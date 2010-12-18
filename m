@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: platform/i2c busses: pm runtime and system sleep
-Date: Sat, 18 Dec 2010 15:59:50 +0100
-Message-ID: <201012181559.50347.rjw__49587.9416158006$1292684519$gmane$org@sisk.pl>
-References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
-	<201012181354.58077.rjw@sisk.pl>
-	<20101218132029.GA22273@opensource.wolfsonmicro.com>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Sat, 18 Dec 2010 16:07:26 +0100
+Message-ID: <201012181607.26628.rjw__33512.670468963$1292684925$gmane$org@sisk.pl>
+References: <AANLkTikJr+0kVPE4aSwPjZWRfA3gRSNgGwzQdSwRpo_5@mail.gmail.com>
+	<Pine.LNX.4.44L0.1012110937100.10743-100000@netrider.rowland.org>
+	<AANLkTi=32bqipN5U00La-B7JSgTC1bHgMev=xUSF6kRN@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101218132029.GA22273@opensource.wolfsonmicro.com>
+In-Reply-To: <AANLkTi=32bqipN5U00La-B7JSgTC1bHgMev=xUSF6kRN@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,48 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Ohad Ben-Cohen <ohad@wizery.com>
+Cc: linux-mmc@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ido Yariv <ido@wizery.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, December 18, 2010, Mark Brown wrote:
-> On Sat, Dec 18, 2010 at 01:54:57PM +0100, Rafael J. Wysocki wrote:
-> > On Saturday, December 18, 2010, Mark Brown wrote:
+On Saturday, December 18, 2010, Ohad Ben-Cohen wrote:
+> Hi Alan,
 > 
-> > > SPI and platform (the first two buses I looked at) both seem to have
-> > > legacy suspend operations too?  Clearly the bus would need to provide an
-> > > op to invoke the legacy call but the logic which prioritises the pm_ops
-> > > over the legacy operation is generic.
+> Sorry for the belated response,
 > 
-> > Well, the problem with that is the driver would need to tell the generic call
-> > what the legacy routine is and there's no, er, generic way to do that.
+> On Sat, Dec 11, 2010 at 4:50 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> >> Think of a device which you have no way to reset other than powering
+> >> it down and up again.
+> >>
+> >> If that device is managed by runtime PM, the only way to do that is by
+> >> using put_sync() followed by a get_sync(). Sure, if someone else
+> >> increased the usage_count of that device this won't work, but then of
+> >> course it means that the driver is not using runtime PM correctly.
+> >
+> > Not so.  Even if a driver uses runtime PM correctly, there will still
+> > be times when someone else has increased the usage_count.  This happens
+> > during probing and during system resume, for example.
 > 
-> > In the i2c case, for example, there is struct i2c_driver that contains the
-> > ->suspend() and ->resume() pointers, so the bus type driver _knows_ how to
-> > get there, but the PM core doesn't have this information.
+> I'm aware of these two examples; normally we're good with them since
+> during probing we're not toggling the power, and during suspend/resume
+> the SDIO core is responsible for manipulating the power (and it does
+> so directly). Are there (or do you think there will be) additional
+> examples where this can happen ?
 > 
-> Sure, but this could be readily accomplished by providing bus
-> legacy_suspend() and legacy_resume() operations that the generic code
-> could use to do the actual call.
-
-First, there already are ->suspend() and ->resume() callbacks in
-struct bus_type which are regarded as "legacy".  The PM core uses those as
-appropriate in drivers/base/power/main.c .
-
-Second, the situation at hand is that the bus type implements dev_pm_ops,
-but the driver doesn't.  Now, pm_generic_suspend() is called with a struct
-device pointer, so it would have to go back to dev->bus, find the
-->legacy_suspend() callback (as opposed to ->suspend(), which also is legacy,
-but is called by the PM core instead).  May I call that confusing?
-
-> This would save them all implmeneting
-> essentially the same decision making code for all the various different 
-> PM operations - the only bit that differs between buses is going to be
-> the actual process for calling the legacy API.
+> But this leads me to a real problem which we have encountered.
 > 
-> Like I say, I'm not sure if it's actually worth it.
+> During system suspend, our driver is asked (by mac80211's suspend
+> handler) to power off its device. When this happens, the driver has no
+> idea that the system is suspending - regular driver code (responsible
+> to remove the wlan interface and stop the device) is being called.
 
-Well, I don't really think so.
+That's where the problem is.  If there's a difference, from the driver's
+point of view, between suspend and some other operation, there should be a
+way to tell the driver what case it actually is dealing with.
 
-Thanks,
+BTW, what would you do in that case if the runtime PM of the device were
+disabled by user space by writing "on" to the device's
+/sys/devices/.../power/control file?
+
 Rafael
