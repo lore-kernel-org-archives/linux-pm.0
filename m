@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Sun, 19 Dec 2010 11:22:09 +0100
-Message-ID: <201012191122.09581.rjw__24583.0538835891$1292754237$gmane$org@sisk.pl>
-References: <AANLkTikJr+0kVPE4aSwPjZWRfA3gRSNgGwzQdSwRpo_5@mail.gmail.com>
-	<AANLkTin23vbbA7+UDzh=v060HbkLMrJjB38cs+AWScPJ@mail.gmail.com>
-	<201012182347.08635.rjw@sisk.pl>
+Subject: [PATCH] PCI / PCIe: Clear Root PME Status bits during
+	early resume
+Date: Sun, 19 Dec 2010 11:49:40 +0100
+Message-ID: <201012191149.40547.rjw__4073.90463301471$1292755869$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012182347.08635.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,99 +16,175 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ohad Ben-Cohen <ohad@wizery.com>, Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
+To: linux-pci@vger.kernel.org
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, December 18, 2010, Rafael J. Wysocki wrote:
-> On Saturday, December 18, 2010, Ohad Ben-Cohen wrote:
-> > On Sat, Dec 18, 2010 at 5:07 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Saturday, December 18, 2010, Ohad Ben-Cohen wrote:
-> > >> On Sat, Dec 11, 2010 at 4:50 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > >> >> Think of a device which you have no way to reset other than powering
-> > >> >> it down and up again.
-> > >> >>
-> > >> >> If that device is managed by runtime PM, the only way to do that is by
-> > >> >> using put_sync() followed by a get_sync(). Sure, if someone else
-> > >> >> increased the usage_count of that device this won't work, but then of
-> > >> >> course it means that the driver is not using runtime PM correctly.
-> > >> >
-> > >> > Not so.  Even if a driver uses runtime PM correctly, there will still
-> > >> > be times when someone else has increased the usage_count.  This happens
-> > >> > during probing and during system resume, for example.
-> > >>
-> > >> I'm aware of these two examples; normally we're good with them since
-> > >> during probing we're not toggling the power, and during suspend/resume
-> > >> the SDIO core is responsible for manipulating the power (and it does
-> > >> so directly). Are there (or do you think there will be) additional
-> > >> examples where this can happen ?
-> > >>
-> > >> But this leads me to a real problem which we have encountered.
-> > >>
-> > >> During system suspend, our driver is asked (by mac80211's suspend
-> > >> handler) to power off its device. When this happens, the driver has no
-> > >> idea that the system is suspending - regular driver code (responsible
-> > >> to remove the wlan interface and stop the device) is being called.
-> > >
-> > > That's where the problem is.  If there's a difference, from the driver's
-> > > point of view, between suspend and some other operation, there should be a
-> > > way to tell the driver what case it actually is dealing with.
-> > 
-> > Yes, the problem will be solved if the driver would bypass the runtime
-> > PM framework on system suspend. mac80211 obviously has this
-> > information, and technically it's very easy to let the driver know
-> > about it.
-> > 
-> > But the difference between suspend and normal operation is really
-> > artificial: in both cases mac80211 just asks the driver to power its
-> > device down, and the end result is exactly the same (a GPIO line of
-> > the device is de-asserted in our case). The difference between these
-> > two scenarios
-> > exist only because runtime PM is effectively disabled during system
-> > suspend, and therefore the driver has to look for an alternative way
-> > to power down the device.
-> 
-> That's not correct, sorry.
-> 
-> There is a bug and the bug is that you use the runtime PM to power down
-> the device in every situation, although you obviously shouldn't do that
-> (e.g. because it may be disabled by user space or it _is_ disabled by
-> the PM core during system suspend).
-> 
-> > > BTW, what would you do in that case if the runtime PM of the device were
-> > > disabled by user space by writing "on" to the device's
-> > > /sys/devices/.../power/control file?
-> > 
-> > That's a good point.
-> > 
-> > Blocking runtime PM for this device is fatal since this particular
-> > device has functionality tied up with its power control (no other way
-> > to reset it).
-> > 
-> > It might call for a device-specific dev_pm_info bit flag to prohibit this...
-> 
-> No way.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-That said, I think we may do something different that perhaps will make your
-life somewhat easier.
+I noticed that PCI Express PMEs don't work on my Toshiba Portege R500
+after the system has been woken up from a sleep state by a PME
+(through Wake-on-LAN).  After some investigation it turned out that
+the BIOS didn't clear the Root PME Status bit in the root port that
+received the wakeup PME and since the Requester ID was also set in
+the port's Root Status register, subsequent PMEs didn't trigger
+interrupts.
 
-Namely, if your driver doesn't implement any system suspend callbacks
-(i.e. ->suspend(), ->resume(), ->freeze(), ->thaw() etc.) and it doesn't
-want the analogous subsystem callbacks to be executed for the device, it will
-make sense to flag the device as "runtime only", or something like this,
-which make the PM core skip the device in dpm_suspend() etc.
+This problem can be avoided by clearing the Root PME Status bits in
+all PCI Express root ports during early resume (it needs to be done
+in pci_pm_default_resume_early() and not in the port's resume
+routine, because it's generally necessary even if the PCI Express
+port driver is not used).
 
-In that case, if a device if flagged as "runtime only", we can avoid
-calling pm_runtime_get_noirq() for it in dpm_prepare() and, analogously,
-calling pm_runtime_put_sync() for it in dpm_complete().  However, we will have
-to fail system suspend (or hibernation) if a "runtime only" device has the
-power.runtime_auto flag unset.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci-driver.c |    7 +++++++
+ drivers/pci/pci.c        |   16 ++++++++++++++++
+ drivers/pci/pcie/pme.c   |   27 ++++-----------------------
+ include/linux/pci.h      |    1 +
+ include/linux/pci_regs.h |    2 ++
+ 5 files changed, 30 insertions(+), 23 deletions(-)
 
-So, I think we can add a "runtime only" flag working as described above.
-I guess it will also help in the case I've been discussing with Kevin for some
-time (i2c device using runtime PM used by an RTC in a semi-transparent
-fashion).
-
-Alan, what do you think?
-
-Rafael
+Index: linux-2.6/drivers/pci/pci-driver.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -456,6 +456,13 @@ static void pci_pm_default_resume_early(
+ {
+ 	pci_restore_standard_config(pci_dev);
+ 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
++	/*
++	 * Some BIOSes forget to clear Root PME Status bits after system wakeup
++	 * which breaks ACPI-based runtime wakeup on PCI Express, so clear those
++	 * bits now just in case (shouldn't hurt).
++	 */
++	if(pci_is_pcie(pci_dev) && pci_dev->pcie_type == PCI_EXP_TYPE_ROOT_PORT)
++		pcie_pme_clear_root_status(pci_dev);
+ }
+ 
+ #endif
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1266,6 +1266,22 @@ int pci_set_pcie_reset_state(struct pci_
+ }
+ 
+ /**
++ * pcie_pme_clear_root_status - Clear root port PME interrupt status.
++ * @dev: PCIe root port or event collector.
++ */
++void pcie_pme_clear_root_status(struct pci_dev *dev)
++{
++	int rtsta_pos;
++	u32 rtsta;
++
++	rtsta_pos = pci_pcie_cap(dev) + PCI_EXP_RTSTA;
++
++	pci_read_config_dword(dev, rtsta_pos, &rtsta);
++	rtsta |= PCI_EXP_RTSTA_PME;
++	pci_write_config_dword(dev, rtsta_pos, rtsta);
++}
++
++/**
+  * pci_check_pme_status - Check if given device has generated PME.
+  * @dev: Device to check.
+  *
+Index: linux-2.6/drivers/pci/pcie/pme.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/pme.c
++++ linux-2.6/drivers/pci/pcie/pme.c
+@@ -26,9 +26,6 @@
+ #include "../pci.h"
+ #include "portdrv.h"
+ 
+-#define PCI_EXP_RTSTA_PME	0x10000 /* PME status */
+-#define PCI_EXP_RTSTA_PENDING	0x20000 /* PME pending */
+-
+ /*
+  * If this switch is set, MSI will not be used for PCIe PME signaling.  This
+  * causes the PCIe port driver to use INTx interrupts only, but it turns out
+@@ -74,22 +71,6 @@ void pcie_pme_interrupt_enable(struct pc
+ }
+ 
+ /**
+- * pcie_pme_clear_status - Clear root port PME interrupt status.
+- * @dev: PCIe root port or event collector.
+- */
+-static void pcie_pme_clear_status(struct pci_dev *dev)
+-{
+-	int rtsta_pos;
+-	u32 rtsta;
+-
+-	rtsta_pos = pci_pcie_cap(dev) + PCI_EXP_RTSTA;
+-
+-	pci_read_config_dword(dev, rtsta_pos, &rtsta);
+-	rtsta |= PCI_EXP_RTSTA_PME;
+-	pci_write_config_dword(dev, rtsta_pos, rtsta);
+-}
+-
+-/**
+  * pcie_pme_walk_bus - Scan a PCI bus for devices asserting PME#.
+  * @bus: PCI bus to scan.
+  *
+@@ -253,7 +234,7 @@ static void pcie_pme_work_fn(struct work
+ 			 * Clear PME status of the port.  If there are other
+ 			 * pending PMEs, the status will be set again.
+ 			 */
+-			pcie_pme_clear_status(port);
++			pcie_pme_clear_root_status(port);
+ 
+ 			spin_unlock_irq(&data->lock);
+ 			pcie_pme_handle_request(port, rtsta & 0xffff);
+@@ -378,7 +359,7 @@ static int pcie_pme_probe(struct pcie_de
+ 
+ 	port = srv->port;
+ 	pcie_pme_interrupt_enable(port, false);
+-	pcie_pme_clear_status(port);
++	pcie_pme_clear_root_status(port);
+ 
+ 	ret = request_irq(srv->irq, pcie_pme_irq, IRQF_SHARED, "PCIe PME", srv);
+ 	if (ret) {
+@@ -402,7 +383,7 @@ static int pcie_pme_suspend(struct pcie_
+ 
+ 	spin_lock_irq(&data->lock);
+ 	pcie_pme_interrupt_enable(port, false);
+-	pcie_pme_clear_status(port);
++	pcie_pme_clear_root_status(port);
+ 	data->noirq = true;
+ 	spin_unlock_irq(&data->lock);
+ 
+@@ -422,7 +403,7 @@ static int pcie_pme_resume(struct pcie_d
+ 
+ 	spin_lock_irq(&data->lock);
+ 	data->noirq = false;
+-	pcie_pme_clear_status(port);
++	pcie_pme_clear_root_status(port);
+ 	pcie_pme_interrupt_enable(port, true);
+ 	spin_unlock_irq(&data->lock);
+ 
+Index: linux-2.6/include/linux/pci_regs.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci_regs.h
++++ linux-2.6/include/linux/pci_regs.h
+@@ -496,6 +496,8 @@
+ #define  PCI_EXP_RTCTL_CRSSVE	0x10	/* CRS Software Visibility Enable */
+ #define PCI_EXP_RTCAP		30	/* Root Capabilities */
+ #define PCI_EXP_RTSTA		32	/* Root Status */
++#define PCI_EXP_RTSTA_PME	0x10000 /* PME status */
++#define PCI_EXP_RTSTA_PENDING	0x20000 /* PME pending */
+ #define PCI_EXP_DEVCAP2		36	/* Device Capabilities 2 */
+ #define  PCI_EXP_DEVCAP2_ARI	0x20	/* Alternative Routing-ID */
+ #define PCI_EXP_DEVCTL2		40	/* Device Control 2 */
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -821,6 +821,7 @@ int pci_back_from_sleep(struct pci_dev *
+ bool pci_dev_run_wake(struct pci_dev *dev);
+ bool pci_check_pme_status(struct pci_dev *dev);
+ void pci_pme_wakeup_bus(struct pci_bus *bus);
++void pcie_pme_clear_root_status(struct pci_dev *dev);
+ 
+ static inline int pci_enable_wake(struct pci_dev *dev, pci_power_t state,
+ 				  bool enable)
