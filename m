@@ -1,14 +1,17 @@
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 2/2] i2c: Factor out runtime suspend checks from
-	PM operations
-Date: Mon, 20 Dec 2010 14:33:13 +0000
-Message-ID: <1292855593-30608-2-git-send-email-broonie__41887.0752830573$1292855673$gmane$org@opensource.wolfsonmicro.com>
-References: <1292855593-30608-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: Re: platform/i2c busses: pm runtime and system sleep
+Date: Mon, 20 Dec 2010 15:00:52 +0000
+Message-ID: <20101220150051.GI26706__43480.2959477112$1292857333$gmane$org@rakim.wolfsonmicro.main>
+References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
+	<201012181354.58077.rjw@sisk.pl>
+	<20101218132029.GA22273@opensource.wolfsonmicro.com>
+	<201012181559.50347.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1292855593-30608-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-Disposition: inline
+In-Reply-To: <201012181559.50347.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,120 +21,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, patches@opensource.wolfsonmicro.com, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-When devices use dev_pm_ops the I2C API is implementing standard functionality
-for integration with runtime PM and for checking for the presence of a per
-device op. The PM core provides pm_generic_ functions implementing this
-behaviour - use them to reduce coupling with future PM updates.
+On Sat, Dec 18, 2010 at 03:59:50PM +0100, Rafael J. Wysocki wrote:
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/i2c/i2c-core.c |   57 ++++++++++++++++--------------------------------
- 1 files changed, 19 insertions(+), 38 deletions(-)
+> Second, the situation at hand is that the bus type implements dev_pm_ops,
+> but the driver doesn't.  Now, pm_generic_suspend() is called with a struct
+> device pointer, so it would have to go back to dev->bus, find the
+> ->legacy_suspend() callback (as opposed to ->suspend(), which also is legacy,
+> but is called by the PM core instead).  May I call that confusing?
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 6b4cc56..4478557 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -196,69 +196,50 @@ static int i2c_device_pm_suspend(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (pm) {
--		if (pm_runtime_suspended(dev))
--			return 0;
--		else
--			return pm->suspend ? pm->suspend(dev) : 0;
--	}
--
--	return i2c_legacy_suspend(dev, PMSG_SUSPEND);
-+	if (pm)
-+		return pm_generic_suspend(dev);
-+	else
-+		return i2c_legacy_suspend(dev, PMSG_SUSPEND);
- }
- 
- static int i2c_device_pm_resume(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
--	int ret;
- 
- 	if (pm)
--		ret = pm->resume ? pm->resume(dev) : 0;
-+		return pm_generic_resume(dev);
- 	else
--		ret = i2c_legacy_resume(dev);
--
--	return ret;
-+		return i2c_legacy_resume(dev);
- }
- 
- static int i2c_device_pm_freeze(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (pm) {
--		if (pm_runtime_suspended(dev))
--			return 0;
--		else
--			return pm->freeze ? pm->freeze(dev) : 0;
--	}
--
--	return i2c_legacy_suspend(dev, PMSG_FREEZE);
-+	if (pm)
-+		return pm_generic_freeze(dev);
-+	else
-+		return i2c_legacy_suspend(dev, PMSG_FREEZE);
- }
- 
- static int i2c_device_pm_thaw(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (pm) {
--		if (pm_runtime_suspended(dev))
--			return 0;
--		else
--			return pm->thaw ? pm->thaw(dev) : 0;
--	}
--
--	return i2c_legacy_resume(dev);
-+	if (pm)
-+		return pm_generic_thaw(dev);
-+	else
-+		return i2c_legacy_resume(dev);
- }
- 
- static int i2c_device_pm_poweroff(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (pm) {
--		if (pm_runtime_suspended(dev))
--			return 0;
--		else
--			return pm->poweroff ? pm->poweroff(dev) : 0;
--	}
--
--	return i2c_legacy_suspend(dev, PMSG_HIBERNATE);
-+	if (pm)
-+		return pm_generic_poweroff(dev);
-+	else
-+		return i2c_legacy_suspend(dev, PMSG_HIBERNATE);
- }
- 
- static int i2c_device_pm_restore(struct device *dev)
-@@ -267,7 +248,7 @@ static int i2c_device_pm_restore(struct device *dev)
- 	int ret;
- 
- 	if (pm)
--		ret = pm->restore ? pm->restore(dev) : 0;
-+		ret = pm_generic_restore(dev);
- 	else
- 		ret = i2c_legacy_resume(dev);
- 
--- 
-1.7.2.3
+Well, the trouble is that the whole situation is already pretty
+confusing for what should be very simple buses, each one needs to write
+a bunch of not really bus specific code in order to get basic behaviour
+which allows the drivers to make use of runtime PM, requiring more
+thought and care per bus than I'd expect given that they've nothing
+really to contribute.  This leads to the sort of random variations
+between buses that Rabin is reporting, and means that updates keep
+having to get done in multiple different places.
+
+The overall effect is that from the point of view of trying to use
+runtime PM in drivers which work with these simple buses everything
+feels like it's much harder work than it should be.  Moving all the
+decision making out of the buses and into the PM core seems like a win
+here.
