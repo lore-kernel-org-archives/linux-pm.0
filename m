@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ath9k: Do not use legacy PCI power management
-Date: Mon, 20 Dec 2010 01:14:23 +0100
-Message-ID: <201012200114.23527.rjw__38367.0740215622$1292804160$gmane$org@sisk.pl>
-References: <201010160036.17653.rjw@sisk.pl> <201012200032.21704.rjw@sisk.pl>
-	<4D0E9DE3.8050100@hauke-m.de>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Sun, 19 Dec 2010 22:37:58 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1012192226270.31110-100000__29144.6020630703$1292816364$gmane$org@netrider.rowland.org>
+References: <201012191122.09581.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D0E9DE3.8050100@hauke-m.de>
+In-Reply-To: <201012191122.09581.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,44 +17,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Hauke Mehrtens <hauke@hauke-m.de>
-Cc: ath9k-devel@venema.h4ckr.net, "Luis R. Rodriguez" <lrodriguez@atheros.com>, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "John W. Linville" <linville@tuxdriver.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, December 20, 2010, Hauke Mehrtens wrote:
-> On 12/20/2010 12:32 AM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > The ath9k driver uses legacy PCI power management (system suspend
-> > and resume) callbacks, so make it use struct dev_pm_ops callbacks and
-> > let the PCI subsystem handle all of the PCI-specific details of
-> > system power transitions.
-> > 
-> > This change has been tested on Acer Ferrari One with the
-> > Atheros AR928X PCI Express network adapter (rev. 01).
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> > 
-> > Hi,
-> > 
-> > This patch has been sent already once under a slightly different subject
-> > and with a different changelog.  I'm not sure what happened to it that time,
-> > so here it goes again.
-> > 
-> > I'm quite confident it doesn't break things and it simplifies the driver's
-> > suspend and resume routines quite a bit, so please apply.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> Hi Rafael,
+On Sun, 19 Dec 2010, Rafael J. Wysocki wrote:
+
+> That said, I think we may do something different that perhaps will make your
+> life somewhat easier.
 > 
-> Your patch was already applied (see commit
-> f0e94b479c987abef17eb18e5c8e0ed178d00cd4 in linux-next) or didn't I got
-> your problem?
+> Namely, if your driver doesn't implement any system suspend callbacks
+> (i.e. ->suspend(), ->resume(), ->freeze(), ->thaw() etc.) and it doesn't
+> want the analogous subsystem callbacks to be executed for the device, it will
+> make sense to flag the device as "runtime only", or something like this,
+> which make the PM core skip the device in dpm_suspend() etc.
+> 
+> In that case, if a device if flagged as "runtime only", we can avoid
+> calling pm_runtime_get_noirq() for it in dpm_prepare() and, analogously,
+> calling pm_runtime_put_sync() for it in dpm_complete().  However, we will have
+> to fail system suspend (or hibernation) if a "runtime only" device has the
+> power.runtime_auto flag unset.
 
-Oh, is it?  Sorry for the noise, then.
+Or more generally, if pm_runtime_suspended() doesn't return 'true' for 
+the device.  But if the device gets suspended asynchronously, this may 
+very well happen.  For example, an i2c device is originally runtime 
+suspended, but its device_suspend() call occurs at the same time as the 
+call for the RTC device, so the i2c device actually happens to be 
+resumed at that time in order to communicate with the RTC.
 
-Thanks,
-Rafael
+> So, I think we can add a "runtime only" flag working as described above.
+> I guess it will also help in the case I've been discussing with Kevin for some
+> time (i2c device using runtime PM used by an RTC in a semi-transparent
+> fashion).
+> 
+> Alan, what do you think?
+
+I'm not sure.  In this situation, should we worry more that we usually
+do about the possibility of a runtime resume occurring after the device
+has gone through device_suspend()?  Or just depend on the driver to do
+everything correctly?
+
+Alan Stern
