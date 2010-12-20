@@ -1,15 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: platform/i2c busses: pm runtime and system sleep
-Date: Mon, 20 Dec 2010 22:13:53 +0100
-Message-ID: <201012202213.53902.rjw__37411.551786545$1292879709$gmane$org@sisk.pl>
-References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
-	<201012181559.50347.rjw@sisk.pl>
-	<20101220150051.GI26706@rakim.wolfsonmicro.main>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Mon, 20 Dec 2010 22:17:09 +0100
+Message-ID: <201012202217.09374.rjw__43833.5243882195$1292879905$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1012192226270.31110-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101220150051.GI26706@rakim.wolfsonmicro.main>
+In-Reply-To: <Pine.LNX.4.44L0.1012192226270.31110-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +17,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, December 20, 2010, Mark Brown wrote:
-> On Sat, Dec 18, 2010 at 03:59:50PM +0100, Rafael J. Wysocki wrote:
+On Monday, December 20, 2010, Alan Stern wrote:
+> On Sun, 19 Dec 2010, Rafael J. Wysocki wrote:
 > 
-> > Second, the situation at hand is that the bus type implements dev_pm_ops,
-> > but the driver doesn't.  Now, pm_generic_suspend() is called with a struct
-> > device pointer, so it would have to go back to dev->bus, find the
-> > ->legacy_suspend() callback (as opposed to ->suspend(), which also is legacy,
-> > but is called by the PM core instead).  May I call that confusing?
+> > That said, I think we may do something different that perhaps will make your
+> > life somewhat easier.
+> > 
+> > Namely, if your driver doesn't implement any system suspend callbacks
+> > (i.e. ->suspend(), ->resume(), ->freeze(), ->thaw() etc.) and it doesn't
+> > want the analogous subsystem callbacks to be executed for the device, it will
+> > make sense to flag the device as "runtime only", or something like this,
+> > which make the PM core skip the device in dpm_suspend() etc.
+> > 
+> > In that case, if a device if flagged as "runtime only", we can avoid
+> > calling pm_runtime_get_noirq() for it in dpm_prepare() and, analogously,
+> > calling pm_runtime_put_sync() for it in dpm_complete().  However, we will have
+> > to fail system suspend (or hibernation) if a "runtime only" device has the
+> > power.runtime_auto flag unset.
 > 
-> Well, the trouble is that the whole situation is already pretty
-> confusing for what should be very simple buses, each one needs to write
-> a bunch of not really bus specific code in order to get basic behaviour
-> which allows the drivers to make use of runtime PM, requiring more
-> thought and care per bus than I'd expect given that they've nothing
-> really to contribute.  This leads to the sort of random variations
-> between buses that Rabin is reporting, and means that updates keep
-> having to get done in multiple different places.
-> 
-> The overall effect is that from the point of view of trying to use
-> runtime PM in drivers which work with these simple buses everything
-> feels like it's much harder work than it should be.  Moving all the
-> decision making out of the buses and into the PM core seems like a win
-> here.
+> Or more generally, if pm_runtime_suspended() doesn't return 'true' for 
+> the device.
 
-Well, the _solution_ is to get rid of the legacy stuff from those buses in the
-first place.  Then, they'll just need to use the generic ops without any
-trouble.
+That's not necessary, because the device may be suspended using
+pm_runtime_suspend() later than we check pm_runtime_suspended().
 
-What you're proposing is a workaround that people will use as an excuse for
-not doing the right thing forever.
+I'd use the "runtime only" (or perhaps better "no_dpm") flag as a declaration
+(if set) that the device is going to be suspended with the help of "runtime"
+callbacks and the driver takes the responsibility for getting things right.
+
+> But if the device gets suspended asynchronously, this may 
+> very well happen.  For example, an i2c device is originally runtime 
+> suspended, but its device_suspend() call occurs at the same time as the 
+> call for the RTC device, so the i2c device actually happens to be 
+> resumed at that time in order to communicate with the RTC.
+> 
+> > So, I think we can add a "runtime only" flag working as described above.
+> > I guess it will also help in the case I've been discussing with Kevin for some
+> > time (i2c device using runtime PM used by an RTC in a semi-transparent
+> > fashion).
+> > 
+> > Alan, what do you think?
+> 
+> I'm not sure.  In this situation, should we worry more that we usually
+> do about the possibility of a runtime resume occurring after the device
+> has gone through device_suspend()?  Or just depend on the driver to do
+> everything correctly?
+
+The latter.
 
 Thanks,
 Rafael
