@@ -1,11 +1,11 @@
 From: linux-pm.20.masuefke@spamgourmet.com
 Subject: Suspend2Ram - Kernel Panic on Dual Core Atom D525 right
-	after resume
-Date: Mon, 20 Dec 2010 11:11:47 +0100
-Message-ID: <4D0F2BE3.8000207@rwth-aachen.de>
+ after resume part 2
+Date: Mon, 20 Dec 2010 11:15:11 +0100
+Message-ID: <4D0F2CAF.3060506@rwth-aachen.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,63 +18,93 @@ Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-I have a system that is unable to suspend to ram, under most but not all 
-conditions.
-Suspend to disk works flawlessly as well as "Power On Suspend " (ACPI 
-S1) if ACPI suspend is set to "S1(POS)" in the BIOS
+-- continued, mail seems to have been cur short on the list --
 
-To me, the matter seems complicated, I have done as many tests as I can 
-and I find it extremely difficult to describe my findings in a short manner.
+That means, I cannot produce reasonable log files because there is no
+captureable output (neither file nor on the serial port) right after the
+resume.
+But I got some literal "screeenshots" taken with a digicam:
+http://www-users.rwth-aachen.de/martin.suefke/s2ram/
+The pictures were taken when I was able to, but I cannot give exact
+configuration details for each picture. The configs were quite similar
+though, all made with "make --oldconfig" based upon the configuration of
+the 2.6.23.2 Kernel.
 
-The System in concern is a Gigabyte GA-D525TUD , with an Atom D525 
-Processor (1.8GHz, Dual Core, Hyperthreading, no IntelSpeedStep/CPU 
-Frequency Scaling ) and 4GB DDR3 ram installed. The mainboard is in use 
-scince about one week.
-Bios Versions F2 (as shipped) and F3 (just updated) behave identical, 
-buggy.
+I ran most tests (dozens!) with the Kernel 2.6.36.2.
+Tested these Kernel command line options, also in combinations:
+"noapic" -> bug remains
+"acpi=3Doff" -> no more "mem" option in /sys/proc/power
+"test_suspend=3Dmem" -> bug appeard during the boot test
 
-Main problem "the bug":
-(at a "vanilla" 24x80 virtual terminal, tty0)
+I tried setting the testing options in /sys/power/pm_test, for all three
+Kernels, especially the "core" test repeated quite often.
+"core" -> pass (hibernates for ca. 10 seconds, system comes up again,
+system stable & useable)
+"processors" -> pass
+"platform" -> pass
+"devices" -> pass
+"freezer" -> pass
+
+I tried the setting pm_trace=3D1 in /sys/power/pm_trace
+dmesg -s 1000000 | grep -i2 'hash match' showed nothing
+The hwclock was set to about December 2024, though. I tried this
+repeatedly and with all three Kernels.
+
+I tried setting /sys/power/pm_async to 0 -> bug still there (also tested
+more than once)
+
+Finally, I disabled one core (both Hyperthreads) of the machine and
+voil=E0: suspend to ram works:
+I guess that cpu0 and cpu3 are Hyperthreads of one core and cpu1 and
+cpu2 are Hyperthreads of the other core
+# cd /sys/devices/system/cpu/
+# echo 0 > cpu1/online
+# echo 0 > cpu2/online
 # echo mem > /sys/power/state
-(machine suspends, power is turned off except for standby power, all OK)
-[I press the power button to wake it up again]
-(Power comes up, Machine is halted, Kernel panic'd, keyboard LEDs caps 
-lock + scroll lock blinking, the monitor shows the VGA Bios "Intel 
-PineView ..." or a panic screen)
+(system suspends)
+[press power button]
+(system resumes, stable, working, charming)
 
-This is reproducible with www.kernel.org Kernels 2.6.35.10, 2.6.36.2 and 
-2.6.37-rc6 , all compiled for x86_64 (amd64)
-Most testing was done in the initrd for this would not wreck my 
-harddrive (fsck complaining because of unclean shutdown). Therefore 
-there were no programs running and also I could unload all modules with 
-"rmmod" in the initrd (absolutely needed drivers are all compiled-in). 
-But the results for suspending were all the same: Kernel Panic. No 
-matter wether modules (mostly RAID, HD controller, iScsi ) were loaded 
-or not. The outcome is the same when testing in the "really booted" 
-state, in runlevel 3 as well as in runlevel 1.
+But if one re-enables one of the just-disabled CPUs , the system crashes
+*if it was in suspend to ram before*:
+# echo 1 > cpu1/online
+(Kernel panic)
 
-I followed http://en.opensuse.org/SDB:Suspend_to_RAM and the 
-documentation in <Kernel-Source>/Documentation/power to no avail.
-A useable screen becomes visible after resume when Kernel cmd line 
-option "acpi_sleep=s3_bios" is given. This seems ok to me.
+But if one enables one thread of each core the system crashes, too:
+# cd /sys/devices/system/cpu/
+# echo 0 > cpu2/online
+# echo 0 > cpu3/online
+# echo mem > /sys/power/state
+(Kernel panic)
 
-Of course, I used <web-search-engine-of-choice-here> but found nothing 
-that solved the issue.
+For comparison, the CPUs 1-3 can be switched on and off at will and
+without trouble if the system never had suspended to ram
+# echo 0 > cpu1/online
+# echo 0 > cpu2/online
+# echo 0 > cpu3/online
+# echo 1 > cpu1/online
+# echo 1 > cpu2/online
+# echo 1 > cpu3/online
+(no problem, system runnning, the order of the above 6 commands and
+repetitions of these do not matter)
+Some printk statements may appear on the console saying that SMP
+scheduling is changed for UP scheduling if only cpu0 is active and
+another printk statement for the change back when >=3D2 CPUs/Hyperthreads
+are enabled.
 
-Because of the blinking keyboard LEDs I assume a kernel panic upon 
-resume and that it is not a driver that makes the trouble, nor is it my 
-screeen being blank because the video would not be resumed as it is 
-often the failure. This is why I bug the mainling list with this problem.
+Disabling "CPU Frequency Scaling", "Intel_Idle", "Model Specific
+Registers", "Microcode updating" alone or in various combinations in the
+kernel yielded nothing. Except Kernel Panics
 
-It is difficult to obtain reasonable debug output as the console didn't 
-come back after the suspend at first (alleviated by adding the kernel 
-command line option "no_console_suspend") and serial debug output via 
-ttyS0 stays frozen after resume. Using an oscilloscope, I see signals on 
-the RS232-Tx line, at about 500-520 uSec/bit (a little unter 2000 baud - 
-no sensible baud rate), so there is a bug in the resume of a serial 
-console (Kernel cmd line option "console=ttyS0,115200n8 console=tty0" ), 
-too. This bug seems not much important to me. Should I file it 
-nevertheless ? Where ? Sidenote: When the serial console fails, console 
-output on the screen may be slowed to a crawl, too. There is one Picture 
-with an exceptionally long resume time (263 seconds!) because of that
+I don't know exactly which information I should provide in order to help
+you help me. It is all here or it can be produced, please ask for it if
+I can provide any info or running any further tests.
+
+I am not sure if I should post tons of kernel config, log files and
+pictures on the mailing list (probably not), so I will put them here:
+http://www-users.rwth-aachen.de/martin.suefke/s2ram/
+There is the grub.cfg file (for the kernel options) , all file contents
+from /sys/power and /sys/devices/system/cpu (so one can understand the
+core relationships) and the content of  /proc/cpuinfo as well as a few
+of the logs I got from the serial console.
+However the serial logs are of a repetitive and little meaning nature
