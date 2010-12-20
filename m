@@ -1,15 +1,13 @@
-From: David Vrabel <david.vrabel@csr.com>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Sat, 18 Dec 2010 14:16:30 +0000
-Message-ID: <4D0CC23E.6000509__16040.3252965354$1292946849$gmane$org@csr.com>
-References: <AANLkTikJr+0kVPE4aSwPjZWRfA3gRSNgGwzQdSwRpo_5@mail.gmail.com>
-	<Pine.LNX.4.44L0.1012110937100.10743-100000@netrider.rowland.org>
-	<AANLkTi=32bqipN5U00La-B7JSgTC1bHgMev=xUSF6kRN@mail.gmail.com>
+From: Hauke Mehrtens <hauke@hauke-m.de>
+Subject: Re: [PATCH] ath9k: Do not use legacy PCI power management
+Date: Mon, 20 Dec 2010 01:05:55 +0100
+Message-ID: <4D0E9DE3.8050100__42793.2185856209$1292946858$gmane$org@hauke-m.de>
+References: <201010160036.17653.rjw@sisk.pl> <201012200032.21704.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=32bqipN5U00La-B7JSgTC1bHgMev=xUSF6kRN@mail.gmail.com>
+In-Reply-To: <201012200032.21704.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +17,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ohad Ben-Cohen <ohad@wizery.com>
-Cc: linux-mmc@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Ido Yariv <ido@wizery.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ath9k-devel@venema.h4ckr.net, "Luis R. Rodriguez" <lrodriguez@atheros.com>, linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "John W. Linville" <linville@tuxdriver.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 18/12/2010 13:29, Ohad Ben-Cohen wrote:
+On 12/20/2010 12:32 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> During system suspend, our driver is asked (by mac80211's suspend
-> handler) to power off its device. When this happens, the driver has no
-> idea that the system is suspending - regular driver code (responsible
-> to remove the wlan interface and stop the device) is being called.
-> Obviously pm_runtime_put_sync() won't power off the device at this
-> point, but later during suspend, when the SDIO core will suspend, the
-> device will be powered off and things would work as expected.
+> The ath9k driver uses legacy PCI power management (system suspend
+> and resume) callbacks, so make it use struct dev_pm_ops callbacks and
+> let the PCI subsystem handle all of the PCI-specific details of
+> system power transitions.
 > 
-> That breaks when the suspend transition is cancelled (e.g. due to an
-> error) before SDIO core gets the chance to power off the device: the
-> driver will be asked (by mac80211's resume handler) to power up the
-> device and reinitialize it, but since the device was never powered
-> off, the driver will fail doing so because the device is quiescent (a
-> power cycle should have put him into a communicable state, but that
-> never happened in this scenario).
+> This change has been tested on Acer Ferrari One with the
+> Atheros AR928X PCI Express network adapter (rev. 01).
 > 
-> At that resume point the device is always on - whether the system
-> suspended successfully or not - and the driver can't tell whether the
-> device was indeed powered off beforehand or not. In addition, the
-> driver code that is going to fail is not a resume handler - it's just
-> regular driver code responsible for powering on the device and
-> reinitializing it (which is being called by mac80211's resume
-> handler).
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> 
+> Hi,
+> 
+> This patch has been sent already once under a slightly different subject
+> and with a different changelog.  I'm not sure what happened to it that time,
+> so here it goes again.
+> 
+> I'm quite confident it doesn't break things and it simplifies the driver's
+> suspend and resume routines quite a bit, so please apply.
+> 
+> Thanks,
+> Rafael
+> 
+Hi Rafael,
 
-It's not clear where the problem is exactly.  It may be useful if you
-describe the wi-fi chip's operational or power states and the valid
-transitions between them.
+Your patch was already applied (see commit
+f0e94b479c987abef17eb18e5c8e0ed178d00cd4 in linux-next) or didn't I got
+your problem?
 
-Is the problem:
-
-1. The suspend handler puts the wi-fi chip into a state that cannot be
-recovered from without a power cycle?  The obvious solution would be to
-not put the chip into such a state.
-
-or
-
-2. The resume handler fails because it cannot distinguish between a
-wi-fi chip that needs reinitializing from power-on and one that is
-already operational?  There is probably a chip register you can query to
-determine if the chip was powered down or reset.  In the absense of any
-suitable chip-specific register a CCCR register such as I/O Enable might
-be usable.
-
-David
+Hauke
