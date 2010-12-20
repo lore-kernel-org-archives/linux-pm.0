@@ -1,13 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Sun, 19 Dec 2010 22:37:58 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012192226270.31110-100000__29144.6020630703$1292816364$gmane$org@netrider.rowland.org>
-References: <201012191122.09581.rjw@sisk.pl>
+From: linux-pm.20.masuefke@spamgourmet.com
+Subject: Suspend2Ram - Kernel Panic on Dual Core Atom D525 right
+	after resume
+Date: Mon, 20 Dec 2010 11:11:47 +0100
+Message-ID: <4D0F2BE3.8000207@rwth-aachen.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012191122.09581.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,44 +16,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 19 Dec 2010, Rafael J. Wysocki wrote:
+Hello,
+I have a system that is unable to suspend to ram, under most but not all 
+conditions.
+Suspend to disk works flawlessly as well as "Power On Suspend " (ACPI 
+S1) if ACPI suspend is set to "S1(POS)" in the BIOS
 
-> That said, I think we may do something different that perhaps will make your
-> life somewhat easier.
-> 
-> Namely, if your driver doesn't implement any system suspend callbacks
-> (i.e. ->suspend(), ->resume(), ->freeze(), ->thaw() etc.) and it doesn't
-> want the analogous subsystem callbacks to be executed for the device, it will
-> make sense to flag the device as "runtime only", or something like this,
-> which make the PM core skip the device in dpm_suspend() etc.
-> 
-> In that case, if a device if flagged as "runtime only", we can avoid
-> calling pm_runtime_get_noirq() for it in dpm_prepare() and, analogously,
-> calling pm_runtime_put_sync() for it in dpm_complete().  However, we will have
-> to fail system suspend (or hibernation) if a "runtime only" device has the
-> power.runtime_auto flag unset.
+To me, the matter seems complicated, I have done as many tests as I can 
+and I find it extremely difficult to describe my findings in a short manner.
 
-Or more generally, if pm_runtime_suspended() doesn't return 'true' for 
-the device.  But if the device gets suspended asynchronously, this may 
-very well happen.  For example, an i2c device is originally runtime 
-suspended, but its device_suspend() call occurs at the same time as the 
-call for the RTC device, so the i2c device actually happens to be 
-resumed at that time in order to communicate with the RTC.
+The System in concern is a Gigabyte GA-D525TUD , with an Atom D525 
+Processor (1.8GHz, Dual Core, Hyperthreading, no IntelSpeedStep/CPU 
+Frequency Scaling ) and 4GB DDR3 ram installed. The mainboard is in use 
+scince about one week.
+Bios Versions F2 (as shipped) and F3 (just updated) behave identical, 
+buggy.
 
-> So, I think we can add a "runtime only" flag working as described above.
-> I guess it will also help in the case I've been discussing with Kevin for some
-> time (i2c device using runtime PM used by an RTC in a semi-transparent
-> fashion).
-> 
-> Alan, what do you think?
+Main problem "the bug":
+(at a "vanilla" 24x80 virtual terminal, tty0)
+# echo mem > /sys/power/state
+(machine suspends, power is turned off except for standby power, all OK)
+[I press the power button to wake it up again]
+(Power comes up, Machine is halted, Kernel panic'd, keyboard LEDs caps 
+lock + scroll lock blinking, the monitor shows the VGA Bios "Intel 
+PineView ..." or a panic screen)
 
-I'm not sure.  In this situation, should we worry more that we usually
-do about the possibility of a runtime resume occurring after the device
-has gone through device_suspend()?  Or just depend on the driver to do
-everything correctly?
+This is reproducible with www.kernel.org Kernels 2.6.35.10, 2.6.36.2 and 
+2.6.37-rc6 , all compiled for x86_64 (amd64)
+Most testing was done in the initrd for this would not wreck my 
+harddrive (fsck complaining because of unclean shutdown). Therefore 
+there were no programs running and also I could unload all modules with 
+"rmmod" in the initrd (absolutely needed drivers are all compiled-in). 
+But the results for suspending were all the same: Kernel Panic. No 
+matter wether modules (mostly RAID, HD controller, iScsi ) were loaded 
+or not. The outcome is the same when testing in the "really booted" 
+state, in runlevel 3 as well as in runlevel 1.
 
-Alan Stern
+I followed http://en.opensuse.org/SDB:Suspend_to_RAM and the 
+documentation in <Kernel-Source>/Documentation/power to no avail.
+A useable screen becomes visible after resume when Kernel cmd line 
+option "acpi_sleep=s3_bios" is given. This seems ok to me.
+
+Of course, I used <web-search-engine-of-choice-here> but found nothing 
+that solved the issue.
+
+Because of the blinking keyboard LEDs I assume a kernel panic upon 
+resume and that it is not a driver that makes the trouble, nor is it my 
+screeen being blank because the video would not be resumed as it is 
+often the failure. This is why I bug the mainling list with this problem.
+
+It is difficult to obtain reasonable debug output as the console didn't 
+come back after the suspend at first (alleviated by adding the kernel 
+command line option "no_console_suspend") and serial debug output via 
+ttyS0 stays frozen after resume. Using an oscilloscope, I see signals on 
+the RS232-Tx line, at about 500-520 uSec/bit (a little unter 2000 baud - 
+no sensible baud rate), so there is a bug in the resume of a serial 
+console (Kernel cmd line option "console=ttyS0,115200n8 console=tty0" ), 
+too. This bug seems not much important to me. Should I file it 
+nevertheless ? Where ? Sidenote: When the serial console fails, console 
+output on the screen may be slowed to a crawl, too. There is one Picture 
+with an exceptionally long resume time (263 seconds!) because of that
