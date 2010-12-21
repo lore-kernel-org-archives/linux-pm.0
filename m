@@ -1,13 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Kevin Hilman <khilman@deeprootsystems.com>
 Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Tue, 21 Dec 2010 22:31:57 +0100
-Message-ID: <201012212231.57420.rjw__24759.1763538823$1292969249$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1012201946330.19558-100000@netrider.rowland.org>
+Date: Tue, 21 Dec 2010 14:23:25 -0800
+Message-ID: <87ipymwysi.fsf__19881.9839781665$1292970283$gmane$org@deeprootsystems.com>
+References: <AANLkTikJr+0kVPE4aSwPjZWRfA3gRSNgGwzQdSwRpo_5@mail.gmail.com>
+	<AANLkTin23vbbA7+UDzh=v060HbkLMrJjB38cs+AWScPJ@mail.gmail.com>
+	<201012182347.08635.rjw@sisk.pl> <201012191122.09581.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1012201946330.19558-100000@netrider.rowland.org>
+In-Reply-To: <201012191122.09581.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sun, 19 Dec 2010 11:22:09 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,51 +20,119 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, December 21, 2010, Alan Stern wrote:
-> On Mon, 20 Dec 2010, Rafael J. Wysocki wrote:
-> 
-> > > > In that case, if a device if flagged as "runtime only", we can avoid
-> > > > calling pm_runtime_get_noirq() for it in dpm_prepare() and, analogously,
-> > > > calling pm_runtime_put_sync() for it in dpm_complete().  However, we will have
-> > > > to fail system suspend (or hibernation) if a "runtime only" device has the
-> > > > power.runtime_auto flag unset.
-> > > 
-> > > Or more generally, if pm_runtime_suspended() doesn't return 'true' for 
-> > > the device.
-> > 
-> > That's not necessary, because the device may be suspended using
-> > pm_runtime_suspend() later than we check pm_runtime_suspended().
-> 
-> What if the device has a child in the RPM_ACTIVE state?  Then 
-> pm_runtime_suspend() won't do anything, even if the child really is 
-> dpm-suspended.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Well, in fact I was thinking of leaf devices.  Following all of the children
-for non-leaf devices would pretty much nullify the whole possible gain.
+> On Saturday, December 18, 2010, Rafael J. Wysocki wrote:
+>> On Saturday, December 18, 2010, Ohad Ben-Cohen wrote:
+>> > On Sat, Dec 18, 2010 at 5:07 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > > On Saturday, December 18, 2010, Ohad Ben-Cohen wrote:
+>> > >> On Sat, Dec 11, 2010 at 4:50 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > >> >> Think of a device which you have no way to reset other than powering
+>> > >> >> it down and up again.
+>> > >> >>
+>> > >> >> If that device is managed by runtime PM, the only way to do that is by
+>> > >> >> using put_sync() followed by a get_sync(). Sure, if someone else
+>> > >> >> increased the usage_count of that device this won't work, but then of
+>> > >> >> course it means that the driver is not using runtime PM correctly.
+>> > >> >
+>> > >> > Not so.  Even if a driver uses runtime PM correctly, there will still
+>> > >> > be times when someone else has increased the usage_count.  This happens
+>> > >> > during probing and during system resume, for example.
+>> > >>
+>> > >> I'm aware of these two examples; normally we're good with them since
+>> > >> during probing we're not toggling the power, and during suspend/resume
+>> > >> the SDIO core is responsible for manipulating the power (and it does
+>> > >> so directly). Are there (or do you think there will be) additional
+>> > >> examples where this can happen ?
+>> > >>
+>> > >> But this leads me to a real problem which we have encountered.
+>> > >>
+>> > >> During system suspend, our driver is asked (by mac80211's suspend
+>> > >> handler) to power off its device. When this happens, the driver has no
+>> > >> idea that the system is suspending - regular driver code (responsible
+>> > >> to remove the wlan interface and stop the device) is being called.
+>> > >
+>> > > That's where the problem is.  If there's a difference, from the driver's
+>> > > point of view, between suspend and some other operation, there should be a
+>> > > way to tell the driver what case it actually is dealing with.
+>> > 
+>> > Yes, the problem will be solved if the driver would bypass the runtime
+>> > PM framework on system suspend. mac80211 obviously has this
+>> > information, and technically it's very easy to let the driver know
+>> > about it.
+>> > 
+>> > But the difference between suspend and normal operation is really
+>> > artificial: in both cases mac80211 just asks the driver to power its
+>> > device down, and the end result is exactly the same (a GPIO line of
+>> > the device is de-asserted in our case). The difference between these
+>> > two scenarios
+>> > exist only because runtime PM is effectively disabled during system
+>> > suspend, and therefore the driver has to look for an alternative way
+>> > to power down the device.
+>> 
+>> That's not correct, sorry.
+>> 
+>> There is a bug and the bug is that you use the runtime PM to power down
+>> the device in every situation, although you obviously shouldn't do that
+>> (e.g. because it may be disabled by user space or it _is_ disabled by
+>> the PM core during system suspend).
+>> 
+>> > > BTW, what would you do in that case if the runtime PM of the device were
+>> > > disabled by user space by writing "on" to the device's
+>> > > /sys/devices/.../power/control file?
+>> > 
+>> > That's a good point.
+>> > 
+>> > Blocking runtime PM for this device is fatal since this particular
+>> > device has functionality tied up with its power control (no other way
+>> > to reset it).
+>> > 
+>> > It might call for a device-specific dev_pm_info bit flag to prohibit this...
+>> 
+>> No way.
+>
+> That said, I think we may do something different that perhaps will make your
+> life somewhat easier.
+>
+> Namely, if your driver doesn't implement any system suspend callbacks
+> (i.e. ->suspend(), ->resume(), ->freeze(), ->thaw() etc.) and it doesn't
+> want the analogous subsystem callbacks to be executed for the device, it will
+> make sense to flag the device as "runtime only", or something like this,
+> which make the PM core skip the device in dpm_suspend() etc.
+>
+> In that case, if a device if flagged as "runtime only", we can avoid
+> calling pm_runtime_get_noirq() for it in dpm_prepare() and, analogously,
+> calling pm_runtime_put_sync() for it in dpm_complete().  However, we will have
+> to fail system suspend (or hibernation) if a "runtime only" device has the
+> power.runtime_auto flag unset.
+>
+> So, I think we can add a "runtime only" flag working as described above.
+> I guess it will also help in the case I've been discussing with Kevin for some
+> time (i2c device using runtime PM used by an RTC in a semi-transparent
+> fashion).
 
-> > I'd use the "runtime only" (or perhaps better "no_dpm") flag as a declaration
-> > (if set) that the device is going to be suspended with the help of "runtime"
-> > callbacks and the driver takes the responsibility for getting things right.
-> 
-> I'm still not sure about this; the design isn't clear.  Are these
-> runtime callbacks going to come from the PM core or from the driver?  
-> If from the driver, how will the driver know when to issue them?  What
-> about coordinating async suspends (the device must be suspended after
-> its children and before its parent)?
+[sorry for being late to the discussion]
 
-It basically goes like this.  There's device A that is only resumed when it's
-needed to carry out an operation and is suspended immediately after that.
-There's another device B that needs A to do something during its suspend.
-So, when the suspend of B is started, A is woken up, does its work and is
-suspended again (using pm_runtime_suspend()).  Then B is suspended.
+Something like thi would certainly work for the case we've discussed at
+LPC and some other similar ones we have on OMAP where we have "runtime
+only" drivers.
 
-We currently require that ->suspend() and ->resume() callbacks be defined
-for A (presumably pointing to the same code as its runtime callbacks) so that
-things work correctly, but perhaps we can just relax this requirement a bit?
-I'm not 100% sure that's a good idea, just considering it.
+That being said, another thing we discussed briefly at LPC was wondering
+about reason(s) behind the DPM core locking out runtime PM transitions
+in the first place.
 
-Rafael
+Currently runtime PM transitions are blocked in dpm_prepare() and only
+allowed again in dpm_complete().  How about locking out runtime PM
+transitions only until the DPM suspend operation is complete.  IOW,
+rather than waiting for dpm_complete() to re-allow runtime PM
+transitions, what about allowing them after dpm_suspend()?  I haven't
+actually tested this yet, since I'm busy with getting OMAP PM stuff
+ready for the merge window, so it's just and idea so far.  Of course
+similar will be needed to block runtime PM transitions during
+dpm_resume().  
+
+Kevin
