@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: platform/i2c busses: pm runtime and system sleep
-Date: Wed, 22 Dec 2010 01:35:56 +0100
-Message-ID: <201012220135.56766.rjw__5620.73900732702$1292978263$gmane$org@sisk.pl>
-References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
-	<201012202213.53902.rjw@sisk.pl>
-	<20101221235127.GC10081@opensource.wolfsonmicro.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Tue, 21 Dec 2010 20:42:59 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1012212032590.11252-100000__20279.8576829538$1292982250$gmane$org@netrider.rowland.org>
+References: <201012212231.57420.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20101221235127.GC10081@opensource.wolfsonmicro.com>
+In-Reply-To: <201012212231.57420.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +17,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 22, 2010, Mark Brown wrote:
-> On Mon, Dec 20, 2010 at 10:13:53PM +0100, Rafael J. Wysocki wrote:
-> 
-> > Well, the _solution_ is to get rid of the legacy stuff from those buses in the
-> > first place.  Then, they'll just need to use the generic ops without any
-> > trouble.
-> 
-> > What you're proposing is a workaround that people will use as an excuse for
-> > not doing the right thing forever.
-> 
-> I hadn't actually realised that there was any urgency about removing the
-> old APIs - I'd not really seen much work in that direction.  If the
-> intention is to actively push people over to dev_pm_ops that does make a
-> bit more sense.
+On Tue, 21 Dec 2010, Rafael J. Wysocki wrote:
 
-There's no urgency strictly speaking, but there's a preference. :-)
+> It basically goes like this.  There's device A that is only resumed when it's
+> needed to carry out an operation and is suspended immediately after that.
+> There's another device B that needs A to do something during its suspend.
+> So, when the suspend of B is started, A is woken up, does its work and is
+> suspended again (using pm_runtime_suspend()).  Then B is suspended.
+> 
+> We currently require that ->suspend() and ->resume() callbacks be defined
+> for A (presumably pointing to the same code as its runtime callbacks) so that
+> things work correctly, but perhaps we can just relax this requirement a bit?
+> I'm not 100% sure that's a good idea, just considering it.
 
-I think it probably is the time to actually start pushing people into that,
-because the legacy stuff has been causing too much pain recently.
+I still don't know.  It would require a lot of special conditions: no
+child devices, not runtime-PM-disabled, not runtime-PM-forbidden...  
+Also, A's parent would have to be coded carefully; otherwise A's
+runtime resume would prevent the parent from suspending.
 
-Thanks,
-Rafael
+This just doesn't fit very well with the runtime PM model, or at least, 
+not in the form you described.
+
+Consider this instead:  Since A is required to be functional before B
+can be used, A must be registered before B and hence B gets suspended
+before A.  Therefore during the prepare phase we can runtime-resume A
+and leave it powered up; when B needs to suspend, it won't matter that
+the runtime-PM calls are ineffective.  Then when A's dpm_suspend
+occurs, it can safely go to a low-power state and stay there.
+
+Alan Stern
