@@ -1,12 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] i2c: Factor out runtime suspend checks from PM
-	operations
-Date: Wed, 22 Dec 2010 18:07:48 +0000
-Message-ID: <1293041268-7707-1-git-send-email-broonie__3551.23146805472$1293041324$gmane$org@opensource.wolfsonmicro.com>
+From: Rabin Vincent <rabin@rab.in>
+Subject: Re: [PATCH] i2c: Factor out runtime suspend checks from
+	PM operations
+Date: Thu, 23 Dec 2010 00:49:39 +0530
+Message-ID: <AANLkTin5eSg8vL4Q8yZ9tme38fbS2aAZ-xeLQSNu809B__15487.5759188601$1293045719$gmane$org@mail.gmail.com>
+References: <1293041268-7707-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1293041268-7707-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,138 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>
-Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
 List-Id: linux-pm@vger.kernel.org
 
-When devices use dev_pm_ops the I2C API is implementing standard functionality
-for integration with runtime PM and for checking for the presence of a per
-device op. The PM core provides pm_generic_ functions implementing this
-behaviour - use them to reduce coupling with future PM updates.
+On Wed, Dec 22, 2010 at 11:37 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> =A0static int i2c_device_pm_restore(struct device *dev)
+> @@ -266,15 +247,16 @@ static int i2c_device_pm_restore(struct device *dev)
+> =A0 =A0 =A0 =A0const struct dev_pm_ops *pm =3D dev->driver ? dev->driver-=
+>pm : NULL;
+> =A0 =A0 =A0 =A0int ret;
+>
+> - =A0 =A0 =A0 if (pm)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D pm->restore ? pm->restore(dev) : 0;
+> - =A0 =A0 =A0 else
+> + =A0 =A0 =A0 if (pm) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D pm_generic_restore(dev);
+> + =A0 =A0 =A0 } else {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ret =3D i2c_legacy_resume(dev);
+>
+> - =A0 =A0 =A0 if (!ret) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_runtime_disable(dev);
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_runtime_set_active(dev);
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_runtime_enable(dev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!ret) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_runtime_disable(dev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_runtime_set_active(dev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_runtime_enable(dev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> =A0 =A0 =A0 =A0}
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
+I asked Rafael about the legacy operations earlier on the other thread:
 
-Depends on my patch to add prototypes for the pm_generic_ operations.
+On Fri, Dec 17, 2010 at 5:39 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, December 16, 2010, Rabin Vincent wrote:
+>> If so, before I send patches to fix them: can it be assumed that only
+>> drivers using dev_pm_ops (and not the legacy ops of these busses) will
+>> need the interactions between runtime PM and system sleep as done in the
+>> generic ops?
+>
+> Yes, you can make this assumption safely. =A0The drivers that don't use
+> dev_pm_ops can't support runtime PM at all.
 
- drivers/i2c/i2c-core.c |   70 ++++++++++++++++++------------------------------
- 1 files changed, 26 insertions(+), 44 deletions(-)
+And even if we did want to support runtime PM interaction for legacy
+ops, the code for restore() above suffers from the problem of setting
+active even when no callback exists, like I mentioned in the same email
+for resume():
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 6b4cc56..fd3674a 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -196,69 +196,50 @@ static int i2c_device_pm_suspend(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (pm) {
--		if (pm_runtime_suspended(dev))
--			return 0;
--		else
--			return pm->suspend ? pm->suspend(dev) : 0;
--	}
--
--	return i2c_legacy_suspend(dev, PMSG_SUSPEND);
-+	if (pm)
-+		return pm_generic_suspend(dev);
-+	else
-+		return i2c_legacy_suspend(dev, PMSG_SUSPEND);
- }
- 
- static int i2c_device_pm_resume(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
--	int ret;
- 
- 	if (pm)
--		ret = pm->resume ? pm->resume(dev) : 0;
-+		return pm_generic_resume(dev);
- 	else
--		ret = i2c_legacy_resume(dev);
--
--	return ret;
-+		return i2c_legacy_resume(dev);
- }
- 
- static int i2c_device_pm_freeze(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (pm) {
--		if (pm_runtime_suspended(dev))
--			return 0;
--		else
--			return pm->freeze ? pm->freeze(dev) : 0;
--	}
--
--	return i2c_legacy_suspend(dev, PMSG_FREEZE);
-+	if (pm)
-+		return pm_generic_freeze(dev);
-+	else
-+		return i2c_legacy_suspend(dev, PMSG_FREEZE);
- }
- 
- static int i2c_device_pm_thaw(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (pm) {
--		if (pm_runtime_suspended(dev))
--			return 0;
--		else
--			return pm->thaw ? pm->thaw(dev) : 0;
--	}
--
--	return i2c_legacy_resume(dev);
-+	if (pm)
-+		return pm_generic_thaw(dev);
-+	else
-+		return i2c_legacy_resume(dev);
- }
- 
- static int i2c_device_pm_poweroff(struct device *dev)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (pm) {
--		if (pm_runtime_suspended(dev))
--			return 0;
--		else
--			return pm->poweroff ? pm->poweroff(dev) : 0;
--	}
--
--	return i2c_legacy_suspend(dev, PMSG_HIBERNATE);
-+	if (pm)
-+		return pm_generic_poweroff(dev);
-+	else
-+		return i2c_legacy_suspend(dev, PMSG_HIBERNATE);
- }
- 
- static int i2c_device_pm_restore(struct device *dev)
-@@ -266,15 +247,16 @@ static int i2c_device_pm_restore(struct device *dev)
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int ret;
- 
--	if (pm)
--		ret = pm->restore ? pm->restore(dev) : 0;
--	else
-+	if (pm) {
-+		ret = pm_generic_restore(dev);
-+	} else {
- 		ret = i2c_legacy_resume(dev);
- 
--	if (!ret) {
--		pm_runtime_disable(dev);
--		pm_runtime_set_active(dev);
--		pm_runtime_enable(dev);
-+		if (!ret) {
-+			pm_runtime_disable(dev);
-+			pm_runtime_set_active(dev);
-+			pm_runtime_enable(dev);
-+		}
- 	}
- 
- 	return ret;
--- 
-1.7.2.3
+On Thu, Dec 16, 2010 at 11:56 PM, Rabin Vincent <rabin@rab.in> wrote:
+> =A0(2) Both I2C and platform do not set the device as active when a
+> =A0 =A0 =A0pm->resume callback exists and it succeeds.
+>
+> =A0 =A0 =A0This seems to have been done in i2c until recently, but has be=
+en
+> =A0 =A0 =A0removed by 753419f59e ("i2c: Fix for suspend/resume issue"). =
+=A0It
+> =A0 =A0 =A0seems to me that this removal is incorrect, and instead the re=
+al
+> =A0 =A0 =A0problem with the implementation was that it set the device as
+> =A0 =A0 =A0active even if no resume callback existed, whereas it should o=
+nly
+> =A0 =A0 =A0do so when it exists and returns zero, like the generic ops.
