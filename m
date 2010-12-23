@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Thu, 23 Dec 2010 11:03:24 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012231055440.5617-100000__29640.3140797795$1293120315$gmane$org@netrider.rowland.org>
-References: <AANLkTi=9kjmb3evOON3WMoGjqadDHqqBKVH4viT02Qf9@mail.gmail.com>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] PCI / PCIe: Clear Root PME Status bits early
+ during system resume
+Date: Thu, 23 Dec 2010 12:54:35 -0800
+Message-ID: <20101223125435.248105fa__31247.2754311331$1293137829$gmane$org@jbarnes-desktop>
+References: <201012191149.40547.rjw@sisk.pl> <201012191341.23601.rjw@sisk.pl>
+	<201012191354.47960.rjw@sisk.pl> <201012191557.16403.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=9kjmb3evOON3WMoGjqadDHqqBKVH4viT02Qf9@mail.gmail.com>
+In-Reply-To: <201012191557.16403.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,33 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ohad Ben-Cohen <ohad@wizery.com>
-Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 23 Dec 2010, Ohad Ben-Cohen wrote:
+On Sun, 19 Dec 2010 15:57:16 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> On Sun, Dec 19, 2010 at 12:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > That said, I think we may do something different that perhaps will make your
-> > life somewhat easier.
-> ...
-> > So, I think we can add a "runtime only" flag working as described above.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> That will definitely solve the suspend/resume issue we're having.
+> I noticed that PCI Express PMEs don't work on my Toshiba Portege R500
+> after the system has been woken up from a sleep state by a PME
+> (through Wake-on-LAN).  After some investigation it turned out that
+> the BIOS didn't clear the Root PME Status bit in the root port that
+> received the wakeup PME and since the Requester ID was also set in
+> the port's Root Status register, any subsequent PMEs didn't trigger
+> interrupts.
 > 
-> But due to /sys/devices/.../power/control, we will still have to
-> bypass runtime PM for this particular device.
+> This problem can be avoided by clearing the Root PME Status bits in
+> all PCI Express root ports during early resume.  For this purpose,
+> add an early resume routine to the PCIe port driver and make this
+> driver be always registered, even if pci_ports_disable is set (in
+> which case the driver's only function is to provide the early
+> resume callback).
 > 
-> We need a way to unconditionally power down the device, and as long as
-> runtime PM can be disabled by the user, we can't use it.
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> 
 
-I'm still not aware of the details of your situation.  Nevertheless, it
-shouldn't be hard to set up a suspend() routine that would do whatever
-was needed to power down the device, whether this means calling the 
-runtime_suspend() routine directly or something else.  That's basically 
-what every other driver does.
+Applied to my linux-next branch, thanks.
 
-By definition, system sleep transitions require bypassing runtime PM.  
-There's nothing odd or unusual about it.
-
-Alan Stern
+-- 
+Jesse Barnes, Intel Open Source Technology Center
