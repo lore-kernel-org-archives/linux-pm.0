@@ -1,7 +1,7 @@
 From: Vitaly Wool <vitalywool@gmail.com>
 Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Sat, 25 Dec 2010 22:50:52 +0100
-Message-ID: <AANLkTikcTSgjdxR106H2XZdmepN40bTKfEgmP04OQAz3__44437.87353016$1293313899$gmane$org@mail.gmail.com>
+Date: Sat, 25 Dec 2010 22:54:18 +0100
+Message-ID: <AANLkTinBpuPZGrOZww=DbW8Z9A0qAZGNswcanSaQKOKp__27153.0977836393$1293314109$gmane$org@mail.gmail.com>
 References: <AANLkTi=aHU57xDq+-DWrN2sJsAwx_9bZ_ofy1rOmp0VH@mail.gmail.com>
 	<Pine.LNX.4.44L0.1012251046060.5079-100000@netrider.rowland.org>
 	<AANLkTimj0E3Rz_8WQrU4wGg3ONyXzkUT9+U3Xqz7Cq0X@mail.gmail.com>
