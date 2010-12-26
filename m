@@ -1,7 +1,7 @@
 From: Ohad Ben-Cohen <ohad@wizery.com>
 Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Sun, 26 Dec 2010 14:43:39 +0200
-Message-ID: <AANLkTimzNXyirnV9wGXf6R454bwEDf=poBZzevAWXEUd__7111.70486542887$1293367494$gmane$org@mail.gmail.com>
+Date: Sun, 26 Dec 2010 16:53:57 +0200
+Message-ID: <AANLkTinvBD6NhHY7PMw9NSJNBW77-Gah8Vcow6t1aiCT__15720.8492084921$1293375328$gmane$org@mail.gmail.com>
 References: <AANLkTimj0E3Rz_8WQrU4wGg3ONyXzkUT9+U3Xqz7Cq0X@mail.gmail.com>
 	<Pine.LNX.4.44L0.1012252041260.10725-100000@netrider.rowland.org>
 	<AANLkTinyKfwcZLD5D4rdF6OpQqr79F==GRjAMBjjbupW@mail.gmail.com>
@@ -25,7 +25,27 @@ Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wi
 List-Id: linux-pm@vger.kernel.org
 
 On Sun, Dec 26, 2010 at 1:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Why does the driver need the device to be reset even though it hasn't
-> been suspeneded yet?
+> (It still is not a race, though.)
 
-Because it is asked to stop the hardware by mac80211.
+Thread 1
+=======
+
+suspend_handler_of_a_random_device()
+{
+    return failure;
+}
+
+Thread 2
+=======
+
+suspend_handler_of_our_mmc_host_controller()
+{
+    invoke our sdio suspend handler and power down the card (directly);
+    return success;
+}
+
+If thread 2 wins => everything is cool
+If thread 1 wins => our driver will not be able to resume
+
+The race begins after mac80211 invokes our driver's power off handler,
+which is using pm_runtime_put_sync().
