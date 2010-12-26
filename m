@@ -1,15 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Sun, 26 Dec 2010 19:37:21 +0100
-Message-ID: <201012261937.21256.rjw__24322.5661143244$1293388715$gmane$org@sisk.pl>
-References: <AANLkTimj0E3Rz_8WQrU4wGg3ONyXzkUT9+U3Xqz7Cq0X@mail.gmail.com>
-	<201012261245.29680.rjw@sisk.pl>
-	<AANLkTinvBD6NhHY7PMw9NSJNBW77-Gah8Vcow6t1aiCT@mail.gmail.com>
+Subject: [PATCH] sky2: Do not use legacy PCI power management
+Date: Sun, 26 Dec 2010 19:44:32 +0100
+Message-ID: <201012261944.32517.rjw__37109.4495327727$1293389163$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinvBD6NhHY7PMw9NSJNBW77-Gah8Vcow6t1aiCT@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +15,149 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ohad Ben-Cohen <ohad@wizery.com>
-Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
+To: netdev@vger.kernel.org
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Stephen Hemminger <shemminger@linux-foundation.org>, David Miller <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, December 26, 2010, Ohad Ben-Cohen wrote:
-> On Sun, Dec 26, 2010 at 1:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > (It still is not a race, though.)
-> 
-> Thread 1
-> =======
-> 
-> suspend_handler_of_a_random_device()
-> {
->     return failure;
-> }
-> 
-> Thread 2
-> =======
-> 
-> suspend_handler_of_our_mmc_host_controller()
-> {
->     invoke our sdio suspend handler and power down the card (directly);
->     return success;
-> }
-> 
-> If thread 2 wins => everything is cool
-> If thread 1 wins => our driver will not be able to resume
-> 
-> The race begins after mac80211 invokes our driver's power off handler,
-> which is using pm_runtime_put_sync().
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-So, it only happens during asynchronous suspend?  In other words, if suspend
-is synchronous, everything should be fine, right?
+The sky2 driver uses the legacy PCI power management, so it has to do
+some PCI-specific things in its ->suspend() and ->resume() callbacks,
+which isn't necessary and should better be done by the PCI
+sybsystem-level power management code.  Moreover, it uses
+device_set_wakeup_enable() incorrectly (that function should be
+used when the WoL setting is changed rather than during suspend).
 
-Rafael
+Convert sky2 to the new PCI power management framework and make it
+let the PCI subsystem take care of all the PCI-specific aspects of
+device handling during system power transitions.
+
+Tested on a desktop machine with a Marvell 88E8056 PCI-E adapter.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/sky2.c |   54 +++++++++++++++++++++++++++--------------------------
+ 1 file changed, 28 insertions(+), 26 deletions(-)
+
+Index: linux-2.6/drivers/net/sky2.c
+===================================================================
+--- linux-2.6.orig/drivers/net/sky2.c
++++ linux-2.6/drivers/net/sky2.c
+@@ -3398,12 +3398,24 @@ static int sky2_set_wol(struct net_devic
+ {
+ 	struct sky2_port *sky2 = netdev_priv(dev);
+ 	struct sky2_hw *hw = sky2->hw;
++	bool enable_wakeup = false;
++	int i;
+ 
+ 	if ((wol->wolopts & ~sky2_wol_supported(sky2->hw)) ||
+ 	    !device_can_wakeup(&hw->pdev->dev))
+ 		return -EOPNOTSUPP;
+ 
+ 	sky2->wol = wol->wolopts;
++
++	for (i = 0; i < hw->ports; i++) {
++		struct net_device *dev = hw->dev[i];
++		struct sky2_port *sky2 = netdev_priv(dev);
++
++		if (sky2->wol)
++			enable_wakeup = true;
++	}
++	device_set_wakeup_enable(&hw->pdev->dev, enable_wakeup);
++
+ 	return 0;
+ }
+ 
+@@ -4920,10 +4932,11 @@ static void __devexit sky2_remove(struct
+ 	pci_set_drvdata(pdev, NULL);
+ }
+ 
+-static int sky2_suspend(struct pci_dev *pdev, pm_message_t state)
++static int sky2_suspend(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct sky2_hw *hw = pci_get_drvdata(pdev);
+-	int i, wol = 0;
++	int i;
+ 
+ 	if (!hw)
+ 		return 0;
+@@ -4940,41 +4953,24 @@ static int sky2_suspend(struct pci_dev *
+ 
+ 		if (sky2->wol)
+ 			sky2_wol_init(sky2);
+-
+-		wol |= sky2->wol;
+ 	}
+ 
+-	device_set_wakeup_enable(&pdev->dev, wol != 0);
+-
+ 	sky2_power_aux(hw);
+ 	rtnl_unlock();
+ 
+-	pci_save_state(pdev);
+-	pci_enable_wake(pdev, pci_choose_state(pdev, state), wol);
+-	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+-
+ 	return 0;
+ }
+ 
+ #ifdef CONFIG_PM
+-static int sky2_resume(struct pci_dev *pdev)
++static int sky2_resume(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct sky2_hw *hw = pci_get_drvdata(pdev);
+ 	int err;
+ 
+ 	if (!hw)
+ 		return 0;
+ 
+-	err = pci_set_power_state(pdev, PCI_D0);
+-	if (err)
+-		goto out;
+-
+-	err = pci_restore_state(pdev);
+-	if (err)
+-		goto out;
+-
+-	pci_enable_wake(pdev, PCI_D0, 0);
+-
+ 	/* Re-enable all clocks */
+ 	err = pci_write_config_dword(pdev, PCI_DEV_REG3, 0);
+ 	if (err) {
+@@ -4994,11 +4990,20 @@ out:
+ 	pci_disable_device(pdev);
+ 	return err;
+ }
++
++static SIMPLE_DEV_PM_OPS(sky2_pm_ops, sky2_suspend, sky2_resume);
++#define SKY2_PM_OPS (&sky2_pm_ops)
++
++#else
++
++#define SKY2_PM_OPS NULL
+ #endif
+ 
+ static void sky2_shutdown(struct pci_dev *pdev)
+ {
+-	sky2_suspend(pdev, PMSG_SUSPEND);
++	sky2_suspend(&pdev->dev);
++	pci_wake_from_d3(pdev, device_may_wakeup(&pdev->dev));
++	pci_set_power_state(pdev, PCI_D3hot);
+ }
+ 
+ static struct pci_driver sky2_driver = {
+@@ -5006,11 +5011,8 @@ static struct pci_driver sky2_driver = {
+ 	.id_table = sky2_id_table,
+ 	.probe = sky2_probe,
+ 	.remove = __devexit_p(sky2_remove),
+-#ifdef CONFIG_PM
+-	.suspend = sky2_suspend,
+-	.resume = sky2_resume,
+-#endif
+ 	.shutdown = sky2_shutdown,
++	.driver.pm = SKY2_PM_OPS,
+ };
+ 
+ static int __init sky2_init_module(void)
