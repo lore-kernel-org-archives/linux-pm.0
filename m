@@ -1,11 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] tg3: Do not use legacy PCI power management
-Date: Sat, 25 Dec 2010 23:56:23 +0100
-Message-ID: <201012252356.23424.rjw__15092.9439267658$1293317900$gmane$org@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Sat, 25 Dec 2010 21:48:10 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1012252041260.10725-100000__39613.5638388388$1293331771$gmane$org@netrider.rowland.org>
+References: <AANLkTimj0E3Rz_8WQrU4wGg3ONyXzkUT9+U3Xqz7Cq0X@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTimj0E3Rz_8WQrU4wGg3ONyXzkUT9+U3Xqz7Cq0X@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,249 +17,143 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: netdev@vger.kernel.org
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Matt Carlson <mcarlson@broadcom.com>, David Miller <davem@davemloft.net>, Michael Chan <mchan@broadcom.com>
+To: Ohad Ben-Cohen <ohad@wizery.com>
+Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sat, 25 Dec 2010, Ohad Ben-Cohen wrote:
 
-The tg3 driver uses the legacy PCI power management, so it has to do
-some PCI-specific things in its ->suspend() and ->resume() callbacks,
-which isn't necessary and should better be done by the PCI
-sybsystem-level power management code.
+> On Sat, Dec 25, 2010 at 6:21 PM, Alan Stern <stern@rowland.harvard.edu> w=
+rote:
+> > Right. =A0You may or may not realize it, but this requirement means that
+> > the driver _must_ bypass runtime PM sometimes.
+> =
 
-Convert tg3 to the new PCI power management framework and make it
-let the PCI subsystem take care of all the PCI-specific aspects of
-device handling during system power transitions.
+> http://www.spinics.net/lists/linux-pm/msg22864.html
+> =
 
-Tested on HP nx6325 with a NetXtreme BCM5788 adapter.
+> > Now you've lost me. =A0Which of the driver's handlers are you talking
+> > about?
+> =
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/tg3.c |  101 ++++++++++++++++++++++--------------------------------
- 1 file changed, 43 insertions(+), 58 deletions(-)
+> The driver's handler, which is called by mac80211, and is responsible
+> to power off the device.
+> The _same_ handler is being called either during runtime or during a
+> system transition to suspend
 
-Index: linux-2.6/drivers/net/tg3.c
-===================================================================
---- linux-2.6.orig/drivers/net/tg3.c
-+++ linux-2.6/drivers/net/tg3.c
-@@ -2549,39 +2549,35 @@ static void __tg3_set_mac_addr(struct tg
- 	tw32(MAC_TX_BACKOFF_SEED, addr_high);
- }
- 
--static int tg3_set_power_state(struct tg3 *tp, pci_power_t state)
-+static void tg3_enable_register_access(struct tg3 *tp)
- {
--	u32 misc_host_ctrl;
--	bool device_should_wake, do_low_power;
--
--	/* Make sure register accesses (indirect or otherwise)
--	 * will function correctly.
-+	/*
-+	 * Make sure register accesses (indirect or otherwise) will function
-+	 * correctly.
- 	 */
- 	pci_write_config_dword(tp->pdev,
--			       TG3PCI_MISC_HOST_CTRL,
--			       tp->misc_host_ctrl);
-+			       TG3PCI_MISC_HOST_CTRL, tp->misc_host_ctrl);
-+}
- 
--	switch (state) {
--	case PCI_D0:
--		pci_enable_wake(tp->pdev, state, false);
--		pci_set_power_state(tp->pdev, PCI_D0);
-+static int tg3_power_up(struct tg3 *tp)
-+{
-+	tg3_enable_register_access(tp);
- 
--		/* Switch out of Vaux if it is a NIC */
--		if (tp->tg3_flags2 & TG3_FLG2_IS_NIC)
--			tw32_wait_f(GRC_LOCAL_CTRL, tp->grc_local_ctrl, 100);
-+	pci_set_power_state(tp->pdev, PCI_D0);
- 
--		return 0;
-+	/* Switch out of Vaux if it is a NIC */
-+	if (tp->tg3_flags2 & TG3_FLG2_IS_NIC)
-+		tw32_wait_f(GRC_LOCAL_CTRL, tp->grc_local_ctrl, 100);
- 
--	case PCI_D1:
--	case PCI_D2:
--	case PCI_D3hot:
--		break;
-+	return 0;
-+}
- 
--	default:
--		netdev_err(tp->dev, "Invalid power state (D%d) requested\n",
--			   state);
--		return -EINVAL;
--	}
-+static int tg3_power_down_prepare(struct tg3 *tp)
-+{
-+	u32 misc_host_ctrl;
-+	bool device_should_wake, do_low_power;
-+
-+	tg3_enable_register_access(tp);
- 
- 	/* Restore the CLKREQ setting. */
- 	if (tp->tg3_flags3 & TG3_FLG3_CLKREQ_BUG) {
-@@ -2600,8 +2596,7 @@ static int tg3_set_power_state(struct tg
- 	tw32(TG3PCI_MISC_HOST_CTRL,
- 	     misc_host_ctrl | MISC_HOST_CTRL_MASK_PCI_INT);
- 
--	device_should_wake = pci_pme_capable(tp->pdev, state) &&
--			     device_may_wakeup(&tp->pdev->dev) &&
-+	device_should_wake = device_may_wakeup(&tp->pdev->dev) &&
- 			     (tp->tg3_flags & TG3_FLAG_WOL_ENABLE);
- 
- 	if (tp->tg3_flags3 & TG3_FLG3_USE_PHYLIB) {
-@@ -2823,13 +2818,15 @@ static int tg3_set_power_state(struct tg
- 
- 	tg3_write_sig_post_reset(tp, RESET_KIND_SHUTDOWN);
- 
--	if (device_should_wake)
--		pci_enable_wake(tp->pdev, state, true);
-+	return 0;
-+}
- 
--	/* Finally, set the new power state. */
--	pci_set_power_state(tp->pdev, state);
-+static void tg3_power_down(struct tg3 *tp)
-+{
-+	tg3_power_down_prepare(tp);
- 
--	return 0;
-+	pci_wake_from_d3(tp->pdev, tp->tg3_flags & TG3_FLAG_WOL_ENABLE);
-+	pci_set_power_state(tp->pdev, PCI_D3hot);
- }
- 
- static void tg3_aux_stat_to_speed_duplex(struct tg3 *tp, u32 val, u16 *speed, u8 *duplex)
-@@ -9101,7 +9098,7 @@ static int tg3_open(struct net_device *d
- 
- 	netif_carrier_off(tp->dev);
- 
--	err = tg3_set_power_state(tp, PCI_D0);
-+	err = tg3_power_up(tp);
- 	if (err)
- 		return err;
- 
-@@ -9266,7 +9263,7 @@ static int tg3_close(struct net_device *
- 
- 	tg3_free_consistent(tp);
- 
--	tg3_set_power_state(tp, PCI_D3hot);
-+	tg3_power_down(tp);
- 
- 	netif_carrier_off(tp->dev);
- 
-@@ -11068,7 +11065,7 @@ static void tg3_self_test(struct net_dev
- 	struct tg3 *tp = netdev_priv(dev);
- 
- 	if (tp->phy_flags & TG3_PHYFLG_IS_LOW_POWER)
--		tg3_set_power_state(tp, PCI_D0);
-+		tg3_power_up(tp);
- 
- 	memset(data, 0, sizeof(u64) * TG3_NUM_TEST);
- 
-@@ -11136,7 +11133,7 @@ static void tg3_self_test(struct net_dev
- 			tg3_phy_start(tp);
- 	}
- 	if (tp->phy_flags & TG3_PHYFLG_IS_LOW_POWER)
--		tg3_set_power_state(tp, PCI_D3hot);
-+		tg3_power_down(tp);
- 
- }
- 
-@@ -13546,7 +13543,7 @@ static int __devinit tg3_get_invariants(
- 	    (tp->tg3_flags3 & TG3_FLG3_5717_PLUS))
- 		tp->tg3_flags |= TG3_FLAG_CPMU_PRESENT;
- 
--	/* Set up tp->grc_local_ctrl before calling tg3_set_power_state().
-+	/* Set up tp->grc_local_ctrl before calling tg_power_up().
- 	 * GPIO1 driven high will bring 5700's external PHY out of reset.
- 	 * It is also used as eeprom write protect on LOMs.
- 	 */
-@@ -13577,7 +13574,7 @@ static int __devinit tg3_get_invariants(
- 	}
- 
- 	/* Force the chip into D0. */
--	err = tg3_set_power_state(tp, PCI_D0);
-+	err = tg3_power_up(tp);
- 	if (err) {
- 		dev_err(&tp->pdev->dev, "Transition to D0 failed\n");
- 		return err;
-@@ -14980,19 +14977,13 @@ static void __devexit tg3_remove_one(str
- 	}
- }
- 
--static int tg3_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int tg3_suspend(struct device *device)
- {
-+	struct pci_dev *pdev = to_pci_dev(device);
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 	struct tg3 *tp = netdev_priv(dev);
--	pci_power_t target_state;
- 	int err;
- 
--	/* PCI register 4 needs to be saved whether netif_running() or not.
--	 * MSI address and data need to be saved if using MSI and
--	 * netif_running().
--	 */
--	pci_save_state(pdev);
--
- 	if (!netif_running(dev))
- 		return 0;
- 
-@@ -15013,9 +15004,7 @@ static int tg3_suspend(struct pci_dev *p
- 	tp->tg3_flags &= ~TG3_FLAG_INIT_COMPLETE;
- 	tg3_full_unlock(tp);
- 
--	target_state = pdev->pm_cap ? pci_target_state(pdev) : PCI_D3hot;
--
--	err = tg3_set_power_state(tp, target_state);
-+	err = tg3_power_down_prepare(tp);
- 	if (err) {
- 		int err2;
- 
-@@ -15042,21 +15031,16 @@ out:
- 	return err;
- }
- 
--static int tg3_resume(struct pci_dev *pdev)
-+static int tg3_resume(struct device *device)
- {
-+	struct pci_dev *pdev = to_pci_dev(device);
- 	struct net_device *dev = pci_get_drvdata(pdev);
- 	struct tg3 *tp = netdev_priv(dev);
- 	int err;
- 
--	pci_restore_state(tp->pdev);
--
- 	if (!netif_running(dev))
- 		return 0;
- 
--	err = tg3_set_power_state(tp, PCI_D0);
--	if (err)
--		return err;
--
- 	netif_device_attach(dev);
- 
- 	tg3_full_lock(tp, 0);
-@@ -15080,13 +15064,14 @@ out:
- 	return err;
- }
- 
-+static SIMPLE_DEV_PM_OPS(tg3_pm_ops, tg3_suspend, tg3_resume);
-+
- static struct pci_driver tg3_driver = {
- 	.name		= DRV_MODULE_NAME,
- 	.id_table	= tg3_pci_tbl,
- 	.probe		= tg3_init_one,
- 	.remove		= __devexit_p(tg3_remove_one),
--	.suspend	= tg3_suspend,
--	.resume		= tg3_resume
-+	.driver.pm	= &tg3_pm_ops,
- };
- 
- static int __init tg3_init(void)
+Is there a separate handler responsible for powering the device back
+on?  What are the names of these handlers?
+
+> > What races?
+> =
+
+> Driver thinks power is off and device is now fully reset, but it's isn't =
+really
+
+That's not a race; it's just a misunderstanding.  A race is when you
+have two threads of control executing concurrently and either one can
+end up carrying out some action first.
+
+> > Why does the driver have to _assume_ the device was powered off -- why
+> > doesn't it simply _do_ the power down?
+> =
+
+> runtime PM is disabled during suspend. and the driver doesn't know
+> that the system is suspending, and it is using pm_runtime_put_sync().
+
+What is the name of the routine that calls pm_runtime_put_sync()?  =
+
+What is the name of the driver's runtime_suspend routine?  Is either of
+them the same as the handler you mentioned above?  And while we're at =
+
+it, what is the name of the routine that _actually_ changes the =
+
+device's power level?
+
+It's very difficult to talk about different pieces of code without =
+
+knowing their names.
+
+> It's the same code that executes during runtime and while system is
+> suspending
+
+Okay, there's nothing wrong with that.  But the code that runs during =
+
+system suspend should not call pm_runtime_put_sync().
+
+> Even if we changed mac80211 to tell us the system is suspending, so we
+> would power off the device directly in this case, it won't solve all
+> of our problems, because even during runtime we need to bypass runtime
+> PM due to /sys/devices/.../power/control.
+
+Evidently you are facing two distinct problems, and they need to be
+solved together.  In fact, solving one problem (bypassing runtime PM)  =
+
+will probably help to solve the other (doing system resume correctly).
+
+> > Maybe it would help if you provided a list of the relevant subroutines
+> > together with descriptions of the circumstances under which they are
+> > called and what they are expected to do. =A0For example, a brief
+> > pseudo-code listing.
+> =
+
+> Frankly, I don't think it's worth it.
+> =
+
+> We're just a single use case and Rafael already said he won't support it.
+
+Well, I'd like to help you find the best solution, but I can't because =
+
+I don't understand how the subsystem and driver are structured, and you =
+
+aren't providing enough details.  We won't make any further progress on =
+
+this unless you abandon the incomplete high-level overviews and instead =
+
+give a more or less complete lower-level description -- including the =
+
+subroutine names!
+
+> > It's not necessary to maintain usage_count while you're bypassing
+> > runtime PM. =A0Just make sure when you're done that everything is back =
+in
+> > sync.
+> =
+
+> I think you are missing the fact that we will have to bypass runtime
+> PM also during runtime, and not only in suspend/resume, and that's due
+> to /sys/devices/.../power/control.
+
+No, I realize that.
+
+> That's why we will also have to maintain usage_count - to prevent
+> dpm_complete() from powering the device down, when it is really up.
+
+When else should dpm_complete() power the device down?  You certainly
+don't want to power the device down when it is already down!  :-)
+
+Maybe you mean that you want to prevent dpm_complete() from powering
+the device down while it is in use.  That should never be a problem --
+the device should never be used without the PM core being aware.  The
+unusual cases you have described all involve powering the device down
+at times when it is supposed to be in use (e.g., in order to do a
+reset).  If you do these power-downs directly instead of trying to use =
+
+runtime PM, then the PM core will never think the device is idle when =
+
+it really is being used.
+
+Ultimately it boils down to this.  You have several possible reasons
+for powering-down the device: runtime PM, system sleep, and reset (or
+other similar driver-specific things).  Presumably the reset case
+occurs only while the device is in use, and with sufficient locking to
+prevent the driver from trying to access the device while the reset is
+in progress.
+
+Therefore you need to have a single routine that actually powers-down
+the device, and you need to call this routine in different settings:
+during system sleep or runtime suspend (the same code in the driver =
+
+handles these two cases, right?) and when a reset is needed.
+
+Alan Stern
