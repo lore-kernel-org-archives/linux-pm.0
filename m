@@ -1,15 +1,10 @@
-From: Tejun Heo <htejun@gmail.com>
-Subject: Re: [Probably regression] Possible circular locking
- dependency from ATA in current mainline
-Date: Mon, 27 Dec 2010 13:03:58 +0100
-Message-ID: <20101227120358.GA488__16702.8328789913$1293451549$gmane$org@htj.dyndns.org>
-References: <201012262316.26638.rjw@sisk.pl>
+From: wkq5325 <wkq5325@163.com>
+Subject: why  menu.c in cpuidle   continue ?
+Date: Mon, 27 Dec 2010 23:58:54 +0800 (CST)
+Message-ID: <1a05924.a870.12d288dbfca.Coremail.wkq5325@163.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============8391153867013547812=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201012262316.26638.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,38 +12,56 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>
+To: linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Rafael.
+--===============8391153867013547812==
+Content-Type: multipart/alternative;
+	boundary="----=_Part_114121_21357466.1293465534409"
 
-On Sun, Dec 26, 2010 at 11:16:26PM +0100, Rafael J. Wysocki wrote:
-> [  319.281892] =======================================================
-> [  319.281893] [ INFO: possible circular locking dependency detected ]
-> [  319.281894] 2.6.37-rc7+ #16
-> [  319.281895] -------------------------------------------------------
-> [  319.281896] kworker/1:0/13333 is trying to acquire lock:
-> [  319.281897]  (&bdev->bd_mutex){+.+.+.}, at: [<ffffffff811271a6>] revalidate_disk+0x56/0x90
-> [  319.281902] 
-> [  319.281903] but task is already holding lock:
-> [  319.281903]  (&ap->scsi_scan_mutex){+.+...}, at: [<ffffffff81360420>] ata_scsi_dev_rescan+0x30/0x120
+------=_Part_114121_21357466.1293465534409
+Content-Type: text/plain; charset=GBK
+Content-Transfer-Encoding: 7bit
 
-This dependency is true.
+Hi,
+I find the code in 2.6.36 menu.c (cpuidle)
 
-> [  319.281910] -> #3 (&ap->scsi_scan_mutex){+.+...}:
-> [  319.281927] -> #2 ((&ap->scsi_rescan_task)){+.+...}:
-> [  319.281937] -> #1 (events){+.+.+.}:
-> [  319.281970] -> #0 (&bdev->bd_mutex){+.+.+.}:
+  for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
+287                 struct cpuidle_state *s = &dev->states[i];
+289                 if (s->flags & CPUIDLE_FLAG_IGNORE)
+290                         continue;
+291                 if (s->target_residency > data->predicted_us)
+292                         continue;
+293                 if (s->exit_latency > latency_req)
+294                         continue;
+Why continue? Not break ?? Before  2.6.36 , break is used here, I can understand.
+But now , I don't know why continue for the remaining state??
 
-But the above is bogus.  It's only linked through the system_wq.  The
-current lockdep notation assumes single execution resource and
-triggers spuriously in certain cases.  I'll think about how to relax
-it.
+wkq
 
-Thank you.
 
--- 
-tejun
+
+------=_Part_114121_21357466.1293465534409
+Content-Type: text/html; charset=GBK
+Content-Transfer-Encoding: 7bit
+
+Hi,<br>I find the code in 2.6.36 menu.c (cpuidle)<br><pre>  for (<a href="http://lxr.free-electrons.com/ident?i=i">i</a> = <a href="http://lxr.free-electrons.com/ident?i=CPUIDLE_DRIVER_STATE_START">CPUIDLE_DRIVER_STATE_START</a>; <a href="http://lxr.free-electrons.com/ident?i=i">i</a> &lt; <a href="http://lxr.free-electrons.com/ident?i=dev">dev</a>-&gt;state_count; <a href="http://lxr.free-electrons.com/ident?i=i">i</a>++) {<br><a name="L287" href="http://lxr.free-electrons.com/source/drivers/cpuidle/governors/menu.c#L287">287</a>                 struct <a href="http://lxr.free-electrons.com/ident?i=cpuidle_state">cpuidle_state</a> *<a href="http://lxr.free-electrons.com/ident?i=s">s</a> = &amp;<a href="http://lxr.free-electrons.com/ident?i=dev">dev</a>-&gt;<a href="http://lxr.free-electro
+ ns.com/ident?i=states">states</a>[<a href="http://lxr.free-electrons.com/ident?i=i">i</a>];<a name="L288" href="http://lxr.free-electrons.com/source/drivers/cpuidle/governors/menu.c#L288"><!
+ /a><br><a name="L289" href="http://lxr.free-electrons.com/source/drivers/cpuidle/governors/menu.c#L289">289</a>                 if (<a href="http://lxr.free-electrons.com/ident?i=s">s</a>-&gt;<a href="http://lxr.free-electrons.com/ident?i=flags">flags</a> &amp; <a href="http://lxr.free-electrons.com/ident?i=CPUIDLE_FLAG_IGNORE">CPUIDLE_FLAG_IGNORE</a>)<br><a name="L290" href="http://lxr.free-electrons.com/source/drivers/cpuidle/governors/menu.c#L290">290</a>                         continue;<br><a name="L291" href="http://lxr.free-electrons.com/source/drivers/cpuidle/governors/menu.c#L291">291</a>                 if (<a href="http://lxr.free-electrons.com/ident?i=s">s</a>-&gt;target_residency &gt; <a href="http://lxr.free-electrons.com/ident?i=data">data</a>-&gt;predicted_us)<br><a name="
+ L292" href="http://lxr.free-electrons.com/source/drivers/cpuidle/governors/menu.c#L292">292</a>                         continue;<br><a name="L293" href="http://lxr.free-electrons.com/sourc!
+ e/drivers/cpuidle/governors/menu.c#L293">293</a>                 if (<a href="http://lxr.free-electrons.com/ident?i=s">s</a>-&gt;exit_latency &gt; latency_req)<br><a name="L294" href="http://lxr.free-electrons.com/source/drivers/cpuidle/governors/menu.c#L294">294</a>                         continue;<br><a name="L295" href="http://lxr.free-electrons.com/source/drivers/cpuidle/governors/menu.c#L295"></a>Why continue? Not break ?? Before  2.6.36 , break is used here, I can understand.<br>But now , I don't know why continue for the remaining state??<br><br>wkq<br></pre><br>        
+<br><br><span title="neteasefooter"><span id="netease_mail_footer"></span></span>
+------=_Part_114121_21357466.1293465534409--
+
+
+--===============8391153867013547812==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============8391153867013547812==--
