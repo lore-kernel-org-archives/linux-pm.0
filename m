@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/4] ACPI / PM: Drop special ACPI wakeup flags
-Date: Tue, 28 Dec 2010 16:30:39 +0100
-Message-ID: <201012281630.39826.rjw__5797.77468597076$1293550783$gmane$org@sisk.pl>
+Subject: [PATCH 4/4] ACPI / PM: Report wakeup events from buttons
+Date: Tue, 28 Dec 2010 16:31:26 +0100
+Message-ID: <201012281631.26958.rjw__23945.0125759051$1293550907$gmane$org@sisk.pl>
 References: <201012281625.36191.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,56 +23,34 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Drop special ACPI wakeup flags, wakeup.state.enabled and
-wakeup.flags.always_enabled, that aren't necessary any more after
-we've started to use standard device wakeup flags for handling ACPI
-wakeup devices.
+Since ACPI buttons and lids can be configured to wake up the system
+from sleep states, report wakeup events from these devices.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/glue.c     |    5 +----
- include/acpi/acpi_bus.h |    6 ------
- 2 files changed, 1 insertion(+), 10 deletions(-)
+ drivers/acpi/button.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Index: linux-2.6/drivers/acpi/glue.c
+Index: linux-2.6/drivers/acpi/button.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/glue.c
-+++ linux-2.6/drivers/acpi/glue.c
-@@ -167,11 +167,8 @@ static int acpi_bind_one(struct device *
- 				"firmware_node");
- 		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
- 				"physical_node");
--		if (acpi_dev->wakeup.flags.valid) {
-+		if (acpi_dev->wakeup.flags.valid)
- 			device_set_wakeup_capable(dev, true);
--			device_set_wakeup_enable(dev,
--						acpi_dev->wakeup.state.enabled);
--		}
- 	}
+--- linux-2.6.orig/drivers/acpi/button.c
++++ linux-2.6/drivers/acpi/button.c
+@@ -279,6 +279,9 @@ static int acpi_lid_send_state(struct ac
+ 	input_report_switch(button->input, SW_LID, !state);
+ 	input_sync(button->input);
  
- 	return 0;
-Index: linux-2.6/include/acpi/acpi_bus.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpi_bus.h
-+++ linux-2.6/include/acpi/acpi_bus.h
-@@ -241,20 +241,14 @@ struct acpi_device_perf {
- struct acpi_device_wakeup_flags {
- 	u8 valid:1;		/* Can successfully enable wakeup? */
- 	u8 run_wake:1;		/* Run-Wake GPE devices */
--	u8 always_enabled:1;	/* Run-wake devices that are always enabled */
- 	u8 notifier_present:1;  /* Wake-up notify handler has been installed */
- };
++	if (state)
++		pm_wakeup_event(&device->dev, 0);
++
+ 	ret = blocking_notifier_call_chain(&acpi_lid_notifier, state, device);
+ 	if (ret == NOTIFY_DONE)
+ 		ret = blocking_notifier_call_chain(&acpi_lid_notifier, state,
+@@ -314,6 +317,8 @@ static void acpi_button_notify(struct ac
+ 			input_sync(input);
+ 			input_report_key(input, keycode, 0);
+ 			input_sync(input);
++
++			pm_wakeup_event(&device->dev, 0);
+ 		}
  
--struct acpi_device_wakeup_state {
--	u8 enabled:1;
--};
--
- struct acpi_device_wakeup {
- 	acpi_handle gpe_device;
- 	u64 gpe_number;
- 	u64 sleep_state;
- 	struct acpi_handle_list resources;
--	struct acpi_device_wakeup_state state;
- 	struct acpi_device_wakeup_flags flags;
- 	int prepare_count;
- 	int run_wake_count;
+ 		acpi_bus_generate_proc_event(device, event, ++button->pushed);
