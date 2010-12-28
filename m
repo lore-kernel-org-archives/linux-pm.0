@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/4] ACPI / PM: Use device wakeup flags for
-	handling ACPI wakeup devices
-Date: Tue, 28 Dec 2010 16:29:58 +0100
-Message-ID: <201012281629.58792.rjw__34179.0080107332$1293550559$gmane$org@sisk.pl>
+Subject: [PATCH 1/4] ACPI / PM: Do not enable multiple devices to
+	wake up simultaneously
+Date: Tue, 28 Dec 2010 16:28:58 +0100
+Message-ID: <201012281628.59239.rjw__33098.8633832478$1293550669$gmane$org@sisk.pl>
 References: <201012281625.36191.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,158 +24,69 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-There are ACPI devices (buttons and the laptop lid) that can wake up
-the system from sleep states and have no "physical" companion
-devices.  The ACPI subsystem uses two flags, wakeup.state.enabled and
-wakeup.flags.always_enabled, for handling those devices, but they
-are not accessible through the standard device wakeup infrastructure.
-User space can only control them via the /proc/acpi/wakeup interface
-that is not really convenient (e.g. the way in which devices are
-enabled to wake up the system is not portable between different
-systems, because it requires one to know the devices' "names" used in
-the system's ACPI tables).
+If a device is enabled to wake up the system from sleep states via
+/proc/acpi/wakeup and there are other devices associated with the
+same wakeup GPE, all of these devices are automatically enabled to
+wake up the system.  This isn't correct, because the fact that the
+GPE is shared need not imply that wakeup power has to be enabled for
+all the devices at the same time (i.e. it is possible that one device
+will have its wakeup power enabled and it will wake up the system
+from sleep states if the shared wakeup GPE is enabled, while another
+device having its wakeup power disabled will not wake up the system
+even though the GPE is enabled).
 
-To address this problem, use standard device wakeup flags instead of
-the special ACPI flags for handling those devices.  In particular,
-use device_set_wakeup_capable() to mark the ACPI wakeup devices
-during initialization and use device_set_wakeup_enable() to allow
-or disallow them to wake up the system from sleep states.  Rework
-the /proc/acpi/wakeup interface to take these changes into account.
+Rework acpi_system_write_wakeup_device() so that it only enables
+wakeup for one device at a time.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/button.c |    4 ++--
- drivers/acpi/proc.c   |   19 +++++++++++++------
- drivers/acpi/scan.c   |    2 +-
- drivers/acpi/wakeup.c |   18 ++++++++++--------
- 4 files changed, 26 insertions(+), 17 deletions(-)
+ drivers/acpi/proc.c |   26 +-------------------------
+ 1 file changed, 1 insertion(+), 25 deletions(-)
 
-Index: linux-2.6/drivers/acpi/wakeup.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/wakeup.c
-+++ linux-2.6/drivers/acpi/wakeup.c
-@@ -37,11 +37,12 @@ void acpi_enable_wakeup_devices(u8 sleep
- 			container_of(node, struct acpi_device, wakeup_list);
- 
- 		if (!dev->wakeup.flags.valid
--		    || !(dev->wakeup.state.enabled || dev->wakeup.prepare_count)
--		    || sleep_state > (u32) dev->wakeup.sleep_state)
-+		    || sleep_state > (u32) dev->wakeup.sleep_state
-+		    || !(device_may_wakeup(&dev->dev)
-+		        || dev->wakeup.prepare_count))
- 			continue;
- 
--		if (dev->wakeup.state.enabled)
-+		if (device_may_wakeup(&dev->dev))
- 			acpi_enable_wakeup_device_power(dev, sleep_state);
- 
- 		/* The wake-up power should have been enabled already. */
-@@ -63,14 +64,15 @@ void acpi_disable_wakeup_devices(u8 slee
- 			container_of(node, struct acpi_device, wakeup_list);
- 
- 		if (!dev->wakeup.flags.valid
--		    || !(dev->wakeup.state.enabled || dev->wakeup.prepare_count)
--		    || (sleep_state > (u32) dev->wakeup.sleep_state))
-+		    || sleep_state > (u32) dev->wakeup.sleep_state
-+		    || !(device_may_wakeup(&dev->dev)
-+		        || dev->wakeup.prepare_count))
- 			continue;
- 
- 		acpi_gpe_wakeup(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
- 				ACPI_GPE_DISABLE);
- 
--		if (dev->wakeup.state.enabled)
-+		if (device_may_wakeup(&dev->dev))
- 			acpi_disable_wakeup_device_power(dev);
- 	}
- }
-@@ -84,8 +86,8 @@ int __init acpi_wakeup_device_init(void)
- 		struct acpi_device *dev = container_of(node,
- 						       struct acpi_device,
- 						       wakeup_list);
--		if (dev->wakeup.flags.always_enabled)
--			dev->wakeup.state.enabled = 1;
-+		if (device_can_wakeup(&dev->dev))
-+			device_set_wakeup_enable(&dev->dev, true);
- 	}
- 	mutex_unlock(&acpi_device_lock);
- 	return 0;
-Index: linux-2.6/drivers/acpi/button.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/button.c
-+++ linux-2.6/drivers/acpi/button.c
-@@ -426,7 +426,7 @@ static int acpi_button_add(struct acpi_d
- 		acpi_enable_gpe(device->wakeup.gpe_device,
- 				device->wakeup.gpe_number);
- 		device->wakeup.run_wake_count++;
--		device->wakeup.state.enabled = 1;
-+		device_set_wakeup_enable(&device->dev, true);
- 	}
- 
- 	printk(KERN_INFO PREFIX "%s [%s]\n", name, acpi_device_bid(device));
-@@ -449,7 +449,7 @@ static int acpi_button_remove(struct acp
- 		acpi_disable_gpe(device->wakeup.gpe_device,
- 				device->wakeup.gpe_number);
- 		device->wakeup.run_wake_count--;
--		device->wakeup.state.enabled = 0;
-+		device_set_wakeup_enable(&device->dev, false);
- 	}
- 
- 	acpi_button_remove_fs(device);
-Index: linux-2.6/drivers/acpi/scan.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/scan.c
-+++ linux-2.6/drivers/acpi/scan.c
-@@ -803,7 +803,7 @@ static void acpi_bus_set_run_wake_flags(
- 	/* Power button, Lid switch always enable wakeup */
- 	if (!acpi_match_device_ids(device, button_device_ids)) {
- 		device->wakeup.flags.run_wake = 1;
--		device->wakeup.flags.always_enabled = 1;
-+		device_set_wakeup_capable(&device->dev, true);
- 		return;
- 	}
- 
 Index: linux-2.6/drivers/acpi/proc.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/proc.c
 +++ linux-2.6/drivers/acpi/proc.c
-@@ -311,7 +311,9 @@ acpi_system_wakeup_device_seq_show(struc
- 			   dev->pnp.bus_id,
- 			   (u32) dev->wakeup.sleep_state,
- 			   dev->wakeup.flags.run_wake ? '*' : ' ',
--			   dev->wakeup.state.enabled ? "enabled" : "disabled");
-+			   (device_may_wakeup(&dev->dev)
-+			     || (ldev && device_may_wakeup(ldev))) ?
-+			       "enabled" : "disabled");
- 		if (ldev)
- 			seq_printf(seq, "%s:%s",
- 				   ldev->bus ? ldev->bus->name : "no-bus",
-@@ -328,8 +330,10 @@ static void physical_device_enable_wakeu
- {
- 	struct device *dev = acpi_get_physical_device(adev->handle);
+@@ -341,7 +341,6 @@ acpi_system_write_wakeup_device(struct f
+ 	char strbuf[5];
+ 	char str[5] = "";
+ 	unsigned int len = count;
+-	struct acpi_device *found_dev = NULL;
  
--	if (dev && device_can_wakeup(dev))
--		device_set_wakeup_enable(dev, adev->wakeup.state.enabled);
-+	if (dev && device_can_wakeup(dev)) {
-+		bool enable = !device_may_wakeup(dev);
-+		device_set_wakeup_enable(dev, enable);
-+	}
- }
- 
- static ssize_t
-@@ -360,9 +364,12 @@ acpi_system_write_wakeup_device(struct f
- 			continue;
- 
+ 	if (len > 4)
+ 		len = 4;
+@@ -363,33 +362,10 @@ acpi_system_write_wakeup_device(struct f
  		if (!strncmp(dev->pnp.bus_id, str, 4)) {
--			dev->wakeup.state.enabled =
--			    dev->wakeup.state.enabled ? 0 : 1;
--			physical_device_enable_wakeup(dev);
-+			if (device_can_wakeup(&dev->dev)) {
-+				bool enable = !device_may_wakeup(&dev->dev);
-+				device_set_wakeup_enable(&dev->dev, enable);
-+			} else {
-+				physical_device_enable_wakeup(dev);
-+			}
+ 			dev->wakeup.state.enabled =
+ 			    dev->wakeup.state.enabled ? 0 : 1;
+-			found_dev = dev;
++			physical_device_enable_wakeup(dev);
  			break;
  		}
  	}
+-	if (found_dev) {
+-		physical_device_enable_wakeup(found_dev);
+-		list_for_each_safe(node, next, &acpi_wakeup_device_list) {
+-			struct acpi_device *dev = container_of(node,
+-							       struct
+-							       acpi_device,
+-							       wakeup_list);
+-
+-			if ((dev != found_dev) &&
+-			    (dev->wakeup.gpe_number ==
+-			     found_dev->wakeup.gpe_number)
+-			    && (dev->wakeup.gpe_device ==
+-				found_dev->wakeup.gpe_device)) {
+-				printk(KERN_WARNING
+-				       "ACPI: '%s' and '%s' have the same GPE, "
+-				       "can't disable/enable one separately\n",
+-				       dev->pnp.bus_id, found_dev->pnp.bus_id);
+-				dev->wakeup.state.enabled =
+-				    found_dev->wakeup.state.enabled;
+-				physical_device_enable_wakeup(dev);
+-			}
+-		}
+-	}
+ 	mutex_unlock(&acpi_device_lock);
+ 	return count;
+ }
