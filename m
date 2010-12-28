@@ -1,15 +1,14 @@
-From: Thomas Fjellstrom <thomas@fjellstrom.ca>
-Subject: Re: Wake On lan and ATL1 nic
-Date: Thu, 23 Dec 2010 08:32:00 -0700
-Message-ID: <201012230832.00443.thomas__14426.5476534658$1293551137$gmane$org@fjellstrom.ca>
-References: <201012141756.59591.thomas@fjellstrom.ca>
-	<201012221423.29719.rjw@sisk.pl>
-Reply-To: thomas@fjellstrom.ca
+From: Ohad Ben-Cohen <ohad@wizery.com>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Tue, 28 Dec 2010 21:04:47 +0200
+Message-ID: <AANLkTim7pGtO=vjKmA_3O74Kwvio124cgoaMeUSB70dW__15469.5090525367$1293563301$gmane$org@mail.gmail.com>
+References: <AANLkTinyKfwcZLD5D4rdF6OpQqr79F==GRjAMBjjbupW@mail.gmail.com>
+	<Pine.LNX.4.44L0.1012261050050.18773-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012221423.29719.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1012261050050.18773-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,171 +18,142 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On December 22, 2010, Rafael J. Wysocki wrote:
-> On Wednesday, December 15, 2010, Thomas Fjellstrom wrote:
-> > I can't seem to get wol to work with my desktop, which has an integrated
-> > ATL1 GbE nic. I can't be absolutely sure if it ever worked, but I think
-> > it did at one point. I can use ethtool to look at the wol status, that
-> > it supports magic-packet wol, and I can enable it, which is done at boot
-> > using an init script. But No matter how many times I try to send a wol
-> > packet to that machine it never wakes up.
-> > 
-> > Looking around on the net seems to say it is supported, and should work,
-> > but I'm not having any luck. Anyone have any hints?
-> 
-> It works for me with 2.6.37-rc7 and the appended patch applied (at least
-> the machine is woken up from suspend to RAM).  Of course, the adapter
-> needs to be configured for that with the help of ethtool.
+On Sun, Dec 26, 2010 at 7:00 PM, Alan Stern <stern@rowland.harvard.edu> wro=
+te:
+> Hmm. =A0It's a little difficult to untangle the web of dev_pm_ops
+> pointers and other stuff.
 
-Hi, thanks for making quick work of this. I have one slight problem, my nic 
-seems to use the atl1 driver, and not atl1c. I've tried using atl1c and atl1e, 
-both will load if I modprobe them, but neither actually bring up the device. 
-Even tried blacklisting atl1 first.
+Yeah, SDIO suspend/resume is very different from other subsystems.
 
-> Thanks,
-> Rafael
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: atl1c: Do not use legacy PCI power management
-> 
-> The atl1c driver uses the legacy PCI power management, so it has to
-> do some PCI-specific things in its ->suspend() and ->resume()
-> callbacks and they are not done correctly.
-> 
-> Convert atl1c to the new PCI power management framework and make it
-> let the PCI subsystem handle all of the PCI-specific aspects of
-> device handling during system power transitions.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/net/atl1c/atl1c_main.c |   39
-> +++++++++++++++------------------------ 1 file changed, 15 insertions(+),
-> 24 deletions(-)
-> 
-> Index: linux-2.6/drivers/net/atl1c/atl1c_main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/atl1c/atl1c_main.c
-> +++ linux-2.6/drivers/net/atl1c/atl1c_main.c
-> @@ -702,6 +702,7 @@ static int __devinit atl1c_sw_init(struc
-> 
-> 
->  	adapter->wol = 0;
-> +	device_set_wakeup_enable(&pdev->dev, false);
->  	adapter->link_speed = SPEED_0;
->  	adapter->link_duplex = FULL_DUPLEX;
->  	adapter->num_rx_queues = AT_DEF_RECEIVE_QUEUE;
-> @@ -2444,8 +2445,9 @@ static int atl1c_close(struct net_device
->  	return 0;
->  }
-> 
-> -static int atl1c_suspend(struct pci_dev *pdev, pm_message_t state)
-> +static int atl1c_suspend(struct device *dev)
->  {
-> +	struct pci_dev *pdev = to_pci_dev(dev);
->  	struct net_device *netdev = pci_get_drvdata(pdev);
->  	struct atl1c_adapter *adapter = netdev_priv(netdev);
->  	struct atl1c_hw *hw = &adapter->hw;
-> @@ -2454,7 +2456,6 @@ static int atl1c_suspend(struct pci_dev
->  	u32 wol_ctrl_data = 0;
->  	u16 mii_intr_status_data = 0;
->  	u32 wufc = adapter->wol;
-> -	int retval = 0;
-> 
->  	atl1c_disable_l0s_l1(hw);
->  	if (netif_running(netdev)) {
-> @@ -2462,9 +2463,6 @@ static int atl1c_suspend(struct pci_dev
->  		atl1c_down(adapter);
->  	}
->  	netif_device_detach(netdev);
-> -	retval = pci_save_state(pdev);
-> -	if (retval)
-> -		return retval;
-> 
->  	if (wufc)
->  		if (atl1c_phy_power_saving(hw) != 0)
-> @@ -2525,12 +2523,8 @@ static int atl1c_suspend(struct pci_dev
->  		AT_WRITE_REG(hw, REG_WOL_CTRL, wol_ctrl_data);
->  		AT_WRITE_REG(hw, REG_MAC_CTRL, mac_ctrl_data);
-> 
-> -		/* pcie patch */
-> -		device_set_wakeup_enable(&pdev->dev, 1);
-> -
->  		AT_WRITE_REG(hw, REG_GPHY_CTRL, GPHY_CTRL_DEFAULT |
->  			GPHY_CTRL_EXT_RESET);
-> -		pci_prepare_to_sleep(pdev);
->  	} else {
->  		AT_WRITE_REG(hw, REG_GPHY_CTRL, GPHY_CTRL_POWER_SAVING);
->  		master_ctrl_data |= MASTER_CTRL_CLK_SEL_DIS;
-> @@ -2540,25 +2534,17 @@ static int atl1c_suspend(struct pci_dev
->  		AT_WRITE_REG(hw, REG_MAC_CTRL, mac_ctrl_data);
->  		AT_WRITE_REG(hw, REG_WOL_CTRL, 0);
->  		hw->phy_configured = false; /* re-init PHY when resume */
-> -		pci_enable_wake(pdev, pci_choose_state(pdev, state), 0);
->  	}
-> 
-> -	pci_disable_device(pdev);
-> -	pci_set_power_state(pdev, pci_choose_state(pdev, state));
-> -
->  	return 0;
->  }
-> 
-> -static int atl1c_resume(struct pci_dev *pdev)
-> +static int atl1c_resume(struct device *dev)
->  {
-> +	struct pci_dev *pdev = to_pci_dev(dev);
->  	struct net_device *netdev = pci_get_drvdata(pdev);
->  	struct atl1c_adapter *adapter = netdev_priv(netdev);
-> 
-> -	pci_set_power_state(pdev, PCI_D0);
-> -	pci_restore_state(pdev);
-> -	pci_enable_wake(pdev, PCI_D3hot, 0);
-> -	pci_enable_wake(pdev, PCI_D3cold, 0);
-> -
->  	AT_WRITE_REG(&adapter->hw, REG_WOL_CTRL, 0);
->  	atl1c_reset_pcie(&adapter->hw, ATL1C_PCIE_L0S_L1_DISABLE |
->  			ATL1C_PCIE_PHY_RESET);
-> @@ -2582,7 +2568,12 @@ static int atl1c_resume(struct pci_dev *
-> 
->  static void atl1c_shutdown(struct pci_dev *pdev)
->  {
-> -	atl1c_suspend(pdev, PMSG_SUSPEND);
-> +	struct net_device *netdev = pci_get_drvdata(pdev);
-> +	struct atl1c_adapter *adapter = netdev_priv(netdev);
-> +
-> +	atl1c_suspend(&pdev->dev);
-> +	pci_wake_from_d3(pdev, adapter->wol);
-> +	pci_set_power_state(pdev, PCI_D3hot);
->  }
-> 
->  static const struct net_device_ops atl1c_netdev_ops = {
-> @@ -2886,16 +2877,16 @@ static struct pci_error_handlers atl1c_e
->  	.resume = atl1c_io_resume,
->  };
-> 
-> +static SIMPLE_DEV_PM_OPS(atl1c_pm_ops, atl1c_suspend, atl1c_resume);
-> +
->  static struct pci_driver atl1c_driver = {
->  	.name     = atl1c_driver_name,
->  	.id_table = atl1c_pci_tbl,
->  	.probe    = atl1c_probe,
->  	.remove   = __devexit_p(atl1c_remove),
-> -	/* Power Managment Hooks */
-> -	.suspend  = atl1c_suspend,
-> -	.resume   = atl1c_resume,
->  	.shutdown = atl1c_shutdown,
-> -	.err_handler = &atl1c_err_handler
-> +	.err_handler = &atl1c_err_handler,
-> +	.driver.pm = &atl1c_pm_ops,
->  };
-> 
->  /*
+There are several layers of abstractions involved, from the host
+controller driver, to the MMC core code, to the SDIO core code, to
+finally get to the actual SDIO function driver.
 
+I'll try to explain it below by addressing your questions. If
+something is still unclear, feel free to ask me.
 
--- 
-Thomas Fjellstrom
-thomas@fjellstrom.ca
+> There's wl1271_suspend() and wl1271_resume()
+> (which don't do anything)
+
+It just looks like they don't. In fact, by returning 0,
+wl1271_suspend() is telling the SDIO subsystem that it's OK to power
+down the SDIO function (in general an SDIO card can have several SDIO
+functions, each of which may be driven by a separate SDIO driver). If
+all the SDIO functions agreed, then SDIO core (mmc_sdio_suspend())
+tells MMC core (mmc_suspend_host()) it's OK to power down the card (by
+directly calling mmc_power_off()).
+
+> Under what circumstances does the MMC/SDIO core call
+> wl1271_sdio_set_power(), and where are those function calls?
+
+The relations are actually reversed: the MMC/SDIO core never calls
+this function.
+
+This function is called by the wl1271 driver itself, mostly as a
+response to a request by the mac80211 layer (but also as a response to
+a hardware error), that requires manipulation of the power of the
+card.
+
+There are a handful of reasons this may happen:
+
+error recovery:
+
+wl1271_recovery_work() ->
+    __wl1271_op_remove_interface() ->
+          wl1271_power_off() ->
+               wl1271_sdio_set_power() ->
+                      wl1271_sdio_power_off() ->
+                             pm_runtime_put_sync()
+
+wlan interface goes down:
+
+ieee80211_do_stop() ->
+  wl1271_op_remove_interface() ->
+    __wl1271_op_remove_interface() ->
+          ...
+
+system suspend:
+
+__ieee80211_suspend ->
+  wl1271_op_remove_interface() ->
+      ...
+
+> The normal case is that system suspend succeeds. =A0Then there is no
+> race. =A0If system suspend fails then the failure may occur either before
+> or after the wl1271 device is powered down; _that_ is the race
+> (assuming you are using asynchronous PM). =A0But normally it doesn't
+> occur.
+
+True. On my setup I have stressed the solution for long nights (using
+/sys/power/pm_test) without any error. But we found other setups with
+different circumstances where this error showed up.
+
+But it's not only due to the asynchronous PM race - a device that was
+added to the device tree after the host controller, but before
+mac80211, has a chance to abort a system suspend (by returning an
+error in its suspend handler) at a point in time which will leave our
+driver thinking (erroneously) that the wl1271 was powered off.
+
+> You mean, the wl1271 device has no PM methods of its own; its power is
+> managed entirely by the parent MMC/SDIO controller?
+
+Yes.
+
+> If that's right
+> then you should call pm_runtime_no_callbacks() for the wl1271 device.
+
+Yeah, that's in my queue...
+
+>
+> Is it possible for there to be more than one device connected to the
+> same MMC/SDIO controller?
+
+Generally yes, host controllers may have several slots, but to the
+MMC/SDIO core, it is presented as each slot is a separate host
+controller (personally I have never seen such hardware, but I did find
+an example for that in the host controller's source folder).
+
+> That's for runtime PM. =A0What about system sleep? =A0It looks like
+> sdio_bus_type has no callbacks for suspend or resume, so the driver's
+> callbacks get used instead -- that would be wl1271_suspend() and
+> wl1271_resume(). =A0But they don't do anything, so there's no power
+> change until the parent MMC/SDIO controller is suspended. =A0That would
+> be in mmc_sdio_suspend() and mmc_sdio_resume()? =A0But I can't tell what
+> pmops->suspend and pmops->resume methods they end up calling. =A0Are
+> these the entries in wl1271_sdio_pm_ops? =A0Does that mean
+> wl1271_suspend() and wl1271_resume() get called twice?
+
+No, wl1271_suspend() and wl1271_resume() are called once, but it's all
+triggered by the host controller's suspend/resume handlers.
+
+For example:
+
+omap_hsmmc_suspend() ->
+    mmc_suspend_host() ->
+        mmc_sdio_suspend() ->
+            wl1271_suspend()
+
+And then, if there are no errors, mmc_suspend_host() will eventually
+call mmc_power_off(), which powers off the card directly. So only at
+this point will our device get eventually shut down.
+
+> I think I already understand how the runtime suspend/resume paths work:
+> There are no runtime PM methods for the wl1271 device, so the PM core
+> simply propagates changes up to the parent MMC/SDIO device and ends up
+> calling mmc_runtime_suspend() or mmc_runtime_resume(). =A0Right?
+
+Right.
+
+> What is the pathway for reset (or other similar activities that
+> require the device to be powered-down while it is in use)?
+
+During runtime, the device will have to be powered off for error
+recovery and every time the wlan interface goes down. Please see the
+pathways above.
+
+Thanks,
+Ohad.
