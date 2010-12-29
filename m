@@ -1,10 +1,10 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.37-rc8: Reported regressions from 2.6.36
-Date: Wed, 29 Dec 2010 23:59:38 +0100 (CET)
-Message-ID: <96DQe4a_2tH.A.cFB.l27GNB__38184.8907484256$1293664309$gmane$org@chimera>
+Subject: 2.6.37-rc8: Reported regressions 2.6.35 -> 2.6.36
+Date: Thu, 30 Dec 2010 00:18:40 +0100 (CET)
+Message-ID: <odW4v9b6arG.A.2bH.uE8GNB__15592.8929722451$1293665341$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -20,217 +20,213 @@ To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
-LjM2LApmb3Igd2hpY2ggdGhlcmUgYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBrbm93biB0
-byB0aGUgdHJhY2tpbmcgdGVhbS4KSWYgYW55IG9mIHRoZW0gaGF2ZSBiZWVuIGZpeGVkIGFscmVh
-ZHksIHBsZWFzZSBsZXQgdXMga25vdy4KCklmIHlvdSBrbm93IG9mIGFueSBvdGhlciB1bnJlc29s
-dmVkIHJlZ3Jlc3Npb25zIGZyb20gMi42LjM2LCBwbGVhc2UgbGV0IHVzCmtub3cgZWl0aGVyIGFu
-ZCB3ZSdsbCBhZGQgdGhlbSB0byB0aGUgbGlzdC4gIEFsc28sIHBsZWFzZSBsZXQgdXMga25vdwpp
-ZiBhbnkgb2YgdGhlIGVudHJpZXMgYmVsb3cgYXJlIGludmFsaWQuCgpFYWNoIGVudHJ5IGZyb20g
-dGhlIGxpc3Qgd2lsbCBiZSBzZW50IGFkZGl0aW9uYWxseSBpbiBhbiBhdXRvbWF0aWMgcmVwbHkK
-dG8gdGhpcyBtZXNzYWdlIHdpdGggQ0NzIHRvIHRoZSBwZW9wbGUgaW52b2x2ZWQgaW4gcmVwb3J0
-aW5nIGFuZCBoYW5kbGluZwp0aGUgaXNzdWUuCgoKTGlzdGVkIHJlZ3Jlc3Npb25zIHN0YXRpc3Rp
-Y3M6CgogIERhdGUgICAgICAgICAgVG90YWwgIFBlbmRpbmcgIFVucmVzb2x2ZWQKICAtLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgMjAxMC0xMi0zMCAgICAgICA4NSAg
-ICAgICAzMiAgICAgICAgICAyNgogIDIwMTAtMTItMTkgICAgICAgNzMgICAgICAgMjggICAgICAg
-ICAgMjQKICAyMDEwLTEyLTAzICAgICAgIDU1ICAgICAgIDI1ICAgICAgICAgIDE5CiAgMjAxMC0x
-MS0xOSAgICAgICAzOSAgICAgICAyOSAgICAgICAgICAyNQoKClVucmVzb2x2ZWQgcmVncmVzc2lv
-bnMKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI1ODQyClN1YmplY3QJCTogdGhpbmtwYWQgVDQxMHMg
-aW50ZWwgaTkxNSByZWdyZXNzaW9uClN1Ym1pdHRlcgk6IFRyYXZpcyBIdW1lIDx0cmF2aXNAY29t
-cHV0b3Jpbmcub3JnPgpEYXRlCQk6IDIwMTAtMTItMjkgMTg6MjEgKDEgZGF5cyBvbGQpCgoKQnVn
-LUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI1ODIy
-ClN1YmplY3QJCTogW0JVR10ga2VybmVsIEJVRyBhdCBtbS90cnVuY2F0ZS5jOjQ3OSEgb24gMi42
-LjM3LXJjOApTdWJtaXR0ZXIJOiBHdXJ1ZGFzIFBhaSA8Z3VydWRhcy5wYWlAb3JhY2xlLmNvbT4K
-RGF0ZQkJOiAyMDEwLTEyLTI5IDY6NTggKDEgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8NEQxQUQ5
-MzUuMTAyMDUwNEBvcmFjbGUuY29tPgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1s
-aW51eC1rZXJuZWwmbT0xMjkzNjA1MTEyMjIwMzcmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI1ODEyClN1YmplY3QJCTogMi42LjM3
-LXJjNzogUmVncmVzc2lvbjogYjQzOiBjcmFzaGVzIGluIGh3cm5nX3JlZ2lzdGVyKCkKU3VibWl0
-dGVyCTogTWFyaW8gJ0JpdEtvZW5pZycgSG9sYmUgPE1hcmlvLkhvbGJlQHR1LWlsbWVuYXUuZGU+
-CkRhdGUJCTogMjAxMC0xMi0yOCAxMzozMiAoMiBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDxzbHJu
-aWhqcG5oLjd0NC5NYXJpby5Ib2xiZUBkYXJrc2lkZS5keW4uc2FtYmEtdG5nLm9yZz4KUmVmZXJl
-bmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5MzU0MzE5MDAyMzAx
-Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0yNTYwMgpTdWJqZWN0CQk6IFtyZWdyZXNzaW9uXSAyLjYuMzctcmM1OiBzY3NpX2VoXzEx
-IENQVSBsb29wClN1Ym1pdHRlcgk6IE1hcnRpbiBTdGVpZ2Vyd2FsZCA8TWFydGluQGxpY2h0dm9s
-bC5kZT4KRGF0ZQkJOiAyMDEwLTEyLTIwIDEwOjA1ICgxMCBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6
-IDwyMDEwMTIyMDExMDUuMDg5OTMuTWFydGluQGxpY2h0dm9sbC5kZT4KUmVmZXJlbmNlcwk6IGh0
-dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5MjgzOTU0MTA4MzMxJnc9MgoKCkJ1
-Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yNTQz
-MgpTdWJqZWN0CQk6IEFscGhhIGZhaWxzIHRvIGJ1aWxkIHdpdGggZ2NjIDQuNApTdWJtaXR0ZXIJ
-OiBCZW4gSHV0Y2hpbmdzIDxiZW5AZGVjYWRlbnQub3JnLnVrPgpEYXRlCQk6IDIwMTAtMTItMjIg
-MDE6NTUgKDggZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5v
-cmcvc2hvd19idWcuY2dpP2lkPTI1NDAyClN1YmplY3QJCToga2VybmVsICgyLjYuMzctOC1nZW5l
-cmljX2FtZDY0KSBwYW5pYyBvbiBib290ICh3aXRoIG1lc3NhZ2UgIm1hcF9zaW5nbGU6IGJvdW5j
-ZSBidWZmZXIgaXMgbm90IERNQSdibGUpIC0gcG9zc2libGUgcmVncmVzc2lvbiAhISEKU3VibWl0
-dGVyCTogY2FybG9zIDxjYXJsb3MucGFsbWFAb25vLmNvbT4KRGF0ZQkJOiAyMDEwLTEyLTIxIDE5
-OjU4ICg5IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
-L3Nob3dfYnVnLmNnaT9pZD0yNTM5MgpTdWJqZWN0CQk6IHNjc2lfZWhfMTEgQ1BVIGxvb3AKU3Vi
-bWl0dGVyCTogWmhhbmcsIFlhbm1pbiA8eWFubWluX3poYW5nQGxpbnV4LmludGVsLmNvbT4KRGF0
-ZQkJOiAyMDEwLTA4LTE4IDY6MTggKDEzNCBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDwxMjgyMTEy
-MzE4LjIxMjAyLjguY2FtZWxAeW16aGFuZy5zaC5pbnRlbC5jb20+ClJlZmVyZW5jZXMJOiBodHRw
-Oi8vbWFyYy5pbmZvLz90PTEyOTI4Mzk2NzEwMDAwNCZyPTEmdz0yCgkJICBodHRwOi8vbGttbC5v
-cmcvbGttbC8yMDEwLzEyLzIwLzUyCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5l
-bC5vcmcvc2hvd19idWcuY2dpP2lkPTI0ODgyClN1YmplY3QJCTogUE0vSGliZXJuYXRlOiBNZW1v
-cnkgY29ycnVwdGlvbiBwYXRjaCBpbnRyb2R1Y2VzIHJlZ3Jlc3Npb24gKDIuNi4zNi4yKQpTdWJt
-aXR0ZXIJOiAgPGFrd2F0dHNAeW1haWwuY29tPgpEYXRlCQk6IDIwMTAtMTItMTQgMDQ6MDAgKDE2
-IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0yNDgyMgpTdWJqZWN0CQk6IEVtYmVkZGVkIERpc3BsYXlQb3J0IGlzIGRldGVj
-dGVkIHdyb25nbHkgb24gSFAgUHJvQm9vayA1MzIwbQpTdWJtaXR0ZXIJOiBUYWthc2hpIEl3YWkg
-PHRpd2FpQHN1c2UuZGU+CkRhdGUJCTogMjAxMC0xMi0xMyAxMTowOSAoMTcgZGF5cyBvbGQpCkhh
-bmRsZWQtQnkJOiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdpbHNvbi5jby51az4KCgpCdWct
-RW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjQ3NzIK
-U3ViamVjdAkJOiBDcmFzaCB3aXRoIGJ0cmZzIHJvb3RmcyBvbiBkbS1jcnlwdCBbIGtlcm5lbCBC
-VUcgYXQgZnMvYnRyZnMvaW5vZGUuYzo4MDYhIF0gb24gbGludXggMi42LjM3LXJjNQpTdWJtaXR0
-ZXIJOiBGYWJpbyBDb21vbGxpIDxmYWJpby5jb21vbGxpQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDEw
-LTEyLTEwIDIwOjMwICgyMCBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDxBQU5Ma1RpPWo5enNhWU5j
-dT1OZ0dWPUhmRS0zck5IelZzd292OFZyZ3dqUXBAbWFpbC5nbWFpbC5jb20+ClJlZmVyZW5jZXMJ
-OiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyOTIwMTMwODcwNjU2OCZ3PTIK
-CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
-MjQ3NjIKU3ViamVjdAkJOiBCVUcgYXQgcGVyZl9jdHhfYWRqdXN0X2ZyZXEgKGtlcm5lbC9wZXJm
-X2V2ZW50LmM6MTU4MikKU3VibWl0dGVyCTogQ2hyaXMgV2lsc29uIDxjaHJpc0BjaHJpcy13aWxz
-b24uY28udWs+CkRhdGUJCTogMjAxMC0xMi0xMCAxMjowMCAoMjAgZGF5cyBvbGQpCk1lc3NhZ2Ut
-SUQJOiA8YzZkODI5JHBxaWJoYUBmbXNtZ2EwMDEuZm0uaW50ZWwuY29tPgpSZWZlcmVuY2VzCTog
-aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjkxOTgyNDc1MzE2MTImdz0yCgoK
-QnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI0
-NTkyClN1YmplY3QJCTogMi42LjM3LXJjNTogTlVMTCBwb2ludGVyIG9vcHMgaW4gc2VsaW51eF9z
-b2NrZXRfdW5peF9zdHJlYW1fY29ubmVjdApTdWJtaXR0ZXIJOiBKZXJlbXkgRml0emhhcmRpbmdl
-IDxqZXJlbXlAZ29vcC5vcmc+CkRhdGUJCTogMjAxMC0xMi0wOCAyMTowOSAoMjIgZGF5cyBvbGQp
-Ck1lc3NhZ2UtSUQJOiA8NENGRkYzRjMuOTAxMDBAZ29vcC5vcmc+ClJlZmVyZW5jZXMJOiBodHRw
-Oi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyOTE4NDI1NjYyOTcxMiZ3PTIKCgpCdWct
-RW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjQ1ODIK
-U3ViamVjdAkJOiBLZXJuZWwgT29wcyBhdCB0dHlfYnVmZmVyX3JlcXVlc3Rfcm9vbSB3aGVuIHVz
-aW5nIHBwcGQgcHJvZ3JhbSAoMi42LjM3LXJjNCkKU3VibWl0dGVyCTogYmFveWIgPGJhb3liQGF2
-aXQub3JnLmNuPgpEYXRlCQk6IDIwMTAtMTItMDggMTM6NTUgKDIyIGRheXMgb2xkKQpNZXNzYWdl
-LUlECTogPEVGNkRERTIxOERCMzQ3MDJCMUZBODRENkNEN0VBNzcxQGJhb3liPgpSZWZlcmVuY2Vz
-CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjkxODE3NjM1MjU3Mzgmdz0y
-CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
-PTI0MzcyClN1YmplY3QJCToga2R1bXAgYnJva2VuIG9uIDIuNi4zNy1yYzQKU3VibWl0dGVyCTog
-U3RhbmlzbGF3IEdydXN6a2EgPHNncnVzemthQHJlZGhhdC5jb20+CkRhdGUJCTogMjAxMC0xMi0w
-MyAxMToxNiAoMjcgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8MjAxMDEyMDMxMTE2MjMuR0EyNzQx
-QHJlZGhhdC5jb20+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5l
-bCZtPTEyOTEzNzUwMjMyMzAwMyZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2Vy
-bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjQzNjIKU3ViamVjdAkJOiBwZXJmIGh3ICBpbiBrZXhl
-Y2VkIGtlcm5lbCBicm9rZW4gaW4gdGlwClN1Ym1pdHRlcgk6IFlpbmdoYWkgTHUgPHlpbmdoYWlA
-a2VybmVsLm9yZz4KRGF0ZQkJOiAyMDEwLTEyLTAxIDg6MDAgKDI5IGRheXMgb2xkKQpGaXJzdC1C
-YWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvbGludXMvMzNjNmQ2YTdhZDBmZmFiOWIx
-YjE1ZjhlNDEwN2EyYWYwNzJhMDVhMApNZXNzYWdlLUlECTogPDRDRjYwMDk1LjEwMjA5MDBAa2Vy
-bmVsLm9yZz4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09
-MTI5MTE5MDU1OTIyMDY1Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwu
-b3JnL3Nob3dfYnVnLmNnaT9pZD0yNDI3MgpTdWJqZWN0CQk6IGlvdG9wIHJlcG9ydHMgaW5zYW5l
-IHBlci1wcm9jZXNzIGRpc2sgcmVhZC93cml0ZSBzdGF0aXN0aWNzClN1Ym1pdHRlcgk6IEJyaWFu
-IFJvZ2VycyA8YnJpYW5AeHl6dy5vcmc+CkRhdGUJCTogMjAxMC0xMi0wMyAxMjowMCAoMjcgZGF5
-cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0dHA6Ly9naXQua2VybmVsLm9yZy9saW51cy84NTg5
-MzEyMDY5OWY4YmFlOGNhYTEyYThlZTE4YWI1ZmNlYWM5NzhlCgoKQnVnLUVudHJ5CTogaHR0cDov
-L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIzOTAyClN1YmplY3QJCTogW0JV
-R10gMi42LjM3LXJjMyBtYXNzaXZlIGludGVyYWN0aXZpdHkgcmVncmVzc2lvbiBvbiBBUk0KU3Vi
-bWl0dGVyCTogTWlrYWVsIFBldHRlcnNzb24gPG1pa3BlQGl0LnV1LnNlPgpEYXRlCQk6IDIwMTAt
-MTEtMjcgMTU6MTYgKDMzIGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtl
-cm5lbC5vcmcvbGludXMvMzA1ZTY4MzVlMDU1MTM0MDZmYTEyODIwZTQwZTRhOGVjYjYzNzQzYwpN
-ZXNzYWdlLUlECTogPDwxOTY5Ny44Mzc4LjcxNzc2MS4yMzYyMDJAcGlsc3BldHNlbi5pdC51dS5z
-ZT4+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyOTA4
-NzA5ODkxMTgzNyZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MjM0NzIKU3ViamVjdAkJOiAyLjYuMzctcmMyIHZzLiAyLjYuMzYgbGFw
-dG9wIGJhY2tsaWdodCBjaGFuZ2VzPwpTdWJtaXR0ZXIJOiBQYXRyaWNrIFNjaGFhZiA8bmV0ZGV2
-QGJvZi5kZT4KRGF0ZQkJOiAyMDEwLTExLTE3IDEzOjQxICg0MyBkYXlzIG9sZCkKTWVzc2FnZS1J
-RAk6IDwxMjkwMDAxMjYyLjU3MjcuMi5jYW1lbEBsYXQxPgpSZWZlcmVuY2VzCTogaHR0cDovL21h
-cmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjkwMDAxMjc5MjA5MTImdz0yCgoKQnVnLUVudHJ5
-CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIzMTAyClN1Ympl
-Y3QJCTogW2Jpc2VjdGVkXSBpOTE1IHJlZ3Jlc3Npb24gaW4gcG9zdCAyLjYuMzYga2VybmVscwpT
-dWJtaXR0ZXIJOiBKb2hhbm5lcyBIaXJ0ZSA8am9oYW5uZXMuaGlydGVAZmVtLnR1LWlsbWVuYXUu
-ZGU+CkRhdGUJCTogMjAxMC0xMS0xMCA3OjAyICg1MCBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDwy
-MDEwMTExMDA4MDIuMjAzMzIuam9oYW5uZXMuaGlydGVAZmVtLnR1LWlsbWVuYXUuZGU+ClJlZmVy
-ZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyODkzNzMxMDAxNzA1
-NyZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9MjI5NDIKU3ViamVjdAkJOiBbMi42LjM3LXJjMSwgT09NXSB2aXJ0YmxrOiBPT00gaW4g
-ZG9fdmlydGJsa19yZXF1ZXN0KCkKU3VibWl0dGVyCTogRGF2ZSBDaGlubmVyIDxkYXZpZEBmcm9t
-b3JiaXQuY29tPgpEYXRlCQk6IDIwMTAtMTEtMDUgMTozMCAoNTUgZGF5cyBvbGQpCk1lc3NhZ2Ut
-SUQJOiA8MjAxMDExMDUwMTMwMDMuR0UxMzgzMEBkYXN0YXJkPgpSZWZlcmVuY2VzCTogaHR0cDov
-L21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjg4OTIwNjI5MTc2NDEmdz0yCgoKQnVnLUVu
-dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIyOTEyClN1
-YmplY3QJCTogc3BpX2xtNzBsbHAgbW9kdWxlIGNyYXNoIG9uIHVubG9hZCAoMi42LjM3LXJjMSkK
-U3VibWl0dGVyCTogUmFuZHkgRHVubGFwIDxyYW5keS5kdW5sYXBAb3JhY2xlLmNvbT4KRGF0ZQkJ
-OiAyMDEwLTExLTA1IDA6MTYgKDU1IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDIwMTAxMTA0MTcx
-NjIwLjAwZDhjOTVkLnJhbmR5LmR1bmxhcEBvcmFjbGUuY29tPgpSZWZlcmVuY2VzCTogaHR0cDov
-L21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjg4OTE2Mjc5MTM2NDcmdz0yCgoKQnVnLUVu
-dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIyODgyClN1
-YmplY3QJCTogKDIuNi4zNy1yYzEpIGFtZDY0LWFncCBtb2R1bGUgY3Jhc2hlZCBvbiBzZWNvbmQg
-bG9hZApTdWJtaXR0ZXIJOiBSYW5keSBEdW5sYXAgPHJhbmR5LmR1bmxhcEBvcmFjbGUuY29tPgpE
-YXRlCQk6IDIwMTAtMTEtMDUgMDoxMyAoNTUgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8MjAxMDEx
-MDQxNzEzMzMuZmVhMWY0OTgucmFuZHkuZHVubGFwQG9yYWNsZS5jb20+ClJlZmVyZW5jZXMJOiBo
-dHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyODg5MTYwNTIxMzQ0NyZ3PTIKCgpC
-dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjI2
-NDIKU3ViamVjdAkJOiAyLjYuMzctcmMxOiBEaXNrIHRha2VzIDEwIHNlY29uZHMgdG8gcmVzdW1l
-IC0gTWFjQm9vazIsMQpTdWJtaXR0ZXIJOiBUb2JpYXMgPGRldm51bGxAcGx6ay5vcmc+CkRhdGUJ
-CTogMjAxMC0xMS0xMCAxOTozMyAoNTAgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIyNTYyClN1YmplY3QJCTogUmVncmVz
-c2lvbiBpbiAyLjYuMzctcmMxIC0gbG9ncyBzcGFtbWVkIHdpdGggInVuYWJsZSB0byBlbnVtZXJh
-dGUgVVNCIHBvcnQiIC0gYmlzZWN0ZWQgdG8gY29tbWl0IDNkZjcxNjllClN1Ym1pdHRlcgk6IExh
-cnJ5IEZpbmdlciA8TGFycnkuRmluZ2VyQGx3ZmluZ2VyLm5ldD4KRGF0ZQkJOiAyMDEwLTExLTAy
-IDIyOjMyICg1OCBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwu
-b3JnL2xpbnVzLzNkZjcxNjllNzNmYzFkNzFhMzljZmZlYWNjOTY5ZjY4NDBjZGY1MmIKTWVzc2Fn
-ZS1JRAk6IDw0Q0QwOTE2Ni40MDYwMjAyQGx3ZmluZ2VyLm5ldD4KUmVmZXJlbmNlcwk6IGh0dHA6
-Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI4ODczNzEzMjA3OTA2Jnc9MgoKCkJ1Zy1F
-bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMjU0MgpT
-dWJqZWN0CQk6IFsyLjYuMzctcmMxXSBkcm06aTE5NSBlcnJvcnMKU3VibWl0dGVyCTogUGF1bCBS
-b2xsYW5kIDxyb2xAd2l0YmUubmV0PgpEYXRlCQk6IDIwMTAtMTEtMDIgMTQ6NTggKDU4IGRheXMg
-b2xkKQpNZXNzYWdlLUlECTogPDIwMTAxMTAyMTU1ODEzLjA5Y2IyYzZlQHR1eC5ERUYud2l0YmUu
-bmV0PgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjg4
-NzA5OTE2Mjg5NzAmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
-c2hvd19idWcuY2dpP2lkPTIyNDcyClN1YmplY3QJCTogdmdhX3N3aXRjaGVyb28gZmFpbHMgdG8g
-c3dpdGNoIGZyb20gaW50ZWwgdG8gYXRpClN1Ym1pdHRlcgk6IFJhZHUgQW5kcmllcyA8YWRtaXJh
-bDBAdHV4ZmFtaWx5Lm9yZz4KRGF0ZQkJOiAyMDEwLTExLTA4IDE2OjQ2ICg1MiBkYXlzIG9sZCkK
-CgpSZWdyZXNzaW9ucyB3aXRoIHBhdGNoZXMKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpCdWct
-RW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjU0NDIK
-U3ViamVjdAkJOiBpeHA0eHggZGVmaW5lcyBGUkVRIG1hY3JvOyBjb25mbGljdHMgd2l0aCBnc3Bj
-YS9vdjUxOSBkcml2ZXIKU3VibWl0dGVyCTogQmVuIEh1dGNoaW5ncyA8YmVuQGRlY2FkZW50Lm9y
-Zy51az4KRGF0ZQkJOiAyMDEwLTEyLTIyIDAyOjAyICg4IGRheXMgb2xkKQpIYW5kbGVkLUJ5CTog
-QmVuIEh1dGNoaW5ncyA8YmVuQGRlY2FkZW50Lm9yZy51az4KUGF0Y2gJCTogaHR0cHM6Ly9idWd6
-aWxsYS5rZXJuZWwub3JnL2F0dGFjaG1lbnQuY2dpP2lkPTQxMjUyCgoKQnVnLUVudHJ5CTogaHR0
-cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI1NDIyClN1YmplY3QJCTog
-bm91dmVhdSBmYWlscyB0byBidWlsZCBvbiBpYTY0ClN1Ym1pdHRlcgk6IEJlbiBIdXRjaGluZ3Mg
-PGJlbkBkZWNhZGVudC5vcmcudWs+CkRhdGUJCTogMjAxMC0xMi0yMiAwMTo0OSAoOCBkYXlzIG9s
-ZCkKSGFuZGxlZC1CeQk6IEJlbiBIdXRjaGluZ3MgPGJlbkBkZWNhZGVudC5vcmcudWs+ClBhdGNo
-CQk6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9hdHRhY2htZW50LmNnaT9pZD00MTI0MgoK
-CkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0y
-NTAxMgpTdWJqZWN0CQk6IEJVRzogaTkxNSBjYXVzZXMgTlVMTCBwb2ludGVyIGRlcmVmZXJlbmNl
-IGluIDIuNi4zNy1yYzUtZ2l0NApTdWJtaXR0ZXIJOiBUw7VudSBSYWl0dmlpciA8anVzc3VmQGxp
-bnV4LmVlPgpEYXRlCQk6IDIwMTAtMTItMTUgMTI6NDggKDE1IGRheXMgb2xkKQpGaXJzdC1CYWQt
-Q29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvbGludXMvZGE3OWRlOTdkMjU0MTQ1ZGNiN2Mw
-OGM5NzhiMTA5M2VhYzE1ZWM5YwpNZXNzYWdlLUlECTogPGFscGluZS5ERUIuMi4wMC4xMDEyMTUx
-MjM4NTcwLjQ3OTdAamJieXZ4Lm9oemNweWhvLnJyPgpSZWZlcmVuY2VzCTogaHR0cDovL3d3dy5z
-cGluaWNzLm5ldC9saXN0cy9kcmktZGV2ZWwvbXNnMDYyODIuaHRtbApIYW5kbGVkLUJ5CTogQ2hy
-aXMgV2lsc29uIDxjaHJpc0BjaHJpcy13aWxzb24uY28udWs+ClBhdGNoCQk6IGh0dHBzOi8vYnVn
-emlsbGEua2VybmVsLm9yZy9hdHRhY2htZW50LmNnaT9pZD00MTUwMgoKCkJ1Zy1FbnRyeQk6IGh0
-dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMjgxMgpTdWJqZWN0CQk6
-IGtlcm5lbCBvb3BzIG9uIDIuNi4zNy1yYzEKU3VibWl0dGVyCTogQW5kcmV3IDxhdHN3YXJ0ekBn
-bWFpbC5jb20+CkRhdGUJCTogMjAxMC0xMS0xMiAxNjowNSAoNDggZGF5cyBvbGQpCkZpcnN0LUJh
-ZC1Db21taXQ6IGh0dHA6Ly9naXQua2VybmVsLm9yZy9saW51cy9hNjhjNDM5YjE5NjZjOTFmMGVm
-NDc0ZTJiZjI3NWQ2NzkyMzEyNzI2ClBhdGNoCQk6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9y
-Zy9hdHRhY2htZW50LmNnaT9pZD00MTE5MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5r
-ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMjY3MgpTdWJqZWN0CQk6IFJlZ3Jlc3Npb24gaW4g
-Mi42LjM3LXJjMSBmb3IgSW50ZWwgOTQ1IEdyYXBoaWNzIEFkYXB0ZXIgLSBiaXNlY3RlZCB0byBj
-b21taXQgZTllMzMxYQpTdWJtaXR0ZXIJOiBMYXJyeSBGaW5nZXIgPExhcnJ5LkZpbmdlckBsd2Zp
-bmdlci5uZXQ+CkRhdGUJCTogMjAxMC0xMS0xMSAwMTo1NiAoNDkgZGF5cyBvbGQpClJlZmVyZW5j
-ZXMJOiBodHRwczovL2J1Z3MuZnJlZWRlc2t0b3Aub3JnL3Nob3dfYnVnLmNnaT9pZD0zMTgwMwoJ
-CSAgaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjg5NDQwMDEzMTE0NDQmdz0y
-CgkJICBodHRwOi8vd3d3Lm1haWwtYXJjaGl2ZS5jb20vaW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNr
-dG9wLm9yZy9tc2cwMjIzNS5odG1sClBhdGNoCQk6IGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5v
-cmcvcGF0Y2gvMzU5NDcyLwoJCSAgaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8z
-NTk1MDIvCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTIyNjYyClN1YmplY3QJCTogZGl2aWRlIGVycm9yIGluIHNlbGVjdF90YXNrX3JxX2Zh
-aXIoKQpTdWJtaXR0ZXIJOiBNeXJvbiBTdG93ZSA8bXlyb24uc3Rvd2VAaHAuY29tPgpEYXRlCQk6
-IDIwMTAtMTEtMTAgMjM6NTggKDUwIGRheXMgb2xkKQpQYXRjaAkJOiBodHRwOi8vbGttbC5vcmcv
-bGttbC8yMDEwLzExLzEzLzE3NgoJCSAgaHR0cDovL2xrbWwub3JnL2xrbWwvMjAxMC8xMS8xMy8x
-ODEKCgpGb3IgZGV0YWlscywgcGxlYXNlIHZpc2l0IHRoZSBidWcgZW50cmllcyBhbmQgZm9sbG93
-IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVuY2VzLgoKQXMgeW91IGNhbiBzZWUsIHRoZXJlIGlz
-IGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2ggb2YgdGhlIGxpc3RlZCByZWdyZXNzaW9ucy4KVGhl
-cmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5IHVzZWQgZm9yIHRyYWNraW5nIHRoZSByZWdyZXNz
-aW9ucyBmcm9tIDIuNi4zNiwKdW5yZXNvbHZlZCBhcyB3ZWxsIGFzIHJlc29sdmVkLCBhdDoKCmh0
-dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMTc4MgoKUGxlYXNlIGxl
-dCB0aGUgdHJhY2tpbmcgdGVhbSBrbm93IGlmIHRoZXJlIGFyZSBhbnkgQnVnemlsbGEgZW50cmll
-cyB0aGF0CnNob3VsZCBiZSBhZGRlZCB0byB0aGUgbGlzdCBpbiB0aGVyZS4KClRoYW5rcyEKCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1h
-aWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+[NOTE: This most likely is the last summary report of regressions introduced
+ between 2.6.35 and 2.6.36.]
+
+This message contains a list of some post-2.6.35 regressions introduced before
+2.6.36, for which there are no fixes in the mainline known to the tracking team.
+If any of them have been fixed already, please let us know.
+
+If you know of any other unresolved post-2.6.35 regressions, please let us know
+either and we'll add them to the list.  Also, please let us know if any
+of the entries below are invalid.
+
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
+
+
+Listed regressions statistics:
+
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2010-12-30       99       22          20
+  2010-12-19       98       28          23
+  2010-12-05       95       34          31
+  2010-11-19       92       38          34
+  2010-10-17       70       27          27
+  2010-10-10       56       16          15
+  2010-10-03       52       16          14
+  2010-09-26       46       15          13
+  2010-09-20       38       15          15
+  2010-09-12       28       14          13
+  2010-08-30       21       16          15
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=24752
+Subject		: Random crashes easily reproducible with make -j5 - intel i915 - kernel 2.6.36 on intel/nvidia hybrid graphics machine
+Submitter	: Giacomo <delleceste@gmail.com>
+Date		: 2010-12-10 8:57 (20 days old)
+Message-ID	: <AANLkTimkQM94u9iz7FVVjehB0mwDwfkNwKhF2F2tYq-r@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=129197146619176&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=24722
+Subject		: Disconnecting my USB mouse hangs the machine and issues kernel warning
+Submitter	: Heinz Diehl <htd@fancy-poultry.org>
+Date		: 2010-12-12 12:42 (18 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=24392
+Subject		: AGP aperture disabled, worked in 2.6.35
+Submitter	: Stephen Kitt <steve@sk2.org>
+Date		: 2010-12-06 06:31 (24 days old)
+First-Bad-Commit: http://git.kernel.org/linus/http://git.kernel.org/linus/96576a9e1a0cdb8a43d3af5846be0948f52b4460
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=24202
+Subject		: [830] drm:intel_prepare_page_flip, *ERROR* Prepared flip multiple times
+Submitter	: mkkot <marcin2006@gmail.com>
+Date		: 2010-12-02 14:10 (28 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=23812
+Subject		: HAL does not provide battery information on RHEL5 and CentOS-5
+Submitter	: Dag Wieers <dag@wieers.com>
+Date		: 2010-11-26 18:08 (34 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22842
+Subject		: iwl3945 suddenly stops working
+Submitter	: Felipe Contreras <felipe.contreras@gmail.com>
+Date		: 2010-11-14 11:14 (46 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22782
+Subject		: 2.6.36: general protection fault during lockfs lockspace removal
+Submitter	: nik@linuxbox.cz <nik@linuxbox.cz>
+Date		: 2010-11-12 12:05 (48 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22172
+Subject		: alsa-util.c: snd_pcm_avail_delay() returned strange values: delay 0 is less than avail 32
+Submitter	: Tobias <devnull@plzk.org>
+Date		: 2010-11-06 09:33 (54 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=22092
+Subject		: Kernel v2.6.36 trouble on USB disconnect
+Submitter	: Ketil Froyn <ketil@froyn.name>
+Date		: 2010-10-29 8:05 (62 days old)
+Message-ID	: <<AANLkTik5qVxkEGVAA1PSOGk2KTW+ekHpSwttsQEWzWj+@mail.gmail.com>>
+References	: http://marc.info/?l=linux-kernel&m=128833956503607&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=21652
+Subject		: several problems with intel graphics since 2.6.36
+Submitter	: Norbert Preining <preining@logic.at>
+Date		: 2010-10-27 14:32 (64 days old)
+Message-ID	: <20101027143252.GA8676@gamma.logic.tuwien.ac.at>
+References	: http://marc.info/?l=linux-kernel&m=128818998630241&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=21402
+Subject		: [KVM] Noacpi Windows guest can not boot up on 32bit KVM host
+Submitter	: xudong <xudong.hao@intel.com>
+Date		: 2010-10-29 03:01 (62 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=20332
+Subject		: [LogFS] [2.6.36-rc7] Kernel BUG at lib/btree.c:465!
+Submitter	: Prasad Joshi <prasadjoshi124@gmail.com>
+Date		: 2010-10-12 18:56 (79 days old)
+Message-ID	: <AANLkTimAbCZNhLQ5nADUiAC+7JpAeJBEmjFwdxyZ-FxO@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=128690910501830&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=20322
+Subject		: 2.6.36-rc7: inconsistent lock state: inconsistent {IN-RECLAIM_FS-R} -> {RECLAIM_FS-ON-W} usage.
+Submitter	: Dave Jones <davej@redhat.com>
+Date		: 2010-10-11 20:10 (80 days old)
+Message-ID	: <20101011201007.GA29707@redhat.com>
+References	: http://marc.info/?l=linux-kernel&m=128682782828453&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=20232
+Subject		: kworker consumes ~100% CPU on HP Elitebook 8540w running 2.6.36_rc6-git4
+Submitter	: Ozan Caglayan <ozan@pardus.org.tr>
+Date		: 2010-10-13 06:13 (78 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19392
+Subject		: WARNING: at drivers/net/wireless/ath/ath5k/base.c:3475 ath5k_bss_info_changed+0x44/0x168 [ath5k]()
+Submitter	: Justin Mattock <justinmattock@gmail.com>
+Date		: 2010-09-28 22:30 (93 days old)
+Message-ID	: <<AANLkTim5WCGKPvEkOkO_YnMF9pg8mvLfQoFBNUFpfa_k@mail.gmail.com>>
+References	: http://marc.info/?l=linux-kernel&m=128571307018635&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19372
+Subject		: 2.6.36-rc6: WARNING: at drivers/gpu/drm/radeon/radeon_fence.c:235 radeon_fence_wait+0x35a/0x3c0
+Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
+Date		: 2010-09-29 21:29 (92 days old)
+Message-ID	: <20100929212923.GA5578@core2.telecom.by>
+References	: http://marc.info/?l=linux-kernel&m=128579579400315&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=19052
+Subject		: 2.6.36-rc5-git1 -- [drm:i915_report_and_clear_eir] *ERROR* EIR stuck: 0x00000010, masking
+Submitter	: Miles Lane <miles.lane@gmail.com>
+Date		: 2010-09-22 23:47 (99 days old)
+Message-ID	: <AANLkTikWQjUQjFJU9MO1+XbSLAEE-GARz+S+Dz2Fgu4h@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=128519926626322&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=17121
+Subject		: Two blank rectangles more than 10 cm long when booting
+Submitter	: Eric Valette <eric.valette@free.fr>
+Date		: 2010-08-26 17:24 (126 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=17061
+Subject		: 2.6.36-rc1 on zaurus: bluetooth regression
+Submitter	: Pavel Machek <pavel@ucw.cz>
+Date		: 2010-08-21 15:24 (131 days old)
+Message-ID	: <20100821152445.GA1536@ucw.cz>
+References	: http://marc.info/?l=linux-kernel&m=128240433828087&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16951
+Subject		: hackbench regression with 2.6.36-rc1
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2010-08-18 6:18 (134 days old)
+Message-ID	: <1282112318.21202.8.camel@ymzhang.sh.intel.com>
+References	: http://marc.info/?l=linux-kernel&m=128211235904910&w=2
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=21092
+Subject		: Kernel 2.6.36 Bug during quotaon on reiserfs
+Submitter	:  <markus.gapp@gmx.net>
+Date		: 2010-10-24 16:57 (67 days old)
+Handled-By	: Jan Kara <jack@suse.cz>
+Patch		: https://bugzilla.kernel.org/attachment.cgi?id=35292
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=16971
+Subject		: qla4xxx compile failure on 32-bit PowerPC: missing readq and writeq
+Submitter	: Meelis Roos <mroos@linux.ee>
+Date		: 2010-08-19 21:03 (133 days old)
+Message-ID	: <<<alpine.SOC.1.00.1008192359310.19654@math.ut.ee>>>
+References	: http://marc.info/?l=linux-kernel&m=128225184900892&w=2
+Patch		: http://marc.info/?l=linux-scsi&m=128590267608876&w=2
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions introduced
+between 2.6.35 and 2.6.36, unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=16444
+
+Please let the tracking team know if there are any Bugzilla entries that
+should be added to the list in there.
+
+Thanks!
