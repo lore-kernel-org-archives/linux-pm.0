@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Ohad Ben-Cohen <ohad@wizery.com>
 Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Tue, 28 Dec 2010 16:46:33 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012281541580.22998-100000__15474.1468177692$1293572870$gmane$org@netrider.rowland.org>
+Date: Wed, 29 Dec 2010 08:34:25 +0200
+Message-ID: <AANLkTikrd3JpBG4JYUUxQhPPNhSmJaE5j5ozz=_vpU52__16743.6662632555$1293604562$gmane$org@mail.gmail.com>
 References: <AANLkTim7pGtO=vjKmA_3O74Kwvio124cgoaMeUSB70dW@mail.gmail.com>
+	<Pine.LNX.4.44L0.1012281541580.22998-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTim7pGtO=vjKmA_3O74Kwvio124cgoaMeUSB70dW@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1012281541580.22998-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,169 +18,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ohad Ben-Cohen <ohad@wizery.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 28 Dec 2010, Ohad Ben-Cohen wrote:
+On Tue, Dec 28, 2010 at 11:46 PM, Alan Stern <stern@rowland.harvard.edu> wr=
+ote:
+> What's the relation between mmc_power_off() and mmc_power_save_host()?
 
-> On Sun, Dec 26, 2010 at 7:00 PM, Alan Stern <stern@rowland.harvard.edu> w=
-rote:
-> > Hmm. =A0It's a little difficult to untangle the web of dev_pm_ops
-> > pointers and other stuff.
-> =
+Essentially they are the same - mmc_power_off() is the one that
+actually powers off the card.
 
-> Yeah, SDIO suspend/resume is very different from other subsystems.
-> =
+mmc_power_save_host() just invokes first a bus-specific ->power_save()
+handler (if one exists).
 
-> There are several layers of abstractions involved, from the host
-> controller driver, to the MMC core code, to the SDIO core code, to
-> finally get to the actual SDIO function driver.
+> Does one merely go into a low-power state whereas the other does the
+> complete-power-off reset?
 
-Actually that sounds quite a lot like the USB subsystem, except perhaps
-for the fact that you have two layers of core code instead of just one.  =
+No, think of them as the same. Both will lead to a complete power off.
+The mmc_power_off() is just an internal function which belongs to the
+MMC core.
 
-The cards are much like USB devices (indivisible for the purposes of
-power management) and the functions are much like USB interfaces (bound
-to individual drivers but not independently power-managed or
-resettable).
+> During wlan-interface-down, it's not necessary to reduce the power
+> level; it's merely desirable. =A0That's exactly the sort of thing runtime
+> PM is meant for. =A0Hence the existing call to pm_runtime_put_sync() is
+> sufficient.
 
-> I'll try to explain it below by addressing your questions. If
-> something is still unclear, feel free to ask me.
-> =
+Not exactly - think of airplane mode, where we must ensure the radios
+are disabled, without being blocked by /sys/devices/.../power/control
+- we will need to bypass runtime PM in this scenario too.
 
-> > There's wl1271_suspend() and wl1271_resume()
-> > (which don't do anything)
-> =
+> Put it another way: =A0Suppose an SDIO card has more than one function
+> and you need to reset the wl1271 function. =A0It sounds like there's no
+> way to do this without resetting the other functions as well. =A0What
+> happens if another function's driver is busy and can't allow a reset
+> just then?
 
-> It just looks like they don't. In fact, by returning 0,
-> wl1271_suspend() is telling the SDIO subsystem that it's OK to power
-> down the SDIO function (in general an SDIO card can have several SDIO
-> functions, each of which may be driven by a separate SDIO driver). If
-> all the SDIO functions agreed, then SDIO core (mmc_sdio_suspend())
-> tells MMC core (mmc_suspend_host()) it's OK to power down the card (by
-> directly calling mmc_power_off()).
+That's a chip specific thing. In our case, there is no other active
+SDIO function.
 
-What's the relation between mmc_power_off() and mmc_power_save_host()?  =
+Other vendors which does employ several SDIO functions have a separate
+reset for each function _in addition_ to the power line. So for them
+the runtime PM model is just great - they never care if the actual
+power is down or not - it's really just about power consumption, and
+nothing else. When they need an unconditional reset, they just use the
+appropriate reset line.
 
-
-When you say "power down", which of these routines do you mean?  I get
-the feeling that sometimes you mean one and sometimes the other, which
-leads to problems in understanding.
-
-Why are there two separate routines?
-
-Does one merely go into a low-power state whereas the other does the =
-
-complete-power-off reset?
-
-If so, which does which?  =
-
-
-What's the reason for not going into the complete-power-off state every
-time?
-
-If it is latency, shouldn't the runtime-PM path use the low-latency
-routine and the system-sleep path use the high-latency routine?  =
-
-Although I can't tell for certain, it seems to be the other way around.
-
-> > Under what circumstances does the MMC/SDIO core call
-> > wl1271_sdio_set_power(), and where are those function calls?
-> =
-
-> The relations are actually reversed: the MMC/SDIO core never calls
-> this function.
-> =
-
-> This function is called by the wl1271 driver itself, mostly as a
-> response to a request by the mac80211 layer (but also as a response to
-> a hardware error), that requires manipulation of the power of the
-> card.
-> =
-
-> There are a handful of reasons this may happen:
-> =
-
-> error recovery:
-> =
-
-> wl1271_recovery_work() ->
->     __wl1271_op_remove_interface() ->
->           wl1271_power_off() ->
->                wl1271_sdio_set_power() ->
->                       wl1271_sdio_power_off() ->
->                              pm_runtime_put_sync()
-> =
-
-> wlan interface goes down:
-> =
-
-> ieee80211_do_stop() ->
->   wl1271_op_remove_interface() ->
->     __wl1271_op_remove_interface() ->
->           ...
-> =
-
-> system suspend:
-> =
-
-> __ieee80211_suspend ->
->   wl1271_op_remove_interface() ->
->       ...
-
-Okay.  These paths should be interrelated with power management in a =
-
-different way.
-
-It's correct for wl1271_op_remove_interface() to be called in these =
-
-three situations, and it's correct to do a pm_runtime_put_sync().  But =
-
-it's not correct to rely on that to actually change any power levels or =
-
-do a reset.
-
-Instead, wl1271_error_recovery_work() should call either
-mmc_suspend_host() or mmc_power_save_host() (whichever one does the
-actual power-off reset) directly, after calling wl1271_power_off().  =
-
-In fact, you might even want to do a pm_runtime_get_noresume() before
-calling wl1271_power_off(), to prevent the PM core from interfering
-with the reset.
-
-Similarly, during system suspend mmc_suspend_host() should be =
-
-responsible for doing all the necessary power-down operations.  Runtime =
-
-PM is completely out of the picture at this time.  And this should be =
-
-independent of mac80211 -- in fact, the card should be powered down =
-
-appropriately even if the kernel doesn't have a mac80211 layer.
-
-During wlan-interface-down, it's not necessary to reduce the power
-level; it's merely desirable.  That's exactly the sort of thing runtime
-PM is meant for.  Hence the existing call to pm_runtime_put_sync() is
-sufficient.
-
-> > Is it possible for there to be more than one device connected to the
-> > same MMC/SDIO controller?
-> =
-
-> Generally yes, host controllers may have several slots, but to the
-> MMC/SDIO core, it is presented as each slot is a separate host
-> controller (personally I have never seen such hardware, but I did find
-> an example for that in the host controller's source folder).
-
-Put it another way:  Suppose an SDIO card has more than one function =
-
-and you need to reset the wl1271 function.  It sounds like there's no =
-
-way to do this without resetting the other functions as well.  What =
-
-happens if another function's driver is busy and can't allow a reset =
-
-just then?
-
-Alan Stern
+In our case we have a single control for both power and reset
+functionality (actually we do have a separate power line to the
+device, but it is not controlled by software - it is fed directly from
+the battery rail).
