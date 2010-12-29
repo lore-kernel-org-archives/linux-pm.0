@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/2] PCI / PM: Report wakeup events before
-	resuming devices
-Date: Wed, 29 Dec 2010 13:22:08 +0100
-Message-ID: <201012291322.08521.rjw__28714.5867165693$1293625497$gmane$org@sisk.pl>
+Subject: [PATCH 1/2] PCI / PM: Use pm_wakeup_event() directly for
+	reporting wakeup events
+Date: Wed, 29 Dec 2010 13:21:23 +0100
+Message-ID: <201012291321.23899.rjw__16095.0475292795$1293625498$gmane$org@sisk.pl>
 References: <201012291320.22777.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,68 +24,71 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make wakeup events be reported by the PCI subsystem before attempting
-to resume devices or queuing up runtime resume requests for them,
-because wakeup events should be reported as soon as they have been
-detected.
+After recent changes related to wakeup events pm_wakeup_event()
+automatically checks if the given device is configured to signal
+wakeup, so pci_wakeup_event() may be a static inline function
+calling pm_wakeup_event() directly.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-acpi.c |    2 +-
- drivers/pci/pci.c      |    2 +-
- drivers/pci/pcie/pme.c |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/pci/pci.c   |   16 ----------------
+ drivers/pci/pci.h   |    6 ++++++
+ include/linux/pci.h |    1 -
+ 3 files changed, 6 insertions(+), 17 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci-acpi.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-acpi.c
-+++ linux-2.6/drivers/pci/pci-acpi.c
-@@ -46,9 +46,9 @@ static void pci_acpi_wake_dev(acpi_handl
- 	struct pci_dev *pci_dev = context;
- 
- 	if (event == ACPI_NOTIFY_DEVICE_WAKE && pci_dev) {
-+		pci_wakeup_event(pci_dev);
- 		pci_check_pme_status(pci_dev);
- 		pm_runtime_resume(&pci_dev->dev);
--		pci_wakeup_event(pci_dev);
- 		if (pci_dev->subordinate)
- 			pci_pme_wakeup_bus(pci_dev->subordinate);
- 	}
 Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci.c
 +++ linux-2.6/drivers/pci/pci.c
-@@ -1311,8 +1311,8 @@ bool pci_check_pme_status(struct pci_dev
- static int pci_pme_wakeup(struct pci_dev *dev, void *ign)
- {
- 	if (pci_check_pme_status(dev)) {
--		pm_request_resume(&dev->dev);
- 		pci_wakeup_event(dev);
-+		pm_request_resume(&dev->dev);
- 	}
- 	return 0;
+@@ -1300,22 +1300,6 @@ bool pci_check_pme_status(struct pci_dev
+ 	return ret;
  }
-Index: linux-2.6/drivers/pci/pcie/pme.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/pme.c
-+++ linux-2.6/drivers/pci/pcie/pme.c
-@@ -103,8 +103,8 @@ static bool pcie_pme_walk_bus(struct pci
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		/* Skip PCIe devices in case we started from a root port. */
- 		if (!pci_is_pcie(dev) && pci_check_pme_status(dev)) {
--			pm_request_resume(&dev->dev);
- 			pci_wakeup_event(dev);
-+			pm_request_resume(&dev->dev);
- 			ret = true;
- 		}
  
-@@ -206,8 +206,8 @@ static void pcie_pme_handle_request(stru
- 		/* The device is there, but we have to check its PME status. */
- 		found = pci_check_pme_status(dev);
- 		if (found) {
--			pm_request_resume(&dev->dev);
- 			pci_wakeup_event(dev);
-+			pm_request_resume(&dev->dev);
- 		}
- 		pci_dev_put(dev);
- 	} else if (devfn) {
+-/*
+- * Time to wait before the system can be put into a sleep state after reporting
+- * a wakeup event signaled by a PCI device.
+- */
+-#define PCI_WAKEUP_COOLDOWN	100
+-
+-/**
+- * pci_wakeup_event - Report a wakeup event related to a given PCI device.
+- * @dev: Device to report the wakeup event for.
+- */
+-void pci_wakeup_event(struct pci_dev *dev)
+-{
+-	if (device_may_wakeup(&dev->dev))
+-		pm_wakeup_event(&dev->dev, PCI_WAKEUP_COOLDOWN);
+-}
+-
+ /**
+  * pci_pme_wakeup - Wake up a PCI device if its PME Status bit is set.
+  * @dev: Device to handle.
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -74,6 +74,12 @@ extern void pci_pm_init(struct pci_dev *
+ extern void platform_pci_wakeup_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+ 
++static inline void pci_wakeup_event(struct pci_dev *dev)
++{
++	/* Wait 100 ms before the system can be put into a sleep state. */
++	pm_wakeup_event(&dev->dev, 100);
++}
++
+ static inline bool pci_is_bridge(struct pci_dev *pci_dev)
+ {
+ 	return !!(pci_dev->subordinate);
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -820,7 +820,6 @@ int pci_prepare_to_sleep(struct pci_dev 
+ int pci_back_from_sleep(struct pci_dev *dev);
+ bool pci_dev_run_wake(struct pci_dev *dev);
+ bool pci_check_pme_status(struct pci_dev *dev);
+-void pci_wakeup_event(struct pci_dev *dev);
+ void pci_pme_wakeup_bus(struct pci_bus *bus);
+ 
+ static inline int pci_enable_wake(struct pci_dev *dev, pci_power_t state,
