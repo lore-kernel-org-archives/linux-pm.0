@@ -1,14 +1,14 @@
-From: Ohad Ben-Cohen <ohad@wizery.com>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Wed, 29 Dec 2010 10:01:40 +0200
-Message-ID: <AANLkTi=QT1thWxy94=imJhbbcXQ1CD36=PnkAyaaA6Hj__30245.9728009582$1293609787$gmane$org@mail.gmail.com>
-References: <AANLkTim7pGtO=vjKmA_3O74Kwvio124cgoaMeUSB70dW@mail.gmail.com>
-	<Pine.LNX.4.44L0.1012281541580.22998-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 2/2] PCI / PM: Report wakeup events before
+	resuming devices
+Date: Wed, 29 Dec 2010 13:22:08 +0100
+Message-ID: <201012291322.08521.rjw__28714.5867165693$1293625497$gmane$org@sisk.pl>
+References: <201012291320.22777.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1012281541580.22998-100000@netrider.rowland.org>
+In-Reply-To: <201012291320.22777.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,24 +18,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-pci@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 28, 2010 at 11:46 PM, Alan Stern <stern@rowland.harvard.edu> wr=
-ote:
-> Similarly, during system suspend mmc_suspend_host() should be
-> responsible for doing all the necessary power-down operations. =A0Runtime
-> PM is completely out of the picture at this time. =A0And this should be
-> independent of mac80211 -- in fact, the card should be powered down
-> appropriately even if the kernel doesn't have a mac80211 layer.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-And it is.
+Make wakeup events be reported by the PCI subsystem before attempting
+to resume devices or queuing up runtime resume requests for them,
+because wakeup events should be reported as soon as they have been
+detected.
 
-But in order to boot the firmware on resume, we need to reset the
-device. And if system suspend has been cancelled before
-mmc_power_off() was invoked, we will not be able to. So, in this case
-too, the driver will have to power the device off.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci-acpi.c |    2 +-
+ drivers/pci/pci.c      |    2 +-
+ drivers/pci/pcie/pme.c |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-It all really boils down to the same solution - we will always have to
-bypass runtime PM and directly control the power of the device.
+Index: linux-2.6/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-acpi.c
++++ linux-2.6/drivers/pci/pci-acpi.c
+@@ -46,9 +46,9 @@ static void pci_acpi_wake_dev(acpi_handl
+ 	struct pci_dev *pci_dev = context;
+ 
+ 	if (event == ACPI_NOTIFY_DEVICE_WAKE && pci_dev) {
++		pci_wakeup_event(pci_dev);
+ 		pci_check_pme_status(pci_dev);
+ 		pm_runtime_resume(&pci_dev->dev);
+-		pci_wakeup_event(pci_dev);
+ 		if (pci_dev->subordinate)
+ 			pci_pme_wakeup_bus(pci_dev->subordinate);
+ 	}
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1311,8 +1311,8 @@ bool pci_check_pme_status(struct pci_dev
+ static int pci_pme_wakeup(struct pci_dev *dev, void *ign)
+ {
+ 	if (pci_check_pme_status(dev)) {
+-		pm_request_resume(&dev->dev);
+ 		pci_wakeup_event(dev);
++		pm_request_resume(&dev->dev);
+ 	}
+ 	return 0;
+ }
+Index: linux-2.6/drivers/pci/pcie/pme.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pcie/pme.c
++++ linux-2.6/drivers/pci/pcie/pme.c
+@@ -103,8 +103,8 @@ static bool pcie_pme_walk_bus(struct pci
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		/* Skip PCIe devices in case we started from a root port. */
+ 		if (!pci_is_pcie(dev) && pci_check_pme_status(dev)) {
+-			pm_request_resume(&dev->dev);
+ 			pci_wakeup_event(dev);
++			pm_request_resume(&dev->dev);
+ 			ret = true;
+ 		}
+ 
+@@ -206,8 +206,8 @@ static void pcie_pme_handle_request(stru
+ 		/* The device is there, but we have to check its PME status. */
+ 		found = pci_check_pme_status(dev);
+ 		if (found) {
+-			pm_request_resume(&dev->dev);
+ 			pci_wakeup_event(dev);
++			pm_request_resume(&dev->dev);
+ 		}
+ 		pci_dev_put(dev);
+ 	} else if (devfn) {
