@@ -1,13 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Wed, 29 Dec 2010 23:30:21 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1012292326220.13580-100000__13078.1531836421$1293683568$gmane$org@netrider.rowland.org>
-References: <AANLkTi=QT1thWxy94=imJhbbcXQ1CD36=PnkAyaaA6Hj@mail.gmail.com>
+From: Rabin Vincent <rabin@rab.in>
+Subject: Re: i2c runtime suspend and system wide suspend
+Date: Thu, 30 Dec 2010 12:02:53 +0530
+Message-ID: <AANLkTinqqgNwgFCMVL-2T83zKnNLGLF007atJ4-EDEW5__35644.4272133105$1293690837$gmane$org@mail.gmail.com>
+References: <4D1C0CFE.5010008@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=QT1thWxy94=imJhbbcXQ1CD36=PnkAyaaA6Hj@mail.gmail.com>
+In-Reply-To: <4D1C0CFE.5010008@codeaurora.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,49 +17,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ohad Ben-Cohen <ohad@wizery.com>
-Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
+To: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
+Cc: Partha Basak <p-basak2@ti.com>, linux-arm-msm@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 29 Dec 2010, Ohad Ben-Cohen wrote:
+On Thu, Dec 30, 2010 at 10:09 AM, Abhijeet Dharmapurikar
+<adharmap@codeaurora.org> wrote:
+> The i2c-core driver mixes runtime suspend and system wide suspend, in that,
+> during a system wide suspend, it skips calling ->suspend if the device is
+> runtime suspended.
+>
+> I have an interrupt controller running over the i2c bus and that driver is
+> oblivious of the runtime pm framework, IOW, it doesn't do any runtime pm
+> calls. CONFIG_RUNTIME_PM is enabled however (for some other bus drivers).
+> The issue I am facing is that all such i2c devices are assumed runtime
+> suspended and the ->suspend for these devices is not invoked during
+> systemwide suspend.
 
-> On Tue, Dec 28, 2010 at 11:46 PM, Alan Stern <stern@rowland.harvard.edu> =
-wrote:
-> > Similarly, during system suspend mmc_suspend_host() should be
-> > responsible for doing all the necessary power-down operations. =A0Runti=
-me
-> > PM is completely out of the picture at this time. =A0And this should be
-> > independent of mac80211 -- in fact, the card should be powered down
-> > appropriately even if the kernel doesn't have a mac80211 layer.
-> =
+This was discussed on linux-pm recently.  Rafael had a fix, I'm don't know
+whether it's applied yet:
 
-> And it is.
-> =
+https://lists.linux-foundation.org/pipermail/linux-pm/2010-December/029567.html
+https://lists.linux-foundation.org/pipermail/linux-pm/2010-December/029596.html
 
-> But in order to boot the firmware on resume, we need to reset the
-> device. And if system suspend has been cancelled before
-> mmc_power_off() was invoked, we will not be able to. So, in this case
-> too, the driver will have to power the device off.
+Also relevant:
 
-If the suspend transition was cancelled before mmc_power_off(), why do =
-
-you need to boot the firmware on resume?  Since the device hasn't =
-
-actually been powered off, can't it continue using the same firmware as =
-
-before?
-
-What routine is responsible for deciding to boot the firmware, and what =
-
-is its call path?
-
-> It all really boils down to the same solution - we will always have to
-> bypass runtime PM and directly control the power of the device.
-
-While this is probably true, I'm not at all convinced that the current =
-
-design is layered correctly.  Fixing the design might reduce the amount =
-
-of bypassing required.
-
-Alan Stern
+https://lists.linux-foundation.org/pipermail/linux-pm/2010-December/029600.html
+https://lists.linux-foundation.org/pipermail/linux-pm/2010-December/029658.html
