@@ -1,13 +1,14 @@
 From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] tg3: Do not use legacy PCI power management
-Date: Fri, 31 Dec 2010 11:14:40 -0800 (PST)
-Message-ID: <20101231.111440.28810446.davem__48481.0736416422$1293822919$gmane$org@davemloft.net>
-References: <201012252356.23424.rjw@sisk.pl>
+Subject: Re: [PATCH] skge: Do not use legacy PCI power management
+Date: Fri, 31 Dec 2010 12:50:32 -0800 (PST)
+Message-ID: <20101231.125032.200373631.davem__23296.1441310637$1293828694$gmane$org@davemloft.net>
+References: <201012261944.32517.rjw@sisk.pl> <20101230105229.189f3737@nehalam>
+	<201012302350.01205.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012252356.23424.rjw@sisk.pl>
+In-Reply-To: <201012302350.01205.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: rjw@sisk.pl
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, mcarlson@broadcom.com, mchan@broadcom.com
+Cc: netdev@vger.kernel.org, shemminger@vyatta.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Sat, 25 Dec 2010 23:56:23 +0100
+Date: Thu, 30 Dec 2010 23:50:01 +0100
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> On Thursday, December 30, 2010, Stephen Hemminger wrote:
+>> The skge driver used the legacy PCI power management, and did its
+>> own PCI callbacks.  Use the same code model as Rafael's changes to
+>> sky2. Let the PCI subsystem take care of all the PCI-specific aspects of
+>> device handling during system power transitions.
+>> 
+>> Compile tested only (so far).
+>> 
+>> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 > 
-> The tg3 driver uses the legacy PCI power management, so it has to do
-> some PCI-specific things in its ->suspend() and ->resume() callbacks,
-> which isn't necessary and should better be done by the PCI
-> sybsystem-level power management code.
-> 
-> Convert tg3 to the new PCI power management framework and make it
-> let the PCI subsystem take care of all the PCI-specific aspects of
-> device handling during system power transitions.
-> 
-> Tested on HP nx6325 with a NetXtreme BCM5788 adapter.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Applied.
+Applied to net-next-2.6, thanks!
