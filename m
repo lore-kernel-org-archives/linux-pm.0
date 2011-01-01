@@ -1,14 +1,14 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] skge: Do not use legacy PCI power management
-Date: Fri, 31 Dec 2010 12:50:32 -0800 (PST)
-Message-ID: <20101231.125032.200373631.davem__23296.1441310637$1293828694$gmane$org@davemloft.net>
-References: <201012261944.32517.rjw@sisk.pl> <20101230105229.189f3737@nehalam>
-	<201012302350.01205.rjw@sisk.pl>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Subject: [PATCH net-next-2.6] tg3: fix warnings
+Date: Sat, 01 Jan 2011 16:22:46 +0100
+Message-ID: <1293895366.2535.43.camel__1639.56607361815$1293895475$gmane$org@edumazet-laptop>
+References: <201012252356.23424.rjw@sisk.pl>
+	<20101231.111440.28810446.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012302350.01205.rjw@sisk.pl>
+In-Reply-To: <20101231.111440.28810446.davem@davemloft.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: netdev@vger.kernel.org, shemminger@vyatta.com, linux-pm@lists.linux-foundation.org
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, Jesse Gross <jesse@nicira.com>, mcarlson@broadcom.com, mchan@broadcom.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Thu, 30 Dec 2010 23:50:01 +0100
-
-> On Thursday, December 30, 2010, Stephen Hemminger wrote:
->> The skge driver used the legacy PCI power management, and did its
->> own PCI callbacks.  Use the same code model as Rafael's changes to
->> sky2. Let the PCI subsystem take care of all the PCI-specific aspects of
->> device handling during system power transitions.
->> 
->> Compile tested only (so far).
->> 
->> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-Applied to net-next-2.6, thanks!
+TGUgdmVuZHJlZGkgMzEgZMOpY2VtYnJlIDIwMTAgw6AgMTE6MTQgLTA4MDAsIERhdmlkIE1pbGxl
+ciBhIMOpY3JpdCA6Cj4gRnJvbTogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHNpc2sucGw+Cj4g
+RGF0ZTogU2F0LCAyNSBEZWMgMjAxMCAyMzo1NjoyMyArMDEwMAo+IAo+ID4gRnJvbTogUmFmYWVs
+IEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgo+ID4gCj4gPiBUaGUgdGczIGRyaXZlciB1c2VzIHRo
+ZSBsZWdhY3kgUENJIHBvd2VyIG1hbmFnZW1lbnQsIHNvIGl0IGhhcyB0byBkbwo+ID4gc29tZSBQ
+Q0ktc3BlY2lmaWMgdGhpbmdzIGluIGl0cyAtPnN1c3BlbmQoKSBhbmQgLT5yZXN1bWUoKSBjYWxs
+YmFja3MsCj4gPiB3aGljaCBpc24ndCBuZWNlc3NhcnkgYW5kIHNob3VsZCBiZXR0ZXIgYmUgZG9u
+ZSBieSB0aGUgUENJCj4gPiBzeWJzeXN0ZW0tbGV2ZWwgcG93ZXIgbWFuYWdlbWVudCBjb2RlLgo+
+ID4gCj4gPiBDb252ZXJ0IHRnMyB0byB0aGUgbmV3IFBDSSBwb3dlciBtYW5hZ2VtZW50IGZyYW1l
+d29yayBhbmQgbWFrZSBpdAo+ID4gbGV0IHRoZSBQQ0kgc3Vic3lzdGVtIHRha2UgY2FyZSBvZiBh
+bGwgdGhlIFBDSS1zcGVjaWZpYyBhc3BlY3RzIG9mCj4gPiBkZXZpY2UgaGFuZGxpbmcgZHVyaW5n
+IHN5c3RlbSBwb3dlciB0cmFuc2l0aW9ucy4KPiA+IAo+ID4gVGVzdGVkIG9uIEhQIG54NjMyNSB3
+aXRoIGEgTmV0WHRyZW1lIEJDTTU3ODggYWRhcHRlci4KPiA+IAo+ID4gU2lnbmVkLW9mZi1ieTog
+UmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgo+IAo+IEFwcGxpZWQuCgpIYXBweSBuZXcg
+eWVhciBldmVyeWJvZHkgOykKCkhlcmUgaXMgYSBmb2xsb3d1cCB0byBhdm9pZCBzb21lIHdhcm5p
+bmdzIGlmIENPTkZJR19QTV9TTEVFUD1uCgpOb3cgSSBoYXZlIHRvIHVuZGVyc3RhbmQgd2h5IHZs
+YW4vYm9uZGluZyBkb2VzbnQgd29yayBhbnltb3JlIHdpdGggdGczCm9uIGN1cnJlbnQgbmV0LW5l
+eHQtMi42IDooIAoKSXMgYW55Ym9keSBhbHJlYWR5IG9uIHRoaXMgcHJvYmxlbSA/CihDYyBKZXNz
+ZSBHcm9zcykKClRoYW5rcwoKW1BBVENIIG5ldC1uZXh0LTIuNl0gdGczOiBmaXggd2FybmluZ3MK
+CkluIGNhc2UgQ09ORklHX1BNX1NMRUVQIGlzIGRpc2FibGVkLCB3ZSBkb250IG5lZWQgdGczX3N1
+c3BlbmQoKSBhbmQKdGczX3Jlc3VtZSgpLgoKZHJpdmVycy9uZXQvdGczLmM6MTUwNTY6IHdhcm5p
+bmc6IOKAmHRnM19zdXNwZW5k4oCZIGRlZmluZWQgYnV0IG5vdCB1c2VkCmRyaXZlcnMvbmV0L3Rn
+My5jOjE1MTEwOiB3YXJuaW5nOiDigJh0ZzNfcmVzdW1l4oCZIGRlZmluZWQgYnV0IG5vdCB1c2Vk
+CgpTaWduZWQtb2ZmLWJ5OiBFcmljIER1bWF6ZXQgPGVyaWMuZHVtYXpldEBnbWFpbC5jb20+CkNj
+OiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+CkNjOiBNaWNoYWVsIENoYW4gPG1jaGFu
+QGJyb2FkY29tLmNvbT4KQ2M6IE1hdHQgQ2FybHNvbiA8bWNhcmxzb25AYnJvYWRjb20uY29tPgot
+LS0KIGRyaXZlcnMvbmV0L3RnMy5jIHwgICAxMCArKysrKysrKystCiAxIGZpbGVzIGNoYW5nZWQs
+IDkgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0
+L3RnMy5jIGIvZHJpdmVycy9uZXQvdGczLmMKaW5kZXggNjEzNzg2OS4uZTNkODBjOSAxMDA2NDQK
+LS0tIGEvZHJpdmVycy9uZXQvdGczLmMKKysrIGIvZHJpdmVycy9uZXQvdGczLmMKQEAgLTE1MDUy
+LDYgKzE1MDUyLDcgQEAgc3RhdGljIHZvaWQgX19kZXZleGl0IHRnM19yZW1vdmVfb25lKHN0cnVj
+dCBwY2lfZGV2ICpwZGV2KQogCX0KIH0KIAorI2lmZGVmIENPTkZJR19QTV9TTEVFUAogc3RhdGlj
+IGludCB0ZzNfc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXZpY2UpCiB7CiAJc3RydWN0IHBjaV9k
+ZXYgKnBkZXYgPSB0b19wY2lfZGV2KGRldmljZSk7CkBAIC0xNTE0MCwxMyArMTUxNDEsMjAgQEAg
+b3V0OgogfQogCiBzdGF0aWMgU0lNUExFX0RFVl9QTV9PUFModGczX3BtX29wcywgdGczX3N1c3Bl
+bmQsIHRnM19yZXN1bWUpOworI2RlZmluZSBURzNfUE1fT1BTICgmdGczX3BtX29wcykKKworI2Vs
+c2UKKworI2RlZmluZSBURzNfUE1fT1BTIE5VTEwKKworI2VuZGlmIC8qIENPTkZJR19QTV9TTEVF
+UCAqLwogCiBzdGF0aWMgc3RydWN0IHBjaV9kcml2ZXIgdGczX2RyaXZlciA9IHsKIAkubmFtZQkJ
+PSBEUlZfTU9EVUxFX05BTUUsCiAJLmlkX3RhYmxlCT0gdGczX3BjaV90YmwsCiAJLnByb2JlCQk9
+IHRnM19pbml0X29uZSwKIAkucmVtb3ZlCQk9IF9fZGV2ZXhpdF9wKHRnM19yZW1vdmVfb25lKSwK
+LQkuZHJpdmVyLnBtCT0gJnRnM19wbV9vcHMsCisJLmRyaXZlci5wbQk9IFRHM19QTV9PUFMsCiB9
+OwogCiBzdGF0aWMgaW50IF9faW5pdCB0ZzNfaW5pdCh2b2lkKQoKCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
+eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
