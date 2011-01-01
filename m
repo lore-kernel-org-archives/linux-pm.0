@@ -1,13 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Power Hibernate: (bugfix) when failed,
-	"in_suspend"	should be reset.
-Date: Sun, 2 Jan 2011 10:10:47 +0100
-Message-ID: <20110102091047.GX32469@atrey.karlin.mff.cuni.cz>
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Subject: Re: [Resend][PATCH 1/3] Platform / x86: Make
+	fujitsu_laptop use acpi_bus_update_power()
+Date: Sat, 1 Jan 2011 13:04:03 +1030 (CST)
+Message-ID: <201101010234.p012Y3F0019523__47344.349747482$1294070892$gmane$org@mercury.physics.adelaide.edu.au>
+References: <201012112343.26591.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <201012112343.26591.rjw@sisk.pl> from "Rafael J. Wysocki" at Dec
+	11, 2010 11:43:26 PM
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +19,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, kyungmin.park@samsung.com, myungjoo.ham@gmail.com, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi guys
 
-> When hibernation failed due to an error in swsusp_write() called by
-> hibernate(), it skips calling "power_down()" and returns. When
-> hibernate() is called again (probably after fixing up so that
-> swsusp_write() wouldn't fail again), before "in_suspend = 1" of
-> create_image is called, in_suspend should be 0. However, because
-> hibernate() did not reset "in_suspend" after a failure, it's already 1.
+For a whole variety of reasons which are too complicated to go into now
+(including but not limited to me not being on the direct "to" list), I
+missed this when it was posted in early-to-mid December.
+
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> This patch fixes such inconsistency of "in_suspend" value.
-
-Ack.
-
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Use the new function acpi_bus_update_power(), which is safer than
+> acpi_bus_get_power(), for getting device power state in
+> acpi_fujitsu_add() and acpi_fujitsu_hotkey_add().
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Reported-and-Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
 > ---
->  kernel/power/hibernate.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+>  drivers/platform/x86/fujitsu-laptop.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index e6c498d..e27bf22 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -643,6 +643,7 @@ int hibernate(void)
->  		swsusp_free();
->  		if (!error)
->  			power_down();
-> +		in_suspend = 0;
->  	} else {
->  		pr_debug("PM: Image restored successfully.\n");
->  	}
+> Index: linux-2.6/drivers/platform/x86/fujitsu-laptop.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/platform/x86/fujitsu-laptop.c
+> +++ linux-2.6/drivers/platform/x86/fujitsu-laptop.c
+> @@ -689,7 +689,7 @@ static int acpi_fujitsu_add(struct acpi_
+>  	if (error)
+>  		goto err_free_input_dev;
+>  
+> -	result = acpi_bus_get_power(fujitsu->acpi_handle, &state);
+> +	result = acpi_bus_update_power(fujitsu->acpi_handle, &state);
+>  	if (result) {
+>  		printk(KERN_ERR "Error reading power state\n");
+>  		goto err_unregister_input_dev;
+> @@ -857,7 +857,7 @@ static int acpi_fujitsu_hotkey_add(struc
+>  	if (error)
+>  		goto err_free_input_dev;
+>  
+> -	result = acpi_bus_get_power(fujitsu_hotkey->acpi_handle, &state);
+> +	result = acpi_bus_update_power(fujitsu_hotkey->acpi_handle, &state);
+>  	if (result) {
+>  		printk(KERN_ERR "Error reading power state\n");
+>  		goto err_unregister_input_dev;
+> 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+For what it's worth and in case it's important, here's a belated ack:
+
+Acked-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+
+Regards
+  jonathan
