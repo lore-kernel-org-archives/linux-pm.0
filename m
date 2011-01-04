@@ -1,15 +1,13 @@
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Subject: Re: [Resend][PATCH 1/3] Platform / x86: Make
-	fujitsu_laptop use acpi_bus_update_power()
-Date: Sat, 1 Jan 2011 13:04:03 +1030 (CST)
-Message-ID: <201101010234.p012Y3F0019523__47344.349747482$1294070892$gmane$org@mercury.physics.adelaide.edu.au>
-References: <201012112343.26591.rjw@sisk.pl>
+From: jean.pihet@newoldbits.com
+Subject: [PATCH 1/3] perf: add calls to suspend trace point
+Date: Tue,  4 Jan 2011 11:48:29 +0100
+Message-ID: <1294138109-24679-1-git-send-email-j-pihet__8142.22286358035$1294138202$gmane$org@ti.com>
+References: <1294136263-24020-1-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201012112343.26591.rjw@sisk.pl> from "Rafael J. Wysocki" at Dec
-	11, 2010 11:43:26 PM
+In-Reply-To: <1294136263-24020-1-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +17,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: mingo@elte.hu, trenn@suse.de, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org
+Cc: linux-perf-users@vger.kernel.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi guys
+From: Jean Pihet <j-pihet@ti.com>
 
-For a whole variety of reasons which are too complicated to go into now
-(including but not limited to me not being on the direct "to" list), I
-missed this when it was posted in early-to-mid December.
+Uses the machine_suspend trace point, called from the
+generic kernel suspend_enter function.
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Use the new function acpi_bus_update_power(), which is safer than
-> acpi_bus_get_power(), for getting device power state in
-> acpi_fujitsu_add() and acpi_fujitsu_hotkey_add().
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Reported-and-Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
-> ---
->  drivers/platform/x86/fujitsu-laptop.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/drivers/platform/x86/fujitsu-laptop.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/platform/x86/fujitsu-laptop.c
-> +++ linux-2.6/drivers/platform/x86/fujitsu-laptop.c
-> @@ -689,7 +689,7 @@ static int acpi_fujitsu_add(struct acpi_
->  	if (error)
->  		goto err_free_input_dev;
->  
-> -	result = acpi_bus_get_power(fujitsu->acpi_handle, &state);
-> +	result = acpi_bus_update_power(fujitsu->acpi_handle, &state);
->  	if (result) {
->  		printk(KERN_ERR "Error reading power state\n");
->  		goto err_unregister_input_dev;
-> @@ -857,7 +857,7 @@ static int acpi_fujitsu_hotkey_add(struc
->  	if (error)
->  		goto err_free_input_dev;
->  
-> -	result = acpi_bus_get_power(fujitsu_hotkey->acpi_handle, &state);
-> +	result = acpi_bus_update_power(fujitsu_hotkey->acpi_handle, &state);
->  	if (result) {
->  		printk(KERN_ERR "Error reading power state\n");
->  		goto err_unregister_input_dev;
-> 
+Signed-off-by: Jean Pihet <j-pihet@ti.com>
+CC: Thomas Renninger <trenn@suse.de>
+---
+ kernel/power/suspend.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-For what it's worth and in case it's important, here's a belated ack:
-
-Acked-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-
-Regards
-  jonathan
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index ecf7705..0650596 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -22,6 +22,7 @@
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
++#include <trace/events/power.h>
+ 
+ #include "power.h"
+ 
+@@ -164,7 +165,9 @@ static int suspend_enter(suspend_state_t state)
+ 	error = sysdev_suspend(PMSG_SUSPEND);
+ 	if (!error) {
+ 		if (!suspend_test(TEST_CORE) && pm_check_wakeup_events()) {
++			trace_machine_suspend(state);
+ 			error = suspend_ops->enter(state);
++			trace_machine_suspend(PWR_EVENT_EXIT);
+ 			events_check_enabled = false;
+ 		}
+ 		sysdev_resume();
+-- 
+1.7.2.3
