@@ -1,16 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] i2c: Factor out runtime suspend checks from
-	PM	operations
-Date: Tue, 4 Jan 2011 23:10:21 +0000
-Message-ID: <20110104231021.GA18024__12545.4700588763$1294182687$gmane$org@sirena.org.uk>
-References: <1293712813-4090-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<4D23A839.6030205@codeaurora.org>
+From: Raj Kumar <rajkumar278@hotmail.com>
+Subject: Re: Question about timers during system suspend
+Date: Wed, 5 Jan 2011 05:27:34 +0530
+Message-ID: <BLU102-W11E15CD0A639C1DE2097CAEB080@phx.gbl>
+References: <BLU102-W26157F65094C5BCB0C51ADEB080@phx.gbl>,
+	<201101050005.42914.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4D23A839.6030205@codeaurora.org>
+In-Reply-To: <201101050005.42914.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,19 +18,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
+To: rjw@sisk.pl
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 04, 2011 at 03:07:37PM -0800, Abhijeet Dharmapurikar wrote:
-> Mark Brown wrote:
 
->> device op. The PM core provides pm_generic_ functions implementing this
->> behaviour - use them to reduce coupling with future PM updates.
+ 
+Dear rafael,
+ 
+Thanks for quick reply.
+ 
+>> I have question regarding the timers during system suspend. If a software timer is
+> > active in device driver, will this timer be stopped during system suspend?
+>
+> What do you mean by "stopped"? Do you mean canceled?
+ 
+I mean cancel the software timer. But if the software timer is active as you already mentioned it will not prevent
+system suspend. I mean to say if the driver has active software timer means software timer is not fired yet and device driver
+will return from suspend callback without cancelation software timer and it times out after this
+will not prevent system suspend to return error code.
+ 
+right??
+ 
+or is it mandatory to cancel the software timer during suspend callback to device driver?
+ 
+ 
+Regards
+raj
+ 
 
-> pm_generic_suspend() and others needs to be externed in linux/pm_runtime.h?
 
-Yes, there's a patch in -next for this already so this patch would need
-to either wait for later in the merge window or go in via the PM tree
-with the preceeding one (the original version of this patch was posted
-as part of a series with the export patch).
+
+----------------------------------------
+> From: rjw@sisk.pl
+> To: rajkumar278@hotmail.com
+> Subject: Re: [linux-pm] Question about timers during system suspend
+> Date: Wed, 5 Jan 2011 00:05:42 +0100
+> CC: linux-pm@lists.linux-foundation.org
+>
+> On Tuesday, January 04, 2011, Raj Kumar wrote:
+> >
+> > Hi,
+>
+> Hi,
+>
+> > I have question regarding the timers during system suspend. If a software timer is
+> > active in device driver, will this timer be stopped during system suspend?
+>
+> What do you mean by "stopped"? Do you mean canceled?
+>
+> > If the timer is active, will it prevent the system from full suspend?
+>
+> No, it won't.
+>
+> > The another thing is during system suspend, how the user space code know about suspend?
+>
+> It doesn't, unless it's notified by the user space process initiating suspend.
+>
+> > One way is that device driver gets the suspend and it notifies the user space.
+>
+> That doesn't work, because user space is frozen when drivers' suspend routines
+> are being called. It might work if the driver in question registered a power
+> management notifier and sent a notification to user space from there.
+>
+> > But is there way that during system goes into full suspend, is any user space component that will
+> > give notifications to applications that has registered for system suspend transition?
+>
+> That depends on the configuration of user space. pm-utils can do that for one
+> example.
+>
+> Thanks,
+> Rafael 		 	   		  
