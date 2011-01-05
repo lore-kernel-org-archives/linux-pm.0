@@ -1,13 +1,16 @@
-From: jean.pihet@newoldbits.com
-Subject: [PATCH 1/2] perf: add calls to suspend trace point
-Date: Wed,  5 Jan 2011 19:49:01 +0100
-Message-ID: <1294253342-29056-2-git-send-email-j-pihet__44843.1260571398$1294253475$gmane$org@ti.com>
-References: <1294253342-29056-1-git-send-email-j-pihet@ti.com>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: suspend hangs at platform phase [was: mmotm
+ 2010-12-23-16-58 uploaded]
+Date: Wed, 05 Jan 2011 22:36:04 +0100
+Message-ID: <4D24E444.6080308__16614.4438706853$1294263522$gmane$org@gmail.com>
+References: <201012240132.oBO1W8Ub022207@imap1.linux-foundation.org>
+	<4D232352.2030809@gmail.com> <4D234F8E.7080102@gmail.com>
+	<201101042357.08600.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1294253342-29056-1-git-send-email-j-pihet@ti.com>
+In-Reply-To: <201101042357.08600.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,49 +20,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: mingo@elte.hu, trenn@suse.de, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org
-Cc: linux-perf-users@vger.kernel.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Brown, Len" <len.brown@intel.com>, mm-commits@vger.kernel.org, steiner@sgi.com, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, akpm@linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Pihet <j-pihet@ti.com>
+On 01/04/2011 11:57 PM, Rafael J. Wysocki wrote:
+> On Tuesday, January 04, 2011, Jiri Slaby wrote:
+>> On 01/04/2011 02:40 PM, Jiri Slaby wrote:
+>>> On 12/24/2010 01:58 AM, akpm@linux-foundation.org wrote:
+>>>> The mm-of-the-moment snapshot 2010-12-23-16-58 has been uploaded to
+>>>
+>>> Hi, this kernel regresses with respect to suspend to ram in comparison
+>>> with mmotm 2010-12-16-14-56.
+>>>
+>>> This is OK:
+>>> echo devices > /sys/power/pm_test
+>>> pm-suspend
+>>> This hangs at suspend phase:
+>>> echo platform > /sys/power/pm_test
+>>> pm-suspend
+> 
+> Hmm.  So it looks like _PTS hangs?
 
-Uses the machine_suspend trace point, called from the
-generic kernel suspend_devices_and_enter function.
+No _PST here :).
 
-Signed-off-by: Jean Pihet <j-pihet@ti.com>
-CC: Thomas Renninger <trenn@suse.de>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/suspend.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+>>> Note that this kernel is based on next-20101221. Should I try newer (and
+>>> clean) -next?
+>>
+>> Ok, bisected down to:
+>> 16dc39c98a6ca56a27f22f7ac6731d8223237a2e is first bad commit
+>> commit 16dc39c98a6ca56a27f22f7ac6731d8223237a2e
+...
+>> Revert of that patch fixes the problem.
+> 
+> Can you send a dmesg output and acpidump output from the failing system, please?
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index ecf7705..031d5e3 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -22,6 +22,7 @@
- #include <linux/mm.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
-+#include <trace/events/power.h>
- 
- #include "power.h"
- 
-@@ -201,6 +202,7 @@ int suspend_devices_and_enter(suspend_state_t state)
- 	if (!suspend_ops)
- 		return -ENOSYS;
- 
-+	trace_machine_suspend(state);
- 	if (suspend_ops->begin) {
- 		error = suspend_ops->begin(state);
- 		if (error)
-@@ -229,6 +231,7 @@ int suspend_devices_and_enter(suspend_state_t state)
-  Close:
- 	if (suspend_ops->end)
- 		suspend_ops->end();
-+	trace_machine_suspend(PWR_EVENT_EXIT);
- 	return error;
- 
-  Recover_platform:
+Here they are:
+http://www.fi.muni.cz/~xslaby/sklad/panics/dmesg-no-susp.txt
+http://www.fi.muni.cz/~xslaby/sklad/adump.txt
+
+They are captured from the mmotm minus 16dc39c98a6ca56 if that's OK?
+Ignore the BUG there, it's caused by qemu and fixed in later -next.
+
+regards,
 -- 
-1.7.2.3
+js
