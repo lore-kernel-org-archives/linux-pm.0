@@ -1,9 +1,10 @@
-From: satish kumar <gsatish10@gmail.com>
-Subject: cpufreq utils for ARM machine
-Date: Wed, 5 Jan 2011 16:54:07 +0530
-Message-ID: <AANLkTikYbmvytNVE00fB_ZSW7K_3gW5fVFaepyMZz8si@mail.gmail.com>
+From: jean.pihet@newoldbits.com
+Subject: [PATCH 0/2] tools, perf: new power trace API
+Date: Wed,  5 Jan 2011 19:49:00 +0100
+Message-ID: <1294253342-29056-1-git-send-email-j-pihet__49512.6367117793$1294253447$gmane$org@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4999597842086846183=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -12,61 +13,31 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: mingo@elte.hu, trenn@suse.de, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org
+Cc: linux-perf-users@vger.kernel.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============4999597842086846183==
-Content-Type: multipart/alternative; boundary=90e6ba4fc4b697b29c0499179f8c
+From: Jean Pihet <j-pihet@ti.com>
 
---90e6ba4fc4b697b29c0499179f8c
-Content-Type: text/plain; charset=ISO-8859-1
+Provides:
+. calls to machine_suspend trace point,
+. API Documentation
 
-Hi all
+The OMAP specific changes will be submitted separately on
+the linux-omap ML because:
+- the OMAP changes need to be rebased on the latest linux-omap 2.6.37 tree,
+- more feedback is needed from the linux-omap folks.
 
-I want to test Cpu freq utils on ARM board
-I cross cmipled it  fro AR board an dI ma getting the error as
+Jean Pihet (2):
+  perf: add calls to suspend trace point
+  tools, perf: Documentation for the power events API
 
-"inconstraint asm " in Line no:8 cpuid.h
-can I know error an dhow we can rectify ?
+ Documentation/trace/events-power.txt |   90 ++++++++++++++++++++++++++++++++++
+ kernel/power/suspend.c               |    3 +
+ 2 files changed, 93 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/trace/events-power.txt
 
-
-I am getting the info. for cpufreq-info on linux Pc.
-
-if i want to copy libspufreq.so libspufreq.so.0 libspufreq.so.0.0.0 to
-Target board
-to which location i have to copy .so files.   to usr/bin or to any other
-directory.
-
-
-Thank you
-Satish.G
-
---90e6ba4fc4b697b29c0499179f8c
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi all<div><br></div><div>I want to test Cpu freq utils on ARM board=A0</di=
-v><div>I cross cmipled it =A0fro AR board an dI ma getting the error as=A0<=
-/div><div><br></div><div>&quot;inconstraint asm &quot; in Line no:8 cpuid.h=
-=A0</div>
-<div>can I know error an dhow we can rectify ?</div><div><br></div><div><br=
-></div><div>I am getting the info. for cpufreq-info on linux Pc.</div><div>=
-<br></div><div>if i want to copy libspufreq.so=A0libspufreq.so.0=A0libspufr=
-eq.so.0.0.0 to Target board=A0</div>
-<div>to which location i have to copy .so files. =A0 to usr/bin or to any o=
-ther directory.</div><div><br></div><div><br></div><div>Thank you</div><div=
->Satish.G</div><div><br></div><div>=A0</div><div><br></div>
-
---90e6ba4fc4b697b29c0499179f8c--
-
---===============4999597842086846183==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4999597842086846183==--
+-- 
+1.7.2.3
