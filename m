@@ -1,16 +1,15 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 1/3] perf: add calls to suspend trace point
-Date: Wed, 5 Jan 2011 11:09:35 +0100
-Message-ID: <AANLkTimRvZs2QBZ4y+AEO7CWUudwBSM6-K0ZQxFTF+Fm__34433.0224361785$1294222268$gmane$org@mail.gmail.com>
+Date: Wed, 5 Jan 2011 11:15:55 +0100
+Message-ID: <201101051115.55528.rjw__37737.5671560459$1294222785$gmane$org@sisk.pl>
 References: <1294136263-24020-1-git-send-email-j-pihet@ti.com>
-	<20110104112919.GB9879@atrey.karlin.mff.cuni.cz>
-	<AANLkTim_ekCNw6xhC_MGY7=gfXUCfinXkLeXtttpHaGc@mail.gmail.com>
 	<201101050001.23979.rjw@sisk.pl>
+	<AANLkTimRvZs2QBZ4y+AEO7CWUudwBSM6-K0ZQxFTF+Fm@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101050001.23979.rjw@sisk.pl>
+In-Reply-To: <AANLkTimRvZs2QBZ4y+AEO7CWUudwBSM6-K0ZQxFTF+Fm@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,94 +19,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jean Pihet <jean.pihet@newoldbits.com>
 Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, linux-perf-users@vger.kernel.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 5, 2011 at 12:01 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, January 04, 2011, Jean Pihet wrote:
->> Hi,
->>
->> On Tue, Jan 4, 2011 at 12:29 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> > Hi!
->> >
->> >> Uses the machine_suspend trace point, called from the
->> >> generic kernel suspend_enter function.
->> >>
->> >> Signed-off-by: Jean Pihet <j-pihet@ti.com>
->> >> CC: Thomas Renninger <trenn@suse.de>
->> >> ---
->> >> =A0kernel/power/suspend.c | =A0 =A03 +++
->> >> =A01 files changed, 3 insertions(+), 0 deletions(-)
->> >>
->> >> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
->> >> index ecf7705..0650596 100644
->> >> --- a/kernel/power/suspend.c
->> >> +++ b/kernel/power/suspend.c
->> >> @@ -22,6 +22,7 @@
->> >> =A0#include <linux/mm.h>
->> >> =A0#include <linux/slab.h>
->> >> =A0#include <linux/suspend.h>
->> >> +#include <trace/events/power.h>
->> >>
->> >> =A0#include "power.h"
->> >>
->> >> @@ -164,7 +165,9 @@ static int suspend_enter(suspend_state_t state)
->> >> =A0 =A0 =A0 error =3D sysdev_suspend(PMSG_SUSPEND);
->> >> =A0 =A0 =A0 if (!error) {
->> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (!suspend_test(TEST_CORE) && pm_check_=
-wakeup_events()) {
->> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 trace_machine_suspend(state=
-);
->> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 error =3D suspend_ops->en=
-ter(state);
->> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 trace_machine_suspend(PWR_E=
-VENT_EXIT);
->> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 events_check_enabled =3D =
-false;
->> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
->> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 sysdev_resume();
->> >
->> > Ok... why this place?
->> This trace has been placed here because it traces the machine low
->> level mode enter.
->>
->> > I mean, perhaps suspend time should include
->> > device suspend?
->> That makes sense. We have a few options here:
->> 1) keep the traces as proposed to trace the low level machine code only,
->> 2) move the traces to the entry and exit of suspend_enter so that it
->> includes the prepare and late_prepare (+ the associated wake-up)
->> callbacks as well,
->> 3) move the traces to suspend_devices_and_enter so that it includes 2)
->> and the handling of the console and the devices,
->> 4) move the traces to enter_state do that it includes 3), the call to
->> sys_sync and the user space freeze.
->>
->> Note that the the SNAPSHOT_2RAM ioctl code also calls
->> suspend_devices_and_enter, so if only 4) is used no trace will be
->> generated in that case.
->>
->> I am in favor of 3) of 4).
->> What do you think?
->
-> Why don't we keep the tracepoints as proposed _and_ add two additional
-> tracepoints around device suspend-resume?
-I like the idea but that requires to extend the current API with
-additional suspend tracepoints or device state change tracepoints.
-That can be done once the current API is firmly in place.
-Today the only trace API for suspend is machine_suspend(unsigned int
-state), so I think the best option is 3) here above.
+On Wednesday, January 05, 2011, Jean Pihet wrote:
+> On Wed, Jan 5, 2011 at 12:01 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Tuesday, January 04, 2011, Jean Pihet wrote:
+> >> Hi,
+> >>
+> >> On Tue, Jan 4, 2011 at 12:29 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> >> > Hi!
+> >> >
+> >> >> Uses the machine_suspend trace point, called from the
+> >> >> generic kernel suspend_enter function.
+> >> >>
+> >> >> Signed-off-by: Jean Pihet <j-pihet@ti.com>
+> >> >> CC: Thomas Renninger <trenn@suse.de>
+> >> >> ---
+> >> >>  kernel/power/suspend.c |    3 +++
+> >> >>  1 files changed, 3 insertions(+), 0 deletions(-)
+> >> >>
+> >> >> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> >> >> index ecf7705..0650596 100644
+> >> >> --- a/kernel/power/suspend.c
+> >> >> +++ b/kernel/power/suspend.c
+> >> >> @@ -22,6 +22,7 @@
+> >> >>  #include <linux/mm.h>
+> >> >>  #include <linux/slab.h>
+> >> >>  #include <linux/suspend.h>
+> >> >> +#include <trace/events/power.h>
+> >> >>
+> >> >>  #include "power.h"
+> >> >>
+> >> >> @@ -164,7 +165,9 @@ static int suspend_enter(suspend_state_t state)
+> >> >>       error = sysdev_suspend(PMSG_SUSPEND);
+> >> >>       if (!error) {
+> >> >>               if (!suspend_test(TEST_CORE) && pm_check_wakeup_events()) {
+> >> >> +                     trace_machine_suspend(state);
+> >> >>                       error = suspend_ops->enter(state);
+> >> >> +                     trace_machine_suspend(PWR_EVENT_EXIT);
+> >> >>                       events_check_enabled = false;
+> >> >>               }
+> >> >>               sysdev_resume();
+> >> >
+> >> > Ok... why this place?
+> >> This trace has been placed here because it traces the machine low
+> >> level mode enter.
+> >>
+> >> > I mean, perhaps suspend time should include
+> >> > device suspend?
+> >> That makes sense. We have a few options here:
+> >> 1) keep the traces as proposed to trace the low level machine code only,
+> >> 2) move the traces to the entry and exit of suspend_enter so that it
+> >> includes the prepare and late_prepare (+ the associated wake-up)
+> >> callbacks as well,
+> >> 3) move the traces to suspend_devices_and_enter so that it includes 2)
+> >> and the handling of the console and the devices,
+> >> 4) move the traces to enter_state do that it includes 3), the call to
+> >> sys_sync and the user space freeze.
+> >>
+> >> Note that the the SNAPSHOT_2RAM ioctl code also calls
+> >> suspend_devices_and_enter, so if only 4) is used no trace will be
+> >> generated in that case.
+> >>
+> >> I am in favor of 3) of 4).
+> >> What do you think?
+> >
+> > Why don't we keep the tracepoints as proposed _and_ add two additional
+> > tracepoints around device suspend-resume?
+> I like the idea but that requires to extend the current API with
+> additional suspend tracepoints or device state change tracepoints.
+> That can be done once the current API is firmly in place.
+> Today the only trace API for suspend is machine_suspend(unsigned int
+> state), so I think the best option is 3) here above.
+> 
+> Unless there is an objection I am pushing 3) asap.
 
-Unless there is an objection I am pushing 3) asap.
+Fine by me.
 
-Thanks!
-Jean
-
->
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->
+Thanks,
+Rafael
