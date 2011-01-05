@@ -1,14 +1,14 @@
-From: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
-Subject: Re: [PATCH] i2c: Factor out runtime suspend checks from
-	PM operations
-Date: Tue, 04 Jan 2011 15:07:37 -0800
-Message-ID: <4D23A839.6030205__31122.3894627348$1294270523$gmane$org@codeaurora.org>
-References: <1293712813-4090-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Greg KH <gregkh@suse.de>
+Subject: [02/49] x86, hotplug: Use mwait to offline a processor,
+	fix the legacy case
+Date: Wed, 05 Jan 2011 15:00:20 -0800
+Message-ID: <20110105230323.519068211__23313.169895164$1294271215$gmane$org@clark.site>
+References: <20110105234415.GA22369@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1293712813-4090-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20110105234415.GA22369@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +18,166 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, "H. Peter Anvin" <hpa@linux.intel.com>, torvalds@linux-foundation.org, stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-Mark Brown wrote:
-> When devices use dev_pm_ops the I2C API is implementing standard functionality
-> for integration with runtime PM and for checking for the presence of a per
-> device op. The PM core provides pm_generic_ functions implementing this
-> behaviour - use them to reduce coupling with future PM updates.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/i2c/i2c-core.c |   68 ++++++++++++++---------------------------------
->  1 files changed, 20 insertions(+), 48 deletions(-)
-> 
-> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> index 6b4cc56..6793c51 100644
-> --- a/drivers/i2c/i2c-core.c
-> +++ b/drivers/i2c/i2c-core.c
-> @@ -196,88 +196,60 @@ static int i2c_device_pm_suspend(struct device *dev)
->  {
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  
-> -	if (pm) {
-> -		if (pm_runtime_suspended(dev))
-> -			return 0;
-> -		else
-> -			return pm->suspend ? pm->suspend(dev) : 0;
-> -	}
-> -
-> -	return i2c_legacy_suspend(dev, PMSG_SUSPEND);
-> +	if (pm)
-> +		return pm_generic_suspend(dev);
+2.6.32-longterm review patch.  If anyone has any objections, please let us know.
+
+------------------
 
 
-pm_generic_suspend() and others needs to be externed in linux/pm_runtime.h?
+From: H. Peter Anvin <hpa@linux.intel.com>
 
---
-Sent by an employee of the Qualcomm Innovation Center, Inc. The Qualcomm 
-Innovation Center, Inc. is a member of the Code Aurora Forum.
+upstream ea53069231f9317062910d6e772cca4ce93de8c8
+x86, hotplug: Use mwait to offline a processor, fix the legacy case
+
+Here included also some small follow-on patches to the same code:
+
+upstream a68e5c94f7d3dd64fef34dd5d97e365cae4bb42a
+x86, hotplug: Move WBINVD back outside the play_dead loop
+
+upstream ce5f68246bf2385d6174856708d0b746dc378f20
+x86, hotplug: In the MWAIT case of play_dead, CLFLUSH the cache line
+
+https://bugzilla.kernel.org/show_bug.cgi?id=5471
+
+Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/include/asm/processor.h |   23 ----------
+ arch/x86/kernel/smpboot.c        |   85 ++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 84 insertions(+), 24 deletions(-)
+
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -765,29 +765,6 @@ extern unsigned long		boot_option_idle_o
+ extern unsigned long		idle_halt;
+ extern unsigned long		idle_nomwait;
+ 
+-/*
+- * on systems with caches, caches must be flashed as the absolute
+- * last instruction before going into a suspended halt.  Otherwise,
+- * dirty data can linger in the cache and become stale on resume,
+- * leading to strange errors.
+- *
+- * perform a variety of operations to guarantee that the compiler
+- * will not reorder instructions.  wbinvd itself is serializing
+- * so the processor will not reorder.
+- *
+- * Systems without cache can just go into halt.
+- */
+-static inline void wbinvd_halt(void)
+-{
+-	mb();
+-	/* check for clflush to determine if wbinvd is legal */
+-	if (cpu_has_clflush)
+-		asm volatile("cli; wbinvd; 1: hlt; jmp 1b" : : : "memory");
+-	else
+-		while (1)
+-			halt();
+-}
+-
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
+ 
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1338,11 +1338,94 @@ void play_dead_common(void)
+ 	local_irq_disable();
+ }
+ 
++#define MWAIT_SUBSTATE_MASK		0xf
++#define MWAIT_SUBSTATE_SIZE		4
++
++#define CPUID_MWAIT_LEAF		5
++#define CPUID5_ECX_EXTENSIONS_SUPPORTED 0x1
++
++/*
++ * We need to flush the caches before going to sleep, lest we have
++ * dirty data in our caches when we come back up.
++ */
++static inline void mwait_play_dead(void)
++{
++	unsigned int eax, ebx, ecx, edx;
++	unsigned int highest_cstate = 0;
++	unsigned int highest_subcstate = 0;
++	int i;
++	void *mwait_ptr;
++
++	if (!cpu_has(&current_cpu_data, X86_FEATURE_MWAIT))
++		return;
++	if (!cpu_has(&current_cpu_data, X86_FEATURE_CLFLSH))
++		return;
++	if (current_cpu_data.cpuid_level < CPUID_MWAIT_LEAF)
++		return;
++
++	eax = CPUID_MWAIT_LEAF;
++	ecx = 0;
++	native_cpuid(&eax, &ebx, &ecx, &edx);
++
++	/*
++	 * eax will be 0 if EDX enumeration is not valid.
++	 * Initialized below to cstate, sub_cstate value when EDX is valid.
++	 */
++	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED)) {
++		eax = 0;
++	} else {
++		edx >>= MWAIT_SUBSTATE_SIZE;
++		for (i = 0; i < 7 && edx; i++, edx >>= MWAIT_SUBSTATE_SIZE) {
++			if (edx & MWAIT_SUBSTATE_MASK) {
++				highest_cstate = i;
++				highest_subcstate = edx & MWAIT_SUBSTATE_MASK;
++			}
++		}
++		eax = (highest_cstate << MWAIT_SUBSTATE_SIZE) |
++			(highest_subcstate - 1);
++	}
++
++	/*
++	 * This should be a memory location in a cache line which is
++	 * unlikely to be touched by other processors.  The actual
++	 * content is immaterial as it is not actually modified in any way.
++	 */
++	mwait_ptr = &current_thread_info()->flags;
++
++	wbinvd();
++
++	while (1) {
++		/*
++		 * The CLFLUSH is a workaround for erratum AAI65 for
++		 * the Xeon 7400 series.  It's not clear it is actually
++		 * needed, but it should be harmless in either case.
++		 * The WBINVD is insufficient due to the spurious-wakeup
++		 * case where we return around the loop.
++		 */
++		clflush(mwait_ptr);
++		__monitor(mwait_ptr, 0, 0);
++		mb();
++		__mwait(eax, 0);
++	}
++}
++
++static inline void hlt_play_dead(void)
++{
++	if (current_cpu_data.x86 >= 4)
++		wbinvd();
++
++	while (1) {
++		native_halt();
++	}
++}
++
+ void native_play_dead(void)
+ {
+ 	play_dead_common();
+ 	tboot_shutdown(TB_SHUTDOWN_WFS);
+-	wbinvd_halt();
++
++	mwait_play_dead();	/* Only returns on failure */
++	hlt_play_dead();
+ }
+ 
+ #else /* ... !CONFIG_HOTPLUG_CPU */
