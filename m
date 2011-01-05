@@ -1,16 +1,14 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: suspend hangs at platform phase [was: mmotm
- 2010-12-23-16-58 uploaded]
-Date: Wed, 05 Jan 2011 23:46:01 +0100
-Message-ID: <4D24F4A9.8010301__15631.0598053553$1294267724$gmane$org@gmail.com>
-References: <201012240132.oBO1W8Ub022207@imap1.linux-foundation.org>
-	<201101042357.08600.rjw@sisk.pl> <4D24E444.6080308@gmail.com>
-	<201101052339.46453.rjw@sisk.pl>
+From: Greg KH <gregkh@suse.de>
+Subject: [02/49] x86, hotplug: Use mwait to offline a processor,
+	fix the legacy case
+Date: Wed, 05 Jan 2011 15:00:20 -0800
+Message-ID: <20110105230323.519068211__38534.042312722$1294268987$gmane$org@clark.site>
+References: <20110105230438.GA26241@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101052339.46453.rjw@sisk.pl>
+In-Reply-To: <20110105230438.GA26241@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,42 +18,166 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Brown, Len" <len.brown@intel.com>, mm-commits@vger.kernel.org, steiner@sgi.com, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, akpm@linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, "H. Peter Anvin" <hpa@linux.intel.com>, torvalds@linux-foundation.org, stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-On 01/05/2011 11:39 PM, Rafael J. Wysocki wrote:
-> On Wednesday, January 05, 2011, Jiri Slaby wrote:
->> On 01/04/2011 11:57 PM, Rafael J. Wysocki wrote:
->>> On Tuesday, January 04, 2011, Jiri Slaby wrote:
->>>> On 01/04/2011 02:40 PM, Jiri Slaby wrote:
->>>>> On 12/24/2010 01:58 AM, akpm@linux-foundation.org wrote:
->>>>>> The mm-of-the-moment snapshot 2010-12-23-16-58 has been uploaded to
->>>>>
->>>>> Hi, this kernel regresses with respect to suspend to ram in comparison
->>>>> with mmotm 2010-12-16-14-56.
->>>>>
->>>>> This is OK:
->>>>> echo devices > /sys/power/pm_test
->>>>> pm-suspend
->>>>> This hangs at suspend phase:
->>>>> echo platform > /sys/power/pm_test
->>>>> pm-suspend
->>>
->>> Hmm.  So it looks like _PTS hangs?
->>
->> No _PST here :).
-> 
-> I really meant _PTS and yes, there is one and it does quite a lot of
-> interesting stuff.
+2.6.32-longterm review patch.  If anyone has any objections, please let us know.
 
-Yeah, I grepped for _PTS, but in a wrong file. My bad.
+------------------
 
-> Are you able to collect serial console (or equivalent) logs from that machine?
 
-Unfortunately I don't have a second machine with serial port. What
-exactly you want to dig out of the logs? Will netconsole work at that phase?
+From: H. Peter Anvin <hpa@linux.intel.com>
 
-regards,
--- 
-js
+upstream ea53069231f9317062910d6e772cca4ce93de8c8
+x86, hotplug: Use mwait to offline a processor, fix the legacy case
+
+Here included also some small follow-on patches to the same code:
+
+upstream a68e5c94f7d3dd64fef34dd5d97e365cae4bb42a
+x86, hotplug: Move WBINVD back outside the play_dead loop
+
+upstream ce5f68246bf2385d6174856708d0b746dc378f20
+x86, hotplug: In the MWAIT case of play_dead, CLFLUSH the cache line
+
+https://bugzilla.kernel.org/show_bug.cgi?id=5471
+
+Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/include/asm/processor.h |   23 ----------
+ arch/x86/kernel/smpboot.c        |   85 ++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 84 insertions(+), 24 deletions(-)
+
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -765,29 +765,6 @@ extern unsigned long		boot_option_idle_o
+ extern unsigned long		idle_halt;
+ extern unsigned long		idle_nomwait;
+ 
+-/*
+- * on systems with caches, caches must be flashed as the absolute
+- * last instruction before going into a suspended halt.  Otherwise,
+- * dirty data can linger in the cache and become stale on resume,
+- * leading to strange errors.
+- *
+- * perform a variety of operations to guarantee that the compiler
+- * will not reorder instructions.  wbinvd itself is serializing
+- * so the processor will not reorder.
+- *
+- * Systems without cache can just go into halt.
+- */
+-static inline void wbinvd_halt(void)
+-{
+-	mb();
+-	/* check for clflush to determine if wbinvd is legal */
+-	if (cpu_has_clflush)
+-		asm volatile("cli; wbinvd; 1: hlt; jmp 1b" : : : "memory");
+-	else
+-		while (1)
+-			halt();
+-}
+-
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
+ 
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1338,11 +1338,94 @@ void play_dead_common(void)
+ 	local_irq_disable();
+ }
+ 
++#define MWAIT_SUBSTATE_MASK		0xf
++#define MWAIT_SUBSTATE_SIZE		4
++
++#define CPUID_MWAIT_LEAF		5
++#define CPUID5_ECX_EXTENSIONS_SUPPORTED 0x1
++
++/*
++ * We need to flush the caches before going to sleep, lest we have
++ * dirty data in our caches when we come back up.
++ */
++static inline void mwait_play_dead(void)
++{
++	unsigned int eax, ebx, ecx, edx;
++	unsigned int highest_cstate = 0;
++	unsigned int highest_subcstate = 0;
++	int i;
++	void *mwait_ptr;
++
++	if (!cpu_has(&current_cpu_data, X86_FEATURE_MWAIT))
++		return;
++	if (!cpu_has(&current_cpu_data, X86_FEATURE_CLFLSH))
++		return;
++	if (current_cpu_data.cpuid_level < CPUID_MWAIT_LEAF)
++		return;
++
++	eax = CPUID_MWAIT_LEAF;
++	ecx = 0;
++	native_cpuid(&eax, &ebx, &ecx, &edx);
++
++	/*
++	 * eax will be 0 if EDX enumeration is not valid.
++	 * Initialized below to cstate, sub_cstate value when EDX is valid.
++	 */
++	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED)) {
++		eax = 0;
++	} else {
++		edx >>= MWAIT_SUBSTATE_SIZE;
++		for (i = 0; i < 7 && edx; i++, edx >>= MWAIT_SUBSTATE_SIZE) {
++			if (edx & MWAIT_SUBSTATE_MASK) {
++				highest_cstate = i;
++				highest_subcstate = edx & MWAIT_SUBSTATE_MASK;
++			}
++		}
++		eax = (highest_cstate << MWAIT_SUBSTATE_SIZE) |
++			(highest_subcstate - 1);
++	}
++
++	/*
++	 * This should be a memory location in a cache line which is
++	 * unlikely to be touched by other processors.  The actual
++	 * content is immaterial as it is not actually modified in any way.
++	 */
++	mwait_ptr = &current_thread_info()->flags;
++
++	wbinvd();
++
++	while (1) {
++		/*
++		 * The CLFLUSH is a workaround for erratum AAI65 for
++		 * the Xeon 7400 series.  It's not clear it is actually
++		 * needed, but it should be harmless in either case.
++		 * The WBINVD is insufficient due to the spurious-wakeup
++		 * case where we return around the loop.
++		 */
++		clflush(mwait_ptr);
++		__monitor(mwait_ptr, 0, 0);
++		mb();
++		__mwait(eax, 0);
++	}
++}
++
++static inline void hlt_play_dead(void)
++{
++	if (current_cpu_data.x86 >= 4)
++		wbinvd();
++
++	while (1) {
++		native_halt();
++	}
++}
++
+ void native_play_dead(void)
+ {
+ 	play_dead_common();
+ 	tboot_shutdown(TB_SHUTDOWN_WFS);
+-	wbinvd_halt();
++
++	mwait_play_dead();	/* Only returns on failure */
++	hlt_play_dead();
+ }
+ 
+ #else /* ... !CONFIG_HOTPLUG_CPU */
