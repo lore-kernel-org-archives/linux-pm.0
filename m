@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend hangs at platform phase [was: mmotm
-	2010-12-23-16-58 uploaded]
-Date: Thu, 6 Jan 2011 16:45:28 +0100
-Message-ID: <201101061645.28968.rjw__24123.037493746$1294329731$gmane$org@sisk.pl>
-References: <201012240132.oBO1W8Ub022207@imap1.linux-foundation.org>
-	<201101060028.43342.rjw@sisk.pl> <4D258A55.2040003@gmail.com>
+Subject: Re: [PATCH 1/1] PM: fix oops in suspend/hibernate code
+Date: Thu, 6 Jan 2011 16:57:39 +0100
+Message-ID: <201101061657.39723.rjw__37467.0633617372$1294330385$gmane$org@sisk.pl>
+References: <201101060028.43342.rjw@sisk.pl>
+	<1294305504-5787-1-git-send-email-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D258A55.2040003@gmail.com>
+In-Reply-To: <1294305504-5787-1-git-send-email-jslaby@suse.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +18,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "Brown, Len" <len.brown@intel.com>, mm-commits@vger.kernel.org, steiner@sgi.com, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, akpm@linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, akpm@linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Thursday, January 06, 2011, Jiri Slaby wrote:
-> On 01/06/2011 12:28 AM, Rafael J. Wysocki wrote:
-> > Two more questions:
-> > (1) Does the failing machine power off correctly with the kernel that fails to
-> >     suspend?
-> 
-> Poweroff is OK.
-> 
-> > (2) Is the failing suspend behavior reproducible if you run
-> >     "echo disk > /sys/power/state" instead of "pm-suspend" in the platform test?
-> 
-> Thanks for the hint no_console_suspend with hibernate shows somwthing
-> (opposing to suspend). I've sent a patch for the oops which occured due
-> to ioremap change.
+> When ioremap fails (which might happen for some reason),
 
-Can you send a link to the patch, please?
+If it happens, something is seriously wrong (see below).
 
-> The ioremap change still needs to be reverted, obviously.
+BTW, to keep things in context, please post fixes like this in the same thread
+in which you reported the problem.  At lease please retain the CC list from
+there.
 
-Does it need to be reverted with your patch applied too?
+> we nicely oops in suspend_nvs_save due to NULL dereference by memcpy in
+> there.  Fail gracefully instead.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> ---
+>  drivers/acpi/sleep.c    |    5 ++---
+>  include/linux/suspend.h |    4 ++--
+>  kernel/power/nvs.c      |    8 +++++++-
+>  3 files changed, 11 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> index c423231..f94c9a9 100644
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -124,8 +124,7 @@ static int acpi_pm_freeze(void)
+>  static int acpi_pm_pre_suspend(void)
+>  {
+>  	acpi_pm_freeze();
+> -	suspend_nvs_save();
+> -	return 0;
+> +	return suspend_nvs_save();
+>  }
+>  
+>  /**
+> @@ -151,7 +150,7 @@ static int acpi_pm_prepare(void)
+>  {
+>  	int error = __acpi_pm_prepare();
+>  	if (!error)
+> -		acpi_pm_pre_suspend();
+> +		error = acpi_pm_pre_suspend();
+>  
+>  	return error;
+>  }
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index c1f4998..3ac2551 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -262,7 +262,7 @@ static inline bool system_entering_hibernation(void) { return false; }
+>  extern int suspend_nvs_register(unsigned long start, unsigned long size);
+>  extern int suspend_nvs_alloc(void);
+>  extern void suspend_nvs_free(void);
+> -extern void suspend_nvs_save(void);
+> +extern int suspend_nvs_save(void);
+>  extern void suspend_nvs_restore(void);
+>  #else /* CONFIG_SUSPEND_NVS */
+>  static inline int suspend_nvs_register(unsigned long a, unsigned long b)
+> @@ -271,7 +271,7 @@ static inline int suspend_nvs_register(unsigned long a, unsigned long b)
+>  }
+>  static inline int suspend_nvs_alloc(void) { return 0; }
+>  static inline void suspend_nvs_free(void) {}
+> -static inline void suspend_nvs_save(void) {}
+> +static inline int suspend_nvs_save(void) {}
+>  static inline void suspend_nvs_restore(void) {}
+>  #endif /* CONFIG_SUSPEND_NVS */
+>  
+> diff --git a/kernel/power/nvs.c b/kernel/power/nvs.c
+> index 1836db6..57c6fab 100644
+> --- a/kernel/power/nvs.c
+> +++ b/kernel/power/nvs.c
+> @@ -105,7 +105,7 @@ int suspend_nvs_alloc(void)
+>  /**
+>   *	suspend_nvs_save - save NVS memory regions
+>   */
+> -void suspend_nvs_save(void)
+> +int suspend_nvs_save(void)
+>  {
+>  	struct nvs_page *entry;
+>  
+> @@ -114,8 +114,14 @@ void suspend_nvs_save(void)
+>  	list_for_each_entry(entry, &nvs_list, node)
+>  		if (entry->data) {
+>  			entry->kaddr = ioremap(entry->phys_start, entry->size);
+
+I wonder what happens if you simply change the ioremap() here to
+ioremap_nocache() without any other modifications?
+
+It _really_ shouldn't fail here, because the NVS pages are known to be present.
+
+> +			if (!entry->kaddr) {
+> +				suspend_nvs_free();
+> +				return -ENOMEM;
+> +			}
+>  			memcpy(entry->data, entry->kaddr, entry->size);
+>  		}
+> +
+> +	return 0;
+>  }
+>  
+>  /**
+> 
 
 Rafael
