@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 11/11] ACPI / Battery: Update information on info
-	notification and resume
-Date: Thu, 6 Jan 2011 23:42:27 +0100
-Message-ID: <201101062342.28168.rjw__4764.27586186237$1294354625$gmane$org@sisk.pl>
+Subject: [PATCH 8/11] ACPI / PM: Check status of power resources
+	under mutexes
+Date: Thu, 6 Jan 2011 23:38:57 +0100
+Message-ID: <201101062338.57967.rjw__43228.4660092138$1294354809$gmane$org@sisk.pl>
 References: <201101062331.17079.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,57 +24,74 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-A notification event 0x81 from an ACPI battery device requires us to
-re-read the battery information structure.  Follow this requirement
-and remove and re-create the battery's attibutes in sysfs so that
-they reflect the reporting units used by the battery at the moment
-(those units may actually change sometimes at run time, which happens
-on some Thinkpads).
-
-The approach used in this patch was suggested by Matthew Garrett.
+It certainly is not a good idea to execute _ON or _OFF and _STA
+for the same power resource at the same time which may happen in
+some circumstances in theory.  To prevent that from happening,
+read the power state of each power resource under its mutex, as
+that will prevent the sate from being changed at the same time.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Matthew Garrett <mjg@redhat.com>
 ---
- drivers/acpi/battery.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/acpi/power.c |   33 ++++++++++++++++++++-------------
+ 1 file changed, 20 insertions(+), 13 deletions(-)
 
-Index: linux-2.6/drivers/acpi/battery.c
+Index: linux-2.6/drivers/acpi/power.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/battery.c
-+++ linux-2.6/drivers/acpi/battery.c
-@@ -631,6 +631,17 @@ static int acpi_battery_update(struct ac
- 	return result;
+--- linux-2.6.orig/drivers/acpi/power.c
++++ linux-2.6/drivers/acpi/power.c
+@@ -145,9 +145,8 @@ static int acpi_power_get_state(acpi_han
+ 
+ static int acpi_power_get_list_state(struct acpi_handle_list *list, int *state)
+ {
+-	int result = 0, state1;
+-	u32 i = 0;
+-
++	int cur_state;
++	int i = 0;
+ 
+ 	if (!list || !state)
+ 		return -EINVAL;
+@@ -155,25 +154,33 @@ static int acpi_power_get_list_state(str
+ 	/* The state of the list is 'on' IFF all resources are 'on'. */
+ 
+ 	for (i = 0; i < list->count; i++) {
+-		/*
+-		 * The state of the power resource can be obtained by
+-		 * using the ACPI handle. In such case it is unnecessary to
+-		 * get the Power resource first and then get its state again.
+-		 */
+-		result = acpi_power_get_state(list->handles[i], &state1);
++		struct acpi_power_resource *resource;
++		acpi_handle handle = list->handles[i];
++		int result;
++
++		result = acpi_power_get_context(handle, &resource);
+ 		if (result)
+ 			return result;
+ 
+-		*state = state1;
++		mutex_lock(&resource->resource_lock);
+ 
+-		if (*state != ACPI_POWER_RESOURCE_STATE_ON)
++		result = acpi_power_get_state(handle, &cur_state);
++
++		mutex_unlock(&resource->resource_lock);
++
++		if (result)
++			return result;
++
++		if (cur_state != ACPI_POWER_RESOURCE_STATE_ON)
+ 			break;
+ 	}
+ 
+ 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Resource list is %s\n",
+-			  *state ? "on" : "off"));
++			  cur_state ? "on" : "off"));
+ 
+-	return result;
++	*state = cur_state;
++
++	return 0;
  }
  
-+static void acpi_battery_refresh(struct acpi_battery *battery)
-+{
-+	if (!battery->bat.dev)
-+		return;
-+
-+	acpi_battery_get_info(battery);
-+	/* The battery may have changed its reporting units. */
-+	sysfs_remove_battery(battery);
-+	sysfs_add_battery(battery);
-+}
-+
- /* --------------------------------------------------------------------------
-                               FS Interface (/proc)
-    -------------------------------------------------------------------------- */
-@@ -914,6 +925,8 @@ static void acpi_battery_notify(struct a
- 	if (!battery)
- 		return;
- 	old = battery->bat.dev;
-+	if (event == ACPI_BATTERY_NOTIFY_INFO)
-+		acpi_battery_refresh(battery);
- 	acpi_battery_update(battery);
- 	acpi_bus_generate_proc_event(device, event,
- 				     acpi_battery_present(battery));
-@@ -983,6 +996,7 @@ static int acpi_battery_resume(struct ac
- 	if (!device)
- 		return -EINVAL;
- 	battery = acpi_driver_data(device);
-+	acpi_battery_refresh(battery);
- 	battery->update_time = 0;
- 	acpi_battery_update(battery);
- 	return 0;
+ static int __acpi_power_on(struct acpi_power_resource *resource)
