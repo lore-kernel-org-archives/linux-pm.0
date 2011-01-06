@@ -1,14 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH] PM: fix suspend_set_ops() to take const
-	pointer
-Date: Thu, 06 Jan 2011 10:55:37 -0800
-Message-ID: <1294340137.328.6.camel__45884.0031562888$1294340324$gmane$org@vence>
-References: <1294273373-8967-1-git-send-email-khilman@ti.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/1] PM: fix oops in suspend/hibernate code
+Date: Thu, 06 Jan 2011 16:01:12 -0500 (EST)
+Message-ID: <alpine.LFD.2.02.1101061554130.17728__37275.1018302099$1294348021$gmane$org@x980>
+References: <201101060028.43342.rjw@sisk.pl> <201101061657.39723.rjw@sisk.pl>
+	<4D25E943.804@gmail.com> <201101061738.14581.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1294273373-8967-1-git-send-email-khilman@ti.com>
+In-reply-to: <201101061738.14581.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,65 +18,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, akpm@linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2011-01-05 at 16:22 -0800, Kevin Hilman wrote:
-> checkpatch warns that pointers for certain structs should be const,
-> and platform_suspend_ops is one of those structs.  If you follow this
-> suggestion you trade a checkpatch warning for a compiler warning of
-> the form:
-> 
->    warning: passing argument 1 of 'suspend_set_ops' discards qualifiers from pointer target type
-> 
-> Fix suspend_set_ops() to take a const pointer so everyone expects
-> const.
-> 
-> Signed-off-by: Kevin Hilman <khilman@ti.com>
-> ---
-> Applies to v2.6.37, but also applies cleanly to suspend-2.6/linux-next
+> ... My theory is that we have mapped the
+> same area already using ioremap_cache() and now we're trying to map it again
+> using ioremap_nocache(), hence the conflict.  I need to confirm this.
 
-Oops, plese disregard.  This is already fixed in linux-next.
+On my test box.
 
-Kevin
+BIOS-e820: 0000000077626000 - 0000000077632000 (ACPI NVS)
 
->  include/linux/suspend.h |    4 ++--
->  kernel/power/suspend.c  |    2 +-
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 2669751..bb98383 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -122,7 +122,7 @@ struct platform_suspend_ops {
->   * suspend_set_ops - set platform dependent suspend operations
->   * @ops: The new suspend operations to set.
->   */
-> -extern void suspend_set_ops(struct platform_suspend_ops *ops);
-> +extern void suspend_set_ops(const struct platform_suspend_ops *ops);
->  extern int suspend_valid_only_mem(suspend_state_t state);
->  
->  /**
-> @@ -147,7 +147,7 @@ extern int pm_suspend(suspend_state_t state);
->  #else /* !CONFIG_SUSPEND */
->  #define suspend_valid_only_mem	NULL
->  
-> -static inline void suspend_set_ops(struct platform_suspend_ops *ops) {}
-> +static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
->  static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
->  #endif /* !CONFIG_SUSPEND */
->  
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index ecf7705..0c0af3d 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -36,7 +36,7 @@ static struct platform_suspend_ops *suspend_ops;
->   *	suspend_set_ops - Set the global suspend method table.
->   *	@ops:	Pointer to ops structure.
->   */
-> -void suspend_set_ops(struct platform_suspend_ops *ops)
-> +void suspend_set_ops(const struct platform_suspend_ops *ops)
->  {
->  	mutex_lock(&pm_mutex);
->  	suspend_ops = ops;
+yet there are at least two tables (FACS and SSDT)
+that live in that region, and there are several
+run-time AML memory opregions residing in that range too.
+So the region has already been mapped by acpi_os_map_memory()
+(now using ioremap_cache()) before suspend_nvs_save() runs.
+
+Is there a reason that suspend_nvs_save()
+requires a non-cached mapping?
+
+cheers,
+Len Brown, Intel Open Source Technology Center
