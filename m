@@ -1,11 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH] PM: fix suspend_set_ops() to take const pointer
-Date: Wed,  5 Jan 2011 16:22:53 -0800
-Message-ID: <1294273373-8967-1-git-send-email-khilman__46038.396357517$1294273592$gmane$org@ti.com>
+From: Greg KH <gregkh@suse.de>
+Subject: [001/152] x86, hotplug: Use mwait to offline a processor,
+	fix the legacy case
+Date: Wed, 05 Jan 2011 16:21:40 -0800
+Message-ID: <20110106002256.836269833__16559.9678796299$1294274596$gmane$org@clark.site>
+References: <20110106002500.GA3172@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20110106002500.GA3172@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,62 +18,166 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, "H. Peter Anvin" <hpa@linux.intel.com>, torvalds@linux-foundation.org, stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
 List-Id: linux-pm@vger.kernel.org
 
-checkpatch warns that pointers for certain structs should be const,
-and platform_suspend_ops is one of those structs.  If you follow this
-suggestion you trade a checkpatch warning for a compiler warning of
-the form:
+2.6.36-stable review patch.  If anyone has any objections, please let us know.
 
-   warning: passing argument 1 of 'suspend_set_ops' discards qualifiers from pointer target type
+------------------
 
-Fix suspend_set_ops() to take a const pointer so everyone expects
-const.
 
-Signed-off-by: Kevin Hilman <khilman@ti.com>
+From: H. Peter Anvin <hpa@linux.intel.com>
+
+upstream ea53069231f9317062910d6e772cca4ce93de8c8
+x86, hotplug: Use mwait to offline a processor, fix the legacy case
+
+Here included also some small follow-on patches to the same code:
+
+upstream a68e5c94f7d3dd64fef34dd5d97e365cae4bb42a
+x86, hotplug: Move WBINVD back outside the play_dead loop
+
+upstream ce5f68246bf2385d6174856708d0b746dc378f20
+x86, hotplug: In the MWAIT case of play_dead, CLFLUSH the cache line
+
+https://bugzilla.kernel.org/show_bug.cgi?id=5471
+
+Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
-Applies to v2.6.37, but also applies cleanly to suspend-2.6/linux-next
+ arch/x86/include/asm/processor.h |   23 ----------
+ arch/x86/kernel/smpboot.c        |   85 ++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 84 insertions(+), 24 deletions(-)
 
- include/linux/suspend.h |    4 ++--
- kernel/power/suspend.c  |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 2669751..bb98383 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -122,7 +122,7 @@ struct platform_suspend_ops {
-  * suspend_set_ops - set platform dependent suspend operations
-  * @ops: The new suspend operations to set.
-  */
--extern void suspend_set_ops(struct platform_suspend_ops *ops);
-+extern void suspend_set_ops(const struct platform_suspend_ops *ops);
- extern int suspend_valid_only_mem(suspend_state_t state);
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -764,29 +764,6 @@ extern unsigned long		idle_halt;
+ extern unsigned long		idle_nomwait;
+ extern bool			c1e_detected;
  
- /**
-@@ -147,7 +147,7 @@ extern int pm_suspend(suspend_state_t state);
- #else /* !CONFIG_SUSPEND */
- #define suspend_valid_only_mem	NULL
+-/*
+- * on systems with caches, caches must be flashed as the absolute
+- * last instruction before going into a suspended halt.  Otherwise,
+- * dirty data can linger in the cache and become stale on resume,
+- * leading to strange errors.
+- *
+- * perform a variety of operations to guarantee that the compiler
+- * will not reorder instructions.  wbinvd itself is serializing
+- * so the processor will not reorder.
+- *
+- * Systems without cache can just go into halt.
+- */
+-static inline void wbinvd_halt(void)
+-{
+-	mb();
+-	/* check for clflush to determine if wbinvd is legal */
+-	if (cpu_has_clflush)
+-		asm volatile("cli; wbinvd; 1: hlt; jmp 1b" : : : "memory");
+-	else
+-		while (1)
+-			halt();
+-}
+-
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
  
--static inline void suspend_set_ops(struct platform_suspend_ops *ops) {}
-+static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
- static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
- #endif /* !CONFIG_SUSPEND */
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1383,11 +1383,94 @@ void play_dead_common(void)
+ 	local_irq_disable();
+ }
  
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index ecf7705..0c0af3d 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -36,7 +36,7 @@ static struct platform_suspend_ops *suspend_ops;
-  *	suspend_set_ops - Set the global suspend method table.
-  *	@ops:	Pointer to ops structure.
-  */
--void suspend_set_ops(struct platform_suspend_ops *ops)
-+void suspend_set_ops(const struct platform_suspend_ops *ops)
++#define MWAIT_SUBSTATE_MASK		0xf
++#define MWAIT_SUBSTATE_SIZE		4
++
++#define CPUID_MWAIT_LEAF		5
++#define CPUID5_ECX_EXTENSIONS_SUPPORTED 0x1
++
++/*
++ * We need to flush the caches before going to sleep, lest we have
++ * dirty data in our caches when we come back up.
++ */
++static inline void mwait_play_dead(void)
++{
++	unsigned int eax, ebx, ecx, edx;
++	unsigned int highest_cstate = 0;
++	unsigned int highest_subcstate = 0;
++	int i;
++	void *mwait_ptr;
++
++	if (!cpu_has(&current_cpu_data, X86_FEATURE_MWAIT))
++		return;
++	if (!cpu_has(&current_cpu_data, X86_FEATURE_CLFLSH))
++		return;
++	if (current_cpu_data.cpuid_level < CPUID_MWAIT_LEAF)
++		return;
++
++	eax = CPUID_MWAIT_LEAF;
++	ecx = 0;
++	native_cpuid(&eax, &ebx, &ecx, &edx);
++
++	/*
++	 * eax will be 0 if EDX enumeration is not valid.
++	 * Initialized below to cstate, sub_cstate value when EDX is valid.
++	 */
++	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED)) {
++		eax = 0;
++	} else {
++		edx >>= MWAIT_SUBSTATE_SIZE;
++		for (i = 0; i < 7 && edx; i++, edx >>= MWAIT_SUBSTATE_SIZE) {
++			if (edx & MWAIT_SUBSTATE_MASK) {
++				highest_cstate = i;
++				highest_subcstate = edx & MWAIT_SUBSTATE_MASK;
++			}
++		}
++		eax = (highest_cstate << MWAIT_SUBSTATE_SIZE) |
++			(highest_subcstate - 1);
++	}
++
++	/*
++	 * This should be a memory location in a cache line which is
++	 * unlikely to be touched by other processors.  The actual
++	 * content is immaterial as it is not actually modified in any way.
++	 */
++	mwait_ptr = &current_thread_info()->flags;
++
++	wbinvd();
++
++	while (1) {
++		/*
++		 * The CLFLUSH is a workaround for erratum AAI65 for
++		 * the Xeon 7400 series.  It's not clear it is actually
++		 * needed, but it should be harmless in either case.
++		 * The WBINVD is insufficient due to the spurious-wakeup
++		 * case where we return around the loop.
++		 */
++		clflush(mwait_ptr);
++		__monitor(mwait_ptr, 0, 0);
++		mb();
++		__mwait(eax, 0);
++	}
++}
++
++static inline void hlt_play_dead(void)
++{
++	if (current_cpu_data.x86 >= 4)
++		wbinvd();
++
++	while (1) {
++		native_halt();
++	}
++}
++
+ void native_play_dead(void)
  {
- 	mutex_lock(&pm_mutex);
- 	suspend_ops = ops;
--- 
-1.7.3.4
+ 	play_dead_common();
+ 	tboot_shutdown(TB_SHUTDOWN_WFS);
+-	wbinvd_halt();
++
++	mwait_play_dead();	/* Only returns on failure */
++	hlt_play_dead();
+ }
+ 
+ #else /* ... !CONFIG_HOTPLUG_CPU */
