@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 7/11] ACPI / PM: Rename acpi_power_off_device()
-Date: Thu, 6 Jan 2011 23:38:04 +0100
-Message-ID: <201101062338.04737.rjw__11412.0809980252$1294354429$gmane$org@sisk.pl>
+Subject: [PATCH 11/11] ACPI / Battery: Update information on info
+	notification and resume
+Date: Thu, 6 Jan 2011 23:42:27 +0100
+Message-ID: <201101062342.28168.rjw__4764.27586186237$1294354625$gmane$org@sisk.pl>
 References: <201101062331.17079.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,43 +24,57 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Rename acpi_power_off_device() to acpi_power_off() in analogy with
-acpi_power_on().
+A notification event 0x81 from an ACPI battery device requires us to
+re-read the battery information structure.  Follow this requirement
+and remove and re-create the battery's attibutes in sysfs so that
+they reflect the reporting units used by the battery at the moment
+(those units may actually change sometimes at run time, which happens
+on some Thinkpads).
+
+The approach used in this patch was suggested by Matthew Garrett.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Matthew Garrett <mjg@redhat.com>
 ---
- drivers/acpi/power.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/acpi/battery.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Index: linux-2.6/drivers/acpi/power.c
+Index: linux-2.6/drivers/acpi/battery.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/power.c
-+++ linux-2.6/drivers/acpi/power.c
-@@ -219,7 +219,7 @@ static int acpi_power_on(acpi_handle han
+--- linux-2.6.orig/drivers/acpi/battery.c
++++ linux-2.6/drivers/acpi/battery.c
+@@ -631,6 +631,17 @@ static int acpi_battery_update(struct ac
  	return result;
  }
  
--static int acpi_power_off_device(acpi_handle handle)
-+static int acpi_power_off(acpi_handle handle)
- {
- 	int result = 0;
- 	acpi_status status = AE_OK;
-@@ -268,7 +268,7 @@ static void __acpi_power_off_list(struct
- 	int i;
- 
- 	for (i = num_res - 1; i >= 0 ; i--)
--		acpi_power_off_device(list->handles[i]);
-+		acpi_power_off(list->handles[i]);
- }
- 
- static void acpi_power_off_list(struct acpi_handle_list *list)
-@@ -430,8 +430,7 @@ int acpi_disable_wakeup_device_power(str
- 
- 	/* Close power resource */
- 	for (i = 0; i < dev->wakeup.resources.count; i++) {
--		int ret = acpi_power_off_device(
--				dev->wakeup.resources.handles[i]);
-+		int ret = acpi_power_off(dev->wakeup.resources.handles[i]);
- 		if (ret) {
- 			printk(KERN_ERR PREFIX "Transition power state\n");
- 			dev->wakeup.flags.valid = 0;
++static void acpi_battery_refresh(struct acpi_battery *battery)
++{
++	if (!battery->bat.dev)
++		return;
++
++	acpi_battery_get_info(battery);
++	/* The battery may have changed its reporting units. */
++	sysfs_remove_battery(battery);
++	sysfs_add_battery(battery);
++}
++
+ /* --------------------------------------------------------------------------
+                               FS Interface (/proc)
+    -------------------------------------------------------------------------- */
+@@ -914,6 +925,8 @@ static void acpi_battery_notify(struct a
+ 	if (!battery)
+ 		return;
+ 	old = battery->bat.dev;
++	if (event == ACPI_BATTERY_NOTIFY_INFO)
++		acpi_battery_refresh(battery);
+ 	acpi_battery_update(battery);
+ 	acpi_bus_generate_proc_event(device, event,
+ 				     acpi_battery_present(battery));
+@@ -983,6 +996,7 @@ static int acpi_battery_resume(struct ac
+ 	if (!device)
+ 		return -EINVAL;
+ 	battery = acpi_driver_data(device);
++	acpi_battery_refresh(battery);
+ 	battery->update_time = 0;
+ 	acpi_battery_update(battery);
+ 	return 0;
