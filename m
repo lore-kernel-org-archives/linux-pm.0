@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/11] ACPI / ACPICA: Fix global lock acquisition
-Date: Thu, 6 Jan 2011 23:32:23 +0100
-Message-ID: <201101062332.23942.rjw__22588.6361011819$1294354239$gmane$org@sisk.pl>
+Subject: [PATCH 3/11] ACPI / PM: Use device wakeup flags for
+	handling ACPI wakeup devices
+Date: Thu, 6 Jan 2011 23:34:22 +0100
+Message-ID: <201101062334.22792.rjw__35801.9404848621$1294354241$gmane$org@sisk.pl>
 References: <201101062331.17079.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,169 +24,158 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-There are two problems with the ACPICA's current implementation of
-the global lock acquisition.  First, acpi_ev_global_lock_handler(),
-which in fact is an interface to the outside of the kernel, doesn't
-validate its input, so it only works correctly if the other side
-(i.e. the ACPI firmware) is fully specification-compliant (as far
-as the global lock is concerned).  Unfortunately, that's known not
-to be the case on some systems (i.e. we get spurious global lock
-signaling interrupts without the pending flag set on some systems).
-Second, acpi_ev_global_lock_handler() attempts to acquire the global
-lock on behalf of a thread waiting for it without checking if there
-actually is such a thread.  Both of these shortcomings need to be
-addressed to prevent all possible race conditions from happening.
+There are ACPI devices (buttons and the laptop lid) that can wake up
+the system from sleep states and have no "physical" companion
+devices.  The ACPI subsystem uses two flags, wakeup.state.enabled and
+wakeup.flags.always_enabled, for handling those devices, but they
+are not accessible through the standard device wakeup infrastructure.
+User space can only control them via the /proc/acpi/wakeup interface
+that is not really convenient (e.g. the way in which devices are
+enabled to wake up the system is not portable between different
+systems, because it requires one to know the devices' "names" used in
+the system's ACPI tables).
 
-Rework acpi_ev_global_lock_handler() so that it doesn't try to
-acquire the global lock and make it signal the availability of the
-global lock to the waiting thread instead.  Make sure that the
-availability of the global lock can only be signaled when there
-is a thread waiting for it and that it can't be signaled more than
-once in a row (to keep acpi_gbl_global_lock_semaphore in balance).
+To address this problem, use standard device wakeup flags instead of
+the special ACPI flags for handling those devices.  In particular,
+use device_set_wakeup_capable() to mark the ACPI wakeup devices
+during initialization and use device_set_wakeup_enable() to allow
+or disallow them to wake up the system from sleep states.  Rework
+the /proc/acpi/wakeup interface to take these changes into account.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/acpica/evmisc.c |   94 +++++++++++++++++++++++++------------------
- 1 file changed, 55 insertions(+), 39 deletions(-)
+ drivers/acpi/button.c |    4 ++--
+ drivers/acpi/proc.c   |   19 +++++++++++++------
+ drivers/acpi/scan.c   |    2 +-
+ drivers/acpi/wakeup.c |   18 ++++++++++--------
+ 4 files changed, 26 insertions(+), 17 deletions(-)
 
-Index: linux-2.6/drivers/acpi/acpica/evmisc.c
+Index: linux-2.6/drivers/acpi/wakeup.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evmisc.c
-+++ linux-2.6/drivers/acpi/acpica/evmisc.c
-@@ -284,41 +284,41 @@ static void ACPI_SYSTEM_XFACE acpi_ev_no
-  * RETURN:      ACPI_INTERRUPT_HANDLED
-  *
-  * DESCRIPTION: Invoked directly from the SCI handler when a global lock
-- *              release interrupt occurs. Attempt to acquire the global lock,
-- *              if successful, signal the thread waiting for the lock.
-+ *              release interrupt occurs.  If there's a thread waiting for
-+ *              the global lock, signal it.
-  *
-  * NOTE: Assumes that the semaphore can be signaled from interrupt level. If
-  * this is not possible for some reason, a separate thread will have to be
-  * scheduled to do this.
-  *
-  ******************************************************************************/
-+static u8 acpi_ev_global_lock_pending;
-+static spinlock_t _acpi_ev_global_lock_pending_lock;
-+#define acpi_ev_global_lock_pending_lock &_acpi_ev_global_lock_pending_lock
+--- linux-2.6.orig/drivers/acpi/wakeup.c
++++ linux-2.6/drivers/acpi/wakeup.c
+@@ -37,11 +37,12 @@ void acpi_enable_wakeup_devices(u8 sleep
+ 			container_of(node, struct acpi_device, wakeup_list);
  
- static u32 acpi_ev_global_lock_handler(void *context)
+ 		if (!dev->wakeup.flags.valid
+-		    || !(dev->wakeup.state.enabled || dev->wakeup.prepare_count)
+-		    || sleep_state > (u32) dev->wakeup.sleep_state)
++		    || sleep_state > (u32) dev->wakeup.sleep_state
++		    || !(device_may_wakeup(&dev->dev)
++		        || dev->wakeup.prepare_count))
+ 			continue;
+ 
+-		if (dev->wakeup.state.enabled)
++		if (device_may_wakeup(&dev->dev))
+ 			acpi_enable_wakeup_device_power(dev, sleep_state);
+ 
+ 		/* The wake-up power should have been enabled already. */
+@@ -63,14 +64,15 @@ void acpi_disable_wakeup_devices(u8 slee
+ 			container_of(node, struct acpi_device, wakeup_list);
+ 
+ 		if (!dev->wakeup.flags.valid
+-		    || !(dev->wakeup.state.enabled || dev->wakeup.prepare_count)
+-		    || (sleep_state > (u32) dev->wakeup.sleep_state))
++		    || sleep_state > (u32) dev->wakeup.sleep_state
++		    || !(device_may_wakeup(&dev->dev)
++		        || dev->wakeup.prepare_count))
+ 			continue;
+ 
+ 		acpi_gpe_wakeup(dev->wakeup.gpe_device, dev->wakeup.gpe_number,
+ 				ACPI_GPE_DISABLE);
+ 
+-		if (dev->wakeup.state.enabled)
++		if (device_may_wakeup(&dev->dev))
+ 			acpi_disable_wakeup_device_power(dev);
+ 	}
+ }
+@@ -84,8 +86,8 @@ int __init acpi_wakeup_device_init(void)
+ 		struct acpi_device *dev = container_of(node,
+ 						       struct acpi_device,
+ 						       wakeup_list);
+-		if (dev->wakeup.flags.always_enabled)
+-			dev->wakeup.state.enabled = 1;
++		if (device_can_wakeup(&dev->dev))
++			device_set_wakeup_enable(&dev->dev, true);
+ 	}
+ 	mutex_unlock(&acpi_device_lock);
+ 	return 0;
+Index: linux-2.6/drivers/acpi/button.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/button.c
++++ linux-2.6/drivers/acpi/button.c
+@@ -426,7 +426,7 @@ static int acpi_button_add(struct acpi_d
+ 		acpi_enable_gpe(device->wakeup.gpe_device,
+ 				device->wakeup.gpe_number);
+ 		device->wakeup.run_wake_count++;
+-		device->wakeup.state.enabled = 1;
++		device_set_wakeup_enable(&device->dev, true);
+ 	}
+ 
+ 	printk(KERN_INFO PREFIX "%s [%s]\n", name, acpi_device_bid(device));
+@@ -449,7 +449,7 @@ static int acpi_button_remove(struct acp
+ 		acpi_disable_gpe(device->wakeup.gpe_device,
+ 				device->wakeup.gpe_number);
+ 		device->wakeup.run_wake_count--;
+-		device->wakeup.state.enabled = 0;
++		device_set_wakeup_enable(&device->dev, false);
+ 	}
+ 
+ 	acpi_button_remove_fs(device);
+Index: linux-2.6/drivers/acpi/scan.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/scan.c
++++ linux-2.6/drivers/acpi/scan.c
+@@ -803,7 +803,7 @@ static void acpi_bus_set_run_wake_flags(
+ 	/* Power button, Lid switch always enable wakeup */
+ 	if (!acpi_match_device_ids(device, button_device_ids)) {
+ 		device->wakeup.flags.run_wake = 1;
+-		device->wakeup.flags.always_enabled = 1;
++		device_set_wakeup_capable(&device->dev, true);
+ 		return;
+ 	}
+ 
+Index: linux-2.6/drivers/acpi/proc.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/proc.c
++++ linux-2.6/drivers/acpi/proc.c
+@@ -311,7 +311,9 @@ acpi_system_wakeup_device_seq_show(struc
+ 			   dev->pnp.bus_id,
+ 			   (u32) dev->wakeup.sleep_state,
+ 			   dev->wakeup.flags.run_wake ? '*' : ' ',
+-			   dev->wakeup.state.enabled ? "enabled" : "disabled");
++			   (device_may_wakeup(&dev->dev)
++			     || (ldev && device_may_wakeup(ldev))) ?
++			       "enabled" : "disabled");
+ 		if (ldev)
+ 			seq_printf(seq, "%s:%s",
+ 				   ldev->bus ? ldev->bus->name : "no-bus",
+@@ -328,8 +330,10 @@ static void physical_device_enable_wakeu
  {
--	u8 acquired = FALSE;
-+	acpi_status status;
-+	acpi_cpu_flags flags;
+ 	struct device *dev = acpi_get_physical_device(adev->handle);
  
--	/*
--	 * Attempt to get the lock.
--	 *
--	 * If we don't get it now, it will be marked pending and we will
--	 * take another interrupt when it becomes free.
--	 */
--	ACPI_ACQUIRE_GLOBAL_LOCK(acpi_gbl_FACS, acquired);
--	if (acquired) {
-+	flags = acpi_os_acquire_lock(acpi_ev_global_lock_pending_lock);
- 
--		/* Got the lock, now wake all threads waiting for it */
-+	if (!acpi_ev_global_lock_pending) {
-+		goto out;
+-	if (dev && device_can_wakeup(dev))
+-		device_set_wakeup_enable(dev, adev->wakeup.state.enabled);
++	if (dev && device_can_wakeup(dev)) {
++		bool enable = !device_may_wakeup(dev);
++		device_set_wakeup_enable(dev, enable);
 +	}
- 
--		acpi_gbl_global_lock_acquired = TRUE;
--		/* Send a unit to the semaphore */
-+	/* Send a unit to the semaphore */
- 
--		if (ACPI_FAILURE
--		    (acpi_os_signal_semaphore
--		     (acpi_gbl_global_lock_semaphore, 1))) {
--			ACPI_ERROR((AE_INFO,
--				    "Could not signal Global Lock semaphore"));
--		}
-+	status = acpi_os_signal_semaphore(acpi_gbl_global_lock_semaphore, 1);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_ERROR((AE_INFO, "Could not signal Global Lock semaphore"));
- 	}
- 
-+	acpi_ev_global_lock_pending = FALSE;
-+
-+ out:
-+	acpi_os_release_lock(acpi_ev_global_lock_pending_lock, flags);
-+
- 	return (ACPI_INTERRUPT_HANDLED);
  }
  
-@@ -415,6 +415,7 @@ static int acpi_ev_global_lock_acquired;
+ static ssize_t
+@@ -360,9 +364,12 @@ acpi_system_write_wakeup_device(struct f
+ 			continue;
  
- acpi_status acpi_ev_acquire_global_lock(u16 timeout)
- {
-+	acpi_cpu_flags flags;
- 	acpi_status status = AE_OK;
- 	u8 acquired = FALSE;
- 
-@@ -467,32 +468,47 @@ acpi_status acpi_ev_acquire_global_lock(
- 		return_ACPI_STATUS(AE_OK);
+ 		if (!strncmp(dev->pnp.bus_id, str, 4)) {
+-			dev->wakeup.state.enabled =
+-			    dev->wakeup.state.enabled ? 0 : 1;
+-			physical_device_enable_wakeup(dev);
++			if (device_can_wakeup(&dev->dev)) {
++				bool enable = !device_may_wakeup(&dev->dev);
++				device_set_wakeup_enable(&dev->dev, enable);
++			} else {
++				physical_device_enable_wakeup(dev);
++			}
+ 			break;
+ 		}
  	}
- 
--	/* Attempt to acquire the actual hardware lock */
-+	flags = acpi_os_acquire_lock(acpi_ev_global_lock_pending_lock);
-+
-+	do {
-+
-+		/* Attempt to acquire the actual hardware lock */
- 
--	ACPI_ACQUIRE_GLOBAL_LOCK(acpi_gbl_FACS, acquired);
--	if (acquired) {
-+		ACPI_ACQUIRE_GLOBAL_LOCK(acpi_gbl_FACS, acquired);
-+		if (acquired) {
-+			acpi_gbl_global_lock_acquired = TRUE;
- 
--		/* We got the lock */
-+			ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
-+					  "Acquired hardware Global Lock\n"));
-+			break;
-+		}
-+
-+		acpi_ev_global_lock_pending = TRUE;
-+
-+		acpi_os_release_lock(acpi_ev_global_lock_pending_lock, flags);
- 
-+		/*
-+		 * Did not get the lock. The pending bit was set above, and we
-+		 * must wait until we get the global lock released interrupt.
-+		 */
- 		ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
--				  "Acquired hardware Global Lock\n"));
-+				  "Waiting for hardware Global Lock\n"));
- 
--		acpi_gbl_global_lock_acquired = TRUE;
--		return_ACPI_STATUS(AE_OK);
--	}
-+		/*
-+		 * Wait for handshake with the global lock interrupt handler.
-+		 * This interface releases the interpreter if we must wait.
-+		 */
-+		status = acpi_ex_system_wait_semaphore(
-+						acpi_gbl_global_lock_semaphore,
-+						ACPI_WAIT_FOREVER);
- 
--	/*
--	 * Did not get the lock. The pending bit was set above, and we must now
--	 * wait until we get the global lock released interrupt.
--	 */
--	ACPI_DEBUG_PRINT((ACPI_DB_EXEC, "Waiting for hardware Global Lock\n"));
-+		flags = acpi_os_acquire_lock(acpi_ev_global_lock_pending_lock);
- 
--	/*
--	 * Wait for handshake with the global lock interrupt handler.
--	 * This interface releases the interpreter if we must wait.
--	 */
--	status = acpi_ex_system_wait_semaphore(acpi_gbl_global_lock_semaphore,
--					       ACPI_WAIT_FOREVER);
-+	} while (ACPI_SUCCESS(status));
-+
-+	acpi_ev_global_lock_pending = FALSE;
-+
-+	acpi_os_release_lock(acpi_ev_global_lock_pending_lock, flags);
- 
- 	return_ACPI_STATUS(status);
- }
