@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/11] ACPI / PM: Do not enable multiple devices
-	to wake up simultaneously
-Date: Thu, 6 Jan 2011 23:33:30 +0100
-Message-ID: <201101062333.30960.rjw__16213.4403166876$1294354237$gmane$org@sisk.pl>
+Subject: [PATCH 1/11] ACPI / ACPICA: Fix global lock acquisition
+Date: Thu, 6 Jan 2011 23:32:23 +0100
+Message-ID: <201101062332.23942.rjw__22588.6361011819$1294354239$gmane$org@sisk.pl>
 References: <201101062331.17079.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,67 +23,169 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-If a device is enabled to wake up the system from sleep states via
-/proc/acpi/wakeup and there are other devices associated with the
-same wakeup GPE, all of these devices are automatically enabled to
-wake up the system.  This isn't correct, because the fact the GPE is
-shared need not imply that wakeup power has to be enabled for all the
-devices at the same time (i.e. it is possible that one device will
-have its wakeup power enabled and it will wake up the system from a
-sleep state if the shared wakeup GPE is enabled, while another device
-having its wakeup power disabled will not wake up the system even
-though the GPE is enabled).  Rework acpi_system_write_wakeup_device()
-so that it only enables wakeup for one device at a time.
+There are two problems with the ACPICA's current implementation of
+the global lock acquisition.  First, acpi_ev_global_lock_handler(),
+which in fact is an interface to the outside of the kernel, doesn't
+validate its input, so it only works correctly if the other side
+(i.e. the ACPI firmware) is fully specification-compliant (as far
+as the global lock is concerned).  Unfortunately, that's known not
+to be the case on some systems (i.e. we get spurious global lock
+signaling interrupts without the pending flag set on some systems).
+Second, acpi_ev_global_lock_handler() attempts to acquire the global
+lock on behalf of a thread waiting for it without checking if there
+actually is such a thread.  Both of these shortcomings need to be
+addressed to prevent all possible race conditions from happening.
+
+Rework acpi_ev_global_lock_handler() so that it doesn't try to
+acquire the global lock and make it signal the availability of the
+global lock to the waiting thread instead.  Make sure that the
+availability of the global lock can only be signaled when there
+is a thread waiting for it and that it can't be signaled more than
+once in a row (to keep acpi_gbl_global_lock_semaphore in balance).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/proc.c |   26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+ drivers/acpi/acpica/evmisc.c |   94 +++++++++++++++++++++++++------------------
+ 1 file changed, 55 insertions(+), 39 deletions(-)
 
-Index: linux-2.6/drivers/acpi/proc.c
+Index: linux-2.6/drivers/acpi/acpica/evmisc.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/proc.c
-+++ linux-2.6/drivers/acpi/proc.c
-@@ -341,7 +341,6 @@ acpi_system_write_wakeup_device(struct f
- 	char strbuf[5];
- 	char str[5] = "";
- 	unsigned int len = count;
--	struct acpi_device *found_dev = NULL;
+--- linux-2.6.orig/drivers/acpi/acpica/evmisc.c
++++ linux-2.6/drivers/acpi/acpica/evmisc.c
+@@ -284,41 +284,41 @@ static void ACPI_SYSTEM_XFACE acpi_ev_no
+  * RETURN:      ACPI_INTERRUPT_HANDLED
+  *
+  * DESCRIPTION: Invoked directly from the SCI handler when a global lock
+- *              release interrupt occurs. Attempt to acquire the global lock,
+- *              if successful, signal the thread waiting for the lock.
++ *              release interrupt occurs.  If there's a thread waiting for
++ *              the global lock, signal it.
+  *
+  * NOTE: Assumes that the semaphore can be signaled from interrupt level. If
+  * this is not possible for some reason, a separate thread will have to be
+  * scheduled to do this.
+  *
+  ******************************************************************************/
++static u8 acpi_ev_global_lock_pending;
++static spinlock_t _acpi_ev_global_lock_pending_lock;
++#define acpi_ev_global_lock_pending_lock &_acpi_ev_global_lock_pending_lock
  
- 	if (len > 4)
- 		len = 4;
-@@ -363,33 +362,10 @@ acpi_system_write_wakeup_device(struct f
- 		if (!strncmp(dev->pnp.bus_id, str, 4)) {
- 			dev->wakeup.state.enabled =
- 			    dev->wakeup.state.enabled ? 0 : 1;
--			found_dev = dev;
-+			physical_device_enable_wakeup(dev);
- 			break;
- 		}
- 	}
--	if (found_dev) {
--		physical_device_enable_wakeup(found_dev);
--		list_for_each_safe(node, next, &acpi_wakeup_device_list) {
--			struct acpi_device *dev = container_of(node,
--							       struct
--							       acpi_device,
--							       wakeup_list);
--
--			if ((dev != found_dev) &&
--			    (dev->wakeup.gpe_number ==
--			     found_dev->wakeup.gpe_number)
--			    && (dev->wakeup.gpe_device ==
--				found_dev->wakeup.gpe_device)) {
--				printk(KERN_WARNING
--				       "ACPI: '%s' and '%s' have the same GPE, "
--				       "can't disable/enable one separately\n",
--				       dev->pnp.bus_id, found_dev->pnp.bus_id);
--				dev->wakeup.state.enabled =
--				    found_dev->wakeup.state.enabled;
--				physical_device_enable_wakeup(dev);
--			}
+ static u32 acpi_ev_global_lock_handler(void *context)
+ {
+-	u8 acquired = FALSE;
++	acpi_status status;
++	acpi_cpu_flags flags;
+ 
+-	/*
+-	 * Attempt to get the lock.
+-	 *
+-	 * If we don't get it now, it will be marked pending and we will
+-	 * take another interrupt when it becomes free.
+-	 */
+-	ACPI_ACQUIRE_GLOBAL_LOCK(acpi_gbl_FACS, acquired);
+-	if (acquired) {
++	flags = acpi_os_acquire_lock(acpi_ev_global_lock_pending_lock);
+ 
+-		/* Got the lock, now wake all threads waiting for it */
++	if (!acpi_ev_global_lock_pending) {
++		goto out;
++	}
+ 
+-		acpi_gbl_global_lock_acquired = TRUE;
+-		/* Send a unit to the semaphore */
++	/* Send a unit to the semaphore */
+ 
+-		if (ACPI_FAILURE
+-		    (acpi_os_signal_semaphore
+-		     (acpi_gbl_global_lock_semaphore, 1))) {
+-			ACPI_ERROR((AE_INFO,
+-				    "Could not signal Global Lock semaphore"));
 -		}
++	status = acpi_os_signal_semaphore(acpi_gbl_global_lock_semaphore, 1);
++	if (ACPI_FAILURE(status)) {
++		ACPI_ERROR((AE_INFO, "Could not signal Global Lock semaphore"));
+ 	}
+ 
++	acpi_ev_global_lock_pending = FALSE;
++
++ out:
++	acpi_os_release_lock(acpi_ev_global_lock_pending_lock, flags);
++
+ 	return (ACPI_INTERRUPT_HANDLED);
+ }
+ 
+@@ -415,6 +415,7 @@ static int acpi_ev_global_lock_acquired;
+ 
+ acpi_status acpi_ev_acquire_global_lock(u16 timeout)
+ {
++	acpi_cpu_flags flags;
+ 	acpi_status status = AE_OK;
+ 	u8 acquired = FALSE;
+ 
+@@ -467,32 +468,47 @@ acpi_status acpi_ev_acquire_global_lock(
+ 		return_ACPI_STATUS(AE_OK);
+ 	}
+ 
+-	/* Attempt to acquire the actual hardware lock */
++	flags = acpi_os_acquire_lock(acpi_ev_global_lock_pending_lock);
++
++	do {
++
++		/* Attempt to acquire the actual hardware lock */
+ 
+-	ACPI_ACQUIRE_GLOBAL_LOCK(acpi_gbl_FACS, acquired);
+-	if (acquired) {
++		ACPI_ACQUIRE_GLOBAL_LOCK(acpi_gbl_FACS, acquired);
++		if (acquired) {
++			acpi_gbl_global_lock_acquired = TRUE;
+ 
+-		/* We got the lock */
++			ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
++					  "Acquired hardware Global Lock\n"));
++			break;
++		}
++
++		acpi_ev_global_lock_pending = TRUE;
++
++		acpi_os_release_lock(acpi_ev_global_lock_pending_lock, flags);
+ 
++		/*
++		 * Did not get the lock. The pending bit was set above, and we
++		 * must wait until we get the global lock released interrupt.
++		 */
+ 		ACPI_DEBUG_PRINT((ACPI_DB_EXEC,
+-				  "Acquired hardware Global Lock\n"));
++				  "Waiting for hardware Global Lock\n"));
+ 
+-		acpi_gbl_global_lock_acquired = TRUE;
+-		return_ACPI_STATUS(AE_OK);
 -	}
- 	mutex_unlock(&acpi_device_lock);
- 	return count;
++		/*
++		 * Wait for handshake with the global lock interrupt handler.
++		 * This interface releases the interpreter if we must wait.
++		 */
++		status = acpi_ex_system_wait_semaphore(
++						acpi_gbl_global_lock_semaphore,
++						ACPI_WAIT_FOREVER);
+ 
+-	/*
+-	 * Did not get the lock. The pending bit was set above, and we must now
+-	 * wait until we get the global lock released interrupt.
+-	 */
+-	ACPI_DEBUG_PRINT((ACPI_DB_EXEC, "Waiting for hardware Global Lock\n"));
++		flags = acpi_os_acquire_lock(acpi_ev_global_lock_pending_lock);
+ 
+-	/*
+-	 * Wait for handshake with the global lock interrupt handler.
+-	 * This interface releases the interpreter if we must wait.
+-	 */
+-	status = acpi_ex_system_wait_semaphore(acpi_gbl_global_lock_semaphore,
+-					       ACPI_WAIT_FOREVER);
++	} while (ACPI_SUCCESS(status));
++
++	acpi_ev_global_lock_pending = FALSE;
++
++	acpi_os_release_lock(acpi_ev_global_lock_pending_lock, flags);
+ 
+ 	return_ACPI_STATUS(status);
  }
