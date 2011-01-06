@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/1] PM: fix oops in suspend/hibernate code
-Date: Thu, 6 Jan 2011 17:38:14 +0100
-Message-ID: <201101061738.14581.rjw__2974.59588987312$1294332429$gmane$org@sisk.pl>
-References: <201101060028.43342.rjw@sisk.pl> <201101061657.39723.rjw@sisk.pl>
-	<4D25E943.804@gmail.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH] PM: fix suspend_set_ops() to take const
+	pointer
+Date: Thu, 06 Jan 2011 10:55:37 -0800
+Message-ID: <1294340137.328.6.camel__45884.0031562888$1294340324$gmane$org@vence>
+References: <1294273373-8967-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D25E943.804@gmail.com>
+In-Reply-To: <1294273373-8967-1-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,133 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, akpm@linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 06, 2011, Jiri Slaby wrote:
-> On 01/06/2011 04:57 PM, Rafael J. Wysocki wrote:
-> > On Thursday, January 06, 2011, Jiri Slaby wrote:
-> >> When ioremap fails (which might happen for some reason),
-> > 
-> > If it happens, something is seriously wrong (see below).
+On Wed, 2011-01-05 at 16:22 -0800, Kevin Hilman wrote:
+> checkpatch warns that pointers for certain structs should be const,
+> and platform_suspend_ops is one of those structs.  If you follow this
+> suggestion you trade a checkpatch warning for a compiler warning of
+> the form:
 > 
-> I agree that something is broken, however ioremap may fail for dozen of
-> reasons. Ignoring the retval is a *bad* idea and it took me a while to
-> sort out what is wrong. Especially if one has no console like throughout
-> suspend. If it was handled properly, I would know immediately. (There
-> should be a message printed out which I forgot to add.)
-
-It wasn't handled, because it _never_ failed previously.  The ACPI mapping
-change apparently revealed a deeper problem.
-
-I'm not saying the patch isn't useful, though, and I'm going to take it
-for 2.6.38 (perhaps with minor modifications).
-
-> > BTW, to keep things in context, please post fixes like this in the same thread
-> > in which you reported the problem.  At lease please retain the CC list from
-> > there.
+>    warning: passing argument 1 of 'suspend_set_ops' discards qualifiers from pointer target type
 > 
-> I actually did, there is:
-> In-Reply-To: <201101060028.43342.rjw@sisk.pl>
-> and it successfully threaded to the conversation for me in TB.
-
-But you trimmed the CC line, didn't you?  Which caused my filter to put the
-patch into a different folder. :-)
-
-> >> we nicely oops in suspend_nvs_save due to NULL dereference by memcpy in
-> >> there.  Fail gracefully instead.
-> >>
-> >> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> >> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> >> ---
-> >>  drivers/acpi/sleep.c    |    5 ++---
-> >>  include/linux/suspend.h |    4 ++--
-> >>  kernel/power/nvs.c      |    8 +++++++-
-> >>  3 files changed, 11 insertions(+), 6 deletions(-)
-> >>
-> >> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-> >> index c423231..f94c9a9 100644
-> >> --- a/drivers/acpi/sleep.c
-> >> +++ b/drivers/acpi/sleep.c
-> >> @@ -124,8 +124,7 @@ static int acpi_pm_freeze(void)
-> >>  static int acpi_pm_pre_suspend(void)
-> >>  {
-> >>  	acpi_pm_freeze();
-> >> -	suspend_nvs_save();
-> >> -	return 0;
-> >> +	return suspend_nvs_save();
-> >>  }
-> >>  
-> >>  /**
-> >> @@ -151,7 +150,7 @@ static int acpi_pm_prepare(void)
-> >>  {
-> >>  	int error = __acpi_pm_prepare();
-> >>  	if (!error)
-> >> -		acpi_pm_pre_suspend();
-> >> +		error = acpi_pm_pre_suspend();
-> >>  
-> >>  	return error;
-> >>  }
-> >> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> >> index c1f4998..3ac2551 100644
-> >> --- a/include/linux/suspend.h
-> >> +++ b/include/linux/suspend.h
-> >> @@ -262,7 +262,7 @@ static inline bool system_entering_hibernation(void) { return false; }
-> >>  extern int suspend_nvs_register(unsigned long start, unsigned long size);
-> >>  extern int suspend_nvs_alloc(void);
-> >>  extern void suspend_nvs_free(void);
-> >> -extern void suspend_nvs_save(void);
-> >> +extern int suspend_nvs_save(void);
-> >>  extern void suspend_nvs_restore(void);
-> >>  #else /* CONFIG_SUSPEND_NVS */
-> >>  static inline int suspend_nvs_register(unsigned long a, unsigned long b)
-> >> @@ -271,7 +271,7 @@ static inline int suspend_nvs_register(unsigned long a, unsigned long b)
-> >>  }
-> >>  static inline int suspend_nvs_alloc(void) { return 0; }
-> >>  static inline void suspend_nvs_free(void) {}
-> >> -static inline void suspend_nvs_save(void) {}
-> >> +static inline int suspend_nvs_save(void) {}
-> >>  static inline void suspend_nvs_restore(void) {}
-> >>  #endif /* CONFIG_SUSPEND_NVS */
-> >>  
-> >> diff --git a/kernel/power/nvs.c b/kernel/power/nvs.c
-> >> index 1836db6..57c6fab 100644
-> >> --- a/kernel/power/nvs.c
-> >> +++ b/kernel/power/nvs.c
-> >> @@ -105,7 +105,7 @@ int suspend_nvs_alloc(void)
-> >>  /**
-> >>   *	suspend_nvs_save - save NVS memory regions
-> >>   */
-> >> -void suspend_nvs_save(void)
-> >> +int suspend_nvs_save(void)
-> >>  {
-> >>  	struct nvs_page *entry;
-> >>  
-> >> @@ -114,8 +114,14 @@ void suspend_nvs_save(void)
-> >>  	list_for_each_entry(entry, &nvs_list, node)
-> >>  		if (entry->data) {
-> >>  			entry->kaddr = ioremap(entry->phys_start, entry->size);
-> > 
-> > I wonder what happens if you simply change the ioremap() here to
-> > ioremap_nocache() without any other modifications?
+> Fix suspend_set_ops() to take a const pointer so everyone expects
+> const.
 > 
-> ioremap *is* ioremap_nocache on x86. And that's the conflict it
-> complains about I guess? Don't you mean ioremap_cache?
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
+> ---
+> Applies to v2.6.37, but also applies cleanly to suspend-2.6/linux-next
 
-Yes, I meant ioremap_cache(), sorry.  Using ioremap_cache() here fixes the
-problem for Len (he's seeing the same issue on his test machine).
+Oops, plese disregard.  This is already fixed in linux-next.
 
-The question is why it helps, though.  My theory is that we have mapped the
-same area already using ioremap_cache() and now we're trying to map it again
-using ioremap_nocache(), hence the conflict.  I need to confirm this.
+Kevin
 
-> > It _really_ shouldn't fail here, because the NVS pages are known to be present.
+>  include/linux/suspend.h |    4 ++--
+>  kernel/power/suspend.c  |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> It fails because of conflicting maps as can be seen in the photo. At
-> least I think so.
-
-Yes, I think so too.  Which is _suspicious_.
-
-Thanks,
-Rafael
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index 2669751..bb98383 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -122,7 +122,7 @@ struct platform_suspend_ops {
+>   * suspend_set_ops - set platform dependent suspend operations
+>   * @ops: The new suspend operations to set.
+>   */
+> -extern void suspend_set_ops(struct platform_suspend_ops *ops);
+> +extern void suspend_set_ops(const struct platform_suspend_ops *ops);
+>  extern int suspend_valid_only_mem(suspend_state_t state);
+>  
+>  /**
+> @@ -147,7 +147,7 @@ extern int pm_suspend(suspend_state_t state);
+>  #else /* !CONFIG_SUSPEND */
+>  #define suspend_valid_only_mem	NULL
+>  
+> -static inline void suspend_set_ops(struct platform_suspend_ops *ops) {}
+> +static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
+>  static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
+>  #endif /* !CONFIG_SUSPEND */
+>  
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index ecf7705..0c0af3d 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -36,7 +36,7 @@ static struct platform_suspend_ops *suspend_ops;
+>   *	suspend_set_ops - Set the global suspend method table.
+>   *	@ops:	Pointer to ops structure.
+>   */
+> -void suspend_set_ops(struct platform_suspend_ops *ops)
+> +void suspend_set_ops(const struct platform_suspend_ops *ops)
+>  {
+>  	mutex_lock(&pm_mutex);
+>  	suspend_ops = ops;
