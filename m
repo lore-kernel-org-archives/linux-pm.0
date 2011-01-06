@@ -1,11 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/11] Various ACPI patches for 2.6.38
-Date: Thu, 6 Jan 2011 23:31:16 +0100
-Message-ID: <201101062331.17079.rjw__6602.38522473282$1294354023$gmane$org@sisk.pl>
+Subject: [PATCH 4/11] ACPI / PM: Drop special ACPI wakeup flags
+Date: Thu, 6 Jan 2011 23:35:10 +0100
+Message-ID: <201101062335.10677.rjw__40521.437142934$1294354227$gmane$org@sisk.pl>
+References: <201101062331.17079.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201101062331.17079.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,47 +21,58 @@ To: Len Brown <lenb@kernel.org>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-In this series there are several ACPI patches I'd like to go into 2.6.38.
-Some of them have been posted to linux-acpi already, some others are new.
+Drop special ACPI wakeup flags, wakeup.state.enabled and
+wakeup.flags.always_enabled, that aren't necessary any more after
+we've started to use standard device wakeup flags for handling ACPI
+wakeup devices.
 
-[1/11] - Fix global lock acquisition (this patch is the same as
-         https://patchwork.kernel.org/patch/435861/).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/glue.c     |    5 +----
+ include/acpi/acpi_bus.h |    6 ------
+ 2 files changed, 1 insertion(+), 10 deletions(-)
 
-[2/11] - Prevent /proc/acpi/wakeup from enabling multiple devices to
-         wake up simultaneously (this patch is the same as
-         https://patchwork.kernel.org/patch/436351/).
-
-[3/11] - Make the button driver use standard device wakeup flags
-         (same as https://patchwork.kernel.org/patch/436321/).
-
-[4/11] - Drop special ACPI wakeup flags that aren't necessary any more
-         (same as https://patchwork.kernel.org/patch/436341/).
-
-[5/11] - Use pm_wakeup_event() to report wakeup events from ACPI buttons
-         (same as https://patchwork.kernel.org/patch/436331/).
-
-[6/11] - Blacklist Averatec box requiring acpi_sleep=nonvs (new patch).
-
-[7/11] - Rename acpi_power_off_device() (new patch).
-
-[8/11] - Check status of power resources under mutexes (new patch).
-
-[9/11] - Avoid printing messages about missing _PRW methods unnecessarily
-         (new, fixes a glitch introduced by one of the recent regression fixes,
-         -stable material).
-
-[10/11] - Remove the wake_capable flag which isn't really useful (new patch).
-
-[11/11] - Refresh battery information on 0x81 notification and during resume
-          (new patch, based on the Matthew's battery patch we discussed some
-          time ago).
-
-Please consider for applying.
-
-[NOTE: This series doesn't contain patches that depend on the latest ACPICA
- update and fix/modify changes made by it.]
-
-Thanks,
-Rafael
+Index: linux-2.6/drivers/acpi/glue.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/glue.c
++++ linux-2.6/drivers/acpi/glue.c
+@@ -167,11 +167,8 @@ static int acpi_bind_one(struct device *
+ 				"firmware_node");
+ 		ret = sysfs_create_link(&acpi_dev->dev.kobj, &dev->kobj,
+ 				"physical_node");
+-		if (acpi_dev->wakeup.flags.valid) {
++		if (acpi_dev->wakeup.flags.valid)
+ 			device_set_wakeup_capable(dev, true);
+-			device_set_wakeup_enable(dev,
+-						acpi_dev->wakeup.state.enabled);
+-		}
+ 	}
+ 
+ 	return 0;
+Index: linux-2.6/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.orig/include/acpi/acpi_bus.h
++++ linux-2.6/include/acpi/acpi_bus.h
+@@ -241,20 +241,14 @@ struct acpi_device_perf {
+ struct acpi_device_wakeup_flags {
+ 	u8 valid:1;		/* Can successfully enable wakeup? */
+ 	u8 run_wake:1;		/* Run-Wake GPE devices */
+-	u8 always_enabled:1;	/* Run-wake devices that are always enabled */
+ 	u8 notifier_present:1;  /* Wake-up notify handler has been installed */
+ };
+ 
+-struct acpi_device_wakeup_state {
+-	u8 enabled:1;
+-};
+-
+ struct acpi_device_wakeup {
+ 	acpi_handle gpe_device;
+ 	u64 gpe_number;
+ 	u64 sleep_state;
+ 	struct acpi_handle_list resources;
+-	struct acpi_device_wakeup_state state;
+ 	struct acpi_device_wakeup_flags flags;
+ 	int prepare_count;
+ 	int run_wake_count;
