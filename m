@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/5] ACPI: Use ioremap_cache()
-Date: Fri, 7 Jan 2011 01:46:40 +0100
-Message-ID: <201101070146.40348.rjw__32861.9691929363$1294363160$gmane$org@sisk.pl>
+Subject: [PATCH 1/5] PM: Fix oops in suspend/hibernate code
+	related to failing ioremap()
+Date: Fri, 7 Jan 2011 01:42:31 +0100
+Message-ID: <201101070142.31777.rjw__5831.87967208705$1294363161$gmane$org@sisk.pl>
 References: <201101070141.02951.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,73 +22,90 @@ To: Len Brown <lenb@kernel.org>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+From: Jiri Slaby <jslaby@suse.cz>
 
-Although the temporary boot-time ACPI table mappings
-were set up with CPU caching enabled, the permanent table
-mappings and AML run-time region memory accesses were
-set up with ioremap(), which on x86 is a synonym for
-ioremap_nocache().
+When ioremap() fails (which might happen for some reason), we nicely
+oops in suspend_nvs_save() due to NULL dereference by memcpy() in there.
+Fail gracefully instead.
 
-Changing this to ioremap_cache() improves performance as
-seen when accessing the tables via acpidump,
-or /sys/firmware/acpi/tables.  It should also improve
-AML run-time performance.
-
-No change on ia64.
-
-Reported-by: Jack Steiner <steiner@sgi.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/ia64/include/asm/io.h |    5 +++++
- drivers/acpi/osl.c         |    6 +++---
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/acpi/sleep.c    |    5 ++---
+ include/linux/suspend.h |    4 ++--
+ kernel/power/nvs.c      |    8 +++++++-
+ 3 files changed, 11 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/arch/ia64/include/asm/io.h
+Index: linux-2.6/drivers/acpi/sleep.c
 ===================================================================
---- linux-2.6.orig/arch/ia64/include/asm/io.h
-+++ linux-2.6/arch/ia64/include/asm/io.h
-@@ -426,6 +426,11 @@ extern void __iomem * ioremap_nocache (u
- extern void iounmap (volatile void __iomem *addr);
- extern void __iomem * early_ioremap (unsigned long phys_addr, unsigned long size);
- extern void early_iounmap (volatile void __iomem *addr, unsigned long size);
-+static inline void __iomem * ioremap_cache (unsigned long phys_addr, unsigned long size)
-+{
-+	return ioremap(phys_addr, size);
-+}
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -124,8 +124,7 @@ static int acpi_pm_freeze(void)
+ static int acpi_pm_pre_suspend(void)
+ {
+ 	acpi_pm_freeze();
+-	suspend_nvs_save();
+-	return 0;
++	return suspend_nvs_save();
+ }
+ 
+ /**
+@@ -151,7 +150,7 @@ static int acpi_pm_prepare(void)
+ {
+ 	int error = __acpi_pm_prepare();
+ 	if (!error)
+-		acpi_pm_pre_suspend();
++		error = acpi_pm_pre_suspend();
+ 
+ 	return error;
+ }
+Index: linux-2.6/include/linux/suspend.h
+===================================================================
+--- linux-2.6.orig/include/linux/suspend.h
++++ linux-2.6/include/linux/suspend.h
+@@ -262,7 +262,7 @@ static inline bool system_entering_hiber
+ extern int suspend_nvs_register(unsigned long start, unsigned long size);
+ extern int suspend_nvs_alloc(void);
+ extern void suspend_nvs_free(void);
+-extern void suspend_nvs_save(void);
++extern int suspend_nvs_save(void);
+ extern void suspend_nvs_restore(void);
+ #else /* CONFIG_SUSPEND_NVS */
+ static inline int suspend_nvs_register(unsigned long a, unsigned long b)
+@@ -271,7 +271,7 @@ static inline int suspend_nvs_register(u
+ }
+ static inline int suspend_nvs_alloc(void) { return 0; }
+ static inline void suspend_nvs_free(void) {}
+-static inline void suspend_nvs_save(void) {}
++static inline int suspend_nvs_save(void) {}
+ static inline void suspend_nvs_restore(void) {}
+ #endif /* CONFIG_SUSPEND_NVS */
+ 
+Index: linux-2.6/kernel/power/nvs.c
+===================================================================
+--- linux-2.6.orig/kernel/power/nvs.c
++++ linux-2.6/kernel/power/nvs.c
+@@ -105,7 +105,7 @@ int suspend_nvs_alloc(void)
+ /**
+  *	suspend_nvs_save - save NVS memory regions
+  */
+-void suspend_nvs_save(void)
++int suspend_nvs_save(void)
+ {
+ 	struct nvs_page *entry;
+ 
+@@ -114,8 +114,14 @@ void suspend_nvs_save(void)
+ 	list_for_each_entry(entry, &nvs_list, node)
+ 		if (entry->data) {
+ 			entry->kaddr = ioremap(entry->phys_start, entry->size);
++			if (!entry->kaddr) {
++				suspend_nvs_free();
++				return -ENOMEM;
++			}
+ 			memcpy(entry->data, entry->kaddr, entry->size);
+ 		}
 +
++	return 0;
+ }
  
- /*
-  * String version of IO memory access ops:
-Index: linux-2.6/drivers/acpi/osl.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/osl.c
-+++ linux-2.6/drivers/acpi/osl.c
-@@ -320,7 +320,7 @@ acpi_os_map_memory(acpi_physical_address
- 
- 	pg_off = round_down(phys, PAGE_SIZE);
- 	pg_sz = round_up(phys + size, PAGE_SIZE) - pg_off;
--	virt = ioremap(pg_off, pg_sz);
-+	virt = ioremap_cache(pg_off, pg_sz);
- 	if (!virt) {
- 		kfree(map);
- 		return NULL;
-@@ -642,7 +642,7 @@ acpi_os_read_memory(acpi_physical_addres
- 	virt_addr = acpi_map_vaddr_lookup(phys_addr, size);
- 	rcu_read_unlock();
- 	if (!virt_addr) {
--		virt_addr = ioremap(phys_addr, size);
-+		virt_addr = ioremap_cache(phys_addr, size);
- 		unmap = 1;
- 	}
- 	if (!value)
-@@ -678,7 +678,7 @@ acpi_os_write_memory(acpi_physical_addre
- 	virt_addr = acpi_map_vaddr_lookup(phys_addr, size);
- 	rcu_read_unlock();
- 	if (!virt_addr) {
--		virt_addr = ioremap(phys_addr, size);
-+		virt_addr = ioremap_cache(phys_addr, size);
- 		unmap = 1;
- 	}
- 
+ /**
