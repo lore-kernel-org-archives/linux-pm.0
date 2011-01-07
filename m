@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/5] ACPI / PM: Update file information and the
-	list of includes in nvs.c
-Date: Fri, 7 Jan 2011 01:44:28 +0100
-Message-ID: <201101070144.28641.rjw__20825.9994783022$1294362747$gmane$org@sisk.pl>
+Subject: [PATCH 4/5] ACPI / PM: Make suspend_nvs_save() use
+	acpi_os_map_memory()
+Date: Fri, 7 Jan 2011 01:45:58 +0100
+Message-ID: <201101070145.58907.rjw__17688.1525585943$1294362865$gmane$org@sisk.pl>
 References: <201101070141.02951.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,34 +24,35 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The file information and the list of include in drivers/acpi/nvs.c
-are outdated, so update them.
+It turns out that the NVS memory region that suspend_nvs_save()
+attempts to map has been already mapped by acpi_os_map_memory(), so
+suspend_nvs_save() should better use acpi_os_map_memory() for mapping
+memory to avoid conflicts.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/nvs.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/acpi/nvs.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 Index: linux-2.6/drivers/acpi/nvs.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/nvs.c
 +++ linux-2.6/drivers/acpi/nvs.c
-@@ -1,7 +1,7 @@
- /*
-- * linux/kernel/power/hibernate_nvs.c - Routines for handling NVS memory
-+ * nvs.c - Routines for saving and restoring ACPI NVS memory region
-  *
-- * Copyright (C) 2008,2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-+ * Copyright (C) 2008-2011 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-  *
-  * This file is released under the GPLv2.
-  */
-@@ -11,7 +11,7 @@
- #include <linux/list.h>
+@@ -12,6 +12,7 @@
  #include <linux/mm.h>
  #include <linux/slab.h>
--#include <linux/suspend.h>
-+#include <linux/acpi.h>
+ #include <linux/acpi.h>
++#include <acpi/acpiosxf.h>
  
  /*
   * Platforms, like ACPI, may want us to save some memory used by them during
+@@ -113,7 +114,8 @@ int suspend_nvs_save(void)
+ 
+ 	list_for_each_entry(entry, &nvs_list, node)
+ 		if (entry->data) {
+-			entry->kaddr = ioremap(entry->phys_start, entry->size);
++			entry->kaddr = acpi_os_map_memory(entry->phys_start,
++							  entry->size);
+ 			if (!entry->kaddr) {
+ 				suspend_nvs_free();
+ 				return -ENOMEM;
