@@ -1,17 +1,15 @@
-From: Eduardo Valentin <eduardo.valentin@nokia.com>
-Subject: Re: [PATCH 2/2] tools,
-	perf: Documentation for the power events API
-Date: Fri, 7 Jan 2011 07:50:42 +0200
-Message-ID: <20110107055042.GA6137__48515.2069748894$1294379819$gmane$org@besouro.research.nokia.com>
-References: <1294253342-29056-1-git-send-email-j-pihet@ti.com>
-	<1294253342-29056-3-git-send-email-j-pihet@ti.com>
-Reply-To: eduardo.valentin@nokia.com
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 4/5] ACPI / PM: Make suspend_nvs_save() use
+ acpi_os_map_memory()
+Date: Fri, 07 Jan 2011 01:02:31 -0500 (EST)
+Message-ID: <alpine.LFD.2.02.1101070100160.20858__21368.8764757991$1294380202$gmane$org@x980>
+References: <201101070141.02951.rjw@sisk.pl> <201101070145.58907.rjw@sisk.pl>
+	<alpine.LFD.2.02.1101070045150.20858@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1294253342-29056-3-git-send-email-j-pihet@ti.com>
+In-reply-to: <alpine.LFD.2.02.1101070045150.20858@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,136 +19,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "ext jean.pihet@newoldbits.com" <jean.pihet@newoldbits.com>
-Cc: Len Brown <len.brown@intel.com>, linux-perf-users@vger.kernel.org, linux-kernel@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, linux-pm@lists.linux-foundation.org, mingo@elte.hu, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Jean,
+> my arrandale laptop took multiple OOPS on resume after this patch.
 
-On Wed, Jan 05, 2011 at 07:49:02PM +0100, ext jean.pihet@newoldbits.com wrote:
-> From: Jean Pihet <j-pihet@ti.com>
-> 
-> Provides documentation for the following:
-> - the new power trace API,
-> - the old (legacy) power trace API,
-> - the DEPRECATED Kconfig option usage.
-> 
-> Signed-off-by: Jean Pihet <j-pihet@ti.com>
-> ---
->  Documentation/trace/events-power.txt |   90 ++++++++++++++++++++++++++++++++++
->  1 files changed, 90 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/trace/events-power.txt
-> 
-> diff --git a/Documentation/trace/events-power.txt b/Documentation/trace/events-power.txt
-> new file mode 100644
-> index 0000000..96d87b6
-> --- /dev/null
-> +++ b/Documentation/trace/events-power.txt
-> @@ -0,0 +1,90 @@
-> +
-> +			Subsystem Trace Points: power
-> +
-> +The power tracing system captures events related to power transitions
-> +within the kernel. Broadly speaking there are three major subheadings:
-> +
-> +  o Power state switch which reports events related to suspend (S-states),
-> +     cpuidle (C-states) and cpufreq (P-states)
-> +  o System clock related changes
+This bit makes my laptop happy, so I'll add it to this patch.
 
-What do you mean by system clock here? I see that you are covering cpu rate
-changes and system clock (?) here. How about memory clock changes?
-Would it make sense to have a major subheading for it? Maybe you are
-targeting it be traced by means of clocks event (item 2. bellow)..
+thanks,
+-Len
 
-> +  o Power domains related changes and transitions
-> +
-> +This document describes what each of the tracepoints is and why they
-> +might be useful.
-> +
-> +Cf. include/trace/events/power.h for the events definitions.
-> +
-> +1. Power state switch events
-> +============================
-> +
-> +1.1 New trace API
-> +-----------------
-> +
-> +A 'cpu' event class gathers the CPU-related events: cpuidle and
-> +cpufreq.
-> +
-> +cpu_idle		"state=%lu cpu_id=%lu"
-> +cpu_frequency		"state=%lu cpu_id=%lu"
-> +
-> +A suspend event is used to indicate the system going in and out of the
-> +suspend mode:
-> +
-> +machine_suspend		"state=%lu"
-> +
-> +
-> +Note: the value of '-1' or '4294967295' for state means an exit from the current state,
-> +i.e. trace_cpu_idle(4, smp_processor_id()) means that the system
-> +enters the idle state 4, while trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id())
-> +means that the system exits the previous idle state.
-> +
-> +The event which has 'state=4294967295' in the trace is very important to the user
-> +space tools which are using it to detect the end of the current state, and so to
-> +correctly draw the states diagrams and to calculate accurate statistics etc.
-> +
-> +1.2 DEPRECATED trace API
-> +------------------------
-> +
-> +A new Kconfig option CONFIG_EVENT_POWER_TRACING_DEPRECATED with the default value of
-> +'y' has been created. This allows the legacy trace power API to be used conjointly
-> +with the new trace API.
-> +The Kconfig option, the old trace API (in include/trace/events/power.h) and the
-> +old trace points will disappear in a future release (namely 2.6.41).
-> +
-> +power_start		"type=%lu state=%lu cpu_id=%lu"
-> +power_frequency		"type=%lu state=%lu cpu_id=%lu"
-> +power_end		"cpu_id=%lu"
-> +
-> +The 'type' parameter takes one of those macros:
-> + . POWER_NONE	= 0,
-> + . POWER_CSTATE	= 1,	/* C-State */
-> + . POWER_PSTATE	= 2,	/* Fequency change or DVFS */
-> +
-> +The 'state' parameter is set depending on the type:
-> + . Target C-state for type=POWER_CSTATE,
-> + . Target frequency for type=POWER_PSTATE,
-> +
-> +power_end is used to indicate the exit of a state, corresponding to the latest
-> +power_start event.
-> +
-> +2. Clocks events
-> +================
-> +The clock events are used for clock enable/disable and for
-> +clock rate change.
-> +
-> +clock_enable		"%s state=%lu cpu_id=%lu"
-> +clock_disable		"%s state=%lu cpu_id=%lu"
-> +clock_set_rate		"%s state=%lu cpu_id=%lu"
-> +
-> +The first parameter gives the clock name (e.g. "gpio1_iclk").
-> +The second parameter is '1' for enable, '0' for disable, the target
-> +clock rate for set_rate.
-> +
-> +3. Power domains events
-> +=======================
-> +The power domain events are used for power domains transitions
-> +
-> +power_domain_target	"%s state=%lu cpu_id=%lu"
-> +
-> +The first parameter gives the power domain name (e.g. "mpu_pwrdm").
-> +The second parameter is the power domain target state.
-> +
-> -- 
-> 1.7.2.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Eduardo Valentin
+diff --git a/drivers/acpi/nvs.c b/drivers/acpi/nvs.c
+index 8e7ab5e..54b6ab8 100644
+--- a/drivers/acpi/nvs.c
++++ b/drivers/acpi/nvs.c
+@@ -80,7 +80,7 @@ void suspend_nvs_free(void)
+ 			free_page((unsigned long)entry->data);
+ 			entry->data = NULL;
+ 			if (entry->kaddr) {
+-				iounmap(entry->kaddr);
++				acpi_os_unmap_memory(entry->kaddr, entry->size);
+ 				entry->kaddr = NULL;
+ 			}
+ 		}
