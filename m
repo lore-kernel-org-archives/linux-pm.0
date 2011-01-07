@@ -1,13 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 10/11] ACPI: Drop device flag wake_capable
-Date: Fri, 7 Jan 2011 01:22:12 +0100
-Message-ID: <201101070122.12578.rjw__24551.2658184909$1294360006$gmane$org@sisk.pl>
-References: <511724.91814.qm@web180315.mail.gq1.yahoo.com>
+Subject: [PATCH 0/5] PM / ACPI: Fix problems with ACPI NVS saving
+	related to using ioremap_cache() by ACPI
+Date: Fri, 7 Jan 2011 01:41:02 +0100
+Message-ID: <201101070141.02951.rjw__17490.786399185$1294362629$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <511724.91814.qm@web180315.mail.gq1.yahoo.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,63 +16,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: David Brownell <david-b@pacbell.net>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, January 07, 2011, David Brownell wrote:
-> 
-> --- On Thu, 1/6/11, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> 
-> > 
-> > The wake_capable ACPI device flag is not necessary, because
-> > it is
-> > only used in scan.c for recording the information
-> 
-> 
-> Only  for ACPI, yes? Generically, it records data for any
-> wake-capable dvice, and is not ACPI-specific...
+Hi,
 
-You're wrong, sorry.  It _is_ ACPI-specific.
+The following series of patches makes the NVS save/restore code work correctly
+if ioremap_cache() is used by ACPI.
 
-> My bias is that ACPI should  work the way other PM
-> solutions/hardware work, not collect special cases
-> unique to ACPI (kind of like this.) ...
+[1/5] - Fix Oops in the NVS saving code related to failing ioremap()
+        (patch from Jiri).
 
-So this patch is going into the right direction, isn't it?
+[2/5] - Move the NVS save/restore code to drivers/acpi.
 
->  that _PRW
-> > is
-> > present for the given device.  That information is
-> > only used by
-> > acpi_add_single_object() to decide whether or not to call
-> > acpi_bus_get_wakeup_device_flags(), so the flag may be
-> > dropped
-> > if the _PRW check is moved to
-> > acpi_bus_get_wakeup_device_flags().
-> 
-> Only if you presume ACPI ....
+[3/5] - Update file information and the list of includes in nvs.c.
 
-What do you mean _exactly_?  This flags is _not_ used anywhere outside of
-drivers/acpi/scan.c, so what's the problem?
+[4/5] - Make suspend_nvs_save() use acpi_os_map_memory().
 
-> I'm glad to see that generic-vs-ACPI duplication
-> of flags vanishing; way back when I started to add
-> wakeup support, I had to stop part way through ACPI
-> in large part because wake didn't work well yet in the Linux PM
-> framework, except for select non-ACPI HW.
-> (Starting with a USB subset: OTG and hub port sleep and ewakeup); oh, also GPIO wake on some HW, e.g.
-> or buttons, and switches like MMC/SD card detect. ISTR that stuff still wierds out a bit as it goes
-> through Linux-ACPI.
-> 
-> Also, to the extent that the ACPI code was supposed
-> to be generic and not Linux-specific, I thought Len
-> or someone from Intel should drive such issues.
+[5/5] - Make ACPI use ioremap_cache() internally.
 
-Again, please be more specific.
+Please review/test.
 
-It appears you haven't been following the development in this area for years
-and now you're making comments I can't really understand.  What's up, really?
+Do you want me to take these patches to my tree or are you going to push them
+to Linus?
 
 Rafael
