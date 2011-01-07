@@ -1,14 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/5] PM / ACPI: Fix problems with ACPI NVS
- saving related to using ioremap_cache() by ACPI
-Date: Fri, 07 Jan 2011 01:08:28 -0500 (EST)
-Message-ID: <alpine.LFD.2.02.1101070106020.20858__3156.00359249419$1294380557$gmane$org@x980>
-References: <201101070141.02951.rjw@sisk.pl>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 5/9] acpi: processor->cpuidle: Only set cpuidle
+	check_bm flag if pr->flags.bm_check is set
+Date: Fri,  7 Jan 2011 11:29:46 +0100
+Message-ID: <1294396190-23031-6-git-send-email-trenn__38096.8262012631$1294396380$gmane$org@suse.de>
+References: <1294396190-23031-1-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201101070141.02951.rjw@sisk.pl>
+In-Reply-To: <1294396190-23031-1-git-send-email-trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,13 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, arjan@linux.intel.com, j-pihet@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-> Do you want me to take these patches to my tree or are you going to push them
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: lenb@kernel.org
+CC: linux-acpi@vger.kernel.org
+CC: linux-pm@lists.linux-foundation.org
+CC: Arjan van de Ven <arjan@linux.intel.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+---
+ drivers/acpi/processor_idle.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-I've included them in acpi-test, and will include in my .38 push.
-
-thanks,
--Len Brown, Intel Open Source Technology Center
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index b28693e..82f74c9 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1039,7 +1039,8 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
+ 			snprintf(state->abbr, CPUIDLE_ABBR_LEN, "C3");
+ 			state->flags |= CPUIDLE_FLAG_DEEP;
+ 			state->flags |= CPUIDLE_FLAG_TIME_VALID;
+-			state->flags |= CPUIDLE_FLAG_CHECK_BM;
++			if (pr->flags.bm_check)
++				state->flags |= CPUIDLE_FLAG_CHECK_BM;
+ 			state->enter = pr->flags.bm_check ?
+ 					acpi_idle_enter_bm :
+ 					acpi_idle_enter_simple;
+-- 
+1.7.3.1
