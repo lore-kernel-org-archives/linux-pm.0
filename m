@@ -1,15 +1,14 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 4/5] ACPI / PM: Make suspend_nvs_save() use
- acpi_os_map_memory()
-Date: Fri, 07 Jan 2011 01:02:31 -0500 (EST)
-Message-ID: <alpine.LFD.2.02.1101070100160.20858__21368.8764757991$1294380202$gmane$org@x980>
-References: <201101070141.02951.rjw@sisk.pl> <201101070145.58907.rjw@sisk.pl>
-	<alpine.LFD.2.02.1101070045150.20858@x980>
+Subject: Re: [PATCH 0/5] PM / ACPI: Fix problems with ACPI NVS
+ saving related to using ioremap_cache() by ACPI
+Date: Fri, 07 Jan 2011 01:08:28 -0500 (EST)
+Message-ID: <alpine.LFD.2.02.1101070106020.20858__3156.00359249419$1294380557$gmane$org@x980>
+References: <201101070141.02951.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.LFD.2.02.1101070045150.20858@x980>
+In-reply-to: <201101070141.02951.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,23 +22,9 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-> my arrandale laptop took multiple OOPS on resume after this patch.
+> Do you want me to take these patches to my tree or are you going to push them
 
-This bit makes my laptop happy, so I'll add it to this patch.
+I've included them in acpi-test, and will include in my .38 push.
 
 thanks,
--Len
-
-diff --git a/drivers/acpi/nvs.c b/drivers/acpi/nvs.c
-index 8e7ab5e..54b6ab8 100644
---- a/drivers/acpi/nvs.c
-+++ b/drivers/acpi/nvs.c
-@@ -80,7 +80,7 @@ void suspend_nvs_free(void)
- 			free_page((unsigned long)entry->data);
- 			entry->data = NULL;
- 			if (entry->kaddr) {
--				iounmap(entry->kaddr);
-+				acpi_os_unmap_memory(entry->kaddr, entry->size);
- 				entry->kaddr = NULL;
- 			}
- 		}
+-Len Brown, Intel Open Source Technology Center
