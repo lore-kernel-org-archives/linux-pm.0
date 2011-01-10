@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 12/12] [RFC] Introduce Alarm (hybrid) timers
-Date: Sat, 8 Jan 2011 11:36:06 +0100
-Message-ID: <201101081136.06682.rjw__7058.84616259045$1294483185$gmane$org@sisk.pl>
-References: <1294280159-2513-1-git-send-email-john.stultz@linaro.org>
-	<AANLkTin8cntsFpaikpfzPbWL1YFb702rPync240X4axW@mail.gmail.com>
-	<1294367420.4518.171.camel@work-vm>
+From: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] forcedeth: Do not use legacy PCI power
+	management
+Date: Sun, 09 Jan 2011 16:20:52 -0800 (PST)
+Message-ID: <20110109.162052.98884306.davem__32954.4907356196$1294618914$gmane$org@davemloft.net>
+References: <201101070049.16833.rjw@sisk.pl> <201101072212.05449.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1294367420.4518.171.camel@work-vm>
+In-Reply-To: <201101072212.05449.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,56 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: rjw@sisk.pl
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpZGF5LCBKYW51YXJ5IDA3LCAyMDExLCBKb2huIFN0dWx0eiB3cm90ZToKPiBPbiBUaHUs
-IDIwMTEtMDEtMDYgYXQgMTY6NTggLTA4MDAsIEFydmUgSGrDuG5uZXbDpWcgd3JvdGU6Cj4gPiAy
-MDExLzEvNiBKb2huIFN0dWx0eiA8am9obi5zdHVsdHpAbGluYXJvLm9yZz46Cj4gPiA+IFNvIG90
-aGVyd2lzZSwgZG8geW91IHNlZSBhbnkgcmVhc29uIHdoeSBhbmRyb2lkIG1pZ2h0IG5vdCBiZSBh
-YmxlIHRvCj4gPiA+IGFkYXB0IHRoaXMgY29kZSB0byByZXBsYWNlIHRoZSBhbmRyb2lkIGFsYXJt
-IHRpbWVycz8KPiA+ID4KPiA+IAo+ID4gVGhlIHVzZXItc3BhY2UgaW50ZXJmYWNlIGRvZXMgbm90
-IGxvb2sgYXBwZWFsaW5nLCBidXQgSSBkb24ndCBzZWUgYW55Cj4gPiByZWFzb24gd2h5IHRoZSBp
-bi1rZXJuZWwgaW50ZXJmYWNlKHMpIGNhbm5vdCBiZSBzaGFyZWQuIE91ciB1c2VyLXNwYWNlCj4g
-PiBjb2RlIGhhcyBhIHNpbmdsZSB0aHJlYWQgdGhhdCB3YWl0cyBmb3IgYWxhcm1zIHRvIHRyaWdn
-ZXIsIHdoaWxlIHRoZQo+ID4gYWxhcm1zIGNhbiBiZSBtb2RpZmllZCBmcm9tIGFueSB0aHJlYWQu
-Cj4gCj4gU28gaXRzIHNvbWV0aGluZyBsaWtlIG5hbm9zbGVlcCgpLCBvbmx5IG90aGVyIHRocmVh
-ZHMgY2FuIGV4dGVuZCBvcgo+IHNob3J0ZW4gdGhlIHNsZWVwIHRpbWU/Cj4gCj4gQ291bGQgeW91
-IGV4cGxhaW4gc29tZSBvZiB0aGUgcmF0aW9uYWwgZm9yIHN1Y2ggYW4gaW50ZXJmYWNlLCBzbyBJ
-IGNhbgo+IGJldHRlciB1bmRlcnN0YW5kIHRoZSBuZWVkPwo+IAo+ID4gIEFzIGZhciBhcyBJIGNh
-biB0ZWxsLCB1c2luZwo+ID4gdGhlIHBvc2l4IGludGVyZmFjZSB3b3VsZCBlaXRoZXIgcmVxdWly
-ZSBhIHRocmVhZCBwZXIgYWxhcm0gKHVwIHRvIDUpCj4gPiBvciB1c2luZyBzaWduYWxzLiBCb3Ro
-IG1ha2UgdGhlIHVzZXItc3BhY2UgY29kZSBtb3JlIGNvbXBsaWNhdGVkLCBhbmQKPiAKPiBZZWEs
-IGl0IHByb2JhYmx5IHdvdWxkIG5lZWQgc2lnbmFscywgYnV0IEknZCBoYXZlIHRvIGdyb2sgdGhl
-IHVzZSBjYXNlIGEKPiBsaXR0bGUgYmV0dGVyLiBBbmQgaXRzIHBvc3NpYmxlIGl0IHdvdWxkIGNv
-bXBsaWNhdGUgdGhlIHVzZXItc3BhY2UgY29kZQo+IHNvbWUsIGJ1dCBvbiB0aGUgb3RoZXIgaGFu
-ZCwgaXQgd291bGQgYmUgdXNpbmcgYSBtb3JlIHN0YW5kYXJkIGtlcm5lbAo+IGludGVyZmFjZS4g
-VGhlIG90aGVyIG9wdGlvbiBpcyBleHRlbmRpbmcgdGhlIHBvc2l4IGludGVyZmFjZSB0byB0cnkg
-dG8KPiBiZXR0ZXIgbWF0Y2ggdGhlIG5lZWQuCj4gCj4gPiBpdCBpcyBub3QgY2xlYXIgaWYgZWl0
-aGVyIG9mIHRoZW0gcHJvdmlkZSBhIGNsZWFyIGhhbmQtb2ZmIGJldHdlZW4KPiA+IHdoZXJlIHRo
-ZSBrZXJuZWwgbmVlZHMgdG8gYmxvY2sgc3VzcGVuZCBiZWNhdXNlIHRoZSBhbGFybSBoYXMgbm90
-IGJlZW4KPiA+IGRlbGl2ZXJlZCB0byB1c2VyLXNwYWNlIGFuZCB3aGVyZSB1c2VyLXNwYWNlIG5l
-ZWRzIHRvIGJsb2NrIHN1c3BlbmQKPiA+IGJlY2F1c2UgaXQgaXMgaGFuZGxpbmcgdGhlIGFsYXJt
-Lgo+IAo+IEluZGVlZC4gSSdtIHN0aWxsIGxvb2tpbmcgaW50byB0aGUgcG1fd2FrZSBkZXRhaWxz
-IHRvIHNlZSB0aGUKPiBsaW1pdGF0aW9ucyB0aGVyZS4gU29tZSBtZXRob2Qgb2YgaW5oZXJpdGlu
-ZyBhIHN0YXlfYXdha2Ugc2VlbXMgdG8gYmUKPiBuZWVkZWQsIGJ1dCBzb3VuZHMgcHJldHR5IHVn
-bHkuIEFsdGVybmF0aXZlbHkgd2UgbWF5IG5lZWQgc29tZSBtZXRob2Qgb3IKPiBjYWxsYmFjayB0
-byB0aGUga2VybmVsIHRvIGRldGVjdCB0aGF0IGEgc2lnbmFsIGhhcyBiZWVuIGhhbmRsZWQgYnkK
-PiB1c2VybGFuZCAoYWxsb3dpbmcgdGhlIHBtX3JlbGF4IHRvIG9jY3VyKS4KPiAKPiBSYWZhZWw6
-IEFueSB0aG91Z2h0cyBoZXJlPwoKSSB0aGluayB0aGlzIHByb2JsZW0gaXMgc3BlY2lmaWMgdG8g
-QW5kcm9pZCB3aGVyZSBzdXNwZW5kIGlzIHN0YXJ0ZWQKYXV0b21hdGljYWxseSBmcm9tIGtlcm5l
-bCBzcGFjZSwgc28gdXNlciBzcGFjZSBuZWVkcyBhbiBpbnRlcmZhY2UgdG8gYWN0aXZlbHkKcHJl
-dmVudCB0aGUga2VybmVsIGZyb20gc3RhcnRpbmcgc3VzcGVuZC4KClRoZSBtYWlubGluZSBtb2Rl
-bCBpcyB0aGF0IHN1c3BlbmQgd2lsbCBhbHdheXMgYmUgc3RhcnRlZCBmcm9tIHVzZXIgc3BhY2Us
-CnNvIGluc3RlYWQgb2YgdGVsbGluZyB0aGUga2VybmVsIG5vdCB0byBzdXNwZW5kIHVzZXIgc3Bh
-Y2UgbmVlZHMgdG8gYXZvaWQKc3RhcnRpbmcgc3VzcGVuZCBpbiB0aGUgZmlyc3QgcGxhY2UuICBJ
-biB0aGlzIG1vZGVsIHRoZSBrZXJuZWwgY29kZSBjYW4gc2ltcGx5CmNhbGwgcG1fcmVsYXgoKSBh
-cyBzb29uIGFzIF9pdF8gZG9lc24ndCBuZWVkIHRvIHByZXZlbnQgdGhlIHN5c3RlbSBmcm9tCnN1
-c3BlbmRpbmcgYW55IG1vcmUgKGVnLiBpdCBrbm93cyB0aGF0IHVzZXIgc3BhY2UgaGFzIGxlYXJu
-dCBvZiB0aGUgYWxhcm0pIGFuZAppdCBuZWVkIG5vdCB3b3JyeSBhYm91dCB0aGUgdXNlciBzcGFj
-ZSBwYXJ0IChlZy4gd2hldGhlciBvciBub3QgdXNlciBzcGFjZQppcyBzdGlsbCBoYW5kbGluZyB0
-aGUgYWxhcm0pLiAKClRoYW5rcywKUmFmYWVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
-aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Fri, 7 Jan 2011 22:12:05 +0100
+
+> Subject: forcedeth: Do not use legacy PCI power management (v2)
+> 
+> The forcedeth driver uses the legacy PCI power management, so it has
+> to do PCI-specific things in its ->suspend() and ->resume() callbacks
+> and some of them are not done correctly.
+> 
+> Convert forcedeth to the new PCI power management framework and make
+> it let the PCI subsystem take care of all the PCI-specific aspects of
+> device handling during system power transitions.
+> 
+> Tested with nVidia Corporation MCP55 Ethernet (rev a2).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+Applied, thanks.
