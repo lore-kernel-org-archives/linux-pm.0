@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Trying to understand new wakeup events architecture
-Date: Wed, 12 Jan 2011 21:02:44 +0100
-Message-ID: <201101122102.44482.rjw@sisk.pl>
-References: <AANLkTik0y2O4GTvoFkm-94iSWdWUG8juZ0cBNWXDas8Q@mail.gmail.com>
-	<AANLkTinw9MXSXV3FNp-b1S0bpBVBoLJi7CUhC0=2Pgg0@mail.gmail.com>
-	<AANLkTi=PL_tzxEnfKGjP4Qjv_jNyR-c95W8-caXfG2vo@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 4/9] cpuidle: Introduce .abbr (abbrevation)
+ for cpuidle states
+Date: Wed, 12 Jan 2011 17:25:12 -0500 (EST)
+Message-ID: <alpine.LFD.2.02.1101121705130.19754__1686.76976250044$1294871303$gmane$org@x980>
+References: <1294396190-23031-1-git-send-email-trenn@suse.de>
+	<1294396190-23031-5-git-send-email-trenn@suse.de>
+	<alpine.LFD.2.02.1101120150570.19140@x980>
+	<201101121437.51122.trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=PL_tzxEnfKGjP4Qjv_jNyR-c95W8-caXfG2vo@mail.gmail.com>
+In-reply-to: <201101121437.51122.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,33 +21,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Drake <dsd@laptop.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, linux-omap@vger.kernel.org, arjan@linux.intel.com, j-pihet@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, January 12, 2011, Daniel Drake wrote:
-> Hi Rafael,
-> 
-> On 16 December 2010 14:39, Daniel Drake <dsd@laptop.org> wrote:
-> > On 15 December 2010 22:33, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> I guess it's sufficient to read the article at http://lwn.net/Articles/416690/
-> >> (or the PDF linked from there is that's not enough :-)).
-> >
-> > Thanks, that helps a lot.
-> >
-> >> I don't really think it solves your problem right now, because it's only a
-> >> high-level framework and it's missing some mechanics for this purpose.
-> >
-> > OK, so we'll push for a sysfs node that can be used by userspace to
-> > determine the wakeup source.
-> 
-> How do you feel about us using power_kobj to create
-> /sys/power/wakeup_source from inside our OLPC code?
-> This would include a textual representation of the last wakeup source.
-> 
-> Alternatively we could put it as a sysfs attribute of our own platform device.
+> > If the display tools can only handle 3 characters,
+> > then why not have them simply use the 1st 3 characters
+> > of the existing name field?
 
-I'm basically fine with /sys/power/source as long as its contents are generally
-suitable.  What exactly do you want to show up in that file?
+> You mean use:
+> C3 NHM
+> instead of
+> NHM-C3
+> for intel_idle?
 
-Rafael
+Yes.
+is there a reason that would be a problem?
+
+If only 3 characters are useful,
+then I'd rather see you simly do this:
+
+#define CPUIDLE_NAME_LEN 3
+
+> Then userspace has to parse the two informations glued
+> together, get rid of the whitespace, etc.
+
+what "two informations"?
+why is kernel bloat the instrument of choice
+to avoid the expense of string truncation
+in user-space tools?
+
+> But by sysfs convention a separate file must be used
+> if two data are passed to userspace which is the case here.
+
+what two data?
+
+It is fine for a string to include space characters.
+
+> > If that is not unique,
+> > then re-arrange the strings so that it is unique...
+
+> See above, it would unnecessarily make life hard for
+> userspace.
+> Afaik sysfs entries do not consume resources as long as
+> they do not get accessed.
+
+they clutter the source code,
+they create  an additional name for something
+that arguably already has 3 names --
+the state #, the name, and the description.
+I'd rather delete a few of the fields than add a 4th...
+
+> >Of course the ACPI part of this patch will not apply,
+> > as it depends on patch 1 in this series, which was erroneous.
+> > For ACPI, the existing name field is already fine,
+> > as C%d fits into 3 characters.
+
+> For acpi_idle only it would work, but this is (nearly) the only
+> one.
+> For example for sh arch:
+> name: SuperH
+> "SH SuperH" contains two data and should get split up into:
+> name: SuperH
+> abbr: SH
+
+acpi/arch/sh/kernel/cpu/shmobile/cpuidle.c
+already uses state->name = "C0", "C1", "C2".
+
+Just use them and be done.
+
+> By convention the first characters of "description" could be
+> used, but you would again end up in userspace parsing and
+> double info in one sysfs file.
+> 
+> I hope that's enough for convincing, I'd really like to go
+> the .abbr way. Do you give me an acked-by for that one?
+
+No.
+
+We should not invent an additional abbreviation field.
+The tools should use the existing name field.
+If the existing name field is not sufficient, then
+the states should simply be enumerated and numbers
+be shown in the GUI.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
