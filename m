@@ -1,16 +1,17 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 4/9] cpuidle: Introduce .abbr (abbrevation)
-	for cpuidle states
-Date: Thu, 13 Jan 2011 00:39:18 +0100
-Message-ID: <201101130039.19519.trenn__11816.2492792637$1294875635$gmane$org@suse.de>
-References: <1294396190-23031-1-git-send-email-trenn@suse.de>
-	<201101121437.51122.trenn@suse.de>
-	<alpine.LFD.2.02.1101121705130.19754@x980>
-Mime-Version: 1.0
+From: Theodore Tso <tytso@mit.edu>
+Subject: Re: Oops while going into hibernate
+Date: Wed, 12 Jan 2011 19:44:17 -0500
+Message-ID: <A01161D0-D08F-4522-A546-90057B2E1F2A__36034.568589139$1294879550$gmane$org@mit.edu>
+References: <alpine.LFD.2.02.1101121443230.1900@localhost6.localdomain6>
+	<20110112162655.GA13496@thunk.org>
+	<alpine.LFD.2.02.1101121755400.2011@localhost6.localdomain6>
+	<20110112172646.GB13496@thunk.org>
+	<alpine.LFD.2.02.1101121934060.2011@localhost6.localdomain6>
+Mime-Version: 1.0 (Apple Message framework v1082)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.02.1101121705130.19754@x980>
+In-Reply-To: <alpine.LFD.2.02.1101121934060.2011@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,38 +21,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, mingo@elte.hu, linux-omap@vger.kernel.org, arjan@linux.intel.com, j-pihet@ti.com
+To: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, "linux-ext4@vger.kernel.org development" <linux-ext4@vger.kernel.org>, LKML Kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 12 January 2011 23:25:12 Len Brown wrote:
-> > > If the display tools can only handle 3 characters,
-> > > then why not have them simply use the 1st 3 characters
-> > > of the existing name field?
+
+On Jan 12, 2011, at 1:49 PM, Sebastian Ott wrote:
+
 > 
-> > You mean use:
-> > C3 NHM
-> > instead of
-> > NHM-C3
-> > for intel_idle?
+> I did about 5 re-tests with different loads, the result was always:
 > 
-> Yes.
-> is there a reason that would be a problem?
-A much more elegant solution came to my mind:
-I'll rewrite the perf timechart patch to do:
-Title:   C-stateName1 [1] , C-stateName2 [2]
-and later I will refer to the states by 1, 2, ...
-Eventually a:
-Description:
-[1] C-stateDescription1
-[2] C-stateDescription2
-...
-can be put somewhere as well.
+> [  249.238697] EXT4-fs (dasda1): inode #1106 has NULL jinode
+> 
+> # debugfs /dev/dasda1
+> debugfs 1.41.10 (10-Feb-2009)
+> debugfs:  ncheck 1106
+> Inode   Pathname
+> 1106    /usr/bin/killall
+> debugfs:  q
+> 
 
-Please ignore this patch.
+That looks really bogus.  /usr/bin/killall is a system binary, and there's no good reason that hibernation should be trying to write pages to that binary.
 
-Stupid that I didn't think of that in the first place.
+You said originally that the oops was happening "while going into hibernation right after resuming with...".   So that means you did a successful suspend/resume, and then the second suspend caused the oops?   It looks like somehow the pages were left marked as dirty, so the writeback daemons attempted writing back a page to an inode which was never opened read/write (and in fact as a text page for /usr/bin/killall, was mapped read/only).   Given that ext4 initializes jinode only when the file is opened read/write, the fact that it is null, and the fact that it makes no sense that a program would be modifying /usr/bin/killall as part of a suspend/resume, it looks very much like we just unmasked a software suspend bug....
 
-Thanks,
-
-   Thomas
+-- Ted
