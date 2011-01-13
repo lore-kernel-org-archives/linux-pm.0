@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 06/12] cpuidle: delete NOP CPUIDLE_FLAG_POLL
-Date: Wed, 12 Jan 2011 22:39:56 -0500
-Message-ID: <d247632c08c674864d438733280422ddb7130ff8.1294889887.git.len.brown@intel.com>
+Subject: [PATCH 09/12] cpuidle: CPUIDLE_FLAG_TLB_FLUSHED is
+ specific to intel_idle
+Date: Wed, 12 Jan 2011 22:39:59 -0500
+Message-ID: <956d033fb2eb3f8818260cdf01644bf4dc1a9e33.1294889887.git.len.brown@intel.com>
 References: <1294890002-6274-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,38 +26,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-it serves no purpose
-
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/cpuidle/cpuidle.c |    2 +-
+ drivers/idle/intel_idle.c |    8 ++++++++
  include/linux/cpuidle.h   |    1 -
- 2 files changed, 1 insertions(+), 2 deletions(-)
+ 2 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 37e4460..dd5f1ea 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -186,7 +186,7 @@ static void poll_idle_init(struct cpuidle_device *dev)
- 	state->exit_latency = 0;
- 	state->target_residency = 0;
- 	state->power_usage = -1;
--	state->flags = CPUIDLE_FLAG_POLL;
-+	state->flags = 0;
- 	state->enter = poll_idle;
- }
- #else
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 21d3871..8256309 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -82,6 +82,14 @@ static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state);
+ static struct cpuidle_state *cpuidle_state_table;
+ 
+ /*
++ * Set this flag for states where the HW flushes the TLB for us
++ * and so we don't need cross-calls to keep it consistent.
++ * If this flag is set, SW flushes the TLB, so even if the
++ * HW doesn't do the flushing, this flag is safe to use.
++ */
++#define CPUIDLE_FLAG_TLB_FLUSHED	0x10000
++
++/*
+  * States are indexed by the cstate number,
+  * which is also the index into the MWAIT hint array.
+  * Thus C0 is a dummy.
 diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 1be416b..dee3285 100644
+index c252953..6be722c 100644
 --- a/include/linux/cpuidle.h
 +++ b/include/linux/cpuidle.h
-@@ -48,7 +48,6 @@ struct cpuidle_state {
- /* Idle State Flags */
+@@ -49,7 +49,6 @@ struct cpuidle_state {
  #define CPUIDLE_FLAG_TIME_VALID	(0x01) /* is residency time measurable? */
  #define CPUIDLE_FLAG_CHECK_BM	(0x02) /* BM activity will exit state */
--#define CPUIDLE_FLAG_POLL	(0x10) /* no latency, no savings */
- #define CPUIDLE_FLAG_SHALLOW	(0x20) /* low latency, minimal savings */
- #define CPUIDLE_FLAG_BALANCED	(0x40) /* medium latency, moderate savings */
- #define CPUIDLE_FLAG_DEEP	(0x80) /* high latency, large savings */
+ #define CPUIDLE_FLAG_IGNORE	(0x100) /* ignore during this idle period */
+-#define CPUIDLE_FLAG_TLB_FLUSHED (0x200) /* tlb will be flushed */
+ 
+ #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
+ 
 -- 
 1.7.4.rc1.14.g7fad99
