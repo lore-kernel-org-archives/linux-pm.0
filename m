@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 08/12] cpuidle: delete unused
- CPUIDLE_FLAG_SHALLOW, BALANCED, DEEP definitions
-Date: Wed, 12 Jan 2011 22:39:58 -0500
-Message-ID: <642f11c53f17aee991d97d14e6922172849ef227.1294889887.git.len.brown@intel.com>
+Subject: [PATCH 05/12] ACPI: processor_idle: delete use of NOP
+	CPUIDLE_FLAGs
+Date: Wed, 12 Jan 2011 22:39:55 -0500
+Message-ID: <0aae9f923bcc476a8e4725dd3ac37547b9816ee5.1294889887.git.len.brown@intel.com>
 References: <1294890002-6274-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,24 +26,48 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
+CPUIDLE_FLAG_SHALLOW
+CPUIDLE_FLAG_BALANCED
+CPUIDLE_FLAG_DEEP
+CPUIDLE_FLAG_CHECK_BM
+
+were set by acpi_processor_setup_cpuidle(),
+but never used by cpuidle or by acpi_idle.
+So stop setting them.
+
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/linux/cpuidle.h |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ drivers/acpi/processor_idle.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index dee3285..c252953 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -48,9 +48,6 @@ struct cpuidle_state {
- /* Idle State Flags */
- #define CPUIDLE_FLAG_TIME_VALID	(0x01) /* is residency time measurable? */
- #define CPUIDLE_FLAG_CHECK_BM	(0x02) /* BM activity will exit state */
--#define CPUIDLE_FLAG_SHALLOW	(0x20) /* low latency, minimal savings */
--#define CPUIDLE_FLAG_BALANCED	(0x40) /* medium latency, moderate savings */
--#define CPUIDLE_FLAG_DEEP	(0x80) /* high latency, large savings */
- #define CPUIDLE_FLAG_IGNORE	(0x100) /* ignore during this idle period */
- #define CPUIDLE_FLAG_TLB_FLUSHED (0x200) /* tlb will be flushed */
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index eefd4aa..70599d2 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1023,7 +1023,6 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
+ 		state->flags = 0;
+ 		switch (cx->type) {
+ 			case ACPI_STATE_C1:
+-			state->flags |= CPUIDLE_FLAG_SHALLOW;
+ 			if (cx->entry_method == ACPI_CSTATE_FFH)
+ 				state->flags |= CPUIDLE_FLAG_TIME_VALID;
  
+@@ -1032,16 +1031,13 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
+ 			break;
+ 
+ 			case ACPI_STATE_C2:
+-			state->flags |= CPUIDLE_FLAG_BALANCED;
+ 			state->flags |= CPUIDLE_FLAG_TIME_VALID;
+ 			state->enter = acpi_idle_enter_simple;
+ 			dev->safe_state = state;
+ 			break;
+ 
+ 			case ACPI_STATE_C3:
+-			state->flags |= CPUIDLE_FLAG_DEEP;
+ 			state->flags |= CPUIDLE_FLAG_TIME_VALID;
+-			state->flags |= CPUIDLE_FLAG_CHECK_BM;
+ 			state->enter = pr->flags.bm_check ?
+ 					acpi_idle_enter_bm :
+ 					acpi_idle_enter_simple;
 -- 
 1.7.4.rc1.14.g7fad99
