@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 05/12] ACPI: processor_idle: delete use of NOP
-	CPUIDLE_FLAGs
-Date: Wed, 12 Jan 2011 22:39:55 -0500
-Message-ID: <0aae9f923bcc476a8e4725dd3ac37547b9816ee5.1294889887.git.len.brown@intel.com>
+Subject: [PATCH 07/12] SH,
+	cpuidle: delete use of NOP CPUIDLE_FLAGS_SHALLOW
+Date: Wed, 12 Jan 2011 22:39:57 -0500
+Message-ID: <03d8b083511a7be2c69b750b8a4e412a21189291.1294889887.git.len.brown@intel.com>
 References: <1294890002-6274-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,48 +26,24 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-CPUIDLE_FLAG_SHALLOW
-CPUIDLE_FLAG_BALANCED
-CPUIDLE_FLAG_DEEP
-CPUIDLE_FLAG_CHECK_BM
-
-were set by acpi_processor_setup_cpuidle(),
-but never used by cpuidle or by acpi_idle.
-So stop setting them.
+set but not checked.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/processor_idle.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+ arch/sh/kernel/cpu/shmobile/cpuidle.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index eefd4aa..70599d2 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -1023,7 +1023,6 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
- 		state->flags = 0;
- 		switch (cx->type) {
- 			case ACPI_STATE_C1:
--			state->flags |= CPUIDLE_FLAG_SHALLOW;
- 			if (cx->entry_method == ACPI_CSTATE_FFH)
- 				state->flags |= CPUIDLE_FLAG_TIME_VALID;
+diff --git a/arch/sh/kernel/cpu/shmobile/cpuidle.c b/arch/sh/kernel/cpu/shmobile/cpuidle.c
+index 83972aa..c19e2a9 100644
+--- a/arch/sh/kernel/cpu/shmobile/cpuidle.c
++++ b/arch/sh/kernel/cpu/shmobile/cpuidle.c
+@@ -81,7 +81,6 @@ void sh_mobile_setup_cpuidle(void)
+ 	state->target_residency = 1 * 2;
+ 	state->power_usage = 3;
+ 	state->flags = 0;
+-	state->flags |= CPUIDLE_FLAG_SHALLOW;
+ 	state->flags |= CPUIDLE_FLAG_TIME_VALID;
+ 	state->enter = cpuidle_sleep_enter;
  
-@@ -1032,16 +1031,13 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
- 			break;
- 
- 			case ACPI_STATE_C2:
--			state->flags |= CPUIDLE_FLAG_BALANCED;
- 			state->flags |= CPUIDLE_FLAG_TIME_VALID;
- 			state->enter = acpi_idle_enter_simple;
- 			dev->safe_state = state;
- 			break;
- 
- 			case ACPI_STATE_C3:
--			state->flags |= CPUIDLE_FLAG_DEEP;
- 			state->flags |= CPUIDLE_FLAG_TIME_VALID;
--			state->flags |= CPUIDLE_FLAG_CHECK_BM;
- 			state->enter = pr->flags.bm_check ?
- 					acpi_idle_enter_bm :
- 					acpi_idle_enter_simple;
 -- 
 1.7.4.rc1.14.g7fad99
