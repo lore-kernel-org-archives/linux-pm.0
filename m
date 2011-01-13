@@ -1,14 +1,17 @@
-From: Daniel Drake <dsd@laptop.org>
-Subject: Re: Trying to understand new wakeup events architecture
-Date: Thu, 13 Jan 2011 20:01:48 +0000
-Message-ID: <1294948908.2228.11.camel@polyethylene>
-References: <Pine.LNX.4.44L0.1101131154350.2022-100000@iolanthe.rowland.org>
-	<201101132034.49522.rjw@sisk.pl>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] i2c: Factor out runtime suspend checks from
+ PM operations
+Date: Thu, 13 Jan 2011 21:17:51 +0100
+Message-ID: <20110113211751.62e878d8__11332.2907746353$1294950089$gmane$org@endymion.delvare>
+References: <1293712813-4090-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<4D23A839.6030205@codeaurora.org>
+	<20110104231021.GA18024@sirena.org.uk>
+	<201101050928.53979.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101132034.49522.rjw@sisk.pl>
+In-Reply-To: <201101050928.53979.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,71 +22,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+Cc: Abhijeet Dharmapurikar <adharmap@codeaurora.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2011-01-13 at 20:34 +0100, Rafael J. Wysocki wrote:
-> It looks like Daniel wants the wakeup events framework to store the last
-> active wakeup source information somewhere (eg. in a file in /sys/power).
-> I'm a little bit worried about that, because potentially there may be many
-> wakeup events occuring at run time, in which case it would be a significant
-> performance overhead to update the "last active wakeup source" info every
-> time (and a scalability issue, because every code path handling a wakeup
-> source would want to update the same sysfs file).  Also, collecting that
-> information at run time doesn't seem to be particularly useful.
+Hi Rafael,
 
-This was one thing that confused me reading about the wakeup events
-architecture, and I'm still not entirely clear.
-
-Your definition of "wakeup event" is an event that happens, during
-regular system operation, that should prevent the system from going to
-sleep. Is that accurate?
-
-When I refer to "wakeup event" I'm referring exclusively to events that
-happen when the system is suspended, that cause it to wake up and resume
-operation.
-
-> It may be useful to know what device has actually woken up the system from
-> suspend.  To that end, I think the only really valid approach is to retrieve
-> this information from the platform firmware early during resume and export
-> it through a sysfs attribute afterwards.  We can develop a generic helper
-> code for that second part, but the first one has to be platform-specific.
+On Wed, 5 Jan 2011 09:28:53 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, January 05, 2011, Mark Brown wrote:
+> > On Tue, Jan 04, 2011 at 03:07:37PM -0800, Abhijeet Dharmapurikar wrote:
+> > > Mark Brown wrote:
+> > 
+> > >> device op. The PM core provides pm_generic_ functions implementing this
+> > >> behaviour - use them to reduce coupling with future PM updates.
+> > 
+> > > pm_generic_suspend() and others needs to be externed in linux/pm_runtime.h?
+> > 
+> > Yes, there's a patch in -next for this already so this patch would need
+> > to either wait for later in the merge window or go in via the PM tree
+> > with the preceeding one (the original version of this patch was posted
+> > as part of a series with the export patch).
 > 
-> Daniel, what exactly does your user space use this information for?
+> I would take it, but I'm still waiting for a word from Jean.
 
-We're talking the same language here. I'd welcome a generic helper.
+Sorry for the long silence, I was on vacation. I've just applied this
+patch, and I will send it to Linus tomorrow.
 
-There are several different cases, but here is one example that should
-be illustrative:
-
-1) System is idle, hence it goes to sleep with display on, with rtcwake
-timer for 5 minutes in the future, as well as various other wakeup
-sources active (keyboard, mouse, network, ...)
-
-2) 5 minutes passes and system resumes. Userspace determines that the
-wakeup source was the RTC alarm. In other words, the system is still
-idle. Since the user doesn't seem to be doing anything and might not
-even be watching, we dim the screen a bit to save some power. Then we go
-back to sleep.
-
-3) A few minutes later, the user starts typing. The system resumes.
-Userspace checks the wakeup reason, notes that it was woken up due to
-local user activity. So the display is restored to normal brightness.
-The idle-check timer is started again, ready to go to sleep a minute or
-so after user inactivity.
-
-
-
-
-an alternative case for #3 is:
-
-3b) A few minutes later, a network packet is received for the system.
-The system resumes. Userspace checks the wakeup reason, notes that it
-was woken up due to network activity. The brightness is *not* changed,
-since if it were, it would appear very strange to anyone watching. The
-system goes back to sleep within a few seconds, assuming that the user
-is not present means that theres no need to sit around a long time
-waiting for input.
-
-
-Daniel
+-- 
+Jean Delvare
