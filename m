@@ -1,20 +1,16 @@
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: Oops while going into hibernate
-Date: Thu, 13 Jan 2011 14:36:12 +0100
-Message-ID: <20110113133612.GD2534__5931.09419937736$1294925839$gmane$org@osiris.boeblingen.de.ibm.com>
-References: <alpine.LFD.2.02.1101121443230.1900@localhost6.localdomain6>
-	<20110112162655.GA13496@thunk.org>
-	<alpine.LFD.2.02.1101121755400.2011@localhost6.localdomain6>
-	<20110112172646.GB13496@thunk.org>
-	<alpine.LFD.2.02.1101121934060.2011@localhost6.localdomain6>
-	<A01161D0-D08F-4522-A546-90057B2E1F2A@mit.edu>
-	<alpine.LFD.2.02.1101131238480.1899@localhost6.localdomain6>
+From: Daniel Drake <dsd@laptop.org>
+Subject: Re: Trying to understand new wakeup events architecture
+Date: Thu, 13 Jan 2011 15:06:28 +0000
+Message-ID: <1294931188.2244.5.camel@polyethylene>
+References: <AANLkTik0y2O4GTvoFkm-94iSWdWUG8juZ0cBNWXDas8Q@mail.gmail.com>
+	<AANLkTinw9MXSXV3FNp-b1S0bpBVBoLJi7CUhC0=2Pgg0@mail.gmail.com>
+	<AANLkTi=PL_tzxEnfKGjP4Qjv_jNyR-c95W8-caXfG2vo@mail.gmail.com>
+	<201101122102.44482.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1101131238480.1899@localhost6.localdomain6>
+In-Reply-To: <201101122102.44482.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,33 +20,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, "linux-ext4@vger.kernel.org development" <linux-ext4@vger.kernel.org>, Theodore Tso <tytso@mit.edu>, LKML Kernel <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 13, 2011 at 12:48:40PM +0100, Sebastian Ott wrote:
-> On Wed, 12 Jan 2011, Theodore Tso wrote:
-> > It looks like somehow the pages were left marked as dirty, so the
-> > writeback daemons attempted writing back a page to an inode which was
-> > never opened read/write (and in fact as a text page for
-> > /usr/bin/killall, was mapped read/only).
-> > Given that ext4 initializes jinode only when the file is opened
-> > read/write, the fact that it is null, and the fact that it makes no
-> > sense that a program would be modifying /usr/bin/killall as part of a
-> > suspend/resume, it looks very much like we just unmasked a software
-> > suspend bug....
-> Ah, ok. Thanks for the explanation!
+On Wed, 2011-01-12 at 21:02 +0100, Rafael J. Wysocki wrote:
+> > How do you feel about us using power_kobj to create
+> > /sys/power/wakeup_source from inside our OLPC code?
+> > This would include a textual representation of the last wakeup source.
+> > 
+> > Alternatively we could put it as a sysfs attribute of our own platform device.
+> 
+> I'm basically fine with /sys/power/source as long as its contents are generally
+> suitable.  What exactly do you want to show up in that file?
 
-Eeeek... this seems to be an architecture specific bug that is only present
-on s390.
-The dirty bit for user space pages on all architectures but s390 are stored
-into the PTE's. On s390 however they are stored into the storage key that
-exists per _physical_ page.
-So, what we should have done, when implementing suspend/resume on s390, is
-to save the storage key for each page and write that to the suspend device
-and upon resume restore the storage key contents for each physical page.
-The code that would do that is missing... Hence _all_ pages of the resumed
-image are dirty after they have been copied to their location.
-*ouch*
+Do you mean /sys/power/source or /sys/power/wakeup_source? I prefer the
+latter as the first one sounds like "power source" (AC, battery,
+solar, ...)
 
-Will fix.
+As for contents, it will read back a string. One of:
+
+rtc alarm
+power button
+lid
+key press
+battery
+battery state changed
+battery error
+ebook
+wlan packet
+ac power
+battery critical
+gp timer
+hda
+usb
+unknown
+
+Thanks,
+Daniel
