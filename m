@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 07/12] SH,
-	cpuidle: delete use of NOP CPUIDLE_FLAGS_SHALLOW
-Date: Wed, 12 Jan 2011 22:39:57 -0500
-Message-ID: <03d8b083511a7be2c69b750b8a4e412a21189291.1294889887.git.len.brown@intel.com>
+Subject: [PATCH 10/12] cpuidle: CPUIDLE_FLAG_CHECK_BM is
+	omap3_idle specific
+Date: Wed, 12 Jan 2011 22:40:00 -0500
+Message-ID: <5392083748a340f68052c0b83a7ce28b10324972.1294889887.git.len.brown@intel.com>
 References: <1294890002-6274-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,24 +26,36 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-set but not checked.
-
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/sh/kernel/cpu/shmobile/cpuidle.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ arch/arm/mach-omap2/cpuidle34xx.c |    2 ++
+ include/linux/cpuidle.h           |    1 -
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/sh/kernel/cpu/shmobile/cpuidle.c b/arch/sh/kernel/cpu/shmobile/cpuidle.c
-index 83972aa..c19e2a9 100644
---- a/arch/sh/kernel/cpu/shmobile/cpuidle.c
-+++ b/arch/sh/kernel/cpu/shmobile/cpuidle.c
-@@ -81,7 +81,6 @@ void sh_mobile_setup_cpuidle(void)
- 	state->target_residency = 1 * 2;
- 	state->power_usage = 3;
- 	state->flags = 0;
--	state->flags |= CPUIDLE_FLAG_SHALLOW;
- 	state->flags |= CPUIDLE_FLAG_TIME_VALID;
- 	state->enter = cpuidle_sleep_enter;
+diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
+index 0d50b45..f9be4e3 100644
+--- a/arch/arm/mach-omap2/cpuidle34xx.c
++++ b/arch/arm/mach-omap2/cpuidle34xx.c
+@@ -47,6 +47,8 @@
  
+ #define OMAP3_STATE_MAX OMAP3_STATE_C7
+ 
++#define CPUIDLE_FLAG_CHECK_BM	0x10000	/* use omap3_enter_idle_bm() */
++
+ struct omap3_processor_cx {
+ 	u8 valid;
+ 	u8 type;
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 6be722c..36719ea 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -47,7 +47,6 @@ struct cpuidle_state {
+ 
+ /* Idle State Flags */
+ #define CPUIDLE_FLAG_TIME_VALID	(0x01) /* is residency time measurable? */
+-#define CPUIDLE_FLAG_CHECK_BM	(0x02) /* BM activity will exit state */
+ #define CPUIDLE_FLAG_IGNORE	(0x100) /* ignore during this idle period */
+ 
+ #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
 -- 
 1.7.4.rc1.14.g7fad99
