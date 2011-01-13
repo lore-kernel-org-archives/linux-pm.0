@@ -1,21 +1,13 @@
-From: "Ted Ts'o" <tytso@mit.edu>
-Subject: Re: Oops while going into hibernate
-Date: Thu, 13 Jan 2011 13:46:26 -0500
-Message-ID: <20110113184626.GA31800__31678.0710396872$1294944491$gmane$org@thunk.org>
-References: <alpine.LFD.2.02.1101121443230.1900@localhost6.localdomain6>
-	<20110112162655.GA13496@thunk.org>
-	<alpine.LFD.2.02.1101121755400.2011@localhost6.localdomain6>
-	<20110112172646.GB13496@thunk.org>
-	<alpine.LFD.2.02.1101121934060.2011@localhost6.localdomain6>
-	<A01161D0-D08F-4522-A546-90057B2E1F2A@mit.edu>
-	<alpine.LFD.2.02.1101131238480.1899@localhost6.localdomain6>
-	<20110113133612.GD2534@osiris.boeblingen.de.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Trying to understand new wakeup events architecture
+Date: Thu, 13 Jan 2011 20:34:49 +0100
+Message-ID: <201101132034.49522.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1101131154350.2022-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110113133612.GD2534@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.1101131154350.2022-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,37 +17,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: pm list <linux-pm@lists.linux-foundation.org>, "linux-ext4@vger.kernel.org development" <linux-ext4@vger.kernel.org>, LKML Kernel <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>, Daniel Drake <dsd@laptop.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 13, 2011 at 02:36:12PM +0100, Heiko Carstens wrote:
+On Thursday, January 13, 2011, Alan Stern wrote:
+> On Thu, 13 Jan 2011, Daniel Drake wrote:
 > 
-> Eeeek... this seems to be an architecture specific bug that is only present
-> on s390.
-> The dirty bit for user space pages on all architectures but s390 are stored
-> into the PTE's. On s390 however they are stored into the storage key that
-> exists per _physical_ page.
-> So, what we should have done, when implementing suspend/resume on s390, is
-> to save the storage key for each page and write that to the suspend device
-> and upon resume restore the storage key contents for each physical page.
-> The code that would do that is missing... Hence _all_ pages of the resumed
-> image are dirty after they have been copied to their location.
-> *ouch*
-> 
-> Will fix.
+> > On Thu, 2011-01-13 at 10:14 -0500, Alan Stern wrote:
+> > > On Thu, 13 Jan 2011, Daniel Drake wrote:
+> > > 
+> > > > As for contents, it will read back a string. One of:
+> > > > 
+> > > > rtc alarm
+> > > > power button
+> > > > lid
+> > > > key press
+> > > > battery
+> > > > battery state changed
+> > > > battery error
+> > > > ebook
+> > > > wlan packet
+> > > > ac power
+> > > > battery critical
+> > > > gp timer
+> > > > hda
+> > > > usb
+> > > > unknown
+> > > 
+> > > Wouldn't it be better to read back a device pathname when the wakeup
+> > > source can be identified as a particular device?  Whoever uses this 
+> > > field should be responsible for converting it to one of those more 
+> > > generic forms.
+> > 
+> > It could be done, but might be ugly. The problem is that those
+> > individual devices don't really know that they were woken up. It's done
+> > by OLPC's EC driver. So the EC driver would have to either hardcode
+> > device paths, or have a load of device-hunting code.
 
-Glad you found the root cause.  If you don't think you can get this
-fixed quickly, before -rc2 or -rc3, I can fairly quickly add some
-checks to ext4 to detect this condition, issue a warning, and then
-return an error code from the ->writepages() hook.  (Which will then
-promptly be ignored by the writeback code, since, hey, what are they
-going to do with an error, but that's a discussion for another forum.)
-Would that be helpful?
+Alternatively, it could store the information somewhere and have some special
+code down the resume code path turn it into the info available from sysfs.
 
-I'm still a bit concerned with the call to set the pages' PTE to be
-dirty that I found in the hibernate code, but I accept the fact that
-removing it doesn't solve the s390 crash.  It still seems wrong to me,
-and hopefully someone from linux-pm can look at that more closely.
+> > Another small problem is that it doesn't encode the difference between
+> > "battery state changed" and "battery error", for example.
+> > 
+> > If it's really disliked as a string, perhaps it would be OK just to
+> > stash it within the sysfs directory of our device, not polluting the
+> > global namespace.
+> > 
+> > I'm hoping this can all be a temporary measure anyway, as future closer
+> > integration with Rafael's wakeup events architecture plus the ability
+> > for that architecture to export wakeup source info should make it go
+> > away.
 
-    	      	      	   	    	     - Ted
+Well, if that's supposed to be temporary, it shouldn't be there in
+/sys/power/, so please put it somewhere else in that case.
+
+> You can do whatever is best for you on the OLPC platform; I was just 
+> offering a suggestion.
+
+It looks like Daniel wants the wakeup events framework to store the last
+active wakeup source information somewhere (eg. in a file in /sys/power).
+I'm a little bit worried about that, because potentially there may be many
+wakeup events occuring at run time, in which case it would be a significant
+performance overhead to update the "last active wakeup source" info every
+time (and a scalability issue, because every code path handling a wakeup
+source would want to update the same sysfs file).  Also, collecting that
+information at run time doesn't seem to be particularly useful.
+
+It may be useful to know what device has actually woken up the system from
+suspend.  To that end, I think the only really valid approach is to retrieve
+this information from the platform firmware early during resume and export
+it through a sysfs attribute afterwards.  We can develop a generic helper
+code for that second part, but the first one has to be platform-specific.
+
+Daniel, what exactly does your user space use this information for?
+
+Thanks,
+Rafael
