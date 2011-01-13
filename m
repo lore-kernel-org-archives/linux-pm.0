@@ -1,16 +1,19 @@
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 12/12] [RFC] Introduce Alarm (hybrid) timers
-Date: Wed, 12 Jan 2011 21:03:45 -0800
-Message-ID: <AANLkTinnCQzG2rsfyy9yHJR8eSVGYdPHMb8HaBfAaOxQ@mail.gmail.com>
-References: <1294280159-2513-1-git-send-email-john.stultz@linaro.org>
-	<AANLkTin8cntsFpaikpfzPbWL1YFb702rPync240X4axW@mail.gmail.com>
-	<1294367420.4518.171.camel@work-vm>
-	<201101081136.06682.rjw@sisk.pl>
+From: "Ted Ts'o" <tytso@mit.edu>
+Subject: Re: Oops while going into hibernate
+Date: Thu, 13 Jan 2011 00:56:12 -0500
+Message-ID: <20110113055612.GF13496__17578.2485086986$1294898231$gmane$org@thunk.org>
+References: <alpine.LFD.2.02.1101121443230.1900@localhost6.localdomain6>
+	<20110112162655.GA13496@thunk.org>
+	<alpine.LFD.2.02.1101121755400.2011@localhost6.localdomain6>
+	<20110112172646.GB13496@thunk.org>
+	<alpine.LFD.2.02.1101121934060.2011@localhost6.localdomain6>
+	<A01161D0-D08F-4522-A546-90057B2E1F2A@mit.edu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101081136.06682.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <A01161D0-D08F-4522-A546-90057B2E1F2A@mit.edu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,74 +23,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alessandro Zummo <a.zummo@towertech.it>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, "linux-ext4@vger.kernel.org development" <linux-ext4@vger.kernel.org>, LKML Kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jan 8, 2011 at 2:36 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, January 07, 2011, John Stultz wrote:
->> On Thu, 2011-01-06 at 16:58 -0800, Arve Hj=F8nnev=E5g wrote:
->> > 2011/1/6 John Stultz <john.stultz@linaro.org>:
->> > > So otherwise, do you see any reason why android might not be able to
->> > > adapt this code to replace the android alarm timers?
->> > >
->> >
->> > The user-space interface does not look appealing, but I don't see any
->> > reason why the in-kernel interface(s) cannot be shared. Our user-space
->> > code has a single thread that waits for alarms to trigger, while the
->> > alarms can be modified from any thread.
->>
->> So its something like nanosleep(), only other threads can extend or
->> shorten the sleep time?
->>
->> Could you explain some of the rational for such an interface, so I can
->> better understand the need?
->>
->> > =A0As far as I can tell, using
->> > the posix interface would either require a thread per alarm (up to 5)
->> > or using signals. Both make the user-space code more complicated, and
->>
->> Yea, it probably would need signals, but I'd have to grok the use case a
->> little better. And its possible it would complicate the user-space code
->> some, but on the other hand, it would be using a more standard kernel
->> interface. The other option is extending the posix interface to try to
->> better match the need.
->>
->> > it is not clear if either of them provide a clear hand-off between
->> > where the kernel needs to block suspend because the alarm has not been
->> > delivered to user-space and where user-space needs to block suspend
->> > because it is handling the alarm.
->>
->> Indeed. I'm still looking into the pm_wake details to see the
->> limitations there. Some method of inheriting a stay_awake seems to be
->> needed, but sounds pretty ugly. Alternatively we may need some method or
->> callback to the kernel to detect that a signal has been handled by
->> userland (allowing the pm_relax to occur).
->>
->> Rafael: Any thoughts here?
->
-> I think this problem is specific to Android where suspend is started
-> automatically from kernel space, so user space needs an interface to acti=
-vely
-> prevent the kernel from starting suspend.
->
-> The mainline model is that suspend will always be started from user space,
-> so instead of telling the kernel not to suspend user space needs to avoid
-> starting suspend in the first place. =A0In this model the kernel code can=
- simply
-> call pm_relax() as soon as _it_ doesn't need to prevent the system from
-> suspending any more (eg. it knows that user space has learnt of the alarm=
-) and
-> it need not worry about the user space part (eg. whether or not user space
-> is still handling the alarm).
->
+On Wed, Jan 12, 2011 at 07:44:17PM -0500, Theodore Tso wrote:
+> 
+> You said originally that the oops was happening "while going into
+> hibernation right after resuming with...".  So that means you did a
+> successful suspend/resume, and then the second suspend caused the
+> oops?  It looks like somehow the pages were left marked as dirty, so
+> the writeback daemons attempted writing back a page to an inode
+> which was never opened read/write (and in fact as a text page for
+> /usr/bin/killall, was mapped read/only).  Given that ext4
+> initializes jinode only when the file is opened read/write, the fact
+> that it is null, and the fact that it makes no sense that a program
+> would be modifying /usr/bin/killall as part of a suspend/resume, it
+> looks very much like we just unmasked a software suspend bug....
 
-You still have to make sure a race free implementation is possible. If
-you are implementing alarms by calling nano-sleep, your model require
-the nano-sleeping thread to also respond to requests from the thread
-that initiates suspend when that thread checks if it is safe to
-suspend.
+... and I think I've found the problem.  In kernel/power/block_io.c,
+in the function submit(), we see this:
 
--- =
+	if (bio_chain == NULL) {
+		submit_bio(bio_rw, bio);
+		wait_on_page_locked(page);
+		if (rw == READ)
+			bio_set_pages_dirty(bio); <====
+		bio_put(bio);
 
-Arve Hj=F8nnev=E5g
+So when we read in pages from the software suspend device, we end up
+marking the pages as dirty(!).  I'm guessing this was caused by a copy
+and paste from the only other caller of bio_set_pages_dirty(), which
+is the direct I/O code, which needs this when we are writing from a
+file into a user-provided buffer.  But for restoring from a software
+suspend case, this is as far as I can tell wholely inappropriate.
+
+This causes needless writes, which is bad even before ext4 unmasked
+the problem.  I will send a patch under separate cover; could you give
+it a try and see if it fixes your crash?
+
+I will look into bulletproofing ext4 by adding checks for this case
+and printing warning messages, but neverthe less, I think the root
+cause is actually in the hibernation's bio code.
+
+					- Ted
