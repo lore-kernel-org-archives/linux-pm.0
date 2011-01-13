@@ -1,15 +1,20 @@
-From: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PM / Hibernate: Don't mark pages dirty when
- reading pages while thawing
-Date: Thu, 13 Jan 2011 13:36:15 +0100 (CET)
-Message-ID: <alpine.LFD.2.02.1101131333071.1899__4330.06395255706$1294922311$gmane$org@localhost6.localdomain6>
-References: <20110113055612.GF13496@thunk.org>
-	<1294898351-26156-1-git-send-email-tytso@mit.edu>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: Oops while going into hibernate
+Date: Thu, 13 Jan 2011 14:36:12 +0100
+Message-ID: <20110113133612.GD2534__5931.09419937736$1294925839$gmane$org@osiris.boeblingen.de.ibm.com>
+References: <alpine.LFD.2.02.1101121443230.1900@localhost6.localdomain6>
+	<20110112162655.GA13496@thunk.org>
+	<alpine.LFD.2.02.1101121755400.2011@localhost6.localdomain6>
+	<20110112172646.GB13496@thunk.org>
+	<alpine.LFD.2.02.1101121934060.2011@localhost6.localdomain6>
+	<A01161D0-D08F-4522-A546-90057B2E1F2A@mit.edu>
+	<alpine.LFD.2.02.1101131238480.1899@localhost6.localdomain6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1294898351-26156-1-git-send-email-tytso@mit.edu>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.02.1101131238480.1899@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,55 +24,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Theodore Ts'o <tytso@mit.edu>
-Cc: linux-pm@lists.linux-foundation.org, Ext4 Developers List <linux-ext4@vger.kernel.org>, Linux Kernel Developers List <linux-kernel@vger.kernel.org>
+To: Sebastian Ott <sebott@linux.vnet.ibm.com>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, "linux-ext4@vger.kernel.org development" <linux-ext4@vger.kernel.org>, Theodore Tso <tytso@mit.edu>, LKML Kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Jan 13, 2011 at 12:48:40PM +0100, Sebastian Ott wrote:
+> On Wed, 12 Jan 2011, Theodore Tso wrote:
+> > It looks like somehow the pages were left marked as dirty, so the
+> > writeback daemons attempted writing back a page to an inode which was
+> > never opened read/write (and in fact as a text page for
+> > /usr/bin/killall, was mapped read/only).
+> > Given that ext4 initializes jinode only when the file is opened
+> > read/write, the fact that it is null, and the fact that it makes no
+> > sense that a program would be modifying /usr/bin/killall as part of a
+> > suspend/resume, it looks very much like we just unmasked a software
+> > suspend bug....
+> Ah, ok. Thanks for the explanation!
 
-On Thu, 13 Jan 2011, Theodore Ts'o wrote:
-> Everything was sync'ed before the hibernation, so no pages could be
-> dirty.  So this causes a lot of wasted I/O activity right after
-> resuming from hibernation.
-> 
-> Worse, it also causes pages from files that were opened read/only to
-> be marked writeble which makes them subject to writeback.  This was
-> discovered when ext4 was changed to so that the jinode pointer was not
-> initialized unless the file was opened read/write, and this caused
-> things to blow up.  But that just unmasked a problem, since the pages
-> belonging to the file in question should have never been marked dirty
-> in the first place.  It increases the chances the text blocks for
-> executables like /usr/bin/killall will get corrupted when they are
-> needlessly written, and of course it means extra write cycles to the
-> SSD.
-> 
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>
-> Cc: linux-pm@lists.linux-foundation.org
-> ---
->  kernel/power/block_io.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/power/block_io.c b/kernel/power/block_io.c
-> index 83bbc7c..108a4f3 100644
-> --- a/kernel/power/block_io.c
-> +++ b/kernel/power/block_io.c
-> @@ -49,8 +49,6 @@ static int submit(int rw, struct block_device *bdev, sector_t sector,
->  	if (bio_chain == NULL) {
->  		submit_bio(bio_rw, bio);
->  		wait_on_page_locked(page);
-> -		if (rw == READ)
-> -			bio_set_pages_dirty(bio);
->  		bio_put(bio);
->  	} else {
->  		if (rw == READ)
-> -- 
-> 1.7.3.1
-> 
-> 
+Eeeek... this seems to be an architecture specific bug that is only present
+on s390.
+The dirty bit for user space pages on all architectures but s390 are stored
+into the PTE's. On s390 however they are stored into the storage key that
+exists per _physical_ page.
+So, what we should have done, when implementing suspend/resume on s390, is
+to save the storage key for each page and write that to the suspend device
+and upon resume restore the storage key contents for each physical page.
+The code that would do that is missing... Hence _all_ pages of the resumed
+image are dirty after they have been copied to their location.
+*ouch*
 
-I did some test with this patch applied, but sadly it didn't help.
-The testcase was reduced to one hibernation followed by a sync.
-
-Regards,
-Sebastian
+Will fix.
