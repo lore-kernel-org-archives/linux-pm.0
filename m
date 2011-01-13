@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 04/12] cpuidle: Rename X86 specific idle poll
- state[0] from C0 to POLL
-Date: Wed, 12 Jan 2011 22:39:54 -0500
-Message-ID: <720f1c3010db6a411358b962a2007969117840bc.1294889887.git.len.brown@intel.com>
+Subject: [PATCH 06/12] cpuidle: delete NOP CPUIDLE_FLAG_POLL
+Date: Wed, 12 Jan 2011 22:39:56 -0500
+Message-ID: <d247632c08c674864d438733280422ddb7130ff8.1294889887.git.len.brown@intel.com>
 References: <1294890002-6274-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,32 +23,40 @@ To: linux-pm@lists.linux-foundation.org
 Cc: Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Renninger <trenn@suse.de>
+From: Len Brown <len.brown@intel.com>
 
-C0 means and is well know as "not idle".
-All documentation out there uses this term as "running"/"not idle"
-state. Also Linux userspace tools (e.g. cpufreq-aperf and turbostat)
-show C0 residency which there is correct, but means something totally
-else than cpuidle "POLL" state.
+it serves no purpose
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
  drivers/cpuidle/cpuidle.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/linux/cpuidle.h   |    1 -
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 97df791..37e4460 100644
+index 37e4460..dd5f1ea 100644
 --- a/drivers/cpuidle/cpuidle.c
 +++ b/drivers/cpuidle/cpuidle.c
-@@ -181,7 +181,7 @@ static void poll_idle_init(struct cpuidle_device *dev)
- 
- 	cpuidle_set_statedata(state, NULL);
- 
--	snprintf(state->name, CPUIDLE_NAME_LEN, "C0");
-+	snprintf(state->name, CPUIDLE_NAME_LEN, "POLL");
- 	snprintf(state->desc, CPUIDLE_DESC_LEN, "CPUIDLE CORE POLL IDLE");
+@@ -186,7 +186,7 @@ static void poll_idle_init(struct cpuidle_device *dev)
  	state->exit_latency = 0;
  	state->target_residency = 0;
+ 	state->power_usage = -1;
+-	state->flags = CPUIDLE_FLAG_POLL;
++	state->flags = 0;
+ 	state->enter = poll_idle;
+ }
+ #else
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 1be416b..dee3285 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -48,7 +48,6 @@ struct cpuidle_state {
+ /* Idle State Flags */
+ #define CPUIDLE_FLAG_TIME_VALID	(0x01) /* is residency time measurable? */
+ #define CPUIDLE_FLAG_CHECK_BM	(0x02) /* BM activity will exit state */
+-#define CPUIDLE_FLAG_POLL	(0x10) /* no latency, no savings */
+ #define CPUIDLE_FLAG_SHALLOW	(0x20) /* low latency, minimal savings */
+ #define CPUIDLE_FLAG_BALANCED	(0x40) /* medium latency, moderate savings */
+ #define CPUIDLE_FLAG_DEEP	(0x80) /* high latency, large savings */
 -- 
 1.7.4.rc1.14.g7fad99
