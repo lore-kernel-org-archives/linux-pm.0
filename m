@@ -1,16 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 12/12] cpuidle/x86/perf: fix power:cpu_idle
- double end events and throw cpu_idle events from the cpuidle layer
-Date: Wed, 12 Jan 2011 22:40:02 -0500
-Message-ID: <f77cfe4ea21760268c0277fa3e4b02dfd2a2c2f4.1294889887.git.len.brown__48400.1238983639$1294891285$gmane$org@intel.com>
-References: <1294890002-6274-1-git-send-email-lenb@kernel.org>
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [PATCH 12/12] [RFC] Introduce Alarm (hybrid) timers
+Date: Wed, 12 Jan 2011 21:03:45 -0800
+Message-ID: <AANLkTinnCQzG2rsfyy9yHJR8eSVGYdPHMb8HaBfAaOxQ@mail.gmail.com>
+References: <1294280159-2513-1-git-send-email-john.stultz@linaro.org>
+	<AANLkTin8cntsFpaikpfzPbWL1YFb702rPync240X4axW@mail.gmail.com>
+	<1294367420.4518.171.camel@work-vm>
+	<201101081136.06682.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1294890002-6274-1-git-send-email-lenb@kernel.org>
-In-reply-to: <ddbd550d503c9cdefcd6674a0ef168d57d3f0917.1294889887.git.len.brown@intel.com>
-References: <ddbd550d503c9cdefcd6674a0ef168d57d3f0917.1294889887.git.len.brown@intel.com>
+In-Reply-To: <201101081136.06682.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,186 +20,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-omap@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Robert Schoene <robert.schoene@tu-dresden.de>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alessandro Zummo <a.zummo@towertech.it>, Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Renninger <trenn@suse.de>
+On Sat, Jan 8, 2011 at 2:36 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday, January 07, 2011, John Stultz wrote:
+>> On Thu, 2011-01-06 at 16:58 -0800, Arve Hj=F8nnev=E5g wrote:
+>> > 2011/1/6 John Stultz <john.stultz@linaro.org>:
+>> > > So otherwise, do you see any reason why android might not be able to
+>> > > adapt this code to replace the android alarm timers?
+>> > >
+>> >
+>> > The user-space interface does not look appealing, but I don't see any
+>> > reason why the in-kernel interface(s) cannot be shared. Our user-space
+>> > code has a single thread that waits for alarms to trigger, while the
+>> > alarms can be modified from any thread.
+>>
+>> So its something like nanosleep(), only other threads can extend or
+>> shorten the sleep time?
+>>
+>> Could you explain some of the rational for such an interface, so I can
+>> better understand the need?
+>>
+>> > =A0As far as I can tell, using
+>> > the posix interface would either require a thread per alarm (up to 5)
+>> > or using signals. Both make the user-space code more complicated, and
+>>
+>> Yea, it probably would need signals, but I'd have to grok the use case a
+>> little better. And its possible it would complicate the user-space code
+>> some, but on the other hand, it would be using a more standard kernel
+>> interface. The other option is extending the posix interface to try to
+>> better match the need.
+>>
+>> > it is not clear if either of them provide a clear hand-off between
+>> > where the kernel needs to block suspend because the alarm has not been
+>> > delivered to user-space and where user-space needs to block suspend
+>> > because it is handling the alarm.
+>>
+>> Indeed. I'm still looking into the pm_wake details to see the
+>> limitations there. Some method of inheriting a stay_awake seems to be
+>> needed, but sounds pretty ugly. Alternatively we may need some method or
+>> callback to the kernel to detect that a signal has been handled by
+>> userland (allowing the pm_relax to occur).
+>>
+>> Rafael: Any thoughts here?
+>
+> I think this problem is specific to Android where suspend is started
+> automatically from kernel space, so user space needs an interface to acti=
+vely
+> prevent the kernel from starting suspend.
+>
+> The mainline model is that suspend will always be started from user space,
+> so instead of telling the kernel not to suspend user space needs to avoid
+> starting suspend in the first place. =A0In this model the kernel code can=
+ simply
+> call pm_relax() as soon as _it_ doesn't need to prevent the system from
+> suspending any more (eg. it knows that user space has learnt of the alarm=
+) and
+> it need not worry about the user space part (eg. whether or not user space
+> is still handling the alarm).
+>
 
-Currently intel_idle and acpi_idle driver show double cpu_idle "exit idle"
-events -> this patch fixes it and makes cpu_idle events throwing less complex.
+You still have to make sure a race free implementation is possible. If
+you are implementing alarms by calling nano-sleep, your model require
+the nano-sleeping thread to also respond to requests from the thread
+that initiates suspend when that thread checks if it is safe to
+suspend.
 
-It also introduces cpu_idle events for all architectures which use
-the cpuidle subsystem, namely:
-  - arch/arm/mach-at91/cpuidle.c
-  - arch/arm/mach-davinci/cpuidle.c
-  - arch/arm/mach-kirkwood/cpuidle.c
-  - arch/arm/mach-omap2/cpuidle34xx.c
-  - arch/drivers/acpi/processor_idle.c (for all cases, not only mwait)
-  - arch/x86/kernel/process.c (did throw events before, but was a mess)
-  - drivers/idle/intel_idle.c (did throw events before)
+-- =
 
-Convention should be:
-Fire cpu_idle events inside the current pm_idle function (not somewhere
-down the the callee tree) to keep things easy.
-
-Current possible pm_idle functions in X86:
-c1e_idle, poll_idle, cpuidle_idle_call, mwait_idle, default_idle
--> this is really easy is now.
-
-This affects userspace:
-The type field of the cpu_idle power event can now direclty get
-mapped to:
-/sys/devices/system/cpu/cpuX/cpuidle/stateX/{name,desc,usage,time,...}
-instead of throwing very CPU/mwait specific values.
-This change is not visible for the intel_idle driver.
-For the acpi_idle driver it should only be visible if the vendor
-misses out C-states in his BIOS.
-Another (perf timechart) patch reads out cpuidle info of cpu_idle
-events from:
-/sys/.../cpuidle/stateX/*, then the cpuidle events are mapped
-to the correct C-/cpuidle state again, even if e.g. vendors miss
-out C-states in their BIOS and for example only export C1 and C3.
--> everything is fine.
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-CC: Robert Schoene <robert.schoene@tu-dresden.de>
-CC: Jean Pihet <j-pihet@ti.com>
-CC: Arjan van de Ven <arjan@linux.intel.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>
-CC: linux-pm@lists.linux-foundation.org
-CC: linux-acpi@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-CC: linux-perf-users@vger.kernel.org
-CC: linux-omap@vger.kernel.org
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/kernel/process.c    |    6 ++++--
- arch/x86/kernel/process_32.c |    4 ----
- arch/x86/kernel/process_64.c |    6 ------
- drivers/cpuidle/cpuidle.c    |   10 ++++++++--
- drivers/idle/intel_idle.c    |    2 --
- 5 files changed, 12 insertions(+), 16 deletions(-)
-
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 09c08a1..67e96e6 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -386,6 +386,8 @@ void default_idle(void)
- 		else
- 			local_irq_enable();
- 		current_thread_info()->status |= TS_POLLING;
-+		trace_power_end(smp_processor_id());
-+		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
- 	} else {
- 		local_irq_enable();
- 		/* loop is done by the caller */
-@@ -443,8 +445,6 @@ EXPORT_SYMBOL_GPL(cpu_idle_wait);
-  */
- void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
- {
--	trace_power_start(POWER_CSTATE, (ax>>4)+1, smp_processor_id());
--	trace_cpu_idle((ax>>4)+1, smp_processor_id());
- 	if (!need_resched()) {
- 		if (cpu_has(__this_cpu_ptr(&cpu_info), X86_FEATURE_CLFLUSH_MONITOR))
- 			clflush((void *)&current_thread_info()->flags);
-@@ -471,6 +471,8 @@ static void mwait_idle(void)
- 			__sti_mwait(0, 0);
- 		else
- 			local_irq_enable();
-+		trace_power_end(smp_processor_id());
-+		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
- 	} else
- 		local_irq_enable();
- }
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 4b9befa..8d12878 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -57,8 +57,6 @@
- #include <asm/syscalls.h>
- #include <asm/debugreg.h>
- 
--#include <trace/events/power.h>
--
- asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
- 
- /*
-@@ -113,8 +111,6 @@ void cpu_idle(void)
- 			stop_critical_timings();
- 			pm_idle();
- 			start_critical_timings();
--			trace_power_end(smp_processor_id());
--			trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
- 		}
- 		tick_nohz_restart_sched_tick();
- 		preempt_enable_no_resched();
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 4c818a7..bd387e8 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -51,8 +51,6 @@
- #include <asm/syscalls.h>
- #include <asm/debugreg.h>
- 
--#include <trace/events/power.h>
--
- asmlinkage extern void ret_from_fork(void);
- 
- DEFINE_PER_CPU(unsigned long, old_rsp);
-@@ -141,10 +139,6 @@ void cpu_idle(void)
- 			pm_idle();
- 			start_critical_timings();
- 
--			trace_power_end(smp_processor_id());
--			trace_cpu_idle(PWR_EVENT_EXIT,
--				       smp_processor_id());
--
- 			/* In many cases the interrupt that ended idle
- 			   has already called exit_idle. But some idle
- 			   loops can be woken up without interrupt. */
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 386888f..e4855c3 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -96,7 +96,15 @@ static void cpuidle_idle_call(void)
- 
- 	/* enter the state and update stats */
- 	dev->last_state = target_state;
-+
-+	trace_power_start(POWER_CSTATE, next_state, dev->cpu);
-+	trace_cpu_idle(next_state, dev->cpu);
-+
- 	dev->last_residency = target_state->enter(dev, target_state);
-+
-+	trace_power_end(dev->cpu);
-+	trace_cpu_idle(PWR_EVENT_EXIT, dev->cpu);
-+
- 	if (dev->last_state)
- 		target_state = dev->last_state;
- 
-@@ -106,8 +114,6 @@ static void cpuidle_idle_call(void)
- 	/* give the governor an opportunity to reflect on the outcome */
- 	if (cpuidle_curr_governor->reflect)
- 		cpuidle_curr_governor->reflect(dev);
--	trace_power_end(smp_processor_id());
--	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
- }
- 
- /**
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 56ac09d..60fa6ec 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -220,8 +220,6 @@ static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state)
- 	kt_before = ktime_get_real();
- 
- 	stop_critical_timings();
--	trace_power_start(POWER_CSTATE, (eax >> 4) + 1, cpu);
--	trace_cpu_idle((eax >> 4) + 1, cpu);
- 	if (!need_resched()) {
- 
- 		__monitor((void *)&current_thread_info()->flags, 0, 0);
--- 
-1.7.4.rc1.14.g7fad99
+Arve Hj=F8nnev=E5g
