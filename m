@@ -1,12 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH] PM: Do not create wakeup sysfs files for
-	devices that cannot wakeup
-Date: Fri, 14 Jan 2011 01:34:43 +0100
-Message-ID: <201101140134.43342.rjw__2243.27189284868$1294971431$gmane$org@sisk.pl>
+From: Paul Fox <pgf@laptop.org>
+Subject: Re: Trying to understand new wakeup events architecture
+Date: Thu, 13 Jan 2011 21:11:43 -0500
+Message-ID: <9391.1294971103@foxharp.boston.ma.us>
+References: <Pine.LNX.4.44L0.1101131526400.2022-100000@iolanthe.rowland.org>
+	<1294951314.2228.19.camel@polyethylene>
+	(sfid-20110113_154206_459158_C7841E1C)
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-reply-to: <1294951314.2228.19.camel@polyethylene>
+	(sfid-20110113_154206_459158_C7841E1C)
+Content-ID: <9388.1294971103.1@foxharp.boston.ma.us>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,293 +21,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Daniel Drake <dsd@laptop.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+daniel wrote:
+ > On Thu, 2011-01-13 at 15:31 -0500, Alan Stern wrote:
+ > > On Thu, 13 Jan 2011, Daniel Drake wrote:
+ > > 
+ > > > On Thu, 2011-01-13 at 20:34 +0100, Rafael J. Wysocki wrote:
+ > > > > It looks like Daniel wants the wakeup events framework to store the last
+ > > > > active wakeup source information somewhere (eg. in a file in /sys/power).
+ > > > > I'm a little bit worried about that, because potentially there may be many
+ > > > > wakeup events occuring at run time, in which case it would be a significant
+ > > > > performance overhead to update the "last active wakeup source" info every
+ > > > > time (and a scalability issue, because every code path handling a wakeup
+ > > > > source would want to update the same sysfs file).  Also, collecting that
+ > > > > information at run time doesn't seem to be particularly useful.
+ > > > 
+ > > > This was one thing that confused me reading about the wakeup events
+ > > > architecture, and I'm still not entirely clear.
+ > > > 
+ > > > Your definition of "wakeup event" is an event that happens, during
+ > > > regular system operation, that should prevent the system from going to
+ > > > sleep. Is that accurate?
+ > > 
+ > > My understanding (which probably isn't exactly the same as Rafael's) is
+ > > that a "wakeup event" is any event which should either prevent the
+ > > system from going to sleep or should wake up the system if it is
+ > > already asleep.  After all, these are the same events (user typing,
+ > > network packet arriving, alarm firing) -- the only difference is what
+ > > state the system is in when they occur.
+ > 
+ > OK, that makes it clearer.
+ > 
+ > > > When I refer to "wakeup event" I'm referring exclusively to events that
+ > > > happen when the system is suspended, that cause it to wake up and resume
+ > > > operation.
+ > > > 
+ > > > > It may be useful to know what device has actually woken up the system from
+ > > > > suspend.  To that end, I think the only really valid approach is to retrieve
+ > > > > this information from the platform firmware early during resume and export
+ > > > > it through a sysfs attribute afterwards.  We can develop a generic helper
+ > > > > code for that second part, but the first one has to be platform-specific.
+ > > > > 
+ > > > > Daniel, what exactly does your user space use this information for?
+ > > > 
+ > > > We're talking the same language here. I'd welcome a generic helper.
+ > > > 
+ > > > There are several different cases, but here is one example that should
+ > > > be illustrative:
+ > > > 
+ > > > 1) System is idle, hence it goes to sleep with display on, with rtcwake
+ > > > timer for 5 minutes in the future, as well as various other wakeup
+ > > > sources active (keyboard, mouse, network, ...)
+ > > > 
+ > > > 2) 5 minutes passes and system resumes. Userspace determines that the
+ > > > wakeup source was the RTC alarm. In other words, the system is still
+ > > > idle. Since the user doesn't seem to be doing anything and might not
+ > > > even be watching, we dim the screen a bit to save some power. Then we go
+ > > > back to sleep.
+ > > > 
+ > > > 3) A few minutes later, the user starts typing. The system resumes.
+ > > > Userspace checks the wakeup reason, notes that it was woken up due to
+ > > > local user activity. So the display is restored to normal brightness.
+ > > > The idle-check timer is started again, ready to go to sleep a minute or
+ > > > so after user inactivity.
+ > > 
+ > > What happens when the system wakes up because more than one event 
+ > > happened?  For example, what if the user starts typing at exactly the 
+ > > same moment as the 5-minute RTC alarm fires? 
+ > 
+ > I think there is some guarantee that the wakeup source is identifiable.
+ > One of those things has to have happened first, even if they were very
+ > close in time. If it was the keyboard waking up in #2, the keyboard is
+ > presented as the wakeup reason, and the system decides to keep running
+ > for a while, restarting its user inactivity timer for the next suspend
+ > (where we go back to #1).
+ > 
+ > If the RTC alarm wakes the system but then there is a keypress during
+ > resume, this will get caught by a userspace daemon, returning the system
+ > to "normal state" with the user inactivity timer. If it happens as the
+ > system is going into suspend, the system will go into suspend then will
+ > cause a new immediate system resume with the keyboard identified as the
+ > wakeup source.
+ > 
+ > There may be some race conditions here, which Rafael's recent
+ > infrastructure work may be on the road to fixing.
 
-Currently, wakeup sysfs attributes are created for all devices,
-regardless of whether or not they are wakeup-capable.  This is
-excessive and complicates wakeup device identification from user
-space (i.e. to identify wakeup-capable devices user space has to read
-/sys/devices/.../power/wakeup for all devices and see if these files
-are not empty).
+there are certainly race conditions there on the XO.  in practice,
+they haven't been too serious, since the primary wakeup source is user
+input, and users simply retry.  but our wlan, for example, isn't as
+peristent about waking the system, and if we miss one of those events,
+it can mean the machine loses active connections (unless woken in time
+by other means).  i've seen other clear examples during powerd
+development, and have had to redesign some system interactions to
+reduce the chances of such races.  it's very clear that the new
+infrastructure will be a big improvement.
 
-Fix this issue by avoiding to create wakeup sysfs files for devices
-that cannot wake up the system from sleep states (i.e. whose
-power.can_wakeup flags are unset during registration) and modify
-device_set_wakeup_capable() so that it adds (or removes) the relevant
-sysfs attributes if a device's wakeup capability status is changed.
+paul
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/power.h  |   15 +++-----
- drivers/base/power/sysfs.c  |   81 +++++++++++++++++++++++++++-----------------
- drivers/base/power/wakeup.c |   26 ++++++++++++++
- include/linux/pm_runtime.h  |    6 +++
- include/linux/pm_wakeup.h   |   10 +----
- 5 files changed, 91 insertions(+), 47 deletions(-)
+ > 
+ > Daniel
+ > 
 
-Index: linux-2.6/drivers/base/power/sysfs.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/sysfs.c
-+++ linux-2.6/drivers/base/power/sysfs.c
-@@ -431,9 +431,20 @@ static ssize_t async_store(struct device
- static DEVICE_ATTR(async, 0644, async_show, async_store);
- #endif /* CONFIG_PM_ADVANCED_DEBUG */
- 
--static struct attribute * power_attrs[] = {
--	&dev_attr_wakeup.attr,
-+static struct attribute *power_attrs[] = {
-+#ifdef CONFIG_PM_ADVANCED_DEBUG
-+	&dev_attr_async.attr,
-+#endif
-+	NULL,
-+};
-+static struct attribute_group pm_attr_group = {
-+	.name	= power_group_name,
-+	.attrs	= power_attrs,
-+};
-+
-+static struct attribute *wakeup_attrs[] = {
- #ifdef CONFIG_PM_SLEEP
-+	&dev_attr_wakeup.attr,
- 	&dev_attr_wakeup_count.attr,
- 	&dev_attr_wakeup_active_count.attr,
- 	&dev_attr_wakeup_hit_count.attr,
-@@ -442,32 +453,26 @@ static struct attribute * power_attrs[]
- 	&dev_attr_wakeup_max_time_ms.attr,
- 	&dev_attr_wakeup_last_time_ms.attr,
- #endif
--#ifdef CONFIG_PM_ADVANCED_DEBUG
--	&dev_attr_async.attr,
--#ifdef CONFIG_PM_RUNTIME
--	&dev_attr_runtime_status.attr,
--	&dev_attr_runtime_usage.attr,
--	&dev_attr_runtime_active_kids.attr,
--	&dev_attr_runtime_enabled.attr,
--#endif
--#endif
- 	NULL,
- };
--static struct attribute_group pm_attr_group = {
-+static struct attribute_group pm_wakeup_attr_group = {
- 	.name	= power_group_name,
--	.attrs	= power_attrs,
-+	.attrs	= wakeup_attrs,
- };
- 
--#ifdef CONFIG_PM_RUNTIME
--
- static struct attribute *runtime_attrs[] = {
--#ifndef CONFIG_PM_ADVANCED_DEBUG
-+#ifdef CONFIG_PM_RUNTIME
- 	&dev_attr_runtime_status.attr,
--#endif
- 	&dev_attr_control.attr,
- 	&dev_attr_runtime_suspended_time.attr,
- 	&dev_attr_runtime_active_time.attr,
- 	&dev_attr_autosuspend_delay_ms.attr,
-+#ifdef CONFIG_PM_ADVANCED_DEBUG
-+	&dev_attr_runtime_usage.attr,
-+	&dev_attr_runtime_active_kids.attr,
-+	&dev_attr_runtime_enabled.attr,
-+#endif
-+#endif /* CONFIG_PM_RUNTIME */
- 	NULL,
- };
- static struct attribute_group pm_runtime_attr_group = {
-@@ -480,35 +485,49 @@ int dpm_sysfs_add(struct device *dev)
- 	int rc;
- 
- 	rc = sysfs_create_group(&dev->kobj, &pm_attr_group);
--	if (rc == 0 && !dev->power.no_callbacks) {
-+	if (rc)
-+		return rc;
-+
-+	if (pm_runtime_callbacks_present(dev)) {
- 		rc = sysfs_merge_group(&dev->kobj, &pm_runtime_attr_group);
- 		if (rc)
--			sysfs_remove_group(&dev->kobj, &pm_attr_group);
-+			goto err_out;
-+	}
-+
-+	if (device_can_wakeup(dev)) {
-+		rc = sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
-+		if (rc) {
-+			if (pm_runtime_callbacks_present(dev))
-+				sysfs_unmerge_group(&dev->kobj,
-+						    &pm_runtime_attr_group);
-+			goto err_out;
-+		}
- 	}
-+	return 0;
-+
-+ err_out:
-+	sysfs_remove_group(&dev->kobj, &pm_attr_group);
- 	return rc;
- }
- 
--void rpm_sysfs_remove(struct device *dev)
-+int wakeup_sysfs_add(struct device *dev)
- {
--	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
-+	return sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
- }
- 
--void dpm_sysfs_remove(struct device *dev)
-+void wakeup_sysfs_remove(struct device *dev)
- {
--	rpm_sysfs_remove(dev);
--	sysfs_remove_group(&dev->kobj, &pm_attr_group);
-+	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
- }
- 
--#else /* CONFIG_PM_RUNTIME */
--
--int dpm_sysfs_add(struct device * dev)
-+void rpm_sysfs_remove(struct device *dev)
- {
--	return sysfs_create_group(&dev->kobj, &pm_attr_group);
-+	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
- }
- 
--void dpm_sysfs_remove(struct device * dev)
-+void dpm_sysfs_remove(struct device *dev)
- {
-+	rpm_sysfs_remove(dev);
-+	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
- 	sysfs_remove_group(&dev->kobj, &pm_attr_group);
- }
--
--#endif
-Index: linux-2.6/include/linux/pm_runtime.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_runtime.h
-+++ linux-2.6/include/linux/pm_runtime.h
-@@ -87,6 +87,11 @@ static inline bool pm_runtime_enabled(st
- 	return !dev->power.disable_depth;
- }
- 
-+static inline bool pm_runtime_callbacks_present(struct device *dev)
-+{
-+	return !dev->power.no_callbacks;
-+}
-+
- static inline void pm_runtime_mark_last_busy(struct device *dev)
- {
- 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
-@@ -133,6 +138,7 @@ static inline int pm_generic_runtime_res
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
- static inline void pm_runtime_irq_safe(struct device *dev) {}
- 
-+static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
- static inline void pm_runtime_mark_last_busy(struct device *dev) {}
- static inline void __pm_runtime_use_autosuspend(struct device *dev,
- 						bool use) {}
-Index: linux-2.6/drivers/base/power/power.h
-===================================================================
---- linux-2.6.orig/drivers/base/power/power.h
-+++ linux-2.6/drivers/base/power/power.h
-@@ -61,16 +61,15 @@ static inline void device_pm_move_last(s
- extern int dpm_sysfs_add(struct device *);
- extern void dpm_sysfs_remove(struct device *);
- extern void rpm_sysfs_remove(struct device *);
-+extern int wakeup_sysfs_add(struct device *dev);
-+extern void wakeup_sysfs_remove(struct device *dev);
- 
- #else /* CONFIG_PM */
- 
--static inline int dpm_sysfs_add(struct device *dev)
--{
--	return 0;
--}
--
--static inline void dpm_sysfs_remove(struct device *dev)
--{
--}
-+static inline int dpm_sysfs_add(struct device *dev) { return 0; }
-+static inline void dpm_sysfs_remove(struct device *dev) {}
-+static inline void rpm_sysfs_remove(struct device *) {}
-+static inline int wakeup_sysfs_add(struct device *dev) { return 0; }
-+static inline void wakeup_sysfs_remove(struct device *dev) {}
- 
- #endif
-Index: linux-2.6/include/linux/pm_wakeup.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_wakeup.h
-+++ linux-2.6/include/linux/pm_wakeup.h
-@@ -62,18 +62,11 @@ struct wakeup_source {
-  * Changes to device_may_wakeup take effect on the next pm state change.
-  */
- 
--static inline void device_set_wakeup_capable(struct device *dev, bool capable)
--{
--	dev->power.can_wakeup = capable;
--}
--
- static inline bool device_can_wakeup(struct device *dev)
- {
- 	return dev->power.can_wakeup;
- }
- 
--
--
- static inline bool device_may_wakeup(struct device *dev)
- {
- 	return dev->power.can_wakeup && !!dev->power.wakeup;
-@@ -88,6 +81,7 @@ extern struct wakeup_source *wakeup_sour
- extern void wakeup_source_unregister(struct wakeup_source *ws);
- extern int device_wakeup_enable(struct device *dev);
- extern int device_wakeup_disable(struct device *dev);
-+extern void device_set_wakeup_capable(struct device *dev, bool capable);
- extern int device_init_wakeup(struct device *dev, bool val);
- extern int device_set_wakeup_enable(struct device *dev, bool enable);
- extern void __pm_stay_awake(struct wakeup_source *ws);
-@@ -144,7 +138,7 @@ static inline int device_wakeup_disable(
- 
- static inline int device_init_wakeup(struct device *dev, bool val)
- {
--	dev->power.can_wakeup = val;
-+	device_set_wakeup_capable(dev, val);
- 	return val ? -EINVAL : 0;
- }
- 
-Index: linux-2.6/drivers/base/power/wakeup.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/wakeup.c
-+++ linux-2.6/drivers/base/power/wakeup.c
-@@ -228,6 +228,32 @@ int device_wakeup_disable(struct device
- EXPORT_SYMBOL_GPL(device_wakeup_disable);
- 
- /**
-+ * device_set_wakeup_capable - Set/reset device wakeup capability flag.
-+ * @dev: Device to handle.
-+ * @capable: Whether or not @dev is capable of waking up the system from sleep.
-+ *
-+ * If @capable is set, set the @dev's power.can_wakeup flag and add its
-+ * wakeup-related attributes to sysfs.  Otherwise, unset the @dev's
-+ * power.can_wakeup flag and remove its wakeup-related attributes from sysfs.
-+ */
-+void device_set_wakeup_capable(struct device *dev, bool capable)
-+{
-+	if (!!dev->power.can_wakeup == !!capable)
-+		return;
-+
-+	if (device_is_registered(dev)) {
-+		if (capable) {
-+			if (wakeup_sysfs_add(dev))
-+				return;
-+		} else {
-+			wakeup_sysfs_remove(dev);
-+		}
-+	}
-+	dev->power.can_wakeup = capable;
-+}
-+EXPORT_SYMBOL_GPL(device_set_wakeup_capable);
-+
-+/**
-  * device_init_wakeup - Device wakeup initialization.
-  * @dev: Device to handle.
-  * @enable: Whether or not to enable @dev as a wakeup device.
+=---------------------
+ paul fox, pgf@laptop.org
