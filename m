@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Do not create wakeup sysfs files
-	for devices that cannot wakeup
-Date: Sat, 15 Jan 2011 01:08:45 +0100
-Message-ID: <201101150108.45657.rjw__32405.2914431833$1295050335$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1101141451500.1885-100000@iolanthe.rowland.org>
+Subject: Re: Resume from Memory very slow on 2.6.37+
+Date: Mon, 17 Jan 2011 23:49:06 +0100
+Message-ID: <201101172349.06993.rjw__42014.8600046106$1295304702$gmane$org@sisk.pl>
+References: <AANLkTimBEnKTuR5aQyXvpZX8grQPw1eCaVgP-k9yBXhv@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1101141451500.1885-100000@iolanthe.rowland.org>
+In-Reply-To: <AANLkTimBEnKTuR5aQyXvpZX8grQPw1eCaVgP-k9yBXhv@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,472 +17,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jack Steiner <steiner@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, January 14, 2011, Alan Stern wrote:
-> On Fri, 14 Jan 2011, Rafael J. Wysocki wrote:
-...
-> ...
+On Monday, January 17, 2011, Jeff Chua wrote:
+> I've just tried the recent linux git pull
+> (e78bf5e6cbe837daa6ab628a5f679548742994d3) and suspend-to-memory
+> works, but resume takes a very long time (30 seconds doing nothing).
 > 
-> >  static struct attribute *runtime_attrs[] = {
-> > -#ifndef CONFIG_PM_ADVANCED_DEBUG
-> > +#ifdef CONFIG_PM_RUNTIME
-> >  	&dev_attr_runtime_status.attr,
-> > -#endif
-> >  	&dev_attr_control.attr,
-> >  	&dev_attr_runtime_suspended_time.attr,
-> >  	&dev_attr_runtime_active_time.attr,
-> >  	&dev_attr_autosuspend_delay_ms.attr,
-> > +#ifdef CONFIG_PM_ADVANCED_DEBUG
-> > +	&dev_attr_runtime_usage.attr,
-> > +	&dev_attr_runtime_active_kids.attr,
-> > +	&dev_attr_runtime_enabled.attr,
-> > +#endif
-> > +#endif /* CONFIG_PM_RUNTIME */
-> >  	NULL,
-> >  };
-> >  static struct attribute_group pm_runtime_attr_group = {
-> > @@ -480,35 +485,49 @@ int dpm_sysfs_add(struct device *dev)
-> >  	int rc;
-> >  
-> >  	rc = sysfs_create_group(&dev->kobj, &pm_attr_group);
-> > -	if (rc == 0 && !dev->power.no_callbacks) {
-> > +	if (rc)
-> > +		return rc;
-> > +
-> > +	if (pm_runtime_callbacks_present(dev)) {
-> >  		rc = sysfs_merge_group(&dev->kobj, &pm_runtime_attr_group);
-> >  		if (rc)
-> > -			sysfs_remove_group(&dev->kobj, &pm_attr_group);
-> > +			goto err_out;
-> > +	}
-> 
-> One thing I don't like about this change.  The original code defines
-> runtime_status, runtime_usage, runtime_active_kids, and runtime_enabled
-> whenever PM_RUNTIME and PM_ADVANCED_DEBUG are set.  Now you don't
-> define these attributes if runtime callbacks aren't present, even 
-> though they would still make sense.  Maybe you should have two 
-> runtime-related attribute groups, where one depends on 
-> callbacks_present and the other doesn't.
+> Bisected and it says first bad commit is
+> ca9b600be38c73b7d25acfb8b7e4e9a9e941d881
 
-OK, I think that problem is not present any more in the new version of the
-patch, which is appended.
+Hmm.  That's probably because acpi_os_unmap_memory() does the
+synchronize_rcu(), but I have no idea why it might cause a problem to
+occur in suspend_nvs_free().
 
-> Apart from that, it all seems reasonable.  But you should change the
-> description of the wakeup attribute in Documentation/power/devices.txt;  
-> it says that the attribute file is present but empty if the device is
-> not wakeup-capable.
+What happens if you replace the acpi_os_map_memory() in
+suspend_nvs_save() with ioremap_cache() and the acpi_os_unmap_memory() in
+suspend_nvs_free() with iounmap() ?
 
-Right and not only that.  The descriptions in ABI/sysfs-device-power have to be
-updated too.
-
-Thanks,
 Rafael
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM: Do not create wakeup sysfs files for devices that cannot wake up
 
-Currently, wakeup sysfs attributes are created for all devices,
-regardless of whether or not they are wakeup-capable.  This is
-excessive and complicates wakeup device identification from user
-space (i.e. to identify wakeup-capable devices user space has to read
-/sys/devices/.../power/wakeup for all devices and see if they are not
-empty).
-
-Fix this issue by avoiding to create wakeup sysfs files for devices
-that cannot wake up the system from sleep states (i.e. whose
-power.can_wakeup flags are unset during registration) and modify
-device_set_wakeup_capable() so that it adds (or removes) the relevant
-sysfs attributes if a device's wakeup capability status is changed.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/ABI/testing/sysfs-devices-power |   20 +++---
- Documentation/power/devices.txt               |   20 +++---
- drivers/base/power/power.h                    |   15 ++---
- drivers/base/power/sysfs.c                    |   78 +++++++++++++++++---------
- drivers/base/power/wakeup.c                   |   26 ++++++++
- include/linux/pm_runtime.h                    |    6 ++
- include/linux/pm_wakeup.h                     |   10 ---
- 7 files changed, 112 insertions(+), 63 deletions(-)
-
-Index: linux-2.6/drivers/base/power/sysfs.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/sysfs.c
-+++ linux-2.6/drivers/base/power/sysfs.c
-@@ -431,26 +431,18 @@ static ssize_t async_store(struct device
- static DEVICE_ATTR(async, 0644, async_show, async_store);
- #endif /* CONFIG_PM_ADVANCED_DEBUG */
- 
--static struct attribute * power_attrs[] = {
--	&dev_attr_wakeup.attr,
--#ifdef CONFIG_PM_SLEEP
--	&dev_attr_wakeup_count.attr,
--	&dev_attr_wakeup_active_count.attr,
--	&dev_attr_wakeup_hit_count.attr,
--	&dev_attr_wakeup_active.attr,
--	&dev_attr_wakeup_total_time_ms.attr,
--	&dev_attr_wakeup_max_time_ms.attr,
--	&dev_attr_wakeup_last_time_ms.attr,
--#endif
-+static struct attribute *power_attrs[] = {
- #ifdef CONFIG_PM_ADVANCED_DEBUG
-+#ifdef CONFIG_PM_SLEEP
- 	&dev_attr_async.attr,
-+#endif
- #ifdef CONFIG_PM_RUNTIME
- 	&dev_attr_runtime_status.attr,
- 	&dev_attr_runtime_usage.attr,
- 	&dev_attr_runtime_active_kids.attr,
- 	&dev_attr_runtime_enabled.attr,
- #endif
--#endif
-+#endif /* CONFIG_PM_ADVANCED_DEBUG */
- 	NULL,
- };
- static struct attribute_group pm_attr_group = {
-@@ -458,9 +450,26 @@ static struct attribute_group pm_attr_gr
- 	.attrs	= power_attrs,
- };
- 
--#ifdef CONFIG_PM_RUNTIME
-+static struct attribute *wakeup_attrs[] = {
-+#ifdef CONFIG_PM_SLEEP
-+	&dev_attr_wakeup.attr,
-+	&dev_attr_wakeup_count.attr,
-+	&dev_attr_wakeup_active_count.attr,
-+	&dev_attr_wakeup_hit_count.attr,
-+	&dev_attr_wakeup_active.attr,
-+	&dev_attr_wakeup_total_time_ms.attr,
-+	&dev_attr_wakeup_max_time_ms.attr,
-+	&dev_attr_wakeup_last_time_ms.attr,
-+#endif
-+	NULL,
-+};
-+static struct attribute_group pm_wakeup_attr_group = {
-+	.name	= power_group_name,
-+	.attrs	= wakeup_attrs,
-+};
- 
- static struct attribute *runtime_attrs[] = {
-+#ifdef CONFIG_PM_RUNTIME
- #ifndef CONFIG_PM_ADVANCED_DEBUG
- 	&dev_attr_runtime_status.attr,
- #endif
-@@ -468,6 +477,7 @@ static struct attribute *runtime_attrs[]
- 	&dev_attr_runtime_suspended_time.attr,
- 	&dev_attr_runtime_active_time.attr,
- 	&dev_attr_autosuspend_delay_ms.attr,
-+#endif /* CONFIG_PM_RUNTIME */
- 	NULL,
- };
- static struct attribute_group pm_runtime_attr_group = {
-@@ -480,35 +490,49 @@ int dpm_sysfs_add(struct device *dev)
- 	int rc;
- 
- 	rc = sysfs_create_group(&dev->kobj, &pm_attr_group);
--	if (rc == 0 && !dev->power.no_callbacks) {
-+	if (rc)
-+		return rc;
-+
-+	if (pm_runtime_callbacks_present(dev)) {
- 		rc = sysfs_merge_group(&dev->kobj, &pm_runtime_attr_group);
- 		if (rc)
--			sysfs_remove_group(&dev->kobj, &pm_attr_group);
-+			goto err_out;
-+	}
-+
-+	if (device_can_wakeup(dev)) {
-+		rc = sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
-+		if (rc) {
-+			if (pm_runtime_callbacks_present(dev))
-+				sysfs_unmerge_group(&dev->kobj,
-+						    &pm_runtime_attr_group);
-+			goto err_out;
-+		}
- 	}
-+	return 0;
-+
-+ err_out:
-+	sysfs_remove_group(&dev->kobj, &pm_attr_group);
- 	return rc;
- }
- 
--void rpm_sysfs_remove(struct device *dev)
-+int wakeup_sysfs_add(struct device *dev)
- {
--	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
-+	return sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
- }
- 
--void dpm_sysfs_remove(struct device *dev)
-+void wakeup_sysfs_remove(struct device *dev)
- {
--	rpm_sysfs_remove(dev);
--	sysfs_remove_group(&dev->kobj, &pm_attr_group);
-+	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
- }
- 
--#else /* CONFIG_PM_RUNTIME */
--
--int dpm_sysfs_add(struct device * dev)
-+void rpm_sysfs_remove(struct device *dev)
- {
--	return sysfs_create_group(&dev->kobj, &pm_attr_group);
-+	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
- }
- 
--void dpm_sysfs_remove(struct device * dev)
-+void dpm_sysfs_remove(struct device *dev)
- {
-+	rpm_sysfs_remove(dev);
-+	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
- 	sysfs_remove_group(&dev->kobj, &pm_attr_group);
- }
--
--#endif
-Index: linux-2.6/include/linux/pm_runtime.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_runtime.h
-+++ linux-2.6/include/linux/pm_runtime.h
-@@ -87,6 +87,11 @@ static inline bool pm_runtime_enabled(st
- 	return !dev->power.disable_depth;
- }
- 
-+static inline bool pm_runtime_callbacks_present(struct device *dev)
-+{
-+	return !dev->power.no_callbacks;
-+}
-+
- static inline void pm_runtime_mark_last_busy(struct device *dev)
- {
- 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
-@@ -133,6 +138,7 @@ static inline int pm_generic_runtime_res
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
- static inline void pm_runtime_irq_safe(struct device *dev) {}
- 
-+static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
- static inline void pm_runtime_mark_last_busy(struct device *dev) {}
- static inline void __pm_runtime_use_autosuspend(struct device *dev,
- 						bool use) {}
-Index: linux-2.6/drivers/base/power/power.h
-===================================================================
---- linux-2.6.orig/drivers/base/power/power.h
-+++ linux-2.6/drivers/base/power/power.h
-@@ -61,16 +61,15 @@ static inline void device_pm_move_last(s
- extern int dpm_sysfs_add(struct device *);
- extern void dpm_sysfs_remove(struct device *);
- extern void rpm_sysfs_remove(struct device *);
-+extern int wakeup_sysfs_add(struct device *dev);
-+extern void wakeup_sysfs_remove(struct device *dev);
- 
- #else /* CONFIG_PM */
- 
--static inline int dpm_sysfs_add(struct device *dev)
--{
--	return 0;
--}
--
--static inline void dpm_sysfs_remove(struct device *dev)
--{
--}
-+static inline int dpm_sysfs_add(struct device *dev) { return 0; }
-+static inline void dpm_sysfs_remove(struct device *dev) {}
-+static inline void rpm_sysfs_remove(struct device *) {}
-+static inline int wakeup_sysfs_add(struct device *dev) { return 0; }
-+static inline void wakeup_sysfs_remove(struct device *dev) {}
- 
- #endif
-Index: linux-2.6/include/linux/pm_wakeup.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_wakeup.h
-+++ linux-2.6/include/linux/pm_wakeup.h
-@@ -62,18 +62,11 @@ struct wakeup_source {
-  * Changes to device_may_wakeup take effect on the next pm state change.
-  */
- 
--static inline void device_set_wakeup_capable(struct device *dev, bool capable)
--{
--	dev->power.can_wakeup = capable;
--}
--
- static inline bool device_can_wakeup(struct device *dev)
- {
- 	return dev->power.can_wakeup;
- }
- 
--
--
- static inline bool device_may_wakeup(struct device *dev)
- {
- 	return dev->power.can_wakeup && !!dev->power.wakeup;
-@@ -88,6 +81,7 @@ extern struct wakeup_source *wakeup_sour
- extern void wakeup_source_unregister(struct wakeup_source *ws);
- extern int device_wakeup_enable(struct device *dev);
- extern int device_wakeup_disable(struct device *dev);
-+extern void device_set_wakeup_capable(struct device *dev, bool capable);
- extern int device_init_wakeup(struct device *dev, bool val);
- extern int device_set_wakeup_enable(struct device *dev, bool enable);
- extern void __pm_stay_awake(struct wakeup_source *ws);
-@@ -144,7 +138,7 @@ static inline int device_wakeup_disable(
- 
- static inline int device_init_wakeup(struct device *dev, bool val)
- {
--	dev->power.can_wakeup = val;
-+	device_set_wakeup_capable(dev, val);
- 	return val ? -EINVAL : 0;
- }
- 
-Index: linux-2.6/drivers/base/power/wakeup.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/wakeup.c
-+++ linux-2.6/drivers/base/power/wakeup.c
-@@ -228,6 +228,32 @@ int device_wakeup_disable(struct device
- EXPORT_SYMBOL_GPL(device_wakeup_disable);
- 
- /**
-+ * device_set_wakeup_capable - Set/reset device wakeup capability flag.
-+ * @dev: Device to handle.
-+ * @capable: Whether or not @dev is capable of waking up the system from sleep.
-+ *
-+ * If @capable is set, set the @dev's power.can_wakeup flag and add its
-+ * wakeup-related attributes to sysfs.  Otherwise, unset the @dev's
-+ * power.can_wakeup flag and remove its wakeup-related attributes from sysfs.
-+ */
-+void device_set_wakeup_capable(struct device *dev, bool capable)
-+{
-+	if (!!dev->power.can_wakeup == !!capable)
-+		return;
-+
-+	if (device_is_registered(dev)) {
-+		if (capable) {
-+			if (wakeup_sysfs_add(dev))
-+				return;
-+		} else {
-+			wakeup_sysfs_remove(dev);
-+		}
-+	}
-+	dev->power.can_wakeup = capable;
-+}
-+EXPORT_SYMBOL_GPL(device_set_wakeup_capable);
-+
-+/**
-  * device_init_wakeup - Device wakeup initialization.
-  * @dev: Device to handle.
-  * @enable: Whether or not to enable @dev as a wakeup device.
-Index: linux-2.6/Documentation/power/devices.txt
-===================================================================
---- linux-2.6.orig/Documentation/power/devices.txt
-+++ linux-2.6/Documentation/power/devices.txt
-@@ -159,18 +159,18 @@ matter, and the kernel is responsible fo
- whether or not a wakeup-capable device should issue wakeup events is a policy
- decision, and it is managed by user space through a sysfs attribute: the
- power/wakeup file.  User space can write the strings "enabled" or "disabled" to
--set or clear the should_wakeup flag, respectively.  Reads from the file will
--return the corresponding string if can_wakeup is true, but if can_wakeup is
--false then reads will return an empty string, to indicate that the device
--doesn't support wakeup events.  (But even though the file appears empty, writes
--will still affect the should_wakeup flag.)
-+set or clear the "should_wakeup" flag, respectively.  This file is only present
-+for wakeup-capable devices (i.e. devices whose "can_wakeup" flags are set)
-+and is created (or removed) by device_set_wakeup_capable().  Reads from the
-+file will return the corresponding string.
- 
- The device_may_wakeup() routine returns true only if both flags are set.
--Drivers should check this routine when putting devices in a low-power state
--during a system sleep transition, to see whether or not to enable the devices'
--wakeup mechanisms.  However for runtime power management, wakeup events should
--be enabled whenever the device and driver both support them, regardless of the
--should_wakeup flag.
-+This information is used by subsystems, like the PCI bus type code, to see
-+whether or not to enable the devices' wakeup mechanisms.  If device wakeup
-+mechanisms are enabled or disabled directly by drivers, they also should use
-+device_may_wakeup() to decide what to do during a system sleep transition.
-+However for runtime power management, wakeup events should be enabled whenever
-+the device and driver both support them, regardless of the should_wakeup flag.
- 
- 
- /sys/devices/.../power/control files
-Index: linux-2.6/Documentation/ABI/testing/sysfs-devices-power
-===================================================================
---- linux-2.6.orig/Documentation/ABI/testing/sysfs-devices-power
-+++ linux-2.6/Documentation/ABI/testing/sysfs-devices-power
-@@ -29,9 +29,8 @@ Description:
- 		"disabled" to it.
- 
- 		For the devices that are not capable of generating system wakeup
--		events this file contains "\n".  In that cases the user space
--		cannot modify the contents of this file and the device cannot be
--		enabled to wake up the system.
-+		events this file is not present.  In that case the device cannot
-+		be enabled to wake up the system from sleep states.
- 
- What:		/sys/devices/.../power/control
- Date:		January 2009
-@@ -85,7 +84,7 @@ Description:
- 		The /sys/devices/.../wakeup_count attribute contains the number
- 		of signaled wakeup events associated with the device.  This
- 		attribute is read-only.  If the device is not enabled to wake up
--		the system from sleep states, this attribute is empty.
-+		the system from sleep states, this attribute is not present.
- 
- What:		/sys/devices/.../power/wakeup_active_count
- Date:		September 2010
-@@ -95,7 +94,7 @@ Description:
- 		number of times the processing of wakeup events associated with
- 		the device was completed (at the kernel level).  This attribute
- 		is read-only.  If the device is not enabled to wake up the
--		system from sleep states, this attribute is empty.
-+		system from sleep states, this attribute is not present.
- 
- What:		/sys/devices/.../power/wakeup_hit_count
- Date:		September 2010
-@@ -105,7 +104,8 @@ Description:
- 		number of times the processing of a wakeup event associated with
- 		the device might prevent the system from entering a sleep state.
- 		This attribute is read-only.  If the device is not enabled to
--		wake up the system from sleep states, this attribute is empty.
-+		wake up the system from sleep states, this attribute is not
-+		present.
- 
- What:		/sys/devices/.../power/wakeup_active
- Date:		September 2010
-@@ -115,7 +115,7 @@ Description:
- 		or 0, depending on whether or not a wakeup event associated with
- 		the device is being processed (1).  This attribute is read-only.
- 		If the device is not enabled to wake up the system from sleep
--		states, this attribute is empty.
-+		states, this attribute is not present.
- 
- What:		/sys/devices/.../power/wakeup_total_time_ms
- Date:		September 2010
-@@ -125,7 +125,7 @@ Description:
- 		the total time of processing wakeup events associated with the
- 		device, in milliseconds.  This attribute is read-only.  If the
- 		device is not enabled to wake up the system from sleep states,
--		this attribute is empty.
-+		this attribute is not present.
- 
- What:		/sys/devices/.../power/wakeup_max_time_ms
- Date:		September 2010
-@@ -135,7 +135,7 @@ Description:
- 		the maximum time of processing a single wakeup event associated
- 		with the device, in milliseconds.  This attribute is read-only.
- 		If the device is not enabled to wake up the system from sleep
--		states, this attribute is empty.
-+		states, this attribute is not present.
- 
- What:		/sys/devices/.../power/wakeup_last_time_ms
- Date:		September 2010
-@@ -146,7 +146,7 @@ Description:
- 		signaling the last wakeup event associated with the device, in
- 		milliseconds.  This attribute is read-only.  If the device is
- 		not enabled to wake up the system from sleep states, this
--		attribute is empty.
-+		attribute is not present.
- 
- What:		/sys/devices/.../power/autosuspend_delay_ms
- Date:		September 2010
+> commit ca9b600be38c73b7d25acfb8b7e4e9a9e941d881
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Fri Jan 7 01:45:58 2011 +0100
+> 
+>     ACPI / PM: Make suspend_nvs_save() use acpi_os_map_memory()
+> 
+>     It turns out that the NVS memory region that suspend_nvs_save()
+>     attempts to map has been already mapped by acpi_os_map_memory(), so
+>     suspend_nvs_save() should better use acpi_os_map_memory() for mapping
+>     memory to avoid conflicts.
+> 
+>     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>     Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> 
+> I reverted the following commits, and system resumes without waiting ...
+> 
+> commit ca9b600be38c73b7d25acfb8b7e4e9a9e941d881
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Fri Jan 7 01:45:58 2011 +0100
+> 
+>     ACPI / PM: Make suspend_nvs_save() use acpi_os_map_memory()
+> 
+> commit 6d5bbf00d251cc73223a71422d69e069dc2e0b8d
+> Author: Len Brown <len.brown@intel.com>
+> Date:   Fri Jan 7 01:46:40 2011 +0100
+> 
+>     ACPI: Use ioremap_cache()
+> 
+> commit d146df18c13d16e321efa8ef9b57c95c3bec1722
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Fri Jan 7 01:44:28 2011 +0100
+> 
+>     ACPI / PM: Update file information and the list of includes in nvs.c
+> 
+> 
+> Notebook is Lenovo X201s. 8GB RAM. 256GB SSD.
+> 
+> 
+> Thanks,
+> Jeff
+> 
+> 
