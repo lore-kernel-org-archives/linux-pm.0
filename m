@@ -1,11 +1,14 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH] intel_idle: disable HW auto-demotion
-Date: Tue, 18 Jan 2011 21:52:26 -0500 (EST)
-Message-ID: <alpine.LFD.2.02.1101182150400.14668__18510.7654579499$1295405705$gmane$org@x980>
+Subject: [PATCH] intel_idle: disable HW auto-demotion by default
+	(v2)
+Date: Wed, 19 Jan 2011 00:40:43 -0500 (EST)
+Message-ID: <alpine.LFD.2.02.1101190035200.14668__39357.9382136979$1295415827$gmane$org@x980>
+References: <alpine.LFD.2.02.1101182150400.14668@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-reply-to: <alpine.LFD.2.02.1101182150400.14668@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,30 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-acpi@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
 HW auto-demotion is a mechanism where the HW overrides
 the OS C-state request, instead choosing a shallower state.
-
-This is a useful feature for legacy Linux, which has clock
+It is a useful feature for legacy Linux, which has clock
 ticks in idle and may request states deeper than make sense.
 
 However, modern Linux should get exactly the states it requests.
 
-In particular, when a processor is taken off-line, it is
-important that its request for the deepest available C-state
-is honored, else it can disrupt the C-states reached by
-the remaining on-line threads.
-
-boot with "intel_idle.auto_demote=1" to disable the effect of this patch.
+In particular, when a CPU is taken off-line, it must
+not be demoted, else it can prevent the entire package from
+reaching deep C-states.
 
 https://bugzilla.kernel.org/show_bug.cgi?id=25252
 
+boot with "intel_idle.auto_demote=1" to disable
+disabling auto_demotion.
+
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
+
+(v2): use smp_call_function() rather than work_on_cpu()
+update modparam name to match commit log.
+
  arch/x86/include/asm/msr-index.h |    4 ++++
  drivers/idle/intel_idle.c        |   30 ++++++++++++++++++++++++++++++
  2 files changed, 34 insertions(+), 0 deletions(-)
@@ -59,7 +65,7 @@ index 4d0dfa0..b75eeab 100644
  #define MSR_IA32_BBL_CR_CTL		0x00000119
  
 diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 7acb32e..3ee8c38 100644
+index 7acb32e..1290e24 100644
 --- a/drivers/idle/intel_idle.c
 +++ b/drivers/idle/intel_idle.c
 @@ -62,6 +62,7 @@
@@ -78,9 +84,9 @@ index 7acb32e..3ee8c38 100644
 + */
 +static unsigned int has_nhm_snb_hw_auto_demotion;
 +#ifdef CONFIG_NO_HZ
-+static unsigned int auto_demotion;
++static unsigned int auto_demote;
 +#else
-+static unsigned int auto_demotion = 1;
++static unsigned int auto_demote = 1;
 +#endif
 +
 +/*
@@ -91,7 +97,7 @@ index 7acb32e..3ee8c38 100644
  	.notifier_call = setup_broadcast_cpuhp_notify,
  };
  
-+static long nhm_snb_auto_demotion_off(void *unused)
++static long auto_demotion_disable(void *unused)
 +{
 +	unsigned long long msr_bits;
 +
@@ -124,22 +130,22 @@ index 7acb32e..3ee8c38 100644
  		break;
  
  	default:
-@@ -439,6 +466,8 @@ static int intel_idle_cpuidle_devices_init(void)
- 			intel_idle_cpuidle_devices_uninit();
+@@ -440,6 +467,8 @@ static int intel_idle_cpuidle_devices_init(void)
  			return -EIO;
  		}
-+		if (has_nhm_snb_hw_auto_demotion && (auto_demotion == 0))
-+			work_on_cpu(i, nhm_snb_auto_demotion_off, 0);
  	}
++	if (has_nhm_snb_hw_auto_demotion && (auto_demote == 0))
++		smp_call_function(auto_demotion_disable, NULL, 1);
  
  	return 0;
+ }
 @@ -490,6 +519,7 @@ module_init(intel_idle_init);
  module_exit(intel_idle_exit);
  
  module_param(max_cstate, int, 0444);
-+module_param(auto_demotion, int, 0444);
++module_param(auto_demote, int, 0444);
  
  MODULE_AUTHOR("Len Brown <len.brown@intel.com>");
  MODULE_DESCRIPTION("Cpuidle driver for Intel Hardware v" INTEL_IDLE_VERSION);
 -- 
-1.7.4.rc2
+1.7.4.rc2.3.g60a2e
