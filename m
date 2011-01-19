@@ -1,16 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [2/2] ACPI / PM: Call suspend_nvs_free() earlier during
-	resume
-Date: Wed, 19 Jan 2011 22:27:55 +0100
-Message-ID: <201101192227.55298.rjw__14904.3246442035$1295472620$gmane$org@sisk.pl>
-References: <AANLkTimBEnKTuR5aQyXvpZX8grQPw1eCaVgP-k9yBXhv@mail.gmail.com>
-	<AANLkTimf3B=z1DCA2q+yi-ccyAJwmjkB_g8EP=ZTehmn@mail.gmail.com>
-	<201101192219.07569.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH] PM: Do not create wakeup sysfs files
+ for devices that cannot wakeup
+Date: Wed, 19 Jan 2011 17:05:16 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1101191704080.3655-100000__25856.3027870425$1295474892$gmane$org@iolanthe.rowland.org>
+References: <201101150108.45657.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101192219.07569.rjw@sisk.pl>
+In-Reply-To: <201101150108.45657.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,42 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Jack Steiner <steiner@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sat, 15 Jan 2011, Rafael J. Wysocki wrote:
 
-It turns out that some device drivers map pages from the ACPI NVS
-region during resume using ioremap(), which conflicts with
-ioremap_cache() used for mapping those pages by the NVS save/restore
-code in nvs.c.
+> OK, I think that problem is not present any more in the new version of the
+> patch, which is appended.
+> 
+> > Apart from that, it all seems reasonable.  But you should change the
+> > description of the wakeup attribute in Documentation/power/devices.txt;  
+> > it says that the attribute file is present but empty if the device is
+> > not wakeup-capable.
+> 
+> Right and not only that.  The descriptions in ABI/sysfs-device-power have to be
+> updated too.
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Do not create wakeup sysfs files for devices that cannot wake up
+> 
+> Currently, wakeup sysfs attributes are created for all devices,
+> regardless of whether or not they are wakeup-capable.  This is
+> excessive and complicates wakeup device identification from user
+> space (i.e. to identify wakeup-capable devices user space has to read
+> /sys/devices/.../power/wakeup for all devices and see if they are not
+> empty).
+> 
+> Fix this issue by avoiding to create wakeup sysfs files for devices
+> that cannot wake up the system from sleep states (i.e. whose
+> power.can_wakeup flags are unset during registration) and modify
+> device_set_wakeup_capable() so that it adds (or removes) the relevant
+> sysfs attributes if a device's wakeup capability status is changed.
 
-Make the NVS pages mapped by the code in nvs.c be unmapped before
-device drivers' resume routines run.
+Yes, this all looks okay to me.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/sleep.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep.c
-+++ linux-2.6/drivers/acpi/sleep.c
-@@ -166,6 +166,7 @@ static void acpi_pm_finish(void)
- 	u32 acpi_state = acpi_target_sleep_state;
- 
- 	acpi_ec_unblock_transactions();
-+	suspend_nvs_free();
- 
- 	if (acpi_state == ACPI_STATE_S0)
- 		return;
-@@ -186,7 +187,6 @@ static void acpi_pm_finish(void)
-  */
- static void acpi_pm_end(void)
- {
--	suspend_nvs_free();
- 	/*
- 	 * This is necessary in case acpi_pm_finish() is not called during a
- 	 * failing transition to a sleep state.
+Alan Stern
