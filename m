@@ -1,16 +1,14 @@
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-Subject: Re: Resume from Memory very slow on 2.6.37+
-Date: Wed, 19 Jan 2011 22:13:13 +0800
-Message-ID: <AANLkTimf3B=z1DCA2q+yi-ccyAJwmjkB_g8EP=ZTehmn__5637.08129707283$1295446502$gmane$org@mail.gmail.com>
-References: <AANLkTimBEnKTuR5aQyXvpZX8grQPw1eCaVgP-k9yBXhv@mail.gmail.com>
-	<201101182120.16835.rjw@sisk.pl>
-	<AANLkTikay6g5rOyDnv_ocz49GvUcQN+OkrusrbcRPB0K@mail.gmail.com>
-	<201101190238.18529.rjw@sisk.pl>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] intel_idle: disable HW auto-demotion
+Date: Wed, 19 Jan 2011 14:41:52 +0000
+Message-ID: <20110119144152.GA23020__37100.8957889446$1295448275$gmane$org@srcf.ucam.org>
+References: <alpine.LFD.2.02.1101182150400.14668@x980>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101190238.18529.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.02.1101182150400.14668@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,54 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Jack Steiner <steiner@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 19, 2011 at 9:38 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, January 19, 2011, Jeff Chua wrote:
->> On Wed, Jan 19, 2011 at 4:20 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > Please apply the appended patch (without the previous one) and post a =
-dmesg
->> > log containing a suspend-resume cycle with the delay. =A0I wonder wher=
-e exactly
->> > the delay occurs.
->> > + =A0 =A0 =A0 pr_info("%s: synchronize_rcu()\n", __func__);
->> > =A0 =A0 =A0 =A0synchronize_rcu();
->> > + =A0 =A0 =A0 pr_info("%s: iounmap(%p), physaddr: %llx, size: %u\n", _=
-_func__,
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 map->virt, map->phys, map->size);
->>
->> Rafael,
->>
->> The 30 seconds is due to this ...
->>
->> PM: Syncing filesystems ... done.
->> Freezing user space processes ... _memory: synchronize_rcu()
->> acpi_os_unmap_memory: iounmap(ffffc90001c22000), physaddr: bb398000, siz=
-e: 4096
->> acpi_os_unmap_memory: synchronize_rcu()
->> acpi_os_unmap_memory: iounmap(ffffc90001c26000), physaddr: bb399000, siz=
-e: 4096
-00), physaddr: bb79e000, size: 4096
->> Restarting tasks ... done.
->>
->> After this, I see my X windows.
->
-> Are you able to say whether the synchronize_rcu() or the iounmap() calls =
-block?
+On Tue, Jan 18, 2011 at 09:52:26PM -0500, Len Brown wrote:
+> + * Disable HW auto demotion on tick-less idle kernels
+> + */
+> +static unsigned int has_nhm_snb_hw_auto_demotion;
+> +#ifdef CONFIG_NO_HZ
+> +static unsigned int auto_demotion;
+> +#else
+> +static unsigned int auto_demotion = 1;
+> +#endif
 
-It's "synchronize_rcu()" that's causing the slow down. Removing it
-solves the problem.
+What if someone boots with nohz=off?
 
-Does synchronize_rcu() triggers the limiting update rate as described
-in Documentation/RCU/whatisRCU.txt?
+Just so I'm clear on this - this is unrelated to the auto-popup on DMA, 
+right?
 
-        In addition, the synchronize_rcu() API has the nice property
-        of automatically limiting update rate should grace periods
-        be delayed.  This property results in system resilience in face
-        of denial-of-service attacks.
-
-
-Thanks,
-Jeff
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
