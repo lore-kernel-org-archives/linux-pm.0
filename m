@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/11] ACPI: Do not export functions that are only
-	used in osl.c
-Date: Thu, 20 Jan 2011 12:30:55 +0100
-Message-ID: <201101201230.55529.rjw__10477.3571285934$1295524048$gmane$org@sisk.pl>
+Subject: [PATCH 3/11] ACPI: Fix acpi_os_read_memory() and
+	acpi_os_write_memory()
+Date: Thu, 20 Jan 2011 12:30:09 +0100
+Message-ID: <201101201230.10048.rjw__4923.94219986654$1295524172$gmane$org@sisk.pl>
 References: <201101201226.41021.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,58 +24,91 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The functions acpi_os_map_generic_address() and
-acpi_os_unmap_generic_address() are only used in drivers/acpi/osl.c,
-so make them static and remove the extern definitions of them from
-include/linux/acpi_io.h.
+The functions acpi_os_read_memory() and acpi_os_write_memory() do
+two wrong things.  First, they shouldn't call rcu_read_unlock()
+before the looked up address is actually used for I/O, because in
+that case the mapping it belongs to may be removed before the I/O
+is done.  Second, they shouldn't use the physical address if
+there's no mapping for it, because that may lead to problems (at
+least for the "write" case it's like sending data to a random
+physical address in the hope it's going to work).
+
+Make the rcu_read_unlock() be called by these functions when the I/O
+is complete and modify them to dump stack and return error code if
+the requested physical address is not present in the ACPI iomaps.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/osl.c      |    6 ++----
- include/linux/acpi_io.h |    3 ---
- 2 files changed, 2 insertions(+), 7 deletions(-)
+ drivers/acpi/osl.c |   31 +++++++++++++------------------
+ 1 file changed, 13 insertions(+), 18 deletions(-)
 
 Index: linux-2.6/drivers/acpi/osl.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/osl.c
 +++ linux-2.6/drivers/acpi/osl.c
-@@ -397,7 +397,7 @@ void __init early_acpi_os_unmap_memory(v
- 		__acpi_unmap_table(virt, size);
- }
- 
--int acpi_os_map_generic_address(struct acpi_generic_address *addr)
-+static int acpi_os_map_generic_address(struct acpi_generic_address *addr)
+@@ -638,17 +638,17 @@ acpi_os_read_memory(acpi_physical_addres
  {
- 	void __iomem *virt;
+ 	u32 dummy;
+ 	void __iomem *virt_addr;
+-	int size = width / 8, unmap = 0;
++
++	if (!value)
++		value = &dummy;
  
-@@ -413,9 +413,8 @@ int acpi_os_map_generic_address(struct a
+ 	rcu_read_lock();
+-	virt_addr = acpi_map_vaddr_lookup(phys_addr, size);
+-	rcu_read_unlock();
++	virt_addr = acpi_map_vaddr_lookup(phys_addr, width / 8);
+ 	if (!virt_addr) {
+-		virt_addr = acpi_os_ioremap(phys_addr, size);
+-		unmap = 1;
++		rcu_read_unlock();
++		WARN(true, "Address not mapped: %llx\n", phys_addr);
++		return AE_BAD_ADDRESS;
+ 	}
+-	if (!value)
+-		value = &dummy;
  
- 	return 0;
- }
--EXPORT_SYMBOL_GPL(acpi_os_map_generic_address);
- 
--void acpi_os_unmap_generic_address(struct acpi_generic_address *addr)
-+static void acpi_os_unmap_generic_address(struct acpi_generic_address *addr)
- {
- 	void __iomem *virt;
- 	unsigned long flags;
-@@ -433,7 +432,6 @@ void acpi_os_unmap_generic_address(struc
- 
- 	acpi_os_unmap_memory(virt, size);
- }
--EXPORT_SYMBOL_GPL(acpi_os_unmap_generic_address);
- 
- #ifdef ACPI_FUTURE_USAGE
- acpi_status
-Index: linux-2.6/include/linux/acpi_io.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi_io.h
-+++ linux-2.6/include/linux/acpi_io.h
-@@ -10,7 +10,4 @@ static inline void __iomem *acpi_os_iore
-        return ioremap_cache(phys, size);
- }
- 
--int acpi_os_map_generic_address(struct acpi_generic_address *addr);
--void acpi_os_unmap_generic_address(struct acpi_generic_address *addr);
+ 	switch (width) {
+ 	case 8:
+@@ -663,9 +663,7 @@ acpi_os_read_memory(acpi_physical_addres
+ 	default:
+ 		BUG();
+ 	}
 -
- #endif
+-	if (unmap)
+-		iounmap(virt_addr);
++	rcu_read_unlock();
+ 
+ 	return AE_OK;
+ }
+@@ -674,14 +672,13 @@ acpi_status
+ acpi_os_write_memory(acpi_physical_address phys_addr, u32 value, u32 width)
+ {
+ 	void __iomem *virt_addr;
+-	int size = width / 8, unmap = 0;
+ 
+ 	rcu_read_lock();
+-	virt_addr = acpi_map_vaddr_lookup(phys_addr, size);
+-	rcu_read_unlock();
++	virt_addr = acpi_map_vaddr_lookup(phys_addr, width / 8);
+ 	if (!virt_addr) {
+-		virt_addr = acpi_os_ioremap(phys_addr, size);
+-		unmap = 1;
++		rcu_read_unlock();
++		WARN(true, "Address not mapped: %llx\n", phys_addr);
++		return AE_BAD_ADDRESS;
+ 	}
+ 
+ 	switch (width) {
+@@ -697,9 +694,7 @@ acpi_os_write_memory(acpi_physical_addre
+ 	default:
+ 		BUG();
+ 	}
+-
+-	if (unmap)
+-		iounmap(virt_addr);
++	rcu_read_unlock();
+ 
+ 	return AE_OK;
+ }
