@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 9/11] ACPI: Introduce acpi_os_get_iomem()
-Date: Thu, 20 Jan 2011 12:35:46 +0100
-Message-ID: <201101201235.46222.rjw__26253.9557683796$1295524218$gmane$org@sisk.pl>
+Subject: [PATCH 10/11] ACPI / PM: Use existing ACPI iomaps for
+	NVS save/restore
+Date: Thu, 20 Jan 2011 12:36:36 +0100
+Message-ID: <201101201236.37192.rjw__25874.6983985931$1295524900$gmane$org@sisk.pl>
 References: <201101201226.41021.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,50 +24,66 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Introduce function acpi_os_get_iomem() that may be used by its callers
-to get a reference to an ACPI iomap.
+Modify the NVS save/restore code to use acpi_os_get_iomem() and
+acpi_os_unmap_memory() to acquire and release references to ACPI
+iomaps, respectively.  If there's no ACPI iomap corresponding to the
+given NVS page, acpi_os_ioremap() is used to map that page and
+iounmap() is used to unmap it during resume.  [If the page is not
+present in the ACPI iomaps already, it doesn't make sense to add its
+mapping to the list of ACPI iomaps, because it's going to be thrown
+away during the subsequent resume anyway.]
+
+Testing on my HP nx6325 shows that approx. 90% of the NVS pages
+have already been mapped by ACPI before suspend and are present in
+the ACPI iomaps, so this change appears to be the right thing to do
+in general.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/osl.c      |   16 ++++++++++++++++
- include/linux/acpi_io.h |    2 ++
- 2 files changed, 18 insertions(+)
+ drivers/acpi/nvs.c |   19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/drivers/acpi/osl.c
+Index: linux-2.6/drivers/acpi/nvs.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/osl.c
-+++ linux-2.6/drivers/acpi/osl.c
-@@ -285,6 +285,22 @@ acpi_map_vaddr_lookup(acpi_physical_addr
- 	return NULL;
- }
+--- linux-2.6.orig/drivers/acpi/nvs.c
++++ linux-2.6/drivers/acpi/nvs.c
+@@ -26,6 +26,7 @@ struct nvs_page {
+ 	unsigned int size;
+ 	void *kaddr;
+ 	void *data;
++	bool unmap;
+ 	struct list_head node;
+ };
  
-+void __iomem *acpi_os_get_iomem(acpi_physical_address phys, unsigned int size)
-+{
-+	struct acpi_ioremap *map;
-+	void __iomem *virt = NULL;
-+
-+	mutex_lock(&acpi_ioremap_lock);
-+	map = acpi_map_lookup(phys, size);
-+	if (map) {
-+		virt = map->virt + (phys - map->phys);
-+		map->refcount++;
-+	}
-+	mutex_unlock(&acpi_ioremap_lock);
-+	return virt;
-+}
-+EXPORT_SYMBOL_GPL(acpi_os_get_iomem);
-+
- /* Must be called with 'acpi_ioremap_lock' or RCU read lock held. */
- static struct acpi_ioremap *
- acpi_map_lookup_virt(void __iomem *virt, acpi_size size)
-Index: linux-2.6/include/linux/acpi_io.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi_io.h
-+++ linux-2.6/include/linux/acpi_io.h
-@@ -10,4 +10,6 @@ static inline void __iomem *acpi_os_iore
-        return ioremap_cache(phys, size);
- }
+@@ -81,7 +82,13 @@ void suspend_nvs_free(void)
+ 			free_page((unsigned long)entry->data);
+ 			entry->data = NULL;
+ 			if (entry->kaddr) {
+-				iounmap(entry->kaddr);
++				if (entry->unmap) {
++					iounmap(entry->kaddr);
++					entry->unmap = false;
++				} else {
++					acpi_os_unmap_memory(entry->kaddr,
++							     entry->size);
++				}
+ 				entry->kaddr = NULL;
+ 			}
+ 		}
+@@ -115,8 +122,14 @@ int suspend_nvs_save(void)
  
-+void __iomem *acpi_os_get_iomem(acpi_physical_address phys, unsigned int size);
+ 	list_for_each_entry(entry, &nvs_list, node)
+ 		if (entry->data) {
+-			entry->kaddr = acpi_os_ioremap(entry->phys_start,
+-						    entry->size);
++			unsigned long phys = entry->phys_start;
++			unsigned int size = entry->size;
 +
- #endif
++			entry->kaddr = acpi_os_get_iomem(phys, size);
++			if (!entry->kaddr) {
++				entry->kaddr = acpi_os_ioremap(phys, size);
++				entry->unmap = true;
++			}
+ 			if (!entry->kaddr) {
+ 				suspend_nvs_free();
+ 				return -ENOMEM;
