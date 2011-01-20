@@ -1,11 +1,15 @@
-From: Amerigo Wang <amwang@redhat.com>
-Subject: [Patch] acpi: remove acpi_sleep=s4_nonvs
-Date: Wed, 19 Jan 2011 13:14:06 +0800
-Message-ID: <1295414046-14257-1-git-send-email-amwang__14093.1232054301$1295549573$gmane$org@redhat.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
+	iomaps management
+Date: Thu, 20 Jan 2011 21:57:16 +0100
+Message-ID: <201101202157.16813.rjw__32916.8502278209$1295557141$gmane$org@sisk.pl>
+References: <201101201226.41021.rjw@sisk.pl>
+	<AANLkTikVRHfu2KhH4yi2VerkRXBdCODedCDORmpEzRXO@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTikVRHfu2KhH4yi2VerkRXBdCODedCDORmpEzRXO@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,60 +19,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, WANG Cong <amwang@redhat.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, "open list:SUSPEND TO RAM" <linux-pm@lists.linux-foundation.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-acpi_sleep=s4_nonvs is superseded by acpi_sleep=nonvs.
+On Thursday, January 20, 2011, Jeff Chua wrote:
+> On Thu, Jan 20, 2011 at 7:26 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > [10/11] - Make the NVS code use existing iomaps if possible.
+> 
+> Seems ok.
+> 
+> > [11/11] - (cleanup) Remove an unnecessary field from struct nvs_page.
+> 
+> This seems to have an issue. Notebook tries to suspend ... then resume
+> immediately.
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
+That's unexpected.  Please apply the debug patch below in addition to the
+whole series and send a dmesg output containing a (failing) suspend attempt
+(with the patch applied).
+
+Thanks,
+Rafael
+
 
 ---
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 8c594c4..247582c 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -521,14 +521,6 @@ Who:	Thomas Gleixner <tglx@linutronix.de>
+ drivers/acpi/nvs.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/acpi/nvs.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/nvs.c
++++ linux-2.6/drivers/acpi/nvs.c
+@@ -87,9 +87,15 @@ void suspend_nvs_free(void)
+ 			entry->data = NULL;
+ 			if (entry->kaddr) {
+ 				if (entry->unmap) {
++					pr_info("%s: Unmapping %p\n", __func__,
++						entry->kaddr);
++
+ 					iounmap(entry->kaddr);
+ 					entry->unmap = false;
+ 				} else {
++					pr_info("%s: Dropping %p\n", __func__,
++						entry->kaddr);
++
+ 					acpi_os_unmap_memory(entry->kaddr,
+ 							     entry->size);
+ 				}
+@@ -139,9 +145,17 @@ int suspend_nvs_save(void)
+ 			if (!entry->kaddr) {
+ 				suspend_nvs_free();
+ 				return -EIO;
++			} else {
++				pr_info("%s: Mapped %p\n", __func__,
++					entry->kaddr);
+ 			}
+ 			entry->unmap = true;
++		} else {
++			pr_info("%s: Got address %p\n", __func__, entry->kaddr);
+ 		}
++		pr_info("%s: Saving %p <- %p\n", __func__,
++			entry->data, entry->kaddr);
++
+ 		memcpy(entry->data, entry->kaddr, entry->size);
  
- ----------------------------
+ 		page_addr += PAGE_SIZE;
+@@ -164,6 +178,10 @@ void suspend_nvs_restore(void)
+ 	printk(KERN_INFO "PM: Restoring platform NVS memory\n");
  
--What:	The acpi_sleep=s4_nonvs command line option
--When:	2.6.37
--Files:	arch/x86/kernel/acpi/sleep.c
--Why:	superseded by acpi_sleep=nonvs
--Who:	Rafael J. Wysocki <rjw@sisk.pl>
--
------------------------------
--
- What: 	PCI DMA unmap state API
- When:	August 2012
- Why:	PCI DMA unmap state API (include/linux/pci-dma.h) was replaced
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index b72e071..64d907d 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -240,7 +240,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 
- 	acpi_sleep=	[HW,ACPI] Sleep options
- 			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig,
--				  old_ordering, s4_nonvs, sci_force_enable }
-+				  old_ordering, nonvs, sci_force_enable }
- 			See Documentation/power/video.txt for information on
- 			s3_bios and s3_mode.
- 			s3_beep is for debugging; it makes the PC's speaker beep
-diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-index 69fd72a..bb9f327 100644
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -162,11 +162,6 @@ static int __init acpi_sleep_setup(char *str)
- #ifdef CONFIG_HIBERNATION
- 		if (strncmp(str, "s4_nohwsig", 10) == 0)
- 			acpi_no_s4_hw_signature();
--		if (strncmp(str, "s4_nonvs", 8) == 0) {
--			pr_warning("ACPI: acpi_sleep=s4_nonvs is deprecated, "
--					"please use acpi_sleep=nonvs instead");
--			acpi_nvs_nosave();
--		}
- #endif
- 		if (strncmp(str, "nonvs", 5) == 0)
- 			acpi_nvs_nosave();
+ 	list_for_each_entry(entry, &nvs_list, node)
+-		if (entry->data)
++		if (entry->data) {
++			pr_info("%s: Restoring %p -> %p\n", __func__,
++				entry->data, entry->kaddr);
++
+ 			memcpy(entry->kaddr, entry->data, entry->size);
++		}
+ }
