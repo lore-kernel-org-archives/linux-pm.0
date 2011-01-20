@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 10/11] ACPI / PM: Use existing ACPI iomaps for
-	NVS save/restore
-Date: Thu, 20 Jan 2011 12:36:36 +0100
-Message-ID: <201101201236.37192.rjw__25874.6983985931$1295524900$gmane$org@sisk.pl>
+Subject: [PATCH 11/11] ACPI / PM: Make NVS save/restore code use
+	slightly less memory
+Date: Thu, 20 Jan 2011 12:37:34 +0100
+Message-ID: <201101201237.34551.rjw__1885.81049810654$1295524988$gmane$org@sisk.pl>
 References: <201101201226.41021.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,66 +24,110 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Modify the NVS save/restore code to use acpi_os_get_iomem() and
-acpi_os_unmap_memory() to acquire and release references to ACPI
-iomaps, respectively.  If there's no ACPI iomap corresponding to the
-given NVS page, acpi_os_ioremap() is used to map that page and
-iounmap() is used to unmap it during resume.  [If the page is not
-present in the ACPI iomaps already, it doesn't make sense to add its
-mapping to the list of ACPI iomaps, because it's going to be thrown
-away during the subsequent resume anyway.]
-
-Testing on my HP nx6325 shows that approx. 90% of the NVS pages
-have already been mapped by ACPI before suspend and are present in
-the ACPI iomaps, so this change appears to be the right thing to do
-in general.
+Remove the unnecessary field phys_start from struct nvs_page and
+rework the code in nvs.c to reflect that change.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/nvs.c |   19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
+ drivers/acpi/nvs.c |   45 ++++++++++++++++++++++++++++-----------------
+ 1 file changed, 28 insertions(+), 17 deletions(-)
 
 Index: linux-2.6/drivers/acpi/nvs.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/nvs.c
 +++ linux-2.6/drivers/acpi/nvs.c
-@@ -26,6 +26,7 @@ struct nvs_page {
+@@ -22,7 +22,6 @@
+  */
+ 
+ struct nvs_page {
+-	unsigned long phys_start;
  	unsigned int size;
  	void *kaddr;
  	void *data;
-+	bool unmap;
- 	struct list_head node;
+@@ -31,6 +30,8 @@ struct nvs_page {
  };
  
-@@ -81,7 +82,13 @@ void suspend_nvs_free(void)
- 			free_page((unsigned long)entry->data);
- 			entry->data = NULL;
- 			if (entry->kaddr) {
--				iounmap(entry->kaddr);
-+				if (entry->unmap) {
-+					iounmap(entry->kaddr);
-+					entry->unmap = false;
-+				} else {
-+					acpi_os_unmap_memory(entry->kaddr,
-+							     entry->size);
-+				}
- 				entry->kaddr = NULL;
- 			}
- 		}
-@@ -115,8 +122,14 @@ int suspend_nvs_save(void)
+ static LIST_HEAD(nvs_list);
++static unsigned long nvs_start;
++static unsigned int nvs_offset;
  
- 	list_for_each_entry(entry, &nvs_list, node)
- 		if (entry->data) {
--			entry->kaddr = acpi_os_ioremap(entry->phys_start,
--						    entry->size);
-+			unsigned long phys = entry->phys_start;
-+			unsigned int size = entry->size;
+ /**
+  *	suspend_nvs_register - register platform NVS memory region to save
+@@ -44,25 +45,28 @@ static LIST_HEAD(nvs_list);
+ int suspend_nvs_register(unsigned long start, unsigned long size)
+ {
+ 	struct nvs_page *entry, *next;
++	unsigned int offset;
+ 
++	nvs_start = round_down(start, PAGE_SIZE);
++	nvs_offset = start - nvs_start;
++	offset = nvs_offset;
+ 	while (size > 0) {
+-		unsigned int nr_bytes;
++		unsigned int nr_bytes = PAGE_SIZE - offset;
+ 
+ 		entry = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
+ 		if (!entry)
+-			goto Error;
++			goto err_out;
+ 
+ 		list_add_tail(&entry->node, &nvs_list);
+-		entry->phys_start = start;
+-		nr_bytes = PAGE_SIZE - (start & ~PAGE_MASK);
+ 		entry->size = (size < nr_bytes) ? size : nr_bytes;
+ 
+ 		start += entry->size;
+ 		size -= entry->size;
++		offset -= offset;
+ 	}
+ 	return 0;
+ 
+- Error:
++ err_out:
+ 	list_for_each_entry_safe(entry, next, &nvs_list, node) {
+ 		list_del(&entry->node);
+ 		kfree(entry);
+@@ -117,25 +121,32 @@ int suspend_nvs_alloc(void)
+ int suspend_nvs_save(void)
+ {
+ 	struct nvs_page *entry;
++	unsigned long page_addr = nvs_start;
++	unsigned int offset = nvs_offset;
+ 
+ 	printk(KERN_INFO "PM: Saving platform NVS memory\n");
+ 
+-	list_for_each_entry(entry, &nvs_list, node)
+-		if (entry->data) {
+-			unsigned long phys = entry->phys_start;
+-			unsigned int size = entry->size;
++	list_for_each_entry(entry, &nvs_list, node) {
++		unsigned long phys = page_addr + offset;
++		unsigned int size = entry->size;
+ 
+-			entry->kaddr = acpi_os_get_iomem(phys, size);
+-			if (!entry->kaddr) {
+-				entry->kaddr = acpi_os_ioremap(phys, size);
+-				entry->unmap = true;
+-			}
++		if (!entry->data)
++			return -ENOMEM;
 +
-+			entry->kaddr = acpi_os_get_iomem(phys, size);
-+			if (!entry->kaddr) {
-+				entry->kaddr = acpi_os_ioremap(phys, size);
-+				entry->unmap = true;
-+			}
++		entry->kaddr = acpi_os_get_iomem(phys, size);
++		if (!entry->kaddr) {
++			entry->kaddr = acpi_os_ioremap(phys, size);
  			if (!entry->kaddr) {
  				suspend_nvs_free();
- 				return -ENOMEM;
+-				return -ENOMEM;
++				return -EIO;
+ 			}
+-			memcpy(entry->data, entry->kaddr, entry->size);
++			entry->unmap = true;
+ 		}
++		memcpy(entry->data, entry->kaddr, entry->size);
++
++		page_addr += PAGE_SIZE;
++		offset -= offset;
++	}
+ 
+ 	return 0;
+ }
