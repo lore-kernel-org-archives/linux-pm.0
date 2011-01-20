@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Resume from Memory very slow on 2.6.37+
-Date: Thu, 20 Jan 2011 02:50:30 +0100
-Message-ID: <201101200250.30459.rjw__26507.5183626779$1295488431$gmane$org@sisk.pl>
-References: <AANLkTimBEnKTuR5aQyXvpZX8grQPw1eCaVgP-k9yBXhv@mail.gmail.com>
-	<201101192219.07569.rjw@sisk.pl>
-	<AANLkTinvz=syQgiWkQLgu2ssutBNccKuyxdPcGj97npU@mail.gmail.com>
+Subject: [PATCH 2/11] ACPI / PM: Call suspend_nvs_free() earlier
+	during resume
+Date: Thu, 20 Jan 2011 12:28:57 +0100
+Message-ID: <201101201228.57812.rjw__33890.3459058658$1295523716$gmane$org@sisk.pl>
+References: <201101201226.41021.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinvz=syQgiWkQLgu2ssutBNccKuyxdPcGj97npU@mail.gmail.com>
+In-Reply-To: <201101201226.41021.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jeff Chua <jeff.chua.linux@gmail.com>, Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Jack Steiner <steiner@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jeff Chua <jeff.chua.linux@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 20, 2011, Jeff Chua wrote:
-> On Thu, Jan 20, 2011 at 5:19 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > OK, I'd like you to test the two patches I'll send in replies to this
-> > message.
-> > [1/2] - It will go back to using ioremap_cache() for NVS pages allocations.
-> 
-> Applied. This one makes resume effective.
-> 
-> > [2/2] - This one will move suspend_nvs_free() before device drivers' resume
-> >        callbacks (should avoid conflicts with the drivers' mappings).
-> 
-> Applied. This one makes no difference. Without applying [1/2], this
-> one makes resume hangs, so definitely needs to go along with [1/2].
-> 
-> Applied both and I've tried a few cycles and resume still working ok.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-OK, thanks.
+It turns out that some device drivers map pages from the ACPI NVS
+region during resume using ioremap(), which conflicts with the
+ioremap_cache() used for mapping those pages by the NVS save/restore
+code in nvs.c.
 
-Len, can you push https://patchwork.kernel.org/patch/490071/ and
-https://patchwork.kernel.org/patch/490061/ to Linus, please?
+Make the NVS pages mapped by the code in nvs.c be unmapped before
+device drivers' resume routines run.
 
-Rafael
+Tested-by: Jeff Chua <jeff.chua.linux@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/acpi/sleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep.c
++++ linux-2.6/drivers/acpi/sleep.c
+@@ -166,6 +166,7 @@ static void acpi_pm_finish(void)
+ 	u32 acpi_state = acpi_target_sleep_state;
+ 
+ 	acpi_ec_unblock_transactions();
++	suspend_nvs_free();
+ 
+ 	if (acpi_state == ACPI_STATE_S0)
+ 		return;
+@@ -186,7 +187,6 @@ static void acpi_pm_finish(void)
+  */
+ static void acpi_pm_end(void)
+ {
+-	suspend_nvs_free();
+ 	/*
+ 	 * This is necessary in case acpi_pm_finish() is not called during a
+ 	 * failing transition to a sleep state.
