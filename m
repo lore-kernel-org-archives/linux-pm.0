@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 11/11] ACPI / PM: Make NVS save/restore code use
-	slightly less memory
-Date: Thu, 20 Jan 2011 12:37:34 +0100
-Message-ID: <201101201237.34551.rjw__1885.81049810654$1295524988$gmane$org@sisk.pl>
-References: <201101201226.41021.rjw@sisk.pl>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
+Date: Thu, 20 Jan 2011 16:23:58 +0100
+Message-ID: <4D38538E.9070104__31398.1494088241$1295537198$gmane$org@gmail.com>
+References: <201012030107.oB317ZSW019223@imap1.linux-foundation.org>
+	<201012132210.51325.rjw@suse.com> <4D07EAE5.6050803@gmail.com>
+	<201012142322.36053.rjw@suse.com> <4D25CF4A.9090202@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101201226.41021.rjw@sisk.pl>
+In-Reply-To: <4D25CF4A.9090202@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,116 +19,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jeff Chua <jeff.chua.linux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@suse.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On 01/06/2011 03:18 PM, Jiri Slaby wrote:
+> On 12/14/2010 11:22 PM, Rafael J. Wysocki wrote:
+>> On Tuesday, December 14, 2010, Jiri Slaby wrote:
+>>> On 12/13/2010 10:10 PM, Rafael J. Wysocki wrote:
+>>>> On Monday, December 13, 2010, Jiri Slaby wrote:
+>>>>> On 12/05/2010 02:08 PM, Rafael J. Wysocki wrote:
+>>>>>> On Sunday, December 05, 2010, Jiri Slaby wrote:
+>>>>>>> On 12/03/2010 01:34 AM, akpm@linux-foundation.org wrote:
+>>>>>>>> The mm-of-the-moment snapshot 2010-12-02-16-34 has been uploaded to
+>>>>>>>
+>>>>>>> Hi, this kernel regresses with respect to resume. It doesn't wake up,
+>>>>>>> the screen is black with blinking cursor at position [1, 1].
+>>>>>>> 2010-11-23-16-12 seemed to be OK. In this one it is 100% reproducible so
+>>>>>>> far.
+>>>>>>>
+>>>>>>> I'm using pm-suspend, any ideas what to test before I start to find the
+>>>>>>> reason on my own?
+>>>>>>
+>>>>>> Please try the pm_test tests for core, processors and devices, eg.:
+>>>>>
+>>>>> Hmm, I haven't seen the issues since then. So it had to be some kind of
+>>>>> coincidence -- I see the issue occasionally for some time already. Now
+>>>>> it triggered twice in a row after I updated the kernel.
+>>>>
+>>>> Hmm.  What hardware is that?
+>>>
+>>> What exactly do you want to know about it? It's some specific intel
+>>> desktop machine, 3 years old, 2 intel cores, 6G of mem, 2 sata disks in
+>>> raid, dvb-t usb receiver (af9015), usb keyboard and mouse.
+>>
+>> I'm seeing pretty much the same symptoms on quite different hardware, except
+>> for one thing: USB keyboard and mouse.
+>>
+>> Have you checked if writing 0 to /sys/power/pm_async helps?
+> 
+> It's very hard to reproduce (it happens once a week or two), so I can't
+> say yet. As it happened yesterday again, going to test it from now on.
 
-Remove the unnecessary field phys_start from struct nvs_page and
-rework the code in nvs.c to reflect that change.
+Ok, I haven't seen the issue with 0 in /sys/power/pm_async for two weeks
+now (I added it to boot.local). I would say it's related to that...
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/nvs.c |   45 ++++++++++++++++++++++++++++-----------------
- 1 file changed, 28 insertions(+), 17 deletions(-)
-
-Index: linux-2.6/drivers/acpi/nvs.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/nvs.c
-+++ linux-2.6/drivers/acpi/nvs.c
-@@ -22,7 +22,6 @@
-  */
- 
- struct nvs_page {
--	unsigned long phys_start;
- 	unsigned int size;
- 	void *kaddr;
- 	void *data;
-@@ -31,6 +30,8 @@ struct nvs_page {
- };
- 
- static LIST_HEAD(nvs_list);
-+static unsigned long nvs_start;
-+static unsigned int nvs_offset;
- 
- /**
-  *	suspend_nvs_register - register platform NVS memory region to save
-@@ -44,25 +45,28 @@ static LIST_HEAD(nvs_list);
- int suspend_nvs_register(unsigned long start, unsigned long size)
- {
- 	struct nvs_page *entry, *next;
-+	unsigned int offset;
- 
-+	nvs_start = round_down(start, PAGE_SIZE);
-+	nvs_offset = start - nvs_start;
-+	offset = nvs_offset;
- 	while (size > 0) {
--		unsigned int nr_bytes;
-+		unsigned int nr_bytes = PAGE_SIZE - offset;
- 
- 		entry = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
- 		if (!entry)
--			goto Error;
-+			goto err_out;
- 
- 		list_add_tail(&entry->node, &nvs_list);
--		entry->phys_start = start;
--		nr_bytes = PAGE_SIZE - (start & ~PAGE_MASK);
- 		entry->size = (size < nr_bytes) ? size : nr_bytes;
- 
- 		start += entry->size;
- 		size -= entry->size;
-+		offset -= offset;
- 	}
- 	return 0;
- 
-- Error:
-+ err_out:
- 	list_for_each_entry_safe(entry, next, &nvs_list, node) {
- 		list_del(&entry->node);
- 		kfree(entry);
-@@ -117,25 +121,32 @@ int suspend_nvs_alloc(void)
- int suspend_nvs_save(void)
- {
- 	struct nvs_page *entry;
-+	unsigned long page_addr = nvs_start;
-+	unsigned int offset = nvs_offset;
- 
- 	printk(KERN_INFO "PM: Saving platform NVS memory\n");
- 
--	list_for_each_entry(entry, &nvs_list, node)
--		if (entry->data) {
--			unsigned long phys = entry->phys_start;
--			unsigned int size = entry->size;
-+	list_for_each_entry(entry, &nvs_list, node) {
-+		unsigned long phys = page_addr + offset;
-+		unsigned int size = entry->size;
- 
--			entry->kaddr = acpi_os_get_iomem(phys, size);
--			if (!entry->kaddr) {
--				entry->kaddr = acpi_os_ioremap(phys, size);
--				entry->unmap = true;
--			}
-+		if (!entry->data)
-+			return -ENOMEM;
-+
-+		entry->kaddr = acpi_os_get_iomem(phys, size);
-+		if (!entry->kaddr) {
-+			entry->kaddr = acpi_os_ioremap(phys, size);
- 			if (!entry->kaddr) {
- 				suspend_nvs_free();
--				return -ENOMEM;
-+				return -EIO;
- 			}
--			memcpy(entry->data, entry->kaddr, entry->size);
-+			entry->unmap = true;
- 		}
-+		memcpy(entry->data, entry->kaddr, entry->size);
-+
-+		page_addr += PAGE_SIZE;
-+		offset -= offset;
-+	}
- 
- 	return 0;
- }
+regards,
+-- 
+js
