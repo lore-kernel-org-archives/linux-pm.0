@@ -1,9 +1,8 @@
-From: Jeff Chua <jeff.chua.linux@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Occasional (too common) suspend problem
-Date: Sat, 22 Jan 2011 01:09:56 +0800
-Message-ID: <AANLkTi=cEyfE=tmyfCjixn+hxA2fQnj=O=hrij_D1NuZ__7554.52268426797$1295629850$gmane$org@mail.gmail.com>
+Date: Fri, 21 Jan 2011 21:54:16 +0100
+Message-ID: <201101212154.16597.rjw__17027.2138937891$1295643434$gmane$org@sisk.pl>
 References: <AANLkTikBRf00H_6YcS9nsnJG68WguDzL_AvNTRyDWRY=@mail.gmail.com>
-	<AANLkTi=LyufFJ-zqMWdGnSnZ-iW+ONbQ8mLfTn1O5WVi@mail.gmail.com>
 	<1295587618.11852.57.camel@minggr.sh.intel.com>
 	<AANLkTi=1n2YMa=_gcfuTQtT=k388MppCWCsxRkhjj-qz@mail.gmail.com>
 Mime-Version: 1.0
@@ -21,44 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Lin Ming <ming.m.lin@intel.com>, "Moore, Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Lin Ming <ming.m.lin@intel.com>, Jeff Chua <jeff.chua.linux@gmail.com>, "Moore, Robert" <robert.moore@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jan 22, 2011 at 12:28 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
+On Friday, January 21, 2011, Linus Torvalds wrote:
 > On Thu, Jan 20, 2011 at 9:26 PM, Lin Ming <ming.m.lin@intel.com> wrote:
->> On Fri, 2011-01-21 at 12:50, Linus Torvalds wrote:
->> Does revert bba63a29(ACPICA: Implicit notify support) help?
->
-> It seemed to, but on the third boot (with several suspend cycles per
-> boot) I ended up seeing it. This is why I can't bisect it - it really
-> isn't reliable enough to bisect sanely.
->
-> One thing I've noticed: if the system suspends once, it seems to
-> suspend several times. At least I think that every time I've seen this
-> problem, it's happened on the first suspend (and if it comes back
-> after a keypress, the second suspend will hang hard). But I've been
-> booting this machine so much during all the testing, that I haven't
-> ever done a really _long_ run of many suspend/resume cyles, so my
-> evidence for that is weakish.
+> > On Fri, 2011-01-21 at 12:50, Linus Torvalds wrote:
+> >>
+> >>  ...
+> >>  [   54.628375] PM: Saving platform NVS memory
+> >>  [   54.628387] Disabling non-boot CPUs ...
+> >>  [   63.554966] ACPI Exception: AE_BAD_PARAMETER, Returned by Handler
+> >> for [EmbeddedControl] (20110112/evregion-474)
+> >>  [   63.554992] ACPI Error: Method parse/execution failed
+> >> [\_SB_.PCI0.SBRG.EC0_.RCTP] (Node f5c2dea0), AE_BAD_PARAMETER
+> >> (20110112/psparse-536)
+> >>  [   63.555022] ACPI Error: Method parse/execution failed
+> >> [\_TZ_.RTMP] (Node f5c32fa8), AE_BAD_PARAMETER (20110112/psparse-536)
+> >>  [   63.555047] ACPI Error: Method parse/execution failed
+> >> [\_TZ_.TZ00._TMP] (Node f5c34018), AE_BAD_PARAMETER
+> >> (20110112/psparse-536)
+> >>  [   63.555079] Thermal: failed to read out thermal zone 0
+> >>  [   63.556361] CPU 1 is now offline
+> >>  [   63.556944] PM: Restoring platform NVS memory
+> >>  [   63.556944] Enabling non-boot CPUs ...
+> >>  [   63.556944] Booting Node 0 Processor 1 APIC 0x1
+> >>  [   63.556279] Initializing CPU#1
+> >>  ...
+> >>
+> >> which really doesn't tell me much, except that clearly something in
+> >> ACPI-land is unhappy, and it looks thermal-related (that last error
+> >> message comes from thermal_zone_device_update()).
+> >>
+> >> Any ideas?
 
-This might not be related, but may be it'll lead to something ... With
-Rafael's latest patches that you pulled, suspend-to-ram/resume works
-for me now. But I was still having problem with "hibernating" to disk.
-It turned out that the recent changes (past few weeks) caused the ACPI
-to failed when I tried to make the LED blink with  "echo 2 blink
->/proc/acpi/ibm/led". Used to work before. But, now it simply hang and
-can't suspend. Removiing the echo blink make suspend-to-disk works
-again.
+Apparently, the problem occurs while CPU1 is being disabled (or at least
+the message is printed at that time), which is highly suspicious, because we
+shouldn't be doing _anything_ ACPI-related at this point (the SCI should
+have been disabled way earlier and the GPEs should have been disabled as well),
+so I'm not really sure what's the source of the ACPI messages.
 
-And I've also seen the case you mentioned where sometimes it couldn't
-suspend (either by closing the lid or running "echo mem
->/sys/power/state") ... it seems to happen more often when the machine
-is under load ... happens a few time when I hurried to get off work
-and only realized when my backpack on my back was burning hot!!!
+It _looks_ like we may be executing an AML method while CPU1 is disabled,
+which would be kind of ... sick.
 
-Now I completed disabled CONFIG_THINKPAD_ACPI and
-CONFIG_THINKPAD_ACPI_UNSAFE_LEDS and hopefully won't see anymore hangs
-before suspend.
-
-Jeff.
+Rafael
