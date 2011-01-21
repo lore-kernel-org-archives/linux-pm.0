@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.38-rc1 resume hang (da8aeb92 "ACPI/Battery:
-	Update information on info notification and resume")
-Date: Fri, 21 Jan 2011 21:30:26 +0100
-Message-ID: <201101212130.26693.rjw__31782.39957565$1295643829$gmane$org@sisk.pl>
-References: <20110121140031.GA3280@gandalf>
+Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
+	iomaps management
+Date: Fri, 21 Jan 2011 22:06:37 +0100
+Message-ID: <201101212206.37469.rjw__7445.5983624377$1295644155$gmane$org@sisk.pl>
+References: <201101201226.41021.rjw@sisk.pl> <201101210104.43641.rjw@sisk.pl>
+	<AANLkTi=3JZUa3AtfcxnSuS36ORZLbS2-M+fJAR6_Moof@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110121140031.GA3280@gandalf>
+In-Reply-To: <AANLkTi=3JZUa3AtfcxnSuS36ORZLbS2-M+fJAR6_Moof@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,28 +19,240 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Hogan <james@albanarts.com>
-Cc: Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, ACPI Devel Mailing List <linux-acpi@gver.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, January 21, 2011, James Hogan wrote:
-> Hi,
+On Friday, January 21, 2011, Jeff Chua wrote:
+> 2011/1/21 Rafael J. Wysocki <rjw@sisk.pl>:
+> > Thanks, but unfortunately this wasn't conclusive.  Please apply the patch below
+> > instead of the previous one (on top of [1/11] - [11/11]) and collect dmesg
+> > output containing a (failing) suspend attempt.
+> >
+> > Please attach full dmesg, so that I can see the size and address of your
+> > system's NVS region.
 > 
-> After updating from 2.6.37 to 2.6.28-rc1, resume from suspend is broken
-> on my Dell M1210 Laptop.
-> 
-> I tried pm_trace and both block and battery matched the hash, so I
-> bisected the problem to commit da8aeb92 (see below).
-> 
-> I've reverted this commit on 2.6.38 and it doesn't die on resume anymore.
-> 
-> My bisection log and .config are pasted below.
-> 
-> Let me know if I can provide any more info or help test any patches etc.
+> Attached.
 
-This should have been fixed already in the current Linus' tree by this commit:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b23fffd778c312b8fb258d342051fcbdf6712128
+So, below is a replacement for [11/11].  Please test it on top of
+[1/11] - [10/11] (the current Linus' tree already contains [1/11] and [2/11])
+and let me know if it works for you (in either case, please attach dmesg
+output containing a suspend attempt).
 
-Can you verify, please?
+If it works, I'll remove the diagnostic messages and submit along with the
+rest of the patchset.
 
+Thanks,
 Rafael
+
+---
+Subject: ACPI / PM: Make NVS save/restore code use slightly less memory (test)
+
+Remove the unnecessary field phys_start from struct nvs_page and
+modify the code in nvs.c to use an array of struct nvs_page objects
+instead of a list which makes it a bit more straightforward (in
+addition to saving a little memory).
+
+Not-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/nvs.c |  125 +++++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 79 insertions(+), 46 deletions(-)
+
+Index: linux-2.6/drivers/acpi/nvs.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/nvs.c
++++ linux-2.6/drivers/acpi/nvs.c
+@@ -22,15 +22,15 @@
+  */
+ 
+ struct nvs_page {
+-	unsigned long phys_start;
+ 	unsigned int size;
+-	void *kaddr;
++	void __iomem *kaddr;
+ 	void *data;
+ 	bool unmap;
+-	struct list_head node;
+ };
+ 
+-static LIST_HEAD(nvs_list);
++static struct nvs_page *nvs;
++static unsigned long nvs_start;
++static unsigned int nvs_span;
+ 
+ /**
+  *	suspend_nvs_register - register platform NVS memory region to save
+@@ -43,31 +43,40 @@ static LIST_HEAD(nvs_list);
+  */
+ int suspend_nvs_register(unsigned long start, unsigned long size)
+ {
+-	struct nvs_page *entry, *next;
++	struct nvs_page *p, *p_end;
++	unsigned int head, tail;
+ 
+-	while (size > 0) {
+-		unsigned int nr_bytes;
++	pr_info("PM: Registering ACPI NVS region at %lx (%ld bytes)\n",
++		start, size);
+ 
+-		entry = kzalloc(sizeof(struct nvs_page), GFP_KERNEL);
+-		if (!entry)
+-			goto Error;
+-
+-		list_add_tail(&entry->node, &nvs_list);
+-		entry->phys_start = start;
+-		nr_bytes = PAGE_SIZE - (start & ~PAGE_MASK);
+-		entry->size = (size < nr_bytes) ? size : nr_bytes;
+-
+-		start += entry->size;
+-		size -= entry->size;
++	nvs_start = start;
++	head = PAGE_SIZE - (start & ~PAGE_MASK);
++	if (head) {
++		nvs_span = 1;
++		size -= size > head ? head : size;
++	} else {
++		nvs_span = 0;
++		head = PAGE_SIZE;
+ 	}
+-	return 0;
++	nvs_span += size >> PAGE_SHIFT;
++	tail = size & ~PAGE_MASK;
++	if (tail)
++		nvs_span++;
++	else
++		tail = PAGE_SIZE;
++
++	nvs = kzalloc(sizeof(*nvs) * nvs_span, GFP_KERNEL);
++	if (!nvs)
++		return -ENOMEM;
++
++	p = nvs;
++	p->size = head;
++	for (p++, p_end = nvs + nvs_span - 1; p < p_end; p++)
++		p->size = PAGE_SIZE;
++	if (p_end > nvs)
++		p_end->size = tail;
+ 
+- Error:
+-	list_for_each_entry_safe(entry, next, &nvs_list, node) {
+-		list_del(&entry->node);
+-		kfree(entry);
+-	}
+-	return -ENOMEM;
++	return 0;
+ }
+ 
+ /**
+@@ -75,17 +84,23 @@ int suspend_nvs_register(unsigned long s
+  */
+ void suspend_nvs_free(void)
+ {
+-	struct nvs_page *entry;
++	struct nvs_page *entry, *end;
+ 
+-	list_for_each_entry(entry, &nvs_list, node)
++	for (entry = nvs, end = nvs + nvs_span; entry < end; entry++)
+ 		if (entry->data) {
+ 			free_page((unsigned long)entry->data);
+ 			entry->data = NULL;
+ 			if (entry->kaddr) {
+ 				if (entry->unmap) {
++					pr_info("%s: Unmapping %p\n", __func__,
++						entry->kaddr);
++
+ 					iounmap(entry->kaddr);
+ 					entry->unmap = false;
+ 				} else {
++					pr_info("%s: Releasing %p\n", __func__,
++						entry->kaddr);
++
+ 					acpi_os_unmap_memory(entry->kaddr,
+ 							     entry->size);
+ 				}
+@@ -99,9 +114,9 @@ void suspend_nvs_free(void)
+  */
+ int suspend_nvs_alloc(void)
+ {
+-	struct nvs_page *entry;
++	struct nvs_page *entry, *end;
+ 
+-	list_for_each_entry(entry, &nvs_list, node) {
++	for (entry = nvs, end = nvs + nvs_span; entry < end; entry++) {
+ 		entry->data = (void *)__get_free_page(GFP_KERNEL);
+ 		if (!entry->data) {
+ 			suspend_nvs_free();
+@@ -116,26 +131,44 @@ int suspend_nvs_alloc(void)
+  */
+ int suspend_nvs_save(void)
+ {
+-	struct nvs_page *entry;
++	struct nvs_page *entry, *end;
++	unsigned long phys = nvs_start;
+ 
+ 	printk(KERN_INFO "PM: Saving platform NVS memory\n");
+ 
+-	list_for_each_entry(entry, &nvs_list, node)
+-		if (entry->data) {
+-			unsigned long phys = entry->phys_start;
+-			unsigned int size = entry->size;
++	for (entry = nvs, end = nvs + nvs_span; entry < end; entry++) {
++		unsigned int size = entry->size;
++		void __iomem *kaddr;
+ 
+-			entry->kaddr = acpi_os_get_iomem(phys, size);
+-			if (!entry->kaddr) {
+-				entry->kaddr = acpi_os_ioremap(phys, size);
+-				entry->unmap = true;
+-			}
+-			if (!entry->kaddr) {
+-				suspend_nvs_free();
+-				return -ENOMEM;
+-			}
+-			memcpy(entry->data, entry->kaddr, entry->size);
++		if (!entry->data) {
++			suspend_nvs_free();
++			return -ENOMEM;
++		}
++
++		pr_info("%s: Trying to map %lx, %d\n", __func__, phys, size);
++
++		kaddr = acpi_os_get_iomem(phys, size);
++		if (!kaddr) {
++			kaddr = acpi_os_ioremap(phys, size);
++			entry->unmap = !!kaddr;
++		} else {
++			pr_info("%s: Got address %p\n", __func__, kaddr);
+ 		}
++		entry->kaddr = kaddr;
++
++		if (!entry->kaddr) {
++			pr_info("%s: Mapping failed\n", __func__);
++
++			suspend_nvs_free();
++			return -EIO;
++		} else {
++			pr_info("%s: Using address %p\n", __func__, entry->kaddr);
++		}
++
++		memcpy(entry->data, entry->kaddr, size);
++
++		phys += size;
++	}
+ 
+ 	return 0;
+ }
+@@ -148,11 +181,11 @@ int suspend_nvs_save(void)
+  */
+ void suspend_nvs_restore(void)
+ {
+-	struct nvs_page *entry;
++	struct nvs_page *entry, *end;
+ 
+ 	printk(KERN_INFO "PM: Restoring platform NVS memory\n");
+ 
+-	list_for_each_entry(entry, &nvs_list, node)
++	for (entry = nvs, end = nvs + nvs_span; entry < end; entry++)
+ 		if (entry->data)
+ 			memcpy(entry->kaddr, entry->data, entry->size);
+ }
