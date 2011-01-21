@@ -1,16 +1,14 @@
-From: James Hogan <james@albanarts.com>
-Subject: Re: 2.6.38-rc1 resume hang (da8aeb92 "ACPI/Battery:
- Update information on info notification and resume")
-Date: Fri, 21 Jan 2011 21:20:28 +0000
-Message-ID: <20110121212028.GA2916__37817.5396043391$1295644968$gmane$org@gandalf>
-References: <20110121140031.GA3280@gandalf>
- <201101212130.26693.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: Occasional (too common) suspend problem
+Date: Fri, 21 Jan 2011 17:25:42 -0500 (EST)
+Message-ID: <alpine.LFD.2.02.1101211701330.3924__8264.98349565572$1295648931$gmane$org@x980>
+References: <AANLkTikBRf00H_6YcS9nsnJG68WguDzL_AvNTRyDWRY=@mail.gmail.com>
+	<alpine.LFD.2.02.1101211550190.3924@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201101212130.26693.rjw@sisk.pl>
+In-reply-to: <alpine.LFD.2.02.1101211550190.3924@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +18,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jeff Chua <jeff.chua.linux@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
-
-On Fri, Jan 21, 2011 at 09:30:26PM +0100, Rafael J. Wysocki wrote:
-> On Friday, January 21, 2011, James Hogan wrote:
-> > Hi,
+> > and here's the one that failed and then ended up coming back on a keypress:
 > > 
-> > After updating from 2.6.37 to 2.6.28-rc1, resume from suspend is broken
-> > on my Dell M1210 Laptop.
+> >   ...
+> >   [   54.628375] PM: Saving platform NVS memory
+> >   [   54.628387] Disabling non-boot CPUs ...
+> >   [   63.554966] ACPI Exception: AE_BAD_PARAMETER, Returned by Handler
+> > for [EmbeddedControl] (20110112/evregion-474)
+> >   [   63.554992] ACPI Error: Method parse/execution failed
+> > [\_SB_.PCI0.SBRG.EC0_.RCTP] (Node f5c2dea0), AE_BAD_PARAMETER
+> > (20110112/psparse-536)
+> >   [   63.555022] ACPI Error: Method parse/execution failed
+> > [\_TZ_.RTMP] (Node f5c32fa8), AE_BAD_PARAMETER (20110112/psparse-536)
+> >   [   63.555047] ACPI Error: Method parse/execution failed
+> > [\_TZ_.TZ00._TMP] (Node f5c34018), AE_BAD_PARAMETER
+> > (20110112/psparse-536)
+> >   [   63.555079] Thermal: failed to read out thermal zone 0
+> >   [   63.556361] CPU 1 is now offline
+> >   [   63.556944] PM: Restoring platform NVS memory
+> >   [   63.556944] Enabling non-boot CPUs ...
+> >   [   63.556944] Booting Node 0 Processor 1 APIC 0x1
+> >   [   63.556279] Initializing CPU#1
+> >   ...
 > > 
-> > I tried pm_trace and both block and battery matched the hash, so I
-> > bisected the problem to commit da8aeb92 (see below).
-> > 
-> > I've reverted this commit on 2.6.38 and it doesn't die on resume anymore.
-> > 
-> > My bisection log and .config are pasted below.
-> > 
-> > Let me know if I can provide any more info or help test any patches etc.
+> > which really doesn't tell me much, except that clearly something in
+> > ACPI-land is unhappy, and it looks thermal-related (that last error
+> > message comes from thermal_zone_device_update()).
 > 
-> This should have been fixed already in the current Linus' tree by this commit:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b23fffd778c312b8fb258d342051fcbdf6712128
-> 
-> Can you verify, please?
+> The thermal code failed to get the current
+> temperature (via AML "_TMP" method) because
+> the embedded controller (or our interface to it) malfunctioned.
 
-Yes, that fixes it. I'll remember to check for an existing fix at the
-end of the bisection as well as the beginning next time.
+Hmm, on looking closer with Rafael, we discovered that
+this isn't the EC malfunctioning, these messages result
+from us disabling the EC via acpi_ec_block_transactions().
 
-Thanks
+Apparently you've got a thermal zone with polling enabled
+every 30 seconds.  These are quite rare, I've only seen
+them on asus boxes.  This timeout happened during suspend
+when EC was disabled and thus the message.  We should have 
+frozen that work-queue...
 
-James
+I don't know if fixing that symptom will fix the suspend
+problem, but it can't hurt.
+
+-Len Brown, Intel Open Source Technology Center
