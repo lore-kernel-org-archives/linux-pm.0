@@ -1,15 +1,15 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
-Date: Fri, 21 Jan 2011 10:16:35 +0100
-Message-ID: <4D394EF3.5000805__26182.6045382351$1295601553$gmane$org@gmail.com>
-References: <201012030107.oB317ZSW019223@imap1.linux-foundation.org>
-	<4D25CF4A.9090202@gmail.com> <4D38538E.9070104@gmail.com>
-	<201101202202.01089.rjw@suse.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
+	iomaps management
+Date: Fri, 21 Jan 2011 13:01:12 +0100
+Message-ID: <201101211301.12390.rjw__3138.10155862502$1295611560$gmane$org@sisk.pl>
+References: <201101201226.41021.rjw@sisk.pl> <201101210104.43641.rjw@sisk.pl>
+	<AANLkTi=3JZUa3AtfcxnSuS36ORZLbS2-M+fJAR6_Moof@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101202202.01089.rjw@suse.com>
+In-Reply-To: <AANLkTi=3JZUa3AtfcxnSuS36ORZLbS2-M+fJAR6_Moof@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@suse.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/20/2011 10:02 PM, Rafael J. Wysocki wrote:
-> In that case the next step would be to build the kernel with
-> CONFIG_PM_ADVANCED_DEBUG set and try to switch the async flag for individual
-> devices (it is located is /sys/devices/.../power/ for each device).
+On Friday, January 21, 2011, Jeff Chua wrote:
+> 2011/1/21 Rafael J. Wysocki <rjw@sisk.pl>:
+> > Thanks, but unfortunately this wasn't conclusive.  Please apply the patch below
+> > instead of the previous one (on top of [1/11] - [11/11]) and collect dmesg
+> > output containing a (failing) suspend attempt.
+> >
+> > Please attach full dmesg, so that I can see the size and address of your
+> > system's NVS region.
 > 
-> For example, I wonder if it is sufficient to unset it for all USB devices.
+> Attached.
 
-Ok, I added
-for aa in /sys/bus/usb/devices/*/power/async; do
-        echo disabled > $aa
-done
-to /etc/init.d/boot.local. Let's see :).
+OK, I suspect the new code tries to map one page too many, but
+I still don't know how many pages we are _supposed_ to map, because there's
+no e820 information in your dmesg (I'm not sure exactly why).
 
-thanks,
--- 
-js
+Anyway, I'll have a replacement for [11/11] later today.
+
+Thanks,
+Rafael
