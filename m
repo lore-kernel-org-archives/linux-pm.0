@@ -1,18 +1,17 @@
-From: Dave Airlie <airlied@linux.ie>
-Subject: Re: Occasional (too common) suspend problem
-Date: Sun, 23 Jan 2011 01:02:16 +0000 (GMT)
-Message-ID: <alpine.DEB.2.00.1101230059220.13826__49757.0312618793$1295744712$gmane$org@skynet.skynet.ie>
-References: <AANLkTikBRf00H_6YcS9nsnJG68WguDzL_AvNTRyDWRY=@mail.gmail.com>
-	<AANLkTi=Tkf9MYmSmCX6CZ9Ymgqo8S1HmRkBn+Uvr2KUb@mail.gmail.com>
-	<AANLkTikv55eQfNaCGLm-2pA3Ndyi9ZEzb4xn64D3u0ww@mail.gmail.com>
-	<201101221110.17786.rjw@sisk.pl>
-	<AANLkTik2sUJb9G5sA_Zr9_Q1=rJdYkgRe-MgTb0zhwc2@mail.gmail.com>
-	<AANLkTikJVFEOgD_i+ghFupJksy2X_G1outhMmhPbP1Yd@mail.gmail.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
+ iomaps management
+Date: Sun, 23 Jan 2011 16:20:37 -0200
+Message-ID: <20110123182037.GH24071__13039.9110763848$1295806921$gmane$org@khazad-dum.debian.net>
+References: <201101201226.41021.rjw@sisk.pl> <201101212206.37469.rjw@sisk.pl>
+	<AANLkTimEoAhO9TRx4Aq7NnTTt6G-u+cHJRyAMjSAJgTm@mail.gmail.com>
+	<201101221013.10239.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikJVFEOgD_i+ghFupJksy2X_G1outhMmhPbP1Yd@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <201101221013.10239.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,31 +21,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Chris Wilson <chris@chris-wilson.co.uk>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 22 Jan 2011, Linus Torvalds wrote:
-
-> code, and I'm hereby adding some of the i915 people to the mix.
-> Because one of the main things that the pm-suspend scripts do is
-> things like
+On Sat, 22 Jan 2011, Rafael J. Wysocki wrote:
+> > I discovered CONFIG_THINKPAD_ACPI caused suspend-to-disk to hang. I
+> > need the Thinkpad ACPI to control the fan and bluetooth. It looks like
+> > the thinkpad acpi is trying acquire locks while suspending.  Disabling
+> > cmos, light, led and hotkeys makes suspend-to-disk works again.
 > 
->         local con
->         for con in /sys/class/graphics/*/state; do
->                 [ -f $con ] || continue
->                 echo 1 >"${con}"
->         done
+> Well, we should tell the thinkpad_acpi maintainer about that, then (CCed).
 
-These caused me problems before esp when lockdep was setting 
-oops_in_progress, but I repaired that and if X is running the VT 
-should be in graphics mode and these end up doing nothing. Though there 
-could be a race.
+What are the requirements re. mutexes for sleep-to-disk versus sleep-to-ram?
 
-With -rc2 on my Thinkpad T60p, radeon r500 GPU, Intel T2500 (2 core), I 
-just got a reboot on resume, after a pm-suspend. I'll do some more 
-experiments later if I get some time.
+Did something change in that area that caused the driver to hang?  A pointer
+to the ML threads, documentation, or patchset/git commit with those changes
+would be enough answer, and I will pursue it from there.
 
-does pm-suspend work from init 3? if not does nomodeset init 3 work?
-
-Dave.
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
