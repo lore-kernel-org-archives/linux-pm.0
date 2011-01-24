@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
 	iomaps management
-Date: Mon, 24 Jan 2011 22:36:08 +0100
-Message-ID: <201101242236.09171.rjw__23555.5933476009$1295905150$gmane$org@sisk.pl>
-References: <201101201226.41021.rjw@sisk.pl> <201101232128.03007.rjw@sisk.pl>
-	<AANLkTi=YwD7kBZ6XsnUpCfqCmTuwwhkcAYvjXJL3Fj8O@mail.gmail.com>
+Date: Mon, 24 Jan 2011 22:37:43 +0100
+Message-ID: <201101242237.44269.rjw__48793.6180238195$1295905305$gmane$org@sisk.pl>
+References: <201101201226.41021.rjw@sisk.pl> <201101232135.32510.rjw@sisk.pl>
+	<20110123231512.GB11203@khazad-dum.debian.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=YwD7kBZ6XsnUpCfqCmTuwwhkcAYvjXJL3Fj8O@mail.gmail.com>
+In-Reply-To: <20110123231512.GB11203@khazad-dum.debian.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,37 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, January 24, 2011, Jeff Chua wrote:
-> On Mon, Jan 24, 2011 at 4:28 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday, January 23, 2011, Jeff Chua wrote:
-> >> On Sun, Jan 23, 2011 at 3:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Saturday, January 22, 2011, Jeff Chua wrote:
-> >> >> 2011/1/22 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> >> > On Saturday, January 22, 2011, Jeff Chua wrote:
-> >> Strange. If I didn't offline, it hanged during suspend even without
-> >> thinkpad_acpi. I could see that the suspend code does the offline
-> >> automatically, but executing the offline before calling suspend makes
-> >> it no hanging.
-> >
-> > That means there's a problem in the CPU hotplug code that manifests itslef
-> > during suspend.  Is this 100% reproducible?  Did it happen with 2.6.37?
+On Monday, January 24, 2011, Henrique de Moraes Holschuh wrote:
+> On Sun, 23 Jan 2011, Rafael J. Wysocki wrote:
+> > On Sunday, January 23, 2011, Henrique de Moraes Holschuh wrote:
+> > > On Sat, 22 Jan 2011, Rafael J. Wysocki wrote:
+> > > > > I discovered CONFIG_THINKPAD_ACPI caused suspend-to-disk to hang. I
+> > > > > need the Thinkpad ACPI to control the fan and bluetooth. It looks like
+> > > > > the thinkpad acpi is trying acquire locks while suspending.  Disabling
+> > > > > cmos, light, led and hotkeys makes suspend-to-disk works again.
+> > > > 
+> > > > Well, we should tell the thinkpad_acpi maintainer about that, then (CCed).
+> > > 
+> > > What are the requirements re. mutexes for sleep-to-disk versus sleep-to-ram?
+> > 
+> > No difference.  Basically, there are two differences between suspend and
+> > hibernation, as far as drivers are concerned:
+> > (1) It's better to use the ->freeze()/->thaw() and ->poweroff()/->restore()
+> >     callbacks for hibernation.
+> > (2) It may be _much_ more difficult to get free memory during hibernation
+> >     (so theoretically attempts to get memory during hibernation are more likely
+> >     to block).
 > 
-> Quite reproducible. Once "something" trigger the hang,  no matter how
-> I reset the system, it'll still hang at suspend. And at other times,
-> it just worked. I tried many things, but it seems if I go back to use
-> an earlier version (2.6.37 works perfectly for suspend-to-disk/mem),
-> then switched back to the newer broken version, it'll work for a few
-> cycles before hanging at suspend-to-disk.
+> So, if there is nothing wrong with mutex use by itself...
 > 
-> I guess it could be CPU hotplug, and may be that thinkpad-acpi is
-> triggering the broken cpu hotplug to fail.
+> Thinkpad-acpi calls the thinkpad firmware (using normal ACPI method calls),
+> which does SMI traps into the SMBIOS to do whatever it wants done.  And that
+> includes writing to the NVS (both the peecee RTC CMOS, and ACPI-backed
+> "NVS").
+> 
+> > Besides, the problem reported by Jeff seems to be caused by CPU hotplug.
+> 
+> Something weird going on with CPU hotplug could throw Lenovo's
+> way-too-complex-for-comfort SMM firmware out of wack alright.
+> 
+> That can be checked.  Lobotomize the driver so that it does not do the acpi
+> calls in the suspend path (but keep everything else).  If it still locks, it
+> is not the firmware.
 
-So please try with this commit on top:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ec30f343d61391ab23705e50a525da1d55395780
+It turns out there's a bug in intel_idle causing people a lot of pain with CPU
+hotplugging.  Should be fixed now it the Linus' tree.
 
 Thanks,
 Rafael
