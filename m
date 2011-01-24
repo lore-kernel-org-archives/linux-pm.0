@@ -1,16 +1,16 @@
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
-	iomaps management
-Date: Mon, 24 Jan 2011 09:13:30 +0800
-Message-ID: <AANLkTi=YwD7kBZ6XsnUpCfqCmTuwwhkcAYvjXJL3Fj8O__42432.619960937$1295831665$gmane$org@mail.gmail.com>
-References: <201101201226.41021.rjw@sisk.pl> <201101222012.14028.rjw@sisk.pl>
-	<AANLkTikstr=vY=1S7A4Pudg3u=k4eJ7HRz6tWwAq4N-v@mail.gmail.com>
-	<201101232128.03007.rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Occasional (too common) suspend problem
+Date: Mon, 24 Jan 2011 17:22:05 +1000
+Message-ID: <AANLkTimSv5Myv14Kys2OTgm=wH=8DFPFeeUSkEfg-+b1__20485.0419926972$1295853903$gmane$org@mail.gmail.com>
+References: <AANLkTikBRf00H_6YcS9nsnJG68WguDzL_AvNTRyDWRY=@mail.gmail.com>
+	<201101222017.40389.rjw@sisk.pl>
+	<AANLkTikSZTZ+mSWcjs2LQGOTbbKY+SAb5YEjP+GDSK0+@mail.gmail.com>
+	<201101232229.49494.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101232128.03007.rjw@sisk.pl>
+In-Reply-To: <201101232229.49494.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,32 +21,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>, Jesse Barnes <jbarnes@virtuousgeek.org>, Chris Wilson <chris@chris-wilson.co.uk>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 24, 2011 at 4:28 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday, January 23, 2011, Jeff Chua wrote:
->> On Sun, Jan 23, 2011 at 3:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Saturday, January 22, 2011, Jeff Chua wrote:
->> >> 2011/1/22 Rafael J. Wysocki <rjw@sisk.pl>:
->> >> > On Saturday, January 22, 2011, Jeff Chua wrote:
->> Strange. If I didn't offline, it hanged during suspend even without
->> thinkpad_acpi. I could see that the suspend code does the offline
->> automatically, but executing the offline before calling suspend makes
->> it no hanging.
+On Mon, Jan 24, 2011 at 7:29 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 >
-> That means there's a problem in the CPU hotplug code that manifests itslef
-> during suspend. =A0Is this 100% reproducible? =A0Did it happen with 2.6.3=
-7?
+> There's one more thing that may be related. =A0Apparently, we've made som=
+ething
+> recently that's causing lots of problems with boot and poweroff for Asus
+> machines (https://lkml.org/lkml/2011/1/23/54). =A0The Asus BIOSes evident=
+ly
+> don't like something we do, but I have no idea what that may be at this p=
+oint.
 
-Quite reproducible. Once "something" trigger the hang,  no matter how
-I reset the system, it'll still hang at suspend. And at other times,
-it just worked. I tried many things, but it seems if I go back to use
-an earlier version (2.6.37 works perfectly for suspend-to-disk/mem),
-then switched back to the newer broken version, it'll work for a few
-cycles before hanging at suspend-to-disk.
+Yeah, I think there's something there. In fact, I'm getting pretty
+sure of it. Because I have now twice seen the _shutdown_ end up
+halting, and guess what? When I press a key, it then finishes the
+shutdown.
 
-I guess it could be CPU hotplug, and may be that thinkpad-acpi is
-triggering the broken cpu hotplug to fail.
+Sound familiar?
 
-Jeff
+The last thing printed is the "Disabling non-boot CPU's" thing or
+whatever. I didn't take a picture, and it obviously doesn't get logged
+(since it's after the processes have been killed), but it definitely
+smelled like "Uhhuh, same problem as with suspend".
+
+                   Linus
