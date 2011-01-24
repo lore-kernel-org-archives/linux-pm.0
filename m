@@ -1,18 +1,11 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Occasional (too common) suspend problem
-Date: Mon, 24 Jan 2011 19:43:27 +1000
-Message-ID: <AANLkTi=YAZxoGTyK4AQwDiBz6e9JegihLuO34cCxSR6U__16395.8157333129$1295862386$gmane$org@mail.gmail.com>
-References: <AANLkTikBRf00H_6YcS9nsnJG68WguDzL_AvNTRyDWRY=@mail.gmail.com>
-	<201101222017.40389.rjw@sisk.pl>
-	<AANLkTikSZTZ+mSWcjs2LQGOTbbKY+SAb5YEjP+GDSK0+@mail.gmail.com>
-	<201101232229.49494.rjw@sisk.pl>
-	<AANLkTimSv5Myv14Kys2OTgm=wH=8DFPFeeUSkEfg-+b1@mail.gmail.com>
-	<1295856557.1866.802.camel@rui>
+From: Thomas Renninger <trenn@suse.de>
+Subject: User tool for configuring wake-up devices
+Date: Mon, 24 Jan 2011 15:09:47 +0100
+Message-ID: <201101241509.48032.trenn__39960.9632826925$1295878262$gmane$org@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1295856557.1866.802.camel@rui>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,32 +15,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>, Jesse Barnes <jbarnes@virtuousgeek.org>, Chris Wilson <chris@chris-wilson.co.uk>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: David Brownell <david-b@pacbell.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-acpi@vger.kernel.org
+Cc: oneukum@suse.de
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 24, 2011 at 6:09 PM, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Mon, 2011-01-24 at 15:22 +0800, Linus Torvalds wrote:
->>
->> Yeah, I think there's something there. In fact, I'm getting pretty
->> sure of it. Because I have now twice seen the _shutdown_ end up
->> halting, and guess what? When I press a key, it then finishes the
->> shutdown.
->>
->> Sound familiar?
->>
->> The last thing printed is the "Disabling non-boot CPU's" thing or
->> whatever. I didn't take a picture, and it obviously doesn't get logged
->> (since it's after the processes have been killed), but it definitely
->> smelled like "Uhhuh, same problem as with suspend".
->>
-> https://patchwork.kernel.org/patch/500501/
-> does this patch help?
+Hi,
 
-Ding ding ding - I think we have a winner. Five reboots with
-successful suspend/resume cycles. So this may well be it.
+some time ago we talked about a userspace tool
+which can enable specific devices to be able to
+wake the machine up from suspend.
 
-Of course, it was flaky enough before that it's not a guarantee (it
-certainly doesn't always fail), but I'm optimistic.
+While Rafael solved that for network directly
+in the driver iirc (should work via ethtool now),
+there wasn't any outcome for
+other devices (usb, key, mouse, generic ACPI implementation
+reading out device's sysfs path...) to activate them as
+wakeup devices in a userfriendly way?
 
-               Linus
+Oliver just asked me for a tool to e.g. configure
+and enable usb or other devices as wake-up devices.
+
+I quickly googled and found:
+  - acpitools (http://sourceforge.net/projects/acpitool)
+    rather old, I doubt it does any sysfs reads to find
+    out which devices could be configured and of what
+    type they are?
+
+  - acpi-wakeup
+    even less feature rich...
+
+In sysfs is this supposed to work via:
+/sys/devices/.../power/wakeup_active
+now?
+
+How are users supposed to enable devices for suspend wake up?
+Are there any tools already which are worth packaging
+or is such a tool waiting for implementation?
+
+Thanks,
+
+   Thomas
