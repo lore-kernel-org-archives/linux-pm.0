@@ -1,14 +1,16 @@
-From: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: PROBLEM: Shutdown does not poweroff due to commit
- 2a2d31c8 "intel_idle: open broadcast clock event"
-Date: Mon, 24 Jan 2011 09:09:35 +0800
-Message-ID: <1295831375.1949.944.camel@sli10-conroe>
-References: <AANLkTikDA9JqFjLRfPuPWTu3xbdfc16SzaRAwzKE3cH=@mail.gmail.com>
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
+	iomaps management
+Date: Mon, 24 Jan 2011 09:13:30 +0800
+Message-ID: <AANLkTi=YwD7kBZ6XsnUpCfqCmTuwwhkcAYvjXJL3Fj8O__42432.619960937$1295831665$gmane$org@mail.gmail.com>
+References: <201101201226.41021.rjw@sisk.pl> <201101222012.14028.rjw@sisk.pl>
+	<AANLkTikstr=vY=1S7A4Pudg3u=k4eJ7HRz6tWwAq4N-v@mail.gmail.com>
+	<201101232128.03007.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikDA9JqFjLRfPuPWTu3xbdfc16SzaRAwzKE3cH=@mail.gmail.com>
+In-Reply-To: <201101232128.03007.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,53 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ari Savolainen <ari.m.savolainen@gmail.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2011-01-22 at 02:03 +0800, Ari Savolainen wrote:
-> Hi,
-> 
-> I have a Dell Precision WorkStation T3500. It stopped to power off
-> after shutdown. Bisection revealed commit 2a2d31c8 "intel_idle: open
-> broadcast clock event" to be the reason.  Below are all the dmesg
-> lines containing "intel_idle":
-> 
-> [    2.184560] intel_idle: MWAIT substates: 0x1120
-> [    2.184561] intel_idle: v0.4 model 0x1A
-> [    2.184562] intel_idle: lapic_timer_reliable_states 0x2
-> [    2.204056] ACPI: acpi_idle yielding to intel_idle
-> 
-> Please let me know what further information you need to fix the problem.
-I can't reproduce it here, but can you please try below patch:
+On Mon, Jan 24, 2011 at 4:28 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Sunday, January 23, 2011, Jeff Chua wrote:
+>> On Sun, Jan 23, 2011 at 3:12 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Saturday, January 22, 2011, Jeff Chua wrote:
+>> >> 2011/1/22 Rafael J. Wysocki <rjw@sisk.pl>:
+>> >> > On Saturday, January 22, 2011, Jeff Chua wrote:
+>> Strange. If I didn't offline, it hanged during suspend even without
+>> thinkpad_acpi. I could see that the suspend code does the offline
+>> automatically, but executing the offline before calling suspend makes
+>> it no hanging.
+>
+> That means there's a problem in the CPU hotplug code that manifests itslef
+> during suspend. =A0Is this 100% reproducible? =A0Did it happen with 2.6.3=
+7?
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 7acb32e..1fa091e 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -263,7 +263,7 @@ static void __setup_broadcast_timer(void *arg)
- 	clockevents_notify(reason, &cpu);
- }
- 
--static int __cpuinit setup_broadcast_cpuhp_notify(struct notifier_block *n,
-+static int setup_broadcast_cpuhp_notify(struct notifier_block *n,
- 		unsigned long action, void *hcpu)
- {
- 	int hotcpu = (unsigned long)hcpu;
-@@ -273,15 +273,11 @@ static int __cpuinit setup_broadcast_cpuhp_notify(struct notifier_block *n,
- 		smp_call_function_single(hotcpu, __setup_broadcast_timer,
- 			(void *)true, 1);
- 		break;
--	case CPU_DOWN_PREPARE:
--		smp_call_function_single(hotcpu, __setup_broadcast_timer,
--			(void *)false, 1);
--		break;
- 	}
- 	return NOTIFY_OK;
- }
- 
--static struct notifier_block __cpuinitdata setup_broadcast_notifier = {
-+static struct notifier_block setup_broadcast_notifier = {
- 	.notifier_call = setup_broadcast_cpuhp_notify,
- };
- 
+Quite reproducible. Once "something" trigger the hang,  no matter how
+I reset the system, it'll still hang at suspend. And at other times,
+it just worked. I tried many things, but it seems if I go back to use
+an earlier version (2.6.37 works perfectly for suspend-to-disk/mem),
+then switched back to the newer broken version, it'll work for a few
+cycles before hanging at suspend-to-disk.
+
+I guess it could be CPU hotplug, and may be that thinkpad-acpi is
+triggering the broken cpu hotplug to fail.
+
+Jeff
