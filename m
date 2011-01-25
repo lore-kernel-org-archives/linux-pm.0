@@ -1,7 +1,8 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/3] PM / Wakeup: Fixes in wakeup.c
-Date: Tue, 25 Jan 2011 01:12:40 +0100
-Message-ID: <201101250112.40350.rjw__34661.7177980535$1295914805$gmane$org@sisk.pl>
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
+	iomaps management
+Date: Tue, 25 Jan 2011 17:43:22 +0800 (SGT)
+Message-ID: <Pine.LNX.4.64.1101251740380.3737__17002.4510975511$1295948683$gmane$org@boston.corp.fedex.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,14 +16,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-The following three patches fix some issues I've recently noticed in
-drivers/base/power/wakeup.c.
+On Tue, Jan 25, 2011 at 5:37 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday, January 24, 2011, Henrique de Moraes Holschuh wrote:
+> It turns out there's a bug in intel_idle causing people a lot of pain 
+> with CPU hotplugging.  Should be fixed now it the Linus' tree.
+
+Uh, I see the git fix now. Thanks. The workaround I did was to manually 
+offline all CPUs before suspend and that fixed it too.
+
+As for the thinkpad-acpi, here a little patch to disable all hotkeys so 
+that Fn-F4 works natively to suspend-to-memory when 
+CONFIG_THINKPAD_ACPI_HOTKEY_POLL is not set.
 
 Thanks,
-Rafael
+Jeff
+
+--- lx/drivers/platform/x86/thinkpad_acpi.c.org	2011-01-22 21:48:05.000000000 +0800
++++ lx/drivers/platform/x86/thinkpad_acpi.c	2011-01-22 21:55:14.000000000 +0800
+@@ -8776,10 +8776,12 @@
+  	{
+  		.data = &thinkpad_acpi_driver_data,
+  	},
++#ifdef CONFIG_THINKPAD_ACPI_HOTKEY_POLL
+  	{
+  		.init = hotkey_init,
+  		.data = &hotkey_driver_data,
+  	},
++#endif
+  	{
+  		.init = bluetooth_init,
