@@ -1,8 +1,8 @@
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-Subject: Re: [PATCH 0/11] ACPI: Fixes and cleanups related to
-	iomaps management
-Date: Tue, 25 Jan 2011 17:43:22 +0800 (SGT)
-Message-ID: <Pine.LNX.4.64.1101251740380.3737__17002.4510975511$1295948683$gmane$org@boston.corp.fedex.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] PM: don't enable interrupts while running
+	in_interrupt
+Date: Tue, 25 Jan 2011 13:08:36 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1101251307060.1867-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,36 +17,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: tim blechmann <tim@klingt.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+This patch (as1445) fixes a bug in the runtime PM core left over from
+the addition of the no_callbacks flag.  If this flag is set then it is
+possible for rpm_suspend() to be called in_interrupt, so when
+releasing spinlocks it's important not to re-enable interrupts.  
 
-On Tue, Jan 25, 2011 at 5:37 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, January 24, 2011, Henrique de Moraes Holschuh wrote:
-> It turns out there's a bug in intel_idle causing people a lot of pain 
-> with CPU hotplugging.  Should be fixed now it the Linus' tree.
+To avoid an unnecessary save-and-restore of the interrupt flag, the
+patch also inlines a pm_request_idle() call.
 
-Uh, I see the git fix now. Thanks. The workaround I did was to manually 
-offline all CPUs before suspend and that fixed it too.
+This fixes Bugzilla #27482.
 
-As for the thinkpad-acpi, here a little patch to disable all hotkeys so 
-that Fn-F4 works natively to suspend-to-memory when 
-CONFIG_THINKPAD_ACPI_HOTKEY_POLL is not set.
+(The offending code was added in 2.6.37, so it's not necessary to apply
+this to any earlier stable kernels.)
 
-Thanks,
-Jeff
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-by: tim blechmann <tim@klingt.org>
+CC: <stable@kernel.org>
 
---- lx/drivers/platform/x86/thinkpad_acpi.c.org	2011-01-22 21:48:05.000000000 +0800
-+++ lx/drivers/platform/x86/thinkpad_acpi.c	2011-01-22 21:55:14.000000000 +0800
-@@ -8776,10 +8776,12 @@
-  	{
-  		.data = &thinkpad_acpi_driver_data,
-  	},
-+#ifdef CONFIG_THINKPAD_ACPI_HOTKEY_POLL
-  	{
-  		.init = hotkey_init,
-  		.data = &hotkey_driver_data,
-  	},
-+#endif
-  	{
-  		.init = bluetooth_init,
+---
+
+Index: usb-2.6/drivers/base/power/runtime.c
+===================================================================
+--- usb-2.6.orig/drivers/base/power/runtime.c
++++ usb-2.6/drivers/base/power/runtime.c
+@@ -407,12 +407,15 @@ static int rpm_suspend(struct device *de
+ 		goto out;
+ 	}
+ 
++	/* Maybe the parent is now able to suspend. */
+ 	if (parent && !parent->power.ignore_children && !dev->power.irq_safe) {
+-		spin_unlock_irq(&dev->power.lock);
++		spin_unlock(&dev->power.lock);
+ 
+-		pm_request_idle(parent);
++		spin_lock(&parent->power.lock);
++		rpm_idle(parent, RPM_ASYNC);
++		spin_unlock(&parent->power.lock);
+ 
+-		spin_lock_irq(&dev->power.lock);
++		spin_lock(&dev->power.lock);
+ 	}
+ 
+  out:
