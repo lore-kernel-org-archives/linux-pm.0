@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/3] PM / Wakeup: Make pm_save_wakeup_count()
-	work as documented
-Date: Tue, 25 Jan 2011 01:15:33 +0100
-Message-ID: <201101250115.34088.rjw__33083.1482810483$1295914681$gmane$org@sisk.pl>
+Subject: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
+Date: Tue, 25 Jan 2011 01:14:17 +0100
+Message-ID: <201101250114.17758.rjw__40644.2739688375$1295914724$gmane$org@sisk.pl>
 References: <201101250112.40350.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,55 +23,92 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-According to Documentation/ABI/testing/sysfs-power, the
-/sys/power/wakeup_count interface should only make the kernel react
-to wakeup events during suspend if the last write to it has been
-successful.  However, if /sys/power/wakeup_count is written to two
-times in a row, where the first write is successful and the second
-is not, the kernel will still react to wakeup events during suspend
-due to a bug in pm_save_wakeup_count().
+The memory barrier in wakeup_source_deactivate() is supposed to
+prevent the callers of pm_wakeup_pending() and pm_get_wakeup_count()
+from seeing the new value of events_in_progress (0, in particular)
+and the old value of event_count at the same time.  However, if
+wakeup_source_deactivate() is executed by CPU0 and, for instance,
+pm_wakeup_pending() is executed by CPU1, where both processors can
+reorder operations, the memory barrier in wakeup_source_deactivate()
+doesn't affect CPU1 which can reorder reads.  In that case CPU1 may
+very well decide to fetch event_count before it's modified and
+events_in_progress after it's been updated, so pm_wakeup_pending()
+may fail to detect a wakeup event.  This issue can be addressed by
+adding a read memory barrier in pm_wakeup_pending() that will enforce
+events_in_progress to be read before event_count.
 
-Fix the bug by making pm_save_wakeup_count() clear
-events_check_enabled unconditionally before checking if there are
-any new wakeup events registered since the previous read from
-/sys/power/wakeup_count.
+For similar reason, a read memory barrier should be added to
+pm_get_wakeup_count().
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/wakeup.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/base/power/wakeup.c |   33 +++++++++++++++++++++++++--------
+ 1 file changed, 25 insertions(+), 8 deletions(-)
 
 Index: linux-2.6/drivers/base/power/wakeup.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/wakeup.c
 +++ linux-2.6/drivers/base/power/wakeup.c
-@@ -644,23 +644,22 @@ bool pm_get_wakeup_count(unsigned int *c
-  *
-  * If @count is equal to the current number of registered wakeup events and the
-  * current number of wakeup events being processed is zero, store @count as the
-- * old number of registered wakeup events to be used by pm_check_wakeup_events()
-- * and return true.  Otherwise return false.
-+ * old number of registered wakeup events for pm_check_wakeup_events(), enable
-+ * wakeup events detection and return 'true'.  Otherwise disable wakeup events
-+ * detection and return 'false'.
-  */
- bool pm_save_wakeup_count(unsigned int count)
- {
--	bool ret = false;
--
-+	events_check_enabled = false;
- 	spin_lock_irq(&events_lock);
- 	if (!__pm_wakeup_pending(count)) {
- 		saved_count = count;
- 		events_check_enabled = true;
--		ret = true;
- 	}
- 	spin_unlock_irq(&events_lock);
--	if (!ret)
-+	if (!events_check_enabled)
- 		pm_wakeup_update_hit_counts();
--	return ret;
-+	return events_check_enabled;
+@@ -568,12 +568,30 @@ static void pm_wakeup_update_hit_counts(
  }
  
- static struct dentry *wakeup_sources_stats_dentry;
+ /**
++ * __pm_wakeup_pending - Check if there are any new wakeup events.
++ * @count: Expected number of wakeup events registered so far.
++ *
++ * Compare the current number of registered wakeup events with @count and return
++ * true if they are different.  Also return true if the current number of wakeup
++ * events being processed is different from zero.
++ */
++static bool __pm_wakeup_pending(unsigned int count)
++{
++	bool in_progress;
++
++	in_progress = !!atomic_read(&events_in_progress);
++	smp_rmb();
++	return in_progress || (unsigned int)atomic_read(&event_count) != count;
++}
++
++/**
+  * pm_wakeup_pending - Check if power transition in progress should be aborted.
+  *
+- * Compare the current number of registered wakeup events with its preserved
+- * value from the past and return true if new wakeup events have been registered
+- * since the old value was stored.  Also return true if the current number of
+- * wakeup events being processed is different from zero.
++ * If wakeup events detection is enabled, call __pm_wakeup_pending() for
++ * saved_count (preserved number of registered wakeup events from the past) and
++ * return its result.  If it is 'true' (i.e. new wakeup events have been
++ * registered since the last modification of saved_count), disable wakeup events
++ * detection and update the statistics of all wakeup sources.
+  */
+ bool pm_wakeup_pending(void)
+ {
+@@ -582,8 +600,7 @@ bool pm_wakeup_pending(void)
+ 
+ 	spin_lock_irqsave(&events_lock, flags);
+ 	if (events_check_enabled) {
+-		ret = ((unsigned int)atomic_read(&event_count) != saved_count)
+-			|| atomic_read(&events_in_progress);
++		ret = __pm_wakeup_pending(saved_count);
+ 		events_check_enabled = !ret;
+ 	}
+ 	spin_unlock_irqrestore(&events_lock, flags);
+@@ -616,6 +633,7 @@ bool pm_get_wakeup_count(unsigned int *c
+ 	}
+ 
+ 	ret = !atomic_read(&events_in_progress);
++	smp_rmb();
+ 	*count = atomic_read(&event_count);
+ 	return ret;
+ }
+@@ -634,8 +652,7 @@ bool pm_save_wakeup_count(unsigned int c
+ 	bool ret = false;
+ 
+ 	spin_lock_irq(&events_lock);
+-	if (count == (unsigned int)atomic_read(&event_count)
+-	    && !atomic_read(&events_in_progress)) {
++	if (!__pm_wakeup_pending(count)) {
+ 		saved_count = count;
+ 		events_check_enabled = true;
+ 		ret = true;
