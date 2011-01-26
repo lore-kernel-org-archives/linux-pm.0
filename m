@@ -1,7 +1,8 @@
 From: Mandeep Singh Baines <msb@chromium.org>
-Subject: [PATCH 5/6] fs: use appropriate printk priority level
-Date: Wed, 26 Jan 2011 15:29:29 -0800
-Message-ID: <1296084570-31453-6-git-send-email-msb__30330.1434069455$1296144568$gmane$org@chromium.org>
+Subject: [PATCH 1/6] mm/page_alloc: use appropriate printk
+	priority level
+Date: Wed, 26 Jan 2011 15:29:25 -0800
+Message-ID: <1296084570-31453-2-git-send-email-msb__13117.5804454417$1296144568$gmane$org@chromium.org>
 References: <20110125235700.GR8008@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -28,50 +29,76 @@ dmesg warnings closely.
 
 Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
 ---
- fs/bio.c         |    2 +-
- fs/namespace.c   |    2 +-
- init/do_mounts.c |    3 ++-
- 3 files changed, 4 insertions(+), 3 deletions(-)
+ mm/page_alloc.c |   27 +++++++++++++++------------
+ 1 files changed, 15 insertions(+), 12 deletions(-)
 
-diff --git a/fs/bio.c b/fs/bio.c
-index 4bd454f..4cf2a52 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -111,7 +111,7 @@ static struct kmem_cache *bio_find_or_create_slab(unsigned int extra_size)
- 	if (!slab)
- 		goto out_unlock;
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 90c1439..234c704 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3129,14 +3129,14 @@ void build_all_zonelists(void *data)
+ 	else
+ 		page_group_by_mobility_disabled = 0;
  
--	printk("bio: create slab <%s> at %d\n", bslab->name, entry);
-+	printk(KERN_INFO "bio: create slab <%s> at %d\n", bslab->name, entry);
- 	bslab->slab = slab;
- 	bslab->slab_ref = 1;
- 	bslab->slab_size = sz;
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 7b0b953..c81bcd9 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -2594,7 +2594,7 @@ void __init mnt_init(void)
- 	if (!mount_hashtable)
- 		panic("Failed to allocate mount hash table\n");
+-	printk("Built %i zonelists in %s order, mobility grouping %s.  "
+-		"Total pages: %ld\n",
++	printk(KERN_INFO "Built %i zonelists in %s order, mobility grouping %s."
++		"  Total pages: %ld\n",
+ 			nr_online_nodes,
+ 			zonelist_order_name[current_zonelist_order],
+ 			page_group_by_mobility_disabled ? "off" : "on",
+ 			vm_total_pages);
+ #ifdef CONFIG_NUMA
+-	printk("Policy zone: %s\n", zone_names[policy_zone]);
++	printk(KERN_INFO "Policy zone: %s\n", zone_names[policy_zone]);
+ #endif
+ }
  
--	printk("Mount-cache hash table entries: %lu\n", HASH_SIZE);
-+	printk(KERN_INFO "Mount-cache hash table entries: %lu\n", HASH_SIZE);
+@@ -4700,33 +4700,36 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
+ 	find_zone_movable_pfns_for_nodes(zone_movable_pfn);
  
- 	for (u = 0; u < HASH_SIZE; u++)
- 		INIT_LIST_HEAD(&mount_hashtable[u]);
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 2b54bef..3e01121 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -293,7 +293,8 @@ static int __init do_mount_root(char *name, char *fs, int flags, void *data)
+ 	/* Print out the zone ranges */
+-	printk("Zone PFN ranges:\n");
++	printk(KERN_INFO "Zone PFN ranges:\n");
+ 	for (i = 0; i < MAX_NR_ZONES; i++) {
+ 		if (i == ZONE_MOVABLE)
+ 			continue;
+-		printk("  %-8s ", zone_names[i]);
++		printk(KERN_INFO "  %-8s ", zone_names[i]);
+ 		if (arch_zone_lowest_possible_pfn[i] ==
+ 				arch_zone_highest_possible_pfn[i])
+ 			printk("empty\n");
+ 		else
+-			printk("%0#10lx -> %0#10lx\n",
++			printk(KERN_INFO "%0#10lx -> %0#10lx\n",
+ 				arch_zone_lowest_possible_pfn[i],
+ 				arch_zone_highest_possible_pfn[i]);
+ 	}
  
- 	sys_chdir((const char __user __force *)"/root");
- 	ROOT_DEV = current->fs->pwd.mnt->mnt_sb->s_dev;
--	printk("VFS: Mounted root (%s filesystem)%s on device %u:%u.\n",
-+	printk(KERN_INFO
-+	       "VFS: Mounted root (%s filesystem)%s on device %u:%u.\n",
- 	       current->fs->pwd.mnt->mnt_sb->s_type->name,
- 	       current->fs->pwd.mnt->mnt_sb->s_flags & MS_RDONLY ?
- 	       " readonly" : "", MAJOR(ROOT_DEV), MINOR(ROOT_DEV));
+ 	/* Print out the PFNs ZONE_MOVABLE begins at in each node */
+-	printk("Movable zone start PFN for each node\n");
++	printk(KERN_INFO "Movable zone start PFN for each node\n");
+ 	for (i = 0; i < MAX_NUMNODES; i++) {
+ 		if (zone_movable_pfn[i])
+-			printk("  Node %d: %lu\n", i, zone_movable_pfn[i]);
++			printk(KERN_INFO "  Node %d: %lu\n", i,
++			       zone_movable_pfn[i]);
+ 	}
+ 
+ 	/* Print out the early_node_map[] */
+-	printk("early_node_map[%d] active PFN ranges\n", nr_nodemap_entries);
++	printk(KERN_INFO "early_node_map[%d] active PFN ranges\n",
++	       nr_nodemap_entries);
+ 	for (i = 0; i < nr_nodemap_entries; i++)
+-		printk("  %3d: %0#10lx -> %0#10lx\n", early_node_map[i].nid,
+-						early_node_map[i].start_pfn,
+-						early_node_map[i].end_pfn);
++		printk(KERN_INFO "  %3d: %0#10lx -> %0#10lx\n",
++		       early_node_map[i].nid,
++		       early_node_map[i].start_pfn,
++		       early_node_map[i].end_pfn);
+ 
+ 	/* Initialise every node */
+ 	mminit_verify_pageflags_layout();
 -- 
 1.7.3.1
