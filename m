@@ -1,7 +1,8 @@
 From: Mandeep Singh Baines <msb@chromium.org>
-Subject: [PATCH 4/6] TTY: use appropriate printk priority level
-Date: Wed, 26 Jan 2011 15:29:28 -0800
-Message-ID: <1296084570-31453-5-git-send-email-msb__40847.9347861887$1296144570$gmane$org@chromium.org>
+Subject: [PATCH 6/6] taskstats: use appropriate printk priority
+	level
+Date: Wed, 26 Jan 2011 15:29:30 -0800
+Message-ID: <1296084570-31453-7-git-send-email-msb__23629.9980701462$1296144577$gmane$org@chromium.org>
 References: <20110125235700.GR8008@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -28,49 +29,21 @@ dmesg warnings closely.
 
 Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
 ---
- drivers/tty/vt/vt.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ kernel/taskstats.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 76407ec..511d80e 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -2158,7 +2158,7 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
- 	currcons = vc->vc_num;
- 	if (!vc_cons_allocated(currcons)) {
- 	    /* could this happen? */
--		printk_once("con_write: tty %d not allocated\n", currcons+1);
-+		printk_once(KERN_WARNING "con_write: tty %d not allocated\n", currcons+1);
- 	    release_console_sem();
- 	    return 0;
- 	}
-@@ -2940,7 +2940,7 @@ static int __init con_init(void)
- 	gotoxy(vc, vc->vc_x, vc->vc_y);
- 	csi_J(vc, 0);
- 	update_screen(vc);
--	printk("Console: %s %s %dx%d",
-+	pr_info("Console: %s %s %dx%d",
- 		vc->vc_can_do_color ? "colour" : "mono",
- 		display_desc, vc->vc_cols, vc->vc_rows);
- 	printable = 1;
-@@ -3103,7 +3103,7 @@ static int bind_con_driver(const struct consw *csw, int first, int last,
- 			clear_buffer_attributes(vc);
- 	}
+diff --git a/kernel/taskstats.c b/kernel/taskstats.c
+index 3971c6b..9ffea36 100644
+--- a/kernel/taskstats.c
++++ b/kernel/taskstats.c
+@@ -685,7 +685,7 @@ static int __init taskstats_init(void)
+ 		goto err_cgroup_ops;
  
--	printk("Console: switching ");
-+	pr_info("Console: switching ");
- 	if (!deflt)
- 		printk("consoles %d-%d ", first+1, last+1);
- 	if (j >= 0) {
-@@ -3804,7 +3804,8 @@ void do_unblank_screen(int leaving_gfx)
- 		return;
- 	if (!vc_cons_allocated(fg_console)) {
- 		/* impossible */
--		printk("unblank_screen: tty %d not allocated ??\n", fg_console+1);
-+		pr_warning("unblank_screen: tty %d not allocated ??\n",
-+			   fg_console+1);
- 		return;
- 	}
- 	vc = vc_cons[fg_console].d;
+ 	family_registered = 1;
+-	printk("registered taskstats version %d\n", TASKSTATS_GENL_VERSION);
++	pr_info("registered taskstats version %d\n", TASKSTATS_GENL_VERSION);
+ 	return 0;
+ err_cgroup_ops:
+ 	genl_unregister_ops(&family, &taskstats_ops);
 -- 
 1.7.3.1
