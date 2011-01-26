@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: don't enable interrupts while running
-	in_interrupt
-Date: Tue, 25 Jan 2011 20:53:15 +0100
-Message-ID: <201101252053.15206.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1101251307060.1867-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
+Date: Wed, 26 Jan 2011 15:21:39 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1101261514280.1879-100000__1154.29911898008$1296073953$gmane$org@iolanthe.rowland.org>
+References: <201101250114.17758.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1101251307060.1867-100000@iolanthe.rowland.org>
+In-Reply-To: <201101250114.17758.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,56 +17,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: tim blechmann <tim@klingt.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 25, 2011, Alan Stern wrote:
-> This patch (as1445) fixes a bug in the runtime PM core left over from
-> the addition of the no_callbacks flag.  If this flag is set then it is
-> possible for rpm_suspend() to be called in_interrupt, so when
-> releasing spinlocks it's important not to re-enable interrupts.  
-> 
-> To avoid an unnecessary save-and-restore of the interrupt flag, the
-> patch also inlines a pm_request_idle() call.
-> 
-> This fixes Bugzilla #27482.
-> 
-> (The offending code was added in 2.6.37, so it's not necessary to apply
-> this to any earlier stable kernels.)
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> Reported-by: tim blechmann <tim@klingt.org>
-> CC: <stable@kernel.org>
+On Tue, 25 Jan 2011, Rafael J. Wysocki wrote:
 
-Applied to suspend-2.6/pm-fixes, thanks Alan!
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The memory barrier in wakeup_source_deactivate() is supposed to
+> prevent the callers of pm_wakeup_pending() and pm_get_wakeup_count()
+> from seeing the new value of events_in_progress (0, in particular)
+> and the old value of event_count at the same time.  However, if
+> wakeup_source_deactivate() is executed by CPU0 and, for instance,
+> pm_wakeup_pending() is executed by CPU1, where both processors can
+> reorder operations, the memory barrier in wakeup_source_deactivate()
+> doesn't affect CPU1 which can reorder reads.  In that case CPU1 may
+> very well decide to fetch event_count before it's modified and
+> events_in_progress after it's been updated, so pm_wakeup_pending()
+> may fail to detect a wakeup event.  This issue can be addressed by
+> adding a read memory barrier in pm_wakeup_pending() that will enforce
+> events_in_progress to be read before event_count.
+> 
+> For similar reason, a read memory barrier should be added to
+> pm_get_wakeup_count().
 
+How come this is implemented using memory barriers rather than a lock?  
+Is it because this is potentially a fairly hot path?
 
-> ---
-> 
-> Index: usb-2.6/drivers/base/power/runtime.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/power/runtime.c
-> +++ usb-2.6/drivers/base/power/runtime.c
-> @@ -407,12 +407,15 @@ static int rpm_suspend(struct device *de
->  		goto out;
->  	}
->  
-> +	/* Maybe the parent is now able to suspend. */
->  	if (parent && !parent->power.ignore_children && !dev->power.irq_safe) {
-> -		spin_unlock_irq(&dev->power.lock);
-> +		spin_unlock(&dev->power.lock);
->  
-> -		pm_request_idle(parent);
-> +		spin_lock(&parent->power.lock);
-> +		rpm_idle(parent, RPM_ASYNC);
-> +		spin_unlock(&parent->power.lock);
->  
-> -		spin_lock_irq(&dev->power.lock);
-> +		spin_lock(&dev->power.lock);
->  	}
->  
->   out:
-> 
-> 
-> 
+New memory barriers are supposed to have comments present in the code, 
+explaining why they are needed.
+
+Ideally you could do away with the need for synchronization entirely.  
+For example, events_in_progress and event_count could be stored as two 
+16-bit values stuffed into a single atomic variable.  Then they could 
+both be read or updated simultaneously.
+
+Alan Stern
