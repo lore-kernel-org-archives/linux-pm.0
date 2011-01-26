@@ -1,7 +1,7 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@novell.com>
 Subject: Re: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
-Date: Wed, 26 Jan 2011 21:36:46 +0100
-Message-ID: <201101262136.46577.rjw__45724.7406513945$1296074361$gmane$org@sisk.pl>
+Date: Wed, 26 Jan 2011 23:53:20 +0100
+Message-ID: <201101262353.21043.rjw@novell.com>
 References: <Pine.LNX.4.44L0.1101261514280.1879-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -45,22 +45,161 @@ On Wednesday, January 26, 2011, Alan Stern wrote:
 > 
 > How come this is implemented using memory barriers rather than a lock?  
 > Is it because this is potentially a fairly hot path?
-
-Yes, that's the reason.
-
+> 
 > New memory barriers are supposed to have comments present in the code, 
 > explaining why they are needed.
-
-Of course I can add them.
-
+> 
 > Ideally you could do away with the need for synchronization entirely.  
 > For example, events_in_progress and event_count could be stored as two 
 > 16-bit values stuffed into a single atomic variable.  Then they could 
 > both be read or updated simultaneously.
 
-I thought about that too, but didn't actually implement it.
+OK, the patch below appears to work for me.  Can you have a look at it, please?
 
-Well, I guess it would be better.
-
-Thanks,
 Rafael
+
+
+---
+ drivers/base/power/wakeup.c |   82 +++++++++++++++++++++++++++++++-------------
+ 1 file changed, 58 insertions(+), 24 deletions(-)
+
+Index: linux-2.6/drivers/base/power/wakeup.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/wakeup.c
++++ linux-2.6/drivers/base/power/wakeup.c
+@@ -24,12 +24,48 @@
+  */
+ bool events_check_enabled;
+ 
+-/* The counter of registered wakeup events. */
+-static atomic_t event_count = ATOMIC_INIT(0);
+-/* A preserved old value of event_count. */
++#define EVENT_COUNT_BITS	(sizeof(atomic_t) * 4)
++#define MAX_EVENT_COUNT		((1 << EVENT_COUNT_BITS) - 1)
++
++/* Combined counters of registered wakeup events and events in progress. */
++static atomic_t combined_event_count = ATOMIC_INIT(0);
++
++static unsigned int split_counters(unsigned int *inpr, unsigned int *cnt)
++{
++	unsigned int comb = atomic_read(&combined_event_count);
++
++	*inpr = (comb >> EVENT_COUNT_BITS);
++	*cnt = comb & MAX_EVENT_COUNT;
++	return comb;
++}
++
++static unsigned int merge_counters(unsigned int inpr, unsigned int cnt)
++{
++	return (inpr << EVENT_COUNT_BITS) | cnt;
++}
++
++static void update_events_in_progress(void)
++{
++	unsigned int cnt, inpr, old, new;
++
++	do {
++		old = split_counters(&inpr, &cnt);
++		new = merge_counters(inpr + 1, cnt);
++	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
++}
++
++static void update_counters(void)
++{
++	unsigned int cnt, inpr, old, new;
++
++	do {
++		old = split_counters(&inpr, &cnt);
++		new = merge_counters(inpr - 1, cnt + 1);
++	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
++}
++
++/* A preserved old value of event counter. */
+ static unsigned int saved_count;
+-/* The counter of wakeup events being processed. */
+-static atomic_t events_in_progress = ATOMIC_INIT(0);
+ 
+ static DEFINE_SPINLOCK(events_lock);
+ 
+@@ -333,7 +369,7 @@ static void wakeup_source_activate(struc
+ 	ws->timer_expires = jiffies;
+ 	ws->last_time = ktime_get();
+ 
+-	atomic_inc(&events_in_progress);
++	update_events_in_progress();
+ }
+ 
+ /**
+@@ -419,15 +455,7 @@ static void wakeup_source_deactivate(str
+ 
+ 	del_timer(&ws->timer);
+ 
+-	/*
+-	 * event_count has to be incremented before events_in_progress is
+-	 * modified, so that the callers of pm_check_wakeup_events() and
+-	 * pm_save_wakeup_count() don't see the old value of event_count and
+-	 * events_in_progress equal to zero at the same time.
+-	 */
+-	atomic_inc(&event_count);
+-	smp_mb__before_atomic_dec();
+-	atomic_dec(&events_in_progress);
++	update_counters();
+ }
+ 
+ /**
+@@ -582,8 +610,10 @@ bool pm_wakeup_pending(void)
+ 
+ 	spin_lock_irqsave(&events_lock, flags);
+ 	if (events_check_enabled) {
+-		ret = ((unsigned int)atomic_read(&event_count) != saved_count)
+-			|| atomic_read(&events_in_progress);
++		unsigned int inpr, cnt;
++
++		split_counters(&inpr, &cnt);
++		ret = (cnt != saved_count || inpr > 0);
+ 		events_check_enabled = !ret;
+ 	}
+ 	spin_unlock_irqrestore(&events_lock, flags);
+@@ -605,19 +635,22 @@ bool pm_wakeup_pending(void)
+  */
+ bool pm_get_wakeup_count(unsigned int *count)
+ {
+-	bool ret;
++	unsigned int inpr, cnt;
+ 
+ 	if (capable(CAP_SYS_ADMIN))
+ 		events_check_enabled = false;
+ 
+-	while (atomic_read(&events_in_progress) && !signal_pending(current)) {
++	for (;;) {
++		split_counters(&inpr, &cnt);
++		if (inpr == 0 || signal_pending(current))
++			break;
+ 		pm_wakeup_update_hit_counts();
+ 		schedule_timeout_interruptible(msecs_to_jiffies(TIMEOUT));
+ 	}
+ 
+-	ret = !atomic_read(&events_in_progress);
+-	*count = atomic_read(&event_count);
+-	return ret;
++	split_counters(&inpr, &cnt);
++	*count = cnt;
++	return !inpr;
+ }
+ 
+ /**
+@@ -631,11 +664,12 @@ bool pm_get_wakeup_count(unsigned int *c
+  */
+ bool pm_save_wakeup_count(unsigned int count)
+ {
++	unsigned int inpr, cnt;
+ 	bool ret = false;
+ 
+ 	spin_lock_irq(&events_lock);
+-	if (count == (unsigned int)atomic_read(&event_count)
+-	    && !atomic_read(&events_in_progress)) {
++	split_counters(&inpr, &cnt);
++	if (cnt == count && inpr == 0) {
+ 		saved_count = count;
+ 		events_check_enabled = true;
+ 		ret = true;
