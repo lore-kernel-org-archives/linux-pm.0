@@ -1,7 +1,7 @@
 From: Mandeep Singh Baines <msb@chromium.org>
-Subject: [PATCH 3/6] PM: use appropriate printk priority level
-Date: Wed, 26 Jan 2011 15:29:27 -0800
-Message-ID: <1296084570-31453-4-git-send-email-msb__8238.77287698469$1296144568$gmane$org@chromium.org>
+Subject: [PATCH 5/6] fs: use appropriate printk priority level
+Date: Wed, 26 Jan 2011 15:29:29 -0800
+Message-ID: <1296084570-31453-6-git-send-email-msb__30330.1434069455$1296144568$gmane$org@chromium.org>
 References: <20110125235700.GR8008@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -26,44 +26,52 @@ noise at KERN_WARNING, this patch set the priority level appriopriately
 for unleveled printks()s. This should be useful to folks that look at
 dmesg warnings closely.
 
-Changed these messages to pr_info. But might be more appropriate as
-pr_debug.
-
 Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
 ---
- drivers/base/power/trace.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ fs/bio.c         |    2 +-
+ fs/namespace.c   |    2 +-
+ init/do_mounts.c |    3 ++-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-index 9f4258d..c80e138 100644
---- a/drivers/base/power/trace.c
-+++ b/drivers/base/power/trace.c
-@@ -112,7 +112,7 @@ static unsigned int read_magic_time(void)
- 	unsigned int val;
+diff --git a/fs/bio.c b/fs/bio.c
+index 4bd454f..4cf2a52 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -111,7 +111,7 @@ static struct kmem_cache *bio_find_or_create_slab(unsigned int extra_size)
+ 	if (!slab)
+ 		goto out_unlock;
  
- 	get_rtc_time(&time);
--	printk("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
-+	pr_info("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
- 		time.tm_hour, time.tm_min, time.tm_sec,
- 		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
- 	val = time.tm_year;				/* 100 years */
-@@ -179,7 +179,7 @@ static int show_file_hash(unsigned int value)
- 		unsigned int hash = hash_string(lineno, file, FILEHASH);
- 		if (hash != value)
- 			continue;
--		printk("  hash matches %s:%u\n", file, lineno);
-+		pr_info("  hash matches %s:%u\n", file, lineno);
- 		match++;
- 	}
- 	return match;
-@@ -255,7 +255,7 @@ static int late_resume_init(void)
- 	val = val / FILEHASH;
- 	dev = val /* % DEVHASH */;
+-	printk("bio: create slab <%s> at %d\n", bslab->name, entry);
++	printk(KERN_INFO "bio: create slab <%s> at %d\n", bslab->name, entry);
+ 	bslab->slab = slab;
+ 	bslab->slab_ref = 1;
+ 	bslab->slab_size = sz;
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 7b0b953..c81bcd9 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -2594,7 +2594,7 @@ void __init mnt_init(void)
+ 	if (!mount_hashtable)
+ 		panic("Failed to allocate mount hash table\n");
  
--	printk("  Magic number: %d:%d:%d\n", user, file, dev);
-+	pr_info("  Magic number: %d:%d:%d\n", user, file, dev);
- 	show_file_hash(file);
- 	show_dev_hash(dev);
- 	return 0;
+-	printk("Mount-cache hash table entries: %lu\n", HASH_SIZE);
++	printk(KERN_INFO "Mount-cache hash table entries: %lu\n", HASH_SIZE);
+ 
+ 	for (u = 0; u < HASH_SIZE; u++)
+ 		INIT_LIST_HEAD(&mount_hashtable[u]);
+diff --git a/init/do_mounts.c b/init/do_mounts.c
+index 2b54bef..3e01121 100644
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -293,7 +293,8 @@ static int __init do_mount_root(char *name, char *fs, int flags, void *data)
+ 
+ 	sys_chdir((const char __user __force *)"/root");
+ 	ROOT_DEV = current->fs->pwd.mnt->mnt_sb->s_dev;
+-	printk("VFS: Mounted root (%s filesystem)%s on device %u:%u.\n",
++	printk(KERN_INFO
++	       "VFS: Mounted root (%s filesystem)%s on device %u:%u.\n",
+ 	       current->fs->pwd.mnt->mnt_sb->s_type->name,
+ 	       current->fs->pwd.mnt->mnt_sb->s_flags & MS_RDONLY ?
+ 	       " readonly" : "", MAJOR(ROOT_DEV), MINOR(ROOT_DEV));
 -- 
 1.7.3.1
