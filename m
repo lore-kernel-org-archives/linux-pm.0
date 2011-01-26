@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@novell.com>
-Subject: Re: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
-Date: Wed, 26 Jan 2011 23:53:20 +0100
-Message-ID: <201101262353.21043.rjw@novell.com>
-References: <Pine.LNX.4.44L0.1101261514280.1879-100000@iolanthe.rowland.org>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Wed, 26 Jan 2011 15:28:20 -0800
+Message-ID: <87k4hrtfcb.fsf@ti.com>
+References: <Pine.LNX.4.44L0.1012212032590.11252-100000@netrider.rowland.org>
+	<201012221329.40251.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1101261514280.1879-100000@iolanthe.rowland.org>
+In-Reply-To: <201012221329.40251.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 22 Dec 2010 13:29:40 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,189 +19,128 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, January 26, 2011, Alan Stern wrote:
-> On Tue, 25 Jan 2011, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > The memory barrier in wakeup_source_deactivate() is supposed to
-> > prevent the callers of pm_wakeup_pending() and pm_get_wakeup_count()
-> > from seeing the new value of events_in_progress (0, in particular)
-> > and the old value of event_count at the same time.  However, if
-> > wakeup_source_deactivate() is executed by CPU0 and, for instance,
-> > pm_wakeup_pending() is executed by CPU1, where both processors can
-> > reorder operations, the memory barrier in wakeup_source_deactivate()
-> > doesn't affect CPU1 which can reorder reads.  In that case CPU1 may
-> > very well decide to fetch event_count before it's modified and
-> > events_in_progress after it's been updated, so pm_wakeup_pending()
-> > may fail to detect a wakeup event.  This issue can be addressed by
-> > adding a read memory barrier in pm_wakeup_pending() that will enforce
-> > events_in_progress to be read before event_count.
-> > 
-> > For similar reason, a read memory barrier should be added to
-> > pm_get_wakeup_count().
-> 
-> How come this is implemented using memory barriers rather than a lock?  
-> Is it because this is potentially a fairly hot path?
-> 
-> New memory barriers are supposed to have comments present in the code, 
-> explaining why they are needed.
-> 
-> Ideally you could do away with the need for synchronization entirely.  
-> For example, events_in_progress and event_count could be stored as two 
-> 16-bit values stuffed into a single atomic variable.  Then they could 
-> both be read or updated simultaneously.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-OK, the patch below appears to work for me.  Can you have a look at it, please?
+> On Wednesday, December 22, 2010, Alan Stern wrote:
+>> On Tue, 21 Dec 2010, Rafael J. Wysocki wrote:
+>> 
+>> > It basically goes like this.  There's device A that is only resumed when it's
+>> > needed to carry out an operation and is suspended immediately after that.
+>> > There's another device B that needs A to do something during its suspend.
+>> > So, when the suspend of B is started, A is woken up, does its work and is
+>> > suspended again (using pm_runtime_suspend()).  Then B is suspended.
+>> > 
+>> > We currently require that ->suspend() and ->resume() callbacks be defined
+>> > for A (presumably pointing to the same code as its runtime callbacks) so that
+>> > things work correctly, but perhaps we can just relax this requirement a bit?
+>> > I'm not 100% sure that's a good idea, just considering it.
+>> 
+>> I still don't know.  It would require a lot of special conditions: no
+>> child devices, not runtime-PM-disabled, not runtime-PM-forbidden...  
+>> Also, A's parent would have to be coded carefully; otherwise A's
+>> runtime resume would prevent the parent from suspending.
+>> 
+>> This just doesn't fit very well with the runtime PM model, or at least, 
+>> not in the form you described.
+>> 
+>> Consider this instead:  Since A is required to be functional before B
+>> can be used, A must be registered before B and hence B gets suspended
+>> before A.  Therefore during the prepare phase we can runtime-resume A
+>> and leave it powered up; when B needs to suspend, it won't matter that
+>> the runtime-PM calls are ineffective.
+>
+> We don't really need to do that, because the runtime resume _is_ functional
+> during system suspend.  The only thing missing is a ->suspend() callback for A
+> (and a corresponding ->resume() callback to make sure A will be available to
+> B during system resume).
+>
 
-Rafael
+OK, I'm finally back to debugging this problem and looking for a final
+solution.
 
+I agree that what is needed is ->suspend() and ->resume() callbacks for
+A, but the question remains how to implement them.
 
----
- drivers/base/power/wakeup.c |   82 +++++++++++++++++++++++++++++++-------------
- 1 file changed, 58 insertions(+), 24 deletions(-)
+In my case, A doesn't need runtime callbacks, but *does* require that
+the subsystem callbacks are called because the subsystem actually does
+all the real PM work.  On OMAP, the device PM code (clock mgmt, device
+low-power states, etc.) is common for all on-chip devices, so is handled
+in common code at the subsystem level (in this case, platform_bus.)
 
-Index: linux-2.6/drivers/base/power/wakeup.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/wakeup.c
-+++ linux-2.6/drivers/base/power/wakeup.c
-@@ -24,12 +24,48 @@
-  */
- bool events_check_enabled;
- 
--/* The counter of registered wakeup events. */
--static atomic_t event_count = ATOMIC_INIT(0);
--/* A preserved old value of event_count. */
-+#define EVENT_COUNT_BITS	(sizeof(atomic_t) * 4)
-+#define MAX_EVENT_COUNT		((1 << EVENT_COUNT_BITS) - 1)
-+
-+/* Combined counters of registered wakeup events and events in progress. */
-+static atomic_t combined_event_count = ATOMIC_INIT(0);
-+
-+static unsigned int split_counters(unsigned int *inpr, unsigned int *cnt)
-+{
-+	unsigned int comb = atomic_read(&combined_event_count);
-+
-+	*inpr = (comb >> EVENT_COUNT_BITS);
-+	*cnt = comb & MAX_EVENT_COUNT;
-+	return comb;
-+}
-+
-+static unsigned int merge_counters(unsigned int inpr, unsigned int cnt)
-+{
-+	return (inpr << EVENT_COUNT_BITS) | cnt;
-+}
-+
-+static void update_events_in_progress(void)
-+{
-+	unsigned int cnt, inpr, old, new;
-+
-+	do {
-+		old = split_counters(&inpr, &cnt);
-+		new = merge_counters(inpr + 1, cnt);
-+	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
-+}
-+
-+static void update_counters(void)
-+{
-+	unsigned int cnt, inpr, old, new;
-+
-+	do {
-+		old = split_counters(&inpr, &cnt);
-+		new = merge_counters(inpr - 1, cnt + 1);
-+	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
-+}
-+
-+/* A preserved old value of event counter. */
- static unsigned int saved_count;
--/* The counter of wakeup events being processed. */
--static atomic_t events_in_progress = ATOMIC_INIT(0);
- 
- static DEFINE_SPINLOCK(events_lock);
- 
-@@ -333,7 +369,7 @@ static void wakeup_source_activate(struc
- 	ws->timer_expires = jiffies;
- 	ws->last_time = ktime_get();
- 
--	atomic_inc(&events_in_progress);
-+	update_events_in_progress();
+Therefore, what is ideally needed is the ability for A's suspend to
+simply call pm_runtime_suspend() so the subsystem can do the work.
+However, since runtime transitions are locked out by this time, that
+doesn't work.  IOW, what is needed is a way for a system suspend to say
+"please finish the runtime suspend that was already requested."
+
+What I've done to work around this in driver A is to manually check
+pm_runtime_suspended() and directly call the subsystem's runtime
+suspend/resume (patch below[1].  NOTE, I've used the _noirq methods to
+ensure device A is available when device B needs it.)
+
+While this works, I'm not crazy about it since it requires the driver
+know about the subsystem (in this case the bus) where the real PM work
+is done.  IMO, it would be much more intuitive (and readable) if the
+driver's suspend hooks could simply trigger a runtime suspend (either a
+new one, or one already requested.)
+
+FWIW, another hack that I've experimented with is just to just re-enable
+runtime transitions by doing a pm_runtime_put_sync() in the
+suspend_noirq method and a pm_runtime_get_noresume() in the resume_noirq
+method.  This allows driver A to suspend since it has already requested
+runtime, but I don't expect this second approach to be popluar. :) This
+second approach also doen't address system suspend/resume when the user
+has disabled runtime PM via /sys/devices/.../power/control.
+
+Kevin
+
+[1]
+diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
+index b605ff3..a4bc15a 100644
+--- a/drivers/i2c/busses/i2c-omap.c
++++ b/drivers/i2c/busses/i2c-omap.c
+@@ -1137,12 +1137,40 @@ omap_i2c_remove(struct platform_device *pdev)
+ 	return 0;
  }
  
- /**
-@@ -419,15 +455,7 @@ static void wakeup_source_deactivate(str
- 
- 	del_timer(&ws->timer);
- 
--	/*
--	 * event_count has to be incremented before events_in_progress is
--	 * modified, so that the callers of pm_check_wakeup_events() and
--	 * pm_save_wakeup_count() don't see the old value of event_count and
--	 * events_in_progress equal to zero at the same time.
--	 */
--	atomic_inc(&event_count);
--	smp_mb__before_atomic_dec();
--	atomic_dec(&events_in_progress);
-+	update_counters();
- }
- 
- /**
-@@ -582,8 +610,10 @@ bool pm_wakeup_pending(void)
- 
- 	spin_lock_irqsave(&events_lock, flags);
- 	if (events_check_enabled) {
--		ret = ((unsigned int)atomic_read(&event_count) != saved_count)
--			|| atomic_read(&events_in_progress);
-+		unsigned int inpr, cnt;
++#ifdef CONFIG_SUSPEND
++static int omap_i2c_suspend(struct device *dev)
++{
++	if (!pm_runtime_suspended(dev))
++		if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend)
++			dev->bus->pm->runtime_suspend(dev);
 +
-+		split_counters(&inpr, &cnt);
-+		ret = (cnt != saved_count || inpr > 0);
- 		events_check_enabled = !ret;
- 	}
- 	spin_unlock_irqrestore(&events_lock, flags);
-@@ -605,19 +635,22 @@ bool pm_wakeup_pending(void)
-  */
- bool pm_get_wakeup_count(unsigned int *count)
- {
--	bool ret;
-+	unsigned int inpr, cnt;
++	return 0;
++}
++
++static int omap_i2c_resume(struct device *dev)
++{
++	if (!pm_runtime_suspended(dev))
++		if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume)
++			dev->bus->pm->runtime_resume(dev);
++
++	return 0;
++}
++
++static struct dev_pm_ops omap_i2c_pm_ops = {
++	.suspend_noirq = omap_i2c_suspend,
++	.resume_noirq = omap_i2c_resume,
++};
++#else
++#define omap_i2c_pm_ops NULL
++#endif
++
+ static struct platform_driver omap_i2c_driver = {
+ 	.probe		= omap_i2c_probe,
+ 	.remove		= omap_i2c_remove,
+ 	.driver		= {
+ 		.name	= "omap_i2c",
+ 		.owner	= THIS_MODULE,
++		.pm     = &omap_i2c_pm_ops,
+ 	},
+ };
  
- 	if (capable(CAP_SYS_ADMIN))
- 		events_check_enabled = false;
- 
--	while (atomic_read(&events_in_progress) && !signal_pending(current)) {
-+	for (;;) {
-+		split_counters(&inpr, &cnt);
-+		if (inpr == 0 || signal_pending(current))
-+			break;
- 		pm_wakeup_update_hit_counts();
- 		schedule_timeout_interruptible(msecs_to_jiffies(TIMEOUT));
- 	}
- 
--	ret = !atomic_read(&events_in_progress);
--	*count = atomic_read(&event_count);
--	return ret;
-+	split_counters(&inpr, &cnt);
-+	*count = cnt;
-+	return !inpr;
- }
- 
- /**
-@@ -631,11 +664,12 @@ bool pm_get_wakeup_count(unsigned int *c
-  */
- bool pm_save_wakeup_count(unsigned int count)
- {
-+	unsigned int inpr, cnt;
- 	bool ret = false;
- 
- 	spin_lock_irq(&events_lock);
--	if (count == (unsigned int)atomic_read(&event_count)
--	    && !atomic_read(&events_in_progress)) {
-+	split_counters(&inpr, &cnt);
-+	if (cnt == count && inpr == 0) {
- 		saved_count = count;
- 		events_check_enabled = true;
- 		ret = true;
