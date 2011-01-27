@@ -1,13 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@novell.com>
-Subject: Re: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
-Date: Thu, 27 Jan 2011 22:19:54 +0100
-Message-ID: <201101272219.54303.rjw__7806.78082160211$1296163273$gmane$org@novell.com>
-References: <Pine.LNX.4.44L0.1101271335480.2090-100000@iolanthe.rowland.org>
+From: Vitaly Wool <vitalywool@gmail.com>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Thu, 27 Jan 2011 23:18:27 +0100
+Message-ID: <AANLkTinbHx1XtxpWDr+UCUBo6xRCs=zT1AD_y2kXo0cL__11000.0050081455$1296166829$gmane$org@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1101271439020.2090-100000@iolanthe.rowland.org>
+	<87tyguje7j.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1101271335480.2090-100000@iolanthe.rowland.org>
+In-Reply-To: <87tyguje7j.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,240 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>, Ido Yariv <ido@wizery.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 27, 2011, Alan Stern wrote:
-> On Wed, 26 Jan 2011, Rafael J. Wysocki wrote:
-> 
-> > > Ideally you could do away with the need for synchronization entirely.  
-> > > For example, events_in_progress and event_count could be stored as two 
-> > > 16-bit values stuffed into a single atomic variable.  Then they could 
-> > > both be read or updated simultaneously.
-> > 
-> > OK, the patch below appears to work for me.  Can you have a look at it, please?
-> > 
-> > Rafael
-> > 
-> > 
-> > ---
-> >  drivers/base/power/wakeup.c |   82 +++++++++++++++++++++++++++++++-------------
-> >  1 file changed, 58 insertions(+), 24 deletions(-)
-> > 
-> > Index: linux-2.6/drivers/base/power/wakeup.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/power/wakeup.c
-> > +++ linux-2.6/drivers/base/power/wakeup.c
-> > @@ -24,12 +24,48 @@
-> >   */
-> >  bool events_check_enabled;
-> >  
-> > -/* The counter of registered wakeup events. */
-> > -static atomic_t event_count = ATOMIC_INIT(0);
-> > -/* A preserved old value of event_count. */
-> > +#define EVENT_COUNT_BITS	(sizeof(atomic_t) * 4)
-> 
-> This should be sizeof(int), since atomic_t variables store int values.  
-> In principle, the atomic_t might include other things along with the 
-> stored value (it used to, on some architectures).
+On Thu, Jan 27, 2011 at 9:15 PM, Kevin Hilman <khilman@ti.com> wrote:
+>
+>> If it is, then you can call omap_pm_runtime_suspend() directly instead
+>> of calling dev->bus->pm->runtime_suspend().
+>
+> Personally, I prefer going through dev->bus as we try to avoid SoC
+> specific calls in the driver.
+>
+> This same HW block might be re-used on non-OMAP SoCs (e.g. TI DaVinci)
+> that would have different PM at the susbystem level.
+>
+> So, to summarize, as long as folks are OK with drivers directly calling
+> the subsystem runtime PM callbacks, I'll go this route.
 
-OK
+I personally think it's okay for the moment. Generally speaking, SD
+bus driver might not have runtime PM support so it's better to have
+this explicitly called and not compiling for other platforms rather
+than have it compiling but working not the way it's expected to.
 
-> > +#define MAX_EVENT_COUNT		((1 << EVENT_COUNT_BITS) - 1)
-> > +
-> > +/* Combined counters of registered wakeup events and events in progress. */
-> > +static atomic_t combined_event_count = ATOMIC_INIT(0);
-> > +
-> 
-> Comment here, explaining that this is needed so that the in_progress 
-> and count parts can be operated on simultaneously.
-
-OK
-
-> > +static unsigned int split_counters(unsigned int *inpr, unsigned int *cnt)
-> > +{
-> > +	unsigned int comb = atomic_read(&combined_event_count);
-> > +
-> > +	*inpr = (comb >> EVENT_COUNT_BITS);
-> > +	*cnt = comb & MAX_EVENT_COUNT;
-> 
-> The inpr part is bounded, whereas the cnt part increments without 
-> limit.  Therefore inpr should occupy the lower bits and cnt should 
-> occupy the upper bits, where overflow isn't an issue.
-
-Well, it wouldn't matter if merge_counters() weren't buggy (cnt should have
-been masked before applying the | in there).  Plus the simplifications below
-require inpr to be the lower bits, right?
-
-> > +	return comb;
-> > +}
-> > +
-> > +static unsigned int merge_counters(unsigned int inpr, unsigned int cnt)
-> > +{
-> > +	return (inpr << EVENT_COUNT_BITS) | cnt;
-> > +}
-> > +
-> > +static void update_events_in_progress(void)
-> > +{
-> > +	unsigned int cnt, inpr, old, new;
-> > +
-> > +	do {
-> > +		old = split_counters(&inpr, &cnt);
-> > +		new = merge_counters(inpr + 1, cnt);
-> > +	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
-> > +}
-> 
-> Just atomic_inc(&combined_event_count) -- after inpr has been moved to 
-> the lower bits.
-
-OK
-
-> > +
-> > +static void update_counters(void)
-> > +{
-> > +	unsigned int cnt, inpr, old, new;
-> > +
-> > +	do {
-> > +		old = split_counters(&inpr, &cnt);
-> > +		new = merge_counters(inpr - 1, cnt + 1);
-> > +	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
-> > +}
-> 
-> Just atomic_add(MAX_EVENT_COUNT, &combined_event_count).
-
-Right.
-
-> The rest looks fine.
-
-OK
-
-Updated patch is appended.
-
-Thanks,
-Rafael
-
----
- drivers/base/power/wakeup.c |   61 ++++++++++++++++++++++++++++----------------
- 1 file changed, 39 insertions(+), 22 deletions(-)
-
-Index: linux-2.6/drivers/base/power/wakeup.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/wakeup.c
-+++ linux-2.6/drivers/base/power/wakeup.c
-@@ -24,12 +24,26 @@
-  */
- bool events_check_enabled;
- 
--/* The counter of registered wakeup events. */
--static atomic_t event_count = ATOMIC_INIT(0);
--/* A preserved old value of event_count. */
-+/*
-+ * Combined counters of registered wakeup events and wakeup events in progress.
-+ * They need to be modified together atomically, so it's better to use one
-+ * atomic variable to hold them both.
-+ */
-+static atomic_t combined_event_count = ATOMIC_INIT(0);
-+
-+#define IN_PROGRESS_BITS	(sizeof(int) * 4)
-+#define MAX_IN_PROGRESS		((1 << IN_PROGRESS_BITS) - 1)
-+
-+static void split_counters(unsigned int *cnt, unsigned int *inpr)
-+{
-+	unsigned int comb = atomic_read(&combined_event_count);
-+
-+	*cnt = (comb >> IN_PROGRESS_BITS);
-+	*inpr = comb & MAX_IN_PROGRESS;
-+}
-+
-+/* A preserved old value of the events counter. */
- static unsigned int saved_count;
--/* The counter of wakeup events being processed. */
--static atomic_t events_in_progress = ATOMIC_INIT(0);
- 
- static DEFINE_SPINLOCK(events_lock);
- 
-@@ -333,7 +347,8 @@ static void wakeup_source_activate(struc
- 	ws->timer_expires = jiffies;
- 	ws->last_time = ktime_get();
- 
--	atomic_inc(&events_in_progress);
-+	/* Increment the counter of events in progress. */
-+	atomic_inc(&combined_event_count);
- }
- 
- /**
-@@ -420,14 +435,10 @@ static void wakeup_source_deactivate(str
- 	del_timer(&ws->timer);
- 
- 	/*
--	 * event_count has to be incremented before events_in_progress is
--	 * modified, so that the callers of pm_check_wakeup_events() and
--	 * pm_save_wakeup_count() don't see the old value of event_count and
--	 * events_in_progress equal to zero at the same time.
-+	 * Increment the counter of registered wakeup events and decrement the
-+	 * couter of wakeup events in progress simultaneously.
- 	 */
--	atomic_inc(&event_count);
--	smp_mb__before_atomic_dec();
--	atomic_dec(&events_in_progress);
-+	atomic_add(MAX_IN_PROGRESS, &combined_event_count);
- }
- 
- /**
-@@ -582,8 +593,10 @@ bool pm_wakeup_pending(void)
- 
- 	spin_lock_irqsave(&events_lock, flags);
- 	if (events_check_enabled) {
--		ret = ((unsigned int)atomic_read(&event_count) != saved_count)
--			|| atomic_read(&events_in_progress);
-+		unsigned int cnt, inpr;
-+
-+		split_counters(&cnt, &inpr);
-+		ret = (cnt != saved_count || inpr > 0);
- 		events_check_enabled = !ret;
- 	}
- 	spin_unlock_irqrestore(&events_lock, flags);
-@@ -605,19 +618,22 @@ bool pm_wakeup_pending(void)
-  */
- bool pm_get_wakeup_count(unsigned int *count)
- {
--	bool ret;
-+	unsigned int cnt, inpr;
- 
- 	if (capable(CAP_SYS_ADMIN))
- 		events_check_enabled = false;
- 
--	while (atomic_read(&events_in_progress) && !signal_pending(current)) {
-+	for (;;) {
-+		split_counters(&cnt, &inpr);
-+		if (inpr == 0 || signal_pending(current))
-+			break;
- 		pm_wakeup_update_hit_counts();
- 		schedule_timeout_interruptible(msecs_to_jiffies(TIMEOUT));
- 	}
- 
--	ret = !atomic_read(&events_in_progress);
--	*count = atomic_read(&event_count);
--	return ret;
-+	split_counters(&cnt, &inpr);
-+	*count = cnt;
-+	return !inpr;
- }
- 
- /**
-@@ -631,11 +647,12 @@ bool pm_get_wakeup_count(unsigned int *c
-  */
- bool pm_save_wakeup_count(unsigned int count)
- {
-+	unsigned int cnt, inpr;
- 	bool ret = false;
- 
- 	spin_lock_irq(&events_lock);
--	if (count == (unsigned int)atomic_read(&event_count)
--	    && !atomic_read(&events_in_progress)) {
-+	split_counters(&cnt, &inpr);
-+	if (cnt == count && inpr == 0) {
- 		saved_count = count;
- 		events_check_enabled = true;
- 		ret = true;
+~Vitaly
