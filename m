@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
-Date: Thu, 27 Jan 2011 14:00:17 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1101271335480.2090-100000__8529.36997912384$1296154965$gmane$org@iolanthe.rowland.org>
-References: <201101262353.21043.rjw@novell.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Thu, 27 Jan 2011 11:22:58 -0800
+Message-ID: <87hbcum9rh.fsf__44193.486593622$1296156281$gmane$org@ti.com>
+References: <Pine.LNX.4.44L0.1101271158530.2090-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101262353.21043.rjw@novell.com>
+In-Reply-To: <Pine.LNX.4.44L0.1101271158530.2090-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Thu, 27 Jan 2011 13:13:33 -0500 (EST)")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,97 +18,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@novell.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 26 Jan 2011, Rafael J. Wysocki wrote:
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-> > Ideally you could do away with the need for synchronization entirely.  
-> > For example, events_in_progress and event_count could be stored as two 
-> > 16-bit values stuffed into a single atomic variable.  Then they could 
-> > both be read or updated simultaneously.
-> 
-> OK, the patch below appears to work for me.  Can you have a look at it, please?
-> 
-> Rafael
-> 
-> 
-> ---
->  drivers/base/power/wakeup.c |   82 +++++++++++++++++++++++++++++++-------------
->  1 file changed, 58 insertions(+), 24 deletions(-)
-> 
-> Index: linux-2.6/drivers/base/power/wakeup.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/wakeup.c
-> +++ linux-2.6/drivers/base/power/wakeup.c
-> @@ -24,12 +24,48 @@
->   */
->  bool events_check_enabled;
->  
-> -/* The counter of registered wakeup events. */
-> -static atomic_t event_count = ATOMIC_INIT(0);
-> -/* A preserved old value of event_count. */
-> +#define EVENT_COUNT_BITS	(sizeof(atomic_t) * 4)
+> On Wed, 26 Jan 2011, Kevin Hilman wrote:
+>
+>> >> Consider this instead:  Since A is required to be functional before B
+>> >> can be used, A must be registered before B and hence B gets suspended
+>> >> before A.  Therefore during the prepare phase we can runtime-resume A
+>> >> and leave it powered up; when B needs to suspend, it won't matter that
+>> >> the runtime-PM calls are ineffective.
+>> >
+>> > We don't really need to do that, because the runtime resume _is_ functional
+>> > during system suspend.
+>
+> Not asynchronous runtime resume, because the workqueue is frozen.  But 
+> that's not the issue here.
+>
+>> >  The only thing missing is a ->suspend() callback for A
+>> > (and a corresponding ->resume() callback to make sure A will be available to
+>> > B during system resume).
+>> >
+>> 
+>> OK, I'm finally back to debugging this problem and looking for a final
+>> solution.
+>> 
+>> I agree that what is needed is ->suspend() and ->resume() callbacks for
+>> A, but the question remains how to implement them.
+>> 
+>> In my case, A doesn't need runtime callbacks, but *does* require that
+>> the subsystem callbacks are called because the subsystem actually does
+>> all the real PM work.  On OMAP, the device PM code (clock mgmt, device
+>> low-power states, etc.) is common for all on-chip devices, so is handled
+>> in common code at the subsystem level (in this case, platform_bus.)
+>> 
+>> Therefore, what is ideally needed is the ability for A's suspend to
+>> simply call pm_runtime_suspend() so the subsystem can do the work.
+>> However, since runtime transitions are locked out by this time, that
+>> doesn't work.  IOW, what is needed is a way for a system suspend to say
+>> "please finish the runtime suspend that was already requested."
+>
+> Calling the runtime_suspend method directly is the way to do it.
+>
 
-This should be sizeof(int), since atomic_t variables store int values.  
-In principle, the atomic_t might include other things along with the 
-stored value (it used to, on some architectures).
+Do you mean the driver's runtime_suspend method, or the subsystem's
+runtime_suspend method?  In my case, the driver has no runtime_suspend
+method since the subystem methods are doing the heavy lifting.
 
-> +#define MAX_EVENT_COUNT		((1 << EVENT_COUNT_BITS) - 1)
-> +
-> +/* Combined counters of registered wakeup events and events in progress. */
-> +static atomic_t combined_event_count = ATOMIC_INIT(0);
-> +
+>> What I've done to work around this in driver A is to manually check
+>> pm_runtime_suspended() and directly call the subsystem's runtime
+>> suspend/resume (patch below[1].  NOTE, I've used the _noirq methods to
+>> ensure device A is available when device B needs it.)
+>
+> Hmm.  The pm_runtime_suspended() check may not be needed (if A were
+> suspended already then B would have encountered problems).  But
+> including it doesn't hurt.
+>
+> Using the _noirq method isn't a good idea, unless you know for certain 
+> that the runtime_suspend handler doesn't need to sleep.  
+> Using the normal suspend method should work okay, because B always has
+> to suspend before A.
 
-Comment here, explaining that this is needed so that the in_progress 
-and count parts can be operated on simultaneously.
+I do know that it doesn't need to sleep, but I think I can use the
+normal methods anyways in case that changes in the future.
 
-> +static unsigned int split_counters(unsigned int *inpr, unsigned int *cnt)
-> +{
-> +	unsigned int comb = atomic_read(&combined_event_count);
-> +
-> +	*inpr = (comb >> EVENT_COUNT_BITS);
-> +	*cnt = comb & MAX_EVENT_COUNT;
+>> While this works, I'm not crazy about it since it requires the driver
+>> know about the subsystem (in this case the bus) where the real PM work
+>> is done.  IMO, it would be much more intuitive (and readable) if the
+>> driver's suspend hooks could simply trigger a runtime suspend (either a
+>> new one, or one already requested.)
+>
+> This isn't clear to me.  Isn't the driver registered on the bus in 
+> question?  Can't the driver therefore call the bus's runtime_suspend 
+> routine directly, instead of dereferencing the bus->pm->runtime_suspend 
+> pointer?
 
-The inpr part is bounded, whereas the cnt part increments without 
-limit.  Therefore inpr should occupy the lower bits and cnt should 
-occupy the upper bits, where overflow isn't an issue.
+Not sure what you mean by directly.  The platform_bus doesn't expose
+its runtime PM methods since they can be customized at runtime, so they
+have to be called via bus->pm.
 
-> +	return comb;
-> +}
-> +
-> +static unsigned int merge_counters(unsigned int inpr, unsigned int cnt)
-> +{
-> +	return (inpr << EVENT_COUNT_BITS) | cnt;
-> +}
-> +
-> +static void update_events_in_progress(void)
-> +{
-> +	unsigned int cnt, inpr, old, new;
-> +
-> +	do {
-> +		old = split_counters(&inpr, &cnt);
-> +		new = merge_counters(inpr + 1, cnt);
-> +	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
-> +}
+Or do you mean using dev->driver instead of dev->bus?
 
-Just atomic_inc(&combined_event_count) -- after inpr has been moved to 
-the lower bits.
-
-> +
-> +static void update_counters(void)
-> +{
-> +	unsigned int cnt, inpr, old, new;
-> +
-> +	do {
-> +		old = split_counters(&inpr, &cnt);
-> +		new = merge_counters(inpr - 1, cnt + 1);
-> +	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
-> +}
-
-Just atomic_add(MAX_EVENT_COUNT, &combined_event_count).
-
-The rest looks fine.
-
-Alan Stern
+Kevin
