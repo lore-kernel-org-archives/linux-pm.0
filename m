@@ -1,14 +1,13 @@
-From: Vitaly Wool <vitalywool@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Thu, 27 Jan 2011 23:18:27 +0100
-Message-ID: <AANLkTinbHx1XtxpWDr+UCUBo6xRCs=zT1AD_y2kXo0cL__11000.0050081455$1296166829$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1101271439020.2090-100000@iolanthe.rowland.org>
-	<87tyguje7j.fsf@ti.com>
+Date: Fri, 28 Jan 2011 00:11:50 +0100
+Message-ID: <201101280011.50602.rjw__2980.01801497794$1296170027$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1101271158530.2090-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87tyguje7j.fsf@ti.com>
+In-Reply-To: <Pine.LNX.4.44L0.1101271158530.2090-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,27 +17,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>, Ido Yariv <ido@wizery.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 27, 2011 at 9:15 PM, Kevin Hilman <khilman@ti.com> wrote:
->
->> If it is, then you can call omap_pm_runtime_suspend() directly instead
->> of calling dev->bus->pm->runtime_suspend().
->
-> Personally, I prefer going through dev->bus as we try to avoid SoC
-> specific calls in the driver.
->
-> This same HW block might be re-used on non-OMAP SoCs (e.g. TI DaVinci)
-> that would have different PM at the susbystem level.
->
-> So, to summarize, as long as folks are OK with drivers directly calling
-> the subsystem runtime PM callbacks, I'll go this route.
+On Thursday, January 27, 2011, Alan Stern wrote:
+> On Wed, 26 Jan 2011, Kevin Hilman wrote:
+> 
+> > >> Consider this instead:  Since A is required to be functional before B
+> > >> can be used, A must be registered before B and hence B gets suspended
+> > >> before A.  Therefore during the prepare phase we can runtime-resume A
+> > >> and leave it powered up; when B needs to suspend, it won't matter that
+> > >> the runtime-PM calls are ineffective.
+> > >
+> > > We don't really need to do that, because the runtime resume _is_ functional
+> > > during system suspend.
+> 
+> Not asynchronous runtime resume, because the workqueue is frozen.  But 
+> that's not the issue here.
+> 
+> > >  The only thing missing is a ->suspend() callback for A
+> > > (and a corresponding ->resume() callback to make sure A will be available to
+> > > B during system resume).
+> > >
+> > 
+> > OK, I'm finally back to debugging this problem and looking for a final
+> > solution.
+> > 
+> > I agree that what is needed is ->suspend() and ->resume() callbacks for
+> > A, but the question remains how to implement them.
+> > 
+> > In my case, A doesn't need runtime callbacks, but *does* require that
+> > the subsystem callbacks are called because the subsystem actually does
+> > all the real PM work.  On OMAP, the device PM code (clock mgmt, device
+> > low-power states, etc.) is common for all on-chip devices, so is handled
+> > in common code at the subsystem level (in this case, platform_bus.)
+> > 
+> > Therefore, what is ideally needed is the ability for A's suspend to
+> > simply call pm_runtime_suspend() so the subsystem can do the work.
+> > However, since runtime transitions are locked out by this time, that
+> > doesn't work.  IOW, what is needed is a way for a system suspend to say
+> > "please finish the runtime suspend that was already requested."
+> 
+> Calling the runtime_suspend method directly is the way to do it.
+> 
+> > What I've done to work around this in driver A is to manually check
+> > pm_runtime_suspended() and directly call the subsystem's runtime
+> > suspend/resume (patch below[1].  NOTE, I've used the _noirq methods to
+> > ensure device A is available when device B needs it.)
+> 
+> Hmm.  The pm_runtime_suspended() check may not be needed (if A were
+> suspended already then B would have encountered problems).  But
+> including it doesn't hurt.
+> 
+> Using the _noirq method isn't a good idea, unless you know for certain 
+> that the runtime_suspend handler doesn't need to sleep.
 
-I personally think it's okay for the moment. Generally speaking, SD
-bus driver might not have runtime PM support so it's better to have
-this explicitly called and not compiling for other platforms rather
-than have it compiling but working not the way it's expected to.
+That requirement is long gone, because timer interrupts are still enabled
+when the _noirq() callbacks are run.  The _noirq part means that the driver's
+own interrupt handler is guaranteed not to run concurrently with the routines
+(unless this also is a timer interrupt, that is).
 
-~Vitaly
+Rafael
