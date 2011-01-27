@@ -1,17 +1,13 @@
-From: Mandeep Singh Baines <msb@chromium.org>
-Subject: Re: [PATCH 1/6] mm/page_alloc: use appropriate printk
- priority level
-Date: Wed, 26 Jan 2011 20:22:28 -0800
-Message-ID: <20110127042228.GX8008__18812.4079410501$1296144584$gmane$org@google.com>
-References: <20110125235700.GR8008@google.com>
-	<1296084570-31453-2-git-send-email-msb@chromium.org>
-	<4D40BD00.1090408@bluewatersys.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: subtle pm_runtime_put_sync race and sdio functions
+Date: Thu, 27 Jan 2011 13:13:33 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1101271158530.2090-100000__5291.33344903148$1296152107$gmane$org@iolanthe.rowland.org>
+References: <87k4hrtfcb.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4D40BD00.1090408@bluewatersys.com>
+In-Reply-To: <87k4hrtfcb.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,70 +17,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: Mandeep Singh Baines <msb@chromium.org>, gregkh@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@redhat.com, linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: linux-pm@vger.kernel.org
 
-Ryan Mallon (ryan@bluewatersys.com) wrote:
-> On 01/27/2011 12:29 PM, Mandeep Singh Baines wrote:
-> > printk()s without a priority level default to KERN_WARNING. To reduce
-> > noise at KERN_WARNING, this patch set the priority level appriopriately
-> > for unleveled printks()s. This should be useful to folks that look at
-> > dmesg warnings closely.
-> > 
-> > Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
-> > ---
-> 
-> > @@ -4700,33 +4700,36 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
-> >  	find_zone_movable_pfns_for_nodes(zone_movable_pfn);
-> >  
-> >  	/* Print out the zone ranges */
-> > -	printk("Zone PFN ranges:\n");
-> > +	printk(KERN_INFO "Zone PFN ranges:\n");
-> >  	for (i = 0; i < MAX_NR_ZONES; i++) {
-> >  		if (i == ZONE_MOVABLE)
-> >  			continue;
-> > -		printk("  %-8s ", zone_names[i]);
-> > +		printk(KERN_INFO "  %-8s ", zone_names[i]);
-> >  		if (arch_zone_lowest_possible_pfn[i] ==
-> >  				arch_zone_highest_possible_pfn[i])
-> >  			printk("empty\n");
-> 
-> Should be printk(KERN_CONT ... (or pr_cont).
-> 
-> >  		else
-> > -			printk("%0#10lx -> %0#10lx\n",
-> > +			printk(KERN_INFO "%0#10lx -> %0#10lx\n",
-> >  				arch_zone_lowest_possible_pfn[i],
-> >  				arch_zone_highest_possible_pfn[i]);
-> 
-> The printk above doesn't have a trailing newline so this should be
-> printk(KERN_CONT ...
-> 
-> There are a couple of other places in this patch series that also need
-> to be fixed in a similar manner.
-> 
+On Wed, 26 Jan 2011, Kevin Hilman wrote:
 
-D'oh. Good catch;)
+> >> Consider this instead:  Since A is required to be functional before B
+> >> can be used, A must be registered before B and hence B gets suspended
+> >> before A.  Therefore during the prepare phase we can runtime-resume A
+> >> and leave it powered up; when B needs to suspend, it won't matter that
+> >> the runtime-PM calls are ineffective.
+> >
+> > We don't really need to do that, because the runtime resume _is_ functional
+> > during system suspend.
 
-The KERN_INFO here was unintentional. I had intended to leave it out.
-The code I was looking at as a reference was just omitting KERN_ for
-continuations. But I take it that the convention is to use KERN_CONT.
-I'll fixup the patch series to use that.
+Not asynchronous runtime resume, because the workqueue is frozen.  But 
+that's not the issue here.
 
-I tried to use pr_ wherever the file was already using it or where I was
-changing all printk()s. For files with many printk()s I just continued
-using printk() to keep the patch small and also to avoid mixing printk
-with pr_. However, if it is preferrable, I'm happy to replace all printk()s
-with pr_ in the files I touch in the series.
-
-> ~Ryan
+> >  The only thing missing is a ->suspend() callback for A
+> > (and a corresponding ->resume() callback to make sure A will be available to
+> > B during system resume).
+> >
 > 
-> -- 
-> Bluewater Systems Ltd - ARM Technology Solution Centre
+> OK, I'm finally back to debugging this problem and looking for a final
+> solution.
 > 
-> Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
-> ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
-> http://www.bluewatersys.com	New Zealand
-> Phone: +64 3 3779127		Freecall: Australia 1800 148 751
-> Fax:   +64 3 3779135			  USA 1800 261 2934
+> I agree that what is needed is ->suspend() and ->resume() callbacks for
+> A, but the question remains how to implement them.
+> 
+> In my case, A doesn't need runtime callbacks, but *does* require that
+> the subsystem callbacks are called because the subsystem actually does
+> all the real PM work.  On OMAP, the device PM code (clock mgmt, device
+> low-power states, etc.) is common for all on-chip devices, so is handled
+> in common code at the subsystem level (in this case, platform_bus.)
+> 
+> Therefore, what is ideally needed is the ability for A's suspend to
+> simply call pm_runtime_suspend() so the subsystem can do the work.
+> However, since runtime transitions are locked out by this time, that
+> doesn't work.  IOW, what is needed is a way for a system suspend to say
+> "please finish the runtime suspend that was already requested."
+
+Calling the runtime_suspend method directly is the way to do it.
+
+> What I've done to work around this in driver A is to manually check
+> pm_runtime_suspended() and directly call the subsystem's runtime
+> suspend/resume (patch below[1].  NOTE, I've used the _noirq methods to
+> ensure device A is available when device B needs it.)
+
+Hmm.  The pm_runtime_suspended() check may not be needed (if A were
+suspended already then B would have encountered problems).  But
+including it doesn't hurt.
+
+Using the _noirq method isn't a good idea, unless you know for certain 
+that the runtime_suspend handler doesn't need to sleep.  Using the 
+normal suspend method should work okay, because B always has to suspend 
+before A.
+
+> While this works, I'm not crazy about it since it requires the driver
+> know about the subsystem (in this case the bus) where the real PM work
+> is done.  IMO, it would be much more intuitive (and readable) if the
+> driver's suspend hooks could simply trigger a runtime suspend (either a
+> new one, or one already requested.)
+
+This isn't clear to me.  Isn't the driver registered on the bus in 
+question?  Can't the driver therefore call the bus's runtime_suspend 
+routine directly, instead of dereferencing the bus->pm->runtime_suspend 
+pointer?
+
+Alan Stern
