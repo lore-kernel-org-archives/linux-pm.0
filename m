@@ -1,14 +1,17 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Thu, 27 Jan 2011 12:15:12 -0800
-Message-ID: <87tyguje7j.fsf__26712.4615762897$1296159371$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1101271439020.2090-100000@iolanthe.rowland.org>
+From: Ryan Mallon <ryan@bluewatersys.com>
+Subject: Re: [PATCH 1/6] mm/page_alloc: use appropriate printk
+	priority level
+Date: Fri, 28 Jan 2011 09:32:09 +1300
+Message-ID: <4D41D649.6020800__22129.204174462$1296160375$gmane$org@bluewatersys.com>
+References: <20110125235700.GR8008@google.com>
+	<1296084570-31453-2-git-send-email-msb@chromium.org>
+	<4D40BD00.1090408@bluewatersys.com>
+	<20110127042228.GX8008@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1101271439020.2090-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Thu, 27 Jan 2011 14:49:01 -0500 (EST)")
+In-Reply-To: <20110127042228.GX8008@google.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +21,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-wireless@vger.kernel.org, linux-mmc@vger.kernel.org, Ido Yariv <ido@wizery.com>, linux-pm@lists.linux-foundation.org, Johannes Berg <johannes@sipsolutions.net>
+To: Mandeep Singh Baines <msb@chromium.org>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@redhat.com, linux-fsdevel@vger.kernel.org, joe@perches.com, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On 01/27/2011 05:22 PM, Mandeep Singh Baines wrote:
+> Ryan Mallon (ryan@bluewatersys.com) wrote:
+>> On 01/27/2011 12:29 PM, Mandeep Singh Baines wrote:
+>>> printk()s without a priority level default to KERN_WARNING. To reduce
+>>> noise at KERN_WARNING, this patch set the priority level appriopriately
+>>> for unleveled printks()s. This should be useful to folks that look at
+>>> dmesg warnings closely.
+>>>
+>>> Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
+>>> ---
+>>
+>>> @@ -4700,33 +4700,36 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
+>>>  	find_zone_movable_pfns_for_nodes(zone_movable_pfn);
+>>>  
+>>>  	/* Print out the zone ranges */
+>>> -	printk("Zone PFN ranges:\n");
+>>> +	printk(KERN_INFO "Zone PFN ranges:\n");
+>>>  	for (i = 0; i < MAX_NR_ZONES; i++) {
+>>>  		if (i == ZONE_MOVABLE)
+>>>  			continue;
+>>> -		printk("  %-8s ", zone_names[i]);
+>>> +		printk(KERN_INFO "  %-8s ", zone_names[i]);
+>>>  		if (arch_zone_lowest_possible_pfn[i] ==
+>>>  				arch_zone_highest_possible_pfn[i])
+>>>  			printk("empty\n");
+>>
+>> Should be printk(KERN_CONT ... (or pr_cont).
+>>
+>>>  		else
+>>> -			printk("%0#10lx -> %0#10lx\n",
+>>> +			printk(KERN_INFO "%0#10lx -> %0#10lx\n",
+>>>  				arch_zone_lowest_possible_pfn[i],
+>>>  				arch_zone_highest_possible_pfn[i]);
+>>
+>> The printk above doesn't have a trailing newline so this should be
+>> printk(KERN_CONT ...
+>>
+>> There are a couple of other places in this patch series that also need
+>> to be fixed in a similar manner.
+>>
+> 
+> D'oh. Good catch;)
+> 
+> The KERN_INFO here was unintentional. I had intended to leave it out.
+> The code I was looking at as a reference was just omitting KERN_ for
+> continuations. But I take it that the convention is to use KERN_CONT.
+> I'll fixup the patch series to use that.
 
-> On Thu, 27 Jan 2011, Kevin Hilman wrote:
->
->> > Calling the runtime_suspend method directly is the way to do it.
->> >
->> 
->> Do you mean the driver's runtime_suspend method, or the subsystem's
->> runtime_suspend method?
->
-> The subsystem's.  If the driver has a runtime_suspend method then the 
-> subsystem's method will call it.
+I think in general it is nicer to use KERN_CONT because it explicitly
+shows that there is a printk somewhere above with no trailing newline.
 
-Yes.  Thanks for the clarification.
+Note that include/linux/printk.h has this to say about KERN_CONT:
 
->> >> While this works, I'm not crazy about it since it requires the driver
->> >> know about the subsystem (in this case the bus) where the real PM work
->> >> is done.  IMO, it would be much more intuitive (and readable) if the
->> >> driver's suspend hooks could simply trigger a runtime suspend (either a
->> >> new one, or one already requested.)
->> >
->> > This isn't clear to me.  Isn't the driver registered on the bus in 
->> > question?  Can't the driver therefore call the bus's runtime_suspend 
->> > routine directly, instead of dereferencing the bus->pm->runtime_suspend 
->> > pointer?
->> 
->> Not sure what you mean by directly.  The platform_bus doesn't expose
->> its runtime PM methods since they can be customized at runtime, so they
->> have to be called via bus->pm.
->> 
->> Or do you mean using dev->driver instead of dev->bus?
->
-> You're doing all of this for OMAP, right?  What is the subsystem's
-> runtime_suspend routine?  Is it omap_pm_runtime_suspend()?
+/*
+ * Annotation for a "continued" line of log printout (only done after a
+ * line that had no enclosing \n). Only to be used by core/arch code
+ * during early bootup (a continued line is not SMP-safe otherwise).
+ */
 
-Yes.
+I'm guessing that the above is safe, but if you are fixing printks up
+then it would be good to check that places using continued lines are safe.
 
-> If it is, then you can call omap_pm_runtime_suspend() directly instead
-> of calling dev->bus->pm->runtime_suspend().
+> I tried to use pr_ wherever the file was already using it or where I was
+> changing all printk()s. For files with many printk()s I just continued
+> using printk() to keep the patch small and also to avoid mixing printk
+> with pr_. However, if it is preferrable, I'm happy to replace all printk()s
+> with pr_ in the files I touch in the series.
 
-Personally, I prefer going through dev->bus as we try to avoid SoC
-specific calls in the driver.
+I'm not sure what the policy on changing printk to the pr_ variants is.
+Cc'ed Joe Perches who knows more about such things.
 
-This same HW block might be re-used on non-OMAP SoCs (e.g. TI DaVinci)
-that would have different PM at the susbystem level.
+~Ryan
 
-So, to summarize, as long as folks are OK with drivers directly calling
-the subsystem runtime PM callbacks, I'll go this route.
+-- 
+Bluewater Systems Ltd - ARM Technology Solution Centre
 
-Kevin
+Ryan Mallon         		5 Amuri Park, 404 Barbadoes St
+ryan@bluewatersys.com         	PO Box 13 889, Christchurch 8013
+http://www.bluewatersys.com	New Zealand
+Phone: +64 3 3779127		Freecall: Australia 1800 148 751
+Fax:   +64 3 3779135			  USA 1800 261 2934
