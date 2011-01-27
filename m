@@ -1,16 +1,13 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: subtle pm_runtime_put_sync race and sdio functions
-Date: Thu, 27 Jan 2011 10:54:19 -0800
-Message-ID: <87bp32npno.fsf__33799.0441512831$1296154600$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1012212032590.11252-100000@netrider.rowland.org>
-	<201012221329.40251.rjw@sisk.pl> <87k4hrtfcb.fsf@ti.com>
-	<AANLkTikH0aHQNzShAYQfPLPg4C_0HS_pWEqbJJ4aHZgm@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
+Date: Thu, 27 Jan 2011 14:00:17 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1101271335480.2090-100000__8529.36997912384$1296154965$gmane$org@iolanthe.rowland.org>
+References: <201101262353.21043.rjw@novell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTikH0aHQNzShAYQfPLPg4C_0HS_pWEqbJJ4aHZgm@mail.gmail.com>
-	(Vitaly Wool's message of "Thu, 27 Jan 2011 19:20:10 +0100")
+In-Reply-To: <201101262353.21043.rjw@novell.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +17,97 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vitaly Wool <vitalywool@gmail.com>
-Cc: linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.linux-foundation.org, Ido Yariv <ido@wizery.com>
+To: "Rafael J. Wysocki" <rjw@novell.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Vml0YWx5IFdvb2wgPHZpdGFseXdvb2xAZ21haWwuY29tPiB3cml0ZXM6Cgo+IEhpIEtldmluLAo+
-Cj4+IFRoZXJlZm9yZSwgd2hhdCBpcyBpZGVhbGx5IG5lZWRlZCBpcyB0aGUgYWJpbGl0eSBmb3Ig
-QSdzIHN1c3BlbmQgdG8KPj4gc2ltcGx5IGNhbGwgcG1fcnVudGltZV9zdXNwZW5kKCkgc28gdGhl
-IHN1YnN5c3RlbSBjYW4gZG8gdGhlIHdvcmsuCj4+IEhvd2V2ZXIsIHNpbmNlIHJ1bnRpbWUgdHJh
-bnNpdGlvbnMgYXJlIGxvY2tlZCBvdXQgYnkgdGhpcyB0aW1lLCB0aGF0Cj4+IGRvZXNuJ3Qgd29y
-ay4gwqBJT1csIHdoYXQgaXMgbmVlZGVkIGlzIGEgd2F5IGZvciBhIHN5c3RlbSBzdXNwZW5kIHRv
-IHNheQo+PiAicGxlYXNlIGZpbmlzaCB0aGUgcnVudGltZSBzdXNwZW5kIHRoYXQgd2FzIGFscmVh
-ZHkgcmVxdWVzdGVkLiIKPj4KPj4gV2hhdCBJJ3ZlIGRvbmUgdG8gd29yayBhcm91bmQgdGhpcyBp
-biBkcml2ZXIgQSBpcyB0byBtYW51YWxseSBjaGVjawo+PiBwbV9ydW50aW1lX3N1c3BlbmRlZCgp
-IGFuZCBkaXJlY3RseSBjYWxsIHRoZSBzdWJzeXN0ZW0ncyBydW50aW1lCj4+IHN1c3BlbmQvcmVz
-dW1lIChwYXRjaCBiZWxvd1sxXS4gwqBOT1RFLCBJJ3ZlIHVzZWQgdGhlIF9ub2lycSBtZXRob2Rz
-IHRvCj4+IGVuc3VyZSBkZXZpY2UgQSBpcyBhdmFpbGFibGUgd2hlbiBkZXZpY2UgQiBuZWVkcyBp
-dC4pCj4KPiBzdXBwb3NlIHRoaXMgZHJpdmVyIHJ1bnMgb24gYSBwbGF0Zm9ybSB0aGF0IGhhcyBy
-dW50aW1lIFBNIGRpc2FibGVkLgo+IEhvdyBpcyBpdCBnb2luZyB0byB3b3JrIHRoZW4/Cj4KClRo
-ZW4gcG1fcnVudGltZV9zdXNwZW5kZWQoKSB3aWxsIGJlIGZhbHNlLCBhbmQgdGhlIGJ1cyBtZXRo
-b2RzIHdpbGwKc3VzcGVuZCB0aGUgZGV2aWNlLgoKS2V2aW4KCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1w
-bUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRp
-b24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Wed, 26 Jan 2011, Rafael J. Wysocki wrote:
+
+> > Ideally you could do away with the need for synchronization entirely.  
+> > For example, events_in_progress and event_count could be stored as two 
+> > 16-bit values stuffed into a single atomic variable.  Then they could 
+> > both be read or updated simultaneously.
+> 
+> OK, the patch below appears to work for me.  Can you have a look at it, please?
+> 
+> Rafael
+> 
+> 
+> ---
+>  drivers/base/power/wakeup.c |   82 +++++++++++++++++++++++++++++++-------------
+>  1 file changed, 58 insertions(+), 24 deletions(-)
+> 
+> Index: linux-2.6/drivers/base/power/wakeup.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/wakeup.c
+> +++ linux-2.6/drivers/base/power/wakeup.c
+> @@ -24,12 +24,48 @@
+>   */
+>  bool events_check_enabled;
+>  
+> -/* The counter of registered wakeup events. */
+> -static atomic_t event_count = ATOMIC_INIT(0);
+> -/* A preserved old value of event_count. */
+> +#define EVENT_COUNT_BITS	(sizeof(atomic_t) * 4)
+
+This should be sizeof(int), since atomic_t variables store int values.  
+In principle, the atomic_t might include other things along with the 
+stored value (it used to, on some architectures).
+
+> +#define MAX_EVENT_COUNT		((1 << EVENT_COUNT_BITS) - 1)
+> +
+> +/* Combined counters of registered wakeup events and events in progress. */
+> +static atomic_t combined_event_count = ATOMIC_INIT(0);
+> +
+
+Comment here, explaining that this is needed so that the in_progress 
+and count parts can be operated on simultaneously.
+
+> +static unsigned int split_counters(unsigned int *inpr, unsigned int *cnt)
+> +{
+> +	unsigned int comb = atomic_read(&combined_event_count);
+> +
+> +	*inpr = (comb >> EVENT_COUNT_BITS);
+> +	*cnt = comb & MAX_EVENT_COUNT;
+
+The inpr part is bounded, whereas the cnt part increments without 
+limit.  Therefore inpr should occupy the lower bits and cnt should 
+occupy the upper bits, where overflow isn't an issue.
+
+> +	return comb;
+> +}
+> +
+> +static unsigned int merge_counters(unsigned int inpr, unsigned int cnt)
+> +{
+> +	return (inpr << EVENT_COUNT_BITS) | cnt;
+> +}
+> +
+> +static void update_events_in_progress(void)
+> +{
+> +	unsigned int cnt, inpr, old, new;
+> +
+> +	do {
+> +		old = split_counters(&inpr, &cnt);
+> +		new = merge_counters(inpr + 1, cnt);
+> +	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
+> +}
+
+Just atomic_inc(&combined_event_count) -- after inpr has been moved to 
+the lower bits.
+
+> +
+> +static void update_counters(void)
+> +{
+> +	unsigned int cnt, inpr, old, new;
+> +
+> +	do {
+> +		old = split_counters(&inpr, &cnt);
+> +		new = merge_counters(inpr - 1, cnt + 1);
+> +	} while (atomic_cmpxchg(&combined_event_count, old, new) != old);
+> +}
+
+Just atomic_add(MAX_EVENT_COUNT, &combined_event_count).
+
+The rest looks fine.
+
+Alan Stern
