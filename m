@@ -1,11 +1,13 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH] i2c: OMAP: fix static suspend vs. runtime suspend
-Date: Thu, 27 Jan 2011 16:18:41 -0800
-Message-ID: <1296173921-4832-1-git-send-email-khilman__15401.1748884388$1296174130$gmane$org@ti.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
+Date: Fri, 28 Jan 2011 15:23:41 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1101281521190.2089-100000__8579.04681838608$1296246387$gmane$org@iolanthe.rowland.org>
+References: <201101272219.54303.rjw@novell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201101272219.54303.rjw@novell.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,81 +17,143 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Dooks <ben-linux@fluff.org>, Rajendra Nayak <rnayak@ti.com>, linux-i2c@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@novell.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-When runtime PM is enabled, each OMAP i2c device is suspended after
-each i2c xfer.  However, there are two cases when the static suspend
-methods must be used to ensure the devices are suspended:
+On Thu, 27 Jan 2011, Rafael J. Wysocki wrote:
 
-1) runtime PM is disabled, either at compile time or dynamically
-    via /sys/devices/.../power/control.
-2) an i2c client driver uses i2c during it's suspend callback, thus
-   leaving the i2c driver active (NOTE: runtime suspend transitions are
-   disabled during system suspend, so i2c activity during system
-   suspend will runtime resume the device, but not runtime (re)suspend it.)
+> Updated patch is appended.
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+>  drivers/base/power/wakeup.c |   61 ++++++++++++++++++++++++++++----------------
+>  1 file changed, 39 insertions(+), 22 deletions(-)
+> 
+> Index: linux-2.6/drivers/base/power/wakeup.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/wakeup.c
+> +++ linux-2.6/drivers/base/power/wakeup.c
+> @@ -24,12 +24,26 @@
+>   */
+>  bool events_check_enabled;
+>  
+> -/* The counter of registered wakeup events. */
+> -static atomic_t event_count = ATOMIC_INIT(0);
+> -/* A preserved old value of event_count. */
+> +/*
+> + * Combined counters of registered wakeup events and wakeup events in progress.
+> + * They need to be modified together atomically, so it's better to use one
+> + * atomic variable to hold them both.
+> + */
+> +static atomic_t combined_event_count = ATOMIC_INIT(0);
+> +
+> +#define IN_PROGRESS_BITS	(sizeof(int) * 4)
+> +#define MAX_IN_PROGRESS		((1 << IN_PROGRESS_BITS) - 1)
+> +
+> +static void split_counters(unsigned int *cnt, unsigned int *inpr)
+> +{
+> +	unsigned int comb = atomic_read(&combined_event_count);
+> +
+> +	*cnt = (comb >> IN_PROGRESS_BITS);
+> +	*inpr = comb & MAX_IN_PROGRESS;
+> +}
+> +
+> +/* A preserved old value of the events counter. */
+>  static unsigned int saved_count;
+> -/* The counter of wakeup events being processed. */
+> -static atomic_t events_in_progress = ATOMIC_INIT(0);
+>  
+>  static DEFINE_SPINLOCK(events_lock);
+>  
+> @@ -333,7 +347,8 @@ static void wakeup_source_activate(struc
+>  	ws->timer_expires = jiffies;
+>  	ws->last_time = ktime_get();
+>  
+> -	atomic_inc(&events_in_progress);
+> +	/* Increment the counter of events in progress. */
+> +	atomic_inc(&combined_event_count);
+>  }
+>  
+>  /**
+> @@ -420,14 +435,10 @@ static void wakeup_source_deactivate(str
+>  	del_timer(&ws->timer);
+>  
+>  	/*
+> -	 * event_count has to be incremented before events_in_progress is
+> -	 * modified, so that the callers of pm_check_wakeup_events() and
+> -	 * pm_save_wakeup_count() don't see the old value of event_count and
+> -	 * events_in_progress equal to zero at the same time.
+> +	 * Increment the counter of registered wakeup events and decrement the
+> +	 * couter of wakeup events in progress simultaneously.
+>  	 */
+> -	atomic_inc(&event_count);
+> -	smp_mb__before_atomic_dec();
+> -	atomic_dec(&events_in_progress);
+> +	atomic_add(MAX_IN_PROGRESS, &combined_event_count);
+>  }
+>  
+>  /**
+> @@ -582,8 +593,10 @@ bool pm_wakeup_pending(void)
+>  
+>  	spin_lock_irqsave(&events_lock, flags);
+>  	if (events_check_enabled) {
+> -		ret = ((unsigned int)atomic_read(&event_count) != saved_count)
+> -			|| atomic_read(&events_in_progress);
+> +		unsigned int cnt, inpr;
+> +
+> +		split_counters(&cnt, &inpr);
+> +		ret = (cnt != saved_count || inpr > 0);
+>  		events_check_enabled = !ret;
+>  	}
+>  	spin_unlock_irqrestore(&events_lock, flags);
+> @@ -605,19 +618,22 @@ bool pm_wakeup_pending(void)
+>   */
+>  bool pm_get_wakeup_count(unsigned int *count)
+>  {
+> -	bool ret;
+> +	unsigned int cnt, inpr;
+>  
+>  	if (capable(CAP_SYS_ADMIN))
+>  		events_check_enabled = false;
+>  
+> -	while (atomic_read(&events_in_progress) && !signal_pending(current)) {
+> +	for (;;) {
+> +		split_counters(&cnt, &inpr);
+> +		if (inpr == 0 || signal_pending(current))
+> +			break;
+>  		pm_wakeup_update_hit_counts();
+>  		schedule_timeout_interruptible(msecs_to_jiffies(TIMEOUT));
+>  	}
+>  
+> -	ret = !atomic_read(&events_in_progress);
+> -	*count = atomic_read(&event_count);
+> -	return ret;
+> +	split_counters(&cnt, &inpr);
+> +	*count = cnt;
+> +	return !inpr;
+>  }
+>  
+>  /**
+> @@ -631,11 +647,12 @@ bool pm_get_wakeup_count(unsigned int *c
+>   */
+>  bool pm_save_wakeup_count(unsigned int count)
+>  {
+> +	unsigned int cnt, inpr;
+>  	bool ret = false;
+>  
+>  	spin_lock_irq(&events_lock);
+> -	if (count == (unsigned int)atomic_read(&event_count)
+> -	    && !atomic_read(&events_in_progress)) {
+> +	split_counters(&cnt, &inpr);
+> +	if (cnt == count && inpr == 0) {
+>  		saved_count = count;
+>  		events_check_enabled = true;
+>  		ret = true;
 
-Since the actual work to suspend the device is handled by the
-subsytem, call the bus methods to take care of it.
+This looks okay.  Sure, it's a little clunky, but it's better than the 
+alternatives.
 
-NOTE: This takes care of a known suspend problem on OMAP3 where the
-TWL RTC driver does i2c xfers during its suspend path leaving the i2c
-driver in an active state (since runtime suspend transistions are
-disabled.)
-
-Signed-off-by: Kevin Hilman <khilman@ti.com>
----
-Ben, this is a regression in 2.6.38 so hopefully this can be queued
-in the 2.6.38-rc cycle.  Thanks.
-
- drivers/i2c/busses/i2c-omap.c |   28 ++++++++++++++++++++++++++++
- 1 files changed, 28 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
-index b605ff3..0541df9 100644
---- a/drivers/i2c/busses/i2c-omap.c
-+++ b/drivers/i2c/busses/i2c-omap.c
-@@ -1137,12 +1137,40 @@ omap_i2c_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_SUSPEND
-+static int omap_i2c_suspend(struct device *dev)
-+{
-+	if (!pm_runtime_suspended(dev))
-+		if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend)
-+			dev->bus->pm->runtime_suspend(dev);
-+
-+	return 0;
-+}
-+
-+static int omap_i2c_resume(struct device *dev)
-+{
-+	if (!pm_runtime_suspended(dev))
-+		if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume)
-+			dev->bus->pm->runtime_resume(dev);
-+
-+	return 0;
-+}
-+
-+static struct dev_pm_ops omap_i2c_pm_ops = {
-+	.suspend = omap_i2c_suspend,
-+	.resume = omap_i2c_resume,
-+};
-+#else
-+#define omap_i2c_pm_ops NULL
-+#endif
-+
- static struct platform_driver omap_i2c_driver = {
- 	.probe		= omap_i2c_probe,
- 	.remove		= omap_i2c_remove,
- 	.driver		= {
- 		.name	= "omap_i2c",
- 		.owner	= THIS_MODULE,
-+		.pm     = &omap_i2c_pm_ops,
- 	},
- };
- 
--- 
-1.7.3.5
+Alan Stern
