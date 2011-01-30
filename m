@@ -1,13 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/3] PM / Wakeup: Add missing memory barriers
-Date: Fri, 28 Jan 2011 15:23:41 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1101281521190.2089-100000__8579.04681838608$1296246387$gmane$org@iolanthe.rowland.org>
-References: <201101272219.54303.rjw@novell.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH] Power domains for platform bus type
+Date: Sun, 30 Jan 2011 01:07:19 +0100
+Message-ID: <201101300107.19389.rjw__18228.1719208278$1296346247$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201101272219.54303.rjw@novell.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,143 +15,496 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@novell.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 27 Jan 2011, Rafael J. Wysocki wrote:
+Hi,
 
-> Updated patch is appended.
-> 
-> Thanks,
-> Rafael
-> 
-> ---
->  drivers/base/power/wakeup.c |   61 ++++++++++++++++++++++++++++----------------
->  1 file changed, 39 insertions(+), 22 deletions(-)
-> 
-> Index: linux-2.6/drivers/base/power/wakeup.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/wakeup.c
-> +++ linux-2.6/drivers/base/power/wakeup.c
-> @@ -24,12 +24,26 @@
->   */
->  bool events_check_enabled;
->  
-> -/* The counter of registered wakeup events. */
-> -static atomic_t event_count = ATOMIC_INIT(0);
-> -/* A preserved old value of event_count. */
-> +/*
-> + * Combined counters of registered wakeup events and wakeup events in progress.
-> + * They need to be modified together atomically, so it's better to use one
-> + * atomic variable to hold them both.
-> + */
-> +static atomic_t combined_event_count = ATOMIC_INIT(0);
-> +
-> +#define IN_PROGRESS_BITS	(sizeof(int) * 4)
-> +#define MAX_IN_PROGRESS		((1 << IN_PROGRESS_BITS) - 1)
-> +
-> +static void split_counters(unsigned int *cnt, unsigned int *inpr)
-> +{
-> +	unsigned int comb = atomic_read(&combined_event_count);
-> +
-> +	*cnt = (comb >> IN_PROGRESS_BITS);
-> +	*inpr = comb & MAX_IN_PROGRESS;
-> +}
-> +
-> +/* A preserved old value of the events counter. */
->  static unsigned int saved_count;
-> -/* The counter of wakeup events being processed. */
-> -static atomic_t events_in_progress = ATOMIC_INIT(0);
->  
->  static DEFINE_SPINLOCK(events_lock);
->  
-> @@ -333,7 +347,8 @@ static void wakeup_source_activate(struc
->  	ws->timer_expires = jiffies;
->  	ws->last_time = ktime_get();
->  
-> -	atomic_inc(&events_in_progress);
-> +	/* Increment the counter of events in progress. */
-> +	atomic_inc(&combined_event_count);
->  }
->  
->  /**
-> @@ -420,14 +435,10 @@ static void wakeup_source_deactivate(str
->  	del_timer(&ws->timer);
->  
->  	/*
-> -	 * event_count has to be incremented before events_in_progress is
-> -	 * modified, so that the callers of pm_check_wakeup_events() and
-> -	 * pm_save_wakeup_count() don't see the old value of event_count and
-> -	 * events_in_progress equal to zero at the same time.
-> +	 * Increment the counter of registered wakeup events and decrement the
-> +	 * couter of wakeup events in progress simultaneously.
->  	 */
-> -	atomic_inc(&event_count);
-> -	smp_mb__before_atomic_dec();
-> -	atomic_dec(&events_in_progress);
-> +	atomic_add(MAX_IN_PROGRESS, &combined_event_count);
->  }
->  
->  /**
-> @@ -582,8 +593,10 @@ bool pm_wakeup_pending(void)
->  
->  	spin_lock_irqsave(&events_lock, flags);
->  	if (events_check_enabled) {
-> -		ret = ((unsigned int)atomic_read(&event_count) != saved_count)
-> -			|| atomic_read(&events_in_progress);
-> +		unsigned int cnt, inpr;
-> +
-> +		split_counters(&cnt, &inpr);
-> +		ret = (cnt != saved_count || inpr > 0);
->  		events_check_enabled = !ret;
->  	}
->  	spin_unlock_irqrestore(&events_lock, flags);
-> @@ -605,19 +618,22 @@ bool pm_wakeup_pending(void)
->   */
->  bool pm_get_wakeup_count(unsigned int *count)
->  {
-> -	bool ret;
-> +	unsigned int cnt, inpr;
->  
->  	if (capable(CAP_SYS_ADMIN))
->  		events_check_enabled = false;
->  
-> -	while (atomic_read(&events_in_progress) && !signal_pending(current)) {
-> +	for (;;) {
-> +		split_counters(&cnt, &inpr);
-> +		if (inpr == 0 || signal_pending(current))
-> +			break;
->  		pm_wakeup_update_hit_counts();
->  		schedule_timeout_interruptible(msecs_to_jiffies(TIMEOUT));
->  	}
->  
-> -	ret = !atomic_read(&events_in_progress);
-> -	*count = atomic_read(&event_count);
-> -	return ret;
-> +	split_counters(&cnt, &inpr);
-> +	*count = cnt;
-> +	return !inpr;
->  }
->  
->  /**
-> @@ -631,11 +647,12 @@ bool pm_get_wakeup_count(unsigned int *c
->   */
->  bool pm_save_wakeup_count(unsigned int count)
->  {
-> +	unsigned int cnt, inpr;
->  	bool ret = false;
->  
->  	spin_lock_irq(&events_lock);
-> -	if (count == (unsigned int)atomic_read(&event_count)
-> -	    && !atomic_read(&events_in_progress)) {
-> +	split_counters(&cnt, &inpr);
-> +	if (cnt == count && inpr == 0) {
->  		saved_count = count;
->  		events_check_enabled = true;
->  		ret = true;
+This is something we discussed during the last Linux Plumbers Conference.
 
-This looks okay.  Sure, it's a little clunky, but it's better than the 
-alternatives.
+The problem appears to be that the same device may be used in different
+systems in different configurations such that actions necessary for the
+device's power management can vary from one system to another.  In those
+cases the drivers' power management callbacks are generally not sufficient,
+because they can't take the configuration of the whole system into account.
 
-Alan Stern
+I think this issue may be addressed by adding objects that will represent
+power domains and will provide power management callbacks to be executed
+in addition to the device driver's PM callbacks, which is done by the patch
+below.
+
+Please have a look at it and tell me what you think.
+
+Thanks,
+Rafael
+
+---
+The platform bus type is often used to represent Systems-on-a-Chip
+(SoC) where all devices are represented by objects of type struct
+platform_device.  In those cases the same "platform" device driver
+may be used in multiple different system configurations, but the
+actions needed to put the devices it handles into a low-power state
+and back into the full-power state may depend on the design of the
+SoC.  The driver, however, cannot possibly include all the
+information necessary for the power management of its device on all
+the systems it's used with.  Moreover, the device hierarchy also
+isn't suitable for holding this kind of information.
+
+The patch below attempts to address this problem by introducing
+objects of type struct power_domain that can be used for representing
+power domains inside of the SoC.  Every struct power_domain object
+consists of two sets of device power management callbacks that
+can be used to perform what's needed for device power management
+in addition to the operations carried out by the device's driver.
+Namely, if a struct power_domain object is pointed to by the domain
+field in a struct platform_device, the callbacks provided by its
+pre_ops member will be executed for the dev member of that
+struct platform_device before executing the corresponding callbacks
+provided by the device's driver.  Analogously, the power domain's
+post_ops callbacks will be executed after the corresponding callbacks
+provided by the device's driver.
+---
+ drivers/base/platform.c         |  266 ++++++++++++++++++++++++++++------------
+ include/linux/platform_device.h |    6 
+ 2 files changed, 198 insertions(+), 74 deletions(-)
+
+Index: linux-2.6/include/linux/platform_device.h
+===================================================================
+--- linux-2.6.orig/include/linux/platform_device.h
++++ linux-2.6/include/linux/platform_device.h
+@@ -14,6 +14,11 @@
+ #include <linux/device.h>
+ #include <linux/mod_devicetable.h>
+ 
++struct power_domain {
++	struct dev_pm_ops *pre_ops;
++	struct dev_pm_ops *post_ops;
++};
++
+ struct platform_device {
+ 	const char	* name;
+ 	int		id;
+@@ -22,6 +27,7 @@ struct platform_device {
+ 	struct resource	* resource;
+ 
+ 	const struct platform_device_id	*id_entry;
++	const struct power_domain *domain;
+ 
+ 	/* arch specific additions */
+ 	struct pdev_archdata	archdata;
+Index: linux-2.6/drivers/base/platform.c
+===================================================================
+--- linux-2.6.orig/drivers/base/platform.c
++++ linux-2.6/drivers/base/platform.c
+@@ -697,68 +697,98 @@ static void platform_pm_complete(struct
+ int __weak platform_pm_suspend(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->suspend)
++		pd->pre_ops->suspend(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->suspend)
+-			ret = drv->pm->suspend(dev);
+-	} else {
+-		ret = platform_legacy_suspend(dev, PMSG_SUSPEND);
++	if (drv) {
++		if (drv->pm) {
++			if (drv->pm->suspend)
++				ret = drv->pm->suspend(dev);
++		} else {
++			ret = platform_legacy_suspend(dev, PMSG_SUSPEND);
++		}
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->suspend)
++		pd->post_ops->suspend(dev);
++
+ 	return ret;
+ }
+ 
+ int __weak platform_pm_suspend_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->suspend_noirq)
++		pd->pre_ops->suspend_noirq(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->suspend_noirq)
+-			ret = drv->pm->suspend_noirq(dev);
++	if (drv && drv->pm && drv->pm->suspend_noirq) {
++		ret = drv->pm->suspend_noirq(dev);
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->suspend_noirq)
++		pd->post_ops->suspend_noirq(dev);
++
+ 	return ret;
+ }
+ 
+ int __weak platform_pm_resume(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->resume)
++		pd->pre_ops->resume(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->resume)
+-			ret = drv->pm->resume(dev);
+-	} else {
+-		ret = platform_legacy_resume(dev);
++	if (drv) {
++		if (drv->pm) {
++			if (drv->pm->resume)
++				ret = drv->pm->resume(dev);
++		} else {
++			ret = platform_legacy_resume(dev);
++		}
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->resume)
++		pd->post_ops->resume(dev);
++
+ 	return ret;
+ }
+ 
+ int __weak platform_pm_resume_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->resume_noirq)
++		pd->pre_ops->resume_noirq(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->resume_noirq)
+-			ret = drv->pm->resume_noirq(dev);
++	if (drv && drv->pm && drv->pm->resume_noirq) {
++		ret = drv->pm->resume_noirq(dev);
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->resume_noirq)
++		pd->post_ops->resume_noirq(dev);
++
+ 	return ret;
+ }
+ 
+@@ -776,136 +806,196 @@ int __weak platform_pm_resume_noirq(stru
+ static int platform_pm_freeze(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->freeze)
++		pd->pre_ops->freeze(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->freeze)
+-			ret = drv->pm->freeze(dev);
+-	} else {
+-		ret = platform_legacy_suspend(dev, PMSG_FREEZE);
++	if (drv) {
++		if (drv->pm) {
++			if (drv->pm->freeze)
++				ret = drv->pm->freeze(dev);
++		} else {
++			ret = platform_legacy_suspend(dev, PMSG_FREEZE);
++		}
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->freeze)
++		pd->post_ops->freeze(dev);
++
+ 	return ret;
+ }
+ 
+ static int platform_pm_freeze_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->freeze_noirq)
++		pd->pre_ops->freeze_noirq(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->freeze_noirq)
+-			ret = drv->pm->freeze_noirq(dev);
++	if (drv && drv->pm && drv->pm->freeze_noirq) {
++		ret = drv->pm->freeze_noirq(dev);
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->freeze_noirq)
++		pd->post_ops->freeze_noirq(dev);
++
+ 	return ret;
+ }
+ 
+ static int platform_pm_thaw(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->thaw)
++		pd->pre_ops->thaw(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->thaw)
+-			ret = drv->pm->thaw(dev);
+-	} else {
+-		ret = platform_legacy_resume(dev);
++	if (drv) {
++		if (drv->pm) {
++			if (drv->pm->thaw)
++				ret = drv->pm->thaw(dev);
++		} else {
++			ret = platform_legacy_resume(dev);
++		}
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->thaw)
++		pd->post_ops->thaw(dev);
++
+ 	return ret;
+ }
+ 
+ static int platform_pm_thaw_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->thaw_noirq)
++		pd->pre_ops->thaw_noirq(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->thaw_noirq)
+-			ret = drv->pm->thaw_noirq(dev);
++	if (drv && drv->pm && drv->pm->thaw_noirq) {
++		ret = drv->pm->thaw_noirq(dev);
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->thaw_noirq)
++		pd->post_ops->thaw_noirq(dev);
++
+ 	return ret;
+ }
+ 
+ static int platform_pm_poweroff(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->poweroff)
++		pd->pre_ops->poweroff(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->poweroff)
+-			ret = drv->pm->poweroff(dev);
+-	} else {
+-		ret = platform_legacy_suspend(dev, PMSG_HIBERNATE);
++	if (drv) {
++		if (drv->pm) {
++			if (drv->pm->poweroff)
++				ret = drv->pm->poweroff(dev);
++		} else {
++			ret = platform_legacy_suspend(dev, PMSG_HIBERNATE);
++		}
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->poweroff)
++		pd->post_ops->poweroff(dev);
++
+ 	return ret;
+ }
+ 
+ static int platform_pm_poweroff_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->poweroff_noirq)
++		pd->pre_ops->poweroff_noirq(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->poweroff_noirq)
+-			ret = drv->pm->poweroff_noirq(dev);
++	if (drv && drv->pm && drv->pm->poweroff_noirq) {
++		ret = drv->pm->poweroff_noirq(dev);
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->poweroff_noirq)
++		pd->post_ops->poweroff_noirq(dev);
++
+ 	return ret;
+ }
+ 
+ static int platform_pm_restore(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->restore)
++		pd->pre_ops->restore(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->restore)
+-			ret = drv->pm->restore(dev);
+-	} else {
+-		ret = platform_legacy_resume(dev);
++	if (drv) {
++		if (drv->pm) {
++			if (drv->pm->restore)
++				ret = drv->pm->restore(dev);
++		} else {
++			ret = platform_legacy_resume(dev);
++		}
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->restore)
++		pd->post_ops->restore(dev);
++
+ 	return ret;
+ }
+ 
+ static int platform_pm_restore_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
+ 	int ret = 0;
+ 
+-	if (!drv)
+-		return 0;
++	if (pd && pd->pre_ops && pd->pre_ops->restore_noirq)
++		pd->pre_ops->restore_noirq(dev);
+ 
+-	if (drv->pm) {
+-		if (drv->pm->restore_noirq)
+-			ret = drv->pm->restore_noirq(dev);
++	if (drv && drv->pm && drv->pm->restore_noirq) {
++		ret = drv->pm->restore_noirq(dev);
++		if (ret)
++			return ret;
+ 	}
+ 
++	if (pd && pd->post_ops && pd->post_ops->restore_noirq)
++		pd->post_ops->restore_noirq(dev);
++
+ 	return ret;
+ }
+ 
+@@ -926,12 +1016,40 @@ static int platform_pm_restore_noirq(str
+ 
+ int __weak platform_pm_runtime_suspend(struct device *dev)
+ {
+-	return pm_generic_runtime_suspend(dev);
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
++	int ret;
++
++	if (pd && pd->pre_ops && pd->pre_ops->runtime_suspend)
++		pd->pre_ops->runtime_suspend(dev);
++
++	ret = pm_generic_runtime_suspend(dev);
++	if (ret)
++		return ret;
++
++	if (pd && pd->post_ops && pd->post_ops->runtime_suspend)
++		pd->post_ops->runtime_suspend(dev);
++
++	return 0;
+ };
+ 
+ int __weak platform_pm_runtime_resume(struct device *dev)
+ {
+-	return pm_generic_runtime_resume(dev);
++	struct platform_device *pdev = to_platform_device(dev);
++	const struct power_domain *pd = pdev->domain;
++	int ret;
++
++	if (pd && pd->pre_ops && pd->pre_ops->runtime_resume)
++		pd->pre_ops->runtime_resume(dev);
++
++	ret = pm_generic_runtime_resume(dev);
++	if (ret)
++		return ret;
++
++	if (pd && pd->post_ops && pd->post_ops->runtime_resume)
++		pd->post_ops->runtime_resume(dev);
++
++	return 0;
+ };
+ 
+ int __weak platform_pm_runtime_idle(struct device *dev)
