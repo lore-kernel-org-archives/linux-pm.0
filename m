@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] Power domains for platform bus type
-Date: Mon, 31 Jan 2011 19:09:06 +0100
-Message-ID: <201101311909.07333.rjw__32911.4138534807$1296500468$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1101310957350.1931-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH] i2c: OMAP: fix static suspend vs. runtime
+	suspend
+Date: Mon, 31 Jan 2011 19:19:48 +0100
+Message-ID: <201101311919.49225.rjw__36643.5210490183$1296500606$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1101311119190.1931-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1101310957350.1931-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1101311119190.1931-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,35 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>, Magnus Damm <magnus.damm@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 On Monday, January 31, 2011, Alan Stern wrote:
-> On Sun, 30 Jan 2011, Rafael J. Wysocki wrote:
+> On Mon, 31 Jan 2011, Kevin Hilman wrote:
 > 
-> > > One thing about this implementation is slightly questionable.  The new
-> > > power_domain callbacks were added to the __weak platform PM routines,
-> > > which means they will have to be included in every overriding routine
-> > > provided by a platform imiplementation.
-> > > 
-> > > Would it be better to separate these things?  Have the power_domain 
-> > > callbacks occur in a static outer function which then calls a public 
-> > > __weak inner function that can be overridden?
+> > I understand how this works, but frankly I'm still a bit fuzzy on why.
 > > 
-> > That certainly is a good idea, but I wasn't sure how to do that.  It looks
-> > like I could keep the __weak functions as they are and modify
-> > platform_dev_pm_ops instead to point to a new set of function that in turn
-> > would call the __weak ones.  For example, the .suspend pointer in
-> > platform_dev_pm_ops might point to a new function, say
-> > platform_pm_full_suspend() that would call the power domain functions and
-> > the "original" platform_pm_suspend().  Is that what you mean?
+> > I guess I'm still missing a good understanding of what "interfering with a
+> > system power transition" means, and why a runtime suspend qualifies as
+> > interfering but not a runtime resume.
 > 
-> Yes.  But what about the platform_bus_set_pm_ops() interface?  Should
-> platform-specific replacements for the pm_ops functions also include
-> the power_domain callbacks?
+> These are good questions.  Rafael implemented this design originally; 
+> my contribution was only to warn him of the potential for problems.  
+> Therefore he should explain the rationale for the design.
 
-Well, whoever uses platform_bus_set_pm_ops(), he can simply prevent power
-domains from being used by not defining them in the first place. :-)
+The reason why runtime resume is allowed during system power transitions is
+because in some cases during system suspend we simply have to resume devices
+that were previously runtime-suspended (for example, the PCI bus type does
+that).
 
+The reason why runtime suspend is not allowed during system power transitions
+if the following race:
+
+- A device has been suspended via a system suspend callback.
+- The runtime PM framework executes a (scheduled) suspend on that device,
+  not knowing that it's already been suspended, which potentially results in
+  accessing the device's registers in a low-power state.
+
+Now, it can be avoided if every driver does the right thing and checks whether
+the device is already suspended in its runtime suspend callback, but that would
+kind of defeat the purpose of the runtime PM framework, at least partially.
+
+Thanks,
 Rafael
