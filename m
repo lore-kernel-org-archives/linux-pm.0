@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] Power domains for platform bus type
-Date: Sun, 30 Jan 2011 23:39:02 +0100
-Message-ID: <201101302339.02993.rjw__23963.0842618228$1296427302$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1101301100090.6500-100000@netrider.rowland.org>
+Subject: Re: [PATCH 3/6] PM: use appropriate printk priority level
+Date: Mon, 31 Jan 2011 11:12:29 +0100
+Message-ID: <201101311112.29528.rjw__34781.6571746536$1296468953$gmane$org@sisk.pl>
+References: <20110125235700.GR8008@google.com>
+	<1296084570-31453-4-git-send-email-msb@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1101301100090.6500-100000@netrider.rowland.org>
+In-Reply-To: <1296084570-31453-4-git-send-email-msb@chromium.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,45 +18,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Mandeep Singh Baines <msb@chromium.org>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@redhat.com, linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, January 30, 2011, Alan Stern wrote:
-> On Sun, 30 Jan 2011, Rafael J. Wysocki wrote:
+On Thursday, January 27, 2011, Mandeep Singh Baines wrote:
+> printk()s without a priority level default to KERN_WARNING. To reduce
+> noise at KERN_WARNING, this patch set the priority level appriopriately
+> for unleveled printks()s. This should be useful to folks that look at
+> dmesg warnings closely.
 > 
-> > Hi,
-> > 
-> > This is something we discussed during the last Linux Plumbers Conference.
-> > 
-> > The problem appears to be that the same device may be used in different
-> > systems in different configurations such that actions necessary for the
-> > device's power management can vary from one system to another.  In those
-> > cases the drivers' power management callbacks are generally not sufficient,
-> > because they can't take the configuration of the whole system into account.
-> > 
-> > I think this issue may be addressed by adding objects that will represent
-> > power domains and will provide power management callbacks to be executed
-> > in addition to the device driver's PM callbacks, which is done by the patch
-> > below.
-> > 
-> > Please have a look at it and tell me what you think.
+> Changed these messages to pr_info. But might be more appropriate as
+> pr_debug.
 > 
-> One thing about this implementation is slightly questionable.  The new
-> power_domain callbacks were added to the __weak platform PM routines,
-> which means they will have to be included in every overriding routine
-> provided by a platform imiplementation.
-> 
-> Would it be better to separate these things?  Have the power_domain 
-> callbacks occur in a static outer function which then calls a public 
-> __weak inner function that can be overridden?
+> Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
 
-That certainly is a good idea, but I wasn't sure how to do that.  It looks
-like I could keep the __weak functions as they are and modify
-platform_dev_pm_ops instead to point to a new set of function that in turn
-would call the __weak ones.  For example, the .suspend pointer in
-platform_dev_pm_ops might point to a new function, say
-platform_pm_full_suspend() that would call the power domain functions and
-the "original" platform_pm_suspend().  Is that what you mean?
+Applied to suspend-2.6/linux-next.
 
+Thanks,
 Rafael
+
+
+> ---
+>  drivers/base/power/trace.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+> index 9f4258d..c80e138 100644
+> --- a/drivers/base/power/trace.c
+> +++ b/drivers/base/power/trace.c
+> @@ -112,7 +112,7 @@ static unsigned int read_magic_time(void)
+>  	unsigned int val;
+>  
+>  	get_rtc_time(&time);
+> -	printk("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
+> +	pr_info("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
+>  		time.tm_hour, time.tm_min, time.tm_sec,
+>  		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
+>  	val = time.tm_year;				/* 100 years */
+> @@ -179,7 +179,7 @@ static int show_file_hash(unsigned int value)
+>  		unsigned int hash = hash_string(lineno, file, FILEHASH);
+>  		if (hash != value)
+>  			continue;
+> -		printk("  hash matches %s:%u\n", file, lineno);
+> +		pr_info("  hash matches %s:%u\n", file, lineno);
+>  		match++;
+>  	}
+>  	return match;
+> @@ -255,7 +255,7 @@ static int late_resume_init(void)
+>  	val = val / FILEHASH;
+>  	dev = val /* % DEVHASH */;
+>  
+> -	printk("  Magic number: %d:%d:%d\n", user, file, dev);
+> +	pr_info("  Magic number: %d:%d:%d\n", user, file, dev);
+>  	show_file_hash(file);
+>  	show_dev_hash(dev);
+>  	return 0;
+> 
