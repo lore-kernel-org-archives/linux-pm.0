@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/6] PM: use appropriate printk priority level
-Date: Mon, 31 Jan 2011 11:12:29 +0100
-Message-ID: <201101311112.29528.rjw__34781.6571746536$1296468953$gmane$org@sisk.pl>
-References: <20110125235700.GR8008@google.com>
-	<1296084570-31453-4-git-send-email-msb@chromium.org>
+From: Rajendra Nayak <rnayak@ti.com>
+Subject: Re: [PATCH] i2c: OMAP: fix static suspend vs. runtime
+	suspend
+Date: Mon, 31 Jan 2011 16:58:02 +0530
+Message-ID: <1a4ad626f3cb73267847e8ac7bd47545__28768.5112831698$1296473771$gmane$org@mail.gmail.com>
+References: <1296173921-4832-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1296084570-31453-4-git-send-email-msb@chromium.org>
+In-Reply-To: <1296173921-4832-1-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,60 +18,106 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mandeep Singh Baines <msb@chromium.org>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@redhat.com, linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Kevin Hilman <khilman@ti.com>, Ben Dooks <ben-linux@fluff.org>, linux-i2c@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 27, 2011, Mandeep Singh Baines wrote:
-> printk()s without a priority level default to KERN_WARNING. To reduce
-> noise at KERN_WARNING, this patch set the priority level appriopriately
-> for unleveled printks()s. This should be useful to folks that look at
-> dmesg warnings closely.
-> 
-> Changed these messages to pr_info. But might be more appropriate as
-> pr_debug.
-> 
-> Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
+Hi Kevin,
 
-Applied to suspend-2.6/linux-next.
+> -----Original Message-----
+> From: Kevin Hilman [mailto:khilman@ti.com]
+> Sent: Friday, January 28, 2011 5:49 AM
+> To: Ben Dooks; Rajendra Nayak; linux-i2c@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org; linux-pm@lists.linux-foundation.org;
+linux-arm-kernel@lists.infradead.org
+> Subject: [PATCH] i2c: OMAP: fix static suspend vs. runtime suspend
+>
+> When runtime PM is enabled, each OMAP i2c device is suspended after
+> each i2c xfer.  However, there are two cases when the static suspend
+> methods must be used to ensure the devices are suspended:
+>
+> 1) runtime PM is disabled, either at compile time or dynamically
+>     via /sys/devices/.../power/control.
+> 2) an i2c client driver uses i2c during it's suspend callback, thus
+>    leaving the i2c driver active (NOTE: runtime suspend transitions are
+>    disabled during system suspend, so i2c activity during system
+>    suspend will runtime resume the device, but not runtime (re)suspend
+it.)
+>
+> Since the actual work to suspend the device is handled by the
+> subsytem, call the bus methods to take care of it.
 
-Thanks,
-Rafael
+The patch looks good to me. Thanks for the fix.
+Validated suspend on OMAP4sdp with the patch.
+Can you elaborate a bit more on how/why runtime PM transitions
+are disabled during system suspend, and how is it taken care
+of that a runtime resume of a device works however a subsequent
+runtime (re)suspend does not?
 
+Regards,
+Rajendra
 
+>
+> NOTE: This takes care of a known suspend problem on OMAP3 where the
+> TWL RTC driver does i2c xfers during its suspend path leaving the i2c
+> driver in an active state (since runtime suspend transistions are
+> disabled.)
+>
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
 > ---
->  drivers/base/power/trace.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-> index 9f4258d..c80e138 100644
-> --- a/drivers/base/power/trace.c
-> +++ b/drivers/base/power/trace.c
-> @@ -112,7 +112,7 @@ static unsigned int read_magic_time(void)
->  	unsigned int val;
->  
->  	get_rtc_time(&time);
-> -	printk("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
-> +	pr_info("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
->  		time.tm_hour, time.tm_min, time.tm_sec,
->  		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
->  	val = time.tm_year;				/* 100 years */
-> @@ -179,7 +179,7 @@ static int show_file_hash(unsigned int value)
->  		unsigned int hash = hash_string(lineno, file, FILEHASH);
->  		if (hash != value)
->  			continue;
-> -		printk("  hash matches %s:%u\n", file, lineno);
-> +		pr_info("  hash matches %s:%u\n", file, lineno);
->  		match++;
->  	}
->  	return match;
-> @@ -255,7 +255,7 @@ static int late_resume_init(void)
->  	val = val / FILEHASH;
->  	dev = val /* % DEVHASH */;
->  
-> -	printk("  Magic number: %d:%d:%d\n", user, file, dev);
-> +	pr_info("  Magic number: %d:%d:%d\n", user, file, dev);
->  	show_file_hash(file);
->  	show_dev_hash(dev);
+> Ben, this is a regression in 2.6.38 so hopefully this can be queued
+> in the 2.6.38-rc cycle.  Thanks.
+>
+>  drivers/i2c/busses/i2c-omap.c |   28 ++++++++++++++++++++++++++++
+>  1 files changed, 28 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/i2c/busses/i2c-omap.c
+b/drivers/i2c/busses/i2c-omap.c
+> index b605ff3..0541df9 100644
+> --- a/drivers/i2c/busses/i2c-omap.c
+> +++ b/drivers/i2c/busses/i2c-omap.c
+> @@ -1137,12 +1137,40 @@ omap_i2c_remove(struct platform_device *pdev)
 >  	return 0;
-> 
+>  }
+>
+> +#ifdef CONFIG_SUSPEND
+> +static int omap_i2c_suspend(struct device *dev)
+> +{
+> +	if (!pm_runtime_suspended(dev))
+> +		if (dev->bus && dev->bus->pm &&
+dev->bus->pm->runtime_suspend)
+> +			dev->bus->pm->runtime_suspend(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static int omap_i2c_resume(struct device *dev)
+> +{
+> +	if (!pm_runtime_suspended(dev))
+> +		if (dev->bus && dev->bus->pm &&
+dev->bus->pm->runtime_resume)
+> +			dev->bus->pm->runtime_resume(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct dev_pm_ops omap_i2c_pm_ops = {
+> +	.suspend = omap_i2c_suspend,
+> +	.resume = omap_i2c_resume,
+> +};
+> +#else
+> +#define omap_i2c_pm_ops NULL
+> +#endif
+> +
+>  static struct platform_driver omap_i2c_driver = {
+>  	.probe		= omap_i2c_probe,
+>  	.remove		= omap_i2c_remove,
+>  	.driver		= {
+>  		.name	= "omap_i2c",
+>  		.owner	= THIS_MODULE,
+> +		.pm     = &omap_i2c_pm_ops,
+>  	},
+>  };
+>
+> --
+> 1.7.3.5
