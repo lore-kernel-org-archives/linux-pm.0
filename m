@@ -1,15 +1,16 @@
-From: Grant Likely <grant.likely@secretlab.ca>
+From: Kevin Hilman <khilman@ti.com>
 Subject: Re: [RFC][PATCH] Power domains for platform bus type
-Date: Mon, 31 Jan 2011 16:23:23 -0700
-Message-ID: <20110131232323.GA2978__3071.67318319461$1296516295$gmane$org@angua.secretlab.ca>
+Date: Mon, 31 Jan 2011 15:43:41 -0800
+Message-ID: <871v3s3ahe.fsf__47907.3349074044$1296517515$gmane$org@ti.com>
 References: <201101300107.19389.rjw@sisk.pl>
- <87tygo3br4.fsf@ti.com>
+	<20110131225902.GD27856@angua.secretlab.ca>
+	<201102010010.46096.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <87tygo3br4.fsf@ti.com>
+In-Reply-To: <201102010010.46096.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Tue, 1 Feb 2011 00:10:45 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +20,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 31, 2011 at 03:16:15PM -0800, Kevin Hilman wrote:
-> Hi Rafael,
-> 
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > Hi,
-> >
-> > This is something we discussed during the last Linux Plumbers Conference.
-> >
-> > The problem appears to be that the same device may be used in different
-> > systems in different configurations such that actions necessary for the
-> > device's power management can vary from one system to another.  In those
-> > cases the drivers' power management callbacks are generally not sufficient,
-> > because they can't take the configuration of the whole system into account.
-> >
-> > I think this issue may be addressed by adding objects that will represent
-> > power domains and will provide power management callbacks to be executed
-> > in addition to the device driver's PM callbacks, which is done by the patch
-> > below.
-> >
-> > Please have a look at it and tell me what you think.
-> 
-> Very nice.  I like the approach and the fact that it allows grouping of
-> only devices we care about customizing, instead of every device on the
-> platform_bus (I know Grant will like that part too.  :)
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-:-D
+>> Also, what is the use case for having 2 sets of power_domain ops?  My
+>> gut tells me that you'd only want to do post ops on the
+>> {freeze,suspend,poweroff} path and pre ops on the {resume,thaw,restore}
+>> path.  It seems overly engineered to me, but I may be missing
+>> something fundamental.
+>
+> Well, that's a part of the RFC, actually. :-)
+>
+> For the subsystems I've worked with (PCI, ACPI, PNP to some extent) one set
+> would be sufficient, but I don't know of every possible use case.
 
-> I experimented with something similar before I took the easy way out
-> with platform_bus_set_pm_ops() :/
-> 
-> This approach might also solve the problem(s) we've been discussing
-> around the conflicts between runtime PM callbacks and system PM
-> callbacks (that RTC vs. i2c issue.)  With this approach, I shouldn't
-> have to to add the callbacks like I did for the i2c driver, but rather
-> handle them in common code.  I'll experiment with this...
-> 
-> The primary question for me is whether this should rather be at the
-> 'struct device' level instead of at the platform_device level.  While
-> we're currently only using this customization on platform_devices, I
-> don't think we should limit it to that.  Part of these discussions at
-> LPC was also about whether or not to move to using custom SoC-specific
-> devices and busses.  If/when we go that route, we'd want these power
-> domains part of struct device, not platform_device.
+For the on-chip SoC devices we're managing with OMAP, we're currently
+only using one set: post ops on [runtime_]suspend and pre ops on
+[runtime_]resume.
 
-Definitely should be at the struct device level IMNSHO.
+However, I could imagine (at least conceptually) using the pre ops on
+suspend to do some constraints checking and/or possibly some
+management/notification of dependent devices.  Another possiblity
+(although possibly racy) would be using the pre ops on suspend to
+initiate some high-latency operations.
+
+I guess the main problem with two sets is wasted space.  e.g, if I move
+OMAP to this (already hacking on it) there will be only 2 functions used
+in post ops: [runtime_]suspend() and 2 used in pre ops [runtime_]_resume().
+
+Kevin
