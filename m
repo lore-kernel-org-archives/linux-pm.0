@@ -1,13 +1,11 @@
-From: Grant Likely <grant.likely@secretlab.ca>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC][PATCH] Power domains for platform bus type
-Date: Mon, 31 Jan 2011 20:18:44 -0700
-Message-ID: <AANLkTinEsUOZQURXOfAVoTU5=k0mi8PC0_Gte6gACDFj__40646.9859801748$1296530738$gmane$org@mail.gmail.com>
-References: <201101300107.19389.rjw@sisk.pl>
-	<20110131225902.GD27856@angua.secretlab.ca>
-	<201102010010.46096.rjw@sisk.pl> <871v3s3ahe.fsf@ti.com>
+Date: Mon, 31 Jan 2011 22:40:44 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1101312235190.11313-100000__49792.8938515999$1296531827$gmane$org@netrider.rowland.org>
+References: <871v3s3ahe.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <871v3s3ahe.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -20,43 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kevin Hilman <khilman@ti.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 31, 2011 at 4:43 PM, Kevin Hilman <khilman@ti.com> wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->
->>> Also, what is the use case for having 2 sets of power_domain ops? =A0My
->>> gut tells me that you'd only want to do post ops on the
->>> {freeze,suspend,poweroff} path and pre ops on the {resume,thaw,restore}
->>> path. =A0It seems overly engineered to me, but I may be missing
->>> something fundamental.
->>
->> Well, that's a part of the RFC, actually. :-)
->>
->> For the subsystems I've worked with (PCI, ACPI, PNP to some extent) one =
-set
->> would be sufficient, but I don't know of every possible use case.
->
+On Mon, 31 Jan 2011, Kevin Hilman wrote:
+
 > For the on-chip SoC devices we're managing with OMAP, we're currently
 > only using one set: post ops on [runtime_]suspend and pre ops on
 > [runtime_]resume.
->
+> 
 > However, I could imagine (at least conceptually) using the pre ops on
 > suspend to do some constraints checking and/or possibly some
-> management/notification of dependent devices. =A0Another possiblity
+> management/notification of dependent devices.  Another possiblity
 > (although possibly racy) would be using the pre ops on suspend to
 > initiate some high-latency operations.
->
-> I guess the main problem with two sets is wasted space. =A0e.g, if I move
+
+Dependency management is very relevant here, since we're talking about
+relations that explicitly aren't of the parent-child type.  If any of
+the devices in question get marked for async suspend/resume, for
+example, they certainly will need dependency handling.
+
+> I guess the main problem with two sets is wasted space.  e.g, if I move
 > OMAP to this (already hacking on it) there will be only 2 functions used
-> in post ops: [runtime_]suspend() and 2 used in pre ops [runtime_]_resume(=
-).
+> in post ops: [runtime_]suspend() and 2 used in pre ops [runtime_]_resume().
 
-There's a conceptual load added to the (human) reader too.  Every
-additional hook point is an additional piece other engineers need to
-fit into their mental model.  I'm resistant to having the two sets of
-ops without a definite use case for it when conceptually I can only
-imagine a need for one set.
+The wasted space is minimal; we're only talking about one extra pm_ops
+structure for each power domain.  Presumably any reasonable SoC isn't
+going to have a tremendous number of separate power domains.  Or am I
+wrong about this?
 
-g.
+Alan Stern
