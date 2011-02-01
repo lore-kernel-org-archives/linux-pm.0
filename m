@@ -1,16 +1,14 @@
 From: Kevin Hilman <khilman@ti.com>
 Subject: Re: [RFC][PATCH] Power domains for platform bus type
-Date: Mon, 31 Jan 2011 15:43:41 -0800
-Message-ID: <871v3s3ahe.fsf__47907.3349074044$1296517515$gmane$org@ti.com>
+Date: Mon, 31 Jan 2011 16:17:02 -0800
+Message-ID: <878vy01udd.fsf__26242.4528752037$1296519515$gmane$org@ti.com>
 References: <201101300107.19389.rjw@sisk.pl>
-	<20110131225902.GD27856@angua.secretlab.ca>
-	<201102010010.46096.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102010010.46096.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Tue, 1 Feb 2011 00:10:45 +0100")
+In-Reply-To: <201101300107.19389.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sun, 30 Jan 2011 01:07:19 +0100")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,29 +24,29 @@ List-Id: linux-pm@vger.kernel.org
 
 "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
->> Also, what is the use case for having 2 sets of power_domain ops?  My
->> gut tells me that you'd only want to do post ops on the
->> {freeze,suspend,poweroff} path and pre ops on the {resume,thaw,restore}
->> path.  It seems overly engineered to me, but I may be missing
->> something fundamental.
+> Hi,
 >
-> Well, that's a part of the RFC, actually. :-)
+> This is something we discussed during the last Linux Plumbers Conference.
 >
-> For the subsystems I've worked with (PCI, ACPI, PNP to some extent) one set
-> would be sufficient, but I don't know of every possible use case.
+> The problem appears to be that the same device may be used in different
+> systems in different configurations such that actions necessary for the
+> device's power management can vary from one system to another.  In those
+> cases the drivers' power management callbacks are generally not sufficient,
+> because they can't take the configuration of the whole system into account.
+>
+> I think this issue may be addressed by adding objects that will represent
+> power domains and will provide power management callbacks to be executed
+> in addition to the device driver's PM callbacks, which is done by the patch
+> below.
+>
+> Please have a look at it and tell me what you think.
+>
 
-For the on-chip SoC devices we're managing with OMAP, we're currently
-only using one set: post ops on [runtime_]suspend and pre ops on
-[runtime_]resume.
+FYI... I just tested this patch on OMAP by converting our existing use
+of platform_bus_set_ops() to use this approach by adding a powerdomain
+to each omap_device.   
 
-However, I could imagine (at least conceptually) using the pre ops on
-suspend to do some constraints checking and/or possibly some
-management/notification of dependent devices.  Another possiblity
-(although possibly racy) would be using the pre ops on suspend to
-initiate some high-latency operations.
-
-I guess the main problem with two sets is wasted space.  e.g, if I move
-OMAP to this (already hacking on it) there will be only 2 functions used
-in post ops: [runtime_]suspend() and 2 used in pre ops [runtime_]_resume().
+Note we're currently only overriding the runtime_[suspend|resume]
+methods, so those are the only paths I've tested.
 
 Kevin
