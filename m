@@ -1,13 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] Power domains for platform bus type
-Date: Mon, 31 Jan 2011 22:40:44 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1101312235190.11313-100000__49792.8938515999$1296531827$gmane$org@netrider.rowland.org>
-References: <871v3s3ahe.fsf@ti.com>
+Date: Tue, 1 Feb 2011 11:52:20 +0100
+Message-ID: <201102011152.21200.rjw__2238.11481050706$1296557828$gmane$org@sisk.pl>
+References: <201101300107.19389.rjw@sisk.pl> <878vy01udd.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <871v3s3ahe.fsf@ti.com>
+In-Reply-To: <878vy01udd.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,33 +18,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kevin Hilman <khilman@ti.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>, LKML <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 31 Jan 2011, Kevin Hilman wrote:
-
-> For the on-chip SoC devices we're managing with OMAP, we're currently
-> only using one set: post ops on [runtime_]suspend and pre ops on
-> [runtime_]resume.
+On Tuesday, February 01, 2011, Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> However, I could imagine (at least conceptually) using the pre ops on
-> suspend to do some constraints checking and/or possibly some
-> management/notification of dependent devices.  Another possiblity
-> (although possibly racy) would be using the pre ops on suspend to
-> initiate some high-latency operations.
+> > Hi,
+> >
+> > This is something we discussed during the last Linux Plumbers Conference.
+> >
+> > The problem appears to be that the same device may be used in different
+> > systems in different configurations such that actions necessary for the
+> > device's power management can vary from one system to another.  In those
+> > cases the drivers' power management callbacks are generally not sufficient,
+> > because they can't take the configuration of the whole system into account.
+> >
+> > I think this issue may be addressed by adding objects that will represent
+> > power domains and will provide power management callbacks to be executed
+> > in addition to the device driver's PM callbacks, which is done by the patch
+> > below.
+> >
+> > Please have a look at it and tell me what you think.
+> >
+> 
+> FYI... I just tested this patch on OMAP by converting our existing use
+> of platform_bus_set_ops() to use this approach by adding a powerdomain
+> to each omap_device.   
+> 
+> Note we're currently only overriding the runtime_[suspend|resume]
+> methods, so those are the only paths I've tested.
 
-Dependency management is very relevant here, since we're talking about
-relations that explicitly aren't of the parent-child type.  If any of
-the devices in question get marked for async suspend/resume, for
-example, they certainly will need dependency handling.
+Thanks a lot for the testing!
 
-> I guess the main problem with two sets is wasted space.  e.g, if I move
-> OMAP to this (already hacking on it) there will be only 2 functions used
-> in post ops: [runtime_]suspend() and 2 used in pre ops [runtime_]_resume().
+I'm going to prepare a new version of the patch that will add power domain
+objects at the core level (ie. struct device).
 
-The wasted space is minimal; we're only talking about one extra pm_ops
-structure for each power domain.  Presumably any reasonable SoC isn't
-going to have a tremendous number of separate power domains.  Or am I
-wrong about this?
-
-Alan Stern
+Rafael
