@@ -1,14 +1,12 @@
-From: Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH] [1/139] x86,
-	hotplug: Use mwait to offline a processor, fix the legacy case
-Date: Tue,  1 Feb 2011 16:43:14 -0800 (PST)
-Message-ID: <20110202004314.B53413E09BD__35652.3602655672$1296607642$gmane$org@tassilo.jf.intel.com>
-References: <20110201443.618138584@firstfloor.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: 2.6.38-rc3-git1: Reported regressions from 2.6.37
+Date: Thu,  3 Feb 2011 00:02:08 +0100 (CET)
+Message-ID: <QUnbpYCwS-F.A.vaC.VHeSNB__35917.3900251791$1296688663$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110201443.618138584@firstfloor.org>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,169 +16,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: lenb@kernel.org, linux-pm@lists.linux-foundation.org, x86@kernel.org, hpa@linux.intel.com, len.brown@intel.com, gregkh@suse.de, ak@linux.intel.com, linux-kernel@vger.kern
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-2.6.35-longterm review patch.  If anyone has any objections, please let me know.
-
-------------------
-
-From: H. Peter Anvin <hpa@linux.intel.com>
-
-upstream ea53069231f9317062910d6e772cca4ce93de8c8
-x86, hotplug: Use mwait to offline a processor, fix the legacy case
-
-Here included also some small follow-on patches to the same code:
-
-upstream a68e5c94f7d3dd64fef34dd5d97e365cae4bb42a
-x86, hotplug: Move WBINVD back outside the play_dead loop
-
-upstream ce5f68246bf2385d6174856708d0b746dc378f20
-x86, hotplug: In the MWAIT case of play_dead, CLFLUSH the cache line
-
-https://bugzilla.kernel.org/show_bug.cgi?id=5471
-
-Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- arch/x86/include/asm/processor.h |   23 ----------
- arch/x86/kernel/smpboot.c        |   85 ++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 84 insertions(+), 24 deletions(-)
-
-Index: linux-2.6.35.y/arch/x86/include/asm/processor.h
-===================================================================
---- linux-2.6.35.y.orig/arch/x86/include/asm/processor.h
-+++ linux-2.6.35.y/arch/x86/include/asm/processor.h
-@@ -763,29 +763,6 @@ extern unsigned long		boot_option_idle_o
- extern unsigned long		idle_halt;
- extern unsigned long		idle_nomwait;
- 
--/*
-- * on systems with caches, caches must be flashed as the absolute
-- * last instruction before going into a suspended halt.  Otherwise,
-- * dirty data can linger in the cache and become stale on resume,
-- * leading to strange errors.
-- *
-- * perform a variety of operations to guarantee that the compiler
-- * will not reorder instructions.  wbinvd itself is serializing
-- * so the processor will not reorder.
-- *
-- * Systems without cache can just go into halt.
-- */
--static inline void wbinvd_halt(void)
--{
--	mb();
--	/* check for clflush to determine if wbinvd is legal */
--	if (cpu_has_clflush)
--		asm volatile("cli; wbinvd; 1: hlt; jmp 1b" : : : "memory");
--	else
--		while (1)
--			halt();
--}
--
- extern void enable_sep_cpu(void);
- extern int sysenter_setup(void);
- 
-Index: linux-2.6.35.y/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-2.6.35.y.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6.35.y/arch/x86/kernel/smpboot.c
-@@ -1387,11 +1387,94 @@ void play_dead_common(void)
- 	local_irq_disable();
- }
- 
-+#define MWAIT_SUBSTATE_MASK		0xf
-+#define MWAIT_SUBSTATE_SIZE		4
-+
-+#define CPUID_MWAIT_LEAF		5
-+#define CPUID5_ECX_EXTENSIONS_SUPPORTED 0x1
-+
-+/*
-+ * We need to flush the caches before going to sleep, lest we have
-+ * dirty data in our caches when we come back up.
-+ */
-+static inline void mwait_play_dead(void)
-+{
-+	unsigned int eax, ebx, ecx, edx;
-+	unsigned int highest_cstate = 0;
-+	unsigned int highest_subcstate = 0;
-+	int i;
-+	void *mwait_ptr;
-+
-+	if (!cpu_has(&current_cpu_data, X86_FEATURE_MWAIT))
-+		return;
-+	if (!cpu_has(&current_cpu_data, X86_FEATURE_CLFLSH))
-+		return;
-+	if (current_cpu_data.cpuid_level < CPUID_MWAIT_LEAF)
-+		return;
-+
-+	eax = CPUID_MWAIT_LEAF;
-+	ecx = 0;
-+	native_cpuid(&eax, &ebx, &ecx, &edx);
-+
-+	/*
-+	 * eax will be 0 if EDX enumeration is not valid.
-+	 * Initialized below to cstate, sub_cstate value when EDX is valid.
-+	 */
-+	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED)) {
-+		eax = 0;
-+	} else {
-+		edx >>= MWAIT_SUBSTATE_SIZE;
-+		for (i = 0; i < 7 && edx; i++, edx >>= MWAIT_SUBSTATE_SIZE) {
-+			if (edx & MWAIT_SUBSTATE_MASK) {
-+				highest_cstate = i;
-+				highest_subcstate = edx & MWAIT_SUBSTATE_MASK;
-+			}
-+		}
-+		eax = (highest_cstate << MWAIT_SUBSTATE_SIZE) |
-+			(highest_subcstate - 1);
-+	}
-+
-+	/*
-+	 * This should be a memory location in a cache line which is
-+	 * unlikely to be touched by other processors.  The actual
-+	 * content is immaterial as it is not actually modified in any way.
-+	 */
-+	mwait_ptr = &current_thread_info()->flags;
-+
-+	wbinvd();
-+
-+	while (1) {
-+		/*
-+		 * The CLFLUSH is a workaround for erratum AAI65 for
-+		 * the Xeon 7400 series.  It's not clear it is actually
-+		 * needed, but it should be harmless in either case.
-+		 * The WBINVD is insufficient due to the spurious-wakeup
-+		 * case where we return around the loop.
-+		 */
-+		clflush(mwait_ptr);
-+		__monitor(mwait_ptr, 0, 0);
-+		mb();
-+		__mwait(eax, 0);
-+	}
-+}
-+
-+static inline void hlt_play_dead(void)
-+{
-+	if (current_cpu_data.x86 >= 4)
-+		wbinvd();
-+
-+	while (1) {
-+		native_halt();
-+	}
-+}
-+
- void native_play_dead(void)
- {
- 	play_dead_common();
- 	tboot_shutdown(TB_SHUTDOWN_WFS);
--	wbinvd_halt();
-+
-+	mwait_play_dead();	/* Only returns on failure */
-+	hlt_play_dead();
- }
- 
- #else /* ... !CONFIG_HOTPLUG_CPU */
+VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
+LjM3LApmb3Igd2hpY2ggdGhlcmUgYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBrbm93biB0
+byB0aGUgdHJhY2tpbmcgdGVhbS4KSWYgYW55IG9mIHRoZW0gaGF2ZSBiZWVuIGZpeGVkIGFscmVh
+ZHksIHBsZWFzZSBsZXQgdXMga25vdy4KCklmIHlvdSBrbm93IG9mIGFueSBvdGhlciB1bnJlc29s
+dmVkIHJlZ3Jlc3Npb25zIGZyb20gMi42LjM3LCBwbGVhc2UgbGV0IHVzCmtub3cgZWl0aGVyIGFu
+ZCB3ZSdsbCBhZGQgdGhlbSB0byB0aGUgbGlzdC4gIEFsc28sIHBsZWFzZSBsZXQgdXMga25vdwpp
+ZiBhbnkgb2YgdGhlIGVudHJpZXMgYmVsb3cgYXJlIGludmFsaWQuCgpFYWNoIGVudHJ5IGZyb20g
+dGhlIGxpc3Qgd2lsbCBiZSBzZW50IGFkZGl0aW9uYWxseSBpbiBhbiBhdXRvbWF0aWMgcmVwbHkK
+dG8gdGhpcyBtZXNzYWdlIHdpdGggQ0NzIHRvIHRoZSBwZW9wbGUgaW52b2x2ZWQgaW4gcmVwb3J0
+aW5nIGFuZCBoYW5kbGluZwp0aGUgaXNzdWUuCgoKTGlzdGVkIHJlZ3Jlc3Npb25zIHN0YXRpc3Rp
+Y3M6CgogIERhdGUgICAgICAgICAgVG90YWwgIFBlbmRpbmcgIFVucmVzb2x2ZWQKICAtLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgMjAxMS0wMi0wMyAgICAgICAxOSAg
+ICAgICAxMSAgICAgICAgICAgNwoKClVucmVzb2x2ZWQgcmVncmVzc2lvbnMKLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
+dWcuY2dpP2lkPTI4MTAyClN1YmplY3QJCTogTmV3IGRpc3BsYXkgZXJyb3JzIGluIDIuNi4zOC1y
+YzItMDAxNzUtZzZmYjFiMzAKU3VibWl0dGVyCTogTmljbyBTY2hvdHRlbGl1cyA8bmljby1rZXJu
+ZWwtMjAxMTAxMTdAc2Nob3R0ZWxpdXMub3JnPgpEYXRlCQk6IDIwMTEtMDEtMjggMjA6MjkgKDYg
+ZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8MjAxMTAxMjgyMDI5MDUuR0IzMzk1QHNjaG90dGVsaXVz
+Lm9yZz4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5
+NjI0NjU3NDI1OTQ5Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
+L3Nob3dfYnVnLmNnaT9pZD0yODA1MgpTdWJqZWN0CQk6IFtCVUddIDIuNi4zOC1yYzI6IENpcmN1
+bGFyIExvY2tpbmcgRGVwZW5kZW5jeQpTdWJtaXR0ZXIJOiBLbnV0IFBldGVyc2VuIDxLbnV0X1Bl
+dGVyc2VuQHQtb25saW5lLmRlPgpEYXRlCQk6IDIwMTEtMDEtMjQgOToyNSAoMTAgZGF5cyBvbGQp
+Ck1lc3NhZ2UtSUQJOiA8NEQzRDQ1QTMuNzA0MDgwOUB0LW9ubGluZS5kZT4KUmVmZXJlbmNlcwk6
+IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5NTg2MTE4NTE1NDQzJnc9MgoK
+CkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0y
+NzgxMgpTdWJqZWN0CQk6IDIuNi4zOC1yYzI6IGFjcGkgYmFja2xpZ2h0IGNvbnRyb2wgbWlzc2lu
+ZwpTdWJtaXR0ZXIJOiBUaG9tYXMgTWV5ZXIgPHRob21hc0BtM3kzci5kZT4KRGF0ZQkJOiAyMDEx
+LTAxLTIyIDEwOjQ5ICgxMiBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5r
+ZXJuZWwub3JnL2xpbnVzLzY3N2JkODEwZWVkY2U2MWVkZjE1NDUyNDkxNzgxZmYwNDZiOTJlZGMK
+TWVzc2FnZS1JRAk6IDwxMjk1NjkzMzQ5LjIxMjAuMy5jYW1lbEBsb2NhbGhvc3QubG9jYWxkb21h
+aW4+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyOTU2
+OTM1MzQxNDc1NSZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
+aG93X2J1Zy5jZ2k/aWQ9Mjc2NTIKU3ViamVjdAkJOiAzOC1yYzE6IHVtb3VudCtybW1vZCBjYXVz
+ZSBleHQ0IGVycm9yLgpTdWJtaXR0ZXIJOiBUYW8gTWEgPHRtQHRhby5tYT4KRGF0ZQkJOiAyMDEx
+LTAxLTE5IDY6NTMgKDE1IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDREMzY4QTcwLjUwMzAxMDNA
+dGFvLm1hPgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1leHQ0Jm09MTI5
+NTQyMDAxMDMxNzUwJnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
+L3Nob3dfYnVnLmNnaT9pZD0yNzM4MgpTdWJqZWN0CQk6IGF0aDVrIHBoeTA6IGdhaW4gY2FsaWJy
+YXRpb24gdGltZW91dApTdWJtaXR0ZXIJOiBOaWNvbGFzIFN0cmFuc2t5IDxOaWNvQHN0cmFuc2t5
+LmN4PgpEYXRlCQk6IDIwMTEtMDEtMjMgMDA6MTggKDExIGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6
+IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yNzI4MgpTdWJqZWN0
+CQk6IFJlZ3Jlc3Npb246IDIuNi4zOCB2cy4gUG93ZXJ0b3AgMgpTdWJtaXR0ZXIJOiBEZW5uaXMg
+SmFuc2VuIDxkZW5uaXMuamFuc2VuQHdlYi5kZT4KRGF0ZQkJOiAyMDExLTAxLTIxIDE0OjM0ICgx
+MyBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93
+X2J1Zy5jZ2k/aWQ9MjcwMjIKU3ViamVjdAkJOiBbUkVQT1JUXSBCVUc6IHNwaW5sb2NrIHJlY3Vy
+c2lvbiBvbiBDUFUjMCwgaW5pdC8xClN1Ym1pdHRlcgk6IFNhbnRvc2ggU2hpbGlta2FyIDxzYW50
+b3NoLnNoaWxpbWthckB0aS5jb20+CkRhdGUJCTogMjAxMS0wMS0xMCAxNTozMyAoMjQgZGF5cyBv
+bGQpCk1lc3NhZ2UtSUQJOiA8YTdhOWJkYWE1OTM2NjMwOTI1ZmI3ZmZkMWExNzk1YjFAbWFpbC5n
+bWFpbC5jb20+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZt
+PTEyOTQ2NzI5NDgwODY1NSZ3PTIKCgpSZWdyZXNzaW9ucyB3aXRoIHBhdGNoZXMKLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
+aG93X2J1Zy5jZ2k/aWQ9MjgwMTIKU3ViamVjdAkJOiBbZHJtOmk5MTVfZHJpdmVyX2xvYWRdICpF
+UlJPUiogZmFpbGVkIHRvIGluaXQgbW9kZXNldCwgRUlOVkFMClN1Ym1pdHRlcgk6IEZlcmVuYyBX
+w6FnbmVyIDx3ZmVyaUBuaWlmLmh1PgpEYXRlCQk6IDIwMTEtMDItMDEgMTU6MTggKDIgZGF5cyBv
+bGQpCkhhbmRsZWQtQnkJOiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdpbHNvbi5jby51az4K
+UGF0Y2gJCTogaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL2F0dGFjaG1lbnQuY2dpP2lkPTQ1
+ODkyCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dp
+P2lkPTI3ODYyClN1YmplY3QJCTogQ2Fubm90IGxhdW5jaCBYLm9yZyBzZXJ2ZXIgb24gQ29yZSBJ
+NSB3aXRoIDIuNi4zOC1yYzItZ2l0NwpTdWJtaXR0ZXIJOiBEYXJpc3V6IEx1a3N6YSA8ZGFyaXVz
+ei5sdWtzemFAZ21haWwuY29tPgpEYXRlCQk6IDIwMTEtMDEtMzAgMTI6MTMgKDQgZGF5cyBvbGQp
+CkhhbmRsZWQtQnkJOiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdpbHNvbi5jby51az4KUGF0
+Y2gJCTogaHR0cHM6Ly9idWdzLmZyZWVkZXNrdG9wLm9yZy9hdHRhY2htZW50LmNnaT9pZD00MjYz
+NAoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
+ZD0yNzcwMgpTdWJqZWN0CQk6IHJlZ3Jlc3Npb24gMi42LjM3IC0+IDIuNi4zOC1yYzE6IGFmdGVy
+IHN1c3BlbmQgYmFja2xpZ2h0IGNhbm5vdCBiZSBhZGp1c3RlZApTdWJtaXR0ZXIJOiBOb3JiZXJ0
+IFByZWluaW5nIDxwcmVpbmluZ0Bsb2dpYy5hdD4KRGF0ZQkJOiAyMDExLTAxLTIxIDE6NTUgKDEz
+IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDIwMTEwMTIxMDE1NTI5LkdEOTc5NkBnYW1tYS5sb2dp
+Yy50dXdpZW4uYWMuYXQ+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtl
+cm5lbCZtPTEyOTU1NzcxNzgyNjgxOSZ3PTIKSGFuZGxlZC1CeQk6IE1pY2hhZWwgS2FyY2hlciA8
+a2VybmVsQG1rYXJjaGVyLmRpYWx1cC5mdS1iZXJsaW4uZGU+ClBhdGNoCQk6IGh0dHBzOi8vcGF0
+Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvNDk5MjIxLwoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6
+aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yNzQ3MgpTdWJqZWN0CQk6IDViZDVhNDUg
+YnJlYWtzIHJlc3VtZSBmcm9tIHN1c3BlbmQgb24gVGhpbmtwYWQgWDIwMQpTdWJtaXR0ZXIJOiBC
+asO2cm4gU2NobGllw59tYW5uIDxjaHJvbm9zc0BnbXguZGU+CkRhdGUJCTogMjAxMS0wMS0yMyAy
+MzoyNCAoMTEgZGF5cyBvbGQpCkhhbmRsZWQtQnkJOiBDQVNURVQgTWF0dGhpZXUgPGNhc3RldC5t
+YXR0aGlldUBmcmVlLmZyPgpQYXRjaAkJOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvYXR0
+YWNobWVudC5jZ2k/aWQ9NDUxOTIKCgpGb3IgZGV0YWlscywgcGxlYXNlIHZpc2l0IHRoZSBidWcg
+ZW50cmllcyBhbmQgZm9sbG93IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVuY2VzLgoKQXMgeW91
+IGNhbiBzZWUsIHRoZXJlIGlzIGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2ggb2YgdGhlIGxpc3Rl
+ZCByZWdyZXNzaW9ucy4KVGhlcmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5IHVzZWQgZm9yIHRy
+YWNraW5nIHRoZSByZWdyZXNzaW9ucyBmcm9tIDIuNi4zNywKdW5yZXNvbHZlZCBhcyB3ZWxsIGFz
+IHJlc29sdmVkLCBhdDoKCmh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
+ZD0yNzM1MgoKUGxlYXNlIGxldCB0aGUgdHJhY2tpbmcgdGVhbSBrbm93IGlmIHRoZXJlIGFyZSBh
+bnkgQnVnemlsbGEgZW50cmllcyB0aGF0CnNob3VsZCBiZSBhZGRlZCB0byB0aGUgbGlzdCBpbiB0
+aGVyZS4KClRoYW5rcyEKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtcG0=
