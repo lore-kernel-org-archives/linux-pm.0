@@ -1,14 +1,16 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] ACPI: Remove the wakeup.run_wake_count
-	device field
-Date: Thu, 3 Feb 2011 11:20:16 -0800
-Message-ID: <20110203112016.56ed35c3__27152.6390723468$1296760948$gmane$org@jbarnes-desktop>
-References: <201102032014.18102.rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.38-rc3-git1: Reported regressions 2.6.36 ->
+	2.6.37
+Date: Thu, 3 Feb 2011 14:10:51 -0800
+Message-ID: <AANLkTi=7EOih=fY5FCvhQbewSc=3a49cYVaKJRWM+-3d__19962.6121939675$1296771144$gmane$org@mail.gmail.com>
+References: <e9vOd5LzdBK.A.dyD.h6eSNB@chimera>
+	<AANLkTikELiGS+fM5WguZS=Fo-sSXmej1UnKWqCFmnE0k@mail.gmail.com>
+	<s5haaid3xos.wl%tiwai@suse.de> <201102032009.17100.rjw@sisk.pl>
+	<AANLkTi=suS1VDL=6EtT0D2=0c1DWwxdwZBBv=-BySNX-@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary=001485eba1e80dd0f1049b680b26
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102032014.18102.rjw@sisk.pl>
+In-Reply-To: <AANLkTi=suS1VDL=6EtT0D2=0c1DWwxdwZBBv=-BySNX-@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,40 +20,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>
+To: Carlos Mafra <crmafra2@gmail.com>, Keith Packard <keithp@keithp.com>, Dave Airlie <airlied@redhat.com>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 3 Feb 2011 20:14:17 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+--001485eba1e80dd0f1049b680b26
+Content-Type: text/plain; charset=ISO-8859-1
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> The wakeup.run_wake_count ACPI device field is only used by the PCI
-> runtime PM code to "protect" devices from being prepared for
-> generating wakeup signals more than once in a row.  However, it
-> really doesn't provide any protection, because (1) all of the
-> functions it is supposed to protect use their own reference counters
-> effectively ensuring that the device will be set up for generating
-> wakeup signals just once and (2) the PCI runtime PM code uses
-> wakeup.run_wake_count in a racy way, since nothing prevents
-> acpi_dev_run_wake() from being called concurrently from two different
-> threads for the same device.
-> 
-> Remove the wakeup.run_wake_count ACPI device field which is
-> unnecessary, confusing and used in a wrong way.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/acpi/button.c   |    2 --
->  drivers/acpi/scan.c     |    1 -
->  drivers/pci/pci-acpi.c  |   16 ++++------------
->  include/acpi/acpi_bus.h |    1 -
->  4 files changed, 4 insertions(+), 16 deletions(-)
+On Thu, Feb 3, 2011 at 1:56 PM, Carlos Mafra <crmafra2@gmail.com> wrote:
+>>
+>> I added https://bugzilla.kernel.org/show_bug.cgi?id=24982 to the list of
+>> post-2.6.36 regressions for further tracking.
+>
+> I also tested on 2.6.38-rc3+ now and the issue is not solved,
+> just like Takashi expected.
 
-Ack on the PCI bits.
+Hmm. That commit (bf9dc102e284) still reverts cleanly.
 
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Keith, Dave, should we just revert it? It's definitely a regression,
+and we do _not_ allow "fixes" to one thing that just causes a
+regression to another.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Quite frankly, I think it's totally wrong to just blindly set DPMS
+status to ON like that. It's as wrong as it was to leave it off, and
+the regressions reported are basically mirror images of the exact same
+bug that that commit tried to fix.
+
+IOW, the commit message says:
+
+    When setting a new crtc configuration, force the DPMS state of all
+    connectors to ON. Otherwise, they'll be left at OFF and a future mode set
+    that disables the specified connector will not turn the connector off.
+
+but setting it to ON doesn't actually _fix_ anything, because you just
+get the exact same issue in reverse, ie you just get
+
+   .. and a future mode set  that ENables the specified connector will
+    not turn the connector ON.
+
+instead. Which is exactly what Carlos and Takashi are reporting.
+
+Maybe the right thing to do is to set it to 'unknown', something like this.
+
+TOTALLY UNTESTED!
+
+                          Linus
+
+--001485eba1e80dd0f1049b680b26
+Content-Type: text/x-patch; charset=US-ASCII; name="patch.diff"
+Content-Disposition: attachment; filename="patch.diff"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_gjq7zjz50
+
+IGRyaXZlcnMvZ3B1L2RybS9kcm1fY3J0Y19oZWxwZXIuYyB8ICAgIDYgKysrLS0tCiBpbmNsdWRl
+L2RybS9kcm1fbW9kZS5oICAgICAgICAgICAgfCAgICAxICsKIDIgZmlsZXMgY2hhbmdlZCwgNCBp
+bnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2Ry
+bS9kcm1fY3J0Y19oZWxwZXIuYyBiL2RyaXZlcnMvZ3B1L2RybS9kcm1fY3J0Y19oZWxwZXIuYwpp
+bmRleCA5NTJiM2Q0Li43ZjU4NWVkIDEwMDY0NAotLS0gYS9kcml2ZXJzL2dwdS9kcm0vZHJtX2Ny
+dGNfaGVscGVyLmMKKysrIGIvZHJpdmVycy9ncHUvZHJtL2RybV9jcnRjX2hlbHBlci5jCkBAIC02
+ODEsMTEgKzY4MSwxMSBAQCBpbnQgZHJtX2NydGNfaGVscGVyX3NldF9jb25maWcoc3RydWN0IGRy
+bV9tb2RlX3NldCAqc2V0KQogCQkJZ290byBmYWlsOwogCQl9CiAJfQotCURSTV9ERUJVR19LTVMo
+IlNldHRpbmcgY29ubmVjdG9yIERQTVMgc3RhdGUgdG8gb25cbiIpOworCURSTV9ERUJVR19LTVMo
+IlNldHRpbmcgY29ubmVjdG9yIERQTVMgc3RhdGUgdG8gJ3Vua25vd24nXG4iKTsKIAlmb3IgKGkg
+PSAwOyBpIDwgc2V0LT5udW1fY29ubmVjdG9yczsgaSsrKSB7Ci0JCURSTV9ERUJVR19LTVMoIlx0
+W0NPTk5FQ1RPUjolZDolc10gc2V0IERQTVMgb25cbiIsIHNldC0+Y29ubmVjdG9yc1tpXS0+YmFz
+ZS5pZCwKKwkJRFJNX0RFQlVHX0tNUygiXHRbQ09OTkVDVE9SOiVkOiVzXSBzZXQgRFBNUyAndW5r
+bm93bidcbiIsIHNldC0+Y29ubmVjdG9yc1tpXS0+YmFzZS5pZCwKIAkJCSAgICAgIGRybV9nZXRf
+Y29ubmVjdG9yX25hbWUoc2V0LT5jb25uZWN0b3JzW2ldKSk7Ci0JCXNldC0+Y29ubmVjdG9yc1tp
+XS0+ZHBtcyA9IERSTV9NT0RFX0RQTVNfT047CisJCXNldC0+Y29ubmVjdG9yc1tpXS0+ZHBtcyA9
+IERSTV9NT0RFX0RQTVNfVU5LTk9XTjsKIAl9CiAKIAlrZnJlZShzYXZlX2Nvbm5lY3RvcnMpOwpk
+aWZmIC0tZ2l0IGEvaW5jbHVkZS9kcm0vZHJtX21vZGUuaCBiL2luY2x1ZGUvZHJtL2RybV9tb2Rl
+LmgKaW5kZXggMGZjNzM5Ny4uNGI1MTQ0YyAxMDA2NDQKLS0tIGEvaW5jbHVkZS9kcm0vZHJtX21v
+ZGUuaAorKysgYi9pbmNsdWRlL2RybS9kcm1fbW9kZS5oCkBAIC01OSw2ICs1OSw3IEBACiAKIC8q
+IERQTVMgZmxhZ3MgKi8KIC8qIGJpdCBjb21wYXRpYmxlIHdpdGggdGhlIHhvcmcgZGVmaW5pdGlv
+bnMuICovCisjZGVmaW5lIERSTV9NT0RFX0RQTVNfVU5LTk9XTgkoLTEpCiAjZGVmaW5lIERSTV9N
+T0RFX0RQTVNfT04JMAogI2RlZmluZSBEUk1fTU9ERV9EUE1TX1NUQU5EQlkJMQogI2RlZmluZSBE
+Uk1fTU9ERV9EUE1TX1NVU1BFTkQJMgo=
+--001485eba1e80dd0f1049b680b26
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--001485eba1e80dd0f1049b680b26--
