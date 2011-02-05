@@ -1,16 +1,13 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 8/8] ACPI / PM: Use existing ACPI iomaps for
- NVS save/restore (v2)
-Date: Sat, 5 Feb 2011 10:51:10 -0800
-Message-ID: <AANLkTin1gHSS1Hu_ia4RFimNeYXWGtY9XBqfRH28D1ZL__21612.0886420414$1296932043$gmane$org@mail.gmail.com>
-References: <201101201226.41021.rjw@sisk.pl> <201101250025.10817.rjw@sisk.pl>
-	<201101250032.07423.rjw@sisk.pl>
-	<AANLkTi=nAhadVy6y6f4uOy0-pvTQrdwYgQ0y_4ukui2z@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Logitech autosuspend + runtime_pm loses input
+Date: Sat, 5 Feb 2011 15:14:12 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1102051511180.4210-100000__32650.3270808191$1296936924$gmane$org@netrider.rowland.org>
+References: <AANLkTikSwviozL+ezdvqengQpag4cpbLxR+vgs_JKXbZ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=nAhadVy6y6f4uOy0-pvTQrdwYgQ0y_4ukui2z@mail.gmail.com>
+In-Reply-To: <AANLkTikSwviozL+ezdvqengQpag4cpbLxR+vgs_JKXbZ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,26 +17,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: pm list <linux-pm@lists.linux-foundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Feb 5, 2011 at 7:31 AM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
->
-> The suspend monster is back! The suspend-to-ram is fine, but upon
-> resume, screen is blank. Haven't bisected in case someone has also
-> done so.
->
-> It's very recent. ... between commit
-> 831d52bc153971b70e64eccfbed2b232394f22f8 and
-> 44f2c5c841da1b1e0864d768197ab1497b5c2cc1.
+On Sat, 5 Feb 2011, Andrew Lutomirski wrote:
 
-Hmm. It's almost certainly one of the DRI patches, but which one? I
-think bisection is the only way to figure it out. It shouldn't be too
-bad, since there's only 120 commits in that range.
+> I have a Logitech MX Revolution (a cordless mouse receiver) plugged
+> into a Logitech G15 (a keyboard w/ a hub) plugged into an Intel Cougar
+> Point EHCI controller.  (Results are the same on an xHCI controller,
+> though.)
+> 
+> With autosuspend *or* runtime PM off, everything works.  (Well, the
+> G15 is buggy and occasionally crashes and doesn't recover until
+> powercycled, but that even happens on Windows.)  With runtime PM
+> enabled on the whole tree, I have problems with autosuspend.
+> 
+> If I enable autosuspend on just the mouse by doing:
+> 
+> echo 2 >./1-1/1-1.2/1-1.2.3/power/autosuspend
+> (where that device is Bus 001 Device 005: ID 046d:c51a Logitech, Inc.
+> MX Revolution/G7 Cordless Mouse), then after about two seconds of not
+> moving the mouse, the mouse ignores the first second or so of motion
+> when I start moving it again.
+> 
+> If I enable autosuspend on just part of the keyboard by doing:
+> 
+> echo 2 >./1-1/1-1.2/1-1.2.1/power/autosuspend
+> (that's Bus 001 Device 004: ID 046d:c221 Logitech, Inc. G11/G15
+> Keyboard / Keyboard)
+> 
+> then after a couple seconds of not typing, my next keystroke is lost or delayed.
+> 
+> It seems to be enough to turn off runtime PM (via power/control) OR
+> turn off autosuspend on the keyboard device to make the keyboard work
+> and on the mouse device to make the mouse work.
+> 
+> Is this a case of "don't do that, you fool," or is there a legitimate
+> bug to be fixed in the runtime pm code?
+> 
+> My motherboard is Intel DH67GD (ordered just before they canceled
+> production) with latest BIOS.
 
-In fact, you can almost certainly just bisect from 89840966c579 to
-bb5b583b5279, which is just 31 commits and should get you bisected in
-just five tries or so.
+I don't think there is any bug in the code.  The problem lies in the 
+devices; they appear to be designed so as to lose some input events 
+when waking up from suspend.  This is very common among keyboard and 
+mouse devices -- probably because autoresume was not used under Windows 
+and hence didn't get tested.
 
-                       Linus
+Hence my advice is, as you guessed, "Don't do that".
+
+Alan Stern
