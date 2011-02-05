@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
-Date: Fri, 4 Feb 2011 15:07:24 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1102041506090.1877-100000__44223.0626511902$1296850181$gmane$org@iolanthe.rowland.org>
-References: <4D4C55B7.4010005@gmail.com>
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+Subject: Re: [PATCH 8/8] ACPI / PM: Use existing ACPI iomaps for
+ NVS save/restore (v2)
+Date: Sat, 5 Feb 2011 23:31:23 +0800
+Message-ID: <AANLkTi=nAhadVy6y6f4uOy0-pvTQrdwYgQ0y_4ukui2z__30690.2823540897$1296919965$gmane$org@mail.gmail.com>
+References: <201101201226.41021.rjw@sisk.pl> <201101250025.10817.rjw@sisk.pl>
+	<201101250032.07423.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D4C55B7.4010005@gmail.com>
+In-Reply-To: <201101250032.07423.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,44 +19,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@suse.com>, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 4 Feb 2011, Jiri Slaby wrote:
+The suspend monster is back! The suspend-to-ram is fine, but upon
+resume, screen is blank. Haven't bisected in case someone has also
+done so.
 
-> On 02/04/2011 08:33 PM, Alan Stern wrote:
-> > On Fri, 4 Feb 2011, Jiri Slaby wrote:
-> > 
-> >>>> It seems to suffice... No hangs still. Should I enable pm_async back
-> >>>> again to confirm the issue is still present?
-> >>>
-> >>> Yes, please, it would be good to know for sure.
-> >>
-> >> Ok, confirmed right now :).
-> >>
-> >> I disabled pm_async for USB again. What do you suggest next?
-> > 
-> > What happens if you leave pm_async enabled but unplug all the USB 
-> > devices before suspending?
-> 
-> Then I cannot suspend at all (ENOINPUTDEVICE)... And this would be
-> painful as the bug occurs once a week or so.
+It's very recent. ... between commit
+831d52bc153971b70e64eccfbed2b232394f22f8 and
+44f2c5c841da1b1e0864d768197ab1497b5c2cc1.
 
-You can suspend using a remote network login.  Agreed, this would be 
-painful.
-
-> > If there are any USB devices you can't 
-> > unplug, you can get an equivalent result by unconfiguring the root 
-> > hubs:
-> > 
-> > 	for a in /sys/bus/usb/devices/usb* ; do
-> > 		echo 0 >$a/bConfigurationValue
-> > 	done
-> 
-> Well, I can put this into suspend/resume scripts. What's the opposite
-> operation? 1 > $a/bConfigurationValue?
-
-Yes.
-
-Alan Stern
+Thanks,
+Jeff
