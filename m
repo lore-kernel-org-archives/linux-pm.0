@@ -1,15 +1,12 @@
-From: Ben Dooks <ben-i2c@fluff.org>
-Subject: Re: [PATCH] i2c: OMAP: fix static suspend vs. runtime
-	suspend
-Date: Sat, 5 Feb 2011 16:08:43 +0000
-Message-ID: <20110205160843.GD15795__30628.3013815575$1297097514$gmane$org@trinity.fluff.org>
-References: <1296173921-4832-1-git-send-email-khilman@ti.com>
+From: Pierre Tardy <pierre.tardy@intel.com>
+Subject: [PATCH v2 0/3] sdhci runtime_pm implementation using mmc
+	clock gating fw
+Date: Sun,  6 Feb 2011 19:02:47 +0100
+Message-ID: <cover.1297014479.git.pierre.tardy__15651.4546870769$1297097664$gmane$org@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1296173921-4832-1-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,94 +16,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Pierre Tardy <pierre.tardy@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 27, 2011 at 04:18:41PM -0800, Kevin Hilman wrote:
-> When runtime PM is enabled, each OMAP i2c device is suspended after
-> each i2c xfer.  However, there are two cases when the static suspend
-> methods must be used to ensure the devices are suspended:
-> 
-> 1) runtime PM is disabled, either at compile time or dynamically
->     via /sys/devices/.../power/control.
-> 2) an i2c client driver uses i2c during it's suspend callback, thus
->    leaving the i2c driver active (NOTE: runtime suspend transitions are
->    disabled during system suspend, so i2c activity during system
->    suspend will runtime resume the device, but not runtime (re)suspend it.)
-> 
-> Since the actual work to suspend the device is handled by the
-> subsytem, call the bus methods to take care of it.
-> 
-> NOTE: This takes care of a known suspend problem on OMAP3 where the
-> TWL RTC driver does i2c xfers during its suspend path leaving the i2c
-> driver in an active state (since runtime suspend transistions are
-> disabled.)
-> 
-> Signed-off-by: Kevin Hilman <khilman@ti.com>
-> ---
-> Ben, this is a regression in 2.6.38 so hopefully this can be queued
-> in the 2.6.38-rc cycle.  Thanks.
+Please find a simple sdhci runtime_pm implementation
+that uses clock gating fw as a tip to know when 
+our chip is idle.
 
-Ok, after all the discussions should I keep it in my -rc queue?
- 
->  drivers/i2c/busses/i2c-omap.c |   28 ++++++++++++++++++++++++++++
->  1 files changed, 28 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
-> index b605ff3..0541df9 100644
-> --- a/drivers/i2c/busses/i2c-omap.c
-> +++ b/drivers/i2c/busses/i2c-omap.c
-> @@ -1137,12 +1137,40 @@ omap_i2c_remove(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> +#ifdef CONFIG_SUSPEND
-> +static int omap_i2c_suspend(struct device *dev)
-> +{
-> +	if (!pm_runtime_suspended(dev))
-> +		if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend)
-> +			dev->bus->pm->runtime_suspend(dev);
-> +
-> +	return 0;
-> +}
-> +
-> +static int omap_i2c_resume(struct device *dev)
-> +{
-> +	if (!pm_runtime_suspended(dev))
-> +		if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume)
-> +			dev->bus->pm->runtime_resume(dev);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct dev_pm_ops omap_i2c_pm_ops = {
-> +	.suspend = omap_i2c_suspend,
-> +	.resume = omap_i2c_resume,
-> +};
-> +#else
-> +#define omap_i2c_pm_ops NULL
-> +#endif
-> +
->  static struct platform_driver omap_i2c_driver = {
->  	.probe		= omap_i2c_probe,
->  	.remove		= omap_i2c_remove,
->  	.driver		= {
->  		.name	= "omap_i2c",
->  		.owner	= THIS_MODULE,
-> +		.pm     = &omap_i2c_pm_ops,
->  	},
->  };
->  
-> -- 
-> 1.7.3.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Previous version was RFC and untested,
+This version has been tested on intel medfield platform.
+
+Pierre Tardy (2):
+  mmc: put the led blinking code after clock ungating
+  sdhci:v2:use ios->clock to know when sdhci is idle
+
+Yunpeng Gao (1):
+  sdhci-pci : Enable runtime PM support
+
+ drivers/mmc/core/core.c      |    3 +-
+ drivers/mmc/host/sdhci-pci.c |  124 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/mmc/host/sdhci.c     |   60 ++++++++++++++++++++
+ drivers/mmc/host/sdhci.h     |    5 ++
+ include/linux/mmc/sdhci.h    |    1 +
+ 5 files changed, 191 insertions(+), 2 deletions(-)
 
 -- 
-Ben Dooks, ben@fluff.org, http://www.fluff.org/ben/
+1.7.2.3
 
-Large Hadron Colada: A large Pina Colada that makes the universe disappear.
+---------------------------------------------------------------------
+Intel Corporation SAS (French simplified joint stock company)
+Registered headquarters: "Les Montalets"- 2, rue de Paris, 
+92196 Meudon Cedex, France
+Registration Number:  302 456 199 R.C.S. NANTERRE
+Capital: 4,572,000 Euros
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
