@@ -1,12 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/2] ACPI / Button: Avoid disabling wakeup
-	unnecessarily on remove
-Date: Sun, 6 Feb 2011 14:21:18 +0100
-Message-ID: <201102061421.18978.rjw__17542.8469935015$1296998601$gmane$org@sisk.pl>
+Subject: [PATCH 1/2] ACPI / Wakeup: Enable button GPEs
+	unconditionally during initialization
+Date: Sun, 6 Feb 2011 14:20:17 +0100
+Message-ID: <201102061420.17431.rjw__76.8235106535897$1296998602$gmane$org@sisk.pl>
 References: <201102061418.56202.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <201102061418.56202.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -22,49 +22,34 @@ To: Len Brown <lenb@kernel.org>
 Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Ferenc =?utf-8?q?W=C3=A1gner?= <wferi@niif.hu>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-If a button device had already been enabled to wake up the system
-from sleep states before the button driver saw it, the driver
-shouldn't disable the device's wakeup capability when being detached
-from the device.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/button.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/drivers/acpi/button.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/button.c
-+++ linux-2.6/drivers/acpi/button.c
-@@ -98,6 +98,7 @@ struct acpi_button {
- 	struct input_dev *input;
- 	char phys[32];			/* for input device */
- 	unsigned long pushed;
-+	bool wakeup_enabled;
- };
- 
- static const struct file_operations acpi_button_info_fops = {
-@@ -430,7 +431,10 @@ static int acpi_button_add(struct acpi_d
- 		/* Button's GPE is run-wake GPE */
- 		acpi_enable_gpe(device->wakeup.gpe_device,
- 				device->wakeup.gpe_number);
--		device_set_wakeup_enable(&device->dev, true);
-+		if (!device_may_wakeup(&device->dev)) {
-+			device_set_wakeup_enable(&device->dev, true);
-+			button->wakeup_enabled = true;
-+		}
- 	}
- 
- 	printk(KERN_INFO PREFIX "%s [%s]\n", name, acpi_device_bid(device));
-@@ -452,7 +456,8 @@ static int acpi_button_remove(struct acp
- 	if (device->wakeup.flags.valid) {
- 		acpi_disable_gpe(device->wakeup.gpe_device,
- 				device->wakeup.gpe_number);
--		device_set_wakeup_enable(&device->dev, false);
-+		if (button->wakeup_enabled)
-+			device_set_wakeup_enable(&device->dev, false);
- 	}
- 
- 	acpi_button_remove_fs(device);
+RnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgoKQ29tbWl0IDk2MzBiZGQgKEFD
+UEk6IFVzZSBHUEUgcmVmZXJlbmNlIGNvdW50aW5nIHRvIHN1cHBvcnQgc2hhcmVkCkdQRXMpIGlu
+dHJvZHVjZWQgYSBzdXNwZW5kIHJlZ3Jlc3Npb24gd2hlcmUgYm94ZXMgcmVzdW1lIGltbWVkaWF0
+ZWx5CmFmdGVyIGJlaW5nIHN1c3BlbmRlZCBkdWUgdG8gdGhlIGxpZCBvciBzbGVlcCBidXR0b24g
+d2FrZXVwIHN0YXR1cwpub3QgYmVpbmcgY2xlYXJlZCBwcm9wZXJseS4gIFRoaXMgaGFwcGVucyBp
+ZiB0aGUgR1BFcyBjb3JyZXNwb25kaW5nCnRvIHRob3NlIGRldmljZXMgYXJlIG5vdCBlbmFibGVk
+IGFsbCB0aGUgdGltZSwgd2hpY2ggYXBwYXJlbnRseSBpcwpleHBlY3RlZCBieSBzb21lIEJJT1Nl
+cy4KClRvIGZpeCB0aGlzIHByb2JsZW0sIGVuYWJsZSBidXR0b24gYW5kIGxpZCBHUEVzIHVuY29u
+ZGl0aW9uYWxseQpkdXJpbmcgaW5pdGlhbGl6YXRpb24gYW5kIGtlZXAgdGhlbSBlbmFibGVkIGFs
+bCB0aGUgdGltZSwgcmVnYXJkbGVzcwpvZiB3aGV0aGVyIG9yIG5vdCB0aGUgQUNQSSBidXR0b24g
+ZHJpdmVyIGlzIHVzZWQuCgpSZWZlcmVuY2VzOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcv
+c2hvd19idWcuY2dpP2lkPTI3MzcyClJlcG9ydGVkLWFuZC10ZXN0ZWQtYnk6IEZlcmVuYyBXw6Fn
+bmVyIDx3ZmVyaUBuaWlmLmh1PgpDYzogc3RhYmxlQGtlcm5lbC5vcmcKU2lnbmVkLW9mZi1ieTog
+UmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgotLS0KIGRyaXZlcnMvYWNwaS9idXR0b24u
+YyB8ICAgMTMgLS0tLS0tLS0tLS0tLQogZHJpdmVycy9hY3BpL3dha2V1cC5jIHwgICAgNiArKysr
+Ky0KIDIgZmlsZXMgY2hhbmdlZCwgNSBpbnNlcnRpb25zKCspLCAxNCBkZWxldGlvbnMoLSkKCklu
+ZGV4OiBsaW51eC0yLjYvZHJpdmVycy9hY3BpL3dha2V1cC5jCj09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4
+LTIuNi5vcmlnL2RyaXZlcnMvYWNwaS93YWtldXAuYworKysgbGludXgtMi42L2RyaXZlcnMvYWNw
+aS93YWtldXAuYwpAQCAtODYsOCArODYsMTIgQEAgaW50IF9faW5pdCBhY3BpX3dha2V1cF9kZXZp
+Y2VfaW5pdCh2b2lkKQogCQlzdHJ1Y3QgYWNwaV9kZXZpY2UgKmRldiA9IGNvbnRhaW5lcl9vZihu
+b2RlLAogCQkJCQkJICAgICAgIHN0cnVjdCBhY3BpX2RldmljZSwKIAkJCQkJCSAgICAgICB3YWtl
+dXBfbGlzdCk7Ci0JCWlmIChkZXZpY2VfY2FuX3dha2V1cCgmZGV2LT5kZXYpKQorCQlpZiAoZGV2
+aWNlX2Nhbl93YWtldXAoJmRldi0+ZGV2KSkgeworCQkJLyogQnV0dG9uIEdQRXMgYXJlIHN1cHBv
+c2VkIHRvIGJlIGFsd2F5cyBlbmFibGVkLiAqLworCQkJYWNwaV9lbmFibGVfZ3BlKGRldi0+d2Fr
+ZXVwLmdwZV9kZXZpY2UsCisJCQkJCWRldi0+d2FrZXVwLmdwZV9udW1iZXIpOwogCQkJZGV2aWNl
+X3NldF93YWtldXBfZW5hYmxlKCZkZXYtPmRldiwgdHJ1ZSk7CisJCX0KIAl9CiAJbXV0ZXhfdW5s
+b2NrKCZhY3BpX2RldmljZV9sb2NrKTsKIAlyZXR1cm4gMDsKCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1w
+bUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRp
+b24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
