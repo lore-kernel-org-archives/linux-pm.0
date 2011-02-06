@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Updated][PATCH 1/2] ACPI / Wakeup: Enable button GPEs
-	unconditionally during initialization
-Date: Sun, 6 Feb 2011 15:24:08 +0100
-Message-ID: <201102061524.08578.rjw__8382.63065456903$1297002314$gmane$org@sisk.pl>
-References: <201102061418.56202.rjw@sisk.pl> <201102061420.17431.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Do not create wakeup sysfs files for
+ devices that cannot wake up (v2)
+Date: Sun, 6 Feb 2011 10:29:24 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1102061024150.20379-100000__24887.4466553845$1297006251$gmane$org@netrider.rowland.org>
+References: <201102061519.11360.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102061420.17431.rjw@sisk.pl>
+In-Reply-To: <201102061519.11360.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,40 +18,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Ferenc =?utf-8?q?W=C3=A1gner?= <wferi@niif.hu>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgpTdWJqZWN0OiBBQ1BJIC8gV2Fr
-ZXVwOiBFbmFibGUgYnV0dG9uIEdQRXMgdW5jb25kaXRpb25hbGx5IGR1cmluZyBpbml0aWFsaXph
-dGlvbgoKQ29tbWl0IDk2MzBiZGQgKEFDUEk6IFVzZSBHUEUgcmVmZXJlbmNlIGNvdW50aW5nIHRv
-IHN1cHBvcnQgc2hhcmVkCkdQRXMpIGludHJvZHVjZWQgYSBzdXNwZW5kIHJlZ3Jlc3Npb24gd2hl
-cmUgYm94ZXMgcmVzdW1lIGltbWVkaWF0ZWx5CmFmdGVyIGJlaW5nIHN1c3BlbmRlZCBkdWUgdG8g
-dGhlIGxpZCBvciBzbGVlcCBidXR0b24gd2FrZXVwIHN0YXR1cwpub3QgYmVpbmcgY2xlYXJlZCBw
-cm9wZXJseS4gIFRoaXMgaGFwcGVucyBpZiB0aGUgR1BFcyBjb3JyZXNwb25kaW5nCnRvIHRob3Nl
-IGRldmljZXMgYXJlIG5vdCBlbmFibGVkIGFsbCB0aGUgdGltZSwgd2hpY2ggYXBwYXJlbnRseSBp
-cwpleHBlY3RlZCBieSBzb21lIEJJT1Nlcy4KClRvIGZpeCB0aGlzIHByb2JsZW0sIGVuYWJsZSBi
-dXR0b24gYW5kIGxpZCBHUEVzIHVuY29uZGl0aW9uYWxseQpkdXJpbmcgaW5pdGlhbGl6YXRpb24g
-YW5kIGtlZXAgdGhlbSBlbmFibGVkIGFsbCB0aGUgdGltZSwgcmVnYXJkbGVzcwpvZiB3aGV0aGVy
-IG9yIG5vdCB0aGUgQUNQSSBidXR0b24gZHJpdmVyIGlzIHVzZWQuCgpSZWZlcmVuY2VzOiBodHRw
-czovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI3MzcyClJlcG9ydGVkLWFu
-ZC10ZXN0ZWQtYnk6IEZlcmVuYyBXw6FnbmVyIDx3ZmVyaUBuaWlmLmh1PgpDYzogc3RhYmxlQGtl
-cm5lbC5vcmcKU2lnbmVkLW9mZi1ieTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgot
-LS0KCkhpLAoKVGhpcyB0aW1lIHdpdGggdGhlIGNvcnJlY3QgZGlmZnN0YXQuCgpUaGFua3MsClJh
-ZmFlbAoKLS0tCiBkcml2ZXJzL2FjcGkvd2FrZXVwLmMgfCAgICA2ICsrKysrLQogMSBmaWxlIGNo
-YW5nZWQsIDUgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQoKSW5kZXg6IGxpbnV4LTIuNi9k
-cml2ZXJzL2FjcGkvd2FrZXVwLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvZHJpdmVy
-cy9hY3BpL3dha2V1cC5jCisrKyBsaW51eC0yLjYvZHJpdmVycy9hY3BpL3dha2V1cC5jCkBAIC04
-Niw4ICs4NiwxMiBAQCBpbnQgX19pbml0IGFjcGlfd2FrZXVwX2RldmljZV9pbml0KHZvaWQpCiAJ
-CXN0cnVjdCBhY3BpX2RldmljZSAqZGV2ID0gY29udGFpbmVyX29mKG5vZGUsCiAJCQkJCQkgICAg
-ICAgc3RydWN0IGFjcGlfZGV2aWNlLAogCQkJCQkJICAgICAgIHdha2V1cF9saXN0KTsKLQkJaWYg
-KGRldmljZV9jYW5fd2FrZXVwKCZkZXYtPmRldikpCisJCWlmIChkZXZpY2VfY2FuX3dha2V1cCgm
-ZGV2LT5kZXYpKSB7CisJCQkvKiBCdXR0b24gR1BFcyBhcmUgc3VwcG9zZWQgdG8gYmUgYWx3YXlz
-IGVuYWJsZWQuICovCisJCQlhY3BpX2VuYWJsZV9ncGUoZGV2LT53YWtldXAuZ3BlX2RldmljZSwK
-KwkJCQkJZGV2LT53YWtldXAuZ3BlX251bWJlcik7CiAJCQlkZXZpY2Vfc2V0X3dha2V1cF9lbmFi
-bGUoJmRldi0+ZGV2LCB0cnVlKTsKKwkJfQogCX0KIAltdXRleF91bmxvY2soJmFjcGlfZGV2aWNl
-X2xvY2spOwogCXJldHVybiAwOwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91
-bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
-c3RpbmZvL2xpbnV4LXBt
+On Sun, 6 Feb 2011, Rafael J. Wysocki wrote:
+
+> Hi,
+> 
+> Below is the next version of the patch changing the PM core to only create
+> wakeup sysfs files for devices that are wakeup-capable.  It contains a change
+> in drivers/usb/core/hub.c that should avoid the problem described in the thread
+> at https://lkml.org/lkml/2011/2/5/108 , but I'm not 100% it's the right
+> approach.  Please have a look.
+
+Yes, that's right -- in fact, it's exactly the same as what I was going
+to do.  Of course, it should be separated out into a separate patch, to
+be applied before the other wakeup changes.
+
+Alan Stern
