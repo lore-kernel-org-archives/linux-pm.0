@@ -1,16 +1,14 @@
-From: Mandeep Singh Baines <msb@chromium.org>
-Subject: [PATCH v2] TTY: use appropriate printk priority level
-Date: Sun, 6 Feb 2011 09:31:53 -0800
-Message-ID: <20110206173153.GT19745__22395.7542017617$1297013600$gmane$org@google.com>
-References: <20110125235700.GR8008@google.com>
-	<1296084570-31453-5-git-send-email-msb@chromium.org>
-	<20110203221346.GA477@kroah.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: Do not create wakeup sysfs files for
+	devices that cannot wake up (v2)
+Date: Sun, 6 Feb 2011 19:53:17 +0100
+Message-ID: <201102061953.17433.rjw__43232.4021975093$1297018516$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1102061024150.20379-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110203221346.GA477@kroah.com>
+In-Reply-To: <Pine.LNX.4.44L0.1102061024150.20379-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,69 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org, mingo@redhat.com, linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rebased to apply cleanly against v2.6.38-rc3
+On Sunday, February 06, 2011, Alan Stern wrote:
+> On Sun, 6 Feb 2011, Rafael J. Wysocki wrote:
+> 
+> > Hi,
+> > 
+> > Below is the next version of the patch changing the PM core to only create
+> > wakeup sysfs files for devices that are wakeup-capable.  It contains a change
+> > in drivers/usb/core/hub.c that should avoid the problem described in the thread
+> > at https://lkml.org/lkml/2011/2/5/108 , but I'm not 100% it's the right
+> > approach.  Please have a look.
+> 
+> Yes, that's right -- in fact, it's exactly the same as what I was going
+> to do.  Of course, it should be separated out into a separate patch, to
+> be applied before the other wakeup changes.
 
----
-printk()s without a priority level default to KERN_WARNING. To reduce
-noise at KERN_WARNING, this patch set the priority level appriopriately
-for unleveled printks()s. This should be useful to folks that look at
-dmesg warnings closely.
+OK, I'll split it out.
 
-Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
----
- drivers/tty/vt/vt.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+Greg, any objections to me putting the change below into the suspend tree as
+a separate commit:
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 147ede3..d5669ff 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -2157,10 +2157,10 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
+Index: linux-2.6/drivers/usb/core/hub.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/core/hub.c
++++ linux-2.6/drivers/usb/core/hub.c
+@@ -1465,6 +1465,7 @@ void usb_set_device_state(struct usb_dev
+                enum usb_device_state new_state)
+ {
+        unsigned long flags;
++       int wakeup = -1;
  
- 	currcons = vc->vc_num;
- 	if (!vc_cons_allocated(currcons)) {
--	    /* could this happen? */
--		printk_once("con_write: tty %d not allocated\n", currcons+1);
--	    console_unlock();
--	    return 0;
-+		/* could this happen? */
-+		pr_warn_once("con_write: tty %d not allocated\n", currcons+1);
-+		console_unlock();
-+		return 0;
- 	}
- 
- 	himask = vc->vc_hi_font_mask;
-@@ -2940,7 +2940,7 @@ static int __init con_init(void)
- 	gotoxy(vc, vc->vc_x, vc->vc_y);
- 	csi_J(vc, 0);
- 	update_screen(vc);
--	printk("Console: %s %s %dx%d",
-+	pr_info("Console: %s %s %dx%d",
- 		vc->vc_can_do_color ? "colour" : "mono",
- 		display_desc, vc->vc_cols, vc->vc_rows);
- 	printable = 1;
-@@ -3103,7 +3103,7 @@ static int bind_con_driver(const struct consw *csw, int first, int last,
- 			clear_buffer_attributes(vc);
- 	}
- 
--	printk("Console: switching ");
-+	pr_info("Console: switching ");
- 	if (!deflt)
- 		printk("consoles %d-%d ", first+1, last+1);
- 	if (j >= 0) {
-@@ -3809,7 +3809,8 @@ void do_unblank_screen(int leaving_gfx)
- 		return;
- 	if (!vc_cons_allocated(fg_console)) {
- 		/* impossible */
--		printk("unblank_screen: tty %d not allocated ??\n", fg_console+1);
-+		pr_warning("unblank_screen: tty %d not allocated ??\n",
-+			   fg_console+1);
- 		return;
- 	}
- 	vc = vc_cons[fg_console].d;
--- 
-1.7.3.1
+        spin_lock_irqsave(&device_state_lock, flags);
+        if (udev->state == USB_STATE_NOTATTACHED)
+@@ -1479,11 +1480,10 @@ void usb_set_device_state(struct usb_dev
+                                        || new_state == USB_STATE_SUSPENDED)
+                                ;       /* No change to wakeup settings */
+                        else if (new_state == USB_STATE_CONFIGURED)
+-                               device_set_wakeup_capable(&udev->dev,
+-                                       (udev->actconfig->desc.bmAttributes
+-                                        & USB_CONFIG_ATT_WAKEUP));
++                               wakeup = udev->actconfig->desc.bmAttributes
++                                        & USB_CONFIG_ATT_WAKEUP;
+                        else
+-                               device_set_wakeup_capable(&udev->dev, 0);
++                               wakeup = 0;
+                }
+                if (udev->state == USB_STATE_SUSPENDED &&
+                        new_state != USB_STATE_SUSPENDED)
+@@ -1495,6 +1495,8 @@ void usb_set_device_state(struct usb_dev
+        } else
+                recursively_mark_NOTATTACHED(udev);
+        spin_unlock_irqrestore(&device_state_lock, flags);
++       if (wakeup >= 0)
++               device_set_wakeup_capable(&udev->dev, wakeup);
+ }
+ EXPORT_SYMBOL_GPL(usb_set_device_state);
+
+Thanks,
+Rafael
