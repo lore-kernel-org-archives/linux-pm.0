@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/6] ACPI / PM: Do not switch interrupts off/on
-	in acpi_hibernation_enter()
-Date: Mon, 7 Feb 2011 23:22:46 +0100
-Message-ID: <201102072322.47041.rjw__20869.8356793777$1297118288$gmane$org@sisk.pl>
-References: <201102072316.41270.rjw@sisk.pl>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
+Date: Mon, 7 Feb 2011 14:23:50 -0800
+Message-ID: <20110207222350.GA24804__37856.479190714$1297118499$gmane$org@core.coreip.homeip.net>
+References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<201102072215.59921.rjw@sisk.pl>
+	<20110207214732.GA24703@core.coreip.homeip.net>
+	<201102072300.03986.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102072316.41270.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201102072300.03986.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +21,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Mon, Feb 07, 2011 at 11:00:03PM +0100, Rafael J. Wysocki wrote:
+> On Monday, February 07, 2011, Dmitry Torokhov wrote:
+> > On Mon, Feb 07, 2011 at 10:15:59PM +0100, Rafael J. Wysocki wrote:
+> > > On Monday, February 07, 2011, Mark Brown wrote:
+> > > > 
+> > > > Yeah, but some people seem very keen on removing the pointers to the PM
+> > > > ops entirely when CONFIG_PM is disabled which means that you end up with
+> > > > varying idioms for what you do with the PM ops as stuff gets ifdefed
+> > > > out.  Then again I'm not sure anything would make those people any
+> > > > happier.
+> > > 
+> > > I really think we should do things that makes sense rather that worry about
+> > > who's going to like or dislike it (except for Linus maybe, but he tends to like
+> > > things that make sense anyway).  At this point I think the change I suggested
+> > > makes sense, because it (a) simplifies things and (b) follows the quite common
+> > > practice which is to make PM callbacks depend on CONFIG_PM.
+> > 
+> > Many people make these callback dependent on PM not because it makes
+> > much sense but because it is possible to do so. However, aside of
+> > randconfig compile testing, nobody really tests drivers that implement
+> > PM in the !CONFIG_PM setting.
+> 
+> That I can agree with, but I'm not sure whether it is an argument against
+> the patch I've just posted or for it?
 
-The function acpi_hibernation_enter() is always called with
-interrupts off, so it doesn't need to switch them off and on.
+More of an observation for your (b) justification. I'd probably force
+CONFIG_PM to always 'y'w while we weeding references to it from
+drivers...
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/sleep.c |    3 ---
- 1 file changed, 3 deletions(-)
-
-Index: linux-2.6/drivers/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep.c
-+++ linux-2.6/drivers/acpi/sleep.c
-@@ -457,16 +457,13 @@ static int acpi_hibernation_begin(void)
- static int acpi_hibernation_enter(void)
- {
- 	acpi_status status = AE_OK;
--	unsigned long flags = 0;
- 
- 	ACPI_FLUSH_CPU_CACHE();
- 
--	local_irq_save(flags);
- 	/* This shouldn't return.  If it returns, we have a problem */
- 	status = acpi_enter_sleep_state(ACPI_STATE_S4);
- 	/* Reprogram control registers and execute _BFS */
- 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
--	local_irq_restore(flags);
- 
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
- }
+-- 
+Dmitry
