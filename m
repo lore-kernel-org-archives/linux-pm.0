@@ -1,17 +1,17 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Date: Mon, 7 Feb 2011 14:50:31 +0000
-Message-ID: <20110207145031.GL10564__31368.2180633352$1297090283$gmane$org@opensource.wolfsonmicro.com>
+Date: Mon, 7 Feb 2011 16:00:55 +0100
+Message-ID: <AANLkTikw7j5Q7CGZK=Xbcgubt9LYBGiXf01wQ4nbg8NR__19704.48989091$1297091439$gmane$org@mail.gmail.com>
 References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 	<20110208011324.d5371c4c.sfr@canb.auug.org.au>
 	<20110207141829.GK10564@opensource.wolfsonmicro.com>
 	<20110208014432.2c9288e4.sfr@canb.auug.org.au>
+	<20110207145031.GL10564@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110208014432.2c9288e4.sfr@canb.auug.org.au>
+In-Reply-To: <20110207145031.GL10564@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,26 +21,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-embedded@vger.kernel.org, Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 08, 2011 at 01:44:32AM +1100, Stephen Rothwell wrote:
-> On Mon, 7 Feb 2011 14:18:29 +0000 Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-
-> > Do you mean that these systems require CONFIG_PM be turned off, or just
-> > that people tend not to turn it on?  If the latter would you expect any
-> > ill effects from doing so?
-
-> I don't know the answer to either question without testing.  All I am
-> saying is that currently the default for CONFIG_PM is "off" and you are
-> changing it to be "on" and there may not have been any testing done of
-> that in some situations.   We don't know where it was explicitly
-> turned off any more since we shrank our defconfig files (which was done
-> automatically) ... since it is off by default, it doesn't need to be
-> mentioned in a defconfig unless it needs to be turned on.
-
-My suspicion would be that it'll have been turned off by someone hitting
-return through a config upgrade rather than through deliberate effort.
-On the other hand if it is essential for some machines to have it
-disabled they probably want to have somethnig in Kconfig.
+T24gTW9uLCBGZWIgNywgMjAxMSBhdCAxNTo1MCwgTWFyayBCcm93bgo8YnJvb25pZUBvcGVuc291
+cmNlLndvbGZzb25taWNyby5jb20+IHdyb3RlOgo+IE9uIFR1ZSwgRmViIDA4LCAyMDExIGF0IDAx
+OjQ0OjMyQU0gKzExMDAsIFN0ZXBoZW4gUm90aHdlbGwgd3JvdGU6Cj4+IE9uIE1vbiwgNyBGZWIg
+MjAxMSAxNDoxODoyOSArMDAwMCBNYXJrIEJyb3duIDxicm9vbmllQG9wZW5zb3VyY2Uud29sZnNv
+bm1pY3JvLmNvbT4gd3JvdGU6Cj4KPj4gPiBEbyB5b3UgbWVhbiB0aGF0IHRoZXNlIHN5c3RlbXMg
+cmVxdWlyZSBDT05GSUdfUE0gYmUgdHVybmVkIG9mZiwgb3IganVzdAo+PiA+IHRoYXQgcGVvcGxl
+IHRlbmQgbm90IHRvIHR1cm4gaXQgb24/IMKgSWYgdGhlIGxhdHRlciB3b3VsZCB5b3UgZXhwZWN0
+IGFueQo+PiA+IGlsbCBlZmZlY3RzIGZyb20gZG9pbmcgc28/Cj4KPj4gSSBkb24ndCBrbm93IHRo
+ZSBhbnN3ZXIgdG8gZWl0aGVyIHF1ZXN0aW9uIHdpdGhvdXQgdGVzdGluZy4gwqBBbGwgSSBhbQo+
+PiBzYXlpbmcgaXMgdGhhdCBjdXJyZW50bHkgdGhlIGRlZmF1bHQgZm9yIENPTkZJR19QTSBpcyAi
+b2ZmIiBhbmQgeW91IGFyZQo+PiBjaGFuZ2luZyBpdCB0byBiZSAib24iIGFuZCB0aGVyZSBtYXkg
+bm90IGhhdmUgYmVlbiBhbnkgdGVzdGluZyBkb25lIG9mCj4+IHRoYXQgaW4gc29tZSBzaXR1YXRp
+b25zLiDCoCBXZSBkb24ndCBrbm93IHdoZXJlIGl0IHdhcyBleHBsaWNpdGx5Cj4+IHR1cm5lZCBv
+ZmYgYW55IG1vcmUgc2luY2Ugd2Ugc2hyYW5rIG91ciBkZWZjb25maWcgZmlsZXMgKHdoaWNoIHdh
+cyBkb25lCj4+IGF1dG9tYXRpY2FsbHkpIC4uLiBzaW5jZSBpdCBpcyBvZmYgYnkgZGVmYXVsdCwg
+aXQgZG9lc24ndCBuZWVkIHRvIGJlCj4+IG1lbnRpb25lZCBpbiBhIGRlZmNvbmZpZyB1bmxlc3Mg
+aXQgbmVlZHMgdG8gYmUgdHVybmVkIG9uLgo+Cj4gTXkgc3VzcGljaW9uIHdvdWxkIGJlIHRoYXQg
+aXQnbGwgaGF2ZSBiZWVuIHR1cm5lZCBvZmYgYnkgc29tZW9uZSBoaXR0aW5nCj4gcmV0dXJuIHRo
+cm91Z2ggYSBjb25maWcgdXBncmFkZSByYXRoZXIgdGhhbiB0aHJvdWdoIGRlbGliZXJhdGUgZWZm
+b3J0Lgo+IE9uIHRoZSBvdGhlciBoYW5kIGlmIGl0IGlzIGVzc2VudGlhbCBmb3Igc29tZSBtYWNo
+aW5lcyB0byBoYXZlIGl0Cj4gZGlzYWJsZWQgdGhleSBwcm9iYWJseSB3YW50IHRvIGhhdmUgc29t
+ZXRobmlnIGluIEtjb25maWcuCgokIGdpdCBncmVwICJDT05GSUdfUE0gaXMgbm90IHNldCIKN2Nm
+M2Q3M2I0MzYwZTkxYjE0MzI2NjMyYWIxYWVkYTRjYjI2MzA4ZF4gLS0gYXJjaC8gfCB3YyAtbAoy
+NTYKJAoKN2NmM2Q3M2I0MzYwZTkxYjE0MzI2NjMyYWIxYWVkYTRjYjI2MzA4ZCBpcyB0aGUgY29t
+bWl0IHRoYXQgaW50cm9kdWNlZApzYXZlZGVmY29uZmlnLCBzbyB0aGF0J3MgYSBzYWZlIHJldmlz
+aW9uIHdpdGggdW50cmltbWVkIGRlZmNvbmZpZ3MuCgpHcntvZXRqZSxlZXRpbmd9cywKCsKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIEdlZXJ0CgotLQpHZWVydCBVeXR0ZXJob2V2
+ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02
+OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwg
+SSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlz
+dHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4KwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqDCoCDCoMKgIC0tIExpbnVzIFRvcnZh
+bGRzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
+LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
+czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
