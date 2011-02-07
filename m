@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/6] ACPI / PM: Call acpi_save_state_mem() right
-	before low-level suspend
-Date: Mon, 7 Feb 2011 23:20:53 +0100
-Message-ID: <201102072320.53799.rjw__24723.1926805854$1297117638$gmane$org@sisk.pl>
+Subject: [PATCH 3/6] ACPI / PM: Modify the "low-level resume
+	finished" message
+Date: Mon, 7 Feb 2011 23:19:55 +0100
+Message-ID: <201102072319.56040.rjw__3317.48918765715$1297117638$gmane$org@sisk.pl>
 References: <201102072316.41270.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,45 +24,33 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Since acpi_save_state_mem() is only called by acpi_suspend_enter()
-if the target sleep state is S3, it's better to call it under the
-switch (acpi_state), right before do_suspend_lowlevel().
+Move the low-level resume completion message to the point where
+control goes back to acpi_suspend_enter() during resume and change
+it so that it's more informative.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/sleep.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/acpi/sleep.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 Index: linux-2.6/drivers/acpi/sleep.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep.c
 +++ linux-2.6/drivers/acpi/sleep.c
-@@ -244,17 +244,10 @@ static int acpi_suspend_enter(suspend_st
- {
- 	acpi_status status = AE_OK;
- 	u32 acpi_state = acpi_target_sleep_state;
-+	int error;
- 
- 	ACPI_FLUSH_CPU_CACHE();
- 
--	/* Do arch specific saving of state. */
--	if (acpi_state == ACPI_STATE_S3) {
--		int error = acpi_save_state_mem();
--
--		if (error)
--			return error;
--	}
--
- 	switch (acpi_state) {
- 	case ACPI_STATE_S1:
- 		barrier();
-@@ -262,6 +255,9 @@ static int acpi_suspend_enter(suspend_st
- 		break;
+@@ -263,6 +263,7 @@ static int acpi_suspend_enter(suspend_st
  
  	case ACPI_STATE_S3:
-+		error = acpi_save_state_mem();
-+		if (error)
-+			return error;
  		do_suspend_lowlevel();
- 		pr_info(PREFIX "Low-level resume complete\n");
++		pr_info(PREFIX "Low-level resume complete\n");
  		break;
+ 	}
+ 
+@@ -288,8 +289,6 @@ static int acpi_suspend_enter(suspend_st
+ 	/* Allow EC transactions to happen. */
+ 	acpi_ec_unblock_transactions_early();
+ 
+-	printk(KERN_DEBUG "Back to C!\n");
+-
+ 	suspend_nvs_restore();
+ 
+ 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
