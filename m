@@ -1,15 +1,11 @@
-From: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH 1/2] USB / Hub: Do not call
- device_set_wakeup_capable() under spinlock
-Date: Mon, 7 Feb 2011 19:10:18 +0900
-Message-ID: <AANLkTim7Q==ndSRDjAFF+tgRFqFory3Q9nJBPEQKuEEo__35786.3086661839$1297073465$gmane$org@mail.gmail.com>
-References: <201102061519.11360.rjw@sisk.pl> <201102062106.29712.rjw@sisk.pl>
-	<201102062107.49909.rjw@sisk.pl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] PM: Hide CONFIG_PM from users
+Date: Mon,  7 Feb 2011 12:22:15 +0000
+Message-ID: <1297081335-13631-1-git-send-email-broonie__5366.48403290219$1297081489$gmane$org@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102062107.49909.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +15,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBGZWIgNywgMjAxMSBhdCA1OjA3IEFNLCBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNp
-c2sucGw+IHdyb3RlOgo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD4KPgo+
-IEEgc3Vic2VxdWVudCBwYXRjaCB3aWxsIG1vZGlmeSBkZXZpY2Vfc2V0X3dha2V1cF9jYXBhYmxl
-KCkgaW4gc3VjaAo+IGEgd2F5IHRoYXQgaXQgd2lsbCBjYWxsIGZ1bmN0aW9ucyB3aGljaCBtYXkg
-c2xlZXAgYW5kIHRoZXJlZm9yZSBpdAo+IHNob3VsZG4ndCBiZSBjYWxsZWQgdW5kZXIgc3Bpbmxv
-Y2tzLiDCoEluIHByZXBhcmF0aW9uIGZvciB0aGF0LCBtb2RpZnkKPiB1c2Jfc2V0X2RldmljZV9z
-dGF0ZSgpIHRvIGF2b2lkIGNhbGxpbmcgZGV2aWNlX3NldF93YWtldXBfY2FwYWJsZSgpCj4gdW5k
-ZXIgZGV2aWNlX3N0YXRlX2xvY2suCj4KPiBTaWduZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2Nr
-aSA8cmp3QHNpc2sucGw+Cj4gQWNrZWQtYnk6IEdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ2toQHN1
-c2UuZGU+CgpSZXBvcnRlZC1ieTogTWluY2hhbiBLaW0gPG1pbmNoYW4ua2ltQGdtYWlsLmNvbT4K
-VGVzdGVkLWJ5OiBNaW5jaGFuIEtpbSA8bWluY2hhbi5raW1AZ21haWwuY29tPgoKLS0gCktpbmQg
-cmVnYXJkcywKTWluY2hhbiBLaW0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
-dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9saW51eC1wbQ==
+It is very rare to find a current system which is both sufficiently
+resource constrained to want to compile out power management support
+and sufficiently power insensitive to be able to tolerate doing so.
+Since having the configuration option requires non-zero effort to
+maintain, with ifdefery in most drivers, but it is used with vanishing
+rarity it is simpler to just remove the option.
+
+Begin doing so by hiding it from users - this should attract complaints
+from any active users. The option is left disabled for the IA64 Ski
+simulator which is a partial simulator for IA64 systems mostly missing
+device support. This is a very limited use case which is unlikely to
+ever want to enable most drivers.
+
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ kernel/power/Kconfig |   21 ++-------------------
+ 1 files changed, 2 insertions(+), 19 deletions(-)
+
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 2657299..99e3c52 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -1,23 +1,6 @@
+ config PM
+-	bool "Power Management support"
+-	depends on !IA64_HP_SIM
+-	---help---
+-	  "Power Management" means that parts of your computer are shut
+-	  off or put into a power conserving "sleep" mode if they are not
+-	  being used.  There are two competing standards for doing this: APM
+-	  and ACPI.  If you want to use either one, say Y here and then also
+-	  to the requisite support below.
+-
+-	  Power Management is most important for battery powered laptop
+-	  computers; if you have a laptop, check out the Linux Laptop home
+-	  page on the WWW at <http://www.linux-on-laptops.com/> or
+-	  Tuxmobil - Linux on Mobile Computers at <http://www.tuxmobil.org/>
+-	  and the Battery Powered Linux mini-HOWTO, available from
+-	  <http://www.tldp.org/docs.html#howto>.
+-
+-	  Note that, even if you say N here, Linux on the x86 architecture
+-	  will issue the hlt instruction if nothing is to be done, thereby
+-	  sending the processor to sleep and saving power.
++	bool
++	default y if !IA64_HP_SIM
+ 
+ config PM_DEBUG
+ 	bool "Power Management Debug Support"
+-- 
+1.7.2.3
