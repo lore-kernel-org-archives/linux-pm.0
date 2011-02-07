@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Date: Mon, 7 Feb 2011 20:16:53 +0100
-Message-ID: <201102072016.53410.rjw__8532.21294605664$1297106458$gmane$org@sisk.pl>
-References: <20110207152132.GM10564@opensource.wolfsonmicro.com>
-	<Pine.LNX.4.44L0.1102071035320.1924-100000@iolanthe.rowland.org>
-	<20110207154953.GN10564@opensource.wolfsonmicro.com>
+Date: Mon, 7 Feb 2011 19:30:26 +0000
+Message-ID: <20110207193026.GT10564__34534.6328722828$1297107082$gmane$org@opensource.wolfsonmicro.com>
+References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<201102072014.04259.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110207154953.GN10564@opensource.wolfsonmicro.com>
+Content-Disposition: inline
+In-Reply-To: <201102072014.04259.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +19,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-embedded@vger.kernel.org, Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@lists.linux-foundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, February 07, 2011, Mark Brown wrote:
-> On Mon, Feb 07, 2011 at 10:36:31AM -0500, Alan Stern wrote:
-> > On Mon, 7 Feb 2011, Mark Brown wrote:
-> 
-> > > I'd not be so sure - since it's a bool without an explicit default set
-> > > Kconfig will default to disabling it and if anything enabling it is the
-> > > option that requires special effort.
-> 
-> > This may be a naive suggestion, but have you considered simply _asking_
-> > the people who added those defconfigs?
-> 
-> I'm rather hoping that they'll notice the mailing list thread or that
-> someone else who knows what's going on with them does - as Geert pointed
-> out there's a considerable number of defconfigs that have this turned
-> off.  It seems more sensible to get some idea if this seems sane to
-> people in the general case before going trying to identify and contact
-> so many individuals.
-> 
-> If there are systems that really require disabling CONFIG_PM we probably
-> need to add stuff to Kconfig to make sure it can't be enabled anyway;
-> this shouldn't enable any new configurations.
+On Mon, Feb 07, 2011 at 08:14:03PM +0100, Rafael J. Wysocki wrote:
+> On Monday, February 07, 2011, Mark Brown wrote:
 
-Well, as I've just said, I don't like this change.  I'd very much prefer it if
-CONFIG_PM_OPS were renamed to CONFIG_PM.
+> >  config PM_DEBUG
+> >  	bool "Power Management Debug Support"
 
-Thanks,
-Rafael
+> I think it would be better to simply rename CONFIG_PM_OPS into CONFIG_PM.
+
+That still leaves the IA64 emulator to worry about but I'm not
+fundamentally opposed to that, it achieves a similar effect.  The main
+thing I'm looking for here is to cut down on the configuration options
+we have to maintain.
+
+> However, there's a number of things that I'm afraid wouldn't build correctly
+> if none of CONFIG_PM_SLEEP and CONFIG_PM_RUNTIME were set in that case.
+
+Actually CONFIG_PM_OPS probably also wants to be on independantly of
+those two sometimes for .poweroff() which I'd expect to run even if we
+can't suspend.
