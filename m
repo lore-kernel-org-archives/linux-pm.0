@@ -1,17 +1,17 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Date: Mon, 7 Feb 2011 16:00:55 +0100
-Message-ID: <AANLkTikw7j5Q7CGZK=Xbcgubt9LYBGiXf01wQ4nbg8NR__19704.48989091$1297091439$gmane$org@mail.gmail.com>
+Date: Tue, 8 Feb 2011 02:10:45 +1100
+Message-ID: <20110208021045.699654ca.sfr__21815.5587478124$1297091640$gmane$org@canb.auug.org.au>
 References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 	<20110208011324.d5371c4c.sfr@canb.auug.org.au>
 	<20110207141829.GK10564@opensource.wolfsonmicro.com>
 	<20110208014432.2c9288e4.sfr@canb.auug.org.au>
 	<20110207145031.GL10564@opensource.wolfsonmicro.com>
+	<AANLkTikw7j5Q7CGZK=Xbcgubt9LYBGiXf01wQ4nbg8NR@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============2680649627260201142=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110207145031.GL10564@opensource.wolfsonmicro.com>
+In-Reply-To: <AANLkTikw7j5Q7CGZK=Xbcgubt9LYBGiXf01wQ4nbg8NR@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +19,65 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-embedded@vger.kernel.org, Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-embedded@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBGZWIgNywgMjAxMSBhdCAxNTo1MCwgTWFyayBCcm93bgo8YnJvb25pZUBvcGVuc291
-cmNlLndvbGZzb25taWNyby5jb20+IHdyb3RlOgo+IE9uIFR1ZSwgRmViIDA4LCAyMDExIGF0IDAx
-OjQ0OjMyQU0gKzExMDAsIFN0ZXBoZW4gUm90aHdlbGwgd3JvdGU6Cj4+IE9uIE1vbiwgNyBGZWIg
-MjAxMSAxNDoxODoyOSArMDAwMCBNYXJrIEJyb3duIDxicm9vbmllQG9wZW5zb3VyY2Uud29sZnNv
-bm1pY3JvLmNvbT4gd3JvdGU6Cj4KPj4gPiBEbyB5b3UgbWVhbiB0aGF0IHRoZXNlIHN5c3RlbXMg
-cmVxdWlyZSBDT05GSUdfUE0gYmUgdHVybmVkIG9mZiwgb3IganVzdAo+PiA+IHRoYXQgcGVvcGxl
-IHRlbmQgbm90IHRvIHR1cm4gaXQgb24/IMKgSWYgdGhlIGxhdHRlciB3b3VsZCB5b3UgZXhwZWN0
-IGFueQo+PiA+IGlsbCBlZmZlY3RzIGZyb20gZG9pbmcgc28/Cj4KPj4gSSBkb24ndCBrbm93IHRo
-ZSBhbnN3ZXIgdG8gZWl0aGVyIHF1ZXN0aW9uIHdpdGhvdXQgdGVzdGluZy4gwqBBbGwgSSBhbQo+
-PiBzYXlpbmcgaXMgdGhhdCBjdXJyZW50bHkgdGhlIGRlZmF1bHQgZm9yIENPTkZJR19QTSBpcyAi
-b2ZmIiBhbmQgeW91IGFyZQo+PiBjaGFuZ2luZyBpdCB0byBiZSAib24iIGFuZCB0aGVyZSBtYXkg
-bm90IGhhdmUgYmVlbiBhbnkgdGVzdGluZyBkb25lIG9mCj4+IHRoYXQgaW4gc29tZSBzaXR1YXRp
-b25zLiDCoCBXZSBkb24ndCBrbm93IHdoZXJlIGl0IHdhcyBleHBsaWNpdGx5Cj4+IHR1cm5lZCBv
-ZmYgYW55IG1vcmUgc2luY2Ugd2Ugc2hyYW5rIG91ciBkZWZjb25maWcgZmlsZXMgKHdoaWNoIHdh
-cyBkb25lCj4+IGF1dG9tYXRpY2FsbHkpIC4uLiBzaW5jZSBpdCBpcyBvZmYgYnkgZGVmYXVsdCwg
-aXQgZG9lc24ndCBuZWVkIHRvIGJlCj4+IG1lbnRpb25lZCBpbiBhIGRlZmNvbmZpZyB1bmxlc3Mg
-aXQgbmVlZHMgdG8gYmUgdHVybmVkIG9uLgo+Cj4gTXkgc3VzcGljaW9uIHdvdWxkIGJlIHRoYXQg
-aXQnbGwgaGF2ZSBiZWVuIHR1cm5lZCBvZmYgYnkgc29tZW9uZSBoaXR0aW5nCj4gcmV0dXJuIHRo
-cm91Z2ggYSBjb25maWcgdXBncmFkZSByYXRoZXIgdGhhbiB0aHJvdWdoIGRlbGliZXJhdGUgZWZm
-b3J0Lgo+IE9uIHRoZSBvdGhlciBoYW5kIGlmIGl0IGlzIGVzc2VudGlhbCBmb3Igc29tZSBtYWNo
-aW5lcyB0byBoYXZlIGl0Cj4gZGlzYWJsZWQgdGhleSBwcm9iYWJseSB3YW50IHRvIGhhdmUgc29t
-ZXRobmlnIGluIEtjb25maWcuCgokIGdpdCBncmVwICJDT05GSUdfUE0gaXMgbm90IHNldCIKN2Nm
-M2Q3M2I0MzYwZTkxYjE0MzI2NjMyYWIxYWVkYTRjYjI2MzA4ZF4gLS0gYXJjaC8gfCB3YyAtbAoy
-NTYKJAoKN2NmM2Q3M2I0MzYwZTkxYjE0MzI2NjMyYWIxYWVkYTRjYjI2MzA4ZCBpcyB0aGUgY29t
-bWl0IHRoYXQgaW50cm9kdWNlZApzYXZlZGVmY29uZmlnLCBzbyB0aGF0J3MgYSBzYWZlIHJldmlz
-aW9uIHdpdGggdW50cmltbWVkIGRlZmNvbmZpZ3MuCgpHcntvZXRqZSxlZXRpbmd9cywKCsKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIEdlZXJ0CgotLQpHZWVydCBVeXR0ZXJob2V2
-ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LW02
-OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwg
-SSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlz
-dHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4KwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqDCoCDCoMKgIC0tIExpbnVzIFRvcnZh
-bGRzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
-LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRw
-czovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+--===============2680649627260201142==
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__8_Feb_2011_02_10_45_+1100_r4fpwZf8VNv_J/_S"
+
+--Signature=_Tue__8_Feb_2011_02_10_45_+1100_r4fpwZf8VNv_J/_S
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Geert,
+
+On Mon, 7 Feb 2011 16:00:55 +0100 Geert Uytterhoeven <geert@linux-m68k.org>=
+ wrote:
+>
+> $ git grep "CONFIG_PM is not set"
+> 7cf3d73b4360e91b14326632ab1aeda4cb26308d^ -- arch/ | wc -l
+> 256
+> $
+>=20
+> 7cf3d73b4360e91b14326632ab1aeda4cb26308d is the commit that introduced
+> savedefconfig, so that's a safe revision with untrimmed defconfigs.
+
+Yeah, but we can't tell if CONFIG_PM is turned off on purpose in those
+defconfigs, or just off because noone explicitly turned it on.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__8_Feb_2011_02_10_45_+1100_r4fpwZf8VNv_J/_S
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQEcBAEBAgAGBQJNUAt1AAoJEDMEi1NhKgbsHQMH/i/hm9i9pisjmv3T05ZtS1jd
+HgYORtkriKnCr5bl98Tleo9nzTmyGrY0d0TcWHsLcsRrtM89RFAatikMApZwxe47
+hI9kf9rdFV7B4w7FhubvnB3A3rEgiC3URdfP2hUv1K9y37c63HPTRinXNL6wkvG3
+yhiCGFHfllqZxO5xmP5tJcHvjzAShoDHnFK12nvYZq0jMgbF65oEycw+wZpKvCqH
+nR8L373rsCOEG4Si06SxOvUbY30OvQOvWnC5fsY1/NTTi/2R+z690leNr9tEMxbN
+tHv1OjvxO4oim3p9nGSsKJJqSb8aJb2XHzaXo9A+X73xzGVSHBf/PzDrD5cyzbQ=
+=Wf9n
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__8_Feb_2011_02_10_45_+1100_r4fpwZf8VNv_J/_S--
+
+--===============2680649627260201142==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============2680649627260201142==--
