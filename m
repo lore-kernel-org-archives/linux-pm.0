@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/6] ACPI / PM: Modify the "low-level resume
-	finished" message
-Date: Mon, 7 Feb 2011 23:19:55 +0100
-Message-ID: <201102072319.56040.rjw__3317.48918765715$1297117638$gmane$org@sisk.pl>
+Subject: [PATCH 2/6] ACPI / PM: Do not switch interrupts off/on
+	in acpi_suspend_enter()
+Date: Mon, 7 Feb 2011 23:19:10 +0100
+Message-ID: <201102072319.10327.rjw__4432.63653801313$1297117777$gmane$org@sisk.pl>
 References: <201102072316.41270.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,33 +24,39 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Move the low-level resume completion message to the point where
-control goes back to acpi_suspend_enter() during resume and change
-it so that it's more informative.
+The function acpi_suspend_enter() is always called with interrupts
+off, so it doesn't need to switch them off and on.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/sleep.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/acpi/sleep.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
 Index: linux-2.6/drivers/acpi/sleep.c
 ===================================================================
 --- linux-2.6.orig/drivers/acpi/sleep.c
 +++ linux-2.6/drivers/acpi/sleep.c
-@@ -263,6 +263,7 @@ static int acpi_suspend_enter(suspend_st
+@@ -243,7 +243,6 @@ static int acpi_suspend_begin(suspend_st
+ static int acpi_suspend_enter(suspend_state_t pm_state)
+ {
+ 	acpi_status status = AE_OK;
+-	unsigned long flags = 0;
+ 	u32 acpi_state = acpi_target_sleep_state;
  
- 	case ACPI_STATE_S3:
- 		do_suspend_lowlevel();
-+		pr_info(PREFIX "Low-level resume complete\n");
- 		break;
+ 	ACPI_FLUSH_CPU_CACHE();
+@@ -256,7 +255,6 @@ static int acpi_suspend_enter(suspend_st
+ 			return error;
  	}
  
-@@ -288,8 +289,6 @@ static int acpi_suspend_enter(suspend_st
+-	local_irq_save(flags);
+ 	switch (acpi_state) {
+ 	case ACPI_STATE_S1:
+ 		barrier();
+@@ -290,7 +288,6 @@ static int acpi_suspend_enter(suspend_st
  	/* Allow EC transactions to happen. */
  	acpi_ec_unblock_transactions_early();
  
--	printk(KERN_DEBUG "Back to C!\n");
--
- 	suspend_nvs_restore();
+-	local_irq_restore(flags);
+ 	printk(KERN_DEBUG "Back to C!\n");
  
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
+ 	suspend_nvs_restore();
