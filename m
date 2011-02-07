@@ -1,11 +1,13 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] PM: Hide CONFIG_PM from users
-Date: Mon,  7 Feb 2011 12:22:15 +0000
-Message-ID: <1297081335-13631-1-git-send-email-broonie__5366.48403290219$1297081489$gmane$org@opensource.wolfsonmicro.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
+Date: Mon, 7 Feb 2011 13:40:28 +0100
+Message-ID: <AANLkTimxpRHW2TPwSnufpoeOHoEtkz1iaR3-VsC1qM4j__239.230079069053$1297082577$gmane$org@mail.gmail.com>
+References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,57 +17,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-arch@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-It is very rare to find a current system which is both sufficiently
-resource constrained to want to compile out power management support
-and sufficiently power insensitive to be able to tolerate doing so.
-Since having the configuration option requires non-zero effort to
-maintain, with ifdefery in most drivers, but it is used with vanishing
-rarity it is simpler to just remove the option.
-
-Begin doing so by hiding it from users - this should attract complaints
-from any active users. The option is left disabled for the IA64 Ski
-simulator which is a partial simulator for IA64 systems mostly missing
-device support. This is a very limited use case which is unlikely to
-ever want to enable most drivers.
-
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- kernel/power/Kconfig |   21 ++-------------------
- 1 files changed, 2 insertions(+), 19 deletions(-)
-
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 2657299..99e3c52 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -1,23 +1,6 @@
- config PM
--	bool "Power Management support"
--	depends on !IA64_HP_SIM
--	---help---
--	  "Power Management" means that parts of your computer are shut
--	  off or put into a power conserving "sleep" mode if they are not
--	  being used.  There are two competing standards for doing this: APM
--	  and ACPI.  If you want to use either one, say Y here and then also
--	  to the requisite support below.
--
--	  Power Management is most important for battery powered laptop
--	  computers; if you have a laptop, check out the Linux Laptop home
--	  page on the WWW at <http://www.linux-on-laptops.com/> or
--	  Tuxmobil - Linux on Mobile Computers at <http://www.tuxmobil.org/>
--	  and the Battery Powered Linux mini-HOWTO, available from
--	  <http://www.tldp.org/docs.html#howto>.
--
--	  Note that, even if you say N here, Linux on the x86 architecture
--	  will issue the hlt instruction if nothing is to be done, thereby
--	  sending the processor to sleep and saving power.
-+	bool
-+	default y if !IA64_HP_SIM
- 
- config PM_DEBUG
- 	bool "Power Management Debug Support"
--- 
-1.7.2.3
+T24gTW9uLCBGZWIgNywgMjAxMSBhdCAxMzoyMiwgTWFyayBCcm93bgo8YnJvb25pZUBvcGVuc291
+cmNlLndvbGZzb25taWNyby5jb20+IHdyb3RlOgo+IEl0IGlzIHZlcnkgcmFyZSB0byBmaW5kIGEg
+Y3VycmVudCBzeXN0ZW0gd2hpY2ggaXMgYm90aCBzdWZmaWNpZW50bHkKPiByZXNvdXJjZSBjb25z
+dHJhaW5lZCB0byB3YW50IHRvIGNvbXBpbGUgb3V0IHBvd2VyIG1hbmFnZW1lbnQgc3VwcG9ydAo+
+IGFuZCBzdWZmaWNpZW50bHkgcG93ZXIgaW5zZW5zaXRpdmUgdG8gYmUgYWJsZSB0byB0b2xlcmF0
+ZSBkb2luZyBzby4KCkhtbW0uLi4KCj4gLS0tIGEva2VybmVsL3Bvd2VyL0tjb25maWcKPiArKysg
+Yi9rZXJuZWwvcG93ZXIvS2NvbmZpZwo+IEBAIC0xLDIzICsxLDYgQEAKPiDCoGNvbmZpZyBQTQo+
+IC0gwqAgwqAgwqAgYm9vbCAiUG93ZXIgTWFuYWdlbWVudCBzdXBwb3J0Igo+IC0gwqAgwqAgwqAg
+ZGVwZW5kcyBvbiAhSUE2NF9IUF9TSU0KPiAtIMKgIMKgIMKgIC0tLWhlbHAtLS0KPiAtIMKgIMKg
+IMKgIMKgICJQb3dlciBNYW5hZ2VtZW50IiBtZWFucyB0aGF0IHBhcnRzIG9mIHlvdXIgY29tcHV0
+ZXIgYXJlIHNodXQKPiAtIMKgIMKgIMKgIMKgIG9mZiBvciBwdXQgaW50byBhIHBvd2VyIGNvbnNl
+cnZpbmcgInNsZWVwIiBtb2RlIGlmIHRoZXkgYXJlIG5vdAo+IC0gwqAgwqAgwqAgwqAgYmVpbmcg
+dXNlZC4gwqBUaGVyZSBhcmUgdHdvIGNvbXBldGluZyBzdGFuZGFyZHMgZm9yIGRvaW5nIHRoaXM6
+IEFQTQo+IC0gwqAgwqAgwqAgwqAgYW5kIEFDUEkuIMKgSWYgeW91IHdhbnQgdG8gdXNlIGVpdGhl
+ciBvbmUsIHNheSBZIGhlcmUgYW5kIHRoZW4gYWxzbwo+IC0gwqAgwqAgwqAgwqAgdG8gdGhlIHJl
+cXVpc2l0ZSBzdXBwb3J0IGJlbG93LgoKR29vZCB0byBzZWUgdGhlIFBDLWNlbnRyaWMgY29tbWVu
+dHMgYXJlIGdvaW5nIGF3YXkgOi0pCgo+IC0KPiAtIMKgIMKgIMKgIMKgIFBvd2VyIE1hbmFnZW1l
+bnQgaXMgbW9zdCBpbXBvcnRhbnQgZm9yIGJhdHRlcnkgcG93ZXJlZCBsYXB0b3AKPiAtIMKgIMKg
+IMKgIMKgIGNvbXB1dGVyczsgaWYgeW91IGhhdmUgYSBsYXB0b3AsIGNoZWNrIG91dCB0aGUgTGlu
+dXggTGFwdG9wIGhvbWUKPiAtIMKgIMKgIMKgIMKgIHBhZ2Ugb24gdGhlIFdXVyBhdCA8aHR0cDov
+L3d3dy5saW51eC1vbi1sYXB0b3BzLmNvbS8+IG9yCj4gLSDCoCDCoCDCoCDCoCBUdXhtb2JpbCAt
+IExpbnV4IG9uIE1vYmlsZSBDb21wdXRlcnMgYXQgPGh0dHA6Ly93d3cudHV4bW9iaWwub3JnLz4K
+PiAtIMKgIMKgIMKgIMKgIGFuZCB0aGUgQmF0dGVyeSBQb3dlcmVkIExpbnV4IG1pbmktSE9XVE8s
+IGF2YWlsYWJsZSBmcm9tCj4gLSDCoCDCoCDCoCDCoCA8aHR0cDovL3d3dy50bGRwLm9yZy9kb2Nz
+Lmh0bWwjaG93dG8+Lgo+IC0KPiAtIMKgIMKgIMKgIMKgIE5vdGUgdGhhdCwgZXZlbiBpZiB5b3Ug
+c2F5IE4gaGVyZSwgTGludXggb24gdGhlIHg4NiBhcmNoaXRlY3R1cmUKPiAtIMKgIMKgIMKgIMKg
+IHdpbGwgaXNzdWUgdGhlIGhsdCBpbnN0cnVjdGlvbiBpZiBub3RoaW5nIGlzIHRvIGJlIGRvbmUs
+IHRoZXJlYnkKPiAtIMKgIMKgIMKgIMKgIHNlbmRpbmcgdGhlIHByb2Nlc3NvciB0byBzbGVlcCBh
+bmQgc2F2aW5nIHBvd2VyLgo+ICsgwqAgwqAgwqAgYm9vbAo+ICsgwqAgwqAgwqAgZGVmYXVsdCB5
+IGlmICFJQTY0X0hQX1NJTQoKVGhlIGZvbGxvd2luZyBhcmNoaXRlY3R1cmVzIGRvIG5vdCBzb3Vy
+Y2UgImtlcm5lbC9wb3dlci9LY29uZmlnIjoKCmFscGhhCmNyaXMKaDgzMDAKS2NvbmZpZwptMzJy
+Cm02OGsKbTY4a25vbW11Cm1pY3JvYmxhemUKcGFyaXNjCnNjb3JlCnNwYXJjCnRpbGUKdW0KeHRl
+bnNhCgpXaGljaCBtZWFucyB0aGF0IChmb3Igbm93KSBJIGRvbid0IGhhdmUgdG8gY2FyZSB0aGF0
+IENPTkZJR19QTSBiZWNvbWVzCnVuY2xlYXJhYmxlLiBPdGhlciBwZW9wbGUgbWF5IGNhcmUsIHRo
+b3VnaC4uLgoKR3J7b2V0amUsZWV0aW5nfXMsCgrCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCBHZWVydAoKLS0KR2VlcnQgVXl0dGVyaG9ldmVuIC0tIFRoZXJlJ3MgbG90cyBvZiBM
+aW51eCBiZXlvbmQgaWEzMiAtLSBnZWVydEBsaW51eC1tNjhrLm9yZwoKSW4gcGVyc29uYWwgY29u
+dmVyc2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNlbGYgYSBoYWNrZXIu
+IEJ1dAp3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVzdCBzYXkgInByb2dyYW1t
+ZXIiIG9yIHNvbWV0aGluZyBsaWtlIHRoYXQuCsKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgwqAgwqDCoCAtLSBMaW51cyBUb3J2YWxkcwpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgt
+cG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
