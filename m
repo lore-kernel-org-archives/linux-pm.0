@@ -1,15 +1,14 @@
-From: Chris Ball <cjb@laptop.org>
-Subject: Re: [PATCH v2 2/3] sdhci-pci : Enable runtime PM support
-Date: Sun, 6 Feb 2011 21:15:44 +0000
-Message-ID: <20110206211544.GA23898__8666.73584464497$1297027005$gmane$org@void.printf.net>
-References: <cover.1297014479.git.pierre.tardy@intel.com>
-	<6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/2] Fix hangup after creating checkpoint on
+	Xen.
+Date: Mon, 7 Feb 2011 10:35:29 +0100
+Message-ID: <201102071035.29922.rjw__2880.42066754333$1297071428$gmane$org@sisk.pl>
+References: <20110207.180718.885783824287845425.kaz@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
+In-Reply-To: <20110207.180718.885783824287845425.kaz@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,44 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pierre Tardy <pierre.tardy@intel.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Yunpeng Gao <yunpeng.gao@intel.com>
+To: "SUZUKI, Kazuhiro" <kaz@jp.fujitsu.com>
+Cc: linux-pm@lists.linux-foundation.org, xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
+
+On Monday, February 07, 2011, SUZUKI, Kazuhiro wrote:
+> Hi,
 
 Hi,
 
-On Sun, Feb 06, 2011 at 07:02:49PM +0100, Pierre Tardy wrote:
-> From: Yunpeng Gao <yunpeng.gao@intel.com>
+> The following patch series fixes hangup after creating checkpoint on
+> Xen. The Linux Xen guest can be saved the state to restore later, and
+> also created snapshot like checkpoint via the hypervisor.
+> But, when the snapshot is created for the PV guest, it will hangup.
 > 
-> Follow the kernel runtime PM framework, enable runtime PM support of the
-> sdhci host controller with pci interface.
-> 
-> Note that this patch implements runtime_pm but now actually detects
-> activity.
-> It relies on higher level (childrens) to do actual waking up
-> Activity detection is put in following patch
-> 
-> Original version from: Yunpeng Gao <yunpeng.gao@intel.com>
-> with modifications by: Pierre Tardy <pierre.tardy@intel.com>
-> 
-> Signed-off-by: Pierre Tardy <pierre.tardy@intel.com>
+> We added 'PMSG_CANCEL' message and 'cancel' handler in dev_pm_ops
+> struct in the pm-linux part.
 
-I had to add a:
+Please don't do that, unless you can convince me there's no other way to fix
+the problem you're trying to address.
 
-diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
-index 22581a1..48061b3 100644
---- a/drivers/mmc/host/sdhci-pci.c
-+++ b/drivers/mmc/host/sdhci-pci.c
-@@ -18,6 +18,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/slab.h>
- #include <linux/device.h>
-+#include <linux/pm_runtime.h>
- 
- #include <linux/mmc/host.h>
- 
-to prevent a compile error.
+In my opinion it's highly unrealistic to assume that device drivers
+(or even subsystems) will implement the ->cancel() callback just for the
+benefit of Xen.
 
--- 
-Chris Ball   <cjb@laptop.org>   <http://printf.net/>
-One Laptop Per Child
+And if the only subsystem that needs to implement ->cancel() is Xen, then the
+issue should be addressed without modifying the device core code, in a different
+way.
+
+> In creating checkpoint mode, the resume handler of xenbus should not
+> be called. In this case, it is recognized that the suspend was canceled
+> in drivers/xen/manage.c and call dpm_resume_end() with PMSG_CANCEL.
+> If the 'cancel' handler is defined, it is called instead of resume().
+> 
+> [1/2] - Fix hangup after creating checkpoint on Xen -- pm-linux part.
+> [2/2] - Fix hangup after creating checkpoint on Xen -- Xen part.
+
+Thanks,
+Rafael
