@@ -1,14 +1,15 @@
-From: Frank Rowand <frank.rowand@am.sony.com>
-Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Date: Mon, 7 Feb 2011 18:52:00 -0800
-Message-ID: <4D50AFD0.9020704__3937.59104558757$1297179560$gmane$org@am.sony.com>
-References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-Reply-To: frank.rowand@am.sony.com
+From: Ian Campbell <ijc@hellion.org.uk>
+Subject: Re: [PATCH 0/2] Fix hangup after creating checkpoint on
+	Xen.
+Date: Tue, 08 Feb 2011 11:22:58 +0000
+Message-ID: <1297164178.9388.65.camel__23247.7003163241$1297179576$gmane$org@zakaz.uk.xensource.com>
+References: <20110207.180718.885783824287845425.kaz@jp.fujitsu.com>
+	<201102071035.29922.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <201102071035.29922.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,41 +19,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, xen-devel@lists.xensource.com, "SUZUKI,
+	Kazuhiro" <kaz@jp.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/07/11 04:22, Mark Brown wrote:
-> It is very rare to find a current system which is both sufficiently
-> resource constrained to want to compile out power management support
-> and sufficiently power insensitive to be able to tolerate doing so.
-> Since having the configuration option requires non-zero effort to
-> maintain, with ifdefery in most drivers, but it is used with vanishing
-> rarity it is simpler to just remove the option.
+On Mon, 2011-02-07 at 10:35 +0100, Rafael J. Wysocki wrote:
+> On Monday, February 07, 2011, SUZUKI, Kazuhiro wrote:
+> > Hi,
+> 
+> Hi,
+> 
+> > The following patch series fixes hangup after creating checkpoint on
+> > Xen. The Linux Xen guest can be saved the state to restore later, and
+> > also created snapshot like checkpoint via the hypervisor.
+> > But, when the snapshot is created for the PV guest, it will hangup.
+> > 
+> > We added 'PMSG_CANCEL' message and 'cancel' handler in dev_pm_ops
+> > struct in the pm-linux part.
+> 
+> Please don't do that, unless you can convince me there's no other way to fix
+> the problem you're trying to address.
 
-Proof by assertion that it is used with vanishing rarity.
+Sorry, it was my advise to Kazuhiro that solving the underlying issue by
+extending the core would be preferable to making Xen specific hacks.
 
-> Begin doing so by hiding it from users - this should attract complaints
-> from any active users. The option is left disabled for the IA64 Ski
-> simulator which is a partial simulator for IA64 systems mostly missing
-> device support. This is a very limited use case which is unlikely to
-> ever want to enable most drivers.
+The problem is that currently we have:
 
-That is not a good method of getting feedback from users.
+        dpm_suspend_start(PMSG_SUSPEND);
+        
+                dpm_suspend_noirq(PMSG_SUSPEND);
+                        
+                        sysdev_suspend(PMSG_SUSPEND);
+                        /* suspend hypercall */
+                        sysdev_resume();
+                
+                dpm_resume_noirq(PMSG_RESUME);
+        
+        dpm_resume_end(PMSG_RESUME);
 
- 1) It immediately removes the ability to have CONFIG_PM undefined,
-    without first giving active users a chance to provide feedback.
+However the suspend hypercall can return a value indicating that the
+suspend didn't actually happen (e.g. was cancelled). This is used e.g.
+when checkpointing guests, because in that case you want the original
+guest to continue. When the suspend didn't happen the drivers need to
+recover differently from if it did.
 
- 2) The removal of that ability is not obvious ("make oldconfig" does
-    not say anything about CONFIG_PM).  It is easy to overlook a
-    config change that happens silently.
+The originally proposed solution was to only call dpm_resume_end if the
+suspend was not cancelled. My concern with this was that unbalancing the
+dpm_suspend_* and dpm_resume_* did not seem like a correct interaction
+with the core. For example dpm_suspend_* adds stuff to
+dpm_suspended_list and if dpm_resume_* is not called presumably this all
+gets out of sync for next time. Hence my suggestion to add a cancel
+message type.
 
- 3) The active users may not move to a newer version of the kernel
-    that contains this change until after it has been decided that
-    there are no users of the config option since no one complained
-    in a timely manner.
+> In my opinion it's highly unrealistic to assume that device drivers
+> (or even subsystems) will implement the ->cancel() callback just for the
+> benefit of Xen.
 
-Would it be appropriate to use Documentation/feature-removal-schedule.txt
-if this truly will be removed?
+I did vague wonder if a similar message might be of interest to e.g.
+cancelling hibernations or similar.
 
--Frank
+> And if the only subsystem that needs to implement ->cancel() is Xen, then the
+> issue should be addressed without modifying the device core code, in a different
+> way.
+
+I thought it would be preferable to make use of/extend core
+functionality where possible but if that's not the case we can find
+another way.
+
+Do you have any suggestions for how to correctly interact with the core
+functions?
+
+Is adding a suspend_cancel operation to just at the struct xenbus_driver
+level and introducing a xen specific function to walk to the bus the
+sort of thing you were thinking of? (it seems reasonable). Should we be
+doing anything with dpm_*_list in that case?
+
+(FWIW original thread is on xen-devel at
+http://thread.gmane.org/gmane.comp.emulators.xen.devel/95265/)
+
+Ian.
+
+-- 
+Ian Campbell
+Current Noise: Crowbar - Dead Sun
+
+Why on earth do people buy old bottles of wine when they can get a
+fresh one for a quarter of the price?
