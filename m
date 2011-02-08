@@ -1,17 +1,18 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Date: Tue, 8 Feb 2011 11:18:27 +0000
-Message-ID: <20110208111827.GA29850__28917.7831532017$1297164075$gmane$org@opensource.wolfsonmicro.com>
-References: <20110207152132.GM10564@opensource.wolfsonmicro.com>
-	<Pine.LNX.4.44L0.1102071035320.1924-100000@iolanthe.rowland.org>
-	<20110207154953.GN10564@opensource.wolfsonmicro.com>
-	<AANLkTimh=8pSmQ6i-5H5+agSso7dCOcOrUJ6Uq_fu7nh@mail.gmail.com>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Remove CONFIG_PM altogether,
+ enable power management all the time
+Date: Tue, 8 Feb 2011 13:21:59 +0100
+Message-ID: <20110208122159.GA8284__11798.3053475202$1297167813$gmane$org@elte.hu>
+References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<201102072046.48763.rjw@sisk.pl>
+	<20110207201803.GU10564@opensource.wolfsonmicro.com>
+	<201102072215.59921.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <AANLkTimh=8pSmQ6i-5H5+agSso7dCOcOrUJ6Uq_fu7nh@mail.gmail.com>
+In-Reply-To: <201102072215.59921.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +22,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-embedded@vger.kernel.org, Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@lists.linux-foundation.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, linux-embedded@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 07, 2011 at 05:17:59PM -0800, Ray Lee wrote:
-> On Mon, Feb 7, 2011 at 7:49 AM, Mark Brown
 
-> > I'm rather hoping that they'll notice the mailing list thread or that
-> > someone else who knows what's going on with them does
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> Surely you're joking. I mean, do _you_ scan every message that comes
-> through lkml and its various sister lists?
+> I'd appreciate it if people could review/test it and drop their comments.
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+>  arch/x86/xen/Kconfig               |    2 +-
+>  drivers/acpi/Kconfig               |    1 -
+>  drivers/acpi/bus.c                 |    4 +---
+>  drivers/acpi/internal.h            |    6 ++++++
+>  drivers/acpi/sleep.c               |   13 +++++++++++--
+>  drivers/base/power/Makefile        |    3 +--
+>  drivers/net/e1000e/netdev.c        |    8 ++++----
+>  drivers/net/pch_gbe/pch_gbe_main.c |    2 +-
+>  drivers/pci/pci-driver.c           |    4 ++--
+>  drivers/scsi/Makefile              |    2 +-
+>  drivers/scsi/scsi_priv.h           |    2 +-
+>  drivers/scsi/scsi_sysfs.c          |    2 +-
+>  drivers/usb/core/hcd-pci.c         |    4 ++--
+>  include/acpi/acpi_bus.h            |    2 +-
+>  include/linux/pm.h                 |    2 +-
+>  kernel/power/Kconfig               |   29 +++--------------------------
+>  16 files changed, 37 insertions(+), 49 deletions(-)
 
-Actually I do at least scan most of the lists.
+Ok, there's some real bang for bucks in this patch, nice! It's a beginning.
 
-> Do a git blame and add them to the CC:. It's the polite thing to do.
+Reviewed-by: Ingo Molnar <mingo@elte.hu>
 
-It's also going to result in the mail not going to the mailing lists as
-there's a limit on the number of people you can CC enforced by vger
-which probably isn't constructive.  It's moot now but as I said in the
-text you've helpfully cut I'd have suggested contacting them after the
-thread had come to a conclusion.
+Also, i've Cc:-ed Linus, to check whether the idea to make power management a 
+permanent, core portion of Linux has any obvious downsides we missed.
+
+Rafael, could you do a defconfig-ish x86 build with and without CONFIG_PM, and post 
+the 'size vmlinux' comparison - so that we can see the size difference? We make some 
+things CONFIG_EXPERT configurable just to enable folks who *really* want to cut down 
+on kernel size to configure it out.
+
+Note that those usecases, even if they want a super-small kernel, might not care 
+about PM at all while they care about size: small boot kernels in ROMs, or simple 
+devices where CPU-idling implies deep low power mode, etc.
+
+So the vmlinux size comparisons would be needed really. If it's 5k nobody will care. 
+If it's 50k-100k that's borderline. In the other side of the scale we have the 1500+
+#ifdef CONFIG_PM lines strewn around the kernel source, and the frequent !PM build
+breakages.
+
+	Ingo
