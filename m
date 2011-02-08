@@ -1,17 +1,15 @@
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Date: Tue, 8 Feb 2011 12:12:55 +0000
-Message-ID: <20110208121254.GE29850__16332.9081995927$1297169255$gmane$org@opensource.wolfsonmicro.com>
+Date: Tue, 8 Feb 2011 14:15:39 +0000
+Message-ID: <20110208141539.GI29850__23512.1184880429$1297174749$gmane$org@opensource.wolfsonmicro.com>
 References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<201102072046.48763.rjw@sisk.pl>
-	<20110207201803.GU10564@opensource.wolfsonmicro.com>
-	<201102072215.59921.rjw@sisk.pl>
+	<4D50AFD0.9020704@am.sony.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201102072215.59921.rjw@sisk.pl>
+In-Reply-To: <4D50AFD0.9020704@am.sony.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,33 +19,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Frank Rowand <frank.rowand@am.sony.com>
+Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 07, 2011 at 10:15:59PM +0100, Rafael J. Wysocki wrote:
+On Mon, Feb 07, 2011 at 06:52:00PM -0800, Frank Rowand wrote:
+> On 02/07/11 04:22, Mark Brown wrote:
 
-> I really think we should do things that makes sense rather that worry about
-> who's going to like or dislike it (except for Linus maybe, but he tends to like
-> things that make sense anyway).  At this point I think the change I suggested
-> makes sense, because it (a) simplifies things and (b) follows the quite common
-> practice which is to make PM callbacks depend on CONFIG_PM.
+> > Since having the configuration option requires non-zero effort to
+> > maintain, with ifdefery in most drivers, but it is used with vanishing
+> > rarity it is simpler to just remove the option.
 
-So, part of the issue here is that it's not clear if having the ifdefs
-in the drivers is really something that makes sense.  It's not at all
-clear that anyone is actually making active use of them on real systems
-rather than just doing build coverage testing, it really feels like the
-ifdefs that people are currently using are just being cargo culted
-around.
+> Proof by assertion that it is used with vanishing rarity.
 
-The reason it's come up for me is that dev_pm_ops changes things a bit
-as you've got to decide how to handle the struct itself and there's no
-clear decision on what the best way forward for that is (is it OK to
-leave the struct if it's empty?) so you end up with the approach you
-need to take varying between maintainers which is annoying.
+Sure, hopefully if it's incorrect people will come out of the woodwork
+to correct me :)
 
-> I'd appreciate it if people could review/test it and drop their comments.
+> That is not a good method of getting feedback from users.
 
-Looks good to me:
+>  1) It immediately removes the ability to have CONFIG_PM undefined,
+>     without first giving active users a chance to provide feedback.
 
-Reviewed/Tested-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Note that it's not a terribly difficult change to reverse; if someone
+urgently does need to do so then I'd be surprised if they were able to
+build a kernel but not cope with that change.
+
+>  2) The removal of that ability is not obvious ("make oldconfig" does
+>     not say anything about CONFIG_PM).  It is easy to overlook a
+>     config change that happens silently.
+
+It will expose the sub-options which actually do stuff, though - it's
+only the top level option for PM.
+
+> Would it be appropriate to use Documentation/feature-removal-schedule.txt
+> if this truly will be removed?
+
+I guess, though I'm a bit pessimistic about anyone actually noticing.
+With Raphael's version it's not such a big deal as CONFIG_PM is selected
+by other options that previously depended on it instead of being enabled
+all the time.
