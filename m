@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/5] PM: Make CONFIG_PM depend on
-	(CONFIG_PM_SLEEP || CONFIG_PM_RUNTIME)
-Date: Tue, 8 Feb 2011 22:21:07 +0100
-Message-ID: <201102082221.07930.rjw__25582.3646941737$1297201719$gmane$org@sisk.pl>
+From: Frank Rowand <frank.rowand@am.sony.com>
+Subject: Re: [PATCH] Remove CONFIG_PM altogether,
+ enable power management all the time
+Date: Tue, 8 Feb 2011 15:35:29 -0800
+Message-ID: <4D51D341.3040209__48141.185710165$1297208283$gmane$org@am.sony.com>
 References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<20110208122159.GA8284@elte.hu> <201102082218.28015.rjw@sisk.pl>
+	<201102072046.48763.rjw@sisk.pl>
+	<20110207201803.GU10564@opensource.wolfsonmicro.com>
+	<201102072215.59921.rjw@sisk.pl> <20110208122159.GA8284@elte.hu>
+Reply-To: frank.rowand@am.sony.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102082218.28015.rjw@sisk.pl>
+In-Reply-To: <20110208122159.GA8284@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,106 +26,65 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, linux-embedded@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On 02/08/11 04:21, Ingo Molnar wrote:
 
->From the users' point of view CONFIG_PM is really only used for
-making it possible to set CONFIG_SUSPEND, CONFIG_HIBERNATION,
-CONFIG_PM_RUNTIME and (surprisingly enough) CONFIG_XEN_SAVE_RESTORE
-(CONFIG_PM_OPP also depends on CONFIG_PM, but quite artificially).
-However, both CONFIG_SUSPEND and CONFIG_HIBERNATION require platform
-support (independent of CONFIG_PM) and it is not quite obvious that
-CONFIG_PM has to be set for CONFIG_XEN_SAVE_RESTORE to be available.
-Thus, from the users' point of view, it would be more logical to
-automatically select CONFIG_PM if any of the above options depending
-on it are set.
+< snip >
 
-Make CONFIG_PM depend on (CONFIG_PM_SLEEP || CONFIG_PM_RUNTIME),
-which will cause it to be selected when any of CONFIG_SUSPEND,
-CONFIG_HIBERNATION, CONFIG_PM_RUNTIME, CONFIG_XEN_SAVE_RESTORE is
-set and will clarify its meaning.
+> Also, i've Cc:-ed Linus, to check whether the idea to make power management a 
+> permanent, core portion of Linux has any obvious downsides we missed.
+> 
+> Rafael, could you do a defconfig-ish x86 build with and without CONFIG_PM, and post 
+> the 'size vmlinux' comparison - so that we can see the size difference? We make some 
+> things CONFIG_EXPERT configurable just to enable folks who *really* want to cut down 
+> on kernel size to configure it out.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/xen/Kconfig |    2 +-
- kernel/power/Kconfig |   29 ++++++-----------------------
- 2 files changed, 7 insertions(+), 24 deletions(-)
+For 2.6.38-rc4, x86_64, CONFIG_NR_CPUS=4:
 
-Index: linux-2.6/kernel/power/Kconfig
-===================================================================
---- linux-2.6.orig/kernel/power/Kconfig
-+++ linux-2.6/kernel/power/Kconfig
-@@ -1,23 +1,7 @@
- config PM
--	bool "Power Management support"
--	depends on !IA64_HP_SIM
--	---help---
--	  "Power Management" means that parts of your computer are shut
--	  off or put into a power conserving "sleep" mode if they are not
--	  being used.  There are two competing standards for doing this: APM
--	  and ACPI.  If you want to use either one, say Y here and then also
--	  to the requisite support below.
--
--	  Power Management is most important for battery powered laptop
--	  computers; if you have a laptop, check out the Linux Laptop home
--	  page on the WWW at <http://www.linux-on-laptops.com/> or
--	  Tuxmobil - Linux on Mobile Computers at <http://www.tuxmobil.org/>
--	  and the Battery Powered Linux mini-HOWTO, available from
--	  <http://www.tldp.org/docs.html#howto>.
--
--	  Note that, even if you say N here, Linux on the x86 architecture
--	  will issue the hlt instruction if nothing is to be done, thereby
--	  sending the processor to sleep and saving power.
-+	bool
-+	depends on PM_SLEEP || PM_RUNTIME
-+	default y
- 
- config PM_DEBUG
- 	bool "Power Management Debug Support"
-@@ -102,7 +86,7 @@ config PM_SLEEP_ADVANCED_DEBUG
- 
- config SUSPEND
- 	bool "Suspend to RAM and standby"
--	depends on PM && ARCH_SUSPEND_POSSIBLE
-+	depends on ARCH_SUSPEND_POSSIBLE
- 	default y
- 	---help---
- 	  Allow the system to enter sleep states in which main memory is
-@@ -133,7 +117,7 @@ config SUSPEND_FREEZER
- 
- config HIBERNATION
- 	bool "Hibernation (aka 'suspend to disk')"
--	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
-+	depends on SWAP && ARCH_HIBERNATION_POSSIBLE
- 	select LZO_COMPRESS
- 	select LZO_DECOMPRESS
- 	---help---
-@@ -224,7 +208,7 @@ config APM_EMULATION
- 
- config PM_RUNTIME
- 	bool "Run-time PM core functionality"
--	depends on PM
-+	depends on !IA64_HP_SIM
- 	---help---
- 	  Enable functionality allowing I/O devices to be put into energy-saving
- 	  (low power) states at run time (or autosuspended) after a specified
-@@ -246,7 +230,6 @@ config ARCH_HAS_OPP
- 
- config PM_OPP
- 	bool "Operating Performance Point (OPP) Layer library"
--	depends on PM
- 	depends on ARCH_HAS_OPP
- 	---help---
- 	  SOCs have a standard set of tuples consisting of frequency and
-Index: linux-2.6/arch/x86/xen/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/xen/Kconfig
-+++ linux-2.6/arch/x86/xen/Kconfig
-@@ -38,7 +38,7 @@ config XEN_MAX_DOMAIN_MEMORY
- 
- config XEN_SAVE_RESTORE
-        bool
--       depends on XEN && PM
-+       depends on XEN
-        default y
- 
- config XEN_DEBUG_FS
+size vmlinux
+   text     data       bss       dec      hex  filename
+
+6553910  3555020   9994240  20103170  132c002  vmlinux    with    CONFIG_PM
+6512652  3553116   9994240  20060008  1321768  vmlinux    without CONFIG_PM
+
+  41258     1904         0     43162                      delta
+
+
+That is big enough for me to care.
+
+Turning on CONFIG_PM also forces a few other options on:
+
+ 295a296
+ > CONFIG_XEN_SAVE_RESTORE=y
+ 422c423,431
+ < # CONFIG_PM is not set
+ ---
+ > CONFIG_PM=y
+ > # CONFIG_PM_DEBUG is not set
+ > CONFIG_PM_SLEEP_SMP=y
+ > CONFIG_PM_SLEEP=y
+ > # CONFIG_SUSPEND is not set
+ > # CONFIG_HIBERNATION is not set
+ > # CONFIG_PM_RUNTIME is not set
+ > CONFIG_PM_OPS=y
+ > # CONFIG_ACPI is not set
+ 451,454c460
+ < CONFIG_CPU_IDLE=y
+ < CONFIG_CPU_IDLE_GOV_LADDER=y
+ < CONFIG_CPU_IDLE_GOV_MENU=y
+ < # CONFIG_INTEL_IDLE is not set
+ ---
+ > # CONFIG_CPU_IDLE is not set
+
+> 
+> Note that those usecases, even if they want a super-small kernel, might not care 
+> about PM at all while they care about size: small boot kernels in ROMs, or simple 
+> devices where CPU-idling implies deep low power mode, etc.
+> 
+> So the vmlinux size comparisons would be needed really. If it's 5k nobody will care. 
+> If it's 50k-100k that's borderline. In the other side of the scale we have the 1500+
+> #ifdef CONFIG_PM lines strewn around the kernel source, and the frequent !PM build
+> breakages.
+> 
+> 	Ingo
+
+-Frank
