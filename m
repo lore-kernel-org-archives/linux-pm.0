@@ -1,8 +1,7 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Remove CONFIG_PM altogether,
- enable power management all the time
-Date: Tue, 8 Feb 2011 13:21:59 +0100
-Message-ID: <20110208122159.GA8284__11798.3053475202$1297167813$gmane$org@elte.hu>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
+Date: Tue, 8 Feb 2011 12:12:55 +0000
+Message-ID: <20110208121254.GE29850__16332.9081995927$1297169255$gmane$org@opensource.wolfsonmicro.com>
 References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 	<201102072046.48763.rjw@sisk.pl>
 	<20110207201803.GU10564@opensource.wolfsonmicro.com>
@@ -22,56 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, linux-embedded@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Feb 07, 2011 at 10:15:59PM +0100, Rafael J. Wysocki wrote:
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> I really think we should do things that makes sense rather that worry about
+> who's going to like or dislike it (except for Linus maybe, but he tends to like
+> things that make sense anyway).  At this point I think the change I suggested
+> makes sense, because it (a) simplifies things and (b) follows the quite common
+> practice which is to make PM callbacks depend on CONFIG_PM.
+
+So, part of the issue here is that it's not clear if having the ifdefs
+in the drivers is really something that makes sense.  It's not at all
+clear that anyone is actually making active use of them on real systems
+rather than just doing build coverage testing, it really feels like the
+ifdefs that people are currently using are just being cargo culted
+around.
+
+The reason it's come up for me is that dev_pm_ops changes things a bit
+as you've got to decide how to handle the struct itself and there's no
+clear decision on what the best way forward for that is (is it OK to
+leave the struct if it's empty?) so you end up with the approach you
+need to take varying between maintainers which is annoying.
 
 > I'd appreciate it if people could review/test it and drop their comments.
-> 
-> Thanks,
-> Rafael
-> 
-> ---
->  arch/x86/xen/Kconfig               |    2 +-
->  drivers/acpi/Kconfig               |    1 -
->  drivers/acpi/bus.c                 |    4 +---
->  drivers/acpi/internal.h            |    6 ++++++
->  drivers/acpi/sleep.c               |   13 +++++++++++--
->  drivers/base/power/Makefile        |    3 +--
->  drivers/net/e1000e/netdev.c        |    8 ++++----
->  drivers/net/pch_gbe/pch_gbe_main.c |    2 +-
->  drivers/pci/pci-driver.c           |    4 ++--
->  drivers/scsi/Makefile              |    2 +-
->  drivers/scsi/scsi_priv.h           |    2 +-
->  drivers/scsi/scsi_sysfs.c          |    2 +-
->  drivers/usb/core/hcd-pci.c         |    4 ++--
->  include/acpi/acpi_bus.h            |    2 +-
->  include/linux/pm.h                 |    2 +-
->  kernel/power/Kconfig               |   29 +++--------------------------
->  16 files changed, 37 insertions(+), 49 deletions(-)
 
-Ok, there's some real bang for bucks in this patch, nice! It's a beginning.
+Looks good to me:
 
-Reviewed-by: Ingo Molnar <mingo@elte.hu>
-
-Also, i've Cc:-ed Linus, to check whether the idea to make power management a 
-permanent, core portion of Linux has any obvious downsides we missed.
-
-Rafael, could you do a defconfig-ish x86 build with and without CONFIG_PM, and post 
-the 'size vmlinux' comparison - so that we can see the size difference? We make some 
-things CONFIG_EXPERT configurable just to enable folks who *really* want to cut down 
-on kernel size to configure it out.
-
-Note that those usecases, even if they want a super-small kernel, might not care 
-about PM at all while they care about size: small boot kernels in ROMs, or simple 
-devices where CPU-idling implies deep low power mode, etc.
-
-So the vmlinux size comparisons would be needed really. If it's 5k nobody will care. 
-If it's 50k-100k that's borderline. In the other side of the scale we have the 1500+
-#ifdef CONFIG_PM lines strewn around the kernel source, and the frequent !PM build
-breakages.
-
-	Ingo
+Reviewed/Tested-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
