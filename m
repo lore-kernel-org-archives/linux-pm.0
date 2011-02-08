@@ -1,14 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/2] Fix hangup after creating checkpoint on
- Xen.
-Date: Tue, 8 Feb 2011 11:46:37 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1102081143470.2100-100000__8735.351303085$1297183759$gmane$org@iolanthe.rowland.org>
-References: <1297164178.9388.65.camel@zakaz.uk.xensource.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
+Date: Wed, 9 Feb 2011 01:48:22 +0900
+Message-ID: <20110208164822.GA7426__5850.55243359438$1297183906$gmane$org@linux-sh.org>
+References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<201102072300.03986.rjw@sisk.pl>
+	<20110207222350.GA24804@core.coreip.homeip.net>
+	<201102080005.40448.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1297164178.9388.65.camel@zakaz.uk.xensource.com>
+Content-Disposition: inline
+In-Reply-To: <201102080005.40448.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,41 +21,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: linux-pm@lists.linux-foundation.org, xen-devel@lists.xensource.com, "SUZUKI,
-	Kazuhiro" <kaz@jp.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 8 Feb 2011, Ian Campbell wrote:
-
-> The problem is that currently we have:
+On Tue, Feb 08, 2011 at 12:05:40AM +0100, Rafael J. Wysocki wrote:
+> On Monday, February 07, 2011, Dmitry Torokhov wrote:
+> > More of an observation for your (b) justification. I'd probably force
+> > CONFIG_PM to always 'y'w while we weeding references to it from
+> > drivers...
 > 
->         dpm_suspend_start(PMSG_SUSPEND);
->         
->                 dpm_suspend_noirq(PMSG_SUSPEND);
->                         
->                         sysdev_suspend(PMSG_SUSPEND);
->                         /* suspend hypercall */
->                         sysdev_resume();
->                 
->                 dpm_resume_noirq(PMSG_RESUME);
->         
->         dpm_resume_end(PMSG_RESUME);
+> We simply can't force CONFIG_PM to 'y', because some platforms want it to be 'n'.
 > 
-> However the suspend hypercall can return a value indicating that the
-> suspend didn't actually happen (e.g. was cancelled). This is used e.g.
-> when checkpointing guests, because in that case you want the original
-> guest to continue. When the suspend didn't happen the drivers need to
-> recover differently from if it did.
+> OTOH, if CONFIG_PM = CONFIG_PM_SLEEP||CONFIG_PM_RUNTIME, we can just leave the
+> #ifdefs as they are and simply avoid adding new ones, or use CONFIG_PM for all
+> PM callbacks.
+> 
+For sh at least turning on CONFIG_PM without PM_SLEEP or PM_RUNTIME is
+largely pointless, so the bulk of the defconfigs have it turned off. The
+few platforms that do use CONFIG_PM for something also have more
+comprehensive support implemented. The few times we do have it enabled
+without one of the others supported is simply for build coverage, mostly
+due to sharing drivers (whatever isn't already triggered through
+rand/allyes/modconfigs).
 
-That is odd, and it is quite different from the intended design of the 
-PM core.  Drivers are supposed to put their devices into a known 
-suspended state; then afterwards they put the devices back into an 
-operational state.  What happens while the devices are in the suspended 
-state isn't supposed to matter -- the system transition can fail, but 
-devices get treated exactly the same way as if it succeeded.
-
-Why do your drivers need to recover differently based on the success of 
-the hypercall?
-
-Alan Stern
+I would expect that this is a common scenario for the bulk of the
+defconfigs that reflect PM being a platform-specific vs architecture-wide
+property regardless of architecture, however.
