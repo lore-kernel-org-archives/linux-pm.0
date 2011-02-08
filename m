@@ -1,15 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Date: Tue, 8 Feb 2011 14:15:39 +0000
-Message-ID: <20110208141539.GI29850__23512.1184880429$1297174749$gmane$org@opensource.wolfsonmicro.com>
+Date: Tue, 8 Feb 2011 15:29:01 +0100
+Message-ID: <20110208142901.GB1437__41473.7798426815$1297175511$gmane$org@ucw.cz>
 References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<4D50AFD0.9020704@am.sony.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <4D50AFD0.9020704@am.sony.com>
+In-Reply-To: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,42 +18,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frank Rowand <frank.rowand@am.sony.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 07, 2011 at 06:52:00PM -0800, Frank Rowand wrote:
-> On 02/07/11 04:22, Mark Brown wrote:
+Hi!
 
-> > Since having the configuration option requires non-zero effort to
-> > maintain, with ifdefery in most drivers, but it is used with vanishing
-> > rarity it is simpler to just remove the option.
+> It is very rare to find a current system which is both sufficiently
+> resource constrained to want to compile out power management support
+> and sufficiently power insensitive to be able to tolerate doing so.
 
-> Proof by assertion that it is used with vanishing rarity.
+Ok, how much memory do we talk about here?
 
-Sure, hopefully if it's incorrect people will come out of the woodwork
-to correct me :)
+Lots of embedded systems are AC powered or powered from some powerful
+source -- such as alternator in car. PM can be unwanted complexity
+there.
 
-> That is not a good method of getting feedback from users.
+Ot maybe they are running under realtime hypervisor...
 
->  1) It immediately removes the ability to have CONFIG_PM undefined,
->     without first giving active users a chance to provide feedback.
-
-Note that it's not a terribly difficult change to reverse; if someone
-urgently does need to do so then I'd be surprised if they were able to
-build a kernel but not cope with that change.
-
->  2) The removal of that ability is not obvious ("make oldconfig" does
->     not say anything about CONFIG_PM).  It is easy to overlook a
->     config change that happens silently.
-
-It will expose the sub-options which actually do stuff, though - it's
-only the top level option for PM.
-
-> Would it be appropriate to use Documentation/feature-removal-schedule.txt
-> if this truly will be removed?
-
-I guess, though I'm a bit pessimistic about anyone actually noticing.
-With Raphael's version it's not such a big deal as CONFIG_PM is selected
-by other options that previously depended on it instead of being enabled
-all the time.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
