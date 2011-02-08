@@ -1,14 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM: Hide CONFIG_PM from users
-Date: Tue, 8 Feb 2011 15:29:01 +0100
-Message-ID: <20110208142901.GB1437__41473.7798426815$1297175511$gmane$org@ucw.cz>
-References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH wq#for-2.6.39] workqueue: add
+	system_freezeable_wq
+Date: Tue, 8 Feb 2011 10:10:46 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1102081008180.2100-100000__21351.4511975974$1297177995$gmane$org@iolanthe.rowland.org>
+References: <20110208094155.GB6558@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20110208094155.GB6558@htj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,24 +18,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Len Brown <len.brown@intel.com>, linux-embedded@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tue, 8 Feb 2011, Tejun Heo wrote:
 
-> It is very rare to find a current system which is both sufficiently
-> resource constrained to want to compile out power management support
-> and sufficiently power insensitive to be able to tolerate doing so.
+> From de62c151df9b6568c67977920267392c432f340a Mon Sep 17 00:00:00 2001
+> From: Tejun Heo <tj@kernel.org>
+> Date: Tue, 8 Feb 2011 10:39:03 +0100
+> 
+> Add system wide freezeable workqueue.
 
-Ok, how much memory do we talk about here?
+The preferred spelling is "freezable".
 
-Lots of embedded systems are AC powered or powered from some powerful
-source -- such as alternator in car. PM can be unwanted complexity
-there.
-
-Ot maybe they are running under realtime hypervisor...
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan Stern
