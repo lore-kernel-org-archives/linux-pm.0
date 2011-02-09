@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Xen-devel] Re: [PATCH 0/2] Fix hangup after
-	creating checkpoint on Xen.
-Date: Thu, 10 Feb 2011 17:26:30 +0100
-Message-ID: <201102101726.30725.rjw__37435.1716171533$1297355343$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1102101043010.2029-100000@iolanthe.rowland.org>
+From: Brendan Cully <brendan@cs.ubc.ca>
+Subject: Re: [PATCH 0/2] Fix hangup after creating checkpoint on
+ Xen.
+Date: Wed, 9 Feb 2011 15:16:59 -0800
+Message-ID: <20110209231659.GB249__43216.5905055173$1297355539$gmane$org@zanzibar.kublai.com>
+References: <Pine.LNX.4.44L0.1102081143470.2100-100000@iolanthe.rowland.org>
+	<1297186554.9388.248.camel@zakaz.uk.xensource.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1102101043010.2029-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <1297186554.9388.248.camel@zakaz.uk.xensource.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,88 +20,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, LKML <linux-kernel@vger.kernel.org>, Brendan Cully <brendan@cs.ubc.ca>, Ian Campbell <ijc@hellion.org.uk>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "SUZUKI,
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "SUZUKI,
 	Kazuhiro" <kaz@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, February 10, 2011, Alan Stern wrote:
-> On Thu, 10 Feb 2011, Ian Campbell wrote:
-> 
-> > On Wed, 2011-02-09 at 23:42 +0000, Alan Stern wrote:
-> > > In fact there already is a "fast suspend & resume" path in the PM core.  
-> > > It's the freeze/thaw procedure used when starting to hibernate.  The
-> > > documentation specifically says that drivers' freeze methods are
-> > > supposed to quiesce their devices but not change power levels.  In
-> > > addition, the thaw method is invoked as part of recovery from a failed
-> > > hibernation attempt, so it already has the "cancel" semantics that xen 
-> > > seems to want.
+On Tuesday, 08 February 2011 at 17:35, Ian Campbell wrote:
+> On Tue, 2011-02-08 at 11:46 -0500, Alan Stern wrote:
+> > On Tue, 8 Feb 2011, Ian Campbell wrote:
 > > 
-> > Sounds like that would work and I would much prefer to simply make
-> > correct use of the core functionality.
+> > > The problem is that currently we have:
+> > > 
+> > >         dpm_suspend_start(PMSG_SUSPEND);
+> > >         
+> > >                 dpm_suspend_noirq(PMSG_SUSPEND);
+> > >                         
+> > >                         sysdev_suspend(PMSG_SUSPEND);
+> > >                         /* suspend hypercall */
+> > >                         sysdev_resume();
+> > >                 
+> > >                 dpm_resume_noirq(PMSG_RESUME);
+> > >         
+> > >         dpm_resume_end(PMSG_RESUME);
+> > > 
+> > > However the suspend hypercall can return a value indicating that the
+> > > suspend didn't actually happen (e.g. was cancelled). This is used e.g.
+> > > when checkpointing guests, because in that case you want the original
+> > > guest to continue. When the suspend didn't happen the drivers need to
+> > > recover differently from if it did.
+> > 
+> > That is odd, and it is quite different from the intended design of the 
+> > PM core.  Drivers are supposed to put their devices into a known 
+> > suspended state; then afterwards they put the devices back into an 
+> > operational state.  What happens while the devices are in the suspended 
+> > state isn't supposed to matter -- the system transition can fail, but 
+> > devices get treated exactly the same way as if it succeeded.
+> > 
+> > Why do your drivers need to recover differently based on the success of 
+> > the hypercall?
 > 
-> It seems like a reasonable approach.  Whether it will actually _work_ 
-> is a harder question...  :-)
+> checkpointing isn't really my area but AIUI you don't want to do a full
+> device teardown and reconnect like you would with a proper suspend
+> because of the time that takes which prevents you from doing continuous
+> rolling checkpoints at granularity which people want to implement
+> various disaster recovery schemes.
 > 
-> > So PMSG_FREEZE is balanced by either PMSG_RECOVER or PMSG_THAW depending
-> > on whether the suspend was cancelled or not?
+> Hopefully one of the Xen checkpointing folks will chime in and explain
+> why this is not possible to achieve at the individual driver level (or,
+> even better, with a patch which does it that way ;-)).
 
-That's correct, but from drivers' point of view PMSG_THAW is equivalent to
-PMSG_RECOVER, because the both of them cause ->thaw() callbacks to be executed.
+As Ian says, Xen has suspend_cancel because while the normal full
+suspend/resume path works, it is much slower, and the work done during
+resume is redundant. I don't remember the numbers offhand, but when we
+added suspend_cancel I think we could do full suspend/resume in under
+100us, which was maybe a couple of orders of magnitude faster than
+full resume (largely due to slow xenstore handshaking on resume,
+IIRC). It made a big difference for our Remus HA project, which was
+checkpointing tens of times per second.
 
-> Basically yes.  It is also "balanced" by PMSG_RESTORE, which is used
-> after a memory image has been restored (although this isn't relevant to
-> your snapshotting).  See the comments in include/linux/pm.h.
+I'd like to keep the fast resume option, and expect that it can be
+contained entirely in Xen-specific code. I'll try to get someone to
+look into it here.
 
-Yup.
-
-> >  So the sequence of events
-> > is something like:
-> > 	dpm_suspend_start(PMSG_FREEZE);
-> >          
-> > 		dpm_suspend_noirq(PMSG_FREEZE);
-> >                          
-> > 			sysdev_suspend(PMSG_QUIESCE);
-> 
-> This should say sysdev_suspend(PMSG_FREEZE).
-
-Yes, PMSG_QUIESCE is restore-specific.
-
-> > 			cancelled = suspend_hypercall()
-> 
-> At this point swsusp_arch_suspend() is called.  If that translates to 
-> suspend_hypercall() in your setting, then yes.
-> 
-> > 			sysdev_resume();
-> >                  
-> > 		dpm_resume_noirq(cancelled ? PMSG_RECOVER : PMSG_THAW);
-> >          
-> > 	dpm_resume_end(cancelled ? PMSG_RECOVER : PMSG_THAW);
-> > ?
-> 
-> Yes.
-
-Actually, I think PMSG_THAW can be used in both cases.  The resume-side
-routines only use the 'state' argument for diagnostics.
-
-> > (For comparison we currently have:
-> > > > >         dpm_suspend_start(PMSG_SUSPEND);
-> > > > >         
-> > > > >                 dpm_suspend_noirq(PMSG_SUSPEND);
-> > > > >                         
-> > > > >                         sysdev_suspend(PMSG_SUSPEND);
-> > > > >                         /* suspend hypercall */
-> > > > >                         sysdev_resume();
-> > > > >                 
-> > > > >                 dpm_resume_noirq(PMSG_RESUME);
-> > > > >         
-> > > > >         dpm_resume_end(PMSG_RESUME);
-> > )
-> 
-> Right.  The sequence of calls is the same, but the PMSG_ argument is 
-> different so drivers are expected to act differently in response.
-
-That's correct.
-
-Thanks,
-Rafael
+I think fast resume is somewhat orthogonal to the problem of hanging
+on resume, which just sounds like a xen-specific bug in the slow
+path.
