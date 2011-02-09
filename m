@@ -1,16 +1,17 @@
-From: Brendan Cully <brendan@cs.ubc.ca>
-Subject: Re: [PATCH 0/2] Fix hangup after creating checkpoint on
- Xen.
-Date: Wed, 9 Feb 2011 15:16:59 -0800
-Message-ID: <20110209231659.GB249__43216.5905055173$1297355539$gmane$org@zanzibar.kublai.com>
-References: <Pine.LNX.4.44L0.1102081143470.2100-100000@iolanthe.rowland.org>
-	<1297186554.9388.248.camel@zakaz.uk.xensource.com>
+From: Frank Rowand <frank.rowand@gmail.com>
+Subject: Re: [PATCH] Remove CONFIG_PM altogether,
+ enable power management all the time
+Date: Wed, 09 Feb 2011 10:31:29 -0800
+Message-ID: <4D52DD81.7050401__39940.8463774764$1297355540$gmane$org@am.sony.com>
+References: <4D51D341.3040209@am.sony.com>
+	<20110209114137.GA10163@opensource.wolfsonmicro.com>
+	<201102091807.03094.rjw@sisk.pl>
+Reply-To: frank.rowand@am.sony.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1297186554.9388.248.camel@zakaz.uk.xensource.com>
+In-Reply-To: <201102091807.03094.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,68 +21,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org, "SUZUKI,
-	Kazuhiro" <kaz@jp.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, linux-embedded@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, 08 February 2011 at 17:35, Ian Campbell wrote:
-> On Tue, 2011-02-08 at 11:46 -0500, Alan Stern wrote:
-> > On Tue, 8 Feb 2011, Ian Campbell wrote:
-> > 
-> > > The problem is that currently we have:
-> > > 
-> > >         dpm_suspend_start(PMSG_SUSPEND);
-> > >         
-> > >                 dpm_suspend_noirq(PMSG_SUSPEND);
-> > >                         
-> > >                         sysdev_suspend(PMSG_SUSPEND);
-> > >                         /* suspend hypercall */
-> > >                         sysdev_resume();
-> > >                 
-> > >                 dpm_resume_noirq(PMSG_RESUME);
-> > >         
-> > >         dpm_resume_end(PMSG_RESUME);
-> > > 
-> > > However the suspend hypercall can return a value indicating that the
-> > > suspend didn't actually happen (e.g. was cancelled). This is used e.g.
-> > > when checkpointing guests, because in that case you want the original
-> > > guest to continue. When the suspend didn't happen the drivers need to
-> > > recover differently from if it did.
-> > 
-> > That is odd, and it is quite different from the intended design of the 
-> > PM core.  Drivers are supposed to put their devices into a known 
-> > suspended state; then afterwards they put the devices back into an 
-> > operational state.  What happens while the devices are in the suspended 
-> > state isn't supposed to matter -- the system transition can fail, but 
-> > devices get treated exactly the same way as if it succeeded.
-> > 
-> > Why do your drivers need to recover differently based on the success of 
-> > the hypercall?
+On 02/09/11 09:07, Rafael J. Wysocki wrote:
+> On Wednesday, February 09, 2011, Mark Brown wrote:
+>> On Tue, Feb 08, 2011 at 03:35:29PM -0800, Frank Rowand wrote:
+>>
+>>> For 2.6.38-rc4, x86_64, CONFIG_NR_CPUS=4:
+>>
+>>> size vmlinux
+>>>    text     data       bss       dec      hex  filename
+>>>
+>>> 6553910  3555020   9994240  20103170  132c002  vmlinux    with    CONFIG_PM
+>>> 6512652  3553116   9994240  20060008  1321768  vmlinux    without CONFIG_PM
+>>>
+>>>   41258     1904         0     43162                      delta
+>>
+>>> That is big enough for me to care.
+>>
+>> Hrm, that's pretty surprising.  It'd be interesting to know how much of
+>> that is due to the PM core itself and how much of that is from drivers.
+>> For the drivers CONFIG_PM isn't really the option they should be using
+>> in the first place - they mostly want some combination of PM_SLEEP and
+>> PM_RUNTIME for the specific functionality.  I'm running some checks now.
+>>
+>>>  > CONFIG_PM_SLEEP=y
+>>
+>> Raphael's patch will make this a user visible option in place of raw
+>> CONFIG_PM by default so you'd be able to turn that off.
 > 
-> checkpointing isn't really my area but AIUI you don't want to do a full
-> device teardown and reconnect like you would with a proper suspend
-> because of the time that takes which prevents you from doing continuous
-> rolling checkpoints at granularity which people want to implement
-> various disaster recovery schemes.
-> 
-> Hopefully one of the Xen checkpointing folks will chime in and explain
-> why this is not possible to achieve at the individual driver level (or,
-> even better, with a patch which does it that way ;-)).
+> No, it won't (just to clarify).
 
-As Ian says, Xen has suspend_cancel because while the normal full
-suspend/resume path works, it is much slower, and the work done during
-resume is redundant. I don't remember the numbers offhand, but when we
-added suspend_cancel I think we could do full suspend/resume in under
-100us, which was maybe a couple of orders of magnitude faster than
-full resume (largely due to slow xenstore handshaking on resume,
-IIRC). It made a big difference for our Remus HA project, which was
-checkpointing tens of times per second.
+Raphael's patch will turn on CONFIG_PM in the correct circumstances, and
+leave it off when not needed by other config options.  That means that
+the size overhead will _not_ be an issue for me because CONFIG_PM
+will not be enabled when not needed.
 
-I'd like to keep the fast resume option, and expect that it can be
-contained entirely in Xen-specific code. I'll try to get someone to
-look into it here.
-
-I think fast resume is somewhat orthogonal to the problem of hanging
-on resume, which just sounds like a xen-specific bug in the slow
-path.
+-Frank
