@@ -1,15 +1,16 @@
-From: Chris Ball <cjb@laptop.org>
-Subject: Re: [PATCH v2 2/3] sdhci-pci : Enable runtime PM support
-Date: Thu, 10 Feb 2011 04:37:18 +0000
-Message-ID: <20110210043718.GA7585__43387.5048220672$1297312722$gmane$org@void.printf.net>
-References: <cover.1297014479.git.pierre.tardy@intel.com>
-	<6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
+From: Ian Campbell <ijc@hellion.org.uk>
+Subject: Re: [Xen-devel] Re: [PATCH 0/2] Fix hangup after
+ creating checkpoint on Xen.
+Date: Thu, 10 Feb 2011 11:31:13 +0000
+Message-ID: <1297337473.20491.144.camel__21312.3436239131$1297337563$gmane$org@zakaz.uk.xensource.com>
+References: <Pine.LNX.4.44L0.1102081143470.2100-100000@iolanthe.rowland.org>
+	<1297186554.9388.248.camel@zakaz.uk.xensource.com>
+	<20110209231659.GB249@zanzibar.kublai.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
+In-Reply-To: <20110209231659.GB249@zanzibar.kublai.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,62 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pierre Tardy <pierre.tardy@intel.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Yunpeng Gao <yunpeng.gao@intel.com>
+To: Brendan Cully <brendan@cs.ubc.ca>
+Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "SUZUKI,
+	Kazuhiro" <kaz@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Pierre,
+On Wed, 2011-02-09 at 23:16 +0000, Brendan Cully wrote:
+> I'd like to keep the fast resume option, and expect that it can be
+> contained entirely in Xen-specific code. I'll try to get someone to
+> look into it here.
 
-On Sun, Feb 06, 2011 at 07:02:49PM +0100, Pierre Tardy wrote:
-> From: Yunpeng Gao <yunpeng.gao@intel.com>
-> 
-> Follow the kernel runtime PM framework, enable runtime PM support of the
-> sdhci host controller with pci interface.
-> 
-> Note that this patch implements runtime_pm but now actually detects
-> activity.
-> It relies on higher level (childrens) to do actual waking up
-> Activity detection is put in following patch
+Thanks, please put them in contact with Kazuhiro who has already been
+looking into this.
 
-Testing this patchset in linux-next-20100208 gives:
+> I think fast resume is somewhat orthogonal to the problem of hanging
+> on resume, which just sounds like a xen-specific bug in the slow
+> path.
 
-[   10.829223] sdhci: Secure Digital Host Controller Interface driver
-[   10.829548] sdhci: Copyright(c) Pierre Ossman
-[   10.883906] sdhci-pci 0000:0d:00.0: SDHCI controller found [1180:e822] (rev 1)
-[   10.884533] sdhci-pci 0000:0d:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[   10.885189] sdhci-pci 0000:0d:00.0: Will use DMA mode even though HW doesn't fully claim to support it.
-[   10.886176] sdhci-pci 0000:0d:00.0: setting latency timer to 64
-[   10.886819] Registered led device: mmc0::
-[   10.887281] mmc0: SDHCI controller on PCI [0000:0d:00.0] using DMA
-[   10.887724] sdhci-pci 0000:0d:00.0: Unbalanced pm_runtime_enable!
-[   10.888498] sdhci-pci 0000:17:00.0: SDHCI controller found [1180:e822] (rev 1)
-[   10.889179] sdhci-pci 0000:17:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-[   10.889876] sdhci-pci 0000:17:00.0: Will use DMA mode even though HW doesn't fully claim to support it.
-[   10.890924] sdhci-pci 0000:17:00.0: setting latency timer to 64
-[   10.891387] Registered led device: mmc1::
-[   10.891900] mmc1: SDHCI controller on PCI [0000:17:00.0] using DMA
-[   10.892280] sdhci-pci 0000:17:00.0: Unbalanced pm_runtime_enable!
+The bug on the Xen side is taking the slow path when the suspend was
+actually cancelled, which is what the original patch tries to fix.
 
-(Note the last line above.)
+Or should/could the slow path be able cope either way?
 
-I then removed the card and reinserted it, but there's no dmesg output
-related to the reinsert, only to the card removal:
-
-[   65.381047] mmc0: card d555 removed
-
-So, card insertion is broken.  I then did rmmod sdhci-pci && modprobe
-sdhci-pci, and it picked up the card again.
-
-There was also a weird UI hang for a few hundred msecs around the time
-the second modprobe happened, but I don't expect you to be able to do
-anything about that without a more helpful report; if it happens again
-I'll try to record what's going on using ftrace.
-
-Full dmesg is at:
-   http://dev.laptop.org/~cjb/logs/runtime-pm-sdhci-20100209.log
-
-Thanks,
+Ian.
 
 -- 
-Chris Ball   <cjb@laptop.org>   <http://printf.net/>
-One Laptop Per Child
+Ian Campbell
+Current Noise: Neil Young - Love And War
+
+For every complex problem, there is a solution that is simple, neat, and wrong.
+		-- H. L. Mencken
