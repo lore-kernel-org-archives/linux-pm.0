@@ -1,15 +1,14 @@
-From: "Matt Carlson" <mcarlson@broadcom.com>
-Subject: Re: [PATCH 1/3] tg3: Avoid setting power.can_wakeup for
- devices that cannot wake up
-Date: Thu, 10 Feb 2011 12:48:44 -0800
-Message-ID: <20110210204844.GA4158__29493.6585975394$1297379879$gmane$org@mcarlson.broadcom.com>
-References: <201102101751.56508.rjw@sisk.pl> <201102101753.09504.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Patch] idle governor: Avoid lock acquisition to
+	read pm_qos before entering idle
+Date: Fri, 11 Feb 2011 00:17:15 +0100
+Message-ID: <201102110017.16066.rjw__8761.8293393918$1297380000$gmane$org@sisk.pl>
+References: <1297300864.2645.128.camel@schen9-DESK>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102101753.09504.rjw@sisk.pl>
-Content-Disposition: inline
+In-Reply-To: <1297300864.2645.128.camel@schen9-DESK>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,53 +18,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jay Cliburn <jcliburn@gmail.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Matthew Carlson <mcarlson@broadcom.com>, Jie Yang <jie.yang@atheros.com>, Thomas Fjellstrom <thomas@fjellstrom.ca>, Michael Chan <mchan@broadcom.com>, Chris Snook <chris.snook@gmail.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, David Miller <davem@davemloft.net>
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: Len <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, mark gross <markgross@thegnar.org>, linux-kernel@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>, David Alan Gilbert <linux@treblig.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 10, 2011 at 08:53:09AM -0800, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thursday, February 10, 2011, Tim Chen wrote:
+> I noticed that before entering idle state, the menu idle governor will
+> look up the current pm_qos value according to the list of qos request
+> received.  This look up currently needs the acquisition of a lock to go
+> down a list of qos requests to find the qos value, slowing down the
+> entrance into idle state due to contention by multiple cpus to traverse
+> this list.  The contention is severe when there are a lot of cpus waking
+> and going into idle.  For example, for a simple workload that has 32
+> pair of processes ping ponging messages to each other, where 64 cores
+> cores are active in test system, I see the following profile:
 > 
-> The tg3 driver uses device_init_wakeup() in such a way that the
-> device's power.can_wakeup flag may be set even though the PCI
-> subsystem cleared it before, in which case the device cannot wake
-> up the system from sleep states.  Modify the driver to only change
-> the power.can_wakeup flag if the device is not capable of generating
-> wakeup signals.
+> -     37.82%          swapper  [kernel.kallsyms]          [k]
+> _raw_spin_lock_irqsave
+>    - _raw_spin_lock_irqsave
+>       - 95.65% pm_qos_request             
+>            menu_select                                             
+>            cpuidle_idle_call                      
+>          - cpu_idle                                                     
+>               99.98% start_secondary
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/net/tg3.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+> Perhaps a better approach will be to cache the updated pm_qos value so
+> reading it does not require lock acquisition as in the patch below.   
 > 
-> Index: linux-2.6/drivers/net/tg3.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/tg3.c
-> +++ linux-2.6/drivers/net/tg3.c
-> @@ -12403,9 +12403,11 @@ static void __devinit tg3_get_eeprom_hw_
->  			tp->tg3_flags3 |= TG3_FLG3_RGMII_EXT_IBND_TX_EN;
+> Tim
+> 
+> Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+> diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
+> index 77cbddb..a7d87f9 100644
+> --- a/include/linux/pm_qos_params.h
+> +++ b/include/linux/pm_qos_params.h
+> @@ -16,6 +16,10 @@
+>  #define PM_QOS_NUM_CLASSES 4
+>  #define PM_QOS_DEFAULT_VALUE -1
+>  
+> +#define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+> +#define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+> +#define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
+> +
+>  struct pm_qos_request_list {
+>  	struct plist_node list;
+>  	int pm_qos_class;
+> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> index aeaa7f8..b6310d1 100644
+> --- a/kernel/pm_qos_params.c
+> +++ b/kernel/pm_qos_params.c
+> @@ -58,6 +58,7 @@ struct pm_qos_object {
+>  	struct blocking_notifier_head *notifiers;
+>  	struct miscdevice pm_qos_power_miscdev;
+>  	char *name;
+> +	s32 value;
+>  	s32 default_value;
+>  	enum pm_qos_type type;
+>  };
+> @@ -70,7 +71,8 @@ static struct pm_qos_object cpu_dma_pm_qos = {
+>  	.requests = PLIST_HEAD_INIT(cpu_dma_pm_qos.requests, pm_qos_lock),
+>  	.notifiers = &cpu_dma_lat_notifier,
+>  	.name = "cpu_dma_latency",
+> -	.default_value = 2000 * USEC_PER_SEC,
+> +	.value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
+> +	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
+>  	.type = PM_QOS_MIN,
+>  };
+>  
+> @@ -79,7 +81,8 @@ static struct pm_qos_object network_lat_pm_qos = {
+>  	.requests = PLIST_HEAD_INIT(network_lat_pm_qos.requests, pm_qos_lock),
+>  	.notifiers = &network_lat_notifier,
+>  	.name = "network_latency",
+> -	.default_value = 2000 * USEC_PER_SEC,
+> +	.value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
+> +	.default_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
+>  	.type = PM_QOS_MIN
+>  };
+>  
+> @@ -89,7 +92,8 @@ static struct pm_qos_object network_throughput_pm_qos = {
+>  	.requests = PLIST_HEAD_INIT(network_throughput_pm_qos.requests, pm_qos_lock),
+>  	.notifiers = &network_throughput_notifier,
+>  	.name = "network_throughput",
+> -	.default_value = 0,
+> +	.value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
+> +	.default_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
+>  	.type = PM_QOS_MAX,
+>  };
+>  
+> @@ -132,6 +136,16 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
 >  	}
->  done:
-> -	device_init_wakeup(&tp->pdev->dev, tp->tg3_flags & TG3_FLAG_WOL_CAP);
-> -	device_set_wakeup_enable(&tp->pdev->dev,
-> +	if (tp->tg3_flags & TG3_FLAG_WOL_CAP)
-> +		device_set_wakeup_enable(&tp->pdev->dev,
->  				 tp->tg3_flags & TG3_FLAG_WOL_ENABLE);
-> +	else
-> +		device_set_wakeup_capable(&tp->pdev->dev, false);
-
-I did this because I couldn't see where 'can_wakeup' gets set.  I don't
-see a call to device_init_wakeup() that would be relevant to tg3
-devices.  I do see a couple calls to device_set_wakeup_capable() in
-acpi/glue.c and acpi/scan.c.  Is that the place?
-
 >  }
 >  
->  static int __devinit tg3_issue_otp_command(struct tg3 *tp, u32 cmd)
+> +static inline s32 pm_qos_read_value(struct pm_qos_object *o)
+> +{
+> +	return o->value;
+> +}
+> +
+> +static inline int pm_qos_set_value(struct pm_qos_object *o, s32 value)
+> +{
+> +	o->value = value;
+> +}
 
-This is something I was always curious about too.  The TG3_FLAG_WOL_CAP
-tracks whether or not the device can handle WOL.  Is it safe to do away
-with this flag and lean on the 'can_wakeup' flag instead?  My concern is
-that some other part of the system might enable that flag after
-tg3_get_invariants() has run.  If that happens and the device isn't
-really WOL capable bad things can occur.
+This requires a fixup, the above function is supposed to return an int.
+
+Also, please add a comment about the requisite 32-bitness as suggested by James.
+
+Thanks,
+Rafael
