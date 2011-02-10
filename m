@@ -1,10 +1,15 @@
-From: wkq5325 <wkq5325@163.com>
-Subject: Xeon(R) CPU X3220 wrong frequency reading??
-Date: Thu, 10 Feb 2011 09:29:48 +0800 (CST)
-Message-ID: <1bf71d93.7900.12e0d303bca.Coremail.wkq5325@163.com>
+From: Chris Ball <cjb@laptop.org>
+Subject: Re: [PATCH v2 2/3] sdhci-pci : Enable runtime PM support
+Date: Thu, 10 Feb 2011 04:37:18 +0000
+Message-ID: <20110210043718.GA7585__43387.5048220672$1297312722$gmane$org@void.printf.net>
+References: <cover.1297014479.git.pierre.tardy@intel.com>
+	<6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5539079723119504557=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -12,50 +17,64 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.linux-foundation.org>
+To: Pierre Tardy <pierre.tardy@intel.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Yunpeng Gao <yunpeng.gao@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============5539079723119504557==
-Content-Type: multipart/alternative;
-	boundary="----=_Part_83336_1906331403.1297301388234"
+Hi Pierre,
 
-------=_Part_83336_1906331403.1297301388234
-Content-Type: text/plain; charset=GBK
-Content-Transfer-Encoding: 7bit
+On Sun, Feb 06, 2011 at 07:02:49PM +0100, Pierre Tardy wrote:
+> From: Yunpeng Gao <yunpeng.gao@intel.com>
+> 
+> Follow the kernel runtime PM framework, enable runtime PM support of the
+> sdhci host controller with pci interface.
+> 
+> Note that this patch implements runtime_pm but now actually detects
+> activity.
+> It relies on higher level (childrens) to do actual waking up
+> Activity detection is put in following patch
 
-Hi,
- My CPU is Xeon(R) X3220  2.4Ghz, but linux userspace governor gives 900Mhz.
-The strange problem is that sometimes userspace governor gives correct
-reading(after a new boot).
-Is it the processor frequency scaling problem or linux problem or bios problem?
-(someone said it is bios, but I don't think so) .
- 
-linux : 2.6.36.2
-bios revision: 1.1
+Testing this patchset in linux-next-20100208 gives:
 
-Thanks.
-wkq
-------=_Part_83336_1906331403.1297301388234
-Content-Type: text/html; charset=GBK
-Content-Transfer-Encoding: 7bit
+[   10.829223] sdhci: Secure Digital Host Controller Interface driver
+[   10.829548] sdhci: Copyright(c) Pierre Ossman
+[   10.883906] sdhci-pci 0000:0d:00.0: SDHCI controller found [1180:e822] (rev 1)
+[   10.884533] sdhci-pci 0000:0d:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   10.885189] sdhci-pci 0000:0d:00.0: Will use DMA mode even though HW doesn't fully claim to support it.
+[   10.886176] sdhci-pci 0000:0d:00.0: setting latency timer to 64
+[   10.886819] Registered led device: mmc0::
+[   10.887281] mmc0: SDHCI controller on PCI [0000:0d:00.0] using DMA
+[   10.887724] sdhci-pci 0000:0d:00.0: Unbalanced pm_runtime_enable!
+[   10.888498] sdhci-pci 0000:17:00.0: SDHCI controller found [1180:e822] (rev 1)
+[   10.889179] sdhci-pci 0000:17:00.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+[   10.889876] sdhci-pci 0000:17:00.0: Will use DMA mode even though HW doesn't fully claim to support it.
+[   10.890924] sdhci-pci 0000:17:00.0: setting latency timer to 64
+[   10.891387] Registered led device: mmc1::
+[   10.891900] mmc1: SDHCI controller on PCI [0000:17:00.0] using DMA
+[   10.892280] sdhci-pci 0000:17:00.0: Unbalanced pm_runtime_enable!
 
-<DIV>Hi,<BR>&nbsp;My CPU is Xeon(R) X3220&nbsp; 2.4Ghz, but linux userspace governor gives 900Mhz.<BR>The strange problem is that sometimes userspace governor gives correct<BR>reading(after a new boot).<BR>Is it the processor frequency scaling problem or linux problem or bios problem?<BR>(someone said it is bios, but I don't think so) .</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>linux : 2.6.36.2</DIV>
-<DIV>bios revision: 1.1</DIV>
-<DIV><BR>Thanks.</DIV>
-<DIV>wkq</DIV><br><br><span title="neteasefooter"><span id="netease_mail_footer"></span></span>
-------=_Part_83336_1906331403.1297301388234--
+(Note the last line above.)
 
+I then removed the card and reinserted it, but there's no dmesg output
+related to the reinsert, only to the card removal:
 
---===============5539079723119504557==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+[   65.381047] mmc0: card d555 removed
 
+So, card insertion is broken.  I then did rmmod sdhci-pci && modprobe
+sdhci-pci, and it picked up the card again.
 
---===============5539079723119504557==--
+There was also a weird UI hang for a few hundred msecs around the time
+the second modprobe happened, but I don't expect you to be able to do
+anything about that without a more helpful report; if it happens again
+I'll try to record what's going on using ftrace.
+
+Full dmesg is at:
+   http://dev.laptop.org/~cjb/logs/runtime-pm-sdhci-20100209.log
+
+Thanks,
+
+-- 
+Chris Ball   <cjb@laptop.org>   <http://printf.net/>
+One Laptop Per Child
