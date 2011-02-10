@@ -1,16 +1,14 @@
 From: Ian Campbell <ijc@hellion.org.uk>
 Subject: Re: [Xen-devel] Re: [PATCH 0/2] Fix hangup after
  creating checkpoint on Xen.
-Date: Thu, 10 Feb 2011 11:31:13 +0000
-Message-ID: <1297337473.20491.144.camel__21312.3436239131$1297337563$gmane$org@zakaz.uk.xensource.com>
-References: <Pine.LNX.4.44L0.1102081143470.2100-100000@iolanthe.rowland.org>
-	<1297186554.9388.248.camel@zakaz.uk.xensource.com>
-	<20110209231659.GB249@zanzibar.kublai.com>
+Date: Thu, 10 Feb 2011 11:40:05 +0000
+Message-ID: <1297338005.20491.163.camel__45846.6908232824$1297338083$gmane$org@zakaz.uk.xensource.com>
+References: <Pine.LNX.4.44L0.1102091837050.18843-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110209231659.GB249@zanzibar.kublai.com>
+In-Reply-To: <Pine.LNX.4.44L0.1102091837050.18843-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,33 +18,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brendan Cully <brendan@cs.ubc.ca>
-Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, LKML <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "SUZUKI,
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, LKML <linux-kernel@vger.kernel.org>, Brendan Cully <brendan@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "SUZUKI,
 	Kazuhiro" <kaz@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2011-02-09 at 23:16 +0000, Brendan Cully wrote:
-> I'd like to keep the fast resume option, and expect that it can be
-> contained entirely in Xen-specific code. I'll try to get someone to
-> look into it here.
+On Wed, 2011-02-09 at 23:42 +0000, Alan Stern wrote:
+> In fact there already is a "fast suspend & resume" path in the PM core.  
+> It's the freeze/thaw procedure used when starting to hibernate.  The
+> documentation specifically says that drivers' freeze methods are
+> supposed to quiesce their devices but not change power levels.  In
+> addition, the thaw method is invoked as part of recovery from a failed
+> hibernation attempt, so it already has the "cancel" semantics that xen 
+> seems to want.
 
-Thanks, please put them in contact with Kazuhiro who has already been
-looking into this.
+Sounds like that would work and I would much prefer to simply make
+correct use of the core functionality.
 
-> I think fast resume is somewhat orthogonal to the problem of hanging
-> on resume, which just sounds like a xen-specific bug in the slow
-> path.
+So PMSG_FREEZE is balanced by either PMSG_RECOVER or PMSG_THAW depending
+on whether the suspend was cancelled or not? So the sequence of events
+is something like:
+	dpm_suspend_start(PMSG_FREEZE);
+         
+		dpm_suspend_noirq(PMSG_FREEZE);
+                         
+			sysdev_suspend(PMSG_QUIESCE);
+			cancelled = suspend_hypercall()
+			sysdev_resume();
+                 
+		dpm_resume_noirq(cancelled ? PMSG_RECOVER : PMSG_THAW);
+         
+	dpm_resume_end(cancelled ? PMSG_RECOVER : PMSG_THAW);
+?
 
-The bug on the Xen side is taking the slow path when the suspend was
-actually cancelled, which is what the original patch tries to fix.
-
-Or should/could the slow path be able cope either way?
+(For comparison we currently have:
+> > >         dpm_suspend_start(PMSG_SUSPEND);
+> > >         
+> > >                 dpm_suspend_noirq(PMSG_SUSPEND);
+> > >                         
+> > >                         sysdev_suspend(PMSG_SUSPEND);
+> > >                         /* suspend hypercall */
+> > >                         sysdev_resume();
+> > >                 
+> > >                 dpm_resume_noirq(PMSG_RESUME);
+> > >         
+> > >         dpm_resume_end(PMSG_RESUME);
+)
 
 Ian.
-
 -- 
 Ian Campbell
-Current Noise: Neil Young - Love And War
+Current Noise: Neil Young - Angry World
 
-For every complex problem, there is a solution that is simple, neat, and wrong.
-		-- H. L. Mencken
+If only one could get that wonderful feeling of accomplishment without
+having to accomplish anything.
