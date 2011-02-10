@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Xen-devel] Re: [PATCH 0/2] Fix hangup after
- creating checkpoint on Xen.
-Date: Thu, 10 Feb 2011 11:00:51 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1102101043010.2029-100000__30453.3692230054$1297354589$gmane$org@iolanthe.rowland.org>
-References: <1297338005.20491.163.camel@zakaz.uk.xensource.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Wake On lan and ATL1 nic
+Date: Thu, 10 Feb 2011 17:07:52 +0100
+Message-ID: <201102101707.52930.rjw__20842.8340535194$1297354752$gmane$org@sisk.pl>
+References: <201012141756.59591.thomas@fjellstrom.ca>
+	<201012232159.00654.rjw@sisk.pl>
+	<201102100859.39059.thomas@fjellstrom.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1297338005.20491.163.camel@zakaz.uk.xensource.com>
+In-Reply-To: <201102100859.39059.thomas@fjellstrom.ca>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,74 +19,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, LKML <linux-kernel@vger.kernel.org>, Brendan Cully <brendan@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "SUZUKI,
-	Kazuhiro" <kaz@jp.fujitsu.com>
+To: thomas@fjellstrom.ca
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 10 Feb 2011, Ian Campbell wrote:
-
-> On Wed, 2011-02-09 at 23:42 +0000, Alan Stern wrote:
-> > In fact there already is a "fast suspend & resume" path in the PM core.  
-> > It's the freeze/thaw procedure used when starting to hibernate.  The
-> > documentation specifically says that drivers' freeze methods are
-> > supposed to quiesce their devices but not change power levels.  In
-> > addition, the thaw method is invoked as part of recovery from a failed
-> > hibernation attempt, so it already has the "cancel" semantics that xen 
-> > seems to want.
+On Thursday, February 10, 2011, Thomas Fjellstrom wrote:
+> On December 23, 2010, Rafael J. Wysocki wrote:
+> > On Thursday, December 23, 2010, Thomas Fjellstrom wrote:
+> > > On December 22, 2010, Rafael J. Wysocki wrote:
+> > > > On Wednesday, December 15, 2010, Thomas Fjellstrom wrote:
+> > > > > I can't seem to get wol to work with my desktop, which has an
+> > > > > integrated ATL1 GbE nic. I can't be absolutely sure if it ever
+> > > > > worked, but I think it did at one point. I can use ethtool to look
+> > > > > at the wol status, that it supports magic-packet wol, and I can
+> > > > > enable it, which is done at boot using an init script. But No matter
+> > > > > how many times I try to send a wol packet to that machine it never
+> > > > > wakes up.
+> > > > > 
+> > > > > Looking around on the net seems to say it is supported, and should
+> > > > > work, but I'm not having any luck. Anyone have any hints?
+> > > > 
+> > > > It works for me with 2.6.37-rc7 and the appended patch applied (at
+> > > > least the machine is woken up from suspend to RAM).  Of course, the
+> > > > adapter needs to be configured for that with the help of ethtool.
+> > > 
+> > > Hi, thanks for making quick work of this. I have one slight problem, my
+> > > nic seems to use the atl1 driver, and not atl1c. I've tried using atl1c
+> > > and atl1e, both will load if I modprobe them, but neither actually bring
+> > > up the device. Even tried blacklisting atl1 first.
+> > 
+> > I see.
+> > 
+> > Please try the patch below, then.  It's analogous to the atl1c one, but
+> > it's untested (builds for me).
+> > 
+> > Thanks,
+> > Rafael
+> > 
+> > 
 > 
-> Sounds like that would work and I would much prefer to simply make
-> correct use of the core functionality.
+> Hi, I just (finally) got around to testing this, and it all works now! thanks a 
+> lot. Though to be honest, it may not have had an impact. I noticed my BIOS 
+> settings for PCI device wakeup had been disabled (I could swear they were on, 
+> but after testing the patch, and wol STILL didn't work, I didn't have any 
+> other ideas...). And it seems WOL now works on both an unpatched 
+> 2.6.36.1+autogroup, and a patched 2.6.37.
+> 
+> I haven't done any significant testing of this patch, other than the machine 
+> boots, the network comes up, and WOL works.
+> 
+> If you have any things you want me to try, to make sure the patch is correct, 
+> let me know.
+> 
+> Thanks again for working on the patches.
 
-It seems like a reasonable approach.  Whether it will actually _work_ 
-is a harder question...  :-)
+No problem, thanks for the testing.  I'm going to push the patch, because it's
+generally needed, so it's good to know it doesn't break things at least.
 
-> So PMSG_FREEZE is balanced by either PMSG_RECOVER or PMSG_THAW depending
-> on whether the suspend was cancelled or not?
-
-Basically yes.  It is also "balanced" by PMSG_RESTORE, which is used
-after a memory image has been restored (although this isn't relevant to
-your snapshotting).  See the comments in include/linux/pm.h.
-
->  So the sequence of events
-> is something like:
-> 	dpm_suspend_start(PMSG_FREEZE);
->          
-> 		dpm_suspend_noirq(PMSG_FREEZE);
->                          
-> 			sysdev_suspend(PMSG_QUIESCE);
-
-This should say sysdev_suspend(PMSG_FREEZE).
-
-> 			cancelled = suspend_hypercall()
-
-At this point swsusp_arch_suspend() is called.  If that translates to 
-suspend_hypercall() in your setting, then yes.
-
-> 			sysdev_resume();
->                  
-> 		dpm_resume_noirq(cancelled ? PMSG_RECOVER : PMSG_THAW);
->          
-> 	dpm_resume_end(cancelled ? PMSG_RECOVER : PMSG_THAW);
-> ?
-
-Yes.
-
-> (For comparison we currently have:
-> > > >         dpm_suspend_start(PMSG_SUSPEND);
-> > > >         
-> > > >                 dpm_suspend_noirq(PMSG_SUSPEND);
-> > > >                         
-> > > >                         sysdev_suspend(PMSG_SUSPEND);
-> > > >                         /* suspend hypercall */
-> > > >                         sysdev_resume();
-> > > >                 
-> > > >                 dpm_resume_noirq(PMSG_RESUME);
-> > > >         
-> > > >         dpm_resume_end(PMSG_RESUME);
-> )
-
-Right.  The sequence of calls is the same, but the PMSG_ argument is 
-different so drivers are expected to act differently in response.
-
-Alan Stern
+Rafael
