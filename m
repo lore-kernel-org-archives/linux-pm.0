@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Updated][PATCH 5/5] PM: Clean up PM_TRACE dependencies
-	and drop unnecessary Kconfig option
-Date: Fri, 11 Feb 2011 00:32:48 +0100
-Message-ID: <201102110032.48810.rjw__5746.47577382183$1297380932$gmane$org@sisk.pl>
-References: <1297081335-13631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<201102082218.28015.rjw@sisk.pl> <201102082223.37975.rjw@sisk.pl>
+From: "Matt Carlson" <mcarlson@broadcom.com>
+Subject: Re: [PATCH 1/3] tg3: Avoid setting power.can_wakeup for
+ devices that cannot wake up
+Date: Thu, 10 Feb 2011 16:00:15 -0800
+Message-ID: <20110211000015.GA4254__24195.8090140999$1297382541$gmane$org@mcarlson.broadcom.com>
+References: <201102101751.56508.rjw@sisk.pl> <201102101753.09504.rjw@sisk.pl>
+	<20110210204844.GA4158@mcarlson.broadcom.com>
+	<201102102208.42410.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102082223.37975.rjw@sisk.pl>
+In-Reply-To: <201102102208.42410.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +21,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, linux-embedded@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jay Cliburn <jcliburn@gmail.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Matthew Carlson <mcarlson@broadcom.com>, Jie Yang <jie.yang@atheros.com>, Thomas Fjellstrom <thomas@fjellstrom.ca>, Michael Chan <mchan@broadcom.com>, Chris Snook <chris.snook@gmail.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, David Miller <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 08, 2011, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu, Feb 10, 2011 at 01:08:42PM -0800, Rafael J. Wysocki wrote:
+> On Thursday, February 10, 2011, Matt Carlson wrote:
+> > On Thu, Feb 10, 2011 at 08:53:09AM -0800, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > The tg3 driver uses device_init_wakeup() in such a way that the
+> > > device's power.can_wakeup flag may be set even though the PCI
+> > > subsystem cleared it before, in which case the device cannot wake
+> > > up the system from sleep states.  Modify the driver to only change
+> > > the power.can_wakeup flag if the device is not capable of generating
+> > > wakeup signals.
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  drivers/net/tg3.c |    6 ++++--
+> > >  1 file changed, 4 insertions(+), 2 deletions(-)
+> > > 
+> > > Index: linux-2.6/drivers/net/tg3.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/drivers/net/tg3.c
+> > > +++ linux-2.6/drivers/net/tg3.c
+> > > @@ -12403,9 +12403,11 @@ static void __devinit tg3_get_eeprom_hw_
+> > >  			tp->tg3_flags3 |= TG3_FLG3_RGMII_EXT_IBND_TX_EN;
+> > >  	}
+> > >  done:
+> > > -	device_init_wakeup(&tp->pdev->dev, tp->tg3_flags & TG3_FLAG_WOL_CAP);
+> > > -	device_set_wakeup_enable(&tp->pdev->dev,
+> > > +	if (tp->tg3_flags & TG3_FLAG_WOL_CAP)
+> > > +		device_set_wakeup_enable(&tp->pdev->dev,
+> > >  				 tp->tg3_flags & TG3_FLAG_WOL_ENABLE);
+> > > +	else
+> > > +		device_set_wakeup_capable(&tp->pdev->dev, false);
+> > 
+> > I did this because I couldn't see where 'can_wakeup' gets set.  I don't
+> > see a call to device_init_wakeup() that would be relevant to tg3
+> > devices.  I do see a couple calls to device_set_wakeup_capable() in
+> > acpi/glue.c and acpi/scan.c.  Is that the place?
 > 
-> CONFIG_PM_SLEEP_ADVANCED_DEBUG should depend on CONFIG_PM_SLEEP
-> and CONFIG_CAN_PM_TRACE need not depend on EXPERIMENTAL.  Modify
-> kernel/power/Kconfig along those lines.
+> No, it's pci_pm_init() or platform_pci_wakeup_init() and they both use
+> device_set_wakeup_capable() rather tha device_init_wakeup(), which is just a
+> combination of device_set_wakeup_capable() and device_set_wakeup_enable()
+> anyway.
+> 
+> And there's no why reason PCI drivers should use device_pm_init() at all.
 
-It turns out that CONFIG_PM_SLEEP_ADVANCED_DEBUG is not used any more, so we
-can simply get rid of it.
+O.K.
 
-Thanks,
-Rafael
+Acked-by: Matt Carlson <mcarlson@broadcom.com>
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM: Clean up PM_TRACE dependencies and drop unnecessary Kconfig option
+> > >  }
+> > >  
+> > >  static int __devinit tg3_issue_otp_command(struct tg3 *tp, u32 cmd)
+> > 
+> > This is something I was always curious about too.  The TG3_FLAG_WOL_CAP
+> > tracks whether or not the device can handle WOL.  Is it safe to do away
+> > with this flag and lean on the 'can_wakeup' flag instead?
+> 
+> I don't think so.  power.can_wakeup only tracks the capability to generate
+> wakeup signals from the PCI perspective and it is set by PCI if the device
+> appears to be able to generate wakeup signals.
+> 
+> So, I think the driver should work as in the $subject patch - reset the
+> power.can_wakeup flag if TG3_FLAG_WOL_CAP is unset and don't touch it
+> otherwise.
 
-CONFIG_PM_SLEEP_ADVANCED_DEBUG is not used any more, so drop it
-and CONFIG_CAN_PM_TRACE need not depend on EXPERIMENTAL, so remove
-that dependency.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/Kconfig |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
-
-Index: linux-2.6/kernel/power/Kconfig
-===================================================================
---- linux-2.6.orig/kernel/power/Kconfig
-+++ linux-2.6/kernel/power/Kconfig
-@@ -140,11 +140,6 @@ config PM_ADVANCED_DEBUG
- 	fields of device objects from user space.  If you are not a kernel
- 	developer interested in debugging/testing Power Management, say "no".
- 
--config PM_SLEEP_ADVANCED_DEBUG
--	bool
--	depends on PM_ADVANCED_DEBUG
--	default n
--
- config PM_TEST_SUSPEND
- 	bool "Test suspend/resume and wakealarm during bootup"
- 	depends on SUSPEND && PM_DEBUG && RTC_CLASS=y
-@@ -158,7 +153,7 @@ config PM_TEST_SUSPEND
- 
- config CAN_PM_TRACE
- 	def_bool y
--	depends on PM_DEBUG && PM_SLEEP && EXPERIMENTAL
-+	depends on PM_DEBUG && PM_SLEEP
- 
- config PM_TRACE
- 	bool
+That makes sense.  Thanks.
