@@ -1,17 +1,19 @@
-From: "Matt Carlson" <mcarlson@broadcom.com>
-Subject: Re: [PATCH 1/3] tg3: Avoid setting power.can_wakeup for
- devices that cannot wake up
-Date: Thu, 10 Feb 2011 16:00:15 -0800
-Message-ID: <20110211000015.GA4254__24195.8090140999$1297382541$gmane$org@mcarlson.broadcom.com>
-References: <201102101751.56508.rjw@sisk.pl> <201102101753.09504.rjw@sisk.pl>
-	<20110210204844.GA4158@mcarlson.broadcom.com>
-	<201102102208.42410.rjw@sisk.pl>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH v4] tools: create power/x86/turbostat
+Date: Thu, 10 Feb 2011 23:43:16 -0500 (EST)
+Message-ID: <alpine.LFD.2.02.1102102338150.3384__12958.5904455327$1297399504$gmane$org@x980>
+References: <alpine.LFD.2.00.1010230116590.29399@localhost.localdomain>
+	<alpine.LFD.2.00.1010240004180.23060@localhost.localdomain>
+	<alpine.LFD.2.00.1010262312090.3209@localhost.localdomain>
+	<alpine.LFD.2.00.1011151056380.2939@x980>
+	<alpine.LFD.2.00.1011232353440.20657@x980>
+	<alpine.LFD.2.00.1012070053470.5514@x980>
+	<AANLkTi=_dYMw1JVWcu_uyqPQxzo2Ms94DEXYGbEtNZYq@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102102208.42410.rjw@sisk.pl>
-Content-Disposition: inline
+In-reply-to: <AANLkTi=_dYMw1JVWcu_uyqPQxzo2Ms94DEXYGbEtNZYq@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,73 +23,461 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jay Cliburn <jcliburn@gmail.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Matthew Carlson <mcarlson@broadcom.com>, Jie Yang <jie.yang@atheros.com>, Thomas Fjellstrom <thomas@fjellstrom.ca>, Michael Chan <mchan@broadcom.com>, Chris Snook <chris.snook@gmail.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, David Miller <davem@davemloft.net>
+To: Thiago Farina <tfransosi@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 10, 2011 at 01:08:42PM -0800, Rafael J. Wysocki wrote:
-> On Thursday, February 10, 2011, Matt Carlson wrote:
-> > On Thu, Feb 10, 2011 at 08:53:09AM -0800, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > The tg3 driver uses device_init_wakeup() in such a way that the
-> > > device's power.can_wakeup flag may be set even though the PCI
-> > > subsystem cleared it before, in which case the device cannot wake
-> > > up the system from sleep states.  Modify the driver to only change
-> > > the power.can_wakeup flag if the device is not capable of generating
-> > > wakeup signals.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > ---
-> > >  drivers/net/tg3.c |    6 ++++--
-> > >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > > 
-> > > Index: linux-2.6/drivers/net/tg3.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/drivers/net/tg3.c
-> > > +++ linux-2.6/drivers/net/tg3.c
-> > > @@ -12403,9 +12403,11 @@ static void __devinit tg3_get_eeprom_hw_
-> > >  			tp->tg3_flags3 |= TG3_FLG3_RGMII_EXT_IBND_TX_EN;
-> > >  	}
-> > >  done:
-> > > -	device_init_wakeup(&tp->pdev->dev, tp->tg3_flags & TG3_FLAG_WOL_CAP);
-> > > -	device_set_wakeup_enable(&tp->pdev->dev,
-> > > +	if (tp->tg3_flags & TG3_FLAG_WOL_CAP)
-> > > +		device_set_wakeup_enable(&tp->pdev->dev,
-> > >  				 tp->tg3_flags & TG3_FLAG_WOL_ENABLE);
-> > > +	else
-> > > +		device_set_wakeup_capable(&tp->pdev->dev, false);
-> > 
-> > I did this because I couldn't see where 'can_wakeup' gets set.  I don't
-> > see a call to device_init_wakeup() that would be relevant to tg3
-> > devices.  I do see a couple calls to device_set_wakeup_capable() in
-> > acpi/glue.c and acpi/scan.c.  Is that the place?
-> 
-> No, it's pci_pm_init() or platform_pci_wakeup_init() and they both use
-> device_set_wakeup_capable() rather tha device_init_wakeup(), which is just a
-> combination of device_set_wakeup_capable() and device_set_wakeup_enable()
-> anyway.
-> 
-> And there's no why reason PCI drivers should use device_pm_init() at all.
+From: Len Brown <len.brown@intel.com>
 
-O.K.
+Follow kernel style more closely.
+Nuke typdef, re-name "per cpu counters" simply to be counters etc.
 
-Acked-by: Matt Carlson <mcarlson@broadcom.com>
+This patch changes no functionality.
 
-> > >  }
-> > >  
-> > >  static int __devinit tg3_issue_otp_command(struct tg3 *tp, u32 cmd)
-> > 
-> > This is something I was always curious about too.  The TG3_FLAG_WOL_CAP
-> > tracks whether or not the device can handle WOL.  Is it safe to do away
-> > with this flag and lean on the 'can_wakeup' flag instead?
-> 
-> I don't think so.  power.can_wakeup only tracks the capability to generate
-> wakeup signals from the PCI perspective and it is set by PCI if the device
-> appears to be able to generate wakeup signals.
-> 
-> So, I think the driver should work as in the $subject patch - reset the
-> power.can_wakeup flag if TG3_FLAG_WOL_CAP is unset and don't touch it
-> otherwise.
+Suggested-by: Thiago Farina <tfransosi@gmail.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+Thanks for the feedback, Thiago.
 
-That makes sense.  Thanks.
+-Len
+
+ tools/power/x86/turbostat/turbostat.c |  196 ++++++++++++++++-----------------
+ 1 files changed, 96 insertions(+), 100 deletions(-)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 4c6983d..87d309e 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -72,7 +72,7 @@ int need_reinitialize;
+ 
+ int num_cpus;
+ 
+-typedef struct per_cpu_counters {
++struct counters {
+ 	unsigned long long tsc;		/* per thread */
+ 	unsigned long long aperf;	/* per thread */
+ 	unsigned long long mperf;	/* per thread */
+@@ -88,13 +88,13 @@ typedef struct per_cpu_counters {
+ 	int pkg;
+ 	int core;
+ 	int cpu;
+-	struct per_cpu_counters *next;
+-} PCC;
++	struct counters *next;
++};
+ 
+-PCC *pcc_even;
+-PCC *pcc_odd;
+-PCC *pcc_delta;
+-PCC *pcc_average;
++struct counters *cnt_even;
++struct counters *cnt_odd;
++struct counters *cnt_delta;
++struct counters *cnt_average;
+ struct timeval tv_even;
+ struct timeval tv_odd;
+ struct timeval tv_delta;
+@@ -125,7 +125,7 @@ unsigned long long get_msr(int cpu, off_t offset)
+ 	return msr;
+ }
+ 
+-void print_header()
++void print_header(void)
+ {
+ 	if (show_pkg)
+ 		fprintf(stderr, "pkg ");
+@@ -160,39 +160,39 @@ void print_header()
+ 	putc('\n', stderr);
+ }
+ 
+-void dump_pcc(PCC *pcc)
++void dump_cnt(struct counters *cnt)
+ {
+-	fprintf(stderr, "package: %d ", pcc->pkg);
+-	fprintf(stderr, "core:: %d ", pcc->core);
+-	fprintf(stderr, "CPU: %d ", pcc->cpu);
+-	fprintf(stderr, "TSC: %016llX\n", pcc->tsc);
+-	fprintf(stderr, "c3: %016llX\n", pcc->c3);
+-	fprintf(stderr, "c6: %016llX\n", pcc->c6);
+-	fprintf(stderr, "c7: %016llX\n", pcc->c7);
+-	fprintf(stderr, "aperf: %016llX\n", pcc->aperf);
+-	fprintf(stderr, "pc2: %016llX\n", pcc->pc2);
+-	fprintf(stderr, "pc3: %016llX\n", pcc->pc3);
+-	fprintf(stderr, "pc6: %016llX\n", pcc->pc6);
+-	fprintf(stderr, "pc7: %016llX\n", pcc->pc7);
+-	fprintf(stderr, "msr0x%x: %016llX\n", extra_msr_offset, pcc->extra_msr);
++	fprintf(stderr, "package: %d ", cnt->pkg);
++	fprintf(stderr, "core:: %d ", cnt->core);
++	fprintf(stderr, "CPU: %d ", cnt->cpu);
++	fprintf(stderr, "TSC: %016llX\n", cnt->tsc);
++	fprintf(stderr, "c3: %016llX\n", cnt->c3);
++	fprintf(stderr, "c6: %016llX\n", cnt->c6);
++	fprintf(stderr, "c7: %016llX\n", cnt->c7);
++	fprintf(stderr, "aperf: %016llX\n", cnt->aperf);
++	fprintf(stderr, "pc2: %016llX\n", cnt->pc2);
++	fprintf(stderr, "pc3: %016llX\n", cnt->pc3);
++	fprintf(stderr, "pc6: %016llX\n", cnt->pc6);
++	fprintf(stderr, "pc7: %016llX\n", cnt->pc7);
++	fprintf(stderr, "msr0x%x: %016llX\n", extra_msr_offset, cnt->extra_msr);
+ }
+ 
+-void dump_list(PCC *pcc)
++void dump_list(struct counters *cnt)
+ {
+-	printf("dump_list 0x%p\n", pcc);
++	printf("dump_list 0x%p\n", cnt);
+ 
+-	for (; pcc; pcc = pcc->next)
+-		dump_pcc(pcc);
++	for (; cnt; cnt = cnt->next)
++		dump_cnt(cnt);
+ }
+ 
+-void print_pcc(PCC *p)
++void print_cnt(struct counters *p)
+ {
+ 	double interval_float;
+ 
+ 	interval_float = tv_delta.tv_sec + tv_delta.tv_usec/1000000.0;
+ 
+ 	/* topology columns, print blanks on 1st (average) line */
+-	if (p == pcc_average) {
++	if (p == cnt_average) {
+ 		if (show_pkg)
+ 			fprintf(stderr, "    ");
+ 		if (show_core)
+@@ -262,24 +262,24 @@ void print_pcc(PCC *p)
+ 	putc('\n', stderr);
+ }
+ 
+-void print_counters(PCC *cnt)
++void print_counters(struct counters *counters)
+ {
+-	PCC *pcc;
++	struct counters *cnt;
+ 
+ 	print_header();
+ 
+ 	if (num_cpus > 1)
+-		print_pcc(pcc_average);
++		print_cnt(cnt_average);
+ 
+-	for (pcc = cnt; pcc != NULL; pcc = pcc->next)
+-		print_pcc(pcc);
++	for (cnt = counters; cnt != NULL; cnt = cnt->next)
++		print_cnt(cnt);
+ 
+ }
+ 
+ #define SUBTRACT_COUNTER(after, before, delta) (delta = (after - before), (before > after))
+ 
+-
+-int compute_delta(PCC *after, PCC *before, PCC *delta)
++int compute_delta(struct counters *after,
++	struct counters *before, struct counters *delta)
+ {
+ 	int errors = 0;
+ 	int perf_err = 0;
+@@ -391,20 +391,20 @@ int compute_delta(PCC *after, PCC *before, PCC *delta)
+ 		delta->extra_msr = after->extra_msr;
+ 		if (errors) {
+ 			fprintf(stderr, "ERROR cpu%d before:\n", before->cpu);
+-			dump_pcc(before);
++			dump_cnt(before);
+ 			fprintf(stderr, "ERROR cpu%d after:\n", before->cpu);
+-			dump_pcc(after);
++			dump_cnt(after);
+ 			errors = 0;
+ 		}
+ 	}
+ 	return 0;
+ }
+ 
+-void compute_average(PCC *delta, PCC *avg)
++void compute_average(struct counters *delta, struct counters *avg)
+ {
+-	PCC *sum;
++	struct counters *sum;
+ 
+-	sum = calloc(1, sizeof(PCC));
++	sum = calloc(1, sizeof(struct counters));
+ 	if (sum == NULL) {
+ 		perror("calloc sum");
+ 		exit(1);
+@@ -438,35 +438,34 @@ void compute_average(PCC *delta, PCC *avg)
+ 	free(sum);
+ }
+ 
+-void get_counters(PCC *pcc)
++void get_counters(struct counters *cnt)
+ {
+-	for ( ; pcc; pcc = pcc->next) {
+-		pcc->tsc = get_msr(pcc->cpu, MSR_TSC);
++	for ( ; cnt; cnt = cnt->next) {
++		cnt->tsc = get_msr(cnt->cpu, MSR_TSC);
+ 		if (do_nhm_cstates)
+-			pcc->c3 = get_msr(pcc->cpu, MSR_CORE_C3_RESIDENCY);
++			cnt->c3 = get_msr(cnt->cpu, MSR_CORE_C3_RESIDENCY);
+ 		if (do_nhm_cstates)
+-			pcc->c6 = get_msr(pcc->cpu, MSR_CORE_C6_RESIDENCY);
++			cnt->c6 = get_msr(cnt->cpu, MSR_CORE_C6_RESIDENCY);
+ 		if (do_snb_cstates)
+-			pcc->c7 = get_msr(pcc->cpu, MSR_CORE_C7_RESIDENCY);
++			cnt->c7 = get_msr(cnt->cpu, MSR_CORE_C7_RESIDENCY);
+ 		if (has_aperf)
+-			pcc->aperf = get_msr(pcc->cpu, MSR_APERF);
++			cnt->aperf = get_msr(cnt->cpu, MSR_APERF);
+ 		if (has_aperf)
+-			pcc->mperf = get_msr(pcc->cpu, MSR_MPERF);
++			cnt->mperf = get_msr(cnt->cpu, MSR_MPERF);
+ 		if (do_snb_cstates)
+-			pcc->pc2 = get_msr(pcc->cpu, MSR_PKG_C2_RESIDENCY);
++			cnt->pc2 = get_msr(cnt->cpu, MSR_PKG_C2_RESIDENCY);
+ 		if (do_nhm_cstates)
+-			pcc->pc3 = get_msr(pcc->cpu, MSR_PKG_C3_RESIDENCY);
++			cnt->pc3 = get_msr(cnt->cpu, MSR_PKG_C3_RESIDENCY);
+ 		if (do_nhm_cstates)
+-			pcc->pc6 = get_msr(pcc->cpu, MSR_PKG_C6_RESIDENCY);
++			cnt->pc6 = get_msr(cnt->cpu, MSR_PKG_C6_RESIDENCY);
+ 		if (do_snb_cstates)
+-			pcc->pc7 = get_msr(pcc->cpu, MSR_PKG_C7_RESIDENCY);
++			cnt->pc7 = get_msr(cnt->cpu, MSR_PKG_C7_RESIDENCY);
+ 		if (extra_msr_offset)
+-			pcc->extra_msr = get_msr(pcc->cpu, extra_msr_offset);
++			cnt->extra_msr = get_msr(cnt->cpu, extra_msr_offset);
+ 	}
+ }
+ 
+-
+-void print_nehalem_info()
++void print_nehalem_info(void)
+ {
+ 	unsigned long long msr;
+ 	unsigned int ratio;
+@@ -514,38 +513,38 @@ void print_nehalem_info()
+ 
+ }
+ 
+-void free_counter_list(PCC *list)
++void free_counter_list(struct counters *list)
+ {
+-	PCC *p;
++	struct counters *p;
+ 
+ 	for (p = list; p; ) {
+-		PCC *free_me;
++		struct counters *free_me;
+ 
+ 		free_me = p;
+ 		p = p->next;
+ 		free(free_me);
+ 	}
+-	return;
+ }
+ 
+ void free_all_counters(void)
+ {
+-	free_counter_list(pcc_even);
+-	pcc_even = NULL;
++	free_counter_list(cnt_even);
++	cnt_even = NULL;
+ 
+-	free_counter_list(pcc_odd);
+-	pcc_odd = NULL;
++	free_counter_list(cnt_odd);
++	cnt_odd = NULL;
+ 
+-	free_counter_list(pcc_delta);
+-	pcc_delta = NULL;
++	free_counter_list(cnt_delta);
++	cnt_delta = NULL;
+ 
+-	free_counter_list(pcc_average);
+-	pcc_average = NULL;
++	free_counter_list(cnt_average);
++	cnt_average = NULL;
+ }
+ 
+-void insert_cpu_counters(PCC **list, PCC *new)
++void insert_counters(struct counters **list,
++	struct counters *new)
+ {
+-	PCC *prev;
++	struct counters *prev;
+ 
+ 	/*
+ 	 * list was empty
+@@ -594,18 +593,16 @@ void insert_cpu_counters(PCC **list, PCC *new)
+ 	 */
+ 	new->next = prev->next;
+ 	prev->next = new;
+-
+-	return;
+ }
+ 
+-void alloc_new_cpu_counters(int pkg, int core, int cpu)
++void alloc_new_counters(int pkg, int core, int cpu)
+ {
+-	PCC *new;
++	struct counters *new;
+ 
+ 	if (verbose > 1)
+ 		printf("pkg%d core%d, cpu%d\n", pkg, core, cpu);
+ 
+-	new = (PCC *)calloc(1, sizeof(PCC));
++	new = (struct counters *)calloc(1, sizeof(struct counters));
+ 	if (new == NULL) {
+ 		perror("calloc");
+ 		exit(1);
+@@ -613,9 +610,10 @@ void alloc_new_cpu_counters(int pkg, int core, int cpu)
+ 	new->pkg = pkg;
+ 	new->core = core;
+ 	new->cpu = cpu;
+-	insert_cpu_counters(&pcc_odd, new);
++	insert_counters(&cnt_odd, new);
+ 
+-	new = (PCC *)calloc(1, sizeof(PCC));
++	new = (struct counters *)calloc(1,
++		sizeof(struct counters));
+ 	if (new == NULL) {
+ 		perror("calloc");
+ 		exit(1);
+@@ -623,9 +621,9 @@ void alloc_new_cpu_counters(int pkg, int core, int cpu)
+ 	new->pkg = pkg;
+ 	new->core = core;
+ 	new->cpu = cpu;
+-	insert_cpu_counters(&pcc_even, new);
++	insert_counters(&cnt_even, new);
+ 
+-	new = (PCC *)calloc(1, sizeof(PCC));
++	new = (struct counters *)calloc(1, sizeof(struct counters));
+ 	if (new == NULL) {
+ 		perror("calloc");
+ 		exit(1);
+@@ -633,9 +631,9 @@ void alloc_new_cpu_counters(int pkg, int core, int cpu)
+ 	new->pkg = pkg;
+ 	new->core = core;
+ 	new->cpu = cpu;
+-	insert_cpu_counters(&pcc_delta, new);
++	insert_counters(&cnt_delta, new);
+ 
+-	new = (PCC *)calloc(1, sizeof(PCC));
++	new = (struct counters *)calloc(1, sizeof(struct counters));
+ 	if (new == NULL) {
+ 		perror("calloc");
+ 		exit(1);
+@@ -643,7 +641,7 @@ void alloc_new_cpu_counters(int pkg, int core, int cpu)
+ 	new->pkg = pkg;
+ 	new->core = core;
+ 	new->cpu = cpu;
+-	pcc_average = new;
++	cnt_average = new;
+ }
+ 
+ int get_physical_package_id(int cpu)
+@@ -719,7 +717,7 @@ void re_initialize(void)
+ {
+ 	printf("turbostat: topology changed, re-initializing.\n");
+ 	free_all_counters();
+-	num_cpus = for_all_cpus(alloc_new_cpu_counters);
++	num_cpus = for_all_cpus(alloc_new_counters);
+ 	need_reinitialize = 0;
+ 	printf("num_cpus is now %d\n", num_cpus);
+ }
+@@ -728,7 +726,7 @@ void dummy(int pkg, int core, int cpu) { return; }
+ /*
+  * check to see if a cpu came on-line
+  */
+-void verify_num_cpus()
++void verify_num_cpus(void)
+ {
+ 	int new_num_cpus;
+ 
+@@ -740,14 +738,12 @@ void verify_num_cpus()
+ 				num_cpus, new_num_cpus);
+ 		need_reinitialize = 1;
+ 	}
+-
+-	return;
+ }
+ 
+ void turbostat_loop()
+ {
+ restart:
+-	get_counters(pcc_even);
++	get_counters(cnt_even);
+ 	gettimeofday(&tv_even, (struct timezone *)NULL);
+ 
+ 	while (1) {
+@@ -757,24 +753,24 @@ restart:
+ 			goto restart;
+ 		}
+ 		sleep(interval_sec);
+-		get_counters(pcc_odd);
++		get_counters(cnt_odd);
+ 		gettimeofday(&tv_odd, (struct timezone *)NULL);
+ 
+-		compute_delta(pcc_odd, pcc_even, pcc_delta);
++		compute_delta(cnt_odd, cnt_even, cnt_delta);
+ 		timersub(&tv_odd, &tv_even, &tv_delta);
+-		compute_average(pcc_delta, pcc_average);
+-		print_counters(pcc_delta);
++		compute_average(cnt_delta, cnt_average);
++		print_counters(cnt_delta);
+ 		if (need_reinitialize) {
+ 			re_initialize();
+ 			goto restart;
+ 		}
+ 		sleep(interval_sec);
+-		get_counters(pcc_even);
++		get_counters(cnt_even);
+ 		gettimeofday(&tv_even, (struct timezone *)NULL);
+-		compute_delta(pcc_even, pcc_odd, pcc_delta);
++		compute_delta(cnt_even, cnt_odd, cnt_delta);
+ 		timersub(&tv_even, &tv_odd, &tv_delta);
+-		compute_average(pcc_delta, pcc_average);
+-		print_counters(pcc_delta);
++		compute_average(cnt_delta, cnt_average);
++		print_counters(cnt_delta);
+ 	}
+ }
+ 
+@@ -952,7 +948,7 @@ void turbostat_init()
+ 	check_dev_msr();
+ 	check_super_user();
+ 
+-	num_cpus = for_all_cpus(alloc_new_cpu_counters);
++	num_cpus = for_all_cpus(alloc_new_counters);
+ 
+ 	if (verbose)
+ 		print_nehalem_info();
+@@ -962,7 +958,7 @@ int fork_it(char **argv)
+ {
+ 	int retval;
+ 	pid_t child_pid;
+-	get_counters(pcc_even);
++	get_counters(cnt_even);
+ 	gettimeofday(&tv_even, (struct timezone *)NULL);
+ 
+ 	child_pid = fork();
+@@ -985,14 +981,14 @@ int fork_it(char **argv)
+ 			exit(1);
+ 		}
+ 	}
+-	get_counters(pcc_odd);
++	get_counters(cnt_odd);
+ 	gettimeofday(&tv_odd, (struct timezone *)NULL);
+-	retval = compute_delta(pcc_odd, pcc_even, pcc_delta);
++	retval = compute_delta(cnt_odd, cnt_even, cnt_delta);
+ 
+ 	timersub(&tv_odd, &tv_even, &tv_delta);
+-	compute_average(pcc_delta, pcc_average);
++	compute_average(cnt_delta, cnt_average);
+ 	if (!retval)
+-		print_counters(pcc_delta);
++		print_counters(cnt_delta);
+ 
+ 	fprintf(stderr, "%.6f sec\n", tv_delta.tv_sec + tv_delta.tv_usec/1000000.0);;
+ 
+-- 
+1.7.4.45.g1a9f
