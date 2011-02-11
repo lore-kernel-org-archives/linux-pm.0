@@ -1,19 +1,14 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [Patch] idle governor: Avoid lock acquisition to
- read pm_qos before entering idle
-Date: Fri, 11 Feb 2011 12:03:50 -0800
-Message-ID: <1297454630.2645.277.camel__20691.5920287885$1297455009$gmane$org@schen9-DESK>
-References: <1297300864.2645.128.camel@schen9-DESK>
-	<201102110017.16066.rjw@sisk.pl>
-	<1297385416.2645.262.camel@schen9-DESK>
-	<201102112022.25637.rjw@sisk.pl>
-	<1297452478.2645.265.camel@schen9-DESK>
-	<1297452814.4967.110.camel@mulgrave.site>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Allow pm_runtime_suspend() to succeed
+ during system suspend
+Date: Fri, 11 Feb 2011 15:36:15 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1102111514180.2048-100000__22531.1674912975$1297456630$gmane$org@iolanthe.rowland.org>
+References: <201102112100.23996.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1297452814.4967.110.camel@mulgrave.site>
+In-Reply-To: <201102112100.23996.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,33 +18,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Len <len.brown@intel.com>, Andi Kleen <ak@linux.intel.com>, mark gross <markgross@thegnar.org>, linux-kernel@vger.kernel.org, David Alan Gilbert <linux@treblig.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2011-02-11 at 13:33 -0600, James Bottomley wrote:
-> On Fri, 2011-02-11 at 11:27 -0800, Tim Chen wrote:
-> > On Fri, 2011-02-11 at 20:22 +0100, Rafael J. Wysocki wrote:
-> > 
-> > > 
-> > > Thanks, but I'd put that comment before the structure definition with the
-> > > "NOTE:" prefix and I think you should explain the reason why that field
-> > > shouldn't be changed to 64-bits.
-> > > 
-> > 
-> > Either you or James want to suggest a comment on why the field shouldn't
-> > be changed to 64-bits to be placed there?
-> 
-> /*
->  * Note: The lockless read read path depends on the CPU accessing 
->  * target_value atomically.  Atomic access is only guaranteed on all CPU
->  * types linux supports for 32 bit quantites
->  */
-> 
-> James
-> 
-> 
+On Fri, 11 Feb 2011, Rafael J. Wysocki wrote:
 
-Thanks.  I will incorporate your suggested comment in an updated patch.
+> > The reason why runtime suspend is not allowed during system power transitions
+> > if the following race:
+> > 
+> > - A device has been suspended via a system suspend callback.
+> > - The runtime PM framework executes a (scheduled) suspend on that device,
+> >   not knowing that it's already been suspended, which potentially results in
+> >   accessing the device's registers in a low-power state.
+> > 
+> > Now, it can be avoided if every driver does the right thing and checks whether
+> > the device is already suspended in its runtime suspend callback, but that would
+> > kind of defeat the purpose of the runtime PM framework, at least partially.
+> 
+> In fact, I've just realized that the above race cannot really occur, because
+> pm_wq is freezable, so I'm proposing the following change.
 
-Tim
+Yes, I had reached essentially the same conclusion.  Of course, there 
+may still be other kernel threads running or interrupt handlers that 
+can interfere.  It's probably okay to assume that drivers will handle 
+these things.
+
+> Of course, it still doesn't prevent user space from disabling the runtime PM
+> framework's helpers via /sys/devices/.../power/control.
+
+True.  So in the end this won't make much difference, but we might as 
+well do it.
+
+Alan Stern
