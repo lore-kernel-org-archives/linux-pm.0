@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 2/2] PM: Make system-wide PM and runtime PM
-	handle subsystems consistently
-Date: Sat, 12 Feb 2011 23:14:41 +0100
-Message-ID: <201102122314.41407.rjw__4075.62932600758$1297549139$gmane$org@sisk.pl>
-References: <201101300107.19389.rjw@sisk.pl> <201102011939.49793.rjw@sisk.pl>
-	<201102122312.26545.rjw@sisk.pl>
+Subject: 2.6.38-rc4-git5: Reported regressions from 2.6.37
+Date: Sat, 12 Feb 2011 23:57:33 +0100 (CET)
+Message-ID: <NMZS1i37KEE.A.1eG.6_wVNB__7507.22953021086$1297551723$gmane$org@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102122312.26545.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,376 +16,142 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-The code handling system-wide power transitions (eg. suspend-to-RAM)
-can in theory execute callbacks provided by the device's bus type,
-device type and class in each phase of the power transition.  In
-turn, the runtime PM core code only calls one of those callbacks at
-a time, preferring bus type callbacks to device type or class
-callbacks and device type callbacks to class callbacks.
-
-It seems reasonable to make them both behave in the same way in that
-respect.  Moreover, even though a device may belong to two subsystems
-(eg. bus type and device class) simultaneously, in practice power
-management callbacks for system-wide power transitions are always
-provided by only one of them (ie. if the bus type callbacks are
-defined, the device class ones are not and vice versa).  Thus it is
-possible to modify the code handling system-wide power transitions
-so that it follows the core runtime PM code (ie. treats the
-subsystem callbacks as mutually exclusive).
-
-On the other hand, the core runtime PM code will choose to execute,
-for example, a runtime suspend callback provided by the device type
-even if the bus type's struct dev_pm_ops object exists, but the
-runtime_suspend pointer in it happens to be NULL.  This is confusing,
-because it may lead to the execution of callbacks from different
-subsystems during different operations (eg. the bus type suspend
-callback may be executed during runtime suspend, while the device
-type callback will be executed during runtime resume).
-
-Make all of the power management code treat subsystem callbacks in
-a consistent way, such that:
-(1) If the device's bus type is defined (eg. dev->bus is not NULL)
-    and its pm pointer is not NULL, the callbacks from dev->bus->pm
-    will be used.
-(2) If dev->bus is NULL or dev->bus->pm is NULL, but the device's
-    device type is defined (eg. dev->type is not NULL) and its pm
-    pointer is not NULL, the callbacks from dev->type->pm will be
-    used.
-(3) If dev->bus is NULL or dev->bus->pm is NULL and dev->type is
-    NULL or dev->type->pm is NULL, the callbacks from dev->class->pm
-    will be used provided that both dev->class and dev->class->pm
-    are not NULL.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/power/devices.txt |   28 +++----
- drivers/base/power/main.c       |  141 +++++++++++++++++-----------------------
- drivers/base/power/runtime.c    |   12 +--
- 3 files changed, 79 insertions(+), 102 deletions(-)
-
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -433,21 +433,17 @@ static int device_resume_noirq(struct de
- 		error = pm_noirq_op(dev, dev->bus->pm, state);
- 		if (error)
- 			goto End;
--	}
--
--	if (dev->type && dev->type->pm) {
-+	} else if (dev->type && dev->type->pm) {
- 		pm_dev_dbg(dev, state, "EARLY type ");
- 		error = pm_noirq_op(dev, dev->type->pm, state);
- 		if (error)
- 			goto End;
--	}
--
--	if (dev->class && dev->class->pm) {
-+	} else if (dev->class && dev->class->pm) {
- 		pm_dev_dbg(dev, state, "EARLY class ");
- 		error = pm_noirq_op(dev, dev->class->pm, state);
- 	}
- 
--End:
-+ End:
- 	TRACE_RESUME(error);
- 	return error;
- }
-@@ -532,21 +528,18 @@ static int device_resume(struct device *
- 		if (dev->bus->pm) {
- 			pm_dev_dbg(dev, state, "");
- 			error = pm_op(dev, dev->bus->pm, state);
-+			goto End;
- 		} else if (dev->bus->resume) {
- 			pm_dev_dbg(dev, state, "legacy ");
- 			error = legacy_resume(dev, dev->bus->resume);
--		}
--		if (error)
- 			goto End;
-+		}
- 	}
- 
--	if (dev->type) {
--		if (dev->type->pm) {
--			pm_dev_dbg(dev, state, "type ");
--			error = pm_op(dev, dev->type->pm, state);
--		}
--		if (error)
--			goto End;
-+	if (dev->type && dev->type->pm) {
-+		pm_dev_dbg(dev, state, "type ");
-+		error = pm_op(dev, dev->type->pm, state);
-+		goto End;
- 	}
- 
- 	if (dev->class) {
-@@ -558,6 +551,7 @@ static int device_resume(struct device *
- 			error = legacy_resume(dev, dev->class->resume);
- 		}
- 	}
-+
-  End:
- 	device_unlock(dev);
- 	complete_all(&dev->power.completion);
-@@ -644,19 +638,18 @@ static void device_complete(struct devic
- 		dev->pwr_domain->ops.complete(dev);
- 	}
- 
--	if (dev->class && dev->class->pm && dev->class->pm->complete) {
--		pm_dev_dbg(dev, state, "completing class ");
--		dev->class->pm->complete(dev);
--	}
--
--	if (dev->type && dev->type->pm && dev->type->pm->complete) {
--		pm_dev_dbg(dev, state, "completing type ");
--		dev->type->pm->complete(dev);
--	}
--
--	if (dev->bus && dev->bus->pm && dev->bus->pm->complete) {
-+	if (dev->bus && dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "completing ");
--		dev->bus->pm->complete(dev);
-+		if (dev->bus->pm->complete)
-+			dev->bus->pm->complete(dev);
-+	} else if (dev->type && dev->type->pm) {
-+		pm_dev_dbg(dev, state, "completing type ");
-+		if (dev->type->pm->complete)
-+			dev->type->pm->complete(dev);
-+	} else if (dev->class && dev->class->pm) {
-+		pm_dev_dbg(dev, state, "completing class ");
-+		if (dev->class->pm->complete)
-+			dev->class->pm->complete(dev);
- 	}
- 
- 	device_unlock(dev);
-@@ -741,27 +734,23 @@ static pm_message_t resume_event(pm_mess
-  */
- static int device_suspend_noirq(struct device *dev, pm_message_t state)
- {
--	int error = 0;
-+	int error;
- 
--	if (dev->class && dev->class->pm) {
--		pm_dev_dbg(dev, state, "LATE class ");
--		error = pm_noirq_op(dev, dev->class->pm, state);
-+	if (dev->bus && dev->bus->pm) {
-+		pm_dev_dbg(dev, state, "LATE ");
-+		error = pm_noirq_op(dev, dev->bus->pm, state);
- 		if (error)
--			goto End;
--	}
--
--	if (dev->type && dev->type->pm) {
-+			return error;
-+	} else if (dev->type && dev->type->pm) {
- 		pm_dev_dbg(dev, state, "LATE type ");
- 		error = pm_noirq_op(dev, dev->type->pm, state);
- 		if (error)
--			goto End;
--	}
--
--	if (dev->bus && dev->bus->pm) {
--		pm_dev_dbg(dev, state, "LATE ");
--		error = pm_noirq_op(dev, dev->bus->pm, state);
-+			return error;
-+	} else if (dev->class && dev->class->pm) {
-+		pm_dev_dbg(dev, state, "LATE class ");
-+		error = pm_noirq_op(dev, dev->class->pm, state);
- 		if (error)
--			goto End;
-+			return error;
- 	}
- 
- 	if (dev->pwr_domain) {
-@@ -769,8 +758,7 @@ static int device_suspend_noirq(struct d
- 		pm_noirq_op(dev, &dev->pwr_domain->ops, state);
- 	}
- 
--End:
--	return error;
-+	return 0;
- }
- 
- /**
-@@ -857,40 +845,36 @@ static int __device_suspend(struct devic
- 		goto End;
- 	}
- 
--	if (dev->class) {
--		if (dev->class->pm) {
--			pm_dev_dbg(dev, state, "class ");
--			error = pm_op(dev, dev->class->pm, state);
--		} else if (dev->class->suspend) {
--			pm_dev_dbg(dev, state, "legacy class ");
--			error = legacy_suspend(dev, state, dev->class->suspend);
--		}
--		if (error)
--			goto End;
--	}
--
--	if (dev->type) {
--		if (dev->type->pm) {
--			pm_dev_dbg(dev, state, "type ");
--			error = pm_op(dev, dev->type->pm, state);
--		}
--		if (error)
--			goto End;
--	}
--
- 	if (dev->bus) {
- 		if (dev->bus->pm) {
- 			pm_dev_dbg(dev, state, "");
- 			error = pm_op(dev, dev->bus->pm, state);
-+			goto Domain;
- 		} else if (dev->bus->suspend) {
- 			pm_dev_dbg(dev, state, "legacy ");
- 			error = legacy_suspend(dev, state, dev->bus->suspend);
-+			goto Domain;
- 		}
--		if (error)
--			goto End;
- 	}
- 
--	if (dev->pwr_domain) {
-+	if (dev->type && dev->type->pm) {
-+		pm_dev_dbg(dev, state, "type ");
-+		error = pm_op(dev, dev->type->pm, state);
-+		goto Domain;
-+	}
-+
-+	if (dev->class) {
-+		if (dev->class->pm) {
-+			pm_dev_dbg(dev, state, "class ");
-+			error = pm_op(dev, dev->class->pm, state);
-+		} else if (dev->class->suspend) {
-+			pm_dev_dbg(dev, state, "legacy class ");
-+			error = legacy_suspend(dev, state, dev->class->suspend);
-+		}
-+	}
-+
-+ Domain:
-+	if (!error && dev->pwr_domain) {
- 		pm_dev_dbg(dev, state, "power domain ");
- 		pm_op(dev, &dev->pwr_domain->ops, state);
- 	}
-@@ -985,25 +969,24 @@ static int device_prepare(struct device
- 
- 	device_lock(dev);
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->prepare) {
-+	if (dev->bus && dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "preparing ");
--		error = dev->bus->pm->prepare(dev);
-+		if (dev->bus->pm->prepare)
-+			error = dev->bus->pm->prepare(dev);
- 		suspend_report_result(dev->bus->pm->prepare, error);
- 		if (error)
- 			goto End;
--	}
--
--	if (dev->type && dev->type->pm && dev->type->pm->prepare) {
-+	} else if (dev->type && dev->type->pm) {
- 		pm_dev_dbg(dev, state, "preparing type ");
--		error = dev->type->pm->prepare(dev);
-+		if (dev->type->pm->prepare)
-+			error = dev->type->pm->prepare(dev);
- 		suspend_report_result(dev->type->pm->prepare, error);
- 		if (error)
- 			goto End;
--	}
--
--	if (dev->class && dev->class->pm && dev->class->pm->prepare) {
-+	} else if (dev->class && dev->class->pm) {
- 		pm_dev_dbg(dev, state, "preparing class ");
--		error = dev->class->pm->prepare(dev);
-+		if (dev->class->pm->prepare)
-+			error = dev->class->pm->prepare(dev);
- 		suspend_report_result(dev->class->pm->prepare, error);
- 		if (error)
- 			goto End;
-Index: linux-2.6/drivers/base/power/runtime.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -214,9 +214,9 @@ static int rpm_idle(struct device *dev,
- 
- 	dev->power.idle_notification = true;
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle)
-+	if (dev->bus && dev->bus->pm)
- 		callback = dev->bus->pm->runtime_idle;
--	else if (dev->type && dev->type->pm && dev->type->pm->runtime_idle)
-+	else if (dev->type && dev->type->pm)
- 		callback = dev->type->pm->runtime_idle;
- 	else if (dev->class && dev->class->pm)
- 		callback = dev->class->pm->runtime_idle;
-@@ -382,9 +382,9 @@ static int rpm_suspend(struct device *de
- 
- 	__update_runtime_status(dev, RPM_SUSPENDING);
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend)
-+	if (dev->bus && dev->bus->pm)
- 		callback = dev->bus->pm->runtime_suspend;
--	else if (dev->type && dev->type->pm && dev->type->pm->runtime_suspend)
-+	else if (dev->type && dev->type->pm)
- 		callback = dev->type->pm->runtime_suspend;
- 	else if (dev->class && dev->class->pm)
- 		callback = dev->class->pm->runtime_suspend;
-@@ -584,9 +584,9 @@ static int rpm_resume(struct device *dev
- 	if (dev->pwr_domain)
- 		rpm_callback(dev->pwr_domain->ops.runtime_resume, dev);
- 
--	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume)
-+	if (dev->bus && dev->bus->pm)
- 		callback = dev->bus->pm->runtime_resume;
--	else if (dev->type && dev->type->pm && dev->type->pm->runtime_resume)
-+	else if (dev->type && dev->type->pm)
- 		callback = dev->type->pm->runtime_resume;
- 	else if (dev->class && dev->class->pm)
- 		callback = dev->class->pm->runtime_resume;
-Index: linux-2.6/Documentation/power/devices.txt
-===================================================================
---- linux-2.6.orig/Documentation/power/devices.txt
-+++ linux-2.6/Documentation/power/devices.txt
-@@ -249,23 +249,17 @@ various phases always run after tasks ha
- unfrozen.  Furthermore, the *_noirq phases run at a time when IRQ handlers have
- been disabled (except for those marked with the IRQ_WAKEUP flag).
- 
--Most phases use bus, type, and class callbacks (that is, methods defined in
--dev->bus->pm, dev->type->pm, and dev->class->pm).  The prepare and complete
--phases are exceptions; they use only bus callbacks.  When multiple callbacks
--are used in a phase, they are invoked in the order: <class, type, bus> during
--power-down transitions and in the opposite order during power-up transitions.
--For example, during the suspend phase the PM core invokes
--
--	dev->class->pm.suspend(dev);
--	dev->type->pm.suspend(dev);
--	dev->bus->pm.suspend(dev);
--
--before moving on to the next device, whereas during the resume phase the core
--invokes
--
--	dev->bus->pm.resume(dev);
--	dev->type->pm.resume(dev);
--	dev->class->pm.resume(dev);
-+All phases use bus, type, or class callbacks (that is, methods defined in
-+dev->bus->pm, dev->type->pm, or dev->class->pm).  These callbacks are mutually
-+exclusive, so if the bus provides a struct dev_pm_ops object pointed to by its
-+pm field (i.e. both dev->bus and dev->bus->pm are defined), the callbacks
-+included in that object (i.e. dev->bus->pm) will be used.  In turn, if the
-+device type provides a struct dev_pm_ops object pointed to by its pm field
-+(i.e. both dev->type and dev->type->pm are defined), the PM core will used the
-+callbacks from that object (i.e. dev->type->pm).  Finally, if the pm fields of
-+both the bus and device type objects are NULL (or those objects do not exist),
-+the callbacks provided by the class (that is, the callbacks from dev->class->pm)
-+will be used.
- 
- These callbacks may in turn invoke device- or driver-specific methods stored in
- dev->driver->pm, but they don't have to.
+VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMi42
+LjM3LApmb3Igd2hpY2ggdGhlcmUgYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBrbm93biB0
+byB0aGUgdHJhY2tpbmcgdGVhbS4KSWYgYW55IG9mIHRoZW0gaGF2ZSBiZWVuIGZpeGVkIGFscmVh
+ZHksIHBsZWFzZSBsZXQgdXMga25vdy4KCklmIHlvdSBrbm93IG9mIGFueSBvdGhlciB1bnJlc29s
+dmVkIHJlZ3Jlc3Npb25zIGZyb20gMi42LjM3LCBwbGVhc2UgbGV0IHVzCmtub3cgZWl0aGVyIGFu
+ZCB3ZSdsbCBhZGQgdGhlbSB0byB0aGUgbGlzdC4gIEFsc28sIHBsZWFzZSBsZXQgdXMga25vdwpp
+ZiBhbnkgb2YgdGhlIGVudHJpZXMgYmVsb3cgYXJlIGludmFsaWQuCgpFYWNoIGVudHJ5IGZyb20g
+dGhlIGxpc3Qgd2lsbCBiZSBzZW50IGFkZGl0aW9uYWxseSBpbiBhbiBhdXRvbWF0aWMgcmVwbHkK
+dG8gdGhpcyBtZXNzYWdlIHdpdGggQ0NzIHRvIHRoZSBwZW9wbGUgaW52b2x2ZWQgaW4gcmVwb3J0
+aW5nIGFuZCBoYW5kbGluZwp0aGUgaXNzdWUuCgoKTGlzdGVkIHJlZ3Jlc3Npb25zIHN0YXRpc3Rp
+Y3M6CgogIERhdGUgICAgICAgICAgVG90YWwgIFBlbmRpbmcgIFVucmVzb2x2ZWQKICAtLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgMjAxMS0wMi0xMiAgICAgICAzOSAg
+ICAgICAyMCAgICAgICAgICAxOAogIDIwMTEtMDItMDMgICAgICAgMTkgICAgICAgMTEgICAgICAg
+ICAgIDcKCgpVbnJlc29sdmVkIHJlZ3Jlc3Npb25zCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1
+Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yODg4
+MgpTdWJqZWN0CQk6IFNjcmVlbiBjb3JydXB0aW9uIGFuZCBHUFUgaGFuZ3MKU3VibWl0dGVyCTog
+S28gTWkgPGNoYW9zdHlhLnRlc3RAaG90bWFpbC5jb20+CkRhdGUJCTogMjAxMS0wMi0xMSAxODox
+NyAoMiBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
+aG93X2J1Zy5jZ2k/aWQ9Mjg4NTIKU3ViamVjdAkJOiBbS01TXSByYWRlb24gYXJ0aWZhY3RzIHdo
+ZW4gc3dpdGNoZWQgdG8gZ3JhcGhpY3MgZHVyaW5nIGJvb3QKU3VibWl0dGVyCTogT2xkxZlpY2gg
+SmVkbGnEjWthIDxvbGRpdW0ucHJvQHNlem5hbS5jej4KRGF0ZQkJOiAyMDExLTAyLTEwIDIxOjEx
+ICgzIGRheXMgb2xkKQpIYW5kbGVkLUJ5CTogQWxleCBEZXVjaGVyIDxhbGV4ZGV1Y2hlckBnbWFp
+bC5jb20+CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
+Y2dpP2lkPTI4ODQyClN1YmplY3QJCTogMi42LjM4LXJjMyByZWdyZXNzaW9uIGlwdjYgVEZUUCBk
+b3dubG9hZCB3aXRoIGN1cmwgZmFpbGluZyBpbiBnZXRwZWVybmFtZT8KU3VibWl0dGVyCTogRXJp
+YyBXLiBCaWVkZXJtYW4gPGViaWVkZXJtQHhtaXNzaW9uLmNvbT4KRGF0ZQkJOiAyMDExLTAyLTA4
+IDk6NDEgKDUgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8bTFlaTdpYW1ubi5mc2ZAZmVzcy5lYmll
+ZGVybS5vcmc+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZt
+PTEyOTcxNTgxMTQyMTUzNCZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVs
+Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mjg4MzIKU3ViamVjdAkJOiBbcmVncmVzc2lvbl1bMi42LjM4
+LXJjWF1bbmV0XVtpd2xhZ25dIFdpRmkgc2lnbmFsIGFmdGVyIHBlcmlvZCBvZiB0aW1lIHRhbmtz
+IGNhdXNpbmcgY29udGFudCBkcm9wcwpTdWJtaXR0ZXIJOiBTaGF3biBTdGFyciA8c2hhd24uc3Rh
+cnJAcm9nZXJzLmNvbT4KRGF0ZQkJOiAyMDExLTAyLTA3IDM6NTQgKDYgZGF5cyBvbGQpCk1lc3Nh
+Z2UtSUQJOiA8NjEzMzczLjM0MTcyLnFtQHNtdHAxMDYucm9nLm1haWwucmUyLnlhaG9vLmNvbT4K
+UmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5NzA1MTI1
+ODMyNzE4Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
+YnVnLmNnaT9pZD0yODY0MgpTdWJqZWN0CQk6IEFDUEkgYnJva2VuIG9uIERFTEwgTGF0aXR1ZGUg
+RTY0MTAgaW4gMi42LjM4LXJjMwpTdWJtaXR0ZXIJOiBBZGFtIEtvdmFyaSA8a292YXJpYWRhbUBn
+bWFpbC5jb20+CkRhdGUJCTogMjAxMS0wMi0wOCAyMjoyMiAoNSBkYXlzIG9sZCkKCgpCdWctRW50
+cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mjg1NjIKU3Vi
+amVjdAkJOiBbQlVHXSB1c2IgcHJvYmxlbXMgaW4gLjM4LXJjMysKU3VibWl0dGVyCTogRWQgVG9t
+bGluc29uIDxlZHRAYWVpLmNhPgpEYXRlCQk6IDIwMTEtMDItMDUgMTk6MTcgKDggZGF5cyBvbGQp
+Ck1lc3NhZ2UtSUQJOiA8MjAxMTAyMDUxNDE3LjU4OTUzLmVkdEBhZWkuY2E+ClJlZmVyZW5jZXMJ
+OiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyOTY5MzM5MTQxNzYwNyZ3PTIK
+CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
+Mjg1MjIKU3ViamVjdAkJOiBVbmFibGUgdG8gbW91bnQgRkFULWZvcm1hdHRlZCBmbG9wcHkgb24g
+L2Rldi9mZDAsIHBsdXMgV0FSTl9PTiB3aGVuIHVzaW5nIC9kZXYvZmQwdTE0NDAKU3VibWl0dGVy
+CTogQWxleCBWaWxsYWNpcyBMYXNzbyA8YXZpbGxhY2lAY2VpYm8uZmllYy5lc3BvbC5lZHUuZWM+
+CkRhdGUJCTogMjAxMS0wMi0wNyAxNzoyMSAoNiBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRw
+Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mjg0NTIKU3ViamVjdAkJOiAy
+LjYuMzgtcmMzIHJlZ3Jlc3Npb24gb24gcGFyaXNjOiBzZWdmYXVsdHMKU3VibWl0dGVyCTogTWVl
+bGlzIFJvb3MgPG1yb29zQGxpbnV4LmVlPgpEYXRlCQk6IDIwMTEtMDItMDEgMjI6MDAgKDEyIGRh
+eXMgb2xkKQpNZXNzYWdlLUlECTogPGFscGluZS5TT0MuMS4wMC4xMTAyMDEyMzQyMjAwLjI1OTQ0
+QG1hdGgudXQuZWU+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5l
+bCZtPTEyOTY1OTc2MzQyNjYwMCZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2Vy
+bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mjg0NDIKU3ViamVjdAkJOiAyLjYuMzgtcmMzOiBGVVNF
+IChzc2hmcykgaGFuZ3MgdW5kZXIgbG9hZApTdWJtaXR0ZXIJOiBEbWl0cnkgVG9yb2tob3YgPGRt
+aXRyeS50b3Jva2hvdkBnbWFpbC5jb20+CkRhdGUJCTogMjAxMS0wMi0wMSAxNzo1NCAoMTIgZGF5
+cyBvbGQpCkZpcnN0LUJhZC1Db21taXQ6IGh0dHA6Ly9naXQua2VybmVsLm9yZy9saW51cy80Y2Qw
+NmEzNDRkYjc1MmY1MTM0MzcxMzg5NTNhZjE5MWNiZTlhNjkxCk1lc3NhZ2UtSUQJOiA8MjAxMTAy
+MDExNzU0NTIuR0I1MThAY29yZS5jb3JlaXAuaG9tZWlwLm5ldD4KUmVmZXJlbmNlcwk6IGh0dHA6
+Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5NjU4MjkxNzAzNjc5Jnc9MgoKCkJ1Zy1F
+bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yODQzMgpT
+dWJqZWN0CQk6IGtodWdlcGFnZWQ6IGdldHMgc3R1Y2sgd2hlbiB3cml0aW5nIHRvIFVTQiBmbGFz
+aCwgMi42LjM4LXJjMgpTdWJtaXR0ZXIJOiBKaW5kxZlpY2ggTWFrb3ZpxI1rYSA8bWFrb3ZpY2tA
+Z21haWwuY29tPgpEYXRlCQk6IDIwMTEtMDEtMzEgMTk6MjggKDEzIGRheXMgb2xkKQpNZXNzYWdl
+LUlECTogPEFBTkxrVGk9dU9wTjBQd1dkR2g2aXJpLXZKd3VNUytXTVB4bWFaanYwLVRyVkBtYWls
+LmdtYWlsLmNvbT4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVs
+Jm09MTI5NjUwMjEwNTE2NjI3Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
+ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yODQyMgpTdWJqZWN0CQk6IGtyZWYgYW5kIGFwcGFybW9y
+IHBhbmljIGluIDIuNi4zOC1yYzIuClN1Ym1pdHRlcgk6IFRhbyBNYSA8dG1AdGFvLm1hPgpEYXRl
+CQk6IDIwMTEtMDEtMzEgMTA6MDYgKDEzIGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDRENDY4OTlC
+LjgwMzAyQHRhby5tYT4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2Vy
+bmVsJm09MTI5NjQ2ODQwMzAzMTQ5Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5r
+ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yODI2MgpTdWJqZWN0CQk6IFNsb3cgcmVzdW1lIGZy
+b20gc3VzcGVuZC9oaWJlcm5hdGUgb24gRGVsbCBJbnNwaXJvbiBNMzAxWgpTdWJtaXR0ZXIJOiBM
+dWNhIEZlcnJldHRpIDxsZmVycmV0dEBnbm9tZS5vcmc+CkRhdGUJCTogMjAxMS0wMi0wNSAxMjoz
+NyAoOCBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
+aG93X2J1Zy5jZ2k/aWQ9MjgyMzIKU3ViamVjdAkJOiBLZXJuZWwgcGFuaWNzIHdpdGggMi42LjM4
+IChyYzEsIHJjMiwgcmMzLCByYzQpIGFuZCB0aGUgbHpvIGNvbXByZXNzaW9uIG9mIGJ0cmZzClN1
+Ym1pdHRlcgk6IEp1YW4gRnJhbmNpc2NvIENhbnRlcm8gSHVydGFkbyA8aWFtQGp1YW5mcmEuaW5m
+bz4KRGF0ZQkJOiAyMDExLTAyLTA1IDA0OjQ0ICg4IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0
+dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yODEwMgpTdWJqZWN0CQk6
+IE5ldyBkaXNwbGF5IGVycm9ycyBpbiAyLjYuMzgtcmMyLTAwMTc1LWc2ZmIxYjMwClN1Ym1pdHRl
+cgk6IE5pY28gU2Nob3R0ZWxpdXMgPG5pY28ta2VybmVsLTIwMTEwMTE3QHNjaG90dGVsaXVzLm9y
+Zz4KRGF0ZQkJOiAyMDExLTAxLTI4IDIwOjI5ICgxNiBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDwy
+MDExMDEyODIwMjkwNS5HQjMzOTVAc2Nob3R0ZWxpdXMub3JnPgpSZWZlcmVuY2VzCTogaHR0cDov
+L21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjk2MjQ2NTc0MjU5NDkmdz0yCgoKQnVnLUVu
+dHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI4MDUyClN1
+YmplY3QJCTogW0JVR10gMi42LjM4LXJjMjogQ2lyY3VsYXIgTG9ja2luZyBEZXBlbmRlbmN5ClN1
+Ym1pdHRlcgk6IEtudXQgUGV0ZXJzZW4gPEtudXRfUGV0ZXJzZW5AdC1vbmxpbmUuZGU+CkRhdGUJ
+CTogMjAxMS0wMS0yNCA5OjI1ICgyMCBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDw0RDNENDVBMy43
+MDQwODA5QHQtb25saW5lLmRlPgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51
+eC1rZXJuZWwmbT0xMjk1ODYxMTg1MTU0NDMmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3pp
+bGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI3NzYyClN1YmplY3QJCTogQnJpZ2h0bmVz
+cyBBZGp1c3RtZW50IG9uIFRvc2hpYmEgbmIzMDUgTmV0Ym9va3MgaXMgbm9uLWZ1bmN0aW9uYWwu
+ClN1Ym1pdHRlcgk6IEpvaG4gTWVzbW9uIDxqbWVzbW9uQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDEx
+LTAxLTI5IDAzOjQ3ICgxNSBkYXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5r
+ZXJuZWwub3JnL2xpbnVzLzQ0ODM0YTY3YzAwODJlMmNmNzRiMTZiZTkxZTQ5MTA4YjE0MzJkNjUK
+CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
+MjczODIKU3ViamVjdAkJOiBhdGg1ayBwaHkwOiBnYWluIGNhbGlicmF0aW9uIHRpbWVvdXQKU3Vi
+bWl0dGVyCTogTmljb2xhcyBTdHJhbnNreSA8Tmljb0BzdHJhbnNreS5jeD4KRGF0ZQkJOiAyMDEx
+LTAxLTIzIDAwOjE4ICgyMSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEu
+a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjcwMjIKU3ViamVjdAkJOiBbUkVQT1JUXSBCVUc6
+IHNwaW5sb2NrIHJlY3Vyc2lvbiBvbiBDUFUjMCwgaW5pdC8xClN1Ym1pdHRlcgk6IFNhbnRvc2gg
+U2hpbGlta2FyIDxzYW50b3NoLnNoaWxpbWthckB0aS5jb20+CkRhdGUJCTogMjAxMS0wMS0xMCAx
+NTozMyAoMzQgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8YTdhOWJkYWE1OTM2NjMwOTI1ZmI3ZmZk
+MWExNzk1YjFAbWFpbC5nbWFpbC5jb20+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9s
+PWxpbnV4LWtlcm5lbCZtPTEyOTQ2NzI5NDgwODY1NSZ3PTIKCgpSZWdyZXNzaW9ucyB3aXRoIHBh
+dGNoZXMKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemls
+bGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mjg4MDIKU3ViamVjdAkJOiBjb21taXQgNWQx
+ZDBjYyBicmVha3MgcmVzdW1lIGZyb20gc3VzcGVuZCBvbiBUaGlua3BhZCBYMjAxClN1Ym1pdHRl
+cgk6IEJqw7ZybiBTY2hsaWXDn21hbm4gPGNocm9ub3NzQGdteC5kZT4KRGF0ZQkJOiAyMDExLTAy
+LTEwIDE3OjIzICgzIGRheXMgb2xkKQpIYW5kbGVkLUJ5CTogQ2hyaXMgV2lsc29uIDxjaHJpc0Bj
+aHJpcy13aWxzb24uY28udWs+ClBhdGNoCQk6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9h
+dHRhY2htZW50LmNnaT9pZD00NzE3MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
+ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yNzcwMgpTdWJqZWN0CQk6IHJlZ3Jlc3Npb24gMi42LjM3
+IC0+IDIuNi4zOC1yYzE6IGFmdGVyIHN1c3BlbmQgYmFja2xpZ2h0IGNhbm5vdCBiZSBhZGp1c3Rl
+ZApTdWJtaXR0ZXIJOiBOb3JiZXJ0IFByZWluaW5nIDxwcmVpbmluZ0Bsb2dpYy5hdD4KRGF0ZQkJ
+OiAyMDExLTAxLTIxIDE6NTUgKDIzIGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDIwMTEwMTIxMDE1
+NTI5LkdEOTc5NkBnYW1tYS5sb2dpYy50dXdpZW4uYWMuYXQ+ClJlZmVyZW5jZXMJOiBodHRwOi8v
+bWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyOTU1NzcxNzgyNjgxOSZ3PTIKSGFuZGxlZC1C
+eQk6IE1pY2hhZWwgS2FyY2hlciA8a2VybmVsQG1rYXJjaGVyLmRpYWx1cC5mdS1iZXJsaW4uZGU+
+ClBhdGNoCQk6IGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvNDk5MjIxLwoKCkZv
+ciBkZXRhaWxzLCBwbGVhc2UgdmlzaXQgdGhlIGJ1ZyBlbnRyaWVzIGFuZCBmb2xsb3cgdGhlIGxp
+bmtzIGdpdmVuIGluCnJlZmVyZW5jZXMuCgpBcyB5b3UgY2FuIHNlZSwgdGhlcmUgaXMgYSBCdWd6
+aWxsYSBlbnRyeSBmb3IgZWFjaCBvZiB0aGUgbGlzdGVkIHJlZ3Jlc3Npb25zLgpUaGVyZSBhbHNv
+IGlzIGEgQnVnemlsbGEgZW50cnkgdXNlZCBmb3IgdHJhY2tpbmcgdGhlIHJlZ3Jlc3Npb25zIGZy
+b20gMi42LjM3LAp1bnJlc29sdmVkIGFzIHdlbGwgYXMgcmVzb2x2ZWQsIGF0OgoKaHR0cDovL2J1
+Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI3MzUyCgpQbGVhc2UgbGV0IHRoZSB0
+cmFja2luZyB0ZWFtIGtub3cgaWYgdGhlcmUgYXJlIGFueSBCdWd6aWxsYSBlbnRyaWVzIHRoYXQK
+c2hvdWxkIGJlIGFkZGVkIHRvIHRoZSBsaXN0IGluIHRoZXJlLgoKVGhhbmtzIQoKX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBs
+aXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
