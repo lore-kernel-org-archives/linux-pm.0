@@ -1,15 +1,13 @@
-From: mark gross <markgross@thegnar.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [Patch v2] idle governor: Avoid lock acquisition to
- read pm_qos before entering idle
-Date: Fri, 11 Feb 2011 22:35:24 -0800
-Message-ID: <20110212063524.GA15289__35852.0338814289$1297492617$gmane$org@gvim.org>
+	read pm_qos before entering idle
+Date: Sat, 12 Feb 2011 10:07:23 +0100
+Message-ID: <201102121007.23384.rjw__47980.6738709614$1297501738$gmane$org@sisk.pl>
 References: <1297457344.2645.323.camel@schen9-DESK>
-Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
 In-Reply-To: <1297457344.2645.323.camel@schen9-DESK>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -24,7 +22,7 @@ To: Tim Chen <tim.c.chen@linux.intel.com>
 Cc: Andi Kleen <ak@linux.intel.com>, mark gross <markgross@thegnar.org>, linux-kernel@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>, David Alan Gilbert <linux@treblig.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 11, 2011 at 12:49:04PM -0800, Tim Chen wrote:
+On Friday, February 11, 2011, Tim Chen wrote:
 > Thanks to the reviews and comments by Rafael, James, Mark and Andi.
 > Here's version 2 of the patch incorporating your comments and also some
 > update to my previous patch comments.
@@ -53,9 +51,12 @@ On Fri, Feb 11, 2011 at 12:49:04PM -0800, Tim Chen wrote:
 > reading it does not require lock acquisition as in the patch below.  
 > With this patch the contention for pm_qos_lock is removed and I saw a
 > 2.2X increase in throughput for my message passing workload. 
-> 
-> Tim
-> 
+
+Thanks, the patch is going to be merged through the Len Brown's idle tree.
+
+Rafael
+
+
 > Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 > diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
 > index 77cbddb..a7d87f9 100644
@@ -169,9 +170,3 @@ On Fri, Feb 11, 2011 at 12:49:04PM -0800, Tim Chen wrote:
 > +	return pm_qos_read_value(pm_qos_array[pm_qos_class]);
 >  }
 >  EXPORT_SYMBOL_GPL(pm_qos_request);
->  
-> 
->
-Ack --mark
-:wq
- 
