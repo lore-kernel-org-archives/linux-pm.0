@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Patch v2] idle governor: Avoid lock acquisition to
-	read pm_qos before entering idle
-Date: Sat, 12 Feb 2011 10:07:23 +0100
-Message-ID: <201102121007.23384.rjw__47980.6738709614$1297501738$gmane$org@sisk.pl>
-References: <1297457344.2645.323.camel@schen9-DESK>
+Subject: Re: [PATCH] swsusp: fix return value when alloc fail
+Date: Sat, 12 Feb 2011 21:09:15 +0100
+Message-ID: <201102122109.15966.rjw@sisk.pl>
+References: <20110212172603.GA2721@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1297457344.2645.323.camel@schen9-DESK>
+In-Reply-To: <20110212172603.GA2721@localhost.localdomain>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,155 +17,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: Andi Kleen <ak@linux.intel.com>, mark gross <markgross@thegnar.org>, linux-kernel@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>, David Alan Gilbert <linux@treblig.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>
+To: Stanislaw Gruszka <stf_xl@pop3.wp.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, February 11, 2011, Tim Chen wrote:
-> Thanks to the reviews and comments by Rafael, James, Mark and Andi.
-> Here's version 2 of the patch incorporating your comments and also some
-> update to my previous patch comments.
+On Saturday, February 12, 2011, Stanislaw Gruszka wrote:
+> Currently we return 0 in swsusp_alloc() when alloc_image_page() fail.
+> Patch fixes that. Also remove unneeded "error" variable since only
+> possible error is -ENOMEM.
 > 
-> I noticed that before entering idle state, the menu idle governor will
-> look up the current pm_qos target value according to the list of qos
-> requests received.  This look up currently needs the acquisition of a
-> lock to access the list of qos requests to find the qos target value,
-> slowing down the entrance into idle state due to contention by multiple
-> cpus to access this list.  The contention is severe when there are a lot
-> of cpus waking and going into idle.  For example, for a simple workload
-> that has 32 pair of processes ping ponging messages to each other, where
-> 64 cpu cores are active in test system, I see the following profile with
-> 37.82% of cpu cycles spent in contention of pm_qos_lock:
-> 
-> -     37.82%          swapper  [kernel.kallsyms]          [k]
-> _raw_spin_lock_irqsave
->    - _raw_spin_lock_irqsave
->       - 95.65% pm_qos_request             
->            menu_select                                             
->            cpuidle_idle_call                      
->          - cpu_idle                                                     
->               99.98% start_secondary
-> 
-> A better approach will be to cache the updated pm_qos target value so
-> reading it does not require lock acquisition as in the patch below.  
-> With this patch the contention for pm_qos_lock is removed and I saw a
-> 2.2X increase in throughput for my message passing workload. 
+> Signed-off-by: Stanislaw Gruszka <stf_xl@wp.pl>
 
-Thanks, the patch is going to be merged through the Len Brown's idle tree.
+Good catch, thanks!  Patch applied to suspend-2.6/linux-next.
 
 Rafael
 
 
-> Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-> diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
-> index 77cbddb..a7d87f9 100644
-> --- a/include/linux/pm_qos_params.h
-> +++ b/include/linux/pm_qos_params.h
-> @@ -16,6 +16,10 @@
->  #define PM_QOS_NUM_CLASSES 4
->  #define PM_QOS_DEFAULT_VALUE -1
+> ---
+>  kernel/power/snapshot.c |    7 ++-----
+>  1 files changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 0dac75e..64db648 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -1519,11 +1519,8 @@ static int
+>  swsusp_alloc(struct memory_bitmap *orig_bm, struct memory_bitmap *copy_bm,
+>  		unsigned int nr_pages, unsigned int nr_highmem)
+>  {
+> -	int error = 0;
+> -
+>  	if (nr_highmem > 0) {
+> -		error = get_highmem_buffer(PG_ANY);
+> -		if (error)
+> +		if (get_highmem_buffer(PG_ANY))
+>  			goto err_out;
+>  		if (nr_highmem > alloc_highmem) {
+>  			nr_highmem -= alloc_highmem;
+> @@ -1546,7 +1543,7 @@ swsusp_alloc(struct memory_bitmap *orig_bm, struct memory_bitmap *copy_bm,
 >  
-> +#define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
-> +#define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
-> +#define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
-> +
->  struct pm_qos_request_list {
->  	struct plist_node list;
->  	int pm_qos_class;
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index aeaa7f8..6a8fad8 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -53,11 +53,17 @@ enum pm_qos_type {
->  	PM_QOS_MIN		/* return the smallest value */
->  };
->  
-> +/*
-> + * Note: The lockless read path depends on the CPU accessing
-> + * target_value atomically.  Atomic access is only guaranteed on all CPU
-> + * types linux supports for 32 bit quantites
-> + */
->  struct pm_qos_object {
->  	struct plist_head requests;
->  	struct blocking_notifier_head *notifiers;
->  	struct miscdevice pm_qos_power_miscdev;
->  	char *name;
-> +	s32 target_value;	/* Do not change to 64 bit */
->  	s32 default_value;
->  	enum pm_qos_type type;
->  };
-> @@ -70,7 +76,8 @@ static struct pm_qos_object cpu_dma_pm_qos = {
->  	.requests = PLIST_HEAD_INIT(cpu_dma_pm_qos.requests, pm_qos_lock),
->  	.notifiers = &cpu_dma_lat_notifier,
->  	.name = "cpu_dma_latency",
-> -	.default_value = 2000 * USEC_PER_SEC,
-> +	.target_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
-> +	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
->  	.type = PM_QOS_MIN,
->  };
->  
-> @@ -79,7 +86,8 @@ static struct pm_qos_object network_lat_pm_qos = {
->  	.requests = PLIST_HEAD_INIT(network_lat_pm_qos.requests, pm_qos_lock),
->  	.notifiers = &network_lat_notifier,
->  	.name = "network_latency",
-> -	.default_value = 2000 * USEC_PER_SEC,
-> +	.target_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
-> +	.default_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
->  	.type = PM_QOS_MIN
->  };
->  
-> @@ -89,7 +97,8 @@ static struct pm_qos_object network_throughput_pm_qos = {
->  	.requests = PLIST_HEAD_INIT(network_throughput_pm_qos.requests, pm_qos_lock),
->  	.notifiers = &network_throughput_notifier,
->  	.name = "network_throughput",
-> -	.default_value = 0,
-> +	.target_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
-> +	.default_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
->  	.type = PM_QOS_MAX,
->  };
->  
-> @@ -132,6 +141,16 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
->  	}
+>   err_out:
+>  	swsusp_free();
+> -	return error;
+> +	return -ENOMEM;
 >  }
 >  
-> +static inline s32 pm_qos_read_value(struct pm_qos_object *o)
-> +{
-> +	return o->target_value;
-> +}
-> +
-> +static inline void pm_qos_set_value(struct pm_qos_object *o, s32 value)
-> +{
-> +	o->target_value = value;
-> +}
-> +
->  static void update_target(struct pm_qos_object *o, struct plist_node *node,
->  			  int del, int value)
->  {
-> @@ -156,6 +175,7 @@ static void update_target(struct pm_qos_object *o, struct plist_node *node,
->  		plist_add(node, &o->requests);
->  	}
->  	curr_value = pm_qos_get_value(o);
-> +	pm_qos_set_value(o, curr_value);
->  	spin_unlock_irqrestore(&pm_qos_lock, flags);
->  
->  	if (prev_value != curr_value)
-> @@ -190,18 +210,11 @@ static int find_pm_qos_object_by_minor(int minor)
->   * pm_qos_request - returns current system wide qos expectation
->   * @pm_qos_class: identification of which qos value is requested
->   *
-> - * This function returns the current target value in an atomic manner.
-> + * This function returns the current target value.
->   */
->  int pm_qos_request(int pm_qos_class)
->  {
-> -	unsigned long flags;
-> -	int value;
-> -
-> -	spin_lock_irqsave(&pm_qos_lock, flags);
-> -	value = pm_qos_get_value(pm_qos_array[pm_qos_class]);
-> -	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> -
-> -	return value;
-> +	return pm_qos_read_value(pm_qos_array[pm_qos_class]);
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_request);
+>  asmlinkage int swsusp_save(void)
+> 
