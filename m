@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 1/2] PM: Add support for device power
-	domains
-Date: Mon, 14 Feb 2011 23:34:47 +0100
-Message-ID: <201102142334.47553.rjw__7738.52352654121$1297857240$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1102141110400.1716-100000@iolanthe.rowland.org>
+Subject: Re: [RFC][PATCH 2/2] PM: Make system-wide PM and runtime
+	PM handle subsystems consistently
+Date: Mon, 14 Feb 2011 23:35:18 +0100
+Message-ID: <201102142335.18973.rjw__20483.4280456$1297857244$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1102141123370.1716-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1102141110400.1716-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1102141123370.1716-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,58 +27,68 @@ On Monday, February 14, 2011, Alan Stern wrote:
 > 
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > The platform bus type is often used to handle Systems-on-a-Chip (SoC)
-> > where all devices are represented by objects of type struct
-> > platform_device.  In those cases the same "platform" device driver
-> > may be used with multiple different system configurations, but the
-> > actions needed to put the devices it handles into a low-power state
-> > and back into the full-power state may depend on the design of the
-> > given SoC.  The driver, however, cannot possibly include all the
-> > information necessary for the power management of its device on all
-> > the systems it is used with.  Moreover, the device hierarchy in its
-> > current form also is not suitable for representing this kind of
-> > information.
+> > The code handling system-wide power transitions (eg. suspend-to-RAM)
+> > can in theory execute callbacks provided by the device's bus type,
+> > device type and class in each phase of the power transition.  In
+> > turn, the runtime PM core code only calls one of those callbacks at
+> > a time, preferring bus type callbacks to device type or class
+> > callbacks and device type callbacks to class callbacks.
 > > 
-> > The patch below attempts to address this problem by introducing
-> > objects of type struct dev_power_domain that can be used for
-> > representing power domains within a SoC.  Every struct
-> > dev_power_domain object provides a sets of device power
-> > management callbacks that can be used to perform what's needed for
-> > device power management in addition to the operations carried out by
-> > the device's driver and subsystem.
+> > It seems reasonable to make them both behave in the same way in that
+> > respect.  Moreover, even though a device may belong to two subsystems
+> > (eg. bus type and device class) simultaneously, in practice power
+> > management callbacks for system-wide power transitions are always
+> > provided by only one of them (ie. if the bus type callbacks are
+> > defined, the device class ones are not and vice versa).  Thus it is
+> > possible to modify the code handling system-wide power transitions
+> > so that it follows the core runtime PM code (ie. treats the
+> > subsystem callbacks as mutually exclusive).
 > > 
-> > Namely, if a struct dev_power_domain object is pointed to by the
-> > pwr_domain field in a struct device, the callbacks provided by its
-> > ops member will be executed in addition to the corresponding
-> > callbacks provided by the device's subsystem and driver during all
-> > power transitions.
+> > On the other hand, the core runtime PM code will choose to execute,
+> > for example, a runtime suspend callback provided by the device type
+> > even if the bus type's struct dev_pm_ops object exists, but the
+> > runtime_suspend pointer in it happens to be NULL.  This is confusing,
+> > because it may lead to the execution of callbacks from different
+> > subsystems during different operations (eg. the bus type suspend
+> > callback may be executed during runtime suspend, while the device
+> > type callback will be executed during runtime resume).
+> > 
+> > Make all of the power management code treat subsystem callbacks in
+> > a consistent way, such that:
+> > (1) If the device's bus type is defined (eg. dev->bus is not NULL)
+> >     and its pm pointer is not NULL, the callbacks from dev->bus->pm
+> >     will be used.
+> > (2) If dev->bus is NULL or dev->bus->pm is NULL, but the device's
+> >     device type is defined (eg. dev->type is not NULL) and its pm
+> >     pointer is not NULL, the callbacks from dev->type->pm will be
+> >     used.
+> > (3) If dev->bus is NULL or dev->bus->pm is NULL and dev->type is
+> >     NULL or dev->type->pm is NULL, the callbacks from dev->class->pm
+> >     will be used provided that both dev->class and dev->class->pm
+> >     are not NULL.
 > 
-> Overall this looks very good.
+> It looks okay, but I haven't tested it.  Just one minor change needed 
+> in the documentation:
 > 
-> > Index: linux-2.6/include/linux/pm.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/pm.h
-> > +++ linux-2.6/include/linux/pm.h
-> > @@ -463,6 +463,14 @@ struct dev_pm_info {
-> >  
-> >  extern void update_pm_runtime_accounting(struct device *dev);
-> >  
-> > +/*
-> > + * Power domains provide callbacks that are executed during system suspend,
-> > + * hibernation, system resume and during runtime PM transitions along with
-> > + * subsystem-level and driver-level callbacks.
-> > + */
-> > +struct dev_power_domain {
-> > +	struct dev_pm_ops	ops;
-> > +};
+> > +All phases use bus, type, or class callbacks (that is, methods defined in
+> > +dev->bus->pm, dev->type->pm, or dev->class->pm).  These callbacks are mutually
+> > +exclusive, so if the bus provides a struct dev_pm_ops object pointed to by its
+> > +pm field (i.e. both dev->bus and dev->bus->pm are defined), the callbacks
+> > +included in that object (i.e. dev->bus->pm) will be used.  In turn, if the
 > 
-> I don't have a clear picture of how people are going to want to use 
-> these dev_power_domain structures.  Should there be a
-> 
-> 	void			*priv;
-> 
-> member as well?
+> s/In turn/Otherwise/
 
-Well, I'm not sure.  What would be the purpose of it?
+OK
 
+> > +device type provides a struct dev_pm_ops object pointed to by its pm field
+> > +(i.e. both dev->type and dev->type->pm are defined), the PM core will used the
+> > +callbacks from that object (i.e. dev->type->pm).  Finally, if the pm fields of
+> > +both the bus and device type objects are NULL (or those objects do not exist),
+> > +the callbacks provided by the class (that is, the callbacks from dev->class->pm)
+> > +will be used.
+> >  
+> >  These callbacks may in turn invoke device- or driver-specific methods stored in
+> >  dev->driver->pm, but they don't have to.
+
+Thanks,
 Rafael
