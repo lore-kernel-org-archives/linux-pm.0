@@ -1,11 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT] tools/power patches for 2.6.38-rc4
-Date: Tue, 15 Feb 2011 15:53:41 -0500 (EST)
-Message-ID: <alpine.LFD.2.02.1102151549560.843__15955.5399361581$1297874010$gmane$org@x980>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 1/2] PM: Add support for device power
+	domains
+Date: Tue, 15 Feb 2011 22:40:02 +0100
+Message-ID: <201102152240.03077.rjw__28294.1371937797$1297874938$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1102142158100.17345-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1102142158100.17345-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,65 +18,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Tuesday, February 15, 2011, Alan Stern wrote:
+> On Mon, 14 Feb 2011, Rafael J. Wysocki wrote:
+> 
+> > > I don't have a clear picture of how people are going to want to use 
+> > > these dev_power_domain structures.  Should there be a
+> > > 
+> > > 	void			*priv;
+> > > 
+> > > member as well?
+> > 
+> > Well, I'm not sure.  What would be the purpose of it?
+> 
+> It's easy to imagine an SoC with multiple power domains and hence
+> multiple structures.  The platform code would need some way to tell
+> those structures apart.  But we should get some advice from the people
+> who will actually have to use these things...
 
-please pull from: 
+Well, anyway I think it should be easy to add a priv pointer at any time later
+if there's a use case?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git tools-release
-
-a bug-fix, plus some style updates that didn't seem worth delaying,
-especially since turbostat is brand-new to the tree in 2.6.38.
-
-This will update the files shown below.
-
-thanks!
-
-Len Brown
-Intel Open Source Technology Center
-
-
-ps. individual patches are available on linux-pm@lists.linux-foundation.org
-
- tools/power/x86/turbostat/turbostat.c |  200 ++++++++++++++++-----------------
- 1 files changed, 98 insertions(+), 102 deletions(-)
-
-through these commits:
-
-Len Brown (1):
-      tools: turbostat: style updates
-
-Thomas Renninger (1):
-      tools: turbostat: fix bitwise and operand
-
-with this log:
-
-commit a829eb4d7e08b316e2d48880ecab3630497f300f
-Author: Len Brown <len.brown@intel.com>
-Date:   Thu Feb 10 23:36:34 2011 -0500
-
-    tools: turbostat: style updates
-    
-    Follow kernel coding style traditions more closely.
-    Delete typedef, re-name "per cpu counters" to
-    simply be counters etc.
-    
-    This patch changes no functionality.
-    
-    Suggested-by: Thiago Farina <tfransosi@gmail.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 8209e054b6bd0805a25b8c4af971160fa146bf22
-Author: Thomas Renninger <trenn@suse.de>
-Date:   Fri Jan 21 15:11:19 2011 +0100
-
-    tools: turbostat: fix bitwise and operand
-    
-    bug could cause false positive on indicating
-    presence of invarient TSC or APERF support.
-    
-    Signed-off-by: Thomas Renninger <trenn@suse.de>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+Rafael
