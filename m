@@ -1,14 +1,12 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 2/2] PM: Make system-wide PM and runtime
- PM handle subsystems consistently
-Date: Wed, 16 Feb 2011 09:57:35 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1102160955210.2108-100000__15832.52475034$1297922930$gmane$org@iolanthe.rowland.org>
-References: <201102161324.49633.rjw@sisk.pl>
+From: linux-pm.20.masuefke@spamgourmet.com
+Subject: Still having problems with Suspend-To-Ram an Intel Atom
+	D525
+Date: Wed, 16 Feb 2011 19:50:09 +0100
+Message-ID: <4D5C1C61.7000200@rwth-aachen.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102161324.49633.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +16,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Feb 2011, Rafael J. Wysocki wrote:
+Hello,
 
-> Unfortunately, it doesn't work on my Acer Ferrari One.  The problem is that
-> hcd_pci_suspend() fails for the EHCI controller, apparently because the root
-> hub is not suspended.  Do root hubs need both class suspend and bus type
-> suspend to work at the same time?
+I still have no success suspending my Intel Atom D525 (with the NM10
+chipset) to ram.
 
-No, only the bus type suspend method is needed.  Can you provide the
-dmesg log using a kernel built with CONFIG_USB_DEBUG?
+Suspend to ram does not work at all, suspend to disk works.
 
-Alan Stern
+Please see the mailing list thread from 20Dec2011 for a detailed problem 
+description:
+https://lists.linux-foundation.org/pipermail/linux-pm/2010-December/thread.html#29654
+and the screenshots on http://www-users.rwth-aachen.de/martin.suefke/s2ram/
+
+I re-tested now with 2.6.38-rc4 and 2.6.22 (git pulls from Linus 
+Torvald's kernel tree) in a desperate attempt to find any working
+version, so I could maybe try to pin down the problem by git-bisect.
+However, also with 2.6.22 and 2.6.38-rc4 suspend to ram does not work.
+
+The configurations for these kernels were made with 'make oldconfig'
+from this configuration:
+http://www-users.rwth-aachen.de/martin.suefke/s2ram/Kernel_config_2.6.37-rc6
+
+If anybody has any clue, hint, suggestion or questions regarding the
+issue, please drop me a note.
+
+Thank You,
+Martin Suefke
