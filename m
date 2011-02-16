@@ -1,17 +1,14 @@
-From: Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH 1/1,
- v9] cgroup/freezer: add per freezer duty ratio control
-Date: Tue, 15 Feb 2011 19:23:21 -0800
-Message-ID: <20110216032321.GA14893__17178.104146342$1297902656$gmane$org@count0.beaverton.ibm.com>
-References: <1297807750-28844-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<1297807750-28844-2-git-send-email-jacob.jun.pan@linux.intel.com>
-	<201102160100.15487.rjw@sisk.pl> <20110215163812.7fa020b5@putvin>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] intel_idle: disable HW auto-demotion
+Date: Wed, 16 Feb 2011 01:19:18 -0500 (EST)
+Message-ID: <alpine.LFD.2.02.1102160115160.843__39239.6714458757$1297908354$gmane$org@x980>
+References: <alpine.LFD.2.02.1101182150400.14668@x980>
+	<20110119144152.GA23020@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110215163812.7fa020b5@putvin>
+In-reply-to: <20110119144152.GA23020@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,39 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Cedric Le Goater <clg@vnet.ibm.com>, container cgroup <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "Kirill A. Shutemov" <kirill@shutemov.name>, Paul Menage <menage@google.com>, Arjan van de Ven <arjan@linux.intel.com>, akpm@linux-foundation.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 15, 2011 at 04:38:12PM -0800, Jacob Pan wrote:
-> On Wed, 16 Feb 2011 01:00:15 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Wed, 19 Jan 2011, Matthew Garrett wrote:
 
-<snip>
+> On Tue, Jan 18, 2011 at 09:52:26PM -0500, Len Brown wrote:
+> > + * Disable HW auto demotion on tick-less idle kernels
+> > + */
+> > +static unsigned int has_nhm_snb_hw_auto_demotion;
+> > +#ifdef CONFIG_NO_HZ
+> > +static unsigned int auto_demotion;
+> > +#else
+> > +static unsigned int auto_demotion = 1;
+> > +#endif
+> 
+> What if someone boots with nohz=off?
 
-> > Well, quite frankly, I'm not going to take this patch unless it gets
-> > an ACK from the scheduler people (which I'm guessing is not going to
-> > happen before hell freezes over).
-> > 
-> > IOW, please find a better way to address the issue at hand.
-> > 
-> We do have a real need that there is no exist feature in the kernel can
-> provide solution for. You want ACK from scheduler people because it has
-> impact on disabling irq? or you think scheduler should be the one that
-> provide the solution. I did try cpu subsystem, but it seems to be
-> limited to RT and certain scheduling policy e.g. RR and FIFO.
+The next version of this patch will disable auto-demotion
+independent of HZ, on the assumption that the governor
+is smart enough today to get what it asks for, HZ or NO_HZ.
 
-I agree with Rafael. I think the scheduler should provide the solution
-and it can be done via modifications to the cpu cgroup subsystem. 
-Yes, it only has the shares and rt-related files *right now*. However,
-Kame replied earlier with a link to some patches for extending it
-that introduce files with similar (granted: not the same) semantics:
+It is also now limits the change to NHM/WSM,
+as SNB has auto-un-demotion to address this scenario.
 
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2010-10/msg04335.html
+> Just so I'm clear on this - this is unrelated to the auto-popup on DMA, 
+> right?
 
-I think you could build on that and help push those patches towards
-mainline along with your enhancements for reducing wakeups rather
-than modify the freezer cgroup subsystem.
+Right, C2 popup is a different feature, and that is smart
+enought to return to the power saving state after the
+DMA is done.
 
-Cheers,
-	-Matt Helsley
+cheers,
+Len Brown, Intel Open Source Technology Center
