@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Still having problems with Suspend-To-Ram an Intel
- Atom D525
-Date: Thu, 17 Feb 2011 10:16:07 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1102171012020.2153-100000@iolanthe.rowland.org>
-References: <4D5C1C61.7000200@rwth-aachen.de>
+From: Rabin Vincent <rabin@rab.in>
+Subject: Re: platform/i2c busses: pm runtime and system sleep
+Date: Thu, 17 Feb 2011 20:55:06 +0530
+Message-ID: <AANLkTikRUZRh0YnP8nYTKFnFeUiJbK5xKvHHjn_S+gZE__44710.5119623759$1297956488$gmane$org@mail.gmail.com>
+References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
+	<201012170109.43137.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D5C1C61.7000200@rwth-aachen.de>
+In-Reply-To: <201012170109.43137.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +18,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm.20.masuefke@spamgourmet.com
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Feb 2011 linux-pm.20.masuefke@spamgourmet.com wrote:
+On Fri, Dec 17, 2010 at 05:39, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, December 16, 2010, Rabin Vincent wrote:
+>> There seem to be some differences between the generic ops and the i2c
+>> and platform busses' implementations of the interaction between runtime
+>> PM and system sleep:
+>>
+>> =A0 (1) The platform bus does not implement the
+>> =A0 =A0 =A0 don't-call-pm->suspend()-if pm_runtime_suspended()-returns-t=
+rue
+>> =A0 =A0 =A0 functionality implemented by the generic ops and i2c.
+>>
+>> =A0 (2) Both I2C and platform do not set the device as active when a
+>> =A0 =A0 =A0 pm->resume callback exists and it succeeds.
+...
+>> Are these divergences from the generic ops to be considered as bugs?
+>
+> I think so. =A0I'm not sure about (1), because someone may already depend=
+ on
+> that behavior, but (2) looks like a bug to me.
 
-> Hello,
-> 
-> I still have no success suspending my Intel Atom D525 (with the NM10
-> chipset) to ram.
-> 
-> Suspend to ram does not work at all, suspend to disk works.
-> 
-> Please see the mailing list thread from 20Dec2011 for a detailed problem 
-> description:
-> https://lists.linux-foundation.org/pipermail/linux-pm/2010-December/thread.html#29654
-> and the screenshots on http://www-users.rwth-aachen.de/martin.suefke/s2ram/
-> 
-> I re-tested now with 2.6.38-rc4 and 2.6.22 (git pulls from Linus 
-> Torvald's kernel tree) in a desperate attempt to find any working
-> version, so I could maybe try to pin down the problem by git-bisect.
-> However, also with 2.6.22 and 2.6.38-rc4 suspend to ram does not work.
-> 
-> The configurations for these kernels were made with 'make oldconfig'
-> from this configuration:
-> http://www-users.rwth-aachen.de/martin.suefke/s2ram/Kernel_config_2.6.37-rc6
-> 
-> If anybody has any clue, hint, suggestion or questions regarding the
-> issue, please drop me a note.
+Revisiting these points again.  (2) has since been corrected for i2c,
+but platform does not do (1) and (2).
 
-I don't have any ideas about debugging this, but I do have an idea
-about where you might get more help.  Post a message to LKML, and don't
-describe it as a suspend problem.  Instead, describe it as a problem
-enabling CPU cores after the system has gone through a suspend/resume
-cycle.  This may help attract the attention of people who are familiar
-with the issues involved in enabling and disabling CPUs -- which 
-appears to be the source of your difficulties.
+I've submitted a patch today to convert the AMBA bus to support pm-ops,
+and it was convenient to just use the GENERIC_SUBSYS_PM_OPS.  But some
+ARM SoCs have a combination of AMBA and platform devices for the on-chip
+devices so having different behaviour between the interaction of
+runtime-pm and system suspend callbacks does not seem like an ideal
+situation, and would only serve to confuse driver writers.  So, should I
+just not use GENERIC_SUBSYS_PM_OPS in the AMBA bus but instead open-code
+the rountines to make it work like platform?
 
-Alan Stern
+This will solve the platform vs AMBA bus, but shouldn't we really be
+aiming for consistent behaviour between these and the other busses such
+as I2C and SPI, which are also usually commonly used on the same
+platforms and are using GENERIC_PM_OPS?
+
+Should we be auditing all platform drivers and then switch platform to
+the GENERIC_PM_OPS?
+
+Or should the two points (1) and (2) be not handled in the bus at all
+and be left to individual drivers (in which case we should audit i2c and
+spi and change GENERIC_PM_OPS)?
