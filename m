@@ -1,12 +1,14 @@
-From: "Jan Beulich" <JBeulich@novell.com>
-Subject: [PATCH] simplify kernel/power/Kconfig
-Date: Thu, 17 Feb 2011 13:34:11 +0000
-Message-ID: <4D5D31E3020000780003263F__40918.0121882402$1297949761$gmane$org@vpn.id2.novell.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 2/2] PM: Make system-wide PM and runtime
+ PM handle subsystems consistently
+Date: Thu, 17 Feb 2011 09:55:46 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1102170951330.2153-100000__28128.1676296659$1297954709$gmane$org@iolanthe.rowland.org>
+References: <201102170045.48975.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <201102170045.48975.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,82 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@ucw.cz
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-kbuild@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-'n' defaults are pretty pointless and actually bogus when used with
-prompt-less config options.
+On Thu, 17 Feb 2011, Rafael J. Wysocki wrote:
 
-The "bool"/"default y" pair with no prompt can be expressed more
-compactly using def_bool.
+> > > Apart from this I think the order of checks introduced by the $subject patch
+> > > should be:
+> > > (1) If dev->class != NULL and dev->class->pm != NULL, use dev->class,
+> > >     or otherwise
+> > > (2) if dev->type != NULL and dev->type->pm != NULL, use dev->type,
+> > >     or otherwise
+> > > (3) use dev->bus (if present).
+> > > as that would allow classes and device types to override bus type PM
+> > > callbacks if they wish to.
+> > 
+> > I haven't heard of any device types being present on more than one kind
+> > of bus, so it makes sense for device types to override bus types.
+> 
+> OK
+> 
+> > But I'm not so sure about the priority we should give to classes.  On the
+> > other hand, if no classes define a dev_pm_ops then of course it doesn't
+> > matter.
+> 
+> The change will also affect classes that provide "legacy" suspend-resume
+> (if there are any, which I'm totally unsure of).
+> 
+> Anyway, I think we need to choose one ordering. :-)
+> 
+> What about type / bus / class , then?
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+I really don't know.  Somebody who has more experience with device 
+class implementations should answer.
 
----
- kernel/power/Kconfig |   13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+Greg, any ideas?
 
---- 2.6.38-rc5/kernel/power/Kconfig
-+++ 2.6.38-rc5-kconfig-power/kernel/power/Kconfig
-@@ -30,7 +30,6 @@ config PM_DEBUG
- config PM_ADVANCED_DEBUG
- 	bool "Extra PM attributes in sysfs for low-level debugging/testing"
- 	depends on PM_DEBUG
--	default n
- 	---help---
- 	Add extra sysfs attributes allowing one to access some Power Management
- 	fields of device objects from user space.  If you are not a kernel
-@@ -39,7 +38,6 @@ config PM_ADVANCED_DEBUG
- config PM_VERBOSE
- 	bool "Verbose Power Management debugging"
- 	depends on PM_DEBUG
--	default n
- 	---help---
- 	This option enables verbose messages from the Power Management code.
- 
-@@ -67,7 +65,6 @@ config PM_TRACE_RTC
- 	depends on CAN_PM_TRACE
- 	depends on X86
- 	select PM_TRACE
--	default n
- 	---help---
- 	This enables some cheesy code to save the last PM event point in the
- 	RTC across reboots, so that you can debug a machine that just hangs
-@@ -82,23 +79,20 @@ config PM_TRACE_RTC
- 	set to an invalid time after a resume.
- 
- config PM_SLEEP_SMP
--	bool
-+	def_bool y
- 	depends on SMP
- 	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
- 	depends on PM_SLEEP
- 	select HOTPLUG
- 	select HOTPLUG_CPU
--	default y
- 
- config PM_SLEEP
--	bool
-+	def_bool y
- 	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
--	default y
- 
- config PM_SLEEP_ADVANCED_DEBUG
- 	bool
- 	depends on PM_ADVANCED_DEBUG
--	default n
- 
- config SUSPEND
- 	bool "Suspend to RAM and standby"
-@@ -237,9 +231,8 @@ config PM_RUNTIME
- 	  wake-up events.
- 
- config PM_OPS
--	bool
-+	def_bool y
- 	depends on PM_SLEEP || PM_RUNTIME
--	default y
- 
- config ARCH_HAS_OPP
- 	bool
+To recap: The issue is how to handle multiple PM callbacks.  Since the
+bus type, device type, and device class may all have their own
+callbacks, Rafael has decided the best approach is to prioritize them
+and invoke only the highest-priority callback.  But what priority order
+should we use?
+
+Alan Stern
