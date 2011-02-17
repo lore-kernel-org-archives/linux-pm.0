@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 2/2] PM: Make system-wide PM and runtime
- PM handle subsystems consistently
-Date: Thu, 17 Feb 2011 09:55:46 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1102170951330.2153-100000__28128.1676296659$1297954709$gmane$org@iolanthe.rowland.org>
-References: <201102170045.48975.rjw@sisk.pl>
+Subject: Re: Still having problems with Suspend-To-Ram an Intel
+ Atom D525
+Date: Thu, 17 Feb 2011 10:16:07 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1102171012020.2153-100000@iolanthe.rowland.org>
+References: <4D5C1C61.7000200@rwth-aachen.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102170045.48975.rjw@sisk.pl>
+In-Reply-To: <4D5C1C61.7000200@rwth-aachen.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,47 +18,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm.20.masuefke@spamgourmet.com
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 17 Feb 2011, Rafael J. Wysocki wrote:
+On Wed, 16 Feb 2011 linux-pm.20.masuefke@spamgourmet.com wrote:
 
-> > > Apart from this I think the order of checks introduced by the $subject patch
-> > > should be:
-> > > (1) If dev->class != NULL and dev->class->pm != NULL, use dev->class,
-> > >     or otherwise
-> > > (2) if dev->type != NULL and dev->type->pm != NULL, use dev->type,
-> > >     or otherwise
-> > > (3) use dev->bus (if present).
-> > > as that would allow classes and device types to override bus type PM
-> > > callbacks if they wish to.
-> > 
-> > I haven't heard of any device types being present on more than one kind
-> > of bus, so it makes sense for device types to override bus types.
+> Hello,
 > 
-> OK
+> I still have no success suspending my Intel Atom D525 (with the NM10
+> chipset) to ram.
 > 
-> > But I'm not so sure about the priority we should give to classes.  On the
-> > other hand, if no classes define a dev_pm_ops then of course it doesn't
-> > matter.
+> Suspend to ram does not work at all, suspend to disk works.
 > 
-> The change will also affect classes that provide "legacy" suspend-resume
-> (if there are any, which I'm totally unsure of).
+> Please see the mailing list thread from 20Dec2011 for a detailed problem 
+> description:
+> https://lists.linux-foundation.org/pipermail/linux-pm/2010-December/thread.html#29654
+> and the screenshots on http://www-users.rwth-aachen.de/martin.suefke/s2ram/
 > 
-> Anyway, I think we need to choose one ordering. :-)
+> I re-tested now with 2.6.38-rc4 and 2.6.22 (git pulls from Linus 
+> Torvald's kernel tree) in a desperate attempt to find any working
+> version, so I could maybe try to pin down the problem by git-bisect.
+> However, also with 2.6.22 and 2.6.38-rc4 suspend to ram does not work.
 > 
-> What about type / bus / class , then?
+> The configurations for these kernels were made with 'make oldconfig'
+> from this configuration:
+> http://www-users.rwth-aachen.de/martin.suefke/s2ram/Kernel_config_2.6.37-rc6
+> 
+> If anybody has any clue, hint, suggestion or questions regarding the
+> issue, please drop me a note.
 
-I really don't know.  Somebody who has more experience with device 
-class implementations should answer.
-
-Greg, any ideas?
-
-To recap: The issue is how to handle multiple PM callbacks.  Since the
-bus type, device type, and device class may all have their own
-callbacks, Rafael has decided the best approach is to prioritize them
-and invoke only the highest-priority callback.  But what priority order
-should we use?
+I don't have any ideas about debugging this, but I do have an idea
+about where you might get more help.  Post a message to LKML, and don't
+describe it as a suspend problem.  Instead, describe it as a problem
+enabling CPU cores after the system has gone through a suspend/resume
+cycle.  This may help attract the attention of people who are familiar
+with the issues involved in enabling and disabling CPUs -- which 
+appears to be the source of your difficulties.
 
 Alan Stern
