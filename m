@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: regression 2.6.38-rc4 -> 2.6.38-rc5 suspend fails
-Date: Fri, 18 Feb 2011 18:49:17 +0100
-Message-ID: <201102181849.17589.rjw__8713.50262682444$1298051449$gmane$org@sisk.pl>
-References: <20110217163300.GA7988@gamma.logic.tuwien.ac.at>
-	<201102172309.26106.rwys@fuw.edu.pl>
-	<20110218025601.GA30118@gamma.logic.tuwien.ac.at>
+Subject: Re: platform/i2c busses: pm runtime and system sleep
+Date: Fri, 18 Feb 2011 19:28:05 +0100
+Message-ID: <201102181928.05911.rjw__5680.42558520592$1298053829$gmane$org@sisk.pl>
+References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
+	<AANLkTikRUZRh0YnP8nYTKFnFeUiJbK5xKvHHjn_S+gZE@mail.gmail.com>
+	<AANLkTinsPqFcodH0w7LQeFEY+amodNH4CneRCRhhbKaz@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110218025601.GA30118@gamma.logic.tuwien.ac.at>
+In-Reply-To: <AANLkTinsPqFcodH0w7LQeFEY+amodNH4CneRCRhhbKaz@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,22 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Norbert Preining <preining@logic.at>, Stefan Berger <stefanb@linux.vnet.ibm.com>, Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Guillaume Chazarain <guichaz@gmail.com>, linux-kernel@vger.kernel.org
+To: Rabin Vincent <rabin@rab.in>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, February 18, 2011, Norbert Preining wrote:
-> On Do, 17 Feb 2011, R. J. Wysocki wrote:
-> > > [  187.431895] sd 0:0:0:0: [sda] Stopping disk
-> > > [  187.480078] tpm_tis 00:0a: Operation Timed out
-> > > [  187.480095] legacy_suspend(): pnp_bus_suspend+0x0/0x6a returns -62
-> > > [  187.480101] PM: Device 00:0a failed to suspend: error -62
+On Friday, February 18, 2011, Rabin Vincent wrote:
+> On Thu, Feb 17, 2011 at 20:55, Rabin Vincent <rabin@rab.in> wrote:
+> > This will solve the platform vs AMBA bus, but shouldn't we really be
+> > aiming for consistent behaviour between these and the other busses such
+> > as I2C and SPI, which are also usually commonly used on the same
+> > platforms and are using GENERIC_PM_OPS?
+> >
+> > Should we be auditing all platform drivers and then switch platform to
+> > the GENERIC_PM_OPS?
+> >
+> > Or should the two points (1) and (2) be not handled in the bus at all
+> > and be left to individual drivers (in which case we should audit i2c and
+> > spi and change GENERIC_PM_OPS)?
 > 
-> > What happens if you revert commit 9b29050 (tpm_tis: Use timeouts returned from TPM)?
-> 
-> Reverting this commit the laptop suspends fine again.
+> How about something like the below?  If we have something like this, we
+> can just switch platform to GENERIC_PM_OPS and add the
+> pm_runtime_want_interaction() (or something better named) call to the
+> i2c and spi drivers using runtime PM.
 
-Stefan, Rajiv, the above commit causes a suspend regression to appear for
-Norbert.  Care to have a look?
+Why don't we make platform_bus_type behave along the lines of generic ops
+instead?
 
 Rafael
