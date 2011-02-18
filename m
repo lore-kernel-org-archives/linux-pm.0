@@ -1,13 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] simplify kernel/power/Kconfig
-Date: Fri, 18 Feb 2011 01:08:14 +0100
-Message-ID: <201102180108.14916.rjw__3558.4636185833$1297987864$gmane$org@sisk.pl>
-References: <4D5D31E3020000780003263F@vpn.id2.novell.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: [PATCH] PM QoS: Allow parsing of ASCII values
+Date: Fri, 18 Feb 2011 10:54:56 +0900
+Message-ID: <1297994096-1839-1-git-send-email-horms@verge.net.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D5D31E3020000780003263F@vpn.id2.novell.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,95 +15,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-kbuild@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Dan Carpenter <error27@gmail.com>, Mark Gross <markgross@thegnar.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, February 17, 2011, Jan Beulich wrote:
-> 'n' defaults are pretty pointless and actually bogus when used with
-> prompt-less config options.
-> 
-> The "bool"/"default y" pair with no prompt can be expressed more
-> compactly using def_bool.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+In "PM QoS: Correct pr_debug() misuse and improve parameter checks"
+the parsing of the ASCII hex value was tightened. Unfortunately
+it was tightened to the point where no value is valid.
 
-Applied to suspend-2.6/linux-next, but I had to rebase it.  Please
-remember to check if the patch applies to linux-next next time.
+Root of the problem seems to lie in wheather the ASCII hex is followed
+by a '\n' or not. My reading of the documentation is that the '\n' should
+not be present. However the code previously only accepted that version.
+The current code accepts neither. My fix is to accept both.
 
-Thanks,
-Rafael
+Cc: Mark Gross <markgross@thegnar.org>
+Cc: Dan Carpenter <error27@gmail.com>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Simon Horman <horms@verge.net.au>
 
+---
+This appears to have been introduced around 2.6.36-rc4.
+And was an @stable patch. As such I believe this change
+is stable material.
+---
+ kernel/pm_qos_params.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-> ---
->  kernel/power/Kconfig |   13 +++----------
->  1 file changed, 3 insertions(+), 10 deletions(-)
-> 
-> --- 2.6.38-rc5/kernel/power/Kconfig
-> +++ 2.6.38-rc5-kconfig-power/kernel/power/Kconfig
-> @@ -30,7 +30,6 @@ config PM_DEBUG
->  config PM_ADVANCED_DEBUG
->  	bool "Extra PM attributes in sysfs for low-level debugging/testing"
->  	depends on PM_DEBUG
-> -	default n
->  	---help---
->  	Add extra sysfs attributes allowing one to access some Power Management
->  	fields of device objects from user space.  If you are not a kernel
-> @@ -39,7 +38,6 @@ config PM_ADVANCED_DEBUG
->  config PM_VERBOSE
->  	bool "Verbose Power Management debugging"
->  	depends on PM_DEBUG
-> -	default n
->  	---help---
->  	This option enables verbose messages from the Power Management code.
->  
-> @@ -67,7 +65,6 @@ config PM_TRACE_RTC
->  	depends on CAN_PM_TRACE
->  	depends on X86
->  	select PM_TRACE
-> -	default n
->  	---help---
->  	This enables some cheesy code to save the last PM event point in the
->  	RTC across reboots, so that you can debug a machine that just hangs
-> @@ -82,23 +79,20 @@ config PM_TRACE_RTC
->  	set to an invalid time after a resume.
->  
->  config PM_SLEEP_SMP
-> -	bool
-> +	def_bool y
->  	depends on SMP
->  	depends on ARCH_SUSPEND_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
->  	depends on PM_SLEEP
->  	select HOTPLUG
->  	select HOTPLUG_CPU
-> -	default y
->  
->  config PM_SLEEP
-> -	bool
-> +	def_bool y
->  	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
-> -	default y
->  
->  config PM_SLEEP_ADVANCED_DEBUG
->  	bool
->  	depends on PM_ADVANCED_DEBUG
-> -	default n
->  
->  config SUSPEND
->  	bool "Suspend to RAM and standby"
-> @@ -237,9 +231,8 @@ config PM_RUNTIME
->  	  wake-up events.
->  
->  config PM_OPS
-> -	bool
-> +	def_bool y
->  	depends on PM_SLEEP || PM_RUNTIME
-> -	default y
->  
->  config ARCH_HAS_OPP
->  	bool
-> 
-> 
-> 
-> 
-> 
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index aeaa7f8..98a34ea 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -387,10 +387,11 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ 	if (count == sizeof(s32)) {
+ 		if (copy_from_user(&value, buf, sizeof(s32)))
+ 			return -EFAULT;
+-	} else if (count == 11) { /* len('0x12345678/0') */
+-		if (copy_from_user(ascii_value, buf, 11))
++	} else if (count == 11 || count == 10) { /* len('0x12345678\n') or
++						  * len('0x12345678') */
++		if (copy_from_user(ascii_value, buf, count))
+ 			return -EFAULT;
+-		if (strlen(ascii_value) != 10)
++		if (strlen(ascii_value) != count)
+ 			return -EINVAL;
+ 		x = sscanf(ascii_value, "%x", &value);
+ 		if (x != 1)
+-- 
+1.7.2.3
