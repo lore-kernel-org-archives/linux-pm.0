@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: platform/i2c busses: pm runtime and system sleep
-Date: Fri, 18 Feb 2011 19:28:05 +0100
-Message-ID: <201102181928.05911.rjw__5680.42558520592$1298053829$gmane$org@sisk.pl>
-References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
-	<AANLkTikRUZRh0YnP8nYTKFnFeUiJbK5xKvHHjn_S+gZE@mail.gmail.com>
-	<AANLkTinsPqFcodH0w7LQeFEY+amodNH4CneRCRhhbKaz@mail.gmail.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] PM: Make system-wide PM and runtime PM treat
+ subsystems consistently
+Date: Fri, 18 Feb 2011 11:22:41 -0800
+Message-ID: <20110218192241.GA6172__3611.34433555907$1298057111$gmane$org@kroah.com>
+References: <201102170045.48975.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1102170951330.2153-100000@iolanthe.rowland.org>
+	<20110217170441.GA31809@kroah.com>
+	<201102180054.25603.rwys@fuw.edu.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTinsPqFcodH0w7LQeFEY+amodNH4CneRCRhhbKaz@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <201102180054.25603.rwys@fuw.edu.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +22,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Rabin Vincent <rabin@rab.in>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, February 18, 2011, Rabin Vincent wrote:
-> On Thu, Feb 17, 2011 at 20:55, Rabin Vincent <rabin@rab.in> wrote:
-> > This will solve the platform vs AMBA bus, but shouldn't we really be
-> > aiming for consistent behaviour between these and the other busses such
-> > as I2C and SPI, which are also usually commonly used on the same
-> > platforms and are using GENERIC_PM_OPS?
-> >
-> > Should we be auditing all platform drivers and then switch platform to
-> > the GENERIC_PM_OPS?
-> >
-> > Or should the two points (1) and (2) be not handled in the bus at all
-> > and be left to individual drivers (in which case we should audit i2c and
-> > spi and change GENERIC_PM_OPS)?
+On Fri, Feb 18, 2011 at 12:54:25AM +0100, R. J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> How about something like the below?  If we have something like this, we
-> can just switch platform to GENERIC_PM_OPS and add the
-> pm_runtime_want_interaction() (or something better named) call to the
-> i2c and spi drivers using runtime PM.
+> The code handling system-wide power transitions (eg. suspend-to-RAM)
+> can in theory execute callbacks provided by the device's bus type,
+> device type and class in each phase of the power transition.  In
+> turn, the runtime PM core code only calls one of those callbacks at
+> a time, preferring bus type callbacks to device type or class
+> callbacks and device type callbacks to class callbacks.
+> 
+> It seems reasonable to make them both behave in the same way in that
+> respect.  Moreover, even though a device may belong to two subsystems
+> (eg. bus type and device class) simultaneously, in practice power
+> management callbacks for system-wide power transitions are always
+> provided by only one of them (ie. if the bus type callbacks are
+> defined, the device class ones are not and vice versa).  Thus it is
+> possible to modify the code handling system-wide power transitions
+> so that it follows the core runtime PM code (ie. treats the
+> subsystem callbacks as mutually exclusive).
+> 
+> On the other hand, the core runtime PM code will choose to execute,
+> for example, a runtime suspend callback provided by the device type
+> even if the bus type's struct dev_pm_ops object exists, but the
+> runtime_suspend pointer in it happens to be NULL.  This is confusing,
+> because it may lead to the execution of callbacks from different
+> subsystems during different operations (eg. the bus type suspend
+> callback may be executed during runtime suspend of the device, while
+> the device type callback will be executed during system suspend).
+> 
+> Make all of the power management code treat subsystem callbacks in
+> a consistent way, such that:
+> (1) If the device's type is defined (eg. dev->type is not NULL)
+>     and its pm pointer is not NULL, the callbacks from dev->type->pm
+>     will be used.
+> (2) If dev->type is NULL or dev->type->pm is NULL, but the device's
+>     class is defined (eg. dev->class is not NULL) and its pm pointer
+>     is not NULL, the callbacks from dev->class->pm will be used.
+> (3) If dev->type is NULL or dev->type->pm is NULL and dev->class is
+>     NULL or dev->class->pm is NULL, the callbacks from dev->bus->pm
+>     will be used provided that both dev->bus and dev->bus->pm are
+>     not NULL.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Kevin Hilman <khilman@ti.com>
+> Reasoning-sounds-sane-to: Grant Likely <grant.likely@secretlab.ca>
 
-Why don't we make platform_bus_type behave along the lines of generic ops
-instead?
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Rafael
+You are going to take this through your tree, right?
+
+thanks,
+
+greg k-h
