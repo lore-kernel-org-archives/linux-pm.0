@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM QoS: Allow parsing of ASCII values
-Date: Fri, 18 Feb 2011 10:17:20 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1102181006110.1972-100000@iolanthe.rowland.org>
-References: <20110218063955.GA2558@verge.net.au>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: regression 2.6.38-rc4 -> 2.6.38-rc5 suspend fails
+Date: Fri, 18 Feb 2011 18:49:17 +0100
+Message-ID: <201102181849.17589.rjw__8713.50262682444$1298051449$gmane$org@sisk.pl>
+References: <20110217163300.GA7988@gamma.logic.tuwien.ac.at>
+	<201102172309.26106.rwys@fuw.edu.pl>
+	<20110218025601.GA30118@gamma.logic.tuwien.ac.at>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110218063955.GA2558@verge.net.au>
+In-Reply-To: <20110218025601.GA30118@gamma.logic.tuwien.ac.at>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,63 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Simon Horman <horms@verge.net.au>
-Cc: linux-pm@lists.linux-foundation.org, Dan Carpenter <error27@gmail.com>, mark gross <markgross@thegnar.org>
+To: Norbert Preining <preining@logic.at>, Stefan Berger <stefanb@linux.vnet.ibm.com>, Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Guillaume Chazarain <guichaz@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 18 Feb 2011, Simon Horman wrote:
+On Friday, February 18, 2011, Norbert Preining wrote:
+> On Do, 17 Feb 2011, R. J. Wysocki wrote:
+> > > [  187.431895] sd 0:0:0:0: [sda] Stopping disk
+> > > [  187.480078] tpm_tis 00:0a: Operation Timed out
+> > > [  187.480095] legacy_suspend(): pnp_bus_suspend+0x0/0x6a returns -62
+> > > [  187.480101] PM: Device 00:0a failed to suspend: error -62
+> 
+> > What happens if you revert commit 9b29050 (tpm_tis: Use timeouts returned from TPM)?
+> 
+> Reverting this commit the laptop suspends fine again.
 
-> Hi Mark,
-> 
-> On Thu, Feb 17, 2011 at 09:05:16PM -0800, mark gross wrote:
-> > On Fri, Feb 18, 2011 at 10:54:56AM +0900, Simon Horman wrote:
-> > > In "PM QoS: Correct pr_debug() misuse and improve parameter checks"
-> > > the parsing of the ASCII hex value was tightened. Unfortunately
-> > > it was tightened to the point where no value is valid.
-> > 
-> > How is it of no value?  Can you not sent a 10 char string with a
-> > zero-byte end of string maker?
-> 
-> My testing indicates that
-> 
-> echo -n "0x12345678" will yield count == 10 in copy_from_user()
-> 
-> that
-> 
-> echo "0x12345678" will yield count == 11 in copy_from_user()
-> 
-> and that in both case strlen() will yeild the same value as count.
-> 
-> > Is expecting the c-string marker in the interface a bad idea that needs
-> > fixing?
-> 
-> I think that is the crux of the problem from my point of view.
-> That is, using echo as above there is no '\0' by the time
-> the string gets to the kernel.
-> 
-> I now see that the following works :-)
-> 
-> echo -ne '0x12345678\0' | dd of=/dev/network_latency
-> 
-> However I wonder if the call to strlen() is safe.
-> In the case of the following is there any guarantee that
-> ascii_value is '\0' terminated? Perhaps strnlen() is needed?
-> 
-> echo -n '0x123456789' | dd of=/dev/network_latency
+Stefan, Rajiv, the above commit causes a suspend regression to appear for
+Norbert.  Care to have a look?
 
-Normally these interfaces are designed so that people can do either
-
-	echo '...data...' >/dev/...
-
-or
-
-	echo -n '...data...' >/dev/...
-
-and it will just work.  This means you should allow count to be equal 
-to either 10 or 11, but if it is 11 then you should check that the last 
-character really is '\n'.
-
-Also, you might want to consider using strict_strtoul() for parsing or 
-conversion.
-
-Alan Stern
+Rafael
