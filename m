@@ -1,11 +1,15 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: [PATCH] PM QoS: Allow parsing of ASCII values
-Date: Fri, 18 Feb 2011 10:54:56 +0900
-Message-ID: <1297994096-1839-1-git-send-email-horms@verge.net.au>
+From: Rabin Vincent <rabin@rab.in>
+Subject: Re: platform/i2c busses: pm runtime and system sleep
+Date: Fri, 18 Feb 2011 08:18:48 +0530
+Message-ID: <AANLkTinsPqFcodH0w7LQeFEY+amodNH4CneRCRhhbKaz__40454.4819998138$1297997427$gmane$org@mail.gmail.com>
+References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
+	<201012170109.43137.rjw@sisk.pl>
+	<AANLkTikRUZRh0YnP8nYTKFnFeUiJbK5xKvHHjn_S+gZE@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <AANLkTikRUZRh0YnP8nYTKFnFeUiJbK5xKvHHjn_S+gZE@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,50 +19,142 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Dan Carpenter <error27@gmail.com>, Mark Gross <markgross@thegnar.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-In "PM QoS: Correct pr_debug() misuse and improve parameter checks"
-the parsing of the ASCII hex value was tightened. Unfortunately
-it was tightened to the point where no value is valid.
+On Thu, Feb 17, 2011 at 20:55, Rabin Vincent <rabin@rab.in> wrote:
+> This will solve the platform vs AMBA bus, but shouldn't we really be
+> aiming for consistent behaviour between these and the other busses such
+> as I2C and SPI, which are also usually commonly used on the same
+> platforms and are using GENERIC_PM_OPS?
+>
+> Should we be auditing all platform drivers and then switch platform to
+> the GENERIC_PM_OPS?
+>
+> Or should the two points (1) and (2) be not handled in the bus at all
+> and be left to individual drivers (in which case we should audit i2c and
+> spi and change GENERIC_PM_OPS)?
 
-Root of the problem seems to lie in wheather the ASCII hex is followed
-by a '\n' or not. My reading of the documentation is that the '\n' should
-not be present. However the code previously only accepted that version.
-The current code accepts neither. My fix is to accept both.
+How about something like the below?  If we have something like this, we
+can just switch platform to GENERIC_PM_OPS and add the
+pm_runtime_want_interaction() (or something better named) call to the
+i2c and spi drivers using runtime PM.
 
-Cc: Mark Gross <markgross@thegnar.org>
-Cc: Dan Carpenter <error27@gmail.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Simon Horman <horms@verge.net.au>
+diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+index 42f97f9..c2a3b63 100644
+--- a/drivers/base/power/generic_ops.c
++++ b/drivers/base/power/generic_ops.c
+@@ -87,7 +87,10 @@ static int __pm_generic_call(struct device *dev, int event)
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 	int (*callback)(struct device *);
 
----
-This appears to have been introduced around 2.6.36-rc4.
-And was an @stable patch. As such I believe this change
-is stable material.
----
- kernel/pm_qos_params.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+-	if (!pm || pm_runtime_suspended(dev))
++	if (!pm)
++		return 0;
++
++	if (device_want_interaction(dev) && pm_runtime_suspended(dev))
+ 		return 0;
 
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index aeaa7f8..98a34ea 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -387,10 +387,11 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- 	if (count == sizeof(s32)) {
- 		if (copy_from_user(&value, buf, sizeof(s32)))
- 			return -EFAULT;
--	} else if (count == 11) { /* len('0x12345678/0') */
--		if (copy_from_user(ascii_value, buf, 11))
-+	} else if (count == 11 || count == 10) { /* len('0x12345678\n') or
-+						  * len('0x12345678') */
-+		if (copy_from_user(ascii_value, buf, count))
- 			return -EFAULT;
--		if (strlen(ascii_value) != 10)
-+		if (strlen(ascii_value) != count)
- 			return -EINVAL;
- 		x = sscanf(ascii_value, "%x", &value);
- 		if (x != 1)
--- 
-1.7.2.3
+ 	switch (event) {
+@@ -185,7 +188,7 @@ static int __pm_generic_resume(struct device *dev,
+int event)
+ 		return 0;
+
+ 	ret = callback(dev);
+-	if (!ret && pm_runtime_enabled(dev)) {
++	if (!ret && device_want_interaction(dev) && pm_runtime_enabled(dev)) {
+ 		pm_runtime_disable(dev);
+ 		pm_runtime_set_active(dev);
+ 		pm_runtime_enable(dev);
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 42615b4..2b8a099 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1069,6 +1069,30 @@ void pm_runtime_allow(struct device *dev)
+ EXPORT_SYMBOL_GPL(pm_runtime_allow);
+
+ /**
++ * pm_runtime_want_interaction - Enable interaction between system sleep
++ *				 and runtime PM callbacks at the bus/subsystem
++ *				 level.
++ * @dev: Device to handle
++ *
++ * Set the power.want_interaction flage, which tells the generic PM subsystem
++ * ops that the following actions should be done during system suspend/resume:
++ *
++ * - If the device has been runtime suspended, the driver's
++ *   suspend() handler will not be invoked.
++ *
++ * - If the device has a resume() pm callback, and the resume()
++ *   callback returns success on system resume, the device's
++ *   runtime PM status will be set to active.
++ */
++void pm_runtime_want_interaction(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	dev->power.want_interaction = 1;
++	spin_unlock_irq(&dev->power.lock);
++}
++EXPORT_SYMBOL_GPL(pm_runtime_want_interaction);
++
++/**
+  * pm_runtime_no_callbacks - Ignore run-time PM callbacks for a device.
+  * @dev: Device to handle.
+  *
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index dd9c7ab..b9bcfb9 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -450,6 +450,7 @@ struct dev_pm_info {
+ 	unsigned int		irq_safe:1;
+ 	unsigned int		use_autosuspend:1;
+ 	unsigned int		timer_autosuspends:1;
++	unsigned int		want_interaction:1;
+ 	enum rpm_request	request;
+ 	enum rpm_status		runtime_status;
+ 	int			runtime_error;
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index d34f067..a0e081b 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -44,6 +44,7 @@ extern void pm_runtime_irq_safe(struct device *dev);
+ extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
+ extern void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);
+ extern unsigned long pm_runtime_autosuspend_expiration(struct device *dev);
++static void pm_runtime_want_system_sleep_interaction(struct device *dev);
+
+ static inline bool pm_children_suspended(struct device *dev)
+ {
+@@ -66,6 +67,11 @@ static inline void pm_runtime_put_noidle(struct device *dev)
+ 	atomic_add_unless(&dev->power.usage_count, -1, 0);
+ }
+
++static inline bool device_want_interaction(struct device *dev)
++{
++	return dev->power.want_interaction;
++}
++
+ static inline bool device_run_wake(struct device *dev)
+ {
+ 	return dev->power.run_wake;
+@@ -122,6 +128,7 @@ static inline bool pm_children_suspended(struct
+device *dev) { return false; }
+ static inline void pm_suspend_ignore_children(struct device *dev, bool en) {}
+ static inline void pm_runtime_get_noresume(struct device *dev) {}
+ static inline void pm_runtime_put_noidle(struct device *dev) {}
++static inline bool device_want_interaction(struct device *dev) {
+return false; }
+ static inline bool device_run_wake(struct device *dev) { return false; }
+ static inline void device_set_run_wake(struct device *dev, bool enable) {}
+ static inline bool pm_runtime_suspended(struct device *dev) { return false; }
+@@ -132,6 +139,7 @@ static inline int
+pm_generic_runtime_suspend(struct device *dev) { return 0; }
+ static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
+ static inline void pm_runtime_no_callbacks(struct device *dev) {}
+ static inline void pm_runtime_irq_safe(struct device *dev) {}
++static inline void pm_runtime_want_system_sleep_interaction(struct
+device *dev) {}
+
+ static inline void pm_runtime_mark_last_busy(struct device *dev) {}
+ static inline void __pm_runtime_use_autosuspend(struct device *dev,
