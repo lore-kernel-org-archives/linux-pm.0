@@ -1,7 +1,7 @@
-From: Rabin Vincent <rabin@rab.in>
+From: Linus Walleij <linus.walleij@linaro.org>
 Subject: Re: platform/i2c busses: pm runtime and system sleep
-Date: Sat, 19 Feb 2011 12:54:52 +0530
-Message-ID: <AANLkTinb0zVSUyNBAySH7K7=3bX-ecoQa--CzPJ+OM_b__1924.56937297738$1298100411$gmane$org@mail.gmail.com>
+Date: Sat, 19 Feb 2011 10:54:57 +0100
+Message-ID: <AANLkTim2TfG-18XN3r9m3Rq68ZD6QHUY7X82E4-XWH83__43378.9811250337$1298109430$gmane$org@mail.gmail.com>
 References: <AANLkTinyDE3OxKup_aqsN8HJH_r5LcwkP17OtuMRpACx@mail.gmail.com>
 	<201102181928.05911.rjw@sisk.pl>
 	<AANLkTi=j9KeX2TSzMaKMWR6GpXjFcsjp0z8Rt+ArLXiV@mail.gmail.com>
@@ -22,11 +22,11 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>, LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Feb 19, 2011 at 01:57, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
+2011/2/18 Russell King - ARM Linux <linux@arm.linux.org.uk>:
+
 > Do we have any pressing need to convert AMBA stuff? =A0I haven't heard any
 > reason yet to convert them to runtime PM - they don't even make any
 > runtime PM calls.
@@ -35,22 +35,33 @@ On Sat, Feb 19, 2011 at 01:57, Russell King - ARM Linux
 > As my boards don't have any sensible PM support, I don't have any
 > visibility of what PM facilities would be required.
 
-The rationale for runtime power control is the same as that for
-65500fa94aaeb3 "ARM: 6467/1: amba: optional PrimeCell core voltage
-switch".
+Sure, basically I ACK Rabins patch and his reasoning for it. (BTW
+Rabin spends most of his days working on the Ux500 SoCs too.)
 
-As compared to the regulator API which that patch is using, the runtime
-pm usage is more flexible (for example allowing certain power control
-APIs to be called from atomic context), provides callbacks for
-asynchronous turnoff with callbacks back to the driver to save/restore
-state (runtime_suspend()/runtime_resume()), and provides core support
-for things like "autosuspend" which allows delaying suspend until some
-time after last inactivity.  Using runtime PM also allows use of the new
-device-level power domain support ("PM: Add support for device power
-domains", in -next) to easily implement SoC-specific handling.
+The runtime PM we need for Ux500 is to switch off silicon core
+voltage first and foremost. The call I've added to switch of a core
+voltage regulator will need to be called when the silicon is idle.
 
-We need to first add bus support for this to allow drivers to use this
-API.  It is possible to make the AMBA patch smaller and touch only the
-AMBA bus code by implementing support for the legacy bus-specific
-suspend/resume calls, and drivers can be later converted to pm-ops as
-needed.
+In spi/amba-pl022.c I take the most brutal approach with a recent
+patch: hammer off this core switch (and clock) whenever the hardware
+is not used. This is simple in this driver since it has no state to preserve
+across transfers, it is written such that the core is loaded with the
+appropriate state for each message.
+
+Continuing this approach we run into two problems with this
+and other drivers:
+
+-  Hammering off/on the clock+voltage is causing delays in HW
+   so what you want is some hysteresis (usually, wait a few us/ms
+   then switch off) - sort of a takeoff/landing effect.
+
+-  Modelling voltage domains as regulators is nice, but require
+   us to switch on/off from process context, so we cannot do this
+   from interrupt handlers.
+
+Both of these problems are solved by elegance if we use runtime
+PM, since it will provide a hysteresis timeout that can be triggered
+from interrupt context and call the idling hooks in process context.
+
+Yours,
+Linus Walleij
