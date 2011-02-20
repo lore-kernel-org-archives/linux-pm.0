@@ -1,15 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/3] xen: Use PM/Hibernate events for
-	save/restore/chkpt
-Date: Sun, 20 Feb 2011 08:49:31 +0100
-Message-ID: <20110220074931.GA28485__24529.4578526684$1298188341$gmane$org@elf.ucw.cz>
-References: <1298157158-5421-1-git-send-email-rshriram@cs.ubc.ca>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: 2.6.37.1 s2disk regression (TPM)
+Date: Sun, 20 Feb 2011 11:13:17 +0100
+Message-ID: <4D60E93D.1050205__1000.38035675443$1298196955$gmane$org@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1298157158-5421-1-git-send-email-rshriram@cs.ubc.ca>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +15,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-Cc: linux-pm@lists.linux-foundation.org, xen-devel@lists.xensource.com, Iam Campbell <ian.campbell@citrix.com>
+To: stefanb@linux.vnet.ibm.com
+Cc: srajiv@linux.vnet.ibm.com, Linux kernel mailing list <linux-kernel@vger.kernel.org>, debora@linux.vnet.ibm.com, tpmdd-devel@lists.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2011-02-19 15:12:35, Shriram Rajagopalan wrote:
-> The current implementation of xen guest save/restore/checkpoint functionality
-> uses PM_SUSPEND and PM_RESUME events. This is not optimal when taking
-> checkpoints of a virtual machine (where the suspend hypercall returns
-> non-zero, requiring the devices and xenbus to just pickup from where they left
-> off instead of a complete teardown/reconnect to backend). 
-> 
-> The following set of patches modify this implementation to use Hibernate style
-> control flow (freeze/restore for save/restore and freeze/thaw for checkpoint,
-> which is merely a cancelled save akin to failed swsusp() ).
-> 
-> These patches are against Ian Campbell's PVHVM tree at
-> git://xenbits.xen.org/people/ianc/linux-2.6.git for-stefano/pvhvm
-> 
-> at commit 8a8d1bc753c4e2dda5f2890292d60c67d6ebb573
-> kernel version: 2.6.38-rc4
+Hi,
 
-Series looks ok to me...
+I'm unable to hibernate 2.6.37.1 unless I rmmod tpm_tis:
+[10974.074587] Suspending console(s) (use no_console_suspend to debug)
+[10974.103073] tpm_tis 00:0c: Operation Timed out
+[10974.103089] legacy_suspend(): pnp_bus_suspend+0x0/0xa0 returns -62
+[10974.103095] PM: Device 00:0c failed to freeze: error -62
+
+2.6.37 worked fine. Going to revert 9b29050f8f7 (tpm_tis: Use timeouts
+returned from TPM) for testing.
+
+regards,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+js
