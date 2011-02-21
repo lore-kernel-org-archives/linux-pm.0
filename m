@@ -1,15 +1,14 @@
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Subject: Re: 2.6.37.1 s2disk regression (TPM)
-Date: Mon, 21 Feb 2011 14:12:35 -0300
-Message-ID: <4D629D03.90801__13816.1484421746$1298317455$gmane$org@linux.vnet.ibm.com>
-References: <4D60E93D.1050205@gmail.com> <4D60F108.9000106@gmail.com>
-	<201102201151.11635.rjw@sisk.pl> <201102201248.10779.rjw@sisk.pl>
-	<4D628521.8000205@linux.vnet.ibm.com> <4D629427.8020500@gmail.com>
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+Subject: Re: [PATCH 0/3] xen: Use PM/Hibernate events for
+ save/restore/chkpt
+Date: Mon, 21 Feb 2011 17:17:30 +0000
+Message-ID: <1298308650.16356.8102.camel__4804.84890654242$1298317603$gmane$org@zakaz.uk.xensource.com>
+References: <Pine.LNX.4.44L0.1102211135170.15325-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D629427.8020500@gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1102211135170.15325-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,81 +18,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: stefanb@linux.vnet.ibm.com, Linux kernel mailing list <linux-kernel@vger.kernel.org>, debora@linux.vnet.ibm.com, preining@logic.at, linux-pm <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/21/2011 01:34 PM, Jiri Slaby wrote:
+On Mon, 2011-02-21 at 16:40 +0000, Alan Stern wrote:
+> On Mon, 21 Feb 2011, Ian Campbell wrote:
+> 
+> > On Sun, 2011-02-20 at 07:49 +0000, Pavel Machek wrote:
+> > > On Sat 2011-02-19 15:12:35, Shriram Rajagopalan wrote:
+> > > > The current implementation of xen guest save/restore/checkpoint functionality
+> > > > uses PM_SUSPEND and PM_RESUME events. This is not optimal when taking
+> > > > checkpoints of a virtual machine (where the suspend hypercall returns
+> > > > non-zero, requiring the devices and xenbus to just pickup from where they left
+> > > > off instead of a complete teardown/reconnect to backend). 
+> > > > 
+> > > > The following set of patches modify this implementation to use Hibernate style
+> > > > control flow (freeze/restore for save/restore and freeze/thaw for checkpoint,
+> > > > which is merely a cancelled save akin to failed swsusp() ).
+> > > > 
+> > > > These patches are against Ian Campbell's PVHVM tree at
+> > > > git://xenbits.xen.org/people/ianc/linux-2.6.git for-stefano/pvhvm
+> > > > 
+> > > > at commit 8a8d1bc753c4e2dda5f2890292d60c67d6ebb573
+> > > > kernel version: 2.6.38-rc4
+> > > 
+> > > Series looks ok to me...
+> > 
+> > Thanks Pavel, may we take that as an Acked-by?
+> > 
+> > For my part the Xen side is:
+> > Acked-by: Ian Campbell <ian.campbell@citrix.com>
+> 
+> There's one part of this which could be troublesome.  The new code 
+> generates FREEZE, THAW, and RESTORE events even in kernels where 
+> CONFIG_HIBERNATION isn't set.  In such kernels, drivers are not 
+> obliged to handle these events correctly.
 
->>> BTW, the first hunk from that commit in drivers/char/tpm/tpm.c seems
->>> to be
->>> completely broken:
->>> @@ -577,9 +577,11 @@ duration:
->>>           if (rc)
->>>                   return;
->>>
->>> -       if (be32_to_cpu(tpm_cmd.header.out.return_code)
->>> -           != 3 * sizeof(u32))
->>> +       if (be32_to_cpu(tpm_cmd.header.out.return_code) != 0 ||
->>> +           be32_to_cpu(tpm_cmd.header.out.length)
->>> +           != sizeof(tpm_cmd.header.out) + sizeof(u32) + 3 *
->>> sizeof(u32))
->>>                   return;
->>> +
->>>           duration_cap =&tpm_cmd.params.getcap_out.cap.duration;
->>>           chip->vendor.duration[TPM_SHORT] =
->>>               usecs_to_jiffies(be32_to_cpu(duration_cap->tpm_short));
->>>
->>> Namely, either the old code always returned as a result of the
->>> conditional
->>> being removed, or the new code will always return as a result of
->>> the (... != 0) check.  I wonder if there's supposed to be (... == 0)
->>> instead?
->> The previous code was checking the wrong field of the TPM returned
->> buffer, probably
->> due an old commit that incorporated the tpm_cmd strucuture, it should
->> check if the return code
->> is != 0, which if true, means that the command didn't succeed. The
->> output length check should be
->> just a sanity check, so indeed the logical operator should be&&
->> instead.
-> No it should not. You want 'if (wrong_retcode OR wrong_len) die;'. IOW I
-> don't see what exactly is wrong on the 'if'. I think it's correct.
-> (Given the old test was incorrect.)
-Exactly, I read it too fast and inverted the logic while writing the response, missing De Morgan's.
+The dependencies on CONFIG_HIBERNATION which I can see appear to be more
+often at the bus level (e.g. in drivers/acpi drivers/pci/pci-driver.c
+etc) is that right?
 
-> There has to be another problem which caused my regression. And since it
-> reports "Operation Timed out", the former default timeout values worked
-> for me, the ones read from TPM do not.
-Yes, it's highly due inconsistent timeout values reported by the TPM as I mentioned, my working timeouts are:
-3020000 4510000 181000000
+For a PV guest only the Xen PV drivers really matter.
 
-> I'm not at that machine now, what are the usual timeouts in usecs? The
-> use of conversed jiffies seem bogus. If the usecs are so low (or HZ so
-> high on some configs) that the conversion returns 1 jiffie,
-> wait_event_interruptible_timeout in wait_for_stat will return 0 when:
-> * 1 jiffie passes without change in status (proper timeout)
-> * status changed, but also the timer ticked once meanwhile, i.e. we
-> scheduled a moment before timer tick
->
-> But this is only a theory so far. What about this (wrapped, just dropped
-> by mouse), I may try it when I'm back to the machine?
-> --- a/drivers/char/tpm/tpm_tis.c
-> +++ b/drivers/char/tpm/tpm_tis.c
-> @@ -201,7 +201,7 @@ static int wait_for_stat(struct tpm_chip *chip, u8
-> mask, unsigned long timeout,
->                                                        ((tpm_tis_status
->                                                          (chip)&  mask) ==
->                                                         mask), timeout);
-> -               if (rc>  0)
-> +               if (rc>  0 || (tpm_tis_status(chip)&  mask) == mask)
->                          return 0;
->          } else {
->                  stop = jiffies + timeout;
->
-This will work for small timeout values discrepancies, but not if, for example,
-the TPM is returning the values in msecs instead of usecs, which should affect the
-result when issuing commands that last longer. That's why I'd like to see
-the failing timeout values first.
+But for a PVHVM guest you are right since there are the emulated "PC"
+devices though which could be problematic. There's nothing especially
+thrilling in that set of devices although I don't think that invalidates
+your point.
 
-Rajiv
+> Shouldn't the CONFIG_XEN_SAVE_RESTORE option select CONFIG_HIBERNATION?
+> In which case the #ifdef lines in pm_op() wouldn't need to be changed.
+
+I think selecting user-visible symbols is generally frowned upon.
+
+But apart from that I was concerned that tying the Xen functionality
+into the hibernation option was a bit odd/artificial. Perhaps it's the
+only solution though.
+
+Ian.
