@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/3] xen: Use PM/Hibernate events for
- save/restore/chkpt
-Date: Mon, 21 Feb 2011 11:40:17 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1102211135170.15325-100000__15183.933862909$1298306558$gmane$org@netrider.rowland.org>
-References: <1298282702.16356.7578.camel@zakaz.uk.xensource.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.37.1 s2disk regression (TPM)
+Date: Mon, 21 Feb 2011 08:57:53 -0800
+Message-ID: <AANLkTi=itY4+Q8mzn=8EPsT-GMaLPWeFkuzmGLLwO1Pj__12450.1925115057$1298317128$gmane$org@mail.gmail.com>
+References: <4D60E93D.1050205@gmail.com> <4D60F108.9000106@gmail.com>
+	<201102201151.11635.rjw@sisk.pl> <201102201248.10779.rjw@sisk.pl>
+	<4D628521.8000205@linux.vnet.ibm.com> <4D629427.8020500@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1298282702.16356.7578.camel@zakaz.uk.xensource.com>
+In-Reply-To: <4D629427.8020500@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +19,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ian Campbell <Ian.Campbell@eu.citrix.com>
-Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: stefanb@linux.vnet.ibm.com, Rajiv Andrade <srajiv@linux.vnet.ibm.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, debora@linux.vnet.ibm.com, preining@logic.at, linux-pm <linux-pm@lists.linux-foundation.org>, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 Feb 2011, Ian Campbell wrote:
+2011/2/21 Jiri Slaby <jirislaby@gmail.com>:
+> Linus, please stop garbling my name. I'm not Sladby (2nd time you
+> committed that) and not even Juri.
 
-> On Sun, 2011-02-20 at 07:49 +0000, Pavel Machek wrote:
-> > On Sat 2011-02-19 15:12:35, Shriram Rajagopalan wrote:
-> > > The current implementation of xen guest save/restore/checkpoint functionality
-> > > uses PM_SUSPEND and PM_RESUME events. This is not optimal when taking
-> > > checkpoints of a virtual machine (where the suspend hypercall returns
-> > > non-zero, requiring the devices and xenbus to just pickup from where they left
-> > > off instead of a complete teardown/reconnect to backend). 
-> > > 
-> > > The following set of patches modify this implementation to use Hibernate style
-> > > control flow (freeze/restore for save/restore and freeze/thaw for checkpoint,
-> > > which is merely a cancelled save akin to failed swsusp() ).
-> > > 
-> > > These patches are against Ian Campbell's PVHVM tree at
-> > > git://xenbits.xen.org/people/ianc/linux-2.6.git for-stefano/pvhvm
-> > > 
-> > > at commit 8a8d1bc753c4e2dda5f2890292d60c67d6ebb573
-> > > kernel version: 2.6.38-rc4
-> > 
-> > Series looks ok to me...
-> 
-> Thanks Pavel, may we take that as an Acked-by?
-> 
-> For my part the Xen side is:
-> Acked-by: Ian Campbell <ian.campbell@citrix.com>
+I think the Juri was just my fingers being off. The Sladby was real,
+though. I don't know why I think your name has a 'd' in it. Sorry.
 
-There's one part of this which could be troublesome.  The new code 
-generates FREEZE, THAW, and RESTORE events even in kernels where 
-CONFIG_HIBERNATION isn't set.  In such kernels, drivers are not 
-obliged to handle these events correctly.
+I tend to try to copy-paste complicated names to avoid typo's, but
+yours is short enough that I think I can write it. I obviously can't.
 
-Shouldn't the CONFIG_XEN_SAVE_RESTORE option select CONFIG_HIBERNATION?
-In which case the #ifdef lines in pm_op() wouldn't need to be changed.
-
-Alan Stern
+                    Linus
