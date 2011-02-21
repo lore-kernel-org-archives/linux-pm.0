@@ -1,17 +1,13 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [stable] [REVERT request stable-2.6.36/37] Re:
- 2.6.37.1 s2disk regression (TPM)
-Date: Sun, 20 Feb 2011 08:50:02 -0800
-Message-ID: <20110220165002.GA19771__25209.9598794759$1298220721$gmane$org@kroah.com>
-References: <4D60E93D.1050205@gmail.com> <201102201144.34043.rjw@sisk.pl>
-	<4D60F108.9000106@gmail.com> <201102201151.11635.rjw@sisk.pl>
-	<4D60F38C.5050704@gmail.com>
+From: Rabin Vincent <rabin.vincent@stericsson.com>
+Subject: [PATCHv2] amba: support pm ops
+Date: Mon, 21 Feb 2011 12:32:17 +0530
+Message-ID: <1298271737-1606-1-git-send-email-rabin.vincent__33370.544963009$1298271926$gmane$org@stericsson.com>
+References: <1297928986-31171-1-git-send-email-rabin.vincent@stericsson.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4D60F38C.5050704@gmail.com>
+In-Reply-To: <1297928986-31171-1-git-send-email-rabin.vincent@stericsson.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +17,403 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: stefanb@linux.vnet.ibm.com, srajiv@linux.vnet.ibm.com, Linux kernel mailing list <linux-kernel@vger.kernel.org>, debora@linux.vnet.ibm.com, tpmdd-devel@lists.sourceforge.net, linux-pm <linux-pm@lists.linux-foundation.org>, stable@kernel.org
+To: linux@arm.linux.org.uk
+Cc: linux-pm@lists.linux-foundation.org, Rabin Vincent <rabin.vincent@stericsson.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 20, 2011 at 11:57:16AM +0100, Jiri Slaby wrote:
-> On 02/20/2011 11:51 AM, Rafael J. Wysocki wrote:
-> > On Sunday, February 20, 2011, Jiri Slaby wrote:
-> >> On 02/20/2011 11:44 AM, Rafael J. Wysocki wrote:
-> >>> On Sunday, February 20, 2011, Jiri Slaby wrote:
-> >>>> Hi,
-> >>>>
-> >>>> I'm unable to hibernate 2.6.37.1 unless I rmmod tpm_tis:
-> >>>> [10974.074587] Suspending console(s) (use no_console_suspend to debug)
-> >>>> [10974.103073] tpm_tis 00:0c: Operation Timed out
-> >>>> [10974.103089] legacy_suspend(): pnp_bus_suspend+0x0/0xa0 returns -62
-> >>>> [10974.103095] PM: Device 00:0c failed to freeze: error -62
-> >>>>
-> >>>> 2.6.37 worked fine. Going to revert 9b29050f8f7 (tpm_tis: Use timeouts
-> >>>> returned from TPM) for testing.
-> >>>
-> >>> Yes, this has been confirmed to cause suspend regressions to happen
-> >>
-> >> OK, the revert works for me too... Are there any fixes?
-> > 
-> > No, and the author and maintainer have not been responding.  If that contiunes,
-> > I'll simply ask Linus to revert it.
-> 
-> Ok then, stable team, please revert that from 2.6.37 stable.
+Support pm_ops in the AMBA bus, required to allow drivers to use runtime pm.
+The implementation of AMBA bus pm ops is based on the platform bus
+implementation.
 
-Ok, I'll do that for the next .37-stable release.
+Signed-off-by: Rabin Vincent <rabin.vincent@stericsson.com>
+---
+v2: Base the implementation on the platform bus instead of the generic ops,
+    implementation all the functions platform does and with the same behaviour.
+    Also continue to support the legacy operations so that this patch doesn't
+    need to modify all the drivers and thus becomes easier to merge.
 
-> I guess the same problem is in 2.6.36, so reverting it in 2.6.36 should
-> be done too...
+ drivers/amba/bus.c       |  329 ++++++++++++++++++++++++++++++++++++++++++----
+ include/linux/amba/bus.h |    2 +
+ 2 files changed, 308 insertions(+), 23 deletions(-)
 
-.36-stable is now end-of-life :(
-
-thanks,
-
-greg k-h
+diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+index ca96b0a..7bc7762 100644
+--- a/drivers/amba/bus.c
++++ b/drivers/amba/bus.c
+@@ -13,12 +13,12 @@
+ #include <linux/string.h>
+ #include <linux/slab.h>
+ #include <linux/io.h>
++#include <linux/pm.h>
+ #include <linux/amba/bus.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/sizes.h>
+ 
+-#define to_amba_device(d)	container_of(d, struct amba_device, dev)
+ #define to_amba_driver(d)	container_of(d, struct amba_driver, drv)
+ 
+ static struct amba_id *
+@@ -57,26 +57,6 @@ static int amba_uevent(struct device *dev, struct kobj_uevent_env *env)
+ #define amba_uevent NULL
+ #endif
+ 
+-static int amba_suspend(struct device *dev, pm_message_t state)
+-{
+-	struct amba_driver *drv = to_amba_driver(dev->driver);
+-	int ret = 0;
+-
+-	if (dev->driver && drv->suspend)
+-		ret = drv->suspend(to_amba_device(dev), state);
+-	return ret;
+-}
+-
+-static int amba_resume(struct device *dev)
+-{
+-	struct amba_driver *drv = to_amba_driver(dev->driver);
+-	int ret = 0;
+-
+-	if (dev->driver && drv->resume)
+-		ret = drv->resume(to_amba_device(dev));
+-	return ret;
+-}
+-
+ #define amba_attr_func(name,fmt,arg...)					\
+ static ssize_t name##_show(struct device *_dev,				\
+ 			   struct device_attribute *attr, char *buf)	\
+@@ -102,6 +82,310 @@ static struct device_attribute amba_dev_attrs[] = {
+ 	__ATTR_NULL,
+ };
+ 
++#ifdef CONFIG_PM_SLEEP
++
++static int amba_legacy_suspend(struct device *dev, pm_message_t mesg)
++{
++	struct amba_driver *adrv = to_amba_driver(dev->driver);
++	struct amba_device *adev = to_amba_device(dev);
++	int ret = 0;
++
++	if (dev->driver && adrv->suspend)
++		ret = adrv->suspend(adev, mesg);
++
++	return ret;
++}
++
++static int amba_legacy_resume(struct device *dev)
++{
++	struct amba_driver *adrv = to_amba_driver(dev->driver);
++	struct amba_device *adev = to_amba_device(dev);
++	int ret = 0;
++
++	if (dev->driver && adrv->resume)
++		ret = adrv->resume(adev);
++
++	return ret;
++}
++
++static int amba_pm_prepare(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm && drv->pm->prepare)
++		ret = drv->pm->prepare(dev);
++
++	return ret;
++}
++
++static void amba_pm_complete(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++
++	if (drv && drv->pm && drv->pm->complete)
++		drv->pm->complete(dev);
++}
++
++#else /* !CONFIG_PM_SLEEP */
++
++#define amba_pm_prepare		NULL
++#define amba_pm_complete		NULL
++
++#endif /* !CONFIG_PM_SLEEP */
++
++#ifdef CONFIG_SUSPEND
++
++static int amba_pm_suspend(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->suspend)
++			ret = drv->pm->suspend(dev);
++	} else {
++		ret = amba_legacy_suspend(dev, PMSG_SUSPEND);
++	}
++
++	return ret;
++}
++
++static int amba_pm_suspend_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->suspend_noirq)
++			ret = drv->pm->suspend_noirq(dev);
++	}
++
++	return ret;
++}
++
++static int amba_pm_resume(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->resume)
++			ret = drv->pm->resume(dev);
++	} else {
++		ret = amba_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int amba_pm_resume_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->resume_noirq)
++			ret = drv->pm->resume_noirq(dev);
++	}
++
++	return ret;
++}
++
++#else /* !CONFIG_SUSPEND */
++
++#define amba_pm_suspend		NULL
++#define amba_pm_resume		NULL
++#define amba_pm_suspend_noirq	NULL
++#define amba_pm_resume_noirq	NULL
++
++#endif /* !CONFIG_SUSPEND */
++
++#ifdef CONFIG_HIBERNATION
++
++static int amba_pm_freeze(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->freeze)
++			ret = drv->pm->freeze(dev);
++	} else {
++		ret = amba_legacy_suspend(dev, PMSG_FREEZE);
++	}
++
++	return ret;
++}
++
++static int amba_pm_freeze_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->freeze_noirq)
++			ret = drv->pm->freeze_noirq(dev);
++	}
++
++	return ret;
++}
++
++static int amba_pm_thaw(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->thaw)
++			ret = drv->pm->thaw(dev);
++	} else {
++		ret = amba_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int amba_pm_thaw_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->thaw_noirq)
++			ret = drv->pm->thaw_noirq(dev);
++	}
++
++	return ret;
++}
++
++static int amba_pm_poweroff(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->poweroff)
++			ret = drv->pm->poweroff(dev);
++	} else {
++		ret = amba_legacy_suspend(dev, PMSG_HIBERNATE);
++	}
++
++	return ret;
++}
++
++static int amba_pm_poweroff_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->poweroff_noirq)
++			ret = drv->pm->poweroff_noirq(dev);
++	}
++
++	return ret;
++}
++
++static int amba_pm_restore(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->restore)
++			ret = drv->pm->restore(dev);
++	} else {
++		ret = amba_legacy_resume(dev);
++	}
++
++	return ret;
++}
++
++static int amba_pm_restore_noirq(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (!drv)
++		return 0;
++
++	if (drv->pm) {
++		if (drv->pm->restore_noirq)
++			ret = drv->pm->restore_noirq(dev);
++	}
++
++	return ret;
++}
++
++#else /* !CONFIG_HIBERNATION */
++
++#define amba_pm_freeze		NULL
++#define amba_pm_thaw		NULL
++#define amba_pm_poweroff		NULL
++#define amba_pm_restore		NULL
++#define amba_pm_freeze_noirq	NULL
++#define amba_pm_thaw_noirq		NULL
++#define amba_pm_poweroff_noirq	NULL
++#define amba_pm_restore_noirq	NULL
++
++#endif /* !CONFIG_HIBERNATION */
++
++static const struct dev_pm_ops amba_pm = {
++	.prepare	= amba_pm_prepare,
++	.complete	= amba_pm_complete,
++	.suspend	= amba_pm_suspend,
++	.resume		= amba_pm_resume,
++	.freeze		= amba_pm_freeze,
++	.thaw		= amba_pm_thaw,
++	.poweroff	= amba_pm_poweroff,
++	.restore	= amba_pm_restore,
++	.suspend_noirq	= amba_pm_suspend_noirq,
++	.resume_noirq	= amba_pm_resume_noirq,
++	.freeze_noirq	= amba_pm_freeze_noirq,
++	.thaw_noirq	= amba_pm_thaw_noirq,
++	.poweroff_noirq	= amba_pm_poweroff_noirq,
++	.restore_noirq	= amba_pm_restore_noirq,
++	SET_RUNTIME_PM_OPS(
++		pm_generic_runtime_suspend,
++		pm_generic_runtime_resume,
++		pm_generic_runtime_idle
++	)
++};
++
+ /*
+  * Primecells are part of the Advanced Microcontroller Bus Architecture,
+  * so we call the bus "amba".
+@@ -111,8 +395,7 @@ struct bus_type amba_bustype = {
+ 	.dev_attrs	= amba_dev_attrs,
+ 	.match		= amba_match,
+ 	.uevent		= amba_uevent,
+-	.suspend	= amba_suspend,
+-	.resume		= amba_resume,
++	.pm		= &amba_pm,
+ };
+ 
+ static int __init amba_init(void)
+diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+index a0ccf28..1849975 100644
+--- a/include/linux/amba/bus.h
++++ b/include/linux/amba/bus.h
+@@ -58,6 +58,8 @@ enum amba_vendor {
+ 
+ extern struct bus_type amba_bustype;
+ 
++#define to_amba_device(d)	container_of(d, struct amba_device, dev)
++
+ #define amba_get_drvdata(d)	dev_get_drvdata(&d->dev)
+ #define amba_set_drvdata(d,p)	dev_set_drvdata(&d->dev, p)
+ 
+-- 
+1.7.2.dirty
