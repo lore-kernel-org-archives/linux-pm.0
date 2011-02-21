@@ -1,14 +1,17 @@
-From: Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: [PATCH 0/3] xen: Use PM/Hibernate events for
- save/restore/chkpt
-Date: Mon, 21 Feb 2011 17:17:30 +0000
-Message-ID: <1298308650.16356.8102.camel__4804.84890654242$1298317603$gmane$org@zakaz.uk.xensource.com>
-References: <Pine.LNX.4.44L0.1102211135170.15325-100000@netrider.rowland.org>
+From: Chris Ball <cjb@laptop.org>
+Subject: Re: [PATCH v2 2/3] sdhci-pci : Enable runtime PM support
+Date: Mon, 21 Feb 2011 20:45:23 +0000
+Message-ID: <20110221204523.GA28419__14011.9471973323$1298321255$gmane$org@void.printf.net>
+References: <cover.1297014479.git.pierre.tardy@intel.com>
+	<6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
+	<20110210043718.GA7585@void.printf.net>
+	<AANLkTi=iZ3dzAoRuRdpvQ=uBp4u8O8LtMuu2XdSWeZwr@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1102211135170.15325-100000@netrider.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <AANLkTi=iZ3dzAoRuRdpvQ=uBp4u8O8LtMuu2XdSWeZwr@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +21,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>
+To: Pierre Tardy <tardyp@gmail.com>
+Cc: linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Pierre Tardy <pierre.tardy@intel.com>, Yunpeng Gao <yunpeng.gao@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2011-02-21 at 16:40 +0000, Alan Stern wrote:
-> On Mon, 21 Feb 2011, Ian Campbell wrote:
-> 
-> > On Sun, 2011-02-20 at 07:49 +0000, Pavel Machek wrote:
-> > > On Sat 2011-02-19 15:12:35, Shriram Rajagopalan wrote:
-> > > > The current implementation of xen guest save/restore/checkpoint functionality
-> > > > uses PM_SUSPEND and PM_RESUME events. This is not optimal when taking
-> > > > checkpoints of a virtual machine (where the suspend hypercall returns
-> > > > non-zero, requiring the devices and xenbus to just pickup from where they left
-> > > > off instead of a complete teardown/reconnect to backend). 
-> > > > 
-> > > > The following set of patches modify this implementation to use Hibernate style
-> > > > control flow (freeze/restore for save/restore and freeze/thaw for checkpoint,
-> > > > which is merely a cancelled save akin to failed swsusp() ).
-> > > > 
-> > > > These patches are against Ian Campbell's PVHVM tree at
-> > > > git://xenbits.xen.org/people/ianc/linux-2.6.git for-stefano/pvhvm
-> > > > 
-> > > > at commit 8a8d1bc753c4e2dda5f2890292d60c67d6ebb573
-> > > > kernel version: 2.6.38-rc4
-> > > 
-> > > Series looks ok to me...
-> > 
-> > Thanks Pavel, may we take that as an Acked-by?
-> > 
-> > For my part the Xen side is:
-> > Acked-by: Ian Campbell <ian.campbell@citrix.com>
-> 
-> There's one part of this which could be troublesome.  The new code 
-> generates FREEZE, THAW, and RESTORE events even in kernels where 
-> CONFIG_HIBERNATION isn't set.  In such kernels, drivers are not 
-> obliged to handle these events correctly.
+Hi Pierre,
 
-The dependencies on CONFIG_HIBERNATION which I can see appear to be more
-often at the bus level (e.g. in drivers/acpi drivers/pci/pci-driver.c
-etc) is that right?
+On Sun, Feb 13, 2011 at 11:42:01AM +0100, Pierre Tardy wrote:
+> > [ =A0 10.892280] sdhci-pci 0000:17:00.0: Unbalanced pm_runtime_enable!
+> =
 
-For a PV guest only the Xen PV drivers really matter.
+> I never have seen this before. I'm not testing those patches on
+> mmc-next, as our platform is not totally upstream yet, and do not boot
+> on 2.6.37+ based kernel.
+> However, we backported the pm_runtime patches from 2.6.37. Is there
+> some differences in very latest patches on default enablement of
+> runtime_pm?
 
-But for a PVHVM guest you are right since there are the emulated "PC"
-devices though which could be problematic. There's nothing especially
-thrilling in that set of devices although I don't think that invalidates
-your point.
+It's getting enabled by drivers/pci/pci-driver.c:local_pci_probe(),
+before the sdhci-pci probe function runs.  local_pci_probe() does:
 
-> Shouldn't the CONFIG_XEN_SAVE_RESTORE option select CONFIG_HIBERNATION?
-> In which case the #ifdef lines in pm_op() wouldn't need to be changed.
+        /* Unbound PCI devices are always set to disabled and suspended.
+         * During probe, the device is set to enabled and active and the
+         * usage count is incremented.  If the driver supports runtime PM,
+         * it should call pm_runtime_put_noidle() in its probe routine and
+         * pm_runtime_get_noresume() in its remove routine.
+         */
+        pm_runtime_get_noresume(dev);
+        pm_runtime_set_active(dev);
+        pm_runtime_enable(dev);
 
-I think selecting user-visible symbols is generally frowned upon.
+and then the "Unbalanced pm_runtime_enable!" message appears when
+sdhci_pci_probe() calls pm_runtime_enable() for the second time. =
 
-But apart from that I was concerned that tying the Xen functionality
-into the hibernation option was a bit odd/artificial. Perhaps it's the
-only solution though.
 
-Ian.
+> > I then removed the card and reinserted it, but there's no dmesg output
+> > related to the reinsert, only to the card removal:
+> >
+> > [ =A0 65.381047] mmc0: card d555 removed
+> >
+> > So, card insertion is broken. =A0I then did rmmod sdhci-pci && modprobe
+> > sdhci-pci, and it picked up the card again.
+> =
+
+> So what you have here is non working card-detection when device is in PCI=
+_D3.
+> This sounds like a HW limitation in you platform.
+> =
+
+> D3 is originally meant for suspend to ram, so it sounds logic that
+> some HW wont support wake on card detect.
+> it sounds like we need a SDHCI_RUNTIME_PM_CAP, so that we can properly
+> describe which HW can be safely put D3 at runtime.
+> Also, maybe on some HW, D1 will support wake on card detect. I dont
+> know how can the driver hint pci subsystem that it should go D1 rather
+> than D3 in the runtime_pm flow.
+> Maybe Rafael can advice on this.
+
+The controller advertises the ability to generate PME wakeups from D3
+in its PCI capabilities; perhaps we just aren't programming it properly.
+I don't see anything in your patch that would set SDHCI wakeup bits or
+unmask card insertion/removal IRQs -- maybe that could be it?
+
+Thanks,
+
+-- =
+
+Chris Ball   <cjb@laptop.org>   <http://printf.net/>
+One Laptop Per Child
