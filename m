@@ -1,15 +1,16 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [stable] 2.6.38-rc5-git6: Reported regressions
-	2.6.36 -> 2.6.37
-Date: Tue, 22 Feb 2011 12:07:24 -0800
-Message-ID: <20110222200724.GB11679__25246.436140924$1298408046$gmane$org@kroah.com>
-References: <JwKd6rET8XO.A._ZC.gbuYNB@chimera>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCHv3] amba: support pm ops
+Date: Tue, 22 Feb 2011 20:15:29 +0000
+Message-ID: <20110222201529.GB29559__2172.09175830266$1298408558$gmane$org@n2100.arm.linux.org.uk>
+References: <201102212126.10742.rjw@sisk.pl>
+	<1298353261-22193-1-git-send-email-rabin.vincent@stericsson.com>
+	<201102222102.15089.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <JwKd6rET8XO.A._ZC.gbuYNB@chimera>
+In-Reply-To: <201102222102.15089.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,21 +21,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Rabin Vincent <rabin.vincent@stericsson.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 21, 2011 at 11:29:26PM +0100, Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=24582
-> Subject		: Kernel Oops at tty_buffer_request_room when using pppd program (2.6.37-rc4)
-> Submitter	: baoyb <baoyb@avit.org.cn>
-> Date		: 2010-12-08 13:55 (76 days old)
-> Message-ID	: <EF6DDE218DB34702B1FA84D6CD7EA771@baoyb>
-> References	: http://marc.info/?l=linux-kernel&m=129181763525738&w=2
-> Handled-By	: Jiri Slaby <jslaby@suse.cz>
-> Patch		: https://bugzilla.kernel.org/attachment.cgi?id=47872
+On Tue, Feb 22, 2011 at 09:02:14PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday, February 22, 2011, Rabin Vincent wrote:
+> > Support pm_ops in the AMBA bus, required to allow drivers to use runtime pm.
+> > The implementation of AMBA bus pm ops is based on the platform bus
+> > implementation.
+> > 
+> > Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > Signed-off-by: Rabin Vincent <rabin.vincent@stericsson.com>
+> 
+> Looks good.
+> 
+> Who's supposed to take it?
 
-This is queued up already for sending to Linus soon.
+Does this help?
 
-thanks,
-
-greg k-h
+ARM PRIMECELL BUS SUPPORT
+M:      Russell King <linux@arm.linux.org.uk>
+S:      Maintained
+F:      drivers/amba/
+F:      include/linux/amba/bus.h
