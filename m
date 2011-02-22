@@ -1,20 +1,11 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: 2.6.37.1 s2disk regression (TPM)
-Date: Tue, 22 Feb 2011 18:39:37 +0100
-Message-ID: <4D63F4D9.6030505__49405.6892850951$1298396728$gmane$org@gmail.com>
-References: <4D60E93D.1050205@gmail.com> <4D60F108.9000106@gmail.com>
-	<201102201151.11635.rjw@sisk.pl> <201102201248.10779.rjw@sisk.pl>
-	<4D628521.8000205@linux.vnet.ibm.com> <4D629427.8020500@gmail.com>
-	<4D629D03.90801@linux.vnet.ibm.com> <4D62CD93.3040206@gmail.com>
-	<4D62D930.8060304@linux.vnet.ibm.com> <4D62DCBA.9050609@gmail.com>
-	<4D62E221.7010104@linux.vnet.ibm.com> <4D62E2F2.4060406@gmail.com>
-	<4D63066D.3080701@linux.vnet.ibm.com> <4D6376A9.5060704@gmail.com>
-	<4D63A4B8.8040106@linux.vnet.ibm.com>
+From: Martin Steigerwald <Martin@lichtvoll.de>
+Subject: extremely slow resume with 2.6.37
+Date: Tue, 22 Feb 2011 21:39:11 +0100
+Message-ID: <201102222139.12599.Martin__3701.43161057985$1298407314$gmane$org@lichtvoll.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D63A4B8.8040106@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,29 +15,105 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefan Berger <stefanb@linux.vnet.ibm.com>
-Cc: Rajiv Andrade <srajiv@linux.vnet.ibm.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, debora@linux.vnet.ibm.com, preining@logic.at, linux-pm <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/22/2011 12:57 PM, Stefan Berger wrote:
-> The forthcoming patch will simply also adapt the other 2 values and
-> multiply them by 1000. The reason for the suspend failure is the 2nd
-> timeout with TPM_SaveState command being of medium duration.
-> 
-> There will be a 2nd patch for re-enabling the TPM's interrupts that the
-> BIOS may (this may be BIOS-dependent) have disabled while sending a
-> command (TPM_Startup) to the TPM upon resume and having used polling
-> mode and leaving it with the interrupts disabled.
-> 
-> I'd appreciate it if you tested both of them.
+Hi!
 
-I didn't get any. Could you add a pointer to them?
+A moment ago I had an extremely slow resume with 2.6.37. So slow that I =
 
-BTW. there is another guy who hit this. He has:
-/sys/devices/pnp0/00:02/timeouts:1000000 2000 150000
+aborted it.
 
-like I do.
+It was at 37% as I looked and then took a minute or more for each percent. =
 
-regards,
--- 
-js
+I am using in kernel suspend to disk via hibernate 1.99 which uses sysfs =
+
+power state disk.
+
+Anyone have seen something like this? This was the first occurence, and I =
+
+am using 2.6.37 for quite a while.
+
+I am calling hibernate-disk from this script:
+
+shambhala:~> cat /etc/acpi/hibernate-extra.sh =
+
+#!/bin/sh
+
+# Zur Sicherheit gleich am Anfang alle ausstehenden =C4nderungen schreiben
+sync
+
+# Versuchen, m=F6glichst viele LowMem Pages freizubekommen
+# Dir Entries legt Ext4 offenbar auch ins LowMem
+# Und mit zu wenig LowMem Pages klappt der Tiefschlaf mit
+# Radeon DRM KMS nicht.
+echo 3 > /proc/sys/vm/drop_caches
+
+# Network Manager schlafen legen
+# siehe /usr/lib/pm-utils/sleep.d/55NetworkManager
+dbus-send --print-reply --system                        \
+        --dest=3Dorg.freedesktop.NetworkManager \
+        /org/freedesktop/NetworkManager       \
+        org.freedesktop.NetworkManager.sleep
+
+# Systemzeit in Hardware-Uhr speichern
+/etc/init.d/hwclock.sh stop
+
+# Uptimed stoppen, damit er die Rekorde schreibt
+/etc/init.d/uptimed stop
+
+# Zur Sicherheit hier nochmal alle ausstehenden =C4nderungen schreiben
+sync
+
+# Gutnacht
+# /etc/acpi/hibernate.sh
+#echo 1 > /sys/power/tuxonice/do_hibernate
+#pm-suspend-hybrid
+#pm-hibernate
+hibernate-disk
+
+# Uptimed wieder starten. Dabei schreibt er erneut die Rekorde
+/etc/init.d/uptimed start
+
+# Rekorde gleich schreiben
+sync
+
+# Festplatten-Parameter wieder setzen
+/etc/init.d/hdparm start
+
+# Systemzeit anhand Hardware-Uhr wieder setzen
+/etc/init.d/hwclock.sh start
+
+# Network Manager aufwecken
+dbus-send --print-reply --system                        \
+        --dest=3Dorg.freedesktop.NetworkManager \
+        /org/freedesktop/NetworkManager       \
+        org.freedesktop.NetworkManager.wake
+
+
+I am echoing 3 onto drop_caches cause often in kernel suspend - as well as =
+
+TuxOnIce as I used it back then - was not able to free lowmem pages in =
+
+order for the image to be allocated after I switched to radeon kms which =
+
+seems to require quite some lowmem pages of its own, but I will post a =
+
+different mail about this one.
+
+I am using
+
+shambhala:~> cat /proc/version
+Linux version 2.6.37-tp42-rtime-00004-g9eb63ce (martin@shambhala) (gcc =
+
+version 4.4.5 (Debian 4.4.5-8) ) #1 PREEMPT Thu Jan 13 10:59:19 CET 2011
+
+which is 2.6.37 + some recursive mtime changes from Jan Kara, which should =
+
+only affect Ext3 and Ext4.
+
+Ciao,
+-- =
+
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
