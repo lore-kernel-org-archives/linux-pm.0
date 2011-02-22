@@ -1,13 +1,18 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
-Date: Tue, 22 Feb 2011 09:45:44 +0100
-Message-ID: <4D6377B8.7080805__29928.6717003726$1298364491$gmane$org@gmail.com>
-References: <Pine.LNX.4.44L0.1102041426380.1877-100000@iolanthe.rowland.org>
+From: Norbert Preining <preining@logic.at>
+Subject: Re: 2.6.37.1 s2disk regression (TPM)
+Date: Tue, 22 Feb 2011 18:13:43 +0900
+Message-ID: <20110222091342.GA2212__41875.9041269825$1298366081$gmane$org@gamma.logic.tuwien.ac.at>
+References: <4D60E93D.1050205@gmail.com> <4D60F108.9000106@gmail.com>
+	<201102201151.11635.rjw@sisk.pl> <201102201248.10779.rjw@sisk.pl>
+	<4D628521.8000205@linux.vnet.ibm.com>
+	<20110222053932.GB21903@gamma.logic.tuwien.ac.at>
+	<4D6376F0.4020200@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1102041426380.1877-100000@iolanthe.rowland.org>
+Content-Disposition: inline
+In-Reply-To: <4D6376F0.4020200@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,57 +22,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@suse.com>, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: stefanb@linux.vnet.ibm.com, Rajiv Andrade <srajiv@linux.vnet.ibm.com>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, debora@linux.vnet.ibm.com, linux-pm <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/04/2011 08:33 PM, Alan Stern wrote:
-> On Fri, 4 Feb 2011, Jiri Slaby wrote:
-> 
->>>> It seems to suffice... No hangs still. Should I enable pm_async back
->>>> again to confirm the issue is still present?
->>>
->>> Yes, please, it would be good to know for sure.
->>
->> Ok, confirmed right now :).
->>
->> I disabled pm_async for USB again. What do you suggest next?
-> 
-> What happens if you leave pm_async enabled but unplug all the USB 
-> devices before suspending?  If there are any USB devices you can't 
-> unplug, you can get an equivalent result by unconfiguring the root 
-> hubs:
-> 
-> 	for a in /sys/bus/usb/devices/usb* ; do
-> 		echo 0 >$a/bConfigurationValue
-> 	done
+On Di, 22 Feb 2011, Jiri Slaby wrote:
+> Ok, run some older kernel where this is not reverted (.38-rc5, 2.6.37.1)
+> or revert the revert :).
 
-This doesn't seem to help. The hang happened 3 times during the 2 weeks.
+1000000 4000 152000
 
-I have /etc/pm/sleep.d/99usb-debug with:
-#!/bin/bash
+Best wishes
 
-send() {
-        for a in /sys/bus/usb/devices/usb* ; do
-                echo $1 >$a/bConfigurationValue
-        done
-}
-
-case "$1" in
-        hibernate|suspend)
-                        send 0
-                ;;
-        thaw|resume)
-                        send 1
-                ;;
-        *)
-                ;;
-esac
-
-exit 0
-
-And it indeed properly enable/disable usb before/after suspend.
-
-regards,
--- 
-js
+Norbert
+------------------------------------------------------------------------
+Norbert Preining            preining@{jaist.ac.jp, logic.at, debian.org}
+JAIST, Japan                                 TeX Live & Debian Developer
+DSA: 0x09C5B094   fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+------------------------------------------------------------------------
+HARBLEDOWN (vb.)
+To manoeuvre a double mattress down a winding staircase.
+			--- Douglas Adams, The Meaning of Liff
