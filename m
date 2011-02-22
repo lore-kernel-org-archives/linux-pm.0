@@ -1,11 +1,14 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: extremely slow resume with 2.6.37
-Date: Tue, 22 Feb 2011 21:39:11 +0100
-Message-ID: <201102222139.12599.Martin__3701.43161057985$1298407314$gmane$org@lichtvoll.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCHv3] amba: support pm ops
+Date: Tue, 22 Feb 2011 21:02:14 +0100
+Message-ID: <201102222102.15089.rjw__7153.36243524707$1298407827$gmane$org@sisk.pl>
+References: <201102212126.10742.rjw@sisk.pl>
+	<1298353261-22193-1-git-send-email-rabin.vincent@stericsson.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1298353261-22193-1-git-send-email-rabin.vincent@stericsson.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,105 +18,421 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Rabin Vincent <rabin.vincent@stericsson.com>
+Cc: linux-pm@lists.linux-foundation.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Tuesday, February 22, 2011, Rabin Vincent wrote:
+> Support pm_ops in the AMBA bus, required to allow drivers to use runtime pm.
+> The implementation of AMBA bus pm ops is based on the platform bus
+> implementation.
+> 
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Rabin Vincent <rabin.vincent@stericsson.com>
 
-A moment ago I had an extremely slow resume with 2.6.37. So slow that I =
+Looks good.
 
-aborted it.
+Who's supposed to take it?
 
-It was at 37% as I looked and then took a minute or more for each percent. =
-
-I am using in kernel suspend to disk via hibernate 1.99 which uses sysfs =
-
-power state disk.
-
-Anyone have seen something like this? This was the first occurence, and I =
-
-am using 2.6.37 for quite a while.
-
-I am calling hibernate-disk from this script:
-
-shambhala:~> cat /etc/acpi/hibernate-extra.sh =
-
-#!/bin/sh
-
-# Zur Sicherheit gleich am Anfang alle ausstehenden =C4nderungen schreiben
-sync
-
-# Versuchen, m=F6glichst viele LowMem Pages freizubekommen
-# Dir Entries legt Ext4 offenbar auch ins LowMem
-# Und mit zu wenig LowMem Pages klappt der Tiefschlaf mit
-# Radeon DRM KMS nicht.
-echo 3 > /proc/sys/vm/drop_caches
-
-# Network Manager schlafen legen
-# siehe /usr/lib/pm-utils/sleep.d/55NetworkManager
-dbus-send --print-reply --system                        \
-        --dest=3Dorg.freedesktop.NetworkManager \
-        /org/freedesktop/NetworkManager       \
-        org.freedesktop.NetworkManager.sleep
-
-# Systemzeit in Hardware-Uhr speichern
-/etc/init.d/hwclock.sh stop
-
-# Uptimed stoppen, damit er die Rekorde schreibt
-/etc/init.d/uptimed stop
-
-# Zur Sicherheit hier nochmal alle ausstehenden =C4nderungen schreiben
-sync
-
-# Gutnacht
-# /etc/acpi/hibernate.sh
-#echo 1 > /sys/power/tuxonice/do_hibernate
-#pm-suspend-hybrid
-#pm-hibernate
-hibernate-disk
-
-# Uptimed wieder starten. Dabei schreibt er erneut die Rekorde
-/etc/init.d/uptimed start
-
-# Rekorde gleich schreiben
-sync
-
-# Festplatten-Parameter wieder setzen
-/etc/init.d/hdparm start
-
-# Systemzeit anhand Hardware-Uhr wieder setzen
-/etc/init.d/hwclock.sh start
-
-# Network Manager aufwecken
-dbus-send --print-reply --system                        \
-        --dest=3Dorg.freedesktop.NetworkManager \
-        /org/freedesktop/NetworkManager       \
-        org.freedesktop.NetworkManager.wake
+Rafael
 
 
-I am echoing 3 onto drop_caches cause often in kernel suspend - as well as =
-
-TuxOnIce as I used it back then - was not able to free lowmem pages in =
-
-order for the image to be allocated after I switched to radeon kms which =
-
-seems to require quite some lowmem pages of its own, but I will post a =
-
-different mail about this one.
-
-I am using
-
-shambhala:~> cat /proc/version
-Linux version 2.6.37-tp42-rtime-00004-g9eb63ce (martin@shambhala) (gcc =
-
-version 4.4.5 (Debian 4.4.5-8) ) #1 PREEMPT Thu Jan 13 10:59:19 CET 2011
-
-which is 2.6.37 + some recursive mtime changes from Jan Kara, which should =
-
-only affect Ext3 and Ext4.
-
-Ciao,
--- =
-
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+> ---
+> v3: add a missing header. don't keep an empty dev_pm_ops struct when it's
+>     not used.
+> 
+>  drivers/amba/bus.c       |  340 ++++++++++++++++++++++++++++++++++++++++++---
+>  include/linux/amba/bus.h |    2 +
+>  2 files changed, 319 insertions(+), 23 deletions(-)
+> 
+> diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+> index ca96b0a..7d38981 100644
+> --- a/drivers/amba/bus.c
+> +++ b/drivers/amba/bus.c
+> @@ -13,12 +13,13 @@
+>  #include <linux/string.h>
+>  #include <linux/slab.h>
+>  #include <linux/io.h>
+> +#include <linux/pm.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/amba/bus.h>
+>  
+>  #include <asm/irq.h>
+>  #include <asm/sizes.h>
+>  
+> -#define to_amba_device(d)	container_of(d, struct amba_device, dev)
+>  #define to_amba_driver(d)	container_of(d, struct amba_driver, drv)
+>  
+>  static struct amba_id *
+> @@ -57,26 +58,6 @@ static int amba_uevent(struct device *dev, struct kobj_uevent_env *env)
+>  #define amba_uevent NULL
+>  #endif
+>  
+> -static int amba_suspend(struct device *dev, pm_message_t state)
+> -{
+> -	struct amba_driver *drv = to_amba_driver(dev->driver);
+> -	int ret = 0;
+> -
+> -	if (dev->driver && drv->suspend)
+> -		ret = drv->suspend(to_amba_device(dev), state);
+> -	return ret;
+> -}
+> -
+> -static int amba_resume(struct device *dev)
+> -{
+> -	struct amba_driver *drv = to_amba_driver(dev->driver);
+> -	int ret = 0;
+> -
+> -	if (dev->driver && drv->resume)
+> -		ret = drv->resume(to_amba_device(dev));
+> -	return ret;
+> -}
+> -
+>  #define amba_attr_func(name,fmt,arg...)					\
+>  static ssize_t name##_show(struct device *_dev,				\
+>  			   struct device_attribute *attr, char *buf)	\
+> @@ -102,6 +83,320 @@ static struct device_attribute amba_dev_attrs[] = {
+>  	__ATTR_NULL,
+>  };
+>  
+> +#ifdef CONFIG_PM_SLEEP
+> +
+> +static int amba_legacy_suspend(struct device *dev, pm_message_t mesg)
+> +{
+> +	struct amba_driver *adrv = to_amba_driver(dev->driver);
+> +	struct amba_device *adev = to_amba_device(dev);
+> +	int ret = 0;
+> +
+> +	if (dev->driver && adrv->suspend)
+> +		ret = adrv->suspend(adev, mesg);
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_legacy_resume(struct device *dev)
+> +{
+> +	struct amba_driver *adrv = to_amba_driver(dev->driver);
+> +	struct amba_device *adev = to_amba_device(dev);
+> +	int ret = 0;
+> +
+> +	if (dev->driver && adrv->resume)
+> +		ret = adrv->resume(adev);
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_prepare(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (drv && drv->pm && drv->pm->prepare)
+> +		ret = drv->pm->prepare(dev);
+> +
+> +	return ret;
+> +}
+> +
+> +static void amba_pm_complete(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +
+> +	if (drv && drv->pm && drv->pm->complete)
+> +		drv->pm->complete(dev);
+> +}
+> +
+> +#else /* !CONFIG_PM_SLEEP */
+> +
+> +#define amba_pm_prepare		NULL
+> +#define amba_pm_complete		NULL
+> +
+> +#endif /* !CONFIG_PM_SLEEP */
+> +
+> +#ifdef CONFIG_SUSPEND
+> +
+> +static int amba_pm_suspend(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->suspend)
+> +			ret = drv->pm->suspend(dev);
+> +	} else {
+> +		ret = amba_legacy_suspend(dev, PMSG_SUSPEND);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_suspend_noirq(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->suspend_noirq)
+> +			ret = drv->pm->suspend_noirq(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_resume(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->resume)
+> +			ret = drv->pm->resume(dev);
+> +	} else {
+> +		ret = amba_legacy_resume(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_resume_noirq(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->resume_noirq)
+> +			ret = drv->pm->resume_noirq(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +#else /* !CONFIG_SUSPEND */
+> +
+> +#define amba_pm_suspend		NULL
+> +#define amba_pm_resume		NULL
+> +#define amba_pm_suspend_noirq	NULL
+> +#define amba_pm_resume_noirq	NULL
+> +
+> +#endif /* !CONFIG_SUSPEND */
+> +
+> +#ifdef CONFIG_HIBERNATION
+> +
+> +static int amba_pm_freeze(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->freeze)
+> +			ret = drv->pm->freeze(dev);
+> +	} else {
+> +		ret = amba_legacy_suspend(dev, PMSG_FREEZE);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_freeze_noirq(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->freeze_noirq)
+> +			ret = drv->pm->freeze_noirq(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_thaw(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->thaw)
+> +			ret = drv->pm->thaw(dev);
+> +	} else {
+> +		ret = amba_legacy_resume(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_thaw_noirq(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->thaw_noirq)
+> +			ret = drv->pm->thaw_noirq(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_poweroff(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->poweroff)
+> +			ret = drv->pm->poweroff(dev);
+> +	} else {
+> +		ret = amba_legacy_suspend(dev, PMSG_HIBERNATE);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_poweroff_noirq(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->poweroff_noirq)
+> +			ret = drv->pm->poweroff_noirq(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_restore(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->restore)
+> +			ret = drv->pm->restore(dev);
+> +	} else {
+> +		ret = amba_legacy_resume(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int amba_pm_restore_noirq(struct device *dev)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (!drv)
+> +		return 0;
+> +
+> +	if (drv->pm) {
+> +		if (drv->pm->restore_noirq)
+> +			ret = drv->pm->restore_noirq(dev);
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +#else /* !CONFIG_HIBERNATION */
+> +
+> +#define amba_pm_freeze		NULL
+> +#define amba_pm_thaw		NULL
+> +#define amba_pm_poweroff		NULL
+> +#define amba_pm_restore		NULL
+> +#define amba_pm_freeze_noirq	NULL
+> +#define amba_pm_thaw_noirq		NULL
+> +#define amba_pm_poweroff_noirq	NULL
+> +#define amba_pm_restore_noirq	NULL
+> +
+> +#endif /* !CONFIG_HIBERNATION */
+> +
+> +#ifdef CONFIG_PM
+> +
+> +static const struct dev_pm_ops amba_pm = {
+> +	.prepare	= amba_pm_prepare,
+> +	.complete	= amba_pm_complete,
+> +	.suspend	= amba_pm_suspend,
+> +	.resume		= amba_pm_resume,
+> +	.freeze		= amba_pm_freeze,
+> +	.thaw		= amba_pm_thaw,
+> +	.poweroff	= amba_pm_poweroff,
+> +	.restore	= amba_pm_restore,
+> +	.suspend_noirq	= amba_pm_suspend_noirq,
+> +	.resume_noirq	= amba_pm_resume_noirq,
+> +	.freeze_noirq	= amba_pm_freeze_noirq,
+> +	.thaw_noirq	= amba_pm_thaw_noirq,
+> +	.poweroff_noirq	= amba_pm_poweroff_noirq,
+> +	.restore_noirq	= amba_pm_restore_noirq,
+> +	SET_RUNTIME_PM_OPS(
+> +		pm_generic_runtime_suspend,
+> +		pm_generic_runtime_resume,
+> +		pm_generic_runtime_idle
+> +	)
+> +};
+> +
+> +#define AMBA_PM (&amba_pm)
+> +
+> +#else /* !CONFIG_PM */
+> +
+> +#define AMBA_PM	NULL
+> +
+> +#endif /* !CONFIG_PM */
+> +
+>  /*
+>   * Primecells are part of the Advanced Microcontroller Bus Architecture,
+>   * so we call the bus "amba".
+> @@ -111,8 +406,7 @@ struct bus_type amba_bustype = {
+>  	.dev_attrs	= amba_dev_attrs,
+>  	.match		= amba_match,
+>  	.uevent		= amba_uevent,
+> -	.suspend	= amba_suspend,
+> -	.resume		= amba_resume,
+> +	.pm		= AMBA_PM,
+>  };
+>  
+>  static int __init amba_init(void)
+> diff --git a/include/linux/amba/bus.h b/include/linux/amba/bus.h
+> index a0ccf28..1849975 100644
+> --- a/include/linux/amba/bus.h
+> +++ b/include/linux/amba/bus.h
+> @@ -58,6 +58,8 @@ enum amba_vendor {
+>  
+>  extern struct bus_type amba_bustype;
+>  
+> +#define to_amba_device(d)	container_of(d, struct amba_device, dev)
+> +
+>  #define amba_get_drvdata(d)	dev_get_drvdata(&d->dev)
+>  #define amba_set_drvdata(d,p)	dev_set_drvdata(&d->dev, p)
+>  
+> 
