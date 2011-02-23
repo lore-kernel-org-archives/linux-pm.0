@@ -1,16 +1,13 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: Re: does hibernate to disk try hard enough to free
-	memory?
-Date: Wed, 23 Feb 2011 15:10:46 +0100
-Message-ID: <201102231511.15683.Martin__21383.5519426086$1298470357$gmane$org@lichtvoll.de>
-References: <201102222159.58546.Martin@lichtvoll.de>
-	<201102222307.41499.Martin@lichtvoll.de>
-	<201102222332.43864.rjw@sisk.pl>
-	(sfid-20110222_235917_178098_58EF243B)
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM QoS: Allow parsing of ASCII values
+Date: Wed, 23 Feb 2011 10:20:35 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1102231009070.2233-100000@iolanthe.rowland.org>
+References: <20110223065647.GB26136@gvim.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6174083828079178192=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201102222332.43864.rjw@sisk.pl>
+In-Reply-To: <20110223065647.GB26136@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,96 +15,151 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: mark gross <markgross@thegnar.org>
+Cc: linux-pm@lists.linux-foundation.org, Dan Carpenter <error27@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============6174083828079178192==
-Content-Type: multipart/signed;
-  boundary="nextPart2760788.Nz7BMqQCQB";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Tue, 22 Feb 2011, mark gross wrote:
 
---nextPart2760788.Nz7BMqQCQB
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+> On Mon, Feb 21, 2011 at 08:33:36PM -0800, mark gross wrote:
+> > On Fri, Feb 18, 2011 at 10:54:56AM +0900, Simon Horman wrote:
+> > > In "PM QoS: Correct pr_debug() misuse and improve parameter checks"
+> > > the parsing of the ASCII hex value was tightened. Unfortunately
+> > > it was tightened to the point where no value is valid.
+> > > 
+> > > Root of the problem seems to lie in wheather the ASCII hex is followed
+> > > by a '\n' or not. My reading of the documentation is that the '\n' should
+> > > not be present. However the code previously only accepted that version.
+> > > The current code accepts neither. My fix is to accept both.
+> > > 
+> > > Cc: Mark Gross <markgross@thegnar.org>
+> > > Cc: Dan Carpenter <error27@gmail.com>
+> > > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > > Signed-off-by: Simon Horman <horms@verge.net.au>
+> > > 
+> > > ---
+> > > This appears to have been introduced around 2.6.36-rc4.
+> > > And was an @stable patch. As such I believe this change
+> > > is stable material.
+> > > ---
+> > >  kernel/pm_qos_params.c |    7 ++++---
+> > >  1 files changed, 4 insertions(+), 3 deletions(-)
+> > > 
+> > > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> > > index aeaa7f8..98a34ea 100644
+> > > --- a/kernel/pm_qos_params.c
+> > > +++ b/kernel/pm_qos_params.c
+> > > @@ -387,10 +387,11 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+> > >  	if (count == sizeof(s32)) {
+> > >  		if (copy_from_user(&value, buf, sizeof(s32)))
+> > >  			return -EFAULT;
+> > > -	} else if (count == 11) { /* len('0x12345678/0') */
+> > > -		if (copy_from_user(ascii_value, buf, 11))
+> > > +	} else if (count == 11 || count == 10) { /* len('0x12345678\n') or
+> > shouldn't this be count ==12 ||count ==10?
+> > After taking Alan's advice and looking at strict_strtoul it looks like
+> > 10 and 12 are the numbers to use.
+> > 
+> > Also playing with your dd test:
+> > mgross@mgt:~$ echo -n 0x12345678 | dd of=junk.bin
+> > 0+1 records in
+> > 0+1 records out
+> > 10 bytes (10 B) copied, 0.000368621 s, 27.1 kB/s
+> > mgross@mgt:~$ hexdump junk.bin 
+> > 0000000 7830 3231 3433 3635 3837               
+> > 000000a
+> > mgross@mgt:~$ echo  0x12345678 | dd of=junk.bin
+> > 0+1 records in
+> > 0+1 records out
+> > 11 bytes (11 B) copied, 0.000384755 s, 28.6 kB/s
+> > mgross@mgt:~$ hexdump junk.bin 
+> > 0000000 7830 3231 3433 3635 3837 000a          
+> > 000000b
 
-Am Tuesday 22 February 2011 schrieb Rafael J. Wysocki:
-> On Tuesday, February 22, 2011, Martin Steigerwald wrote:
-> > Am Tuesday 22 February 2011 schrieb Rafael J. Wysocki:
-> > > On Tuesday, February 22, 2011, Martin Steigerwald wrote:
-> > > > Hi!
-> > > >=20
-> > > > Since Radeon KMS I often have it that my ThinkPad T42 with 2 MiB
-> > > > of RAM is not able to allocate memory for the hibernation image.
-> > > > Before KMS hibernation only very rarely failed for that reason.
-> > > >=20
-> > > > Often I run without compositing at all as I believe this might
-> > > > spare some pages as well. But this doesn't always help.
-> > > >=20
-> > > > It complains that to less pages could be freed. For example with
-> > > > kernel 2.6.37:
-> > > >=20
-> > > > Feb 16 00:15:00 shambhala kernel: PM: Creating hibernation image:
-> > > > Feb 16 00:15:00 shambhala kernel: PM: Need to copy 186577 pages
-> > > > Feb 16 00:15:00 shambhala kernel: PM: Normal pages needed: 114411
-> > > > + 1024, available pages: 112767
-> > > > Feb 16 00:15:00 shambhala kernel: PM: Not enough free memory
-> > > > Feb 16 00:15:00 shambhala kernel: PM: Error -12 creating
-> > > > hibernation image Feb 16 00:15:00 shambhala kernel: Extended
-> > > > CMOS year: 2000 Feb 16 00:15:00 shambhala kernel: ACPI: Waking
-> > > > up from system sleep state S4
-> > > > Feb 16 00:15:00 shambhala kernel: PM: early recover of devices
-> > > > complete after 0.376 msecs
-> > >=20
-> > > What's the value in /sys/power/image_size?
-> >=20
-> > shambhala:~> cat /sys/power/image_size
-> > 844206080
-> >=20
-> > Should I try with less?
->=20
-> Yes, please.  Try with 700000000 for example.
+The "extra" byte here is undoubtedly caused by the fact that hexdump is 
+presenting the data in 2-byte chunks.  I almost always invoke hexdump 
+with the -C option, to get individual bytes.  The length of the data 
+really is 11 bytes.
 
-I replaced dropping by settings image_size to this valua and the ThinkPad=20
-hibernated with KMail open. Thus seems to work, but I will test a bit=20
-further.
+> > 
+> > it looks like I have 10 or 12 bytes (but can't reconcile the dd output
+> > saying 11 bytes when hexdump is showing 12 )
+> 
+> on a 64 bit ubuntu box its 11 bytes that get sent to the kernel hexdump
+> must be padding the extra byte.> 
+> > The following patch (untested) should make things work ok.
+> it doesn't work and I'm still debugging some straingess with  strict_strtoul
+> 
+> it looks like its munging the string I'm passing in.
 
-Where does the higher value previously set come from? Autotuning? Is there=
-=20
-anything that can be improved with autotuning? If yes, I can file a bug=20
-report. Otherwise I just try to find a good value for image size and be=20
-done with it.
+No, strict_strtoul() doesn't touch the input string.
 
-Thanks,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+> > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> > index aeaa7f8..6cbce91 100644
+> > --- a/kernel/pm_qos_params.c
+> > +++ b/kernel/pm_qos_params.c
+> > @@ -381,19 +381,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+> >  {
+> >  	s32 value;
+> >  	int x;
+> > -	char ascii_value[11];
+> > +	char ascii_value[12];
+> >  	struct pm_qos_request_list *pm_qos_req;
+> >  
+> >  	if (count == sizeof(s32)) {
+> >  		if (copy_from_user(&value, buf, sizeof(s32)))
+> >  			return -EFAULT;
+> > -	} else if (count == 11) { /* len('0x12345678/0') */
+> > -		if (copy_from_user(ascii_value, buf, 11))
+> > +	} else if (count == 10 || count == 12) { /* '0x12345678' or
+> 	} else if (count == 10 || count == 11) { /* '0x12345678' or
 
---nextPart2760788.Nz7BMqQCQB
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+The test should be for 10 or 11: "0x12345678" or "0x12345678\n".  By 
+the way, note the difference between "\n" and "/n".
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> > +						    '0x12345678/n/0'*/
+> > +		memset(ascii_value, 0, sizeof(ascii_value));
 
-iEYEABECAAYFAk1lFWcACgkQmRvqrKWZhMf8kQCglNEiA5KmveZ2pXb7eYDFXhKy
-KO0AnRYNpFKTkV2XOgbZb7cgjlJsy9/l
-=T3Gf
------END PGP SIGNATURE-----
+Actually, it suffices to do
 
---nextPart2760788.Nz7BMqQCQB--
+		ascii_value[count] = 0;
 
---===============6174083828079178192==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+if the number of bytes you copy is equal to count.
 
+> > +		if (copy_from_user(ascii_value, buf, count))
+> 		if (copy_from_user(ascii_value, buf, 10))
 
---===============6174083828079178192==--
+Which line does the patch add?
+
+> >  			return -EFAULT;
+> > -		if (strlen(ascii_value) != 10)
+> > -			return -EINVAL;
+> > -		x = sscanf(ascii_value, "%x", &value);
+> > -		if (x != 1)
+> > +		if (strict_strtoul(ascii_value,16,value) != 0)
+>                                                   ^&value
+> its odd the array ascii_value is getting stomped on.  Very strange.
+> I'm sure I'm doing something dumb.  I'll keep working on this and send
+> an patch after it checks out.
+
+How careful do you want to be here?  For example, which of the
+following inputs do you want to accept?
+
+	0x1234
+	abcd1234
+	abcd123456
+	abcd123456\n
+	abcd1234567
+	1234567890
+	1234567890\n
+	12345678901
+	0x12345678
+	0x12345678\n
+	0x123456789
+
+Maybe it's okay to be a little relaxed about this, and trust the caller 
+to pass in data that makes sense.
+
+Alan Stern
