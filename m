@@ -1,13 +1,17 @@
-From: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-Subject: [PATCH v2] xen: fix XEN_SAVE_RESTORE Kconfig dependencies
-Date: Wed, 23 Feb 2011 08:23:41 -0800
-Message-ID: <1298478221-14826-1-git-send-email-rshriram__17295.0554559522$1298478458$gmane$org@cs.ubc.ca>
-References: <1298446066-11754-1-git-send-email-rshriram@cs.ubc.ca>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/3] xen: Use PM/Hibernate events for
+	save/restore/chkpt
+Date: Wed, 23 Feb 2011 19:38:47 +0100
+Message-ID: <20110223183847.GA1555__21793.5486849912$1298486528$gmane$org@ucw.cz>
+References: <1298157158-5421-1-git-send-email-rshriram@cs.ubc.ca>
+	<20110220074931.GA28485@elf.ucw.cz>
+	<1298282702.16356.7578.camel@zakaz.uk.xensource.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1298446066-11754-1-git-send-email-rshriram@cs.ubc.ca>
+Content-Disposition: inline
+In-Reply-To: <1298282702.16356.7578.camel@zakaz.uk.xensource.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,44 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: xen-devel@lists.xensource.com
-Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org, Ian Campbell <ian.campbell@citrix.com>
+To: Ian Campbell <Ian.Campbell@eu.citrix.com>
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>
 List-Id: linux-pm@vger.kernel.org
 
-Make XEN_SAVE_RESTORE depend on HIBERNATION.
-Remove XEN_SAVE_RESTORE dependency from PM_SLEEP.
+Hi!
 
-Signed-off-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
----
- arch/x86/xen/Kconfig |    2 +-
- kernel/power/Kconfig |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> > > The following set of patches modify this implementation to use Hibernate style
+> > > control flow (freeze/restore for save/restore and freeze/thaw for checkpoint,
+> > > which is merely a cancelled save akin to failed swsusp() ).
+> > > 
+> > > These patches are against Ian Campbell's PVHVM tree at
+> > > git://xenbits.xen.org/people/ianc/linux-2.6.git for-stefano/pvhvm
+> > > 
+> > > at commit 8a8d1bc753c4e2dda5f2890292d60c67d6ebb573
+> > > kernel version: 2.6.38-rc4
+> > 
+> > Series looks ok to me...
+> 
+> Thanks Pavel, may we take that as an Acked-by?
 
-diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
-index 2c876ed..0e68597 100644
---- a/arch/x86/xen/Kconfig
-+++ b/arch/x86/xen/Kconfig
-@@ -38,7 +38,7 @@ config XEN_MAX_DOMAIN_MEMORY
- 
- config XEN_SAVE_RESTORE
-        bool
--       depends on XEN
-+       depends on XEN && HIBERNATION
-        default y
- 
- config XEN_DEBUG_FS
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 4603f08..74fe864 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -85,7 +85,7 @@ config PM_STD_PARTITION
- 
- config PM_SLEEP
- 	def_bool y
--	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
-+	depends on SUSPEND || HIBERNATION
- 
- config PM_SLEEP_SMP
- 	def_bool y
+ok.
+
+> For my part the Xen side is:
+> Acked-by: Ian Campbell <ian.campbell@citrix.com>
+> 
+> The changes to drivers/xen/manage.c depend on some other cleanups made
+> on the Xen side (in linux-next soon if not already via Stefano's tree)
+> so how would you like to handle them? I could point you to a suitable to
+> apply the pm.h bits to or we could carry them in the Xen tree if you are
+> happy with them.
+
+Rafael maintains pm tree these days... Rafael?
+
 -- 
-1.7.0.4
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
