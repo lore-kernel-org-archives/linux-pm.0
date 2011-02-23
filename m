@@ -1,16 +1,14 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH] PM QoS: Allow parsing of ASCII values
-Date: Tue, 22 Feb 2011 22:56:47 -0800
-Message-ID: <20110223065647.GB26136@gvim.org>
-References: <1297994096-1839-1-git-send-email-horms@verge.net.au>
-	<20110222043336.GB23306@gvim.org>
-Reply-To: markgross@thegnar.org
+From: Shriram Rajagopalan <rshriram@cs.ubc.ca>
+Subject: [PATCH v2 2/3] xen: use freeze/restore/thaw PM events
+	for suspend/resume/chkpt
+Date: Tue, 22 Feb 2011 23:03:54 -0800
+Message-ID: <1298444634-10865-1-git-send-email-rshriram__18291.5147197948$1298444704$gmane$org@cs.ubc.ca>
+References: <1298157158-5421-1-git-send-email-rshriram@cs.ubc.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110222043336.GB23306@gvim.org>
+In-Reply-To: <1298157158-5421-1-git-send-email-rshriram@cs.ubc.ca>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,130 +18,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Simon Horman <horms@verge.net.au>
-Cc: linux-pm@lists.linux-foundation.org, Dan Carpenter <error27@gmail.com>, Mark Gross <markgross@thegnar.org>
+To: xen-devel@lists.xensource.com
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org, Iam Campbell <ian.campbell@citrix.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 21, 2011 at 08:33:36PM -0800, mark gross wrote:
-> On Fri, Feb 18, 2011 at 10:54:56AM +0900, Simon Horman wrote:
-> > In "PM QoS: Correct pr_debug() misuse and improve parameter checks"
-> > the parsing of the ASCII hex value was tightened. Unfortunately
-> > it was tightened to the point where no value is valid.
-> > 
-> > Root of the problem seems to lie in wheather the ASCII hex is followed
-> > by a '\n' or not. My reading of the documentation is that the '\n' should
-> > not be present. However the code previously only accepted that version.
-> > The current code accepts neither. My fix is to accept both.
-> > 
-> > Cc: Mark Gross <markgross@thegnar.org>
-> > Cc: Dan Carpenter <error27@gmail.com>
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Signed-off-by: Simon Horman <horms@verge.net.au>
-> > 
-> > ---
-> > This appears to have been introduced around 2.6.36-rc4.
-> > And was an @stable patch. As such I believe this change
-> > is stable material.
-> > ---
-> >  kernel/pm_qos_params.c |    7 ++++---
-> >  1 files changed, 4 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> > index aeaa7f8..98a34ea 100644
-> > --- a/kernel/pm_qos_params.c
-> > +++ b/kernel/pm_qos_params.c
-> > @@ -387,10 +387,11 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
-> >  	if (count == sizeof(s32)) {
-> >  		if (copy_from_user(&value, buf, sizeof(s32)))
-> >  			return -EFAULT;
-> > -	} else if (count == 11) { /* len('0x12345678/0') */
-> > -		if (copy_from_user(ascii_value, buf, 11))
-> > +	} else if (count == 11 || count == 10) { /* len('0x12345678\n') or
-> shouldn't this be count ==12 ||count ==10?
-> After taking Alan's advice and looking at strict_strtoul it looks like
-> 10 and 12 are the numbers to use.
-> 
-> Also playing with your dd test:
-> mgross@mgt:~$ echo -n 0x12345678 | dd of=junk.bin
-> 0+1 records in
-> 0+1 records out
-> 10 bytes (10 B) copied, 0.000368621 s, 27.1 kB/s
-> mgross@mgt:~$ hexdump junk.bin 
-> 0000000 7830 3231 3433 3635 3837               
-> 000000a
-> mgross@mgt:~$ echo  0x12345678 | dd of=junk.bin
-> 0+1 records in
-> 0+1 records out
-> 11 bytes (11 B) copied, 0.000384755 s, 28.6 kB/s
-> mgross@mgt:~$ hexdump junk.bin 
-> 0000000 7830 3231 3433 3635 3837 000a          
-> 000000b
+Use PM_FREEZE, PM_THAW and PM_RESTORE power events for
+suspend/resume/checkpoint functionality, instead of PM_SUSPEND
+and PM_RESUME. Use of these pm events fixes the Xen Guest hangup
+when taking checkpoints. When a suspend event is cancelled
+(while taking checkpoints once/continuously), we use PM_THAW
+instead of PM_RESUME. PM_RESTORE is used when suspend is not
+cancelled. See Documentation/power/devices.txt and linux/pm.h
+for more info about freeze, thaw and restore. The sequence of
+pm events in a suspend-resume scenario is shown below.
 
-> 
-> it looks like I have 10 or 12 bytes (but can't reconcile the dd output
-> saying 11 bytes when hexdump is showing 12 )
+        dpm_suspend_start(PMSG_FREEZE);
 
-on a 64 bit ubuntu box its 11 bytes that get sent to the kernel hexdump
-must be padding the extra byte.> 
-> The following patch (untested) should make things work ok.
-it doesn't work and I'm still debugging some straingess with  strict_strtoul
+                dpm_suspend_noirq(PMSG_FREEZE);
 
-it looks like its munging the string I'm passing in.
+                       sysdev_suspend(PMSG_FREEZE);
+                       cancelled = suspend_hypercall()
+                       sysdev_resume();
 
-> 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index aeaa7f8..6cbce91 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -381,19 +381,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
->  {
->  	s32 value;
->  	int x;
-> -	char ascii_value[11];
-> +	char ascii_value[12];
->  	struct pm_qos_request_list *pm_qos_req;
->  
->  	if (count == sizeof(s32)) {
->  		if (copy_from_user(&value, buf, sizeof(s32)))
->  			return -EFAULT;
-> -	} else if (count == 11) { /* len('0x12345678/0') */
-> -		if (copy_from_user(ascii_value, buf, 11))
-> +	} else if (count == 10 || count == 12) { /* '0x12345678' or
-	} else if (count == 10 || count == 11) { /* '0x12345678' or
-> +						    '0x12345678/n/0'*/
-> +		memset(ascii_value, 0, sizeof(ascii_value));
-> +		if (copy_from_user(ascii_value, buf, count))
-		if (copy_from_user(ascii_value, buf, 10))
-						
->  			return -EFAULT;
-> -		if (strlen(ascii_value) != 10)
-> -			return -EINVAL;
-> -		x = sscanf(ascii_value, "%x", &value);
-> -		if (x != 1)
-> +		if (strict_strtoul(ascii_value,16,value) != 0)
-                                                  ^&value
-its odd the array ascii_value is getting stomped on.  Very strange.
-I'm sure I'm doing something dumb.  I'll keep working on this and send
-an patch after it checks out.
+               dpm_resume_noirq(cancelled ? PMSG_THAW : PMSG_RESTORE);
 
---mark
+       dpm_resume_end(cancelled ? PMSG_THAW : PMSG_RESTORE);
 
->  			return -EINVAL;
->  		pr_debug("%s, %d, 0x%x\n", ascii_value, x, value);
->  	} else
-> 
-> ------
-> I'll test this tomorrow and do a proper posting (if it works right)
-> 
-> --mark
-> > +						  * len('0x12345678') */
-> > +		if (copy_from_user(ascii_value, buf, count))
-> >  			return -EFAULT;
-> > -		if (strlen(ascii_value) != 10)
-> > +		if (strlen(ascii_value) != count)
-> >  			return -EINVAL;
-> >  		x = sscanf(ascii_value, "%x", &value);
-> >  		if (x != 1)
-> > -- 
-> > 1.7.2.3
-> > 
+Signed-off-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
+---
+ drivers/xen/manage.c                       |   16 ++++++++--------
+ drivers/xen/xenbus/xenbus_probe_frontend.c |    8 +++++---
+ 2 files changed, 13 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index c255ed4..c24d0e7 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -61,7 +61,7 @@ static void xen_post_suspend(int cancelled)
+ 	xen_mm_unpin_all();
+ }
+ 
+-#ifdef CONFIG_PM_SLEEP
++#ifdef CONFIG_XEN_SAVE_RESTORE
+ static int xen_suspend(void *data)
+ {
+ 	struct suspend_info *si = data;
+@@ -69,7 +69,7 @@ static int xen_suspend(void *data)
+ 
+ 	BUG_ON(!irqs_disabled());
+ 
+-	err = sysdev_suspend(PMSG_SUSPEND);
++	err = sysdev_suspend(PMSG_FREEZE);
+ 	if (err) {
+ 		printk(KERN_ERR "xen_suspend: sysdev_suspend failed: %d\n",
+ 			err);
+@@ -118,7 +118,7 @@ static void do_suspend(void)
+ 	}
+ #endif
+ 
+-	err = dpm_suspend_start(PMSG_SUSPEND);
++	err = dpm_suspend_start(PMSG_FREEZE);
+ 	if (err) {
+ 		printk(KERN_ERR "xen suspend: dpm_suspend_start %d\n", err);
+ 		goto out_thaw;
+@@ -127,7 +127,7 @@ static void do_suspend(void)
+ 	printk(KERN_DEBUG "suspending xenstore...\n");
+ 	xs_suspend();
+ 
+-	err = dpm_suspend_noirq(PMSG_SUSPEND);
++	err = dpm_suspend_noirq(PMSG_FREEZE);
+ 	if (err) {
+ 		printk(KERN_ERR "dpm_suspend_noirq failed: %d\n", err);
+ 		goto out_resume;
+@@ -147,7 +147,7 @@ static void do_suspend(void)
+ 
+ 	err = stop_machine(xen_suspend, &si, cpumask_of(0));
+ 
+-	dpm_resume_noirq(PMSG_RESUME);
++	dpm_resume_noirq(si.cancelled ? PMSG_THAW : PMSG_RESTORE);
+ 
+ 	if (err) {
+ 		printk(KERN_ERR "failed to start xen_suspend: %d\n", err);
+@@ -161,7 +161,7 @@ out_resume:
+ 	} else
+ 		xs_suspend_cancel();
+ 
+-	dpm_resume_end(PMSG_RESUME);
++	dpm_resume_end(si.cancelled ? PMSG_THAW : PMSG_RESTORE);
+ 
+ 	/* Make sure timer events get retriggered on all CPUs */
+ 	clock_was_set();
+@@ -173,7 +173,7 @@ out:
+ #endif
+ 	shutting_down = SHUTDOWN_INVALID;
+ }
+-#endif	/* CONFIG_PM_SLEEP */
++#endif	/* CONFIG_XEN_SAVE_RESTORE */
+ 
+ struct shutdown_handler {
+ 	const char *command;
+@@ -202,7 +202,7 @@ static void shutdown_handler(struct xenbus_watch *watch,
+ 		{ "poweroff",	do_poweroff },
+ 		{ "halt",	do_poweroff },
+ 		{ "reboot",	do_reboot   },
+-#ifdef CONFIG_PM_SLEEP
++#ifdef CONFIG_XEN_SAVE_RESTORE
+ 		{ "suspend",	do_suspend  },
+ #endif
+ 		{NULL, NULL},
+diff --git a/drivers/xen/xenbus/xenbus_probe_frontend.c b/drivers/xen/xenbus/xenbus_probe_frontend.c
+index ea83999..b6a2690 100644
+--- a/drivers/xen/xenbus/xenbus_probe_frontend.c
++++ b/drivers/xen/xenbus/xenbus_probe_frontend.c
+@@ -86,9 +86,11 @@ static struct device_attribute xenbus_frontend_dev_attrs[] = {
+ };
+ 
+ static const struct dev_pm_ops xenbus_pm_ops = {
+-	.suspend = xenbus_dev_suspend,
+-	.resume  = xenbus_dev_resume,
+-	.thaw  = xenbus_dev_cancel,
++	.suspend	= xenbus_dev_suspend,
++	.resume		= xenbus_dev_resume,
++	.freeze		= xenbus_dev_suspend,
++	.thaw		= xenbus_dev_cancel,
++	.restore	= xenbus_dev_resume,
+ };
+ 
+ static struct xen_bus_type xenbus_frontend = {
+-- 
+1.7.0.4
