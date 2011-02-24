@@ -1,17 +1,11 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFT][PATCH] ACPI / ACPICA: Implicit notify for
-	multiple	devices
-Date: Thu, 24 Feb 2011 18:41:12 +0000
-Message-ID: <20110224184112.GA9850__26942.4827107743$1298573165$gmane$org@srcf.ucam.org>
-References: <201102232305.45005.rjw@sisk.pl>
-	<20110224154126.GA5285@srcf.ucam.org>
-	<201102241938.37158.rjw@sisk.pl>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Subject: modelling power supply / charging logic of ebook reader
+Date: Thu, 24 Feb 2011 21:13:42 +0100
+Message-ID: <201102242113.42463.heiko@sntech.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201102241938.37158.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,23 +15,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "Moore, Robert" <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 24, 2011 at 07:38:36PM +0100, Rafael J. Wysocki wrote:
-> On Thursday, February 24, 2011, Matthew Garrett wrote:
-> > Works on my test Thinkpad - notifies get sent to both EHCI controllers 
-> > and the HDA hardware now.
-> > 
-> > Tested-by: Matthew Garrett <mjg@redhat.com>
-> 
-> Cool, thanks!
-> 
-> How urgent is this issue?
+Hi,
 
-Enabling PCI runtime PM on these machines could cause GPE storms without 
-waking the device.
+Warning newbie questions and I'm hoping I'm on the right list :-)
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I'm trying to implement charging logic for a device. As these are my first 
+steps into the kernel I'd like to solicit opinions in which way to proceed.
+
+
+Hardware: Qisda ebook-reader family - essentially every machine with an epaper 
+display from Sipix build around a s3c2416. Charger IC is a Texas Instruments 
+bq24075 connected via gpios. The manufacturers used a fork of 2.6.21.5 and we 
+try to make a current kernel usable on the devices.
+
+Somewhere on lkml I read that reimplementing basic charger logic in yet 
+another driver is not desired, so I'm looking at using the pda-power driver in 
+combination with a simple bq2407x regulator driver based on Philipp Zabels 
+driver for the bq24022.
+
+The usb gadget driver has not OTG functionality and vbus detection is done via 
+a special gpio. So it seems the gpio-vbus driver seems to be the driver to use 
+for this.
+
+
+Questions:
+
+It's possible to connect the devices usb port to either a normal usb host or a 
+dedicated charger with higher current. The current charger type is read from 
+some usb registers. So my question would be on how to model this with pda-
+power.
+The ac-part is propably not usable for this as it seems to require a different 
+gpio-source. 
+Is implementing some sort of "is_usb_aca"-hook a possible way
+
+The charger also reports its charging status via a gpio. What's the best way 
+to implement this with pda-power?
+My current idea is to add an is_charging or supply_status hook to pda-power 
+and if defined output this value via the get_property method and 
+POWER_SUPPLY_STATUS_*. Correct?
+
+
+Or as a complete alternative is it more reasonable to implement a new power-
+supply for this and not add more switches to pda-power?
+For example the pcf56033-charger driver has exactly this functionality but for 
+a specific device.
+As nowadays most of the devices only have an usb port but different charging 
+sources for it, is it reasonable to build some sort of generic "gadget-power" 
+driver analogous to pda-power or does something of this sort exist?
+
+
+Thanks for any input :-)
+Heiko
