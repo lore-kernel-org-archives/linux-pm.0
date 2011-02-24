@@ -1,12 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFT][PATCH] ACPI / ACPICA: Implicit notify for multiple
-	devices
-Date: Wed, 23 Feb 2011 23:05:44 +0100
-Message-ID: <201102232305.45005.rjw__26725.0272715048$1298500001$gmane$org@sisk.pl>
+From: Ming Lei <tom.leiming@gmail.com>
+Subject: Re: [Bug 29802] New: [REGRESSION 2.6.38-rc1+] bisected
+ to: USB: use the no_callbacks flag for interfaces
+Date: Thu, 24 Feb 2011 19:09:16 +0800
+Message-ID: <AANLkTikcfYvw0ztFUBwkLK+wqPjNYyVRgUsZ3mJVb5fi__29466.1519852982$1298545830$gmane$org@mail.gmail.com>
+References: <bug-29802-11382@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary=000e0cd5174c8f3317049d053efa
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <bug-29802-11382@https.bugzilla.kernel.org/>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,168 +17,156 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "Moore, Robert" <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
+To: bettiah@gmail.com
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>, linux-usb <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+--000e0cd5174c8f3317049d053efa
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Commit bba63a2 (ACPICA: Implicit notify support) introduced a
-mechanism that causes a notify request of type
-ACPI_NOTIFY_DEVICE_WAKE to be queued automatically by
-acpi_ev_asynch_execute_gpe_method() for the device whose _PRW points
-to the GPE being handled if that GPE is not associated with an
-_Lxx/_Exx method.  However, it turns out that on some systems there
-are multiple devices with _PRW pointing to the same GPE without
-_Lxx/_Exx and the mechanism introduced by commit bba63a2 needs to be
-extended so that "implicit" notify requests of type
-ACPI_NOTIFY_DEVICE_WAKE can be queued automatically for all those
-devices at the same time.
+Hi bettiah,
 
-Reported-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+2011/2/24  <bugzilla-daemon@bugzilla.kernel.org>:
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D29802
+>
+> =A0 =A0 =A0 =A0 =A0 Summary: [REGRESSION 2.6.38-rc1+] bisected to: USB: u=
+se the
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0no_callbacks flag for interfaces
+> =A0 =A0 =A0 =A0 =A0 Product: Power Management
+> =A0 =A0 =A0 =A0 =A0 Version: 2.5
+> =A0 =A0Kernel Version: 2.6.38-rc6
+> =A0 =A0 =A0 =A0 =A0Platform: All
+> =A0 =A0 =A0 =A0OS/Version: Linux
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0Tree: Mainline
+> =A0 =A0 =A0 =A0 =A0 =A0Status: NEW
+> =A0 =A0 =A0 =A0 =A0Severity: normal
+> =A0 =A0 =A0 =A0 =A0Priority: P1
+> =A0 =A0 =A0 =A0 Component: Other
+> =A0 =A0 =A0 =A0AssignedTo: power-management_other@kernel-bugs.osdl.org
+> =A0 =A0 =A0 =A0ReportedBy: bettiah@gmail.com
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0CC: tom.leiming@gmail.com
+> =A0 =A0 =A0 =A0Regression: Yes
+>
+>
+> On an embedded system, (beagleboard using Asix CONFIG_USB_NET_AX8817X
+> statically compiled, =A0usb/ethernet bridge, rootfs over nfs), =A0:
+>
+> [ =A0 =A06.817382] usb 1-2.4: new high speed USB device using ehci-omap a=
+nd address
+> 3
+> [ =A0 =A06.940979] usb 1-2.4: rpm_resume flags 0x0
+> [ =A0 =A06.945373] usb 1-2.4: rpm_resume returns 1
+> [ =A0 =A06.961700] usb 1-2.4: New USB device found, idVendor=3D0b95, idPr=
+oduct=3D772a
+> [ =A0 =A06.968963] usb 1-2.4: New USB device strings: Mfr=3D1, Product=3D=
+2,
+> SerialNumber=3D3
+> [ =A0 =A06.976684] usb 1-2.4: Product: AX88772
+> [ =A0 =A06.980834] usb 1-2.4: Manufacturer: ASIX Elec. Corp.
+> [ =A0 =A06.986145] usb 1-2.4: SerialNumber: 000065
+> [ =A0 =A06.996917] usb 1-2.4: rpm_resume flags 0x4
+> [ =A0 =A07.001312] usb 1-2.4: rpm_resume returns 1
+> [ =A0 =A07.007507] usb 1-2.4: rpm_resume flags 0x4
+> [ =A0 =A07.011901] usb 1-2.4: rpm_resume returns 1
+> [ =A0 =A07.040679] mmc0: new SD card at address 9ffc
+> [ =A0 =A07.049255] mmcblk0: mmc0:9ffc SD01G 968 MiB
+> [ =A0 =A07.061950] =A0mmcblk0: p1 p2
+> [ =A0 =A07.259307] usb usb2: rpm_suspend flags 0x9
+> [ =A0 =A07.263732] usb usb2: rpm_suspend returns 0
+> [ =A0 =A07.268310] usb usb2: rpm_suspend flags 0xa
+> [ =A0 =A07.272735] usb usb2: rpm_suspend returns 0
+> [ =A0 =A07.945953] asix 1-2.4:1.0: eth0: register 'asix' at usb-ehci-omap=
+.0-2.4,
+> ASIX AX88772 USB
+> 2.0 Ethernet, 00:00:00:00:00:65
+> [ =A0 =A07.957794] asix 1-2.4:1.0: rpm_suspend flags 0x4
+> [ =A0 =A07.962738] asix 1-2.4:1.0: rpm_suspend returns 0
+> [ =A0 =A07.967956] hub 1-2:1.0: rpm_resume flags 0x4
+> [ =A0 =A07.972534] hub 1-2:1.0: rpm_resume returns 1
+> [ =A0 =A07.977386] hub 1-2:1.0: rpm_suspend flags 0x4
+> [ =A0 =A07.982055] hub 1-2:1.0: rpm_suspend returns 0
+> [ =A0 =A08.333007] asix 1-2.4:1.0: rpm_resume flags 0x4
+> [ =A0 =A08.337890] asix 1-2.4:1.0: rpm_resume returns 0
+> [ =A0 =A08.343933] eth0: link down
+> [ =A0 =A09.368652] Sending DHCP requests .
+> [ =A0 =A09.949462] asix 1-2.4:1.0: rpm_resume flags 0x4
+> [ =A0 =A09.954498] asix 1-2.4:1.0: rpm_resume returns 1
+> [ =A0 =A09.961425] eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
+> [ =A0 12.134307] .
+> [ =A0 12.135864] asix 1-2.4:1.0: rpm_resume flags 0x5
+> [ =A0 12.140869] asix 1-2.4:1.0: rpm_resume returns 1
+> [ =A0 12.649963] ,
+> [ =A0 12.651489] asix 1-2.4:1.0: rpm_resume flags 0x5
+> [ =A0 12.656524] asix 1-2.4:1.0: rpm_resume returns 1
+> [ =A0 12.665618] =A0OK
+> [ =A0 12.667480] IP-Config: Got DHCP answer from 0.0.0.0, my address is
+> 192.168.1.102
+> [ =A0 12.678771] IP-Config: Complete:
+> [ =A0 12.682250] =A0 =A0 =A0device=3Deth0, addr=3D192.168.1.102, mask=3D2=
+55.255.255.0,
+> gw=3D192.168.1.1,
+> [ =A0 12.690246] =A0 =A0 =A0host=3D192.168.1.102, domain=3D, nis-domain=
+=3D(none),
+> [ =A0 12.696533] =A0 =A0 =A0bootserver=3D0.0.0.0, rootserver=3D192.168.1.=
+106, rootpath=3D,
+> mtu=3D576
+> [ =A0 12.715637] asix 1-2.4:1.0: rpm_resume flags 0x5
+> [ =A0 12.720489] asix 1-2.4:1.0: rpm_resume returns 1
+> [ =A0 12.725830] asix 1-2.4:1.0: rpm_resume flags 0x5
+> [ =A0 12.730651] asix 1-2.4:1.0: rpm_resume returns 1
+> [ =A0 12.742034] asix 1-2.4:1.0: rpm_resume flags 0x5
+> [ =A0 12.746887] asix 1-2.4:1.0: rpm_resume returns 1
+> [ =A0 12.752075] asix 1-2.4:1.0: rpm_resume flags 0x5
+> [ =A0 12.756927] asix 1-2.4:1.0: rpm_resume returns 1
 
-Hi Matthew,
+>From the debug messages above, seems all is OK, and
+runtime pm does work well.
 
-The patch below doesn't blow up my Toshiba test box, which is a good sign,
-but please test it on the boxes where you see the problem.
+The commit 63defa73c8c1193c1273474440c30d34c2524597
 
-Thanks,
-Rafael
+        USB: use the no_callbacks flag for interfaces
 
----
- drivers/acpi/acpica/aclocal.h |    7 ++++++-
- drivers/acpi/acpica/evgpe.c   |   17 +++++++++++++----
- drivers/acpi/acpica/evxfgpe.c |   42 +++++++++++++++++++++++++++++++++---------
- 3 files changed, 52 insertions(+), 14 deletions(-)
+you bisected may cause more messages above dumped out
+than before.
 
-Index: linux-2.6/drivers/acpi/acpica/aclocal.h
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/aclocal.h
-+++ linux-2.6/drivers/acpi/acpica/aclocal.h
-@@ -416,10 +416,15 @@ struct acpi_gpe_handler_info {
- 	u8 originally_enabled;  /* True if GPE was originally enabled */
- };
- 
-+struct acpi_gpe_notify_object {
-+	struct acpi_namespace_node *node;
-+	struct acpi_gpe_notify_object *next;
-+};
-+
- union acpi_gpe_dispatch_info {
- 	struct acpi_namespace_node *method_node;	/* Method node for this GPE level */
- 	struct acpi_gpe_handler_info *handler;  /* Installed GPE handler */
--	struct acpi_namespace_node *device_node;        /* Parent _PRW device for implicit notify */
-+	struct acpi_gpe_notify_object device;   /* List of _PRW devices for implicit notify */
- };
- 
- /*
-Index: linux-2.6/drivers/acpi/acpica/evxfgpe.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evxfgpe.c
-+++ linux-2.6/drivers/acpi/acpica/evxfgpe.c
-@@ -198,7 +198,9 @@ acpi_setup_gpe_for_wake(acpi_handle wake
- 	acpi_status status = AE_BAD_PARAMETER;
- 	struct acpi_gpe_event_info *gpe_event_info;
- 	struct acpi_namespace_node *device_node;
-+	struct acpi_gpe_notify_object *notify_object;
- 	acpi_cpu_flags flags;
-+	u8 gpe_dispatch_mask;
- 
- 	ACPI_FUNCTION_TRACE(acpi_setup_gpe_for_wake);
- 
-@@ -221,27 +223,49 @@ acpi_setup_gpe_for_wake(acpi_handle wake
- 		goto unlock_and_exit;
- 	}
- 
-+	if (wake_device == ACPI_ROOT_OBJECT) {
-+		goto out;
-+	}
-+
- 	/*
- 	 * If there is no method or handler for this GPE, then the
- 	 * wake_device will be notified whenever this GPE fires (aka
- 	 * "implicit notify") Note: The GPE is assumed to be
- 	 * level-triggered (for windows compatibility).
- 	 */
--	if (((gpe_event_info->flags & ACPI_GPE_DISPATCH_MASK) ==
--	      ACPI_GPE_DISPATCH_NONE) && (wake_device != ACPI_ROOT_OBJECT)) {
-+	gpe_dispatch_mask = gpe_event_info->flags & ACPI_GPE_DISPATCH_MASK;
-+	if (gpe_dispatch_mask != ACPI_GPE_DISPATCH_NONE
-+	    && gpe_dispatch_mask != ACPI_GPE_DISPATCH_NOTIFY) {
-+		goto out;
-+	}
- 
--		/* Validate wake_device is of type Device */
-+	/* Validate wake_device is of type Device */
- 
--		device_node = ACPI_CAST_PTR(struct acpi_namespace_node,
--					    wake_device);
--		if (device_node->type != ACPI_TYPE_DEVICE) {
--			goto unlock_and_exit;
--		}
-+	device_node = ACPI_CAST_PTR(struct acpi_namespace_node, wake_device);
-+	if (device_node->type != ACPI_TYPE_DEVICE) {
-+		goto unlock_and_exit;
-+	}
-+
-+	if (gpe_dispatch_mask == ACPI_GPE_DISPATCH_NONE) {
- 		gpe_event_info->flags = (ACPI_GPE_DISPATCH_NOTIFY |
- 					 ACPI_GPE_LEVEL_TRIGGERED);
--		gpe_event_info->dispatch.device_node = device_node;
-+		gpe_event_info->dispatch.device.node = device_node;
-+		gpe_event_info->dispatch.device.next = NULL;
-+	} else {
-+		/* There are multiple devices to notify implicitly. */
-+
-+		notify_object = ACPI_ALLOCATE_ZEROED(sizeof(*notify_object));
-+		if (!notify_object) {
-+			status = AE_NO_MEMORY;
-+			goto unlock_and_exit;
-+		}
-+
-+		notify_object->node = device_node;
-+		notify_object->next = gpe_event_info->dispatch.device.next;
-+		gpe_event_info->dispatch.device.next = notify_object;
- 	}
- 
-+ out:
- 	gpe_event_info->flags |= ACPI_GPE_CAN_WAKE;
- 	status = AE_OK;
- 
-Index: linux-2.6/drivers/acpi/acpica/evgpe.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/evgpe.c
-+++ linux-2.6/drivers/acpi/acpica/evgpe.c
-@@ -457,6 +457,7 @@ static void ACPI_SYSTEM_XFACE acpi_ev_as
- 	acpi_status status;
- 	struct acpi_gpe_event_info *local_gpe_event_info;
- 	struct acpi_evaluate_info *info;
-+	struct acpi_gpe_notify_object *notify_object;
- 
- 	ACPI_FUNCTION_TRACE(ev_asynch_execute_gpe_method);
- 
-@@ -508,10 +509,18 @@ static void ACPI_SYSTEM_XFACE acpi_ev_as
- 		 * from this thread -- because handlers may in turn run other
- 		 * control methods.
- 		 */
--		status =
--		    acpi_ev_queue_notify_request(local_gpe_event_info->dispatch.
--						 device_node,
--						 ACPI_NOTIFY_DEVICE_WAKE);
-+		status = acpi_ev_queue_notify_request(
-+				local_gpe_event_info->dispatch.device.node,
-+				ACPI_NOTIFY_DEVICE_WAKE);
-+
-+		notify_object = local_gpe_event_info->dispatch.device.next;
-+		while (ACPI_SUCCESS(status) && notify_object) {
-+			status = acpi_ev_queue_notify_request(
-+					notify_object->node,
-+					ACPI_NOTIFY_DEVICE_WAKE);
-+			notify_object = notify_object->next;
-+		}
-+
- 		break;
- 
- 	case ACPI_GPE_DISPATCH_METHOD:
+If you want to see less runtime pm messages, please disable
+CONFIG_PM_DEBUG.
+
+Or you can try the attachment patch to see if less 'rpm_resume'
+messages will be dumped out, but let Alan decide if it should
+be taken.  This part in the commit was added by Alan.
+
+thanks,
+--=20
+Lei Ming
+
+--000e0cd5174c8f3317049d053efa
+Content-Type: text/x-patch; charset=US-ASCII; name="rpm_resume.patch"
+Content-Disposition: attachment; filename="rpm_resume.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_gkjki0ez0
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdXNiL2NvcmUvZHJpdmVyLmMgYi9kcml2ZXJzL3VzYi9jb3Jl
+L2RyaXZlci5jCmluZGV4IGZjYTYxNzIuLmQ5MzNmNzcgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdXNi
+L2NvcmUvZHJpdmVyLmMKKysrIGIvZHJpdmVycy91c2IvY29yZS9kcml2ZXIuYwpAQCAtMTU2NCw5
+ICsxNTY0LDE4IEBAIEVYUE9SVF9TWU1CT0xfR1BMKHVzYl9hdXRvcG1fZ2V0X2ludGVyZmFjZSk7
+CiAgKi8KIGludCB1c2JfYXV0b3BtX2dldF9pbnRlcmZhY2VfYXN5bmMoc3RydWN0IHVzYl9pbnRl
+cmZhY2UgKmludGYpCiB7Ci0JaW50CXN0YXR1czsKKwlpbnQgICAgICAgICAgICAgc3RhdHVzID0g
+MDsKKwllbnVtIHJwbV9zdGF0dXMgczsKKworCS8qIERvbid0IHJlcXVlc3QgYSByZXN1bWUgdW5s
+ZXNzIHRoZSBpbnRlcmZhY2UgaXMgYWxyZWFkeSBzdXNwZW5kaW5nCisJICogb3Igc3VzcGVuZGVk
+LiAgRG9pbmcgc28gd291bGQgZm9yY2UgYSBydW5uaW5nIHN1c3BlbmQgdGltZXIgdG8gYmUKKwkg
+KiBjYW5jZWxsZWQuCisJICovCisJcG1fcnVudGltZV9nZXRfbm9yZXN1bWUoJmludGYtPmRldik7
+CisJcyA9IEFDQ0VTU19PTkNFKGludGYtPmRldi5wb3dlci5ydW50aW1lX3N0YXR1cyk7CisJaWYg
+KHMgPT0gUlBNX1NVU1BFTkRJTkcgfHwgcyA9PSBSUE1fU1VTUEVOREVEKQorCSAgICAgICAgc3Rh
+dHVzID0gcG1fcmVxdWVzdF9yZXN1bWUoJmludGYtPmRldik7CiAKLQlzdGF0dXMgPSBwbV9ydW50
+aW1lX2dldCgmaW50Zi0+ZGV2KTsKIAlpZiAoc3RhdHVzIDwgMCAmJiBzdGF0dXMgIT0gLUVJTlBS
+T0dSRVNTKQogCQlwbV9ydW50aW1lX3B1dF9ub2lkbGUoJmludGYtPmRldik7CiAJZWxzZQo=
+--000e0cd5174c8f3317049d053efa
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--000e0cd5174c8f3317049d053efa--
