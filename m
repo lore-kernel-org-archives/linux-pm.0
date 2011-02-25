@@ -1,16 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Xen-devel] Re: [PATCH 0/3] xen: Use PM/Hibernate
-	events for save/restore/chkpt
-Date: Fri, 25 Feb 2011 19:24:47 +0100
-Message-ID: <201102251924.47802.rjw__25711.3249194392$1298658429$gmane$org@sisk.pl>
-References: <1298157158-5421-1-git-send-email-rshriram@cs.ubc.ca>
-	<201102241941.00984.rjw@sisk.pl>
-	<alpine.DEB.2.00.1102251713560.19277@kaball-desktop>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 1/1,
+ v9] cgroup/freezer: add per freezer duty ratio control
+Date: Fri, 25 Feb 2011 10:23:19 -0800
+Message-ID: <20110225102319.6c776838__48504.8077222475$1298658692$gmane$org@putvin>
+References: <1297807750-28844-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	<1297807750-28844-2-git-send-email-jacob.jun.pan@linux.intel.com>
+	<201102160100.15487.rjw@sisk.pl> <20110215163812.7fa020b5@putvin>
+	<20110216032321.GA14893@count0.beaverton.ibm.com>
+	<20110224154525.1b463723@jacob-laptop>
+	<AANLkTinyhp29X8-atA=0DaHFuthTjVMJgBOitP52gwEX@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1102251713560.19277@kaball-desktop>
+In-Reply-To: <AANLkTinyhp29X8-atA=0DaHFuthTjVMJgBOitP52gwEX@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,43 +23,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Jan Beulich <JBeulich@novell.com>, Ian Campbell <Ian.Campbell@eu.citrix.com>, Shriram Rajagopalan <rshriram@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: Cedric Le Goater <clg@vnet.ibm.com>, container cgroup <containers@lists.linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>, "Kirill A. Shutemov" <kirill@shutemov.name>, akpm@linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, February 25, 2011, Stefano Stabellini wrote:
-> On Thu, 24 Feb 2011, Rafael J. Wysocki wrote:
-> > > I believe it only "[PATCH 3/3] PM: pm.h - Add comments about Xen save/restore/chkpt use case"
-> > > 
-> > > (http://marc.info/?i=1298157158-5421-4-git-send-email-rshriram@cs.ubc.ca)
-> > 
-> > This particular one should go in _after_ the functional patches.
-> > 
-> > > I or Stefano (these patches are against Ian's tree which is againsts Stefano's
-> > > tree) can take the other patches and stick Pavel's Ack, Rafeal's Ack, Ian's Ack
-> > > on them and also my Signed-off for the Xen bits.
-> > > 
-> > > I think that would work?
-> > 
-> > In fact, I think it's better if all patches go through the Xen tree.
-> > 
->  
-> I don't mind taking them but if they have to go after your
-> suspend-2.6/linux-next tree this would introduce a new dependency in the
-> branch I am preparing for linux-next myself.
+On Fri, 25 Feb 2011 09:53:59 -0800
+Paul Menage <menage@google.com> wrote:
+
+> On Thu, Feb 24, 2011 at 3:45 PM, jacob pan
+> <jacob.jun.pan@linux.intel.com> wrote:
+> > I played with v3 and v4 of the CFS bandwidth patch. When the cpu
+> > cgroup exceeds its cfs_quota, it does have the same effect as this
+> > patch in terms of freeze/thaw at given period and allowed runtime.
+> > But when the cgroup cpu usage is below cfs_quota, it is not
+> > throttled. Therefore, it cannot reduce wakeups.
 > 
-> Should I pull your suspend-2.6/linux-next tree into my linux-next branch?
-> Considering that this could create conflicts in linux-next if you
-> force-push your tree with some new changes and I don't update my version
-> of it, maybe it is better if I pull only a reduced version of it with
-> just the strict dependencies?
-
-It's not that simple, I think you'd need to pull my entire linux-next branch
-because of the dependencies between commits in there.
-
-Alternatively, I can take the entire $subject patchset.
-
-Still, I'd like the discussion to settle before anyway.
-
-Thanks,
-Rafael
+> How about a userspace daemon that periodically flips the CPU quota for
+> the cgroup between zero and the group's runnable level? Wouldn't that
+> achieve what you need pretty easily without having to introduce
+> additional complexity and threads into the kernel?
+I think it should work but with little bit more overhead than
+doing the same in the kernel. It will also need one periodic timer per
+cgroup. Two extra timer wake ups for each time slice to run.
+Thanks for the great suggestion. I will do some experiment with it.
