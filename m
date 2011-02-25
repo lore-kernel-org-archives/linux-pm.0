@@ -1,19 +1,17 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH v2 2/3] sdhci-pci : Enable runtime PM support
-Date: Fri, 25 Feb 2011 14:54:40 +0000
-Message-ID: <20110225145440.GA31620__47027.2803366699$1298646009$gmane$org@srcf.ucam.org>
-References: <cover.1297014479.git.pierre.tardy@intel.com>
-	<6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
-	<20110210043718.GA7585@void.printf.net>
-	<AANLkTi=iZ3dzAoRuRdpvQ=uBp4u8O8LtMuu2XdSWeZwr@mail.gmail.com>
-	<20110221204523.GA28419@void.printf.net>
-	<8250E4885F9967469CAC3FB5CBA2CE69935212DEA0@irsmsx501.ger.corp.intel.com>
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+Subject: Re: [PATCH 0/3] xen: Use PM/Hibernate events for
+ save/restore/chkpt
+Date: Fri, 25 Feb 2011 16:19:52 +0000
+Message-ID: <1298650792.5034.551.camel__48190.5613946312$1298650948$gmane$org@zakaz.uk.xensource.com>
+References: <Pine.LNX.4.44L0.1102211135170.15325-100000@netrider.rowland.org>
+	<1298308650.16356.8102.camel@zakaz.uk.xensource.com>
+	<201102212123.17720.rjw@sisk.pl>
+	<alpine.DEB.2.00.1102251610160.19277@kaball-desktop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <8250E4885F9967469CAC3FB5CBA2CE69935212DEA0@irsmsx501.ger.corp.intel.com>
+In-Reply-To: <alpine.DEB.2.00.1102251610160.19277@kaball-desktop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,21 +21,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Tardy, Pierre" <pierre.tardy@intel.com>
-Cc: Pierre Tardy <tardyp@gmail.com>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Chris Ball <cjb@laptop.org>, "Gao,
-	Yunpeng" <yunpeng.gao@intel.com>
+To: Stefano Stabellini <Stefano.Stabellini@eu.citrix.com>
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 25, 2011 at 07:33:12AM +0000, Tardy, Pierre wrote:
+On Fri, 2011-02-25 at 16:17 +0000, Stefano Stabellini wrote:
+> On Mon, 21 Feb 2011, Rafael J. Wysocki wrote:
+> > > For a PV guest only the Xen PV drivers really matter.
+> > > 
+> > > But for a PVHVM guest you are right since there are the emulated "PC"
+> > > devices though which could be problematic. There's nothing especially
+> > > thrilling in that set of devices although I don't think that invalidates
+> > > your point.
+> 
+> This is a genuine concern because it currently breaks save/restore for
+> all PV on HVM guests (dummy_hcd being the offending driver).
 
-> My understanding is the pci driver is not supposed to do any set_power_state/pci_save_state/wake_enable.
-> Everything is supposed to be generically handle by pci frameworks's runtime_pm impl.
-> Need confirmation from Rafael.
+Only if !CONFIG_HIBERNATION, right?
 
-The core can only enable PME generation, it can't configure what 
-generates PMEs. There's a register in sdhci that needs to be programmed 
-to enable wakeups on card insert/removal/interrupt. If you don't then 
-you won't get a PME no matter what the core does.
+> > > > Shouldn't the CONFIG_XEN_SAVE_RESTORE option select CONFIG_HIBERNATION?
+> > > > In which case the #ifdef lines in pm_op() wouldn't need to be changed.
+> > > 
+> > > I think selecting user-visible symbols is generally frowned upon.
+> > > 
+> > > But apart from that I was concerned that tying the Xen functionality
+> > > into the hibernation option was a bit odd/artificial. Perhaps it's the
+> > > only solution though.
+> > 
+> > I'd very much prefer it if the patchset didn't touch drivers/base/power/main.c.
+> > 
+> > However, if you want to select CONFIG_HIBERNATION from CONFIG_XEN_SAVE_RESTORE,
+> > you should make sure that CONFIG_HIBERNATION is really selectable (ie.
+> > CONFIG_SWAP is set and CONFIG_ARCH_HIBERNATION_POSSIBLE is set).
+> 
+> I think we should follow this suggestion.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+See the thread "[PATCH] xen: fix XEN_SAVE_RESTORE Kconfig dependencies"
+from Shriram <1298446066-11754-1-git-send-email-rshriram@cs.ubc.ca>
+
+Ian.
