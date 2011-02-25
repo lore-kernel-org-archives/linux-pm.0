@@ -1,18 +1,18 @@
-From: "Tardy, Pierre" <pierre.tardy@intel.com>
-Subject: Re: [PATCH v2 2/3] sdhci-pci : Enable runtime PM support
-Date: Fri, 25 Feb 2011 07:33:12 +0000
-Message-ID: <8250E4885F9967469CAC3FB5CBA2CE69935212DEA0__41964.0902000994$1298619256$gmane$org@irsmsx501.ger.corp.intel.com>
-References: <cover.1297014479.git.pierre.tardy@intel.com>
-	<6722fa7986194808f4d69a1e5ba6d3f163b77da9.1297014479.git.pierre.tardy@intel.com>
-	<20110210043718.GA7585@void.printf.net>
-	<AANLkTi=iZ3dzAoRuRdpvQ=uBp4u8O8LtMuu2XdSWeZwr@mail.gmail.com>
-	<20110221204523.GA28419@void.printf.net>
+From: "Jan Beulich" <JBeulich@novell.com>
+Subject: Re: [Xen-devel] Re: [PATCH] xen: fix XEN_SAVE_RESTORE
+	Kconfig	 dependencies
+Date: Fri, 25 Feb 2011 08:49:26 +0000
+Message-ID: <4D677B260200007800033A60__34287.4618633234$1298623831$gmane$org@vpn.id2.novell.com>
+References: <1298446066-11754-1-git-send-email-rshriram@cs.ubc.ca>
+	<1298452123.16356.10537.camel@zakaz.uk.xensource.com>
+	<4D64F681020000780003347D@vpn.id2.novell.com>
+	<1298459402.16356.10779.camel@zakaz.uk.xensource.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110221204523.GA28419@void.printf.net>
-Content-Language: en-US
+In-Reply-To: <1298459402.16356.10779.camel@zakaz.uk.xensource.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,49 +22,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Chris Ball <cjb@laptop.org>, Pierre Tardy <tardyp@gmail.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Gao, Yunpeng" <yunpeng.gao@intel.com>
+To: Ian Campbell <Ian.Campbell@eu.citrix.com>
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>
 List-Id: linux-pm@vger.kernel.org
 
-Rafael, 
-Any comments here?
-
-> It's getting enabled by drivers/pci/pci-driver.c:local_pci_probe(),
-> before the sdhci-pci probe function runs.  local_pci_probe() does:
+>>> On 23.02.11 at 12:10, Ian Campbell <Ian.Campbell@eu.citrix.com> wrote:
+> On Wed, 2011-02-23 at 10:58 +0000, Jan Beulich wrote:
+>> >>> On 23.02.11 at 10:08, Ian Campbell <Ian.Campbell@eu.citrix.com> wrote:
+>> > On Wed, 2011-02-23 at 07:27 +0000, Shriram Rajagopalan wrote:
+>> >> Make XEN_SAVE_RESTORE user visible and enable HIBERNATION and SWAP,
+>> >> if this option is enabled.
+>> > 
+>> > I was under the (perhaps mistaken?) impression that selecting user
+>> > visible Kconfig symbols was verboten since it has side-effects which
+>> > make it hard for users to figure out why something cannot be switched
+>> > off and/or how to turn things on etc.
+>> > 
+>> > In any case I think I preferred the "depends HIBERNATION" idea -- I
+>> > thought that was the consensus of the thread too?
+>> 
+>> Why HIBERNATION (and SWAP) instead of SUSPEND? Xen doesn't
+>> support the former (other than the latter)...
 > 
->         /* Unbound PCI devices are always set to disabled and suspended.
->          * During probe, the device is set to enabled and active and the
->          * usage count is incremented.  If the driver supports runtime PM,
->          * it should call pm_runtime_put_noidle() in its probe routine and
->          * pm_runtime_get_noresume() in its remove routine.
->          */
->         pm_runtime_get_noresume(dev);
->         pm_runtime_set_active(dev);
->         pm_runtime_enable(dev);
+> HIBERNATION provides the FREEZE, THAW and RESUME methods which we would
+> like to use to integrate save/restore/checkpoint with the PM core i.e.
+> choose THAW vs. RESUME based on whether the suspend was cancelled (aka a
+> checkpoint) or not. See Shriram's other recent patch for details.
 
-OK. Sounds like it is a change post 2.6.37.
-So we need to replace the current sdhci runtime_pm initialization by what is in this comments.
+But imo it's nevertheless wrong to select HIBERNATION (and bogus
+to select SWAP), as that'll create to user space the impression that
+the kernel is capable of doing hibernation, which is wrong. If you
+need the particular PM operations but no hibernation, then an
+intermediary option will need to be introduced.
 
-> > Maybe Rafael can advice on this.
-> 
-> The controller advertises the ability to generate PME wakeups from D3
-> in its PCI capabilities; perhaps we just aren't programming it properly.
-> I don't see anything in your patch that would set SDHCI wakeup bits or
-> unmask card insertion/removal IRQs -- maybe that could be it?
-My understanding is the pci driver is not supposed to do any set_power_state/pci_save_state/wake_enable.
-Everything is supposed to be generically handle by pci frameworks's runtime_pm impl.
-Need confirmation from Rafael.
-
-Regards,
-Pierre
----------------------------------------------------------------------
-Intel Corporation SAS (French simplified joint stock company)
-Registered headquarters: "Les Montalets"- 2, rue de Paris, 
-92196 Meudon Cedex, France
-Registration Number:  302 456 199 R.C.S. NANTERRE
-Capital: 4,572,000 Euros
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+Jan
