@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: OPP: opp_find_freq_exact documentation
-	fix
-Date: Fri, 25 Feb 2011 23:59:37 +0100
-Message-ID: <201102252359.38140.rjw__2777.27805446393$1298674915$gmane$org@sisk.pl>
-References: <1298618044-8292-1-git-send-email-nm@ti.com>
+From: Pierre Tardy <tardyp@gmail.com>
+Subject: Re: [PATCH] intel_idle: disable NHM/WSM HW C-state
+	auto-demotion (v3)
+Date: Sun, 27 Feb 2011 17:17:53 +0100
+Message-ID: <AANLkTinVCvUkmX3pnSy_Ah3fOm6hV-jAPrQXAQ971xnS__38136.8715818555$1298823552$gmane$org@mail.gmail.com>
+References: <alpine.LFD.2.02.1101182150400.14668@x980>
+	<alpine.LFD.2.02.1101190035200.14668@x980>
+	<alpine.LFD.2.02.1102160119430.843@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1298618044-8292-1-git-send-email-nm@ti.com>
+In-Reply-To: <alpine.LFD.2.02.1102160119430.843@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,40 +20,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, linux-omap <linux-omap@vger.kernel.org>, linux-arm <linux-arm-kernel@lists.infradead.org>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, February 25, 2011, Nishanth Menon wrote:
-> opp_find_freq_exact documentation has is_available instead
-> of available. This also fixes warning with the kernel-doc:
-> scripts/kernel-doc drivers/base/power/opp.c >/dev/null
-> Warning(drivers/base/power/opp.c:246): No description found for parameter 'available'
-> Warning(drivers/base/power/opp.c:246): Excess function parameter 'is_available' description in 'opp_find_freq_exact'
-> 
-> Signed-off-by: Nishanth Menon <nm@ti.com>
+On Wed, Feb 16, 2011 at 7:22 AM, Len Brown <lenb@kernel.org> wrote:
+> From: Len Brown <len.brown@intel.com>
+>
+> Hardware C-state auto-demotion is a mechanism where the HW overrides
+> the OS C-state request, instead demoting to a shallower state,
+> which is less expensive, but saves less power.
+I'm interrested, for pytimechart, to have trace information of what
+actual c-state got reached after each idle request.
+Do you have any info on how to get that?
 
-Applied to suspend-2.6/linux-next.
-
-Thanks,
-Rafael
-
-
-> ---
->  drivers/base/power/opp.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index 2bb9b4c..56a6899 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -222,7 +222,7 @@ int opp_get_opp_count(struct device *dev)
->   * opp_find_freq_exact() - search for an exact frequency
->   * @dev:		device for which we do this operation
->   * @freq:		frequency to search for
-> - * @is_available:	true/false - match for available opp
-> + * @available:		true/false - match for available opp
->   *
->   * Searches for exact match in the opp list and returns pointer to the matching
->   * opp if found, else returns ERR_PTR in case of error and should be handled
-> 
+Regards
+Pierre
