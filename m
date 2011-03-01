@@ -1,17 +1,11 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] intel_idle: disable NHM/WSM HW C-state
-	auto-demotion (v3)
-Date: Mon, 28 Feb 2011 11:08:50 -0500 (EST)
-Message-ID: <alpine.LFD.2.02.1102281105460.17782__15357.8732432381$1298909444$gmane$org@x980>
-References: <alpine.LFD.2.02.1101182150400.14668@x980>
-	<alpine.LFD.2.02.1101190035200.14668@x980>
-	<alpine.LFD.2.02.1102160119430.843@x980>
-	<AANLkTinVCvUkmX3pnSy_Ah3fOm6hV-jAPrQXAQ971xnS@mail.gmail.com>
+From: Pierre Tardy <tardyp@gmail.com>
+Subject: [RFC,PATCHv3 0/3] sdhci runtime_pm implementation
+Date: Tue,  1 Mar 2011 19:15:30 +0100
+Message-ID: <cover.1298820825.git.tardyp__9841.52931855551$1299003420$gmane$org@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <AANLkTinVCvUkmX3pnSy_Ah3fOm6hV-jAPrQXAQ971xnS@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +15,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pierre Tardy <tardyp@gmail.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org
+Cc: Pierre Tardy <tardyp@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-> > Hardware C-state auto-demotion is a mechanism where the HW overrides
-> > the OS C-state request, instead demoting to a shallower state,
-> > which is less expensive, but saves less power.
+Please find sdhci runtime_pm implementation.
 
-> I'm interrested, for pytimechart, to have trace information of what
-> actual c-state got reached after each idle request.
-> Do you have any info on how to get that?
+It uses clock gating fw as a tip to know when our chip is idle.
+It implements wake up from card insertion/removal.
 
-the actual c-state residency can be seen in the residency 
-counters that are exported by turbostat.
-However, at the time of the request/return the OS doesn't know
-that it's request got demoted demoted (or un-demoted).
+This is RFC, please dont merge yet. I really would like to have deep review
+from PCI linux-pm guys.
 
-No, checking the counters is not something we want to
-add to the idle entry/exit path -- they are not optimized for speed.
+Opens are: 
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+1/ Not sure if the pci configs in the driver in rpm_suspend/resume flow
+ are not duplicate from what the core is doing.
+
+2/ Wakeup from D3hot: I cannot find any driver that is implementing it in current upstream,
+I'm not sure if I'm doing it the good way. 
+We have the exact same issue for our not yet upstreamable usb-otg driver.
+Not sure if this cannot be implemented generically in core.
+
+version 1: was RFC and untested,
+version 2: has been tested on intel medfield platform.
+version 3: RFC, untested.
+- Change runtime_pm initialization to match latest PCI framework scheme
+- Added wake-up support
+
+Pierre Tardy (2):
+  mmc: sdhci: use ios->clock to know when sdhci is idle
+  mmc: sdhci: handle wake-up from runtime_pm
+
+Yunpeng Gao (1):
+  mmc: sdhci-pci: Enable runtime PM support
+
+ drivers/mmc/host/sdhci-pci.c |  117 +++++++++++++++++++++++++++++++++++++++++-
+ drivers/mmc/host/sdhci.c     |   88 +++++++++++++++++++++++++++++++
+ drivers/mmc/host/sdhci.h     |    5 ++
+ include/linux/mmc/sdhci.h    |    3 +
+ scripts/checkpatch.pl        |    6 +-
+ 5 files changed, 215 insertions(+), 4 deletions(-)
