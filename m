@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC,PATCHv3 0/3] sdhci runtime_pm implementation
-Date: Tue, 1 Mar 2011 15:30:29 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1103011528230.2034-100000__48968.3205647909$1299011566$gmane$org@iolanthe.rowland.org>
-References: <AANLkTik5HVxoOCH1ZVj50nUsCA5E04Y0J0RaWw7_KyKw@mail.gmail.com>
+From: Pierre Tardy <tardyp@gmail.com>
+Subject: Re: [RFC,
+	PATCHv3 3/3] mmc: sdhci: handle wake-up from runtime_pm
+Date: Tue, 1 Mar 2011 21:48:37 +0100
+Message-ID: <AANLkTi=nWXad7WMRYxu7cvC478qy7ptpotR4K_ATNt_J__23529.0207238451$1299012588$gmane$org@mail.gmail.com>
+References: <AANLkTikt1r3j99_ub0ce3_3snjoDXvR2+x6RxcjGfMK8@mail.gmail.com>
+	<Pine.LNX.4.44L0.1103011525040.2034-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTik5HVxoOCH1ZVj50nUsCA5E04Y0J0RaWw7_KyKw@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1103011525040.2034-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,29 +19,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pierre Tardy <tardyp@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 1 Mar 2011, Pierre Tardy wrote:
+On Tue, Mar 1, 2011 at 9:27 PM, Alan Stern <stern@rowland.harvard.edu> wrot=
+e:
+> On Tue, 1 Mar 2011, Pierre Tardy wrote:
+>
+>> >> + =A0 =A0 if (pm_runtime_suspended()) {
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 host->waking_up =3D 1;
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 /* Note that we disable temporarly the inte=
+rrupt until we do the
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0* resume. If we don't then we'll get con=
+stantly interrupted
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0* until we actually resume.
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0*
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0* as the irq is shared, this might not b=
+e very friendly to our
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0* irq sharers but the pm_runtime workque=
+ue should really be
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0* called soon.
+>> >
+>> > Instead of disabling the IRQ, would it be possible to tell the device
+>> > to stop generating an interrupt request?
+>>
+>> Well, the device is power gated, so any access to it will cause a bus
+>> timeout (depending of the platform)
+>
+> But could you gate the power back on and then turn off the interrupt
+> request?
+That's the role of runtime_resume... On some platform, this may need
+up to sending some SPI commands to the PMIC, to get those power rails
+back on.
+Something that you cannot do in interrupt context.
 
-> >> > Other drivers do it, but they use PCI PME# instead of interrupts.
-> >> Could you please elaborate?
-> >> My understanding is that PCI PME will generate MSI, which translate in
-> >> interrupt.
-> >
-> > It depends on the platform. =A0On systems with ACPI, PCI PME generates =
-an
-> > ACPI I/O event, which is handled by the ACPI and PM cores. =A0It does n=
-ot
-> > invoke the device driver's interrupt handler.
-> So, let's say, in the ACPI case, if the interrupt handler dont get
-> called, how would the driver know that he got a sdcard insert event,
-> and trigger a mmc_rescan() ?
+>
+> It seems like a foolish design to have an interrupt request that can't
+> be turned off by an interrupt handler.
+It's what we have for now ( looks like I need to go back to my system
+architects to see if we can change that...)
 
-When the ACPI and PCI cores process the PME event, they call
-pm_runtime_resume().  The driver's runtime_resume routine would read
-the device status and see the insert event, which would cause it to
-trigger mmc_rescan().
-
-Alan Stern
+Alan,
+thanks for all this feedback. I have now a much more clear view on how
+this is working on ACPI, I'll try to see how we can mimic this
+behaviour on intel_mid.
