@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC,
- PATCHv3 1/3] mmc: sdhci-pci: Enable runtime PM support
-Date: Tue, 1 Mar 2011 14:46:56 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1103011433110.2034-100000__33039.1149771914$1299009889$gmane$org@iolanthe.rowland.org>
-References: <1c071e206d0d02e07d3872f20268fba6b101a6b4.1298820826.git.tardyp@gmail.com>
+ PATCHv3 3/3] mmc: sdhci: handle wake-up from runtime_pm
+Date: Tue, 1 Mar 2011 14:53:46 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1103011448430.2034-100000__12765.8834601336$1299009905$gmane$org@iolanthe.rowland.org>
+References: <b01ca43311e25bf24c6e60e9f6d6d7b91ae3a130.1298820826.git.tardyp@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1c071e206d0d02e07d3872f20268fba6b101a6b4.1298820826.git.tardyp@gmail.com>
+In-Reply-To: <b01ca43311e25bf24c6e60e9f6d6d7b91ae3a130.1298820826.git.tardyp@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,186 +19,121 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pierre Tardy <tardyp@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Pierre Tardy <pierre.tardy@intel.com>, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Yunpeng Gao <yunpeng.gao@intel.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On Tue, 1 Mar 2011, Pierre Tardy wrote:
 
-> From: Yunpeng Gao <yunpeng.gao@intel.com>
+> When sdhci is runtime_suspended, it can still receive a wake-up
+> because of card insertion.
+> The wake-up will then be signaled by an interrupt which cannot be serviced
+> immediatly, as the device is powered off, and register are not accessibles.
 > 
-> Follow the kernel runtime PM framework, enable runtime PM support of the
-> sdhci host controller with pci interface.
+> We cannot call pm_runtime_get_sync() in irq context as on some architecture (e.g. intel_mid),
+> runtime_resume can lead to too much latency, due to e.g. PLL warm-up and such aggressive
+> power gating.
 > 
-> Note that this patch implements runtime_pm but now actually detects
-> activity.
-> It relies on higher level (childrens) to do actual waking up
-> Activity detection is put in a following patch
+> We temporarly disable the interrupt, and trigger a runtime_resume of the device
+> The interrupt will be re-enabled when resume is finished.
 > 
-> This patch also does not enable wakeups, so card insertion will not work
-> if runtime_pm is activated.
-> This is also dealt in a following patch
-> 
-> Original version from: Yunpeng Gao <yunpeng.gao@intel.com>
-> with modifications by: Pierre Tardy <pierre.tardy@intel.com>
-> 
-> Signed-off-by: Pierre Tardy <pierre.tardy@intel.com>
+> Signed-off-by: Pierre Tardy <tardyp@gmail.com>
 > ---
->  drivers/mmc/host/sdhci-pci.c |  120 +++++++++++++++++++++++++++++++++++++++++-
->  drivers/mmc/host/sdhci.c     |   31 +++++++++++
->  drivers/mmc/host/sdhci.h     |    5 ++
->  3 files changed, 155 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
-> index 2f8d468..f167a55 100644
-> --- a/drivers/mmc/host/sdhci-pci.c
-> +++ b/drivers/mmc/host/sdhci-pci.c
-> @@ -18,6 +18,7 @@
->  #include <linux/dma-mapping.h>
->  #include <linux/slab.h>
->  #include <linux/device.h>
-> +#include <linux/pm_runtime.h>
->  
->  #include <linux/mmc/host.h>
->  
-> @@ -1031,6 +1032,8 @@ static int __devinit sdhci_pci_probe(struct pci_dev *pdev,
->  	if (ret)
->  		return ret;
->  
-> +	pm_runtime_set_active(&pdev->dev);
+>  drivers/mmc/host/sdhci-pci.c |    8 +-------
+>  drivers/mmc/host/sdhci.c     |   30 +++++++++++++++++++++++++++++-
+>  include/linux/mmc/sdhci.h    |    2 ++
+>  scripts/checkpatch.pl        |    6 +++---
+>  4 files changed, 35 insertions(+), 11 deletions(-)
 
-This line is redundant.  It won't do anything, and the PCI core already 
-does it.
-
-> +
->  	slots = PCI_SLOT_INFO_SLOTS(slots) + 1;
->  	dev_dbg(&pdev->dev, "found %d slot(s)\n", slots);
->  	if (slots == 0)
-> @@ -1086,7 +1089,7 @@ static int __devinit sdhci_pci_probe(struct pci_dev *pdev,
+> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> index 735c3f7..85a1956 100644
+> --- a/drivers/mmc/host/sdhci.c
+> +++ b/drivers/mmc/host/sdhci.c
+> @@ -1599,6 +1599,21 @@ static irqreturn_t sdhci_irq(int irq, void *dev_id)
+>  	u32 intmask;
+>  	int cardint = 0;
 >  
->  		chip->slots[i] = slot;
->  	}
-> -
-> +	pm_runtime_put_noidle(&pdev->dev);
+> +	/* we might come from a sd insertion or sdio irq wake.. */
+> +	if (pm_runtime_suspended()) {
+> +		host->waking_up = 1;
+> +		/* Note that we disable temporarly the interrupt until we do the
+> +		 * resume. If we don't then we'll get constantly interrupted
+> +		 * until we actually resume.
+> +		 *
+> +		 * as the irq is shared, this might not be very friendly to our
+> +		 * irq sharers but the pm_runtime workqueue should really be
+> +		 * called soon.
+
+Instead of disabling the IRQ, would it be possible to tell the device 
+to stop generating an interrupt request?
+
+> +		 */
+> +		disable_irq_nosync(irq);
+> +		pm_runtime_get(host->mmc->parent);
+
+Does this pm_runtime_get() have a corresponding pm_runtime_put()?  I 
+didn't notice one anywhere.
+
+> +		return IRQ_NONE;
+> +	}
+>  	spin_lock(&host->lock);
+>  
+>  	intmask = sdhci_readl(host, SDHCI_INT_STATUS);
+> @@ -1747,7 +1762,12 @@ EXPORT_SYMBOL_GPL(sdhci_enable_irq_wakeups);
+>  
+>  int sdhci_runtime_suspend(struct sdhci_host *host)
+>  {
+> -	/* nothing to do yet */
+> +	u8 val;
+> +	/* make sure we wake up on sdcard insert/remove enabled */
+> +	val = SDHCI_WAKE_ON_INSERT | SDHCI_WAKE_ON_REMOVE;
+> +	if (host->mmc->pm_flags & MMC_PM_WAKE_SDIO_IRQ)
+> +		val |= SDHCI_WAKE_ON_INT;
+> +	sdhci_writeb(host, val, SDHCI_WAKE_UP_CONTROL);
 >  	return 0;
->  
->  free:
-> @@ -1114,8 +1117,120 @@ static void __devexit sdhci_pci_remove(struct pci_dev *pdev)
->  	}
->  
->  	pci_disable_device(pdev);
-> +	pm_runtime_get_noresume(&pdev->dev);
-> +
-> +}
-> +
-> +#ifdef CONFIG_PM_RUNTIME
-> +
-> +static int sdhci_pci_runtime_suspend(struct device *dev)
-> +{
-> +	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
-> +	struct sdhci_pci_chip *chip;
-> +	struct sdhci_pci_slot *slot;
-> +	int i, ret;
-> +	mmc_pm_flag_t pm_flags = 0;
-> +	pm_message_t state;
-> +
-> +	chip = pci_get_drvdata(pdev);
-> +	if (!chip)
-> +		return 0;
-> +
-> +	for (i = 0; i < chip->num_slots; i++) {
-> +		slot = chip->slots[i];
-> +		if (!slot)
-> +			continue;
-> +
-> +		ret = sdhci_runtime_suspend(slot->host);
-> +
-> +		if (ret) {
-> +			for (i--; i >= 0; i--)
-> +				sdhci_runtime_resume(chip->slots[i]->host);
-> +			return ret;
-> +		}
-> +
-> +		pm_flags |= slot->host->mmc->pm_flags;
-> +	}
-> +
-> +	state.event = PM_EVENT_AUTO_SUSPEND;
-> +	if (chip->fixes && chip->fixes->suspend) {
-> +		ret = chip->fixes->suspend(chip, state);
-> +		if (ret) {
-> +			for (i = chip->num_slots - 1; i >= 0; i--)
-> +				sdhci_runtime_resume(chip->slots[i]->host);
-> +			return ret;
-> +		}
-> +	}
-
-You probably should call synchronize_irq() here.  Otherwise a delayed
-IRQ might get delivered after the device has changed to D3.
-
-> +
-> +	pci_save_state(pdev);
-> +	if (pm_flags & MMC_PM_KEEP_POWER) {
-> +		if (pm_flags & MMC_PM_WAKE_SDIO_IRQ)
-> +			pci_enable_wake(pdev, PCI_D3hot, 1);
-> +	} else {
-> +		pci_enable_wake(pdev, PCI_D3hot, 0);
-> +		pci_disable_device(pdev);
-> +	}
-> +	pci_set_power_state(pdev, PCI_D3hot);
-
-Most of this isn't needed.  The PCI core does pci_save_state(), 
-pci_enable_wake(), and pci_set_power_state().
-
-Of course, you might want to override the wakeup setting selected by
-the core.  This is determined by pci_dev_run_wake(), for which you may 
-need to call device_set_run_wake().
-
-> +
-> +	return 0;
 >  }
 >  
-> +static int sdhci_pci_runtime_resume(struct device *dev)
-> +{
-> +	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
-> +	struct sdhci_pci_chip *chip;
-> +	struct sdhci_pci_slot *slot;
-> +	int i, ret;
-> +
-> +	chip = pci_get_drvdata(pdev);
-> +	if (!chip)
-> +		return 0;
-> +
-> +	pci_set_power_state(pdev, PCI_D0);
-> +	pci_restore_state(pdev);
-
-The PCI core does pci_set_power_state() and pci_restore_state().
-
-> +	ret = pci_enable_device(pdev);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (chip->fixes && chip->fixes->resume) {
-> +		ret = chip->fixes->resume(chip);
-> +		if (ret)
-> +			return ret;
+> @@ -1768,6 +1788,14 @@ int sdhci_runtime_resume(struct sdhci_host *host)
+>  	sdhci_set_ios(host->mmc, &host->mmc->ios);
+>  	mmiowb();
+>  
+> +	if (host->waking_up) {
+> +		host->waking_up = 0;
+> +		/* Re-enable the irq now we are perfectly resumed.
+> +		 * Any yet unhandled interrupt (i.e. the wake) will retrigger
+> +		 * irq
+> +		 */
+> +		irq_enable(host->irq);
 > +	}
-> +
-> +	for (i = 0; i < chip->num_slots; i++) {
-> +		slot = chip->slots[i];
-> +		if (!slot)
-> +			continue;
-> +
-> +		ret = sdhci_runtime_resume(slot->host);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int sdhci_pci_runtime_idle(struct device *dev)
-> +{
-> +	pm_runtime_autosuspend(dev);
-> +	return -EAGAIN;
-> +}
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(sdhci_runtime_resume);
+
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> index e3c7fc0..17aeda3 100755
+> --- a/scripts/checkpatch.pl
+> +++ b/scripts/checkpatch.pl
+> @@ -1325,8 +1325,8 @@ sub process {
+>  		$prefix = "$filename:$realline: " if ($emacs && $file);
+>  		$prefix = "$filename:$linenr: " if ($emacs && !$file);
+>  
+> -		$here = "#$linenr: " if (!$file);
+> -		$here = "#$realline: " if ($file);
+> +		$here = "" if (!$file);
+> +		$here = "" if ($file);
+>  
+>  		# extract the filename as it passes
+>  		if ($line =~ /^diff --git.*?(\S+)$/) {
+> @@ -1349,7 +1349,7 @@ sub process {
+>  			next;
+>  		}
+>  
+> -		$here .= "FILE: $realfile:$realline:" if ($realcnt != 0);
+> +		$here .= "$realfile:$realline:" if ($realcnt != 0);
+>  
+>  		my $hereline = "$here\n$rawline\n";
+>  		my $herecurr = "$here\n$rawline\n";
+> 
+
+Surely this doesn't belong in the patch.
 
 Alan Stern
