@@ -1,11 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT] idle patches for 2.6.38-rc7
-Date: Wed, 02 Mar 2011 20:43:32 -0500 (EST)
-Message-ID: <alpine.LFD.2.02.1103022041370.12344__13932.1292670958$1299116776$gmane$org@x980>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Documentation/power/states.txt: fix
+	repetition
+Date: Thu, 3 Mar 2011 10:37:31 +0100
+Message-ID: <201103031037.31619.rjw__37917.0339358554$1299145256$gmane$org@sisk.pl>
+References: <1299142660-5859-1-git-send-email-gnurou@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1299142660-5859-1-git-send-email-gnurou@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,65 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Alexandre Courbot <gnurou@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Thursday, March 03, 2011, Alexandre Courbot wrote:
+> Remove repetition of "called swsusp".
+> 
+> Signed-off-by: Alexandre Courbot <gnurou@gmail.com>
 
-please pull from: 
+This patch has already been applied to suspend-2.6/linux-next.
+Is this a new version?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
+Rafael
 
-This will update the files shown below.
 
-thanks!
-
-Len Brown
-Intel Open Source Technology Center
-
- arch/x86/include/asm/msr-index.h |    5 +++++
- drivers/idle/intel_idle.c        |   24 ++++++++++++++++++++++++
- 2 files changed, 29 insertions(+), 0 deletions(-)
-
-through these commits:
-
-Len Brown (2):
-      intel_idle: disable NHM/WSM HW C-state auto-demotion
-      intel_idle: disable Atom/Lincroft HW C-state auto-demotion
-
-with this log:
-
-commit bfb53ccf1c734b1907df7189eef4c08489827951
-Author: Len Brown <len.brown@intel.com>
-Date:   Wed Feb 16 01:32:48 2011 -0500
-
-    intel_idle: disable Atom/Lincroft HW C-state auto-demotion
-    
-    Just as we had to disable auto-demotion for NHM/WSM,
-    we need to do the same for Atom (Lincroft version).
-    
-    In particular, auto-demotion will prevent Lincroft
-    from entering the S0i3 idle power saving state.
-    
-    https://bugzilla.kernel.org/show_bug.cgi?id=25252
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 14796fca2bd22acc73dd0887248d003b0f441d08
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue Jan 18 20:48:27 2011 -0500
-
-    intel_idle: disable NHM/WSM HW C-state auto-demotion
-    
-    Hardware C-state auto-demotion is a mechanism where the HW overrides
-    the OS C-state request, instead demoting to a shallower state,
-    which is less expensive, but saves less power.
-    
-    Modern Linux should generally get exactly the states it requests.
-    In particular, when a CPU is taken off-line, it must not be demoted, else
-    it can prevent the entire package from reaching deep C-states.
-    
-    https://bugzilla.kernel.org/show_bug.cgi?id=25252
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  Documentation/power/states.txt |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/Documentation/power/states.txt b/Documentation/power/states.txt
+> index 34800cc..4416b28 100644
+> --- a/Documentation/power/states.txt
+> +++ b/Documentation/power/states.txt
+> @@ -62,12 +62,12 @@ setup via another operating system for it to use. Despite the
+>  inconvenience, this method requires minimal work by the kernel, since
+>  the firmware will also handle restoring memory contents on resume. 
+>  
+> -For suspend-to-disk, a mechanism called swsusp called 'swsusp' (Swap
+> -Suspend) is used to write memory contents to free swap space.
+> -swsusp has some restrictive requirements, but should work in most
+> -cases. Some, albeit outdated, documentation can be found in
+> -Documentation/power/swsusp.txt. Alternatively, userspace can do most
+> -of the actual suspend to disk work, see userland-swsusp.txt.
+> +For suspend-to-disk, a mechanism called 'swsusp' (Swap Suspend) is used
+> +to write memory contents to free swap space. swsusp has some restrictive
+> +requirements, but should work in most cases. Some, albeit outdated,
+> +documentation can be found in Documentation/power/swsusp.txt.
+> +Alternatively, userspace can do most of the actual suspend to disk work,
+> +see userland-swsusp.txt.
+>  
+>  Once memory state is written to disk, the system may either enter a
+>  low-power state (like ACPI S4), or it may simply power down. Powering
+> 
