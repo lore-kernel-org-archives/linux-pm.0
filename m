@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/6] ACPI / PM: Modify the "low-level resume
-	finished" message
-Date: Fri, 4 Mar 2011 21:53:19 +0100
-Message-ID: <201103042153.19301.rjw__24028.8417823196$1299273776$gmane$org@sisk.pl>
-References: <201102072316.41270.rjw@sisk.pl> <201102072319.56040.rjw@sisk.pl>
-	<20110304153807.GE1358@ucw.cz>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [Security] [PATCH] power: disable hibernation if
+ module loading is disabled
+Date: Fri, 4 Mar 2011 13:27:09 -0800
+Message-ID: <20110304212709.GA28680__27825.3259174109$1299274370$gmane$org@kroah.com>
+References: <1299255084-4390-1-git-send-email-segoon@openwall.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110304153807.GE1358@ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <1299255084-4390-1-git-send-email-segoon@openwall.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Vasiliy Kulikov <segoon@openwall.com>
+Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 04, 2011, Pavel Machek wrote:
-> Hi!
-> 
-> > Move the low-level resume completion message to the point where
-> > control goes back to acpi_suspend_enter() during resume and change
-> > it so that it's more informative.
-> 
-> Well, doing some printk as soon as reasonably possible was helpful for
-> debugging in the past. I'd move it sooner, not later.
-> 
-> (If you see that message, it means that normal printk debugging can be
-> used, not exotic stuff like hashes in NVRAM).
+On Fri, Mar 04, 2011 at 07:11:24PM +0300, Vasiliy Kulikov wrote:
+> If /proc/sys/kernel/modules_disabled is set to 1, then nobody (even full
+> root) may not read/write arbitrary kernel memory.  In spite of it,
+> hibernation allows anyone with an access to either /dev/snapshot or
+> /sys/power/ make the full snapshot of the system.  This snapshot may be
+> freely changed and uploaded back.
 
-That's what the patch is doing, isn't it?
+This sounds like a very unintentional change to the "don't load any
+modules" option, right?  If so, you should really document this
+somewhere, otherwise people are going to get very confused when their
+system suspends suddenly stop working for no obvious reason.
+
+thanks,
+
+greg k-h
