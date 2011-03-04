@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Xen-devel] Re: [PATCH 0/3] xen: Use PM/Hibernate
-	events for save/restore/chkpt
-Date: Fri, 4 Mar 2011 21:52:02 +0100
-Message-ID: <201103042152.02341.rjw__7070.53651935912$1299272106$gmane$org@sisk.pl>
-References: <1298157158-5421-1-git-send-email-rshriram@cs.ubc.ca>
-	<alpine.DEB.2.00.1102281104180.19277@kaball-desktop>
-	<AANLkTimVaxA6fJw+pKacAt=KAt6b9qTZFAL1sjSKbhX6@mail.gmail.com>
+From: Vasiliy Kulikov <segoon@openwall.com>
+Subject: Re: [PATCH] power: disable hibernation if module loading
+ is disabled
+Date: Sat, 5 Mar 2011 00:10:35 +0300
+Message-ID: <20110304211035.GA28842__40175.7624852054$1299273093$gmane$org@albatros>
+References: <1299255084-4390-1-git-send-email-segoon@openwall.com>
+	<201103042142.09247.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTimVaxA6fJw+pKacAt=KAt6b9qTZFAL1sjSKbhX6@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <201103042142.09247.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,66 +20,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rshriram@cs.ubc.ca
-Cc: "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Stefano Stabellini <stefano.stabellini@eu.citrix.com>, Jan Beulich <JBeulich@novell.com>, Ian Campbell <Ian.Campbell@eu.citrix.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 04, 2011, Shriram Rajagopalan wrote:
-> On Mon, Feb 28, 2011 at 3:06 AM, Stefano Stabellini
-> <stefano.stabellini@eu.citrix.com> wrote:
-> > On Fri, 25 Feb 2011, Rafael J. Wysocki wrote:
-> >> On Friday, February 25, 2011, Stefano Stabellini wrote:
-> >> > On Thu, 24 Feb 2011, Rafael J. Wysocki wrote:
-> >> > > > I believe it only "[PATCH 3/3] PM: pm.h - Add comments about Xen save/restore/chkpt use case"
-> >> > > >
-> >> > > > (http://marc.info/?i=1298157158-5421-4-git-send-email-rshriram@cs.ubc.ca)
-> >> > >
-> >> > > This particular one should go in _after_ the functional patches.
-> >> > >
-> >> > > > I or Stefano (these patches are against Ian's tree which is againsts Stefano's
-> >> > > > tree) can take the other patches and stick Pavel's Ack, Rafeal's Ack, Ian's Ack
-> >> > > > on them and also my Signed-off for the Xen bits.
-> >> > > >
-> >> > > > I think that would work?
-> >> > >
-> >> > > In fact, I think it's better if all patches go through the Xen tree.
-> >> > >
-> >> >
-> >> > I don't mind taking them but if they have to go after your
-> >> > suspend-2.6/linux-next tree this would introduce a new dependency in the
-> >> > branch I am preparing for linux-next myself.
-> >> >
-> >> > Should I pull your suspend-2.6/linux-next tree into my linux-next branch?
-> >> > Considering that this could create conflicts in linux-next if you
-> >> > force-push your tree with some new changes and I don't update my version
-> >> > of it, maybe it is better if I pull only a reduced version of it with
-> >> > just the strict dependencies?
-> >>
-> >> It's not that simple, I think you'd need to pull my entire linux-next branch
-> >> because of the dependencies between commits in there.
-> >>
-> >> Alternatively, I can take the entire $subject patchset.
-> >>
-> >> Still, I'd like the discussion to settle before anyway.
-> >
-> There has been no further discussion on this issue so far. Is there a
-> consensus ? To summarize:
->  XEN_SAVE_RESTORE depends on HIBERNATE, and in order to
-> enable the save/restore functionality, the user has to enable HIBERNATE
-> explicitly.
->  In thread "xen: fix XEN_SAVE_RESTORE Kconfig dependencies", Jan raised
-> an issue about "selecting" HIBERNATE & SWAP without the user's knowledge. That
-> was resolved by making XEN_SAVE_RESTORE "depend" on HIBERNATE and
-> making the user explicitly select it.
->  Rafael suggested making an intermediate interface CONFIG_HIBERNATE_INTERFACE
-> as an alternative but at the cost of a lot of code rework possibly.
+On Fri, Mar 04, 2011 at 21:42 +0100, Rafael J. Wysocki wrote:
+> That "everyone" is actually the "full root" (in the case of /sys/power/state)
+> or someone having CAP_SYS_ADMIN in the /dev/snapshot case, right?
 
-Not really.  There are a few files I'd like to depend on
-CONFIG_HIBERNATE_INTERFACE initially (in kernel/power/ mostly) and the more
-fine-grained differentiation can be done later over time.
+Yes, sorry for my bad english.  "Everyone" is indeed misleading :-D
 
-So, my suggestion is to introduce CONFIG_HIBERNATE_INTERFACE as discussed
-elsewhere and rework CONFIG_XEN_SAVE_RESTORE accordingly.
+> Second, there's _zero_ relationship between /proc/sys/kernel/modules_disabled
+> and the hibernation interface, so please find a different way to solve the
+> problem (if there is any).
+
+If modules_disabled is set to 1, then nobody, even full root may not write
+to the kernel, right?  So, if something permits to indirectly pass
+modules_disabled restriction, this is a bug.  Otherwise,
+modules_disabled is confusing as it gives false sense of security.
+
+-OR-
+
+modules_disabled's documentation should be changed to note that it
+doesn't prevent rootkit uploading, but only forbids modprob'ing modules
+via the "official" init_module(2) gate, disallowing e.g. module autoloading.
+
 
 Thanks,
-Rafael
+
+-- 
+Vasiliy Kulikov
+http://www.openwall.com - bringing security into open computing environments
