@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] power: disable hibernation if module loading
 	is disabled
-Date: Fri, 4 Mar 2011 21:42:09 +0100
-Message-ID: <201103042142.09247.rjw__8931.62857178158$1299271430$gmane$org@sisk.pl>
+Date: Fri, 4 Mar 2011 21:48:39 +0100
+Message-ID: <201103042148.39944.rjw__13389.962379779$1299271860$gmane$org@sisk.pl>
 References: <1299255084-4390-1-git-send-email-segoon@openwall.com>
+	<20110304184324.GQ372@outflux.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1299255084-4390-1-git-send-email-segoon@openwall.com>
+In-Reply-To: <20110304184324.GQ372@outflux.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,58 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vasiliy Kulikov <segoon@openwall.com>
-Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Kees Cook <kees.cook@canonical.com>
+Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Vasiliy Kulikov <segoon@openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 04, 2011, Vasiliy Kulikov wrote:
-> If /proc/sys/kernel/modules_disabled is set to 1, then nobody (even full
-> root) may not read/write arbitrary kernel memory.  In spite of it,
-> hibernation allows anyone with an access to either /dev/snapshot or
-> /sys/power/ make the full snapshot of the system.  This snapshot may be
-> freely changed and uploaded back.
+On Friday, March 04, 2011, Kees Cook wrote:
+> On Fri, Mar 04, 2011 at 07:11:24PM +0300, Vasiliy Kulikov wrote:
+> > If /proc/sys/kernel/modules_disabled is set to 1, then nobody (even full
+> > root) may not read/write arbitrary kernel memory.  In spite of it,
+> > hibernation allows anyone with an access to either /dev/snapshot or
+> > /sys/power/ make the full snapshot of the system.  This snapshot may be
+> > freely changed and uploaded back.
 > 
-> Signed-off-by: Vasiliy Kulikov <segoon@openwall.com>
+> Ah, yes please. I'd like to try to have ways to close all the
+> "intentional" arbitrary memory writing interfaces.
 
-That "everyone" is actually the "full root" (in the case of /sys/power/state)
-or someone having CAP_SYS_ADMIN in the /dev/snapshot case, right?
+They are not exactly arbitrary and I'd like to see a plausible attack
+scenario using the hibernation interface as is (assuming you're not a
+full root at least).
 
-So the changelog is misleading and please fix it.
+> Hooking it to modules_disable seems as good as any other toggle.
 
-Second, there's _zero_ relationship between /proc/sys/kernel/modules_disabled
-and the hibernation interface, so please find a different way to solve the
-problem (if there is any).
+You're kidding, aren't you?
+
+> Still waiting to hear
+> anything on this: http://article.gmane.org/gmane.linux.acpi.devel/49471
+
+I personally don't think it's a good idea, but I'm not the maintainer of that
+code.
 
 Thanks,
 Rafael
-
-
-> ---
->  kernel/power/hibernate.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index 1832bd2..1ac9eee 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -328,6 +328,9 @@ int hibernation_snapshot(int platform_mode)
->  {
->  	int error;
->  
-> +	if (modules_disabled)
-> +		return -EPERM;
-> +
->  	error = platform_begin(platform_mode);
->  	if (error)
->  		goto Close;
-> @@ -385,6 +388,9 @@ static int resume_target_kernel(bool platform_mode)
->  {
->  	int error;
->  
-> +	if (modules_disabled)
-> +		return -EPERM;
-> +
->  	error = dpm_suspend_noirq(PMSG_QUIESCE);
->  	if (error) {
->  		printk(KERN_ERR "PM: Some devices failed to power down, "
-> 
