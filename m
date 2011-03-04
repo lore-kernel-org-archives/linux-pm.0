@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] power: disable hibernation if module loading
-	is disabled
-Date: Fri, 4 Mar 2011 22:21:02 +0100
-Message-ID: <201103042221.02852.rjw__26059.4098399908$1299273708$gmane$org@sisk.pl>
-References: <1299255084-4390-1-git-send-email-segoon@openwall.com>
-	<201103042142.09247.rjw@sisk.pl> <20110304211035.GA28842@albatros>
+Subject: Re: [PATCH 3/6] ACPI / PM: Modify the "low-level resume
+	finished" message
+Date: Fri, 4 Mar 2011 21:53:19 +0100
+Message-ID: <201103042153.19301.rjw__24028.8417823196$1299273776$gmane$org@sisk.pl>
+References: <201102072316.41270.rjw@sisk.pl> <201102072319.56040.rjw@sisk.pl>
+	<20110304153807.GE1358@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110304211035.GA28842@albatros>
+In-Reply-To: <20110304153807.GE1358@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,37 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vasiliy Kulikov <segoon@openwall.com>
-Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 04, 2011, Vasiliy Kulikov wrote:
-> On Fri, Mar 04, 2011 at 21:42 +0100, Rafael J. Wysocki wrote:
-> > That "everyone" is actually the "full root" (in the case of /sys/power/state)
-> > or someone having CAP_SYS_ADMIN in the /dev/snapshot case, right?
+On Friday, March 04, 2011, Pavel Machek wrote:
+> Hi!
 > 
-> Yes, sorry for my bad english.  "Everyone" is indeed misleading :-D
+> > Move the low-level resume completion message to the point where
+> > control goes back to acpi_suspend_enter() during resume and change
+> > it so that it's more informative.
 > 
-> > Second, there's _zero_ relationship between /proc/sys/kernel/modules_disabled
-> > and the hibernation interface, so please find a different way to solve the
-> > problem (if there is any).
+> Well, doing some printk as soon as reasonably possible was helpful for
+> debugging in the past. I'd move it sooner, not later.
 > 
-> If modules_disabled is set to 1, then nobody, even full root may not write
-> to the kernel, right?  So, if something permits to indirectly pass
-> modules_disabled restriction, this is a bug.  Otherwise,
-> modules_disabled is confusing as it gives false sense of security.
-> 
-> -OR-
-> 
-> modules_disabled's documentation should be changed to note that it
-> doesn't prevent rootkit uploading, but only forbids modprob'ing modules
-> via the "official" init_module(2) gate, disallowing e.g. module autoloading.
+> (If you see that message, it means that normal printk debugging can be
+> used, not exotic stuff like hashes in NVRAM).
 
-Why not to change that documentation, then?
-
-Also, please note that in order to "write" into memory using the hibernation
-interface you need to have write access to swap, which you can use to corrupt
-memory regardless of the modules_disabled setting AFAICS.
-
-Thanks,
-Rafael
+That's what the patch is doing, isn't it?
