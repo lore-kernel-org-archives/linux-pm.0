@@ -1,12 +1,15 @@
-From: Vasiliy Kulikov <segoon@openwall.com>
-Subject: [PATCH] power: disable hibernation if module loading is
-	disabled
-Date: Fri,  4 Mar 2011 19:11:24 +0300
-Message-ID: <1299255084-4390-1-git-send-email-segoon__18959.4898176894$1299256134$gmane$org@openwall.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] power: disable hibernation if module loading
+ is disabled
+Date: Fri, 4 Mar 2011 21:32:02 +0100
+Message-ID: <20110304203201.GA22079__35261.4231328063$1299270797$gmane$org@elf.ucw.cz>
+References: <1299255084-4390-1-git-send-email-segoon@openwall.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <1299255084-4390-1-git-send-email-segoon@openwall.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,44 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-pm@lists.linux-foundation.org
+To: Vasiliy Kulikov <segoon@openwall.com>
+Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-If /proc/sys/kernel/modules_disabled is set to 1, then nobody (even full
-root) may not read/write arbitrary kernel memory.  In spite of it,
-hibernation allows anyone with an access to either /dev/snapshot or
-/sys/power/ make the full snapshot of the system.  This snapshot may be
-freely changed and uploaded back.
+On Fri 2011-03-04 19:11:24, Vasiliy Kulikov wrote:
+> If /proc/sys/kernel/modules_disabled is set to 1, then nobody (even full
+> root) may not read/write arbitrary kernel memory.  In spite of it,
+> hibernation allows anyone with an access to either /dev/snapshot or
+> /sys/power/ make the full snapshot of the system.  This snapshot may be
+> freely changed and uploaded back.
 
-Signed-off-by: Vasiliy Kulikov <segoon@openwall.com>
----
- kernel/power/hibernate.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+module loading has nothing to do with hibernation, and hibernation
+already checks for CAP_ADMIN or something similary strong. I don't see
+why this new check is needed.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 1832bd2..1ac9eee 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -328,6 +328,9 @@ int hibernation_snapshot(int platform_mode)
- {
- 	int error;
- 
-+	if (modules_disabled)
-+		return -EPERM;
-+
- 	error = platform_begin(platform_mode);
- 	if (error)
- 		goto Close;
-@@ -385,6 +388,9 @@ static int resume_target_kernel(bool platform_mode)
- {
- 	int error;
- 
-+	if (modules_disabled)
-+		return -EPERM;
-+
- 	error = dpm_suspend_noirq(PMSG_QUIESCE);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
+In fact, you are probably breaking someone's setup right now.
+
+> +	if (modules_disabled)
+> +		return -EPERM;
+> +
+>  	error = platform_begin(platform_mode);
+
+Hmm. How is this supposed to work with CONFIG_MODULES off?
+
+NAK.
+								Pavel
 -- 
-1.7.0.4
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
