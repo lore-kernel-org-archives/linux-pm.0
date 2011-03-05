@@ -1,11 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PCI/ACPI: Report ASPM support to BIOS if not
-	disabled from command line
-Date: Sat, 5 Mar 2011 13:21:51 +0100
-Message-ID: <201103051321.51856.rjw__48391.5336350494$1299327782$gmane$org@sisk.pl>
+Subject: [PATCH] PCI / PM: Add kerneldoc descrition of
+	pci_pm_reset()
+Date: Sat, 5 Mar 2011 13:24:27 +0100
+Message-ID: <201103051324.27461.rjw__19547.5134220489$1299327909$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -17,61 +17,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Cc: linux-pci@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPgoKV2UgbmVlZCB0byBkaXN0aW5n
-dWlzaCB0aGUgc2l0dWF0aW9uIGluIHdoaWNoIEFTUE0gc3VwcG9ydCBpcwpkaXNhYmxlZCBmcm9t
-IHRoZSBjb21tYW5kIGxpbmUgb3IgdGhyb3VnaCAuY29uZmlnIGZyb20gdGhlIHNpdHVhdGlvbgpp
-biB3aGljaCBpdCBpcyBkaXNhYmxlZCwgYmVjYXVzZSB0aGUgaGFyZHdhcmUgb3IgQklPUyBjYW4n
-dCBoYW5kbGUKaXQuICBJbiB0aGUgZm9ybWVyIGNhc2Ugd2Ugc2hvdWxkIG5vdCByZXBvcnQgQVNQ
-TSBzdXBwb3J0IHRvIHRoZSBCSU9TCnRocm91Z2ggQUNQSSBfT1NDLCBidXQgaW4gdGhlIGxhdHRl
-ciBjYXNlIHdlIHNob3VsZCBkbyB0aGF0LgoKSW50cm9kdWNlIHBjaWVfYXNwbV9zdXBwb3J0X2Vu
-YWJsZWQoKSB0aGF0IGNhbiBiZSB1c2VkIGJ5CmFjcGlfcGNpX3Jvb3RfYWRkKCkgdG8gZGV0ZXJt
-aW5lIHdoZXRoZXIgb3Igbm90IGl0IHNob3VsZCByZXBvcnQgQVNQTQpzdXBwb3J0IHRvIHRoZSBC
-SU9TIHRocm91Z2ggX09TQy4KClJlZmVyZW5jZXM6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9y
-Zy9zaG93X2J1Zy5jZ2k/aWQ9Mjk3MjIKUmVmZXJlbmNlczogaHR0cHM6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMDIzMgpSZXBvcnRlZC1hbmQtdGVzdGVkLWJ5OiBPcnR3
-aW4gR2zDvGNrIDxvZGlAb2RpLmNoPgpTaWduZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lzb2NraSA8
-cmp3QHNpc2sucGw+Ci0tLQogZHJpdmVycy9hY3BpL3BjaV9yb290LmMgfCAgICAyICstCiBkcml2
-ZXJzL3BjaS9wY2llL2FzcG0uYyB8ICAgIDcgKysrKysrKwogaW5jbHVkZS9saW51eC9wY2kuaCAg
-ICAgfCAgICA3ICsrKy0tLS0KIDMgZmlsZXMgY2hhbmdlZCwgMTEgaW5zZXJ0aW9ucygrKSwgNSBk
-ZWxldGlvbnMoLSkKCkluZGV4OiBsaW51eC0yLjYvZHJpdmVycy9wY2kvcGNpZS9hc3BtLmMKPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvZHJpdmVycy9wY2kvcGNpZS9hc3BtLmMKKysrIGxp
-bnV4LTIuNi9kcml2ZXJzL3BjaS9wY2llL2FzcG0uYwpAQCAtNjksNiArNjksNyBAQCBzdHJ1Y3Qg
-cGNpZV9saW5rX3N0YXRlIHsKIH07CiAKIHN0YXRpYyBpbnQgYXNwbV9kaXNhYmxlZCwgYXNwbV9m
-b3JjZSwgYXNwbV9jbGVhcl9zdGF0ZTsKK3N0YXRpYyBib29sIGFzcG1fc3VwcG9ydF9lbmFibGVk
-ID0gdHJ1ZTsKIHN0YXRpYyBERUZJTkVfTVVURVgoYXNwbV9sb2NrKTsKIHN0YXRpYyBMSVNUX0hF
-QUQobGlua19saXN0KTsKIApAQCAtODk2LDYgKzg5Nyw3IEBAIHN0YXRpYyBpbnQgX19pbml0IHBj
-aWVfYXNwbV9kaXNhYmxlKGNoYXIKIHsKIAlpZiAoIXN0cmNtcChzdHIsICJvZmYiKSkgewogCQlh
-c3BtX2Rpc2FibGVkID0gMTsKKwkJYXNwbV9zdXBwb3J0X2VuYWJsZWQgPSBmYWxzZTsKIAkJcHJp
-bnRrKEtFUk5fSU5GTyAiUENJZSBBU1BNIGlzIGRpc2FibGVkXG4iKTsKIAl9IGVsc2UgaWYgKCFz
-dHJjbXAoc3RyLCAiZm9yY2UiKSkgewogCQlhc3BtX2ZvcmNlID0gMTsKQEAgLTkzMCwzICs5MzIs
-OCBAQCBpbnQgcGNpZV9hc3BtX2VuYWJsZWQodm9pZCkKIH0KIEVYUE9SVF9TWU1CT0wocGNpZV9h
-c3BtX2VuYWJsZWQpOwogCitib29sIHBjaWVfYXNwbV9zdXBwb3J0X2VuYWJsZWQodm9pZCkKK3sK
-KwlyZXR1cm4gYXNwbV9zdXBwb3J0X2VuYWJsZWQ7Cit9CitFWFBPUlRfU1lNQk9MKHBjaWVfYXNw
-bV9zdXBwb3J0X2VuYWJsZWQpOwpJbmRleDogbGludXgtMi42L2RyaXZlcnMvYWNwaS9wY2lfcm9v
-dC5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2RyaXZlcnMvYWNwaS9wY2lfcm9vdC5j
-CisrKyBsaW51eC0yLjYvZHJpdmVycy9hY3BpL3BjaV9yb290LmMKQEAgLTU2NCw3ICs1NjQsNyBA
-QCBzdGF0aWMgaW50IF9fZGV2aW5pdCBhY3BpX3BjaV9yb290X2FkZChzCiAJLyogSW5kaWNhdGUg
-c3VwcG9ydCBmb3IgdmFyaW91cyBfT1NDIGNhcGFiaWxpdGllcy4gKi8KIAlpZiAocGNpX2V4dF9j
-ZmdfYXZhaWwocm9vdC0+YnVzLT5zZWxmKSkKIAkJZmxhZ3MgfD0gT1NDX0VYVF9QQ0lfQ09ORklH
-X1NVUFBPUlQ7Ci0JaWYgKHBjaWVfYXNwbV9lbmFibGVkKCkpCisJaWYgKHBjaWVfYXNwbV9zdXBw
-b3J0X2VuYWJsZWQoKSkKIAkJZmxhZ3MgfD0gT1NDX0FDVElWRV9TVEFURV9QV1JfU1VQUE9SVCB8
-CiAJCQlPU0NfQ0xPQ0tfUFdSX0NBUEFCSUxJVFlfU1VQUE9SVDsKIAlpZiAocGNpX21zaV9lbmFi
-bGVkKCkpCkluZGV4OiBsaW51eC0yLjYvaW5jbHVkZS9saW51eC9wY2kuaAo9PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0t
-LSBsaW51eC0yLjYub3JpZy9pbmNsdWRlL2xpbnV4L3BjaS5oCisrKyBsaW51eC0yLjYvaW5jbHVk
-ZS9saW51eC9wY2kuaApAQCAtMTAwMiwxMiArMTAwMiwxMSBAQCBleHRlcm4gYm9vbCBwY2llX3Bv
-cnRzX2F1dG87CiAjZW5kaWYKIAogI2lmbmRlZiBDT05GSUdfUENJRUFTUE0KLXN0YXRpYyBpbmxp
-bmUgaW50IHBjaWVfYXNwbV9lbmFibGVkKHZvaWQpCi17Ci0JcmV0dXJuIDA7Ci19CitzdGF0aWMg
-aW5saW5lIGludCBwY2llX2FzcG1fZW5hYmxlZCh2b2lkKSB7IHJldHVybiAwOyB9CitzdGF0aWMg
-aW5saW5lIGJvb2wgcGNpZV9hc3BtX3N1cHBvcnRfZW5hYmxlZCh2b2lkKSB7IHJldHVybiBmYWxz
-ZTsgfQogI2Vsc2UKIGV4dGVybiBpbnQgcGNpZV9hc3BtX2VuYWJsZWQodm9pZCk7CitleHRlcm4g
-Ym9vbCBwY2llX2FzcG1fc3VwcG9ydF9lbmFibGVkKHZvaWQpOwogI2VuZGlmCiAKICNpZmRlZiBD
-T05GSUdfUENJRUFFUgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2xpbnV4LXBt
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+The pci_pm_reset() function is not a very nice interface due to its
+limitations and conditional behavior (e.g. it doesn't affect devices
+in low-power states), but it cannot be simply dropped, because
+existing device drivers may depend on it.  Still, its behavior and
+limitations should be well documented, so add an appropriate
+kerneldoc comment to it.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -2473,6 +2473,21 @@ clear:
+ 	return 0;
+ }
+ 
++/**
++ * pci_pm_reset - Put device into PCI_D3hot and back to PCI_D0.
++ * @dev: Device to reset.
++ * @probe: If set, only check if the device can be reset this way.
++ *
++ * If @dev supports native PCI PM and its PCI_PM_CTRL_NO_SOFT_RESET flag is
++ * unset, it will be reinitialized internally when going from PCI_D3hot to
++ * PCI_D0.  If that's the case and the device is not in a low-power state
++ * already, force it into PCI_D3hot and back to PCI_D0, causing it to be reset.
++ *
++ * NOTE: This causes the caller to sleep for twice the device power transition
++ * cooldown period, which for the D0->D3hot and D3hot->D0 transitions is 10 ms
++ * by devault (ie. unless the @dev's d3_delay field has a different value).
++ * Moreover, only devices in D0 can be reset by this function.
++ */
+ static int pci_pm_reset(struct pci_dev *dev, int probe)
+ {
+ 	u16 csr;
