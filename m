@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.38-rc7: oops on hibernate
-Date: Sat, 5 Mar 2011 21:39:14 +0100
-Message-ID: <201103052139.15012.rjw@sisk.pl>
-References: <20110305194027.GA6582@laptop.local>
+Subject: [PATCH v2] PCI / PM: Add kerneldoc description of
+	pci_pm_reset()
+Date: Sat, 5 Mar 2011 21:48:44 +0100
+Message-ID: <201103052148.44413.rjw__38087.6753632494$1299358190$gmane$org@sisk.pl>
+References: <201103051324.27461.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110305194027.GA6582@laptop.local>
+In-Reply-To: <201103051324.27461.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,29 +18,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Nezhevenko <dion@inhex.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-pci@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, March 05, 2011, Dmitry Nezhevenko wrote:
-> Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+The pci_pm_reset() function is not a very nice interface due to its
+limitations and conditional behavior (e.g. it doesn't affect devices
+in low-power states), but it cannot be simply dropped, because
+existing device drivers may depend on it.  However, its behavior and
+limitations should be well documented, so add an appropriate
+kerneldoc comment to it.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
 
 Hi,
 
-> I've just hit oops on hibernate. Unfortunately there is no
-> info in syslog, however I've created a photo with call stack:
-> http://dion.org.ua/tmp/20110305_210225.jpg
-> 
-> It looks like I can't reproduce it anymore. Both hibernate and s2ram works
-> on this machine (Asus F6A laptop).
-
-Unfortunately, if it's not reproducible it's almost impossible to find
-the root cause.  The symptom is that we try to access a bit in one of the
-hibernate code's memory bitmaps, but it turns out that the address it is
-supposed to correspond to is not present in those bitmaps.
-
-The code probably may be reworked to avoid triggering a bug on in such
-cases, but that's about the only idea I have at the moment.
+I corrected some spelling and similar stuff.
 
 Thanks,
 Rafael
+
+---
+ drivers/pci/pci.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -2473,6 +2473,21 @@ clear:
+ 	return 0;
+ }
+ 
++/**
++ * pci_pm_reset - Put device into PCI_D3 and back into PCI_D0.
++ * @dev: Device to reset.
++ * @probe: If set, only check if the device can be reset this way.
++ *
++ * If @dev supports native PCI PM and its PCI_PM_CTRL_NO_SOFT_RESET flag is
++ * unset, it will be reinitialized internally when going from PCI_D3hot to
++ * PCI_D0.  If that's the case and the device is not in a low-power state
++ * already, force it into PCI_D3hot and back to PCI_D0, causing it to be reset.
++ *
++ * NOTE: This causes the caller to sleep for twice the device power transition
++ * cooldown period, which for the D0->D3hot and D3hot->D0 transitions is 10 ms
++ * by devault (i.e. unless the @dev's d3_delay field has a different value).
++ * Moreover, only devices in D0 can be reset by this function.
++ */
+ static int pci_pm_reset(struct pci_dev *dev, int probe)
+ {
+ 	u16 csr;
