@@ -1,14 +1,13 @@
-From: david@lang.hm
-Subject: Re: [PATCH] power: disable hibernation if module loading
- is disabled
-Date: Sun, 6 Mar 2011 11:36:24 -0800 (PST)
-Message-ID: <alpine.DEB.2.00.1103061134520.9066@asgard.lang.hm>
-References: <1299255084-4390-1-git-send-email-segoon@openwall.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.38-rc7-git4: Reported regressions from 2.6.37
+Date: Sun, 6 Mar 2011 22:42:22 +0100
+Message-ID: <201103062242.22445.rjw__37578.8325131454$1299447835$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1103061041440.13175-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1299255084-4390-1-git-send-email-segoon@openwall.com>
+In-Reply-To: <Pine.LNX.4.44L0.1103061041440.13175-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +17,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vasiliy Kulikov <segoon@openwall.com>
-Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Florian Mickler <florian@mickler.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 4 Mar 2011, Vasiliy Kulikov wrote:
+On Sunday, March 06, 2011, Alan Stern wrote:
+> On Sun, 6 Mar 2011, Rafael J. Wysocki wrote:
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=29902
+> > Subject		: System suspend failed after 1-2 successful resumes
+> > Submitter	: Alex Terekhov <a.terekhov@gmail.com>
+> > Date		: 2011-02-25 22:24 (10 days old)
+> 
+> As far as I know, this isn't a regression.  Most likely it is present 
+> in earlier kernels too, but the OP hasn't tried any.
+> 
+> Anyway, it appears to be a combination of problems.  One is a bug, for 
+> which a patch has been written and will be submitted soon.  The other 
+> is unclear, it is probably a hardware issue.
 
-> If /proc/sys/kernel/modules_disabled is set to 1, then nobody (even full
-> root) may not read/write arbitrary kernel memory.  In spite of it,
-> hibernation allows anyone with an access to either /dev/snapshot or
-> /sys/power/ make the full snapshot of the system.  This snapshot may be
-> freely changed and uploaded back.
+OK, thanks for the info.
 
-given that the user can boot a different OS entirely and modify the stored 
-image, I don't see how this can work, even conceptually.
-
-and tieing anything modules related to hibernation is just wrong, you are 
-mixing completely different concepts (even if the implementation happens 
-to be similar)
-
-David Lang
+Rafael
