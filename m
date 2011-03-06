@@ -1,16 +1,13 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH] PM QoS: Allow parsing of ASCII values
-Date: Sun, 6 Mar 2011 06:07:14 -0800
-Message-ID: <20110306140714.GA2438@gvim.org>
-References: <20110224161732.GA6512@gvim.org>
-	<Pine.LNX.4.44L0.1102241154540.2084-100000@iolanthe.rowland.org>
-Reply-To: markgross@thegnar.org
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: 2.6.38-rc7-git4: Reported regressions from 2.6.37
+Date: Sun, 6 Mar 2011 10:47:05 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1103061041440.13175-100000__26134.5623679974$1299426492$gmane$org@netrider.rowland.org>
+References: <t0W8Ea1iKeB.A.6xD.Lp3cNB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1102241154540.2084-100000@iolanthe.rowland.org>
+In-Reply-To: <t0W8Ea1iKeB.A.6xD.Lp3cNB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,102 +17,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, Dan Carpenter <error27@gmail.com>, mark gross <markgross@thegnar.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Florian Mickler <florian@mickler.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 24, 2011 at 12:00:35PM -0500, Alan Stern wrote:
-> On Thu, 24 Feb 2011, mark gross wrote:
-> 
-> > > How careful do you want to be here?  For example, which of the
-> > > following inputs do you want to accept?
-> > > 
-> > > 	0x1234
-> > > 	abcd1234
-> > > 	abcd123456
-> > > 	abcd123456\n
-> > > 	abcd1234567
-> > > 	1234567890
-> > > 	1234567890\n
-> > > 	12345678901
-> > 
-> > > 	0x12345678
-> > > 	0x12345678\n
-> > just these 2 are what I had planned to allow after this email thread.
-> > 
-> > > 	0x123456789
-> > > 
-> > > Maybe it's okay to be a little relaxed about this, and trust the caller 
-> > > to pass in data that makes sense.
-> > yeah but is it worth the effort?
-> 
-> Checking for exactly those two forms really is a lot of effort.  You
-> have to make sure the first two characters are "0x" or "0X", you have
-> to check that each of the next eight characters is a valid hex digit,
-> and you have to verify that the 11th character, if present, is a
-> newline.
-> 
-> If you can get results that are good enough just by calling
-> strict_strtoul() without all these checks, it's probably worthwhile.
->
-I just don't want any buffer overrun bugs in code I'm writing.
+On Sun, 6 Mar 2011, Rafael J. Wysocki wrote:
 
-I like the attached thank you for all the really useful input.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=29902
+> Subject		: System suspend failed after 1-2 successful resumes
+> Submitter	: Alex Terekhov <a.terekhov@gmail.com>
+> Date		: 2011-02-25 22:24 (10 days old)
 
---mark
-Signed-off-by: mark gross <markgross@thegnar.org>
+As far as I know, this isn't a regression.  Most likely it is present 
+in earlier kernels too, but the OP hasn't tried any.
 
+Anyway, it appears to be a combination of problems.  One is a bug, for 
+which a patch has been written and will be submitted soon.  The other 
+is unclear, it is probably a hardware issue.
 
->From df199e491c750c529abcfb0e2256f508f1afd061 Mon Sep 17 00:00:00 2001
-From: mark gross <markgross@thegnar.org>
-Date: Sun, 6 Mar 2011 05:45:44 -0800
-Subject: [PATCH] correct PM QOS's user mode interface to work with ascii input per
- what is in the kernel docs.  Writing a string to the ABI from user mode
- comes in 2 flavors.  one with and one without a '\n' at the end.  this
- change accepts both.
-
- echo 0x12345678 > /dev/cpu_dma_latency
-and
- echo -n 0x12345678 > /dev/cpu_dma_latency
-now both work.
----
- kernel/pm_qos_params.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index aeaa7f8..b315446 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -40,6 +40,7 @@
- #include <linux/string.h>
- #include <linux/platform_device.h>
- #include <linux/init.h>
-+#include <linux/kernel.h>
- 
- #include <linux/uaccess.h>
- 
-@@ -387,15 +388,15 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
- 	if (count == sizeof(s32)) {
- 		if (copy_from_user(&value, buf, sizeof(s32)))
- 			return -EFAULT;
--	} else if (count == 11) { /* len('0x12345678/0') */
--		if (copy_from_user(ascii_value, buf, 11))
-+	} else if (count == 10 || count == 11) { /* '0x12345678' or
-+						    '0x12345678/n'*/
-+		ascii_value[count] = 0;
-+		if (copy_from_user(ascii_value, buf, count))
- 			return -EFAULT;
--		if (strlen(ascii_value) != 10)
-+		if ((x=strict_strtol(ascii_value, 16, &value)) != 0){
-+			pr_debug("%s, 0x%x, 0x%x\n",ascii_value, value, x);
- 			return -EINVAL;
--		x = sscanf(ascii_value, "%x", &value);
--		if (x != 1)
--			return -EINVAL;
--		pr_debug("%s, %d, 0x%x\n", ascii_value, x, value);
-+		}
- 	} else
- 		return -EINVAL;
- 
--- 
-1.7.1
+Alan Stern
