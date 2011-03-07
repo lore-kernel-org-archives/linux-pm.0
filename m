@@ -1,9 +1,10 @@
-From: deepaksi <deepak.sikri@st.com>
-Subject: SPEAR Power Management: Suspend to ram problem.
-Date: Mon, 7 Mar 2011 13:18:32 +0530
-Message-ID: <4D748DD0.4080608@st.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [ANNOUNCE] suspend-utils 1.0 has been released
+Date: Mon, 7 Mar 2011 22:37:31 +0100
+Message-ID: <201103072237.32194.rjw__47062.7191164114$1299534106$gmane$org@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8305340448196069035=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -12,100 +13,47 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Vipin KUMAR <vipin.kumar@st.com>, Shiraz HASHIM <shiraz.hashim@st.com>, Amit GOEL <amit.goel@st.com>, Armando VISCONTI <armando.visconti@st.com>, deepaksi <deepak.sikri@st.com>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Alon Bar-Lev <alon.barlev@gmail.com>, Luca Tettamanti <kronos.it@gmail.com>, LKML <linux-kernel@vger.kernel.org>, suspend-devel@lists.sourceforge.net, Rodolfo Garcia <kix@kix.es>, Stefan Seyfried <stefan.seyfried@googlemail.com>
 List-Id: linux-pm@vger.kernel.org
 
---===============8305340448196069035==
-Content-Type: text/html; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Yesterday I released version 1.0 of the suspend-utils package including
+s2disk/resume, s2ram, s2both and several supporting programs.  It contains
+the final official s2ram whitelist and should work with all of the Linux
+kernels supporting the user space hibernation interface released to date.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Hi,<br>
-<br>
-I am facing some issues related to system wake up&nbsp; from the sleep. The
-SPEAr system is a SOC having the ARM cortex core.<br>
-The system hardware has certain power islands, and one such island
-contains the Memory controller. If all the power islands except for the
-one with memory controller are switched off before moving into sleep,
-the wake up and system restore happens fine. But once I switch off the
-power island containing Memory Controller, we are facing certain issues
-as soon as I re-enable the MMU. <br>
-<br>
-<br>
-<b>Before Moving into sleep the following actions are performed.</b><br>
-<br>
-1. The code execution is done on the "Always on RAM". As the PC jumps
-to Always on RAM, the contents of link register and GPR are latched on
-to stack in DDR. Post this all the push operations are done on a
-temporary stack maintained in Always on ram (AOR)<br>
-2. Store sp and spsr to AOR<br>
-3.&nbsp; Save all ARM registers: Coprocessor access control register, TTBR0,
-TTBR1 and Translation table base control,&nbsp; Domain access control
-register, data fault status register, instruction fault status
-register,&nbsp; Data aux fault status register, instruction aux fault
-status, data fault address register and instruction fault address
-register,&nbsp; user r/w thread and process ID, user r/o thread and process
-ID, priv only thread and process ID, cache size selection,&nbsp; Data TLB
-lockdown, instruction TLB lockdown registers, Secure or non secure
-vector base address, FCSE PID, Context PID, Primary remap, normal remap
-registers, current cpsr, Data memory barrier and Data sync barrier...<br>
-<br>
-4. Switch off Instruction Cache, prediction flow, data cache. Then
-Switch off the MMU, put the DDR is self refresh. <br>
-5. Latch the memory controller initialization values on to stack<br>
-5. Move the system into low power mode, and then switch off the power
-domains.<br>
-<br>
-<b>Post wake up the actions are performed to restore in the reverse
-order.</b> The values of the registers poped back is verified to be
-fine.<br>
-1. An additional step is to reset and reprogram the Memory controller
-with the values latch on to the stack.<br>
-<br>
-When the MMU is re-enabled, the PC jumps fine to the Virtual address on
-the "Always-on RAM". <br>
-<br>
-Then I pop the contents of link register, and GPR, from the stack. The
-contents of these registers matched with the contents that were pushed
-before moving into sleep (verification done). The DDR contents&nbsp; were
-also verified to be correct for some random locations ( 0x0-0x8000)
-before and after sleep, to ensure that the DDR corruption is not
-triggering the problem. <br>
-<br>
-The last step involves programming the Program counter to a location on
-DDR (latched in link register on DDR stack).<br>
-But as soon as the Program Counter is programmed with the value of link
-register (popped from DDR), the system gets a error, which I am not
-able to trace using the lauterbach debugger.<br>
-<br>
-I suspect that there are still few things left in MMU configuration
-(not sure), which I missed.<br>
-The corruption problem could not be totally ruled out though as the
-memory controller also moves to off state in system sleep, and then is
-reset followed by DDR moved out of self refresh.<br>
-<br>
-I would really appreciate any help on this. <br>
-<br>
-Regards<br>
-Deepak<br>
-</body>
-</html>
+The suspend-utils-1.0 package is available for download from:
+http://sourceforge.net/projects/suspend/files/suspend/suspend-1.0/suspend-utils-1.0.tar.bz2/download
 
---===============8305340448196069035==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+For details about the release please refer to the ReleaseNotes file within
+the package.  For the full list of changes, please refer to the ChangeLog
+file.
 
+The development of s2ram is not going to be continued after this release
+and I'm not going to add any new entries to the whitelist.  Consequently,
+please do not report new machines that work with s2ram and are not listed.
+Still, bugs reported against s2ram will be handled and possibly fixed, so
+please report if you find one.  The hibernation-related utilities are still
+going to be worked on in the future.
 
---===============8305340448196069035==--
+Using the opportunity I'd like to thank all of the people who contributed
+to the suspend-utils project and made this release possible, especially
+Pavel Machek who inspired the development of s2disk/resume and created the
+first version of s2ram, Stefan Seyfried who helped to integrate the
+utilities with SUSE and openSUSE power management facilities and added a ton
+of machines to the s2ram whitelist, Luca Tettamanti who's been working on
+the project's web page, among other things, Alon Bar-Lev who added the
+configuration and build scripts, and our last s2ram whitelist maintainer
+Rodolfo Garcia.  Your work helped many Linux users to benefit from working
+suspend-to-RAM, so thanks a lot!
+
+There's one important administrative change related to the release.  Namely,
+the suspend-devel mailing list, that recently has been mostly used for
+reporting new machines to be added to the s2ram whitelist, is going to be
+closed.  Please send bug reports and other messages related to the
+suspend-utils package to linux-pm@lists.linux-foundation.org instead.
+
+Thanks and enjoy,
+Rafael
