@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
-Date: Tue, 8 Mar 2011 23:15:55 +0100
-Message-ID: <201103082315.55561.rjw__26292.1849768192$1299622599$gmane$org@sisk.pl>
+Date: Tue, 8 Mar 2011 23:16:59 +0100
+Message-ID: <201103082316.59901.rjw__22852.7486011901$1299622657$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.1102221029100.1968-100000@iolanthe.rowland.org>
 	<201103082312.26675.rjw@sisk.pl> <4D76AA2C.2010805@gmail.com>
 Mime-Version: 1.0
@@ -50,4 +50,6 @@ On Tuesday, March 08, 2011, Jiri Slaby wrote:
 > 
 > I don't know, maybe it's in suspend package which I don't have installed.
 
-It's there, yes.
+Hm.  So you use the in-kernel hibernate code?
+
+The one in the suspend package is generally faster.
