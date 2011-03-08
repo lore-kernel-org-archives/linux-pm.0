@@ -1,14 +1,11 @@
-From: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
-Date: Tue, 08 Mar 2011 21:31:06 +0100
-Message-ID: <4D76920A.8070605__47826.7485894777$1299616334$gmane$org@gmail.com>
-References: <Pine.LNX.4.44L0.1102221029100.1968-100000@iolanthe.rowland.org>
-	<4D75F34B.5010409@gmail.com> <201103082025.38559.rjw@suse.com>
+From: Sedat Dilek <sedat.dilek@googlemail.com>
+Subject: [PATCH] x86: Fix ACPI wakeup build failure
+Date: Tue,  8 Mar 2011 22:39:24 +0100
+Message-ID: <1299620364-21644-1-git-send-email-sedat.dilek__26062.7252785072$1299620450$gmane$org@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103082025.38559.rjw@suse.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,32 +15,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@suse.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>, Len Brown <len.brown@intel.com>, "H.J. Lu" <hjl.tools@gmail.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-next@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Sedat Dilek <sedat.dilek@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/08/2011 08:25 PM, Rafael J. Wysocki wrote:
-> On Tuesday, March 08, 2011, Jiri Slaby wrote:
->> On 02/22/2011 04:36 PM, Alan Stern wrote:
->>> By the way, are you booting with no_console_suspend?  And do you do 
->>> "echo 8 >/proc/sys/kernel/printk" (or equivalently, Alt-SysRq-8) before 
->>> suspending?
->>
->> Unfortunately there are no messages at all.
->>
->> Rafael, this is a Factory with intel gfx (modesetting). Do pm-utils
->> switch a console in such case? And if yes, to which one?
-> 
-> pm-utils don't, but s2ram does, I'm not sure from the top of my head to
-> which one, though.
-> 
-> If you use a KMS driver (I get you do), please just "chmod a-x /usr/sbin/s2ram".
+This fixes the following breakage in linux-next (next-20110308):
+  AS      arch/x86/kernel/acpi/wakeup_rm.o
+  arch/x86/kernel/acpi/wakeup_rm.S: Assembler messages:
+  arch/x86/kernel/acpi/wakeup_rm.S:12: Error: .size expression with symbol `wakeup_code_start' does not evaluate to a constant
 
-Yeah, I meant kernel modesetting, of course. Sorry for the confusion.
+The issue was introduced by commit d1ee433539ea5963a8f946f3428b335d1c5fdb20:
+"x86, trampoline: Use the unified trampoline setup for ACPI wakeup"
 
-I don't have /usr/sbin/s2ram. So I commented the --quirk-no-chvt thing
-in a pm-utils script.
+The problem was discovered while using Debian's binutils (2.21.0.20110302-1)
+and experimenting with binutils from upstream.
 
-thanks,
+Thanks Alexander and H.J. for the vital help.
+
+CC: Alexander van Heukelum <heukelum@fastmail.fm>
+CC: "H.J. Lu" <hjl.tools@gmail.com>
+CC: Len Brown <len.brown@intel.com>
+CC: Pavel Machek <pavel@ucw.cz>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>
+CC: x86@kernel.org
+CC: linux-pm@lists.linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+CC: linux-next@vger.kernel.org
+Signed-off-by: Sedat Dilek <sedat.dilek@gmail.com>
+---
+ arch/x86/kernel/acpi/wakeup_rm.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/wakeup_rm.S b/arch/x86/kernel/acpi/wakeup_rm.S
+index 6ce81ee..63b8ab5 100644
+--- a/arch/x86/kernel/acpi/wakeup_rm.S
++++ b/arch/x86/kernel/acpi/wakeup_rm.S
+@@ -9,4 +9,4 @@
+ 	.globl	acpi_wakeup_code
+ acpi_wakeup_code:
+ 	.incbin	"arch/x86/kernel/acpi/realmode/wakeup.bin"
+-	.size	wakeup_code_start, .-wakeup_code_start
++	.size	acpi_wakeup_code, .-acpi_wakeup_code
 -- 
-js
+1.7.4.1
