@@ -1,11 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [ANNOUNCE] suspend-utils 1.0 has been released
-Date: Mon, 7 Mar 2011 22:37:31 +0100
-Message-ID: <201103072237.32194.rjw__47062.7191164114$1299534106$gmane$org@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] power: disable hibernation if module loading
+ is disabled
+Date: Tue, 8 Mar 2011 07:58:45 +0100
+Message-ID: <20110308065845.GB1357__45110.4225976907$1299567612$gmane$org@ucw.cz>
+References: <1299255084-4390-1-git-send-email-segoon@openwall.com>
+	<201103042330.25079.rjw@sisk.pl> <20110305103444.GA26773@albatros>
+	<201103051224.18621.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <201103051224.18621.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,45 +21,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Alon Bar-Lev <alon.barlev@gmail.com>, Luca Tettamanti <kronos.it@gmail.com>, LKML <linux-kernel@vger.kernel.org>, suspend-devel@lists.sourceforge.net, Rodolfo Garcia <kix@kix.es>, Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, security@kernel.org, linux-pm@lists.linux-foundation.org, Vasiliy Kulikov <segoon@openwall.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Yesterday I released version 1.0 of the suspend-utils package including
-s2disk/resume, s2ram, s2both and several supporting programs.  It contains
-the final official s2ram whitelist and should work with all of the Linux
-kernels supporting the user space hibernation interface released to date.
+Hi!
 
-The suspend-utils-1.0 package is available for download from:
-http://sourceforge.net/projects/suspend/files/suspend/suspend-1.0/suspend-utils-1.0.tar.bz2/download
 
-For details about the release please refer to the ReleaseNotes file within
-the package.  For the full list of changes, please refer to the ChangeLog
-file.
+> > > modules_disabled surely is not the right interface to disable hibernation
+> > > and I don't really think there's a bug because it doesn't work as you'd like
+> > > it to.  In fact, there would be a bug if it did work that way.
+> > 
+> > What do you mean here?  Do you agree that you may read kernel image,
+> > slightly change it (including e.g. possible checksums, I didn't bother
+> > to check how much one should change), and write it back?
+> 
+> Yes, you can, but that's not the point.  The point is that calling an interface
+> that disables all possible functionality modifying kernel memory
+> "modules_disabled" is completely dumb.  Sorry, but that's how it goes.
 
-The development of s2ram is not going to be continued after this release
-and I'm not going to add any new entries to the whitelist.  Consequently,
-please do not report new machines that work with s2ram and are not listed.
-Still, bugs reported against s2ram will be handled and possibly fixed, so
-please report if you find one.  The hibernation-related utilities are still
-going to be worked on in the future.
+Fully agreed.
 
-Using the opportunity I'd like to thank all of the people who contributed
-to the suspend-utils project and made this release possible, especially
-Pavel Machek who inspired the development of s2disk/resume and created the
-first version of s2ram, Stefan Seyfried who helped to integrate the
-utilities with SUSE and openSUSE power management facilities and added a ton
-of machines to the s2ram whitelist, Luca Tettamanti who's been working on
-the project's web page, among other things, Alon Bar-Lev who added the
-configuration and build scripts, and our last s2ram whitelist maintainer
-Rodolfo Garcia.  Your work helped many Linux users to benefit from working
-suspend-to-RAM, so thanks a lot!
+If you want a subset of cap_sys_admin than can't install
+rootkit... just do it like that. Create cap_small_admin with such
+subset and migrate people that don't need full admin to it.
 
-There's one important administrative change related to the release.  Namely,
-the suspend-devel mailing list, that recently has been mostly used for
-reporting new machines to be added to the s2ram whitelist, is going to be
-closed.  Please send bug reports and other messages related to the
-suspend-utils package to linux-pm@lists.linux-foundation.org instead.
-
-Thanks and enjoy,
-Rafael
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
