@@ -1,13 +1,12 @@
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-Subject: Re: [PATCH] x86: Fix ACPI wakeup build failure
-Date: Tue, 08 Mar 2011 23:32:34 +0100
-Message-ID: <1299623554.6915.1427615977__44181.7055027515$1299629613$gmane$org@webmail.messagingengine.com>
-References: <1299620364-21644-1-git-send-email-sedat.dilek@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH 0/2] Allow subsystems to avoid using sysdevs
+	for defining "core" PM callbacks
+Date: Thu, 10 Mar 2011 01:31:57 +0100
+Message-ID: <201103100131.58206.rjw__30566.9725909413$1299717332$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1299620364-21644-1-git-send-email-sedat.dilek@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,62 +16,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sedat Dilek <sedat.dilek@googlemail.com>
-Cc: "H.J. Lu" <hjl.tools@gmail.com>, Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-next@vger.kernel.org, "H. Peter
-	Anvin" <hpa@zytor.com>, Sedat Dilek <sedat.dilek@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 08 Mar 2011 22:39 +0100, "Sedat Dilek" <sedat.dilek@googlemail.com> wrote:
-> This fixes the following breakage in linux-next (next-20110308):
->   AS      arch/x86/kernel/acpi/wakeup_rm.o
->   arch/x86/kernel/acpi/wakeup_rm.S: Assembler messages:
->   arch/x86/kernel/acpi/wakeup_rm.S:12: Error: .size expression with
->   symbol `wakeup_code_start' does not evaluate to a constant
-> 
-> The issue was introduced by commit
-> d1ee433539ea5963a8f946f3428b335d1c5fdb20:
-> "x86, trampoline: Use the unified trampoline setup for ACPI wakeup"
-> 
-> The problem was discovered while using Debian's binutils
-> (2.21.0.20110302-1)
-> and experimenting with binutils from upstream.
-> 
-> Thanks Alexander and H.J. for the vital help.
-> 
-> CC: Alexander van Heukelum <heukelum@fastmail.fm>
-> CC: "H.J. Lu" <hjl.tools@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Pavel Machek <pavel@ucw.cz>
-> CC: "Rafael J. Wysocki" <rjw@sisk.pl>
-> CC: Thomas Gleixner <tglx@linutronix.de>
-> CC: Ingo Molnar <mingo@redhat.com>
-> CC: "H. Peter Anvin" <hpa@zytor.com>
-> CC: x86@kernel.org
-> CC: linux-pm@lists.linux-foundation.org
-> CC: linux-kernel@vger.kernel.org
-> CC: linux-next@vger.kernel.org
-> Signed-off-by: Sedat Dilek <sedat.dilek@gmail.com>
+Hi,
 
-Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
+There are multiple problems with sysdevs, or struct sys_device objects to
+be precise, that are so annoying that some people have started to think
+of removind them entirely from the kernel.  To me, personally, the most
+obvious issue is the way sysdevs are used for defining suspend/resume
+callbacks to be executed with one CPU on-line and interrupts disabled.
+Greg and Kay may tell you more about the other problems with sysdevs. :-)
 
-(This problem exists in the x86-tree. Mainline is fine.)
+Some subsystems need to carry out certain operations during suspend after
+we've disabled non-boot CPUs and interrupts have been switched off on the
+only on-line one.  Currently, the only way to achieve that is to define
+sysdev suspend/resume callbacks, but this is cumbersome and inefficient.
+Namely, to do that, one has to define a sysdev class providing the callbacks
+and a sysdev actually using them, which is excessively complicated.  Moreover,
+the sysdev suspend/resume callbacks take arguments that are not really used
+by the majority of subsystems defining sysdev suspend/resume callbacks
+(or even if they are used, they don't really _need_ to be used, so they
+are simply unnecessary).  Of course, if a sysdev is only defined to provide
+suspend/resume (and maybe shutdown) callbacks, there's no real reason why
+it should show up in sysfs.
 
-> ---
->  arch/x86/kernel/acpi/wakeup_rm.S |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/wakeup_rm.S
-> b/arch/x86/kernel/acpi/wakeup_rm.S
-> index 6ce81ee..63b8ab5 100644
-> --- a/arch/x86/kernel/acpi/wakeup_rm.S
-> +++ b/arch/x86/kernel/acpi/wakeup_rm.S
-> @@ -9,4 +9,4 @@
->  	.globl	acpi_wakeup_code
->  acpi_wakeup_code:
->  	.incbin	"arch/x86/kernel/acpi/realmode/wakeup.bin"
-> -       .size   wakeup_code_start, .-wakeup_code_start
-> +       .size   acpi_wakeup_code, .-acpi_wakeup_code
-> -- 
-> 1.7.4.1
-> 
-> 
+For this reason, I thought it would be a good idea to provide a simpler
+interface for subsystems to define "very late" suspend callbacks and
+"very early" resume callbacks (and "very late" shutdown callbacks as well)
+without the entire bloat related to sysdevs.  The interface is introduced
+by the first of the following patches, while the second patch converts some
+sysdev users related to the x86 architecture to using the new interface.
+
+I believe that call sysdev users who need to define suspend/resume/shutdown
+callbacks may be converted to using the interface provided by the first patch,
+which in turn should allow us to convert the remaining sysdev functionality
+into "normal" struct device interfaces.  Still, even if that turns out to be
+too complicated, the bloat reduction resulting from the second patch kind of
+shows that moving at least some sysdev users to a simpler interface (like in
+the first patch) is a good idea anyway.
+
+This is a proof of concept, so the patches have not been tested.  Please be
+extrememly careful, because they touch sensitive code, so to speak.  In the
+majority of cases the changes are rather straightforward, but there are some
+more interesting cases as well (io_apic.c most importantly).
+
+Please have a look and tell me what you think.
+
+Thanks,
+Rafael
