@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 0/2] Allow subsystems to avoid using
-	sysdevs for defining "core" PM callbacks
-Date: Thu, 10 Mar 2011 20:04:25 +0100
-Message-ID: <201103102004.26144.rjw__40984.2100031257$1299783966$gmane$org@sisk.pl>
-References: <201103100131.58206.rjw@sisk.pl> <1299762315.1875.14.camel@zag>
+Subject: [PATCH] cpufreq: Remove the pm_message_t argument from
+	driver suspend
+Date: Thu, 10 Mar 2011 21:13:05 +0100
+Message-ID: <201103102113.05946.rjw__28733.4407832988$1299788218$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1299762315.1875.14.camel@zag>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,63 +16,113 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kay Sievers <kay.sievers@suse.de>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
+To: Dave Jones <davej@redhat.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, March 10, 2011, Kay Sievers wrote:
-> On Thu, 2011-03-10 at 01:31 +0100, Rafael J. Wysocki wrote:
-> > There are multiple problems with sysdevs, or struct sys_device objects to
-> > be precise, that are so annoying that some people have started to think
-> > of removind them entirely from the kernel.  To me, personally, the most
-> > obvious issue is the way sysdevs are used for defining suspend/resume
-> > callbacks to be executed with one CPU on-line and interrupts disabled.
-> > Greg and Kay may tell you more about the other problems with sysdevs. :-)
-> > 
-> > Some subsystems need to carry out certain operations during suspend after
-> > we've disabled non-boot CPUs and interrupts have been switched off on the
-> > only on-line one.  Currently, the only way to achieve that is to define
-> > sysdev suspend/resume callbacks, but this is cumbersome and inefficient.
-> > Namely, to do that, one has to define a sysdev class providing the callbacks
-> > and a sysdev actually using them, which is excessively complicated.  Moreover,
-> > the sysdev suspend/resume callbacks take arguments that are not really used
-> > by the majority of subsystems defining sysdev suspend/resume callbacks
-> > (or even if they are used, they don't really _need_ to be used, so they
-> > are simply unnecessary).  Of course, if a sysdev is only defined to provide
-> > suspend/resume (and maybe shutdown) callbacks, there's no real reason why
-> > it should show up in sysfs.
-> > 
-> > For this reason, I thought it would be a good idea to provide a simpler
-> > interface for subsystems to define "very late" suspend callbacks and
-> > "very early" resume callbacks (and "very late" shutdown callbacks as well)
-> > without the entire bloat related to sysdevs.  The interface is introduced
-> > by the first of the following patches, while the second patch converts some
-> > sysdev users related to the x86 architecture to using the new interface.
-> > 
-> > I believe that call sysdev users who need to define suspend/resume/shutdown
-> > callbacks may be converted to using the interface provided by the first patch,
-> > which in turn should allow us to convert the remaining sysdev functionality
-> > into "normal" struct device interfaces.  Still, even if that turns out to be
-> > too complicated, the bloat reduction resulting from the second patch kind of
-> > shows that moving at least some sysdev users to a simpler interface (like in
-> > the first patch) is a good idea anyway.
-> 
-> Do I read that right? We get rid of the entire dance of creating
-> sysdevs/sysdev_classes and the pointless and broken stuff in /sys?
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-That's the plan at least.
+None of the existing cpufreq drivers uses the second argument of
+its .suspend() callback (which isn't useful anyway), so remove it.
 
-> We just dynamically maintain a list of devices/operations, which is
-> list-executed when needed?
-> 
-> These new "core" operations are not included in every device but only
-> global per subsystem, just like the sysdev_class did earlier?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
 
-Yup.
+Hi,
 
-> Looks all like a nice plan to me.
-
-Good. :-)
+This patch is requisite for sysdevs rework discussed here:
+https://lkml.org/lkml/2011/3/9/439
+Please apply or let me know if I can take it to the suspend tree.
 
 Thanks,
 Rafael
+
+---
+ arch/arm/mach-s5pv210/cpufreq.c              |    3 +--
+ arch/arm/mach-s5pv310/cpufreq.c              |    3 +--
+ arch/arm/plat-s3c24xx/cpu-freq.c             |    2 +-
+ arch/powerpc/platforms/powermac/cpufreq_32.c |    2 +-
+ drivers/cpufreq/cpufreq.c                    |    2 +-
+ include/linux/cpufreq.h                      |    2 +-
+ 6 files changed, 6 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/include/linux/cpufreq.h
+===================================================================
+--- linux-2.6.orig/include/linux/cpufreq.h
++++ linux-2.6/include/linux/cpufreq.h
+@@ -230,7 +230,7 @@ struct cpufreq_driver {
+ 	int	(*bios_limit)	(int cpu, unsigned int *limit);
+ 
+ 	int	(*exit)		(struct cpufreq_policy *policy);
+-	int	(*suspend)	(struct cpufreq_policy *policy, pm_message_t pmsg);
++	int	(*suspend)	(struct cpufreq_policy *policy);
+ 	int	(*resume)	(struct cpufreq_policy *policy);
+ 	struct freq_attr	**attr;
+ };
+Index: linux-2.6/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6/drivers/cpufreq/cpufreq.c
+@@ -1371,7 +1371,7 @@ static int cpufreq_suspend(struct sys_de
+ 		goto out;
+ 
+ 	if (cpufreq_driver->suspend) {
+-		ret = cpufreq_driver->suspend(cpu_policy, pmsg);
++		ret = cpufreq_driver->suspend(cpu_policy);
+ 		if (ret)
+ 			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
+ 					"step on CPU %u\n", cpu_policy->cpu);
+Index: linux-2.6/arch/powerpc/platforms/powermac/cpufreq_32.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/cpufreq_32.c
++++ linux-2.6/arch/powerpc/platforms/powermac/cpufreq_32.c
+@@ -429,7 +429,7 @@ static u32 read_gpio(struct device_node
+ 	return offset;
+ }
+ 
+-static int pmac_cpufreq_suspend(struct cpufreq_policy *policy, pm_message_t pmsg)
++static int pmac_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
+ 	/* Ok, this could be made a bit smarter, but let's be robust for now. We
+ 	 * always force a speed change to high speed before sleep, to make sure
+Index: linux-2.6/arch/arm/mach-s5pv210/cpufreq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s5pv210/cpufreq.c
++++ linux-2.6/arch/arm/mach-s5pv210/cpufreq.c
+@@ -390,8 +390,7 @@ static int s5pv210_target(struct cpufreq
+ }
+ 
+ #ifdef CONFIG_PM
+-static int s5pv210_cpufreq_suspend(struct cpufreq_policy *policy,
+-				   pm_message_t pmsg)
++static int s5pv210_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/arch/arm/mach-s5pv310/cpufreq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s5pv310/cpufreq.c
++++ linux-2.6/arch/arm/mach-s5pv310/cpufreq.c
+@@ -458,8 +458,7 @@ static int s5pv310_target(struct cpufreq
+ }
+ 
+ #ifdef CONFIG_PM
+-static int s5pv310_cpufreq_suspend(struct cpufreq_policy *policy,
+-				   pm_message_t pmsg)
++static int s5pv310_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
+ 	return 0;
+ }
+Index: linux-2.6/arch/arm/plat-s3c24xx/cpu-freq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/cpu-freq.c
++++ linux-2.6/arch/arm/plat-s3c24xx/cpu-freq.c
+@@ -433,7 +433,7 @@ static int s3c_cpufreq_verify(struct cpu
+ static struct cpufreq_frequency_table suspend_pll;
+ static unsigned int suspend_freq;
+ 
+-static int s3c_cpufreq_suspend(struct cpufreq_policy *policy, pm_message_t pmsg)
++static int s3c_cpufreq_suspend(struct cpufreq_policy *policy)
+ {
+ 	suspend_pll.frequency = clk_get_rate(_clk_mpll);
+ 	suspend_pll.index = __raw_readl(S3C2410_MPLLCON);
