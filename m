@@ -1,14 +1,14 @@
-From: Jim Rees <rees@umich.edu>
-Subject: Re: WARNING: at kref_get
-Date: Thu, 10 Mar 2011 07:38:19 -0500
-Message-ID: <20110310123819.GA3700@merit.edu>
-References: <20110310054945.GB3058@merit.edu> <201103101139.58837.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 0/2] Allow subsystems to avoid using
+	sysdevs for defining "core" PM callbacks
+Date: Thu, 10 Mar 2011 20:04:25 +0100
+Message-ID: <201103102004.26144.rjw__40984.2100031257$1299783966$gmane$org@sisk.pl>
+References: <201103100131.58206.rjw@sisk.pl> <1299762315.1875.14.camel@zag>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201103101139.58837.rjw@sisk.pl>
+In-Reply-To: <1299762315.1875.14.camel@zag>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,15 +18,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: Kay Sievers <kay.sievers@suse.de>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-Rafael J. Wysocki wrote:
+On Thursday, March 10, 2011, Kay Sievers wrote:
+> On Thu, 2011-03-10 at 01:31 +0100, Rafael J. Wysocki wrote:
+> > There are multiple problems with sysdevs, or struct sys_device objects to
+> > be precise, that are so annoying that some people have started to think
+> > of removind them entirely from the kernel.  To me, personally, the most
+> > obvious issue is the way sysdevs are used for defining suspend/resume
+> > callbacks to be executed with one CPU on-line and interrupts disabled.
+> > Greg and Kay may tell you more about the other problems with sysdevs. :-)
+> > 
+> > Some subsystems need to carry out certain operations during suspend after
+> > we've disabled non-boot CPUs and interrupts have been switched off on the
+> > only on-line one.  Currently, the only way to achieve that is to define
+> > sysdev suspend/resume callbacks, but this is cumbersome and inefficient.
+> > Namely, to do that, one has to define a sysdev class providing the callbacks
+> > and a sysdev actually using them, which is excessively complicated.  Moreover,
+> > the sysdev suspend/resume callbacks take arguments that are not really used
+> > by the majority of subsystems defining sysdev suspend/resume callbacks
+> > (or even if they are used, they don't really _need_ to be used, so they
+> > are simply unnecessary).  Of course, if a sysdev is only defined to provide
+> > suspend/resume (and maybe shutdown) callbacks, there's no real reason why
+> > it should show up in sysfs.
+> > 
+> > For this reason, I thought it would be a good idea to provide a simpler
+> > interface for subsystems to define "very late" suspend callbacks and
+> > "very early" resume callbacks (and "very late" shutdown callbacks as well)
+> > without the entire bloat related to sysdevs.  The interface is introduced
+> > by the first of the following patches, while the second patch converts some
+> > sysdev users related to the x86 architecture to using the new interface.
+> > 
+> > I believe that call sysdev users who need to define suspend/resume/shutdown
+> > callbacks may be converted to using the interface provided by the first patch,
+> > which in turn should allow us to convert the remaining sysdev functionality
+> > into "normal" struct device interfaces.  Still, even if that turns out to be
+> > too complicated, the bloat reduction resulting from the second patch kind of
+> > shows that moving at least some sysdev users to a simpler interface (like in
+> > the first patch) is a good idea anyway.
+> 
+> Do I read that right? We get rid of the entire dance of creating
+> sysdevs/sysdev_classes and the pointless and broken stuff in /sys?
 
-  On Thursday, March 10, 2011, Jim Rees wrote:
-  > Was there ever a resolution to this bug?
-  
-  Do you still see the warning in 2.6.38-rc8?
+That's the plan at least.
 
-I will try it and get back to you.
+> We just dynamically maintain a list of devices/operations, which is
+> list-executed when needed?
+> 
+> These new "core" operations are not included in every device but only
+> global per subsystem, just like the sysdev_class did earlier?
+
+Yup.
+
+> Looks all like a nice plan to me.
+
+Good. :-)
+
+Thanks,
+Rafael
