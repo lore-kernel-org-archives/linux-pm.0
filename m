@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: WARNING: at kref_get
-Date: Thu, 10 Mar 2011 11:39:58 +0100
-Message-ID: <201103101139.58837.rjw@sisk.pl>
-References: <20110310054945.GB3058@merit.edu>
+Subject: Re: [RFC][PATCH 1/2] Introduce struct syscore_ops and
+	related functionality
+Date: Thu, 10 Mar 2011 11:42:07 +0100
+Message-ID: <201103101142.07510.rjw__32015.8055438244$1299753777$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1103092224480.3620-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110310054945.GB3058@merit.edu>
+In-Reply-To: <Pine.LNX.4.44L0.1103092224480.3620-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,58 +18,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jim Rees <rees@umich.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, March 10, 2011, Jim Rees wrote:
-> Was there ever a resolution to this bug?
+On Thursday, March 10, 2011, Alan Stern wrote:
+> On Thu, 10 Mar 2011, Rafael J. Wysocki wrote:
+> 
+> > Some subsystems need to carry out suspend/resume and shutdown
+> > operations with one CPU on-line and interrupts disabled.  The only
+> > way to register such operations is to define a sysdev class and
+> > a sysdev specifically for this purpose which is cumbersome and
+> > inefficient.  Moreover, the arguments taken by sysdev suspend,
+> > resume and shutdown callbacks are practically never necessary.
+> > 
+> > For this reason, introduce a simpler interface allowing subsystems
+> > to register operations to be executed very late during system suspend
+> > and shutdown and very early during resume in the form of
+> > strcut syscore_ops objects.
+> 
+> ...
+> 
+> > Index: linux-2.6/drivers/base/syscore.c
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6/drivers/base/syscore.c
+> 
+> It's true that the existing sys.c file lies in drivers/base; this is
+> presumably because it handles a bunch of class-related registration
+> stuff.  Now you're getting rid of all that, leaving just the
+> power-related operations, so doesn't it make more sense to put this
+> file in drivers/base/power?
 
-Do you still see the warning in 2.6.38-rc8?
+I didn't, because shutdown() doesn't really belong in there (well, depending).
+
+> > +/**
+> > + * syscore_suspend - Execute all the registered system core suspend callbacks.
+> > + *
+> > + * This function is executed with one CPU on-line and disabled interrupts.
+> > + */
+> > +int syscore_suspend(void)
+> > +{
+> > +	struct syscore_ops *ops;
+> > +
+> > +	list_for_each_entry_reverse(ops, &syscore_ops_list, node)
+> > +		if (ops->suspend) {
+> > +			int ret = ops->suspend();
+> > +			if (ret) {
+> > +				pr_err("PM: System core suspend callback "
+> > +					"%pF failed.\n", ops->suspend);
+> > +				return ret;
+> 
+> If an error occurs, you need to go back and resume all the things that
+> were suspended.  At least, that's what the code in sysdev_suspend does.
+
+Right, thanks a lot!
+
+> > +			}
+> > +		}
+> > +
+> > +	return 0;
+> > +}
 
 Rafael
-
-
-> Date: Tue Nov 2 14:49:08 PDT 2010
-> Subject: [GIT PULL] One more power management fix for 2.6.37
-> https://lists.linux-foundation.org/pipermail/linux-pm/2010-November/029299.html
-> 
-> I'm still seeing this in the Ubuntu version of 2.6.38-rc6.  I'd be happy to
-> try with the kernel.org version if anyone thinks it would make a difference.
-> 
-> WARNING: at /u/rees/l/linux-natty/lib/kref.c:34 kref_get+0x21/0x30()
-> Hardware name: 2386BHU
-> Modules linked in: sha1_generic arc4 ppp_mppe ppp_async crc_ccitt michael_mic orinoco_cs orinoco cfg80211 parport_pc dm_crypt ppdev snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss pcmcia snd_mixer_oss snd_pcm thinkpad_acpi snd_timer yenta_socket psmouse snd pcmcia_rsrc serio_raw pcmcia_core snd_page_alloc soundcore nvram lp parport i915 fbcon tileblit font bitblit softcursor drm_kms_helper drm usbhid intel_agp i2c_algo_bit intel_gtt e1000 sdhci_pci hid ata_piix sdhci video agpgart
-> Pid: 7110, comm: pm-suspend Not tainted 2.6.38-rc6-x40 #5
-> Call Trace:
->  [<c0147dd2>] ? warn_slowpath_common+0x72/0xa0
->  [<c031fc51>] ? kref_get+0x21/0x30
->  [<c031fc51>] ? kref_get+0x21/0x30
->  [<c0147e22>] ? warn_slowpath_null+0x22/0x30
->  [<c031fc51>] ? kref_get+0x21/0x30
->  [<c031ebd2>] ? kobject_get+0x12/0x20
->  [<c03b6958>] ? get_device+0x18/0x20
->  [<c03bfd70>] ? dpm_resume_end+0x1c0/0x2b0
->  [<c0180768>] ? suspend_devices_and_enter+0xb8/0x260
->  [<c0577f95>] ? printk+0x1d/0x20
->  [<c0180a18>] ? enter_state+0x108/0x130
->  [<c017ffbd>] ? state_store+0x6d/0xb0
->  [<c017ff50>] ? state_store+0x0/0xb0
->  [<c031e7b0>] ? kobj_attr_store+0x20/0x30
->  [<c02637c9>] ? sysfs_write_file+0x99/0xf0
->  [<c020a9d2>] ? vfs_write+0xa2/0x170
->  [<c0263730>] ? sysfs_write_file+0x0/0xf0
->  [<c020ab72>] ? sys_write+0x42/0x70
->  [<c057ae0c>] ? syscall_call+0x7/0xb
-> ---[ end trace 3295bc3b85c7d9eb ]---
-> PM: resume devices took 0.916 seconds
-> Restarting tasks ... 
-> done.
-> video LNXVIDEO:00: Restoring backlight state
-> EXT4-fs (sda1): re-mounted. Opts: errors=remount-ro,commit=0
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-> 
-> 
