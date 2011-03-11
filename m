@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 2/2] Convert several sysdev users to
-	using struct syscore_ops
-Date: Fri, 11 Mar 2011 21:45:45 +0100
-Message-ID: <201103112145.45695.rjw__20566.0679880113$1299877938$gmane$org@sisk.pl>
-References: <201103100131.58206.rjw@sisk.pl> <201103112129.24876.rjw@sisk.pl>
-	<20110311203305.GA21045@suse.de>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended
+	with quite some features
+Date: Sat, 12 Mar 2011 00:53:53 +0100
+Message-ID: <201103120053.53565.trenn__2326.67288878492$1299887715$gmane$org@suse.de>
+References: <201103111247.00212.trenn@suse.de>
+	<AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110311203305.GA21045@suse.de>
+In-Reply-To: <AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 11, 2011, Greg KH wrote:
-> On Fri, Mar 11, 2011 at 09:29:24PM +0100, Rafael J. Wysocki wrote:
-> > I thought about two different possible ways forward:
-> > 
-> > (1) Push [1/2] and the patches converting things that x86 depends on first,
-> >     followed perhaps by a patch introducing something like
-> >     CONFIG_ARCH_NO_SYSDEV_OPS that would simply disable
-> >     sysdev_{suspend|resume|shutdown}() (x86 would set it).  The other arches
-> >     might then be converted over time.
-> > 
-> > (2) Prepare patches converting everything that can be converted in the tree
-> >     and push them all in one shot.
-> > 
-> > The advantage of (1) is that we can start making changes RSN and the
-> > advantage of (2) seems to be that we may avoid some potential suspend/resume
-> > ordering issues on non-x86 architectures that may arise in principle if some
-> > subsystems are converted to using struct syscore_ops while the others are
-> > not (syscore_suspend() is executed after sysdev_suspend(), so if we move
-> > something from the latter to the former, it may end up being executed after
-> > things that it was executed before previously).
-> > 
-> > Please let me know what your opinion is.
+Hi,
+
+I excluded some people/lists...
+
+On Friday, March 11, 2011 04:56:01 PM Corentin Chary wrote:
+...
+> > The tool should compile and work on as much architectures as
+> > possible.
 > 
-> Hm, I would prefer (1) as that lets us get this moving sooner, and "flag
-> days" are never good to have.  If there are problems that arise because
-> of it, as you have noted, it will be simple just to convert the parts
-> that were using the "old" methods to the new ones to fix the issue,
-> right?
+> Hi Thomas,
+> Do you think handling really vendor specific "boosts" like EeePC's SHE
+> is in cpupower scope ?
+Not really.
 
-Yes, I agree.
+> Still, it would not solve the issue of setting SHE mode in a standard
+> way, or associating it with a governor.
+I am not familiar with this stuff.
+This is an oem/vendor specific way to modify the front-side-bus 
+throughput on (Intel atom only?) eeepc like machines (acer, asus and 
+others?)?
 
-Thanks,
-Rafael
+You could try to experiment with registering your own delayed work queue
+in eeepc-laptopc.c and try to find best tunings and fittings for such 
+requirements.
+If it works out and/or other xy-laptop.c or whatever drivers provide 
+similar functionality it could get moved up into a more generic 
+framework. A separate one next to cpuidle and cpufreq, for example 
+fsb_mod?
+-> then cpupower should get enhanced to show its statistics, provide 
+easy knobs to tune things and provide a manpage what this is all 
+about...
+
+       Thomas
+
+PS: Wouldn't the cpufreq subsystem suffice to register for this
+SHE thing?
+Could it be that SHE and real CPU freq (speedstep) is mutual exclusive?
+Is the only problem that p4_clockmod cannot be loaded then?
+I know it's needed to "unlock" certain eeepcs, but this not typical?
+Are there any statistics how much p4_clockmod saves power on such
+machines?
+
+    Thomas
