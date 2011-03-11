@@ -1,13 +1,16 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Why is max_cstate=1 still needed?
-Date: Fri, 11 Mar 2011 15:02:50 +0100 (CET)
-Message-ID: <alpine.LFD.2.00.1103111445520.2787__2015.50121787495$1299852358$gmane$org@localhost6.localdomain6>
-References: <4D7A1322.4050706@suse.cz>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [RFC][Update][PATCH 1/2] Introduce struct
+ syscore_ops and related functionality
+Date: Fri, 11 Mar 2011 09:11:31 -0800
+Message-ID: <20110311171131.GA10437__8341.76079738445$1299863643$gmane$org@suse.de>
+References: <Pine.LNX.4.44L0.1103092224480.3620-100000@netrider.rowland.org>
+	<201103101230.45569.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D7A1322.4050706@suse.cz>
+Content-Disposition: inline
+In-Reply-To: <201103101230.45569.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,60 +20,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "x86@kernel.org" <x86@kernel.org>, Linux kernel mailing list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 11 Mar 2011, Jiri Slaby wrote:
-> there are still reports against the latest kernels, that people need to
-> pass processor/intel_idle.max_cstate=1 to successfully boot the kernel.
-> The symptoms are always the same, until the parameter is specified OR
-> until the user presses a key, the system won't boot up.
+On Thu, Mar 10, 2011 at 12:30:45PM +0100, Rafael J. Wysocki wrote:
+> On Thursday, March 10, 2011, Alan Stern wrote:
+> > On Thu, 10 Mar 2011, Rafael J. Wysocki wrote:
+> > 
+> > > Some subsystems need to carry out suspend/resume and shutdown
+> > > operations with one CPU on-line and interrupts disabled.  The only
+> > > way to register such operations is to define a sysdev class and
+> > > a sysdev specifically for this purpose which is cumbersome and
+> > > inefficient.  Moreover, the arguments taken by sysdev suspend,
+> > > resume and shutdown callbacks are practically never necessary.
+> > > 
+> > > For this reason, introduce a simpler interface allowing subsystems
+> > > to register operations to be executed very late during system suspend
+> > > and shutdown and very early during resume in the form of
+> > > strcut syscore_ops objects.
+> > 
+> > ...
+> > 
+> > > Index: linux-2.6/drivers/base/syscore.c
+> > > ===================================================================
+> > > --- /dev/null
+> > > +++ linux-2.6/drivers/base/syscore.c
+> > 
+> > It's true that the existing sys.c file lies in drivers/base; this is
+> > presumably because it handles a bunch of class-related registration
+> > stuff.  Now you're getting rid of all that, leaving just the
+> > power-related operations, so doesn't it make more sense to put this
+> > file in drivers/base/power?
+> > 
+> > > +/**
+> > > + * syscore_suspend - Execute all the registered system core suspend callbacks.
+> > > + *
+> > > + * This function is executed with one CPU on-line and disabled interrupts.
+> > > + */
+> > > +int syscore_suspend(void)
+> > > +{
+> > > +	struct syscore_ops *ops;
+> > > +
+> > > +	list_for_each_entry_reverse(ops, &syscore_ops_list, node)
+> > > +		if (ops->suspend) {
+> > > +			int ret = ops->suspend();
+> > > +			if (ret) {
+> > > +				pr_err("PM: System core suspend callback "
+> > > +					"%pF failed.\n", ops->suspend);
+> > > +				return ret;
+> > 
+> > If an error occurs, you need to go back and resume all the things that
+> > were suspended.  At least, that's what the code in sysdev_suspend does.
+> > 
+> > > +			}
+> > > +		}
+> > > +
+> > > +	return 0;
+> > > +}
 > 
-> This started to appear between 2.6.31 and 2.6.34 (possibly a 2.6.33
-> regression) and continues to be reported against the latest stable
-> 2.6.37.3. For example:
-> https://bugzilla.kernel.org/show_bug.cgi?id=15289
-> https://bugzilla.novell.com/show_bug.cgi?id=579932
-> https://bugzilla.novell.com/show_bug.cgi?id=673589
-> https://bugzilla.novell.com/show_bug.cgi?id=675161
+> Below is a new version of the patch.  I've taken your comment on the failing
+> suspend into account, fix the list traversal direction in syscore_shutdown()
+> and added some debug statements.
 > 
-> I see that there were some fixes in .38-rc in this bug report (they look
-> unrelated):
-> https://bugzilla.kernel.org/show_bug.cgi?id=29992
+> Thanks,
+> Rafael
 > 
-> Should they give .38-rc a try?
+> ---
+> Some subsystems need to carry out suspend/resume and shutdown
+> operations with one CPU on-line and interrupts disabled.  The only
+> way to register such operations is to define a sysdev class and
+> a sysdev specifically for this purpose which is cumbersome and
+> inefficient.  Moreover, the arguments taken by sysdev suspend,
+> resume and shutdown callbacks are practically never necessary.
+> 
+> For this reason, introduce a simpler interface allowing subsystems
+> to register operations to be executed very late during system suspend
+> and shutdown and very early during resume in the form of
+> strcut syscore_ops objects.
+> 
+> ---
+>  drivers/base/Makefile       |    2 
+>  drivers/base/syscore.c      |  107 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/syscore_ops.h |   29 +++++++++++
+>  kernel/power/hibernate.c    |    9 +++
+>  kernel/power/suspend.c      |    4 +
+>  kernel/sys.c                |    4 +
+>  6 files changed, 154 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/include/linux/syscore_ops.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/include/linux/syscore_ops.h
+> @@ -0,0 +1,29 @@
+> +/*
+> + *  syscore_ops.h - System core operations.
+> + *
+> + *  Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
+> + *
+> + *  This file is released under the GPLv2.
+> + */
+> +
+> +#ifndef _LINUX_SYSCORE_OPS_H
+> +#define _LINUX_SYSCORE_OPS_H
+> +
+> +#include <linux/list.h>
+> +
+> +struct syscore_ops {
+> +	struct list_head node;
+> +	int (*suspend)(void);
+> +	void (*resume)(void);
+> +	void (*shutdown)(void);
+> +};
+> +
+> +extern void register_syscore_ops(struct syscore_ops *ops);
+> +extern void unregister_syscore_ops(struct syscore_ops *ops);
+> +#ifdef CONFIG_PM_SLEEP
+> +extern int syscore_suspend(void);
+> +extern void syscore_resume(void);
+> +#endif
 
-Trying does no damage :(
- 
-> Any help would be appreciated.
+Minor nit, provide inline functions for these when CONFIG_PM_SLEEP is
+not defined so the code still builds?
 
-I went through the bug reports briefly. While they all report the same
-symptoms (hangs until key pressed) the root cause varies.
+Other than that, this looks great to me, thanks for doing this.  Do you
+want me to take it through my tree, or yours?
 
-   - SMM C1E handler broken (affects AMD only)
-   - HPET issues (mostly AMD)
-   - The usual ACPI/BIOS madness
+thanks,
 
-On most of those systems nohz=off hides the problem as well as it
-prevents deeper power states, so the local apic timer just keeps
-ticking and the broadcast via PIT/HPET is not activated. hpet=disable
-is another way to work around it.
-
-To be honest we have no real handle on all of this as much of the
-wreckage is hidden deep in that black hole of ACPI/BIOS. We grew some
-quirks and detection mechanisms over time, but there seems to be a
-never ending source of trouble especially as HW vendors seem to add
-more power related features into the BIOS. We've seen perf wreckage as
-well as some of those abuse performance counters :(
-
-Of course those "features" are only tested against that other OS, some
-of them even require a driver counterpart for the other OS. Of course
-we have no information about that at all and the HW vendors are
-helpful as ever.
-
-Yes, it's sad, but reality.
-
-Thanks,
-
-	tglx
+greg k-h
