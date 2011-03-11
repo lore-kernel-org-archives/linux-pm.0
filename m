@@ -1,15 +1,14 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 10/10] ARM: Use struct syscore_ops instead of
- sysdevs for PM in timer and leds
-Date: Mon, 14 Mar 2011 02:06:36 -0700
-Message-ID: <4D7DDA9C.9020700__8733.95069870657$1300114256$gmane$org@codeaurora.org>
-References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
-	<201103131402.48129.rjw@sisk.pl> <201103131404.33311.rjw@sisk.pl>
+From: Corentin Chary <corentin.chary@gmail.com>
+Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended
+	with quite some features
+Date: Fri, 11 Mar 2011 15:56:01 +0000
+Message-ID: <AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc__10785.968337632$1300114986$gmane$org@mail.gmail.com>
+References: <201103111247.00212.trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103131404.33311.rjw@sisk.pl>
+In-Reply-To: <201103111247.00212.trenn@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +18,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Mattia Dongili <malattia@linux.it>, dri-devel@lists.freedesktop.org, Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, linux@dominikbrodowski.net, discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, power@bughost.org
 List-Id: linux-pm@vger.kernel.org
 
-On 3/13/2011 6:04 AM, Rafael J. Wysocki wrote:
->   #if defined(CONFIG_PM)&&  !defined(CONFIG_GENERIC_CLOCKEVENTS)
-> -static int timer_suspend(struct sys_device *dev, pm_message_t state)
-> +static int timer_suspend(void)
->   {
-> -	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
-> -
-> -	if (timer->suspend != NULL)
-> +	if (system_timer->suspend)
->   		timer->suspend();
+On Fri, Mar 11, 2011 at 11:46 AM, Thomas Renninger <trenn@suse.de> wrote:
+> Why is there need for another tool?
+> -----------------------------------
+>
+> CPU power consumption vs performance tuning is not about
+> CPU frequency switching anymore for quite some time.
+> Deep sleep states, traditional dynamic frequency scaling and
+> hidden turbo/boost frequencies are tight close together and
+> depend on each other. The first two exist on different architectures
+> like PPC, Itanium and ARM the latter only on X86.
+> On X86 the APU (CPU+GPU) will only run most efficiently if CPU
+> and GPU has proper power management in place.
+>
+> Users and Developers want to have *one* tool to get an overview what their
+> system supports and to monitor and debug CPU power management in detail.
+>
+> The tool should compile and work on as much architectures as
+> possible.
 >
 
-Shouldn't this be system_timer->suspend() ?
+Hi Thomas,
+Do you think handling really vendor specific "boosts" like EeePC's SHE
+is in cpupower scope ?
+Still, it would not solve the issue of setting SHE mode in a standard
+way, or associating it with a governor.
+Thanks,
 
 -- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+Corentin Chary
+http://xf.iksaif.net
