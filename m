@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/8] PCI / Intel IOMMU: Use syscore_ops instead
-	of sysdev class and sysdev
-Date: Sat, 12 Mar 2011 22:18:14 +0100
-Message-ID: <201103122218.14832.rjw__47633.5209365518$1299965491$gmane$org@sisk.pl>
+Subject: [PATCH 8/8] Introduce ARCH_NO_SYSDEV_OPS config option
+Date: Sat, 12 Mar 2011 22:21:36 +0100
+Message-ID: <201103122221.37295.rjw__1171.44103064692$1299965608$gmane$org@sisk.pl>
 References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,110 +23,132 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The Intel IOMMU subsystem uses a sysdev class and a sysdev for
-executing iommu_suspend() after interrupts have been turned off
-on the boot CPU (during system suspend) and for executing
-iommu_resume() before turning on interrupts on the boot CPU
-(during system resume).  However, since both of these functions
-ignore their arguments, the entire mechanism may be replaced with a
-struct syscore_ops object which is simpler.
+Introduce option allowing architectures where sysdev operations
+used during system suspend, resume and shutdown have been completely
+replaced with struct sycore_ops operations to avoid building sysdev
+code that will never be used.  Making callbacks in struct sys_device
+and struct sysdev_driver depend on ARCH_NO_SYSDEV_OPS allows us to
+verify if all of the references have been actually removed from the
+code the given architecture depends on.
+
+Make x86 set ARCH_NO_SYSDEV_OPS.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/intel-iommu.c |   38 +++++++++-----------------------------
- 1 file changed, 9 insertions(+), 29 deletions(-)
+ arch/x86/Kconfig       |    3 +++
+ drivers/base/sys.c     |    3 ++-
+ include/linux/device.h |    4 ++++
+ include/linux/pm.h     |   10 ++++++++--
+ include/linux/sysdev.h |    7 +++++--
+ 5 files changed, 22 insertions(+), 5 deletions(-)
 
-Index: linux-2.6/drivers/pci/intel-iommu.c
+Index: linux-2.6/include/linux/pm.h
 ===================================================================
---- linux-2.6.orig/drivers/pci/intel-iommu.c
-+++ linux-2.6/drivers/pci/intel-iommu.c
-@@ -36,7 +36,7 @@
- #include <linux/iova.h>
- #include <linux/iommu.h>
- #include <linux/intel-iommu.h>
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- #include <linux/tboot.h>
- #include <linux/dmi.h>
- #include <asm/cacheflush.h>
-@@ -3135,7 +3135,7 @@ static void iommu_flush_all(void)
- 	}
- }
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -529,13 +529,19 @@ struct dev_power_domain {
+  */
  
--static int iommu_suspend(struct sys_device *dev, pm_message_t state)
-+static int iommu_suspend(void)
- {
- 	struct dmar_drhd_unit *drhd;
- 	struct intel_iommu *iommu = NULL;
-@@ -3175,7 +3175,7 @@ nomem:
- 	return -ENOMEM;
- }
+ #ifdef CONFIG_PM_SLEEP
+-extern void device_pm_lock(void);
++#ifndef CONFIG_ARCH_NO_SYSDEV_OPS
++extern int sysdev_suspend(pm_message_t state);
+ extern int sysdev_resume(void);
++#else
++static inline int sysdev_suspend(pm_message_t state) { return 0; }
++static inline int sysdev_resume(void) { return 0; }
++#endif
++
++extern void device_pm_lock(void);
+ extern void dpm_resume_noirq(pm_message_t state);
+ extern void dpm_resume_end(pm_message_t state);
  
--static int iommu_resume(struct sys_device *dev)
-+static void iommu_resume(void)
- {
- 	struct dmar_drhd_unit *drhd;
- 	struct intel_iommu *iommu = NULL;
-@@ -3183,7 +3183,7 @@ static int iommu_resume(struct sys_devic
+ extern void device_pm_unlock(void);
+-extern int sysdev_suspend(pm_message_t state);
+ extern int dpm_suspend_noirq(pm_message_t state);
+ extern int dpm_suspend_start(pm_message_t state);
  
- 	if (init_iommu_hw()) {
- 		WARN(1, "IOMMU setup failed, DMAR can not resume!\n");
--		return -EIO;
-+		return;
- 	}
- 
- 	for_each_active_iommu(iommu, drhd) {
-@@ -3204,40 +3204,20 @@ static int iommu_resume(struct sys_devic
- 
- 	for_each_active_iommu(iommu, drhd)
- 		kfree(iommu->iommu_state);
+Index: linux-2.6/include/linux/sysdev.h
+===================================================================
+--- linux-2.6.orig/include/linux/sysdev.h
++++ linux-2.6/include/linux/sysdev.h
+@@ -33,12 +33,13 @@ struct sysdev_class {
+ 	const char *name;
+ 	struct list_head	drivers;
+ 	struct sysdev_class_attribute **attrs;
 -
--	return 0;
- }
- 
--static struct sysdev_class iommu_sysclass = {
--	.name		= "iommu",
-+static struct syscore_ops iommu_syscore_ops = {
- 	.resume		= iommu_resume,
- 	.suspend	= iommu_suspend,
++	struct kset		kset;
++#ifndef CONFIG_ARCH_NO_SYSDEV_OPS
+ 	/* Default operations for these types of devices */
+ 	int	(*shutdown)(struct sys_device *);
+ 	int	(*suspend)(struct sys_device *, pm_message_t state);
+ 	int	(*resume)(struct sys_device *);
+-	struct kset		kset;
++#endif
  };
  
--static struct sys_device device_iommu = {
--	.cls	= &iommu_sysclass,
--};
--
--static int __init init_iommu_sysfs(void)
-+static void __init init_iommu_pm_ops(void)
- {
--	int error;
--
--	error = sysdev_class_register(&iommu_sysclass);
--	if (error)
--		return error;
--
--	error = sysdev_register(&device_iommu);
--	if (error)
--		sysdev_class_unregister(&iommu_sysclass);
--
--	return error;
-+	register_syscore_ops(&iommu_syscore_ops);
+ struct sysdev_class_attribute {
+@@ -76,9 +77,11 @@ struct sysdev_driver {
+ 	struct list_head	entry;
+ 	int	(*add)(struct sys_device *);
+ 	int	(*remove)(struct sys_device *);
++#ifndef CONFIG_ARCH_NO_SYSDEV_OPS
+ 	int	(*shutdown)(struct sys_device *);
+ 	int	(*suspend)(struct sys_device *, pm_message_t state);
+ 	int	(*resume)(struct sys_device *);
++#endif
+ };
+ 
+ 
+Index: linux-2.6/include/linux/device.h
+===================================================================
+--- linux-2.6.orig/include/linux/device.h
++++ linux-2.6/include/linux/device.h
+@@ -635,8 +635,12 @@ static inline int devtmpfs_mount(const c
+ /* drivers/base/power/shutdown.c */
+ extern void device_shutdown(void);
+ 
++#ifndef CONFIG_ARCH_NO_SYSDEV_OPS
+ /* drivers/base/sys.c */
+ extern void sysdev_shutdown(void);
++#else
++static inline void sysdev_shutdown(void) { }
++#endif
+ 
+ /* debugging and troubleshooting/diagnostic helpers. */
+ extern const char *dev_driver_string(const struct device *dev);
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -184,6 +184,9 @@ config ARCH_HIBERNATION_POSSIBLE
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+ 
++config ARCH_NO_SYSDEV_OPS
++	def_bool y
++
+ config ZONE_DMA32
+ 	bool
+ 	default X86_64
+Index: linux-2.6/drivers/base/sys.c
+===================================================================
+--- linux-2.6.orig/drivers/base/sys.c
++++ linux-2.6/drivers/base/sys.c
+@@ -302,7 +302,7 @@ void sysdev_unregister(struct sys_device
  }
  
- #else
--static int __init init_iommu_sysfs(void)
--{
--	return 0;
--}
-+static inline int init_iommu_pm_ops(void) { }
- #endif	/* CONFIG_PM */
  
- /*
-@@ -3320,7 +3300,7 @@ int __init intel_iommu_init(void)
- #endif
- 	dma_ops = &intel_dma_ops;
+-
++#ifndef CONFIG_ARCH_NO_SYSDEV_OPS
+ /**
+  *	sysdev_shutdown - Shut down all system devices.
+  *
+@@ -497,6 +497,7 @@ int sysdev_resume(void)
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(sysdev_resume);
++#endif /* CONFIG_ARCH_NO_SYSDEV_OPS */
  
--	init_iommu_sysfs();
-+	init_iommu_pm_ops();
- 
- 	register_iommu(&intel_iommu_ops);
- 
+ int __init system_bus_init(void)
+ {
