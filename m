@@ -1,7 +1,8 @@
 From: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-Subject: [PATCH v3 1/5] xen: xenbus PM events support
-Date: Fri, 11 Mar 2011 21:07:00 -0800
-Message-ID: <1299906420-30885-1-git-send-email-rshriram__23067.0159719468$1299906645$gmane$org@cs.ubc.ca>
+Subject: [PATCH v3 0/5] xen: Use PM/Hibernate events for
+	save/restore/chkpt
+Date: Fri, 11 Mar 2011 21:06:16 -0800
+Message-ID: <1299906376-30843-1-git-send-email-rshriram__21897.137622773$1299906648$gmane$org@cs.ubc.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,118 +17,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: xen-devel@lists.xensource.com
-Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org, Kazuhiro SUZUKI <kaz@jp.fujitsu.com>
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Kazuhiro SUZUKI <kaz@jp.fujitsu.com>
+The current implementation of xen guest save/restore/checkpoint functionality
+uses PM_SUSPEND and PM_RESUME events. This is not optimal when taking
+checkpoints of a virtual machine (where the suspend hypercall returns
+non-zero, requiring the devices and xenbus to just pickup from where they left
+off instead of a complete teardown/reconnect to backend). 
 
-Make xenbus frontend device subscribe to PM events
-to receive suspend/resume/freeze/thaw/restore
-notifications.
+The following set of patches modify this implementation to use Hibernate style
+control flow (freeze/restore for save/restore and freeze/thaw for checkpoint,
+which is merely a cancelled save akin to failed swsusp() ).
 
-Signed-off-by: Kenji Wakamiya <wkenji@jp.fujitsu.com>
-Signed-off-by: Kazuhiro Suzuki <kaz@jp.fujitsu.com>
-Signed-off-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-Acked-by: Ian Campbell <ian.campbell@citrix.com>
-[shriram--minor mods and improved commit message]
----
+These patches are against a merged tree based on linux-next branches from 
+Stefano Stabellini and Rafael J. Wysocki.
+
+Changes since last resend(s):
+  - Introduce a new user visible symbol HIBERNATION_INTERFACE and
+    hide the HIBERNATION symbol. As per earlier discussions, 
+    XEN_SAVE_RESTORE could "select" HIBERNATION yet be able to hide the
+    sysfs interfaces exposed by hibernation subsystem.
+
+Disabling unnecessary code (if HIBERNATION_INTERFACE) is not
+selected, requires a moving around a lot of code. Simply skipping 
+snapshot.c, user.c etc from the compile does not help as these files have global
+functions and variables, that are being used from elsewhere in the kernel. 
+I have currently used #ifs to disable the sysfs interface when user visible
+hibernation is disabled, but there is still some code bloat left.
+
+Kazuhiro SUZUKI (1):
+  xen: xenbus PM events support
+
+Shriram Rajagopalan (4):
+  xen: use freeze/restore/thaw PM events for suspend/resume/chkpt
+  PM: pm.h - Add comments about Xen save/restore/chkpt use case
+  PM: Add visible HIBERNATION_INTERFACE and hide HIBERNATION
+  xen: fix XEN_SAVE_RESTORE Kconfig dependencies
+
+ arch/x86/xen/Kconfig                       |    1 +
+ drivers/xen/manage.c                       |   16 ++++++++--------
  drivers/xen/xenbus/xenbus_probe.c          |   12 ++++++++++--
  drivers/xen/xenbus/xenbus_probe.h          |    3 ++-
- drivers/xen/xenbus/xenbus_probe_frontend.c |    9 +++++++--
+ drivers/xen/xenbus/xenbus_probe_frontend.c |   11 +++++++++--
+ include/linux/pm.h                         |   19 +++++++++++++++++++
  include/xen/xenbus.h                       |    2 +-
- 4 files changed, 20 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
-index baa65e7..7397695 100644
---- a/drivers/xen/xenbus/xenbus_probe.c
-+++ b/drivers/xen/xenbus/xenbus_probe.c
-@@ -577,7 +577,7 @@ void xenbus_dev_changed(const char *node, struct xen_bus_type *bus)
- }
- EXPORT_SYMBOL_GPL(xenbus_dev_changed);
- 
--int xenbus_dev_suspend(struct device *dev, pm_message_t state)
-+int xenbus_dev_suspend(struct device *dev)
- {
- 	int err = 0;
- 	struct xenbus_driver *drv;
-@@ -590,7 +590,7 @@ int xenbus_dev_suspend(struct device *dev, pm_message_t state)
- 		return 0;
- 	drv = to_xenbus_driver(dev->driver);
- 	if (drv->suspend)
--		err = drv->suspend(xdev, state);
-+		err = drv->suspend(xdev);
- 	if (err)
- 		printk(KERN_WARNING
- 		       "xenbus: suspend %s failed: %i\n", dev_name(dev), err);
-@@ -642,6 +642,14 @@ int xenbus_dev_resume(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(xenbus_dev_resume);
- 
-+int xenbus_dev_cancel(struct device *dev)
-+{
-+	/* Do nothing */
-+	DPRINTK("cancel");
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(xenbus_dev_cancel);
-+
- /* A flag to determine if xenstored is 'ready' (i.e. has started) */
- int xenstored_ready = 0;
- 
-diff --git a/drivers/xen/xenbus/xenbus_probe.h b/drivers/xen/xenbus/xenbus_probe.h
-index 2466581..888b990 100644
---- a/drivers/xen/xenbus/xenbus_probe.h
-+++ b/drivers/xen/xenbus/xenbus_probe.h
-@@ -64,8 +64,9 @@ extern void xenbus_dev_changed(const char *node, struct xen_bus_type *bus);
- 
- extern void xenbus_dev_shutdown(struct device *_dev);
- 
--extern int xenbus_dev_suspend(struct device *dev, pm_message_t state);
-+extern int xenbus_dev_suspend(struct device *dev);
- extern int xenbus_dev_resume(struct device *dev);
-+extern int xenbus_dev_cancel(struct device *dev);
- 
- extern void xenbus_otherend_changed(struct xenbus_watch *watch,
- 				    const char **vec, unsigned int len,
-diff --git a/drivers/xen/xenbus/xenbus_probe_frontend.c b/drivers/xen/xenbus/xenbus_probe_frontend.c
-index 5bcc2d6..ea83999 100644
---- a/drivers/xen/xenbus/xenbus_probe_frontend.c
-+++ b/drivers/xen/xenbus/xenbus_probe_frontend.c
-@@ -85,6 +85,12 @@ static struct device_attribute xenbus_frontend_dev_attrs[] = {
- 	__ATTR_NULL
- };
- 
-+static const struct dev_pm_ops xenbus_pm_ops = {
-+	.suspend = xenbus_dev_suspend,
-+	.resume  = xenbus_dev_resume,
-+	.thaw  = xenbus_dev_cancel,
-+};
-+
- static struct xen_bus_type xenbus_frontend = {
- 	.root = "device",
- 	.levels = 2,		/* device/type/<id> */
-@@ -100,8 +106,7 @@ static struct xen_bus_type xenbus_frontend = {
- 		.shutdown	= xenbus_dev_shutdown,
- 		.dev_attrs	= xenbus_frontend_dev_attrs,
- 
--		.suspend	= xenbus_dev_suspend,
--		.resume		= xenbus_dev_resume,
-+		.pm		= &xenbus_pm_ops,
- 	},
- };
- 
-diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
-index 7a1d15f..5467369 100644
---- a/include/xen/xenbus.h
-+++ b/include/xen/xenbus.h
-@@ -92,7 +92,7 @@ struct xenbus_driver {
- 	void (*otherend_changed)(struct xenbus_device *dev,
- 				 enum xenbus_state backend_state);
- 	int (*remove)(struct xenbus_device *dev);
--	int (*suspend)(struct xenbus_device *dev, pm_message_t state);
-+	int (*suspend)(struct xenbus_device *dev);
- 	int (*resume)(struct xenbus_device *dev);
- 	int (*uevent)(struct xenbus_device *, struct kobj_uevent_env *);
- 	struct device_driver driver;
--- 
-1.7.0.4
+ kernel/power/Kconfig                       |   11 ++++++++---
+ kernel/power/hibernate.c                   |    8 ++++++++
+ kernel/power/main.c                        |    2 +-
+ kernel/power/user.c                        |    2 ++
+ 11 files changed, 69 insertions(+), 18 deletions(-)
