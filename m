@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/8] ACPI: Use syscore_ops instead of sysdev
-	class and sysdev
-Date: Sat, 12 Mar 2011 22:16:51 +0100
-Message-ID: <201103122216.51858.rjw__43056.9445052699$1299965013$gmane$org@sisk.pl>
+Subject: [PATCH 4/8] timekeeping: Use syscore_ops instead of
+	sysdev class and sysdev
+Date: Sat, 12 Mar 2011 22:17:33 +0100
+Message-ID: <201103122217.34004.rjw__12715.8249299557$1299965024$gmane$org@sisk.pl>
 References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,87 +19,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
+Cc: Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACPI uses a sysdev class and a sysdev for executing
-irqrouter_resume() before turning on interrupts on the boot CPU.
-However, since irqrouter_resume() ignores its argument, the entire
-mechanism may be replaced with a struct syscore_ops object which
-is considerably simpler.
+The timekeeping subsystem uses a sysdev class and a sysdev for
+executing timekeeping_suspend() after interrupts have been turned off
+on the boot CPU (during system suspend) and for executing
+timekeeping_resume() before turning on interrupts on the boot CPU
+(during system resume).  However, since both of these functions
+ignore their arguments, the entire mechanism may be replaced with a
+struct syscore_ops object which is simpler.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/pci_link.c |   30 ++++++++----------------------
- 1 file changed, 8 insertions(+), 22 deletions(-)
+ kernel/time/timekeeping.c |   27 ++++++++-------------------
+ 1 file changed, 8 insertions(+), 19 deletions(-)
 
-Index: linux-2.6/drivers/acpi/pci_link.c
+Index: linux-2.6/kernel/time/timekeeping.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/pci_link.c
-+++ linux-2.6/drivers/acpi/pci_link.c
-@@ -29,7 +29,7 @@
-  *	   for IRQ management (e.g. start()->_SRS).
-  */
- 
+--- linux-2.6.orig/kernel/time/timekeeping.c
++++ linux-2.6/kernel/time/timekeeping.c
+@@ -14,7 +14,7 @@
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/sched.h>
 -#include <linux/sysdev.h>
 +#include <linux/syscore_ops.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -757,14 +757,13 @@ static int acpi_pci_link_resume(struct a
- 	return 0;
- }
+ #include <linux/clocksource.h>
+ #include <linux/jiffies.h>
+ #include <linux/time.h>
+@@ -561,13 +561,12 @@ static struct timespec timekeeping_suspe
  
--static int irqrouter_resume(struct sys_device *dev)
-+static void irqrouter_resume(void)
+ /**
+  * timekeeping_resume - Resumes the generic timekeeping subsystem.
+- * @dev:	unused
+  *
+  * This is for the generic clocksource timekeeping.
+  * xtime/wall_to_monotonic/jiffies/etc are
+  * still managed by arch specific suspend/resume code.
+  */
+-static int timekeeping_resume(struct sys_device *dev)
++static void timekeeping_resume(void)
  {
- 	struct acpi_pci_link *link;
+ 	unsigned long flags;
+ 	struct timespec ts;
+@@ -596,11 +595,9 @@ static int timekeeping_resume(struct sys
  
- 	list_for_each_entry(link, &acpi_link_list, list) {
- 		acpi_pci_link_resume(link);
- 	}
+ 	/* Resume hrtimers */
+ 	hres_timers_resume();
+-
 -	return 0;
  }
  
- static int acpi_pci_link_remove(struct acpi_device *device, int type)
-@@ -871,32 +870,19 @@ static int __init acpi_irq_balance_set(c
+-static int timekeeping_suspend(struct sys_device *dev, pm_message_t state)
++static int timekeeping_suspend(void)
+ {
+ 	unsigned long flags;
  
- __setup("acpi_irq_balance", acpi_irq_balance_set);
+@@ -618,26 +615,18 @@ static int timekeeping_suspend(struct sy
+ }
  
--/* FIXME: we will remove this interface after all drivers call pci_disable_device */
--static struct sysdev_class irqrouter_sysdev_class = {
--	.name = "irqrouter",
-+static struct syscore_ops irqrouter_syscore_ops = {
- 	.resume = irqrouter_resume,
+ /* sysfs resume/suspend bits for timekeeping */
+-static struct sysdev_class timekeeping_sysclass = {
+-	.name		= "timekeeping",
++static struct syscore_ops timekeeping_syscore_ops = {
+ 	.resume		= timekeeping_resume,
+ 	.suspend	= timekeeping_suspend,
  };
  
--static struct sys_device device_irqrouter = {
--	.id = 0,
--	.cls = &irqrouter_sysdev_class,
+-static struct sys_device device_timer = {
+-	.id		= 0,
+-	.cls		= &timekeeping_sysclass,
 -};
 -
--static int __init irqrouter_init_sysfs(void)
-+static int __init irqrouter_init_ops(void)
+-static int __init timekeeping_init_device(void)
++static int __init timekeeping_init_ops(void)
  {
--	int error;
-+	if (!acpi_disabled && !acpi_noirq)
-+		register_syscore_ops(&irqrouter_syscore_ops);
- 
--	if (acpi_disabled || acpi_noirq)
--		return 0;
--
--	error = sysdev_class_register(&irqrouter_sysdev_class);
+-	int error = sysdev_class_register(&timekeeping_sysclass);
 -	if (!error)
--		error = sysdev_register(&device_irqrouter);
--
+-		error = sysdev_register(&device_timer);
 -	return error;
++	register_syscore_ops(&timekeeping_syscore_ops);
 +	return 0;
  }
  
--device_initcall(irqrouter_init_sysfs);
-+device_initcall(irqrouter_init_ops);
+-device_initcall(timekeeping_init_device);
++device_initcall(timekeeping_init_ops);
  
- static int __init acpi_pci_link_init(void)
- {
+ /*
+  * If the error is already larger, we look ahead even further
