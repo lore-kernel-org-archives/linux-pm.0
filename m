@@ -1,8 +1,8 @@
 From: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-Subject: [PATCH v3 0/5] xen: Use PM/Hibernate events for
-	save/restore/chkpt
-Date: Fri, 11 Mar 2011 21:06:16 -0800
-Message-ID: <1299906376-30843-1-git-send-email-rshriram__21897.137622773$1299906648$gmane$org@cs.ubc.ca>
+Subject: [PATCH v3 4/5] PM: Add visible HIBERNATION_INTERFACE and
+	hide HIBERNATION
+Date: Fri, 11 Mar 2011 21:07:51 -0800
+Message-ID: <1299906471-31011-1-git-send-email-rshriram@cs.ubc.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,50 +20,99 @@ To: xen-devel@lists.xensource.com
 Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-The current implementation of xen guest save/restore/checkpoint functionality
-uses PM_SUSPEND and PM_RESUME events. This is not optimal when taking
-checkpoints of a virtual machine (where the suspend hypercall returns
-non-zero, requiring the devices and xenbus to just pickup from where they left
-off instead of a complete teardown/reconnect to backend). 
+HIBERNATION covers the main hibernation control code and freeze-thaw
+pm events, that xen's save/restore also uses. Explicitly enabling
+an independant hibernation functionality to enable xen's save/restore
+is a bit ugly. Define a new user visible symbol HIBERNATION_INTERFACE
+that "selects" HIBERNATION and covers the main hibernation control code
+instead of HIBERNATION. This way, we can also make XEN_SAVE_RESTORE
+"select" HIBERNATION, enabling only the freeze-thaw code.
 
-The following set of patches modify this implementation to use Hibernate style
-control flow (freeze/restore for save/restore and freeze/thaw for checkpoint,
-which is merely a cancelled save akin to failed swsusp() ).
+Signed-off-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
+---
+ kernel/power/Kconfig     |    9 +++++++--
+ kernel/power/hibernate.c |    4 ++++
+ kernel/power/main.c      |    2 +-
+ kernel/power/user.c      |    2 ++
+ 4 files changed, 14 insertions(+), 3 deletions(-)
 
-These patches are against a merged tree based on linux-next branches from 
-Stefano Stabellini and Rafael J. Wysocki.
-
-Changes since last resend(s):
-  - Introduce a new user visible symbol HIBERNATION_INTERFACE and
-    hide the HIBERNATION symbol. As per earlier discussions, 
-    XEN_SAVE_RESTORE could "select" HIBERNATION yet be able to hide the
-    sysfs interfaces exposed by hibernation subsystem.
-
-Disabling unnecessary code (if HIBERNATION_INTERFACE) is not
-selected, requires a moving around a lot of code. Simply skipping 
-snapshot.c, user.c etc from the compile does not help as these files have global
-functions and variables, that are being used from elsewhere in the kernel. 
-I have currently used #ifs to disable the sysfs interface when user visible
-hibernation is disabled, but there is still some code bloat left.
-
-Kazuhiro SUZUKI (1):
-  xen: xenbus PM events support
-
-Shriram Rajagopalan (4):
-  xen: use freeze/restore/thaw PM events for suspend/resume/chkpt
-  PM: pm.h - Add comments about Xen save/restore/chkpt use case
-  PM: Add visible HIBERNATION_INTERFACE and hide HIBERNATION
-  xen: fix XEN_SAVE_RESTORE Kconfig dependencies
-
- arch/x86/xen/Kconfig                       |    1 +
- drivers/xen/manage.c                       |   16 ++++++++--------
- drivers/xen/xenbus/xenbus_probe.c          |   12 ++++++++++--
- drivers/xen/xenbus/xenbus_probe.h          |    3 ++-
- drivers/xen/xenbus/xenbus_probe_frontend.c |   11 +++++++++--
- include/linux/pm.h                         |   19 +++++++++++++++++++
- include/xen/xenbus.h                       |    2 +-
- kernel/power/Kconfig                       |   11 ++++++++---
- kernel/power/hibernate.c                   |    8 ++++++++
- kernel/power/main.c                        |    2 +-
- kernel/power/user.c                        |    2 ++
- 11 files changed, 69 insertions(+), 18 deletions(-)
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 4603f08..493c678 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -19,10 +19,15 @@ config SUSPEND_FREEZER
+ 	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
+ 
+ config HIBERNATION
+-	bool "Hibernation (aka 'suspend to disk')"
+-	depends on SWAP && ARCH_HIBERNATION_POSSIBLE
++	def_bool n
++	depends on ARCH_HIBERNATION_POSSIBLE
+ 	select LZO_COMPRESS
+ 	select LZO_DECOMPRESS
++
++config HIBERNATION_INTERFACE
++	bool "Hibernation (aka 'suspend to disk')"
++	depends on SWAP
++	select HIBERNATION
+ 	---help---
+ 	  Enable the suspend to disk (STD) functionality, which is usually
+ 	  called "hibernation" in user interfaces.  STD checkpoints the
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 1832bd2..13bcf69 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -592,6 +592,7 @@ static int prepare_processes(void)
+  *	hibernate - The granpappy of the built-in hibernation management
+  */
+ 
++#ifdef CONFIG_HIBERNATION_INTERFACE
+ int hibernate(void)
+ {
+ 	int error;
+@@ -667,6 +668,8 @@ int hibernate(void)
+ 	return error;
+ }
+ 
++#else /* !CONFIG_HIBERNATION_INTERFACE */
++int hibernate(void) { return -ENOSYS; }
+ 
+ /**
+  *	software_resume - Resume from a saved image.
+@@ -1029,3 +1032,4 @@ __setup("noresume", noresume_setup);
+ __setup("resume_offset=", resume_offset_setup);
+ __setup("resume=", resume_setup);
+ __setup("hibernate=", hibernate_setup);
++#endif /* !CONFIG_HIBERNATION_INTERFACE */
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 8eaba5f..686a130 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -156,7 +156,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 			s += sprintf(s,"%s ", pm_states[i]);
+ 	}
+ #endif
+-#ifdef CONFIG_HIBERNATION
++#ifdef CONFIG_HIBERNATION_INTERFACE
+ 	s += sprintf(s, "%s\n", "disk");
+ #else
+ 	if (s != buf)
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index c36c3b9..5f36ee7 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -458,6 +458,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 	return error;
+ }
+ 
++#ifdef CONFIG_HIBERNATION_INTERFACE
+ static const struct file_operations snapshot_fops = {
+ 	.open = snapshot_open,
+ 	.release = snapshot_release,
+@@ -479,3 +480,4 @@ static int __init snapshot_device_init(void)
+ };
+ 
+ device_initcall(snapshot_device_init);
++#endif /* CONFIG_HIBERNATION_INTERFACE */
+-- 
+1.7.0.4
