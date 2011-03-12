@@ -1,8 +1,8 @@
 From: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-Subject: [PATCH v3 5/5] xen: fix XEN_SAVE_RESTORE Kconfig
-	dependencies
-Date: Fri, 11 Mar 2011 21:08:03 -0800
-Message-ID: <1299906483-31053-1-git-send-email-rshriram@cs.ubc.ca>
+Subject: [PATCH v3 3/5] PM: pm.h - Add comments about Xen
+	save/restore/chkpt use case
+Date: Fri, 11 Mar 2011 21:07:27 -0800
+Message-ID: <1299906447-30969-1-git-send-email-rshriram@cs.ubc.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,39 +20,44 @@ To: xen-devel@lists.xensource.com
 Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Make XEN_SAVE_RESTORE select HIBERNATION.
-Remove XEN_SAVE_RESTORE dependency from PM_SLEEP.
+Add documentation to pm.h on how xen uses PM events (freeze,
+thaw, restore) to implement Guest VM save/checkpoint/restore
+functionality.
 
 Signed-off-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
 ---
- arch/x86/xen/Kconfig |    1 +
- kernel/power/Kconfig |    2 +-
- 2 files changed, 2 insertions(+), 1 deletions(-)
+ include/linux/pm.h |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
-index 2c876ed..41e71f9 100644
---- a/arch/x86/xen/Kconfig
-+++ b/arch/x86/xen/Kconfig
-@@ -39,6 +39,7 @@ config XEN_MAX_DOMAIN_MEMORY
- config XEN_SAVE_RESTORE
-        bool
-        depends on XEN
-+       select HIBERNATION
-        default y
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 6618216..ad33d21 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -526,6 +526,25 @@ struct dev_power_domain {
+  * well as during system sleep states like PM_SUSPEND_STANDBY.  They may
+  * be able to use wakeup events to exit from runtime low-power states,
+  * or from system low-power states such as standby or suspend-to-RAM.
++ *
++ * Xen Guest Kernels use PM_FREEZE, PM_RESTORE and PM_THAW to implement
++ * VM save/restore/checkpoint functionality. Save and Restore are somewhat
++ * similar to hibernate functionality. The sequence of events is shown below:
++ *        dpm_suspend_start(PMSG_FREEZE);
++ *
++ *              dpm_suspend_noirq(PMSG_FREEZE);
++ *
++ *                     sysdev_suspend(PMSG_FREEZE);
++ *                     cancelled = suspend_hypercall()
++ *                     sysdev_resume();
++ *
++ *             dpm_resume_noirq(cancelled ? PMSG_THAW : PMSG_RESTORE);
++ *
++ *     dpm_resume_end(cancelled ? PMSG_THAW : PMSG_RESTORE);
++ *
++ * If the syspend_hypercall returns 1, it means that the VM was merely
++ * checkpointed (akin to THAW). If it returns 0, it means the system has been
++ * fully restored from its on-disk snapshot (akin to RESTORE).
+  */
  
- config XEN_DEBUG_FS
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 493c678..41dafb2 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -90,7 +90,7 @@ config PM_STD_PARTITION
- 
- config PM_SLEEP
- 	def_bool y
--	depends on SUSPEND || HIBERNATION || XEN_SAVE_RESTORE
-+	depends on SUSPEND || HIBERNATION
- 
- config PM_SLEEP_SMP
- 	def_bool y
+ #ifdef CONFIG_PM_SLEEP
 -- 
 1.7.0.4
