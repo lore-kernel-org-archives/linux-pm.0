@@ -1,8 +1,7 @@
 From: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-Subject: [PATCH v3 3/5] PM: pm.h - Add comments about Xen
-	save/restore/chkpt use case
-Date: Fri, 11 Mar 2011 21:07:27 -0800
-Message-ID: <1299906447-30969-1-git-send-email-rshriram@cs.ubc.ca>
+Subject: [PATCH v3 1/5] xen: xenbus PM events support
+Date: Fri, 11 Mar 2011 21:07:00 -0800
+Message-ID: <1299906420-30885-1-git-send-email-rshriram__23067.0159719468$1299906645$gmane$org@cs.ubc.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,47 +16,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: xen-devel@lists.xensource.com
-Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org, Kazuhiro SUZUKI <kaz@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add documentation to pm.h on how xen uses PM events (freeze,
-thaw, restore) to implement Guest VM save/checkpoint/restore
-functionality.
+From: Kazuhiro SUZUKI <kaz@jp.fujitsu.com>
 
+Make xenbus frontend device subscribe to PM events
+to receive suspend/resume/freeze/thaw/restore
+notifications.
+
+Signed-off-by: Kenji Wakamiya <wkenji@jp.fujitsu.com>
+Signed-off-by: Kazuhiro Suzuki <kaz@jp.fujitsu.com>
 Signed-off-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
+Acked-by: Ian Campbell <ian.campbell@citrix.com>
+[shriram--minor mods and improved commit message]
 ---
- include/linux/pm.h |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+ drivers/xen/xenbus/xenbus_probe.c          |   12 ++++++++++--
+ drivers/xen/xenbus/xenbus_probe.h          |    3 ++-
+ drivers/xen/xenbus/xenbus_probe_frontend.c |    9 +++++++--
+ include/xen/xenbus.h                       |    2 +-
+ 4 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 6618216..ad33d21 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -526,6 +526,25 @@ struct dev_power_domain {
-  * well as during system sleep states like PM_SUSPEND_STANDBY.  They may
-  * be able to use wakeup events to exit from runtime low-power states,
-  * or from system low-power states such as standby or suspend-to-RAM.
-+ *
-+ * Xen Guest Kernels use PM_FREEZE, PM_RESTORE and PM_THAW to implement
-+ * VM save/restore/checkpoint functionality. Save and Restore are somewhat
-+ * similar to hibernate functionality. The sequence of events is shown below:
-+ *        dpm_suspend_start(PMSG_FREEZE);
-+ *
-+ *              dpm_suspend_noirq(PMSG_FREEZE);
-+ *
-+ *                     sysdev_suspend(PMSG_FREEZE);
-+ *                     cancelled = suspend_hypercall()
-+ *                     sysdev_resume();
-+ *
-+ *             dpm_resume_noirq(cancelled ? PMSG_THAW : PMSG_RESTORE);
-+ *
-+ *     dpm_resume_end(cancelled ? PMSG_THAW : PMSG_RESTORE);
-+ *
-+ * If the syspend_hypercall returns 1, it means that the VM was merely
-+ * checkpointed (akin to THAW). If it returns 0, it means the system has been
-+ * fully restored from its on-disk snapshot (akin to RESTORE).
-  */
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index baa65e7..7397695 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -577,7 +577,7 @@ void xenbus_dev_changed(const char *node, struct xen_bus_type *bus)
+ }
+ EXPORT_SYMBOL_GPL(xenbus_dev_changed);
  
- #ifdef CONFIG_PM_SLEEP
+-int xenbus_dev_suspend(struct device *dev, pm_message_t state)
++int xenbus_dev_suspend(struct device *dev)
+ {
+ 	int err = 0;
+ 	struct xenbus_driver *drv;
+@@ -590,7 +590,7 @@ int xenbus_dev_suspend(struct device *dev, pm_message_t state)
+ 		return 0;
+ 	drv = to_xenbus_driver(dev->driver);
+ 	if (drv->suspend)
+-		err = drv->suspend(xdev, state);
++		err = drv->suspend(xdev);
+ 	if (err)
+ 		printk(KERN_WARNING
+ 		       "xenbus: suspend %s failed: %i\n", dev_name(dev), err);
+@@ -642,6 +642,14 @@ int xenbus_dev_resume(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(xenbus_dev_resume);
+ 
++int xenbus_dev_cancel(struct device *dev)
++{
++	/* Do nothing */
++	DPRINTK("cancel");
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xenbus_dev_cancel);
++
+ /* A flag to determine if xenstored is 'ready' (i.e. has started) */
+ int xenstored_ready = 0;
+ 
+diff --git a/drivers/xen/xenbus/xenbus_probe.h b/drivers/xen/xenbus/xenbus_probe.h
+index 2466581..888b990 100644
+--- a/drivers/xen/xenbus/xenbus_probe.h
++++ b/drivers/xen/xenbus/xenbus_probe.h
+@@ -64,8 +64,9 @@ extern void xenbus_dev_changed(const char *node, struct xen_bus_type *bus);
+ 
+ extern void xenbus_dev_shutdown(struct device *_dev);
+ 
+-extern int xenbus_dev_suspend(struct device *dev, pm_message_t state);
++extern int xenbus_dev_suspend(struct device *dev);
+ extern int xenbus_dev_resume(struct device *dev);
++extern int xenbus_dev_cancel(struct device *dev);
+ 
+ extern void xenbus_otherend_changed(struct xenbus_watch *watch,
+ 				    const char **vec, unsigned int len,
+diff --git a/drivers/xen/xenbus/xenbus_probe_frontend.c b/drivers/xen/xenbus/xenbus_probe_frontend.c
+index 5bcc2d6..ea83999 100644
+--- a/drivers/xen/xenbus/xenbus_probe_frontend.c
++++ b/drivers/xen/xenbus/xenbus_probe_frontend.c
+@@ -85,6 +85,12 @@ static struct device_attribute xenbus_frontend_dev_attrs[] = {
+ 	__ATTR_NULL
+ };
+ 
++static const struct dev_pm_ops xenbus_pm_ops = {
++	.suspend = xenbus_dev_suspend,
++	.resume  = xenbus_dev_resume,
++	.thaw  = xenbus_dev_cancel,
++};
++
+ static struct xen_bus_type xenbus_frontend = {
+ 	.root = "device",
+ 	.levels = 2,		/* device/type/<id> */
+@@ -100,8 +106,7 @@ static struct xen_bus_type xenbus_frontend = {
+ 		.shutdown	= xenbus_dev_shutdown,
+ 		.dev_attrs	= xenbus_frontend_dev_attrs,
+ 
+-		.suspend	= xenbus_dev_suspend,
+-		.resume		= xenbus_dev_resume,
++		.pm		= &xenbus_pm_ops,
+ 	},
+ };
+ 
+diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
+index 7a1d15f..5467369 100644
+--- a/include/xen/xenbus.h
++++ b/include/xen/xenbus.h
+@@ -92,7 +92,7 @@ struct xenbus_driver {
+ 	void (*otherend_changed)(struct xenbus_device *dev,
+ 				 enum xenbus_state backend_state);
+ 	int (*remove)(struct xenbus_device *dev);
+-	int (*suspend)(struct xenbus_device *dev, pm_message_t state);
++	int (*suspend)(struct xenbus_device *dev);
+ 	int (*resume)(struct xenbus_device *dev);
+ 	int (*uevent)(struct xenbus_device *, struct kobj_uevent_env *);
+ 	struct device_driver driver;
 -- 
 1.7.0.4
