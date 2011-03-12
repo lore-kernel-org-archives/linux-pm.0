@@ -1,12 +1,14 @@
-From: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-Subject: [PATCH v3 2/5] xen: use freeze/restore/thaw PM events
-	for suspend/resume/chkpt
-Date: Fri, 11 Mar 2011 21:07:15 -0800
-Message-ID: <1299906435-30927-1-git-send-email-rshriram__28638.5358348072$1299906658$gmane$org@cs.ubc.ca>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 3/8] ACPI: Use syscore_ops instead of sysdev
+	class and sysdev
+Date: Sat, 12 Mar 2011 22:16:51 +0100
+Message-ID: <201103122216.51858.rjw__43056.9445052699$1299965013$gmane$org@sisk.pl>
+References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201103122212.40828.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,132 +18,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: xen-devel@lists.xensource.com
-Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, linux-pm@lists.linux-foundation.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-Use PM_FREEZE, PM_THAW and PM_RESTORE power events for
-suspend/resume/checkpoint functionality, instead of PM_SUSPEND
-and PM_RESUME. Use of these pm events fixes the Xen Guest hangup
-when taking checkpoints. When a suspend event is cancelled
-(while taking checkpoints once/continuously), we use PM_THAW
-instead of PM_RESUME. PM_RESTORE is used when suspend is not
-cancelled. See Documentation/power/devices.txt and linux/pm.h
-for more info about freeze, thaw and restore. The sequence of
-pm events in a suspend-resume scenario is shown below.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-        dpm_suspend_start(PMSG_FREEZE);
+ACPI uses a sysdev class and a sysdev for executing
+irqrouter_resume() before turning on interrupts on the boot CPU.
+However, since irqrouter_resume() ignores its argument, the entire
+mechanism may be replaced with a struct syscore_ops object which
+is considerably simpler.
 
-                dpm_suspend_noirq(PMSG_FREEZE);
-
-                       sysdev_suspend(PMSG_FREEZE);
-                       cancelled = suspend_hypercall()
-                       sysdev_resume();
-
-               dpm_resume_noirq(cancelled ? PMSG_THAW : PMSG_RESTORE);
-
-       dpm_resume_end(cancelled ? PMSG_THAW : PMSG_RESTORE);
-
-Signed-off-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/xen/manage.c                       |   16 ++++++++--------
- drivers/xen/xenbus/xenbus_probe_frontend.c |    8 +++++---
- 2 files changed, 13 insertions(+), 11 deletions(-)
+ drivers/acpi/pci_link.c |   30 ++++++++----------------------
+ 1 file changed, 8 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
-index ebb2928..e9903f1 100644
---- a/drivers/xen/manage.c
-+++ b/drivers/xen/manage.c
-@@ -61,7 +61,7 @@ static void xen_post_suspend(int cancelled)
- 	xen_mm_unpin_all();
+Index: linux-2.6/drivers/acpi/pci_link.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_link.c
++++ linux-2.6/drivers/acpi/pci_link.c
+@@ -29,7 +29,7 @@
+  *	   for IRQ management (e.g. start()->_SRS).
+  */
+ 
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+@@ -757,14 +757,13 @@ static int acpi_pci_link_resume(struct a
+ 	return 0;
  }
  
--#ifdef CONFIG_PM_SLEEP
-+#ifdef CONFIG_XEN_SAVE_RESTORE
- static int xen_suspend(void *data)
+-static int irqrouter_resume(struct sys_device *dev)
++static void irqrouter_resume(void)
  {
- 	struct suspend_info *si = data;
-@@ -69,7 +69,7 @@ static int xen_suspend(void *data)
+ 	struct acpi_pci_link *link;
  
- 	BUG_ON(!irqs_disabled());
- 
--	err = sysdev_suspend(PMSG_SUSPEND);
-+	err = sysdev_suspend(PMSG_FREEZE);
- 	if (err) {
- 		printk(KERN_ERR "xen_suspend: sysdev_suspend failed: %d\n",
- 			err);
-@@ -118,7 +118,7 @@ static void do_suspend(void)
+ 	list_for_each_entry(link, &acpi_link_list, list) {
+ 		acpi_pci_link_resume(link);
  	}
- #endif
- 
--	err = dpm_suspend_start(PMSG_SUSPEND);
-+	err = dpm_suspend_start(PMSG_FREEZE);
- 	if (err) {
- 		printk(KERN_ERR "xen suspend: dpm_suspend_start %d\n", err);
- 		goto out_thaw;
-@@ -127,7 +127,7 @@ static void do_suspend(void)
- 	printk(KERN_DEBUG "suspending xenstore...\n");
- 	xs_suspend();
- 
--	err = dpm_suspend_noirq(PMSG_SUSPEND);
-+	err = dpm_suspend_noirq(PMSG_FREEZE);
- 	if (err) {
- 		printk(KERN_ERR "dpm_suspend_noirq failed: %d\n", err);
- 		goto out_resume;
-@@ -147,7 +147,7 @@ static void do_suspend(void)
- 
- 	err = stop_machine(xen_suspend, &si, cpumask_of(0));
- 
--	dpm_resume_noirq(PMSG_RESUME);
-+	dpm_resume_noirq(si.cancelled ? PMSG_THAW : PMSG_RESTORE);
- 
- 	if (err) {
- 		printk(KERN_ERR "failed to start xen_suspend: %d\n", err);
-@@ -161,7 +161,7 @@ out_resume:
- 	} else
- 		xs_suspend_cancel();
- 
--	dpm_resume_end(PMSG_RESUME);
-+	dpm_resume_end(si.cancelled ? PMSG_THAW : PMSG_RESTORE);
- 
- 	/* Make sure timer events get retriggered on all CPUs */
- 	clock_was_set();
-@@ -173,7 +173,7 @@ out:
- #endif
- 	shutting_down = SHUTDOWN_INVALID;
+-	return 0;
  }
--#endif	/* CONFIG_PM_SLEEP */
-+#endif	/* CONFIG_XEN_SAVE_RESTORE */
  
- struct shutdown_handler {
- 	const char *command;
-@@ -202,7 +202,7 @@ static void shutdown_handler(struct xenbus_watch *watch,
- 		{ "poweroff",	do_poweroff },
- 		{ "halt",	do_poweroff },
- 		{ "reboot",	do_reboot   },
--#ifdef CONFIG_PM_SLEEP
-+#ifdef CONFIG_XEN_SAVE_RESTORE
- 		{ "suspend",	do_suspend  },
- #endif
- 		{NULL, NULL},
-diff --git a/drivers/xen/xenbus/xenbus_probe_frontend.c b/drivers/xen/xenbus/xenbus_probe_frontend.c
-index ea83999..b6a2690 100644
---- a/drivers/xen/xenbus/xenbus_probe_frontend.c
-+++ b/drivers/xen/xenbus/xenbus_probe_frontend.c
-@@ -86,9 +86,11 @@ static struct device_attribute xenbus_frontend_dev_attrs[] = {
+ static int acpi_pci_link_remove(struct acpi_device *device, int type)
+@@ -871,32 +870,19 @@ static int __init acpi_irq_balance_set(c
+ 
+ __setup("acpi_irq_balance", acpi_irq_balance_set);
+ 
+-/* FIXME: we will remove this interface after all drivers call pci_disable_device */
+-static struct sysdev_class irqrouter_sysdev_class = {
+-	.name = "irqrouter",
++static struct syscore_ops irqrouter_syscore_ops = {
+ 	.resume = irqrouter_resume,
  };
  
- static const struct dev_pm_ops xenbus_pm_ops = {
--	.suspend = xenbus_dev_suspend,
--	.resume  = xenbus_dev_resume,
--	.thaw  = xenbus_dev_cancel,
-+	.suspend	= xenbus_dev_suspend,
-+	.resume		= xenbus_dev_resume,
-+	.freeze		= xenbus_dev_suspend,
-+	.thaw		= xenbus_dev_cancel,
-+	.restore	= xenbus_dev_resume,
- };
+-static struct sys_device device_irqrouter = {
+-	.id = 0,
+-	.cls = &irqrouter_sysdev_class,
+-};
+-
+-static int __init irqrouter_init_sysfs(void)
++static int __init irqrouter_init_ops(void)
+ {
+-	int error;
++	if (!acpi_disabled && !acpi_noirq)
++		register_syscore_ops(&irqrouter_syscore_ops);
  
- static struct xen_bus_type xenbus_frontend = {
--- 
-1.7.0.4
+-	if (acpi_disabled || acpi_noirq)
+-		return 0;
+-
+-	error = sysdev_class_register(&irqrouter_sysdev_class);
+-	if (!error)
+-		error = sysdev_register(&device_irqrouter);
+-
+-	return error;
++	return 0;
+ }
+ 
+-device_initcall(irqrouter_init_sysfs);
++device_initcall(irqrouter_init_ops);
+ 
+ static int __init acpi_pci_link_init(void)
+ {
