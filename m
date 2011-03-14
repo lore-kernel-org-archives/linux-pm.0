@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Update] Re: [PATCH 10/10] ARM: Use struct syscore_ops
-	instead of sysdevs for PM in timer and leds
-Date: Mon, 14 Mar 2011 20:54:57 +0100
-Message-ID: <201103142054.57999.rjw__26569.1657354639$1300132766$gmane$org@sisk.pl>
-References: <201103100131.58206.rjw@sisk.pl> <201103131404.33311.rjw@sisk.pl>
-	<4D7DDA9C.9020700@codeaurora.org>
+Subject: [PATCH] PM / Hibernate: Reduce autotuned default image
+	size
+Date: Tue, 15 Mar 2011 00:42:23 +0100
+Message-ID: <201103150042.23288.rjw__48313.994651153$1300146246$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D7DDA9C.9020700@codeaurora.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,202 +16,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, March 14, 2011, Stephen Boyd wrote:
-> On 3/13/2011 6:04 AM, Rafael J. Wysocki wrote:
-> >   #if defined(CONFIG_PM)&&  !defined(CONFIG_GENERIC_CLOCKEVENTS)
-> > -static int timer_suspend(struct sys_device *dev, pm_message_t state)
-> > +static int timer_suspend(void)
-> >   {
-> > -	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
-> > -
-> > -	if (timer->suspend != NULL)
-> > +	if (system_timer->suspend)
-> >   		timer->suspend();
-> >
-> 
-> Shouldn't this be system_timer->suspend() ?
-
-Indeed, thanks a lot!
-
-I must have forgotten to test it with CONFIG_GENERIC_CLOCKEVENTS unset.
-
-Updated patch follows.
-
----
 From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ARM: Use struct syscore_ops instead of sysdevs for PM in timer and leds
 
-Convert arch/arm/kernel/time.c and arch/arm/kernel/leds.c to using
-struct syscore_ops for power management instead of sysdev classes
-and sysdevs.
+The hibernate image size autotuning mechanism sets the default
+image size to 5/2 of the total system RAM, but it is reported
+that on some systems device drivers allocate substantial
+amounts of memory during suspend and the creation of the image
+fails as a result (too little memory is preallocated).
 
-This simplifies the code in arch/arm/kernel/time.c quite a bit and is
-necessary for removing sysdevs from the kernel entirely in future.
+Modify the autotuning mechanism to use 1/3 instead of 2/5 of RAM
+as the default image size, which is reported to be sufficient for
+the affected systems.
 
+References: https://bugzilla.kernel.org/show_bug.cgi?id=30482
+Reported-and-tested-by: Martin Steigerwald <Martin@Lichtvoll.de>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/arm/include/asm/mach/time.h |    1 -
- arch/arm/kernel/leds.c           |   28 ++++++++++++++++------------
- arch/arm/kernel/time.c           |   35 ++++++++++++-----------------------
- 3 files changed, 28 insertions(+), 36 deletions(-)
+ kernel/power/snapshot.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/arch/arm/kernel/time.c
+Index: linux-2.6/kernel/power/snapshot.c
 ===================================================================
---- linux-2.6.orig/arch/arm/kernel/time.c
-+++ linux-2.6/arch/arm/kernel/time.c
-@@ -21,7 +21,7 @@
- #include <linux/timex.h>
- #include <linux/errno.h>
- #include <linux/profile.h>
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- #include <linux/timer.h>
- #include <linux/irq.h>
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -42,15 +42,15 @@ static void swsusp_unset_page_forbidden(
  
-@@ -117,48 +117,37 @@ void timer_tick(void)
- #endif
- 
- #if defined(CONFIG_PM) && !defined(CONFIG_GENERIC_CLOCKEVENTS)
--static int timer_suspend(struct sys_device *dev, pm_message_t state)
-+static int timer_suspend(void)
- {
--	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
--
--	if (timer->suspend != NULL)
--		timer->suspend();
-+	if (system_timer->suspend)
-+		system_timer->suspend();
- 
- 	return 0;
- }
- 
--static int timer_resume(struct sys_device *dev)
-+static void timer_resume(void)
- {
--	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
--
--	if (timer->resume != NULL)
--		timer->resume();
--
--	return 0;
-+	if (system_timer->resume)
-+		system_timer->resume();
- }
- #else
- #define timer_suspend NULL
- #define timer_resume NULL
- #endif
- 
--static struct sysdev_class timer_sysclass = {
--	.name		= "timer",
-+static struct syscore_ops timer_syscore_ops = {
- 	.suspend	= timer_suspend,
- 	.resume		= timer_resume,
- };
- 
--static int __init timer_init_sysfs(void)
-+static int __init timer_init_syscore_ops(void)
- {
--	int ret = sysdev_class_register(&timer_sysclass);
--	if (ret == 0) {
--		system_timer->dev.cls = &timer_sysclass;
--		ret = sysdev_register(&system_timer->dev);
--	}
-+	register_syscore_ops(&timer_syscore_ops);
- 
--	return ret;
-+	return 0;
- }
- 
--device_initcall(timer_init_sysfs);
-+device_initcall(timer_init_syscore_ops);
- 
- void __init time_init(void)
- {
-Index: linux-2.6/arch/arm/include/asm/mach/time.h
-===================================================================
---- linux-2.6.orig/arch/arm/include/asm/mach/time.h
-+++ linux-2.6/arch/arm/include/asm/mach/time.h
-@@ -34,7 +34,6 @@
-  *   timer interrupt which may be pending.
+ /*
+  * Preferred image size in bytes (tunable via /sys/power/image_size).
+- * When it is set to N, swsusp will do its best to ensure the image
+- * size will not exceed N bytes, but if that is impossible, it will
+- * try to create the smallest image possible.
++ * When it is set to N, the image creating code will do its best to
++ * ensure the image size will not exceed N bytes, but if that is
++ * impossible, it will try to create the smallest image possible.
   */
- struct sys_timer {
--	struct sys_device	dev;
- 	void			(*init)(void);
- 	void			(*suspend)(void);
- 	void			(*resume)(void);
-Index: linux-2.6/arch/arm/kernel/leds.c
-===================================================================
---- linux-2.6.orig/arch/arm/kernel/leds.c
-+++ linux-2.6/arch/arm/kernel/leds.c
-@@ -10,6 +10,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
+ unsigned long image_size;
  
- #include <asm/leds.h>
- 
-@@ -69,36 +70,37 @@ static ssize_t leds_store(struct sys_dev
- 
- static SYSDEV_ATTR(event, 0200, NULL, leds_store);
- 
--static int leds_suspend(struct sys_device *dev, pm_message_t state)
-+static struct sysdev_class leds_sysclass = {
-+	.name		= "leds",
-+};
-+
-+static struct sys_device leds_device = {
-+	.id		= 0,
-+	.cls		= &leds_sysclass,
-+};
-+
-+static int leds_suspend(void)
+ void __init hibernate_image_size_init(void)
  {
- 	leds_event(led_stop);
- 	return 0;
+-	image_size = ((totalram_pages * 2) / 5) * PAGE_SIZE;
++	image_size = (totalram_pages / 3) * PAGE_SIZE;
  }
  
--static int leds_resume(struct sys_device *dev)
-+static void leds_resume(void)
- {
- 	leds_event(led_start);
--	return 0;
- }
- 
--static int leds_shutdown(struct sys_device *dev)
-+static void leds_shutdown(void)
- {
- 	leds_event(led_halted);
--	return 0;
- }
- 
--static struct sysdev_class leds_sysclass = {
--	.name		= "leds",
-+static struct syscore_ops leds_syscore_ops = {
- 	.shutdown	= leds_shutdown,
- 	.suspend	= leds_suspend,
- 	.resume		= leds_resume,
- };
- 
--static struct sys_device leds_device = {
--	.id		= 0,
--	.cls		= &leds_sysclass,
--};
--
- static int __init leds_init(void)
- {
- 	int ret;
-@@ -107,6 +109,8 @@ static int __init leds_init(void)
- 		ret = sysdev_register(&leds_device);
- 	if (ret == 0)
- 		ret = sysdev_create_file(&leds_device, &attr_event);
-+	if (ret == 0)
-+		register_syscore_ops(&leds_syscore_ops);
- 	return ret;
- }
- 
+ /* List of PBEs needed for restoring the pages that were allocated before
