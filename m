@@ -1,16 +1,15 @@
-From: Corentin Chary <corentin.chary@gmail.com>
-Subject: Re: [ANNOUNCE] cpupowerutils - cpufrequtils extended
-	with quite some features
-Date: Sat, 12 Mar 2011 10:59:10 +0100
-Message-ID: <AANLkTinErtKD_eufvhOL-1OOffYSouf5KLLH2cCMyaT3__3272.66120953045$1300115861$gmane$org@mail.gmail.com>
-References: <201103111247.00212.trenn@suse.de>
-	<AANLkTimFg+uYGbSi=Ci-+_e89TgLkyMB7PAJcnt7mzTc@mail.gmail.com>
-	<201103120053.53565.trenn@suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [Update] Re: [PATCH 10/10] ARM: Use struct syscore_ops
+	instead of sysdevs for PM in timer and leds
+Date: Mon, 14 Mar 2011 20:54:57 +0100
+Message-ID: <201103142054.57999.rjw__26569.1657354639$1300132766$gmane$org@sisk.pl>
+References: <201103100131.58206.rjw@sisk.pl> <201103131404.33311.rjw@sisk.pl>
+	<4D7DDA9C.9020700@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103120053.53565.trenn@suse.de>
+In-Reply-To: <4D7DDA9C.9020700@codeaurora.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,43 +19,202 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: discuss@lesswatts.org, linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org, platform-driver-x86@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
->> Hi Thomas,
->> Do you think handling really vendor specific "boosts" like EeePC's SHE
->> is in cpupower scope
-> This is an oem/vendor specific way to modify the front-side-bus
-> throughput on (Intel atom only?) eeepc like machines (acer, asus and
-> others?)?
+On Monday, March 14, 2011, Stephen Boyd wrote:
+> On 3/13/2011 6:04 AM, Rafael J. Wysocki wrote:
+> >   #if defined(CONFIG_PM)&&  !defined(CONFIG_GENERIC_CLOCKEVENTS)
+> > -static int timer_suspend(struct sys_device *dev, pm_message_t state)
+> > +static int timer_suspend(void)
+> >   {
+> > -	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
+> > -
+> > -	if (timer->suspend != NULL)
+> > +	if (system_timer->suspend)
+> >   		timer->suspend();
+> >
+> 
+> Shouldn't this be system_timer->suspend() ?
 
-I don't know exactly what it does, but yes it seems to modify the fsb
-(and possibly something else on some models, who know ...), and it's
-only specific to Asus EeePCs.
-But Asus notebooks seems to have a similar "Power4Gear" function, that
-may also overclock/downclock the gpu.
+Indeed, thanks a lot!
 
-> You could try to experiment with registering your own delayed work queue
-> in eeepc-laptopc.c and try to find best tunings and fittings for such
-> requirements.
-> If it works out and/or other xy-laptop.c or whatever drivers provide
-> similar functionality it could get moved up into a more generic
-> framework. A separate one next to cpuidle and cpufreq, for example
-> fsb_mod?
+I must have forgotten to test it with CONFIG_GENERIC_CLOCKEVENTS unset.
 
-I'll see if other platform drivers have something similar, but I
-believe that at least one of them has a "peformance" mode.
+Updated patch follows.
 
-> PS: Wouldn't the cpufreq subsystem suffice to register for this
-> SHE thing?
-> Could it be that SHE and real CPU freq (speedstep) is mutual exclusive?
-> Is the only problem that p4_clockmod cannot be loaded then?
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ARM: Use struct syscore_ops instead of sysdevs for PM in timer and leds
 
-p4_clockmod is only loaded on olds EeePCs. New ones are using
-acpi-cpufreq. And you can only load one cpufreq driver at a time.
+Convert arch/arm/kernel/time.c and arch/arm/kernel/leds.c to using
+struct syscore_ops for power management instead of sysdev classes
+and sysdevs.
 
+This simplifies the code in arch/arm/kernel/time.c quite a bit and is
+necessary for removing sysdevs from the kernel entirely in future.
 
--- 
-Corentin Chary
-http://xf.iksaif.net
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/arm/include/asm/mach/time.h |    1 -
+ arch/arm/kernel/leds.c           |   28 ++++++++++++++++------------
+ arch/arm/kernel/time.c           |   35 ++++++++++++-----------------------
+ 3 files changed, 28 insertions(+), 36 deletions(-)
+
+Index: linux-2.6/arch/arm/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/arm/kernel/time.c
++++ linux-2.6/arch/arm/kernel/time.c
+@@ -21,7 +21,7 @@
+ #include <linux/timex.h>
+ #include <linux/errno.h>
+ #include <linux/profile.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/timer.h>
+ #include <linux/irq.h>
+ 
+@@ -117,48 +117,37 @@ void timer_tick(void)
+ #endif
+ 
+ #if defined(CONFIG_PM) && !defined(CONFIG_GENERIC_CLOCKEVENTS)
+-static int timer_suspend(struct sys_device *dev, pm_message_t state)
++static int timer_suspend(void)
+ {
+-	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
+-
+-	if (timer->suspend != NULL)
+-		timer->suspend();
++	if (system_timer->suspend)
++		system_timer->suspend();
+ 
+ 	return 0;
+ }
+ 
+-static int timer_resume(struct sys_device *dev)
++static void timer_resume(void)
+ {
+-	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
+-
+-	if (timer->resume != NULL)
+-		timer->resume();
+-
+-	return 0;
++	if (system_timer->resume)
++		system_timer->resume();
+ }
+ #else
+ #define timer_suspend NULL
+ #define timer_resume NULL
+ #endif
+ 
+-static struct sysdev_class timer_sysclass = {
+-	.name		= "timer",
++static struct syscore_ops timer_syscore_ops = {
+ 	.suspend	= timer_suspend,
+ 	.resume		= timer_resume,
+ };
+ 
+-static int __init timer_init_sysfs(void)
++static int __init timer_init_syscore_ops(void)
+ {
+-	int ret = sysdev_class_register(&timer_sysclass);
+-	if (ret == 0) {
+-		system_timer->dev.cls = &timer_sysclass;
+-		ret = sysdev_register(&system_timer->dev);
+-	}
++	register_syscore_ops(&timer_syscore_ops);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+-device_initcall(timer_init_sysfs);
++device_initcall(timer_init_syscore_ops);
+ 
+ void __init time_init(void)
+ {
+Index: linux-2.6/arch/arm/include/asm/mach/time.h
+===================================================================
+--- linux-2.6.orig/arch/arm/include/asm/mach/time.h
++++ linux-2.6/arch/arm/include/asm/mach/time.h
+@@ -34,7 +34,6 @@
+  *   timer interrupt which may be pending.
+  */
+ struct sys_timer {
+-	struct sys_device	dev;
+ 	void			(*init)(void);
+ 	void			(*suspend)(void);
+ 	void			(*resume)(void);
+Index: linux-2.6/arch/arm/kernel/leds.c
+===================================================================
+--- linux-2.6.orig/arch/arm/kernel/leds.c
++++ linux-2.6/arch/arm/kernel/leds.c
+@@ -10,6 +10,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ 
+ #include <asm/leds.h>
+ 
+@@ -69,36 +70,37 @@ static ssize_t leds_store(struct sys_dev
+ 
+ static SYSDEV_ATTR(event, 0200, NULL, leds_store);
+ 
+-static int leds_suspend(struct sys_device *dev, pm_message_t state)
++static struct sysdev_class leds_sysclass = {
++	.name		= "leds",
++};
++
++static struct sys_device leds_device = {
++	.id		= 0,
++	.cls		= &leds_sysclass,
++};
++
++static int leds_suspend(void)
+ {
+ 	leds_event(led_stop);
+ 	return 0;
+ }
+ 
+-static int leds_resume(struct sys_device *dev)
++static void leds_resume(void)
+ {
+ 	leds_event(led_start);
+-	return 0;
+ }
+ 
+-static int leds_shutdown(struct sys_device *dev)
++static void leds_shutdown(void)
+ {
+ 	leds_event(led_halted);
+-	return 0;
+ }
+ 
+-static struct sysdev_class leds_sysclass = {
+-	.name		= "leds",
++static struct syscore_ops leds_syscore_ops = {
+ 	.shutdown	= leds_shutdown,
+ 	.suspend	= leds_suspend,
+ 	.resume		= leds_resume,
+ };
+ 
+-static struct sys_device leds_device = {
+-	.id		= 0,
+-	.cls		= &leds_sysclass,
+-};
+-
+ static int __init leds_init(void)
+ {
+ 	int ret;
+@@ -107,6 +109,8 @@ static int __init leds_init(void)
+ 		ret = sysdev_register(&leds_device);
+ 	if (ret == 0)
+ 		ret = sysdev_create_file(&leds_device, &attr_event);
++	if (ret == 0)
++		register_syscore_ops(&leds_syscore_ops);
+ 	return ret;
+ }
+ 
