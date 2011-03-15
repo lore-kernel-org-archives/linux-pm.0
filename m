@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 4/5] PM: Add visible HIBERNATION_INTERFACE
-	and hide HIBERNATION
-Date: Tue, 15 Mar 2011 22:39:49 +0100
-Message-ID: <201103152239.49689.rjw__44359.2599397109$1300225471$gmane$org@sisk.pl>
-References: <1299906471-31011-1-git-send-email-rshriram@cs.ubc.ca>
-	<AANLkTi=a3Pk-L3J0_i9eh=WDLWZKKOF4WnvaK16DzGz-@mail.gmail.com>
+Subject: [Update,
+	v2] Re: [PATCH 7/8] cpufreq: Use syscore_ops for boot CPU
+	suspend/resume
+Date: Tue, 15 Mar 2011 22:43:02 +0100
+Message-ID: <201103152243.02809.rjw__29145.353465765$1300227012$gmane$org@sisk.pl>
+References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
+	<201103122220.30173.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <AANLkTi=a3Pk-L3J0_i9eh=WDLWZKKOF4WnvaK16DzGz-@mail.gmail.com>
+In-Reply-To: <201103122220.30173.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,129 +20,203 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rshriram@cs.ubc.ca
-Cc: linux-pm@lists.linux-foundation.org, xen-devel@lists.xensource.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, March 15, 2011, Shriram Rajagopalan wrote:
-> On Fri, Mar 11, 2011 at 9:07 PM, Shriram Rajagopalan <rshriram@cs.ubc.ca> wrote:
-> > HIBERNATION covers the main hibernation control code and freeze-thaw
-> > pm events, that xen's save/restore also uses. Explicitly enabling
-> > an independant hibernation functionality to enable xen's save/restore
-> > is a bit ugly. Define a new user visible symbol HIBERNATION_INTERFACE
-> > that "selects" HIBERNATION and covers the main hibernation control code
-> > instead of HIBERNATION. This way, we can also make XEN_SAVE_RESTORE
-> > "select" HIBERNATION, enabling only the freeze-thaw code.
-> >
-> > Signed-off-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
-> > ---
-> >  kernel/power/Kconfig     |    9 +++++++--
-> >  kernel/power/hibernate.c |    4 ++++
-> >  kernel/power/main.c      |    2 +-
-> >  kernel/power/user.c      |    2 ++
-> >  4 files changed, 14 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > index 4603f08..493c678 100644
-> > --- a/kernel/power/Kconfig
-> > +++ b/kernel/power/Kconfig
-> > @@ -19,10 +19,15 @@ config SUSPEND_FREEZER
-> >          Turning OFF this setting is NOT recommended! If in doubt, say Y.
-> >
-> >  config HIBERNATION
-> > -       bool "Hibernation (aka 'suspend to disk')"
-> > -       depends on SWAP && ARCH_HIBERNATION_POSSIBLE
-> > +       def_bool n
-> > +       depends on ARCH_HIBERNATION_POSSIBLE
-> >        select LZO_COMPRESS
-> >        select LZO_DECOMPRESS
-> > +
-> > +config HIBERNATION_INTERFACE
-> > +       bool "Hibernation (aka 'suspend to disk')"
-> > +       depends on SWAP
-> > +       select HIBERNATION
-> >        ---help---
-> >          Enable the suspend to disk (STD) functionality, which is usually
-> >          called "hibernation" in user interfaces.  STD checkpoints the
-> > diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> > index 1832bd2..13bcf69 100644
-> > --- a/kernel/power/hibernate.c
-> > +++ b/kernel/power/hibernate.c
-> > @@ -592,6 +592,7 @@ static int prepare_processes(void)
-> >  *     hibernate - The granpappy of the built-in hibernation management
-> >  */
-> >
-> > +#ifdef CONFIG_HIBERNATION_INTERFACE
-> >  int hibernate(void)
-> >  {
-> >        int error;
-> > @@ -667,6 +668,8 @@ int hibernate(void)
-> >        return error;
-> >  }
-> >
-> > +#else /* !CONFIG_HIBERNATION_INTERFACE */
-> > +int hibernate(void) { return -ENOSYS; }
-> >
-> >  /**
-> >  *     software_resume - Resume from a saved image.
-> > @@ -1029,3 +1032,4 @@ __setup("noresume", noresume_setup);
-> >  __setup("resume_offset=", resume_offset_setup);
-> >  __setup("resume=", resume_setup);
-> >  __setup("hibernate=", hibernate_setup);
-> > +#endif /* !CONFIG_HIBERNATION_INTERFACE */
-> > diff --git a/kernel/power/main.c b/kernel/power/main.c
-> > index 8eaba5f..686a130 100644
-> > --- a/kernel/power/main.c
-> > +++ b/kernel/power/main.c
-> > @@ -156,7 +156,7 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
-> >                        s += sprintf(s,"%s ", pm_states[i]);
-> >        }
-> >  #endif
-> > -#ifdef CONFIG_HIBERNATION
-> > +#ifdef CONFIG_HIBERNATION_INTERFACE
-> >        s += sprintf(s, "%s\n", "disk");
-> >  #else
-> >        if (s != buf)
-> > diff --git a/kernel/power/user.c b/kernel/power/user.c
-> > index c36c3b9..5f36ee7 100644
-> > --- a/kernel/power/user.c
-> > +++ b/kernel/power/user.c
-> > @@ -458,6 +458,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
-> >        return error;
-> >  }
-> >
-> > +#ifdef CONFIG_HIBERNATION_INTERFACE
-> >  static const struct file_operations snapshot_fops = {
-> >        .open = snapshot_open,
-> >        .release = snapshot_release,
-> > @@ -479,3 +480,4 @@ static int __init snapshot_device_init(void)
-> >  };
-> >
-> >  device_initcall(snapshot_device_init);
-> > +#endif /* CONFIG_HIBERNATION_INTERFACE */
-> > --
-> > 1.7.0.4
-> >
-> >
+On Saturday, March 12, 2011, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Rafael, do you have any objections to this patch?
-
-Actually, I do.  Please see the comments I've just sent in a reply to the
-patch itself.
-
-> As discussed earlier
-> http://lists.xensource.com/archives/html/xen-devel/2011-03/msg00267.html
-> these patches are against a merged tree (your linux-next and stefano's
-> linux-next).
-> Konrad would pull this tree into his branch and push it in the end
-> (after your & stefano's trees
-> have gone in).
+> The cpufreq subsystem uses sysdev suspend and resume for
+> executing cpufreq_suspend() and cpufreq_resume(), respectively,
+> during system suspend, after interrupts have been switched off on the
+> boot CPU, and during system resume, while interrupts are still off on
+> the boot CPU.  In both cases the other CPUs are off-line at the
+> relevant point (either they have been switched off via CPU hotplug
+> during suspend, or they haven't been switched on yet during resume).
+> For this reason, although it may seem that cpufreq_suspend() and
+> cpufreq_resume() are executed for all CPUs in the system, they are
+> only called for the boot CPU in fact, which is quite confusing.
 > 
-> Alternatively, if you would like to carry patches 3/5 and 4/5 directly
-> in your tree, then the other
-> patches could go into the xen tree.
+> To remove the confusion and to prepare for elimiating sysdev
+> suspend and resume operations from the kernel enirely, convernt
+> cpufreq to using a struct syscore_ops object for the boot CPU
+> suspend and resume and rename the callbacks so that their names
+> reflect their purpose.  In addition, put some explanatory remarks
+> into their kerneldoc comments.
 
-I'd prefer that, once 4/5 has been modified as requested.
+I had to modify this patch, because the previous version had problems with
+systems that don't support cpufreq.  The updated patch (which is appended)
+also simplifies the code even further.
 
 Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: cpufreq: Use syscore_ops for boot CPU suspend/resume (v2)
+
+The cpufreq subsystem uses sysdev suspend and resume for
+executing cpufreq_suspend() and cpufreq_resume(), respectively,
+during system suspend, after interrupts have been switched off on the
+boot CPU, and during system resume, while interrupts are still off on
+the boot CPU.  In both cases the other CPUs are off-line at the
+relevant point (either they have been switched off via CPU hotplug
+during suspend, or they haven't been switched on yet during resume).
+For this reason, although it may seem that cpufreq_suspend() and
+cpufreq_resume() are executed for all CPUs in the system, they are
+only called for the boot CPU in fact, which is quite confusing.
+
+To remove the confusion and to prepare for elimiating sysdev
+suspend and resume operations from the kernel enirely, convernt
+cpufreq to using a struct syscore_ops object for the boot CPU
+suspend and resume and rename the callbacks so that their names
+reflect their purpose.  In addition, put some explanatory remarks
+into their kerneldoc comments.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/cpufreq/cpufreq.c |   66 ++++++++++++++++++----------------------------
+ 1 file changed, 26 insertions(+), 40 deletions(-)
+
+Index: linux-2.6/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6.orig/drivers/cpufreq/cpufreq.c
++++ linux-2.6/drivers/cpufreq/cpufreq.c
+@@ -28,6 +28,7 @@
+ #include <linux/cpu.h>
+ #include <linux/completion.h>
+ #include <linux/mutex.h>
++#include <linux/syscore_ops.h>
+ 
+ #include <trace/events/power.h>
+ 
+@@ -1340,35 +1341,31 @@ out:
+ }
+ EXPORT_SYMBOL(cpufreq_get);
+ 
++static struct sysdev_driver cpufreq_sysdev_driver = {
++	.add		= cpufreq_add_dev,
++	.remove		= cpufreq_remove_dev,
++};
++
+ 
+ /**
+- *	cpufreq_suspend - let the low level driver prepare for suspend
++ * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
++ *
++ * This function is only executed for the boot processor.  The other CPUs
++ * have been put offline by means of CPU hotplug.
+  */
+-
+-static int cpufreq_suspend(struct sys_device *sysdev, pm_message_t pmsg)
++static int cpufreq_bp_suspend(void)
+ {
+ 	int ret = 0;
+ 
+-	int cpu = sysdev->id;
++	int cpu = smp_processor_id();
+ 	struct cpufreq_policy *cpu_policy;
+ 
+ 	dprintk("suspending cpu %u\n", cpu);
+ 
+-	if (!cpu_online(cpu))
+-		return 0;
+-
+-	/* we may be lax here as interrupts are off. Nonetheless
+-	 * we need to grab the correct cpu policy, as to check
+-	 * whether we really run on this CPU.
+-	 */
+-
++	/* If there's no policy for the boot CPU, we have nothing to do. */
+ 	cpu_policy = cpufreq_cpu_get(cpu);
+ 	if (!cpu_policy)
+-		return -EINVAL;
+-
+-	/* only handle each CPU group once */
+-	if (unlikely(cpu_policy->cpu != cpu))
+-		goto out;
++		return 0;
+ 
+ 	if (cpufreq_driver->suspend) {
+ 		ret = cpufreq_driver->suspend(cpu_policy);
+@@ -1377,13 +1374,12 @@ static int cpufreq_suspend(struct sys_de
+ 					"step on CPU %u\n", cpu_policy->cpu);
+ 	}
+ 
+-out:
+ 	cpufreq_cpu_put(cpu_policy);
+ 	return ret;
+ }
+ 
+ /**
+- *	cpufreq_resume -  restore proper CPU frequency handling after resume
++ * cpufreq_bp_resume - Restore proper frequency handling of the boot CPU.
+  *
+  *	1.) resume CPUfreq hardware support (cpufreq_driver->resume())
+  *	2.) schedule call cpufreq_update_policy() ASAP as interrupts are
+@@ -1391,31 +1387,23 @@ out:
+  *	    what we believe it to be. This is a bit later than when it
+  *	    should be, but nonethteless it's better than calling
+  *	    cpufreq_driver->get() here which might re-enable interrupts...
++ *
++ * This function is only executed for the boot CPU.  The other CPUs have not
++ * been turned on yet.
+  */
+-static int cpufreq_resume(struct sys_device *sysdev)
++static void cpufreq_bp_resume(void)
+ {
+ 	int ret = 0;
+ 
+-	int cpu = sysdev->id;
++	int cpu = smp_processor_id();
+ 	struct cpufreq_policy *cpu_policy;
+ 
+ 	dprintk("resuming cpu %u\n", cpu);
+ 
+-	if (!cpu_online(cpu))
+-		return 0;
+-
+-	/* we may be lax here as interrupts are off. Nonetheless
+-	 * we need to grab the correct cpu policy, as to check
+-	 * whether we really run on this CPU.
+-	 */
+-
++	/* If there's no policy for the boot CPU, we have nothing to do. */
+ 	cpu_policy = cpufreq_cpu_get(cpu);
+ 	if (!cpu_policy)
+-		return -EINVAL;
+-
+-	/* only handle each CPU group once */
+-	if (unlikely(cpu_policy->cpu != cpu))
+-		goto fail;
++		return;
+ 
+ 	if (cpufreq_driver->resume) {
+ 		ret = cpufreq_driver->resume(cpu_policy);
+@@ -1430,14 +1418,11 @@ static int cpufreq_resume(struct sys_dev
+ 
+ fail:
+ 	cpufreq_cpu_put(cpu_policy);
+-	return ret;
+ }
+ 
+-static struct sysdev_driver cpufreq_sysdev_driver = {
+-	.add		= cpufreq_add_dev,
+-	.remove		= cpufreq_remove_dev,
+-	.suspend	= cpufreq_suspend,
+-	.resume		= cpufreq_resume,
++static struct syscore_ops cpufreq_syscore_ops = {
++	.suspend	= cpufreq_bp_suspend,
++	.resume		= cpufreq_bp_resume,
+ };
+ 
+ 
+@@ -2002,6 +1987,7 @@ static int __init cpufreq_core_init(void
+ 	cpufreq_global_kobject = kobject_create_and_add("cpufreq",
+ 						&cpu_sysdev_class.kset.kobj);
+ 	BUG_ON(!cpufreq_global_kobject);
++	register_syscore_ops(&cpufreq_syscore_ops);
+ 
+ 	return 0;
+ }
