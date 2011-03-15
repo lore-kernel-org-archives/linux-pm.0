@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM / Hibernate: Reduce autotuned default image
-	size
-Date: Tue, 15 Mar 2011 00:42:23 +0100
-Message-ID: <201103150042.23288.rjw__48313.994651153$1300146246$gmane$org@sisk.pl>
+Subject: [GIT PULL] Power management updates for 2.6.39
+Date: Tue, 15 Mar 2011 22:19:52 +0100
+Message-ID: <201103152219.52694.rjw__25563.4701964029$1300224142$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,50 +15,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi Linus,
 
-The hibernate image size autotuning mechanism sets the default
-image size to 5/2 of the total system RAM, but it is reported
-that on some systems device drivers allocate substantial
-amounts of memory during suspend and the creation of the image
-fails as a result (too little memory is preallocated).
+Please pull power management updates for 2.6.39 from:
 
-Modify the autotuning mechanism to use 1/3 instead of 2/5 of RAM
-as the default image size, which is reported to be sufficient for
-the affected systems.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-References: https://bugzilla.kernel.org/show_bug.cgi?id=30482
-Reported-and-tested-by: Martin Steigerwald <Martin@Lichtvoll.de>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/snapshot.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+They include:
 
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -42,15 +42,15 @@ static void swsusp_unset_page_forbidden(
- 
- /*
-  * Preferred image size in bytes (tunable via /sys/power/image_size).
-- * When it is set to N, swsusp will do its best to ensure the image
-- * size will not exceed N bytes, but if that is impossible, it will
-- * try to create the smallest image possible.
-+ * When it is set to N, the image creating code will do its best to
-+ * ensure the image size will not exceed N bytes, but if that is
-+ * impossible, it will try to create the smallest image possible.
-  */
- unsigned long image_size;
- 
- void __init hibernate_image_size_init(void)
- {
--	image_size = ((totalram_pages * 2) / 5) * PAGE_SIZE;
-+	image_size = (totalram_pages / 3) * PAGE_SIZE;
- }
- 
- /* List of PBEs needed for restoring the pages that were allocated before
+* Wakeup sources framework fixes.
+
+* PM core modification preventing sysfs files related to wakeup from being
+  created for devices that can't wake up the system.
+
+* Reduction of the number of power management Kconfig options.
+
+* Runtime PM framework modification allowing pm_runtime_suspend() to succeed
+  during system suspend.
+
+* Removal of pm_flags.
+
+* Support for device power domains in the core PM code.
+
+* PM core and runtime PM framework modification making them treat subsystems
+  in a consistent way.
+
+* Introduction of struct syscore_ops for implementing core subsystems'
+  suspend/resume and shutdown operations without using sysdevs.
+
+* Various PM-related fixes.
+
+
+ Documentation/ABI/testing/sysfs-devices-power |   20 +-
+ Documentation/power/devices.txt               |   94 +++++++---
+ Documentation/power/runtime_pm.txt            |   13 +-
+ Documentation/power/states.txt                |   12 +-
+ arch/x86/kernel/apm_32.c                      |    5 +-
+ arch/x86/xen/Kconfig                          |    2 +-
+ drivers/acpi/Kconfig                          |    1 -
+ drivers/acpi/bus.c                            |   23 +--
+ drivers/acpi/sleep.c                          |    4 +-
+ drivers/base/Makefile                         |    2 +-
+ drivers/base/power/Makefile                   |    3 +-
+ drivers/base/power/main.c                     |  175 ++++++++++---------
+ drivers/base/power/opp.c                      |    2 +-
+ drivers/base/power/power.h                    |   21 +--
+ drivers/base/power/runtime.c                  |   37 +++--
+ drivers/base/power/sysfs.c                    |   78 ++++++---
+ drivers/base/power/trace.c                    |    6 +-
+ drivers/base/power/wakeup.c                   |  109 ++++++++----
+ drivers/base/syscore.c                        |  117 ++++++++++++
+ drivers/net/e1000e/netdev.c                   |    8 +-
+ drivers/net/pch_gbe/pch_gbe_main.c            |    2 +-
+ drivers/pci/pci-driver.c                      |    4 +-
+ drivers/scsi/Makefile                         |    2 +-
+ drivers/scsi/scsi_priv.h                      |    2 +-
+ drivers/scsi/scsi_sysfs.c                     |    2 +-
+ drivers/usb/core/hcd-pci.c                    |    4 +-
+ drivers/usb/core/hub.c                        |   10 +-
+ include/acpi/acpi_bus.h                       |    2 +-
+ include/linux/device.h                        |    1 +
+ include/linux/pm.h                            |   19 +-
+ include/linux/pm_runtime.h                    |    6 +
+ include/linux/pm_wakeup.h                     |    8 +-
+ include/linux/syscore_ops.h                   |   29 +++
+ kernel/pm_qos_params.c                        |   24 +++
+ kernel/power/Kconfig                          |  237 +++++++++++--------------
+ kernel/power/hibernate.c                      |    9 +
+ kernel/power/main.c                           |    3 -
+ kernel/power/snapshot.c                       |    8 +-
+ kernel/power/suspend.c                        |    4 +
+ kernel/sys.c                                  |    4 +
+ 40 files changed, 691 insertions(+), 421 deletions(-)
+
+---------------
+
+Alexandre Courbot (1):
+      PM: Documentation/power/states.txt: fix repetition
+
+Jan Beulich (1):
+      PM: Simplify kernel/power/Kconfig
+
+Mandeep Singh Baines (1):
+      PM: Use appropriate printk() priority level in trace.c
+
+Nishanth Menon (1):
+      PM / OPP: opp_find_freq_exact() documentation fix
+
+Rafael J. Wysocki (16):
+      PM / Wakeup: Combine atomic counters to avoid reordering issues
+      PM / Wakeup: Make pm_save_wakeup_count() work as documented
+      PM / Wakeup: Don't update events_check_enabled in pm_get_wakeup_count()
+      USB / Hub: Do not call device_set_wakeup_capable() under spinlock
+      PM: Do not create wakeup sysfs files for devices that cannot wake up
+      PM / ACPI: Remove references to pm_flags from bus.c
+      PM: Make CONFIG_PM depend on (CONFIG_PM_SLEEP || CONFIG_PM_RUNTIME)
+      PM: Reorder power management Kconfig options
+      PM: Remove CONFIG_PM_OPS
+      PM: Clean up PM_TRACE dependencies and drop unnecessary Kconfig option
+      PM: Allow pm_runtime_suspend() to succeed during system suspend
+      PM: Drop pm_flags that is not necessary
+      PM: Add support for device power domains
+      PM: Make system-wide PM and runtime PM treat subsystems consistently
+      PM / Core: Introduce struct syscore_ops for core subsystems PM
+      PM / Hibernate: Reduce autotuned default image size
+
+Thomas Renninger (1):
+      PM QoS: Make pm_qos settings readable
