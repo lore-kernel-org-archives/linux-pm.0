@@ -1,15 +1,14 @@
-From: Daniel Drake <dsd@laptop.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [PATCH] PM / Suspend: Add more suspend notifier
 	events
-Date: Fri, 18 Mar 2011 18:01:47 +0000
-Message-ID: <AANLkTimrBwyiO7nsCfDNC-g4Xu4-6+4NXHbj8_Mr2fr4@mail.gmail.com>
+Date: Fri, 18 Mar 2011 18:51:00 +0100
+Message-ID: <201103181851.00988.rjw@sisk.pl>
 References: <20110318174620.2D0B99D401D@zog.reactivated.net>
-	<201103181851.00988.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103181851.00988.rjw@sisk.pl>
+In-Reply-To: <20110318174620.2D0B99D401D@zog.reactivated.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,24 +18,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Daniel Drake <dsd@laptop.org>
 Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, dilinger@queued.net
 List-Id: linux-pm@vger.kernel.org
 
-2011/3/18 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Friday, March 18, 2011, Daniel Drake wrote:
->> Without becoming a full platform_suspend_ops implementation, the core
->> olpc driver needs to be called during late suspend to apply a wakeup mask
->> that will have been set by individual drivers' suspend routines.
->>
->> Add a notifier here, and a symmetric one to happen during resume.
->
-> Why not to use a struct syscore_ops instead?
+On Friday, March 18, 2011, Daniel Drake wrote:
+> Without becoming a full platform_suspend_ops implementation, the core
+> olpc driver needs to be called during late suspend to apply a wakeup mask
+> that will have been set by individual drivers' suspend routines.
+> 
+> Add a notifier here, and a symmetric one to happen during resume.
 
-That looks like exactly what we need. Thanks.
+Why not to use a struct syscore_ops instead?
 
-In my mail I wrote that we need interrupts enabled, but on looking
-further I don't think we do. So syscore_ops should take care of it.
-I'll let you know if it doesn't.
+Rafael
 
-Daniel
+
+> Signed-off-by: Daniel Drake <dsd@laptop.org>
+> ---
+>  include/linux/notifier.h |   10 ++++++----
+>  kernel/power/suspend.c   |    5 +++++
+>  2 files changed, 11 insertions(+), 4 deletions(-)
+> 
+> To further clarify how this will be used by upcoming patches:
+> 
+> OLPC's EC needs to be run with a specific event mask during runtime,
+> and another one (based on configured wakeup events) during suspend.
+> 
+> The exact details of the in-suspend mask we are interested in cannot be
+> computed until individual drivers suspend routines are run.
+> 
+> Therefore we need a way to hook in generic code that runs after normal drivers
+> suspend routines, in process context with interrupts still enabled, to apply
+> the in-suspend event mask.
+> 
+> This patch will add the olpc_ec_wakeup_set() API for setting the appropriate
+> bits in the in-suspend event mask (stored only in memory to begin with), and
+> uses the new notifiers to program that mask to the hardware at the appropriate
+> time:
+> http://dev.laptop.org/~dsd/20110114/0006-olpc-EC-SCI-wakeup-mask-functionality.patch
+> 
+> This patch uses the olpc_ec_wakeup_set() API to compute and set the suspend
+> preference during olpc-battery's suspend routine:
+> http://dev.laptop.org/~dsd/20110114/0013-olpc_battery-add-wakeup-support.patch
+> (other drivers will follow this pattern too)
+> 
+> diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+> index 2026f9e..4519d4f 100644
+> --- a/include/linux/notifier.h
+> +++ b/include/linux/notifier.h
+> @@ -254,10 +254,12 @@ static inline int notifier_to_errno(int ret)
+>  /* Hibernation and suspend events */
+>  #define PM_HIBERNATION_PREPARE	0x0001 /* Going to hibernate */
+>  #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+> -#define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+> -#define PM_POST_SUSPEND		0x0004 /* Suspend finished */
+> -#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
+> -#define PM_POST_RESTORE		0x0006 /* Restore failed */
+> +#define PM_SUSPEND_PREPARE	0x0003 /* Preparing to suspend the system */
+> +#define PM_DO_SUSPEND		0x0004 /* Going to suspend the system */
+> +#define PM_DO_RESUME		0x0005 /* Going to resume the system */
+> +#define PM_POST_SUSPEND		0x0006 /* Suspend finished */
+> +#define PM_RESTORE_PREPARE	0x0007 /* Going to restore a saved image */
+> +#define PM_POST_RESTORE		0x0008 /* Restore failed */
+>  
+>  /* Console keyboard events.
+>   * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 2814c32..35acfc5 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -224,9 +224,14 @@ int suspend_devices_and_enter(suspend_state_t state)
+>  	if (suspend_test(TEST_DEVICES))
+>  		goto Recover_platform;
+>  
+> +	error = pm_notifier_call_chain(PM_DO_SUSPEND);
+> +	if (error)
+> +		goto Recover_platform;
+> +
+>  	suspend_enter(state);
+>  
+>   Resume_devices:
+> +	pm_notifier_call_chain(PM_DO_RESUME);
+>  	suspend_test_start();
+>  	dpm_resume_end(PMSG_RESUME);
+>  	suspend_test_finish("resume devices");
+> 
