@@ -1,13 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: suspend() and runtime_suspend()
-Date: Mon, 21 Mar 2011 10:28:28 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1103211024230.1978-100000@iolanthe.rowland.org>
-References: <9F3EABD6E3419B4C81F34EAABB4D40188142FF8486@irsmsx501.ger.corp.intel.com>
+From: as <bartmon@gmail.com>
+Subject: Re: [Bug 31432] Resume from suspend fails on new
+ FireWire stack (TSB43AB22/A IEEE-1394a-2000 Controller)
+Date: Sat, 19 Mar 2011 19:47:03 +0100
+Message-ID: <AANLkTimVq5qCstOEyiV37TxwaRGhkVrq=4zWA57aH0Zf__17506.5876021565$1300723054$gmane$org@mail.gmail.com>
+References: <bug-31432-4803@https.bugzilla.kernel.org/>
+	<201103191300.p2JD07Hr032711@demeter1.kernel.org>
+	<20110319145248.3a5cf71f@stein>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9F3EABD6E3419B4C81F34EAABB4D40188142FF8486@irsmsx501.ger.corp.intel.com>
+In-Reply-To: <20110319145248.3a5cf71f@stein>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,57 +20,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Martin, LoicX" <loicx.martin@intel.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-pm@lists.linux-foundation.org, linux1394-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 Mar 2011, Martin, LoicX wrote:
-
-> Hi
-> 
-> I found in the linux kernel documentation :
-> In /power/pci.h
-> 2.4.1. System Suspend
-> 
-> PCI device drivers (that don't implement legacy power management callbacks) are
-> generally not expected to prepare devices for signaling wakeup or to put them
-> into low-power states.  However, if one of the driver's suspend callbacks
-> (pm->suspend() or pm->suspend_noirq()) saves the device's standard configuration
-> registers, pci_pm_suspend_noirq() will assume that the device has been prepared
-> to signal wakeup and put into a low-power state by the driver (the driver is
-> then assumed to have used the helper functions provided by the PCI subsystem for
-> this purpose).  PCI device drivers are not encouraged to do that, but in some
-> rare cases doing that in the driver may be the optimum approach.
-> 
-> 3.1.2 suspend()
-> 
-> It is not required (in fact it even is
-> not recommended) that a PCI driver's suspend() callback save the standard
-> configuration registers of the device, prepare it for waking up the system, or
-> put it into a low-power state.  All of these operations can very well be taken
-> care of by the PCI subsystem, without the driver's participation.
-> 
-> 2.3. Runtime Device Power Management
-> 
-> It is expected that the device driver's pm->runtime_suspend() callback will
-> not attempt to prepare the device for signaling wakeup or to put it into a
-> low-power state.  The driver ought to leave these tasks to the PCI subsystem
-> that has all of the information necessary to perform them.
-> 
-> 
-> So I was wondering why in the kernel sources, most of the PCI drivers were using pci_set_power_state, as well pci_save_state either in suspend() callbacks
-
-Perhaps because those PCI drivers were written before the
-documentation, using legacy power management.
-
->  either in runtime_suspend() callbacks.
-
-There should not be any drivers doing that, because runtime_suspend is 
-a relatively recent addition.  Can you provide examples?
-
-> Why should we not use those functions in a driver suspend callback implementation ?
-
-Because it would duplicate code that is already present in the PCI
-core.
-
-Alan Stern
+PiBBbGFzIHRoZXJlIGFyZSBubyBtZXNzYWdlcyBmcm9tIHRoZSBmaXJld2lyZSBkcml2ZXJzIGlu
+IHRoaXMgbG9nLiAgTm90IGV2ZW4KPiBhIG1lc3NhZ2UgZnJvbSBQQ0kgY29yZSB0aGF0IGEgZmly
+ZXdpcmUtb2hjaSBkcml2ZXIgbWV0aG9kIGZhaWxlZC4gIEhlbmNlCj4gd2UgKGxpbnV4MTM5NC1k
+ZXZlbCBwZW9wbGUpIGhhdmUgbm90aGluZyB0byBnbyBvbiB5ZXQuCgpUaGlzIGlzIGJlY2F1c2Ug
+SSBjYW4ndCBnZXQgdGhlIG1lc3NhZ2UgYnVmZmVyIGZyb20gdGhlIGh1bmcga2VybmVsLgpUaGUg
+bG9nIGlzIGZyb20gYSBmb3JjZWZ1bGx5IHJlYm9vdGVkIGtlcm5lbCB3aGljaCBsb2dzIHRoZSB0
+cmFjZQppbmZvcm1hdGlvbiB3aGljaCBpcyBzdG9yZWQgaW4gdGhlIFJUQyBiZXR3ZWVuIHJlYm9v
+dHMgKHN1cHBvc2VkbHkKdGhpcyBpcyB0aGUgb25seSBub24tdm9sYXRpbGUgcmVnaXN0ZXIgYXZh
+aWxhYmxlKS4gWW91IGNhbiBzZWUgdGhhdApvdmVyd3JpdGluZyB0aGUgUlRDIHJlc3VsdHMgaW4g
+ZGF0ZSBpbiB0aGUgMjAyMCdzLiBNb3JlIGhlcmU6Cmh0dHBzOi8vd2lraS51YnVudHUuY29tL0Rl
+YnVnZ2luZ0tlcm5lbFN1c3BlbmQjJTIycmVzdW1lLXRyYWNlJTIyJTIwZGVidWdnaW5nJTIwcHJv
+Y2VkdXJlJTIwZm9yJTIwZmluZGluZyUyMGJ1Z2d5JTIwZHJpdmVycwoKCj4gVGhlIGRvd25zdHJl
+YW0gdHJhY2tlciBpdGVtIGlzOgo+IGh0dHBzOi8vYnVncy5sYXVuY2hwYWQubmV0L3VidW50dS8r
+c291cmNlL2xpbnV4LytidWcvNzMyNjQxCj4KPiBJdCBjb250YWlucyBhIHNvbWV3aGF0IGRpZmZl
+cmVudCBmYWlsdXJlIGRlc2NyaXB0aW9uIGZyb20gYSAyLjYuMzUgVWJ1bnR1Cj4ga2VybmVsOgo+
+Ci4uLgo+Cj4gSmHFoWEsIGFyZSBhbGwgb2YgdGhlIGRtZXNnIG1lc3NhZ2VzIGluIHRoaXMgcmVw
+b3J0IGZyb20gdGhlIHNhbWUgc2Vzc2lvbj8KCmRtZXNnIG1lc3NhZ2VzIG9uIExhdW5jaHBhZCBh
+cmUgZnJvbSAyLjYuMzUgYXMgaXQgaXMgdGhlIHNoaXBwZWQKa2VybmVsIGluIFVidW50dSAxMC4x
+MC4gSW4gdGhlIGNvbW1lbnQgb24gTGF1bmNocGFkIHlvdSBjYW4gYWxzbyBzZWUKZG1lc2cgZnJv
+bSAyLjYuMzgtcmM4IHRoYXQgd2FzIGxhdGVzdCBtYWlubGluZSBhdCB0aGUgdGltZS4KT24gdGhp
+cyBrZXJuZWwgYnVnemlsbGEgSSBwb3N0ZWQgdGhlIGRtZXNnIG9mIHRoZSBqdXN0IHJlbGVhc2Vk
+IDIuNi4zOApzdGFibGUga2VybmVsIGJlY2F1c2UgSSB0aGluayB0aGlzIHZlcnNpb24gaXMgbW9z
+dCByZWxldmFudCBhdCB0aGlzCnRpbWUgKHJpZ2h0PykuCgoKPiBMaW51eC1wbSBmb2xrcywgd2h5
+IGlzIHRoZSBQTSBSZXN0b3JlIGZhaWx1cmUgcmVwb3J0ZWQgYXQgMC43MTQ4NzMgYnV0IHRoZQo+
+IHN5c3RlbSBwcm9jZWVkcyBhbmQgbG9ncyBzdWNjZXNzZnVsIGF0dGFjaG1lbnQgb2YgZmlyZXdp
+cmUtb2hjaSdzIHBjaV9wcm9iZQo+IHRvIHRoZSBQQ0kgZGV2aWNlPwoKSSB0aGluayB5b3UgY2Fu
+IGZpbmQgYW4gZXhwbGFuYXRpb24gZm9yIHRoaXMgaW4gbXkgZmlyc3QgcGFyYWdyYXBoIG9mCnRo
+aXMgZW1haWwuCgoKPiBDYW4gc29tZWJvZHkgY29tbWVudCBvbiB0aGUgcGhlbm9tZW5vbiB0aGF0
+IFZUIHN3aXRjaGluZyB3YXMgYWZmZWN0ZWQ/IC4uLgo+IFdlbGwsIG1heWJlIGZpcmV3aXJlLWNv
+cmUgaHVuZyBpbiBhIHdvcmtxdWV1ZSBqb2Igd2hpY2ggaW4gdHVybiBwcmV2ZW50ZWQKPiBzdWJz
+ZXF1ZW50IHByb2Nlc3Npbmcgb2Ygb3RoZXIgc3Vic3lzdGVtcycgd29ya3F1ZXVlIGpvYnMuICBU
+aGlzIGNhbiBiZQo+IG11Y2ggbW9yZSBvZiBhIHByb2JsZW0gd2l0aCBhIGtlcm5lbCBsaWtlIDIu
+Ni4zNSB0aGFuIHdpdGggbmV3ZXIgb25lcwo+IHdpdGggY29uY3VycmVuY3kgbWFuYWdlZCB3b3Jr
+cXVldWVzICgyLjYuMzYgYW5kIGxhdGVyKS4KClRoZSBWVCBzd2l0Y2hpbmcgaXMgb25seSBwb3Nz
+aWJsZSBvbiAyLjYuMzUgZm9yIG1lLiBUaGF0IGlzIHdoeSBJIG9ubHkKbWVudGlvbmVkIGl0IG9u
+IExhdW5jaHBhZC4gV2l0aCAuMzggbXkgZGlzcGxheSByZWNlaXZlcyBubyBzaWduYWwKYWZ0ZXIg
+YXR0ZW1wdGluZyBhIHJlc3VtZS4KCgo+IChKYcWhYSwgcHJlZmVyIHJlcGx5LXRvLWFsbCBmb3Ig
+cmVzcG9uc2VzLiBUaGFua3MgZm9yIHlvdXIgcmVwb3J0cyBzbyBmYXIuKQoKKiBTdGVmYW4sIHNv
+cnJ5IGZvciBkdXBsaWNhdGUsIHJlcGx5aW5nIHRvIHJlc3Qgb2YgeW91ciBDQyAqClRoYW5rcyBm
+b3IgeW91ciBwYXRpZW5jZSwgdGhpcyBpcyBteSBmaXJzdCBidWcgcmVwb3J0IGhlcmUuIDopCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1h
+aWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
