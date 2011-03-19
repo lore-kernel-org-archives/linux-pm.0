@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 9/10] sh: Use struct syscore_ops instead of
-	sysdev class and sysdev
-Date: Sat, 19 Mar 2011 01:47:27 +0100
-Message-ID: <201103190147.28001.rjw__304.620530414645$1300495725$gmane$org@sisk.pl>
-References: <201103100131.58206.rjw@sisk.pl>
-	<201103131403.49561.rwys@fuw.edu.pl>
-	<20110317082016.GB13315@linux-sh.org>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [Bug 31432] Resume from suspend fails on new
+ FireWire stack (TSB43AB22/A IEEE-1394a-2000 Controller)
+Date: Sat, 19 Mar 2011 14:52:48 +0100
+Message-ID: <20110319145248.3a5cf71f__34998.874172061$1300542877$gmane$org@stein>
+References: <bug-31432-4803@https.bugzilla.kernel.org/>
+	<201103191300.p2JD07Hr032711@demeter1.kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110317082016.GB13315@linux-sh.org>
+In-Reply-To: <201103191300.p2JD07Hr032711@demeter1.kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,376 +19,117 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: BARTMON@gmail.com
+Cc: linux-pm@lists.linux-foundation.org, bugzilla-daemon@bugzilla.kernel.org, linux1394-devel@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, March 17, 2011, Paul Mundt wrote:
-> On Sun, Mar 13, 2011 at 02:03:49PM +0100, R. J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Convert the SuperH clocks framework and shared interrupt handling
-> > code to using struct syscore_ops instead of a sysdev classes and
-> > sysdevs for power managment.
-> > 
-> > This reduces the code size significantly and simplifies it.  The
-> > optimizations causing things not to be restored after creating a
-> > hibernation image are removed, but they might lead to undesirable
-> > effects during resume from hibernation (e.g. the clocks would be left
-> > as the boot kernel set them, which might be not the same way as the
-> > hibernated kernel had seen them before the hibernation).
-> > 
-> > This also is necessary for removing sysdevs from the kernel entirely
-> > in the future.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> This misses the use of the sysdev class by the userimask code, though I'm
-> open to suggestions for alternatives.
-
-For now, I'd simply move the sysdev class definition to userimask.c, like
-in the patch below.  The current goal is to eliminate the suspend/resume and
-shutdown operations from sysdevs (and sysdev drivers), the next step will
-be to replace the remaining sysdevs with alternative mechanisms.
-
-Thanks,
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: Drivers / sh: Use struct syscore_ops instead of sysdev class and sysdev (v2)
-
-Convert the SuperH clocks framework and shared interrupt handling
-code to using struct syscore_ops instead of a sysdev classes and
-sysdevs for power managment.
-
-This reduces the code size significantly and simplifies it.  The
-optimizations causing things not to be restored after creating a
-hibernation image are removed, but they might lead to undesirable
-effects during resume from hibernation (e.g. the clocks would be left
-as the boot kernel set them, which might be not the same way as the
-hibernated kernel had seen them before the hibernation).
-
-This also is necessary for removing sysdevs from the kernel entirely
-in the future.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/sh/clk/core.c       |   68 +++++++--------------------
- drivers/sh/intc/core.c      |  108 ++++++++++++++------------------------------
- drivers/sh/intc/internals.h |    5 --
- drivers/sh/intc/userimask.c |    9 +++
- 4 files changed, 63 insertions(+), 127 deletions(-)
-
-Index: linux-2.6/drivers/sh/clk/core.c
-===================================================================
---- linux-2.6.orig/drivers/sh/clk/core.c
-+++ linux-2.6/drivers/sh/clk/core.c
-@@ -21,7 +21,7 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/list.h>
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- #include <linux/seq_file.h>
- #include <linux/err.h>
- #include <linux/io.h>
-@@ -630,68 +630,36 @@ long clk_round_parent(struct clk *clk, u
- EXPORT_SYMBOL_GPL(clk_round_parent);
- 
- #ifdef CONFIG_PM
--static int clks_sysdev_suspend(struct sys_device *dev, pm_message_t state)
-+static void clks_core_resume(void)
- {
--	static pm_message_t prev_state;
- 	struct clk *clkp;
- 
--	switch (state.event) {
--	case PM_EVENT_ON:
--		/* Resumeing from hibernation */
--		if (prev_state.event != PM_EVENT_FREEZE)
--			break;
--
--		list_for_each_entry(clkp, &clock_list, node) {
--			if (likely(clkp->ops)) {
--				unsigned long rate = clkp->rate;
--
--				if (likely(clkp->ops->set_parent))
--					clkp->ops->set_parent(clkp,
--						clkp->parent);
--				if (likely(clkp->ops->set_rate))
--					clkp->ops->set_rate(clkp, rate);
--				else if (likely(clkp->ops->recalc))
--					clkp->rate = clkp->ops->recalc(clkp);
--			}
-+	list_for_each_entry(clkp, &clock_list, node) {
-+		if (likely(clkp->ops)) {
-+			unsigned long rate = clkp->rate;
-+
-+			if (likely(clkp->ops->set_parent))
-+				clkp->ops->set_parent(clkp,
-+					clkp->parent);
-+			if (likely(clkp->ops->set_rate))
-+				clkp->ops->set_rate(clkp, rate);
-+			else if (likely(clkp->ops->recalc))
-+				clkp->rate = clkp->ops->recalc(clkp);
- 		}
--		break;
--	case PM_EVENT_FREEZE:
--		break;
--	case PM_EVENT_SUSPEND:
--		break;
- 	}
--
--	prev_state = state;
--	return 0;
--}
--
--static int clks_sysdev_resume(struct sys_device *dev)
--{
--	return clks_sysdev_suspend(dev, PMSG_ON);
- }
- 
--static struct sysdev_class clks_sysdev_class = {
--	.name = "clks",
--};
--
--static struct sysdev_driver clks_sysdev_driver = {
--	.suspend = clks_sysdev_suspend,
--	.resume = clks_sysdev_resume,
--};
--
--static struct sys_device clks_sysdev_dev = {
--	.cls = &clks_sysdev_class,
-+static struct syscore_ops clks_syscore_ops = {
-+	.resume = clks_core_resume,
- };
- 
--static int __init clk_sysdev_init(void)
-+static int __init clk_syscore_init(void)
- {
--	sysdev_class_register(&clks_sysdev_class);
--	sysdev_driver_register(&clks_sysdev_class, &clks_sysdev_driver);
--	sysdev_register(&clks_sysdev_dev);
-+	register_syscore_ops(&clks_syscore_ops);
- 
- 	return 0;
- }
--subsys_initcall(clk_sysdev_init);
-+subsys_initcall(clk_syscore_init);
- #endif
- 
- /*
-Index: linux-2.6/drivers/sh/intc/core.c
-===================================================================
---- linux-2.6.orig/drivers/sh/intc/core.c
-+++ linux-2.6/drivers/sh/intc/core.c
-@@ -24,7 +24,7 @@
- #include <linux/slab.h>
- #include <linux/interrupt.h>
- #include <linux/sh_intc.h>
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- #include <linux/list.h>
- #include <linux/spinlock.h>
- #include <linux/radix-tree.h>
-@@ -376,108 +376,70 @@ err0:
- 	return -ENOMEM;
- }
- 
--static ssize_t
--show_intc_name(struct sys_device *dev, struct sysdev_attribute *attr, char *buf)
-+static int intc_suspend(void)
- {
- 	struct intc_desc_int *d;
- 
--	d = container_of(dev, struct intc_desc_int, sysdev);
-+	list_for_each_entry(d, &intc_list, list) {
-+		int irq;
- 
--	return sprintf(buf, "%s\n", d->chip.name);
--}
-+		/* enable wakeup irqs belonging to this intc controller */
-+		for_each_active_irq(irq) {
-+			struct irq_data *data;
-+			struct irq_desc *desc;
-+			struct irq_chip *chip;
-+
-+			data = irq_get_irq_data(irq);
-+			chip = irq_data_get_irq_chip(data);
-+			if (chip != &d->chip)
-+				continue;
-+			desc = irq_to_desc(irq);
-+			if ((desc->status & IRQ_WAKEUP))
-+				chip->irq_enable(data);
-+		}
-+	}
- 
--static SYSDEV_ATTR(name, S_IRUGO, show_intc_name, NULL);
-+	return 0;
-+}
- 
--static int intc_suspend(struct sys_device *dev, pm_message_t state)
-+static void intc_resume(void)
- {
- 	struct intc_desc_int *d;
--	struct irq_data *data;
--	struct irq_desc *desc;
--	struct irq_chip *chip;
--	int irq;
--
--	/* get intc controller associated with this sysdev */
--	d = container_of(dev, struct intc_desc_int, sysdev);
--
--	switch (state.event) {
--	case PM_EVENT_ON:
--		if (d->state.event != PM_EVENT_FREEZE)
--			break;
-+
-+	list_for_each_entry(d, &intc_list, list) {
-+		int irq;
- 
- 		for_each_active_irq(irq) {
--			desc = irq_to_desc(irq);
-+			struct irq_data *data;
-+			struct irq_desc *desc;
-+			struct irq_chip *chip;
-+
- 			data = irq_get_irq_data(irq);
- 			chip = irq_data_get_irq_chip(data);
--
- 			/*
- 			 * This will catch the redirect and VIRQ cases
- 			 * due to the dummy_irq_chip being inserted.
- 			 */
- 			if (chip != &d->chip)
- 				continue;
-+			desc = irq_to_desc(irq);
- 			if (desc->status & IRQ_DISABLED)
- 				chip->irq_disable(data);
- 			else
- 				chip->irq_enable(data);
- 		}
--		break;
--	case PM_EVENT_FREEZE:
--		/* nothing has to be done */
--		break;
--	case PM_EVENT_SUSPEND:
--		/* enable wakeup irqs belonging to this intc controller */
--		for_each_active_irq(irq) {
--			desc = irq_to_desc(irq);
--			data = irq_get_irq_data(irq);
--			chip = irq_data_get_irq_chip(data);
--
--			if (chip != &d->chip)
--				continue;
--			if ((desc->status & IRQ_WAKEUP))
--				chip->irq_enable(data);
--		}
--		break;
- 	}
--
--	d->state = state;
--
--	return 0;
- }
- 
--static int intc_resume(struct sys_device *dev)
--{
--	return intc_suspend(dev, PMSG_ON);
--}
--
--struct sysdev_class intc_sysdev_class = {
--	.name		= "intc",
-+struct syscore_ops intc_syscore_ops = {
- 	.suspend	= intc_suspend,
- 	.resume		= intc_resume,
- };
- 
--/* register this intc as sysdev to allow suspend/resume */
--static int __init register_intc_sysdevs(void)
-+static int __init intc_syscore_init(void)
- {
--	struct intc_desc_int *d;
--	int error;
-+	register_syscore_ops(&intc_syscore_ops);
- 
--	error = sysdev_class_register(&intc_sysdev_class);
--	if (!error) {
--		list_for_each_entry(d, &intc_list, list) {
--			d->sysdev.id = d->index;
--			d->sysdev.cls = &intc_sysdev_class;
--			error = sysdev_register(&d->sysdev);
--			if (error == 0)
--				error = sysdev_create_file(&d->sysdev,
--							   &attr_name);
--			if (error)
--				break;
--		}
--	}
--
--	if (error)
--		pr_err("sysdev registration error\n");
--
--	return error;
-+	return 0;
- }
--device_initcall(register_intc_sysdevs);
-+device_initcall(intc_syscore_init);
-Index: linux-2.6/drivers/sh/intc/internals.h
-===================================================================
---- linux-2.6.orig/drivers/sh/intc/internals.h
-+++ linux-2.6/drivers/sh/intc/internals.h
-@@ -4,7 +4,7 @@
- #include <linux/kernel.h>
- #include <linux/types.h>
- #include <linux/radix-tree.h>
--#include <linux/sysdev.h>
-+#include <linux/module.h>
- 
- #define _INTC_MK(fn, mode, addr_e, addr_d, width, shift) \
- 	((shift) | ((width) << 5) | ((fn) << 9) | ((mode) << 13) | \
-@@ -51,9 +51,7 @@ struct intc_subgroup_entry {
- 
- struct intc_desc_int {
- 	struct list_head list;
--	struct sys_device sysdev;
- 	struct radix_tree_root tree;
--	pm_message_t state;
- 	raw_spinlock_t lock;
- 	unsigned int index;
- 	unsigned long *reg;
-@@ -158,7 +156,6 @@ void _intc_enable(struct irq_data *data,
- extern struct list_head intc_list;
- extern raw_spinlock_t intc_big_lock;
- extern unsigned int nr_intc_controllers;
--extern struct sysdev_class intc_sysdev_class;
- 
- unsigned int intc_get_dfl_prio_level(void);
- unsigned int intc_get_prio_level(unsigned int irq);
-Index: linux-2.6/drivers/sh/intc/userimask.c
-===================================================================
---- linux-2.6.orig/drivers/sh/intc/userimask.c
-+++ linux-2.6/drivers/sh/intc/userimask.c
-@@ -57,12 +57,21 @@ store_intc_userimask(struct sysdev_class
- static SYSDEV_CLASS_ATTR(userimask, S_IRUSR | S_IWUSR,
- 			 show_intc_userimask, store_intc_userimask);
- 
-+static struct sysdev_class intc_sysdev_class = {
-+	.name		= "intc",
-+};
- 
- static int __init userimask_sysdev_init(void)
- {
-+	int error;
-+
- 	if (unlikely(!uimask))
- 		return -ENXIO;
- 
-+	error = sysdev_class_register(&intc_sysdev_class);
-+	if (error)
-+		return error;
-+
- 	return sysdev_class_create_file(&intc_sysdev_class, &attr_userimask);
- }
- late_initcall(userimask_sysdev_init);
+T24gTWFyIDE5IGJ1Z3ppbGxhLWRhZW1vbkBidWd6aWxsYS5rZXJuZWwub3JnIHdyb3RlOgo+IGh0
+dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzE0MzIKPiAKPiAKPiBS
+YWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+IGNoYW5nZWQ6Cj4gCj4gICAgICAgICAgICBX
+aGF0ICAgIHxSZW1vdmVkICAgICAgICAgICAgICAgICAgICAgfEFkZGVkCj4gLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLQo+ICAgICAgICAgICAgICAgICAgQ0N8ICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IHxyandAc2lzay5wbAo+ICAgICAgICAgICBDb21wb25lbnR8SGliZXJuYXRpb24vU3VzcGVuZCAg
+ICAgICAgIHxJRUVFMTM5NAo+ICAgICAgICAgICAgICBCbG9ja3N8ICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIHw3MjE2Cj4gICAgICAgICAgQXNzaWduZWRUb3xwb3dlci1tYW5hZ2VtZW50X290
+aGVyQGtlcm4gfGRyaXZlcnNfaWVlZTEzOTRAa2VybmVsLWJ1Zwo+ICAgICAgICAgICAgICAgICAg
+ICB8ZWwtYnVncy5vc2RsLm9yZyAgICAgICAgICAgIHxzLm9zZGwub3JnCj4gICAgICAgICAgICAg
+UHJvZHVjdHxQb3dlciBNYW5hZ2VtZW50ICAgICAgICAgICAgfERyaXZlcnMKClF1b3RpbmcgdGhl
+IGJ1ZyBkZXNjcmlwdGlvbiBmb3IgbGludXgxMzk0LWRldmVsOgoKPiBEZXNjcmlwdGlvbiBGcm9t
+ICBKYcWhYSAgMjAxMS0wMy0xOSAxMjozNDowMCAgCj4gQ3JlYXRlZCBhbiBhdHRhY2htZW50IChp
+ZD01MTI0MikgW2RldGFpbHNdCj4gZG1lc2cgb2YgMi42LjM4CgpbaHR0cHM6Ly9idWd6aWxsYS5r
+ZXJuZWwub3JnL2F0dGFjaG1lbnQuY2dpP2lkPTUxMjQyXQoKPiAKPiBJIGhhdmUgZGlhZ25vc2Vk
+IGEgcmVncmVzc2lvbiBpbiBzZXZlcmFsIGtlcm5lbCB2ZXJzaW9ucyAoYXQgbGVhc3QKPiAyLjYu
+MzUueCBhbmQgY3VycmVudCBzdGFibGUgdmVyc2lvbiAyLjYuMzgpLiAKPiAKPiBBZnRlciB1cGdy
+YWRpbmcgZnJvbSAyLjYuMzIgKFVidW50dSAxMC4wNCkgdG8gMi42LjM1IChVYnVudXR1IDEwLjEw
+KQo+IHJlc3VtZSBmcm9tIHN1c3BlbmQgZmFpbGVkIHNvIEkgY2FtZSBhY3Jvc3MgdGhlIC9zeXMv
+cG93ZXIvcG1fdHJhY2UKPiB0cmFjaW5nIG1ldGhvZCBhbmQgd2l0aCB0aGF0IGluZm8gSSBuYXJy
+b3dlZCB0aGUgaXNzdWUgdG8gYSBmaXJld2lyZQo+IGRldmljZSB3aGljaCBzZWVtcyB0byBiZSB0
+aGUgaXNzdWUuIEkgYWxzbyB0cmllZCB0aGUgcmVjZW50bHkgcmVsZWFzZWQKPiAyLjYuMzggbWFp
+bmxpbmUgdmVyc2lvbi4KPiAKPiBBIHdvcmthcm91bmQgd2hpY2ggY29uZmlybWVkIG15IHN1c3Bp
+Y2lvbnMgaXMgcmVtb3ZpbmcgZmlyZXdpcmUgbW9kdWxlczoKPiAjIG1vZHByb2JlIC1yIGZpcmV3
+aXJlX2NvcmUgZmlyZXdpcmVfb2hjaQo+IFRoZW4gcmVzdW1lIHdvcmtzIHdlbGwuCj4gCj4gSGVy
+ZSdzIHRoZSBldmlkZW5jZToKPiAKPiAkIHVuYW1lIC1hCj4gTGludXggc2VuZGVsbCAyLjYuMzgt
+MDIwNjM4LWdlbmVyaWMgIzIwMTEwMzE1MTMwMyBTTVAgVHVlIE1hciAxNQo+IDEzOjA4OjA5IFVU
+QyAyMDExIHg4Nl82NCBHTlUvTGludXgKPiAKPiByZWxldmFudCBwYXJ0IG9mIGRtZXNnOgo+IFsg
+ICAgMS4xODE5OThdIFBNOiBIaWJlcm5hdGlvbiBpbWFnZSBub3QgcHJlc2VudCBvciBjb3VsZCBu
+b3QgYmUgbG9hZGVkLgo+IFsgICAgMS4xODIwMTddIHJlZ2lzdGVyZWQgdGFza3N0YXRzIHZlcnNp
+b24gMQo+IFsgICAgMS4xODIzMDddICAgTWFnaWMgbnVtYmVyOiAwOjExNzo0NzYKPiBbICAgIDEu
+MTgyMzEwXSAgIGhhc2ggbWF0Y2hlcyAvaG9tZS9rZXJuZWwtcHBhL0NPRC9saW51eC9kcml2ZXJz
+L2Jhc2UvcG93ZXIvbWFpbi5jOjUxNAo+IFsgICAgMS4xODIzNzBdIHBjaSAwMDAwOjAzOjA1LjA6
+IGhhc2ggbWF0Y2hlcwo+IFsgICAgMS4xODI0NDJdIHJ0Y19jbW9zIDAwOjA1OiBzZXR0aW5nIHN5
+c3RlbSBjbG9jayB0byAyMDI0LTAzLTAyIDEwOjI4OjQwIFVUQyAoMTcwOTM3NTMyMCkKPiAKPiAk
+IGxzcGNpIHwgZ3JlcCAwMzowNQo+IDAzOjA1LjAgRmlyZVdpcmUgKElFRUUgMTM5NCk6IFRleGFz
+IEluc3RydW1lbnRzIFRTQjQzQUIyMi9BIElFRUUtMTM5NGEtMjAwMCBDb250cm9sbGVyIChQSFkv
+TGluaykKPiAKPiAkIGdyZXAgMDM6MDUgZG1lc2ctMzgudHh0IAo+IFsgICAgMC4zNjAwNTJdIHBj
+aSAwMDAwOjAzOjA1LjA6IFsxMDRjOjgwMjNdIHR5cGUgMCBjbGFzcyAweDAwMGMwMAo+IFsgICAg
+MC4zNjAwNjddIHBjaSAwMDAwOjAzOjA1LjA6IHJlZyAxMDogW21lbSAweGZkZWZmMDAwLTB4ZmRl
+ZmY3ZmZdCj4gWyAgICAwLjM2MDA3Nl0gcGNpIDAwMDA6MDM6MDUuMDogcmVnIDE0OiBbbWVtIDB4
+ZmRlZjgwMDAtMHhmZGVmYmZmZl0KPiBbICAgIDAuMzYwMTIzXSBwY2kgMDAwMDowMzowNS4wOiBz
+dXBwb3J0cyBEMSBEMgo+IFsgICAgMC4zNjAxMjVdIHBjaSAwMDAwOjAzOjA1LjA6IFBNRSMgc3Vw
+cG9ydGVkIGZyb20gRDAgRDEgRDIgRDNob3QKPiBbICAgIDAuMzYwMTMwXSBwY2kgMDAwMDowMzow
+NS4wOiBQTUUjIGRpc2FibGVkCj4gCj4gSSd2ZSBwb3N0ZWQgdGhpcyBvbiBMYXVuY2hwYWQgKEJ1
+ZyAjNzMyNjQxKSBidXQgbm8gcmVzcG9uc2VzIGF0IGFsbAo+IHRoZXJlLgoKQWxhcyB0aGVyZSBh
+cmUgbm8gbWVzc2FnZXMgZnJvbSB0aGUgZmlyZXdpcmUgZHJpdmVycyBpbiB0aGlzIGxvZy4gIE5v
+dCBldmVuCmEgbWVzc2FnZSBmcm9tIFBDSSBjb3JlIHRoYXQgYSBmaXJld2lyZS1vaGNpIGRyaXZl
+ciBtZXRob2QgZmFpbGVkLiAgSGVuY2UKd2UgKGxpbnV4MTM5NC1kZXZlbCBwZW9wbGUpIGhhdmUg
+bm90aGluZyB0byBnbyBvbiB5ZXQuCgpDYW4gc29tZWJvZHkgd2hvIGtub3dzIHBvd2VyIG1hbmFn
+ZW1lbnQgZXhwbGFpbiB3aGF0IHNob3VsZCBiZQppbnZlc3RpZ2F0ZWQgbmV4dD8KClRoZSBkb3du
+c3RyZWFtIHRyYWNrZXIgaXRlbSBpczoKaHR0cHM6Ly9idWdzLmxhdW5jaHBhZC5uZXQvdWJ1bnR1
+Lytzb3VyY2UvbGludXgvK2J1Zy83MzI2NDEKCkl0IGNvbnRhaW5zIGEgc29tZXdoYXQgZGlmZmVy
+ZW50IGZhaWx1cmUgZGVzY3JpcHRpb24gZnJvbSBhIDIuNi4zNSBVYnVudHUKa2VybmVsOgoKPiBT
+aW5jZSB1cGdyYWRlIHRvIDEwLjEwL2tlcm5lbCAyLjYuMzUga2VybmVsIGRvZXNuJ3QgY29tcGxl
+dGUgcmVzdW1lIGZyb20KPiBzdXNwZW5kLgo+IAo+ICQgdW5hbWUgLWEKPiBMaW51eCBzZW5kZWxs
+IDIuNi4zNS0yNy1nZW5lcmljICM0OC1VYnVudHUgU01QIFR1ZSBGZWIgMjIgMjA6MjU6NDYgVVRD
+Cj4gMjAxMSB4ODZfNjQgR05VL0xpbnV4Cj4gCj4gWG9yZyB2dHkgaXMgYmxhbmssIEkgY2FuIGNo
+YW5nZSB0byBvdGhlciB2dHlzIGJ1dCB3aGVuIGkgcmV0dXJuIHRvIHRoZQo+IG9uZSB3aXRoIFhv
+cmcsIHN3aXRjaGluZyBubyBsb25nZXIgd29ya3MuIE9ubHkgbWFudWFsIHJlc2V0IHJlbWVkaWVz
+Cj4gdGhpcyBzaXR1YXRpb24uCj4gCj4gVHJpZWQKPiBodHRwczovL3dpa2kudWJ1bnR1LmNvbS9E
+ZWJ1Z2dpbmdLZXJuZWxTdXNwZW5kIyUyMnJlc3VtZS10cmFjZSUyMiUyMGRlYnVnZ2luZyUyMHBy
+b2NlZHVyZSUyMGZvciUyMGZpbmRpbmclMjBidWdneSUyMGRyaXZlcnMKPiAKPiBbIDAuNzE0ODcz
+XSBQTTogUmVzdW1lIGZyb20gZGlzayBmYWlsZWQuCj4gWyAwLjcxNDg4Nl0gcmVnaXN0ZXJlZCB0
+YXNrc3RhdHMgdmVyc2lvbiAxCj4gWyAwLjcxNTE2N10gTWFnaWMgbnVtYmVyOiAwOjYwODo0NzYK
+PiBbIDAuNzE1MTcwXSBoYXNoIG1hdGNoZXMgL2J1aWxkL2J1aWxkZC9saW51eC0yLjYuMzUvZHJp
+dmVycy9iYXNlL3Bvd2VyL21haW4uYzo1NDUKPiBbIDAuNzE1MjEzXSBwY2kgMDAwMDowMzowNS4w
+OiBoYXNoIG1hdGNoZXMKPiBbIDAuNzE1MjgxXSBydGNfY21vcyAwMDowNTogc2V0dGluZyBzeXN0
+ZW0gY2xvY2sgdG8gMTk4MC0wOS0wOCAxMDoyNzo1MSBVVEMgKDMzNzI1Njg3MSkKPiAKPiAkIGxz
+cGNpIHwgZ3JlcCAwMzowNQo+IDAzOjA1LjAgRmlyZVdpcmUgKElFRUUgMTM5NCk6IFRleGFzIElu
+c3RydW1lbnRzIFRTQjQzQUIyMi9BIElFRUUtMTM5NGEtMjAwMCBDb250cm9sbGVyIChQSFkvTGlu
+aykKPiAKPiAkIGRtZXNnfGdyZXAgZmlyZQo+IFsgMC4zODAwNjVdIHBjaSAwMDAwOjAzOjA1LjA6
+IHJlZyAxMDogW21lbSAweGZkZWZmMDAwLTB4ZmRlZmY3ZmZdCj4gWyAwLjM4MDA3MV0gcGNpIDAw
+MDA6MDM6MDUuMDogcmVnIDE0OiBbbWVtIDB4ZmRlZjgwMDAtMHhmZGVmYmZmZl0KPiBbIDAuMzgw
+MTA1XSBwY2kgMDAwMDowMzowNS4wOiBzdXBwb3J0cyBEMSBEMgo+IFsgMC4zODAxMDddIHBjaSAw
+MDAwOjAzOjA1LjA6IFBNRSMgc3VwcG9ydGVkIGZyb20gRDAgRDEgRDIgRDNob3QKPiBbIDAuMzgw
+MTExXSBwY2kgMDAwMDowMzowNS4wOiBQTUUjIGRpc2FibGVkCj4gWyAwLjcxNTIxM10gcGNpIDAw
+MDA6MDM6MDUuMDogaGFzaCBtYXRjaGVzCj4gWyAwLjg5MzQ3Ml0gZmlyZXdpcmVfb2hjaSAwMDAw
+OjAzOjA1LjA6IFBDSSBJTlQgQSAtPiBMaW5rW0FQQzRdIC0+IEdTSSAxOSAobGV2ZWwsIGxvdykg
+LT4gSVJRIDE5Cj4gWyAwLjk1MDA2MV0gZmlyZXdpcmVfb2hjaTogQWRkZWQgZnctb2hjaSBkZXZp
+Y2UgMDAwMDowMzowNS4wLCBPSENJIHYxLjEwLCA0IElSICsgOCBJVCBjb250ZXh0cywgcXVpcmtz
+IDB4Mgo+IAo+ICQgbHNtb2R8Z3JlcCBmaXJlCj4gZmlyZXdpcmVfb2hjaSAyNDgzOSAwCj4gZmly
+ZXdpcmVfY29yZSA1NDMyNyAxIGZpcmV3aXJlX29oY2kKPiBjcmNfaXR1X3QgMTczOSAxIGZpcmV3
+aXJlX2NvcmUKPiAKPiAkc3VkbyBtb2Rwcm9iZSAtciBmaXJld2lyZV9jb3JlIGZpcmV3aXJlX29o
+Y2kKPiAKPiBBbmQgdGhlbiByZXN1bWluZyBmcm9tIHN1c3BlbmQgd29ya3MuCj4gCgpKYcWhYSwg
+YXJlIGFsbCBvZiB0aGUgZG1lc2cgbWVzc2FnZXMgaW4gdGhpcyByZXBvcnQgZnJvbSB0aGUgc2Ft
+ZSBzZXNzaW9uPwoKTGludXgtcG0gZm9sa3MsIHdoeSBpcyB0aGUgUE0gUmVzdG9yZSBmYWlsdXJl
+IHJlcG9ydGVkIGF0IDAuNzE0ODczIGJ1dCB0aGUKc3lzdGVtIHByb2NlZWRzIGFuZCBsb2dzIHN1
+Y2Nlc3NmdWwgYXR0YWNobWVudCBvZiBmaXJld2lyZS1vaGNpJ3MgcGNpX3Byb2JlCnRvIHRoZSBQ
+Q0kgZGV2aWNlPwoKQWxzbywgd2h5IGlzIGJhc2UvcG93ZXIvbWFpbi5jOjpkZXZpY2VfcmVzdW1l
+IG1lbnRpb25lZCBpbiB0aGUgUE0gdHJhY2UKYnV0IHRoZXJlIGlzIG5vIGhpbnQgaW4gdGhlIGxv
+ZyB0aGF0IGZpcmV3aXJlLW9oY2kncyBwY2lfcmVzdW1lIHdhcyBjYWxsZWQ/CgpTaWRlIG5vdGU6
+ICBXaGlsZSBmaXJld2lyZS1vaGNpJ3MgcGNpX3Byb2JlIHN1Y2NlZWRlZCwgdGhlIGNvbnRyb2xs
+ZXIKbWlnaHQgYWN0dWFsbHkgbm90IGhhdmUgYmVjb21lIG9wZXJhdGlvbmFsLiAgVXN1YWxseSB0
+aGUgc3VjY2VzcyBtZXNzYWdlCmZyb20gZmlyZXdpcmUtb2hjaSBzaG91bGQgYmUgZm9sbG93ZWQg
+b24gY2lyY2EgNTAwIG1zIGFmdGVyd2FyZHMgYnkgYQptZXNzYWdlIGxpa2UgdGhpczogImZpcmV3
+aXJlX2NvcmU6IGNyZWF0ZWQgZGV2aWNlIGZ3MDogR1VJRAowMDExMDYwMDAwMDA0MWNjLCBTNDAw
+IgoKQ2FuIHNvbWVib2R5IGNvbW1lbnQgb24gdGhlIHBoZW5vbWVub24gdGhhdCBWVCBzd2l0Y2hp
+bmcgd2FzIGFmZmVjdGVkPyAuLi4KV2VsbCwgbWF5YmUgZmlyZXdpcmUtY29yZSBodW5nIGluIGEg
+d29ya3F1ZXVlIGpvYiB3aGljaCBpbiB0dXJuIHByZXZlbnRlZApzdWJzZXF1ZW50IHByb2Nlc3Np
+bmcgb2Ygb3RoZXIgc3Vic3lzdGVtcycgd29ya3F1ZXVlIGpvYnMuICBUaGlzIGNhbiBiZQptdWNo
+IG1vcmUgb2YgYSBwcm9ibGVtIHdpdGggYSBrZXJuZWwgbGlrZSAyLjYuMzUgdGhhbiB3aXRoIG5l
+d2VyIG9uZXMKd2l0aCBjb25jdXJyZW5jeSBtYW5hZ2VkIHdvcmtxdWV1ZXMgKDIuNi4zNiBhbmQg
+bGF0ZXIpLgoKKEphxaFhLCBwcmVmZXIgcmVwbHktdG8tYWxsIGZvciByZXNwb25zZXMuIFRoYW5r
+cyBmb3IgeW91ciByZXBvcnRzIHNvIGZhci4pCi0tIApTdGVmYW4gUmljaHRlcgotPT09PT0tPT0t
+PT0gLS09PSA9LS09PQpodHRwOi8vYXJjZ3JhcGguZGUvc3IvCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1w
+bUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRp
+b24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
