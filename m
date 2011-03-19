@@ -1,15 +1,15 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [Bug 31432] Resume from suspend fails on new
- FireWire stack (TSB43AB22/A IEEE-1394a-2000 Controller)
-Date: Sat, 19 Mar 2011 14:52:48 +0100
-Message-ID: <20110319145248.3a5cf71f__34998.874172061$1300542877$gmane$org@stein>
-References: <bug-31432-4803@https.bugzilla.kernel.org/>
-	<201103191300.p2JD07Hr032711@demeter1.kernel.org>
+From: Raj Kumar <rajkumar278@hotmail.com>
+Subject: Re: Question about hibernation
+Date: Sun, 20 Mar 2011 05:17:23 +0530
+Message-ID: <SNT117-W5712D8F8C5F4734915B5D1EBB30@phx.gbl>
+References: <BLU102-W26157F65094C5BCB0C51ADEB080@phx.gbl>
+	<201101050927.53977.rjw@sisk.pl>
+	<SNT117-W3213A3C4E358A6A690C09BEBB00@phx.gbl>,
+	<201103181509.02943.oneukum@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============3552556263759473415=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103191300.p2JD07Hr032711@demeter1.kernel.org>
+In-Reply-To: <201103181509.02943.oneukum@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,119 +17,113 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: BARTMON@gmail.com
-Cc: linux-pm@lists.linux-foundation.org, bugzilla-daemon@bugzilla.kernel.org, linux1394-devel@lists.sourceforge.net
+To: oneukum@suse.de, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gTWFyIDE5IGJ1Z3ppbGxhLWRhZW1vbkBidWd6aWxsYS5rZXJuZWwub3JnIHdyb3RlOgo+IGh0
-dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzE0MzIKPiAKPiAKPiBS
-YWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+IGNoYW5nZWQ6Cj4gCj4gICAgICAgICAgICBX
-aGF0ICAgIHxSZW1vdmVkICAgICAgICAgICAgICAgICAgICAgfEFkZGVkCj4gLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLQo+ICAgICAgICAgICAgICAgICAgQ0N8ICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IHxyandAc2lzay5wbAo+ICAgICAgICAgICBDb21wb25lbnR8SGliZXJuYXRpb24vU3VzcGVuZCAg
-ICAgICAgIHxJRUVFMTM5NAo+ICAgICAgICAgICAgICBCbG9ja3N8ICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIHw3MjE2Cj4gICAgICAgICAgQXNzaWduZWRUb3xwb3dlci1tYW5hZ2VtZW50X290
-aGVyQGtlcm4gfGRyaXZlcnNfaWVlZTEzOTRAa2VybmVsLWJ1Zwo+ICAgICAgICAgICAgICAgICAg
-ICB8ZWwtYnVncy5vc2RsLm9yZyAgICAgICAgICAgIHxzLm9zZGwub3JnCj4gICAgICAgICAgICAg
-UHJvZHVjdHxQb3dlciBNYW5hZ2VtZW50ICAgICAgICAgICAgfERyaXZlcnMKClF1b3RpbmcgdGhl
-IGJ1ZyBkZXNjcmlwdGlvbiBmb3IgbGludXgxMzk0LWRldmVsOgoKPiBEZXNjcmlwdGlvbiBGcm9t
-ICBKYcWhYSAgMjAxMS0wMy0xOSAxMjozNDowMCAgCj4gQ3JlYXRlZCBhbiBhdHRhY2htZW50IChp
-ZD01MTI0MikgW2RldGFpbHNdCj4gZG1lc2cgb2YgMi42LjM4CgpbaHR0cHM6Ly9idWd6aWxsYS5r
-ZXJuZWwub3JnL2F0dGFjaG1lbnQuY2dpP2lkPTUxMjQyXQoKPiAKPiBJIGhhdmUgZGlhZ25vc2Vk
-IGEgcmVncmVzc2lvbiBpbiBzZXZlcmFsIGtlcm5lbCB2ZXJzaW9ucyAoYXQgbGVhc3QKPiAyLjYu
-MzUueCBhbmQgY3VycmVudCBzdGFibGUgdmVyc2lvbiAyLjYuMzgpLiAKPiAKPiBBZnRlciB1cGdy
-YWRpbmcgZnJvbSAyLjYuMzIgKFVidW50dSAxMC4wNCkgdG8gMi42LjM1IChVYnVudXR1IDEwLjEw
-KQo+IHJlc3VtZSBmcm9tIHN1c3BlbmQgZmFpbGVkIHNvIEkgY2FtZSBhY3Jvc3MgdGhlIC9zeXMv
-cG93ZXIvcG1fdHJhY2UKPiB0cmFjaW5nIG1ldGhvZCBhbmQgd2l0aCB0aGF0IGluZm8gSSBuYXJy
-b3dlZCB0aGUgaXNzdWUgdG8gYSBmaXJld2lyZQo+IGRldmljZSB3aGljaCBzZWVtcyB0byBiZSB0
-aGUgaXNzdWUuIEkgYWxzbyB0cmllZCB0aGUgcmVjZW50bHkgcmVsZWFzZWQKPiAyLjYuMzggbWFp
-bmxpbmUgdmVyc2lvbi4KPiAKPiBBIHdvcmthcm91bmQgd2hpY2ggY29uZmlybWVkIG15IHN1c3Bp
-Y2lvbnMgaXMgcmVtb3ZpbmcgZmlyZXdpcmUgbW9kdWxlczoKPiAjIG1vZHByb2JlIC1yIGZpcmV3
-aXJlX2NvcmUgZmlyZXdpcmVfb2hjaQo+IFRoZW4gcmVzdW1lIHdvcmtzIHdlbGwuCj4gCj4gSGVy
-ZSdzIHRoZSBldmlkZW5jZToKPiAKPiAkIHVuYW1lIC1hCj4gTGludXggc2VuZGVsbCAyLjYuMzgt
-MDIwNjM4LWdlbmVyaWMgIzIwMTEwMzE1MTMwMyBTTVAgVHVlIE1hciAxNQo+IDEzOjA4OjA5IFVU
-QyAyMDExIHg4Nl82NCBHTlUvTGludXgKPiAKPiByZWxldmFudCBwYXJ0IG9mIGRtZXNnOgo+IFsg
-ICAgMS4xODE5OThdIFBNOiBIaWJlcm5hdGlvbiBpbWFnZSBub3QgcHJlc2VudCBvciBjb3VsZCBu
-b3QgYmUgbG9hZGVkLgo+IFsgICAgMS4xODIwMTddIHJlZ2lzdGVyZWQgdGFza3N0YXRzIHZlcnNp
-b24gMQo+IFsgICAgMS4xODIzMDddICAgTWFnaWMgbnVtYmVyOiAwOjExNzo0NzYKPiBbICAgIDEu
-MTgyMzEwXSAgIGhhc2ggbWF0Y2hlcyAvaG9tZS9rZXJuZWwtcHBhL0NPRC9saW51eC9kcml2ZXJz
-L2Jhc2UvcG93ZXIvbWFpbi5jOjUxNAo+IFsgICAgMS4xODIzNzBdIHBjaSAwMDAwOjAzOjA1LjA6
-IGhhc2ggbWF0Y2hlcwo+IFsgICAgMS4xODI0NDJdIHJ0Y19jbW9zIDAwOjA1OiBzZXR0aW5nIHN5
-c3RlbSBjbG9jayB0byAyMDI0LTAzLTAyIDEwOjI4OjQwIFVUQyAoMTcwOTM3NTMyMCkKPiAKPiAk
-IGxzcGNpIHwgZ3JlcCAwMzowNQo+IDAzOjA1LjAgRmlyZVdpcmUgKElFRUUgMTM5NCk6IFRleGFz
-IEluc3RydW1lbnRzIFRTQjQzQUIyMi9BIElFRUUtMTM5NGEtMjAwMCBDb250cm9sbGVyIChQSFkv
-TGluaykKPiAKPiAkIGdyZXAgMDM6MDUgZG1lc2ctMzgudHh0IAo+IFsgICAgMC4zNjAwNTJdIHBj
-aSAwMDAwOjAzOjA1LjA6IFsxMDRjOjgwMjNdIHR5cGUgMCBjbGFzcyAweDAwMGMwMAo+IFsgICAg
-MC4zNjAwNjddIHBjaSAwMDAwOjAzOjA1LjA6IHJlZyAxMDogW21lbSAweGZkZWZmMDAwLTB4ZmRl
-ZmY3ZmZdCj4gWyAgICAwLjM2MDA3Nl0gcGNpIDAwMDA6MDM6MDUuMDogcmVnIDE0OiBbbWVtIDB4
-ZmRlZjgwMDAtMHhmZGVmYmZmZl0KPiBbICAgIDAuMzYwMTIzXSBwY2kgMDAwMDowMzowNS4wOiBz
-dXBwb3J0cyBEMSBEMgo+IFsgICAgMC4zNjAxMjVdIHBjaSAwMDAwOjAzOjA1LjA6IFBNRSMgc3Vw
-cG9ydGVkIGZyb20gRDAgRDEgRDIgRDNob3QKPiBbICAgIDAuMzYwMTMwXSBwY2kgMDAwMDowMzow
-NS4wOiBQTUUjIGRpc2FibGVkCj4gCj4gSSd2ZSBwb3N0ZWQgdGhpcyBvbiBMYXVuY2hwYWQgKEJ1
-ZyAjNzMyNjQxKSBidXQgbm8gcmVzcG9uc2VzIGF0IGFsbAo+IHRoZXJlLgoKQWxhcyB0aGVyZSBh
-cmUgbm8gbWVzc2FnZXMgZnJvbSB0aGUgZmlyZXdpcmUgZHJpdmVycyBpbiB0aGlzIGxvZy4gIE5v
-dCBldmVuCmEgbWVzc2FnZSBmcm9tIFBDSSBjb3JlIHRoYXQgYSBmaXJld2lyZS1vaGNpIGRyaXZl
-ciBtZXRob2QgZmFpbGVkLiAgSGVuY2UKd2UgKGxpbnV4MTM5NC1kZXZlbCBwZW9wbGUpIGhhdmUg
-bm90aGluZyB0byBnbyBvbiB5ZXQuCgpDYW4gc29tZWJvZHkgd2hvIGtub3dzIHBvd2VyIG1hbmFn
-ZW1lbnQgZXhwbGFpbiB3aGF0IHNob3VsZCBiZQppbnZlc3RpZ2F0ZWQgbmV4dD8KClRoZSBkb3du
-c3RyZWFtIHRyYWNrZXIgaXRlbSBpczoKaHR0cHM6Ly9idWdzLmxhdW5jaHBhZC5uZXQvdWJ1bnR1
-Lytzb3VyY2UvbGludXgvK2J1Zy83MzI2NDEKCkl0IGNvbnRhaW5zIGEgc29tZXdoYXQgZGlmZmVy
-ZW50IGZhaWx1cmUgZGVzY3JpcHRpb24gZnJvbSBhIDIuNi4zNSBVYnVudHUKa2VybmVsOgoKPiBT
-aW5jZSB1cGdyYWRlIHRvIDEwLjEwL2tlcm5lbCAyLjYuMzUga2VybmVsIGRvZXNuJ3QgY29tcGxl
-dGUgcmVzdW1lIGZyb20KPiBzdXNwZW5kLgo+IAo+ICQgdW5hbWUgLWEKPiBMaW51eCBzZW5kZWxs
-IDIuNi4zNS0yNy1nZW5lcmljICM0OC1VYnVudHUgU01QIFR1ZSBGZWIgMjIgMjA6MjU6NDYgVVRD
-Cj4gMjAxMSB4ODZfNjQgR05VL0xpbnV4Cj4gCj4gWG9yZyB2dHkgaXMgYmxhbmssIEkgY2FuIGNo
-YW5nZSB0byBvdGhlciB2dHlzIGJ1dCB3aGVuIGkgcmV0dXJuIHRvIHRoZQo+IG9uZSB3aXRoIFhv
-cmcsIHN3aXRjaGluZyBubyBsb25nZXIgd29ya3MuIE9ubHkgbWFudWFsIHJlc2V0IHJlbWVkaWVz
-Cj4gdGhpcyBzaXR1YXRpb24uCj4gCj4gVHJpZWQKPiBodHRwczovL3dpa2kudWJ1bnR1LmNvbS9E
-ZWJ1Z2dpbmdLZXJuZWxTdXNwZW5kIyUyMnJlc3VtZS10cmFjZSUyMiUyMGRlYnVnZ2luZyUyMHBy
-b2NlZHVyZSUyMGZvciUyMGZpbmRpbmclMjBidWdneSUyMGRyaXZlcnMKPiAKPiBbIDAuNzE0ODcz
-XSBQTTogUmVzdW1lIGZyb20gZGlzayBmYWlsZWQuCj4gWyAwLjcxNDg4Nl0gcmVnaXN0ZXJlZCB0
-YXNrc3RhdHMgdmVyc2lvbiAxCj4gWyAwLjcxNTE2N10gTWFnaWMgbnVtYmVyOiAwOjYwODo0NzYK
-PiBbIDAuNzE1MTcwXSBoYXNoIG1hdGNoZXMgL2J1aWxkL2J1aWxkZC9saW51eC0yLjYuMzUvZHJp
-dmVycy9iYXNlL3Bvd2VyL21haW4uYzo1NDUKPiBbIDAuNzE1MjEzXSBwY2kgMDAwMDowMzowNS4w
-OiBoYXNoIG1hdGNoZXMKPiBbIDAuNzE1MjgxXSBydGNfY21vcyAwMDowNTogc2V0dGluZyBzeXN0
-ZW0gY2xvY2sgdG8gMTk4MC0wOS0wOCAxMDoyNzo1MSBVVEMgKDMzNzI1Njg3MSkKPiAKPiAkIGxz
-cGNpIHwgZ3JlcCAwMzowNQo+IDAzOjA1LjAgRmlyZVdpcmUgKElFRUUgMTM5NCk6IFRleGFzIElu
-c3RydW1lbnRzIFRTQjQzQUIyMi9BIElFRUUtMTM5NGEtMjAwMCBDb250cm9sbGVyIChQSFkvTGlu
-aykKPiAKPiAkIGRtZXNnfGdyZXAgZmlyZQo+IFsgMC4zODAwNjVdIHBjaSAwMDAwOjAzOjA1LjA6
-IHJlZyAxMDogW21lbSAweGZkZWZmMDAwLTB4ZmRlZmY3ZmZdCj4gWyAwLjM4MDA3MV0gcGNpIDAw
-MDA6MDM6MDUuMDogcmVnIDE0OiBbbWVtIDB4ZmRlZjgwMDAtMHhmZGVmYmZmZl0KPiBbIDAuMzgw
-MTA1XSBwY2kgMDAwMDowMzowNS4wOiBzdXBwb3J0cyBEMSBEMgo+IFsgMC4zODAxMDddIHBjaSAw
-MDAwOjAzOjA1LjA6IFBNRSMgc3VwcG9ydGVkIGZyb20gRDAgRDEgRDIgRDNob3QKPiBbIDAuMzgw
-MTExXSBwY2kgMDAwMDowMzowNS4wOiBQTUUjIGRpc2FibGVkCj4gWyAwLjcxNTIxM10gcGNpIDAw
-MDA6MDM6MDUuMDogaGFzaCBtYXRjaGVzCj4gWyAwLjg5MzQ3Ml0gZmlyZXdpcmVfb2hjaSAwMDAw
-OjAzOjA1LjA6IFBDSSBJTlQgQSAtPiBMaW5rW0FQQzRdIC0+IEdTSSAxOSAobGV2ZWwsIGxvdykg
-LT4gSVJRIDE5Cj4gWyAwLjk1MDA2MV0gZmlyZXdpcmVfb2hjaTogQWRkZWQgZnctb2hjaSBkZXZp
-Y2UgMDAwMDowMzowNS4wLCBPSENJIHYxLjEwLCA0IElSICsgOCBJVCBjb250ZXh0cywgcXVpcmtz
-IDB4Mgo+IAo+ICQgbHNtb2R8Z3JlcCBmaXJlCj4gZmlyZXdpcmVfb2hjaSAyNDgzOSAwCj4gZmly
-ZXdpcmVfY29yZSA1NDMyNyAxIGZpcmV3aXJlX29oY2kKPiBjcmNfaXR1X3QgMTczOSAxIGZpcmV3
-aXJlX2NvcmUKPiAKPiAkc3VkbyBtb2Rwcm9iZSAtciBmaXJld2lyZV9jb3JlIGZpcmV3aXJlX29o
-Y2kKPiAKPiBBbmQgdGhlbiByZXN1bWluZyBmcm9tIHN1c3BlbmQgd29ya3MuCj4gCgpKYcWhYSwg
-YXJlIGFsbCBvZiB0aGUgZG1lc2cgbWVzc2FnZXMgaW4gdGhpcyByZXBvcnQgZnJvbSB0aGUgc2Ft
-ZSBzZXNzaW9uPwoKTGludXgtcG0gZm9sa3MsIHdoeSBpcyB0aGUgUE0gUmVzdG9yZSBmYWlsdXJl
-IHJlcG9ydGVkIGF0IDAuNzE0ODczIGJ1dCB0aGUKc3lzdGVtIHByb2NlZWRzIGFuZCBsb2dzIHN1
-Y2Nlc3NmdWwgYXR0YWNobWVudCBvZiBmaXJld2lyZS1vaGNpJ3MgcGNpX3Byb2JlCnRvIHRoZSBQ
-Q0kgZGV2aWNlPwoKQWxzbywgd2h5IGlzIGJhc2UvcG93ZXIvbWFpbi5jOjpkZXZpY2VfcmVzdW1l
-IG1lbnRpb25lZCBpbiB0aGUgUE0gdHJhY2UKYnV0IHRoZXJlIGlzIG5vIGhpbnQgaW4gdGhlIGxv
-ZyB0aGF0IGZpcmV3aXJlLW9oY2kncyBwY2lfcmVzdW1lIHdhcyBjYWxsZWQ/CgpTaWRlIG5vdGU6
-ICBXaGlsZSBmaXJld2lyZS1vaGNpJ3MgcGNpX3Byb2JlIHN1Y2NlZWRlZCwgdGhlIGNvbnRyb2xs
-ZXIKbWlnaHQgYWN0dWFsbHkgbm90IGhhdmUgYmVjb21lIG9wZXJhdGlvbmFsLiAgVXN1YWxseSB0
-aGUgc3VjY2VzcyBtZXNzYWdlCmZyb20gZmlyZXdpcmUtb2hjaSBzaG91bGQgYmUgZm9sbG93ZWQg
-b24gY2lyY2EgNTAwIG1zIGFmdGVyd2FyZHMgYnkgYQptZXNzYWdlIGxpa2UgdGhpczogImZpcmV3
-aXJlX2NvcmU6IGNyZWF0ZWQgZGV2aWNlIGZ3MDogR1VJRAowMDExMDYwMDAwMDA0MWNjLCBTNDAw
-IgoKQ2FuIHNvbWVib2R5IGNvbW1lbnQgb24gdGhlIHBoZW5vbWVub24gdGhhdCBWVCBzd2l0Y2hp
-bmcgd2FzIGFmZmVjdGVkPyAuLi4KV2VsbCwgbWF5YmUgZmlyZXdpcmUtY29yZSBodW5nIGluIGEg
-d29ya3F1ZXVlIGpvYiB3aGljaCBpbiB0dXJuIHByZXZlbnRlZApzdWJzZXF1ZW50IHByb2Nlc3Np
-bmcgb2Ygb3RoZXIgc3Vic3lzdGVtcycgd29ya3F1ZXVlIGpvYnMuICBUaGlzIGNhbiBiZQptdWNo
-IG1vcmUgb2YgYSBwcm9ibGVtIHdpdGggYSBrZXJuZWwgbGlrZSAyLjYuMzUgdGhhbiB3aXRoIG5l
-d2VyIG9uZXMKd2l0aCBjb25jdXJyZW5jeSBtYW5hZ2VkIHdvcmtxdWV1ZXMgKDIuNi4zNiBhbmQg
-bGF0ZXIpLgoKKEphxaFhLCBwcmVmZXIgcmVwbHktdG8tYWxsIGZvciByZXNwb25zZXMuIFRoYW5r
-cyBmb3IgeW91ciByZXBvcnRzIHNvIGZhci4pCi0tIApTdGVmYW4gUmljaHRlcgotPT09PT0tPT0t
-PT0gLS09PSA9LS09PQpodHRwOi8vYXJjZ3JhcGguZGUvc3IvCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1w
-bUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRp
-b24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+--===============3552556263759473415==
+Content-Type: multipart/alternative;
+	boundary="_a1d3a9e1-7c51-4a35-8fd2-765fc4b55406_"
+
+--_a1d3a9e1-7c51-4a35-8fd2-765fc4b55406_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+
+Hi=2C
+=20
+Thanks for reply. What if memory is allocated using dma_alloc_coherent wher=
+e the physical address is from dedicated area of RAM(which is not addressab=
+le by OS)? I also believe that all the buffers and state variables are take=
+n care by OS kernel. Right?
+=20
+Thanks
+Raj
+=20
+
+=20
+> From: oneukum@suse.de
+> To: linux-pm@lists.linux-foundation.org
+> Subject: Re: [linux-pm] Question about hibernation
+> Date: Fri=2C 18 Mar 2011 15:09:02 +0100
+> CC: rajkumar278@hotmail.com
+>=20
+> Am Freitag=2C 18. M=E4rz 2011=2C 14:45:24 schrieb Raj Kumar:
+> >=20
+> > Hi=2C
+> >=20
+> > I have following question regarding the hibernation. If a device driver=
+ uses dedicated memory (dedicated memory in linux which is not OS addressab=
+le e.g. device driver is using some pages from dedicated memory)=2C When th=
+e system hibernates=2C will this be responsibility of device driver to save=
+ this area=20
+> > or=20
+> > OS hibernation procedure save this area of ram (dedicated memory area) =
+into swap image?
+>=20
+> If you got it from get_free_pages (at the end of a long call chain) the
+> kernel saves it. If not=2C it is your problem.
+>=20
+> HTH
+> Oliver
+ 		 	   		  =
+
+--_a1d3a9e1-7c51-4a35-8fd2-765fc4b55406_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+Hi=2C<BR>
+&nbsp=3B<BR>
+Thanks for reply. What if memory is allocated using dma_alloc_coherent wher=
+e the physical address is from dedicated area of RAM(which is not addressab=
+le by OS)? I also believe that all the buffers and state variables are take=
+n care by OS kernel. Right?<BR>
+&nbsp=3B<BR>
+Thanks<BR>
+Raj<BR>
+&nbsp=3B<BR>
+<BR>&nbsp=3B<BR>
+&gt=3B From: oneukum@suse.de<BR>&gt=3B To: linux-pm@lists.linux-foundation.=
+org<BR>&gt=3B Subject: Re: [linux-pm] Question about hibernation<BR>&gt=3B =
+Date: Fri=2C 18 Mar 2011 15:09:02 +0100<BR>&gt=3B CC: rajkumar278@hotmail.c=
+om<BR>&gt=3B <BR>&gt=3B Am Freitag=2C 18. M=E4rz 2011=2C 14:45:24 schrieb R=
+aj Kumar:<BR>&gt=3B &gt=3B <BR>&gt=3B &gt=3B Hi=2C<BR>&gt=3B &gt=3B <BR>&gt=
+=3B &gt=3B I have following question regarding the hibernation. If a device=
+ driver uses dedicated memory (dedicated memory in linux which is not OS ad=
+dressable e.g. device driver is using some pages from dedicated memory)=2C =
+When the system hibernates=2C will this be responsibility of device driver =
+to save this area <BR>&gt=3B &gt=3B or <BR>&gt=3B &gt=3B OS hibernation pro=
+cedure save this area of ram (dedicated memory area) into swap image?<BR>&g=
+t=3B <BR>&gt=3B If you got it from get_free_pages (at the end of a long cal=
+l chain) the<BR>&gt=3B kernel saves it. If not=2C it is your problem.<BR>&g=
+t=3B <BR>&gt=3B HTH<BR>&gt=3B Oliver<BR> 		 	   		  </body>
+</html>=
+
+--_a1d3a9e1-7c51-4a35-8fd2-765fc4b55406_--
+
+--===============3552556263759473415==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============3552556263759473415==--
