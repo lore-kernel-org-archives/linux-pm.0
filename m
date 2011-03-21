@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/6] cpufreq: Use syscore_ops for boot CPU
-	suspend/resume (v2)
-Date: Tue, 22 Mar 2011 00:38:01 +0100
-Message-ID: <201103220038.02116.rjw__20237.3021784753$1300753280$gmane$org@sisk.pl>
+Subject: [PATCH 0/6] Do not use sysdevs for implementing "core"
+	PM operations on x86
+Date: Tue, 22 Mar 2011 00:31:22 +0100
+Message-ID: <201103220031.22729.rjw__26229.5185625137$1300753521$gmane$org@sisk.pl>
 References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
-	<201103220031.22729.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103220031.22729.rjw@sisk.pl>
+In-Reply-To: <201103122212.40828.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,169 +22,95 @@ To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 Cc: kvm@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, cpufreq@vger.kernel.org, iommu@lists.linux-foundation.org, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, tglx@linutronix.de, David Woodhouse <dwmw2@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-The cpufreq subsystem uses sysdev suspend and resume for
-executing cpufreq_suspend() and cpufreq_resume(), respectively,
-during system suspend, after interrupts have been switched off on the
-boot CPU, and during system resume, while interrupts are still off on
-the boot CPU.  In both cases the other CPUs are off-line at the
-relevant point (either they have been switched off via CPU hotplug
-during suspend, or they haven't been switched on yet during resume).
-For this reason, although it may seem that cpufreq_suspend() and
-cpufreq_resume() are executed for all CPUs in the system, they are
-only called for the boot CPU in fact, which is quite confusing.
+On Saturday, March 12, 2011, Rafael J. Wysocki wrote:
+> On Thursday, March 10, 2011, Rafael J. Wysocki wrote:
+> > There are multiple problems with sysdevs, or struct sys_device objects to
+> > be precise, that are so annoying that some people have started to think
+> > of removind them entirely from the kernel.  To me, personally, the most
+> > obvious issue is the way sysdevs are used for defining suspend/resume
+> > callbacks to be executed with one CPU on-line and interrupts disabled.
+> > Greg and Kay may tell you more about the other problems with sysdevs. :-)
+> > 
+> > Some subsystems need to carry out certain operations during suspend after
+> > we've disabled non-boot CPUs and interrupts have been switched off on the
+> > only on-line one.  Currently, the only way to achieve that is to define
+> > sysdev suspend/resume callbacks, but this is cumbersome and inefficient.
+> > Namely, to do that, one has to define a sysdev class providing the callbacks
+> > and a sysdev actually using them, which is excessively complicated.  Moreover,
+> > the sysdev suspend/resume callbacks take arguments that are not really used
+> > by the majority of subsystems defining sysdev suspend/resume callbacks
+> > (or even if they are used, they don't really _need_ to be used, so they
+> > are simply unnecessary).  Of course, if a sysdev is only defined to provide
+> > suspend/resume (and maybe shutdown) callbacks, there's no real reason why
+> > it should show up in sysfs.
+> > 
+> > For this reason, I thought it would be a good idea to provide a simpler
+> > interface for subsystems to define "very late" suspend callbacks and
+> > "very early" resume callbacks (and "very late" shutdown callbacks as well)
+> > without the entire bloat related to sysdevs.  The interface is introduced
+> > by the first of the following patches, while the second patch converts some
+> > sysdev users related to the x86 architecture to using the new interface.
+> > 
+> > I believe that call sysdev users who need to define suspend/resume/shutdown
+> > callbacks may be converted to using the interface provided by the first patch,
+> > which in turn should allow us to convert the remaining sysdev functionality
+> > into "normal" struct device interfaces.  Still, even if that turns out to be
+> > too complicated, the bloat reduction resulting from the second patch kind of
+> > shows that moving at least some sysdev users to a simpler interface (like in
+> > the first patch) is a good idea anyway.
+> > 
+> > This is a proof of concept, so the patches have not been tested.  Please be
+> > extrememly careful, because they touch sensitive code, so to speak.  In the
+> > majority of cases the changes are rather straightforward, but there are some
+> > more interesting cases as well (io_apic.c most importantly).
+> 
+> Since Greg likes the idea and there haven't been any objections so far, here's
+> the official submission.  The patches have been tested on HP nx6325 and
+> Toshiba Portege R500.
+> 
+> Patch [1/8] is regareded as 2.6.38 material, following Greg's advice.  The
+> other patches in the set are regarded as 2.6.39 material.  The last one
+> obviously depends on all of the previous ones.
+> 
+> [1/8] - Introduce struct syscore_ops for registering operations to be run on
+>         one CPU during suspend/resume/shutdown.
+> 
+> [2/8] - Convert sysdev users in arch/x86 to using struct syscore_ops.
+> 
+> [3/8] - Make ACPI use struct syscore_ops for irqrouter_resume().
+> 
+> [4/8] - Make timekeeping use struct syscore_ops for suspend/resume.
+> 
+> [5/8] - Make Intel IOMMU use struct syscore_ops for suspend/resume.
+> 
+> [6/8] - Make KVM use struct syscore_ops for suspend/resume.
+> 
+> [7/8] - Make cpufreq use struct syscore_ops for boot CPU suspend/resume.
+> 
+> [8/8] - Introduce config switch allowing architectures to skip sysdev
+>         suspend/resume/shutdown code.
+> 
+> If there are no objectsions, I'd like to push these patches through the suspend
+> tree.
 
-To remove the confusion and to prepare for elimiating sysdev
-suspend and resume operations from the kernel enirely, convernt
-cpufreq to using a struct syscore_ops object for the boot CPU
-suspend and resume and rename the callbacks so that their names
-reflect their purpose.  In addition, put some explanatory remarks
-into their kerneldoc comments.
+[1/8] has been merged in the meantime and [3/8] has been included into the
+ACPI tree.  if there are no objections, I'm going to push the following
+patches to Linus this week through the suspend-2.6 tree:
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/cpufreq/cpufreq.c |   66 ++++++++++++++++++----------------------------
- 1 file changed, 26 insertions(+), 40 deletions(-)
+[1/6] - Convert sysdev users in arch/x86 to using struct syscore_ops.
 
-Index: linux-2.6/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6/drivers/cpufreq/cpufreq.c
-@@ -28,6 +28,7 @@
- #include <linux/cpu.h>
- #include <linux/completion.h>
- #include <linux/mutex.h>
-+#include <linux/syscore_ops.h>
+[2/6] - Make timekeeping use struct syscore_ops for suspend/resume.
  
- #include <trace/events/power.h>
- 
-@@ -1340,35 +1341,31 @@ out:
- }
- EXPORT_SYMBOL(cpufreq_get);
- 
-+static struct sysdev_driver cpufreq_sysdev_driver = {
-+	.add		= cpufreq_add_dev,
-+	.remove		= cpufreq_remove_dev,
-+};
-+
- 
- /**
-- *	cpufreq_suspend - let the low level driver prepare for suspend
-+ * cpufreq_bp_suspend - Prepare the boot CPU for system suspend.
-+ *
-+ * This function is only executed for the boot processor.  The other CPUs
-+ * have been put offline by means of CPU hotplug.
-  */
--
--static int cpufreq_suspend(struct sys_device *sysdev, pm_message_t pmsg)
-+static int cpufreq_bp_suspend(void)
- {
- 	int ret = 0;
- 
--	int cpu = sysdev->id;
-+	int cpu = smp_processor_id();
- 	struct cpufreq_policy *cpu_policy;
- 
- 	dprintk("suspending cpu %u\n", cpu);
- 
--	if (!cpu_online(cpu))
--		return 0;
--
--	/* we may be lax here as interrupts are off. Nonetheless
--	 * we need to grab the correct cpu policy, as to check
--	 * whether we really run on this CPU.
--	 */
--
-+	/* If there's no policy for the boot CPU, we have nothing to do. */
- 	cpu_policy = cpufreq_cpu_get(cpu);
- 	if (!cpu_policy)
--		return -EINVAL;
--
--	/* only handle each CPU group once */
--	if (unlikely(cpu_policy->cpu != cpu))
--		goto out;
-+		return 0;
- 
- 	if (cpufreq_driver->suspend) {
- 		ret = cpufreq_driver->suspend(cpu_policy);
-@@ -1377,13 +1374,12 @@ static int cpufreq_suspend(struct sys_de
- 					"step on CPU %u\n", cpu_policy->cpu);
- 	}
- 
--out:
- 	cpufreq_cpu_put(cpu_policy);
- 	return ret;
- }
- 
- /**
-- *	cpufreq_resume -  restore proper CPU frequency handling after resume
-+ * cpufreq_bp_resume - Restore proper frequency handling of the boot CPU.
-  *
-  *	1.) resume CPUfreq hardware support (cpufreq_driver->resume())
-  *	2.) schedule call cpufreq_update_policy() ASAP as interrupts are
-@@ -1391,31 +1387,23 @@ out:
-  *	    what we believe it to be. This is a bit later than when it
-  *	    should be, but nonethteless it's better than calling
-  *	    cpufreq_driver->get() here which might re-enable interrupts...
-+ *
-+ * This function is only executed for the boot CPU.  The other CPUs have not
-+ * been turned on yet.
-  */
--static int cpufreq_resume(struct sys_device *sysdev)
-+static void cpufreq_bp_resume(void)
- {
- 	int ret = 0;
- 
--	int cpu = sysdev->id;
-+	int cpu = smp_processor_id();
- 	struct cpufreq_policy *cpu_policy;
- 
- 	dprintk("resuming cpu %u\n", cpu);
- 
--	if (!cpu_online(cpu))
--		return 0;
--
--	/* we may be lax here as interrupts are off. Nonetheless
--	 * we need to grab the correct cpu policy, as to check
--	 * whether we really run on this CPU.
--	 */
--
-+	/* If there's no policy for the boot CPU, we have nothing to do. */
- 	cpu_policy = cpufreq_cpu_get(cpu);
- 	if (!cpu_policy)
--		return -EINVAL;
--
--	/* only handle each CPU group once */
--	if (unlikely(cpu_policy->cpu != cpu))
--		goto fail;
-+		return;
- 
- 	if (cpufreq_driver->resume) {
- 		ret = cpufreq_driver->resume(cpu_policy);
-@@ -1430,14 +1418,11 @@ static int cpufreq_resume(struct sys_dev
- 
- fail:
- 	cpufreq_cpu_put(cpu_policy);
--	return ret;
- }
- 
--static struct sysdev_driver cpufreq_sysdev_driver = {
--	.add		= cpufreq_add_dev,
--	.remove		= cpufreq_remove_dev,
--	.suspend	= cpufreq_suspend,
--	.resume		= cpufreq_resume,
-+static struct syscore_ops cpufreq_syscore_ops = {
-+	.suspend	= cpufreq_bp_suspend,
-+	.resume		= cpufreq_bp_resume,
- };
- 
- 
-@@ -2002,6 +1987,7 @@ static int __init cpufreq_core_init(void
- 	cpufreq_global_kobject = kobject_create_and_add("cpufreq",
- 						&cpu_sysdev_class.kset.kobj);
- 	BUG_ON(!cpufreq_global_kobject);
-+	register_syscore_ops(&cpufreq_syscore_ops);
- 
- 	return 0;
- }
+[3/6] - Make Intel IOMMU use struct syscore_ops for suspend/resume.
+
+[4/6] - Make KVM use struct syscore_ops for suspend/resume.
+
+[5/6] - Make cpufreq use struct syscore_ops for boot CPU suspend/resume.
+
+[6/6] - Introduce config switch allowing architectures to skip sysdev
+        suspend/resume/shutdown code.
+
+Thanks,
+Rafael
