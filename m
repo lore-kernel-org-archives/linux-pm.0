@@ -1,17 +1,15 @@
-From: Kay Sievers <kay.sievers@suse.de>
-Subject: Re: [PATCH 9/10] sh: Use struct syscore_ops instead of
- sysdev class and sysdev
-Date: Tue, 22 Mar 2011 15:19:56 +0100
-Message-ID: <1300803596.1456.10.camel__44868.969920981$1300803671$gmane$org@zag>
-References: <201103100131.58206.rjw@sisk.pl>
-	<201103131403.49561.rwys@fuw.edu.pl>
-	<20110317082016.GB13315@linux-sh.org>
-	<201103190147.28001.rjw@sisk.pl> <20110322140420.GA24004@linux-sh.org>
+From: "Martin, LoicX" <loicx.martin@intel.com>
+Subject: Re: suspend() and runtime_suspend()
+Date: Tue, 22 Mar 2011 15:50:22 +0000
+Message-ID: <9F3EABD6E3419B4C81F34EAABB4D40188142FF8E0D@irsmsx501.ger.corp.intel.com>
+References: <9F3EABD6E3419B4C81F34EAABB4D40188142FF8486@irsmsx501.ger.corp.intel.com>
+	<Pine.LNX.4.44L0.1103211024230.1978-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110322140420.GA24004@linux-sh.org>
+In-Reply-To: <Pine.LNX.4.44L0.1103211024230.1978-100000@iolanthe.rowland.org>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,75 +19,130 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2011-03-22 at 23:04 +0900, Paul Mundt wrote:
-> On Sat, Mar 19, 2011 at 01:47:27AM +0100, Rafael J. Wysocki wrote:
-> > On Thursday, March 17, 2011, Paul Mundt wrote:
-> > > On Sun, Mar 13, 2011 at 02:03:49PM +0100, R. J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Convert the SuperH clocks framework and shared interrupt handling
-> > > > code to using struct syscore_ops instead of a sysdev classes and
-> > > > sysdevs for power managment.
-> > > > 
-> > > > This reduces the code size significantly and simplifies it.  The
-> > > > optimizations causing things not to be restored after creating a
-> > > > hibernation image are removed, but they might lead to undesirable
-> > > > effects during resume from hibernation (e.g. the clocks would be left
-> > > > as the boot kernel set them, which might be not the same way as the
-> > > > hibernated kernel had seen them before the hibernation).
-> > > > 
-> > > > This also is necessary for removing sysdevs from the kernel entirely
-> > > > in the future.
-> > > > 
-> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > This misses the use of the sysdev class by the userimask code, though I'm
-> > > open to suggestions for alternatives.
-> > 
-> > For now, I'd simply move the sysdev class definition to userimask.c, like
-> > in the patch below.  The current goal is to eliminate the suspend/resume and
-> > shutdown operations from sysdevs (and sysdev drivers), the next step will
-> > be to replace the remaining sysdevs with alternative mechanisms.
-> > 
-> It's not quite that straightforward, you've also killed off the name
-> attribute for each of the intc sysdevs, so we no longer have a visible
-> way to map a given intc controller number to the controller name in a
-> user visible way.
-> 
-> I'm not opposed to the syscore thing for suspend/resume ops, but I'm not
-> willing to trash the userimask and name mapping interface in the process
-> with no alternatives.
-> 
-> userimask was the first global configuration item I added, but there are
-> other per-controller and global configuration knobs that I plan to export
-> through the interface, so there really needs to be a compelling reason
-> for moving off of sysdevs.
+Hi =
 
-Yes, they don't fit into the model. They have been a dumb hack from the
-first day, and never integrated into the kenrel driver core or hotplug
-properly.
 
-If you need the userspace visibility, better just add a "struct
-bus_type" with a proper name for your subsystem and register a "struct
-device" with the bus_type assigned for all of them, instead of using the
-broken concept of sydevs. You can even make them show up
-in /sys/devices/system/<bus_type name>/<struct device name>/ if you want
-to.
+I found those drivers:
 
-That way userspace can properly enumerate them in a flat list
-in /sys/bus/<bus_type name>/devices/*, and gets proper events on module
-load and during system coldplug, and can hook into the usual hotplug
-pathes to set/get these values instead of crawling magicly defined and
-decoupled locations in /sys which can not express proper hierarchy,
-classicication, or anything else that all other devices can just do.
+drivers/dma/intel_mid_dma.c
+drivers/i2c/busses/i2c-intel-mid.c
+drivers/staging/gma500/psb_drv.c
+drivers/staging/gma500/psb_powermgmt.c
+drivers/staging/intel_sst/intel_sst.c
 
-There is really no reason for any device being a magic and conceptually
-broken sysdev today - just to be different from any other device the
-kernel exports to userspace.
+We are currently working on this purpose (runtime suspend/resume implementa=
+tion), and our first understanding was not perfectly clear.
+That's why I was asking about the correct implementation of those callback.
 
-Thanks,
-Kay
+Thanks
+
+I have one more question about this part of the documentation:
+>>However, the driver should not call the pm_runtime_allow() helper functio=
+n unblocking
+>>the runtime PM of the device. Instead, it should allow user space or some
+>>platform-specific code to do that
+
+Is there any reason concerning the system stability or something else to do=
+ it that way instead of doing it in the driver during the probe ?
+
+
+Lo=EFc
+
+-----Original Message-----
+From: Alan Stern [mailto:stern@rowland.harvard.edu] =
+
+Sent: Monday, March 21, 2011 3:28 PM
+To: Martin, LoicX
+Cc: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] suspend() and runtime_suspend()
+
+On Mon, 21 Mar 2011, Martin, LoicX wrote:
+
+> Hi
+> =
+
+> I found in the linux kernel documentation :
+> In /power/pci.h
+> 2.4.1. System Suspend
+> =
+
+> PCI device drivers (that don't implement legacy power management callback=
+s) are
+> generally not expected to prepare devices for signaling wakeup or to put =
+them
+> into low-power states.  However, if one of the driver's suspend callbacks
+> (pm->suspend() or pm->suspend_noirq()) saves the device's standard config=
+uration
+> registers, pci_pm_suspend_noirq() will assume that the device has been pr=
+epared
+> to signal wakeup and put into a low-power state by the driver (the driver=
+ is
+> then assumed to have used the helper functions provided by the PCI subsys=
+tem for
+> this purpose).  PCI device drivers are not encouraged to do that, but in =
+some
+> rare cases doing that in the driver may be the optimum approach.
+> =
+
+> 3.1.2 suspend()
+> =
+
+> It is not required (in fact it even is
+> not recommended) that a PCI driver's suspend() callback save the standard
+> configuration registers of the device, prepare it for waking up the syste=
+m, or
+> put it into a low-power state.  All of these operations can very well be =
+taken
+> care of by the PCI subsystem, without the driver's participation.
+> =
+
+> 2.3. Runtime Device Power Management
+> =
+
+> It is expected that the device driver's pm->runtime_suspend() callback wi=
+ll
+> not attempt to prepare the device for signaling wakeup or to put it into a
+> low-power state.  The driver ought to leave these tasks to the PCI subsys=
+tem
+> that has all of the information necessary to perform them.
+> =
+
+> =
+
+> So I was wondering why in the kernel sources, most of the PCI drivers wer=
+e using pci_set_power_state, as well pci_save_state either in suspend() cal=
+lbacks
+
+Perhaps because those PCI drivers were written before the
+documentation, using legacy power management.
+
+>  either in runtime_suspend() callbacks.
+
+There should not be any drivers doing that, because runtime_suspend is =
+
+a relatively recent addition.  Can you provide examples?
+
+> Why should we not use those functions in a driver suspend callback implem=
+entation ?
+
+Because it would duplicate code that is already present in the PCI
+core.
+
+Alan Stern
+
+---------------------------------------------------------------------
+Intel Corporation SAS (French simplified joint stock company)
+Registered headquarters: "Les Montalets"- 2, rue de Paris, =
+
+92196 Meudon Cedex, France
+Registration Number:  302 456 199 R.C.S. NANTERRE
+Capital: 4,572,000 Euros
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
