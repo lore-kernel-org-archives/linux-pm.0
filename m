@@ -1,15 +1,15 @@
-From: =?UTF-8?Q?Ja=C5=A1a_Bartelj?= <jasa.bartelj@gmail.com>
-Subject: Re: [Bug 31432] Resume from suspend fails on new
- FireWire stack (TSB43AB22/A IEEE-1394a-2000 Controller)
-Date: Mon, 21 Mar 2011 20:02:28 +0100
-Message-ID: <AANLkTimvEUdz+nTY80dTCSEPv5vGYiPKcGoxxkrm0OS9__49228.7092646167$1300897766$gmane$org@mail.gmail.com>
-References: <bug-31432-35532@https.bugzilla.kernel.org/>
-	<201103210659.p2L6xXQi019212@demeter2.kernel.org>
+From: Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH 4/6] KVM: Use syscore_ops instead of sysdev
+ class and sysdev
+Date: Tue, 22 Mar 2011 11:18:36 +0200
+Message-ID: <4D88696C.6060203__5286.55730090595$1300897884$gmane$org@redhat.com>
+References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
+	<201103220031.22729.rjw@sisk.pl> <201103220037.06465.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103210659.p2L6xXQi019212@demeter2.kernel.org>
+In-Reply-To: <201103220037.06465.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,16 +19,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: bugzilla-daemon@bugzilla.kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linux1394-devel@lists.sourceforge.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: kvm@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, iommu@lists.linux-foundation.org, mingo@redhat.com, cpufreq@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-> Is the failure in resume from suspend(-to-RAM), or in restore from
-> hibernate (alias resume from suspend-to-disk), or both?
+On 03/22/2011 01:37 AM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki<rjw@sisk.pl>
+>
+> KVM uses a sysdev class and a sysdev for executing kvm_suspend()
+> after interrupts have been turned off on the boot CPU (during system
+> suspend) and for executing kvm_resume() before turning on interrupts
+> on the boot CPU (during system resume).  However, since both of these
+> functions ignore their arguments, the entire mechanism may be
+> replaced with a struct syscore_ops object which is simpler.
+>
 
-The described failure is from suspend-to-RAM.
+Acked-by: Avi Kivity <avi@redhat.com>
 
-I have just tried hibernation with firewire modules loaded and the
-kernel does not complete it. It hangs at a VT with only a blinking
-cursor on the top left. A hard reset is required to regain control!
-Here's what I see in the messages log: http://pastebin.com/rz0c8hKM
+-- 
+error compiling committee.c: too many arguments to function
