@@ -1,15 +1,15 @@
-From: "Martin, LoicX" <loicx.martin@intel.com>
-Subject: Re: suspend() and runtime_suspend()
-Date: Tue, 22 Mar 2011 15:50:22 +0000
-Message-ID: <9F3EABD6E3419B4C81F34EAABB4D40188142FF8E0D@irsmsx501.ger.corp.intel.com>
-References: <9F3EABD6E3419B4C81F34EAABB4D40188142FF8486@irsmsx501.ger.corp.intel.com>
-	<Pine.LNX.4.44L0.1103211024230.1978-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 9/10] sh: Use struct syscore_ops instead of
+	sysdev class and sysdev
+Date: Tue, 22 Mar 2011 21:19:28 +0100
+Message-ID: <201103222119.28328.rjw__14100.0951327898$1300825333$gmane$org@sisk.pl>
+References: <201103100131.58206.rjw@sisk.pl> <201103190147.28001.rjw@sisk.pl>
+	<20110322140420.GA24004@linux-sh.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1103211024230.1978-100000@iolanthe.rowland.org>
-Content-Language: en-US
+In-Reply-To: <20110322140420.GA24004@linux-sh.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,130 +19,351 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi =
+On Tuesday, March 22, 2011, Paul Mundt wrote:
+> On Sat, Mar 19, 2011 at 01:47:27AM +0100, Rafael J. Wysocki wrote:
+> > On Thursday, March 17, 2011, Paul Mundt wrote:
+> > > On Sun, Mar 13, 2011 at 02:03:49PM +0100, R. J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Convert the SuperH clocks framework and shared interrupt handling
+> > > > code to using struct syscore_ops instead of a sysdev classes and
+> > > > sysdevs for power managment.
+> > > > 
+> > > > This reduces the code size significantly and simplifies it.  The
+> > > > optimizations causing things not to be restored after creating a
+> > > > hibernation image are removed, but they might lead to undesirable
+> > > > effects during resume from hibernation (e.g. the clocks would be left
+> > > > as the boot kernel set them, which might be not the same way as the
+> > > > hibernated kernel had seen them before the hibernation).
+> > > > 
+> > > > This also is necessary for removing sysdevs from the kernel entirely
+> > > > in the future.
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > This misses the use of the sysdev class by the userimask code, though I'm
+> > > open to suggestions for alternatives.
+> > 
+> > For now, I'd simply move the sysdev class definition to userimask.c, like
+> > in the patch below.  The current goal is to eliminate the suspend/resume and
+> > shutdown operations from sysdevs (and sysdev drivers), the next step will
+> > be to replace the remaining sysdevs with alternative mechanisms.
+> > 
+> It's not quite that straightforward, you've also killed off the name
+> attribute for each of the intc sysdevs, so we no longer have a visible
+> way to map a given intc controller number to the controller name in a
+> user visible way.
 
+Hmm.  So you actually want those empty directories to show up in sysfs?
+I didn't think they were really useful ...
 
-I found those drivers:
+> I'm not opposed to the syscore thing for suspend/resume ops, but I'm not
+> willing to trash the userimask and name mapping interface in the process
+> with no alternatives.
 
-drivers/dma/intel_mid_dma.c
-drivers/i2c/busses/i2c-intel-mid.c
-drivers/staging/gma500/psb_drv.c
-drivers/staging/gma500/psb_powermgmt.c
-drivers/staging/intel_sst/intel_sst.c
+OK
 
-We are currently working on this purpose (runtime suspend/resume implementa=
-tion), and our first understanding was not perfectly clear.
-That's why I was asking about the correct implementation of those callback.
+> userimask was the first global configuration item I added, but there are
+> other per-controller and global configuration knobs that I plan to export
+> through the interface, so there really needs to be a compelling reason
+> for moving off of sysdevs.
 
-Thanks
+Yes, there is.  They are simply unusable in other situations, but I agree
+we'll need to find a clean way to replace them where there's a good reason to
+use them.
 
-I have one more question about this part of the documentation:
->>However, the driver should not call the pm_runtime_allow() helper functio=
-n unblocking
->>the runtime PM of the device. Instead, it should allow user space or some
->>platform-specific code to do that
+Updated patch follows.
 
-Is there any reason concerning the system stability or something else to do=
- it that way instead of doing it in the driver during the probe ?
+Thanks,
+Rafael
 
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: Drivers / sh: Use struct syscore_ops instead of sysdevs
 
-Lo=EFc
+Convert the SuperH clocks framework and shared interrupt handling
+code to using struct syscore_ops instead of a sysdev classes and
+sysdevs for power managment.
 
------Original Message-----
-From: Alan Stern [mailto:stern@rowland.harvard.edu] =
+This reduces the code size significantly and simplifies it.  The
+optimizations causing things not to be restored after creating a
+hibernation image are removed, but they might lead to undesirable
+effects during resume from hibernation (e.g. the clocks would be left
+as the boot kernel set them, which might be not the same way as the
+hibernated kernel had seen them before the hibernation).
 
-Sent: Monday, March 21, 2011 3:28 PM
-To: Martin, LoicX
-Cc: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] suspend() and runtime_suspend()
+This also is necessary for removing sysdevs from the kernel entirely
+in the future.
 
-On Mon, 21 Mar 2011, Martin, LoicX wrote:
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/sh/clk/core.c       |   68 ++++++++-----------------------
+ drivers/sh/intc/core.c      |   95 +++++++++++++++++++++-----------------------
+ drivers/sh/intc/internals.h |    1 
+ 3 files changed, 65 insertions(+), 99 deletions(-)
 
-> Hi
-> =
-
-> I found in the linux kernel documentation :
-> In /power/pci.h
-> 2.4.1. System Suspend
-> =
-
-> PCI device drivers (that don't implement legacy power management callback=
-s) are
-> generally not expected to prepare devices for signaling wakeup or to put =
-them
-> into low-power states.  However, if one of the driver's suspend callbacks
-> (pm->suspend() or pm->suspend_noirq()) saves the device's standard config=
-uration
-> registers, pci_pm_suspend_noirq() will assume that the device has been pr=
-epared
-> to signal wakeup and put into a low-power state by the driver (the driver=
- is
-> then assumed to have used the helper functions provided by the PCI subsys=
-tem for
-> this purpose).  PCI device drivers are not encouraged to do that, but in =
-some
-> rare cases doing that in the driver may be the optimum approach.
-> =
-
-> 3.1.2 suspend()
-> =
-
-> It is not required (in fact it even is
-> not recommended) that a PCI driver's suspend() callback save the standard
-> configuration registers of the device, prepare it for waking up the syste=
-m, or
-> put it into a low-power state.  All of these operations can very well be =
-taken
-> care of by the PCI subsystem, without the driver's participation.
-> =
-
-> 2.3. Runtime Device Power Management
-> =
-
-> It is expected that the device driver's pm->runtime_suspend() callback wi=
-ll
-> not attempt to prepare the device for signaling wakeup or to put it into a
-> low-power state.  The driver ought to leave these tasks to the PCI subsys=
-tem
-> that has all of the information necessary to perform them.
-> =
-
-> =
-
-> So I was wondering why in the kernel sources, most of the PCI drivers wer=
-e using pci_set_power_state, as well pci_save_state either in suspend() cal=
-lbacks
-
-Perhaps because those PCI drivers were written before the
-documentation, using legacy power management.
-
->  either in runtime_suspend() callbacks.
-
-There should not be any drivers doing that, because runtime_suspend is =
-
-a relatively recent addition.  Can you provide examples?
-
-> Why should we not use those functions in a driver suspend callback implem=
-entation ?
-
-Because it would duplicate code that is already present in the PCI
-core.
-
-Alan Stern
-
----------------------------------------------------------------------
-Intel Corporation SAS (French simplified joint stock company)
-Registered headquarters: "Les Montalets"- 2, rue de Paris, =
-
-92196 Meudon Cedex, France
-Registration Number:  302 456 199 R.C.S. NANTERRE
-Capital: 4,572,000 Euros
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+Index: linux-2.6/drivers/sh/clk/core.c
+===================================================================
+--- linux-2.6.orig/drivers/sh/clk/core.c
++++ linux-2.6/drivers/sh/clk/core.c
+@@ -21,7 +21,7 @@
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/list.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/seq_file.h>
+ #include <linux/err.h>
+ #include <linux/io.h>
+@@ -630,68 +630,36 @@ long clk_round_parent(struct clk *clk, u
+ EXPORT_SYMBOL_GPL(clk_round_parent);
+ 
+ #ifdef CONFIG_PM
+-static int clks_sysdev_suspend(struct sys_device *dev, pm_message_t state)
++static void clks_core_resume(void)
+ {
+-	static pm_message_t prev_state;
+ 	struct clk *clkp;
+ 
+-	switch (state.event) {
+-	case PM_EVENT_ON:
+-		/* Resumeing from hibernation */
+-		if (prev_state.event != PM_EVENT_FREEZE)
+-			break;
+-
+-		list_for_each_entry(clkp, &clock_list, node) {
+-			if (likely(clkp->ops)) {
+-				unsigned long rate = clkp->rate;
+-
+-				if (likely(clkp->ops->set_parent))
+-					clkp->ops->set_parent(clkp,
+-						clkp->parent);
+-				if (likely(clkp->ops->set_rate))
+-					clkp->ops->set_rate(clkp, rate);
+-				else if (likely(clkp->ops->recalc))
+-					clkp->rate = clkp->ops->recalc(clkp);
+-			}
++	list_for_each_entry(clkp, &clock_list, node) {
++		if (likely(clkp->ops)) {
++			unsigned long rate = clkp->rate;
++
++			if (likely(clkp->ops->set_parent))
++				clkp->ops->set_parent(clkp,
++					clkp->parent);
++			if (likely(clkp->ops->set_rate))
++				clkp->ops->set_rate(clkp, rate);
++			else if (likely(clkp->ops->recalc))
++				clkp->rate = clkp->ops->recalc(clkp);
+ 		}
+-		break;
+-	case PM_EVENT_FREEZE:
+-		break;
+-	case PM_EVENT_SUSPEND:
+-		break;
+ 	}
+-
+-	prev_state = state;
+-	return 0;
+-}
+-
+-static int clks_sysdev_resume(struct sys_device *dev)
+-{
+-	return clks_sysdev_suspend(dev, PMSG_ON);
+ }
+ 
+-static struct sysdev_class clks_sysdev_class = {
+-	.name = "clks",
+-};
+-
+-static struct sysdev_driver clks_sysdev_driver = {
+-	.suspend = clks_sysdev_suspend,
+-	.resume = clks_sysdev_resume,
+-};
+-
+-static struct sys_device clks_sysdev_dev = {
+-	.cls = &clks_sysdev_class,
++static struct syscore_ops clks_syscore_ops = {
++	.resume = clks_core_resume,
+ };
+ 
+-static int __init clk_sysdev_init(void)
++static int __init clk_syscore_init(void)
+ {
+-	sysdev_class_register(&clks_sysdev_class);
+-	sysdev_driver_register(&clks_sysdev_class, &clks_sysdev_driver);
+-	sysdev_register(&clks_sysdev_dev);
++	register_syscore_ops(&clks_syscore_ops);
+ 
+ 	return 0;
+ }
+-subsys_initcall(clk_sysdev_init);
++subsys_initcall(clk_syscore_init);
+ #endif
+ 
+ /*
+Index: linux-2.6/drivers/sh/intc/core.c
+===================================================================
+--- linux-2.6.orig/drivers/sh/intc/core.c
++++ linux-2.6/drivers/sh/intc/core.c
+@@ -25,6 +25,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/sh_intc.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/list.h>
+ #include <linux/spinlock.h>
+ #include <linux/radix-tree.h>
+@@ -376,91 +377,89 @@ err0:
+ 	return -ENOMEM;
+ }
+ 
+-static ssize_t
+-show_intc_name(struct sys_device *dev, struct sysdev_attribute *attr, char *buf)
++static int intc_suspend(void)
+ {
+ 	struct intc_desc_int *d;
+ 
+-	d = container_of(dev, struct intc_desc_int, sysdev);
++	list_for_each_entry(d, &intc_list, list) {
++		int irq;
+ 
+-	return sprintf(buf, "%s\n", d->chip.name);
+-}
++		/* enable wakeup irqs belonging to this intc controller */
++		for_each_active_irq(irq) {
++			struct irq_data *data;
++			struct irq_desc *desc;
++			struct irq_chip *chip;
+ 
+-static SYSDEV_ATTR(name, S_IRUGO, show_intc_name, NULL);
++			data = irq_get_irq_data(irq);
++			chip = irq_data_get_irq_chip(data);
++			if (chip != &d->chip)
++				continue;
++			desc = irq_to_desc(irq);
++			if ((desc->status & IRQ_WAKEUP))
++				chip->irq_enable(data);
++		}
++	}
++
++	return 0;
++}
+ 
+-static int intc_suspend(struct sys_device *dev, pm_message_t state)
++static void intc_resume(void)
+ {
+ 	struct intc_desc_int *d;
+-	struct irq_data *data;
+-	struct irq_desc *desc;
+-	struct irq_chip *chip;
+-	int irq;
+-
+-	/* get intc controller associated with this sysdev */
+-	d = container_of(dev, struct intc_desc_int, sysdev);
+ 
+-	switch (state.event) {
+-	case PM_EVENT_ON:
+-		if (d->state.event != PM_EVENT_FREEZE)
+-			break;
++	list_for_each_entry(d, &intc_list, list) {
++		int irq;
+ 
+ 		for_each_active_irq(irq) {
+-			desc = irq_to_desc(irq);
++			struct irq_data *data;
++			struct irq_desc *desc;
++			struct irq_chip *chip;
++
+ 			data = irq_get_irq_data(irq);
+ 			chip = irq_data_get_irq_chip(data);
+-
+ 			/*
+ 			 * This will catch the redirect and VIRQ cases
+ 			 * due to the dummy_irq_chip being inserted.
+ 			 */
+ 			if (chip != &d->chip)
+ 				continue;
++			desc = irq_to_desc(irq);
+ 			if (desc->status & IRQ_DISABLED)
+ 				chip->irq_disable(data);
+ 			else
+ 				chip->irq_enable(data);
+ 		}
+-		break;
+-	case PM_EVENT_FREEZE:
+-		/* nothing has to be done */
+-		break;
+-	case PM_EVENT_SUSPEND:
+-		/* enable wakeup irqs belonging to this intc controller */
+-		for_each_active_irq(irq) {
+-			desc = irq_to_desc(irq);
+-			data = irq_get_irq_data(irq);
+-			chip = irq_data_get_irq_chip(data);
+-
+-			if (chip != &d->chip)
+-				continue;
+-			if ((desc->status & IRQ_WAKEUP))
+-				chip->irq_enable(data);
+-		}
+-		break;
+ 	}
+-
+-	d->state = state;
+-
+-	return 0;
+ }
+ 
+-static int intc_resume(struct sys_device *dev)
+-{
+-	return intc_suspend(dev, PMSG_ON);
+-}
++struct syscore_ops intc_syscore_ops = {
++	.suspend	= intc_suspend,
++	.resume		= intc_resume,
++};
+ 
+ struct sysdev_class intc_sysdev_class = {
+ 	.name		= "intc",
+-	.suspend	= intc_suspend,
+-	.resume		= intc_resume,
+ };
+ 
+-/* register this intc as sysdev to allow suspend/resume */
++static ssize_t
++show_intc_name(struct sys_device *dev, struct sysdev_attribute *attr, char *buf)
++{
++	struct intc_desc_int *d;
++
++	d = container_of(dev, struct intc_desc_int, sysdev);
++
++	return sprintf(buf, "%s\n", d->chip.name);
++}
++
++static SYSDEV_ATTR(name, S_IRUGO, show_intc_name, NULL);
++
+ static int __init register_intc_sysdevs(void)
+ {
+ 	struct intc_desc_int *d;
+ 	int error;
+ 
++	register_syscore_ops(&intc_syscore_ops);
++
+ 	error = sysdev_class_register(&intc_sysdev_class);
+ 	if (!error) {
+ 		list_for_each_entry(d, &intc_list, list) {
+Index: linux-2.6/drivers/sh/intc/internals.h
+===================================================================
+--- linux-2.6.orig/drivers/sh/intc/internals.h
++++ linux-2.6/drivers/sh/intc/internals.h
+@@ -53,7 +53,6 @@ struct intc_desc_int {
+ 	struct list_head list;
+ 	struct sys_device sysdev;
+ 	struct radix_tree_root tree;
+-	pm_message_t state;
+ 	raw_spinlock_t lock;
+ 	unsigned int index;
+ 	unsigned long *reg;
