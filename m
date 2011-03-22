@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/6] Do not use sysdevs for implementing "core"
-	PM operations on x86
-Date: Tue, 22 Mar 2011 00:31:22 +0100
-Message-ID: <201103220031.22729.rjw__26229.5185625137$1300753521$gmane$org@sisk.pl>
-References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
+From: Raj Kumar <rajkumar278@hotmail.com>
+Subject: Regarding the dedicated memory for hibernation
+Date: Tue, 22 Mar 2011 15:01:52 +0530
+Message-ID: <SNT117-W368129D3EED2DAB17547BFEBB40@phx.gbl>
+References: <BLU102-W6F8402163EAD81AFBF321EB490@phx.gbl>,
+	<201011030418.02830.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============4218096497380891094=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103122212.40828.rjw@sisk.pl>
+In-Reply-To: <201011030418.02830.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,101 +15,72 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: kvm@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, cpufreq@vger.kernel.org, iommu@lists.linux-foundation.org, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, tglx@linutronix.de, David Woodhouse <dwmw2@infradead.org>
+To: rjw@sisk.pl
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--===============4218096497380891094==
+Content-Type: multipart/alternative;
+	boundary="_e6834c0a-c1b4-496e-8e67-9676a212a695_"
 
-On Saturday, March 12, 2011, Rafael J. Wysocki wrote:
-> On Thursday, March 10, 2011, Rafael J. Wysocki wrote:
-> > There are multiple problems with sysdevs, or struct sys_device objects to
-> > be precise, that are so annoying that some people have started to think
-> > of removind them entirely from the kernel.  To me, personally, the most
-> > obvious issue is the way sysdevs are used for defining suspend/resume
-> > callbacks to be executed with one CPU on-line and interrupts disabled.
-> > Greg and Kay may tell you more about the other problems with sysdevs. :-)
-> > 
-> > Some subsystems need to carry out certain operations during suspend after
-> > we've disabled non-boot CPUs and interrupts have been switched off on the
-> > only on-line one.  Currently, the only way to achieve that is to define
-> > sysdev suspend/resume callbacks, but this is cumbersome and inefficient.
-> > Namely, to do that, one has to define a sysdev class providing the callbacks
-> > and a sysdev actually using them, which is excessively complicated.  Moreover,
-> > the sysdev suspend/resume callbacks take arguments that are not really used
-> > by the majority of subsystems defining sysdev suspend/resume callbacks
-> > (or even if they are used, they don't really _need_ to be used, so they
-> > are simply unnecessary).  Of course, if a sysdev is only defined to provide
-> > suspend/resume (and maybe shutdown) callbacks, there's no real reason why
-> > it should show up in sysfs.
-> > 
-> > For this reason, I thought it would be a good idea to provide a simpler
-> > interface for subsystems to define "very late" suspend callbacks and
-> > "very early" resume callbacks (and "very late" shutdown callbacks as well)
-> > without the entire bloat related to sysdevs.  The interface is introduced
-> > by the first of the following patches, while the second patch converts some
-> > sysdev users related to the x86 architecture to using the new interface.
-> > 
-> > I believe that call sysdev users who need to define suspend/resume/shutdown
-> > callbacks may be converted to using the interface provided by the first patch,
-> > which in turn should allow us to convert the remaining sysdev functionality
-> > into "normal" struct device interfaces.  Still, even if that turns out to be
-> > too complicated, the bloat reduction resulting from the second patch kind of
-> > shows that moving at least some sysdev users to a simpler interface (like in
-> > the first patch) is a good idea anyway.
-> > 
-> > This is a proof of concept, so the patches have not been tested.  Please be
-> > extrememly careful, because they touch sensitive code, so to speak.  In the
-> > majority of cases the changes are rather straightforward, but there are some
-> > more interesting cases as well (io_apic.c most importantly).
-> 
-> Since Greg likes the idea and there haven't been any objections so far, here's
-> the official submission.  The patches have been tested on HP nx6325 and
-> Toshiba Portege R500.
-> 
-> Patch [1/8] is regareded as 2.6.38 material, following Greg's advice.  The
-> other patches in the set are regarded as 2.6.39 material.  The last one
-> obviously depends on all of the previous ones.
-> 
-> [1/8] - Introduce struct syscore_ops for registering operations to be run on
->         one CPU during suspend/resume/shutdown.
-> 
-> [2/8] - Convert sysdev users in arch/x86 to using struct syscore_ops.
-> 
-> [3/8] - Make ACPI use struct syscore_ops for irqrouter_resume().
-> 
-> [4/8] - Make timekeeping use struct syscore_ops for suspend/resume.
-> 
-> [5/8] - Make Intel IOMMU use struct syscore_ops for suspend/resume.
-> 
-> [6/8] - Make KVM use struct syscore_ops for suspend/resume.
-> 
-> [7/8] - Make cpufreq use struct syscore_ops for boot CPU suspend/resume.
-> 
-> [8/8] - Introduce config switch allowing architectures to skip sysdev
->         suspend/resume/shutdown code.
-> 
-> If there are no objectsions, I'd like to push these patches through the suspend
-> tree.
+--_e6834c0a-c1b4-496e-8e67-9676a212a695_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-[1/8] has been merged in the meantime and [3/8] has been included into the
-ACPI tree.  if there are no objections, I'm going to push the following
-patches to Linus this week through the suspend-2.6 tree:
 
-[1/6] - Convert sysdev users in arch/x86 to using struct syscore_ops.
+Hi Rafael=2C
 
-[2/6] - Make timekeeping use struct syscore_ops for suspend/resume.
- 
-[3/6] - Make Intel IOMMU use struct syscore_ops for suspend/resume.
+I have one question regarding the dedicated memory(the memory that is not O=
+S addressable). But when userspace does mmap=2C I am creating mapping for V=
+MA to physical addresses that are in dedicated memory.
+The question is when system hibernates=2C will the OS kernel take care of t=
+his when creating hibernation image as mmap creates a virtual address space=
+ or device driver should explicity swap this memory(dedicated memory) in hi=
+bernation image?
 
-[4/6] - Make KVM use struct syscore_ops for suspend/resume.
+Regards
+Raj
+ 		 	   		  =
 
-[5/6] - Make cpufreq use struct syscore_ops for boot CPU suspend/resume.
+--_e6834c0a-c1b4-496e-8e67-9676a212a695_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-[6/6] - Introduce config switch allowing architectures to skip sysdev
-        suspend/resume/shutdown code.
+<html>
+<head>
+<style><!--
+.hmmessage P
+{
+margin:0px=3B
+padding:0px
+}
+body.hmmessage
+{
+font-size: 10pt=3B
+font-family:Tahoma
+}
+--></style>
+</head>
+<body class=3D'hmmessage'>
+Hi Rafael=2C<br><br>I have one question regarding the dedicated memory(the =
+memory that is not OS addressable). But when userspace does mmap=2C I am cr=
+eating mapping for VMA to physical addresses that are in dedicated memory.<=
+br>The question is when system hibernates=2C will the OS kernel take care o=
+f this when creating hibernation image as mmap creates a virtual address sp=
+ace or device driver should explicity swap this memory(dedicated memory) in=
+ hibernation image?<br><br>Regards<br>Raj<br> 		 	   		  </body>
+</html>=
 
-Thanks,
-Rafael
+--_e6834c0a-c1b4-496e-8e67-9676a212a695_--
+
+--===============4218096497380891094==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4218096497380891094==--
