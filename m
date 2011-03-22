@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 9/10] sh: Use struct syscore_ops instead of
-	sysdev class and sysdev
-Date: Tue, 22 Mar 2011 21:30:46 +0100
-Message-ID: <201103222130.46603.rjw__21620.9798506044$1300825966$gmane$org@sisk.pl>
-References: <201103100131.58206.rjw@sisk.pl>
-	<20110322140420.GA24004@linux-sh.org>
-	<1300803596.1456.10.camel@zag>
+Subject: Re: [PATCH 0/6] Do not use sysdevs for implementing
+	"core" PM operations on x86
+Date: Tue, 22 Mar 2011 21:33:13 +0100
+Message-ID: <201103222133.14054.rjw__36661.966951988$1300826325$gmane$org@sisk.pl>
+References: <201103100131.58206.rjw@sisk.pl> <201103220031.22729.rjw@sisk.pl>
+	<20110322103258.GC4448@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1300803596.1456.10.camel@zag>
+In-Reply-To: <20110322103258.GC4448@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,93 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kay Sievers <kay.sievers@suse.de>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kvm@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, cpufreq@vger.kernel.org, iommu@lists.linux-foundation.org, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, March 22, 2011, Kay Sievers wrote:
-> On Tue, 2011-03-22 at 23:04 +0900, Paul Mundt wrote:
-> > On Sat, Mar 19, 2011 at 01:47:27AM +0100, Rafael J. Wysocki wrote:
-> > > On Thursday, March 17, 2011, Paul Mundt wrote:
-> > > > On Sun, Mar 13, 2011 at 02:03:49PM +0100, R. J. Wysocki wrote:
-> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > > 
-> > > > > Convert the SuperH clocks framework and shared interrupt handling
-> > > > > code to using struct syscore_ops instead of a sysdev classes and
-> > > > > sysdevs for power managment.
-> > > > > 
-> > > > > This reduces the code size significantly and simplifies it.  The
-> > > > > optimizations causing things not to be restored after creating a
-> > > > > hibernation image are removed, but they might lead to undesirable
-> > > > > effects during resume from hibernation (e.g. the clocks would be left
-> > > > > as the boot kernel set them, which might be not the same way as the
-> > > > > hibernated kernel had seen them before the hibernation).
-> > > > > 
-> > > > > This also is necessary for removing sysdevs from the kernel entirely
-> > > > > in the future.
-> > > > > 
-> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > This misses the use of the sysdev class by the userimask code, though I'm
-> > > > open to suggestions for alternatives.
-> > > 
-> > > For now, I'd simply move the sysdev class definition to userimask.c, like
-> > > in the patch below.  The current goal is to eliminate the suspend/resume and
-> > > shutdown operations from sysdevs (and sysdev drivers), the next step will
-> > > be to replace the remaining sysdevs with alternative mechanisms.
-> > > 
-> > It's not quite that straightforward, you've also killed off the name
-> > attribute for each of the intc sysdevs, so we no longer have a visible
-> > way to map a given intc controller number to the controller name in a
-> > user visible way.
-> > 
-> > I'm not opposed to the syscore thing for suspend/resume ops, but I'm not
-> > willing to trash the userimask and name mapping interface in the process
-> > with no alternatives.
-> > 
-> > userimask was the first global configuration item I added, but there are
-> > other per-controller and global configuration knobs that I plan to export
-> > through the interface, so there really needs to be a compelling reason
-> > for moving off of sysdevs.
+On Tuesday, March 22, 2011, Ingo Molnar wrote:
 > 
-> Yes, they don't fit into the model. They have been a dumb hack from the
-> first day, and never integrated into the kenrel driver core or hotplug
-> properly.
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> If you need the userspace visibility, better just add a "struct
-> bus_type" with a proper name for your subsystem and register a "struct
-> device" with the bus_type assigned for all of them, instead of using the
-> broken concept of sydevs. You can even make them show up
-> in /sys/devices/system/<bus_type name>/<struct device name>/ if you want
-> to.
+> > > If there are no objectsions, I'd like to push these patches through the suspend
+> > > tree.
+> > 
+> > [1/8] has been merged in the meantime and [3/8] has been included into the
+> > ACPI tree.  if there are no objections, I'm going to push the following
+> > patches to Linus this week through the suspend-2.6 tree:
+> > 
+> > [1/6] - Convert sysdev users in arch/x86 to using struct syscore_ops.
+> > 
+> > [2/6] - Make timekeeping use struct syscore_ops for suspend/resume.
+> >  
+> > [3/6] - Make Intel IOMMU use struct syscore_ops for suspend/resume.
+> > 
+> > [4/6] - Make KVM use struct syscore_ops for suspend/resume.
+> > 
+> > [5/6] - Make cpufreq use struct syscore_ops for boot CPU suspend/resume.
+> > 
+> > [6/6] - Introduce config switch allowing architectures to skip sysdev
+> >         suspend/resume/shutdown code.
+> 
+> The x86 bits look fine.
+> 
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 
-I don't really think that's going to be useful in this particular case.
-The reason is, first, because the struct device would cause lots of other
-stuff to show up in sysfs which would be totally redundant and confusing
-and, second, because the things exported here are simply static attributes,
-pretty much like the stuff in /sys/power/.
+Thanks!
 
-Perhaps there's a more straightforward way to make some files show up in
-sysfs on a specific path than defininig an otherwise useless bus type and
-device object?
+> The patches affect a lot of hardware so please make sure they are tested well 
+> before pushing them to Linus :-)
 
-> That way userspace can properly enumerate them in a flat list
-> in /sys/bus/<bus_type name>/devices/*, and gets proper events on module
-> load and during system coldplug, and can hook into the usual hotplug
-> pathes to set/get these values instead of crawling magicly defined and
-> decoupled locations in /sys which can not express proper hierarchy,
-> classicication, or anything else that all other devices can just do.
-
-There's no hotplug involved or anything remotely like that AFAICS.
-There are simply static files as I said above, they are created
-early during system initialization and simply stay there.
-
-> There is really no reason for any device being a magic and conceptually
-> broken sysdev today - just to be different from any other device the
-> kernel exports to userspace.
-
-It's not a "device being a sysdev", it's sysdevs being used for creating
-a user space interface, which isn't broken by itself.
+I have tested the majority, but unfortunately I have no hardware to test
+the Intel IOMMU patch on it.
 
 Thanks,
 Rafael
