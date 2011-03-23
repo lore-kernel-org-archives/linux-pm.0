@@ -1,19 +1,13 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 9/10] sh: Use struct syscore_ops instead of
-	sysdev class and sysdev
-Date: Wed, 23 Mar 2011 20:28:27 +0900
-Message-ID: <20110323112826.GB6008__23027.1859829829$1300879769$gmane$org@linux-sh.org>
-References: <201103100131.58206.rjw@sisk.pl> <201103222130.46603.rjw@sisk.pl>
-	<1300826390.1815.5.camel@zag> <201103222200.52131.rjw@sisk.pl>
-	<1300828356.1815.15.camel@zag> <20110322214922.GA7503@linux-sh.org>
-	<1300831256.1815.22.camel@zag> <20110322222347.GA3978@linux-sh.org>
-	<20110323111220.GB27671@sirena.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: suspend() and runtime_suspend()
+Date: Wed, 23 Mar 2011 11:39:01 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1103231125431.2211-100000@iolanthe.rowland.org>
+References: <9F3EABD6E3419B4C81F34EAABB4D40188142FF8E0D@irsmsx501.ger.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110323111220.GB27671@sirena.org.uk>
+In-Reply-To: <9F3EABD6E3419B4C81F34EAABB4D40188142FF8E0D@irsmsx501.ger.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,30 +17,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: "Martin, LoicX" <loicx.martin@intel.com>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 23, 2011 at 11:12:20AM +0000, Mark Brown wrote:
-> On Wed, Mar 23, 2011 at 07:23:48AM +0900, Paul Mundt wrote:
-> > On Tue, Mar 22, 2011 at 11:00:56PM +0100, Kay Sievers wrote:
+On Tue, 22 Mar 2011, Martin, LoicX wrote:
+
+> Hi 
 > 
-> > > Which is what we need to get rid of. It does not make any sense on the
-> > > global picture to have anything like that exported to userspace.
+> I found those drivers:
 > 
-> > So far I haven't heard any rationale for why it doesn't. Exporting CPU
-> > state to userspace certainly makes sense, and the sysdev model has worked
-> > reasonably for CPUs, memory nodes, etc.
+> drivers/dma/intel_mid_dma.c
+
+This driver uses the legacy PM interface, and it appears that the 
+runtime_suspend method was piggybacked on top of that.  Consequently it 
+was not done properly.
+
+> drivers/i2c/busses/i2c-intel-mid.c
+
+This driver simply needs to be changed.
+
+You could write to the maintainers of these drivers, informing them of 
+the problem.
+
+> drivers/staging/gma500/psb_drv.c
+> drivers/staging/gma500/psb_powermgmt.c
+> drivers/staging/intel_sst/intel_sst.c
+
+Nobody expects code in drivers/staging to be a paragon of good style.  
+Again, you could write to the maintainers.
+
+> We are currently working on this purpose (runtime suspend/resume implementation), and our first understanding was not perfectly clear.
+> That's why I was asking about the correct implementation of those callback.
+
+There are plenty of other examples showing the right way to do it.
+
+> Thanks
 > 
-> FWIW it'd be really helpful to have CPUs (or at least SoCs) be regular
-> struct devices for integration with the regulator API so we can have all
-> things that might use a regulator (like DVFS) be struct devices but...
+> I have one more question about this part of the documentation:
+> >>However, the driver should not call the pm_runtime_allow() helper function unblocking
+> >>the runtime PM of the device. Instead, it should allow user space or some
+> >>platform-specific code to do that
 > 
-Sure, that makes sense. The easiest would probably be to just replace the
-struct cpu sysdev with a struct device pointer and fix up drivers/base/cpu.c
-accordingly. The linux/cpu.h API is unfortunately rather coupled to the
-idea of having a sysdev, but this is purely for attributes and attribute
-groups and primarily impacts powerpc, so the conversion shouldn't be too
-painful. For simple topology registration the bulk of the architectures
-ultimately don't care what's backing the struct cpu within the sysfs
-context.
+> Is there any reason concerning the system stability or something else to do it that way instead of doing it in the driver during the probe ?
+
+People have had bad experiences with devices that don't work correctly
+with runtime-suspend.  I don't know how well-behaved most PCI devices
+are in this regard, but a lot of USB devices fail miserably.  Hence the
+decision to have some subsystems forbid runtime-suspend by default,
+leaving userspace to decide whether runtime-suspend should be allowed.
+
+If you've got a driver for a device that you _know_ will work correctly 
+with runtime-suspend, you can go ahead and call pm_runtime_allow() 
+during probe.
+
+Alan Stern
