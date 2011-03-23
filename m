@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 9/10] sh: Use struct syscore_ops instead of
-	sysdev class and sysdev
-Date: Wed, 23 Mar 2011 00:32:37 +0100
-Message-ID: <201103230032.37417.rjw__22936.85304835$1300838222$gmane$org@sisk.pl>
-References: <201103100131.58206.rjw@sisk.pl> <201103222323.42627.rjw@sisk.pl>
-	<1300833843.1815.53.camel@zag>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 1/2 2.6.37.stable] intel_idle: disable NHM/WSM HW
+ C-state auto-demotion
+Date: Tue, 22 Mar 2011 22:24:43 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1103222222490.10489@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1300833843.1815.53.camel@zag>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,81 +16,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kay Sievers <kay.sievers@suse.de>
-Cc: Russell King <linux@arm.linux.org.uk>, linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: stable@kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, March 22, 2011, Kay Sievers wrote:
-> On Tue, 2011-03-22 at 23:23 +0100, Rafael J. Wysocki wrote:
-> > On Tuesday, March 22, 2011, Kay Sievers wrote:
-...
-> > 
-> > Now, I can easily understand arguments about representing everything under
-> > /sys/devices/ by struct device objects, no question about that.  However,
-> > I also think there should be a place for things like those mentioned in the
-> > comment in sys.c, presumably outside of /sys/devices/.
-> 
-> No, please. We have all we need. Let's do one example, which you might
-> apply to any other thing, because you never know what's the next big
-> thing in hardware. We need to be a future-proof-as-possible, and that's
-> not some second-class out-of-scope sysfs directory.
-> 
-> Lets' take CPUs:
->   - they send events when registered
->   - they want to export device specific properties
->   - userspace wants to take actions when such devices are available
-> 
-> That all fits properly into the driver model in theory. Unless you do
-> coldplug and bootup a box.
-> 
-> These devices are already there before userspace even starts, hence we
-> find all these devices and "trigger" an fake uevent for all of them at
-> bootup. That will match execute all the rules specified for that device,
-> just as it would be hotplugges in that moment, hence we call it
-> coldplug, which works for all devices with the hotplug code, even when
-> they are never hot-pluggable.
-> 
-> What we do for coldplug is that we iterate over all flat lists of
-> subsystems and find the devices lists and trigger the event by poking in
-> the "uevent" sysfs file. Now all the sysdevs do not have a subsystem to
-> find, and do not have a standard "uevent" file.
-> 
-> Back to the CPUs, we have all the nice device directories which could
-> have all the CPU features in properties we need to make autoloading of
-> cpufreq, governer, kvm possible (patch exists from Andi Kleen already) 
-> 
-> But these dumb CPU sysfs device directories are completely invisible for
-> the *usual* logic, and should just join the model and all will just work
-> out-of-the-box.
+From: Len Brown <len.brown@intel.com>
 
-That all is cool, but I'm not sure how it is related to things like
-available_clocksource and current_clocksource (which happen to be located
-under /sys/devices/system/clocksource/clocksource0/ being simply a path
-in sysfs).
+upstream 14796fca2bd22acc73dd0887248d003b0f441d08
 
-> When we started to clean up /sys (again only talking about devices, not
-> other stuff) we had:
->   /block/*
->   /class/<subsys>/*
->   /bus/<subsys>/devices/*
->   /devices/system/<subsys>/*
-> which are 4 different exports of exactly the same thing, a "device".
-> "Block" we converted to "class" already, "class" will be converted to
-> "bus", and "bus" will be renamed to "subsystem". All the current names
-> will be kept as compat symlinks, just as we did for "block". After that,
-> _all_ devices have a "subsystem" and a subsystem global directory where
-> people can add custom stuff shared by all devices-of-the-same-type. Ev
+Hardware C-state auto-demotion is a mechanism where the HW overrides
+the OS C-state request, instead demoting to a shallower state,
+which is less expensive, but saves less power.
 
-OK, sounds good.
+Modern Linux should generally get exactly the states it requests.
+In particular, when a CPU is taken off-line, it must not be demoted, else
+it can prevent the entire package from reaching deep C-states.
 
-> You can also argument from the other side, if a kernel device export is
-> not worth the few bytes of /sys/devices/ and a "subsystem" (struct
-> bus_type) it should not be in /sys at all, especially not hidden
-> somehwere outside of /sys/devices when it is something remotely close to
-> a device.
+https://bugzilla.kernel.org/show_bug.cgi?id=25252
 
-Well, Greg apparently thinks that available_clocksource and current_clocksource
-could be located under /sys/bus/clock/.  Perhaps other attributes now exported
-through sysdevs could be moved to places like this?
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ arch/x86/include/asm/msr-index.h |    4 ++++
+ drivers/idle/intel_idle.c        |   20 ++++++++++++++++++++
+ 2 files changed, 24 insertions(+), 0 deletions(-)
 
-Rafael
+Index: linux-2.6.37.y/arch/x86/include/asm/msr-index.h
+===================================================================
+--- linux-2.6.37.y.orig/arch/x86/include/asm/msr-index.h
++++ linux-2.6.37.y/arch/x86/include/asm/msr-index.h
+@@ -36,6 +36,10 @@
+ #define MSR_IA32_PERFCTR1		0x000000c2
+ #define MSR_FSB_FREQ			0x000000cd
+ 
++#define MSR_NHM_SNB_PKG_CST_CFG_CTL	0x000000e2
++#define NHM_C3_AUTO_DEMOTE		(1UL << 25)
++#define NHM_C1_AUTO_DEMOTE		(1UL << 26)
++
+ #define MSR_MTRRcap			0x000000fe
+ #define MSR_IA32_BBL_CR_CTL		0x00000119
+ 
+Index: linux-2.6.37.y/drivers/idle/intel_idle.c
+===================================================================
+--- linux-2.6.37.y.orig/drivers/idle/intel_idle.c
++++ linux-2.6.37.y/drivers/idle/intel_idle.c
+@@ -62,6 +62,7 @@
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+ #include <asm/mwait.h>
++#include <asm/msr.h>
+ 
+ #define INTEL_IDLE_VERSION "0.4"
+ #define PREFIX "intel_idle: "
+@@ -85,6 +86,12 @@ static int intel_idle(struct cpuidle_dev
+ static struct cpuidle_state *cpuidle_state_table;
+ 
+ /*
++ * Hardware C-state auto-demotion may not always be optimal.
++ * Indicate which enable bits to clear here.
++ */
++static unsigned long long auto_demotion_disable_flags;
++
++/*
+  * States are indexed by the cstate number,
+  * which is also the index into the MWAIT hint array.
+  * Thus C0 is a dummy.
+@@ -276,6 +283,15 @@ static struct notifier_block setup_broad
+ 	.notifier_call = setup_broadcast_cpuhp_notify,
+ };
+ 
++static void auto_demotion_disable(void *dummy)
++{
++	unsigned long long msr_bits;
++
++	rdmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
++	msr_bits &= ~auto_demotion_disable_flags;
++	wrmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
++}
++
+ /*
+  * intel_idle_probe()
+  */
+@@ -319,6 +335,8 @@ static int intel_idle_probe(void)
+ 	case 0x25:	/* Westmere */
+ 	case 0x2C:	/* Westmere */
+ 		cpuidle_state_table = nehalem_cstates;
++		auto_demotion_disable_flags =
++			(NHM_C1_AUTO_DEMOTE | NHM_C3_AUTO_DEMOTE);
+ 		break;
+ 
+ 	case 0x1C:	/* 28 - Atom Processor */
+@@ -431,6 +449,8 @@ static int intel_idle_cpuidle_devices_in
+ 			return -EIO;
+ 		}
+ 	}
++	if (auto_demotion_disable_flags)
++		smp_call_function(auto_demotion_disable, NULL, 1);
+ 
+ 	return 0;
+ }
