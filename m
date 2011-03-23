@@ -1,16 +1,16 @@
 From: richard -rw- weinberger <richard.weinberger@gmail.com>
 Subject: Re: Corrupted files after suspend to disk
-Date: Wed, 23 Mar 2011 23:16:26 +0100
-Message-ID: <AANLkTinkLj6SUMn-9Dkqn-Dx_7SN2dF70LYb2pFu19+3__48828.9157431156$1300990994$gmane$org@mail.gmail.com>
+Date: Wed, 23 Mar 2011 23:30:39 +0100
+Message-ID: <AANLkTi=UMDZ+78bS-U=Kvp_PYnc_BNHH5EgJnm1nssHP__6507.23469811982$1300990995$gmane$org@mail.gmail.com>
 References: <AANLkTinRC1hXvaXDVV5pOA4YyCdXwAjziZsDzm=LuHqK@mail.gmail.com>
-	<201103232136.19091.rjw@sisk.pl>
-	<AANLkTimSyPiaq14yNP-KPxPcUaCqd4xr1xVNhefdK722@mail.gmail.com>
 	<201103232311.38889.rjw@sisk.pl>
+	<AANLkTinkLj6SUMn-9Dkqn-Dx_7SN2dF70LYb2pFu19+3@mail.gmail.com>
+	<201103232322.52485.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103232311.38889.rjw@sisk.pl>
+In-Reply-To: <201103232322.52485.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,62 +24,74 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 23, 2011 at 11:11 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Wed, Mar 23, 2011 at 11:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > On Wednesday, March 23, 2011, richard -rw- weinberger wrote:
->> 2011/3/23 Rafael J. Wysocki <rjw@sisk.pl>:
+>> On Wed, Mar 23, 2011 at 11:11 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 >> > On Wednesday, March 23, 2011, richard -rw- weinberger wrote:
->> >> Hi,
+>> >> 2011/3/23 Rafael J. Wysocki <rjw@sisk.pl>:
+>> >> > On Wednesday, March 23, 2011, richard -rw- weinberger wrote:
+>> >> >> Hi,
+>> >> >>
+>> >> >> I'm facing a very strange problem on my netbook (Lenovo Ideapad S1=
+0)
+>> >> >> running Linux 2.6.37.4.
+>> >> >> After resuming from s2disk some files are corrupted.
+>> >> >> But when I reboot my netbook everything seems good again.
+>> >> >>
+>> >> >> When I saw the problem the first time the ls command segfaulted al=
+ways.
+>> >> >> I did a reboot and it worked again.
+>> >> >>
+>> >> >> A few days later zypper crashed. After a reboot it worked again.
+>> >> >> And today ssh crashed. I looked a bit closer and saw it crashed
+>> >> >> somewhere within libcrypto.
+>> >> >> So I made copy libcrypto and rebooted.
+>> >> >> After the reboot ssh worked again but libcrypto and the copy of it=
+ hat
+>> >> >> a different sha1 sum!
+>> >> >> WTF?!
+>> >> >>
+>> >> >> Is this a known issue?
+>> >> >
+>> >> > No.
+>> >> >
+>> >> >> dmesgs and config are attached.
+>> >> >>
+>> >> >> The used distribution is openSUSE 11.4 with suspend-0.80.20100129-=
+7.1
+>> >> >> (default from suse).
+>> >> >> I'm using ext3 as root filesystem.
+>> >> >> What else do you need?
+>> >> >
+>> >> > Whatever you can do to narrow down the problem. =A0At the moment I =
+only know
+>> >> > that it's there.
 >> >>
->> >> I'm facing a very strange problem on my netbook (Lenovo Ideapad S10)
->> >> running Linux 2.6.37.4.
->> >> After resuming from s2disk some files are corrupted.
->> >> But when I reboot my netbook everything seems good again.
->> >>
->> >> When I saw the problem the first time the ls command segfaulted alway=
-s.
->> >> I did a reboot and it worked again.
->> >>
->> >> A few days later zypper crashed. After a reboot it worked again.
->> >> And today ssh crashed. I looked a bit closer and saw it crashed
->> >> somewhere within libcrypto.
->> >> So I made copy libcrypto and rebooted.
->> >> After the reboot ssh worked again but libcrypto and the copy of it hat
->> >> a different sha1 sum!
->> >> WTF?!
->> >>
->> >> Is this a known issue?
+>> >> I can reproduce the problem now.
+>> >> After ~20 suspend and resume iterations aide finds corrupted files in=
+ /lib/.
+>> >> It's always a very basic lib like libcrypto, libglib which is used all
+>> >> the time on my system.
 >> >
->> > No.
+>> > Those files are never intentionally modified, right?
 >> >
->> >> dmesgs and config are attached.
->> >>
->> >> The used distribution is openSUSE 11.4 with suspend-0.80.20100129-7.1
->> >> (default from suse).
->> >> I'm using ext3 as root filesystem.
->> >> What else do you need?
+>> >> Maybe it's an issue like this one?
+>> >> https://lkml.org/lkml/2010/12/2/339
 >> >
->> > Whatever you can do to narrow down the problem. =A0At the moment I onl=
-y know
->> > that it's there.
+>> > It might have if that patch hadn't been merged before 2.6.37.
+>> >
+>> > Is the system 32-bit or 64-bit?
 >>
->> I can reproduce the problem now.
->> After ~20 suspend and resume iterations aide finds corrupted files in /l=
-ib/.
->> It's always a very basic lib like libcrypto, libglib which is used all
->> the time on my system.
+>> It's a 32-bit system.
+>> cmp shows that the corrupted files differ in many bytes (not scattered).
+>> The corrupted bytes are always 0 or 252.
 >
-> Those files are never intentionally modified, right?
->
->> Maybe it's an issue like this one?
->> https://lkml.org/lkml/2010/12/2/339
->
-> It might have if that patch hadn't been merged before 2.6.37.
->
-> Is the system 32-bit or 64-bit?
+> Do I understand correctly that the files apparently corrupted after resume
+> are not corrupted any more when you reboot?
 
-It's a 32-bit system.
-cmp shows that the corrupted files differ in many bytes (not scattered).
-The corrupted bytes are always 0 or 252.
+Yes.
+Seems like a cache issue.
+
 
 > Rafael
 > --
