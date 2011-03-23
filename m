@@ -1,14 +1,18 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2 2.6.37.stable] intel_idle: disable
- Atom/Lincroft HW C-state auto-demotion
-Date: Tue, 22 Mar 2011 22:26:59 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1103222224530.10489@x980>
-References: <alpine.LFD.2.02.1103222222490.10489@x980>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 9/10] sh: Use struct syscore_ops instead of
+	sysdev	class and sysdev
+Date: Wed, 23 Mar 2011 09:45:58 +0000
+Message-ID: <20110323094557.GA3040__36361.6147348241$1300873765$gmane$org@n2100.arm.linux.org.uk>
+References: <201103100131.58206.rjw@sisk.pl>
+	<20110322214922.GA7503@linux-sh.org>
+	<1300831256.1815.22.camel@zag> <201103222323.42627.rjw@sisk.pl>
+	<1300833843.1815.53.camel@zag>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.LFD.2.02.1103222222490.10489@x980>
+Content-Disposition: inline
+In-Reply-To: <1300833843.1815.53.camel@zag>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,54 +22,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stable@kernel.org
-Cc: linux-pm@lists.linux-foundation.org
+To: Kay Sievers <kay.sievers@suse.de>
+Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+On Tue, Mar 22, 2011 at 11:44:03PM +0100, Kay Sievers wrote:
+> When we started to clean up /sys (again only talking about devices, not
+> other stuff) we had:
+>   /block/*
+>   /class/<subsys>/*
+>   /bus/<subsys>/devices/*
+>   /devices/system/<subsys>/*
+> which are 4 different exports of exactly the same thing, a "device".
+> "Block" we converted to "class" already, "class" will be converted to
+> "bus", and "bus" will be renamed to "subsystem". All the current names
+> will be kept as compat symlinks, just as we did for "block".
 
-upstream bfb53ccf1c734b1907df7189eef4c08489827951
+I bet userspace will end up failing with that and need updating yet
+again, inspite of the symlinks.
 
-Just as we had to disable auto-demotion for NHM/WSM,
-we need to do the same for Atom (Lincroft version).
-
-In particular, auto-demotion will prevent Lincroft
-from entering the S0i3 idle power saving state.
-
-https://bugzilla.kernel.org/show_bug.cgi?id=25252
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/include/asm/msr-index.h |    1 +
- drivers/idle/intel_idle.c        |    4 ++++
- 2 files changed, 5 insertions(+), 0 deletions(-)
-
-Index: linux-2.6.37.y/arch/x86/include/asm/msr-index.h
-===================================================================
---- linux-2.6.37.y.orig/arch/x86/include/asm/msr-index.h
-+++ linux-2.6.37.y/arch/x86/include/asm/msr-index.h
-@@ -39,6 +39,7 @@
- #define MSR_NHM_SNB_PKG_CST_CFG_CTL	0x000000e2
- #define NHM_C3_AUTO_DEMOTE		(1UL << 25)
- #define NHM_C1_AUTO_DEMOTE		(1UL << 26)
-+#define ATM_LNC_C6_AUTO_DEMOTE		(1UL << 25)
- 
- #define MSR_MTRRcap			0x000000fe
- #define MSR_IA32_BBL_CR_CTL		0x00000119
-Index: linux-2.6.37.y/drivers/idle/intel_idle.c
-===================================================================
---- linux-2.6.37.y.orig/drivers/idle/intel_idle.c
-+++ linux-2.6.37.y/drivers/idle/intel_idle.c
-@@ -340,8 +340,12 @@ static int intel_idle_probe(void)
- 		break;
- 
- 	case 0x1C:	/* 28 - Atom Processor */
-+		cpuidle_state_table = atom_cstates;
-+		break;
-+
- 	case 0x26:	/* 38 - Lincroft Atom Processor */
- 		cpuidle_state_table = atom_cstates;
-+		auto_demotion_disable_flags = ATM_LNC_C6_AUTO_DEMOTE;
- 		break;
- 
- 	case 0x2A:	/* SNB */
+While Linus complains about the churn in the ARM subtree, I'd like to
+officially complain about the pointless churn in sysfs which actively
+breaks (and sometimes prevents) userspace booting when you upgrade
+kernels.
