@@ -1,15 +1,16 @@
 From: Greg KH <greg@kroah.com>
-Subject: Re: [stable] [PATCH 1/2 2.6.37.stable] intel_idle:
- disable NHM/WSM HW C-state auto-demotion
-Date: Wed, 23 Mar 2011 15:54:20 -0700
-Message-ID: <20110323225420.GE27334__32636.6313071505$1300922238$gmane$org@kroah.com>
+Subject: Re: [stable] [PATCH 2/2 2.6.37.stable] intel_idle:
+ disable Atom/Lincroft HW C-state auto-demotion
+Date: Wed, 23 Mar 2011 15:55:29 -0700
+Message-ID: <20110323225529.GF27334__27292.559881653$1300922254$gmane$org@kroah.com>
 References: <alpine.LFD.2.02.1103222222490.10489@x980>
+	<alpine.LFD.2.02.1103222224530.10489@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1103222222490.10489@x980>
+In-Reply-To: <alpine.LFD.2.02.1103222224530.10489@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,25 +24,23 @@ To: Len Brown <lenb@kernel.org>
 Cc: linux-pm@lists.linux-foundation.org, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 22, 2011 at 10:24:43PM -0400, Len Brown wrote:
+On Tue, Mar 22, 2011 at 10:26:59PM -0400, Len Brown wrote:
 > From: Len Brown <len.brown@intel.com>
 > 
-> upstream 14796fca2bd22acc73dd0887248d003b0f441d08
+> upstream bfb53ccf1c734b1907df7189eef4c08489827951
 > 
-> Hardware C-state auto-demotion is a mechanism where the HW overrides
-> the OS C-state request, instead demoting to a shallower state,
-> which is less expensive, but saves less power.
+> Just as we had to disable auto-demotion for NHM/WSM,
+> we need to do the same for Atom (Lincroft version).
 > 
-> Modern Linux should generally get exactly the states it requests.
-> In particular, when a CPU is taken off-line, it must not be demoted, else
-> it can prevent the entire package from reaching deep C-states.
+> In particular, auto-demotion will prevent Lincroft
+> from entering the S0i3 idle power saving state.
 > 
 > https://bugzilla.kernel.org/show_bug.cgi?id=25252
 > 
 > Signed-off-by: Len Brown <len.brown@intel.com>
 
-This patch doesn't apply to the .38-stable tree, and it also needs to go
-there, right?  Can you please send a version that I can apply?
+This one also doesn't apply to the .38 tree, can you provide a copy of
+it as well?
 
 thanks,
 
