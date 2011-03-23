@@ -1,16 +1,13 @@
-From: "Roedel, Joerg" <Joerg.Roedel@amd.com>
-Subject: Re: [PATCH 3/6] PCI / Intel IOMMU: Use syscore_ops
- instead of sysdev class and sysdev
-Date: Wed, 23 Mar 2011 08:48:45 +0100
-Message-ID: <20110323074845.GE20444__27302.8481788517$1300897963$gmane$org@amd.com>
-References: <201103100131.58206.rjw@sisk.pl> <201103220036.17824.rjw@sisk.pl>
-	<20110322105738.GC20444@amd.com> <201103222307.21983.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: suspend() and runtime_suspend()
+Date: Wed, 23 Mar 2011 21:38:07 +0100
+Message-ID: <201103232138.07980.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1103231125431.2211-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201103222307.21983.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1103231125431.2211-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +17,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, "mingo@redhat.com" <mingo@redhat.com>, Avi Kivity <avi@redhat.com>, "H. Peter
-	Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>, "tglx@linutronix.de" <tglx@linutronix.de>
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 22, 2011 at 06:07:21PM -0400, Rafael J. Wysocki wrote:
-> On Tuesday, March 22, 2011, Joerg Roedel wrote:
-> > On Mon, Mar 21, 2011 at 07:36:17PM -0400, Rafael J. Wysocki wrote:
-> > >  drivers/pci/intel-iommu.c |   38 +++++++++-----------------------------
-> > >  1 file changed, 9 insertions(+), 29 deletions(-)
+On Wednesday, March 23, 2011, Alan Stern wrote:
+> On Tue, 22 Mar 2011, Martin, LoicX wrote:
+> 
+> > Hi 
 > > 
-> > Looks good.
+> > I found those drivers:
+> > 
+> > drivers/dma/intel_mid_dma.c
 > 
-> May I take that as an ACK?
-
-Sure :-)
- 
-> > I prepare a patch to convert AMD IOMMU to syscore_ops too.
+> This driver uses the legacy PM interface, and it appears that the 
+> runtime_suspend method was piggybacked on top of that.  Consequently it 
+> was not done properly.
 > 
-> Already done.  :-)
+> > drivers/i2c/busses/i2c-intel-mid.c
 > 
-> It's a part of patch [1/6].
+> This driver simply needs to be changed.
+> 
+> You could write to the maintainers of these drivers, informing them of 
+> the problem.
+> 
+> > drivers/staging/gma500/psb_drv.c
+> > drivers/staging/gma500/psb_powermgmt.c
+> > drivers/staging/intel_sst/intel_sst.c
+> 
+> Nobody expects code in drivers/staging to be a paragon of good style.  
+> Again, you could write to the maintainers.
+> 
+> > We are currently working on this purpose (runtime suspend/resume implementation), and our first understanding was not perfectly clear.
+> > That's why I was asking about the correct implementation of those callback.
+> 
+> There are plenty of other examples showing the right way to do it.
+> 
+> > Thanks
+> > 
+> > I have one more question about this part of the documentation:
+> > >>However, the driver should not call the pm_runtime_allow() helper function unblocking
+> > >>the runtime PM of the device. Instead, it should allow user space or some
+> > >>platform-specific code to do that
+> > 
+> > Is there any reason concerning the system stability or something else to do it that way instead of doing it in the driver during the probe ?
+> 
+> People have had bad experiences with devices that don't work correctly
+> with runtime-suspend.  I don't know how well-behaved most PCI devices
+> are in this regard,
 
-I see, saves me work, thanks :-)
+Not very well. :-(
 
-	Joerg
+> but a lot of USB devices fail miserably.  Hence the
+> decision to have some subsystems forbid runtime-suspend by default,
+> leaving userspace to decide whether runtime-suspend should be allowed.
+> 
+> If you've got a driver for a device that you _know_ will work correctly 
+> with runtime-suspend, you can go ahead and call pm_runtime_allow() 
+> during probe.
 
--- 
-AMD Operating System Research Center
+Exactly.
 
-Advanced Micro Devices GmbH Einsteinring 24 85609 Dornach
-General Managers: Alberto Bozzo, Andrew Bowd
-Registration: Dornach, Landkr. Muenchen; Registerger. Muenchen, HRB Nr. 43632
+Thanks for your patience. :-)
+
+Rafael
