@@ -1,15 +1,14 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 5/5] x86 idle: remove NOP hlt_use_halt()
-Date: Thu, 24 Mar 2011 03:08:28 -0400
-Message-ID: <6bdee95bc92adfbe9de20c415e936bf1bb94993d.1300950095.git.len.brown__12466.3226925351$1300950628$gmane$org@intel.com>
-References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
+Subject: [PATCH] APM: delete APM in Linux-2.6.40
+Date: Thu, 24 Mar 2011 03:39:07 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1103240336590.4529__4195.50146111778$1300952491$gmane$org@x980>
+References: <alpine.LFD.2.02.1103232321070.3848@x980>
+	<20110324154505.934a56a0.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1300950508-22746-1-git-send-email-lenb@kernel.org>
-In-reply-to: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1300950095.git.len.brown@intel.com>
-References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1300950095.git.len.brown@intel.com>
+In-reply-to: <20110324154505.934a56a0.sfr@canb.auug.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,79 +18,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: x86@kernel.org
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-hlt_use_halt() no longer has any effect,
-except to complicate the indentation in default_idle().
-
-no functional change.
-
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/kernel/process.c |   39 ++++++++++++++-------------------------
- 1 files changed, 14 insertions(+), 25 deletions(-)
+ Documentation/feature-removal-schedule.txt |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 8688ade..094d4ac 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -342,39 +342,28 @@ EXPORT_SYMBOL(boot_option_idle_override);
- void (*pm_idle)(void);
- EXPORT_SYMBOL(pm_idle);
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index b3f35e5..2a03c46 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -619,3 +619,11 @@ Why:	The original implementation of memsw feature enabled by
+ Who:	Michal Hocko <mhocko@suse.cz>
  
--static inline int hlt_use_halt(void)
--{
--	return 1;
--}
--
- /*
-  * We use this if we don't have any better
-  * idle routine..
-  */
- void default_idle(void)
- {
--	if (hlt_use_halt()) {
--		trace_power_start(POWER_CSTATE, 1, smp_processor_id());
--		trace_cpu_idle(1, smp_processor_id());
--		current_thread_info()->status &= ~TS_POLLING;
--		/*
--		 * TS_POLLING-cleared state must be visible before we
--		 * test NEED_RESCHED:
--		 */
--		smp_mb();
-+	trace_power_start(POWER_CSTATE, 1, smp_processor_id());
-+	trace_cpu_idle(1, smp_processor_id());
-+	current_thread_info()->status &= ~TS_POLLING;
-+	/*
-+	 * TS_POLLING-cleared state must be visible before we
-+	 * test NEED_RESCHED:
-+	 */
-+	smp_mb();
- 
--		if (!need_resched())
--			safe_halt();	/* enables interrupts racelessly */
--		else
--			local_irq_enable();
--		current_thread_info()->status |= TS_POLLING;
--		trace_power_end(smp_processor_id());
--		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
--	} else {
-+	if (!need_resched())
-+		safe_halt();	/* enables interrupts racelessly */
-+	else
- 		local_irq_enable();
--		/* loop is done by the caller */
--		cpu_relax();
--	}
-+	current_thread_info()->status |= TS_POLLING;
-+	trace_power_end(smp_processor_id());
-+	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
- }
- #ifdef CONFIG_APM_MODULE
- EXPORT_SYMBOL(default_idle);
+ ----------------------------
++
++What:	CONFIG_APM
++When:	2.6.40
++Why:	Microsoft deleted APM from Windows as of Vista in in 2006.
++	It now seems more than safe that the latest Linux Kernel be APM-free.
++	The vintage laptops supporting APM are now difficult to find,
++	making it problatic to maintain this code.
++Who:	Len Brown <len.brown@intel.com>
 -- 
 1.7.4.1.343.ga91df
