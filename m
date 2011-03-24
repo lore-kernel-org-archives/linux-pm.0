@@ -1,15 +1,11 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [stable] [PATCH 1/2 2.6.37.stable] intel_idle:
- disable NHM/WSM HW C-state auto-demotion
-Date: Wed, 23 Mar 2011 22:53:22 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1103232252000.12911@x980>
-References: <alpine.LFD.2.02.1103222222490.10489@x980>
-	<20110323225420.GE27334@kroah.com>
+Subject: [GIT] idle patch for 2.6.39-merge
+Date: Wed, 23 Mar 2011 23:12:50 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1103232306511.3848__17888.6767746464$1300936531$gmane$org@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20110323225420.GE27334@kroah.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +15,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <greg@kroah.com>
-Cc: linux-pm@lists.linux-foundation.org, stable@kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 23 Mar 2011, Greg KH wrote:
+Hi Linus,
 
-> On Tue, Mar 22, 2011 at 10:24:43PM -0400, Len Brown wrote:
-> > From: Len Brown <len.brown@intel.com>
-> > 
-> > upstream 14796fca2bd22acc73dd0887248d003b0f441d08
-> > 
-> > Hardware C-state auto-demotion is a mechanism where the HW overrides
-> > the OS C-state request, instead demoting to a shallower state,
-> > which is less expensive, but saves less power.
-> > 
-> > Modern Linux should generally get exactly the states it requests.
-> > In particular, when a CPU is taken off-line, it must not be demoted, else
-> > it can prevent the entire package from reaching deep C-states.
-> > 
-> > https://bugzilla.kernel.org/show_bug.cgi?id=25252
-> > 
-> > Signed-off-by: Len Brown <len.brown@intel.com>
-> 
-> This patch doesn't apply to the .38-stable tree, and it also needs to go
-> there, right?  Can you please send a version that I can apply?
+please pull from: 
 
-it is already present in 2.6.38, as is the next one.
-That is why the subject specified 2.6.37.stable.
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
 
-thanks,
--Len
+This will update the file shown below.
+
+thanks!
+
+Len Brown
+Intel Open Source Technology Center
+
+ps. individual patches are available on linux-pm@lists.linux-foundation.org
+
+ drivers/idle/intel_idle.c |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
+
+through these commits:
+
+Thomas Renninger (1):
+      intel_idle: Rename cpuidle states
+
+with this log:
+
+commit 15e123e5d7e8ee9ba3717e743d8eb5fd0fe57712
+Author: Thomas Renninger <trenn@suse.de>
+Date:   Sun Feb 27 22:36:43 2011 +0100
+
+    intel_idle: Rename cpuidle states
+    
+    Userspace apps might have to cut off parts off the
+    idle state name for display reasons.
+    Switch NHM-C1 to C1-NHM (and others) so that a cut off
+    name is unique and makes sense to the user.
+    
+    Signed-off-by: Thomas Renninger <trenn@suse.de>
+    CC: lenb@kernel.org
+    Signed-off-by: Len Brown <len.brown@intel.com>
