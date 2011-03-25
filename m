@@ -1,16 +1,15 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/5] x86 idle: remove NOP hlt_use_halt()
-Date: Sat, 26 Mar 2011 00:32:45 +0530
-Message-ID: <20110325190245.GA20328__25308.8092468262$1301079849$gmane$org@dirshya.in.ibm.com>
-References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1300950095.git.len.brown@intel.com>
-	<6bdee95bc92adfbe9de20c415e936bf1bb94993d.1300950095.git.len.brown@intel.com>
-Reply-To: svaidy@linux.vnet.ibm.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
+Date: Fri, 25 Mar 2011 23:33:23 +0100
+Message-ID: <201103252333.23880.rjw__2277.1420925439$1301092603$gmane$org@sisk.pl>
+References: <alpine.LFD.2.02.1103232321070.3848@x980>
+	<alpine.LFD.2.02.1103241929450.16085@x980>
+	<20110325113048.GC29521@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <6bdee95bc92adfbe9de20c415e936bf1bb94993d.1300950095.git.len.brown@intel.com>
+In-Reply-To: <20110325113048.GC29521@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,85 +19,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-* Len Brown <lenb@kernel.org> [2011-03-24 03:08:28]:
+On Friday, March 25, 2011, Ingo Molnar wrote:
+> 
+> * Len Brown <lenb@kernel.org> wrote:
+> 
+> > > Thus from a maintenance POV APM has not been much of a drag on the x86 
+> > > maintainer side. Sure, we do not test it, but that's the case with most of 
+> > > the obsolete drivers in the kernel.
+> > > 
+> > > The principle is that as long as there's no ongoing drag, the cost of 
+> > > carrying obsolete drivers is minimal - and the unknown cost of screwing 
+> > > someone in a big way by removing hardware support is hard to measure 
+> > > reliably. So we are cautious and err on the side of supporting too much 
+> > > hardware.
+> > 
+> > I think this reasoning would apply in 2006, but that was 5 years ago.
+> 
+> I cited a few real examples:
+> 
+>  > > Beyond the lack of a upstream-visible feature-removal-schedule entry, we 
+>  > > still have an Arcnet driver which hardware was obsoleted by Ethernet in the 
+>  > > late 80s, and we still have i486 support and those are *much* older than 
+>  > > APM.
+> 
+> So how does your reasoning not apply to those drivers? There's several which 
+> are older than APM support.
+> 
+> We had this really big battle about x86/Voyager two years ago, which x86 
+> subarchitecture literally had just a single user left, and the code was more 
+> intrusive than APM. Even there after much flaming the eventual consensus was 
+> that we'd accept it back if it was done cleanly, as part of the new-style 
+> x86_platform code.
+> 
+> Given that APM fits into the current PM frameworks there's no such problem here 
+> that i can see.
 
-> From: Len Brown <len.brown@intel.com>
-> 
-> hlt_use_halt() no longer has any effect,
-> except to complicate the indentation in default_idle().
-> 
-> no functional change.
-> 
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/x86/kernel/process.c |   39 ++++++++++++++-------------------------
->  1 files changed, 14 insertions(+), 25 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-> index 8688ade..094d4ac 100644
-> --- a/arch/x86/kernel/process.c
-> +++ b/arch/x86/kernel/process.c
-> @@ -342,39 +342,28 @@ EXPORT_SYMBOL(boot_option_idle_override);
->  void (*pm_idle)(void);
->  EXPORT_SYMBOL(pm_idle);
-> 
-> -static inline int hlt_use_halt(void)
-> -{
-> -	return 1;
-> -}
-> -
->  /*
->   * We use this if we don't have any better
->   * idle routine..
->   */
->  void default_idle(void)
->  {
-> -	if (hlt_use_halt()) {
-> -		trace_power_start(POWER_CSTATE, 1, smp_processor_id());
-> -		trace_cpu_idle(1, smp_processor_id());
-> -		current_thread_info()->status &= ~TS_POLLING;
-> -		/*
-> -		 * TS_POLLING-cleared state must be visible before we
-> -		 * test NEED_RESCHED:
-> -		 */
-> -		smp_mb();
-> +	trace_power_start(POWER_CSTATE, 1, smp_processor_id());
-> +	trace_cpu_idle(1, smp_processor_id());
-> +	current_thread_info()->status &= ~TS_POLLING;
-> +	/*
-> +	 * TS_POLLING-cleared state must be visible before we
-> +	 * test NEED_RESCHED:
-> +	 */
-> +	smp_mb();
-> 
-> -		if (!need_resched())
-> -			safe_halt();	/* enables interrupts racelessly */
-> -		else
-> -			local_irq_enable();
-> -		current_thread_info()->status |= TS_POLLING;
-> -		trace_power_end(smp_processor_id());
-> -		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
-> -	} else {
-> +	if (!need_resched())
-> +		safe_halt();	/* enables interrupts racelessly */
-> +	else
->  		local_irq_enable();
-> -		/* loop is done by the caller */
-> -		cpu_relax();
-> -	}
-> +	current_thread_info()->status |= TS_POLLING;
-> +	trace_power_end(smp_processor_id());
-> +	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
->  }
->  #ifdef CONFIG_APM_MODULE
->  EXPORT_SYMBOL(default_idle);
+Well, it kind of does but not really. :-)
 
-Hi Len,
+The main problem with APM is that nobody really works on it and I'm not sure
+if there are any active users.  At least no one reports any problems with it,
+which is kind of surprising, given the number of chages we've made in the PM
+core for the last couple of years.  So quite likely it's just become
+non-functional over time anyway, but we have no confirmation.
 
-The cleanup looks good.
-
---Vaidy
+Thanks,
+Rafael
