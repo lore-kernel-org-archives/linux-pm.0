@@ -1,20 +1,16 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
-Date: Fri, 25 Mar 2011 13:41:24 +0100
-Message-ID: <20110325124124.GA31408__19950.7040357732$1301056943$gmane$org@elte.hu>
-References: <alpine.LFD.2.02.1103232321070.3848@x980>
-	<20110324154505.934a56a0.sfr@canb.auug.org.au>
-	<alpine.LFD.2.02.1103240336590.4529@x980>
-	<alpine.LFD.2.02.1103240414450.4529@x980>
-	<20110324083959.GE30812@elte.hu>
-	<alpine.LFD.2.02.1103241929450.16085@x980>
-	<20110325113048.GC29521@elte.hu> <20110325123815.GA29936@elte.hu>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 5/5] x86 idle: remove NOP hlt_use_halt()
+Date: Sat, 26 Mar 2011 00:32:45 +0530
+Message-ID: <20110325190245.GA20328__25308.8092468262$1301079849$gmane$org@dirshya.in.ibm.com>
+References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1300950095.git.len.brown@intel.com>
+	<6bdee95bc92adfbe9de20c415e936bf1bb94993d.1300950095.git.len.brown@intel.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110325123815.GA29936@elte.hu>
+In-Reply-To: <6bdee95bc92adfbe9de20c415e936bf1bb94993d.1300950095.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,40 +21,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+* Len Brown <lenb@kernel.org> [2011-03-24 03:08:28]:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
+> From: Len Brown <len.brown@intel.com>
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> hlt_use_halt() no longer has any effect,
+> except to complicate the indentation in default_idle().
 > 
-> > > Okay, I can delay this way:
-> > > 
-> > > 2.6.39:
-> > > 	feature-removal.txt targets 2.6.42 removal
-> > > 	depend on CONFIG_EXPERT
-> > > 
-> > > 2.6.40, 2.6.41:
-> > > 	WARN once on run-time access
-> > > 
-> > > 2.6.42:
-> > > 	remove.
-> > 
-> > Regardless of removal, i'd suggest a "this code is not supported" kind of 
-> > WARN() message to the APM code today, into .39 - to see whether it pops up 
-> > anywhere - and mark it for -stable as well.
-> > 
-> > .42 removal might be too fast, considering the typical release schedule of 
-> > Linux distributions. [...]
+> no functional change.
 > 
-> Anyway, i'd ack this schedule if you queued up the WARN() today with a -stable 
-> tag, on the condition that if we get complaints about that message, we keep APM 
-> support.
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/kernel/process.c |   39 ++++++++++++++-------------------------
+>  1 files changed, 14 insertions(+), 25 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> index 8688ade..094d4ac 100644
+> --- a/arch/x86/kernel/process.c
+> +++ b/arch/x86/kernel/process.c
+> @@ -342,39 +342,28 @@ EXPORT_SYMBOL(boot_option_idle_override);
+>  void (*pm_idle)(void);
+>  EXPORT_SYMBOL(pm_idle);
+> 
+> -static inline int hlt_use_halt(void)
+> -{
+> -	return 1;
+> -}
+> -
+>  /*
+>   * We use this if we don't have any better
+>   * idle routine..
+>   */
+>  void default_idle(void)
+>  {
+> -	if (hlt_use_halt()) {
+> -		trace_power_start(POWER_CSTATE, 1, smp_processor_id());
+> -		trace_cpu_idle(1, smp_processor_id());
+> -		current_thread_info()->status &= ~TS_POLLING;
+> -		/*
+> -		 * TS_POLLING-cleared state must be visible before we
+> -		 * test NEED_RESCHED:
+> -		 */
+> -		smp_mb();
+> +	trace_power_start(POWER_CSTATE, 1, smp_processor_id());
+> +	trace_cpu_idle(1, smp_processor_id());
+> +	current_thread_info()->status &= ~TS_POLLING;
+> +	/*
+> +	 * TS_POLLING-cleared state must be visible before we
+> +	 * test NEED_RESCHED:
+> +	 */
+> +	smp_mb();
+> 
+> -		if (!need_resched())
+> -			safe_halt();	/* enables interrupts racelessly */
+> -		else
+> -			local_irq_enable();
+> -		current_thread_info()->status |= TS_POLLING;
+> -		trace_power_end(smp_processor_id());
+> -		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
+> -	} else {
+> +	if (!need_resched())
+> +		safe_halt();	/* enables interrupts racelessly */
+> +	else
+>  		local_irq_enable();
+> -		/* loop is done by the caller */
+> -		cpu_relax();
+> -	}
+> +	current_thread_info()->status |= TS_POLLING;
+> +	trace_power_end(smp_processor_id());
+> +	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
+>  }
+>  #ifdef CONFIG_APM_MODULE
+>  EXPORT_SYMBOL(default_idle);
 
-s/today/for .39
+Hi Len,
 
-Thanks,
+The cleanup looks good.
 
-	Ingo
+--Vaidy
