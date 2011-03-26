@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM / Hibernate: Introduce
-	CONFIG_HIBERNATE_INTERFACE
-Date: Sat, 26 Mar 2011 12:29:44 +0100
-Message-ID: <201103261229.44770.rjw__19122.4135844552$1301139041$gmane$org@sisk.pl>
+Subject: [PATCH] Net / jme: Do not use legacy PCI power management
+Date: Sat, 26 Mar 2011 12:34:06 +0100
+Message-ID: <201103261234.06274.rjw__2311.89028495482$1301139273$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,164 +15,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>
+To: netdev@vger.kernel.org
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Xen save/restore is going to use hibernate device callbacks for
-quiescing devices and putting them back to normal operations and it
-would need to select CONFIG_HIBERNATION for this purpose.  However,
-that also would cause the hibernate interfaces for user space to be
-enabled, which might confuse user space, because the Xen kernels
-don't support hibernation.  Moreover, it would be wasteful, as it
-would make the Xen kernels include a substantial amount of code that
-they would never use.
+The jme driver uses the legacy PCI power management, so it has to do
+some PCI-specific things in its ->suspend() and ->resume() callbacks,
+which isn't necessary and should better be done by the PCI
+sybsystem-level power management code.  It also doesn't use device
+wakeup flags correctly.
 
-To address this issue introduce new power management Kconfig option
-CONFIG_HIBERNATE_INTERFACE, such that the hibernate interfaces for
-user space and the image-handling code will depend on it and it will
-select CONFIG_HIBERNATION.  Then, Xen save/restore will be able to
-select CONFIG_HIBERNATION without dragging the entire hibernate code
-along with it.
+Convert jme to the new PCI power management framework and make it
+let the PCI subsystem take care of all the PCI-specific aspects of
+device handling during system power transitions.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Tested-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
 ---
- arch/x86/power/Makefile |    3 ++-
- include/linux/suspend.h |   15 +++++----------
- kernel/power/Kconfig    |    4 ++++
- kernel/power/Makefile   |    4 ++--
- kernel/power/main.c     |    2 +-
- kernel/power/power.h    |    6 +++---
- 6 files changed, 17 insertions(+), 17 deletions(-)
+ drivers/net/jme.c |   30 ++++++++++++++++--------------
+ 1 file changed, 16 insertions(+), 14 deletions(-)
 
-Index: linux-2.6/kernel/power/Kconfig
+Index: linux-2.6/drivers/net/jme.c
 ===================================================================
---- linux-2.6.orig/kernel/power/Kconfig
-+++ linux-2.6/kernel/power/Kconfig
-@@ -19,8 +19,12 @@ config SUSPEND_FREEZER
- 	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
+--- linux-2.6.orig/drivers/net/jme.c
++++ linux-2.6/drivers/net/jme.c
+@@ -273,7 +273,7 @@ jme_clear_pm(struct jme_adapter *jme)
+ {
+ 	jwrite32(jme, JME_PMCS, 0xFFFF0000 | jme->reg_pmcs);
+ 	pci_set_power_state(jme->pdev, PCI_D0);
+-	pci_enable_wake(jme->pdev, PCI_D0, false);
++	device_set_wakeup_enable(&jme->pdev->dev, false);
+ }
  
- config HIBERNATION
-+	bool
+ static int
+@@ -2538,6 +2538,8 @@ jme_set_wol(struct net_device *netdev,
+ 
+ 	jwrite32(jme, JME_PMCS, jme->reg_pmcs);
+ 
++	device_set_wakeup_enable(&jme->pdev->dev, jme->reg_pmcs);
 +
-+config HIBERNATE_INTERFACE
- 	bool "Hibernation (aka 'suspend to disk')"
- 	depends on SWAP && ARCH_HIBERNATION_POSSIBLE
-+	select HIBERNATION
- 	select LZO_COMPRESS
- 	select LZO_DECOMPRESS
- 	---help---
-Index: linux-2.6/kernel/power/Makefile
-===================================================================
---- linux-2.6.orig/kernel/power/Makefile
-+++ linux-2.6/kernel/power/Makefile
-@@ -6,7 +6,7 @@ obj-$(CONFIG_PM_SLEEP)		+= console.o
- obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
--obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o \
--				   block_io.o
-+obj-$(CONFIG_HIBERNATE_INTERFACE)	+= hibernate.o snapshot.o swap.o \
-+						user.o block_io.o
+ 	return 0;
+ }
  
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-Index: linux-2.6/include/linux/suspend.h
-===================================================================
---- linux-2.6.orig/include/linux/suspend.h
-+++ linux-2.6/include/linux/suspend.h
-@@ -229,7 +229,7 @@ struct platform_hibernation_ops {
- 	void (*recover)(void);
+@@ -3172,9 +3174,9 @@ jme_shutdown(struct pci_dev *pdev)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int
+-jme_suspend(struct pci_dev *pdev, pm_message_t state)
++static int jme_suspend(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct jme_adapter *jme = netdev_priv(netdev);
+ 
+@@ -3206,22 +3208,18 @@ jme_suspend(struct pci_dev *pdev, pm_mes
+ 	tasklet_hi_enable(&jme->rxclean_task);
+ 	tasklet_hi_enable(&jme->rxempty_task);
+ 
+-	pci_save_state(pdev);
+ 	jme_powersave_phy(jme);
+-	pci_enable_wake(jme->pdev, PCI_D3hot, true);
+-	pci_set_power_state(pdev, PCI_D3hot);
+ 
+ 	return 0;
+ }
+ 
+-static int
+-jme_resume(struct pci_dev *pdev)
++static int jme_resume(struct device *dev)
+ {
++	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct jme_adapter *jme = netdev_priv(netdev);
+ 
+-	jme_clear_pm(jme);
+-	pci_restore_state(pdev);
++	jwrite32(jme, JME_PMCS, 0xFFFF0000 | jme->reg_pmcs);
+ 
+ 	jme_phy_on(jme);
+ 	if (test_bit(JME_FLAG_SSET, &jme->flags))
+@@ -3238,6 +3236,13 @@ jme_resume(struct pci_dev *pdev)
+ 
+ 	return 0;
+ }
++
++static SIMPLE_DEV_PM_OPS(jme_pm_ops, jme_suspend, jme_resume);
++#define JME_PM_OPS (&jme_pm_ops)
++
++#else
++
++#define JME_PM_OPS NULL
+ #endif
+ 
+ static DEFINE_PCI_DEVICE_TABLE(jme_pci_tbl) = {
+@@ -3251,11 +3256,8 @@ static struct pci_driver jme_driver = {
+ 	.id_table       = jme_pci_tbl,
+ 	.probe          = jme_init_one,
+ 	.remove         = __devexit_p(jme_remove_one),
+-#ifdef CONFIG_PM
+-	.suspend        = jme_suspend,
+-	.resume         = jme_resume,
+-#endif /* CONFIG_PM */
+ 	.shutdown       = jme_shutdown,
++	.driver.pm	= JME_PM_OPS,
  };
  
--#ifdef CONFIG_HIBERNATION
-+#ifdef CONFIG_HIBERNATE_INTERFACE
- /* kernel/power/snapshot.c */
- extern void __register_nosave_region(unsigned long b, unsigned long e, int km);
- static inline void __init register_nosave_region(unsigned long b, unsigned long e)
-@@ -248,7 +248,9 @@ extern unsigned long get_safe_page(gfp_t
- extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
- extern int hibernate(void);
- extern bool system_entering_hibernation(void);
--#else /* CONFIG_HIBERNATION */
-+#else /* !CONFIG_HIBERNATE_INTERFACE */
-+static inline void register_nosave_region(unsigned long b, unsigned long e) {}
-+static inline void register_nosave_region_late(unsigned long b, unsigned long e) {}
- static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
- static inline void swsusp_set_page_free(struct page *p) {}
- static inline void swsusp_unset_page_free(struct page *p) {}
-@@ -256,7 +258,7 @@ static inline void swsusp_unset_page_fre
- static inline void hibernation_set_ops(const struct platform_hibernation_ops *ops) {}
- static inline int hibernate(void) { return -ENOSYS; }
- static inline bool system_entering_hibernation(void) { return false; }
--#endif /* CONFIG_HIBERNATION */
-+#endif /* !CONFIG_HIBERNATE_INTERFACE */
- 
- #ifdef CONFIG_PM_SLEEP
- void save_processor_state(void);
-@@ -298,13 +300,6 @@ static inline bool pm_wakeup_pending(voi
- extern struct mutex pm_mutex;
- 
- #ifndef CONFIG_HIBERNATION
--static inline void register_nosave_region(unsigned long b, unsigned long e)
--{
--}
--static inline void register_nosave_region_late(unsigned long b, unsigned long e)
--{
--}
--
- static inline void lock_system_sleep(void) {}
- static inline void unlock_system_sleep(void) {}
- 
-Index: linux-2.6/arch/x86/power/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/power/Makefile
-+++ linux-2.6/arch/x86/power/Makefile
-@@ -4,4 +4,5 @@ nostackp := $(call cc-option, -fno-stack
- CFLAGS_cpu.o	:= $(nostackp)
- 
- obj-$(CONFIG_PM_SLEEP)		+= cpu.o
--obj-$(CONFIG_HIBERNATION)	+= hibernate_$(BITS).o hibernate_asm_$(BITS).o
-+obj-$(CONFIG_HIBERNATE_INTERFACE)	+= hibernate_$(BITS).o \
-+						hibernate_asm_$(BITS).o
-Index: linux-2.6/kernel/power/main.c
-===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -156,7 +156,7 @@ static ssize_t state_show(struct kobject
- 			s += sprintf(s,"%s ", pm_states[i]);
- 	}
- #endif
--#ifdef CONFIG_HIBERNATION
-+#ifdef CONFIG_HIBERNATE_INTERFACE
- 	s += sprintf(s, "%s\n", "disk");
- #else
- 	if (s != buf)
-Index: linux-2.6/kernel/power/power.h
-===================================================================
---- linux-2.6.orig/kernel/power/power.h
-+++ linux-2.6/kernel/power/power.h
-@@ -13,7 +13,7 @@ struct swsusp_info {
- 	unsigned long		size;
- } __attribute__((aligned(PAGE_SIZE)));
- 
--#ifdef CONFIG_HIBERNATION
-+#ifdef CONFIG_HIBERNATE_INTERFACE
- /* kernel/power/snapshot.c */
- extern void __init hibernate_image_size_init(void);
- 
-@@ -53,10 +53,10 @@ extern int hibernation_snapshot(int plat
- extern int hibernation_restore(int platform_mode);
- extern int hibernation_platform_enter(void);
- 
--#else /* !CONFIG_HIBERNATION */
-+#else /* !CONFIG_HIBERNATE_INTERFACE */
- 
- static inline void hibernate_image_size_init(void) {}
--#endif /* !CONFIG_HIBERNATION */
-+#endif /* !CONFIG_HIBERNATE_INTERFACE */
- 
- extern int pfn_is_nosave(unsigned long);
- 
+ static int __init
