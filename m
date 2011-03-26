@@ -1,15 +1,19 @@
 From: Len Brown <lenb@kernel.org>
 Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
-Date: Sat, 26 Mar 2011 00:35:51 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1103260021410.28928__42.9401793100581$1301114310$gmane$org@x980>
+Date: Sat, 26 Mar 2011 01:01:38 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1103260036300.28928__37252.5183171549$1301115806$gmane$org@x980>
 References: <alpine.LFD.2.02.1103232321070.3848@x980>
+	<20110324154505.934a56a0.sfr@canb.auug.org.au>
+	<alpine.LFD.2.02.1103240336590.4529@x980>
+	<alpine.LFD.2.02.1103240414450.4529@x980>
+	<20110324083959.GE30812@elte.hu>
 	<alpine.LFD.2.02.1103241929450.16085@x980>
-	<20110325113048.GC29521@elte.hu> <201103252333.23880.rjw@sisk.pl>
+	<20110325113048.GC29521@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201103252333.23880.rjw@sisk.pl>
+In-reply-to: <20110325113048.GC29521@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,35 +23,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-> >  > > Beyond the lack of a upstream-visible feature-removal-schedule entry, we 
-> >  > > still have an Arcnet driver which hardware was obsoleted by Ethernet in the 
-> >  > > late 80s, and we still have i486 support and those are *much* older than 
-> >  > > APM.
+> Regardless of removal, i'd suggest a "this code is not supported" kind of 
+> WARN() message to the APM code today, into .39 - to see whether it pops up 
+> anywhere - and mark it for -stable as well.
 
-> > So how does your reasoning not apply to those drivers? There's several which 
-> > are older than APM support.
+Okay, can do.
 
-If we follow-through with the proposed cpuidle changes,
-then we'll have to cut APM code.   The problem isn't cutting
-the code, it is testing it.  I do have a couple of 15-year old
-laptops which include APM support.  However, with ACPI disabled
-to enable APM, they don't even boot the upstream kernel today.
+> .42 removal might be too fast, considering the typical release schedule of 
+> Linux distributions. And i'm still doubting the removal itself: we are adding 
+> lots of special-purpose subarch drivers to arch/x86/ as we speak (the embedded 
+> mess coming to x86) - which drivers will be tomorrow's APM code. On what 
+> grounds do we treat APM support differently?
+>
+> Our general compatibility with old hardware is an *asset* that we should value.
 
-> > We had this really big battle about x86/Voyager two years ago, which x86 
-> > subarchitecture literally had just a single user left, and the code was more 
-> > intrusive than APM. Even there after much flaming the eventual consensus was 
-> > that we'd accept it back if it was done cleanly, as part of the new-style 
-> > x86_platform code.
-> > 
-> > Given that APM fits into the current PM frameworks there's no such problem here 
-> > that i can see.
+My guess is that the customers have died off,
+and so the code is no longer an asset, but a maintenance liability.
 
-Somebody was pushing for Voyager support in the kernel
-and was energetic about maintaining it.
+If there is a buzzing community of people running 2011
+linux kernels on their ancient laptops in APM mode,
+then the APM maintainer would probably know about them.
+
+Personally, my oldest usable laptop is a T23 from March 2002.
+It supports APM and ACPI (it shipped with Win2K).
+Linux works well on it in ACPI mode, but doesn't even boot in APM mode.
+If anybody was really using the latest kernel in APM mode,
+I suspect this laptop would boot...
+
+Is there somebody on LKML that has a older laptop than me
+and is able to get it to boot in APM mode?  I'd be astonished
+if there was not.  Are they willing to regularly test changes
+to the upstream kernel to make sure that APM still works?
+If yes, where have they been for the last 5 years?
+
+I suspect when there is nobody using the latest kernel on mrst,
+then the latest kernel can delete support for mrst, and nobody will care.
+Like APM, it will probably undergo "maintenance without testing",
+aka bit rot, for a period before that happens.
 
 cheers,
 -Len
