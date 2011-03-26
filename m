@@ -1,21 +1,12 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
-Date: Sat, 26 Mar 2011 10:31:31 +0100
-Message-ID: <20110326093131.GA8706__6700.59436602077$1301131973$gmane$org@elte.hu>
-References: <alpine.LFD.2.02.1103232321070.3848@x980>
-	<20110324154505.934a56a0.sfr@canb.auug.org.au>
-	<alpine.LFD.2.02.1103240336590.4529@x980>
-	<alpine.LFD.2.02.1103240414450.4529@x980>
-	<20110324083959.GE30812@elte.hu>
-	<alpine.LFD.2.02.1103241929450.16085@x980>
-	<20110325113048.GC29521@elte.hu>
-	<alpine.LFD.2.02.1103260036300.28928@x980>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] PM / Hibernate: Introduce
+	CONFIG_HIBERNATE_INTERFACE
+Date: Sat, 26 Mar 2011 12:29:44 +0100
+Message-ID: <201103261229.44770.rjw__19122.4135844552$1301139041$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1103260036300.28928@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,32 +16,164 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-pm@lists.linux-foundation.org
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, xen-devel@lists.xensource.com, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-* Len Brown <lenb@kernel.org> wrote:
+Xen save/restore is going to use hibernate device callbacks for
+quiescing devices and putting them back to normal operations and it
+would need to select CONFIG_HIBERNATION for this purpose.  However,
+that also would cause the hibernate interfaces for user space to be
+enabled, which might confuse user space, because the Xen kernels
+don't support hibernation.  Moreover, it would be wasteful, as it
+would make the Xen kernels include a substantial amount of code that
+they would never use.
 
-> Personally, my oldest usable laptop is a T23 from March 2002.
-> It supports APM and ACPI (it shipped with Win2K).
-> Linux works well on it in ACPI mode, but doesn't even boot in APM mode.
-> If anybody was really using the latest kernel in APM mode,
-> I suspect this laptop would boot...
+To address this issue introduce new power management Kconfig option
+CONFIG_HIBERNATE_INTERFACE, such that the hibernate interfaces for
+user space and the image-handling code will depend on it and it will
+select CONFIG_HIBERNATION.  Then, Xen save/restore will be able to
+select CONFIG_HIBERNATION without dragging the entire hibernate code
+along with it.
 
-I boot non-ACPI kernels all the time:
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Tested-by: Shriram Rajagopalan <rshriram@cs.ubc.ca>
+---
+ arch/x86/power/Makefile |    3 ++-
+ include/linux/suspend.h |   15 +++++----------
+ kernel/power/Kconfig    |    4 ++++
+ kernel/power/Makefile   |    4 ++--
+ kernel/power/main.c     |    2 +-
+ kernel/power/power.h    |    6 +++---
+ 6 files changed, 17 insertions(+), 17 deletions(-)
 
-  mercury:~> grep -E 'PM|ACPI' /proc/config.gz 
-  mercury:~> 
-  mercury:~> uname -a
-  Linux mercury 2.6.38-tip+ #110579 SMP Sat Mar 26 11:47:58 CET 2011 x86_64 x86_64 x86_64 GNU/Linux
-
-How does it fail for you?
-
-Could you describe the steps you'd like to see from folks using APM to see it 
-tested? What kernel configs, BIOS options, etc., what should they see in the 
-syslog, etc. - to make sure APM mode is still working fine?
-
-Thanks,
-
-	Ingo
+Index: linux-2.6/kernel/power/Kconfig
+===================================================================
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -19,8 +19,12 @@ config SUSPEND_FREEZER
+ 	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
+ 
+ config HIBERNATION
++	bool
++
++config HIBERNATE_INTERFACE
+ 	bool "Hibernation (aka 'suspend to disk')"
+ 	depends on SWAP && ARCH_HIBERNATION_POSSIBLE
++	select HIBERNATION
+ 	select LZO_COMPRESS
+ 	select LZO_DECOMPRESS
+ 	---help---
+Index: linux-2.6/kernel/power/Makefile
+===================================================================
+--- linux-2.6.orig/kernel/power/Makefile
++++ linux-2.6/kernel/power/Makefile
+@@ -6,7 +6,7 @@ obj-$(CONFIG_PM_SLEEP)		+= console.o
+ obj-$(CONFIG_FREEZER)		+= process.o
+ obj-$(CONFIG_SUSPEND)		+= suspend.o
+ obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
+-obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o \
+-				   block_io.o
++obj-$(CONFIG_HIBERNATE_INTERFACE)	+= hibernate.o snapshot.o swap.o \
++						user.o block_io.o
+ 
+ obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
+Index: linux-2.6/include/linux/suspend.h
+===================================================================
+--- linux-2.6.orig/include/linux/suspend.h
++++ linux-2.6/include/linux/suspend.h
+@@ -229,7 +229,7 @@ struct platform_hibernation_ops {
+ 	void (*recover)(void);
+ };
+ 
+-#ifdef CONFIG_HIBERNATION
++#ifdef CONFIG_HIBERNATE_INTERFACE
+ /* kernel/power/snapshot.c */
+ extern void __register_nosave_region(unsigned long b, unsigned long e, int km);
+ static inline void __init register_nosave_region(unsigned long b, unsigned long e)
+@@ -248,7 +248,9 @@ extern unsigned long get_safe_page(gfp_t
+ extern void hibernation_set_ops(const struct platform_hibernation_ops *ops);
+ extern int hibernate(void);
+ extern bool system_entering_hibernation(void);
+-#else /* CONFIG_HIBERNATION */
++#else /* !CONFIG_HIBERNATE_INTERFACE */
++static inline void register_nosave_region(unsigned long b, unsigned long e) {}
++static inline void register_nosave_region_late(unsigned long b, unsigned long e) {}
+ static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
+ static inline void swsusp_set_page_free(struct page *p) {}
+ static inline void swsusp_unset_page_free(struct page *p) {}
+@@ -256,7 +258,7 @@ static inline void swsusp_unset_page_fre
+ static inline void hibernation_set_ops(const struct platform_hibernation_ops *ops) {}
+ static inline int hibernate(void) { return -ENOSYS; }
+ static inline bool system_entering_hibernation(void) { return false; }
+-#endif /* CONFIG_HIBERNATION */
++#endif /* !CONFIG_HIBERNATE_INTERFACE */
+ 
+ #ifdef CONFIG_PM_SLEEP
+ void save_processor_state(void);
+@@ -298,13 +300,6 @@ static inline bool pm_wakeup_pending(voi
+ extern struct mutex pm_mutex;
+ 
+ #ifndef CONFIG_HIBERNATION
+-static inline void register_nosave_region(unsigned long b, unsigned long e)
+-{
+-}
+-static inline void register_nosave_region_late(unsigned long b, unsigned long e)
+-{
+-}
+-
+ static inline void lock_system_sleep(void) {}
+ static inline void unlock_system_sleep(void) {}
+ 
+Index: linux-2.6/arch/x86/power/Makefile
+===================================================================
+--- linux-2.6.orig/arch/x86/power/Makefile
++++ linux-2.6/arch/x86/power/Makefile
+@@ -4,4 +4,5 @@ nostackp := $(call cc-option, -fno-stack
+ CFLAGS_cpu.o	:= $(nostackp)
+ 
+ obj-$(CONFIG_PM_SLEEP)		+= cpu.o
+-obj-$(CONFIG_HIBERNATION)	+= hibernate_$(BITS).o hibernate_asm_$(BITS).o
++obj-$(CONFIG_HIBERNATE_INTERFACE)	+= hibernate_$(BITS).o \
++						hibernate_asm_$(BITS).o
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -156,7 +156,7 @@ static ssize_t state_show(struct kobject
+ 			s += sprintf(s,"%s ", pm_states[i]);
+ 	}
+ #endif
+-#ifdef CONFIG_HIBERNATION
++#ifdef CONFIG_HIBERNATE_INTERFACE
+ 	s += sprintf(s, "%s\n", "disk");
+ #else
+ 	if (s != buf)
+Index: linux-2.6/kernel/power/power.h
+===================================================================
+--- linux-2.6.orig/kernel/power/power.h
++++ linux-2.6/kernel/power/power.h
+@@ -13,7 +13,7 @@ struct swsusp_info {
+ 	unsigned long		size;
+ } __attribute__((aligned(PAGE_SIZE)));
+ 
+-#ifdef CONFIG_HIBERNATION
++#ifdef CONFIG_HIBERNATE_INTERFACE
+ /* kernel/power/snapshot.c */
+ extern void __init hibernate_image_size_init(void);
+ 
+@@ -53,10 +53,10 @@ extern int hibernation_snapshot(int plat
+ extern int hibernation_restore(int platform_mode);
+ extern int hibernation_platform_enter(void);
+ 
+-#else /* !CONFIG_HIBERNATION */
++#else /* !CONFIG_HIBERNATE_INTERFACE */
+ 
+ static inline void hibernate_image_size_init(void) {}
+-#endif /* !CONFIG_HIBERNATION */
++#endif /* !CONFIG_HIBERNATE_INTERFACE */
+ 
+ extern int pfn_is_nosave(unsigned long);
+ 
