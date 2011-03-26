@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] Net / jme: Do not use legacy PCI power management
-Date: Sat, 26 Mar 2011 12:34:06 +0100
-Message-ID: <201103261234.06274.rjw__2311.89028495482$1301139273$gmane$org@sisk.pl>
+Subject: [RFC][PATCH] PM / Platform: Remove __weak definitions of
+	runtime PM callbacks
+Date: Sun, 27 Mar 2011 00:58:41 +0100
+Message-ID: <201103270058.41632.rjw__37268.9006072052$1301183992$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,111 +16,135 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: netdev@vger.kernel.org
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The jme driver uses the legacy PCI power management, so it has to do
-some PCI-specific things in its ->suspend() and ->resume() callbacks,
-which isn't necessary and should better be done by the PCI
-sybsystem-level power management code.  It also doesn't use device
-wakeup flags correctly.
+Remove the __weak definitions of platform bus type runtime PM
+callbacks, make platform_dev_pm_ops point to the generic routines
+as appropriate and allow architectures using platform_dev_pm_ops to
+replace the runtime PM callbacks in that structure with their own
+set.
 
-Convert jme to the new PCI power management framework and make it
-let the PCI subsystem take care of all the PCI-specific aspects of
-device handling during system power transitions.
+Convert architectures providing its own definitions of the platform
+runtime PM callbacks to use the new mechanism.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/net/jme.c |   30 ++++++++++++++++--------------
- 1 file changed, 16 insertions(+), 14 deletions(-)
+ arch/arm/mach-shmobile/pm_runtime.c      |    3 ++
+ arch/sh/kernel/cpu/shmobile/pm_runtime.c |    3 ++
+ drivers/base/platform.c                  |   43 ++++++++++---------------------
+ include/linux/platform_device.h          |    4 ++
+ 4 files changed, 24 insertions(+), 29 deletions(-)
 
-Index: linux-2.6/drivers/net/jme.c
+Index: linux-2.6/drivers/base/platform.c
 ===================================================================
---- linux-2.6.orig/drivers/net/jme.c
-+++ linux-2.6/drivers/net/jme.c
-@@ -273,7 +273,7 @@ jme_clear_pm(struct jme_adapter *jme)
- {
- 	jwrite32(jme, JME_PMCS, 0xFFFF0000 | jme->reg_pmcs);
- 	pci_set_power_state(jme->pdev, PCI_D0);
--	pci_enable_wake(jme->pdev, PCI_D0, false);
-+	device_set_wakeup_enable(&jme->pdev->dev, false);
- }
+--- linux-2.6.orig/drivers/base/platform.c
++++ linux-2.6/drivers/base/platform.c
+@@ -922,32 +922,7 @@ static int platform_pm_restore_noirq(str
  
- static int
-@@ -2538,6 +2538,8 @@ jme_set_wol(struct net_device *netdev,
+ #endif /* !CONFIG_HIBERNATION */
  
- 	jwrite32(jme, JME_PMCS, jme->reg_pmcs);
- 
-+	device_set_wakeup_enable(&jme->pdev->dev, jme->reg_pmcs);
-+
- 	return 0;
- }
- 
-@@ -3172,9 +3174,9 @@ jme_shutdown(struct pci_dev *pdev)
- }
- 
- #ifdef CONFIG_PM
--static int
--jme_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int jme_suspend(struct device *dev)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct jme_adapter *jme = netdev_priv(netdev);
- 
-@@ -3206,22 +3208,18 @@ jme_suspend(struct pci_dev *pdev, pm_mes
- 	tasklet_hi_enable(&jme->rxclean_task);
- 	tasklet_hi_enable(&jme->rxempty_task);
- 
--	pci_save_state(pdev);
- 	jme_powersave_phy(jme);
--	pci_enable_wake(jme->pdev, PCI_D3hot, true);
--	pci_set_power_state(pdev, PCI_D3hot);
- 
- 	return 0;
- }
- 
--static int
--jme_resume(struct pci_dev *pdev)
-+static int jme_resume(struct device *dev)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct jme_adapter *jme = netdev_priv(netdev);
- 
--	jme_clear_pm(jme);
--	pci_restore_state(pdev);
-+	jwrite32(jme, JME_PMCS, 0xFFFF0000 | jme->reg_pmcs);
- 
- 	jme_phy_on(jme);
- 	if (test_bit(JME_FLAG_SSET, &jme->flags))
-@@ -3238,6 +3236,13 @@ jme_resume(struct pci_dev *pdev)
- 
- 	return 0;
- }
-+
-+static SIMPLE_DEV_PM_OPS(jme_pm_ops, jme_suspend, jme_resume);
-+#define JME_PM_OPS (&jme_pm_ops)
-+
-+#else
-+
-+#define JME_PM_OPS NULL
- #endif
- 
- static DEFINE_PCI_DEVICE_TABLE(jme_pci_tbl) = {
-@@ -3251,11 +3256,8 @@ static struct pci_driver jme_driver = {
- 	.id_table       = jme_pci_tbl,
- 	.probe          = jme_init_one,
- 	.remove         = __devexit_p(jme_remove_one),
--#ifdef CONFIG_PM
--	.suspend        = jme_suspend,
--	.resume         = jme_resume,
--#endif /* CONFIG_PM */
- 	.shutdown       = jme_shutdown,
-+	.driver.pm	= JME_PM_OPS,
+-#ifdef CONFIG_PM_RUNTIME
+-
+-int __weak platform_pm_runtime_suspend(struct device *dev)
+-{
+-	return pm_generic_runtime_suspend(dev);
+-};
+-
+-int __weak platform_pm_runtime_resume(struct device *dev)
+-{
+-	return pm_generic_runtime_resume(dev);
+-};
+-
+-int __weak platform_pm_runtime_idle(struct device *dev)
+-{
+-	return pm_generic_runtime_idle(dev);
+-};
+-
+-#else /* !CONFIG_PM_RUNTIME */
+-
+-#define platform_pm_runtime_suspend NULL
+-#define platform_pm_runtime_resume NULL
+-#define platform_pm_runtime_idle NULL
+-
+-#endif /* !CONFIG_PM_RUNTIME */
+-
+-static const struct dev_pm_ops platform_dev_pm_ops = {
++static struct dev_pm_ops platform_dev_pm_ops = {
+ 	.prepare = platform_pm_prepare,
+ 	.complete = platform_pm_complete,
+ 	.suspend = platform_pm_suspend,
+@@ -962,9 +937,9 @@ static const struct dev_pm_ops platform_
+ 	.thaw_noirq = platform_pm_thaw_noirq,
+ 	.poweroff_noirq = platform_pm_poweroff_noirq,
+ 	.restore_noirq = platform_pm_restore_noirq,
+-	.runtime_suspend = platform_pm_runtime_suspend,
+-	.runtime_resume = platform_pm_runtime_resume,
+-	.runtime_idle = platform_pm_runtime_idle,
++	SET_RUNTIME_PM_OPS(pm_generic_runtime_suspend,
++			   pm_generic_runtime_resume,
++			   pm_generic_runtime_idle)
  };
  
- static int __init
+ struct bus_type platform_bus_type = {
+@@ -976,6 +951,16 @@ struct bus_type platform_bus_type = {
+ };
+ EXPORT_SYMBOL_GPL(platform_bus_type);
+ 
++void platform_set_runtime_pm_ops(int (*suspend)(struct device *dev),
++				 int (*resume)(struct device *dev),
++				 int (*idle)(struct device *dev))
++{
++	platform_dev_pm_ops.runtime_suspend = suspend;
++	platform_dev_pm_ops.runtime_resume = resume;
++	platform_dev_pm_ops.runtime_idle = idle;
++}
++EXPORT_SYMBOL_GPL(platform_set_runtime_pm_ops);
++
+ /**
+  * platform_bus_get_pm_ops() - return pointer to busses dev_pm_ops
+  *
+Index: linux-2.6/include/linux/platform_device.h
+===================================================================
+--- linux-2.6.orig/include/linux/platform_device.h
++++ linux-2.6/include/linux/platform_device.h
+@@ -200,4 +200,8 @@ static inline char *early_platform_drive
+ }
+ #endif /* MODULE */
+ 
++extern void platform_set_runtime_pm_ops(int (*suspend)(struct device *dev),
++					int (*resume)(struct device *dev),
++					int (*idle)(struct device *dev));
++
+ #endif /* _PLATFORM_DEVICE_H_ */
+Index: linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm_runtime.c
++++ linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+@@ -163,6 +163,9 @@ static struct notifier_block platform_bu
+ 
+ static int __init sh_pm_runtime_init(void)
+ {
++	platform_set_runtime_pm_ops(platform_pm_runtime_suspend,
++				    platform_pm_runtime_resume,
++				    platform_pm_runtime_idle);
+ 	bus_register_notifier(&platform_bus_type, &platform_bus_notifier);
+ 	return 0;
+ }
+Index: linux-2.6/arch/sh/kernel/cpu/shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/sh/kernel/cpu/shmobile/pm_runtime.c
++++ linux-2.6/arch/sh/kernel/cpu/shmobile/pm_runtime.c
+@@ -302,6 +302,9 @@ static int __init sh_pm_runtime_init(voi
+ {
+ 	INIT_WORK(&hwblk_work, platform_pm_runtime_work);
+ 
++	platform_set_runtime_pm_ops(platform_pm_runtime_suspend,
++				    platform_pm_runtime_resume,
++				    platform_pm_runtime_idle);
+ 	bus_register_notifier(&platform_bus_type, &platform_bus_notifier);
+ 	return 0;
+ }
