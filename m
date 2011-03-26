@@ -1,19 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
-Date: Sat, 26 Mar 2011 01:01:38 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1103260036300.28928__37252.5183171549$1301115806$gmane$org@x980>
+Subject: Re: [PATCH] APM: delete APM in Linux-2.6.40
+Date: Sat, 26 Mar 2011 01:09:46 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1103260103250.28928__20642.1987656087$1301116252$gmane$org@x980>
 References: <alpine.LFD.2.02.1103232321070.3848@x980>
-	<20110324154505.934a56a0.sfr@canb.auug.org.au>
-	<alpine.LFD.2.02.1103240336590.4529@x980>
-	<alpine.LFD.2.02.1103240414450.4529@x980>
-	<20110324083959.GE30812@elte.hu>
-	<alpine.LFD.2.02.1103241929450.16085@x980>
-	<20110325113048.GC29521@elte.hu>
+	<201103241315.34722.linux@rainbow-software.org>
+	<alpine.LFD.2.02.1103241905250.16085@x980>
+	<201103250907.16337.linux@rainbow-software.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20110325113048.GC29521@elte.hu>
+In-reply-to: <201103250907.16337.linux@rainbow-software.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,47 +20,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> Regardless of removal, i'd suggest a "this code is not supported" kind of 
-> WARN() message to the APM code today, into .39 - to see whether it pops up 
-> anywhere - and mark it for -stable as well.
+> > > Please don't turn Linux into second Windows.
+> >
+> > No worry there.
+> >
+> > I mention Microsoft not to advocate that Linux be Windows,
+> > but to point out that this (hardware/firmware) ship sank 5 years
+> > ago and Linux is still on the boat.  MS was able to delete
+> > APM support in 2006 from their source tree, yet we still carry it.
+> 
+> And we also support ISA cards (network/sound/whatever). That's why many people 
+> (including me) like and use Linux. Take any old machine that has enough power 
+> to do the job you want and install Linux - e.g. get a Pentium box, install 
+> Debian and you have a mail server (and if you need to power it down, you need 
+> APM too). It's not possible with any other OS (well, maybe *BSD but Linux has 
+> more drivers).
+> 
+> If we remove support for older HW, Linux will never get a decent desktop 
+> market share. The common use case is "new Windows will not run (or run slow) 
+> on that (old) box, let's try Linux".
 
-Okay, can do.
+Supporting APM is not a path to increased desktop market share.
+Indeed, one could easily argue it would be the opposite.
 
-> .42 removal might be too fast, considering the typical release schedule of 
-> Linux distributions. And i'm still doubting the removal itself: we are adding 
-> lots of special-purpose subarch drivers to arch/x86/ as we speak (the embedded 
-> mess coming to x86) - which drivers will be tomorrow's APM code. On what 
-> grounds do we treat APM support differently?
->
-> Our general compatibility with old hardware is an *asset* that we should value.
+> > > If you don't want APM in the
+> > > kernel, just don't compile it. There are many people using older systems
+> > > with APM - and most of them wouldn't oppose to this removal as they don't
+> > > even know about it.
+> >
+> > They can still run old Linux on an old APM-only laptop --
+> > just like they can still run Windows 3.1 or Windows XP if they want to.
+> >
+> > What we'd be taking away is their ability to run the latest
+> > Linux kernel on that laptop.
+> 
+> And that's bad. With Linux philosophy, you need new kernel to get new HW 
+> support. So if you have an APM-only laptop and would want to use a new USB 
+> device, you're out of luck. What to do then? Delete Linux and install Windows 
+> XP?
+> 
+> > The issue at hand is people (like me) who have to maintain
+> > the latest Linux source code.  In sort, I don't want to
+> > write, debug, and test a cpuidle driver for an apm-only laptop
+> > when I could be spending effort on code that people will
+> > actually run.
+> 
+> So don't do it then. If APM works now, keep it as is. Just like hgafb (HGA 
+> hardware is from 1984).
 
-My guess is that the customers have died off,
-and so the code is no longer an asset, but a maintenance liability.
-
-If there is a buzzing community of people running 2011
-linux kernels on their ancient laptops in APM mode,
-then the APM maintainer would probably know about them.
-
-Personally, my oldest usable laptop is a T23 from March 2002.
-It supports APM and ACPI (it shipped with Win2K).
-Linux works well on it in ACPI mode, but doesn't even boot in APM mode.
-If anybody was really using the latest kernel in APM mode,
-I suspect this laptop would boot...
-
-Is there somebody on LKML that has a older laptop than me
-and is able to get it to boot in APM mode?  I'd be astonished
-if there was not.  Are they willing to regularly test changes
-to the upstream kernel to make sure that APM still works?
-If yes, where have they been for the last 5 years?
-
-I suspect when there is nobody using the latest kernel on mrst,
-then the latest kernel can delete support for mrst, and nobody will care.
-Like APM, it will probably undergo "maintenance without testing",
-aka bit rot, for a period before that happens.
+Speaking for the only old system I have with APM support,
+today's kernel already doesn't boot on it in APM mode.
+(it boots fine in ACPI mode, though as you mentioned,
+ X already dropped support for its decade-old graphics controller)
 
 cheers,
 -Len
