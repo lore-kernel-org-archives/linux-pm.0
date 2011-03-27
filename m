@@ -1,12 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH] PM / Platform: Remove __weak definitions of
-	runtime PM callbacks
-Date: Sun, 27 Mar 2011 00:58:41 +0100
-Message-ID: <201103270058.41632.rjw__37268.9006072052$1301183992$gmane$org@sisk.pl>
+Subject: Re: 2.6.38-git18: Reported regressions from 2.6.37
+Date: Sun, 27 Mar 2011 22:48:38 +0200
+Message-ID: <201103272248.38893.rjw__15424.4642392316$1301259243$gmane$org@sisk.pl>
+References: <lDYNS4ATQ-N.A._aD.9m5jNB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <lDYNS4ATQ-N.A._aD.9m5jNB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,135 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sunday, March 27, 2011, Rafael J. Wysocki wrote:
+> This message contains a list of some regressions from 2.6.37,
+> for which there are no fixes in the mainline known to the tracking team.
+> If any of them have been fixed already, please let us know.
+> 
+> If you know of any other unresolved regressions from 2.6.37, please let us
+> know either and we'll add them to the list.  Also, please let us know
+> if any of the entries below are invalid.
+> 
+> Each entry from the list will be sent additionally in an automatic reply
+> to this message with CCs to the people involved in reporting and handling
+> the issue.
+> 
+> 
+> Listed regressions statistics:
+> 
+>   Date          Total  Pending  Unresolved
+>   ----------------------------------------
+>   2011-03-27       88       26          26
+>   2011-03-06       70       27          26
+>   2011-02-21       51       18          17
+>   2011-02-12       39       20          18
+>   2011-02-03       19       11           7
 
-Remove the __weak definitions of platform bus type runtime PM
-callbacks, make platform_dev_pm_ops point to the generic routines
-as appropriate and allow architectures using platform_dev_pm_ops to
-replace the runtime PM callbacks in that structure with their own
-set.
 
-Convert architectures providing its own definitions of the platform
-runtime PM callbacks to use the new mechanism.
+I forgot to mention that the tracking of regressions from 2.6.36 is now closed
+and the tracking of regressions from 2.6.38 is going to start after 2.6.39-rc1
+has been released.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/arm/mach-shmobile/pm_runtime.c      |    3 ++
- arch/sh/kernel/cpu/shmobile/pm_runtime.c |    3 ++
- drivers/base/platform.c                  |   43 ++++++++++---------------------
- include/linux/platform_device.h          |    4 ++
- 4 files changed, 24 insertions(+), 29 deletions(-)
+The meta-bug for the tracking of regressions from 2.6.38 is
+https://bugzilla.kernel.org/show_bug.cgi?id=32012
 
-Index: linux-2.6/drivers/base/platform.c
-===================================================================
---- linux-2.6.orig/drivers/base/platform.c
-+++ linux-2.6/drivers/base/platform.c
-@@ -922,32 +922,7 @@ static int platform_pm_restore_noirq(str
- 
- #endif /* !CONFIG_HIBERNATION */
- 
--#ifdef CONFIG_PM_RUNTIME
--
--int __weak platform_pm_runtime_suspend(struct device *dev)
--{
--	return pm_generic_runtime_suspend(dev);
--};
--
--int __weak platform_pm_runtime_resume(struct device *dev)
--{
--	return pm_generic_runtime_resume(dev);
--};
--
--int __weak platform_pm_runtime_idle(struct device *dev)
--{
--	return pm_generic_runtime_idle(dev);
--};
--
--#else /* !CONFIG_PM_RUNTIME */
--
--#define platform_pm_runtime_suspend NULL
--#define platform_pm_runtime_resume NULL
--#define platform_pm_runtime_idle NULL
--
--#endif /* !CONFIG_PM_RUNTIME */
--
--static const struct dev_pm_ops platform_dev_pm_ops = {
-+static struct dev_pm_ops platform_dev_pm_ops = {
- 	.prepare = platform_pm_prepare,
- 	.complete = platform_pm_complete,
- 	.suspend = platform_pm_suspend,
-@@ -962,9 +937,9 @@ static const struct dev_pm_ops platform_
- 	.thaw_noirq = platform_pm_thaw_noirq,
- 	.poweroff_noirq = platform_pm_poweroff_noirq,
- 	.restore_noirq = platform_pm_restore_noirq,
--	.runtime_suspend = platform_pm_runtime_suspend,
--	.runtime_resume = platform_pm_runtime_resume,
--	.runtime_idle = platform_pm_runtime_idle,
-+	SET_RUNTIME_PM_OPS(pm_generic_runtime_suspend,
-+			   pm_generic_runtime_resume,
-+			   pm_generic_runtime_idle)
- };
- 
- struct bus_type platform_bus_type = {
-@@ -976,6 +951,16 @@ struct bus_type platform_bus_type = {
- };
- EXPORT_SYMBOL_GPL(platform_bus_type);
- 
-+void platform_set_runtime_pm_ops(int (*suspend)(struct device *dev),
-+				 int (*resume)(struct device *dev),
-+				 int (*idle)(struct device *dev))
-+{
-+	platform_dev_pm_ops.runtime_suspend = suspend;
-+	platform_dev_pm_ops.runtime_resume = resume;
-+	platform_dev_pm_ops.runtime_idle = idle;
-+}
-+EXPORT_SYMBOL_GPL(platform_set_runtime_pm_ops);
-+
- /**
-  * platform_bus_get_pm_ops() - return pointer to busses dev_pm_ops
-  *
-Index: linux-2.6/include/linux/platform_device.h
-===================================================================
---- linux-2.6.orig/include/linux/platform_device.h
-+++ linux-2.6/include/linux/platform_device.h
-@@ -200,4 +200,8 @@ static inline char *early_platform_drive
- }
- #endif /* MODULE */
- 
-+extern void platform_set_runtime_pm_ops(int (*suspend)(struct device *dev),
-+					int (*resume)(struct device *dev),
-+					int (*idle)(struct device *dev));
-+
- #endif /* _PLATFORM_DEVICE_H_ */
-Index: linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/pm_runtime.c
-+++ linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
-@@ -163,6 +163,9 @@ static struct notifier_block platform_bu
- 
- static int __init sh_pm_runtime_init(void)
- {
-+	platform_set_runtime_pm_ops(platform_pm_runtime_suspend,
-+				    platform_pm_runtime_resume,
-+				    platform_pm_runtime_idle);
- 	bus_register_notifier(&platform_bus_type, &platform_bus_notifier);
- 	return 0;
- }
-Index: linux-2.6/arch/sh/kernel/cpu/shmobile/pm_runtime.c
-===================================================================
---- linux-2.6.orig/arch/sh/kernel/cpu/shmobile/pm_runtime.c
-+++ linux-2.6/arch/sh/kernel/cpu/shmobile/pm_runtime.c
-@@ -302,6 +302,9 @@ static int __init sh_pm_runtime_init(voi
- {
- 	INIT_WORK(&hwblk_work, platform_pm_runtime_work);
- 
-+	platform_set_runtime_pm_ops(platform_pm_runtime_suspend,
-+				    platform_pm_runtime_resume,
-+				    platform_pm_runtime_idle);
- 	bus_register_notifier(&platform_bus_type, &platform_bus_notifier);
- 	return 0;
- }
+Thanks,
+Rafael
