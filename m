@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/7] ARM: Use struct syscore_ops instead of
-	sysdevs for PM in common code
-Date: Mon, 28 Mar 2011 01:26:25 +0200
-Message-ID: <201103280126.25958.rjw__3858.66371584616$1301268858$gmane$org@sisk.pl>
-References: <201103280125.11750.rjw@sisk.pl>
+Subject: [PATCH 0/7] ARM: Use syscore_ops for "core" power
+	management
+Date: Mon, 28 Mar 2011 01:25:11 +0200
+Message-ID: <201103280125.11750.rjw__2468.13409398801$1301268870$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103280125.11750.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,371 +20,53 @@ To: LKML <linux-kernel@vger.kernel.org>
 Cc: Russell King <linux@arm.linux.org.uk>, Greg KH <gregkh@suse.de>, Ben Dooks <ben-linux@fluff.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Convert some ARM architecture's common code to using
-struct syscore_ops objects for power management instead of sysdev
-classes and sysdevs.
+There are multiple problems with sysdevs, or struct sys_device objects to
+be precise, that are so annoying that some people have started to think
+of removind them entirely from the kernel.  To me, personally, the most
+obvious issue is the way sysdevs are used for defining suspend/resume
+callbacks to be executed with one CPU on-line and interrupts disabled.
+Apart from this, sysdevs do not follow general rules related to the
+representation of things in /sys/devices/, so user space that uses
+/sys/devices/ to retrieve information on device hierarchy layout and
+device configuration, such as udev, cannot really handle them correctly.
 
-This simplifies the code and reduces the kernel's memory footprint.
-It also is necessary for removing sysdevs from the kernel entirely in
-the future.
+Some subsystems need to carry out certain operations during suspend after
+we've disabled non-boot CPUs and interrupts have been switched off on the
+only on-line one.  Currently, the only way to achieve that is to define
+sysdev suspend/resume callbacks, but this is cumbersome and inefficient.
+Namely, to do that, one has to define a sysdev class providing the callbacks
+and a sysdev actually using them, which is excessively complicated.  Moreover,
+the sysdev suspend/resume callbacks take arguments that are not really used
+by the majority of subsystems defining sysdev suspend/resume callbacks
+(or even if they are used, they don't really need to be used, so they
+are simply unnecessary).  Of course, if a sysdev is only defined to provide
+suspend/resume (and maybe shutdown) callbacks, there's no real reason why
+it should show up in sysfs.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/arm/common/vic.c            |   69 ++++++++++++++-------------------------
- arch/arm/include/asm/mach/time.h |    1 
- arch/arm/kernel/leds.c           |   28 +++++++++------
- arch/arm/kernel/time.c           |   35 ++++++-------------
- arch/arm/vfp/vfpmodule.c         |   19 ++--------
- 5 files changed, 58 insertions(+), 94 deletions(-)
+For this reason, I thought it would be a good idea to provide a simpler
+interface for subsystems to define "very late" suspend callbacks and
+"very early" resume callbacks (and "very late" shutdown callbacks as well)
+without the entire bloat related to sysdevs.  Such an interface has been
+merged recently in the form of struct syscore_ops framework that can be used
+to replace sysdevs in the "core" power management area.
 
-Index: linux-2.6/arch/arm/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/arm/kernel/time.c
-+++ linux-2.6/arch/arm/kernel/time.c
-@@ -21,7 +21,7 @@
- #include <linux/timex.h>
- #include <linux/errno.h>
- #include <linux/profile.h>
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- #include <linux/timer.h>
- #include <linux/irq.h>
- 
-@@ -115,48 +115,37 @@ void timer_tick(void)
- #endif
- 
- #if defined(CONFIG_PM) && !defined(CONFIG_GENERIC_CLOCKEVENTS)
--static int timer_suspend(struct sys_device *dev, pm_message_t state)
-+static int timer_suspend(void)
- {
--	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
--
--	if (timer->suspend != NULL)
--		timer->suspend();
-+	if (system_timer->suspend)
-+		system_timer->suspend();
- 
- 	return 0;
- }
- 
--static int timer_resume(struct sys_device *dev)
-+static void timer_resume(void)
- {
--	struct sys_timer *timer = container_of(dev, struct sys_timer, dev);
--
--	if (timer->resume != NULL)
--		timer->resume();
--
--	return 0;
-+	if (system_timer->resume)
-+		system_timer->resume();
- }
- #else
- #define timer_suspend NULL
- #define timer_resume NULL
- #endif
- 
--static struct sysdev_class timer_sysclass = {
--	.name		= "timer",
-+static struct syscore_ops timer_syscore_ops = {
- 	.suspend	= timer_suspend,
- 	.resume		= timer_resume,
- };
- 
--static int __init timer_init_sysfs(void)
-+static int __init timer_init_syscore_ops(void)
- {
--	int ret = sysdev_class_register(&timer_sysclass);
--	if (ret == 0) {
--		system_timer->dev.cls = &timer_sysclass;
--		ret = sysdev_register(&system_timer->dev);
--	}
-+	register_syscore_ops(&timer_syscore_ops);
- 
--	return ret;
-+	return 0;
- }
- 
--device_initcall(timer_init_sysfs);
-+device_initcall(timer_init_syscore_ops);
- 
- void __init time_init(void)
- {
-Index: linux-2.6/arch/arm/include/asm/mach/time.h
-===================================================================
---- linux-2.6.orig/arch/arm/include/asm/mach/time.h
-+++ linux-2.6/arch/arm/include/asm/mach/time.h
-@@ -34,7 +34,6 @@
-  *   timer interrupt which may be pending.
-  */
- struct sys_timer {
--	struct sys_device	dev;
- 	void			(*init)(void);
- 	void			(*suspend)(void);
- 	void			(*resume)(void);
-Index: linux-2.6/arch/arm/kernel/leds.c
-===================================================================
---- linux-2.6.orig/arch/arm/kernel/leds.c
-+++ linux-2.6/arch/arm/kernel/leds.c
-@@ -10,6 +10,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- 
- #include <asm/leds.h>
- 
-@@ -69,36 +70,37 @@ static ssize_t leds_store(struct sys_dev
- 
- static SYSDEV_ATTR(event, 0200, NULL, leds_store);
- 
--static int leds_suspend(struct sys_device *dev, pm_message_t state)
-+static struct sysdev_class leds_sysclass = {
-+	.name		= "leds",
-+};
-+
-+static struct sys_device leds_device = {
-+	.id		= 0,
-+	.cls		= &leds_sysclass,
-+};
-+
-+static int leds_suspend(void)
- {
- 	leds_event(led_stop);
- 	return 0;
- }
- 
--static int leds_resume(struct sys_device *dev)
-+static void leds_resume(void)
- {
- 	leds_event(led_start);
--	return 0;
- }
- 
--static int leds_shutdown(struct sys_device *dev)
-+static void leds_shutdown(void)
- {
- 	leds_event(led_halted);
--	return 0;
- }
- 
--static struct sysdev_class leds_sysclass = {
--	.name		= "leds",
-+static struct syscore_ops leds_syscore_ops = {
- 	.shutdown	= leds_shutdown,
- 	.suspend	= leds_suspend,
- 	.resume		= leds_resume,
- };
- 
--static struct sys_device leds_device = {
--	.id		= 0,
--	.cls		= &leds_sysclass,
--};
--
- static int __init leds_init(void)
- {
- 	int ret;
-@@ -107,6 +109,8 @@ static int __init leds_init(void)
- 		ret = sysdev_register(&leds_device);
- 	if (ret == 0)
- 		ret = sysdev_create_file(&leds_device, &attr_event);
-+	if (ret == 0)
-+		register_syscore_ops(&leds_syscore_ops);
- 	return ret;
- }
- 
-Index: linux-2.6/arch/arm/common/vic.c
-===================================================================
---- linux-2.6.orig/arch/arm/common/vic.c
-+++ linux-2.6/arch/arm/common/vic.c
-@@ -22,17 +22,16 @@
- #include <linux/init.h>
- #include <linux/list.h>
- #include <linux/io.h>
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- #include <linux/device.h>
- #include <linux/amba/bus.h>
- 
- #include <asm/mach/irq.h>
- #include <asm/hardware/vic.h>
- 
--#if defined(CONFIG_PM)
-+#ifdef CONFIG_PM
- /**
-  * struct vic_device - VIC PM device
-- * @sysdev: The system device which is registered.
-  * @irq: The IRQ number for the base of the VIC.
-  * @base: The register base for the VIC.
-  * @resume_sources: A bitmask of interrupts for resume.
-@@ -43,8 +42,6 @@
-  * @protect: Save for VIC_PROTECT.
-  */
- struct vic_device {
--	struct sys_device sysdev;
--
- 	void __iomem	*base;
- 	int		irq;
- 	u32		resume_sources;
-@@ -59,11 +56,6 @@ struct vic_device {
- static struct vic_device vic_devices[CONFIG_ARM_VIC_NR];
- 
- static int vic_id;
--
--static inline struct vic_device *to_vic(struct sys_device *sys)
--{
--	return container_of(sys, struct vic_device, sysdev);
--}
- #endif /* CONFIG_PM */
- 
- /**
-@@ -85,10 +77,9 @@ static void vic_init2(void __iomem *base
- 	writel(32, base + VIC_PL190_DEF_VECT_ADDR);
- }
- 
--#if defined(CONFIG_PM)
--static int vic_class_resume(struct sys_device *dev)
-+#ifdef CONFIG_PM
-+static void resume_one_vic(struct vic_device *vic)
- {
--	struct vic_device *vic = to_vic(dev);
- 	void __iomem *base = vic->base;
- 
- 	printk(KERN_DEBUG "%s: resuming vic at %p\n", __func__, base);
-@@ -107,13 +98,18 @@ static int vic_class_resume(struct sys_d
- 
- 	writel(vic->soft_int, base + VIC_INT_SOFT);
- 	writel(~vic->soft_int, base + VIC_INT_SOFT_CLEAR);
-+}
- 
--	return 0;
-+static void vic_resume(void)
-+{
-+	int id;
-+
-+	for (id = vic_id - 1; id >= 0; id--)
-+		resume_one_vic(vic_devices + id);
- }
- 
--static int vic_class_suspend(struct sys_device *dev, pm_message_t state)
-+static void suspend_one_vic(struct vic_device *vic)
- {
--	struct vic_device *vic = to_vic(dev);
- 	void __iomem *base = vic->base;
- 
- 	printk(KERN_DEBUG "%s: suspending vic at %p\n", __func__, base);
-@@ -128,14 +124,21 @@ static int vic_class_suspend(struct sys_
- 
- 	writel(vic->resume_irqs, base + VIC_INT_ENABLE);
- 	writel(~vic->resume_irqs, base + VIC_INT_ENABLE_CLEAR);
-+}
-+
-+static int vic_suspend(void)
-+{
-+	int id;
-+
-+	for (id = 0; id < vic_id; id++)
-+		suspend_one_vic(vic_devices + id);
- 
- 	return 0;
- }
- 
--struct sysdev_class vic_class = {
--	.name		= "vic",
--	.suspend	= vic_class_suspend,
--	.resume		= vic_class_resume,
-+struct syscore_ops vic_syscore_ops = {
-+	.suspend	= vic_suspend,
-+	.resume		= vic_resume,
- };
- 
- /**
-@@ -147,30 +150,8 @@ struct sysdev_class vic_class = {
- */
- static int __init vic_pm_init(void)
- {
--	struct vic_device *dev = vic_devices;
--	int err;
--	int id;
--
--	if (vic_id == 0)
--		return 0;
--
--	err = sysdev_class_register(&vic_class);
--	if (err) {
--		printk(KERN_ERR "%s: cannot register class\n", __func__);
--		return err;
--	}
--
--	for (id = 0; id < vic_id; id++, dev++) {
--		dev->sysdev.id = id;
--		dev->sysdev.cls = &vic_class;
--
--		err = sysdev_register(&dev->sysdev);
--		if (err) {
--			printk(KERN_ERR "%s: failed to register device\n",
--			       __func__);
--			return err;
--		}
--	}
-+	if (vic_id > 0)
-+		register_syscore_ops(&vic_syscore_ops);
- 
- 	return 0;
- }
-Index: linux-2.6/arch/arm/vfp/vfpmodule.c
-===================================================================
---- linux-2.6.orig/arch/arm/vfp/vfpmodule.c
-+++ linux-2.6/arch/arm/vfp/vfpmodule.c
-@@ -378,9 +378,9 @@ static void vfp_enable(void *unused)
- }
- 
- #ifdef CONFIG_PM
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- 
--static int vfp_pm_suspend(struct sys_device *dev, pm_message_t state)
-+static int vfp_pm_suspend(void)
- {
- 	struct thread_info *ti = current_thread_info();
- 	u32 fpexc = fmrx(FPEXC);
-@@ -400,34 +400,25 @@ static int vfp_pm_suspend(struct sys_dev
- 	return 0;
- }
- 
--static int vfp_pm_resume(struct sys_device *dev)
-+static void vfp_pm_resume(void)
- {
- 	/* ensure we have access to the vfp */
- 	vfp_enable(NULL);
- 
- 	/* and disable it to ensure the next usage restores the state */
- 	fmxr(FPEXC, fmrx(FPEXC) & ~FPEXC_EN);
--
--	return 0;
- }
- 
--static struct sysdev_class vfp_pm_sysclass = {
--	.name		= "vfp",
-+static struct syscore_ops vfp_pm_syscore_ops = {
- 	.suspend	= vfp_pm_suspend,
- 	.resume		= vfp_pm_resume,
- };
- 
--static struct sys_device vfp_pm_sysdev = {
--	.cls	= &vfp_pm_sysclass,
--};
--
- static void vfp_pm_init(void)
- {
--	sysdev_class_register(&vfp_pm_sysclass);
--	sysdev_register(&vfp_pm_sysdev);
-+	register_syscore_ops(&vfp_pm_syscore_ops);
- }
- 
--
- #else
- static inline void vfp_pm_init(void) { }
- #endif /* CONFIG_PM */
+The x86 architecture and subsystems it depends on have already been converted
+to using the new framework instead of sysdevs for "core" power management and
+the following series of patches does the analogous thing for the ARM
+architecture.  I have done my best to build the kernel for every affected
+platform, but unfortunately some of them don't build even without my changes,
+so some minor issues might have slept through my fingers.  Hopefully, though,
+there won't be too many of them.
+
+[1/7] - Use syscore_ops for "core" PM in some common ARM code.
+[2/7] - Use syscore_ops for "core" PM on OMAP.
+[3/7] - Use syscore_ops for "core" PM on Integrator.
+[4/7] - Use syscore_ops for "core" PM on SA1100.
+[5/7] - Use syscore_ops for "core" PM on PXA-based platforms.
+[6/7] - Use syscore_ops for "core" PM on Samsung platforms.
+[7/7] - Mark ARM select CONFIG_ARCH_NO_SYSDEV_OPS.
+
+Thanks,
+Rafael
