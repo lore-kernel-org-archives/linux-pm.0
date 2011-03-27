@@ -1,14 +1,14 @@
-From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Subject: [RFC PATCH V5 1/4] cpuidle: Move dev->last_residency
-	update to driver	enter routine, remove dev->last_state
-Date: Mon, 6 Jun 2011 19:09:26 +0530
-Message-ID: <20110606133926.5670.4650.stgit__11391.931694425$1310141068$gmane$org@tringupt.in.ibm.com>
-References: <20110606133917.5670.54949.stgit@tringupt.in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 6/7] ARM / Samsung: Use struct syscore_ops for
+	"core" power	management
+Date: Mon, 28 Mar 2011 01:29:49 +0200
+Message-ID: <201103280129.50192.rjw__22245.1398069554$1310141726$gmane$org@sisk.pl>
+References: <201103280125.11750.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110606133917.5670.54949.stgit@tringupt.in.ibm.com>
+In-Reply-To: <201103280125.11750.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,859 +18,1172 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: arjan@linux.intel.com, peterz@infradead.org, lenb@kernel.org, venki@google.com, ak@linux.intel.com, len.brown@intel.com, santosh.shilimkar@ti.com, khilman@ti.com
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Greg KH <gregkh@suse.de>, Ben Dooks <ben-linux@fluff.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Cpuidle governor only suggests the state to enter using the
-governor->select() interface, but allows the low level driver to
-override the recommended state. The actual entered state
-may be different because of software or hardware demotion. Software
-demotion is done by the back-end cpuidle driver and can be accounted
-correctly. Current cpuidle code uses last_state field to capture the
-actual state entered and based on that updates the statistics for the
-state entered.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Ideally the driver enter routine should update the counters,
-and it should return the state actually entered rather than the time
-spent there. The generic cpuidle code should simply handle where
-the counters live in the sysfs namespace, not updating the counters.
+Replace sysdev classes and struct sys_device objects used for "core"
+power management by Samsung platforms with struct syscore_ops objects
+that are simpler.
 
-Reference:
-https://lkml.org/lkml/2011/3/25/52
+This generally reduces the code size and the kernel memory footprint.
+It also is necessary for removing sysdevs entirely from the kernel in
+the future.
 
-Signed-off-by: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
+ arch/arm/mach-exynos4/pm.c               |   45 ++++++++++++--------
+ arch/arm/mach-s3c2410/irq.c              |   30 -------------
+ arch/arm/mach-s3c2410/mach-bast.c        |   17 ++-----
+ arch/arm/mach-s3c2410/pm.c               |   13 ++---
+ arch/arm/mach-s3c2410/s3c2410.c          |    5 ++
+ arch/arm/mach-s3c2412/irq.c              |    2 
+ arch/arm/mach-s3c2412/mach-jive.c        |   19 ++------
+ arch/arm/mach-s3c2412/pm.c               |   27 ++++++------
+ arch/arm/mach-s3c2412/s3c2412.c          |    4 +
+ arch/arm/mach-s3c2416/irq.c              |    2 
+ arch/arm/mach-s3c2416/pm.c               |   27 +++++-------
+ arch/arm/mach-s3c2416/s3c2416.c          |    5 ++
+ arch/arm/mach-s3c2440/mach-osiris.c      |   18 ++------
+ arch/arm/mach-s3c2440/s3c2440.c          |    8 +++
+ arch/arm/mach-s3c2440/s3c2442.c          |    6 ++
+ arch/arm/mach-s3c2440/s3c244x-irq.c      |    4 -
+ arch/arm/mach-s3c2440/s3c244x.c          |   62 ++++++++++++++--------------
+ arch/arm/mach-s3c64xx/irq-pm.c           |   18 ++++----
+ arch/arm/mach-s5pv210/pm.c               |   25 +++++++----
+ arch/arm/plat-s3c24xx/dma.c              |   68 +++++++++++--------------------
+ arch/arm/plat-s3c24xx/irq-pm.c           |    7 ---
+ arch/arm/plat-s5p/irq-pm.c               |    7 ---
+ arch/arm/plat-samsung/include/plat/cpu.h |    6 ++
+ arch/arm/plat-samsung/include/plat/pm.h  |    6 +-
+ 24 files changed, 203 insertions(+), 228 deletions(-)
 
- arch/arm/mach-at91/cpuidle.c          |   10 +++-
- arch/arm/mach-davinci/cpuidle.c       |    9 +++-
- arch/arm/mach-exynos4/cpuidle.c       |    7 ++-
- arch/arm/mach-kirkwood/cpuidle.c      |   12 ++++-
- arch/arm/mach-omap2/cpuidle34xx.c     |   65 ++++++++++++++++-------------
- arch/sh/kernel/cpu/shmobile/cpuidle.c |   12 +++--
- drivers/acpi/processor_idle.c         |   75 ++++++++++++++++++++++-----------
- drivers/cpuidle/cpuidle.c             |   32 +++++++-------
- drivers/cpuidle/governors/ladder.c    |   13 ++++++
- drivers/cpuidle/governors/menu.c      |    7 ++-
- drivers/idle/intel_idle.c             |   12 ++++-
- include/linux/cpuidle.h               |    7 +--
- 12 files changed, 162 insertions(+), 99 deletions(-)
-
-diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
-index 1cfeac1..4696a0d 100644
---- a/arch/arm/mach-at91/cpuidle.c
-+++ b/arch/arm/mach-at91/cpuidle.c
-@@ -33,7 +33,7 @@ static struct cpuidle_driver at91_idle_driver = {
+Index: linux-2.6/arch/arm/plat-samsung/include/plat/pm.h
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-samsung/include/plat/pm.h
++++ linux-2.6/arch/arm/plat-samsung/include/plat/pm.h
+@@ -103,14 +103,16 @@ extern void s3c_pm_do_restore_core(struc
  
- /* Actual code that puts the SoC in different idle states */
- static int at91_enter_idle(struct cpuidle_device *dev,
--			       struct cpuidle_state *state)
-+			       int index)
- {
- 	struct timeval before, after;
- 	int idle_time;
-@@ -41,10 +41,10 @@ static int at91_enter_idle(struct cpuidle_device *dev,
+ #ifdef CONFIG_PM
+ extern int s3c_irqext_wake(struct irq_data *data, unsigned int state);
+-extern int s3c24xx_irq_suspend(struct sys_device *dev, pm_message_t state);
+-extern int s3c24xx_irq_resume(struct sys_device *dev);
++extern int s3c24xx_irq_suspend(void);
++extern void s3c24xx_irq_resume(void);
+ #else
+ #define s3c_irqext_wake NULL
+ #define s3c24xx_irq_suspend NULL
+ #define s3c24xx_irq_resume  NULL
+ #endif
  
- 	local_irq_disable();
- 	do_gettimeofday(&before);
--	if (state == &dev->states[0])
-+	if (index == 0)
- 		/* Wait for interrupt state */
- 		cpu_do_idle();
--	else if (state == &dev->states[1]) {
-+	else if (index == 1) {
- 		asm("b 1f; .align 5; 1:");
- 		asm("mcr p15, 0, r0, c7, c10, 4");	/* drain write buffer */
- 		saved_lpr = sdram_selfrefresh_enable();
-@@ -55,7 +55,9 @@ static int at91_enter_idle(struct cpuidle_device *dev,
- 	local_irq_enable();
- 	idle_time = (after.tv_sec - before.tv_sec) * USEC_PER_SEC +
- 			(after.tv_usec - before.tv_usec);
--	return idle_time;
++extern struct syscore_ops s3c24xx_irq_syscore_ops;
 +
-+	dev->last_residency = idle_time;
-+	return index;
- }
+ /* PM debug functions */
  
- /* Initialize CPU idle by registering the idle states */
-diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
-index bd59f31..ca8582a 100644
---- a/arch/arm/mach-davinci/cpuidle.c
-+++ b/arch/arm/mach-davinci/cpuidle.c
-@@ -78,9 +78,9 @@ static struct davinci_ops davinci_states[DAVINCI_CPUIDLE_MAX_STATES] = {
+ #ifdef CONFIG_SAMSUNG_PM_DEBUG
+Index: linux-2.6/arch/arm/plat-s5p/irq-pm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-s5p/irq-pm.c
++++ linux-2.6/arch/arm/plat-s5p/irq-pm.c
+@@ -16,7 +16,6 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+-#include <linux/sysdev.h>
  
- /* Actual code that puts the SoC in different idle states */
- static int davinci_enter_idle(struct cpuidle_device *dev,
--						struct cpuidle_state *state)
-+						int index)
- {
--	struct davinci_ops *ops = cpuidle_get_statedata(state);
-+	struct davinci_ops *ops = cpuidle_get_statedata(&dev->states[index]);
- 	struct timeval before, after;
- 	int idle_time;
- 
-@@ -98,7 +98,10 @@ static int davinci_enter_idle(struct cpuidle_device *dev,
- 	local_irq_enable();
- 	idle_time = (after.tv_sec - before.tv_sec) * USEC_PER_SEC +
- 			(after.tv_usec - before.tv_usec);
--	return idle_time;
-+
-+	dev->last_residency = idle_time;
-+
-+	return index;
- }
- 
- static int __init davinci_cpuidle_probe(struct platform_device *pdev)
-diff --git a/arch/arm/mach-exynos4/cpuidle.c b/arch/arm/mach-exynos4/cpuidle.c
-index bf7e96f..ea026e7 100644
---- a/arch/arm/mach-exynos4/cpuidle.c
-+++ b/arch/arm/mach-exynos4/cpuidle.c
-@@ -16,7 +16,7 @@
- #include <asm/proc-fns.h>
- 
- static int exynos4_enter_idle(struct cpuidle_device *dev,
--			      struct cpuidle_state *state);
-+			      int index);
- 
- static struct cpuidle_state exynos4_cpuidle_set[] = {
- 	[0] = {
-@@ -37,7 +37,7 @@ static struct cpuidle_driver exynos4_idle_driver = {
+ #include <plat/cpu.h>
+ #include <plat/irqs.h>
+@@ -77,17 +76,15 @@ static struct sleep_save eint_save[] = {
+ 	SAVE_ITEM(S5P_EINT_MASK(3)),
  };
  
- static int exynos4_enter_idle(struct cpuidle_device *dev,
--			      struct cpuidle_state *state)
-+			      int index)
+-int s3c24xx_irq_suspend(struct sys_device *dev, pm_message_t state)
++int s3c24xx_irq_suspend(void)
  {
- 	struct timeval before, after;
- 	int idle_time;
-@@ -52,7 +52,8 @@ static int exynos4_enter_idle(struct cpuidle_device *dev,
- 	idle_time = (after.tv_sec - before.tv_sec) * USEC_PER_SEC +
- 		    (after.tv_usec - before.tv_usec);
+ 	s3c_pm_do_save(eint_save, ARRAY_SIZE(eint_save));
  
--	return idle_time;
-+	dev->last_residency = idle_time;
-+	return index;
- }
- 
- static int __init exynos4_init_cpuidle(void)
-diff --git a/arch/arm/mach-kirkwood/cpuidle.c b/arch/arm/mach-kirkwood/cpuidle.c
-index f68d33f..358dd80 100644
---- a/arch/arm/mach-kirkwood/cpuidle.c
-+++ b/arch/arm/mach-kirkwood/cpuidle.c
-@@ -32,17 +32,17 @@ static DEFINE_PER_CPU(struct cpuidle_device, kirkwood_cpuidle_device);
- 
- /* Actual code that puts the SoC in different idle states */
- static int kirkwood_enter_idle(struct cpuidle_device *dev,
--			       struct cpuidle_state *state)
-+			       int index)
- {
- 	struct timeval before, after;
- 	int idle_time;
- 
- 	local_irq_disable();
- 	do_gettimeofday(&before);
--	if (state == &dev->states[0])
-+	if (index == 0)
- 		/* Wait for interrupt state */
- 		cpu_do_idle();
--	else if (state == &dev->states[1]) {
-+	else if (index == 1) {
- 		/*
- 		 * Following write will put DDR in self refresh.
- 		 * Note that we have 256 cycles before DDR puts it
-@@ -57,7 +57,11 @@ static int kirkwood_enter_idle(struct cpuidle_device *dev,
- 	local_irq_enable();
- 	idle_time = (after.tv_sec - before.tv_sec) * USEC_PER_SEC +
- 			(after.tv_usec - before.tv_usec);
--	return idle_time;
-+
-+	/* Update last residency */
-+	dev->last_residency = idle_time;
-+
-+	return index;
- }
- 
- /* Initialize CPU idle by registering the idle states */
-diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
-index 4bf6e6e..3d9caea 100644
---- a/arch/arm/mach-omap2/cpuidle34xx.c
-+++ b/arch/arm/mach-omap2/cpuidle34xx.c
-@@ -88,17 +88,19 @@ static int _cpuidle_deny_idle(struct powerdomain *pwrdm,
- /**
-  * omap3_enter_idle - Programs OMAP3 to enter the specified state
-  * @dev: cpuidle device
-- * @state: The target state to be programmed
-+ * @index: the index of state to be entered
-  *
-  * Called from the CPUidle framework to program the device to the
-  * specified target state selected by the governor.
-  */
- static int omap3_enter_idle(struct cpuidle_device *dev,
--			struct cpuidle_state *state)
-+				int index)
- {
--	struct omap3_idle_statedata *cx = cpuidle_get_statedata(state);
-+	struct omap3_idle_statedata *cx =
-+			cpuidle_get_statedata(&dev->states[index]);
- 	struct timespec ts_preidle, ts_postidle, ts_idle;
- 	u32 mpu_state = cx->mpu_state, core_state = cx->core_state;
-+	int idle_time;
- 
- 	/* Used to keep track of the total time in idle */
- 	getnstimeofday(&ts_preidle);
-@@ -113,7 +115,7 @@ static int omap3_enter_idle(struct cpuidle_device *dev,
- 		goto return_sleep_time;
- 
- 	/* Deny idle for C1 */
--	if (state == &dev->states[0]) {
-+	if (index == 0) {
- 		pwrdm_for_each_clkdm(mpu_pd, _cpuidle_deny_idle);
- 		pwrdm_for_each_clkdm(core_pd, _cpuidle_deny_idle);
- 	}
-@@ -122,7 +124,7 @@ static int omap3_enter_idle(struct cpuidle_device *dev,
- 	omap_sram_idle();
- 
- 	/* Re-allow idle for C1 */
--	if (state == &dev->states[0]) {
-+	if (index == 0) {
- 		pwrdm_for_each_clkdm(mpu_pd, _cpuidle_allow_idle);
- 		pwrdm_for_each_clkdm(core_pd, _cpuidle_allow_idle);
- 	}
-@@ -134,28 +136,34 @@ return_sleep_time:
- 	local_irq_enable();
- 	local_fiq_enable();
- 
--	return ts_idle.tv_nsec / NSEC_PER_USEC + ts_idle.tv_sec * USEC_PER_SEC;
-+	idle_time = ts_idle.tv_nsec / NSEC_PER_USEC + ts_idle.tv_sec * USEC_PER_SEC;
-+
-+	/* Update cpuidle counters */
-+	dev->last_residency = idle_time;
-+
-+	return index;
- }
- 
- /**
-  * next_valid_state - Find next valid C-state
-  * @dev: cpuidle device
-- * @state: Currently selected C-state
-+ * @index: Index of currently selected c-state
-  *
-- * If the current state is valid, it is returned back to the caller.
-- * Else, this function searches for a lower c-state which is still
-- * valid.
-+ * If the state corresponding to index is valid, index is returned back
-+ * to the caller. Else, this function searches for a lower c-state which is
-+ * still valid (as defined in omap3_power_states[]) and returns its index.
-  *
-  * A state is valid if the 'valid' field is enabled and
-  * if it satisfies the enable_off_mode condition.
-  */
--static struct cpuidle_state *next_valid_state(struct cpuidle_device *dev,
--					      struct cpuidle_state *curr)
-+static int next_valid_state(struct cpuidle_device *dev,
-+				int index)
- {
--	struct cpuidle_state *next = NULL;
-+	struct cpuidle_state *curr = &dev->states[index];
- 	struct omap3_idle_statedata *cx = cpuidle_get_statedata(curr);
- 	u32 mpu_deepest_state = PWRDM_POWER_RET;
- 	u32 core_deepest_state = PWRDM_POWER_RET;
-+	int next_index = -1;
- 
- 	if (enable_off_mode) {
- 		mpu_deepest_state = PWRDM_POWER_OFF;
-@@ -172,20 +180,20 @@ static struct cpuidle_state *next_valid_state(struct cpuidle_device *dev,
- 	if ((cx->valid) &&
- 	    (cx->mpu_state >= mpu_deepest_state) &&
- 	    (cx->core_state >= core_deepest_state)) {
--		return curr;
-+		return index;
- 	} else {
- 		int idx = OMAP3_NUM_STATES - 1;
- 
- 		/* Reach the current state starting at highest C-state */
- 		for (; idx >= 0; idx--) {
- 			if (&dev->states[idx] == curr) {
--				next = &dev->states[idx];
-+				next_index = idx;
- 				break;
- 			}
- 		}
- 
- 		/* Should never hit this condition */
--		WARN_ON(next == NULL);
-+		WARN_ON(next_index == -1);
- 
- 		/*
- 		 * Drop to next valid state.
-@@ -197,37 +205,38 @@ static struct cpuidle_state *next_valid_state(struct cpuidle_device *dev,
- 			if ((cx->valid) &&
- 			    (cx->mpu_state >= mpu_deepest_state) &&
- 			    (cx->core_state >= core_deepest_state)) {
--				next = &dev->states[idx];
-+				next_index = idx;
- 				break;
- 			}
- 		}
- 		/*
- 		 * C1 is always valid.
--		 * So, no need to check for 'next==NULL' outside this loop.
-+		 * So, no need to check for 'next_index == -1' outside this loop.
- 		 */
- 	}
- 
--	return next;
-+	return next_index;
- }
- 
- /**
-  * omap3_enter_idle_bm - Checks for any bus activity
-  * @dev: cpuidle device
-- * @state: The target state to be programmed
-+ * @index: array index of target state to be programmed
-  *
-  * This function checks for any pending activity and then programs
-  * the device to the specified or a safer state.
-  */
- static int omap3_enter_idle_bm(struct cpuidle_device *dev,
--			       struct cpuidle_state *state)
-+			       int index)
- {
--	struct cpuidle_state *new_state;
-+	struct cpuidle_state *state = &dev->states[index];
-+	int new_state_idx;
- 	u32 core_next_state, per_next_state = 0, per_saved_state = 0, cam_state;
- 	struct omap3_idle_statedata *cx;
- 	int ret;
- 
- 	if (!omap3_can_sleep()) {
--		new_state = dev->safe_state;
-+		new_state_idx = dev->safe_state_index;
- 		goto select_state;
- 	}
- 
-@@ -237,7 +246,7 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
- 	 */
- 	cam_state = pwrdm_read_pwrst(cam_pd);
- 	if (cam_state == PWRDM_POWER_ON) {
--		new_state = dev->safe_state;
-+		new_state_idx = dev->safe_state_index;
- 		goto select_state;
- 	}
- 
-@@ -264,11 +273,10 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
- 	if (per_next_state != per_saved_state)
- 		pwrdm_set_next_pwrst(per_pd, per_next_state);
- 
--	new_state = next_valid_state(dev, state);
-+	new_state_idx = next_valid_state(dev, index);
- 
- select_state:
--	dev->last_state = new_state;
--	ret = omap3_enter_idle(dev, new_state);
-+	ret = omap3_enter_idle(dev, new_state_idx);
- 
- 	/* Restore original PER state if it was modified */
- 	if (per_next_state != per_saved_state)
-@@ -339,11 +347,12 @@ int __init omap3_idle_init(void)
- 
- 	cpuidle_register_driver(&omap3_idle_driver);
- 	dev = &per_cpu(omap3_idle_dev, smp_processor_id());
-+	dev->safe_state_index = -1;
- 
- 	/* C1 . MPU WFI + Core active */
- 	cx = _fill_cstate(dev, 0, "MPU ON + CORE ON");
- 	(&dev->states[0])->enter = omap3_enter_idle;
--	dev->safe_state = &dev->states[0];
-+	dev->safe_state_index = 0;
- 	cx->valid = 1;	/* C1 is always valid */
- 	cx->mpu_state = PWRDM_POWER_ON;
- 	cx->core_state = PWRDM_POWER_ON;
-diff --git a/arch/sh/kernel/cpu/shmobile/cpuidle.c b/arch/sh/kernel/cpu/shmobile/cpuidle.c
-index e4469e7..7be50d4 100644
---- a/arch/sh/kernel/cpu/shmobile/cpuidle.c
-+++ b/arch/sh/kernel/cpu/shmobile/cpuidle.c
-@@ -25,11 +25,11 @@ static unsigned long cpuidle_mode[] = {
- };
- 
- static int cpuidle_sleep_enter(struct cpuidle_device *dev,
--			       struct cpuidle_state *state)
-+				int index)
- {
- 	unsigned long allowed_mode = arch_hwblk_sleep_mode();
- 	ktime_t before, after;
--	int requested_state = state - &dev->states[0];
-+	int requested_state = index;
- 	int allowed_state;
- 	int k;
- 
-@@ -46,11 +46,13 @@ static int cpuidle_sleep_enter(struct cpuidle_device *dev,
- 	 */
- 	k = min_t(int, allowed_state, requested_state);
- 
--	dev->last_state = &dev->states[k];
- 	before = ktime_get();
- 	sh_mobile_call_standby(cpuidle_mode[k]);
- 	after = ktime_get();
--	return ktime_to_ns(ktime_sub(after, before)) >> 10;
-+
-+	dev->last_residency = (int)ktime_to_ns(ktime_sub(after, before)) >> 10;
-+
-+	return k;
- }
- 
- static struct cpuidle_device cpuidle_dev;
-@@ -84,7 +86,7 @@ void sh_mobile_setup_cpuidle(void)
- 	state->flags |= CPUIDLE_FLAG_TIME_VALID;
- 	state->enter = cpuidle_sleep_enter;
- 
--	dev->safe_state = state;
-+	dev->safe_state_index = i-1;
- 
- 	if (sh_mobile_sleep_supported & SUSP_SH_SF) {
- 		state = &dev->states[i++];
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 431ab11..9cd08ce 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -741,22 +741,24 @@ static inline void acpi_idle_do_entry(struct acpi_processor_cx *cx)
- /**
-  * acpi_idle_enter_c1 - enters an ACPI C1 state-type
-  * @dev: the target CPU
-- * @state: the state data
-+ * @index: index of target state
-  *
-  * This is equivalent to the HALT instruction.
-  */
- static int acpi_idle_enter_c1(struct cpuidle_device *dev,
--			      struct cpuidle_state *state)
-+				int index)
- {
- 	ktime_t  kt1, kt2;
- 	s64 idle_time;
- 	struct acpi_processor *pr;
-+	struct cpuidle_state *state = &dev->states[index];
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
- 
- 	pr = __this_cpu_read(processors);
-+	dev->last_residency = 0;
- 
- 	if (unlikely(!pr))
--		return 0;
-+		return -EINVAL;
- 
- 	local_irq_disable();
- 
-@@ -764,7 +766,7 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
- 	if (acpi_idle_suspend) {
- 		local_irq_enable();
- 		cpu_relax();
--		return 0;
-+		return -EINVAL;
- 	}
- 
- 	lapic_timer_state_broadcast(pr, cx, 1);
-@@ -773,37 +775,46 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
- 	kt2 = ktime_get_real();
- 	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
-+	/* Update device last_residency*/
-+	dev->last_residency = (int)idle_time;
-+
- 	local_irq_enable();
- 	cx->usage++;
- 	lapic_timer_state_broadcast(pr, cx, 0);
- 
--	return idle_time;
-+	return index;
- }
- 
- /**
-  * acpi_idle_enter_simple - enters an ACPI state without BM handling
-  * @dev: the target CPU
-- * @state: the state data
-+ * @index: the index of suggested state
-  */
- static int acpi_idle_enter_simple(struct cpuidle_device *dev,
--				  struct cpuidle_state *state)
-+				int index)
- {
- 	struct acpi_processor *pr;
-+	struct cpuidle_state *state = &dev->states[index];
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
- 	ktime_t  kt1, kt2;
- 	s64 idle_time_ns;
- 	s64 idle_time;
- 
- 	pr = __this_cpu_read(processors);
-+	dev->last_residency = 0;
- 
- 	if (unlikely(!pr))
--		return 0;
--
--	if (acpi_idle_suspend)
--		return(acpi_idle_enter_c1(dev, state));
-+		return -EINVAL;
- 
- 	local_irq_disable();
- 
-+	if (acpi_idle_suspend) {
-+		local_irq_enable();
-+		cpu_relax();
-+		return -EINVAL;
-+	}
-+
-+
- 	if (cx->entry_method != ACPI_CSTATE_FFH) {
- 		current_thread_info()->status &= ~TS_POLLING;
- 		/*
-@@ -815,7 +826,7 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 		if (unlikely(need_resched())) {
- 			current_thread_info()->status |= TS_POLLING;
- 			local_irq_enable();
--			return 0;
-+			return -EINVAL;
- 		}
- 	}
- 
-@@ -837,6 +848,9 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 	idle_time = idle_time_ns;
- 	do_div(idle_time, NSEC_PER_USEC);
- 
-+	/* Update device last_residency*/
-+	dev->last_residency = (int)idle_time;
-+
- 	/* Tell the scheduler how much we idled: */
- 	sched_clock_idle_wakeup_event(idle_time_ns);
- 
-@@ -848,7 +862,7 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 
- 	lapic_timer_state_broadcast(pr, cx, 0);
- 	cx->time += idle_time;
--	return idle_time;
-+	return index;
- }
- 
- static int c3_cpu_count;
-@@ -857,14 +871,15 @@ static DEFINE_SPINLOCK(c3_lock);
- /**
-  * acpi_idle_enter_bm - enters C3 with proper BM handling
-  * @dev: the target CPU
-- * @state: the state data
-+ * @index: the index of suggested state
-  *
-  * If BM is detected, the deepest non-C3 idle state is entered instead.
-  */
- static int acpi_idle_enter_bm(struct cpuidle_device *dev,
--			      struct cpuidle_state *state)
-+				int index)
- {
- 	struct acpi_processor *pr;
-+	struct cpuidle_state *state = &dev->states[index];
- 	struct acpi_processor_cx *cx = cpuidle_get_statedata(state);
- 	ktime_t  kt1, kt2;
- 	s64 idle_time_ns;
-@@ -872,22 +887,26 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 
- 
- 	pr = __this_cpu_read(processors);
-+	dev->last_residency = 0;
- 
- 	if (unlikely(!pr))
--		return 0;
-+		return -EINVAL;
- 
--	if (acpi_idle_suspend)
--		return(acpi_idle_enter_c1(dev, state));
-+
-+	if (acpi_idle_suspend) {
-+		cpu_relax();
-+		return -EINVAL;
-+	}
- 
- 	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
--		if (dev->safe_state) {
--			dev->last_state = dev->safe_state;
--			return dev->safe_state->enter(dev, dev->safe_state);
-+		if (dev->safe_state_index >= 0) {
-+			return dev->states[dev->safe_state_index].enter(dev,
-+						dev->safe_state_index);
- 		} else {
- 			local_irq_disable();
- 			acpi_safe_halt();
- 			local_irq_enable();
--			return 0;
-+			return -EINVAL;
- 		}
- 	}
- 
-@@ -904,7 +923,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 		if (unlikely(need_resched())) {
- 			current_thread_info()->status |= TS_POLLING;
- 			local_irq_enable();
--			return 0;
-+			return -EINVAL;
- 		}
- 	}
- 
-@@ -954,6 +973,9 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	idle_time = idle_time_ns;
- 	do_div(idle_time, NSEC_PER_USEC);
- 
-+	/* Update device last_residency*/
-+	dev->last_residency = (int)idle_time;
-+
- 	/* Tell the scheduler how much we idled: */
- 	sched_clock_idle_wakeup_event(idle_time_ns);
- 
-@@ -965,7 +987,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 
- 	lapic_timer_state_broadcast(pr, cx, 0);
- 	cx->time += idle_time;
--	return idle_time;
-+	return index;
- }
- 
- struct cpuidle_driver acpi_idle_driver = {
-@@ -992,6 +1014,7 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
- 	}
- 
- 	dev->cpu = pr->id;
-+	dev->safe_state_index = -1;
- 	for (i = 0; i < CPUIDLE_STATE_MAX; i++) {
- 		dev->states[i].name[0] = '\0';
- 		dev->states[i].desc[0] = '\0';
-@@ -1027,13 +1050,13 @@ static int acpi_processor_setup_cpuidle(struct acpi_processor *pr)
- 				state->flags |= CPUIDLE_FLAG_TIME_VALID;
- 
- 			state->enter = acpi_idle_enter_c1;
--			dev->safe_state = state;
-+			dev->safe_state_index = count;
- 			break;
- 
- 			case ACPI_STATE_C2:
- 			state->flags |= CPUIDLE_FLAG_TIME_VALID;
- 			state->enter = acpi_idle_enter_simple;
--			dev->safe_state = state;
-+			dev->safe_state_index = count;
- 			break;
- 
- 			case ACPI_STATE_C3:
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index bf50924..5d9757d 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -51,7 +51,7 @@ static void cpuidle_idle_call(void)
- {
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_state *target_state;
--	int next_state;
-+	int next_state, entered_state;
- 
- 	/* check if the device is ready */
- 	if (!dev || !dev->enabled) {
-@@ -94,26 +94,27 @@ static void cpuidle_idle_call(void)
- 
- 	target_state = &dev->states[next_state];
- 
--	/* enter the state and update stats */
--	dev->last_state = target_state;
--
- 	trace_power_start(POWER_CSTATE, next_state, dev->cpu);
- 	trace_cpu_idle(next_state, dev->cpu);
- 
--	dev->last_residency = target_state->enter(dev, target_state);
-+	entered_state = target_state->enter(dev, next_state);
- 
- 	trace_power_end(dev->cpu);
- 	trace_cpu_idle(PWR_EVENT_EXIT, dev->cpu);
- 
--	if (dev->last_state)
--		target_state = dev->last_state;
--
--	target_state->time += (unsigned long long)dev->last_residency;
--	target_state->usage++;
-+	if (entered_state >= 0) {
-+		/* Update cpuidle counters */
-+		/* This can be moved to within driver enter routine
-+		 * but that results in multiple copies of same code.
-+		 */
-+		dev->states[entered_state].time +=
-+				(unsigned long long)dev->last_residency;
-+		dev->states[entered_state].usage++;
-+	}
- 
- 	/* give the governor an opportunity to reflect on the outcome */
- 	if (cpuidle_curr_governor->reflect)
--		cpuidle_curr_governor->reflect(dev);
-+		cpuidle_curr_governor->reflect(dev, entered_state);
- }
- 
- /**
-@@ -162,11 +163,10 @@ void cpuidle_resume_and_unlock(void)
- EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
- 
- #ifdef CONFIG_ARCH_HAS_CPU_RELAX
--static int poll_idle(struct cpuidle_device *dev, struct cpuidle_state *st)
-+static int poll_idle(struct cpuidle_device *dev, int index)
- {
- 	ktime_t	t1, t2;
- 	s64 diff;
--	int ret;
- 
- 	t1 = ktime_get();
- 	local_irq_enable();
-@@ -178,8 +178,9 @@ static int poll_idle(struct cpuidle_device *dev, struct cpuidle_state *st)
- 	if (diff > INT_MAX)
- 		diff = INT_MAX;
- 
--	ret = (int) diff;
--	return ret;
-+	dev->last_residency = (int) diff;
-+
-+	return index;
- }
- 
- static void poll_idle_init(struct cpuidle_device *dev)
-@@ -238,7 +239,6 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
- 		dev->states[i].time = 0;
- 	}
- 	dev->last_residency = 0;
--	dev->last_state = NULL;
- 
- 	smp_wmb();
- 
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index 12c9890..6a686a7 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -153,11 +153,24 @@ static int ladder_enable_device(struct cpuidle_device *dev)
  	return 0;
  }
  
-+/**
-+ * ladder_reflect - update the correct last_state_idx
-+ * @dev: the CPU
-+ * @index: the index of actual state entered
-+ */
-+static void ladder_reflect(struct cpuidle_device *dev, int index)
+-int s3c24xx_irq_resume(struct sys_device *dev)
++void s3c24xx_irq_resume(void)
+ {
+ 	s3c_pm_do_restore(eint_save, ARRAY_SIZE(eint_save));
+-
+-	return 0;
+ }
+ 
+Index: linux-2.6/arch/arm/plat-s3c24xx/irq-pm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/irq-pm.c
++++ linux-2.6/arch/arm/plat-s3c24xx/irq-pm.c
+@@ -14,7 +14,6 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+-#include <linux/sysdev.h>
+ #include <linux/irq.h>
+ 
+ #include <plat/cpu.h>
+@@ -65,7 +64,7 @@ static unsigned long save_extint[3];
+ static unsigned long save_eintflt[4];
+ static unsigned long save_eintmask;
+ 
+-int s3c24xx_irq_suspend(struct sys_device *dev, pm_message_t state)
++int s3c24xx_irq_suspend(void)
+ {
+ 	unsigned int i;
+ 
+@@ -81,7 +80,7 @@ int s3c24xx_irq_suspend(struct sys_devic
+ 	return 0;
+ }
+ 
+-int s3c24xx_irq_resume(struct sys_device *dev)
++void s3c24xx_irq_resume(void)
+ {
+ 	unsigned int i;
+ 
+@@ -93,6 +92,4 @@ int s3c24xx_irq_resume(struct sys_device
+ 
+ 	s3c_pm_do_restore(irq_save, ARRAY_SIZE(irq_save));
+ 	__raw_writel(save_eintmask, S3C24XX_EINTMASK);
+-
+-	return 0;
+ }
+Index: linux-2.6/arch/arm/mach-s3c2410/irq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2410/irq.c
++++ linux-2.6/arch/arm/mach-s3c2410/irq.c
+@@ -23,38 +23,12 @@
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+ #include <linux/ioport.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ 
+ #include <plat/cpu.h>
+ #include <plat/pm.h>
+ 
+-static int s3c2410_irq_add(struct sys_device *sysdev)
+-{
+-	return 0;
+-}
+-
+-static struct sysdev_driver s3c2410_irq_driver = {
+-	.add		= s3c2410_irq_add,
++struct syscore_ops s3c24xx_irq_syscore_ops = {
+ 	.suspend	= s3c24xx_irq_suspend,
+ 	.resume		= s3c24xx_irq_resume,
+ };
+-
+-static int __init s3c2410_irq_init(void)
+-{
+-	return sysdev_driver_register(&s3c2410_sysclass, &s3c2410_irq_driver);
+-}
+-
+-arch_initcall(s3c2410_irq_init);
+-
+-static struct sysdev_driver s3c2410a_irq_driver = {
+-	.add		= s3c2410_irq_add,
+-	.suspend	= s3c24xx_irq_suspend,
+-	.resume		= s3c24xx_irq_resume,
+-};
+-
+-static int __init s3c2410a_irq_init(void)
+-{
+-	return sysdev_driver_register(&s3c2410a_sysclass, &s3c2410a_irq_driver);
+-}
+-
+-arch_initcall(s3c2410a_irq_init);
+Index: linux-2.6/arch/arm/mach-s3c2410/pm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2410/pm.c
++++ linux-2.6/arch/arm/mach-s3c2410/pm.c
+@@ -25,6 +25,7 @@
+ #include <linux/errno.h>
+ #include <linux/time.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/gpio.h>
+ #include <linux/io.h>
+ 
+@@ -92,7 +93,7 @@ static void s3c2410_pm_prepare(void)
+ 	}
+ }
+ 
+-static int s3c2410_pm_resume(struct sys_device *dev)
++static void s3c2410_pm_resume(void)
+ {
+ 	unsigned long tmp;
+ 
+@@ -104,10 +105,12 @@ static int s3c2410_pm_resume(struct sys_
+ 
+ 	if ( machine_is_aml_m5900() )
+ 		s3c2410_gpio_setpin(S3C2410_GPF(2), 0);
+-
+-	return 0;
+ }
+ 
++struct syscore_ops s3c2410_pm_syscore_ops = {
++	.resume		= s3c2410_pm_resume,
++};
++
+ static int s3c2410_pm_add(struct sys_device *dev)
+ {
+ 	pm_cpu_prep = s3c2410_pm_prepare;
+@@ -119,7 +122,6 @@ static int s3c2410_pm_add(struct sys_dev
+ #if defined(CONFIG_CPU_S3C2410)
+ static struct sysdev_driver s3c2410_pm_driver = {
+ 	.add		= s3c2410_pm_add,
+-	.resume		= s3c2410_pm_resume,
+ };
+ 
+ /* register ourselves */
+@@ -133,7 +135,6 @@ arch_initcall(s3c2410_pm_drvinit);
+ 
+ static struct sysdev_driver s3c2410a_pm_driver = {
+ 	.add		= s3c2410_pm_add,
+-	.resume		= s3c2410_pm_resume,
+ };
+ 
+ static int __init s3c2410a_pm_drvinit(void)
+@@ -147,7 +148,6 @@ arch_initcall(s3c2410a_pm_drvinit);
+ #if defined(CONFIG_CPU_S3C2440)
+ static struct sysdev_driver s3c2440_pm_driver = {
+ 	.add		= s3c2410_pm_add,
+-	.resume		= s3c2410_pm_resume,
+ };
+ 
+ static int __init s3c2440_pm_drvinit(void)
+@@ -161,7 +161,6 @@ arch_initcall(s3c2440_pm_drvinit);
+ #if defined(CONFIG_CPU_S3C2442)
+ static struct sysdev_driver s3c2442_pm_driver = {
+ 	.add		= s3c2410_pm_add,
+-	.resume		= s3c2410_pm_resume,
+ };
+ 
+ static int __init s3c2442_pm_drvinit(void)
+Index: linux-2.6/arch/arm/plat-samsung/include/plat/cpu.h
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-samsung/include/plat/cpu.h
++++ linux-2.6/arch/arm/plat-samsung/include/plat/cpu.h
+@@ -68,6 +68,12 @@ extern void s3c24xx_init_uartdevs(char *
+ struct sys_timer;
+ extern struct sys_timer s3c24xx_timer;
+ 
++extern struct syscore_ops s3c2410_pm_syscore_ops;
++extern struct syscore_ops s3c2412_pm_syscore_ops;
++extern struct syscore_ops s3c2416_pm_syscore_ops;
++extern struct syscore_ops s3c244x_pm_syscore_ops;
++extern struct syscore_ops s3c64xx_irq_syscore_ops;
++
+ /* system device classes */
+ 
+ extern struct sysdev_class s3c2410_sysclass;
+Index: linux-2.6/arch/arm/mach-s3c2410/s3c2410.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2410/s3c2410.c
++++ linux-2.6/arch/arm/mach-s3c2410/s3c2410.c
+@@ -19,6 +19,7 @@
+ #include <linux/gpio.h>
+ #include <linux/clk.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/serial_core.h>
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
+@@ -40,6 +41,7 @@
+ #include <plat/devs.h>
+ #include <plat/clock.h>
+ #include <plat/pll.h>
++#include <plat/pm.h>
+ 
+ #include <plat/gpio-core.h>
+ #include <plat/gpio-cfg.h>
+@@ -168,6 +170,9 @@ int __init s3c2410_init(void)
+ {
+ 	printk("S3C2410: Initialising architecture\n");
+ 
++	register_syscore_ops(&s3c2410_pm_syscore_ops);
++	register_syscore_ops(&s3c24xx_irq_syscore_ops);
++
+ 	return sysdev_register(&s3c2410_sysdev);
+ }
+ 
+Index: linux-2.6/arch/arm/mach-s3c2412/irq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2412/irq.c
++++ linux-2.6/arch/arm/mach-s3c2412/irq.c
+@@ -202,8 +202,6 @@ static int s3c2412_irq_add(struct sys_de
+ 
+ static struct sysdev_driver s3c2412_irq_driver = {
+ 	.add		= s3c2412_irq_add,
+-	.suspend	= s3c24xx_irq_suspend,
+-	.resume		= s3c24xx_irq_resume,
+ };
+ 
+ static int s3c2412_irq_init(void)
+Index: linux-2.6/arch/arm/mach-s3c2412/pm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2412/pm.c
++++ linux-2.6/arch/arm/mach-s3c2412/pm.c
+@@ -17,6 +17,7 @@
+ #include <linux/timer.h>
+ #include <linux/init.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
+ 
+@@ -86,13 +87,24 @@ static struct sleep_save s3c2412_sleep[]
+ 	SAVE_ITEM(S3C2413_GPJSLPCON),
+ };
+ 
+-static int s3c2412_pm_suspend(struct sys_device *dev, pm_message_t state)
++static struct sysdev_driver s3c2412_pm_driver = {
++	.add		= s3c2412_pm_add,
++};
++
++static __init int s3c2412_pm_init(void)
 +{
-+	struct ladder_device *ldev = &__get_cpu_var(ladder_devices);
-+	if (index > 0)
-+		ldev->last_state_idx = index;
++	return sysdev_driver_register(&s3c2412_sysclass, &s3c2412_pm_driver);
 +}
 +
- static struct cpuidle_governor ladder_governor = {
- 	.name =		"ladder",
- 	.rating =	10,
- 	.enable =	ladder_enable_device,
- 	.select =	ladder_select_state,
-+	.reflect =	ladder_reflect,
- 	.owner =	THIS_MODULE,
- };
- 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index c47f3d0..e4b200c 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -310,14 +310,17 @@ static int menu_select(struct cpuidle_device *dev)
- /**
-  * menu_reflect - records that data structures need update
-  * @dev: the CPU
-+ * @index: the index of actual entered state
-  *
-  * NOTE: it's important to be fast here because this operation will add to
-  *       the overall exit latency.
-  */
--static void menu_reflect(struct cpuidle_device *dev)
-+static void menu_reflect(struct cpuidle_device *dev, int index)
- {
- 	struct menu_device *data = &__get_cpu_var(menu_devices);
--	data->needs_update = 1;
-+	data->last_state_idx = index;
-+	if (index >= 0)
-+		data->needs_update = 1;
- }
- 
- /**
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index a46dddf..a1c888d 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -81,7 +81,7 @@ static unsigned int mwait_substates;
- static unsigned int lapic_timer_reliable_states = (1 << 1);	 /* Default to only C1 */
- 
- static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
--static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state);
-+static int intel_idle(struct cpuidle_device *dev, int index);
- 
- static struct cpuidle_state *cpuidle_state_table;
- 
-@@ -209,12 +209,13 @@ static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
- /**
-  * intel_idle
-  * @dev: cpuidle_device
-- * @state: cpuidle state
-+ * @index: index of cpuidle state
-  *
-  */
--static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state)
-+static int intel_idle(struct cpuidle_device *dev, int index)
- {
- 	unsigned long ecx = 1; /* break on interrupt flag */
-+	struct cpuidle_state *state = &dev->states[index];
- 	unsigned long eax = (unsigned long)cpuidle_get_statedata(state);
- 	unsigned int cstate;
- 	ktime_t kt_before, kt_after;
-@@ -256,7 +257,10 @@ static int intel_idle(struct cpuidle_device *dev, struct cpuidle_state *state)
- 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
- 
--	return usec_delta;
-+	/* Update cpuidle counters */
-+	dev->last_residency = (int)usec_delta;
++arch_initcall(s3c2412_pm_init);
 +
-+	return index;
++static int s3c2412_pm_suspend(void)
+ {
+ 	s3c_pm_do_save(s3c2412_sleep, ARRAY_SIZE(s3c2412_sleep));
+ 	return 0;
  }
  
- static void __setup_broadcast_timer(void *arg)
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 36719ea..45eef60 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -42,7 +42,7 @@ struct cpuidle_state {
- 	unsigned long long	time; /* in US */
+-static int s3c2412_pm_resume(struct sys_device *dev)
++static void s3c2412_pm_resume(void)
+ {
+ 	unsigned long tmp;
  
- 	int (*enter)	(struct cpuidle_device *dev,
--			 struct cpuidle_state *state);
-+			int index);
+@@ -102,18 +114,9 @@ static int s3c2412_pm_resume(struct sys_
+ 	__raw_writel(tmp, S3C2412_PWRCFG);
+ 
+ 	s3c_pm_do_restore(s3c2412_sleep, ARRAY_SIZE(s3c2412_sleep));
+-	return 0;
+ }
+ 
+-static struct sysdev_driver s3c2412_pm_driver = {
+-	.add		= s3c2412_pm_add,
++struct syscore_ops s3c2412_pm_syscore_ops = {
+ 	.suspend	= s3c2412_pm_suspend,
+ 	.resume		= s3c2412_pm_resume,
+ };
+-
+-static __init int s3c2412_pm_init(void)
+-{
+-	return sysdev_driver_register(&s3c2412_sysclass, &s3c2412_pm_driver);
+-}
+-
+-arch_initcall(s3c2412_pm_init);
+Index: linux-2.6/arch/arm/mach-s3c2412/s3c2412.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2412/s3c2412.c
++++ linux-2.6/arch/arm/mach-s3c2412/s3c2412.c
+@@ -19,6 +19,7 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/serial_core.h>
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
+@@ -244,5 +245,8 @@ int __init s3c2412_init(void)
+ {
+ 	printk("S3C2412: Initialising architecture\n");
+ 
++	register_syscore_ops(&s3c2412_pm_syscore_ops);
++	register_syscore_ops(&s3c24xx_irq_syscore_ops);
++
+ 	return sysdev_register(&s3c2412_sysdev);
+ }
+Index: linux-2.6/arch/arm/mach-s3c2416/irq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2416/irq.c
++++ linux-2.6/arch/arm/mach-s3c2416/irq.c
+@@ -238,8 +238,6 @@ static int __init s3c2416_irq_add(struct
+ 
+ static struct sysdev_driver s3c2416_irq_driver = {
+ 	.add		= s3c2416_irq_add,
+-	.suspend	= s3c24xx_irq_suspend,
+-	.resume		= s3c24xx_irq_resume,
  };
  
- /* Idle State Flags */
-@@ -87,13 +87,12 @@ struct cpuidle_device {
- 	int			state_count;
- 	struct cpuidle_state	states[CPUIDLE_STATE_MAX];
- 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
--	struct cpuidle_state	*last_state;
+ static int __init s3c2416_irq_init(void)
+Index: linux-2.6/arch/arm/mach-s3c2416/pm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2416/pm.c
++++ linux-2.6/arch/arm/mach-s3c2416/pm.c
+@@ -11,6 +11,7 @@
+ */
  
- 	struct list_head 	device_list;
- 	struct kobject		kobj;
- 	struct completion	kobj_unregister;
- 	void			*governor_data;
--	struct cpuidle_state	*safe_state;
-+	int			safe_state_index;
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/io.h>
  
- 	int (*prepare)		(struct cpuidle_device *dev);
+ #include <asm/cacheflush.h>
+@@ -55,30 +56,26 @@ static int s3c2416_pm_add(struct sys_dev
+ 	return 0;
+ }
+ 
+-static int s3c2416_pm_suspend(struct sys_device *dev, pm_message_t state)
++static struct sysdev_driver s3c2416_pm_driver = {
++	.add		= s3c2416_pm_add,
++};
++
++static __init int s3c2416_pm_init(void)
+ {
+-	return 0;
++	return sysdev_driver_register(&s3c2416_sysclass, &s3c2416_pm_driver);
+ }
+ 
+-static int s3c2416_pm_resume(struct sys_device *dev)
++arch_initcall(s3c2416_pm_init);
++
++
++static void s3c2416_pm_resume(void)
+ {
+ 	/* unset the return-from-sleep amd inform flags */
+ 	__raw_writel(0x0, S3C2443_PWRMODE);
+ 	__raw_writel(0x0, S3C2412_INFORM0);
+ 	__raw_writel(0x0, S3C2412_INFORM1);
+-
+-	return 0;
+ }
+ 
+-static struct sysdev_driver s3c2416_pm_driver = {
+-	.add		= s3c2416_pm_add,
+-	.suspend	= s3c2416_pm_suspend,
++struct syscore_ops s3c2416_pm_syscore_ops = {
+ 	.resume		= s3c2416_pm_resume,
  };
-@@ -165,7 +164,7 @@ struct cpuidle_governor {
- 	void (*disable)		(struct cpuidle_device *dev);
+-
+-static __init int s3c2416_pm_init(void)
+-{
+-	return sysdev_driver_register(&s3c2416_sysclass, &s3c2416_pm_driver);
+-}
+-
+-arch_initcall(s3c2416_pm_init);
+Index: linux-2.6/arch/arm/mach-s3c2416/s3c2416.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2416/s3c2416.c
++++ linux-2.6/arch/arm/mach-s3c2416/s3c2416.c
+@@ -32,6 +32,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/serial_core.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
  
- 	int  (*select)		(struct cpuidle_device *dev);
--	void (*reflect)		(struct cpuidle_device *dev);
-+	void (*reflect)		(struct cpuidle_device *dev, int index);
+@@ -54,6 +55,7 @@
+ #include <plat/devs.h>
+ #include <plat/cpu.h>
+ #include <plat/sdhci.h>
++#include <plat/pm.h>
  
- 	struct module 		*owner;
+ #include <plat/iic-core.h>
+ #include <plat/fb-core.h>
+@@ -95,6 +97,9 @@ int __init s3c2416_init(void)
+ 
+ 	s3c_fb_setname("s3c2443-fb");
+ 
++	register_syscore_ops(&s3c2416_pm_syscore_ops);
++	register_syscore_ops(&s3c24xx_irq_syscore_ops);
++
+ 	return sysdev_register(&s3c2416_sysdev);
+ }
+ 
+Index: linux-2.6/arch/arm/mach-s3c2440/s3c244x-irq.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2440/s3c244x-irq.c
++++ linux-2.6/arch/arm/mach-s3c2440/s3c244x-irq.c
+@@ -116,8 +116,6 @@ static int s3c244x_irq_add(struct sys_de
+ 
+ static struct sysdev_driver s3c2440_irq_driver = {
+ 	.add		= s3c244x_irq_add,
+-	.suspend	= s3c24xx_irq_suspend,
+-	.resume		= s3c24xx_irq_resume,
  };
+ 
+ static int s3c2440_irq_init(void)
+@@ -129,8 +127,6 @@ arch_initcall(s3c2440_irq_init);
+ 
+ static struct sysdev_driver s3c2442_irq_driver = {
+ 	.add		= s3c244x_irq_add,
+-	.suspend	= s3c24xx_irq_suspend,
+-	.resume		= s3c24xx_irq_resume,
+ };
+ 
+ 
+Index: linux-2.6/arch/arm/mach-s3c2440/s3c244x.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2440/s3c244x.c
++++ linux-2.6/arch/arm/mach-s3c2440/s3c244x.c
+@@ -19,6 +19,7 @@
+ #include <linux/serial_core.h>
+ #include <linux/platform_device.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
+ 
+@@ -134,45 +135,14 @@ void __init s3c244x_init_clocks(int xtal
+ 	s3c2410_baseclk_add();
+ }
+ 
+-#ifdef CONFIG_PM
+-
+-static struct sleep_save s3c244x_sleep[] = {
+-	SAVE_ITEM(S3C2440_DSC0),
+-	SAVE_ITEM(S3C2440_DSC1),
+-	SAVE_ITEM(S3C2440_GPJDAT),
+-	SAVE_ITEM(S3C2440_GPJCON),
+-	SAVE_ITEM(S3C2440_GPJUP)
+-};
+-
+-static int s3c244x_suspend(struct sys_device *dev, pm_message_t state)
+-{
+-	s3c_pm_do_save(s3c244x_sleep, ARRAY_SIZE(s3c244x_sleep));
+-	return 0;
+-}
+-
+-static int s3c244x_resume(struct sys_device *dev)
+-{
+-	s3c_pm_do_restore(s3c244x_sleep, ARRAY_SIZE(s3c244x_sleep));
+-	return 0;
+-}
+-
+-#else
+-#define s3c244x_suspend NULL
+-#define s3c244x_resume  NULL
+-#endif
+-
+ /* Since the S3C2442 and S3C2440 share  items, put both sysclasses here */
+ 
+ struct sysdev_class s3c2440_sysclass = {
+ 	.name		= "s3c2440-core",
+-	.suspend	= s3c244x_suspend,
+-	.resume		= s3c244x_resume
+ };
+ 
+ struct sysdev_class s3c2442_sysclass = {
+ 	.name		= "s3c2442-core",
+-	.suspend	= s3c244x_suspend,
+-	.resume		= s3c244x_resume
+ };
+ 
+ /* need to register class before we actually register the device, and
+@@ -194,3 +164,33 @@ static int __init s3c2442_core_init(void
+ }
+ 
+ core_initcall(s3c2442_core_init);
++
++
++#ifdef CONFIG_PM
++static struct sleep_save s3c244x_sleep[] = {
++	SAVE_ITEM(S3C2440_DSC0),
++	SAVE_ITEM(S3C2440_DSC1),
++	SAVE_ITEM(S3C2440_GPJDAT),
++	SAVE_ITEM(S3C2440_GPJCON),
++	SAVE_ITEM(S3C2440_GPJUP)
++};
++
++static int s3c244x_suspend(void)
++{
++	s3c_pm_do_save(s3c244x_sleep, ARRAY_SIZE(s3c244x_sleep));
++	return 0;
++}
++
++static void s3c244x_resume(void)
++{
++	s3c_pm_do_restore(s3c244x_sleep, ARRAY_SIZE(s3c244x_sleep));
++}
++#else
++#define s3c244x_suspend NULL
++#define s3c244x_resume  NULL
++#endif
++
++struct syscore_ops s3c244x_pm_syscore_ops = {
++	.suspend	= s3c244x_suspend,
++	.resume		= s3c244x_resume,
++};
+Index: linux-2.6/arch/arm/mach-s3c2440/s3c2440.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2440/s3c2440.c
++++ linux-2.6/arch/arm/mach-s3c2440/s3c2440.c
+@@ -19,6 +19,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/serial_core.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/gpio.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
+@@ -33,6 +34,7 @@
+ #include <plat/devs.h>
+ #include <plat/cpu.h>
+ #include <plat/s3c244x.h>
++#include <plat/pm.h>
+ 
+ #include <plat/gpio-core.h>
+ #include <plat/gpio-cfg.h>
+@@ -51,6 +53,12 @@ int __init s3c2440_init(void)
+ 	s3c_device_wdt.resource[1].start = IRQ_S3C2440_WDT;
+ 	s3c_device_wdt.resource[1].end   = IRQ_S3C2440_WDT;
+ 
++	/* register suspend/resume handlers */
++
++	register_syscore_ops(&s3c2410_pm_syscore_ops);
++	register_syscore_ops(&s3c244x_pm_syscore_ops);
++	register_syscore_ops(&s3c24xx_irq_syscore_ops);
++
+ 	/* register our system device for everything else */
+ 
+ 	return sysdev_register(&s3c2440_sysdev);
+Index: linux-2.6/arch/arm/mach-s3c2440/s3c2442.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2440/s3c2442.c
++++ linux-2.6/arch/arm/mach-s3c2440/s3c2442.c
+@@ -29,6 +29,7 @@
+ #include <linux/err.h>
+ #include <linux/device.h>
+ #include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/interrupt.h>
+ #include <linux/ioport.h>
+ #include <linux/mutex.h>
+@@ -45,6 +46,7 @@
+ #include <plat/clock.h>
+ #include <plat/cpu.h>
+ #include <plat/s3c244x.h>
++#include <plat/pm.h>
+ 
+ #include <plat/gpio-core.h>
+ #include <plat/gpio-cfg.h>
+@@ -167,6 +169,10 @@ int __init s3c2442_init(void)
+ {
+ 	printk("S3C2442: Initialising architecture\n");
+ 
++	register_syscore_ops(&s3c2410_pm_syscore_ops);
++	register_syscore_ops(&s3c244x_pm_syscore_ops);
++	register_syscore_ops(&s3c24xx_irq_syscore_ops);
++
+ 	return sysdev_register(&s3c2442_sysdev);
+ }
+ 
+Index: linux-2.6/arch/arm/mach-s3c64xx/irq-pm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c64xx/irq-pm.c
++++ linux-2.6/arch/arm/mach-s3c64xx/irq-pm.c
+@@ -13,7 +13,7 @@
+  */
+ 
+ #include <linux/kernel.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/interrupt.h>
+ #include <linux/serial_core.h>
+ #include <linux/irq.h>
+@@ -54,7 +54,7 @@ static struct irq_grp_save {
+ 
+ static u32 irq_uart_mask[CONFIG_SERIAL_SAMSUNG_UARTS];
+ 
+-static int s3c64xx_irq_pm_suspend(struct sys_device *dev, pm_message_t state)
++static int s3c64xx_irq_pm_suspend(void)
+ {
+ 	struct irq_grp_save *grp = eint_grp_save;
+ 	int i;
+@@ -75,7 +75,7 @@ static int s3c64xx_irq_pm_suspend(struct
+ 	return 0;
+ }
+ 
+-static int s3c64xx_irq_pm_resume(struct sys_device *dev)
++static void s3c64xx_irq_pm_resume(void)
+ {
+ 	struct irq_grp_save *grp = eint_grp_save;
+ 	int i;
+@@ -94,18 +94,18 @@ static int s3c64xx_irq_pm_resume(struct
+ 	}
+ 
+ 	S3C_PMDBG("%s: IRQ configuration restored\n", __func__);
+-	return 0;
+ }
+ 
+-static struct sysdev_driver s3c64xx_irq_driver = {
++struct syscore_ops s3c64xx_irq_syscore_ops = {
+ 	.suspend = s3c64xx_irq_pm_suspend,
+ 	.resume	 = s3c64xx_irq_pm_resume,
+ };
+ 
+-static int __init s3c64xx_irq_pm_init(void)
++static __init int s3c64xx_syscore_init(void)
+ {
+-	return sysdev_driver_register(&s3c64xx_sysclass, &s3c64xx_irq_driver);
+-}
++	register_syscore_ops(&s3c64xx_irq_syscore_ops);
+ 
+-arch_initcall(s3c64xx_irq_pm_init);
++	return 0;
++}
+ 
++core_initcall(s3c64xx_syscore_init);
+Index: linux-2.6/arch/arm/mach-s5pv210/pm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s5pv210/pm.c
++++ linux-2.6/arch/arm/mach-s5pv210/pm.c
+@@ -16,6 +16,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/suspend.h>
++#include <linux/syscore_ops.h>
+ #include <linux/io.h>
+ 
+ #include <plat/cpu.h>
+@@ -140,7 +141,17 @@ static int s5pv210_pm_add(struct sys_dev
+ 	return 0;
+ }
+ 
+-static int s5pv210_pm_resume(struct sys_device *dev)
++static struct sysdev_driver s5pv210_pm_driver = {
++	.add		= s5pv210_pm_add,
++};
++
++static __init int s5pv210_pm_drvinit(void)
++{
++	return sysdev_driver_register(&s5pv210_sysclass, &s5pv210_pm_driver);
++}
++arch_initcall(s5pv210_pm_drvinit);
++
++static void s5pv210_pm_resume(void)
+ {
+ 	u32 tmp;
+ 
+@@ -150,17 +161,15 @@ static int s5pv210_pm_resume(struct sys_
+ 	__raw_writel(tmp , S5P_OTHERS);
+ 
+ 	s3c_pm_do_restore_core(s5pv210_core_save, ARRAY_SIZE(s5pv210_core_save));
+-
+-	return 0;
+ }
+ 
+-static struct sysdev_driver s5pv210_pm_driver = {
+-	.add		= s5pv210_pm_add,
++static struct syscore_ops s5pv210_pm_syscore_ops = {
+ 	.resume		= s5pv210_pm_resume,
+ };
+ 
+-static __init int s5pv210_pm_drvinit(void)
++static __init int s5pv210_pm_syscore_init(void)
+ {
+-	return sysdev_driver_register(&s5pv210_sysclass, &s5pv210_pm_driver);
++	register_syscore_ops(&s5pv210_pm_syscore_ops);
++	return 0;
+ }
+-arch_initcall(s5pv210_pm_drvinit);
++arch_initcall(s5pv210_pm_syscore_init);
+Index: linux-2.6/arch/arm/mach-exynos4/pm.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-exynos4/pm.c
++++ linux-2.6/arch/arm/mach-exynos4/pm.c
+@@ -16,6 +16,7 @@
+ 
+ #include <linux/init.h>
+ #include <linux/suspend.h>
++#include <linux/syscore_ops.h>
+ #include <linux/io.h>
+ 
+ #include <asm/cacheflush.h>
+@@ -372,7 +373,27 @@ void exynos4_scu_enable(void __iomem *sc
+ 	flush_cache_all();
+ }
+ 
+-static int exynos4_pm_resume(struct sys_device *dev)
++static struct sysdev_driver exynos4_pm_driver = {
++	.add		= exynos4_pm_add,
++};
++
++static __init int exynos4_pm_drvinit(void)
++{
++	unsigned int tmp;
++
++	s3c_pm_init();
++
++	/* All wakeup disable */
++
++	tmp = __raw_readl(S5P_WAKEUP_MASK);
++	tmp |= ((0xFF << 8) | (0x1F << 1));
++	__raw_writel(tmp, S5P_WAKEUP_MASK);
++
++	return sysdev_driver_register(&exynos4_sysclass, &exynos4_pm_driver);
++}
++arch_initcall(exynos4_pm_drvinit);
++
++static void exynos4_pm_resume(void)
+ {
+ 	/* For release retention */
+ 
+@@ -394,27 +415,15 @@ static int exynos4_pm_resume(struct sys_
+ 	/* enable L2X0*/
+ 	writel_relaxed(1, S5P_VA_L2CC + L2X0_CTRL);
+ #endif
+-
+-	return 0;
+ }
+ 
+-static struct sysdev_driver exynos4_pm_driver = {
+-	.add		= exynos4_pm_add,
++static struct syscore_ops exynos4_pm_syscore_ops = {
+ 	.resume		= exynos4_pm_resume,
+ };
+ 
+-static __init int exynos4_pm_drvinit(void)
++static __init int exynos4_pm_syscore_init(void)
+ {
+-	unsigned int tmp;
+-
+-	s3c_pm_init();
+-
+-	/* All wakeup disable */
+-
+-	tmp = __raw_readl(S5P_WAKEUP_MASK);
+-	tmp |= ((0xFF << 8) | (0x1F << 1));
+-	__raw_writel(tmp, S5P_WAKEUP_MASK);
+-
+-	return sysdev_driver_register(&exynos4_sysclass, &exynos4_pm_driver);
++	register_syscore_ops(&exynos4_pm_syscore_ops);
++	return 0;
+ }
+-arch_initcall(exynos4_pm_drvinit);
++arch_initcall(exynos4_pm_syscore_init);
+Index: linux-2.6/arch/arm/mach-s3c2410/mach-bast.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2410/mach-bast.c
++++ linux-2.6/arch/arm/mach-s3c2410/mach-bast.c
+@@ -17,7 +17,7 @@
+ #include <linux/timer.h>
+ #include <linux/init.h>
+ #include <linux/gpio.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/serial_core.h>
+ #include <linux/platform_device.h>
+ #include <linux/dm9000.h>
+@@ -214,17 +214,16 @@ static struct s3c2410_uartcfg bast_uartc
+ /* NAND Flash on BAST board */
+ 
+ #ifdef CONFIG_PM
+-static int bast_pm_suspend(struct sys_device *sd, pm_message_t state)
++static int bast_pm_suspend(void)
+ {
+ 	/* ensure that an nRESET is not generated on resume. */
+ 	gpio_direction_output(S3C2410_GPA(21), 1);
+ 	return 0;
+ }
+ 
+-static int bast_pm_resume(struct sys_device *sd)
++static void bast_pm_resume(void)
+ {
+ 	s3c_gpio_cfgpin(S3C2410_GPA(21), S3C2410_GPA21_nRSTOUT);
+-	return 0;
+ }
+ 
+ #else
+@@ -232,16 +231,11 @@ static int bast_pm_resume(struct sys_dev
+ #define bast_pm_resume NULL
+ #endif
+ 
+-static struct sysdev_class bast_pm_sysclass = {
+-	.name		= "mach-bast",
++static struct syscore_ops bast_pm_syscore_ops = {
+ 	.suspend	= bast_pm_suspend,
+ 	.resume		= bast_pm_resume,
+ };
+ 
+-static struct sys_device bast_pm_sysdev = {
+-	.cls		= &bast_pm_sysclass,
+-};
+-
+ static int smartmedia_map[] = { 0 };
+ static int chip0_map[] = { 1 };
+ static int chip1_map[] = { 2 };
+@@ -642,8 +636,7 @@ static void __init bast_map_io(void)
+ 
+ static void __init bast_init(void)
+ {
+-	sysdev_class_register(&bast_pm_sysclass);
+-	sysdev_register(&bast_pm_sysdev);
++	register_syscore_ops(&bast_pm_syscore_ops);
+ 
+ 	s3c_i2c0_set_platdata(&bast_i2c_info);
+ 	s3c_nand_set_platdata(&bast_nand_info);
+Index: linux-2.6/arch/arm/plat-s3c24xx/dma.c
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-s3c24xx/dma.c
++++ linux-2.6/arch/arm/plat-s3c24xx/dma.c
+@@ -22,7 +22,7 @@
+ #include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/interrupt.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/slab.h>
+ #include <linux/errno.h>
+ #include <linux/io.h>
+@@ -1195,19 +1195,12 @@ int s3c2410_dma_getposition(unsigned int
+ 
+ EXPORT_SYMBOL(s3c2410_dma_getposition);
+ 
+-static inline struct s3c2410_dma_chan *to_dma_chan(struct sys_device *dev)
+-{
+-	return container_of(dev, struct s3c2410_dma_chan, dev);
+-}
+-
+-/* system device class */
++/* system core operations */
+ 
+ #ifdef CONFIG_PM
+ 
+-static int s3c2410_dma_suspend(struct sys_device *dev, pm_message_t state)
++static void s3c2410_dma_suspend_chan(s3c2410_dma_chan *cp)
+ {
+-	struct s3c2410_dma_chan *cp = to_dma_chan(dev);
+-
+ 	printk(KERN_DEBUG "suspending dma channel %d\n", cp->number);
+ 
+ 	if (dma_rdreg(cp, S3C2410_DMA_DMASKTRIG) & S3C2410_DMASKTRIG_ON) {
+@@ -1222,13 +1215,21 @@ static int s3c2410_dma_suspend(struct sy
+ 
+ 		s3c2410_dma_dostop(cp);
+ 	}
++}
++
++static int s3c2410_dma_suspend(void)
++{
++	struct s3c2410_dma_chan *cp = s3c2410_chans;
++	int channel;
++
++	for (channel = 0; channel < dma_channels; cp++, channel++)
++		s3c2410_dma_suspend_chan(cp);
+ 
+ 	return 0;
+ }
+ 
+-static int s3c2410_dma_resume(struct sys_device *dev)
++static void s3c2410_dma_resume_chan(struct s3c2410_dma_chan *cp)
+ {
+-	struct s3c2410_dma_chan *cp = to_dma_chan(dev);
+ 	unsigned int no = cp->number | DMACH_LOW_LEVEL;
+ 
+ 	/* restore channel's hardware configuration */
+@@ -1249,13 +1250,21 @@ static int s3c2410_dma_resume(struct sys
+ 	return 0;
+ }
+ 
++static void s3c2410_dma_resume(void)
++{
++	struct s3c2410_dma_chan *cp = s3c2410_chans + dma_channels - 1;
++	int channel;
++
++	for (channel = dma_channels - 1; channel >= 0; cp++, channel--)
++		s3c2410_dma_resume_chan(cp);
++}
++
+ #else
+ #define s3c2410_dma_suspend NULL
+ #define s3c2410_dma_resume  NULL
+ #endif /* CONFIG_PM */
+ 
+-struct sysdev_class dma_sysclass = {
+-	.name		= "s3c24xx-dma",
++struct syscore_ops dma_syscore_ops = {
+ 	.suspend	= s3c2410_dma_suspend,
+ 	.resume		= s3c2410_dma_resume,
+ };
+@@ -1269,39 +1278,14 @@ static void s3c2410_dma_cache_ctor(void
+ 
+ /* initialisation code */
+ 
+-static int __init s3c24xx_dma_sysclass_init(void)
++static int __init s3c24xx_dma_syscore_init(void)
+ {
+-	int ret = sysdev_class_register(&dma_sysclass);
+-
+-	if (ret != 0)
+-		printk(KERN_ERR "dma sysclass registration failed\n");
+-
+-	return ret;
+-}
+-
+-core_initcall(s3c24xx_dma_sysclass_init);
+-
+-static int __init s3c24xx_dma_sysdev_register(void)
+-{
+-	struct s3c2410_dma_chan *cp = s3c2410_chans;
+-	int channel, ret;
+-
+-	for (channel = 0; channel < dma_channels; cp++, channel++) {
+-		cp->dev.cls = &dma_sysclass;
+-		cp->dev.id  = channel;
+-		ret = sysdev_register(&cp->dev);
+-
+-		if (ret) {
+-			printk(KERN_ERR "error registering dev for dma %d\n",
+-			       channel);
+- 			return ret;
+-		}
+-	}
++	register_syscore_ops(&dma_syscore_ops);
+ 
+ 	return 0;
+ }
+ 
+-late_initcall(s3c24xx_dma_sysdev_register);
++late_initcall(s3c24xx_dma_syscore_init);
+ 
+ int __init s3c24xx_dma_init(unsigned int channels, unsigned int irq,
+ 			    unsigned int stride)
+Index: linux-2.6/arch/arm/mach-s3c2440/mach-osiris.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2440/mach-osiris.c
++++ linux-2.6/arch/arm/mach-s3c2440/mach-osiris.c
+@@ -17,7 +17,7 @@
+ #include <linux/init.h>
+ #include <linux/gpio.h>
+ #include <linux/device.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/serial_core.h>
+ #include <linux/clk.h>
+ #include <linux/i2c.h>
+@@ -284,7 +284,7 @@ static struct platform_device osiris_pcm
+ #ifdef CONFIG_PM
+ static unsigned char pm_osiris_ctrl0;
+ 
+-static int osiris_pm_suspend(struct sys_device *sd, pm_message_t state)
++static int osiris_pm_suspend(void)
+ {
+ 	unsigned int tmp;
+ 
+@@ -304,7 +304,7 @@ static int osiris_pm_suspend(struct sys_
+ 	return 0;
+ }
+ 
+-static int osiris_pm_resume(struct sys_device *sd)
++static void osiris_pm_resume(void)
+ {
+ 	if (pm_osiris_ctrl0 & OSIRIS_CTRL0_FIX8)
+ 		__raw_writeb(OSIRIS_CTRL1_FIX8, OSIRIS_VA_CTRL1);
+@@ -312,8 +312,6 @@ static int osiris_pm_resume(struct sys_d
+ 	__raw_writeb(pm_osiris_ctrl0, OSIRIS_VA_CTRL0);
+ 
+ 	s3c_gpio_cfgpin(S3C2410_GPA(21), S3C2410_GPA21_nRSTOUT);
+-
+-	return 0;
+ }
+ 
+ #else
+@@ -321,16 +319,11 @@ static int osiris_pm_resume(struct sys_d
+ #define osiris_pm_resume NULL
+ #endif
+ 
+-static struct sysdev_class osiris_pm_sysclass = {
+-	.name		= "mach-osiris",
++static struct syscore_ops osiris_pm_syscore_ops = {
+ 	.suspend	= osiris_pm_suspend,
+ 	.resume		= osiris_pm_resume,
+ };
+ 
+-static struct sys_device osiris_pm_sysdev = {
+-	.cls		= &osiris_pm_sysclass,
+-};
+-
+ /* Link for DVS driver to TPS65011 */
+ 
+ static void osiris_tps_release(struct device *dev)
+@@ -439,8 +432,7 @@ static void __init osiris_map_io(void)
+ 
+ static void __init osiris_init(void)
+ {
+-	sysdev_class_register(&osiris_pm_sysclass);
+-	sysdev_register(&osiris_pm_sysdev);
++	register_syscore_ops(&osiris_pm_syscore_ops);
+ 
+ 	s3c_i2c0_set_platdata(NULL);
+ 	s3c_nand_set_platdata(&osiris_nand_info);
+Index: linux-2.6/arch/arm/mach-s3c2412/mach-jive.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-s3c2412/mach-jive.c
++++ linux-2.6/arch/arm/mach-s3c2412/mach-jive.c
+@@ -17,7 +17,7 @@
+ #include <linux/timer.h>
+ #include <linux/init.h>
+ #include <linux/gpio.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/serial_core.h>
+ #include <linux/platform_device.h>
+ #include <linux/i2c.h>
+@@ -486,7 +486,7 @@ static struct s3c2410_udc_mach_info jive
+ /* Jive power management device */
+ 
+ #ifdef CONFIG_PM
+-static int jive_pm_suspend(struct sys_device *sd, pm_message_t state)
++static int jive_pm_suspend(void)
+ {
+ 	/* Write the magic value u-boot uses to check for resume into
+ 	 * the INFORM0 register, and ensure INFORM1 is set to the
+@@ -498,10 +498,9 @@ static int jive_pm_suspend(struct sys_de
+ 	return 0;
+ }
+ 
+-static int jive_pm_resume(struct sys_device *sd)
++static void jive_pm_resume(void)
+ {
+ 	__raw_writel(0x0, S3C2412_INFORM0);
+-	return 0;
+ }
+ 
+ #else
+@@ -509,16 +508,11 @@ static int jive_pm_resume(struct sys_dev
+ #define jive_pm_resume NULL
+ #endif
+ 
+-static struct sysdev_class jive_pm_sysclass = {
+-	.name		= "jive-pm",
++static struct syscore_ops jive_pm_syscore_ops = {
+ 	.suspend	= jive_pm_suspend,
+ 	.resume		= jive_pm_resume,
+ };
+ 
+-static struct sys_device jive_pm_sysdev = {
+-	.cls		= &jive_pm_sysclass,
+-};
+-
+ static void __init jive_map_io(void)
+ {
+ 	s3c24xx_init_io(jive_iodesc, ARRAY_SIZE(jive_iodesc));
+@@ -536,10 +530,9 @@ static void jive_power_off(void)
+ 
+ static void __init jive_machine_init(void)
+ {
+-	/* register system devices for managing low level suspend */
++	/* register system core operations for managing low level suspend */
+ 
+-	sysdev_class_register(&jive_pm_sysclass);
+-	sysdev_register(&jive_pm_sysdev);
++	register_syscore_ops(&jive_pm_syscore_ops);
+ 
+ 	/* write our sleep configurations for the IO. Pull down all unused
+ 	 * IO, ensure that we have turned off all peripherals we do not
 
 
 _______________________________________________
