@@ -1,13 +1,16 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH] apm: orphan the driver
-Date: Mon, 28 Mar 2011 14:44:38 +0200 (CEST)
-Message-ID: <alpine.LRH.2.00.1103281443240.8162__33818.887131247$1301316416$gmane$org@twin.jikos.cz>
-References: <20110326172204.05e52c10.sfr@canb.auug.org.au>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
+Date: Mon, 28 Mar 2011 05:57:01 -0700
+Message-ID: <4D90859D.70704__9373.18128203533$1301317114$gmane$org@zytor.com>
+References: <alpine.LFD.2.02.1103232321070.3848@x980>
+	<20110325113048.GC29521@elte.hu>
+	<alpine.LFD.2.02.1103260036300.28928@x980>
+	<201103272340.42748.linux@rainbow-software.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110326172204.05e52c10.sfr@canb.auug.org.au>
+In-Reply-To: <201103272340.42748.linux@rainbow-software.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +20,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>, x86@kernel.org, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "H. Peter Anvin" <hpa@zytor.com>, Ondrej Zary <linux@rainbow-software.org>, Andrew Morton <akpm@linux-foundation.org>, Linus <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 26 Mar 2011, Stephen Rothwell wrote:
-
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  MAINTAINERS |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
+On 03/27/2011 02:40 PM, Ondrej Zary wrote:
 > 
-> I no longer have access to any hardware that uses APM and have not
-> provided real maintenance for several years.  Hopefully someone with the
-> hardware or energy will step forward if the driver is to be kept.
+> I just tested 2.6.38-rc4 on a desktop board and it works (power off at least). 
+> If using Grub2, linux16 command must be used instead of linux in grub.cfg 
+> (otherwise loading apm module will fail with "apm: BIOS not found").
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 749f9cd..61f9948 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -548,10 +548,8 @@ S:	Maintained
->  F:	sound/aoa/
->  
->  APM DRIVER
-> -M:	Stephen Rothwell <sfr@canb.auug.org.au>
->  L:	linux-laptop@vger.kernel.org
-> -W:	http://www.canb.auug.org.au/~sfr/
-> -S:	Supported
-> +S:	Orphan
->  F:	arch/x86/kernel/apm_32.c
->  F:	include/linux/apm_bios.h
 
-I still have some hardware that uses APM and put a new 2.6 on it time to 
-time, so I can take this driver over if you want to. According to git log 
-it's really low effort anyway :)
+This is just Yet Another Example of the Grub2 people doing things in the
+absolutely most idiotic way possible by default, and then blaming the user.
+
+	-hpa
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
