@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 6/7] ARM / Samsung: Use struct syscore_ops
-	for "core" power management
-Date: Mon, 28 Mar 2011 21:42:21 +0200
-Message-ID: <201103282142.21810.rjw__27907.4603728533$1301341372$gmane$org@sisk.pl>
-References: <201103280125.11750.rjw@sisk.pl> <201103280129.50192.rjw@sisk.pl>
-	<20110327234521.GH9995@trinity.fluff.org>
+Subject: Re: [RFC][PATCH] PM / Platform: Remove __weak
+	definitions of runtime PM callbacks
+Date: Mon, 28 Mar 2011 21:43:58 +0200
+Message-ID: <201103282143.58477.rjw__22295.0433999815$1301341467$gmane$org@sisk.pl>
+References: <201103270058.41632.rjw@sisk.pl>
+	<AANLkTi=JW-xdzE3tCMohVZ1A=2pk2WHD0WrDPU4FNaXA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110327234521.GH9995@trinity.fluff.org>
+In-Reply-To: <AANLkTi=JW-xdzE3tCMohVZ1A=2pk2WHD0WrDPU4FNaXA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +19,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Russell King <linux@arm.linux.org.uk>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, March 28, 2011, Ben Dooks wrote:
-> On Mon, Mar 28, 2011 at 01:29:49AM +0200, Rafael J. Wysocki wrote:
+On Monday, March 28, 2011, Magnus Damm wrote:
+> On Sun, Mar 27, 2011 at 8:58 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Replace sysdev classes and struct sys_device objects used for "core"
-> > power management by Samsung platforms with struct syscore_ops objects
-> > that are simpler.
-> > 
-> > This generally reduces the code size and the kernel memory footprint.
-> > It also is necessary for removing sysdevs entirely from the kernel in
-> > the future.
+> >
+> > Remove the __weak definitions of platform bus type runtime PM
+> > callbacks, make platform_dev_pm_ops point to the generic routines
+> > as appropriate and allow architectures using platform_dev_pm_ops to
+> > replace the runtime PM callbacks in that structure with their own
+> > set.
+> >
+> > Convert architectures providing its own definitions of the platform
+> > runtime PM callbacks to use the new mechanism.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Hmm, does it still allow the system to choose which bits are bound
-> depending on the cpu being registered, as for the s3c stuff it isn't
-> just about the suspend/resume, it's binding items that get registered
-> early in the startup sequence?
+> Looking good, thanks Rafael. Tested on the sh7372 Mackerel board.
+> 
+> Acked-by: Magnus Damm <damm@opensource.se>
 
-The registering is still done through sysdevs, the syscore_ops are only
-used for power management.  I did my best to retain the existing flow of
-control as far as possible.
+Thanks, I'll put it into my for-2.6.40 queue as soon as 2.6.39-rc1 is out.
 
-Thanks,
 Rafael
