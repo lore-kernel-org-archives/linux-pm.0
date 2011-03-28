@@ -1,15 +1,17 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 2/7] ARM / OMAP: Use struct syscore_ops for
-	"core" power management
-Date: Mon, 28 Mar 2011 09:18:28 -0700
-Message-ID: <87ipv3kyln.fsf__6471.67256470329$1301330013$gmane$org@ti.com>
-References: <201103280125.11750.rjw@sisk.pl> <201103280127.09110.rjw@sisk.pl>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] apm: orphan the driver
+Date: Mon, 28 Mar 2011 19:24:37 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1103281924010.26754__12796.694369945$1301333222$gmane$org@pobox.suse.cz>
+References: <20110326172204.05e52c10.sfr@canb.auug.org.au>
+	<alpine.LRH.2.00.1103281443240.8162@twin.jikos.cz>
+	<20110329004438.d9e755ef.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.1103281604040.26754@pobox.suse.cz>
+	<1301321667.30628.21.camel@Joe-Laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103280127.09110.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Mon, 28 Mar 2011 01:27:08 +0200")
+In-Reply-To: <1301321667.30628.21.camel@Joe-Laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,125 +21,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Russell King <linux@arm.linux.org.uk>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Joe Perches <joe@perches.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>, x86@kernel.org, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "H. Peter Anvin" <hpa@zytor.com>, Ondrej Zary <linux@rainbow-software.org>, Andrew Morton <akpm@linux-foundation.org>, Linus <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Mon, 28 Mar 2011, Joe Perches wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Replace the sysdev class and struct sys_device used for power
-> management in the OMAP's GPIO code with a struct syscore_ops object
-> which is simpler.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > I still have some hardware that uses APM and put a new 2.6 on it time 
+> > > > to time, so I can take this driver over if you want to. According to 
+> > > > git log it's really low effort anyway :)
+> > > If you want it, its yours :-)
+> > Not really fighting for maintaining it actively, but can certainly give it 
+> > some care when necessary.
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> []
+> > @@ -548,8 +548,9 @@ S:	Maintained
+> >  F:	sound/aoa/
+> >  
+> >  APM DRIVER
+> > -L:	linux-laptop@vger.kernel.org
+> > -S:	Orphan
+> > +M:	Jiri Kosina <jkosina@suse.cz>
+> > +L:	linux-kernel@vger.kernel.org
+> 
+> Please don't add L: LKML as it's the default
+> and it could confuse people that read the file
+> and see some sections with LKML and other without
+> and may think that LKML is somehow optional.
+> 
+> > +S:	Maintained
+> 
+> If you're not actively maintaining it, maybe
+> S:	Odd Fixes
+> instead?
 
-Acked-by: Kevin Hilman <khilman@ti.com>
+Whatever ...
 
-Looks fine to me.  We're in the process of converting this driver to
-runtime PM.  When that happens the syscore ops will be removed as well,
-but I'm fine with this patch until we finish the runtime PM conversion.
 
-Kevin
 
-> ---
->  arch/arm/plat-omap/gpio.c |   35 +++++++++--------------------------
->  1 file changed, 9 insertions(+), 26 deletions(-)
->
-> Index: linux-2.6/arch/arm/plat-omap/gpio.c
-> ===================================================================
-> --- linux-2.6.orig/arch/arm/plat-omap/gpio.c
-> +++ linux-2.6/arch/arm/plat-omap/gpio.c
-> @@ -17,7 +17,7 @@
->  #include <linux/init.h>
->  #include <linux/module.h>
->  #include <linux/interrupt.h>
-> -#include <linux/sysdev.h>
-> +#include <linux/syscore_ops.h>
->  #include <linux/err.h>
->  #include <linux/clk.h>
->  #include <linux/io.h>
-> @@ -1379,9 +1379,7 @@ static const struct dev_pm_ops omap_mpui
->  	.resume_noirq = omap_mpuio_resume_noirq,
->  };
->  
-> -/* use platform_driver for this, now that there's no longer any
-> - * point to sys_device (other than not disturbing old code).
-> - */
-> +/* use platform_driver for this. */
->  static struct platform_driver omap_mpuio_driver = {
->  	.driver		= {
->  		.name	= "mpuio",
-> @@ -1754,7 +1752,7 @@ static int __devinit omap_gpio_probe(str
->  }
->  
->  #if defined(CONFIG_ARCH_OMAP16XX) || defined(CONFIG_ARCH_OMAP2PLUS)
-> -static int omap_gpio_suspend(struct sys_device *dev, pm_message_t mesg)
-> +static int omap_gpio_suspend(void)
->  {
->  	int i;
->  
-> @@ -1804,12 +1802,12 @@ static int omap_gpio_suspend(struct sys_
->  	return 0;
->  }
->  
-> -static int omap_gpio_resume(struct sys_device *dev)
-> +static void omap_gpio_resume(void)
->  {
->  	int i;
->  
->  	if (!cpu_class_is_omap2() && !cpu_is_omap16xx())
-> -		return 0;
-> +		return;
->  
->  	for (i = 0; i < gpio_bank_count; i++) {
->  		struct gpio_bank *bank = &gpio_bank[i];
-> @@ -1845,21 +1843,13 @@ static int omap_gpio_resume(struct sys_d
->  		__raw_writel(bank->saved_wakeup, wake_set);
->  		spin_unlock_irqrestore(&bank->lock, flags);
->  	}
-> -
-> -	return 0;
->  }
->  
-> -static struct sysdev_class omap_gpio_sysclass = {
-> -	.name		= "gpio",
-> +static struct syscore_ops omap_gpio_syscore_ops = {
->  	.suspend	= omap_gpio_suspend,
->  	.resume		= omap_gpio_resume,
->  };
->  
-> -static struct sys_device omap_gpio_device = {
-> -	.id		= 0,
-> -	.cls		= &omap_gpio_sysclass,
-> -};
-> -
->  #endif
->  
->  #ifdef CONFIG_ARCH_OMAP2PLUS
-> @@ -2117,21 +2107,14 @@ postcore_initcall(omap_gpio_drv_reg);
->  
->  static int __init omap_gpio_sysinit(void)
->  {
-> -	int ret = 0;
-> -
->  	mpuio_init();
->  
->  #if defined(CONFIG_ARCH_OMAP16XX) || defined(CONFIG_ARCH_OMAP2PLUS)
-> -	if (cpu_is_omap16xx() || cpu_class_is_omap2()) {
-> -		if (ret == 0) {
-> -			ret = sysdev_class_register(&omap_gpio_sysclass);
-> -			if (ret == 0)
-> -				ret = sysdev_register(&omap_gpio_device);
-> -		}
-> -	}
-> +	if (cpu_is_omap16xx() || cpu_class_is_omap2())
-> +		register_syscore_ops(&omap_gpio_syscore_ops);
->  #endif
->  
-> -	return ret;
-> +	return 0;
->  }
->  
->  arch_initcall(omap_gpio_sysinit);
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: [PATCH] APM: take over maintainership
+
+Commit 04a6553f076 ("apm: orphan the driver") Orphaned the APM
+driver as Stephen is not willing/able to maintain it any more.
+
+As I still have some hardware that is using APM and running 2.6,
+I can take it over.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
+ MAINTAINERS |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8aa1cac..a8f2705 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -548,8 +548,8 @@ S:	Maintained
+ F:	sound/aoa/
+ 
+ APM DRIVER
+-L:	linux-laptop@vger.kernel.org
+-S:	Orphan
++M:	Jiri Kosina <jkosina@suse.cz>
++S:	Odd Fixes
+ F:	arch/x86/kernel/apm_32.c
+ F:	include/linux/apm_bios.h
+ 
+-- 
+1.7.3.1
