@@ -1,19 +1,15 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] apm: orphan the driver
-Date: Mon, 28 Mar 2011 11:46:18 -0700
-Message-ID: <AANLkTimqE2YZCH5GonnqeHGGBwzggTymauS1KYuTsqOX__27904.1505106308$1301339333$gmane$org@mail.gmail.com>
-References: <20110326172204.05e52c10.sfr@canb.auug.org.au>
-	<alpine.LRH.2.00.1103281443240.8162@twin.jikos.cz>
-	<20110329004438.d9e755ef.sfr@canb.auug.org.au>
-	<alpine.LNX.2.00.1103281604040.26754@pobox.suse.cz>
-	<20110328174542.GW21838@one.firstfloor.org>
-	<4D90CC0B.8070105@zytor.com>
-	<20110328182123.GX21838@one.firstfloor.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 6/7] ARM / Samsung: Use struct syscore_ops
+	for "core" power management
+Date: Mon, 28 Mar 2011 21:42:21 +0200
+Message-ID: <201103282142.21810.rjw__27907.4603728533$1301341372$gmane$org@sisk.pl>
+References: <201103280125.11750.rjw@sisk.pl> <201103280129.50192.rjw@sisk.pl>
+	<20110327234521.GH9995@trinity.fluff.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110328182123.GX21838@one.firstfloor.org>
+In-Reply-To: <20110327234521.GH9995@trinity.fluff.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,27 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>, x86@kernel.org, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "H. Peter Anvin" <hpa@zytor.com>, Ondrej Zary <linux@rainbow-software.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 28, 2011 at 11:21 AM, Andi Kleen <andi@firstfloor.org> wrote:
->
-> Phasing out APM idle at least would be reasonable.  resumably even if the old
-> laptops still work they are likely on AC because their batteries have
-> long died. So using a bit more power in idle shouldn't be a big
-> issue.
+On Monday, March 28, 2011, Ben Dooks wrote:
+> On Mon, Mar 28, 2011 at 01:29:49AM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Replace sysdev classes and struct sys_device objects used for "core"
+> > power management by Samsung platforms with struct syscore_ops objects
+> > that are simpler.
+> > 
+> > This generally reduces the code size and the kernel memory footprint.
+> > It also is necessary for removing sysdevs entirely from the kernel in
+> > the future.
+> 
+> Hmm, does it still allow the system to choose which bits are bound
+> depending on the cpu being registered, as for the s3c stuff it isn't
+> just about the suspend/resume, it's binding items that get registered
+> early in the startup sequence?
 
-Agreed. Especially since I'm not at all convinced that APM CPU idling
-ever really worked in the first place.
+The registering is still done through sysdevs, the syscore_ops are only
+used for power management.  I did my best to retain the existing flow of
+control as far as possible.
 
-And as you say, it's not a catastrophic failure even if we were to
-remove it, and even if it were to have mattered on those old laptops
-years ago. I think we can happily say "not worth worrying about" when
-it comes to APM_CPU_IDLE.
-
-And shutdown, suspend and screensaver should all be much easier to
-continue to support - they shouldn't have any serious infrastructure
-issues.
-
-                       Linus
+Thanks,
+Rafael
