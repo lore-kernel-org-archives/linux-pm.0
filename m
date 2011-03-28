@@ -1,18 +1,15 @@
-From: Calvin Walton <calvin.walton@kepstin.ca>
-Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
-Date: Fri, 25 Mar 2011 11:41:54 -0400
-Message-ID: <1301067716.2053.6.camel__45364.3799447038$1301323312$gmane$org@ayu>
-References: <alpine.LFD.2.02.1103232321070.3848@x980>
-	<20110324154505.934a56a0.sfr@canb.auug.org.au>
-	<alpine.LFD.2.02.1103240336590.4529@x980>
-	<alpine.LFD.2.02.1103240414450.4529@x980>
-	<20110324083959.GE30812@elte.hu>
-	<alpine.LFD.2.02.1103241929450.16085@x980>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH 2/7] ARM / OMAP: Use struct syscore_ops for
+	"core" power management
+Date: Mon, 28 Mar 2011 09:18:28 -0700
+Message-ID: <87ipv3kyln.fsf__6471.67256470329$1301330013$gmane$org@ti.com>
+References: <201103280125.11750.rjw@sisk.pl> <201103280127.09110.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.02.1103241929450.16085@x980>
+In-Reply-To: <201103280127.09110.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Mon, 28 Mar 2011 01:27:08 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,34 +19,125 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H.
-	Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Russell King <linux@arm.linux.org.uk>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2011-03-24 at 19:49 -0400, Len Brown wrote:
-> > > Microsoft was able to delete APM from Windows in 2006
-> > > with the release of Windows Vista. [...]
-> > 
-> > Does Windows XP still support it?
-> 
-> yes, and so does Red Hat Linux 9.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> > While i'm not a fan of APM at all, this removal is a tad fast IMHO.
-> >
-> > Beyond the lack of a upstream-visible feature-removal-schedule entry, we still 
-> > have an Arcnet driver which hardware was obsoleted by Ethernet in the late 80s, 
-> > and we still have i486 support and those are *much* older than APM.
-> 
-> How would you like to write i486 specific code for the latest kernel
-> and test it on i486 hardware, honestly?
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Replace the sysdev class and struct sys_device used for power
+> management in the OMAP's GPIO code with a struct syscore_ops object
+> which is simpler.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Hmm, that reminds me: I should try a newer kernel on my 486 some time,
-it's still running 2.6.25. I'm actually quite honestly surprised that
-the modern libata drivers include code for and fully support my old
-vesa-bus IDE controller! (X has been less friendly, they dropped support
-for the graphics chipset during the Xfree86 4 development--but I mostly
-use this box headless.)
+Acked-by: Kevin Hilman <khilman@ti.com>
 
--- 
-Calvin Walton <calvin.walton@kepstin.ca>
+Looks fine to me.  We're in the process of converting this driver to
+runtime PM.  When that happens the syscore ops will be removed as well,
+but I'm fine with this patch until we finish the runtime PM conversion.
+
+Kevin
+
+> ---
+>  arch/arm/plat-omap/gpio.c |   35 +++++++++--------------------------
+>  1 file changed, 9 insertions(+), 26 deletions(-)
+>
+> Index: linux-2.6/arch/arm/plat-omap/gpio.c
+> ===================================================================
+> --- linux-2.6.orig/arch/arm/plat-omap/gpio.c
+> +++ linux-2.6/arch/arm/plat-omap/gpio.c
+> @@ -17,7 +17,7 @@
+>  #include <linux/init.h>
+>  #include <linux/module.h>
+>  #include <linux/interrupt.h>
+> -#include <linux/sysdev.h>
+> +#include <linux/syscore_ops.h>
+>  #include <linux/err.h>
+>  #include <linux/clk.h>
+>  #include <linux/io.h>
+> @@ -1379,9 +1379,7 @@ static const struct dev_pm_ops omap_mpui
+>  	.resume_noirq = omap_mpuio_resume_noirq,
+>  };
+>  
+> -/* use platform_driver for this, now that there's no longer any
+> - * point to sys_device (other than not disturbing old code).
+> - */
+> +/* use platform_driver for this. */
+>  static struct platform_driver omap_mpuio_driver = {
+>  	.driver		= {
+>  		.name	= "mpuio",
+> @@ -1754,7 +1752,7 @@ static int __devinit omap_gpio_probe(str
+>  }
+>  
+>  #if defined(CONFIG_ARCH_OMAP16XX) || defined(CONFIG_ARCH_OMAP2PLUS)
+> -static int omap_gpio_suspend(struct sys_device *dev, pm_message_t mesg)
+> +static int omap_gpio_suspend(void)
+>  {
+>  	int i;
+>  
+> @@ -1804,12 +1802,12 @@ static int omap_gpio_suspend(struct sys_
+>  	return 0;
+>  }
+>  
+> -static int omap_gpio_resume(struct sys_device *dev)
+> +static void omap_gpio_resume(void)
+>  {
+>  	int i;
+>  
+>  	if (!cpu_class_is_omap2() && !cpu_is_omap16xx())
+> -		return 0;
+> +		return;
+>  
+>  	for (i = 0; i < gpio_bank_count; i++) {
+>  		struct gpio_bank *bank = &gpio_bank[i];
+> @@ -1845,21 +1843,13 @@ static int omap_gpio_resume(struct sys_d
+>  		__raw_writel(bank->saved_wakeup, wake_set);
+>  		spin_unlock_irqrestore(&bank->lock, flags);
+>  	}
+> -
+> -	return 0;
+>  }
+>  
+> -static struct sysdev_class omap_gpio_sysclass = {
+> -	.name		= "gpio",
+> +static struct syscore_ops omap_gpio_syscore_ops = {
+>  	.suspend	= omap_gpio_suspend,
+>  	.resume		= omap_gpio_resume,
+>  };
+>  
+> -static struct sys_device omap_gpio_device = {
+> -	.id		= 0,
+> -	.cls		= &omap_gpio_sysclass,
+> -};
+> -
+>  #endif
+>  
+>  #ifdef CONFIG_ARCH_OMAP2PLUS
+> @@ -2117,21 +2107,14 @@ postcore_initcall(omap_gpio_drv_reg);
+>  
+>  static int __init omap_gpio_sysinit(void)
+>  {
+> -	int ret = 0;
+> -
+>  	mpuio_init();
+>  
+>  #if defined(CONFIG_ARCH_OMAP16XX) || defined(CONFIG_ARCH_OMAP2PLUS)
+> -	if (cpu_is_omap16xx() || cpu_class_is_omap2()) {
+> -		if (ret == 0) {
+> -			ret = sysdev_class_register(&omap_gpio_sysclass);
+> -			if (ret == 0)
+> -				ret = sysdev_register(&omap_gpio_device);
+> -		}
+> -	}
+> +	if (cpu_is_omap16xx() || cpu_class_is_omap2())
+> +		register_syscore_ops(&omap_gpio_syscore_ops);
+>  #endif
+>  
+> -	return ret;
+> +	return 0;
+>  }
+>  
+>  arch_initcall(omap_gpio_sysinit);
