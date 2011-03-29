@@ -1,15 +1,15 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [RFC][PATCH] PM / Platform: Remove __weak
-	definitions of runtime PM callbacks
-Date: Tue, 29 Mar 2011 12:13:08 +0900
-Message-ID: <20110329031308.GC7338__18549.8836836361$1301368463$gmane$org@linux-sh.org>
-References: <201103270058.41632.rjw@sisk.pl>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Warning with asm-generic/div64.h
+Date: Tue, 29 Mar 2011 13:58:56 +0200
+Message-ID: <201103291358.56758.arnd__19223.4310824007$1301400043$gmane$org@arndb.de>
+References: <007801cbead6$1984b6e0$4c8e24a0$@mprc.pku.edu.cn>
+	<201103251439.53568.arnd@arndb.de>
+	<018a01cbee06$534730a0$f9d591e0$@mprc.pku.edu.cn>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201103270058.41632.rjw@sisk.pl>
+In-Reply-To: <018a01cbee06$534730a0$f9d591e0$@mprc.pku.edu.cn>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,20 +19,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: Guan Xuetao <gxt@mprc.pku.edu.cn>
+Cc: linux-arch@vger.kernel.org, 'Len Brown' <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Mar 27, 2011 at 12:58:41AM +0100, Rafael J. Wysocki wrote:
-> Remove the __weak definitions of platform bus type runtime PM
-> callbacks, make platform_dev_pm_ops point to the generic routines
-> as appropriate and allow architectures using platform_dev_pm_ops to
-> replace the runtime PM callbacks in that structure with their own
-> set.
+On Tuesday 29 March 2011, Guan Xuetao wrote:
+> > The macro doesn't work for signed input or for 32 bit input. I'd suggest
+> > fixing the caller to use an unsigned type.
 > 
-> Convert architectures providing its own definitions of the platform
-> runtime PM callbacks to use the new mechanism.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Then,
+> Cc: Len Brown <len.brown@intel.com> (supporter:SUSPEND TO RAM)
+> Cc: Pavel Machek <pavel@ucw.cz> (supporter:SUSPEND TO RAM)
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl> (supporter:SUSPEND TO RAM)
+> Cc: linux-pm@lists.linux-foundation.org (open list:SUSPEND TO RAM)
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Yes, that sounds right.
+
+	Arnd
