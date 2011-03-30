@@ -1,16 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 0/9] x86 idle cruft removal - v2
-Date: Thu, 31 Mar 2011 12:28:36 +0200
-Message-ID: <20110331102836.GA3723__22138.2358846769$1301567383$gmane$org@elte.hu>
-References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
-	<1301551404-8263-1-git-send-email-lenb@kernel.org>
-	<20110331104549.3065ab29@lxorguk.ukuu.org.uk>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
+Date: Wed, 30 Mar 2011 17:19:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1103301707210.2085-100000__25794.7062993937$1301577970$gmane$org@iolanthe.rowland.org>
+References: <201103302202.04025.rjw@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110331104549.3065ab29@lxorguk.ukuu.org.uk>
+In-Reply-To: <201103302202.04025.rjw@suse.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,37 +17,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@suse.com>
+Cc: akpm@linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 30 Mar 2011, Rafael J. Wysocki wrote:
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> We don't care if it doesn't work on a few machines (in fact we have
-> a table to avoid that), we care that it *DOES* work on lots.
+> > Rafael, this does seem to be a general problem.  Suppose a new device
+> > gets connected while the system is suspended.  How is the driver's
+> > probe method supposed to cope if it gets called while userspace is
+> > still frozen but it needs to load some firmware?
+> > 
+> > Is the answer that probing should always be delayed until after tasks
+> > are thawed?  There must be lots of subsystems which would have trouble 
+> > doing that, although we ought to be able to implement delayed probing 
+> > from within the driver core easily enough.
 > 
-> Removing it probably isn't a bad thing long term, but it's not appeared in
-> the deprecated list and has not been there for several releases so it is
-> not eligible for removal at this point.
+> I don't know how to solve that.
 > 
-> People spent years getting Linux to support all this hardware and
-> throwing bits out left right and centre to tidy up your current project
-> is not the way it should be done.
-> 
-> So can we do this properly please. We have a process for good reason.
-> 
-> Deprecate it properly
+> First off, the prepare routines of drivers that need to load firmware during
+> resume probably should preload the firmware for the devices present during the
+> suspend.
 
-Ok, agreed. Len, mind delaying this patch for a few releases?
+That's okay for drivers that are bound to a device before the suspend 
+starts.  But we also need to handle new devices added while the system 
+was asleep.
 
-> Add a printk/WARN_ON() indicating to the user it is deprecated but we
-> will continue, and then give it a couple of releaes. Kerneloops.org will
-> help answer whether that WARN_ON was hit.
+> Second, I don't generally think drivers should probe for devices during resume.
+> I guess the delayed probing would be the cleanest appoach here.
 
-Yeah, also add a -stable backport so that older kernel users have a chance to 
-notice faster.
+Here's the difficulty.  Normally the USB subsystem does use delayed
+probing -- in fact, probing is done in a freezable thread.  However
+this is a special case.  Not all USB drivers support suspend/resume;
+those that don't get unbound during suspend and then rebound during
+resume.  The rebinding occurs in the "complete" phase of the resume,
+before tasks are thawed.
 
-Thanks,
+I suppose the rebinding could be delayed.  It would be better to fix
+the USB DVB drivers, though, by adding PM support.  But there's a bunch
+of them in drivers/media/dvb/dvb-usb, and AFAICS they would all need to
+be fixed.  And I have no idea of what changes they would need.
 
-	Ingo
+Do you have any better suggestions?
+
+Alan Stern
