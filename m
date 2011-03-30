@@ -1,12 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH] x86 intel power: Initialize
-	MSR_IA32_ENERGY_PERF_BIAS
-Date: Wed, 30 Mar 2011 18:21:02 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1103301819250.31342__23140.6438666911$1301525377$gmane$org@x980>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Xen-devel] [PATCH] PM / Hibernate: Introduce
+	CONFIG_HIBERNATE_INTERFACE
+Date: Wed, 30 Mar 2011 23:10:24 +0200
+Message-ID: <201103302310.24717.rjw__24419.2215534442$1301527400$gmane$org@sisk.pl>
+References: <201103261229.44770.rjw@sisk.pl>
+	<1301414013.18413.29.camel@zakaz.uk.xensource.com>
+	<201103292139.35645.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201103292139.35645.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,73 +20,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: x86@kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Cc: Shriram Rajagopalan <rshriram@cs.ubc.ca>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+On Tuesday, March 29, 2011, Rafael J. Wysocki wrote:
+> On Tuesday, March 29, 2011, Ian Campbell wrote:
+> > Hi Rafael,
+> > 
+> > On Sat, 2011-03-26 at 11:29 +0000, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Xen save/restore is going to use hibernate device callbacks for
+> > > quiescing devices and putting them back to normal operations and it
+> > > would need to select CONFIG_HIBERNATION for this purpose.  However,
+> > > that also would cause the hibernate interfaces for user space to be
+> > > enabled, which might confuse user space, because the Xen kernels
+> > > don't support hibernation.  Moreover, it would be wasteful, as it
+> > > would make the Xen kernels include a substantial amount of code that
+> > > they would never use.
+> > > 
+> > > To address this issue introduce new power management Kconfig option
+> > > CONFIG_HIBERNATE_INTERFACE, such that the hibernate interfaces for
+> > > user space and the image-handling code will depend on it and it will
+> > > select CONFIG_HIBERNATION.  Then, Xen save/restore will be able to
+> > > select CONFIG_HIBERNATION without dragging the entire hibernate code
+> > > along with it.
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Were you planning to put this forward for 2.6.39 or are you waiting for
+> > 2.6.40?
+> 
+> I'm goint to push it for 2.6.39.  In fact, I'm going to send the pull request
+> shortly.
 
-Since 2.6.35 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
-Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility is available
-in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
+Unfortunately Linus didn't like it, so I need to rework it to make him happy.
 
-However, the typical BIOS fails to initialize the MSR,
-and the typical Linux distro neglects to invoke x86_energy_perf_policy(8).
+As a result the patch is not going to go into 2.6.39.
 
-The result is that some modern hardware is running in hardware default,
-which is "performance" mode, rather than the intended design default
-of "normal" mode.
-
-Initialize the MSR to the "normal" setting during kernel boot.
-
-Of course, x86_energy_perf_policy(8) is available to change
-the default after boot, should the user have a policy preference.
-
-cc: stable@kernel.org
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/include/asm/msr-index.h |    3 +++
- arch/x86/kernel/cpu/intel.c      |   14 ++++++++++++++
- 2 files changed, 17 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 43a18c7..91fedd9 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -250,6 +250,9 @@
- #define MSR_IA32_TEMPERATURE_TARGET	0x000001a2
- 
- #define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
-+#define ENERGY_PERF_BIAS_PERFORMANCE	0
-+#define ENERGY_PERF_BIAS_NORMAL		6
-+#define ENERGY_PERF_BIAS_POWERSWAVE	15
- 
- #define MSR_IA32_PACKAGE_THERM_STATUS		0x000001b1
- 
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index d16c2c5..48cca4a 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -448,6 +448,20 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- 
- 	if (cpu_has(c, X86_FEATURE_VMX))
- 		detect_vmx_virtcap(c);
-+
-+	/*
-+	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if BIOS did not.
-+	 * x86_energy_perf_policy(8) is available to change it at run-time
-+	 */
-+	if (cpu_has(c, X86_FEATURE_EPB)) {
-+		u64 epb;
-+
-+		rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-+		if ((epb & 0xF) == 0) {
-+			epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
-+			wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-+		}
-+	}
- }
- 
- #ifdef CONFIG_X86_32
--- 
-1.7.4.2.406.gbe91
+Thanks,
+Rafael
