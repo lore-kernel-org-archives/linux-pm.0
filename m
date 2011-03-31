@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 4/9] x86 idle floppy: delete
-	disable_hlt()/enable_hlt()
-Date: Thu, 31 Mar 2011 02:03:19 -0400
-Message-ID: <fb07f62522099f5d3f2b7aa6014329d716081b62.1301550524.git.len.brown__43285.3529732258$1301551735$gmane$org@intel.com>
+Subject: [PATCH 9/9] x86 idle: delete mwait_idle()
+Date: Thu, 31 Mar 2011 02:03:24 -0400
+Message-ID: <9797d1edfe558e20297785ce5b4e26339b74ea2c.1301550524.git.len.brown__47882.2834477343$1301551849$gmane$org@intel.com>
 References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
 	<1301551404-8263-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
@@ -27,168 +26,140 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-The X86_32-only disable_hlt/enable_hlt mechanism was used
-by the 32-bit floppy driver.  Its effect was to replace
-the use of the HLT instruction inside default_idle() with
-cpu_relax().
+For ACPI mode, mwait_with_hints() in cstate.c is used instead of
+process.c's mwait_idle().
 
-Unlcear why this workaround was ever needed, it was commented:
+For INTEL_IDLE mode, the mwait in intel_idle() is used instead of
+process.c's mwait_idle().
 
-floppy.c said:
+So delete process.c's mwait_idle().
+This will change the behaviour of SMP sysgtems that are
+running !ACPI and !INTEL_IDLE kernels -- they will use
+HALT instead of MWAIT.
 
-"disable hlt during certain critical i/o operations"
-
-x86/kernel/process.c said:
-
-"This halt magic was a workaround for ancient floppy DMA
- wreckage. It should be safe to remove."
-
-So remove it, as it allows us to simplify the x86 idle code.
+This deletes the "idle=mwait" parameter, and thus the
+boot_option_idle_override == IDLE_FORCE_MWAIT flag.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/include/asm/system.h |    7 -------
- arch/x86/kernel/process.c     |   24 ------------------------
- drivers/block/floppy.c        |   35 -----------------------------------
- 3 files changed, 0 insertions(+), 66 deletions(-)
+ Documentation/kernel-parameters.txt |    7 +------
+ arch/x86/include/asm/processor.h    |    2 +-
+ arch/x86/kernel/process.c           |   34 +---------------------------------
+ drivers/acpi/processor_idle.c       |    1 -
+ 4 files changed, 3 insertions(+), 41 deletions(-)
 
-diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-index 33ecc3e..013dd42 100644
---- a/arch/x86/include/asm/system.h
-+++ b/arch/x86/include/asm/system.h
-@@ -93,10 +93,6 @@ do {									\
- 			"memory");					\
- } while (0)
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index e6b4843..ce9624a 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -917,16 +917,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 			Claim all unknown PCI IDE storage controllers.
  
--/*
-- * disable hlt during certain critical i/o operations
-- */
--#define HAVE_DISABLE_HLT
- #else
- #define __SAVE(reg, offset) "movq %%" #reg ",(14-" #offset ")*8(%%rsp)\n\t"
- #define __RESTORE(reg, offset) "movq (14-" #offset ")*8(%%rsp),%%" #reg "\n\t"
-@@ -337,9 +333,6 @@ static inline void clflush(volatile void *__p)
+ 	idle=		[X86]
+-			Format: idle=poll, idle=mwait, idle=halt, idle=nomwait
++			Format: idle=poll, idle=halt, idle=nomwait
+ 			Poll forces a polling idle loop that can slightly
+ 			improve the performance of waking up a idle CPU, but
+ 			will use a lot of power and make the system run hot.
+ 			Not recommended.
+-			idle=mwait: On systems which support MONITOR/MWAIT but
+-			the kernel chose to not use it because it doesn't save
+-			as much power as a normal idle loop, use the
+-			MONITOR/MWAIT idle loop anyways. Performance should be
+-			the same as idle=poll.
+ 			idle=halt: Halt is forced to be used for CPU idle.
+ 			In such case C2/C3 won't be used again.
+ 			idle=nomwait: Disable mwait for CPU C-states
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 3b288ca..0d8d2a4 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -752,7 +752,7 @@ extern unsigned long		boot_option_idle_override;
+ extern bool			c1e_detected;
  
- #define nop() asm volatile ("nop")
+ enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
+-			 IDLE_POLL, IDLE_FORCE_MWAIT};
++			 IDLE_POLL};
  
--void disable_hlt(void);
--void enable_hlt(void);
--
- void cpu_idle_wait(void);
- 
- extern unsigned long arch_align_stack(unsigned long sp);
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index cd461c3..8688ade 100644
+index 9f08e7b..4b93d50 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
-@@ -342,34 +342,10 @@ EXPORT_SYMBOL(boot_option_idle_override);
- void (*pm_idle)(void);
- EXPORT_SYMBOL(pm_idle);
- 
--#ifdef CONFIG_X86_32
--/*
-- * This halt magic was a workaround for ancient floppy DMA
-- * wreckage. It should be safe to remove.
-- */
--static int hlt_counter;
--void disable_hlt(void)
--{
--	hlt_counter++;
--}
--EXPORT_SYMBOL(disable_hlt);
--
--void enable_hlt(void)
--{
--	hlt_counter--;
--}
--EXPORT_SYMBOL(enable_hlt);
--
--static inline int hlt_use_halt(void)
--{
--	return (!hlt_counter);
--}
--#else
- static inline int hlt_use_halt(void)
- {
- 	return 1;
+@@ -399,27 +399,6 @@ void cpu_idle_wait(void)
  }
--#endif
+ EXPORT_SYMBOL_GPL(cpu_idle_wait);
  
+-/* Default MONITOR/MWAIT with no hints, used for default C1 state */
+-static void mwait_idle(void)
+-{
+-	if (!need_resched()) {
+-		trace_power_start(POWER_CSTATE, 1, smp_processor_id());
+-		trace_cpu_idle(1, smp_processor_id());
+-		if (cpu_has(__this_cpu_ptr(&cpu_info), X86_FEATURE_CLFLUSH_MONITOR))
+-			clflush((void *)&current_thread_info()->flags);
+-
+-		__monitor((void *)&current_thread_info()->flags, 0, 0);
+-		smp_mb();
+-		if (!need_resched())
+-			__sti_mwait(0, 0);
+-		else
+-			local_irq_enable();
+-		trace_power_end(smp_processor_id());
+-		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
+-	} else
+-		local_irq_enable();
+-}
+-
  /*
-  * We use this if we don't have any better
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 77fc76f..9a4e006 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -1032,36 +1032,6 @@ static int fd_wait_for_completion(unsigned long delay, timeout_fn function)
- 	return 0;
- }
- 
--static DEFINE_SPINLOCK(floppy_hlt_lock);
--static int hlt_disabled;
--static void floppy_disable_hlt(void)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&floppy_hlt_lock, flags);
--	if (!hlt_disabled) {
--		hlt_disabled = 1;
--#ifdef HAVE_DISABLE_HLT
--		disable_hlt();
--#endif
--	}
--	spin_unlock_irqrestore(&floppy_hlt_lock, flags);
--}
--
--static void floppy_enable_hlt(void)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&floppy_hlt_lock, flags);
--	if (hlt_disabled) {
--		hlt_disabled = 0;
--#ifdef HAVE_DISABLE_HLT
--		enable_hlt();
--#endif
--	}
--	spin_unlock_irqrestore(&floppy_hlt_lock, flags);
--}
--
- static void setup_DMA(void)
+  * On SMP it's slightly faster (but much more power-consuming!)
+  * to poll the ->work.need_resched flag instead of waiting for the
+@@ -457,9 +436,6 @@ int mwait_usable(const struct cpuinfo_x86 *c)
  {
- 	unsigned long f;
-@@ -1106,7 +1076,6 @@ static void setup_DMA(void)
- 	fd_enable_dma();
- 	release_dma_lock(f);
- #endif
--	floppy_disable_hlt();
+ 	u32 eax, ebx, ecx, edx;
+ 
+-	if (boot_option_idle_override == IDLE_FORCE_MWAIT)
+-		return 1;
+-
+ 	if (c->cpuid_level < MWAIT_INFO)
+ 		return 0;
+ 
+@@ -548,13 +524,7 @@ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+ 	if (pm_idle)
+ 		return;
+ 
+-	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
+-		/*
+-		 * One CPU supports mwait => All CPUs supports mwait
+-		 */
+-		printk(KERN_INFO "using mwait in idle threads.\n");
+-		pm_idle = mwait_idle;
+-	} else if (cpu_has_amd_erratum(amd_erratum_400)) {
++	if (cpu_has_amd_erratum(amd_erratum_400)) {
+ 		/* E400: APIC timer interrupt does not wake up CPU from C1e */
+ 		printk(KERN_INFO "using C1E aware idle routine\n");
+ 		pm_idle = c1e_idle;
+@@ -578,8 +548,6 @@ static int __init idle_setup(char *str)
+ 		printk("using polling idle threads.\n");
+ 		pm_idle = poll_idle;
+ 		boot_option_idle_override = IDLE_POLL;
+-	} else if (!strcmp(str, "mwait")) {
+-		boot_option_idle_override = IDLE_FORCE_MWAIT;
+ 	} else if (!strcmp(str, "halt")) {
+ 		/*
+ 		 * When the boot option of idle=halt is added, halt is
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index d615b7d..a15390c 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -82,7 +82,6 @@ module_param(latency_factor, uint, 0644);
+ static int disabled_by_idle_boot_param(void)
+ {
+ 	return boot_option_idle_override == IDLE_POLL ||
+-		boot_option_idle_override == IDLE_FORCE_MWAIT ||
+ 		boot_option_idle_override == IDLE_HALT;
  }
  
- static void show_floppy(void);
-@@ -1708,7 +1677,6 @@ irqreturn_t floppy_interrupt(int irq, void *dev_id)
- 	fd_disable_dma();
- 	release_dma_lock(f);
- 
--	floppy_enable_hlt();
- 	do_floppy = NULL;
- 	if (fdc >= N_FDC || FDCS->address == -1) {
- 		/* we don't even know which FDC is the culprit */
-@@ -1857,8 +1825,6 @@ static void floppy_shutdown(unsigned long data)
- 		show_floppy();
- 	cancel_activity();
- 
--	floppy_enable_hlt();
--
- 	flags = claim_dma_lock();
- 	fd_disable_dma();
- 	release_dma_lock(flags);
-@@ -4503,7 +4469,6 @@ static void floppy_release_irq_and_dma(void)
- #if N_FDC > 1
- 	set_dor(1, ~8, 0);
- #endif
--	floppy_enable_hlt();
- 
- 	if (floppy_track_buffer && max_buffer_sectors) {
- 		tmpsize = max_buffer_sectors * 1024;
 -- 
 1.7.4.2.406.gbe91
