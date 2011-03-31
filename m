@@ -1,16 +1,15 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2/9] x86 idle: remove NOP
-	cpuinfo_x86.hlt_works_ok flag
-Date: Thu, 31 Mar 2011 03:02:00 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1103310252160.8569__40465.2209872895$1301555051$gmane$org@x980>
-References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
-	<b048802b0285a5ff28e74a4309d833116174904a.1301550524.git.len.brown@intel.com>
-	<20110331061247.GA24786@elte.hu>
+Subject: Re: [PATCH 0/9] x86 idle cruft removal - v2
+Date: Thu, 31 Mar 2011 03:21:09 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1103310309120.8774__38975.2162308016$1301556209$gmane$org@x980>
+References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
+	<1301551404-8263-1-git-send-email-lenb@kernel.org>
+	<4D942191.2080408@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20110331061247.GA24786@elte.hu>
+In-reply-to: <4D942191.2080408@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +19,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> > hlt_works_ok was X86_32 only, initialized to 1, and never cleared.
+> > What is next:
 > > 
-> > On 32-bit kernels, this deletes a line from /proc/cpuinfo: "hlt_bug : no"
+> > handle c1e_idle() vs default_idle()
+> > 	run-time check for AMD workaround enable as part of default_idle?
+> > give xen_arch_setup default_idle() w/o having it touch pm_idle
+> > 	perhaps it can simply set a flag to disable cpuidle...
+> > 		which is what would run if the xen kernel were
+> > 		booted on raw iron.  Or can we handle this
+> > 		at compile time?
 > 
-> I think you missed the valid usecase where an old CPU with broken halt is 
-> booted with the no-hlt boot parameter and does not want to crash in the HLT 
-> instruction.
-> 
-> That "no-hlt" boot parameter does:
-> 
->   arch/x86/kernel/cpu/bugs.c:     boot_cpu_data.hlt_works_ok = 0;
-> 
-> We can restrict compatibility, but *please* lets do it *explicitly*, not under 
-> some 'remove unused code' pretense ...
-> 
-> Could you please list all CPU models that are affected?
+> I guess it may be good to have a method to override cpuidle and
+> force it to call default_idle from inside cpuidle_idle_call(). This
+> could be useful for users other than xen in future. Ofcourse this override
+> should not touch pm_idle (which would be removed anyway).
 
-"no-hlt" existed only for 32-bit, and there were exactly zero
-automatic invocations of it.
+Actually what I was thinking was the ability to disable cpuidle
+altogether via cmdline.  ie a run-time equivalent of CONFIG_CPU_IDLE=n.
+eg. "cpuidle=0"  In that case cpu_idle_call() would return error
+and we'd have:
 
-"idle=poll" does the same thing -- sans change a line
-in /proc/cpuinfo.
+cpu_idle()
+	if (cpu_idle_call())
+		default_idle()
 
-Do we really need both?
+This is also a clean way for CONFIG_CPU_IDLE=n to work.
 
-thanks,
+> Provision is already there to call default_idle from inside
+> cpuidle_idle_call(); we can use that after checking a flag?? Can
+> we use something like boot_option_idle_override? Or set/unset
+> flag through an API?
+
+I think it is strange for cpuidle to turn around and
+call back to default_idle().  I'd like to see if we can
+keep knowledge of default_idle() inside process.c.
+If cpuidle can't do better than default_idle()
+then it sholdn't be running...
+
+> > delete pm_idle
+> > 	x86 will then use default_idle or cpuidle
+> > allow cpuidle to use default_idle to handle the period
+> > 	where it polls because cpus have not yet registered
+> 
+> If we remove pm_idle and directly call cpuidle, the
+> check already exists to call default_idle until a cpuidle
+> driver (and cpus) is registered.
+
+it isn't working.
+If it were, then we'd not see any polling in the cpuidle stats.
+
+cheers,
 -Len
