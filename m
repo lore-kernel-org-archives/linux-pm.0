@@ -1,13 +1,22 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Resume hangs [was: mmotm 2010-12-02-16-34 uploaded]
-Date: Wed, 30 Mar 2011 17:19:54 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1103301707210.2085-100000__25794.7062993937$1301577970$gmane$org@iolanthe.rowland.org>
-References: <201103302202.04025.rjw@suse.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 2/9] x86 idle: remove NOP
+	cpuinfo_x86.hlt_works_ok flag
+Date: Thu, 31 Mar 2011 15:41:03 +0100
+Message-ID: <20110331154103.70d88899__43095.5687923872$1301582625$gmane$org@lxorguk.ukuu.org.uk>
+References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
+	<b048802b0285a5ff28e74a4309d833116174904a.1301550524.git.len.brown@intel.com>
+	<20110331061247.GA24786@elte.hu>
+	<alpine.LFD.2.02.1103310252160.8569@x980>
+	<20110331081800.GH5938@elte.hu>
+	<20110331102355.17d30a38@lxorguk.ukuu.org.uk>
+	<20110331092721.GA16570@elte.hu>
+	<20110331103320.5a72ff8c@lxorguk.ukuu.org.uk>
+	<20110331093528.GA19288@elte.hu> <4D948D86.2050607@zytor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103302202.04025.rjw@suse.com>
+In-Reply-To: <4D948D86.2050607@zytor.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,47 +26,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@suse.com>
-Cc: akpm@linux-foundation.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 30 Mar 2011, Rafael J. Wysocki wrote:
+On Thu, 31 Mar 2011 07:19:50 -0700
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-> > Rafael, this does seem to be a general problem.  Suppose a new device
-> > gets connected while the system is suspended.  How is the driver's
-> > probe method supposed to cope if it gets called while userspace is
-> > still frozen but it needs to load some firmware?
+> On 03/31/2011 02:35 AM, Ingo Molnar wrote:
 > > 
-> > Is the answer that probing should always be delayed until after tasks
-> > are thawed?  There must be lots of subsystems which would have trouble 
-> > doing that, although we ought to be able to implement delayed probing 
-> > from within the driver core easily enough.
+> > * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > 
+> >>> Btw., we used to auto-detect broken HLT systems IIRC - but that got lost 
+> >>> already. We should at least honor the boot parameter.
+> >>
+> >> I don't believe we ever auto detected them or found a way to do so. That
+> >> was why the HLT message was printed before hlt was executed.
+> > 
+> > Yeah - the CPU hang was unrecoverably deep so no auto-detection was possible.
+> > 
+> > That's seriously ancient stuff - still, keeping the boot option around (<10 
+> > lines of code) does not hurt anyone.
+> > 
 > 
-> I don't know how to solve that.
-> 
-> First off, the prepare routines of drivers that need to load firmware during
-> resume probably should preload the firmware for the devices present during the
-> suspend.
+> What it was was bad power supplies or low-capacitance, high-inductance
+> power distribution that happened to work with MS-DOS which always burned
+> the CPU at 100% and therefore left the power draw relatively consistent
+> current.  A proper OS putting the CPU in HLT produced a lot more high
+> frequency noise on the power busses, with disastrous results without
+> proper bypass.
 
-That's okay for drivers that are bound to a device before the suspend 
-starts.  But we also need to handle new devices added while the system 
-was asleep.
+And also chipset errata in some cases - eg some revisions of the CS5510
+hung the box solid if a CPU hlt occurred during an IDE transfer. I don't
+think any CS5510s are still around although I've had mail from someone
+with a CS5520 in use not that long ago so who knows!
 
-> Second, I don't generally think drivers should probe for devices during resume.
-> I guess the delayed probing would be the cleanest appoach here.
-
-Here's the difficulty.  Normally the USB subsystem does use delayed
-probing -- in fact, probing is done in a freezable thread.  However
-this is a special case.  Not all USB drivers support suspend/resume;
-those that don't get unbound during suspend and then rebound during
-resume.  The rebinding occurs in the "complete" phase of the resume,
-before tasks are thawed.
-
-I suppose the rebinding could be delayed.  It would be better to fix
-the USB DVB drivers, though, by adding PM support.  But there's a bunch
-of them in drivers/media/dvb/dvb-usb, and AFAICS they would all need to
-be fixed.  And I have no idea of what changes they would need.
-
-Do you have any better suggestions?
-
-Alan Stern
+The joy of ancient history.
