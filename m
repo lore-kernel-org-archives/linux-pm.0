@@ -1,14 +1,24 @@
-From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/9] x86 idle cruft removal - v2
-Date: Thu, 31 Mar 2011 12:09:13 +0530
-Message-ID: <4D942191.2080408__19539.1821362593$1301553623$gmane$org@linux.vnet.ibm.com>
-References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
-	<1301551404-8263-1-git-send-email-lenb@kernel.org>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86 idle APM: delete apm_cpu_idle(),
+ and its use of pm_idle
+Date: Thu, 31 Mar 2011 08:56:22 +0200
+Message-ID: <20110331065622.GE5938__15876.2587038384$1301554646$gmane$org@elte.hu>
+References: <20110326172204.05e52c10.sfr@canb.auug.org.au>
+	<alpine.LRH.2.00.1103281443240.8162@twin.jikos.cz>
+	<20110329004438.d9e755ef.sfr@canb.auug.org.au>
+	<alpine.LNX.2.00.1103281604040.26754@pobox.suse.cz>
+	<20110328174542.GW21838@one.firstfloor.org>
+	<4D90CC0B.8070105@zytor.com>
+	<20110328182123.GX21838@one.firstfloor.org>
+	<AANLkTimqE2YZCH5GonnqeHGGBwzggTymauS1KYuTsqOX@mail.gmail.com>
+	<alpine.LNX.2.00.1103282309290.26754@pobox.suse.cz>
+	<alpine.LFD.2.02.1103302311500.2444@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1301551404-8263-1-git-send-email-lenb@kernel.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.02.1103302311500.2444@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +29,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ondrej Zary <linux@rainbow-software.org>, Jiri Kosina <jkosina@suse.cz>, x86@kernel.org, LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 
+* Len Brown <lenb@kernel.org> wrote:
 
-On 03/31/2011 11:33 AM, Len Brown wrote:
-> unchanged:
->
-> [PATCH 1/9] x86 idle: remove "no-hlt" cmdline param
-> [PATCH 2/9] x86 idle: remove NOP cpuinfo_x86.hlt_works_ok flag
-> [PATCH 3/9] x86 idle: remove NOP halt_works()
-> [PATCH 4/9] x86 idle floppy: delete disable_hlt()/enable_hlt()
-> [PATCH 5/9] x86 idle: remove NOP hlt_use_halt()
->
-> new:
->
-> [PATCH 6/9] x86 idle APM: delete apm_cpu_idle(), and its use of pm_idle
-> [PATCH 7/9] x86 idle: do not EXPORT_SYMBOL pm_idle and default_idle
-> [PATCH 8/9] x86 idle: move mwait_idle_with_hints() to where it is used
-> [PATCH 9/9] x86 idle: delete mwait_idle()
->
->
->   Documentation/kernel-parameters.txt |   11 +--
->   arch/x86/Kconfig                    |   11 --
->   arch/x86/include/asm/processor.h    |   14 +--
->   arch/x86/include/asm/system.h       |    7 -
->   arch/x86/kernel/acpi/cstate.c       |   24 ++++
->   arch/x86/kernel/apm_32.c            |  232 -----------------------------------
->   arch/x86/kernel/cpu/bugs.c          |   13 +--
->   arch/x86/kernel/cpu/proc.c          |    2 -
->   arch/x86/kernel/process.c           |  127 +++-----------------
->   arch/x86/kernel/setup.c             |    4 +-
->   arch/x86/xen/setup.c                |    3 -
->   drivers/acpi/processor_idle.c       |    1 -
->   drivers/block/floppy.c              |   35 ------
->   13 files changed, 45 insertions(+), 439 deletions(-)
->
-> What is next:
->
-> handle c1e_idle() vs default_idle()
-> 	run-time check for AMD workaround enable as part of default_idle?
-> give xen_arch_setup default_idle() w/o having it touch pm_idle
-> 	perhaps it can simply set a flag to disable cpuidle...
-> 		which is what would run if the xen kernel were
-> 		booted on raw iron.  Or can we handle this
-> 		at compile time?
+> From: Len Brown <len.brown@intel.com>
+> 
+> There is some doubt whether the APM idle feature
+> to call into the BIOS from the idle loop is reliable.
+> Certainly it was known to fail on some machines,
+> but more importantly, APM machines have not shipped
+> for a decade and so finding machines to test the code
+> is problematic.
+> 
+> After this patch, systems running in APM mode will
+> simply run default_idle() and HALT without calling
+> into the BIOS from their idle loop.
+> 
+> This deletes a much-maligned modular user of the (pm_idle)()
+> function pointer.
+> 
+> Signed-off-by: Len Brown <len.brown@intel.com>
 
-I guess it may be good to have a method to override cpuidle and
-force it to call default_idle from inside cpuidle_idle_call(). This
-could be useful for users other than xen in future. Ofcourse this 
-override should not touch pm_idle (which would be removed anyway).
+Ok, this should have far less negative impact on old hardware.
 
-Provision is already there to call default_idle from inside
-cpuidle_idle_call(); we can use that after checking a flag?? Can
-we use something like boot_option_idle_override? Or set/unset
-flag through an API?
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-> delete pm_idle
-> 	x86 will then use default_idle or cpuidle
-> allow cpuidle to use default_idle to handle the period
-> 	where it polls because cpus have not yet registered
+Thanks,
 
-If we remove pm_idle and directly call cpuidle, the
-check already exists to call default_idle until a cpuidle
-driver (and cpus) is registered.
-
--Trinabh
+	Ingo
