@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 9/9] x86 idle: delete mwait_idle()
-Date: Thu, 31 Mar 2011 02:03:24 -0400
-Message-ID: <9797d1edfe558e20297785ce5b4e26339b74ea2c.1301550524.git.len.brown__47882.2834477343$1301551849$gmane$org@intel.com>
+Subject: [PATCH 7/9] x86 idle: do not EXPORT_SYMBOL pm_idle and
+	default_idle
+Date: Thu, 31 Mar 2011 02:03:22 -0400
+Message-ID: <31ad970fd2a09dbe4cbccb9bc7b8520fac973f38.1301550524.git.len.brown__39586.3613965504$1301551976$gmane$org@intel.com>
 References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
 	<1301551404-8263-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
@@ -26,140 +27,35 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-For ACPI mode, mwait_with_hints() in cstate.c is used instead of
-process.c's mwait_idle().
-
-For INTEL_IDLE mode, the mwait in intel_idle() is used instead of
-process.c's mwait_idle().
-
-So delete process.c's mwait_idle().
-This will change the behaviour of SMP sysgtems that are
-running !ACPI and !INTEL_IDLE kernels -- they will use
-HALT instead of MWAIT.
-
-This deletes the "idle=mwait" parameter, and thus the
-boot_option_idle_override == IDLE_FORCE_MWAIT flag.
+APM was the only potential modular user of pm_idle,
+and default_idle(), and that use is now gone.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/kernel-parameters.txt |    7 +------
- arch/x86/include/asm/processor.h    |    2 +-
- arch/x86/kernel/process.c           |   34 +---------------------------------
- drivers/acpi/processor_idle.c       |    1 -
- 4 files changed, 3 insertions(+), 41 deletions(-)
+ arch/x86/kernel/process.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e6b4843..ce9624a 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -917,16 +917,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			Claim all unknown PCI IDE storage controllers.
- 
- 	idle=		[X86]
--			Format: idle=poll, idle=mwait, idle=halt, idle=nomwait
-+			Format: idle=poll, idle=halt, idle=nomwait
- 			Poll forces a polling idle loop that can slightly
- 			improve the performance of waking up a idle CPU, but
- 			will use a lot of power and make the system run hot.
- 			Not recommended.
--			idle=mwait: On systems which support MONITOR/MWAIT but
--			the kernel chose to not use it because it doesn't save
--			as much power as a normal idle loop, use the
--			MONITOR/MWAIT idle loop anyways. Performance should be
--			the same as idle=poll.
- 			idle=halt: Halt is forced to be used for CPU idle.
- 			In such case C2/C3 won't be used again.
- 			idle=nomwait: Disable mwait for CPU C-states
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 3b288ca..0d8d2a4 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -752,7 +752,7 @@ extern unsigned long		boot_option_idle_override;
- extern bool			c1e_detected;
- 
- enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
--			 IDLE_POLL, IDLE_FORCE_MWAIT};
-+			 IDLE_POLL};
- 
- extern void enable_sep_cpu(void);
- extern int sysenter_setup(void);
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 9f08e7b..4b93d50 100644
+index 094d4ac..9d485d9 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
-@@ -399,27 +399,6 @@ void cpu_idle_wait(void)
- }
- EXPORT_SYMBOL_GPL(cpu_idle_wait);
+@@ -340,7 +340,6 @@ EXPORT_SYMBOL(boot_option_idle_override);
+  * Powermanagement idle function, if any..
+  */
+ void (*pm_idle)(void);
+-EXPORT_SYMBOL(pm_idle);
  
--/* Default MONITOR/MWAIT with no hints, used for default C1 state */
--static void mwait_idle(void)
--{
--	if (!need_resched()) {
--		trace_power_start(POWER_CSTATE, 1, smp_processor_id());
--		trace_cpu_idle(1, smp_processor_id());
--		if (cpu_has(__this_cpu_ptr(&cpu_info), X86_FEATURE_CLFLUSH_MONITOR))
--			clflush((void *)&current_thread_info()->flags);
--
--		__monitor((void *)&current_thread_info()->flags, 0, 0);
--		smp_mb();
--		if (!need_resched())
--			__sti_mwait(0, 0);
--		else
--			local_irq_enable();
--		trace_power_end(smp_processor_id());
--		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
--	} else
--		local_irq_enable();
--}
--
  /*
-  * On SMP it's slightly faster (but much more power-consuming!)
-  * to poll the ->work.need_resched flag instead of waiting for the
-@@ -457,9 +436,6 @@ int mwait_usable(const struct cpuinfo_x86 *c)
- {
- 	u32 eax, ebx, ecx, edx;
- 
--	if (boot_option_idle_override == IDLE_FORCE_MWAIT)
--		return 1;
--
- 	if (c->cpuid_level < MWAIT_INFO)
- 		return 0;
- 
-@@ -548,13 +524,7 @@ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- 	if (pm_idle)
- 		return;
- 
--	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
--		/*
--		 * One CPU supports mwait => All CPUs supports mwait
--		 */
--		printk(KERN_INFO "using mwait in idle threads.\n");
--		pm_idle = mwait_idle;
--	} else if (cpu_has_amd_erratum(amd_erratum_400)) {
-+	if (cpu_has_amd_erratum(amd_erratum_400)) {
- 		/* E400: APIC timer interrupt does not wake up CPU from C1e */
- 		printk(KERN_INFO "using C1E aware idle routine\n");
- 		pm_idle = c1e_idle;
-@@ -578,8 +548,6 @@ static int __init idle_setup(char *str)
- 		printk("using polling idle threads.\n");
- 		pm_idle = poll_idle;
- 		boot_option_idle_override = IDLE_POLL;
--	} else if (!strcmp(str, "mwait")) {
--		boot_option_idle_override = IDLE_FORCE_MWAIT;
- 	} else if (!strcmp(str, "halt")) {
- 		/*
- 		 * When the boot option of idle=halt is added, halt is
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index d615b7d..a15390c 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -82,7 +82,6 @@ module_param(latency_factor, uint, 0644);
- static int disabled_by_idle_boot_param(void)
- {
- 	return boot_option_idle_override == IDLE_POLL ||
--		boot_option_idle_override == IDLE_FORCE_MWAIT ||
- 		boot_option_idle_override == IDLE_HALT;
+  * We use this if we don't have any better
+@@ -365,9 +364,6 @@ void default_idle(void)
+ 	trace_power_end(smp_processor_id());
+ 	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
  }
+-#ifdef CONFIG_APM_MODULE
+-EXPORT_SYMBOL(default_idle);
+-#endif
  
+ void stop_this_cpu(void *dummy)
+ {
 -- 
 1.7.4.2.406.gbe91
