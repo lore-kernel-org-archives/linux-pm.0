@@ -1,17 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 8/9] x86 idle: move mwait_idle_with_hints() to
-	where it is used
-Date: Thu, 31 Mar 2011 02:03:23 -0400
-Message-ID: <4d2078e66b3a1ccde091c952449bcd780fe53de4.1301550524.git.len.brown__17573.8795348027$1301552146$gmane$org@intel.com>
-References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
-	<1301551404-8263-1-git-send-email-lenb@kernel.org>
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/9] x86 idle: remove NOP
+	cpuinfo_x86.hlt_works_ok flag
+Date: Thu, 31 Mar 2011 08:12:47 +0200
+Message-ID: <20110331061247.GA24786__32479.1000494317$1301552309$gmane$org@elte.hu>
+References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
+	<b048802b0285a5ff28e74a4309d833116174904a.1301550524.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1301551404-8263-1-git-send-email-lenb@kernel.org>
-In-reply-to: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
-References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
+Content-Disposition: inline
+In-Reply-To: <b048802b0285a5ff28e74a4309d833116174904a.1301550524.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,102 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: x86@kernel.org
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
 
-no functional change
+* Len Brown <lenb@kernel.org> wrote:
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/include/asm/processor.h |    2 --
- arch/x86/kernel/acpi/cstate.c    |   24 ++++++++++++++++++++++++
- arch/x86/kernel/process.c        |   23 -----------------------
- 3 files changed, 24 insertions(+), 25 deletions(-)
+> From: Len Brown <len.brown@intel.com>
+> 
+> hlt_works_ok was X86_32 only, initialized to 1, and never cleared.
+> 
+> On 32-bit kernels, this deletes a line from /proc/cpuinfo: "hlt_bug : no"
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 8776232..3b288ca 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -745,8 +745,6 @@ static inline void __sti_mwait(unsigned long eax, unsigned long ecx)
- 		     :: "a" (eax), "c" (ecx));
- }
- 
--extern void mwait_idle_with_hints(unsigned long eax, unsigned long ecx);
--
- extern void select_idle_routine(const struct cpuinfo_x86 *c);
- extern void init_c1e_mask(void);
- 
-diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
-index 5812404..c49281e 100644
---- a/arch/x86/kernel/acpi/cstate.c
-+++ b/arch/x86/kernel/acpi/cstate.c
-@@ -149,6 +149,30 @@ int acpi_processor_ffh_cstate_probe(unsigned int cpu,
- }
- EXPORT_SYMBOL_GPL(acpi_processor_ffh_cstate_probe);
- 
-+/*
-+ * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
-+ * which can obviate IPI to trigger checking of need_resched.
-+ * We execute MONITOR against need_resched and enter optimized wait state
-+ * through MWAIT. Whenever someone changes need_resched, we would be woken
-+ * up from MWAIT (without an IPI).
-+ *
-+ * New with Core Duo processors, MWAIT can take some hints based on CPU
-+ * capability.
-+ */
-+static void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
-+{
-+	if (!need_resched()) {
-+		if (cpu_has(__this_cpu_ptr(&cpu_info), X86_FEATURE_CLFLUSH_MONITOR))
-+			clflush((void *)&current_thread_info()->flags);
-+
-+		__monitor((void *)&current_thread_info()->flags, 0, 0);
-+		smp_mb();
-+		if (!need_resched())
-+			__mwait(ax, cx);
-+	}
-+}
-+
-+
- void acpi_processor_ffh_cstate_enter(struct acpi_processor_cx *cx)
- {
- 	unsigned int cpu = smp_processor_id();
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 9d485d9..9f08e7b 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -399,29 +399,6 @@ void cpu_idle_wait(void)
- }
- EXPORT_SYMBOL_GPL(cpu_idle_wait);
- 
--/*
-- * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
-- * which can obviate IPI to trigger checking of need_resched.
-- * We execute MONITOR against need_resched and enter optimized wait state
-- * through MWAIT. Whenever someone changes need_resched, we would be woken
-- * up from MWAIT (without an IPI).
-- *
-- * New with Core Duo processors, MWAIT can take some hints based on CPU
-- * capability.
-- */
--void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
--{
--	if (!need_resched()) {
--		if (cpu_has(__this_cpu_ptr(&cpu_info), X86_FEATURE_CLFLUSH_MONITOR))
--			clflush((void *)&current_thread_info()->flags);
--
--		__monitor((void *)&current_thread_info()->flags, 0, 0);
--		smp_mb();
--		if (!need_resched())
--			__mwait(ax, cx);
--	}
--}
--
- /* Default MONITOR/MWAIT with no hints, used for default C1 state */
- static void mwait_idle(void)
- {
--- 
-1.7.4.2.406.gbe91
+I think you missed the valid usecase where an old CPU with broken halt is 
+booted with the no-hlt boot parameter and does not want to crash in the HLT 
+instruction.
+
+That "no-hlt" boot parameter does:
+
+  arch/x86/kernel/cpu/bugs.c:     boot_cpu_data.hlt_works_ok = 0;
+
+We can restrict compatibility, but *please* lets do it *explicitly*, not under 
+some 'remove unused code' pretense ...
+
+Could you please list all CPU models that are affected?
+
+Thanks,
+
+	Ingo
