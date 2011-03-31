@@ -1,20 +1,22 @@
 From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH 2/9] x86 idle: remove NOP
 	cpuinfo_x86.hlt_works_ok flag
-Date: Thu, 31 Mar 2011 11:27:21 +0200
-Message-ID: <20110331092721.GA16570__37604.3539181866$1301563701$gmane$org@elte.hu>
+Date: Thu, 31 Mar 2011 11:35:28 +0200
+Message-ID: <20110331093528.GA19288__5805.10748918659$1301564283$gmane$org@elte.hu>
 References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
 	<b048802b0285a5ff28e74a4309d833116174904a.1301550524.git.len.brown@intel.com>
 	<20110331061247.GA24786@elte.hu>
 	<alpine.LFD.2.02.1103310252160.8569@x980>
 	<20110331081800.GH5938@elte.hu>
 	<20110331102355.17d30a38@lxorguk.ukuu.org.uk>
+	<20110331092721.GA16570@elte.hu>
+	<20110331103320.5a72ff8c@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110331102355.17d30a38@lxorguk.ukuu.org.uk>
+In-Reply-To: <20110331103320.5a72ff8c@lxorguk.ukuu.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -31,30 +33,16 @@ List-Id: linux-pm@vger.kernel.org
 
 * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> > Do we know whether a distro adds this to the boot line? Do we know about users 
-> > relying on it.
+> > Btw., we used to auto-detect broken HLT systems IIRC - but that got lost 
+> > already. We should at least honor the boot parameter.
 > 
-> I certainly had hardware that needed it. Don't any more but this is more
-> trying to rip out stuff without letting nature take its course.
-> 
-> It's a trivial feature item.
+> I don't believe we ever auto detected them or found a way to do so. That
+> was why the HLT message was printed before hlt was executed.
 
-Yes.
+Yeah - the CPU hang was unrecoverably deep so no auto-detection was possible.
 
-> > > Do we really need both?
-> > 
-> > Probably not, as i said i do not disagree - i just think it should be more 
-> > explicit. Make it a: "users of CPU models X beware" commit title, not 'remove 
-> > inactive code' ...
-> 
-> Just make the one config variable respond to both boot configuration
-> options. The parser is __init code anyway so discarded so the actual code
-> cost of compatibility is exactly NIL.
-
-Yeah, agreed.
-
-Btw., we used to auto-detect broken HLT systems IIRC - but that got lost 
-already. We should at least honor the boot parameter.
+That's seriously ancient stuff - still, keeping the boot option around (<10 
+lines of code) does not hurt anyone.
 
 Thanks,
 
