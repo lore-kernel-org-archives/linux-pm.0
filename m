@@ -1,17 +1,13 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/9] x86 idle: remove NOP
-	cpuinfo_x86.hlt_works_ok flag
-Date: Thu, 31 Mar 2011 02:03:17 -0400
-Message-ID: <b048802b0285a5ff28e74a4309d833116174904a.1301550524.git.len.brown__2960.0630900406$1301551484$gmane$org@intel.com>
+Subject: [PATCH 0/9] x86 idle cruft removal - v2
+Date: Thu, 31 Mar 2011 02:03:15 -0400
+Message-ID: <1301551404-8263-1-git-send-email-lenb__33760.155508253$1301551520$gmane$org@kernel.org>
 References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
-	<1301551404-8263-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1301551404-8263-1-git-send-email-lenb@kernel.org>
-In-reply-to: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
-References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
+In-reply-to: <1300950508-22746-1-git-send-email-lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,127 +18,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: x86@kernel.org
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+unchanged:
 
-hlt_works_ok was X86_32 only, initialized to 1, and never cleared.
+[PATCH 1/9] x86 idle: remove "no-hlt" cmdline param
+[PATCH 2/9] x86 idle: remove NOP cpuinfo_x86.hlt_works_ok flag
+[PATCH 3/9] x86 idle: remove NOP halt_works()
+[PATCH 4/9] x86 idle floppy: delete disable_hlt()/enable_hlt()
+[PATCH 5/9] x86 idle: remove NOP hlt_use_halt()
 
-On 32-bit kernels, this deletes a line from /proc/cpuinfo: "hlt_bug : no"
+new:
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/include/asm/processor.h |    5 -----
- arch/x86/kernel/cpu/bugs.c       |    5 +----
- arch/x86/kernel/cpu/proc.c       |    2 --
- arch/x86/kernel/process.c        |    2 +-
- arch/x86/kernel/setup.c          |    4 ++--
- arch/x86/xen/setup.c             |    3 ---
- 6 files changed, 4 insertions(+), 17 deletions(-)
+[PATCH 6/9] x86 idle APM: delete apm_cpu_idle(), and its use of pm_idle
+[PATCH 7/9] x86 idle: do not EXPORT_SYMBOL pm_idle and default_idle
+[PATCH 8/9] x86 idle: move mwait_idle_with_hints() to where it is used
+[PATCH 9/9] x86 idle: delete mwait_idle()
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 45636ce..b5c83f1 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -67,7 +67,6 @@ struct cpuinfo_x86 {
- 	char			wp_works_ok;	/* It doesn't on 386's */
- 
- 	/* Problems on some 486Dx4's and old 386's: */
--	char			hlt_works_ok;
- 	char			hard_math;
- 	char			rfu;
- 	char			fdiv_bug;
-@@ -150,11 +149,7 @@ extern const struct seq_operations cpuinfo_op;
- 
- static inline int hlt_works(int cpu)
- {
--#ifdef CONFIG_X86_32
--	return cpu_data(cpu).hlt_works_ok;
--#else
- 	return 1;
--#endif
- }
- 
- #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index 4c91631..b5e2910 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -82,10 +82,7 @@ static void __init check_hlt(void)
- 		return;
- 
- 	printk(KERN_INFO "Checking 'hlt' instruction... ");
--	if (!boot_cpu_data.hlt_works_ok) {
--		printk("disabled\n");
--		return;
--	}
-+
- 	halt();
- 	halt();
- 	halt();
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 62ac8cb..203feb7 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -33,7 +33,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 	int fpu_exception = c->hard_math && (ignore_fpu_irq || cpu_has_fpu);
- 	seq_printf(m,
- 		   "fdiv_bug\t: %s\n"
--		   "hlt_bug\t\t: %s\n"
- 		   "f00f_bug\t: %s\n"
- 		   "coma_bug\t: %s\n"
- 		   "fpu\t\t: %s\n"
-@@ -41,7 +40,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 		   "cpuid level\t: %d\n"
- 		   "wp\t\t: %s\n",
- 		   c->fdiv_bug ? "yes" : "no",
--		   c->hlt_works_ok ? "no" : "yes",
- 		   c->f00f_bug ? "yes" : "no",
- 		   c->coma_bug ? "yes" : "no",
- 		   c->hard_math ? "yes" : "no",
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index ff45541..4966c7e 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -362,7 +362,7 @@ EXPORT_SYMBOL(enable_hlt);
- 
- static inline int hlt_use_halt(void)
- {
--	return (!hlt_counter && boot_cpu_data.hlt_works_ok);
-+	return (!hlt_counter);
- }
- #else
- static inline int hlt_use_halt(void)
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index d3cfe26..fab5631 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -175,9 +175,9 @@ static struct resource bss_resource = {
- 
- #ifdef CONFIG_X86_32
- /* cpu data as detected by the assembly code in head.S */
--struct cpuinfo_x86 new_cpu_data __cpuinitdata = {0, 0, 0, 0, -1, 1, 0, 0, -1};
-+struct cpuinfo_x86 new_cpu_data __cpuinitdata = {0, 0, 0, 0, -1, 0, 0, -1};
- /* common cpu data for all cpus */
--struct cpuinfo_x86 boot_cpu_data __read_mostly = {0, 0, 0, 0, -1, 1, 0, 0, -1};
-+struct cpuinfo_x86 boot_cpu_data __read_mostly = {0, 0, 0, 0, -1, 0, 0, -1};
- EXPORT_SYMBOL(boot_cpu_data);
- static void set_mca_bus(int x)
- {
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index a8a66a5..97d2fbd 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -351,9 +351,6 @@ void __init xen_arch_setup(void)
- 	       COMMAND_LINE_SIZE : MAX_GUEST_CMDLINE);
- 
- 	/* Set up idle, making sure it calls safe_halt() pvop */
--#ifdef CONFIG_X86_32
--	boot_cpu_data.hlt_works_ok = 1;
--#endif
- 	pm_idle = default_idle;
- 	boot_option_idle_override = IDLE_HALT;
- 
--- 
-1.7.4.2.406.gbe91
+
+ Documentation/kernel-parameters.txt |   11 +--
+ arch/x86/Kconfig                    |   11 --
+ arch/x86/include/asm/processor.h    |   14 +--
+ arch/x86/include/asm/system.h       |    7 -
+ arch/x86/kernel/acpi/cstate.c       |   24 ++++
+ arch/x86/kernel/apm_32.c            |  232 -----------------------------------
+ arch/x86/kernel/cpu/bugs.c          |   13 +--
+ arch/x86/kernel/cpu/proc.c          |    2 -
+ arch/x86/kernel/process.c           |  127 +++-----------------
+ arch/x86/kernel/setup.c             |    4 +-
+ arch/x86/xen/setup.c                |    3 -
+ drivers/acpi/processor_idle.c       |    1 -
+ drivers/block/floppy.c              |   35 ------
+ 13 files changed, 45 insertions(+), 439 deletions(-)
+
+What is next:
+
+handle c1e_idle() vs default_idle()
+	run-time check for AMD workaround enable as part of default_idle?
+give xen_arch_setup default_idle() w/o having it touch pm_idle
+	perhaps it can simply set a flag to disable cpuidle...
+		which is what would run if the xen kernel were
+		booted on raw iron.  Or can we handle this
+		at compile time?
+delete pm_idle
+	x86 will then use default_idle or cpuidle
+allow cpuidle to use default_idle to handle the period
+	where it polls because cpus have not yet registered
