@@ -1,15 +1,16 @@
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: [PATCH 9/9] x86 idle: delete mwait_idle()
-Date: Fri, 1 Apr 2011 13:02:43 +0200
-Message-ID: <20110401110243.GN11175__24456.5082401552$1301676794$gmane$org@alberich.amd.com>
-References: <67e90d97e0a77df4acd0c75e1bacc7714e011f3e.1301550524.git.len.brown@intel.com>
-	<9797d1edfe558e20297785ce5b4e26339b74ea2c.1301550524.git.len.brown@intel.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 0/9] x86 idle cruft removal - v2
+Date: Fri, 01 Apr 2011 14:33:24 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1104011313540.2606__34162.5675945126$1301682886$gmane$org@x980>
+References: <1300950508-22746-1-git-send-email-lenb@kernel.org>
+	<1301551404-8263-1-git-send-email-lenb@kernel.org>
+	<alpine.LFD.2.02.1104010020280.2797@x980>
+	<4D959D25.5010805@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <9797d1edfe558e20297785ce5b4e26339b74ea2c.1301550524.git.len.brown@intel.com>
+In-reply-to: <4D959D25.5010805@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,31 +20,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
+To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 31, 2011 at 02:03:24AM -0400, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
-> 
-> For ACPI mode, mwait_with_hints() in cstate.c is used instead of
-> process.c's mwait_idle().
-> 
-> For INTEL_IDLE mode, the mwait in intel_idle() is used instead of
-> process.c's mwait_idle().
-> 
-> So delete process.c's mwait_idle().
-> This will change the behaviour of SMP sysgtems that are
-> running !ACPI and !INTEL_IDLE kernels -- they will use
-> HALT instead of MWAIT.
-> 
-> This deletes the "idle=mwait" parameter, and thus the
-> boot_option_idle_override == IDLE_FORCE_MWAIT flag.
-> 
-> Signed-off-by: Len Brown <len.brown@intel.com>
 
-Acked-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> I guess this would eliminate the problems caused by pm_idle.
 
+Right.
 
-Regards,
-Andreas
+...at least we can contain it inside process.c
+where we still need to be able to handle halt/amd-bug/poll.
+Probably I'll re-name it to better reflect its function,
+say x86_default_idle, in this case.
+
+> In that case I also think we need not implement a default
+> driver (like the one I had done https://lkml.org/lkml/2011/3/22/154)
+> to handle the case when acpi_idle and intel_idle may not register.
+
+Right.
+
+the stuff in process.c should handle the !cpuidle
+and !CPU_IDLE cases, and in the typical case it will
+handle idle during boot before cpuidle initializes.
+
+> Additionally, we may not need to support multiple cpuidle driver registration
+> as now there would be only acpi_idle and intel_idle
+> and mechanism already exists to select between the two.
+
+Right.
+
+I think multiple driver registration is over-kill, though
+I have no real opposition to it should a real need for it emerge.
+The only need I could come up with is that it would save me
+a reboot when I want to compare drivers -- but we should optimize
+for real-world-use, not lab use, and simpler is better.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
