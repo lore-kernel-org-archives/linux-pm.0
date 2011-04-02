@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 06/18] x86 idle: deprecate mwait_idle() and
- "idle=mwait" cmdline param
-Date: Sat, 02 Apr 2011 02:22:48 -0400
-Message-ID: <7eaf17a79efa960a4a317d3cb8651375ed61f5a6.1301724243.git.len.brown__12821.4570846923$1301725972$gmane$org@intel.com>
+Subject: [PATCH 01/18] cpuidle: menu: fixed wrapping timers at
+	4.294 seconds
+Date: Sat, 02 Apr 2011 02:22:43 -0400
+Message-ID: <c82cf78992a66bfa7f0c82aeb20ba6922127463b.1301724243.git.len.brown__46343.5939200737$1301726098$gmane$org@intel.com>
 References: <alpine.LFD.2.02.1104010020280.2797@x980>
 	<1301725380-10579-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
@@ -10,8 +10,6 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-reply-to: <1301725380-10579-1-git-send-email-lenb@kernel.org>
-In-reply-to: <c82cf78992a66bfa7f0c82aeb20ba6922127463b.1301724243.git.len.brown@intel.com>
-References: <c82cf78992a66bfa7f0c82aeb20ba6922127463b.1301724243.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,64 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+From: Tero Kristo <tero.kristo@nokia.com>
 
-mwait_idle() is a C1-only idle loop intended to be more efficient
-than HLT on SMP hardware that supports it.
+Cpuidle menu governor is using u32 as a temporary datatype for storing
+nanosecond values which wrap around at 4.294 seconds. This causes errors
+in predicted sleep times resulting in higher than should be C state
+selection and increased power consumption. This also breaks cpuidle
+state residency statistics.
 
-But mwait_idle() has been replaced by the more general
-mwait_idle_with_hints(), which handles both C1 and deeper C-states.
-ACPI uses only mwait_idle_with_hints(), and never uses mwait_idle().
-
-Deprecate mwait_idle() and the "idle=mwait" cmdline param
-to simplify the x86 idle code.
-
-After this change, kernels configured with
-(!CONFIG_ACPI=n && !CONFIG_INTEL_IDLE=n) when run on hardware
-that support MWAIT will simply use HLT.  If MWAIT is desired
-on those systems, cpuidle and the cpuidle drivers above
-will support it.
-
-cc: x86@kernel.org
 cc: stable@kernel.org
+Signed-off-by: Tero Kristo <tero.kristo@nokia.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/feature-removal-schedule.txt |    7 +++++++
- arch/x86/kernel/process.c                  |    1 +
- 2 files changed, 8 insertions(+), 0 deletions(-)
+ drivers/cpuidle/governors/menu.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index f587159..9ee4a2c 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -35,6 +35,13 @@ Who:	Len Brown <len.brown@intel.com>
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index f508690..c47f3d0 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -237,6 +237,7 @@ static int menu_select(struct cpuidle_device *dev)
+ 	unsigned int power_usage = -1;
+ 	int i;
+ 	int multiplier;
++	struct timespec t;
  
- ----------------------------
+ 	if (data->needs_update) {
+ 		menu_update(dev);
+@@ -251,8 +252,9 @@ static int menu_select(struct cpuidle_device *dev)
+ 		return 0;
  
-+What:	x86 "idle=mwait" cmdline param
-+When:	2.6.40
-+Why:	simplify x86 idle code
-+Who:	Len Brown <len.brown@intel.com>
-+
-+----------------------------
-+
- What:	PRISM54
- When:	2.6.34
+ 	/* determine the expected residency time, round up */
++	t = ktime_to_timespec(tick_nohz_get_sleep_length());
+ 	data->expected_us =
+-	    DIV_ROUND_UP((u32)ktime_to_ns(tick_nohz_get_sleep_length()), 1000);
++		t.tv_sec * USEC_PER_SEC + t.tv_nsec / NSEC_PER_USEC;
  
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 17b8771..1f64501 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -645,6 +645,7 @@ static int __init idle_setup(char *str)
- 		boot_option_idle_override = IDLE_POLL;
- 	} else if (!strcmp(str, "mwait")) {
- 		boot_option_idle_override = IDLE_FORCE_MWAIT;
-+		WARN_ONCE(1, "\idle=mwait\" will be removed in 2.6.40\"\n");
- 	} else if (!strcmp(str, "halt")) {
- 		/*
- 		 * When the boot option of idle=halt is added, halt is
+ 
+ 	data->bucket = which_bucket(data->expected_us);
 -- 
 1.7.5.rc0
