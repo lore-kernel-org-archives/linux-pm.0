@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 18/18] 2.6.40: x86 idle: remove deprecated
-	mwait_idle()
-Date: Sat, 02 Apr 2011 02:23:00 -0400
-Message-ID: <d29645381f953dd00b853ae69e2347b1c5274465.1301724243.git.len.brown__33091.4169121117$1301728006$gmane$org@intel.com>
+Subject: [PATCH 11/18] cpuidle: stop using pm_idle
+Date: Sat, 02 Apr 2011 02:22:53 -0400
+Message-ID: <5f8cf82855ca448698efe66f48779972ad08ffc0.1301724243.git.len.brown__8886.32199862531$1301728126$gmane$org@intel.com>
 References: <alpine.LFD.2.02.1104010020280.2797@x980>
 	<1301725380-10579-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,163 +21,251 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-For ACPI mode, mwait_with_hints() in cstate.c is used instead of
-mwait_idle().
+pm_idle does not scale as an idle handler registration mechanism.
+Don't use it for cpuidle.  Instead, call cpuidle directly, and
+allow architectures to use pm_idle as an arch-specific default
+if they need it.  ie.
 
-For INTEL_IDLE mode, the mwait in intel_idle() is used instead of
-mwait_idle().
-
-So mwait_idle() is used only on hardware that supports MWAIT,
-but is running a !ACPI && !INTEL_IDLE kernel.
-Such a system will run HLT instead of MWAIT after this change.
+cpu_idle()
+	...
+	if(cpuidle_call_idle())
+		pm_idle();
 
 cc: x86@kernel.org
-Acked-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+cc: Kevin Hilman <khilman@deeprootsystems.com>
+cc: Paul Mundt <lethal@linux-sh.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/feature-removal-schedule.txt |    7 -----
- Documentation/kernel-parameters.txt        |    7 +----
- arch/x86/include/asm/processor.h           |    2 +-
- arch/x86/kernel/process.c                  |   35 +---------------------------
- drivers/acpi/processor_idle.c              |    1 -
- 5 files changed, 3 insertions(+), 49 deletions(-)
+ arch/arm/kernel/process.c    |    4 +++-
+ arch/sh/kernel/idle.c        |    6 ++++--
+ arch/x86/kernel/process_32.c |    4 +++-
+ arch/x86/kernel/process_64.c |    4 +++-
+ drivers/cpuidle/cpuidle.c    |   38 ++++++++++++++++++--------------------
+ include/linux/cpuidle.h      |    2 ++
+ 6 files changed, 33 insertions(+), 25 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 9b84b1a..f55ba2c 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -6,13 +6,6 @@ be removed from this file.
+diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+index 94bbedb..dc9d685 100644
+--- a/arch/arm/kernel/process.c
++++ b/arch/arm/kernel/process.c
+@@ -30,6 +30,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/random.h>
+ #include <linux/hw_breakpoint.h>
++#include <linux/cpuidle.h>
  
- ----------------------------
+ #include <asm/cacheflush.h>
+ #include <asm/leds.h>
+@@ -196,7 +197,8 @@ void cpu_idle(void)
+ 				cpu_relax();
+ 			} else {
+ 				stop_critical_timings();
+-				pm_idle();
++				if (cpuidle_call_idle())
++					pm_idle();
+ 				start_critical_timings();
+ 				/*
+ 				 * This will eventually be removed - pm_idle
+diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
+index 425d604..9c7099e 100644
+--- a/arch/sh/kernel/idle.c
++++ b/arch/sh/kernel/idle.c
+@@ -16,12 +16,13 @@
+ #include <linux/thread_info.h>
+ #include <linux/irqflags.h>
+ #include <linux/smp.h>
++#include <linux/cpuidle.h>
+ #include <asm/pgalloc.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/smp.h>
  
--What:	x86 "idle=mwait" cmdline param
--When:	2.6.40
--Why:	simplify x86 idle code
--Who:	Len Brown <len.brown@intel.com>
--
------------------------------
--
- What:	PRISM54
- When:	2.6.34
+-void (*pm_idle)(void) = NULL;
++static void (*pm_idle)(void);
  
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index a9db94e..52c956a 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -920,16 +920,11 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			Claim all unknown PCI IDE storage controllers.
+ static int hlt_counter;
  
- 	idle=		[X86]
--			Format: idle=poll, idle=mwait, idle=halt, idle=nomwait
-+			Format: idle=poll, idle=halt, idle=nomwait
- 			Poll forces a polling idle loop that can slightly
- 			improve the performance of waking up a idle CPU, but
- 			will use a lot of power and make the system run hot.
- 			Not recommended.
--			idle=mwait: On systems which support MONITOR/MWAIT but
--			the kernel chose to not use it because it doesn't save
--			as much power as a normal idle loop, use the
--			MONITOR/MWAIT idle loop anyways. Performance should be
--			the same as idle=poll.
- 			idle=halt: Halt is forced to be used for CPU idle.
- 			In such case C2/C3 won't be used again.
- 			idle=nomwait: Disable mwait for CPU C-states
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 10cdee8..3424009 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -752,7 +752,7 @@ extern unsigned long		boot_option_idle_override;
- extern bool			amd_e400_detected;
+@@ -100,7 +101,8 @@ void cpu_idle(void)
+ 			local_irq_disable();
+ 			/* Don't trace irqs off for idle */
+ 			stop_critical_timings();
+-			pm_idle();
++			if (cpuidle_call_idle())
++				pm_idle();
+ 			/*
+ 			 * Sanity check to ensure that pm_idle() returns
+ 			 * with IRQs enabled
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 8d12878..61fadbe 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -38,6 +38,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
+ #include <linux/kdebug.h>
++#include <linux/cpuidle.h>
  
- enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_NOMWAIT,
--			 IDLE_POLL, IDLE_FORCE_MWAIT};
-+			 IDLE_POLL};
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+@@ -109,7 +110,8 @@ void cpu_idle(void)
+ 			local_irq_disable();
+ 			/* Don't trace irqs off for idle */
+ 			stop_critical_timings();
+-			pm_idle();
++			if (cpuidle_idle_call())
++				pm_idle();
+ 			start_critical_timings();
+ 		}
+ 		tick_nohz_restart_sched_tick();
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index bd387e8..210641a 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -37,6 +37,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
+ #include <linux/ftrace.h>
++#include <linux/cpuidle.h>
  
- extern void enable_sep_cpu(void);
- extern int sysenter_setup(void);
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 8daa323..4ab4bba 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -399,27 +399,6 @@ void cpu_idle_wait(void)
- }
- EXPORT_SYMBOL_GPL(cpu_idle_wait);
+ #include <asm/pgtable.h>
+ #include <asm/system.h>
+@@ -136,7 +137,8 @@ void cpu_idle(void)
+ 			enter_idle();
+ 			/* Don't trace irqs off for idle */
+ 			stop_critical_timings();
+-			pm_idle();
++			if (cpuidle_idle_call())
++				pm_idle();
+ 			start_critical_timings();
  
--/* Default MONITOR/MWAIT with no hints, used for default C1 state */
--static void mwait_idle(void)
--{
--	if (!need_resched()) {
--		trace_power_start(POWER_CSTATE, 1, smp_processor_id());
--		trace_cpu_idle(1, smp_processor_id());
--		if (cpu_has(__this_cpu_ptr(&cpu_info), X86_FEATURE_CLFLUSH_MONITOR))
--			clflush((void *)&current_thread_info()->flags);
--
--		__monitor((void *)&current_thread_info()->flags, 0, 0);
--		smp_mb();
--		if (!need_resched())
--			__sti_mwait(0, 0);
+ 			/* In many cases the interrupt that ended idle
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 041df0b..d4c5423 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -25,10 +25,10 @@ DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+ 
+ DEFINE_MUTEX(cpuidle_lock);
+ LIST_HEAD(cpuidle_detected_devices);
+-static void (*pm_idle_old)(void);
+ 
+ static int enabled_devices;
+ static int off __read_mostly;
++static int initialized __read_mostly;
+ 
+ int cpuidle_disabled(void)
+ {
+@@ -56,25 +56,23 @@ static int __cpuidle_register_device(struct cpuidle_device *dev);
+  * cpuidle_idle_call - the main idle loop
+  *
+  * NOTE: no locks or semaphores should be used here
++ * return non-zero on failure
+  */
+-static void cpuidle_idle_call(void)
++int cpuidle_idle_call(void)
+ {
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_state *target_state;
+ 	int next_state;
+ 
++	if (off)
++		return -ENODEV;
++
++	if (!initialized)
++		return -ENODEV;
++
+ 	/* check if the device is ready */
+-	if (!dev || !dev->enabled) {
+-		if (pm_idle_old)
+-			pm_idle_old();
 -		else
+-#if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
+-			default_idle();
+-#else
 -			local_irq_enable();
--		trace_power_end(smp_processor_id());
--		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
--	} else
--		local_irq_enable();
--}
--
- /*
-  * On SMP it's slightly faster (but much more power-consuming!)
-  * to poll the ->work.need_resched flag instead of waiting for the
-@@ -457,9 +436,6 @@ int mwait_usable(const struct cpuinfo_x86 *c)
- {
- 	u32 eax, ebx, ecx, edx;
+-#endif
+-		return;
+-	}
++	if (!dev || !dev->enabled)
++		return -EBUSY;
  
--	if (boot_option_idle_override == IDLE_FORCE_MWAIT)
--		return 1;
--
- 	if (c->cpuid_level < MWAIT_INFO)
- 		return 0;
+ #if 0
+ 	/* shows regressions, re-enable for 2.6.29 */
+@@ -99,7 +97,7 @@ static void cpuidle_idle_call(void)
+ 	next_state = cpuidle_curr_governor->select(dev);
+ 	if (need_resched()) {
+ 		local_irq_enable();
+-		return;
++		return 0;
+ 	}
  
-@@ -548,13 +524,7 @@ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- 	if (pm_idle)
- 		return;
- 
--	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
--		/*
--		 * One CPU supports mwait => All CPUs supports mwait
--		 */
--		printk(KERN_INFO "using mwait in idle threads.\n");
--		pm_idle = mwait_idle;
--	} else if (cpu_has_amd_erratum(amd_erratum_400)) {
-+	if (cpu_has_amd_erratum(amd_erratum_400)) {
- 		/* E400: APIC timer interrupt does not wake up CPU from C1e */
- 		printk(KERN_INFO "using E400 aware idle routine\n");
- 		pm_idle = amd_e400_idle;
-@@ -578,9 +548,6 @@ static int __init idle_setup(char *str)
- 		printk("using polling idle threads.\n");
- 		pm_idle = poll_idle;
- 		boot_option_idle_override = IDLE_POLL;
--	} else if (!strcmp(str, "mwait")) {
--		boot_option_idle_override = IDLE_FORCE_MWAIT;
--		WARN_ONCE(1, "\idle=mwait\" will be removed in 2.6.40\"\n");
- 	} else if (!strcmp(str, "halt")) {
- 		/*
- 		 * When the boot option of idle=halt is added, halt is
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 53d9f10..954a9d3 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -82,7 +82,6 @@ module_param(latency_factor, uint, 0644);
- static int disabled_by_idle_boot_param(void)
- {
- 	return boot_option_idle_override == IDLE_POLL ||
--		boot_option_idle_override == IDLE_FORCE_MWAIT ||
- 		boot_option_idle_override == IDLE_HALT;
+ 	target_state = &dev->states[next_state];
+@@ -124,6 +122,8 @@ static void cpuidle_idle_call(void)
+ 	/* give the governor an opportunity to reflect on the outcome */
+ 	if (cpuidle_curr_governor->reflect)
+ 		cpuidle_curr_governor->reflect(dev);
++
++	return 0;
  }
  
+ /**
+@@ -131,10 +131,10 @@ static void cpuidle_idle_call(void)
+  */
+ void cpuidle_install_idle_handler(void)
+ {
+-	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
++	if (enabled_devices) {
+ 		/* Make sure all changes finished before we switch to new idle */
+ 		smp_wmb();
+-		pm_idle = cpuidle_idle_call;
++		initialized = 1;
+ 	}
+ }
+ 
+@@ -143,8 +143,8 @@ void cpuidle_install_idle_handler(void)
+  */
+ void cpuidle_uninstall_idle_handler(void)
+ {
+-	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+-		pm_idle = pm_idle_old;
++	if (enabled_devices) {
++		initialized = 0;
+ 		cpuidle_kick_cpus();
+ 	}
+ }
+@@ -440,8 +440,6 @@ static int __init cpuidle_init(void)
+ 	if (cpuidle_disabled())
+ 		return -ENODEV;
+ 
+-	pm_idle_old = pm_idle;
+-
+ 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+ 	if (ret)
+ 		return ret;
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index b89f67d..b51629e 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -123,6 +123,7 @@ struct cpuidle_driver {
+ 
+ #ifdef CONFIG_CPU_IDLE
+ extern void disable_cpuidle(void);
++extern int cpuidle_idle_call(void);
+ 
+ extern int cpuidle_register_driver(struct cpuidle_driver *drv);
+ struct cpuidle_driver *cpuidle_get_driver(void);
+@@ -137,6 +138,7 @@ extern void cpuidle_disable_device(struct cpuidle_device *dev);
+ 
+ #else
+ static inline void disable_cpuidle(void) { }
++static inline int cpuidle_idle_call(void) { return -ENODEV; }
+ 
+ static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
+ {return -ENODEV; }
 -- 
 1.7.5.rc0
