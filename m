@@ -1,14 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] cpuidle: menu: fixed wrapping timers at
-	4.294 seconds
-Date: Fri, 01 Apr 2011 20:07:04 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1104012006370.3461__11845.9193887704$1301702993$gmane$org@x980>
-References: <1298560763-441-1-git-send-email-tero.kristo@nokia.com>
+Subject: [PATCH 02/18] x86 idle floppy: deprecate disable_hlt()
+Date: Sat, 02 Apr 2011 02:22:44 -0400
+Message-ID: <f925862949eb722b15453ab6c053d674147580d3.1301724243.git.len.brown@intel.com>
+References: <alpine.LFD.2.02.1104010020280.2797@x980>
+	<1301725380-10579-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1298560763-441-1-git-send-email-tero.kristo@nokia.com>
+In-reply-to: <1301725380-10579-1-git-send-email-lenb@kernel.org>
+In-reply-to: <c82cf78992a66bfa7f0c82aeb20ba6922127463b.1301724243.git.len.brown@intel.com>
+References: <c82cf78992a66bfa7f0c82aeb20ba6922127463b.1301724243.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,59 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tero Kristo <tero.kristo@nokia.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-applied to idle-test
+From: Len Brown <len.brown@intel.com>
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+Plan to remove floppy_disable_hlt in 2.6.40, an ancient
+workaround with comments that it should be removed.
 
-ps. please cc linux-pm on cpuidle pathces
+This allows us to remove clutter and a run-time branch
+from the idle code.
 
-On Thu, 24 Feb 2011, Tero Kristo wrote:
+WARN_ONCE() on invocation until it is removed.
 
-> Cpuidle menu governor is using u32 as a temporary datatype for storing
-> nanosecond values which wrap around at 4.294 seconds. This causes errors
-> in predicted sleep times resulting in higher than should be C state
-> selection and increased power consumption. This also breaks cpuidle
-> state residency statistics.
-> 
-> Signed-off-by: Tero Kristo <tero.kristo@nokia.com>
-> ---
->  drivers/cpuidle/governors/menu.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index f508690..c47f3d0 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -237,6 +237,7 @@ static int menu_select(struct cpuidle_device *dev)
->  	unsigned int power_usage = -1;
->  	int i;
->  	int multiplier;
-> +	struct timespec t;
->  
->  	if (data->needs_update) {
->  		menu_update(dev);
-> @@ -251,8 +252,9 @@ static int menu_select(struct cpuidle_device *dev)
->  		return 0;
->  
->  	/* determine the expected residency time, round up */
-> +	t = ktime_to_timespec(tick_nohz_get_sleep_length());
->  	data->expected_us =
-> -	    DIV_ROUND_UP((u32)ktime_to_ns(tick_nohz_get_sleep_length()), 1000);
-> +		t.tv_sec * USEC_PER_SEC + t.tv_nsec / NSEC_PER_USEC;
->  
->  
->  	data->bucket = which_bucket(data->expected_us);
-> -- 
-> 1.7.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+cc: x86@kernel.org
+cc: stable@kernel.org
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ Documentation/feature-removal-schedule.txt |    8 ++++++++
+ drivers/block/floppy.c                     |    1 +
+ 2 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index b3f35e5..54db467 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -6,6 +6,14 @@ be removed from this file.
+ 
+ ---------------------------
+ 
++What:	x86 floppy disable_hlt
++When:	2.6.40
++Why:	ancient workaround of dubious utility clutters the
++	code used by everybody else.
++Who:	Len Brown <len.brown@intel.com>
++
++---------------------------
++
+ What:	PRISM54
+ When:	2.6.34
+ 
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index 77fc76f..41ea03f 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -1038,6 +1038,7 @@ static void floppy_disable_hlt(void)
+ {
+ 	unsigned long flags;
+ 
++	WARN_ONCE(1, "floppy_disable_hlt() scheduled for removal in 2.6.40");
+ 	spin_lock_irqsave(&floppy_hlt_lock, flags);
+ 	if (!hlt_disabled) {
+ 		hlt_disabled = 1;
+-- 
+1.7.5.rc0
