@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 13/18] 2.6.40: x86 idle: remove deprecated
- "hlt_bug: no" in 32-bit /proc/cpuinfo
-Date: Sat, 02 Apr 2011 02:22:55 -0400
-Message-ID: <b499d75b1c21e1f3183001847172b6b71baf1c8b.1301724243.git.len.brown__21674.2966943004$1301727802$gmane$org@intel.com>
+Subject: [PATCH 10/18] x86 idle: move mwait_idle_with_hints() to
+ where it is used
+Date: Sat, 02 Apr 2011 02:22:52 -0400
+Message-ID: <68855c4b4018577c781c464e2598aba0bae957eb.1301724243.git.len.brown@intel.com>
 References: <alpine.LFD.2.02.1104010020280.2797@x980>
 	<1301725380-10579-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
@@ -27,140 +27,99 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-Now that the "no-hlt" cmdline param is gone...
+...and make it static
 
-cpuinfo_x86.hlt_works_ok, halt_works() and the
-"hlt_bug: no" line in 32-bit /proc/cpuinfo are NOPS.
-
-remove them.
+no functional change
 
 cc: x86@kernel.org
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/include/asm/processor.h |   10 ----------
- arch/x86/kernel/cpu/bugs.c       |    5 +----
- arch/x86/kernel/cpu/proc.c       |    2 --
- arch/x86/kernel/process.c        |    5 ++---
- arch/x86/kernel/setup.c          |    4 ++--
- arch/x86/xen/setup.c             |    3 ---
- 6 files changed, 5 insertions(+), 24 deletions(-)
+ arch/x86/include/asm/processor.h |    2 --
+ arch/x86/kernel/acpi/cstate.c    |   24 ++++++++++++++++++++++++
+ arch/x86/kernel/process.c        |   23 -----------------------
+ 3 files changed, 24 insertions(+), 25 deletions(-)
 
 diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index fd02787..10cdee8 100644
+index a8c5fed..fd02787 100644
 --- a/arch/x86/include/asm/processor.h
 +++ b/arch/x86/include/asm/processor.h
-@@ -67,7 +67,6 @@ struct cpuinfo_x86 {
- 	char			wp_works_ok;	/* It doesn't on 386's */
+@@ -755,8 +755,6 @@ static inline void __sti_mwait(unsigned long eax, unsigned long ecx)
+ 		     :: "a" (eax), "c" (ecx));
+ }
  
- 	/* Problems on some 486Dx4's and old 386's: */
--	char			hlt_works_ok;
- 	char			hard_math;
- 	char			rfu;
- 	char			fdiv_bug;
-@@ -148,15 +147,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
- 
- extern const struct seq_operations cpuinfo_op;
- 
--static inline int hlt_works(int cpu)
--{
--#ifdef CONFIG_X86_32
--	return cpu_data(cpu).hlt_works_ok;
--#else
--	return 1;
--#endif
--}
+-extern void mwait_idle_with_hints(unsigned long eax, unsigned long ecx);
 -
- #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
+ extern void select_idle_routine(const struct cpuinfo_x86 *c);
+ extern void init_amd_e400_mask(void);
  
- extern void cpu_detect(struct cpuinfo_x86 *c);
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index 4c91631..b5e2910 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -82,10 +82,7 @@ static void __init check_hlt(void)
- 		return;
+diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+index 5812404..c49281e 100644
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -149,6 +149,30 @@ int acpi_processor_ffh_cstate_probe(unsigned int cpu,
+ }
+ EXPORT_SYMBOL_GPL(acpi_processor_ffh_cstate_probe);
  
- 	printk(KERN_INFO "Checking 'hlt' instruction... ");
--	if (!boot_cpu_data.hlt_works_ok) {
--		printk("disabled\n");
--		return;
--	}
++/*
++ * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
++ * which can obviate IPI to trigger checking of need_resched.
++ * We execute MONITOR against need_resched and enter optimized wait state
++ * through MWAIT. Whenever someone changes need_resched, we would be woken
++ * up from MWAIT (without an IPI).
++ *
++ * New with Core Duo processors, MWAIT can take some hints based on CPU
++ * capability.
++ */
++static void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
++{
++	if (!need_resched()) {
++		if (cpu_has(__this_cpu_ptr(&cpu_info), X86_FEATURE_CLFLUSH_MONITOR))
++			clflush((void *)&current_thread_info()->flags);
 +
- 	halt();
- 	halt();
- 	halt();
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 62ac8cb..203feb7 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -33,7 +33,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 	int fpu_exception = c->hard_math && (ignore_fpu_irq || cpu_has_fpu);
- 	seq_printf(m,
- 		   "fdiv_bug\t: %s\n"
--		   "hlt_bug\t\t: %s\n"
- 		   "f00f_bug\t: %s\n"
- 		   "coma_bug\t: %s\n"
- 		   "fpu\t\t: %s\n"
-@@ -41,7 +40,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 		   "cpuid level\t: %d\n"
- 		   "wp\t\t: %s\n",
- 		   c->fdiv_bug ? "yes" : "no",
--		   c->hlt_works_ok ? "no" : "yes",
- 		   c->f00f_bug ? "yes" : "no",
- 		   c->coma_bug ? "yes" : "no",
- 		   c->hard_math ? "yes" : "no",
++		__monitor((void *)&current_thread_info()->flags, 0, 0);
++		smp_mb();
++		if (!need_resched())
++			__mwait(ax, cx);
++	}
++}
++
++
+ void acpi_processor_ffh_cstate_enter(struct acpi_processor_cx *cx)
+ {
+ 	unsigned int cpu = smp_processor_id();
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 579c78f..c485629 100644
+index 1c45a9c..579c78f 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
-@@ -364,7 +364,7 @@ EXPORT_SYMBOL(enable_hlt);
- 
- static inline int hlt_use_halt(void)
- {
--	return (!hlt_counter && boot_cpu_data.hlt_works_ok);
-+	return !hlt_counter;
+@@ -441,29 +441,6 @@ void cpu_idle_wait(void)
  }
- #else
- static inline int hlt_use_halt(void)
-@@ -416,8 +416,7 @@ void stop_this_cpu(void *dummy)
- 	disable_local_APIC();
+ EXPORT_SYMBOL_GPL(cpu_idle_wait);
  
- 	for (;;) {
--		if (hlt_works(smp_processor_id()))
--			halt();
-+		halt();
- 	}
- }
- 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index d3cfe26..fab5631 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -175,9 +175,9 @@ static struct resource bss_resource = {
- 
- #ifdef CONFIG_X86_32
- /* cpu data as detected by the assembly code in head.S */
--struct cpuinfo_x86 new_cpu_data __cpuinitdata = {0, 0, 0, 0, -1, 1, 0, 0, -1};
-+struct cpuinfo_x86 new_cpu_data __cpuinitdata = {0, 0, 0, 0, -1, 0, 0, -1};
- /* common cpu data for all cpus */
--struct cpuinfo_x86 boot_cpu_data __read_mostly = {0, 0, 0, 0, -1, 1, 0, 0, -1};
-+struct cpuinfo_x86 boot_cpu_data __read_mostly = {0, 0, 0, 0, -1, 0, 0, -1};
- EXPORT_SYMBOL(boot_cpu_data);
- static void set_mca_bus(int x)
+-/*
+- * This uses new MONITOR/MWAIT instructions on P4 processors with PNI,
+- * which can obviate IPI to trigger checking of need_resched.
+- * We execute MONITOR against need_resched and enter optimized wait state
+- * through MWAIT. Whenever someone changes need_resched, we would be woken
+- * up from MWAIT (without an IPI).
+- *
+- * New with Core Duo processors, MWAIT can take some hints based on CPU
+- * capability.
+- */
+-void mwait_idle_with_hints(unsigned long ax, unsigned long cx)
+-{
+-	if (!need_resched()) {
+-		if (cpu_has(__this_cpu_ptr(&cpu_info), X86_FEATURE_CLFLUSH_MONITOR))
+-			clflush((void *)&current_thread_info()->flags);
+-
+-		__monitor((void *)&current_thread_info()->flags, 0, 0);
+-		smp_mb();
+-		if (!need_resched())
+-			__mwait(ax, cx);
+-	}
+-}
+-
+ /* Default MONITOR/MWAIT with no hints, used for default C1 state */
+ static void mwait_idle(void)
  {
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index aa02cce..32069fb 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -352,9 +352,6 @@ void __init xen_arch_setup(void)
- 	       COMMAND_LINE_SIZE : MAX_GUEST_CMDLINE);
- 
- 	/* Set up idle, making sure it calls safe_halt() pvop */
--#ifdef CONFIG_X86_32
--	boot_cpu_data.hlt_works_ok = 1;
--#endif
- 	disable_cpuidle();
- 	boot_option_idle_override = IDLE_HALT;
- 
 -- 
 1.7.5.rc0
