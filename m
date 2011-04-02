@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 12/18] 2.6.40: x86 idle: remove deprecated
- "no-hlt" cmdline param
-Date: Sat, 02 Apr 2011 02:22:54 -0400
-Message-ID: <6f29c9504382d48164e62f10ec0c7928c57a4e2c.1301724243.git.len.brown@intel.com>
+Subject: [PATCH 13/18] 2.6.40: x86 idle: remove deprecated
+ "hlt_bug: no" in 32-bit /proc/cpuinfo
+Date: Sat, 02 Apr 2011 02:22:55 -0400
+Message-ID: <b499d75b1c21e1f3183001847172b6b71baf1c8b.1301724243.git.len.brown__21674.2966943004$1301727802$gmane$org@intel.com>
 References: <alpine.LFD.2.02.1104010020280.2797@x980>
 	<1301725380-10579-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
@@ -27,81 +27,140 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-The X86_32-only "no-hlt" cmdline option was used to disable
-the HLT instruction in the idle loop for the beneift of
-systems with flakey power issues 15 years ago.
+Now that the "no-hlt" cmdline param is gone...
 
-It would also set the "hlt_bug" line in /proc/cpuinfo
-and disable HLT in machine_halt().
+cpuinfo_x86.hlt_works_ok, halt_works() and the
+"hlt_bug: no" line in 32-bit /proc/cpuinfo are NOPS.
 
-If such a system is still running the upstream kernel,
-"idle=poll" is available to disable HLT in the idle loop.
-The kernel will, however, still use HLT in machine_halt().
+remove them.
 
 cc: x86@kernel.org
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/feature-removal-schedule.txt |   11 -----------
- Documentation/kernel-parameters.txt        |    4 ----
- arch/x86/kernel/cpu/bugs.c                 |    9 ---------
- 3 files changed, 0 insertions(+), 24 deletions(-)
+ arch/x86/include/asm/processor.h |   10 ----------
+ arch/x86/kernel/cpu/bugs.c       |    5 +----
+ arch/x86/kernel/cpu/proc.c       |    2 --
+ arch/x86/kernel/process.c        |    5 ++---
+ arch/x86/kernel/setup.c          |    4 ++--
+ arch/x86/xen/setup.c             |    3 ---
+ 6 files changed, 5 insertions(+), 24 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 9ee4a2c..720e698 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -24,17 +24,6 @@ Who:	Len Brown <len.brown@intel.com>
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index fd02787..10cdee8 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -67,7 +67,6 @@ struct cpuinfo_x86 {
+ 	char			wp_works_ok;	/* It doesn't on 386's */
  
- ----------------------------
+ 	/* Problems on some 486Dx4's and old 386's: */
+-	char			hlt_works_ok;
+ 	char			hard_math;
+ 	char			rfu;
+ 	char			fdiv_bug;
+@@ -148,15 +147,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
  
--What:	x86_32 "no-hlt" cmdline param
--When:	2.6.40
--Why:	remove a branch from idle path, simplify code used by everybody.
--	This option disabled the use of HLT in idle and machine_halt()
--	for hardware that was flakey 15-years ago.  Today we have
--	"idle=poll" that removed HLT from idle, and so if such a machine
--	is still running the upstream kernel, "idle=poll" is likely sufficient.
--Who:	Len Brown <len.brown@intel.com>
--
------------------------------
--
- What:	x86 "idle=mwait" cmdline param
- When:	2.6.40
- Why:	simplify x86 idle code
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 08e8a22..a9db94e 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1669,10 +1669,6 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			wfi(ARM) instruction doesn't work correctly and not to
- 			use it. This is also useful when using JTAG debugger.
+ extern const struct seq_operations cpuinfo_op;
  
--	no-hlt		[BUGS=X86-32] Tells the kernel that the hlt
--			instruction doesn't work correctly and not to
--			use it.
--
- 	no_file_caps	Tells the kernel not to honor file capabilities.  The
- 			only way then for a file to be executed with privilege
- 			is to be setuid root or executed by root.
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index 525514c..4c91631 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -17,15 +17,6 @@
- #include <asm/paravirt.h>
- #include <asm/alternative.h>
- 
--static int __init no_halt(char *s)
+-static inline int hlt_works(int cpu)
 -{
--	WARN_ONCE(1, "\"no-hlt\" is deprecated, please use \"idle=poll\"\n");
--	boot_cpu_data.hlt_works_ok = 0;
+-#ifdef CONFIG_X86_32
+-	return cpu_data(cpu).hlt_works_ok;
+-#else
 -	return 1;
+-#endif
 -}
 -
--__setup("no-hlt", no_halt);
--
- static int __init no_387(char *s)
+ #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
+ 
+ extern void cpu_detect(struct cpuinfo_x86 *c);
+diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
+index 4c91631..b5e2910 100644
+--- a/arch/x86/kernel/cpu/bugs.c
++++ b/arch/x86/kernel/cpu/bugs.c
+@@ -82,10 +82,7 @@ static void __init check_hlt(void)
+ 		return;
+ 
+ 	printk(KERN_INFO "Checking 'hlt' instruction... ");
+-	if (!boot_cpu_data.hlt_works_ok) {
+-		printk("disabled\n");
+-		return;
+-	}
++
+ 	halt();
+ 	halt();
+ 	halt();
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index 62ac8cb..203feb7 100644
+--- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -33,7 +33,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
+ 	int fpu_exception = c->hard_math && (ignore_fpu_irq || cpu_has_fpu);
+ 	seq_printf(m,
+ 		   "fdiv_bug\t: %s\n"
+-		   "hlt_bug\t\t: %s\n"
+ 		   "f00f_bug\t: %s\n"
+ 		   "coma_bug\t: %s\n"
+ 		   "fpu\t\t: %s\n"
+@@ -41,7 +40,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
+ 		   "cpuid level\t: %d\n"
+ 		   "wp\t\t: %s\n",
+ 		   c->fdiv_bug ? "yes" : "no",
+-		   c->hlt_works_ok ? "no" : "yes",
+ 		   c->f00f_bug ? "yes" : "no",
+ 		   c->coma_bug ? "yes" : "no",
+ 		   c->hard_math ? "yes" : "no",
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 579c78f..c485629 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -364,7 +364,7 @@ EXPORT_SYMBOL(enable_hlt);
+ 
+ static inline int hlt_use_halt(void)
  {
- 	boot_cpu_data.hard_math = 0;
+-	return (!hlt_counter && boot_cpu_data.hlt_works_ok);
++	return !hlt_counter;
+ }
+ #else
+ static inline int hlt_use_halt(void)
+@@ -416,8 +416,7 @@ void stop_this_cpu(void *dummy)
+ 	disable_local_APIC();
+ 
+ 	for (;;) {
+-		if (hlt_works(smp_processor_id()))
+-			halt();
++		halt();
+ 	}
+ }
+ 
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index d3cfe26..fab5631 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -175,9 +175,9 @@ static struct resource bss_resource = {
+ 
+ #ifdef CONFIG_X86_32
+ /* cpu data as detected by the assembly code in head.S */
+-struct cpuinfo_x86 new_cpu_data __cpuinitdata = {0, 0, 0, 0, -1, 1, 0, 0, -1};
++struct cpuinfo_x86 new_cpu_data __cpuinitdata = {0, 0, 0, 0, -1, 0, 0, -1};
+ /* common cpu data for all cpus */
+-struct cpuinfo_x86 boot_cpu_data __read_mostly = {0, 0, 0, 0, -1, 1, 0, 0, -1};
++struct cpuinfo_x86 boot_cpu_data __read_mostly = {0, 0, 0, 0, -1, 0, 0, -1};
+ EXPORT_SYMBOL(boot_cpu_data);
+ static void set_mca_bus(int x)
+ {
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index aa02cce..32069fb 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -352,9 +352,6 @@ void __init xen_arch_setup(void)
+ 	       COMMAND_LINE_SIZE : MAX_GUEST_CMDLINE);
+ 
+ 	/* Set up idle, making sure it calls safe_halt() pvop */
+-#ifdef CONFIG_X86_32
+-	boot_cpu_data.hlt_works_ok = 1;
+-#endif
+ 	disable_cpuidle();
+ 	boot_option_idle_override = IDLE_HALT;
+ 
 -- 
 1.7.5.rc0
