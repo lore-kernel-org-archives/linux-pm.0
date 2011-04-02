@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 17/18] 2.6.40: x86 idle: do not export
- default_idle() and (pm_idle)()
-Date: Sat, 02 Apr 2011 02:22:59 -0400
-Message-ID: <f67c099ed8071d3b3c96bf9c02eb42bc80654869.1301724243.git.len.brown__39182.7251566157$1301727790$gmane$org@intel.com>
+Subject: [PATCH 15/18] 2.6.40: x86 idle: remove deprecated
+	hlt_use_halt()
+Date: Sat, 02 Apr 2011 02:22:57 -0400
+Message-ID: <44df5341b941e76965c20bd60e0057c385b28204.1301724243.git.len.brown@intel.com>
 References: <alpine.LFD.2.02.1104010020280.2797@x980>
 	<1301725380-10579-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
@@ -27,62 +27,75 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-With the removal of apm_cpu_idle(), we can now remove
-EXPORT_SYMBOL() for both default_idle() and (pm_idle)().
+Removing the floppy workaround made hlt_use_halt() constant.
+So we can now remove it, and we no longer need to test it
+in default_idle().
 
-Further, make default_idle() static.
-(pm_idle)() is still global b/c it is used by cpu_idle().
+no functional change.
 
 cc: x86@kernel.org
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/include/asm/system.h |    2 --
- arch/x86/kernel/process.c     |    8 +-------
- 2 files changed, 1 insertions(+), 9 deletions(-)
+ arch/x86/kernel/process.c |   39 ++++++++++++++-------------------------
+ 1 files changed, 14 insertions(+), 25 deletions(-)
 
-diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-index 013dd42..a3379bc 100644
---- a/arch/x86/include/asm/system.h
-+++ b/arch/x86/include/asm/system.h
-@@ -338,8 +338,6 @@ void cpu_idle_wait(void);
- extern unsigned long arch_align_stack(unsigned long sp);
- extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
- 
--void default_idle(void);
--
- void stop_this_cpu(void *dummy);
- 
- /*
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 53fb569..8daa323 100644
+index 09bd118..53fb569 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
-@@ -340,15 +340,12 @@ EXPORT_SYMBOL(boot_option_idle_override);
-  * Powermanagement idle function, if any..
-  */
- void (*pm_idle)(void);
--#if defined(CONFIG_APM_MODULE) && defined(CONFIG_APM_CPU_IDLE)
--EXPORT_SYMBOL(pm_idle);
--#endif
+@@ -344,39 +344,28 @@ void (*pm_idle)(void);
+ EXPORT_SYMBOL(pm_idle);
+ #endif
  
+-static inline int hlt_use_halt(void)
+-{
+-	return 1;
+-}
+-
  /*
   * We use this if we don't have any better
   * idle routine..
   */
--void default_idle(void)
-+static void default_idle(void)
+ void default_idle(void)
  {
- 	trace_power_start(POWER_CSTATE, 1, smp_processor_id());
- 	trace_cpu_idle(1, smp_processor_id());
-@@ -367,9 +364,6 @@ void default_idle(void)
- 	trace_power_end(smp_processor_id());
- 	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
- }
--#if defined(CONFIG_APM_MODULE) && defined(CONFIG_APM_CPU_IDLE)
--EXPORT_SYMBOL(default_idle);
--#endif
+-	if (hlt_use_halt()) {
+-		trace_power_start(POWER_CSTATE, 1, smp_processor_id());
+-		trace_cpu_idle(1, smp_processor_id());
+-		current_thread_info()->status &= ~TS_POLLING;
+-		/*
+-		 * TS_POLLING-cleared state must be visible before we
+-		 * test NEED_RESCHED:
+-		 */
+-		smp_mb();
++	trace_power_start(POWER_CSTATE, 1, smp_processor_id());
++	trace_cpu_idle(1, smp_processor_id());
++	current_thread_info()->status &= ~TS_POLLING;
++	/*
++	 * TS_POLLING-cleared state must be visible before we
++	 * test NEED_RESCHED:
++	 */
++	smp_mb();
  
- void stop_this_cpu(void *dummy)
- {
+-		if (!need_resched())
+-			safe_halt();	/* enables interrupts racelessly */
+-		else
+-			local_irq_enable();
+-		current_thread_info()->status |= TS_POLLING;
+-		trace_power_end(smp_processor_id());
+-		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
+-	} else {
++	if (!need_resched())
++		safe_halt();	/* enables interrupts racelessly */
++	else
+ 		local_irq_enable();
+-		/* loop is done by the caller */
+-		cpu_relax();
+-	}
++	current_thread_info()->status |= TS_POLLING;
++	trace_power_end(smp_processor_id());
++	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
+ }
+ #if defined(CONFIG_APM_MODULE) && defined(CONFIG_APM_CPU_IDLE)
+ EXPORT_SYMBOL(default_idle);
 -- 
 1.7.5.rc0
