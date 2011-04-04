@@ -1,16 +1,19 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [Xen-devel] [PATCH 09/18] cpuidle: replace xen
- access to x86 pm_idle and default_idle
-Date: Mon, 4 Apr 2011 11:33:35 -0400
-Message-ID: <20110404153335.GA19168__30742.5302723006$1301931287$gmane$org@dumpdata.com>
-References: <c82cf78992a66bfa7f0c82aeb20ba6922127463b.1301724243.git.len.brown@intel.com>
-	<e2f656a28f548ed19c829563e5168ce48026570b.1301724243.git.len.brown@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] APM: delete APM in Linux-2.6.40
+Date: Mon, 4 Apr 2011 18:44:56 +0200
+Message-ID: <20110404164456.GA13215__2288.20738052509$1301935601$gmane$org@elf.ucw.cz>
+References: <alpine.LFD.2.02.1103232321070.3848@x980>
+	<20110324154505.934a56a0.sfr@canb.auug.org.au>
+	<alpine.LFD.2.02.1103240336590.4529@x980>
+	<20110324102116.GA17446@khazad-dum.debian.net>
+	<alpine.LFD.2.02.1103241903030.16085@x980>
+	<20110325010705.GB4535@khazad-dum.debian.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <e2f656a28f548ed19c829563e5168ce48026570b.1301724243.git.len.brown@intel.com>
+In-Reply-To: <20110325010705.GB4535@khazad-dum.debian.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,95 +23,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Apr 02, 2011 at 02:22:51AM -0400, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
-> 
-> When a Xen Dom0 kernel boots on a hypervisor, it gets access
-> to the raw-hardware ACPI tables.  While it parses the idle tables
-> for the hypervisor's beneift, it uses HLT for its own idle.
-> 
-> Rather than have xen scribble on pm_idle and access default_idle,
-> have it simply disable_cpuidle() so acpi_idle will not load and
-> architecture default HLT will be used.
-Hey Len,
+Hi!
 
-Looks good to me. I've also tested this on the affected Intel machine and
-your patchset works fine.
+> > > People with a ThinkPad T23, T30 will really not appreciate this, and it
+> > > should not be too difficult to recruit some as testers.
+> > 
+> > I have both, and they both support ACPI.
+> 
+> I wonder why I had some users of those two boxes advocating APM, maybe
+> it used to work better or something.  Or I got the T21 and A30 confused
+> with the T23.
+> 
+> Well, I don't think we need to support the thre-digit series ThinkPads,
+> the number of those still working is probably on the four digits
+> world-wide.  And I haven't heard from anyone with a T21 or A31 in a
+> while, so they might be down to five digits already.
 
-> 
-> cc: xen-devel@lists.xensource.com
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/x86/xen/setup.c      |    3 ++-
->  drivers/cpuidle/cpuidle.c |    4 ++++
->  include/linux/cpuidle.h   |    2 ++
->  3 files changed, 8 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-> index a8a66a5..aa02cce 100644
-> --- a/arch/x86/xen/setup.c
-> +++ b/arch/x86/xen/setup.c
-> @@ -9,6 +9,7 @@
->  #include <linux/mm.h>
->  #include <linux/pm.h>
->  #include <linux/memblock.h>
-> +#include <linux/cpuidle.h>
->  
->  #include <asm/elf.h>
->  #include <asm/vdso.h>
-> @@ -354,7 +355,7 @@ void __init xen_arch_setup(void)
->  #ifdef CONFIG_X86_32
->  	boot_cpu_data.hlt_works_ok = 1;
->  #endif
-> -	pm_idle = default_idle;
-> +	disable_cpuidle();
->  	boot_option_idle_override = IDLE_HALT;
->  
->  	fiddle_vdso();
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index faae2c3..041df0b 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -34,6 +34,10 @@ int cpuidle_disabled(void)
->  {
->  	return off;
->  }
-> +void disable_cpuidle(void)
-> +{
-> +	off = 1;
-> +}
->  
->  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
->  static void cpuidle_kick_cpus(void)
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 36719ea..b89f67d 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -122,6 +122,7 @@ struct cpuidle_driver {
->  };
->  
->  #ifdef CONFIG_CPU_IDLE
-> +extern void disable_cpuidle(void);
->  
->  extern int cpuidle_register_driver(struct cpuidle_driver *drv);
->  struct cpuidle_driver *cpuidle_get_driver(void);
-> @@ -135,6 +136,7 @@ extern int cpuidle_enable_device(struct cpuidle_device *dev);
->  extern void cpuidle_disable_device(struct cpuidle_device *dev);
->  
->  #else
-> +static inline void disable_cpuidle(void) { }
->  
->  static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
->  {return -ENODEV; }
-> -- 
-> 1.7.5.rc0
-> 
-> 
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xensource.com
-> http://lists.xensource.com/xen-devel
+I still have working thinkpad 560X, my brother occassionaly uses it...
+
+I do not think we should remove APM support like this. It does not
+seem to be huge maintainance burden...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
