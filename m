@@ -1,15 +1,20 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86: kernel: acpi : Fix style problems in
-	boot.c
-Date: Sun, 3 Apr 2011 07:40:08 +0200
-Message-ID: <20110403054007.GB10921__33186.3357256681$1301809318$gmane$org@elf.ucw.cz>
-References: <AANLkTincUPbf23QdtQWhqjH+MaB9n2xKWQ4F54sZit=j@mail.gmail.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 16/18] 2.6.40: x86 idle APM: remove
+ deprecated apm_cpu_idle()
+Date: Mon, 4 Apr 2011 11:05:58 +0100
+Message-ID: <20110404110558.55301a8b__30433.63602269$1301911612$gmane$org@lxorguk.ukuu.org.uk>
+References: <alpine.LFD.2.02.1104010020280.2797@x980>
+	<1301725380-10579-1-git-send-email-lenb@kernel.org>
+	<5d9716021b20302ece48fd486bbad9bcb2502353.1301724243.git.len.brown@intel.com>
+	<20110402124054.49c3a3f4@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.02.1104021529580.18682@x980>
+	<20110402220021.74ecdb5b@lxorguk.ukuu.org.uk>
+	<4D97E018.1090504@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <AANLkTincUPbf23QdtQWhqjH+MaB9n2xKWQ4F54sZit=j@mail.gmail.com>
+In-Reply-To: <4D97E018.1090504@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,272 +24,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Aakash Goenka <aakash.goenka@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+> There are other problems too. This design of pm_idle has been copied
+> by numerous other architectures. arm/blackfin/cris/ia64/m32r/m68knomm
+> /microblaze/mn10300/sh/sparc all have pm_idle. This will keep spreading
+> in future I guess.
 
->  Fixes most style errors and warnings.
->  Signed-off-by: Aakash Goenka <aakash.goenka@gmail.com>
+Presumably because they've decided it is a good model and works for them.
+That's a matter for their arch maintainers surely.
 
+> https://lkml.org/lkml/2010/10/19/449 . The problem  is that it
+> results in two places of registration: cpuidle subsystem and
+> this. It was pointed that 99.99% of people run cpuidle and
+> we should directly call cpuidle and use its registration mechanism
+> rather than duplicate code.
 
+That makes sense. However what Len is trying to do doesn't seem to.
 
+The most likely case is nobody really needs APM idle now. In which case
+Len's first patches (adding the warnings) make sense, but instead of
+rushing headlong into everything else a simple years wait until the WARNs
+have been in Fedora and co for a few months would avoid any further work
+on it. In the mean time it produces a WARN, it can even be marked
+__deprecated to ensure nobody else uses it.
 
->  static int __init
-> -acpi_parse_lapic_nmi(struct acpi_subtable_header * header, const
-> unsigned long end)
-> +acpi_parse_lapic_nmi(struct acpi_subtable_header *header,
-> +		     const unsigned long end)
->  {
->  	struct acpi_madt_local_apic_nmi *lapic_nmi = NULL;
-> 
+The less likely case is that at some point within the year it turns out a
+few people do need and care about it, so it needs shuffling into cpuidle
+nicely.
 
-Are you sure? Still looks word-wrapped to me.
+In computing terms this seems to be a lazy evaluation problem - why do
+all the extra work and risk bugs and problems trying to do things within
+one release when you can just let it chill for a year and maybe not do
+any work at all ?
 
-> @@ -345,7 +344,7 @@ acpi_parse_lapic_nmi(struct acpi_subtable_header *
-> header, const unsigned long e
->  #ifdef CONFIG_X86_IO_APIC
-> 
->  static int __init
-> -acpi_parse_ioapic(struct acpi_subtable_header * header, const
-> unsigned long end)
-> +acpi_parse_ioapic(struct acpi_subtable_header *header, const unsigned long end)
->  {
->  	struct acpi_madt_io_apic *ioapic = NULL;
-> 
-> @@ -365,7 +364,8 @@ acpi_parse_ioapic(struct acpi_subtable_header *
-> header, const unsigned long end)
->  /*
->   * Parse Interrupt Source Override for the ACPI SCI
->   */
-> -static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity,
-> u16 trigger, u32 gsi)
-> +static void __init acpi_sci_ioapic_setup(u8 bus_irq,
-> +					 u16 polarity, u16 trigger, u32 gsi)
->  {
->  	if (trigger == 0)	/* compatible SCI trigger is level */
->  		trigger = 3;
-> @@ -396,7 +396,7 @@ static void __init acpi_sci_ioapic_setup(u8
-> bus_irq, u16 polarity, u16 trigger,
->  }
-> 
->  static int __init
-> -acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
-> +acpi_parse_int_src_ovr(struct acpi_subtable_header *header,
->  		       const unsigned long end)
->  {
->  	struct acpi_madt_interrupt_override *intsrc = NULL;
-> @@ -410,8 +410,10 @@ acpi_parse_int_src_ovr(struct
-> acpi_subtable_header * header,
-> 
->  	if (intsrc->source_irq == acpi_gbl_FADT.sci_interrupt) {
->  		acpi_sci_ioapic_setup(intsrc->source_irq,
-> -				      intsrc->inti_flags & ACPI_MADT_POLARITY_MASK,
-> -				      (intsrc->inti_flags & ACPI_MADT_TRIGGER_MASK) >> 2,
-> +				      intsrc->inti_flags &
-> +				      ACPI_MADT_POLARITY_MASK,
-> +				      (intsrc->inti_flags &
-> +				      ACPI_MADT_TRIGGER_MASK) >> 2,
->  				      intsrc->global_irq);
->  		return 0;
->  	}
-> @@ -421,7 +423,8 @@ acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
->  			printk(PREFIX "BIOS IRQ0 pin2 override ignored.\n");
->  			return 0;
->  		}
-> -		if (acpi_fix_pin2_polarity && (intsrc->inti_flags &
-> ACPI_MADT_POLARITY_MASK)) {
-> +		if (acpi_fix_pin2_polarity &&
-> +		    (intsrc->inti_flags & ACPI_MADT_POLARITY_MASK)) {
->  			intsrc->inti_flags &= ~ACPI_MADT_POLARITY_MASK;
->  			printk(PREFIX "BIOS IRQ0 pin2 override: forcing polarity to high
-> active.\n");
->  		}
-> @@ -429,14 +432,16 @@ acpi_parse_int_src_ovr(struct
-> acpi_subtable_header * header,
-> 
->  	mp_override_legacy_irq(intsrc->source_irq,
->  				intsrc->inti_flags & ACPI_MADT_POLARITY_MASK,
-> -				(intsrc->inti_flags & ACPI_MADT_TRIGGER_MASK) >> 2,
-> +				(intsrc->inti_flags &
-> +				ACPI_MADT_TRIGGER_MASK) >> 2,
->  				intsrc->global_irq);
-> 
->  	return 0;
->  }
-> 
->  static int __init
-> -acpi_parse_nmi_src(struct acpi_subtable_header * header, const
-> unsigned long end)
-> +acpi_parse_nmi_src(struct acpi_subtable_header *header,
-> +		   const unsigned long end)
->  {
->  	struct acpi_madt_nmi_source *nmi_src = NULL;
-> 
-> @@ -652,7 +657,7 @@ static int __cpuinit _acpi_map_lsapic(acpi_handle
-> handle, int *pcpu)
->  	 */
->  	cpumask_andnot(new_map, cpu_present_mask, tmp_map);
->  	if (cpumask_empty(new_map)) {
-> -		printk ("Unable to map lapic to logical cpu number\n");
-> +		printk(KERN_WARNING PREFIX "Unable to map lapic to logical cpu number\n");
->  		retval = -EINVAL;
->  		goto free_new_map;
->  	}
-> @@ -686,9 +691,8 @@ int acpi_unmap_lsapic(int cpu)
->  	set_cpu_present(cpu, false);
->  	num_processors--;
-> 
-> -	return (0);
-> +	return 0;
->  }
-> -
->  EXPORT_SYMBOL(acpi_unmap_lsapic);
->  #endif				/* CONFIG_ACPI_HOTPLUG_CPU */
-> 
-> @@ -697,7 +701,6 @@ int acpi_register_ioapic(acpi_handle handle, u64
-> phys_addr, u32 gsi_base)
->  	/* TBD */
->  	return -EINVAL;
->  }
-> -
->  EXPORT_SYMBOL(acpi_register_ioapic);
-> 
->  int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base)
-> @@ -705,7 +708,6 @@ int acpi_unregister_ioapic(acpi_handle handle, u32 gsi_base)
->  	/* TBD */
->  	return -EINVAL;
->  }
-> -
->  EXPORT_SYMBOL(acpi_unregister_ioapic);
-> 
->  static int __init acpi_parse_sbf(struct acpi_table_header *table)
-> @@ -726,7 +728,7 @@ static int __init acpi_parse_sbf(struct
-> acpi_table_header *table)
->  #ifdef CONFIG_HPET_TIMER
->  #include <asm/hpet.h>
-> 
-> -static struct __initdata resource *hpet_res;
-> +static struct __initdata resource * hpet_res;
-> 
->  static int __init acpi_parse_hpet(struct acpi_table_header *table)
->  {
-> @@ -833,7 +835,7 @@ static int __init acpi_parse_fadt(struct
-> acpi_table_header *table)
->  		 * "X" fields are optional extensions to the original V1.0
->  		 * fields, so we must selectively expand V1.0 fields if the
->  		 * corresponding X field is zero.
-> -	 	 */
-> +		 */
->  		if (!pmtmr_ioport)
->  			pmtmr_ioport = acpi_gbl_FADT.pm_timer_block;
->  	} else {
-> @@ -926,7 +928,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
->  	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_X2APIC_NMI,
->  				  acpi_parse_x2apic_nmi, 0);
->  	count =
-> -	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_NMI,
-> acpi_parse_lapic_nmi, 0);
-> +	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_NMI,
-> +				  acpi_parse_lapic_nmi, 0);
->  	if (count < 0 || x2count < 0) {
->  		printk(KERN_ERR PREFIX "Error parsing LAPIC NMI entry\n");
->  		/* TBD: Cleanup to allow fallback to MPS */
-> @@ -983,7 +986,7 @@ void __init mp_config_acpi_legacy_irqs(void)
->  	int i;
->  	struct mpc_intsrc mp_irq;
-> 
-> -#if defined (CONFIG_MCA) || defined (CONFIG_EISA)
-> +#if defined(CONFIG_MCA) || defined(CONFIG_EISA)
->  	/*
->  	 * Fabricate the legacy ISA bus (bus #31).
->  	 */
-> @@ -1170,8 +1173,8 @@ static int __init acpi_parse_madt_ioapic_entries(void)
->  	}
-> 
->  	count =
-> -	    acpi_table_parse_madt(ACPI_MADT_TYPE_INTERRUPT_OVERRIDE,
-> acpi_parse_int_src_ovr,
-> -				  nr_irqs);
-> +	    acpi_table_parse_madt(ACPI_MADT_TYPE_INTERRUPT_OVERRIDE,
-> +				  acpi_parse_int_src_ovr, nr_irqs);
->  	if (count < 0) {
->  		printk(KERN_ERR PREFIX
->  		       "Error parsing interrupt source overrides entry\n");
-> @@ -1269,10 +1272,10 @@ static void __init acpi_process_madt(void)
->  		}
->  	} else {
->  		/*
-> - 		 * ACPI found no MADT, and so ACPI wants UP PIC mode.
-> - 		 * In the event an MPS table was found, forget it.
-> - 		 * Boot with "acpi=off" to use MPS on such a system.
-> - 		 */
-> +		 * ACPI found no MADT, and so ACPI wants UP PIC mode.
-> +		 * In the event an MPS table was found, forget it.
-> +		 * Boot with "acpi=off" to use MPS on such a system.
-> +		 */
->  		if (smp_found_config) {
->  			printk(KERN_WARNING PREFIX
->  				"No APIC-table, disabling MPS\n");
-> @@ -1496,7 +1499,7 @@ void __init acpi_boot_table_init(void)
->  	 * If acpi_disabled, bail out
->  	 */
->  	if (acpi_disabled)
-> -		return;
-> +		return;
-> 
->  	/*
->  	 * Initialize the ACPI boot-time table parser.
-> @@ -1575,26 +1578,22 @@ static int __init parse_acpi(char *arg)
->  		return -EINVAL;
-> 
->  	/* "acpi=off" disables both ACPI table parsing and interpreter */
-> -	if (strcmp(arg, "off") == 0) {
-> +	if (strcmp(arg, "off") == 0)
->  		disable_acpi();
-> -	}
->  	/* acpi=force to over-ride black-list */
->  	else if (strcmp(arg, "force") == 0) {
->  		acpi_force = 1;
->  		acpi_disabled = 0;
->  	}
->  	/* acpi=strict disables out-of-spec workarounds */
-> -	else if (strcmp(arg, "strict") == 0) {
-> +	else if (strcmp(arg, "strict") == 0)
->  		acpi_strict = 1;
-> -	}
->  	/* acpi=rsdt use RSDT instead of XSDT */
-> -	else if (strcmp(arg, "rsdt") == 0) {
-> +	else if (strcmp(arg, "rsdt") == 0)
->  		acpi_rsdt_forced = 1;
-> -	}
->  	/* "acpi=noirq" disables ACPI interrupt routing */
-> -	else if (strcmp(arg, "noirq") == 0) {
-> +	else if (strcmp(arg, "noirq") == 0)
->  		acpi_noirq_set();
-> -	}
->  	/* "acpi=copy_dsdt" copys DSDT */
->  	else if (strcmp(arg, "copy_dsdt") == 0) {
->  		acpi_gbl_copy_dsdt_locally = 1;
-> @@ -1674,7 +1673,7 @@ int __acpi_acquire_global_lock(unsigned int *lock)
->  		old = *lock;
->  		new = (((old & ~0x3) + 2) + ((old >> 1) & 0x1));
->  		val = cmpxchg(lock, old, new);
-> -	} while (unlikely (val != old));
-> +	} while (unlikely(val != old));
->  	return (new < 3) ? -1 : 0;
->  }
-> 
-> @@ -1685,6 +1684,6 @@ int __acpi_release_global_lock(unsigned int *lock)
->  		old = *lock;
->  		new = old & ~0x3;
->  		val = cmpxchg(lock, old, new);
-> -	} while (unlikely (val != old));
-> +	} while (unlikely(val != old));
->  	return old & 0x1;
->  }
+Don't let me stop anyone actually doing the work but it seems to be
+impatience before sanity ?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan
