@@ -1,15 +1,16 @@
-From: Frank Hofmann <frank.hofmann@tomtom.com>
-Subject: Re: [RFC PATCH] Current status,
-	suspend-to-disk support on ARM
-Date: Mon, 4 Apr 2011 16:06:35 +0100 (BST)
-Message-ID: <alpine.DEB.2.00.1104041600410.690__5799.03298425979$1301929652$gmane$org@localhost6.localdomain6>
-References: <alpine.DEB.2.00.1104041424310.690@localhost6.localdomain6>
-Reply-To: frank.hofmann@tomtom.com
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [Xen-devel] [PATCH 09/18] cpuidle: replace xen
+ access to x86 pm_idle and default_idle
+Date: Mon, 4 Apr 2011 11:33:35 -0400
+Message-ID: <20110404153335.GA19168__30742.5302723006$1301931287$gmane$org@dumpdata.com>
+References: <c82cf78992a66bfa7f0c82aeb20ba6922127463b.1301724243.git.len.brown@intel.com>
+	<e2f656a28f548ed19c829563e5168ce48026570b.1301724243.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="235565064-1325659552-1301929284=:690"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1104041424310.690@localhost6.localdomain6>
-Content-ID: <alpine.DEB.2.00.1104041601280.690@localhost6.localdomain6>
+Content-Disposition: inline
+In-Reply-To: <e2f656a28f548ed19c829563e5168ce48026570b.1301724243.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,254 +20,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frank Hofmann <frank.hofmann@tomtom.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sat, Apr 02, 2011 at 02:22:51AM -0400, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+> 
+> When a Xen Dom0 kernel boots on a hypervisor, it gets access
+> to the raw-hardware ACPI tables.  While it parses the idle tables
+> for the hypervisor's beneift, it uses HLT for its own idle.
+> 
+> Rather than have xen scribble on pm_idle and access default_idle,
+> have it simply disable_cpuidle() so acpi_idle will not load and
+> architecture default HLT will be used.
+Hey Len,
 
---235565064-1325659552-1301929284=:690
-Content-Type: TEXT/PLAIN; FORMAT=flowed; CHARSET=US-ASCII
-Content-ID: <alpine.DEB.2.00.1104041601281.690@localhost6.localdomain6>
+Looks good to me. I've also tested this on the affected Intel machine and
+your patchset works fine.
 
-Hi,
-
-sorry for double posting, the mailing list processor tells me "a non-text 
-attachment was scrubbed"; just for the critical piece ...
-
-Hopefully this one goes through. It's only "git diff" output; what could 
-it have tripped over ?
-
-Thanks,
-FrankH.
---235565064-1325659552-1301929284=:690
-Content-Type: TEXT/x-diff; name=hibernate-core-04Apr2011.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.2.00.1104041606350.690@localhost6.localdomain6>
-Content-Description: 
-Content-Disposition: attachment; filename=hibernate-core-04Apr2011.patch
-
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL0tjb25maWcgYi9hcmNoL2FybS9LY29u
-ZmlnDQppbmRleCA2YjY3ODZjLi5iM2MyNzFmIDEwMDY0NA0KLS0tIGEvYXJj
-aC9hcm0vS2NvbmZpZw0KKysrIGIvYXJjaC9hcm0vS2NvbmZpZw0KQEAgLTE5
-NSw2ICsxOTUsMTQgQEAgY29uZmlnIFZFQ1RPUlNfQkFTRQ0KIAloZWxwDQog
-CSAgVGhlIGJhc2UgYWRkcmVzcyBvZiBleGNlcHRpb24gdmVjdG9ycy4NCiAN
-Citjb25maWcgQVJDSF9ISUJFUk5BVElPTl9QT1NTSUJMRQ0KKwlib29sDQor
-CWhlbHANCisJICBJZiB0aGUgbWFjaGluZSBhcmNoaXRlY3R1cmUgc3VwcG9y
-dHMgc3VzcGVuZC10by1kaXNrDQorCSAgaXQgc2hvdWxkIHNlbGVjdCB0aGlz
-IGF1dG9tYXRpY2FsbHkgZm9yIHlvdS4NCisJICBPdGhlcndpc2UsIHNheSAn
-WScgYXQgeW91ciBvd24gcGVyaWwuDQorDQogY29uZmlnIEFSQ0hfSEFTX0NQ
-VV9JRExFX1dBSVQNCiAJZGVmX2Jvb2wgeQ0KIA0KZGlmZiAtLWdpdCBhL2Fy
-Y2gvYXJtL2luY2x1ZGUvYXNtL21lbW9yeS5oIGIvYXJjaC9hcm0vaW5jbHVk
-ZS9hc20vbWVtb3J5LmgNCmluZGV4IDU0MjFkODIuLjIzZTkzYTYgMTAwNjQ0
-DQotLS0gYS9hcmNoL2FybS9pbmNsdWRlL2FzbS9tZW1vcnkuaA0KKysrIGIv
-YXJjaC9hcm0vaW5jbHVkZS9hc20vbWVtb3J5LmgNCkBAIC0xOTEsNiArMTkx
-LDcgQEAgc3RhdGljIGlubGluZSB2b2lkICpwaHlzX3RvX3ZpcnQodW5zaWdu
-ZWQgbG9uZyB4KQ0KICAqLw0KICNkZWZpbmUgX19wYSh4KQkJCV9fdmlydF90
-b19waHlzKCh1bnNpZ25lZCBsb25nKSh4KSkNCiAjZGVmaW5lIF9fdmEoeCkJ
-CQkoKHZvaWQgKilfX3BoeXNfdG9fdmlydCgodW5zaWduZWQgbG9uZykoeCkp
-KQ0KKyNkZWZpbmUgX19wYV9zeW1ib2woeCkJCV9fcGEoUkVMT0NfSElERSgo
-dW5zaWduZWQgbG9uZykoeCksMCkpDQogI2RlZmluZSBwZm5fdG9fa2FkZHIo
-cGZuKQlfX3ZhKChwZm4pIDw8IFBBR0VfU0hJRlQpDQogDQogLyoNCmRpZmYg
-LS1naXQgYS9hcmNoL2FybS9pbmNsdWRlL2FzbS9zdXNwZW5kLmggYi9hcmNo
-L2FybS9pbmNsdWRlL2FzbS9zdXNwZW5kLmgNCm5ldyBmaWxlIG1vZGUgMTAw
-NjQ0DQppbmRleCAwMDAwMDAwLi44ODU3Yzc5DQotLS0gL2Rldi9udWxsDQor
-KysgYi9hcmNoL2FybS9pbmNsdWRlL2FzbS9zdXNwZW5kLmgNCkBAIC0wLDAg
-KzEsNiBAQA0KKyNpZm5kZWYgX19BU01fQVJNX1NVU1BFTkRfSA0KKyNkZWZp
-bmUgX19BU01fQVJNX1NVU1BFTkRfSA0KKw0KK3N0YXRpYyBpbmxpbmUgaW50
-IGFyY2hfcHJlcGFyZV9zdXNwZW5kKHZvaWQpIHsgcmV0dXJuIDA7IH0NCisN
-CisjZW5kaWYJLyogX19BU01fQVJNX1NVU1BFTkRfSCAqLw0KZGlmZiAtLWdp
-dCBhL2FyY2gvYXJtL2tlcm5lbC9NYWtlZmlsZSBiL2FyY2gvYXJtL2tlcm5l
-bC9NYWtlZmlsZQ0KaW5kZXggYzliMDBiYi4uNTQxYWMzYSAxMDA2NDQNCi0t
-LSBhL2FyY2gvYXJtL2tlcm5lbC9NYWtlZmlsZQ0KKysrIGIvYXJjaC9hcm0v
-a2VybmVsL01ha2VmaWxlDQpAQCAtMzYsNiArMzYsNyBAQCBvYmotJChDT05G
-SUdfQVJNX1RIVU1CRUUpCSs9IHRodW1iZWUubw0KIG9iai0kKENPTkZJR19L
-R0RCKQkJKz0ga2dkYi5vDQogb2JqLSQoQ09ORklHX0FSTV9VTldJTkQpCSs9
-IHVud2luZC5vDQogb2JqLSQoQ09ORklHX0hBVkVfVENNKQkJKz0gdGNtLm8N
-CitvYmotJChDT05GSUdfSElCRVJOQVRJT04pCSs9IGNwdS5vIHN3c3VzcC5v
-DQogDQogb2JqLSQoQ09ORklHX0NSVU5DSCkJCSs9IGNydW5jaC5vIGNydW5j
-aC1iaXRzLm8NCiBBRkxBR1NfY3J1bmNoLWJpdHMubwkJOj0gLVdhLC1tY3B1
-PWVwOTMxMg0KZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2tlcm5lbC9jcHUuYyBi
-L2FyY2gvYXJtL2tlcm5lbC9jcHUuYw0KbmV3IGZpbGUgbW9kZSAxMDA2NDQN
-CmluZGV4IDAwMDAwMDAuLjRmYTliODANCi0tLSAvZGV2L251bGwNCisrKyBi
-L2FyY2gvYXJtL2tlcm5lbC9jcHUuYw0KQEAgLTAsMCArMSw2MyBAQA0KKy8q
-DQorICogSGliZXJuYXRpb24gc3VwcG9ydCBzcGVjaWZpYyBmb3IgQVJNDQor
-ICoNCisgKiBCYXNlZCBvbiB3b3JrIGJ5Og0KKyAqDQorICogVWJ1bnR1IHBy
-b2plY3QsIGhpYmVybmF0aW9uIHN1cHBvcnQgZm9yIG1hY2gtZG92ZSwNCisg
-KglodHRwczovL2xrbWwub3JnL2xrbWwvMjAxMC82LzE4LzQNCisgKg0KKyAq
-IENvcHlyaWdodCAoQykgMjAxMCBOb2tpYSBDb3Jwb3JhdGlvbg0KKyAqCUNv
-bnRhY3Q6IEhpcm9zaGkgRE9ZVSA8SGlyb3NoaS5ET1lVQG5va2lhLmNvbT4N
-CisgKglodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL3BpcGVy
-bWFpbC9saW51eC1wbS8yMDEwLUp1bmUvMDI3NDIyLmh0bWwNCisgKg0KKyAq
-IENvcHlyaWdodCAoQykgMjAxMCBUZXhhcyBJbnN0cnVtZW50cywgSW5jLg0K
-KyAqCXZpYSBsaW51eC1vbWFwIG1haWxpbmcgbGlzdCwgVGVlcnRoIFJlZGR5
-IGV0IGFsLg0KKyAqCWh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0
-Y2gvOTY0NDIvDQorICoNCisgKiBDb3B5cmlnaHQgKEMpIDIwMDYgUmFmYWVs
-IEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPg0KKyAqDQorICogTGljZW5zZSB0
-ZXJtczogR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgKEdQTCkgdmVyc2lv
-biAyDQorICovDQorDQorI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KKyNp
-bmNsdWRlIDxsaW51eC9tbS5oPg0KKyNpbmNsdWRlIDxhc20vcHRyYWNlLmg+
-DQorI2luY2x1ZGUgPGFzbS90bGJmbHVzaC5oPg0KKw0KKy8qIFJlZmVyZW5j
-ZXMgdG8gc2VjdGlvbiBib3VuZGFyaWVzICovDQorZXh0ZXJuIGNvbnN0IHZv
-aWQgX19ub3NhdmVfYmVnaW4sIF9fbm9zYXZlX2VuZDsNCisNCisvKg0KKyAq
-IHBmbl9pc19ub3NhdmUgLSBjaGVjayBpZiBnaXZlbiBwZm4gaXMgaW4gdGhl
-ICdub3NhdmUnIHNlY3Rpb24NCisgKi8NCitub3RyYWNlIGludCBwZm5faXNf
-bm9zYXZlKHVuc2lnbmVkIGxvbmcgcGZuKQ0KK3sNCisJdW5zaWduZWQgbG9u
-ZyBub3NhdmVfYmVnaW5fcGZuID0gX19wYV9zeW1ib2woJl9fbm9zYXZlX2Jl
-Z2luKSA+PiBQQUdFX1NISUZUOw0KKwl1bnNpZ25lZCBsb25nIG5vc2F2ZV9l
-bmRfcGZuID0gUEFHRV9BTElHTihfX3BhX3N5bWJvbCgmX19ub3NhdmVfZW5k
-KSkgPj4gUEFHRV9TSElGVDsNCisNCisJcmV0dXJuIChwZm4gPj0gbm9zYXZl
-X2JlZ2luX3BmbikgJiYgKHBmbiA8IG5vc2F2ZV9lbmRfcGZuKTsNCit9DQor
-DQorLyoNCisgKiB3cmFwIHRoZSBhc3NlbWJseSBoZWxwZXJzIGhlcmUuDQor
-ICovDQorZXh0ZXJuIHZvaWQgc3dzdXNwX2FyY2hfc3VzcGVuZF9pbnRlcm5h
-bCh2b2lkKTsNCitleHRlcm4gaW50IHN3c3VzcF9hcmNoX3Jlc3VtZV9pbnRl
-cm5hbCh2b2lkKTsNCitleHRlcm4gaW50IHN3c3VzcF9zYXZlKHZvaWQpOw0K
-Kw0KK25vdHJhY2UgaW50IHN3c3VzcF9hcmNoX3N1c3BlbmQodm9pZCkNCit7
-DQorCXN3c3VzcF9hcmNoX3N1c3BlbmRfaW50ZXJuYWwoKTsNCisJcmV0dXJu
-IHN3c3VzcF9zYXZlKCk7DQorfQ0KKw0KK25vdHJhY2UgaW50IHN3c3VzcF9h
-cmNoX3Jlc3VtZSh2b2lkKQ0KK3sNCisJLyoNCisJICogU2V0IHBhZ2VkaXIg
-dG8gc3dhcHBlciAoc28gdGhhdCByZXN1bWUgdmlhIGluaXRyYW1mcyBjYW4g
-d29yaykuDQorCSAqLw0KKwljcHVfc3dpdGNoX21tKHN3YXBwZXJfcGdfZGly
-LCBjdXJyZW50LT5hY3RpdmVfbW0pOw0KKw0KKwlyZXR1cm4gc3dzdXNwX2Fy
-Y2hfcmVzdW1lX2ludGVybmFsKCk7DQorfQ0KKw0KZGlmZiAtLWdpdCBhL2Fy
-Y2gvYXJtL2tlcm5lbC9zd3N1c3AuUyBiL2FyY2gvYXJtL2tlcm5lbC9zd3N1
-c3AuUw0KbmV3IGZpbGUgbW9kZSAxMDA2NDQNCmluZGV4IDAwMDAwMDAuLjk4
-ZTBlNGQNCi0tLSAvZGV2L251bGwNCisrKyBiL2FyY2gvYXJtL2tlcm5lbC9z
-d3N1c3AuUw0KQEAgLTAsMCArMSwxNDIgQEANCisvKg0KKyAqIEhpYmVybmF0
-aW9uIHN1cHBvcnQgc3BlY2lmaWMgZm9yIEFSTQ0KKyAqDQorICogQmFzZWQg
-b24gd29yayBieToNCisgKg0KKyAqIFVidW50dSBwcm9qZWN0LCBoaWJlcm5h
-dGlvbiBzdXBwb3J0IGZvciBtYWNoLWRvdmUsDQorICoJaHR0cHM6Ly9sa21s
-Lm9yZy9sa21sLzIwMTAvNi8xOC80DQorICoNCisgKiBDb3B5cmlnaHQgKEMp
-IDIwMTAgTm9raWEgQ29ycG9yYXRpb24NCisgKglDb250YWN0OiBIaXJvc2hp
-IERPWVUgPEhpcm9zaGkuRE9ZVUBub2tpYS5jb20+DQorICoJaHR0cHM6Ly9s
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9waXBlcm1haWwvbGludXgtcG0v
-MjAxMC1KdW5lLzAyNzQyMi5odG1sDQorICoNCisgKiBDb3B5cmlnaHQgKEMp
-IDIwMTAgVGV4YXMgSW5zdHJ1bWVudHMsIEluYy4NCisgKgl2aWEgbGludXgt
-b21hcCBtYWlsaW5nIGxpc3QsIFRlZXJ0aCBSZWRkeSBldCBhbC4NCisgKglo
-dHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzk2NDQyLw0KKyAq
-DQorICogQ29weXJpZ2h0IChDKSAyMDA2IFJhZmFlbCBKLiBXeXNvY2tpIDxy
-andAc2lzay5wbD4NCisgKg0KKyAqIExpY2Vuc2UgdGVybXM6IEdOVSBHZW5l
-cmFsIFB1YmxpYyBMaWNlbnNlIChHUEwpIHZlcnNpb24gMg0KKyAqLw0KKw0K
-KyNpbmNsdWRlIDxsaW51eC9saW5rYWdlLmg+DQorI2luY2x1ZGUgPGFzbS9h
-c3NlbWJsZXIuaD4NCisjaW5jbHVkZSA8YXNtL2NhY2hlLmg+DQorI2luY2x1
-ZGUgPGFzbS9tZW1vcnkuaD4NCisjaW5jbHVkZSA8YXNtL3BhZ2UuaD4NCisj
-aW5jbHVkZSA8YXNtL3B0cmFjZS5oPg0KKw0KKy8qDQorICogRm9yY2UgQVJN
-IG1vZGUgYmVjYXVzZToNCisgKgktIHdlIHVzZSBQQy1yZWxhdGl2ZSBhZGRy
-ZXNzaW5nIHdpdGggPjhiaXQgb2Zmc2V0cw0KKyAqCS0gd2UgdXNlIG1zciB3
-aXRoIGltbWVkaWF0ZXMNCisgKi8NCisuYXJtDQorDQorLmFsaWduCVBBR0Vf
-U0hJRlQNCisuTHN3c3VzcF9wYWdlX3N0YXJ0Og0KKw0KKy8qDQorICogU2F2
-ZSB0aGUgY3VycmVudCBDUFUgc3RhdGUgYmVmb3JlIHN1c3BlbmQgLyBwb3dl
-cm9mZi4NCisgKi8NCitFTlRSWShzd3N1c3BfYXJjaF9zdXNwZW5kX2ludGVy
-bmFsKQ0KKwlhZHIJcjAsIGN0eA0KKwltcnMJcjEsIGNwc3INCisJc3RtCXIw
-ISwge3IxfQkJLyogY3VycmVudCBDUFNSICovDQorCW1zcgljcHNyX2MsICNT
-WVNURU1fTU9ERQ0KKwlzdG0JcjAhLCB7cjAtcjE0fQkJLyogdXNlciByZWdz
-ICovDQorCW1zcgljcHNyX2MsICNTVkNfTU9ERQ0KKwltcnMJcjIsIHNwc3IN
-CisJc3RtCXIwISwge3IyLCBzcCwgbHJ9CS8qIFNWQyBTUFNSLCBTVkMgcmVn
-cyAqLw0KKwltc3IJY3BzciwgcjEJCS8qIHJlc3RvcmUgb3JpZ2luYWwgbW9k
-ZSAqLw0KKwliCV9fc2F2ZV9wcm9jZXNzb3Jfc3RhdGUNCitFTkRQUk9DKHN3
-c3VzcF9hcmNoX3N1c3BlbmRfaW50ZXJuYWwpDQorDQorDQorLyoNCisgKiBS
-ZXN0b3JlIHRoZSBtZW1vcnkgaW1hZ2UgZnJvbSB0aGUgcGFnZWxpc3RzLCBh
-bmQgbG9hZCB0aGUgQ1BVIHJlZ2lzdGVycw0KKyAqIGZyb20gc2F2ZWQgc3Rh
-dGUuDQorICogVGhpcyBydW5zIGluIGEgdmVyeSByZXN0cmljdGl2ZSBjb250
-ZXh0IC0gbmFtZWx5LCBubyBzdGFjayBjYW4gYmUgdXNlZA0KKyAqIGJlZm9y
-ZSB0aGUgQ1BVIHJlZ2lzdGVyIHN0YXRlIHNhdmVkIGJ5IHN3c3VzcF9hcmNo
-X3N1c3BlbmQoKSBoYXMgYmVlbg0KKyAqIHJlc3RvcmVkLg0KKyAqLw0KK0VO
-VFJZKHN3c3VzcF9hcmNoX3Jlc3VtZV9pbnRlcm5hbCkNCisJLyoNCisJICog
-VGhlIGZvbGxvd2luZyBjb2RlIGlzIGFuIGFzc2VtYmx5IHZlcnNpb24gb2Y6
-DQorCSAqDQorCSAqCXN0cnVjdCBwYmUgKnBiZTsNCisJICoJZm9yIChwYmUg
-PSByZXN0b3JlX3BibGlzdDsgcGJlICE9IE5VTEw7IHBiZSA9IHBiZS0+bmV4
-dCkNCisJICoJCWNvcHlfcGFnZShwYmUtPm9yaWdfYWRkcmVzcywgcGJlLT5h
-ZGRyZXNzKTsNCisJICoNCisJICogQmVjYXVzZSB0aGlzIGlzIHRoZSB2ZXJ5
-IHBsYWNlIHdoZXJlIGRhdGEgcGFnZXMsIGluY2x1ZGluZyBvdXIgc3RhY2ss
-DQorCSAqIGFyZSBvdmVyd3JpdHRlbiwgZnVuY3Rpb24gY2FsbHMgYXJlIG9i
-dmlvdXNseSBpbXBvc3NpYmxlLiBIZW5jZSBhc20uDQorCSAqDQorCSAqIFRo
-ZSBjb3JlIG9mIHRoZSBsb29wIGlzIHRha2VuIGFsbW9zdCB2ZXJiYXRpbSBm
-cm9tIGNvcHlfcGFnZS5TLg0KKwkgKi8NCisJbGRyICAgICByMSwgPShyZXN0
-b3JlX3BibGlzdCAtIDgpCS8qICJmYWtlIiBwYmUtPm5leHQgKi8NCisJYgkz
-Zg0KKy5sdG9yZw0KKy5hbGlnbiBMMV9DQUNIRV9TSElGVA0KKzA6DQorUExE
-KAlwbGQJW3IwLCAjMF0JCQkpDQorUExEKAlwbGQJW3IwLCAjTDFfQ0FDSEVf
-QllURVNdCQkpDQorCW1vdglyMywgIyhQQUdFX1NJWkUgLyAoMiAqIEwxX0NB
-Q0hFX0JZVEVTKSBQTEQoIC0xICkpDQorCWxkbWlhCXIwISwge3I0LXI3fQ0K
-KzE6DQorUExEKAlwbGQJW3IwLCAjKDIgKiBMMV9DQUNIRV9CWVRFUyldCSkN
-CitQTEQoCXBsZAlbcjAsICMoMyAqIEwxX0NBQ0hFX0JZVEVTKV0JKQ0KKzI6
-DQorLnJlcHQJKDIgKiBMMV9DQUNIRV9CWVRFUyAvIDE2IC0gMSkNCisJc3Rt
-aWEJcjIhLCB7cjQtcjd9DQorCWxkbWlhCXIwISwge3I0LXI3fQ0KKy5lbmRy
-DQorCXN1YnMJcjMsIHIzLCAjMQ0KKwlzdG1pYQlyMiEsIHtyNC1yN30NCisJ
-bGRtZ3RpYQlyMCEsIHtyNC1yN30NCisJYmd0CTFiDQorUExEKAlsZG1lcWlh
-CXIwISwge3I0LXI3fQkJCSkNCitQTEQoCWJlcQkyYgkJCQkpDQorMzoNCisJ
-bGRyICAgICByMSwgW3IxLCAjOF0JCS8qIGxvYWQgbmV4dCBpbiBsaXN0IChw
-YmUtPm5leHQpICovDQorCWNtcCAgICAgcjEsICMwDQorCWxkcm5lCXIwLCBb
-cjFdCQkvKiBzcmMgcGFnZSBzdGFydCBhZGRyZXNzIChwYmUtPmFkZHJlc3Mp
-ICovDQorCWxkcm5lCXIyLCBbcjEsICM0XQkJLyogZHN0IHBhZ2Ugc3RhcnQg
-YWRkcmVzcyAocGJlLT5vcmlnX2FkZHJlc3MpICovDQorCWJuZSAgICAgMGIN
-CisNCisJLyoNCisJICogRG9uZSAtIG5vdyByZXN0b3JlIHRoZSBDUFUgc3Rh
-dGUgYW5kIHJldHVybi4NCisJICovDQorCW1zcgljcHNyX2MsICNTWVNURU1f
-TU9ERQ0KKwlhZHIJcjAsIGN0eA0KKwlsZG0JcjAhLCB7cjEsIHNwLCBscn0J
-LyogZmlyc3Qgd29yZCBpcyBDUFNSLCBmb2xsb3dpbmcgYXJlIHIwL3IxIChp
-cnJlbGV2YW50KSAqLw0KKwltc3IJY3Bzcl9jeHNmLCByMQ0KKwlsZG0JcjAh
-LCB7cjItcjE0fQ0KKwltc3IJY3Bzcl9jLCAjU1ZDX01PREUNCisJbGRtCXIw
-ISwge3IyLCBzcCwgbHJ9DQorCW1zcglzcHNyX2N4c2YsIHIyDQorCW1zcglj
-cHNyX2MsIHIxCQkvKiB1c2UgQ1BTUiBmcm9tIGFib3ZlICovDQorDQorCS8q
-DQorCSAqIEZyb20gaGVyZSBvbiB3ZSBoYXZlIGEgdmFsaWQgc3RhY2sgYWdh
-aW4uIENvcmUgc3RhdGUgaXMNCisJICogbm90IHJlc3RvcmVkIHlldCwgcmVk
-aXJlY3QgdG8gdGhlIG1hY2hpbmUtc3BlY2lmaWMNCisJICogaW1wbGVtZW50
-YXRpb24gdG8gZ2V0IHRoYXQgZG9uZS4NCisJICogTm90ZSB0aGF0IGF0IHRo
-aXMgcG9pbnQgd2UgaGF2ZSBzdWNjZWVkZWQgd2l0aCByZXN0b3JlOw0KKwkg
-KiBpZiBtYWNoaW5lLXNwZWNpZmljIGNvZGUgZmFpbHMgaXQnZCBuZWVkIHRv
-IHBhbmljLCB0aGVyZQ0KKwkgKiBpcyBubyB3YXkgYW55bW9yZSBub3cgdG8g
-cmVjb3ZlciBmcm9tICJyZXN1bWUgZmFpbHVyZSIuDQorCSAqLw0KKwltb3YJ
-cjEsICMwDQorCXN0bWZkCXNwISwge3IxLGxyfQ0KKwlibAlfX3Jlc3RvcmVf
-cHJvY2Vzc29yX3N0YXRlCS8qIHJlc3RvcmUgY29yZSBzdGF0ZSAqLw0KKwls
-ZG1mZAlzcCEsIHtyMCxwY30NCitFTkRQUk9DKHN3c3VzcF9hcmNoX3Jlc3Vt
-ZV9pbnRlcm5hbCkNCisNCisubHRvcmcNCisNCisvKg0KKyAqIFNhdmUgdGhl
-IENQVSBjb250ZXh0IChyZWdpc3RlciBzZXQgZm9yIGFsbCBtb2RlcyBhbmQg
-bWFjaC1zcGVjaWZpYyBjcCByZWdzKQ0KKyAqIGhlcmUuIFNldHRpbmcgYXNp
-ZGUgd2hhdCByZW1haW5zIG9mIHRoaXMgQ1BVIHBhZ2UsIHNob3VsZCBiZSBh
-cGxlbnR5Lg0KKyAqLw0KKy5hbGlnbiBMMV9DQUNIRV9TSElGVA0KK0VOVFJZ
-KGN0eCkNCisuc3BhY2UJKFBBR0VfU0laRSAtICguIC0gLkxzd3N1c3BfcGFn
-ZV9zdGFydCkpDQorRU5EKGN0eCkNCmRpZmYgLS1naXQgYS9hcmNoL2FybS9r
-ZXJuZWwvdm1saW51eC5sZHMuUyBiL2FyY2gvYXJtL2tlcm5lbC92bWxpbnV4
-Lmxkcy5TDQppbmRleCA0OTU3ZTEzLi5lNjkxYzc3IDEwMDY0NA0KLS0tIGEv
-YXJjaC9hcm0va2VybmVsL3ZtbGludXgubGRzLlMNCisrKyBiL2FyY2gvYXJt
-L2tlcm5lbC92bWxpbnV4Lmxkcy5TDQpAQCAtMTUzLDcgKzE1Myw2IEBAIFNF
-Q1RJT05TDQogCQlfX2luaXRfZW5kID0gLjsNCiAjZW5kaWYNCiANCi0JCU5P
-U0FWRV9EQVRBDQogCQlDQUNIRUxJTkVfQUxJR05FRF9EQVRBKDMyKQ0KIA0K
-IAkJLyoNCkBAIC0xNzYsNiArMTc1LDggQEAgU0VDVElPTlMNCiAJfQ0KIAlf
-ZWRhdGFfbG9jID0gX19kYXRhX2xvYyArIFNJWkVPRiguZGF0YSk7DQogDQor
-CU5PU0FWRV9EQVRBDQorDQogI2lmZGVmIENPTkZJR19IQVZFX1RDTQ0KICAg
-ICAgICAgLyoNCiAJICogV2UgYWxpZ24gZXZlcnl0aGluZyB0byBhIHBhZ2Ug
-Ym91bmRhcnkgc28gd2UgY2FuDQpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9hc20t
-Z2VuZXJpYy92bWxpbnV4Lmxkcy5oIGIvaW5jbHVkZS9hc20tZ2VuZXJpYy92
-bWxpbnV4Lmxkcy5oDQppbmRleCBiNmU4MThmLi4wZDM5YWUwIDEwMDY0NA0K
-LS0tIGEvaW5jbHVkZS9hc20tZ2VuZXJpYy92bWxpbnV4Lmxkcy5oDQorKysg
-Yi9pbmNsdWRlL2FzbS1nZW5lcmljL3ZtbGludXgubGRzLmgNCkBAIC0xNzEs
-NyArMTcxLDcgQEANCiAjZGVmaW5lIE5PU0FWRV9EQVRBCQkJCQkJCVwNCiAJ
-LiA9IEFMSUdOKFBBR0VfU0laRSk7CQkJCQkJXA0KIAlWTUxJTlVYX1NZTUJP
-TChfX25vc2F2ZV9iZWdpbikgPSAuOwkJCQlcDQotCSooLmRhdGEubm9zYXZl
-KQkJCQkJCQlcDQorCS5kYXRhLm5vc2F2ZSA6IHsgKiguZGF0YS5ub3NhdmUp
-IH0JCQkJXA0KIAkuID0gQUxJR04oUEFHRV9TSVpFKTsJCQkJCQlcDQogCVZN
-TElOVVhfU1lNQk9MKF9fbm9zYXZlX2VuZCkgPSAuOw0KIA0KZGlmZiAtLWdp
-dCBhL2luY2x1ZGUvbGludXgvc3VzcGVuZC5oIGIvaW5jbHVkZS9saW51eC9z
-dXNwZW5kLmgNCmluZGV4IDVlNzgxZDguLjQ3NmQ0YzMgMTAwNjQ0DQotLS0g
-YS9pbmNsdWRlL2xpbnV4L3N1c3BlbmQuaA0KKysrIGIvaW5jbHVkZS9saW51
-eC9zdXNwZW5kLmgNCkBAIC0yNzQsOCArMjc0LDEzIEBAIHN0YXRpYyBpbmxp
-bmUgdm9pZCBoaWJlcm5hdGVfbnZzX3Jlc3RvcmUodm9pZCkge30NCiAjZW5k
-aWYgLyogQ09ORklHX0hJQkVSTkFUSU9OX05WUyAqLw0KIA0KICNpZmRlZiBD
-T05GSUdfUE1fU0xFRVANCisjaWZuZGVmIENPTkZJR19BUk0NCiB2b2lkIHNh
-dmVfcHJvY2Vzc29yX3N0YXRlKHZvaWQpOw0KIHZvaWQgcmVzdG9yZV9wcm9j
-ZXNzb3Jfc3RhdGUodm9pZCk7DQorI2Vsc2UNCisjZGVmaW5lCXNhdmVfcHJv
-Y2Vzc29yX3N0YXRlCXByZWVtcHRfZGlzYWJsZQ0KKyNkZWZpbmUJcmVzdG9y
-ZV9wcm9jZXNzb3Jfc3RhdGUJcHJlZW1wdF9lbmFibGUNCisjZW5kaWYNCiAN
-CiAvKiBrZXJuZWwvcG93ZXIvbWFpbi5jICovDQogZXh0ZXJuIGludCByZWdp
-c3Rlcl9wbV9ub3RpZmllcihzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm5iKTsN
-Cg==
-
---235565064-1325659552-1301929284=:690
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---235565064-1325659552-1301929284=:690--
+> 
+> cc: xen-devel@lists.xensource.com
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/xen/setup.c      |    3 ++-
+>  drivers/cpuidle/cpuidle.c |    4 ++++
+>  include/linux/cpuidle.h   |    2 ++
+>  3 files changed, 8 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+> index a8a66a5..aa02cce 100644
+> --- a/arch/x86/xen/setup.c
+> +++ b/arch/x86/xen/setup.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/mm.h>
+>  #include <linux/pm.h>
+>  #include <linux/memblock.h>
+> +#include <linux/cpuidle.h>
+>  
+>  #include <asm/elf.h>
+>  #include <asm/vdso.h>
+> @@ -354,7 +355,7 @@ void __init xen_arch_setup(void)
+>  #ifdef CONFIG_X86_32
+>  	boot_cpu_data.hlt_works_ok = 1;
+>  #endif
+> -	pm_idle = default_idle;
+> +	disable_cpuidle();
+>  	boot_option_idle_override = IDLE_HALT;
+>  
+>  	fiddle_vdso();
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index faae2c3..041df0b 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -34,6 +34,10 @@ int cpuidle_disabled(void)
+>  {
+>  	return off;
+>  }
+> +void disable_cpuidle(void)
+> +{
+> +	off = 1;
+> +}
+>  
+>  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
+>  static void cpuidle_kick_cpus(void)
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 36719ea..b89f67d 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -122,6 +122,7 @@ struct cpuidle_driver {
+>  };
+>  
+>  #ifdef CONFIG_CPU_IDLE
+> +extern void disable_cpuidle(void);
+>  
+>  extern int cpuidle_register_driver(struct cpuidle_driver *drv);
+>  struct cpuidle_driver *cpuidle_get_driver(void);
+> @@ -135,6 +136,7 @@ extern int cpuidle_enable_device(struct cpuidle_device *dev);
+>  extern void cpuidle_disable_device(struct cpuidle_device *dev);
+>  
+>  #else
+> +static inline void disable_cpuidle(void) { }
+>  
+>  static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
+>  {return -ENODEV; }
+> -- 
+> 1.7.5.rc0
+> 
+> 
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xensource.com
+> http://lists.xensource.com/xen-devel
