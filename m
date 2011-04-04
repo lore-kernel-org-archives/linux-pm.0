@@ -1,19 +1,12 @@
-From: Borislav Petkov <borislav.petkov@amd.com>
-Subject: Re: [PATCH 07/18] x86 idle: clarify AMD erratum 400
-	workaround -v2
-Date: Sun, 3 Apr 2011 11:00:43 +0200
-Message-ID: <20110403090043.GA4315__35602.1713502288$1301940136$gmane$org@aftab>
-References: <c82cf78992a66bfa7f0c82aeb20ba6922127463b.1301724243.git.len.brown@intel.com>
-	<68477f71a39cd0ba9acd40e94e49969cbe1bec79.1301724243.git.len.brown@intel.com>
-	<20110402082316.GA21804@liondog.tnic>
-	<alpine.LFD.2.02.1104021442460.18682@x980>
-	<alpine.LFD.2.02.1104021521330.18682@x980>
+From: <john@johnandjuliet.com>
+Subject: Re: [TuxOnIce-devel] [RFC PATCH] Current status,
+ suspend-to-disk support on ARM
+Date: Mon, 04 Apr 2011 08:41:08 -0700
+Message-ID: <20110404084108.98fd97237cc930a62b888eb89e535f85.03cdcb032e.wbe__38040.629172656$1301940138$gmane$org@email12.secureserver.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1104021521330.18682@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,39 +16,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, "Rosenfeld, Hans" <Hans.Rosenfeld@amd.com>, "Herrmann3, Andreas" <Andreas.Herrmann3@amd.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@alien8.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: frank.hofmann@tomtom.com
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Apr 02, 2011 at 03:22:39PM -0400, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
-> 
-> The workaround for AMD erratum 400 uses the term "c1e" falsely suggesting:
-> 1. Intel C1E is somehow involved
-> 2. All AMD processors with C1E are involved
-> 
-> Use the string "amd_c1e" instead of simply "c1e" to clarify that
-> this workaround is specific to AMD's version of C1E.
-> Use the string "e400" to clarify that the workaround is specific
-> to AMD processors with Erratum 400.
-> 
-> This patch is text-substitution only, with no functional change.
-> 
-> cc: x86@kernel.org
-> cc: Hans Rosenfeld <hans.rosenfeld@amd.com>
-> cc: Andreas Herrmann <andreas.herrmann3@amd.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
+Wow.. More stuff to look at.
 
-Looks good, thanks.
+My status with the past patch is this:
 
-Acked-by: Borislav Petkov <borislav.petkov@amd.com>
+1) I can suspend (swsusp) or at least it is pretending to
 
--- 
-Regards/Gruss,
-Boris.
+2) Cannot resume... Using resume=/dev/block/mmcblk1p2 or
+CONFIG_PM_STD_PARTITION="/dev/block/mmcblk1p2"
+does nothing.. the system just boots normally.
 
-Advanced Micro Devices GmbH
-Einsteinring 24, 85609 Dornach
-General Managers: Alberto Bozzo, Andrew Bowd
-Registration: Dornach, Gemeinde Aschheim, Landkreis Muenchen
-Registergericht Muenchen, HRB Nr. 43632
+Going through the previous patches and found a few discrepencies that I
+am looking closer at and will comment on soon.
+
+Meanwhile doing a side build anyway to start to look at the TOI patches
+into this (OMAP4 Android) kernel.
+
+
+Ive got a small group here now interested to make this work so we may be
+able to get more progress.  Not all are kernel experts but they are
+fairly sharp guys with low-level experience...
+
+
+
+> Hi,
+> 
+> some status on making hibernation (suspend-to-disk) work on ARM.
+> 
+> I've simplified an updated patch set again, to make the pieces obvious. 
+> The attached patch set also cleanly compiles when adding TuxOnIce to it.
+> 
