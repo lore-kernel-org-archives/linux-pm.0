@@ -1,13 +1,15 @@
 From: Frank Hofmann <frank.hofmann@tomtom.com>
-Subject: [RFC PATCH] Current status,
+Subject: Re: [RFC PATCH] Current status,
 	suspend-to-disk support on ARM
-Date: Mon, 4 Apr 2011 15:47:09 +0100 (BST)
-Message-ID: <alpine.DEB.2.00.1104041424310.690__28347.5394863219$1301928550$gmane$org@localhost6.localdomain6>
+Date: Mon, 4 Apr 2011 16:06:35 +0100 (BST)
+Message-ID: <alpine.DEB.2.00.1104041600410.690__5799.03298425979$1301929652$gmane$org@localhost6.localdomain6>
+References: <alpine.DEB.2.00.1104041424310.690@localhost6.localdomain6>
 Reply-To: frank.hofmann@tomtom.com
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="235565064-1225985430-1301927302=:690"
+Content-Type: MULTIPART/MIXED; BOUNDARY="235565064-1325659552-1301929284=:690"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-ID: <alpine.DEB.2.00.1104041528460.690@localhost6.localdomain6>
+In-Reply-To: <alpine.DEB.2.00.1104041424310.690@localhost6.localdomain6>
+Content-ID: <alpine.DEB.2.00.1104041601280.690@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,140 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tuxonice-devel@tuxonice.net, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Frank Hofmann <frank.hofmann@tomtom.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
---235565064-1225985430-1301927302=:690
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; format=flowed
-Content-ID: <alpine.DEB.2.00.1104041528461.690@localhost6.localdomain6>
+--235565064-1325659552-1301929284=:690
+Content-Type: TEXT/PLAIN; FORMAT=flowed; CHARSET=US-ASCII
+Content-ID: <alpine.DEB.2.00.1104041601281.690@localhost6.localdomain6>
 
 Hi,
 
-some status on making hibernation (suspend-to-disk) work on ARM.
+sorry for double posting, the mailing list processor tells me "a non-text 
+attachment was scrubbed"; just for the critical piece ...
 
-I've simplified an updated patch set again, to make the pieces obvious. 
-The attached patch set also cleanly compiles when adding TuxOnIce to it.
+Hopefully this one goes through. It's only "git diff" output; what could 
+it have tripped over ?
 
-
-Pls. don't take this as a formal patch submission; this is discussion 
-material and hence not currently based on any specific kernel revision.
-
-
-The code essentially splits into two - a generic bit supplying the glue 
-code that the framework needs, and SoC-specific code to do the core state 
-suspend/resume.
-
-The generic bits do two things:
-
- 	* implement some glue the suspend-to-disk framework requires:
-
- 		- pfn_is_nosave
- 		- save/restore_processor_state
- 		- swsusp_arch_suspend/resume entrypoints
-
- 	* ARM assembly for the "guts" of swsusp_arch_suspend/resume
-
- 		- save/restore current regset, CPSR and svc stack/lr
- 		- page restore loop to copy the pageset back
- 		- redirect to SoC-specific code for core suspend/resume
-
-Hopefully what's in there is actually agnostic enough to qualify as "ARM 
-generic". This stuff is quite clean by now.
-
-There's one ugly thing in this set - I've changed a generic kernel header, 
-<linux/suspend.h> to #define save/restore_processor_state() on ARM so that 
-it only does preempt_disable/enable(). It's surprising that this isn't the 
-default behaviour; all platforms need swsusp_arch_suspend/resume anyway so 
-why force the existance of _two_ arch-specific hooks ?
-
-
-
-In addition to this glue, one needs:
-
- 	* a SoC-dependent __save/__restore_processor_state.
-           There's two examples attached for that, OMAP3 and Samsung 6450.
-
-This bit is the "hacky" part of the patch; on ARM, the platform code is 
-blissfully unaware of suspend-to-disk while suspend-to-ram is partially 
-very complex code.
-
-The shown diffs hook into the "inner guts" of existing suspend-to-ram on 
-ARM, and while that looks like it does a large part of the job, there's 
-surely a better way.
-
-I've supplied those as merely illustrative... to show that the inline 
-assembly orgies from previous patches are just unnecessarily duplicating 
-already-existing functionality. The way this is reused here might not be 
-the perfect way - intent only was to show how much code re-use is 
-actually possible in the area.
-
-Whoever wishes can instead substitute the __save/__restore_processor_state 
-inline assembly orgies from previously posted patches here - it all hooks 
-in very cleanly.
-
-
-
-To test / extend this code on an ARM architecture other than the two 
-shown, one can start with the generic bits and simply make NOP-impls for 
-the SoC-specific bits; that should at the very least allow a snapshot to 
-be created, and so validate that device tree quiesce/freeze resume/thaw 
-work correctly. Resume from such an image wouldn't work, though. At least 
-the MMU state is absolutely critical.
-
-
-
-
-Re, how (if at all) to get this towards mainline:
-
-It looks like the various ARM boards have _very_ different views towards 
-what suspend_ops.enter() will have to do; some are quite simple there, 
-others are exceedingly complex.
-
-One would ultimately hope for as much code sharing between hibernation and 
-suspend-to-mem as possible, for sure, but the current code isn't aware of 
-this; in many cases, saving/restoring state is done all over the place in 
-the "arch framework" bits of suspend_ops.enter(), before the actual CPU 
-core state is saved/resumed. ARM is heavily biased towards optimizing the 
-hell out of suspend-to-mem, and a "grand central store" for system state 
-isn't really there, all boards have their own strategy for this, and their 
-own assumptions on what the CPU state is when resumed from RAM. This is 
-even harder to do for "secure" SoCs, where part of the functionality is 
-handled by (non-kernel) internal ROM code.
-
-
-Russell King has recently done a change to the CPU suspend core code to 
-make that use a "more generic" interface (have them all dump state into a 
-caller-supplied buffer, at the least). The attached patches aren't yet 
-fully aware of that because of the need _not_ to suspend (but return after 
-state save) when called through the hibernation code. My brain hasn't yet 
-grown big enough to solve this well ...
-
-
-
-Re, success with this patch: On OMAP3, I've got issues; the console 
-doesn't properly suspend/resume and using no_console_suspend keeps the 
-messages but looses console input after resume. Also, graphics doesn't 
-come back, and successive hibernation attempts cause crashes in the USB 
-stack. It works much better on the Samsung 64xx boards, for me at least. 
-But then, quite a few people reported success with the older patches on 
-OMAP, hence I wonder, who's got it "fully working" ?
-
-
-
-Any comments ? What can be improved ?
-
-
-Have fun,
+Thanks,
 FrankH.
---235565064-1225985430-1301927302=:690
-Content-Type: TEXT/X-DIFF; NAME=hibernate-core-04Apr2011.patch
+--235565064-1325659552-1301929284=:690
+Content-Type: TEXT/x-diff; name=hibernate-core-04Apr2011.patch
 Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.2.00.1104041528220.690@localhost6.localdomain6>
+Content-ID: <alpine.DEB.2.00.1104041606350.690@localhost6.localdomain6>
 Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=hibernate-core-04Apr2011.patch
+Content-Disposition: attachment; filename=hibernate-core-04Apr2011.patch
 
 ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL0tjb25maWcgYi9hcmNoL2FybS9LY29u
 ZmlnDQppbmRleCA2YjY3ODZjLi5iM2MyNzFmIDEwMDY0NA0KLS0tIGEvYXJj
@@ -367,133 +262,11 @@ CiAvKiBrZXJuZWwvcG93ZXIvbWFpbi5jICovDQogZXh0ZXJuIGludCByZWdp
 c3Rlcl9wbV9ub3RpZmllcihzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm5iKTsN
 Cg==
 
---235565064-1225985430-1301927302=:690
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=hibernate-omap3-04Apr2011
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.2.00.1104041528221.690@localhost6.localdomain6>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=hibernate-omap3-04Apr2011
-
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL3BsYXQtb21hcC9LY29uZmlnIGIvYXJj
-aC9hcm0vcGxhdC1vbWFwL0tjb25maWcNCmluZGV4IGRmNWNlNTYuLmI0NzEz
-YmEgMTAwNjQ0DQotLS0gYS9hcmNoL2FybS9wbGF0LW9tYXAvS2NvbmZpZw0K
-KysrIGIvYXJjaC9hcm0vcGxhdC1vbWFwL0tjb25maWcNCkBAIC0yMyw2ICsy
-Myw3IEBAIGNvbmZpZyBBUkNIX09NQVAzDQogCXNlbGVjdCBDUFVfVjcNCiAJ
-c2VsZWN0IENPTU1PTl9DTEtERVYNCiAJc2VsZWN0IE9NQVBfSU9NTVUNCisJ
-c2VsZWN0IEFSQ0hfSElCRVJOQVRJT05fUE9TU0lCTEUNCiANCiBjb25maWcg
-QVJDSF9PTUFQNA0KIAlib29sICJUSSBPTUFQNCINCmRpZmYgLS1naXQgYS9h
-cmNoL2FybS9tYWNoLW9tYXAyL3NsZWVwMzR4eC5TIGIvYXJjaC9hcm0vbWFj
-aC1vbWFwMi9zbGVlcDM0eHguUw0KaW5kZXggZWE0ZTQ5OC4uZmQ0ODQxNyAx
-MDA2NDQNCi0tLSBhL2FyY2gvYXJtL21hY2gtb21hcDIvc2xlZXAzNHh4LlMN
-CisrKyBiL2FyY2gvYXJtL21hY2gtb21hcDIvc2xlZXAzNHh4LlMNCkBAIC0z
-MjgsNiArMzI4LDE3IEBAIHJlc3RvcmU6DQogCS53b3JkCTB4RTE2MDAwNzEJ
-CUAgY2FsbCBTTUkgbW9uaXRvciAoc21pICMxKQ0KICNlbmRpZg0KIAliCWxv
-Z2ljX2wxX3Jlc3RvcmUNCisjaWZkZWYgQ09ORklHX0hJQkVSTkFUSU9ODQor
-RU5UUlkoX19yZXN0b3JlX3Byb2Nlc3Nvcl9zdGF0ZSkNCisJc3RtZmQJc3Ah
-LCB7IHIwIC0gcjEyLCBsciB9DQorCXN0cglzcCwgW3IwXQkJQCBmaXh1cCBz
-YXZlZCBzdGFjayBwb2ludGVyDQorCXN0cglsciwgW3IwLCAjOF0JCUAgZml4
-dXAgc2F2ZWQgbGluayByZWdpc3Rlcg0KKwltb3YJcjMsIHIwDQorCW1vdgly
-MSwgIzENCisJYgkuTGxvZ2ljX2wxX3Jlc3RvcmVfaW50ZXJuYWwNCitFTkRQ
-Uk9DKF9fcmVzdG9yZV9wcm9jZXNzb3Jfc3RhdGUpDQorI2VuZGlmDQorDQog
-bDJfaW52X2FwaV9wYXJhbXM6DQogCS53b3JkICAgMHgxLCAweDAwDQogbDJf
-aW52X2dwOg0KQEAgLTM1OCw2ICszNjksNyBAQCBsb2dpY19sMV9yZXN0b3Jl
-Og0KIAlsZHIJcjQsIHNjcmF0Y2hwYWRfYmFzZQ0KIAlsZHIJcjMsIFtyNCwj
-MHhCQ10NCiAJYWRkcwlyMywgcjMsICMxNg0KKy5MbG9naWNfbDFfcmVzdG9y
-ZV9pbnRlcm5hbDoNCiAJbGRtaWEJcjMhLCB7cjQtcjZ9DQogCW1vdglzcCwg
-cjQNCiAJbXNyCXNwc3JfY3hzZiwgcjUNCkBAIC00MzMsNiArNDQ1LDEwIEBA
-IHR0YnJfZXJyb3I6DQogCSovDQogCWIJdHRicl9lcnJvcg0KIHVzZXR0YnIw
-Og0KKyNpZmRlZiBDT05GSUdfSElCRVJOQVRJT04NCisJY21wCXIxLCAjMQ0K
-KwlsZG1lcWZkCXNwISwgeyByMCAtIHIxMiwgcGMgfQlAIGVhcmx5IHJldHVy
-biBmcm9tIF9fcmVzdG9yZV9wcm9jZXNzb3Jfc3RhdGUNCisjZW5kaWYNCiAJ
-bXJjCXAxNSwgMCwgcjIsIGMyLCBjMCwgMA0KIAlsZHIJcjUsIHR0YnJiaXRf
-bWFzaw0KIAlhbmQJcjIsIHI1DQpAQCAtNDcxLDYgKzQ4NywxNiBAQCB1c2V0
-dGJyMDoNCiAJbWNyCXAxNSwgMCwgcjQsIGMxLCBjMCwgMA0KIA0KIAlsZG1m
-ZAlzcCEsIHtyMC1yMTIsIHBjfQkJQCByZXN0b3JlIHJlZ3MgYW5kIHJldHVy
-bg0KKw0KKyNpZmRlZiBDT05GSUdfSElCRVJOQVRJT04NCitFTlRSWShfX3Nh
-dmVfcHJvY2Vzc29yX3N0YXRlKQ0KKwlzdG1mZAlzcCEsIHtyMC1yMTIsIGxy
-fQ0KKwltb3YJcjEsICMweDQNCisJbW92CXI4LCByMA0KKwliCWwxX2xvZ2lj
-X2xvc3QNCitFTkRQUk9DKF9fc2F2ZV9wcm9jZXNzb3Jfc3RhdGUpDQorI2Vu
-ZGlmDQorDQogc2F2ZV9jb250ZXh0X3dmaToNCiAJLypiCXNhdmVfY29udGV4
-dF93ZmkqLwlAIGVuYWJsZSB0byBkZWJ1ZyBzYXZlIGNvZGUNCiAJbW92CXI4
-LCByMCAvKiBTdG9yZSBTRFJBTSBhZGRyZXNzIGluIHI4ICovDQpAQCAtNTQ1
-LDYgKzU3MSwxMCBAQCBsMV9sb2dpY19sb3N0Og0KIAltcmMJcDE1LCAwLCBy
-NCwgYzEsIGMwLCAwDQogCS8qIHNhdmUgY29udHJvbCByZWdpc3RlciAqLw0K
-IAlzdG1pYQlyOCEsIHtyNH0NCisjaWZkZWYgQ09ORklHX0hJQkVSTkFUSU9O
-DQorCWNtcAlyMSwgIzQNCisJbGRtZXFmZAlzcCEsIHtyMC1yMTIsIHBjfQlA
-IGVhcmx5IHJldHVybiBmcm9tIF9fc2F2ZV9wcm9jZXNzb3Jfc3RhdGUNCisj
-ZW5kaWYNCiBjbGVhbl9jYWNoZXM6DQogCS8qIENsZWFuIERhdGEgb3IgdW5p
-ZmllZCBjYWNoZSB0byBQT1UqLw0KIAkvKiBIb3cgdG8gaW52YWxpZGF0ZSBv
-bmx5IEwxIGNhY2hlPz8/PyAtICNGSVhfTUUjICovDQo=
-
---235565064-1225985430-1301927302=:690
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=hibernate-smdk6450-04Apr2011
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.2.00.1104041528222.690@localhost6.localdomain6>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=hibernate-smdk6450-04Apr2011
-
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL3BsYXQtczVwL3NsZWVwLlMgYi9hcmNo
-L2FybS9wbGF0LXM1cC9zbGVlcC5TDQppbmRleCAyY2RhZTRhLi5mZDJiMGEx
-IDEwMDY0NA0KLS0tIGEvYXJjaC9hcm0vcGxhdC1zNXAvc2xlZXAuUw0KKysr
-IGIvYXJjaC9hcm0vcGxhdC1zNXAvc2xlZXAuUw0KQEAgLTQ4LDEwICs0OCwx
-NyBAQA0KIAkgKg0KIAkgKiBlbnRyeToNCiAJICoJcjAgPSBzYXZlIGFkZHJl
-c3MgKHZpcnR1YWwgYWRkciBvZiBzM2Nfc2xlZXBfc2F2ZV9waHlzKQ0KLQkq
-Lw0KKwkgKglyMSAoX2ludGVybmFsXyBvbmx5KSA9IENQVSBzbGVlcCB0cmFt
-cG9saW5lIChpZiBhbnkpDQorCSAqLw0KIA0KLUVOVFJZKHMzY19jcHVfc2F2
-ZSkNCitFTlRSWShfX3NhdmVfcHJvY2Vzc29yX3N0YXRlKQ0KKwltb3YJcjEs
-ICMwDQorCWIJLkxzM2NfY3B1X3NhdmVfaW50ZXJuYWwNCitFTkRQUk9DKF9f
-c2F2ZV9wcm9jZXNzb3Jfc3RhdGUpDQogDQorRU5UUlkoczNjX2NwdV9zYXZl
-KQ0KKwlsZHIJcjEsID1wbV9jcHVfc2xlZXAJQCBzZXQgdHJhbXBvbGluZQ0K
-Ky5MczNjX2NwdV9zYXZlX2ludGVybmFsOg0KIAlzdG1mZAlzcCEsIHsgcjMg
-LSByMTIsIGxyIH0NCiANCiAJbXJjCXAxNSwgMCwgcjQsIGMxMywgYzAsIDAJ
-QCBGQ1NFL1BJRA0KQEAgLTY3LDExICs3NCwxMyBAQCBFTlRSWShzM2NfY3B1
-X3NhdmUpDQogDQogCXN0bWlhCXIwLCB7IHIzIC0gcjEzIH0NCiANCisJbW92
-CXI0LCByMQ0KIAlAQCB3cml0ZSBvdXIgc3RhdGUgYmFjayB0byBSQU0NCiAJ
-YmwJczNjX3BtX2NiX2ZsdXNoY2FjaGUNCiANCisJbW92CXIwLCByNA0KKwls
-ZG1lcWZkCXNwISwgeyByMyAtIHIxMiwgcGMgfQlAIGlmIHRoZXJlIHdhcyBu
-byB0cmFtcG9saW5lLCByZXR1cm4NCiAJQEAganVtcCB0byBmaW5hbCBjb2Rl
-IHRvIHNlbmQgc3lzdGVtIHRvIHNsZWVwDQotCWxkcglyMCwgPXBtX2NwdV9z
-bGVlcA0KIAlAQGxkcglwYywgWyByMCBdDQogCWxkcglyMCwgWyByMCBdDQog
-CW1vdglwYywgcjANCkBAIC04Niw5ICs5NSwxOSBAQCByZXN1bWVfd2l0aF9t
-bXU6DQogCXN0cglyMTIsIFtyNF0NCiANCiAJbGRtZmQJc3AhLCB7IHIzIC0g
-cjEyLCBwYyB9DQorRU5EUFJPQyhzM2NfY3B1X3NhdmUpDQorDQorRU5UUlko
-X19yZXN0b3JlX3Byb2Nlc3Nvcl9zdGF0ZSkNCisJc3RtZmQJc3AhLCB7IHIz
-IC0gcjEyLCBsciB9DQorCWxkcglyMiwgPS5MczNjX2NwdV9yZXN1bWVfaW50
-ZXJuYWwNCisJbW92CXIxLCAjMQ0KKwlzdHIJc3AsIFtyMCwgIzQwXQkJQCBm
-aXh1cCBzcCBpbiByZXN0b3JlIGNvbnRleHQNCisJbW92CXBjLCByMg0KK0VO
-RFBST0MoX19yZXN0b3JlX3Byb2Nlc3Nvcl9zdGF0ZSkNCiANCiAJLmx0b3Jn
-DQogDQorDQogCUBAIHRoZSBuZXh0IGJpdHMgc2l0IGluIHRoZSAuZGF0YSBz
-ZWdtZW50LCBldmVuIHRob3VnaCB0aGV5DQogCUBAIGhhcHBlbiB0byBiZSBj
-b2RlLi4uIHRoZSBzNXB2MjEwX3NsZWVwX3NhdmVfcGh5cyBuZWVkcyB0byBi
-ZQ0KIAlAQCBhY2Nlc3NlZCBieSB0aGUgcmVzdW1lIGNvZGUgYmVmb3JlIGl0
-IGNhbiByZXN0b3JlIHRoZSBNTVUuDQpAQCAtMTMxLDYgKzE1MCw3IEBAIEVO
-VFJZKHMzY19jcHVfcmVzdW1lKQ0KIAltY3IJcDE1LCAwLCByMSwgYzcsIGM1
-LCAwCQlAQCBpbnZhbGlkYXRlIEkgQ2FjaGUNCiANCiAJbGRyCXIwLCBzM2Nf
-c2xlZXBfc2F2ZV9waHlzCUAgYWRkcmVzcyBvZiByZXN0b3JlIGJsb2NrDQor
-LkxzM2NfY3B1X3Jlc3VtZV9pbnRlcm5hbDoNCiAJbGRtaWEJcjAsIHsgcjMg
-LSByMTMgfQ0KIA0KIAltY3IJcDE1LCAwLCByNCwgYzEzLCBjMCwgMAlAIEZD
-U0UvUElEDQpAQCAtMTUyLDYgKzE3Miw5IEBAIEVOVFJZKHMzY19jcHVfcmVz
-dW1lKQ0KIAltY3IJcDE1LCAwLCByMTIsIGMxMCwgYzIsIDAJQCB3cml0ZSBQ
-UlJSDQogCW1jcglwMTUsIDAsIHIzLCBjMTAsIGMyLCAxCUAgd3JpdGUgTk1S
-Ug0KIA0KKwljbXAJcjEsICMwDQorCWJuZQkwZgkJCUAgb25seSBkbyBNTVUg
-cGh5cyBpbml0DQorCQkJCQlAIG5vdCBjYWxsZWQgYnkgX19yZXN0b3JlX3By
-b2Nlc3Nvcl9zdGF0ZQ0KIAkvKiBjYWxjdWxhdGUgZmlyc3Qgc2VjdGlvbiBh
-ZGRyZXNzIGludG8gcjggKi8NCiAJbW92CXI0LCByNg0KIAlsZHIJcjUsID0w
-eDNmZmYNCkBAIC0xNzUsNiArMTk4LDcgQEAgRU5UUlkoczNjX2NwdV9yZXN1
-bWUpDQogCXN0cglyMTAsIFtyNF0NCiANCiAJbGRyCXIyLCA9cmVzdW1lX3dp
-dGhfbW11DQorMDoNCiAJbWNyCXAxNSwgMCwgcjksIGMxLCBjMCwgMAkJQCB0
-dXJuIG9uIE1NVSwgZXRjDQogDQogICAgICAgICBub3ANCkBAIC0xODMsNiAr
-MjA3LDcgQEAgRU5UUlkoczNjX2NwdV9yZXN1bWUpDQogICAgICAgICBub3AN
-CiAgICAgICAgIG5vcAkJCQkJQCBzZWNvbmQtdG8tbGFzdCBiZWZvcmUgbW11
-DQogDQorCWxkbW5lZmQJc3AhLCB7IHIzIC0gcjEyLCBwYyB9DQogCW1vdglw
-YywgcjIJCQkJQCBnbyBiYWNrIHRvIHZpcnR1YWwgYWRkcmVzcw0KIA0KIAku
-bHRvcmcNCg==
-
---235565064-1225985430-1301927302=:690
+--235565064-1325659552-1301929284=:690
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---235565064-1225985430-1301927302=:690--
+--235565064-1325659552-1301929284=:690--
