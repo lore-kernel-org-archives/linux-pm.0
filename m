@@ -1,19 +1,16 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] APM: delete APM in Linux-2.6.40
-Date: Mon, 04 Apr 2011 16:18:33 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1104041615040.5324__10904.5612895445$1301948422$gmane$org@x980>
-References: <alpine.LFD.2.02.1103232321070.3848@x980>
-	<20110324154505.934a56a0.sfr@canb.auug.org.au>
-	<alpine.LFD.2.02.1103240336590.4529@x980>
-	<20110324102116.GA17446@khazad-dum.debian.net>
-	<alpine.LFD.2.02.1103241903030.16085@x980>
-	<20110325010705.GB4535@khazad-dum.debian.net>
-	<20110404164456.GA13215@elf.ucw.cz>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [RFC][PATCH] PM / Platform: Remove __weak
+ definitions of runtime PM callbacks
+Date: Tue, 5 Apr 2011 16:17:33 +0900
+Message-ID: <BANLkTi=oFuSRSCLZRGwZACioCxO0WSYsOQ__43113.8265332722$1301987911$gmane$org@mail.gmail.com>
+References: <201103270058.41632.rjw@sisk.pl>
+	<AANLkTi=JW-xdzE3tCMohVZ1A=2pk2WHD0WrDPU4FNaXA@mail.gmail.com>
+	<201103282143.58477.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20110404164456.GA13215@elf.ucw.cz>
+In-Reply-To: <201103282143.58477.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,25 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Mar 29, 2011 at 4:43 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday, March 28, 2011, Magnus Damm wrote:
+>> On Sun, Mar 27, 2011 at 8:58 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > From: Rafael J. Wysocki <rjw@sisk.pl>
+>> >
+>> > Remove the __weak definitions of platform bus type runtime PM
+>> > callbacks, make platform_dev_pm_ops point to the generic routines
+>> > as appropriate and allow architectures using platform_dev_pm_ops to
+>> > replace the runtime PM callbacks in that structure with their own
+>> > set.
+>> >
+>> > Convert architectures providing its own definitions of the platform
+>> > runtime PM callbacks to use the new mechanism.
+>> >
+>> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>
+>> Looking good, thanks Rafael. Tested on the sh7372 Mackerel board.
+>>
+>> Acked-by: Magnus Damm <damm@opensource.se>
+>
+> Thanks, I'll put it into my for-2.6.40 queue as soon as 2.6.39-rc1 is out.
 
-> I still have working thinkpad 560X, my brother occassionaly uses it...
+Thanks. By the way, I think the symbols should be converted to static
+as well. Do you prefer to make a V2 or shall we do that incrementally?
 
-There is no doubt that there are still people running Linux
-on old APM laptops.
-
-The question, however, is if they're running (or will run)
-the latest upstream kernel.  Further, are they available
-to test APM patches to the latest upstream kernel.
-
-> I do not think we should remove APM support like this. It does not
-> seem to be huge maintainance burden...
-
-Last week we decided not to delete APM yet.
-The jury is still out on APM's idle hooks.
-
-cheers,
-Len Brown, Intel Open Source Technology Center
+/ magnus
