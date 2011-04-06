@@ -1,12 +1,15 @@
 From: Sonny Rao <sonnyrao@chromium.org>
-Subject: [PATCH] Enable async suspend/resume on industrial IO
+Subject: Re: [RFC][PATCH] Enable async suspend/resume of i2c
 	devices
-Date: Tue,  5 Apr 2011 19:45:14 -0700
-Message-ID: <1302057915-13549-1-git-send-email-sonnyrao__9570.7017150291$1302115318$gmane$org@chromium.org>
+Date: Tue, 5 Apr 2011 23:51:48 -0700
+Message-ID: <BANLkTikkmmCuAvoov4wY7zUC4mX9yrDnXQ__160.839039790694$1302115329$gmane$org@mail.gmail.com>
+References: <BANLkTik7i0VQpJb+enUd9c4-XvZQ1S57fQ@mail.gmail.com>
+	<20110406052335.GA25578@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20110406052335.GA25578@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,31 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: jic23@cam.ac.uk
-Cc: devel@driverdev.osuosl.org, bleung@chromium.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Phillip Kurtenbach <pkurtenbach@gmail.com>, snanda@chromium.org, linux-pm@lists.linux-foundation.org, Sonny Rao <sonnyrao@chromium.org>, Andrew Morton <akpm@linux-foundation.org>, Manuel Stahl <manuel.stahl@iis.fraunhofer.de>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-i2c@vger.kernel.org, "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>, "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org, bleung@chromium.org, snanda@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-Industrial I/O devices can sometimes take a long time to resume,
-allowing them to be asynchronus saves 50ms on one light sensor
+On Tue, Apr 5, 2011 at 10:23 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Mon, Apr 04, 2011 at 08:47:01PM -0700, Sonny Rao wrote:
+>> This improves our resume time when we have devices on an i2c bus
+>> that are slow to resume. =A0In particular we have a light sensor that
+>> adds about 50ms of resume time on one device. We have to enable it
+>> both on the i2c master and i2c client side and then we get fully async
+>> suspend/resume. =A0I suspect we'll see nice gains on systems with more
+>> i2c devices and will test that out soon.
+>>
+>> Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
+>
+> It'd probably help if the patch explained why this is safe - my
+> immediate question is why if it's safe to just unconditionally enable
+> async suspend for all I2C clients and adaptors it's not safe to do so
+> for all devices of all types?
+>
 
-Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
+Yeah, I admit that I'm not yet familiar enough with suspend/resume
+to give a good answer, and I was wondering the same thing. I was
+hoping people on the lists would chime in an say if it weren't safe,
+or if there is a better way to get some parallelism for slow devices.
 
----
- drivers/staging/iio/industrialio-core.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+It might help if I gave you a bit more background on how I got to this
+point.
 
-diff --git a/drivers/staging/iio/industrialio-core.c b/drivers/staging/iio/industrialio-core.c
-index 768f448..a4b099f 100644
---- a/drivers/staging/iio/industrialio-core.c
-+++ b/drivers/staging/iio/industrialio-core.c
-@@ -811,6 +811,8 @@ int iio_device_register(struct iio_dev *dev_info)
- 	if (dev_info->modes & INDIO_RING_TRIGGERED)
- 		iio_device_register_trigger_consumer(dev_info);
- 
-+	device_enable_async_suspend(&dev_info->dev);
-+
- 	return 0;
- 
- error_free_sysfs:
--- 
-1.7.2.3
+We've been looking at suspend/resume performance on a dual
+core Atom netbook (four hardware threads), and noticed each
+that bringing each logical cpu up was adding about 80ms to our
+resume time.
+
+There was some expectation that having more cpus available
+to do device resume would make up for the initial cost of bringing
+each cpu up, but it turned out that wasn't the case.  Going from one
+logical cpu to two made total resume time lower, but the third and
+fourth cpus only added time.   So there wasn't enough device
+parallelism to take advantage of four cpus.
+
+So we started looking for what devices were going slow and the
+top hitter was a light sensor that has to get totally reinitialized upon
+resume.  Also, 50ms seems pretty small but in the case of the
+that turns out to be about 8% of our time in device resume.
+
+I've also noticed some other devices which aren't asynchronous
+taking more than a trivial amount of time.  Especially some of the
+ACPI devices like fans, batterys, etc, and was going to go look
+at making those async as well if it would help.
+
+I'm open to suggestions on how to tackle this, thanks for the
+feedback.
+
+Sonny
