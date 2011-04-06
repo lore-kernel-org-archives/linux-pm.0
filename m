@@ -1,14 +1,16 @@
-From: Jonathan Cameron <jic23@cam.ac.uk>
-Subject: Re: [PATCH] Enable async suspend/resume on industrial IO
-	devices
-Date: Wed, 06 Apr 2011 11:59:10 +0100
-Message-ID: <4D9C477E.4050400__37645.2019125738$1302115333$gmane$org@cam.ac.uk>
-References: <1302057915-13549-1-git-send-email-sonnyrao@chromium.org>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [RFC][PATCH] Enable async suspend/resume of i2c
+ devices
+Date: Thu, 7 Apr 2011 07:31:24 +0900
+Message-ID: <20110406223123.GA5297__19898.8076918342$1302129159$gmane$org@opensource.wolfsonmicro.com>
+References: <20110406095240.410b4e7e@endymion.delvare>
+	<Pine.LNX.4.44L0.1104061043220.1907-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1302057915-13549-1-git-send-email-sonnyrao@chromium.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1104061043220.1907-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +20,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sonny Rao <sonnyrao@chromium.org>
-Cc: devel@driverdev.osuosl.org, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Phillip Kurtenbach <pkurtenbach@gmail.com>, snanda@chromium.org, Andrew Morton <akpm@linux-foundation.org>, bleung@chromium.org, linux-pm@lists.linux-foundation.org, Manuel Stahl <manuel.stahl@iis.fraunhofer.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-i2c@vger.kernel.org, "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org, Sonny Rao <sonnyrao@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/06/11 03:45, Sonny Rao wrote:
-> Industrial I/O devices can sometimes take a long time to resume,
-> allowing them to be asynchronus saves 50ms on one light sensor
-> 
-Hi Sonny,
+On Wed, Apr 06, 2011 at 10:49:17AM -0400, Alan Stern wrote:
 
-cc'd linux-iio
+> Neither is the case.  For these subsystems, the PM dependencies _are_ 
+> known.
 
-I'm not particularly familiar with this.  Are there any disadvantages?
-I just wonder if it would be better to push this into individual drivers
-rather than the core?
+...
 
-Jonathan
-> Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
-> 
-> ---
->  drivers/staging/iio/industrialio-core.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/staging/iio/industrialio-core.c b/drivers/staging/iio/industrialio-core.c
-> index 768f448..a4b099f 100644
-> --- a/drivers/staging/iio/industrialio-core.c
-> +++ b/drivers/staging/iio/industrialio-core.c
-> @@ -811,6 +811,8 @@ int iio_device_register(struct iio_dev *dev_info)
->  	if (dev_info->modes & INDIO_RING_TRIGGERED)
->  		iio_device_register_trigger_consumer(dev_info);
->  
-> +	device_enable_async_suspend(&dev_info->dev);
-> +
->  	return 0;
->  
->  error_free_sysfs:
+> Now, I have no idea what the situation is with regard to I2C...
+
+You definitely don't know *anything* about the relationships for I2C,
+especially in embedded systems.
