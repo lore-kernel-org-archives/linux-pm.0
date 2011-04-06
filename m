@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM / Platform: Remove __weak
-	definitions of runtime PM callbacks
-Date: Wed, 6 Apr 2011 06:24:23 +0200
-Message-ID: <201104060624.23692.rjw__16299.6044419289$1302064008$gmane$org@sisk.pl>
-References: <201103270058.41632.rjw@sisk.pl> <201103282143.58477.rjw@sisk.pl>
-	<BANLkTi=oFuSRSCLZRGwZACioCxO0WSYsOQ@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [RFC][PATCH] Enable async suspend/resume of i2c
+	devices
+Date: Wed, 6 Apr 2011 06:23:35 +0100
+Message-ID: <20110406052335.GA25578__18358.8705178865$1302067570$gmane$org@sirena.org.uk>
+References: <BANLkTik7i0VQpJb+enUd9c4-XvZQ1S57fQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=oFuSRSCLZRGwZACioCxO0WSYsOQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <BANLkTik7i0VQpJb+enUd9c4-XvZQ1S57fQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,37 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: Sonny Rao <sonnyrao@chromium.org>
+Cc: "Jean Delvare (PC drivers, core)" <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org, "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, April 05, 2011, Magnus Damm wrote:
-> On Tue, Mar 29, 2011 at 4:43 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday, March 28, 2011, Magnus Damm wrote:
-> >> On Sun, Mar 27, 2011 at 8:58 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >> >
-> >> > Remove the __weak definitions of platform bus type runtime PM
-> >> > callbacks, make platform_dev_pm_ops point to the generic routines
-> >> > as appropriate and allow architectures using platform_dev_pm_ops to
-> >> > replace the runtime PM callbacks in that structure with their own
-> >> > set.
-> >> >
-> >> > Convert architectures providing its own definitions of the platform
-> >> > runtime PM callbacks to use the new mechanism.
-> >> >
-> >> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >>
-> >> Looking good, thanks Rafael. Tested on the sh7372 Mackerel board.
-> >>
-> >> Acked-by: Magnus Damm <damm@opensource.se>
-> >
-> > Thanks, I'll put it into my for-2.6.40 queue as soon as 2.6.39-rc1 is out.
+On Mon, Apr 04, 2011 at 08:47:01PM -0700, Sonny Rao wrote:
+> This improves our resume time when we have devices on an i2c bus
+> that are slow to resume.  In particular we have a light sensor that
+> adds about 50ms of resume time on one device. We have to enable it
+> both on the i2c master and i2c client side and then we get fully async
+> suspend/resume.  I suspect we'll see nice gains on systems with more
+> i2c devices and will test that out soon.
 > 
-> Thanks. By the way, I think the symbols should be converted to static
-> as well. Do you prefer to make a V2 or shall we do that incrementally?
+> Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
 
-I can fold that changed into the patch as I haven't pushed it yet.
-
-Thanks,
-Rafael
+It'd probably help if the patch explained why this is safe - my
+immediate question is why if it's safe to just unconditionally enable
+async suspend for all I2C clients and adaptors it's not safe to do so
+for all devices of all types?
