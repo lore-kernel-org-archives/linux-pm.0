@@ -1,11 +1,15 @@
-From: Amerigo Wang <amwang@redhat.com>
-Subject: [RESEND Patch] acpi: remove acpi_sleep=s4_nonvs
-Date: Wed,  6 Apr 2011 13:28:44 +0800
-Message-ID: <1302067724-14795-1-git-send-email-amwang__12072.8217335001$1302069344$gmane$org@redhat.com>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [RFC][PATCH] Enable async suspend/resume of i2c
+	devices
+Date: Wed, 6 Apr 2011 09:52:40 +0200
+Message-ID: <20110406095240.410b4e7e@endymion.delvare>
+References: <BANLkTik7i0VQpJb+enUd9c4-XvZQ1S57fQ@mail.gmail.com>
+	<20110406052335.GA25578@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20110406052335.GA25578@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,69 +19,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, WANG Cong <amwang@redhat.com>, linux-doc@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Sonny Rao <sonnyrao@chromium.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org, "Ben Dooks
+	(embedded platforms)" <ben-linux@fluff.org>
 List-Id: linux-pm@vger.kernel.org
 
-First post is here: https://lkml.org/lkml/2011/1/19/4
+On Wed, 6 Apr 2011 06:23:35 +0100, Mark Brown wrote:
+> On Mon, Apr 04, 2011 at 08:47:01PM -0700, Sonny Rao wrote:
+> > This improves our resume time when we have devices on an i2c bus
+> > that are slow to resume.  In particular we have a light sensor that
+> > adds about 50ms of resume time on one device. We have to enable it
+> > both on the i2c master and i2c client side and then we get fully async
+> > suspend/resume.  I suspect we'll see nice gains on systems with more
+> > i2c devices and will test that out soon.
+> > 
+> > Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
+> 
+> It'd probably help if the patch explained why this is safe - my
+> immediate question is why if it's safe to just unconditionally enable
+> async suspend for all I2C clients and adaptors it's not safe to do so
+> for all devices of all types?
 
-acpi_sleep=s4_nonvs is superseded by acpi_sleep=nonvs.
+I have exactly the same concern. From
+Documentation/ABI/testing/sysfs-devices-power:
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Len Brown <len.brown@intel.com>
+	It generally is unsafe to permit the asynchronous suspend/resume
+	of a device unless it is certain that all of the PM dependencies
+	of the device are known to the PM core.  However, for some
+	devices this attribute is set to "enabled" by bus type code or
+	device drivers and in that cases it should be safe to leave the
+	default value.
 
----
- Documentation/feature-removal-schedule.txt |    8 --------
- Documentation/kernel-parameters.txt        |    2 +-
- arch/x86/kernel/acpi/sleep.c               |    5 -----
- 3 files changed, 1 insertions(+), 14 deletions(-)
+As I don't see any code being added to guarantee that "all of the PM
+dependencies of the device are known to the PM core", I am skeptical
+about the general correctness of the proposed change.
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 274b32d..f57775c 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -480,14 +480,6 @@ Who:	Thomas Gleixner <tglx@linutronix.de>
- 
- ----------------------------
- 
--What:	The acpi_sleep=s4_nonvs command line option
--When:	2.6.37
--Files:	arch/x86/kernel/acpi/sleep.c
--Why:	superseded by acpi_sleep=nonvs
--Who:	Rafael J. Wysocki <rjw@sisk.pl>
--
------------------------------
--
- What: 	PCI DMA unmap state API
- When:	August 2012
- Why:	PCI DMA unmap state API (include/linux/pci-dma.h) was replaced
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index d2b5150..26c69c1 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -245,7 +245,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 
- 	acpi_sleep=	[HW,ACPI] Sleep options
- 			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig,
--				  old_ordering, s4_nonvs, sci_force_enable }
-+				  old_ordering, nonvs, sci_force_enable }
- 			See Documentation/power/video.txt for information on
- 			s3_bios and s3_mode.
- 			s3_beep is for debugging; it makes the PC's speaker beep
-diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-index ff93bc1..18a857b 100644
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -112,11 +112,6 @@ static int __init acpi_sleep_setup(char *str)
- #ifdef CONFIG_HIBERNATION
- 		if (strncmp(str, "s4_nohwsig", 10) == 0)
- 			acpi_no_s4_hw_signature();
--		if (strncmp(str, "s4_nonvs", 8) == 0) {
--			pr_warning("ACPI: acpi_sleep=s4_nonvs is deprecated, "
--					"please use acpi_sleep=nonvs instead");
--			acpi_nvs_nosave();
--		}
- #endif
- 		if (strncmp(str, "nonvs", 5) == 0)
- 			acpi_nvs_nosave();
+On the other hand, a quick grep on the kernel tree shows that the scsi,
+usb and pci subsystem enable async suspend unconditionally for all
+devices. This seems quite contradictory with the quoted statement
+above. Rafael, can you please clarify? Is the attribute description too
+alarmist, or are the subsystems too optimistic? ;)
+
+Original post for reference:
+http://marc.info/?l=linux-i2c&m=130206741920878&w=2
+
+Sonny, on how many systems did you test it? In particular, did you test
+it on several TV cards (which use I2C a lot and sometimes in complex
+setups)?
+
+-- 
+Jean Delvare
