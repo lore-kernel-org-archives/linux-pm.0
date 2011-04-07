@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH] Enable async suspend/resume of i2c
-	devices
-Date: Thu, 7 Apr 2011 10:34:00 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1104071031590.2147-100000__17392.2048685656$1302187000$gmane$org@iolanthe.rowland.org>
-References: <20110407102544.4c34dfeb@endymion.delvare>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH/RFC 0/6] ARM: runtime PM: consolidate runtime
+	PM implementations
+Date: Thu, 07 Apr 2011 07:58:57 -0700
+Message-ID: <871v1eaz0u.fsf__38288.4472412572$1302188399$gmane$org@ti.com>
+References: <1302134569-22825-1-git-send-email-khilman@ti.com>
+	<201104070738.42956.rjw@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110407102544.4c34dfeb@endymion.delvare>
+In-Reply-To: <201104070738.42956.rjw@suse.com> (Rafael J. Wysocki's message of
+	"Thu, 7 Apr 2011 07:38:42 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,37 +20,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, linux-pm@lists.linux-foundation.org, Sonny Rao <sonnyrao@chromium.org>
+To: "Rafael J. Wysocki" <rjw@suse.com>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 7 Apr 2011, Jean Delvare wrote:
+[adding linux-pm, which I forgot to add in original post]
 
-> On Thu, 7 Apr 2011 09:00:43 +0100, Mark Brown wrote:
-> > On Thu, Apr 07, 2011 at 09:55:13AM +0200, Jean Delvare wrote:
-> > > On Thu, 7 Apr 2011 07:31:24 +0900, Mark Brown wrote:
-> > 
-> > > > You definitely don't know *anything* about the relationships for I2C,
-> > > > especially in embedded systems.
-> > 
-> > > Can you please elaborate? The i2c subsystem uses a standard
-> > > parent-children relationship. It seems fairly similar to USB for
-> > > example. The only special case I can think of is with bus multiplexing,
-> > > but it would be easy enough to switch off async suspend/resume in this
-> > > case.
-> > 
-> > For I2C itself that's the case but for power and GPIO (which are very
-> > common in conjunction with I2C in the embedded context) we loose the
-> > tree.  This is much less of an issue with buses like PCI where
-> > everything is bundled into the bus.
-> 
-> Out of curiosity, how is this handled in the synchronous suspend/resume
-> case?
+"Rafael J. Wysocki" <rjw@suse.com> writes:
 
-With synchronous resume, devices are resumed in the order they were
-originally registered.  Since the power and GPIO controllers must have
-been registered before the I2C controller (otherwise the I2C wouldn't
-have been accessible when it was registered!), they will be resumed
-first.
+> On Thursday, April 07, 2011, Kevin Hilman wrote:
+>> This series aims to consolidate OMAP and SH-mobile runtime PM
+>> implementations around the new device power domains.
+>> 
+>> In 2.6.39, device power domains were added (commit
+>> 7538e3db6e015e890825fbd9f8659952896ddd5b, PM: add support for device
+>> power domains).  In converting both OMAP and SH-mobile to use device
+>> power domains, the overlap between implementations was almost 100%.  
+>> 
+>> To share the runtime PM implementation based on simple clock gating,
+>> move it to arch/arm/common and initialize it from OMAP and SH-mobile.
+>> 
+>> Also, OMAP was the only user of platform_bus_set_pm_ops().  Now that
+>> it has been converted to device power domains, remove
+>> platform_bus_set_pm_ops().
+>
+> Please, don't do it this way.
+>
+> First, we'll still need platform_bus_set_pm_ops() on shmobile and the reason
+> is that we want to override the platform bus type PM ops for _all_ devices on
+> that platform, which power domains are not really suitable for.
 
-Alan Stern
+That doesn't sound quite right to me.
+
+Magnus should step in here to clarify the situation on SH-mobile, but
+like Grant, I'm pretty sure that we don't need (or want) to replace PM
+ops for _all_ platform devices.
+
+Looking at the replacement ops used, they simply manage device clocks,
+and this probably only applies to on-chip devices (at least that's true
+on OMAP.)
+
+Replacing the PM ops for all devices was done on OMAP and SH-mobile
+because that was the only approach we had.  Now that we have device
+power domains (thanks Rafael!), we can be more selective about which
+devices to apply them to.
+
+Note that my RFC patch/series did not do the selective part of deciding
+which devices to override and which ones not to, that part will be
+platform specific.  
+
+> Second, we're going to introduce code for handling real power domains for
+> shmobile that would conflict with the way you're using power domains for
+> overriding the default PM ops.
+
+Conflict in what way?
+
+If you have new device power domain callbacks for specific devices in a
+an on-chp power domain, they would just override the "default" ones that
+only do basic clock gating.  I'm guessing the new callbacks will do some
+management of the SoC specific powerdomains in addition to clock gating.
+That's how it works on OMAP.
+
+Put a different way, the device power domain callbacks in this proposal
+will be the defaults, providing a simple clock-gating only approach to
+device power management.   However, when new code comes along to manage
+the actual SoC power domains, devices in those power domains will just
+override these default clock-gating-only versions.
+
+This is exactly how things are working in OMAP.  On OMAP1, we use only
+the simple, clock-gating only callbacks because the OMAP1 PM
+capabilities are much more limited.  On OMAP2+, we override these
+callbacks with different ones that in addition to managing clocks, also
+manage the SoC power domains.
+
+> Besides, the way you've used power domains appears to assume that drivers
+> will not define their own runtime PM callbacks, because if they do, those
+> callbacks will be called _in_ _addition_ to the power domain callbacks you're
+> trying to add (from the default platform bus type callbacks).
+
+That was intentional.
+
+If all a driver needs to do for runtime PM is manage clocks, it doesn't
+need runtime PM callbacks since it's hanlded by core code.  If it has
+additional things to do (save context, quiesce hardware, wait for
+somthing to finish etc.) it can do that in it's own callbacks, and then
+the clock gating will happen in the device power domain callbacks.
+
+The point is use both levels of callbacks. The device power domain
+callbacks handle all the operations that are common to the device power
+domain, and the driver callbacks handle driver specific stuff.  
+
+It also means that drivers don't have to manage their own clocks, at
+least for PM purposes.  This is a big win for drivers that are used on
+multiple platforms, or even multiple SoCs in the same family where
+clocking may be different.  Drivers that can remain ignorant of the
+underlying clocking (and power domain layout) are much more portable.
+
+Kevin
