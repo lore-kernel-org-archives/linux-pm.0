@@ -1,17 +1,17 @@
-From: Sonny Rao <sonnyrao@chromium.org>
-Subject: Re: [RFC][PATCH] Enable async suspend/resume of i2c
-	devices
-Date: Wed, 6 Apr 2011 23:45:34 -0700
-Message-ID: <BANLkTi=t03WEB70D0YH29JEQei=wJU5Gig__11538.179315585$1302158816$gmane$org@mail.gmail.com>
-References: <20110406095240.410b4e7e@endymion.delvare>
-	<20110406223123.GA5297@opensource.wolfsonmicro.com>
-	<BANLkTikApnXBtP7c=QLEvM9ye=_YZiSSqw@mail.gmail.com>
-	<201104070722.44771.rjw@sisk.pl>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC][PATCH] PM / Platform: Remove __weak
+ definitions of runtime PM callbacks
+Date: Thu, 7 Apr 2011 00:09:22 -0700
+Message-ID: <20110407070922.GE6427__37585.9414729804$1302160313$gmane$org@angua.secretlab.ca>
+References: <201103270058.41632.rjw@sisk.pl> <201104070729.45484.rjw@sisk.pl>
+	<20110407054806.GC6427@angua.secretlab.ca>
+	<201104070815.41579.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104070722.44771.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201104070815.41579.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,44 +22,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org, "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 6, 2011 at 10:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, April 07, 2011, Sonny Rao wrote:
->> On Wed, Apr 6, 2011 at 3:31 PM, Mark Brown
->> <broonie@opensource.wolfsonmicro.com> wrote:
->> > On Wed, Apr 06, 2011 at 10:49:17AM -0400, Alan Stern wrote:
->> >
->> >> Neither is the case. =A0For these subsystems, the PM dependencies _ar=
-e_
->> >> known.
->> >
->> > ...
->> >
->> >> Now, I have no idea what the situation is with regard to I2C...
->> >
->> > You definitely don't know *anything* about the relationships for I2C,
->> > especially in embedded systems.
->> >
->>
->> Would it be okay to enable this on a per-device basis where it is
->> known to be safe?
->
-> Yes.
+On Thu, Apr 07, 2011 at 08:15:41AM +0200, Rafael J. Wysocki wrote:
+> On Thursday, April 07, 2011, Grant Likely wrote:
+> > On Thu, Apr 07, 2011 at 07:29:45AM +0200, Rafael J. Wysocki wrote:
+> > > On Thursday, April 07, 2011, Kevin Hilman wrote:
+> > > > Hi Rafael, Magnus,
+> > > > 
+> > > > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> > > > 
+> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > >
+> > > > > Remove the __weak definitions of platform bus type runtime PM
+> > > > > callbacks, make platform_dev_pm_ops point to the generic routines
+> > > > > as appropriate and allow architectures using platform_dev_pm_ops to
+> > > > > replace the runtime PM callbacks in that structure with their own
+> > > > > set.
+> > > > >
+> > > > > Convert architectures providing its own definitions of the platform
+> > > > > runtime PM callbacks to use the new mechanism.
+> > > > >
+> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > I dont't think we should be adding yet another new interface for setting
+> > > > platform-specific runtime PM ops.
+> > > > 
+> > > > We now have 3.  Two existing ones:
+> > > > 
+> > > > 1) new device power domains (presumably preferred)
+> > > > 2) platform_bus_set_pm_ops() (disliked by many)
+> > > 
+> > > Hmm, I wasn't aware of that one, will have a look.
+> > > 
+> > > > and now the new one you create here
+> > > > 
+> > > > 3) platform_set_runtime_pm_ops()
+> > > > 
+> > > > This new one is basically the same as platform_bus_set_pm_ops(), but
+> > > > targetted only at runtime PM ops, and also has all the same problems
+> > > > that have been discussed before.  Namely, it overrides the pm ops for
+> > > > *every* device on the platform_bus, instead of targetting only specific
+> > > > devices.
+> > > 
+> > > This is not a problem for this particular use case.  We really want to
+> > > replace the PM ops for all of the platform devices on that platform.
+> > 
+> > I strongly doubt that you really want to do that.  platform_devices
+> > can appear anywhere in the system, and many of them will end up being
+> > entirely outside the SoC, and hence outside of any SoC specific
+> > behaviour.
+> 
+> That is a valid observation, but I still think the way Kevin attempted to
+> use the power domain callbacks wasn't the right one for addressing this
+> particular issue.
+> 
+> > What is the use case for overriding every platform_device's PM ops?
+> 
+> The basic idea, which I agree with, is that we should avoid saving device
+> registers when the device is not going to be powered down (i.e. we only
+> want to gate its clock).  Since the saving of device registers is generally
+> done by device drivers' suspend callbacks, it's better to avoid executing
+> those callbacks until we know the devices in question are going to be powered
+> down.  That, however, is not known to the default platform bus type
+> callbacks that automatically invoke the drivers' callbacks if they exist.
+> Hence, it's better to replace the default platform bus type callbacks with
+> other ones that only disable the devices' clocks and let power domain
+> callbacks (that should know whether or not the devices will be powered down)
+> handle the rest.
 
-Ok, I'll probably submit a patch for the specific case of the slow
-light sensor to the IIO
-guys later on, and if I find cases where we get wins on other I2C
-heavy platforms
-(like ARM netbooks) I'll send those out as device-specific changes as well.
+Okay, I think I understand the scenario.  However, replacing the default
+behaviour for the entire platform_bus_type I still think is too large
+a hammer.  The default behaviour is to assume worst case behaviour for
+platform_devices, which means that it doesn't know what the parent of
+the device is going to do after the suspend event.  It could do
+anything, so platform_bus_type assumes the worst.  Since
+platform_devices can turn up anywhere, I think that is the right
+behaviour and any override really needs to be per-device.
 
-<snip>
+That said, I'll let you and Kevin work out what the /correct/ approach
+for doing those per-device overrides should be. :-)
 
-> It is used by subsystems where dependencies between devices are known to
-> generally follow the structure of the device hierarchy within the kernel
-> (i.e. they are well-defined buses with well-defined parents and children).
-
-Ok, thanks for the explanation!
-
-Sonny
+g.
