@@ -1,12 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH] nohz: delay going tickless under CPU load to
-	favor deeper C states
-Date: Thu,  7 Apr 2011 11:18:31 -0700
-Message-ID: <1302200311-24263-1-git-send-email-khilman__20353.9738817655$1302200361$gmane$org@ti.com>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH] nohz: delay going tickless under CPU load to
+ favor deeper C states
+Date: Thu, 07 Apr 2011 12:57:06 -0700
+Message-ID: <4D9E1712.5090600__4597.57344001463$1302206296$gmane$org@linux.intel.com>
+References: <1302200311-24263-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1302200311-24263-1-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,65 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
-Cc: Vincent Bour <v-bour@ti.com>, Nicole Chalhoub <n-chalhoub@ti.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Kevin Hilman <khilman@ti.com>
+Cc: Vincent Bour <v-bour@ti.com>, linux-kernel@vger.kernel.org, Nicole Chalhoub <n-chalhoub@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Nicole Chalhoub <n-chalhoub@ti.com>
+On 4/7/2011 11:18 AM, Kevin Hilman wrote:
+> From: Nicole Chalhoub<n-chalhoub@ti.com>
+>
+> While there is CPU load, continue the periodic tick in order to give
+> CPUidle another opportunity to pick a deeper C-state instead of
+> spending potentially long i
 
-While there is CPU load, continue the periodic tick in order to give
-CPUidle another opportunity to pick a deeper C-state instead of
-spending potentially long idle times in a shallow C-state.
 
-Long winded version:
+so I don't really like this patch. It's actually a pretty bad hack (I'm 
+sure it'll work somewhat)
+[and I mean that in the most positive sense of the word ;-) ]
 
-When going idle with a high load average, CPUidle menu governor will
-decide to pick a shallow C-state since one of the guiding principles
-of the menu governor is "The busier the system, the less impact of C
-states is acceptable" (taken from cpuidle/governors/menu.c.)  That
-makes perfect sense.
+what we really need instead, and this is inside cpuidle, is the option 
+to set a timer when we enter the non-deepest C state,
+so that if that timer fires we then reevaluate.
+The duration of that timer will be dependent on the C state (so should 
+come from the C state structure of the state we pick).
 
-However, there are missed power-saving opportunities for bursty
-workloads with long idle times (e.g. MP3 playback.)  Given such a
-workload, because of the load average, CPUidle tends to pick a shallow
-C-state.  Because we also go tickless, this shallow C-state is used
-for the duration of the idle period.  If the idle period is long, a
-deeper C state would've resulted in better power savings.
+For the most shallow one this will be a relatively short time, but for 
+the deepest-but-one this might be a lot longer time.
 
-This patch delays going tickless when there is a load such that on the
-next tick, the CPUidle governor will have another opportunity to to
-pick a deeper C-state.  Since the system will have been idle for
-potentially a full tick, the load average will drop and a deeper C
-state will most likely be chosen.
 
-Delaying NOHZ decisions until the load is zero improved the load
-estimation on our ARM/OMAP4 platform where HZ=128 and increased the
-time spent in deep C-states (~50% of idle time in C-states deeper than
-C1).  A power saving of ~20mA at battery level is observed during MP3
-playback on OMAP4/Blaze board.
+your patch abuses a completely different, unrelated timer for this, with 
+a pretty much unspecified frequency, that also has other side effects 
+that we probably don't want.
 
-Signed-off-by: Nicole Chalhoub <n-chalhoub@ti.com>
-Signed-off-by: Vincent Bour <v-bour@ti.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-[khilman@ti.com: rework changelog]
-Signed-off-by: Kevin Hilman <khilman@ti.com>
----
- kernel/time/tick-sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index d5097c4..418066c 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -324,7 +324,7 @@ void tick_nohz_stop_sched_tick(int inidle)
- 	} while (read_seqretry(&xtime_lock, seq));
- 
- 	if (rcu_needs_cpu(cpu) || printk_needs_cpu(cpu) ||
--	    arch_needs_cpu(cpu)) {
-+	    arch_needs_cpu(cpu) || this_cpu_load()) {
- 		next_jiffies = last_jiffies + 1;
- 		delta_jiffies = 1;
- 	} else {
--- 
-1.7.4
+it shouldn't be hard to do the right thing instead and make it a 
+separate timer with a per C state timeout.
+
+(and I would say a default timeout of 10x the break even time that we 
+already have in the structure)
