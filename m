@@ -1,18 +1,16 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [RFC][PATCH] Enable async suspend/resume of i2c
+From: Jonathan Cameron <jic23@cam.ac.uk>
+Subject: Re: [PATCH] Enable async suspend/resume on industrial IO
 	devices
-Date: Thu, 7 Apr 2011 10:33:38 +0200
-Message-ID: <20110407103338.5da7c092__30274.5188506835$1302165274$gmane$org@endymion.delvare>
-References: <20110406095240.410b4e7e@endymion.delvare>
-	<Pine.LNX.4.44L0.1104061043220.1907-100000@iolanthe.rowland.org>
-	<20110406223123.GA5297@opensource.wolfsonmicro.com>
-	<20110407095513.4c0b708e@endymion.delvare>
-	<BANLkTikDc6QhtK6F5VTX4iCkT0CAiXvztg@mail.gmail.com>
+Date: Thu, 07 Apr 2011 12:29:14 +0100
+Message-ID: <4D9DA00A.3030700__15929.9033497975$1302175778$gmane$org@cam.ac.uk>
+References: <1302057915-13549-1-git-send-email-sonnyrao@chromium.org>
+	<4D9C477E.4050400@cam.ac.uk>
+	<BANLkTikWBU-uW6xKwNt+zrS0JbDPOzdd0w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTikDc6QhtK6F5VTX4iCkT0CAiXvztg@mail.gmail.com>
+In-Reply-To: <BANLkTikWBU-uW6xKwNt+zrS0JbDPOzdd0w@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,31 +21,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Sonny Rao <sonnyrao@chromium.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, linux-pm@lists.linux-foundation.org
+Cc: devel@driverdev.osuosl.org, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Phillip Kurtenbach <pkurtenbach@gmail.com>, snanda@chromium.org, Andrew Morton <akpm@linux-foundation.org>, bleung@chromium.org, linux-pm@lists.linux-foundation.org, Manuel Stahl <manuel.stahl@iis.fraunhofer.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 7 Apr 2011 01:19:59 -0700, Sonny Rao wrote:
-> On Thu, Apr 7, 2011 at 12:55 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > Sonny, I would expect you to obtain the time saving by only switching
-> > the i2c client device to async suspend/resume. wasn't it the case? i2c
-> > bus device suspend/resume shouldn't matter, as the operation should be
-> > handled by the hardware (e.g. PCI) layer.
+On 04/06/11 23:47, Sonny Rao wrote:
+> On Wed, Apr 6, 2011 at 3:59 AM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
+>> On 04/06/11 03:45, Sonny Rao wrote:
+>>> Industrial I/O devices can sometimes take a long time to resume,
+>>> allowing them to be asynchronus saves 50ms on one light sensor
+>>>
+>> Hi Sonny,
+>>
+>> cc'd linux-iio
+>>
+>> I'm not particularly familiar with this.  Are there any disadvantages?
+>> I just wonder if it would be better to push this into individual drivers
+>> rather than the core?
 > 
-> I tried that first, and it looked like the client resume wouldn't start on the
-> async thread until the kernel resumed the i2c master which was
-
-This is expected... You need an operational i2c master to talk to the
-i2c client, regardless of async or not.
-
-> happening very late for some reason.  Maybe this was just a fluke of
-> the device ordering, but enabling it for both master and client allowed
-> the device resume to consistently happen much earlier.
-
-OK, that makes sense. I don't know how the synchronous resume decides
-in which order it processes the devices, presumably it simply walks the
-device tree. If you are unlucky and the i2c master is near the end,
-then indeed the asynchronous resume of the i2c client device alone may
-save nothing at all. I get it now.
-
--- 
-Jean Delvare
+> Yeah we could do it that way too, I sent out a similar patch for i2c
+> and people were asking if it was entirely safe.  It sounds like it may
+> depend on dependencies between devices.
+> 
+> Do you know if any of the devices in iio have inter-device dependencies?
+> I was under the impression they were mostly stand-alone sensors that
+> ordinarily wouldn't, but I haven't tried to audit all of them or anything.
+Mostly I think is the key word here.  Right now I don't think we have anything
+that would have a problem, but putting something like that in the core is
+liable to bite sometime in the future.  For now at least I think I'd prefer
+to see it in an individual driver.
