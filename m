@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [RFC][PATCH] PM / Platform: Remove __weak
-	definitions of runtime PM callbacks
-Date: Thu, 7 Apr 2011 07:29:45 +0200
-Message-ID: <201104070729.45484.rjw__14701.7983058051$1302154220$gmane$org@sisk.pl>
-References: <201103270058.41632.rjw@sisk.pl> <87zko3dn4b.fsf@ti.com>
+ definitions of runtime PM callbacks
+Date: Wed, 6 Apr 2011 22:44:59 -0700
+Message-ID: <20110407054459.GB6427__44906.7571353682$1302155155$gmane$org@angua.secretlab.ca>
+References: <201103270058.41632.rjw@sisk.pl>
+ <87zko3dn4b.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <87zko3dn4b.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -19,10 +21,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kevin Hilman <khilman@ti.com>
-Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, grant.likely@secretlab.ca, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, April 07, 2011, Kevin Hilman wrote:
+On Wed, Apr 06, 2011 at 03:35:32PM -0700, Kevin Hilman wrote:
 > Hi Rafael, Magnus,
 > 
 > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
@@ -47,9 +49,7 @@ On Thursday, April 07, 2011, Kevin Hilman wrote:
 > 
 > 1) new device power domains (presumably preferred)
 > 2) platform_bus_set_pm_ops() (disliked by many)
-
-Hmm, I wasn't aware of that one, will have a look.
-
+> 
 > and now the new one you create here
 > 
 > 3) platform_set_runtime_pm_ops()
@@ -58,26 +58,12 @@ Hmm, I wasn't aware of that one, will have a look.
 > targetted only at runtime PM ops, and also has all the same problems
 > that have been discussed before.  Namely, it overrides the pm ops for
 > *every* device on the platform_bus, instead of targetting only specific
+> devices.  With the new device power domains, we can target specific
 > devices.
-
-This is not a problem for this particular use case.  We really want to
-replace the PM ops for all of the platform devices on that platform.
-
-Though I agree it probably makes more sense to use the existing
-platform_bus_set_pm_ops() for this purpose.
-
-> With the new device power domains, we can target specific devices.
 > 
 > Wouldn't the right way to go here be to convert mach-shmobile over to
 > using device power domains?
 
-Not for this particular purpose.
- 
-> The patch below against v2.6.39-rc2 combined with your patch (minus the
-> mach-shmobile/* changes) should do it.
+I agree.  +1
 
-Unfortunately it would conflict with work in progress introducing _real_
-power domains on shmobile.
-
-Thanks,
-Rafael
+g.
