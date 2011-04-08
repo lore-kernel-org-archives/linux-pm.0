@@ -1,16 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
-Date: Fri, 8 Apr 2011 08:25:06 +0200
-Message-ID: <20110408062506.GB1596__18782.2816581049$1302244126$gmane$org@ucw.cz>
-References: <alpine.LFD.2.02.1103232321070.3848@x980>
-	<alpine.LFD.2.02.1103241929450.16085@x980>
-	<20110325113048.GC29521@elte.hu> <201103252333.23880.rjw@sisk.pl>
+Subject: Re: [PATCH 1/2 2.6.37.stable] intel_idle:
+	disable	NHM/WSM HW C-state auto-demotion
+Date: Fri, 8 Apr 2011 15:16:30 +0200
+Message-ID: <20110408131630.GA18525@atrey.karlin.mff.cuni.cz>
+References: <alpine.LFD.2.02.1103222222490.10489@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201103252333.23880.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.02.1103222222490.10489@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +19,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > So how does your reasoning not apply to those drivers? There's several which 
-> > are older than APM support.
-> > 
-> > We had this really big battle about x86/Voyager two years ago, which x86 
-> > subarchitecture literally had just a single user left, and the code was more 
-> > intrusive than APM. Even there after much flaming the eventual consensus was 
-> > that we'd accept it back if it was done cleanly, as part of the new-style 
-> > x86_platform code.
-> > 
-> > Given that APM fits into the current PM frameworks there's no such problem here 
-> > that i can see.
+> Hardware C-state auto-demotion is a mechanism where the HW overrides
+> the OS C-state request, instead demoting to a shallower state,
+> which is less expensive, but saves less power.
 > 
-> Well, it kind of does but not really. :-)
+> Modern Linux should generally get exactly the states it requests.
+> In particular, when a CPU is taken off-line, it must not be demoted, else
+> it can prevent the entire package from reaching deep C-states.
 > 
-> The main problem with APM is that nobody really works on it and I'm not sure
-> if there are any active users.  At least no one reports any problems with it,
-> which is kind of surprising, given the number of chages we've made in the PM
-> core for the last couple of years.  So quite likely it's just become
-> non-functional over time anyway, but we have no confirmation.
+> https://bugzilla.kernel.org/show_bug.cgi?id=25252
+> 
+>  
+> +#define MSR_NHM_SNB_PKG_CST_CFG_CTL	0x000000e2
+> +#define NHM_C3_AUTO_DEMOTE		(1UL << 25)
+> +#define NHM_C1_AUTO_DEMOTE		(1UL << 26)
+> +
+....
+> @@ -85,6 +86,12 @@ static int intel_idle(struct cpuidle_dev
+>  static struct cpuidle_state *cpuidle_state_table;
+>  
+>  /*
+> + * Hardware C-state auto-demotion may not always be optimal.
+> + * Indicate which enable bits to clear here.
+> + */
+> +static unsigned long long auto_demotion_disable_flags;
 
-It was working ok last time I tried -- cca 6/2010.
-								Pavel
+Why long long here, but long above?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
