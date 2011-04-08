@@ -1,15 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2 2.6.37.stable] intel_idle:
-	disable	NHM/WSM HW C-state auto-demotion
-Date: Fri, 8 Apr 2011 15:16:30 +0200
-Message-ID: <20110408131630.GA18525@atrey.karlin.mff.cuni.cz>
+Subject: Re: [stable] [PATCH 1/2 2.6.37.stable]
+	intel_idle:	disable NHM/WSM HW C-state auto-demotion
+Date: Fri, 8 Apr 2011 15:16:45 +0200
+Message-ID: <20110408131645.GB18525@atrey.karlin.mff.cuni.cz>
 References: <alpine.LFD.2.02.1103222222490.10489@x980>
+	<20110323225420.GE27334@kroah.com>
+	<alpine.LFD.2.02.1103232252000.12911@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1103222222490.10489@x980>
+In-Reply-To: <alpine.LFD.2.02.1103232252000.12911@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,34 +25,32 @@ To: Len Brown <lenb@kernel.org>
 Cc: linux-pm@lists.linux-foundation.org, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+> On Wed, 23 Mar 2011, Greg KH wrote:
+> 
+> > On Tue, Mar 22, 2011 at 10:24:43PM -0400, Len Brown wrote:
+> > > From: Len Brown <len.brown@intel.com>
+> > > 
+> > > upstream 14796fca2bd22acc73dd0887248d003b0f441d08
+> > > 
+> > > Hardware C-state auto-demotion is a mechanism where the HW overrides
+> > > the OS C-state request, instead demoting to a shallower state,
+> > > which is less expensive, but saves less power.
+> > > 
+> > > Modern Linux should generally get exactly the states it requests.
+> > > In particular, when a CPU is taken off-line, it must not be demoted, else
+> > > it can prevent the entire package from reaching deep C-states.
+> > > 
+> > > https://bugzilla.kernel.org/show_bug.cgi?id=25252
+> > > 
+> > > Signed-off-by: Len Brown <len.brown@intel.com>
+> > 
+> > This patch doesn't apply to the .38-stable tree, and it also needs to go
+> > there, right?  Can you please send a version that I can apply?
+> 
+> it is already present in 2.6.38, as is the next one.
+> That is why the subject specified 2.6.37.stable.
 
-> Hardware C-state auto-demotion is a mechanism where the HW overrides
-> the OS C-state request, instead demoting to a shallower state,
-> which is less expensive, but saves less power.
-> 
-> Modern Linux should generally get exactly the states it requests.
-> In particular, when a CPU is taken off-line, it must not be demoted, else
-> it can prevent the entire package from reaching deep C-states.
-> 
-> https://bugzilla.kernel.org/show_bug.cgi?id=25252
-> 
->  
-> +#define MSR_NHM_SNB_PKG_CST_CFG_CTL	0x000000e2
-> +#define NHM_C3_AUTO_DEMOTE		(1UL << 25)
-> +#define NHM_C1_AUTO_DEMOTE		(1UL << 26)
-> +
-....
-> @@ -85,6 +86,12 @@ static int intel_idle(struct cpuidle_dev
->  static struct cpuidle_state *cpuidle_state_table;
->  
->  /*
-> + * Hardware C-state auto-demotion may not always be optimal.
-> + * Indicate which enable bits to clear here.
-> + */
-> +static unsigned long long auto_demotion_disable_flags;
-
-Why long long here, but long above?
+Why is it stable material? Seems like small power optimalization to me...
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
