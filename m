@@ -1,16 +1,15 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH] nohz: delay going tickless under CPU load to
-	favor deeper C states
-Date: Thu, 07 Apr 2011 15:38:04 -0700
-Message-ID: <87k4f5662b.fsf__31285.4755241007$1302216079$gmane$org@ti.com>
-References: <1302200311-24263-1-git-send-email-khilman@ti.com>
-	<4D9E1712.5090600@linux.intel.com>
+Subject: Re: [PATCH/RFC 0/6] ARM: runtime PM: consolidate runtime
+	PM implementations
+Date: Thu, 07 Apr 2011 17:32:42 -0700
+Message-ID: <874o694m6t.fsf__24983.3279675387$1302226233$gmane$org@ti.com>
+References: <1302134569-22825-1-git-send-email-khilman@ti.com>
+	<871v1eaz0u.fsf@ti.com> <87hbaa7zhs.fsf@ti.com>
+	<201104080031.23452.rjw@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4D9E1712.5090600@linux.intel.com> (Arjan van de Ven's message of
-	"Thu, 07 Apr 2011 12:57:06 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,73 +19,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Vincent Bour <v-bour@ti.com>, linux-kernel@vger.kernel.org, Nicole Chalhoub <n-chalhoub@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@suse.com>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Arjan,
+"Rafael J. Wysocki" <rjw@suse.com> writes:
 
-Arjan van de Ven <arjan@linux.intel.com> writes:
-
-> On 4/7/2011 11:18 AM, Kevin Hilman wrote:
->> From: Nicole Chalhoub<n-chalhoub@ti.com>
->>
->> While there is CPU load, continue the periodic tick in order to give
->> CPUidle another opportunity to pick a deeper C-state instead of
->> spending potentially long i
+> On Thursday, April 07, 2011, Kevin Hilman wrote:
+>> Kevin Hilman <khilman@ti.com> writes:
+>> 
+>> [...]
+>> 
+>> > Replacing the PM ops for all devices was done on OMAP and SH-mobile
+>> > because that was the only approach we had.  Now that we have device
+>> > power domains (thanks Rafael!), we can be more selective about which
+>> > devices to apply them to.
+>> >
+>> > Note that my RFC patch/series did not do the selective part of deciding
+>> > which devices to override and which ones not to, that part will be
+>> > platform specific.  
+>> 
+>> Actually, thinking about this a little more, my patch actually does
+>> select only relevant devices, and not *all* platform devices.
+>> 
+>> In my patch, the device power domain pointers are only added for devices
+>> where a clk_get() actually succeeds.  In the original version, the
+>> runtime PM hooks are overridden for *all* platform devices, but ones
+>> that have no clock (or where clk_get() failed) have the additional
+>> overhead of still calling the custom PM ops, but the custom ops have
+>> nothing to do.
 >
+> As I wrote in another message to Grant, the problem basically is that
+> the platform bus type behavior is not the desirable one.  Namely, I don't
+> generally want device driver callbacks to be invoked until we know that
+> power will be removed from the devices.  
+
+Ah, I didn't know that was a goal.  I totally agree there.
+
+> However, the platform bus type executes driver callbacks automatically
+> if they exist.  This currently is unavoidable, because power domain
+> callbacks are executed in addition to and not instead the bus type
+> callbacks.
 >
-> so I don't really like this patch. It's actually a pretty bad hack
-> (I'm sure it'll work somewhat)
-> [and I mean that in the most positive sense of the word ;-) ]
-
-I'll take it as a complement then. :)
-
-I agree though, it did feel somewhat like we were attempting to fix the
-problem in the wrong place.
-
-> what we really need instead, and this is inside cpuidle, is the option
-> to set a timer when we enter the non-deepest C state,
-> so that if that timer fires we then reevaluate.
-> The duration of that timer will be dependent on the C state (so should
-> come from the C state structure of the state we pick).
-
-OK, this sounds like a good idea.  Will experiment.
-
-Of course, setting new timers can affect the governors decision.  To
-avoid that, I guess this timer will need to be one-shot, and only set
-after the CPUidle governor has made a decision, otherwise that timer
-itself will affect tick_nohz_get_sleep_length() which the governor uses
-to pick a C-state.
-
-> For the most shallow one this will be a relatively short time, but for
-> the deepest-but-one this might be a lot longer time.
+> We've discussed that a bit at the LF Collab Summit with Grant and Paul and
+> the conclusion is that to address this particular problem we'll need to change
+> the core so that if there is a power domain for the given device, the
+> power domain callbacks will be executed first and if they return a specific
+> error code, the core will execute the bus type callbacks.  For devices that
+> don't belong to any power domain, the bus type callbacks will be executed
+> (which is the current behavior).
 >
-> your patch abuses a completely different, unrelated timer for this,
-> with a pretty much unspecified frequency, that also has other side
-> effects that we probably don't want.
+> I'm going to post a patch along these lines early next week.  Then, we
+> can simply move the management of device clocks, the execution of device
+> driver callbacks and the power removal into power domain callbacks.
 
-What side effects come to mind?  The only side effects that I could
-think of were (potentially) unwanted wakeups from C1.  However, since C1
-is presumably cheap to enter (and exit), it seemed like a worthwhile
-cost since you're almost certain to pick a deeper C state after wakeup.
+Sounds good to me.
 
-That being said, your idea of per C-state timer is much better than
-relying on the scheduler tick.  On most ARM systems, HZ is still pretty
-low (around 100), the time between ticks is relatively long, but on a
-HZ=1000 setup, I could see the extra wakeups having a penalty of their
-own.
+> At that point it may be possible to share some code between shmobile and
+> OMAP, but I'm not sure yet how much of the code may be shared and it what
+> way exactly.
 
-> it shouldn't be hard to do the right thing instead and make it a
-> separate timer with a per C state timeout.
-
-Agreed.  Will give it a try.
-
-> (and I would say a default timeout of 10x the break even time that we
-> already have in the structure)
-
-OK.
-
-Thanks for the review and suggestions,
+I'll have a look again after you post your series, but I'm pretty sure
+any runtime PM implementation based on basic clock gating could be
+shared.  Basically, the idea is in the absence of real power domains, to
+create a default "virtual" powerdomain that contains every device with a
+clock.  This would capture all on-chip devices into a single power domain.
+The device powerdomain callbacks for these would do the basic clock
+gating (as is done in mach-shmobile/pm_runtime.c).
 
 Kevin
