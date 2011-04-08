@@ -1,15 +1,17 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH/RFC 0/6] ARM: runtime PM: consolidate runtime
-	PM implementations
-Date: Thu, 07 Apr 2011 17:32:42 -0700
-Message-ID: <874o694m6t.fsf__24983.3279675387$1302226233$gmane$org@ti.com>
-References: <1302134569-22825-1-git-send-email-khilman@ti.com>
-	<871v1eaz0u.fsf@ti.com> <87hbaa7zhs.fsf@ti.com>
-	<201104080031.23452.rjw@suse.com>
+From: Sonny Rao <sonnyrao@chromium.org>
+Subject: Re: [PATCH] Enable async suspend/resume on industrial IO
+	devices
+Date: Thu, 7 Apr 2011 20:26:27 -0700
+Message-ID: <BANLkTikRPz_NYY=mJ8Mqe9k2cyu-ouC4iw__23258.3593846813$1302233352$gmane$org@mail.gmail.com>
+References: <1302057915-13549-1-git-send-email-sonnyrao@chromium.org>
+	<4D9C477E.4050400@cam.ac.uk>
+	<BANLkTikWBU-uW6xKwNt+zrS0JbDPOzdd0w@mail.gmail.com>
+	<4D9DA00A.3030700@cam.ac.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4D9DA00A.3030700@cam.ac.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,72 +21,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@suse.com>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Grant Likely <grant.likely@secretlab.ca>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: devel@driverdev.osuosl.org, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Phillip Kurtenbach <pkurtenbach@gmail.com>, snanda@chromium.org, Andrew Morton <akpm@linux-foundation.org>, bleung@chromium.org, linux-pm@lists.linux-foundation.org, Manuel Stahl <manuel.stahl@iis.fraunhofer.de>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@suse.com> writes:
-
-> On Thursday, April 07, 2011, Kevin Hilman wrote:
->> Kevin Hilman <khilman@ti.com> writes:
->> 
->> [...]
->> 
->> > Replacing the PM ops for all devices was done on OMAP and SH-mobile
->> > because that was the only approach we had.  Now that we have device
->> > power domains (thanks Rafael!), we can be more selective about which
->> > devices to apply them to.
->> >
->> > Note that my RFC patch/series did not do the selective part of deciding
->> > which devices to override and which ones not to, that part will be
->> > platform specific.  
->> 
->> Actually, thinking about this a little more, my patch actually does
->> select only relevant devices, and not *all* platform devices.
->> 
->> In my patch, the device power domain pointers are only added for devices
->> where a clk_get() actually succeeds.  In the original version, the
->> runtime PM hooks are overridden for *all* platform devices, but ones
->> that have no clock (or where clk_get() failed) have the additional
->> overhead of still calling the custom PM ops, but the custom ops have
->> nothing to do.
+On Thu, Apr 7, 2011 at 4:29 AM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
+> On 04/06/11 23:47, Sonny Rao wrote:
+>> On Wed, Apr 6, 2011 at 3:59 AM, Jonathan Cameron <jic23@cam.ac.uk> wrote:
+>>> On 04/06/11 03:45, Sonny Rao wrote:
+>>>> Industrial I/O devices can sometimes take a long time to resume,
+>>>> allowing them to be asynchronus saves 50ms on one light sensor
+>>>>
+>>> Hi Sonny,
+>>>
+>>> cc'd linux-iio
+>>>
+>>> I'm not particularly familiar with this. =A0Are there any disadvantages?
+>>> I just wonder if it would be better to push this into individual drivers
+>>> rather than the core?
+>>
+>> Yeah we could do it that way too, I sent out a similar patch for i2c
+>> and people were asking if it was entirely safe. =A0It sounds like it may
+>> depend on dependencies between devices.
+>>
+>> Do you know if any of the devices in iio have inter-device dependencies?
+>> I was under the impression they were mostly stand-alone sensors that
+>> ordinarily wouldn't, but I haven't tried to audit all of them or anythin=
+g.
+> Mostly I think is the key word here. =A0Right now I don't think we have a=
+nything
+> that would have a problem, but putting something like that in the core is
+> liable to bite sometime in the future. =A0For now at least I think I'd pr=
+efer
+> to see it in an individual driver.
 >
-> As I wrote in another message to Grant, the problem basically is that
-> the platform bus type behavior is not the desirable one.  Namely, I don't
-> generally want device driver callbacks to be invoked until we know that
-> power will be removed from the devices.  
+Ok sure, FYI, I had a similar discussion with the i2c folks and I
+think the consensus was to do it per-driver as well.
+The driver I was interested in was the tsl258x which isn't in staging
+yet.  When it goes in, I shall submit my patch on top of that.
 
-Ah, I didn't know that was a goal.  I totally agree there.
 
-> However, the platform bus type executes driver callbacks automatically
-> if they exist.  This currently is unavoidable, because power domain
-> callbacks are executed in addition to and not instead the bus type
-> callbacks.
->
-> We've discussed that a bit at the LF Collab Summit with Grant and Paul and
-> the conclusion is that to address this particular problem we'll need to change
-> the core so that if there is a power domain for the given device, the
-> power domain callbacks will be executed first and if they return a specific
-> error code, the core will execute the bus type callbacks.  For devices that
-> don't belong to any power domain, the bus type callbacks will be executed
-> (which is the current behavior).
->
-> I'm going to post a patch along these lines early next week.  Then, we
-> can simply move the management of device clocks, the execution of device
-> driver callbacks and the power removal into power domain callbacks.
-
-Sounds good to me.
-
-> At that point it may be possible to share some code between shmobile and
-> OMAP, but I'm not sure yet how much of the code may be shared and it what
-> way exactly.
-
-I'll have a look again after you post your series, but I'm pretty sure
-any runtime PM implementation based on basic clock gating could be
-shared.  Basically, the idea is in the absence of real power domains, to
-create a default "virtual" powerdomain that contains every device with a
-clock.  This would capture all on-chip devices into a single power domain.
-The device powerdomain callbacks for these would do the basic clock
-gating (as is done in mach-shmobile/pm_runtime.c).
-
-Kevin
+Thanks,
+Sonny
