@@ -1,13 +1,12 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [SUBMIT REQUEST] cpupowerutils for linux-next
-Date: Mon, 11 Apr 2011 13:58:59 +1000
-Message-ID: <20110411135859.a59fda1f.sfr__26287.6034867533$1302494390$gmane$org@canb.auug.org.au>
-References: <201104041510.56570.trenn@suse.de>
-	<20110411135730.a6498f6f.sfr@canb.auug.org.au>
+From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Subject: [RFC PATCH V2 0/4] cpuidle: global registration of idle
+	states with	per-cpu statistics
+Date: Mon, 11 Apr 2011 12:45:44 +0530
+Message-ID: <20110411071508.6348.67918.stgit__42960.1710675799$1302506266$gmane$org@tringupt.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7857432788901042849=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110411135730.a6498f6f.sfr@canb.auug.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,64 +14,72 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Greg Kroah-Hartman <gregkh@novell.com>, Andreas Herrmann <andreas.herrmann3@amd.com>, LKML <linux-kernel@vger.kernel.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org, peterz@infradead.org
+Cc: karthik-dp@ti.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---===============7857432788901042849==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_Apr_2011_13_58_59_+1000_MOg.ASDem_uxf4Px"
+The core change is to split the cpuidle_device structure into parts
+that can be global and parts that has to remain per-cpu.  The per-cpu
+pieces are mostly generic statistics that can be independent of
+current running driver. 
 
---Signature=_Mon__11_Apr_2011_13_58_59_+1000_MOg.ASDem_uxf4Px
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Motivation:
+* Simplify the cpuidle subsystem framework and have 
+  registration/unregistration done by single cpu.
 
-Hi Thomas,
+* Have single copy of cpuidle_states structure and thus reduce 
+  memory consumption.
 
-On Mon, 11 Apr 2011 13:57:30 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> > git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git cpup=
-owerutils
->=20
-> OK, I have added this tree starting tomorrow.
+* Only in very rare cases asymmetric C-states exist which
+  can be handled within the cpuidle driver. Most architectures
+  do not have asymmetric C-states.
 
-I just have you listed as the contact for any problems with this tree.
-Is that sufficient?  If there are others (or a mailing list) that should
-be notified as well, please let me know.
+* References: 
+	https://lkml.org/lkml/2011/2/10/37
+	https://lkml.org/lkml/2011/3/25/52
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The first couple of patches in the series move the statistics accounting 
+part to withing cpuidle driver; which ensures correctness in updation
+of statistics. Moving statistics within cpuidle driver is also required to
+make cpuidle_state not writable and thus global. Third patch splits 
+the per-cpu part out of cpuidle_state structure and the fourth patch 
+makes the cpuidle_state global. Please refer to 
+https://lkml.org/lkml/2011/3/25/52 . Version 1 of the series is at
+https://lkml.org/lkml/2011/3/22/161
 
---Signature=_Mon__11_Apr_2011_13_58_59_+1000_MOg.ASDem_uxf4Px
-Content-Type: application/pgp-signature
+This patch series applies on top of 2.6.38 and is tested on x86 Nehalem 
+system with multiple ACPI C-States.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+To Do:
 
-iQEcBAEBAgAGBQJNonyDAAoJEDMEi1NhKgbs8WAIAI0B3GOlDEUzOXRT/Zst9N5h
-udpSEM+Bx/AYGFP/7oEWp/xanW7sPQAwNIOEuxxKhkVBfIL2hQsZcYgRjTq2cAqj
-4SABpv3Spg8WHwM/M8k3Ej18OoIkX5aR6Q0CsM8V2oHyeX8OQs6/G7gV1N5ECanT
-VXLbu8Z/YdH0LRjAeZBL/jAbDKdqdX6RzctMvvtXUpm4+lDa0WxVCAegdufMIqK3
-5tpsQPosQpOjhW+Lh2/1pmQeZ9bzIhTeBXq1ytQFAPTOsHhfoKzADs2ij0mFrrwa
-aejALky42DSn+J8uTti4LHUGah0j2qxFxRzQiI27spgswqTuLeLfC4hnJLE3qJA=
-=jK+5
------END PGP SIGNATURE-----
+1. This patch series works only for acpi_idle driver. Changes would
+  have to be done for other idle drivers i.e. intel_idle, at91_idle_driver,
+  davinci_idle_driver, kirkwood_idle_driver, omap3_idle_driver.
 
---Signature=_Mon__11_Apr_2011_13_58_59_+1000_MOg.ASDem_uxf4Px--
+2. Make ladder governor follow changed API. Currently it works for menu
+  governor only.
 
---===============7857432788901042849==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Thanks,
+-Trinabh
+
+---
+
+Trinabh Gupta (4):
+      Single/Global registration of idle states
+      Split cpuidle_state structure and move per-cpu statistics fields
+      Remove CPUIDLE_FLAG_IGNORE and dev->prepare()
+      Move dev->last_residency update to driver enter routine; remove dev->last_state
 
 
---===============7857432788901042849==--
+ drivers/acpi/processor_driver.c  |   18 ----
+ drivers/acpi/processor_idle.c    |  184 ++++++++++++++++++++++++++++++--------
+ drivers/cpuidle/cpuidle.c        |   80 +++++------------
+ drivers/cpuidle/driver.c         |   26 +++++
+ drivers/cpuidle/governors/menu.c |   25 +++--
+ drivers/cpuidle/sysfs.c          |   18 ++--
+ include/linux/cpuidle.h          |   49 ++++++----
+ 7 files changed, 247 insertions(+), 153 deletions(-)
+
+--
