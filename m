@@ -1,17 +1,14 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86 APM: delete Linux kernel APM support
-Date: Mon, 11 Apr 2011 15:05:05 +0200
-Message-ID: <20110411130505.GA3301__30986.5744704895$1302527376$gmane$org@ucw.cz>
-References: <alpine.LFD.2.02.1103232321070.3848@x980>
-	<alpine.LFD.2.02.1103241929450.16085@x980>
-	<20110325113048.GC29521@elte.hu> <201103252333.23880.rjw@sisk.pl>
-	<20110408062506.GB1596@ucw.cz> <4D9F7630.1090503@zytor.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
+ for interrupt handlers
+Date: Mon, 11 Apr 2011 12:08:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104111202470.1975-100000@iolanthe.rowland.org>
+References: <4DA3229C.8070808@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4D9F7630.1090503@zytor.com>
+In-Reply-To: <4DA3229C.8070808@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,29 +18,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org
+To: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Mon, 11 Apr 2011, Sylwester Nawrocki wrote:
 
-> >> Well, it kind of does but not really. :-)
-> >>
-> >> The main problem with APM is that nobody really works on it and I'm not sure
-> >> if there are any active users.  At least no one reports any problems with it,
-> >> which is kind of surprising, given the number of chages we've made in the PM
-> >> core for the last couple of years.  So quite likely it's just become
-> >> non-functional over time anyway, but we have no confirmation.
-> > 
-> > It was working ok last time I tried -- cca 6/2010.
+> > +  void pm_runtime_irq_safe(struct device *dev);
+> > +    - set the power.irq_safe flag for the device, causing the runtime-PM
+> > +      callbacks to be invoked with interrupts disabled
+> > +
+> >    void pm_runtime_mark_last_busy(struct device *dev);
+> >      - set the power.last_busy field to the current time
+> >  
+> > @@ -438,6 +454,16 @@ pm_runtime_suspended()
+> >  pm_runtime_mark_last_busy()
+> >  pm_runtime_autosuspend_expiration()
+> >  
+> > +If pm_runtime_irq_safe() has been called for a device then the following helper
+> > +functions may also be called in interrupt context:
 > 
-> What aspects of it did you test, and on what platform?
+> I was wondering what is the proper usage of this API. From a point of view of
+> a driver, does it mean that in runtime_resume/runtime_suspend helpers any
+> blocking calls cannot be used, so the device driver is prepared for situations
+> when some other subsystem invokes pm_runtime_irq_safe() on its device?
 
-thinkpad 560X.
+I should have mentioned this in the documentation.  Yes, if 
+pm_runtime_irq_safe() has been called for a device then that device's 
+runtime_resume and runtime_suspend helpers must be able to run in 
+interrupt context.  Hence they must not make any blocking calls.
 
-I tested basic boot, IIRC it did turn backlight off properly in
-screensaver and even suspend worked.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+However, this doesn't mean _all_ runtime_resume/runtime_suspend methods 
+have to be IRQ-safe.  Only those for which pm_runtime_irq_safe() has 
+been called.
+
+A driver shouldn't worry about some other subsystem calling
+pm_runtime_irq_safe() for one of its devices.  If that ever happened,
+it would be a gross violation of proper layering.
+
+> Or is pm_runtime_irq_safe() intended to be called only by the device driver
+> in such case?
+
+Yes, that's right.
+
+> I'd like to use blocking calls for a voltage regulator control within
+> the runtime PM helpers in the driver but I'm not sure whether this wouldn't
+> violate the API.
+
+You should be okay.  Just bear in mind that it means the voltage 
+regulator's parent won't be able to runtime suspend.  If the regulator 
+is a platform device with no meaningful parent then of course this 
+won't matter.
+
+Alan Stern
