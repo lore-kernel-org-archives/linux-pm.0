@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
- for interrupt handlers
-Date: Mon, 11 Apr 2011 14:37:11 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1104111434390.1975-100000@iolanthe.rowland.org>
-References: <4DA3386F.8090609@samsung.com>
+Subject: Re: [RESEND PATCH] PM: add a config that give warnning
+ if driver take too long on suspend/resume.
+Date: Mon, 11 Apr 2011 14:42:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104111439430.1975-100000@iolanthe.rowland.org>
+References: <BANLkTincwnm_2DBKibNP-JC5fqKJf5MWXQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4DA3386F.8090609@samsung.com>
+In-Reply-To: <BANLkTincwnm_2DBKibNP-JC5fqKJf5MWXQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,30 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Jiejing.Zhang " <kzjeef@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 11 Apr 2011, Sylwester Nawrocki wrote:
+On Tue, 12 Apr 2011, Jiejing.Zhang  wrote:
 
-> The regulator driver is a PMIC that uses I2C communication to control
-> the voltage regulators. So to be able to control the regulator supplying
-> the device, the runtime_resume/suspend callbacks need to be called with 
-> interrupts enabled. Otherwise the I2C communication wouldn't work.
+> > Bear in mind that rotating disk drives typically take several hundred
+> > milliseconds to spin down.  The warning would always trigger.  That
+> > doesn't seem particularly useful.
+> >
+> 
+> I think it's better change the default value 0 to disable it, enable it only
+> some one write a threshold.
+> 
+> First of all, it's a debug function (depends on PM_DEBUG), It's useful
+> in embedded area, like mobile phone or e-book, they are suspend/resume very
+> frequently and required resume as quick as possible. This debug function
+> can used to figure out which driver(s) is/are slow on suspend/resume.
+> 
+> I fact that embedded engineer meets a lot is, after some development the
+> total time of suspend/resume is become slow, since there was a lot driver
+> may affect the total time, it's function can help them to figure out which
+> driver is slow, and it's make life easier.
 
-Right.  Which obviously means that its callbacks can't be IRQ-safe.
+Maybe you should mention this in the patch description.
 
-> I don't really need runtime_suspend/resume to be IRQ-safe, just wanted 
-> to make sure that in some conditions some other subsystem does not request that.
-
-If it does happen, you can track down the person responsible for 
-writing that function call, and complain loudly!  :-)
-
-> As I have seen there is no runtime PM call to clear the power.irq_safe
-> flags once it is set, so it looked like pm_runtime_irq_safe() is a basically 
-> a "one-time" call.
-
-Yes.  The use cases I could think of were all for platform devices 
-where there would never be any reason to clear the flag.
+You know, the "initcall_debug" boot parameter will cause the kernel to 
+log the amount of time each device spends doing suspend and resume.
 
 Alan Stern
