@@ -1,14 +1,14 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH ver. 2] PM: add synchronous runtime interface
-	for interrupt	handlers
-Date: Mon, 11 Apr 2011 19:20:47 +0200
-Message-ID: <4DA3386F.8090609@samsung.com>
-References: <Pine.LNX.4.44L0.1104111202470.1975-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RESEND PATCH] PM: add a config that give warnning
+ if driver take too long on suspend/resume.
+Date: Tue, 12 Apr 2011 12:09:14 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104121200530.2000-100000@iolanthe.rowland.org>
+References: <BANLkTik8bWF8c+BmrzzqOZiWWwujskgs7w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <Pine.LNX.4.44L0.1104111202470.1975-100000@iolanthe.rowland.org>
+In-Reply-To: <BANLkTik8bWF8c+BmrzzqOZiWWwujskgs7w@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,83 +18,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Partha Basak <p-basak2@ti.com>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Jiejing.Zhang " <kzjeef@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/11/2011 06:08 PM, Alan Stern wrote:
-> On Mon, 11 Apr 2011, Sylwester Nawrocki wrote:
+On Tue, 12 Apr 2011, Jiejing.Zhang  wrote:
+
+> Thanks for you reply.
+> Yes, you are right, this parameter can print out log of information,
+> also can echo 1 > /sys/module/kernel/parameters/initcall_debug to enable this.
+> but the output is really not good to read, and hard to filter out
+> what's is time consume device:
+
+...
+
+> Do you think I add a time threshold and a better readable name in
+> initcall_debug is a good idea ?
+> I've tried add some threshold into this code, but I don't know where
+> to put the threshold parameter.
+> The initcall_debug is a module parameter of kernel/main.c, I don't
+> think add some threshold here is a good idea.
 > 
->>> +  void pm_runtime_irq_safe(struct device *dev);
->>> +    - set the power.irq_safe flag for the device, causing the runtime-PM
->>> +      callbacks to be invoked with interrupts disabled
->>> +
->>>    void pm_runtime_mark_last_busy(struct device *dev);
->>>      - set the power.last_busy field to the current time
->>>  
->>> @@ -438,6 +454,16 @@ pm_runtime_suspended()
->>>  pm_runtime_mark_last_busy()
->>>  pm_runtime_autosuspend_expiration()
->>>  
->>> +If pm_runtime_irq_safe() has been called for a device then the following helper
->>> +functions may also be called in interrupt context:
->>
->> I was wondering what is the proper usage of this API. From a point of view of
->> a driver, does it mean that in runtime_resume/runtime_suspend helpers any
->> blocking calls cannot be used, so the device driver is prepared for situations
->> when some other subsystem invokes pm_runtime_irq_safe() on its device?
+> Also, I think the mission of my patch, and initcall_debug is
+> different, my patch is aim to filter out some really time consuming
+> device, but initcall_debug seems to figure out where kernel died when
+> doing init/suspend/resume operation. It's hard to merge two together.
 > 
-> I should have mentioned this in the documentation.  Yes, if 
-> pm_runtime_irq_safe() has been called for a device then that device's 
-> runtime_resume and runtime_suspend helpers must be able to run in 
-> interrupt context.  Hence they must not make any blocking calls.
+> my patch put this option under PM_DEBUG, and the threshold file under
+> /sys/power/device_suspend_time_threshold
 > 
-> However, this doesn't mean _all_ runtime_resume/runtime_suspend methods 
-> have to be IRQ-safe.  Only those for which pm_runtime_irq_safe() has 
-> been called.
-
-Thank you for the clarification.
-
-OK, my main concerns was, who decides whether the specific runtime PM
-helpers are IRQ-safe or not. But indeed, it now makes a little sense
-to me to impose such a requirement on all runtime_suspend/resume helpers.
-
+> the output is like this:
 > 
-> A driver shouldn't worry about some other subsystem calling
-> pm_runtime_irq_safe() for one of its devices.  If that ever happened,
-> it would be a gross violation of proper layering.
-
-Ok, that's good news.
-
+> bash-3.2# echo 500 > /sys/power/device_suspend_time_threshold
+> bash-3.2# request_suspend_state: mem (0->3) at 73269332502 (1970-01-02
+> 03:12:18.107533376 UTC)
+> PM: Syncing filesystems ... done.
+> Freezing user space processes ... (elapsed 0.02 seconds) done.
+> Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+> PM: device usb:2-1.1 suspend too slow, it takes          15.758 msecs
+> PM: device usb:2-1.4.1 suspend too slow, it takes        21.619 msecs
+> PM: device usb:2-1.4 suspend too slow, it takes          18.569 msecs
+> PM: device platform:soc-audio.2 suspend too slow, it takes       1216.710 msecs
+> da9052_tsi_suspend: called
+> PM: device platform:da9052-tsi suspend too slow, it takes        2.538 msecs
+> PM: device usb:2-1 suspend too slow, it takes    22.371 msecs
+> PM: suspend of devices complete after 1252.998 msecs
+> suspend wp cpu=400000000
+> PM: late suspend of devices complete after 0.775 msecs
 > 
->> Or is pm_runtime_irq_safe() intended to be called only by the device driver
->> in such case?
+> --- [ log end ] ----
 > 
-> Yes, that's right.
-> 
->> I'd like to use blocking calls for a voltage regulator control within
->> the runtime PM helpers in the driver but I'm not sure whether this wouldn't
->> violate the API.
-> 
-> You should be okay.  Just bear in mind that it means the voltage 
-> regulator's parent won't be able to runtime suspend.  If the regulator 
-> is a platform device with no meaningful parent then of course this 
-> won't matter.
+> If you want to figure out which device suspend too slow, this patch
+> will do better.
 
-The regulator driver is a PMIC that uses I2C communication to control
-the voltage regulators. So to be able to control the regulator supplying
-the device, the runtime_resume/suspend callbacks need to be called with 
-interrupts enabled. Otherwise the I2C communication wouldn't work.
+It's okay with me.  Presenting the information in an easy-to-read form 
+is fine.  I just wanted to point out that the information is already 
+available.
 
-I don't really need runtime_suspend/resume to be IRQ-safe, just wanted 
-to make sure that in some conditions some other subsystem does not request that.
+BTW, there are several spelling errors in the Kconfig help text in your 
+patch.  You should fix them before submitting the patch again.
 
-As I have seen there is no runtime PM call to clear the power.irq_safe
-flags once it is set, so it looked like pm_runtime_irq_safe() is a basically 
-a "one-time" call.
-
-
-Regards,
--- 
-Sylwester Nawrocki
-Samsung Poland R&D Center
+Alan Stern
