@@ -1,16 +1,15 @@
-From: Mike Frysinger <vapier@gentoo.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: freezer: should barriers be smp ?
-Date: Wed, 13 Apr 2011 18:57:13 -0400
-Message-ID: <BANLkTi=_+kYvs3_dsXifd_rkxfmFzJLttA__33825.6727358841$1302735693$gmane$org@mail.gmail.com>
+Date: Thu, 14 Apr 2011 01:12:29 +0200
+Message-ID: <201104140112.29210.rjw__20148.8766856075$1302736399$gmane$org@sisk.pl>
 References: <BANLkTi=F-C-vwX4PGGfbkdTBw3OWL-twfg@mail.gmail.com>
-	<201104132353.09282.rjw@sisk.pl>
-	<BANLkTik1tg2fzFgZmeSCGZxbNPDydotb-w@mail.gmail.com>
 	<201104140049.23344.rjw@sisk.pl>
+	<BANLkTi=_+kYvs3_dsXifd_rkxfmFzJLttA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104140049.23344.rjw@sisk.pl>
+In-Reply-To: <BANLkTi=_+kYvs3_dsXifd_rkxfmFzJLttA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +19,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mike Frysinger <vapier@gentoo.org>
 Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBcHIgMTMsIDIwMTEgYXQgMTg6NDksIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
-IE9uIFRodXJzZGF5LCBBcHJpbCAxNCwgMjAxMSwgTWlrZSBGcnlzaW5nZXIgd3JvdGU6Cj4+IGkg
-Z3Vlc3MgdGhlIHRyb3VibGUgZm9yIHVzIGlzIHRoYXQgeW91IGhhdmUgb25lIENQVSBwb3N0aW5n
-IHdyaXRlcyB0bwo+PiB0YXNrLT5mbGFncyAoYW5kIGRvaW5nIHNvIGJ5IGdyYWJiaW5nIHRoZSB0
-YXNrJ3Mgc3BpbmxvY2spLCBidXQgdGhlCj4+IG90aGVyIENQVSBpcyBzaW1wbHkgcmVhZGluZyB0
-aG9zZSBmbGFncy4gwqB0aGVyZSBhcmUgbm8gU01QIGJhcnJpZXJzIGluCj4+IGJldHdlZW4gdGhl
-IHJlYWQgYW5kIHdyaXRlIHN0ZXBzLCBub3IgaXMgdGhlIHJlYWRpbmcgQ1BVIGdyYWJiaW5nIGFu
-eQo+PiBsb2NrcyB3aGljaCB3b3VsZCBiZSBhbiBpbXBsaWNpdCBTTVAgYmFycmllci4gwqBzaW5j
-ZSB0aGUgQmxhY2tmaW4gU01QCj4+IHBvcnQgbGFja3MgaGFyZHdhcmUgY2FjaGUgY29oZXJlbmN5
-LCB0aGVyZSBpcyBubyB3YXkgZm9yIHVzIHRvIGtub3cKPj4gIndlJ3ZlIGdvdCB0byBzeW5jIHRo
-ZSBjYWNoZXMgYmVmb3JlIHdlIGNhbiBkbyB0aGlzIHJlYWQiLiDCoGJ5IHVzaW5nCj4+IHRoZSBw
-YXRjaCBpIHBvc3RlZCBhYm92ZSwgd2UgaGF2ZSB0aGF0IHNpZ25hbCBhbmQgc28gdGhpbmdzIHdv
-cmsKPj4gY29ycmVjdGx5LiwKPgo+IEluIHRoZW9yeSBJIHdvdWxkbid0IGV4cGVjdCB0aGUgcGF0
-Y2ggdG8gd29yayBjb3JyZWN0bHksIGJlY2F1c2UgaXQgcmVwbGFjZXMKPiBfc3Ryb25nZXJfIG1l
-bW9yeSBiYXJyaWVycyB3aXRoIF93ZWFrZXJfIFNNUCBiYXJyaWVycy4gwqBIb3dldmVyLCBsb29r
-aW5nIGF0Cj4gdGhlIGJsYWNrZmluJ3MgZGVmaW5pdGlvbnMgb2YgU01QIGJhcnJpZXJzIEkgc2Vl
-IHRoYXQgaXQgdXNlcyBleHRyYSBzdHVmZiB0aGF0Cj4gc2hvdWxkIF9hbHNvXyBiZSB1c2VkIGlu
-IHRoZSBkZWZpbml0aW9ucyBvZiB0aGUgbWFuZGF0b3J5IGJhcnJpZXJzLgo+Cj4gSW4gbXkgb3Bp
-bmlvbiBpcyBhbiBhcmNoaXRlY3R1cmUgcHJvYmxlbSwgbm90IHRoZSBmcmVlemVyIGNvZGUgcHJv
-YmxlbS4KCk9LLCB3ZSBoYXZlIGEgcGF0Y2ggcGVuZGluZyBsb2NhbGx5IHdoaWNoIHBvcHVsYXRl
-cyBhbGwgYmFycmllcnMgd2l0aAp0aGlzIGxvZ2ljLCBidXQgYmFzZWQgb24gbXkgdW5kZXJzdGFu
-ZGluZyBvZiB0aGluZ3MsIHRoYXQgZGlkbnQgc2VlbQpjb3JyZWN0LiAgaSBndWVzcyBpJ20gcmVh
-ZGluZyB0b28gbXVjaCBpbnRvIHRoZSBuYW1lcyAuLi4gaSdkIGV4cGVjdAp0aGUgb3Bwb3NpdGUg
-YmVoYXZpb3Igd2hlcmUgInJtYiIgaXMgb25seSBmb3IgVVAgbmVlZHMgd2hpbGUgInNtcF9ybWIi
-CmlzIGEgcm1iIHdoaWNoIGFkZGl0aW9uYWxseSBjb3ZlcnMgU01QLgotbWlrZQpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxp
-c3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51
-eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Thursday, April 14, 2011, Mike Frysinger wrote:
+> On Wed, Apr 13, 2011 at 18:49, Rafael J. Wysocki wrote:
+> > On Thursday, April 14, 2011, Mike Frysinger wrote:
+> >> i guess the trouble for us is that you have one CPU posting writes to
+> >> task->flags (and doing so by grabbing the task's spinlock), but the
+> >> other CPU is simply reading those flags.  there are no SMP barriers in
+> >> between the read and write steps, nor is the reading CPU grabbing any
+> >> locks which would be an implicit SMP barrier.  since the Blackfin SMP
+> >> port lacks hardware cache coherency, there is no way for us to know
+> >> "we've got to sync the caches before we can do this read".  by using
+> >> the patch i posted above, we have that signal and so things work
+> >> correctly.,
+> >
+> > In theory I wouldn't expect the patch to work correctly, because it replaces
+> > _stronger_ memory barriers with _weaker_ SMP barriers.  However, looking at
+> > the blackfin's definitions of SMP barriers I see that it uses extra stuff that
+> > should _also_ be used in the definitions of the mandatory barriers.
+> >
+> > In my opinion is an architecture problem, not the freezer code problem.
+> 
+> OK, we have a patch pending locally which populates all barriers with
+> this logic, but based on my understanding of things, that didnt seem
+> correct.  i guess i'm reading too much into the names ... i'd expect
+> the opposite behavior where "rmb" is only for UP needs while "smp_rmb"
+> is a rmb which additionally covers SMP.
+
+Well, I guess the naming is for historical reasons, ie. mb(), rmb() and wmb()
+were there first and it probably was regarded cleaner to use new names for the
+optimized smp_ variants than to rename all instances already in the code and
+then repurpose the old names.
+
+Thanks,
+Rafael
