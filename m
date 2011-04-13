@@ -1,14 +1,16 @@
-From: Mike Frysinger <vapier@gentoo.org>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: freezer: should barriers be smp ?
-Date: Wed, 13 Apr 2011 17:02:45 -0400
-Message-ID: <BANLkTiknfeTj6GD0t-ekMoaS1QYQBVyBjQ__43278.0778072358$1302728635$gmane$org@mail.gmail.com>
+Date: Wed, 13 Apr 2011 23:05:46 +0200
+Message-ID: <20110413210546.GC16830__5937.64864975146$1302728941$gmane$org@elf.ucw.cz>
 References: <BANLkTi=F-C-vwX4PGGfbkdTBw3OWL-twfg@mail.gmail.com>
 	<201104132258.17705.rjw@sisk.pl>
+	<BANLkTiknfeTj6GD0t-ekMoaS1QYQBVyBjQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104132258.17705.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <BANLkTiknfeTj6GD0t-ekMoaS1QYQBVyBjQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +20,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mike Frysinger <vapier@gentoo.org>
 Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBcHIgMTMsIDIwMTEgYXQgMTY6NTgsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
-IE9uIFdlZG5lc2RheSwgQXByaWwgMTMsIDIwMTEsIE1pa2UgRnJ5c2luZ2VyIHdyb3RlOgo+PiB3
-aGVuIHdlIHN1c3BlbmQvcmVzdW1lIEJsYWNrZmluIFNNUCBzeXN0ZW1zLCB3ZSBub3RpY2UgdGhh
-dCB0aGUKPj4gZnJlZXplciBjb2RlIHJ1bnMgb24gbXVsdGlwbGUgY29yZXMuIMKgdGhpcyBpcyBv
-ZiBjb3Vyc2Ugd2hhdCB5b3Ugd2FudAo+PiAtLSBmcmVlemUgcHJvY2Vzc2VzIGluIHBhcmFsbGVs
-LiDCoGhvd2V2ZXIsIHRoZSBjb2RlIG9ubHkgdXNlcyBub24tc21wCj4+IGJhc2VkIGJhcnJpZXJz
-IHdoaWNoIGNhdXNlcyB1cyBwcm9ibGVtcyAuLi4gb3VyIGNvcmVzIG5lZWQgc29mdHdhcmUKPj4g
-c3VwcG9ydCB0byBrZWVwIGNhY2hlcyBpbiBzeW5jLCBzbyBvdXIgc21wIGJhcnJpZXJzIGRvIGp1
-c3QgdGhhdC4gwqBidXQKPj4gdGhlIG5vbi1zbXAgYmFycmllcnMgZG8gbm90LCBhbmQgc28gdGhl
-IGZyb3plbi90aGF3ZWQgcHJvY2Vzc2VzCj4+IHJhbmRvbWx5IGdldCBzdHVjayBpbiB0aGUgd3Jv
-bmcgdGFzayBzdGF0ZS4KPj4KPj4gdGhpbmtpbmcgYWJvdXQgaXQsIHNob3VsZG50IHRoZSBmcmVl
-emVyIGNvZGUgYmUgdXNpbmcgc21wIGJhcnJpZXJzID8KPgo+IFllcywgaXQgc2hvdWxkLCBidXQg
-cm1iKCkgYW5kIHdtYigpIGFyZSBzdXBwb3NlZCB0byBiZSBTTVAgYmFycmllcnMuCj4KPiBPciBk
-byB5b3UgbWVhbiBzb21ldGhpbmcgZGlmZmVyZW50PwoKdGhlbiB3aGF0J3MgdGhlIGRpZmYgYmV0
-d2VlbiBzbXBfcm1iKCkgYW5kIHJtYigpID8KCnRoaXMgaXMgd2hhdCBpJ20gcHJvcG9zaW5nOgot
-LS0gYS9rZXJuZWwvZnJlZXplci5jCisrKyBiL2tlcm5lbC9mcmVlemVyLmMKQEAgLTE3LDcgKzE3
-LDcgQEAgc3RhdGljIGlubGluZSB2b2lkIGZyb3plbl9wcm9jZXNzKHZvaWQpCiB7CiAgICBpZiAo
-IXVubGlrZWx5KGN1cnJlbnQtPmZsYWdzICYgUEZfTk9GUkVFWkUpKSB7CiAgICAgICAgY3VycmVu
-dC0+ZmxhZ3MgfD0gUEZfRlJPWkVOOwotICAgICAgIHdtYigpOworICAgICAgIHNtcF93bWIoKTsK
-ICAgIH0KICAgIGNsZWFyX2ZyZWV6ZV9mbGFnKGN1cnJlbnQpOwogfQpAQCAtOTMsNyArOTMsNyBA
-QCBib29sIGZyZWV6ZV90YXNrKHN0cnVjdCB0YXNrX3N0cnVjdCAqcCwgYm9vbCBzaWdfb25seSkK
-ICAgICAqIHRoZSB0YXNrIGFzIGZyb3plbiBhbmQgbmV4dCBjbGVhcnMgaXRzIFRJRl9GUkVFWkUu
-CiAgICAgKi8KICAgIGlmICghZnJlZXppbmcocCkpIHsKLSAgICAgICBybWIoKTsKKyAgICAgICBz
-bXBfcm1iKCk7CiAgICAgICAgaWYgKGZyb3plbihwKSkKICAgICAgICAgICAgcmV0dXJuIGZhbHNl
-OwoKLW1pa2UKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-Cmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
-eC1wbQ==
+On Wed 2011-04-13 17:02:45, Mike Frysinger wrote:
+> On Wed, Apr 13, 2011 at 16:58, Rafael J. Wysocki wrote:
+> > On Wednesday, April 13, 2011, Mike Frysinger wrote:
+> >> when we suspend/resume Blackfin SMP systems, we notice that the
+> >> freezer code runs on multiple cores. =A0this is of course what you want
+> >> -- freeze processes in parallel. =A0however, the code only uses non-smp
+> >> based barriers which causes us problems ... our cores need software
+> >> support to keep caches in sync, so our smp barriers do just that. =A0b=
+ut
+> >> the non-smp barriers do not, and so the frozen/thawed processes
+> >> randomly get stuck in the wrong task state.
+> >>
+> >> thinking about it, shouldnt the freezer code be using smp barriers ?
+> >
+> > Yes, it should, but rmb() and wmb() are supposed to be SMP barriers.
+> >
+> > Or do you mean something different?
+> =
+
+> then what's the diff between smp_rmb() and rmb() ?
+> =
+
+> this is what i'm proposing:
+> --- a/kernel/freezer.c
+> +++ b/kernel/freezer.c
+> @@ -17,7 +17,7 @@ static inline void frozen_process(void)
+>  {
+>     if (!unlikely(current->flags & PF_NOFREEZE)) {
+>         current->flags |=3D PF_FROZEN;
+> -       wmb();
+> +       smp_wmb();
+>     }
+>     clear_freeze_flag(current);
+>  }
+> @@ -93,7 +93,7 @@ bool freeze_task(struct task_struct *p, bool sig_only)
+>      * the task as frozen and next clears its TIF_FREEZE.
+>      */
+>     if (!freezing(p)) {
+> -       rmb();
+> +       smp_rmb();
+>         if (frozen(p))
+>             return false;
+
+smp_rmb() is NOP on uniprocessor.
+
+I believe the code is correct as is.
+									Pavel
+
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
