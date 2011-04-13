@@ -1,12 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Mike Frysinger <vapier@gentoo.org>
 Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
- ?
-Date: Wed, 13 Apr 2011 18:11:48 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1104131805090.2005-100000__47613.4880599149$1302732843$gmane$org@iolanthe.rowland.org>
-References: <201104132353.09282.rjw@sisk.pl>
+	?
+Date: Wed, 13 Apr 2011 18:22:28 -0400
+Message-ID: <BANLkTik1tg2fzFgZmeSCGZxbNPDydotb-w__22378.9064134055$1302733413$gmane$org@mail.gmail.com>
+References: <BANLkTi=F-C-vwX4PGGfbkdTBw3OWL-twfg@mail.gmail.com>
+	<20110413210546.GC16830@elf.ucw.cz>
+	<BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
+	<201104132353.09282.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <201104132353.09282.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -19,42 +22,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 13 Apr 2011, Rafael J. Wysocki wrote:
-
-> The above means that smp_*mb() are defined as *mb() if CONFIG_SMP is set,
-> which basically means that *mb() are more restrictive than the corresponding
-> smp_*mb().  More precisely, they also cover the cases in which the CPU
-> reorders instructions on uniprocessor, which we definitely want to cover.
-> 
-> IOW, your patch would break things on uniprocessor where the CPU reorders
-> instructions.
-
-How could anything break on a UP system?  CPUs don't reorder 
-instructions that drastically.  For example, no CPU will ever violate
-this assertion:
-
-	x = 0;
-	y = x;
-	x = 1;
-	assert(y == 0);
-
-even if it does reorder the second and third statements internally.  
-This is guaranteed by the C language specification.
-
-> > Documentation/memory-barriers.txt:
-> > SMP memory barriers are reduced to compiler barriers on uniprocessor compiled
-> > systems because it is assumed that a CPU will appear to be self-consistent,
-> > and will order overlapping accesses correctly with respect to itself.
-> 
-> Exactly, which is not guaranteed in general (e.g. on Alpha).  That is, some
-> CPUs can reorder instructions in such a way that a compiler barrier is not
-> sufficient to prevent breakage.
-
-I don't think this is right.  You _can_ assume that Alphas appear to be
-self-consistent.  If they didn't, you wouldn't be able to use them at
-all.
-
-Alan Stern
+T24gV2VkLCBBcHIgMTMsIDIwMTEgYXQgMTc6NTMsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
+IE9uIFdlZG5lc2RheSwgQXByaWwgMTMsIDIwMTEsIE1pa2UgRnJ5c2luZ2VyIHdyb3RlOgo+PiBP
+biBXZWQsIEFwciAxMywgMjAxMSBhdCAxNzowNSwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+PiA+IE9u
+IFdlZCAyMDExLTA0LTEzIDE3OjAyOjQ1LCBNaWtlIEZyeXNpbmdlciB3cm90ZToKPj4gPj4gT24g
+V2VkLCBBcHIgMTMsIDIwMTEgYXQgMTY6NTgsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+PiA+
+PiA+IE9uIFdlZG5lc2RheSwgQXByaWwgMTMsIDIwMTEsIE1pa2UgRnJ5c2luZ2VyIHdyb3RlOgo+
+PiA+PiA+PiB3aGVuIHdlIHN1c3BlbmQvcmVzdW1lIEJsYWNrZmluIFNNUCBzeXN0ZW1zLCB3ZSBu
+b3RpY2UgdGhhdCB0aGUKPj4gPj4gPj4gZnJlZXplciBjb2RlIHJ1bnMgb24gbXVsdGlwbGUgY29y
+ZXMuIMKgdGhpcyBpcyBvZiBjb3Vyc2Ugd2hhdCB5b3Ugd2FudAo+PiA+PiA+PiAtLSBmcmVlemUg
+cHJvY2Vzc2VzIGluIHBhcmFsbGVsLiDCoGhvd2V2ZXIsIHRoZSBjb2RlIG9ubHkgdXNlcyBub24t
+c21wCj4+ID4+ID4+IGJhc2VkIGJhcnJpZXJzIHdoaWNoIGNhdXNlcyB1cyBwcm9ibGVtcyAuLi4g
+b3VyIGNvcmVzIG5lZWQgc29mdHdhcmUKPj4gPj4gPj4gc3VwcG9ydCB0byBrZWVwIGNhY2hlcyBp
+biBzeW5jLCBzbyBvdXIgc21wIGJhcnJpZXJzIGRvIGp1c3QgdGhhdC4gwqBidXQKPj4gPj4gPj4g
+dGhlIG5vbi1zbXAgYmFycmllcnMgZG8gbm90LCBhbmQgc28gdGhlIGZyb3plbi90aGF3ZWQgcHJv
+Y2Vzc2VzCj4+ID4+ID4+IHJhbmRvbWx5IGdldCBzdHVjayBpbiB0aGUgd3JvbmcgdGFzayBzdGF0
+ZS4KPj4gPj4gPj4KPj4gPj4gPj4gdGhpbmtpbmcgYWJvdXQgaXQsIHNob3VsZG50IHRoZSBmcmVl
+emVyIGNvZGUgYmUgdXNpbmcgc21wIGJhcnJpZXJzID8KPj4gPj4gPgo+PiA+PiA+IFllcywgaXQg
+c2hvdWxkLCBidXQgcm1iKCkgYW5kIHdtYigpIGFyZSBzdXBwb3NlZCB0byBiZSBTTVAgYmFycmll
+cnMuCj4+ID4+ID4KPj4gPj4gPiBPciBkbyB5b3UgbWVhbiBzb21ldGhpbmcgZGlmZmVyZW50Pwo+
+PiA+Pgo+PiA+PiB0aGVuIHdoYXQncyB0aGUgZGlmZiBiZXR3ZWVuIHNtcF9ybWIoKSBhbmQgcm1i
+KCkgPwo+PiA+Pgo+PiA+PiB0aGlzIGlzIHdoYXQgaSdtIHByb3Bvc2luZzoKPj4gPj4gLS0tIGEv
+a2VybmVsL2ZyZWV6ZXIuYwo+PiA+PiArKysgYi9rZXJuZWwvZnJlZXplci5jCj4+ID4+IEBAIC0x
+Nyw3ICsxNyw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBmcm96ZW5fcHJvY2Vzcyh2b2lkKQo+PiA+
+PiDCoHsKPj4gPj4gwqAgwqAgaWYgKCF1bmxpa2VseShjdXJyZW50LT5mbGFncyAmIFBGX05PRlJF
+RVpFKSkgewo+PiA+PiDCoCDCoCDCoCDCoCBjdXJyZW50LT5mbGFncyB8PSBQRl9GUk9aRU47Cj4+
+ID4+IC0gwqAgwqAgwqAgd21iKCk7Cj4+ID4+ICsgwqAgwqAgwqAgc21wX3dtYigpOwo+PiA+PiDC
+oCDCoCB9Cj4+ID4+IMKgIMKgIGNsZWFyX2ZyZWV6ZV9mbGFnKGN1cnJlbnQpOwo+PiA+PiDCoH0K
+Pj4gPj4gQEAgLTkzLDcgKzkzLDcgQEAgYm9vbCBmcmVlemVfdGFzayhzdHJ1Y3QgdGFza19zdHJ1
+Y3QgKnAsIGJvb2wgc2lnX29ubHkpCj4+ID4+IMKgIMKgIMKgKiB0aGUgdGFzayBhcyBmcm96ZW4g
+YW5kIG5leHQgY2xlYXJzIGl0cyBUSUZfRlJFRVpFLgo+PiA+PiDCoCDCoCDCoCovCj4+ID4+IMKg
+IMKgIGlmICghZnJlZXppbmcocCkpIHsKPj4gPj4gLSDCoCDCoCDCoCBybWIoKTsKPj4gPj4gKyDC
+oCDCoCDCoCBzbXBfcm1iKCk7Cj4+ID4+IMKgIMKgIMKgIMKgIGlmIChmcm96ZW4ocCkpCj4+ID4+
+IMKgIMKgIMKgIMKgIMKgIMKgIHJldHVybiBmYWxzZTsKPj4gPgo+PiA+IHNtcF9ybWIoKSBpcyBO
+T1Agb24gdW5pcHJvY2Vzc29yLgo+PiA+Cj4+ID4gSSBiZWxpZXZlIHRoZSBjb2RlIGlzIGNvcnJl
+Y3QgYXMgaXMuCj4+Cj4+IHRoYXQgaXNudCB3aGF0IHRoZSBjb2RlIC8gZG9jdW1lbnRhdGlvbiBz
+YXlzLiDCoHVubGVzcyBpJ20gcmVhZGluZyB0aGVtCj4+IHdyb25nLCBib3RoIHNlZW0gdG8gaW5k
+aWNhdGUgdGhhdCB0aGUgcHJvcG9zZWQgcGF0Y2ggaXMgd2hhdCB3ZQo+PiBhY3R1YWxseSB3YW50
+Lgo+Cj4gTm90IHJlYWxseS4KPgo+PiBpbmNsdWRlL2xpbnV4L2NvbXBpbGVyLWdjYy5oOgo+PiAj
+ZGVmaW5lIGJhcnJpZXIoKSBfX2FzbV9fIF9fdm9sYXRpbGVfXygiIjogOiA6Im1lbW9yeSIpCj4+
+Cj4+IGluY2x1ZGUvYXNtLWdlbmVyaWMvc3lzdGVtLmg6Cj4+ICNkZWZpbmUgbWIoKSDCoCDCoGFz
+bSB2b2xhdGlsZSAoIiI6IDogOiJtZW1vcnkiKQo+PiAjZGVmaW5lIHJtYigpIMKgIG1iKCkKPj4g
+I2RlZmluZSB3bWIoKSDCoCBhc20gdm9sYXRpbGUgKCIiOiA6IDoibWVtb3J5IikKPj4KPj4gI2lm
+ZGVmIENPTkZJR19TTVAKPj4gI2RlZmluZSBzbXBfbWIoKSDCoCDCoG1iKCkKPj4gI2RlZmluZSBz
+bXBfcm1iKCkgwqAgcm1iKCkKPj4gI2RlZmluZSBzbXBfd21iKCkgwqAgd21iKCkKPj4gI2Vsc2UK
+Pj4gI2RlZmluZSBzbXBfbWIoKSDCoCDCoGJhcnJpZXIoKQo+PiAjZGVmaW5lIHNtcF9ybWIoKSDC
+oCBiYXJyaWVyKCkKPj4gI2RlZmluZSBzbXBfd21iKCkgwqAgYmFycmllcigpCj4+ICNlbmRpZgo+
+Cj4gVGhlIGFib3ZlIG1lYW5zIHRoYXQgc21wXyptYigpIGFyZSBkZWZpbmVkIGFzICptYigpIGlm
+IENPTkZJR19TTVAgaXMgc2V0LAo+IHdoaWNoIGJhc2ljYWxseSBtZWFucyB0aGF0ICptYigpIGFy
+ZSBtb3JlIHJlc3RyaWN0aXZlIHRoYW4gdGhlIGNvcnJlc3BvbmRpbmcKPiBzbXBfKm1iKCkuIMKg
+TW9yZSBwcmVjaXNlbHksIHRoZXkgYWxzbyBjb3ZlciB0aGUgY2FzZXMgaW4gd2hpY2ggdGhlIENQ
+VQo+IHJlb3JkZXJzIGluc3RydWN0aW9ucyBvbiB1bmlwcm9jZXNzb3IsIHdoaWNoIHdlIGRlZmlu
+aXRlbHkgd2FudCB0byBjb3Zlci4KPgo+IElPVywgeW91ciBwYXRjaCB3b3VsZCBicmVhayB0aGlu
+Z3Mgb24gdW5pcHJvY2Vzc29yIHdoZXJlIHRoZSBDUFUgcmVvcmRlcnMKPiBpbnN0cnVjdGlvbnMu
+Cj4KPj4gRG9jdW1lbnRhdGlvbi9tZW1vcnktYmFycmllcnMudHh0Ogo+PiBTTVAgbWVtb3J5IGJh
+cnJpZXJzIGFyZSByZWR1Y2VkIHRvIGNvbXBpbGVyIGJhcnJpZXJzIG9uIHVuaXByb2Nlc3NvciBj
+b21waWxlZAo+PiBzeXN0ZW1zIGJlY2F1c2UgaXQgaXMgYXNzdW1lZCB0aGF0IGEgQ1BVIHdpbGwg
+YXBwZWFyIHRvIGJlIHNlbGYtY29uc2lzdGVudCwKPj4gYW5kIHdpbGwgb3JkZXIgb3ZlcmxhcHBp
+bmcgYWNjZXNzZXMgY29ycmVjdGx5IHdpdGggcmVzcGVjdCB0byBpdHNlbGYuCj4KPiBFeGFjdGx5
+LCB3aGljaCBpcyBub3QgZ3VhcmFudGVlZCBpbiBnZW5lcmFsIChlLmcuIG9uIEFscGhhKS4gwqBU
+aGF0IGlzLCBzb21lCj4gQ1BVcyBjYW4gcmVvcmRlciBpbnN0cnVjdGlvbnMgaW4gc3VjaCBhIHdh
+eSB0aGF0IGEgY29tcGlsZXIgYmFycmllciBpcyBub3QKPiBzdWZmaWNpZW50IHRvIHByZXZlbnQg
+YnJlYWthZ2UuCj4KPiBUaGUgY29kZSBfbWF5XyBiZSB3cm9uZyBmb3IgYSBkaWZmZXJlbnQgcmVh
+c29uLCB0aG91Z2guIMKgSSBuZWVkIHRvIGNoZWNrLgoKc28gdGhlIGN1cnJlbnQgY29kZSBpcyBw
+cm90ZWN0aW5nIGFnYWluc3QgYSBVUCBzeXN0ZW0gc3dhcHBpbmcgaW4vb3V0CmZyZWV6ZXIgdGhy
+ZWFkcyBmb3IgcHJvY2Vzc2VzLCBhbmQgdGhlIGJhcnJpZXJzIGFyZSB0byBtYWtlIHN1cmUgdGhh
+dAp0aGUgdXBkYXRlZCBmbGFncyB2YXJpYWJsZSBpcyBwb3N0ZWQgYnkgdGhlIHRpbWUgYW5vdGhl
+ciBzd2FwcGVkIGluCnRocmVhZCBnZXRzIHRvIHRoYXQgcG9pbnQuCgppIGd1ZXNzIHRoZSB0cm91
+YmxlIGZvciB1cyBpcyB0aGF0IHlvdSBoYXZlIG9uZSBDUFUgcG9zdGluZyB3cml0ZXMgdG8KdGFz
+ay0+ZmxhZ3MgKGFuZCBkb2luZyBzbyBieSBncmFiYmluZyB0aGUgdGFzaydzIHNwaW5sb2NrKSwg
+YnV0IHRoZQpvdGhlciBDUFUgaXMgc2ltcGx5IHJlYWRpbmcgdGhvc2UgZmxhZ3MuICB0aGVyZSBh
+cmUgbm8gU01QIGJhcnJpZXJzIGluCmJldHdlZW4gdGhlIHJlYWQgYW5kIHdyaXRlIHN0ZXBzLCBu
+b3IgaXMgdGhlIHJlYWRpbmcgQ1BVIGdyYWJiaW5nIGFueQpsb2NrcyB3aGljaCB3b3VsZCBiZSBh
+biBpbXBsaWNpdCBTTVAgYmFycmllci4gIHNpbmNlIHRoZSBCbGFja2ZpbiBTTVAKcG9ydCBsYWNr
+cyBoYXJkd2FyZSBjYWNoZSBjb2hlcmVuY3ksIHRoZXJlIGlzIG5vIHdheSBmb3IgdXMgdG8ga25v
+dwoid2UndmUgZ290IHRvIHN5bmMgdGhlIGNhY2hlcyBiZWZvcmUgd2UgY2FuIGRvIHRoaXMgcmVh
+ZCIuICBieSB1c2luZwp0aGUgcGF0Y2ggaSBwb3N0ZWQgYWJvdmUsIHdlIGhhdmUgdGhhdCBzaWdu
+YWwgYW5kIHNvIHRoaW5ncyB3b3JrCmNvcnJlY3RseS4sCi1taWtlCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
+eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
