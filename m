@@ -1,16 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: freezer: should barriers be smp ?
-Date: Wed, 13 Apr 2011 23:05:46 +0200
-Message-ID: <20110413210546.GC16830__5937.64864975146$1302728941$gmane$org@elf.ucw.cz>
+From: Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
+	?
+Date: Wed, 13 Apr 2011 17:11:10 -0400
+Message-ID: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw__1660.54052901945$1302729506$gmane$org@mail.gmail.com>
 References: <BANLkTi=F-C-vwX4PGGfbkdTBw3OWL-twfg@mail.gmail.com>
 	<201104132258.17705.rjw@sisk.pl>
 	<BANLkTiknfeTj6GD0t-ekMoaS1QYQBVyBjQ@mail.gmail.com>
+	<20110413210546.GC16830@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <BANLkTiknfeTj6GD0t-ekMoaS1QYQBVyBjQ@mail.gmail.com>
+In-Reply-To: <20110413210546.GC16830@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,60 +21,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Frysinger <vapier@gentoo.org>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2011-04-13 17:02:45, Mike Frysinger wrote:
-> On Wed, Apr 13, 2011 at 16:58, Rafael J. Wysocki wrote:
-> > On Wednesday, April 13, 2011, Mike Frysinger wrote:
-> >> when we suspend/resume Blackfin SMP systems, we notice that the
-> >> freezer code runs on multiple cores. =A0this is of course what you want
-> >> -- freeze processes in parallel. =A0however, the code only uses non-smp
-> >> based barriers which causes us problems ... our cores need software
-> >> support to keep caches in sync, so our smp barriers do just that. =A0b=
-ut
-> >> the non-smp barriers do not, and so the frozen/thawed processes
-> >> randomly get stuck in the wrong task state.
-> >>
-> >> thinking about it, shouldnt the freezer code be using smp barriers ?
-> >
-> > Yes, it should, but rmb() and wmb() are supposed to be SMP barriers.
-> >
-> > Or do you mean something different?
-> =
-
-> then what's the diff between smp_rmb() and rmb() ?
-> =
-
-> this is what i'm proposing:
-> --- a/kernel/freezer.c
-> +++ b/kernel/freezer.c
-> @@ -17,7 +17,7 @@ static inline void frozen_process(void)
->  {
->     if (!unlikely(current->flags & PF_NOFREEZE)) {
->         current->flags |=3D PF_FROZEN;
-> -       wmb();
-> +       smp_wmb();
->     }
->     clear_freeze_flag(current);
->  }
-> @@ -93,7 +93,7 @@ bool freeze_task(struct task_struct *p, bool sig_only)
->      * the task as frozen and next clears its TIF_FREEZE.
->      */
->     if (!freezing(p)) {
-> -       rmb();
-> +       smp_rmb();
->         if (frozen(p))
->             return false;
-
-smp_rmb() is NOP on uniprocessor.
-
-I believe the code is correct as is.
-									Pavel
-
--- =
-
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+T24gV2VkLCBBcHIgMTMsIDIwMTEgYXQgMTc6MDUsIFBhdmVsIE1hY2hlayB3cm90ZToKPiBPbiBX
+ZWQgMjAxMS0wNC0xMyAxNzowMjo0NSwgTWlrZSBGcnlzaW5nZXIgd3JvdGU6Cj4+IE9uIFdlZCwg
+QXByIDEzLCAyMDExIGF0IDE2OjU4LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPj4gPiBPbiBX
+ZWRuZXNkYXksIEFwcmlsIDEzLCAyMDExLCBNaWtlIEZyeXNpbmdlciB3cm90ZToKPj4gPj4gd2hl
+biB3ZSBzdXNwZW5kL3Jlc3VtZSBCbGFja2ZpbiBTTVAgc3lzdGVtcywgd2Ugbm90aWNlIHRoYXQg
+dGhlCj4+ID4+IGZyZWV6ZXIgY29kZSBydW5zIG9uIG11bHRpcGxlIGNvcmVzLiDCoHRoaXMgaXMg
+b2YgY291cnNlIHdoYXQgeW91IHdhbnQKPj4gPj4gLS0gZnJlZXplIHByb2Nlc3NlcyBpbiBwYXJh
+bGxlbC4gwqBob3dldmVyLCB0aGUgY29kZSBvbmx5IHVzZXMgbm9uLXNtcAo+PiA+PiBiYXNlZCBi
+YXJyaWVycyB3aGljaCBjYXVzZXMgdXMgcHJvYmxlbXMgLi4uIG91ciBjb3JlcyBuZWVkIHNvZnR3
+YXJlCj4+ID4+IHN1cHBvcnQgdG8ga2VlcCBjYWNoZXMgaW4gc3luYywgc28gb3VyIHNtcCBiYXJy
+aWVycyBkbyBqdXN0IHRoYXQuIMKgYnV0Cj4+ID4+IHRoZSBub24tc21wIGJhcnJpZXJzIGRvIG5v
+dCwgYW5kIHNvIHRoZSBmcm96ZW4vdGhhd2VkIHByb2Nlc3Nlcwo+PiA+PiByYW5kb21seSBnZXQg
+c3R1Y2sgaW4gdGhlIHdyb25nIHRhc2sgc3RhdGUuCj4+ID4+Cj4+ID4+IHRoaW5raW5nIGFib3V0
+IGl0LCBzaG91bGRudCB0aGUgZnJlZXplciBjb2RlIGJlIHVzaW5nIHNtcCBiYXJyaWVycyA/Cj4+
+ID4KPj4gPiBZZXMsIGl0IHNob3VsZCwgYnV0IHJtYigpIGFuZCB3bWIoKSBhcmUgc3VwcG9zZWQg
+dG8gYmUgU01QIGJhcnJpZXJzLgo+PiA+Cj4+ID4gT3IgZG8geW91IG1lYW4gc29tZXRoaW5nIGRp
+ZmZlcmVudD8KPj4KPj4gdGhlbiB3aGF0J3MgdGhlIGRpZmYgYmV0d2VlbiBzbXBfcm1iKCkgYW5k
+IHJtYigpID8KPj4KPj4gdGhpcyBpcyB3aGF0IGknbSBwcm9wb3Npbmc6Cj4+IC0tLSBhL2tlcm5l
+bC9mcmVlemVyLmMKPj4gKysrIGIva2VybmVsL2ZyZWV6ZXIuYwo+PiBAQCAtMTcsNyArMTcsNyBA
+QCBzdGF0aWMgaW5saW5lIHZvaWQgZnJvemVuX3Byb2Nlc3Modm9pZCkKPj4gwqB7Cj4+IMKgIMKg
+IGlmICghdW5saWtlbHkoY3VycmVudC0+ZmxhZ3MgJiBQRl9OT0ZSRUVaRSkpIHsKPj4gwqAgwqAg
+wqAgwqAgY3VycmVudC0+ZmxhZ3MgfD0gUEZfRlJPWkVOOwo+PiAtIMKgIMKgIMKgIHdtYigpOwo+
+PiArIMKgIMKgIMKgIHNtcF93bWIoKTsKPj4gwqAgwqAgfQo+PiDCoCDCoCBjbGVhcl9mcmVlemVf
+ZmxhZyhjdXJyZW50KTsKPj4gwqB9Cj4+IEBAIC05Myw3ICs5Myw3IEBAIGJvb2wgZnJlZXplX3Rh
+c2soc3RydWN0IHRhc2tfc3RydWN0ICpwLCBib29sIHNpZ19vbmx5KQo+PiDCoCDCoCDCoCogdGhl
+IHRhc2sgYXMgZnJvemVuIGFuZCBuZXh0IGNsZWFycyBpdHMgVElGX0ZSRUVaRS4KPj4gwqAgwqAg
+wqAqLwo+PiDCoCDCoCBpZiAoIWZyZWV6aW5nKHApKSB7Cj4+IC0gwqAgwqAgwqAgcm1iKCk7Cj4+
+ICsgwqAgwqAgwqAgc21wX3JtYigpOwo+PiDCoCDCoCDCoCDCoCBpZiAoZnJvemVuKHApKQo+PiDC
+oCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gZmFsc2U7Cj4KPiBzbXBfcm1iKCkgaXMgTk9QIG9uIHVu
+aXByb2Nlc3Nvci4KPgo+IEkgYmVsaWV2ZSB0aGUgY29kZSBpcyBjb3JyZWN0IGFzIGlzLgoKdGhh
+dCBpc250IHdoYXQgdGhlIGNvZGUgLyBkb2N1bWVudGF0aW9uIHNheXMuICB1bmxlc3MgaSdtIHJl
+YWRpbmcgdGhlbQp3cm9uZywgYm90aCBzZWVtIHRvIGluZGljYXRlIHRoYXQgdGhlIHByb3Bvc2Vk
+IHBhdGNoIGlzIHdoYXQgd2UKYWN0dWFsbHkgd2FudC4KCmluY2x1ZGUvbGludXgvY29tcGlsZXIt
+Z2NjLmg6CiNkZWZpbmUgYmFycmllcigpIF9fYXNtX18gX192b2xhdGlsZV9fKCIiOiA6IDoibWVt
+b3J5IikKCmluY2x1ZGUvYXNtLWdlbmVyaWMvc3lzdGVtLmg6CiNkZWZpbmUgbWIoKSAgICBhc20g
+dm9sYXRpbGUgKCIiOiA6IDoibWVtb3J5IikKI2RlZmluZSBybWIoKSAgIG1iKCkKI2RlZmluZSB3
+bWIoKSAgIGFzbSB2b2xhdGlsZSAoIiI6IDogOiJtZW1vcnkiKQoKI2lmZGVmIENPTkZJR19TTVAK
+I2RlZmluZSBzbXBfbWIoKSAgICBtYigpCiNkZWZpbmUgc21wX3JtYigpICAgcm1iKCkKI2RlZmlu
+ZSBzbXBfd21iKCkgICB3bWIoKQojZWxzZQojZGVmaW5lIHNtcF9tYigpICAgIGJhcnJpZXIoKQoj
+ZGVmaW5lIHNtcF9ybWIoKSAgIGJhcnJpZXIoKQojZGVmaW5lIHNtcF93bWIoKSAgIGJhcnJpZXIo
+KQojZW5kaWYKCkRvY3VtZW50YXRpb24vbWVtb3J5LWJhcnJpZXJzLnR4dDoKU01QIG1lbW9yeSBi
+YXJyaWVycyBhcmUgcmVkdWNlZCB0byBjb21waWxlciBiYXJyaWVycyBvbiB1bmlwcm9jZXNzb3Ig
+Y29tcGlsZWQKc3lzdGVtcyBiZWNhdXNlIGl0IGlzIGFzc3VtZWQgdGhhdCBhIENQVSB3aWxsIGFw
+cGVhciB0byBiZSBzZWxmLWNvbnNpc3RlbnQsCmFuZCB3aWxsIG9yZGVyIG92ZXJsYXBwaW5nIGFj
+Y2Vzc2VzIGNvcnJlY3RseSB3aXRoIHJlc3BlY3QgdG8gaXRzZWxmLgoKWyFdIE5vdGUgdGhhdCBT
+TVAgbWVtb3J5IGJhcnJpZXJzIF9tdXN0XyBiZSB1c2VkIHRvIGNvbnRyb2wgdGhlIG9yZGVyaW5n
+IG9mCnJlZmVyZW5jZXMgdG8gc2hhcmVkIG1lbW9yeSBvbiBTTVAgc3lzdGVtcywgdGhvdWdoIHRo
+ZSB1c2Ugb2YgbG9ja2luZyBpbnN0ZWFkCmlzIHN1ZmZpY2llbnQuCi1taWtlCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
+dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
+LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
