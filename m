@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management Kconfig modifications for
-	2.6.39
-Date: Tue, 12 Apr 2011 22:15:28 +0200
-Message-ID: <201104122215.28569.rjw__44002.0634131089$1302639583$gmane$org@sisk.pl>
+Subject: [RFC][PATCH] PM: Make power domain callbacks take
+	precedence over subsystem ones
+Date: Wed, 13 Apr 2011 02:05:26 +0200
+Message-ID: <201104130205.26988.rjw__35366.0689121627$1302653272$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,33 +16,268 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ian Campbell <Ian.Campbell@eu.citrix.com>, Shriram Rajagopalan <rshriram@cs.ubc.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Please pull the Kconfig modification introducing CONFIG_HIBERNATE_CALLBACKS and
-the Xen patch depending on it from:
+Change the PM core's behavior related to power domains in such a way
+that, if a power domain is defined for a given device, its callbacks
+will be executed instead of and not in addition to the device
+subsystem's PM callbacks.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+The idea behind the initial implementation of power domains handling
+by the PM core was that power domain callbacks would be executed in
+addition to subsystem callbacks, so that it would be possible to
+extend the subsystem callbacks by using power domains.  It turns out,
+however, that this wouldn't be really convenient in some important
+situations.
 
+For example, there are systems in which power can only be removed
+from entire power domains.  On those systems it is not desirable to
+execute device drivers' PM callbacks until it is known that power is
+going to be removed from the devices in question, which means that
+they should be executed by power domain callbacks rather then by
+subsystem (e.g. bus type) PM callbacks, because subsystems generally
+have no information about what devices belong to which power domain.
+Thus, for instance, if the bus type in question is the platform bus
+type, its PM callbacks generally should not be called in addition to
+power domain callbacks, because they run device drivers' callbacks
+unconditionally if defined.
 
- arch/powerpc/kernel/ibmebus.c |    6 +++---
- arch/x86/xen/Kconfig          |    1 +
- drivers/amba/bus.c            |    6 +++---
- drivers/base/platform.c       |    6 +++---
- drivers/base/power/main.c     |    8 ++++----
- drivers/pci/pci-driver.c      |    6 +++---
- drivers/xen/manage.c          |    6 +++---
- include/linux/suspend.h       |   11 +++--------
- kernel/power/Kconfig          |    6 +++++-
- 9 files changed, 28 insertions(+), 28 deletions(-)
+While in principle the default subsystem PM callbacks, or a subset of
+them, may be replaced with different functions, it doesn't seem
+correct to do so, because that would change the subsystem's behavior
+with respect to all devices in the system, regardless of whether or
+not they belong to any power domains.  Thus, the only remaining
+option is to make power domain callbacks take precedence over
+subsystem callbacks.
 
----------------
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c    |   64 ++++++++++++++++++++-----------------------
+ drivers/base/power/runtime.c |   29 ++++++-------------
+ 2 files changed, 41 insertions(+), 52 deletions(-)
 
-Rafael J. Wysocki (1):
-      PM / Hibernate: Introduce CONFIG_HIBERNATE_CALLBACKS
-
-Shriram Rajagopalan (1):
-      fix XEN_SAVE_RESTORE Kconfig dependencies
+Index: linux-2.6/drivers/base/power/runtime.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/runtime.c
++++ linux-2.6/drivers/base/power/runtime.c
+@@ -168,7 +168,6 @@ static int rpm_check_suspend_allowed(str
+ static int rpm_idle(struct device *dev, int rpmflags)
+ {
+ 	int (*callback)(struct device *);
+-	int (*domain_callback)(struct device *);
+ 	int retval;
+ 
+ 	retval = rpm_check_suspend_allowed(dev);
+@@ -214,7 +213,9 @@ static int rpm_idle(struct device *dev,
+ 
+ 	dev->power.idle_notification = true;
+ 
+-	if (dev->type && dev->type->pm)
++	if (dev->pwr_domain)
++		callback = dev->pwr_domain->ops.runtime_idle;
++	else if (dev->type && dev->type->pm)
+ 		callback = dev->type->pm->runtime_idle;
+ 	else if (dev->class && dev->class->pm)
+ 		callback = dev->class->pm->runtime_idle;
+@@ -223,19 +224,10 @@ static int rpm_idle(struct device *dev,
+ 	else
+ 		callback = NULL;
+ 
+-	if (dev->pwr_domain)
+-		domain_callback = dev->pwr_domain->ops.runtime_idle;
+-	else
+-		domain_callback = NULL;
+-
+-	if (callback || domain_callback) {
++	if (callback) {
+ 		spin_unlock_irq(&dev->power.lock);
+ 
+-		if (domain_callback)
+-			retval = domain_callback(dev);
+-
+-		if (!retval && callback)
+-			callback(dev);
++		callback(dev);
+ 
+ 		spin_lock_irq(&dev->power.lock);
+ 	}
+@@ -382,7 +374,9 @@ static int rpm_suspend(struct device *de
+ 
+ 	__update_runtime_status(dev, RPM_SUSPENDING);
+ 
+-	if (dev->type && dev->type->pm)
++	if (dev->pwr_domain)
++		callback = dev->pwr_domain->ops.runtime_suspend;
++	else if (dev->type && dev->type->pm)
+ 		callback = dev->type->pm->runtime_suspend;
+ 	else if (dev->class && dev->class->pm)
+ 		callback = dev->class->pm->runtime_suspend;
+@@ -400,8 +394,6 @@ static int rpm_suspend(struct device *de
+ 		else
+ 			pm_runtime_cancel_pending(dev);
+ 	} else {
+-		if (dev->pwr_domain)
+-			rpm_callback(dev->pwr_domain->ops.runtime_suspend, dev);
+  no_callback:
+ 		__update_runtime_status(dev, RPM_SUSPENDED);
+ 		pm_runtime_deactivate_timer(dev);
+@@ -582,9 +574,8 @@ static int rpm_resume(struct device *dev
+ 	__update_runtime_status(dev, RPM_RESUMING);
+ 
+ 	if (dev->pwr_domain)
+-		rpm_callback(dev->pwr_domain->ops.runtime_resume, dev);
+-
+-	if (dev->type && dev->type->pm)
++		callback = dev->pwr_domain->ops.runtime_resume;
++	else if (dev->type && dev->type->pm)
+ 		callback = dev->type->pm->runtime_resume;
+ 	else if (dev->class && dev->class->pm)
+ 		callback = dev->class->pm->runtime_resume;
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -425,10 +425,8 @@ static int device_resume_noirq(struct de
+ 
+ 	if (dev->pwr_domain) {
+ 		pm_dev_dbg(dev, state, "EARLY power domain ");
+-		pm_noirq_op(dev, &dev->pwr_domain->ops, state);
+-	}
+-
+-	if (dev->type && dev->type->pm) {
++		error = pm_noirq_op(dev, &dev->pwr_domain->ops, state);
++	} else if (dev->type && dev->type->pm) {
+ 		pm_dev_dbg(dev, state, "EARLY type ");
+ 		error = pm_noirq_op(dev, dev->type->pm, state);
+ 	} else if (dev->class && dev->class->pm) {
+@@ -516,7 +514,8 @@ static int device_resume(struct device *
+ 
+ 	if (dev->pwr_domain) {
+ 		pm_dev_dbg(dev, state, "power domain ");
+-		pm_op(dev, &dev->pwr_domain->ops, state);
++		error = pm_op(dev, &dev->pwr_domain->ops, state);
++		goto End;
+ 	}
+ 
+ 	if (dev->type && dev->type->pm) {
+@@ -628,12 +627,11 @@ static void device_complete(struct devic
+ {
+ 	device_lock(dev);
+ 
+-	if (dev->pwr_domain && dev->pwr_domain->ops.complete) {
++	if (dev->pwr_domain) {
+ 		pm_dev_dbg(dev, state, "completing power domain ");
+-		dev->pwr_domain->ops.complete(dev);
+-	}
+-
+-	if (dev->type && dev->type->pm) {
++		if (dev->pwr_domain->ops.complete)
++			dev->pwr_domain->ops.complete(dev);
++	} else if (dev->type && dev->type->pm) {
+ 		pm_dev_dbg(dev, state, "completing type ");
+ 		if (dev->type->pm->complete)
+ 			dev->type->pm->complete(dev);
+@@ -731,7 +729,12 @@ static int device_suspend_noirq(struct d
+ {
+ 	int error;
+ 
+-	if (dev->type && dev->type->pm) {
++	if (dev->pwr_domain) {
++		pm_dev_dbg(dev, state, "LATE power domain ");
++		error = pm_noirq_op(dev, &dev->pwr_domain->ops, state);
++		if (error)
++			return error;
++	} else if (dev->type && dev->type->pm) {
+ 		pm_dev_dbg(dev, state, "LATE type ");
+ 		error = pm_noirq_op(dev, dev->type->pm, state);
+ 		if (error)
+@@ -748,11 +751,6 @@ static int device_suspend_noirq(struct d
+ 			return error;
+ 	}
+ 
+-	if (dev->pwr_domain) {
+-		pm_dev_dbg(dev, state, "LATE power domain ");
+-		pm_noirq_op(dev, &dev->pwr_domain->ops, state);
+-	}
+-
+ 	return 0;
+ }
+ 
+@@ -840,21 +838,27 @@ static int __device_suspend(struct devic
+ 		goto End;
+ 	}
+ 
++	if (dev->pwr_domain) {
++		pm_dev_dbg(dev, state, "power domain ");
++		error = pm_op(dev, &dev->pwr_domain->ops, state);
++		goto End;
++	}
++
+ 	if (dev->type && dev->type->pm) {
+ 		pm_dev_dbg(dev, state, "type ");
+ 		error = pm_op(dev, dev->type->pm, state);
+-		goto Domain;
++		goto End;
+ 	}
+ 
+ 	if (dev->class) {
+ 		if (dev->class->pm) {
+ 			pm_dev_dbg(dev, state, "class ");
+ 			error = pm_op(dev, dev->class->pm, state);
+-			goto Domain;
++			goto End;
+ 		} else if (dev->class->suspend) {
+ 			pm_dev_dbg(dev, state, "legacy class ");
+ 			error = legacy_suspend(dev, state, dev->class->suspend);
+-			goto Domain;
++			goto End;
+ 		}
+ 	}
+ 
+@@ -868,12 +872,6 @@ static int __device_suspend(struct devic
+ 		}
+ 	}
+ 
+- Domain:
+-	if (!error && dev->pwr_domain) {
+-		pm_dev_dbg(dev, state, "power domain ");
+-		pm_op(dev, &dev->pwr_domain->ops, state);
+-	}
+-
+  End:
+ 	device_unlock(dev);
+ 	complete_all(&dev->power.completion);
+@@ -964,7 +962,14 @@ static int device_prepare(struct device
+ 
+ 	device_lock(dev);
+ 
+-	if (dev->type && dev->type->pm) {
++	if (dev->pwr_domain) {
++		pm_dev_dbg(dev, state, "preparing power domain ");
++		if (dev->pwr_domain->ops.prepare)
++			error = dev->pwr_domain->ops.prepare(dev);
++		suspend_report_result(dev->pwr_domain->ops.prepare, error);
++		if (error)
++			goto End;
++	} else if (dev->type && dev->type->pm) {
+ 		pm_dev_dbg(dev, state, "preparing type ");
+ 		if (dev->type->pm->prepare)
+ 			error = dev->type->pm->prepare(dev);
+@@ -983,13 +988,6 @@ static int device_prepare(struct device
+ 		if (dev->bus->pm->prepare)
+ 			error = dev->bus->pm->prepare(dev);
+ 		suspend_report_result(dev->bus->pm->prepare, error);
+-		if (error)
+-			goto End;
+-	}
+-
+-	if (dev->pwr_domain && dev->pwr_domain->ops.prepare) {
+-		pm_dev_dbg(dev, state, "preparing power domain ");
+-		dev->pwr_domain->ops.prepare(dev);
+ 	}
+ 
+  End:
