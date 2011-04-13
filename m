@@ -1,17 +1,16 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
-	?
-Date: Wed, 13 Apr 2011 17:11:10 -0400
-Message-ID: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw__1660.54052901945$1302729506$gmane$org@mail.gmail.com>
-References: <BANLkTi=F-C-vwX4PGGfbkdTBw3OWL-twfg@mail.gmail.com>
-	<201104132258.17705.rjw@sisk.pl>
-	<BANLkTiknfeTj6GD0t-ekMoaS1QYQBVyBjQ@mail.gmail.com>
-	<20110413210546.GC16830@elf.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCH] Current status,
+	suspend-to-disk support on ARM
+Date: Wed, 13 Apr 2011 23:38:02 +0200
+Message-ID: <201104132338.03003.rjw__29494.3249821246$1302730793$gmane$org@sisk.pl>
+References: <alpine.DEB.2.00.1104041424310.690@localhost6.localdomain6>
+	<20110412183208.GC26916@elf.ucw.cz>
+	<alpine.DEB.2.00.1104131020080.29883@localhost6.localdomain6>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110413210546.GC16830@elf.ucw.cz>
+In-Reply-To: <alpine.DEB.2.00.1104131020080.29883@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,58 +20,228 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: frank.hofmann@tomtom.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBcHIgMTMsIDIwMTEgYXQgMTc6MDUsIFBhdmVsIE1hY2hlayB3cm90ZToKPiBPbiBX
-ZWQgMjAxMS0wNC0xMyAxNzowMjo0NSwgTWlrZSBGcnlzaW5nZXIgd3JvdGU6Cj4+IE9uIFdlZCwg
-QXByIDEzLCAyMDExIGF0IDE2OjU4LCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPj4gPiBPbiBX
-ZWRuZXNkYXksIEFwcmlsIDEzLCAyMDExLCBNaWtlIEZyeXNpbmdlciB3cm90ZToKPj4gPj4gd2hl
-biB3ZSBzdXNwZW5kL3Jlc3VtZSBCbGFja2ZpbiBTTVAgc3lzdGVtcywgd2Ugbm90aWNlIHRoYXQg
-dGhlCj4+ID4+IGZyZWV6ZXIgY29kZSBydW5zIG9uIG11bHRpcGxlIGNvcmVzLiDCoHRoaXMgaXMg
-b2YgY291cnNlIHdoYXQgeW91IHdhbnQKPj4gPj4gLS0gZnJlZXplIHByb2Nlc3NlcyBpbiBwYXJh
-bGxlbC4gwqBob3dldmVyLCB0aGUgY29kZSBvbmx5IHVzZXMgbm9uLXNtcAo+PiA+PiBiYXNlZCBi
-YXJyaWVycyB3aGljaCBjYXVzZXMgdXMgcHJvYmxlbXMgLi4uIG91ciBjb3JlcyBuZWVkIHNvZnR3
-YXJlCj4+ID4+IHN1cHBvcnQgdG8ga2VlcCBjYWNoZXMgaW4gc3luYywgc28gb3VyIHNtcCBiYXJy
-aWVycyBkbyBqdXN0IHRoYXQuIMKgYnV0Cj4+ID4+IHRoZSBub24tc21wIGJhcnJpZXJzIGRvIG5v
-dCwgYW5kIHNvIHRoZSBmcm96ZW4vdGhhd2VkIHByb2Nlc3Nlcwo+PiA+PiByYW5kb21seSBnZXQg
-c3R1Y2sgaW4gdGhlIHdyb25nIHRhc2sgc3RhdGUuCj4+ID4+Cj4+ID4+IHRoaW5raW5nIGFib3V0
-IGl0LCBzaG91bGRudCB0aGUgZnJlZXplciBjb2RlIGJlIHVzaW5nIHNtcCBiYXJyaWVycyA/Cj4+
-ID4KPj4gPiBZZXMsIGl0IHNob3VsZCwgYnV0IHJtYigpIGFuZCB3bWIoKSBhcmUgc3VwcG9zZWQg
-dG8gYmUgU01QIGJhcnJpZXJzLgo+PiA+Cj4+ID4gT3IgZG8geW91IG1lYW4gc29tZXRoaW5nIGRp
-ZmZlcmVudD8KPj4KPj4gdGhlbiB3aGF0J3MgdGhlIGRpZmYgYmV0d2VlbiBzbXBfcm1iKCkgYW5k
-IHJtYigpID8KPj4KPj4gdGhpcyBpcyB3aGF0IGknbSBwcm9wb3Npbmc6Cj4+IC0tLSBhL2tlcm5l
-bC9mcmVlemVyLmMKPj4gKysrIGIva2VybmVsL2ZyZWV6ZXIuYwo+PiBAQCAtMTcsNyArMTcsNyBA
-QCBzdGF0aWMgaW5saW5lIHZvaWQgZnJvemVuX3Byb2Nlc3Modm9pZCkKPj4gwqB7Cj4+IMKgIMKg
-IGlmICghdW5saWtlbHkoY3VycmVudC0+ZmxhZ3MgJiBQRl9OT0ZSRUVaRSkpIHsKPj4gwqAgwqAg
-wqAgwqAgY3VycmVudC0+ZmxhZ3MgfD0gUEZfRlJPWkVOOwo+PiAtIMKgIMKgIMKgIHdtYigpOwo+
-PiArIMKgIMKgIMKgIHNtcF93bWIoKTsKPj4gwqAgwqAgfQo+PiDCoCDCoCBjbGVhcl9mcmVlemVf
-ZmxhZyhjdXJyZW50KTsKPj4gwqB9Cj4+IEBAIC05Myw3ICs5Myw3IEBAIGJvb2wgZnJlZXplX3Rh
-c2soc3RydWN0IHRhc2tfc3RydWN0ICpwLCBib29sIHNpZ19vbmx5KQo+PiDCoCDCoCDCoCogdGhl
-IHRhc2sgYXMgZnJvemVuIGFuZCBuZXh0IGNsZWFycyBpdHMgVElGX0ZSRUVaRS4KPj4gwqAgwqAg
-wqAqLwo+PiDCoCDCoCBpZiAoIWZyZWV6aW5nKHApKSB7Cj4+IC0gwqAgwqAgwqAgcm1iKCk7Cj4+
-ICsgwqAgwqAgwqAgc21wX3JtYigpOwo+PiDCoCDCoCDCoCDCoCBpZiAoZnJvemVuKHApKQo+PiDC
-oCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gZmFsc2U7Cj4KPiBzbXBfcm1iKCkgaXMgTk9QIG9uIHVu
-aXByb2Nlc3Nvci4KPgo+IEkgYmVsaWV2ZSB0aGUgY29kZSBpcyBjb3JyZWN0IGFzIGlzLgoKdGhh
-dCBpc250IHdoYXQgdGhlIGNvZGUgLyBkb2N1bWVudGF0aW9uIHNheXMuICB1bmxlc3MgaSdtIHJl
-YWRpbmcgdGhlbQp3cm9uZywgYm90aCBzZWVtIHRvIGluZGljYXRlIHRoYXQgdGhlIHByb3Bvc2Vk
-IHBhdGNoIGlzIHdoYXQgd2UKYWN0dWFsbHkgd2FudC4KCmluY2x1ZGUvbGludXgvY29tcGlsZXIt
-Z2NjLmg6CiNkZWZpbmUgYmFycmllcigpIF9fYXNtX18gX192b2xhdGlsZV9fKCIiOiA6IDoibWVt
-b3J5IikKCmluY2x1ZGUvYXNtLWdlbmVyaWMvc3lzdGVtLmg6CiNkZWZpbmUgbWIoKSAgICBhc20g
-dm9sYXRpbGUgKCIiOiA6IDoibWVtb3J5IikKI2RlZmluZSBybWIoKSAgIG1iKCkKI2RlZmluZSB3
-bWIoKSAgIGFzbSB2b2xhdGlsZSAoIiI6IDogOiJtZW1vcnkiKQoKI2lmZGVmIENPTkZJR19TTVAK
-I2RlZmluZSBzbXBfbWIoKSAgICBtYigpCiNkZWZpbmUgc21wX3JtYigpICAgcm1iKCkKI2RlZmlu
-ZSBzbXBfd21iKCkgICB3bWIoKQojZWxzZQojZGVmaW5lIHNtcF9tYigpICAgIGJhcnJpZXIoKQoj
-ZGVmaW5lIHNtcF9ybWIoKSAgIGJhcnJpZXIoKQojZGVmaW5lIHNtcF93bWIoKSAgIGJhcnJpZXIo
-KQojZW5kaWYKCkRvY3VtZW50YXRpb24vbWVtb3J5LWJhcnJpZXJzLnR4dDoKU01QIG1lbW9yeSBi
-YXJyaWVycyBhcmUgcmVkdWNlZCB0byBjb21waWxlciBiYXJyaWVycyBvbiB1bmlwcm9jZXNzb3Ig
-Y29tcGlsZWQKc3lzdGVtcyBiZWNhdXNlIGl0IGlzIGFzc3VtZWQgdGhhdCBhIENQVSB3aWxsIGFw
-cGVhciB0byBiZSBzZWxmLWNvbnNpc3RlbnQsCmFuZCB3aWxsIG9yZGVyIG92ZXJsYXBwaW5nIGFj
-Y2Vzc2VzIGNvcnJlY3RseSB3aXRoIHJlc3BlY3QgdG8gaXRzZWxmLgoKWyFdIE5vdGUgdGhhdCBT
-TVAgbWVtb3J5IGJhcnJpZXJzIF9tdXN0XyBiZSB1c2VkIHRvIGNvbnRyb2wgdGhlIG9yZGVyaW5n
-IG9mCnJlZmVyZW5jZXMgdG8gc2hhcmVkIG1lbW9yeSBvbiBTTVAgc3lzdGVtcywgdGhvdWdoIHRo
-ZSB1c2Ugb2YgbG9ja2luZyBpbnN0ZWFkCmlzIHN1ZmZpY2llbnQuCi1taWtlCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
-dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Wednesday, April 13, 2011, Frank Hofmann wrote:
+> 
+> On Tue, 12 Apr 2011, Pavel Machek wrote:
+> 
+> > Hi!
+> [ ... ]
+> >> But then on all architectures in kernels as far back as 2.6.32 it
+> >> doesn't look like save/restore_processor state are actually
+> >> adjusting the preempt count; nowhere do they call
+> >> preempt_enable/disable.
+> >
+> > You might need to dig a bit more. IIRC it manipulated FPU or something
+> > long time ago.
+> 
+> Actually, it's the other way round - kernel_fpu_begin/end are users of 
+> preempt_disable/enable, quote Documentation/preempt-locking.txt:
+> 
+>  	Note, some FPU functions are already explicitly preempt safe.  For example,
+>  	kernel_fpu_begin and kernel_fpu_end will disable and enable preemption.
+>  	However, math_state_restore must be called with preemption disabled.
+> 
+> But kernel_fpu_begin/end functions are x86-specific. At best, that makes 
+> the comment in hibernate.c (which refers to "needing" preempt_dis/enable) 
+> misleading.
+
+This comment is outright wrong in fact, sorry about that.  Evidently,
+restore_processor_state() is called right after the "restore control flow
+magically appears here" comment and it _does_ use the saved state.
+
+I'll remove that comment.
+
+> x86, in this, is an odd one out, though, in ; On ARM, for example, saving 
+> the FP context happens through a PM notifier.
+> 
+> In addition, it seems that the code (at least in hibernate.c, 
+> create_image) does anyway:
+> 
+>  	- go single-cpu (disables all but current)
+>  	- switch interrupts off (local_irq_disable)
+> 
+> before going into save_processor_state - wouldn't that mean all conditions 
+> for nonpreemptable (or all conditions for a stable FP state) are already 
+> met by that time ?
+
+Yes, it does.
+
+> >> Finally, on things like e.g. the floating point context saves:
+> >> Wouldn't this happen as part of freezing processes (in the early
+> >> stages of suspend), and/or as part of device quiesce ?
+> >
+> > Are you sure? I thought we have (had?) concept of lazy FPU
+> > saving... and occassionaly kernel uses FPU too (with some
+> > precautions).
+> 
+> speaking in particular for ARM, I'd deflect the answer to:
+> 
+>  	http://www.spinics.net/lists/linux-pm/msg22839.html
+> 
+> It's lazy but it does happen ... without any specific need to have the 
+> "bracketing" that save/restore_processor_state are doing.
+
+save/restore_processor_state() are arch-specific and do whatever is necessary
+or useful for the given architecture.  The saving/restoring of the FPU state
+at those points happens to be useful for x86 IIRC.
+
+> Food for thought:
+> 
+> I mean, the code in hibernate.c really looks like this (quote):
+> 
+> 
+> static int create_image(int platform_mode)
+> {
+>          int error;
+> 
+>          error = arch_prepare_suspend();				<===== platform hook 1
+
+Architecture hook rather and it would have been one if there had been any
+architecture actually providing anything different from a NOP.  IOW, to be
+removed (forgot about it last time I did a code cleanup).
+
+> [ ... ]
+>          error = dpm_suspend_noirq(PMSG_FREEZE);			<===== platform hook 2
+
+Not really.  This is a device core callback for the last stage of device freeze.
+
+> [ ... ]
+>          error = platform_pre_snapshot(platform_mode);		<===== platform hook 3
+
+This is a platform hook.
+
+> [ ... ]
+>          error = disable_nonboot_cpus();				<===== platform hook 4
+
+Not a platform hook.  This one disables the nonboot CPUs using hotplug and this
+mechanism is supposed to work that way on all platforms.
+
+> [ ... ]
+>          error = sysdev_suspend(PMSG_FREEZE);			<===== ...
+>          if (!error)
+>                  error = syscore_suspend();			<===== ...
+> [ ... ]
+
+These suspend things that are "below" devices (like interrupt controllers
+and such stuff) and by no means are platform hooks.
+
+>          in_suspend = 1;
+>          save_processor_state();					<===== platform hook N-1
+
+This is an architecture hook for saving the state of the boot CPU.
+
+>          error = swsusp_arch_suspend();				<===== platform hook N
+
+This one is needed on x86 so that we can point the CPU to the original
+page tables after we've restored the target kernel from the image.
+
+> [ ... ]
+>          restore_processor_state();				<===== platform hook N+1
+> [ ... ]
+> 
+> And that's _without_ the platform hibernation ops hooks code in 
+> hibernate(), which calls this one.
+
+Actually not without, platform_pre_snapshot() is one of those.
+
+> This code is full of places where to plug save/restore code (or any sort 
+> of "bracketing" begin/finish hooks) into.
+> It's surprising that with all these hooks existing already, "bracketing" 
+> of swsusp_arch_suspend() by save/restore_processor state is so sacrosanct.
+> 
+> These are _three_ arch-dependent hooks in three consecutive lines of code.
+> 
+> If a platform requires the bracketing, why can it not do that part in 
+> syscore_suspend() ? Or why not simply embed it in swsusp_arch_suspend() ?
+
+save/restore_processor_state() are also used by the x86's suspend to RAM code.
+Of course, you can argue that they should be kept x86-specific, but since
+those features were originally developed on x86, the code still remains
+x86-centric in that respect.
+
+> As said, wrt. to save/restore_processor_state, x86 is definitely the odd 
+> one out (and not a good example) with the monstrosity of code; all other 
+> architectures either have trivial or even completely empty code for
+> save/restore_processor_state().
+> 
+> Should we really force everyone to provide an (as good as) empty hook just 
+> because x86 at one point had chosen to have it ?
+
+I don't see much reason for that, but since none of the guys who implemented
+those empty hooks has ever complained and/or attempted to change things, there
+has not been much reason to work in that direction. :-)
+
+> >>>> @@ -195,6 +195,14 @@ config VECTORS_BASE
+> >>>> 	help
+> >>>> 	  The base address of exception vectors.
+> >>>>
+> >>>> +config ARCH_HIBERNATION_POSSIBLE
+> >>>> +	bool
+> >>>> +	help
+> >>>> +	  If the machine architecture supports suspend-to-disk
+> >>>> +	  it should select this automatically for you.
+> >>>> +	  Otherwise, say 'Y' at your own peril.
+> >>>> +
+> >>>
+> >>> Good for debugging, but not good for mainline.
+> >>
+> >> How would this be done better ?
+> >
+> > Just set the ARCH_HIBERNATION_POSSIBLE=y in the ARM code now that ARM
+> > can do it. No need to ask user.
+> 
+> I.e. preferrably:
+> 
+>  	config ARCH_HIBERNATION_POSSIBLE
+>  		def_bool n
+
+You don't need to use "def_bool n", "bool" alone will do just fine.
+
+> plus the "select" within the actual platform config subsection for those 
+> that have it.
+> 
+> To stress the point: "ARM can do it" would be an exaggeration even if 
+> those changes went in, because only some ARM types will have it.
+> 
+> The situation on ARM is identical to e.g. SuperH, see arch/sh/Kconfig,
+> 
+> config SUPERH32
+>          def_bool ARCH = "sh"
+> [ ... various ... ]
+>          select ARCH_HIBERNATION_POSSIBLE if MMU
+> 
+> config ARCH_HIBERNATION_POSSIBLE
+>          def_bool n
+> 
+
+Yes, something like this.
+
+> >> @@ -412,8 +413,7 @@ static int resume_target_kernel(bool platform_mode)
+> >>  	if (error)
+> >>  		goto Enable_irqs;
+> >>
+> >> -	/* We'll ignore saved state, but this gets preempt count (etc) right */
+> >> -	save_processor_state();
+> >> +	preempt_disable();
+
+Why do you need that preempt_disable() here?
+
+> >>  	error = restore_highmem();
+> >>  	if (!error) {
+> >>  		error = swsusp_arch_resume();
+> >
+> > Yep. save_processor_state() on x86 does kernel_fpu_begin(), and than
+> > one needs to be balanced IIRC.
+> 
+> 
+> The needs of x86 force generic kernel changes ;-)
+
+Not necessarily.  In fact, implementing that feature on different architectures
+is a good opportunity to clean up the code if necessary.
+
+Thanks,
+Rafael
