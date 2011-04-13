@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
  ?
-Date: Wed, 13 Apr 2011 18:04:30 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1104131757430.2005-100000__35479.1129277602$1302732328$gmane$org@iolanthe.rowland.org>
-References: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
+Date: Wed, 13 Apr 2011 18:11:48 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104131805090.2005-100000__47613.4880599149$1302732843$gmane$org@iolanthe.rowland.org>
+References: <201104132353.09282.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
+In-Reply-To: <201104132353.09282.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAxMyBBcHIgMjAxMSwgTWlrZSBGcnlzaW5nZXIgd3JvdGU6Cgo+IE9uIFdlZCwgQXBy
-IDEzLCAyMDExIGF0IDE3OjA1LCBQYXZlbCBNYWNoZWsgd3JvdGU6Cj4gPiBPbiBXZWQgMjAxMS0w
-NC0xMyAxNzowMjo0NSwgTWlrZSBGcnlzaW5nZXIgd3JvdGU6Cj4gCj4gPj4gdGhlbiB3aGF0J3Mg
-dGhlIGRpZmYgYmV0d2VlbiBzbXBfcm1iKCkgYW5kIHJtYigpID8KPiA+Pgo+ID4+IHRoaXMgaXMg
-d2hhdCBpJ20gcHJvcG9zaW5nOgo+ID4+IC0tLSBhL2tlcm5lbC9mcmVlemVyLmMKPiA+PiArKysg
-Yi9rZXJuZWwvZnJlZXplci5jCj4gPj4gQEAgLTE3LDcgKzE3LDcgQEAgc3RhdGljIGlubGluZSB2
-b2lkIGZyb3plbl9wcm9jZXNzKHZvaWQpCj4gPj4gwqB7Cj4gPj4gwqAgwqAgaWYgKCF1bmxpa2Vs
-eShjdXJyZW50LT5mbGFncyAmIFBGX05PRlJFRVpFKSkgewo+ID4+IMKgIMKgIMKgIMKgIGN1cnJl
-bnQtPmZsYWdzIHw9IFBGX0ZST1pFTjsKPiA+PiAtIMKgIMKgIMKgIHdtYigpOwo+ID4+ICsgwqAg
-wqAgwqAgc21wX3dtYigpOwo+ID4+IMKgIMKgIH0KPiA+PiDCoCDCoCBjbGVhcl9mcmVlemVfZmxh
-ZyhjdXJyZW50KTsKPiA+PiDCoH0KPiA+PiBAQCAtOTMsNyArOTMsNyBAQCBib29sIGZyZWV6ZV90
-YXNrKHN0cnVjdCB0YXNrX3N0cnVjdCAqcCwgYm9vbCBzaWdfb25seSkKPiA+PiDCoCDCoCDCoCog
-dGhlIHRhc2sgYXMgZnJvemVuIGFuZCBuZXh0IGNsZWFycyBpdHMgVElGX0ZSRUVaRS4KPiA+PiDC
-oCDCoCDCoCovCj4gPj4gwqAgwqAgaWYgKCFmcmVlemluZyhwKSkgewo+ID4+IC0gwqAgwqAgwqAg
-cm1iKCk7Cj4gPj4gKyDCoCDCoCDCoCBzbXBfcm1iKCk7Cj4gPj4gwqAgwqAgwqAgwqAgaWYgKGZy
-b3plbihwKSkKPiA+PiDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gZmFsc2U7Cj4gPgo+ID4gc21w
-X3JtYigpIGlzIE5PUCBvbiB1bmlwcm9jZXNzb3IuCj4gPgo+ID4gSSBiZWxpZXZlIHRoZSBjb2Rl
-IGlzIGNvcnJlY3QgYXMgaXMuCj4gCj4gdGhhdCBpc250IHdoYXQgdGhlIGNvZGUgLyBkb2N1bWVu
-dGF0aW9uIHNheXMuICB1bmxlc3MgaSdtIHJlYWRpbmcgdGhlbQo+IHdyb25nLCBib3RoIHNlZW0g
-dG8gaW5kaWNhdGUgdGhhdCB0aGUgcHJvcG9zZWQgcGF0Y2ggaXMgd2hhdCB3ZQo+IGFjdHVhbGx5
-IHdhbnQuCgpUaGUgZXhpc3RpbmcgY29kZSBpcyBjb3JyZWN0IGJ1dCBpdCBpc24ndCBvcHRpbWFs
-LgoKd21iKCkgYW5kIHJtYigpIGFyZSBoZWF2eS1kdXR5IG9wZXJhdGlvbnMsIGFuZCB5b3UgZG9u
-J3Qgd2FudCB0byBjYWxsCnRoZW0gd2hlbiB0aGV5IGFyZW4ndCBuZWVkZWQuICBUaGF0J3MgZXhh
-Y3RseSB3aGF0IHNtcF93bWIoKSBhbmQKc21wX3JtYigpIGFyZSBmb3IgLS0gdGhleSBjYWxsIHdt
-YigpIGFuZCBybWIoKSwgYnV0IG9ubHkgaW4gU01QIAprZXJuZWxzLgoKVW5sZXNzIHlvdSBuZWVk
-IHRvIHN5bmNocm9uaXplIHdpdGggYW5vdGhlciBwcm9jZXNzb3IgKG5vdCBuZWNlc3NhcmlseSAK
-YSBDUFUsIGl0IGNvdWxkIGJlIHNvbWV0aGluZyBlbWJlZGRlZCB3aXRoaW4gYSBkZXZpY2UpLCB5
-b3Ugc2hvdWxkIAphbHdheXMgdXNlIHNtcF93bWIoKSBhbmQgc21wX3JtYigpIHJhdGhlciB0aGFu
-IHdtYigpIGFuZCBybWIoKS4KCkFsYW4gU3Rlcm4KCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Wed, 13 Apr 2011, Rafael J. Wysocki wrote:
+
+> The above means that smp_*mb() are defined as *mb() if CONFIG_SMP is set,
+> which basically means that *mb() are more restrictive than the corresponding
+> smp_*mb().  More precisely, they also cover the cases in which the CPU
+> reorders instructions on uniprocessor, which we definitely want to cover.
+> 
+> IOW, your patch would break things on uniprocessor where the CPU reorders
+> instructions.
+
+How could anything break on a UP system?  CPUs don't reorder 
+instructions that drastically.  For example, no CPU will ever violate
+this assertion:
+
+	x = 0;
+	y = x;
+	x = 1;
+	assert(y == 0);
+
+even if it does reorder the second and third statements internally.  
+This is guaranteed by the C language specification.
+
+> > Documentation/memory-barriers.txt:
+> > SMP memory barriers are reduced to compiler barriers on uniprocessor compiled
+> > systems because it is assumed that a CPU will appear to be self-consistent,
+> > and will order overlapping accesses correctly with respect to itself.
+> 
+> Exactly, which is not guaranteed in general (e.g. on Alpha).  That is, some
+> CPUs can reorder instructions in such a way that a compiler barrier is not
+> sufficient to prevent breakage.
+
+I don't think this is right.  You _can_ assume that Alphas appear to be
+self-consistent.  If they didn't, you wouldn't be able to use them at
+all.
+
+Alan Stern
