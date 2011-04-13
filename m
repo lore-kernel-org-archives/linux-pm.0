@@ -1,14 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
-	?
-Date: Wed, 13 Apr 2011 23:53:09 +0200
-Message-ID: <201104132353.09282.rjw__31333.7819105529$1302731621$gmane$org@sisk.pl>
-References: <BANLkTi=F-C-vwX4PGGfbkdTBw3OWL-twfg@mail.gmail.com>
-	<20110413210546.GC16830@elf.ucw.cz>
-	<BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
+ ?
+Date: Wed, 13 Apr 2011 18:04:30 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104131757430.2005-100000__35479.1129277602$1302732328$gmane$org@iolanthe.rowland.org>
+References: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -24,94 +22,35 @@ To: Mike Frysinger <vapier@gentoo.org>
 Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, April 13, 2011, Mike Frysinger wrote:
-> On Wed, Apr 13, 2011 at 17:05, Pavel Machek wrote:
-> > On Wed 2011-04-13 17:02:45, Mike Frysinger wrote:
-> >> On Wed, Apr 13, 2011 at 16:58, Rafael J. Wysocki wrote:
-> >> > On Wednesday, April 13, 2011, Mike Frysinger wrote:
-> >> >> when we suspend/resume Blackfin SMP systems, we notice that the
-> >> >> freezer code runs on multiple cores.  this is of course what you want
-> >> >> -- freeze processes in parallel.  however, the code only uses non-smp
-> >> >> based barriers which causes us problems ... our cores need software
-> >> >> support to keep caches in sync, so our smp barriers do just that.  but
-> >> >> the non-smp barriers do not, and so the frozen/thawed processes
-> >> >> randomly get stuck in the wrong task state.
-> >> >>
-> >> >> thinking about it, shouldnt the freezer code be using smp barriers ?
-> >> >
-> >> > Yes, it should, but rmb() and wmb() are supposed to be SMP barriers.
-> >> >
-> >> > Or do you mean something different?
-> >>
-> >> then what's the diff between smp_rmb() and rmb() ?
-> >>
-> >> this is what i'm proposing:
-> >> --- a/kernel/freezer.c
-> >> +++ b/kernel/freezer.c
-> >> @@ -17,7 +17,7 @@ static inline void frozen_process(void)
-> >>  {
-> >>     if (!unlikely(current->flags & PF_NOFREEZE)) {
-> >>         current->flags |= PF_FROZEN;
-> >> -       wmb();
-> >> +       smp_wmb();
-> >>     }
-> >>     clear_freeze_flag(current);
-> >>  }
-> >> @@ -93,7 +93,7 @@ bool freeze_task(struct task_struct *p, bool sig_only)
-> >>      * the task as frozen and next clears its TIF_FREEZE.
-> >>      */
-> >>     if (!freezing(p)) {
-> >> -       rmb();
-> >> +       smp_rmb();
-> >>         if (frozen(p))
-> >>             return false;
-> >
-> > smp_rmb() is NOP on uniprocessor.
-> >
-> > I believe the code is correct as is.
-> 
-> that isnt what the code / documentation says.  unless i'm reading them
-> wrong, both seem to indicate that the proposed patch is what we
-> actually want.
-
-Not really.
-
-> include/linux/compiler-gcc.h:
-> #define barrier() __asm__ __volatile__("": : :"memory")
-> 
-> include/asm-generic/system.h:
-> #define mb()    asm volatile ("": : :"memory")
-> #define rmb()   mb()
-> #define wmb()   asm volatile ("": : :"memory")
-> 
-> #ifdef CONFIG_SMP
-> #define smp_mb()    mb()
-> #define smp_rmb()   rmb()
-> #define smp_wmb()   wmb()
-> #else
-> #define smp_mb()    barrier()
-> #define smp_rmb()   barrier()
-> #define smp_wmb()   barrier()
-> #endif
-
-The above means that smp_*mb() are defined as *mb() if CONFIG_SMP is set,
-which basically means that *mb() are more restrictive than the corresponding
-smp_*mb().  More precisely, they also cover the cases in which the CPU
-reorders instructions on uniprocessor, which we definitely want to cover.
-
-IOW, your patch would break things on uniprocessor where the CPU reorders
-instructions.
-
-> Documentation/memory-barriers.txt:
-> SMP memory barriers are reduced to compiler barriers on uniprocessor compiled
-> systems because it is assumed that a CPU will appear to be self-consistent,
-> and will order overlapping accesses correctly with respect to itself.
-
-Exactly, which is not guaranteed in general (e.g. on Alpha).  That is, some
-CPUs can reorder instructions in such a way that a compiler barrier is not
-sufficient to prevent breakage.
-
-The code _may_ be wrong for a different reason, though.  I need to check.
-
-Thanks,
-Rafael
+T24gV2VkLCAxMyBBcHIgMjAxMSwgTWlrZSBGcnlzaW5nZXIgd3JvdGU6Cgo+IE9uIFdlZCwgQXBy
+IDEzLCAyMDExIGF0IDE3OjA1LCBQYXZlbCBNYWNoZWsgd3JvdGU6Cj4gPiBPbiBXZWQgMjAxMS0w
+NC0xMyAxNzowMjo0NSwgTWlrZSBGcnlzaW5nZXIgd3JvdGU6Cj4gCj4gPj4gdGhlbiB3aGF0J3Mg
+dGhlIGRpZmYgYmV0d2VlbiBzbXBfcm1iKCkgYW5kIHJtYigpID8KPiA+Pgo+ID4+IHRoaXMgaXMg
+d2hhdCBpJ20gcHJvcG9zaW5nOgo+ID4+IC0tLSBhL2tlcm5lbC9mcmVlemVyLmMKPiA+PiArKysg
+Yi9rZXJuZWwvZnJlZXplci5jCj4gPj4gQEAgLTE3LDcgKzE3LDcgQEAgc3RhdGljIGlubGluZSB2
+b2lkIGZyb3plbl9wcm9jZXNzKHZvaWQpCj4gPj4gwqB7Cj4gPj4gwqAgwqAgaWYgKCF1bmxpa2Vs
+eShjdXJyZW50LT5mbGFncyAmIFBGX05PRlJFRVpFKSkgewo+ID4+IMKgIMKgIMKgIMKgIGN1cnJl
+bnQtPmZsYWdzIHw9IFBGX0ZST1pFTjsKPiA+PiAtIMKgIMKgIMKgIHdtYigpOwo+ID4+ICsgwqAg
+wqAgwqAgc21wX3dtYigpOwo+ID4+IMKgIMKgIH0KPiA+PiDCoCDCoCBjbGVhcl9mcmVlemVfZmxh
+ZyhjdXJyZW50KTsKPiA+PiDCoH0KPiA+PiBAQCAtOTMsNyArOTMsNyBAQCBib29sIGZyZWV6ZV90
+YXNrKHN0cnVjdCB0YXNrX3N0cnVjdCAqcCwgYm9vbCBzaWdfb25seSkKPiA+PiDCoCDCoCDCoCog
+dGhlIHRhc2sgYXMgZnJvemVuIGFuZCBuZXh0IGNsZWFycyBpdHMgVElGX0ZSRUVaRS4KPiA+PiDC
+oCDCoCDCoCovCj4gPj4gwqAgwqAgaWYgKCFmcmVlemluZyhwKSkgewo+ID4+IC0gwqAgwqAgwqAg
+cm1iKCk7Cj4gPj4gKyDCoCDCoCDCoCBzbXBfcm1iKCk7Cj4gPj4gwqAgwqAgwqAgwqAgaWYgKGZy
+b3plbihwKSkKPiA+PiDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gZmFsc2U7Cj4gPgo+ID4gc21w
+X3JtYigpIGlzIE5PUCBvbiB1bmlwcm9jZXNzb3IuCj4gPgo+ID4gSSBiZWxpZXZlIHRoZSBjb2Rl
+IGlzIGNvcnJlY3QgYXMgaXMuCj4gCj4gdGhhdCBpc250IHdoYXQgdGhlIGNvZGUgLyBkb2N1bWVu
+dGF0aW9uIHNheXMuICB1bmxlc3MgaSdtIHJlYWRpbmcgdGhlbQo+IHdyb25nLCBib3RoIHNlZW0g
+dG8gaW5kaWNhdGUgdGhhdCB0aGUgcHJvcG9zZWQgcGF0Y2ggaXMgd2hhdCB3ZQo+IGFjdHVhbGx5
+IHdhbnQuCgpUaGUgZXhpc3RpbmcgY29kZSBpcyBjb3JyZWN0IGJ1dCBpdCBpc24ndCBvcHRpbWFs
+LgoKd21iKCkgYW5kIHJtYigpIGFyZSBoZWF2eS1kdXR5IG9wZXJhdGlvbnMsIGFuZCB5b3UgZG9u
+J3Qgd2FudCB0byBjYWxsCnRoZW0gd2hlbiB0aGV5IGFyZW4ndCBuZWVkZWQuICBUaGF0J3MgZXhh
+Y3RseSB3aGF0IHNtcF93bWIoKSBhbmQKc21wX3JtYigpIGFyZSBmb3IgLS0gdGhleSBjYWxsIHdt
+YigpIGFuZCBybWIoKSwgYnV0IG9ubHkgaW4gU01QIAprZXJuZWxzLgoKVW5sZXNzIHlvdSBuZWVk
+IHRvIHN5bmNocm9uaXplIHdpdGggYW5vdGhlciBwcm9jZXNzb3IgKG5vdCBuZWNlc3NhcmlseSAK
+YSBDUFUsIGl0IGNvdWxkIGJlIHNvbWV0aGluZyBlbWJlZGRlZCB3aXRoaW4gYSBkZXZpY2UpLCB5
+b3Ugc2hvdWxkIAphbHdheXMgdXNlIHNtcF93bWIoKSBhbmQgc21wX3JtYigpIHJhdGhlciB0aGFu
+IHdtYigpIGFuZCBybWIoKS4KCkFsYW4gU3Rlcm4KCl9fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0
+cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
+L21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
