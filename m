@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp?
-Date: Thu, 14 Apr 2011 10:55:24 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1104141040060.2487-100000__15321.7230494649$1302792997$gmane$org@iolanthe.rowland.org>
-References: <201104140034.41727.rjw@sisk.pl>
+Subject: Re: freezer: should barriers be smp ?
+Date: Thu, 14 Apr 2011 11:13:58 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104141104160.2487-100000__23873.0531106286$1302794107$gmane$org@iolanthe.rowland.org>
+References: <BANLkTi=_+kYvs3_dsXifd_rkxfmFzJLttA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104140034.41727.rjw@sisk.pl>
+In-Reply-To: <BANLkTi=_+kYvs3_dsXifd_rkxfmFzJLttA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,79 +17,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 14 Apr 2011, Rafael J. Wysocki wrote:
+On Wed, 13 Apr 2011, Mike Frysinger wrote:
 
-> On Thursday, April 14, 2011, Alan Stern wrote:
-> > On Wed, 13 Apr 2011, Rafael J. Wysocki wrote:
-> > 
-> > > The above means that smp_*mb() are defined as *mb() if CONFIG_SMP is set,
-> > > which basically means that *mb() are more restrictive than the corresponding
-> > > smp_*mb().  More precisely, they also cover the cases in which the CPU
-> > > reorders instructions on uniprocessor, which we definitely want to cover.
-> > > 
-> > > IOW, your patch would break things on uniprocessor where the CPU reorders
-> > > instructions.
-> > 
-> > How could anything break on a UP system?  CPUs don't reorder 
-> > instructions that drastically.  For example, no CPU will ever violate
-> > this assertion:
-> > 
-> > 	x = 0;
-> > 	y = x;
-> > 	x = 1;
-> > 	assert(y == 0);
-> > 
-> > even if it does reorder the second and third statements internally.  
-> > This is guaranteed by the C language specification.
+> > On Wed, Apr 13, 2011 at 18:49, Rafael J. Wysocki wrote:
+
+> > In my opinion is an architecture problem, not the freezer code problem.
 > 
-> Well, you conveniently removed the patch from your reply. :-)
+> OK, we have a patch pending locally which populates all barriers with
+> this logic, but based on my understanding of things, that didnt seem
+> correct.  i guess i'm reading too much into the names ... i'd expect
+> the opposite behavior where "rmb" is only for UP needs while "smp_rmb"
+> is a rmb which additionally covers SMP.
 
-All the patch does is replace an instance of wmb() with smp_wmb() and 
-an instance of rmb() with smp_rmb().
+You are misinterpreting the names and the concepts, both.
 
-> For example, there's no reason why the CPU cannot reorder things so that
-> the "if (frozen(p))" is (speculatively) done before the "if (!freezing(p))"
-> if there's only a compiler barrier between them.
+First, you need to understand that memory barriers are needed only for
+purposes of synchronizing between two different entities capable of
+accessing memory (obviously it's not necessary to synchronize an entity
+with itself).  One of those entities is always a CPU, of course; the
+other entity could be a DMA-capable device or it could be another CPU.
 
-That's true.  On an SMP system, smp_wmb() is identical to wmb(), so
-there will be a true memory barrier when it is needed.  On a UP system,
-reordering the instructions in this way will not change the final
-result -- in particular, it won't break anything.
+A device driver might need to use memory barriers even on a UP
+platform, because it might need to synchronize the CPU with the device
+it is driving.
 
-In your example, the two tests look at different flags in *p.  
-Speculative reordering of the tests won't make any difference unless
-one of the flags gets changed in between.  On a UP system, the only way
-the flag can be changed is for the CPU to change it, in which case
-the CPU would obviously know that the speculative result had to be
-invalidated.
+But core kernel code is concerned only with CPUs.  Therefore on UP 
+systems, core kernel code (such as the freezer) never needs to use 
+memory barriers.
 
-> > > > Documentation/memory-barriers.txt:
-> > > > SMP memory barriers are reduced to compiler barriers on uniprocessor compiled
-> > > > systems because it is assumed that a CPU will appear to be self-consistent,
-> > > > and will order overlapping accesses correctly with respect to itself.
-> > > 
-> > > Exactly, which is not guaranteed in general (e.g. on Alpha).  That is, some
-> > > CPUs can reorder instructions in such a way that a compiler barrier is not
-> > > sufficient to prevent breakage.
-> > 
-> > I don't think this is right.  You _can_ assume that Alphas appear to be
-> > self-consistent.  If they didn't, you wouldn't be able to use them at
-> > all.
-> 
-> I'm quite convinced that the statement "some CPUs can reorder instructions in
-> such a way that a compiler barrier is not sufficient to prevent breakage" is
-> correct.
+That's the difference between rmb() and smp_rmb().  rmb() _always_ 
+generates a memory barrier, so it should be used only in device 
+drivers.  smp_rmb() generates a memory barrier only if CONFIG_SMP is 
+enabled; otherwise it merely generates a compiler barrier.
 
-No.  The correct statement is "Some CPUs can reorder instructions in 
-such a way that a compiler barrier is not sufficient to prevent 
-breakage on SMP systems."
-
-Just for kicks...  Which was added to the kernel first: SMP support or 
-memory barriers?  I don't know the answer; it would take a fair amount 
-of digging to find out.
+In the freezer, there is no reason to use rmb() and wmb().  It should 
+use smp_rmb() and smp_wmb().
 
 Alan Stern
