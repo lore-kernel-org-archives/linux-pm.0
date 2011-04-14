@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [RFC][PATCH] PM: Make power domain callbacks take
 	precedence over subsystem ones
-Date: Fri, 15 Apr 2011 00:45:54 +0200
-Message-ID: <201104150045.54904.rjw__26257.2074578658$1302822588$gmane$org@sisk.pl>
+Date: Fri, 15 Apr 2011 01:12:24 +0200
+Message-ID: <201104150112.24722.rjw__13928.029072895$1302822757$gmane$org@sisk.pl>
 References: <201104130205.26988.rjw@sisk.pl>
-	<BANLkTimQ6kX41-53Dw2RqEVyYzbT2qbz9Q@mail.gmail.com>
+	<Pine.LNX.4.44L0.1104130954270.2005-100000@iolanthe.rowland.org>
+	<BANLkTiknpAkUQMaq3WZSTHy2cs-vXkv08Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTimQ6kX41-53Dw2RqEVyYzbT2qbz9Q@mail.gmail.com>
+In-Reply-To: <BANLkTiknpAkUQMaq3WZSTHy2cs-vXkv08Q@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,43 +20,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, April 14, 2011, Magnus Damm wrote:
-> Hi Rafael,
-> 
-> On Wed, Apr 13, 2011 at 9:05 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wednesday, April 13, 2011, Grant Likely wrote:
+> On Wed, Apr 13, 2011 at 8:17 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Wed, 13 Apr 2011, Rafael J. Wysocki wrote:
 > >
-> > Change the PM core's behavior related to power domains in such a way
-> > that, if a power domain is defined for a given device, its callbacks
-> > will be executed instead of and not in addition to the device
-> > subsystem's PM callbacks.
+> >> From: Rafael J. Wysocki <rjw@sisk.pl>
+> >>
+> >> Change the PM core's behavior related to power domains in such a way
+> >> that, if a power domain is defined for a given device, its callbacks
+> >> will be executed instead of and not in addition to the device
+> >> subsystem's PM callbacks.
+> >>
+> >> The idea behind the initial implementation of power domains handling
+> >> by the PM core was that power domain callbacks would be executed in
+> >> addition to subsystem callbacks, so that it would be possible to
+> >> extend the subsystem callbacks by using power domains.  It turns out,
+> >> however, that this wouldn't be really convenient in some important
+> >> situations.
+> >>
+> >> For example, there are systems in which power can only be removed
+> >> from entire power domains.  On those systems it is not desirable to
+> >> execute device drivers' PM callbacks until it is known that power is
+> >> going to be removed from the devices in question, which means that
+> >> they should be executed by power domain callbacks rather then by
+> >> subsystem (e.g. bus type) PM callbacks, because subsystems generally
+> >> have no information about what devices belong to which power domain.
+> >> Thus, for instance, if the bus type in question is the platform bus
+> >> type, its PM callbacks generally should not be called in addition to
+> >> power domain callbacks, because they run device drivers' callbacks
+> >> unconditionally if defined.
+> >
+> > What about systems where it makes sense to execute the subsystem
+> > callbacks even if power isn't going to be removed from the device?
+> > It's quite possible that the subsystem could reduce the device's power
+> > consumption even when the device isn't powered down completely.
 > 
-> Thanks for your work on this! I'm very happy to see a more fine
-> grained interface for SoC specific code compared to the weak symbols
-> and other coarse grained alternatives for the platform bus.
+> The understanding Rafael and I came to was that if a power domain is
+> attached to a device, then the power domain becomes the responsible
+> party.  Normally this means it will turn around and immediately call
+> the bus_type pm ops, but it has the option to not call them if for a
+> particular system it knows better, or to defer calling them.
 > 
-> My only thought on this is if we really want to limit ourselves to
-> only control power domains using these callbacks. I can imagine that
-> some SoCs want to do other non-power domain specific operations with
-> these callbacks, and if so, perhaps using the term power domain as
-> name of the pointer in struct device would be somewhat odd. OTOH, I
-> really dislike naming discussions in general and I can't really think
-> of any good names. So it all looks more like a set of system specific
-> PM override hooks.
+> Basically, if you're using a power domain, it is assumed that the
+> power domain has particular knowledge about the system, and it should
+> have the option to override the default behaviour.
 > 
-> Or is there something that is really power domain specific with these hooks?
+> >
+> > Is the extra overhead of invoking the subsystem callback really all
+> > that troublesome?
+> 
+> It isn't an overhead problem.  It's a control & complexity problem.
+> We could try to implement a heuristic or api to control when the bus
+> type PM ops should be overridden, but I think it is cleaner to make it
+> a rule that if you implement a power domain, then that power domain
+> becomes responsible for all PM operations.
 
-Not in principle, but I think there is.  Namely, if there are two groups
-of devices belonging to the same bus type (e.g. platform) that each require
-different PM handling, it is legitimate to call them "power domains" (where
-"domain" means "a set of devices related to each other because of the way
-they need to be handled"), even if they don't share power resources.
+Well said. :-)
 
-Of course, if they do share power resources, the term is just right. :-)
+I'm taking that as an ACK for my patch if you don't mind.
 
 Thanks,
 Rafael
