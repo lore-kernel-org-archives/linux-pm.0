@@ -1,15 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 intel power: Initialize
-	MSR_IA32_ENERGY_PERF_BIAS
-Date: Thu, 14 Apr 2011 11:08:54 +0200
-Message-ID: <20110414090854.GB9248__3383.29265728152$1302772225$gmane$org@elte.hu>
-References: <alpine.LFD.2.02.1103301819250.31342@x980>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp?
+Date: Thu, 14 Apr 2011 10:55:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104141040060.2487-100000__15321.7230494649$1302792997$gmane$org@iolanthe.rowland.org>
+References: <201104140034.41727.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1103301819250.31342@x980>
+In-Reply-To: <201104140034.41727.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,88 +17,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, 14 Apr 2011, Rafael J. Wysocki wrote:
 
-* Len Brown <lenb@kernel.org> wrote:
-
-> From: Len Brown <len.brown@intel.com>
+> On Thursday, April 14, 2011, Alan Stern wrote:
+> > On Wed, 13 Apr 2011, Rafael J. Wysocki wrote:
+> > 
+> > > The above means that smp_*mb() are defined as *mb() if CONFIG_SMP is set,
+> > > which basically means that *mb() are more restrictive than the corresponding
+> > > smp_*mb().  More precisely, they also cover the cases in which the CPU
+> > > reorders instructions on uniprocessor, which we definitely want to cover.
+> > > 
+> > > IOW, your patch would break things on uniprocessor where the CPU reorders
+> > > instructions.
+> > 
+> > How could anything break on a UP system?  CPUs don't reorder 
+> > instructions that drastically.  For example, no CPU will ever violate
+> > this assertion:
+> > 
+> > 	x = 0;
+> > 	y = x;
+> > 	x = 1;
+> > 	assert(y == 0);
+> > 
+> > even if it does reorder the second and third statements internally.  
+> > This is guaranteed by the C language specification.
 > 
-> Since 2.6.35 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
-> Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility is available
-> in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
-> 
-> However, the typical BIOS fails to initialize the MSR,
-> and the typical Linux distro neglects to invoke x86_energy_perf_policy(8).
-> 
-> The result is that some modern hardware is running in hardware default,
-> which is "performance" mode, rather than the intended design default
-> of "normal" mode.
-> 
-> Initialize the MSR to the "normal" setting during kernel boot.
-> 
-> Of course, x86_energy_perf_policy(8) is available to change
-> the default after boot, should the user have a policy preference.
-> 
-> cc: stable@kernel.org
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/x86/include/asm/msr-index.h |    3 +++
->  arch/x86/kernel/cpu/intel.c      |   14 ++++++++++++++
->  2 files changed, 17 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-> index 43a18c7..91fedd9 100644
-> --- a/arch/x86/include/asm/msr-index.h
-> +++ b/arch/x86/include/asm/msr-index.h
-> @@ -250,6 +250,9 @@
->  #define MSR_IA32_TEMPERATURE_TARGET	0x000001a2
->  
->  #define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
-> +#define ENERGY_PERF_BIAS_PERFORMANCE	0
-> +#define ENERGY_PERF_BIAS_NORMAL		6
-> +#define ENERGY_PERF_BIAS_POWERSWAVE	15
->  
->  #define MSR_IA32_PACKAGE_THERM_STATUS		0x000001b1
->  
-> diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-> index d16c2c5..48cca4a 100644
-> --- a/arch/x86/kernel/cpu/intel.c
-> +++ b/arch/x86/kernel/cpu/intel.c
-> @@ -448,6 +448,20 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
->  
->  	if (cpu_has(c, X86_FEATURE_VMX))
->  		detect_vmx_virtcap(c);
-> +
-> +	/*
-> +	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if BIOS did not.
-> +	 * x86_energy_perf_policy(8) is available to change it at run-time
-> +	 */
-> +	if (cpu_has(c, X86_FEATURE_EPB)) {
-> +		u64 epb;
-> +
-> +		rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-> +		if ((epb & 0xF) == 0) {
-> +			epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
-> +			wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-> +		}
-> +	}
+> Well, you conveniently removed the patch from your reply. :-)
 
-Dunno, this patch appears to silently modify the system to be slower than it 
-was before under Linux.
+All the patch does is replace an instance of wmb() with smp_wmb() and 
+an instance of rmb() with smp_rmb().
 
-Won't people report this as a regression if this change reduces performance for 
-them?
+> For example, there's no reason why the CPU cannot reorder things so that
+> the "if (frozen(p))" is (speculatively) done before the "if (!freezing(p))"
+> if there's only a compiler barrier between them.
 
-They wont be able to see your comments in the code and in the changelog either, 
-when this happens to them. They might look into /proc/cpuinfo and see 'epb' 
-there but it wont tell them anything. They wont know about a utility available 
-in tools/power/x86/ either.
+That's true.  On an SMP system, smp_wmb() is identical to wmb(), so
+there will be a true memory barrier when it is needed.  On a UP system,
+reordering the instructions in this way will not change the final
+result -- in particular, it won't break anything.
 
-So this patch has 'future trouble' written all over it i'm afraid.
+In your example, the two tests look at different flags in *p.  
+Speculative reordering of the tests won't make any difference unless
+one of the flags gets changed in between.  On a UP system, the only way
+the flag can be changed is for the CPU to change it, in which case
+the CPU would obviously know that the speculative result had to be
+invalidated.
 
-Thanks,
+> > > > Documentation/memory-barriers.txt:
+> > > > SMP memory barriers are reduced to compiler barriers on uniprocessor compiled
+> > > > systems because it is assumed that a CPU will appear to be self-consistent,
+> > > > and will order overlapping accesses correctly with respect to itself.
+> > > 
+> > > Exactly, which is not guaranteed in general (e.g. on Alpha).  That is, some
+> > > CPUs can reorder instructions in such a way that a compiler barrier is not
+> > > sufficient to prevent breakage.
+> > 
+> > I don't think this is right.  You _can_ assume that Alphas appear to be
+> > self-consistent.  If they didn't, you wouldn't be able to use them at
+> > all.
+> 
+> I'm quite convinced that the statement "some CPUs can reorder instructions in
+> such a way that a compiler barrier is not sufficient to prevent breakage" is
+> correct.
 
-	Ingo
+No.  The correct statement is "Some CPUs can reorder instructions in 
+such a way that a compiler barrier is not sufficient to prevent 
+breakage on SMP systems."
+
+Just for kicks...  Which was added to the kernel first: SMP support or 
+memory barriers?  I don't know the answer; it would take a fair amount 
+of digging to find out.
+
+Alan Stern
