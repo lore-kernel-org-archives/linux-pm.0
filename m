@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM: Make power domain callbacks take
-	precedence over subsystem ones
-Date: Fri, 15 Apr 2011 01:12:24 +0200
-Message-ID: <201104150112.24722.rjw__13928.029072895$1302822757$gmane$org@sisk.pl>
-References: <201104130205.26988.rjw@sisk.pl>
-	<Pine.LNX.4.44L0.1104130954270.2005-100000@iolanthe.rowland.org>
-	<BANLkTiknpAkUQMaq3WZSTHy2cs-vXkv08Q@mail.gmail.com>
+Subject: [RFC][PATCH 1/2] shmobile: Use power domains for
+	platform runtime PM
+Date: Fri, 15 Apr 2011 01:18:09 +0200
+Message-ID: <201104150118.10251.rjw__10706.7930898213$1302823539$gmane$org@sisk.pl>
+References: <201104130205.26988.rjw@sisk.pl> <201104150116.01634.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTiknpAkUQMaq3WZSTHy2cs-vXkv08Q@mail.gmail.com>
+In-Reply-To: <201104150116.01634.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,68 +18,459 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, April 13, 2011, Grant Likely wrote:
-> On Wed, Apr 13, 2011 at 8:17 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Wed, 13 Apr 2011, Rafael J. Wysocki wrote:
-> >
-> >> From: Rafael J. Wysocki <rjw@sisk.pl>
-> >>
-> >> Change the PM core's behavior related to power domains in such a way
-> >> that, if a power domain is defined for a given device, its callbacks
-> >> will be executed instead of and not in addition to the device
-> >> subsystem's PM callbacks.
-> >>
-> >> The idea behind the initial implementation of power domains handling
-> >> by the PM core was that power domain callbacks would be executed in
-> >> addition to subsystem callbacks, so that it would be possible to
-> >> extend the subsystem callbacks by using power domains.  It turns out,
-> >> however, that this wouldn't be really convenient in some important
-> >> situations.
-> >>
-> >> For example, there are systems in which power can only be removed
-> >> from entire power domains.  On those systems it is not desirable to
-> >> execute device drivers' PM callbacks until it is known that power is
-> >> going to be removed from the devices in question, which means that
-> >> they should be executed by power domain callbacks rather then by
-> >> subsystem (e.g. bus type) PM callbacks, because subsystems generally
-> >> have no information about what devices belong to which power domain.
-> >> Thus, for instance, if the bus type in question is the platform bus
-> >> type, its PM callbacks generally should not be called in addition to
-> >> power domain callbacks, because they run device drivers' callbacks
-> >> unconditionally if defined.
-> >
-> > What about systems where it makes sense to execute the subsystem
-> > callbacks even if power isn't going to be removed from the device?
-> > It's quite possible that the subsystem could reduce the device's power
-> > consumption even when the device isn't powered down completely.
-> 
-> The understanding Rafael and I came to was that if a power domain is
-> attached to a device, then the power domain becomes the responsible
-> party.  Normally this means it will turn around and immediately call
-> the bus_type pm ops, but it has the option to not call them if for a
-> particular system it knows better, or to defer calling them.
-> 
-> Basically, if you're using a power domain, it is assumed that the
-> power domain has particular knowledge about the system, and it should
-> have the option to override the default behaviour.
-> 
-> >
-> > Is the extra overhead of invoking the subsystem callback really all
-> > that troublesome?
-> 
-> It isn't an overhead problem.  It's a control & complexity problem.
-> We could try to implement a heuristic or api to control when the bus
-> type PM ops should be overridden, but I think it is cleaner to make it
-> a rule that if you implement a power domain, then that power domain
-> becomes responsible for all PM operations.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Well said. :-)
+shmobile platforms replace the runtime PM callbacks of the platform
+bus type with their own routines, but this means that the callbacks
+are replaced system-wide.  This may not be the right approach if the
+platform devices on the system are not of the same type (e.g. some
+of them belong to an SoC and the others are located in separate
+chips), because in those cases they may require different handling.
+Thus it is better to use power domains to override the platform bus
+type's PM handling, as it generally is possible to use different
+power domains for devices with different PM requirements.
 
-I'm taking that as an ACK for my patch if you don't mind.
+Define a default power domain for shmobile in both the SH and ARM
+falvors and use it to override the platform bus type's PM callbacks.
+Since the suspend and hibernate callbacks of the new "default" power
+domains need to be the same and the platform bus type's suspend and
+hibernate callbacks for the time being, export those callbacks so
+that can be used outside of the platform bus type code.
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/arm/mach-shmobile/pm_runtime.c      |   38 ++++++++++++++++----
+ arch/sh/kernel/cpu/shmobile/pm_runtime.c |   46 +++++++++++++++++++------
+ drivers/base/platform.c                  |   57 +++++++++----------------------
+ include/linux/platform_device.h          |   40 +++++++++++++++++++++
+ 4 files changed, 123 insertions(+), 58 deletions(-)
+
+Index: linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm_runtime.c
++++ linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+@@ -66,11 +66,11 @@ static void platform_pm_runtime_bug(stru
+ 		dev_err(dev, "runtime pm suspend before resume\n");
+ }
+ 
+-int platform_pm_runtime_suspend(struct device *dev)
++static int default_platform_runtime_suspend(struct device *dev)
+ {
+ 	struct pm_runtime_data *prd = __to_prd(dev);
+ 
+-	dev_dbg(dev, "platform_pm_runtime_suspend()\n");
++	dev_dbg(dev, "%s()\n", __func__);
+ 
+ 	platform_pm_runtime_bug(dev, prd);
+ 
+@@ -82,11 +82,11 @@ int platform_pm_runtime_suspend(struct d
+ 	return 0;
+ }
+ 
+-int platform_pm_runtime_resume(struct device *dev)
++static int default_platform_runtime_resume(struct device *dev)
+ {
+ 	struct pm_runtime_data *prd = __to_prd(dev);
+ 
+-	dev_dbg(dev, "platform_pm_runtime_resume()\n");
++	dev_dbg(dev, "%s()\n", __func__);
+ 
+ 	platform_pm_runtime_init(dev, prd);
+ 
+@@ -98,12 +98,34 @@ int platform_pm_runtime_resume(struct de
+ 	return 0;
+ }
+ 
+-int platform_pm_runtime_idle(struct device *dev)
++static int default_platform_runtime_idle(struct device *dev)
+ {
+ 	/* suspend synchronously to disable clocks immediately */
+ 	return pm_runtime_suspend(dev);
+ }
+ 
++static struct dev_power_domain default_power_domain = {
++	.ops = {
++		.prepare = platform_pm_prepare,
++		.complete = platform_pm_complete,
++		.suspend = platform_pm_suspend,
++		.resume = platform_pm_resume,
++		.freeze = platform_pm_freeze,
++		.thaw = platform_pm_thaw,
++		.poweroff = platform_pm_poweroff,
++		.restore = platform_pm_restore,
++		.suspend_noirq = platform_pm_suspend_noirq,
++		.resume_noirq = platform_pm_resume_noirq,
++		.freeze_noirq = platform_pm_freeze_noirq,
++		.thaw_noirq = platform_pm_thaw_noirq,
++		.poweroff_noirq = platform_pm_poweroff_noirq,
++		.restore_noirq = platform_pm_restore_noirq,
++		.runtime_suspend = default_platform_runtime_suspend,
++		.runtime_resume = default_platform_runtime_resume,
++		.runtime_idle = default_platform_runtime_idle,
++	},
++};
++
+ static int platform_bus_notify(struct notifier_block *nb,
+ 			       unsigned long action, void *data)
+ {
+@@ -114,10 +136,12 @@ static int platform_bus_notify(struct no
+ 
+ 	if (action == BUS_NOTIFY_BIND_DRIVER) {
+ 		prd = devres_alloc(__devres_release, sizeof(*prd), GFP_KERNEL);
+-		if (prd)
++		if (prd) {
+ 			devres_add(dev, prd);
+-		else
++			dev->pwr_domain = &default_power_domain;
++		} else {
+ 			dev_err(dev, "unable to alloc memory for runtime pm\n");
++		}
+ 	}
+ 
+ 	return 0;
+Index: linux-2.6/arch/sh/kernel/cpu/shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/sh/kernel/cpu/shmobile/pm_runtime.c
++++ linux-2.6/arch/sh/kernel/cpu/shmobile/pm_runtime.c
+@@ -139,7 +139,7 @@ void platform_pm_runtime_suspend_idle(vo
+ 	queue_work(pm_wq, &hwblk_work);
+ }
+ 
+-int platform_pm_runtime_suspend(struct device *dev)
++static int default_platform_runtime_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct pdev_archdata *ad = &pdev->archdata;
+@@ -147,7 +147,7 @@ int platform_pm_runtime_suspend(struct d
+ 	int hwblk = ad->hwblk_id;
+ 	int ret = 0;
+ 
+-	dev_dbg(dev, "platform_pm_runtime_suspend() [%d]\n", hwblk);
++	dev_dbg(dev, "%s() [%d]\n", __func__, hwblk);
+ 
+ 	/* ignore off-chip platform devices */
+ 	if (!hwblk)
+@@ -183,20 +183,20 @@ int platform_pm_runtime_suspend(struct d
+ 	mutex_unlock(&ad->mutex);
+ 
+ out:
+-	dev_dbg(dev, "platform_pm_runtime_suspend() [%d] returns %d\n",
+-		hwblk, ret);
++	dev_dbg(dev, "%s() [%d] returns %d\n",
++		 __func__, hwblk, ret);
+ 
+ 	return ret;
+ }
+ 
+-int platform_pm_runtime_resume(struct device *dev)
++static int default_platform_runtime_resume(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct pdev_archdata *ad = &pdev->archdata;
+ 	int hwblk = ad->hwblk_id;
+ 	int ret = 0;
+ 
+-	dev_dbg(dev, "platform_pm_runtime_resume() [%d]\n", hwblk);
++	dev_dbg(dev, "%s() [%d]\n", __func__, hwblk);
+ 
+ 	/* ignore off-chip platform devices */
+ 	if (!hwblk)
+@@ -228,19 +228,19 @@ int platform_pm_runtime_resume(struct de
+ 	 */
+ 	mutex_unlock(&ad->mutex);
+ out:
+-	dev_dbg(dev, "platform_pm_runtime_resume() [%d] returns %d\n",
+-		hwblk, ret);
++	dev_dbg(dev, "%s() [%d] returns %d\n",
++		__func__, hwblk, ret);
+ 
+ 	return ret;
+ }
+ 
+-int platform_pm_runtime_idle(struct device *dev)
++static int default_platform_runtime_idle(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	int hwblk = pdev->archdata.hwblk_id;
+ 	int ret = 0;
+ 
+-	dev_dbg(dev, "platform_pm_runtime_idle() [%d]\n", hwblk);
++	dev_dbg(dev, "%s() [%d]\n", __func__, hwblk);
+ 
+ 	/* ignore off-chip platform devices */
+ 	if (!hwblk)
+@@ -252,10 +252,32 @@ int platform_pm_runtime_idle(struct devi
+ 	/* suspend synchronously to disable clocks immediately */
+ 	ret = pm_runtime_suspend(dev);
+ out:
+-	dev_dbg(dev, "platform_pm_runtime_idle() [%d] done!\n", hwblk);
++	dev_dbg(dev, "%s() [%d] done!\n", __func__, hwblk);
+ 	return ret;
+ }
+ 
++static struct dev_power_domain default_power_domain = {
++	.ops = {
++		.prepare = platform_pm_prepare,
++		.complete = platform_pm_complete,
++		.suspend = platform_pm_suspend,
++		.resume = platform_pm_resume,
++		.freeze = platform_pm_freeze,
++		.thaw = platform_pm_thaw,
++		.poweroff = platform_pm_poweroff,
++		.restore = platform_pm_restore,
++		.suspend_noirq = platform_pm_suspend_noirq,
++		.resume_noirq = platform_pm_resume_noirq,
++		.freeze_noirq = platform_pm_freeze_noirq,
++		.thaw_noirq = platform_pm_thaw_noirq,
++		.poweroff_noirq = platform_pm_poweroff_noirq,
++		.restore_noirq = platform_pm_restore_noirq,
++		.runtime_suspend = default_platform_runtime_suspend,
++		.runtime_resume = default_platform_runtime_resume,
++		.runtime_idle = default_platform_runtime_idle,
++	},
++};
++
+ static int platform_bus_notify(struct notifier_block *nb,
+ 			       unsigned long action, void *data)
+ {
+@@ -276,6 +298,7 @@ static int platform_bus_notify(struct no
+ 		hwblk_disable(hwblk_info, hwblk);
+ 		/* make sure driver re-inits itself once */
+ 		__set_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags);
++		dev->pwr_domain = &default_power_domain;
+ 		break;
+ 	/* TODO: add BUS_NOTIFY_BIND_DRIVER and increase idle count */
+ 	case BUS_NOTIFY_BOUND_DRIVER:
+@@ -289,6 +312,7 @@ static int platform_bus_notify(struct no
+ 		__set_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags);
+ 		break;
+ 	case BUS_NOTIFY_DEL_DEVICE:
++		dev->pwr_domain = NULL;
+ 		break;
+ 	}
+ 	return 0;
+Index: linux-2.6/drivers/base/platform.c
+===================================================================
+--- linux-2.6.orig/drivers/base/platform.c
++++ linux-2.6/drivers/base/platform.c
+@@ -667,7 +667,7 @@ static int platform_legacy_resume(struct
+ 	return ret;
+ }
+ 
+-static int platform_pm_prepare(struct device *dev)
++int platform_pm_prepare(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -678,7 +678,7 @@ static int platform_pm_prepare(struct de
+ 	return ret;
+ }
+ 
+-static void platform_pm_complete(struct device *dev)
++void platform_pm_complete(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 
+@@ -686,16 +686,11 @@ static void platform_pm_complete(struct
+ 		drv->pm->complete(dev);
+ }
+ 
+-#else /* !CONFIG_PM_SLEEP */
+-
+-#define platform_pm_prepare		NULL
+-#define platform_pm_complete		NULL
+-
+-#endif /* !CONFIG_PM_SLEEP */
++#endif /* CONFIG_PM_SLEEP */
+ 
+ #ifdef CONFIG_SUSPEND
+ 
+-int __weak platform_pm_suspend(struct device *dev)
++int platform_pm_suspend(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -713,7 +708,7 @@ int __weak platform_pm_suspend(struct de
+ 	return ret;
+ }
+ 
+-int __weak platform_pm_suspend_noirq(struct device *dev)
++int platform_pm_suspend_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -729,7 +724,7 @@ int __weak platform_pm_suspend_noirq(str
+ 	return ret;
+ }
+ 
+-int __weak platform_pm_resume(struct device *dev)
++int platform_pm_resume(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -747,7 +742,7 @@ int __weak platform_pm_resume(struct dev
+ 	return ret;
+ }
+ 
+-int __weak platform_pm_resume_noirq(struct device *dev)
++int platform_pm_resume_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -763,18 +758,11 @@ int __weak platform_pm_resume_noirq(stru
+ 	return ret;
+ }
+ 
+-#else /* !CONFIG_SUSPEND */
+-
+-#define platform_pm_suspend		NULL
+-#define platform_pm_resume		NULL
+-#define platform_pm_suspend_noirq	NULL
+-#define platform_pm_resume_noirq	NULL
+-
+-#endif /* !CONFIG_SUSPEND */
++#endif /* CONFIG_SUSPEND */
+ 
+ #ifdef CONFIG_HIBERNATE_CALLBACKS
+ 
+-static int platform_pm_freeze(struct device *dev)
++int platform_pm_freeze(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -792,7 +780,7 @@ static int platform_pm_freeze(struct dev
+ 	return ret;
+ }
+ 
+-static int platform_pm_freeze_noirq(struct device *dev)
++int platform_pm_freeze_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -808,7 +796,7 @@ static int platform_pm_freeze_noirq(stru
+ 	return ret;
+ }
+ 
+-static int platform_pm_thaw(struct device *dev)
++int platform_pm_thaw(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -826,7 +814,7 @@ static int platform_pm_thaw(struct devic
+ 	return ret;
+ }
+ 
+-static int platform_pm_thaw_noirq(struct device *dev)
++int platform_pm_thaw_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -842,7 +830,7 @@ static int platform_pm_thaw_noirq(struct
+ 	return ret;
+ }
+ 
+-static int platform_pm_poweroff(struct device *dev)
++int platform_pm_poweroff(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -860,7 +848,7 @@ static int platform_pm_poweroff(struct d
+ 	return ret;
+ }
+ 
+-static int platform_pm_poweroff_noirq(struct device *dev)
++int platform_pm_poweroff_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -876,7 +864,7 @@ static int platform_pm_poweroff_noirq(st
+ 	return ret;
+ }
+ 
+-static int platform_pm_restore(struct device *dev)
++int platform_pm_restore(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -894,7 +882,7 @@ static int platform_pm_restore(struct de
+ 	return ret;
+ }
+ 
+-static int platform_pm_restore_noirq(struct device *dev)
++int platform_pm_restore_noirq(struct device *dev)
+ {
+ 	struct device_driver *drv = dev->driver;
+ 	int ret = 0;
+@@ -910,18 +898,7 @@ static int platform_pm_restore_noirq(str
+ 	return ret;
+ }
+ 
+-#else /* !CONFIG_HIBERNATE_CALLBACKS */
+-
+-#define platform_pm_freeze		NULL
+-#define platform_pm_thaw		NULL
+-#define platform_pm_poweroff		NULL
+-#define platform_pm_restore		NULL
+-#define platform_pm_freeze_noirq	NULL
+-#define platform_pm_thaw_noirq		NULL
+-#define platform_pm_poweroff_noirq	NULL
+-#define platform_pm_restore_noirq	NULL
+-
+-#endif /* !CONFIG_HIBERNATE_CALLBACKS */
++#endif /* CONFIG_HIBERNATE_CALLBACKS */
+ 
+ #ifdef CONFIG_PM_RUNTIME
+ 
+Index: linux-2.6/include/linux/platform_device.h
+===================================================================
+--- linux-2.6.orig/include/linux/platform_device.h
++++ linux-2.6/include/linux/platform_device.h
+@@ -205,4 +205,44 @@ static inline char *early_platform_drive
+ }
+ #endif /* MODULE */
+ 
++#ifdef CONFIG_PM_SLEEP
++extern int platform_pm_prepare(struct device *dev);
++extern void platform_pm_complete(struct device *dev);
++#else
++#define platform_pm_prepare	NULL
++#define platform_pm_complete	NULL
++#endif
++
++#ifdef CONFIG_SUSPEND
++extern int platform_pm_suspend(struct device *dev);
++extern int platform_pm_suspend_noirq(struct device *dev);
++extern int platform_pm_resume(struct device *dev);
++extern int platform_pm_resume_noirq(struct device *dev);
++#else
++#define platform_pm_suspend		NULL
++#define platform_pm_resume		NULL
++#define platform_pm_suspend_noirq	NULL
++#define platform_pm_resume_noirq	NULL
++#endif
++
++#ifdef CONFIG_HIBERNATE_CALLBACKS
++extern int platform_pm_freeze(struct device *dev);
++extern int platform_pm_freeze_noirq(struct device *dev);
++extern int platform_pm_thaw(struct device *dev);
++extern int platform_pm_thaw_noirq(struct device *dev);
++extern int platform_pm_poweroff(struct device *dev);
++extern int platform_pm_poweroff_noirq(struct device *dev);
++extern int platform_pm_restore(struct device *dev);
++extern int platform_pm_restore_noirq(struct device *dev);
++#else
++#define platform_pm_freeze		NULL
++#define platform_pm_thaw		NULL
++#define platform_pm_poweroff		NULL
++#define platform_pm_restore		NULL
++#define platform_pm_freeze_noirq	NULL
++#define platform_pm_thaw_noirq		NULL
++#define platform_pm_poweroff_noirq	NULL
++#define platform_pm_restore_noirq	NULL
++#endif
++
+ #endif /* _PLATFORM_DEVICE_H_ */
