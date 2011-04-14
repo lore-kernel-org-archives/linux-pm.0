@@ -1,14 +1,13 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [RFC][PATCH] PM: Make power domain callbacks take
- precedence over subsystem ones
-Date: Fri, 15 Apr 2011 03:20:42 +0900
-Message-ID: <BANLkTimQ6kX41-53Dw2RqEVyYzbT2qbz9Q__28123.7511816018$1302805394$gmane$org@mail.gmail.com>
-References: <201104130205.26988.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp?
+Date: Fri, 15 Apr 2011 00:34:21 +0200
+Message-ID: <201104150034.21937.rjw__23508.5557368167$1302820527$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1104141040060.2487-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104130205.26988.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1104141040060.2487-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +17,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+On Thursday, April 14, 2011, Alan Stern wrote:
+> On Thu, 14 Apr 2011, Rafael J. Wysocki wrote:
+> 
+> > On Thursday, April 14, 2011, Alan Stern wrote:
+> > > On Wed, 13 Apr 2011, Rafael J. Wysocki wrote:
+> > > 
+> > > > The above means that smp_*mb() are defined as *mb() if CONFIG_SMP is set,
+> > > > which basically means that *mb() are more restrictive than the corresponding
+> > > > smp_*mb().  More precisely, they also cover the cases in which the CPU
+> > > > reorders instructions on uniprocessor, which we definitely want to cover.
+> > > > 
+> > > > IOW, your patch would break things on uniprocessor where the CPU reorders
+> > > > instructions.
+> > > 
+> > > How could anything break on a UP system?  CPUs don't reorder 
+> > > instructions that drastically.  For example, no CPU will ever violate
+> > > this assertion:
+> > > 
+> > > 	x = 0;
+> > > 	y = x;
+> > > 	x = 1;
+> > > 	assert(y == 0);
+> > > 
+> > > even if it does reorder the second and third statements internally.  
+> > > This is guaranteed by the C language specification.
+> > 
+> > Well, you conveniently removed the patch from your reply. :-)
+> 
+> All the patch does is replace an instance of wmb() with smp_wmb() and 
+> an instance of rmb() with smp_rmb().
+> 
+> > For example, there's no reason why the CPU cannot reorder things so that
+> > the "if (frozen(p))" is (speculatively) done before the "if (!freezing(p))"
+> > if there's only a compiler barrier between them.
+> 
+> That's true.  On an SMP system, smp_wmb() is identical to wmb(), so
+> there will be a true memory barrier when it is needed.  On a UP system,
+> reordering the instructions in this way will not change the final
+> result -- in particular, it won't break anything.
+> 
+> In your example, the two tests look at different flags in *p.  
+> Speculative reordering of the tests won't make any difference unless
+> one of the flags gets changed in between.  On a UP system, the only way
+> the flag can be changed is for the CPU to change it, in which case
+> the CPU would obviously know that the speculative result had to be
+> invalidated.
 
-On Wed, Apr 13, 2011 at 9:05 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Change the PM core's behavior related to power domains in such a way
-> that, if a power domain is defined for a given device, its callbacks
-> will be executed instead of and not in addition to the device
-> subsystem's PM callbacks.
+Note, however, that preemption may happen basically at any time, so the
+task that executes the two "if" statements can be preempted after it has
+loaded p->flags into a register and before it checks the TIF_FREEZE (if
+they are reordered).  In that case the p->flags (in memory) may be
+changed by another task in the meantime.
 
-Thanks for your work on this! I'm very happy to see a more fine
-grained interface for SoC specific code compared to the weak symbols
-and other coarse grained alternatives for the platform bus.
+> > > > > Documentation/memory-barriers.txt:
+> > > > > SMP memory barriers are reduced to compiler barriers on uniprocessor compiled
+> > > > > systems because it is assumed that a CPU will appear to be self-consistent,
+> > > > > and will order overlapping accesses correctly with respect to itself.
+> > > > 
+> > > > Exactly, which is not guaranteed in general (e.g. on Alpha).  That is, some
+> > > > CPUs can reorder instructions in such a way that a compiler barrier is not
+> > > > sufficient to prevent breakage.
+> > > 
+> > > I don't think this is right.  You _can_ assume that Alphas appear to be
+> > > self-consistent.  If they didn't, you wouldn't be able to use them at
+> > > all.
+> > 
+> > I'm quite convinced that the statement "some CPUs can reorder instructions in
+> > such a way that a compiler barrier is not sufficient to prevent breakage" is
+> > correct.
+> 
+> No.  The correct statement is "Some CPUs can reorder instructions in 
+> such a way that a compiler barrier is not sufficient to prevent 
+> breakage on SMP systems."
 
-My only thought on this is if we really want to limit ourselves to
-only control power domains using these callbacks. I can imagine that
-some SoCs want to do other non-power domain specific operations with
-these callbacks, and if so, perhaps using the term power domain as
-name of the pointer in struct device would be somewhat odd. OTOH, I
-really dislike naming discussions in general and I can't really think
-of any good names. So it all looks more like a set of system specific
-PM override hooks.
+That's if preemption is not taken into account.
 
-Or is there something that is really power domain specific with these hooks?
+> Just for kicks...  Which was added to the kernel first: SMP support or 
+> memory barriers?  I don't know the answer; it would take a fair amount 
+> of digging to find out.
 
-Thanks,
+I have no idea. :-)
 
-/ magnus
+Rafael
