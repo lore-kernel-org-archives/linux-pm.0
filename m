@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Mike Frysinger <vapier@gentoo.org>
 Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
 	?
-Date: Sat, 16 Apr 2011 01:30:55 +0200
-Message-ID: <201104160130.55836.rjw__49872.3117322244$1302910281$gmane$org@sisk.pl>
+Date: Fri, 15 Apr 2011 19:24:47 -0400
+Message-ID: <BANLkTik9aGTqb0JNr3RsnDjPiSpbSdEUpA__22245.1018322774$1302910402$gmane$org@mail.gmail.com>
 References: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
+	<20110415162938.GA11454@atrey.karlin.mff.cuni.cz>
+	<BANLkTikaymG-5-YoTnG2SPJCnBtXPpfHBQ@mail.gmail.com>
 	<201104160111.49409.rjw@sisk.pl>
-	<BANLkTik9aGTqb0JNr3RsnDjPiSpbSdEUpA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTik9aGTqb0JNr3RsnDjPiSpbSdEUpA@mail.gmail.com>
+In-Reply-To: <201104160111.49409.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,51 +21,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Frysinger <vapier@gentoo.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, April 16, 2011, Mike Frysinger wrote:
-> On Fri, Apr 15, 2011 at 19:11, Rafael J. Wysocki wrote:
-> > On Friday, April 15, 2011, Mike Frysinger wrote:
-> >> On Fri, Apr 15, 2011 at 12:29, Pavel Machek wrote:
-> >> >> > > I believe the code is correct as is.
-> >> >> >
-> >> >> > that isnt what the code / documentation says.  unless i'm reading them
-> >> >> > wrong, both seem to indicate that the proposed patch is what we
-> >> >> > actually want.
-> >> >>
-> >> >> The existing code is correct but it isn't optimal.
-> >> >>
-> >> >> wmb() and rmb() are heavy-duty operations, and you don't want to call
-> >> >> them when they aren't needed.  That's exactly what smp_wmb() and
-> >> >> smp_rmb() are for -- they call wmb() and rmb(), but only in SMP
-> >> >> kernels.
-> >> >>
-> >> >> Unless you need to synchronize with another processor (not necessarily
-> >> >> a CPU, it could be something embedded within a device), you should
-> >> >> always use smp_wmb() and smp_rmb() rather than wmb() and rmb().
-> >> >
-> >> > Maybe; but this code is not performance critical and I believe being
-> >> > obvious here is better...
-> >>
-> >> isnt it though ?  especially when we talk about suspending/resuming on
-> >> embedded systems to get more savings over just cpu idle ?  we want
-> >> that latency to be as low as possible.
-> >
-> > I agree, we can switch the freezer to smp_ barriers, but not for the reason
-> > you gave before. :-)
-> >
-> > Care to repost the patch with a suitable changelog?
-> 
-> np
-> 
-> to be clear, what you said wrt the Blackfin smp barriers still holds
-> true right ?
-
-I think so.
-
-> so this changset i merged doesnt need any tweaking ...
-> http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=commitdiff;h=943aee0c685d0563228d5a2ad9c8394ad0300fb5
-
-Rafael
+T24gRnJpLCBBcHIgMTUsIDIwMTEgYXQgMTk6MTEsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
+IE9uIEZyaWRheSwgQXByaWwgMTUsIDIwMTEsIE1pa2UgRnJ5c2luZ2VyIHdyb3RlOgo+PiBPbiBG
+cmksIEFwciAxNSwgMjAxMSBhdCAxMjoyOSwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+PiA+PiA+ID4g
+SSBiZWxpZXZlIHRoZSBjb2RlIGlzIGNvcnJlY3QgYXMgaXMuCj4+ID4+ID4KPj4gPj4gPiB0aGF0
+IGlzbnQgd2hhdCB0aGUgY29kZSAvIGRvY3VtZW50YXRpb24gc2F5cy4gwqB1bmxlc3MgaSdtIHJl
+YWRpbmcgdGhlbQo+PiA+PiA+IHdyb25nLCBib3RoIHNlZW0gdG8gaW5kaWNhdGUgdGhhdCB0aGUg
+cHJvcG9zZWQgcGF0Y2ggaXMgd2hhdCB3ZQo+PiA+PiA+IGFjdHVhbGx5IHdhbnQuCj4+ID4+Cj4+
+ID4+IFRoZSBleGlzdGluZyBjb2RlIGlzIGNvcnJlY3QgYnV0IGl0IGlzbid0IG9wdGltYWwuCj4+
+ID4+Cj4+ID4+IHdtYigpIGFuZCBybWIoKSBhcmUgaGVhdnktZHV0eSBvcGVyYXRpb25zLCBhbmQg
+eW91IGRvbid0IHdhbnQgdG8gY2FsbAo+PiA+PiB0aGVtIHdoZW4gdGhleSBhcmVuJ3QgbmVlZGVk
+LiDCoFRoYXQncyBleGFjdGx5IHdoYXQgc21wX3dtYigpIGFuZAo+PiA+PiBzbXBfcm1iKCkgYXJl
+IGZvciAtLSB0aGV5IGNhbGwgd21iKCkgYW5kIHJtYigpLCBidXQgb25seSBpbiBTTVAKPj4gPj4g
+a2VybmVscy4KPj4gPj4KPj4gPj4gVW5sZXNzIHlvdSBuZWVkIHRvIHN5bmNocm9uaXplIHdpdGgg
+YW5vdGhlciBwcm9jZXNzb3IgKG5vdCBuZWNlc3NhcmlseQo+PiA+PiBhIENQVSwgaXQgY291bGQg
+YmUgc29tZXRoaW5nIGVtYmVkZGVkIHdpdGhpbiBhIGRldmljZSksIHlvdSBzaG91bGQKPj4gPj4g
+YWx3YXlzIHVzZSBzbXBfd21iKCkgYW5kIHNtcF9ybWIoKSByYXRoZXIgdGhhbiB3bWIoKSBhbmQg
+cm1iKCkuCj4+ID4KPj4gPiBNYXliZTsgYnV0IHRoaXMgY29kZSBpcyBub3QgcGVyZm9ybWFuY2Ug
+Y3JpdGljYWwgYW5kIEkgYmVsaWV2ZSBiZWluZwo+PiA+IG9idmlvdXMgaGVyZSBpcyBiZXR0ZXIu
+Li4KPj4KPj4gaXNudCBpdCB0aG91Z2ggPyDCoGVzcGVjaWFsbHkgd2hlbiB3ZSB0YWxrIGFib3V0
+IHN1c3BlbmRpbmcvcmVzdW1pbmcgb24KPj4gZW1iZWRkZWQgc3lzdGVtcyB0byBnZXQgbW9yZSBz
+YXZpbmdzIG92ZXIganVzdCBjcHUgaWRsZSA/IMKgd2Ugd2FudAo+PiB0aGF0IGxhdGVuY3kgdG8g
+YmUgYXMgbG93IGFzIHBvc3NpYmxlLgo+Cj4gSSBhZ3JlZSwgd2UgY2FuIHN3aXRjaCB0aGUgZnJl
+ZXplciB0byBzbXBfIGJhcnJpZXJzLCBidXQgbm90IGZvciB0aGUgcmVhc29uCj4geW91IGdhdmUg
+YmVmb3JlLiA6LSkKPgo+IENhcmUgdG8gcmVwb3N0IHRoZSBwYXRjaCB3aXRoIGEgc3VpdGFibGUg
+Y2hhbmdlbG9nPwoKbnAKCnRvIGJlIGNsZWFyLCB3aGF0IHlvdSBzYWlkIHdydCB0aGUgQmxhY2tm
+aW4gc21wIGJhcnJpZXJzIHN0aWxsIGhvbGRzCnRydWUgcmlnaHQgPyAgc28gdGhpcyBjaGFuZ3Nl
+dCBpIG1lcmdlZCBkb2VzbnQgbmVlZCBhbnkgdHdlYWtpbmcgLi4uCmh0dHA6Ly9naXQua2VybmVs
+Lm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3ZhcGllci9ibGFja2Zpbi5naXQ7YT1jb21taXRkaWZm
+O2g9OTQzYWVlMGM2ODVkMDU2MzIyOGQ1YTJhZDljODM5NGFkMDMwMGZiNQotbWlrZQpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
+IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
