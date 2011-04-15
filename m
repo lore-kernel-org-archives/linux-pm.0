@@ -1,13 +1,17 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: /proc/acpi/wakeup regression in 2.6.39-rc3
-Date: Fri, 15 Apr 2011 10:38:47 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1104151034580.2051-100000__32573.7494197258$1302878382$gmane$org@iolanthe.rowland.org>
-References: <201104150053.37037.rjw@sisk.pl>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC][PATCH] PM: Make power domain callbacks take
+ precedence over subsystem ones
+Date: Fri, 15 Apr 2011 08:38:39 -0600
+Message-ID: <BANLkTi=+7n76OABAgRr+FEjbuF6N4Z8c3w__47368.6401536272$1302878390$gmane$org@mail.gmail.com>
+References: <201104130205.26988.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1104130954270.2005-100000@iolanthe.rowland.org>
+	<BANLkTiknpAkUQMaq3WZSTHy2cs-vXkv08Q@mail.gmail.com>
+	<201104150112.24722.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104150053.37037.rjw@sisk.pl>
+In-Reply-To: <201104150112.24722.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,35 +22,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, Tino Keitel <tino.keitel@tikei.de>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 15 Apr 2011, Rafael J. Wysocki wrote:
+On Thu, Apr 14, 2011 at 5:12 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday, April 13, 2011, Grant Likely wrote:
+>> On Wed, Apr 13, 2011 at 8:17 AM, Alan Stern <stern@rowland.harvard.edu> =
+wrote:
+>> > On Wed, 13 Apr 2011, Rafael J. Wysocki wrote:
+>> >
+>> >> From: Rafael J. Wysocki <rjw@sisk.pl>
+>> >>
+>> >> Change the PM core's behavior related to power domains in such a way
+>> >> that, if a power domain is defined for a given device, its callbacks
+>> >> will be executed instead of and not in addition to the device
+>> >> subsystem's PM callbacks.
+>> >>
+>> >> The idea behind the initial implementation of power domains handling
+>> >> by the PM core was that power domain callbacks would be executed in
+>> >> addition to subsystem callbacks, so that it would be possible to
+>> >> extend the subsystem callbacks by using power domains. =A0It turns ou=
+t,
+>> >> however, that this wouldn't be really convenient in some important
+>> >> situations.
+>> >>
+>> >> For example, there are systems in which power can only be removed
+>> >> from entire power domains. =A0On those systems it is not desirable to
+>> >> execute device drivers' PM callbacks until it is known that power is
+>> >> going to be removed from the devices in question, which means that
+>> >> they should be executed by power domain callbacks rather then by
+>> >> subsystem (e.g. bus type) PM callbacks, because subsystems generally
+>> >> have no information about what devices belong to which power domain.
+>> >> Thus, for instance, if the bus type in question is the platform bus
+>> >> type, its PM callbacks generally should not be called in addition to
+>> >> power domain callbacks, because they run device drivers' callbacks
+>> >> unconditionally if defined.
+>> >
+>> > What about systems where it makes sense to execute the subsystem
+>> > callbacks even if power isn't going to be removed from the device?
+>> > It's quite possible that the subsystem could reduce the device's power
+>> > consumption even when the device isn't powered down completely.
+>>
+>> The understanding Rafael and I came to was that if a power domain is
+>> attached to a device, then the power domain becomes the responsible
+>> party. =A0Normally this means it will turn around and immediately call
+>> the bus_type pm ops, but it has the option to not call them if for a
+>> particular system it knows better, or to defer calling them.
+>>
+>> Basically, if you're using a power domain, it is assumed that the
+>> power domain has particular knowledge about the system, and it should
+>> have the option to override the default behaviour.
+>>
+>> >
+>> > Is the extra overhead of invoking the subsystem callback really all
+>> > that troublesome?
+>>
+>> It isn't an overhead problem. =A0It's a control & complexity problem.
+>> We could try to implement a heuristic or api to control when the bus
+>> type PM ops should be overridden, but I think it is cleaner to make it
+>> a rule that if you implement a power domain, then that power domain
+>> becomes responsible for all PM operations.
+>
+> Well said. :-)
+>
+> I'm taking that as an ACK for my patch if you don't mind.
 
-> On Friday, April 15, 2011, Tino Keitel wrote:
-> > Hi,
-> > 
-> > with 2.6.38, I enabled wakeup from suspend to RAM with the USB keyboard
-> > this way:
-> > 
-> > echo USB2 > /proc/acpi/wakeup
-> > 
-> > This does not work anymore with 2.6.39-rc3. Wakeup using the keyboard
-> > won't work, and the USB2 line in /proc/acpi/wakeup doesn't change to
-> > "enabled" after the echo command.
-> > 
-> > Is this intended? If yes, what is the new way to enable keyboard
-> > wakeup?
-> 
-> No, it's supposed to work IIRC.  I'll have a look at that code tomorrow.
+And so you should.
 
-Tino, can you check the contents of the power/wakeup files in the
-appropriate sysfs directories?  That would be the directory for the
-keyboard device itself and the directory for the USB host controller
-for the bus the keyboard is on.
-
-By default, power/wakeup should be "enabled" for the keyboard device 
-and "disabled" for the host controller.  If you write "enabled" into 
-the host controller's file by hand, does that fix the problem?
-
-Alan Stern
+g.
