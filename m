@@ -1,17 +1,13 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86 intel power: Initialize
-	MSR_IA32_ENERGY_PERF_BIAS
-Date: Fri, 15 Apr 2011 12:17:12 +0200
-Message-ID: <20110415101712.GB28007__19136.1370300458$1302862846$gmane$org@elte.hu>
-References: <alpine.LFD.2.02.1103301819250.31342@x980>
-	<20110414090854.GB9248@elte.hu>
-	<alpine.LFD.2.02.1104150202310.29365@x980>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp?
+Date: Fri, 15 Apr 2011 10:32:59 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104151017300.2051-100000__49095.4948975288$1302878072$gmane$org@iolanthe.rowland.org>
+References: <201104150034.21937.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1104150202310.29365@x980>
+In-Reply-To: <201104150034.21937.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,87 +17,72 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 15 Apr 2011, Rafael J. Wysocki wrote:
 
-* Len Brown <lenb@kernel.org> wrote:
-
-> 
-> > > From: Len Brown <len.brown@intel.com>
-> > > 
-> > > Since 2.6.35 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
-> > > Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility is available
-> > > in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
-> > > 
-> > > However, the typical BIOS fails to initialize the MSR,
-> > > and the typical Linux distro neglects to invoke x86_energy_perf_policy(8).
-> > > 
-> > > The result is that some modern hardware is running in hardware default,
-> > > which is "performance" mode, rather than the intended design default
-> > > of "normal" mode.
-> > > 
-> > > Initialize the MSR to the "normal" setting during kernel boot.
-> > > 
-> > > Of course, x86_energy_perf_policy(8) is available to change
-> > > the default after boot, should the user have a policy preference.
-> > > 
-> > > cc: stable@kernel.org
-> > > Signed-off-by: Len Brown <len.brown@intel.com>
-> > > ---
-> > >  arch/x86/include/asm/msr-index.h |    3 +++
-> > >  arch/x86/kernel/cpu/intel.c      |   14 ++++++++++++++
-> > >  2 files changed, 17 insertions(+), 0 deletions(-)
-> > > 
-> ...
+> > > For example, there's no reason why the CPU cannot reorder things so that
+> > > the "if (frozen(p))" is (speculatively) done before the "if (!freezing(p))"
+> > > if there's only a compiler barrier between them.
 > > 
-> > Dunno, this patch appears to silently modify the system to be slower than it 
-> > was before under Linux.
+> > That's true.  On an SMP system, smp_wmb() is identical to wmb(), so
+> > there will be a true memory barrier when it is needed.  On a UP system,
+> > reordering the instructions in this way will not change the final
+> > result -- in particular, it won't break anything.
 > > 
-> > Won't people report this as a regression if this change reduces performance for 
-> > them?
+> > In your example, the two tests look at different flags in *p.  
+> > Speculative reordering of the tests won't make any difference unless
+> > one of the flags gets changed in between.  On a UP system, the only way
+> > the flag can be changed is for the CPU to change it, in which case
+> > the CPU would obviously know that the speculative result had to be
+> > invalidated.
+> 
+> Note, however, that preemption may happen basically at any time, so the
+> task that executes the two "if" statements can be preempted after it has
+> loaded p->flags into a register and before it checks the TIF_FREEZE (if
+> they are reordered).  In that case the p->flags (in memory) may be
+> changed by another task in the meantime.
+
+That's okay, because on a UP system there's only one CPU involved.  
+
+When the other task changes p->flags, the CPU will realize that the
+register containing the speculative p->flags value is now invalid.  
+This will force it to re-read p->flags before testing TIF_FREEZE.
+
+In principle, the sequence of events is no different from single-line
+code doing:
+
+	p->a = 1;
+	if (p->b)
+		...
+	if (p->a)
+		...
+
+No CPU is ever going to mess this up, even if it does speculatively
+load p->a before executing any of the other statements.
+
+A problem can arise only when the "p->a = 1" statement is executed by a 
+_different_ CPU.  In that case the original CPU has no way to tell that 
+the speculative value is invalid, so a memory barrier is needed to 
+prevent the speculative load.
+
+> > > I'm quite convinced that the statement "some CPUs can reorder instructions in
+> > > such a way that a compiler barrier is not sufficient to prevent breakage" is
+> > > correct.
 > > 
-> > They wont be able to see your comments in the code and in the changelog either, 
-> > when this happens to them. They might look into /proc/cpuinfo and see 'epb' 
-> > there but it wont tell them anything. They wont know about a utility available 
-> > in tools/power/x86/ either.
+> > No.  The correct statement is "Some CPUs can reorder instructions in 
+> > such a way that a compiler barrier is not sufficient to prevent 
+> > breakage on SMP systems."
 > 
-> This patch makes no change to the epb feature indicator
-> /proc/cpuinfo.
+> That's if preemption is not taken into account.
 
-I know. I reacted to this bit in the changelog:
+It's true even with preemption.
 
-> > > Since 2.6.35 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
+Besides, if this helps to convince you, recall that the task-switch
+code (i.e., the scheduler) contains its own memory barriers.  If one
+task gets preempted by another, these barriers will defeat instruction
+reordering across the preemption boundary.
 
-Printing the existence of a CPU feature does nothing to inform users.
-
-> > So this patch has 'future trouble' written all over it i'm afraid.
-> 
-> EPB is limited to SNB and later.
-> So the installed base as yet is small.
-> (it also exists on WSM-EP, but doesn't do so much there)
-> EPB will have a more significant effect on future hardware.
-> 
-> Linux currently trails competing operating systems in energy
-> efficiency on SNB due to this setting, and Linux will trail
-> competing operating systems even more on future hardware
-> if this default is not fixed.
-> 
-> Will it be possible to measure a performance difference between
-> "performance" and "normal"?  Yes, it will be possible.
-> Will 99.9% of users notice?  Nope.  More likely they'll notice
-> the the power savings that are disabled in "performance" mode.
-> 
-> I should have called it "benchmark" mode instead of "performance" mode...
-
-That's all fair but does not address the concerns i raised. A silent change 
-during bootup is asking for trouble.
-
-So how about informing users, how about making it non-silent? An informative 
-printk that also mentions the power configuration tool, etc. This solves the 
-concerns i mentioned.
-
-Thanks,
-
-	Ingo
+Alan Stern
