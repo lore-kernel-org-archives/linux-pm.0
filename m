@@ -1,11 +1,15 @@
-From: deepaksi <deepak.sikri@st.com>
-Subject: SPEAR Power Management: Suspend to ram problem
-Date: Fri, 15 Apr 2011 11:14:54 +0530
-Message-ID: <4DA7DB56.4070307__37600.9114007049$1302846466$gmane$org@st.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] x86 intel power: Initialize
+	MSR_IA32_ENERGY_PERF_BIAS
+Date: Fri, 15 Apr 2011 02:25:53 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1104150202310.29365__25768.214723985$1302848829$gmane$org@x980>
+References: <alpine.LFD.2.02.1103301819250.31342@x980>
+	<20110414090854.GB9248@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-reply-to: <20110414090854.GB9248@elte.hu>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,53 +19,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Armando VISCONTI <armando.visconti@st.com>, linux-sh@vger.kernel.org, Amit GOEL <amit.goel@st.com>, linux-kernel@vger.kernel.org, Vipin KUMAR <vipin.kumar@st.com>, Shiraz HASHIM <shiraz.hashim@st.com>, deepaksi <deepak.sikri@st.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 
-Hi,
-I am facing some issues related to system wake up  from the sleep.
-The SPEAr system is a SOC having the ARM cortex core.
-The system hardware has certain power islands, and all islands except the
- one having the wake up sources and Power Management Controller are made
- off, while moving into sleep.
+> > From: Len Brown <len.brown@intel.com>
+> > 
+> > Since 2.6.35 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
+> > Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility is available
+> > in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
+> > 
+> > However, the typical BIOS fails to initialize the MSR,
+> > and the typical Linux distro neglects to invoke x86_energy_perf_policy(8).
+> > 
+> > The result is that some modern hardware is running in hardware default,
+> > which is "performance" mode, rather than the intended design default
+> > of "normal" mode.
+> > 
+> > Initialize the MSR to the "normal" setting during kernel boot.
+> > 
+> > Of course, x86_energy_perf_policy(8) is available to change
+> > the default after boot, should the user have a policy preference.
+> > 
+> > cc: stable@kernel.org
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> > ---
+> >  arch/x86/include/asm/msr-index.h |    3 +++
+> >  arch/x86/kernel/cpu/intel.c      |   14 ++++++++++++++
+> >  2 files changed, 17 insertions(+), 0 deletions(-)
+> > 
+...
+> 
+> Dunno, this patch appears to silently modify the system to be slower than it 
+> was before under Linux.
+> 
+> Won't people report this as a regression if this change reduces performance for 
+> them?
+> 
+> They wont be able to see your comments in the code and in the changelog either, 
+> when this happens to them. They might look into /proc/cpuinfo and see 'epb' 
+> there but it wont tell them anything. They wont know about a utility available 
+> in tools/power/x86/ either.
 
-On waking up from Suspend to RAM, I get the following log on the console
-( the debugger
- shows, all the devices are up and some user space processes are being
-run, which execute
-a system call before crash).
+This patch makes no change to the epb feature indicator
+/proc/cpuinfo.
 
-PM: Syncing filesystems ... done.
-Freezing user space processes ... (elapsed 0.01 seconds) done.
-Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
-Suspending console(s) (use no_console_suspend to debug)
-PM: suspend of devices complete after 2.857 msecs
-PM: late suspend of devices complete after 0.970 msecs
-PM: early resume of devices complete after 0.671 msecs
-usb usb3: root hub lost power or was reset
-usb usb4: root hub lost power or was reset
-PM: resume of devices complete after 30.735 msecs
-Restarting tasks ... done.
-Kernel panic - not syncing: Attempted to kill init!
-Backtrace:
-[<80031b30>] (dump_backtrace+0x0/0x10c) from [<80031c70>]
-(dump_stack+0x18/0x1c)
- r7:0000000b r6:0000000b r5:8f828000 r4:803b90e8
-[<80031c58>] (dump_stack+0x0/0x1c) from [<8004266c>] (panic+0x60/0x17c)
-[<8004260c>] (panic+0x0/0x17c) from [<80045800>] (do_exit+0x68/0x5f0)
- r3:8038d3c0 r2:8f828000 r1:8f8280fc r0:80331eaa
-[<80045798>] (do_exit+0x0/0x5f0) from [<80045e20>] (do_group_exit+0x98/0xc8)
-[<80045d88>] (do_group_exit+0x0/0xc8) from [<80050eec>]
-(get_signal_to_deliver+0x310/0x350)
- r7:8f82a000 r6:8f82bee0 r5:8f91259c r4:0000000b
-[<80050bdc>] (get_signal_to_deliver+0x0/0x350) from [<800309a0>]
-(do_notify_resume+0x70/0x62c)
-[<80030930>] (do_notify_resume+0x0/0x62c) from [<8002dd98>]
-(work_pending+0x24/0x28)
+> So this patch has 'future trouble' written all over it i'm afraid.
 
+EPB is limited to SNB and later.
+So the installed base as yet is small.
+(it also exists on WSM-EP, but doesn't do so much there)
+EPB will have a more significant effect on future hardware.
 
-Could any one help in debugging the same ?
+Linux currently trails competing operating systems in energy
+efficiency on SNB due to this setting, and Linux will trail
+competing operating systems even more on future hardware
+if this default is not fixed.
 
-Deepak
+Will it be possible to measure a performance difference between
+"performance" and "normal"?  Yes, it will be possible.
+Will 99.9% of users notice?  Nope.  More likely they'll notice
+the the power savings that are disabled in "performance" mode.
+
+I should have called it "benchmark" mode instead of "performance" mode...
+
+thanks,
+Len Brown, Intel Open Source Technology Center
