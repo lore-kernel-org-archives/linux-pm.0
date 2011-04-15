@@ -1,15 +1,17 @@
-From: Len Brown <lenb@kernel.org>
+From: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH] x86 intel power: Initialize
 	MSR_IA32_ENERGY_PERF_BIAS
-Date: Fri, 15 Apr 2011 02:25:53 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1104150202310.29365__25768.214723985$1302848829$gmane$org@x980>
+Date: Fri, 15 Apr 2011 12:17:12 +0200
+Message-ID: <20110415101712.GB28007__19136.1370300458$1302862846$gmane$org@elte.hu>
 References: <alpine.LFD.2.02.1103301819250.31342@x980>
 	<20110414090854.GB9248@elte.hu>
+	<alpine.LFD.2.02.1104150202310.29365@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20110414090854.GB9248@elte.hu>
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.02.1104150202310.29365@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,70 +21,87 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 
-> > From: Len Brown <len.brown@intel.com>
-> > 
-> > Since 2.6.35 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
-> > Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility is available
-> > in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
-> > 
-> > However, the typical BIOS fails to initialize the MSR,
-> > and the typical Linux distro neglects to invoke x86_energy_perf_policy(8).
-> > 
-> > The result is that some modern hardware is running in hardware default,
-> > which is "performance" mode, rather than the intended design default
-> > of "normal" mode.
-> > 
-> > Initialize the MSR to the "normal" setting during kernel boot.
-> > 
-> > Of course, x86_energy_perf_policy(8) is available to change
-> > the default after boot, should the user have a policy preference.
-> > 
-> > cc: stable@kernel.org
-> > Signed-off-by: Len Brown <len.brown@intel.com>
-> > ---
-> >  arch/x86/include/asm/msr-index.h |    3 +++
-> >  arch/x86/kernel/cpu/intel.c      |   14 ++++++++++++++
-> >  2 files changed, 17 insertions(+), 0 deletions(-)
-> > 
-...
+* Len Brown <lenb@kernel.org> wrote:
+
 > 
-> Dunno, this patch appears to silently modify the system to be slower than it 
-> was before under Linux.
+> > > From: Len Brown <len.brown@intel.com>
+> > > 
+> > > Since 2.6.35 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
+> > > Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility is available
+> > > in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
+> > > 
+> > > However, the typical BIOS fails to initialize the MSR,
+> > > and the typical Linux distro neglects to invoke x86_energy_perf_policy(8).
+> > > 
+> > > The result is that some modern hardware is running in hardware default,
+> > > which is "performance" mode, rather than the intended design default
+> > > of "normal" mode.
+> > > 
+> > > Initialize the MSR to the "normal" setting during kernel boot.
+> > > 
+> > > Of course, x86_energy_perf_policy(8) is available to change
+> > > the default after boot, should the user have a policy preference.
+> > > 
+> > > cc: stable@kernel.org
+> > > Signed-off-by: Len Brown <len.brown@intel.com>
+> > > ---
+> > >  arch/x86/include/asm/msr-index.h |    3 +++
+> > >  arch/x86/kernel/cpu/intel.c      |   14 ++++++++++++++
+> > >  2 files changed, 17 insertions(+), 0 deletions(-)
+> > > 
+> ...
+> > 
+> > Dunno, this patch appears to silently modify the system to be slower than it 
+> > was before under Linux.
+> > 
+> > Won't people report this as a regression if this change reduces performance for 
+> > them?
+> > 
+> > They wont be able to see your comments in the code and in the changelog either, 
+> > when this happens to them. They might look into /proc/cpuinfo and see 'epb' 
+> > there but it wont tell them anything. They wont know about a utility available 
+> > in tools/power/x86/ either.
 > 
-> Won't people report this as a regression if this change reduces performance for 
-> them?
+> This patch makes no change to the epb feature indicator
+> /proc/cpuinfo.
+
+I know. I reacted to this bit in the changelog:
+
+> > > Since 2.6.35 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
+
+Printing the existence of a CPU feature does nothing to inform users.
+
+> > So this patch has 'future trouble' written all over it i'm afraid.
 > 
-> They wont be able to see your comments in the code and in the changelog either, 
-> when this happens to them. They might look into /proc/cpuinfo and see 'epb' 
-> there but it wont tell them anything. They wont know about a utility available 
-> in tools/power/x86/ either.
+> EPB is limited to SNB and later.
+> So the installed base as yet is small.
+> (it also exists on WSM-EP, but doesn't do so much there)
+> EPB will have a more significant effect on future hardware.
+> 
+> Linux currently trails competing operating systems in energy
+> efficiency on SNB due to this setting, and Linux will trail
+> competing operating systems even more on future hardware
+> if this default is not fixed.
+> 
+> Will it be possible to measure a performance difference between
+> "performance" and "normal"?  Yes, it will be possible.
+> Will 99.9% of users notice?  Nope.  More likely they'll notice
+> the the power savings that are disabled in "performance" mode.
+> 
+> I should have called it "benchmark" mode instead of "performance" mode...
 
-This patch makes no change to the epb feature indicator
-/proc/cpuinfo.
+That's all fair but does not address the concerns i raised. A silent change 
+during bootup is asking for trouble.
 
-> So this patch has 'future trouble' written all over it i'm afraid.
+So how about informing users, how about making it non-silent? An informative 
+printk that also mentions the power configuration tool, etc. This solves the 
+concerns i mentioned.
 
-EPB is limited to SNB and later.
-So the installed base as yet is small.
-(it also exists on WSM-EP, but doesn't do so much there)
-EPB will have a more significant effect on future hardware.
+Thanks,
 
-Linux currently trails competing operating systems in energy
-efficiency on SNB due to this setting, and Linux will trail
-competing operating systems even more on future hardware
-if this default is not fixed.
-
-Will it be possible to measure a performance difference between
-"performance" and "normal"?  Yes, it will be possible.
-Will 99.9% of users notice?  Nope.  More likely they'll notice
-the the power savings that are disabled in "performance" mode.
-
-I should have called it "benchmark" mode instead of "performance" mode...
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+	Ingo
