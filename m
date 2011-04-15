@@ -1,14 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 0/2] Remove __weak definitions of platform
-	PM callbacks
-Date: Fri, 15 Apr 2011 01:16:01 +0200
-Message-ID: <201104150116.01634.rjw__31587.7721565359$1302823593$gmane$org@sisk.pl>
-References: <201104130205.26988.rjw@sisk.pl>
+From: deepaksi <deepak.sikri@st.com>
+Subject: SPEAR Power Management: Suspend to ram problem
+Date: Fri, 15 Apr 2011 11:14:54 +0530
+Message-ID: <4DA7DB56.4070307__37600.9114007049$1302846466$gmane$org@st.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104130205.26988.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,21 +15,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>
+To: linux-pm@lists.linux-foundation.org
+Cc: Armando VISCONTI <armando.visconti@st.com>, linux-sh@vger.kernel.org, Amit GOEL <amit.goel@st.com>, linux-kernel@vger.kernel.org, Vipin KUMAR <vipin.kumar@st.com>, Shiraz HASHIM <shiraz.hashim@st.com>, deepaksi <deepak.sikri@st.com>
 List-Id: linux-pm@vger.kernel.org
 
+
 Hi,
+I am facing some issues related to system wake up  from the sleep.
+The SPEAr system is a SOC having the ARM cortex core.
+The system hardware has certain power islands, and all islands except the
+ one having the wake up sources and Power Management Controller are made
+ off, while moving into sleep.
 
-The following two patches are based on top of
-https://patchwork.kernel.org/patch/702401/ .
+On waking up from Suspend to RAM, I get the following log on the console
+( the debugger
+ shows, all the devices are up and some user space processes are being
+run, which execute
+a system call before crash).
 
-[1/2] converts shmobile (both the ARM and SH flavors) to using a power domain
-for overriding the platform bus type's PM callbacks, which makes it possible
-to remove the __weak definitions of the runtime PM callbacks from platform.c,
-which is done in [2/2].
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.01 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Suspending console(s) (use no_console_suspend to debug)
+PM: suspend of devices complete after 2.857 msecs
+PM: late suspend of devices complete after 0.970 msecs
+PM: early resume of devices complete after 0.671 msecs
+usb usb3: root hub lost power or was reset
+usb usb4: root hub lost power or was reset
+PM: resume of devices complete after 30.735 msecs
+Restarting tasks ... done.
+Kernel panic - not syncing: Attempted to kill init!
+Backtrace:
+[<80031b30>] (dump_backtrace+0x0/0x10c) from [<80031c70>]
+(dump_stack+0x18/0x1c)
+ r7:0000000b r6:0000000b r5:8f828000 r4:803b90e8
+[<80031c58>] (dump_stack+0x0/0x1c) from [<8004266c>] (panic+0x60/0x17c)
+[<8004260c>] (panic+0x0/0x17c) from [<80045800>] (do_exit+0x68/0x5f0)
+ r3:8038d3c0 r2:8f828000 r1:8f8280fc r0:80331eaa
+[<80045798>] (do_exit+0x0/0x5f0) from [<80045e20>] (do_group_exit+0x98/0xc8)
+[<80045d88>] (do_group_exit+0x0/0xc8) from [<80050eec>]
+(get_signal_to_deliver+0x310/0x350)
+ r7:8f82a000 r6:8f82bee0 r5:8f91259c r4:0000000b
+[<80050bdc>] (get_signal_to_deliver+0x0/0x350) from [<800309a0>]
+(do_notify_resume+0x70/0x62c)
+[<80030930>] (do_notify_resume+0x0/0x62c) from [<8002dd98>]
+(work_pending+0x24/0x28)
 
-Comments welcome.
 
-Thanks,
-Rafael
+Could any one help in debugging the same ?
+
+Deepak
