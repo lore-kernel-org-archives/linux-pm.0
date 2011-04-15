@@ -1,16 +1,18 @@
-From: Mike Frysinger <vapier@gentoo.org>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
-	?
-Date: Fri, 15 Apr 2011 12:33:12 -0400
-Message-ID: <BANLkTikaymG-5-YoTnG2SPJCnBtXPpfHBQ__15909.1273825199$1302885351$gmane$org@mail.gmail.com>
+ ?
+Date: Fri, 15 Apr 2011 18:57:37 +0200
+Message-ID: <20110415165737.GA23812__24948.5459215522$1302887315$gmane$org@elf.ucw.cz>
 References: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
 	<Pine.LNX.4.44L0.1104131757430.2005-100000@iolanthe.rowland.org>
 	<20110415162938.GA11454@atrey.karlin.mff.cuni.cz>
+	<BANLkTikaymG-5-YoTnG2SPJCnBtXPpfHBQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110415162938.GA11454@atrey.karlin.mff.cuni.cz>
+Content-Disposition: inline
+In-Reply-To: <BANLkTikaymG-5-YoTnG2SPJCnBtXPpfHBQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,29 +22,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
+To: Mike Frysinger <vapier@gentoo.org>
 Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBBcHIgMTUsIDIwMTEgYXQgMTI6MjksIFBhdmVsIE1hY2hlayB3cm90ZToKPj4gPiA+
-IEkgYmVsaWV2ZSB0aGUgY29kZSBpcyBjb3JyZWN0IGFzIGlzLgo+PiA+Cj4+ID4gdGhhdCBpc250
-IHdoYXQgdGhlIGNvZGUgLyBkb2N1bWVudGF0aW9uIHNheXMuIMKgdW5sZXNzIGknbSByZWFkaW5n
-IHRoZW0KPj4gPiB3cm9uZywgYm90aCBzZWVtIHRvIGluZGljYXRlIHRoYXQgdGhlIHByb3Bvc2Vk
-IHBhdGNoIGlzIHdoYXQgd2UKPj4gPiBhY3R1YWxseSB3YW50Lgo+Pgo+PiBUaGUgZXhpc3Rpbmcg
-Y29kZSBpcyBjb3JyZWN0IGJ1dCBpdCBpc24ndCBvcHRpbWFsLgo+Pgo+PiB3bWIoKSBhbmQgcm1i
-KCkgYXJlIGhlYXZ5LWR1dHkgb3BlcmF0aW9ucywgYW5kIHlvdSBkb24ndCB3YW50IHRvIGNhbGwK
-Pj4gdGhlbSB3aGVuIHRoZXkgYXJlbid0IG5lZWRlZC4gwqBUaGF0J3MgZXhhY3RseSB3aGF0IHNt
-cF93bWIoKSBhbmQKPj4gc21wX3JtYigpIGFyZSBmb3IgLS0gdGhleSBjYWxsIHdtYigpIGFuZCBy
-bWIoKSwgYnV0IG9ubHkgaW4gU01QCj4+IGtlcm5lbHMuCj4+Cj4+IFVubGVzcyB5b3UgbmVlZCB0
-byBzeW5jaHJvbml6ZSB3aXRoIGFub3RoZXIgcHJvY2Vzc29yIChub3QgbmVjZXNzYXJpbHkKPj4g
-YSBDUFUsIGl0IGNvdWxkIGJlIHNvbWV0aGluZyBlbWJlZGRlZCB3aXRoaW4gYSBkZXZpY2UpLCB5
-b3Ugc2hvdWxkCj4+IGFsd2F5cyB1c2Ugc21wX3dtYigpIGFuZCBzbXBfcm1iKCkgcmF0aGVyIHRo
-YW4gd21iKCkgYW5kIHJtYigpLgo+Cj4gTWF5YmU7IGJ1dCB0aGlzIGNvZGUgaXMgbm90IHBlcmZv
-cm1hbmNlIGNyaXRpY2FsIGFuZCBJIGJlbGlldmUgYmVpbmcKPiBvYnZpb3VzIGhlcmUgaXMgYmV0
-dGVyLi4uCgppc250IGl0IHRob3VnaCA/ICBlc3BlY2lhbGx5IHdoZW4gd2UgdGFsayBhYm91dCBz
-dXNwZW5kaW5nL3Jlc3VtaW5nIG9uCmVtYmVkZGVkIHN5c3RlbXMgdG8gZ2V0IG1vcmUgc2F2aW5n
-cyBvdmVyIGp1c3QgY3B1IGlkbGUgPyAgd2Ugd2FudAp0aGF0IGxhdGVuY3kgdG8gYmUgYXMgbG93
-IGFzIHBvc3NpYmxlLgotbWlrZQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91
-bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
-c3RpbmZvL2xpbnV4LXBt
+> >> The existing code is correct but it isn't optimal.
+> >>
+> >> wmb() and rmb() are heavy-duty operations, and you don't want to call
+> >> them when they aren't needed. =A0That's exactly what smp_wmb() and
+> >> smp_rmb() are for -- they call wmb() and rmb(), but only in SMP
+> >> kernels.
+> >>
+> >> Unless you need to synchronize with another processor (not necessarily
+> >> a CPU, it could be something embedded within a device), you should
+> >> always use smp_wmb() and smp_rmb() rather than wmb() and rmb().
+> >
+> > Maybe; but this code is not performance critical and I believe being
+> > obvious here is better...
+> =
+
+> isnt it though ?  especially when we talk about suspending/resuming on
+> embedded systems to get more savings over just cpu idle ?  we want
+> that latency to be as low as possible.
+
+Feel free to measure the difference. I bet it is lost in noise,
+freezer just is not _that_ hot path.
+
+								Pavel
+-- =
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
