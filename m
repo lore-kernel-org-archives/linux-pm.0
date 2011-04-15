@@ -1,18 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
- ?
-Date: Fri, 15 Apr 2011 18:57:37 +0200
-Message-ID: <20110415165737.GA23812__24948.5459215522$1302887315$gmane$org@elf.ucw.cz>
-References: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
-	<Pine.LNX.4.44L0.1104131757430.2005-100000@iolanthe.rowland.org>
-	<20110415162938.GA11454@atrey.karlin.mff.cuni.cz>
-	<BANLkTikaymG-5-YoTnG2SPJCnBtXPpfHBQ@mail.gmail.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: [PATCH/RFC] pm: disabling runtime power-management has
+ to reset the status
+Date: Fri, 15 Apr 2011 20:14:59 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.1104152011090.18593@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <BANLkTikaymG-5-YoTnG2SPJCnBtXPpfHBQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,35 +16,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Magnus Damm <damm@opensource.se>
 List-Id: linux-pm@vger.kernel.org
 
-> >> The existing code is correct but it isn't optimal.
-> >>
-> >> wmb() and rmb() are heavy-duty operations, and you don't want to call
-> >> them when they aren't needed. =A0That's exactly what smp_wmb() and
-> >> smp_rmb() are for -- they call wmb() and rmb(), but only in SMP
-> >> kernels.
-> >>
-> >> Unless you need to synchronize with another processor (not necessarily
-> >> a CPU, it could be something embedded within a device), you should
-> >> always use smp_wmb() and smp_rmb() rather than wmb() and rmb().
-> >
-> > Maybe; but this code is not performance critical and I believe being
-> > obvious here is better...
-> =
+Restore the initial RPM_SUSPENDED runtime pm status, when disabling,
+otherwise the following enable will not function. This happens, e.g.,
+when unloading and reloading drivers.
 
-> isnt it though ?  especially when we talk about suspending/resuming on
-> embedded systems to get more savings over just cpu idle ?  we want
-> that latency to be as low as possible.
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Simon Horman <horms@verge.net.au>
+Cc: Magnus Damm <damm@opensource.se>
+---
 
-Feel free to measure the difference. I bet it is lost in noise,
-freezer just is not _that_ hot path.
+No, I do not claim to understand the thousand of states, flags, and 
+counters, this just happens to fix the problem for me. Feel free to make a 
+correct solution out of this.
 
-								Pavel
--- =
+ drivers/base/power/runtime.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 3172c60..83d6898 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1012,8 +1012,10 @@ void __pm_runtime_disable(struct device *dev, bool check_resume)
+ 		pm_runtime_put_noidle(dev);
+ 	}
+ 
+-	if (!dev->power.disable_depth++)
++	if (!dev->power.disable_depth++) {
+ 		__pm_runtime_barrier(dev);
++		dev->power.runtime_status = RPM_SUSPENDED;
++	}
+ 
+  out:
+ 	spin_unlock_irq(&dev->power.lock);
+-- 
+1.7.2.5
