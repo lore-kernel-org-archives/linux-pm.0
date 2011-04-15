@@ -1,13 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp?
-Date: Fri, 15 Apr 2011 10:32:59 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1104151017300.2051-100000__49095.4948975288$1302878072$gmane$org@iolanthe.rowland.org>
-References: <201104150034.21937.rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Make power domain callbacks take
+ precedence over subsystem ones
+Date: Fri, 15 Apr 2011 10:34:47 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104151033020.2051-100000__40791.9326368303$1302878135$gmane$org@iolanthe.rowland.org>
+References: <201104150045.54904.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104150034.21937.rjw@sisk.pl>
+In-Reply-To: <201104150045.54904.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,71 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, 15 Apr 2011, Rafael J. Wysocki wrote:
 
-> > > For example, there's no reason why the CPU cannot reorder things so that
-> > > the "if (frozen(p))" is (speculatively) done before the "if (!freezing(p))"
-> > > if there's only a compiler barrier between them.
+> On Thursday, April 14, 2011, Magnus Damm wrote:
+
+> > My only thought on this is if we really want to limit ourselves to
+> > only control power domains using these callbacks. I can imagine that
+> > some SoCs want to do other non-power domain specific operations with
+> > these callbacks, and if so, perhaps using the term power domain as
+> > name of the pointer in struct device would be somewhat odd. OTOH, I
+> > really dislike naming discussions in general and I can't really think
+> > of any good names. So it all looks more like a set of system specific
+> > PM override hooks.
 > > 
-> > That's true.  On an SMP system, smp_wmb() is identical to wmb(), so
-> > there will be a true memory barrier when it is needed.  On a UP system,
-> > reordering the instructions in this way will not change the final
-> > result -- in particular, it won't break anything.
-> > 
-> > In your example, the two tests look at different flags in *p.  
-> > Speculative reordering of the tests won't make any difference unless
-> > one of the flags gets changed in between.  On a UP system, the only way
-> > the flag can be changed is for the CPU to change it, in which case
-> > the CPU would obviously know that the speculative result had to be
-> > invalidated.
+> > Or is there something that is really power domain specific with these hooks?
 > 
-> Note, however, that preemption may happen basically at any time, so the
-> task that executes the two "if" statements can be preempted after it has
-> loaded p->flags into a register and before it checks the TIF_FREEZE (if
-> they are reordered).  In that case the p->flags (in memory) may be
-> changed by another task in the meantime.
-
-That's okay, because on a UP system there's only one CPU involved.  
-
-When the other task changes p->flags, the CPU will realize that the
-register containing the speculative p->flags value is now invalid.  
-This will force it to re-read p->flags before testing TIF_FREEZE.
-
-In principle, the sequence of events is no different from single-line
-code doing:
-
-	p->a = 1;
-	if (p->b)
-		...
-	if (p->a)
-		...
-
-No CPU is ever going to mess this up, even if it does speculatively
-load p->a before executing any of the other statements.
-
-A problem can arise only when the "p->a = 1" statement is executed by a 
-_different_ CPU.  In that case the original CPU has no way to tell that 
-the speculative value is invalid, so a memory barrier is needed to 
-prevent the speculative load.
-
-> > > I'm quite convinced that the statement "some CPUs can reorder instructions in
-> > > such a way that a compiler barrier is not sufficient to prevent breakage" is
-> > > correct.
-> > 
-> > No.  The correct statement is "Some CPUs can reorder instructions in 
-> > such a way that a compiler barrier is not sufficient to prevent 
-> > breakage on SMP systems."
+> Not in principle, but I think there is.  Namely, if there are two groups
+> of devices belonging to the same bus type (e.g. platform) that each require
+> different PM handling, it is legitimate to call them "power domains" (where
+> "domain" means "a set of devices related to each other because of the way
+> they need to be handled"), even if they don't share power resources.
 > 
-> That's if preemption is not taken into account.
+> Of course, if they do share power resources, the term is just right. :-)
 
-It's true even with preemption.
-
-Besides, if this helps to convince you, recall that the task-switch
-code (i.e., the scheduler) contains its own memory barriers.  If one
-task gets preempted by another, these barriers will defeat instruction
-reordering across the preemption boundary.
+They could be called "PM domains" instead of "power domains".  That's 
+legitimate because they do get used by the PM core, even if they don't 
+literally involve groups of devices sharing the same power supply.
 
 Alan Stern
