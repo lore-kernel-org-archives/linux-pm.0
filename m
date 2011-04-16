@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/9] PM: Export platform bus type's default PM
-	callbacks
-Date: Sun, 17 Apr 2011 01:37:10 +0200
-Message-ID: <201104170137.11205.rjw__39919.676553882$1302997555$gmane$org@sisk.pl>
+Subject: [PATCH 4/9] PM / Platform: Use generic runtime PM
+	callbacks directly
+Date: Sun, 17 Apr 2011 01:38:53 +0200
+Message-ID: <201104170138.54163.rjw__14018.9157719307$1302997556$gmane$org@sisk.pl>
 References: <201104130205.26988.rjw@sisk.pl> <201104170135.19388.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,276 +24,57 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Export the default PM callbacks defined for the platform bus type so
-that they can be used by power domains for suspending and resuming
-platform devices in the future.
+Once shmobile platforms have been converted to using power domains
+for overriding the platform bus type's PM callbacks, it isn't
+necessary to use the __weakly defined wrappers around the generinc
+runtime PM callbacks in the platform bus type any more.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/platform.c         |   72 ++++++++++------------------------------
- include/linux/platform_device.h |   60 +++++++++++++++++++++++++++++++++
- 2 files changed, 78 insertions(+), 54 deletions(-)
+ drivers/base/platform.c |   31 +++----------------------------
+ 1 file changed, 3 insertions(+), 28 deletions(-)
 
 Index: linux-2.6/drivers/base/platform.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/platform.c
 +++ linux-2.6/drivers/base/platform.c
-@@ -667,7 +667,7 @@ static int platform_legacy_resume(struct
- 	return ret;
- }
+@@ -900,36 +900,11 @@ int platform_pm_restore_noirq(struct dev
  
--static int platform_pm_prepare(struct device *dev)
-+int platform_pm_prepare(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -678,7 +678,7 @@ static int platform_pm_prepare(struct de
- 	return ret;
- }
+ #endif /* CONFIG_HIBERNATE_CALLBACKS */
  
--static void platform_pm_complete(struct device *dev)
-+void platform_pm_complete(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 
-@@ -686,16 +686,11 @@ static void platform_pm_complete(struct
- 		drv->pm->complete(dev);
- }
- 
--#else /* !CONFIG_PM_SLEEP */
+-#ifdef CONFIG_PM_RUNTIME
 -
--#define platform_pm_prepare		NULL
--#define platform_pm_complete		NULL
+-int __weak platform_pm_runtime_suspend(struct device *dev)
+-{
+-	return pm_generic_runtime_suspend(dev);
+-};
 -
--#endif /* !CONFIG_PM_SLEEP */
-+#endif /* CONFIG_PM_SLEEP */
- 
- #ifdef CONFIG_SUSPEND
- 
--int __weak platform_pm_suspend(struct device *dev)
-+int platform_pm_suspend(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -713,7 +708,7 @@ int __weak platform_pm_suspend(struct de
- 	return ret;
- }
- 
--int __weak platform_pm_suspend_noirq(struct device *dev)
-+int platform_pm_suspend_noirq(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -729,7 +724,7 @@ int __weak platform_pm_suspend_noirq(str
- 	return ret;
- }
- 
--int __weak platform_pm_resume(struct device *dev)
-+int platform_pm_resume(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -747,7 +742,7 @@ int __weak platform_pm_resume(struct dev
- 	return ret;
- }
- 
--int __weak platform_pm_resume_noirq(struct device *dev)
-+int platform_pm_resume_noirq(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -763,18 +758,11 @@ int __weak platform_pm_resume_noirq(stru
- 	return ret;
- }
- 
--#else /* !CONFIG_SUSPEND */
+-int __weak platform_pm_runtime_resume(struct device *dev)
+-{
+-	return pm_generic_runtime_resume(dev);
+-};
 -
--#define platform_pm_suspend		NULL
--#define platform_pm_resume		NULL
--#define platform_pm_suspend_noirq	NULL
--#define platform_pm_resume_noirq	NULL
+-int __weak platform_pm_runtime_idle(struct device *dev)
+-{
+-	return pm_generic_runtime_idle(dev);
+-};
 -
--#endif /* !CONFIG_SUSPEND */
-+#endif /* CONFIG_SUSPEND */
- 
- #ifdef CONFIG_HIBERNATE_CALLBACKS
- 
--static int platform_pm_freeze(struct device *dev)
-+int platform_pm_freeze(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -792,7 +780,7 @@ static int platform_pm_freeze(struct dev
- 	return ret;
- }
- 
--static int platform_pm_freeze_noirq(struct device *dev)
-+int platform_pm_freeze_noirq(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -808,7 +796,7 @@ static int platform_pm_freeze_noirq(stru
- 	return ret;
- }
- 
--static int platform_pm_thaw(struct device *dev)
-+int platform_pm_thaw(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -826,7 +814,7 @@ static int platform_pm_thaw(struct devic
- 	return ret;
- }
- 
--static int platform_pm_thaw_noirq(struct device *dev)
-+int platform_pm_thaw_noirq(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -842,7 +830,7 @@ static int platform_pm_thaw_noirq(struct
- 	return ret;
- }
- 
--static int platform_pm_poweroff(struct device *dev)
-+int platform_pm_poweroff(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -860,7 +848,7 @@ static int platform_pm_poweroff(struct d
- 	return ret;
- }
- 
--static int platform_pm_poweroff_noirq(struct device *dev)
-+int platform_pm_poweroff_noirq(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -876,7 +864,7 @@ static int platform_pm_poweroff_noirq(st
- 	return ret;
- }
- 
--static int platform_pm_restore(struct device *dev)
-+int platform_pm_restore(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -894,7 +882,7 @@ static int platform_pm_restore(struct de
- 	return ret;
- }
- 
--static int platform_pm_restore_noirq(struct device *dev)
-+int platform_pm_restore_noirq(struct device *dev)
- {
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
-@@ -910,18 +898,7 @@ static int platform_pm_restore_noirq(str
- 	return ret;
- }
- 
--#else /* !CONFIG_HIBERNATE_CALLBACKS */
+-#else /* !CONFIG_PM_RUNTIME */
 -
--#define platform_pm_freeze		NULL
--#define platform_pm_thaw		NULL
--#define platform_pm_poweroff		NULL
--#define platform_pm_restore		NULL
--#define platform_pm_freeze_noirq	NULL
--#define platform_pm_thaw_noirq		NULL
--#define platform_pm_poweroff_noirq	NULL
--#define platform_pm_restore_noirq	NULL
+-#define platform_pm_runtime_suspend NULL
+-#define platform_pm_runtime_resume NULL
+-#define platform_pm_runtime_idle NULL
 -
--#endif /* !CONFIG_HIBERNATE_CALLBACKS */
-+#endif /* CONFIG_HIBERNATE_CALLBACKS */
- 
- #ifdef CONFIG_PM_RUNTIME
- 
-@@ -949,20 +926,7 @@ int __weak platform_pm_runtime_idle(stru
- #endif /* !CONFIG_PM_RUNTIME */
- 
+-#endif /* !CONFIG_PM_RUNTIME */
+-
  static const struct dev_pm_ops platform_dev_pm_ops = {
--	.prepare = platform_pm_prepare,
--	.complete = platform_pm_complete,
--	.suspend = platform_pm_suspend,
--	.resume = platform_pm_resume,
--	.freeze = platform_pm_freeze,
--	.thaw = platform_pm_thaw,
--	.poweroff = platform_pm_poweroff,
--	.restore = platform_pm_restore,
--	.suspend_noirq = platform_pm_suspend_noirq,
--	.resume_noirq = platform_pm_resume_noirq,
--	.freeze_noirq = platform_pm_freeze_noirq,
--	.thaw_noirq = platform_pm_thaw_noirq,
--	.poweroff_noirq = platform_pm_poweroff_noirq,
--	.restore_noirq = platform_pm_restore_noirq,
-+	USE_PLATFORM_PM_SLEEP_OPS,
- 	.runtime_suspend = platform_pm_runtime_suspend,
- 	.runtime_resume = platform_pm_runtime_resume,
- 	.runtime_idle = platform_pm_runtime_idle,
-Index: linux-2.6/include/linux/platform_device.h
-===================================================================
---- linux-2.6.orig/include/linux/platform_device.h
-+++ linux-2.6/include/linux/platform_device.h
-@@ -205,4 +205,64 @@ static inline char *early_platform_drive
- }
- #endif /* MODULE */
+ 	USE_PLATFORM_PM_SLEEP_OPS,
+-	.runtime_suspend = platform_pm_runtime_suspend,
+-	.runtime_resume = platform_pm_runtime_resume,
+-	.runtime_idle = platform_pm_runtime_idle,
++	.runtime_suspend = pm_generic_runtime_suspend,
++	.runtime_resume = pm_generic_runtime_resume,
++	.runtime_idle = pm_generic_runtime_idle,
+ };
  
-+#ifdef CONFIG_PM_SLEEP
-+extern int platform_pm_prepare(struct device *dev);
-+extern void platform_pm_complete(struct device *dev);
-+#else
-+#define platform_pm_prepare	NULL
-+#define platform_pm_complete	NULL
-+#endif
-+
-+#ifdef CONFIG_SUSPEND
-+extern int platform_pm_suspend(struct device *dev);
-+extern int platform_pm_suspend_noirq(struct device *dev);
-+extern int platform_pm_resume(struct device *dev);
-+extern int platform_pm_resume_noirq(struct device *dev);
-+#else
-+#define platform_pm_suspend		NULL
-+#define platform_pm_resume		NULL
-+#define platform_pm_suspend_noirq	NULL
-+#define platform_pm_resume_noirq	NULL
-+#endif
-+
-+#ifdef CONFIG_HIBERNATE_CALLBACKS
-+extern int platform_pm_freeze(struct device *dev);
-+extern int platform_pm_freeze_noirq(struct device *dev);
-+extern int platform_pm_thaw(struct device *dev);
-+extern int platform_pm_thaw_noirq(struct device *dev);
-+extern int platform_pm_poweroff(struct device *dev);
-+extern int platform_pm_poweroff_noirq(struct device *dev);
-+extern int platform_pm_restore(struct device *dev);
-+extern int platform_pm_restore_noirq(struct device *dev);
-+#else
-+#define platform_pm_freeze		NULL
-+#define platform_pm_thaw		NULL
-+#define platform_pm_poweroff		NULL
-+#define platform_pm_restore		NULL
-+#define platform_pm_freeze_noirq	NULL
-+#define platform_pm_thaw_noirq		NULL
-+#define platform_pm_poweroff_noirq	NULL
-+#define platform_pm_restore_noirq	NULL
-+#endif
-+
-+#ifdef CONFIG_PM_SLEEP
-+#define USE_PLATFORM_PM_SLEEP_OPS \
-+	.prepare = platform_pm_prepare, \
-+	.complete = platform_pm_complete, \
-+	.suspend = platform_pm_suspend, \
-+	.resume = platform_pm_resume, \
-+	.freeze = platform_pm_freeze, \
-+	.thaw = platform_pm_thaw, \
-+	.poweroff = platform_pm_poweroff, \
-+	.restore = platform_pm_restore, \
-+	.suspend_noirq = platform_pm_suspend_noirq, \
-+	.resume_noirq = platform_pm_resume_noirq, \
-+	.freeze_noirq = platform_pm_freeze_noirq, \
-+	.thaw_noirq = platform_pm_thaw_noirq, \
-+	.poweroff_noirq = platform_pm_poweroff_noirq, \
-+	.restore_noirq = platform_pm_restore_noirq
-+#else
-+#define USE_PLATFORM_PM_SLEEP_OPS
-+#endif
-+
- #endif /* _PLATFORM_DEVICE_H_ */
+ struct bus_type platform_bus_type = {
