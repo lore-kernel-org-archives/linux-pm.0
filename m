@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/9] PM: Rework shmobile and OMAP runtime PM
-	using power domains
-Date: Sun, 17 Apr 2011 01:35:18 +0200
-Message-ID: <201104170135.19388.rjw__40121.1624769077$1302997540$gmane$org@sisk.pl>
-References: <201104130205.26988.rjw@sisk.pl>
+Subject: [PATCH 3/9] shmobile: Use power domains for platform
+	runtime PM
+Date: Sun, 17 Apr 2011 01:38:05 +0200
+Message-ID: <201104170138.06068.rjw__13040.1036273271$1302997551$gmane$org@sisk.pl>
+References: <201104130205.26988.rjw@sisk.pl> <201104170135.19388.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104130205.26988.rjw@sisk.pl>
+In-Reply-To: <201104170135.19388.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,40 +22,206 @@ To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The following series of patches is my attempt to consolidate the shmobile and
-OMAP runtime PM code using power domains so that it is not necessary to
-replace the platform bus type's runtime PM callbacks any more.
+shmobile platforms replace the runtime PM callbacks of the platform
+bus type with their own routines, but this means that the callbacks
+are replaced system-wide.  This may not be the right approach if the
+platform devices on the system are not of the same type (e.g. some
+of them belong to an SoC and the others are located in separate
+chips), because in those cases they may require different handling.
+Thus it is better to use power domains to override the platform bus
+type's PM handling, as it generally is possible to use different
+power domains for devices with different PM requirements.
 
-Some of the patches have already been posted, some are new and some are
-from Kevin. :-)
+Define a default power domain for shmobile in both the SH and ARM
+falvors and use it to override the platform bus type's PM callbacks.
+Since the suspend and hibernate callbacks of the new "default" power
+domains need to be the same and the platform bus type's suspend and
+hibernate callbacks for the time being, export those callbacks so
+that can be used outside of the platform bus type code.
 
-[1/9] - Make power domain callbacks take precedence over subsystem ones
-        (this one has been discussed already).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/arm/mach-shmobile/pm_runtime.c      |   25 ++++++++++++++++-------
+ arch/sh/kernel/cpu/shmobile/pm_runtime.c |   33 ++++++++++++++++++++-----------
+ 2 files changed, 40 insertions(+), 18 deletions(-)
 
-[2/9] - Export the platform bus type's default PM callbacks so that they
-        can be used in power domain objects.
-
-[3/9] - Use a default power domain for runtime PM on shmobile (both ARM
-        and SH flavors) instead of replacing the platform bus type's
-        runtime PM callbacks (using __weak).
-
-[4/9] - Use generic runtime PM callbacks directly in the platform bus type.
-
-[5/9] - Move OMAP2 runtime PM implementation to using a power domain object
-        (patch from Kevin rebased on top of [1-4/9]).
-
-[6/9] - Add subsystem data field to struct dev_pm_info.
-
-[7/9] - Introduce generic clock manipulation routines for runtime PM and
-        convert ARM shmobile to using them.
-
-[8/9] - Move OMAP1 runtime PM to the new core infrastructure.
-
-[9/9] - Remove platform_bus_set_pm_ops() (patch from Kevin).
-
-Comments welcome.
-
-Thanks,
-Rafael
+Index: linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm_runtime.c
++++ linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+@@ -66,11 +66,11 @@ static void platform_pm_runtime_bug(stru
+ 		dev_err(dev, "runtime pm suspend before resume\n");
+ }
+ 
+-int platform_pm_runtime_suspend(struct device *dev)
++static int default_platform_runtime_suspend(struct device *dev)
+ {
+ 	struct pm_runtime_data *prd = __to_prd(dev);
+ 
+-	dev_dbg(dev, "platform_pm_runtime_suspend()\n");
++	dev_dbg(dev, "%s()\n", __func__);
+ 
+ 	platform_pm_runtime_bug(dev, prd);
+ 
+@@ -82,11 +82,11 @@ int platform_pm_runtime_suspend(struct d
+ 	return 0;
+ }
+ 
+-int platform_pm_runtime_resume(struct device *dev)
++static int default_platform_runtime_resume(struct device *dev)
+ {
+ 	struct pm_runtime_data *prd = __to_prd(dev);
+ 
+-	dev_dbg(dev, "platform_pm_runtime_resume()\n");
++	dev_dbg(dev, "%s()\n", __func__);
+ 
+ 	platform_pm_runtime_init(dev, prd);
+ 
+@@ -98,12 +98,21 @@ int platform_pm_runtime_resume(struct de
+ 	return 0;
+ }
+ 
+-int platform_pm_runtime_idle(struct device *dev)
++static int default_platform_runtime_idle(struct device *dev)
+ {
+ 	/* suspend synchronously to disable clocks immediately */
+ 	return pm_runtime_suspend(dev);
+ }
+ 
++static struct dev_power_domain default_power_domain = {
++	.ops = {
++		USE_PLATFORM_PM_SLEEP_OPS,
++		.runtime_suspend = default_platform_runtime_suspend,
++		.runtime_resume = default_platform_runtime_resume,
++		.runtime_idle = default_platform_runtime_idle,
++	},
++};
++
+ static int platform_bus_notify(struct notifier_block *nb,
+ 			       unsigned long action, void *data)
+ {
+@@ -114,10 +123,12 @@ static int platform_bus_notify(struct no
+ 
+ 	if (action == BUS_NOTIFY_BIND_DRIVER) {
+ 		prd = devres_alloc(__devres_release, sizeof(*prd), GFP_KERNEL);
+-		if (prd)
++		if (prd) {
+ 			devres_add(dev, prd);
+-		else
++			dev->pwr_domain = &default_power_domain;
++		} else {
+ 			dev_err(dev, "unable to alloc memory for runtime pm\n");
++		}
+ 	}
+ 
+ 	return 0;
+Index: linux-2.6/arch/sh/kernel/cpu/shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/sh/kernel/cpu/shmobile/pm_runtime.c
++++ linux-2.6/arch/sh/kernel/cpu/shmobile/pm_runtime.c
+@@ -139,7 +139,7 @@ void platform_pm_runtime_suspend_idle(vo
+ 	queue_work(pm_wq, &hwblk_work);
+ }
+ 
+-int platform_pm_runtime_suspend(struct device *dev)
++static int default_platform_runtime_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct pdev_archdata *ad = &pdev->archdata;
+@@ -147,7 +147,7 @@ int platform_pm_runtime_suspend(struct d
+ 	int hwblk = ad->hwblk_id;
+ 	int ret = 0;
+ 
+-	dev_dbg(dev, "platform_pm_runtime_suspend() [%d]\n", hwblk);
++	dev_dbg(dev, "%s() [%d]\n", __func__, hwblk);
+ 
+ 	/* ignore off-chip platform devices */
+ 	if (!hwblk)
+@@ -183,20 +183,20 @@ int platform_pm_runtime_suspend(struct d
+ 	mutex_unlock(&ad->mutex);
+ 
+ out:
+-	dev_dbg(dev, "platform_pm_runtime_suspend() [%d] returns %d\n",
+-		hwblk, ret);
++	dev_dbg(dev, "%s() [%d] returns %d\n",
++		 __func__, hwblk, ret);
+ 
+ 	return ret;
+ }
+ 
+-int platform_pm_runtime_resume(struct device *dev)
++static int default_platform_runtime_resume(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct pdev_archdata *ad = &pdev->archdata;
+ 	int hwblk = ad->hwblk_id;
+ 	int ret = 0;
+ 
+-	dev_dbg(dev, "platform_pm_runtime_resume() [%d]\n", hwblk);
++	dev_dbg(dev, "%s() [%d]\n", __func__, hwblk);
+ 
+ 	/* ignore off-chip platform devices */
+ 	if (!hwblk)
+@@ -228,19 +228,19 @@ int platform_pm_runtime_resume(struct de
+ 	 */
+ 	mutex_unlock(&ad->mutex);
+ out:
+-	dev_dbg(dev, "platform_pm_runtime_resume() [%d] returns %d\n",
+-		hwblk, ret);
++	dev_dbg(dev, "%s() [%d] returns %d\n",
++		__func__, hwblk, ret);
+ 
+ 	return ret;
+ }
+ 
+-int platform_pm_runtime_idle(struct device *dev)
++static int default_platform_runtime_idle(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	int hwblk = pdev->archdata.hwblk_id;
+ 	int ret = 0;
+ 
+-	dev_dbg(dev, "platform_pm_runtime_idle() [%d]\n", hwblk);
++	dev_dbg(dev, "%s() [%d]\n", __func__, hwblk);
+ 
+ 	/* ignore off-chip platform devices */
+ 	if (!hwblk)
+@@ -252,10 +252,19 @@ int platform_pm_runtime_idle(struct devi
+ 	/* suspend synchronously to disable clocks immediately */
+ 	ret = pm_runtime_suspend(dev);
+ out:
+-	dev_dbg(dev, "platform_pm_runtime_idle() [%d] done!\n", hwblk);
++	dev_dbg(dev, "%s() [%d] done!\n", __func__, hwblk);
+ 	return ret;
+ }
+ 
++static struct dev_power_domain default_power_domain = {
++	.ops = {
++		USE_PLATFORM_PM_SLEEP_OPS,
++		.runtime_suspend = default_platform_runtime_suspend,
++		.runtime_resume = default_platform_runtime_resume,
++		.runtime_idle = default_platform_runtime_idle,
++	},
++};
++
+ static int platform_bus_notify(struct notifier_block *nb,
+ 			       unsigned long action, void *data)
+ {
+@@ -276,6 +285,7 @@ static int platform_bus_notify(struct no
+ 		hwblk_disable(hwblk_info, hwblk);
+ 		/* make sure driver re-inits itself once */
+ 		__set_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags);
++		dev->pwr_domain = &default_power_domain;
+ 		break;
+ 	/* TODO: add BUS_NOTIFY_BIND_DRIVER and increase idle count */
+ 	case BUS_NOTIFY_BOUND_DRIVER:
+@@ -289,6 +299,7 @@ static int platform_bus_notify(struct no
+ 		__set_bit(PDEV_ARCHDATA_FLAG_INIT, &pdev->archdata.flags);
+ 		break;
+ 	case BUS_NOTIFY_DEL_DEVICE:
++		dev->pwr_domain = NULL;
+ 		break;
+ 	}
+ 	return 0;
