@@ -1,17 +1,14 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [uclinux-dist-devel] freezer: should barriers be smp
-	?
-Date: Fri, 15 Apr 2011 19:24:47 -0400
-Message-ID: <BANLkTik9aGTqb0JNr3RsnDjPiSpbSdEUpA__22245.1018322774$1302910402$gmane$org@mail.gmail.com>
-References: <BANLkTinj3y+-VhzFAPz8Gzb5vAbtUFU6Aw@mail.gmail.com>
-	<20110415162938.GA11454@atrey.karlin.mff.cuni.cz>
-	<BANLkTikaymG-5-YoTnG2SPJCnBtXPpfHBQ@mail.gmail.com>
-	<201104160111.49409.rjw@sisk.pl>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [RFC][PATCH] PM: Make power domain callbacks take
+ precedence over subsystem ones
+Date: Sat, 16 Apr 2011 10:17:51 -0700
+Message-ID: <1302974271.2719.33.camel__9329.94475956566$1302992819$gmane$org@vence>
+References: <201104130205.26988.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104160111.49409.rjw@sisk.pl>
+In-Reply-To: <201104130205.26988.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,38 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBBcHIgMTUsIDIwMTEgYXQgMTk6MTEsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
-IE9uIEZyaWRheSwgQXByaWwgMTUsIDIwMTEsIE1pa2UgRnJ5c2luZ2VyIHdyb3RlOgo+PiBPbiBG
-cmksIEFwciAxNSwgMjAxMSBhdCAxMjoyOSwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+PiA+PiA+ID4g
-SSBiZWxpZXZlIHRoZSBjb2RlIGlzIGNvcnJlY3QgYXMgaXMuCj4+ID4+ID4KPj4gPj4gPiB0aGF0
-IGlzbnQgd2hhdCB0aGUgY29kZSAvIGRvY3VtZW50YXRpb24gc2F5cy4gwqB1bmxlc3MgaSdtIHJl
-YWRpbmcgdGhlbQo+PiA+PiA+IHdyb25nLCBib3RoIHNlZW0gdG8gaW5kaWNhdGUgdGhhdCB0aGUg
-cHJvcG9zZWQgcGF0Y2ggaXMgd2hhdCB3ZQo+PiA+PiA+IGFjdHVhbGx5IHdhbnQuCj4+ID4+Cj4+
-ID4+IFRoZSBleGlzdGluZyBjb2RlIGlzIGNvcnJlY3QgYnV0IGl0IGlzbid0IG9wdGltYWwuCj4+
-ID4+Cj4+ID4+IHdtYigpIGFuZCBybWIoKSBhcmUgaGVhdnktZHV0eSBvcGVyYXRpb25zLCBhbmQg
-eW91IGRvbid0IHdhbnQgdG8gY2FsbAo+PiA+PiB0aGVtIHdoZW4gdGhleSBhcmVuJ3QgbmVlZGVk
-LiDCoFRoYXQncyBleGFjdGx5IHdoYXQgc21wX3dtYigpIGFuZAo+PiA+PiBzbXBfcm1iKCkgYXJl
-IGZvciAtLSB0aGV5IGNhbGwgd21iKCkgYW5kIHJtYigpLCBidXQgb25seSBpbiBTTVAKPj4gPj4g
-a2VybmVscy4KPj4gPj4KPj4gPj4gVW5sZXNzIHlvdSBuZWVkIHRvIHN5bmNocm9uaXplIHdpdGgg
-YW5vdGhlciBwcm9jZXNzb3IgKG5vdCBuZWNlc3NhcmlseQo+PiA+PiBhIENQVSwgaXQgY291bGQg
-YmUgc29tZXRoaW5nIGVtYmVkZGVkIHdpdGhpbiBhIGRldmljZSksIHlvdSBzaG91bGQKPj4gPj4g
-YWx3YXlzIHVzZSBzbXBfd21iKCkgYW5kIHNtcF9ybWIoKSByYXRoZXIgdGhhbiB3bWIoKSBhbmQg
-cm1iKCkuCj4+ID4KPj4gPiBNYXliZTsgYnV0IHRoaXMgY29kZSBpcyBub3QgcGVyZm9ybWFuY2Ug
-Y3JpdGljYWwgYW5kIEkgYmVsaWV2ZSBiZWluZwo+PiA+IG9idmlvdXMgaGVyZSBpcyBiZXR0ZXIu
-Li4KPj4KPj4gaXNudCBpdCB0aG91Z2ggPyDCoGVzcGVjaWFsbHkgd2hlbiB3ZSB0YWxrIGFib3V0
-IHN1c3BlbmRpbmcvcmVzdW1pbmcgb24KPj4gZW1iZWRkZWQgc3lzdGVtcyB0byBnZXQgbW9yZSBz
-YXZpbmdzIG92ZXIganVzdCBjcHUgaWRsZSA/IMKgd2Ugd2FudAo+PiB0aGF0IGxhdGVuY3kgdG8g
-YmUgYXMgbG93IGFzIHBvc3NpYmxlLgo+Cj4gSSBhZ3JlZSwgd2UgY2FuIHN3aXRjaCB0aGUgZnJl
-ZXplciB0byBzbXBfIGJhcnJpZXJzLCBidXQgbm90IGZvciB0aGUgcmVhc29uCj4geW91IGdhdmUg
-YmVmb3JlLiA6LSkKPgo+IENhcmUgdG8gcmVwb3N0IHRoZSBwYXRjaCB3aXRoIGEgc3VpdGFibGUg
-Y2hhbmdlbG9nPwoKbnAKCnRvIGJlIGNsZWFyLCB3aGF0IHlvdSBzYWlkIHdydCB0aGUgQmxhY2tm
-aW4gc21wIGJhcnJpZXJzIHN0aWxsIGhvbGRzCnRydWUgcmlnaHQgPyAgc28gdGhpcyBjaGFuZ3Nl
-dCBpIG1lcmdlZCBkb2VzbnQgbmVlZCBhbnkgdHdlYWtpbmcgLi4uCmh0dHA6Ly9naXQua2VybmVs
-Lm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L3ZhcGllci9ibGFja2Zpbi5naXQ7YT1jb21taXRkaWZm
-O2g9OTQzYWVlMGM2ODVkMDU2MzIyOGQ1YTJhZDljODM5NGFkMDMwMGZiNQotbWlrZQpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
-IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Wed, 2011-04-13 at 02:05 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Change the PM core's behavior related to power domains in such a way
+> that, if a power domain is defined for a given device, its callbacks
+> will be executed instead of and not in addition to the device
+> subsystem's PM callbacks.
+> 
+> The idea behind the initial implementation of power domains handling
+> by the PM core was that power domain callbacks would be executed in
+> addition to subsystem callbacks, so that it would be possible to
+> extend the subsystem callbacks by using power domains.  It turns out,
+> however, that this wouldn't be really convenient in some important
+> situations.
+> 
+> For example, there are systems in which power can only be removed
+> from entire power domains.  On those systems it is not desirable to
+> execute device drivers' PM callbacks until it is known that power is
+> going to be removed from the devices in question, which means that
+> they should be executed by power domain callbacks rather then by
+> subsystem (e.g. bus type) PM callbacks, because subsystems generally
+> have no information about what devices belong to which power domain.
+> Thus, for instance, if the bus type in question is the platform bus
+> type, its PM callbacks generally should not be called in addition to
+> power domain callbacks, because they run device drivers' callbacks
+> unconditionally if defined.
+> 
+> While in principle the default subsystem PM callbacks, or a subset of
+> them, may be replaced with different functions, it doesn't seem
+> correct to do so, because that would change the subsystem's behavior
+> with respect to all devices in the system, regardless of whether or
+> not they belong to any power domains.  Thus, the only remaining
+> option is to make power domain callbacks take precedence over
+> subsystem callbacks.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+Leaving the issue of to (re)name this field aside:
+
+Acked-by: Kevin Hilman <khilman@ti.com>
