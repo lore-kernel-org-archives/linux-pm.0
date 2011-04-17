@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.36-rc3-git7: Reported regressions 2.6.37 -> 2.6.38
-Date: Sun, 17 Apr 2011 15:48:28 +0200 (CEST)
-Message-ID: <sam8u5dLkaB.A.afE.53uqNB__19879.6733901419$1303048211$gmane$org@chimera>
+Subject: [PATCH 4/14] ARM / OMAP: Use struct syscore_ops for
+	"core" power management
+Date: Sun, 17 Apr 2011 23:08:07 +0200
+Message-ID: <201104172308.08049.rjw__22627.2144508131$1303075036$gmane$org@sisk.pl>
+References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <201104172301.54115.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,174 +18,115 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Greg KH <gregkh@suse.de>, Ralf Baechle <ralf@linux-mips.org>, Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>, Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>, Kay Sievers <kay.sievers@suse.de>, Mike Frysinger <vapier@gentoo.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHBvc3QtMi42LjM3IHJlZ3Jlc3Np
-b25zIGludHJvZHVjZWQgYmVmb3JlCjIuNi4zOCwgZm9yIHdoaWNoIHRoZXJlIGFyZSBubyBmaXhl
-cyBpbiB0aGUgbWFpbmxpbmUga25vd24gdG8gdGhlIHRyYWNraW5nIHRlYW0uCklmIGFueSBvZiB0
-aGVtIGhhdmUgYmVlbiBmaXhlZCBhbHJlYWR5LCBwbGVhc2UgbGV0IHVzIGtub3cuCgpJZiB5b3Ug
-a25vdyBvZiBhbnkgb3RoZXIgdW5yZXNvbHZlZCBwb3N0LTIuNi4zNyByZWdyZXNzaW9ucywgcGxl
-YXNlIGxldCB1cyBrbm93CmVpdGhlciBhbmQgd2UnbGwgYWRkIHRoZW0gdG8gdGhlIGxpc3QuICBB
-bHNvLCBwbGVhc2UgbGV0IHVzIGtub3cgaWYgYW55Cm9mIHRoZSBlbnRyaWVzIGJlbG93IGFyZSBp
-bnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUgc2VudCBhZGRpdGlvbmFs
-bHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3aXRoIENDcyB0byB0aGUg
-cGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcgdGhlCmlzc3VlLgoKCkxp
-c3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAgICAgIFRvdGFsICBQZW5k
-aW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LQogIDIwMTEtMDQtMTcgICAgICAgOTggICAgICAgMjggICAgICAgICAgMjgKICAyMDExLTAzLTI3
-ICAgICAgIDg4ICAgICAgIDI2ICAgICAgICAgIDI2CiAgMjAxMS0wMy0wNiAgICAgICA3MCAgICAg
-ICAyNyAgICAgICAgICAyNgogIDIwMTEtMDItMjEgICAgICAgNTEgICAgICAgMTggICAgICAgICAg
-MTcKICAyMDExLTAyLTEyICAgICAgIDM5ICAgICAgIDIwICAgICAgICAgIDE4CiAgMjAxMS0wMi0w
-MyAgICAgICAxOSAgICAgICAxMSAgICAgICAgICAgNwoKClVucmVzb2x2ZWQgcmVncmVzc2lvbnMK
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5l
-bC5vcmcvc2hvd19idWcuY2dpP2lkPTMyODYyClN1YmplY3QJCTogYWNlcl93bWkgcGFydGlhbGx5
-IGNyYXNoZXMgQUNQSS9FQyAoQXNwaXJlIDg5MzBHKQpTdWJtaXR0ZXIJOiBIZWN0b3IgTWFydGlu
-IDxoZWN0b3JAbWFyY2Fuc29mdC5jb20+CkRhdGUJCTogMjAxMS0wNC0wNyAxNzo0NCAoMTEgZGF5
-cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTMyNzYyClN1YmplY3QJCTogQm9vdGluZyB3aXRoIGV4dGVybmFsIG1vbml0b3IgYXR0
-YWNoZWQgcmVzdWx0cyBpbiByZWQgZmxpY2tlcmluZyBzY3JlZW4gb24gdGhlIGV4dGVybmFsIG1v
-bml0b3IKU3VibWl0dGVyCTogQW50b24gPGFudG9uLmJ1Z3NAZ21haWwuY29tPgpEYXRlCQk6IDIw
-MTEtMDQtMDYgMDQ6NTAgKDEyIGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0zMjIwMgpTdWJqZWN0CQk6IDIuNi4zOCBoYW5n
-cyBvbiBib290IHVudGlsIGtleSBpcyBwcmVzc2VkClN1Ym1pdHRlcgk6IFR2cnRrbyBVcnN1bGlu
-IDx0dnJ0a29AdXJzdWxpbi5uZXQ+CkRhdGUJCTogMjAxMS0wMy0yNyAxOToxOCAoMjIgZGF5cyBv
-bGQpCk1lc3NhZ2UtSUQJOiA8MTMwMTI1MzQ4NS4yNTAwLjIuY2FtZWxAZGV1dGVyb3M+ClJlZmVy
-ZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEzMDEyNTQxMTExNjU1
-OCZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9MzIxMTIKU3ViamVjdAkJOiBXcml0ZXMgdG8gVVNCIGZsYXNoIGRyaXZlcyBhcmUgZXh0
-cmVtZWx5IHNsb3cgaW4gMi42LjM4ClN1Ym1pdHRlcgk6IERlbGFuIEF6YWJhbmkgPGRlbGFuQGF6
-YWJhbmkuY29tPgpEYXRlCQk6IDIwMTEtMDMtMjkgMDg6MTAgKDIwIGRheXMgb2xkKQoKCkJ1Zy1F
-bnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0zMjA3MgpT
-dWJqZWN0CQk6IDIuNi4zOCBSZWdyZXNzaW9uOiBOdmlkaWEgR2VGb3JjZTg0MDAgKyBpOTE1ID0g
-Q3Jhc2ggb24gQm9vdApTdWJtaXR0ZXIJOiBzaW1vbkBtdW5nZXdlbGwub3JnCkRhdGUJCTogMjAx
-MS0wMy0yNCAxNToyMCAoMjUgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8ZmU0NzFjMDU4OTc3NzZi
-N2MyNmI5ZmQyNjAzZTNiNzYuc3F1aXJyZWxAaG9zdDE3MS5jYW5hY2EuY29tPgpSZWZlcmVuY2Vz
-CTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzAxMDA5NTU5MjY0MzQmdz0y
-CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
-PTMxOTgyClN1YmplY3QJCTogWEZTIG1lbW9yeSBhbGxvY2F0aW9uIGRlYWRsb2NrIGluIDIuNi4z
-OApTdWJtaXR0ZXIJOiBTZWFuIE5vb25hbiA8U2Vhbi5Ob29uYW5AdHdvc2lnbWEuY29tPgpEYXRl
-CQk6IDIwMTEtMDMtMjEgMTY6MTkgKDI4IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDA4MURERTQz
-RjYxRjNENDM5MjlBMTgxQjQ3N0RDQTk1NjM5QjUyRkRATVNYQU9BNi50d29zaWdtYS5jb20+ClJl
-ZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEzMDA3MjU4NTEx
-MTMxMCZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
-Zy5jZ2k/aWQ9MzE5MjIKU3ViamVjdAkJOiBhdGg1azogRGVjcmVhc2VkIHRocm91Z2hwdXQgaW4g
-SUJTUyBvciA4MDIuMTFuIG1vZGUKU3VibWl0dGVyCTogSmVmZiBDb29rIDxqZWZmQGRlc2VyZXR0
-ZWNobm9sb2d5LmNvbT4KRGF0ZQkJOiAyMDExLTAzLTI2IDIwOjA2ICgyMyBkYXlzIG9sZCkKCgpC
-dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzE4
-NzIKU3ViamVjdAkJOiBib290IHBhbmljIHVubGVzcyBhY3BpPW9mZiwgVGhyZWFkIG92ZXJyYW4g
-c3RhY2ssIG9yIHN0YWNrIGNvcnJ1cHRlZCAtIFRvc2hpYmEgU2F0ZWxsaXRlL21vYmlsZSBQNApT
-dWJtaXR0ZXIJOiBQYXNjYWwgRG9ybWVhdSA8cGRvcm1lYXVAZnJlZS5mcj4KRGF0ZQkJOiAyMDEx
-LTAzLTI1IDIwOjE3ICgyNCBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEu
-a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzE3ODIKU3ViamVjdAkJOiBub3V2ZWF1OiBsb2Nr
-ZGVwIHNwZXcKU3VibWl0dGVyCTogSm9oYW5uZXMgQmVyZyA8am9oYW5uZXNAc2lwc29sdXRpb25z
-Lm5ldD4KRGF0ZQkJOiAyMDExLTAzLTI0IDA5OjUxICgyNSBkYXlzIG9sZCkKCgpCdWctRW50cnkJ
-OiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzE3MDIKU3ViamVj
-dAkJOiBhdGg1ayBwaHkyOiBmYWlsZWQgdG8gd2FrZXVwIHRoZSBNQUMgQ2hpcApTdWJtaXR0ZXIJ
-OiBKdXN0aW4gUC4gTWF0dG9jayA8anVzdGlubWF0dG9ja0BnbWFpbC5jb20+CkRhdGUJCTogMjAx
-MS0wMy0yMiAxOToxNSAoMjcgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxh
-Lmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTMxNTcyClN1YmplY3QJCTogQlVHIGluIHZiX2Fs
-bG9jKCkgLSBmaXJld2lyZSBjcmFzaCBhdCBib290ClN1Ym1pdHRlcgk6IFBhdmVsIEt5c2lsa2Eg
-PGdvbGRlbmZpc2hAbGludXhzb2Z0LmN6PgpEYXRlCQk6IDIwMTEtMDMtMjEgMTI6NDAgKDI4IGRh
-eXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVn
-LmNnaT9pZD0zMTUzMgpTdWJqZWN0CQk6IDIuNi4zODogUXVvdGEgb3ZlciBORlM0ClN1Ym1pdHRl
-cgk6IEFkYW0gTGFja29yenluc2tpIDxhZGFtQG9zLmluZi50dS1kcmVzZGVuLmRlPgpEYXRlCQk6
-IDIwMTEtMDMtMTcgMTM6MzIgKDMyIGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDIwMTEwMzE3MTMz
-MjQ3LkdCNjQyNEBvcy5pbmYudHUtZHJlc2Rlbi5kZT4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJj
-LmluZm8vP2w9bGludXgta2VybmVsJm09MTMwMDM2ODc4MjAzNDg1Jnc9MgoKCkJ1Zy1FbnRyeQk6
-IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0zMTQ1MgpTdWJqZWN0
-CQk6IGF0aDlrOiB0aHJvdWdocHV0IGlzc3VlIGluIDgwMi4xMW4gYW5kIGFsc28gSUJTUyBtb2Rl
-ClN1Ym1pdHRlcgk6IFJpY2hhcmQgU2Now7x0eiA8ci5zY2h0ekB0LW9ubGluZS5kZT4KRGF0ZQkJ
-OiAyMDExLTAzLTE5IDE5OjA2ICgzMCBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVn
-emlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzE0MDIKU3ViamVjdAkJOiBEaW1pbmlz
-aGVkIGJyaWdodG5lc3MgYXQgc3RhcnR1cApTdWJtaXR0ZXIJOiBHdWlsaGVybWUgU2FsYXphciA8
-Z3VpbGhlcm1lc2FsYXphckB5bWFpbC5jb20+CkRhdGUJCTogMjAxMS0wMy0xOCAxNjoyOSAoMzEg
-ZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
-dWcuY2dpP2lkPTMxMzIyClN1YmplY3QJCTogMi42LjM4LXJjIGVjaG8gMyA+IC9wcm9jL3N5cy92
-bS9kcm9wX2NhY2hlcyByZXBhaXJzIG1wbGF5ZXIgZGlzdG9ydGlvbnMKU3VibWl0dGVyCTogSGFu
-cyBkZSBCcnVpbiA8am1kZWJydWluQHhtc25ldC5ubD4KRGF0ZQkJOiAyMDExLTAzLTE0IDIxOjM0
-ICgzNSBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDw0RDdFODlFNy4zMDgwNTA1QHhtc25ldC5ubD4K
-UmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMwMDE0MTgx
-OTE5ODI3Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0zMTAxMgpTdWJqZWN0CQk6IFdBUk5JTkc6IFBlcmY6IGJhZCBmcmFtZSBwb2lu
-dGVyID0gKG51bGwpLCAyLjYuMzgtcmM4ClN1Ym1pdHRlcgk6IENodWNrIEViYmVydCA8Y2ViYmVy
-dEByZWRoYXQuY29tPgpEYXRlCQk6IDIwMTEtMDMtMTIgMTk6MDggKDM3IGRheXMgb2xkKQpNZXNz
-YWdlLUlECTogPDIwMTEwMzEyMTQwODUxLjUyNDIwMTQ5QGthdGFtYXJpPgpSZWZlcmVuY2VzCTog
-aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjk5OTU3MjEwMTQ5MzEmdz0yCgoK
-QnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTMw
-OTkyClN1YmplY3QJCTogMi42LjM4LXJjNzogU29tZSBzdHJhbmdlIHNvZnQtbG9ja3VwClN1Ym1p
-dHRlcgk6IERtaXRyeSBOZXpoZXZlbmtvIDxkaW9uQGluaGV4Lm5ldD4KRGF0ZQkJOiAyMDExLTAz
-LTA2IDE0OjAxICg0MyBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDwyMDExMDMwNjE0MDEwNC5HQTc3
-MDBAbGFwdG9wLmxvY2FsPgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1r
-ZXJuZWwmbT0xMjk5NDIxNjEyMDU3Mzkmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxh
-Lmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTMwODUyClN1YmplY3QJCTogU2VsZG9tIGVycm9y
-cyBhZnRlciBzdXNwZW5kL3Jlc3VtZSBjYXVzaW5nIHByb2JsZW1zClN1Ym1pdHRlcgk6IE1laG1l
-dCBHaXJpdGxpIDxtZWhtZXRAZ2lyaXRsaS5ldT4KRGF0ZQkJOiAyMDExLTAzLTEwIDEwOjUzICgz
-OSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93
-X2J1Zy5jZ2k/aWQ9MzA1ODIKU3ViamVjdAkJOiBXQVJOSU5HOiBhdCBkcml2ZXJzL25ldC93aXJl
-bGVzcy9hdGgvYXRoOWsvcmVjdi5jOjUzNiBhdGhfc3RvcHJlY3YrMHhjOC8weGRhIFthdGg5a10o
-KQpTdWJtaXR0ZXIJOiBKdXN0aW4gTWF0dG9jayA8anVzdGlubWF0dG9ja0BnbWFpbC5jb20+CkRh
-dGUJCTogMjAxMS0wMy0wMyA1OjQ3ICg0NiBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDxBQU5Ma1Rp
-azlUbzBSa3EyRlJxUUZCMndOdTBreUo3Q3p5QmVrMmpCcDM2Q2JAbWFpbC5nbWFpbC5jb20+ClJl
-ZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyOTkxMzEyNzcy
-Mjc4NiZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1
-Zy5jZ2k/aWQ9Mjk5OTIKU3ViamVjdAkJOiBib290IGhhbmcgMi42LjM3LjEgcmVncmVzc2lvbiB3
-LyBpbnRlbF9pZGxlIGFuZCBDT05GSUdfTk9fSFo9biAtIGFzdXMgcDdwNTVkIGxlClN1Ym1pdHRl
-cgk6IERlIEdhbnNlbWFuIEFtYXVyeSA8YW1hdXJ5LmRlZ2Fuc2VtYW5AZ21haWwuY29tPgpEYXRl
-CQk6IDIwMTEtMDItMjcgMTA6MzggKDUwIGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9i
-dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yOTg1MgpTdWJqZWN0CQk6IDIuNi4z
-OC1yYzU6IG5mc2Q6IHBhZ2UgYWxsb2NhdGlvbiBmYWlsdXJlLiBzcGlubG9jayB0cnlsb2NrIGZh
-aWx1cmUgb24gVVAKU3VibWl0dGVyCTogQWxleGFuZGVyIEJlcmVnYWxvdiA8YS5iZXJlZ2Fsb3ZA
-Z21haWwuY29tPgpEYXRlCQk6IDIwMTEtMDItMjEgMjA6MzMgKDU2IGRheXMgb2xkKQpNZXNzYWdl
-LUlECTogPEFBTkxrVGk9MTROX2NfQjdtTFkwSDhEdDhwdGU2QzBtakZuVnVDMzdlNDRIc0BtYWls
-LmdtYWlsLmNvbT4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgtbmV0ZGV2
-Jm09MTI5ODMyMDQyNDAyNjY4Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yOTY3MgpTdWJqZWN0CQk6IFtyZWdyZXNzaW9uXVtBTFNB
-XVtoZGEtY29uZXhhbnRdWzIuNi4zOC1yY1hdIGV4dGVybmFsIG1pY3JvcGhvbmUgc291bmQgdG9v
-IHF1aWV0ClN1Ym1pdHRlcgk6IFNoYXduIFN0YXJyIDxzaGF3bi5zdGFyckByb2dlcnMuY29tPgpE
-YXRlCQk6IDIwMTEtMDItMTkgNjowMiAoNTggZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8NDc0NjMw
-LjI1MzM1LnFtQHNtdHAxMDUucm9nLm1haWwucmUyLnlhaG9vLmNvbT4KUmVmZXJlbmNlcwk6IGh0
-dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5ODA5NTM2NTAyMDkyJnc9MgoKCkJ1
-Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yODgw
-MgpTdWJqZWN0CQk6IGNvbW1pdCA1ZDFkMGNjIGJyZWFrcyByZXN1bWUgZnJvbSBzdXNwZW5kIG9u
-IFRoaW5rcGFkIFgyMDEKU3VibWl0dGVyCTogQmrDtnJuIFNjaGxpZcOfbWFubiA8Y2hyb25vc3NA
-Z214LmRlPgpEYXRlCQk6IDIwMTEtMDItMTAgMTc6MjMgKDY3IGRheXMgb2xkKQpIYW5kbGVkLUJ5
-CTogQ2hyaXMgV2lsc29uIDxjaHJpc0BjaHJpcy13aWxzb24uY28udWs+CgoKQnVnLUVudHJ5CTog
-aHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI4NjQyClN1YmplY3QJ
-CTogQUNQSSBicm9rZW4gb24gREVMTCBMYXRpdHVkZSBFNjQxMCBpbiAyLjYuMzgtcmMzClN1Ym1p
-dHRlcgk6IEFkYW0gS292YXJpIDxrb3ZhcmlhZGFtQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDExLTAy
-LTA4IDIyOjIyICg2OSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2Vy
-bmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mjg1NjIKU3ViamVjdAkJOiBbQlVHXSB1c2IgcHJvYmxl
-bXMgaW4gLjM4LXJjMysKU3VibWl0dGVyCTogRWQgVG9tbGluc29uIDxlZHRAYWVpLmNhPgpEYXRl
-CQk6IDIwMTEtMDItMDUgMTk6MTcgKDcyIGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDIwMTEwMjA1
-MTQxNy41ODk1My5lZHRAYWVpLmNhPgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1s
-aW51eC1rZXJuZWwmbT0xMjk2OTMzOTE0MTc2MDcmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI4NTIyClN1YmplY3QJCTogVW5hYmxl
-IHRvIG1vdW50IEZBVC1mb3JtYXR0ZWQgZmxvcHB5IG9uIC9kZXYvZmQwLCBwbHVzIFdBUk5fT04g
-d2hlbiB1c2luZyAvZGV2L2ZkMHUxNDQwClN1Ym1pdHRlcgk6IEFsZXggVmlsbGFjaXMgTGFzc28g
-PGF2aWxsYWNpQGNlaWJvLmZpZWMuZXNwb2wuZWR1LmVjPgpEYXRlCQk6IDIwMTEtMDItMDcgMTc6
-MjEgKDcwIGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
-L3Nob3dfYnVnLmNnaT9pZD0yODQ1MgpTdWJqZWN0CQk6IDIuNi4zOC1yYzMgcmVncmVzc2lvbiBv
-biBwYXJpc2M6IHNlZ2ZhdWx0cwpTdWJtaXR0ZXIJOiBNZWVsaXMgUm9vcyA8bXJvb3NAbGludXgu
-ZWU+CkRhdGUJCTogMjAxMS0wMi0wMSAyMjowMCAoNzYgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8
-YWxwaW5lLlNPQy4xLjAwLjExMDIwMTIzNDIyMDAuMjU5NDRAbWF0aC51dC5lZT4KUmVmZXJlbmNl
-cwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5NjU5NzYzNDI2NjAwJnc9
-MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
-ZD0yODQyMgpTdWJqZWN0CQk6IGtyZWYgYW5kIGFwcGFybW9yIHBhbmljIGluIDIuNi4zOC1yYzIu
-ClN1Ym1pdHRlcgk6IFRhbyBNYSA8dG1AdGFvLm1hPgpEYXRlCQk6IDIwMTEtMDEtMzEgMTA6MDYg
-KDc3IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDRENDY4OTlCLjgwMzAyQHRhby5tYT4KUmVmZXJl
-bmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5NjQ2ODQwMzAzMTQ5
-Jnc9MgoKClJlZ3Jlc3Npb25zIHdpdGggcGF0Y2hlcwotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K
-CkZvciBkZXRhaWxzLCBwbGVhc2UgdmlzaXQgdGhlIGJ1ZyBlbnRyaWVzIGFuZCBmb2xsb3cgdGhl
-IGxpbmtzIGdpdmVuIGluCnJlZmVyZW5jZXMuCgpBcyB5b3UgY2FuIHNlZSwgdGhlcmUgaXMgYSBC
-dWd6aWxsYSBlbnRyeSBmb3IgZWFjaCBvZiB0aGUgbGlzdGVkIHJlZ3Jlc3Npb25zLgpUaGVyZSBh
-bHNvIGlzIGEgQnVnemlsbGEgZW50cnkgdXNlZCBmb3IgdHJhY2tpbmcgdGhlIHJlZ3Jlc3Npb25z
-IGludHJvZHVjZWQKYmV0d2VlbiAyLjYuMzcgYW5kIDIuNi4zOCwgdW5yZXNvbHZlZCBhcyB3ZWxs
-IGFzIHJlc29sdmVkLCBhdDoKCmh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0yNzM1MgoKUGxlYXNlIGxldCB0aGUgdHJhY2tpbmcgdGVhbSBrbm93IGlmIHRoZXJlIGFy
-ZSBhbnkgQnVnemlsbGEgZW50cmllcyB0aGF0CnNob3VsZCBiZSBhZGRlZCB0byB0aGUgbGlzdCBp
-biB0aGVyZS4KClRoYW5rcyEKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlz
-dGluZm8vbGludXgtcG0=
+From: Rafael J. Wysocki <rjw@sisk.pl>
+
+Replace the sysdev class and struct sys_device used for power
+management in the OMAP's GPIO code with a struct syscore_ops object
+which is simpler.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/plat-omap/gpio.c |   35 +++++++++--------------------------
+ 1 file changed, 9 insertions(+), 26 deletions(-)
+
+Index: linux-2.6/arch/arm/plat-omap/gpio.c
+===================================================================
+--- linux-2.6.orig/arch/arm/plat-omap/gpio.c
++++ linux-2.6/arch/arm/plat-omap/gpio.c
+@@ -17,7 +17,7 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/err.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
+@@ -1372,9 +1372,7 @@ static const struct dev_pm_ops omap_mpui
+ 	.resume_noirq = omap_mpuio_resume_noirq,
+ };
+ 
+-/* use platform_driver for this, now that there's no longer any
+- * point to sys_device (other than not disturbing old code).
+- */
++/* use platform_driver for this. */
+ static struct platform_driver omap_mpuio_driver = {
+ 	.driver		= {
+ 		.name	= "mpuio",
+@@ -1745,7 +1743,7 @@ static int __devinit omap_gpio_probe(str
+ }
+ 
+ #if defined(CONFIG_ARCH_OMAP16XX) || defined(CONFIG_ARCH_OMAP2PLUS)
+-static int omap_gpio_suspend(struct sys_device *dev, pm_message_t mesg)
++static int omap_gpio_suspend(void)
+ {
+ 	int i;
+ 
+@@ -1795,12 +1793,12 @@ static int omap_gpio_suspend(struct sys_
+ 	return 0;
+ }
+ 
+-static int omap_gpio_resume(struct sys_device *dev)
++static void omap_gpio_resume(void)
+ {
+ 	int i;
+ 
+ 	if (!cpu_class_is_omap2() && !cpu_is_omap16xx())
+-		return 0;
++		return;
+ 
+ 	for (i = 0; i < gpio_bank_count; i++) {
+ 		struct gpio_bank *bank = &gpio_bank[i];
+@@ -1836,21 +1834,13 @@ static int omap_gpio_resume(struct sys_d
+ 		__raw_writel(bank->saved_wakeup, wake_set);
+ 		spin_unlock_irqrestore(&bank->lock, flags);
+ 	}
+-
+-	return 0;
+ }
+ 
+-static struct sysdev_class omap_gpio_sysclass = {
+-	.name		= "gpio",
++static struct syscore_ops omap_gpio_syscore_ops = {
+ 	.suspend	= omap_gpio_suspend,
+ 	.resume		= omap_gpio_resume,
+ };
+ 
+-static struct sys_device omap_gpio_device = {
+-	.id		= 0,
+-	.cls		= &omap_gpio_sysclass,
+-};
+-
+ #endif
+ 
+ #ifdef CONFIG_ARCH_OMAP2PLUS
+@@ -2108,21 +2098,14 @@ postcore_initcall(omap_gpio_drv_reg);
+ 
+ static int __init omap_gpio_sysinit(void)
+ {
+-	int ret = 0;
+-
+ 	mpuio_init();
+ 
+ #if defined(CONFIG_ARCH_OMAP16XX) || defined(CONFIG_ARCH_OMAP2PLUS)
+-	if (cpu_is_omap16xx() || cpu_class_is_omap2()) {
+-		if (ret == 0) {
+-			ret = sysdev_class_register(&omap_gpio_sysclass);
+-			if (ret == 0)
+-				ret = sysdev_register(&omap_gpio_device);
+-		}
+-	}
++	if (cpu_is_omap16xx() || cpu_class_is_omap2())
++		register_syscore_ops(&omap_gpio_syscore_ops);
+ #endif
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ arch_initcall(omap_gpio_sysinit);
