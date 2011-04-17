@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 9/9] PM: Revert "driver core: platform_bus: allow
-	runtime override of dev_pm_ops"
-Date: Sun, 17 Apr 2011 01:44:14 +0200
-Message-ID: <201104170144.15043.rjw__13300.8991404951$1302997718$gmane$org@sisk.pl>
-References: <201104130205.26988.rjw@sisk.pl> <201104170135.19388.rjw@sisk.pl>
+Subject: 2.6.39-rc3-git7: Reported regressions from 2.6.38
+Date: Sun, 17 Apr 2011 14:52:34 +0200 (CEST)
+Message-ID: <OlQwC5HnRsN.A.ULB.OGuqNB__34436.0907598913$1303044818$gmane$org@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104170135.19388.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,81 +16,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Kevin Hilman <khilman@ti.com>
+This message contains a list of some regressions from 2.6.38,
+for which there are no fixes in the mainline known to the tracking team.
+If any of them have been fixed already, please let us know.
 
-The platform_bus_set_pm_ops() operation is deprecated in favor of the
-new device power domain infrastructre implemented in commit
-7538e3db6e015e890825fbd9f8659952896ddd5b (PM: add support for device
-power domains)
+If you know of any other unresolved regressions from 2.6.38, please let us
+know either and we'll add them to the list.  Also, please let us know
+if any of the entries below are invalid.
 
-Signed-off-by: Kevin Hilman <khilman@ti.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/platform.c         |   35 -----------------------------------
- include/linux/platform_device.h |    3 ---
- 2 files changed, 38 deletions(-)
+Each entry from the list will be sent additionally in an automatic reply
+to this message with CCs to the people involved in reporting and handling
+the issue.
 
-Index: linux-2.6/drivers/base/platform.c
-===================================================================
---- linux-2.6.orig/drivers/base/platform.c
-+++ linux-2.6/drivers/base/platform.c
-@@ -916,41 +916,6 @@ struct bus_type platform_bus_type = {
- };
- EXPORT_SYMBOL_GPL(platform_bus_type);
- 
--/**
-- * platform_bus_get_pm_ops() - return pointer to busses dev_pm_ops
-- *
-- * This function can be used by platform code to get the current
-- * set of dev_pm_ops functions used by the platform_bus_type.
-- */
--const struct dev_pm_ops * __init platform_bus_get_pm_ops(void)
--{
--	return platform_bus_type.pm;
--}
--
--/**
-- * platform_bus_set_pm_ops() - update dev_pm_ops for the platform_bus_type
-- *
-- * @pm: pointer to new dev_pm_ops struct to be used for platform_bus_type
-- *
-- * Platform code can override the dev_pm_ops methods of
-- * platform_bus_type by using this function.  It is expected that
-- * platform code will first do a platform_bus_get_pm_ops(), then
-- * kmemdup it, then customize selected methods and pass a pointer to
-- * the new struct dev_pm_ops to this function.
-- *
-- * Since platform-specific code is customizing methods for *all*
-- * devices (not just platform-specific devices) it is expected that
-- * any custom overrides of these functions will keep existing behavior
-- * and simply extend it.  For example, any customization of the
-- * runtime PM methods should continue to call the pm_generic_*
-- * functions as the default ones do in addition to the
-- * platform-specific behavior.
-- */
--void __init platform_bus_set_pm_ops(const struct dev_pm_ops *pm)
--{
--	platform_bus_type.pm = pm;
--}
--
- int __init platform_bus_init(void)
- {
- 	int error;
-Index: linux-2.6/include/linux/platform_device.h
-===================================================================
---- linux-2.6.orig/include/linux/platform_device.h
-+++ linux-2.6/include/linux/platform_device.h
-@@ -150,9 +150,6 @@ extern struct platform_device *platform_
- 					struct resource *res, unsigned int n_res,
- 					const void *data, size_t size);
- 
--extern const struct dev_pm_ops * platform_bus_get_pm_ops(void);
--extern void platform_bus_set_pm_ops(const struct dev_pm_ops *pm);
--
- /* early platform driver interface */
- struct early_platform_driver {
- 	const char *class_str;
+
+Listed regressions statistics:
+
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2011-04-17       17       11          10
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33342
+Subject		: [2.6.39-rc2][bisected] Constant DISK_MEDIA_CHANGE_EVENTS from CDROM drive.
+Submitter	: Shaun Ruffell <sruffell@digium.com>
+Date		: 2011-04-08 20:15 (10 days old)
+Message-ID	: <20110408201513.GA3040@digium.com>
+References	: http://marc.info/?l=linux-kernel&m=130229371907209&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33272
+Subject		: drm related hard-hang
+Submitter	: Peter Teoh <htmldeveloper@gmail.com>
+Date		: 2011-04-14 01:29 (4 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33242
+Subject		: Lockdep splat in autofs with 2.6.39-rc2
+Submitter	: Nick Bowler <nbowler@elliptictech.com>
+Date		: 2011-04-07 19:44 (11 days old)
+Message-ID	: <20110407194403.GA29404@elliptictech.com>
+References	: http://marc.info/?l=linux-kernel&m=130220545614682&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33142
+Subject		: 2.6.39-rc2 regression: X201s fails to resume b77dcf8460ae57d4eb9fd3633eb4f97b8fb20716
+Submitter	: Keith Packard <keithp@keithp.com>
+Date		: 2011-04-06 7:44 (12 days old)
+Message-ID	: <yun1v1fj024.fsf@aiko.keithp.com>
+References	: http://marc.info/?l=linux-kernel&m=130207593728273&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33102
+Subject		: File's copied from client->linux server only copy 1st 64K data;rest is lost
+Submitter	: Linda Walsh <lkml@tlinx.org>
+Date		: 2011-04-11 22:12 (7 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33092
+Subject		: [regression] 2.6.39-rc1 - Beagleboard usbnet broken
+Submitter	: Mark Jackson <mpfj-list@mimc.co.uk>
+Date		: 2011-04-04 9:22 (14 days old)
+First-Bad-Commit: http://git.kernel.org/linus/087809fce28f50098d9c3ef1a6865c722f23afd2
+Message-ID	: <4D998DC9.3040109@mimc.co.uk>
+References	: http://marc.info/?l=linux-kernel&m=130191386508831&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=32982
+Subject		: Kernel locks up a few minutes after boot
+Submitter	: Bart Van Assche <bart.vanassche@gmail.com>
+Date		: 2011-04-10 19:55 (8 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=32902
+Subject		: 2.6.39-rc1 doesn't boot on thinkpad t61p x86_64
+Submitter	: Alex Romosan <romosan@sycorax.lbl.gov>
+Date		: 2011-04-03 19:41 (15 days old)
+Message-ID	: <87k4fbnmw8.fsf@sycorax.lbl.gov>
+References	: http://marc.info/?l=linux-kernel&m=130186054431678&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=32892
+Subject		: 2.6.39-rc1 data corruption with rtorrent
+Submitter	: Jindrich Makovicka <makovick@gmail.com>
+Date		: 2011-04-02 20:21 (16 days old)
+Message-ID	: <20110402222118.3b5c2fa8@holly>
+References	: http://marc.info/?l=linux-kernel&m=130177570309226&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=32262
+Subject		: 2.6.38-git15+  IDE hangs boot
+Submitter	: Pete Clements <clem@clem.clem-digital.net>
+Date		: 2011-03-25 15:38 (24 days old)
+Message-ID	: <201103251538.p2PFc11i001674@clem.clem-digital.net>
+References	: http://marc.info/?l=linux-kernel&m=130106749313695&w=2
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33252
+Subject		: [regression 2.6.39-rc2][bisected] "perf, x86: P4 PMU - Read proper MSR register to catch" and NMIs
+Submitter	: Shaun Ruffell <sruffell@digium.com>
+Date		: 2011-04-06 22:30 (12 days old)
+First-Bad-Commit: http://git.kernel.org/linus/242214f9c1eeaae40eca11e3b4d37bfce960a7cd
+Message-ID	: <20110406223036.GA15721@digium.com>
+References	: http://marc.info/?l=linux-kernel&m=130212907032580&w=2
+Handled-By	: Don Zickus <dzickus@redhat.com>
+Patch		: http://cache.gmane.org//gmane/linux/kernel/1125621-001.bin
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.38,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=32012
+
+Please let the tracking team know if there are any Bugzilla entries that
+should be added to the list in there.
+
+Thanks!
