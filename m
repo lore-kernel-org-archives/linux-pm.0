@@ -1,16 +1,16 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH 10/14] PM / MIPS: Use struct syscore_ops
- instead of sysdevs for PM
-Date: Mon, 18 Apr 2011 11:12:18 +0100
-Message-ID: <20110418101218.GA25325__11412.7174987972$1303121821$gmane$org@linux-mips.org>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH 8/14] ARM / Samsung: Use struct syscore_ops
+ for "core" power	management
+Date: Mon, 18 Apr 2011 06:49:23 +0900
+Message-ID: <008801cbfd49$5508c870$ff1a5950$%kim__16700.240042019$1303150929$gmane$org@samsung.com>
 References: <201103280125.11750.rjw@sisk.pl> <201104172301.54115.rjw@sisk.pl>
-	<201104172312.35060.rjw@sisk.pl>
+	<201104172311.17082.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201104172312.35060.rjw@sisk.pl>
+In-reply-to: <201104172311.17082.rjw@sisk.pl>
+Content-language: ko
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +20,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>, Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>, Kay Sievers <kay.sievers@suse.de>, Mike Frysinger <vapier@gentoo.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>, linux-arm-kernel@lists.infradead.org
+To: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'LKML' <linux-kernel@vger.kernel.org>
+Cc: 'Jeremy Fitzhardinge' <jeremy.fitzhardinge@citrix.com>, 'Russell King' <linux@arm.linux.org.uk>, 'Konrad Rzeszutek Wilk' <konrad.wilk@oracle.com>, 'Greg KH' <gregkh@suse.de>, 'Ralf Baechle' <ralf@linux-mips.org>, linux-omap@vger.kernel.org, 'Ben Dooks' <ben-linux@fluff.org>, 'Jiri Kosina' <jkosina@suse.cz>, 'Kay Sievers' <kay.sievers@suse.de>, 'Mike Frysinger' <vapier@gentoo.org>, 'Linux PM mailing list' <linux-pm@lists.linux-foundation.org>, 'Guan Xuetao' <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org, 'Hans-Christian Egtvedt' <hans-christian.egtvedt@atmel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch breaks the Alchemy kernel compile; below patch on top of it fixes
-that again.
+Rafael J. Wysocki wrote:
+> 
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Replace sysdev classes and struct sys_device objects used for "core"
+> power management by Samsung platforms with struct syscore_ops objects
+> that are simpler.
+> 
+> This generally reduces the code size and the kernel memory footprint.
+> It also is necessary for removing sysdevs entirely from the kernel in
+> the future.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 
----
- arch/mips/alchemy/common/irq.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> ---
+>  arch/arm/mach-exynos4/pm.c               |   45 ++++++++++++--------
+>  arch/arm/mach-s3c2410/irq.c              |   30 -------------
+>  arch/arm/mach-s3c2410/mach-bast.c        |   17 ++-----
+>  arch/arm/mach-s3c2410/pm.c               |   13 ++---
+>  arch/arm/mach-s3c2410/s3c2410.c          |    5 ++
+>  arch/arm/mach-s3c2412/irq.c              |    2
+>  arch/arm/mach-s3c2412/mach-jive.c        |   19 ++------
+>  arch/arm/mach-s3c2412/pm.c               |   27 ++++++------
+>  arch/arm/mach-s3c2412/s3c2412.c          |    4 +
+>  arch/arm/mach-s3c2416/irq.c              |    2
+>  arch/arm/mach-s3c2416/pm.c               |   27 +++++-------
+>  arch/arm/mach-s3c2416/s3c2416.c          |    5 ++
+>  arch/arm/mach-s3c2440/mach-osiris.c      |   18 ++------
+>  arch/arm/mach-s3c2440/s3c2440.c          |    8 +++
+>  arch/arm/mach-s3c2440/s3c2442.c          |    6 ++
+>  arch/arm/mach-s3c2440/s3c244x-irq.c      |    4 -
+>  arch/arm/mach-s3c2440/s3c244x.c          |   62
+++++++++++++++--------------
+>  arch/arm/mach-s3c64xx/irq-pm.c           |   18 ++++----
+>  arch/arm/mach-s5pv210/pm.c               |   25 +++++++----
+>  arch/arm/plat-s3c24xx/dma.c              |   68
++++++++++++-----------------
+> ---
+>  arch/arm/plat-s3c24xx/irq-pm.c           |    7 ---
+>  arch/arm/plat-s5p/irq-pm.c               |    7 ---
+>  arch/arm/plat-samsung/include/plat/cpu.h |    6 ++
+>  arch/arm/plat-samsung/include/plat/pm.h  |    6 +-
+>  24 files changed, 203 insertions(+), 228 deletions(-)
+> 
 
-Index: linux-mips/arch/mips/alchemy/common/irq.c
-===================================================================
---- linux-mips.orig/arch/mips/alchemy/common/irq.c
-+++ linux-mips/arch/mips/alchemy/common/irq.c
-@@ -619,8 +619,8 @@ static struct syscore_ops alchemy_ic_sys
- 
- static int __init alchemy_ic_syscore_init(void)
- {
--	alchemy_ic_data[0].base = ioremap(icbase[IC0_PHYS_ADDR], 0x1000);
--	alchemy_ic_data[1].base = ioremap(icbase[IC1_PHYS_ADDR], 0x1000);
-+	alchemy_ic_data[0].base = ioremap(IC0_PHYS_ADDR, 0x1000);
-+	alchemy_ic_data[1].base = ioremap(IC1_PHYS_ADDR, 0x1000);
- 
- 	register_syscore_ops(&alchemy_ic_syscore_ops);
- 
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
