@@ -1,15 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH 7/9] PM / Runtime: Add generic clock
-	manipulation rountines for runtime PM
-Date: Wed, 20 Apr 2011 00:50:04 +0200
-Message-ID: <201104200050.04347.rjw__10710.4675415487$1303253542$gmane$org@sisk.pl>
-References: <201104130205.26988.rjw@sisk.pl> <201104200010.50656.rjw@sisk.pl>
-	<20110419222004.GA9664@linux-sh.org>
+From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Subject: [RFC PATCH V3 0/4] cpuidle: global registration of idle
+	states with	per-cpu statistics
+Date: Wed, 20 Apr 2011 12:25:15 +0530
+Message-ID: <20110420065445.332.13688.stgit__5587.15515439889$1303282597$gmane$org@tringupt.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110419222004.GA9664@linux-sh.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,111 +16,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: arjan@linux.intel.com, peterz@infradead.org, lenb@kernel.org, venki@google.com, ak@linux.intel.com, len.brown@intel.com
+Cc: davinci-linux-open-source@linux.davincidsp.com, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, April 20, 2011, Paul Mundt wrote:
-> On Wed, Apr 20, 2011 at 12:10:50AM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, April 19, 2011, Paul Mundt wrote:
-> > > On Tue, Apr 19, 2011 at 11:42:26PM +0200, Rafael J. Wysocki wrote:
-> > > > On Tuesday, April 19, 2011, Magnus Damm wrote:
-> > > > > Do you have any plans to add support for multiple clocks per struct
-> > > > > device? I had some plans to play around with that myself, but if we're
-> > > > > moving the code to a common place then this obviously becomes a bit
-> > > > > more complicated.
-> > > > > 
-> > > > > It's rather common that each hardware block in an SoC is connected to
-> > > > > more than a single clock. This needs to be managed by software
-> > > > > somehow.
-> > > > > 
-> > > > > So if the plan is to make to the code generic, how about allowing the
-> > > > > architecture to associate clocks with each struct device somehow?
-> > > > 
-> > > > Hmm.  For now, my patchset generally reorganizes the existing code without
-> > > > adding new functionality.  Of course, it is possible to add new functionality
-> > > > on top of it, but I'd prefer to focus on the "real" power domains support
-> > > > first (which I think should be done in a generic way too).
-> > > > 
-> > > Multiple clocks is not new functionality, it's the common case for the
-> > > bulk of the platforms, and something that is already presently handled.
-> > 
-> > OK
-> > 
-> > > > The plan is to share as much code as it makes sense between platforms and
-> > > > architectures.
-> > > 
-> > > An admirable plan, but the framework needs to be able to provide at least
-> > > the current required level of functionality in order for it to be
-> > > adopted, too.
-> > 
-> > Sure.
-> > 
-> > > On Mon, Apr 18, 2011 at 09:57:28PM +0200, Rafael J. Wysocki wrote:
-> > > > @@ -24,23 +24,18 @@
-> > > >  #ifdef CONFIG_PM_RUNTIME
-> > > >  static int omap1_pm_runtime_suspend(struct device *dev)
-> > > >  {
-> > > > -	struct clk *iclk, *fclk;
-> > > > -	int ret = 0;
-> > > > +	int ret;
-> > > >  
-> > > >  	dev_dbg(dev, "%s\n", __func__);
-> > > >  
-> > > >  	ret = pm_generic_runtime_suspend(dev);
-> > > > +	if (ret)
-> > > > +		return ret;
-> > > >  
-> > > > -	fclk = clk_get(dev, "fck");
-> > > > -	if (!IS_ERR(fclk)) {
-> > > > -		clk_disable(fclk);
-> > > > -		clk_put(fclk);
-> > > > -	}
-> > > > -
-> > > > -	iclk = clk_get(dev, "ick");
-> > > > -	if (!IS_ERR(iclk)) {
-> > > > -		clk_disable(iclk);
-> > > > -		clk_put(iclk);
-> > > > +	ret = pm_runtime_clock_suspend(dev);
-> > > > +	if (ret) {
-> > > > +		pm_generic_runtime_resume(dev);
-> > > > +		return ret;
-> > > >  	}
-> > > >  
-> > > >  	return 0;
-> > > 
-> > > The before and after changes here are not functionally equivalent. You've
-> > > gone from an explicit multi-clock scheme to a single encapsulated one via
-> > > pm_runtime_clock_suspend().
-> > 
-> > You're refferring to the OMAP changes I suppose?
-> 
-> Yes, but we have similar use cases on SH, too.
-> 
-> > > Almost every single SH IP block is likewise abstracted in to a function
-> > > and interface clock, and OMAP and others are where we modelled this
-> > > abstraction on top of in the first place, so there are certainly users
-> > > there too.
-> > 
-> > In fact, the shmobile runtime PM code in arch/arm/mach-shmobile/pm_runtime.c
-> > uses only one clock right now.
-> > 
-> That's more due to general laziness than design. The code in
-> arch/sh/kernel/cpu/shmobile/pm_runtime.c goes through a hwblk abstraction
-> that functionally maps out for some CPUs via one API what is the function
-> clock on other CPUs. The hwblk API was never carried over to the ARM
-> side, and so a simplistic single clock case was implemented instead, and
-> the drivers with multiple clocks all performed manual clock gating on
-> their multiple clocks outside of the context of runtime PM.
-> 
-> OMAP1 clearly has a demonstratable case for multiple clocks that are
-> runtime PM managed, and this is exactly the sort of use case that SH
-> requires, too. If we can migrate off of and kill off some short-lived
-> ill-conceived APIs in the process, great. IOW, if you solve the OMAP1
-> problem then we can easily fix up ARM SH/R-Mobile and regular SH parts to
-> comply uniformly.
+The core change in this series is to split the cpuidle_device structure 
+into parts that can be global and parts that has to remain per-cpu. 
+The per-cpu pieces are mostly generic statistics that can be independent 
+of current running driver. As a result of these changes, there is single 
+copy of cpuidle_states structure and single registration done by one 
+cpu. The low level driver is free to set per-cpu driver data on
+each cpu if needed using the cpuidle_set_statedata() as the case
+today. Only in very rare cases asymmetric C-states exist which can be 
+handled within the cpuidle driver. Most architectures do not have 
+asymmetric C-states.
 
-OK, I'll extend the generic code to cover the OMAP case.
+This patch series along with Len Brown's pm_idle() cleanup 
+(ref:https://lkml.org/lkml/2011/4/2/8) will simplify the cpuidle framework 
+and make it easy to port to other architectures like POWER.
+
+References: 
+https://lkml.org/lkml/2011/2/10/37
+https://lkml.org/lkml/2011/3/25/52
+
+First two patches in the series facilitate splitting of cpuidle_states
+and cpuidle_device structure and next two patches do the actual split,
+change the API's and make existing code follow the changed API.
+
+[1/4] - Move the idle residency accounting part from cpuidle.c to
+  the respective low level drivers, so that the accounting can
+  be accurately maintained if the driver decides to demote the
+  chosen (suggested) by the governor.
+
+[2/4] - removes the cpuidle_device()->prepare API since is is not
+  widely used and the only use case was to allow software
+  demotion using CPUIDLE_FLAG_IGNORE flag.  Both these
+  functions can be absorbed within the cpuidle back-end
+  driver ad hence deprecating the prepare routine and the
+  CPUIDLE_FLAG_IGNORE flag.
+
+  - Ref: https://lkml.org/lkml/2011/3/25/52
+
+[3/4] - Splits the usage statistics (read/write) part out of
+  cpuidle_state structure, so that the states can become read
+  only and hence made global.
+
+[4/4] - most APIs will now need to pass pointer to both global
+   cpuidle_driver and per-cpu cpuidle_device structure.
+
+Version 1 is at https://lkml.org/lkml/2011/3/22/161
+Version 2 is at https://lkml.org/lkml/2011/4/11/32
+
+Changes from V2:
+
+1. Enabled global registration for arm at91_idle_driver,
+  davinci_idle_driver, kirkwood_idle_driver, omap3_idle_driver cpuidle
+  drivers. Enabled global registration for x86 intel_idle_driver also.
+
+2. Made ladder governor follow new changed API. Thus both menu and ladder
+  governors work with these changes.
+
+This patch series applies on top of 2.6.39-rc2 and is tested on x86 Nehalem 
+system with multiple ACPI C-States with both acpi_idle and intel_idle
+cpuidle drivers. Note that this code is not tested for arm yet.
 
 Thanks,
-Rafael
+-Trinabh
