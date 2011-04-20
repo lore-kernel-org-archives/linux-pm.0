@@ -1,16 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [RFC PATCH V3 4/4] cpuidle: Single/Global
-	registration of idle states
-Date: Wed, 20 Apr 2011 10:33:25 -0700
-Message-ID: <87k4eo6d5m.fsf__22145.7530897625$1303320958$gmane$org@ti.com>
-References: <20110420065445.332.13688.stgit@tringupt.in.ibm.com>
-	<20110420065608.332.30043.stgit@tringupt.in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH/RFC] MMC: remove unbalanced
+	pm_runtime_suspend()
+Date: Wed, 20 Apr 2011 22:06:14 +0200
+Message-ID: <201104202206.14240.rjw__22405.4062193774$1303330131$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1104201104230.2159-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110420065608.332.30043.stgit@tringupt.in.ibm.com> (Trinabh
-	Gupta's message of "Wed, 20 Apr 2011 12:26:34 +0530")
+In-Reply-To: <Pine.LNX.4.44L0.1104201104230.2159-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,46 +18,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Cc: venki@google.com, davinci-linux-open-source@linux.davincidsp.com, ak@linux.intel.com, len.brown@intel.com, peterz@infradead.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com, linux-arm-kernel@lists.infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-mmc@vger.kernel.org, Magnus Damm <damm@opensource.se>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
-Trinabh Gupta <trinabh@linux.vnet.ibm.com> writes:
+[Added linux-pm to the CC list.]
 
-> With this patch there is single copy of cpuidle_states structure
-> instead of per-cpu. The statistics needed on per-cpu basis
-> by the governor are kept per-cpu. This simplifies the cpuidle
-> subsystem as state registration is done by single cpu only.
-> Having single copy of cpuidle_states saves memory. Rare case
-> of asymmetric C-states can be handled within the cpuidle driverand
-> architectures such as POWER do not have asymmetric C-states.
+On Wednesday, April 20, 2011, Alan Stern wrote:
+> On Wed, 20 Apr 2011, Guennadi Liakhovetski wrote:
+...
+> Ah, now I see the problem.  It looks like we did not give sufficient
+> thought to the case where a device starts off (and therefore should
+> finish up) in a powered-down state.  Calling pm_runtime_put_sync()
+> after unbinding the device driver seems a little futile -- with no
+> driver, the subsystem may not be able to power-down the device!
+> 
+> Rafael, how do you think we should handle this?  Get rid of the 
+> pm_runtime_get_no_resume() and pm_runtime_put_sync() calls in 
+> dd.c:__device_release_driver()?
 
-I haven't actually tested this series on OMAP yet, but it currently
-doesn't compile.
+I think we need pm_runtime_barrier() in there.  Otherwise we risk
+removing the driver while there's a runtime PM request pending.
 
-The patch below (on top of your series) is required to compile on OMAP,
-I think it's doing what you intended, but please confirm.
+But we can move the pm_runtime_put_sync() before driver_sysfs_remove().
 
-Kevin
+Would that help?
 
-diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
-index 6641574..ab77ba3 100644
---- a/arch/arm/mach-omap2/cpuidle34xx.c
-+++ b/arch/arm/mach-omap2/cpuidle34xx.c
-@@ -512,6 +512,7 @@ static int omap3_cpuidle_driver_init(void)
- 	int i, retval, count = 0;
- 	struct omap3_processor_cx *cx;
- 	struct cpuidle_state *state;
-+	struct cpuidle_driver *drv = &omap3_idle_driver;
- 
- 	mpu_pd = pwrdm_lookup("mpu_pwrdm");
- 	core_pd = pwrdm_lookup("core_pwrdm");
-@@ -532,7 +533,7 @@ static int omap3_cpuidle_driver_init(void)
- 		state->enter = (state->flags & CPUIDLE_FLAG_CHECK_BM) ?
- 			omap3_enter_idle_bm : omap3_enter_idle;
- 		if (cx->type == OMAP3_STATE_C1)
--			dev->safe_state_index = count;
-+			drv->safe_state_index = count;
- 		sprintf(state->name, "C%d", count+1);
- 		strncpy(state->desc, cx->desc, CPUIDLE_DESC_LEN);
- 		count++;
+Rafael
