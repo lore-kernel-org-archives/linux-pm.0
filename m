@@ -1,19 +1,11 @@
-From: Matt Hsu <matt@0xlab.org>
-Subject: Re: [TuxOnIce-devel] [RFC PATCH] Current status,
- suspend-to-disk support on ARM
-Date: Wed, 20 Apr 2011 15:14:31 +0800
-Message-ID: <BANLkTinp1+6Ocmy5LAUEiPwAje+VnrTo9Q__48082.1431185634$1303283740$gmane$org@mail.gmail.com>
-References: <alpine.DEB.2.00.1104041424310.690@localhost6.localdomain6>
-	<20110412183208.GC26916@elf.ucw.cz>
-	<alpine.DEB.2.00.1104131020080.29883@localhost6.localdomain6>
-	<201104132338.03003.rjw@sisk.pl>
-	<alpine.DEB.2.00.1104141747310.9967@localhost6.localdomain6>
-	<BANLkTinroLCypX-iG0xGpnyxBk=P5TVtJQ@mail.gmail.com>
-	<alpine.DEB.2.00.1104191859260.4937@localhost6.localdomain6>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [RFC PATCH] PM / Core: suspend_again cb for syscore_ops
+Date: Wed, 20 Apr 2011 17:28:26 +0900
+Message-ID: <1303288106-2965-1-git-send-email-myungjoo.ham__18222.0055525706$1303288177$gmane$org@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2262664623919401888=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1104191859260.4937@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,98 +13,254 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: frank.hofmann@tomtom.com
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
---===============2262664623919401888==
-Content-Type: multipart/alternative; boundary=bcaec5489e4d42250404a15460b4
+A system or a device may need to control suspend/wakeup events. It may
+want to wakeup the system after a predefined amount of time or at a
+predefined event decided while entering suspend for polling or delayed
+work. Then, it may want to enter suspend again if its predefined wakeup
+condition is the only wakeup reason and there is no outstanding events;
+thus, it does not wakeup the userspace unnecessary and keeps suspended
+as long as possible (saving the power).
 
---bcaec5489e4d42250404a15460b4
-Content-Type: text/plain; charset=ISO-8859-1
+Enabling a system to wakeup after a specified time can be easily
+achieved by using RTC. However, to enter suspend again immediately
+without invoking userland, we need additional features in the
+suspend framework.
 
->
-> Also, I'd like to investigate whether ARM will require a set of
-> platform_hibernation_ops - Samsung's patch from last December,
->
-> http://www.spinics.net/lists/arm-kernel/msg108565.html
->
+Such need comes from:
 
-    Hi FrankH,
+1. Monitoring a critical device status without interrupts that can
+wakeup the system. (in-suspend polling)
+ An example is ambient temperature monitoring that needs to shut down
+the system or a specific device function if it is too hot or cold. The
+temperature of a specific device may be needed to be monitored as well;
+e.g., a charger monitors battery temperature in order to stop charging
+if overheated.
 
-     The patch seems has connection with this
+2. Execute critical "delayed work" at suspend.
+ A driver or a system/board may have a delayed work (or any similar
+things) that it wants to execute at the requested time.
+ For example, some chargers want to check the battery voltage some
+time (e.g., 30 seconds) after the battery is fully charged and the
+charger stops. Then, the charger restarts charging if the voltage has
+dropped more than a threshold, which is smaller than "restart-charger"
+voltage, which is a threshold to restart charging regardless of the
+time passed.
 
-     www.kernel.org/doc/ols/2010/ols2010-pages-9-18.pdf
+This patch allows a system or a device to provide "suspend_again"
+callback with syscore_ops. With suspend_again callbacks registered,
+the suspend framework (kernel/power/suspend.c) tries to enter suspend
+again if conditions are met.
 
-    You can see the section 4.3 fast device reactivation.
-    It does the similar thing  as STR, but drivers status are kept in
-hibernation image instead of main memory.
-    I guess this is why this patch comes out.
+The system enters the suspend again if and only if all of the following
+conditions are met:
+1. None of suspend_again ops returned "I want to stop suspend"
+(suspend_again returns SUSPEND_AGAIN_STOP).
+2. At least one of suspend_again ops returned "I want to suspend again"
+(suspend_again returns SUSPEND_AGAIN_CONTINUE)
 
-    In the current device driver model, there are no appropriate handling
-specific to
-    hibernation_suspend/hibernation_resume ops.
+suspend_again ops may return "I do not care. This wakeup is not related
+with me." (SUSPEND_AGAIN_NC, which is 0).
 
-    So they make their own interface/platform drivers.
+Use SUSPEND_AGAIN_STOP in order to override other devices'
+SUSPEND_AGAIN_CONTINUE and to wakeup fully. For devices that poll
+sensors during suspend may need this if any outstanding status is found.
+For conventional suspend wakeup sources, SUSPEND_AGAIN_STOP may be used
+to override SUSPEND_AGAIN devices.
 
+Anyway, the following features may need to be added later:
+1. An API to allow devices to express next desired wakeup-time. Then,
+the framework will combine them and setup RTC alarm accordingly and
+save/restore previously registered RTC alarms.
+2. Create a method to declare a specific instance of delayed-work is to
+be executed in suspend by waking up the system in the middle of
+suspend. Then, let the framework handle those "critical" delayed-work
+in suspend.
+3. If a device says SUSPEND_AGAIN_CONTINUE and there is another wakeup
+source pending (e.g., power button) without suspend_again ops, the
+system will enter suspend again. In such a case, the system should not
+suspend again. We may need to see if irqs that are enabled by
+set_irq_wake() (and not related to suspend_ops devices)
+are pending at syscore_suspend_again(). Maybe we need to add
+something like "set_irq_wake_with_suspend_again" so that IRQs with
+suspend_again ops implemented are ignored for the
+"override-suspend-again-continue" checking.
 
-> seems to indicate that they believe it's necessary at least on some ARM
-> hardware. OMAP has similar functions to that, it'd be great to unify.
->
->
-> FrankH.
->
->
-> --
-- Matt
+For the initial release, I have set the point of "suspend-again" after
+suspend_ops->end(). However, I'm not so sure about where to set the
+suspend-again point. Because in-suspend polling, which may require
+I/O with other devices, is supposed to be executed at suspend-again ops,
+the suspend-again point is configured to be as late as possible in
+suspend_devices_and_enter(). In order to reduce the number of devices
+waked up, we may need to set the suspend-again point ealier.
 
---bcaec5489e4d42250404a15460b4
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/base/syscore.c      |   36 +++++++++++++++++++++++++++
+ include/linux/syscore_ops.h |    7 +++++
+ kernel/power/suspend.c      |   57 +++++++++++++++++++++++-------------------
+ 3 files changed, 74 insertions(+), 26 deletions(-)
 
-<br><div class=3D"gmail_quote"><blockquote class=3D"gmail_quote" style=3D"m=
-argin: 0pt 0pt 0pt 0.8ex; border-left: 1px solid rgb(204, 204, 204); paddin=
-g-left: 1ex;">
-<br>
-Also, I&#39;d like to investigate whether ARM will require a set of platfor=
-m_hibernation_ops - Samsung&#39;s patch from last December,<br>
-<br>
-<a href=3D"http://www.spinics.net/lists/arm-kernel/msg108565.html" target=
-=3D"_blank">http://www.spinics.net/lists/arm-kernel/msg108565.html</a><br><=
-/blockquote><div><br>=A0=A0=A0 Hi FrankH,<br><br>=A0=A0=A0=A0 The patch see=
-ms has connection with this <br>
-<br>=A0=A0=A0=A0 <span class=3D"f"><cite><a href=3D"http://www.kernel.org/d=
-oc/ols/2010/ols2010-pages-9-18.pdf">www.kernel.org/doc/ols/2010/ols2010-pag=
-es-9-18.pdf</a><br><br></cite></span>=A0 =A0 You can see the section 4.3 fa=
-st device reactivation.<br>
-=A0 =A0 It does the similar thing=A0 as STR, but drivers status are kept in=
- hibernation image instead of main memory. <br>=A0=A0=A0 I guess this is wh=
-y this patch comes out.<br><br>=A0=A0=A0 In the current device driver model=
-, there are no appropriate handling specific to <br>
-=A0=A0=A0 hibernation_suspend/hibernation_resume ops. <br><br>=A0=A0=A0 So =
-they make their own interface/platform drivers.<br><br></div><blockquote cl=
-ass=3D"gmail_quote" style=3D"margin: 0pt 0pt 0pt 0.8ex; border-left: 1px so=
-lid rgb(204, 204, 204); padding-left: 1ex;">
-
-<br>
-seems to indicate that they believe it&#39;s necessary at least on some ARM=
- hardware. OMAP has similar functions to that, it&#39;d be great to unify.<=
-br>
-<br>
-<br>
-FrankH.<div><div></div><div class=3D"h5"><br>
-<br></div></div></blockquote></div>-- <br>- Matt<br>
-
---bcaec5489e4d42250404a15460b4--
-
---===============2262664623919401888==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============2262664623919401888==--
+diff --git a/drivers/base/syscore.c b/drivers/base/syscore.c
+index 90af294..1a7e08d 100644
+--- a/drivers/base/syscore.c
++++ b/drivers/base/syscore.c
+@@ -95,6 +95,42 @@ void syscore_resume(void)
+ 				"Interrupts enabled after %pF\n", ops->resume);
+ 		}
+ }
++
++/**
++ * syscore_suspend_again - Execute all the registeres system core suspend_again
++ *			callbacks. If at least one returns
++ *			SUSPEND_AGAIN_CONTINUE and no one returns
++ *			SUSPEND_AGAIN_STOP, syscore_suspend_again let the system
++ *			enter suspend again.
++ */
++bool syscore_suspend_again(void)
++{
++	struct syscore_ops *ops;
++	enum suspend_again_cond condition = SUSPEND_AGAIN_NC;
++
++	list_for_each_entry(ops, &syscore_ops_list, node)
++		if (ops->suspend_again) {
++			switch (ops->suspend_again()) {
++			case SUSPEND_AGAIN_NC:
++				break;
++			case SUSPEND_AGAIN_CONTINUE:
++				if (condition == SUSPEND_AGAIN_NC)
++					condition = SUSPEND_AGAIN_CONTINUE;
++				break;
++			case SUSPEND_AGAIN_STOP:
++				condition = SUSPEND_AGAIN_STOP;
++				break;
++			default:
++				pr_warn("PM: incorrect return from %pF\n",
++					ops->suspend_again);
++			}
++		}
++
++	if (condition == SUSPEND_AGAIN_CONTINUE)
++		return true;
++
++	return false;
++}
+ #endif /* CONFIG_PM_SLEEP */
+ 
+ /**
+diff --git a/include/linux/syscore_ops.h b/include/linux/syscore_ops.h
+index 27b3b0b..bf9bc4e 100644
+--- a/include/linux/syscore_ops.h
++++ b/include/linux/syscore_ops.h
+@@ -11,10 +11,16 @@
+ 
+ #include <linux/list.h>
+ 
++enum suspend_again_cond {
++	SUSPEND_AGAIN_NC = 0, /* Do Not Care */
++	SUSPEND_AGAIN_CONTINUE, /* Start or keep the again */
++	SUSPEND_AGAIN_STOP, /* Stop or do not start. Override CONTINUE */
++};
+ struct syscore_ops {
+ 	struct list_head node;
+ 	int (*suspend)(void);
+ 	void (*resume)(void);
++	enum suspend_again_cond (*suspend_again)(void);
+ 	void (*shutdown)(void);
+ };
+ 
+@@ -23,6 +29,7 @@ extern void unregister_syscore_ops(struct syscore_ops *ops);
+ #ifdef CONFIG_PM_SLEEP
+ extern int syscore_suspend(void);
+ extern void syscore_resume(void);
++extern bool syscore_suspend_again(void);
+ #endif
+ extern void syscore_shutdown(void);
+ 
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 2814c32..aa6a3d1 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -202,43 +202,48 @@ static int suspend_enter(suspend_state_t state)
+ int suspend_devices_and_enter(suspend_state_t state)
+ {
+ 	int error;
++	bool recover = false;
+ 
+ 	if (!suspend_ops)
+ 		return -ENOSYS;
+ 
+-	trace_machine_suspend(state);
+-	if (suspend_ops->begin) {
+-		error = suspend_ops->begin(state);
+-		if (error)
+-			goto Close;
+-	}
+-	suspend_console();
+-	pm_restrict_gfp_mask();
+-	suspend_test_start();
+-	error = dpm_suspend_start(PMSG_SUSPEND);
+-	if (error) {
+-		printk(KERN_ERR "PM: Some devices failed to suspend\n");
+-		goto Recover_platform;
+-	}
+-	suspend_test_finish("suspend devices");
+-	if (suspend_test(TEST_DEVICES))
+-		goto Recover_platform;
++	do {
++		trace_machine_suspend(state);
++		if (suspend_ops->begin) {
++			error = suspend_ops->begin(state);
++			if (error)
++				goto Close;
++		}
++		suspend_console();
++		pm_restrict_gfp_mask();
++		suspend_test_start();
++		error = dpm_suspend_start(PMSG_SUSPEND);
++		if (error) {
++			printk(KERN_ERR "PM: Some devices failed to suspend\n");
++			goto Recover_platform;
++		}
++		suspend_test_finish("suspend devices");
++		if (suspend_test(TEST_DEVICES))
++			goto Recover_platform;
+ 
+-	suspend_enter(state);
++		error = suspend_enter(state);
+ 
+  Resume_devices:
+-	suspend_test_start();
+-	dpm_resume_end(PMSG_RESUME);
+-	suspend_test_finish("resume devices");
+-	pm_restore_gfp_mask();
+-	resume_console();
++		suspend_test_start();
++		dpm_resume_end(PMSG_RESUME);
++		suspend_test_finish("resume devices");
++		pm_restore_gfp_mask();
++		resume_console();
+  Close:
+-	if (suspend_ops->end)
+-		suspend_ops->end();
+-	trace_machine_suspend(PWR_EVENT_EXIT);
++		if (suspend_ops->end)
++			suspend_ops->end();
++		trace_machine_suspend(PWR_EVENT_EXIT);
++	} while (syscore_suspend_again() && !error && !recover);
++
+ 	return error;
+ 
+  Recover_platform:
++	recover = true;
+ 	if (suspend_ops->recover)
+ 		suspend_ops->recover();
+ 	goto Resume_devices;
+-- 
+1.7.1
