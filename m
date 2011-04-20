@@ -1,17 +1,17 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 7/9] PM / Runtime: Add generic
-	clock	manipulation rountines for runtime PM
-Date: Wed, 20 Apr 2011 12:57:39 +0100
-Message-ID: <20110420115738.GA25571__43174.3901492611$1303300792$gmane$org@sirena.org.uk>
-References: <201104130205.26988.rjw@sisk.pl> <201104170142.10723.rjw@sisk.pl>
-	<20110419105836.GG9462@sirena.org.uk>
-	<201104192335.34560.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86 intel power: Initialize
+	MSR_IA32_ENERGY_PERF_BIAS
+Date: Wed, 20 Apr 2011 15:14:42 +0200
+Message-ID: <20110420131442.GA29418__3090.68756546385$1303305436$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <alpine.LFD.2.02.1103301819250.31342@x980>
+	<20110414090854.GB9248@elte.hu>
+	<alpine.LFD.2.02.1104150202310.29365@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201104192335.34560.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.02.1104150202310.29365@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: Len Brown <lenb@kernel.org>, stable@kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 19, 2011 at 11:35:34PM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, April 19, 2011, Mark Brown wrote:
 
-> > I've had similar thoughts with respect to the regulator API - I'd been
-> > thinking of dealing with this by adding a notifier which subsystems
-> > could build upon, in much the same way as already exists for the system
-> > ssuspend and resume events.
+> > > However, the typical BIOS fails to initialize the MSR,
+> > > and the typical Linux distro neglects to invoke x86_energy_perf_policy(8).
+> > > 
+> > > The result is that some modern hardware is running in hardware default,
+> > > which is "performance" mode, rather than the intended design default
+> > > of "normal" mode.
+> > > 
+> > > Initialize the MSR to the "normal" setting during kernel boot.
+> > > 
+> > > Of course, x86_energy_perf_policy(8) is available to change
+> > > the default after boot, should the user have a policy preference.
+> > > 
+> > > cc: stable@kernel.org
+...
+> Will it be possible to measure a performance difference between
+> "performance" and "normal"?  Yes, it will be possible.
 
-> Well, I generally avoid using notifiers, because they lead to big functions
-> that carry out many different tasks.
+Ok. So... what "serious bug" does this fix? You really need to use cc:
+stable less. Tweaking performance/power ratio is _not_ serious bug.
 
-> That said, I think consolidation and reduction of duplicate code is all good,
-> this way or another. :-)
 
-Well, if you're comfortable with adding explicit regulator API hooks in
-the code directly then I can just do that - I'd been thinking notifiers
-since they mean you don't have to worry about what's going on with it
-but if you're happy with making it explicit that's fine by me also.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
