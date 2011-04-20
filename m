@@ -1,17 +1,15 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86 intel power: Initialize
-	MSR_IA32_ENERGY_PERF_BIAS
-Date: Wed, 20 Apr 2011 15:14:42 +0200
-Message-ID: <20110420131442.GA29418__3090.68756546385$1303305436$gmane$org@atrey.karlin.mff.cuni.cz>
-References: <alpine.LFD.2.02.1103301819250.31342@x980>
-	<20110414090854.GB9248@elte.hu>
-	<alpine.LFD.2.02.1104150202310.29365@x980>
+Subject: Re: [RFC PATCH] PM / Core: suspend_again cb for
+	syscore_ops
+Date: Wed, 20 Apr 2011 12:36:41 +0200
+Message-ID: <20110420103641.GA1789__28957.4557952166$1303305927$gmane$org@ucw.cz>
+References: <1303288106-2965-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.02.1104150202310.29365@x980>
+In-Reply-To: <1303288106-2965-1-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,31 +19,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>, stable@kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-> > > However, the typical BIOS fails to initialize the MSR,
-> > > and the typical Linux distro neglects to invoke x86_energy_perf_policy(8).
-> > > 
-> > > The result is that some modern hardware is running in hardware default,
-> > > which is "performance" mode, rather than the intended design default
-> > > of "normal" mode.
-> > > 
-> > > Initialize the MSR to the "normal" setting during kernel boot.
-> > > 
-> > > Of course, x86_energy_perf_policy(8) is available to change
-> > > the default after boot, should the user have a policy preference.
-> > > 
-> > > cc: stable@kernel.org
-...
-> Will it be possible to measure a performance difference between
-> "performance" and "normal"?  Yes, it will be possible.
+> A system or a device may need to control suspend/wakeup events. It may
+> want to wakeup the system after a predefined amount of time or at a
+> predefined event decided while entering suspend for polling or delayed
+> work. Then, it may want to enter suspend again if its predefined wakeup
+> condition is the only wakeup reason and there is no outstanding events;
+> thus, it does not wakeup the userspace unnecessary and keeps suspended
+> as long as possible (saving the power).
 
-Ok. So... what "serious bug" does this fix? You really need to use cc:
-stable less. Tweaking performance/power ratio is _not_ serious bug.
+Nice. Zaurus needs it, exactly due to this reason:
 
+> 2. Execute critical "delayed work" at suspend.
+>  A driver or a system/board may have a delayed work (or any similar
+> things) that it wants to execute at the requested time.
+>  For example, some chargers want to check the battery voltage some
+> time (e.g., 30 seconds) after the battery is fully charged and the
+> charger stops. Then, the charger restarts charging if the voltage has
+> dropped more than a threshold, which is smaller than "restart-charger"
+> voltage, which is a threshold to restart charging regardless of the
+> time passed.
+
+Yep, and zaurus also needs it to stop charging.
+
+> The system enters the suspend again if and only if all of the following
+> conditions are met:
+> 1. None of suspend_again ops returned "I want to stop suspend"
+> (suspend_again returns SUSPEND_AGAIN_STOP).
+> 2. At least one of suspend_again ops returned "I want to suspend again"
+> (suspend_again returns SUSPEND_AGAIN_CONTINUE)
+
+Better naming  could be SUSPEND_AGAIN and VETO_RESUSPEND or
+SUSPEND_AGAIN_VETO .
+
+> Anyway, the following features may need to be added later:
+> 1. An API to allow devices to express next desired wakeup-time. Then,
+> the framework will combine them and setup RTC alarm accordingly and
+> save/restore previously registered RTC alarms.
+
+Yep.
 
 									Pavel
 -- 
