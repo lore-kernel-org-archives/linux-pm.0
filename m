@@ -1,15 +1,14 @@
-From: Tino Keitel <tino.keitel@tikei.de>
-Subject: Re: [PATCH] PM / Wakeup: Fix initialization of
- wakeup-related device sysfs files
-Date: Fri, 22 Apr 2011 09:57:07 +0200
-Message-ID: <20110422075707.GA17464__8719.68404758281$1303459075$gmane$org@x61.home>
-References: <201104212357.43052.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH/RFC] MMC: remove unbalanced
+	pm_runtime_suspend()
+Date: Fri, 22 Apr 2011 11:20:26 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1104221058140.1877-100000__48332.0062667646$1303485729$gmane$org@iolanthe.rowland.org>
+References: <201104220006.09982.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201104212357.43052.rjw@sisk.pl>
+In-Reply-To: <201104220006.09982.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,13 +19,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Cc: linux-mmc@vger.kernel.org, Magnus Damm <damm@opensource.se>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Fri, 22 Apr 2011, Rafael J. Wysocki wrote:
 
-I'm currently travelling and therefore unable to test the patch. I'll
-send feedback next Monday.
+> > The subsystem should be smart enough to handle runtime PM requests while
+> > the driver's remove callback is running.
+> 
+> If we make such a rule, we may as well remove all of the runtime PM
+> calls from __device_release_driver().
+>  
+> > > I think the current code is better than any of the alternatives considered
+> > > so far.
+> > 
+> > Then you think Guennadi should leave his patch as it is, including the 
+> > "reversed" put/get?
+> 
+> This, or we need to remove the runtime PM calls from __device_release_driver().
 
-Regards,
-Tino
+Let's go back to first principles.  The underlying problem we want to
+solve is that runtime PM callbacks race with driver unbinding.  In a
+worst-case scenario, a driver module might be unbound and unloaded from
+memory and then a runtime PM callback could occur, causing an invalid
+memory access.
+
+Related to this is the fact that some drivers want to use runtime PM 
+from within their remove routines.  This implies that the PM core 
+shouldn't simply disallow all runtime PM callbacks during unbinding.
+
+As it happens, the PM core doesn't call drivers' runtime PM routines 
+directly.  Instead it calls bus, type, class, and power-domain 
+routines -- which may in turn invoke the driver routines.
+
+Put together, this all suggests that the PM core can't solve the
+underlying problem and shouldn't try.  Instead, it should be up to the
+subsystems to insure they don't make invalid callbacks.  For example,
+the USB subsystem does this by explicitly doing pm_runtime_get_sync() 
+before unbinding a driver.  Other subsystems would want to use a 
+different approach.
+
+If we add this requirement then yes, it would make sense to remove the 
+get_noresume and put_sync calls from __device_release_driver().  We 
+probably want to keep the barrier, though.
+
+> I'm a bit worried about the driver_sysfs_remove() and the bus notifier that
+> in theory may affect the runtime PM callbacks potentially executed before
+> ->remove() is called.
+
+The driver_sysfs_remove() call merely gets rid of a couple of symlinks 
+in sysfs.  I don't think that will impact runtime PM.
+
+The bus notifier might, however.  Perhaps the barrier should be moved 
+down, after the notifier call.  How does this patch look?
+
+Alan Stern
+
+
+
+ drivers/base/dd.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+Index: usb-2.6/drivers/base/dd.c
+===================================================================
+--- usb-2.6.orig/drivers/base/dd.c
++++ usb-2.6/drivers/base/dd.c
+@@ -316,15 +316,13 @@ static void __device_release_driver(stru
+ 
+ 	drv = dev->driver;
+ 	if (drv) {
+-		pm_runtime_get_noresume(dev);
+-		pm_runtime_barrier(dev);
+-
+ 		driver_sysfs_remove(dev);
+ 
+ 		if (dev->bus)
+ 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 						     BUS_NOTIFY_UNBIND_DRIVER,
+ 						     dev);
++		pm_runtime_barrier(dev);
+ 
+ 		if (dev->bus && dev->bus->remove)
+ 			dev->bus->remove(dev);
+@@ -337,8 +335,6 @@ static void __device_release_driver(stru
+ 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 						     BUS_NOTIFY_UNBOUND_DRIVER,
+ 						     dev);
+-
+-		pm_runtime_put_sync(dev);
+ 	}
+ }
+ 
