@@ -1,17 +1,13 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [RFC PATCH V3 4/4] cpuidle: Single/Global
-	registration of idle states
-Date: Fri, 22 Apr 2011 16:06:42 -0700
-Message-ID: <871v0tvqbh.fsf__3609.76047018102$1303513745$gmane$org@ti.com>
-References: <20110420065445.332.13688.stgit@tringupt.in.ibm.com>
-	<20110420065608.332.30043.stgit@tringupt.in.ibm.com>
-	<87k4eo6d5m.fsf@ti.com> <4DAFB847.50404@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [GIT PULL] Two power management fixes for 2.6.39
+Date: Sat, 23 Apr 2011 19:55:43 +0200
+Message-ID: <201104231955.44001.rjw__42956.9051288583$1303581403$gmane$org@sisk.pl>
+References: <201104212211.03185.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4DAFB847.50404@linux.vnet.ibm.com> (Trinabh Gupta's message of
-	"Thu, 21 Apr 2011 10:23:27 +0530")
+In-Reply-To: <201104212211.03185.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,27 +17,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Cc: venki@google.com, davinci-linux-open-source@linux.davincidsp.com, ak@linux.intel.com, len.brown@intel.com, peterz@infradead.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com, linux-arm-kernel@lists.infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ian Campbell <Ian.Campbell@eu.citrix.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Trinabh,
+On Thursday, April 21, 2011, Rafael J. Wysocki wrote:
+> Hi Linus,
+> 
+> Please pull two power management fixes for 2.6.39 from:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
+> 
+> They fix bugs related to syscore_ops introduced earlier in this cycle.
 
-Trinabh Gupta <trinabh@linux.vnet.ibm.com> writes:
+Well, I guess I should have said they fixed regressions related to the introduction
+of syscore_ops.  At least the second commit fixes real breakage (the error code
+paths should not be broken as well, but they aren't executed too often).
 
-[...]
+Anyway, next week I'm going to have more regression fixes ready, so I'll send
+a new pull request at that time.
 
-> I just wanted to get comments on the design and understand how it
-> affects various architectures in question. It looks to me as if the
-> design should be okay and infact better for architectures like ARM
-> since they do not have different idle states for different cpus and
-> thus do not require per-cpu registration.  Global registration would
-> work and be simpler; please correct me if I am wrong.
-
-Yes, I agree that the new design is better, I especially like that it's
-more clear (and expected) that final state decision making is to be done
-directly in the driver without the back-and-forth in the current setup.
+>  arch/x86/kernel/apm_32.c |    5 +++++
+>  drivers/base/syscore.c   |    2 ++
+>  drivers/xen/manage.c     |    9 ++++++++-
+>  kernel/kexec.c           |    7 +++++++
+>  kernel/power/hibernate.c |   10 ++++++++--
+>  kernel/power/suspend.c   |    5 ++++-
+>  6 files changed, 34 insertions(+), 4 deletions(-)
+> 
+> ---------------
+> 
+> Rafael J. Wysocki (2):
+>       PM: Fix error code paths executed after failing syscore_suspend()
+>       PM: Add missing syscore_suspend() and syscore_resume() calls
 
 Thanks,
-
-Kevin
+Rafael
