@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 4/9] PM / Platform: Use generic runtime PM
-	callbacks directly
-Date: Sun, 24 Apr 2011 23:39:33 +0200
-Message-ID: <201104242339.33422.rjw__23370.7881103784$1303682308$gmane$org@sisk.pl>
+Subject: [PATCH 8/9] OMAP1 / PM: Use generic clock manipulation
+	routines for runtime PM
+Date: Sun, 24 Apr 2011 23:43:41 +0200
+Message-ID: <201104242343.41456.rjw__34562.2836299755$1303682310$gmane$org@sisk.pl>
 References: <201104130205.26988.rjw@sisk.pl> <201104170135.19388.rjw@sisk.pl>
 	<201104242330.13607.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -25,56 +25,116 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Once shmobile platforms have been converted to using power domains
-for overriding the platform bus type's PM callbacks, it isn't
-necessary to use the __weakly defined wrappers around the generinc
-runtime PM callbacks in the platform bus type any more.
+Convert OMAP1 to using the new generic clock manipulation routines
+and a device power domain for runtime PM instead of overriding the
+platform bus type's runtime PM callbacks.  This allows us to simplify
+OMAP1-specific code and to share some code with other platforms
+(shmobile in particular).
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/platform.c |   31 +++----------------------------
- 1 file changed, 3 insertions(+), 28 deletions(-)
+ arch/arm/mach-omap1/pm_bus.c |   69 +++++++++++++------------------------------
+ 1 file changed, 22 insertions(+), 47 deletions(-)
 
-Index: linux-2.6/drivers/base/platform.c
+Index: linux-2.6/arch/arm/mach-omap1/pm_bus.c
 ===================================================================
---- linux-2.6.orig/drivers/base/platform.c
-+++ linux-2.6/drivers/base/platform.c
-@@ -900,35 +900,10 @@ int platform_pm_restore_noirq(struct dev
+--- linux-2.6.orig/arch/arm/mach-omap1/pm_bus.c
++++ linux-2.6/arch/arm/mach-omap1/pm_bus.c
+@@ -24,75 +24,50 @@
+ #ifdef CONFIG_PM_RUNTIME
+ static int omap1_pm_runtime_suspend(struct device *dev)
+ {
+-	struct clk *iclk, *fclk;
+-	int ret = 0;
++	int ret;
  
- #endif /* CONFIG_HIBERNATE_CALLBACKS */
+ 	dev_dbg(dev, "%s\n", __func__);
  
--#ifdef CONFIG_PM_RUNTIME
+ 	ret = pm_generic_runtime_suspend(dev);
++	if (ret)
++		return ret;
+ 
+-	fclk = clk_get(dev, "fck");
+-	if (!IS_ERR(fclk)) {
+-		clk_disable(fclk);
+-		clk_put(fclk);
+-	}
 -
--int __weak platform_pm_runtime_suspend(struct device *dev)
--{
--	return pm_generic_runtime_suspend(dev);
+-	iclk = clk_get(dev, "ick");
+-	if (!IS_ERR(iclk)) {
+-		clk_disable(iclk);
+-		clk_put(iclk);
++	ret = pm_runtime_clk_suspend(dev);
++	if (ret) {
++		pm_generic_runtime_resume(dev);
++		return ret;
+ 	}
+ 
+ 	return 0;
 -};
++}
+ 
+ static int omap1_pm_runtime_resume(struct device *dev)
+ {
+-	struct clk *iclk, *fclk;
 -
--int __weak platform_pm_runtime_resume(struct device *dev)
--{
+ 	dev_dbg(dev, "%s\n", __func__);
+ 
+-	iclk = clk_get(dev, "ick");
+-	if (!IS_ERR(iclk)) {
+-		clk_enable(iclk);
+-		clk_put(iclk);
+-	}
++	pm_runtime_clk_resume(dev);
++	return pm_generic_runtime_resume(dev);
++}
+ 
+-	fclk = clk_get(dev, "fck");
+-	if (!IS_ERR(fclk)) {
+-		clk_enable(fclk);
+-		clk_put(fclk);
+-	}
++static struct dev_power_domain default_power_domain = {
++	.ops = {
++		.runtime_suspend = omap1_pm_runtime_suspend,
++		.runtime_resume = omap1_pm_runtime_resume,
++		USE_PLATFORM_PM_SLEEP_OPS
++	},
++};
+ 
 -	return pm_generic_runtime_resume(dev);
--};
--
--int __weak platform_pm_runtime_idle(struct device *dev)
--{
--	return pm_generic_runtime_idle(dev);
--};
--
--#else /* !CONFIG_PM_RUNTIME */
--
--#define platform_pm_runtime_suspend NULL
--#define platform_pm_runtime_resume NULL
--#define platform_pm_runtime_idle NULL
--
--#endif /* !CONFIG_PM_RUNTIME */
--
- static const struct dev_pm_ops platform_dev_pm_ops = {
--	.runtime_suspend = platform_pm_runtime_suspend,
--	.runtime_resume = platform_pm_runtime_resume,
--	.runtime_idle = platform_pm_runtime_idle,
-+	.runtime_suspend = pm_generic_runtime_suspend,
-+	.runtime_resume = pm_generic_runtime_resume,
-+	.runtime_idle = pm_generic_runtime_idle,
- 	USE_PLATFORM_PM_SLEEP_OPS
++static struct pm_clk_notifier_block platform_bus_notifier = {
++	.pwr_domain = &default_power_domain,
++	.con_ids = { "ick", "fck", NULL, },
  };
  
+ static int __init omap1_pm_runtime_init(void)
+ {
+-	const struct dev_pm_ops *pm;
+-	struct dev_pm_ops *omap_pm;
+-
+ 	if (!cpu_class_is_omap1())
+ 		return -ENODEV;
+ 
+-	pm = platform_bus_get_pm_ops();
+-	if (!pm) {
+-		pr_err("%s: unable to get dev_pm_ops from platform_bus\n",
+-			__func__);
+-		return -ENODEV;
+-	}
+-
+-	omap_pm = kmemdup(pm, sizeof(struct dev_pm_ops), GFP_KERNEL);
+-	if (!omap_pm) {
+-		pr_err("%s: unable to alloc memory for new dev_pm_ops\n",
+-			__func__);
+-		return -ENOMEM;
+-	}
+-
+-	omap_pm->runtime_suspend = omap1_pm_runtime_suspend;
+-	omap_pm->runtime_resume = omap1_pm_runtime_resume;
+-
+-	platform_bus_set_pm_ops(omap_pm);
++	pm_runtime_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
+ 
+ 	return 0;
+ }
