@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] freezer: use smp barriers
-Date: Mon, 25 Apr 2011 12:38:35 +0200
-Message-ID: <201104251238.36005.rjw__22766.6551051245$1303727984$gmane$org@sisk.pl>
-References: <1303716665-27584-1-git-send-email-vapier@gentoo.org>
+From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Subject: Re: [PATCH 11/18] cpuidle: stop using pm_idle
+Date: Mon, 25 Apr 2011 16:11:23 +0530
+Message-ID: <4DB54FD3.2090007__28621.5456588709$1303728156$gmane$org@linux.vnet.ibm.com>
+References: <alpine.LFD.2.02.1104010020280.2797@x980>
+	<1301725380-10579-1-git-send-email-lenb@kernel.org>
+	<5f8cf82855ca448698efe66f48779972ad08ffc0.1301724243.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1303716665-27584-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <5f8cf82855ca448698efe66f48779972ad08ffc0.1301724243.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,48 +19,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, x86@kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 25, 2011, Mike Frysinger wrote:
-> The freezer processes are dealing with multiple threads running
-> simultaneously, and on a UP system, the memory reads/writes do
-> not need barriers to keep things in sync.  These are only needed
-> on SMP systems, so use SMP barriers instead.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-Applied to suspend-2.6/linux-next.
+
+On 04/02/2011 11:52 AM, Len Brown wrote:
+> From: Len Brown<len.brown@intel.com>
+>
+> pm_idle does not scale as an idle handler registration mechanism.
+> Don't use it for cpuidle.  Instead, call cpuidle directly, and
+> allow architectures to use pm_idle as an arch-specific default
+> if they need it.  ie.
+>
+> cpu_idle()
+> 	...
+> 	if(cpuidle_call_idle())
+> 		pm_idle();
+>
+
+Hi Len,
+
+This doesn't compile right now for ARM. The patch below
+(on top of your series) is required to compile on arm, sh
 
 Thanks,
-Rafael
+-Trinabh
 
-
-> ---
->  kernel/freezer.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/freezer.c b/kernel/freezer.c
-> index 66ecd2e..7b01de9 100644
-> --- a/kernel/freezer.c
-> +++ b/kernel/freezer.c
-> @@ -17,7 +17,7 @@ static inline void frozen_process(void)
->  {
->  	if (!unlikely(current->flags & PF_NOFREEZE)) {
->  		current->flags |= PF_FROZEN;
-> -		wmb();
-> +		smp_wmb();
->  	}
->  	clear_freeze_flag(current);
->  }
-> @@ -93,7 +93,7 @@ bool freeze_task(struct task_struct *p, bool sig_only)
->  	 * the task as frozen and next clears its TIF_FREEZE.
->  	 */
->  	if (!freezing(p)) {
-> -		rmb();
-> +		smp_rmb();
->  		if (frozen(p))
->  			return false;
->  
-> 
+diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+index d7ee0d4..1a347f4 100644
+--- a/arch/arm/kernel/process.c
++++ b/arch/arm/kernel/process.c
+@@ -197,7 +197,7 @@ void cpu_idle(void)
+  				cpu_relax();
+  			} else {
+  				stop_critical_timings();
+-				if (cpuidle_call_idle())
++				if (cpuidle_idle_call())
+  					pm_idle();
+  				start_critical_timings();
+  				/*
+diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
+index 9c7099e..1db1968 100644
+--- a/arch/sh/kernel/idle.c
++++ b/arch/sh/kernel/idle.c
+@@ -101,7 +101,7 @@ void cpu_idle(void)
+  			local_irq_disable();
+  			/* Don't trace irqs off for idle */
+  			stop_critical_timings();
+-			if (cpuidle_call_idle())
++			if (cpuidle_idle_call())
+  				pm_idle();
+  			/*
+  			 * Sanity check to ensure that pm_idle() returns
