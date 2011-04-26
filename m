@@ -1,17 +1,16 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [RFC PATCH] PM: Introduce generic DVFS framework
- with device-specific OPPs
-Date: Tue, 26 Apr 2011 13:54:30 -0700
-Message-ID: <20110426205430.GA20381@suse.de>
-References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
-	<20110426132224.GC13597@suse.de>
-	<BANLkTi=VFPZinH+1x0xBTP9o_s6+2gsA7w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCH v2 1/3] PM / Core: suspend_again callback
+	for device PM.
+Date: Tue, 26 Apr 2011 22:47:43 +0200
+Message-ID: <201104262247.44113.rjw__48026.0096876465$1303854333$gmane$org@sisk.pl>
+References: <1303288106-2965-1-git-send-email-myungjoo.ham@samsung.com>
+	<201104261347.21811.rjw@sisk.pl>
+	<20110426203543.GB27140@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <BANLkTi=VFPZinH+1x0xBTP9o_s6+2gsA7w@mail.gmail.com>
+In-Reply-To: <20110426203543.GB27140@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,29 +20,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Jiejing.Zhang " <kzjeef@gmail.com>
-Cc: Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, kyungmin.park@samsung.com, MyungJoo Ham <myungjoo.ham@samsung.com>, "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>, "Jean Delvare (PC drivers core)" <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBBcHIgMjYsIDIwMTEgYXQgMTA6NDU6MThQTSArMDgwMCwgSmllamluZy5aaGFuZyAg
-d3JvdGU6Cj4gSGkgR3JlZywKPiAKPiBJIHRoaW5rIERWRlMgaGVyZSBtZWFucyDigJxEeW5hbWlj
-IHZvbHRhZ2UgYW5kIGZyZXF1ZW5jeSBzY2FsaW5n4oCdLMKgIHJlZmVyaW5nIHRoZQo+IGZpcnN0
-IGdvb2dsZSdzIHJlc3VsdDoKCk9rLCBpZiBzbywgcGxlYXNlIHNwZWxsIGl0IG91dC4KCkFsc28s
-IGRvbid0IHVzZSAnZHZmcycgYXMgYSBwcmVmaXggaW4gdGhlIGtlcm5lbCwgdG9vIG1hbnkgb3Ro
-ZXIgcGVvcGxlCndpbGwgdGhpbmsgaXQgaXMgYSBmaWxlc3lzdGVtLiAgSG93IGFib3V0ICJkeW52
-b2x0Ij8KCk9yIGFueXRoaW5nIGVsc2UsIGp1c3Qgbm8gJ2ZzJyBpbiB0aGUgbmFtZSBvdGhlcndp
-c2UgY29uZnVzaW9uIHdpbGwKcmVpZ24uCgo+IGEgZHluYW1pYyB2b2x0YWdlIGFuZCBmcmVxdWVu
-Y3kgc2NhbGluZyAoRFZGUykgKnRlY2huaXF1ZSB0aGF0IG1pbmltaXplcyB0aGUKPiB0b3RhbCBz
-eXN0ZW0gZW5lcmd5IGNvbnN1bXB0aW9uIGZvciBwZXJmb3JtaW5nIGEgdGFzayB3aGlsZSBzYXRp
-c2Z5aW5nCj4gYSBnaXZlbiBleGVjdXRpb24gdGltZSBjb25zdHJhaW50LiBXZSBmaXJzdCBzaG93
-IHRoYXQgaW4gb3JkZXIgdG8KPiBndWFyYW50ZWUgbWluaW11bSBlbmVyZ3kgZm9yIHRhc2sgZXhl
-Y3V0aW9uIGJ5IHVzaW5nIERWRlMgaXQgaXMKPiBlc3NlbnRpYWwgdG8gZGl2aWRlIHRoZSBzeXN0
-ZW0gcG93ZXIgaW50byBhY3RpdmUgYW5kIHN0YW5kYnkgcG93ZXIKPiBjb21wb25lbnRzLiBOZXh0
-LCB3ZSBwcmVzZW50IGEgbmV3IERWRlMgdGVjaG5pcXVlLCB3aGljaCBjb25zaWRlcnMgbm90Cj4g
-b25seSB0aGUgYWN0aXZlIHBvd2VyLCBidXQgYWxzbyB0aGUgc3RhbmRieSBjb21wb25lbnQgb2Yg
-dGhlIHN5c3RlbQo+IHBvd2VyLgoKUGxlYXNlIHB1dCB0aGlzIGluIHRoZSBjaGFuZ2Vsb2cgZW50
-cnksIHlvdSBuZWVkIHRvIGV4cGxhaW4gaXQgdG8gdGhvc2UKb2YgdXMgd2hvIGhhdmUgbmV2ZXIg
-c2VlbiBpdC4KCnRoYW5rcywKCmdyZWcgay1oCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
-aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Tuesday, April 26, 2011, Pavel Machek wrote:
+> Hi!
+> 
+> > If I saw it correctly, patches [2-3/3] only added the generic routine to
+> > the platform and i2c bus types, right?
+> > 
+> > Now, this one is better than the previous one IMO, but (1) it also should
+> > cover hibernation (I'd don't see a reason why suspend-to-RAM should be a
+> > special case here) and (2) I don't really think that thawing user
+> > space is
+> 
+> Suspend-to-RAM really is special here... at least for zaurus-like
+> machine.
+> 
+> In hibernation, you are "powered down"; that means suspend to RAM with
+> bootloader active (operating system is off). You do not need to do any
+> kind of maintenance -- bootloader takes care of battery charging and
+> protection.
+> 
+> > "too heavy" (in fact it's much lighter weight than resuming all devices
+> > that your approach doesn't prevent from happening, so for example on my
+> > desktop/notebook machines I woulnd't mind at all if user space were
+> > thawed after all of the devices had been resumed).
+> 
+> Well, it would be behavior change for the user. I told the zaurus to
+> go s2ram, I do not expect it to wake up after 5 minutes because it
+> needed to check battery status.
+> 
+> I'd have to modify my userland to retry suspend again and again and
+> again...
+
+And that's exactly what should be done.  Have a user space process controlling
+that, because avoiding to thaw user space doesn't buy us almost anything.
+
+Now, I know that it's probably easier to modify the kernel than to write
+a user space tool for that, test it and so on, but "easier" is not necessarily
+"better".
+
+> > > @@ -145,6 +145,15 @@ typedef struct pm_message {
+> > >   *	actions required for resuming the device that need interrupts to be
+> > >   *	disabled
+> > >   *
+> > > + * @suspend_again: Tell the system whether the device wants to either
+> > > + *	suspend again (return > 0), wake up (return < 0), or not-care
+> > > + *	(return = 0). If a device wants to poll sensors or execute some code
+> > > + *	during suspended, suspend_again callback is the place assuming that
+> > > + *	periodic-wakeup or alarm-wakeup is already setup. Note that if a
+> > > + *	device returns "wakeup" with an under-zero value, it overrides
+> > > + *	other devices' "suspend again" return values. This allows to
+> > > + *	execute some codes while being kept suspended in the view of userland.
+> > > + *
+> > 
+> > Since, as I said, I think that should cover hibernation too, I'd change the
+> > name to, say, sleep_again().
+> 
+> I'm not sure if we need to cover hibernation. Do you know any machine
+> that needs this for hibernation case?
+
+Yes, any machine that "needs" it while suspended.  What's the difference,
+after all?  The only difference is that there's an image on permanent storage
+in the hibernation case.  You still can overheat a battery when charging it
+while hibernated, right?
+
+> > > @@ -291,7 +291,9 @@ int enter_state(suspend_state_t state)
+> > >  		goto Finish;
+> > >  
+> > >  	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
+> > > -	error = suspend_devices_and_enter(state);
+> > > +	do {
+> > > +		error = suspend_devices_and_enter(state);
+> > > +	} while (!error && dpm_suspend_again());
+> > >  
+> > >   Finish:
+> > >  	pr_debug("PM: Finishing wakeup.\n");
+> > > 
+> > 
+> > To conclude, I'm not sure about the approach.  In particular, I'm not sure
+> > if the benefit is worth the effort and the resulting complications (ie. the
+> > possibility of having to deal with wakeup signals not requested by user
+> > space) seem to be a bit too far reaching.
+> 
+> We already have platform-specific hacks to do exactly this at least on
+> Zaurus. Moving it to common code means that hacks are not duplicated..
+
+Well, good to know they are there, but I'm still not sure what to do about
+that.  At the moment I feel like having too little information to really
+decide, so perhaps please point me to the code you're talking about for
+starters.
+
+Thanks,
+Rafael
