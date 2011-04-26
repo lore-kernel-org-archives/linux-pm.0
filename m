@@ -1,14 +1,15 @@
-From: "Jiejing.Zhang " <kzjeef@gmail.com>
-Subject: Re: [RFC PATCH] PM: Introduce generic DVFS framework
- with device-specific OPPs
-Date: Tue, 26 Apr 2011 22:45:18 +0800
-Message-ID: <BANLkTi=VFPZinH+1x0xBTP9o_s6+2gsA7w@mail.gmail.com>
-References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
-	<20110426132224.GC13597@suse.de>
+From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+Subject: Re: [PATCH 11/14] PM / AVR32: Use struct syscore_ops
+ instead of sysdevs for PM
+Date: Tue, 26 Apr 2011 14:22:12 +0200
+Message-ID: <1303820532.3125.12.camel__39717.574165161$1303830028$gmane$org@hcegtvedt>
+References: <201103280125.11750.rjw@sisk.pl>
+	<201104172301.54115.rjw@sisk.pl>  <201104172313.09712.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3869897883668699274=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110426132224.GC13597@suse.de>
+In-Reply-To: <201104172313.09712.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,122 +17,29 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>, Ben Dooks <ben-linux@fluff.org>, Jiri Kosina <jkosina@suse.cz>, Kay Sievers <kay.sievers@suse.de>, Mike Frysinger <vapier@gentoo.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
---===============3869897883668699274==
-Content-Type: multipart/alternative; boundary=bcaec53f95d19efe2f04a1d36071
+On Sun, 2011-04-17 at 23:13 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Convert some AVR32 architecture's code to using struct syscore_ops
+> objects for power management instead of sysdev classes and sysdevs.
+> 
+> This simplifies the code and reduces the kernel's memory footprint.
+> It also is necessary for removing sysdevs from the kernel entirely in
+> the future.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
---bcaec53f95d19efe2f04a1d36071
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
 
-Hi Greg,
+Thanks, nice work. Tested and run on hardware.
 
-I think DVFS here means =93Dynamic voltage and frequency scaling=94,  refer=
-ing
-the first google's result:
+<snipp>
 
-a dynamic voltage and frequency scaling (DVFS) *technique that minimizes th=
-e
-total system energy
-consumption for performing a task while satisfying a given execution time
-constraint. We first show that in order to
-guarantee minimum energy for task execution by using DVFS it is essential t=
-o
-divide the system power into active and
-standby power components. Next, we present a new DVFS technique, which
-considers not only the active power, but also
-the standby component of the system power.
-
-It's widely used in embeded Soc.
-
-Best regards,
-Zhang Jiejing
-
-
-2011/4/26 Greg KH <gregkh@suse.de>
-
-> On Tue, Apr 26, 2011 at 05:43:21PM +0900, MyungJoo Ham wrote:
-> > With OPPs, a device may have multiple operable frequency and voltage
-> > sets. However, there can be multiple possible operable sets and a syste=
-m
-> > will need to choose one from them. In order to reduce the power
-> > consumption (by reducing frequency and voltage) without affecting the
-> > performance too much, a DVFS scheme may be used.
->
-> What is "DVFS"?  A new filesystem?
->
-> confused,
->
-> greg k-h
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->
-
---bcaec53f95d19efe2f04a1d36071
-Content-Type: text/html; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-
-Hi Greg,<br><br>I think DVFS here means =93Dynamic voltage and frequency sc=
-aling=94,=A0 refering the first google&#39;s result:<br><br>a dynamic volta=
-ge and frequency scaling (DVFS) *technique that minimizes the total system =
-energy<br>
-
-consumption for performing a task while satisfying a given execution time c=
-onstraint. We first show that in order to<br>guarantee minimum energy for t=
-ask execution by using DVFS it is essential to divide the system power into=
- active and<br>
-
-standby power components. Next, we present a new DVFS technique, which cons=
-iders not only the active power, but also<br>the standby component of the s=
-ystem power.<br><br>It&#39;s widely used in embeded Soc.<br clear=3D"all">
-
-<div><br></div>Best regards,<br>Zhang Jiejing<br>
-<br><br><div class=3D"gmail_quote">2011/4/26 Greg KH <span dir=3D"ltr">&lt;=
-<a href=3D"mailto:gregkh@suse.de">gregkh@suse.de</a>&gt;</span><br><blockqu=
-ote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc s=
-olid;padding-left:1ex;">
-
-<div class=3D"im">On Tue, Apr 26, 2011 at 05:43:21PM +0900, MyungJoo Ham wr=
-ote:<br>
-&gt; With OPPs, a device may have multiple operable frequency and voltage<b=
-r>
-&gt; sets. However, there can be multiple possible operable sets and a syst=
-em<br>
-&gt; will need to choose one from them. In order to reduce the power<br>
-&gt; consumption (by reducing frequency and voltage) without affecting the<=
-br>
-&gt; performance too much, a DVFS scheme may be used.<br>
-<br>
-</div>What is &quot;DVFS&quot;? =A0A new filesystem?<br>
-<br>
-confused,<br>
-<br>
-greg k-h<br>
-<div><div></div><div class=3D"h5">_________________________________________=
-______<br>
-linux-pm mailing list<br>
-<a href=3D"mailto:linux-pm@lists.linux-foundation.org">linux-pm@lists.linux=
--foundation.org</a><br>
-<a href=3D"https://lists.linux-foundation.org/mailman/listinfo/linux-pm" ta=
-rget=3D"_blank">https://lists.linux-foundation.org/mailman/listinfo/linux-p=
-m</a><br>
-</div></div></blockquote></div><br>
-
---bcaec53f95d19efe2f04a1d36071--
-
---===============3869897883668699274==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============3869897883668699274==--
+-- 
+Hans-Christian Egtvedt
