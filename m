@@ -1,16 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH/RFC] MMC: remove unbalanced
-	pm_runtime_suspend()
-Date: Tue, 26 Apr 2011 13:51:59 +0200
-Message-ID: <201104261351.59622.rjw__23432.4891855524$1303818735$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1104221709030.1791-100000@iolanthe.rowland.org>
-	<201104251229.27263.rjw@sisk.pl>
-	<Pine.LNX.4.64.1104261239270.11811@axis700.grange>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [RFC PATCH v2 1/3] PM / Core: suspend_again callback
+ for device PM.
+Date: Tue, 26 Apr 2011 06:17:37 -0700
+Message-ID: <20110426131737.GA13597__3683.12147115848$1303824651$gmane$org@suse.de>
+References: <1303288106-2965-1-git-send-email-myungjoo.ham@samsung.com>
+	<1303781471-2477-1-git-send-email-myungjoo.ham@samsung.com>
+	<201104261347.21811.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.1104261239270.11811@axis700.grange>
+Content-Disposition: inline
+In-Reply-To: <201104261347.21811.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,132 +21,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-mmc@vger.kernel.org, linux-pm@lists.linux-foundation.org, Magnus Damm <damm@opensource.se>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, LKML <linux-kernel@vger.kernel.org>, kyungmin.park@samsung.com, MyungJoo Ham <myungjoo.ham@samsung.com>, "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>, "Jean Delvare (PC drivers core)" <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, April 26, 2011, Guennadi Liakhovetski wrote:
-> Hi
+On Tue, Apr 26, 2011 at 01:47:21PM +0200, Rafael J. Wysocki wrote:
+> Moreover, I'm not sure if kernel subsystems (including drivers) should really
+> decide when to generate wakeup signals in the first place.  Generally,
+> user space decides what devices should wake up the system from sleep and the
+> kernel should follow.  So, there shouldn't be any wakeup signals enabled
+> beyond what user space has requested.
 
-Hi,
+The RTC wakeup signals are ok though, right?  Userspace is the one
+asking for that from what I can tell.
 
-> On Mon, 25 Apr 2011, Rafael J. Wysocki wrote:
+> To conclude, I'm not sure about the approach.  In particular, I'm not sure
+> if the benefit is worth the effort and the resulting complications (ie. the
+> possibility of having to deal with wakeup signals not requested by user
+> space) seem to be a bit too far reaching.
 > 
-> > On Saturday, April 23, 2011, Rafael J. Wysocki wrote:
-> > > On Friday, April 22, 2011, Alan Stern wrote:
-> > > > On Fri, 22 Apr 2011, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > > The barrier would not prevent the race between the notifier and runtie PM
-> > > > > > from taking place.  Why don't we do something like this instead:
-> > > > > > 
-> > > > > > ---
-> > > > > >  drivers/base/dd.c |    3 ++-
-> > > > > >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > > > > > 
-> > > > > > Index: linux-2.6/drivers/base/dd.c
-> > > > > > ===================================================================
-> > > > > > --- linux-2.6.orig/drivers/base/dd.c
-> > > > > > +++ linux-2.6/drivers/base/dd.c
-> > > > > > @@ -326,6 +326,8 @@ static void __device_release_driver(stru
-> > > > > >  						     BUS_NOTIFY_UNBIND_DRIVER,
-> > > > > >  						     dev);
-> > > > > >  
-> > > > > > +		pm_runtime_put_sync(dev);
-> > > > > > +
-> > > > > 
-> > > > > In fact, I think this one may be _noidle.  If we allow the bus/driver
-> > > > > to do what they wont, we might as well let them handle the "device idle"
-> > > > > case from ->remove().
-> > > > 
-> > > > Maybe...  But keeping it put_sync doesn't do any harm.  In Guennadi's 
-> > > > case, it might allow him to get rid of the pm_runtime_suspend() call in 
-> > > > the remove routine.
-> > > > 
-> > > > > >  		if (dev->bus && dev->bus->remove)
-> > > > > >  			dev->bus->remove(dev);
-> > > > > >  		else if (drv->remove)
-> > > > > > @@ -338,7 +340,6 @@ static void __device_release_driver(stru
-> > > > > >  						     BUS_NOTIFY_UNBOUND_DRIVER,
-> > > > > >  						     dev);
-> > > > > >  
-> > > > > > -		pm_runtime_put_sync(dev);
-> > > > > >  	}
-> > > > > >  }
-> > > > 
-> > > > Basically this is okay with me, and it should allow Guennadi to avoid
-> > > > the extra put/get pair.
-> > > 
-> > > OK, so I'm going to put the appended patch into my linux-next branch
-> > > (hopefully, the problem is explained sufficiently in the changelog).
-> > 
-> > I thought about that a bit more and came to the conclusion that we should
-> > do things a bit differently in __device_release_driver().  Namely, the fact
-> > that the device can be resumed (either synchronously or asynchronously) after
-> > the pm_runtime_barrier() has returned may be problematic too, because it
-> > may race with the bus notifier in some cases.  For this reason, I think it
-> > would be better to do pm_runtime_get_sync() instead of the
-> > pm_runtime_get_noresume() and pm_runtime_barrier().
-> > 
-> > So, I think the appended patch would be better than the previous one.
-> 
-> I refrained in taking part in the general rtpm API behaviour, I'd rather 
-> rely on others here. If you push this your patch, I'll have to change my 
-> TMIO/SDHI and MMCIF patches as follows:
-> 
-> diff --git a/drivers/mmc/host/sh_mmcif.c b/drivers/mmc/host/sh_mmcif.c
-> index 1889d64..3a22e55 100644
-> --- a/drivers/mmc/host/sh_mmcif.c
-> +++ b/drivers/mmc/host/sh_mmcif.c
-> @@ -1117,6 +1117,8 @@ static int __devexit sh_mmcif_remove(struct platform_device *pdev)
->  	struct sh_mmcif_host *host = platform_get_drvdata(pdev);
->  	int irq[2];
->  
-> +	pm_runtime_get_sync(&pdev->dev);
-> +
->  	mmc_remove_host(host->mmc);
->  	sh_mmcif_release_dma(host);
->  
-> @@ -1137,7 +1139,6 @@ static int __devexit sh_mmcif_remove(struct platform_device *pdev)
->  	mmc_free_host(host->mmc);
->  	pm_runtime_put_sync(&pdev->dev);
->  	pm_runtime_disable(&pdev->dev);
-> -	pm_runtime_get_noresume(&pdev->dev);
->  
->  	return 0;
->  }
-> diff --git a/drivers/mmc/host/tmio_mmc_pio.c b/drivers/mmc/host/tmio_mmc_pio.c
-> index 26598f1..86eaa68 100644
-> --- a/drivers/mmc/host/tmio_mmc_pio.c
-> +++ b/drivers/mmc/host/tmio_mmc_pio.c
-> @@ -956,17 +956,9 @@ void tmio_mmc_host_remove(struct tmio_mmc_host *host)
->  	iounmap(host->ctl);
->  	mmc_free_host(host->mmc);
->  
-> -	/*
-> -	 * Now rtpm usage_count = 2, because we incremented it once in probe()
-> -	 * above, and dd.c incremented it again, before calling .release(). So.
-> -	 * to power the device down we have to decrement the counter to 0 and
-> -	 * suspend it, because after our disable() suspending from dd.c will
-> -	 * only decrement the counter, but not call any callbacks
-> -	 */
-> -	pm_runtime_put_noidle(&pdev->dev);
-> +	/* Compensate for pm_runtime_get_sync() in probe() above */
->  	pm_runtime_put_sync(&pdev->dev);
->  	pm_runtime_disable(&pdev->dev);
-> -	pm_runtime_get_noresume(&pdev->dev);
->  }
->  EXPORT_SYMBOL(tmio_mmc_host_remove);
+> Greg, what do you think?
 
-So you won't get the reversed _put/_get calls any more here, good. :-)
+I agree with you in that I don't think that this type of feature is
+valid at the moment.
 
-> Is this your patch final and shall I submit updated versions of my patches 
+I don't understand why our current situation doesn't work, what are we
+lacking that is needed for these systems that we have not seen before?
 
-This patch will be final if there are no objections from other people.
+What is the root problem that this is trying to solve?
 
-> or shall I wait for your patch to take its final form and hit "next?"
+thanks,
 
-It generally is better to wait for a patch to appear in linux-next before
-basing you work on top of it.
-
-Thanks,
-Rafael
+greg k-h
