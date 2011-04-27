@@ -1,19 +1,17 @@
-From: Colin Cross <ccross@google.com>
+From: Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: [RFC PATCH] PM: Introduce generic DVFS framework
  with device-specific OPPs
-Date: Wed, 27 Apr 2011 11:37:07 -0700
-Message-ID: <BANLkTinP0_qpF3sp8CzDy42i24wqqo7ohw__34976.9522938461$1303931729$gmane$org@mail.gmail.com>
+Date: Wed, 27 Apr 2011 21:00:48 +0200 (CEST)
+Message-ID: <alpine.LFD.2.02.1104272031320.3323__19493.8050852672$1303931729$gmane$org@ionos>
 References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
 	<201104261309.47629.rjw@sisk.pl>
 	<BANLkTi=tBYT4NpayaoAA1+f1uaj9QyT+Yw@mail.gmail.com>
 	<BANLkTi=GVZnZuXmbK54Swi8Nv9ZZGhZcNw@mail.gmail.com>
 	<BANLkTin4rrniJpOheLH=JE0jq7vFpdDbrA@mail.gmail.com>
-	<BANLkTi=WWASxk3Fz83324k40Lbq+ccAPeA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-75676391-1303930850=:3323"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=WWASxk3Fz83324k40Lbq+ccAPeA@mail.gmail.com>
+In-Reply-To: <BANLkTin4rrniJpOheLH=JE0jq7vFpdDbrA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,64 +22,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Menon, Nishanth" <nm@ti.com>
-Cc: Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org, linux-omap <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org, linux-omap <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-(sorry, missent the earlier one)
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Wed, Apr 27, 2011 at 11:07 AM, Menon, Nishanth <nm@ti.com> wrote:
+--8323328-75676391-1303930850=:3323
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id p3RJEYuT032233
+
+On Wed, 27 Apr 2011, Menon, Nishanth wrote:
 > On Wed, Apr 27, 2011 at 12:49, Colin Cross <ccross@google.com> wrote:
-> +l-o
->
->> I'm a little confused about the design for this, and OPP as well. =A0OPP
->> matches a struct device * and a frequency to a voltage, which is not a
->> generically useful pairing, as far as I can tell. =A0On Tegra, it is
->> quite possible for a single device to have multiple clocks that each
->> have different voltage requirements, for example the display block can
->> have an interface clock as well as a pixel clock. =A0Simplifying this to
->> dev + freq =3D voltage seems very OMAP specific, and will be difficult
->> or impossible to adapt to Tegra.
-> We have the same requirements as well(iclk,fclk,pixclk etc..)! We
-> group them under voltage domains in OMAP ;). if your issue was a
-> ability to have a single freq to a OPP, it is upto SoC to do the
-> proper mapping. Concept of an OPP still remains consistent - which is
-> for a voltage, there is only so much freq you can drive that specific
-> module to.
-No, that is still wrong. =A0You don't drive a module at a frequency, you
-drive a clock. =A0You can't map struct device * 1-1 to a clock. =A0Look at
-omap2_set_init_voltage:
-static int __init omap2_set_init_voltage(char *vdd_name, char *clk_name,
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0struct device *dev) {
-        ...
- =A0 =A0 =A0 =A0clk =3D =A0clk_get(NULL, clk_name);
- =A0 =A0 =A0 =A0freq =3D clk->rate;
- =A0 =A0 =A0 =A0opp =3D opp_find_freq_ceil(dev, &freq);
- =A0 =A0 =A0 =A0...
-}
-
-What happens if I have a dev with two frequencies?  I can only pass a
-dev into opp.  It makes infinitely more sense to pass in a clock:
-opp_find_freq_ceil(clk, &freq).
-
+> > I proposed in a different thread on LKML that DVFS be handled within
+> > the generic clock implementation. =A0Platforms would register a
+> > regulator and a table of voltages for each struct clock that required
+> > DVFS, and the voltages would be changed on normal clk_* requests.
+> > This maintains compatibility with existing clk_* calls.
+>=20
 > It is upto SoC frameworks to implement the transitions. E.g. lets look
 > at scalability: How'd the mechanism proposed work with temperature
 > variances: Example: I dont want to hit 1.5GHz if temp >70C - wont it
 > be an SoC specific hack I'd need to introduce?
-No, because you're putting it in the wrong place, that is a policy
-decision.  Handle it in the clock framework, or handle it in the
-device driver.  That's a bad example either way - what happens if you
-are already at 1.5GHz when the temperature crosses 70C?  You need an
-interrupt that tells you the temperature is too high, and than needs
-to affect a policy decision at a much higher level than dvfs.
 
->
+Why is limiting the max core frequency depending on temperature a SoC
+specific problem ?
+
+Everyone wants to do that. x86 does it in hardware / SMM, other
+architectures want the kernel to take care of it.
+
+So the decision is simple. Something wants to set core freq to 1.5
+GHz, so it calls clk_set_rate() and there we consult the DVFS code
+first to validate that setting. If it can be set, fine, then DVFS will
+set the voltages _before_ we change the frequency or it will simply
+veto the change because one of the preliminaries for such a change is
+not given.
+
+Please stop thinking that your SoC is sooo special. It's NOT.
+
+The HW concepts are quite similar all over the place, they are just
+named differently and use different IP blocks with slightly different
+functionality, but the problems are not unique to a particular SoC at
+all.
+
 > All OPP framework does is store that maps, and leaves it to users to
 > choose regulators, clock framework variances, SoC temperature sensors
 > or what ever mechanisms they choose to allow through a transition.
-I understand its just a map, but its a map between two things that
-don't have a direct mapping in many SoCs.  I think if you changed
-every usage of struct dev * in opp to struct clk *, it would make much
-more sense.  There is already a mapping from struct dev * to struct
-clk *, its called clk_get, and it takes a second parameter to allow
-devices to have multiple clocks.
+
+That's how it's implemented, but that does not say that the design is
+correct and usable for more than the usecase it was modeled after.
+=20
+We are looking into a common clock framework, which abstracts out the
+duplicated functionality of the various implementations and reduces
+them to the real thing: hardware drivers. So we really need to look
+into that DVFS problem as well, simply because it is tightly coupled
+and not a complete separate entity.
+
+And looking at the struct clk disaster we really don't want another
+incarnation in terms of DVFS where we end up with the same decision
+functions in various SoCs over and over.
+
+Thanks,
+
+	tglx
+--8323328-75676391-1303930850=:3323
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+--8323328-75676391-1303930850=:3323--
