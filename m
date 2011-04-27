@@ -1,18 +1,18 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [RFC PATCH v2 1/3] PM / Core: suspend_again callback
-	for device PM.
-Date: Wed, 27 Apr 2011 19:47:20 +0900
-Message-ID: <BANLkTik4v=8ME4p76dxboj_hs=m6P3EENA__30388.2149550647$1303901313$gmane$org@mail.gmail.com>
-References: <1303288106-2965-1-git-send-email-myungjoo.ham@samsung.com>
-	<20110426210627.GA28033@elf.ucw.cz>
-	<201104262346.58046.rjw@sisk.pl> <201104270032.42046.rjw@sisk.pl>
-	<BANLkTi=QDjBtY2WypXjYzyAOUGYjf_oRvw@mail.gmail.com>
-	<1303897603.4431.16.camel@oct.suse.cz>
+From: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [RFC PATCH] PM: Introduce generic DVFS
+	framework	with device-specific OPPs
+Date: Wed, 27 Apr 2011 14:36:37 +0100
+Message-ID: <20110427133637.GA25850@sirena.org.uk>
+References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
+	<20110426132224.GC13597@suse.de>
+	<BANLkTi=VFPZinH+1x0xBTP9o_s6+2gsA7w@mail.gmail.com>
+	<20110426205430.GA20381@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1303897603.4431.16.camel@oct.suse.cz>
+Content-Disposition: inline
+In-Reply-To: <20110426205430.GA20381@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,63 +22,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: zaurus-devel@www.linuxtogo.org, Len Brown <len.brown@intel.com>, thommycheck@gmail.com, "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>, Marek Vasut <marek.vasut@gmail.com>, dbaryshkov@gmail.com, Cyril Hrubis <metan@ucw.cz>, arminlitzel@web.de, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, lenz@cs.wisc.edu, kyungmin.park@samsung.com, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "Jean Delvare (PC drivers core)" <khali@linux-fr.org>, eric.y.miao@gmail.com, linux-pm@lists.linux-foundation.org, omegamoon@gmail.com
+To: Greg KH <gregkh@suse.de>
+Cc: Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBcHIgMjcsIDIwMTEgYXQgNjo0NiBQTSwgU3RhbmlzbGF2IEJyYWJlYyA8dXR4QHBl
-bmd1aW4uY3o+IHdyb3RlOgo+IE15dW5nSm9vIEhhbSB3cm90ZToKPgo+PiBBcyBsb25nIGFzIHN5
-c2RldnMgYXJlIHJlc3VtZWQgYW5kIHNvbWUgZGV2aWNlcy9zdWJzeXN0ZW1zIChJMkMtUE1JQywK
-Pj4gQURDLCBhbmQgUlRDIGluIG15IGNhc2VzKSBjYW4gYmUgc2VsZWN0aXZlbHkgcmVzdW1lZCBh
-bmQgc3VzcGVuZGVkLCBpdAo+PiBpcyBmaW5lLgo+PiBUaHVzLCB5b3VyICJhbHRlcm5hdGl2ZSIg
-c3VnZ2VzdGlvbiBpcyBwZXJmZWN0IHdpdGggbWUuIEFjdHVhbGx5LCB0aGlzCj4+IGlzIGFsbW9z
-dCBnb2luZyBiYWNrIHRvIHRoZSBvcmlnaW5hbCBoYWNrLiA9KQo+Pgo+PiBJJ2xsIHN1Ym1pdCBu
-ZXh0IHJldmlzaW9uIHdpdGggcGxhdGZvcm1fc3VzcGVuZF9vcHMgbGF0ZXIuCj4KPiBEb2VzIGtl
-cm5lbCBoYXZlIHNvbWV0aGluZyBsaWtlICJzbGVlcHkgdGFzayIgaW50ZXJmYWNlLCBlLiBnLiBz
-cGVjaWFsCj4gbW9kZSB0aGF0IGlzIHRyaWdnZXJlZCBieSBzb21lIHNvcnQgb2YgaW50ZXJydXB0
-IGFuZCBpbnN0ZWFkIG9mIGdvaW5nIHRvCj4gcGVyZm9ybSBmdWxsIHJlc3VtZSwgaXQganVzdCBs
-ZXRzIGEgaG9vayB0byB3YWtlIHVwICJtYW51YWxseSIgbmVlZGVkCj4gZGV2aWNlcywgcGVyZm9y
-bSB0aGUgInNsZWVweSB0YXNrIiBhbmQgdGhlbiB0ZWxsIHRoZSBzeXN0ZW0gd2hldGhlciBmdWxs
-Cj4gcmVzdW1lIGlzIHJlcXVlc3RlZD8KCk5vdCB0aGF0IEkga25vdyBvZi4gSSBkb24ndCBzZWUg
-YW55dGhpbmcgdGhhdCBzdG9wcyB0aGUgcmVzdW1pbmcgZmxvdwooZnVsbCByZXN1bWUgd2lsbCBi
-ZSBwZXJmb3JtZWQgYXQgYW55IHdha2V1cCBldmVudCBiZWZvcmUgdGhpcyBwYXRjaCkKClRoZSBw
-YXRjaCB0aGF0IGlzIGdvaW5nIHRvIGJlIHJldmlzZWQgYXMgbWVudGlvbmVkIHdpbGwgYWxsb3cg
-eW91IHRvIHBlcmZvcm0KMSkgIm1hbnVhbGx5IiB3YWtlIHVwIHNvbWUgZGV2aWNlcwoyKSBwZXJm
-b3JtICJzbGVlcHkgdGFza3MiCjMpICJtYW51YWxseSIgc3VzcGVuZCBkZXZpY2VzIHdha2VkIHVw
-IGF0IDEpCjQpIHRlbGwgdGhlIHN5c3RlbSB3aGV0aGVyIGZ1bGwgcmVzdW1lIGlzIHJlcXVlc3Rl
-ZC4KYXQgdGhlIHN1c3BlbmRfYWdhaW4gY2FsbGJhY2sgb2Ygc3RydWN0IHBsYXRmb3JtX3N1c3Bl
-bmRfb3BzIHN1c3BlbmRfb3BzLgoKSG93ZXZlciwgeW91IG1heSBuZWVkIHNvbWUgImhlbHBlcnMi
-IHRvIGRvIDEgYW5kIDMgZWFzaWx5LgoKQW55d2F5LCBmb3IgdGhlICJoZWxwZXJzIiBmb3IgMSkg
-YW5kIDMpLCBJIGV4cGVjdCB0aGF0IGFsbG93aW5nIHRoZQpvbmUgd2hvIHByb3ZpZGUgc3VzcGVu
-ZF9vcHMgdG8gcHJvdmlkZSBhIGxpc3Qgb2Ygc3RydWN0IGRldiBwb2ludGVycwp0aGF0IHJlcXVp
-cmVkIHdha2V1cCB3b3VsZCBiZSBlbm91Z2guCgpJJ2QgbG9vayBhdCB0aGlzIGlzc3VlIGFzIHdl
-bGwgYmVjYXVzZSBJIGhhdmUgdGhlIHNhbWUgaXNzdWUsIGJ1dCBJJ2QKZG8gaXQgc2VwYXJhdGVs
-eSB3aXRoIHRoZSAic3VzcGVuZF9hZ2FpbiIuCgo+Cj4gSXQgY2FuIGZpdCBmb3IgWmF1cnVzIGJh
-dHRlcnkgY2hhcmdpbmcgbW9uaXRvcmluZyAtIHRpbWVyIGludGVycnVwdAo+IG5lZWRzIHRvIHdh
-a2UganVzdCB0aGUgU1BJIGJ1cy4KPgo+IEJ1dCBJIGNhbiBpbWFnaW5lIGEgR1BTIGxvZ2dlciB1
-c2luZyBzdWNoIGludGVyZmFjZSB0byBzYXZlIGVuZXJneSAtCj4gc2VyaWFsIGludGVycnVwdCBz
-ZW1pLXdha2VzIHRoZSBzeXN0ZW0gZWFjaCBzZWNvbmQsIGJ1dCB3aWxsIG5vdCBnbyB0bwo+IGRv
-IGZ1bGwgcmVzdW1lLiBJdCBqdXN0IHByb2Nlc3NlcyBOTUVBIHNlbnRlbmNlIGFuZCBidWZmZXJz
-IHRoZSByZXN1bHQuCj4gT25seSBpZiBidWZmZXIgYmVjb21lcyBmdWxsLCBpdCBpc3N1ZXMgZnVs
-bCByZXN1bWUgYW5kIHdyaXRlcyBkYXRhCj4gc29tZXdoZXJlLgoKU3VyZSwgYXMgbG9uZyBhcyB0
-aGUgcGxhdGZvcm0gZmlsZSAob3IgbWFjaGluZS9ib2FyZCBmaWxlKSBoYXMgdGhlCnN1c3BlbmRf
-YWdhaW4gY2FsbGJhY2sgaW1wbGVtZW50ZWQgY29ycmVjdGx5LCBpdCB3aWxsIHdvcmsgYXMgeW91
-CmV4cGVjdGVkLgoKPgo+IC0tCj4gQmVzdCBSZWdhcmRzIC8gUyBwb3pkcmF2ZW0sCj4KPiBTdGFu
-aXNsYXYgQnJhYmVjCj4gc29mdHdhcmUgZGV2ZWxvcGVyCj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCj4gU1VTRSBM
-SU5VWCwgcy4gci4gby4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBlLW1h
-aWw6IHNicmFiZWNAc3VzZS5jego+IExpaG92YXJza8OhIDEwNjAvMTIgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqB0ZWw6ICs0OSA5MTEgNzQwNTM4NDU0Nwo+IDE5MCAw
-MCBQcmFoYSA5IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgZmF4OiArNDIwIDI4NCAwMjggOTUxCj4gQ3plY2ggUmVwdWJsaWMgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBodHRwOi8vd3d3LnN1c2UuY3ov
-Cj4KPgo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4g
-bGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKPiBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmlu
-ZnJhZGVhZC5vcmcKPiBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2xpbnV4LWFybS1rZXJuZWwKPgoKCkNoZWVycyEKCi0gTXl1bmdKb28KLS0gCk15dW5nSm9vIEhh
-bSAo7ZWo66qF7KO8KSwgUGguRC4KTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwKRGlnaXRh
-bCBNZWRpYSBhbmQgQ29tbXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKU2Ftc3VuZyBFbGVjdHJv
-bmljcwpjZWxsOiA4Mi0xMC02NzE0LTI4NTgKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Tue, Apr 26, 2011 at 01:54:30PM -0700, Greg KH wrote:
+> On Tue, Apr 26, 2011 at 10:45:18PM +0800, Jiejing.Zhang  wrote:
+
+> > I think DVFS here means ???Dynamic voltage and frequency scaling???,?? refering the
+> > first google's result:
+
+> Ok, if so, please spell it out.
+
+> Also, don't use 'dvfs' as a prefix in the kernel, too many other people
+> will think it is a filesystem.  How about "dynvolt"?
+
+> Or anything else, just no 'fs' in the name otherwise confusion will
+> reign.
+
+This really is the standard technical term for this, it's vanishingly
+rare for it to be a source of confusion in context.  We should at least
+mention the actual term in the documentation even if we invent our own
+name for it.
