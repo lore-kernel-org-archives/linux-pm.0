@@ -1,22 +1,21 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
+From: Colin Cross <ccross@google.com>
 Subject: Re: [RFC PATCH] PM: Introduce generic DVFS framework
  with device-specific OPPs
-Date: Thu, 28 Apr 2011 15:12:13 +0900
-Message-ID: <BANLkTi=Be3DrAUoPmgHpjhAVmN-Pi5Au7g__42185.0466206253$1303971201$gmane$org@mail.gmail.com>
+Date: Wed, 27 Apr 2011 23:43:48 -0700
+Message-ID: <BANLkTikVHs1n8fXEAZh6Q4io39eD9PG14w__16275.3869816244$1303973104$gmane$org@mail.gmail.com>
 References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
 	<201104261309.47629.rjw@sisk.pl>
 	<BANLkTi=tBYT4NpayaoAA1+f1uaj9QyT+Yw@mail.gmail.com>
 	<BANLkTi=GVZnZuXmbK54Swi8Nv9ZZGhZcNw@mail.gmail.com>
 	<BANLkTin4rrniJpOheLH=JE0jq7vFpdDbrA@mail.gmail.com>
 	<BANLkTi=WWASxk3Fz83324k40Lbq+ccAPeA@mail.gmail.com>
-	<BANLkTikEtTDp3Cpj0D5z34wA0_G_DWwKFg@mail.gmail.com>
-	<alpine.LFD.2.02.1104272104390.3323@ionos>
-	<BANLkTinWD0ktYKzR_jnQSE76AuW+Z1PSLw@mail.gmail.com>
+	<BANLkTinP0_qpF3sp8CzDy42i24wqqo7ohw@mail.gmail.com>
+	<BANLkTin-OMyrz=McN6X4TAZrvv3ehVBGew@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTinWD0ktYKzR_jnQSE76AuW+Z1PSLw@mail.gmail.com>
+In-Reply-To: <BANLkTin-OMyrz=McN6X4TAZrvv3ehVBGew@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,56 +25,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@google.com>
-Cc: "Menon, Nishanth" <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-omap <linux-omap@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: "Menon, Nishanth" <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, linux-omap <linux-omap@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBcHIgMjgsIDIwMTEgYXQgNTo0OCBBTSwgQ29saW4gQ3Jvc3MgPGNjcm9zc0Bnb29n
-bGUuY29tPiB3cm90ZToKPiBPbiBXZWQsIEFwciAyNywgMjAxMSBhdCAxMjoyNiBQTSwgVGhvbWFz
-IEdsZWl4bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+IHdyb3RlOgo+PiBGb3JnZXQgT01BUCBpbXBs
-ZW1lbnRhdGlvbiBkZXRhaWxzIGZvciBhIHdoaWxlLCBzaXQgYmFjayBhbmQgbG9vayBhdAo+PiB0
-aGUgYmlnIHBpY3R1cmUuCj4KPiBIZXJlJ3MgbXkgcHJvcG9zYWwgZm9yIERWRlM6Cj4gLSBEVkZT
-IGlzIGltcGxlbWVudGVkIGluIGRyaXZlcnMvY2xrL2R2ZnMuYywgYW5kIGlzIGNhbGxlZCBieSB0
-aGUKPiBjb21tb24gY2xvY2sgaW1wbGVtZW50YXRpb24gdG8gYWRqdXN0IHRoZSB2b2x0YWdlcywg
-aWYgbmVjZXNzYXJ5LCBvbgo+IHJlZ3VsYXIgY2xrXyogY2FsbHMuCj4gLSBQbGF0Zm9ybSBjb2Rl
-IHByb3ZpZGVzIG1hcHBpbmdzIGluIHRoZSBmb3JtIChjbGssIHJlZ3VsYXRvciwgbWF4Cj4gZnJl
-cXVlbmN5LCBtaW4gdm9sdGFnZSkgdG8gdGhlIGR2ZnMgY29kZS4KPiAtIEV2ZXJ5dGhpbmcgdGhh
-dCBpcyBpbiBPUFAgdG9kYXkgZ2V0cyBjb252ZXJ0ZWQgdG8gaGVscGVyIGZ1bmN0aW9ucwo+IGlu
-c2lkZSB0aGUgZHZmcyBpbXBsZW1lbnRhdGlvbiwgYW5kIGlzIG5ldmVyIGNhbGxlZCBmcm9tIFNv
-QyBjb2RlCj4gKGV4Y2VwdCB0byBwYXNzIHRhYmxlcyBhdCBpbml0KSwgb3IgZnJvbSBkcml2ZXJz
-Lgo+IC0gT1BQIGNhbiBiZSByZWNyZWF0ZWQgaW4gdGhlIGZ1dHVyZSBhcyBhIHVwcGVyIGxldmVs
-IHBvbGljeSBtYW5hZ2VyCj4gZm9yIGNsb2NrcyB0aGF0IG5lZWQgdG8gbW92ZSB0b2dldGhlciwg
-aWYgdGhhdCBpcyBldmVyIG5lY2Vzc2FyeS4gwqBJdAo+IHdvdWxkIG5vdCBrbm93IGFueXRoaW5n
-IGFib3V0IHZvbHRhZ2VzLgo+IC0gQSBmZXcgY29tbW9uIHBvbGljeSBpbXBsZW1lbnRhdGlvbnMg
-bmVlZCB0byBiZSBhZGRlZCB0byB0aGUgY29tbW9uCj4gY2xvY2sgaW1wbGVtZW50YXRpb24sIGxp
-a2UgdGVtcGVyYXR1cmUgbGltaXRzLgoKSSBob3BlIHRoYXQgbXkgcHJldmlvdXMgcmVwbHkgYW5z
-d2VyZWQgdGhpcy4KCj4KPiBGb3IgVGVncmE6Cj4gLSBEVkZTIGNvbnRpbnVlcyB0byBiZSBhY2Nl
-c3NlZCBieSBjYWxsaW5nIGNsa18qIGZ1bmN0aW9ucwo+Cj4gRm9yIE9NQVA6Cj4gLSBEVkZTIGlz
-IHRyaWdnZXJlZCBieSBod21vZCB0aHJvdWdoIGNsa18qIGZ1bmN0aW9ucy4gwqBBbnkgY3Jvc3Mt
-YXJjaAo+IGRyaXZlciBjYW4gY29udGludWUgdG8gY2FsbCBjbGtfKiBmdW5jdGlvbnMuCj4KPiBP
-UFAgY3VycmVudGx5IGhhcyBvcHBfZW5hYmxlIGFuZCBvcHBfZGlzYWJsZSBmdW5jdGlvbnMuIMKg
-SSBkb24ndAo+IHVuZGVyc3RhbmQgd2h5IHRoZXNlIGFyZSBuZWVkZWQsIHRoZXkgYXJlIG9ubHkg
-dXNlZCBhdCBpbml0IHRpbWUgdG8KPiBkZXRlcm1pbmUgYXZhaWxhYmxlIHZvbHRhZ2VzLCB3aGlj
-aCBjb3VsZCBiZSBoYW5kbGVkIGJ5IG5ldmVyIHBhc3NpbmcKPiB1bmF2YWlsYWJsZSB2b2x0YWdl
-cyB0byB0aGUgZHZmcyBpbXBsZW1lbnRhdGlvbi4KCldlIG5lZWQgdGhlbSBpbiBydW50aW1lLgoK
-QSBkZXZpY2UgImEiIG1heSB3YW50IHRvIGd1YXJhbnRlZSB0aGF0IGEgZGV2aWNlICJiIiB0byBi
-ZSBhdCBsZWFzdAoiMjAwTUh6IiBvciBmYXN0ZXIgd2hpbGUgaXQgZG9lcyBzb21lIG9wZXJhdGlv
-bnMuIFRoZW4sICJhIiB3aWxsCm9wcF9kaXNhYmxlKCJiIiwgMTAwTUh6IGFuZCBvdGhlcnMpOyBh
-bmQgb3BwX2VuYWJsZSgiYiIsIHRoZW0pIGxhdGVyCm9uLiBXZSBoYXZlIHNpbWlsYXIgaXNzdWVz
-IHdpdGggbXVsdGltZWRpYSBibG9ja3MgKE1GQywgQ2FtZXJhLCBGQiwKR1BVKSBhbmQgQ1BVL01l
-bW9yeSBCdXMuIE9uZGVtYW5kIGdvdmVybm9yIG9mIENQVUZSRVEgaGFzIHNvbWUgZGVsYXkKb24g
-Y2F0Y2hpbmcgdXAgYSB3b3JrbG9hZCAoMS41eCB0aGUgc2FtcGxpbmcgcmF0ZSBpbiBhdmVyYWdl
-LCA8Mi4weAp0aGUgc2FtcGxpbmcgcmF0ZSBpbiB3b3JzdCBjYXNlcyksIHdoaWNoIG1heSBpbmN1
-ciBmbGlja2VyaW5nL3RlYXJpbmcKaXNzdWVzIHdpdGggbXVsdGltZWRpYSBzdHJlYW1zLiBPbiB0
-aGUgb3RoZXIgaGFuZCwgYSBnZW5lcmFsIHRoZXJtYWwKbW9uaXRvciBvciBiYXR0ZXJ5IG1hbmFn
-ZXIgbWlnaHQgd2FudCB0byBsaW1pdCBlbmVyZ3kgdXNhZ2UgYnkKZGlzYWJsaW5nIHRvcCBwZXJm
-b3JtYW5jZSBjbG9ja3MgaWYgaXQgaXMgdG9vIGhvdCBvciB0aGUgYmF0dGVyeSBsZXZlbAppcyBs
-b3cuCgo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4g
-bGludXgtcG0gbWFpbGluZyBsaXN0Cj4gbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5v
-cmcKPiBodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8v
-bGludXgtcG0KPgoKCgotLSAKTXl1bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELgpNb2JpbGUg
-U29mdHdhcmUgUGxhdGZvcm0gTGFiLApEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAo
-RE1DKSBCdXNpbmVzcwpTYW1zdW5nIEVsZWN0cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQtMjg1OApf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
-YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Wed, Apr 27, 2011 at 10:59 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> What one instance of DVFS (devfreq) controls are clocks and
+> regulators. (a device may have multiple regulators as well as multiple
+> clocks)
+> What one instance of DVFS (devfreq) monitors (device load and/or
+> temperature) is a device that uses the clocks and regulators.
+>
+> If we focus on the things that are controlled by DVFS, connecting DVFS
+> with clock seems fine; however, DVFS's decision is based on the status
+> of the device and the decision (monitoring result) configures a set of
+> clocks and regulators. The clocks are not configured independently
+> from others if the clocks are used by a DVFS-capable device. The
+> frequency/voltage pair (OPP in this patch) associated with a device
+> becomes a representative value of a specific configuration that
+> configures the set of clocks and regulators.
+>
+> This is quite similar with CPUFREQ. CPUFREQ provides a single
+> frequency value as a result of monitoring; however the machine's
+> cpufreq driver may set multiple clocks and multiple voltage regulators
+> based on the representative value (which is usually the core clock)
+> although the cpufreq driver may need to control many more clocks with
+> different frequencies.
+>
+> With multiple clocks of a device, if there is a clock that is required
+> to be set independently from the "representative" clock with DVFS, it
+> means that the DVFS monitoring result (load/temperature) is not a
+> scalar value but a vector (multi-dimensional value). That implies that
+> we need to monitor different and independent values, which in turn,
+> implies that we need separated devices. Note that the DVFS monitor
+> result from load and temperature combined is not a multi-dimensional
+> value because the temperature limits "maximum possible frequency or
+> voltage" and the load gives "preferred lower bound of frequency" that
+> can be overridden by the limit set by temperature.
+>
+> Therefore, having one DVFS per clock where multiple clocks are
+> attached to a device will create multiple monitors that monitor the
+> same object(device behavior) with same metrics (load and temperature).
+>
+> Besides, the reason I've started with "target" callback, not clk and
+> regulator names or pointers is that a device may have multiple clks
+> and regulators and the OPP may only show the representative
+> clock/regulators as CPUFREQ does. Especially when the order of
+> transitions of those multiple clocks and regulators matter (if they
+> are in a single device, it sometimes does), running a DVFS per clock,
+> not per device, will be bothersome if not disasterous.
+
+I understand the need for some sort of governor that can use device
+state to determine the necessary clock frequencies.  Where I disagree
+is the connection to voltages.  The governor should ONLY determine the
+frequencies desired, and the voltage required to meet those
+frequencies should be determined by the clock framework, based only on
+the clock and the frequency.
