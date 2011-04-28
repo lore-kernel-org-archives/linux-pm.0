@@ -1,8 +1,8 @@
-From: Colin Cross <ccross@google.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
 Subject: Re: [RFC PATCH] PM: Introduce generic DVFS framework
  with device-specific OPPs
-Date: Wed, 27 Apr 2011 23:44:46 -0700
-Message-ID: <BANLkTiniJUgTTDh7SF8yNMeSMa+JYM21wA__6041.40160508013$1303973149$gmane$org@mail.gmail.com>
+Date: Thu, 28 Apr 2011 15:50:02 +0900
+Message-ID: <BANLkTimzWyvcBV2ymxaMf=HmRhGYBboB1w__126.300662714307$1303973463$gmane$org@mail.gmail.com>
 References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
 	<201104261309.47629.rjw@sisk.pl>
 	<BANLkTi=tBYT4NpayaoAA1+f1uaj9QyT+Yw@mail.gmail.com>
@@ -13,11 +13,13 @@ References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
 	<alpine.LFD.2.02.1104272104390.3323@ionos>
 	<BANLkTinWD0ktYKzR_jnQSE76AuW+Z1PSLw@mail.gmail.com>
 	<BANLkTi=Be3DrAUoPmgHpjhAVmN-Pi5Au7g@mail.gmail.com>
+	<BANLkTiniJUgTTDh7SF8yNMeSMa+JYM21wA@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=Be3DrAUoPmgHpjhAVmN-Pi5Au7g@mail.gmail.com>
+In-Reply-To: <BANLkTiniJUgTTDh7SF8yNMeSMa+JYM21wA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,31 +29,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
+To: Colin Cross <ccross@google.com>
 Cc: "Menon, Nishanth" <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-omap <linux-omap@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 27, 2011 at 11:12 PM, MyungJoo Ham <myungjoo.ham@samsung.com> w=
-rote:
-> On Thu, Apr 28, 2011 at 5:48 AM, Colin Cross <ccross@google.com> wrote:
->> OPP currently has opp_enable and opp_disable functions. =A0I don't
->> understand why these are needed, they are only used at init time to
->> determine available voltages, which could be handled by never passing
->> unavailable voltages to the dvfs implementation.
->
-> We need them in runtime.
->
-> A device "a" may want to guarantee that a device "b" to be at least
-> "200MHz" or faster while it does some operations. Then, "a" will
-> opp_disable("b", 100MHz and others); and opp_enable("b", them) later
-> on. We have similar issues with multimedia blocks (MFC, Camera, FB,
-> GPU) and CPU/Memory Bus. Ondemand governor of CPUFREQ has some delay
-> on catching up a workload (1.5x the sampling rate in average, <2.0x
-> the sampling rate in worst cases), which may incur flickering/tearing
-> issues with multimedia streams. On the other hand, a general thermal
-> monitor or battery manager might want to limit energy usage by
-> disabling top performance clocks if it is too hot or the battery level
-> is low.
-
-That sounds like a very strange api, when what you really mean is
-clk_set_min_rate or clk_set_max_rate.
+T24gVGh1LCBBcHIgMjgsIDIwMTEgYXQgMzo0NCBQTSwgQ29saW4gQ3Jvc3MgPGNjcm9zc0Bnb29n
+bGUuY29tPiB3cm90ZToKPiBPbiBXZWQsIEFwciAyNywgMjAxMSBhdCAxMToxMiBQTSwgTXl1bmdK
+b28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+IHdyb3RlOgo+PiBPbiBUaHUsIEFwciAy
+OCwgMjAxMSBhdCA1OjQ4IEFNLCBDb2xpbiBDcm9zcyA8Y2Nyb3NzQGdvb2dsZS5jb20+IHdyb3Rl
+Ogo+Pj4gT1BQIGN1cnJlbnRseSBoYXMgb3BwX2VuYWJsZSBhbmQgb3BwX2Rpc2FibGUgZnVuY3Rp
+b25zLiDCoEkgZG9uJ3QKPj4+IHVuZGVyc3RhbmQgd2h5IHRoZXNlIGFyZSBuZWVkZWQsIHRoZXkg
+YXJlIG9ubHkgdXNlZCBhdCBpbml0IHRpbWUgdG8KPj4+IGRldGVybWluZSBhdmFpbGFibGUgdm9s
+dGFnZXMsIHdoaWNoIGNvdWxkIGJlIGhhbmRsZWQgYnkgbmV2ZXIgcGFzc2luZwo+Pj4gdW5hdmFp
+bGFibGUgdm9sdGFnZXMgdG8gdGhlIGR2ZnMgaW1wbGVtZW50YXRpb24uCj4+Cj4+IFdlIG5lZWQg
+dGhlbSBpbiBydW50aW1lLgo+Pgo+PiBBIGRldmljZSAiYSIgbWF5IHdhbnQgdG8gZ3VhcmFudGVl
+IHRoYXQgYSBkZXZpY2UgImIiIHRvIGJlIGF0IGxlYXN0Cj4+ICIyMDBNSHoiIG9yIGZhc3RlciB3
+aGlsZSBpdCBkb2VzIHNvbWUgb3BlcmF0aW9ucy4gVGhlbiwgImEiIHdpbGwKPj4gb3BwX2Rpc2Fi
+bGUoImIiLCAxMDBNSHogYW5kIG90aGVycyk7IGFuZCBvcHBfZW5hYmxlKCJiIiwgdGhlbSkgbGF0
+ZXIKPj4gb24uIFdlIGhhdmUgc2ltaWxhciBpc3N1ZXMgd2l0aCBtdWx0aW1lZGlhIGJsb2NrcyAo
+TUZDLCBDYW1lcmEsIEZCLAo+PiBHUFUpIGFuZCBDUFUvTWVtb3J5IEJ1cy4gT25kZW1hbmQgZ292
+ZXJub3Igb2YgQ1BVRlJFUSBoYXMgc29tZSBkZWxheQo+PiBvbiBjYXRjaGluZyB1cCBhIHdvcmts
+b2FkICgxLjV4IHRoZSBzYW1wbGluZyByYXRlIGluIGF2ZXJhZ2UsIDwyLjB4Cj4+IHRoZSBzYW1w
+bGluZyByYXRlIGluIHdvcnN0IGNhc2VzKSwgd2hpY2ggbWF5IGluY3VyIGZsaWNrZXJpbmcvdGVh
+cmluZwo+PiBpc3N1ZXMgd2l0aCBtdWx0aW1lZGlhIHN0cmVhbXMuIE9uIHRoZSBvdGhlciBoYW5k
+LCBhIGdlbmVyYWwgdGhlcm1hbAo+PiBtb25pdG9yIG9yIGJhdHRlcnkgbWFuYWdlciBtaWdodCB3
+YW50IHRvIGxpbWl0IGVuZXJneSB1c2FnZSBieQo+PiBkaXNhYmxpbmcgdG9wIHBlcmZvcm1hbmNl
+IGNsb2NrcyBpZiBpdCBpcyB0b28gaG90IG9yIHRoZSBiYXR0ZXJ5IGxldmVsCj4+IGlzIGxvdy4K
+Pgo+IFRoYXQgc291bmRzIGxpa2UgYSB2ZXJ5IHN0cmFuZ2UgYXBpLCB3aGVuIHdoYXQgeW91IHJl
+YWxseSBtZWFuIGlzCj4gY2xrX3NldF9taW5fcmF0ZSBvciBjbGtfc2V0X21heF9yYXRlLgoKRXNz
+ZW50aWFsbHksIHRoYXQncyB3aGF0IG5lZWRlZC4KSG93ZXZlciwgd2l0aCBjbGtfc2V0X21pbi9t
+YXhfcmF0ZSwgZG9uJ3Qgd2UgbmVlZCB0byBsZXQgYW5vdGhlcgpkZXZpY2UgdG8gYmUgY29uc3Vt
+ZXIgb2Ygb3RoZXIgZGV2aWNlcycgY2xvY2tzPyBOb3QganVzdCBpbnRyb2R1Y2luZyBhCmRldmlj
+ZSB0byBvdGhlciBkZXZpY2VzPwoKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwo+IGxpbnV4LXBtIG1haWxpbmcgbGlzdAo+IGxpbnV4LXBtQGxpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnCj4gaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBtCj4KCgoKLS0gCk15dW5nSm9vIEhhbSAo7ZWo66qF7KO8
+KSwgUGguRC4KTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwKRGlnaXRhbCBNZWRpYSBhbmQg
+Q29tbXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKU2Ftc3VuZyBFbGVjdHJvbmljcwpjZWxsOiA4
+Mi0xMC02NzE0LTI4NTgKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRp
+b24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5m
+by9saW51eC1wbQ==
