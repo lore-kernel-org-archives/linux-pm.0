@@ -1,23 +1,12 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [RFC PATCH] PM: Introduce generic DVFS
-	framework	with device-specific OPPs
-Date: Thu, 28 Apr 2011 13:19:15 +0100
-Message-ID: <20110428121909.GB26116__34190.5362126001$1303993251$gmane$org@sirena.org.uk>
-References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
-	<201104261309.47629.rjw@sisk.pl>
-	<BANLkTi=tBYT4NpayaoAA1+f1uaj9QyT+Yw@mail.gmail.com>
-	<BANLkTi=GVZnZuXmbK54Swi8Nv9ZZGhZcNw@mail.gmail.com>
-	<BANLkTin4rrniJpOheLH=JE0jq7vFpdDbrA@mail.gmail.com>
-	<BANLkTi=WWASxk3Fz83324k40Lbq+ccAPeA@mail.gmail.com>
-	<BANLkTikEtTDp3Cpj0D5z34wA0_G_DWwKFg@mail.gmail.com>
-	<alpine.LFD.2.02.1104272104390.3323@ionos>
-	<BANLkTinWD0ktYKzR_jnQSE76AuW+Z1PSLw@mail.gmail.com>
+From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Subject: [RFC PATCH V4 0/4] cpuidle: global registration of idle
+	states with	per-cpu statistics
+Date: Thu, 28 Apr 2011 22:02:10 +0530
+Message-ID: <20110428163201.4868.6984.stgit__18267.2447212555$1304008414$gmane$org@tringupt.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <BANLkTinWD0ktYKzR_jnQSE76AuW+Z1PSLw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,19 +16,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@google.com>
-Cc: "Menon, Nishanth" <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-omap <linux-omap@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: arjan@linux.intel.com, peterz@infradead.org, lenb@kernel.org, venki@google.com, ak@linux.intel.com, len.brown@intel.com, khilman@ti.com
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 27, 2011 at 01:48:52PM -0700, Colin Cross wrote:
+The following patch series implements global registration of cpuidle
+states, and also has the necessary data structure changes to
+accommodate the per-cpu writable members of the cpuidle_states
+structure.
 
-> OPP currently has opp_enable and opp_disable functions.  I don't
-> understand why these are needed, they are only used at init time to
-> determine available voltages, which could be handled by never passing
-> unavailable voltages to the dvfs implementation.
+Previous version of the series (V3) is at 
+https://lkml.org/lkml/2011/4/20/23
 
-I queried this when OPP was originally added.  The motivation which was
-given (which seemed fairly reasonable) was to reduce the number of data
-tables for similar parts and board designs.  That did seem like
-something which it was reasonable to factor out in some way, though
-possibly with a different mechanism.
+This series applies on 2.6.39-rc5 with Len Brown's pm_idle() cleanup
+version 3 (https://lkml.org/lkml/2011/4/2/8) plus the patch 
+https://lkml.org/lkml/diff/2011/4/25/54/1
+
+Changes from previous version (V3):
+
+1. Compile tested for ARM using the following configs: da8xx_omapl_defconfig,
+  kirkwood_defconfig, stamp9g20_defconfig, omap2plus_defconfig. Boot tested on
+  Panda SoC (OMAP4430) but it doesn't really use cpuidle.
+
+2. Boot tested on x86 nehalem with multiple C-states for both intel_idle
+  and acpi_idle drivers. 
+
+3. Boot tested on T60p thinkpad that has T2600 cpu with multiple C-states.
+  Additionally tested the case when C-state tables change on 
+  AC <-> Battery power switch.
+
+4. De-duplicated code in [1/4] and moved common code related to
+  update of cpuidle statistics to drivers/cpuidle/cpuidle.c
+
+5. Handled the case when acpi_processor_cst_has_changed() is called on x86
+  on switching power from AC <-> Battery. The implementation is just 
+  a prototype. Please provide suggestions.
+
+
+Brief description of the patches:
+
+The core change in this series is to split the cpuidle_device structure 
+into parts that can be global and parts that has to remain per-cpu. 
+The per-cpu pieces are mostly generic statistics that can be independent 
+of current running driver. As a result of these changes, there is single 
+copy of cpuidle_states structure and single registration done by one 
+cpu. The low level driver is free to set per-cpu driver data on
+each cpu if needed using the cpuidle_set_statedata() as the case
+today. Only in very rare cases asymmetric C-states exist which can be 
+handled within the cpuidle driver. Most architectures do not have 
+asymmetric C-states.
+
+First two patches in the series facilitate splitting of cpuidle_states
+and cpuidle_device structure and next two patches do the actual split,
+change the API's and make existing code follow the changed API.
+
+[1/4] - Move the idle residency accounting part from cpuidle.c to
+  the respective low level drivers, so that the accounting can
+  be accurately maintained if the driver decides to demote the
+  chosen (suggested) by the governor.
+
+[2/4] - removes the cpuidle_device()->prepare API since is is not
+  widely used and the only use case was to allow software
+  demotion using CPUIDLE_FLAG_IGNORE flag.  Both these
+  functions can be absorbed within the cpuidle back-end
+  driver ad hence deprecating the prepare routine and the
+  CPUIDLE_FLAG_IGNORE flag.
+
+  - Ref: https://lkml.org/lkml/2011/3/25/52
+
+[3/4] - Splits the usage statistics (read/write) part out of
+  cpuidle_state structure, so that the states can become read
+  only and hence made global.
+
+[4/4] - most APIs will now need to pass pointer to both global
+   cpuidle_driver and per-cpu cpuidle_device structure.
+
+Thanks,
+-Trinabh
