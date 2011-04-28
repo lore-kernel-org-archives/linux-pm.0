@@ -1,18 +1,25 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
+From: Colin Cross <ccross@google.com>
 Subject: Re: [RFC PATCH] PM: Introduce generic DVFS framework
  with device-specific OPPs
-Date: Thu, 28 Apr 2011 15:54:48 +0900
-Message-ID: <BANLkTi==5zpS4=5zstYBC3rNX4-j2-3zDA@mail.gmail.com>
+Date: Thu, 28 Apr 2011 00:06:01 -0700
+Message-ID: <BANLkTik6L8HkJ0YjQYjh_3eEmbffyk1kRA__4999.85312712869$1303974427$gmane$org@mail.gmail.com>
 References: <1303807401-16350-1-git-send-email-myungjoo.ham@samsung.com>
 	<201104261309.47629.rjw@sisk.pl>
 	<BANLkTi=tBYT4NpayaoAA1+f1uaj9QyT+Yw@mail.gmail.com>
-	<201104271546.12757.rjw@sisk.pl>
-Reply-To: myungjoo.ham@gmail.com
+	<BANLkTi=GVZnZuXmbK54Swi8Nv9ZZGhZcNw@mail.gmail.com>
+	<BANLkTin4rrniJpOheLH=JE0jq7vFpdDbrA@mail.gmail.com>
+	<BANLkTi=WWASxk3Fz83324k40Lbq+ccAPeA@mail.gmail.com>
+	<BANLkTikEtTDp3Cpj0D5z34wA0_G_DWwKFg@mail.gmail.com>
+	<alpine.LFD.2.02.1104272104390.3323@ionos>
+	<BANLkTinWD0ktYKzR_jnQSE76AuW+Z1PSLw@mail.gmail.com>
+	<BANLkTi=Be3DrAUoPmgHpjhAVmN-Pi5Au7g@mail.gmail.com>
+	<BANLkTiniJUgTTDh7SF8yNMeSMa+JYM21wA@mail.gmail.com>
+	<BANLkTimzWyvcBV2ymxaMf=HmRhGYBboB1w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104271546.12757.rjw@sisk.pl>
+In-Reply-To: <BANLkTimzWyvcBV2ymxaMf=HmRhGYBboB1w@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,108 +29,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org
+To: myungjoo.ham@gmail.com
+Cc: "Menon, Nishanth" <nm@ti.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-omap <linux-omap@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBcHIgMjcsIDIwMTEgYXQgMTA6NDYgUE0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyandA
-c2lzay5wbD4gd3JvdGU6Cj4gT24gV2VkbmVzZGF5LCBBcHJpbCAyNywgMjAxMSwgTXl1bmdKb28g
-SGFtIHdyb3RlOgo+PiBIZWxsbywKPj4KPj4gMjAxMS80LzI2IFJhZmFlbCBKLiBXeXNvY2tpIDxy
-andAc2lzay5wbD46Cj4+ID4gSGksCj4+ID4KPiAuLi4KPj4gPj4gKwo+PiA+PiArLyoqCj4+ID4+
-ICsgKiBkdmZzX3RpY2tsZV9kZXZpY2UoKSAtIEd1YXJhbnRlZSBtYXhpbXVtIG9wZXJhdGlvbiBz
-cGVlZCBmb3IgYSB3aGlsZQo+PiA+PiArICogwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgaW5z
-dGFuZW91c2x5Lgo+PiA+PiArICogQGRldjogwqAgwqAgdGhlIGRldmljZSB0byBiZSB0aWNrbGVk
-Lgo+PiA+PiArICogQGR1cmF0aW9uX21zOiDCoCDCoCB0aGUgZHVyYXRpb24gb2YgdGlja2xlIGVm
-ZmVjdC4KPj4gPj4gKyAqCj4+ID4+ICsgKiBUaWNrbGUgc2V0cyB0aGUgZGV2aWNlIGF0IHRoZSBt
-YXhpbXVtIGZyZXF1ZW5jeSBpbnN0YW5lb3VzbHkgYW5kCj4+ID4+ICsgKiB0aGUgbWF4aW11bCBm
-cmVxdWVuY3kgaXMgZ3VhcmFudGVlZCB0byBiZSB1c2VkIGZvciB0aGUgZ2l2ZW4gZHVyYXRpb24u
-Cj4+ID4gwqAgwqAgwqAgwqAgwqBeXl5eXl5eCj4+ID4gSSBndWVzcyB0aGF0IHNob3VsZCBiZSAi
-bWF4aW11bSIuCj4+Cj4+IFllcy4gOikKPj4KPj4gPgo+PiA+PiArICogRm9yIGZhc3RlciB1c2Vy
-IHJlcG9uc2UgdGltZSwgYW4gaW5wdXQgZXZlbnQgbWF5IHRpY2tsZSBhIHJlbGF0ZWQgZGV2aWNl
-Cj4+ID4+ICsgKiBzbyB0aGF0IHRoZSBpbnB1dCBldmVudCBkb2VzIG5vdCBuZWVkIHRvIHdhaXQg
-Zm9yIHRoZSBEVkZTIHRvIHJlYWN0IHdpdGgKPj4gPj4gKyAqIG5vcm1hbCBpbnRlcnZhbC4KPj4g
-Pj4gKyAqLwo+PiA+Cj4+ID4gQ2FuIHlvdSBleHBsYWluIGhvdyB0aGlzIGZ1bmN0aW9uIGlzIHN1
-cHBvc2VkIHRvIGJlIHVzZWQsIHBsZWFzZT8KPj4KPj4gT2ssIEknbGwgc2hvdyB5b3UgYSB1c2Fn
-ZSBleGFtcGxlCj4+Cj4+IFRoZSBzeXN0ZW06IGEgdG91Y2hzY3JlZW4gYmFzZWQgY29tcHV0ZXIg
-d2l0aCBEVkZTJ2FibGUgR1BVLgo+PiBVc2UgY2FzZTogYSB1c2VyIHNjcm9sbHMgdGhlIHNjcmVl
-biB3aXRoIGZpbmdlcnMgc3VkZGVubHkuICh0aGluayBvZgo+PiBhbiBpUGhvbmUgb3IgQW5kcm9p
-ZCBkZXZpY2UncyBob21lIHNjcmVlbiBmaWxsZWQgd2l0IGljb25zKQo+PiBXaGlsZSB0aGVyZSBp
-cyBubyB0b3VjaHNjcmVlbiBpbnB1dCAodGh1cywgdGhlIHNjcmVlbiBkb2VzIG5vdCBtb3ZlCj4+
-IGZhc3QpLCB3ZSBkbyBub3QgdXNlIEdQVSB0b28gbXVjaDsgdGh1cyBpdCBpcyBzY2FsZWQgdG8g
-cnVuIGF0IHNsb3dlcgo+PiByYXRlIChsZXQncyBzYXkgMTAwTUh6KS4KPj4gSWYgYSB1c2VyIHN1
-ZGRlbmx5IHRvdWNoZXMgc2NyZWVuIGFuZCBzdGFydHMgbW92aW5nLCB0aGUgc2NyZWVuIHNob3Vs
-ZAo+PiBmb2xsb3cgaXQ7IHRodXMsIHJlcXVpcmVzIG11Y2ggb3V0cHV0IGZyb20gR1BVLgo+PiBX
-aXRoIG5vcm1hbCBEVkZTLUdQVSwgaXQgd291bGQgdGFrZSBzb21lIHRpbWUgdG8gc3BlZWQgaXQg
-dXAgYmVjYXVzZQo+PiBpdCBzaG91bGQgbW9uaXRvciB0aGUgR1BVIHVzYWdlIGFuZCByZWFjdCBh
-ZnRlcndhcmRzLgo+Pgo+PiBXaXRoIHRoZSBBUEkgZ2l2ZW4sICJ0aWNrbGUiIG1heSBiZSBpbmNs
-dWRlZCBpbiB0aGUgdXNlciBpbnB1dCBldmVudC4KPj4gU28gdGhhdCBHUFUgY2FuIGJlIHNjYWxl
-ZCB0byBtYXhpbXVtIGZyZXF1ZW5jeSBpbW1lZGlhdGVseS4KPgo+IFNvIGluIHRoaXMgY2FzZSB0
-aGUgaW5wdXQgc3Vic3lzdGVtIHdvdWxkIGJlIGNhbGxpbmcgZHZmc190aWNrbGVfZGV2aWNlKCkK
-PiAob3Igd2hhdGV2ZXIgaXQgaXMgZmluYWxseSBjYWxsZWQpIGZvciB0aGUgR1BVLCByaWdodD8K
-ClllcywgdGhhdCdzIGNvcnJlY3QuIFRoZSBpbnB1dCBzdWJzeXN0ZW0gc2hvdWxkIHNvbWVob3cg
-InRpY2tsZSIgYQpEVkZTIGRldmljZSAoR1BVIGluIHRoaXMgY2FzZSkuIFdpdGggQ1BVRlJFUS1U
-aWNrbGUgKG5ldmVyIHVwc3RyZWFtZWQKYW55d2F5KSwgd2UgaGF2ZSBiZWVuIGRvaW5nIHRoaXMg
-YnkgYWRkaW5nIHRpY2tsZSBhcyBhbiAiaW5wdXQgZXZlbnQiCmF0IGJvYXJkIGZpbGUgKGkuZS4s
-IGFyY2gvYXJtL21hY2gtKi9tYWNoLSouYykuCgo+Cj4gSSdtIGFmcmFpZCB5b3UnZCBuZWVkIGEg
-dXNlciBzcGFjZSBpbnRlcmZhY2UgZm9yIHRoYXQgYW5kIGxldCB0aGUKPiBhcHBsaWNhdGlvbiAo
-b3IgbGlicmFyeSkgaGFuZGxpbmcgdGhlIHRvdWNocGFkIGlucHV0IGNvbnRyb2wgdGhlICJ0aWNr
-bGUiLgo+IE90aGVyd2lzZSBpdCB3b3VsZCBiZSBkaWZmaWN1bHQgdG8gYXJyYW5nZSB0aGluZ3Mg
-Y29ycmVjdGx5ICh0aGUgYXNzb2NpYXRpb24KPiBiZXR3ZWVuIHRoZSBpbnB1dCBzdWJzeXN0ZW0g
-YW5kIHRoZSBHUFUgaXMgbm90IG9idmlvdXMgYXQgdGhlIGtlcm5lbCBsZXZlbCkuCj4KCkNyZWF0
-aW5nIGEgdXNlciBzcGFjZSBpbnRlcmZhY2UgdG8gY29ubmVjdCBhbiBpbnB1dCBldmVudCAob3Ig
-YW55Cm90aGVyIHVzZXIgc3BhY2UgZXZlbnQpIHdpdGggYSBEVkZTIChsaWtlCi9zeXMvZGV2aWNl
-cy9zeXN0ZW0vY3B1L2NwdXgvY3B1ZnJlcS8uLi4pIHdpbGwgcHJvdmlkZSB0aGUgZmxleGliaWxp
-dHkKZm9yIHVzZXIgc3BhY2UgdG8gdGlja2xlIGFsdGhvdWdoIGl0IG1pZ2h0IG5vdCBiZSBhcyBl
-ZmZpY2llbnQgYXMgdGhlCmFwcHJvYWNoIGluIHRoZSBwcmV2aW91cyBwYXJhZ3JhcGggaW4gdGhl
-IG1ldHJpYyBvZiBob3cgbXVjaCByZXNwb25zZQp0aW1lIGlzIHJlZHVjZWQuIFdlIG1heSBkbyB0
-aGF0IGJ5IGFsbG93aW5nIHNvbWV0aGluZyBsaWtlIHRoaXM6ICJlY2hvCjAgPiAvc3lzL2NsYXNz
-L2RldmZyZXEvZGV2bmFtZS4wL3RpY2tsZSIgb3IgZXZlbiAiZWNobzAgPgovc3lzL2NsYXNzL2Rl
-dmZyZXEvdGlja2xlX2FsbCIKCj4gSWRlYWxseSwgdGhvdWdoLCB0aGUgd29ya2luZyBPUFAgZm9y
-IHRoZSBHUFUgc2hvdWxkIGRlcGVuZCBvbiB0aGUgbnVtYmVyIG9mCj4gcHJvY2Vzc2luZyByZXF1
-ZXN0cyBwZXIgYSB1bml0IG9mIHRpbWUsIHByZXR0eSBtdWNoIGxpa2UgZm9yIGEgQ1BVLgoKQXMg
-bG9uZyBhcyB3ZSBtZWFzdXJlIHdvcmtsb2FkIChudW1iZXIgb2YgcmVxdWVzdHMgb3Igb3BlcmF0
-aW9ucyBwZXIKdW5pdCB0aW1lKSBwZXJpb2RpY2FsbHksIHdlIGhhdmUgdGhlIGlzc3VlIG1lbnRp
-b25lZCB0aGF0IGNhbiBiZQptaXRpZ2F0ZWQgYnkgdGlja2xpbmcuIElkZWFsbHksIGlmIHdlIGNh
-biBjb3VudCBlYWNoIG9wZXJhdGlvbiBhdApkZXZpY2UgZHJpdmVyLCB3ZSBkbyBub3QgbmVlZCB0
-aWNrbGluZyBiZWNhdXNlIHdlIGNhbiBtb25pdG9yIHRoZQp3b3JrbG9hZCB3aXRoIHBlci1vcGVy
-YXRpb24gYmFzaXMgbm90IHBlci1zYW1wbGluZy10aW1lIGJhc2lzLiBJZiBpdAppcyBhIGRldmlj
-ZSB3aXRoIC4uIGxpa2UgLi4gMTAwMCBvcGVyYXRpb25zL3NlYywgaXQgbWlnaHQgYmUgZmVhc2li
-bGUuCkhvd2V2ZXIsIEdQVXMgbWF5IGhhdmUgbGlrZSBvdmVyIDEwMCwwMDAsMDAwIG9wZXJhdGlv
-bnMvc2VjIGFuZCB3ZSdkCmJldHRlciBqdXN0IG1vbml0b3IgdGhlbSBwZXJpb2RpY2FsbHkuIEJl
-c2lkZXMsIGRldmljZXMgaW5jbHVkaW5nIG1hbnkKR1BVcyBhbGxvdyBETUEgYW5kIHVzZXItYWRk
-cmVzc2FibGUgbWVtb3J5IHdpdGhvdXQgZGV2aWNlIGRyaXZlcgppbnRlcnZlbnRpb24gZm9yIG5v
-cm1hbCBvcGVyYXRpb25zIG9uY2UgdGhlIGRldmljZSBpcyBjb25maWd1cmVkLgpUaHVzLCBkZXZp
-Y2UgZHJpdmVyIHdvdWxkbid0IGtub3cgYW55dGhpbmcgYWJvdXQgcGVyLW9wZXJhdGlvbiBiYXNp
-czsKd2UgbmVlZCB0byBzdGljayB3aXRoIHBlcmlvZGljIG1vbml0b3JpbmcgYW55d2F5IChhbmQg
-d2l0aCBkZWxheWVkCkRWRlMgaXNzdWUpIHVubGVzcyBhIEdQVSBjYW4gaW52b2tlIGFuIGludGVy
-cnVwdCBvZiAiSSdtIG92ZXJsb2FkZWQsCmxldCBtZSB3b3JrIGZhc3RlciIKCj4KPj4gSWYgdGhl
-IG1vbml0b3JpbmcgZnJlcXVlbmN5IGlzIDUwbXMsIERWRlMgd2lsbCBsaWtlbHkgdG8gcmVhY3Qg
-d2l0aAo+PiBhYm91dCA3NW1zIG9mIGRlbGF5Lgo+PiBGb3IgZXhhbXBsZSwgaWYgdGhlIHRvdWNo
-IGV2ZW50IGhhcyBvY2N1cnJlZCBhdCAyNW1zIGFmdGVyIHRoZSBsYXN0Cj4+IERWRlMgbW9uaXRv
-cmluZyBldmVudCwgYXQgdGhlIG5leHQgRFZGUyBtb25pdG9yaW5nIGV2ZW50LCB0aGUgbWVhc3Vy
-ZWQKPj4gbG9hZCB3aWxsIGJlIGFib3V0IDUwJSwgd2hpY2ggdXN1YWxseSB3b24ndCByZXF1aXJl
-IERWRlMgdG8gc3BlZWQgdXAuCj4+IFRoZW4sIERWRlMgd2lsbCByZWFjdCBhdCB0aGUgbmV4dCBt
-b25pdG9yaW5nIGV2ZW50OyB0aHVzLCBpdCB0b29rIDUwbXMKPj4gKyAyNW1zLgo+Pgo+PiA3NW1z
-IGlzIGVub3VnaCB0byBnaXZlIHNvbWUgaW1wcmVzc2lvbiB0byB1c2Vycy4gVGhlc2UgZGF5cywg
-bWFueQo+PiBtb2JpbGUgZGV2aWNlcyByZXF1aXJlIDYwSHotYmFzZWQgVUksIHdoaWNoIGlzIGFi
-b3V0IDE2bXMuCj4+Cj4+IEFueXdheSwgdGhpcyBoYXBwZW5zIHdpdGggZHJpdmVycy9jcHVmcmVx
-IGFsc28uIFdlIGhhdmUgYmVlbiB0ZXN0aW5nCj4+ICJ0aWNrbGluZyIgYXNzb2NpYXRlZCB3aXRo
-IGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMuIFRoaXMgaGFzIGJlZW4KPj4gcmVkdWNlZCB1c2Vy
-IHJlc3BvbnNlIHRpbWUgc2lnbmlmaWNhbnRseSByZW1vdmluZyB0aGUgbmVlZCBmb3IgdHVuaW5n
-Cj4+IHRoZSB0aHJlc2hvbGQgdmFsdWVzLgo+Cj4gSSB0aGluayBJIHVuZGVyc3RhbmQgdGhlIHBy
-b2JsZW0sIGJ1dCBJJ20gbm90IHN1cmUgaWYgdGhlcmUncyBhIGNsZWFuIHdheQo+IHRvIHRyaWdn
-ZXIgdGhlICJ0aWNrbGUiIGZyb20gdGhlIGtlcm5lbCBsZXZlbC4KCkknbSBjb25zaWRlcmluZyB0
-aGUgZm9sbG93aW5ncyAoYW5kIHRoZXkgYXJlIG5vdCBtdXR1YWxseSBleGNsdXNpdmUpLgpIb3cg
-YWJvdXQgdGhlbT8KMS4gKHRoZSB3YXkgdGhhdCB3ZSd2ZSBiZWVuIHVzaW5nKSBBZGQgYSB0aWNr
-bGUgY2FsbCB0byBpbnB1dCBldmVudHMKYXQgYm9hcmQgZmlsZS4KMi4gcHJvdmlkZSBzeXNmcyBp
-bnRlcmZhY2UgdGhhdCB0cmlnZ2VycyB0aWNrbGluZyBhbG9uZyB3aXRoIGRldmZyZXEgc3lzZnMu
-Cgo+Cj4gVGhhbmtzLAo+IFJhZmFlbAo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCj4gbGludXgtcG0gbWFpbGluZyBsaXN0Cj4gbGludXgtcG1AbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcKPiBodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtcG0KPgoKCkNoZWVycyEKLSBNeXVuZ0pvbwotLSAKTXl1
-bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELgpNb2JpbGUgU29mdHdhcmUgUGxhdGZvcm0gTGFi
-LApEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBCdXNpbmVzcwpTYW1zdW5n
-IEVsZWN0cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQtMjg1OApfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
-bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Wed, Apr 27, 2011 at 11:50 PM, MyungJoo Ham <myungjoo.ham@samsung.com> w=
+rote:
+> On Thu, Apr 28, 2011 at 3:44 PM, Colin Cross <ccross@google.com> wrote:
+>> On Wed, Apr 27, 2011 at 11:12 PM, MyungJoo Ham <myungjoo.ham@samsung.com=
+> wrote:
+>>> On Thu, Apr 28, 2011 at 5:48 AM, Colin Cross <ccross@google.com> wrote:
+>>>> OPP currently has opp_enable and opp_disable functions. =A0I don't
+>>>> understand why these are needed, they are only used at init time to
+>>>> determine available voltages, which could be handled by never passing
+>>>> unavailable voltages to the dvfs implementation.
+>>>
+>>> We need them in runtime.
+>>>
+>>> A device "a" may want to guarantee that a device "b" to be at least
+>>> "200MHz" or faster while it does some operations. Then, "a" will
+>>> opp_disable("b", 100MHz and others); and opp_enable("b", them) later
+>>> on. We have similar issues with multimedia blocks (MFC, Camera, FB,
+>>> GPU) and CPU/Memory Bus. Ondemand governor of CPUFREQ has some delay
+>>> on catching up a workload (1.5x the sampling rate in average, <2.0x
+>>> the sampling rate in worst cases), which may incur flickering/tearing
+>>> issues with multimedia streams. On the other hand, a general thermal
+>>> monitor or battery manager might want to limit energy usage by
+>>> disabling top performance clocks if it is too hot or the battery level
+>>> is low.
+>>
+>> That sounds like a very strange api, when what you really mean is
+>> clk_set_min_rate or clk_set_max_rate.
+>
+> Essentially, that's what needed.
+> However, with clk_set_min/max_rate, don't we need to let another
+> device to be consumer of other devices' clocks? Not just introducing a
+> device to other devices?
+
+Yes, but that's effectively what you're doing through a backwards api
+anyways.  The question is, for these complicated clock scenarios where
+the final frequency of a clock depends on so many factors, should that
+control go through the clock framework, or through some sort of global
+clock governor (which is where OPP would reappear).
