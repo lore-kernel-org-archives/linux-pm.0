@@ -1,13 +1,11 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.39-rc5-git4: Reported regressions from 2.6.38
-Date: Sat, 30 Apr 2011 13:50:04 -0700
-Message-ID: <BANLkTik2L0BQ0cwOnWrgjyvxV4KMHkgaFQ__27697.0049286776$1304196692$gmane$org@mail.gmail.com>
-References: <Xp4OiTz83N.A.O0D.JVGvNB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: LPC2011 Power Management Micro Conf
+Date: Sun, 1 May 2011 13:53:44 +0200
+Message-ID: <201105011353.44809.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Xp4OiTz83N.A.O0D.JVGvNB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,47 +15,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Alex Elder <aelder@sgi.com>, xfs@oss.sgi.com
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Stephen Boyd <sboyd@codeaurora.org>, Greg Kroah-Hartman <gregkh@suse.de>, Grant Likely <grant.likely@secretlab.ca>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Apr 30, 2011 at 12:42 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> Bug-Entry =A0 =A0 =A0 : http://bugzilla.kernel.org/show_bug.cgi?id=3D34012
-> Subject =A0 =A0 =A0 =A0 : 2.6.39-rc4+: oom-killer busy killing tasks
-> Submitter =A0 =A0 =A0 : Christian Kujau <lists@nerdbynature.de>
-> Date =A0 =A0 =A0 =A0 =A0 =A0: 2011-04-22 1:57 (9 days old)
-> Message-ID =A0 =A0 =A0: <alpine.DEB.2.01.1104211841510.18728@trent.utfs.o=
-rg>
-> References =A0 =A0 =A0: http://marc.info/?l=3Dlinux-kernel&m=3D1303437446=
-22331&w=3D2
+Hello,
 
-Judging by the extended debug info in:
+In the previous years we used to organize Power Management Mini Summits to discuss PM
+issues, the last of which took place during LinuxCon in Boston in 2010. Unfortunately,
+however, it wasn't particularly well attended and the participants generally felt that
+it had failed its purpose. The power management track at the last LPC, on the other
+hand, was generally regarded as interesting and successful, so there only seems to be
+room for one event devoted to power management a year. For this reason, there won't be
+a PM Mini Summit in 2011 and the LPC PM Mini Conference will play the role of the Mini
+Summit.  To this end, in addition to the plenary sessions within the LPC PM track
+there will be a possibility to discuss specific problems related to power management
+in smaller groups.
 
-   http://nerdbynature.de/bits/2.6.39-rc4/oom/
-   (The -9 files are the current ones)
+If there's anything you'd like to discuss or give a presentation on related to
+Power Management, please submit a proposal at
+http://www.linuxplumbersconf.org/2011/ocw/events/LPC2011MC/proposals
+or simply let me know.
 
-that thing shows a _lot_ of xfs inodes:
+At the moment, there are two session slots allocated.  One of them will cover
+the power management development during the last year, but in that context I also
+would like to discuss things that are still missing and problems to solve.
+The second one will cover the idle power consumption problem and will be led
+by Len Brown.  Len has a lot of experience in that area, mostly with systems
+based on Intel hardware, so if you want to contribute your own observations
+and/or results related to idle power, please let me know.
 
-  xfs_inode         479187 479187   1120   14    4 : tunables    0
-0    0 : slabdata  34329  34329      0
+We will have the time for one more sessions slot, so please give me your
+suggestions related to it. Also, please let me know if there's anything you'd
+like to discuss in smaller groups after the plenary sessions.
 
-even though there aren't that many dentries (each inode should have at
-least one dentry associated with it under normal circumstances):
-
-  dentry             97896  97900    160   25    1 : tunables    0
-0    0 : slabdata   3916   3916      0
-
-and then later when the system gets low on memory, the dentries shrink:
-
-  dentry              1017   3525    160   25    1 : tunables    0
-0    0 : slabdata    141    141      0
-
-but the XFS inodes do not:
-
-  xfs_inode         557579 557579   1120   14    4 : tunables    0
-0    0 : slabdata  41492  41492      0
-
-so I suspect it's some kind of XFS inode leak.
-
-                      Linus
+Best regards,
+Rafael
