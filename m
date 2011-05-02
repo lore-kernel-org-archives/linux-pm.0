@@ -1,16 +1,14 @@
-From: Greg KH <gregkh@suse.de>
+From: Valdis.Kletnieks@vt.edu
 Subject: Re: [RFC][PATCH] PM: Print a warning if firmware is
- requested when tasks are frozen
-Date: Mon, 2 May 2011 16:28:20 -0700
-Message-ID: <20110502232820.GA9578__7118.28982825882$1304379047$gmane$org@suse.de>
-References: <201105030044.51661.rjw@sisk.pl> <20110502231234.GA6430@suse.de>
-	<BANLkTikCHO1ST27uhJLU5mBxtWPuuVkNKA@mail.gmail.com>
+	requested when tasks are frozen
+Date: Mon, 02 May 2011 19:30:12 -0400
+Message-ID: <50363.1304379012__15786.0516374514$1304379189$gmane$org@localhost>
+References: <201105030044.51661.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============6878939186309980943=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <BANLkTikCHO1ST27uhJLU5mBxtWPuuVkNKA@mail.gmail.com>
+In-Reply-To: Your message of "Tue, 03 May 2011 00:44:51 +0200."
+	<201105030044.51661.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +16,73 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 02, 2011 at 04:21:09PM -0700, Linus Torvalds wrote:
-> On Mon, May 2, 2011 at 4:12 PM, Greg KH <gregkh@suse.de> wrote:
-> >
-> > But you can safely call this function with nowait set, and this warning
-> > should not be triggered, right?
-> 
-> Why would you want that?
-> 
-> It's _always_ wrong to ask for firmware during resume. "nowait" or not
-> is totally irrelevant. A driver that depends on the firmware being
-> built in to the kernel is a buggy driver, why would you want to
-> silently allow that kind of crap? It's just a timebomb waiting for
-> somebody to compile the kernel differently.
+--===============6878939186309980943==
+Content-Type: multipart/signed; boundary="==_Exmh_1304379012_5156P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
 
-A driver that does not rely on the firmware being built in would be
-correct in calling request_firmware_nowait() on resume, then when
-userspace is properly woken up, the firmware would be sent to the
-device, then the driver would be notified, load it, and handle things
-as part of its resume sequence from that notification.
+--==_Exmh_1304379012_5156P
+Content-Type: text/plain; charset=us-ascii
 
-Isn't that ideally what we want to have happen?
+On Tue, 03 May 2011 00:44:51 +0200, "Rafael J. Wysocki" said:
 
-Or am I missing something else?
+> +	if (WARN_ON(usermodehelper_is_disabled()))
+> +		return -EBUSY;
+> +
 
-thanks,
+Since this is a "no user serviceable parts inside" type of error, so I guess
+WARN_ON rather than a printk(KERN_WARNING is a good idea so we get
+a traceback pointing out the offending driver.
 
-greg k-h
+I have to wonder 2 things though:
+
+1) What percent of the time the missing firmware (or other issues, like the
+display not being resumed yet) will prevent the WARN_ON output from making it
+to the display *anyhow*, so the user *still* hits the power button to try again?
+
+2) What percent of the time the WARN_ON output will itself make the user
+think the resume has died rather than just being slow, causing them to power
+cycle and hope for a clean boot?
+
+Maybe something like this instead?
+
+	if (WARN_ON(usermodehelper_is_disable()))) {
+		printk(KERN_WARNING "Resume continuing, but firmware for %s not loaded", device);
+		return -EBUSY;
+	}
+
+(or whatever that %s actually needs to work)
+
+All the same, it still looks better than what we're doing now.
+
+
+--==_Exmh_1304379012_5156P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFNvz6EcC3lWbTT17ARAoB3AKDdGwaSZvg4IY15nM55u5ZpdmS2ewCfdMpC
+N7QaGdS2glNSsTngfe98oDo=
+=T9ik
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1304379012_5156P--
+
+
+--===============6878939186309980943==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============6878939186309980943==--
