@@ -1,16 +1,12 @@
-From: "Allan, Bruce W" <bruce.w.allan@intel.com>
-Subject: Re: [E1000-devel] WoL stopped working after power off
-	with	2.6.38	(e1000e specific?)
-Date: Mon, 2 May 2011 15:07:13 -0700
-Message-ID: <8DD2590731AB5D4C9DBF71A877482A9001B54CE036__36805.2297308624$1304374199$gmane$org@orsmsx509.amr.corp.intel.com>
-References: <20110430054519.GA9826@scooby.iskra.name>
-	<8DD2590731AB5D4C9DBF71A877482A9001B54CE017@orsmsx509.amr.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [RFC][PATCH] PM: Print a warning if firmware is
+	requested when tasks are frozen
+Date: Tue, 3 May 2011 00:44:51 +0200
+Message-ID: <201105030044.51661.rjw__45637.0397973389$1304376451$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <8DD2590731AB5D4C9DBF71A877482A9001B54CE017@orsmsx509.amr.corp.intel.com>
-Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,60 +16,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Allan, Bruce W" <bruce.w.allan@intel.com>, Kamil Iskra <kamil@iskra.name>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "e1000-devel@lists.sourceforge.net" <e1000->
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
->-----Original Message-----
->From: Allan, Bruce W [mailto:bruce.w.allan@intel.com]
->Sent: Monday, May 02, 2011 3:02 PM
->To: Kamil Iskra; netdev@vger.kernel.org; e1000-devel@lists.sourceforge.net
->Cc: linux-pm@lists.linux-foundation.org
->Subject: Re: [E1000-devel] WoL stopped working after power off with 2.6.38
->(e1000e specific?)
->
->>-----Original Message-----
->>From: Kamil Iskra [mailto:kamil@iskra.name]
->>Sent: Friday, April 29, 2011 10:45 PM
->>To: netdev@vger.kernel.org; e1000-devel@lists.sourceforge.net
->>Subject: [E1000-devel] WoL stopped working after power off with 2.6.38 (e1000e
->>specific?)
->>
->>[ Note: I'm not on these mailing lists, so be sure to Cc: me if you want
->>more info from me ]
->>
->>After upgrading from kernel 2.6.37 to 2.6.38, Wake on LAN after shutdown
->>stopped working for me on both of my Thinkpad laptops.  Both systems use
->>the e1000e driver.  One (a T61) has an 82566MM NIC, the other (an X201) an
->>82577LM.  I'm running 64-bit Gentoo Linux with a custom compiled kernel.
->>The network driver is built into the kernel.
->>
->>Wake on LAN still works after suspend (S3), but not after a complete
->>shutdown (with power supply connected).
->>
->>I figured the updated e1000e driver in 2.6.38 was probably to blame,
->>however, after I copied the whole drivers/net/e1000e directory from the
->>2.6.37 over to the 2.6.38 tree and recompiled, the problem persisted, so I
->>don't know anymore.
->>
->>I modified the system shutdown sequence to invoke ifconfig and ethtool
->>right before the final halt.  According to ifconfig, eth0 is down at that
->>point.  According to ethtool, WoL is configured correctly ("Wake-on: g").
->>There is, however, a difference in the output of ethtool between the two
->>kernel versions.  "Link detected:" shows "yes" with 2.6.37, but "no" with
->>2.6.38.
->>
->>A workaround that I found to work was to invoke "ifconfig eth0 up" right
->>before the halt.
->>
->>Any suggestions?  Is this new behavior expected or is it a bug?
->
->WoL from S5 "works for me"(TM) using the e1000e driver on RHEL6 and 2.6.38.
->Could you provide your customer kernel configuration?
->
->Cc: linux-pm@lists.linux-foundation.org
->
->Thanks,
->Bruce.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-:s/customer/custom/
+Some drivers erroneously use request_firmware() from their ->resume()
+(or ->thaw(), or ->restore()) callbacks, which is not going to work
+unless the firmware has been built in.  This causes system resume to
+stall until the firmware-loading timeout expires, which makes users
+think that the resume has failed and reboot their machines
+unnecessarily.  For this reason, make _request_firmware() print a
+warning when it has been called when tasks are frozen and it's
+impossible to start any new usermode helpers.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/firmware_class.c |    3 +++
+ include/linux/kmod.h          |    1 +
+ kernel/kmod.c                 |    8 ++++++++
+ 3 files changed, 12 insertions(+)
+
+Index: linux-2.6/include/linux/kmod.h
+===================================================================
+--- linux-2.6.orig/include/linux/kmod.h
++++ linux-2.6/include/linux/kmod.h
+@@ -113,5 +113,6 @@ extern void usermodehelper_init(void);
+ 
+ extern int usermodehelper_disable(void);
+ extern void usermodehelper_enable(void);
++extern bool usermodehelper_is_disabled(void);
+ 
+ #endif /* __LINUX_KMOD_H__ */
+Index: linux-2.6/kernel/kmod.c
+===================================================================
+--- linux-2.6.orig/kernel/kmod.c
++++ linux-2.6/kernel/kmod.c
+@@ -301,6 +301,14 @@ void usermodehelper_enable(void)
+ 	usermodehelper_disabled = 0;
+ }
+ 
++/**
++ * usermodehelper_is_disabled - check if new helpers are allowed to be started
++ */
++bool usermodehelper_is_disabled(void)
++{
++	return usermodehelper_disabled;
++}
++
+ static void helper_lock(void)
+ {
+ 	atomic_inc(&running_helpers);
+Index: linux-2.6/drivers/base/firmware_class.c
+===================================================================
+--- linux-2.6.orig/drivers/base/firmware_class.c
++++ linux-2.6/drivers/base/firmware_class.c
+@@ -521,6 +521,9 @@ static int _request_firmware(const struc
+ 	if (!firmware_p)
+ 		return -EINVAL;
+ 
++	if (WARN_ON(usermodehelper_is_disabled()))
++		return -EBUSY;
++
+ 	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
+ 	if (!firmware) {
+ 		dev_err(device, "%s: kmalloc(struct firmware) failed\n",
