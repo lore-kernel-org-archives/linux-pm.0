@@ -1,11 +1,16 @@
-From: Paul Parsons <lost.distance@yahoo.com>
-Subject: [PATCH] apm-emulation: Fix mutex race condition
-Date: Tue, 3 May 2011 01:16:30 +0100 (BST)
-Message-ID: <49798.52726.qm@web29017.mail.ird.yahoo.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH] PM: Print a warning if firmware is
+ requested when tasks are frozen
+Date: Mon, 2 May 2011 17:59:22 -0700
+Message-ID: <BANLkTimwmC=ckj4g_ct4EhOSLD7NDgxdng__46139.3438316465$1304384501$gmane$org@mail.gmail.com>
+References: <201105030044.51661.rjw@sisk.pl> <20110502231234.GA6430@suse.de>
+	<BANLkTikCHO1ST27uhJLU5mBxtWPuuVkNKA@mail.gmail.com>
+	<20110502232820.GA9578@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20110502232820.GA9578@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,22 +20,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: Greg KH <gregkh@suse.de>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-A process suspending the system (e.g. apm -s) locks apm_mutex at the start of apm_ioctl() and keeps it locked while calling pm_suspend(). A second process trying to ACK the suspend (e.g. apmd) may then block in apm_ioctl() trying to lock the same mutex. The first process tries to freeze processes, but the ACK process cannot be frozen because mutex_lock() is uninterruptible. Consequently pm_suspend() will ultimately fail in try_to_freeze_tasks(). This patch allows the ACK process to be frozen if it is blocked in apm_ioctl().
+On Mon, May 2, 2011 at 4:28 PM, Greg KH <gregkh@suse.de> wrote:
+>
+> A driver that does not rely on the firmware being built in would be
+> correct in calling request_firmware_nowait() on resume, then when
+> userspace is properly woken up, the firmware would be sent to the
+> device, then the driver would be notified, load it, and handle things
+> as part of its resume sequence from that notification.
+>
+> Isn't that ideally what we want to have happen?
 
-Signed-off-by: Paul Parsons <lost.distance@yahoo.com>
----
---- clean-2.6.39-rc5/drivers/char/apm-emulation.c	2011-03-15 01:20:32.000000000 +0000
-+++ linux-2.6.39-rc5/drivers/char/apm-emulation.c	2011-05-03 00:34:05.467660807 +0100
-@@ -275,7 +275,8 @@ apm_ioctl(struct file *filp, u_int cmd, 
- 	if (!as->suser || !as->writer)
- 		return -EPERM;
- 
--	mutex_lock(&apm_mutex);
-+	while (mutex_lock_interruptible(&apm_mutex) < 0)
-+		try_to_freeze();
- 	switch (cmd) {
- 	case APM_IOC_SUSPEND:
- 		mutex_lock(&state_lock);
+No. Absolutely not.
+
+What we ideally want to happen is for the driver to not be a stupid
+piece of sh*t.
+
+A driver that needs firmware loading at resume time IS A BROKEN DRIVER.
+
+It really is that simple.
+
+> Or am I missing something else?
+
+The only correct thing to do is for a driver that is active over a
+suspend to cache the firmware in RAM.
+
+There is absolutely no other possible solution. You can't rely on
+user-space loading, because the user space may well require that
+driver to load things in the first place. And even if it doesn't, it
+leaves a huge gaping window where the driver is useless because it has
+no firmware, and then any other (unrelated to firmware loading or udev
+or anythign else) user space that wants to access the device - because
+it was accessing it before the suspend - will be hosed.
+
+Seriously. Anything else is pure idiocy. The only sane model is for
+drivers to load the firmware before the suspend even happens.
+Preferably by simply never unloading the firmware in the first place.
+
+No amount of crazy hacks will ever solve the problem if a driver
+doesn't do that.  Not "nowait", not "reload it from udev when user
+space comes back".
+
+                        Linus
