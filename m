@@ -1,15 +1,15 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [Update x3][PATCH 7/9] PM / Runtime: Generic clock
- manipulation rountines for runtime PM (v6)
-Date: Tue, 03 May 2011 10:00:58 -0700
-Message-ID: <4DC034CA.6000505__37539.2416179695$1304442191$gmane$org@codeaurora.org>
-References: <201104130205.26988.rjw@sisk.pl> <4DBB12EF.9030000@codeaurora.org>
-	<201104292229.56518.rjw@sisk.pl> <201104300004.02601.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM: Print a warning if firmware is
+	requested when tasks are frozen
+Date: Tue, 3 May 2011 19:12:58 +0200
+Message-ID: <201105031912.58736.rjw__14388.6491809555$1304444081$gmane$org@sisk.pl>
+References: <201105030044.51661.rjw@sisk.pl> <201105031302.08910.rjw@sisk.pl>
+	<20110503140608.GB7944@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104300004.02601.rjw@sisk.pl>
+In-Reply-To: <20110503140608.GB7944@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,95 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Valdis.Kletnieks@vt.edu, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/29/2011 03:04 PM, Rafael J. Wysocki wrote:
-> +
-> +/**
-> + * enable_clock - Enable a device clock.
-> + * @dev: Device whose clock is to be enabled.
-> + * @con_id: Connection ID of the clock.
-> + */
-> +static void enable_clock(struct device *dev, const char *con_id)
-> +{
-> +	struct clk *clk;
-> +
-> +	clk = clk_get(dev, con_id);
-> +	if (!IS_ERR(clk)) {
-> +		clk_enable(clk);
-> +		clk_put(clk);
-> +		dev_info(dev, "Runtime PM disabled, clock forced on.\n");
-> +	}
-> +}
+On Tuesday, May 03, 2011, Greg KH wrote:
+> On Tue, May 03, 2011 at 01:02:08PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: PM: Print a warning if firmware is requested when tasks are frozen
+> > 
+> > Some drivers erroneously use request_firmware() from their ->resume()
+> > (or ->thaw(), or ->restore()) callbacks, which is not going to work
+> > unless the firmware has been built in.  This causes system resume to
+> > stall until the firmware-loading timeout expires, which makes users
+> > think that the resume has failed and reboot their machines
+> > unnecessarily.  For this reason, make _request_firmware() print a
+> > warning and return immediately with error code if it has been called
+> > when tasks are frozen and it's impossible to start any new usermode
+> > helpers.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> I'm guessing you will take this through your tree?
 
-This doesn't make much sense to me. You're getting a clock and then
-enabling it and then putting the clock? How can you be so sure that
-clk_put() won't one day do some kind of lower power mode on the clock
-when clk_put() is called on it? I don't think anyone does anything
-today, but I don't think its safe to assume that clk_put() won't try to
-forcibly shut off the clock once all clk_get() callers have clk_put().
+Yes, I will.
 
-Perhaps we should document the meaning of clk_enable() followed by
-clk_put() somewhere instead?
+> If so, that's great:
+> 
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-> +
-> +/**
-> + * disable_clock - Disable a device clock.
-> + * @dev: Device whose clock is to be disabled.
-> + * @con_id: Connection ID of the clock.
-> + */
-> +static void disable_clock(struct device *dev, const char *con_id)
-> +{
-> +	struct clk *clk;
-> +
-> +	clk = clk_get(dev, con_id);
-> +	if (!IS_ERR(clk)) {
-> +		clk_disable(clk);
-> +		clk_put(clk);
-> +		dev_info(dev, "Runtime PM disabled, clock forced off.\n");
-> +	}
-> +}
+Thanks a lot!
 
-This might not be as bad, but it looks like a similar problem.
-
-> -
-> -static int platform_bus_notify(struct notifier_block *nb,
-> -			       unsigned long action, void *data)
-> -{
-> -	struct device *dev = data;
-> -	struct clk *clk;
-> -
-> -	dev_dbg(dev, "platform_bus_notify() %ld !\n", action);
-> -
-> -	switch (action) {
-> -	case BUS_NOTIFY_BIND_DRIVER:
-> -		clk = clk_get(dev, NULL);
-> -		if (!IS_ERR(clk)) {
-> -			clk_enable(clk);
-> -			clk_put(clk);
-> -			dev_info(dev, "runtime pm disabled, clock forced on\n");
-> -		}
-> -		break;
-> -	case BUS_NOTIFY_UNBOUND_DRIVER:
-> -		clk = clk_get(dev, NULL);
-> -		if (!IS_ERR(clk)) {
-> -			clk_disable(clk);
-> -			clk_put(clk);
-> -			dev_info(dev, "runtime pm disabled, clock forced off\n");
-> -		}
-
-Ah ok I see that it's coming from here.
-
-BTW, whatever is in linux-next is failing to compile:
-
-drivers/base/power/clock_ops.c:391: error: 'con_id' undeclared (first
-use in this function)
-drivers/base/power/clock_ops.c:391: error: (Each undeclared identifier
-is reported only once
-drivers/base/power/clock_ops.c:391: error: for each function it appears in.)
-
--- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+Rafael
