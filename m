@@ -1,16 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
+From: <purusothaman.ramajothi@wipro.com>
 Subject: Re: Need Help to debug resume hangs at schedule()
 	function
-Date: Tue, 3 May 2011 16:15:01 +0900
-Message-ID: <BANLkTimcxaDd9ctP7hi3eEkFzTuHS-6QYA@mail.gmail.com>
-References: <2FC8B95E2C77614C9F13EDC44D58183C0108944B@BLR-SJP-MBX01.wipro.com>
-	<BANLkTikH9pgTOteqrsL6KjPYndTVa4EyUA@mail.gmail.com>
-	<2FC8B95E2C77614C9F13EDC44D58183C010ED5D2@BLR-SJP-MBX01.wipro.com>
+Date: Tue, 3 May 2011 15:07:55 +0530
+Message-ID: <2FC8B95E2C77614C9F13EDC44D58183C010ED6A7@BLR-SJP-MBX01.wipro.com>
+References: <2FC8B95E2C77614C9F13EDC44D58183C0108944B@BLR-SJP-MBX01.wipro.com><BANLkTikH9pgTOteqrsL6KjPYndTVa4EyUA@mail.gmail.com><2FC8B95E2C77614C9F13EDC44D58183C010ED5D2@BLR-SJP-MBX01.wipro.com>
+	<BANLkTimcxaDd9ctP7hi3eEkFzTuHS-6QYA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <2FC8B95E2C77614C9F13EDC44D58183C010ED5D2@BLR-SJP-MBX01.wipro.com>
+Content-class: urn:content-classes:message
+In-Reply-To: <BANLkTimcxaDd9ctP7hi3eEkFzTuHS-6QYA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,9 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: purusothaman.ramajothi@wipro.com
+To: myungjoo.ham@gmail.com
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
+
+Hi,
+
+	Thanks for the help.According to my understanding below is the code flow f=
+or resume operation in kernel
+
+1.device_resume()
+2.dpm_resume()
+3.dpm_complete()
+4.thaw_processes()
+5.thaw_tasks()
+6.thaw_process()
+7.schedule ()
+
+I have compared the "resume hang logs" with the "working logs".During resum=
+e all my "drivers" and "devices" resumed back.The final function enters is =
+"thaw_processes".I think the kernel hangs around these function.I confirmed=
+ this by adding checkpoints in the code flow of deep sleep.Because the logs=
+ I have don't have the printk message "Restarting...tasks done" when the ke=
+rnel hangs.
+
+Can u explain me in what scenarios the kernel can hang around the thaw_proc=
+esses?
+Please correct me if the above code flow is incorrect.
+
+Regards,
+Purusothaman R
+
+
+-----Original Message-----
+From: MyungJoo Ham [mailto:myungjoo.ham@gmail.com] =
+
+Sent: Tuesday, May 03, 2011 12:45 PM
+To: Purusothaman Ramajothi (WT01 - Manufacturing & Hi Tech)
+Cc: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] Need Help to debug resume hangs at schedule() funct=
+ion
 
 On Tue, May 3, 2011 at 3:38 PM,  <purusothaman.ramajothi@wipro.com> wrote:
 > Hi,
@@ -185,3 +222,22 @@ Mobile Software Platform Lab,
 Digital Media and Communications (DMC) Business
 Samsung Electronics
 cell: 82-10-6714-2858
+
+Please do not print this email unless it is absolutely necessary. =
+
+
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and ma=
+y contain proprietary, confidential or privileged information. If you are n=
+ot the intended recipient, you should not disseminate, distribute or copy t=
+his e-mail. Please notify the sender immediately and destroy all copies of =
+this message and any attachments. =
+
+
+WARNING: Computer viruses can be transmitted via email. The recipient shoul=
+d check this email and any attachments for the presence of viruses. The com=
+pany accepts no liability for any damage caused by any virus transmitted by=
+ this email. =
+
+
+www.wipro.com
