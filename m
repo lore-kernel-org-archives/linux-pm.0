@@ -1,14 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
+From: <purusothaman.ramajothi@wipro.com>
 Subject: Re: Need Help to debug resume hangs at schedule()
 	function
-Date: Tue, 3 May 2011 11:59:22 +0900
-Message-ID: <BANLkTikH9pgTOteqrsL6KjPYndTVa4EyUA@mail.gmail.com>
+Date: Tue, 3 May 2011 12:08:54 +0530
+Message-ID: <2FC8B95E2C77614C9F13EDC44D58183C010ED5D2@BLR-SJP-MBX01.wipro.com>
 References: <2FC8B95E2C77614C9F13EDC44D58183C0108944B@BLR-SJP-MBX01.wipro.com>
+	<BANLkTikH9pgTOteqrsL6KjPYndTVa4EyUA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <2FC8B95E2C77614C9F13EDC44D58183C0108944B@BLR-SJP-MBX01.wipro.com>
+Content-class: urn:content-classes:message
+In-Reply-To: <BANLkTikH9pgTOteqrsL6KjPYndTVa4EyUA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,9 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: purusothaman.ramajothi@wipro.com
+To: myungjoo.ham@gmail.com
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
+
+Hi,
+
+	Thanks for the reply.I am using 2.6.27.18 kernel.But I think [Kernel hacki=
+ng] =3D=3D> [Detect Hung Tasks] is added from 2.6.30 kernel.
+
+Is there any patch that I can apply to enable the "detec hung tasks" featur=
+e in 2.6.27 kernekl?
+
+Is there any other way of debugging this issue using software methods?
+
+
+Regards,
+Purusothaman R
+
+
+-----Original Message-----
+From: MyungJoo Ham [mailto:myungjoo.ham@gmail.com] =
+
+Sent: Tuesday, May 03, 2011 8:29 AM
+To: Purusothaman Ramajothi (WT01 - Manufacturing & Hi Tech)
+Cc: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] Need Help to debug resume hangs at schedule() funct=
+ion
 
 On Mon, May 2, 2011 at 10:52 PM,  <purusothaman.ramajothi@wipro.com> wrote:
 > Hi,
@@ -35,7 +61,7 @@ ng
 >
 >
 >
-> =93echo mem > /sys/power/state=94
+> "echo mem > /sys/power/state"
 >
 >
 >
@@ -50,10 +76,9 @@ ds
 or
 > debugging this I have added checkpoints in the flow of deep check.When th=
 is
-> issue was produced the kernel hangs around =93thaw_tasks=94 or =93schedul=
-e=94
-> function of =93thaw_processes=94.These functions are defined in
-> =93kernel/power/process.c=94.
+> issue was produced the kernel hangs around "thaw_tasks" or "schedule"
+> function of "thaw_processes".These functions are defined in
+> "kernel/power/process.c".
 >
 
 Have you enabled [Kernel hacking] =3D=3D> [Detect Hung Tasks] and waited
@@ -61,8 +86,8 @@ more than 120 seconds after the hang?
 
 >
 >
-> Note: The final printk message =93Restarting tasks.....done=94 was not di=
-splayed
+> Note: The final printk message "Restarting tasks.....done" was not displa=
+yed
 > when this issue occurred.But all the devices and drivers resumed back.
 >
 >
@@ -123,3 +148,22 @@ Mobile Software Platform Lab,
 Digital Media and Communications (DMC) Business
 Samsung Electronics
 cell: 82-10-6714-2858
+
+Please do not print this email unless it is absolutely necessary. =
+
+
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and ma=
+y contain proprietary, confidential or privileged information. If you are n=
+ot the intended recipient, you should not disseminate, distribute or copy t=
+his e-mail. Please notify the sender immediately and destroy all copies of =
+this message and any attachments. =
+
+
+WARNING: Computer viruses can be transmitted via email. The recipient shoul=
+d check this email and any attachments for the presence of viruses. The com=
+pany accepts no liability for any damage caused by any virus transmitted by=
+ this email. =
+
+
+www.wipro.com
