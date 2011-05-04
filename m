@@ -1,18 +1,16 @@
 From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: Need Help to debug resume hangs at schedule()
-	function
-Date: Wed, 4 May 2011 09:43:32 +0900
-Message-ID: <BANLkTimvHyfFS4F6Gv0edXbi=oK6cEkkog@mail.gmail.com>
-References: <2FC8B95E2C77614C9F13EDC44D58183C0108944B@BLR-SJP-MBX01.wipro.com>
-	<BANLkTikH9pgTOteqrsL6KjPYndTVa4EyUA@mail.gmail.com>
-	<2FC8B95E2C77614C9F13EDC44D58183C010ED5D2@BLR-SJP-MBX01.wipro.com>
-	<BANLkTimcxaDd9ctP7hi3eEkFzTuHS-6QYA@mail.gmail.com>
-	<2FC8B95E2C77614C9F13EDC44D58183C010ED6A7@BLR-SJP-MBX01.wipro.com>
+Subject: Re: [RFC][PATCH 1/2] PM / Runtime: Support for generic
+ I/O power domains
+Date: Wed, 4 May 2011 17:43:19 +0900
+Message-ID: <BANLkTimbUQ9-U9yPkCspf=dL0JfyXqbSng__26290.5660122216$1304498773$gmane$org@mail.gmail.com>
+References: <201104290154.12966.rjw@sisk.pl> <201104290154.56145.rjw@sisk.pl>
+	<BANLkTinsKELoZAZgu0wzT_fQc1kWnd-EVg@mail.gmail.com>
+	<201104292211.03702.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <2FC8B95E2C77614C9F13EDC44D58183C010ED6A7@BLR-SJP-MBX01.wipro.com>
+In-Reply-To: <201104292211.03702.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,249 +20,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: purusothaman.ramajothi@wipro.com
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 3, 2011 at 6:37 PM,  <purusothaman.ramajothi@wipro.com> wrote:
-> Hi,
+On Sat, Apr 30, 2011 at 5:11 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 >
-> =A0 =A0 =A0 =A0Thanks for the help.According to my understanding below is=
- the code flow for resume operation in kernel
+> Well, not really. =A0There are a few things to consider.
 >
-> 1.device_resume()
-> 2.dpm_resume()
-> 3.dpm_complete()
-> 4.thaw_processes()
-> 5.thaw_tasks()
-> 6.thaw_process()
-> 7.schedule ()
->
-> I have compared the "resume hang logs" with the "working logs".During res=
-ume all my "drivers" and "devices" resumed back.The final function enters i=
-s "thaw_processes".I think the kernel hangs around these function.I confirm=
-ed this by adding checkpoints in the code flow of deep sleep.Because the lo=
-gs I have don't have the printk message "Restarting...tasks done" when the =
-kernel hangs.
+> First, in general, there may be devices that have a real parent and belong
+> to a power domain at the same time, so we can't "steal" the parent
+> pointers from them.
 
-Well, then, more printk (pr_emerg?) messages? w/ early printk and/or
-low-level debugging options?
-
-Besides, if the crash log stops right before "Restarting..." than, the
-crash point could be earlier than thaw_processes.
-(or are you crashing at oom_killer_enable? well.. that still means you
-need more printks)
-
->
-> Can u explain me in what scenarios the kernel can hang around the thaw_pr=
-ocesses?
-> Please correct me if the above code flow is incorrect.
-
-- There could be a delayed fatal event triggered by earlier operations
-(device drivers) that happens right after entering thawing.
-- Last a few printk messages may be just not flushed to display at the
-crash point.
-- Even if it stopped at thaw_process, it does not necessary mean that
-something is wrong at thaw_processes. You already have your irqs
-enabled and devices are resumed. Even better, some device drivers may
-have "delayed resume" feature usually implemented with work struct or
-delayed work.
-
->
-> Regards,
-> Purusothaman R
->
->
-> -----Original Message-----
-> From: MyungJoo Ham [mailto:myungjoo.ham@gmail.com]
-> Sent: Tuesday, May 03, 2011 12:45 PM
-> To: Purusothaman Ramajothi (WT01 - Manufacturing & Hi Tech)
-> Cc: linux-pm@lists.linux-foundation.org
-> Subject: Re: [linux-pm] Need Help to debug resume hangs at schedule() fun=
-ction
->
-> On Tue, May 3, 2011 at 3:38 PM, =A0<purusothaman.ramajothi@wipro.com> wro=
-te:
->> Hi,
->>
->> =A0 =A0 =A0 =A0Thanks for the reply.I am using 2.6.27.18 kernel.But I th=
-ink [Kernel hacking] =3D=3D> [Detect Hung Tasks] is added from 2.6.30 kerne=
-l.
->>
->> Is there any patch that I can apply to enable the "detec hung tasks" fea=
-ture in 2.6.27 kernekl?
->
-> Clone the recent kernel.
-> Run git log -- kernel/hung_task.c
-> Pick resulting patches (and more patches if required), apply them to
-> yours, and resolve conflicts if exist.
->
->>
->> Is there any other way of debugging this issue using software methods?
->
-> Add more printks. Store the whole console output somewhere and
-> read/filter/search them later.
->
->>
->>
->> Regards,
->> Purusothaman R
->>
->>
->> -----Original Message-----
->> From: MyungJoo Ham [mailto:myungjoo.ham@gmail.com]
->> Sent: Tuesday, May 03, 2011 8:29 AM
->> To: Purusothaman Ramajothi (WT01 - Manufacturing & Hi Tech)
->> Cc: linux-pm@lists.linux-foundation.org
->> Subject: Re: [linux-pm] Need Help to debug resume hangs at schedule() fu=
-nction
->>
->> On Mon, May 2, 2011 at 10:52 PM, =A0<purusothaman.ramajothi@wipro.com> w=
-rote:
->>> Hi,
->>>
->>>
->>>
->>> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 I am using 2.6.27.18 kern=
-el.My machine is powerpc
->>> architecture.I executed the deep sleep operation by executing the follo=
-wing
->>> command:
->>>
->>>
->>>
->>> "echo mem > /sys/power/state"
->>>
->>>
->>>
->>> The suspend opeartion was successful.All the devices and user level thr=
-eads
->>> are suspended.
->>>
->>>
->>>
->>> But sometimes during resume my machine hangs.This is not happening
->>> regularly.But it occurs after 60 or 70 times of deep sleep operation.So=
- for
->>> debugging this I have added checkpoints in the flow of deep check.When =
-this
->>> issue was produced the kernel hangs around "thaw_tasks" or "schedule"
->>> function of "thaw_processes".These functions are defined in
->>> "kernel/power/process.c".
->>>
->>
->> Have you enabled [Kernel hacking] =3D=3D> [Detect Hung Tasks] and waited
->> more than 120 seconds after the hang?
->>
->>>
->>>
->>> Note: The final printk message "Restarting tasks.....done" was not disp=
-layed
->>> when this issue occurred.But all the devices and drivers resumed back.
->>>
->>>
->>>
->>> I was not able to debug this as the reproduciablity rate was too low.Ki=
-ndly
->>> help me in solving the issue.
->>
->> Around 1/100 is not that low for a suspend/resume issue. Don't get too
->> frustrated. You will probably encounter much rarer (let's say 1/10000)
->> incidents if you are doing the job with newly produced chips and
->> boards. :D
->>
->> If you have some H/W tracers similar as T32, try it. It helps a lot.
->>
->>>
->>>
->>>
->>> Regards,
->>>
->>> Purusothaman R
->>>
->>>
->>>
->>> Please do not print this email unless it is absolutely necessary.
->>>
->>> The information contained in this electronic message and any attachment=
-s to
->>> this message are intended for the exclusive use of the addressee(s) and=
- may
->>> contain proprietary, confidential or privileged information. If you are=
- not
->>> the intended recipient, you should not disseminate, distribute or copy =
-this
->>> e-mail. Please notify the sender immediately and destroy all copies of =
-this
->>> message and any attachments.
->>>
->>> WARNING: Computer viruses can be transmitted via email. The recipient s=
-hould
->>> check this email and any attachments for the presence of viruses. The
->>> company accepts no liability for any damage caused by any virus transmi=
-tted
->>> by this email.
->>>
->>> www.wipro.com
->>>
->>> _______________________________________________
->>> linux-pm mailing list
->>> linux-pm@lists.linux-foundation.org
->>> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->>>
->>
->> --
->> MyungJoo Ham, Ph.D.
->> Mobile Software Platform Lab,
->> Digital Media and Communications (DMC) Business
->> Samsung Electronics
->> cell: 82-10-6714-2858
->>
->> Please do not print this email unless it is absolutely necessary.
->>
->> The information contained in this electronic message and any attachments=
- to this message are intended for the exclusive use of the addressee(s) and=
- may contain proprietary, confidential or privileged information. If you ar=
-e not the intended recipient, you should not disseminate, distribute or cop=
-y this e-mail. Please notify the sender immediately and destroy all copies =
-of this message and any attachments.
->>
->> WARNING: Computer viruses can be transmitted via email. The recipient sh=
-ould check this email and any attachments for the presence of viruses. The =
-company accepts no liability for any damage caused by any virus transmitted=
- by this email.
->>
->> www.wipro.com
->>
->
->
->
-> --
-> MyungJoo Ham, Ph.D.
-> Mobile Software Platform Lab,
-> Digital Media and Communications (DMC) Business
-> Samsung Electronics
-> cell: 82-10-6714-2858
->
-> Please do not print this email unless it is absolutely necessary.
->
-> The information contained in this electronic message and any attachments =
-to this message are intended for the exclusive use of the addressee(s) and =
-may contain proprietary, confidential or privileged information. If you are=
- not the intended recipient, you should not disseminate, distribute or copy=
- this e-mail. Please notify the sender immediately and destroy all copies o=
-f this message and any attachments.
->
-> WARNING: Computer viruses can be transmitted via email. The recipient sho=
-uld check this email and any attachments for the presence of viruses. The c=
-ompany accepts no liability for any damage caused by any virus transmitted =
-by this email.
->
-> www.wipro.com
->
+Ah. right we only have one parent per device. Ok, setting a power
+domain as a device's parent is not going to work for some devices.
 
 
+However, I have some other questions.
 
+1. pm_genpd_runtime_suspend and pm_genpd_runtime_resume are opened to
+outside (not static and "extern"ed). Are devices supposed to call
+pm_genpd_runtime_* directly? Shouldn't they be hidden so that devices
+are forced to turn on/off power domains with runtime_pm framework
+only? Is there any reason to expose them?
+
+2.  If we can assure that related clocks are not turned on when a
+power domain is shutting down, it'd be nice.
+I guess it would be sufficient to let it "WARN" at
+gov->power_down_ok(). Is it the intention of governor?
+
+
+Thank you! I also think this is going to help us a lot, too :)
+
+- MyungJoo
 -- =
 
 MyungJoo Ham, Ph.D.
