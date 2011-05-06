@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/3] PM / Hibernate: Fix ioctl SNAPSHOT_S2RAM
-Date: Sat, 7 May 2011 00:32:27 +0200
-Message-ID: <201105070032.27540.rjw__48806.4138139181$1304721380$gmane$org@sisk.pl>
+Subject: [PATCH 1/3] PM: Fix warning in pm_restrict_gfp_mask()
+	during SNAPSHOT_S2RAM ioctl
+Date: Sat, 7 May 2011 00:30:30 +0200
+Message-ID: <201105070030.30849.rjw__44222.7374217056$1304721498$gmane$org@sisk.pl>
 References: <201105070029.44623.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,29 +24,50 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The SNAPSHOT_S2RAM ioctl used for implementing the feature allowing
-one to suspend to RAM after creating a hibernation image is currently
-broken, because it doesn't clear the "ready" flag in the struct
-snapshot_data object handled by it.  As a result, the
-SNAPSHOT_UNFREEZE doesn't work correctly after SNAPSHOT_S2RAM has
-returned and the user space hibernate task cannot thaw the other
-processes as appropriate.  Make SNAPSHOT_S2RAM clear data->ready
-to fix this problem.
+A warning is printed by pm_restrict_gfp_mask() while the
+SNAPSHOT_S2RAM ioctl is being executed after creating a hibernation
+image, because pm_restrict_gfp_mask() has been called once already
+before the image creation and suspend_devices_and_enter() calls it
+once again.  This happens after commit 452aa6999e6703ffbddd7f6ea124d3
+(mm/pm: force GFP_NOIO during suspend/hibernation and resume).
 
+To avoid this issue, move pm_restrict_gfp_mask() and
+pm_restore_gfp_mask() from suspend_devices_and_enter() to its caller
+in kernel/power/suspend.c.
+
+Reported-by: Alexandre Felipe Muller de Souza <alexandrefm@mandriva.com.br>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/user.c |    1 +
- 1 file changed, 1 insertion(+)
+ kernel/power/suspend.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/kernel/power/user.c
+Index: linux-2.6/kernel/power/suspend.c
 ===================================================================
---- linux-2.6.orig/kernel/power/user.c
-+++ linux-2.6/kernel/power/user.c
-@@ -381,6 +381,7 @@ static long snapshot_ioctl(struct file *
- 		 * PM_HIBERNATION_PREPARE
- 		 */
- 		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
-+		data->ready = 0;
- 		break;
+--- linux-2.6.orig/kernel/power/suspend.c
++++ linux-2.6/kernel/power/suspend.c
+@@ -210,7 +210,6 @@ int suspend_devices_and_enter(suspend_st
+ 			goto Close;
+ 	}
+ 	suspend_console();
+-	pm_restrict_gfp_mask();
+ 	suspend_test_start();
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (error) {
+@@ -227,7 +226,6 @@ int suspend_devices_and_enter(suspend_st
+ 	suspend_test_start();
+ 	dpm_resume_end(PMSG_RESUME);
+ 	suspend_test_finish("resume devices");
+-	pm_restore_gfp_mask();
+ 	resume_console();
+  Close:
+ 	if (suspend_ops->end)
+@@ -288,7 +286,9 @@ int enter_state(suspend_state_t state)
+ 		goto Finish;
  
- 	case SNAPSHOT_PLATFORM_SUPPORT:
+ 	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
++	pm_restrict_gfp_mask();
+ 	error = suspend_devices_and_enter(state);
++	pm_restore_gfp_mask();
+ 
+  Finish:
+ 	pr_debug("PM: Finishing wakeup.\n");
