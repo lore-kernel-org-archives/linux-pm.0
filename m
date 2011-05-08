@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/5] PM: Introduce generic prepare and complete
-	callbacks for subsystems
-Date: Sun, 8 May 2011 23:23:34 +0200
-Message-ID: <201105082323.35035.rjw__238.16767284206$1304890467$gmane$org@sisk.pl>
+Subject: [PATCH 5/5] ARM / shmobile: Support for power domain
+	A4MP on SH7372
+Date: Sun, 8 May 2011 23:25:47 +0200
+Message-ID: <201105082325.48229.rjw__36557.1357113824$1304890580$gmane$org@sisk.pl>
 References: <201104290154.12966.rjw@sisk.pl> <201105082320.57185.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,131 +24,66 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Introduce generic ->prepare() and ->complete() power management
-callbacks that can be used by subsystems and power domains, export
-them and make the generic_subsys_pm_ops object point to them.
-Additionally, provide NULL definitions of all the generic system
-sleep callbacks for CONFIG_PM_SLEEP unset.
+Use the power domains support code added by the previous
+patches to implement support for power domain A4MP on SH7372.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/generic_ops.c |   39 +++++++++++++++++++++++++++++++++++++++
- include/linux/pm.h               |   26 +++++++++++++++++++-------
- 2 files changed, 58 insertions(+), 7 deletions(-)
+ arch/arm/mach-shmobile/board-mackerel.c      |    2 ++
+ arch/arm/mach-shmobile/include/mach/sh7372.h |    3 +++
+ arch/arm/mach-shmobile/pm-sh7372.c           |    7 +++++++
+ 3 files changed, 12 insertions(+)
 
-Index: linux-2.6/drivers/base/power/generic_ops.c
+Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/generic_ops.c
-+++ linux-2.6/drivers/base/power/generic_ops.c
-@@ -74,6 +74,23 @@ EXPORT_SYMBOL_GPL(pm_generic_runtime_res
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -89,9 +89,16 @@ static struct sh7372_domain_data sh7372_
  
- #ifdef CONFIG_PM_SLEEP
- /**
-+ * pm_generic_prepare - Generic routine preparing a device for power transition.
-+ * @dev: Device to prepare.
-+ *
-+ * Prepare a device for a system-wide power transition.
-+ */
-+int pm_generic_prepare(struct device *dev)
-+{
-+	struct device_driver *drv = dev->driver;
-+	int ret = 0;
-+
-+	if (drv && drv->pm && drv->pm->prepare)
-+		ret = drv->pm->prepare(dev);
-+
-+	return ret;
-+}
-+
-+/**
-  * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
-  * @dev: Device to handle.
-  * @event: PM transition of the system under way.
-@@ -213,16 +230,38 @@ int pm_generic_restore(struct device *de
- 	return __pm_generic_resume(dev, PM_EVENT_RESTORE);
- }
- EXPORT_SYMBOL_GPL(pm_generic_restore);
-+
-+/**
-+ * pm_generic_complete - Generic routine competing a device power transition.
-+ * @dev: Device to handle.
-+ *
-+ * Complete a device power transition during a system-wide power transition.
-+ */
-+void pm_generic_complete(struct device *dev)
-+{
-+	struct device_driver *drv = dev->driver;
-+
-+	if (drv && drv->pm && drv->pm->complete)
-+		drv->pm->complete(dev);
-+
-+	/*
-+	 * Let runtime PM try to suspend devices that haven't been in use before
-+	 * going into the system-wide sleep state we're resuming from.
-+	 */
-+	pm_runtime_idle(dev);
-+}
- #endif /* CONFIG_PM_SLEEP */
+ struct generic_power_domain sh7372_a4lc_domain;
  
- struct dev_pm_ops generic_subsys_pm_ops = {
- #ifdef CONFIG_PM_SLEEP
-+	.prepare = pm_generic_prepare,
- 	.suspend = pm_generic_suspend,
- 	.resume = pm_generic_resume,
- 	.freeze = pm_generic_freeze,
- 	.thaw = pm_generic_thaw,
- 	.poweroff = pm_generic_poweroff,
- 	.restore = pm_generic_restore,
-+	.complete = pm_generic_complete,
- #endif
- #ifdef CONFIG_PM_RUNTIME
- 	.runtime_suspend = pm_generic_runtime_suspend,
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -547,6 +547,16 @@ extern void __suspend_report_result(cons
- 	} while (0)
- 
- extern int device_pm_wait_for_dev(struct device *sub, struct device *dev);
++static struct sh7372_domain_data sh7372_a4mp_domain_data = {
++	.bit_shift = 2,
++};
 +
-+extern int pm_generic_prepare(struct device *dev);
-+extern int pm_generic_suspend(struct device *dev);
-+extern int pm_generic_resume(struct device *dev);
-+extern int pm_generic_freeze(struct device *dev);
-+extern int pm_generic_thaw(struct device *dev);
-+extern int pm_generic_restore(struct device *dev);
-+extern int pm_generic_poweroff(struct device *dev);
-+extern void pm_generic_complete(struct device *dev);
++struct generic_power_domain sh7372_a4mp_domain;
 +
- #else /* !CONFIG_PM_SLEEP */
- 
- #define device_pm_lock() do {} while (0)
-@@ -563,6 +573,15 @@ static inline int device_pm_wait_for_dev
+ static int __init sh7372_power_domains_init(void)
  {
+ 	sh7372_init_domain(&sh7372_a4lc_domain, &sh7372_a4lc_domain_data);
++	sh7372_init_domain(&sh7372_a4mp_domain, &sh7372_a4mp_domain_data);
  	return 0;
  }
+ core_initcall(sh7372_power_domains_init);
+Index: linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/sh7372.h
++++ linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+@@ -475,11 +475,14 @@ struct platform_device;
+ #ifdef CONFIG_PM
+ extern struct generic_power_domain sh7372_a4lc_domain;
+ #define SH7372_A4LC	(&sh7372_a4lc_domain)
++extern struct generic_power_domain sh7372_a4mp_domain;
++#define SH7372_A4MP	(&sh7372_a4mp_domain)
+ 
+ extern void sh7372_add_device_to_domain(struct generic_power_domain *domain,
+ 					struct platform_device *pdev);
+ #else
+ #define SH7372_A4LC	NULL
++#define SH7372_A4PM	NULL
+ 
+ static inline void sh7372_add_device_to_domain(struct generic_power_domain *dom,
+ 					       struct platform_device *pd) {}
+Index: linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
++++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+@@ -1218,6 +1218,8 @@ static void __init mackerel_init(void)
+ 	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
+ 	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
+ 
++	sh7372_add_device_to_domain(SH7372_A4MP, &fsi_device);
 +
-+#define pm_generic_prepare	NULL
-+#define pm_generic_suspend	NULL
-+#define pm_generic_resume	NULL
-+#define pm_generic_freeze	NULL
-+#define pm_generic_thaw		NULL
-+#define pm_generic_restore	NULL
-+#define pm_generic_poweroff	NULL
-+#define pm_generic_complete	NULL
- #endif /* !CONFIG_PM_SLEEP */
+ 	hdmi_init_pm_clock();
+ }
  
- /* How to reorder dpm_list after device_move() */
-@@ -573,11 +592,4 @@ enum dpm_order {
- 	DPM_ORDER_DEV_LAST,
- };
- 
--extern int pm_generic_suspend(struct device *dev);
--extern int pm_generic_resume(struct device *dev);
--extern int pm_generic_freeze(struct device *dev);
--extern int pm_generic_thaw(struct device *dev);
--extern int pm_generic_restore(struct device *dev);
--extern int pm_generic_poweroff(struct device *dev);
--
- #endif /* _LINUX_PM_H */
