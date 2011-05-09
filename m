@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Update][PATCH 3/5] PM: System-wide power transitions
-	support for generic power domains
-Date: Tue, 10 May 2011 00:10:28 +0200
-Message-ID: <201105100010.28810.rjw__25035.9170874164$1304979809$gmane$org@sisk.pl>
-References: <201104290154.12966.rjw@sisk.pl> <201105082320.57185.rjw@sisk.pl>
-	<201105082324.19674.rjw@sisk.pl>
+Subject: [RFC][PATCH] PM / Hibernate: Add sysfs knob to control
+	size of memory for drivers
+Date: Tue, 10 May 2011 00:59:25 +0200
+Message-ID: <201105100059.25372.rjw__37743.2990506806$1304982084$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105082324.19674.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,429 +17,194 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make generic power domains support system-wide power transitions
-(system suspend and hibernation).  Add suspend, resume, freeze and
-thaw callbacks to be associated with struct generic_power_domain
-objects and make pm_genpd_init() use them as appropriate.
+Martin reports that on his system hibernation occasionally fails due
+to the lack of memory, because the radeon driver apparently allocates
+too much of it during the device freeze stage.  It turns out that the
+amount of memory allocated by radeon during hibernation (and
+presumably during system suspend too) depends on the utilization of
+the GPU (e.g. hibernating while there are two KDE 4 sessions with
+compositing enabled causes radeon to allocate more memory than for
+one KDE 4 session).
 
-The new callbacks do nothing for devices belonging to power domains
-that were powered down at run time (before the transition).  For the
-other devices the action carried out depends on the type of the
-transition.  During system suspend the power domain ->suspend()
-callback executes pm_generic_suspend() for the device, while the
-power domain ->suspend_noirq() callback stops the device and
-eventually removes power from the power domain it belongs to (after
-all devices in the power domain have been stopped).  During system
-resume the power domain ->resume_noirq() callback powers up the power
-domain (when executed for the first time for the given power domain)
-and starts the device, while the ->resume() callback executes
-pm_generic_resume() for the device.  Finally, the ->complete()
-callback executes pm_runtime_idle() for the device which should put
-it back into the suspended state if its runtime PM usage count is
-equal to zero at that time.
+In principle it should be possible to use image_size to make the
+memory preallocation mechanism free enough memory for the radeon
+driver, but in practice it is not easy to guess the right value
+because of the way the preallocation code uses image_size.  For this
+reason, it seems reasonable to allow users to control the amount of
+memory reserved for driver allocations made after the preallocation,
+which currently is constant and amounts to 1 MB.
 
-The actions carried out during hibernation and resume from it are
-analogous to the ones described above.
+Introduce a new sysfs file, /sys/power/reserved_size, whose value
+will be used as the amount of memory to reserve for the
+post-preallocation reservations made by device drivers, in bytes.
+For backwards compatibility, set its default (and initial) value to
+the currently used number (1 MB).
 
+References: https://bugzilla.kernel.org/show_bug.cgi?id=34102
+Reported-by: Martin Steigerwald <Martin@Lichtvoll.de>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
+ Documentation/ABI/testing/sysfs-power |   14 ++++++++++++++
+ kernel/power/hibernate.c              |   23 +++++++++++++++++++++++
+ kernel/power/main.c                   |    1 +
+ kernel/power/power.h                  |    4 ++++
+ kernel/power/snapshot.c               |   25 ++++++++++++++++++++-----
+ 5 files changed, 62 insertions(+), 5 deletions(-)
 
-Hi,
-
-In this version of the patch I added ->prepare() and ->complete() power domain
-callbacks behaving as described in the changelog (ie. doing nothing if power
-has been removed from the power domain).  On the system I tested this patch
-none of the drivers implements ->prepare() and ->complete(), so I didn't see
-the problem before.
-
-I also made the system-wide PM callbacks access genpd->power_is_off without
-locking, because that test cannot race with the runtime PM code modifying
-that field.
-
-Thanks,
-Rafael
-
----
- drivers/base/power/domain.c |  328 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   |    2 
- 2 files changed, 330 insertions(+)
-
-Index: linux-2.6/drivers/base/power/domain.c
+Index: linux-2.6/kernel/power/hibernate.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -273,6 +273,316 @@ static int pm_genpd_runtime_resume(struc
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -968,10 +968,33 @@ static ssize_t image_size_store(struct k
  
- #endif /* CONFIG_PM_RUNTIME */
+ power_attr(image_size);
  
-+#ifdef CONFIG_PM_SLEEP
-+
-+/**
-+ * pm_genpd_prepare - Start power transition of a device in a power domain.
-+ * @dev: Device to start the transition of.
-+ *
-+ * Start a power transition of a device (during a system-wide power transition)
-+ * under the assumption that its pwr_domain field points to the domain member of
-+ * an object of type struct generic_power_domain representing a power domain
-+ * consisting of I/O devices.
-+ */
-+static int pm_genpd_prepare(struct device *dev)
++static ssize_t reserved_size_show(struct kobject *kobj,
++				  struct kobj_attribute *attr, char *buf)
 +{
-+	struct generic_power_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	return genpd->power_is_off ? 0 : pm_generic_prepare(dev);
++	return sprintf(buf, "%lu\n", reserved_size);
 +}
 +
-+/**
-+ * pm_genpd_suspend - Suspend a device belonging to an I/O power domain.
-+ * @dev: Device to suspend.
-+ *
-+ * Suspend a device under the assumption that its pwr_domain field points to the
-+ * domain member of an object of type struct generic_power_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static int pm_genpd_suspend(struct device *dev)
++static ssize_t reserved_size_store(struct kobject *kobj,
++				   struct kobj_attribute *attr,
++				   const char *buf, size_t n)
 +{
-+	struct generic_power_domain *genpd;
++	unsigned long size;
 +
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	if (genpd->power_is_off)
-+		return 0;
-+
-+	/*
-+	 * If the device is in the (runtime) "suspended" state, call
-+	 * ->start_device() for it, if defined.
-+	 */
-+	pm_runtime_resume(dev);
-+
-+	return pm_generic_suspend(dev);
-+}
-+
-+/**
-+ * pm_genpd_suspend_noirq - Late suspend of a device from an I/O power domain.
-+ * @dev: Device to suspend.
-+ *
-+ * Carry out a late suspend of a device under the assumption that its
-+ * pwr_domain field points to the domain member of an object of type
-+ * struct generic_power_domain representing a power domain consisting of I/O
-+ * devices.
-+ */
-+static int pm_genpd_suspend_noirq(struct device *dev)
-+{
-+	struct generic_power_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	if (genpd->power_is_off)
-+		return 0;
-+
-+	if (genpd->stop_device)
-+		genpd->stop_device(dev);
-+
-+	mutex_lock(&genpd->lock);
-+	if (++genpd->suspended_count == genpd->device_count) {
-+		if (genpd->power_off)
-+			genpd->power_off(&genpd->domain);
++	if (sscanf(buf, "%lu", &size) == 1) {
++		reserved_size = size;
++		return n;
 +	}
-+	mutex_unlock(&genpd->lock);
 +
-+	return 0;
++	return -EINVAL;
 +}
 +
-+/**
-+ * pm_genpd_resume_noirq - Early resume of a device from an I/O power domain.
-+ * @dev: Device to resume.
-+ *
-+ * Carry out an early resume of a device under the assumption that its
-+ * pwr_domain field points to the domain member of an object of type
-+ * struct generic_power_domain representing a power domain consisting of I/O
-+ * devices.
-+ */
-+static int pm_genpd_resume_noirq(struct device *dev)
-+{
-+	struct generic_power_domain *genpd;
++power_attr(reserved_size);
 +
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	if (genpd->power_is_off)
-+		return 0;
-+
-+	mutex_lock(&genpd->lock);
-+	if (genpd->suspended_count == genpd->device_count) {
-+		if (genpd->power_on) {
-+			int ret = genpd->power_on(&genpd->domain);
-+			if (ret) {
-+				mutex_unlock(&genpd->lock);
-+				return ret;
-+			}
-+		}
-+	}
-+	genpd->suspended_count--;
-+	mutex_unlock(&genpd->lock);
-+
-+	if (genpd->start_device)
-+		genpd->start_device(dev);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pm_genpd_resume - Resume a device belonging to an I/O power domain.
-+ * @dev: Device to resume.
-+ *
-+ * Resume a device under the assumption that its pwr_domain field points to the
-+ * domain member of an object of type struct generic_power_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static int pm_genpd_resume(struct device *dev)
-+{
-+	struct generic_power_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	return genpd->power_is_off ? 0 : pm_generic_resume(dev);
-+}
-+
-+/**
-+ * pm_genpd_freeze - Freeze a device belonging to an I/O power domain.
-+ * @dev: Device to freeze.
-+ *
-+ * Freeze a device under the assumption that its pwr_domain field points to the
-+ * domain member of an object of type struct generic_power_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static int pm_genpd_freeze(struct device *dev)
-+{
-+	struct generic_power_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	if (genpd->power_is_off)
-+		return 0;
-+
-+	/*
-+	 * If the device is in the (runtime) "suspended" state, call
-+	 * ->start_device() for it, if defined.
-+	 */
-+	pm_runtime_resume(dev);
-+
-+	return pm_generic_freeze(dev);
-+}
-+
-+/**
-+ * pm_genpd_freeze_noirq - Late freeze of a device from an I/O power domain.
-+ * @dev: Device to freeze.
-+ *
-+ * Carry out a late freeze of a device under the assumption that its
-+ * pwr_domain field points to the domain member of an object of type
-+ * struct generic_power_domain representing a power domain consisting of I/O
-+ * devices.
-+ */
-+static int pm_genpd_freeze_noirq(struct device *dev)
-+{
-+	struct generic_power_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	if (!genpd->power_is_off && genpd->stop_device)
-+		genpd->stop_device(dev);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pm_genpd_thaw_noirq - Early thaw of a device from an I/O power domain.
-+ * @dev: Device to thaw.
-+ *
-+ * Carry out an early thaw of a device under the assumption that its
-+ * pwr_domain field points to the domain member of an object of type
-+ * struct generic_power_domain representing a power domain consisting of I/O
-+ * devices.
-+ */
-+static int pm_genpd_thaw_noirq(struct device *dev)
-+{
-+	struct generic_power_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	if (!genpd->power_is_off && genpd->start_device)
-+		genpd->start_device(dev);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pm_genpd_thaw - Thaw a device belonging to an I/O power domain.
-+ * @dev: Device to thaw.
-+ *
-+ * Thaw a device under the assumption that its pwr_domain field points to the
-+ * domain member of an object of type struct generic_power_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static int pm_genpd_thaw(struct device *dev)
-+{
-+	struct generic_power_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return -EINVAL;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	return genpd->power_is_off ? 0 : pm_generic_thaw(dev);
-+}
-+
-+/**
-+ * pm_genpd_complete - Complete power transition of a device in a power domain.
-+ * @dev: Device to complete the transition of.
-+ *
-+ * Complete a power transition of a device (during a system-wide power
-+ * transition) under the assumption that its pwr_domain field points to the
-+ * domain member of an object of type struct generic_power_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static void pm_genpd_complete(struct device *dev)
-+{
-+	struct generic_power_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	if (IS_ERR_OR_NULL(dev->pwr_domain))
-+		return;
-+
-+	genpd = container_of(dev->pwr_domain,
-+			     struct generic_power_domain, domain);
-+
-+	if (!genpd->power_is_off)
-+		pm_generic_complete(dev);
-+}
-+
-+#else
-+
-+#define pm_genpd_prepare	NULL
-+#define pm_genpd_suspend	NULL
-+#define pm_genpd_suspend_noirq	NULL
-+#define pm_genpd_resume_noirq	NULL
-+#define pm_genpd_resume		NULL
-+#define pm_genpd_freeze		NULL
-+#define pm_genpd_freeze_noirq	NULL
-+#define pm_genpd_thaw_noirq	NULL
-+#define pm_genpd_thaw		NULL
-+#define pm_genpd_complete	NULL
-+
-+#endif /* CONFIG_PM_SLEEP */
-+
- /**
-  * pm_genpd_add_device - Add a device to an I/O power domain.
-  * @genpd: Power domain to add the device to.
-@@ -304,6 +614,7 @@ int pm_genpd_add_device(struct generic_p
+ static struct attribute * g[] = {
+ 	&disk_attr.attr,
+ 	&resume_attr.attr,
+ 	&image_size_attr.attr,
++	&reserved_size_attr.attr,
+ 	NULL,
+ };
  
- 	dle->dev = dev;
- 	list_add_tail(&dle->node, &genpd->device_list);
-+	genpd->device_count++;
- 
- 	spin_lock_irq(&dev->power.lock);
- 	dev->pwr_domain = &genpd->domain;
-@@ -341,6 +652,7 @@ int pm_genpd_remove_device(struct generi
- 		dev->pwr_domain = NULL;
- 		spin_unlock_irq(&dev->power.lock);
- 
-+		genpd->device_count--;
- 		list_del(&dle->node);
- 		kfree(dle);
- 
-@@ -438,7 +750,23 @@ void pm_genpd_init(struct generic_power_
- 	genpd->gov = gov;
- 	genpd->in_progress = 0;
- 	genpd->power_is_off = is_off;
-+	genpd->device_count = 0;
-+	genpd->suspended_count = 0;
- 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
- 	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
- 	genpd->domain.ops.runtime_idle = pm_generic_runtime_idle;
-+	genpd->domain.ops.prepare = pm_genpd_prepare;
-+	genpd->domain.ops.suspend = pm_genpd_suspend;
-+	genpd->domain.ops.suspend_noirq = pm_genpd_suspend_noirq;
-+	genpd->domain.ops.resume_noirq = pm_genpd_resume_noirq;
-+	genpd->domain.ops.resume = pm_genpd_resume;
-+	genpd->domain.ops.freeze = pm_genpd_freeze;
-+	genpd->domain.ops.freeze_noirq = pm_genpd_freeze_noirq;
-+	genpd->domain.ops.thaw_noirq = pm_genpd_thaw_noirq;
-+	genpd->domain.ops.thaw = pm_genpd_thaw;
-+	genpd->domain.ops.poweroff = pm_genpd_suspend;
-+	genpd->domain.ops.poweroff_noirq = pm_genpd_suspend_noirq;
-+	genpd->domain.ops.restore_noirq = pm_genpd_resume_noirq;
-+	genpd->domain.ops.restore = pm_genpd_resume;
-+	genpd->domain.ops.complete = pm_genpd_complete;
- }
-Index: linux-2.6/include/linux/pm_domain.h
+Index: linux-2.6/kernel/power/power.h
 ===================================================================
---- linux-2.6.orig/include/linux/pm_domain.h
-+++ linux-2.6/include/linux/pm_domain.h
-@@ -25,6 +25,8 @@ struct generic_power_domain {
- 	struct dev_power_governor *gov;
- 	unsigned int in_progress;
- 	bool power_is_off;
-+	unsigned int device_count;
-+	unsigned int suspended_count;
- 	int (*power_off)(struct dev_power_domain *domain);
- 	int (*power_on)(struct dev_power_domain *domain);
- 	int (*start_device)(struct device *dev);
+--- linux-2.6.orig/kernel/power/power.h
++++ linux-2.6/kernel/power/power.h
+@@ -15,6 +15,7 @@ struct swsusp_info {
+ 
+ #ifdef CONFIG_HIBERNATION
+ /* kernel/power/snapshot.c */
++extern void __init hibernate_reserved_size_init(void);
+ extern void __init hibernate_image_size_init(void);
+ 
+ #ifdef CONFIG_ARCH_HIBERNATION_HEADER
+@@ -55,6 +56,7 @@ extern int hibernation_platform_enter(vo
+ 
+ #else /* !CONFIG_HIBERNATION */
+ 
++static inline void hibernate_reserved_size_init(void) {}
+ static inline void hibernate_image_size_init(void) {}
+ #endif /* !CONFIG_HIBERNATION */
+ 
+@@ -72,6 +74,8 @@ static struct kobj_attribute _name##_att
+ 
+ /* Preferred image size in bytes (default 500 MB) */
+ extern unsigned long image_size;
++/* Size of memory reserved for drivers (default SPARE_PAGES x PAGE_SIZE) */
++extern unsigned long reserved_size;
+ extern int in_suspend;
+ extern dev_t swsusp_resume_device;
+ extern sector_t swsusp_resume_block;
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -41,6 +41,18 @@ static void swsusp_set_page_forbidden(st
+ static void swsusp_unset_page_forbidden(struct page *);
+ 
+ /*
++ * Number of bytes to reserve for memory allocations made by device drivers
++ * from their ->freeze() and ->freeze_noirq() callbacks so that they don't
++ * cause image creation to fail (tunable via /sys/power/reserved_size).
++ */
++unsigned long reserved_size;
++
++void __init hibernate_reserved_size_init(void)
++{
++	reserved_size = SPARE_PAGES * PAGE_SIZE;
++}
++
++/*
+  * Preferred image size in bytes (tunable via /sys/power/image_size).
+  * When it is set to N, the image creating code will do its best to
+  * ensure the image size will not exceed N bytes, but if that is
+@@ -1263,11 +1275,13 @@ static unsigned long minimum_image_size(
+  * frame in use.  We also need a number of page frames to be free during
+  * hibernation for allocations made while saving the image and for device
+  * drivers, in case they need to allocate memory from their hibernation
+- * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
+- * respectively, both of which are rough estimates).  To make this happen, we
+- * compute the total number of available page frames and allocate at least
++ * callbacks (these two numbers are given by PAGES_FOR_IO (which is a rough
++ * estimate) and reserverd_size divided by PAGE_SIZE (which is tunable through
++ * /sys/power/reserved_size, respectively).  To make this happen, we compute the
++ * total number of available page frames and allocate at least
+  *
+- * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
++ * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2
++ *  + 2 * DIV_ROUND_UP(reserved_size, PAGE_SIZE)
+  *
+  * of them, which corresponds to the maximum size of a hibernation image.
+  *
+@@ -1322,7 +1336,8 @@ int hibernate_preallocate_memory(void)
+ 	count -= totalreserve_pages;
+ 
+ 	/* Compute the maximum number of saveable pages to leave in memory. */
+-	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
++	max_size = (count - (size + PAGES_FOR_IO)) / 2
++			- 2 * DIV_ROUND_UP(reserved_size, PAGE_SIZE);
+ 	/* Compute the desired number of image pages specified by image_size. */
+ 	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
+ 	if (size > max_size)
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -337,6 +337,7 @@ static int __init pm_init(void)
+ 	if (error)
+ 		return error;
+ 	hibernate_image_size_init();
++	hibernate_reserved_size_init();
+ 	power_kobj = kobject_create_and_add("power", NULL);
+ 	if (!power_kobj)
+ 		return -ENOMEM;
+Index: linux-2.6/Documentation/ABI/testing/sysfs-power
+===================================================================
+--- linux-2.6.orig/Documentation/ABI/testing/sysfs-power
++++ linux-2.6/Documentation/ABI/testing/sysfs-power
+@@ -158,3 +158,17 @@ Description:
+ 		successful, will make the kernel abort a subsequent transition
+ 		to a sleep state if any wakeup events are reported after the
+ 		write has returned.
++
++What:		/sys/power/reserved_size
++Date:		May 2011
++Contact:	Rafael J. Wysocki <rjw@sisk.pl>
++Description:
++		The /sys/power/reserved_size file allows user space to control
++		the amount of memory reserved for allocations made by device
++		drivers during the "device freeze" stage of hibernation.  It can
++		be written a string representing a non-negative integer that
++		will be used as the amount of memory to reserve for allocations
++		made by device drivers' "freeze" callbacks, in bytes.
++
++		Reading from this file will display the current value, which is
++		set to 1 MB by default.
