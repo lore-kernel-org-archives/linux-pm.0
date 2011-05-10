@@ -1,17 +1,15 @@
-From: Alexandre Felipe Muller de Souza <alexandrefm@mandriva.com.br>
-Subject: Re: [PATCH] Power Manager suspend-hybrid warn on
-	systemlog
-Date: Tue, 10 May 2011 15:10:47 -0300
-Message-ID: <1305051047.26111.0.camel@localhost.localdomain>
-References: <1298384175.8390.25.camel@localhost.localdomain>
-	<201104262236.10340.rjw@sisk.pl>
-	<1303930856.17485.1.camel@localhost.localdomain>
-	<201105070012.05863.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] PM / Runtime: Support for generic I/O
+	power domains (v3)
+Date: Tue, 10 May 2011 21:03:02 +0200
+Message-ID: <201105102103.02697.rjw__29624.7607599527$1305054241$gmane$org@sisk.pl>
+References: <201104290154.12966.rjw@sisk.pl> <201105082322.44268.rjw@sisk.pl>
+	<BANLkTin49iSYn=r8G=L0S2vnZhtZw6RFpw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105070012.05863.rjw@sisk.pl>
+In-Reply-To: <BANLkTin49iSYn=r8G=L0S2vnZhtZw6RFpw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +19,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Lin Ming <minggr@gmail.com>
+Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
-VGhhbmtzIGEgbG90IFJhZmFlbCwgSSB0ZXN0ZWQgdGhvc2UgcGF0Y2hlcyBhbmQgaXQgd29ya2Vk
-IHdlbGwKCkFsZXhhbmRyZQoKRW0gU8OhYiwgMjAxMS0wNS0wNyDDoHMgMDA6MTIgKzAyMDAsIFJh
-ZmFlbCBKLiBXeXNvY2tpIGVzY3JldmV1Ogo+IE9uIFdlZG5lc2RheSwgQXByaWwgMjcsIDIwMTEs
-IEFsZXhhbmRyZSBGZWxpcGUgTXVsbGVyIGRlIFNvdXphIHdyb3RlOgo+ID4gVGhvc2UgbGluZXMg
-YXJlIHRoZSBsYXN0IGxpbmVzIG9mIGRtZXNnLgo+ID4gSSB0aGluayBpdCB3YXMgYXQgIndha2lu
-ZyB1cCIgcHJvY2Vzcy4KPiAKPiBIbW0uICBJIGhhdmUgZm91bmQgYSBidWcsIGJ1dCBJJ20gbm90
-IHN1cmUgaXQncyB0aGlzIG9uZSBzdGlsbC4KPiAKPiBQbGVhc2UgYXBwbHkgdGhlIGFwcGVuZGVk
-IHBhdGNoIG9uIHRvcCBvZiB0aGUgcHJldmlvdXMgb25lIChpLmUuIHRoZQo+IHNlY29uZCBvZiBt
-eSBwYXRjaGVzKSBhbmQgY2hlY2sgaWYgdGhhdCBoZWxwcy4KPiAKPiBUaGFua3MsCj4gUmFmYWVs
-Cj4gIAo+IAo+IC0tLQo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD4KPiBT
-dWJqZWN0OiBQTSAvIEhpYmVybmF0ZTogRml4IGlvY3RsIFNOQVBTSE9UX1MyUkFNCj4gCj4gVGhl
-IFNOQVBTSE9UX1MyUkFNIGlvY3RsIHVzZWQgZm9yIGltcGxlbWVudGluZyB0aGUgZmVhdHVyZSBh
-bGxvd2luZwo+IG9uZSB0byBzdXNwZW5kIHRvIFJBTSBhZnRlciBjcmVhdGluZyBhIGhpYmVybmF0
-aW9uIGltYWdlIGlzIGN1cnJlbnRseQo+IGJyb2tlbiwgYmVjYXVzZSBpdCBkb2Vzbid0IGNsZWFy
-IHRoZSAicmVhZHkiIGZsYWcgaW4gdGhlIHN0cnVjdAo+IHNuYXBzaG90X2RhdGEgb2JqZWN0IGhh
-bmRsZWQgYnkgaXQuICBBcyBhIHJlc3VsdCwgdGhlCj4gU05BUFNIT1RfVU5GUkVFWkUgZG9lc24n
-dCB3b3JrIGNvcnJlY3RseSBhZnRlciBTTkFQU0hPVF9TMlJBTSBoYXMKPiByZXR1cm5lZCBhbmQg
-dGhlIHVzZXIgc3BhY2UgaGliZXJuYXRlIHRhc2sgY2Fubm90IHRoYXcgdGhlIG90aGVyCj4gcHJv
-Y2Vzc2VzIGFzIGFwcHJvcHJpYXRlLiAgTWFrZSBTTkFQU0hPVF9TMlJBTSBjbGVhciBkYXRhLT5y
-ZWFkeQo+IHRvIGZpeCB0aGlzIHByb2JsZW0uCj4gCj4gU2lnbmVkLW9mZi1ieTogUmFmYWVsIEou
-IFd5c29ja2kgPHJqd0BzaXNrLnBsPgo+IC0tLQo+ICBrZXJuZWwvcG93ZXIvdXNlci5jIHwgICAg
-MSArCj4gIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKQo+IAo+IEluZGV4OiBsaW51eC0y
-LjYva2VybmVsL3Bvd2VyL3VzZXIuYwo+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiAtLS0gbGludXgtMi42Lm9yaWcv
-a2VybmVsL3Bvd2VyL3VzZXIuYwo+ICsrKyBsaW51eC0yLjYva2VybmVsL3Bvd2VyL3VzZXIuYwo+
-IEBAIC0zODEsNiArMzgxLDcgQEAgc3RhdGljIGxvbmcgc25hcHNob3RfaW9jdGwoc3RydWN0IGZp
-bGUgKgo+ICAJCSAqIFBNX0hJQkVSTkFUSU9OX1BSRVBBUkUKPiAgCQkgKi8KPiAgCQllcnJvciA9
-IHN1c3BlbmRfZGV2aWNlc19hbmRfZW50ZXIoUE1fU1VTUEVORF9NRU0pOwo+ICsJCWRhdGEtPnJl
-YWR5ID0gMDsKPiAgCQlicmVhazsKPiAgCj4gIAljYXNlIFNOQVBTSE9UX1BMQVRGT1JNX1NVUFBP
-UlQ6CgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGlu
-dXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0
-dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1w
-bQ==
+On Tuesday, May 10, 2011, Lin Ming wrote:
+> On Mon, May 9, 2011 at 5:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> > +
+> > +/**
+> > + * __pm_genpd_restore_device - Restore a pre-suspend state of a device.
+> > + * @dev: Device to restore the state of.
+> > + * @genpd: Power domain the device belongs to.
+> > + */
+> > +static void __pm_genpd_restore_device(struct device *dev,
+> > +                                     struct generic_power_domain *genpd)
+> > +{
+> > +       struct device_driver *drv = dev->driver;
+> > +
+> > +       if (genpd->start_device)
+> > +               genpd->start_device(dev);
+> > +
+> > +       if (drv && drv->pm && drv->pm->runtime_resume)
+> > +               drv->pm->runtime_resume(dev);
+> > +
+> > +       if (genpd->stop_device)
+> > +               genpd->stop_device(dev);
+> > +}
+> 
+> Why call ->stop_device in restore function?
+
+Because the device is still suspended at this point, most likely.
+Presumably drv->pm->runtime_resume(dev) has restored it's registers, but
+the device's runtime PM status hasn't changed (yet).
+
+> BTW,
+> you implemented power domains for ARM / shmobile,
+> What can we do for other arches?
+> I wonder how to implement this "power domain" on x86.
+
+It depends on what kind of x86 you mean.  On PCs we can't control power
+domains directly and it is done through ACPI power resources, which works.
+I don't think there's a need to rework this.
+
+On Moorestown and similar, I can't say, since I don't know how the hardware
+is designed.
+
+Thanks,
+Rafael
