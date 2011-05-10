@@ -1,15 +1,17 @@
-From: Lin Ming <minggr@gmail.com>
-Subject: Re: [PATCH 1/5] PM / Runtime: Support for generic I/O
-	power domains (v3)
-Date: Tue, 10 May 2011 16:22:00 +0800
-Message-ID: <BANLkTin49iSYn=r8G=L0S2vnZhtZw6RFpw__3616.19489635832$1305015781$gmane$org@mail.gmail.com>
-References: <201104290154.12966.rjw@sisk.pl> <201105082320.57185.rjw@sisk.pl>
-	<201105082322.44268.rjw@sisk.pl>
+From: Alexandre Felipe Muller de Souza <alexandrefm@mandriva.com.br>
+Subject: Re: [PATCH] Power Manager suspend-hybrid warn on
+	systemlog
+Date: Tue, 10 May 2011 15:10:47 -0300
+Message-ID: <1305051047.26111.0.camel@localhost.localdomain>
+References: <1298384175.8390.25.camel@localhost.localdomain>
+	<201104262236.10340.rjw@sisk.pl>
+	<1303930856.17485.1.camel@localhost.localdomain>
+	<201105070012.05863.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105082322.44268.rjw@sisk.pl>
+In-Reply-To: <201105070012.05863.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,40 +22,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 9, 2011 at 5:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-
-> +
-> +/**
-> + * __pm_genpd_restore_device - Restore a pre-suspend state of a device.
-> + * @dev: Device to restore the state of.
-> + * @genpd: Power domain the device belongs to.
-> + */
-> +static void __pm_genpd_restore_device(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- struct generic_power_domain *genpd)
-> +{
-> + =A0 =A0 =A0 struct device_driver *drv =3D dev->driver;
-> +
-> + =A0 =A0 =A0 if (genpd->start_device)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 genpd->start_device(dev);
-> +
-> + =A0 =A0 =A0 if (drv && drv->pm && drv->pm->runtime_resume)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 drv->pm->runtime_resume(dev);
-> +
-> + =A0 =A0 =A0 if (genpd->stop_device)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 genpd->stop_device(dev);
-> +}
-
-Why call ->stop_device in restore function?
-
-BTW,
-you implemented power domains for ARM / shmobile,
-What can we do for other arches?
-I wonder how to implement this "power domain" on x86.
-
-Thanks,
-Lin Ming
+VGhhbmtzIGEgbG90IFJhZmFlbCwgSSB0ZXN0ZWQgdGhvc2UgcGF0Y2hlcyBhbmQgaXQgd29ya2Vk
+IHdlbGwKCkFsZXhhbmRyZQoKRW0gU8OhYiwgMjAxMS0wNS0wNyDDoHMgMDA6MTIgKzAyMDAsIFJh
+ZmFlbCBKLiBXeXNvY2tpIGVzY3JldmV1Ogo+IE9uIFdlZG5lc2RheSwgQXByaWwgMjcsIDIwMTEs
+IEFsZXhhbmRyZSBGZWxpcGUgTXVsbGVyIGRlIFNvdXphIHdyb3RlOgo+ID4gVGhvc2UgbGluZXMg
+YXJlIHRoZSBsYXN0IGxpbmVzIG9mIGRtZXNnLgo+ID4gSSB0aGluayBpdCB3YXMgYXQgIndha2lu
+ZyB1cCIgcHJvY2Vzcy4KPiAKPiBIbW0uICBJIGhhdmUgZm91bmQgYSBidWcsIGJ1dCBJJ20gbm90
+IHN1cmUgaXQncyB0aGlzIG9uZSBzdGlsbC4KPiAKPiBQbGVhc2UgYXBwbHkgdGhlIGFwcGVuZGVk
+IHBhdGNoIG9uIHRvcCBvZiB0aGUgcHJldmlvdXMgb25lIChpLmUuIHRoZQo+IHNlY29uZCBvZiBt
+eSBwYXRjaGVzKSBhbmQgY2hlY2sgaWYgdGhhdCBoZWxwcy4KPiAKPiBUaGFua3MsCj4gUmFmYWVs
+Cj4gIAo+IAo+IC0tLQo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD4KPiBT
+dWJqZWN0OiBQTSAvIEhpYmVybmF0ZTogRml4IGlvY3RsIFNOQVBTSE9UX1MyUkFNCj4gCj4gVGhl
+IFNOQVBTSE9UX1MyUkFNIGlvY3RsIHVzZWQgZm9yIGltcGxlbWVudGluZyB0aGUgZmVhdHVyZSBh
+bGxvd2luZwo+IG9uZSB0byBzdXNwZW5kIHRvIFJBTSBhZnRlciBjcmVhdGluZyBhIGhpYmVybmF0
+aW9uIGltYWdlIGlzIGN1cnJlbnRseQo+IGJyb2tlbiwgYmVjYXVzZSBpdCBkb2Vzbid0IGNsZWFy
+IHRoZSAicmVhZHkiIGZsYWcgaW4gdGhlIHN0cnVjdAo+IHNuYXBzaG90X2RhdGEgb2JqZWN0IGhh
+bmRsZWQgYnkgaXQuICBBcyBhIHJlc3VsdCwgdGhlCj4gU05BUFNIT1RfVU5GUkVFWkUgZG9lc24n
+dCB3b3JrIGNvcnJlY3RseSBhZnRlciBTTkFQU0hPVF9TMlJBTSBoYXMKPiByZXR1cm5lZCBhbmQg
+dGhlIHVzZXIgc3BhY2UgaGliZXJuYXRlIHRhc2sgY2Fubm90IHRoYXcgdGhlIG90aGVyCj4gcHJv
+Y2Vzc2VzIGFzIGFwcHJvcHJpYXRlLiAgTWFrZSBTTkFQU0hPVF9TMlJBTSBjbGVhciBkYXRhLT5y
+ZWFkeQo+IHRvIGZpeCB0aGlzIHByb2JsZW0uCj4gCj4gU2lnbmVkLW9mZi1ieTogUmFmYWVsIEou
+IFd5c29ja2kgPHJqd0BzaXNrLnBsPgo+IC0tLQo+ICBrZXJuZWwvcG93ZXIvdXNlci5jIHwgICAg
+MSArCj4gIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKQo+IAo+IEluZGV4OiBsaW51eC0y
+LjYva2VybmVsL3Bvd2VyL3VzZXIuYwo+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiAtLS0gbGludXgtMi42Lm9yaWcv
+a2VybmVsL3Bvd2VyL3VzZXIuYwo+ICsrKyBsaW51eC0yLjYva2VybmVsL3Bvd2VyL3VzZXIuYwo+
+IEBAIC0zODEsNiArMzgxLDcgQEAgc3RhdGljIGxvbmcgc25hcHNob3RfaW9jdGwoc3RydWN0IGZp
+bGUgKgo+ICAJCSAqIFBNX0hJQkVSTkFUSU9OX1BSRVBBUkUKPiAgCQkgKi8KPiAgCQllcnJvciA9
+IHN1c3BlbmRfZGV2aWNlc19hbmRfZW50ZXIoUE1fU1VTUEVORF9NRU0pOwo+ICsJCWRhdGEtPnJl
+YWR5ID0gMDsKPiAgCQlicmVhazsKPiAgCj4gIAljYXNlIFNOQVBTSE9UX1BMQVRGT1JNX1NVUFBP
+UlQ6CgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGlu
+dXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0
+dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1w
+bQ==
