@@ -1,7 +1,8 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH v2 2/3] PM / DEVFREQ: add example governors
-Date: Wed, 11 May 2011 16:58:42 +0900
-Message-ID: <1305100723-29161-2-git-send-email-myungjoo.ham@samsung.com>
+Subject: [PATCH v2 3/3] PM / DEVFREQ: add sysfs interface
+ (including user tickling)
+Date: Wed, 11 May 2011 16:58:43 +0900
+Message-ID: <1305100723-29161-3-git-send-email-myungjoo.ham@samsung.com>
 References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,122 +22,294 @@ To: linux-pm@lists.linux-foundation.org
 Cc: Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Three CPUFREQ-like governors are provided as examples.
+1. System-wide sysfs interface
+- tickle_all	R: number of tickle_all execution
+		W: tickle all devfreq devices
+- min_interval	R: devfreq monitoring base interval in ms
+- monitoring	R: shows whether devfreq monitoring is active or
+  not.
 
-powersave: use the lowest frequency possible. The user (device) should
-set the polling_ms as 0 because polling is useless for this governor.
-
-performance: use the highest freqeuncy possible. The user (device)
-should set the polling_ms as 0 because polling is useless for this
-governor.
-
-simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
-
-When a user updates OPP entries (enable/disable/add), OPP framework
-automatically notifies DEVFREQ to update operating frequency
-accordingly. Thus, DEVFREQ users (device drivers) do not need to update
-DEVFREQ manually with OPP entry updates or set polling_ms for powersave
-, performance, or any other "static" governors.
+2. Device specific sysfs interface
+- tickle	R: number of tickle execution for the device
+		W: tickle the device
 
 Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/base/power/devfreq.c |   69 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/devfreq.h      |    5 +++
- 2 files changed, 74 insertions(+), 0 deletions(-)
+ drivers/base/power/devfreq.c |  191 ++++++++++++++++++++++++++++++++++++-----
+ include/linux/devfreq.h      |    3 +
+ 2 files changed, 170 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/base/power/devfreq.c b/drivers/base/power/devfreq.c
-index 8e2e45b..251d761 100644
+index 251d761..ba1b606 100644
 --- a/drivers/base/power/devfreq.c
 +++ b/drivers/base/power/devfreq.c
-@@ -351,3 +351,72 @@ static int __init devfreq_init(void)
- 	return 0;
+@@ -40,6 +40,9 @@ static LIST_HEAD(devfreq_list);
+ /* Exclusive access to devfreq_list and its elements */
+ static DEFINE_MUTEX(devfreq_list_lock);
+ 
++static struct kobject *devfreq_kobj;
++static struct attribute_group dev_attr_group;
++
+ /**
+  * find_device_devfreq() - find devfreq struct using device pointer
+  * @dev:	device pointer used to lookup device DEVFREQ.
+@@ -211,6 +214,8 @@ int devfreq_add_device(struct device *dev, struct devfreq_dev_profile *profile,
+ 		queue_delayed_work(devfreq_wq, &devfreq_work,
+ 				   msecs_to_jiffies(DEVFREQ_INTERVAL));
+ 	}
++
++	sysfs_update_group(&dev->kobj, &dev_attr_group);
+ out:
+ 	mutex_unlock(&devfreq_list_lock);
+ 
+@@ -237,6 +242,8 @@ int devfreq_remove_device(struct device *dev)
+ 		return -EINVAL;
+ 	}
+ 
++	sysfs_remove_group(&dev->kobj, &dev_attr_group);
++
+ 	list_del(&devfreq->node);
+ 
+ 	kfree(devfreq);
+@@ -286,6 +293,38 @@ out:
+ 	return err;
  }
- late_initcall(devfreq_init);
-+
-+static int devfreq_powersave_func(struct devfreq *df,
-+				  unsigned long *freq)
+ 
++int _devfreq_tickle_device(struct devfreq *df, unsigned long delay)
 +{
-+	*freq = 0; /* devfreq_do will run "ceiling" to 0 */
-+	return 0;
-+}
++	int err = 0;
++	unsigned long freq;
++	struct opp *opp;
 +
-+struct devfreq_governor devfreq_powersave = {
-+	.get_target_freq = devfreq_powersave_func,
-+};
++	freq = df->profile->max_freq;
++	opp = opp_find_freq_floor(df->dev, &freq);
++	if (IS_ERR(opp))
++		return PTR_ERR(opp);
 +
-+static int devfreq_performance_func(struct devfreq *df,
-+				    unsigned long *freq)
-+{
-+	*freq = UINT_MAX; /* devfreq_do will run "floor" */
-+	return 0;
-+}
-+
-+struct devfreq_governor devfreq_performance = {
-+	.get_target_freq = devfreq_performance_func,
-+};
-+
-+/* Constants for DevFreq-Simple-Ondemand (DFSO) */
-+#define DFSO_UPTHRESHOLD	(90)
-+#define DFSO_DOWNDIFFERENCTIAL	(5)
-+static int devfreq_simple_ondemand_func(struct devfreq *df,
-+					unsigned long *freq)
-+{
-+	struct devfreq_dev_status stat;
-+	int err = df->profile->get_dev_status(df->dev, &stat);
-+	unsigned long long a, b;
-+
-+	if (err)
-+		return err;
-+
-+	/* Set MAX if it's busy enough */
-+	if (stat.busy_time * 100 >
-+	    stat.total_time * DFSO_UPTHRESHOLD) {
-+		*freq = UINT_MAX;
-+		return 0;
++	freq = opp_get_freq(opp);
++	if (df->previous_freq != freq) {
++		err = df->profile->target(df->dev, opp);
++		if (!err)
++			df->previous_freq = freq;
++	}
++	if (err) {
++		dev_err(df->dev, "%s: Cannot set frequency.\n", __func__);
++	} else {
++		df->tickle = delay;
++		df->num_tickle++;
 +	}
 +
-+	/* Set MAX if we do not know the initial frequency */
-+	if (stat.current_frequency == 0) {
-+		*freq = UINT_MAX;
-+		return 0;
++	if (devfreq_wq && !monitoring) {
++		monitoring = true;
++		queue_delayed_work(devfreq_wq, &devfreq_work,
++				   msecs_to_jiffies(DEVFREQ_INTERVAL));
 +	}
 +
-+	/* Keep the current frequency */
-+	if (stat.busy_time * 100 >
-+	    stat.total_time * (DFSO_UPTHRESHOLD - DFSO_DOWNDIFFERENCTIAL)) {
-+		*freq = stat.current_frequency;
-+		return 0;
-+	}
++	return err;
++}
+ /**
+  * devfreq_tickle_device() - Guarantee maximum operation speed for a while
+  *			instaneously.
+@@ -301,43 +340,133 @@ out:
+ int devfreq_tickle_device(struct device *dev, unsigned long duration_ms)
+ {
+ 	struct devfreq *devfreq;
+-	struct opp *opp;
+-	unsigned long freq;
+ 	int err = 0;
++	unsigned long delay; /* in num DEVFREQ_INTERVAL */
+ 
+ 	mutex_lock(&devfreq_list_lock);
+ 	devfreq = find_device_devfreq(dev);
+-	if (!IS_ERR(devfreq)) {
+-		freq = devfreq->profile->max_freq;
+-		opp = opp_find_freq_floor(devfreq->dev, &freq);
+-		freq = opp_get_freq(opp);
+-		if (devfreq->previous_freq != freq) {
+-			err = devfreq->profile->target(devfreq->dev, opp);
+-			if (!err)
+-				devfreq->previous_freq = freq;
+-		}
+-		if (err)
+-			dev_err(dev, "%s: Cannot set frequency.\n", __func__);
+-		else
+-			devfreq->tickle = DIV_ROUND_UP(duration_ms,
+-						       DEVFREQ_INTERVAL);
++	delay = DIV_ROUND_UP(duration_ms, DEVFREQ_INTERVAL);
 +
-+	/* Set the desired frequency based on the load */
-+	a = (unsigned long long) stat.busy_time * stat.current_frequency;
-+	b = div_u64(a, stat.total_time);
-+	b *= 100;
-+	b = div_u64(b, (DFSO_UPTHRESHOLD - DFSO_DOWNDIFFERENCTIAL / 2));
-+	*freq = (unsigned long) b;
++	if (IS_ERR(devfreq))
++		err = PTR_ERR(devfreq);
++	else
++		err = _devfreq_tickle_device(devfreq, delay);
 +
-+	return 0;
++	mutex_unlock(&devfreq_list_lock);
++
++	return err;
 +}
 +
-+struct devfreq_governor devfreq_simple_ondemand = {
-+	.get_target_freq = devfreq_simple_ondemand_func,
++static int num_tickle_all;
++static ssize_t tickle_all(struct device *dev, struct device_attribute *attr,
++			  const char *buf, size_t count)
++{
++	int duration;
++	struct devfreq *tmp;
++	unsigned long delay;
++
++	sscanf(buf, "%d", &duration);
++	if (duration < DEVFREQ_INTERVAL)
++		duration = DEVFREQ_INTERVAL;
++
++	if (unlikely(IS_ERR_OR_NULL(dev))) {
++		pr_err("%s: Invalid parameters\n", __func__);
++		return -EINVAL;
+ 	}
+ 
+-	if (devfreq_wq && !monitoring) {
+-		monitoring = true;
+-		queue_delayed_work(devfreq_wq, &devfreq_work,
+-				   msecs_to_jiffies(DEVFREQ_INTERVAL));
++	delay = DIV_ROUND_UP(duration, DEVFREQ_INTERVAL);
++
++	mutex_lock(&devfreq_list_lock);
++	list_for_each_entry(tmp, &devfreq_list, node) {
++		_devfreq_tickle_device(tmp, delay);
+ 	}
+ 	mutex_unlock(&devfreq_list_lock);
+ 
+-	if (IS_ERR(devfreq)) {
+-		dev_err(dev, "%s: Cannot find devfreq.\n", __func__);
+-		err = PTR_ERR(devfreq);
++	num_tickle_all++;
++	return count;
++}
++
++static ssize_t show_num_tickle_all(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", num_tickle_all);
++}
++
++static ssize_t show_min_interval(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", DEVFREQ_INTERVAL);
++}
++
++static ssize_t show_monitoring(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", monitoring ? 1 : 0);
++}
++
++static DEVICE_ATTR(tickle_all, 0644, show_num_tickle_all, tickle_all);
++static DEVICE_ATTR(min_interval, 0444, show_min_interval, NULL);
++static DEVICE_ATTR(monitoring, 0444, show_monitoring, NULL);
++static struct attribute *devfreq_entries[] = {
++	&dev_attr_tickle_all.attr,
++	&dev_attr_min_interval.attr,
++	&dev_attr_monitoring.attr,
++	NULL,
 +};
++static struct attribute_group devfreq_attr_group = {
++	.name	= "devfreq",
++	.attrs	= devfreq_entries,
++};
++
++static ssize_t tickle(struct device *dev, struct device_attribute *attr,
++		      const char *buf, size_t count)
++{
++	int duration;
++	struct devfreq *df;
++	unsigned long delay;
++
++	sscanf(buf, "%d", &duration);
++	if (duration < DEVFREQ_INTERVAL)
++		duration = DEVFREQ_INTERVAL;
++
++	if (unlikely(IS_ERR_OR_NULL(dev))) {
++		pr_err("%s: Invalid parameters\n", __func__);
++		return -EINVAL;
+ 	}
+ 
+-	return err;
++	delay = DIV_ROUND_UP(duration, DEVFREQ_INTERVAL);
++
++	mutex_lock(&devfreq_list_lock);
++	df = find_device_devfreq(dev);
++	_devfreq_tickle_device(df, delay);
++	mutex_unlock(&devfreq_list_lock);
++
++	return count;
+ }
+ 
++static ssize_t show_num_tickle(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	struct devfreq *df;
++
++	df = find_device_devfreq(dev);
++
++	if (!IS_ERR(df))
++		return sprintf(buf, "%d\n", df->num_tickle);
++
++	return PTR_ERR(df);
++}
++
++static DEVICE_ATTR(tickle, 0644, show_num_tickle, tickle);
++static struct attribute *dev_entries[] = {
++	&dev_attr_tickle.attr,
++	NULL,
++};
++static struct attribute_group dev_attr_group = {
++	.name	= NULL,
++	.attrs	= dev_entries,
++};
++
+ static int __init devfreq_init(void)
+ {
+ 	mutex_lock(&devfreq_list_lock);
+@@ -345,6 +474,20 @@ static int __init devfreq_init(void)
+ 	monitoring = false;
+ 	devfreq_wq = create_freezable_workqueue("devfreq_wq");
+ 	INIT_DELAYED_WORK_DEFERRABLE(&devfreq_work, devfreq_monitor);
++
++	/* Create sysfs */
++#ifdef CONFIG_PM
++	devfreq_kobj = kobject_create_and_add("devfreq", power_kobj);
++	if (!devfreq_kobj) {
++		pr_err("Unable to create DEVFREQ kobject.\n");
++		goto out;
++	}
++	if (sysfs_create_group(devfreq_kobj, &devfreq_attr_group)) {
++		pr_err("Unable to create DEVFREQ sysfs entries.\n");
++		goto out;
++	}
++#endif
++out:
+ 	mutex_unlock(&devfreq_list_lock);
+ 
+ 	devfreq_monitor(&devfreq_work.work);
 diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index d08e9f5..ec41ba6 100644
+index ec41ba6..f6e38ee 100644
 --- a/include/linux/devfreq.h
 +++ b/include/linux/devfreq.h
-@@ -81,6 +81,11 @@ extern int devfreq_add_device(struct device *dev,
- extern int devfreq_remove_device(struct device *dev);
- extern int devfreq_update(struct device *dev, bool may_not_exist);
- extern int devfreq_tickle_device(struct device *dev, unsigned long duration_ms);
+@@ -59,6 +59,7 @@ struct devfreq_governor {
+  *		at each executino of devfreq_monitor, tickle is decremented.
+  *		User may tickle a device-devfreq in order to set maximum
+  *		frequency instaneously with some guaranteed duration.
++ * @num_tickle	number of tickle calls.
+  *
+  * This structure stores the DEVFREQ information for a give device.
+  */
+@@ -72,6 +73,8 @@ struct devfreq {
+ 	unsigned long previous_freq;
+ 	unsigned int next_polling;
+ 	unsigned int tickle;
 +
-+extern struct devfreq_governor devfreq_powersave;
-+extern struct devfreq_governor devfreq_performance;
-+extern struct devfreq_governor devfreq_simple_ondemand;
-+
- #else /* !CONFIG_PM_DEVFREQ */
- static int devfreq_add_device(struct device *dev,
- 			   struct devfreq_dev_profile *profile,
++	unsigned int num_tickle;
+ };
+ 
+ #if defined(CONFIG_PM_DEVFREQ)
 -- 
 1.7.4.1
