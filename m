@@ -1,12 +1,15 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [RFC PATCH v3 1/2] PM / Core: suspend_again callback for
-	suspend_ops.
-Date: Wed, 11 May 2011 14:18:24 +0900
-Message-ID: <1305091105-27173-1-git-send-email-myungjoo.ham@samsung.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [Update][RFC][PATCH 1/2] PM / Runtime: Support for
+ generic I/O power domains (v2)
+Date: Wed, 11 May 2011 09:26:41 +0200
+Message-ID: <1305098801.4642.6.camel@vence>
+References: <201104290154.12966.rjw@sisk.pl>
+	<201104290154.56145.rjw@sisk.pl>  <201104300254.46973.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201104300254.46973.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,150 +19,307 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-A system or a device may need to control suspend/wakeup events. It may
-want to wakeup the system after a predefined amount of time or at a
-predefined event decided while entering suspend for polling or delayed
-work. Then, it may want to enter suspend again if its predefined wakeup
-condition is the only wakeup reason and there is no outstanding events;
-thus, it does not wakeup the userspace unnecessary or unnecessary
-devices and keeps suspended as long as possible (saving the power).
+Hi Rafael,
 
-Enabling a system to wakeup after a specified time can be easily
-achieved by using RTC. However, to enter suspend again immediately
-without invoking userland and unrelated devices, we need additional
-features in the suspend framework.
+On Sat, 2011-04-30 at 02:54 +0200, Rafael J. Wysocki wrote: 
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Introcude common headers, helper functions and callbacks allowing
+> platforms to use simple generic power domains for runtime power
+> management.
+> 
+> Introduce struct generic_power_domain to be used for representing
+> power domains that each contain a number of devices and may be
+> master domains or subdomains with respect to other power domains.
+> Among other things, this structure includes callbacks to be
+> provided by platforms for performing specific tasks related to
+> power management (i.e. ->stop_device() may disable a device's
+> clocks, while ->start_device() may enable them, ->power_on() is
+> supposed to remove power from the entire power domain
+> and ->power_off() is supposed to restore it).
+>
+> Introduce functions that can be used as power domain runtime PM
+> callbacks, pm_genpd_runtime_suspend() and pm_genpd_runtime_resume(),
+> as well as helper functions for the initialization of a power
+> domain represented by a struct generic_power_domain object,
+> adding a device to or removing a device from it and adding or
+> removing subdomains.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Such need comes from:
+Thanks for proposing this.  It looks like a good starting point.  I
+haven't had the time to experiment with it on OMAP yet due to
+travel/conferences, but here's at least a few comments and questions
+after a brief review.
 
-1. Monitoring a critical device status without interrupts that can
-wakeup the system. (in-suspend polling)
- An example is ambient temperature monitoring that needs to shut down
-the system or a specific device function if it is too hot or cold. The
-temperature of a specific device may be needed to be monitored as well;
-e.g., a charger monitors battery temperature in order to stop charging
-if overheated.
+This looks like a good start for an abstraction, but I'm not sure if can
+be broadly useful without some further complications.
 
-2. Execute critical "delayed work" at suspend.
- A driver or a system/board may have a delayed work (or any similar
-things) that it wants to execute at the requested time.
- For example, some chargers want to check the battery voltage some
-time (e.g., 30 seconds) after the battery is fully charged and the
-charger has stopped. Then, the charger restarts charging if the voltage
-has dropped more than a threshold, which is smaller than "restart-charger"
-voltage, which is a threshold to restart charging regardless of the
-time passed.
+On many SoCs, a HW power domain has more than 2 states.  On OMAP for
+example, a power domain can be on, inactive, retention or off.
+Therefore, the 2-state approach in this patch doesn't really map well to
+hardware power domains (and I'm pretty sure OMAP is not unique here.)
+It also means that the binary decision of the proposed governor doesn't
+necessarily map well either (e.g., based on wake-up latency constraints,
+or HW bugs, you might allow an idle device might be able to go to
+retention, but not to off.)
 
-This patch allows to add "suspend_again" callback at struct
-platform_suspend_ops and let the "suspend_again" callback return true if
-the system is required to enter suspend again after the current instance
-of wakeup. Device-wise suspend_again implemented at dev_pm_ops or
-syscore is not done because: a) suspend_again feature is usually under
-platform-wise decision and controls the behavior of the whole platform
-and b) There are very limited devices related to the usage cases of
-suspend_again; chargers and temperature sensors are mentioned so far.
+I suppose one option would be to use "off" as defined here to handle all
+the !on states, and let the platform-specific code handle the details.
+However, that doesn't sound all that "generic" for a generic solution.
 
-With suspend_again callback registered at struct platform_suspend_ops
-suspend_ops in kernel/power/suspend.c with suspend_set_ops by the
-platform, the suspend framework tries to enter suspend again by
-looping suspend_enter() if suspend_again has returned true and there has
-been no errors in the suspending sequence or pending wakeups (by
-pm_wakeup_pending).
+Another possibility would be to allow a generic power domain to have
+multiple states (or levels), with a governor hook for each state.  
 
-Tested at Exynos4-NURI.
+> ---
+> 
+> Hi,
+> 
+> This version of the patch fixes a bug that caused pm_runtime_suspend()
+> (and equivalent) to return -EBUSY erroneously when suspending the last
+> active device in a power domain.  It has been tested on an ARM shmobile
+> system.
+> 
+> Greg, I hope your ACK is still valid. :-)
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+>  drivers/base/power/Makefile |    2 
+>  drivers/base/power/domain.c |  439 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm.h          |    3 
+>  include/linux/pm_domain.h   |   83 ++++++++
+>  4 files changed, 525 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/include/linux/pm_domain.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/include/linux/pm_domain.h
+> @@ -0,0 +1,83 @@
+> +/*
+> + * pm_domain.h - Definitions and headers related to device power domains.
+> + *
+> + * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
+> + *
+> + * This file is released under the GPLv2.
+> + */
+> +
+> +#ifndef _LINUX_PM_DOMAIN_H
+> +#define _LINUX_PM_DOMAIN_H
+> +
+> +#include <linux/device.h>
+> +
+> +struct dev_power_governor {
+> +	bool (*power_down_ok)(struct dev_power_domain *domain);
+> +};
+> +
+> +struct generic_power_domain {
+> +	struct dev_power_domain domain;
+> +	struct list_head node;
+> +	struct generic_power_domain *master;
+> +	struct list_head subdomain_list;
+> +	struct list_head device_list;
+> +	struct mutex lock;
+> +	struct dev_power_governor *gov;
+> +	unsigned int in_progress;
+> +	bool power_is_off;
+> +	int (*power_off)(struct dev_power_domain *domain);
+> +	int (*power_on)(struct dev_power_domain *domain);
+> +	int (*start_device)(struct device *dev);
+> +	int (*stop_device)(struct device *dev);
+> +};
+> +
+> +struct dev_list_entry {
+> +	struct list_head node;
+> +	struct device *dev;
+> +};
+> +
+> +#ifdef CONFIG_PM_RUNTIME
+> +extern int pm_genpd_runtime_suspend(struct device *dev);
+> +extern int pm_genpd_runtime_resume(struct device *dev);
+> +#else
+> +#define pm_genpd_runtime_suspend	NULL;
+> +#define pm_genpd_runtime_resume	NULL;
+> +#endif
+> +
+> +#ifdef CONFIG_PM
+> +extern int pm_genpd_add_device(struct generic_power_domain *genpd,
+> +			       struct device *dev);
+> +extern int pm_genpd_remove_device(struct generic_power_domain *genpd,
+> +				  struct device *dev);
+> +extern int pm_genpd_add_subdomain(struct generic_power_domain *genpd,
+> +				  struct generic_power_domain *new_subdomain);
+> +extern int pm_genpd_remove_subdomain(struct generic_power_domain *genpd,
+> +				     struct generic_power_domain *target);
+> +extern void pm_genpd_init(struct generic_power_domain *genpd,
+> +			  struct dev_power_governor *gov, bool is_off);
+> +#else
+> +static inline int pm_genpd_add_device(struct generic_power_domain *genpd,
+> +				      struct device *dev)
+> +{
+> +	return -ENOSYS;
+> +}
+> +static inline int pm_genpd_remove_device(struct generic_power_domain *genpd,
+> +					 struct device *dev)
+> +{
+> +	return -ENOSYS;
+> +}
+> +static inline int pm_genpd_add_subdomain(struct generic_power_domain *genpd,
+> +					 struct generic_power_domain *new_sd)
+> +{
+> +	return -ENOSYS;
+> +}
+> +static inline int pm_genpd_remove_subdomain(struct generic_power_domain *genpd,
+> +					    struct generic_power_domain *target)
+> +{
+> +	return -ENOSYS;
+> +}
+> +static inline void pm_genpd_init(struct generic_power_domain *genpd,
+> +				 struct dev_power_governor *gov, bool is_off) {}
+> +#endif
+> +
+> +#endif /* _LINUX_PM_DOMAIN_H */
+> Index: linux-2.6/include/linux/pm.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/pm.h
+> +++ linux-2.6/include/linux/pm.h
+> @@ -472,7 +472,8 @@ extern void update_pm_runtime_accounting
+>   * subsystem-level and driver-level callbacks.
+>   */
+>  struct dev_power_domain {
+> -	struct dev_pm_ops	ops;
+> +	struct dev_pm_ops ops;
+> +	void *platform_data;
+>  };
+>  
+>  /*
+> Index: linux-2.6/drivers/base/power/Makefile
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/power/Makefile
+> +++ linux-2.6/drivers/base/power/Makefile
+> @@ -1,4 +1,4 @@
+> -obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o
+> +obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o domain.o
+>  obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
+>  obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+>  obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+> Index: linux-2.6/drivers/base/power/domain.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/drivers/base/power/domain.c
+> @@ -0,0 +1,439 @@
+> +/*
+> + * drivers/base/power/domain.c - Common code related to device power domains.
+> + *
+> + * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
+> + *
+> + * This file is released under the GPLv2.
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/io.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/slab.h>
+> +#include <linux/err.h>
+> +
+> +#ifdef CONFIG_PM_RUNTIME
+> +
+> +/**
+> + * __pm_genpd_restore_device - Restore a pre-suspend state of a device.
+> + * @dev: Device to restore the state of.
+> + * @genpd: Power domain the device belongs to.
+> + */
+> +static void __pm_genpd_restore_device(struct device *dev,
+> +				      struct generic_power_domain *genpd)
+> +{
+> +	struct device_driver *drv = dev->driver;
+> +
+> +	if (genpd->start_device)
+> +		genpd->start_device(dev);
+> +
+> +	if (drv && drv->pm && drv->pm->runtime_resume)
+> +		drv->pm->runtime_resume(dev);
+> +
+> +	if (genpd->stop_device)
+> +		genpd->stop_device(dev);
 
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Why the ->stop_device() here?
 
---
-Changed from v2:
-	- moved (again) from dev_pm_ops to suspend_ops
-	- settled suspend_again point at around suspend_enter().
-Changes from v1:
-	- moved from syscore to dev_pm_ops
-	- added generic ops for subsystems.
-	- cleaned up suspend_again code at kernel/power/suspend.
----
- include/linux/suspend.h |    8 ++++++++
- kernel/power/suspend.c  |   13 ++++++++++---
- 2 files changed, 18 insertions(+), 3 deletions(-)
+Based on the changelog, I'm imagining an implementation of
+->start_device() to be based on clock enable and a ->stop_device to be
+based on clock disable.  Assuming that, after this runtime resume path,
+the driver's device will still have its clocks cut.  Am I missing
+something here?
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 5a89e36..caf5e97 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -92,6 +92,13 @@ typedef int __bitwise suspend_state_t;
-  *	@enter() and @wake(), even if any of them fails.  It is executed after
-  *	a failing @prepare.
-  *
-+ * @suspend_again: Returns whether the system should suspend again (true) or
-+ *	not (false). If the platform wants to poll sensors or execute some
-+ *	code during suspended without invoking userspace and most of devices,
-+ *	suspend_again callback is the place assuming that periodic-wakeup or
-+ *	alarm-wakeup is already setup. This allows to execute some codes while
-+ *	being kept suspended in the view of userland and devices.
-+ *
-  * @end: Called by the PM core right after resuming devices, to indicate to
-  *	the platform that the system has returned to the working state or
-  *	the transition to the sleep state has been aborted.
-@@ -113,6 +120,7 @@ struct platform_suspend_ops {
- 	int (*enter)(suspend_state_t state);
- 	void (*wake)(void);
- 	void (*finish)(void);
-+	bool (*suspend_again)(void);
- 	void (*end)(void);
- 	void (*recover)(void);
- };
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 08515b4..e655f43 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -128,10 +128,12 @@ void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
- /**
-  *	suspend_enter - enter the desired system sleep state.
-  *	@state:		state to enter
-+ *	@pm_wkup_pending:	indicates that the power transition in progress
-+ *				should be aborted.
-  *
-  *	This function should be called after devices have been suspended.
-  */
--static int suspend_enter(suspend_state_t state)
-+static int suspend_enter(suspend_state_t state, bool *pm_wkup_pending)
- {
- 	int error;
- 
-@@ -167,7 +169,8 @@ static int suspend_enter(suspend_state_t state)
- 	if (!error)
- 		error = syscore_suspend();
- 	if (!error) {
--		if (!(suspend_test(TEST_CORE) || pm_wakeup_pending())) {
-+		*pm_wkup_pending = pm_wakeup_pending();
-+		if (!(suspend_test(TEST_CORE) || *pm_wkup_pending)) {
- 			error = suspend_ops->enter(state);
- 			events_check_enabled = false;
- 		}
-@@ -202,6 +205,7 @@ static int suspend_enter(suspend_state_t state)
- int suspend_devices_and_enter(suspend_state_t state)
- {
- 	int error;
-+	bool pm_wkup_pending = false;
- 
- 	if (!suspend_ops)
- 		return -ENOSYS;
-@@ -224,7 +228,10 @@ int suspend_devices_and_enter(suspend_state_t state)
- 	if (suspend_test(TEST_DEVICES))
- 		goto Recover_platform;
- 
--	error = suspend_enter(state);
-+	do {
-+		error = suspend_enter(state, &pm_wkup_pending);
-+	} while (suspend_ops->suspend_again && suspend_ops->suspend_again() &&
-+		 !error && !pm_wkup_pending);
- 
-  Resume_devices:
- 	suspend_test_start();
--- 
-1.7.4.1
+Maybe I don't understand what you mean by "pre-suspend" state.  In my
+mind, the pre-suspend state of a device would be clocks enabled.
+
+Similar question below...
+
+> +}
+> +
+> +/**
+> + * __pm_genpd_poweroff - Remove power from a given power domain.
+> + * @genpd: Power domain to power down.
+> + *
+> + * If all of the @genpd's devices have been suspended and all of its subdomains
+> + * have been powered down, run the runtime suspend callbacks provided by all of
+> + * the @genpd's devices' drivers and remove power from @genpd.
+> + */
+> +static int __pm_genpd_poweroff(struct generic_power_domain *genpd)
+> +{
+> +	struct generic_power_domain *subdomain;
+> +	struct dev_list_entry *dle;
+> +	unsigned int not_suspended;
+> +	int ret;
+> +
+> +	if (genpd->power_is_off)
+> +		return 0;
+> +
+> +	not_suspended = 0;
+> +	list_for_each_entry(dle, &genpd->device_list, node)
+> +		if (!pm_runtime_suspended(dle->dev))
+> +			not_suspended++;
+> +
+> +	if (not_suspended > genpd->in_progress)
+> +		return -EBUSY;
+> +
+> +	list_for_each_entry_reverse(subdomain, &genpd->subdomain_list, node) {
+> +		mutex_lock(&subdomain->lock);
+> +		ret = __pm_genpd_poweroff(subdomain);
+> +		mutex_unlock(&subdomain->lock);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	if (genpd->gov && genpd->gov->power_down_ok) {
+> +		if (!genpd->gov->power_down_ok(&genpd->domain))
+> +			return -EAGAIN;
+> +	}
+> +
+> +	list_for_each_entry_reverse(dle, &genpd->device_list, node) {
+> +		struct device *dev = dle->dev;
+> +		struct device_driver *drv = dev->driver;
+> +
+> +		if (genpd->start_device)
+> +			genpd->start_device(dev);
+
+... is the ->start_device() needed here?
+
+Before the driver's ->runtime_suspend() method is called, I doubt it
+expects its clocks to be cut.
+
+Of course, having the (what seem to be) extra stop/start calls here
+doesn't harm anything.  But if the ->[start|stop]_device() calls are
+expensive for a given platform, the extra overhead might be significant
+for frequent runtime PM transitions.
+
+Kevin
