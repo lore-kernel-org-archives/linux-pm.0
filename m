@@ -1,15 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][RFC][PATCH 1/2] PM / Runtime: Support for
-	generic I/O power domains (v2)
-Date: Wed, 11 May 2011 22:37:50 +0200
-Message-ID: <201105112237.50625.rjw__6794.05917549065$1305146330$gmane$org@sisk.pl>
-References: <201104290154.12966.rjw@sisk.pl> <201104300254.46973.rjw@sisk.pl>
-	<1305098801.4642.6.camel@vence>
+Subject: AHCI driver problem on SB700/SB800 w/ Acer Ferrari One
+Date: Thu, 12 May 2011 00:25:34 +0200
+Message-ID: <201105120025.34531.rjw__30911.2574476332$1305152895$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1305098801.4642.6.camel@vence>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,201 +15,271 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-ide@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, May 11, 2011, Kevin Hilman wrote:
-> Hi Rafael,
+Hi,
 
-Hi Kevin,
+There seems to be a problem on my Acer box which is related to DIPM
+and switching the power source.  Namely, when I detach the AC adapter from
+the machine, the disk (which is an Intel SSD) freezes for a while and
+something like this appears in dmesg:
 
-> On Sat, 2011-04-30 at 02:54 +0200, Rafael J. Wysocki wrote: 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Introcude common headers, helper functions and callbacks allowing
-> > platforms to use simple generic power domains for runtime power
-> > management.
-> > 
-> > Introduce struct generic_power_domain to be used for representing
-> > power domains that each contain a number of devices and may be
-> > master domains or subdomains with respect to other power domains.
-> > Among other things, this structure includes callbacks to be
-> > provided by platforms for performing specific tasks related to
-> > power management (i.e. ->stop_device() may disable a device's
-> > clocks, while ->start_device() may enable them, ->power_on() is
-> > supposed to remove power from the entire power domain
-> > and ->power_off() is supposed to restore it).
-> >
-> > Introduce functions that can be used as power domain runtime PM
-> > callbacks, pm_genpd_runtime_suspend() and pm_genpd_runtime_resume(),
-> > as well as helper functions for the initialization of a power
-> > domain represented by a struct generic_power_domain object,
-> > adding a device to or removing a device from it and adding or
-> > removing subdomains.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> Thanks for proposing this.  It looks like a good starting point.
+[ 2177.808120] ata1.00: exception Emask 0x0 SAct 0x7 SErr 0xd0002 action 0x6 frozen
+[ 2177.808140] ata1: SError: { RecovComm PHYRdyChg CommWake 10B8B }
+[ 2177.808153] ata1.00: failed command: WRITE FPDMA QUEUED
+[ 2177.808171] ata1.00: cmd 61/08:00:08:ed:37/00:00:06:00:00/40 tag 0 ncq 4096 out
+[ 2177.808174]          res 40/00:00:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+[ 2177.808192] ata1.00: status: { DRDY }
+[ 2177.808201] ata1.00: failed command: WRITE FPDMA QUEUED
+[ 2177.808218] ata1.00: cmd 61/08:08:48:f4:c7/00:00:05:00:00/40 tag 1 ncq 4096 out
+[ 2177.808220]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[ 2177.808239] ata1.00: status: { DRDY }
+[ 2177.808247] ata1.00: failed command: WRITE FPDMA QUEUED
+[ 2177.808275] ata1.00: cmd 61/08:10:50:f4:c7/00:00:05:00:00/40 tag 2 ncq 4096 out
+[ 2177.808277]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[ 2177.808303] ata1.00: status: { DRDY }
+[ 2177.808320] ata1: hard resetting link
+[ 2187.812149] ata1: softreset failed (1st FIS failed)
+[ 2187.812227] ata1: hard resetting link
+[ 2188.304128] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[ 2188.304774] ata1.00: configured for UDMA/133
+[ 2188.320333] ata1.00: device reported invalid CHS sector 0
+[ 2188.320361] ata1.00: device reported invalid CHS sector 0
+[ 2188.320394] ata1: EH complete
 
-That's exactly the purpose of it.
+Then, when the AC adapter is attached again, the SSD freezes again and this
+appears in dmesg:
 
-> I haven't had the time to experiment with it on OMAP yet due to
-> travel/conferences, but here's at least a few comments and questions
-> after a brief review.
-> 
-> This looks like a good start for an abstraction, but I'm not sure if can
-> be broadly useful without some further complications.
+[178523.064145] ata1.00: qc timeout (cmd 0xef)
+[178523.064228] ata1.00: failed to disable DIPM, Emask 0x4
+[178523.064248] ata1: hard resetting link
+[178523.556096] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[178523.556793] ata1.00: configured for UDMA/133
+[178523.572051] ata1: EH complete
 
-I wouldn't expect it to match every possible use case, of course, but it's
-simple enough as an initial step and something we may build upon in the
-future.
+That seems to be reproducible 100% of the time.  Moreover, if the box is
+suspended on AC power and then resume on battery power, something more serious
+happens:
 
-> On many SoCs, a HW power domain has more than 2 states.  On OMAP for
-> example, a power domain can be on, inactive, retention or off.
-> Therefore, the 2-state approach in this patch doesn't really map well to
-> hardware power domains (and I'm pretty sure OMAP is not unique here.)
+[178881.824160] ata1.00: exception Emask 0x0 SAct 0x7fffffff SErr 0xd0002 action 0x6 frozen
+[178881.824203] ata1: SError: { RecovComm PHYRdyChg CommWake 10B8B }
+[178881.824223] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824249] ata1.00: cmd 61/08:00:00:d0:9e/00:00:01:00:00/40 tag 0 ncq 4096 out
+[178881.824252]          res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824288] ata1.00: status: { DRDY }
+[178881.824304] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824328] ata1.00: cmd 61/08:08:48:d0:9e/00:00:01:00:00/40 tag 1 ncq 4096 out
+[178881.824331]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824366] ata1.00: status: { DRDY }
+[178881.824381] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824405] ata1.00: cmd 61/08:10:00:d2:9e/00:00:01:00:00/40 tag 2 ncq 4096 out
+[178881.824408]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824443] ata1.00: status: { DRDY }
+[178881.824457] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824481] ata1.00: cmd 61/08:18:20:d3:9e/00:00:01:00:00/40 tag 3 ncq 4096 out
+[178881.824484]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824519] ata1.00: status: { DRDY }
+[178881.824534] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824557] ata1.00: cmd 61/10:20:90:da:9e/00:00:01:00:00/40 tag 4 ncq 8192 out
+[178881.824560]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824595] ata1.00: status: { DRDY }
+[178881.824610] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824633] ata1.00: cmd 61/08:28:c0:5a:6c/00:00:01:00:00/40 tag 5 ncq 4096 out
+[178881.824637]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824671] ata1.00: status: { DRDY }
+[178881.824710] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824731] ata1.00: cmd 61/10:30:48:5f:98/00:00:01:00:00/40 tag 6 ncq 8192 out
+[178881.824734]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824760] ata1.00: status: { DRDY }
+[178881.824773] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824794] ata1.00: cmd 61/08:38:e0:1a:a4/00:00:01:00:00/40 tag 7 ncq 4096 out
+[178881.824797]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824823] ata1.00: status: { DRDY }
+[178881.824836] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824856] ata1.00: cmd 61/08:40:90:29:ac/00:00:01:00:00/40 tag 8 ncq 4096 out
+[178881.824859]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824885] ata1.00: status: { DRDY }
+[178881.824898] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824919] ata1.00: cmd 61/08:48:a0:33:a4/00:00:01:00:00/40 tag 9 ncq 4096 out
+[178881.824922]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.824949] ata1.00: status: { DRDY }
+[178881.824961] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.824982] ata1.00: cmd 61/08:50:c8:51:ac/00:00:01:00:00/40 tag 10 ncq 4096 out
+[178881.824985]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825012] ata1.00: status: { DRDY }
+[178881.825025] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825046] ata1.00: cmd 61/10:58:00:50:96/00:00:01:00:00/40 tag 11 ncq 8192 out
+[178881.825049]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825075] ata1.00: status: { DRDY }
+[178881.825087] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825108] ata1.00: cmd 61/08:60:20:50:96/00:00:01:00:00/40 tag 12 ncq 4096 out
+[178881.825111]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825137] ata1.00: status: { DRDY }
+[178881.825149] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825170] ata1.00: cmd 61/08:68:40:50:96/00:00:01:00:00/40 tag 13 ncq 4096 out
+[178881.825173]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825199] ata1.00: status: { DRDY }
+[178881.825212] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825232] ata1.00: cmd 61/10:70:e0:4c:94/00:00:01:00:00/40 tag 14 ncq 8192 out
+[178881.825235]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825261] ata1.00: status: { DRDY }
+[178881.825273] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825294] ata1.00: cmd 61/10:78:80:55:7b/00:00:01:00:00/40 tag 15 ncq 8192 out
+[178881.825297]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825323] ata1.00: status: { DRDY }
+[178881.825335] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825356] ata1.00: cmd 61/08:80:68:60:64/00:00:01:00:00/40 tag 16 ncq 4096 out
+[178881.825359]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825385] ata1.00: status: { DRDY }
+[178881.825398] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825419] ata1.00: cmd 61/08:88:c8:5a:6c/00:00:01:00:00/40 tag 17 ncq 4096 out
+[178881.825422]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825449] ata1.00: status: { DRDY }
+[178881.825461] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825461] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825482] ata1.00: cmd 61/08:90:b8:b6:64/00:00:01:00:00/40 tag 18 ncq 4096 out
+[178881.825485]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825512] ata1.00: status: { DRDY }
+[178881.825524] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825545] ata1.00: cmd 61/10:98:a8:a2:6d/00:00:01:00:00/40 tag 19 ncq 8192 out
+[178881.825548]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825574] ata1.00: status: { DRDY }
+[178881.825587] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825608] ata1.00: cmd 61/08:a0:58:f6:76/00:00:01:00:00/40 tag 20 ncq 4096 out
+[178881.825611]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825637] ata1.00: status: { DRDY }
+[178881.825649] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825670] ata1.00: cmd 61/08:a8:e0:28:3b/00:00:06:00:00/40 tag 21 ncq 4096 out
+[178881.825673]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825699] ata1.00: status: { DRDY }
+[178881.825712] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825732] ata1.00: cmd 61/48:b0:c0:1e:a5/01:00:04:00:00/40 tag 22 ncq 167936 out
+[178881.825735]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825761] ata1.00: status: { DRDY }
+[178881.825774] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825794] ata1.00: cmd 61/08:b8:78:c1:37/00:00:06:00:00/40 tag 23 ncq 4096 out
+[178881.825798]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825824] ata1.00: status: { DRDY }
+[178881.825836] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825857] ata1.00: cmd 61/18:c0:98:c1:37/00:00:06:00:00/40 tag 24 ncq 12288 out
+[178881.825860]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825886] ata1.00: status: { DRDY }
+[178881.825899] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825919] ata1.00: cmd 61/08:c8:10:c1:37/00:00:06:00:00/40 tag 25 ncq 4096 out
+[178881.825923]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.825949] ata1.00: status: { DRDY }
+[178881.825961] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.825982] ata1.00: cmd 61/10:d0:30:c1:37/00:00:06:00:00/40 tag 26 ncq 8192 out
+[178881.825985]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.826011] ata1.00: status: { DRDY }
+[178881.826024] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.826045] ata1.00: cmd 61/18:d8:50:c1:37/00:00:06:00:00/40 tag 27 ncq 12288 out
+[178881.826048]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.826074] ata1.00: status: { DRDY }
+[178881.826086] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.826107] ata1.00: cmd 61/08:e0:d8:a2:35/00:00:06:00:00/40 tag 28 ncq 4096 out
+[178881.826110]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.826137] ata1.00: status: { DRDY }
+[178881.826149] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.826170] ata1.00: cmd 61/08:e8:d0:a3:35/00:00:06:00:00/40 tag 29 ncq 4096 out
+[178881.826173]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.826199] ata1.00: status: { DRDY }
+[178881.826211] ata1.00: failed command: WRITE FPDMA QUEUED
+[178881.826232] ata1.00: cmd 61/08:f0:50:e5:64/00:00:06:00:00/40 tag 30 ncq 4096 out
+[178881.826235]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+[178881.826261] ata1.00: status: { DRDY }
+[178881.826278] ata1: hard resetting link
+[178891.824149] ata1: softreset failed (1st FIS failed)
+[178891.824188] ata1: hard resetting link
+[178892.320170] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[178892.320874] ata1.00: configured for UDMA/133
+[178892.336156] ata1.00: device reported invalid CHS sector 0
+[178892.336199] ata1.00: device reported invalid CHS sector 0
+[178892.336218] ata1.00: device reported invalid CHS sector 0
+[178892.336236] ata1.00: device reported invalid CHS sector 0
+[178892.336254] ata1.00: device reported invalid CHS sector 0
+[178892.336272] ata1.00: device reported invalid CHS sector 0
+[178892.336290] ata1.00: device reported invalid CHS sector 0
+[178892.336308] ata1.00: device reported invalid CHS sector 0
+[178892.336327] ata1.00: device reported invalid CHS sector 0
+[178892.336345] ata1.00: device reported invalid CHS sector 0
+[178892.336363] ata1.00: device reported invalid CHS sector 0
+[178892.336381] ata1.00: device reported invalid CHS sector 0
+[178892.336399] ata1.00: device reported invalid CHS sector 0
+[178892.336418] ata1.00: device reported invalid CHS sector 0
+[178892.336436] ata1.00: device reported invalid CHS sector 0
+[178892.336455] ata1.00: device reported invalid CHS sector 0
+[178892.336474] ata1.00: device reported invalid CHS sector 0
+[178892.336492] ata1.00: device reported invalid CHS sector 0
+[178892.336512] ata1.00: device reported invalid CHS sector 0
+[178892.336530] ata1.00: device reported invalid CHS sector 0
+[178892.336548] ata1.00: device reported invalid CHS sector 0
+[178892.336567] ata1.00: device reported invalid CHS sector 0
+[178892.336586] ata1.00: device reported invalid CHS sector 0
+[178892.336604] ata1.00: device reported invalid CHS sector 0
+[178892.336622] ata1.00: device reported invalid CHS sector 0
+[178892.336640] ata1.00: device reported invalid CHS sector 0
+[178892.336658] ata1.00: device reported invalid CHS sector 0
+[178892.336677] ata1.00: device reported invalid CHS sector 0
+[178892.336694] ata1.00: device reported invalid CHS sector 0
+[178892.336712] ata1.00: device reported invalid CHS sector 0
+[178892.336731] ata1.00: device reported invalid CHS sector 0
+[178892.336837] ata1: EH complete
 
-Right, so we'd need to extend the approach for OMAP somehow.
+This doesn't happen if the box is both suspended and resumed on battery
+power.
 
-> It also means that the binary decision of the proposed governor doesn't
-> necessarily map well either (e.g., based on wake-up latency constraints,
-> or HW bugs, you might allow an idle device might be able to go to
-> retention, but not to off.)
-> 
-> I suppose one option would be to use "off" as defined here to handle all
-> the !on states, and let the platform-specific code handle the details.
-> However, that doesn't sound all that "generic" for a generic solution.
-> 
-> Another possibility would be to allow a generic power domain to have
-> multiple states (or levels), with a governor hook for each state.  
+I have verified that the issue described above doesn't happen with
+the appended patch applied.
 
-That's possible.  It all depends on how the various domain states affect
-devices.  For example, if device registers survive the inactive and retention
-domain states, they may be regarded as substates of a more general "on" state.
+The hardware is:
 
-Generally, my idea was to use a relatively simple hardware model, like the
-shmobile one, and develop some general code that works with it and may be
-extended in various ways, pretty much as we did with runtime PM.  I think the
-code in this patchset is suitable for that (even on shmobile there are
-more complicated power domains that will require some additional handling).
+00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA Controller [AHCI mode] (prog-if 01 [AHCI 1.0])
+        Subsystem: Acer Incorporated [ALI] Device 029e
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64
+        Interrupt: pin A routed to IRQ 22
+        Region 0: I/O ports at 8420 [size=8]
+        Region 1: I/O ports at 8414 [size=4]
+        Region 2: I/O ports at 8418 [size=8]
+        Region 3: I/O ports at 8410 [size=4]
+        Region 4: I/O ports at 8400 [size=16]
+        Region 5: Memory at f0508000 (32-bit, non-prefetchable) [size=1K]
+        Capabilities: [60] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [70] SATA HBA v1.0 InCfgSpace
+        Kernel driver in use: ahci
 
-In my opinion, if wanted to start with merging something that would match
-every possible hardware configuration out there, we'd end up with a 100 patches
-and 10000 lines of code, or something like this.  That wouldn't be easily
-mergeable, as experience shows all too well. :-)
+[    3.336087] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[    3.340777] ata1.00: ATA-7: INTEL SSDSA2M080G2GC, 2CV102HD, max UDMA/133
+[    3.345233] ata1.00: 156301488 sectors, multi 16: LBA48 NCQ (depth 31/32)
+[    3.350070] ata1.00: configured for UDMA/133
+[    3.354969] scsi 0:0:0:0: Direct-Access     ATA      INTEL SSDSA2M080 2CV1 PQ: 0 ANSI: 5
 
-...
-> > +#ifdef CONFIG_PM_RUNTIME
-> > +
-> > +/**
-> > + * __pm_genpd_restore_device - Restore a pre-suspend state of a device.
-> > + * @dev: Device to restore the state of.
-> > + * @genpd: Power domain the device belongs to.
-> > + */
-> > +static void __pm_genpd_restore_device(struct device *dev,
-> > +				      struct generic_power_domain *genpd)
-> > +{
-> > +	struct device_driver *drv = dev->driver;
-> > +
-> > +	if (genpd->start_device)
-> > +		genpd->start_device(dev);
-> > +
-> > +	if (drv && drv->pm && drv->pm->runtime_resume)
-> > +		drv->pm->runtime_resume(dev);
-> > +
-> > +	if (genpd->stop_device)
-> > +		genpd->stop_device(dev);
-> 
-> Why the ->stop_device() here?
-> 
-> Based on the changelog, I'm imagining an implementation of
-> ->start_device() to be based on clock enable and a ->stop_device to be
-> based on clock disable.  Assuming that, after this runtime resume path,
-> the driver's device will still have its clocks cut.  Am I missing
-> something here?
-
-Please note that this code is executed in a loop for every device in
-the power domain by __pm_genpd_poweron() (including the device whose
-resume triggered powering up the domain).  At this point all the
-devices remain in the "suspended" state from the runtime PM viewpoint.
-
-> Maybe I don't understand what you mean by "pre-suspend" state.  In my
-> mind, the pre-suspend state of a device would be clocks enabled.
-> 
-> Similar question below...
-> 
-> > +}
-> > +
-> > +/**
-> > + * __pm_genpd_poweroff - Remove power from a given power domain.
-> > + * @genpd: Power domain to power down.
-> > + *
-> > + * If all of the @genpd's devices have been suspended and all of its subdomains
-> > + * have been powered down, run the runtime suspend callbacks provided by all of
-> > + * the @genpd's devices' drivers and remove power from @genpd.
-> > + */
-> > +static int __pm_genpd_poweroff(struct generic_power_domain *genpd)
-> > +{
-> > +	struct generic_power_domain *subdomain;
-> > +	struct dev_list_entry *dle;
-> > +	unsigned int not_suspended;
-> > +	int ret;
-> > +
-> > +	if (genpd->power_is_off)
-> > +		return 0;
-> > +
-> > +	not_suspended = 0;
-> > +	list_for_each_entry(dle, &genpd->device_list, node)
-> > +		if (!pm_runtime_suspended(dle->dev))
-> > +			not_suspended++;
-> > +
-> > +	if (not_suspended > genpd->in_progress)
-> > +		return -EBUSY;
-> > +
-> > +	list_for_each_entry_reverse(subdomain, &genpd->subdomain_list, node) {
-> > +		mutex_lock(&subdomain->lock);
-> > +		ret = __pm_genpd_poweroff(subdomain);
-> > +		mutex_unlock(&subdomain->lock);
-> > +		if (ret)
-> > +			return ret;
-> > +	}
-> > +
-> > +	if (genpd->gov && genpd->gov->power_down_ok) {
-> > +		if (!genpd->gov->power_down_ok(&genpd->domain))
-> > +			return -EAGAIN;
-> > +	}
-> > +
-> > +	list_for_each_entry_reverse(dle, &genpd->device_list, node) {
-> > +		struct device *dev = dle->dev;
-> > +		struct device_driver *drv = dev->driver;
-> > +
-> > +		if (genpd->start_device)
-> > +			genpd->start_device(dev);
-> 
-> ... is the ->start_device() needed here?
-> 
-> Before the driver's ->runtime_suspend() method is called, I doubt it
-> expects its clocks to be cut.
-
-In fact, it does, because all of the devices must have been put into the
-runtime PM's "suspended" state before that code is executed.
-
-> Of course, having the (what seem to be) extra stop/start calls here
-> doesn't harm anything.  But if the ->[start|stop]_device() calls are
-> expensive for a given platform, the extra overhead might be significant
-> for frequent runtime PM transitions.
-
-If the entire domain is frequently powered up and down, then I agree it will
-be expensive.  However, that's kind of to be expected, isn't it? ;-)
-
-The code could be optimized to avoid starting and stopping the device that
-triggers the domain poweroff, but that would make it more complicated, which
-I intentionally wanted to avoid at this stage.
-
-Again, this code is meant as a starting point for more complicated things.
-How complicated they will turn out to be in the end, I can't tell right now. :-)
+Please tell me if there's anything I can do as a permanent workaround.
 
 Thanks,
 Rafael
+
+
+---
+ drivers/ata/ahci.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/ata/ahci.c
+===================================================================
+--- linux-2.6.orig/drivers/ata/ahci.c
++++ linux-2.6/drivers/ata/ahci.c
+@@ -193,7 +193,7 @@ static const struct ata_port_info ahci_p
+ 	[board_ahci_sb700] =	/* for SB700 and SB800 */
+ 	{
+ 		AHCI_HFLAGS	(AHCI_HFLAG_IGN_SERR_INTERNAL),
+-		.flags		= AHCI_FLAG_COMMON,
++		.flags		= AHCI_FLAG_COMMON | ATA_FLAG_NO_DIPM,
+ 		.pio_mask	= ATA_PIO4,
+ 		.udma_mask	= ATA_UDMA6,
+ 		.port_ops	= &ahci_sb600_ops,
