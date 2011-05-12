@@ -1,16 +1,15 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH v2 3/3] PM / DEVFREQ: add sysfs interface
- (including user tickling)
-Date: Wed, 11 May 2011 15:55:40 -0700
-Message-ID: <20110511225540.GA3492__5095.01990532062$1305155201$gmane$org@suse.de>
-References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
-	<1305100723-29161-3-git-send-email-myungjoo.ham@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / Wakeup: Fix build warning related to
+	the "wakeup"	sysfs file
+Date: Thu, 12 May 2011 06:17:43 +0000
+Message-ID: <20110512061742.GA2460__3122.52262742749$1305181176$gmane$org@localhost.ucw.cz>
+References: <201105070050.55235.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1305100723-29161-3-git-send-email-myungjoo.ham@samsung.com>
+In-Reply-To: <201105070050.55235.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,27 +19,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 11, 2011 at 04:58:43PM +0900, MyungJoo Ham wrote:
-> 1. System-wide sysfs interface
-> - tickle_all	R: number of tickle_all execution
-> 		W: tickle all devfreq devices
-> - min_interval	R: devfreq monitoring base interval in ms
-> - monitoring	R: shows whether devfreq monitoring is active or
->   not.
+On Sat 2011-05-07 00:50:55, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> 2. Device specific sysfs interface
-> - tickle	R: number of tickle execution for the device
-> 		W: tickle the device
+> The "wakeup" device sysfs file is only created if CONFIG_PM_SLEEP
+> is set, so put it under CONFIG_PM_SLEEP and make a build warning
+> related to it go away.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Any sysfs file change/addition/removal needs to have a
-Documentation/ABI/ entry as well.  Please add that to this patch instead
-of burying it in the changelog entry, where no one will be able to find
-it in the future.
-
-thanks,
-
-greg k-h
+ack.
+ 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
