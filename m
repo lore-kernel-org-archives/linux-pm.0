@@ -1,14 +1,11 @@
 From: Raffaele Recalcati <lamiaposta71@gmail.com>
-Subject: [PATCH 3/4] mmc: bus and block device drivers: support
-	for pm_loss
-Date: Thu, 12 May 2011 19:11:04 +0200
-Message-ID: <1305220265-9020-4-git-send-email-lamiaposta71__40075.7254836664$1305238069$gmane$org@gmail.com>
-References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
+Subject: pm loss development
+Date: Thu, 12 May 2011 19:11:01 +0200
+Message-ID: <1305220265-9020-1-git-send-email-lamiaposta71__3512.20805100656$1305238341$gmane$org@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,164 +16,137 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <raffaele.recalcati@bticino.it>, linux-kernel@vger.kernel.org, Davide Ciminaghi <ciminaghi@gnudd.com>
+Cc: davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Davide Ciminaghi <ciminaghi@gnudd.com>
+What happen normally in runtime pm implementation is that every devices
+are switched off and are enabled only when needed.
+In our case instead we have a completely functional embedded system and,
+when an asyncrhonous event appear, we have only some tens milliseconds
+before the actual power failure takes place.
+This patchset add a support in order to switch off not vital part of the system,
+in order to allow the board to survive longer.
+This allow the possibility to save important data.
 
-Signed-off-by: Davide Ciminaghi <ciminaghi@gnudd.com>
-Signed-off-by: Raffaele Recalcati <raffaele.recalcati@bticino.it>
----
- drivers/mmc/card/block.c |   48 +++++++++++++++++++++++++++++++++++++++++++-
- drivers/mmc/core/bus.c   |   49 +++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 90 insertions(+), 7 deletions(-)
+The implementation has been written by Davide Ciminaghi.
+My work instead was about analyzing different previuos implementation,
+a first completely custom one, a second using runtime pm, arriving
+finally to that one.
 
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index bfc8a8a..c88afef 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -37,6 +37,9 @@
- #include <linux/mmc/mmc.h>
- #include <linux/mmc/sd.h>
- 
-+#include <linux/pm.h>
-+#include <linux/pm_loss.h>
-+
- #include <asm/system.h>
- #include <asm/uaccess.h>
- 
-@@ -755,14 +758,55 @@ static int mmc_blk_resume(struct mmc_card *card)
- 	}
- 	return 0;
- }
--#else
-+
-+#ifdef CONFIG_PM_LOSS
-+
-+#define dev_to_mmc_card(d)	container_of(d, struct mmc_card, dev)
-+
-+static int mmc_blk_power_changed(struct device *dev,
-+				 enum sys_power_state s)
-+{
-+	struct mmc_card *card = dev_to_mmc_card(dev);
-+	struct mmc_blk_data *md = mmc_get_drvdata(card);
-+
-+	switch (s) {
-+	case SYS_PWR_GOOD:
-+		pr_debug_pm_loss("mmc_blk_power_changed(%d)\n", s);
-+		mmc_blk_set_blksize(md, card);
-+		mmc_queue_resume(&md->queue);
-+		break;
-+	case SYS_PWR_FAILING:
-+		pr_debug_pm_loss("mmc_blk_power_changed(%d)\n", s);
-+		mmc_queue_suspend(&md->queue);
-+		break;
-+	default:
-+		BUG();
-+	}
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops mmc_blk_pm_ops = {
-+	.power_changed = mmc_blk_power_changed,
-+};
-+
-+#define MMC_BLK_DEV_PM_OPS_PTR (&mmc_blk_pm_ops)
-+
-+#else /* !CONFIG_PM_LOSS */
-+
-+#define MMC_BLK_DEV_PM_OPS_PTR NULL
-+
-+#endif /* !CONFIG_PM_LOSS */
-+
-+#else /* !CONFIG_PM */
- #define	mmc_blk_suspend	NULL
- #define mmc_blk_resume	NULL
--#endif
-+#define MMC_BLK_DEV_PM_OPS_PTR NULL
-+#endif /* !CONFIG_PM */
- 
- static struct mmc_driver mmc_driver = {
- 	.drv		= {
- 		.name	= "mmcblk",
-+		.pm     = MMC_BLK_DEV_PM_OPS_PTR,
- 	},
- 	.probe		= mmc_blk_probe,
- 	.remove		= mmc_blk_remove,
-diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
-index 63667a8..548d3a9 100644
---- a/drivers/mmc/core/bus.c
-+++ b/drivers/mmc/core/bus.c
-@@ -19,6 +19,8 @@
- #include <linux/mmc/card.h>
- #include <linux/mmc/host.h>
- 
-+#include <linux/pm_loss.h>
-+
- #include "core.h"
- #include "sdio_cis.h"
- #include "bus.h"
-@@ -163,19 +165,56 @@ static int mmc_runtime_idle(struct device *dev)
- 	return pm_runtime_suspend(dev);
- }
- 
-+#define MMC_PM_RUNTIME_OPS_INIT \
-+.runtime_suspend = mmc_runtime_suspend, \
-+.runtime_resume		= mmc_runtime_resume, \
-+.runtime_idle		= mmc_runtime_idle,
-+
-+#else /* !CONFIG_PM_RUNTIME */
-+
-+#define MMC_PM_RUNTIME_OPS_INIT
-+
-+#endif /* !CONFIG_PM_RUNTIME */
-+
-+#ifdef CONFIG_PM_LOSS
-+
-+static int mmc_bus_power_changed(struct device *dev,
-+				 enum sys_power_state s)
-+{
-+	int ret = 0;
-+
-+	pr_debug_pm_loss("mmc_bus_power_changed()\n");
-+
-+	if (dev->driver && dev->driver->pm &&
-+	    dev->driver->pm->power_changed)
-+		ret = dev->driver->pm->power_changed(dev, s);
-+
-+	return ret;
-+}
-+
-+#define MMC_PM_LOSS_OPS_INIT \
-+.power_changed =  mmc_bus_power_changed,
-+
-+#else  /* !CONFIG_PM_LOSS */
-+
-+#define MMC_PM_LOSS_OPS_INIT
-+
-+#endif /* !CONFIG_PM_LOSS */
-+
-+#if defined CONFIG_PM_RUNTIME || defined CONFIG_PM_LOSS
-+
- static const struct dev_pm_ops mmc_bus_pm_ops = {
--	.runtime_suspend	= mmc_runtime_suspend,
--	.runtime_resume		= mmc_runtime_resume,
--	.runtime_idle		= mmc_runtime_idle,
-+	MMC_PM_RUNTIME_OPS_INIT
-+	MMC_PM_LOSS_OPS_INIT
- };
- 
- #define MMC_PM_OPS_PTR	(&mmc_bus_pm_ops)
- 
--#else /* !CONFIG_PM_RUNTIME */
-+#else /* !(CONFIG_PM_RUNTIME || CONFIG_PM_LOSS) */
- 
- #define MMC_PM_OPS_PTR	NULL
- 
--#endif /* !CONFIG_PM_RUNTIME */
-+#endif /* !(CONFIG_PM_RUNTIME || CONFIG_PM_LOSS) */
- 
- static struct bus_type mmc_bus_type = {
- 	.name		= "mmc",
--- 
-1.7.0.4
+I have tested PM loss in our DaVinci dm365 basi board and I write here below a
+piece of code showing a possible usage.
+
+-------------------
+
+static int powerfail_status;
+
+static irqreturn_t basi_powerfail_stop(int irq, void *dev_id);
+
+static irqreturn_t basi_powerfail_quick_check_start(int irq, void *dev_id)
+{
+        basi_mask_irq_gpio0(IRQ_DM365_GPIO0_2);
+        basi_unmask_irq_gpio0(IRQ_DM365_GPIO0_0);
+
+        /* PowerFail situation - START: power is going away */
+        return IRQ_WAKE_THREAD;
+}
+
+static irqreturn_t basi_powerfail_start(int irq, void *dev_id)
+{
+        if (powerfail_status)
+                return IRQ_HANDLED;
+        powerfail_status = 1;
+        pm_loss_power_changed(SYS_PWR_FAILING);
+        return IRQ_HANDLED;
+}
+
+
+static irqreturn_t basi_powerfail_quick_check_stop(int irq, void *dev_id)
+{
+        basi_mask_irq_gpio0(IRQ_DM365_GPIO0_0);
+        basi_unmask_irq_gpio0(IRQ_DM365_GPIO0_2);
+
+        /* PowerFail situation - STOP: power is coming back */
+        return IRQ_WAKE_THREAD;
+}
+
+static irqreturn_t basi_powerfail_stop(int irq, void *dev_id)
+{
+        if (!powerfail_status)
+                return IRQ_HANDLED;
+        powerfail_status = 0;
+        pm_loss_power_changed(SYS_PWR_GOOD);
+        return IRQ_HANDLED;
+}
+
+enum basi_pwrfail_prio {
+        BASI_PWR_FAIL_PRIO_0,
+        BASI_PWR_FAIL_MIN_PRIO = BASI_PWR_FAIL_PRIO_0,
+        BASI_PWR_FAIL_PRIO_1,
+        BASI_PWR_FAIL_PRIO_2,
+        BASI_PWR_FAIL_PRIO_3,
+        BASI_PWR_FAIL_MAX_PRIO = BASI_PWR_FAIL_PRIO_3,
+};
+
+struct pm_loss_default_policy_item basi_pm_loss_policy_items[] = {
+        {
+                .bus_name = "mmc",
+                .bus_priority = BASI_PWR_FAIL_PRIO_1,
+        },
+        {
+                .bus_name = "platform",
+                .bus_priority = BASI_PWR_FAIL_PRIO_2,
+        },
+};
+
+#define BASI_POLICY_NAME "basi-default"
+
+struct pm_loss_default_policy_table basi_pm_loss_policy_table = {
+        .name = BASI_POLICY_NAME,
+        .items = basi_pm_loss_policy_items,
+        .nitems = ARRAY_SIZE(basi_pm_loss_policy_items),
+};
+
+static void basi_powerfail_configure(void)
+{
+        int stat;
+        struct pm_loss_policy *p;
+        stat = request_threaded_irq(IRQ_DM365_GPIO0_2,
+                                    basi_powerfail_quick_check_start,
+                                    basi_powerfail_start,
+                                    0,
+                                    "pwrfail-on", NULL);
+        if (stat < 0)
+                printk(KERN_ERR "request_threaded_irq for IRQ%d (pwrfail-on) "
+                       "failed\n", IRQ_DM365_GPIO0_2);
+        stat = request_threaded_irq(IRQ_DM365_GPIO0_0,
+                                    basi_powerfail_quick_check_stop,
+                                    basi_powerfail_stop, 0,
+                                    "pwrfail-off", NULL);
+        if (stat < 0)
+                printk(KERN_ERR "request_threaded_irq for IRQ%d (pwrfail-off) "
+                       "failed\n", IRQ_DM365_GPIO0_0);
+        basi_mask_irq_gpio0(IRQ_DM365_GPIO0_0);
+        p = pm_loss_setup_default_policy(&basi_pm_loss_policy_table);
+
+        if (!p)
+                printk(KERN_ERR "Could not register pwr change policy\n");
+
+        if (pm_loss_set_policy(BASI_POLICY_NAME) < 0)
+                printk(KERN_ERR "Could not set %s power loss policy\n",
+                       BASI_POLICY_NAME);
+}
+
+int platform_pm_loss_power_changed(struct device *dev,
+                                   enum sys_power_state s)
+{
+        int ret = 0;
+
+        /* Calling platform bus pm_loss functions */
+        pr_debug_pm_loss("platform_pm_loss_power_changed(%d)\n", s);
+
+        if (dev->driver && dev->driver->pm &&
+                dev->driver->pm->power_changed)
+                ret = dev->driver->pm->power_changed(dev, s);
+        return ret;
+}
