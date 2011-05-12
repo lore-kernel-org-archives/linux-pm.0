@@ -1,13 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: xHCI and suspend/resume
-Date: Thu, 12 May 2011 17:49:37 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1105121733370.1917-100000__20916.4583393887$1305237138$gmane$org@iolanthe.rowland.org>
-References: <BANLkTinGcS4YyPzc8zLzfUEBWmcOzYJ0jA@mail.gmail.com>
+From: Raffaele Recalcati <lamiaposta71@gmail.com>
+Subject: [PATCH 4/4] DaVinci: vpfe: support for pm_loss
+Date: Thu, 12 May 2011 19:11:05 +0200
+Message-ID: <1305220265-9020-5-git-send-email-lamiaposta71__5018.06944744221$1305237942$gmane$org@gmail.com>
+References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTinGcS4YyPzc8zLzfUEBWmcOzYJ0jA@mail.gmail.com>
+In-Reply-To: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,66 +17,86 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dwight Schauer <dschauer@gmail.com>
-Cc: dschauer@ti.com, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>, "Xu, Andiry" <Andiry.Xu@amd.com>
+To: linux-pm@lists.linux-foundation.org
+Cc: davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <raffaele.recalcati@bticino.it>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-For new readers: The problem is that an xHCI USB host controller does
-not wake up a suspended system properly.
+From: Raffaele Recalcati <raffaele.recalcati@bticino.it>
 
-On Thu, 12 May 2011, Dwight Schauer wrote:
+Signed-off-by: Raffaele Recalcati <raffaele.recalcati@bticino.it>
+---
+ drivers/media/video/davinci/vpfe_capture.c |   45 ++++++++++++++++++++++++++++
+ 1 files changed, 45 insertions(+), 0 deletions(-)
 
-> Thanks Alan.
-> 
-> OK, this is with 2.6.39-rc7-gregkh
-> 
-> 05:00.0 USB Controller: NEC Corporation uPD720200 USB 3.0 Host
-> Controller (rev 03) (prog-if 30 [XHCI])
->         Subsystem: Melco Inc Device 0241
->         Control: I/O- Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop-
-> ParErr- Stepping- SERR+ FastB2B- DisINTx+
->         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-> <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Interrupt: pin A routed to IRQ 17
->         Region 0: Memory at fe9fe000 (64-bit, non-prefetchable) [size=8K]
->         Capabilities: [50] Power Management version 3
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
-> PME(D0+,D1-,D2-,D3hot+,D3cold-)
->                 Status: D3 NoSoftRst+ PME-Enable+ DSel=0 DScale=0 PME+
-
-That's the important part for power management and wakeup.  The 
-controller does support PCI wakeup.  In fact, at the time you ran lspci 
-the controller _was_ suspended and it was signalling a wakeup request!  
-Obviously something is wrong somewhere...
-
-> @@@ With "on" in power/control I get this upon plugging in a keyboard:
-...
-> @@@ and upon removing it:
-
-All normal.
-
-> @@@ If I put "auto" in power/control I get this:
-> 
-> xhci_hcd 0000:05:00.0: hcd_pci_runtime_suspend: 0
-> xhci_hcd 0000:05:00.0: PME# enabled
-
-This means the controller was suspended with wakeup enabled, as it 
-should be.
-
-> @@@ Upon plugging in a keyboard nothing.
-
-Indeed, that is a problem.  Since wakeup doesn't work right at runtime, 
-it's not surprising that it also fails during system sleep.
-
-> @@@ Setting power/wakeup to "enabled" (it was "disabled") has no
-> effect on this behaviour.
-
-The power/wakeup attribute affects only the wakeup setting for system 
-sleep; it doesn't affect wakeups for runtime PM.
-
-Clearly something is wrong.  But it looks like the problem might be
-somewhere else, not in the xHCI driver.  Is your BIOS up to date?
-
-CC-ing the linux-pm mailing list in case anybody there has some ideas.
-
-Alan Stern
+diff --git a/drivers/media/video/davinci/vpfe_capture.c b/drivers/media/video/davinci/vpfe_capture.c
+index 353eada..21fa9bf 100644
+--- a/drivers/media/video/davinci/vpfe_capture.c
++++ b/drivers/media/video/davinci/vpfe_capture.c
+@@ -74,6 +74,8 @@
+ #include <media/v4l2-common.h>
+ #include <linux/io.h>
+ #include <media/davinci/vpfe_capture.h>
++#include <linux/pm.h>
++#include <linux/pm_loss.h>
+ #include "ccdc_hw_device.h"
+ 
+ static int debug;
+@@ -2051,6 +2053,46 @@ static int __devexit vpfe_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM_LOSS
++static int vpfe_capture_power_changed(struct device *dev,
++				      enum sys_power_state s)
++{
++	int ret;
++	struct vpfe_device *vpfe_dev = dev_get_drvdata(dev);
++	struct vpfe_subdev_info *sdinfo = vpfe_dev->current_subdev;
++
++	if (!sdinfo)
++		return -EINVAL;
++
++	if (!vpfe_dev->started) {
++		pr_debug_pm_loss("vpfe_capture_power_changed(%d) "
++				 "BUT NOTHING TO DO\n", s);
++		return 0;
++	}
++
++	sdinfo = vpfe_dev->current_subdev;
++
++	switch (s) {
++	case SYS_PWR_GOOD:
++		pr_debug_pm_loss("vpfe_capture_power_changed(%d)\n", s);
++		ret = v4l2_device_call_until_err(&vpfe_dev->v4l2_dev,
++						 sdinfo->grp_id,
++						 video, s_stream, 1);
++		break;
++	case SYS_PWR_FAILING:
++		pr_debug_pm_loss("vpfe_capture_power_changed(%d)\n", s);
++		ret = v4l2_device_call_until_err(&vpfe_dev->v4l2_dev,
++						 sdinfo->grp_id,
++						 video, s_stream, 0);
++		break;
++	default:
++		BUG();
++		ret = -ENODEV;
++	}
++	return ret;
++}
++#endif /* CONFIG_PM_LOSS */
++
+ static int vpfe_suspend(struct device *dev)
+ {
+ 	return 0;
+@@ -2064,6 +2106,9 @@ static int vpfe_resume(struct device *dev)
+ static const struct dev_pm_ops vpfe_dev_pm_ops = {
+ 	.suspend = vpfe_suspend,
+ 	.resume = vpfe_resume,
++#ifdef CONFIG_PM_LOSS
++	.power_changed = vpfe_capture_power_changed,
++#endif
+ };
+ 
+ static struct platform_driver vpfe_driver = {
+-- 
+1.7.0.4
