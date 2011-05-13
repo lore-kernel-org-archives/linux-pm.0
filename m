@@ -1,16 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 8/9] OMAP1 / PM: Use generic clock
-	manipulation routines for runtime PM
-Date: Mon, 16 May 2011 12:16:13 +0200
-Message-ID: <87mxindk7m.fsf__35704.7139354565$1305541055$gmane$org@ti.com>
-References: <201104130205.26988.rjw@sisk.pl> <201104170135.19388.rjw@sisk.pl>
-	<201104242330.13607.rjw@sisk.pl> <201104242343.41456.rjw@sisk.pl>
+From: "Michael Leun" <lkml20100708@newton.leun.net>
+Subject: AHCI driver problem on ICH (Re: AHCI driver problem on
+ SB700/SB800 w/ Acer Ferrari One)
+Date: Fri, 13 May 2011 14:37:58 +0200
+Message-ID: <20110513143758.33f68a77__9907.72210429913$1305564254$gmane$org@xenia.leun.net>
+References: <201105120025.34531.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201104242343.41456.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sun, 24 Apr 2011 23:43:41 +0200")
+In-Reply-To: <201105120025.34531.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,20 +18,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-ide@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thu, 12 May 2011 00:25:34 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Convert OMAP1 to using the new generic clock manipulation routines
-> and a device power domain for runtime PM instead of overriding the
-> platform bus type's runtime PM callbacks.  This allows us to simplify
-> OMAP1-specific code and to share some code with other platforms
-> (shmobile in particular).
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> There seems to be a problem on my Acer box which is related to DIPM
+> and switching the power source.  Namely, when I detach the AC adapter
+> from the machine, the disk (which is an Intel SSD) freezes for a
+> while and something like this appears in dmesg:
+[...]
 
-Acked-by: Kevin Hilman <khilman@ti.com>
+Since updating to 2.6.39-rc7 (from 2.6.38.x) I have similar problems
+with two notebooks using Intel ICH:
+
+Acer PTZ1825
+00:1f.2 SATA controller: Intel Corporation ICH9M/M-E SATA AHCI
+Controller (rev 03) (prog-if 01 [AHCI 1.0]) Subsystem: Acer
+Incorporated [ALI] Device 0300 Flags: bus master, 66MHz, medium devsel,
+latency 0, IRQ 42 I/O ports at 30e8 [size=8]
+        I/O ports at 30fc [size=4]
+        I/O ports at 30e0 [size=8]
+        I/O ports at 30f8 [size=4]
+        I/O ports at 3020 [size=32]
+        Memory at d4504000 (32-bit, non-prefetchable) [size=2K]
+        Capabilities: [80] MSI: Enable+ Count=1/16 Maskable- 64bit-
+        Capabilities: [70] Power Management version 3
+        Capabilities: [a8] SATA HBA v1.0
+        Capabilities: [b0] PCI Advanced Features
+        Kernel driver in use: ahci
+
+
+Dell Latitude E6510
+00:1f.2 SATA controller: Intel Corporation 5 Series/3400 Series Chipset
+6 port SATA AHCI Cont roller (rev 05) (prog-if 01 [AHCI 1.0])
+        Subsystem: Dell Device 040b
+        Flags: bus master, 66MHz, medium devsel, latency 0, IRQ 41
+        I/O ports at 8090 [size=8]
+        I/O ports at 8080 [size=4]
+        I/O ports at 8070 [size=8]
+        I/O ports at 8060 [size=4]
+        I/O ports at 8020 [size=32]
+        Memory at e9640000 (32-bit, non-prefetchable) [size=2K]
+        Capabilities: [80] MSI: Enable+ Count=1/1 Maskable- 64bit-
+        Capabilities: [70] Power Management version 3
+        Capabilities: [a8] SATA HBA v1.0
+        Capabilities: [b0] PCI Advanced Features
+        Kernel driver in use: ahci
+
+Patch not tried yet (do not know / not looked into yet where to change
+for this chipset).
+
+Seems to be a 2.6.39-rcX regression?
+
+
+-- 
+MfG,
+
+Michael Leun
