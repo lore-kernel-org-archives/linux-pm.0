@@ -1,15 +1,15 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH] perf: export power_start and power_end
-	tracepoints
-Date: Fri, 13 May 2011 17:09:12 +0200
-Message-ID: <BANLkTikkd9bNRLF1iDAz9Jwrnon3A=j44g__2175.31941966644$1305299513$gmane$org@mail.gmail.com>
-References: <1305297838-4015-1-git-send-email-j-pihet@ti.com>
-	<20110513144830.GB32688@elte.hu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pm loss development
+Date: Fri, 13 May 2011 18:54:57 +0200
+Message-ID: <201105131854.57854.rjw__23945.4976785511$1305305741$gmane$org@sisk.pl>
+References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
+	<201105122127.44484.rjw@sisk.pl>
+	<BANLkTikZkRW6TWMcWyZC4_TdAWgjXDqvYA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110513144830.GB32688@elte.hu>
+In-Reply-To: <BANLkTikZkRW6TWMcWyZC4_TdAWgjXDqvYA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,36 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Raffaele Recalcati <lamiaposta71@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Adding l-o and linux-pm MLs. The original post is at
-http://www.spinics.net/lists/kernel/msg1186554.html
+On Friday, May 13, 2011, Raffaele Recalcati wrote:
+> Hi Rafael,
+> 
+> 2011/5/12 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Thursday, May 12, 2011, Raffaele Recalcati wrote:
+> >> What happen normally in runtime pm implementation is that every devices
+> >> are switched off and are enabled only when needed.
+> >> In our case instead we have a completely functional embedded system and,
+> >> when an asyncrhonous event appear, we have only some tens milliseconds
+> >> before the actual power failure takes place.
+> >> This patchset add a support in order to switch off not vital part of the system,
+> >> in order to allow the board to survive longer.
+> >> This allow the possibility to save important data.
+> >
+> > OK, so first, who decides what parts of the system are vital and what aren't?
+> 
+> Take a quick look at Documentation/power/loss.txt  paragrpah "2.4
+> Power loss policies".
+> You can decide what can be powered off.
 
-On Fri, May 13, 2011 at 4:48 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * jean.pihet@newoldbits.com <jean.pihet@newoldbits.com> wrote:
->
->> From: Jean Pihet <j-pihet@ti.com>
->>
->> If used in a module both tracepoints need to be exported by the
->> kernel.
->
-> but it's not used by any module in the kernel AFAICS, so why is this need=
-ed?
-Not currently, that is why the error went unnoticed. I think it is
-better to fix it now than later.
-
-I am working on a plan to clean-up and isolate the OMAP PM code from
-the core code and to provide the PM functionality as a module. This
-effort is part of the 'remove the crazy ARM churn' from the kernel.
+I read the patches.  My question was about the general idea of who should
+be responsible of making these decisions.
 
 Thanks,
-Jean
-
->
-> Thanks,
->
-> =A0 =A0 =A0 =A0Ingo
->
+Rafael
