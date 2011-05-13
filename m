@@ -1,14 +1,17 @@
-From: "Michael Leun" <lkml20100708@newton.leun.net>
-Subject: AHCI driver problem on ICH (Re: AHCI driver problem on
- SB700/SB800 w/ Acer Ferrari One)
-Date: Fri, 13 May 2011 14:37:58 +0200
-Message-ID: <20110513143758.33f68a77__9907.72210429913$1305564254$gmane$org@xenia.leun.net>
+From: Michael Leun <lkml20100708@newton.leun.net>
+Subject: Re: AHCI driver problem on ICH (Re: AHCI driver problem
+ on SB700/SB800 w/ Acer Ferrari One)
+Date: Fri, 13 May 2011 21:54:13 +0200
+Message-ID: <20110513215413.3480d6b5__15519.2207465463$1305564305$gmane$org@xenia.leun.net>
 References: <201105120025.34531.rjw@sisk.pl>
+	<20110513143758.33f68a77@xenia.leun.net>
+	<201105131856.44250.rjw@sisk.pl>
+	<BANLkTimqxmbpP1-+HxhPQS-YoLTh=bHd1Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105120025.34531.rjw@sisk.pl>
+In-Reply-To: <BANLkTimqxmbpP1-+HxhPQS-YoLTh=bHd1Q@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,57 +25,23 @@ To: Tejun Heo <tj@kernel.org>
 Cc: linux-ide@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 12 May 2011 00:25:34 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Fri, 13 May 2011 19:39:51 +0200
+Tejun Heo <tj@kernel.org> wrote:
 
-> There seems to be a problem on my Acer box which is related to DIPM
-> and switching the power source.  Namely, when I detach the AC adapter
-> from the machine, the disk (which is an Intel SSD) freezes for a
-> while and something like this appears in dmesg:
-[...]
+> Can you guys please take a look at bug#34692?  It seems to be the
+> same problem.
+> 
+>   https://bugzilla.kernel.org/show_bug.cgi?id=34692
+> 
+> The offending commit seems to be 270dac35c2.  Does reverting it
+> resolves the problem for you guys too?
 
-Since updating to 2.6.39-rc7 (from 2.6.38.x) I have similar problems
-with two notebooks using Intel ICH:
+- Does not happen with 2.6.38.6
 
-Acer PTZ1825
-00:1f.2 SATA controller: Intel Corporation ICH9M/M-E SATA AHCI
-Controller (rev 03) (prog-if 01 [AHCI 1.0]) Subsystem: Acer
-Incorporated [ALI] Device 0300 Flags: bus master, 66MHz, medium devsel,
-latency 0, IRQ 42 I/O ports at 30e8 [size=8]
-        I/O ports at 30fc [size=4]
-        I/O ports at 30e0 [size=8]
-        I/O ports at 30f8 [size=4]
-        I/O ports at 3020 [size=32]
-        Memory at d4504000 (32-bit, non-prefetchable) [size=2K]
-        Capabilities: [80] MSI: Enable+ Count=1/16 Maskable- 64bit-
-        Capabilities: [70] Power Management version 3
-        Capabilities: [a8] SATA HBA v1.0
-        Capabilities: [b0] PCI Advanced Features
-        Kernel driver in use: ahci
+- Happens 100% of cases with 2.6.39-rc7 (connect ac adapter or suspend
+  to ram with ac connected and resume with ac disconnected)
 
-
-Dell Latitude E6510
-00:1f.2 SATA controller: Intel Corporation 5 Series/3400 Series Chipset
-6 port SATA AHCI Cont roller (rev 05) (prog-if 01 [AHCI 1.0])
-        Subsystem: Dell Device 040b
-        Flags: bus master, 66MHz, medium devsel, latency 0, IRQ 41
-        I/O ports at 8090 [size=8]
-        I/O ports at 8080 [size=4]
-        I/O ports at 8070 [size=8]
-        I/O ports at 8060 [size=4]
-        I/O ports at 8020 [size=32]
-        Memory at e9640000 (32-bit, non-prefetchable) [size=2K]
-        Capabilities: [80] MSI: Enable+ Count=1/1 Maskable- 64bit-
-        Capabilities: [70] Power Management version 3
-        Capabilities: [a8] SATA HBA v1.0
-        Capabilities: [b0] PCI Advanced Features
-        Kernel driver in use: ahci
-
-Patch not tried yet (do not know / not looked into yet where to change
-for this chipset).
-
-Seems to be a 2.6.39-rcX regression?
-
+- Reverting 270dac35c26433d06a89150c51e75ca0181ca7e4 fixes issue
 
 -- 
 MfG,
