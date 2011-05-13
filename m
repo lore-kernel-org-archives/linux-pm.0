@@ -1,16 +1,16 @@
-From: Davide Ciminaghi <ciminaghi@gnudd.com>
-Subject: Re: [PATCH 1/4] export bus_kset
-Date: Fri, 13 May 2011 19:11:48 +0200
-Message-ID: <20110513171148.GM29259__42302.0380003892$1305306769$gmane$org@mail.gnudd.com>
-References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
-	<1305220265-9020-2-git-send-email-lamiaposta71@gmail.com>
-	<201105122128.54172.rjw@sisk.pl>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: AHCI driver problem on ICH (Re: AHCI driver problem
+ on SB700/SB800 w/ Acer Ferrari One)
+Date: Fri, 13 May 2011 19:39:51 +0200
+Message-ID: <BANLkTimqxmbpP1-+HxhPQS-YoLTh=bHd1Q__1039.58283220908$1305308552$gmane$org@mail.gmail.com>
+References: <201105120025.34531.rjw@sisk.pl>
+	<20110513143758.33f68a77@xenia.leun.net>
+	<201105131856.44250.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201105122128.54172.rjw@sisk.pl>
+In-Reply-To: <201105131856.44250.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +21,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <lamiaposta71@gmail.com>, linux-kernel@vger.kernel.org
+Cc: linux-ide@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Michael Leun <lkml20100708@newton.leun.net>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 12, 2011 at 09:28:53PM +0200, Rafael J. Wysocki wrote:
+Hello,
 
-hi,
+Can you guys please take a look at bug#34692?  It seems to be the same problem.
 
-sorry, I missed this message this morning.
+  https://bugzilla.kernel.org/show_bug.cgi?id=34692
 
-> On Thursday, May 12, 2011, Raffaele Recalcati wrote:
-> > From: Davide Ciminaghi <ciminaghi@gnudd.com>
-> 
-> Please explain why you need to export it, what the alternatives are and
-> why you think this approach is better than the alternatives.
-> 
+The offending commit seems to be 270dac35c2.  Does reverting it
+resolves the problem for you guys too?
 
-what I needed to do was walking through the list of registered busses,
-and invoking the bus_added()/bus_removed() callback of a newly registered
-policy. I couldn't find any other simple way to do it.
+Thanks.
 
-Regards
-Davide
+--
+tejun
