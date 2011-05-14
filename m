@@ -1,12 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.39-rc7-git7: Reported regressions 2.6.37 -> 2.6.38
-Date: Sun, 15 May 2011 00:39:04 +0200 (CEST)
-Message-ID: <Zsp7lN2vZ2O.A.J7C.bQwzNB__15987.5811696567$1305413390$gmane$org@chimera>
+Subject: Re: [RFC][PATCH] PM / Hibernate: Add sysfs knob to
+	control size of memory for drivers
+Date: Sun, 15 May 2011 00:56:55 +0200
+Message-ID: <201105150056.55601.rjw__15170.3110234395$1305413846$gmane$org@sisk.pl>
+References: <201105100059.25372.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <201105100059.25372.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,157 +18,213 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-W05PVEU6CiBUaGlzIG1vc3QgbGlrZWx5IGlzIHRoZSBsYXN0IHN1bW1hcnkgcmVwb3J0IG9mIHBv
-c3QtMi42LjM3IHJlZ3Jlc3Npb25zCiBpbnRyb2R1Y2VkIGR1cmluZyB0aGUgMi42LjM4IGRldmVs
-b3BtZW50IGN5Y2xlLiAgUGxlYXNlIGxldCB1cyBrbm93IHdoYXQKIHRoZSBjdXJyZW50IHN0YXR1
-cyBvZiB0aG9zZSBidWdzIGlzLCBpZiBwb3NzaWJsZSwgYW5kIHRoYW5rcyBmb3IgYWxsIG9mCiB0
-aGUgcmVwb3J0cywgdXBkYXRlcyBhbmQgZml4ZXMuXQoKVGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEg
-bGlzdCBvZiBzb21lIHBvc3QtMi42LjM3IHJlZ3Jlc3Npb25zIGludHJvZHVjZWQgYmVmb3JlCjIu
-Ni4zOCwgZm9yIHdoaWNoIHRoZXJlIGFyZSBubyBmaXhlcyBpbiB0aGUgbWFpbmxpbmUga25vd24g
-dG8gdGhlIHRyYWNraW5nIHRlYW0uCklmIGFueSBvZiB0aGVtIGhhdmUgYmVlbiBmaXhlZCBhbHJl
-YWR5LCBwbGVhc2UgbGV0IHVzIGtub3cuCgpJZiB5b3Uga25vdyBvZiBhbnkgb3RoZXIgdW5yZXNv
-bHZlZCBwb3N0LTIuNi4zNyByZWdyZXNzaW9ucywgcGxlYXNlIGxldCB1cyBrbm93CmVpdGhlciBh
-bmQgd2UnbGwgYWRkIHRoZW0gdG8gdGhlIGxpc3QuICBBbHNvLCBwbGVhc2UgbGV0IHVzIGtub3cg
-aWYgYW55Cm9mIHRoZSBlbnRyaWVzIGJlbG93IGFyZSBpbnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9t
-IHRoZSBsaXN0IHdpbGwgYmUgc2VudCBhZGRpdGlvbmFsbHkgaW4gYW4gYXV0b21hdGljIHJlcGx5
-IHRvCnRoaXMgbWVzc2FnZSB3aXRoIENDcyB0byB0aGUgcGVvcGxlIGludm9sdmVkIGluIHJlcG9y
-dGluZyBhbmQgaGFuZGxpbmcgdGhlCmlzc3VlLgoKCkxpc3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0
-aWNzOgoKICBEYXRlICAgICAgICAgIFRvdGFsICBQZW5kaW5nICBVbnJlc29sdmVkCiAgLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogIDIwMTEtMDUtMTUgICAgICAxMDcg
-ICAgICAgMjMgICAgICAgICAgMjAKICAyMDExLTA0LTMwICAgICAgMTA1ICAgICAgIDI5ICAgICAg
-ICAgIDI4CiAgMjAxMS0wNC0xNyAgICAgICA5OCAgICAgICAyOCAgICAgICAgICAyOAogIDIwMTEt
-MDMtMjcgICAgICAgODggICAgICAgMjYgICAgICAgICAgMjYKICAyMDExLTAzLTA2ICAgICAgIDcw
-ICAgICAgIDI3ICAgICAgICAgIDI2CiAgMjAxMS0wMi0yMSAgICAgICA1MSAgICAgICAxOCAgICAg
-ICAgICAxNwogIDIwMTEtMDItMTIgICAgICAgMzkgICAgICAgMjAgICAgICAgICAgMTgKICAyMDEx
-LTAyLTAzICAgICAgIDE5ICAgICAgIDExICAgICAgICAgICA3CgoKVW5yZXNvbHZlZCByZWdyZXNz
-aW9ucwotLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEu
-a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzQ5OTIKU3ViamVjdAkJOiBSZWdyZXNzaW9uIHdp
-dGggYXRoNWssIGNhbm5vdCBmaW5kIGFueSB3aXJlbGVzcyBuZXR3b3JrClN1Ym1pdHRlcgk6IEpv
-c2h1YSBDb3Zpbmd0b24gPGpvc2h1YWNvdkBnb29nbGVtYWlsLmNvbT4KRGF0ZQkJOiAyMDExLTA1
-LTEyIDExOjI0ICgzIGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0zMzk4MgpTdWJqZWN0CQk6IGF0aDlrOiByZWd1bGF0b3J5
-OiBzdHJhbmdlIHR4IHBvd2VyIGxpbWl0cwpTdWJtaXR0ZXIJOiBSaWNoYXJkIFNjaMO8dHogPHIu
-c2NodHpAdC1vbmxpbmUuZGU+CkRhdGUJCTogMjAxMS0wNC0yNiAxODozNyAoMTkgZGF5cyBvbGQp
-CgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
-PTMzODgyClN1YmplY3QJCTogcnQyODAwcGNpIGJhZCBwZXJmb3JtYW5jZSBpbiAyLjYuMzgKU3Vi
-bWl0dGVyCTogUmljYXJkbyBHcmHDp2EgPHIuanBnQGlvbC5wdD4KRGF0ZQkJOiAyMDExLTA0LTIz
-IDE0OjM1ICgyMiBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVs
-Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzM4NTIKU3ViamVjdAkJOiBSZWdyZXNzaW9uIG9mIEFSMjQx
-MyA4MDIuMTFiZyBpbiAyLjYuMzguNApTdWJtaXR0ZXIJOiBCb3JpcyBQb3BvdiA8cG9wb3YuYkBn
-bWFpbC5jb20+CkRhdGUJCTogMjAxMS0wNC0yMyAxMjoxMiAoMjIgZGF5cyBvbGQpCkZpcnN0LUJh
-ZC1Db21taXQ6IGh0dHA6Ly9naXQua2VybmVsLm9yZy9saW51cy80MmMwMjVmM2RlOTA0MmQ5Yzlh
-YmQ5YTZmNjIwNWQxYTBmNGJjYWRmCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5l
-bC5vcmcvc2hvd19idWcuY2dpP2lkPTMzNjYyClN1YmplY3QJCTogU3lzdGVtIGhhbmdzIGR1cmlu
-ZyBYIHN0YXJ0dXAgKGt3aW4gY29tcG9zaXRpbmc/KQpTdWJtaXR0ZXIJOiBMdWtlLUpyIDxsdWtl
-LWpyK2xpbnV4YnVnc0B1dG9waW9zLm9yZz4KRGF0ZQkJOiAyMDExLTA0LTE5IDA0OjI2ICgyNiBk
-YXlzIG9sZCkKRmlyc3QtQmFkLUNvbW1pdDogaHR0cDovL2dpdC5rZXJuZWwub3JnL2xpbnVzL2U4
-NjE2YjZjZWQ2MTM3MDg1ZTY2NTdjYzYzYmMyZmUzOTAwYjg2MTYKCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzI4NjIKU3ViamVjdAkJOiBh
-Y2VyX3dtaSBwYXJ0aWFsbHkgY3Jhc2hlcyBBQ1BJL0VDIChBc3BpcmUgODkzMEcpClN1Ym1pdHRl
-cgk6IEhlY3RvciBNYXJ0aW4gPGhlY3RvckBtYXJjYW5zb2Z0LmNvbT4KRGF0ZQkJOiAyMDExLTA0
-LTA3IDE3OjQ0ICgzOCBkYXlzIG9sZCkKSGFuZGxlZC1CeQk6IExlZSwgQ2h1bi1ZaSA8amxlZUBu
-b3ZlbGwuY29tPgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0zMjUyMgpTdWJqZWN0CQk6IGRybTppOTE1X2hhbmdjaGVja19yaW5nX2lkbGUg
-YWZ0ZXIgc3VzcGVuZC9yZXN1bWUgY3ljbGUKU3VibWl0dGVyCTogIDxmaGltcGVAdGVsZW5ldC5i
-ZT4KRGF0ZQkJOiAyMDExLTA0LTAyIDE4OjQwICg0MyBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBo
-dHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzIyMDIKU3ViamVjdAkJ
-OiAyLjYuMzggaGFuZ3Mgb24gYm9vdCB1bnRpbCBrZXkgaXMgcHJlc3NlZApTdWJtaXR0ZXIJOiBU
-dnJ0a28gVXJzdWxpbiA8dHZydGtvQHVyc3VsaW4ubmV0PgpEYXRlCQk6IDIwMTEtMDMtMjcgMTk6
-MTggKDQ5IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDEzMDEyNTM0ODUuMjUwMC4yLmNhbWVsQGRl
-dXRlcm9zPgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0x
-MzAxMjU0MTExMTY1NTgmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5v
-cmcvc2hvd19idWcuY2dpP2lkPTMxOTIyClN1YmplY3QJCTogYXRoNWs6IERlY3JlYXNlZCB0aHJv
-dWdocHV0IGluIElCU1Mgb3IgODAyLjExbiBtb2RlClN1Ym1pdHRlcgk6IEplZmYgQ29vayA8amVm
-ZkBkZXNlcmV0dGVjaG5vbG9neS5jb20+CkRhdGUJCTogMjAxMS0wMy0yNiAyMDowNiAoNTAgZGF5
-cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTMxNzgyClN1YmplY3QJCTogbm91dmVhdTogbG9ja2RlcCBzcGV3ClN1Ym1pdHRlcgk6
-IEpvaGFubmVzIEJlcmcgPGpvaGFubmVzQHNpcHNvbHV0aW9ucy5uZXQ+CkRhdGUJCTogMjAxMS0w
-My0yNCAwOTo1MSAoNTIgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTMxNTcyClN1YmplY3QJCTogQlVHIGluIHZiX2FsbG9j
-KCkgLSBmaXJld2lyZSBjcmFzaCBhdCBib290ClN1Ym1pdHRlcgk6IFBhdmVsIEt5c2lsa2EgPGdv
-bGRlbmZpc2hAbGludXhzb2Z0LmN6PgpEYXRlCQk6IDIwMTEtMDMtMjEgMTI6NDAgKDU1IGRheXMg
-b2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0zMTQwMgpTdWJqZWN0CQk6IERpbWluaXNoZWQgYnJpZ2h0bmVzcyBhdCBzdGFydHVwClN1
-Ym1pdHRlcgk6IEd1aWxoZXJtZSBTYWxhemFyIDxndWlsaGVybWVzYWxhemFyQHltYWlsLmNvbT4K
-RGF0ZQkJOiAyMDExLTAzLTE4IDE2OjI5ICg1OCBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzEzMjIKU3ViamVjdAkJOiAy
-LjYuMzgtcmMgZWNobyAzID4gL3Byb2Mvc3lzL3ZtL2Ryb3BfY2FjaGVzIHJlcGFpcnMgbXBsYXll
-ciBkaXN0b3J0aW9ucwpTdWJtaXR0ZXIJOiBIYW5zIGRlIEJydWluIDxqbWRlYnJ1aW5AeG1zbmV0
-Lm5sPgpEYXRlCQk6IDIwMTEtMDMtMTQgMjE6MzQgKDYyIGRheXMgb2xkKQpNZXNzYWdlLUlECTog
-PDREN0U4OUU3LjMwODA1MDVAeG1zbmV0Lm5sPgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5m
-by8/bD1saW51eC1rZXJuZWwmbT0xMzAwMTQxODE5MTk4Mjcmdz0yCgoKQnVnLUVudHJ5CTogaHR0
-cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTMxMDEyClN1YmplY3QJCTog
-V0FSTklORzogUGVyZjogYmFkIGZyYW1lIHBvaW50ZXIgPSAobnVsbCksIDIuNi4zOC1yYzgKU3Vi
-bWl0dGVyCTogQ2h1Y2sgRWJiZXJ0IDxjZWJiZXJ0QHJlZGhhdC5jb20+CkRhdGUJCTogMjAxMS0w
-My0xMiAxOTowOCAoNjQgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8MjAxMTAzMTIxNDA4NTEuNTI0
-MjAxNDlAa2F0YW1hcmk+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtl
-cm5lbCZtPTEyOTk5NTcyMTAxNDkzMSZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEu
-a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzA5OTIKU3ViamVjdAkJOiAyLjYuMzgtcmM3OiBT
-b21lIHN0cmFuZ2Ugc29mdC1sb2NrdXAKU3VibWl0dGVyCTogRG1pdHJ5IE5lemhldmVua28gPGRp
-b25AaW5oZXgubmV0PgpEYXRlCQk6IDIwMTEtMDMtMDYgMTQ6MDEgKDcwIGRheXMgb2xkKQpNZXNz
-YWdlLUlECTogPDIwMTEwMzA2MTQwMTA0LkdBNzcwMEBsYXB0b3AubG9jYWw+ClJlZmVyZW5jZXMJ
-OiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEyOTk0MjE2MTIwNTczOSZ3PTIK
-CgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
-Mjk5OTIKU3ViamVjdAkJOiBib290IGhhbmcgMi42LjM3LjEgcmVncmVzc2lvbiB3LyBpbnRlbF9p
-ZGxlIGFuZCBDT05GSUdfTk9fSFo9biAtIGFzdXMgcDdwNTVkIGxlClN1Ym1pdHRlcgk6IERlIEdh
-bnNlbWFuIEFtYXVyeSA8YW1hdXJ5LmRlZ2Fuc2VtYW5AZ21haWwuY29tPgpEYXRlCQk6IDIwMTEt
-MDItMjcgMTA6MzggKDc3IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5r
-ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yOTY3MgpTdWJqZWN0CQk6IFtyZWdyZXNzaW9uXVtB
-TFNBXVtoZGEtY29uZXhhbnRdWzIuNi4zOC1yY1hdIGV4dGVybmFsIG1pY3JvcGhvbmUgc291bmQg
-dG9vIHF1aWV0ClN1Ym1pdHRlcgk6IFNoYXduIFN0YXJyIDxzaGF3bi5zdGFyckByb2dlcnMuY29t
-PgpEYXRlCQk6IDIwMTEtMDItMTkgNjowMiAoODUgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8NDc0
-NjMwLjI1MzM1LnFtQHNtdHAxMDUucm9nLm1haWwucmUyLnlhaG9vLmNvbT4KUmVmZXJlbmNlcwk6
-IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTI5ODA5NTM2NTAyMDkyJnc9MgoK
-CkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0y
-ODUyMgpTdWJqZWN0CQk6IFVuYWJsZSB0byBtb3VudCBGQVQtZm9ybWF0dGVkIGZsb3BweSBvbiAv
-ZGV2L2ZkMCwgcGx1cyBXQVJOX09OIHdoZW4gdXNpbmcgL2Rldi9mZDB1MTQ0MApTdWJtaXR0ZXIJ
-OiBBbGV4IFZpbGxhY2lzIExhc3NvIDxhdmlsbGFjaUBjZWliby5maWVjLmVzcG9sLmVkdS5lYz4K
-RGF0ZQkJOiAyMDExLTAyLTA3IDE3OjIxICg5NyBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRw
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mjg0NTIKU3ViamVjdAkJOiAy
-LjYuMzgtcmMzIHJlZ3Jlc3Npb24gb24gcGFyaXNjOiBzZWdmYXVsdHMKU3VibWl0dGVyCTogTWVl
-bGlzIFJvb3MgPG1yb29zQGxpbnV4LmVlPgpEYXRlCQk6IDIwMTEtMDItMDEgMjI6MDAgKDEwMyBk
-YXlzIG9sZCkKTWVzc2FnZS1JRAk6IDxhbHBpbmUuU09DLjEuMDAuMTEwMjAxMjM0MjIwMC4yNTk0
-NEBtYXRoLnV0LmVlPgpSZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJu
-ZWwmbT0xMjk2NTk3NjM0MjY2MDAmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTI4NDIyClN1YmplY3QJCToga3JlZiBhbmQgYXBwYXJt
-b3IgcGFuaWMgaW4gMi42LjM4LXJjMi4KU3VibWl0dGVyCTogVGFvIE1hIDx0bUB0YW8ubWE+CkRh
-dGUJCTogMjAxMS0wMS0zMSAxMDowNiAoMTA0IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDRENDY4
-OTlCLjgwMzAyQHRhby5tYT4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgt
-a2VybmVsJm09MTI5NjQ2ODQwMzAzMTQ5Jnc9MgoKClJlZ3Jlc3Npb25zIHdpdGggcGF0Y2hlcwot
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJu
-ZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0zNDI1MgpTdWJqZWN0CQk6IFVuZXhwZWN0ZWQgYmVoYXZp
-b3VyIHdoZW4gc3dpdGNoaW5nIHZpZGVvIGNhcmRzIHdpdGggdmdhX3N3aXRjaGVyb28KU3VibWl0
-dGVyCTogSWdvciBNdXJ6b3YgPGUtbWFpbEBkYXRlLmJ5PgpEYXRlCQk6IDIwMTEtMDUtMDIgMjI6
-MzkgKDEzIGRheXMgb2xkKQpIYW5kbGVkLUJ5CTogRmxvcmlhbiBNaWNrbGVyIDxmbG9yaWFuQG1p
-Y2tsZXIub3JnPgpQYXRjaAkJOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvYXR0YWNobWVu
-dC5jZ2k/aWQ9NTc1ODIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MzIwNzIKU3ViamVjdAkJOiAyLjYuMzggUmVncmVzc2lvbjogTnZpZGlh
-IEdlRm9yY2U4NDAwICsgaTkxNSA9IENyYXNoIG9uIEJvb3QKU3VibWl0dGVyCTogc2ltb25AbXVu
-Z2V3ZWxsLm9yZwpEYXRlCQk6IDIwMTEtMDMtMjQgMTU6MjAgKDUyIGRheXMgb2xkKQpNZXNzYWdl
-LUlECTogPGZlNDcxYzA1ODk3Nzc2YjdjMjZiOWZkMjYwM2UzYjc2LnNxdWlycmVsQGhvc3QxNzEu
-Y2FuYWNhLmNvbT4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVs
-Jm09MTMwMTAwOTU1OTI2NDM0Jnc9MgpQYXRjaAkJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4
-LXhmcyZtPTEzMDE0NDUxOTEyMzgwOSZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEu
-a2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzE1MjIKU3ViamVjdAkJOiBpOTE1L2ttcyByZWdy
-ZXNzaW9uIGFmdGVyIDIuNi4zOC1yYzggKHdhczogUmU6IExpbnV4IDIuNi4zOCkKU3VibWl0dGVy
-CTogTWVsY2hpb3IgRlJBTlogPG1lbGNoaW9yLmZyYW56QGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDEx
-LTAzLTE2IDE3OjMwICg2MCBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDwyMDExMDMxNjE4MzAuNTIy
-MzFAcmstbm9yZC5hdD4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2Vy
-bmVsJm09MTMwMDI5NzA2NDE2NjU5Jnc9MgoJCSAgaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1r
-ZXJuZWwmbT0xMzA0MDkyNzAzMzIxNzQmdz0yClBhdGNoCQk6IGh0dHBzOi8vcGF0Y2h3b3JrLmtl
-cm5lbC5vcmcvcGF0Y2gvNzQzMTYyLwoKCkZvciBkZXRhaWxzLCBwbGVhc2UgdmlzaXQgdGhlIGJ1
-ZyBlbnRyaWVzIGFuZCBmb2xsb3cgdGhlIGxpbmtzIGdpdmVuIGluCnJlZmVyZW5jZXMuCgpBcyB5
-b3UgY2FuIHNlZSwgdGhlcmUgaXMgYSBCdWd6aWxsYSBlbnRyeSBmb3IgZWFjaCBvZiB0aGUgbGlz
-dGVkIHJlZ3Jlc3Npb25zLgpUaGVyZSBhbHNvIGlzIGEgQnVnemlsbGEgZW50cnkgdXNlZCBmb3Ig
-dHJhY2tpbmcgdGhlIHJlZ3Jlc3Npb25zIGludHJvZHVjZWQKYmV0d2VlbiAyLjYuMzcgYW5kIDIu
-Ni4zOCwgdW5yZXNvbHZlZCBhcyB3ZWxsIGFzIHJlc29sdmVkLCBhdDoKCmh0dHA6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yNzM1MgoKUGxlYXNlIGxldCB0aGUgdHJhY2tp
-bmcgdGVhbSBrbm93IGlmIHRoZXJlIGFyZSBhbnkgQnVnemlsbGEgZW50cmllcyB0aGF0CnNob3Vs
-ZCBiZSBhZGRlZCB0byB0aGUgbGlzdCBpbiB0aGVyZS4KClRoYW5rcyEKCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdAps
-aW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZv
-dW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+Hi,
+
+On Tuesday, May 10, 2011, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Martin reports that on his system hibernation occasionally fails due
+> to the lack of memory, because the radeon driver apparently allocates
+> too much of it during the device freeze stage.  It turns out that the
+> amount of memory allocated by radeon during hibernation (and
+> presumably during system suspend too) depends on the utilization of
+> the GPU (e.g. hibernating while there are two KDE 4 sessions with
+> compositing enabled causes radeon to allocate more memory than for
+> one KDE 4 session).
+> 
+> In principle it should be possible to use image_size to make the
+> memory preallocation mechanism free enough memory for the radeon
+> driver, but in practice it is not easy to guess the right value
+> because of the way the preallocation code uses image_size.  For this
+> reason, it seems reasonable to allow users to control the amount of
+> memory reserved for driver allocations made after the preallocation,
+> which currently is constant and amounts to 1 MB.
+> 
+> Introduce a new sysfs file, /sys/power/reserved_size, whose value
+> will be used as the amount of memory to reserve for the
+> post-preallocation reservations made by device drivers, in bytes.
+> For backwards compatibility, set its default (and initial) value to
+> the currently used number (1 MB).
+> 
+> References: https://bugzilla.kernel.org/show_bug.cgi?id=34102
+> Reported-by: Martin Steigerwald <Martin@Lichtvoll.de>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+OK, there are no comments, so my understanding is that everyone is fine
+with this patch and I can add it to my linux-next branch.
+
+Thanks,
+Rafael
+
+
+> ---
+>  Documentation/ABI/testing/sysfs-power |   14 ++++++++++++++
+>  kernel/power/hibernate.c              |   23 +++++++++++++++++++++++
+>  kernel/power/main.c                   |    1 +
+>  kernel/power/power.h                  |    4 ++++
+>  kernel/power/snapshot.c               |   25 ++++++++++++++++++++-----
+>  5 files changed, 62 insertions(+), 5 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/hibernate.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/hibernate.c
+> +++ linux-2.6/kernel/power/hibernate.c
+> @@ -968,10 +968,33 @@ static ssize_t image_size_store(struct k
+>  
+>  power_attr(image_size);
+>  
+> +static ssize_t reserved_size_show(struct kobject *kobj,
+> +				  struct kobj_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%lu\n", reserved_size);
+> +}
+> +
+> +static ssize_t reserved_size_store(struct kobject *kobj,
+> +				   struct kobj_attribute *attr,
+> +				   const char *buf, size_t n)
+> +{
+> +	unsigned long size;
+> +
+> +	if (sscanf(buf, "%lu", &size) == 1) {
+> +		reserved_size = size;
+> +		return n;
+> +	}
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +power_attr(reserved_size);
+> +
+>  static struct attribute * g[] = {
+>  	&disk_attr.attr,
+>  	&resume_attr.attr,
+>  	&image_size_attr.attr,
+> +	&reserved_size_attr.attr,
+>  	NULL,
+>  };
+>  
+> Index: linux-2.6/kernel/power/power.h
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/power.h
+> +++ linux-2.6/kernel/power/power.h
+> @@ -15,6 +15,7 @@ struct swsusp_info {
+>  
+>  #ifdef CONFIG_HIBERNATION
+>  /* kernel/power/snapshot.c */
+> +extern void __init hibernate_reserved_size_init(void);
+>  extern void __init hibernate_image_size_init(void);
+>  
+>  #ifdef CONFIG_ARCH_HIBERNATION_HEADER
+> @@ -55,6 +56,7 @@ extern int hibernation_platform_enter(vo
+>  
+>  #else /* !CONFIG_HIBERNATION */
+>  
+> +static inline void hibernate_reserved_size_init(void) {}
+>  static inline void hibernate_image_size_init(void) {}
+>  #endif /* !CONFIG_HIBERNATION */
+>  
+> @@ -72,6 +74,8 @@ static struct kobj_attribute _name##_att
+>  
+>  /* Preferred image size in bytes (default 500 MB) */
+>  extern unsigned long image_size;
+> +/* Size of memory reserved for drivers (default SPARE_PAGES x PAGE_SIZE) */
+> +extern unsigned long reserved_size;
+>  extern int in_suspend;
+>  extern dev_t swsusp_resume_device;
+>  extern sector_t swsusp_resume_block;
+> Index: linux-2.6/kernel/power/snapshot.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/snapshot.c
+> +++ linux-2.6/kernel/power/snapshot.c
+> @@ -41,6 +41,18 @@ static void swsusp_set_page_forbidden(st
+>  static void swsusp_unset_page_forbidden(struct page *);
+>  
+>  /*
+> + * Number of bytes to reserve for memory allocations made by device drivers
+> + * from their ->freeze() and ->freeze_noirq() callbacks so that they don't
+> + * cause image creation to fail (tunable via /sys/power/reserved_size).
+> + */
+> +unsigned long reserved_size;
+> +
+> +void __init hibernate_reserved_size_init(void)
+> +{
+> +	reserved_size = SPARE_PAGES * PAGE_SIZE;
+> +}
+> +
+> +/*
+>   * Preferred image size in bytes (tunable via /sys/power/image_size).
+>   * When it is set to N, the image creating code will do its best to
+>   * ensure the image size will not exceed N bytes, but if that is
+> @@ -1263,11 +1275,13 @@ static unsigned long minimum_image_size(
+>   * frame in use.  We also need a number of page frames to be free during
+>   * hibernation for allocations made while saving the image and for device
+>   * drivers, in case they need to allocate memory from their hibernation
+> - * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
+> - * respectively, both of which are rough estimates).  To make this happen, we
+> - * compute the total number of available page frames and allocate at least
+> + * callbacks (these two numbers are given by PAGES_FOR_IO (which is a rough
+> + * estimate) and reserverd_size divided by PAGE_SIZE (which is tunable through
+> + * /sys/power/reserved_size, respectively).  To make this happen, we compute the
+> + * total number of available page frames and allocate at least
+>   *
+> - * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
+> + * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2
+> + *  + 2 * DIV_ROUND_UP(reserved_size, PAGE_SIZE)
+>   *
+>   * of them, which corresponds to the maximum size of a hibernation image.
+>   *
+> @@ -1322,7 +1336,8 @@ int hibernate_preallocate_memory(void)
+>  	count -= totalreserve_pages;
+>  
+>  	/* Compute the maximum number of saveable pages to leave in memory. */
+> -	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
+> +	max_size = (count - (size + PAGES_FOR_IO)) / 2
+> +			- 2 * DIV_ROUND_UP(reserved_size, PAGE_SIZE);
+>  	/* Compute the desired number of image pages specified by image_size. */
+>  	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
+>  	if (size > max_size)
+> Index: linux-2.6/kernel/power/main.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/main.c
+> +++ linux-2.6/kernel/power/main.c
+> @@ -337,6 +337,7 @@ static int __init pm_init(void)
+>  	if (error)
+>  		return error;
+>  	hibernate_image_size_init();
+> +	hibernate_reserved_size_init();
+>  	power_kobj = kobject_create_and_add("power", NULL);
+>  	if (!power_kobj)
+>  		return -ENOMEM;
+> Index: linux-2.6/Documentation/ABI/testing/sysfs-power
+> ===================================================================
+> --- linux-2.6.orig/Documentation/ABI/testing/sysfs-power
+> +++ linux-2.6/Documentation/ABI/testing/sysfs-power
+> @@ -158,3 +158,17 @@ Description:
+>  		successful, will make the kernel abort a subsequent transition
+>  		to a sleep state if any wakeup events are reported after the
+>  		write has returned.
+> +
+> +What:		/sys/power/reserved_size
+> +Date:		May 2011
+> +Contact:	Rafael J. Wysocki <rjw@sisk.pl>
+> +Description:
+> +		The /sys/power/reserved_size file allows user space to control
+> +		the amount of memory reserved for allocations made by device
+> +		drivers during the "device freeze" stage of hibernation.  It can
+> +		be written a string representing a non-negative integer that
+> +		will be used as the amount of memory to reserve for allocations
+> +		made by device drivers' "freeze" callbacks, in bytes.
+> +
+> +		Reading from this file will display the current value, which is
+> +		set to 1 MB by default.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
