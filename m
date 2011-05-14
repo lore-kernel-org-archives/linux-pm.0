@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM / Hibernate: Add sysfs knob to
-	control size of memory for drivers
-Date: Sun, 15 May 2011 00:56:55 +0200
-Message-ID: <201105150056.55601.rjw__15170.3110234395$1305413846$gmane$org@sisk.pl>
-References: <201105100059.25372.rjw@sisk.pl>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: pm loss development
+Date: Sat, 14 May 2011 16:33:59 -0700
+Message-ID: <20110514233359.GA19916__41376.5350393534$1305416112$gmane$org@gvim.org>
+References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
+	<20110514162423.GA8292@gvim.org>
+	<BANLkTikaH24rnMxKUOJq8TtgXvzoD3=zYQ@mail.gmail.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105100059.25372.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <BANLkTikaH24rnMxKUOJq8TtgXvzoD3=zYQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,213 +21,174 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Raffaele Recalcati <lamiaposta71@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Sat, May 14, 2011 at 10:30:31PM +0200, Raffaele Recalcati wrote:
+> On Sat, May 14, 2011 at 6:24 PM, mark gross <markgross@thegnar.org> wrote:
+> > On Thu, May 12, 2011 at 07:11:01PM +0200, Raffaele Recalcati wrote:
+> >> What happen normally in runtime pm implementation is that every devices
+> >> are switched off and are enabled only when needed.
+> >> In our case instead we have a completely functional embedded system an=
+d,
+> >> when an asyncrhonous event appear, we have only some tens milliseconds
+> >> before the actual power failure takes place.
+> >
+> > Very interesting! =A0I've been worried about a similar failure on batte=
+ry
+> > driven devices that can experience significant voltage droops when
+> > battery gets old, or low, and we turn on the flashlight led, vibrator
+> > and make the screen bright while a high volume ring tone gets played.
+> >
+> > I think 10ms is a bit unrealistic. =A0I think its more like 300uSec bef=
+ore
+> > you hit brown out.
+> =
 
-On Tuesday, May 10, 2011, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Martin reports that on his system hibernation occasionally fails due
-> to the lack of memory, because the radeon driver apparently allocates
-> too much of it during the device freeze stage.  It turns out that the
-> amount of memory allocated by radeon during hibernation (and
-> presumably during system suspend too) depends on the utilization of
-> the GPU (e.g. hibernating while there are two KDE 4 sessions with
-> compositing enabled causes radeon to allocate more memory than for
-> one KDE 4 session).
-> 
-> In principle it should be possible to use image_size to make the
-> memory preallocation mechanism free enough memory for the radeon
-> driver, but in practice it is not easy to guess the right value
-> because of the way the preallocation code uses image_size.  For this
-> reason, it seems reasonable to allow users to control the amount of
-> memory reserved for driver allocations made after the preallocation,
-> which currently is constant and amounts to 1 MB.
-> 
-> Introduce a new sysfs file, /sys/power/reserved_size, whose value
-> will be used as the amount of memory to reserve for the
-> post-preallocation reservations made by device drivers, in bytes.
-> For backwards compatibility, set its default (and initial) value to
-> the currently used number (1 MB).
-> 
-> References: https://bugzilla.kernel.org/show_bug.cgi?id=34102
-> Reported-by: Martin Steigerwald <Martin@Lichtvoll.de>
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> In our circuit it is the real timing, but I can understand your situation.
+> Are you sure about 300usec?
 
-OK, there are no comments, so my understanding is that everyone is fine
-with this patch and I can add it to my linux-next branch.
+not 100%,  I'll ask the HW guys what the RC bulk circuit half life is
+for the device.  This along with the estimate of the burst power load
+will define the time constraint for responding to the event.
 
-Thanks,
-Rafael
+Note: an LCD will easily pull 600mW to a full watt, and a loud audio
+system can pull a watt, and a 3G modem can have some scary big transient
+spikes in current.  The LED flash light can pull a watt, and I think the
+vibrator is up around 500mW.  And um, well, my CPU has a power dynamic
+range of ~200mW to ~2watts in C0. So, on a bad day a load spike on the
+battery could be over 4 watts with all these going off at the same time.
+
+Some of these events are pretty bursty (vibrator, ring tone at high
+volume, 3G modem spike, P-states, camera flash)  If you are unlucky you
+get a brown out as the vbat drops < 3.3 (or whatever)
+
+> =
+
+> >> This patchset add a support in order to switch off not vital part of t=
+he system,
+> >> in order to allow the board to survive longer.
+> >> This allow the possibility to save important data.
+> >>
+> >> The implementation has been written by Davide Ciminaghi.
+> >> My work instead was about analyzing different previuos implementation,
+> >> a first completely custom one, a second using runtime pm, arriving
+> >> finally to that one.
+> >>
+> >> I have tested PM loss in our DaVinci dm365 basi board and I write here=
+ below a
+> >> piece of code showing a possible usage.
+> >>
+> >> -------------------
+> >>
+> >> static int powerfail_status;
+> >>
+> >> static irqreturn_t basi_powerfail_stop(int irq, void *dev_id);
+> >>
+> >> static irqreturn_t basi_powerfail_quick_check_start(int irq, void *dev=
+_id)
+> >> {
+> >> =A0 =A0 =A0 =A0 basi_mask_irq_gpio0(IRQ_DM365_GPIO0_2);
+> >> =A0 =A0 =A0 =A0 basi_unmask_irq_gpio0(IRQ_DM365_GPIO0_0);
+> >>
+> >> =A0 =A0 =A0 =A0 /* PowerFail situation - START: power is going away */
+> >> =A0 =A0 =A0 =A0 return IRQ_WAKE_THREAD;
+> >> }
+> >>
+> >> static irqreturn_t basi_powerfail_start(int irq, void *dev_id)
+> >> {
+> >> =A0 =A0 =A0 =A0 if (powerfail_status)
+> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return IRQ_HANDLED;
+> >> =A0 =A0 =A0 =A0 powerfail_status =3D 1;
+> >> =A0 =A0 =A0 =A0 pm_loss_power_changed(SYS_PWR_FAILING);
+> >> =A0 =A0 =A0 =A0 return IRQ_HANDLED;
+> >> }
+> >>
+> >>
+> >> static irqreturn_t basi_powerfail_quick_check_stop(int irq, void *dev_=
+id)
+> >> {
+> >> =A0 =A0 =A0 =A0 basi_mask_irq_gpio0(IRQ_DM365_GPIO0_0);
+> >> =A0 =A0 =A0 =A0 basi_unmask_irq_gpio0(IRQ_DM365_GPIO0_2);
+> >>
+> >> =A0 =A0 =A0 =A0 /* PowerFail situation - STOP: power is coming back */
+> >> =A0 =A0 =A0 =A0 return IRQ_WAKE_THREAD;
+> >> }
+> >>
+> >> static irqreturn_t basi_powerfail_stop(int irq, void *dev_id)
+> >> {
+> >> =A0 =A0 =A0 =A0 if (!powerfail_status)
+> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return IRQ_HANDLED;
+> >> =A0 =A0 =A0 =A0 powerfail_status =3D 0;
+> >> =A0 =A0 =A0 =A0 pm_loss_power_changed(SYS_PWR_GOOD);
+> >> =A0 =A0 =A0 =A0 return IRQ_HANDLED;
+> >> }
+> >>
+> >> enum basi_pwrfail_prio {
+> >> =A0 =A0 =A0 =A0 BASI_PWR_FAIL_PRIO_0,
+> >> =A0 =A0 =A0 =A0 BASI_PWR_FAIL_MIN_PRIO =3D BASI_PWR_FAIL_PRIO_0,
+> >> =A0 =A0 =A0 =A0 BASI_PWR_FAIL_PRIO_1,
+> >> =A0 =A0 =A0 =A0 BASI_PWR_FAIL_PRIO_2,
+> >> =A0 =A0 =A0 =A0 BASI_PWR_FAIL_PRIO_3,
+> >> =A0 =A0 =A0 =A0 BASI_PWR_FAIL_MAX_PRIO =3D BASI_PWR_FAIL_PRIO_3,
+> >> };
+> >>
+> >> struct pm_loss_default_policy_item basi_pm_loss_policy_items[] =3D {
+> >> =A0 =A0 =A0 =A0 {
+> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .bus_name =3D "mmc",
+> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .bus_priority =3D BASI_PWR_FAIL_PRIO_1,
+> >> =A0 =A0 =A0 =A0 },
+> >> =A0 =A0 =A0 =A0 {
+> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .bus_name =3D "platform",
+> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 .bus_priority =3D BASI_PWR_FAIL_PRIO_2,
+> >> =A0 =A0 =A0 =A0 },
+> >> };
+> >>
+> >> #define BASI_POLICY_NAME "basi-default"
+> >>
+> >> struct pm_loss_default_policy_table basi_pm_loss_policy_table =3D {
+> >> =A0 =A0 =A0 =A0 .name =3D BASI_POLICY_NAME,
+> >> =A0 =A0 =A0 =A0 .items =3D basi_pm_loss_policy_items,
+> >> =A0 =A0 =A0 =A0 .nitems =3D ARRAY_SIZE(basi_pm_loss_policy_items),
+> >> };
+> >>
+> >> static void basi_powerfail_configure(void)
+> >> {
+> >> =A0 =A0 =A0 =A0 int stat;
+> >> =A0 =A0 =A0 =A0 struct pm_loss_policy *p;
+> >> =A0 =A0 =A0 =A0 stat =3D request_threaded_irq(IRQ_DM365_GPIO0_2,
+> > Is this some comparator device that tugs on this gpio when the voltage
+> > drops or goes to 0? =A0Is threaded irq fast enough?
+> =
+
+> yes, there is a comparator.
+> I need more data about timing, I'll try to add this info in some days.
+
+yeah, even if you don't have as fast of a response time need as I think
+I have, you do need to consider what if the system is busy at the time
+this interrupt comes in.  Could you be blocked and fail to save your
+emmc from corruption?
+
+> =
+
+> > Could we consider something that includes a hot path ISR based
+> > notification call back to do stuff like blink off devices that don't
+> > need to save state; =A0backlights, vibrators, flashlight LEDs, audio
+> > output drivers <-- I'm not sure about audio HW, and then a slower path
+> > for other things that can be put into lower power states?
+> >
+> > the all-clear notification that power is good again should be on a
+> > slower path I would assume.
+> =
+
+> First I get data, afterwards we can see if your need can be seen as an
+> extension or something else.
+>
+
+This is an interesting problem though. ;)  It brings a hard real time
+requirement to the normal linux kernel from the physics of battery
+performance. =
 
 
-> ---
->  Documentation/ABI/testing/sysfs-power |   14 ++++++++++++++
->  kernel/power/hibernate.c              |   23 +++++++++++++++++++++++
->  kernel/power/main.c                   |    1 +
->  kernel/power/power.h                  |    4 ++++
->  kernel/power/snapshot.c               |   25 ++++++++++++++++++++-----
->  5 files changed, 62 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6/kernel/power/hibernate.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/hibernate.c
-> +++ linux-2.6/kernel/power/hibernate.c
-> @@ -968,10 +968,33 @@ static ssize_t image_size_store(struct k
->  
->  power_attr(image_size);
->  
-> +static ssize_t reserved_size_show(struct kobject *kobj,
-> +				  struct kobj_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%lu\n", reserved_size);
-> +}
-> +
-> +static ssize_t reserved_size_store(struct kobject *kobj,
-> +				   struct kobj_attribute *attr,
-> +				   const char *buf, size_t n)
-> +{
-> +	unsigned long size;
-> +
-> +	if (sscanf(buf, "%lu", &size) == 1) {
-> +		reserved_size = size;
-> +		return n;
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +
-> +power_attr(reserved_size);
-> +
->  static struct attribute * g[] = {
->  	&disk_attr.attr,
->  	&resume_attr.attr,
->  	&image_size_attr.attr,
-> +	&reserved_size_attr.attr,
->  	NULL,
->  };
->  
-> Index: linux-2.6/kernel/power/power.h
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/power.h
-> +++ linux-2.6/kernel/power/power.h
-> @@ -15,6 +15,7 @@ struct swsusp_info {
->  
->  #ifdef CONFIG_HIBERNATION
->  /* kernel/power/snapshot.c */
-> +extern void __init hibernate_reserved_size_init(void);
->  extern void __init hibernate_image_size_init(void);
->  
->  #ifdef CONFIG_ARCH_HIBERNATION_HEADER
-> @@ -55,6 +56,7 @@ extern int hibernation_platform_enter(vo
->  
->  #else /* !CONFIG_HIBERNATION */
->  
-> +static inline void hibernate_reserved_size_init(void) {}
->  static inline void hibernate_image_size_init(void) {}
->  #endif /* !CONFIG_HIBERNATION */
->  
-> @@ -72,6 +74,8 @@ static struct kobj_attribute _name##_att
->  
->  /* Preferred image size in bytes (default 500 MB) */
->  extern unsigned long image_size;
-> +/* Size of memory reserved for drivers (default SPARE_PAGES x PAGE_SIZE) */
-> +extern unsigned long reserved_size;
->  extern int in_suspend;
->  extern dev_t swsusp_resume_device;
->  extern sector_t swsusp_resume_block;
-> Index: linux-2.6/kernel/power/snapshot.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/snapshot.c
-> +++ linux-2.6/kernel/power/snapshot.c
-> @@ -41,6 +41,18 @@ static void swsusp_set_page_forbidden(st
->  static void swsusp_unset_page_forbidden(struct page *);
->  
->  /*
-> + * Number of bytes to reserve for memory allocations made by device drivers
-> + * from their ->freeze() and ->freeze_noirq() callbacks so that they don't
-> + * cause image creation to fail (tunable via /sys/power/reserved_size).
-> + */
-> +unsigned long reserved_size;
-> +
-> +void __init hibernate_reserved_size_init(void)
-> +{
-> +	reserved_size = SPARE_PAGES * PAGE_SIZE;
-> +}
-> +
-> +/*
->   * Preferred image size in bytes (tunable via /sys/power/image_size).
->   * When it is set to N, the image creating code will do its best to
->   * ensure the image size will not exceed N bytes, but if that is
-> @@ -1263,11 +1275,13 @@ static unsigned long minimum_image_size(
->   * frame in use.  We also need a number of page frames to be free during
->   * hibernation for allocations made while saving the image and for device
->   * drivers, in case they need to allocate memory from their hibernation
-> - * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
-> - * respectively, both of which are rough estimates).  To make this happen, we
-> - * compute the total number of available page frames and allocate at least
-> + * callbacks (these two numbers are given by PAGES_FOR_IO (which is a rough
-> + * estimate) and reserverd_size divided by PAGE_SIZE (which is tunable through
-> + * /sys/power/reserved_size, respectively).  To make this happen, we compute the
-> + * total number of available page frames and allocate at least
->   *
-> - * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
-> + * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2
-> + *  + 2 * DIV_ROUND_UP(reserved_size, PAGE_SIZE)
->   *
->   * of them, which corresponds to the maximum size of a hibernation image.
->   *
-> @@ -1322,7 +1336,8 @@ int hibernate_preallocate_memory(void)
->  	count -= totalreserve_pages;
->  
->  	/* Compute the maximum number of saveable pages to leave in memory. */
-> -	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
-> +	max_size = (count - (size + PAGES_FOR_IO)) / 2
-> +			- 2 * DIV_ROUND_UP(reserved_size, PAGE_SIZE);
->  	/* Compute the desired number of image pages specified by image_size. */
->  	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
->  	if (size > max_size)
-> Index: linux-2.6/kernel/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/main.c
-> +++ linux-2.6/kernel/power/main.c
-> @@ -337,6 +337,7 @@ static int __init pm_init(void)
->  	if (error)
->  		return error;
->  	hibernate_image_size_init();
-> +	hibernate_reserved_size_init();
->  	power_kobj = kobject_create_and_add("power", NULL);
->  	if (!power_kobj)
->  		return -ENOMEM;
-> Index: linux-2.6/Documentation/ABI/testing/sysfs-power
-> ===================================================================
-> --- linux-2.6.orig/Documentation/ABI/testing/sysfs-power
-> +++ linux-2.6/Documentation/ABI/testing/sysfs-power
-> @@ -158,3 +158,17 @@ Description:
->  		successful, will make the kernel abort a subsequent transition
->  		to a sleep state if any wakeup events are reported after the
->  		write has returned.
-> +
-> +What:		/sys/power/reserved_size
-> +Date:		May 2011
-> +Contact:	Rafael J. Wysocki <rjw@sisk.pl>
-> +Description:
-> +		The /sys/power/reserved_size file allows user space to control
-> +		the amount of memory reserved for allocations made by device
-> +		drivers during the "device freeze" stage of hibernation.  It can
-> +		be written a string representing a non-negative integer that
-> +		will be used as the amount of memory to reserve for allocations
-> +		made by device drivers' "freeze" callbacks, in bytes.
-> +
-> +		Reading from this file will display the current value, which is
-> +		set to 1 MB by default.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+--mark
