@@ -1,12 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.39-rc7-git7: Reported regressions from 2.6.38
-Date: Sun, 15 May 2011 00:18:48 +0200 (CEST)
-Message-ID: <So1vU2GC7XM.A.5wB.44vzNB__5964.36517448655$1305412095$gmane$org@chimera>
+Subject: Re: xHCI and suspend/resume
+Date: Sun, 15 May 2011 00:38:24 +0200
+Message-ID: <201105150038.24493.rjw__29415.336266584$1305412720$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1105121733370.1917-100000@iolanthe.rowland.org>
+	<201105142310.29314.rjw@sisk.pl>
+	<BANLkTik=qXDHj9Qv=c3S657SqEBAC9+1jw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <BANLkTik=qXDHj9Qv=c3S657SqEBAC9+1jw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,137 +19,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Dwight Schauer <dschauer@gmail.com>
+Cc: dschauer@ti.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This message contains a list of some regressions from 2.6.38,
-for which there are no fixes in the mainline known to the tracking team.
-If any of them have been fixed already, please let us know.
+On Saturday, May 14, 2011, Dwight Schauer wrote:
+> 2011/5/14 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Saturday, May 14, 2011, Dwight Schauer wrote:
+> >> On Fri, May 13, 2011 at 3:37 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > On Friday, May 13, 2011, Dwight Schauer wrote:
+> >> >> On Fri, May 13, 2011 at 3:04 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> >> > On Friday, May 13, 2011, Dwight Schauer wrote:
+> >> >> >> On Thu, May 12, 2011 at 5:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> >> >> > On Thursday, May 12, 2011, Rafael J. Wysocki wrote:
+> >> >> >> >> On Thursday, May 12, 2011, Alan Stern wrote:
+> 
+> >> >> >> >> > For new readers: The problem is that an xHCI USB host controller does
+> >> >> >> >> > not wake up a suspended system properly.
+> ...
+> >> > So, clearly, you don't get any PCIe PME interrupts from root ports
+> >> > when the keyboard is plugged in.  Without those interrupts the runtime
+> >> > resume of xhci won't work.
+> >> >
+> >> > Please attach the output of "lspci -vv" with "auto" in the (suspended) xhci's
+> >> > power/control file before and after you've plugged in the keyboard.
+> >> >
+> >> > Thanks,
+> >> > Rafael
+> >>
+> >> The lspci -vv before, after, and diff are attached.
+> >
+> > This means that the PME signaled by the xHCI doesn't cause the PMEStatus bit
+> > in its root port to be set, which is why the root port doesn't generate
+> > interrupts.  This seriously looks like a hardware bug and the only thing
+> > we could do to work around it would be to poll the xHCI for the PME status
+> > periodically (while suspended).
+> >
+> > Can you see if the feature works after booting with pcie_ports=compat in
+> > the kernel command line?
+> >
+> > Rafael
+> >
+> 
+> I'll try that on Monday (the pcie_ports=compat kernel option).
+> 
+> Well, I've got 2 different systems (one Intel and one AMD based, both
+> exhibit the same behavior).
 
-If you know of any other unresolved regressions from 2.6.38, please let us
-know either and we'll add them to the list.  Also, please let us know
-if any of the entries below are invalid.
+Are both xHCI controllers from NEC?
 
-Each entry from the list will be sent additionally in an automatic reply
-to this message with CCs to the people involved in reporting and handling
-the issue.
+> I have a few other systems I can try it on as well on Monday.
 
+Please do if possible.
 
-Listed regressions statistics:
-
-  Date          Total  Pending  Unresolved
-  ----------------------------------------
-  2011-05-15       50       12          11
-  2011-04-30       38       17          16
-  2011-04-17       17       11          10
-
-
-Unresolved regressions
-----------------------
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=35062
-Subject		: Suspend to ram stopped working after commit of " intel-iommu: Unlink domain from iommu "
-Submitter	:  <optiluca@gmail.com>
-Date		: 2011-05-14 11:08 (1 days old)
-First-Bad-Commit: http://git.kernel.org/linus/a97590e56d0d58e1dd262353f7cbd84e81d8e600
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=34952
-Subject		: 2.6.39-rc6: SATA hangs for a few seconds during boot
-Submitter	: Tino Keitel <tino.keitel@tikei.de>
-Date		: 2011-05-09 20:48 (6 days old)
-Message-ID	: <20110509204801.GA2258@x61.home>
-References	: http://marc.info/?l=linux-kernel&m=130497409509438&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=34942
-Subject		: [Bug] Kdump does not work when panic triggered due to MCE
-Submitter	: K.Prasad <prasad@linux.vnet.ibm.com>
-Date		: 2011-05-06 16:54 (9 days old)
-Message-ID	: <20110506165412.GB2719@in.ibm.com>
-References	: http://marc.info/?l=linux-kernel&m=130470087226270&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=34662
-Subject		: Warning at block/genhd.c:1556 disk_clear_events
-Submitter	: Meelis Roos <mroos@linux.ee>
-Date		: 2011-05-02 9:59 (13 days old)
-Message-ID	: <alpine.SOC.1.00.1105021255400.6200@math.ut.ee>
-References	: http://marc.info/?l=linux-kernel&m=130433037002610&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=34492
-Subject		: [2.6.39-rc4, x86_32] Stall at default_idle()
-Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Date		: 2011-04-27 4:49 (18 days old)
-Message-ID	: <201104270449.p3R4n54n023453@www262.sakura.ne.jp>
-References	: http://marc.info/?l=linux-kernel&m=130387977425687&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=34202
-Subject		: MCEUSB remotes don't work with USB 3.0 ports
-Submitter	: Aaron Barany <akb825@gmail.com>
-Date		: 2011-05-01 23:48 (14 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=34002
-Subject		: [REGRESSION] [2.6.39-rc3] Wrong resolution in framebuffer and X Window
-Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
-Date		: 2011-04-17 16:04 (28 days old)
-Message-ID	: <201104171804.04664.maciej.rutecki@gmail.com>
-References	: http://marc.info/?l=linux-fbdev&m=130305625114863&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33842
-Subject		: NULL pointer dereference in ip_fragment
-Submitter	: Tomas Carnecky <tom@dbservice.com>
-Date		: 2011-04-23 07:51 (22 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33792
-Subject		: lockdep trace when unplugging usb audio (.39rc4)
-Submitter	: Dave Jones <davej@redhat.com>
-Date		: 2011-04-19 18:07 (26 days old)
-Message-ID	: <20110419180745.GA438@redhat.com>
-References	: http://marc.info/?l=linux-kernel&m=130323648920431&w=2
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33272
-Subject		: drm related hard-hang
-Submitter	: Peter Teoh <htmldeveloper@gmail.com>
-Date		: 2011-04-14 01:29 (31 days old)
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33242
-Subject		: Lockdep splat in autofs with 2.6.39-rc2
-Submitter	: Nick Bowler <nbowler@elliptictech.com>
-Date		: 2011-04-07 19:44 (38 days old)
-Message-ID	: <20110407194403.GA29404@elliptictech.com>
-References	: http://marc.info/?l=linux-kernel&m=130220545614682&w=2
-
-
-Regressions with patches
-------------------------
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=33802
-Subject		: list_del corruption in sd driver since 2.6.39-rc4
-Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-Date		: 2011-04-21 21:10 (24 days old)
-Handled-By	: James Bottomley <James.Bottomley@suse.de>
-Patch		: http://marc.info/?l=linux-kernel&m=130271409412095
-
-
-For details, please visit the bug entries and follow the links given in
-references.
-
-As you can see, there is a Bugzilla entry for each of the listed regressions.
-There also is a Bugzilla entry used for tracking the regressions from 2.6.38,
-unresolved as well as resolved, at:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=32012
-
-Please let the tracking team know if there are any Bugzilla entries that
-should be added to the list in there.
-
-Thanks!
+Thanks,
+Rafael
