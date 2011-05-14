@@ -1,19 +1,14 @@
-From: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
- ahci_start_engine compliant to AHCI spec"
-Date: Sat, 14 May 2011 14:49:32 -0400
-Message-ID: <4DCECEBC.10705__4217.99840773946$1305399037$gmane$org@pobox.com>
-References: <201105120025.34531.rjw@sisk.pl>
-	<BANLkTimqxmbpP1-+HxhPQS-YoLTh=bHd1Q@mail.gmail.com>
-	<201105132222.11582.rjw@sisk.pl> <201105132244.29605.rjw@sisk.pl>
-	<20110514101807.GA23665@htj.dyndns.org>
-	<20110514102804.GB23665@htj.dyndns.org>
-	<BANLkTi=BNu8mdafPVtbqbKpK4ZcjDDR=YQ@mail.gmail.com>
+From: Oliver Neukum <oliver@neukum.org>
+Subject: Re: pm loss development
+Date: Sat, 14 May 2011 20:53:34 +0200
+Message-ID: <201105142053.34920.oliver__41746.771548833$1305399165$gmane$org@neukum.org>
+References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
+	<201105122127.44484.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=BNu8mdafPVtbqbKpK4ZcjDDR=YQ@mail.gmail.com>
+In-Reply-To: <201105122127.44484.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,16 +18,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Jian Peng <jipeng2005@gmail.com>, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Michael Leun <lkml20100708@newton.leun.net>
+To: linux-pm@lists.linux-foundation.org
+Cc: davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org, Raffaele Recalcati <lamiaposta71@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/14/2011 01:47 PM, Linus Torvalds wrote:
-> On Sat, May 14, 2011 at 3:28 AM, Tejun Heo<tj@kernel.org>  wrote:
->>
->> As we're already in -rc7, I'm sending the revert patch to both Jeff
->> and Linus.
->
-> Applied,
+Am Donnerstag, 12. Mai 2011, 21:27:44 schrieb Rafael J. Wysocki:
+> On Thursday, May 12, 2011, Raffaele Recalcati wrote:
+> > What happen normally in runtime pm implementation is that every devices
+> > are switched off and are enabled only when needed.
+> > In our case instead we have a completely functional embedded system and,
+> > when an asyncrhonous event appear, we have only some tens milliseconds
+> > before the actual power failure takes place.
+> > This patchset add a support in order to switch off not vital part of the system,
+> > in order to allow the board to survive longer.
+> > This allow the possibility to save important data.
+> 
+> OK, so first, who decides what parts of the system are vital and what aren't?
 
-ACK, thanks
+If you know that power is failing in a few miliseconds, only stuff that can lead to data
+corruption is vital. In that timeframe you can't even flush buffers.
+
+	Regards
+		Oliver
