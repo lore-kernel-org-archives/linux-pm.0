@@ -1,18 +1,18 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: pm loss development
-Date: Sat, 14 May 2011 09:35:13 -0700
-Message-ID: <20110514163513.GB8292__10440.8212042928$1305390976$gmane$org@gvim.org>
-References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
-	<201105122127.44484.rjw@sisk.pl>
-	<BANLkTikZkRW6TWMcWyZC4_TdAWgjXDqvYA@mail.gmail.com>
-	<201105131854.57854.rjw@sisk.pl>
-Reply-To: markgross@thegnar.org
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
+ ahci_start_engine compliant to AHCI spec"
+Date: Sat, 14 May 2011 10:47:44 -0700
+Message-ID: <BANLkTi=BNu8mdafPVtbqbKpK4ZcjDDR=YQ__30828.4964216456$1305395346$gmane$org@mail.gmail.com>
+References: <201105120025.34531.rjw@sisk.pl>
+	<BANLkTimqxmbpP1-+HxhPQS-YoLTh=bHd1Q@mail.gmail.com>
+	<201105132222.11582.rjw@sisk.pl> <201105132244.29605.rjw@sisk.pl>
+	<20110514101807.GA23665@htj.dyndns.org>
+	<20110514102804.GB23665@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201105131854.57854.rjw@sisk.pl>
+In-Reply-To: <20110514102804.GB23665@htj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,48 +22,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <lamiaposta71@gmail.com>, linux-kernel@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Jian Peng <jipeng2005@gmail.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Michael Leun <lkml20100708@newton.leun.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 13, 2011 at 06:54:57PM +0200, Rafael J. Wysocki wrote:
-> On Friday, May 13, 2011, Raffaele Recalcati wrote:
-> > Hi Rafael,
-> > 
-> > 2011/5/12 Rafael J. Wysocki <rjw@sisk.pl>:
-> > > On Thursday, May 12, 2011, Raffaele Recalcati wrote:
-> > >> What happen normally in runtime pm implementation is that every devices
-> > >> are switched off and are enabled only when needed.
-> > >> In our case instead we have a completely functional embedded system and,
-> > >> when an asyncrhonous event appear, we have only some tens milliseconds
-> > >> before the actual power failure takes place.
-> > >> This patchset add a support in order to switch off not vital part of the system,
-> > >> in order to allow the board to survive longer.
-> > >> This allow the possibility to save important data.
-> > >
-> > > OK, so first, who decides what parts of the system are vital and what aren't?
-> > 
-> > Take a quick look at Documentation/power/loss.txt  paragrpah "2.4
-> > Power loss policies".
-> > You can decide what can be powered off.
-> 
-> I read the patches.  My question was about the general idea of who should
-> be responsible of making these decisions.
+On Sat, May 14, 2011 at 3:28 AM, Tejun Heo <tj@kernel.org> wrote:
+>
+> As we're already in -rc7, I'm sending the revert patch to both Jeff
+> and Linus.
 
-I would expect the system integrator would based on the application the
-device is getting deployed into.
+Applied,
 
-A generic opportunistic policy for peripherals that are stateless and can
-be trivially power gated off/on from an ISR could be a default but, for
-peripherals that need to do some processing (like waiting on an eMMC DMA
-to complete) can take time to power down into a safe state.
-
---mark
-
-> 
-> Thanks,
-> Rafael
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+                   Linus
