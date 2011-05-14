@@ -1,15 +1,18 @@
 From: mark gross <markgross@thegnar.org>
 Subject: Re: pm loss development
-Date: Sat, 14 May 2011 09:24:24 -0700
-Message-ID: <20110514162423.GA8292__37151.5567800545$1305390331$gmane$org@gvim.org>
+Date: Sat, 14 May 2011 09:35:13 -0700
+Message-ID: <20110514163513.GB8292__10440.8212042928$1305390976$gmane$org@gvim.org>
 References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
+	<201105122127.44484.rjw@sisk.pl>
+	<BANLkTikZkRW6TWMcWyZC4_TdAWgjXDqvYA@mail.gmail.com>
+	<201105131854.57854.rjw@sisk.pl>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
+In-Reply-To: <201105131854.57854.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,169 +22,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Raffaele Recalcati <lamiaposta71@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <lamiaposta71@gmail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 12, 2011 at 07:11:01PM +0200, Raffaele Recalcati wrote:
-> What happen normally in runtime pm implementation is that every devices
-> are switched off and are enabled only when needed.
-> In our case instead we have a completely functional embedded system and,
-> when an asyncrhonous event appear, we have only some tens milliseconds
-> before the actual power failure takes place.
+On Fri, May 13, 2011 at 06:54:57PM +0200, Rafael J. Wysocki wrote:
+> On Friday, May 13, 2011, Raffaele Recalcati wrote:
+> > Hi Rafael,
+> > 
+> > 2011/5/12 Rafael J. Wysocki <rjw@sisk.pl>:
+> > > On Thursday, May 12, 2011, Raffaele Recalcati wrote:
+> > >> What happen normally in runtime pm implementation is that every devices
+> > >> are switched off and are enabled only when needed.
+> > >> In our case instead we have a completely functional embedded system and,
+> > >> when an asyncrhonous event appear, we have only some tens milliseconds
+> > >> before the actual power failure takes place.
+> > >> This patchset add a support in order to switch off not vital part of the system,
+> > >> in order to allow the board to survive longer.
+> > >> This allow the possibility to save important data.
+> > >
+> > > OK, so first, who decides what parts of the system are vital and what aren't?
+> > 
+> > Take a quick look at Documentation/power/loss.txt  paragrpah "2.4
+> > Power loss policies".
+> > You can decide what can be powered off.
+> 
+> I read the patches.  My question was about the general idea of who should
+> be responsible of making these decisions.
 
-Very interesting!  I've been worried about a similar failure on battery
-driven devices that can experience significant voltage droops when
-battery gets old, or low, and we turn on the flashlight led, vibrator
-and make the screen bright while a high volume ring tone gets played.
+I would expect the system integrator would based on the application the
+device is getting deployed into.
 
-I think 10ms is a bit unrealistic.  I think its more like 300uSec before
-you hit brown out.
-
-> This patchset add a support in order to switch off not vital part of the system,
-> in order to allow the board to survive longer.
-> This allow the possibility to save important data.
-> 
-> The implementation has been written by Davide Ciminaghi.
-> My work instead was about analyzing different previuos implementation,
-> a first completely custom one, a second using runtime pm, arriving
-> finally to that one.
-> 
-> I have tested PM loss in our DaVinci dm365 basi board and I write here below a
-> piece of code showing a possible usage.
-> 
-> -------------------
-> 
-> static int powerfail_status;
-> 
-> static irqreturn_t basi_powerfail_stop(int irq, void *dev_id);
-> 
-> static irqreturn_t basi_powerfail_quick_check_start(int irq, void *dev_id)
-> {
->         basi_mask_irq_gpio0(IRQ_DM365_GPIO0_2);
->         basi_unmask_irq_gpio0(IRQ_DM365_GPIO0_0);
-> 
->         /* PowerFail situation - START: power is going away */
->         return IRQ_WAKE_THREAD;
-> }
-> 
-> static irqreturn_t basi_powerfail_start(int irq, void *dev_id)
-> {
->         if (powerfail_status)
->                 return IRQ_HANDLED;
->         powerfail_status = 1;
->         pm_loss_power_changed(SYS_PWR_FAILING);
->         return IRQ_HANDLED;
-> }
-> 
-> 
-> static irqreturn_t basi_powerfail_quick_check_stop(int irq, void *dev_id)
-> {
->         basi_mask_irq_gpio0(IRQ_DM365_GPIO0_0);
->         basi_unmask_irq_gpio0(IRQ_DM365_GPIO0_2);
-> 
->         /* PowerFail situation - STOP: power is coming back */
->         return IRQ_WAKE_THREAD;
-> }
-> 
-> static irqreturn_t basi_powerfail_stop(int irq, void *dev_id)
-> {
->         if (!powerfail_status)
->                 return IRQ_HANDLED;
->         powerfail_status = 0;
->         pm_loss_power_changed(SYS_PWR_GOOD);
->         return IRQ_HANDLED;
-> }
-> 
-> enum basi_pwrfail_prio {
->         BASI_PWR_FAIL_PRIO_0,
->         BASI_PWR_FAIL_MIN_PRIO = BASI_PWR_FAIL_PRIO_0,
->         BASI_PWR_FAIL_PRIO_1,
->         BASI_PWR_FAIL_PRIO_2,
->         BASI_PWR_FAIL_PRIO_3,
->         BASI_PWR_FAIL_MAX_PRIO = BASI_PWR_FAIL_PRIO_3,
-> };
-> 
-> struct pm_loss_default_policy_item basi_pm_loss_policy_items[] = {
->         {
->                 .bus_name = "mmc",
->                 .bus_priority = BASI_PWR_FAIL_PRIO_1,
->         },
->         {
->                 .bus_name = "platform",
->                 .bus_priority = BASI_PWR_FAIL_PRIO_2,
->         },
-> };
-> 
-> #define BASI_POLICY_NAME "basi-default"
-> 
-> struct pm_loss_default_policy_table basi_pm_loss_policy_table = {
->         .name = BASI_POLICY_NAME,
->         .items = basi_pm_loss_policy_items,
->         .nitems = ARRAY_SIZE(basi_pm_loss_policy_items),
-> };
-> 
-> static void basi_powerfail_configure(void)
-> {
->         int stat;
->         struct pm_loss_policy *p;
->         stat = request_threaded_irq(IRQ_DM365_GPIO0_2,
-Is this some comparator device that tugs on this gpio when the voltage
-drops or goes to 0?  Is threaded irq fast enough?
-
-Could we consider something that includes a hot path ISR based
-notification call back to do stuff like blink off devices that don't
-need to save state;  backlights, vibrators, flashlight LEDs, audio
-output drivers <-- I'm not sure about audio HW, and then a slower path
-for other things that can be put into lower power states?
-
-the all-clear notification that power is good again should be on a
-slower path I would assume.
+A generic opportunistic policy for peripherals that are stateless and can
+be trivially power gated off/on from an ISR could be a default but, for
+peripherals that need to do some processing (like waiting on an eMMC DMA
+to complete) can take time to power down into a safe state.
 
 --mark
 
->                                     basi_powerfail_quick_check_start,
->                                     basi_powerfail_start,
->                                     0,
->                                     "pwrfail-on", NULL);
->         if (stat < 0)
->                 printk(KERN_ERR "request_threaded_irq for IRQ%d (pwrfail-on) "
->                        "failed\n", IRQ_DM365_GPIO0_2);
->         stat = request_threaded_irq(IRQ_DM365_GPIO0_0,
->                                     basi_powerfail_quick_check_stop,
->                                     basi_powerfail_stop, 0,
->                                     "pwrfail-off", NULL);
->         if (stat < 0)
->                 printk(KERN_ERR "request_threaded_irq for IRQ%d (pwrfail-off) "
->                        "failed\n", IRQ_DM365_GPIO0_0);
->         basi_mask_irq_gpio0(IRQ_DM365_GPIO0_0);
->         p = pm_loss_setup_default_policy(&basi_pm_loss_policy_table);
 > 
->         if (!p)
->                 printk(KERN_ERR "Could not register pwr change policy\n");
-> 
->         if (pm_loss_set_policy(BASI_POLICY_NAME) < 0)
->                 printk(KERN_ERR "Could not set %s power loss policy\n",
->                        BASI_POLICY_NAME);
-> }
-> 
-> int platform_pm_loss_power_changed(struct device *dev,
->                                    enum sys_power_state s)
-> {
->         int ret = 0;
-> 
->         /* Calling platform bus pm_loss functions */
->         pr_debug_pm_loss("platform_pm_loss_power_changed(%d)\n", s);
-> 
->         if (dev->driver && dev->driver->pm &&
->                 dev->driver->pm->power_changed)
->                 ret = dev->driver->pm->power_changed(dev, s);
->         return ret;
-> }
-> 
-> 
-> 
-> 
+> Thanks,
+> Rafael
 > _______________________________________________
 > linux-pm mailing list
 > linux-pm@lists.linux-foundation.org
