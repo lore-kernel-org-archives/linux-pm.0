@@ -1,14 +1,16 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: Raffaele Recalcati <lamiaposta71@gmail.com>
 Subject: Re: pm loss development
-Date: Sat, 14 May 2011 20:53:34 +0200
-Message-ID: <201105142053.34920.oliver__41746.771548833$1305399165$gmane$org@neukum.org>
+Date: Sat, 14 May 2011 22:21:57 +0200
+Message-ID: <BANLkTi=0T_jmEju+cP8zG8EC0ns-mwKHYw__9766.62444086305$1305404599$gmane$org@mail.gmail.com>
 References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
 	<201105122127.44484.rjw@sisk.pl>
+	<BANLkTikZkRW6TWMcWyZC4_TdAWgjXDqvYA@mail.gmail.com>
+	<201105131854.57854.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105122127.44484.rjw@sisk.pl>
+In-Reply-To: <201105131854.57854.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +20,21 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org, Raffaele Recalcati <lamiaposta71@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Donnerstag, 12. Mai 2011, 21:27:44 schrieb Rafael J. Wysocki:
-> On Thursday, May 12, 2011, Raffaele Recalcati wrote:
-> > What happen normally in runtime pm implementation is that every devices
-> > are switched off and are enabled only when needed.
-> > In our case instead we have a completely functional embedded system and,
-> > when an asyncrhonous event appear, we have only some tens milliseconds
-> > before the actual power failure takes place.
-> > This patchset add a support in order to switch off not vital part of the system,
-> > in order to allow the board to survive longer.
-> > This allow the possibility to save important data.
-> 
-> OK, so first, who decides what parts of the system are vital and what aren't?
-
-If you know that power is failing in a few miliseconds, only stuff that can lead to data
-corruption is vital. In that timeframe you can't even flush buffers.
-
-	Regards
-		Oliver
+PiBJIHJlYWQgdGhlIHBhdGNoZXMuIMKgTXkgcXVlc3Rpb24gd2FzIGFib3V0IHRoZSBnZW5lcmFs
+IGlkZWEgb2Ygd2hvIHNob3VsZAo+IGJlIHJlc3BvbnNpYmxlIG9mIG1ha2luZyB0aGVzZSBkZWNp
+c2lvbnMuCgpUaGUgYmVzdCAgc2hvdWxkIGJlLCBJIHRoaW5rLCB0byBoYXZlIHNvbWUgZ3VpZGVs
+aW5lcyBhbmQgdGhhbiB0aGUKcG9zc2liaWxpdHkgdG8gY2hvb3NlIHRoZSBiZXN0IHBvbGljeSBm
+b3IgZWFjaCBzaXR1YXRpb24uCkluIG15IGJvYXJkIEkgbmVlZGVkIHRvIHNodXRkb3duIHZpZGVv
+IGluIGNhcHR1cmUgYW5kIGRlbW9kdWxhdG9yCmNpcmN1aXQsIHNvIEkgaGF2ZSBpbXBsZW1lbnRl
+ZCB2cGZlIGNhcHR1cmUgc3dpdGNoIG9mZiwgdGhhdCBkb2VzCnN0cmVhbV9vZmYgdG8gYWxsIGl0
+cyB2NGwyIHN1YmRldmljZXMgKGEgcGFsIGRlY29kZXIgYW5kIGEgdmlkZW8KZGVtb2R1bGF0b3Ip
+LgpTbyBJIGNhbiBzYXZlIDMwbUEsIGFuZCBpdCBhbGxvd3MgdG8gbXkgYm9hcmQgdG8gc3Vydml2
+ZSBsb25nZXIuCkkgbmVlZCB0byBkbyBzb21lIHRlc3RzIGFuZCBoYXZlIHNvbWUgZGF0YSB3aXRo
+IGFuZCB3aXRob3V0IFBNIGxvc3MuCgpCeWUsCnJhZmZhZWxlCi0tIAp3d3cub3BlbnN1cmYuaXQK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0g
+bWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8v
+bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
