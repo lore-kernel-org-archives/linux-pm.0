@@ -1,18 +1,15 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH v2.6.38-rc7] Revert "libata: ahci_start_engine
- compliant to AHCI spec"
-Date: Sat, 14 May 2011 12:28:04 +0200
-Message-ID: <20110514102804.GB23665__525.535216047679$1305369142$gmane$org@htj.dyndns.org>
-References: <201105120025.34531.rjw@sisk.pl>
-	<BANLkTimqxmbpP1-+HxhPQS-YoLTh=bHd1Q@mail.gmail.com>
-	<201105132222.11582.rjw@sisk.pl> <201105132244.29605.rjw@sisk.pl>
-	<20110514101807.GA23665@htj.dyndns.org>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: pm loss development
+Date: Sat, 14 May 2011 09:24:24 -0700
+Message-ID: <20110514162423.GA8292__37151.5567800545$1305390331$gmane$org@gvim.org>
+References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110514101807.GA23665@htj.dyndns.org>
+In-Reply-To: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,70 +19,170 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Jian Peng <jipeng2005@gmail.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Michael Leun <lkml20100708@newton.leun.net>
+To: Raffaele Recalcati <lamiaposta71@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This reverts commit 270dac35c26433d06a89150c51e75ca0181ca7e4.
+On Thu, May 12, 2011 at 07:11:01PM +0200, Raffaele Recalcati wrote:
+> What happen normally in runtime pm implementation is that every devices
+> are switched off and are enabled only when needed.
+> In our case instead we have a completely functional embedded system and,
+> when an asyncrhonous event appear, we have only some tens milliseconds
+> before the actual power failure takes place.
 
-The commits causes command timeouts on AC plug/unplug.  It isn't yet
-clear why.  As the commit was for a single rather obscure controller,
-revert the change for now.
+Very interesting!  I've been worried about a similar failure on battery
+driven devices that can experience significant voltage droops when
+battery gets old, or low, and we turn on the flashlight led, vibrator
+and make the screen bright while a high volume ring tone gets played.
 
-The problem was reported and bisected by Gu Rui in bug#34692.
+I think 10ms is a bit unrealistic.  I think its more like 300uSec before
+you hit brown out.
 
- https://bugzilla.kernel.org/show_bug.cgi?id=34692
+> This patchset add a support in order to switch off not vital part of the system,
+> in order to allow the board to survive longer.
+> This allow the possibility to save important data.
+> 
+> The implementation has been written by Davide Ciminaghi.
+> My work instead was about analyzing different previuos implementation,
+> a first completely custom one, a second using runtime pm, arriving
+> finally to that one.
+> 
+> I have tested PM loss in our DaVinci dm365 basi board and I write here below a
+> piece of code showing a possible usage.
+> 
+> -------------------
+> 
+> static int powerfail_status;
+> 
+> static irqreturn_t basi_powerfail_stop(int irq, void *dev_id);
+> 
+> static irqreturn_t basi_powerfail_quick_check_start(int irq, void *dev_id)
+> {
+>         basi_mask_irq_gpio0(IRQ_DM365_GPIO0_2);
+>         basi_unmask_irq_gpio0(IRQ_DM365_GPIO0_0);
+> 
+>         /* PowerFail situation - START: power is going away */
+>         return IRQ_WAKE_THREAD;
+> }
+> 
+> static irqreturn_t basi_powerfail_start(int irq, void *dev_id)
+> {
+>         if (powerfail_status)
+>                 return IRQ_HANDLED;
+>         powerfail_status = 1;
+>         pm_loss_power_changed(SYS_PWR_FAILING);
+>         return IRQ_HANDLED;
+> }
+> 
+> 
+> static irqreturn_t basi_powerfail_quick_check_stop(int irq, void *dev_id)
+> {
+>         basi_mask_irq_gpio0(IRQ_DM365_GPIO0_0);
+>         basi_unmask_irq_gpio0(IRQ_DM365_GPIO0_2);
+> 
+>         /* PowerFail situation - STOP: power is coming back */
+>         return IRQ_WAKE_THREAD;
+> }
+> 
+> static irqreturn_t basi_powerfail_stop(int irq, void *dev_id)
+> {
+>         if (!powerfail_status)
+>                 return IRQ_HANDLED;
+>         powerfail_status = 0;
+>         pm_loss_power_changed(SYS_PWR_GOOD);
+>         return IRQ_HANDLED;
+> }
+> 
+> enum basi_pwrfail_prio {
+>         BASI_PWR_FAIL_PRIO_0,
+>         BASI_PWR_FAIL_MIN_PRIO = BASI_PWR_FAIL_PRIO_0,
+>         BASI_PWR_FAIL_PRIO_1,
+>         BASI_PWR_FAIL_PRIO_2,
+>         BASI_PWR_FAIL_PRIO_3,
+>         BASI_PWR_FAIL_MAX_PRIO = BASI_PWR_FAIL_PRIO_3,
+> };
+> 
+> struct pm_loss_default_policy_item basi_pm_loss_policy_items[] = {
+>         {
+>                 .bus_name = "mmc",
+>                 .bus_priority = BASI_PWR_FAIL_PRIO_1,
+>         },
+>         {
+>                 .bus_name = "platform",
+>                 .bus_priority = BASI_PWR_FAIL_PRIO_2,
+>         },
+> };
+> 
+> #define BASI_POLICY_NAME "basi-default"
+> 
+> struct pm_loss_default_policy_table basi_pm_loss_policy_table = {
+>         .name = BASI_POLICY_NAME,
+>         .items = basi_pm_loss_policy_items,
+>         .nitems = ARRAY_SIZE(basi_pm_loss_policy_items),
+> };
+> 
+> static void basi_powerfail_configure(void)
+> {
+>         int stat;
+>         struct pm_loss_policy *p;
+>         stat = request_threaded_irq(IRQ_DM365_GPIO0_2,
+Is this some comparator device that tugs on this gpio when the voltage
+drops or goes to 0?  Is threaded irq fast enough?
 
-Also, reported by Rafael and Michael in the following thread.
+Could we consider something that includes a hot path ISR based
+notification call back to do stuff like blink off devices that don't
+need to save state;  backlights, vibrators, flashlight LEDs, audio
+output drivers <-- I'm not sure about audio HW, and then a slower path
+for other things that can be put into lower power states?
 
- http://thread.gmane.org/gmane.linux.kernel/1138771
+the all-clear notification that power is good again should be on a
+slower path I would assume.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Gu Rui <chaos.proton@gmail.com>
-Reported-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Michael Leun <lkml20100708@newton.leun.net>
-Cc: Jian Peng <jipeng2005@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>
----
-As we're already in -rc7, I'm sending the revert patch to both Jeff
-and Linus.
+--mark
 
-Thank you.
-
- drivers/ata/libahci.c |   21 ---------------------
- 1 files changed, 0 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/ata/libahci.c b/drivers/ata/libahci.c
-index ff9d832..d38c40f 100644
---- a/drivers/ata/libahci.c
-+++ b/drivers/ata/libahci.c
-@@ -561,27 +561,6 @@ void ahci_start_engine(struct ata_port *ap)
- {
- 	void __iomem *port_mmio = ahci_port_base(ap);
- 	u32 tmp;
--	u8 status;
--
--	status = readl(port_mmio + PORT_TFDATA) & 0xFF;
--
--	/*
--	 * At end of section 10.1 of AHCI spec (rev 1.3), it states
--	 * Software shall not set PxCMD.ST to 1 until it is determined
--	 * that a functoinal device is present on the port as determined by
--	 * PxTFD.STS.BSY=0, PxTFD.STS.DRQ=0 and PxSSTS.DET=3h
--	 *
--	 * Even though most AHCI host controllers work without this check,
--	 * specific controller will fail under this condition
--	 */
--	if (status & (ATA_BUSY | ATA_DRQ))
--		return;
--	else {
--		ahci_scr_read(&ap->link, SCR_STATUS, &tmp);
--
--		if ((tmp & 0xf) != 0x3)
--			return;
--	}
- 
- 	/* start DMA */
- 	tmp = readl(port_mmio + PORT_CMD);
--- 
-1.7.1
+>                                     basi_powerfail_quick_check_start,
+>                                     basi_powerfail_start,
+>                                     0,
+>                                     "pwrfail-on", NULL);
+>         if (stat < 0)
+>                 printk(KERN_ERR "request_threaded_irq for IRQ%d (pwrfail-on) "
+>                        "failed\n", IRQ_DM365_GPIO0_2);
+>         stat = request_threaded_irq(IRQ_DM365_GPIO0_0,
+>                                     basi_powerfail_quick_check_stop,
+>                                     basi_powerfail_stop, 0,
+>                                     "pwrfail-off", NULL);
+>         if (stat < 0)
+>                 printk(KERN_ERR "request_threaded_irq for IRQ%d (pwrfail-off) "
+>                        "failed\n", IRQ_DM365_GPIO0_0);
+>         basi_mask_irq_gpio0(IRQ_DM365_GPIO0_0);
+>         p = pm_loss_setup_default_policy(&basi_pm_loss_policy_table);
+> 
+>         if (!p)
+>                 printk(KERN_ERR "Could not register pwr change policy\n");
+> 
+>         if (pm_loss_set_policy(BASI_POLICY_NAME) < 0)
+>                 printk(KERN_ERR "Could not set %s power loss policy\n",
+>                        BASI_POLICY_NAME);
+> }
+> 
+> int platform_pm_loss_power_changed(struct device *dev,
+>                                    enum sys_power_state s)
+> {
+>         int ret = 0;
+> 
+>         /* Calling platform bus pm_loss functions */
+>         pr_debug_pm_loss("platform_pm_loss_power_changed(%d)\n", s);
+> 
+>         if (dev->driver && dev->driver->pm &&
+>                 dev->driver->pm->power_changed)
+>                 ret = dev->driver->pm->power_changed(dev, s);
+>         return ret;
+> }
+> 
+> 
+> 
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
