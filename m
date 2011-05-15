@@ -1,8 +1,8 @@
-From: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Subject: [PATCH 6/6][RFC] PM / Domains: Support for multiple
-	generic power domain states
-Date: Mon, 16 May 2011 01:34:39 +0200
-Message-ID: <201105160134.39512.rwys@fuw.edu.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 1/6] PM: Introduce generic prepare and complete
+	callbacks for subsystems
+Date: Mon, 16 May 2011 01:30:27 +0200
+Message-ID: <201105160130.28322.rjw__3668.734644498$1305502693$gmane$org@sisk.pl>
 References: <201104290154.12966.rjw@sisk.pl> <201105082320.57185.rjw@sisk.pl>
 	<201105160117.46927.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -25,239 +25,130 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Allow the generic power domains support code to handle power
-domains with multiple states.  Replace the .power_down_ok()
-callback in struct dev_power_governor with a new callback
-.choose_state() that will return the number of the state to put the
-power domain into.  Add new fields nr_states and current_state to
-struct generic_power_domain with the assumption that state 0 will be
-the full power state and states 1 through (nr_states - 1) will be low
-power.  Replace power domain callbacks .power_off() and .power_on()
-with a single .set_state() callback taking the number of the state
-to put the power domain into as its second argument.  Add a new
-generic power domain callback .power_off_state() (taking a state
-number as its second argument) allowing the core to check if
-device runtime PM callbacks need to be executed before putting the
-given power domain into the given state.  Modify the core power
-domains code and the ARM shmobile platform code to take all of the
-above changes into account.
+Introduce generic .prepare() and .complete() power management
+callbacks, currently missing, that can be used by subsystems and
+power domains and export them.  Provide NULL definitions of all
+the generic system sleep callbacks for CONFIG_PM_SLEEP unset.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/arm/mach-shmobile/pm-sh7372.c |   11 ++++--
- drivers/base/power/domain.c        |   60 +++++++++++++++++++++++++++----------
- include/linux/pm_domain.h          |   20 ++++++++----
- 3 files changed, 67 insertions(+), 24 deletions(-)
+ drivers/base/power/generic_ops.c |   39 +++++++++++++++++++++++++++++++++++++++
+ include/linux/pm.h               |   26 +++++++++++++++++++-------
+ 2 files changed, 58 insertions(+), 7 deletions(-)
 
-Index: linux-2.6/include/linux/pm_domain.h
+Index: linux-2.6/drivers/base/power/generic_ops.c
 ===================================================================
---- linux-2.6.orig/include/linux/pm_domain.h
-+++ linux-2.6/include/linux/pm_domain.h
-@@ -12,7 +12,11 @@
- #include <linux/device.h>
+--- linux-2.6.orig/drivers/base/power/generic_ops.c
++++ linux-2.6/drivers/base/power/generic_ops.c
+@@ -74,6 +74,23 @@ EXPORT_SYMBOL_GPL(pm_generic_runtime_res
  
- struct dev_power_governor {
--	bool (*power_down_ok)(struct dev_power_domain *domain);
-+	int (*choose_state)(struct dev_power_domain *domain);
-+};
-+
-+struct power_domain_state {
-+	void *platform_data;
- };
- 
- struct generic_power_domain {
-@@ -23,12 +27,14 @@ struct generic_power_domain {
- 	struct list_head device_list;
- 	struct mutex lock;
- 	struct dev_power_governor *gov;
--	unsigned int in_progress;
-+	int nr_states;
-+	int current_state;
- 	bool power_is_off;
-+	unsigned int in_progress;
- 	unsigned int device_count;
- 	unsigned int suspended_count;
--	int (*power_off)(struct dev_power_domain *domain);
--	int (*power_on)(struct dev_power_domain *domain);
-+	int (*set_state)(struct dev_power_domain *domain, int state);
-+	bool (*power_off_state)(struct dev_power_domain *domain, int state);
- 	int (*start_device)(struct device *dev);
- 	int (*stop_device)(struct device *dev);
- };
-@@ -48,7 +54,8 @@ extern int pm_genpd_add_subdomain(struct
- extern int pm_genpd_remove_subdomain(struct generic_power_domain *genpd,
- 				     struct generic_power_domain *target);
- extern void pm_genpd_init(struct generic_power_domain *genpd,
--			  struct dev_power_governor *gov, bool is_off);
-+			  struct dev_power_governor *gov, int nr_states,
-+			  int cur_state);
- #else
- static inline int pm_genpd_add_device(struct generic_power_domain *genpd,
- 				      struct device *dev)
-@@ -71,7 +78,8 @@ static inline int pm_genpd_remove_subdom
- 	return -ENOSYS;
- }
- static inline void pm_genpd_init(struct generic_power_domain *genpd,
--				 struct dev_power_governor *gov, bool is_off) {}
-+				 struct dev_power_governor *gov,
-+				 int nr_states, int cur_state) {}
- #endif
- 
- #endif /* _LINUX_PM_DOMAIN_H */
-Index: linux-2.6/drivers/base/power/domain.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -62,6 +62,7 @@ static int __pm_genpd_poweroff(struct ge
- 	struct generic_power_domain *subdomain;
- 	struct dev_list_entry *dle;
- 	unsigned int not_suspended;
-+	int new_state;
- 	int ret;
- 
- 	if (genpd->power_is_off)
-@@ -83,9 +84,23 @@ static int __pm_genpd_poweroff(struct ge
- 			return ret;
- 	}
- 
--	if (genpd->gov && genpd->gov->power_down_ok) {
--		if (!genpd->gov->power_down_ok(&genpd->domain))
--			return -EAGAIN;
-+	new_state = (genpd->gov && genpd->gov->choose_state) ?
-+			genpd->gov->choose_state(&genpd->domain) : 1;
-+	if (new_state < 0 || new_state >= genpd->nr_states)
-+		return -EAGAIN;
-+
-+	if (new_state == genpd->current_state)
-+		return 0;
-+
-+	if (genpd->power_off_state
-+	    && !genpd->power_off_state(&genpd->domain, new_state)) {
-+		if (genpd->set_state) {
-+			ret = genpd->set_state(&genpd->domain, new_state);
-+			if (ret)
-+				return ret;
-+		}
-+		genpd->current_state = new_state;
-+		return 0;
- 	}
- 
- 	list_for_each_entry_reverse(dle, &genpd->device_list, node) {
-@@ -105,9 +120,13 @@ static int __pm_genpd_poweroff(struct ge
- 			goto err_dev;
- 	}
- 
--	if (genpd->power_off)
--		genpd->power_off(&genpd->domain);
-+	if (genpd->set_state) {
-+		ret = genpd->set_state(&genpd->domain, new_state);
-+		if (ret)
-+			goto err_dev;
-+	}
- 
-+	genpd->current_state = new_state;
- 	genpd->power_is_off = true;
- 
- 	return 0;
-@@ -199,14 +218,17 @@ static int __pm_genpd_poweron(struct gen
- {
- 	struct dev_list_entry *dle;
- 
--	if (!genpd->power_is_off)
-+	if (genpd->current_state == 0)
- 		return 0;
- 
--	if (genpd->power_on) {
--		int ret = genpd->power_on(&genpd->domain);
-+	if (genpd->set_state) {
-+		int ret = genpd->set_state(&genpd->domain, 0);
- 		if (ret)
- 			return ret;
- 	}
-+	genpd->current_state = 0;
-+	if (!genpd->power_is_off)
-+		return 0;
- 
- 	genpd->power_is_off = false;
- 
-@@ -363,8 +385,8 @@ static int pm_genpd_suspend_noirq(struct
- 
- 	mutex_lock(&genpd->lock);
- 	if (++genpd->suspended_count == genpd->device_count) {
--		if (genpd->power_off)
--			genpd->power_off(&genpd->domain);
-+		if (genpd->set_state)
-+			genpd->set_state(&genpd->domain, genpd->nr_states - 1);
- 	}
- 	mutex_unlock(&genpd->lock);
- 
-@@ -395,8 +417,8 @@ static int pm_genpd_resume_noirq(struct
- 
- 	mutex_lock(&genpd->lock);
- 	if (genpd->suspended_count == genpd->device_count) {
--		if (genpd->power_on) {
--			int ret = genpd->power_on(&genpd->domain);
-+		if (genpd->set_state) {
-+			int ret = genpd->set_state(&genpd->domain, 0);
- 			if (ret) {
- 				mutex_unlock(&genpd->lock);
- 				return ret;
-@@ -713,10 +735,12 @@ int pm_genpd_remove_subdomain(struct gen
-  * pm_genpd_init - Initialize a generic I/O power domain object.
-  * @genpd: Power domain object to initialize.
-  * @gov: Power domain governor to associate with the domain (may be NULL).
-- * @is_off: Initial value of the domain's power_is_off field.
-+ * @nr_states: Number of power domain states (must be greater than 1).
-+ * @cur_state: Initial state of the power domain.
-  */
- void pm_genpd_init(struct generic_power_domain *genpd,
--		   struct dev_power_governor *gov, bool is_off)
-+		   struct dev_power_governor *gov, int nr_states,
-+		   int cur_state)
- {
- 	if (IS_ERR_OR_NULL(genpd))
- 		return;
-@@ -727,8 +751,14 @@ void pm_genpd_init(struct generic_power_
- 	INIT_LIST_HEAD(&genpd->subdomain_list);
- 	mutex_init(&genpd->lock);
- 	genpd->gov = gov;
-+	genpd->nr_states = nr_states > 1 ? nr_states : 2;
-+	if (cur_state < 0 || cur_state >= nr_states)
-+		cur_state = 0;
-+	genpd->current_state = cur_state;
-+	genpd->power_is_off = genpd->power_off_state ?
-+		genpd->power_off_state(&genpd->domain, cur_state) :
-+			(cur_state > 0);
- 	genpd->in_progress = 0;
--	genpd->power_is_off = is_off;
- 	genpd->device_count = 0;
- 	genpd->suspended_count = 0;
- 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
-Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
-+++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -60,15 +60,20 @@ static int pd_power_up(struct dev_power_
- 	return 0;
- }
- 
-+static int pd_set_state(struct dev_power_domain *domain, int state)
+ #ifdef CONFIG_PM_SLEEP
+ /**
++ * pm_generic_prepare - Generic routine preparing a device for power transition.
++ * @dev: Device to prepare.
++ *
++ * Prepare a device for a system-wide power transition.
++ */
++int pm_generic_prepare(struct device *dev)
 +{
-+	return state > 0 ? pd_power_down(domain) : pd_power_up(domain);
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
++
++	if (drv && drv->pm && drv->pm->prepare)
++		ret = drv->pm->prepare(dev);
++
++	return ret;
 +}
 +
- static void sh7372_init_domain(struct generic_power_domain *domain,
- 			       struct sh7372_domain_data *pdata)
- {
--	pm_genpd_init(domain, NULL, false);
- 	domain->domain.platform_data = pdata;
- 	domain->stop_device = pm_runtime_clk_suspend;
- 	domain->start_device = pm_runtime_clk_resume;
--	domain->power_off = pd_power_down;
--	domain->power_on = pd_power_up;
-+	domain->set_state = pd_set_state;
-+	domain->power_off_state = NULL;
-+	pm_genpd_init(domain, NULL, 2, 0);
++/**
+  * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
+  * @dev: Device to handle.
+  * @event: PM transition of the system under way.
+@@ -213,16 +230,38 @@ int pm_generic_restore(struct device *de
+ 	return __pm_generic_resume(dev, PM_EVENT_RESTORE);
  }
+ EXPORT_SYMBOL_GPL(pm_generic_restore);
++
++/**
++ * pm_generic_complete - Generic routine competing a device power transition.
++ * @dev: Device to handle.
++ *
++ * Complete a device power transition during a system-wide power transition.
++ */
++void pm_generic_complete(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++
++	if (drv && drv->pm && drv->pm->complete)
++		drv->pm->complete(dev);
++
++	/*
++	 * Let runtime PM try to suspend devices that haven't been in use before
++	 * going into the system-wide sleep state we're resuming from.
++	 */
++	pm_runtime_idle(dev);
++}
+ #endif /* CONFIG_PM_SLEEP */
  
- void sh7372_add_device_to_domain(struct generic_power_domain *domain,
+ struct dev_pm_ops generic_subsys_pm_ops = {
+ #ifdef CONFIG_PM_SLEEP
++	.prepare = pm_generic_prepare,
+ 	.suspend = pm_generic_suspend,
+ 	.resume = pm_generic_resume,
+ 	.freeze = pm_generic_freeze,
+ 	.thaw = pm_generic_thaw,
+ 	.poweroff = pm_generic_poweroff,
+ 	.restore = pm_generic_restore,
++	.complete = pm_generic_complete,
+ #endif
+ #ifdef CONFIG_PM_RUNTIME
+ 	.runtime_suspend = pm_generic_runtime_suspend,
+Index: linux-2.6/include/linux/pm.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -550,6 +550,16 @@ extern void __suspend_report_result(cons
+ 	} while (0)
+ 
+ extern int device_pm_wait_for_dev(struct device *sub, struct device *dev);
++
++extern int pm_generic_prepare(struct device *dev);
++extern int pm_generic_suspend(struct device *dev);
++extern int pm_generic_resume(struct device *dev);
++extern int pm_generic_freeze(struct device *dev);
++extern int pm_generic_thaw(struct device *dev);
++extern int pm_generic_restore(struct device *dev);
++extern int pm_generic_poweroff(struct device *dev);
++extern void pm_generic_complete(struct device *dev);
++
+ #else /* !CONFIG_PM_SLEEP */
+ 
+ #define device_pm_lock() do {} while (0)
+@@ -566,6 +576,15 @@ static inline int device_pm_wait_for_dev
+ {
+ 	return 0;
+ }
++
++#define pm_generic_prepare	NULL
++#define pm_generic_suspend	NULL
++#define pm_generic_resume	NULL
++#define pm_generic_freeze	NULL
++#define pm_generic_thaw		NULL
++#define pm_generic_restore	NULL
++#define pm_generic_poweroff	NULL
++#define pm_generic_complete	NULL
+ #endif /* !CONFIG_PM_SLEEP */
+ 
+ /* How to reorder dpm_list after device_move() */
+@@ -576,11 +595,4 @@ enum dpm_order {
+ 	DPM_ORDER_DEV_LAST,
+ };
+ 
+-extern int pm_generic_suspend(struct device *dev);
+-extern int pm_generic_resume(struct device *dev);
+-extern int pm_generic_freeze(struct device *dev);
+-extern int pm_generic_thaw(struct device *dev);
+-extern int pm_generic_restore(struct device *dev);
+-extern int pm_generic_poweroff(struct device *dev);
+-
+ #endif /* _LINUX_PM_H */
