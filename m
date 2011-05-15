@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM / Hibernate: Add sysfs knob to
-	control size of memory for drivers
-Date: Sun, 15 May 2011 11:51:26 +0200
-Message-ID: <201105151151.26745.rjw__19049.1453082815$1305453212$gmane$org@sisk.pl>
-References: <201105100059.25372.rjw@sisk.pl>
-	<201105151051.38934.Martin@lichtvoll.de>
-	<201105151136.22169.rjw@sisk.pl>
+Subject: Re: pci 0000:0a:00.0: Refused to change power state,
+	currently in D3
+Date: Sun, 15 May 2011 15:26:41 +0200
+Message-ID: <201105151526.41801.rjw__47514.2496907667$1305466057$gmane$org@sisk.pl>
+References: <936833.81097.qm@web161805.mail.bf1.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105151136.22169.rjw@sisk.pl>
+In-Reply-To: <936833.81097.qm@web161805.mail.bf1.yahoo.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,127 +18,100 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Martin Steigerwald <Martin@lichtvoll.de>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Mikko Vinni <mmvinni@yahoo.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, May 15, 2011, Rafael J. Wysocki wrote:
-> On Sunday, May 15, 2011, Martin Steigerwald wrote:
-> > Am Sonntag, 15. Mai 2011 schrieb Rafael J. Wysocki:
-> > > Hi,
-> > 
-> > Hi Rafael,
-> 
+On Sunday, May 15, 2011, Mikko Vinni wrote:
 > Hi,
-> 
-> > > On Tuesday, May 10, 2011, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Martin reports that on his system hibernation occasionally fails due
-> > > > to the lack of memory, because the radeon driver apparently allocates
-> > > > too much of it during the device freeze stage.  It turns out that the
-> > > > amount of memory allocated by radeon during hibernation (and
-> > > > presumably during system suspend too) depends on the utilization of
-> > > > the GPU (e.g. hibernating while there are two KDE 4 sessions with
-> > > > compositing enabled causes radeon to allocate more memory than for
-> > > > one KDE 4 session).
-> > > > 
-> > > > In principle it should be possible to use image_size to make the
-> > > > memory preallocation mechanism free enough memory for the radeon
-> > > > driver, but in practice it is not easy to guess the right value
-> > > > because of the way the preallocation code uses image_size.  For this
-> > > > reason, it seems reasonable to allow users to control the amount of
-> > > > memory reserved for driver allocations made after the preallocation,
-> > > > which currently is constant and amounts to 1 MB.
-> > > > 
-> > > > Introduce a new sysfs file, /sys/power/reserved_size, whose value
-> > > > will be used as the amount of memory to reserve for the
-> > > > post-preallocation reservations made by device drivers, in bytes.
-> > > > For backwards compatibility, set its default (and initial) value to
-> > > > the currently used number (1 MB).
-> > > > 
-> > > > References: https://bugzilla.kernel.org/show_bug.cgi?id=34102
-> > > > Reported-by: Martin Steigerwald <Martin@Lichtvoll.de>
-> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > OK, there are no comments, so my understanding is that everyone is fine
-> > > with this patch and I can add it to my linux-next branch.
-> > 
-> > Extensively
-> > 
-> > Tested-by: Martin Steigerwald <Martin@Lichtvoll.de>
-> > 
-> > This patch makes a complete difference for me. Instead of not knowing 
-> > whether my ThinkPad T42 will hibernate with lots of applications open and 
-> > thus closing applications prior to hibernation preventively now it simply 
-> > will. *Always*.
-> > 
-> > I even tested it with two KDE 4 sessions with running desktop search 
-> > indexing on one. It took ages, cause KDE 4.6 desktop search / nepomuk stuff 
-> > seems to I/O load the machine beyond anything (bugs reported there), but 
-> > it worked.
-> > 
-> > 16 MiB reserved_size has been enough for one KDE session. With 128 MiB the 
-> > linux kernel hibernated two KDE sessions.
-> > 
-> > Drivers allocating their memory via suspend/hibernate notifiers according 
-> > to Rafael should fix the root cause, but until that is done, this will do. 
-> > Adjusting imagesize instead never gave me such a reliable result.
-> 
-> In fact, if drivers allocated their memory from suspend/hibernate notifiers,
-> that would be practically equivalent to setting reserved_size to the total
-> amount of memory reserved by the drivers.  However, it may be difficult
-> for drivers to predict how much memory they will need at the time the
-> notifiers are called (they are called before freezing user space).
-> 
-> Thus I'm considering a change that will cause device drivers' ->prepare()
-> callbacks to be executed before the preallocation of memory takes place.
-> In that case the drivers may allocate memory from their ->prepare()
-> callbacks _after_ user space has been frozen and that will make more
-> sense overall.
-> 
-> For now, however, I think that exposing reserved_size is the right choice.
 
-BTW, I'm going to add the appended patch on top of it.
+Hi,
+
+> in an HP Pavilion dv5 laptop model dv5-1250eo always at resume
+> from s2ram the following messages are printed:
+> 
+> pci 0000:0a:00.0: Refused to change power state, currently in D3
+> pci 0000:0a:00.1: Refused to change power state, currently in D3
+> pci 0000:0a:00.2: Refused to change power state, currently in D3
+> pci 0000:0a:00.3: Refused to change power state, currently in D3
+> pci 0000:0a:00.4: Refused to change power state, currently in D3
+
+The lspci output indicates that this is a single multi-function
+device that doesn't change its power state when programmed to go
+into D0.  Perhaps it requires a power resource that is not available
+at the point we're trying to restore those devices' registers.
+
+Hard to say what that may be, though.  Please attach the output of
+acpidump from the affected system.
+
+> 
+> 
+> lspci:
+> 
+> 00:00.0 Host bridge: Advanced Micro Devices [AMD] RS780 Host Bridge
+> 00:02.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge (ext gfx port 0)
+> 00:04.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge (PCIE port 0)
+> 00:05.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge (PCIE port 1)
+> 00:06.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge (PCIE port 2)
+> 00:0a.0 PCI bridge: Advanced Micro Devices [AMD] RS780/RS880 PCI to PCI bridge (PCIE port 5)
+> 00:11.0 SATA controller: ATI Technologies Inc SB7x0/SB8x0/SB9x0 SATA Controller [AHCI mode]
+> 00:12.0 USB Controller: ATI Technologies Inc SB7x0/SB8x0/SB9x0 USB OHCI0 Controller
+> 00:12.1 USB Controller: ATI Technologies Inc SB7x0 USB OHCI1 Controller
+> 00:12.2 USB Controller: ATI Technologies Inc SB7x0/SB8x0/SB9x0 USB EHCI Controller
+> 00:13.0 USB Controller: ATI Technologies Inc SB7x0/SB8x0/SB9x0 USB OHCI0 Controller
+> 00:13.1 USB Controller: ATI Technologies Inc SB7x0 USB OHCI1 Controller
+> 00:13.2 USB Controller: ATI Technologies Inc SB7x0/SB8x0/SB9x0 USB EHCI Controller
+> 00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 3a)
+> 00:14.1 IDE interface: ATI Technologies Inc SB7x0/SB8x0/SB9x0 IDE Controller
+> 00:14.2 Audio device: ATI Technologies Inc SBx00 Azalia (Intel HDA)
+> 00:14.3 ISA bridge: ATI Technologies Inc SB7x0/SB8x0/SB9x0 LPC host controller
+> 00:14.4 PCI bridge: ATI Technologies Inc SBx00 PCI to PCI Bridge
+> 00:18.0 Host bridge: Advanced Micro Devices [AMD] Family 11h Processor HyperTransport Configuration (rev 40)
+> 00:18.1 Host bridge: Advanced Micro Devices [AMD] Family 11h Processor Address Map
+> 00:18.2 Host bridge: Advanced Micro Devices [AMD] Family 11h Processor DRAM Controller
+> 00:18.3 Host bridge: Advanced Micro Devices [AMD] Family 11h Processor Miscellaneous Control
+> 00:18.4 Host bridge: Advanced Micro Devices [AMD] Family 11h Processor Link Control
+> 01:00.0 VGA compatible controller: ATI Technologies Inc Mobility Radeon HD 3400 Series
+> 01:00.1 Audio device: ATI Technologies Inc RV620 Audio device [Radeon HD 34xx Series]
+> 08:00.0 Ethernet controller: Atheros Communications Inc. AR5001 Wireless Network Adapter (rev 01)
+> 09:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
+> 0a:00.0 FireWire (IEEE 1394): JMicron Technology Corp. IEEE 1394 Host Controller
+> 0a:00.1 System peripheral: JMicron Technology Corp. SD/MMC Host Controller
+> 0a:00.2 SD Host controller: JMicron Technology Corp. Standard SD Host Controller
+> 0a:00.3 System peripheral: JMicron Technology Corp. MS Host Controller
+> 0a:00.4 System peripheral: JMicron Technology Corp. xD Host Controller
+> 
+> 
+> (first reported to linux-mmc at http://thread.gmane.org/gmane.linux.kernel.mmc/7988,
+> because the card reader is one of the non-functioning devices after resume)
+> 
+> What could be causing such a problem?
+> 
+> The following log is from 2.6.39-rc7 + some code from mmc-next, but this
+> is not a new problem. I can reproduce it easily for example with the
+> default 2.6.32 kernel from Ubuntu 10.10.
+...
+> 
+> 
+> A perhaps funny after-effect of the s2ram problem is that
+> s2disk after that leads to -1 being written all around
+> in the affected pci area after resume:
+> 
+> ...
+> ACPI: Waking up from system sleep state S4
+> ...
+> pci 0000:0a:00.0: restoring config space at offset 0xf (was 0x10a, writing 0xffffffff)
+> pci 0000:0a:00.0: restoring config space at offset 0xe (was 0x0, writing 0xffffffff)
+> ...
+
+That's not even strange.  Since the device is in D3 during hibernation,
+the reads from its registers all return -1 and that's what is saved as the
+current state.
+
+> I haven't tested whether firewire or the card reader, for example, works
+> with such config space.
+
+No, it's not.
 
 Thanks,
 Rafael
-
----
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Sun May 15 11:39:48 2011 +0200
-
-    Revert "PM / Hibernate: Reduce autotuned default image size"
-    
-    This reverts commit bea3864fb627d110933cfb8babe048b63c4fc76e
-    (PM / Hibernate: Reduce autotuned default image size), because users
-    are now able to resolve the issue this commit was supposed to address
-    in a different way (i.e. by using the new /sys/power/reserved_size
-    interface).
-    
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index d69e332..ace5588 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -54,15 +54,15 @@ void __init hibernate_reserved_size_init(void)
- 
- /*
-  * Preferred image size in bytes (tunable via /sys/power/image_size).
-- * When it is set to N, the image creating code will do its best to
-- * ensure the image size will not exceed N bytes, but if that is
-- * impossible, it will try to create the smallest image possible.
-+ * When it is set to N, swsusp will do its best to ensure the image
-+ * size will not exceed N bytes, but if that is impossible, it will
-+ * try to create the smallest image possible.
-  */
- unsigned long image_size;
- 
- void __init hibernate_image_size_init(void)
- {
--	image_size = (totalram_pages / 3) * PAGE_SIZE;
-+	image_size = ((totalram_pages * 2) / 5) * PAGE_SIZE;
- }
- 
- /* List of PBEs needed for restoring the pages that were allocated before
