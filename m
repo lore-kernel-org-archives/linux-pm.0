@@ -1,18 +1,15 @@
-From: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
-	ahci_start_engine compliant to AHCI spec"
-Date: Mon, 16 May 2011 13:02:17 -0400
-Message-ID: <20633.1305565337__49380.5951126435$1305565533$gmane$org@localhost>
-References: <201105120025.34531.rjw@sisk.pl>
-	<BANLkTimqxmbpP1-+HxhPQS-YoLTh=bHd1Q@mail.gmail.com>
-	<201105132222.11582.rjw@sisk.pl> <201105132244.29605.rjw@sisk.pl>
-	<20110514101807.GA23665@htj.dyndns.org>
-	<20110514102804.GB23665@htj.dyndns.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 6/6][RFC] PM / Domains: Support for multiple
+	generic power domain states
+Date: Mon, 16 May 2011 20:29:18 +0200
+Message-ID: <201105162029.18615.rjw__3815.63830092109$1305573590$gmane$org@sisk.pl>
+References: <201104290154.12966.rjw@sisk.pl> <201105160138.10431.rjw@sisk.pl>
+	<87sjsfdklw.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0738530485324690802=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: Your message of "Sat, 14 May 2011 12:28:04 +0200."
-	<20110514102804.GB23665@htj.dyndns.org>
+In-Reply-To: <87sjsfdklw.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,59 +17,58 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Michael Leun <lkml20100708@newton.leun.net>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Jian Peng <jipeng2005@gmail.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
---===============0738530485324690802==
-Content-Type: multipart/signed; boundary="==_Exmh_1305565337_2487P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-
---==_Exmh_1305565337_2487P
-Content-Type: text/plain; charset=us-ascii
-
-On Sat, 14 May 2011 12:28:04 +0200, Tejun Heo said:
-> This reverts commit 270dac35c26433d06a89150c51e75ca0181ca7e4.
+On Monday, May 16, 2011, Kevin Hilman wrote:
+> Hi Rafael,
 > 
-> The commits causes command timeouts on AC plug/unplug.  It isn't yet
-> clear why.  As the commit was for a single rather obscure controller,
-> revert the change for now.
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> The problem was reported and bisected by Gu Rui in bug#34692.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > Allow the generic power domains support code to handle power
+> > domains with multiple states.  
 > 
->  https://bugzilla.kernel.org/show_bug.cgi?id=34692
+> Thanks!
+
+No problem. :-)
+
+> Before I even had the time to respond to you about my previous request
+> for this kind of feature, you've already implmented it. :)  
+
+Well, I had the idea how to implement it right after I had replied to
+your previous message.  The only problem was to find the time to actually
+prepare a patch.
+
+> > Replace the .power_down_ok()
+> > callback in struct dev_power_governor with a new callback
+> > .choose_state() that will return the number of the state to put the
+> > power domain into.  Add new fields nr_states and current_state to
+> > struct generic_power_domain with the assumption that state 0 will be
+> > the full power state and states 1 through (nr_states - 1) will be low
+> > power.  
+> > Replace power domain callbacks .power_off() and .power_on()
+> > with a single .set_state() callback taking the number of the state
+> > to put the power domain into as its second argument.  Add a new
+> > generic power domain callback .power_off_state() (taking a state
+> > number as its second argument) allowing the core to check if
+> > device runtime PM callbacks need to be executed before putting the
+> > given power domain into the given state.  Modify the core power
+> > domains code and the ARM shmobile platform code to take all of the
+> > above changes into account.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Also, reported by Rafael and Michael in the following thread.
-> 
->  http://thread.gmane.org/gmane.linux.kernel/1138771
+> Reviewed-by: Kevin Hilman <khilman@ti.com>
 
-This also fixes the issue I had with a 10-second pause on my Dell Latitude E6500
-laptop at boot while detecting the CD/DVD drive.
+Thanks!
 
---==_Exmh_1305565337_2487P
-Content-Type: application/pgp-signature
+> This looks like a better starting point for more complicated hardware.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+I agree.
 
-iD8DBQFN0ViZcC3lWbTT17ARAlsZAJ91zKbQW9Gq0dUJEYzqYDccsyH3YgCfX/Om
-eOxZRGIEc0/BfbLY5Uhc4wY=
-=ZQ/P
------END PGP SIGNATURE-----
-
---==_Exmh_1305565337_2487P--
-
-
---===============0738530485324690802==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============0738530485324690802==--
+Rafael
