@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/6][RFC] PM / Domains: Support for multiple
-	generic power domain states
-Date: Mon, 16 May 2011 01:38:10 +0200
-Message-ID: <201105160138.10431.rjw__777.623945805494$1305503147$gmane$org@sisk.pl>
-References: <201104290154.12966.rjw@sisk.pl> <201105082320.57185.rjw@sisk.pl>
-	<201105160117.46927.rjw@sisk.pl>
+From: <purusothaman.ramajothi@wipro.com>
+Subject: Re: Need Help to debug resume hangs at schedule()
+	function
+Date: Mon, 16 May 2011 12:16:28 +0530
+Message-ID: <2FC8B95E2C77614C9F13EDC44D58183C01155554@BLR-SJP-MBX01.wipro.com>
+References: <2FC8B95E2C77614C9F13EDC44D58183C0108944B@BLR-SJP-MBX01.wipro.com><BANLkTikH9pgTOteqrsL6KjPYndTVa4EyUA@mail.gmail.com><2FC8B95E2C77614C9F13EDC44D58183C010ED5D2@BLR-SJP-MBX01.wipro.com><BANLkTimcxaDd9ctP7hi3eEkFzTuHS-6QYA@mail.gmail.com><2FC8B95E2C77614C9F13EDC44D58183C010ED6A7@BLR-SJP-MBX01.wipro.com>
+	<BANLkTimvHyfFS4F6Gv0edXbi=oK6cEkkog@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105160117.46927.rjw@sisk.pl>
+Content-class: urn:content-classes:message
+In-Reply-To: <BANLkTimvHyfFS4F6Gv0edXbi=oK6cEkkog@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,245 +20,297 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: myungjoo.ham@gmail.com
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Allow the generic power domains support code to handle power
-domains with multiple states.  Replace the .power_down_ok()
-callback in struct dev_power_governor with a new callback
-.choose_state() that will return the number of the state to put the
-power domain into.  Add new fields nr_states and current_state to
-struct generic_power_domain with the assumption that state 0 will be
-the full power state and states 1 through (nr_states - 1) will be low
-power.  Replace power domain callbacks .power_off() and .power_on()
-with a single .set_state() callback taking the number of the state
-to put the power domain into as its second argument.  Add a new
-generic power domain callback .power_off_state() (taking a state
-number as its second argument) allowing the core to check if
-device runtime PM callbacks need to be executed before putting the
-given power domain into the given state.  Modify the core power
-domains code and the ARM shmobile platform code to take all of the
-above changes into account.
+	Thanks for the reply.I reproduced the issue.What happened is when I try to=
+ resume, the kernel resumed but somehow suspend operation has been triggere=
+d and it immediately went in to deep_sleep.During this time it enters in to=
+ "try_to_freeze_tasks" to freeze all the user space threads.But it hanges a=
+fter some time when it is trying to resume a user space thread.This I confi=
+rmed by adding the printk in the "try_to_freeze_tasks" function.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/arm/mach-shmobile/pm-sh7372.c |   11 ++++--
- drivers/base/power/domain.c        |   60 +++++++++++++++++++++++++++----------
- include/linux/pm_domain.h          |   20 ++++++++----
- 3 files changed, 67 insertions(+), 24 deletions(-)
+Is anyone have faced like this issue? =
 
-Index: linux-2.6/include/linux/pm_domain.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_domain.h
-+++ linux-2.6/include/linux/pm_domain.h
-@@ -12,7 +12,11 @@
- #include <linux/device.h>
- 
- struct dev_power_governor {
--	bool (*power_down_ok)(struct dev_power_domain *domain);
-+	int (*choose_state)(struct dev_power_domain *domain);
-+};
-+
-+struct power_domain_state {
-+	void *platform_data;
- };
- 
- struct generic_power_domain {
-@@ -23,12 +27,14 @@ struct generic_power_domain {
- 	struct list_head device_list;
- 	struct mutex lock;
- 	struct dev_power_governor *gov;
--	unsigned int in_progress;
-+	int nr_states;
-+	int current_state;
- 	bool power_is_off;
-+	unsigned int in_progress;
- 	unsigned int device_count;
- 	unsigned int suspended_count;
--	int (*power_off)(struct dev_power_domain *domain);
--	int (*power_on)(struct dev_power_domain *domain);
-+	int (*set_state)(struct dev_power_domain *domain, int state);
-+	bool (*power_off_state)(struct dev_power_domain *domain, int state);
- 	int (*start_device)(struct device *dev);
- 	int (*stop_device)(struct device *dev);
- };
-@@ -48,7 +54,8 @@ extern int pm_genpd_add_subdomain(struct
- extern int pm_genpd_remove_subdomain(struct generic_power_domain *genpd,
- 				     struct generic_power_domain *target);
- extern void pm_genpd_init(struct generic_power_domain *genpd,
--			  struct dev_power_governor *gov, bool is_off);
-+			  struct dev_power_governor *gov, int nr_states,
-+			  int cur_state);
- #else
- static inline int pm_genpd_add_device(struct generic_power_domain *genpd,
- 				      struct device *dev)
-@@ -71,7 +78,8 @@ static inline int pm_genpd_remove_subdom
- 	return -ENOSYS;
- }
- static inline void pm_genpd_init(struct generic_power_domain *genpd,
--				 struct dev_power_governor *gov, bool is_off) {}
-+				 struct dev_power_governor *gov,
-+				 int nr_states, int cur_state) {}
- #endif
- 
- #endif /* _LINUX_PM_DOMAIN_H */
-Index: linux-2.6/drivers/base/power/domain.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -62,6 +62,7 @@ static int __pm_genpd_poweroff(struct ge
- 	struct generic_power_domain *subdomain;
- 	struct dev_list_entry *dle;
- 	unsigned int not_suspended;
-+	int new_state;
- 	int ret;
- 
- 	if (genpd->power_is_off)
-@@ -83,9 +84,23 @@ static int __pm_genpd_poweroff(struct ge
- 			return ret;
- 	}
- 
--	if (genpd->gov && genpd->gov->power_down_ok) {
--		if (!genpd->gov->power_down_ok(&genpd->domain))
--			return -EAGAIN;
-+	new_state = (genpd->gov && genpd->gov->choose_state) ?
-+			genpd->gov->choose_state(&genpd->domain) : 1;
-+	if (new_state < 0 || new_state >= genpd->nr_states)
-+		return -EAGAIN;
-+
-+	if (new_state == genpd->current_state)
-+		return 0;
-+
-+	if (genpd->power_off_state
-+	    && !genpd->power_off_state(&genpd->domain, new_state)) {
-+		if (genpd->set_state) {
-+			ret = genpd->set_state(&genpd->domain, new_state);
-+			if (ret)
-+				return ret;
-+		}
-+		genpd->current_state = new_state;
-+		return 0;
- 	}
- 
- 	list_for_each_entry_reverse(dle, &genpd->device_list, node) {
-@@ -105,9 +120,13 @@ static int __pm_genpd_poweroff(struct ge
- 			goto err_dev;
- 	}
- 
--	if (genpd->power_off)
--		genpd->power_off(&genpd->domain);
-+	if (genpd->set_state) {
-+		ret = genpd->set_state(&genpd->domain, new_state);
-+		if (ret)
-+			goto err_dev;
-+	}
- 
-+	genpd->current_state = new_state;
- 	genpd->power_is_off = true;
- 
- 	return 0;
-@@ -199,14 +218,17 @@ static int __pm_genpd_poweron(struct gen
- {
- 	struct dev_list_entry *dle;
- 
--	if (!genpd->power_is_off)
-+	if (genpd->current_state == 0)
- 		return 0;
- 
--	if (genpd->power_on) {
--		int ret = genpd->power_on(&genpd->domain);
-+	if (genpd->set_state) {
-+		int ret = genpd->set_state(&genpd->domain, 0);
- 		if (ret)
- 			return ret;
- 	}
-+	genpd->current_state = 0;
-+	if (!genpd->power_is_off)
-+		return 0;
- 
- 	genpd->power_is_off = false;
- 
-@@ -363,8 +385,8 @@ static int pm_genpd_suspend_noirq(struct
- 
- 	mutex_lock(&genpd->lock);
- 	if (++genpd->suspended_count == genpd->device_count) {
--		if (genpd->power_off)
--			genpd->power_off(&genpd->domain);
-+		if (genpd->set_state)
-+			genpd->set_state(&genpd->domain, genpd->nr_states - 1);
- 	}
- 	mutex_unlock(&genpd->lock);
- 
-@@ -395,8 +417,8 @@ static int pm_genpd_resume_noirq(struct
- 
- 	mutex_lock(&genpd->lock);
- 	if (genpd->suspended_count == genpd->device_count) {
--		if (genpd->power_on) {
--			int ret = genpd->power_on(&genpd->domain);
-+		if (genpd->set_state) {
-+			int ret = genpd->set_state(&genpd->domain, 0);
- 			if (ret) {
- 				mutex_unlock(&genpd->lock);
- 				return ret;
-@@ -713,10 +735,12 @@ int pm_genpd_remove_subdomain(struct gen
-  * pm_genpd_init - Initialize a generic I/O power domain object.
-  * @genpd: Power domain object to initialize.
-  * @gov: Power domain governor to associate with the domain (may be NULL).
-- * @is_off: Initial value of the domain's power_is_off field.
-+ * @nr_states: Number of power domain states (must be greater than 1).
-+ * @cur_state: Initial state of the power domain.
-  */
- void pm_genpd_init(struct generic_power_domain *genpd,
--		   struct dev_power_governor *gov, bool is_off)
-+		   struct dev_power_governor *gov, int nr_states,
-+		   int cur_state)
- {
- 	if (IS_ERR_OR_NULL(genpd))
- 		return;
-@@ -727,8 +751,14 @@ void pm_genpd_init(struct generic_power_
- 	INIT_LIST_HEAD(&genpd->subdomain_list);
- 	mutex_init(&genpd->lock);
- 	genpd->gov = gov;
-+	genpd->nr_states = nr_states > 1 ? nr_states : 2;
-+	if (cur_state < 0 || cur_state >= nr_states)
-+		cur_state = 0;
-+	genpd->current_state = cur_state;
-+	genpd->power_is_off = genpd->power_off_state ?
-+		genpd->power_off_state(&genpd->domain, cur_state) :
-+			(cur_state > 0);
- 	genpd->in_progress = 0;
--	genpd->power_is_off = is_off;
- 	genpd->device_count = 0;
- 	genpd->suspended_count = 0;
- 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
-Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
-+++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -60,15 +60,20 @@ static int pd_power_up(struct dev_power_
- 	return 0;
- }
- 
-+static int pd_set_state(struct dev_power_domain *domain, int state)
-+{
-+	return state > 0 ? pd_power_down(domain) : pd_power_up(domain);
-+}
-+
- static void sh7372_init_domain(struct generic_power_domain *domain,
- 			       struct sh7372_domain_data *pdata)
- {
--	pm_genpd_init(domain, NULL, false);
- 	domain->domain.platform_data = pdata;
- 	domain->stop_device = pm_runtime_clk_suspend;
- 	domain->start_device = pm_runtime_clk_resume;
--	domain->power_off = pd_power_down;
--	domain->power_on = pd_power_up;
-+	domain->set_state = pd_set_state;
-+	domain->power_off_state = NULL;
-+	pm_genpd_init(domain, NULL, 2, 0);
- }
- 
- void sh7372_add_device_to_domain(struct generic_power_domain *domain,
+
+
+Regards,
+Purusothaman R
+
+-----Original Message-----
+From: MyungJoo Ham [mailto:myungjoo.ham@gmail.com] =
+
+Sent: Wednesday, May 04, 2011 6:14 AM
+To: Purusothaman Ramajothi (WT01 - Manufacturing & Hi Tech)
+Cc: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] Need Help to debug resume hangs at schedule() funct=
+ion
+
+On Tue, May 3, 2011 at 6:37 PM,  <purusothaman.ramajothi@wipro.com> wrote:
+> Hi,
+>
+> =A0 =A0 =A0 =A0Thanks for the help.According to my understanding below is=
+ the code flow for resume operation in kernel
+>
+> 1.device_resume()
+> 2.dpm_resume()
+> 3.dpm_complete()
+> 4.thaw_processes()
+> 5.thaw_tasks()
+> 6.thaw_process()
+> 7.schedule ()
+>
+> I have compared the "resume hang logs" with the "working logs".During res=
+ume all my "drivers" and "devices" resumed back.The final function enters i=
+s "thaw_processes".I think the kernel hangs around these function.I confirm=
+ed this by adding checkpoints in the code flow of deep sleep.Because the lo=
+gs I have don't have the printk message "Restarting...tasks done" when the =
+kernel hangs.
+
+Well, then, more printk (pr_emerg?) messages? w/ early printk and/or
+low-level debugging options?
+
+Besides, if the crash log stops right before "Restarting..." than, the
+crash point could be earlier than thaw_processes.
+(or are you crashing at oom_killer_enable? well.. that still means you
+need more printks)
+
+>
+> Can u explain me in what scenarios the kernel can hang around the thaw_pr=
+ocesses?
+> Please correct me if the above code flow is incorrect.
+
+- There could be a delayed fatal event triggered by earlier operations
+(device drivers) that happens right after entering thawing.
+- Last a few printk messages may be just not flushed to display at the
+crash point.
+- Even if it stopped at thaw_process, it does not necessary mean that
+something is wrong at thaw_processes. You already have your irqs
+enabled and devices are resumed. Even better, some device drivers may
+have "delayed resume" feature usually implemented with work struct or
+delayed work.
+
+>
+> Regards,
+> Purusothaman R
+>
+>
+> -----Original Message-----
+> From: MyungJoo Ham [mailto:myungjoo.ham@gmail.com]
+> Sent: Tuesday, May 03, 2011 12:45 PM
+> To: Purusothaman Ramajothi (WT01 - Manufacturing & Hi Tech)
+> Cc: linux-pm@lists.linux-foundation.org
+> Subject: Re: [linux-pm] Need Help to debug resume hangs at schedule() fun=
+ction
+>
+> On Tue, May 3, 2011 at 3:38 PM, =A0<purusothaman.ramajothi@wipro.com> wro=
+te:
+>> Hi,
+>>
+>> =A0 =A0 =A0 =A0Thanks for the reply.I am using 2.6.27.18 kernel.But I th=
+ink [Kernel hacking] =3D=3D> [Detect Hung Tasks] is added from 2.6.30 kerne=
+l.
+>>
+>> Is there any patch that I can apply to enable the "detec hung tasks" fea=
+ture in 2.6.27 kernekl?
+>
+> Clone the recent kernel.
+> Run git log -- kernel/hung_task.c
+> Pick resulting patches (and more patches if required), apply them to
+> yours, and resolve conflicts if exist.
+>
+>>
+>> Is there any other way of debugging this issue using software methods?
+>
+> Add more printks. Store the whole console output somewhere and
+> read/filter/search them later.
+>
+>>
+>>
+>> Regards,
+>> Purusothaman R
+>>
+>>
+>> -----Original Message-----
+>> From: MyungJoo Ham [mailto:myungjoo.ham@gmail.com]
+>> Sent: Tuesday, May 03, 2011 8:29 AM
+>> To: Purusothaman Ramajothi (WT01 - Manufacturing & Hi Tech)
+>> Cc: linux-pm@lists.linux-foundation.org
+>> Subject: Re: [linux-pm] Need Help to debug resume hangs at schedule() fu=
+nction
+>>
+>> On Mon, May 2, 2011 at 10:52 PM, =A0<purusothaman.ramajothi@wipro.com> w=
+rote:
+>>> Hi,
+>>>
+>>>
+>>>
+>>> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 I am using 2.6.27.18 kern=
+el.My machine is powerpc
+>>> architecture.I executed the deep sleep operation by executing the follo=
+wing
+>>> command:
+>>>
+>>>
+>>>
+>>> "echo mem > /sys/power/state"
+>>>
+>>>
+>>>
+>>> The suspend opeartion was successful.All the devices and user level thr=
+eads
+>>> are suspended.
+>>>
+>>>
+>>>
+>>> But sometimes during resume my machine hangs.This is not happening
+>>> regularly.But it occurs after 60 or 70 times of deep sleep operation.So=
+ for
+>>> debugging this I have added checkpoints in the flow of deep check.When =
+this
+>>> issue was produced the kernel hangs around "thaw_tasks" or "schedule"
+>>> function of "thaw_processes".These functions are defined in
+>>> "kernel/power/process.c".
+>>>
+>>
+>> Have you enabled [Kernel hacking] =3D=3D> [Detect Hung Tasks] and waited
+>> more than 120 seconds after the hang?
+>>
+>>>
+>>>
+>>> Note: The final printk message "Restarting tasks.....done" was not disp=
+layed
+>>> when this issue occurred.But all the devices and drivers resumed back.
+>>>
+>>>
+>>>
+>>> I was not able to debug this as the reproduciablity rate was too low.Ki=
+ndly
+>>> help me in solving the issue.
+>>
+>> Around 1/100 is not that low for a suspend/resume issue. Don't get too
+>> frustrated. You will probably encounter much rarer (let's say 1/10000)
+>> incidents if you are doing the job with newly produced chips and
+>> boards. :D
+>>
+>> If you have some H/W tracers similar as T32, try it. It helps a lot.
+>>
+>>>
+>>>
+>>>
+>>> Regards,
+>>>
+>>> Purusothaman R
+>>>
+>>>
+>>>
+>>> Please do not print this email unless it is absolutely necessary.
+>>>
+>>> The information contained in this electronic message and any attachment=
+s to
+>>> this message are intended for the exclusive use of the addressee(s) and=
+ may
+>>> contain proprietary, confidential or privileged information. If you are=
+ not
+>>> the intended recipient, you should not disseminate, distribute or copy =
+this
+>>> e-mail. Please notify the sender immediately and destroy all copies of =
+this
+>>> message and any attachments.
+>>>
+>>> WARNING: Computer viruses can be transmitted via email. The recipient s=
+hould
+>>> check this email and any attachments for the presence of viruses. The
+>>> company accepts no liability for any damage caused by any virus transmi=
+tted
+>>> by this email.
+>>>
+>>> www.wipro.com
+>>>
+>>> _______________________________________________
+>>> linux-pm mailing list
+>>> linux-pm@lists.linux-foundation.org
+>>> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>>>
+>>
+>> --
+>> MyungJoo Ham, Ph.D.
+>> Mobile Software Platform Lab,
+>> Digital Media and Communications (DMC) Business
+>> Samsung Electronics
+>> cell: 82-10-6714-2858
+>>
+>> Please do not print this email unless it is absolutely necessary.
+>>
+>> The information contained in this electronic message and any attachments=
+ to this message are intended for the exclusive use of the addressee(s) and=
+ may contain proprietary, confidential or privileged information. If you ar=
+e not the intended recipient, you should not disseminate, distribute or cop=
+y this e-mail. Please notify the sender immediately and destroy all copies =
+of this message and any attachments.
+>>
+>> WARNING: Computer viruses can be transmitted via email. The recipient sh=
+ould check this email and any attachments for the presence of viruses. The =
+company accepts no liability for any damage caused by any virus transmitted=
+ by this email.
+>>
+>> www.wipro.com
+>>
+>
+>
+>
+> --
+> MyungJoo Ham, Ph.D.
+> Mobile Software Platform Lab,
+> Digital Media and Communications (DMC) Business
+> Samsung Electronics
+> cell: 82-10-6714-2858
+>
+> Please do not print this email unless it is absolutely necessary.
+>
+> The information contained in this electronic message and any attachments =
+to this message are intended for the exclusive use of the addressee(s) and =
+may contain proprietary, confidential or privileged information. If you are=
+ not the intended recipient, you should not disseminate, distribute or copy=
+ this e-mail. Please notify the sender immediately and destroy all copies o=
+f this message and any attachments.
+>
+> WARNING: Computer viruses can be transmitted via email. The recipient sho=
+uld check this email and any attachments for the presence of viruses. The c=
+ompany accepts no liability for any damage caused by any virus transmitted =
+by this email.
+>
+> www.wipro.com
+>
+
+
+
+-- =
+
+MyungJoo Ham, Ph.D.
+Mobile Software Platform Lab,
+Digital Media and Communications (DMC) Business
+Samsung Electronics
+cell: 82-10-6714-2858
+
+Please do not print this email unless it is absolutely necessary. =
+
+
+The information contained in this electronic message and any attachments to=
+ this message are intended for the exclusive use of the addressee(s) and ma=
+y contain proprietary, confidential or privileged information. If you are n=
+ot the intended recipient, you should not disseminate, distribute or copy t=
+his e-mail. Please notify the sender immediately and destroy all copies of =
+this message and any attachments. =
+
+
+WARNING: Computer viruses can be transmitted via email. The recipient shoul=
+d check this email and any attachments for the presence of viruses. The com=
+pany accepts no liability for any damage caused by any virus transmitted by=
+ this email. =
+
+
+www.wipro.com
