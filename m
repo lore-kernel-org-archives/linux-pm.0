@@ -1,17 +1,16 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] perf: export power_start and power_end
-	tracepoints
-Date: Mon, 16 May 2011 11:23:09 +0200
-Message-ID: <20110516092309.GD12325__4541.22333690083$1305537878$gmane$org@elte.hu>
-References: <1305297838-4015-1-git-send-email-j-pihet@ti.com>
-	<20110513144830.GB32688@elte.hu>
-	<BANLkTikkd9bNRLF1iDAz9Jwrnon3A=j44g@mail.gmail.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH 6/6][RFC] PM / Domains: Support for multiple
+	generic power domain states
+Date: Mon, 16 May 2011 12:07:39 +0200
+Message-ID: <87sjsfdklw.fsf__9102.60277237303$1305540526$gmane$org@ti.com>
+References: <201104290154.12966.rjw@sisk.pl> <201105082320.57185.rjw@sisk.pl>
+	<201105160117.46927.rjw@sisk.pl> <201105160138.10431.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <BANLkTikkd9bNRLF1iDAz9Jwrnon3A=j44g@mail.gmail.com>
+In-Reply-To: <201105160138.10431.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Mon, 16 May 2011 01:38:10 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Pihet <jean.pihet@newoldbits.com>
-Cc: linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rafael,
 
-* Jean Pihet <jean.pihet@newoldbits.com> wrote:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Adding l-o and linux-pm MLs. The original post is at
-> http://www.spinics.net/lists/kernel/msg1186554.html
-> 
-> On Fri, May 13, 2011 at 4:48 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * jean.pihet@newoldbits.com <jean.pihet@newoldbits.com> wrote:
-> >
-> >> From: Jean Pihet <j-pihet@ti.com>
-> >>
-> >> If used in a module both tracepoints need to be exported by the
-> >> kernel.
-> >
-> > but it's not used by any module in the kernel AFAICS, so why is this needed?
-> Not currently, that is why the error went unnoticed. I think it is
-> better to fix it now than later.
-> 
-> I am working on a plan to clean-up and isolate the OMAP PM code from
-> the core code and to provide the PM functionality as a module. This
-> effort is part of the 'remove the crazy ARM churn' from the kernel.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Allow the generic power domains support code to handle power
+> domains with multiple states.  
 
-Feel free to keep this patch with those modifications/cleanups:
+Thanks!
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Before I even had the time to respond to you about my previous request
+for this kind of feature, you've already implmented it. :)  
 
-but please make sure you push it together, i.e. never export something 
-(knowingly) without having in-tree use for it.
+> Replace the .power_down_ok()
+> callback in struct dev_power_governor with a new callback
+> .choose_state() that will return the number of the state to put the
+> power domain into.  Add new fields nr_states and current_state to
+> struct generic_power_domain with the assumption that state 0 will be
+> the full power state and states 1 through (nr_states - 1) will be low
+> power.  
+> Replace power domain callbacks .power_off() and .power_on()
+> with a single .set_state() callback taking the number of the state
+> to put the power domain into as its second argument.  Add a new
+> generic power domain callback .power_off_state() (taking a state
+> number as its second argument) allowing the core to check if
+> device runtime PM callbacks need to be executed before putting the
+> given power domain into the given state.  Modify the core power
+> domains code and the ARM shmobile platform code to take all of the
+> above changes into account.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+
+This looks like a better starting point for more complicated hardware.
 
 Thanks,
 
-	Ingo
+Kevin
