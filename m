@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 2/3] PM / DEVFREQ: add example governors
-Date: Wed, 18 May 2011 00:39:56 +0200
-Message-ID: <201105180039.56806.rjw__12592.6540037201$1305672784$gmane$org@sisk.pl>
-References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
-	<1305100723-29161-2-git-send-email-myungjoo.ham@samsung.com>
+Subject: Re: xHCI and suspend/resume
+Date: Wed, 18 May 2011 00:56:03 +0200
+Message-ID: <201105180056.03337.rjw__23908.3100147129$1305673069$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1105121733370.1917-100000@iolanthe.rowland.org>
+	<201105172354.22675.rjw@sisk.pl>
+	<BANLkTinqLM2kvEgszcCMbu=pc-yJZsAo9w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1305100723-29161-2-git-send-email-myungjoo.ham@samsung.com>
+In-Reply-To: <BANLkTinqLM2kvEgszcCMbu=pc-yJZsAo9w@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,133 +19,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Dwight Schauer <dschauer@gmail.com>
+Cc: Sarah Sharp <sarah.a.sharp@linux.intel.com>, dschauer@ti.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, May 11, 2011, MyungJoo Ham wrote:
-> Three CPUFREQ-like governors are provided as examples.
+On Wednesday, May 18, 2011, Dwight Schauer wrote:
+> On Tue, May 17, 2011 at 4:54 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Tuesday, May 17, 2011, Dwight Schauer wrote:
+> >> On Tue, May 17, 2011 at 4:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > ...
+> >> >
+> >> > OK, one more test, please.
+> >> >
+> >> > Try to do
+> >> >
+> >> > # echo core > /sys/power/pm_test
+> >> > # echo mem > /sys/power/state
+> >> >
+> >> > (that should simulate suspend, but without going into the BIOS, and it
+> >> > should return do the command prompt after 5-10 sec.) and check if the
+> >> > USB3 controllers work after that ("echo none > /sys/power/pm_test" resets
+> >> > to the normal suspend behavior).
+> >> >
+> >> > Thanks,
+> >> > Rafael
+> >>
+> >> No problem.
+> >>
+> >> The simulated suspend works fine.
+> >
+> > Good.
+> >
+> >> Also, waking up from S3 via a PS/2 keyboard works fine.
+> >
+> > Hmm.  Do you mean that the USB3 controllers work after the resume if
+> > the box has been woken up via the keyboard and they don't work when it
+> > has been woken up via a power button?
+> >
+> > Rafael
 > 
-> powersave: use the lowest frequency possible. The user (device) should
-> set the polling_ms as 0 because polling is useless for this governor.
-> 
-> performance: use the highest freqeuncy possible. The user (device)
-> should set the polling_ms as 0 because polling is useless for this
-> governor.
-> 
-> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
-> 
-> When a user updates OPP entries (enable/disable/add), OPP framework
-> automatically notifies DEVFREQ to update operating frequency
-> accordingly. Thus, DEVFREQ users (device drivers) do not need to update
-> DEVFREQ manually with OPP entry updates or set polling_ms for powersave
-> , performance, or any other "static" governors.
+> They work either way. I'm just not able to get the USB keyboard that
+> is connected to the USB3 controller to perform the wakeup. (Which is
+> what I thought I made clear from the beginning and what Alan Stern had
+> reiterated for new readers further into the thread).
 
-Well, do you expect anyone to actually use them?  If not, it would make
-more sense to put them into a doc.
+Oh, I must have missed that information.  Sorry about that.
 
-Thanks,
+So, the situation is that if you set up the USB3 controllers to wake up
+and next you wake up the system from S3 using a USB device connected to one
+of those controllers, then they appear to be in D3 after the resume and
+apparently cannot be put into D0.  However, if the wakeup is done in any
+different way, they work correctly after the resume, right?
+
+Is that the case on both the affected systems?
+
 Rafael
-
-
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> ---
->  drivers/base/power/devfreq.c |   69 ++++++++++++++++++++++++++++++++++++++++++
->  include/linux/devfreq.h      |    5 +++
->  2 files changed, 74 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/base/power/devfreq.c b/drivers/base/power/devfreq.c
-> index 8e2e45b..251d761 100644
-> --- a/drivers/base/power/devfreq.c
-> +++ b/drivers/base/power/devfreq.c
-> @@ -351,3 +351,72 @@ static int __init devfreq_init(void)
->  	return 0;
->  }
->  late_initcall(devfreq_init);
-> +
-> +static int devfreq_powersave_func(struct devfreq *df,
-> +				  unsigned long *freq)
-> +{
-> +	*freq = 0; /* devfreq_do will run "ceiling" to 0 */
-> +	return 0;
-> +}
-> +
-> +struct devfreq_governor devfreq_powersave = {
-> +	.get_target_freq = devfreq_powersave_func,
-> +};
-> +
-> +static int devfreq_performance_func(struct devfreq *df,
-> +				    unsigned long *freq)
-> +{
-> +	*freq = UINT_MAX; /* devfreq_do will run "floor" */
-> +	return 0;
-> +}
-> +
-> +struct devfreq_governor devfreq_performance = {
-> +	.get_target_freq = devfreq_performance_func,
-> +};
-> +
-> +/* Constants for DevFreq-Simple-Ondemand (DFSO) */
-> +#define DFSO_UPTHRESHOLD	(90)
-> +#define DFSO_DOWNDIFFERENCTIAL	(5)
-> +static int devfreq_simple_ondemand_func(struct devfreq *df,
-> +					unsigned long *freq)
-> +{
-> +	struct devfreq_dev_status stat;
-> +	int err = df->profile->get_dev_status(df->dev, &stat);
-> +	unsigned long long a, b;
-> +
-> +	if (err)
-> +		return err;
-> +
-> +	/* Set MAX if it's busy enough */
-> +	if (stat.busy_time * 100 >
-> +	    stat.total_time * DFSO_UPTHRESHOLD) {
-> +		*freq = UINT_MAX;
-> +		return 0;
-> +	}
-> +
-> +	/* Set MAX if we do not know the initial frequency */
-> +	if (stat.current_frequency == 0) {
-> +		*freq = UINT_MAX;
-> +		return 0;
-> +	}
-> +
-> +	/* Keep the current frequency */
-> +	if (stat.busy_time * 100 >
-> +	    stat.total_time * (DFSO_UPTHRESHOLD - DFSO_DOWNDIFFERENCTIAL)) {
-> +		*freq = stat.current_frequency;
-> +		return 0;
-> +	}
-> +
-> +	/* Set the desired frequency based on the load */
-> +	a = (unsigned long long) stat.busy_time * stat.current_frequency;
-> +	b = div_u64(a, stat.total_time);
-> +	b *= 100;
-> +	b = div_u64(b, (DFSO_UPTHRESHOLD - DFSO_DOWNDIFFERENCTIAL / 2));
-> +	*freq = (unsigned long) b;
-> +
-> +	return 0;
-> +}
-> +
-> +struct devfreq_governor devfreq_simple_ondemand = {
-> +	.get_target_freq = devfreq_simple_ondemand_func,
-> +};
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index d08e9f5..ec41ba6 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -81,6 +81,11 @@ extern int devfreq_add_device(struct device *dev,
->  extern int devfreq_remove_device(struct device *dev);
->  extern int devfreq_update(struct device *dev, bool may_not_exist);
->  extern int devfreq_tickle_device(struct device *dev, unsigned long duration_ms);
-> +
-> +extern struct devfreq_governor devfreq_powersave;
-> +extern struct devfreq_governor devfreq_performance;
-> +extern struct devfreq_governor devfreq_simple_ondemand;
-> +
->  #else /* !CONFIG_PM_DEVFREQ */
->  static int devfreq_add_device(struct device *dev,
->  			   struct devfreq_dev_profile *profile,
-> 
