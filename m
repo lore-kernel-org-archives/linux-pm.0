@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: pm loss development
-Date: Wed, 18 May 2011 01:07:57 +0200
-Message-ID: <201105180107.58078.rjw__7649.82474870539$1305674043$gmane$org@sisk.pl>
+Date: Wed, 18 May 2011 01:10:52 +0200
+Message-ID: <201105180110.52631.rjw__15962.1495790363$1305674123$gmane$org@sisk.pl>
 References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
-	<201105131854.57854.rjw@sisk.pl> <20110514163513.GB8292@gvim.org>
+	<201105131854.57854.rjw@sisk.pl>
+	<BANLkTi=0T_jmEju+cP8zG8EC0ns-mwKHYw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110514163513.GB8292@gvim.org>
+In-Reply-To: <BANLkTi=0T_jmEju+cP8zG8EC0ns-mwKHYw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <lamiaposta71@gmail.com>, linux-kernel@vger.kernel.org
+To: Raffaele Recalcati <lamiaposta71@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, May 14, 2011, mark gross wrote:
-> On Fri, May 13, 2011 at 06:54:57PM +0200, Rafael J. Wysocki wrote:
-> > On Friday, May 13, 2011, Raffaele Recalcati wrote:
-> > > Hi Rafael,
-> > > 
-> > > 2011/5/12 Rafael J. Wysocki <rjw@sisk.pl>:
-> > > > On Thursday, May 12, 2011, Raffaele Recalcati wrote:
-> > > >> What happen normally in runtime pm implementation is that every devices
-> > > >> are switched off and are enabled only when needed.
-> > > >> In our case instead we have a completely functional embedded system and,
-> > > >> when an asyncrhonous event appear, we have only some tens milliseconds
-> > > >> before the actual power failure takes place.
-> > > >> This patchset add a support in order to switch off not vital part of the system,
-> > > >> in order to allow the board to survive longer.
-> > > >> This allow the possibility to save important data.
-> > > >
-> > > > OK, so first, who decides what parts of the system are vital and what aren't?
-> > > 
-> > > Take a quick look at Documentation/power/loss.txt  paragrpah "2.4
-> > > Power loss policies".
-> > > You can decide what can be powered off.
-> > 
+On Saturday, May 14, 2011, Raffaele Recalcati wrote:
 > > I read the patches.  My question was about the general idea of who should
 > > be responsible of making these decisions.
 > 
-> I would expect the system integrator would based on the application the
-> device is getting deployed into.
-> 
-> A generic opportunistic policy for peripherals that are stateless and can
-> be trivially power gated off/on from an ISR could be a default but, for
-> peripherals that need to do some processing (like waiting on an eMMC DMA
-> to complete) can take time to power down into a safe state.
+> The best  should be, I think, to have some guidelines and than the
+> possibility to choose the best policy for each situation.
 
-What do you mean by safe state?
+Again, I'd like to know who's supposed to make the choice.
 
+> In my board I needed to shutdown video in capture and demodulator
+> circuit, so I have implemented vpfe capture switch off, that does
+> stream_off to all its v4l2 subdevices (a pal decoder and a video
+> demodulator).
+> So I can save 30mA, and it allows to my board to survive longer.
+> I need to do some tests and have some data with and without PM loss.
+
+That's fine, but in general we need to take care of a few more things,
+like the interactions between the devices we're switching off and user
+space (that can be doing just about anything at the moment).
+
+We can't simply switch off devices at will, because that may lead to
+breakage too in general.
+
+Thanks,
 Rafael
