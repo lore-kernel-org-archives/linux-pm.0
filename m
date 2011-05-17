@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: xHCI and suspend/resume
-Date: Tue, 17 May 2011 22:03:00 +0200
-Message-ID: <201105172203.00302.rjw__25413.8583470651$1305662785$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1105121733370.1917-100000@iolanthe.rowland.org>
-	<BANLkTikFwkbC9hHNr1UZxLtO9W5+sHUdwg@mail.gmail.com>
-	<201105172118.13725.rjw@sisk.pl>
+Subject: Re: [PATCH v4 2/2] PM / Core: partial resume/suspend API
+	for suspend_again users.
+Date: Tue, 17 May 2011 22:52:31 +0200
+Message-ID: <201105172252.32135.rjw__4239.54908405921$1305665701$gmane$org@sisk.pl>
+References: <20110512061928.GB2460@localhost.ucw.cz>
+	<1305608346-23800-1-git-send-email-myungjoo.ham@samsung.com>
+	<1305608346-23800-2-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105172118.13725.rjw@sisk.pl>
+In-Reply-To: <1305608346-23800-2-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,120 +20,261 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dwight Schauer <dschauer@gmail.com>
-Cc: Sarah Sharp <sarah.a.sharp@linux.intel.com>, dschauer@ti.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 17, 2011, Rafael J. Wysocki wrote:
-> On Tuesday, May 17, 2011, Dwight Schauer wrote:
-> > On Tue, May 17, 2011 at 10:38 AM, Sarah Sharp
-> > <sarah.a.sharp@linux.intel.com> wrote:
-> > > On Sun, May 15, 2011 at 12:38:24AM +0200, Rafael J. Wysocki wrote:
-> > >> On Saturday, May 14, 2011, Dwight Schauer wrote:
-> > >> > 2011/5/14 Rafael J. Wysocki <rjw@sisk.pl>:
-> > >> > > On Saturday, May 14, 2011, Dwight Schauer wrote:
-> > >> > >> On Fri, May 13, 2011 at 3:37 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >> > >> > On Friday, May 13, 2011, Dwight Schauer wrote:
-> > >> > >> >> On Fri, May 13, 2011 at 3:04 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >> > >> >> > On Friday, May 13, 2011, Dwight Schauer wrote:
-> > >> > >> >> >> On Thu, May 12, 2011 at 5:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >> > >> >> >> > On Thursday, May 12, 2011, Rafael J. Wysocki wrote:
-> > >> > >> >> >> >> On Thursday, May 12, 2011, Alan Stern wrote:
-> > >> >
-> > >> > >> >> >> >> > For new readers: The problem is that an xHCI USB host controller does
-> > >> > >> >> >> >> > not wake up a suspended system properly.
-> > >> > ...
-> > >> > >> > So, clearly, you don't get any PCIe PME interrupts from root ports
-> > >> > >> > when the keyboard is plugged in.  Without those interrupts the runtime
-> > >> > >> > resume of xhci won't work.
-> > >> > >> >
-> > >> > >> > Please attach the output of "lspci -vv" with "auto" in the (suspended) xhci's
-> > >> > >> > power/control file before and after you've plugged in the keyboard.
-> > >> > >> >
-> > >> > >> > Thanks,
-> > >> > >> > Rafael
-> > >> > >>
-> > >> > >> The lspci -vv before, after, and diff are attached.
-> > >> > >
-> > >> > > This means that the PME signaled by the xHCI doesn't cause the PMEStatus bit
-> > >> > > in its root port to be set, which is why the root port doesn't generate
-> > >> > > interrupts.  This seriously looks like a hardware bug and the only thing
-> > >> > > we could do to work around it would be to poll the xHCI for the PME status
-> > >> > > periodically (while suspended).
-> > >> > >
-> > >> > > Can you see if the feature works after booting with pcie_ports=compat in
-> > >> > > the kernel command line?
-> > >> > >
-> > >> > > Rafael
-> > >> > >
-> > >> >
-> > >> > I'll try that on Monday (the pcie_ports=compat kernel option).
-> > >> >
-> > >> > Well, I've got 2 different systems (one Intel and one AMD based, both
-> > >> > exhibit the same behavior).
-> > >>
-> > >> Are both xHCI controllers from NEC?
-> > >>
-> > >> > I have a few other systems I can try it on as well on Monday.
-> > >>
-> > >> Please do if possible.
-> > >
-> > > If pcie_ports=compat doesn't help, does it help if you use pci=nomsi?
-> > > I'm wondering if the hardware bug shows up only when MSI or MSI-X is
-> > > enabled for the NEC hardware.  Also, if you turn on
-> > > CONFIG_USB_XHCI_HCD_DEBUGGING, what NEC firmware version do you see in
-> > > dmesg?
-> > >
-> > > Sarah Sharp
-> > >
-> > 
-> > pcie_ports=compat had no effect
-> > with pci_=nomsi I get upon boot.
-> > 
-> > xhci_hcd 0000:02:00.0: Failed to enable MSI-X
-> > xhci_hcd 0000:02:00.0: failed to allocate MSI entry
-> > xhci_hcd 0000:06:00.0: Failed to enable MSI-X
-> > xhci_hcd 0000:06:00.0: failed to allocate MSI entry
-> > 
-> > The 6:00.0 is for NEC device in the PCIe slot.
-> > 
-> > With pci_=nomsi the rutime power management works, I can put auto in
-> > power/control and the device comes back on it's own.
-> > 
-> > However, this does not address the wakeup from system suspend issue,
-> > enabled in power/wakeup still does not work. If the interrupt is now
-> > being polled, that would make sense as to why it still does not work.
-> > 
-> > For TI's xHCI device I get "xhci_hcd 0000:02:00.0: failed to allocate
-> > MSI entry" with pci=nomsi.
-> > 
-> > The system with TI's device in it is exhibiting the same symptoms
-> > (wakeup does not work and by default auto in power/control does not
-> > work). It is a different motherboard and chip-set than the system I
-> > have the NEC device in.
-> > 
-> > pci=nomsi has no effect on the system with the TI xHCI device in it.
-> > pcie_ports=compat had no effect either as far as making auto in
-> > power/control work properly.
-> > 
-> > 
-> > As to the NEC firmware, both the on-board and off-board NEC devices
-> > have the same version:
-> > 
-> > xhci_hcd 0000:02:00.0: NEC firmware version 30.21
-> > xhci_hcd 0000:06:00.0: NEC firmware version 30.21
-> > 
-> > Attached are the dmesg boot logs for both systems.
+On Tuesday, May 17, 2011, MyungJoo Ham wrote:
+> The API, suspend_again, is supposed to be used by platforms when the
+> platforms want to execute some code while suspended (wakeup by an alarm
+> or periodic ticks, run code, suspend again). Because suspend_again is
+> not called when every device is resumed, but is called right after
+> suspend_enter() is called, the suspend_again callback should include
+> device resume and suspend features.
 > 
-> OK, so for the S3 issue, I think there's a problem with the PCIe link
-> on these devices such that the link is not present during resume
-> and that's why commands are not reaching the device.  I'm not sure yet
-> what to do about it, but I wonder if xhci_hcd does something around
-> PCIe links on suspend?
+> This patch provides two APIs: dpm_partial_resume and
+> dpm_partial_suspend. They are supposed to be used in suspend_again to
+> actiavte required devices.
+> 
+> A usage example is:
+> 
+> /* Devices required to run "monitor_something()". */
+> static device *devs[] = {
+> 	&console_serial,
+> 	&device_x,
+> 	&device_y,
+> 	...
+> };
+> 
+> bool example_suspend_again(void)
+> {
+> 	int error, monitor_result;
+> 
+> 	if (!wakeup_reason_is_polling())
+> 		return false;
+> 
+> 	dpm_partial_resume(PMSG_RESUME, devs, ARRAY_SIZE(devs));
 
-It doesn't seem so.
+I'm not sure you need the first argument here.  Also, if the array is
+NULL terminated, you won't need the third one.
 
-Dwight, can you comment out the pci_disable_device(pci_dev); in
-drivers/usb/core/hcd-pci.c and see if that makes a difference?
+> 	resume_console();
+> 
+> 	monitor_result = monitor_something();
+> 
+> 	suspend_console();
+> 	error = dpm_partial_suspend(PMSG_SUSPEND, devs, ARRAY_SIZE(devs));
+
+Same here.
+
+> 	if (error || monitor_result == ERROR)
+> 		return false;
+> 
+> 	return true;
+> }
+
+That said, I don't like this patch.  The reason is that you call
+suspend_enter() is a loop and it calls the _noirq() callbacks for
+_all_ devices and now you're going to only call .resume() and
+.suspend() for several selected devices.  This is not too consistent.
+
+I wonder if those devices needed for .suspend_again() to work on
+your platform could be resumed and suspended by their drivers'
+_noirq() callbacks?
 
 Rafael
+
+
+> Tested at Exynos4-NURI.
+> 
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> --
+> No changes from v3.
+> ---
+>  drivers/base/power/main.c |  154 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm.h        |    4 +
+>  2 files changed, 158 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 052dc53..71dc693 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1082,3 +1082,157 @@ int device_pm_wait_for_dev(struct device *subordinate, struct device *dev)
+>  	return async_error;
+>  }
+>  EXPORT_SYMBOL_GPL(device_pm_wait_for_dev);
+> +
+> +/**
+> + * __dpm_partial_resume - Execute "resume" callbacks for the listed devices.
+> + * @state: PM transition being carried out.
+> + * @devs: Array of pointers for the devices being resumed
+> + * @size: The size of devs array.
+> + */
+> +static void __dpm_partial_resume(pm_message_t state, struct device **devs,
+> +				 int size)
+> +{
+> +	int i;
+> +	struct device *dev;
+> +
+> +	for (i = 0; i < size; i++) {
+> +		int error;
+> +
+> +		dev = devs[i];
+> +		get_device(dev);
+> +
+> +		error = device_resume(dev, state, false);
+> +		if (error)
+> +			pm_dev_err(dev, state, "", error);
+> +
+> +		put_device(dev);
+> +	}
+> +}
+> +
+> +/**
+> + * __dpm_partial_complete - Complete a PM transition for the listed devices.
+> + * @state: PM transition being carried out.
+> + * @devs: Array of pointers for the devices being resumed
+> + * @size: The size of devs array.
+> + */
+> +static void __dpm_partial_complete(pm_message_t state, struct device **devs,
+> +				   int size)
+> +{
+> +	int i;
+> +	struct device *dev;
+> +
+> +	for (i = 0; i < size; i++) {
+> +		dev = devs[i];
+> +
+> +		get_device(dev);
+> +		dev->power.in_suspend = false;
+> +
+> +		device_complete(dev, state);
+> +
+> +		put_device(dev);
+> +	}
+> +}
+> +
+> +/**
+> + * dpm_partial_resume - Execute "resume" callbacks and complete system
+> + *			transaction for the chosen devices only.
+> + * @state: PM transition being carried out.
+> + * @devs: Array of pointers for the devices being resumed
+> + * @size: The size of devs array.
+> + *
+> + * Execute "resume" callbacks for the listed devices and complete the PM
+> + * transition of them.
+> + *
+> + * Because the only a part of devices will be resumed, asynchronous resume
+> + * is dropped.
+> + */
+> +void dpm_partial_resume(pm_message_t state, struct device **devs, int size)
+> +{
+> +	/* Partial dpm_resume */
+> +	__dpm_partial_resume(state, devs, size);
+> +
+> +	/* Partial dpm_complete */
+> +	__dpm_partial_complete(state, devs, size);
+> +}
+> +EXPORT_SYMBOL_GPL(dpm_partial_resume);
+> +
+> +/**
+> + * dpm_partial_suspend - Prepare the given devices for PM transition and
+> + *			suspend them.
+> + * @state: PM transition being carried out.
+> + * @devs: Array of pointers for the devices being suspended
+> + * @size: The size of devs array.
+> + *
+> + * Prepare the given devices for system PM transition and execute "suspend"
+> + * callbacks for them.
+> + *
+> + * The devs array is iterated in the reversed order to use the same devs
+> + * array with dpm_partial_resume().
+> + */
+> +int dpm_partial_suspend(pm_message_t state, struct device **devs, int size)
+> +{
+> +	int error = 0, i;
+> +	struct device *dev;
+> +
+> +	/* Partial dpm_prepare */
+> +	for (i = size - 1; i >= 0; i--) {
+> +		dev = devs[i];
+> +
+> +		get_device(dev);
+> +
+> +		pm_runtime_get_noresume(dev);
+> +		if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
+> +			pm_wakeup_event(dev, 0);
+> +
+> +		pm_runtime_put_sync(dev);
+> +		error = pm_wakeup_pending() ?
+> +				-EBUSY : device_prepare(dev, state);
+> +
+> +		if (error) {
+> +			if (error == -EAGAIN) {
+> +				put_device(dev);
+> +				error = 0;
+> +				i++; /* Try Again */
+> +				continue;
+> +			}
+> +			printk(KERN_INFO "PM: Device %s not prepared "
+> +				"for power transition: code %d\n",
+> +				dev_name(dev), error);
+> +			put_device(dev);
+> +			break;
+> +		}
+> +		dev->power.in_suspend = true;
+> +		put_device(dev);
+> +	}
+> +
+> +	if (error)
+> +		goto err_prepare;
+> +
+> +	/* Partial dpm_suspend */
+> +	for (i = size - 1; i >= 0; i--) {
+> +		dev = devs[i];
+> +
+> +		get_device(dev);
+> +
+> +		/* Synchronous suspend. The list shouldn't be long */
+> +		error = __device_suspend(dev, pm_transition, false);
+> +
+> +		if (error) {
+> +			pm_dev_err(dev, state, "", error);
+> +			put_device(dev);
+> +			break;
+> +		}
+> +		put_device(dev);
+> +	}
+> +
+> +	if (!error)
+> +		return 0;
+> +
+> +	__dpm_partial_resume(PMSG_RESUME, devs + i + 1, size - i - 1);
+> +	i = -1;
+> +err_prepare:
+> +	__dpm_partial_complete(PMSG_RESUME, devs + i + 1, size - i - 1);
+> +
+> +	return error;
+> +}
+> +EXPORT_SYMBOL_GPL(dpm_partial_suspend);
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 512e091..b407762 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -540,10 +540,14 @@ static inline int sysdev_resume(void) { return 0; }
+>  extern void device_pm_lock(void);
+>  extern void dpm_resume_noirq(pm_message_t state);
+>  extern void dpm_resume_end(pm_message_t state);
+> +extern void dpm_partial_resume(pm_message_t state, struct device **devs,
+> +			       int size);
+>  
+>  extern void device_pm_unlock(void);
+>  extern int dpm_suspend_noirq(pm_message_t state);
+>  extern int dpm_suspend_start(pm_message_t state);
+> +extern int dpm_partial_suspend(pm_message_t state, struct device **devs,
+> +			       int size);
+>  
+>  extern void __suspend_report_result(const char *function, void *fn, int ret);
+>  
+> 
