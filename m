@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM / Hibernate: Add sysfs knob to
-	control size of memory for drivers
-Date: Tue, 17 May 2011 01:22:04 +0200
-Message-ID: <201105170122.04402.rjw__14781.9643178538$1305588166$gmane$org@sisk.pl>
-References: <201105100059.25372.rjw@sisk.pl> <201105151136.22169.rjw@sisk.pl>
-	<4DD19879.5020606@tuxonice.net>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH v4 1/2] PM / Core: suspend_again callback for
+	suspend_ops.
+Date: Tue, 17 May 2011 13:59:05 +0900
+Message-ID: <1305608346-23800-1-git-send-email-myungjoo.ham__20493.1996799589$1305608430$gmane$org@samsung.com>
+References: <20110512061928.GB2460@localhost.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4DD19879.5020606@tuxonice.net>
+In-reply-to: <20110512061928.GB2460@localhost.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +18,156 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: nigel@tuxonice.net
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, May 16, 2011, Nigel Cunningham wrote:
-> Hi.
-> 
-> On 15/05/11 19:36, Rafael J. Wysocki wrote:
-> > In fact, if drivers allocated their memory from suspend/hibernate notifiers,
-> > that would be practically equivalent to setting reserved_size to the total
-> > amount of memory reserved by the drivers.  However, it may be difficult
-> > for drivers to predict how much memory they will need at the time the
-> > notifiers are called (they are called before freezing user space).
-> > 
-> > Thus I'm considering a change that will cause device drivers' ->prepare()
-> > callbacks to be executed before the preallocation of memory takes place.
-> > In that case the drivers may allocate memory from their ->prepare()
-> > callbacks _after_ user space has been frozen and that will make more
-> > sense overall.
-> > 
-> > For now, however, I think that exposing reserved_size is the right choice.
-> 
-> Sorry for not commenting earlier - too busy with Drupal development and
-> only came across this thread by chance (yes, I'm still subscribed to the
-> PM list, but haven't been reading it. Hibernation isn't high on my list
-> of priorities at the moment because TOI is feature complete and stable.
-> I know I'm supposed to be sending you patches, but other things have
-> been taking the time that would be used for that).
-> 
-> Anyway...
-> 
-> This sounds to me like a great development. As far as TuxOnIce goes,
-> we've had a knob for ages that has allowed the user to specify an amount
-> of memory to be kept aside for driver allocations, and we calculate and
-> report how much they used in the debugging info sysfs entry. Because
-> TuxOnIce works differently to [u]swsusp, this is the only source of
-> potential out-of-memory related failures, and the measures just
-> mentioned made things much more reliable.
-> 
-> If things went in the direction you're suggesting here, they'd get
-> better again. I'm all in favour!
+A system or a device may need to control suspend/wakeup events. It may
+want to wakeup the system after a predefined amount of time or at a
+predefined event decided while entering suspend for polling or delayed
+work. Then, it may want to enter suspend again if its predefined wakeup
+condition is the only wakeup reason and there is no outstanding events;
+thus, it does not wakeup the userspace unnecessary or unnecessary
+devices and keeps suspended as long as possible (saving the power).
 
-Thanks Nigel!
+Enabling a system to wakeup after a specified time can be easily
+achieved by using RTC. However, to enter suspend again immediately
+without invoking userland and unrelated devices, we need additional
+features in the suspend framework.
+
+Such need comes from:
+
+1. Monitoring a critical device status without interrupts that can
+wakeup the system. (in-suspend polling)
+ An example is ambient temperature monitoring that needs to shut down
+the system or a specific device function if it is too hot or cold. The
+temperature of a specific device may be needed to be monitored as well;
+e.g., a charger monitors battery temperature in order to stop charging
+if overheated.
+
+2. Execute critical "delayed work" at suspend.
+ A driver or a system/board may have a delayed work (or any similar
+things) that it wants to execute at the requested time.
+ For example, some chargers want to check the battery voltage some
+time (e.g., 30 seconds) after the battery is fully charged and the
+charger has stopped. Then, the charger restarts charging if the voltage
+has dropped more than a threshold, which is smaller than "restart-charger"
+voltage, which is a threshold to restart charging regardless of the
+time passed.
+
+This patch allows to add "suspend_again" callback at struct
+platform_suspend_ops and let the "suspend_again" callback return true if
+the system is required to enter suspend again after the current instance
+of wakeup. Device-wise suspend_again implemented at dev_pm_ops or
+syscore is not done because: a) suspend_again feature is usually under
+platform-wise decision and controls the behavior of the whole platform
+and b) There are very limited devices related to the usage cases of
+suspend_again; chargers and temperature sensors are mentioned so far.
+
+With suspend_again callback registered at struct platform_suspend_ops
+suspend_ops in kernel/power/suspend.c with suspend_set_ops by the
+platform, the suspend framework tries to enter suspend again by
+looping suspend_enter() if suspend_again has returned true and there has
+been no errors in the suspending sequence or pending wakeups (by
+pm_wakeup_pending).
+
+Tested at Exynos4-NURI.
+
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+
+--
+Thank you for your valuable comments, Pavel, Rafael, Greg, and others.
+
+Changed from v3:
+	- renamed local variable "pm_wkup_pending" to "wakeup_pending".
+	pm_wakeup_pending is not used because there is a function with the
+	same name.
+Changed from v2:
+	- moved (again) from dev_pm_ops to suspend_ops
+	- settled suspend_again point at around suspend_enter().
+Changes from v1:
+	- moved from syscore to dev_pm_ops
+	- added generic ops for subsystems.
+	- cleaned up suspend_again code at kernel/power/suspend.
+---
+ include/linux/suspend.h |    8 ++++++++
+ kernel/power/suspend.c  |   13 ++++++++++---
+ 2 files changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 5a89e36..caf5e97 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -92,6 +92,13 @@ typedef int __bitwise suspend_state_t;
+  *	@enter() and @wake(), even if any of them fails.  It is executed after
+  *	a failing @prepare.
+  *
++ * @suspend_again: Returns whether the system should suspend again (true) or
++ *	not (false). If the platform wants to poll sensors or execute some
++ *	code during suspended without invoking userspace and most of devices,
++ *	suspend_again callback is the place assuming that periodic-wakeup or
++ *	alarm-wakeup is already setup. This allows to execute some codes while
++ *	being kept suspended in the view of userland and devices.
++ *
+  * @end: Called by the PM core right after resuming devices, to indicate to
+  *	the platform that the system has returned to the working state or
+  *	the transition to the sleep state has been aborted.
+@@ -113,6 +120,7 @@ struct platform_suspend_ops {
+ 	int (*enter)(suspend_state_t state);
+ 	void (*wake)(void);
+ 	void (*finish)(void);
++	bool (*suspend_again)(void);
+ 	void (*end)(void);
+ 	void (*recover)(void);
+ };
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 08515b4..63a6b0b 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -128,10 +128,12 @@ void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
+ /**
+  *	suspend_enter - enter the desired system sleep state.
+  *	@state:		state to enter
++ *	@wakeup_pending:	indicates that the power transition in progress
++ *				should be aborted.
+  *
+  *	This function should be called after devices have been suspended.
+  */
+-static int suspend_enter(suspend_state_t state)
++static int suspend_enter(suspend_state_t state, bool *wakeup_pending)
+ {
+ 	int error;
+ 
+@@ -167,7 +169,8 @@ static int suspend_enter(suspend_state_t state)
+ 	if (!error)
+ 		error = syscore_suspend();
+ 	if (!error) {
+-		if (!(suspend_test(TEST_CORE) || pm_wakeup_pending())) {
++		*wakeup_pending = pm_wakeup_pending();
++		if (!(suspend_test(TEST_CORE) || *wakeup_pending)) {
+ 			error = suspend_ops->enter(state);
+ 			events_check_enabled = false;
+ 		}
+@@ -202,6 +205,7 @@ static int suspend_enter(suspend_state_t state)
+ int suspend_devices_and_enter(suspend_state_t state)
+ {
+ 	int error;
++	bool wakeup_pending = false;
+ 
+ 	if (!suspend_ops)
+ 		return -ENOSYS;
+@@ -224,7 +228,10 @@ int suspend_devices_and_enter(suspend_state_t state)
+ 	if (suspend_test(TEST_DEVICES))
+ 		goto Recover_platform;
+ 
+-	error = suspend_enter(state);
++	do {
++		error = suspend_enter(state, &wakeup_pending);
++	} while (suspend_ops->suspend_again && suspend_ops->suspend_again() &&
++		 !error && !wakeup_pending);
+ 
+  Resume_devices:
+ 	suspend_test_start();
+-- 
+1.7.4.1
