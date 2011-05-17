@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/4] export bus_kset
-Date: Wed, 18 May 2011 01:04:56 +0200
-Message-ID: <201105180104.56252.rjw__42227.745257742$1305673589$gmane$org@sisk.pl>
+Subject: Re: pm loss development
+Date: Wed, 18 May 2011 01:06:56 +0200
+Message-ID: <201105180106.57147.rjw__2290.50318380377$1305673711$gmane$org@sisk.pl>
 References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
-	<20110513171148.GM29259@mail.gnudd.com>
-	<20110515141307.GC15994@mail.gnudd.com>
+	<201105142053.34920.oliver@neukum.org>
+	<BANLkTikEJoV1JHMDZODvv40-8-jmvYMbgg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110515141307.GC15994@mail.gnudd.com>
+In-Reply-To: <BANLkTikEJoV1JHMDZODvv40-8-jmvYMbgg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +19,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Davide Ciminaghi <ciminaghi@gnudd.com>
-Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <lamiaposta71@gmail.com>, linux-kernel@vger.kernel.org
+To: Raffaele Recalcati <lamiaposta71@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, May 15, 2011, Davide Ciminaghi wrote:
-> On Fri, May 13, 2011 at 07:11:48PM +0200, Davide Ciminaghi wrote:
-> > On Thu, May 12, 2011 at 09:28:53PM +0200, Rafael J. Wysocki wrote:
-> > 
-> > hi,
-> > 
-> > sorry, I missed this message this morning.
-> > 
-> > > On Thursday, May 12, 2011, Raffaele Recalcati wrote:
-> > > > From: Davide Ciminaghi <ciminaghi@gnudd.com>
-> > > 
-> > > Please explain why you need to export it, what the alternatives are and
-> > > why you think this approach is better than the alternatives.
-> > > 
-> > 
-> > what I needed to do was walking through the list of registered busses,
-> > and invoking the bus_added()/bus_removed() callback of a newly registered
-> > policy. I couldn't find any other simple way to do it.
+On Saturday, May 14, 2011, Raffaele Recalcati wrote:
+> On Sat, May 14, 2011 at 8:53 PM, Oliver Neukum <oliver@neukum.org> wrote:
+> > Am Donnerstag, 12. Mai 2011, 21:27:44 schrieb Rafael J. Wysocki:
+> >> On Thursday, May 12, 2011, Raffaele Recalcati wrote:
+> >> > What happen normally in runtime pm implementation is that every devices
+> >> > are switched off and are enabled only when needed.
+> >> > In our case instead we have a completely functional embedded system and,
+> >> > when an asyncrhonous event appear, we have only some tens milliseconds
+> >> > before the actual power failure takes place.
+> >> > This patchset add a support in order to switch off not vital part of the system,
+> >> > in order to allow the board to survive longer.
+> >> > This allow the possibility to save important data.
+> >>
+> >> OK, so first, who decides what parts of the system are vital and what aren't?
 > >
-> well, I there is another way to do that: adding a function like this
-> (include/linux/device.h) :
+> > If you know that power is failing in a few miliseconds, only stuff that can lead to data
+> > corruption is vital. In that timeframe you can't even flush buffers.
 > 
-> /**
->  * run a callback for each registered bus type
->  *
->  * @data : arg passed to callback
->  * @fn : pointer to callback
->  */
-> int for_each_bus(void *data, int (*fn)(struct bus_type *bus, void *data));
-> 
-> which would be similar to the already existing bus_for_each_dev() and
-> would allow to avoid exporting a global variable.
+> Remember that if you switch off some peripherals this timeframe
+> becomes longer, so maybe you have enough time to sync some storage
+> devices.
 
-I really think you'd simply need to browse all devices, like the core PM
-code in drivers/base/power/main.c.  You can use dpm_list for that just fine.
+However, switching off peripherals _also_ takes time.  So, it may be more
+useful to take care of the stuff leading to data corruption along with the
+switching off peripherals.
 
 Thanks,
 Rafael
