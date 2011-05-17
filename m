@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 3/3] PM / DEVFREQ: add sysfs interface
-	(including user tickling)
-Date: Wed, 18 May 2011 00:41:57 +0200
-Message-ID: <201105180041.57723.rjw__25527.7641852901$1305672211$gmane$org@sisk.pl>
+Subject: Re: [PATCH v2 2/3] PM / DEVFREQ: add example governors
+Date: Wed, 18 May 2011 00:39:56 +0200
+Message-ID: <201105180039.56806.rjw__12592.6540037201$1305672784$gmane$org@sisk.pl>
 References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
-	<20110511225540.GA3492@suse.de>
-	<BANLkTik__9G-DuSsT_kAc69d+5g8xcVyFg@mail.gmail.com>
+	<1305100723-29161-2-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTik__9G-DuSsT_kAc69d+5g8xcVyFg@mail.gmail.com>
+In-Reply-To: <1305100723-29161-2-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,45 +18,133 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: myungjoo.ham@gmail.com
-Cc: Len Brown <len.brown@intel.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 17, 2011, MyungJoo Ham wrote:
-> On Thu, May 12, 2011 at 7:55 AM, Greg KH <gregkh@suse.de> wrote:
-> > On Wed, May 11, 2011 at 04:58:43PM +0900, MyungJoo Ham wrote:
-> >> 1. System-wide sysfs interface
-> >> - tickle_all  R: number of tickle_all execution
-> >>               W: tickle all devfreq devices
-> >> - min_interval        R: devfreq monitoring base interval in ms
-> >> - monitoring  R: shows whether devfreq monitoring is active or
-> >>   not.
-> >>
-> >> 2. Device specific sysfs interface
-> >> - tickle      R: number of tickle execution for the device
-> >>               W: tickle the device
-> >
-> > Any sysfs file change/addition/removal needs to have a
-> > Documentation/ABI/ entry as well.  Please add that to this patch instead
-> > of burying it in the changelog entry, where no one will be able to find
-> > it in the future.
-> >
-> > thanks,
-> >
-> > greg k-h
-> >
+On Wednesday, May 11, 2011, MyungJoo Ham wrote:
+> Three CPUFREQ-like governors are provided as examples.
 > 
-> Sure, I'll add Documentation/ABI/testing/* entries.
+> powersave: use the lowest frequency possible. The user (device) should
+> set the polling_ms as 0 because polling is useless for this governor.
 > 
-> However, would it be appropriate for "1. System-wide sysfs interface"
-> to be in "sysfs-class-power" and for "2. Device specific sysfs
-> interface" to be in "sysfs-devices-devfreq"?
+> performance: use the highest freqeuncy possible. The user (device)
+> should set the polling_ms as 0 because polling is useless for this
+> governor.
 > 
-> System-wide sysfs interface is in /sys/class/power/devfreq/* and
+> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
+> 
+> When a user updates OPP entries (enable/disable/add), OPP framework
+> automatically notifies DEVFREQ to update operating frequency
+> accordingly. Thus, DEVFREQ users (device drivers) do not need to update
+> DEVFREQ manually with OPP entry updates or set polling_ms for powersave
+> , performance, or any other "static" governors.
 
-Hmm.  Why not to use /sys/power/ that's already there?
-
-> Device specific sysfs interface is in /sys/...DEVICE.../devfreq/* .
+Well, do you expect anyone to actually use them?  If not, it would make
+more sense to put them into a doc.
 
 Thanks,
 Rafael
+
+
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+>  drivers/base/power/devfreq.c |   69 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/devfreq.h      |    5 +++
+>  2 files changed, 74 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/power/devfreq.c b/drivers/base/power/devfreq.c
+> index 8e2e45b..251d761 100644
+> --- a/drivers/base/power/devfreq.c
+> +++ b/drivers/base/power/devfreq.c
+> @@ -351,3 +351,72 @@ static int __init devfreq_init(void)
+>  	return 0;
+>  }
+>  late_initcall(devfreq_init);
+> +
+> +static int devfreq_powersave_func(struct devfreq *df,
+> +				  unsigned long *freq)
+> +{
+> +	*freq = 0; /* devfreq_do will run "ceiling" to 0 */
+> +	return 0;
+> +}
+> +
+> +struct devfreq_governor devfreq_powersave = {
+> +	.get_target_freq = devfreq_powersave_func,
+> +};
+> +
+> +static int devfreq_performance_func(struct devfreq *df,
+> +				    unsigned long *freq)
+> +{
+> +	*freq = UINT_MAX; /* devfreq_do will run "floor" */
+> +	return 0;
+> +}
+> +
+> +struct devfreq_governor devfreq_performance = {
+> +	.get_target_freq = devfreq_performance_func,
+> +};
+> +
+> +/* Constants for DevFreq-Simple-Ondemand (DFSO) */
+> +#define DFSO_UPTHRESHOLD	(90)
+> +#define DFSO_DOWNDIFFERENCTIAL	(5)
+> +static int devfreq_simple_ondemand_func(struct devfreq *df,
+> +					unsigned long *freq)
+> +{
+> +	struct devfreq_dev_status stat;
+> +	int err = df->profile->get_dev_status(df->dev, &stat);
+> +	unsigned long long a, b;
+> +
+> +	if (err)
+> +		return err;
+> +
+> +	/* Set MAX if it's busy enough */
+> +	if (stat.busy_time * 100 >
+> +	    stat.total_time * DFSO_UPTHRESHOLD) {
+> +		*freq = UINT_MAX;
+> +		return 0;
+> +	}
+> +
+> +	/* Set MAX if we do not know the initial frequency */
+> +	if (stat.current_frequency == 0) {
+> +		*freq = UINT_MAX;
+> +		return 0;
+> +	}
+> +
+> +	/* Keep the current frequency */
+> +	if (stat.busy_time * 100 >
+> +	    stat.total_time * (DFSO_UPTHRESHOLD - DFSO_DOWNDIFFERENCTIAL)) {
+> +		*freq = stat.current_frequency;
+> +		return 0;
+> +	}
+> +
+> +	/* Set the desired frequency based on the load */
+> +	a = (unsigned long long) stat.busy_time * stat.current_frequency;
+> +	b = div_u64(a, stat.total_time);
+> +	b *= 100;
+> +	b = div_u64(b, (DFSO_UPTHRESHOLD - DFSO_DOWNDIFFERENCTIAL / 2));
+> +	*freq = (unsigned long) b;
+> +
+> +	return 0;
+> +}
+> +
+> +struct devfreq_governor devfreq_simple_ondemand = {
+> +	.get_target_freq = devfreq_simple_ondemand_func,
+> +};
+> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> index d08e9f5..ec41ba6 100644
+> --- a/include/linux/devfreq.h
+> +++ b/include/linux/devfreq.h
+> @@ -81,6 +81,11 @@ extern int devfreq_add_device(struct device *dev,
+>  extern int devfreq_remove_device(struct device *dev);
+>  extern int devfreq_update(struct device *dev, bool may_not_exist);
+>  extern int devfreq_tickle_device(struct device *dev, unsigned long duration_ms);
+> +
+> +extern struct devfreq_governor devfreq_powersave;
+> +extern struct devfreq_governor devfreq_performance;
+> +extern struct devfreq_governor devfreq_simple_ondemand;
+> +
+>  #else /* !CONFIG_PM_DEVFREQ */
+>  static int devfreq_add_device(struct device *dev,
+>  			   struct devfreq_dev_profile *profile,
+> 
