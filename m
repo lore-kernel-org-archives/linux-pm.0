@@ -1,15 +1,17 @@
-From: Martin Steigerwald <Martin@lichtvoll.de>
-Subject: Re: [RFC][PATCH] PM / Hibernate: Add sysfs knob to
-	control size of memory for drivers
-Date: Wed, 18 May 2011 20:09:46 +0200
-Message-ID: <201105182009.55813.Martin__22052.4071869024$1305742351$gmane$org@lichtvoll.de>
-References: <201105100059.25372.rjw@sisk.pl> <201105150056.55601.rjw@sisk.pl>
-	<20110518172717.GA5734@elf.ucw.cz>
-	(sfid-20110518_200202_152055_05CC21F2)
+From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+Subject: Re: xHCI and suspend/resume
+Date: Tue, 17 May 2011 08:38:36 -0700
+Message-ID: <20110517153836.GA4142__29082.7456083663$1305742487$gmane$org@xanatos>
+References: <Pine.LNX.4.44L0.1105121733370.1917-100000@iolanthe.rowland.org>
+	<201105142310.29314.rjw@sisk.pl>
+	<BANLkTik=qXDHj9Qv=c3S657SqEBAC9+1jw@mail.gmail.com>
+	<201105150038.24493.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1343856416707779217=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110518172717.GA5734@elf.ucw.cz>
+Content-Disposition: inline
+In-Reply-To: <201105150038.24493.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,107 +19,66 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: dschauer@ti.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============1343856416707779217==
-Content-Type: multipart/signed;
-  boundary="nextPart6467563.Ap0r3smVlW";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+On Sun, May 15, 2011 at 12:38:24AM +0200, Rafael J. Wysocki wrote:
+> On Saturday, May 14, 2011, Dwight Schauer wrote:
+> > 2011/5/14 Rafael J. Wysocki <rjw@sisk.pl>:
+> > > On Saturday, May 14, 2011, Dwight Schauer wrote:
+> > >> On Fri, May 13, 2011 at 3:37 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > >> > On Friday, May 13, 2011, Dwight Schauer wrote:
+> > >> >> On Fri, May 13, 2011 at 3:04 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > >> >> > On Friday, May 13, 2011, Dwight Schauer wrote:
+> > >> >> >> On Thu, May 12, 2011 at 5:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > >> >> >> > On Thursday, May 12, 2011, Rafael J. Wysocki wrote:
+> > >> >> >> >> On Thursday, May 12, 2011, Alan Stern wrote:
+> > 
+> > >> >> >> >> > For new readers: The problem is that an xHCI USB host controller does
+> > >> >> >> >> > not wake up a suspended system properly.
+> > ...
+> > >> > So, clearly, you don't get any PCIe PME interrupts from root ports
+> > >> > when the keyboard is plugged in.  Without those interrupts the runtime
+> > >> > resume of xhci won't work.
+> > >> >
+> > >> > Please attach the output of "lspci -vv" with "auto" in the (suspended) xhci's
+> > >> > power/control file before and after you've plugged in the keyboard.
+> > >> >
+> > >> > Thanks,
+> > >> > Rafael
+> > >>
+> > >> The lspci -vv before, after, and diff are attached.
+> > >
+> > > This means that the PME signaled by the xHCI doesn't cause the PMEStatus bit
+> > > in its root port to be set, which is why the root port doesn't generate
+> > > interrupts.  This seriously looks like a hardware bug and the only thing
+> > > we could do to work around it would be to poll the xHCI for the PME status
+> > > periodically (while suspended).
+> > >
+> > > Can you see if the feature works after booting with pcie_ports=compat in
+> > > the kernel command line?
+> > >
+> > > Rafael
+> > >
+> > 
+> > I'll try that on Monday (the pcie_ports=compat kernel option).
+> > 
+> > Well, I've got 2 different systems (one Intel and one AMD based, both
+> > exhibit the same behavior).
+> 
+> Are both xHCI controllers from NEC?
+> 
+> > I have a few other systems I can try it on as well on Monday.
+> 
+> Please do if possible.
 
---nextPart6467563.Ap0r3smVlW
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+If pcie_ports=compat doesn't help, does it help if you use pci=nomsi?
+I'm wondering if the hardware bug shows up only when MSI or MSI-X is
+enabled for the NEC hardware.  Also, if you turn on
+CONFIG_USB_XHCI_HCD_DEBUGGING, what NEC firmware version do you see in
+dmesg?
 
-Am Mittwoch, 18. Mai 2011 schrieb Pavel Machek:
-> Hi!
->=20
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > >=20
-> > > Martin reports that on his system hibernation occasionally fails
-> > > due to the lack of memory, because the radeon driver apparently
-> > > allocates too much of it during the device freeze stage.  It turns
-> > > out that the amount of memory allocated by radeon during
-> > > hibernation (and presumably during system suspend too) depends on
-> > > the utilization of the GPU (e.g. hibernating while there are two
-> > > KDE 4 sessions with compositing enabled causes radeon to allocate
-> > > more memory than for one KDE 4 session).
-> > >=20
-> > > In principle it should be possible to use image_size to make the
-> > > memory preallocation mechanism free enough memory for the radeon
-> > > driver, but in practice it is not easy to guess the right value
-> > > because of the way the preallocation code uses image_size.  For
-> > > this reason, it seems reasonable to allow users to control the
-> > > amount of memory reserved for driver allocations made after the
-> > > preallocation, which currently is constant and amounts to 1 MB.
-> > >=20
-> > > Introduce a new sysfs file, /sys/power/reserved_size, whose value
-> > > will be used as the amount of memory to reserve for the
-> > > post-preallocation reservations made by device drivers, in bytes.
-> > > For backwards compatibility, set its default (and initial) value to
-> > > the currently used number (1 MB).
-> > >=20
-> > > References: https://bugzilla.kernel.org/show_bug.cgi?id=3D34102
-> > > Reported-by: Martin Steigerwald <Martin@Lichtvoll.de>
-> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >=20
-> > OK, there are no comments, so my understanding is that everyone is
-> > fine with this patch and I can add it to my linux-next branch.
->=20
-> Actually no, I don't like it. Yes, knob might be useful for debugging,
-> but having it as part of official kernel interface...
-
-Well I and people with similar setups it is actually quite useful. It=20
-makes the difference between does hibernate *every time* versus does not=20
-hibernate sometimes. And I don't see why it can't go again, when the issue=
-=20
-is taken care of elsewise in the future. I think that autotuning / drivers=
-=20
-allocating their memory via whatnot is better, but until such a mechanism=20
-is agreed, developed and included in official kernel I do think that this=20
-knob does help.
-
-So or so I will patch this in for the kernels for my ThinkPad T42, whether=
-=20
-its part of the official kernel or not. And I build my own kernels anyway.=
-=20
-So when described issue really only happens on my setup and nowhere=20
-else...
-
-I think missing is some documentation so that the advanced user can figure=
-=20
-out this knob.
-
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart6467563.Ap0r3smVlW
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAk3UC2sACgkQmRvqrKWZhMc1WgCfUKdKpMycFTloDAkyFKNng4p+
-RuEAoKGugI/YsMNh1Zj4+y0dl04akJuz
-=B+vn
------END PGP SIGNATURE-----
-
---nextPart6467563.Ap0r3smVlW--
-
---===============1343856416707779217==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============1343856416707779217==--
+Sarah Sharp
