@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 1/3] PM: Introduce DEVFREQ: generic DVFS
-	framework with device-specific OPPs
-Date: Wed, 18 May 2011 22:02:46 +0200
-Message-ID: <201105182202.46820.rjw__21810.146890539$1305749070$gmane$org@sisk.pl>
-References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
-	<201105180036.03836.rjw@sisk.pl>
-	<BANLkTi=_1DJPS+6goLA-UvdHJXEoPWBF2w@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] PM / Core: partial resume/suspend API
+	for suspend_again users.
+Date: Wed, 18 May 2011 22:18:49 +0200
+Message-ID: <201105182218.50088.rjw__21362.9093989313$1305749942$gmane$org@sisk.pl>
+References: <20110512061928.GB2460@localhost.ucw.cz>
+	<201105172252.32135.rjw@sisk.pl>
+	<BANLkTinWF108dOaL-u7Y9vU9Z5X-vSn8zQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=_1DJPS+6goLA-UvdHJXEoPWBF2w@mail.gmail.com>
+In-Reply-To: <BANLkTinWF108dOaL-u7Y9vU9Z5X-vSn8zQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,148 +21,102 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: myungjoo.ham@gmail.com
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On Wednesday, May 18, 2011, MyungJoo Ham wrote:
 > 2011/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
-> > Hi,
-
-Hi,
-
-... 
+> > On Tuesday, May 17, 2011, MyungJoo Ham wrote:
+> >> A usage example is:
+> >>
+> >> bool example_suspend_again(void)
+> >> {
+> >>       int error, monitor_result;
+> >>
+> >>       if (!wakeup_reason_is_polling())
+> >>               return false;
+> >>
+> >>       dpm_partial_resume(PMSG_RESUME, devs, ARRAY_SIZE(devs));
 > >
-> >> +}
-> >> +
-> >> +#define dev_dbg_once(dev, fmt, ...)                          \
-> >> +     if (!once) {                                            \
-> >> +             once = 1;                                       \
-> >> +             dev_dbg(dev, pr_fmt(fmt), ##__VA_ARGS__);       \
-> >> +     }
-> >
-> > Why do you need this?
+> > I'm not sure you need the first argument here.  Also, if the array is
+> > NULL terminated, you won't need the third one.
 > >
 > 
-> This devfreq_do is going to be called periodically; thus, I want to
-> print a message if there is an error, but not too many messages with
-> the repeated calls.
+> It was to pass the parameter to device_resume(), pm_dev_err(),
+> device_complete(), and device_prepare(), which have been using the
+> state value. However, as it is supposed to be used in the context of
+> suspend_devices_and_enter(), I'll remove it and assume PMSG_SUSPEND
+> and PMSG_RESUME are in effect.
 > 
-> Besides, I'd change the macro like this:
+> For the array style, do we generally prefer to use NULL at the end
+> rather than supplying the size? If so, I'll change the array style.
 > 
-> #define dev_dbg_once(dev, fmt, ...)                          \
->      {                                                                \
->              static int once;                                   \
->              if (!once) {                                            \
->                      once = 1;                                       \
->                      dev_dbg(dev, pr_fmt(fmt), ##__VA_ARGS__);       \
->              }                                                 \
->      }
-> 
-> so that "static int once;" in functions can be removed.
-
-That's a good change in my opinion, but since there is the dynamic debug
-feature, I don't think you need to worry too much about that (the user
-can always disable output from those dev_dbg() statements if they generate
-too much noise).
-
-...
-> >> +     list_for_each_entry(devfreq, &devfreq_list, node) {
-> >> +             if (devfreq->next_polling == 0)
-> >> +                     continue;
-> >> +
-> >> +             reserved++;
+> >>       resume_console();
+> >>
+> >>       monitor_result = monitor_something();
+> >>
+> >>       suspend_console();
+> >>       error = dpm_partial_suspend(PMSG_SUSPEND, devs, ARRAY_SIZE(devs));
 > >
-> > Why is the variable called 'reserved'?
-> 
-> The variable reserves the next devfreq_monitor call. If there is no
-> one reserves, we stop monitoring.
-
-So I'd call it 'continue_polling' or something like this.
-
-> However, I've found a bug in this routine (not affecting "reserved++"
-> directly though) that a tickled device without polling governor may
-> not return to its original frequency. It is easily addressed by adding
-> one more condition to the if statement before reserved++;. I'll fix
-> that in the next revision.
-
-OK
-
+> > Same here.
 > >
-> >> +
-> >> +             if (devfreq->tickle) {
-> >> +                     devfreq->tickle--;
-> >> +                     continue;
-> >> +             }
+> >>       if (error || monitor_result == ERROR)
+> >>               return false;
+> >>
+> >>       return true;
+> >> }
 > >
-> > I'd put a coment above that explaining what's going on here.
-> 
-> Ok.
-> 
+> > That said, I don't like this patch.  The reason is that you call
+> > suspend_enter() is a loop and it calls the _noirq() callbacks for
+> > _all_ devices and now you're going to only call .resume() and
+> > .suspend() for several selected devices.  This is not too consistent.
 > >
-> >> +             if (devfreq->next_polling == 1) {
-> >> +                     error = devfreq_do(devfreq);
-> >> +                     if (error && !once) {
-> >> +                             once = 1;
-> >> +                             dev_err(devfreq->dev, "devfreq_do error(%d)\n",
-> >> +                                     error);
-> >
-> > Hmm.  I'm not sure, but wouldn't it make sense to drop the device from
-> > the list if devfreq_do() returns error code?
+> > I wonder if those devices needed for .suspend_again() to work on
+> > your platform could be resumed and suspended by their drivers'
+> > _noirq() callbacks?
 > 
-> Umm... yeah.. that option (calling devfreq_remove_device() for errors)
-> is also possible, which will also remove the need for the macro you've
-> mentioned.
-
-Yes.
-
-> However, when the error is temporary or the device has blocked
-> changing frequencies temporarily from target callback or governor, it
-> could be not so desirable.
-
-I guess we need some experience here.  Namely, it's difficult to say
-what's going to be more frequent, devices that have temporary failures
-or such that either work or not work at all.
-
-That said, I think the simpler approach is to drop devices from the list
-on errors (perhaps depending on the type of the error).
-
-> So, I'm considering to call devfreq_remove_device() at error if the
-> error is not "EAGAIN". That will also remove the need for the macro
-> and debug messages above. How about that?
-
-Sounds reasonable.
-
-...
-> >> @@ -225,3 +225,28 @@ config PM_OPP
-> >>         representing individual voltage domains and provides SOC
-> >>         implementations a ready to use framework to manage OPPs.
-> >>         For more information, read <file:Documentation/power/opp.txt>
-> >> +
-> >> +config PM_DEVFREQ
-> >> +     bool "Generic Dynamic Voltage and Frequency Scaling (DVFS) Framework"
-> >> +     depends on PM_OPP
-> >
-> > This assumes the user will know if his/her platform uses that code.
-> > It may be a good idea to make it depend on a user-invisible option that
-> > can be selected by the platform.
+> For now, we need to access PMIC, Fuel-Gauge, Charger (implemented as
+> regulators), RTC, ADC (w/ hwmon), and UART(drivers/tty/serial).
+> For PMIC, Fuel-Gauge, Charger, and RTC, they will work with no_irq
+> callbacks without any modification.
+> ADC will work if we just let it suspend and resume with no_irq callbacks.
 > 
-> I think that like CPUFREQ, users will want to enable and disable
-> DEVFREQ feature by choice although they cannot choose the governor
-> directly. I'm also considering to allow users to set governors
-> forcibly and globally at menuconfig (like CPUFREQ does). With CPUFREQ,
-> such options helped a lot in troubleshooting of CPU related issues.
+> However, for UART/serial, although it is only used for debugging, it
+> wouldn't be easy and clean to enable only with no_irq callbacks. If we
+> can keep observing the console with suspend_console_enabled=0, it
+> would be much helpful.
+> In order to let some UART/serial drivers work with no-irq callbacks,
+> we'd need reconstruction in drivers/tty/serial/serial_core.c, too.
 > 
-> Do you think it'd be better to have DEVFREQ enabled unconditionally
-> (if PM_OPP is available) nonetheless?
+> Anyway, as the effect of not having partial suspend/resume is limited
+> for now (support for UART/serial can wait), I may defer this part and
+> wait for better and clean methods. And yes, because of the possibility
+> of having dependencies between devices, the inconsistency you've
+> mentioned could be an issue for some systems. However, because such
+> dependencies are not explicitly expressed to kernel while the platform
+> should know about them, partial_suspend/resume was supposed to be
+> called by the platform's suspend_again ops.
 
-First off, it doesn't make sense to enable it if the platform is not going to
-use it.  That's why I think it should depend on a platform-selected option.
-Only if that option is set the user should be given the choice to select
-DEVFREQ.
+This is a difficult problem in general.  One solution of it I had been
+considering some time ago might be to use two or more "suspend lists"
+of devices instead of the single dpm_list we have right now.
 
-Second, I'm not sure if that's a good idea to force DEVFREQ is the platform
-is going to use it.  Perhaps in the future if there are no major issues with
-it, we can do that.
+Namely, suppose we have an array of lists that are idexed by priority
+such that devices in the list of priority 0 are suspended first,
+devices in the list of priority 1 are suspended next and so on (the
+oredering of resume will have to be reversed).  Then, your new code may
+request to only resume the highest pririty list and then call .suspend_again()
+and possiblty continue with normal resume if it returns "false".
+[Please note that you need to call .resume_noirq() for all devices anyway,
+because device interrupts cannot be enabled before calling any drivers'
+.resume_noirq() in case .suspend_again() returns "false".]
+
+Devices will be added to the priority 0 list during registration and
+there will be a special function to move a device to another list
+(increase its suspend pririty) that will ensure the requisite dependencies
+are met (i.e. the suspend priority of a device cannot be greater than
+the suspend priority of its parent, so that the parent would be suspended
+first).
 
 Thanks,
 Rafael
