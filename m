@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH] PM / Hibernate: Add sysfs knob to
-	control size of memory for drivers
-Date: Wed, 18 May 2011 22:23:55 +0200
-Message-ID: <201105182223.55312.rjw__26891.3966058337$1305750245$gmane$org@sisk.pl>
-References: <201105100059.25372.rjw@sisk.pl>
-	<201105182009.55813.Martin@lichtvoll.de>
-	<20110518183638.GA8887@elf.ucw.cz>
+Subject: Re: [PATCH v2 1/3] PM: Introduce DEVFREQ: generic DVFS
+	framework with device-specific OPPs
+Date: Wed, 18 May 2011 22:29:38 +0200
+Message-ID: <201105182229.39110.rjw__46568.6630610891$1305750649$gmane$org@sisk.pl>
+References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
+	<201105182202.46820.rjw@sisk.pl> <20110518202126.GC8887@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110518183638.GA8887@elf.ucw.cz>
+In-Reply-To: <20110518202126.GC8887@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,41 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
 On Wednesday, May 18, 2011, Pavel Machek wrote:
 > Hi!
 > 
-> > > > OK, there are no comments, so my understanding is that everyone is
-> > > > fine with this patch and I can add it to my linux-next branch.
+> > > >> +#define dev_dbg_once(dev, fmt, ...)                          \
+> > > >> +     if (!once) {                                            \
+> > > >> +             once = 1;                                       \
+> > > >> +             dev_dbg(dev, pr_fmt(fmt), ##__VA_ARGS__);       \
+> > > >> +     }
+> > > >
+> > > > Why do you need this?
+> > > >
 > > > 
-> > > Actually no, I don't like it. Yes, knob might be useful for debugging,
-> > > but having it as part of official kernel interface...
+> > > This devfreq_do is going to be called periodically; thus, I want to
+> > > print a message if there is an error, but not too many messages with
+> > > the repeated calls.
+> > > 
+> > > Besides, I'd change the macro like this:
+> > > 
+> > > #define dev_dbg_once(dev, fmt, ...)                          \
+> > >      {                                                                \
+> > >              static int once;                                   \
+> > >              if (!once) {                                            \
+> > >                      once = 1;                                       \
+> > >                      dev_dbg(dev, pr_fmt(fmt), ##__VA_ARGS__);       \
+> > >              }                                                 \
+> > >      }
+> > > 
+> > > so that "static int once;" in functions can be removed.
 > > 
-> > Well I and people with similar setups it is actually quite useful. It 
-> > makes the difference between does hibernate *every time* versus does not 
-> > hibernate sometimes. And I don't see why it can't go again, when the issue 
-> > is taken care of elsewise in the future. I think that autotuning / drivers 
-> > allocating their memory via whatnot is better, but until such a mechanism 
-> > is agreed, developed and included in official kernel I do think that this 
-> > knob does help.
+> > That's a good change in my opinion, but since there is the dynamic debug
+> > feature, I don't think you need to worry too much about that (the user
+> > can always disable output from those dev_dbg() statements if they generate
+> > too much noise).
 > 
-> Yes, autotuning would be better, and yes, knob is useful for you now.
-> 
-> I'd say the knob is for debugging and should go to debugfs somewhere.
-> 
-> > I think missing is some documentation so that the advanced user can figure 
-> > out this knob.
-> 
-> ...so we can easily delete the knob when it is no longer neccessary.
+> Well... we do print-once in other places, too. And that way, we can
+> maybe enable those prints by default...
 
-_If_ drivers start to allocate memory in .prepare(), the knob won't be
-necessary any more and _then_ we may consider removing it.  I guess a lot
-of time will pass before that happens, though. :-)
+I'm not sure what you mean?
 
-That said, I'm not sure we should recommend using it beyond the cases in which
-nothing else works.
-
-Thanks,
 Rafael
