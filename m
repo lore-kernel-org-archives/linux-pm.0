@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 2/3] PM / DEVFREQ: add example governors
-Date: Wed, 18 May 2011 21:46:51 +0200
-Message-ID: <201105182146.51869.rjw__35434.7721128308$1305748172$gmane$org@sisk.pl>
+Subject: Re: [PATCH v2 1/3] PM: Introduce DEVFREQ: generic DVFS
+	framework with device-specific OPPs
+Date: Wed, 18 May 2011 22:02:46 +0200
+Message-ID: <201105182202.46820.rjw__21810.146890539$1305749070$gmane$org@sisk.pl>
 References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
-	<201105180039.56806.rjw@sisk.pl>
-	<BANLkTim0DkhcjWw7fM0e-UhyB3=GkQ7nKw@mail.gmail.com>
+	<201105180036.03836.rjw@sisk.pl>
+	<BANLkTi=_1DJPS+6goLA-UvdHJXEoPWBF2w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTim0DkhcjWw7fM0e-UhyB3=GkQ7nKw@mail.gmail.com>
+In-Reply-To: <BANLkTi=_1DJPS+6goLA-UvdHJXEoPWBF2w@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,39 +26,143 @@ List-Id: linux-pm@vger.kernel.org
 
 On Wednesday, May 18, 2011, MyungJoo Ham wrote:
 > 2011/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Wednesday, May 11, 2011, MyungJoo Ham wrote:
-> >> Three CPUFREQ-like governors are provided as examples.
-> >>
-> >> powersave: use the lowest frequency possible. The user (device) should
-> >> set the polling_ms as 0 because polling is useless for this governor.
-> >>
-> >> performance: use the highest freqeuncy possible. The user (device)
-> >> should set the polling_ms as 0 because polling is useless for this
-> >> governor.
-> >>
-> >> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
-> >>
-> >> When a user updates OPP entries (enable/disable/add), OPP framework
-> >> automatically notifies DEVFREQ to update operating frequency
-> >> accordingly. Thus, DEVFREQ users (device drivers) do not need to update
-> >> DEVFREQ manually with OPP entry updates or set polling_ms for powersave
-> >> , performance, or any other "static" governors.
+> > Hi,
+
+Hi,
+
+... 
 > >
-> > Well, do you expect anyone to actually use them?  If not, it would make
-> > more sense to put them into a doc.
+> >> +}
+> >> +
+> >> +#define dev_dbg_once(dev, fmt, ...)                          \
+> >> +     if (!once) {                                            \
+> >> +             once = 1;                                       \
+> >> +             dev_dbg(dev, pr_fmt(fmt), ##__VA_ARGS__);       \
+> >> +     }
+> >
+> > Why do you need this?
+> >
 > 
-> According to our experiences of DVFS(although this "DEVFREQ" is not
-> applied to them, yet) in memory-bus and GPU,
-> I expect most DEVFREQ users might use "simple_ondemand" and
-> expect "powersave" and "performance" will probably mostly used while
-> testing and debugging.
-> ("userspace"-like governor would be also useful for that purpose, but
-> I'd add it later)
+> This devfreq_do is going to be called periodically; thus, I want to
+> print a message if there is an error, but not too many messages with
+> the repeated calls.
+> 
+> Besides, I'd change the macro like this:
+> 
+> #define dev_dbg_once(dev, fmt, ...)                          \
+>      {                                                                \
+>              static int once;                                   \
+>              if (!once) {                                            \
+>                      once = 1;                                       \
+>                      dev_dbg(dev, pr_fmt(fmt), ##__VA_ARGS__);       \
+>              }                                                 \
+>      }
+> 
+> so that "static int once;" in functions can be removed.
 
-It would be good to have at least one in-tree user for each of them
-(not necessarily from the start, but at one point in the future at least).
+That's a good change in my opinion, but since there is the dynamic debug
+feature, I don't think you need to worry too much about that (the user
+can always disable output from those dev_dbg() statements if they generate
+too much noise).
 
-So if you have any _specific_ users in mind, please let me know.
+...
+> >> +     list_for_each_entry(devfreq, &devfreq_list, node) {
+> >> +             if (devfreq->next_polling == 0)
+> >> +                     continue;
+> >> +
+> >> +             reserved++;
+> >
+> > Why is the variable called 'reserved'?
+> 
+> The variable reserves the next devfreq_monitor call. If there is no
+> one reserves, we stop monitoring.
+
+So I'd call it 'continue_polling' or something like this.
+
+> However, I've found a bug in this routine (not affecting "reserved++"
+> directly though) that a tickled device without polling governor may
+> not return to its original frequency. It is easily addressed by adding
+> one more condition to the if statement before reserved++;. I'll fix
+> that in the next revision.
+
+OK
+
+> >
+> >> +
+> >> +             if (devfreq->tickle) {
+> >> +                     devfreq->tickle--;
+> >> +                     continue;
+> >> +             }
+> >
+> > I'd put a coment above that explaining what's going on here.
+> 
+> Ok.
+> 
+> >
+> >> +             if (devfreq->next_polling == 1) {
+> >> +                     error = devfreq_do(devfreq);
+> >> +                     if (error && !once) {
+> >> +                             once = 1;
+> >> +                             dev_err(devfreq->dev, "devfreq_do error(%d)\n",
+> >> +                                     error);
+> >
+> > Hmm.  I'm not sure, but wouldn't it make sense to drop the device from
+> > the list if devfreq_do() returns error code?
+> 
+> Umm... yeah.. that option (calling devfreq_remove_device() for errors)
+> is also possible, which will also remove the need for the macro you've
+> mentioned.
+
+Yes.
+
+> However, when the error is temporary or the device has blocked
+> changing frequencies temporarily from target callback or governor, it
+> could be not so desirable.
+
+I guess we need some experience here.  Namely, it's difficult to say
+what's going to be more frequent, devices that have temporary failures
+or such that either work or not work at all.
+
+That said, I think the simpler approach is to drop devices from the list
+on errors (perhaps depending on the type of the error).
+
+> So, I'm considering to call devfreq_remove_device() at error if the
+> error is not "EAGAIN". That will also remove the need for the macro
+> and debug messages above. How about that?
+
+Sounds reasonable.
+
+...
+> >> @@ -225,3 +225,28 @@ config PM_OPP
+> >>         representing individual voltage domains and provides SOC
+> >>         implementations a ready to use framework to manage OPPs.
+> >>         For more information, read <file:Documentation/power/opp.txt>
+> >> +
+> >> +config PM_DEVFREQ
+> >> +     bool "Generic Dynamic Voltage and Frequency Scaling (DVFS) Framework"
+> >> +     depends on PM_OPP
+> >
+> > This assumes the user will know if his/her platform uses that code.
+> > It may be a good idea to make it depend on a user-invisible option that
+> > can be selected by the platform.
+> 
+> I think that like CPUFREQ, users will want to enable and disable
+> DEVFREQ feature by choice although they cannot choose the governor
+> directly. I'm also considering to allow users to set governors
+> forcibly and globally at menuconfig (like CPUFREQ does). With CPUFREQ,
+> such options helped a lot in troubleshooting of CPU related issues.
+> 
+> Do you think it'd be better to have DEVFREQ enabled unconditionally
+> (if PM_OPP is available) nonetheless?
+
+First off, it doesn't make sense to enable it if the platform is not going to
+use it.  That's why I think it should depend on a platform-selected option.
+Only if that option is set the user should be given the choice to select
+DEVFREQ.
+
+Second, I'm not sure if that's a good idea to force DEVFREQ is the platform
+is going to use it.  Perhaps in the future if there are no major issues with
+it, we can do that.
 
 Thanks,
 Rafael
