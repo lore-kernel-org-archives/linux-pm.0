@@ -1,16 +1,15 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v2 2/3] PM / DEVFREQ: add example governors
-Date: Wed, 18 May 2011 09:48:13 +0900
-Message-ID: <BANLkTim0DkhcjWw7fM0e-UhyB3=GkQ7nKw__30744.4470040084$1305679840$gmane$org@mail.gmail.com>
-References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
-	<1305100723-29161-2-git-send-email-myungjoo.ham@samsung.com>
-	<201105180039.56806.rjw@sisk.pl>
-Reply-To: myungjoo.ham@gmail.com
+From: "Xu, Andiry" <Andiry.Xu@amd.com>
+Subject: Re: xHCI and suspend/resume
+Date: Wed, 18 May 2011 09:59:58 +0800
+Message-ID: <2DEEA3AB13739D45A22ADDB5086AEA0B015AD959__3575.39961482889$1305684092$gmane$org@sshaexmb1.amd.com>
+References: <Pine.LNX.4.44L0.1105121733370.1917-100000@iolanthe.rowland.org><201105172354.22675.rjw@sisk.pl><BANLkTinqLM2kvEgszcCMbu=pc-yJZsAo9w@mail.gmail.com><201105180056.03337.rjw@sisk.pl>
+	<BANLkTi=mphkfHfd7aeZb+d1uAeAhj1=qFg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105180039.56806.rjw@sisk.pl>
+Content-Class: urn:content-classes:message
+In-Reply-To: <BANLkTi=mphkfHfd7aeZb+d1uAeAhj1=qFg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,105 +19,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Dwight Schauer <dschauer@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Sarah Sharp <sarah.a.sharp@linux.intel.com>, dschauer@ti.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMS81LzE4IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gT24gV2VkbmVzZGF5
-LCBNYXkgMTEsIDIwMTEsIE15dW5nSm9vIEhhbSB3cm90ZToKPj4gVGhyZWUgQ1BVRlJFUS1saWtl
-IGdvdmVybm9ycyBhcmUgcHJvdmlkZWQgYXMgZXhhbXBsZXMuCj4+Cj4+IHBvd2Vyc2F2ZTogdXNl
-IHRoZSBsb3dlc3QgZnJlcXVlbmN5IHBvc3NpYmxlLiBUaGUgdXNlciAoZGV2aWNlKSBzaG91bGQK
-Pj4gc2V0IHRoZSBwb2xsaW5nX21zIGFzIDAgYmVjYXVzZSBwb2xsaW5nIGlzIHVzZWxlc3MgZm9y
-IHRoaXMgZ292ZXJub3IuCj4+Cj4+IHBlcmZvcm1hbmNlOiB1c2UgdGhlIGhpZ2hlc3QgZnJlcWV1
-bmN5IHBvc3NpYmxlLiBUaGUgdXNlciAoZGV2aWNlKQo+PiBzaG91bGQgc2V0IHRoZSBwb2xsaW5n
-X21zIGFzIDAgYmVjYXVzZSBwb2xsaW5nIGlzIHVzZWxlc3MgZm9yIHRoaXMKPj4gZ292ZXJub3Iu
-Cj4+Cj4+IHNpbXBsZV9vbmRlbWFuZDogc2ltcGxpZmllZCB2ZXJzaW9uIG9mIENQVUZSRVEncyBP
-TkRFTUFORCBnb3Zlcm5vci4KPj4KPj4gV2hlbiBhIHVzZXIgdXBkYXRlcyBPUFAgZW50cmllcyAo
-ZW5hYmxlL2Rpc2FibGUvYWRkKSwgT1BQIGZyYW1ld29yawo+PiBhdXRvbWF0aWNhbGx5IG5vdGlm
-aWVzIERFVkZSRVEgdG8gdXBkYXRlIG9wZXJhdGluZyBmcmVxdWVuY3kKPj4gYWNjb3JkaW5nbHku
-IFRodXMsIERFVkZSRVEgdXNlcnMgKGRldmljZSBkcml2ZXJzKSBkbyBub3QgbmVlZCB0byB1cGRh
-dGUKPj4gREVWRlJFUSBtYW51YWxseSB3aXRoIE9QUCBlbnRyeSB1cGRhdGVzIG9yIHNldCBwb2xs
-aW5nX21zIGZvciBwb3dlcnNhdmUKPj4gLCBwZXJmb3JtYW5jZSwgb3IgYW55IG90aGVyICJzdGF0
-aWMiIGdvdmVybm9ycy4KPgo+IFdlbGwsIGRvIHlvdSBleHBlY3QgYW55b25lIHRvIGFjdHVhbGx5
-IHVzZSB0aGVtPyDCoElmIG5vdCwgaXQgd291bGQgbWFrZQo+IG1vcmUgc2Vuc2UgdG8gcHV0IHRo
-ZW0gaW50byBhIGRvYy4KCkFjY29yZGluZyB0byBvdXIgZXhwZXJpZW5jZXMgb2YgRFZGUyhhbHRo
-b3VnaCB0aGlzICJERVZGUkVRIiBpcyBub3QKYXBwbGllZCB0byB0aGVtLCB5ZXQpIGluIG1lbW9y
-eS1idXMgYW5kIEdQVSwKSSBleHBlY3QgbW9zdCBERVZGUkVRIHVzZXJzIG1pZ2h0IHVzZSAic2lt
-cGxlX29uZGVtYW5kIiBhbmQKZXhwZWN0ICJwb3dlcnNhdmUiIGFuZCAicGVyZm9ybWFuY2UiIHdp
-bGwgcHJvYmFibHkgbW9zdGx5IHVzZWQgd2hpbGUKdGVzdGluZyBhbmQgZGVidWdnaW5nLgooInVz
-ZXJzcGFjZSItbGlrZSBnb3Zlcm5vciB3b3VsZCBiZSBhbHNvIHVzZWZ1bCBmb3IgdGhhdCBwdXJw
-b3NlLCBidXQKSSdkIGFkZCBpdCBsYXRlcikKCgpDaGVlcnMhCi0gTXl1bmdKb28KCj4KPiBUaGFu
-a3MsCj4gUmFmYWVsCj4KPgo+PiBTaWduZWQtb2ZmLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9v
-LmhhbUBzYW1zdW5nLmNvbT4KPj4gU2lnbmVkLW9mZi1ieTogS3l1bmdtaW4gUGFyayA8a3l1bmdt
-aW4ucGFya0BzYW1zdW5nLmNvbT4KPj4gLS0tCj4+IMKgZHJpdmVycy9iYXNlL3Bvd2VyL2RldmZy
-ZXEuYyB8IMKgIDY5ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+
-PiDCoGluY2x1ZGUvbGludXgvZGV2ZnJlcS5oIMKgIMKgIMKgfCDCoCDCoDUgKysrCj4+IMKgMiBm
-aWxlcyBjaGFuZ2VkLCA3NCBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQo+Pgo+PiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9iYXNlL3Bvd2VyL2RldmZyZXEuYyBiL2RyaXZlcnMvYmFzZS9wb3dl
-ci9kZXZmcmVxLmMKPj4gaW5kZXggOGUyZTQ1Yi4uMjUxZDc2MSAxMDA2NDQKPj4gLS0tIGEvZHJp
-dmVycy9iYXNlL3Bvd2VyL2RldmZyZXEuYwo+PiArKysgYi9kcml2ZXJzL2Jhc2UvcG93ZXIvZGV2
-ZnJlcS5jCj4+IEBAIC0zNTEsMyArMzUxLDcyIEBAIHN0YXRpYyBpbnQgX19pbml0IGRldmZyZXFf
-aW5pdCh2b2lkKQo+PiDCoCDCoCDCoCByZXR1cm4gMDsKPj4gwqB9Cj4+IMKgbGF0ZV9pbml0Y2Fs
-bChkZXZmcmVxX2luaXQpOwo+PiArCj4+ICtzdGF0aWMgaW50IGRldmZyZXFfcG93ZXJzYXZlX2Z1
-bmMoc3RydWN0IGRldmZyZXEgKmRmLAo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIHVuc2lnbmVkIGxvbmcgKmZyZXEpCj4+ICt7Cj4+ICsgwqAgwqAgKmZy
-ZXEgPSAwOyAvKiBkZXZmcmVxX2RvIHdpbGwgcnVuICJjZWlsaW5nIiB0byAwICovCj4+ICsgwqAg
-wqAgcmV0dXJuIDA7Cj4+ICt9Cj4+ICsKPj4gK3N0cnVjdCBkZXZmcmVxX2dvdmVybm9yIGRldmZy
-ZXFfcG93ZXJzYXZlID0gewo+PiArIMKgIMKgIC5nZXRfdGFyZ2V0X2ZyZXEgPSBkZXZmcmVxX3Bv
-d2Vyc2F2ZV9mdW5jLAo+PiArfTsKPj4gKwo+PiArc3RhdGljIGludCBkZXZmcmVxX3BlcmZvcm1h
-bmNlX2Z1bmMoc3RydWN0IGRldmZyZXEgKmRmLAo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHVuc2lnbmVkIGxvbmcgKmZyZXEpCj4+ICt7Cj4+ICsg
-wqAgwqAgKmZyZXEgPSBVSU5UX01BWDsgLyogZGV2ZnJlcV9kbyB3aWxsIHJ1biAiZmxvb3IiICov
-Cj4+ICsgwqAgwqAgcmV0dXJuIDA7Cj4+ICt9Cj4+ICsKPj4gK3N0cnVjdCBkZXZmcmVxX2dvdmVy
-bm9yIGRldmZyZXFfcGVyZm9ybWFuY2UgPSB7Cj4+ICsgwqAgwqAgLmdldF90YXJnZXRfZnJlcSA9
-IGRldmZyZXFfcGVyZm9ybWFuY2VfZnVuYywKPj4gK307Cj4+ICsKPj4gKy8qIENvbnN0YW50cyBm
-b3IgRGV2RnJlcS1TaW1wbGUtT25kZW1hbmQgKERGU08pICovCj4+ICsjZGVmaW5lIERGU09fVVBU
-SFJFU0hPTEQgwqAgwqAgKDkwKQo+PiArI2RlZmluZSBERlNPX0RPV05ESUZGRVJFTkNUSUFMIMKg
-IMKgIMKgICg1KQo+PiArc3RhdGljIGludCBkZXZmcmVxX3NpbXBsZV9vbmRlbWFuZF9mdW5jKHN0
-cnVjdCBkZXZmcmVxICpkZiwKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCB1bnNpZ25lZCBsb25nICpmcmVxKQo+PiArewo+PiArIMKgIMKg
-IHN0cnVjdCBkZXZmcmVxX2Rldl9zdGF0dXMgc3RhdDsKPj4gKyDCoCDCoCBpbnQgZXJyID0gZGYt
-PnByb2ZpbGUtPmdldF9kZXZfc3RhdHVzKGRmLT5kZXYsICZzdGF0KTsKPj4gKyDCoCDCoCB1bnNp
-Z25lZCBsb25nIGxvbmcgYSwgYjsKPj4gKwo+PiArIMKgIMKgIGlmIChlcnIpCj4+ICsgwqAgwqAg
-wqAgwqAgwqAgwqAgcmV0dXJuIGVycjsKPj4gKwo+PiArIMKgIMKgIC8qIFNldCBNQVggaWYgaXQn
-cyBidXN5IGVub3VnaCAqLwo+PiArIMKgIMKgIGlmIChzdGF0LmJ1c3lfdGltZSAqIDEwMCA+Cj4+
-ICsgwqAgwqAgwqAgwqAgc3RhdC50b3RhbF90aW1lICogREZTT19VUFRIUkVTSE9MRCkgewo+PiAr
-IMKgIMKgIMKgIMKgIMKgIMKgICpmcmVxID0gVUlOVF9NQVg7Cj4+ICsgwqAgwqAgwqAgwqAgwqAg
-wqAgcmV0dXJuIDA7Cj4+ICsgwqAgwqAgfQo+PiArCj4+ICsgwqAgwqAgLyogU2V0IE1BWCBpZiB3
-ZSBkbyBub3Qga25vdyB0aGUgaW5pdGlhbCBmcmVxdWVuY3kgKi8KPj4gKyDCoCDCoCBpZiAoc3Rh
-dC5jdXJyZW50X2ZyZXF1ZW5jeSA9PSAwKSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgKmZyZXEg
-PSBVSU5UX01BWDsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gMDsKPj4gKyDCoCDCoCB9
-Cj4+ICsKPj4gKyDCoCDCoCAvKiBLZWVwIHRoZSBjdXJyZW50IGZyZXF1ZW5jeSAqLwo+PiArIMKg
-IMKgIGlmIChzdGF0LmJ1c3lfdGltZSAqIDEwMCA+Cj4+ICsgwqAgwqAgwqAgwqAgc3RhdC50b3Rh
-bF90aW1lICogKERGU09fVVBUSFJFU0hPTEQgLSBERlNPX0RPV05ESUZGRVJFTkNUSUFMKSkgewo+
-PiArIMKgIMKgIMKgIMKgIMKgIMKgICpmcmVxID0gc3RhdC5jdXJyZW50X2ZyZXF1ZW5jeTsKPj4g
-KyDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gMDsKPj4gKyDCoCDCoCB9Cj4+ICsKPj4gKyDCoCDC
-oCAvKiBTZXQgdGhlIGRlc2lyZWQgZnJlcXVlbmN5IGJhc2VkIG9uIHRoZSBsb2FkICovCj4+ICsg
-wqAgwqAgYSA9ICh1bnNpZ25lZCBsb25nIGxvbmcpIHN0YXQuYnVzeV90aW1lICogc3RhdC5jdXJy
-ZW50X2ZyZXF1ZW5jeTsKPj4gKyDCoCDCoCBiID0gZGl2X3U2NChhLCBzdGF0LnRvdGFsX3RpbWUp
-Owo+PiArIMKgIMKgIGIgKj0gMTAwOwo+PiArIMKgIMKgIGIgPSBkaXZfdTY0KGIsIChERlNPX1VQ
-VEhSRVNIT0xEIC0gREZTT19ET1dORElGRkVSRU5DVElBTCAvIDIpKTsKPj4gKyDCoCDCoCAqZnJl
-cSA9ICh1bnNpZ25lZCBsb25nKSBiOwo+PiArCj4+ICsgwqAgwqAgcmV0dXJuIDA7Cj4+ICt9Cj4+
-ICsKPj4gK3N0cnVjdCBkZXZmcmVxX2dvdmVybm9yIGRldmZyZXFfc2ltcGxlX29uZGVtYW5kID0g
-ewo+PiArIMKgIMKgIC5nZXRfdGFyZ2V0X2ZyZXEgPSBkZXZmcmVxX3NpbXBsZV9vbmRlbWFuZF9m
-dW5jLAo+PiArfTsKPj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvZGV2ZnJlcS5oIGIvaW5j
-bHVkZS9saW51eC9kZXZmcmVxLmgKPj4gaW5kZXggZDA4ZTlmNS4uZWM0MWJhNiAxMDA2NDQKPj4g
-LS0tIGEvaW5jbHVkZS9saW51eC9kZXZmcmVxLmgKPj4gKysrIGIvaW5jbHVkZS9saW51eC9kZXZm
-cmVxLmgKPj4gQEAgLTgxLDYgKzgxLDExIEBAIGV4dGVybiBpbnQgZGV2ZnJlcV9hZGRfZGV2aWNl
-KHN0cnVjdCBkZXZpY2UgKmRldiwKPj4gwqBleHRlcm4gaW50IGRldmZyZXFfcmVtb3ZlX2Rldmlj
-ZShzdHJ1Y3QgZGV2aWNlICpkZXYpOwo+PiDCoGV4dGVybiBpbnQgZGV2ZnJlcV91cGRhdGUoc3Ry
-dWN0IGRldmljZSAqZGV2LCBib29sIG1heV9ub3RfZXhpc3QpOwo+PiDCoGV4dGVybiBpbnQgZGV2
-ZnJlcV90aWNrbGVfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldiwgdW5zaWduZWQgbG9uZyBkdXJh
-dGlvbl9tcyk7Cj4+ICsKPj4gK2V4dGVybiBzdHJ1Y3QgZGV2ZnJlcV9nb3Zlcm5vciBkZXZmcmVx
-X3Bvd2Vyc2F2ZTsKPj4gK2V4dGVybiBzdHJ1Y3QgZGV2ZnJlcV9nb3Zlcm5vciBkZXZmcmVxX3Bl
-cmZvcm1hbmNlOwo+PiArZXh0ZXJuIHN0cnVjdCBkZXZmcmVxX2dvdmVybm9yIGRldmZyZXFfc2lt
-cGxlX29uZGVtYW5kOwo+PiArCj4+IMKgI2Vsc2UgLyogIUNPTkZJR19QTV9ERVZGUkVRICovCj4+
-IMKgc3RhdGljIGludCBkZXZmcmVxX2FkZF9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2LAo+PiDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoHN0cnVjdCBkZXZmcmVxX2Rldl9w
-cm9maWxlICpwcm9maWxlLAo+Pgo+Cj4KCgoKLS0gCk15dW5nSm9vIEhhbSAo7ZWo66qF7KO8KSwg
-UGguRC4KTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwKRGlnaXRhbCBNZWRpYSBhbmQgQ29t
-bXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKU2Ftc3VuZyBFbGVjdHJvbmljcwpjZWxsOiA4Mi0x
-MC02NzE0LTI4NTgKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eC1wbQ==
+> -----Original Message-----
+> From: linux-usb-owner@vger.kernel.org [mailto:linux-usb-
+> owner@vger.kernel.org] On Behalf Of Dwight Schauer
+> Sent: Wednesday, May 18, 2011 7:02 AM
+> To: Rafael J. Wysocki
+> Cc: linux-pm@lists.linux-foundation.org; Sarah Sharp; dschauer@ti.com;
+> USB list
+> Subject: Re: [linux-pm] xHCI and suspend/resume
+> =
+
+> On Tue, May 17, 2011 at 5:56 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Wednesday, May 18, 2011, Dwight Schauer wrote:
+> >> On Tue, May 17, 2011 at 4:54 PM, Rafael J. Wysocki <rjw@sisk.pl>
+> wrote:
+> >> > On Tuesday, May 17, 2011, Dwight Schauer wrote:
+> >> >> On Tue, May 17, 2011 at 4:43 PM, Rafael J. Wysocki <rjw@sisk.pl>
+> wrote:
+> >> > ...
+> >> >> >
+> >> >> > OK, one more test, please.
+> >> >> >
+> >> >> > Try to do
+> >> >> >
+> >> >> > # echo core > /sys/power/pm_test
+> >> >> > # echo mem > /sys/power/state
+> >> >> >
+> >> >> > (that should simulate suspend, but without going into the BIOS,
+> and it
+> >> >> > should return do the command prompt after 5-10 sec.) and check
+> if the
+> >> >> > USB3 controllers work after that ("echo none >
+> /sys/power/pm_test" resets
+> >> >> > to the normal suspend behavior).
+> >> >> >
+> >> >> > Thanks,
+> >> >> > Rafael
+> >> >>
+> >> >> No problem.
+> >> >>
+> >> >> The simulated suspend works fine.
+> >> >
+> >> > Good.
+> >> >
+> >> >> Also, waking up from S3 via a PS/2 keyboard works fine.
+> >> >
+> >> > Hmm. =A0Do you mean that the USB3 controllers work after the resume
+> if
+> >> > the box has been woken up via the keyboard and they don't work
+> when it
+> >> > has been woken up via a power button?
+> >> >
+> >> > Rafael
+> >>
+> >> They work either way. I'm just not able to get the USB keyboard that
+> >> is connected to the USB3 controller to perform the wakeup. (Which is
+> >> what I thought I made clear from the beginning and what Alan Stern
+> had
+> >> reiterated for new readers further into the thread).
+> >
+> > Oh, I must have missed that information. =A0Sorry about that.
+> >
+> > So, the situation is that if you set up the USB3 controllers to wake
+> up
+> > and next you wake up the system from S3 using a USB device connected
+> to one
+> > of those controllers, then they appear to be in D3 after the resume
+> and
+> > apparently cannot be put into D0. =A0However, if the wakeup is done in
+> any
+> > different way, they work correctly after the resume, right?
+> >
+> > Is that the case on both the affected systems?
+> >
+> =
+
+> On both systems the USB3 controllers plugged into PCIe slots work fine
+> after the system has been woken up from S3 suspend state.
+> =
+
+> The USB3 keyboard plugged into the PCIe USB3 controller is immediately
+> avaiable after the system has woken up. It is just that in Linux a
+> keyboard plugged into the USB3 controller can not be used to wake the
+> system up when it has gone into S3 suspend. With Windows 7 on our test
+> systems our USB3 contoller (the Texas Instruments Inc. PCEe xHCI
+> device) a USB keyboard plugged into it can wake it up from an S3
+> suspend.
+> =
+
+
+I've verified that USB keyboard under xHCI controller can wakeup system
+from S3, either by press the keyboard or plug it in during suspend. But
+you need to enable wakeup in /proc/acpi/wakeup for the corresponding
+xHC controller.
+
+Thanks,
+Andiry
