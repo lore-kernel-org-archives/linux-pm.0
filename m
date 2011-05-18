@@ -1,17 +1,15 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v4 1/2] PM / Core: suspend_again callback for
-	suspend_ops.
-Date: Wed, 18 May 2011 18:07:50 +0900
-Message-ID: <BANLkTim6ygf9JN2k1ZnW5kLwvUggDBJyNA__12518.907528329$1305709836$gmane$org@mail.gmail.com>
-References: <20110512061928.GB2460@localhost.ucw.cz>
-	<1305608346-23800-1-git-send-email-myungjoo.ham@samsung.com>
-	<201105172240.46970.rjw@sisk.pl>
-Reply-To: myungjoo.ham@gmail.com
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC][PATCH] PM / Hibernate: Add sysfs knob to
+ control size of memory for drivers
+Date: Wed, 18 May 2011 19:27:17 +0200
+Message-ID: <20110518172717.GA5734__12932.1820023053$1305739710$gmane$org@elf.ucw.cz>
+References: <201105100059.25372.rjw@sisk.pl> <201105150056.55601.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105172240.46970.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201105150056.55601.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,47 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMS81LzE4IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gT24gVHVlc2RheSwg
-TWF5IDE3LCAyMDExLCBNeXVuZ0pvbyBIYW0gd3JvdGU6CltdCj4+IC1zdGF0aWMgaW50IHN1c3Bl
-bmRfZW50ZXIoc3VzcGVuZF9zdGF0ZV90IHN0YXRlKQo+PiArc3RhdGljIGludCBzdXNwZW5kX2Vu
-dGVyKHN1c3BlbmRfc3RhdGVfdCBzdGF0ZSwgYm9vbCAqd2FrZXVwX3BlbmRpbmcpCj4KPiBZb3Ug
-ZG9uJ3QgbmVlZCB0byB1c2UgdGhlIHdha2V1cF9wZW5kaW5nIGFyZ3VtZW50IGF0IGFsbC4gwqBJ
-IHRoaW5rIHlvdQo+IHNob3VsZG4ndCB1c2UgaXQgZXZlbiwgYmVjYXVzZSBpbiB0aGVvcnkgdGhl
-cmUgbWF5IGJlIGEgd2FrZXVwIGV2ZW50IGFmdGVyCj4geW91J3ZlIGNhbGxlZCBwbV93YWtldXBf
-cGVuZGluZygpIGluIHN1c3BlbmRfZW50ZXIoKSBhbmQgaW4gdGhhdCBjYXNlCj4geW91IHNob3Vs
-ZCBicmVhayB0aGUgbG9vcCB0b28uCgpJbiB0aGUgY2FzZSB3aGVyZToKLSBhdCB0aGUgZmlyc3Qg
-aW5zdGFuY2Ugb2Ygc3VzcGVuZF9lbnRlciwgcG1fd2FrZXVwX3BlbmRpbmcoKSByZXR1cm5zIGZh
-bHNlLgotIGFmdGVyIHN1c3BlbmRfb3BzLT5lbnRlcihzdGF0ZSksIHRoZSBwbV93YWtldXBfcGVu
-ZGluZygpICJ3YW50cyIgdG8KcmV0dXJuIHRydWUuCi0gaG93ZXZlciwgc3VzcGVuZF9hZ2FpbiBm
-b3JjZXMgdG8gbG9vcCBhZ2Fpbi4KLSB0aGVuLCBhdCB0aGUgc2Vjb25kIGluc3RhbmNlIG9mIHN1
-c3BlbmRfZW50ZXIsIHBtX3dha2V1cF9wZW5kaW5nKCkKcmV0dXJucyB0cnVlLgotIHRoZSBzdXNw
-ZW5kX2FnYWluJ3MgbG9vcCBicmVha3MuCgpBbHRob3VnaCBpdCBkaWQgbm90IGJyZWFrIHRoZSBs
-b29wIGF0IHRoZSBmaXJzdCB3aGlsZSwgaXQgYnJlYWtzCndpdGhvdXQgY2FsbGluZyBzdXNwZW5k
-X29wcy0+ZW50ZXIgYWdhaW4gYW55d2F5LgoKW10KPgo+IFNvIEkgd291bGQgc2ltcGx5IGNhbGwg
-cG1fd2FrZXVwX3BlbmRpbmcoKSBoZXJlIGFnYWluLgo+CgpCZXNpZGVzLCBpZiB3ZSBzaW1wbHkg
-Y2FsbCBwbV93YWtldXBfcGVuZGluZygpIGFnYWluIGF0IHRoZXJlLCB0aGUKbG9vcCB3aWxsIE5P
-VCBicmVhayB3aXRoIHBtX3dha2V1cF9wZW5kaW5nKCkgaXMgdHJ1ZSBhdCB0aGUgZmlyc3QgY2Fs
-bAppbnNpZGUgb2Ygc3VzcGVuZF9lbnRlcigpLiBUaGUgZnVuY3Rpb24gcG1fd2FrZXVwX3BlbmRp
-bmcoKSBjbGVhcnMgb3V0CnRoZSBwZW5kaW5nIHdha2V1cCBhdCBlYWNoIGNhbGw7IHRodXMsIGlu
-IHRoZSBmb2xsb3dpbmcgZXhhbXBsZSwgdGhlCmxvb3Agd2lsbCBub3QgYnJlYWs6CgotIEF0IHRo
-ZSBmaXJzdCBpbnN0YW5jZSBvZiBzdXNwZW5kX2VudGVyIGluIHRoZSBzdXNwZW5kLWFnYWluIGxv
-b3AsCnBtX3dha2V1cF9wZW5kaW5nKCkgcmV0dXJucyB0cnVlIGluIHN1c3BlbmRfZW50ZXIoKS4K
-LSBzdXNwZW5kX2VudGVyKCkgcmV0dXJucyB3aXRob3V0IGVycm9yLgotIHBtX3dha2V1cF9wZW5k
-aW5nKCkgaXMgY2FsbGVkIGFnYWluIGF0IHRoZSB3aGlsZSBzdGF0ZW1lbnQgYWxvbmcKd2l0aCBz
-dXNwZW5kX29wcy0+c3VzcGVuZF9hZ2FpbigpLgotIHBtX3dha2V1cF9wZW5kaW5nKCkgbm93IHJl
-dHVybnMgZmFsc2UgYmVjYXVzZSBpdCBoYXMgYWxyZWFkeQpyZXR1cm5lZCB0cnVlIGJlZm9yZSBh
-bmQgY2xlYXJlZCAiZXZlbnRzX2NoZWNrX2VuYWJsZWQiCi0gdGhlIGxvb3AgY29udGludWVzLgoK
-QmVjYXVzZSBwbV9zYXZlX3dha2V1cF9jb3VudCB3aWxsIHJldHVybiB0cnVlIG9ubHkgb25jZSBm
-b3IgZWFjaAp3YWtldXAtcHJldmVudGluZy1ldmVudCwgdGhlIHJlc3VsdCBvZiBwbV93YWtldXBf
-cGVuZGluZyBpbgpzdXNwZW5kX2VudGVyKCkgc2hvdWxkIGJlIHJlbGF5ZWQgb3V0c2lkZSB0byB0
-aGUgbG9vcCBhbnl3YXkuCgo+Pgo+PiDCoCBSZXN1bWVfZGV2aWNlczoKPj4gwqAgwqAgwqAgc3Vz
-cGVuZF90ZXN0X3N0YXJ0KCk7Cj4+Cj4KPiBUaGFua3MsCj4gUmFmYWVsCj4KCgpDaGVlcnMhCgot
-IE15dW5nSm9vCi0tIApNeXVuZ0pvbyBIYW0gKO2VqOuqheyjvCksIFBoLkQuCk1vYmlsZSBTb2Z0
-d2FyZSBQbGF0Zm9ybSBMYWIsCkRpZ2l0YWwgTWVkaWEgYW5kIENvbW11bmljYXRpb25zIChETUMp
-IEJ1c2luZXNzClNhbXN1bmcgRWxlY3Ryb25pY3MKY2VsbDogODItMTAtNjcxNC0yODU4Cl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
-bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+Hi!
+
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Martin reports that on his system hibernation occasionally fails due
+> > to the lack of memory, because the radeon driver apparently allocates
+> > too much of it during the device freeze stage.  It turns out that the
+> > amount of memory allocated by radeon during hibernation (and
+> > presumably during system suspend too) depends on the utilization of
+> > the GPU (e.g. hibernating while there are two KDE 4 sessions with
+> > compositing enabled causes radeon to allocate more memory than for
+> > one KDE 4 session).
+> > 
+> > In principle it should be possible to use image_size to make the
+> > memory preallocation mechanism free enough memory for the radeon
+> > driver, but in practice it is not easy to guess the right value
+> > because of the way the preallocation code uses image_size.  For this
+> > reason, it seems reasonable to allow users to control the amount of
+> > memory reserved for driver allocations made after the preallocation,
+> > which currently is constant and amounts to 1 MB.
+> > 
+> > Introduce a new sysfs file, /sys/power/reserved_size, whose value
+> > will be used as the amount of memory to reserve for the
+> > post-preallocation reservations made by device drivers, in bytes.
+> > For backwards compatibility, set its default (and initial) value to
+> > the currently used number (1 MB).
+> > 
+> > References: https://bugzilla.kernel.org/show_bug.cgi?id=34102
+> > Reported-by: Martin Steigerwald <Martin@Lichtvoll.de>
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> OK, there are no comments, so my understanding is that everyone is fine
+> with this patch and I can add it to my linux-next branch.
+
+Actually no, I don't like it. Yes, knob might be useful for debugging,
+but having it as part of official kernel interface...
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
