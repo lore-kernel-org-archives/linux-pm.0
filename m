@@ -1,17 +1,18 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: pm loss development
-Date: Tue, 17 May 2011 20:12:03 -0700
-Message-ID: <20110518031203.GA3640__37741.0828987651$1305688393$gmane$org@gvim.org>
-References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
-	<201105131854.57854.rjw@sisk.pl> <20110514163513.GB8292@gvim.org>
-	<201105180107.58078.rjw@sisk.pl>
-Reply-To: markgross@thegnar.org
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v4 2/2] PM / Core: partial resume/suspend API
+ for suspend_again users.
+Date: Wed, 18 May 2011 14:58:36 +0900
+Message-ID: <BANLkTinWF108dOaL-u7Y9vU9Z5X-vSn8zQ__17265.991253271$1305698381$gmane$org@mail.gmail.com>
+References: <20110512061928.GB2460@localhost.ucw.cz>
+	<1305608346-23800-1-git-send-email-myungjoo.ham@samsung.com>
+	<1305608346-23800-2-git-send-email-myungjoo.ham@samsung.com>
+	<201105172252.32135.rjw@sisk.pl>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201105180107.58078.rjw@sisk.pl>
+In-Reply-To: <201105172252.32135.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,50 +23,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <lamiaposta71@gmail.com>, markgross@thegnar.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 18, 2011 at 01:07:57AM +0200, Rafael J. Wysocki wrote:
-> On Saturday, May 14, 2011, mark gross wrote:
-> > On Fri, May 13, 2011 at 06:54:57PM +0200, Rafael J. Wysocki wrote:
-> > > On Friday, May 13, 2011, Raffaele Recalcati wrote:
-> > > > Hi Rafael,
-> > > > 
-> > > > 2011/5/12 Rafael J. Wysocki <rjw@sisk.pl>:
-> > > > > On Thursday, May 12, 2011, Raffaele Recalcati wrote:
-> > > > >> What happen normally in runtime pm implementation is that every devices
-> > > > >> are switched off and are enabled only when needed.
-> > > > >> In our case instead we have a completely functional embedded system and,
-> > > > >> when an asyncrhonous event appear, we have only some tens milliseconds
-> > > > >> before the actual power failure takes place.
-> > > > >> This patchset add a support in order to switch off not vital part of the system,
-> > > > >> in order to allow the board to survive longer.
-> > > > >> This allow the possibility to save important data.
-> > > > >
-> > > > > OK, so first, who decides what parts of the system are vital and what aren't?
-> > > > 
-> > > > Take a quick look at Documentation/power/loss.txt  paragrpah "2.4
-> > > > Power loss policies".
-> > > > You can decide what can be powered off.
-> > > 
-> > > I read the patches.  My question was about the general idea of who should
-> > > be responsible of making these decisions.
-> > 
-> > I would expect the system integrator would based on the application the
-> > device is getting deployed into.
-> > 
-> > A generic opportunistic policy for peripherals that are stateless and can
-> > be trivially power gated off/on from an ISR could be a default but, for
-> > peripherals that need to do some processing (like waiting on an eMMC DMA
-> > to complete) can take time to power down into a safe state.
-> 
-> What do you mean by safe state?
->
-I need to get more details on this but I assume its a state where the
-meta data of the file system is committed to the emmc before lights go
-off such that when power is reapplied that the damage isn't too big. 
-
-I've also heard some talk of sim card corruption risks but, I don't have
-first hand info on that.
-
---mark
+MjAxMS81LzE4IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gT24gVHVlc2RheSwg
+TWF5IDE3LCAyMDExLCBNeXVuZ0pvbyBIYW0gd3JvdGU6Cj4+IEEgdXNhZ2UgZXhhbXBsZSBpczoK
+Pj4KPj4gYm9vbCBleGFtcGxlX3N1c3BlbmRfYWdhaW4odm9pZCkKPj4gewo+PiDCoCDCoCDCoCBp
+bnQgZXJyb3IsIG1vbml0b3JfcmVzdWx0Owo+Pgo+PiDCoCDCoCDCoCBpZiAoIXdha2V1cF9yZWFz
+b25faXNfcG9sbGluZygpKQo+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gZmFsc2U7Cj4+
+Cj4+IMKgIMKgIMKgIGRwbV9wYXJ0aWFsX3Jlc3VtZShQTVNHX1JFU1VNRSwgZGV2cywgQVJSQVlf
+U0laRShkZXZzKSk7Cj4KPiBJJ20gbm90IHN1cmUgeW91IG5lZWQgdGhlIGZpcnN0IGFyZ3VtZW50
+IGhlcmUuIMKgQWxzbywgaWYgdGhlIGFycmF5IGlzCj4gTlVMTCB0ZXJtaW5hdGVkLCB5b3Ugd29u
+J3QgbmVlZCB0aGUgdGhpcmQgb25lLgo+CgpJdCB3YXMgdG8gcGFzcyB0aGUgcGFyYW1ldGVyIHRv
+IGRldmljZV9yZXN1bWUoKSwgcG1fZGV2X2VycigpLApkZXZpY2VfY29tcGxldGUoKSwgYW5kIGRl
+dmljZV9wcmVwYXJlKCksIHdoaWNoIGhhdmUgYmVlbiB1c2luZyB0aGUKc3RhdGUgdmFsdWUuIEhv
+d2V2ZXIsIGFzIGl0IGlzIHN1cHBvc2VkIHRvIGJlIHVzZWQgaW4gdGhlIGNvbnRleHQgb2YKc3Vz
+cGVuZF9kZXZpY2VzX2FuZF9lbnRlcigpLCBJJ2xsIHJlbW92ZSBpdCBhbmQgYXNzdW1lIFBNU0df
+U1VTUEVORAphbmQgUE1TR19SRVNVTUUgYXJlIGluIGVmZmVjdC4KCkZvciB0aGUgYXJyYXkgc3R5
+bGUsIGRvIHdlIGdlbmVyYWxseSBwcmVmZXIgdG8gdXNlIE5VTEwgYXQgdGhlIGVuZApyYXRoZXIg
+dGhhbiBzdXBwbHlpbmcgdGhlIHNpemU/IElmIHNvLCBJJ2xsIGNoYW5nZSB0aGUgYXJyYXkgc3R5
+bGUuCgo+PiDCoCDCoCDCoCByZXN1bWVfY29uc29sZSgpOwo+Pgo+PiDCoCDCoCDCoCBtb25pdG9y
+X3Jlc3VsdCA9IG1vbml0b3Jfc29tZXRoaW5nKCk7Cj4+Cj4+IMKgIMKgIMKgIHN1c3BlbmRfY29u
+c29sZSgpOwo+PiDCoCDCoCDCoCBlcnJvciA9IGRwbV9wYXJ0aWFsX3N1c3BlbmQoUE1TR19TVVNQ
+RU5ELCBkZXZzLCBBUlJBWV9TSVpFKGRldnMpKTsKPgo+IFNhbWUgaGVyZS4KPgo+PiDCoCDCoCDC
+oCBpZiAoZXJyb3IgfHwgbW9uaXRvcl9yZXN1bHQgPT0gRVJST1IpCj4+IMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIHJldHVybiBmYWxzZTsKPj4KPj4gwqAgwqAgwqAgcmV0dXJuIHRydWU7Cj4+IH0KPgo+
+IFRoYXQgc2FpZCwgSSBkb24ndCBsaWtlIHRoaXMgcGF0Y2guIMKgVGhlIHJlYXNvbiBpcyB0aGF0
+IHlvdSBjYWxsCj4gc3VzcGVuZF9lbnRlcigpIGlzIGEgbG9vcCBhbmQgaXQgY2FsbHMgdGhlIF9u
+b2lycSgpIGNhbGxiYWNrcyBmb3IKPiBfYWxsXyBkZXZpY2VzIGFuZCBub3cgeW91J3JlIGdvaW5n
+IHRvIG9ubHkgY2FsbCAucmVzdW1lKCkgYW5kCj4gLnN1c3BlbmQoKSBmb3Igc2V2ZXJhbCBzZWxl
+Y3RlZCBkZXZpY2VzLiDCoFRoaXMgaXMgbm90IHRvbyBjb25zaXN0ZW50Lgo+Cj4gSSB3b25kZXIg
+aWYgdGhvc2UgZGV2aWNlcyBuZWVkZWQgZm9yIC5zdXNwZW5kX2FnYWluKCkgdG8gd29yayBvbgo+
+IHlvdXIgcGxhdGZvcm0gY291bGQgYmUgcmVzdW1lZCBhbmQgc3VzcGVuZGVkIGJ5IHRoZWlyIGRy
+aXZlcnMnCj4gX25vaXJxKCkgY2FsbGJhY2tzPwoKRm9yIG5vdywgd2UgbmVlZCB0byBhY2Nlc3Mg
+UE1JQywgRnVlbC1HYXVnZSwgQ2hhcmdlciAoaW1wbGVtZW50ZWQgYXMKcmVndWxhdG9ycyksIFJU
+QywgQURDICh3LyBod21vbiksIGFuZCBVQVJUKGRyaXZlcnMvdHR5L3NlcmlhbCkuCkZvciBQTUlD
+LCBGdWVsLUdhdWdlLCBDaGFyZ2VyLCBhbmQgUlRDLCB0aGV5IHdpbGwgd29yayB3aXRoIG5vX2ly
+cQpjYWxsYmFja3Mgd2l0aG91dCBhbnkgbW9kaWZpY2F0aW9uLgpBREMgd2lsbCB3b3JrIGlmIHdl
+IGp1c3QgbGV0IGl0IHN1c3BlbmQgYW5kIHJlc3VtZSB3aXRoIG5vX2lycSBjYWxsYmFja3MuCgpI
+b3dldmVyLCBmb3IgVUFSVC9zZXJpYWwsIGFsdGhvdWdoIGl0IGlzIG9ubHkgdXNlZCBmb3IgZGVi
+dWdnaW5nLCBpdAp3b3VsZG4ndCBiZSBlYXN5IGFuZCBjbGVhbiB0byBlbmFibGUgb25seSB3aXRo
+IG5vX2lycSBjYWxsYmFja3MuIElmIHdlCmNhbiBrZWVwIG9ic2VydmluZyB0aGUgY29uc29sZSB3
+aXRoIHN1c3BlbmRfY29uc29sZV9lbmFibGVkPTAsIGl0CndvdWxkIGJlIG11Y2ggaGVscGZ1bC4K
+SW4gb3JkZXIgdG8gbGV0IHNvbWUgVUFSVC9zZXJpYWwgZHJpdmVycyB3b3JrIHdpdGggbm8taXJx
+IGNhbGxiYWNrcywKd2UnZCBuZWVkIHJlY29uc3RydWN0aW9uIGluIGRyaXZlcnMvdHR5L3Nlcmlh
+bC9zZXJpYWxfY29yZS5jLCB0b28uCgpBbnl3YXksIGFzIHRoZSBlZmZlY3Qgb2Ygbm90IGhhdmlu
+ZyBwYXJ0aWFsIHN1c3BlbmQvcmVzdW1lIGlzIGxpbWl0ZWQKZm9yIG5vdyAoc3VwcG9ydCBmb3Ig
+VUFSVC9zZXJpYWwgY2FuIHdhaXQpLCBJIG1heSBkZWZlciB0aGlzIHBhcnQgYW5kCndhaXQgZm9y
+IGJldHRlciBhbmQgY2xlYW4gbWV0aG9kcy4gQW5kIHllcywgYmVjYXVzZSBvZiB0aGUgcG9zc2li
+aWxpdHkKb2YgaGF2aW5nIGRlcGVuZGVuY2llcyBiZXR3ZWVuIGRldmljZXMsIHRoZSBpbmNvbnNp
+c3RlbmN5IHlvdSd2ZQptZW50aW9uZWQgY291bGQgYmUgYW4gaXNzdWUgZm9yIHNvbWUgc3lzdGVt
+cy4gSG93ZXZlciwgYmVjYXVzZSBzdWNoCmRlcGVuZGVuY2llcyBhcmUgbm90IGV4cGxpY2l0bHkg
+ZXhwcmVzc2VkIHRvIGtlcm5lbCB3aGlsZSB0aGUgcGxhdGZvcm0Kc2hvdWxkIGtub3cgYWJvdXQg
+dGhlbSwgcGFydGlhbF9zdXNwZW5kL3Jlc3VtZSB3YXMgc3VwcG9zZWQgdG8gYmUKY2FsbGVkIGJ5
+IHRoZSBwbGF0Zm9ybSdzIHN1c3BlbmRfYWdhaW4gb3BzLgoKPgo+IFJhZmFlbAo+Cj4KCgpDaGVl
+cnMhCgotIE15dW5nSm9vCi0tIApNeXVuZ0pvbyBIYW0gKO2VqOuqheyjvCksIFBoLkQuCk1vYmls
+ZSBTb2Z0d2FyZSBQbGF0Zm9ybSBMYWIsCkRpZ2l0YWwgTWVkaWEgYW5kIENvbW11bmljYXRpb25z
+IChETUMpIEJ1c2luZXNzClNhbXN1bmcgRWxlY3Ryb25pY3MKY2VsbDogODItMTAtNjcxNC0yODU4
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBt
+IG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczov
+L2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
