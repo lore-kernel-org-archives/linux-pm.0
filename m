@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: xHCI and suspend/resume
-Date: Wed, 18 May 2011 01:38:29 +0200
-Message-ID: <201105180138.29764.rjw__48209.2584287331$1305675519$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1105121733370.1917-100000@iolanthe.rowland.org>
-	<201105180056.03337.rjw@sisk.pl>
-	<BANLkTi=mphkfHfd7aeZb+d1uAeAhj1=qFg@mail.gmail.com>
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Re: [PATCH v2 3/3] PM / DEVFREQ: add sysfs interface
+	(including user tickling)
+Date: Wed, 18 May 2011 09:43:08 +0900
+Message-ID: <BANLkTin+sJeg20BXbOfe7TyDhuDWZqqMMQ__48164.2965497032$1305679462$gmane$org@mail.gmail.com>
+References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
+	<20110511225540.GA3492@suse.de>
+	<BANLkTik__9G-DuSsT_kAc69d+5g8xcVyFg@mail.gmail.com>
+	<201105180041.57723.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=mphkfHfd7aeZb+d1uAeAhj1=qFg@mail.gmail.com>
+In-Reply-To: <201105180041.57723.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,77 +21,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dwight Schauer <dschauer@gmail.com>
-Cc: Sarah Sharp <sarah.a.sharp@linux.intel.com>, dschauer@ti.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, May 18, 2011, Dwight Schauer wrote:
-> On Tue, May 17, 2011 at 5:56 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday, May 18, 2011, Dwight Schauer wrote:
-> >> On Tue, May 17, 2011 at 4:54 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Tuesday, May 17, 2011, Dwight Schauer wrote:
-> >> >> On Tue, May 17, 2011 at 4:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > ...
-> >> >> >
-> >> >> > OK, one more test, please.
-> >> >> >
-> >> >> > Try to do
-> >> >> >
-> >> >> > # echo core > /sys/power/pm_test
-> >> >> > # echo mem > /sys/power/state
-> >> >> >
-> >> >> > (that should simulate suspend, but without going into the BIOS, and it
-> >> >> > should return do the command prompt after 5-10 sec.) and check if the
-> >> >> > USB3 controllers work after that ("echo none > /sys/power/pm_test" resets
-> >> >> > to the normal suspend behavior).
-> >> >> >
-> >> >> > Thanks,
-> >> >> > Rafael
-> >> >>
-> >> >> No problem.
-> >> >>
-> >> >> The simulated suspend works fine.
-> >> >
-> >> > Good.
-> >> >
-> >> >> Also, waking up from S3 via a PS/2 keyboard works fine.
-> >> >
-> >> > Hmm.  Do you mean that the USB3 controllers work after the resume if
-> >> > the box has been woken up via the keyboard and they don't work when it
-> >> > has been woken up via a power button?
-> >> >
-> >> > Rafael
-> >>
-> >> They work either way. I'm just not able to get the USB keyboard that
-> >> is connected to the USB3 controller to perform the wakeup. (Which is
-> >> what I thought I made clear from the beginning and what Alan Stern had
-> >> reiterated for new readers further into the thread).
-> >
-> > Oh, I must have missed that information.  Sorry about that.
-> >
-> > So, the situation is that if you set up the USB3 controllers to wake up
-> > and next you wake up the system from S3 using a USB device connected to one
-> > of those controllers, then they appear to be in D3 after the resume and
-> > apparently cannot be put into D0.  However, if the wakeup is done in any
-> > different way, they work correctly after the resume, right?
-> >
-> > Is that the case on both the affected systems?
-> >
-> 
-> On both systems the USB3 controllers plugged into PCIe slots work fine
-> after the system has been woken up from S3 suspend state.
-> 
-> The USB3 keyboard plugged into the PCIe USB3 controller is immediately
-> avaiable after the system has woken up. It is just that in Linux a
-> keyboard plugged into the USB3 controller can not be used to wake the
-> system up when it has gone into S3 suspend. With Windows 7 on our test
-> systems our USB3 contoller (the Texas Instruments Inc. PCEe xHCI
-> device) a USB keyboard plugged into it can wake it up from an S3
-> suspend.
+On Wed, May 18, 2011 at 7:41 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, May 17, 2011, MyungJoo Ham wrote:
+>> On Thu, May 12, 2011 at 7:55 AM, Greg KH <gregkh@suse.de> wrote:
+>> > On Wed, May 11, 2011 at 04:58:43PM +0900, MyungJoo Ham wrote:
+>> >> 1. System-wide sysfs interface
+>> >> - tickle_all =A0R: number of tickle_all execution
+>> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 W: tickle all devfreq devices
+>> >> - min_interval =A0 =A0 =A0 =A0R: devfreq monitoring base interval in =
+ms
+>> >> - monitoring =A0R: shows whether devfreq monitoring is active or
+>> >> =A0 not.
+>> >>
+>> >> 2. Device specific sysfs interface
+>> >> - tickle =A0 =A0 =A0R: number of tickle execution for the device
+>> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 W: tickle the device
+>> >
+>> > Any sysfs file change/addition/removal needs to have a
+>> > Documentation/ABI/ entry as well. =A0Please add that to this patch ins=
+tead
+>> > of burying it in the changelog entry, where no one will be able to find
+>> > it in the future.
+>> >
+>> > thanks,
+>> >
+>> > greg k-h
+>> >
+>>
+>> Sure, I'll add Documentation/ABI/testing/* entries.
+>>
+>> However, would it be appropriate for "1. System-wide sysfs interface"
+>> to be in "sysfs-class-power" and for "2. Device specific sysfs
+>> interface" to be in "sysfs-devices-devfreq"?
+>>
+>> System-wide sysfs interface is in /sys/class/power/devfreq/* and
+>
+> Hmm. =A0Why not to use /sys/power/ that's already there?
 
-I see.  It seems I'm confusing two different bug reports. :-(  Sorry again.
+Ah.. that was my mistake. I'd put it at /sys/power/devfreq/*.
 
-The runtime PM wakeup aside, what's the contents of /proc/acpi/wakeup
-before suspend (when you're going to try to wake up the system via USB)?
+Thank you for cleaning that up.
 
-Rafael
+>
+>> Device specific sysfs interface is in /sys/...DEVICE.../devfreq/* .
+>
+> Thanks,
+> Rafael
+>
+
+Cheers!
+- MyungJoo
+-- =
+
+MyungJoo Ham, Ph.D.
+Mobile Software Platform Lab,
+Digital Media and Communications (DMC) Business
+Samsung Electronics
+cell: 82-10-6714-2858
