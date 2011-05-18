@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
-	ahci_start_engine compliant to AHCI spec"
-Date: Wed, 18 May 2011 21:44:37 +0200
-Message-ID: <201105182144.37713.rjw__9543.23679111457$1305747956$gmane$org@sisk.pl>
-References: <201105120025.34531.rjw@sisk.pl> <20633.1305565337@localhost>
-	<BANLkTin7NgUMXSVyKn6P0TCrFZ5uaaRL1w@mail.gmail.com>
+Subject: Re: [PATCH v2 2/3] PM / DEVFREQ: add example governors
+Date: Wed, 18 May 2011 21:46:51 +0200
+Message-ID: <201105182146.51869.rjw__35434.7721128308$1305748172$gmane$org@sisk.pl>
+References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
+	<201105180039.56806.rjw@sisk.pl>
+	<BANLkTim0DkhcjWw7fM0e-UhyB3=GkQ7nKw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTin7NgUMXSVyKn6P0TCrFZ5uaaRL1w@mail.gmail.com>
+In-Reply-To: <BANLkTim0DkhcjWw7fM0e-UhyB3=GkQ7nKw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jian Peng <jipeng2005@gmail.com>
-Cc: Valdis.Kletnieks@vt.edu, Michael Leun <lkml20100708@newton.leun.net>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
+To: myungjoo.ham@gmail.com
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, May 18, 2011, Jian Peng wrote:
-> Hi, Valdis/Rafael/Michael,
+On Wednesday, May 18, 2011, MyungJoo Ham wrote:
+> 2011/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Wednesday, May 11, 2011, MyungJoo Ham wrote:
+> >> Three CPUFREQ-like governors are provided as examples.
+> >>
+> >> powersave: use the lowest frequency possible. The user (device) should
+> >> set the polling_ms as 0 because polling is useless for this governor.
+> >>
+> >> performance: use the highest freqeuncy possible. The user (device)
+> >> should set the polling_ms as 0 because polling is useless for this
+> >> governor.
+> >>
+> >> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
+> >>
+> >> When a user updates OPP entries (enable/disable/add), OPP framework
+> >> automatically notifies DEVFREQ to update operating frequency
+> >> accordingly. Thus, DEVFREQ users (device drivers) do not need to update
+> >> DEVFREQ manually with OPP entry updates or set polling_ms for powersave
+> >> , performance, or any other "static" governors.
+> >
+> > Well, do you expect anyone to actually use them?  If not, it would make
+> > more sense to put them into a doc.
 > 
-> Could you help me test the following change?
-> 
-> After reverting 81ca7e4, add 5ms delay as follow since that seems also
-> fixing the issue on my SATA host controller that requires 81ca7e4.
-> 
-> In drivers/ata/libahci.c, inside ahci_hardreset() function,
-> 
-> 
-> 1333 <http://lxr.linux.no/linux+*/drivers/ata/libahci.c#L1333>
-> ahci_start_engine
-> <http://lxr.linux.no/linux+*/+code=ahci_start_engine>(ap
-> <http://lxr.linux.no/linux+*/+code=ap>);
-> 
->             msleep(5);1334
-> <http://lxr.linux.no/linux+*/drivers/ata/libahci.c#L1334>1335
-> <http://lxr.linux.no/linux+*/drivers/ata/libahci.c#L1335>        if
-> (online <http://lxr.linux.no/linux+*/+code=online>)1336
-> <http://lxr.linux.no/linux+*/drivers/ata/libahci.c#L1336>
->   *class <http://lxr.linux.no/linux+*/+code=class> = ahci_dev_classify
-> <http://lxr.linux.no/linux+*/+code=ahci_dev_classify>(ap
-> <http://lxr.linux.no/linux+*/+code=ap>);
-> 
-> Since my host controller requires time to switch internal state to be ready.
-> Please let me know your testing result.
+> According to our experiences of DVFS(although this "DEVFREQ" is not
+> applied to them, yet) in memory-bus and GPU,
+> I expect most DEVFREQ users might use "simple_ondemand" and
+> expect "powersave" and "performance" will probably mostly used while
+> testing and debugging.
+> ("userspace"-like governor would be also useful for that purpose, but
+> I'd add it later)
 
-Could you simply post a patch?
+It would be good to have at least one in-tree user for each of them
+(not necessarily from the start, but at one point in the future at least).
 
+So if you have any _specific_ users in mind, please let me know.
+
+Thanks,
 Rafael
