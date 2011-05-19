@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
-	ahci_start_engine compliant to AHCI spec"
-Date: Thu, 19 May 2011 23:32:16 +0200
-Message-ID: <201105192332.16493.rjw__34513.7965785854$1305840753$gmane$org@sisk.pl>
-References: <201105120025.34531.rjw@sisk.pl> <201105191219.27743.rjw@sisk.pl>
-	<BANLkTin6+2obBm=+5Kd5Za1Lq-n4UQ-STw@mail.gmail.com>
+Subject: Re: pci 0000:0a:00.0: Refused to change power state,
+	currently in D3
+Date: Thu, 19 May 2011 23:35:22 +0200
+Message-ID: <201105192335.22414.rjw__21492.3494183042$1305840928$gmane$org@sisk.pl>
+References: <936833.81097.qm@web161805.mail.bf1.yahoo.com>
+	<201105151526.41801.rjw@sisk.pl>
+	<576614.9833.qm@web161818.mail.bf1.yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTin6+2obBm=+5Kd5Za1Lq-n4UQ-STw@mail.gmail.com>
+In-Reply-To: <576614.9833.qm@web161818.mail.bf1.yahoo.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,32 +20,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jian Peng <jipeng2005@gmail.com>
-Cc: Valdis.Kletnieks@vt.edu, Michael Leun <lkml20100708@newton.leun.net>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
+To: Mikko Vinni <mmvinni@yahoo.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 19, 2011, Jian Peng wrote:
-> Hi, Rafael,
+On Sunday, May 15, 2011, Mikko Vinni wrote:
+> From: Rafael J. Wysocki:
 > 
-> Yes. I tested without reverting the patch that caused failure on E6410 (with
-> same AHCI controller), The system is Ubuntu 11.04 with default 2.6.39-rc6
-> kernel (guess this should be same kernel as yours before reverting the
-> patch).
+> >>  in an HP Pavilion dv5 laptop model dv5-1250eo always at resume
+> >>  from s2ram the following messages are printed:
+> >> 
+> >>  pci 0000:0a:00.0: Refused to change power state, currently in D3
+> >>  pci 0000:0a:00.1: Refused to change power state, currently in D3
+> >>  pci 0000:0a:00.2: Refused to change power state, currently in D3
+> >>  pci 0000:0a:00.3: Refused to change power state, currently in D3
+> >>  pci 0000:0a:00.4: Refused to change power state, currently in D3
+> > 
+> > The lspci output indicates that this is a single multi-function
+> > device that doesn't change its power state when programmed to go
+> > into D0.  Perhaps it requires a power resource that is not available
+> > at the point we're trying to restore those devices' registers.
+> > 
+> > Hard to say what that may be, though.  Please attach the output of
+> > acpidump from the affected system.
 > 
-> My system worked well with AC power cable plugging in and out at boot time,
-> at runtime, and during "dd if=/dev/sda5 of=/dev/null ..".
+> Here it goes. Hopefully it contains the necessary parts and is not
+> too big for the lists (produced without any parameters to acpidump):
 
-What kind of disk did you use?  Mine is an Intel SSD.
+Thanks.  Unfortunately, I didn't have the time to look into it.
 
-> The config file I mentioned is those under /etc/ or other directories that
-> is used to control the power management.
+Could you please go to https://bugzilla.kernel.org/show_bug.cgi?id=35452
+and attach the acpidump output?
 
-They aren't relevant to this issue.
-
-> Did you test my patch? What it the result?
-
-No, I didn't.  Unfortunately, I won't be able to do any tests on the affected
-machine in the near future (most probably for the next two weeks or so).
-
-Thanks,
 Rafael
