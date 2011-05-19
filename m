@@ -1,17 +1,16 @@
-From: Davide Ciminaghi <ciminaghi@gnudd.com>
-Subject: Re: [PATCH 2/4] PM / Loss: power loss management
-Date: Thu, 19 May 2011 11:26:25 +0200
-Message-ID: <20110519092625.GB1446__22379.0210010067$1305797260$gmane$org@mail.gnudd.com>
-References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
-	<201105122157.46895.rjw@sisk.pl>
-	<20110513130212.GF29259@mail.gnudd.com>
-	<201105180132.30802.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
+	ahci_start_engine compliant to AHCI spec"
+Date: Thu, 19 May 2011 12:19:27 +0200
+Message-ID: <201105191219.27743.rjw__41054.568559821$1305800496$gmane$org@sisk.pl>
+References: <201105120025.34531.rjw@sisk.pl>
+	<BANLkTimZ9pe-FhkJYHTG1Jx8MUPrMHSFbA@mail.gmail.com>
+	<BANLkTim9_1Xt8oE4awbCO1iKUW96YUOv_A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201105180132.30802.rjw@sisk.pl>
+In-Reply-To: <BANLkTim9_1Xt8oE4awbCO1iKUW96YUOv_A@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,136 +20,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: davinci-linux-open-source@linux.davincidsp.com, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Raffaele Recalcati <raffaele.recalcati@bticino.it>, linux-pm@lists.linux-foundation.org, Raffaele Recalcati <lamiaposta71@gmail.com>
+To: Jian Peng <jipeng2005@gmail.com>
+Cc: Valdis.Kletnieks@vt.edu, Michael Leun <lkml20100708@newton.leun.net>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 18, 2011 at 01:32:30AM +0200, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> Sorry for the delay.
->
-hi,
+On Thursday, May 19, 2011, Jian Peng wrote:
+> Hi, Rafael,
 
-no problem. I'm having some extremely busy days at the moment, so I'm always 
-late too (as you see).
+Hi,
 
-... 
+> I am using Dell E6410 with same AHCI host controller as your system, but
+> could not reproduce the bug you found out (using Ubuntu 11.04 and 2.6.39-rc6
+> kernel).
 
-> > That was one of the two main reasons why we chose to put this stuff inside 
-> > the kernel. The other reason was that the mmc request queue can be easily 
-> > stopped from kernel space.
-> 
-> OK, but it's not really sufficient to notify drivers in that case, because
-> they may crash user space if they simply switch off devices.  Now, if the
-> power loss actually happens, that probably doesn't matter, but if power is
-> restored afterwards, that won't be nice.
-> 
-> The mmc request queue is a special case that shouldn't affect user space
-> directly, but other devices may be accessed in many different ways and
-> not all of them are safe to intercept forcibly.
-> 
+OK, do I think correctly you tested without the patch you sent previously?
 
-well, I don't know if this is completely correct, but my initial idea was to 
-find some way to just block user space processes when we're not sure about 
-power. Most devices can be accessed via some form of read()/write() or 
-enqueue/dequeue mechanism. What I would like to do is to temporarily blocking 
-such operations (or returning -EAGAIN in case of non-blocking open, for 
-instance). This should slightly reduce power consumption
-anyway, because user space processes cannot run. Then, each single driver 
-should decide whether it is safe or not to actually turn its device off,
-and then restore its state in case of power resume.
+> Do you know which config file I need change to perform this testing?
 
-> However, even for the mmc case you'd need a mechanism that will force
-> the filesystem on it to flush everything to the storage immediately.
-> 
+I'm not sure what you mean.  The kernel .config?
 
-I'm not completely sure about this. What we wanted to do was to avoid powering
-down the mmc while it is physically writing data into its internal memory.
-If we force a sync when the power loss warning event warning happens,
-it is very difficult to be able to guarantee that all buffered data will be 
-written before power actually dies. So we preferred to follow another strategy:
-let the mmc finish any running write operation, and then stop its request 
-queue. If power really goes down, then we hope that the file system journal 
-will fix things on next boot (yes, some data could get lost, but the fs should
-still be mountable). On the other hand, if power resumes, nothing bad should 
-happen for user space processes.
-
-> > Since forcing a given policy seemed the wrong thing to do, we chose to adopt
-....
-> > 
-> > maybe this is design choice comes from our little knowledge of pm_runtime, 
-> > but the reason why we didn't use the existing callbacks was that we wanted 
-> > to avoid any possible conflict.
-> > In our understanding, pm_runtime works more or less like this: "when 
-> > you're done with a peripheral, turn it off" (well, maybe also wait a little 
-> > while to avoid continuously toggling power on and off, thus wasting more 
-> > power than just doing nothing). This is because its goal is to save power 
-> > during normal operation.
-> > On the other hand, we needed something like this: "when some external event 
-> > takes place, just turn off anything you can as fast as you can".
-> 
-> This is more similar to system suspend than to runtime PM.
-> 
-> > Actually, one of the attempts we made before adding pm_loss was to implement 
-> > it via pm_runtime, by just immediately stopping devices on idle and refusing
-> > to turn them on again in case a power loss event took place in the meanwhile.
-> > This worked, and was ok for drivers with no implementation of the pm_runtime 
-> > callbacks, but introduced a potential conflict as far as pm_runtime enabled 
-> > drivers were concerned. That's why we (maybe wrongfully) thought a new 
-> > callback was needed.
-> 
-> Having considered that for a while I think that additional callbacks may be
-> necessary, because they generally may need to do more than just suspending
-> devices.
-> 
-
-ok.
-
-> > > > +This function can be optionally invoked by power loss policies in case of
-> > > > +system power changes (loss and/or resume). Of course every bus or device driver
-> > > > +can react to such events in some specific way. For instance the mmc block
-> > > > +driver will probably block its request queue during a temporary power loss.
-> > > 
-> > > I think you'd have to deal with user space somehow before suspending devices.
-> > > Runtime PM suspends devices when they aren't in use (as indicated by the
-> > > usage counters), but in this power loss case we may really end up suspending
-> > > devices that _are_ in use, right?
-> > > 
-> > yes. This is not a problem for us right now, because when a power loss happens,
-> > the "power bad" condition just lasts for about 100ms. At present, pm_loss
-> > callbacks are implemented for the mmc block device and a video capture device
-> > only.
-> 
-> While that may not be a problem to you, it is a problem in general and it
-> should be taken into account if we are to provide a generic framework for
-> such things.
-> 
-> > In practice what happens on our platform is that processes accessing the mmc 
-> > can be put to sleep until either the board dies or a power resume event takes 
-> > place. If video capture is running, some "black" frames are generated, but 
-> > that is not considered a real fault because power losses should not occur 
-> > during normal operation (unless you really turn the board off, of course).
-> > 
-> > That said, I think you're right anyway, userspace should be notified somehow.
-> > SIGPWR to init ?. As far as I know, there's no single place in the kernel 
-> > where SIGPWR is sent to init:
-> > 
-> > find . -name \*.c  | xargs grep SIGPWR
-> > ...
-> > ./drivers/char/snsc_event.c:            kill_cad_pid(SIGPWR, 0);
-> > ...
-> > ./arch/s390/kernel/nmi.c:               kill_cad_pid(SIGPWR, 1);
-> > 
-> > Maybe pm_loss could become such a place ?
-> 
-> I think so.  SIGPWR seems to be a good candidate, but that would change the
-> current (documented) behavior where SIGPWR is a synonym for SIGINFO.
-> 
-ok, I'll think about this.
-
-A new version of the patchset is underway, but as I told you I'm having quite
-a busy time, so I need some more days to finish and do some test.
-
-Thanks and regards
-Davide
+Rafael
