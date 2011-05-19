@@ -1,17 +1,14 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: pm loss development
-Date: Thu, 19 May 2011 05:45:39 -0700
-Message-ID: <20110519124539.GA10262__24935.8896552168$1305809202$gmane$org@gvim.org>
-References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
-	<201105180107.58078.rjw@sisk.pl> <20110518031203.GA3640@gvim.org>
-	<201105182143.13237.rjw@sisk.pl>
-Reply-To: markgross@thegnar.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM: Remove CONFIG_PM_VERBOSE
+Date: Thu, 19 May 2011 15:07:24 +0200
+Message-ID: <20110519130723.GB4996__18433.4519705319$1305810571$gmane$org@elf.ucw.cz>
+References: <201105140042.04064.rjw@sisk.pl> <201105162032.33480.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201105182143.13237.rjw@sisk.pl>
+In-Reply-To: <201105162032.33480.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,63 +19,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <lamiaposta71@gmail.com>, markgross@thegnar.org
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 18, 2011 at 09:43:13PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, May 18, 2011, mark gross wrote:
-> > On Wed, May 18, 2011 at 01:07:57AM +0200, Rafael J. Wysocki wrote:
-> > > On Saturday, May 14, 2011, mark gross wrote:
-> > > > On Fri, May 13, 2011 at 06:54:57PM +0200, Rafael J. Wysocki wrote:
-> > > > > On Friday, May 13, 2011, Raffaele Recalcati wrote:
-> > > > > > Hi Rafael,
-> > > > > > 
-> > > > > > 2011/5/12 Rafael J. Wysocki <rjw@sisk.pl>:
-> > > > > > > On Thursday, May 12, 2011, Raffaele Recalcati wrote:
-> > > > > > >> What happen normally in runtime pm implementation is that every devices
-> > > > > > >> are switched off and are enabled only when needed.
-> > > > > > >> In our case instead we have a completely functional embedded system and,
-> > > > > > >> when an asyncrhonous event appear, we have only some tens milliseconds
-> > > > > > >> before the actual power failure takes place.
-> > > > > > >> This patchset add a support in order to switch off not vital part of the system,
-> > > > > > >> in order to allow the board to survive longer.
-> > > > > > >> This allow the possibility to save important data.
-> > > > > > >
-> > > > > > > OK, so first, who decides what parts of the system are vital and what aren't?
-> > > > > > 
-> > > > > > Take a quick look at Documentation/power/loss.txt  paragrpah "2.4
-> > > > > > Power loss policies".
-> > > > > > You can decide what can be powered off.
-> > > > > 
-> > > > > I read the patches.  My question was about the general idea of who should
-> > > > > be responsible of making these decisions.
-> > > > 
-> > > > I would expect the system integrator would based on the application the
-> > > > device is getting deployed into.
-> > > > 
-> > > > A generic opportunistic policy for peripherals that are stateless and can
-> > > > be trivially power gated off/on from an ISR could be a default but, for
-> > > > peripherals that need to do some processing (like waiting on an eMMC DMA
-> > > > to complete) can take time to power down into a safe state.
-> > > 
-> > > What do you mean by safe state?
-> > >
-> > I need to get more details on this but I assume its a state where the
-> > meta data of the file system is committed to the emmc before lights go
-> > off such that when power is reapplied that the damage isn't too big. 
-> 
-> I don't think you can guarantee that the metadata won't be damaged
-> without notifying the filesystem of the event (and making it react
-> appropriately).
-> 
-true.  I'm just brain storming what infrastructure would be needed to
-support such a feature.
+On Mon 2011-05-16 20:32:33, Rafael J. Wysocki wrote:
+> On Saturday, May 14, 2011, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Now that we have CONFIG_DYNAMIC_DEBUG there is no need for yet
+> > another flag causing dev_dbg() and pr_debug() statements in the
+> > core PM code to produce output.  Moreover, CONFIG_PM_VERBOSE
+> > causes so much output to be generated that it's not really useful
+> > and almost no one sets it.
+> > 
+> > References: https://bugzilla.kernel.org/show_bug.cgi?id=23182
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> > I've also heard some talk of sim card corruption risks but, I don't have
-> > first hand info on that.
-> 
-> Well, I guess that might be prevented by the driver alone.
-Only the radio has a direct interface to the sim.  (pretty sure anyway)
-so this would transfer into some AT commands pushed to the modem.
+ACK
 
---mark
+> There are no comments, so my understanding is that no one has any objections to
+> this patch.  If that really is the case, I'm going to put it into
+> suspend-2.6/linux-next for 2.6.40.
+
+And sorry for slow responses.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
