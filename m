@@ -1,15 +1,13 @@
-From: Frank Hofmann <frank.hofmann@tomtom.com>
-Subject: [RFC PATCH] ARM hibernation / suspend-to-disk support
-	code
-Date: Thu, 19 May 2011 18:31:28 +0100 (BST)
-Message-ID: <alpine.DEB.2.00.1105181257370.2374__38070.754617411$1305826521$gmane$org@localhost6.localdomain6>
-References: <3DCE2F529B282E4B8F53D4D8AA406A07014FFE@008-AM1MPN1-022.mgdnok.nokia.com>
-Reply-To: frank.hofmann@tomtom.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/4] PM / Loss: power loss management
+Date: Thu, 19 May 2011 22:52:46 +0200
+Message-ID: <201105192252.46836.rjw__23772.4138227806$1305838424$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1105191021220.1900-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="1695163656-1068820027-1305826288=:8018"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <3DCE2F529B282E4B8F53D4D8AA406A07014FFE@008-AM1MPN1-022.mgdnok.nokia.com>
+In-Reply-To: <Pine.LNX.4.44L0.1105191021220.1900-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,295 +17,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: davinci-linux-open-source@linux.davincidsp.com, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Raffaele Recalcati <raffaele.recalcati@bticino.it>, linux-pm@lists.linux-foundation.org, Raffaele Recalcati <lamiaposta71@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thursday, May 19, 2011, Alan Stern wrote:
+> On Thu, 19 May 2011, Davide Ciminaghi wrote:
+> 
+> > I'm not completely sure about this. What we wanted to do was to avoid powering
+> > down the mmc while it is physically writing data into its internal memory.
+> > If we force a sync when the power loss warning event warning happens,
+> > it is very difficult to be able to guarantee that all buffered data will be 
+> > written before power actually dies. So we preferred to follow another strategy:
+> > let the mmc finish any running write operation, and then stop its request 
+> > queue. If power really goes down, then we hope that the file system journal 
+> > will fix things on next boot (yes, some data could get lost, but the fs should
+> > still be mountable). On the other hand, if power resumes, nothing bad should 
+> > happen for user space processes.
+> 
+> You could consider a totally different approach.
+> 
+> Each platform will have a different set of high-power devices it wants
+> to turn off when a power-loss warning occurs.  So instead of changing
+> the core PM interface, you could add a new "power_loss" notifier list.  
+> Only the most critical drivers would need to listen for notifications, 
+> and this could be different drivers on different platforms.
 
---1695163656-1068820027-1305826288=:8018
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Moreover, it would allow not only drivers, but also filesystems (for
+one example) to get notifications.
 
-Hi,
-
-/me again ...
-
-Sorry that this took a little ... holidays. And work. And distractions...
-
-Anyway, here we go again, basic code to enable hibernation 
-(suspend-to-disk) on ARM platforms.
-
-Any comments highly welcome.
-
-
-
-To use this, you need sleep.S modifications for your SoC type (to get 
-__save/__restore_processor_state hooks). I've sent some of those for 
-illustration earlier, they haven't changed, I've not included them here, 
-so pick these changes up from:
-
-http://68.183.106.108/lists/linux-pm/msg24020.html
-
-The patch below only contains the _generic_ code.
-
-
-This is tested on S5P6450 and OMAP3, with the sleep...S changes just 
-mentioned - check the archives for those. Works both with normal swsusp and 
-tuxonice (again, check the archives for the TOI modification needed).
-
-
-
-Previously, I've reported OMAP3 video issues, after resume-from-disk. That 
-isn't fully solved (it's a driver issue) but I've found a workaround: 
-Trigger the resume from initramfs, after loading a logo image into the 
-framebuffer and switching it on. That gets everything back without 
-corruptions / wrong LCD reinitialization.
-
-The OMAP video seems a bit of a diva; I've got one board type on which 
-suspend/resume work perfectly but the omapdss driver spits out thousands 
-of error interrupts during system startup (before the image is loaded), 
-and the other board where all that is fine but the restore somehow garbles 
-the LCD clocking (but the driver's sysfs files claim it's the same).
-
-
-In short: This stuff really works now, for all I can say. And adding 
-support for new type of ARM SoC doesn't touch the basic / generic code at 
-all anymore either.
-
-
-
-
-Anyway ...
-About the patch, changes vs. all previous suggestions:
-
-* Made the assembly sources as small as I responsibly could ;-)
-   They compile for thumb2 (but I haven't tested that yet) as well.
-
-* The page copy loop is now a C function. That also has the advantage
-   that one can use cpu_switch_mm() - a macro - there for swapper_pg_dir,
-   which makes resume via uswsusp ioctl or /sys/power/tuxonice/do_resume
-   possible (only tested the latter, though).
-
-* The SoC state save/restore is made to (re-)use the existing code in
-   sleep....S  for the particular chip.
-   OMAP3 and S5P64xx are provided as examples of that.
-
-* The save/restore_processor_state() hooks are now used in the same way
-   as e.g. existing powerpc code uses them (to trigger lazy saves before
-   and perform cache flushes after).
-
-
-Things that probably aren't perfect yet:
-
-* The code currently reserves a full page for the saved "core" state.
-   This is more than absolutely necessary; anyone think it's a problem ?
-
-* it sets aside another half a page of __nosavedata page for use as
-   temporary stack during the image copy (so that funcs can be called).
-
-   Right now on ARM, that's not an issue because even with TuxOnIce in,
-   there's less than 20 bytes of nosave stuff, so can as well put the
-   rest of that page to good use ;-)
-
-* I'd love to get rid of the include/asm-generic/vmlinux.lds.h change,
-   as it seems that's not necessary in other architectures.
-   Without that, the code gives a link error when building vmlinux
-   though, and I'm unsure how to address that.
-
-* The "integration" with the CPU sleep code is rather "backdoorish".
-   While the hooks into ..._cpu_suspend aren't massive, and there's no
-   code duplication, it'd be nicer to eventually have a cleaner way.
-
-* An OMAPDSS restore troubleshooting HOWTO would be helpful ;-)
-
-
-* The patch needs to be rebaselined against a current kernel;
-   any preferences which tree to base this on ?
-
-
-
-Thanks for all help with the little nits !
-FrankH.
---1695163656-1068820027-1305826288=:8018
-Content-Type: TEXT/x-diff; name=hibernate-19May2011.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.2.00.1105191831280.8018@localhost6.localdomain6>
-Content-Description: 
-Content-Disposition: attachment; filename=hibernate-19May2011.patch
-
-IGFyY2gvYXJtL0tjb25maWcgICAgICAgICAgICAgICAgICB8ICAgIDMgKw0K
-IGFyY2gvYXJtL2luY2x1ZGUvYXNtL21lbW9yeS5oICAgICB8ICAgIDEgKw0K
-IGFyY2gvYXJtL2luY2x1ZGUvYXNtL3N1c3BlbmQuaCAgICB8ICAgIDYgKysN
-CiBhcmNoL2FybS9rZXJuZWwvY3B1LmMgICAgICAgICAgICAgfCAgIDY1ICsr
-KysrKysrKysrKysrKysrKysrKysrKysrDQogYXJjaC9hcm0va2VybmVsL3N3
-c3VzcC5TICAgICAgICAgIHwgICA5MiArKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrDQogYXJjaC9hcm0va2VybmVsL3ZtbGludXgubGRz
-LlMgICAgIHwgICAgMyArLQ0KIGluY2x1ZGUvYXNtLWdlbmVyaWMvdm1saW51
-eC5sZHMuaCB8ICAgIDIgKy0NCiA3IGZpbGVzIGNoYW5nZWQsIDE3MCBpbnNl
-cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvYXJj
-aC9hcm0vS2NvbmZpZyBiL2FyY2gvYXJtL0tjb25maWcNCmluZGV4IDZiNjc4
-NmMuLjg1OWRkODYgMTAwNjQ0DQotLS0gYS9hcmNoL2FybS9LY29uZmlnDQor
-KysgYi9hcmNoL2FybS9LY29uZmlnDQpAQCAtMTk4LDYgKzE5OCw5IEBAIGNv
-bmZpZyBWRUNUT1JTX0JBU0UNCiBjb25maWcgQVJDSF9IQVNfQ1BVX0lETEVf
-V0FJVA0KIAlkZWZfYm9vbCB5DQogDQorY29uZmlnIEFSQ0hfSElCRVJOQVRJ
-T05fUE9TU0lCTEUNCisJZGVmX2Jvb2wgbg0KKw0KIHNvdXJjZSAiaW5pdC9L
-Y29uZmlnIg0KIA0KIHNvdXJjZSAia2VybmVsL0tjb25maWcuZnJlZXplciIN
-CmRpZmYgLS1naXQgYS9hcmNoL2FybS9pbmNsdWRlL2FzbS9tZW1vcnkuaCBi
-L2FyY2gvYXJtL2luY2x1ZGUvYXNtL21lbW9yeS5oDQppbmRleCA1NDIxZDgy
-Li4yM2U5M2E2IDEwMDY0NA0KLS0tIGEvYXJjaC9hcm0vaW5jbHVkZS9hc20v
-bWVtb3J5LmgNCisrKyBiL2FyY2gvYXJtL2luY2x1ZGUvYXNtL21lbW9yeS5o
-DQpAQCAtMTkxLDYgKzE5MSw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCAqcGh5
-c190b192aXJ0KHVuc2lnbmVkIGxvbmcgeCkNCiAgKi8NCiAjZGVmaW5lIF9f
-cGEoeCkJCQlfX3ZpcnRfdG9fcGh5cygodW5zaWduZWQgbG9uZykoeCkpDQog
-I2RlZmluZSBfX3ZhKHgpCQkJKCh2b2lkICopX19waHlzX3RvX3ZpcnQoKHVu
-c2lnbmVkIGxvbmcpKHgpKSkNCisjZGVmaW5lIF9fcGFfc3ltYm9sKHgpCQlf
-X3BhKFJFTE9DX0hJREUoKHVuc2lnbmVkIGxvbmcpKHgpLDApKQ0KICNkZWZp
-bmUgcGZuX3RvX2thZGRyKHBmbikJX192YSgocGZuKSA8PCBQQUdFX1NISUZU
-KQ0KIA0KIC8qDQpkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vaW5jbHVkZS9hc20v
-c3VzcGVuZC5oIGIvYXJjaC9hcm0vaW5jbHVkZS9hc20vc3VzcGVuZC5oDQpu
-ZXcgZmlsZSBtb2RlIDEwMDY0NA0KaW5kZXggMDAwMDAwMC4uN2FiMWZkMg0K
-LS0tIC9kZXYvbnVsbA0KKysrIGIvYXJjaC9hcm0vaW5jbHVkZS9hc20vc3Vz
-cGVuZC5oDQpAQCAtMCwwICsxLDYgQEANCisjaWZuZGVmIF9fQVNNX0FSTV9T
-VVNQRU5EX0gNCisjZGVmaW5lIF9fQVNNX0FSTV9TVVNQRU5EX0gNCisNCitz
-dGF0aWMgaW5saW5lIGludCBhcmNoX3ByZXBhcmVfc3VzcGVuZCh2b2lkKSB7
-IHJldHVybiAwOyB9DQorDQorI2VuZGlmIC8qIF9fQVNNX0FSTV9TVVNQRU5E
-X0ggKi8NCmRpZmYgLS1naXQgYS9hcmNoL2FybS9rZXJuZWwvY3B1LmMgYi9h
-cmNoL2FybS9rZXJuZWwvY3B1LmMNCm5ldyBmaWxlIG1vZGUgMTAwNjQ0DQpp
-bmRleCAwMDAwMDAwLi43NjRjOGZhDQotLS0gL2Rldi9udWxsDQorKysgYi9h
-cmNoL2FybS9rZXJuZWwvY3B1LmMNCkBAIC0wLDAgKzEsNjUgQEANCisvKg0K
-KyAqIEhpYmVybmF0aW9uIHN1cHBvcnQgc3BlY2lmaWMgZm9yIEFSTQ0KKyAq
-DQorICogRGVyaXZlZCBmcm9tIHdvcmsgb24gQVJNIGhpYmVybmF0aW9uIHN1
-cHBvcnQgYnk6DQorICoNCisgKiBVYnVudHUgcHJvamVjdCwgaGliZXJuYXRp
-b24gc3VwcG9ydCBmb3IgbWFjaC1kb3ZlDQorICogQ29weXJpZ2h0IChDKSAy
-MDEwIE5va2lhIENvcnBvcmF0aW9uIChIaXJvc2hpIERveXUpDQorICogQ29w
-eXJpZ2h0IChDKSAyMDEwIFRleGFzIEluc3RydW1lbnRzLCBJbmMuIChUZWVy
-dGggUmVkZHkgZXQgYWwuKQ0KKyAqCWh0dHBzOi8vbGttbC5vcmcvbGttbC8y
-MDEwLzYvMTgvNA0KKyAqCWh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcvcGlwZXJtYWlsL2xpbnV4LXBtLzIwMTAtSnVuZS8wMjc0MjIuaHRt
-bA0KKyAqCWh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvOTY0
-NDIvDQorICoNCisgKiBDb3B5cmlnaHQgKEMpIDIwMDYgUmFmYWVsIEouIFd5
-c29ja2kgPHJqd0BzaXNrLnBsPg0KKyAqDQorICogTGljZW5zZSB0ZXJtczog
-R05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgKEdQTCkgdmVyc2lvbiAyDQor
-ICovDQorDQorI2luY2x1ZGUgPGxpbnV4L21tLmg+DQorI2luY2x1ZGUgPGxp
-bnV4L3NjaGVkLmg+DQorI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4NCisj
-aW5jbHVkZSA8YXNtL3RsYmZsdXNoLmg+DQorDQorZXh0ZXJuIGNvbnN0IHZv
-aWQgX19ub3NhdmVfYmVnaW4sIF9fbm9zYXZlX2VuZDsNCisNCitpbnQgcGZu
-X2lzX25vc2F2ZSh1bnNpZ25lZCBsb25nIHBmbikNCit7DQorCXVuc2lnbmVk
-IGxvbmcgbm9zYXZlX2JlZ2luX3BmbiA9IF9fcGFfc3ltYm9sKCZfX25vc2F2
-ZV9iZWdpbikgPj4gUEFHRV9TSElGVDsNCisJdW5zaWduZWQgbG9uZyBub3Nh
-dmVfZW5kX3BmbiA9IFBBR0VfQUxJR04oX19wYV9zeW1ib2woJl9fbm9zYXZl
-X2VuZCkpID4+IFBBR0VfU0hJRlQ7DQorDQorCXJldHVybiAocGZuID49IG5v
-c2F2ZV9iZWdpbl9wZm4pICYmIChwZm4gPCBub3NhdmVfZW5kX3Bmbik7DQor
-fQ0KKw0KK3ZvaWQgc2F2ZV9wcm9jZXNzb3Jfc3RhdGUodm9pZCkNCit7DQor
-CWZsdXNoX3RocmVhZCgpOw0KK30NCisNCit2b2lkIHJlc3RvcmVfcHJvY2Vz
-c29yX3N0YXRlKHZvaWQpDQorew0KKwlsb2NhbF9mbHVzaF90bGJfYWxsKCk7
-DQorfQ0KKw0KK3U4IF9fc3dzdXNwX2FyY2hfY3R4W1BBR0VfU0laRV0gX19h
-dHRyaWJ1dGVfXygoYWxpZ25lZChQQUdFX1NJWkUpKSk7DQordTggX19zd3N1
-c3BfcmVzdW1lX3N0a1tQQUdFX1NJWkUvMl0gX19ub3NhdmVkYXRhOw0KKw0K
-Ky8qDQorICogVGhlIGZyYW1ld29yayBsb2FkcyB0aGUgaGliZXJuYXRpb24g
-aW1hZ2UgaW50byB0aGlzIGxpbmtlZCBsaXN0LA0KKyAqIGZvciBzd3N1c3Bf
-YXJjaF9yZXN1bWUoKSB0byBjb3B5IGJhY2sgdG8gdGhlIHByb3BlciBkZXN0
-aW5hdGlvbnMuDQorICoNCisgKiBUbyBtYWtlIHRoaXMgd29yayBpZiByZXN1
-bWUgaXMgdHJpZ2dlcmVkIGZyb20gaW5pdHJhbWZzLCB0aGUNCisgKiBwYWdl
-dGFibGVzIG5lZWQgdG8gYmUgc3dpdGNoZWQgdG8gYWxsb3cgd3JpdGVzIHRv
-IGtlcm5lbCBtZW0uDQorICovDQordm9pZCBub3RyYWNlIF9fc3dzdXNwX2Fy
-Y2hfcmVzdG9yZV9wcmVwYXJlKHZvaWQpDQorew0KKwljcHVfc3dpdGNoX21t
-KF9fdmlydF90b19waHlzKHN3YXBwZXJfcGdfZGlyKSwgY3VycmVudC0+YWN0
-aXZlX21tKTsNCit9DQorDQordm9pZCBub3RyYWNlIF9fc3dzdXNwX2FyY2hf
-cmVzdG9yZV9pbWFnZSh2b2lkKQ0KK3sNCisJZXh0ZXJuIHN0cnVjdCBwYmUg
-KnJlc3RvcmVfcGJsaXN0Ow0KKwlzdHJ1Y3QgcGJlICpwYmU7DQorDQorCWZv
-ciAocGJlID0gcmVzdG9yZV9wYmxpc3Q7IHBiZTsgcGJlID0gcGJlLT5uZXh0
-KQ0KKwkJY29weV9wYWdlKHBiZS0+b3JpZ19hZGRyZXNzLCBwYmUtPmFkZHJl
-c3MpOw0KK30NCmRpZmYgLS1naXQgYS9hcmNoL2FybS9rZXJuZWwvc3dzdXNw
-LlMgYi9hcmNoL2FybS9rZXJuZWwvc3dzdXNwLlMNCm5ldyBmaWxlIG1vZGUg
-MTAwNjQ0DQppbmRleCAwMDAwMDAwLi5mYjI2MGE3DQotLS0gL2Rldi9udWxs
-DQorKysgYi9hcmNoL2FybS9rZXJuZWwvc3dzdXNwLlMNCkBAIC0wLDAgKzEs
-OTIgQEANCisvKg0KKyAqIEhpYmVybmF0aW9uIHN1cHBvcnQgc3BlY2lmaWMg
-Zm9yIEFSTQ0KKyAqDQorICogQmFzZWQgb24gd29yayBieToNCisgKg0KKyAq
-IFVidW50dSBwcm9qZWN0LCBoaWJlcm5hdGlvbiBzdXBwb3J0IGZvciBtYWNo
-LWRvdmUsDQorICogQ29weXJpZ2h0IChDKSAyMDEwIE5va2lhIENvcnBvcmF0
-aW9uIChIaXJvc2hpIERveXUpDQorICogQ29weXJpZ2h0IChDKSAyMDEwIFRl
-eGFzIEluc3RydW1lbnRzLCBJbmMuIChUZWVydGggUmVkZHkgZXQgYWwuKQ0K
-KyAqCWh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDEwLzYvMTgvNA0KKyAqCWh0
-dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvcGlwZXJtYWlsL2xp
-bnV4LXBtLzIwMTAtSnVuZS8wMjc0MjIuaHRtbA0KKyAqCWh0dHBzOi8vcGF0
-Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvOTY0NDIvDQorICoNCisgKiBDb3B5
-cmlnaHQgKEMpIDIwMDYgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBs
-Pg0KKyAqDQorICogTGljZW5zZSB0ZXJtczogR05VIEdlbmVyYWwgUHVibGlj
-IExpY2Vuc2UgKEdQTCkgdmVyc2lvbiAyDQorICovDQorDQorI2luY2x1ZGUg
-PGxpbnV4L2xpbmthZ2UuaD4NCisjaW5jbHVkZSA8YXNtL21lbW9yeS5oPg0K
-KyNpbmNsdWRlIDxhc20vcGFnZS5oPg0KKyNpbmNsdWRlIDxhc20vY2FjaGUu
-aD4NCisjaW5jbHVkZSA8YXNtL3B0cmFjZS5oPg0KKw0KKy8qDQorICogU2F2
-ZSB0aGUgY3VycmVudCBDUFUgc3RhdGUgYmVmb3JlIHN1c3BlbmQgLyBwb3dl
-cm9mZi4NCisgKi8NCitFTlRSWShzd3N1c3BfYXJjaF9zdXNwZW5kKQ0KKwls
-ZHIJcjAsID1fX3N3c3VzcF9hcmNoX2N0eA0KKwltcnMJcjEsIGNwc3INCisJ
-c3RyCXIxLCBbcjBdLCAjNAkJLyogQ1BTUiAqLw0KK0FSTSgJbXNyCWNwc3Jf
-YywgI1NZU1RFTV9NT0RFCQkJCQkpDQorVEhVTUIoCW1vdglyMiwgI1NZU1RF
-TV9NT0RFCQkJCQkpDQorVEhVTUIoCW1zcgljcHNyX2MsIHIyCQkJCQkJKQ0K
-KwlzdG0JcjAhLCB7cjQtcjEyLGxyfQkvKiBub252b2xhdGlsZSByZWdzICov
-DQorCXN0cglzcCwgW3IwXSwgIzQNCitBUk0oCW1zcgljcHNyX2MsICNTVkNf
-TU9ERQkJCQkJKQ0KK1RIVU1CKAltb3YJcjIsICNTVkNfTU9ERQkJCQkJCSkN
-CitUSFVNQigJbXNyCWNwc3JfYywgcjIJCQkJCQkpDQorCW1ycwlyMiwgc3Bz
-cg0KKwlzdG0JcjAhLCB7cjIsbHJ9CQkvKiBTVkMgU1BTUiwgU1ZDIHJlZ3Mg
-Ki8NCisJc3RyCXNwLCBbcjBdLCAjNA0KKwltc3IJY3BzciwgcjEJCS8qIHJl
-c3RvcmUgbW9kZSBhdCBlbnRyeSAqLw0KKwlwdXNoCXtscn0NCisJYmwJX19z
-YXZlX3Byb2Nlc3Nvcl9zdGF0ZQ0KKwlwb3AJe2xyfQ0KKwliCXN3c3VzcF9z
-YXZlDQorRU5EUFJPQyhzd3N1c3BfYXJjaF9zdXNwZW5kKQ0KKw0KKy8qDQor
-ICogUmVzdG9yZSB0aGUgbWVtb3J5IGltYWdlIGZyb20gdGhlIHBhZ2VsaXN0
-cywgYW5kIGxvYWQgdGhlIENQVSByZWdpc3RlcnMNCisgKiBmcm9tIHNhdmVk
-IHN0YXRlLg0KKyAqLw0KK0VOVFJZKHN3c3VzcF9hcmNoX3Jlc3VtZSkNCisJ
-YmwJX19zd3N1c3BfYXJjaF9yZXN0b3JlX3ByZXBhcmUNCisJLyoNCisJICog
-U3dpdGNoIHN0YWNrIHRvIGEgbm9zYXZlZGF0YSByZWdpb24gdG8gbWFrZSBz
-dXJlIGltYWdlIHJlc3RvcmUNCisJICogZG9lc24ndCBjbG9iYmVyIGl0IHVu
-ZGVybmVhdGggaXRzZWxmLg0KKwkgKi8NCisJbGRyCXNwLCA9KF9fc3dzdXNw
-X3Jlc3VtZV9zdGsgKyBQQUdFX1NJWkUgLyAyKQ0KKwlibAlfX3N3c3VzcF9h
-cmNoX3Jlc3RvcmVfaW1hZ2UNCisNCisJLyoNCisJICogUmVzdG9yZSB0aGUg
-Q1BVIHJlZ2lzdGVycy4NCisJICovDQorQVJNKAltc3IJY3Bzcl9jLCAjU1lT
-VEVNX01PREUJCQkJCSkNCitUSFVNQigJbW92CXIyLCAjU1lTVEVNX01PREUJ
-CQkJCSkNCitUSFVNQigJbXNyCWNwc3JfYywgcjIJCQkJCQkpDQorCWxkcgly
-MCwgPV9fc3dzdXNwX2FyY2hfY3R4DQorCWxkcglyMSwgW3IwXSwgIzQNCisJ
-bXNyCWNwc3JfY3hzZiwgcjENCisJbGRtCXIwISwge3I0LXIxMixscn0NCisJ
-bGRyCXNwLCBbcjBdLCAjNA0KK0FSTSgJbXNyCWNwc3JfYywgI1NWQ19NT0RF
-CQkJCQkpDQorVEhVTUIoCW1vdglyMiwgI1NWQ19NT0RFCQkJCQkJKQ0KK1RI
-VU1CKAltc3IJY3Bzcl9jLCByMgkJCQkJCSkNCisJbGRtCXIwISwge3IyLGxy
-fQ0KKwlsZHIJc3AsIFtyMF0sICM0DQorCW1zcglzcHNyX2N4c2YsIHIyDQor
-CW1zcgljcHNyX2MsIHIxDQorDQorCS8qDQorCSAqIEZyb20gaGVyZSBvbiB3
-ZSBoYXZlIGEgdmFsaWQgc3RhY2sgYWdhaW4uIENvcmUgc3RhdGUgaXMNCisJ
-ICogbm90IHJlc3RvcmVkIHlldCwgcmVkaXJlY3QgdG8gdGhlIG1hY2hpbmUt
-c3BlY2lmaWMNCisJICogaW1wbGVtZW50YXRpb24gdG8gZ2V0IHRoYXQgZG9u
-ZS4NCisJICogUmVzdW1lIGhhcyBzdWNjZWVkZWQgYXQgdGhpcyBwb2ludDsg
-aWYgdGhlIG1hY2hpbmUtc3BlY2lmaWMNCisJICogY29kZSB3YW50cyB0byBm
-YWlsIGl0IG5lZWRzIHRvIHBhbmljLg0KKwkgKi8NCisJbW92CXIxLCAjMA0K
-KwlwdXNoCXtyMSxscn0NCisJYmwJX19yZXN0b3JlX3Byb2Nlc3Nvcl9zdGF0
-ZQkvKiByZXN0b3JlIGNvcmUgc3RhdGUgKi8NCisJcG9wCXtyMCxwY30NCitF
-TkRQUk9DKHN3c3VzcF9hcmNoX3Jlc3VtZSkNCmRpZmYgLS1naXQgYS9hcmNo
-L2FybS9rZXJuZWwvdm1saW51eC5sZHMuUyBiL2FyY2gvYXJtL2tlcm5lbC92
-bWxpbnV4Lmxkcy5TDQppbmRleCA0OTU3ZTEzLi5lNjkxYzc3IDEwMDY0NA0K
-LS0tIGEvYXJjaC9hcm0va2VybmVsL3ZtbGludXgubGRzLlMNCisrKyBiL2Fy
-Y2gvYXJtL2tlcm5lbC92bWxpbnV4Lmxkcy5TDQpAQCAtMTUzLDcgKzE1Myw2
-IEBAIFNFQ1RJT05TDQogCQlfX2luaXRfZW5kID0gLjsNCiAjZW5kaWYNCiAN
-Ci0JCU5PU0FWRV9EQVRBDQogCQlDQUNIRUxJTkVfQUxJR05FRF9EQVRBKDMy
-KQ0KIA0KIAkJLyoNCkBAIC0xNzYsNiArMTc1LDggQEAgU0VDVElPTlMNCiAJ
-fQ0KIAlfZWRhdGFfbG9jID0gX19kYXRhX2xvYyArIFNJWkVPRiguZGF0YSk7
-DQogDQorCU5PU0FWRV9EQVRBDQorDQogI2lmZGVmIENPTkZJR19IQVZFX1RD
-TQ0KICAgICAgICAgLyoNCiAJICogV2UgYWxpZ24gZXZlcnl0aGluZyB0byBh
-IHBhZ2UgYm91bmRhcnkgc28gd2UgY2FuDQpkaWZmIC0tZ2l0IGEvaW5jbHVk
-ZS9hc20tZ2VuZXJpYy92bWxpbnV4Lmxkcy5oIGIvaW5jbHVkZS9hc20tZ2Vu
-ZXJpYy92bWxpbnV4Lmxkcy5oDQppbmRleCBiNmU4MThmLi4wZDM5YWUwIDEw
-MDY0NA0KLS0tIGEvaW5jbHVkZS9hc20tZ2VuZXJpYy92bWxpbnV4Lmxkcy5o
-DQorKysgYi9pbmNsdWRlL2FzbS1nZW5lcmljL3ZtbGludXgubGRzLmgNCkBA
-IC0xNzEsNyArMTcxLDcgQEANCiAjZGVmaW5lIE5PU0FWRV9EQVRBCQkJCQkJ
-CVwNCiAJLiA9IEFMSUdOKFBBR0VfU0laRSk7CQkJCQkJXA0KIAlWTUxJTlVY
-X1NZTUJPTChfX25vc2F2ZV9iZWdpbikgPSAuOwkJCQlcDQotCSooLmRhdGEu
-bm9zYXZlKQkJCQkJCQlcDQorCS5kYXRhLm5vc2F2ZSA6IHsgKiguZGF0YS5u
-b3NhdmUpIH0JCQkJXA0KIAkuID0gQUxJR04oUEFHRV9TSVpFKTsJCQkJCQlc
-DQogCVZNTElOVVhfU1lNQk9MKF9fbm9zYXZlX2VuZCkgPSAuOw0KIA0K
-
---1695163656-1068820027-1305826288=:8018
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---1695163656-1068820027-1305826288=:8018--
+Thanks,
+Rafael
