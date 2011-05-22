@@ -1,14 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/3] PM / Hibernate: Update kerneldoc comments in
-	hibernate.c
-Date: Sat, 21 May 2011 14:12:11 +0200
-Message-ID: <201105211412.11782.rjw__15630.2095311277$1305980041$gmane$org@sisk.pl>
-References: <201105211408.28671.rjw@sisk.pl>
+From: Jian Peng <jipeng2005@gmail.com>
+Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
+ ahci_start_engine compliant to AHCI spec"
+Date: Sat, 21 May 2011 19:00:26 -0700
+Message-ID: <BANLkTimnfJmMWmSkFiehNeE95z7kxgeQPw__22431.0341327966$1306029701$gmane$org@mail.gmail.com>
+References: <201105120025.34531.rjw@sisk.pl> <20633.1305565337@localhost>
+	<BANLkTin7NgUMXSVyKn6P0TCrFZ5uaaRL1w@mail.gmail.com>
+	<201105182144.37713.rjw@sisk.pl>
+	<BANLkTimZ9pe-FhkJYHTG1Jx8MUPrMHSFbA@mail.gmail.com>
+	<BANLkTim9_1Xt8oE4awbCO1iKUW96YUOv_A@mail.gmail.com>
+	<10124.1305906020@localhost>
+	<20110520154341.GL31426@htj.dyndns.org>
+	<BANLkTi=iNjWsaYCJqP057FkhAXtab5nS=Q@mail.gmail.com>
+	<17610.1305915959@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105211408.28671.rjw@sisk.pl>
+In-Reply-To: <17610.1305915959@localhost>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,377 +26,38 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Frank Hofmann <frank.hofmann@tomtom.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Michael Leun <lkml20100708@newton.leun.net>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+HI, Valdis,
 
-Some of the kerneldoc comments in kernel/power/hibernate.c are
-outdated and some of them don't adhere to the kernel's standards.
-Update them and make them look in a consistent way.
+This patch is on top of reverted patch 81ca7e4. So you should not
+revert 81ca7e4 before applying this new one.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/hibernate.c |  184 ++++++++++++++++++++++++-----------------------
- 1 file changed, 94 insertions(+), 90 deletions(-)
+Best regards,
+Jian
 
-Index: linux-2.6/kernel/power/hibernate.c
-===================================================================
---- linux-2.6.orig/kernel/power/hibernate.c
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -55,10 +55,9 @@ static int hibernation_mode = HIBERNATIO
- static const struct platform_hibernation_ops *hibernation_ops;
- 
- /**
-- * hibernation_set_ops - set the global hibernate operations
-- * @ops: the hibernation operations to use in subsequent hibernation transitions
-+ * hibernation_set_ops - Set the global hibernate operations.
-+ * @ops: Hibernation operations to use in subsequent hibernation transitions.
-  */
--
- void hibernation_set_ops(const struct platform_hibernation_ops *ops)
- {
- 	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
-@@ -115,10 +114,8 @@ static int hibernation_test(int level) {
- #endif /* !CONFIG_PM_DEBUG */
- 
- /**
-- *	platform_begin - tell the platform driver that we're starting
-- *	hibernation
-+ * platform_begin - Use platform driver to start hibernation.
-  */
--
- static int platform_begin(int platform_mode)
- {
- 	return (platform_mode && hibernation_ops) ?
-@@ -126,10 +123,8 @@ static int platform_begin(int platform_m
- }
- 
- /**
-- *	platform_end - tell the platform driver that we've entered the
-- *	working state
-+ * platform_end - Use platform driver to finish transition to the working state.
-  */
--
- static void platform_end(int platform_mode)
- {
- 	if (platform_mode && hibernation_ops)
-@@ -137,8 +132,10 @@ static void platform_end(int platform_mo
- }
- 
- /**
-- *	platform_pre_snapshot - prepare the machine for hibernation using the
-- *	platform driver if so configured and return an error code if it fails
-+ * platform_pre_snapshot - Call platform to prepare the machine for hibernation.
-+ *
-+ * Use the platform driver to prepare the system for creating a hibernate image,
-+ * if so configured, and return an error code if that fails.
-  */
- 
- static int platform_pre_snapshot(int platform_mode)
-@@ -148,10 +145,13 @@ static int platform_pre_snapshot(int pla
- }
- 
- /**
-- *	platform_leave - prepare the machine for switching to the normal mode
-- *	of operation using the platform driver (called with interrupts disabled)
-+ * platform_leave - Use platform to prepare a transition to the working state.
-+ *
-+ * Use the platform driver prepare to prepare the machine for switching to the
-+ * normal mode of operation.
-+ *
-+ * This routine is called on one CPU with interrupts disabled.
-  */
--
- static void platform_leave(int platform_mode)
- {
- 	if (platform_mode && hibernation_ops)
-@@ -159,10 +159,13 @@ static void platform_leave(int platform_
- }
- 
- /**
-- *	platform_finish - switch the machine to the normal mode of operation
-- *	using the platform driver (must be called after platform_prepare())
-+ * platform_finish - Use platform to switch the system to the working state.
-+ *
-+ * Use the platform driver to switch the machine to the normal mode of
-+ * operation.
-+ *
-+ * This routine must be called after platform_prepare().
-  */
--
- static void platform_finish(int platform_mode)
- {
- 	if (platform_mode && hibernation_ops)
-@@ -170,11 +173,14 @@ static void platform_finish(int platform
- }
- 
- /**
-- *	platform_pre_restore - prepare the platform for the restoration from a
-- *	hibernation image.  If the restore fails after this function has been
-- *	called, platform_restore_cleanup() must be called.
-+ * platform_pre_restore - Prepare for hibernate image restoration.
-+ *
-+ * Use the platform driver to prepare the system for resume from a hibernation
-+ * image.
-+ *
-+ * If the restore fails after this function has been called,
-+ * platform_restore_cleanup() must be called.
-  */
--
- static int platform_pre_restore(int platform_mode)
- {
- 	return (platform_mode && hibernation_ops) ?
-@@ -182,12 +188,15 @@ static int platform_pre_restore(int plat
- }
- 
- /**
-- *	platform_restore_cleanup - switch the platform to the normal mode of
-- *	operation after a failing restore.  If platform_pre_restore() has been
-- *	called before the failing restore, this function must be called too,
-- *	regardless of the result of platform_pre_restore().
-+ * platform_restore_cleanup - Switch to the working state after failing restore.
-+ *
-+ * Use the platform driver to switch the system to the normal mode of operation
-+ * after a failing restore.
-+ *
-+ * If platform_pre_restore() has been called before the failing restore, this
-+ * function must be called too, regardless of the result of
-+ * platform_pre_restore().
-  */
--
- static void platform_restore_cleanup(int platform_mode)
- {
- 	if (platform_mode && hibernation_ops)
-@@ -195,10 +204,8 @@ static void platform_restore_cleanup(int
- }
- 
- /**
-- *	platform_recover - recover the platform from a failure to suspend
-- *	devices.
-+ * platform_recover - Recover the platform from a failure to suspend devices.
-  */
--
- static void platform_recover(int platform_mode)
- {
- 	if (platform_mode && hibernation_ops && hibernation_ops->recover)
-@@ -206,13 +213,12 @@ static void platform_recover(int platfor
- }
- 
- /**
-- *	swsusp_show_speed - print the time elapsed between two events.
-- *	@start: Starting event.
-- *	@stop: Final event.
-- *	@nr_pages -	number of pages processed between @start and @stop
-- *	@msg -		introductory message to print
-+ * swsusp_show_speed - Print time elapsed between two events during hibernation.
-+ * @start: Starting event.
-+ * @stop: Final event.
-+ * @nr_pages: Number of memory pages processed between @start and @stop.
-+ * @msg: Additional diagnostic message to print.
-  */
--
- void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			unsigned nr_pages, char *msg)
- {
-@@ -235,11 +241,13 @@ void swsusp_show_speed(struct timeval *s
- }
- 
- /**
-- *	create_image - freeze devices that need to be frozen with interrupts
-- *	off, create the hibernation image and thaw those devices.  Control
-- *	reappears in this routine after a restore.
-+ * create_image - Create a hibernation image.
-+ *
-+ * Execute device drivers' .freeze_noirq() callbacks, create a hibernation image
-+ * and execute the drivers' .thaw_noirq() callbacks.
-+ *
-+ * Control reappears in this routine after the subsequent restore.
-  */
--
- static int create_image(int platform_mode)
- {
- 	int error;
-@@ -304,14 +312,11 @@ static int create_image(int platform_mod
- }
- 
- /**
-- *	hibernation_snapshot - quiesce devices and create the hibernation
-- *	snapshot image.
-- *	@platform_mode - if set, use the platform driver, if available, to
-- *			 prepare the platform firmware for the power transition.
-+ * hibernation_snapshot - Quiesce devices and create a hibernation image.
-+ * @platform_mode: If set, use platform driver to prepare for the transition.
-  *
-- *	Must be called with pm_mutex held
-+ * This routine must be called with pm_mutex held.
-  */
--
- int hibernation_snapshot(int platform_mode)
- {
- 	pm_message_t msg = PMSG_RECOVER;
-@@ -371,13 +376,13 @@ int hibernation_snapshot(int platform_mo
- }
- 
- /**
-- *	resume_target_kernel - prepare devices that need to be suspended with
-- *	interrupts off, restore the contents of highmem that have not been
-- *	restored yet from the image and run the low level code that will restore
-- *	the remaining contents of memory and switch to the just restored target
-- *	kernel.
-+ * resume_target_kernel - Restore system state from a hibernation image.
-+ *
-+ * Execute device drivers' .freeze_noirq() callbacks, restore the contents of
-+ * highmem that have not been restored yet from the image and run the low-level
-+ * code that will restore the remaining contents of memory and switch to the
-+ * just restored target kernel.
-  */
--
- static int resume_target_kernel(bool platform_mode)
- {
- 	int error;
-@@ -445,14 +450,12 @@ static int resume_target_kernel(bool pla
- }
- 
- /**
-- *	hibernation_restore - quiesce devices and restore the hibernation
-- *	snapshot image.  If successful, control returns in hibernation_snaphot()
-- *	@platform_mode - if set, use the platform driver, if available, to
-- *			 prepare the platform firmware for the transition.
-+ * hibernation_restore - Quiesce devices and restore from a hibernation image.
-+ * @platform_mode: If set, use platform driver to prepare for the transition.
-  *
-- *	Must be called with pm_mutex held
-+ * This routine must be called with pm_mutex held.  If it is successful, control
-+ * reappears in the restored target kernel in hibernation_snaphot().
-  */
--
- int hibernation_restore(int platform_mode)
- {
- 	int error;
-@@ -472,10 +475,8 @@ int hibernation_restore(int platform_mod
- }
- 
- /**
-- *	hibernation_platform_enter - enter the hibernation state using the
-- *	platform driver (if available)
-+ * hibernation_platform_enter - Power off the system using the platform driver.
-  */
--
- int hibernation_platform_enter(void)
- {
- 	int error;
-@@ -546,12 +547,12 @@ int hibernation_platform_enter(void)
- }
- 
- /**
-- *	power_down - Shut the machine down for hibernation.
-+ * power_down - Shut the machine down for hibernation.
-  *
-- *	Use the platform driver, if configured so; otherwise try
-- *	to power off or reboot.
-+ * Use the platform driver, if configured, to put the system into the sleep
-+ * state corresponding to hibernation, or try to power it off or reboot,
-+ * depending on the value of hibernation_mode.
-  */
--
- static void power_down(void)
- {
- 	switch (hibernation_mode) {
-@@ -588,9 +589,8 @@ static int prepare_processes(void)
- }
- 
- /**
-- *	hibernate - The granpappy of the built-in hibernation management
-+ * hibernate - Carry out system hibernation, including saving the image.
-  */
--
- int hibernate(void)
- {
- 	int error;
-@@ -668,17 +668,20 @@ int hibernate(void)
- 
- 
- /**
-- *	software_resume - Resume from a saved image.
-+ * software_resume - Resume from a saved hibernation image.
-+ *
-+ * This routine is called as a late initcall, when all devices have been
-+ * discovered and initialized already.
-  *
-- *	Called as a late_initcall (so all devices are discovered and
-- *	initialized), we call swsusp to see if we have a saved image or not.
-- *	If so, we quiesce devices, the restore the saved image. We will
-- *	return above (in hibernate() ) if everything goes well.
-- *	Otherwise, we fail gracefully and return to the normally
-- *	scheduled program.
-+ * The image reading code is called to see if there is a hibernation image
-+ * available for reading.  If that is the case, devices are quiesced and the
-+ * contents of memory is restored from the saved image.
-  *
-+ * If this is successful, control reappears in the restored target kernel in
-+ * hibernation_snaphot() which returns to hibernate().  Otherwise, the routine
-+ * attempts to recover gracefully and make the kernel return to the normal mode
-+ * of operation.
-  */
--
- static int software_resume(void)
- {
- 	int error;
-@@ -808,21 +811,17 @@ static const char * const hibernation_mo
- 	[HIBERNATION_TESTPROC]	= "testproc",
- };
- 
--/**
-- *	disk - Control hibernation mode
-+/*
-+ * /sys/power/disk - Control hibernation mode.
-  *
-- *	Suspend-to-disk can be handled in several ways. We have a few options
-- *	for putting the system to sleep - using the platform driver (e.g. ACPI
-- *	or other hibernation_ops), powering off the system or rebooting the
-- *	system (for testing) as well as the two test modes.
-- *
-- *	The system can support 'platform', and that is known a priori (and
-- *	encoded by the presence of hibernation_ops). However, the user may
-- *	choose 'shutdown' or 'reboot' as alternatives, as well as one fo the
-- *	test modes, 'test' or 'testproc'.
-+ * Hibernation can be handled in several ways.  There are a few different ways
-+ * to put the system into the sleep state: using the platform driver (e.g. ACPI
-+ * or other hibernation_ops), powering it off or rebooting it (for testing
-+ * mostly), or using one of the two available test modes.
-  *
-- *	show() will display what the mode is currently set to.
-- *	store() will accept one of
-+ * The sysfs file /sys/power/disk provides an interface for selecting the
-+ * hibernation mode to use.  Reading from this file causes the available modes
-+ * to be printed.  There are 5 modes that can be supported:
-  *
-  *	'platform'
-  *	'shutdown'
-@@ -830,8 +829,14 @@ static const char * const hibernation_mo
-  *	'test'
-  *	'testproc'
-  *
-- *	It will only change to 'platform' if the system
-- *	supports it (as determined by having hibernation_ops).
-+ * If a platform hibernation driver is in use, 'platform' will be supported
-+ * and will be used by default.  Otherwise, 'shutdown' will be used by default.
-+ * The selected option (i.e. the one corresponding to the current value of
-+ * hibernation_mode) is enclosed by a square bracket.
-+ *
-+ * To select a given hibernation mode it is necessary to write the mode's
-+ * string representation (as returned by reading from /sys/power/disk) back
-+ * into /sys/power/disk.
-  */
- 
- static ssize_t disk_show(struct kobject *kobj, struct kobj_attribute *attr,
-@@ -864,7 +869,6 @@ static ssize_t disk_show(struct kobject
- 	return buf-start;
- }
- 
--
- static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
- 			  const char *buf, size_t n)
- {
+On Fri, May 20, 2011 at 11:25 AM, <Valdis.Kletnieks@vt.edu> wrote:
+>
+> On Fri, 20 May 2011 10:02:56 PDT, Jian Peng said:
+> > --20cf307f38f6d842a904a3b81730
+>
+> > You are both right that adding this majic 5ms delay at this place shoul=
+d not
+> > be the final solution.
+> >
+> > If this magic 5ms delay works on other affected systems, I plan to post=
+ a
+> > new patch that inside ahci_start_engine(), still perform same check, and
+> > show warning message if failed, but will set a flag, then still set STA=
+RT
+> > bit, and if there is such failure flag, add 5ms delay.
+> >
+> > Valdis, could you apply the following patch and retest it?
+>
+> I should be able to do that this weekend. =A0To clarify - should this be =
+with the
+> problem commit 270dac35c26433d06a89150c51e75ca0181ca7e4 applied, or rever=
+ted?
+>
