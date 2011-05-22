@@ -1,22 +1,17 @@
-From: Jian Peng <jipeng2005@gmail.com>
-Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
- ahci_start_engine compliant to AHCI spec"
-Date: Sat, 21 May 2011 19:00:26 -0700
-Message-ID: <BANLkTimnfJmMWmSkFiehNeE95z7kxgeQPw__22431.0341327966$1306029701$gmane$org@mail.gmail.com>
-References: <201105120025.34531.rjw@sisk.pl> <20633.1305565337@localhost>
-	<BANLkTin7NgUMXSVyKn6P0TCrFZ5uaaRL1w@mail.gmail.com>
-	<201105182144.37713.rjw@sisk.pl>
-	<BANLkTimZ9pe-FhkJYHTG1Jx8MUPrMHSFbA@mail.gmail.com>
-	<BANLkTim9_1Xt8oE4awbCO1iKUW96YUOv_A@mail.gmail.com>
-	<10124.1305906020@localhost>
-	<20110520154341.GL31426@htj.dyndns.org>
-	<BANLkTi=iNjWsaYCJqP057FkhAXtab5nS=Q@mail.gmail.com>
-	<17610.1305915959@localhost>
+From: "Frank Hofmann" <Frank.Hofmann@tomtom.com>
+Subject: Re: [RFC PATCH] ARM hibernation / suspend-to-disk
+	support code
+Date: Sun, 22 May 2011 08:39:25 +0200
+Message-ID: <2C577202CB5719438D4E9608C565CB2C01B69D7A@NL-EXC-07.intra.local>
+References: <3DCE2F529B282E4B8F53D4D8AA406A07014FFE@008-AM1MPN1-022.mgdnok.nokia.com>
+	<alpine.DEB.2.00.1105181257370.2374@localhost6.localdomain6>
+	<20110520113758.GA3141@arm.com>
+	<alpine.DEB.2.00.1105201255260.8018@localhost6.localdomain6>
+	<20110520180748.GF7445@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="===============4004460101154973786=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <17610.1305915959@localhost>
+Content-class: urn:content-classes:message
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,40 +19,129 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Valdis.Kletnieks@vt.edu
-Cc: Michael Leun <lkml20100708@newton.leun.net>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Dave Martin <dave.martin@linaro.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, tuxonice-devel@tuxonice.net
 List-Id: linux-pm@vger.kernel.org
 
-HI, Valdis,
+This is a multi-part message in MIME format.
 
-This patch is on top of reverted patch 81ca7e4. So you should not
-revert 81ca7e4 before applying this new one.
+--===============4004460101154973786==
+Content-class: urn:content-classes:message
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01CC184B.2ED069F3"
 
-Best regards,
-Jian
+This is a multi-part message in MIME format.
 
-On Fri, May 20, 2011 at 11:25 AM, <Valdis.Kletnieks@vt.edu> wrote:
->
-> On Fri, 20 May 2011 10:02:56 PDT, Jian Peng said:
-> > --20cf307f38f6d842a904a3b81730
->
-> > You are both right that adding this majic 5ms delay at this place shoul=
-d not
-> > be the final solution.
-> >
-> > If this magic 5ms delay works on other affected systems, I plan to post=
- a
-> > new patch that inside ahci_start_engine(), still perform same check, and
-> > show warning message if failed, but will set a flag, then still set STA=
-RT
-> > bit, and if there is such failure flag, add 5ms delay.
-> >
-> > Valdis, could you apply the following patch and retest it?
->
-> I should be able to do that this weekend. =A0To clarify - should this be =
-with the
-> problem commit 270dac35c26433d06a89150c51e75ca0181ca7e4 applied, or rever=
-ted?
->
+------_=_NextPart_001_01CC184B.2ED069F3
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Russell / Nicolas,
+
+thanks for the clarification on ARM history; there's a lot to learn for =
+me about that still.
+
+I'll reply to Rafael regarding state save/restore.
+
+FrankH.
+
+
+
+-----Original Message-----
+From: Russell King - ARM Linux [mailto:linux@arm.linux.org.uk]
+Sent: Fri 20/05/2011 20:07
+To: Frank Hofmann
+Cc: Dave Martin; linux-pm@lists.linux-foundation.org; =
+tuxonice-devel@tuxonice.net; linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC PATCH] ARM hibernation / suspend-to-disk support code
+=20
+On Fri, May 20, 2011 at 01:39:37PM +0100, Frank Hofmann wrote:
+> I've simply done there what the "setmode" macro from <asm/assembler.h> =
+=20
+> is doing, have chosen not to include that file because it overrides=20
+> "push" on a global scale for no good reason and that sort of thing =
+makes=20
+> me cringe.
+
+"push" was never an ARM instruction until someone decided to make r13
+"special".  As our macros there pre-date the invention of the new ARM
+instruction neumonics, it takes precident _especially_ as there's
+perfectly good alternative ways to say "push" to the assembler.
+
+
+------_=_NextPart_001_01CC184B.2ED069F3
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7654.12">
+<TITLE>RE: [RFC PATCH] ARM hibernation / suspend-to-disk support =
+code</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>Hi Russell / Nicolas,<BR>
+<BR>
+thanks for the clarification on ARM history; there's a lot to learn for =
+me about that still.<BR>
+<BR>
+I'll reply to Rafael regarding state save/restore.<BR>
+<BR>
+FrankH.<BR>
+<BR>
+<BR>
+<BR>
+-----Original Message-----<BR>
+From: Russell King - ARM Linux [<A =
+HREF=3D"mailto:linux@arm.linux.org.uk">mailto:linux@arm.linux.org.uk</A>]=
+<BR>
+Sent: Fri 20/05/2011 20:07<BR>
+To: Frank Hofmann<BR>
+Cc: Dave Martin; linux-pm@lists.linux-foundation.org; =
+tuxonice-devel@tuxonice.net; linux-arm-kernel@lists.infradead.org<BR>
+Subject: Re: [RFC PATCH] ARM hibernation / suspend-to-disk support =
+code<BR>
+<BR>
+On Fri, May 20, 2011 at 01:39:37PM +0100, Frank Hofmann wrote:<BR>
+&gt; I've simply done there what the &quot;setmode&quot; macro from =
+&lt;asm/assembler.h&gt;&nbsp;<BR>
+&gt; is doing, have chosen not to include that file because it =
+overrides<BR>
+&gt; &quot;push&quot; on a global scale for no good reason and that sort =
+of thing makes<BR>
+&gt; me cringe.<BR>
+<BR>
+&quot;push&quot; was never an ARM instruction until someone decided to =
+make r13<BR>
+&quot;special&quot;.&nbsp; As our macros there pre-date the invention of =
+the new ARM<BR>
+instruction neumonics, it takes precident _especially_ as there's<BR>
+perfectly good alternative ways to say &quot;push&quot; to the =
+assembler.<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01CC184B.2ED069F3--
+
+--===============4004460101154973786==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4004460101154973786==--
