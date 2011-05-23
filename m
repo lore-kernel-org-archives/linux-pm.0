@@ -1,22 +1,15 @@
-From: Dave Martin <dave.martin@linaro.org>
-Subject: Re: [RFC PATCH] ARM hibernation / suspend-to-disk
-	support code
-Date: Mon, 23 May 2011 17:38:07 +0100
-Message-ID: <20110523163758.GA2442__43672.9940389798$1306171168$gmane$org@arm.com>
-References: <3DCE2F529B282E4B8F53D4D8AA406A07014FFE@008-AM1MPN1-022.mgdnok.nokia.com>
-	<alpine.DEB.2.00.1105181257370.2374@localhost6.localdomain6>
-	<20110520113758.GA3141@arm.com>
-	<20110520180510.GE7445@n2100.arm.linux.org.uk>
-	<20110523100132.GC2370@arm.com>
-	<20110523101220.GH17672@n2100.arm.linux.org.uk>
-	<20110523111631.GD3769@arm.com>
-	<20110523161149.GB15138@n2100.arm.linux.org.uk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 3/3] PM / Hibernate: Update kerneldoc
+	comments in hibernate.c
+Date: Mon, 23 May 2011 23:11:28 +0200
+Message-ID: <201105232311.28958.rjw__11434.133622288$1306185207$gmane$org@sisk.pl>
+References: <201105211408.28671.rjw@sisk.pl> <201105211412.11782.rjw@sisk.pl>
+	<4DD9CF9E.6000103@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110523161149.GB15138@n2100.arm.linux.org.uk>
+In-Reply-To: <4DD9CF9E.6000103@oracle.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,59 +19,410 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Frank Hofmann <frank.hofmann@tomtom.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Frank Hofmann <frank.hofmann@tomtom.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 23, 2011 at 05:11:49PM +0100, Russell King - ARM Linux wrote:
-> On Mon, May 23, 2011 at 12:16:31PM +0100, Dave Martin wrote:
-> > On Mon, May 23, 2011 at 11:12:20AM +0100, Russell King - ARM Linux wrote:
-> > > On Mon, May 23, 2011 at 11:01:32AM +0100, Dave Martin wrote:
-> > > > On Fri, May 20, 2011 at 07:05:10PM +0100, Russell King - ARM Linux wrote:
-> > > > > Out of the list you mention above, the only thing which isn't saved are the
-> > > > > FIQ registers, and that's a problem for S2RAM too, and should be done by
-> > > > > arch/arm/kernel/fiq.c hooking into the suspend paths.
-> > > > 
-> > > > The alternative view is that the driver using FIQ owns the state in the FIQ
-> > > > mode registers and is therefore responsible for saving and restoring it
-> > > > across suspend/resume.  If so, then any additional globally implemented
-> > > > state save/restore of the FIQ mode state is unnecessary.
-> > > 
-> > > This seems to be most sensible - if the FIQ is being used as a software-DMA,
-> > > then the hardware side of that needs to be cleanly shutdown (eg, waiting for
-> > > the DMA to complete before proceeding) to ensure no loss of data.  That
-> > > can't happen from within the FIQ code.
+On Monday, May 23, 2011, Randy Dunlap wrote:
+> On 05/21/11 05:12, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > OK.  Frank suggested putting comments to this effect in <asm/fiq.h>.
-> > 
-> > I think something along these lines might be appropriate:
-> > 
-> > /*
-> >  * The FIQ mode registers are not magically preserved across suspend/resume.
-> >  *
-> >  * Drivers which require these registers to be preserved across power
-> >  * management operations must implement appropriate suspend/resume handlers
-> >  * to save and restore them.
-> >  */
-> > 
-> > Is the header file a good place for this, or is there some other better
-> > place to put it?
+> > Some of the kerneldoc comments in kernel/power/hibernate.c are
+> > outdated and some of them don't adhere to the kernel's standards.
+> > Update them and make them look in a consistent way.
 > 
-> I tend to suggest that the header file is the right place, because that's
-> where the interface is defined.  Other people argue that its more likely
-> to be seen in the implementation (fiq.c).  So I'm tempted to say both,
-> but lets go with fiq.h for the time being.
+> Hi Rafael,
 
-OK -- the {get,set}_fiq_regs patch is currently in your patch system.
+Hi,
 
-If you have no objection, I'll submit a patch adding the above text to apply
-on top of the other patch (or, if possible, orthogonally).
+> Several of the functions are missing function parameter notations, as
+> noted below.
 
----Dave
+Ah, thanks!  Those should be fixed in the new version of the patch below.
 
-> 
-> > That argument may apply to a ton of state in the Secure World, not just
-> > the FIQ registers
-> 
-> It very much does, and I know OMAP has some kind of SMC call to handle
-> this.
+Thanks,
+Rafael
+
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Hibernate: Update kerneldoc comments in hibernate.c
+
+Some of the kerneldoc comments in kernel/power/hibernate.c are
+outdated and some of them don't adhere to the kernel's standards.
+Update them and make them look in a consistent way.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/hibernate.c |  194 +++++++++++++++++++++++++----------------------
+ 1 file changed, 104 insertions(+), 90 deletions(-)
+
+Index: linux-2.6/kernel/power/hibernate.c
+===================================================================
+--- linux-2.6.orig/kernel/power/hibernate.c
++++ linux-2.6/kernel/power/hibernate.c
+@@ -55,10 +55,9 @@ static int hibernation_mode = HIBERNATIO
+ static const struct platform_hibernation_ops *hibernation_ops;
+ 
+ /**
+- * hibernation_set_ops - set the global hibernate operations
+- * @ops: the hibernation operations to use in subsequent hibernation transitions
++ * hibernation_set_ops - Set the global hibernate operations.
++ * @ops: Hibernation operations to use in subsequent hibernation transitions.
+  */
+-
+ void hibernation_set_ops(const struct platform_hibernation_ops *ops)
+ {
+ 	if (ops && !(ops->begin && ops->end &&  ops->pre_snapshot
+@@ -115,10 +114,9 @@ static int hibernation_test(int level) {
+ #endif /* !CONFIG_PM_DEBUG */
+ 
+ /**
+- *	platform_begin - tell the platform driver that we're starting
+- *	hibernation
++ * platform_begin - Call platform to start hibernation.
++ * @platform_mode: Whether or not to use the platform driver.
+  */
+-
+ static int platform_begin(int platform_mode)
+ {
+ 	return (platform_mode && hibernation_ops) ?
+@@ -126,10 +124,9 @@ static int platform_begin(int platform_m
+ }
+ 
+ /**
+- *	platform_end - tell the platform driver that we've entered the
+- *	working state
++ * platform_end - Call platform to finish transition to the working state.
++ * @platform_mode: Whether or not to use the platform driver.
+  */
+-
+ static void platform_end(int platform_mode)
+ {
+ 	if (platform_mode && hibernation_ops)
+@@ -137,8 +134,11 @@ static void platform_end(int platform_mo
+ }
+ 
+ /**
+- *	platform_pre_snapshot - prepare the machine for hibernation using the
+- *	platform driver if so configured and return an error code if it fails
++ * platform_pre_snapshot - Call platform to prepare the machine for hibernation.
++ * @platform_mode: Whether or not to use the platform driver.
++ *
++ * Use the platform driver to prepare the system for creating a hibernate image,
++ * if so configured, and return an error code if that fails.
+  */
+ 
+ static int platform_pre_snapshot(int platform_mode)
+@@ -148,10 +148,14 @@ static int platform_pre_snapshot(int pla
+ }
+ 
+ /**
+- *	platform_leave - prepare the machine for switching to the normal mode
+- *	of operation using the platform driver (called with interrupts disabled)
++ * platform_leave - Call platform to prepare a transition to the working state.
++ * @platform_mode: Whether or not to use the platform driver.
++ *
++ * Use the platform driver prepare to prepare the machine for switching to the
++ * normal mode of operation.
++ *
++ * This routine is called on one CPU with interrupts disabled.
+  */
+-
+ static void platform_leave(int platform_mode)
+ {
+ 	if (platform_mode && hibernation_ops)
+@@ -159,10 +163,14 @@ static void platform_leave(int platform_
+ }
+ 
+ /**
+- *	platform_finish - switch the machine to the normal mode of operation
+- *	using the platform driver (must be called after platform_prepare())
++ * platform_finish - Call platform to switch the system to the working state.
++ * @platform_mode: Whether or not to use the platform driver.
++ *
++ * Use the platform driver to switch the machine to the normal mode of
++ * operation.
++ *
++ * This routine must be called after platform_prepare().
+  */
+-
+ static void platform_finish(int platform_mode)
+ {
+ 	if (platform_mode && hibernation_ops)
+@@ -170,11 +178,15 @@ static void platform_finish(int platform
+ }
+ 
+ /**
+- *	platform_pre_restore - prepare the platform for the restoration from a
+- *	hibernation image.  If the restore fails after this function has been
+- *	called, platform_restore_cleanup() must be called.
++ * platform_pre_restore - Prepare for hibernate image restoration.
++ * @platform_mode: Whether or not to use the platform driver.
++ *
++ * Use the platform driver to prepare the system for resume from a hibernation
++ * image.
++ *
++ * If the restore fails after this function has been called,
++ * platform_restore_cleanup() must be called.
+  */
+-
+ static int platform_pre_restore(int platform_mode)
+ {
+ 	return (platform_mode && hibernation_ops) ?
+@@ -182,12 +194,16 @@ static int platform_pre_restore(int plat
+ }
+ 
+ /**
+- *	platform_restore_cleanup - switch the platform to the normal mode of
+- *	operation after a failing restore.  If platform_pre_restore() has been
+- *	called before the failing restore, this function must be called too,
+- *	regardless of the result of platform_pre_restore().
++ * platform_restore_cleanup - Switch to the working state after failing restore.
++ * @platform_mode: Whether or not to use the platform driver.
++ *
++ * Use the platform driver to switch the system to the normal mode of operation
++ * after a failing restore.
++ *
++ * If platform_pre_restore() has been called before the failing restore, this
++ * function must be called too, regardless of the result of
++ * platform_pre_restore().
+  */
+-
+ static void platform_restore_cleanup(int platform_mode)
+ {
+ 	if (platform_mode && hibernation_ops)
+@@ -195,10 +211,9 @@ static void platform_restore_cleanup(int
+ }
+ 
+ /**
+- *	platform_recover - recover the platform from a failure to suspend
+- *	devices.
++ * platform_recover - Recover from a failure to suspend devices.
++ * @platform_mode: Whether or not to use the platform driver.
+  */
+-
+ static void platform_recover(int platform_mode)
+ {
+ 	if (platform_mode && hibernation_ops && hibernation_ops->recover)
+@@ -206,13 +221,12 @@ static void platform_recover(int platfor
+ }
+ 
+ /**
+- *	swsusp_show_speed - print the time elapsed between two events.
+- *	@start: Starting event.
+- *	@stop: Final event.
+- *	@nr_pages -	number of pages processed between @start and @stop
+- *	@msg -		introductory message to print
++ * swsusp_show_speed - Print time elapsed between two events during hibernation.
++ * @start: Starting event.
++ * @stop: Final event.
++ * @nr_pages: Number of memory pages processed between @start and @stop.
++ * @msg: Additional diagnostic message to print.
+  */
+-
+ void swsusp_show_speed(struct timeval *start, struct timeval *stop,
+ 			unsigned nr_pages, char *msg)
+ {
+@@ -235,11 +249,14 @@ void swsusp_show_speed(struct timeval *s
+ }
+ 
+ /**
+- *	create_image - freeze devices that need to be frozen with interrupts
+- *	off, create the hibernation image and thaw those devices.  Control
+- *	reappears in this routine after a restore.
++ * create_image - Create a hibernation image.
++ * @platform_mode: Whether or not to use the platform driver.
++ *
++ * Execute device drivers' .freeze_noirq() callbacks, create a hibernation image
++ * and execute the drivers' .thaw_noirq() callbacks.
++ *
++ * Control reappears in this routine after the subsequent restore.
+  */
+-
+ static int create_image(int platform_mode)
+ {
+ 	int error;
+@@ -304,14 +321,11 @@ static int create_image(int platform_mod
+ }
+ 
+ /**
+- *	hibernation_snapshot - quiesce devices and create the hibernation
+- *	snapshot image.
+- *	@platform_mode - if set, use the platform driver, if available, to
+- *			 prepare the platform firmware for the power transition.
++ * hibernation_snapshot - Quiesce devices and create a hibernation image.
++ * @platform_mode: If set, use platform driver to prepare for the transition.
+  *
+- *	Must be called with pm_mutex held
++ * This routine must be called with pm_mutex held.
+  */
+-
+ int hibernation_snapshot(int platform_mode)
+ {
+ 	pm_message_t msg = PMSG_RECOVER;
+@@ -371,13 +385,14 @@ int hibernation_snapshot(int platform_mo
+ }
+ 
+ /**
+- *	resume_target_kernel - prepare devices that need to be suspended with
+- *	interrupts off, restore the contents of highmem that have not been
+- *	restored yet from the image and run the low level code that will restore
+- *	the remaining contents of memory and switch to the just restored target
+- *	kernel.
++ * resume_target_kernel - Restore system state from a hibernation image.
++ * @platform_mode: Whether or not to use the platform driver.
++ *
++ * Execute device drivers' .freeze_noirq() callbacks, restore the contents of
++ * highmem that have not been restored yet from the image and run the low-level
++ * code that will restore the remaining contents of memory and switch to the
++ * just restored target kernel.
+  */
+-
+ static int resume_target_kernel(bool platform_mode)
+ {
+ 	int error;
+@@ -445,14 +460,12 @@ static int resume_target_kernel(bool pla
+ }
+ 
+ /**
+- *	hibernation_restore - quiesce devices and restore the hibernation
+- *	snapshot image.  If successful, control returns in hibernation_snaphot()
+- *	@platform_mode - if set, use the platform driver, if available, to
+- *			 prepare the platform firmware for the transition.
++ * hibernation_restore - Quiesce devices and restore from a hibernation image.
++ * @platform_mode: If set, use platform driver to prepare for the transition.
+  *
+- *	Must be called with pm_mutex held
++ * This routine must be called with pm_mutex held.  If it is successful, control
++ * reappears in the restored target kernel in hibernation_snaphot().
+  */
+-
+ int hibernation_restore(int platform_mode)
+ {
+ 	int error;
+@@ -472,10 +485,8 @@ int hibernation_restore(int platform_mod
+ }
+ 
+ /**
+- *	hibernation_platform_enter - enter the hibernation state using the
+- *	platform driver (if available)
++ * hibernation_platform_enter - Power off the system using the platform driver.
+  */
+-
+ int hibernation_platform_enter(void)
+ {
+ 	int error;
+@@ -546,12 +557,12 @@ int hibernation_platform_enter(void)
+ }
+ 
+ /**
+- *	power_down - Shut the machine down for hibernation.
++ * power_down - Shut the machine down for hibernation.
+  *
+- *	Use the platform driver, if configured so; otherwise try
+- *	to power off or reboot.
++ * Use the platform driver, if configured, to put the system into the sleep
++ * state corresponding to hibernation, or try to power it off or reboot,
++ * depending on the value of hibernation_mode.
+  */
+-
+ static void power_down(void)
+ {
+ 	switch (hibernation_mode) {
+@@ -588,9 +599,8 @@ static int prepare_processes(void)
+ }
+ 
+ /**
+- *	hibernate - The granpappy of the built-in hibernation management
++ * hibernate - Carry out system hibernation, including saving the image.
+  */
+-
+ int hibernate(void)
+ {
+ 	int error;
+@@ -668,17 +678,20 @@ int hibernate(void)
+ 
+ 
+ /**
+- *	software_resume - Resume from a saved image.
++ * software_resume - Resume from a saved hibernation image.
++ *
++ * This routine is called as a late initcall, when all devices have been
++ * discovered and initialized already.
+  *
+- *	Called as a late_initcall (so all devices are discovered and
+- *	initialized), we call swsusp to see if we have a saved image or not.
+- *	If so, we quiesce devices, the restore the saved image. We will
+- *	return above (in hibernate() ) if everything goes well.
+- *	Otherwise, we fail gracefully and return to the normally
+- *	scheduled program.
++ * The image reading code is called to see if there is a hibernation image
++ * available for reading.  If that is the case, devices are quiesced and the
++ * contents of memory is restored from the saved image.
+  *
++ * If this is successful, control reappears in the restored target kernel in
++ * hibernation_snaphot() which returns to hibernate().  Otherwise, the routine
++ * attempts to recover gracefully and make the kernel return to the normal mode
++ * of operation.
+  */
+-
+ static int software_resume(void)
+ {
+ 	int error;
+@@ -808,21 +821,17 @@ static const char * const hibernation_mo
+ 	[HIBERNATION_TESTPROC]	= "testproc",
+ };
+ 
+-/**
+- *	disk - Control hibernation mode
++/*
++ * /sys/power/disk - Control hibernation mode.
+  *
+- *	Suspend-to-disk can be handled in several ways. We have a few options
+- *	for putting the system to sleep - using the platform driver (e.g. ACPI
+- *	or other hibernation_ops), powering off the system or rebooting the
+- *	system (for testing) as well as the two test modes.
+- *
+- *	The system can support 'platform', and that is known a priori (and
+- *	encoded by the presence of hibernation_ops). However, the user may
+- *	choose 'shutdown' or 'reboot' as alternatives, as well as one fo the
+- *	test modes, 'test' or 'testproc'.
++ * Hibernation can be handled in several ways.  There are a few different ways
++ * to put the system into the sleep state: using the platform driver (e.g. ACPI
++ * or other hibernation_ops), powering it off or rebooting it (for testing
++ * mostly), or using one of the two available test modes.
+  *
+- *	show() will display what the mode is currently set to.
+- *	store() will accept one of
++ * The sysfs file /sys/power/disk provides an interface for selecting the
++ * hibernation mode to use.  Reading from this file causes the available modes
++ * to be printed.  There are 5 modes that can be supported:
+  *
+  *	'platform'
+  *	'shutdown'
+@@ -830,8 +839,14 @@ static const char * const hibernation_mo
+  *	'test'
+  *	'testproc'
+  *
+- *	It will only change to 'platform' if the system
+- *	supports it (as determined by having hibernation_ops).
++ * If a platform hibernation driver is in use, 'platform' will be supported
++ * and will be used by default.  Otherwise, 'shutdown' will be used by default.
++ * The selected option (i.e. the one corresponding to the current value of
++ * hibernation_mode) is enclosed by a square bracket.
++ *
++ * To select a given hibernation mode it is necessary to write the mode's
++ * string representation (as returned by reading from /sys/power/disk) back
++ * into /sys/power/disk.
+  */
+ 
+ static ssize_t disk_show(struct kobject *kobj, struct kobj_attribute *attr,
+@@ -864,7 +879,6 @@ static ssize_t disk_show(struct kobject
+ 	return buf-start;
+ }
+ 
+-
+ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 			  const char *buf, size_t n)
+ {
