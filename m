@@ -1,19 +1,21 @@
-From: Frank Hofmann <frank.hofmann@tomtom.com>
-Subject: [RFC PATCH v2] ARM hibernation / suspend-to-disk support
-	code
-Date: Mon, 23 May 2011 16:57:24 +0100 (BST)
-Message-ID: <alpine.DEB.2.00.1105231603070.8018__1725.07424508712$1306166349$gmane$org@localhost6.localdomain6>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC PATCH] ARM hibernation / suspend-to-disk
+	support code
+Date: Mon, 23 May 2011 17:11:49 +0100
+Message-ID: <20110523161149.GB15138__5214.40591332993$1306167620$gmane$org@n2100.arm.linux.org.uk>
 References: <3DCE2F529B282E4B8F53D4D8AA406A07014FFE@008-AM1MPN1-022.mgdnok.nokia.com>
+	<alpine.DEB.2.00.1105181257370.2374@localhost6.localdomain6>
 	<20110520113758.GA3141@arm.com>
-	<alpine.DEB.2.00.1105201255260.8018@localhost6.localdomain6>
-	<201105210027.17159.rjw@sisk.pl> <20110523095232.GB2370@arm.com>
-	<alpine.DEB.2.00.1105231239270.8018@localhost6.localdomain6>
-	<20110523143216.GA14131@n2100.arm.linux.org.uk>
-Reply-To: frank.hofmann@tomtom.com
+	<20110520180510.GE7445@n2100.arm.linux.org.uk>
+	<20110523100132.GC2370@arm.com>
+	<20110523101220.GH17672@n2100.arm.linux.org.uk>
+	<20110523111631.GD3769@arm.com>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1695163656-341139716-1306166245=:8018"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110523143216.GA14131@n2100.arm.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20110523111631.GD3769@arm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,202 +25,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Dave Martin <dave.martin@linaro.org>, tuxonice-devel@tuxonice.net, Frank Hofmann <frank.hofmann@tomtom.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Dave Martin <dave.martin@linaro.org>
+Cc: Frank Hofmann <frank.hofmann@tomtom.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, May 23, 2011 at 12:16:31PM +0100, Dave Martin wrote:
+> On Mon, May 23, 2011 at 11:12:20AM +0100, Russell King - ARM Linux wrote:
+> > On Mon, May 23, 2011 at 11:01:32AM +0100, Dave Martin wrote:
+> > > On Fri, May 20, 2011 at 07:05:10PM +0100, Russell King - ARM Linux wrote:
+> > > > Out of the list you mention above, the only thing which isn't saved are the
+> > > > FIQ registers, and that's a problem for S2RAM too, and should be done by
+> > > > arch/arm/kernel/fiq.c hooking into the suspend paths.
+> > > 
+> > > The alternative view is that the driver using FIQ owns the state in the FIQ
+> > > mode registers and is therefore responsible for saving and restoring it
+> > > across suspend/resume.  If so, then any additional globally implemented
+> > > state save/restore of the FIQ mode state is unnecessary.
+> > 
+> > This seems to be most sensible - if the FIQ is being used as a software-DMA,
+> > then the hardware side of that needs to be cleanly shutdown (eg, waiting for
+> > the DMA to complete before proceeding) to ensure no loss of data.  That
+> > can't happen from within the FIQ code.
+> 
+> OK.  Frank suggested putting comments to this effect in <asm/fiq.h>.
+> 
+> I think something along these lines might be appropriate:
+> 
+> /*
+>  * The FIQ mode registers are not magically preserved across suspend/resume.
+>  *
+>  * Drivers which require these registers to be preserved across power
+>  * management operations must implement appropriate suspend/resume handlers
+>  * to save and restore them.
+>  */
+> 
+> Is the header file a good place for this, or is there some other better
+> place to put it?
 
---1695163656-341139716-1306166245=:8018
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+I tend to suggest that the header file is the right place, because that's
+where the interface is defined.  Other people argue that its more likely
+to be seen in the implementation (fiq.c).  So I'm tempted to say both,
+but lets go with fiq.h for the time being.
 
-On Mon, 23 May 2011, Russell King - ARM Linux wrote:
+> That argument may apply to a ton of state in the Secure World, not just
+> the FIQ registers
 
-> On Mon, May 23, 2011 at 02:37:19PM +0100, Frank Hofmann wrote:
->> What I've found necessary to save/restore via swsusp_arch_suspend/resume
->> are the SYSTEM_MODE and SVC_MODE registers.
->> Yesterday, I had thought that cpu_init() resets SVC_MODE sufficiently but
->> that doesn't seem to be the case, if I leave that out, resume-from-disk
->> doesn't work anymore.
->
-> You will be running in SVC mode, so the SVC mode registers are your
-> current register set.  At some point you need to do an effective
-> "context switch" between the kernel doing the resume and the kernel
-> which was running.  That involves restoring the saved register state.
->
-> System mode on the other hand is unused by the kernel.
->
-
-Ah, and I had it the other way round ... that's why. Thanks !
-
-I've tried that, saving/restoring just CPSR/SPSR and the reg set - and 
-that seems sufficient, works fine !
-
-
-All this means that the basic code has again become smaller.
-Attached is a new version, integrating all the feedback so far:
-
-* save/restore only those parts of the register set that the kernel cannot
-   reinitialize from scratch
-
-* take care of FIQ disable/enable bracketing
-
-* use traditional stmfd/ldmfd instead of push/pop
-
-* don't rely on thread state, current->active_mm, but use global &init_mm
-
-* dump arch_prepare_suspend (skipping ahead of Rafael's suggested fix)
-
-* ditch the vmlinux.lds changes as they're not needed
-
-
-What other outstanding things are there to address for this ?
-
-All the best,
-FrankH.
---1695163656-341139716-1306166245=:8018
-Content-Type: TEXT/x-diff; name=hibernation-core-23May2011.patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.2.00.1105231657240.8018@localhost6.localdomain6>
-Content-Description: 
-Content-Disposition: attachment; filename=hibernation-core-23May2011.patch
-
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL0tjb25maWcgYi9hcmNoL2FybS9LY29u
-ZmlnDQppbmRleCA2YjY3ODZjLi44NTlkZDg2IDEwMDY0NA0KLS0tIGEvYXJj
-aC9hcm0vS2NvbmZpZw0KKysrIGIvYXJjaC9hcm0vS2NvbmZpZw0KQEAgLTE5
-OCw2ICsxOTgsOSBAQCBjb25maWcgVkVDVE9SU19CQVNFDQogY29uZmlnIEFS
-Q0hfSEFTX0NQVV9JRExFX1dBSVQNCiAJZGVmX2Jvb2wgeQ0KIA0KK2NvbmZp
-ZyBBUkNIX0hJQkVSTkFUSU9OX1BPU1NJQkxFDQorCWRlZl9ib29sIG4NCisN
-CiBzb3VyY2UgImluaXQvS2NvbmZpZyINCiANCiBzb3VyY2UgImtlcm5lbC9L
-Y29uZmlnLmZyZWV6ZXIiDQpkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vaW5jbHVk
-ZS9hc20vbWVtb3J5LmggYi9hcmNoL2FybS9pbmNsdWRlL2FzbS9tZW1vcnku
-aA0KaW5kZXggNTQyMWQ4Mi4uMjNlOTNhNiAxMDA2NDQNCi0tLSBhL2FyY2gv
-YXJtL2luY2x1ZGUvYXNtL21lbW9yeS5oDQorKysgYi9hcmNoL2FybS9pbmNs
-dWRlL2FzbS9tZW1vcnkuaA0KQEAgLTE5MSw2ICsxOTEsNyBAQCBzdGF0aWMg
-aW5saW5lIHZvaWQgKnBoeXNfdG9fdmlydCh1bnNpZ25lZCBsb25nIHgpDQog
-ICovDQogI2RlZmluZSBfX3BhKHgpCQkJX192aXJ0X3RvX3BoeXMoKHVuc2ln
-bmVkIGxvbmcpKHgpKQ0KICNkZWZpbmUgX192YSh4KQkJCSgodm9pZCAqKV9f
-cGh5c190b192aXJ0KCh1bnNpZ25lZCBsb25nKSh4KSkpDQorI2RlZmluZSBf
-X3BhX3N5bWJvbCh4KQkJX19wYShSRUxPQ19ISURFKCh1bnNpZ25lZCBsb25n
-KSh4KSwwKSkNCiAjZGVmaW5lIHBmbl90b19rYWRkcihwZm4pCV9fdmEoKHBm
-bikgPDwgUEFHRV9TSElGVCkNCiANCiAvKg0KZGlmZiAtLWdpdCBhL2FyY2gv
-YXJtL2tlcm5lbC9NYWtlZmlsZSBiL2FyY2gvYXJtL2tlcm5lbC9NYWtlZmls
-ZQ0KaW5kZXggYzliMDBiYi4uNTQxYWMzYSAxMDA2NDQNCi0tLSBhL2FyY2gv
-YXJtL2tlcm5lbC9NYWtlZmlsZQ0KKysrIGIvYXJjaC9hcm0va2VybmVsL01h
-a2VmaWxlDQpAQCAtMzYsNiArMzYsNyBAQCBvYmotJChDT05GSUdfQVJNX1RI
-VU1CRUUpCSs9IHRodW1iZWUubw0KIG9iai0kKENPTkZJR19LR0RCKQkJKz0g
-a2dkYi5vDQogb2JqLSQoQ09ORklHX0FSTV9VTldJTkQpCSs9IHVud2luZC5v
-DQogb2JqLSQoQ09ORklHX0hBVkVfVENNKQkJKz0gdGNtLm8NCitvYmotJChD
-T05GSUdfSElCRVJOQVRJT04pCSs9IGNwdS5vIHN3c3VzcC5vDQogDQogb2Jq
-LSQoQ09ORklHX0NSVU5DSCkJCSs9IGNydW5jaC5vIGNydW5jaC1iaXRzLm8N
-CiBBRkxBR1NfY3J1bmNoLWJpdHMubwkJOj0gLVdhLC1tY3B1PWVwOTMxMg0K
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2tlcm5lbC9jcHUuYyBiL2FyY2gvYXJt
-L2tlcm5lbC9jcHUuYw0KbmV3IGZpbGUgbW9kZSAxMDA2NDQNCmluZGV4IDAw
-MDAwMDAuLjBmMWMzMWYNCi0tLSAvZGV2L251bGwNCisrKyBiL2FyY2gvYXJt
-L2tlcm5lbC9jcHUuYw0KQEAgLTAsMCArMSw2NCBAQA0KKy8qDQorICogSGli
-ZXJuYXRpb24gc3VwcG9ydCBzcGVjaWZpYyBmb3IgQVJNDQorICoNCisgKiBE
-ZXJpdmVkIGZyb20gd29yayBvbiBBUk0gaGliZXJuYXRpb24gc3VwcG9ydCBi
-eToNCisgKg0KKyAqIFVidW50dSBwcm9qZWN0LCBoaWJlcm5hdGlvbiBzdXBw
-b3J0IGZvciBtYWNoLWRvdmUNCisgKiBDb3B5cmlnaHQgKEMpIDIwMTAgTm9r
-aWEgQ29ycG9yYXRpb24gKEhpcm9zaGkgRG95dSkNCisgKiBDb3B5cmlnaHQg
-KEMpIDIwMTAgVGV4YXMgSW5zdHJ1bWVudHMsIEluYy4gKFRlZXJ0aCBSZWRk
-eSBldCBhbC4pDQorICoJaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTAvNi8x
-OC80DQorICoJaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9w
-aXBlcm1haWwvbGludXgtcG0vMjAxMC1KdW5lLzAyNzQyMi5odG1sDQorICoJ
-aHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC85NjQ0Mi8NCisg
-Kg0KKyAqIENvcHlyaWdodCAoQykgMjAwNiBSYWZhZWwgSi4gV3lzb2NraSA8
-cmp3QHNpc2sucGw+DQorICoNCisgKiBMaWNlbnNlIHRlcm1zOiBHTlUgR2Vu
-ZXJhbCBQdWJsaWMgTGljZW5zZSAoR1BMKSB2ZXJzaW9uIDINCisgKi8NCisN
-CisjaW5jbHVkZSA8bGludXgvbW0uaD4NCisjaW5jbHVkZSA8bGludXgvc2No
-ZWQuaD4NCisjaW5jbHVkZSA8bGludXgvc3VzcGVuZC5oPg0KKyNpbmNsdWRl
-IDxhc20vdGxiZmx1c2guaD4NCisNCitleHRlcm4gY29uc3Qgdm9pZCBfX25v
-c2F2ZV9iZWdpbiwgX19ub3NhdmVfZW5kOw0KKw0KK2ludCBwZm5faXNfbm9z
-YXZlKHVuc2lnbmVkIGxvbmcgcGZuKQ0KK3sNCisJdW5zaWduZWQgbG9uZyBu
-b3NhdmVfYmVnaW5fcGZuID0gX19wYV9zeW1ib2woJl9fbm9zYXZlX2JlZ2lu
-KSA+PiBQQUdFX1NISUZUOw0KKwl1bnNpZ25lZCBsb25nIG5vc2F2ZV9lbmRf
-cGZuID0gUEFHRV9BTElHTihfX3BhX3N5bWJvbCgmX19ub3NhdmVfZW5kKSkg
-Pj4gUEFHRV9TSElGVDsNCisNCisJcmV0dXJuIChwZm4gPj0gbm9zYXZlX2Jl
-Z2luX3BmbikgJiYgKHBmbiA8IG5vc2F2ZV9lbmRfcGZuKTsNCit9DQorDQor
-dm9pZCBzYXZlX3Byb2Nlc3Nvcl9zdGF0ZSh2b2lkKQ0KK3sNCisJZmx1c2hf
-dGhyZWFkKCk7DQorCWxvY2FsX2ZpcV9kaXNhYmxlKCk7DQorfQ0KKw0KK3Zv
-aWQgcmVzdG9yZV9wcm9jZXNzb3Jfc3RhdGUodm9pZCkNCit7DQorCWxvY2Fs
-X2ZsdXNoX3RsYl9hbGwoKTsNCisJbG9jYWxfZmlxX2VuYWJsZSgpOw0KK30N
-CisNCit1OCBfX3N3c3VzcF9hcmNoX2N0eFtQQUdFX1NJWkVdIF9fYXR0cmli
-dXRlX18oKGFsaWduZWQoUEFHRV9TSVpFKSkpOw0KK3U4IF9fc3dzdXNwX3Jl
-c3VtZV9zdGtbUEFHRV9TSVpFLzJdIF9fbm9zYXZlZGF0YTsNCisNCisvKg0K
-KyAqIFRoZSBmcmFtZXdvcmsgbG9hZHMgdGhlIGhpYmVybmF0aW9uIGltYWdl
-IGludG8gdGhpcyBsaW5rZWQgbGlzdCwNCisgKiBmb3Igc3dzdXNwX2FyY2hf
-cmVzdW1lKCkgdG8gY29weSBiYWNrIHRvIHRoZSBwcm9wZXIgZGVzdGluYXRp
-b25zLg0KKyAqDQorICogVG8gbWFrZSB0aGlzIHdvcmsgaWYgcmVzdW1lIGlz
-IHRyaWdnZXJlZCBmcm9tIGluaXRyYW1mcywgdGhlDQorICogcGFnZXRhYmxl
-cyBuZWVkIHRvIGJlIHN3aXRjaGVkIHRvIGFsbG93IHdyaXRlcyB0byBrZXJu
-ZWwgbWVtLg0KKyAqLw0KK3ZvaWQgbm90cmFjZSBfX3N3c3VzcF9hcmNoX3Jl
-c3RvcmVfaW1hZ2Uodm9pZCkNCit7DQorCWV4dGVybiBzdHJ1Y3QgcGJlICpy
-ZXN0b3JlX3BibGlzdDsNCisJc3RydWN0IHBiZSAqcGJlOw0KKw0KKwljcHVf
-c3dpdGNoX21tKF9fdmlydF90b19waHlzKHN3YXBwZXJfcGdfZGlyKSwgJmlu
-aXRfbW0pOw0KKw0KKwlmb3IgKHBiZSA9IHJlc3RvcmVfcGJsaXN0OyBwYmU7
-IHBiZSA9IHBiZS0+bmV4dCkNCisJCWNvcHlfcGFnZShwYmUtPm9yaWdfYWRk
-cmVzcywgcGJlLT5hZGRyZXNzKTsNCit9DQpkaWZmIC0tZ2l0IGEvYXJjaC9h
-cm0va2VybmVsL3N3c3VzcC5TIGIvYXJjaC9hcm0va2VybmVsL3N3c3VzcC5T
-DQpuZXcgZmlsZSBtb2RlIDEwMDY0NA0KaW5kZXggMDAwMDAwMC4uMWZjMGUz
-Mw0KLS0tIC9kZXYvbnVsbA0KKysrIGIvYXJjaC9hcm0va2VybmVsL3N3c3Vz
-cC5TDQpAQCAtMCwwICsxLDcyIEBADQorLyoNCisgKiBIaWJlcm5hdGlvbiBz
-dXBwb3J0IHNwZWNpZmljIGZvciBBUk0NCisgKg0KKyAqIEJhc2VkIG9uIHdv
-cmsgYnk6DQorICoNCisgKiBVYnVudHUgcHJvamVjdCwgaGliZXJuYXRpb24g
-c3VwcG9ydCBmb3IgbWFjaC1kb3ZlLA0KKyAqIENvcHlyaWdodCAoQykgMjAx
-MCBOb2tpYSBDb3Jwb3JhdGlvbiAoSGlyb3NoaSBEb3l1KQ0KKyAqIENvcHly
-aWdodCAoQykgMjAxMCBUZXhhcyBJbnN0cnVtZW50cywgSW5jLiAoVGVlcnRo
-IFJlZGR5IGV0IGFsLikNCisgKglodHRwczovL2xrbWwub3JnL2xrbWwvMjAx
-MC82LzE4LzQNCisgKglodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnL3BpcGVybWFpbC9saW51eC1wbS8yMDEwLUp1bmUvMDI3NDIyLmh0bWwN
-CisgKglodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzk2NDQy
-Lw0KKyAqDQorICogQ29weXJpZ2h0IChDKSAyMDA2IFJhZmFlbCBKLiBXeXNv
-Y2tpIDxyandAc2lzay5wbD4NCisgKg0KKyAqIExpY2Vuc2UgdGVybXM6IEdO
-VSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIChHUEwpIHZlcnNpb24gMg0KKyAq
-Lw0KKw0KKyNpbmNsdWRlIDxsaW51eC9saW5rYWdlLmg+DQorI2luY2x1ZGUg
-PGFzbS9tZW1vcnkuaD4NCisjaW5jbHVkZSA8YXNtL3BhZ2UuaD4NCisNCisv
-Kg0KKyAqIFNhdmUgdGhlIGN1cnJlbnQgQ1BVIHN0YXRlIGJlZm9yZSBzdXNw
-ZW5kIC8gcG93ZXJvZmYuDQorICovDQorRU5UUlkoc3dzdXNwX2FyY2hfc3Vz
-cGVuZCkNCisJbGRyCXIwLCA9X19zd3N1c3BfYXJjaF9jdHgNCisJbXJzCXIx
-LCBjcHNyDQorCW1ycwlyMiwgc3Bzcg0KKwlzdG1pYQlyMCEsIHtyMS1yMTEs
-bHJ9CUAgQ1BTUiwgU1BTUiwgbm9udm9sYXRpbGUgcmVncw0KKwlzdHIJc3As
-IFtyMF0sICM0CQlAIHN0YWNrDQorCXN0bWZkCXNwISwge2xyfQ0KKwlibAlf
-X3NhdmVfcHJvY2Vzc29yX3N0YXRlCUAgbWFjaGluZS1zcGVjaWZpYyBzdGF0
-ZQ0KKwlsZG1mZAlzcCEsIHtscn0NCisJYglzd3N1c3Bfc2F2ZQkJQCBsZXQg
-ZnJhbWV3b3JrIHdyaXRlIHNuYXBzaG90IG91dA0KK0VORFBST0Moc3dzdXNw
-X2FyY2hfc3VzcGVuZCkNCisNCisvKg0KKyAqIFJlc3RvcmUgdGhlIG1lbW9y
-eSBpbWFnZSBmcm9tIHRoZSBwYWdlbGlzdHMsIGFuZCBsb2FkIHRoZSBDUFUg
-cmVnaXN0ZXJzDQorICogZnJvbSBzYXZlZCBzdGF0ZS4NCisgKi8NCitFTlRS
-WShzd3N1c3BfYXJjaF9yZXN1bWUpDQorCS8qDQorCSAqIFN3aXRjaCBzdGFj
-ayB0byBhIG5vc2F2ZWRhdGEgcmVnaW9uIHRvIG1ha2Ugc3VyZSBpbWFnZSBy
-ZXN0b3JlDQorCSAqIGRvZXNuJ3QgY2xvYmJlciBpdCB1bmRlcm5lYXRoIGl0
-c2VsZi4NCisJICovDQorCWxkcglzcCwgPShfX3N3c3VzcF9yZXN1bWVfc3Rr
-ICsgUEFHRV9TSVpFIC8gMikNCisJYmwJX19zd3N1c3BfYXJjaF9yZXN0b3Jl
-X2ltYWdlDQorDQorCS8qDQorCSAqIFJlc3RvcmUgdGhlIENQVSByZWdpc3Rl
-cnMuDQorCSAqLw0KKwlsZHIJcjAsID1fX3N3c3VzcF9hcmNoX2N0eA0KKwls
-ZG1pYQlyMCEsIHtyMSxyMn0JCUAgQ1BTUiAvIFNQU1INCisJbXNyCWNwc3Is
-IHIxDQorCW1zcglzcHNyLCByMg0KKwlsZHIJcjAsID1fX3N3c3VzcF9hcmNo
-X2N0eAlAIHJlbG9hZCBpbiBjYXNlIHJlZ3NldCBzd2l0Y2hlZA0KKwlsZG1p
-YQlyMCEsIHtyMS1yMTEsbHJ9CUAgbm9udm9sYXRpbGUgcmVncw0KKwlsZHIJ
-c3AsIFtyMF0sICM0CQlAIHN0YWNrDQorDQorCS8qDQorCSAqIEZyb20gaGVy
-ZSBvbiB3ZSBoYXZlIGEgdmFsaWQgc3RhY2sgYWdhaW4uIENvcmUgc3RhdGUg
-aXMNCisJICogbm90IHJlc3RvcmVkIHlldCwgcmVkaXJlY3QgdG8gdGhlIG1h
-Y2hpbmUtc3BlY2lmaWMNCisJICogaW1wbGVtZW50YXRpb24gdG8gZ2V0IHRo
-YXQgZG9uZS4NCisJICogUmVzdW1lIGhhcyBzdWNjZWVkZWQgYXQgdGhpcyBw
-b2ludDsgaWYgdGhlIG1hY2hpbmUtc3BlY2lmaWMNCisJICogY29kZSB3YW50
-cyB0byBmYWlsIGl0IG5lZWRzIHRvIHBhbmljLg0KKwkgKi8NCisJbW92CXIx
-LCAjMA0KKwlzdG1mZAlzcCEsIHtyMSxscn0NCisJYmwJX19yZXN0b3JlX3By
-b2Nlc3Nvcl9zdGF0ZQlAIG1hY2hpbmUtc3BlY2lmaWMgc3RhdGUNCisJYmwJ
-Y3B1X2luaXQJCQlAIHJlaW5pdGlhbGl6ZSBvdGhlciBtb2Rlcw0KKwlsZG1m
-ZAlzcCEsIHtyMCxwY30NCitFTkRQUk9DKHN3c3VzcF9hcmNoX3Jlc3VtZSkN
-Cg==
-
---1695163656-341139716-1306166245=:8018
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---1695163656-341139716-1306166245=:8018--
+It very much does, and I know OMAP has some kind of SMC call to handle
+this.
