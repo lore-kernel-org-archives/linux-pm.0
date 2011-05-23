@@ -1,20 +1,22 @@
-From: Dave Martin <dave.martin@linaro.org>
-Subject: Re: [RFC PATCH] ARM hibernation / suspend-to-disk
-	support code
-Date: Mon, 23 May 2011 12:16:31 +0100
-Message-ID: <20110523111631.GD3769__21081.2207930305$1306149554$gmane$org@arm.com>
-References: <3DCE2F529B282E4B8F53D4D8AA406A07014FFE@008-AM1MPN1-022.mgdnok.nokia.com>
-	<alpine.DEB.2.00.1105181257370.2374@localhost6.localdomain6>
-	<20110520113758.GA3141@arm.com>
-	<20110520180510.GE7445@n2100.arm.linux.org.uk>
-	<20110523100132.GC2370@arm.com>
-	<20110523101220.GH17672@n2100.arm.linux.org.uk>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v2.6.38-rc7] Revert "libata:
+ ahci_start_engine compliant to AHCI spec"
+Date: Mon, 23 May 2011 14:13:10 +0200
+Message-ID: <20110523121310.GA24439__34491.9894393117$1306152853$gmane$org@htj.dyndns.org>
+References: <201105120025.34531.rjw@sisk.pl> <20633.1305565337@localhost>
+	<BANLkTin7NgUMXSVyKn6P0TCrFZ5uaaRL1w@mail.gmail.com>
+	<201105182144.37713.rjw@sisk.pl>
+	<BANLkTimZ9pe-FhkJYHTG1Jx8MUPrMHSFbA@mail.gmail.com>
+	<BANLkTim9_1Xt8oE4awbCO1iKUW96YUOv_A@mail.gmail.com>
+	<10124.1305906020@localhost>
+	<20110520154341.GL31426@htj.dyndns.org>
+	<BANLkTi=iNjWsaYCJqP057FkhAXtab5nS=Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110523101220.GH17672@n2100.arm.linux.org.uk>
+In-Reply-To: <BANLkTi=iNjWsaYCJqP057FkhAXtab5nS=Q@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,58 +26,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Frank Hofmann <frank.hofmann@tomtom.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
+To: Jian Peng <jipeng2005@gmail.com>
+Cc: Valdis.Kletnieks@vt.edu, Michael Leun <lkml20100708@newton.leun.net>, LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 23, 2011 at 11:12:20AM +0100, Russell King - ARM Linux wrote:
-> On Mon, May 23, 2011 at 11:01:32AM +0100, Dave Martin wrote:
-> > On Fri, May 20, 2011 at 07:05:10PM +0100, Russell King - ARM Linux wrote:
-> > > Out of the list you mention above, the only thing which isn't saved are the
-> > > FIQ registers, and that's a problem for S2RAM too, and should be done by
-> > > arch/arm/kernel/fiq.c hooking into the suspend paths.
-> > 
-> > The alternative view is that the driver using FIQ owns the state in the FIQ
-> > mode registers and is therefore responsible for saving and restoring it
-> > across suspend/resume.  If so, then any additional globally implemented
-> > state save/restore of the FIQ mode state is unnecessary.
+Hello,
+
+On Fri, May 20, 2011 at 10:02:56AM -0700, Jian Peng wrote:
+> Hi, Tejun/Valdis,
 > 
-> This seems to be most sensible - if the FIQ is being used as a software-DMA,
-> then the hardware side of that needs to be cleanly shutdown (eg, waiting for
-> the DMA to complete before proceeding) to ensure no loss of data.  That
-> can't happen from within the FIQ code.
+> Since this is an interoperability issue of SATA host controller, the first
+> step I want to try it to make sure the tweak that MAKE my controller WORK
+> does not break other controllers.
+> You are both right that adding this majic 5ms delay at this place should not
+> be the final solution.
+> 
+> If this magic 5ms delay works on other affected systems, I plan to post a
+> new patch that inside ahci_start_engine(), still perform same check, and
+> show warning message if failed, but will set a flag, then still set START
+> bit, and if there is such failure flag, add 5ms delay.
 
-OK.  Frank suggested putting comments to this effect in <asm/fiq.h>.
+Yeah, sounds like a plan but please add ample comment explaining
+what's going on for which controller including link to the mailing
+list threads.  As we're basically adding a black magic, I would still
+like to enable it only for the affected controllers so that we don't
+have to worry whether there are controllers which are affected by this
+problem but we don't know about.
 
-I think something along these lines might be appropriate:
+> --- a/drivers/ata/libahci.c 2011-05-18 14:23:36.564665643 -0700
+> +++ c/drivers/ata/libahci.c 2011-05-20 09:48:06.194663506 -0700
+> @@ -540,6 +540,7 @@
+>   void __iomem *port_mmio = ahci_port_base(ap);
+>   u32 tmp;
+>   u8 status;
+> + int err = 0;
 
-/*
- * The FIQ mode registers are not magically preserved across suspend/resume.
- *
- * Drivers which require these registers to be preserved across power
- * management operations must implement appropriate suspend/resume handlers
- * to save and restore them.
- */
+I think
 
-Is the header file a good place for this, or is there some other better
-place to put it?
+ bool stat_failed = false;
 
-> I also wonder about issues of secure/non-secure stuff here too - what
-> that means is that if we have a driver using FIQ mode, then we have
-> FIQ state to save, but if not there's probably no point (or even any
-> way) to save that state ourselves anyway.
+would be more in line with recent coding style.
 
-That argument may apply to a ton of state in the Secure World, not just
-the FIQ registers
+>   status = readl(port_mmio + PORT_TFDATA) & 0xFF;
+> 
+> @@ -553,12 +554,12 @@
+>    * specific controller will fail under this condition
+>    */
+>   if (status & (ATA_BUSY | ATA_DRQ))
+> -  return;
+> +  err = 1;
+>   else {
+>    ahci_scr_read(&ap->link, SCR_STATUS, &tmp);
+> 
+>    if ((tmp & 0xf) != 0x3)
+> -   return;
+> +   err = 1;
+>   }
+> 
+>   /* start DMA */
+> @@ -566,6 +567,13 @@
+>   tmp |= PORT_CMD_START;
+>   writel(tmp, port_mmio + PORT_CMD);
+>   readl(port_mmio + PORT_CMD); /* flush */
+> +
+> + /* Some controllers need longer time to be ready */
+> + if(err) {
+> +  printk(KERN_WARNING
+> +   "Controller in wrong state when setting START bit\n");
+> +  msleep(5);
 
-The likely model there is that the Secure World must hook somewhere into
-Linux suspend/resume too, so that its hooks can be called at the
-appropriate times.  This could involve a driver which saves/restores the
-state of the Secure World, or low-level hooks which get called from
-the platform power management code.
+ ata_port_printk()?
 
-Either way, Linux doesn't need to be doing anything special except for
-calling those hooks, just as for any other driver.
+Thanks.
 
-Cheers
----Dave
+-- 
+tejun
