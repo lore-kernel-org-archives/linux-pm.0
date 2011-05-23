@@ -1,18 +1,18 @@
 From: Dave Martin <dave.martin@linaro.org>
 Subject: Re: [RFC PATCH] ARM hibernation / suspend-to-disk
- support code
-Date: Mon, 23 May 2011 10:52:32 +0100
-Message-ID: <20110523095232.GB2370__25858.6480668329$1306144418$gmane$org@arm.com>
+	support code
+Date: Mon, 23 May 2011 11:01:32 +0100
+Message-ID: <20110523100132.GC2370__35990.6757287264$1306145036$gmane$org@arm.com>
 References: <3DCE2F529B282E4B8F53D4D8AA406A07014FFE@008-AM1MPN1-022.mgdnok.nokia.com>
+	<alpine.DEB.2.00.1105181257370.2374@localhost6.localdomain6>
 	<20110520113758.GA3141@arm.com>
-	<alpine.DEB.2.00.1105201255260.8018@localhost6.localdomain6>
-	<201105210027.17159.rjw@sisk.pl>
+	<20110520180510.GE7445@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201105210027.17159.rjw@sisk.pl>
+In-Reply-To: <20110520180510.GE7445@n2100.arm.linux.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,140 +22,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: frank.hofmann@tomtom.com, linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Frank Hofmann <frank.hofmann@tomtom.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 21, 2011 at 12:27:16AM +0200, Rafael J. Wysocki wrote:
-> On Friday, May 20, 2011, Frank Hofmann wrote:
-> > On Fri, 20 May 2011, Dave Martin wrote:
-> > 
-> > [ ... ]
-> > >> +/*
-> > >> + * Save the current CPU state before suspend / poweroff.
-> > >> + */
-> > >> +ENTRY(swsusp_arch_suspend)
-> > >> +	ldr	r0, =__swsusp_arch_ctx
-> > >> +	mrs	r1, cpsr
-> > >> +	str	r1, [r0], #4		/* CPSR */
-> > >> +ARM(	msr	cpsr_c, #SYSTEM_MODE					)
-> > >> +THUMB(	mov	r2, #SYSTEM_MODE					)
-> > >> +THUMB(	msr	cpsr_c, r2						)
-> > >
-> > > For Thumb-2 kernels, you can use the cps instruction to change the CPU
-> > > mode:
-> > > 	cps	#SYSTEM_MODE
-> > >
-> > > For ARM though, this instruction is only supported for ARMv6 and above,
-> > > so it's best to keep the msr form for compatibility for that case.
-> > 
-> > Ah, ok, no problem will make that change, looks good.
-> > 
-> > Do all ARMs have cpsr / spsr as used here ? Or is that code restricted to 
-> > ARMv5+ ? I don't have the CPU evolution history there, only got involved 
-> > with ARM when armv6 already was out.
-> > 
-> > I've simply done there what the "setmode" macro from <asm/assembler.h> 
-> > is doing, have chosen not to include that file because it overrides "push" 
-> > on a global scale for no good reason and that sort of thing makes me 
-> > cringe.
-> > 
-> > 
-> > >
-> > >> +	stm	r0!, {r4-r12,lr}	/* nonvolatile regs */
-> > >
-> > > Since r12 is allowed to be corrupted across a function call, we
-> > > probably don't need to save it.
-> > 
-> > ah ok thx for clarification. Earlier iterations of the patch just saved 
-> > r0-r14 there, "just to have it all", doing it right is best as always.
-> > 
-> > >
-> > [ ... ]
-> > >> +	bl	__save_processor_state
-> > >
-> > > <aside>
-> > >
-> > > Structurally, we seem to have:
-> > >
-> > > swsusp_arch_suspend {
-> > > 	/* save some processor state */
-> > > 	__save_processor_state();
-> > >
-> > > 	swsusp_save();
-> > > }
-> > >
-> > > Is __save_processor_state() intended to encapsulate all the CPU-model-
-> > > specific state saving?  Excuse my ignorance of previous conversations...
-> > >
-> > > </aside>
-> > 
-> > You're right.
-> > 
-> > I've attached the codechanges which implement __save/__restore... for 
-> > TI OMAP3 and Samsung S5P64xx, to illustrate, again (that's the stuff 
-> > referred to in the earlier mail I mentioned in first post; beware of code 
-> > churn in there, those diffs don't readily apply to 'just any' kernel).
-> > 
-> > These hooks are essentially the same as the machine-specific cpu_suspend() 
-> > except that we substitute "r0" (the save context after the generic part) 
-> > as target for where-to-save-the-state, and we make the funcs return 
-> > instead of switching to OFF mode.
-> > 
-> > That's what I meant with "backdoorish". A better way would be to change 
-> > the cpu_suspend interface so that it returns instead of directly switching 
-> > to off mode / powering down.
-> > 
-> > Russell has lately been making changes in this area; the current kernels 
-> > are a bit different here since the caller already supplies the 
-> > state-save-buffer, while the older ones used to choose in some 
-> > mach-specific way where to store that state.
-> > 
-> > (one of the reasons why these mach-dependent enablers aren't part of this 
-> > patch suggestion ...)
-> > 
-> > 
-> > >
-> > >> +	pop	{lr}
-> > >> +	b	swsusp_save
-> > >> +ENDPROC(swsusp_arch_suspend)
-> > >
-> > > I'm not too familiar with the suspend/resume stuff, so I may be asking
-> > > a dumb question here, but:
-> > >
-> > > Where do we save/restore r8_FIQ..r13_FIQ, r13_IRQ, r13_UND and r13_ABT?
-> > > (I'm assuming there's no reason to save/restore r14 or SPSR for any
-> > > exception mode, since we presumably aren't going to suspend/resume
-> > > from inside an exception handler (?))
-> > >
-> > > The exception stack pointers might conceivably be reinitialised to
-> > > sane values on resume, without necessarily needing to save/restore
-> > > them, providing my assumption in the previous paragraph is correct.
-> > >
-> > > r8_FIQ..r12_FIQ can store arbitrary state used by the FIQ handler,
-> > > if FIQ is in use.  Can we expect any driver using FIQ to save/restore
-> > > this state itself, rather than doing it globally?  This may be
-> > > reasonable.
-> > 
-> > We don't need to save/restore those, because at the time the snapshot is 
-> > taken interrupts are off and we cannot be in any trap handler either. On 
-> > resume, the kernel that has been loaded has initialized them properly 
-> > already.
+On Fri, May 20, 2011 at 07:05:10PM +0100, Russell King - ARM Linux wrote:
+> On Fri, May 20, 2011 at 12:37:58PM +0100, Dave Martin wrote:
+> > Where do we save/restore r8_FIQ..r13_FIQ, r13_IRQ, r13_UND and r13_ABT?
+> > (I'm assuming there's no reason to save/restore r14 or SPSR for any
+> > exception mode, since we presumably aren't going to suspend/resume
+> > from inside an exception handler (?))
 > 
-> I'm not sure if this is a safe assumption in general.  We may decide to
-> switch to loading hibernate images from boot loaders, for example, and
-> it may not hold any more.  Generally, please don't assume _anything_ has
-> been properly initialized during resume, before the image is loaded.
-> This has already beaten us a couple of times.
+> There is absolutely no need to save r13 for _any_ of the abort modes.  As
+> we have to set them up at boot time to fixed values, we keep that code
+> around, and in the resume paths we re-execute that initialization code.
+> cpu_init().
 
-Surely when resuming via the bootloader, the bootloader must still
-branch to some resume entry point in the kernel?
+That seemed a sensible possibility, but I'm still not familiar with some
+of the details.  It was, as I suspected, a dumb question from me...
 
-That resume code would be responsible for doing any OS-specific
-initialisation and waking up the kernel; plus, the kernel should
-not re-enable interrupts until the kernel state has been restored
-anyway.  It wouldn't be the responsibility of the bootloader to
-set up the relevant state.
+> Out of the list you mention above, the only thing which isn't saved are the
+> FIQ registers, and that's a problem for S2RAM too, and should be done by
+> arch/arm/kernel/fiq.c hooking into the suspend paths.
+
+The alternative view is that the driver using FIQ owns the state in the FIQ
+mode registers and is therefore responsible for saving and restoring it
+across suspend/resume.  If so, then any additional globally implemented
+state save/restore of the FIQ mode state is unnecessary.
+
+Do you have an opinion on which is the better model?
+
+Requiring the driver to take responsibility might encourage the driver
+writers to think about all the implications of save/restore on their
+driver: saving/restoring the FIQ mode registers is unlikely to be enough
+by itself.  Depending on the state of the driver, it might also be
+unnecessary (though it's only a few words of state, so not necessarily
+worth optimising).
 
 Cheers
 ---Dave
