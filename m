@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: linux-next: build warning after merge of the suspend
-	tree
-Date: Tue, 24 May 2011 23:30:09 +0200
-Message-ID: <201105242330.09491.rjw__48505.5079254836$1306272741$gmane$org@sisk.pl>
-References: <20110523150636.ccd83777.sfr@canb.auug.org.au>
-	<201105232154.52344.rjw@sisk.pl> <20110524063424.GC18075@gvim.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH V2] PM: OPP: introduce function to free cpufreq
+	table
+Date: Wed, 25 May 2011 00:43:26 -0700
+Message-ID: <1306309406-3299-1-git-send-email-nm__11578.0255561278$1306309577$gmane$org@ti.com>
+References: <[PATCH] PM: OPP: introduce function to free cpufreq table>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110524063424.GC18075@gvim.org>
+In-Reply-To: <[PATCH] PM: OPP: introduce function to free cpufreq table>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,252 +18,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: linux-omap <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 24, 2011, mark gross wrote:
-> On Mon, May 23, 2011 at 09:54:52PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, May 23, 2011, mark gross wrote:
-> > > On Mon, May 23, 2011 at 03:06:36PM +1000, Stephen Rothwell wrote:
-> > > > Hi Rafael,
-> > > > 
-> > > > After merging the suspend tree, today's linux-next build (i386 defconfig
-> > > > among others) produced this warning:
-> > > > 
-> > > > kernel/pm_qos_params.c: In function 'pm_qos_power_write':
-> > > > kernel/pm_qos_params.c:420: warning: passing argument 3 of 'kstrtol' from incompatible pointer type
-> > > > include/linux/kernel.h:210: note: expected 'long int *' but argument is of type 's32 *'
-> > > > 
-> > > > Intreoduced by commit 365daa955e03 ("PM: Correct PM QOS's user mode
-> > > > interface to work with ascii input per").
-> > > 
-> > > Gah!  I'm sorry about that.
-> > > 
-> > > attached is a fix.
-> > > 
-> > > 
-> > > --mark
-> > > 
-> > > signed-off-by:markgross <markgross@thegnar.org>
-> > > 
-> > > 
-> > > 
-> > > From a8f0587b9ae598be5ca4c3cdda4e0ced6ca9baaf Mon Sep 17 00:00:00 2001
-> > > From: mgross <mgross@cr48>
-> > > Date: Mon, 23 May 2011 07:14:09 -0700
-> > > Subject: [PATCH] clean up a compile time warning in the use of strict_strtol but that was
-> > >  passing an s32 * when it should be passing a long *
-> > > 
-> > > ---
-> > >  kernel/pm_qos_params.c |    6 ++++--
-> > >  1 files changed, 4 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> > > index d61ecf3..dd37c56 100644
-> > > --- a/kernel/pm_qos_params.c
-> > > +++ b/kernel/pm_qos_params.c
-> > > @@ -405,6 +405,7 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
-> > >  		size_t count, loff_t *f_pos)
-> > >  {
-> > >  	s32 value;
-> > > +	long safe_int;
-> > >  	int x;
-> > >  	char ascii_value[11];
-> > >  	struct pm_qos_request_list *pm_qos_req;
-> > > @@ -417,10 +418,11 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
-> > >  		ascii_value[count] = 0;
-> > >  		if (copy_from_user(ascii_value, buf, count))
-> > >  			return -EFAULT;
-> > > -		if ((x=strict_strtol(ascii_value, 16, &value)) != 0){
-> > > -			pr_debug("%s, 0x%x, 0x%x\n",ascii_value, value, x);
-> > > +		if ((x=strict_strtol(ascii_value, 16, &safe_int)) != 0){
-> > > +			pr_debug("%s, 0x%lx, 0x%x\n",ascii_value, safe_int, x);
-> > >  			return -EINVAL;
-> > >  		}
-> > > +		value = (s32) safe_int;
-> > 
-> > Well, this doesn't seem quite right.
-> > 
-> > >  	} else
-> > >  		return -EINVAL;
-> > 
-> > Besides, if count == 11, there we'll write beyond ascii_value[], right?
-> 
-> right. That is a bug.
-> 
-> > 
-> > What about the appended patch instead of your original one?
-> Thank you!
-> 
-> > Rafael
-> > 
-> > 
-> > ---
-> > From: mark gross <markgross@thegnar.org>
-> > Subject: PM: Correct PM QOS's user mode interface to work with ascii input per
-> > 
-> > What is in the kernel docs.  Writing a string to the ABI from user mode
-> > comes in 2 flavors.  One with and one without a '\n' at the end.  This
-> > change accepts both.
-> > 
-> > # echo 0x12345678 > /dev/cpu_dma_latency
-> > 
-> > and
-> > 
-> > # echo -n 0x12345678 > /dev/cpu_dma_latency
-> > 
-> > now both work.
-> > 
-> > [rjw: Fixed up array bounds checking and type casting.]
-> > 
-> > Signed-off-by: mark gross <markgross@thegnar.org>
-> > Acked-by: Simon Horman <horms@verge.net.au>
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  kernel/pm_qos_params.c |   25 ++++++++++++++++---------
-> >  1 file changed, 16 insertions(+), 9 deletions(-)
-> > 
-> > Index: linux-2.6/kernel/pm_qos_params.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/pm_qos_params.c
-> > +++ linux-2.6/kernel/pm_qos_params.c
-> > @@ -40,6 +40,7 @@
-> >  #include <linux/string.h>
-> >  #include <linux/platform_device.h>
-> >  #include <linux/init.h>
-> > +#include <linux/kernel.h>
-> >  
-> >  #include <linux/uaccess.h>
-> >  
-> > @@ -404,24 +405,30 @@ static ssize_t pm_qos_power_write(struct
-> >  		size_t count, loff_t *f_pos)
-> >  {
-> >  	s32 value;
-> > -	int x;
-> >  	char ascii_value[11];
-> >  	struct pm_qos_request_list *pm_qos_req;
-> >  
-> >  	if (count == sizeof(s32)) {
-> >  		if (copy_from_user(&value, buf, sizeof(s32)))
-> >  			return -EFAULT;
-> > -	} else if (count == 11) { /* len('0x12345678/0') */
-> > -		if (copy_from_user(ascii_value, buf, 11))
-> > +	} else if (count >= 10) { /* '0x12345678' or '0x12345678\n'*/
-> Did you mean <= 11 here?  I know that Alan Stern wanted to see the ABI
-> adjusted to accept shorter hex string that the full 10 char string.
-> 
-> FWIW I'm ok with doing that.
-> 
-> > +		unsigned long int ulval;
-> > +		int ret;
-> > +
-> > +		count = 10;
-> 
-> I kind of wanted to return an error to the user if they violate the
-> documented format for the hex string.  With this code you get a silent
-> truncation of the lower digits if the string is "0x123456789abcdef"
+cpufreq table allocated by opp_init_cpufreq_table is better
+freed by OPP layer itself. This allows future modifications to
+the table handling to be transparent to the users.
 
-That's correct, but with the previous code there will be a truncation
-is "echo -n 0x123456789".  If we don't want that, we should check if the
-last character is a '\n'.
-
-> > +		ascii_value[count] = 0;
-> > +		if (copy_from_user(ascii_value, buf, count))
-> >  			return -EFAULT;
-> > -		if (strlen(ascii_value) != 10)
-> > -			return -EINVAL;
-> > -		x = sscanf(ascii_value, "%x", &value);
-> > -		if (x != 1)
-> > +
-> > +		ret = strict_strtoul(ascii_value, 16, &ulval);
-> > +		if (ret){
-> > +			pr_debug("%s, 0x%lx, 0x%x\n", ascii_value, ulval, ret);
-> >  			return -EINVAL;
-> > -		pr_debug("%s, %d, 0x%x\n", ascii_value, x, value);
-> > -	} else
-> > +		}
-> > +		value = (s32)lower_32_bits(ulval);
-> This shouldn't be needed if you are constrained to a hex format of
-> "0x12345678" but this is more readable.  lower_32_bits is a good idea.
-
-OK
-
-Appended is another patch that adds the '\n' check and reworks the code
-a bit (so that it will accept strings like "0x1" too).
-
-Thanks,
-Rafael
-
-
+Signed-off-by: Nishanth Menon <nm@ti.com>
 ---
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM: Fix PM QOS's user mode interface to work with ASCII input
+V2: removed lock of free.
+V1: http://marc.info/?t=130619241700001&r=1&w=2
 
-Make pm_qos_power_write() accept values passed to it in the ASCII hex
-format either with or without an ending newline.
+Example discussion: http://marc.info/?t=130570440600005&r=1&w=2
+ Documentation/power/opp.txt |    2 ++
+ drivers/base/power/opp.c    |   17 +++++++++++++++++
+ include/linux/opp.h         |    8 ++++++++
+ 3 files changed, 27 insertions(+), 0 deletions(-)
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/pm_qos_params.c |   33 +++++++++++++++++++++++----------
- 1 file changed, 23 insertions(+), 10 deletions(-)
-
-Index: linux-2.6/kernel/pm_qos_params.c
-===================================================================
---- linux-2.6.orig/kernel/pm_qos_params.c
-+++ linux-2.6/kernel/pm_qos_params.c
-@@ -40,6 +40,7 @@
- #include <linux/string.h>
- #include <linux/platform_device.h>
- #include <linux/init.h>
-+#include <linux/kernel.h>
+diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
+index 5ae70a1..3035d00 100644
+--- a/Documentation/power/opp.txt
++++ b/Documentation/power/opp.txt
+@@ -321,6 +321,8 @@ opp_init_cpufreq_table - cpufreq framework typically is initialized with
+ 	addition to CONFIG_PM as power management feature is required to
+ 	dynamically scale voltage and frequency in a system.
  
- #include <linux/uaccess.h>
++opp_free_cpufreq_table - Free up the table allocated by opp_init_cpufreq_table
++
+ 7. Data Structures
+ ==================
+ Typically an SoC contains multiple voltage domains which are variable. Each
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 56a6899..5cc1232 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -625,4 +625,21 @@ int opp_init_cpufreq_table(struct device *dev,
  
-@@ -404,24 +405,36 @@ static ssize_t pm_qos_power_write(struct
- 		size_t count, loff_t *f_pos)
+ 	return 0;
+ }
++
++/**
++ * opp_free_cpufreq_table() - free the cpufreq table
++ * @dev:	device for which we do this operation
++ * @table:	table to free
++ *
++ * Free up the table allocated by opp_init_cpufreq_table
++ */
++void opp_free_cpufreq_table(struct device *dev,
++				struct cpufreq_frequency_table **table)
++{
++	if (!table)
++		return;
++
++	kfree(*table);
++	*table = NULL;
++}
+ #endif		/* CONFIG_CPU_FREQ */
+diff --git a/include/linux/opp.h b/include/linux/opp.h
+index 5449945..7020e97 100644
+--- a/include/linux/opp.h
++++ b/include/linux/opp.h
+@@ -94,12 +94,20 @@ static inline int opp_disable(struct device *dev, unsigned long freq)
+ #if defined(CONFIG_CPU_FREQ) && defined(CONFIG_PM_OPP)
+ int opp_init_cpufreq_table(struct device *dev,
+ 			    struct cpufreq_frequency_table **table);
++void opp_free_cpufreq_table(struct device *dev,
++				struct cpufreq_frequency_table **table);
+ #else
+ static inline int opp_init_cpufreq_table(struct device *dev,
+ 			    struct cpufreq_frequency_table **table)
  {
- 	s32 value;
--	int x;
--	char ascii_value[11];
- 	struct pm_qos_request_list *pm_qos_req;
- 
- 	if (count == sizeof(s32)) {
- 		if (copy_from_user(&value, buf, sizeof(s32)))
- 			return -EFAULT;
--	} else if (count == 11) { /* len('0x12345678/0') */
--		if (copy_from_user(ascii_value, buf, 11))
-+	} else if (count <= 11) { /* ASCII perhaps? */
-+		char ascii_value[11];
-+		unsigned long int ulval;
-+		int ret;
+ 	return -EINVAL;
+ }
 +
-+		if (copy_from_user(ascii_value, buf, count))
- 			return -EFAULT;
--		if (strlen(ascii_value) != 10)
--			return -EINVAL;
--		x = sscanf(ascii_value, "%x", &value);
--		if (x != 1)
-+
-+		if (count > 10) {
-+			if (ascii_value[10] == '\n')
-+				ascii_value[10] = '\0';
-+			else
-+				return -EINVAL;
-+		} else {
-+			ascii_value[count] = '\0';
-+		}
-+		ret = strict_strtoul(ascii_value, 16, &ulval);
-+		if (ret) {
-+			pr_debug("%s, 0x%lx, 0x%x\n", ascii_value, ulval, ret);
- 			return -EINVAL;
--		pr_debug("%s, %d, 0x%x\n", ascii_value, x, value);
--	} else
-+		}
-+		value = (s32)lower_32_bits(ulval);
-+	} else {
- 		return -EINVAL;
-+	}
++static inline
++void opp_free_cpufreq_table(struct device *dev,
++				struct cpufreq_frequency_table **table)
++{
++}
+ #endif		/* CONFIG_CPU_FREQ */
  
- 	pm_qos_req = filp->private_data;
- 	pm_qos_update_request(pm_qos_req, value);
+ #endif		/* __LINUX_OPP_H__ */
+-- 
+1.7.1
