@@ -1,14 +1,12 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH V2] PM: OPP: introduce function to free cpufreq
-	table
-Date: Wed, 25 May 2011 00:43:26 -0700
-Message-ID: <1306309406-3299-1-git-send-email-nm__11578.0255561278$1306309577$gmane$org@ti.com>
-References: <[PATCH] PM: OPP: introduce function to free cpufreq table>
+From: Frank Hofmann <frank.hofmann@tomtom.com>
+Subject: [RFC PATCH v3] ARM hibernation/suspend-to-disk support
+Date: Wed, 25 May 2011 14:16:28 +0100 (BST)
+Message-ID: <alpine.DEB.2.00.1105251251330.4319__42546.5848566548$1306329466$gmane$org@localhost6.localdomain6>
+Reply-To: frank.hofmann@tomtom.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="1695163656-1282363869-1306329388=:4319"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <[PATCH] PM: OPP: introduce function to free cpufreq table>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,88 +16,228 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm <linux-pm@lists.linux-foundation.org>
-Cc: linux-omap <linux-omap@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-cpufreq table allocated by opp_init_cpufreq_table is better
-freed by OPP layer itself. This allows future modifications to
-the table handling to be transparent to the users.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
-V2: removed lock of free.
-V1: http://marc.info/?t=130619241700001&r=1&w=2
+--1695163656-1282363869-1306329388=:4319
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 
-Example discussion: http://marc.info/?t=130570440600005&r=1&w=2
- Documentation/power/opp.txt |    2 ++
- drivers/base/power/opp.c    |   17 +++++++++++++++++
- include/linux/opp.h         |    8 ++++++++
- 3 files changed, 27 insertions(+), 0 deletions(-)
+Hi,
 
-diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
-index 5ae70a1..3035d00 100644
---- a/Documentation/power/opp.txt
-+++ b/Documentation/power/opp.txt
-@@ -321,6 +321,8 @@ opp_init_cpufreq_table - cpufreq framework typically is initialized with
- 	addition to CONFIG_PM as power management feature is required to
- 	dynamically scale voltage and frequency in a system.
- 
-+opp_free_cpufreq_table - Free up the table allocated by opp_init_cpufreq_table
-+
- 7. Data Structures
- ==================
- Typically an SoC contains multiple voltage domains which are variable. Each
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 56a6899..5cc1232 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -625,4 +625,21 @@ int opp_init_cpufreq_table(struct device *dev,
- 
- 	return 0;
- }
-+
-+/**
-+ * opp_free_cpufreq_table() - free the cpufreq table
-+ * @dev:	device for which we do this operation
-+ * @table:	table to free
-+ *
-+ * Free up the table allocated by opp_init_cpufreq_table
-+ */
-+void opp_free_cpufreq_table(struct device *dev,
-+				struct cpufreq_frequency_table **table)
-+{
-+	if (!table)
-+		return;
-+
-+	kfree(*table);
-+	*table = NULL;
-+}
- #endif		/* CONFIG_CPU_FREQ */
-diff --git a/include/linux/opp.h b/include/linux/opp.h
-index 5449945..7020e97 100644
---- a/include/linux/opp.h
-+++ b/include/linux/opp.h
-@@ -94,12 +94,20 @@ static inline int opp_disable(struct device *dev, unsigned long freq)
- #if defined(CONFIG_CPU_FREQ) && defined(CONFIG_PM_OPP)
- int opp_init_cpufreq_table(struct device *dev,
- 			    struct cpufreq_frequency_table **table);
-+void opp_free_cpufreq_table(struct device *dev,
-+				struct cpufreq_frequency_table **table);
- #else
- static inline int opp_init_cpufreq_table(struct device *dev,
- 			    struct cpufreq_frequency_table **table)
- {
- 	return -EINVAL;
- }
-+
-+static inline
-+void opp_free_cpufreq_table(struct device *dev,
-+				struct cpufreq_frequency_table **table)
-+{
-+}
- #endif		/* CONFIG_CPU_FREQ */
- 
- #endif		/* __LINUX_OPP_H__ */
--- 
-1.7.1
+I've cleaned this up by the suggestions in the previous thread; this is 
+the result.
+
+- now baselined against rmk/devel-stable
+- didn't create the <asm/suspend.h> because Rafael is just removing
+   that everywhere anyway
+- Fixes re prev suggestion:
+ 	local_fiq_enable/disable bracketing
+ 	save only absolutely essential regs and let cpu_init do the rest
+ 	thumb2 clean assembly
+ 	allows mach hooks (but they're not defined by this code)
+
+- Also: uses the "generic suspend/resume support" code
+   (commit f6b0fa02e8b0708d17d631afce456524eadf87ff, rmk/devel-stable)
+
+Via the latter, the previously-used hooks into machine-dependent code, 
+__save/__restore_processor_state, have become unnecessary.
+
+This now simply calls the cpu_do_suspend/resume utilities provided by the 
+generic code.
+
+
+I'm still figuring out how to best test a recent devel-stable kernel ...
+
+
+Please let me know what you think,
+Thanks in advance,
+
+FrankH.
+
+
+==============================================================================
+Note on non-current kernels (older than 2.6.38):
+==============================================================================
+The use of generic CPU suspend/resume also ties the code to a 
+sufficiently-recent kernel - it requires the code from:
+
+http://ftp.arm.linux.org.uk/git/gitweb.cgi?p=linux-2.6-arm.git;a=commitdiff;h=f6b0fa02e8b0708d17d631afce456524eadf87ff
+
+Which is, for many that (want to) use the feature, a hurdle...
+
+If you're using an older kernel (2.6.37 or below), try the "generic" part 
+posted via:
+
+https://patchwork.kernel.org/patch/809212/
+
+and add a __save/__restore_processor_state for your CPU type, as mentioned 
+here:
+
+http://lists.arm.linux.org.uk/lurker/message/20110520.123937.760c528f.en.html
+==============================================================================
+--1695163656-1282363869-1306329388=:4319
+Content-Type: TEXT/x-diff; name=hibernate-arm.patch
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.DEB.2.00.1105251416280.4319@localhost6.localdomain6>
+Content-Description: 
+Content-Disposition: attachment; filename=hibernate-arm.patch
+
+IGFyY2gvYXJtL2luY2x1ZGUvYXNtL21lbW9yeS5oIHwgICAgMSArDQogYXJj
+aC9hcm0va2VybmVsL01ha2VmaWxlICAgICAgfCAgICAxICsNCiBhcmNoL2Fy
+bS9rZXJuZWwvY3B1LmMgICAgICAgICB8ICAgNzAgKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrDQogYXJjaC9hcm0va2VybmVsL3N3c3VzcC5T
+ICAgICAgfCAgIDg3ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrDQogYXJjaC9hcm0vbW0vS2NvbmZpZyAgICAgICAgICAgfCAg
+ICA1ICsrDQogNSBmaWxlcyBjaGFuZ2VkLCAxNjQgaW5zZXJ0aW9ucygrKSwg
+MCBkZWxldGlvbnMoLSkNCg0KZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2luY2x1
+ZGUvYXNtL21lbW9yeS5oIGIvYXJjaC9hcm0vaW5jbHVkZS9hc20vbWVtb3J5
+LmgNCmluZGV4IDQzMTA3N2MuLmM3ZWY0NTQgMTAwNjQ0DQotLS0gYS9hcmNo
+L2FybS9pbmNsdWRlL2FzbS9tZW1vcnkuaA0KKysrIGIvYXJjaC9hcm0vaW5j
+bHVkZS9hc20vbWVtb3J5LmgNCkBAIC0yNTAsNiArMjUwLDcgQEAgc3RhdGlj
+IGlubGluZSB2b2lkICpwaHlzX3RvX3ZpcnQocGh5c19hZGRyX3QgeCkNCiAg
+Ki8NCiAjZGVmaW5lIF9fcGEoeCkJCQlfX3ZpcnRfdG9fcGh5cygodW5zaWdu
+ZWQgbG9uZykoeCkpDQogI2RlZmluZSBfX3ZhKHgpCQkJKCh2b2lkICopX19w
+aHlzX3RvX3ZpcnQoKHVuc2lnbmVkIGxvbmcpKHgpKSkNCisjZGVmaW5lIF9f
+cGFfc3ltYm9sKHgpCQlfX3BhKFJFTE9DX0hJREUoKHVuc2lnbmVkIGxvbmcp
+KHgpLDApKQ0KICNkZWZpbmUgcGZuX3RvX2thZGRyKHBmbikJX192YSgocGZu
+KSA8PCBQQUdFX1NISUZUKQ0KIA0KIC8qDQpkaWZmIC0tZ2l0IGEvYXJjaC9h
+cm0va2VybmVsL01ha2VmaWxlIGIvYXJjaC9hcm0va2VybmVsL01ha2VmaWxl
+DQppbmRleCA4ZDk1NDQ2Li5iNzZhNDAzIDEwMDY0NA0KLS0tIGEvYXJjaC9h
+cm0va2VybmVsL01ha2VmaWxlDQorKysgYi9hcmNoL2FybS9rZXJuZWwvTWFr
+ZWZpbGUNCkBAIC0zMCw2ICszMCw3IEBAIG9iai0kKENPTkZJR19BUlRIVVIp
+CQkrPSBhcnRodXIubw0KIG9iai0kKENPTkZJR19JU0FfRE1BKQkJKz0gZG1h
+LWlzYS5vDQogb2JqLSQoQ09ORklHX1BDSSkJCSs9IGJpb3MzMi5vIGlzYS5v
+DQogb2JqLSQoQ09ORklHX1BNX1NMRUVQKQkJKz0gc2xlZXAubw0KK29iai0k
+KENPTkZJR19ISUJFUk5BVElPTikJKz0gY3B1Lm8gc3dzdXNwLm8NCiBvYmot
+JChDT05GSUdfSEFWRV9TQ0hFRF9DTE9DSykJKz0gc2NoZWRfY2xvY2subw0K
+IG9iai0kKENPTkZJR19TTVApCQkrPSBzbXAubyBzbXBfdGxiLm8NCiBvYmot
+JChDT05GSUdfSEFWRV9BUk1fU0NVKQkrPSBzbXBfc2N1Lm8NCmRpZmYgLS1n
+aXQgYS9hcmNoL2FybS9rZXJuZWwvY3B1LmMgYi9hcmNoL2FybS9rZXJuZWwv
+Y3B1LmMNCm5ldyBmaWxlIG1vZGUgMTAwNjQ0DQppbmRleCAwMDAwMDAwLi4y
+ZGZiNDBiDQotLS0gL2Rldi9udWxsDQorKysgYi9hcmNoL2FybS9rZXJuZWwv
+Y3B1LmMNCkBAIC0wLDAgKzEsNzAgQEANCisvKg0KKyAqIEhpYmVybmF0aW9u
+IHN1cHBvcnQgc3BlY2lmaWMgZm9yIEFSTQ0KKyAqDQorICogRGVyaXZlZCBm
+cm9tIHdvcmsgb24gQVJNIGhpYmVybmF0aW9uIHN1cHBvcnQgYnk6DQorICoN
+CisgKiBVYnVudHUgcHJvamVjdCwgaGliZXJuYXRpb24gc3VwcG9ydCBmb3Ig
+bWFjaC1kb3ZlDQorICogQ29weXJpZ2h0IChDKSAyMDEwIE5va2lhIENvcnBv
+cmF0aW9uIChIaXJvc2hpIERveXUpDQorICogQ29weXJpZ2h0IChDKSAyMDEw
+IFRleGFzIEluc3RydW1lbnRzLCBJbmMuIChUZWVydGggUmVkZHkgZXQgYWwu
+KQ0KKyAqCWh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDEwLzYvMTgvNA0KKyAq
+CWh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvcGlwZXJtYWls
+L2xpbnV4LXBtLzIwMTAtSnVuZS8wMjc0MjIuaHRtbA0KKyAqCWh0dHBzOi8v
+cGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvOTY0NDIvDQorICoNCisgKiBD
+b3B5cmlnaHQgKEMpIDIwMDYgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNr
+LnBsPg0KKyAqDQorICogTGljZW5zZSB0ZXJtczogR05VIEdlbmVyYWwgUHVi
+bGljIExpY2Vuc2UgKEdQTCkgdmVyc2lvbiAyDQorICovDQorDQorI2luY2x1
+ZGUgPGxpbnV4L21tLmg+DQorI2luY2x1ZGUgPGxpbnV4L3NjaGVkLmg+DQor
+I2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4NCisjaW5jbHVkZSA8YXNtL3Rs
+YmZsdXNoLmg+DQorDQorZXh0ZXJuIGNvbnN0IHZvaWQgX19ub3NhdmVfYmVn
+aW4sIF9fbm9zYXZlX2VuZDsNCisNCitpbnQgcGZuX2lzX25vc2F2ZSh1bnNp
+Z25lZCBsb25nIHBmbikNCit7DQorCXVuc2lnbmVkIGxvbmcgbm9zYXZlX2Jl
+Z2luX3BmbiA9IF9fcGFfc3ltYm9sKCZfX25vc2F2ZV9iZWdpbikgPj4gUEFH
+RV9TSElGVDsNCisJdW5zaWduZWQgbG9uZyBub3NhdmVfZW5kX3BmbiA9IFBB
+R0VfQUxJR04oX19wYV9zeW1ib2woJl9fbm9zYXZlX2VuZCkpID4+IFBBR0Vf
+U0hJRlQ7DQorDQorCXJldHVybiAocGZuID49IG5vc2F2ZV9iZWdpbl9wZm4p
+ICYmIChwZm4gPCBub3NhdmVfZW5kX3Bmbik7DQorfQ0KKw0KK3ZvaWQgc2F2
+ZV9wcm9jZXNzb3Jfc3RhdGUodm9pZCkNCit7DQorCWZsdXNoX3RocmVhZCgp
+Ow0KKwlsb2NhbF9maXFfZGlzYWJsZSgpOw0KKyNpZmRlZiBDT05GSUdfQVJN
+X01BQ0hfSElCRVJOQVRJT05fSE9PSw0KKwltYWNoX3NhdmVfc3RhdGUoKTsN
+CisjZW5kaWYNCit9DQorDQordm9pZCByZXN0b3JlX3Byb2Nlc3Nvcl9zdGF0
+ZSh2b2lkKQ0KK3sNCisJbG9jYWxfZmx1c2hfdGxiX2FsbCgpOw0KKyNpZmRl
+ZiBDT05GSUdfQVJNX01BQ0hfSElCRVJOQVRJT05fSE9PSw0KKwltYWNoX3Jl
+c3RvcmVfc3RhdGUoKTsNCisjZW5kaWYNCisJbG9jYWxfZmlxX2VuYWJsZSgp
+Ow0KK30NCisNCit1OCBfX3N3c3VzcF9hcmNoX2N0eFtQQUdFX1NJWkVdIF9f
+YXR0cmlidXRlX18oKGFsaWduZWQoUEFHRV9TSVpFKSkpOw0KK3U4IF9fc3dz
+dXNwX3Jlc3VtZV9zdGtbUEFHRV9TSVpFLzJdIF9fbm9zYXZlZGF0YTsNCisN
+CisvKg0KKyAqIFRoZSBmcmFtZXdvcmsgbG9hZHMgdGhlIGhpYmVybmF0aW9u
+IGltYWdlIGludG8gdGhpcyBsaW5rZWQgbGlzdCwNCisgKiBmb3Igc3dzdXNw
+X2FyY2hfcmVzdW1lKCkgdG8gY29weSBiYWNrIHRvIHRoZSBwcm9wZXIgZGVz
+dGluYXRpb25zLg0KKyAqDQorICogVG8gbWFrZSB0aGlzIHdvcmsgaWYgcmVz
+dW1lIGlzIHRyaWdnZXJlZCBmcm9tIGluaXRyYW1mcywgdGhlDQorICogcGFn
+ZXRhYmxlcyBuZWVkIHRvIGJlIHN3aXRjaGVkIHRvIGFsbG93IHdyaXRlcyB0
+byBrZXJuZWwgbWVtLg0KKyAqLw0KK3ZvaWQgbm90cmFjZSBfX3N3c3VzcF9h
+cmNoX3Jlc3RvcmVfaW1hZ2Uodm9pZCkNCit7DQorCWV4dGVybiBzdHJ1Y3Qg
+cGJlICpyZXN0b3JlX3BibGlzdDsNCisJc3RydWN0IHBiZSAqcGJlOw0KKw0K
+KwljcHVfc3dpdGNoX21tKF9fdmlydF90b19waHlzKHN3YXBwZXJfcGdfZGly
+KSwgJmluaXRfbW0pOw0KKw0KKwlmb3IgKHBiZSA9IHJlc3RvcmVfcGJsaXN0
+OyBwYmU7IHBiZSA9IHBiZS0+bmV4dCkNCisJCWNvcHlfcGFnZShwYmUtPm9y
+aWdfYWRkcmVzcywgcGJlLT5hZGRyZXNzKTsNCit9DQpkaWZmIC0tZ2l0IGEv
+YXJjaC9hcm0va2VybmVsL3N3c3VzcC5TIGIvYXJjaC9hcm0va2VybmVsL3N3
+c3VzcC5TDQpuZXcgZmlsZSBtb2RlIDEwMDY0NA0KaW5kZXggMDAwMDAwMC4u
+NzMwOGQ2Yw0KLS0tIC9kZXYvbnVsbA0KKysrIGIvYXJjaC9hcm0va2VybmVs
+L3N3c3VzcC5TDQpAQCAtMCwwICsxLDg3IEBADQorLyoNCisgKiBIaWJlcm5h
+dGlvbiBzdXBwb3J0IHNwZWNpZmljIGZvciBBUk0NCisgKg0KKyAqIEJhc2Vk
+IG9uIHdvcmsgYnk6DQorICoNCisgKiBVYnVudHUgcHJvamVjdCwgaGliZXJu
+YXRpb24gc3VwcG9ydCBmb3IgbWFjaC1kb3ZlLA0KKyAqIENvcHlyaWdodCAo
+QykgMjAxMCBOb2tpYSBDb3Jwb3JhdGlvbiAoSGlyb3NoaSBEb3l1KQ0KKyAq
+IENvcHlyaWdodCAoQykgMjAxMCBUZXhhcyBJbnN0cnVtZW50cywgSW5jLiAo
+VGVlcnRoIFJlZGR5IGV0IGFsLikNCisgKglodHRwczovL2xrbWwub3JnL2xr
+bWwvMjAxMC82LzE4LzQNCisgKglodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnL3BpcGVybWFpbC9saW51eC1wbS8yMDEwLUp1bmUvMDI3NDIy
+Lmh0bWwNCisgKglodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNo
+Lzk2NDQyLw0KKyAqDQorICogQ29weXJpZ2h0IChDKSAyMDA2IFJhZmFlbCBK
+LiBXeXNvY2tpIDxyandAc2lzay5wbD4NCisgKg0KKyAqIExpY2Vuc2UgdGVy
+bXM6IEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIChHUEwpIHZlcnNpb24g
+Mg0KKyAqLw0KKw0KKyNpbmNsdWRlIDxsaW51eC9saW5rYWdlLmg+DQorI2lu
+Y2x1ZGUgPGFzbS9tZW1vcnkuaD4NCisjaW5jbHVkZSA8YXNtL3BhZ2UuaD4N
+CisjaW5jbHVkZSA8YXNtL2FzbS1vZmZzZXRzLmg+DQorI2luY2x1ZGUgPGFz
+bS9nbHVlLXByb2MuaD4NCisNCisNCisvKg0KKyAqIFNhdmUgdGhlIGN1cnJl
+bnQgQ1BVIHN0YXRlIGJlZm9yZSBzdXNwZW5kIC8gcG93ZXJvZmYuDQorICov
+DQorRU5UUlkoc3dzdXNwX2FyY2hfc3VzcGVuZCkNCisJbGRyCXIwLCA9X19z
+d3N1c3BfYXJjaF9jdHgNCisJbXJzCXIxLCBjcHNyDQorCW1ycwlyMiwgc3Bz
+cg0KKwlzdG1pYQlyMCEsIHtyMS1yMTEsbHJ9CUAgQ1BTUiwgU1BTUiwgbm9u
+dm9sYXRpbGUgcmVncw0KKwlzdHIJc3AsIFtyMF0sICM0CQlAIHN0YWNrDQor
+CXN0bWZkCXNwISwge2xyfQ0KKyNpZmRlZglNVUxUSV9DUFUNCisJbGRyCXIx
+LCA9cHJvY2Vzc29yDQorCW1vdglsciwgcGMNCisJbGRyCXBjLCBbcjEsICND
+UFVfRE9fU1VTUEVORF0NCisjZWxzZQ0KKwlibAljcHVfZG9fc3VzcGVuZA0K
+KyNlbmRpZg0KKwlsZG1mZAlzcCEsIHtscn0NCisJYglzd3N1c3Bfc2F2ZQkJ
+QCBsZXQgZnJhbWV3b3JrIHdyaXRlIHNuYXBzaG90IG91dA0KK0VORFBST0Mo
+c3dzdXNwX2FyY2hfc3VzcGVuZCkNCisNCisvKg0KKyAqIFJlc3RvcmUgdGhl
+IG1lbW9yeSBpbWFnZSBmcm9tIHRoZSBwYWdlbGlzdHMsIGFuZCBsb2FkIHRo
+ZSBDUFUgcmVnaXN0ZXJzDQorICogZnJvbSBzYXZlZCBzdGF0ZS4NCisgKi8N
+CitFTlRSWShzd3N1c3BfYXJjaF9yZXN1bWUpDQorCS8qDQorCSAqIFN3aXRj
+aCBzdGFjayB0byBhIG5vc2F2ZWRhdGEgcmVnaW9uIHRvIG1ha2Ugc3VyZSBp
+bWFnZSByZXN0b3JlDQorCSAqIGRvZXNuJ3QgY2xvYmJlciBpdCB1bmRlcm5l
+YXRoIGl0c2VsZi4NCisJICovDQorCWxkcglzcCwgPShfX3N3c3VzcF9yZXN1
+bWVfc3RrICsgUEFHRV9TSVpFIC8gMikNCisJYmwJX19zd3N1c3BfYXJjaF9y
+ZXN0b3JlX2ltYWdlDQorDQorCS8qDQorCSAqIFJlc3RvcmUgdGhlIENQVSBy
+ZWdpc3RlcnMuDQorCSAqLw0KKwlsZHIJcjAsID1fX3N3c3VzcF9hcmNoX2N0
+eA0KKwlsZG1pYQlyMCEsIHtyMSxyMn0JCUAgQ1BTUiAvIFNQU1INCisJbXNy
+CWNwc3IsIHIxDQorCW1zcglzcHNyLCByMg0KKwlsZHIJcjAsID1fX3N3c3Vz
+cF9hcmNoX2N0eAlAIHJlbG9hZCBpbiBjYXNlIHJlZ3NldCBzd2l0Y2hlZA0K
+KwlsZG1pYQlyMCEsIHtyMS1yMTEsbHJ9CUAgbm9udm9sYXRpbGUgcmVncw0K
+KwlsZHIJc3AsIFtyMF0sICM0CQlAIHN0YWNrDQorDQorCS8qDQorCSAqIEZy
+b20gaGVyZSBvbiB3ZSBoYXZlIGEgdmFsaWQgc3RhY2sgYWdhaW4uIENvcmUg
+c3RhdGUgaXMNCisJICogbm90IHJlc3RvcmVkIHlldCwgcmVkaXJlY3QgdG8g
+dGhlIG1hY2hpbmUtc3BlY2lmaWMNCisJICogaW1wbGVtZW50YXRpb24gdG8g
+Z2V0IHRoYXQgZG9uZS4NCisJICogUmVzdW1lIGhhcyBzdWNjZWVkZWQgYXQg
+dGhpcyBwb2ludDsgaWYgdGhlIG1hY2hpbmUtc3BlY2lmaWMNCisJICogY29k
+ZSB3YW50cyB0byBmYWlsIGl0IG5lZWRzIHRvIHBhbmljLg0KKwkgKi8NCisJ
+bW92CXIxLCAjMA0KKwlzdG1mZAlzcCEsIHtyMSxyNC1yMTEsbHJ9DQorI2lm
+ZGVmIE1VTFRJX0NQVQ0KKwlsZHIJcjEsID1wcm9jZXNzb3INCisJbW92CWxy
+LCBwYw0KKwlsZHIJcGMsIFtyMSwgI0NQVV9ET19SRVNVTUVdDQorI2Vsc2UN
+CisJYmwJY3B1X2RvX3Jlc3VtZQ0KKyNlbmRpZg0KKwlibAljcHVfaW5pdAkJ
+CUAgcmVpbml0aWFsaXplIG90aGVyIG1vZGVzDQorCWxkbWZkCXNwISwge3Iw
+LHI0LXIxMSxwY30NCitFTkRQUk9DKHN3c3VzcF9hcmNoX3Jlc3VtZSkNCmRp
+ZmYgLS1naXQgYS9hcmNoL2FybS9tbS9LY29uZmlnIGIvYXJjaC9hcm0vbW0v
+S2NvbmZpZw0KaW5kZXggMDA3NGI4ZC4uYzY2OGY4ZiAxMDA2NDQNCi0tLSBh
+L2FyY2gvYXJtL21tL0tjb25maWcNCisrKyBiL2FyY2gvYXJtL21tL0tjb25m
+aWcNCkBAIC02MjcsNiArNjI3LDExIEBAIGNvbmZpZyBDUFVfVVNFX0RPTUFJ
+TlMNCiBjb25maWcgSU9fMzYNCiAJYm9vbA0KIA0KK2NvbmZpZyBBUkNIX0hJ
+QkVSTkFUSU9OX1BPU1NJQkxFDQorCWJvb2wNCisJZGVwZW5kcyBvbiBNTVUN
+CisJZGVmYXVsdCB5IGlmIENQVV9BUk05MjBUIHx8IENQVV9BUk05MjZUIHx8
+IENQVV9TQTExMDAgfHwgQ1BVX1hTQ0FMRSB8fCBDUFVfWFNDMyB8fCBDUFVf
+VjYgfHwgQ1BVX1Y2SyB8fCBDUFVfVjcNCisNCiBjb21tZW50ICJQcm9jZXNz
+b3IgRmVhdHVyZXMiDQogDQogY29uZmlnIEFSTV9USFVNQg0K
+
+--1695163656-1282363869-1306329388=:4319
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--1695163656-1282363869-1306329388=:4319--
