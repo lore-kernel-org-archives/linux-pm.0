@@ -1,15 +1,18 @@
-From: Wanlong Gao <wanlong.gao@gmail.com>
-Subject: Re: [PATCH] MIPS:i8259.c remove resume and shutdown to
-	syscore_ops
-Date: Wed, 25 May 2011 07:14:59 +0800
-Message-ID: <1306278899.2135.2.camel__9316.54950040883$1306358631$gmane$org@Tux>
-References: <1306247112.2066.8.camel@Tux>  <201105242059.59770.rjw@sisk.pl>
-Reply-To: wanlong.gao@gmail.com
+From: mark gross <markgross@thegnar.org>
+Subject: Re: linux-next: build warning after merge of the suspend
+	tree
+Date: Wed, 25 May 2011 18:58:00 -0700
+Message-ID: <20110526015800.GB27039__7972.5525262349$1306375161$gmane$org@gvim.org>
+References: <20110523150636.ccd83777.sfr@canb.auug.org.au>
+	<201105232154.52344.rjw@sisk.pl> <20110524063424.GC18075@gvim.org>
+	<201105242330.09491.rjw@sisk.pl>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105242059.59770.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201105242330.09491.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,30 +23,255 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Pengfei Zhang <zoppof.zhang@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, markgross@thegnar.org, linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24g5LqMLCAyMDExLTA1LTI0IGF0IDIwOjU5ICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBPbiBUdWVzZGF5LCBNYXkgMjQsIDIwMTEsIFdhbmxvbmcgR2FvIHdyb3RlOgo+ID4gCj4g
-PiA+IE9uIFR1ZSwgTWF5IDI0LCAyMDExIGF0IDA4OjE5OjE4UE0gKzA4MDAsIFBlbmdmZWkgWmhh
-bmcgd3JvdGU6Cj4gPiA+IAo+ID4gPiA+IFJlbW92ZSB0aGUgcmVzdW1lIGFuZCBzaHV0ZG93biBv
-ZiBpODI1OUEgZnJvbSB0aGUgc3lzZGV2X2NsYXNzCj4gPiA+ID4gdG8gdGhlIHN5c2NvcmVfb3Bz
-IHNpbmNlIHRoZXNlIG1lbWJlcnMgaGFkIHJlbW92ZWQgZnJvbSB0aGUKPiA+ID4gPiBzdHJ1Y3R1
-cmUgc3lzZGV2X2NsYXNzLgo+ID4gPiAKPiA+ID4gSSBkb24ndCBzZWUgd2h5IG9uZSB3b3VsZCB3
-YW50IHRvIHdhbnQgdG8gZmlyc3QgY2FsbAo+ID4gPiByZWdpc3Rlcl9zeXNjb3JlX29wcwo+ID4g
-PiB0aGVuIHN5c2Rldl9jbGFzc19yZWdpc3RlciBhbmQgc3lzZGV2X3JlZ2lzdGVyPwo+ID4gPiAK
-PiA+IEhpIFJhbGY6Cj4gPiBJZiB0aGVzZSBub3QgbW92ZWQgdG8gc3lzY29yZV9vcHMsIGJ1aWxk
-aW5nIHdpbGwgZ2V0IGVycm9yLgo+ID4gCj4gPiBIaSBUaG9tYXM6Cj4gPiBEb2VzIHlvdSBtZWFu
-IHRoYXQgd2UgY2FuIGp1c3QgcmVtb3ZlIHRoZSBzeXNmcyBlbnRyeSBub3cgPwo+IAo+IEkgaGFk
-IHRoZSBhcHBlbmRlZCBwYXRjaCBpbiBteSB0cmVlIGJlZm9yZSB0aGUgbWVyZ2Ugd2luZG93IHN0
-YXJ0ZWQsCj4gYnV0IGl0IGNvbmZsaWN0ZWQgd2l0aCBhbmFsb2dvdXMgY2hhbmdlcyBpbiB0aGUg
-TUlQUyB0cmVlLCBzbyBJIGhhZAo+IGRyb3BwZWQgaXQuICBXYXMgaXQgYSBtaXN0YWtlPwo+IAo+
-IFJhZmFlbAoKSGkgUmFmYWVsOgoKT24gNS8yNC8xMSwgUmFsZiBCYWVjaGxlIDxyYWxmQGxpbnV4
-LW1pcHMub3JnPiB3cm90ZToKPlJlOiBbUEFUQ0hdIE1JUFM6IFVzZSBzdHJ1Y3Qgc3lzY29yZV9v
-cHMgaW5zdGVhZCBvZiBzeXNkZXZzIGZvciBpODI1OQo+IE9uIEZyaSwgTWF5IDIwLCAyMDExIGF0
-IDEwOjQxOjQxUE0gKzA5MDAsIFlvaWNoaSBZdWFzYSB3cm90ZToKPgo+IFRoYW5rcywgYXBwbGll
-ZC4KPgo+ICAgUmFsZgpJdCBzZWVtcyBhbHJlYWR5IGFwcGxpZWQgc29tZSBhYm91dCB0aGlzPwoK
-VGhhbmtzCgpCZXN0IHJlZ2FyZHMKV2FubG9uZyBHYW8KCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBs
-aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Tue, May 24, 2011 at 11:30:09PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, May 24, 2011, mark gross wrote:
+> > On Mon, May 23, 2011 at 09:54:52PM +0200, Rafael J. Wysocki wrote:
+> > > On Monday, May 23, 2011, mark gross wrote:
+> > > > On Mon, May 23, 2011 at 03:06:36PM +1000, Stephen Rothwell wrote:
+> > > > > Hi Rafael,
+> > > > > 
+> > > > > After merging the suspend tree, today's linux-next build (i386 defconfig
+> > > > > among others) produced this warning:
+> > > > > 
+> > > > > kernel/pm_qos_params.c: In function 'pm_qos_power_write':
+> > > > > kernel/pm_qos_params.c:420: warning: passing argument 3 of 'kstrtol' from incompatible pointer type
+> > > > > include/linux/kernel.h:210: note: expected 'long int *' but argument is of type 's32 *'
+> > > > > 
+> > > > > Intreoduced by commit 365daa955e03 ("PM: Correct PM QOS's user mode
+> > > > > interface to work with ascii input per").
+> > > > 
+> > > > Gah!  I'm sorry about that.
+> > > > 
+> > > > attached is a fix.
+> > > > 
+> > > > 
+> > > > --mark
+> > > > 
+> > > > signed-off-by:markgross <markgross@thegnar.org>
+> > > > 
+> > > > 
+> > > > 
+> > > > From a8f0587b9ae598be5ca4c3cdda4e0ced6ca9baaf Mon Sep 17 00:00:00 2001
+> > > > From: mgross <mgross@cr48>
+> > > > Date: Mon, 23 May 2011 07:14:09 -0700
+> > > > Subject: [PATCH] clean up a compile time warning in the use of strict_strtol but that was
+> > > >  passing an s32 * when it should be passing a long *
+> > > > 
+> > > > ---
+> > > >  kernel/pm_qos_params.c |    6 ++++--
+> > > >  1 files changed, 4 insertions(+), 2 deletions(-)
+> > > > 
+> > > > diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> > > > index d61ecf3..dd37c56 100644
+> > > > --- a/kernel/pm_qos_params.c
+> > > > +++ b/kernel/pm_qos_params.c
+> > > > @@ -405,6 +405,7 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+> > > >  		size_t count, loff_t *f_pos)
+> > > >  {
+> > > >  	s32 value;
+> > > > +	long safe_int;
+> > > >  	int x;
+> > > >  	char ascii_value[11];
+> > > >  	struct pm_qos_request_list *pm_qos_req;
+> > > > @@ -417,10 +418,11 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+> > > >  		ascii_value[count] = 0;
+> > > >  		if (copy_from_user(ascii_value, buf, count))
+> > > >  			return -EFAULT;
+> > > > -		if ((x=strict_strtol(ascii_value, 16, &value)) != 0){
+> > > > -			pr_debug("%s, 0x%x, 0x%x\n",ascii_value, value, x);
+> > > > +		if ((x=strict_strtol(ascii_value, 16, &safe_int)) != 0){
+> > > > +			pr_debug("%s, 0x%lx, 0x%x\n",ascii_value, safe_int, x);
+> > > >  			return -EINVAL;
+> > > >  		}
+> > > > +		value = (s32) safe_int;
+> > > 
+> > > Well, this doesn't seem quite right.
+> > > 
+> > > >  	} else
+> > > >  		return -EINVAL;
+> > > 
+> > > Besides, if count == 11, there we'll write beyond ascii_value[], right?
+> > 
+> > right. That is a bug.
+> > 
+> > > 
+> > > What about the appended patch instead of your original one?
+> > Thank you!
+> > 
+> > > Rafael
+> > > 
+> > > 
+> > > ---
+> > > From: mark gross <markgross@thegnar.org>
+> > > Subject: PM: Correct PM QOS's user mode interface to work with ascii input per
+> > > 
+> > > What is in the kernel docs.  Writing a string to the ABI from user mode
+> > > comes in 2 flavors.  One with and one without a '\n' at the end.  This
+> > > change accepts both.
+> > > 
+> > > # echo 0x12345678 > /dev/cpu_dma_latency
+> > > 
+> > > and
+> > > 
+> > > # echo -n 0x12345678 > /dev/cpu_dma_latency
+> > > 
+> > > now both work.
+> > > 
+> > > [rjw: Fixed up array bounds checking and type casting.]
+> > > 
+> > > Signed-off-by: mark gross <markgross@thegnar.org>
+> > > Acked-by: Simon Horman <horms@verge.net.au>
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  kernel/pm_qos_params.c |   25 ++++++++++++++++---------
+> > >  1 file changed, 16 insertions(+), 9 deletions(-)
+> > > 
+> > > Index: linux-2.6/kernel/pm_qos_params.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/kernel/pm_qos_params.c
+> > > +++ linux-2.6/kernel/pm_qos_params.c
+> > > @@ -40,6 +40,7 @@
+> > >  #include <linux/string.h>
+> > >  #include <linux/platform_device.h>
+> > >  #include <linux/init.h>
+> > > +#include <linux/kernel.h>
+> > >  
+> > >  #include <linux/uaccess.h>
+> > >  
+> > > @@ -404,24 +405,30 @@ static ssize_t pm_qos_power_write(struct
+> > >  		size_t count, loff_t *f_pos)
+> > >  {
+> > >  	s32 value;
+> > > -	int x;
+> > >  	char ascii_value[11];
+> > >  	struct pm_qos_request_list *pm_qos_req;
+> > >  
+> > >  	if (count == sizeof(s32)) {
+> > >  		if (copy_from_user(&value, buf, sizeof(s32)))
+> > >  			return -EFAULT;
+> > > -	} else if (count == 11) { /* len('0x12345678/0') */
+> > > -		if (copy_from_user(ascii_value, buf, 11))
+> > > +	} else if (count >= 10) { /* '0x12345678' or '0x12345678\n'*/
+> > Did you mean <= 11 here?  I know that Alan Stern wanted to see the ABI
+> > adjusted to accept shorter hex string that the full 10 char string.
+> > 
+> > FWIW I'm ok with doing that.
+> > 
+> > > +		unsigned long int ulval;
+> > > +		int ret;
+> > > +
+> > > +		count = 10;
+> > 
+> > I kind of wanted to return an error to the user if they violate the
+> > documented format for the hex string.  With this code you get a silent
+> > truncation of the lower digits if the string is "0x123456789abcdef"
+> 
+> That's correct, but with the previous code there will be a truncation
+> is "echo -n 0x123456789".  If we don't want that, we should check if the
+> last character is a '\n'.
+> 
+> > > +		ascii_value[count] = 0;
+> > > +		if (copy_from_user(ascii_value, buf, count))
+> > >  			return -EFAULT;
+> > > -		if (strlen(ascii_value) != 10)
+> > > -			return -EINVAL;
+> > > -		x = sscanf(ascii_value, "%x", &value);
+> > > -		if (x != 1)
+> > > +
+> > > +		ret = strict_strtoul(ascii_value, 16, &ulval);
+> > > +		if (ret){
+> > > +			pr_debug("%s, 0x%lx, 0x%x\n", ascii_value, ulval, ret);
+> > >  			return -EINVAL;
+> > > -		pr_debug("%s, %d, 0x%x\n", ascii_value, x, value);
+> > > -	} else
+> > > +		}
+> > > +		value = (s32)lower_32_bits(ulval);
+> > This shouldn't be needed if you are constrained to a hex format of
+> > "0x12345678" but this is more readable.  lower_32_bits is a good idea.
+> 
+> OK
+> 
+> Appended is another patch that adds the '\n' check and reworks the code
+> a bit (so that it will accept strings like "0x1" too).
+> 
+> Thanks,
+> Rafael
+> 
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Fix PM QOS's user mode interface to work with ASCII input
+> 
+> Make pm_qos_power_write() accept values passed to it in the ASCII hex
+> format either with or without an ending newline.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/pm_qos_params.c |   33 +++++++++++++++++++++++----------
+>  1 file changed, 23 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6/kernel/pm_qos_params.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/pm_qos_params.c
+> +++ linux-2.6/kernel/pm_qos_params.c
+> @@ -40,6 +40,7 @@
+>  #include <linux/string.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/init.h>
+> +#include <linux/kernel.h>
+>  
+>  #include <linux/uaccess.h>
+>  
+> @@ -404,24 +405,36 @@ static ssize_t pm_qos_power_write(struct
+>  		size_t count, loff_t *f_pos)
+>  {
+>  	s32 value;
+> -	int x;
+> -	char ascii_value[11];
+>  	struct pm_qos_request_list *pm_qos_req;
+>  
+>  	if (count == sizeof(s32)) {
+>  		if (copy_from_user(&value, buf, sizeof(s32)))
+>  			return -EFAULT;
+> -	} else if (count == 11) { /* len('0x12345678/0') */
+> -		if (copy_from_user(ascii_value, buf, 11))
+> +	} else if (count <= 11) { /* ASCII perhaps? */
+> +		char ascii_value[11];
+> +		unsigned long int ulval;
+> +		int ret;
+> +
+> +		if (copy_from_user(ascii_value, buf, count))
+>  			return -EFAULT;
+> -		if (strlen(ascii_value) != 10)
+> -			return -EINVAL;
+> -		x = sscanf(ascii_value, "%x", &value);
+> -		if (x != 1)
+> +
+> +		if (count > 10) {
+> +			if (ascii_value[10] == '\n')
+> +				ascii_value[10] = '\0';
+> +			else
+> +				return -EINVAL;
+> +		} else {
+> +			ascii_value[count] = '\0';
+> +		}
+> +		ret = strict_strtoul(ascii_value, 16, &ulval);
+> +		if (ret) {
+> +			pr_debug("%s, 0x%lx, 0x%x\n", ascii_value, ulval, ret);
+>  			return -EINVAL;
+> -		pr_debug("%s, %d, 0x%x\n", ascii_value, x, value);
+> -	} else
+> +		}
+> +		value = (s32)lower_32_bits(ulval);
+> +	} else {
+>  		return -EINVAL;
+> +	}
+>  
+>  	pm_qos_req = filp->private_data;
+>  	pm_qos_update_request(pm_qos_req, value);
+looks good to me.
+
+Acked-by: markgross <markgross@thegnar.org>
