@@ -1,14 +1,15 @@
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] show energy consumption info in perf tool
-Date: Thu, 26 May 2011 12:49:37 +0200
-Message-ID: <20110526104937.GE1763__12277.8153083802$1306407056$gmane$org@elte.hu>
-References: <1306398855.2207.156.camel@rui>
+From: Matt Fleming <matt@console-pimps.org>
+Subject: Re: [PATCH 2/3] introduce intel_rapl driver
+Date: Thu, 26 May 2011 11:55:39 +0100
+Message-ID: <20110526105527.GA27748__28165.4183789671$1306423638$gmane$org@console-pimps.org>
+References: <1306398857.2207.157.camel@rui>
+ <1306403003.1200.41.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1306398855.2207.156.camel@rui>
+In-Reply-To: <1306403003.1200.41.camel@twins>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,45 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: a.p.zijlstra@chello.nl, ming.m.lin@intel.com, =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>, LKML <linux-kernel@vger.kernel.org>, acme@redhat.com, linux-pm <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Zhang Rui <rui.zhang@intel.com>
+Cc: ming.m.lin@intel.com, LKML <linux-kernel@vger.kernel.org>, acme@redhat.com, linux-pm <linux-pm@lists.linux-foundation.org>, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-
-* Zhang Rui <rui.zhang@intel.com> wrote:
-
-> Introduce four new perf software events
+On Thu, May 26, 2011 at 11:43:23AM +0200, Peter Zijlstra wrote:
 >
-> PERF_COUNT_SW_PKG_ENERGY
-> PERF_COUNT_SW_CORE_ENERGY
-> PERF_COUNT_SW_UNCORE_ENERGY
-> and
-> PERF_COUNT_SW_DRAM_ENERGY
+> That's just wrong.. the reason you're wanting to have this timer is to
+> avoid the RAPL MSRs from overflowing and you loosing offsets, right?
 > 
-> To use it, users can run
-> perf stat -e pkg-energy foo
-> to get the package energy consumption when running foo.
+> But the above is actually forcing the event to create samples on a
+> totally unrelated time base.
+> 
+> RAPL should fail to create a sampling event since it doesn't have the
+> capability to trigger overflow interrupts based on its events.
+> 
+> If you want a timer, add one, but don't do this.
+> 
+> If you expect you actually want to sample, use this event as part of a
+> group and add a sampling event in there and use PERF_FORMAT_GROUP, Matt
+> was working on patches to make perf-record capable of this.
 
-That's very interesting - being able to profile workloads by 
-power/energy use looks like a *very* powerful feature.
+Yep, I have some unfinished patches around here somewhere...
 
-Are you allowed to show us some sample output of the data? What's the 
-granularity of this info? Say what is the output of:
+*rummage*
 
-  perf stat -e pkg-energy -e core-energy -e uncore-energy -e dram-energy -a sleep 10
+OK, they're in this repository on the perf/group-events branch,
 
-?
+    git://git.kernel.org/pub/scm/linux/kernel/git/mfleming/sh-2.6.git
 
-Also, have you tried something like:
+Obviously since I last touched them in November of last year they're
+more than likely not going to apply cleanly to tip, and perhaps more
+importantly, I don't think I ever submitted them to LKML for review.
 
-	perf record -a -e pkg-energy sleep 60
+Rui, I'll try to look at your patch series over the weekend and get my
+sampling patches into a state where they can be submitted for review
+and used by the intel_rapl driver. Does that sound OK?
 
-	perf report
+Or if you want to take a more proactive approach, you're welcome to
+finish and submit them ;-)
 
-To see where most of the energy is used within a 1 minute interval?
-
-Also, conceptually these are really hardware events, right?
-
-Thanks,
-
-	Ingo
+--
+Matt Fleming, Intel Open Source Technology Center
