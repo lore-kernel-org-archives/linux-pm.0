@@ -1,15 +1,13 @@
-From: Matt Fleming <matt@console-pimps.org>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 Subject: Re: [PATCH 2/3] introduce intel_rapl driver
-Date: Thu, 26 May 2011 11:55:39 +0100
-Message-ID: <20110526105527.GA27748__28165.4183789671$1306423638$gmane$org@console-pimps.org>
+Date: Thu, 26 May 2011 08:48:15 -0700
+Message-ID: <20110526084815.adee4fb1.randy.dunlap__22839.548419188$1306425020$gmane$org@oracle.com>
 References: <1306398857.2207.157.camel@rui>
- <1306403003.1200.41.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1306403003.1200.41.camel@twins>
+In-Reply-To: <1306398857.2207.157.camel@rui>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,45 +17,126 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Zhang Rui <rui.zhang@intel.com>
-Cc: ming.m.lin@intel.com, LKML <linux-kernel@vger.kernel.org>, acme@redhat.com, linux-pm <linux-pm@lists.linux-foundation.org>, mingo@elte.hu
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: a.p.zijlstra@chello.nl, ming.m.lin@intel.com, LKML <linux-kernel@vger.kernel.org>, acme@redhat.com, linux-pm <linux-pm@lists.linux-foundation.org>, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 26, 2011 at 11:43:23AM +0200, Peter Zijlstra wrote:
->
-> That's just wrong.. the reason you're wanting to have this timer is to
-> avoid the RAPL MSRs from overflowing and you loosing offsets, right?
+On Thu, 26 May 2011 16:34:17 +0800 Zhang Rui wrote:
+
 > 
-> But the above is actually forcing the event to create samples on a
-> totally unrelated time base.
+> Introduce Intel RAPL driver.
 > 
-> RAPL should fail to create a sampling event since it doesn't have the
-> capability to trigger overflow interrupts based on its events.
+> RAPL (running average power limit) is a new feature which provides mechanisms
+> to enforce power consumption limit, on some new processors.
 > 
-> If you want a timer, add one, but don't do this.
+> RAPL provides MSRs reporting the total amount of energy consumed
+> by the package/core/uncore/dram.
+> Further more, by using RAPL, OS can set a power bugdet in a certain time window,
+> and let Hardware to throttle the processor P/T-state to meet this enery limitation.
 > 
-> If you expect you actually want to sample, use this event as part of a
-> group and add a sampling event in there and use PERF_FORMAT_GROUP, Matt
-> was working on patches to make perf-record capable of this.
+> Currently, we don't have the plan to support the RAPL power control,
+> but we do want to export the package/core/uncore/dram power consumption
+> information via perf tool first.
 
-Yep, I have some unfinished patches around here somewhere...
+Hi,
 
-*rummage*
+What's an uncore?
 
-OK, they're in this repository on the perf/group-events branch,
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/platform/x86/Kconfig      |    8 
+>  drivers/platform/x86/Makefile     |    1 
+>  drivers/platform/x86/intel_rapl.c |  368 ++++++++++++++++++++++++++++++++++++++
+>  include/linux/perf_event.h        |    4 
+>  4 files changed, 381 insertions(+)
+> 
+> Index: linux-2.6/drivers/platform/x86/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/drivers/platform/x86/Kconfig
+> +++ linux-2.6/drivers/platform/x86/Kconfig
+> @@ -753,4 +753,12 @@ config SAMSUNG_LAPTOP
+>  	  To compile this driver as a module, choose M here: the module
+>  	  will be called samsung-laptop.
+>  
+> +config INTEL_RAPL
+> +	tristate "Intel RAPL Support"
+> +	depends on X86
+> +	default y
+> +	---help---
+> +	  RAPL, AKA, Running Average Power Limit provides mechanisms to enforce
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/mfleming/sh-2.6.git
+	  RAPL (Running Average Power Limit) provides mechanisms to enforce
 
-Obviously since I last touched them in November of last year they're
-more than likely not going to apply cleanly to tip, and perhaps more
-importantly, I don't think I ever submitted them to LKML for review.
+> +	  power consumption limit.
+> +
+>  endif # X86_PLATFORM_DEVICES
 
-Rui, I'll try to look at your patch series over the weekend and get my
-sampling patches into a state where they can be submitted for review
-and used by the intel_rapl driver. Does that sound OK?
+> Index: linux-2.6/drivers/platform/x86/intel_rapl.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/drivers/platform/x86/intel_rapl.c
+> @@ -0,0 +1,368 @@
 
-Or if you want to take a more proactive approach, you're welcome to
-finish and submit them ;-)
+[snip]
 
---
-Matt Fleming, Intel Open Source Technology Center
+> +/* show the energy status, in Jelous */
+
+Is that Joules?  or what?
+
+> +static int rapl_read_energy(struct rapl_domain *domain)
+> +{
+> +	u64 value;
+> +	u32 msr = domain->msrs.status;
+> +
+> +	rdmsrl(msr, value);
+> +	return rapl_unit_xlate(ENERGY_UNIT, value, 0);
+> +}
+
+[snip]
+
+> +static int __init intel_rapl_init(void)
+> +{
+> +	enum rapl_domain_id id;
+> +
+> +	/*
+> +	 * RAPL features are only supported on processors have a CPUID
+> +	 * signature with DisplayFamily_DisplayModel of 06_2AH, 06_2DH
+> +	 */
+> +	if (boot_cpu_data.x86 != 0x06)
+> +		return -ENODEV;
+> +
+> +	if (boot_cpu_data.x86_model == 0x2A)
+> +		rapl_domains[RAPL_DOMAIN_PP1].valid = 1;
+> +	else if (boot_cpu_data.x86_model == 0x2D)
+> +		rapl_domains[RAPL_DOMAIN_DRAM].valid = 1;
+> +	else
+> +		return -ENODEV;
+> +
+> +	if (rapl_check_unit())
+> +		return -ENODEV;
+> +
+> +	for(id = 0; id < RAPL_DOMAIN_MAX; id++)
+
+space after "for"
+
+> +		if (rapl_domains[id].valid)
+> +			perf_pmu_register(&(rapl_domains[id].pmu), rapl_domains[id].pmu.name, PERF_TYPE_SOFTWARE);
+> +	return 0;
+> +}
+> +
+> +static void __exit intel_rapl_exit(void)
+> +{
+> +	enum rapl_domain_id id;
+> +
+> +	for(id = 0; id < RAPL_DOMAIN_MAX; id++)
+
+ditto
+
+> +		if (rapl_domains[id].valid)
+> +			perf_pmu_unregister(&(rapl_domains[id].pmu));
+> +}
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
