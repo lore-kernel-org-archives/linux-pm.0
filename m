@@ -1,12 +1,13 @@
 From: Ankita Garg <ankita@in.ibm.com>
-Subject: [PATCH 00/10] mm: Linux VM Infrastructure to support
-	Memory Power Management
-Date: Fri, 27 May 2011 18:01:28 +0530
-Message-ID: <1306499498-14263-1-git-send-email-ankita__35496.6949126267$1306508276$gmane$org@in.ibm.com>
+Subject: [PATCH 02/10] mm: Helper routines
+Date: Fri, 27 May 2011 18:01:30 +0530
+Message-ID: <1306499498-14263-3-git-send-email-ankita__36658.8725396015$1306508305$gmane$org@in.ibm.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,197 +21,195 @@ To: linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, linux-kernel@vger.
 Cc: thomas.abraham@linaro.org, ankita@in.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+With the introduction of regions, helper routines are needed to walk through
+all the regions and zones inside a node. This patch adds these helper
+routines.
 
-Modern systems offer higher CPU performance and large amount of memory in
-each generation in order to support application demands.  Memory subsystem has
-began to offer wide range of capabilities for managing power consumption,
-which is driving the need to relook at the way memory is managed by the
-operating system. Linux VM subsystem has sophisticated algorithms to
-optimally  manage the scarce resources for best overall system performance.
-Apart from the capacity and location of memory areas, the VM subsystem tracks
-special addressability restrictions in zones and relative distance from CPU as
-NUMA nodes if necessary. Power management capabilities in the memory subsystem
-and inclusion of different class of main memory like PCM, or non-volatile RAM,
-brings in new boundaries and attributes that needs to be tagged within the
-Linux VM subsystem for exploitation by the kernel and applications.
+Signed-off-by: Ankita Garg <ankita@in.ibm.com>
+---
+ include/linux/mm.h     |   21 ++++++++++++++++-----
+ include/linux/mmzone.h |   25 ++++++++++++++++++++++---
+ mm/mmzone.c            |   36 +++++++++++++++++++++++++++++++-----
+ mm/page_alloc.c        |   10 ++++++++++
+ 4 files changed, 79 insertions(+), 13 deletions(-)
 
-This patchset proposes a generic memory regions infrastructure that can be
-used to tag boundaries of memory blocks which belongs to a specific memory
-power management domain and further enable exploitation of platform memory
-power management capabilities.
-
-How can Linux VM help memory power savings?
-
-o Consolidate memory allocations and/or references such that they are
-not spread across the entire memory address space.  Basically area of memory
-that is not being referenced, can reside in low power state.
-
-o Support targeted memory reclaim, where certain areas of memory that can be
-easily freed can be offlined, allowing those areas of memory to be put into
-lower power states.
-
-What is a Memory Region ?
--------------------------
-
-Memory regions is a generic memory management framework that enables the
-virtual memory manager to consider memory characteristics when making memory
-allocation and deallocation decisions. It is a layer of abstraction under the
-real NUMA nodes, that encapsulate knowledge of the underlying memory hardware.
-This layer is created at boot time, with information from firmware regarding
-the granularity at which memory power can be managed on the platform. For
-example, on platforms with support for Partial Array Self-Refresh (PASR) [1],
-regions could be aligned to memory unit that can be independently put into
-self-refresh or turned off (content destructive power off). On the other hand,
-platforms with support for multiple memory controllers that control the power
-states of memory, one memory region could be created for all the memory under
-a single memory controller.
-
-The aim of the alignment is to ensure that memory allocations, deallocations
-and reclaim are performed within a defined hardware boundary. By creating
-zones under regions, the buddy allocator would operate at the level of
-regions. The proposed data structure is as shown in the Figure below:
-
-
-             -----------------------------
-             |N0 |N1 |N2 |N3 |.. |.. |Nn |   
-             -----------------------------   
-             / \ \
-            /   \  \
-           /     \   \
- ------------    |  ------------
- | Mem Rgn0 |    |  | Mem Rgn3 |             
- ------------    |  ------------             
-    |            |         |
-    |      ------------    | ---------
-    |      | Mem Rgn1 |    ->| zones |
-    |      ------------      ---------
-    |          |     ---------
-    |          ----->| zones |
-    | ---------      ---------
-    ->| zones |
-      ---------
-
-Memory regions enable the following :
-
-o Sequential allocation of memory in the order of memory regions, thus
-  ensuring that greater number of memory regions are devoid of allocations to
-  begin with
-o With time however, the memory allocations will tend to be spread across
-  different regions. But the notion of a region boundary and region level
-  memory statistics will enable specific regions to be evacuated using
-  targetted allocation and reclaim. 
-
-Lumpy reclaim and other memory compaction work by Mel Gorman, would further
-aid in consolidation of memory [4].
-
-Memory regions is just a base infrastructure that would enable the Linux VM to
-be aware of the physical memory hardware characterisitics, a pre-requisite to
-implementing other sophisticated algorithms and techniques to actually
-conserve power.
-
-Advantages
------------
-
-Memory regions framework works with existing memory management data
-structures and only adds one more layer of abstraction that is required to
-capture special boundaries and properties.  Most VM code paths work similar
-to current implementation with additional traversal of zone data structures
-in pre-defined order.
-
-Alternative Approach:
-
-There are other ways in which memory belonging to the same power domain could
-be grouped together. Fake NUMA nodes under a real NUMA node could encapsulate
-information about the memory hardware units that can be independently power
-managed. With minimal code changes, the same functionality as memory regions
-can be achieved. However, the fake NUMA nodes is a non-intuitive solution, 
-that breaks the NUMA semantics and is not generic in nature. It would present
-an incorrect view of the system to the administrator, by showing that it has a
-greater number of NUMA nodes than actually present.
-
-Challenges
-----------
-
-o Memory interleaving is typically used on all platforms to increase the
-  memory bandwidth and hence memory performance. However, in the presence of
-  interleaving, the amount of idle memory within the hardware domain reduces,
-  impacting power savings. For a given platform, it is important to select an
-  interleaving scheme that gives good performance with optimum power savings.
-
-This is a RFC patchset with minimal functionality to demonstrate the
-requirement and proposed implementation options. It has been tested on TI
-OMAP4 Panda board with 1Gb RAM and the Samsung Exynos 4210 board. The patch
-applies on kernel version 2.6.39-rc5, compiled with the default config files
-for the two platforms. I have turned off cgroup, memory hotplug and kexec to
-begin. Support to these framework can be easily extended. The u-boot
-bootloader does not yet export information regarding the physical memory bank
-boundaries and hence the regions are not correctly aligned to hardware and
-hence hard coded for test/demo purposes. Also, the code assumes that atleast
-one region is present in the node. Compile time exclusion of memory regions is
-a todo.
-
-Results
--------
-Ran pagetest, a simple C program that allocates and touches a required number
-of pages, on a Samsung Exynos 4210 board with ~2GB RAM, booted with 4 memory
-regions, each with ~512MB. The allocation size used was 512MB. Below is the
-free page statistics while running the benchmark:
-
-		---------------------------------------
-	 	|	   | start  | ~480MB |  512MB |	
-		---------------------------------------
-		| Region 0 | 124013 | 1129   | 484    |
-		| Region 1 | 131072 | 131072 | 130824 |
-		| Region 2 | 131072 | 131072 | 131072 |
-		| Region 3 | 57332  | 57332  | 57332  |
-		---------------------------------------
-
-(The total number of pages in Region 3 is 57332, as it contains all the
-remaining pages and hence the region size is not 512MB).
-
-Column 1 indicates the number of free pages in each region at the start of the
-benchmark, column 2 at about 480MB allocation and column 3 at 512MB
-allocation. The memory in regions 1,2 & 3 is free and only region0 is
-utilized. So if the regions are aligned to the hardware memory units, free
-regions could potentially be put either into low power state or turned off. It
-may be possible to allocate from lower address without regions, but once the
-page reclaim comes into play, the page allocations will tend to get spread
-around.
-
-References
-----------
-
-[1] Partial Array Self Refresh
-http://focus.ti.com/general/docs/wtbu/wtbudocumentcenter.tsp?templateId=6123&navigationId=12037
-[2] TI OMAP$ Panda board
-http://pandaboard.org/node/224/#manual
-[3] Memory Regions discussion at Ubuntu Development Summit, May 2011
-https://wiki.linaro.org/Specs/KernelGeneralPerformanceO?action=AttachFile&do=view&target=k81-memregions.odp
-[4] Memory compaction
-http://lwn.net/Articles/368869/
-
-Ankita Garg (10):
-  mm: Introduce the memory regions data structure
-  mm: Helper routines
-  mm: Init zones inside memory regions
-  mm: Refer to zones from memory regions
-  mm: Create zonelists
-  mm: Verify zonelists
-  mm: Modify vmstat
-  mm: Modify vmscan
-  mm: Reflect memory region changes in zoneinfo
-  mm: Create memory regions at boot-up
-
- include/linux/mm.h     |   25 +++-
- include/linux/mmzone.h |   58 +++++++--
- include/linux/vmstat.h |   22 ++-
- mm/mm_init.c           |   51 ++++---
- mm/mmzone.c            |   36 ++++-
- mm/page_alloc.c        |  368 +++++++++++++++++++++++++++++++-----------------
- mm/vmscan.c            |  284 ++++++++++++++++++++-----------------
- mm/vmstat.c            |   77 ++++++----
- 8 files changed, 581 insertions(+), 340 deletions(-)
-
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 6507dde..25299a3 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -675,11 +675,6 @@ static inline int page_to_nid(struct page *page)
+ }
+ #endif
+ 
+-static inline struct zone *page_zone(struct page *page)
+-{
+-	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
+-}
+-
+ #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
+ static inline unsigned long page_to_section(struct page *page)
+ {
+@@ -687,6 +682,22 @@ static inline unsigned long page_to_section(struct page *page)
+ }
+ #endif
+ 
++static inline struct zone *page_zone(struct page *page)
++{
++	pg_data_t *pg = NODE_DATA(page_to_nid(page));
++	int i;
++	unsigned long pfn = page_to_pfn(page);
++
++	for (i = 0; i< pg->nr_mem_regions; i++) {
++		mem_region_t *mem_region= &(pg->mem_regions[i]);
++		unsigned long end_pfn = mem_region->start_pfn + mem_region->spanned_pages - 1;
++		if ((pfn >= mem_region->start_pfn) && (pfn <= end_pfn))
++			return &mem_region->zones[page_zonenum(page)];
++	}
++
++	return NULL;
++}
++
+ static inline void set_page_zone(struct page *page, enum zone_type zone)
+ {
+ 	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 997a474..3f13dc8 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -711,7 +711,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
+ /*
+  * zone_idx() returns 0 for the ZONE_DMA zone, 1 for the ZONE_NORMAL zone, etc.
+  */
+-#define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
++#define zone_idx(zone)		((zone) - (zone)->zone_mem_region->zones)
+ 
+ static inline int populated_zone(struct zone *zone)
+ {
+@@ -818,6 +818,7 @@ extern struct pglist_data contig_page_data;
+ 
+ extern struct pglist_data *first_online_pgdat(void);
+ extern struct pglist_data *next_online_pgdat(struct pglist_data *pgdat);
++extern struct zone* first_zone(void);
+ extern struct zone *next_zone(struct zone *zone);
+ 
+ /**
+@@ -828,6 +829,24 @@ extern struct zone *next_zone(struct zone *zone);
+ 	for (pgdat = first_online_pgdat();		\
+ 	     pgdat;					\
+ 	     pgdat = next_online_pgdat(pgdat))
++
++extern struct mem_region_list_data *first_mem_region(struct pglist_data *pgdat);
++/**
++ * for_each_mem_region - helper macro to iterate over all the memory regions in a
++ * node
++ * @mem_region - pointer to a mem_region_t variable
++ */
++#define for_each_online_mem_region(mem_region)			\
++	for (mem_region = first_node_mem_region();		\
++		mem_region;					\
++		mem_region = next_mem_region(mem_region))
++
++inline int first_mem_region_in_nid(int nid);
++int next_mem_region_in_nid(int idx, int nid);
++/* Basic iterator support to walk all the memory regions in a node */
++#define for_each_mem_region_in_nid(i, nid) 		\
++	for (i = 0; i != -1; i = next_mem_region_in_nid(i, nid))
++
+ /**
+  * for_each_zone - helper macro to iterate over all memory zones
+  * @zone - pointer to struct zone variable
+@@ -836,12 +855,12 @@ extern struct zone *next_zone(struct zone *zone);
+  * fills it in.
+  */
+ #define for_each_zone(zone)			        \
+-	for (zone = (first_online_pgdat())->node_zones; \
++	     for (zone = (first_zone());		\
+ 	     zone;					\
+ 	     zone = next_zone(zone))
+ 
+ #define for_each_populated_zone(zone)		        \
+-	for (zone = (first_online_pgdat())->node_zones; \
++	     for (zone = (first_zone());		\
+ 	     zone;					\
+ 	     zone = next_zone(zone))			\
+ 		if (!populated_zone(zone))		\
+diff --git a/mm/mmzone.c b/mm/mmzone.c
+index f5b7d17..0e2bec3 100644
+--- a/mm/mmzone.c
++++ b/mm/mmzone.c
+@@ -24,21 +24,47 @@ struct pglist_data *next_online_pgdat(struct pglist_data *pgdat)
+ 	return NODE_DATA(nid);
+ }
+ 
++inline struct mem_region_list_data *first_mem_region(struct pglist_data *pgdat)
++{
++	return &pgdat->mem_regions[0];
++}
++
++struct mem_region_list_data *next_mem_region(struct mem_region_list_data *mem_region)
++{
++	int next_region = mem_region->region + 1;
++	pg_data_t *pgdat = NODE_DATA(mem_region->node);
++
++	if (next_region == pgdat->nr_mem_regions)
++		return NULL;
++	return &(pgdat->mem_regions[next_region]);
++}
++
++inline struct zone *first_zone(void)
++{
++	return (first_online_pgdat())->mem_regions[0].zones;
++}
++
+ /*
+  * next_zone - helper magic for for_each_zone()
+  */
+ struct zone *next_zone(struct zone *zone)
+ {
+ 	pg_data_t *pgdat = zone->zone_pgdat;
++	mem_region_t *mem_region = zone->zone_mem_region;
+ 
+-	if (zone < pgdat->node_zones + MAX_NR_ZONES - 1)
++	if (zone < mem_region->zones + MAX_NR_ZONES - 1)
+ 		zone++;
+ 	else {
+-		pgdat = next_online_pgdat(pgdat);
+-		if (pgdat)
+-			zone = pgdat->node_zones;
++		mem_region = next_mem_region(mem_region);
++		if (!mem_region) {
++			pgdat = next_online_pgdat(pgdat);
++			if (pgdat)
++				zone = pgdat->mem_regions[0].zones;
++			else
++				zone = NULL;
++		}
+ 		else
+-			zone = NULL;
++			zone = mem_region->zones;
+ 	}
+ 	return zone;
+ }
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 3f8bce2..af2529d 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2492,6 +2492,16 @@ out:
+ 
+ #define K(x) ((x) << (PAGE_SHIFT-10))
+ 
++int next_mem_region_in_nid(int idx, int nid)
++{
++	pg_data_t *pgdat = NODE_DATA(nid);
++	int region = idx + 1;
++
++	if (region == pgdat->nr_mem_regions)
++		return -1;
++	return region;
++}
++
+ /*
+  * Show free area list (used inside shift_scroll-lock stuff)
+  * We also calculate the percentage fragmentation. We do this by counting the
 -- 
 1.7.4
