@@ -1,13 +1,16 @@
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 2/3] introduce intel_rapl driver
-Date: Thu, 26 May 2011 08:48:15 -0700
-Message-ID: <20110526084815.adee4fb1.randy.dunlap__22839.548419188$1306425020$gmane$org@oracle.com>
-References: <1306398857.2207.157.camel@rui>
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Re: [PATCH v2 2/3] PM / DEVFREQ: add example governors
+Date: Fri, 27 May 2011 13:42:18 +0900
+Message-ID: <BANLkTi=dbX7LqqKrmgb0tSJhC26r7-L3Eg__32763.8382128955$1306471418$gmane$org@mail.gmail.com>
+References: <1305100723-29161-1-git-send-email-myungjoo.ham@samsung.com>
+	<201105180039.56806.rjw@sisk.pl>
+	<BANLkTim0DkhcjWw7fM0e-UhyB3=GkQ7nKw@mail.gmail.com>
+	<201105182146.51869.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1306398857.2207.157.camel@rui>
+In-Reply-To: <201105182146.51869.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,126 +20,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: a.p.zijlstra@chello.nl, ming.m.lin@intel.com, LKML <linux-kernel@vger.kernel.org>, acme@redhat.com, linux-pm <linux-pm@lists.linux-foundation.org>, mingo@elte.hu
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 26 May 2011 16:34:17 +0800 Zhang Rui wrote:
+On Thu, May 19, 2011 at 4:46 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday, May 18, 2011, MyungJoo Ham wrote:
+>> 2011/5/18 Rafael J. Wysocki <rjw@sisk.pl>:
+>> > On Wednesday, May 11, 2011, MyungJoo Ham wrote:
+>> >> Three CPUFREQ-like governors are provided as examples.
+>> >>
+>> >> powersave: use the lowest frequency possible. The user (device) should
+>> >> set the polling_ms as 0 because polling is useless for this governor.
+>> >>
+>> >> performance: use the highest freqeuncy possible. The user (device)
+>> >> should set the polling_ms as 0 because polling is useless for this
+>> >> governor.
+>> >>
+>> >> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
+>> >>
+>> >> When a user updates OPP entries (enable/disable/add), OPP framework
+>> >> automatically notifies DEVFREQ to update operating frequency
+>> >> accordingly. Thus, DEVFREQ users (device drivers) do not need to upda=
+te
+>> >> DEVFREQ manually with OPP entry updates or set polling_ms for powersa=
+ve
+>> >> , performance, or any other "static" governors.
+>> >
+>> > Well, do you expect anyone to actually use them? =A0If not, it would m=
+ake
+>> > more sense to put them into a doc.
+>>
+>> According to our experiences of DVFS(although this "DEVFREQ" is not
+>> applied to them, yet) in memory-bus and GPU,
+>> I expect most DEVFREQ users might use "simple_ondemand" and
+>> expect "powersave" and "performance" will probably mostly used while
+>> testing and debugging.
+>> ("userspace"-like governor would be also useful for that purpose, but
+>> I'd add it later)
+>
+> It would be good to have at least one in-tree user for each of them
+> (not necessarily from the start, but at one point in the future at least).
+>
+> So if you have any _specific_ users in mind, please let me know.
 
-> 
-> Introduce Intel RAPL driver.
-> 
-> RAPL (running average power limit) is a new feature which provides mechanisms
-> to enforce power consumption limit, on some new processors.
-> 
-> RAPL provides MSRs reporting the total amount of energy consumed
-> by the package/core/uncore/dram.
-> Further more, by using RAPL, OS can set a power bugdet in a certain time window,
-> and let Hardware to throttle the processor P/T-state to meet this enery limitation.
-> 
-> Currently, we don't have the plan to support the RAPL power control,
-> but we do want to export the package/core/uncore/dram power consumption
-> information via perf tool first.
+For Exynos4, the DRAM bus, which is included in cpufreq and altered
+along with CPU, but would be better to alter independently, and the
+G3D core (MALI) are the candidate. In our kernel hacks, the DRAM bus
+frequency varies independently from CPU with DRAM usage monitoring and
+I think it can be easily modified to use DEVFREQ; thus, I'm going to
+"translate" this to DEVFREQ next time. For MALI, I don't know whether
+there is non-copyrighted driver or now, but they do support DVFS and
+are using DVFS with some PITA driver support.
 
-Hi,
+These two (EXYNOS4 DRAM bus and MALI) are the specific users in mind for no=
+w.
+Probably, out-of-SoC devices such as WiFi, BT, and others may be the
+candidate as well.
 
-What's an uncore?
-
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/platform/x86/Kconfig      |    8 
->  drivers/platform/x86/Makefile     |    1 
->  drivers/platform/x86/intel_rapl.c |  368 ++++++++++++++++++++++++++++++++++++++
->  include/linux/perf_event.h        |    4 
->  4 files changed, 381 insertions(+)
-> 
-> Index: linux-2.6/drivers/platform/x86/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/drivers/platform/x86/Kconfig
-> +++ linux-2.6/drivers/platform/x86/Kconfig
-> @@ -753,4 +753,12 @@ config SAMSUNG_LAPTOP
->  	  To compile this driver as a module, choose M here: the module
->  	  will be called samsung-laptop.
->  
-> +config INTEL_RAPL
-> +	tristate "Intel RAPL Support"
-> +	depends on X86
-> +	default y
-> +	---help---
-> +	  RAPL, AKA, Running Average Power Limit provides mechanisms to enforce
-
-	  RAPL (Running Average Power Limit) provides mechanisms to enforce
-
-> +	  power consumption limit.
-> +
->  endif # X86_PLATFORM_DEVICES
-
-> Index: linux-2.6/drivers/platform/x86/intel_rapl.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/drivers/platform/x86/intel_rapl.c
-> @@ -0,0 +1,368 @@
-
-[snip]
-
-> +/* show the energy status, in Jelous */
-
-Is that Joules?  or what?
-
-> +static int rapl_read_energy(struct rapl_domain *domain)
-> +{
-> +	u64 value;
-> +	u32 msr = domain->msrs.status;
-> +
-> +	rdmsrl(msr, value);
-> +	return rapl_unit_xlate(ENERGY_UNIT, value, 0);
-> +}
-
-[snip]
-
-> +static int __init intel_rapl_init(void)
-> +{
-> +	enum rapl_domain_id id;
-> +
-> +	/*
-> +	 * RAPL features are only supported on processors have a CPUID
-> +	 * signature with DisplayFamily_DisplayModel of 06_2AH, 06_2DH
-> +	 */
-> +	if (boot_cpu_data.x86 != 0x06)
-> +		return -ENODEV;
-> +
-> +	if (boot_cpu_data.x86_model == 0x2A)
-> +		rapl_domains[RAPL_DOMAIN_PP1].valid = 1;
-> +	else if (boot_cpu_data.x86_model == 0x2D)
-> +		rapl_domains[RAPL_DOMAIN_DRAM].valid = 1;
-> +	else
-> +		return -ENODEV;
-> +
-> +	if (rapl_check_unit())
-> +		return -ENODEV;
-> +
-> +	for(id = 0; id < RAPL_DOMAIN_MAX; id++)
-
-space after "for"
-
-> +		if (rapl_domains[id].valid)
-> +			perf_pmu_register(&(rapl_domains[id].pmu), rapl_domains[id].pmu.name, PERF_TYPE_SOFTWARE);
-> +	return 0;
-> +}
-> +
-> +static void __exit intel_rapl_exit(void)
-> +{
-> +	enum rapl_domain_id id;
-> +
-> +	for(id = 0; id < RAPL_DOMAIN_MAX; id++)
-
-ditto
-
-> +		if (rapl_domains[id].valid)
-> +			perf_pmu_unregister(&(rapl_domains[id].pmu));
-> +}
+>
+> Thanks,
+> Rafael
+>
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+-- =
+
+MyungJoo Ham, Ph.D.
+Mobile Software Platform Lab,
+Digital Media and Communications (DMC) Business
+Samsung Electronics
+cell: 82-10-6714-2858
