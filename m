@@ -1,18 +1,15 @@
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 01/10] mm: Introduce the memory regions data
-	structure
-Date: Tue, 31 May 2011 10:34:20 -0700
-Message-ID: <1306863260.15490.35.camel__27561.1194003888$1306866006$gmane$org@nimitz>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<1306499498-14263-2-git-send-email-ankita@in.ibm.com>
-	<1306510203.22505.69.camel@nimitz>
-	<20110527182041.GM5654@dirshya.in.ibm.com>
-	<1306531912.22505.84.camel@nimitz> <20110529081618.GC8333@in.ibm.com>
+From: Nicolas Pitre <nico@fluxnic.net>
+Subject: Re: [RFC PATCH v3] ARM hibernation/suspend-to-disk
+	support
+Date: Fri, 27 May 2011 15:27:18 -0400 (EDT)
+Message-ID: <alpine.LFD.2.00.1105271501220.3207__40556.9849689074$1306868771$gmane$org@xanadu.home>
+References: <alpine.DEB.2.00.1105251251330.4319@localhost6.localdomain6>
+	<alpine.DEB.2.00.1105271549220.6109@localhost6.localdomain6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110529081618.GC8333@in.ibm.com>
+In-reply-to: <alpine.DEB.2.00.1105271549220.6109@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,44 +19,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Frank Hofmann <frank.hofmann@tomtom.com>
+Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2011-05-29 at 13:46 +0530, Ankita Garg wrote:
-> > It's worth noting that we already do targeted reclaim on boundaries
-> > other than zones.  The lumpy reclaim and memory compaction logically do
-> > the same thing.  So, it's at least possible to do this without having
-> > the global LRU designed around the way you want to reclaim.
-> >
-> My understanding maybe incorrect, but doesn't both lumpy reclaim and
-> memory compaction still work under zone boundary ? While trying to free
-> up higher order pages, lumpy reclaim checks to ensure that pages that
-> are selected do not cross zone boundary. Further, compaction walks
-> through the pages in a zone and tries to re-arrange them.
+On Fri, 27 May 2011, Frank Hofmann wrote:
 
-I'm asserting that we don't need memory regions in the
+>  /*
+>   * r0 = control register value
+>   * r1 = v:p offset (preserved by cpu_do_resume)
+> + *      if this is zero, do not reenable MMU (it's on)
 
-	pgdat->regions[]->zones[]
+This is wrong.  It is well possible for this to be zero when the MMU is 
+active.
 
-layout to do what you're asking for.
+The best way to determine if MMU is on or off is:
 
-Lumpy reclaim is limited to a zone because it's trying to satisfy and
-allocation request that came in for *THAT* *ZONE*.  It's useless to go
-clear out other zones.  In your case, you don't care about zone
-boundaries: you want to reclaim things regardless.
+	mrc	p15, 0, rx, c1, c0	@ load ctrl reg
+	tst	rx, #1			@ test M bit
 
-There was a "cma: Contiguous Memory Allocator added" patch posted a bit
-ago to linux-mm@.  You might want to take a look at it for some
-inspiration.
+> I wonder; is there a proper/suggested way to switch MMU off (and not end in
+> binary nirvana), to have the reentry / reenable work ?
 
-I think you also need to clearly establish here why any memory that
-you're going to want to power off can't use (or shouldn't use)
-ZONE_MOVABLE.  It seems a bit silly to have it there, and ignore it for
-such a similar use case.  Memory hot-remove and power-down are not
-horrifically different beasts.
+This is slightly complicated.  You first need to turn of and disable the 
+caches, and ideally set up a 1:1 mapping for the transition.  There are 
+cpu_proc_fin() and cpu_reset(branch_location).
 
-BTW, that's probably something else to add to your list: make sure
-mem_map[]s for memory in a region get allocated *in* that region. 
+You may also investigate how kexec is handled which purpose is to let 
+the kernel boot another kernel.
 
--- Dave
+
+Nicolas
