@@ -1,7 +1,7 @@
 From: Ankita Garg <ankita@in.ibm.com>
-Subject: [PATCH 08/10] mm: Modify vmscan
-Date: Fri, 27 May 2011 18:01:36 +0530
-Message-ID: <1306499498-14263-9-git-send-email-ankita__44215.0909839713$1306508267$gmane$org@in.ibm.com>
+Subject: [PATCH 05/10] mm: Create zonelists
+Date: Fri, 27 May 2011 18:01:33 +0530
+Message-ID: <1306499498-14263-6-git-send-email-ankita__7731.12924439392$1306508275$gmane$org@in.ibm.com>
 References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,391 +21,130 @@ To: linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, linux-kernel@vger.
 Cc: thomas.abraham@linaro.org, ankita@in.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-Modify vmscan to take into account the changed node-zone hierarchy.
+The default zonelist that is node ordered contains all zones from within a
+node and then all zones from the next node and so on. By introducing memory
+regions, the primary aim is to group memory allocations to a given area of
+memory together. The modified zonelists thus contain all zones from one
+region, followed by all zones from the next region and so on. This ensures
+that all the memory in one region is allocated before going over to the next
+region, unless targetted memory allocations are performed.
 
 Signed-off-by: Ankita Garg <ankita@in.ibm.com>
 ---
- mm/vmscan.c |  284 ++++++++++++++++++++++++++++++++---------------------------
- 1 files changed, 153 insertions(+), 131 deletions(-)
+ mm/page_alloc.c |   62 +++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 38 insertions(+), 24 deletions(-)
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 8bfd450..2e11974 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2235,10 +2235,16 @@ static bool pgdat_balanced(pg_data_t *pgdat, unsigned long balanced_pages,
- 						int classzone_idx)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 3c48635..da8b045 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2668,20 +2668,26 @@ static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
+ 				int nr_zones, enum zone_type zone_type)
  {
- 	unsigned long present_pages = 0;
--	int i;
--
--	for (i = 0; i <= classzone_idx; i++)
--		present_pages += pgdat->node_zones[i].present_pages;
-+	int i, p;
-+
-+	for (i = 0; i <= classzone_idx; i++) {
-+		for_each_mem_region_in_nid(p, pgdat->node_id) {
-+			mem_region_t *mem_region = &pgdat->mem_regions[p];
-+			struct zone *zone = mem_region->zones + i;
-+	
-+			present_pages += zone->present_pages;
-+		}
-+	}
+ 	struct zone *zone;
++	int nid = pgdat->node_id;
++	int i;
++	enum zone_type z_type = zone_type;
  
- 	return balanced_pages > (present_pages >> 2);
- }
-@@ -2247,7 +2253,7 @@ static bool pgdat_balanced(pg_data_t *pgdat, unsigned long balanced_pages,
- static bool sleeping_prematurely(pg_data_t *pgdat, int order, long remaining,
- 					int classzone_idx)
- {
--	int i;
-+	int i, j;
- 	unsigned long balanced = 0;
- 	bool all_zones_ok = true;
+ 	BUG_ON(zone_type >= MAX_NR_ZONES);
+ 	zone_type++;
  
-@@ -2257,29 +2263,31 @@ static bool sleeping_prematurely(pg_data_t *pgdat, int order, long remaining,
- 
- 	/* Check the watermark levels */
- 	for (i = 0; i < pgdat->nr_zones; i++) {
--		struct zone *zone = pgdat->node_zones + i;
-+		for_each_mem_region_in_nid(j, pgdat->node_id) {
-+			mem_region_t *mem_region = &pgdat->mem_regions[j];
-+			struct zone *zone = mem_region->zones + i;
- 
--		if (!populated_zone(zone))
--			continue;
-+			if (!populated_zone(zone))
-+				continue;
- 
--		/*
--		 * balance_pgdat() skips over all_unreclaimable after
--		 * DEF_PRIORITY. Effectively, it considers them balanced so
--		 * they must be considered balanced here as well if kswapd
--		 * is to sleep
--		 */
--		if (zone->all_unreclaimable) {
--			balanced += zone->present_pages;
--			continue;
+-	do {
+-		zone_type--;
+-		zone = pgdat->node_zones + zone_type;
+-		if (populated_zone(zone)) {
+-			zoneref_set_zone(zone,
+-				&zonelist->_zonerefs[nr_zones++]);
+-			check_highest_zone(zone_type);
 -		}
-+			/*
-+			 * balance_pgdat() skips over all_unreclaimable after
-+			 * DEF_PRIORITY. Effectively, it considers them balanced so
-+			 * they must be considered balanced here as well if kswapd
-+			 * is to sleep
-+			 */
-+			if (zone->all_unreclaimable) {
-+				balanced += zone->present_pages;
-+				continue;
+-
+-	} while (zone_type);
++	for_each_mem_region_in_nid(i, nid) {
++		mem_region_t *mem_region = &pgdat->mem_regions[i];
++		do {
++			zone_type--;
++			zone = mem_region->zones + zone_type;
++			if (populated_zone(zone)) {
++				zoneref_set_zone(zone,
++					&zonelist->_zonerefs[nr_zones++]);
++				check_highest_zone(zone_type);
 +			}
++		} while (zone_type);
++		zone_type = z_type + 1;
++	}
+ 	return nr_zones;
+ }
  
--		if (!zone_watermark_ok_safe(zone, order, high_wmark_pages(zone),
--							classzone_idx, 0))
--			all_zones_ok = false;
--		else
--			balanced += zone->present_pages;
-+			if (!zone_watermark_ok_safe(zone, order, high_wmark_pages(zone),
-+								classzone_idx, 0))
-+				all_zones_ok = false;
-+			else
-+				balanced += zone->present_pages;
-+		}
- 	}
--
- 	/*
- 	 * For high-order requests, the balanced zones must contain at least
- 	 * 25% of the nodes pages for kswapd to sleep. For order-0, all zones
-@@ -2318,7 +2326,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order,
- 	int all_zones_ok;
- 	unsigned long balanced;
- 	int priority;
--	int i;
-+	int i, p;
- 	int end_zone = 0;	/* Inclusive.  0 = ZONE_DMA */
- 	unsigned long total_scanned;
- 	struct reclaim_state *reclaim_state = current->reclaim_state;
-@@ -2357,36 +2365,42 @@ loop_again:
- 		 * zone which needs scanning
- 		 */
- 		for (i = pgdat->nr_zones - 1; i >= 0; i--) {
--			struct zone *zone = pgdat->node_zones + i;
-+			for_each_mem_region_in_nid(p, pgdat->node_id) {
-+				mem_region_t *mem_region = &pgdat->mem_regions[p];
-+				struct zone *zone = mem_region->zones + i;
+@@ -2898,7 +2904,7 @@ static int node_order[MAX_NUMNODES];
  
--			if (!populated_zone(zone))
--				continue;
-+				if (!populated_zone(zone))
-+					continue;
+ static void build_zonelists_in_zone_order(pg_data_t *pgdat, int nr_nodes)
+ {
+-	int pos, j, node;
++	int pos, j, node, p;
+ 	int zone_type;		/* needs to be signed */
+ 	struct zone *z;
+ 	struct zonelist *zonelist;
+@@ -2922,7 +2928,7 @@ static void build_zonelists_in_zone_order(pg_data_t *pgdat, int nr_nodes)
  
--			if (zone->all_unreclaimable && priority != DEF_PRIORITY)
--				continue;
-+				if (zone->all_unreclaimable && priority != DEF_PRIORITY)
-+					continue;
- 
--			/*
--			 * Do some background aging of the anon list, to give
--			 * pages a chance to be referenced before reclaiming.
--			 */
--			if (inactive_anon_is_low(zone, &sc))
--				shrink_active_list(SWAP_CLUSTER_MAX, zone,
--							&sc, priority, 0);
--
--			if (!zone_watermark_ok_safe(zone, order,
--					high_wmark_pages(zone), 0, 0)) {
--				end_zone = i;
--				*classzone_idx = i;
--				break;
-+				/*
-+				 * Do some background aging of the anon list, to give
-+				 * pages a chance to be referenced before reclaiming.
-+				 */
-+				if (inactive_anon_is_low(zone, &sc))
-+					shrink_active_list(SWAP_CLUSTER_MAX, zone,
-+								&sc, priority, 0);
+ static int default_zonelist_order(void)
+ {
+-	int nid, zone_type;
++	int nid, zone_type, i;
+ 	unsigned long low_kmem_size,total_size;
+ 	struct zone *z;
+ 	int average_size;
+@@ -2937,12 +2943,16 @@ static int default_zonelist_order(void)
+ 	total_size = 0;
+ 	for_each_online_node(nid) {
+ 		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
+-			z = &NODE_DATA(nid)->node_zones[zone_type];
+-			if (populated_zone(z)) {
+-				if (zone_type < ZONE_NORMAL)
+-					low_kmem_size += z->present_pages;
+-				total_size += z->present_pages;
+-			} else if (zone_type == ZONE_NORMAL) {
++			for_each_mem_region_in_nid(i, nid) {
++				mem_region_t *mem_region = &(NODE_DATA(nid)->mem_regions[i]);
++				z = &mem_region->zones[zone_type];
++				if (populated_zone(z)) {
++					if (zone_type < ZONE_NORMAL)
++						low_kmem_size +=
++							z->present_pages;
 +
-+				if (!zone_watermark_ok_safe(zone, order,
-+						high_wmark_pages(zone), 0, 0)) {
-+					end_zone = i;
-+					*classzone_idx = i;
-+					break;
++					total_size += z->present_pages;
++				} else if (zone_type == ZONE_NORMAL) {
+ 				/*
+ 				 * If any node has only lowmem, then node order
+ 				 * is preferred to allow kernel allocations
+@@ -2950,7 +2960,8 @@ static int default_zonelist_order(void)
+ 				 * on other nodes when there is an abundance of
+ 				 * lowmem available to allocate from.
+ 				 */
+-				return ZONELIST_ORDER_NODE;
++					return ZONELIST_ORDER_NODE;
 +				}
  			}
  		}
- 		if (i < 0)
- 			goto out;
- 
- 		for (i = 0; i <= end_zone; i++) {
--			struct zone *zone = pgdat->node_zones + i;
-+			for_each_mem_region_in_nid(p, pgdat->node_id) {
-+				mem_region_t *mem_region = &pgdat->mem_regions[p];
-+				struct zone *zone = mem_region->zones + i;
- 
--			lru_pages += zone_reclaimable_pages(zone);
-+				lru_pages += zone_reclaimable_pages(zone);
-+			}
- 		}
- 
- 		/*
-@@ -2399,84 +2413,86 @@ loop_again:
- 		 * cause too much scanning of the lower zones.
- 		 */
- 		for (i = 0; i <= end_zone; i++) {
--			struct zone *zone = pgdat->node_zones + i;
--			int nr_slab;
--			unsigned long balance_gap;
--
--			if (!populated_zone(zone))
--				continue;
-+			for_each_mem_region_in_nid(p, pgdat->node_id) {
-+				mem_region_t *mem_region = &pgdat->mem_regions[p];
-+				struct zone *zone = mem_region->zones + i;
-+				int nr_slab;
-+				unsigned long balance_gap;
- 
--			if (zone->all_unreclaimable && priority != DEF_PRIORITY)
--				continue;
-+				if (!populated_zone(zone))
-+					continue;
- 
--			sc.nr_scanned = 0;
-+				if (zone->all_unreclaimable && priority != DEF_PRIORITY)
-+					continue;
- 
--			/*
--			 * Call soft limit reclaim before calling shrink_zone.
--			 * For now we ignore the return value
--			 */
--			mem_cgroup_soft_limit_reclaim(zone, order, sc.gfp_mask);
-+				sc.nr_scanned = 0;
- 
--			/*
--			 * We put equal pressure on every zone, unless
--			 * one zone has way too many pages free
--			 * already. The "too many pages" is defined
--			 * as the high wmark plus a "gap" where the
--			 * gap is either the low watermark or 1%
--			 * of the zone, whichever is smaller.
--			 */
--			balance_gap = min(low_wmark_pages(zone),
--				(zone->present_pages +
--					KSWAPD_ZONE_BALANCE_GAP_RATIO-1) /
--				KSWAPD_ZONE_BALANCE_GAP_RATIO);
--			if (!zone_watermark_ok_safe(zone, order,
--					high_wmark_pages(zone) + balance_gap,
--					end_zone, 0))
--				shrink_zone(priority, zone, &sc);
--			reclaim_state->reclaimed_slab = 0;
--			nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
--						lru_pages);
--			sc.nr_reclaimed += reclaim_state->reclaimed_slab;
--			total_scanned += sc.nr_scanned;
--
--			if (zone->all_unreclaimable)
--				continue;
--			if (nr_slab == 0 &&
--			    !zone_reclaimable(zone))
--				zone->all_unreclaimable = 1;
--			/*
--			 * If we've done a decent amount of scanning and
--			 * the reclaim ratio is low, start doing writepage
--			 * even in laptop mode
--			 */
--			if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
--			    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
--				sc.may_writepage = 1;
-+				/*
-+				 * Call soft limit reclaim before calling shrink_zone.
-+				 * For now we ignore the return value
-+				 */
-+				mem_cgroup_soft_limit_reclaim(zone, order, sc.gfp_mask);
- 
--			if (!zone_watermark_ok_safe(zone, order,
--					high_wmark_pages(zone), end_zone, 0)) {
--				all_zones_ok = 0;
- 				/*
--				 * We are still under min water mark.  This
--				 * means that we have a GFP_ATOMIC allocation
--				 * failure risk. Hurry up!
-+				 * We put equal pressure on every zone, unless
-+				 * one zone has way too many pages free
-+				 * already. The "too many pages" is defined
-+				 * as the high wmark plus a "gap" where the
-+				 * gap is either the low watermark or 1%
-+				 * of the zone, whichever is smaller.
- 				 */
-+				balance_gap = min(low_wmark_pages(zone),
-+					(zone->present_pages +
-+						KSWAPD_ZONE_BALANCE_GAP_RATIO-1) /
-+					KSWAPD_ZONE_BALANCE_GAP_RATIO);
- 				if (!zone_watermark_ok_safe(zone, order,
--					    min_wmark_pages(zone), end_zone, 0))
--					has_under_min_watermark_zone = 1;
--			} else {
-+						high_wmark_pages(zone) + balance_gap,
-+						end_zone, 0))
-+					shrink_zone(priority, zone, &sc);
-+				reclaim_state->reclaimed_slab = 0;
-+				nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
-+							lru_pages);
-+				sc.nr_reclaimed += reclaim_state->reclaimed_slab;
-+				total_scanned += sc.nr_scanned;
-+
-+				if (zone->all_unreclaimable)
-+					continue;
-+				if (nr_slab == 0 &&
-+				    !zone_reclaimable(zone))
-+					zone->all_unreclaimable = 1;
- 				/*
--				 * If a zone reaches its high watermark,
--				 * consider it to be no longer congested. It's
--				 * possible there are dirty pages backed by
--				 * congested BDIs but as pressure is relieved,
--				 * spectulatively avoid congestion waits
-+				 * If we've done a decent amount of scanning and
-+				 * the reclaim ratio is low, start doing writepage
-+				 * even in laptop mode
- 				 */
--				zone_clear_flag(zone, ZONE_CONGESTED);
--				if (i <= *classzone_idx)
--					balanced += zone->present_pages;
--			}
-+				if (total_scanned > SWAP_CLUSTER_MAX * 2 &&
-+				    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
-+					sc.may_writepage = 1;
- 
-+				if (!zone_watermark_ok_safe(zone, order,
-+						high_wmark_pages(zone), end_zone, 0)) {
-+					all_zones_ok = 0;
-+					/*
-+					 * We are still under min water mark.  This
-+					 * means that we have a GFP_ATOMIC allocation
-+					 * failure risk. Hurry up!
-+					 */
-+					if (!zone_watermark_ok_safe(zone, order,
-+						    min_wmark_pages(zone), end_zone, 0))
-+						has_under_min_watermark_zone = 1;
-+				} else {
-+					/*
-+					 * If a zone reaches its high watermark,
-+					 * consider it to be no longer congested. It's
-+					 * possible there are dirty pages backed by
-+					 * congested BDIs but as pressure is relieved,
-+					 * spectulatively avoid congestion waits
-+					 */
-+					zone_clear_flag(zone, ZONE_CONGESTED);
-+					if (i <= *classzone_idx)
-+						balanced += zone->present_pages;
-+				}
-+			}
- 		}
- 		if (all_zones_ok || (order && pgdat_balanced(pgdat, balanced, *classzone_idx)))
- 			break;		/* kswapd: all done */
-@@ -2542,23 +2558,26 @@ out:
- 	 */
- 	if (order) {
- 		for (i = 0; i <= end_zone; i++) {
--			struct zone *zone = pgdat->node_zones + i;
-+			for_each_mem_region_in_nid(p, pgdat->node_id) {
-+				mem_region_t *mem_region = &pgdat->mem_regions[p];
-+				struct zone *zone = mem_region->zones + i;
- 
--			if (!populated_zone(zone))
--				continue;
-+				if (!populated_zone(zone))
-+					continue;
- 
--			if (zone->all_unreclaimable && priority != DEF_PRIORITY)
--				continue;
-+				if (zone->all_unreclaimable && priority != DEF_PRIORITY)
-+					continue;
- 
--			/* Confirm the zone is balanced for order-0 */
--			if (!zone_watermark_ok(zone, 0,
--					high_wmark_pages(zone), 0, 0)) {
--				order = sc.order = 0;
--				goto loop_again;
--			}
-+				/* Confirm the zone is balanced for order-0 */
-+				if (!zone_watermark_ok(zone, 0,
-+						high_wmark_pages(zone), 0, 0)) {
-+					order = sc.order = 0;
-+					goto loop_again;
-+				}
- 
--			/* If balanced, clear the congested flag */
--			zone_clear_flag(zone, ZONE_CONGESTED);
-+				/* If balanced, clear the congested flag */
-+				zone_clear_flag(zone, ZONE_CONGESTED);
-+			}
- 		}
  	}
- 
-@@ -3304,18 +3323,21 @@ static ssize_t write_scan_unevictable_node(struct sys_device *dev,
- 					   struct sysdev_attribute *attr,
- 					const char *buf, size_t count)
- {
--	struct zone *node_zones = NODE_DATA(dev->id)->node_zones;
--	struct zone *zone;
- 	unsigned long res;
-+	int i,j;
- 	unsigned long req = strict_strtoul(buf, 10, &res);
- 
- 	if (!req)
- 		return 1;	/* zero is no-op */
- 
--	for (zone = node_zones; zone - node_zones < MAX_NR_ZONES; ++zone) {
--		if (!populated_zone(zone))
--			continue;
--		scan_zone_unevictable_pages(zone);
-+	for (j = 0; j < MAX_NR_ZONES; ++j) {
-+		for_each_mem_region_in_nid(i, dev->id) {
-+			mem_region_t *mem_region = &(NODE_DATA(dev->id)->mem_regions[i]);
-+			struct zone *zone = mem_region->zones;
-+			if (!populated_zone(zone))
-+				continue;
-+			scan_zone_unevictable_pages(zone);
-+		}
- 	}
- 	return 1;
- }
+@@ -2968,11 +2979,14 @@ static int default_zonelist_order(void)
+ 		low_kmem_size = 0;
+ 		total_size = 0;
+ 		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
+-			z = &NODE_DATA(nid)->node_zones[zone_type];
+-			if (populated_zone(z)) {
+-				if (zone_type < ZONE_NORMAL)
+-					low_kmem_size += z->present_pages;
+-				total_size += z->present_pages;
++			for_each_mem_region_in_nid(i, nid) {
++				mem_region_t *mem_region = &(NODE_DATA(nid)->mem_regions[i]);
++				z = &mem_region->zones[zone_type];
++				if (populated_zone(z)) {
++					if (zone_type < ZONE_NORMAL)
++						low_kmem_size += z->present_pages;
++					total_size += z->present_pages;
++				}
+ 			}
+ 		}
+ 		if (low_kmem_size &&
 -- 
 1.7.4
