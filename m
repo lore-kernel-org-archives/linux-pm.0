@@ -1,11 +1,17 @@
-From: Pan ruochen <panruochen@gmail.com>
-Subject: runtime PM _really_ implemented on 2.6.33?
-Date: Tue, 31 May 2011 13:30:29 +0800
-Message-ID: <BANLkTi=+icF79uENtEuQAOvxwJA5n8S3uQ@mail.gmail.com>
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH 01/10] mm: Introduce the memory regions data
+	structure
+Date: Fri, 27 May 2011 14:31:52 -0700
+Message-ID: <1306531912.22505.84.camel__34142.8749649369$1306876337$gmane$org@nimitz>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<1306499498-14263-2-git-send-email-ankita@in.ibm.com>
+	<1306510203.22505.69.camel@nimitz>
+	<20110527182041.GM5654@dirshya.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20110527182041.GM5654@dirshya.in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,46 +21,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: svaidy@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
+On Fri, 2011-05-27 at 23:50 +0530, Vaidyanathan Srinivasan wrote:
+> The overall idea is to have a VM data structure that can capture
+> various boundaries of memory, and enable the allocations and reclaim
+> logic to target certain areas based on the boundaries and properties
+> required. 
 
-I'm working on runtime PM on 2.6.33 and find the following in
-drivers/base/platform.c
+It's worth noting that we already do targeted reclaim on boundaries
+other than zones.  The lumpy reclaim and memory compaction logically do
+the same thing.  So, it's at least possible to do this without having
+the global LRU designed around the way you want to reclaim.
 
-...
-#ifdef CONFIG_PM_RUNTIME
+Also, if you get _too_ dependent on the global LRU, what are you going
+to do if our cgroup buddies manage to get cgroup'd pages off the global
+LRU?  
 
-int __weak platform_pm_runtime_suspend(struct device *dev)
-{
-    return -ENOSYS;
-};
-
-int __weak platform_pm_runtime_resume(struct device *dev)
-{
-    return -ENOSYS;
-};
-
-int __weak platform_pm_runtime_idle(struct device *dev)
-{
-    return -ENOSYS;
-};
-
-#else /* !CONFIG_PM_RUNTIME */
-...
-
-So I guess runtime PM is not _really_ implemented on 2.6.33, for
-platform devices,
-and maybe other bus type drivers, class type drivers, isn't it?
-
-And I found a message about PM for 2.6.33 in:
-https://lists.linux-foundation.org/pipermail/linux-pm/2009-December/023394.html
-
-Unfortunately, this git package is too large since my network condition is poor.
-I wonder whether there are some patches for the original 2.6.33,
-instead of a whole git project.
-
-Best Regards
-Pan Ruochen
-May 31, 2011
+-- Dave
