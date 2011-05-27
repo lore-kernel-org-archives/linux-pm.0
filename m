@@ -1,15 +1,17 @@
 From: Dave Hansen <dave@linux.vnet.ibm.com>
 Subject: Re: [PATCH 01/10] mm: Introduce the memory regions data
 	structure
-Date: Fri, 27 May 2011 08:30:03 -0700
-Message-ID: <1306510203.22505.69.camel__16980.7463222698$1306764534$gmane$org@nimitz>
+Date: Fri, 27 May 2011 14:31:52 -0700
+Message-ID: <1306531912.22505.84.camel__39888.4860719138$1306764668$gmane$org@nimitz>
 References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 	<1306499498-14263-2-git-send-email-ankita@in.ibm.com>
+	<1306510203.22505.69.camel@nimitz>
+	<20110527182041.GM5654@dirshya.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1306499498-14263-2-git-send-email-ankita@in.ibm.com>
+In-Reply-To: <20110527182041.GM5654@dirshya.in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +21,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: svaidy@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2011-05-27 at 18:01 +0530, Ankita Garg wrote:
-> +typedef struct mem_region_list_data {
-> +       struct zone zones[MAX_NR_ZONES];
-> +       int nr_zones;
-> +
-> +       int node;
-> +       int region;
-> +
-> +       unsigned long start_pfn;
-> +       unsigned long spanned_pages;
-> +} mem_region_t;
-> +
-> +#define MAX_NR_REGIONS    16 
+On Fri, 2011-05-27 at 23:50 +0530, Vaidyanathan Srinivasan wrote:
+> The overall idea is to have a VM data structure that can capture
+> various boundaries of memory, and enable the allocations and reclaim
+> logic to target certain areas based on the boundaries and properties
+> required. 
 
-Don't do the foo_t thing.  It's out of style and the pg_data_t is a
-dinosaur.
+It's worth noting that we already do targeted reclaim on boundaries
+other than zones.  The lumpy reclaim and memory compaction logically do
+the same thing.  So, it's at least possible to do this without having
+the global LRU designed around the way you want to reclaim.
 
-I'm a bit surprised how little discussion of this there is in the patch
-descriptions.  Why did you choose this structure?  What are the
-downsides of doing it this way?  This effectively breaks up the zone's
-LRU in to MAX_NR_REGIONS LRUs.  What effects does that have?
-
-How big _is_ a 'struct zone' these days?  This patch will increase their
-effective size by 16x.
-
-Since one distro kernel basically gets run on *EVERYTHING*, what will
-MAX_NR_REGIONS be in practice?  How many regions are there on the
-largest systems that will need this?  We're going to be doing many
-linear searches and iterations over it, so it's pretty darn important to
-know.  What does this do to lmbench numbers sensitive to page
-allocations?
+Also, if you get _too_ dependent on the global LRU, what are you going
+to do if our cgroup buddies manage to get cgroup'd pages off the global
+LRU?  
 
 -- Dave
