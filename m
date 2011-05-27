@@ -1,7 +1,7 @@
 From: Ankita Garg <ankita@in.ibm.com>
-Subject: [PATCH 02/10] mm: Helper routines
-Date: Fri, 27 May 2011 18:01:30 +0530
-Message-ID: <1306499498-14263-3-git-send-email-ankita__36658.8725396015$1306508305$gmane$org@in.ibm.com>
+Subject: [PATCH 07/10] mm: Modify vmstat
+Date: Fri, 27 May 2011 18:01:35 +0530
+Message-ID: <1306499498-14263-8-git-send-email-ankita__43399.3662395098$1306508424$gmane$org@in.ibm.com>
 References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,195 +21,124 @@ To: linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, linux-kernel@vger.
 Cc: thomas.abraham@linaro.org, ankita@in.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-With the introduction of regions, helper routines are needed to walk through
-all the regions and zones inside a node. This patch adds these helper
-routines.
+Change the way vmstats are collected. Since the zones are now present inside
+regions, scan through all the regions to obtain zone specific statistics.
 
 Signed-off-by: Ankita Garg <ankita@in.ibm.com>
 ---
- include/linux/mm.h     |   21 ++++++++++++++++-----
- include/linux/mmzone.h |   25 ++++++++++++++++++++++---
- mm/mmzone.c            |   36 +++++++++++++++++++++++++++++++-----
- mm/page_alloc.c        |   10 ++++++++++
- 4 files changed, 79 insertions(+), 13 deletions(-)
+ include/linux/vmstat.h |   22 +++++++++++++++-------
+ mm/vmstat.c            |   48 ++++++++++++++++++++++++++++--------------------
+ 2 files changed, 43 insertions(+), 27 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 6507dde..25299a3 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -675,11 +675,6 @@ static inline int page_to_nid(struct page *page)
- }
- #endif
- 
--static inline struct zone *page_zone(struct page *page)
--{
--	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
--}
--
- #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
- static inline unsigned long page_to_section(struct page *page)
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index 2b3831b..296b9ad 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -211,20 +211,28 @@ extern unsigned long zone_reclaimable_pages(struct zone *zone);
+ static inline unsigned long node_page_state(int node,
+ 				 enum zone_stat_item item)
  {
-@@ -687,6 +682,22 @@ static inline unsigned long page_to_section(struct page *page)
- }
- #endif
- 
-+static inline struct zone *page_zone(struct page *page)
-+{
-+	pg_data_t *pg = NODE_DATA(page_to_nid(page));
+-	struct zone *zones = NODE_DATA(node)->node_zones;
 +	int i;
-+	unsigned long pfn = page_to_pfn(page);
++	unsigned long page_state = 0;
 +
-+	for (i = 0; i< pg->nr_mem_regions; i++) {
-+		mem_region_t *mem_region= &(pg->mem_regions[i]);
-+		unsigned long end_pfn = mem_region->start_pfn + mem_region->spanned_pages - 1;
-+		if ((pfn >= mem_region->start_pfn) && (pfn <= end_pfn))
-+			return &mem_region->zones[page_zonenum(page)];
++	for_each_mem_region_in_nid(i, node) {
++		mr_data_t *mrdat = &(NODE_DATA(node)->mem_regions[i]);
++		struct zone *zones = mrdat->zones;
++		
++		page_state = 
+ 
+-	return
+ #ifdef CONFIG_ZONE_DMA
+-		zone_page_state(&zones[ZONE_DMA], item) +
++			zone_page_state(&zones[ZONE_DMA], item) +
+ #endif
+ #ifdef CONFIG_ZONE_DMA32
+-		zone_page_state(&zones[ZONE_DMA32], item) +
++			zone_page_state(&zones[ZONE_DMA32], item) +
+ #endif
+ #ifdef CONFIG_HIGHMEM
+-		zone_page_state(&zones[ZONE_HIGHMEM], item) +
++			zone_page_state(&zones[ZONE_HIGHMEM], item) +
+ #endif
+-		zone_page_state(&zones[ZONE_NORMAL], item) +
+-		zone_page_state(&zones[ZONE_MOVABLE], item);
++			zone_page_state(&zones[ZONE_NORMAL], item) +
++			zone_page_state(&zones[ZONE_MOVABLE], item);
 +	}
-+
-+	return NULL;
-+}
-+
- static inline void set_page_zone(struct page *page, enum zone_type zone)
- {
- 	page->flags &= ~(ZONES_MASK << ZONES_PGSHIFT);
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 997a474..3f13dc8 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -711,7 +711,7 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
- /*
-  * zone_idx() returns 0 for the ZONE_DMA zone, 1 for the ZONE_NORMAL zone, etc.
-  */
--#define zone_idx(zone)		((zone) - (zone)->zone_pgdat->node_zones)
-+#define zone_idx(zone)		((zone) - (zone)->zone_mem_region->zones)
- 
- static inline int populated_zone(struct zone *zone)
- {
-@@ -818,6 +818,7 @@ extern struct pglist_data contig_page_data;
- 
- extern struct pglist_data *first_online_pgdat(void);
- extern struct pglist_data *next_online_pgdat(struct pglist_data *pgdat);
-+extern struct zone* first_zone(void);
- extern struct zone *next_zone(struct zone *zone);
- 
- /**
-@@ -828,6 +829,24 @@ extern struct zone *next_zone(struct zone *zone);
- 	for (pgdat = first_online_pgdat();		\
- 	     pgdat;					\
- 	     pgdat = next_online_pgdat(pgdat))
-+
-+extern struct mem_region_list_data *first_mem_region(struct pglist_data *pgdat);
-+/**
-+ * for_each_mem_region - helper macro to iterate over all the memory regions in a
-+ * node
-+ * @mem_region - pointer to a mem_region_t variable
-+ */
-+#define for_each_online_mem_region(mem_region)			\
-+	for (mem_region = first_node_mem_region();		\
-+		mem_region;					\
-+		mem_region = next_mem_region(mem_region))
-+
-+inline int first_mem_region_in_nid(int nid);
-+int next_mem_region_in_nid(int idx, int nid);
-+/* Basic iterator support to walk all the memory regions in a node */
-+#define for_each_mem_region_in_nid(i, nid) 		\
-+	for (i = 0; i != -1; i = next_mem_region_in_nid(i, nid))
-+
- /**
-  * for_each_zone - helper macro to iterate over all memory zones
-  * @zone - pointer to struct zone variable
-@@ -836,12 +855,12 @@ extern struct zone *next_zone(struct zone *zone);
-  * fills it in.
-  */
- #define for_each_zone(zone)			        \
--	for (zone = (first_online_pgdat())->node_zones; \
-+	     for (zone = (first_zone());		\
- 	     zone;					\
- 	     zone = next_zone(zone))
- 
- #define for_each_populated_zone(zone)		        \
--	for (zone = (first_online_pgdat())->node_zones; \
-+	     for (zone = (first_zone());		\
- 	     zone;					\
- 	     zone = next_zone(zone))			\
- 		if (!populated_zone(zone))		\
-diff --git a/mm/mmzone.c b/mm/mmzone.c
-index f5b7d17..0e2bec3 100644
---- a/mm/mmzone.c
-+++ b/mm/mmzone.c
-@@ -24,21 +24,47 @@ struct pglist_data *next_online_pgdat(struct pglist_data *pgdat)
- 	return NODE_DATA(nid);
++	return page_state;
  }
  
-+inline struct mem_region_list_data *first_mem_region(struct pglist_data *pgdat)
-+{
-+	return &pgdat->mem_regions[0];
-+}
-+
-+struct mem_region_list_data *next_mem_region(struct mem_region_list_data *mem_region)
-+{
-+	int next_region = mem_region->region + 1;
-+	pg_data_t *pgdat = NODE_DATA(mem_region->node);
-+
-+	if (next_region == pgdat->nr_mem_regions)
-+		return NULL;
-+	return &(pgdat->mem_regions[next_region]);
-+}
-+
-+inline struct zone *first_zone(void)
-+{
-+	return (first_online_pgdat())->mem_regions[0].zones;
-+}
-+
- /*
-  * next_zone - helper magic for for_each_zone()
-  */
- struct zone *next_zone(struct zone *zone)
- {
- 	pg_data_t *pgdat = zone->zone_pgdat;
-+	mem_region_t *mem_region = zone->zone_mem_region;
+ extern void zone_statistics(struct zone *, struct zone *, gfp_t gfp);
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 897ea9e..542f8b6 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -191,17 +191,21 @@ void set_pgdat_percpu_threshold(pg_data_t *pgdat,
+ 	struct zone *zone;
+ 	int cpu;
+ 	int threshold;
+-	int i;
++	int i, p;
  
--	if (zone < pgdat->node_zones + MAX_NR_ZONES - 1)
-+	if (zone < mem_region->zones + MAX_NR_ZONES - 1)
- 		zone++;
- 	else {
--		pgdat = next_online_pgdat(pgdat);
--		if (pgdat)
--			zone = pgdat->node_zones;
-+		mem_region = next_mem_region(mem_region);
-+		if (!mem_region) {
-+			pgdat = next_online_pgdat(pgdat);
-+			if (pgdat)
-+				zone = pgdat->mem_regions[0].zones;
-+			else
-+				zone = NULL;
+ 	for (i = 0; i < pgdat->nr_zones; i++) {
+-		zone = &pgdat->node_zones[i];
+-		if (!zone->percpu_drift_mark)
+-			continue;
+-
+-		threshold = (*calculate_pressure)(zone);
+-		for_each_possible_cpu(cpu)
+-			per_cpu_ptr(zone->pageset, cpu)->stat_threshold
+-							= threshold;
++		for_each_mem_region_in_nid(p, pgdat->node_id) {
++			mem_region_t *mem_region = &pgdat->mem_regions[p];
++			struct zone *zone = mem_region->zones + i;
++		
++			if (!zone->percpu_drift_mark)
++				continue;
++
++			threshold = (*calculate_pressure)(zone);
++			for_each_possible_cpu(cpu)
++				per_cpu_ptr(zone->pageset, cpu)->stat_threshold
++								= threshold;
 +		}
- 		else
--			zone = NULL;
-+			zone = mem_region->zones;
  	}
- 	return zone;
  }
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 3f8bce2..af2529d 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2492,6 +2492,16 @@ out:
  
- #define K(x) ((x) << (PAGE_SHIFT-10))
+@@ -642,19 +646,23 @@ static void frag_stop(struct seq_file *m, void *arg)
  
-+int next_mem_region_in_nid(int idx, int nid)
-+{
-+	pg_data_t *pgdat = NODE_DATA(nid);
-+	int region = idx + 1;
+ /* Walk all the zones in a node and print using a callback */
+ static void walk_zones_in_node(struct seq_file *m, pg_data_t *pgdat,
+-		void (*print)(struct seq_file *m, pg_data_t *, struct zone *))
++		void (*print)(struct seq_file *m, pg_data_t *,
++					mem_region_t *, struct zone *))
+ {
+-	struct zone *zone;
+-	struct zone *node_zones = pgdat->node_zones;
+ 	unsigned long flags;
+-
+-	for (zone = node_zones; zone - node_zones < MAX_NR_ZONES; ++zone) {
+-		if (!populated_zone(zone))
+-			continue;
+-
+-		spin_lock_irqsave(&zone->lock, flags);
+-		print(m, pgdat, zone);
+-		spin_unlock_irqrestore(&zone->lock, flags);
++	int i, j;
 +
-+	if (region == pgdat->nr_mem_regions)
-+		return -1;
-+	return region;
-+}
++	for (i = 0; i < MAX_NR_ZONES; ++i) {
++		for_each_mem_region_in_nid(j, pgdat->node_id) {
++			mem_region_t *mem_region = &pgdat->mem_regions[j];
++			struct zone *zone = mem_region->zones + i;
++			if (!populated_zone(zone))
++				continue;
 +
- /*
-  * Show free area list (used inside shift_scroll-lock stuff)
-  * We also calculate the percentage fragmentation. We do this by counting the
++			spin_lock_irqsave(&zone->lock, flags);
++			print(m, pgdat, mem_region, zone);
++			spin_unlock_irqrestore(&zone->lock, flags);
++		}
+ 	}
+ }
+ #endif
 -- 
 1.7.4
