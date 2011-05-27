@@ -1,17 +1,15 @@
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 01/10] mm: Introduce the memory regions data
-	structure
-Date: Fri, 27 May 2011 14:31:52 -0700
-Message-ID: <1306531912.22505.84.camel__35938.8523655527$1306541631$gmane$org@nimitz>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<1306499498-14263-2-git-send-email-ankita@in.ibm.com>
-	<1306510203.22505.69.camel@nimitz>
-	<20110527182041.GM5654@dirshya.in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/5] PM: Support for generic I/O power domains
+	(v4)
+Date: Sat, 28 May 2011 01:15:14 +0200
+Message-ID: <201105280115.14556.rjw__41326.9206103452$1306542318$gmane$org@sisk.pl>
+References: <201104290154.12966.rjw@sisk.pl> <201105082320.57185.rjw@sisk.pl>
+	<201105160117.46927.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110527182041.GM5654@dirshya.in.ibm.com>
+In-Reply-To: <201105160117.46927.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,23 +19,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: svaidy@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2011-05-27 at 23:50 +0530, Vaidyanathan Srinivasan wrote:
-> The overall idea is to have a VM data structure that can capture
-> various boundaries of memory, and enable the allocations and reclaim
-> logic to target certain areas based on the boundaries and properties
-> required. 
+Hi,
 
-It's worth noting that we already do targeted reclaim on boundaries
-other than zones.  The lumpy reclaim and memory compaction logically do
-the same thing.  So, it's at least possible to do this without having
-the global LRU designed around the way you want to reclaim.
+This is the third update of the patchset adding support for generic I/O power
+domains. All patches were posted previously, but I needed to rebase shmobile
+patches on top of the current mainline kernel.
 
-Also, if you get _too_ dependent on the global LRU, what are you going
-to do if our cgroup buddies manage to get cgroup'd pages off the global
-LRU?  
+>From my perspective, the patches are ready for merging and I'm going put
+patches [1-4/5] into my power-domains branch for 2.6.41 (or whatever it turns
+out to be) after 2.6.40-rc1 (or whatever it is going to be called) is out.
+Patch [5/5] is optional.
 
--- Dave
+The entire patchset has been tested with an ARM shmobile Mackerel board.
+
+[1/5] - Support for generic I/O power domains (runtime PM part).
+[2/5] - Support for generic I/O power domains (system sleep part).
+[3/5] - Implementation of generic I/O power domains support for SH7372.
+[4/5] - [RFC] Support of multiple power domain states.
+[5/5] - Introduction of SH7372's A4MP power domain.
+
+Thanks,
+Rafael
