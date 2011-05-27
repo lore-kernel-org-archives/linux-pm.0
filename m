@@ -1,13 +1,13 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/3] introduce intel_rapl driver
-Date: Fri, 27 May 2011 16:26:50 +0800
-Message-ID: <1306484810.16581.375.camel__13150.8145285354$1306484984$gmane$org@rui>
-References: <1306398857.2207.157.camel@rui> <1306403003.1200.41.camel@twins>
+From: Ankita Garg <ankita@in.ibm.com>
+Subject: [PATCH 06/10] mm: Verify zonelists
+Date: Fri, 27 May 2011 18:01:34 +0530
+Message-ID: <1306499498-14263-7-git-send-email-ankita__26852.0647463903$1306508234$gmane$org@in.ibm.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1306403003.1200.41.camel@twins>
+In-Reply-To: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,427 +17,113 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Matt Fleming <matt@console-pimps.org>, "Lin, Ming M" <ming.m.lin@intel.com>, LKML <linux-kernel@vger.kernel.org>, "acme@redhat.com" <acme@redhat.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "mingo@elte.hu" <mingo@elte.hu>
+To: linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: thomas.abraham@linaro.org, ankita@in.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Peter,
+Verify that the zonelists were created appropriately. Below is the output in
+the dmesg for the verification of creation of zonelists. 4 regions, each of
+size 512MB were created on the Samsung Orion/Exynos board (board has 2G RAM).
 
-On Thu, 2011-05-26 at 17:43 +0800, Peter Zijlstra wrote: 
-> On Thu, 2011-05-26 at 16:34 +0800, Zhang Rui wrote:
-> > Introduce Intel RAPL driver.
-> > 
-> > RAPL (running average power limit) is a new feature which provides mechanisms
-> > to enforce power consumption limit, on some new processors.
-> > 
-> > RAPL provides MSRs reporting the total amount of energy consumed
-> > by the package/core/uncore/dram.
-> > Further more, by using RAPL, OS can set a power bugdet in a certain time window,
-> > and let Hardware to throttle the processor P/T-state to meet this enery limitation.
-> > 
-> > Currently, we don't have the plan to support the RAPL power control,
-> > but we do want to export the package/core/uncore/dram power consumption
-> > information via perf tool first.
-> 
-> Do note that perf is not the right API for those control bits. If you
-> never plan to expose those, that's fine. If you do, you'll likely need a
-> parallel API (your own device) for accessing that.
+The regions were created as follows:
 
-Agree.
-I was thinking of registering RAPL as a platform device and set the
-power limit via sysfs nodes.
+created region 0 in nid 0 start pfn 262144 spanned pages 131072
+created region 1 in nid 0 start pfn 393216 spanned pages 131072
+created region 2 in nid 0 start pfn 524288 spanned pages 131072
+created region 3 in nid 0 start pfn 655360 spanned pages 57344
 
-> Please consider if
-> using separate APIs for reading/writing this resource is what you want
-> and mention these considerations in your future changelog.
-> 
-okay. I'll do that.
+mminit::zonelist general 0:Normal = 0:Normal 0:Normal 0:Normal 0:Normal
+mminit::zonelist general 0:Normal = 0:Normal 0:Normal 0:Normal 0:Normal
+mminit::zonelist general 0:Normal = 0:Normal 0:Normal 0:Normal 0:Normal
+mminit::zonelist general 0:Normal = 0:Normal 0:Normal 0:Normal 0:Normal
 
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > ---
-> >  drivers/platform/x86/Kconfig      |    8 
-> >  drivers/platform/x86/Makefile     |    1 
-> >  drivers/platform/x86/intel_rapl.c |  368 ++++++++++++++++++++++++++++++++++++++
-> >  include/linux/perf_event.h        |    4 
-> >  4 files changed, 381 insertions(+)
-> > 
-> > Index: linux-2.6/drivers/platform/x86/Kconfig
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/platform/x86/Kconfig
-> > +++ linux-2.6/drivers/platform/x86/Kconfig
-> > @@ -753,4 +753,12 @@ config SAMSUNG_LAPTOP
-> >  	  To compile this driver as a module, choose M here: the module
-> >  	  will be called samsung-laptop.
-> >  
-> > +config INTEL_RAPL
-> > +	tristate "Intel RAPL Support"
-> > +	depends on X86
-> 
-> Also very much depends on perf being there.
-> 
-Agree.
+Since now 4 zones are present inside a node, the above shows 4 zonelists
+being created.
 
-> > +	default y
-> > +	---help---
-> > +	  RAPL, AKA, Running Average Power Limit provides mechanisms to enforce
-> > +	  power consumption limit.
-> 
-> The enforce part seems dubious, perf is purely about observing state it
-> doesn't enforce anything. Also this help text could do with expanding in
-> general.
-> 
-This help text is just a description of RAPL interface.
-But you're right, I should be more specific about the CURRENT intel_rapl
-driver status.
+Signed-off-by: Ankita Garg <ankita@in.ibm.com>
+---
+ mm/mm_init.c |   51 +++++++++++++++++++++++++++------------------------
+ 1 files changed, 27 insertions(+), 24 deletions(-)
 
-> >  endif # X86_PLATFORM_DEVICES
-> > Index: linux-2.6/drivers/platform/x86/Makefile
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/platform/x86/Makefile
-> > +++ linux-2.6/drivers/platform/x86/Makefile
-> > @@ -42,3 +42,4 @@ obj-$(CONFIG_XO15_EBOOK)	+= xo15-ebook.o
-> >  obj-$(CONFIG_IBM_RTL)		+= ibm_rtl.o
-> >  obj-$(CONFIG_SAMSUNG_LAPTOP)	+= samsung-laptop.o
-> >  obj-$(CONFIG_INTEL_MFLD_THERMAL)	+= intel_mid_thermal.o
-> > +obj-$(CONFIG_INTEL_RAPL)	+= intel_rapl.o
-> > Index: linux-2.6/include/linux/perf_event.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/perf_event.h
-> > +++ linux-2.6/include/linux/perf_event.h
-> > @@ -107,6 +107,10 @@ enum perf_sw_ids {
-> >  	PERF_COUNT_SW_PAGE_FAULTS_MAJ		= 6,
-> >  	PERF_COUNT_SW_ALIGNMENT_FAULTS		= 7,
-> >  	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
-> > +	PERF_COUNT_SW_PKG_ENERGY		= 9,
-> > +	PERF_COUNT_SW_CORE_ENERGY		= 10,
-> > +	PERF_COUNT_SW_UNCORE_ENERGY		= 11,
-> > +	PERF_COUNT_SW_DRAM_ENERGY		= 12,
-> 
-> Not going to happen, RAPL registers its own pmu (wrongly, see below),
-> with that it (should) get its own perf_event_attr::type and thus should
-> have its own ::config space, you do not get to pollute the
-> PERF_TYPE_SOFTWARE config space.
-
-> Currently there isn't a way to expose the events in sysfs, but we do
-> want that, its mostly a matter of getting all involved parties to agree
-> on a format and implementing it.
-> 
-I talked with Lin Ming just now, and he said that it should work in this
-way:
-First, only one pmu for RAPL interfaces, with four different kinds of
-events, pkg/core/uncore/dram,
-and the sysfs I/F is:
-/sys/bus/event_source/devices/rapl/---|---type
-                                      |---pkg
-                                      |---core
-                                      |---uncore
-                                      |---dram
-
-to use it, users can issue something like:
-perf stat -P rapl -e pkg/core/uncore/dram foo
-so that event->attr.type equals rapl_pmu.type and event->attr.config
-equals one of the rapl_domain_id.
-
-This sounds good. I can rewrite the code to work in this way, but it
-doesn't work for now, until both sysfs I/F and perf tool being ready,
-right?
-
-> >  	PERF_COUNT_SW_MAX,			/* non-ABI */
-> >  };
-> > Index: linux-2.6/drivers/platform/x86/intel_rapl.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/drivers/platform/x86/intel_rapl.c
-> 
-> > +#define MSR_RAPL_POWER_UNIT		0x606
-> > +
-> > +/*
-> > + * Platform specific RAPL Domains.
-> > + * Note that PP1 RAPL Domain is supported on 062A only
-> > + * And DRAM RAPL Domain is supported on 062D only
-> > + */
-> 
-> 0x62[AD] is useless, please use proper names.
-
-> > +/* Package RAPL Domain */
-> > +#define MSR_PKG_RAPL_POWER_LIMIT	0x610
-> > +#define MSR_PKG_ENERGY_STATUS		0x611
-> > +#define MSR_PKG_PERF_STATUS		0x613
-> > +#define MSR_PKG_POWER_INFO		0x614
-> > +
-> > +/* PP0 RAPL Domain */
-> > +#define MSR_PP0_POWER_LIMIT		0x638
-> > +#define MSR_PP0_ENERGY_STATUS		0x639
-> > +#define MSR_PP0_POLICY			0x63A
-> > +#define MSR_PP0_PERF_STATUS		0x63B
-> > +
-> > +/* PP1 RAPL Domain, may reflect to uncore devices */
-> > +#define MSR_PP1_POWER_LIMIT		0x640
-> > +#define MSR_PP1_ENERGY_STATUS		0x641
-> > +#define MSR_PP1_POLICY			0x642
-> > +
-> > +/* DRAM RAPL Domain */
-> > +#define MSR_DRAM_POWER_LIMIT		0x618
-> > +#define MSR_DRAM_ENERGY_STATUS		0x619
-> > +#define MSR_DRAM_PERF_STATUS		0x61B
-> > +#define MSR_DRAM_POWER_INFO		0x61C
-> > +
-> > +/* RAPL UNIT BITMASK */
-> > +#define POWER_UNIT_OFFSET	0
-> > +#define POWER_UNIT_MASK		0x0F
-> > +
-> > +#define ENERGY_UNIT_OFFSET	0x08
-> > +#define ENERGY_UNIT_MASK	0x1F00
-> > +
-> > +#define TIME_UNIT_OFFSET	0x10
-> > +#define TIME_UNIT_MASK		0xF000
-> 
-> Are you sure? (x & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET == 0.
-> You either want a mask of 0xF0000, or an offset of 0x0c.
-> 
-oops. It's 0xF0000. sorry about that.
-
-> > +static int rapl_pmu_pkg_event_init(struct perf_event *event);
-> > +static int rapl_pmu_core_event_init(struct perf_event *event);
-> > +static int rapl_pmu_uncore_event_init(struct perf_event *event);
-> > +static int rapl_pmu_dram_event_init(struct perf_event *event);
-> > +static void rapl_event_start(struct perf_event *event, int flags);
-> > +static void rapl_event_stop(struct perf_event *event, int flags);
-> > +static int rapl_event_add(struct perf_event *event, int flags);
-> > +static void rapl_event_del(struct perf_event *event, int flags);
-> > +static void rapl_event_read(struct perf_event *event);
-> > +
-> > +enum rapl_domain_id {
-> > +	RAPL_DOMAIN_PKG,
-> > +	RAPL_DOMAIN_PP0,
-> > +	RAPL_DOMAIN_PP1,
-> > +	RAPL_DOMAIN_DRAM,
-> > +	RAPL_DOMAIN_MAX
-> > +};
-> > +
-> > +struct rapl_domain_msr {
-> > +	int	limit;
-> > +	int	status;
-> > +};
-> > +
-> > +struct rapl_domain {
-> > +	enum rapl_domain_id domain_id;
-> > +	struct rapl_domain_msr msrs;
-> > +	struct pmu pmu;
-> > +	enum perf_sw_ids event_id;
-> > +	int valid;
-> > +};
-> 
-> You could use the rapl_domain_id as your ::config space.
-> 
-> 
-> > +static unsigned int power_unit_divisor;
-> > +static unsigned int energy_unit_divisor;
-> > +static unsigned int time_unit_divisor;
-> > +
-> > +enum unit_type {
-> > +	POWER_UNIT,
-> > +	ENERGY_UNIT,
-> > +	TIME_UNIT
-> > +};
-> > +static u64 rapl_unit_xlate(enum unit_type type, u64 value, int action)
-> > +{
-> > +	u64 divisor;
-> > +
-> > +	switch (type) {
-> > +	case POWER_UNIT:
-> > +		divisor = power_unit_divisor;
-> > +		break;
-> > +	case ENERGY_UNIT:
-> > +		divisor = energy_unit_divisor;
-> > +		break;
-> > +	case TIME_UNIT:
-> > +		divisor = time_unit_divisor;
-> > +		break;
-> > +	default:
-> > +		return 0;
-> > +	};
-> > +
-> > +	if (action)
-> > +		return value * divisor; /* value is from users */
-> > +	else
-> > +		return div64_u64(value, divisor); /* value is from MSR */
-> > +}
-> 
-> Please see the comment down by rapl_check_unit(), this is just too wrong
-> to live.
-> 
-> > +/* show the energy status, in Jelous */
-> > +static int rapl_read_energy(struct rapl_domain *domain)
-> > +{
-> > +	u64 value;
-> > +	u32 msr = domain->msrs.status;
-> > +
-> > +	rdmsrl(msr, value);
-> > +	return rapl_unit_xlate(ENERGY_UNIT, value, 0);
-> > +}
-> > +
-> > +static void rapl_event_update(struct perf_event *event)
-> > +{
-> > +	s64 prev;
-> > +	u64 now;
-> > +	struct rapl_domain *domain = to_rapl_domain(event->pmu);
-> > +
-> > +	now = rapl_read_energy(domain);
-> 
-> So I had to get the Intel SDM because your driver lacks all useful
-> information, and I learned that the RAPL status MSRs contain 32 bits.
-> 
-> So you get those 32 bits, divide them by some number,
-> 
-> > +	prev = local64_xchg(&event->hw.prev_count, now);
-> > +	local64_add(now - prev, &event->count);
-> 
-> And then expect that to work?
-> 
-rapl_read_energy first reads energy status from MSR and then invokes
-rapl_unit_xlate to translate it into Joules.
-For example, on the laptop I tested, the energy unit bits is 0x10, which
-means that the energy unit is 1/65536 Joule.
-So I need to divide the value read from MSR by 65536 to calculate how
-many Joules of energy are cost. 
-
-But this reveals a problem. If the task is scheduled out with energy
-consumption less than 1 Joule, we failed to record it.
-
-IMO, a new callback should be introduced so that I can save the MSR
-value first and translate it to Joule when the task exits. Or just do
-the translation in user space.
-
-what do you think?
-
-> I don't think so..
-> 
-> > +}
-> > +
-> > +static void rapl_event_start(struct perf_event *event, int flags)
-> > +{
-> > +	struct rapl_domain *domain = to_rapl_domain(event->pmu);
-> > +
-> > +	local64_set(&event->hw.prev_count, rapl_read_energy(domain));
-> > +	perf_swevent_start_hrtimer(event);
-> > +}
-> > +
-> > +static void rapl_event_stop(struct perf_event *event, int flags)
-> > +{
-> > +	perf_swevent_cancel_hrtimer(event);
-> > +	rapl_event_update(event);
-> > +}
-> 
-> > +static int rapl_pmu_event_init(struct perf_event *event,
-> > +			       enum rapl_domain_id id)
-> > +{
-> > +	struct rapl_domain *domain = &(rapl_domains[id]);
-> > +
-> > +	if (event->attr.type != PERF_TYPE_SOFTWARE)
-> > +		return -ENOENT;
-> > +
-> > +	if (event->attr.config != domain->event_id)
-> > +		return -ENOENT;
-> > +
-> > +	/* Do periodecal update every second */
-> > +	event->attr.freq = 1;
-> > +	event->attr.sample_period = 1;
-> > +
-> > +	perf_swevent_init_hrtimer(event);
-> > +
-> > +	return 0;
-> > +}
-> 
-> That's just wrong.. the reason you're wanting to have this timer is to
-> avoid the RAPL MSRs from overflowing and you loosing offsets, right?
-> 
-> But the above is actually forcing the event to create samples on a
-> totally unrelated time base.
-> 
-> RAPL should fail to create a sampling event since it doesn't have the
-> capability to trigger overflow interrupts based on its events.
-> 
-> If you want a timer, add one, but don't do this.
-> 
-> If you expect you actually want to sample, use this event as part of a
-> group and add a sampling event in there and use PERF_FORMAT_GROUP, Matt
-> was working on patches to make perf-record capable of this.
-> 
-perf stat doesn't support -g parameter.
-
-BTW, as I need a per task hrtimer, can I make use of the
-hw_perf_event.hrtimer in intel_rapl driver, without touching the perf
-hrtimer interfaces?
-
-> > +static int rapl_check_unit(void)
-> 
-> Shouldn't that be called: rapl_init_unit()? You're not actually
-> verifying anything, you're setting-up state.
-> 
-Agree.
-
-thanks,
-rui
-> > +{
-> > +	u64 output;
-> > +	u32 value;
-> > +
-> > +	rdmsrl(MSR_RAPL_POWER_UNIT, output);
-> > +
-> > +	/* energy unit: 1/enery_unit_divisor Joules */
-> > +	value = (output & ENERGY_UNIT_MASK) >> ENERGY_UNIT_OFFSET;
-> > +	energy_unit_divisor = 1 << value;
-> > +
-> > +	/* power unit: 1/power_unit_divisor Watts */
-> > +	value = (output & POWER_UNIT_MASK) >> POWER_UNIT_OFFSET;
-> > +	power_unit_divisor = 1 << value;
-> > +
-> > +	/* time unit: 1/time_unit_divisor Seconds */
-> > +	value =(output & TIME_UNIT_MASK) >> TIME_UNIT_OFFSET;
-> > +	time_unit_divisor = 1 << value;
-> 
-> So you're saying these factors are powers-of-two, please look at
-> rapl_unit_xlate and try again.
-> 
-> +
-> > +	return 0;
-> > +}
-> > +
-> > +static int __init intel_rapl_init(void)
-> > +{
-> > +	enum rapl_domain_id id;
-> > +
-> > +	/*
-> > +	 * RAPL features are only supported on processors have a CPUID
-> > +	 * signature with DisplayFamily_DisplayModel of 06_2AH, 06_2DH
-> > +	 */
-> > +	if (boot_cpu_data.x86 != 0x06)
-> > +		return -ENODEV;
-> > +
-> > +	if (boot_cpu_data.x86_model == 0x2A)
-> > +		rapl_domains[RAPL_DOMAIN_PP1].valid = 1;
-> > +	else if (boot_cpu_data.x86_model == 0x2D)
-> > +		rapl_domains[RAPL_DOMAIN_DRAM].valid = 1;
-> > +	else
-> > +		return -ENODEV;
-> 
-> Names please, again 06_2[AD] is useless we could have surmised that by
-> reading the code, nobody knows which part that is.
-> 
->   a += 4; /* increment by 4 */
-> 
-> quality comments here.
-> 
-> > +	if (rapl_check_unit())
-> > +		return -ENODEV;
-> > +
-> > +	for(id = 0; id < RAPL_DOMAIN_MAX; id++)
-> > +		if (rapl_domains[id].valid)
-> > +			perf_pmu_register(&(rapl_domains[id].pmu), rapl_domains[id].pmu.name, PERF_TYPE_SOFTWARE);
-> 
-> Uhm, hell no!, you get to use type = -1.
-> 
-> > +	return 0;
-> > +}
-> > +
+diff --git a/mm/mm_init.c b/mm/mm_init.c
+index 4e0e265..77468f8 100644
+--- a/mm/mm_init.c
++++ b/mm/mm_init.c
+@@ -21,44 +21,47 @@ int mminit_loglevel;
+ /* The zonelists are simply reported, validation is manual. */
+ void mminit_verify_zonelist(void)
+ {
+-	int nid;
++	int nid, p;
+ 
+ 	if (mminit_loglevel < MMINIT_VERIFY)
+ 		return;
+ 
+ 	for_each_online_node(nid) {
+ 		pg_data_t *pgdat = NODE_DATA(nid);
+-		struct zone *zone;
+-		struct zoneref *z;
+-		struct zonelist *zonelist;
+-		int i, listid, zoneid;
+-
+-		BUG_ON(MAX_ZONELISTS > 2);
+-		for (i = 0; i < MAX_ZONELISTS * MAX_NR_ZONES; i++) {
+-
+-			/* Identify the zone and nodelist */
+-			zoneid = i % MAX_NR_ZONES;
+-			listid = i / MAX_NR_ZONES;
+-			zonelist = &pgdat->node_zonelists[listid];
+-			zone = &pgdat->node_zones[zoneid];
+-			if (!populated_zone(zone))
+-				continue;
+-
+-			/* Print information about the zonelist */
+-			printk(KERN_DEBUG "mminit::zonelist %s %d:%s = ",
+-				listid > 0 ? "thisnode" : "general", nid,
+-				zone->name);
+-
+-			/* Iterate the zonelist */
+-			for_each_zone_zonelist(zone, z, zonelist, zoneid) {
++		for_each_mem_region_in_nid(p, nid) {
++			mem_region_t *mem_region = &(NODE_DATA(nid)->mem_regions[p]);
++			struct zone *zone;
++			struct zoneref *z;
++			struct zonelist *zonelist;
++			int i, listid, zoneid;
++
++			BUG_ON(MAX_ZONELISTS > 2);
++			for (i = 0; i < MAX_ZONELISTS * MAX_NR_ZONES; i++) {
++
++				/* Identify the zone and nodelist */
++				zoneid = i % MAX_NR_ZONES;
++				listid = i / MAX_NR_ZONES;
++				zonelist = &pgdat->node_zonelists[listid];
++				zone = &mem_region->zones[zoneid];
++				if (!populated_zone(zone))
++					continue;
++
++				/* Print information about the zonelist */
++				printk(KERN_DEBUG "mminit::zonelist %s %d:%s = ",
++					listid > 0 ? "thisnode" : "general", nid,
++					zone->name);
++
++				/* Iterate the zonelist */
++				for_each_zone_zonelist(zone, z, zonelist, zoneid) {
+ #ifdef CONFIG_NUMA
+-				printk(KERN_CONT "%d:%s ",
+-					zone->node, zone->name);
++					printk(KERN_CONT "%d:%s ",
++						zone->node, zone->name);
+ #else
+-				printk(KERN_CONT "0:%s ", zone->name);
++					printk(KERN_CONT "0:%s ", zone->name);
+ #endif /* CONFIG_NUMA */
++				}
++				printk(KERN_CONT "\n");
+ 			}
+-			printk(KERN_CONT "\n");
+ 		}
+ 	}
+ }
+-- 
+1.7.4
