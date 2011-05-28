@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: export suspend_set_ops,
-	suspend_valid_only_mem
-Date: Sat, 28 May 2011 11:01:13 +0200
-Message-ID: <201105281101.13691.rjw__31611.0771302649$1306573303$gmane$org@sisk.pl>
-References: <1306542839-5688-1-git-send-email-khilman@ti.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 2/3] introduce intel_rapl driver
+Date: Sat, 28 May 2011 18:17:57 +0800
+Message-ID: <20110528101757.GA32493__43074.3604586043$1306582669$gmane$org@kroah.com>
+References: <1306398857.2207.157.camel@rui>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1306542839-5688-1-git-send-email-khilman@ti.com>
+Content-Disposition: inline
+In-Reply-To: <1306398857.2207.157.camel@rui>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,46 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-omap@vger.kernel.org, Jean Pihet <jean.pihet@newoldbits.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: a.p.zijlstra@chello.nl, ming.m.lin@intel.com, LKML <linux-kernel@vger.kernel.org>, acme@redhat.com, linux-pm <linux-pm@lists.linux-foundation.org>, mingo@elte.hu
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, May 28, 2011, Kevin Hilman wrote:
-> Some platforms wish to implement their PM core suspend code as
-> modules.  To do so, these functions need to be exported to modules.
+On Thu, May 26, 2011 at 04:34:17PM +0800, Zhang Rui wrote:
+> +/*
+> + *  Intel RAPL interface driver
+> + *
+> + *  Copyright (C) 2010-2011 Zhang Rui <rui.zhang@intel.com>
+> + *
+> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2 of the License, or (at
+> + *  your option) any later version.
 
-Hmm.  What happens if the module is not loaded and the user attempts to
-suspend?
+Are you really sure about "any later version"?  I didn't think that was
+the default rule of Intel kernel code these days, have you verified this
+exception is ok?
 
-Rafael
+> + *
+> + *  This program is distributed in the hope that it will be useful, but
+> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + *  General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License along
+> + *  with this program; if not, write to the Free Software Foundation, Inc.,
+> + *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 
+These two paragraphs are not needed, and the last one is never needed
+unless you want to track the office movements of the FSF for the next
+50+ years and always update this file because of that.
 
-> Reported-by: Jean Pihet <j-pihet@ti.com>
-> Signed-off-by: Kevin Hilman <khilman@ti.com>
-> ---
-> Applies against v2.6.39
-> 
->  kernel/power/suspend.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 6275970..eca495d 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -44,6 +44,7 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
->  	suspend_ops = ops;
->  	mutex_unlock(&pm_mutex);
->  }
-> +EXPORT_SYMBOL(suspend_set_ops);
->  
->  bool valid_state(suspend_state_t state)
->  {
-> @@ -65,6 +66,7 @@ int suspend_valid_only_mem(suspend_state_t state)
->  {
->  	return state == PM_SUSPEND_MEM;
->  }
-> +EXPORT_SYMBOL(suspend_valid_only_mem);
->  
->  static int suspend_test(int level)
->  {
-> 
+greg k-h
