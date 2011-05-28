@@ -1,14 +1,15 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Sat, 28 May 2011 00:56:40 -0700
-Message-ID: <20110528005640.9076c0b1.akpm__25714.991024188$1306569350$gmane$org@linux-foundation.org>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH v3 1/3] PM: Introduce DEVFREQ: generic DVFS
+ framework with device-specific OPPs
+Date: Sat, 28 May 2011 01:57:03 -0700
+Message-ID: <20110528085659.GA3300__21075.2178835266$1306573091$gmane$org@olorun>
+References: <1306471995-4048-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <1306471995-4048-1-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,36 +19,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 27 May 2011 18:01:28 +0530 Ankita Garg <ankita@in.ibm.com> wrote:
+On 13:53-20110527, MyungJoo Ham wrote:
+[..]
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 56a6899..819c1b3 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/rculist.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/opp.h>
+> +#include <linux/devfreq.h>
+>  
+>  /*
+>   * Internal data structure organization with the OPP layer library is as
+> @@ -428,6 +429,11 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>  	list_add_rcu(&new_opp->node, head);
+>  	mutex_unlock(&dev_opp_list_lock);
+>  
+> +	/*
+> +	 * Notify generic dvfs for the change and ignore error
+> +	 * because the device may not have a devfreq entry
+> +	 */
+> +	devfreq_update(dev);
+I think I understand your thought about notifiers here - we had some
+initial thought that we may need notifiers, for e.g. clk change
+notifiers which could implement enable/disable on a dependent device,
+thermal management etc.. so far, we have'nt had a need to modify the
+lowest data store layer to handle this. In this case, I think you'd
+like a notifier mechanism in general for opp_add,enable or disable in
+the opp library. However, with this change, an opp_add now means:
+a) opp_add now depends on devfreq_update() to be part of it's integral
+operation - I think the devfreq should maintain it's own notifier
+mechanisms and not make OPP library do the notification trigger job of
+devfreq.
+b) By ignoring the error, how will the caller of opp_add now know if the
+failures were real - e.g. some device failed to act on the notification
+and the overall opp_add operation failed? And why should OPP library do
+recovery for on behalf of devfreq?
+c) How will you ensure the lock accuracy - given that you need to keep
+to the constraints of opp_add/opp_set_availability here? For example:
+devfreq_do is called from devfreq_monitor(workqueue) and devfreq_update
+in addition to having to call a bunch of function pointers whose
+implementation you do not know, having a function that ensures security
+of it's data, handles all lock conditions that is imposed differently by
+add,enable and disable is not visible in this implementation.
+c) How about considering the usage of OPP library with an SoC cpufreq
+implementation say for MPU AND using the same SoC using devfreq for
+controlling some devices like MALI in your example simultaneously? Lets
+say the thermal policy manager implementation for some reason did an
+opp_disable of a higher OPP of MPU - devfreq_update gets called with the
+device(mpu_dev).. devfreq_update needs to now invoke it's validation
+path and fails correctly - Vs devfreq_update being called by some module
+which actually uses devfreq and the update failed - How does one
+differentiate between the two?
 
-> This patchset proposes a generic memory regions infrastructure that can be
-> used to tag boundaries of memory blocks which belongs to a specific memory
-> power management domain and further enable exploitation of platform memory
-> power management capabilities.
+just my 2 cents, I think these kind of notifiers should probably
+stay out of opp library OR notifiers be introduced in a generic and safe
+fashion.
 
-A couple of quick thoughts...
+>  	return 0;
+>  }
+>  
+> @@ -512,6 +518,9 @@ unlock:
+>  	mutex_unlock(&dev_opp_list_lock);
+>  out:
+>  	kfree(new_opp);
+> +
+> +	/* Notify generic dvfs for the change and ignore error */
+> +	devfreq_update(dev);
+Another place where I am confused - how does devfreq_update know in what
+context is it being called is the OPP getting enabled/disabled/added -
+devfreq_update has to do some additional work to make it's own decision
+- it is almost as if it uses devfreq_update as a trigger mechanism to reevalute
+the entire decision tree - without using information of the context
+opp_enable/disable/add has to maybe make better call. if this
+information is not needed, maybe some other mechanism implemented by
+devfreq layer might suffice..
 
-I'm seeing no estimate of how much energy we might save when this work
-is completed.  But saving energy is the entire point of the entire
-patchset!  So please spend some time thinking about that and update and
-maintain the [patch 0/n] description so others can get some idea of the
-benefit we might get from all of this.  That estimate should include an
-estimate of what proportion of machines are likely to have hardware
-which can use this feature and in what timeframe.
+>  	return r;
+>  }
 
-IOW, if it saves one microwatt on 0.001% of machines, not interested ;)
-
-
-Also, all this code appears to be enabled on all machines?  So machines
-which don't have the requisite hardware still carry any additional
-overhead which is added here.  I can see that ifdeffing a feature like
-this would be ghastly but please also have a think about the
-implications of this and add that discussion also.  
-
-If possible, it would be good to think up some microbenchmarks which
-probe the worst-case performance impact and describe those and present
-the results.  So others can gain an understanding of the runtime costs.
+[...]
+-- 
+Regards,
+Nishanth Menon
