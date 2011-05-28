@@ -1,15 +1,15 @@
-From: Nicolas Pitre <nico@fluxnic.net>
-Subject: Re: [RFC PATCH v3] ARM hibernation/suspend-to-disk
-	support
-Date: Fri, 27 May 2011 15:27:18 -0400 (EDT)
-Message-ID: <alpine.LFD.2.00.1105271501220.3207__40556.9849689074$1306868771$gmane$org@xanadu.home>
-References: <alpine.DEB.2.00.1105251251330.4319@localhost6.localdomain6>
-	<alpine.DEB.2.00.1105271549220.6109@localhost6.localdomain6>
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Subject: Re: [PATCH 10/10] mm: Create memory regions at boot-up
+Date: Sat, 28 May 2011 16:39:31 +0200
+Message-ID: <20110528143931.GB3603__34211.3146478825$1306868775$gmane$org@game.jcrosoft.org>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<1306499498-14263-11-git-send-email-ankita@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.DEB.2.00.1105271549220.6109@localhost6.localdomain6>
+Content-Disposition: inline
+In-Reply-To: <1306499498-14263-11-git-send-email-ankita@in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +19,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frank Hofmann <frank.hofmann@tomtom.com>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
+To: Ankita Garg <ankita@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 27 May 2011, Frank Hofmann wrote:
-
->  /*
->   * r0 = control register value
->   * r1 = v:p offset (preserved by cpu_do_resume)
-> + *      if this is zero, do not reenable MMU (it's on)
-
-This is wrong.  It is well possible for this to be zero when the MMU is 
-active.
-
-The best way to determine if MMU is on or off is:
-
-	mrc	p15, 0, rx, c1, c0	@ load ctrl reg
-	tst	rx, #1			@ test M bit
-
-> I wonder; is there a proper/suggested way to switch MMU off (and not end in
-> binary nirvana), to have the reentry / reenable work ?
-
-This is slightly complicated.  You first need to turn of and disable the 
-caches, and ideally set up a 1:1 mapping for the transition.  There are 
-cpu_proc_fin() and cpu_reset(branch_location).
-
-You may also investigate how kexec is handled which purpose is to let 
-the kernel boot another kernel.
-
-
-Nicolas
+On 18:01 Fri 27 May     , Ankita Garg wrote:
+> Memory regions are created at boot up time, from the information obtained
+> from the firmware. This patchset was developed on ARM platform, on which at
+> present u-boot bootloader does not export information about memory units that
+> can be independently power managed. For the purpose of demonstration, 2 hard
+> coded memory regions are created, of 256MB each on the Panda board with 512MB
+> RAM.
+> 
+> Signed-off-by: Ankita Garg <ankita@in.ibm.com>
+> ---
+>  include/linux/mmzone.h |    8 +++-----
+>  mm/page_alloc.c        |   29 +++++++++++++++++++++++++++++
+>  2 files changed, 32 insertions(+), 5 deletions(-)
+> 
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index bc3e3fd..5dbe1e1 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -627,14 +627,12 @@ typedef struct mem_region_list_data {
+>   */
+>  struct bootmem_data;
+>  typedef struct pglist_data {
+> -/*	The linkage to node_zones is now removed. The new hierarchy introduced
+> - *	is pg_data_t -> mem_region -> zones
+> - * 	struct zone node_zones[MAX_NR_ZONES];
+> - */
+>  	struct zonelist node_zonelists[MAX_ZONELISTS];
+>  	int nr_zones;
+>  #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
+> -	struct page *node_mem_map;
+> +	strs pg_data_t -> mem_region -> zones
+> + *      struct zone node_zones[MAX_NR_ZONES];
+> + */uct page *node_mem_map;
+what is time?
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+>  	struct page_cgroup *node_page_cgroup;
+>  #endif
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index da8b045..3d994e8 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -4285,6 +4285,34 @@ static inline int pageblock_default_order(unsigned int order)
+>  
+>  #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+>  
+> +#define REGIONS_SIZE   (512 << 20) >> PAGE_SHIFT
+fix a region size why?
+> +
+> +static void init_node_memory_regions(struct pglist_data *pgdat)
+> +{
+Best Regards,
+J.
