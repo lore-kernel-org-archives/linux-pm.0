@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/8] idle governor: Avoid lock acquisition to
- read pm_qos before entering idle
-Date: Sun, 29 May 2011 05:41:44 -0400
-Message-ID: <333c5ae9948194428fe6c5ef5c088304fc98263b.1306662035.git.len.brown@intel.com>
+Subject: [PATCH 4/8] x86 idle: EXPORT_SYMBOL(default_idle,
+ pm_idle) only when APM demands it
+Date: Sun, 29 May 2011 05:41:46 -0400
+Message-ID: <06ae40ce073daf233607a3c54a489f2c1e44683e.1306662035.git.len.brown@intel.com>
 References: <1306662110-29954-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,163 +21,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Tim Chen <tim.c.chen@linux.intel.com>, stable@kernel.org
+Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, Jiri Kosina <jkosina@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tim Chen <tim.c.chen@linux.intel.com>
+From: Len Brown <len.brown@intel.com>
 
-Thanks to the reviews and comments by Rafael, James, Mark and Andi.
-Here's version 2 of the patch incorporating your comments and also some
-update to my previous patch comments.
+In the long run, we don't want default_idle() or (pm_idle)() to
+be exported outside of process.c.  Start by not exporting them
+to modules, unless the APM build demands it.
 
-I noticed that before entering idle state, the menu idle governor will
-look up the current pm_qos target value according to the list of qos
-requests received.  This look up currently needs the acquisition of a
-lock to access the list of qos requests to find the qos target value,
-slowing down the entrance into idle state due to contention by multiple
-cpus to access this list.  The contention is severe when there are a lot
-of cpus waking and going into idle.  For example, for a simple workload
-that has 32 pair of processes ping ponging messages to each other, where
-64 cpu cores are active in test system, I see the following profile with
-37.82% of cpu cycles spent in contention of pm_qos_lock:
-
--     37.82%          swapper  [kernel.kallsyms]          [k]
-_raw_spin_lock_irqsave
-   - _raw_spin_lock_irqsave
-      - 95.65% pm_qos_request
-           menu_select
-           cpuidle_idle_call
-         - cpu_idle
-              99.98% start_secondary
-
-A better approach will be to cache the updated pm_qos target value so
-reading it does not require lock acquisition as in the patch below.
-With this patch the contention for pm_qos_lock is removed and I saw a
-2.2X increase in throughput for my message passing workload.
-
-cc: stable@kernel.org
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-Acked-by: Andi Kleen <ak@linux.intel.com>
-Acked-by: James Bottomley <James.Bottomley@suse.de>
-Acked-by: mark gross <markgross@thegnar.org>
+cc: x86@kernel.org
+cc: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/linux/pm_qos_params.h |    4 ++++
- kernel/pm_qos_params.c        |   37 +++++++++++++++++++++++++------------
- 2 files changed, 29 insertions(+), 12 deletions(-)
+ arch/x86/kernel/process.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
-index 77cbddb..a7d87f9 100644
---- a/include/linux/pm_qos_params.h
-+++ b/include/linux/pm_qos_params.h
-@@ -16,6 +16,10 @@
- #define PM_QOS_NUM_CLASSES 4
- #define PM_QOS_DEFAULT_VALUE -1
- 
-+#define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
-+#define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
-+#define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
-+
- struct pm_qos_request_list {
- 	struct plist_node list;
- 	int pm_qos_class;
-diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-index aeaa7f8..6a8fad8 100644
---- a/kernel/pm_qos_params.c
-+++ b/kernel/pm_qos_params.c
-@@ -53,11 +53,17 @@ enum pm_qos_type {
- 	PM_QOS_MIN		/* return the smallest value */
- };
- 
-+/*
-+ * Note: The lockless read path depends on the CPU accessing
-+ * target_value atomically.  Atomic access is only guaranteed on all CPU
-+ * types linux supports for 32 bit quantites
-+ */
- struct pm_qos_object {
- 	struct plist_head requests;
- 	struct blocking_notifier_head *notifiers;
- 	struct miscdevice pm_qos_power_miscdev;
- 	char *name;
-+	s32 target_value;	/* Do not change to 64 bit */
- 	s32 default_value;
- 	enum pm_qos_type type;
- };
-@@ -70,7 +76,8 @@ static struct pm_qos_object cpu_dma_pm_qos = {
- 	.requests = PLIST_HEAD_INIT(cpu_dma_pm_qos.requests, pm_qos_lock),
- 	.notifiers = &cpu_dma_lat_notifier,
- 	.name = "cpu_dma_latency",
--	.default_value = 2000 * USEC_PER_SEC,
-+	.target_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
-+	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
- 	.type = PM_QOS_MIN,
- };
- 
-@@ -79,7 +86,8 @@ static struct pm_qos_object network_lat_pm_qos = {
- 	.requests = PLIST_HEAD_INIT(network_lat_pm_qos.requests, pm_qos_lock),
- 	.notifiers = &network_lat_notifier,
- 	.name = "network_latency",
--	.default_value = 2000 * USEC_PER_SEC,
-+	.target_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
-+	.default_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
- 	.type = PM_QOS_MIN
- };
- 
-@@ -89,7 +97,8 @@ static struct pm_qos_object network_throughput_pm_qos = {
- 	.requests = PLIST_HEAD_INIT(network_throughput_pm_qos.requests, pm_qos_lock),
- 	.notifiers = &network_throughput_notifier,
- 	.name = "network_throughput",
--	.default_value = 0,
-+	.target_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
-+	.default_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
- 	.type = PM_QOS_MAX,
- };
- 
-@@ -132,6 +141,16 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
- 	}
- }
- 
-+static inline s32 pm_qos_read_value(struct pm_qos_object *o)
-+{
-+	return o->target_value;
-+}
-+
-+static inline void pm_qos_set_value(struct pm_qos_object *o, s32 value)
-+{
-+	o->target_value = value;
-+}
-+
- static void update_target(struct pm_qos_object *o, struct plist_node *node,
- 			  int del, int value)
- {
-@@ -156,6 +175,7 @@ static void update_target(struct pm_qos_object *o, struct plist_node *node,
- 		plist_add(node, &o->requests);
- 	}
- 	curr_value = pm_qos_get_value(o);
-+	pm_qos_set_value(o, curr_value);
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
- 	if (prev_value != curr_value)
-@@ -190,18 +210,11 @@ static int find_pm_qos_object_by_minor(int minor)
-  * pm_qos_request - returns current system wide qos expectation
-  * @pm_qos_class: identification of which qos value is requested
-  *
-- * This function returns the current target value in an atomic manner.
-+ * This function returns the current target value.
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 2efbfb7..84f3cda 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -340,7 +340,9 @@ EXPORT_SYMBOL(boot_option_idle_override);
+  * Powermanagement idle function, if any..
   */
- int pm_qos_request(int pm_qos_class)
- {
--	unsigned long flags;
--	int value;
--
--	spin_lock_irqsave(&pm_qos_lock, flags);
--	value = pm_qos_get_value(pm_qos_array[pm_qos_class]);
--	spin_unlock_irqrestore(&pm_qos_lock, flags);
--
--	return value;
-+	return pm_qos_read_value(pm_qos_array[pm_qos_class]);
+ void (*pm_idle)(void);
++#if defined(CONFIG_APM_MODULE) && defined(CONFIG_APM_CPU_IDLE)
+ EXPORT_SYMBOL(pm_idle);
++#endif
+ 
+ #ifdef CONFIG_X86_32
+ /*
+@@ -400,7 +402,7 @@ void default_idle(void)
+ 		cpu_relax();
+ 	}
  }
- EXPORT_SYMBOL_GPL(pm_qos_request);
+-#ifdef CONFIG_APM_MODULE
++#if defined(CONFIG_APM_MODULE) && defined(CONFIG_APM_CPU_IDLE)
+ EXPORT_SYMBOL(default_idle);
+ #endif
  
 -- 
 1.7.5.3.367.ga9930.dirty
