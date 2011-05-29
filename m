@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 7/8] x86 idle: deprecate "no-hlt" cmdline param
-Date: Sun, 29 May 2011 05:41:49 -0400
-Message-ID: <cdaab4a0d330f70c0e5ad8c3f7c65c2e375ea180.1306662035.git.len.brown@intel.com>
+Subject: [PATCH 6/8] x86 idle APM: deprecate CONFIG_APM_CPU_IDLE
+Date: Sun, 29 May 2011 05:41:48 -0400
+Message-ID: <99c63221435963e0cee2402686ba99293c2ffa9e.1306662035.git.len.brown@intel.com>
 References: <1306662110-29954-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,39 +20,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, x86@kernel.org.#.39.x
+Cc: stable@kernel.org.#.39.x, Len Brown <len.brown@intel.com>, x86@kernel.org, Jiri Kosina <jkosina@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-We'd rather that modern machines not check if HLT works on
-every entry into idle, for the benefit of machines that had
-marginal electricals 15-years ago.  If those machines are still running
-the upstream kernel, they can use "idle=poll".  The only difference
-will be that they'll now invoke HLT in machine_hlt().
+We don't want to export the pm_idle function pointer to modules.
+Currently CONFIG_APM_CPU_IDLE w/ CONFIG_APM_MODULE forces us to.
 
-cc: x86@kernel.org # .39.x
+CONFIG_APM_CPU_IDLE is of dubious value, it runs only on 32-bit
+uniprocessor laptops that are over 10 years old.  It calls into
+the BIOS during idle, and is known to cause a number of machines
+to fail.
+
+Removing CONFIG_APM_CPU_IDLE and will allow us to stop exporting
+pm_idle.  Any systems that were calling into the APM BIOS
+at run-time will simply use HLT instead.
+
+cc: x86@kernel.org
+cc: Jiri Kosina <jkosina@suse.cz>
+cc: stable@kernel.org # .39.x
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/feature-removal-schedule.txt |   11 +++++++++++
- arch/x86/kernel/cpu/bugs.c                 |    1 +
+ Documentation/feature-removal-schedule.txt |   10 ++++++++++
+ arch/x86/kernel/apm_32.c                   |    2 ++
  2 files changed, 12 insertions(+), 0 deletions(-)
 
 diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index fc505c1..f1b0eb0 100644
+index 5540615..fc505c1 100644
 --- a/Documentation/feature-removal-schedule.txt
 +++ b/Documentation/feature-removal-schedule.txt
-@@ -24,6 +24,17 @@ Who:	Len Brown <len.brown@intel.com>
+@@ -14,6 +14,16 @@ Who:	Len Brown <len.brown@intel.com>
  
- ----------------------------
+ ---------------------------
  
-+What:	x86_32 "no-hlt" cmdline param
++What:	CONFIG_APM_CPU_IDLE, and its ability to call APM BIOS in idle
 +When:	2012
-+Why:	remove a branch from idle path, simplify code used by everybody.
-+	This option disabled the use of HLT in idle and machine_halt()
-+	for hardware that was flakey 15-years ago.  Today we have
-+	"idle=poll" that removed HLT from idle, and so if such a machine
-+	is still running the upstream kernel, "idle=poll" is likely sufficient.
++Why:	This optional sub-feature of APM is of dubious reliability,
++	and ancient APM laptops are likely better served by calling HLT.
++	Deleting CONFIG_APM_CPU_IDLE allows x86 to stop exporting
++	the pm_idle function pointer to modules.
 +Who:	Len Brown <len.brown@intel.com>
 +
 +----------------------------
@@ -60,17 +67,25 @@ index fc505c1..f1b0eb0 100644
  What:	PRISM54
  When:	2.6.34
  
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index c39576c..525514c 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -19,6 +19,7 @@
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 0e4f24c..4c4ac32 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -359,6 +359,7 @@ struct apm_user {
+  * idle percentage above which bios idle calls are done
+  */
+ #ifdef CONFIG_APM_CPU_IDLE
++#warning deprecated CONFIG_APM_CPU_IDLE will be deleted in 2012
+ #define DEFAULT_IDLE_THRESHOLD	95
+ #else
+ #define DEFAULT_IDLE_THRESHOLD	100
+@@ -902,6 +903,7 @@ static void apm_cpu_idle(void)
+ 	unsigned int jiffies_since_last_check = jiffies - last_jiffies;
+ 	unsigned int bucket;
  
- static int __init no_halt(char *s)
- {
-+	WARN_ONCE(1, "\"no-hlt\" is deprecated, please use \"idle=poll\"\n");
- 	boot_cpu_data.hlt_works_ok = 0;
- 	return 1;
- }
++	WARN_ONCE(1, "deprecated apm_cpu_idle will be deleted in 2012");
+ recalc:
+ 	if (jiffies_since_last_check > IDLE_CALC_LIMIT) {
+ 		use_apm_idle = 0;
 -- 
 1.7.5.3.367.ga9930.dirty
