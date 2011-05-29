@@ -1,20 +1,16 @@
-From: Ankita Garg <ankita@in.ibm.com>
-Subject: Re: [PATCH 01/10] mm: Introduce the memory regions data
-	structure
-Date: Sun, 29 May 2011 13:46:18 +0530
-Message-ID: <20110529081618.GC8333__19779.2721949101$1306657046$gmane$org@in.ibm.com>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<1306499498-14263-2-git-send-email-ankita@in.ibm.com>
-	<1306510203.22505.69.camel@nimitz>
-	<20110527182041.GM5654@dirshya.in.ibm.com>
-	<1306531912.22505.84.camel@nimitz>
-Reply-To: Ankita Garg <ankita@in.ibm.com>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 2/8] idle governor: Avoid lock acquisition to
+ read pm_qos before entering idle
+Date: Sun, 29 May 2011 05:41:44 -0400
+Message-ID: <333c5ae9948194428fe6c5ef5c088304fc98263b.1306662035.git.len.brown@intel.com>
+References: <1306662110-29954-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1306531912.22505.84.camel@nimitz>
+In-reply-to: <1306662110-29954-1-git-send-email-lenb@kernel.org>
+In-reply-to: <7467571f4480b273007517b26297c07154c73924.1306662035.git.len.brown@intel.com>
+References: <7467571f4480b273007517b26297c07154c73924.1306662035.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,39 +20,164 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Tim Chen <tim.c.chen@linux.intel.com>, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Dave,
+From: Tim Chen <tim.c.chen@linux.intel.com>
 
-On Fri, May 27, 2011 at 02:31:52PM -0700, Dave Hansen wrote:
-> On Fri, 2011-05-27 at 23:50 +0530, Vaidyanathan Srinivasan wrote:
-> > The overall idea is to have a VM data structure that can capture
-> > various boundaries of memory, and enable the allocations and reclaim
-> > logic to target certain areas based on the boundaries and properties
-> > required. 
-> 
-> It's worth noting that we already do targeted reclaim on boundaries
-> other than zones.  The lumpy reclaim and memory compaction logically do
-> the same thing.  So, it's at least possible to do this without having
-> the global LRU designed around the way you want to reclaim.
->
+Thanks to the reviews and comments by Rafael, James, Mark and Andi.
+Here's version 2 of the patch incorporating your comments and also some
+update to my previous patch comments.
 
-My understanding maybe incorrect, but doesn't both lumpy reclaim and
-memory compaction still work under zone boundary ? While trying to free
-up higher order pages, lumpy reclaim checks to ensure that pages that
-are selected do not cross zone boundary. Further, compaction walks
-through the pages in a zone and tries to re-arrange them.
+I noticed that before entering idle state, the menu idle governor will
+look up the current pm_qos target value according to the list of qos
+requests received.  This look up currently needs the acquisition of a
+lock to access the list of qos requests to find the qos target value,
+slowing down the entrance into idle state due to contention by multiple
+cpus to access this list.  The contention is severe when there are a lot
+of cpus waking and going into idle.  For example, for a simple workload
+that has 32 pair of processes ping ponging messages to each other, where
+64 cpu cores are active in test system, I see the following profile with
+37.82% of cpu cycles spent in contention of pm_qos_lock:
+
+-     37.82%          swapper  [kernel.kallsyms]          [k]
+_raw_spin_lock_irqsave
+   - _raw_spin_lock_irqsave
+      - 95.65% pm_qos_request
+           menu_select
+           cpuidle_idle_call
+         - cpu_idle
+              99.98% start_secondary
+
+A better approach will be to cache the updated pm_qos target value so
+reading it does not require lock acquisition as in the patch below.
+With this patch the contention for pm_qos_lock is removed and I saw a
+2.2X increase in throughput for my message passing workload.
+
+cc: stable@kernel.org
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+Acked-by: Andi Kleen <ak@linux.intel.com>
+Acked-by: James Bottomley <James.Bottomley@suse.de>
+Acked-by: mark gross <markgross@thegnar.org>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ include/linux/pm_qos_params.h |    4 ++++
+ kernel/pm_qos_params.c        |   37 +++++++++++++++++++++++++------------
+ 2 files changed, 29 insertions(+), 12 deletions(-)
+
+diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
+index 77cbddb..a7d87f9 100644
+--- a/include/linux/pm_qos_params.h
++++ b/include/linux/pm_qos_params.h
+@@ -16,6 +16,10 @@
+ #define PM_QOS_NUM_CLASSES 4
+ #define PM_QOS_DEFAULT_VALUE -1
  
-> Also, if you get _too_ dependent on the global LRU, what are you going
-> to do if our cgroup buddies manage to get cgroup'd pages off the global
-> LRU?  
-> 
-
++#define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
++#define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
++#define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
++
+ struct pm_qos_request_list {
+ 	struct plist_node list;
+ 	int pm_qos_class;
+diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+index aeaa7f8..6a8fad8 100644
+--- a/kernel/pm_qos_params.c
++++ b/kernel/pm_qos_params.c
+@@ -53,11 +53,17 @@ enum pm_qos_type {
+ 	PM_QOS_MIN		/* return the smallest value */
+ };
+ 
++/*
++ * Note: The lockless read path depends on the CPU accessing
++ * target_value atomically.  Atomic access is only guaranteed on all CPU
++ * types linux supports for 32 bit quantites
++ */
+ struct pm_qos_object {
+ 	struct plist_head requests;
+ 	struct blocking_notifier_head *notifiers;
+ 	struct miscdevice pm_qos_power_miscdev;
+ 	char *name;
++	s32 target_value;	/* Do not change to 64 bit */
+ 	s32 default_value;
+ 	enum pm_qos_type type;
+ };
+@@ -70,7 +76,8 @@ static struct pm_qos_object cpu_dma_pm_qos = {
+ 	.requests = PLIST_HEAD_INIT(cpu_dma_pm_qos.requests, pm_qos_lock),
+ 	.notifiers = &cpu_dma_lat_notifier,
+ 	.name = "cpu_dma_latency",
+-	.default_value = 2000 * USEC_PER_SEC,
++	.target_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
++	.default_value = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE,
+ 	.type = PM_QOS_MIN,
+ };
+ 
+@@ -79,7 +86,8 @@ static struct pm_qos_object network_lat_pm_qos = {
+ 	.requests = PLIST_HEAD_INIT(network_lat_pm_qos.requests, pm_qos_lock),
+ 	.notifiers = &network_lat_notifier,
+ 	.name = "network_latency",
+-	.default_value = 2000 * USEC_PER_SEC,
++	.target_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
++	.default_value = PM_QOS_NETWORK_LAT_DEFAULT_VALUE,
+ 	.type = PM_QOS_MIN
+ };
+ 
+@@ -89,7 +97,8 @@ static struct pm_qos_object network_throughput_pm_qos = {
+ 	.requests = PLIST_HEAD_INIT(network_throughput_pm_qos.requests, pm_qos_lock),
+ 	.notifiers = &network_throughput_notifier,
+ 	.name = "network_throughput",
+-	.default_value = 0,
++	.target_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
++	.default_value = PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE,
+ 	.type = PM_QOS_MAX,
+ };
+ 
+@@ -132,6 +141,16 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
+ 	}
+ }
+ 
++static inline s32 pm_qos_read_value(struct pm_qos_object *o)
++{
++	return o->target_value;
++}
++
++static inline void pm_qos_set_value(struct pm_qos_object *o, s32 value)
++{
++	o->target_value = value;
++}
++
+ static void update_target(struct pm_qos_object *o, struct plist_node *node,
+ 			  int del, int value)
+ {
+@@ -156,6 +175,7 @@ static void update_target(struct pm_qos_object *o, struct plist_node *node,
+ 		plist_add(node, &o->requests);
+ 	}
+ 	curr_value = pm_qos_get_value(o);
++	pm_qos_set_value(o, curr_value);
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 
+ 	if (prev_value != curr_value)
+@@ -190,18 +210,11 @@ static int find_pm_qos_object_by_minor(int minor)
+  * pm_qos_request - returns current system wide qos expectation
+  * @pm_qos_class: identification of which qos value is requested
+  *
+- * This function returns the current target value in an atomic manner.
++ * This function returns the current target value.
+  */
+ int pm_qos_request(int pm_qos_class)
+ {
+-	unsigned long flags;
+-	int value;
+-
+-	spin_lock_irqsave(&pm_qos_lock, flags);
+-	value = pm_qos_get_value(pm_qos_array[pm_qos_class]);
+-	spin_unlock_irqrestore(&pm_qos_lock, flags);
+-
+-	return value;
++	return pm_qos_read_value(pm_qos_array[pm_qos_class]);
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_request);
+ 
 -- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs,
-Bangalore, India
+1.7.5.3.367.ga9930.dirty
