@@ -1,15 +1,13 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH] PM: export suspend_set_ops,
-	suspend_valid_only_mem
-Date: Mon, 30 May 2011 09:43:37 +0200
-Message-ID: <BANLkTi=pQEp=_RpNyJ9o=mxjA+PMhgTKZQ__2604.2174235501$1306741470$gmane$org@mail.gmail.com>
-References: <1306542839-5688-1-git-send-email-khilman@ti.com>
-	<201105281101.13691.rjw@sisk.pl>
+From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Subject: Re: idle patches for 2.6.40.merge
+Date: Mon, 30 May 2011 13:42:08 +0530
+Message-ID: <4DE35158.4030604@linux.vnet.ibm.com>
+References: <1306662110-29954-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105281101.13691.rjw@sisk.pl>
+In-Reply-To: <1306662110-29954-1-git-send-email-lenb@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,66 +17,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael,
+Hi Len,
 
-On Sat, May 28, 2011 at 11:01 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, May 28, 2011, Kevin Hilman wrote:
->> Some platforms wish to implement their PM core suspend code as
->> modules. =A0To do so, these functions need to be exported to modules.
->
-> Hmm. =A0What happens if the module is not loaded and the user attempts to
-> suspend?
-In that case suspend_ops is NULL and suspending has no effect
-(pm_suspend returns -ENODEV).
-Note that this also happens after the module unload.
+Would the patch that completely removes pm_idle for x86
+"cpuidle: stop using pm_idle" and the patch that introduces
+bootparam cpuidle.off "cpuidle: create bootparam cpuidle.off=1"
+be pushed as well?
 
-Is that the expected behavior?
-
->
-> Rafael
-
-Regards,
-Jean
-
->
->
->> Reported-by: Jean Pihet <j-pihet@ti.com>
->> Signed-off-by: Kevin Hilman <khilman@ti.com>
->> ---
->> Applies against v2.6.39
->>
->> =A0kernel/power/suspend.c | =A0 =A02 ++
->> =A01 files changed, 2 insertions(+), 0 deletions(-)
->>
->> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
->> index 6275970..eca495d 100644
->> --- a/kernel/power/suspend.c
->> +++ b/kernel/power/suspend.c
->> @@ -44,6 +44,7 @@ void suspend_set_ops(const struct platform_suspend_ops=
- *ops)
->> =A0 =A0 =A0 suspend_ops =3D ops;
->> =A0 =A0 =A0 mutex_unlock(&pm_mutex);
->> =A0}
->> +EXPORT_SYMBOL(suspend_set_ops);
->>
->> =A0bool valid_state(suspend_state_t state)
->> =A0{
->> @@ -65,6 +66,7 @@ int suspend_valid_only_mem(suspend_state_t state)
->> =A0{
->> =A0 =A0 =A0 return state =3D=3D PM_SUSPEND_MEM;
->> =A0}
->> +EXPORT_SYMBOL(suspend_valid_only_mem);
->>
->> =A0static int suspend_test(int level)
->> =A0{
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->
+Thanks
+-Trinabh
