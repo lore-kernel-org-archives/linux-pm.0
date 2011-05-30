@@ -1,14 +1,14 @@
 From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: [PATCH 2/3] introduce intel_rapl driver
-Date: Mon, 30 May 2011 10:40:31 +0800
-Message-ID: <1306723231.32738.36.camel__1605.60267181626$1306723509$gmane$org@rui>
-References: <1306398857.2207.157.camel@rui>
-	<20110526084815.adee4fb1.randy.dunlap@oracle.com>
+Date: Mon, 30 May 2011 11:11:09 +0800
+Message-ID: <1306725069.32738.43.camel__30202.9748833322$1306725234$gmane$org@rui>
+References: <1306398857.2207.157.camel@rui> <1306403003.1200.41.camel@twins>
+	<1306484810.16581.375.camel@rui>  <1306526195.2497.475.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110526084815.adee4fb1.randy.dunlap@oracle.com>
+In-Reply-To: <1306526195.2497.475.camel@laptop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,144 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>, "Lin,
-	Ming M" <ming.m.lin@intel.com>, LKML <linux-kernel@vger.kernel.org>, "acme@redhat.com" <acme@redhat.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "mingo@elte.hu" <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Matt Fleming <matt@console-pimps.org>, "Lin, Ming M" <ming.m.lin@intel.com>, Corey Ashford <cjashfor@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Stephane Eranian <eranian@google.com>, "acme@redhat.com" <acme@redhat.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "mingo@elte.hu" <mingo@elte.hu>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Thu, 2011-05-26 at 23:48 +0800, Randy Dunlap wrote:
-> On Thu, 26 May 2011 16:34:17 +0800 Zhang Rui wrote:
-> 
+On Sat, 2011-05-28 at 03:56 +0800, Peter Zijlstra wrote:
+> On Fri, 2011-05-27 at 16:26 +0800, Zhang Rui wrote:
 > > 
-> > Introduce Intel RAPL driver.
-> > 
-> > RAPL (running average power limit) is a new feature which provides mechanisms
-> > to enforce power consumption limit, on some new processors.
-> > 
-> > RAPL provides MSRs reporting the total amount of energy consumed
-> > by the package/core/uncore/dram.
-> > Further more, by using RAPL, OS can set a power bugdet in a certain time window,
-> > and let Hardware to throttle the processor P/T-state to meet this enery limitation.
-> > 
-> > Currently, we don't have the plan to support the RAPL power control,
-> > but we do want to export the package/core/uncore/dram power consumption
-> > information via perf tool first.
+> > > Currently there isn't a way to expose the events in sysfs, but we do
+> > > want that, its mostly a matter of getting all involved parties to agree
+> > > on a format and implementing it.
+> > > 
+> > I talked with Lin Ming just now, and he said that it should work in this
+> > way:
+> > First, only one pmu for RAPL interfaces, with four different kinds of
+> > events, pkg/core/uncore/dram,
+> > and the sysfs I/F is:
+> > /sys/bus/event_source/devices/rapl/---|---type
+> >                                       |---pkg
+> >                                       |---core
+> >                                       |---uncore
+> >                                       |---dram
 > 
-> Hi,
+> Actually something like:
 > 
-> What's an uncore?
+>  /sys/bus/.../rapl/ -- | -- type
+>                        | -- events -- | -- pkg
+>                                       | -- core
+>                                       | ...
 > 
-According to the Intel SDM, besides the Package and DRAM power domains,
-RAPL defines another two power domains, AKA, PP0/PP1, PP0 refers to the
-processor cores and PP1 refers to the power plane of a specific device
-in the uncore.
-Maybe "uncore" is kind of misleading, but using "PP0/PP1" doesn't mean
-anything to users.
-
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > ---
-> >  drivers/platform/x86/Kconfig      |    8 
-> >  drivers/platform/x86/Makefile     |    1 
-> >  drivers/platform/x86/intel_rapl.c |  368 ++++++++++++++++++++++++++++++++++++++
-> >  include/linux/perf_event.h        |    4 
-> >  4 files changed, 381 insertions(+)
-> > 
-> > Index: linux-2.6/drivers/platform/x86/Kconfig
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/platform/x86/Kconfig
-> > +++ linux-2.6/drivers/platform/x86/Kconfig
-> > @@ -753,4 +753,12 @@ config SAMSUNG_LAPTOP
-> >  	  To compile this driver as a module, choose M here: the module
-> >  	  will be called samsung-laptop.
-> >  
-> > +config INTEL_RAPL
-> > +	tristate "Intel RAPL Support"
-> > +	depends on X86
-> > +	default y
-> > +	---help---
-> > +	  RAPL, AKA, Running Average Power Limit provides mechanisms to enforce
+> was one of the latest proposals, but then someone (can't remember who)
+> offered the opinion that having sub-groups of event might also be
+> wanted.
 > 
-> 	  RAPL (Running Average Power Limit) provides mechanisms to enforce
+> Furthermore a 'format' file was proposed which ought to contain a
+> description of how to compose a ::config value, but we never got around
+> to discussing a valid/useful syntax that could express all existing
+> cases (let alone be future proof).
 > 
-> > +	  power consumption limit.
-> > +
-> >  endif # X86_PLATFORM_DEVICES
+> > to use it, users can issue something like:
+> > perf stat -P rapl -e pkg/core/uncore/dram foo
+> > so that event->attr.type equals rapl_pmu.type and event->attr.config
+> > equals one of the rapl_domain_id.
 > 
-> > Index: linux-2.6/drivers/platform/x86/intel_rapl.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/drivers/platform/x86/intel_rapl.c
-> > @@ -0,0 +1,368 @@
+> Right, something like that, or simply something like -e rapl:pkg, which
+> again reminds me that people were working on a full EBNF syntax for the
+> -e argument.
 > 
-> [snip]
+> > This sounds good. I can rewrite the code to work in this way, but it
+> > doesn't work for now, until both sysfs I/F and perf tool being ready,
+> > right? 
 > 
-> > +/* show the energy status, in Jelous */
+> Right, so the only thing missing is the event bits (and some userspace
+> bits to use it all). The hardest part of it is getting those definitions
+> sorted, writing the patches shouldn't be too hard.
 > 
-> Is that Joules?  or what?
-> 
-Oh. right, it's Joules.
-
-> > +static int rapl_read_energy(struct rapl_domain *domain)
-> > +{
-> > +	u64 value;
-> > +	u32 msr = domain->msrs.status;
-> > +
-> > +	rdmsrl(msr, value);
-> > +	return rapl_unit_xlate(ENERGY_UNIT, value, 0);
-> > +}
-> 
-> [snip]
-> 
-> > +static int __init intel_rapl_init(void)
-> > +{
-> > +	enum rapl_domain_id id;
-> > +
-> > +	/*
-> > +	 * RAPL features are only supported on processors have a CPUID
-> > +	 * signature with DisplayFamily_DisplayModel of 06_2AH, 06_2DH
-> > +	 */
-> > +	if (boot_cpu_data.x86 != 0x06)
-> > +		return -ENODEV;
-> > +
-> > +	if (boot_cpu_data.x86_model == 0x2A)
-> > +		rapl_domains[RAPL_DOMAIN_PP1].valid = 1;
-> > +	else if (boot_cpu_data.x86_model == 0x2D)
-> > +		rapl_domains[RAPL_DOMAIN_DRAM].valid = 1;
-> > +	else
-> > +		return -ENODEV;
-> > +
-> > +	if (rapl_check_unit())
-> > +		return -ENODEV;
-> > +
-> > +	for(id = 0; id < RAPL_DOMAIN_MAX; id++)
-> 
-> space after "for"
-> 
-> > +		if (rapl_domains[id].valid)
-> > +			perf_pmu_register(&(rapl_domains[id].pmu), rapl_domains[id].pmu.name, PERF_TYPE_SOFTWARE);
-> > +	return 0;
-> > +}
-> > +
-> > +static void __exit intel_rapl_exit(void)
-> > +{
-> > +	enum rapl_domain_id id;
-> > +
-> > +	for(id = 0; id < RAPL_DOMAIN_MAX; id++)
-> 
-> ditto
-> 
-will fix them in the next version.
+Okay. So should I finish the kernel code first, which just checks the
+event->attr.type/config value, no matter how they are passed to kernel?
 
 thanks,
 rui
-
-> > +		if (rapl_domains[id].valid)
-> > +			perf_pmu_unregister(&(rapl_domains[id].pmu));
-> > +}
 > 
 > 
-> ---
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
