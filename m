@@ -1,15 +1,11 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Subject: Re: [PATCH 10/10] mm: Create memory regions at boot-up
-Date: Sat, 28 May 2011 16:39:31 +0200
-Message-ID: <20110528143931.GB3603__34211.3146478825$1306868775$gmane$org@game.jcrosoft.org>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<1306499498-14263-11-git-send-email-ankita@in.ibm.com>
+From: Pan ruochen <panruochen@gmail.com>
+Subject: runtime PM _really_ implemented on 2.6.33?
+Date: Tue, 31 May 2011 13:30:29 +0800
+Message-ID: <BANLkTi=+icF79uENtEuQAOvxwJA5n8S3uQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1306499498-14263-11-git-send-email-ankita@in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,59 +15,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18:01 Fri 27 May     , Ankita Garg wrote:
-> Memory regions are created at boot up time, from the information obtained
-> from the firmware. This patchset was developed on ARM platform, on which at
-> present u-boot bootloader does not export information about memory units that
-> can be independently power managed. For the purpose of demonstration, 2 hard
-> coded memory regions are created, of 256MB each on the Panda board with 512MB
-> RAM.
-> 
-> Signed-off-by: Ankita Garg <ankita@in.ibm.com>
-> ---
->  include/linux/mmzone.h |    8 +++-----
->  mm/page_alloc.c        |   29 +++++++++++++++++++++++++++++
->  2 files changed, 32 insertions(+), 5 deletions(-)
-> 
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index bc3e3fd..5dbe1e1 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -627,14 +627,12 @@ typedef struct mem_region_list_data {
->   */
->  struct bootmem_data;
->  typedef struct pglist_data {
-> -/*	The linkage to node_zones is now removed. The new hierarchy introduced
-> - *	is pg_data_t -> mem_region -> zones
-> - * 	struct zone node_zones[MAX_NR_ZONES];
-> - */
->  	struct zonelist node_zonelists[MAX_ZONELISTS];
->  	int nr_zones;
->  #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
-> -	struct page *node_mem_map;
-> +	strs pg_data_t -> mem_region -> zones
-> + *      struct zone node_zones[MAX_NR_ZONES];
-> + */uct page *node_mem_map;
-what is time?
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
->  	struct page_cgroup *node_page_cgroup;
->  #endif
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index da8b045..3d994e8 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -4285,6 +4285,34 @@ static inline int pageblock_default_order(unsigned int order)
->  
->  #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
->  
-> +#define REGIONS_SIZE   (512 << 20) >> PAGE_SHIFT
-fix a region size why?
-> +
-> +static void init_node_memory_regions(struct pglist_data *pgdat)
-> +{
-Best Regards,
-J.
+Hi All,
+
+I'm working on runtime PM on 2.6.33 and find the following in
+drivers/base/platform.c
+
+...
+#ifdef CONFIG_PM_RUNTIME
+
+int __weak platform_pm_runtime_suspend(struct device *dev)
+{
+    return -ENOSYS;
+};
+
+int __weak platform_pm_runtime_resume(struct device *dev)
+{
+    return -ENOSYS;
+};
+
+int __weak platform_pm_runtime_idle(struct device *dev)
+{
+    return -ENOSYS;
+};
+
+#else /* !CONFIG_PM_RUNTIME */
+...
+
+So I guess runtime PM is not _really_ implemented on 2.6.33, for
+platform devices,
+and maybe other bus type drivers, class type drivers, isn't it?
+
+And I found a message about PM for 2.6.33 in:
+https://lists.linux-foundation.org/pipermail/linux-pm/2009-December/023394.html
+
+Unfortunately, this git package is too large since my network condition is poor.
+I wonder whether there are some patches for the original 2.6.33,
+instead of a whole git project.
+
+Best Regards
+Pan Ruochen
+May 31, 2011
