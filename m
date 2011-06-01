@@ -1,13 +1,14 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: runtime PM _really_ implemented on 2.6.33?
-Date: Wed, 1 Jun 2011 10:13:18 +0900
-Message-ID: <BANLkTi=YPMqoXoB00ET6DpkCd0HiYFhgzw@mail.gmail.com>
-References: <BANLkTi=+icF79uENtEuQAOvxwJA5n8S3uQ@mail.gmail.com>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: [PATCH] perf_events: Enable idle state tracing for
+	pseries (ppc64)
+Date: Wed, 1 Jun 2011 18:05:54 +0530
+Message-ID: <20110601123554.GA12492__45280.7552916513$1306931832$gmane$org@deepthi.in.ibm.com>
+Reply-To: deepthi@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=+icF79uENtEuQAOvxwJA5n8S3uQ@mail.gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,78 +18,130 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pan ruochen <panruochen@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Pan,
+Hi,
 
-On Tue, May 31, 2011 at 2:30 PM, Pan ruochen <panruochen@gmail.com> wrote:
-> Hi All,
->
-> I'm working on runtime PM on 2.6.33 and find the following in
-> drivers/base/platform.c
->
-> ...
-> #ifdef CONFIG_PM_RUNTIME
->
-> int __weak platform_pm_runtime_suspend(struct device *dev)
-> {
-> =A0 =A0return -ENOSYS;
-> };
->
-> int __weak platform_pm_runtime_resume(struct device *dev)
-> {
-> =A0 =A0return -ENOSYS;
-> };
->
-> int __weak platform_pm_runtime_idle(struct device *dev)
-> {
-> =A0 =A0return -ENOSYS;
-> };
->
-> #else /* !CONFIG_PM_RUNTIME */
-> ...
->
-> So I guess runtime PM is not _really_ implemented on 2.6.33, for
-> platform devices,
-> and maybe other bus type drivers, class type drivers, isn't it?
->
-> And I found a message about PM for 2.6.33 in:
-> https://lists.linux-foundation.org/pipermail/linux-pm/2009-December/02339=
-4.html
->
-> Unfortunately, this git package is too large since my network condition i=
-s poor.
+Please find below a patch, which has perf_events added for pseries (ppc64)
+platform in order to emit the trace required for perf timechart. 
+It essentially enables perf timechart for pseries platfrom to analyse
+power savings events like cpuidle states.
 
-Umm.. it seems that you are trying to clone the whole repository.
-Then, you can try to pull some part only,  or clone with reference
-(git help clone). If even loading that patch alone is too heavy for
-you, I'm so sorry.
+Steps to enable and disable the trace;
+1) Mount  debugfs;
+   mount -t debugfs none /sys/kernel/debug
+2) Then, enable the event using;
+    echo 1 > /sys/kernel/debug/tracing/events/power/cpu_idle/enable
+3) The output of the trace can be seen in /sys/kernel/debug/tracing/trace
+4) To disable the trace use;
+    echo 0 > sys/kernel/debug/tracing/events/power/cpu_idle/enable
 
-> I wonder whether there are some patches for the original 2.6.33,
-> instead of a whole git project.
+Trace .svg o/p can be viewed for pseries (ppc64) systems showing various 
+cpu-idle states as a part of perf timechart tool. 
+References: http://blog.fenrus.org/?p=5
 
-Why don't you simply use the generic_pm_ops
-(later_kernel/drivers/base/power/generic_ops.c) for platform devices.
-They are defined with __weak. Defining non weak functions should work.
+Issue command 'perf timechart record' to enable tracing. 
+This generates the trace and records in  perf.data file by default.
+One can generate output.svg file by issuing 'perf timechart'. 
 
->
-> Best Regards
-> Pan Ruochen
-> May 31, 2011
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->
+Sample o/p from the trace file: 
+===============================
 
-Cheers!
-- MyungJoo
--- =
+State 1 -> Snooze
+State 2 -> Cede
 
-MyungJoo Ham, Ph.D.
-Mobile Software Platform Lab,
-Digital Media and Communications (DMC) Business
-Samsung Electronics
-cell: 82-10-6714-2858
+# tracer: nop
+#
+TASK-PID    CPU#    TIMESTAMP  FUNCTION
+  | |       |          |         |
+<idle>-0     [000]   292.482314: cpu_idle: state=1 cpu_id=0 
+						^^ Enter Snooze
+<idle>-0     [001]   292.482363: cpu_idle: state=1 cpu_id=1
+<idle>-0     [000]   292.492315: cpu_idle: state=4294967295 cpu_id=0
+						^^ Exit Snooze 	
+<idle>-0     [000]   292.492316: cpu_idle: state=2 cpu_id=0 
+						^^ Enter  Cede 
+<idle>-0     [001]   292.492364: cpu_idle: state=4294967295 cpu_id=1
+<idle>-0     [001]   292.492364: cpu_idle: state=2 cpu_id=1	
+<idle>-0     [000]   292.504198: cpu_idle: state=4294967295 cpu_id=0 
+						^^Exit Cede 
+<idle>-0     [000]   292.504204: cpu_idle: state=1 cpu_id=0
+<idle>-0     [001]   292.504921: cpu_idle: state=4294967295 cpu_id=1
+<idle>-0     [001]   292.504936: cpu_idle: state=1 cpu_id=1
+<idle>-0     [000]   292.514205: cpu_idle: state=4294967295 cpu_id=0    
+
+This patch applies on 2.6.39 and tested on a IBM POWER7 machine.  
+
+-Deepthi
+
+Adding perf events to trace various cpu idle states on ppc64 (pseries) platform.
+Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+
+pseries.h |    4 ++++
+setup.c   |   14 ++++++++++++++
+2 files changed, 18 insertions(+)
+
+Index: linux-2.6.39/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- linux-2.6.39.orig/arch/powerpc/platforms/pseries/setup.c	2011-05-19 00:06:34.000000000 -0400
++++ linux-2.6.39/arch/powerpc/platforms/pseries/setup.c	2011-06-01 07:46:00.000000000 -0400
+@@ -39,6 +39,7 @@
+ #include <linux/irq.h>
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
++#include <trace/events/power.h>
+ 
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+@@ -582,6 +583,10 @@
+ 	 * while, do so.
+ 	 */
+ 	if (snooze) {
++
++		trace_power_start(POWER_CSTATE, CPU_IDLE_SNOOZE, cpu);
++		trace_cpu_idle(CPU_IDLE_SNOOZE, cpu);
++
+ 		start_snooze = get_tb() + snooze * tb_ticks_per_usec;
+ 		local_irq_enable();
+ 		set_thread_flag(TIF_POLLING_NRFLAG);
+@@ -602,9 +607,19 @@
+ 			goto out;
+ 	}
+ 
++	trace_power_end(cpu);
++	trace_cpu_idle(PWR_EVENT_EXIT, cpu);
++
++	trace_power_start(POWER_CSTATE, CPU_IDLE_CEDE, cpu);
++	trace_cpu_idle(CPU_IDLE_CEDE, cpu);
++
+ 	cede_processor();
+ 
+ out:
++
++	trace_power_end(cpu);
++	trace_cpu_idle(PWR_EVENT_EXIT, cpu);
++
+ 	HMT_medium();
+ 	out_purr = mfspr(SPRN_PURR);
+ 	get_lppaca()->wait_state_cycles += out_purr - in_purr;
+Index: linux-2.6.39/arch/powerpc/platforms/pseries/pseries.h
+===================================================================
+--- linux-2.6.39.orig/arch/powerpc/platforms/pseries/pseries.h	2011-05-19 00:06:34.000000000 -0400
++++ linux-2.6.39/arch/powerpc/platforms/pseries/pseries.h	2011-06-01 07:53:24.000000000 -0400
+@@ -12,6 +12,9 @@
+ 
+ #include <linux/interrupt.h>
+ 
++#define CPU_IDLE_SNOOZE 1
++#define CPU_IDLE_CEDE	 2
++
+ struct device_node;
+ 
+ extern void request_event_sources_irqs(struct device_node *np,
+@@ -56,4 +59,5 @@
+ extern int dlpar_attach_node(struct device_node *);
+ extern int dlpar_detach_node(struct device_node *);
+ 
++
+ #endif /* _PSERIES_PSERIES_H */
