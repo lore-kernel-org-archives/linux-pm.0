@@ -1,15 +1,13 @@
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 01/10] mm: Introduce the memory regions data
-	structure
-Date: Fri, 27 May 2011 08:30:03 -0700
-Message-ID: <1306510203.22505.69.camel__17133.1652942628$1306876368$gmane$org@nimitz>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<1306499498-14263-2-git-send-email-ankita@in.ibm.com>
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Re: runtime PM _really_ implemented on 2.6.33?
+Date: Wed, 1 Jun 2011 10:13:18 +0900
+Message-ID: <BANLkTi=YPMqoXoB00ET6DpkCd0HiYFhgzw@mail.gmail.com>
+References: <BANLkTi=+icF79uENtEuQAOvxwJA5n8S3uQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1306499498-14263-2-git-send-email-ankita@in.ibm.com>
+In-Reply-To: <BANLkTi=+icF79uENtEuQAOvxwJA5n8S3uQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +17,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Pan ruochen <panruochen@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2011-05-27 at 18:01 +0530, Ankita Garg wrote:
-> +typedef struct mem_region_list_data {
-> +       struct zone zones[MAX_NR_ZONES];
-> +       int nr_zones;
-> +
-> +       int node;
-> +       int region;
-> +
-> +       unsigned long start_pfn;
-> +       unsigned long spanned_pages;
-> +} mem_region_t;
-> +
-> +#define MAX_NR_REGIONS    16 
+Hello Pan,
 
-Don't do the foo_t thing.  It's out of style and the pg_data_t is a
-dinosaur.
+On Tue, May 31, 2011 at 2:30 PM, Pan ruochen <panruochen@gmail.com> wrote:
+> Hi All,
+>
+> I'm working on runtime PM on 2.6.33 and find the following in
+> drivers/base/platform.c
+>
+> ...
+> #ifdef CONFIG_PM_RUNTIME
+>
+> int __weak platform_pm_runtime_suspend(struct device *dev)
+> {
+> =A0 =A0return -ENOSYS;
+> };
+>
+> int __weak platform_pm_runtime_resume(struct device *dev)
+> {
+> =A0 =A0return -ENOSYS;
+> };
+>
+> int __weak platform_pm_runtime_idle(struct device *dev)
+> {
+> =A0 =A0return -ENOSYS;
+> };
+>
+> #else /* !CONFIG_PM_RUNTIME */
+> ...
+>
+> So I guess runtime PM is not _really_ implemented on 2.6.33, for
+> platform devices,
+> and maybe other bus type drivers, class type drivers, isn't it?
+>
+> And I found a message about PM for 2.6.33 in:
+> https://lists.linux-foundation.org/pipermail/linux-pm/2009-December/02339=
+4.html
+>
+> Unfortunately, this git package is too large since my network condition i=
+s poor.
 
-I'm a bit surprised how little discussion of this there is in the patch
-descriptions.  Why did you choose this structure?  What are the
-downsides of doing it this way?  This effectively breaks up the zone's
-LRU in to MAX_NR_REGIONS LRUs.  What effects does that have?
+Umm.. it seems that you are trying to clone the whole repository.
+Then, you can try to pull some part only,  or clone with reference
+(git help clone). If even loading that patch alone is too heavy for
+you, I'm so sorry.
 
-How big _is_ a 'struct zone' these days?  This patch will increase their
-effective size by 16x.
+> I wonder whether there are some patches for the original 2.6.33,
+> instead of a whole git project.
 
-Since one distro kernel basically gets run on *EVERYTHING*, what will
-MAX_NR_REGIONS be in practice?  How many regions are there on the
-largest systems that will need this?  We're going to be doing many
-linear searches and iterations over it, so it's pretty darn important to
-know.  What does this do to lmbench numbers sensitive to page
-allocations?
+Why don't you simply use the generic_pm_ops
+(later_kernel/drivers/base/power/generic_ops.c) for platform devices.
+They are defined with __weak. Defining non weak functions should work.
 
--- Dave
+>
+> Best Regards
+> Pan Ruochen
+> May 31, 2011
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
+
+Cheers!
+- MyungJoo
+-- =
+
+MyungJoo Ham, Ph.D.
+Mobile Software Platform Lab,
+Digital Media and Communications (DMC) Business
+Samsung Electronics
+cell: 82-10-6714-2858
