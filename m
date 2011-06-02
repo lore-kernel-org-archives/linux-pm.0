@@ -1,11 +1,15 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: calling runtime PM from system PM methods
-Date: Wed, 01 Jun 2011 17:05:31 -0700
-Message-ID: <87k4d55c8k.fsf__43740.4423756108$1306973198$gmane$org@ti.com>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 1/5] PM / Runtime: Support for generic I/O
+ power domains (v4)
+Date: Thu, 2 Jun 2011 09:29:35 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.1106020920360.4067__43492.9197225303$1306999863$gmane$org@axis700.grange>
+References: <201104290154.12966.rjw@sisk.pl> <201105160117.46927.rjw@sisk.pl>
+	<201105280115.14556.rjw@sisk.pl> <201105280117.17883.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201105280117.17883.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,126 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+On Sat, 28 May 2011, Rafael J. Wysocki wrote:
 
-Once again, I'm back to some problems with using runtime PM from system
-PM methods.  On OMAP, many drivers don't need to do anything different
-for runtime PM compared to system PM, so the system PM methods can
-simply use runtime PM.
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Introduce common headers, helper functions and callbacks allowing
+> platforms to use simple generic power domains for runtime power
+> management.
+> 
+> Introduce struct generic_power_domain to be used for representing
+> power domains that each contain a number of devices and may be
+> master domains or subdomains with respect to other power domains.
+> Among other things, this structure includes callbacks to be
+> provided by platforms for performing specific tasks related to
+> power management (i.e. ->stop_device() may disable a device's
+> clocks, while ->start_device() may enable them, ->power_off() is
+> supposed to remove power from the entire power domain
+> and ->power_on() is supposed to restore it).
 
-The obvious complication arises when runtime PM is disabled from
-userspace, preventing system PM.
+I've got a generic question to this: do we have any examples of 
+power-domain specific ->start_device() and ->stop_device() callbacks? A 
+common case is, when these callbacks start and stop clocks, associated 
+with the device, but this is not power-domain specific, right? Do we have 
+any examples of different power domains in a system, having different 
+these calbacks, but all devices in one power-domain, having the same ones?
 
-Taking into consideration that runtime PM can be disabled from
-userspace, the system PM methods need to manually call the subsystems
-runtime PM callbask. An example of the resulting system PM methods can
-be found in the currenty OMAP I2C driver (excerpt below[1])
-
-This was working, but now we have device power domains which complicate
-the story.  My first take was to change the system PM methods to check
-the device power domain callbacks as well[2], and take care of the
-precedence.  That seems OK, but it's starting to feel like extra work
-for each driver that is easy to screw up, and includes some assumptions
-about how the PM core works (e.g. power domain precedence.)
-
-It also has the disadvantage of not taking into consideration the
-IRQ-safe capabilities of the PM core.
-
-Rather than adding this additional logic to every driver, what would be
-best is if we could just take advantage of all the existing logic in the
-runtime PM core, rather than duplicating some of it in the drivers.
-
-The ideal case would be for system PM methods to be able to simply call
-pm_runtime_get_sync/_put_sync as well, but somehow force the
-transitions, even when pm_runtime_forbid() has been called.
-
-I suspect you won't like that idea, but am curious about your opinions.
-
-In the process of experimenting with other solutions, I found an
-interesting discovery:
-
-In the driver's ->suspend() hook, I did something like this:
-
-	priv->forced_suspend = false;
-	if (!pm_runtime_suspended(dev)) {
-		pm_runtime_put_sync(dev);
-		priv->forced_suspend = true;
-	}
-
-and in the resume hook I did this:
-
-	if (priv->forced_suspend)
-		pm_runtime_get_sync(dev);
-
-Even after disabling runtime PM from userspace via
-/sys/devices/.../power/control, the ->suspend() hook triggered an actual
-transition.  This is because pm_runtime_forbid() just uses the usage
-counter, so the _put_sync() in the ->suspend callback decrements the
-counter and triggers an rpm_idle().   Is this expected behavior?
-
-If I can count on this behavior, then the above solution seems better
-than my workaround below[2], although I kinda don't like making
-assumptions about how pm_runtime_forbid() is implemented.
-
-Kevin
-
-[1] from drivers/i2c/busses/i2c-omap.c
-
-static int omap_i2c_suspend(struct device *dev)
-{
-	if (!pm_runtime_suspended(dev))
-		if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend)
-			dev->bus->pm->runtime_suspend(dev);
-
-	return 0;
-}
-
-static int omap_i2c_resume(struct device *dev)
-{
-	if (!pm_runtime_suspended(dev))
-		if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume)
-			dev->bus->pm->runtime_resume(dev);
-
-	return 0;
-}
-
-
-
-
-[2] 
-static int omap_i2c_suspend(struct device *dev)
-{
-	int (*callback)(struct device *) = NULL;
-	int ret = 0;
-
-	if (!pm_runtime_suspended(dev)) {
-		if (dev->pwr_domain)
-			callback = dev->pwr_domain->ops.runtime_suspend;
-		else if (dev->bus && dev->bus->pm)
-			callback = dev->bus->pm->runtime_suspend;
-
-		ret = callback(dev);
-	}
-
-	return ret;
-}
-
-static int omap_i2c_resume(struct device *dev)
-{
-	int (*callback)(struct device *) = NULL;
-	int ret = 0;
-
-	if (!pm_runtime_suspended(dev)) {
-		if (dev->pwr_domain)
-			callback = dev->pwr_domain->ops.runtime_resume;
-		else if (dev->bus && dev->bus->pm)
-			callback = dev->bus->pm->runtime_resume;
-
-		ret = callback(dev);
-	}
-
-	return ret;
-}
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
