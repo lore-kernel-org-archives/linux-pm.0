@@ -1,15 +1,13 @@
-From: Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 5/8] PCI / Intel IOMMU: Use syscore_ops
- instead of sysdev class and sysdev
-Date: Thu, 2 Jun 2011 10:30:40 -0700
-Message-ID: <BANLkTi=xhg7_0O-aVC8s1Uyo4Wkz5OTCdg__30343.0617358119$1307035892$gmane$org@mail.gmail.com>
-References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
-	<201103122218.14832.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: calling runtime PM from system PM methods
+Date: Thu, 2 Jun 2011 14:38:01 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106021436080.1674-100000__13750.3234706402$1307040034$gmane$org@iolanthe.rowland.org>
+References: <87lixkyxa8.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201103122218.14832.rjw@sisk.pl>
+In-Reply-To: <87lixkyxa8.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,23 +17,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
+To: Kevin Hilman <khilman@ti.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Mar 12, 2011 at 1:18 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> -static int __init init_iommu_sysfs(void)
-> -{
-> - =A0 =A0 =A0 return 0;
-> -}
-> +static inline int init_iommu_pm_ops(void) { }
-> =A0#endif /* CONFIG_PM */
+On Thu, 2 Jun 2011, Kevin Hilman wrote:
 
-drivers/pci/intel-iommu.c:3391: warning: no return statement in
-function returning non-void
+> OK.  I was trying to catch that by checking pm_runtime_suspended(), but
+> now see that that cannot work in general.
+> 
+> The problem I'm trying to solve is how (or whether) I can use runtime PM
+> from the system PM methods, specifically in the case where runtime PM
+> has been disabled from userspace (or pm_runtime_forbid() has been
+> called.)  
+> 
+> In a nutshell, what I'm after is for any pm_runtime_forbid() calls to be
+> cancelled during system PM, thus allowing pending runtime PM events to
+> occur during system PM.
 
-s/static inline int/static inline void/
+There are a few approaches that might do what you want.  But I'd like 
+to hear Rafael's opinion before making any suggestions.
 
-Reported-by: Tony Luck <tony.luck@intel.com>
-
--Tony
+Alan Stern
