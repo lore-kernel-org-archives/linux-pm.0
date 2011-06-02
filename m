@@ -1,15 +1,12 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 1/5] PM / Runtime: Support for generic I/O
- power domains (v4)
-Date: Thu, 2 Jun 2011 09:29:35 +0200 (CEST)
-Message-ID: <Pine.LNX.4.64.1106020920360.4067__43492.9197225303$1306999863$gmane$org@axis700.grange>
-References: <201104290154.12966.rjw@sisk.pl> <201105160117.46927.rjw@sisk.pl>
-	<201105280115.14556.rjw@sisk.pl> <201105280117.17883.rjw@sisk.pl>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH v5] PM / Core: suspend_again callback for
+	suspend_ops.
+Date: Thu, 02 Jun 2011 16:32:58 +0900
+Message-ID: <1306999978-4663-1-git-send-email-myungjoo.ham__24632.9323541888$1307000035$gmane$org@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201105280117.17883.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,38 +16,159 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 28 May 2011, Rafael J. Wysocki wrote:
+A system or a device may need to control suspend/wakeup events. It may
+want to wakeup the system after a predefined amount of time or at a
+predefined event decided while entering suspend for polling or delayed
+work. Then, it may want to enter suspend again if its predefined wakeup
+condition is the only wakeup reason and there is no outstanding events;
+thus, it does not wakeup the userspace unnecessary or unnecessary
+devices and keeps suspended as long as possible (saving the power).
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Introduce common headers, helper functions and callbacks allowing
-> platforms to use simple generic power domains for runtime power
-> management.
-> 
-> Introduce struct generic_power_domain to be used for representing
-> power domains that each contain a number of devices and may be
-> master domains or subdomains with respect to other power domains.
-> Among other things, this structure includes callbacks to be
-> provided by platforms for performing specific tasks related to
-> power management (i.e. ->stop_device() may disable a device's
-> clocks, while ->start_device() may enable them, ->power_off() is
-> supposed to remove power from the entire power domain
-> and ->power_on() is supposed to restore it).
+Enabling a system to wakeup after a specified time can be easily
+achieved by using RTC. However, to enter suspend again immediately
+without invoking userland and unrelated devices, we need additional
+features in the suspend framework.
 
-I've got a generic question to this: do we have any examples of 
-power-domain specific ->start_device() and ->stop_device() callbacks? A 
-common case is, when these callbacks start and stop clocks, associated 
-with the device, but this is not power-domain specific, right? Do we have 
-any examples of different power domains in a system, having different 
-these calbacks, but all devices in one power-domain, having the same ones?
+Such need comes from:
 
-Thanks
-Guennadi
+1. Monitoring a critical device status without interrupts that can
+wakeup the system. (in-suspend polling)
+ An example is ambient temperature monitoring that needs to shut down
+the system or a specific device function if it is too hot or cold. The
+temperature of a specific device may be needed to be monitored as well;
+e.g., a charger monitors battery temperature in order to stop charging
+if overheated.
+
+2. Execute critical "delayed work" at suspend.
+ A driver or a system/board may have a delayed work (or any similar
+things) that it wants to execute at the requested time.
+ For example, some chargers want to check the battery voltage some
+time (e.g., 30 seconds) after the battery is fully charged and the
+charger has stopped. Then, the charger restarts charging if the voltage
+has dropped more than a threshold, which is smaller than "restart-charger"
+voltage, which is a threshold to restart charging regardless of the
+time passed.
+
+This patch allows to add "suspend_again" callback at struct
+platform_suspend_ops and let the "suspend_again" callback return true if
+the system is required to enter suspend again after the current instance
+of wakeup. Device-wise suspend_again implemented at dev_pm_ops or
+syscore is not done because: a) suspend_again feature is usually under
+platform-wise decision and controls the behavior of the whole platform
+and b) There are very limited devices related to the usage cases of
+suspend_again; chargers and temperature sensors are mentioned so far.
+
+With suspend_again callback registered at struct platform_suspend_ops
+suspend_ops in kernel/power/suspend.c with suspend_set_ops by the
+platform, the suspend framework tries to enter suspend again by
+looping suspend_enter() if suspend_again has returned true and there has
+been no errors in the suspending sequence or pending wakeups (by
+pm_wakeup_pending).
+
+Tested at Exynos4-NURI.
+
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+
+--
+Thank you for your valuable comments, Pavel, Rafael, Greg, and others.
+
+Changed from v4:
+	- rebased on Linux 3.0 rc1
+	- removed partial_suspend/resume because they are not needed, for now.
+Changed from v3:
+	- renamed local variable "pm_wkup_pending" to "wakeup_pending".
+	pm_wakeup_pending is not used because there is a function with the
+	same name.
+Changed from v2:
+	- moved (again) from dev_pm_ops to suspend_ops
+	- settled suspend_again point at around suspend_enter().
+Changes from v1:
+	- moved from syscore to dev_pm_ops
+	- added generic ops for subsystems.
+	- cleaned up suspend_again code at kernel/power/suspend.
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+ include/linux/suspend.h |    8 ++++++++
+ kernel/power/suspend.c  |   13 ++++++++++---
+ 2 files changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 083ffea..e1e3742 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -92,6 +92,13 @@ typedef int __bitwise suspend_state_t;
+  *	@enter() and @wake(), even if any of them fails.  It is executed after
+  *	a failing @prepare.
+  *
++ * @suspend_again: Returns whether the system should suspend again (true) or
++ *	not (false). If the platform wants to poll sensors or execute some
++ *	code during suspended without invoking userspace and most of devices,
++ *	suspend_again callback is the place assuming that periodic-wakeup or
++ *	alarm-wakeup is already setup. This allows to execute some codes while
++ *	being kept suspended in the view of userland and devices.
++ *
+  * @end: Called by the PM core right after resuming devices, to indicate to
+  *	the platform that the system has returned to the working state or
+  *	the transition to the sleep state has been aborted.
+@@ -113,6 +120,7 @@ struct platform_suspend_ops {
+ 	int (*enter)(suspend_state_t state);
+ 	void (*wake)(void);
+ 	void (*finish)(void);
++	bool (*suspend_again)(void);
+ 	void (*end)(void);
+ 	void (*recover)(void);
+ };
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 1c41ba2..d8a6c51 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -128,10 +128,12 @@ void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
+ /**
+  *	suspend_enter - enter the desired system sleep state.
+  *	@state:		state to enter
++ *	@wakeup_pending:	indicates that the power transition in progress
++ *				should be aborted.
+  *
+  *	This function should be called after devices have been suspended.
+  */
+-static int suspend_enter(suspend_state_t state)
++static int suspend_enter(suspend_state_t state, bool *wakeup_pending)
+ {
+ 	int error;
+ 
+@@ -165,7 +167,8 @@ static int suspend_enter(suspend_state_t state)
+ 
+ 	error = syscore_suspend();
+ 	if (!error) {
+-		if (!(suspend_test(TEST_CORE) || pm_wakeup_pending())) {
++		*wakeup_pending = pm_wakeup_pending();
++		if (!(suspend_test(TEST_CORE) || *wakeup_pending)) {
+ 			error = suspend_ops->enter(state);
+ 			events_check_enabled = false;
+ 		}
+@@ -199,6 +202,7 @@ static int suspend_enter(suspend_state_t state)
+ int suspend_devices_and_enter(suspend_state_t state)
+ {
+ 	int error;
++	bool wakeup_pending = false;
+ 
+ 	if (!suspend_ops)
+ 		return -ENOSYS;
+@@ -220,7 +224,10 @@ int suspend_devices_and_enter(suspend_state_t state)
+ 	if (suspend_test(TEST_DEVICES))
+ 		goto Recover_platform;
+ 
+-	error = suspend_enter(state);
++	do {
++		error = suspend_enter(state, &wakeup_pending);
++	} while (suspend_ops->suspend_again && suspend_ops->suspend_again() &&
++		 !error && !wakeup_pending);
+ 
+  Resume_devices:
+ 	suspend_test_start();
+-- 
+1.7.4.1
