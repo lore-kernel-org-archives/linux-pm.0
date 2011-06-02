@@ -1,22 +1,13 @@
-From: Ankita Garg <ankita@in.ibm.com>
-Subject: Re: [PATCH 01/10] mm: Introduce the memory regions data
-	structure
-Date: Thu, 2 Jun 2011 14:24:09 +0530
-Message-ID: <20110602085409.GA28096__45937.3087659062$1307004980$gmane$org@in.ibm.com>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<1306499498-14263-2-git-send-email-ankita@in.ibm.com>
-	<1306510203.22505.69.camel@nimitz>
-	<20110527182041.GM5654@dirshya.in.ibm.com>
-	<1306531912.22505.84.camel@nimitz>
-	<20110529081618.GC8333@in.ibm.com>
-	<1306863260.15490.35.camel@nimitz>
-Reply-To: Ankita Garg <ankita@in.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: calling runtime PM from system PM methods
+Date: Thu, 2 Jun 2011 10:18:06 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106021010360.1913-100000__39672.1944715411$1307024445$gmane$org@iolanthe.rowland.org>
+References: <87k4d55c8k.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1306863260.15490.35.camel@nimitz>
+In-Reply-To: <87k4d55c8k.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,87 +17,51 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Dave,
+On Wed, 1 Jun 2011, Kevin Hilman wrote:
 
-On Tue, May 31, 2011 at 10:34:20AM -0700, Dave Hansen wrote:
-> On Sun, 2011-05-29 at 13:46 +0530, Ankita Garg wrote:
-> > > It's worth noting that we already do targeted reclaim on boundaries
-> > > other than zones.  The lumpy reclaim and memory compaction logically do
-> > > the same thing.  So, it's at least possible to do this without having
-> > > the global LRU designed around the way you want to reclaim.
-> > >
-> > My understanding maybe incorrect, but doesn't both lumpy reclaim and
-> > memory compaction still work under zone boundary ? While trying to free
-> > up higher order pages, lumpy reclaim checks to ensure that pages that
-> > are selected do not cross zone boundary. Further, compaction walks
-> > through the pages in a zone and tries to re-arrange them.
+> In the process of experimenting with other solutions, I found an
+> interesting discovery:
 > 
-> I'm asserting that we don't need memory regions in the
+> In the driver's ->suspend() hook, I did something like this:
 > 
-> 	pgdat->regions[]->zones[]
+> 	priv->forced_suspend = false;
+> 	if (!pm_runtime_suspended(dev)) {
+> 		pm_runtime_put_sync(dev);
+> 		priv->forced_suspend = true;
+> 	}
 > 
-> layout to do what you're asking for.
+> and in the resume hook I did this:
 > 
-> Lumpy reclaim is limited to a zone because it's trying to satisfy and
-> allocation request that came in for *THAT* *ZONE*.  It's useless to go
-> clear out other zones.  In your case, you don't care about zone
-> boundaries: you want to reclaim things regardless.
->
-
-Ok true. So I guess lumpy reclaim could be extended to just free up
-pages spanning the entire region and not just a particular zone.
- 
-> There was a "cma: Contiguous Memory Allocator added" patch posted a bit
-> ago to linux-mm@.  You might want to take a look at it for some
-> inspiration.
+> 	if (priv->forced_suspend)
+> 		pm_runtime_get_sync(dev);
 > 
+> Even after disabling runtime PM from userspace via
+> /sys/devices/.../power/control, the ->suspend() hook triggered an actual
+> transition.  This is because pm_runtime_forbid() just uses the usage
+> counter, so the _put_sync() in the ->suspend callback decrements the
+> counter and triggers an rpm_idle().   Is this expected behavior?
 
-We did take a look at CMA, but the use case seems to be slightly
-different. Inorder to allocate large contiguous pages, CMA creates a new
-miratetype called MIGRATE_CMA, which effectively isolates pages from the
-buddy allocator.
+Not really.  In fact it is a bug in your experimental code -- you are
+decrementing the usage counter in a context where you did not
+previously increment it.  In principle, the counter might already be 0
+when the suspend hook runs.
 
-> I think you also need to clearly establish here why any memory that
-> you're going to want to power off can't use (or shouldn't use)
-> ZONE_MOVABLE.  It seems a bit silly to have it there, and ignore it for
-> such a similar use case.  Memory hot-remove and power-down are not
-> horrifically different beasts.
-> 
+Yes, it is indeed possible for a device to be active while the usage
+counter is 0.  For example (assuming the counter is initially 0), this
+will happen if you call
 
-Memory hot add and remove are definite usecases for conserving memory
-power. In this first version of the RFC patch, I have not yet added the
-support for ZONE_MOVABLE. I am currently testing the patch that creates
-movable zones under regions, thus ensuring that it can be easily
-evacuated using page migration.
+	pm_runtime_get_sync(dev);
+	pm_runtime_put_noidle(dev);
 
-> BTW, that's probably something else to add to your list: make sure
-> mem_map[]s for memory in a region get allocated *in* that region. 
-> 
+or even if you simply call
 
-There are a few reasons why we decided that we must have all the kernel
-non-movable data structures co-located in a single region as much as
-possible:
+	pm_runtime_resume(dev);
 
-- Having a region devoid of non-movable memory will enable the complete
-  memory region to be even hot-removed
-- If the memory is evacuated and later turned off (loss of content),
-  then the mem_map[]s will be lost. So when the memory comes back on,
-  the mem_map[]s will need to be reinitialized. While the hotplug
-  approach will work for exploiting PASR, it may not be the most
-  efficient one
-- When the memory is put into a lower power state, having the
-  mem_maps[]s in a single region would ensure that any references to
-  just the struct pages will not lead to references to the actual memory
+Of course, the drivers you're talking about may never do this.  Still, 
+it's a logical mistake to do a *_put without previously doing a *_get.
 
-However, it might be worth taking a look at it again.
-
--- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs,
-Bangalore, India
+Alan Stern
