@@ -1,15 +1,16 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH v3] ARM hibernation/suspend-to-disk
- support
-Date: Fri, 3 Jun 2011 00:18:37 +0200
-Message-ID: <20110602221837.GB14328__35054.3967717842$1308033754$gmane$org@ucw.cz>
-References: <alpine.DEB.2.00.1105251251330.4319@localhost6.localdomain6>
+Subject: Re: pm loss development
+Date: Fri, 3 Jun 2011 00:21:11 +0200
+Message-ID: <20110602222111.GA15414__44219.3158240572$1308034139$gmane$org@ucw.cz>
+References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
+	<201105180107.58078.rjw@sisk.pl> <20110518031203.GA3640@gvim.org>
+	<201105182143.13237.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1105251251330.4319@localhost6.localdomain6>
+In-Reply-To: <201105182143.13237.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,25 +20,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frank Hofmann <frank.hofmann@tomtom.com>
-Cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com, Raffaele Recalcati <lamiaposta71@gmail.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> Please let me know what you think,
-> Thanks in advance,
+> > > What do you mean by safe state?
+> > >
+> > I need to get more details on this but I assume its a state where the
+> > meta data of the file system is committed to the emmc before lights go
+> > off such that when power is reapplied that the damage isn't too big. 
+> 
+> I don't think you can guarantee that the metadata won't be damaged
+> without notifying the filesystem of the event (and making it react
+> appropriately).
 
-> +void save_processor_state(void)
-> +{
-> +	flush_thread();
-> +	local_fiq_disable();
-> +#ifdef CONFIG_ARM_MACH_HIBERNATION_HOOK
-> +	mach_save_state();
-> +#endif
-> +}
+Journalling filesystem should survive power loss at random time, as
+long as block device behaves like a disk (i.e. writes whole sectors).
 
-Could we always define mach_save_state, and get rid of ifdef?
+And that can be guaranteed at driver level...
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
