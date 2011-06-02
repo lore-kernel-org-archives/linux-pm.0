@@ -1,14 +1,15 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: calling runtime PM from system PM methods
-Date: Thu, 02 Jun 2011 10:10:23 -0700
-Message-ID: <87lixkyxa8.fsf__30247.7044206627$1307034687$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1106021010360.1913-100000@iolanthe.rowland.org>
+From: Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH 5/8] PCI / Intel IOMMU: Use syscore_ops
+ instead of sysdev class and sysdev
+Date: Thu, 2 Jun 2011 10:30:40 -0700
+Message-ID: <BANLkTi=xhg7_0O-aVC8s1Uyo4Wkz5OTCdg__30343.0617358119$1307035892$gmane$org@mail.gmail.com>
+References: <201103100131.58206.rjw@sisk.pl> <201103122212.40828.rjw@sisk.pl>
+	<201103122218.14832.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106021010360.1913-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Thu, 2 Jun 2011 10:18:06 -0400 (EDT)")
+In-Reply-To: <201103122218.14832.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,116 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Sat, Mar 12, 2011 at 1:18 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> -static int __init init_iommu_sysfs(void)
+> -{
+> - =A0 =A0 =A0 return 0;
+> -}
+> +static inline int init_iommu_pm_ops(void) { }
+> =A0#endif /* CONFIG_PM */
 
-> On Wed, 1 Jun 2011, Kevin Hilman wrote:
->
->> In the process of experimenting with other solutions, I found an
->> interesting discovery:
->> 
->> In the driver's ->suspend() hook, I did something like this:
->> 
->> 	priv->forced_suspend = false;
->> 	if (!pm_runtime_suspended(dev)) {
->> 		pm_runtime_put_sync(dev);
->> 		priv->forced_suspend = true;
->> 	}
->> 
->> and in the resume hook I did this:
->> 
->> 	if (priv->forced_suspend)
->> 		pm_runtime_get_sync(dev);
->> 
->> Even after disabling runtime PM from userspace via
->> /sys/devices/.../power/control, the ->suspend() hook triggered an actual
->> transition.  This is because pm_runtime_forbid() just uses the usage
->> counter, so the _put_sync() in the ->suspend callback decrements the
->> counter and triggers an rpm_idle().   Is this expected behavior?
->
-> Not really.  In fact it is a bug in your experimental code -- you are
-> decrementing the usage counter in a context where you did not
-> previously increment it.  In principle, the counter might already be 0
-> when the suspend hook runs.
->
-> Yes, it is indeed possible for a device to be active while the usage
-> counter is 0.  For example (assuming the counter is initially 0), this
-> will happen if you call
->
-> 	pm_runtime_get_sync(dev);
-> 	pm_runtime_put_noidle(dev);
->
-> or even if you simply call
->
-> 	pm_runtime_resume(dev);
->
-> Of course, the drivers you're talking about may never do this.  Still, 
-> it's a logical mistake to do a *_put without previously doing a *_get.
+drivers/pci/intel-iommu.c:3391: warning: no return statement in
+function returning non-void
 
-OK.  I was trying to catch that by checking pm_runtime_suspended(), but
-now see that that cannot work in general.
+s/static inline int/static inline void/
 
-The problem I'm trying to solve is how (or whether) I can use runtime PM
-from the system PM methods, specifically in the case where runtime PM
-has been disabled from userspace (or pm_runtime_forbid() has been
-called.)  
+Reported-by: Tony Luck <tony.luck@intel.com>
 
-In a nutshell, what I'm after is for any pm_runtime_forbid() calls to be
-cancelled during system PM, thus allowing pending runtime PM events to
-occur during system PM.
-
-Basically, what I have is several drivers who don't really need suspend
-hooks if runtime PM is enabled, because they use runtime PM on a per
-transaction basis, handle all the HW stuff in the runtime PM callbacks,
-and from a HW perspective, there is no difference in power state between
-runtime and static suspend.  These devices are already runtime suspended
-when the system PM callbacks run, so there is nothing for the system PM
-callbacks to do.
-
-If pm_runtime_forbid() has been called, but then a system suspend is
-initiated, we'd like these devices to actually suspend, meaning allowing
-any pending runtime PM transitions to happen during system suspend.
-In order to force/trick/pursuade the device to to this, something like
-this works:
-
-static int omap_i2c_suspend(struct device *dev)
-{
-	if (dev->power.runtime_auto == false)
-		pm_runtime_put_sync(dev);
-
-	return 0;
-}
-
-static int omap_i2c_resume(struct device *dev)
-{
-	if (dev->power.runtime_auto == false)
-		pm_runtime_get_sync(dev);
-
-	return 0;
-}
-
-Yes, this does a put without a get, but when runtime_auto == true,
-there was an implicit _get_noresume() done by the runtime PM core.
-
-Possibly a cleaner way, but one that would force the driver to keep
-addiional state would be something like
-
-suspend (or prepare):
-
-	if (dev->power.runtime_auto == false) {
-		priv->rpm_forced = true;
-		pm_runtime_allow(dev);
-	}
-
-resume (or complete):
-
-       	if (priv->rpm_forced)
-		pm_runtime_forbid(dev);
-
-If this is acceptable, I'd probably implement this at the device power
-domain level instead of having to have every driver do this.
-
-Kevin
+-Tony
