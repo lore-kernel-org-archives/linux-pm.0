@@ -1,15 +1,12 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: calling runtime PM from system PM methods
-Date: Mon, 06 Jun 2011 15:25:48 -0700
-Message-ID: <87zkluwqab.fsf__794.199264101003$1307399274$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1106021010360.1913-100000@iolanthe.rowland.org>
-	<87lixkyxa8.fsf@ti.com> <201106062029.36389.rjw@sisk.pl>
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Subject: [PATCH 3.0-rc1] PM / runtime: fix broken iteration over
+	clock ids
+Date: Sun, 5 Jun 2011 15:31:12 +0200
+Message-ID: <201106051531.32878.jkrzyszt__41704.0277891376$1307400879$gmane$org@tis.icnet.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106062029.36389.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Mon, 6 Jun 2011 20:29:36 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,82 +16,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+In its current form, pm_runtime_clk_notify() iterates through sub-
+strings of pm_clk_notifier_block.con_ids[0] rather than consecutive 
+pm_clk_notifier_block.con_ids[] elements. As a noticeable result, McBSP1 
+port no longer worked for me on updated arch/arm/mach-omap1/pm_bus.c 
+(commit 600b776eb39a13a28b090ba9efceb0c69d4508aa, "OMAP1 / PM: Use 
+generic clock manipulation routines for runtime PM"), not being able to 
+activate "fck" when required.
 
-[..]
+Tested on Amstrad Delta.
 
-> While it is tempting to try to get away with only two PM callbacks per
-> driver instead of four (or even more), it generally is not doable, simply
-> because driver callbacks are not executed directly by the core.
->
-> The only way to address the problem of code duplication between .suspend()
-> and .runtime_suspend() callbacks (and analogously for resume) I see at the
-> moment is to make those callbacks execute common routines.
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+---
+ drivers/base/power/clock_ops.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Makes sense if the "common routines" are in the driver.  The problem
-arises when the common routines are not actually in the driver, but are
-instead at the subsystem (or in this case, device power domain) level.
-
-Considering the OMAP I2C driver, it doesn't have (or need) runtime PM
-callbacks.  It does runtime PM get/put per-xfer, and has no context to
-save/restore, so it needs no runtime PM callbacks, or no special PM code
-other than runtime PM get/put calls.  The device power domain level code
-is managing the device clocks, power states, etc..
-
-So what the system suspend needs to do is something like:
-
-1. block any new xfers from starting
-2. wait for any outstanding xfers
-3. if device is already runtime suspended
-    - nothing to do
-4. trigger idle transition (at device power domain level)
-
-If runtime PM has not been disabled from userspace, it should always end
-at step 3, since the last xfer will always trigger a runtime suspend.
-
-However, if runtime PM has been disabled from
-userspace/pm_runtime_forbid(), we need some way to do step 4.  It's this
-last 'trigger' step that I'm trying to figure out how a clean way of
-implementing, particularily for drivers with no runtime PM callbacks.
-
-Unless I'm missing something else, if runtime PM was not prevented via
-userspace/pm_runtime_forbid(), we would not need this last 'trigger'
-step.  That's why a solution where any pending runtime PM transitions
-would be allowed during system PM is the ideal solution (to me.)  It
-avoids having to call runtime PM methods from system PM all together.
-
-The current OMAP I2C driver in mainline does this extra "trigger" step
-by directly calling the subsystem (bus) callbacks. (It's also missing
-the first two steps, which is a known bug and will be fixed once I
-figure out the rest of this problem.)
-
-However, now that we have device power domains, I was planning to extend
-that to call device power domain callbacks first if they exist.  Since
-that was starting to duplicate callback precedence assumptions in the
-runtime PM core, I was thinking about ways to avoid that by simply using
-runtime PM directly, that's what got me to start this thread in the
-first place.
-
-So, I see 2 ways forward
-
-1. Having some per-device option/flag that would allow pending runtime
-   PM transitions to happen during system PM, thus removing the need
-   for step 4 above.
-
-2. Decide the "right" way to trigger device power domain (or subsytem)
-   transitions from the driver.   Directly calling the subsystem
-   callbacks from the driver?   Any other options?
-
-I have a rather strong preference for the first one, but am realizing
-that I may be in the minority.  So what is the recommended solution for
-2?
-
-Kevin
-
-P.S.  I'm glad you got to discuss this with Paul & Magnus at LinuxCon
-Japan.  I wish I could've been there too.  Hope your return trip went
-well and your internet is back working soon.
+--- git/drivers/base/power/clock_ops.c.orig	2011-05-30 22:16:35.000000000 +0200
++++ git/drivers/base/power/clock_ops.c	2011-06-05 15:19:55.000000000 +0200
+@@ -291,7 +291,7 @@ static int pm_runtime_clk_notify(struct 
+ {
+ 	struct pm_clk_notifier_block *clknb;
+ 	struct device *dev = data;
+-	char *con_id;
++	char **con_id;
+ 	int error;
+ 
+ 	dev_dbg(dev, "%s() %ld\n", __func__, action);
+@@ -309,8 +309,8 @@ static int pm_runtime_clk_notify(struct 
+ 
+ 		dev->pwr_domain = clknb->pwr_domain;
+ 		if (clknb->con_ids[0]) {
+-			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
+-				pm_runtime_clk_add(dev, con_id);
++			for (con_id = &clknb->con_ids[0]; *con_id; con_id++)
++				pm_runtime_clk_add(dev, *con_id);
+ 		} else {
+ 			pm_runtime_clk_add(dev, NULL);
+ 		}
