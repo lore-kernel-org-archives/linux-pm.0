@@ -1,17 +1,13 @@
-From: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: [PATCH 5/8] PCI / Intel IOMMU: Use syscore_ops
- instead of sysdev class and sysdev
-Date: Mon, 6 Jun 2011 10:58:53 -0700
-Message-ID: <987664A83D2D224EAE907B061CE93D5301E700ED2B__11664.1200650067$1307383184$gmane$org@orsmsx505.amr.corp.intel.com>
-References: <201103100131.58206.rjw@sisk.pl> <201103122218.14832.rjw@sisk.pl>
-	<BANLkTi=xhg7_0O-aVC8s1Uyo4Wkz5OTCdg@mail.gmail.com>
-	<201106061957.35413.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: calling runtime PM from system PM methods
+Date: Mon, 6 Jun 2011 20:01:50 +0200
+Message-ID: <201106062001.50969.rjw__48674.830972641$1307383306$gmane$org@sisk.pl>
+References: <87k4d55c8k.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106061957.35413.rjw@sisk.pl>
-Content-Language: en-US
+In-Reply-To: <87k4d55c8k.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,44 +17,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "mingo@redhat.com" <mingo@redhat.com>, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "tglx@linutronix.de" <tglx@linutronix.de>
+To: Kevin Hilman <khilman@ti.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> I guess you mean the following?
+On Thursday, June 02, 2011, Kevin Hilman wrote:
+> Hi Rafael,
 
+Hi,
+
+> Once again, I'm back to some problems with using runtime PM from system
+> PM methods.  On OMAP, many drivers don't need to do anything different
+> for runtime PM compared to system PM, so the system PM methods can
+> simply use runtime PM.
+
+No, they can't (I was talking about that at LinuxCon Japan last week).
+
+I'll give more details in replies to the other messages in this thread.
+
+Thanks,
 Rafael
-
-Exactly.
-
-Thanks
-
--Tony
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-If CONFIG_PM is not set, init_iommu_pm_ops() introduced by commit
-134fac3f457f3dd753ecdb25e6da3e5f6629f696 (PCI / Intel IOMMU: Use
-syscore_ops instead of sysdev class and sysdev) is not defined
-appropriately.  Fix this issue.
-
-Reported-by: Tony Luck <tony.luck@intel.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/pci/intel-iommu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/pci/intel-iommu.c
-===================================================================
---- linux-2.6.orig/drivers/pci/intel-iommu.c
-+++ linux-2.6/drivers/pci/intel-iommu.c
-@@ -3388,7 +3388,7 @@ static void __init init_iommu_pm_ops(voi
- }
- 
- #else
--static inline int init_iommu_pm_ops(void) { }
-+static inline void init_iommu_pm_ops(void) {}
- #endif	/* CONFIG_PM */
- 
- /*
