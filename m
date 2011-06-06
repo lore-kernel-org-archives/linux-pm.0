@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: calling runtime PM from system PM methods
-Date: Thu, 2 Jun 2011 14:38:01 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106021436080.1674-100000__13750.3234706402$1307040034$gmane$org@iolanthe.rowland.org>
-References: <87lixkyxa8.fsf@ti.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v5] PM / Core: suspend_again callback for
+	suspend_ops.
+Date: Mon, 6 Jun 2011 12:29:10 +0200
+Message-ID: <20110606102909.GC5820__17564.7264965393$1307356219$gmane$org@atrey.karlin.mff.cuni.cz>
+References: <1306999978-4663-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87lixkyxa8.fsf@ti.com>
+Content-Disposition: inline
+In-Reply-To: <1306999978-4663-1-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,25 +19,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2 Jun 2011, Kevin Hilman wrote:
-
-> OK.  I was trying to catch that by checking pm_runtime_suspended(), but
-> now see that that cannot work in general.
+> A system or a device may need to control suspend/wakeup events. It may
+> want to wakeup the system after a predefined amount of time or at a
+> predefined event decided while entering suspend for polling or delayed
+> work. Then, it may want to enter suspend again if its predefined wakeup
+> condition is the only wakeup reason and there is no outstanding events;
+> thus, it does not wakeup the userspace unnecessary or unnecessary
+> devices and keeps suspended as long as possible (saving the power).
 > 
-> The problem I'm trying to solve is how (or whether) I can use runtime PM
-> from the system PM methods, specifically in the case where runtime PM
-> has been disabled from userspace (or pm_runtime_forbid() has been
-> called.)  
+> Enabling a system to wakeup after a specified time can be easily
+> achieved by using RTC. However, to enter suspend again immediately
+> without invoking userland and unrelated devices, we need additional
+> features in the suspend framework.
 > 
-> In a nutshell, what I'm after is for any pm_runtime_forbid() calls to be
-> cancelled during system PM, thus allowing pending runtime PM events to
-> occur during system PM.
+> Such need comes from:
+> 
+> 1. Monitoring a critical device status without interrupts that can
+> wakeup the system. (in-suspend polling)
+>  An example is ambient temperature monitoring that needs to shut down
+> the system or a specific device function if it is too hot or cold. The
+> temperature of a specific device may be needed to be monitored as well;
+> e.g., a charger monitors battery temperature in order to stop charging
+> if overheated.
+> 
+> 2. Execute critical "delayed work" at suspend.
+>  A driver or a system/board may have a delayed work (or any similar
+> things) that it wants to execute at the requested time.
+>  For example, some chargers want to check the battery voltage some
+> time (e.g., 30 seconds) after the battery is fully charged and the
+> charger has stopped. Then, the charger restarts charging if the voltage
+> has dropped more than a threshold, which is smaller than "restart-charger"
+> voltage, which is a threshold to restart charging regardless of the
+> time passed.
+> 
+> This patch allows to add "suspend_again" callback at struct
+> platform_suspend_ops and let the "suspend_again" callback return true if
+> the system is required to enter suspend again after the current instance
+> of wakeup. Device-wise suspend_again implemented at dev_pm_ops or
+> syscore is not done because: a) suspend_again feature is usually under
+> platform-wise decision and controls the behavior of the whole platform
+> and b) There are very limited devices related to the usage cases of
+> suspend_again; chargers and temperature sensors are mentioned so far.
+> 
+> With suspend_again callback registered at struct platform_suspend_ops
+> suspend_ops in kernel/power/suspend.c with suspend_set_ops by the
+> platform, the suspend framework tries to enter suspend again by
+> looping suspend_enter() if suspend_again has returned true and there has
+> been no errors in the suspending sequence or pending wakeups (by
+> pm_wakeup_pending).
+> 
+> Tested at Exynos4-NURI.
+> 
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-There are a few approaches that might do what you want.  But I'd like 
-to hear Rafael's opinion before making any suggestions.
-
-Alan Stern
+ACK.
