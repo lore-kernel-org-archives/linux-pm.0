@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "Luck, Tony" <tony.luck@intel.com>
 Subject: Re: [PATCH 5/8] PCI / Intel IOMMU: Use syscore_ops
-	instead of sysdev class and sysdev
-Date: Mon, 6 Jun 2011 19:57:35 +0200
-Message-ID: <201106061957.35413.rjw__22119.5808765062$1307383137$gmane$org@sisk.pl>
+ instead of sysdev class and sysdev
+Date: Mon, 6 Jun 2011 10:58:53 -0700
+Message-ID: <987664A83D2D224EAE907B061CE93D5301E700ED2B__11664.1200650067$1307383184$gmane$org@orsmsx505.amr.corp.intel.com>
 References: <201103100131.58206.rjw@sisk.pl> <201103122218.14832.rjw@sisk.pl>
 	<BANLkTi=xhg7_0O-aVC8s1Uyo4Wkz5OTCdg@mail.gmail.com>
+	<201106061957.35413.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=xhg7_0O-aVC8s1Uyo4Wkz5OTCdg@mail.gmail.com>
+In-Reply-To: <201106061957.35413.rjw@sisk.pl>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,29 +21,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tony Luck <tony.luck@intel.com>
-Cc: linux-pci@vger.kernel.org, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, mingo@redhat.com, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, tglx@linutronix.de
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, "mingo@redhat.com" <mingo@redhat.com>, Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "tglx@linutronix.de" <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 02, 2011, Tony Luck wrote:
-> On Sat, Mar 12, 2011 at 1:18 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > -static int __init init_iommu_sysfs(void)
-> > -{
-> > -       return 0;
-> > -}
-> > +static inline int init_iommu_pm_ops(void) { }
-> >  #endif /* CONFIG_PM */
-> 
-> drivers/pci/intel-iommu.c:3391: warning: no return statement in
-> function returning non-void
-> 
-> s/static inline int/static inline void/
-> 
-> Reported-by: Tony Luck <tony.luck@intel.com>
-
-I guess you mean the following?
+> I guess you mean the following?
 
 Rafael
+
+Exactly.
+
+Thanks
+
+-Tony
 
 ---
 From: Rafael J. Wysocki <rjw@sisk.pl>
