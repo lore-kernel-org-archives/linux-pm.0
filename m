@@ -1,15 +1,12 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/3] PM / Hibernate: Remove
-	arch_prepare_suspend()
-Date: Thu, 2 Jun 2011 05:14:00 +0200
-Message-ID: <20110602031400.GA1565__19038.1812201396$1307357612$gmane$org@ucw.cz>
-References: <201105211408.28671.rjw@sisk.pl> <201105211410.34491.rjw@sisk.pl>
+From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Subject: [RFC PATCH V5 0/4] cpuidle: global registration of idle
+	states with	per-cpu statistics
+Date: Mon, 06 Jun 2011 19:09:18 +0530
+Message-ID: <20110606133917.5670.54949.stgit__41632.5490143665$1307367778$gmane$org@tringupt.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201105211410.34491.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,20 +16,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Frank Hofmann <frank.hofmann@tomtom.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: arjan@linux.intel.com, peterz@infradead.org, lenb@kernel.org, venki@google.com, ak@linux.intel.com, len.brown@intel.com, santosh.shilimkar@ti.com, khilman@ti.com
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat 2011-05-21 14:10:34, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> All architectures supporting hibernation define
-> arch_prepare_suspend() as an empty function, so remove it.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+The following patch series implements global registration of cpuidle
+states, and also has the necessary data structure changes to
+accommodate the per-cpu writable members of the cpuidle_states
+structure.
 
-ACK.
+Previous version of the series (V4) is at https://lkml.org/lkml/2011/4/28/312
+This series applies on 3.0-rc1
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Changes from previous version (V4):
+
+1. Rebased the series to 3.0-rc1
+2. Made same changes for Samsung exynos4 cpuidle driver registration
+
+Tests done:
+1. Compile tested for ARM using the following configs: da8xx_omapl_defconfig,
+  exynos4_defconfig, kirkwood_defconfig, omap2plus_defconfig.
+
+2. Boot tested on x86 nehalem with multiple C-states for both intel_idle
+  and acpi_idle drivers.
+
+Thanks
+-Trinabh 
