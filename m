@@ -1,16 +1,14 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC PATCH V5 1/4] cpuidle: Move dev->last_residency
-	update to	driver enter routine, remove dev->last_state
-Date: Mon, 6 Jun 2011 14:51:05 +0100
-Message-ID: <20110606135105.GA7023__36293.8223559924$1307368710$gmane$org@n2100.arm.linux.org.uk>
-References: <20110606133917.5670.54949.stgit@tringupt.in.ibm.com>
-	<20110606133926.5670.4650.stgit@tringupt.in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 3.0-rc1] PM / runtime: fix broken iteration
+	over clock ids
+Date: Mon, 6 Jun 2011 19:47:36 +0200
+Message-ID: <201106061947.36238.rjw__25513.0302547061$1307382499$gmane$org@sisk.pl>
+References: <201106051531.32878.jkrzyszt@tis.icnet.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110606133926.5670.4650.stgit@tringupt.in.ibm.com>
+In-Reply-To: <201106051531.32878.jkrzyszt@tis.icnet.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,35 +18,113 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Cc: venki@google.com, ak@linux.intel.com, len.brown@intel.com, peterz@infradead.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, arjan@linux.intel.com, linux-arm-kernel@lists.infradead.org
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 06, 2011 at 07:09:26PM +0530, Trinabh Gupta wrote:
-> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
-> index 1cfeac1..4696a0d 100644
-> --- a/arch/arm/mach-at91/cpuidle.c
-> +++ b/arch/arm/mach-at91/cpuidle.c
-> @@ -41,10 +41,10 @@ static int at91_enter_idle(struct cpuidle_device *dev,
+Hi,
+
+On Sunday, June 05, 2011, Janusz Krzysztofik wrote:
+> In its current form, pm_runtime_clk_notify() iterates through sub-
+> strings of pm_clk_notifier_block.con_ids[0] rather than consecutive 
+> pm_clk_notifier_block.con_ids[] elements. As a noticeable result, McBSP1 
+> port no longer worked for me on updated arch/arm/mach-omap1/pm_bus.c 
+> (commit 600b776eb39a13a28b090ba9efceb0c69d4508aa, "OMAP1 / PM: Use 
+> generic clock manipulation routines for runtime PM"), not being able to 
+> activate "fck" when required.
+> 
+> Tested on Amstrad Delta.
+>
+> Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+> ---
+>  drivers/base/power/clock_ops.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- git/drivers/base/power/clock_ops.c.orig	2011-05-30 22:16:35.000000000 +0200
+> +++ git/drivers/base/power/clock_ops.c	2011-06-05 15:19:55.000000000 +0200
+> @@ -291,7 +291,7 @@ static int pm_runtime_clk_notify(struct 
+>  {
+>  	struct pm_clk_notifier_block *clknb;
+>  	struct device *dev = data;
+> -	char *con_id;
+> +	char **con_id;
+>  	int error;
 >  
->  	local_irq_disable();
->  	do_gettimeofday(&before);
-> -	if (state == &dev->states[0])
-> +	if (index == 0)
->  		/* Wait for interrupt state */
->  		cpu_do_idle();
-> -	else if (state == &dev->states[1]) {
-> +	else if (index == 1) {
->  		asm("b 1f; .align 5; 1:");
->  		asm("mcr p15, 0, r0, c7, c10, 4");	/* drain write buffer */
+>  	dev_dbg(dev, "%s() %ld\n", __func__, action);
+> @@ -309,8 +309,8 @@ static int pm_runtime_clk_notify(struct 
+>  
+>  		dev->pwr_domain = clknb->pwr_domain;
+>  		if (clknb->con_ids[0]) {
+> -			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
+> -				pm_runtime_clk_add(dev, con_id);
+> +			for (con_id = &clknb->con_ids[0]; *con_id; con_id++)
+> +				pm_runtime_clk_add(dev, *con_id);
+>  		} else {
+>  			pm_runtime_clk_add(dev, NULL);
+>  		}
 
-While looking through this patch, it is probably worth pointing out for
-the AT91 folk that this is broken.  Here's an extract from the GCC manual:
+First off, sorry for the breakage.  Second, while the patch is correct in
+the part is covered, it is incomplete (it also should cover the
+!CONFIG_PM_RUNTIME case.  So, I think the appended patch would be better.
 
-|  Similarly, you can't expect a sequence of volatile `asm' instructions
-| to remain perfectly consecutive.  If you want consecutive output, use a
-| single `asm'.  Also, GCC will perform some optimizations across a
-| volatile `asm' instruction; GCC does not "forget everything" when it
-| encounters a volatile `asm' instruction the way some other compilers do.
+Thanks,
+Rafael
 
-It might be a good idea to fix those two asm() statements into one.
+---
+ drivers/base/power/clock_ops.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/drivers/base/power/clock_ops.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/clock_ops.c
++++ linux-2.6/drivers/base/power/clock_ops.c
+@@ -291,7 +291,7 @@ static int pm_runtime_clk_notify(struct
+ {
+ 	struct pm_clk_notifier_block *clknb;
+ 	struct device *dev = data;
+-	char *con_id;
++	char **con_id;
+ 	int error;
+ 
+ 	dev_dbg(dev, "%s() %ld\n", __func__, action);
+@@ -309,8 +309,8 @@ static int pm_runtime_clk_notify(struct
+ 
+ 		dev->pwr_domain = clknb->pwr_domain;
+ 		if (clknb->con_ids[0]) {
+-			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
+-				pm_runtime_clk_add(dev, con_id);
++			for (con_id = clknb->con_ids; *con_id; con_id++)
++				pm_runtime_clk_add(dev, *con_id);
+ 		} else {
+ 			pm_runtime_clk_add(dev, NULL);
+ 		}
+@@ -380,7 +380,7 @@ static int pm_runtime_clk_notify(struct
+ {
+ 	struct pm_clk_notifier_block *clknb;
+ 	struct device *dev = data;
+-	char *con_id;
++	char **con_id;
+ 
+ 	dev_dbg(dev, "%s() %ld\n", __func__, action);
+ 
+@@ -389,16 +389,16 @@ static int pm_runtime_clk_notify(struct
+ 	switch (action) {
+ 	case BUS_NOTIFY_ADD_DEVICE:
+ 		if (clknb->con_ids[0]) {
+-			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
+-				enable_clock(dev, con_id);
++			for (con_id = clknb->con_ids; *con_id; con_id++)
++				enable_clock(dev, *con_id);
+ 		} else {
+ 			enable_clock(dev, NULL);
+ 		}
+ 		break;
+ 	case BUS_NOTIFY_DEL_DEVICE:
+ 		if (clknb->con_ids[0]) {
+-			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
+-				disable_clock(dev, con_id);
++			for (con_id = clknb->con_ids; *con_id; con_id++)
++				disable_clock(dev, *con_id);
+ 		} else {
+ 			disable_clock(dev, NULL);
+ 		}
