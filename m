@@ -1,14 +1,16 @@
 From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Subject: Re: [RFC] OMAP: McBSP not working if CONFIG_PM_RUNTIME
-	not set
-Date: Wed, 8 Jun 2011 00:16:43 +0200
-Message-ID: <201106080016.43271.jkrzyszt__20681.6240134232$1307485151$gmane$org@tis.icnet.pl>
-References: <201106072118.33632.jkrzyszt@tis.icnet.pl> <87pqmpnxxe.fsf@ti.com>
+Subject: Re: [PATCH 3.0-rc1] PM / runtime: fix broken iteration
+	over clock ids
+Date: Wed, 8 Jun 2011 00:27:13 +0200
+Message-ID: <201106080027.14378.jkrzyszt__13267.2770218507$1307485891$gmane$org@tis.icnet.pl>
+References: <201106051531.32878.jkrzyszt@tis.icnet.pl>
+	<201106072129.26063.rjw@sisk.pl>
+	<201106072324.54306.jkrzyszt@tis.icnet.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87pqmpnxxe.fsf@ti.com>
+In-Reply-To: <201106072324.54306.jkrzyszt@tis.icnet.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,106 +20,130 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 07 Jun 2011 at 23:17:49 Kevin Hilman wrote:
-> Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> writes:
-> > ... Or should
-> > arch/arm/mach-omap1/pm_bus.c be always built in and
-> > pm_runtime_clk_add_notifier() called from there in order to enable
-> > clocks on device initialization even if CONFIG_PM_RUNTIME is not
-> > set? Or still a better solution?
+On Tue 07 Jun 2011 at 23:24:53 Janusz Krzysztofik wrote:
+> On Tue 07 Jun 2011 at 21:29:25 Rafael J. Wysocki wrote:
+> > OK, below is an "official" version.  Can you please double check if
+> > it fixes the problem for you?
 > 
-> You're on the right track already.
-> 
-> Yes, the notifier init should be done even on the !PM_RUNTIME case so
-> that clocks are enabled when the device is added and disabled when
-> the device is removed.
-> 
-> Can you try the patch below (only compile tested)
+> Hi,
+> I've tested it successfully, but only the CONFIG_PM_RUNTIME=y case,
+> not the other because of still another McBSP issue, I believe,
+> described elswhere.
 
-It's OK, but kind of no-op unless something like below is also applied. 
-With it appended to your patch, you can add my Tested-by or what-else-by 
-you may find appropriate.
+With a patch from Kevin, I was able to test the !PM_RUNTIME case 
+successfully as well.
 
 Thanks,
 Janusz
 
----
---- git/arch/arm/mach-omap1/Makefile.orig	2011-06-06 18:06:57.000000000 +0200
-+++ git/arch/arm/mach-omap1/Makefile	2011-06-07 23:40:11.000000000 +0200
-@@ -4,14 +4,14 @@
- 
- # Common support
- obj-y := io.o id.o sram.o time.o irq.o mux.o flash.o serial.o devices.o dma.o
--obj-y += clock.o clock_data.o opp_data.o reset.o
-+obj-y += clock.o clock_data.o opp_data.o reset.o pm_bus.o
- 
- obj-$(CONFIG_OMAP_MCBSP) += mcbsp.o
- 
- obj-$(CONFIG_OMAP_32K_TIMER)	+= timer32k.o
- 
- # Power Management
--obj-$(CONFIG_PM) += pm.o sleep.o pm_bus.o
-+obj-$(CONFIG_PM) += pm.o sleep.o
- 
- # DSP
- obj-$(CONFIG_OMAP_MBOX_FWK)	+= mailbox_mach.o
---
-
-> If it works, and with your Tested-by, I'll queue this as a fix for
-> v3.0-rc.
-> 
 > Thanks,
+> Janusz
 > 
-> Kevin
-> 
-> >From 971a6b1ba5cbca7b38fb14ae834b124c6e7bf9b5 Mon Sep 17 00:00:00
-> >2001
-> 
-> From: Kevin Hilman <khilman@ti.com>
-> Date: Tue, 7 Jun 2011 14:13:33 -0700
-> Subject: [PATCH] OMAP1: PM: register notifiers with generic clock ops
-> even when !PM_RUNTIME
-> 
-> When runtime PM is disabled, device clocks need to be enabled on
-> device add and disabled on device remove.  This currently is not
-> happening because in the !PM_RUNTIME case, no notifiers are
-> registered for OMAP1 devices.
-> 
-> Fix this by ensuring notifiers are registered, even in the
-> !PM_RUNTIME case.
-> 
-> Reported-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-> Signed-off-by: Kevin Hilman <khilman@ti.com>
-> ---
->  arch/arm/mach-omap1/pm_bus.c |    8 ++++++--
->  1 files changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap1/pm_bus.c
-> b/arch/arm/mach-omap1/pm_bus.c index fe31d93..334fb88 100644
-> --- a/arch/arm/mach-omap1/pm_bus.c
-> +++ b/arch/arm/mach-omap1/pm_bus.c
-> @@ -56,9 +56,13 @@ static struct dev_power_domain
-> default_power_domain = { USE_PLATFORM_PM_SLEEP_OPS
->  	},
->  };
-> +#define OMAP1_PWR_DOMAIN (&default_power_domain)
-> +#else
-> +#define OMAP1_PWR_DOMAIN NULL
-> +#endif /* CONFIG_PM_RUNTIME */
-> 
->  static struct pm_clk_notifier_block platform_bus_notifier = {
-> -	.pwr_domain = &default_power_domain,
-> +	.pwr_domain = OMAP1_PWR_DOMAIN,
->  	.con_ids = { "ick", "fck", NULL, },
->  };
-> 
-> @@ -72,4 +76,4 @@ static int __init omap1_pm_runtime_init(void)
->  	return 0;
->  }
->  core_initcall(omap1_pm_runtime_init);
-> -#endif /* CONFIG_PM_RUNTIME */
-> +
+> > Rafael
+> > 
+> > ---
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: PM / Runtime: Fix loops in pm_runtime_clk_notify()
+> > 
+> > The loops over connection ID strings in pm_runtime_clk_notify()
+> > should actually iterate over the strings and not over the elements
+> > of the first of them, so make those loops behave as appropriate.
+> > 
+> > This fixes a regression introduced by commit 600b776eb39a13a28b090
+> > (OMAP1 / PM: Use generic clock manipulation routines for runtime
+> > PM).
+> > 
+> > Reported-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> > 
+> >  drivers/base/power/clock_ops.c |   16 ++++++++--------
+> >  1 file changed, 8 insertions(+), 8 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/base/power/clock_ops.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/base/power/clock_ops.c
+> > +++ linux-2.6/drivers/base/power/clock_ops.c
+> > @@ -291,7 +291,7 @@ static int pm_runtime_clk_notify(struct
+> > 
+> >  {
+> >  
+> >  	struct pm_clk_notifier_block *clknb;
+> >  	struct device *dev = data;
+> > 
+> > -	char *con_id;
+> > +	char **con_id;
+> > 
+> >  	int error;
+> >  	
+> >  	dev_dbg(dev, "%s() %ld\n", __func__, action);
+> > 
+> > @@ -309,8 +309,8 @@ static int pm_runtime_clk_notify(struct
+> > 
+> >  		dev->pwr_domain = clknb->pwr_domain;
+> >  		if (clknb->con_ids[0]) {
+> > 
+> > -			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
+> > -				pm_runtime_clk_add(dev, con_id);
+> > +			for (con_id = clknb->con_ids; *con_id; con_id++)
+> > +				pm_runtime_clk_add(dev, *con_id);
+> > 
+> >  		} else {
+> >  		
+> >  			pm_runtime_clk_add(dev, NULL);
+> >  		
+> >  		}
+> > 
+> > @@ -380,7 +380,7 @@ static int pm_runtime_clk_notify(struct
+> > 
+> >  {
+> >  
+> >  	struct pm_clk_notifier_block *clknb;
+> >  	struct device *dev = data;
+> > 
+> > -	char *con_id;
+> > +	char **con_id;
+> > 
+> >  	dev_dbg(dev, "%s() %ld\n", __func__, action);
+> > 
+> > @@ -389,16 +389,16 @@ static int pm_runtime_clk_notify(struct
+> > 
+> >  	switch (action) {
+> >  	
+> >  	case BUS_NOTIFY_ADD_DEVICE:
+> >  		if (clknb->con_ids[0]) {
+> > 
+> > -			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
+> > -				enable_clock(dev, con_id);
+> > +			for (con_id = clknb->con_ids; *con_id; con_id++)
+> > +				enable_clock(dev, *con_id);
+> > 
+> >  		} else {
+> >  		
+> >  			enable_clock(dev, NULL);
+> >  		
+> >  		}
+> >  		break;
+> >  	
+> >  	case BUS_NOTIFY_DEL_DEVICE:
+> >  		if (clknb->con_ids[0]) {
+> > 
+> > -			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
+> > -				disable_clock(dev, con_id);
+> > +			for (con_id = clknb->con_ids; *con_id; con_id++)
+> > +				disable_clock(dev, *con_id);
+> > 
+> >  		} else {
+> >  		
+> >  			disable_clock(dev, NULL);
+> >  		
+> >  		}
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe
+> > linux-omap" in the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
