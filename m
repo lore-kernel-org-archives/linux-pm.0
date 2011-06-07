@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3.0-rc1] PM / runtime: fix broken iteration
-	over clock ids
-Date: Tue, 7 Jun 2011 23:35:09 +0200
-Message-ID: <201106072335.09519.rjw__11174.4544389241$1307482597$gmane$org@sisk.pl>
-References: <201106051531.32878.jkrzyszt@tis.icnet.pl>
-	<201106072129.26063.rjw@sisk.pl>
-	<201106072324.54306.jkrzyszt@tis.icnet.pl>
+Subject: Re: [RFC PATCH v4] ARM hibernation/suspend-to-disk
+	support
+Date: Tue, 7 Jun 2011 23:48:44 +0200
+Message-ID: <201106072348.44624.rjw__4333.8879164823$1307483562$gmane$org@sisk.pl>
+References: <alpine.DEB.2.00.1106071722040.2236@localhost6.localdomain6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106072324.54306.jkrzyszt@tis.icnet.pl>
+In-Reply-To: <alpine.DEB.2.00.1106071722040.2236@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,103 +18,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org, frank.hofmann@tomtom.com
+Cc: tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 07, 2011, Janusz Krzysztofik wrote:
-> On Tue 07 Jun 2011 at 21:29:25 Rafael J. Wysocki wrote:
-> > 
-> > OK, below is an "official" version.  Can you please double check if
-> > it fixes the problem for you?
-> 
+On Tuesday, June 07, 2011, Frank Hofmann wrote:
 > Hi,
-> I've tested it successfully, but only the CONFIG_PM_RUNTIME=y case, not 
-> the other because of still another McBSP issue, I believe, described 
-> elswhere.
+> 
+> time for another round on this one...
+> 
+> This got quite a bit cleaned up now.
+> 
+> There's now no more need for a "swsusp context" at all. The code uses 
+> cpu_suspend/resume and keeps the snapshot state on the stack while 
+> writing it out.
+> 
+> There are a few dependencies this patch brings in:
+> 
+> * due to the use of cpu_suspend / cpu_resume, it'll only apply as-is
+>    to kernels no older than f6b0fa02e8b0708d17d631afce456524eadf87ff,
+>    where Russell King introduced the generic interface.
+>    Patching these into older kernels is a little work.
+> 
+> * it temporarily uses swapper_pg_dir and establishes 1:1 mappings there
+>    for a MMU-off transition, which is necessary before resume.
+>    In order to tear these down afterwards, identity_mapping_del() needs
+>    to be called; for some reason that's #ifdef CONFIG_SMP ...
+> 
+> * it needs to "catch" sleep_save_sp after cpu_suspend() so that resume
+>    can be provided with the proper starting point.
+>    This requires an ENTRY(sleep_save_sp) in arch/arm/kernel/sleep.S so
+>    that the symbol becomes public.
+> 
+> * it assumes cpu_reset will disable the MMU. cpu_v6_reset/cpu_v7_reset
+>    are currently not doing so (amongst some other minor chip types).
+> 
+> * there's kind of a circular dependency between CONFIG_HIBERNATION and
+>    CONFIG_PM_SLEEP, on ARM. The latter is necessary so that cpu_suspend
+>    and cpu_resume are compiled in, but it cannot be selected via
+>    ARCH_HIBERNATION_POSSIBLE because CONFIG_PM_SLEEP depends on
+>    CONFIG_HIBERNATION_INTERFACE - selected by CONFIG_HIBERNATION.
+> 
+>    Consequence is that right now, both CONFIG_PM_SLEEP and ...HIBERNATION
+>    must be set in your defconfig file to be able to compile.
 
-OK, thanks!
+In fact, CONFIG_PM_SLEEP = CONFIG_SUSPEND || CONFIG_HIBERNATE_CALLBACKS, so it
+should be sufficient to set HIBERNATION.  ARCH_HIBERNATION_POSSIBLE only
+causes HIBERNATION to become a valid option (that may or may not be set).
 
-If the other case turns out to cause more problems, they'll need separate
-fixes anyway.
+>    (my head swirls from writing this ...)
+
+What problem exactly did you have with those settings?
 
 Rafael
-
- 
-> > ---
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM / Runtime: Fix loops in pm_runtime_clk_notify()
-> > 
-> > The loops over connection ID strings in pm_runtime_clk_notify()
-> > should actually iterate over the strings and not over the elements
-> > of the first of them, so make those loops behave as appropriate.
-> > 
-> > This fixes a regression introduced by commit 600b776eb39a13a28b090
-> > (OMAP1 / PM: Use generic clock manipulation routines for runtime PM).
-> > 
-> > Reported-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/base/power/clock_ops.c |   16 ++++++++--------
-> >  1 file changed, 8 insertions(+), 8 deletions(-)
-> > 
-> > Index: linux-2.6/drivers/base/power/clock_ops.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/power/clock_ops.c
-> > +++ linux-2.6/drivers/base/power/clock_ops.c
-> > @@ -291,7 +291,7 @@ static int pm_runtime_clk_notify(struct
-> >  {
-> >  	struct pm_clk_notifier_block *clknb;
-> >  	struct device *dev = data;
-> > -	char *con_id;
-> > +	char **con_id;
-> >  	int error;
-> > 
-> >  	dev_dbg(dev, "%s() %ld\n", __func__, action);
-> > @@ -309,8 +309,8 @@ static int pm_runtime_clk_notify(struct
-> > 
-> >  		dev->pwr_domain = clknb->pwr_domain;
-> >  		if (clknb->con_ids[0]) {
-> > -			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
-> > -				pm_runtime_clk_add(dev, con_id);
-> > +			for (con_id = clknb->con_ids; *con_id; con_id++)
-> > +				pm_runtime_clk_add(dev, *con_id);
-> >  		} else {
-> >  			pm_runtime_clk_add(dev, NULL);
-> >  		}
-> > @@ -380,7 +380,7 @@ static int pm_runtime_clk_notify(struct
-> >  {
-> >  	struct pm_clk_notifier_block *clknb;
-> >  	struct device *dev = data;
-> > -	char *con_id;
-> > +	char **con_id;
-> > 
-> >  	dev_dbg(dev, "%s() %ld\n", __func__, action);
-> > 
-> > @@ -389,16 +389,16 @@ static int pm_runtime_clk_notify(struct
-> >  	switch (action) {
-> >  	case BUS_NOTIFY_ADD_DEVICE:
-> >  		if (clknb->con_ids[0]) {
-> > -			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
-> > -				enable_clock(dev, con_id);
-> > +			for (con_id = clknb->con_ids; *con_id; con_id++)
-> > +				enable_clock(dev, *con_id);
-> >  		} else {
-> >  			enable_clock(dev, NULL);
-> >  		}
-> >  		break;
-> >  	case BUS_NOTIFY_DEL_DEVICE:
-> >  		if (clknb->con_ids[0]) {
-> > -			for (con_id = clknb->con_ids[0]; *con_id; con_id++)
-> > -				disable_clock(dev, con_id);
-> > +			for (con_id = clknb->con_ids; *con_id; con_id++)
-> > +				disable_clock(dev, *con_id);
-> >  		} else {
-> >  			disable_clock(dev, NULL);
-> >  		}
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-omap"
-> > in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
