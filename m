@@ -1,8 +1,8 @@
 From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 2/7] cpuidle: replace xen access to x86
-	pm_idle and	default_idle
-Date: Tue, 07 Jun 2011 21:59:38 +0530
-Message-ID: <20110607162933.6848.14665.stgit__3996.49414835057$1307464249$gmane$org@tringupt.in.ibm.com>
+Subject: [RFC PATCH V1 4/7] cpuidle: (powerpc) Add
+	cpu_idle_wait() to allow	switching idle routines
+Date: Tue, 07 Jun 2011 22:00:04 +0530
+Message-ID: <20110607162959.6848.26918.stgit__11190.2184239172$1307464255$gmane$org@tringupt.in.ibm.com>
 References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,78 +22,72 @@ To: linux-pm@lists.linux-foundation.org, linuxppc-dev@ozlabs.org
 Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+This patch provides cpu_idle_wait() routine required
+by the cpuidle subsystem. Almost all the code is borrowed
+from x86.
 
-When a Xen Dom0 kernel boots on a hypervisor, it gets access
-to the raw-hardware ACPI tables.  While it parses the idle tables
-for the hypervisor's beneift, it uses HLT for its own idle.
-
-Rather than have xen scribble on pm_idle and access default_idle,
-have it simply disable_cpuidle() so acpi_idle will not load and
-architecture default HLT will be used.
-
-cc: xen-devel@lists.xensource.com
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
 
- arch/x86/xen/setup.c      |    3 ++-
- drivers/cpuidle/cpuidle.c |    4 ++++
- include/linux/cpuidle.h   |    2 ++
- 3 files changed, 8 insertions(+), 1 deletions(-)
+ arch/powerpc/Kconfig              |    4 ++++
+ arch/powerpc/include/asm/system.h |    1 +
+ arch/powerpc/kernel/idle.c        |   18 ++++++++++++++++++
+ 3 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index be1a464..ab1a916 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -9,6 +9,7 @@
- #include <linux/mm.h>
- #include <linux/pm.h>
- #include <linux/memblock.h>
-+#include <linux/cpuidle.h>
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2729c66..518beda 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -87,6 +87,10 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default y if 64BIT
  
- #include <asm/elf.h>
- #include <asm/vdso.h>
-@@ -424,7 +425,7 @@ void __init xen_arch_setup(void)
- #ifdef CONFIG_X86_32
- 	boot_cpu_data.hlt_works_ok = 1;
- #endif
--	pm_idle = default_idle;
-+	disable_cpuidle();
- 	boot_option_idle_override = IDLE_HALT;
++config ARCH_HAS_CPU_IDLE_WAIT
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
+index 2dc595d..811cdf1 100644
+--- a/arch/powerpc/include/asm/system.h
++++ b/arch/powerpc/include/asm/system.h
+@@ -222,6 +222,7 @@ extern unsigned long klimit;
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
  
- 	fiddle_vdso();
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index a171b9e..8d7303b 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -34,6 +34,10 @@ int cpuidle_disabled(void)
- {
- 	return off;
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
++void cpu_idle_wait(void);
+ 
+ /*
+  * Atomic exchange
+diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+index 39a2baa..932392b 100644
+--- a/arch/powerpc/kernel/idle.c
++++ b/arch/powerpc/kernel/idle.c
+@@ -102,6 +102,24 @@ void cpu_idle(void)
+ 	}
  }
-+void disable_cpuidle(void)
+ 
++static void do_nothing(void *unused)
 +{
-+	off = 1;
 +}
++
++/*
++ * cpu_idle_wait - Used to ensure that all the CPUs come out of the old
++ * idle loop and start using the new idle loop.
++ * Required while changing idle handler on SMP systems.
++ * Caller must have changed idle handler to the new value before the call.
++ */
++void cpu_idle_wait(void)
++{
++	smp_mb();
++	/* kick all the CPUs so that they exit out of old idle routine */
++	smp_call_function(do_nothing, NULL, 1);
++}
++EXPORT_SYMBOL_GPL(cpu_idle_wait);
++
+ int powersave_nap;
  
- #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
- static void cpuidle_kick_cpus(void)
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 1e85538..2786787 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -127,6 +127,7 @@ struct cpuidle_driver {
- };
- 
- #ifdef CONFIG_CPU_IDLE
-+extern void disable_cpuidle(void);
- 
- extern int cpuidle_register_driver(struct cpuidle_driver *drv);
- struct cpuidle_driver *cpuidle_get_driver(void);
-@@ -140,6 +141,7 @@ extern int cpuidle_enable_device(struct cpuidle_device *dev);
- extern void cpuidle_disable_device(struct cpuidle_device *dev);
- 
- #else
-+static inline void disable_cpuidle(void) { }
- 
- static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
- {return -ENODEV; }
+ #ifdef CONFIG_SYSCTL
