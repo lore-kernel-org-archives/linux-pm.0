@@ -1,13 +1,12 @@
-From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 7/7] cpuidle: (POWER) Handle power_save=off
-Date: Tue, 07 Jun 2011 22:00:38 +0530
-Message-ID: <20110607163033.6848.70719.stgit__6166.25441839478$1307464354$gmane$org@tringupt.in.ibm.com>
-References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
+From: Frank Hofmann <frank.hofmann@tomtom.com>
+Subject: [RFC PATCH v4] ARM hibernation/suspend-to-disk support
+Date: Tue, 7 Jun 2011 17:48:17 +0100 (BST)
+Message-ID: <alpine.DEB.2.00.1106071722040.2236__23242.6209412099$1307465365$gmane$org@localhost6.localdomain6>
+Reply-To: frank.hofmann@tomtom.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="1695163656-1103984869-1307465298=:2236"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,67 +16,244 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org, linuxppc-dev@ozlabs.org
-Cc: linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch makes pseries_idle_driver to be not registered when
-power_save=off kernel boot option is specified. For this
-boot_option_idle_override is used similar to how it is used for x86.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Signed-off-by: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
+--1695163656-1103984869-1307465298=:2236
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 
- arch/powerpc/include/asm/processor.h            |    3 +++
- arch/powerpc/kernel/idle.c                      |    4 ++++
- arch/powerpc/platforms/pseries/processor_idle.c |    4 ++++
- 3 files changed, 11 insertions(+), 0 deletions(-)
+Hi,
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index d50c2b6..0ce167e 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -377,6 +377,9 @@ static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
- }
- #endif
- 
-+extern unsigned long  boot_option_idle_override;
-+enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
-+
- #endif /* __KERNEL__ */
- #endif /* __ASSEMBLY__ */
- #endif /* _ASM_POWERPC_PROCESSOR_H */
-diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
-index 932392b..61515f4 100644
---- a/arch/powerpc/kernel/idle.c
-+++ b/arch/powerpc/kernel/idle.c
-@@ -39,9 +39,13 @@
- #define cpu_should_die()	0
- #endif
- 
-+unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
-+EXPORT_SYMBOL(boot_option_idle_override);
-+
- static int __init powersave_off(char *arg)
- {
- 	ppc_md.power_save = NULL;
-+	boot_option_idle_override = IDLE_POWERSAVE_OFF;
- 	return 0;
- }
- __setup("powersave=off", powersave_off);
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-index ff44b49..c4c3383 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -288,6 +288,10 @@ static int pseries_idle_probe(void)
- 		return -EPERM;
- 	}
- 
-+	if (boot_option_idle_override != IDLE_NO_OVERRIDE) {
-+		return -ENODEV;
-+	}
-+
- 	if (!firmware_has_feature(FW_FEATURE_SPLPAR)) {
- 		printk(KERN_DEBUG "Using default idle\n");
- 		return -ENODEV;
+time for another round on this one...
+
+This got quite a bit cleaned up now.
+
+There's now no more need for a "swsusp context" at all. The code uses 
+cpu_suspend/resume and keeps the snapshot state on the stack while 
+writing it out.
+
+There are a few dependencies this patch brings in:
+
+* due to the use of cpu_suspend / cpu_resume, it'll only apply as-is
+   to kernels no older than f6b0fa02e8b0708d17d631afce456524eadf87ff,
+   where Russell King introduced the generic interface.
+   Patching these into older kernels is a little work.
+
+* it temporarily uses swapper_pg_dir and establishes 1:1 mappings there
+   for a MMU-off transition, which is necessary before resume.
+   In order to tear these down afterwards, identity_mapping_del() needs
+   to be called; for some reason that's #ifdef CONFIG_SMP ...
+
+* it needs to "catch" sleep_save_sp after cpu_suspend() so that resume
+   can be provided with the proper starting point.
+   This requires an ENTRY(sleep_save_sp) in arch/arm/kernel/sleep.S so
+   that the symbol becomes public.
+
+* it assumes cpu_reset will disable the MMU. cpu_v6_reset/cpu_v7_reset
+   are currently not doing so (amongst some other minor chip types).
+
+* there's kind of a circular dependency between CONFIG_HIBERNATION and
+   CONFIG_PM_SLEEP, on ARM. The latter is necessary so that cpu_suspend
+   and cpu_resume are compiled in, but it cannot be selected via
+   ARCH_HIBERNATION_POSSIBLE because CONFIG_PM_SLEEP depends on
+   CONFIG_HIBERNATION_INTERFACE - selected by CONFIG_HIBERNATION.
+
+   Consequence is that right now, both CONFIG_PM_SLEEP and ...HIBERNATION
+   must be set in your defconfig file to be able to compile.
+
+   (my head swirls from writing this ...)
+
+Otherwise, this is by far the cleanest in the series yet.
+
+
+I've tested this on ARM1176; still need to do OMAP3 (Cortex-A8), will 
+report on that.
+
+
+Please let me know what you think,
+FrankH.
+--1695163656-1103984869-1307465298=:2236
+Content-Type: TEXT/x-diff; name=hibernation-07Jun2011.patch
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.DEB.2.00.1106071748170.2236@localhost6.localdomain6>
+Content-Description: 
+Content-Disposition: attachment; filename=hibernation-07Jun2011.patch
+
+IGFyY2gvYXJtL2luY2x1ZGUvYXNtL21lbW9yeS5oIHwgICAgMSArDQogYXJj
+aC9hcm0va2VybmVsL01ha2VmaWxlICAgICAgfCAgICAxICsNCiBhcmNoL2Fy
+bS9tbS9LY29uZmlnICAgICAgICAgICB8ICAgIDUgKysNCiBhcmNoL2FybS9r
+ZXJuZWwvY3B1LmMgICAgICAgICB8ICAgOTQgKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysNCiBhcmNoL2FybS9rZXJuZWwvc3dz
+dXNwLlMgICAgICB8ICAgODQgKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrDQogNSBmaWxlcyBjaGFuZ2VkLCAxODUgaW5zZXJ0aW9ucygr
+KSwgMCBkZWxldGlvbnMoLSkNCg0KZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2lu
+Y2x1ZGUvYXNtL21lbW9yeS5oIGIvYXJjaC9hcm0vaW5jbHVkZS9hc20vbWVt
+b3J5LmgNCmluZGV4IDQzMTA3N2MuLmM3ZWY0NTQgMTAwNjQ0DQotLS0gYS9h
+cmNoL2FybS9pbmNsdWRlL2FzbS9tZW1vcnkuaA0KKysrIGIvYXJjaC9hcm0v
+aW5jbHVkZS9hc20vbWVtb3J5LmgNCkBAIC0yNTAsNiArMjUwLDcgQEAgc3Rh
+dGljIGlubGluZSB2b2lkICpwaHlzX3RvX3ZpcnQocGh5c19hZGRyX3QgeCkN
+CiAgKi8NCiAjZGVmaW5lIF9fcGEoeCkJCQlfX3ZpcnRfdG9fcGh5cygodW5z
+aWduZWQgbG9uZykoeCkpDQogI2RlZmluZSBfX3ZhKHgpCQkJKCh2b2lkICop
+X19waHlzX3RvX3ZpcnQoKHVuc2lnbmVkIGxvbmcpKHgpKSkNCisjZGVmaW5l
+IF9fcGFfc3ltYm9sKHgpCQlfX3BhKFJFTE9DX0hJREUoKHVuc2lnbmVkIGxv
+bmcpKHgpLDApKQ0KICNkZWZpbmUgcGZuX3RvX2thZGRyKHBmbikJX192YSgo
+cGZuKSA8PCBQQUdFX1NISUZUKQ0KIA0KIC8qDQpkaWZmIC0tZ2l0IGEvYXJj
+aC9hcm0va2VybmVsL01ha2VmaWxlIGIvYXJjaC9hcm0va2VybmVsL01ha2Vm
+aWxlDQppbmRleCA4ZDk1NDQ2Li5iNzZhNDAzIDEwMDY0NA0KLS0tIGEvYXJj
+aC9hcm0va2VybmVsL01ha2VmaWxlDQorKysgYi9hcmNoL2FybS9rZXJuZWwv
+TWFrZWZpbGUNCkBAIC0zMCw2ICszMCw3IEBAIG9iai0kKENPTkZJR19BUlRI
+VVIpCQkrPSBhcnRodXIubw0KIG9iai0kKENPTkZJR19JU0FfRE1BKQkJKz0g
+ZG1hLWlzYS5vDQogb2JqLSQoQ09ORklHX1BDSSkJCSs9IGJpb3MzMi5vIGlz
+YS5vDQogb2JqLSQoQ09ORklHX1BNX1NMRUVQKQkJKz0gc2xlZXAubw0KK29i
+ai0kKENPTkZJR19ISUJFUk5BVElPTikJKz0gY3B1Lm8gc3dzdXNwLm8NCiBv
+YmotJChDT05GSUdfSEFWRV9TQ0hFRF9DTE9DSykJKz0gc2NoZWRfY2xvY2su
+bw0KIG9iai0kKENPTkZJR19TTVApCQkrPSBzbXAubyBzbXBfdGxiLm8NCiBv
+YmotJChDT05GSUdfSEFWRV9BUk1fU0NVKQkrPSBzbXBfc2N1Lm8NCmRpZmYg
+LS1naXQgYS9hcmNoL2FybS9tbS9LY29uZmlnIGIvYXJjaC9hcm0vbW0vS2Nv
+bmZpZw0KaW5kZXggMDA3NGI4ZC4uYzY2OGY4ZiAxMDA2NDQNCi0tLSBhL2Fy
+Y2gvYXJtL21tL0tjb25maWcNCisrKyBiL2FyY2gvYXJtL21tL0tjb25maWcN
+CkBAIC02MjcsNiArNjI3LDExIEBAIGNvbmZpZyBDUFVfVVNFX0RPTUFJTlMN
+CiBjb25maWcgSU9fMzYNCiAJYm9vbA0KIA0KK2NvbmZpZyBBUkNIX0hJQkVS
+TkFUSU9OX1BPU1NJQkxFDQorCWJvb2wNCisJZGVwZW5kcyBvbiBNTVUNCisJ
+ZGVmYXVsdCB5IGlmIENQVV9BUk05MjBUIHx8IENQVV9BUk05MjZUIHx8IENQ
+VV9TQTExMDAgfHwgQ1BVX1hTQ0FMRSB8fCBDUFVfWFNDMyB8fCBDUFVfVjYg
+fHwgQ1BVX1Y2SyB8fCBDUFVfVjcNCisNCiBjb21tZW50ICJQcm9jZXNzb3Ig
+RmVhdHVyZXMiDQogDQogY29uZmlnIEFSTV9USFVNQg0KZGlmZiAtLWdpdCBh
+L2FyY2gvYXJtL2tlcm5lbC9jcHUuYyBiL2FyY2gvYXJtL2tlcm5lbC9jcHUu
+Yw0KbmV3IGZpbGUgbW9kZSAxMDA2NDQNCmluZGV4IDAwMDAwMDAuLjJjZGZh
+ODUNCi0tLSAvZGV2L251bGwNCisrKyBiL2FyY2gvYXJtL2tlcm5lbC9jcHUu
+Yw0KQEAgLTAsMCArMSw5NCBAQA0KKy8qDQorICogSGliZXJuYXRpb24gc3Vw
+cG9ydCBzcGVjaWZpYyBmb3IgQVJNDQorICoNCisgKiBEZXJpdmVkIGZyb20g
+d29yayBvbiBBUk0gaGliZXJuYXRpb24gc3VwcG9ydCBieToNCisgKg0KKyAq
+IFVidW50dSBwcm9qZWN0LCBoaWJlcm5hdGlvbiBzdXBwb3J0IGZvciBtYWNo
+LWRvdmUNCisgKiBDb3B5cmlnaHQgKEMpIDIwMTAgTm9raWEgQ29ycG9yYXRp
+b24gKEhpcm9zaGkgRG95dSkNCisgKiBDb3B5cmlnaHQgKEMpIDIwMTAgVGV4
+YXMgSW5zdHJ1bWVudHMsIEluYy4gKFRlZXJ0aCBSZWRkeSBldCBhbC4pDQor
+ICoJaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTAvNi8xOC80DQorICoJaHR0
+cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9waXBlcm1haWwvbGlu
+dXgtcG0vMjAxMC1KdW5lLzAyNzQyMi5odG1sDQorICoJaHR0cHM6Ly9wYXRj
+aHdvcmsua2VybmVsLm9yZy9wYXRjaC85NjQ0Mi8NCisgKg0KKyAqIENvcHly
+aWdodCAoQykgMjAwNiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+
+DQorICoNCisgKiBMaWNlbnNlIHRlcm1zOiBHTlUgR2VuZXJhbCBQdWJsaWMg
+TGljZW5zZSAoR1BMKSB2ZXJzaW9uIDINCisgKi8NCisNCisjaW5jbHVkZSA8
+bGludXgvbW0uaD4NCisjaW5jbHVkZSA8bGludXgvc2NoZWQuaD4NCisjaW5j
+bHVkZSA8bGludXgvc3VzcGVuZC5oPg0KKyNpbmNsdWRlIDxhc20vdGxiZmx1
+c2guaD4NCisjaW5jbHVkZSA8YXNtL2NhY2hlZmx1c2guaD4NCisjaW5jbHVk
+ZSA8YXNtL3BnYWxsb2MuaD4NCisjaW5jbHVkZSA8YXNtL3NlY3Rpb25zLmg+
+DQorDQorZXh0ZXJuIGNvbnN0IHZvaWQgX19ub3NhdmVfYmVnaW4sIF9fbm9z
+YXZlX2VuZDsNCisNCitpbnQgcGZuX2lzX25vc2F2ZSh1bnNpZ25lZCBsb25n
+IHBmbikNCit7DQorCXVuc2lnbmVkIGxvbmcgbm9zYXZlX2JlZ2luX3BmbiA9
+IF9fcGFfc3ltYm9sKCZfX25vc2F2ZV9iZWdpbikgPj4gUEFHRV9TSElGVDsN
+CisJdW5zaWduZWQgbG9uZyBub3NhdmVfZW5kX3BmbiA9IFBBR0VfQUxJR04o
+X19wYV9zeW1ib2woJl9fbm9zYXZlX2VuZCkpID4+IFBBR0VfU0hJRlQ7DQor
+DQorCXJldHVybiAocGZuID49IG5vc2F2ZV9iZWdpbl9wZm4pICYmIChwZm4g
+PCBub3NhdmVfZW5kX3Bmbik7DQorfQ0KKw0KK3ZvaWQgbm90cmFjZSBzYXZl
+X3Byb2Nlc3Nvcl9zdGF0ZSh2b2lkKQ0KK3sNCisJZmx1c2hfdGhyZWFkKCk7
+DQorCWxvY2FsX2ZpcV9kaXNhYmxlKCk7DQorfQ0KKw0KK3ZvaWQgbm90cmFj
+ZSByZXN0b3JlX3Byb2Nlc3Nvcl9zdGF0ZSh2b2lkKQ0KK3sNCisJZmx1c2hf
+dGxiX2FsbCgpOw0KKwlmbHVzaF9jYWNoZV9hbGwoKTsNCisJbG9jYWxfZmlx
+X2VuYWJsZSgpOw0KK30NCisNCit1OCBfX3N3c3VzcF9yZXN1bWVfc3RrW1BB
+R0VfU0laRS8yXSBfX25vc2F2ZWRhdGE7DQordTMyIF9fc3dzdXNwX3NhdmVf
+c3A7DQorDQoraW50IF9fc3dzdXNwX2FyY2hfcmVzdW1lX2ZpbmlzaCh2b2lk
+KQ0KK3sNCisJaWRlbnRpdHlfbWFwcGluZ19kZWwoc3dhcHBlcl9wZ19kaXIs
+IF9fcGEoX3N0ZXh0KSwgX19wYShfZXRleHQpKTsNCisJcmV0dXJuIDA7DQor
+fQ0KKw0KKy8qDQorICogVGhlIGZyYW1ld29yayBsb2FkcyB0aGUgaGliZXJu
+YXRpb24gaW1hZ2UgaW50byBhIGxpbmtlZCBsaXN0IGFuY2hvcmVkDQorICog
+YXQgcmVzdG9yZV9wYmxpc3QsIGZvciBzd3N1c3BfYXJjaF9yZXN1bWUoKSB0
+byBjb3B5IGJhY2sgdG8gdGhlIHByb3Blcg0KKyAqIGRlc3RpbmF0aW9ucy4N
+CisgKg0KKyAqIFRvIG1ha2UgdGhpcyB3b3JrIGlmIHJlc3VtZSBpcyB0cmln
+Z2VyZWQgZnJvbSBpbml0cmFtZnMsIHRoZQ0KKyAqIHBhZ2V0YWJsZXMgbmVl
+ZCB0byBiZSBzd2l0Y2hlZCB0byBhbGxvdyB3cml0ZXMgdG8ga2VybmVsIG1l
+bS4NCisgKi8NCit2b2lkIG5vdHJhY2UgX19zd3N1c3BfYXJjaF9yZXN0b3Jl
+X2ltYWdlKHZvaWQpDQorew0KKwlleHRlcm4gc3RydWN0IHBiZSAqcmVzdG9y
+ZV9wYmxpc3Q7DQorCWV4dGVybiB2b2lkIGNwdV9yZXN1bWUodm9pZCk7DQor
+CWV4dGVybiB1bnNpZ25lZCBsb25nIHNsZWVwX3NhdmVfc3A7DQorCXN0cnVj
+dCBwYmUgKnBiZTsNCisJdHlwZW9mKGNwdV9yZXNldCkgKnBoeXNfcmVzZXQg
+PSAodHlwZW9mKGNwdV9yZXNldCkgKil2aXJ0X3RvX3BoeXMoY3B1X3Jlc2V0
+KTsNCisNCisJY3B1X3N3aXRjaF9tbShzd2FwcGVyX3BnX2RpciwgJmluaXRf
+bW0pOw0KKw0KKwlmb3IgKHBiZSA9IHJlc3RvcmVfcGJsaXN0OyBwYmU7IHBi
+ZSA9IHBiZS0+bmV4dCkNCisJCWNvcHlfcGFnZShwYmUtPm9yaWdfYWRkcmVz
+cywgcGJlLT5hZGRyZXNzKTsNCisNCisJc2xlZXBfc2F2ZV9zcCA9IF9fc3dz
+dXNwX3NhdmVfc3A7DQorCWZsdXNoX3RsYl9hbGwoKTsNCisJZmx1c2hfY2Fj
+aGVfYWxsKCk7DQorDQorCWlkZW50aXR5X21hcHBpbmdfYWRkKHN3YXBwZXJf
+cGdfZGlyLCBfX3BhKF9zdGV4dCksIF9fcGEoX2V0ZXh0KSk7DQorDQorCWZs
+dXNoX3RsYl9hbGwoKTsNCisJZmx1c2hfY2FjaGVfYWxsKCk7DQorCWNwdV9w
+cm9jX2ZpbigpOw0KKw0KKwlmbHVzaF90bGJfYWxsKCk7DQorCWZsdXNoX2Nh
+Y2hlX2FsbCgpOw0KKw0KKwlwaHlzX3Jlc2V0KHZpcnRfdG9fcGh5cyhjcHVf
+cmVzdW1lKSk7DQorfQ0KKw0KZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2tlcm5l
+bC9zd3N1c3AuUyBiL2FyY2gvYXJtL2tlcm5lbC9zd3N1c3AuUw0KbmV3IGZp
+bGUgbW9kZSAxMDA2NDQNCmluZGV4IDAwMDAwMDAuLmMzYTRiODMNCi0tLSAv
+ZGV2L251bGwNCisrKyBiL2FyY2gvYXJtL2tlcm5lbC9zd3N1c3AuUw0KQEAg
+LTAsMCArMSw4NCBAQA0KKy8qDQorICogSGliZXJuYXRpb24gc3VwcG9ydCBz
+cGVjaWZpYyBmb3IgQVJNDQorICoNCisgKiBCYXNlZCBvbiB3b3JrIGJ5Og0K
+KyAqDQorICogVWJ1bnR1IHByb2plY3QsIGhpYmVybmF0aW9uIHN1cHBvcnQg
+Zm9yIG1hY2gtZG92ZSwNCisgKiBDb3B5cmlnaHQgKEMpIDIwMTAgTm9raWEg
+Q29ycG9yYXRpb24gKEhpcm9zaGkgRG95dSkNCisgKiBDb3B5cmlnaHQgKEMp
+IDIwMTAgVGV4YXMgSW5zdHJ1bWVudHMsIEluYy4gKFRlZXJ0aCBSZWRkeSBl
+dCBhbC4pDQorICoJaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTAvNi8xOC80
+DQorICoJaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9waXBl
+cm1haWwvbGludXgtcG0vMjAxMC1KdW5lLzAyNzQyMi5odG1sDQorICoJaHR0
+cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC85NjQ0Mi8NCisgKg0K
+KyAqIENvcHlyaWdodCAoQykgMjAwNiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3
+QHNpc2sucGw+DQorICoNCisgKiBMaWNlbnNlIHRlcm1zOiBHTlUgR2VuZXJh
+bCBQdWJsaWMgTGljZW5zZSAoR1BMKSB2ZXJzaW9uIDINCisgKi8NCisNCisj
+aW5jbHVkZSA8bGludXgvbGlua2FnZS5oPg0KKyNpbmNsdWRlIDxhc20vbWVt
+b3J5Lmg+DQorI2luY2x1ZGUgPGFzbS9wYWdlLmg+DQorI2luY2x1ZGUgPGFz
+bS9hc3NlbWJsZXIuaD4NCisNCisvKg0KKyAqIFNhdmUgdGhlIGN1cnJlbnQg
+Q1BVIHN0YXRlIGJlZm9yZSBzdXNwZW5kIC8gcG93ZXJvZmYuDQorICogY3B1
+X3N1c3BlbmQoKSBhbGxvY2F0ZXMgc3BhY2Ugb24gdGhlIHN0YWNrIHRvIHNh
+dmUgYWxsIG5lY2Vzc2FyeQ0KKyAqIGluZm9ybWF0aW9uLiBUaGlzIGhhcyB0
+d28gY29uc2VxdWVuY2VzOg0KKyAqCS0gc3dzdXNwX3NhdmUoKSBoYXMgdG8g
+YmUgY2FsbGVkIHdpdGhvdXQgY2hhbmdpbmcgYW55dGhpbmcgb24NCisgKgkg
+IHRoZSBzdGFjay4gT25lIGNhbm5vdCBqdXN0IHJldHVybiBpbnRvIGl0Lg0K
+KyAqCS0gc2hvdWxkIHN3c3VzcF9zYXZlKCkgZmFpbCBmb3Igc29tZSByZWFz
+b24sIHRoZSBwcmV2aW91cyB2YWx1ZQ0KKyAqCSAgb2Ygc3AgaGFzIHRvIGJl
+IHJlc3RvcmVkIGZyb20gYSBzYWZlIHBsYWNlLg0KKyAqLw0KK0VOVFJZKHN3
+c3VzcF9hcmNoX3N1c3BlbmQpDQorCW1ycwlyMSwgY3Bzcg0KKwltcnMJcjIs
+IHNwc3INCisJc3RtZmQJc3AhLCB7cjEtcjExLGxyfQkJQCBzYXZlIHJlZ2lz
+dGVycw0KKwlsZHIJcjAsID0uTHRlbXBfc3ANCisJc3RyCXNwLCBbcjBdCQkJ
+QCB0ZW1wDQorCWxkcglyMSwgPShQSFlTX09GRlNFVCAtIFBBR0VfT0ZGU0VU
+KQ0KKwlhZHIJcjMsIC5McmVzdW1lX3Bvc3RfbW11CQlAIHJlc3VtZSBoZXJl
+DQorCWJsCWNwdV9zdXNwZW5kCQkJQCBzbmFwc2hvdCBzdGF0ZSAodG8gc3Rh
+Y2spDQorCWxkcglyMSwgPXNsZWVwX3NhdmVfc3ANCisJbGRyCXIwLCA9X19z
+d3N1c3Bfc2F2ZV9zcA0KKwlsZHIJcjIsIFtyMV0NCisJc3RyCXIyLCBbcjBd
+DQorCWJsCXN3c3VzcF9zYXZlCQkJQCB3cml0ZSBzbmFwc2hvdA0KKwlsZHIJ
+cjEsID0uTHRlbXBfc3ANCisJbGRyCXNwLCBbcjFdCQkJQCByZXN0b3JlIHN0
+YWNrDQorCWxkbWZkCXNwISwge3IxLXIxMSwgcGN9CQlAIHJldHVybg0KK0VO
+RFBST0Moc3dzdXNwX2FyY2hfc3VzcGVuZCkNCisNCisvKg0KKyAqIFJlc3Rv
+cmUgdGhlIG1lbW9yeSBpbWFnZSBmcm9tIHRoZSBwYWdlbGlzdHMsIGFuZCBs
+b2FkIHRoZSBDUFUgcmVnaXN0ZXJzDQorICogZnJvbSBzYXZlZCBzdGF0ZS4N
+CisgKi8NCitFTlRSWShzd3N1c3BfYXJjaF9yZXN1bWUpDQorCXNldG1vZGUg
+UFNSX0lfQklUIHwgUFNSX0ZfQklUIHwgU1ZDX01PREUsIHIyDQorCS8qDQor
+CSAqIFN3aXRjaCBzdGFjayB0byBhIG5vc2F2ZWRhdGEgcmVnaW9uIHRvIG1h
+a2Ugc3VyZSBpbWFnZSByZXN0b3JlDQorCSAqIGRvZXNuJ3QgY2xvYmJlciBp
+dCB1bmRlcm5lYXRoIGl0c2VsZi4NCisJICogTm90ZSB0aGF0IHRoaXMgZWZm
+ZWN0aXZlbHkgbnVrZXMgImN1cnJlbnQiOyBmcm9tIGhlcmUgb24sIHRoZQ0K
+KwkgKiBleGVjdXRpbmcgY29kZSBydW5zIGNvbnRleHQtbGVzcyBhbmQgbm8g
+ZnVuY3Rpb25zIGNhbiBiZSBjYWxsZWQNCisJICogdGhhdCBoYXZlIHNpZGUg
+ZWZmZWN0cyBiZXlvbmQgYWNjZXNzaW5nIGdsb2JhbCB2YXJpYWJsZXMuDQor
+CSAqLw0KKwlsZHIJc3AsID0oX19zd3N1c3BfcmVzdW1lX3N0ayArIFBBR0Vf
+U0laRSAvIDIpDQorCWIJX19zd3N1c3BfYXJjaF9yZXN0b3JlX2ltYWdlDQor
+Lmx0b3JnDQorLmFsaWduIDUNCisJLyoNCisJICogRXhlY3V0aW9uIHJldHVy
+bnMgaGVyZSB2aWEgcmVzdW1pbmcgdGhlIHNhdmVkIGNvbnRleHQuDQorCSAq
+IE1NVSBpcyBhY3RpdmUgYWdhaW4gYW5kIENQVSBjb3JlIHN0YXRlIGhhcyBi
+ZWVuIHJlc3RvcmVkLCBhbGwNCisJICogdGhhdCByZW1haW5zIHRvIGJlIGRv
+bmUgbm93IGlzIHRvIHJlc3RvcmUgdGhlIENQVSByZWdpc3RlcnMuDQorCSAq
+Lw0KKy5McmVzdW1lX3Bvc3RfbW11Og0KKwlsZG1mZAlzcCEsIHtyMS1yMTF9
+DQorCW1zcgljcHNyLCByMQ0KKwltc3IJc3BzciwgcjINCisJYmwJY3B1X2lu
+aXQJCQlAIHJlaW5pdGlhbGl6ZSBvdGhlciBtb2Rlcw0KKwlsZG1mZAlzcCEs
+IHtscn0NCisJYglfX3N3c3VzcF9hcmNoX3Jlc3VtZV9maW5pc2gJQCBjbGVh
+bnVwDQorRU5EUFJPQyhzd3N1c3BfYXJjaF9yZXN1bWUpDQorDQorLmRhdGEN
+CisuTHRlbXBfc3A6DQorCS5sb25nIDANCg==
+
+--1695163656-1103984869-1307465298=:2236
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--1695163656-1103984869-1307465298=:2236--
