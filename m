@@ -1,16 +1,15 @@
-From: Kevin Hilman <khilman@ti.com>
+From: Magnus Damm <magnus.damm@gmail.com>
 Subject: Re: calling runtime PM from system PM methods
-Date: Wed, 08 Jun 2011 15:50:03 -0700
-Message-ID: <87hb80546c.fsf__18768.9699735076$1307573464$gmane$org@ti.com>
+Date: Thu, 9 Jun 2011 14:29:30 +0900
+Message-ID: <BANLkTimFJdRAipL0Gq_K=RYKcWmDNpds+w__24357.7647059739$1307597439$gmane$org@mail.gmail.com>
 References: <Pine.LNX.4.44L0.1106021010360.1913-100000@iolanthe.rowland.org>
 	<201106062029.36389.rjw@sisk.pl> <87zkluwqab.fsf@ti.com>
-	<201106072332.30464.rjw@sisk.pl>
+	<201106072332.30464.rjw@sisk.pl> <87hb80546c.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106072332.30464.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Tue, 7 Jun 2011 23:32:30 +0200")
+In-Reply-To: <87hb80546c.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,77 +19,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kevin Hilman <khilman@ti.com>
 Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Hi Kevin,
 
-[...]
+On Thu, Jun 9, 2011 at 7:50 AM, Kevin Hilman <khilman@ti.com> wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>
+> [...]
+>
+>> you need to separate the system suspend handling from runtime PM.
+>
+> /me risks getting yelled at again and jumps back in ;)
 
-> you need to separate the system suspend handling from runtime PM.
+=3D)
 
-/me risks getting yelled at again and jumps back in ;)
+>> Each of them requires a different approach, because the goal is really
+>> different in both cases (basically, runtime PM triggers when the
+>> device is _known_ to be idle, while system suspend may trigger while
+>> it's actually being used).
+>
+> OK, but from the driver's perspective, the goals do not seem all that
+> different to me:
+>
+> Runtime suspend
+> 1. activity
+> 2. activity finishes
+> 3. device is _known_ to be idle
+> 4. trigger device low-power transition
+>
+> system suspend [echo mem > /sys/power/state]
+> 1. activity
+> 2. prevent future activity, halt/wait for current activity
+> 3. device is _known_ to be idle
+> 4. trigger device low-power transition
+>
+> The only difference is step 2. =A0In runtime suspend, the activity
+> finishes on its own, in system suspend, the activity is forcibly
+> stopped. =A0In either case, after that point the device is known to be
+> idle, and proceeding from there is identical. =A0IOW, based on the above,
+> another way of looking at system PM is forcing idle so that runtime PM
+> can happen.
 
-> Each of them requires a different approach, because the goal is really
-> different in both cases (basically, runtime PM triggers when the
-> device is _known_ to be idle, while system suspend may trigger while
-> it's actually being used).
+I agree with the view that system wide suspend is similar to force
+idle in the case of a non-wakeup device. If you flip that around then
+from a device driver perspective, system wide suspend on a device
+which is a wakeup source looks like forcing enable.
 
-OK, but from the driver's perspective, the goals do not seem all that
-different to me:
+This is how I see the system wide suspend including wakeup support:
 
-Runtime suspend
 1. activity
-2. activity finishes
+(In case of an ethernet device for instance, the network may be up or down)
+2. save current state
+3. prevent future activity, halt/wait for current activity
+4. device is _known_ to be idle
+5. if wakeup is enabled, force enable regardless of state in step 1 above
+6. trigger device low-power transition (if possible)
+
+For system wide resume:
+
+1. wake up from low-power state (if needed)
+2. if wakeup was enabled, force idle - similar to suspend step 3 above
 3. device is _known_ to be idle
-4. trigger device low-power transition 
+4. restore state saved in suspend step 2 above
+5. activity
+(Also, make sure no interrupts are lost)
 
-system suspend [echo mem > /sys/power/state]
-1. activity
-2. prevent future activity, halt/wait for current activity
-3. device is _known_ to be idle
-4. trigger device low-power transition
+The two roles for each wakeup-capable driver, and switching between
+those adds quite a bit of complexity. The absolute best part is the
+interrupt leakage between the wakeup state and the real state. Almost
+impossible to get right. =3D)
 
-The only difference is step 2.  In runtime suspend, the activity
-finishes on its own, in system suspend, the activity is forcibly
-stopped.  In either case, after that point the device is known to be
-idle, and proceeding from there is identical.  IOW, based on the above,
-another way of looking at system PM is forcing idle so that runtime PM
-can happen.
-
-I think it's important to note the similarities as well as the
-differences.  Maybe I'm still really blind here, but I cannot see how
-they can be completely decoupled.
-
-More specifically, what should be the approach in system suspend when a
-device is already runtime suspended?  If you treat runtime and system PM
-as completely independent, you would have to runtime resume the device
-so that it can then be immediately system suspended.
-
-For many (if not all) devices though, what I suspect we would want is
-for devices that are runtime suspended to stay runtime suspended across
-a system suspend *and* resume.  That would mean that the device power
-domain would not call system PM callbacks on devices that are runtime
-suspended.
-
-At least for device power domains where the low-power state is identical
-between runtime suspend and system suspend, this makes a lot of sense
-(to me.)  Device power domain ->suspend might look something like this
-(obviously not tested):
-
-    if (pm_runtime_suspended(dev))
-        return;
-
-    pm_generic_suspend(dev);       
-    magic_device_idle(dev); /* HW-specific, shared with runtime PM */
-    priv->flags |= MY_DEVICE_SYS_SUSPENDED;
-
-and ->resume():
-
-   if (priv->flags & MY_DEVICE_SYS_SUSPENDED) {
-       magic_device_enable(dev);
-       pm_generic_resume(dev);    
-  }
-
-Kevin
+/ magnus
