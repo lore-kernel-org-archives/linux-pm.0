@@ -1,12 +1,13 @@
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: [PATCH]drivers:base:power:trace.c Add "UTC" Coordinated
-	Universal Time to the printk.
-Date: Wed,  8 Jun 2011 23:01:41 -0700
-Message-ID: <1307599301-2524-1-git-send-email-justinmattock__39067.9164826453$1307599451$gmane$org@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: calling runtime PM from system PM methods
+Date: Thu, 9 Jun 2011 09:56:48 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106090945490.2081-100000__31860.959242522$1307627883$gmane$org@iolanthe.rowland.org>
+References: <87hb80546c.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <87hb80546c.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,40 +17,124 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: len.brown@intel.com
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, "Justin P. Mattock" <justinmattock@gmail.com>
+To: Kevin Hilman <khilman@ti.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: "Justin P. Mattock" <justinmattock@gmail.com>
+On Wed, 8 Jun 2011, Kevin Hilman wrote:
 
-sounds stupid, but taking a glance at the time, and seeing the wrong time, or what seemed 
-wrong in dmesg, caused me to go into total check the time clock panic mode.. So the patch below adds:
-"UTC" Coordinated Universal Time abreviation to the printk so people like me dont flip out over the time!
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> 
+> [...]
+> 
+> > you need to separate the system suspend handling from runtime PM.
+> 
+> /me risks getting yelled at again and jumps back in ;)
+> 
+> > Each of them requires a different approach, because the goal is really
+> > different in both cases (basically, runtime PM triggers when the
+> > device is _known_ to be idle, while system suspend may trigger while
+> > it's actually being used).
+> 
+> OK, but from the driver's perspective, the goals do not seem all that
+> different to me:
+> 
+> Runtime suspend
+> 1. activity
+> 2. activity finishes
+> 3. device is _known_ to be idle
+> 4. trigger device low-power transition 
+> 
+> system suspend [echo mem > /sys/power/state]
+> 1. activity
+> 2. prevent future activity, halt/wait for current activity
+> 3. device is _known_ to be idle
+> 4. trigger device low-power transition
+> 
+> The only difference is step 2.
 
-before:
-[    0.114915] Time:  1:47:03  Date: 06/09/11
+That _is_ the main difference, and it's a big one.  (As Magnus pointed 
+out, wakeup-enabling is another difference).
 
-after:
-[    0.114728] Time:  5:46:02 UTC Date: 06/09/11
+>  In runtime suspend, the activity
+> finishes on its own, in system suspend, the activity is forcibly
+> stopped.  In either case, after that point the device is known to be
+> idle, and proceeding from there is identical.  IOW, based on the above,
+> another way of looking at system PM is forcing idle so that runtime PM
+> can happen.
+> 
+> I think it's important to note the similarities as well as the
+> differences.  Maybe I'm still really blind here, but I cannot see how
+> they can be completely decoupled.
 
-Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+They don't have to be decoupled, and indeed they can share code.  The 
+point Rafael and I are making is that they have to use different 
+callback pointers, which gives you a chance to handle the differences 
+as well as the similarities.
 
----
- drivers/base/power/trace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> More specifically, what should be the approach in system suspend when a
+> device is already runtime suspended?  If you treat runtime and system PM
+> as completely independent, you would have to runtime resume the device
+> so that it can then be immediately system suspended.
 
-diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-index c80e138..009f459 100644
---- a/drivers/base/power/trace.c
-+++ b/drivers/base/power/trace.c
-@@ -112,7 +112,7 @@ static unsigned int read_magic_time(void)
- 	unsigned int val;
- 
- 	get_rtc_time(&time);
--	pr_info("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
-+	pr_info("Time: %2d:%02d:%02d UTC Date: %02d/%02d/%02d\n",
- 		time.tm_hour, time.tm_min, time.tm_sec,
- 		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
- 	val = time.tm_year;				/* 100 years */
--- 
-1.7.5.2
+Assuming the wakeup setting is correct, and assuming you use the same 
+power level for runtime suspend and system suspend, then nothing needs 
+to be done.
+
+If the wakeup setting is not correct, it has to be changed.  That 
+often implies going back to full power in order to change the 
+wakeup setting, then going to low power again.
+
+This is all described in various files under Documentation/power/, in 
+particular, devices.txt and runtime_pm.txt.
+
+> For many (if not all) devices though, what I suspect we would want is
+> for devices that are runtime suspended to stay runtime suspended across
+> a system suspend *and* resume.  That would mean that the device power
+> domain would not call system PM callbacks on devices that are runtime
+> suspended.
+
+No, it's generally agreed that _all_ devices should return to full 
+power during system resume -- even if they were runtime suspended 
+before the system sleep.  This also is explained in the Documentation 
+files.
+
+> At least for device power domains where the low-power state is identical
+> between runtime suspend and system suspend, this makes a lot of sense
+> (to me.)  Device power domain ->suspend might look something like this
+> (obviously not tested):
+> 
+>     if (pm_runtime_suspended(dev))
+>         return;
+
+You could test priv->flags here instead.  But I suppose this would
+work.
+
+>     pm_generic_suspend(dev);       
+
+No, you shouldn't call the PM core here.
+
+>     magic_device_idle(dev); /* HW-specific, shared with runtime PM */
+
+At this point you should call magic_device_set_low_power(dev).  That
+routine can also be shared with runtime PM.
+
+>     priv->flags |= MY_DEVICE_SYS_SUSPENDED;
+
+I don't see any point in having separate flags for system suspend and 
+runtime suspend.  Just use MY_DEVICE_IS_SUSPENDED, and set it in the 
+magic_device_set_low_power routine.
+
+> and ->resume():
+> 
+>    if (priv->flags & MY_DEVICE_SYS_SUSPENDED) {
+>        magic_device_enable(dev);
+>        pm_generic_resume(dev);    
+>   }
+
+This should simply be:
+
+	magic_device_set_full_power(dev);  // clears MY_DEVICE_IS_SUSPENDED
+	magic_device_enable(dev);
+
+Alan Stern
