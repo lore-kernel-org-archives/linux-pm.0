@@ -1,25 +1,19 @@
-From: Frank Hofmann <frank.hofmann@tomtom.com>
-Subject: Re: [RFC PATCH v4] ARM hibernation/suspend-to-disk
- support
-Date: Fri, 10 Jun 2011 15:54:05 +0100 (BST)
-Message-ID: <alpine.DEB.2.00.1106101507390.20826__33963.6034485467$1307717703$gmane$org@localhost6.localdomain6>
-References: <201106072348.44624.rjw@sisk.pl>
-	<alpine.DEB.2.00.1106091604180.11513@localhost6.localdomain6>
-	<20110609154058.GA24424@n2100.arm.linux.org.uk>
-	<4DF0F45A.3030103@ti.com>
-	<20110609164024.GB24424@n2100.arm.linux.org.uk>
-	<4DF0FA73.8050607@ti.com>
-	<20110609171255.GD24424@n2100.arm.linux.org.uk>
-	<alpine.DEB.2.00.1106101110130.11513@localhost6.localdomain6>
-	<20110610134311.GK24424@n2100.arm.linux.org.uk>
-	<alpine.DEB.2.00.1106101444490.20826@localhost6.localdomain6>
-	<20110610140201.GM24424@n2100.arm.linux.org.uk>
-Reply-To: frank.hofmann@tomtom.com
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Fri, 10 Jun 2011 08:11:21 -0700
+Message-ID: <20110610151121.GA2230__44929.1778299541$1307718750$gmane$org@linux.vnet.ibm.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110528005640.9076c0b1.akpm@linux-foundation.org>
+	<20110609185259.GA29287@linux.vnet.ibm.com>
+	<BANLkTinxeeSby_+tta8EhzCg3VbD6+=g+g@mail.gmail.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110610140201.GM24424@n2100.arm.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <BANLkTinxeeSby_+tta8EhzCg3VbD6+=g+g@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,128 +23,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: tuxonice-devel@tuxonice.net, Frank Hofmann <frank.hofmann@tomtom.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 10 Jun 2011, Russell King - ARM Linux wrote:
+On Fri, Jun 10, 2011 at 09:51:53AM +0900, Kyungmin Park wrote:
+> On Fri, Jun 10, 2011 at 3:52 AM, Paul E. McKenney
+> <paulmck@linux.vnet.ibm.com> wrote:
+> > On Sat, May 28, 2011 at 12:56:40AM -0700, Andrew Morton wrote:
+> >> On Fri, 27 May 2011 18:01:28 +0530 Ankita Garg <ankita@in.ibm.com> wro=
+te:
+> >>
+> >> > This patchset proposes a generic memory regions infrastructure that =
+can be
+> >> > used to tag boundaries of memory blocks which belongs to a specific =
+memory
+> >> > power management domain and further enable exploitation of platform =
+memory
+> >> > power management capabilities.
+> >>
+> >> A couple of quick thoughts...
+> >>
+> >> I'm seeing no estimate of how much energy we might save when this work
+> >> is completed. =A0But saving energy is the entire point of the entire
+> >> patchset! =A0So please spend some time thinking about that and update =
+and
+> >> maintain the [patch 0/n] description so others can get some idea of the
+> >> benefit we might get from all of this. =A0That estimate should include=
+ an
+> >> estimate of what proportion of machines are likely to have hardware
+> >> which can use this feature and in what timeframe.
+> >>
+> >> IOW, if it saves one microwatt on 0.001% of machines, not interested ;)
+> >
+> > FWIW, I have seen estimates on the order of a 5% reduction in power
+> > consumption for some common types of embedded devices.
+> =
 
->> [ ... ]
-> I think there's a fundamental problem here - what's required for S2RAM
-> is not what's required for hibernate.  After cpu_suspend() has done
-> its job, you are in a _very_ specific environment designed for the last
-> stages of S2RAM _only_ and not hibernate.
->
-> In order to use cpu_suspend() for hibernate, it requires a completely
-> different path entirely, and there's no getting away from that.
->
-> You can see that when you analyze the differences between S2RAM and
-> hibernate, when you realize that the final part of the S2RAM process
-> (which happens after cpu_suspend() returns) on many SoCs is dealing
-> with putting SDRAM into self-refresh mode before writing some kind of
-> power mode register to tell the power supply to kill power to most
-> of the platform.  That is all _very_ SoC specific.
+> Wow interesting. I can't expect it can reduce 5% power reduction.
+> If it uses the 1GiBytes LPDDR2 memory. each memory port has 4Gib,
+> another has 4Gib. so one bank size is 64MiB (512MiB / 8).
+> So I don't expect it's difficult to contain the free or inactive
+> memory more than 64MiB during runtime.
+> =
 
-Yes, that's what I'm trying to say - the _final_ stage, for s2ram, sends 
-the SoC to low-power.
-Up until there, we do the same for hibernation, don't we ? Where exactly 
-is it different ?
+> Anyway can you describe the exact test environment? esp., memory type?
+> As you know there are too much embedded devices which use the various
+> environment.
 
->
-> Also realize that the code which executes after cpu_suspend() returns
-> is _not_ running in the same context as the code which called
-> cpu_suspend() - cpu_suspend() has modified the stack pointer to store
-> the CPU specific state and that is not the same stack pointer as was
-> the case before cpu_suspend() was called.
+Indeed, your mileage may vary.  It involved a very low-power CPU,
+and the change enabled not just powering off memory, but reducing
+the amount of physical memory provided.
 
-Yes, the function isn't "well behaved" from the ABI point of view because 
-it doesn't preserve registers (including the stack), but that can be 
-accommodated by the caller.
-The current s2ram callers have to accommodate that as well. Which is 
-ultimately easy for them - since poweroff doesn't care.
+Of course, on a server, you could get similar results by having a very
+large amount of memory (say 256GB) and a workload that needed all the
+memory only occasionally for short periods, but could get by with much
+less (say 8GB) the rest of the time.  I have no idea whether or not
+anyone actually has such a system.
 
+							Thanx, Paul
 
-The only reason why hibernation / swsusp_arch_suspend() is different there 
-is because the activity _after_ cpu_suspend() is extensive and _can fail_ 
-(saving the image); on that failure, one would prefer to see an error 
-message and continue instead of panicing the system. So the stack change 
-you mention needs to be addressed, swsusp_arch_suspend() must be a 
-well-behaved function from the ABI point of view.
-
-
-Normally, if all goes _right_, swsusp_save() does not return either. It 
-ends powering the system off. If one were willing to die without message 
-on failure to save the snapshot to disk, and would be willing to block 
-cpu_suspend during writing the snapshot (to guarantee sleep_save_sp isn't 
-changing) one wouldn't need to care about the stack and could simply:
-
-ENTRY(swsusp_arch_suspend)
- 	mrs	r1, cpsr
- 	mrs	r2, spsr
- 	stmfd	sp! {r1-r12,lr}
- 	bl	__swsusp_arch_get_vpoffset
- 	mov	r1, r0
- 	adr	r3, .Lresume_post_mmu
- 	bl	cpu_suspend
- 	bl	swsusp_save
-0:
- 	b	0b		@ should never reach this
-ENDPROC(swsusp_arch_suspend)
-
-
-Resume is quite trivial either way:
-
-ENTRY(swsusp_arch_resume)
-         setmode PSR_I_BIT | PSR_F_BIT | SVC_MODE, r2
-         ldr     sp, =(__swsusp_resume_stk + PAGE_SIZE / 2)
- 	/*
- 	 * replays image, and ends in cpu_reset(cpu_resume)
- 	 */
-         b       __swsusp_arch_restore_image
-.Lresume_post_mmu:
-         ldmfd   sp!, {r1-r12}
-         msr     cpsr, r1
-         msr     spsr, r2
-         bl      cpu_init                        @ reinitialize other modes
-         ldmfd   sp!, {lr}
-         b       __swsusp_arch_resume_finish     @ cleanup
-ENDPROC(swsusp_arch_resume)
-
-
->
-> You don't want to run any of that code when you're dealing with hibernate,
-> so expecting to be able to reuse these S2RAM paths is not realistic.
-
-Hmm, well ... in the end, hibernation does:
-
- 	<snapshot state>
- 	<some long operation that writes the image out>
- 	<poweroff>
-
-while s2ram does:
-
- 	<snapshot state>
- 	<some quick operation setting low power modes>
- 	<poweroff>
-
->
-> What we could do is provide a cpu_hibernate() function which has saner
-> semantics for saving the CPU specific state for hibernate.
-
-Yes, that's exactly what I'm hoping for. From my point of view, this 
-would, though, end up in:
-
-cpu_soc_suspend:
- 	cpu_hibernate_snapshot_state();
- 	/* S2RAM codepath to send soc to low power */
-
-cpu_soc_resume:
- 	/* S2RAM codepath for waking up soc essentials */
- 	cpu_hibernate_restore_state();
-
-At least I can't come up with a really good reason why the state 
-snapshotting operation would have to be different between s2ram and 
-s2disk.
-
-
-FrankH.
+> Thank you,
+> Kyungmin Park
+> >
+> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Thanx, Paul
+> >
+> >> Also, all this code appears to be enabled on all machines? =A0So machi=
+nes
+> >> which don't have the requisite hardware still carry any additional
+> >> overhead which is added here. =A0I can see that ifdeffing a feature li=
+ke
+> >> this would be ghastly but please also have a think about the
+> >> implications of this and add that discussion also.
+> >>
+> >> If possible, it would be good to think up some microbenchmarks which
+> >> probe the worst-case performance impact and describe those and present
+> >> the results. =A0So others can gain an understanding of the runtime cos=
+ts.
+> >>
+> >>
+> >> --
+> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel=
+" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
+> >> Please read the FAQ at =A0http://www.tux.org/lkml/
+> >>
+> >
+> > --
+> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> > the body to majordomo@kvack.org. =A0For more info on Linux MM,
+> > see: http://www.linux-mm.org/ .
+> > Fight unfair telecom internet charges in Canada: sign http://stopthemet=
+er.ca/
+> > Don't email: <a href=3Dmailto:"dont@kvack.org"> email@kvack.org </a>
+> >
