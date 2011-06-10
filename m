@@ -1,23 +1,15 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Fri, 10 Jun 2011 18:23:07 +0100
-Message-ID: <20110610172307.GA27630__27840.1844356724$1307726697$gmane$org@srcf.ucam.org>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<20110528005640.9076c0b1.akpm@linux-foundation.org>
-	<20110609185259.GA29287@linux.vnet.ibm.com>
-	<BANLkTinxeeSby_+tta8EhzCg3VbD6+=g+g@mail.gmail.com>
-	<20110610151121.GA2230@linux.vnet.ibm.com>
-	<20110610155954.GA25774@srcf.ucam.org>
-	<20110610165529.GC2230@linux.vnet.ibm.com>
-	<20110610170535.GC25774@srcf.ucam.org>
-	<20110610171939.GE2230@linux.vnet.ibm.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: calling runtime PM from system PM methods
+Date: Fri, 10 Jun 2011 18:31:55 +0100
+Message-ID: <20110610173154.GO26436__23334.4442131513$1307727163$gmane$org@opensource.wolfsonmicro.com>
+References: <20110610155707.GN26436@opensource.wolfsonmicro.com>
+	<Pine.LNX.4.44L0.1106101317160.1921-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110610171939.GE2230@linux.vnet.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.1106101317160.1921-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,21 +19,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 10, 2011 at 10:19:39AM -0700, Paul E. McKenney wrote:
-> On Fri, Jun 10, 2011 at 06:05:35PM +0100, Matthew Garrett wrote:
-> > I mean at the hardware level. As far as I know, the best we can do at 
-> > the moment is to put an entire node into self refresh when the CPU hits 
-> > package C6.
-> 
-> But this depends on the type of system and CPU family, right?  If you
-> can say, which hardware are you thinking of?  (I am thinking of ARM.)
+On Fri, Jun 10, 2011 at 01:17:56PM -0400, Alan Stern wrote:
+> On Fri, 10 Jun 2011, Mark Brown wrote:
 
-I haven't seen too many ARM servers with 256GB of RAM :) I'm mostly 
-looking at this from an x86 perspective.
+> > ignores that), it's noticably harder to reason about what's going on
+> > when I go outside there and when I think about what I'm doing it always
+> > feels like it should be possible to factor it out of the drivers.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> What would make the common cases easier?
+
+I think from an interface point of view it's something like
+UNIVERSAL_DEV_PM_OPS() and friends, probably with some additional ops
+that can do the glue bits like enabling wakeup and quiescing activity.
+I'd need to think harder about what exactly that'd look like - for my
+cases the fundamental thing I want to say is that there's one suspend
+routine and one resume routine and I'd like some framework code to work
+out when they're called.
