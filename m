@@ -1,15 +1,19 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: calling runtime PM from system PM methods
-Date: Fri, 10 Jun 2011 16:57:07 +0100
-Message-ID: <20110610155707.GN26436__22956.494408618$1307721574$gmane$org@opensource.wolfsonmicro.com>
-References: <20110610152151.GG26441@sirena.org.uk>
-	<Pine.LNX.4.44L0.1106101131110.1921-100000@iolanthe.rowland.org>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Fri, 10 Jun 2011 16:59:54 +0100
+Message-ID: <20110610155954.GA25774__24064.2222379849$1307721813$gmane$org@srcf.ucam.org>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110528005640.9076c0b1.akpm@linux-foundation.org>
+	<20110609185259.GA29287@linux.vnet.ibm.com>
+	<BANLkTinxeeSby_+tta8EhzCg3VbD6+=g+g@mail.gmail.com>
+	<20110610151121.GA2230@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1106101131110.1921-100000@iolanthe.rowland.org>
+In-Reply-To: <20110610151121.GA2230@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,58 +23,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 10, 2011 at 11:45:30AM -0400, Alan Stern wrote:
-> On Fri, 10 Jun 2011, Mark Brown wrote:
+On Fri, Jun 10, 2011 at 08:11:21AM -0700, Paul E. McKenney wrote:
 
-> > It's not massively clear to me how much sense that makes for the
-> > embedded case where we've got a much better idea of what happened to the
-> > hardware over suspend.  Note that I'm thinking here mostly of the case
-> > where we've runtime suspended the device, if the kernel thought the
-> > device was powered then it's much clearer that we should do this on
-> > resume.
+> Of course, on a server, you could get similar results by having a very
+> large amount of memory (say 256GB) and a workload that needed all the
+> memory only occasionally for short periods, but could get by with much
+> less (say 8GB) the rest of the time.  I have no idea whether or not
+> anyone actually has such a system.
 
-> Well, this is a SHOULD, not a MUST.  If you want your driver to leave a
-> device in a low-power state, it can do so.  Just bear in mind that the
-> PM core's idea of the device's runtime power state may end up not
-> matching reality unless you're careful.
+For the server case, the low hanging fruit would seem to be 
+finer-grained self-refresh. At best we seem to be able to do that on a 
+per-CPU socket basis right now. The difference between active and 
+self-refresh would seem to be much larger than the difference between 
+self-refresh and powered down.
 
-This is part of the trouble, it all feels like a lot more work than it
-should be for relatively common cases.  In the audio case we're fine as
-the subsystem implements a completely independent PM infrastructure
-which ignores the PM core except for system suspend (and sometimes
-ignores that), it's noticably harder to reason about what's going on
-when I go outside there and when I think about what I'm doing it always
-feels like it should be possible to factor it out of the drivers.
-
-> Of course, even if all devices do get turned on during resume, one 
-> would expect the normal runtime PM mechanism to power them down again 
-> very shortly after the resume is finished.
-
-Yeah, though of course if you're only going to be resumed for a very
-brief time anyway the amount of time you spend powering up and down
-suddenly gets a lot more interesting.  Things like responding to a
-keepalive from the network can be done quickly enough that people get
-annoyed if you burn 10ms or whatever powering up some irrelevant bit of
-hardware.
-
-> >  I've probably got a fairly
-> > odd view of the world here in that I mostly care about big devices
-> > connected over slow buses where power up can be user visible, and mostly
-> > work on subsystems where the concept of "full power" isn't terribly
-> > meaningful.
-> 
-> The PM core tries to be flexible, but there are limitations.  In
-> particular, it's not very well suited for handling devices with
-> multiple power levels.  Drivers simply have to do the best they can to
-> fit in with the PM core's power model.  For example, all functional
-> states might be considered "full power" and all others might be
-> considered "low power".  Coordinating all the extra details would then
-> be the driver's responsibility.
-
-Right, I mostly agree - like I say I think the main thing that would be
-useful here is to extend the helpers for the common case unified suspend
-situation.  This may be totally separate to what Kevin needs, though.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
