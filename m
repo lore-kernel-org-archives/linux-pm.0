@@ -1,14 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: calling runtime PM from system PM methods
-Date: Fri, 10 Jun 2011 22:45:11 +0200
-Message-ID: <201106102245.11703.rjw__12271.6264836074$1307738702$gmane$org@sisk.pl>
-References: <87hb80546c.fsf@ti.com> <201106102049.03777.rjw@sisk.pl>
-	<20110610185458.GU26436@opensource.wolfsonmicro.com>
+Date: Fri, 10 Jun 2011 17:27:38 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106101720131.1812-100000__4654.78630872003$1307741339$gmane$org@iolanthe.rowland.org>
+References: <201106102227.25391.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110610185458.GU26436@opensource.wolfsonmicro.com>
+In-Reply-To: <201106102227.25391.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,54 +17,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 10, 2011, Mark Brown wrote:
-> On Fri, Jun 10, 2011 at 08:49:03PM +0200, Rafael J. Wysocki wrote:
-> > On Friday, June 10, 2011, Mark Brown wrote:
-> 
-> > > It seems like everyone's agreeing with each other here - from the user
-> > > side the request seems to be largely for core infastructure like
-> > > UNIVERSAL_DEV_PM_OPS() (which I'm not sure is a good idea any more given
-> > > that it doesn't do anything to handle the runtime/system interaction?).
-> 
-> > I'm not sure what you mean here.  First, UNIVERSAL_DEV_PM_OPS() actually
-> > does what it says, defines a set of operations to use for system suspend,
-> > hibernation and runtime PM all the same.
-> 
-> Right, but in the light of what you guys are saying about the
-> interactions between runtime suspend and resume I'm no longer clear that
-> that is actually sane for something which does use runtime PM, and of
-> course if a driver wants to support the wake configuration interface
-> then this might also fall out of the window.
+On Fri, 10 Jun 2011, Rafael J. Wysocki wrote:
 
-It is not generally safe and there are multiple factors deciding of it
-(see the message I've just sent for details).
-
-> > The Kevin's point originally was that it might be desirable to do things
-> > like calling pm_runtime_suspend() from a driver's (system) .suspend()
-> > callback, if I understood it correctly, and the answer was that it wasn't
-> > the right thing to do (for reasons given elsewhere in the thread).
+> Next, what subsystem (e.g. bus type) is the driver going to work with?
 > 
-> Yeah, I think it is too.
+> If the subsystem is "smart" enough, it can take care of many things, like
+> "powering off", wakeup preparations and so on.
 > 
-> > Your point seems to be that simple drivers should not be required to
-> > define separate callback routines, for example, for system suspend and
-> > runtime PM.  However, they aren't required to do so, they can point
-> > all of their "suspend" callback pointers to the same routine, which is
-> > what the UNIVERSAL_DEV_PM_OPS() macro does.
+> Now, there are a few combinations possible.  First, if the subsystem is
+> "smart" and the driver need not take care of the things listed above, then
+> very likely .runtime_suspend() and .suspend() can do the same and
+> UNIVERSAL_DEV_PM_OPS() can be used.  Next, if the subsystem is "smart",
+> but the driver needs to take care of those things, then .suspend() has
+> more to do, but very likely .runtime_suspend() and .suspend_noirq() can
+> do the same, while .suspend() may simply prepare the device for the next
+> stage.  And so on.
 > 
-> So that's definitely safe?  I guess this partly comes back to the thing
-> I'm saying about how I'm finding all this stuff difficult to reason
-> about, every time I see such discussion I get confused about needing to
-> worry about it or not.
+> It's probably fair to say that everithing depends on the subsystem, what it
+> does and what it expects from the driver.
 
-Well, it's just that multiple things go into play here: the subsystem, the
-overall complexity of the driver and so on.  I can probably say what's
-good for a PCI driver, but that may not be suitable for a USB driver, for
-one example.
+Right.  For example, consider the USB subsystem.  It has separate entry
+points for system suspend and runtime suspend.  These routines decide
+whether or not wakeup should be enabled, check the device's current
+power state, and do a few other things; then they call the driver-level
+routines.  Each driver has a single suspend routine; all it does is
+quiesce the device and make sure I/O queues are stopped.  The subsystem
+code then takes care of setting the proper power state.
 
-Thanks,
-Rafael
+Alan Stern
