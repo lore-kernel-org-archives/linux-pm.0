@@ -1,19 +1,15 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Fri, 10 Jun 2011 08:11:21 -0700
-Message-ID: <20110610151121.GA2230__44929.1778299541$1307718750$gmane$org@linux.vnet.ibm.com>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<20110528005640.9076c0b1.akpm@linux-foundation.org>
-	<20110609185259.GA29287@linux.vnet.ibm.com>
-	<BANLkTinxeeSby_+tta8EhzCg3VbD6+=g+g@mail.gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: calling runtime PM from system PM methods
+Date: Fri, 10 Jun 2011 16:21:51 +0100
+Message-ID: <20110610152151.GG26441__10687.9832492725$1307719370$gmane$org@sirena.org.uk>
+References: <20110610143657.GF26441@sirena.org.uk>
+	<Pine.LNX.4.44L0.1106101050140.1921-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <BANLkTinxeeSby_+tta8EhzCg3VbD6+=g+g@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1106101050140.1921-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,99 +19,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 10, 2011 at 09:51:53AM +0900, Kyungmin Park wrote:
-> On Fri, Jun 10, 2011 at 3:52 AM, Paul E. McKenney
-> <paulmck@linux.vnet.ibm.com> wrote:
-> > On Sat, May 28, 2011 at 12:56:40AM -0700, Andrew Morton wrote:
-> >> On Fri, 27 May 2011 18:01:28 +0530 Ankita Garg <ankita@in.ibm.com> wro=
-te:
-> >>
-> >> > This patchset proposes a generic memory regions infrastructure that =
-can be
-> >> > used to tag boundaries of memory blocks which belongs to a specific =
-memory
-> >> > power management domain and further enable exploitation of platform =
-memory
-> >> > power management capabilities.
-> >>
-> >> A couple of quick thoughts...
-> >>
-> >> I'm seeing no estimate of how much energy we might save when this work
-> >> is completed. =A0But saving energy is the entire point of the entire
-> >> patchset! =A0So please spend some time thinking about that and update =
-and
-> >> maintain the [patch 0/n] description so others can get some idea of the
-> >> benefit we might get from all of this. =A0That estimate should include=
- an
-> >> estimate of what proportion of machines are likely to have hardware
-> >> which can use this feature and in what timeframe.
-> >>
-> >> IOW, if it saves one microwatt on 0.001% of machines, not interested ;)
-> >
-> > FWIW, I have seen estimates on the order of a 5% reduction in power
-> > consumption for some common types of embedded devices.
-> =
+On Fri, Jun 10, 2011 at 10:51:02AM -0400, Alan Stern wrote:
+> On Fri, 10 Jun 2011, Mark Brown wrote:
 
-> Wow interesting. I can't expect it can reduce 5% power reduction.
-> If it uses the 1GiBytes LPDDR2 memory. each memory port has 4Gib,
-> another has 4Gib. so one bank size is 64MiB (512MiB / 8).
-> So I don't expect it's difficult to contain the free or inactive
-> memory more than 64MiB during runtime.
-> =
+> > > No, it's generally agreed that _all_ devices should return to full 
+> > > power during system resume -- even if they were runtime suspended 
+> > > before the system sleep.  This also is explained in the Documentation 
+> > > files.
 
-> Anyway can you describe the exact test environment? esp., memory type?
-> As you know there are too much embedded devices which use the various
-> environment.
+> > What is the reasoning behind this agreement?  It's not immediately
+> > obvious why this is useful.
 
-Indeed, your mileage may vary.  It involved a very low-power CPU,
-and the change enabled not just powering off memory, but reducing
-the amount of physical memory provided.
+> See section 6 of Documentation/power/runtime_pm.txt.
 
-Of course, on a server, you could get similar results by having a very
-large amount of memory (say 256GB) and a workload that needed all the
-memory only occasionally for short periods, but could get by with much
-less (say 8GB) the rest of the time.  I have no idea whether or not
-anyone actually has such a system.
+It's not massively clear to me how much sense that makes for the
+embedded case where we've got a much better idea of what happened to the
+hardware over suspend.  Note that I'm thinking here mostly of the case
+where we've runtime suspended the device, if the kernel thought the
+device was powered then it's much clearer that we should do this on
+resume.
 
-							Thanx, Paul
+  * The device's children may need the device to be at full power in
+    order to resume themselves.
 
-> Thank you,
-> Kyungmin Park
-> >
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Thanx, Paul
-> >
-> >> Also, all this code appears to be enabled on all machines? =A0So machi=
-nes
-> >> which don't have the requisite hardware still carry any additional
-> >> overhead which is added here. =A0I can see that ifdeffing a feature li=
-ke
-> >> this would be ghastly but please also have a think about the
-> >> implications of this and add that discussion also.
-> >>
-> >> If possible, it would be good to think up some microbenchmarks which
-> >> probe the worst-case performance impact and describe those and present
-> >> the results. =A0So others can gain an understanding of the runtime cos=
-ts.
-> >>
-> >>
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel=
-" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
-> >> Please read the FAQ at =A0http://www.tux.org/lkml/
-> >>
-> >
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org. =A0For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Fight unfair telecom internet charges in Canada: sign http://stopthemet=
-er.ca/
-> > Don't email: <a href=3Dmailto:"dont@kvack.org"> email@kvack.org </a>
-> >
+Right, this does need to be handled - I'd expect that in most situations
+we'd have sorted through it before we ever enter suspend.
+
+  * The device might need to switch power levels, wake-up settings, etc.
+  * Remote wake-up events might have been lost by the firmware.
+  * The driver's idea of the device state may not agree with the device's
+    physical state.  This can happen during resume from hibernation.
+  * The device might need to be reset.
+
+This is all much more under control in the embedded case, and of course
+the device does know if it's coming back from suspend or hibernation
+IIRC which seems to be the only difficult case.
+
+  * Even though the device was suspended, if its usage counter was > 0 then most
+    likely it would need a run-time resume in the near future anyway.
+
+Presumably in that case it wouldn't be runtime suspended anyway, or we'd
+otherwise be able to cope with the situation without actually fully
+powering the device?
+
+  * Always going back to full power is simplest.
+
+It's simple, but spending time and power rewriting large numbers of
+registers over a slow bus (which is the sort of thing you end up doing
+with some devices) or fiddling about with analogue bringup for devices
+affected by that only to immediately power it off again isn't terribly
+useful either - it's at best slow.
+
+What I'd have expected resume to do is to bring the system back to the
+state it was in before we entered suspend.  I've probably got a fairly
+odd view of the world here in that I mostly care about big devices
+connected over slow buses where power up can be user visible, and mostly
+work on subsystems where the concept of "full power" isn't terribly
+meaningful.
