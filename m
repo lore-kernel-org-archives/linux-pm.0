@@ -1,16 +1,22 @@
-From: Kyungmin Park <kmpark@infradead.org>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
-	Memory Power Management
-Date: Fri, 10 Jun 2011 09:51:53 +0900
-Message-ID: <BANLkTinxeeSby_+tta8EhzCg3VbD6+=g+g__38730.5441232913$1307680700$gmane$org@mail.gmail.com>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<20110528005640.9076c0b1.akpm@linux-foundation.org>
-	<20110609185259.GA29287@linux.vnet.ibm.com>
+From: Frank Hofmann <frank.hofmann@tomtom.com>
+Subject: Re: [RFC PATCH v4] ARM hibernation/suspend-to-disk
+ support
+Date: Fri, 10 Jun 2011 13:22:24 +0100 (BST)
+Message-ID: <alpine.DEB.2.00.1106101110130.11513__14614.7009487779$1307708610$gmane$org@localhost6.localdomain6>
+References: <alpine.DEB.2.00.1106071722040.2236@localhost6.localdomain6>
+	<201106072348.44624.rjw@sisk.pl>
+	<alpine.DEB.2.00.1106091604180.11513@localhost6.localdomain6>
+	<20110609154058.GA24424@n2100.arm.linux.org.uk>
+	<4DF0F45A.3030103@ti.com>
+	<20110609164024.GB24424@n2100.arm.linux.org.uk>
+	<4DF0FA73.8050607@ti.com>
+	<20110609171255.GD24424@n2100.arm.linux.org.uk>
+Reply-To: frank.hofmann@tomtom.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110609185259.GA29287@linux.vnet.ibm.com>
+In-Reply-To: <20110609171255.GD24424@n2100.arm.linux.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,78 +26,193 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: tuxonice-devel@tuxonice.net, Frank Hofmann <frank.hofmann@tomtom.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 10, 2011 at 3:52 AM, Paul E. McKenney
-<paulmck@linux.vnet.ibm.com> wrote:
-> On Sat, May 28, 2011 at 12:56:40AM -0700, Andrew Morton wrote:
->> On Fri, 27 May 2011 18:01:28 +0530 Ankita Garg <ankita@in.ibm.com> wrote:
->>
->> > This patchset proposes a generic memory regions infrastructure that ca=
-n be
->> > used to tag boundaries of memory blocks which belongs to a specific me=
-mory
->> > power management domain and further enable exploitation of platform me=
-mory
->> > power management capabilities.
->>
->> A couple of quick thoughts...
->>
->> I'm seeing no estimate of how much energy we might save when this work
->> is completed. =A0But saving energy is the entire point of the entire
->> patchset! =A0So please spend some time thinking about that and update and
->> maintain the [patch 0/n] description so others can get some idea of the
->> benefit we might get from all of this. =A0That estimate should include an
->> estimate of what proportion of machines are likely to have hardware
->> which can use this feature and in what timeframe.
->>
->> IOW, if it saves one microwatt on 0.001% of machines, not interested ;)
->
-> FWIW, I have seen estimates on the order of a 5% reduction in power
-> consumption for some common types of embedded devices.
+On Thu, 9 Jun 2011, Russell King - ARM Linux wrote:
 
-Wow interesting. I can't expect it can reduce 5% power reduction.
-If it uses the 1GiBytes LPDDR2 memory. each memory port has 4Gib,
-another has 4Gib. so one bank size is 64MiB (512MiB / 8).
-So I don't expect it's difficult to contain the free or inactive
-memory more than 64MiB during runtime.
+> On Thu, Jun 09, 2011 at 10:23:07PM +0530, Santosh Shilimkar wrote:
+[ ... ]
+>> 3. Avoid direct write to AUXCTRL in generic suspend code.
+>
+> This is the only problematical one that I can see.  We need to restore
+> this on systems running in secure mode.  What we could do is rather than
+> writing to the register, read it first and compare its value with what
+> was saved to see whether we need to write it.
+>
+> Then, if platforms run in non-secure mode, they are responsible for
+> restoring that register back to its pre-suspend value before their
+> assembly calls cpu_resume().
 
-Anyway can you describe the exact test environment? esp., memory type?
-As you know there are too much embedded devices which use the various
-environment.
+While this is ok from the point of view of having cpu_suspend / resume 
+being service functions for the platform-specific idle/off-mode code, it 
+also illustrates the difficulty this creates for the hibernation code.
 
-Thank you,
-Kyungmin Park
+If it's not possible to call cpu_suspend / cpu_resume (or something like 
+it - not tied to names ...) as a full-featured generic interface, then 
+creating a true snapshot capability becomes problematic.
+
 >
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Thanx, Paul
+>> 4. Before MMU is enabled in resume a callback to restore
+>> secure register, setup auxctrl etc.
 >
->> Also, all this code appears to be enabled on all machines? =A0So machines
->> which don't have the requisite hardware still carry any additional
->> overhead which is added here. =A0I can see that ifdeffing a feature like
->> this would be ghastly but please also have a think about the
->> implications of this and add that discussion also.
->>
->> If possible, it would be good to think up some microbenchmarks which
->> probe the worst-case performance impact and describe those and present
->> the results. =A0So others can gain an understanding of the runtime costs.
->>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" =
-in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at =A0http://www.tux.org/lkml/
->>
+> You can do this before your assembly calls cpu_resume().
+
+Only that it's known at the point of call to cpu_suspend/resume.
+
+Again, I admit to being biased regarding the usecase here ...
+
+See below.
+
 >
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org. =A0For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Fight unfair telecom internet charges in Canada: sign http://stopthemeter=
-.ca/
-> Don't email: <a href=3Dmailto:"dont@kvack.org"> email@kvack.org </a>
+>> Additionally the L2 cache handling isn't part of
+>> these common suspend hooks.
 >
+> L2 cache handling can't fit into the generic code - it doesn't really
+> belong there either.  It needs to be in the parent or hooked into the
+> syscore_ops stuff as I've said previously.
+
+For the "take things down" side, dode like machine_restart() already is 
+able to flush/inval/disable all these things on the way down, without any 
+SoC-specific knowledge.
+
+OMAP suspend/resume has, just recently, gone half-way there (use the 
+provided flush/inval instead of the home-grown table walker code),
+
+Agree with that. Cache flushing / disabling / invalidation has interfaces 
+(the outer_*, l2* and cache ops) already, and e.g. the OMAP code has 
+recently started to use some of those (kernel_flush instead of the 
+home-grown inval loop). Looks like that part is on its way.
+
+On the resume side, there's actually a problem here - the generic way of 
+enabling a cache is through initcalls - which don't happen on resume, so 
+if the system comes out of a "low enough" state there's some work to do 
+here - which generic cpu_resume() does not do.
+
+>
+> So:
+>
+> ENTRY(my_soc_suspend)
+>        stmfd   sp!, {r4 - r12, lr}
+>        ldr     r3, =resume
+>        bl      cpu_suspend
+> 	/*
+> 	 * Insert whatever code is required here for suspend
+> 	 * eg, save secure mode, then jump to sram to call WFI function
+> 	 */
+> resume:
+> 	ldmfd	sp!, {r4 - r12, pc}
+> ENDPROC(my_soc_suspend)
+>
+> ENTRY(my_soc_resume)
+> 	/*
+> 	 * Insert whatever other code is required to be run before resume
+> 	 * eg, WFI function returns to this symbol after DDR becomes
+> 	 * accessible.  restore secure mode state
+> 	 */
+> 	b	cpu_resume
+> ENDPROC(my_soc_resume)
+
+That alone doesn't accommodate the following situations:
+
+a) there might be pre-suspend / post-resume activities necessary, i.e.
+    the assumption that any SoC-specific "go down" activity can be done
+    after cpu_suspend() and any SoC-specific "bring up" activity before
+    cpu_resume() might not be sufficient.
+    Case in point: Reenabling L2 caches after resume.
+
+b) my bias - snapshotting state (for hibernation).
+    Delegating this to a SoC-specific method risks creating code like
+    the OMAP stuff - where state saving, power management, off mode
+    and whatnot is all interwoven and interdependent.
+    It also creates the problem that _generic_ (platform-independent)
+    hibernation code becomes impossible to do ...
+
+    A clean thing are separate steps:
+
+ 	<mach preparation for suspend state snapshot>
+ 	<generic state snapshot>
+ 	<mach state snapshot>
+ 	...
+ 	<wfi>	/* or not ... */
+ 	...
+ 	<mach prep for resume / basic initialization>
+ 	<generic resume>
+ 	<mach resume>
+
+So why not have those hooks _inside_ cpu_suspend / cpu_resume, i.e. like:
+
+.data
+ENTRY(cpu_suspend)
+ 	mov	r9, lr
+#ifdef	CONFIG_ARCH_NEEDS_SPAGHETTI_SUSPEND
+ 	mov	lr, pc
+ 	ldr	pc, mach_pre_suspend_hook
+#endif
+ 	...
+#ifdef	CONFIG_ARCH_NEEDS_SPAGHETTI_SUSPEND
+ 	mov	lr, r9
+ 	ldr	r4, mach_post_suspend_hook
+ 	b	r4
+#else
+ 	mov	pc, r9
+END(cpu_suspend)
+
+#ifdef	CONFIG_ARCH_NEEDS_SPAGHETTI_SUSPEND
+mach_pre_suspend_hook:
+.long 0
+mach_post_suspend_hook:
+.long 0
+#endif
+
+
+and let the SoC initialization set them if it so desires ?
+
+
+This would allow to use them for snapshotting the state as well.
+
+Key point, again, from the hibernation bias, is really to have that 
+stuff _separate_ from power-down / wfi / whatever-to-enter-lowpower-mode.
+
+
+As many of these activities as possible should be dealt with by sysdev / 
+syscore, agreed; but unfortunately there might be certain things, 
+especially around secure state, that are too closely tied in to delegate 
+it to those ?
+
+
+>
+> What makes it far more complicated in the OMAP case is all that "is l1 state
+> lost?  is l2 state lost?" stuff.
+>
+
+It looks like it's structured this way:
+
+omap_cpu_suspend()
+{
+ 	switch (state) {
+ 	case 3:
+ 	case 1:
+ 		/* save context */
+ 	case 2:
+ 		/* clean caches */
+ 	case 0:
+ 		wfi();
+ 	}
+}
+
+omap_cpu_resume()	/* from OFF, case 2 / 0 never happens */
+{
+ 	if (state == 3)
+ 		/* disable / inval L2 */
+
+ 	/* restore context */
+ 	/* reenable L2 */
+}
+
+
+But the code doesn't perfectly match the comments in it.
+
+
+FrankH.
