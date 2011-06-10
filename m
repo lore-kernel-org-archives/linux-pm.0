@@ -1,17 +1,24 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: calling runtime PM from system PM methods
-Date: Fri, 10 Jun 2011 19:54:58 +0100
-Message-ID: <20110610185458.GU26436__33968.4710641906$1307732239$gmane$org@opensource.wolfsonmicro.com>
-References: <87hb80546c.fsf@ti.com>
-	<Pine.LNX.4.44L0.1106090945490.2081-100000@iolanthe.rowland.org>
-	<20110610143657.GF26441@sirena.org.uk>
-	<201106102049.03777.rjw@sisk.pl>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Fri, 10 Jun 2011 20:23:29 +0100
+Message-ID: <20110610192329.GA30496__47877.7185235687$1307733901$gmane$org@srcf.ucam.org>
+References: <BANLkTinxeeSby_+tta8EhzCg3VbD6+=g+g@mail.gmail.com>
+	<20110610151121.GA2230@linux.vnet.ibm.com>
+	<20110610155954.GA25774@srcf.ucam.org>
+	<20110610165529.GC2230@linux.vnet.ibm.com>
+	<20110610170535.GC25774@srcf.ucam.org>
+	<20110610171939.GE2230@linux.vnet.ibm.com>
+	<20110610172307.GA27630@srcf.ucam.org>
+	<20110610175248.GF2230@linux.vnet.ibm.com>
+	<20110610180807.GB28500@srcf.ucam.org>
+	<20110610184738.GG2230@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201106102049.03777.rjw@sisk.pl>
+In-Reply-To: <20110610184738.GG2230@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,42 +28,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 10, 2011 at 08:49:03PM +0200, Rafael J. Wysocki wrote:
-> On Friday, June 10, 2011, Mark Brown wrote:
+On Fri, Jun 10, 2011 at 11:47:38AM -0700, Paul E. McKenney wrote:
 
-> > It seems like everyone's agreeing with each other here - from the user
-> > side the request seems to be largely for core infastructure like
-> > UNIVERSAL_DEV_PM_OPS() (which I'm not sure is a good idea any more given
-> > that it doesn't do anything to handle the runtime/system interaction?).
+> And if I understand you correctly, then the patches that Ankita posted
+> should help your self-refresh case, along with the originally intended
+> the power-down case and special-purpose use of memory case.
 
-> I'm not sure what you mean here.  First, UNIVERSAL_DEV_PM_OPS() actually
-> does what it says, defines a set of operations to use for system suspend,
-> hibernation and runtime PM all the same.
+Yeah, I'd hope so once we actually have capable hardware.
 
-Right, but in the light of what you guys are saying about the
-interactions between runtime suspend and resume I'm no longer clear that
-that is actually sane for something which does use runtime PM, and of
-course if a driver wants to support the wake configuration interface
-then this might also fall out of the window.
-
-> The Kevin's point originally was that it might be desirable to do things
-> like calling pm_runtime_suspend() from a driver's (system) .suspend()
-> callback, if I understood it correctly, and the answer was that it wasn't
-> the right thing to do (for reasons given elsewhere in the thread).
-
-Yeah, I think it is too.
-
-> Your point seems to be that simple drivers should not be required to
-> define separate callback routines, for example, for system suspend and
-> runtime PM.  However, they aren't required to do so, they can point
-> all of their "suspend" callback pointers to the same routine, which is
-> what the UNIVERSAL_DEV_PM_OPS() macro does.
-
-So that's definitely safe?  I guess this partly comes back to the thing
-I'm saying about how I'm finding all this stuff difficult to reason
-about, every time I see such discussion I get confused about needing to
-worry about it or not.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
