@@ -1,12 +1,24 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: calling runtime PM from system PM methods
-Date: Fri, 10 Jun 2011 16:52:33 -0700
-Message-ID: <87ipsdnt1a.fsf__4848.44356910816$1307750016$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1106090945490.2081-100000@iolanthe.rowland.org>
+From: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Fri, 10 Jun 2011 20:02:33 -0700
+Message-ID: <20110610200233.5ddd5a31__9566.34186809442$1307761205$gmane$org@infradead.org>
+References: <20110610151121.GA2230@linux.vnet.ibm.com>
+	<20110610155954.GA25774@srcf.ucam.org>
+	<20110610165529.GC2230@linux.vnet.ibm.com>
+	<20110610170535.GC25774@srcf.ucam.org>
+	<20110610171939.GE2230@linux.vnet.ibm.com>
+	<20110610172307.GA27630@srcf.ucam.org>
+	<20110610175248.GF2230@linux.vnet.ibm.com>
+	<20110610180807.GB28500@srcf.ucam.org>
+	<20110610184738.GG2230@linux.vnet.ibm.com>
+	<20110610192329.GA30496@srcf.ucam.org>
+	<20110610193713.GJ2230@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20110610193713.GJ2230@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,55 +28,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: paulmck@linux.vnet.ibm.com
+Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Fri, 10 Jun 2011 12:37:13 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-[...]
+> On Fri, Jun 10, 2011 at 08:23:29PM +0100, Matthew Garrett wrote:
+> > On Fri, Jun 10, 2011 at 11:47:38AM -0700, Paul E. McKenney wrote:
+> > 
+> > > And if I understand you correctly, then the patches that Ankita
+> > > posted should help your self-refresh case, along with the
+> > > originally intended the power-down case and special-purpose use
+> > > of memory case.
+> > 
+> > Yeah, I'd hope so once we actually have capable hardware.
+> 
+> Cool!!!
+> 
+> So Ankita's patchset might be useful to you at some point, then.
+> 
+> Does it look like a reasonable implementation?
 
->> More specifically, what should be the approach in system suspend when a
->> device is already runtime suspended?  If you treat runtime and system PM
->> as completely independent, you would have to runtime resume the device
->> so that it can then be immediately system suspended.
->
-> Assuming the wakeup setting is correct, and assuming you use the same 
-> power level for runtime suspend and system suspend, then nothing needs 
-> to be done.
->
-> If the wakeup setting is not correct, it has to be changed.  That 
-> often implies going back to full power in order to change the 
-> wakeup setting, then going to low power again.
+as someone who is working on hardware that is PASR capable right now,
+I have to admit that our plan was to just hook into the buddy allocator,
+and use PASR on the top level of buddy (eg PASR off blocks that are
+free there, and PASR them back on once an allocation required the block
+to be broken up)..... that looked the very most simple to me.
 
-OK, but how should this be implemented?  
+Maybe something much more elaborate is needed, but I didn't see why so
+far.
 
-If the device is runtime suspended at system suspend time, it implies
-that somwhere in the system suspend path, the device has to be powered
-on and enabled (a.k.a. runtime resumed.)
 
->From a driver writer's perspective, doing a pm_runtime_get_sync() would
-be the obvious choice, but that causes nesting of ->runtime_resume
-callbacks within ->suspend callbacks which is apparently forbidden (or
-rather strongly recommended against :)
-
-Now, assuming the driver's suspend can't do a pm_runtime_get()...
-
-In order to power on & enable the device, the driver has to essentially
-duplicate everything that would be done by a runtime resume.
-
-The problem comes because this work is shared between the driver and the
-subsystem.  IOW, it's the driver's ->suspend() callback that decides
-whether or not the device needs to be powered-on/enabled (e.g. to
-enable/disable wakeups), but it might be the subsystem that actually has
-does the magic_device_set_full_power(), magic_device_enable().
-
-So once the driver's ->suspend() realizes it needs to power on & enable
-the device, it has no way to tell the subsystem to do so, wait for it to
-happen, and then enable/disable its wakeups.
-
-Maybe I'm being really dense, really blind, or really stubborn (or all
-three), but it seems to be that using runtime PM calls to implement
-these things would be the most obvious and the most readable.
-
-Kevin
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
