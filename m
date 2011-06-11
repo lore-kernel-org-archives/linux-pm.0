@@ -1,24 +1,12 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Sat, 11 Jun 2011 10:26:54 -0700
-Message-ID: <20110611102654.01e5cea9__47321.6876773678$1307813035$gmane$org@infradead.org>
-References: <20110610165529.GC2230@linux.vnet.ibm.com>
-	<20110610170535.GC25774@srcf.ucam.org>
-	<20110610171939.GE2230@linux.vnet.ibm.com>
-	<20110610172307.GA27630@srcf.ucam.org>
-	<20110610175248.GF2230@linux.vnet.ibm.com>
-	<20110610180807.GB28500@srcf.ucam.org>
-	<20110610184738.GG2230@linux.vnet.ibm.com>
-	<20110610192329.GA30496@srcf.ucam.org>
-	<20110610193713.GJ2230@linux.vnet.ibm.com>
-	<20110610200233.5ddd5a31@infradead.org>
-	<20110611170610.GA2212@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/8] PM / Domains: Support for generic I/O PM
+	domains (v5)
+Date: Sat, 11 Jun 2011 22:23:04 +0200
+Message-ID: <201106112223.04972.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110611170610.GA2212@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,75 +16,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Greg Kroah-Hartman <gregkh@suse.de>, Magnus Damm <magnus.damm@gmail.com>, Paul Walmsley <paul@pwsan.com>, Kevin Hilman <khilman@ti.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 11 Jun 2011 10:06:10 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+Hi,
 
-> On Fri, Jun 10, 2011 at 08:02:33PM -0700, Arjan van de Ven wrote:
-> > On Fri, 10 Jun 2011 12:37:13 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Fri, Jun 10, 2011 at 08:23:29PM +0100, Matthew Garrett wrote:
-> > > > On Fri, Jun 10, 2011 at 11:47:38AM -0700, Paul E. McKenney
-> > > > wrote:
-> > > > 
-> > > > > And if I understand you correctly, then the patches that
-> > > > > Ankita posted should help your self-refresh case, along with
-> > > > > the originally intended the power-down case and
-> > > > > special-purpose use of memory case.
-> > > > 
-> > > > Yeah, I'd hope so once we actually have capable hardware.
-> > > 
-> > > Cool!!!
-> > > 
-> > > So Ankita's patchset might be useful to you at some point, then.
-> > > 
-> > > Does it look like a reasonable implementation?
-> > 
-> > as someone who is working on hardware that is PASR capable right
-> > now, I have to admit that our plan was to just hook into the buddy
-> > allocator, and use PASR on the top level of buddy (eg PASR off
-> > blocks that are free there, and PASR them back on once an
-> > allocation required the block to be broken up)..... that looked the
-> > very most simple to me.
-> > 
-> > Maybe something much more elaborate is needed, but I didn't see why
-> > so far.
-> 
-> If I understand correctly, you face the same issue that affects
-> transparent huge pages, but on a much larger scale.  If you have even
-> one non-moveable allocation in a given top-level buddy block, you
-> won't be able to PASR that block.
+This is the 4th update of the patchset adding support for generic I/O PM
+domains.  The patches have been reworked quite a bit to take feedback into
+account, but I left the Greg's ACK in [4/8] in the hope it still applies
+(Greg, please let me know in case it doesn't :-)).
 
-yep we'd use a non-kernel zone for that; not too big a deal.
-(the much larger scale you can debate, if your memory controller is
-configured correctly the PASR regions are not all that much bigger than
-hugepages)
-> 
-> In addition, one of the things that Ankita's patchset is looking to do
-> is to control allocations in a given region, so that the region can be
-> easily evacuated.  One use for this is to power off regions of memory,
-> another is to PASR off regions of memory, and a third is to ensure
-> that large regions of memory are available for when needed by media
-> codecs (e.g., cameras), but can be used for other purposes when the
-> media codecs don't need them (e.g., when viewing photos rather than
-> taking them).
+The model here is that a bunch of devices share a common power resource
+that can be turned on and off by software.  In addition to that, there
+are means to start and stop the activity of each device, for example
+by manipulating their clocks.  Moreover, there may be hierarchy of
+such things, for example power resource A may be necessary for devices
+a, b, c, which don't rely on any other power resources, and for devices
+x, y, z that also rely on power resource X.  In that case there one PM
+domain object representing devices a, b, c and power resource A, and 
+another PM domain object will represent devices x, y, z with power
+resource X, plus the first object will be the second one's parent.
 
-the codec issue seems to be solved in time; a previous generation
-silicon on our (Intel) side had ARM ecosystem blocks that did not do
-scatter gather, however the current generation ARM ecosystem blocks all
-seem to have added S/G to them....
-(in part this is coming from the strong desire to get camera/etc blocks
-to all use "GPU texture" class memory, so that the camera can directly
-deposit its information into a gpu texture, and similar for media
-encode/decode blocks... this avoids copies as well as duplicate memory).
+Note to Kevin: I know you'd like each PM domain to be able to go into several
+different states, but the situation will always be that in some of those
+states the devices' registers will remain intact, while in the rest of those
+states they will be reset.  Say, there are states 1, 2, 3, 4 and states
+1-3 preserve device registers.  Then it is not necessary to save device
+registers for "domain" states 1-3 and it only is necessary to save them
+when going to state 4.  In that case, .power_off() may map to the "go to
+state 4" operation (and analogously .power_on()), while the rest may be
+done by .stop_device() and .start_device().  IOW, .power_is_off == true
+means "the devices' registers have to be restored", so it need not map to
+any particular physical state of a (hardware) power domain.
 
+Note to Magnus and Paul: I didn't use a global lock as suggested, because
+I think it may lead to completely unnecessary congestion in situations in
+which there are no hierarchies of PM domains.  It is quite easy to show that
+the code doesn't deadlock, because (1) no more than 2 locks are held by the
+same thread at a time (parent lock and child lock) and (2) they are always
+acquired in the same order (parent before the child).
 
+Overall, I think I've taken all of the important dependencies into
+consideration, but if you spot something suspicious, please let me know. :-)
+Wakeup is not covered at this point, because it's not necessary for the
+SH7372's A4LC power domain that's the first user of the new code, but it
+is quite clear how add the support for it.  Also, for more complicated
+cases it is necessary to take QoS requirements (latencies) into account,
+which is in the works (kind of).
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+[1/8] - Update documentation to reflect the fact that struct dev_power_domain
+        callbacks take precedence over subsystem PM callbacks.
+
+[2/8] - Rename struct dev_power_domain to struct dev_pm_domain to reflect the
+        fact that those objects need not correspond to hardware power domains
+        directly.
+
+[3/8] - Move subsys_data in struct dev_pm_info out of #ifdef CONFIG_PM_RUNTIME
+
+[4/8] - Introduce runtime PM support for generic I/O PM domains.
+
+[5/8] - Introduce generic "noirq" callbacks for system suspend/hibernation
+        (that's necessary for the next patches).
+
+[6/8] - Move some PM domains support code fro under #ifdef CONFIG_PM_RUNTIME
+
+[7/8] - Add system-wide PM support for generic I/O PM domains.
+
+[8/8] - Use the new code to represent the SH7372's A4MP power domain.
+
+The patchset has been tested on SH7372 Mackerel board and appears to work
+correctly.
+
+I'd like to push [1/8] for 3.0 (it may be regarded as a fix), but I _think_
+that it may be a good idea to push [2/8] for 3.0 too, to limit the time in
+which people may possibly use the naming that's going to change in their new
+code.  If you agree with that, please let me know, I'll need some serious
+ACKs below that patch if it's to be pushed for 3.0. ;-)
+
+Thanks,
+Rafael
