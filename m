@@ -1,17 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: calling runtime PM from system PM methods
-Date: Sat, 11 Jun 2011 12:42:39 +0100
-Message-ID: <20110611114239.GC2738__2733.79836367003$1307792626$gmane$org@opensource.wolfsonmicro.com>
-References: <20110610155707.GN26436@opensource.wolfsonmicro.com>
-	<201106102038.22725.rjw@sisk.pl>
-	<20110610184222.GT26436@opensource.wolfsonmicro.com>
-	<201106102227.25391.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Question about expected behavior when PM runtime is
+ disabled
+Date: Sat, 11 Jun 2011 12:12:25 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106111204500.3439-100000@netrider.rowland.org>
+References: <4DF2A096.8020503@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201106102227.25391.rjw@sisk.pl>
+In-Reply-To: <4DF2A096.8020503@codeaurora.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,32 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: Kenneth Heitke <kheitke@codeaurora.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 10, 2011 at 10:27:25PM +0200, Rafael J. Wysocki wrote:
+On Fri, 10 Jun 2011, Kenneth Heitke wrote:
 
-> So, there are a few things to consider:
+> Hi Rafael,
+> 
+> Sorry if this question has been raised before.  I actually have two 
+> questions here.  These questions are related to PM runtime being 
+> disabled at runtime (i.e. call to pm_runtime_disable() )
+> 
+> If I call pm_runtime_enabled() to first determine if PM runtime is 
+> enabled followed conditionally by a call to pm_runtime_get_sync(), it 
+> would be possible for PM runtime to be disabled between these two calls 
+> and the get_sync() will fail.  Is there any reason to even use the 
+> enabled() call?
 
-> * Can the device do things like DMA?
-> * Does the driver use a workqueue?
-> * Does it use timers?
+As a general rule, a device won't be enabled or disabled for runtime PM 
+unless its driver or subsystem enables or disables it.  Since you 
+should already know what the driver and subsystem are doing, there 
+usually isn't any reason for using pm_runtime_enabled().
 
-> In all of the above cases your system suspend handling will require extra
-> care to make sure those things won't get in the way of the suspend process.
+>  My goal here was to use the enabled() call to determine 
+> if PM runtime was configured/enabled in the kernel and then to manage my 
+> resources, clocks etc, in a different way if PM runtime is not present.
 
-Yes, that's the quiesce operation I think myself or Alan mentioned.
+If runtime PM isn't present, why do you want to manage your clocks etc.  
+at all?  The fact that it's not in the kernel means the system manager
+doesn't care about power usage.
 
-> It's probably fair to say that everithing depends on the subsystem, what it
-> does and what it expects from the driver.  In the extreme case, when the
-> subsystem is like the platform bus type, the driver unfortunately is on its
-> own and has to deal with the whole complexity.
+> My second question then is what if PM runtime is enabled in the kernel 
+> and then gets disabled at runtime.  What is the expected behavior for a 
+> driver?  Should it fail all requests with EGAIN until PM runtime is 
+> enabled again? (in suspend state, PM runtime gets disable, new i/o 
+> request is made, power and clocks need to be turned on).
 
-I'm pretty much only working with buses that have no infrastructure and
-for which power is essentially orthogonal to the control bus itself -
-that's a very large proportion of the embedded space.  It really feels
-like we could be doing a better job for drivers using these buses,
-there's a lot of similarities in what many of them need but I can never
-find the time to get my head round it confidently enough to actually
-propose anything.
+It's up to the driver and the subsystem, since they are the entities 
+that are responsible for disabling runtime PM.  If you think disabling 
+runtime PM will cause problems, then don't do it.
+
+> What about delayed autosuspend?  I believe that if PM runtime is 
+> disabled while there is a delayed autosuspend pending, the suspend will 
+> fail without notification (clocks and power will be left on).
+
+That's right.
+
+>  Will PM 
+> runtime still be in the idle state once PM runtime is re-enabled?
+
+The device will be in the same state as it was when it was disabled, 
+unless you explicitly call pm_runtime_set_active() or 
+pm_runtime_set_suspended().
+
+Alan Stern
