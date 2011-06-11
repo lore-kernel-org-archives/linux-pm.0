@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: calling runtime PM from system PM methods
-Date: Sat, 11 Jun 2011 22:56:36 +0200
-Message-ID: <201106112256.37012.rjw@sisk.pl>
-References: <20110610155707.GN26436@opensource.wolfsonmicro.com>
-	<201106102227.25391.rjw@sisk.pl>
-	<20110611114239.GC2738@opensource.wolfsonmicro.com>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 0/8] PM / Domains: Support for generic I/O PM
+	domains (v5)
+Date: Sat, 11 Jun 2011 13:57:07 -0700
+Message-ID: <20110611205707.GB15267__22526.3884095058$1307825886$gmane$org@suse.de>
+References: <201106112223.04972.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110611114239.GC2738@opensource.wolfsonmicro.com>
+Content-Disposition: inline
+In-Reply-To: <201106112223.04972.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +19,16 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, June 11, 2011, Mark Brown wrote:
-> On Fri, Jun 10, 2011 at 10:27:25PM +0200, Rafael J. Wysocki wrote:
+On Sat, Jun 11, 2011 at 10:23:04PM +0200, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> > So, there are a few things to consider:
-> 
-> > * Can the device do things like DMA?
-> > * Does the driver use a workqueue?
-> > * Does it use timers?
-> 
-> > In all of the above cases your system suspend handling will require extra
-> > care to make sure those things won't get in the way of the suspend process.
-> 
-> Yes, that's the quiesce operation I think myself or Alan mentioned.
-> 
-> > It's probably fair to say that everithing depends on the subsystem, what it
-> > does and what it expects from the driver.  In the extreme case, when the
-> > subsystem is like the platform bus type, the driver unfortunately is on its
-> > own and has to deal with the whole complexity.
-> 
-> I'm pretty much only working with buses that have no infrastructure and
-> for which power is essentially orthogonal to the control bus itself -
-> that's a very large proportion of the embedded space.  It really feels
-> like we could be doing a better job for drivers using these buses,
-> there's a lot of similarities in what many of them need but I can never
-> find the time to get my head round it confidently enough to actually
-> propose anything.
+> This is the 4th update of the patchset adding support for generic I/O PM
+> domains.  The patches have been reworked quite a bit to take feedback into
+> account, but I left the Greg's ACK in [4/8] in the hope it still applies
+> (Greg, please let me know in case it doesn't :-)).
 
-I agree.  That's one of the reasons why I introduced the struct dev_power_domain
-thing a while ago and the generic PM domains patchset I've just posted is a step
-in that direction.
-
-Thanks,
-Rafael
+It still applies, thanks for leaving it in.
