@@ -1,14 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Question about expected behavior when PM runtime is
- disabled
-Date: Sat, 11 Jun 2011 12:12:25 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106111204500.3439-100000@netrider.rowland.org>
-References: <4DF2A096.8020503@codeaurora.org>
+Subject: Re: calling runtime PM from system PM methods
+Date: Sat, 11 Jun 2011 12:27:51 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106111212340.3439-100000__13648.7979245887$1307809724$gmane$org@netrider.rowland.org>
+References: <8739jhs2hv.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4DF2A096.8020503@codeaurora.org>
+In-Reply-To: <8739jhs2hv.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,58 +17,116 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kenneth Heitke <kheitke@codeaurora.org>
-Cc: linux-pm@lists.linux-foundation.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 10 Jun 2011, Kenneth Heitke wrote:
+On Fri, 10 Jun 2011, Kevin Hilman wrote:
 
-> Hi Rafael,
+> So here's an interesting scenario which I think it triggers the same
+> problem as you highlight above.
 > 
-> Sorry if this question has been raised before.  I actually have two 
-> questions here.  These questions are related to PM runtime being 
-> disabled at runtime (i.e. call to pm_runtime_disable() )
+> Assume you have a driver that's using runtime PM on a per-xfer basis.
+> Before each xfer, it does a pm_runtime_get_sync(), after each xfer it
+> does a pm_runtime_put_sync() (for this example, it's important that it's
+> a _put_sync()).  The _put_sync() might happen in an ISR, or possibly in
+> a thread waiting on a completion which is awoken by the ISR, etc. etc.
+> (the runtime PM callbacks are IRQ safe, and device is marked as such.)
 > 
-> If I call pm_runtime_enabled() to first determine if PM runtime is 
-> enabled followed conditionally by a call to pm_runtime_get_sync(), it 
-> would be possible for PM runtime to be disabled between these two calls 
-> and the get_sync() will fail.  Is there any reason to even use the 
-> enabled() call?
+> The driver is in the middle of an xfer and a system suspend request
+> happens.
+> 
+> The driver's ->suspend() callback happens, and the driver
+> 
+> - enables/disables wakeups based on device_may_wakeup()
+> - prevents future xfers
+> - waits for current xfer to finish
+> 
+> As soon as the xfer finishes, the driver gets notified (completion,
+> callback, IRQ, whatever) and calls pm_runtime_put_sync(), which triggers
+> subsys->runtime_suspend --> driver->runtime_suspend.
+> 
+> While the driver's ->suspend() callback doesn't directly call
+> pm_runtime_put_sync(), the act of waiting for the xfer to finish
+> causes the subsystem/driver->runtime_suspend callbacks to be called
+> during the subsytem/driver->suspend callback, which is the same problem
+> as you highlight above.  
+> 
+> Based on your commit that removed incrementing the usage count across
+> suspend[1], you mentioned "we can rely on subsystems and device drivers
+> to avoid doing that unnecessarily."  The above example shows that this
+> type of thing might not be that obvious to detect and thus avoid.
 
-As a general rule, a device won't be enabled or disabled for runtime PM 
-unless its driver or subsystem enables or disables it.  Since you 
-should already know what the driver and subsystem are doing, there 
-usually isn't any reason for using pm_runtime_enabled().
+As with so many other things, this depends entirely on how the 
+subsystem and driver are designed.  If they are written to allow this 
+sort of thing and handle it properly, there's no problem.
 
->  My goal here was to use the enabled() call to determine 
-> if PM runtime was configured/enabled in the kernel and then to manage my 
-> resources, clocks etc, in a different way if PM runtime is not present.
+Nothing in the PM core itself cares whether the runtime PM routines are
+invoked during system sleep.
 
-If runtime PM isn't present, why do you want to manage your clocks etc.  
-at all?  The fact that it's not in the kernel means the system manager
-doesn't care about power usage.
+> I suspect the solution to the above will be to add back the usage count
+> increment across system suspend, but I'm hoping not.  IMO, it would be
+> more flexible to allow the subsystems to decide.  The subsystems could
+> provide locking (or manage dev->power.usage_count) themselves if
+> necessary.  For example, leave it to the subsystem->prepare() to
+> pm_runtime_get_noresume() if it wants to avoid the "nesting" of
+> callbacks.
 
-> My second question then is what if PM runtime is enabled in the kernel 
-> and then gets disabled at runtime.  What is the expected behavior for a 
-> driver?  Should it fail all requests with EGAIN until PM runtime is 
-> enabled again? (in suspend state, PM runtime gets disable, new i/o 
-> request is made, power and clocks need to be turned on).
+Exactly.
 
-It's up to the driver and the subsystem, since they are the entities 
-that are responsible for disabling runtime PM.  If you think disabling 
-runtime PM will cause problems, then don't do it.
+> A related question: does the pm_wq need to be freezable?  From
+> Documentation/power/runtime_pm.txt:
+> 
+> * The power management workqueue pm_wq in which bus types and device drivers can
+>   put their PM-related work items.  It is strongly recommended that pm_wq be
+>   used for queuing all work items related to run-time PM, because this allows
+>   them to be synchronized with system-wide power transitions (suspend to RAM,
+>   hibernation and resume from system sleep states).  pm_wq is declared in
+>   include/linux/pm_runtime.h and defined in kernel/power/main.c.
+> 
+> Is "synchronized with system-wide power transistions" correct here?
+> Rather than synchronize, using a freezable workqueue actually _prevents_
+> runtime PM events (at least async ones.)
 
-> What about delayed autosuspend?  I believe that if PM runtime is 
-> disabled while there is a delayed autosuspend pending, the suspend will 
-> fail without notification (clocks and power will be left on).
+Which prevents races -- the goal of synchronization.  If you use pm_wq 
+for your asynchronous runtime PM events, you never have to worry about 
+one of them occurring in the middle of a system sleep transition.
 
-That's right.
+> Again, proper locking (or management of dev->power.usage_count) at the
+> subsystem level would get you the same effect, but still leave
+> flexibility to the subsystem/pwr_domain layer.
 
->  Will PM 
-> runtime still be in the idle state once PM runtime is re-enabled?
+I'm not so sure about that.  For example, how would you prevent an 
+async resume from interfering with a system suspend?
 
-The device will be in the same state as it was when it was disabled, 
-unless you explicitly call pm_runtime_set_active() or 
-pm_runtime_set_suspended().
+> Kevin
+> 
+> P.S. the commit below[1] removed the usage count increment/decrement
+>      across system suspend/resume, but Documentation/power/runtime_pm.txt 
+>      still refers to it.   Patch below[2] removes it, ssuming you're
+>      not planning on adding it back.  ;)
+
+...
+
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 654097b..22accb3 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -566,11 +566,6 @@ to do this is:
+>  	pm_runtime_set_active(dev);
+>  	pm_runtime_enable(dev);
+>  
+> -The PM core always increments the run-time usage counter before calling the
+> -->prepare() callback and decrements it after calling the ->complete() callback.
+> -Hence disabling run-time PM temporarily like this will not cause any run-time
+> -suspend callbacks to be lost.
+> -
+
+Thank you for pointing this out.  I had forgotten about this; it
+implies that temporarily disabling runtime PM during system resume is
+no longer safe!
+
+Maybe we should put the get_noresume and put_sync calls back into the
+PM core, but only during the system resume stages.
 
 Alan Stern
