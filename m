@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/8] PM: Introduce generic "noirq" callback
-	routines for subsystems
-Date: Sat, 11 Jun 2011 22:36:50 +0200
-Message-ID: <201106112236.50368.rjw__29204.0324690335$1307825003$gmane$org@sisk.pl>
+Subject: [PATCH 8/8] ARM / shmobile: Support for I/O PM domains
+	for SH7372 (v5)
+Date: Sat, 11 Jun 2011 22:40:11 +0200
+Message-ID: <201106112240.11621.rjw__5580.89440824023$1307825009$gmane$org@sisk.pl>
 References: <201106112223.04972.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,237 +24,190 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Introduce generic "noirq" power management callback routines for
-subsystems in addition to the "regular" generic PM callback routines.
-
-The new routines will be used, among other things, for implementing
-system-wide PM transitions support for generic PM domains.
+Use the generic power domains support introduced by the previous
+patch to implement support for power domains on SH7372.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/generic_ops.c |   90 ++++++++++++++++++++++++++++++++-------
- include/linux/pm.h               |    6 ++
- 2 files changed, 82 insertions(+), 14 deletions(-)
+ arch/arm/mach-shmobile/Kconfig               |    1 
+ arch/arm/mach-shmobile/Makefile              |    4 +
+ arch/arm/mach-shmobile/board-mackerel.c      |    3 +
+ arch/arm/mach-shmobile/include/mach/sh7372.h |   16 +++++
+ arch/arm/mach-shmobile/pm-sh7372.c           |   81 +++++++++++++++++++++++++++
+ 5 files changed, 105 insertions(+)
 
-Index: linux-2.6/drivers/base/power/generic_ops.c
+Index: linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/generic_ops.c
-+++ linux-2.6/drivers/base/power/generic_ops.c
-@@ -94,12 +94,13 @@ int pm_generic_prepare(struct device *de
-  * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
-  * @dev: Device to handle.
-  * @event: PM transition of the system under way.
-+ * @bool: Whether or not this is the "noirq" stage.
-  *
-  * If the device has not been suspended at run time, execute the
-  * suspend/freeze/poweroff/thaw callback provided by its driver, if defined, and
-  * return its error code.  Otherwise, return zero.
-  */
--static int __pm_generic_call(struct device *dev, int event)
-+static int __pm_generic_call(struct device *dev, int event, bool noirq)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int (*callback)(struct device *);
-@@ -109,16 +110,16 @@ static int __pm_generic_call(struct devi
+--- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
++++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+@@ -1496,6 +1496,9 @@ static void __init mackerel_init(void)
  
- 	switch (event) {
- 	case PM_EVENT_SUSPEND:
--		callback = pm->suspend;
-+		callback = noirq ? pm->suspend_noirq : pm->suspend;
- 		break;
- 	case PM_EVENT_FREEZE:
--		callback = pm->freeze;
-+		callback = noirq ? pm->freeze_noirq : pm->freeze;
- 		break;
- 	case PM_EVENT_HIBERNATE:
--		callback = pm->poweroff;
-+		callback = noirq ? pm->poweroff_noirq : pm->poweroff;
- 		break;
- 	case PM_EVENT_THAW:
--		callback = pm->thaw;
-+		callback = noirq ? pm->thaw_noirq : pm->thaw;
- 		break;
- 	default:
- 		callback = NULL;
-@@ -129,42 +130,82 @@ static int __pm_generic_call(struct devi
- }
+ 	platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel_devices));
  
- /**
-+ * pm_generic_suspend_noirq - Generic suspend_noirq callback for subsystems.
-+ * @dev: Device to suspend.
-+ */
-+int pm_generic_suspend_noirq(struct device *dev)
-+{
-+	return __pm_generic_call(dev, PM_EVENT_SUSPEND, true);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_suspend_noirq);
++	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
++	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
 +
-+/**
-  * pm_generic_suspend - Generic suspend callback for subsystems.
-  * @dev: Device to suspend.
-  */
- int pm_generic_suspend(struct device *dev)
- {
--	return __pm_generic_call(dev, PM_EVENT_SUSPEND);
-+	return __pm_generic_call(dev, PM_EVENT_SUSPEND, false);
+ 	hdmi_init_pm_clock();
+ 	sh7372_pm_init();
  }
- EXPORT_SYMBOL_GPL(pm_generic_suspend);
- 
- /**
-+ * pm_generic_freeze_noirq - Generic freeze_noirq callback for subsystems.
-+ * @dev: Device to freeze.
-+ */
-+int pm_generic_freeze_noirq(struct device *dev)
-+{
-+	return __pm_generic_call(dev, PM_EVENT_FREEZE, true);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_freeze_noirq);
-+
-+/**
-  * pm_generic_freeze - Generic freeze callback for subsystems.
-  * @dev: Device to freeze.
-  */
- int pm_generic_freeze(struct device *dev)
- {
--	return __pm_generic_call(dev, PM_EVENT_FREEZE);
-+	return __pm_generic_call(dev, PM_EVENT_FREEZE, false);
- }
- EXPORT_SYMBOL_GPL(pm_generic_freeze);
- 
- /**
-+ * pm_generic_poweroff_noirq - Generic poweroff_noirq callback for subsystems.
-+ * @dev: Device to handle.
-+ */
-+int pm_generic_poweroff_noirq(struct device *dev)
-+{
-+	return __pm_generic_call(dev, PM_EVENT_HIBERNATE, true);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_poweroff_noirq);
-+
-+/**
-  * pm_generic_poweroff - Generic poweroff callback for subsystems.
-  * @dev: Device to handle.
-  */
- int pm_generic_poweroff(struct device *dev)
- {
--	return __pm_generic_call(dev, PM_EVENT_HIBERNATE);
-+	return __pm_generic_call(dev, PM_EVENT_HIBERNATE, false);
- }
- EXPORT_SYMBOL_GPL(pm_generic_poweroff);
- 
- /**
-+ * pm_generic_thaw_noirq - Generic thaw_noirq callback for subsystems.
-+ * @dev: Device to thaw.
-+ */
-+int pm_generic_thaw_noirq(struct device *dev)
-+{
-+	return __pm_generic_call(dev, PM_EVENT_THAW, true);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_thaw_noirq);
-+
-+/**
-  * pm_generic_thaw - Generic thaw callback for subsystems.
-  * @dev: Device to thaw.
-  */
- int pm_generic_thaw(struct device *dev)
- {
--	return __pm_generic_call(dev, PM_EVENT_THAW);
-+	return __pm_generic_call(dev, PM_EVENT_THAW, false);
- }
- EXPORT_SYMBOL_GPL(pm_generic_thaw);
- 
-@@ -172,12 +213,13 @@ EXPORT_SYMBOL_GPL(pm_generic_thaw);
-  * __pm_generic_resume - Generic resume/restore callback for subsystems.
-  * @dev: Device to handle.
-  * @event: PM transition of the system under way.
-+ * @bool: Whether or not this is the "noirq" stage.
-  *
-  * Execute the resume/resotre callback provided by the @dev's driver, if
-  * defined.  If it returns 0, change the device's runtime PM status to 'active'.
-  * Return the callback's error code.
-  */
--static int __pm_generic_resume(struct device *dev, int event)
-+static int __pm_generic_resume(struct device *dev, int event, bool noirq)
- {
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int (*callback)(struct device *);
-@@ -188,10 +230,10 @@ static int __pm_generic_resume(struct de
- 
- 	switch (event) {
- 	case PM_EVENT_RESUME:
--		callback = pm->resume;
-+		callback = noirq ? pm->resume_noirq : pm->resume;
- 		break;
- 	case PM_EVENT_RESTORE:
--		callback = pm->restore;
-+		callback = noirq ? pm->restore_noirq : pm->restore;
- 		break;
- 	default:
- 		callback = NULL;
-@@ -212,22 +254,42 @@ static int __pm_generic_resume(struct de
- }
- 
- /**
-+ * pm_generic_resume_noirq - Generic resume_noirq callback for subsystems.
-+ * @dev: Device to resume.
-+ */
-+int pm_generic_resume_noirq(struct device *dev)
-+{
-+	return __pm_generic_resume(dev, PM_EVENT_RESUME, true);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_resume_noirq);
-+
-+/**
-  * pm_generic_resume - Generic resume callback for subsystems.
-  * @dev: Device to resume.
-  */
- int pm_generic_resume(struct device *dev)
- {
--	return __pm_generic_resume(dev, PM_EVENT_RESUME);
-+	return __pm_generic_resume(dev, PM_EVENT_RESUME, false);
- }
- EXPORT_SYMBOL_GPL(pm_generic_resume);
- 
- /**
-+ * pm_generic_restore_noirq - Generic restore_noirq callback for subsystems.
-+ * @dev: Device to restore.
-+ */
-+int pm_generic_restore_noirq(struct device *dev)
-+{
-+	return __pm_generic_resume(dev, PM_EVENT_RESTORE, true);
-+}
-+EXPORT_SYMBOL_GPL(pm_generic_restore_noirq);
-+
-+/**
-  * pm_generic_restore - Generic restore callback for subsystems.
-  * @dev: Device to restore.
-  */
- int pm_generic_restore(struct device *dev)
- {
--	return __pm_generic_resume(dev, PM_EVENT_RESTORE);
-+	return __pm_generic_resume(dev, PM_EVENT_RESTORE, false);
- }
- EXPORT_SYMBOL_GPL(pm_generic_restore);
- 
-Index: linux-2.6/include/linux/pm.h
+Index: linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
 ===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -553,11 +553,17 @@ extern void __suspend_report_result(cons
- extern int device_pm_wait_for_dev(struct device *sub, struct device *dev);
+--- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/sh7372.h
++++ linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+@@ -12,6 +12,7 @@
+ #define __ASM_SH7372_H__
  
- extern int pm_generic_prepare(struct device *dev);
-+extern int pm_generic_suspend_noirq(struct device *dev);
- extern int pm_generic_suspend(struct device *dev);
-+extern int pm_generic_resume_noirq(struct device *dev);
- extern int pm_generic_resume(struct device *dev);
-+extern int pm_generic_freeze_noirq(struct device *dev);
- extern int pm_generic_freeze(struct device *dev);
-+extern int pm_generic_thaw_noirq(struct device *dev);
- extern int pm_generic_thaw(struct device *dev);
-+extern int pm_generic_restore_noirq(struct device *dev);
- extern int pm_generic_restore(struct device *dev);
-+extern int pm_generic_poweroff_noirq(struct device *dev);
- extern int pm_generic_poweroff(struct device *dev);
- extern void pm_generic_complete(struct device *dev);
+ #include <linux/sh_clk.h>
++#include <linux/pm_domain.h>
  
+ /*
+  * Pin Function Controller:
+@@ -470,4 +471,19 @@ extern struct clk sh7372_fsibck_clk;
+ extern struct clk sh7372_fsidiva_clk;
+ extern struct clk sh7372_fsidivb_clk;
+ 
++struct platform_device;
++
++#ifdef CONFIG_PM
++extern struct generic_pm_domain sh7372_a4lc_domain;
++#define SH7372_A4LC	(&sh7372_a4lc_domain)
++
++extern void sh7372_add_device_to_domain(struct generic_pm_domain *domain,
++					struct platform_device *pdev);
++#else
++#define SH7372_A4LC	NULL
++
++static inline void sh7372_add_device_to_domain(struct generic_pm_domain *dom,
++					       struct platform_device *pd) {}
++#endif /* CONFIG_PM */
++
+ #endif /* __ASM_SH7372_H__ */
+Index: linux-2.6/arch/arm/mach-shmobile/Makefile
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/Makefile
++++ linux-2.6/arch/arm/mach-shmobile/Makefile
+@@ -42,6 +42,10 @@ obj-$(CONFIG_MACH_AP4EVB)	+= board-ap4ev
+ obj-$(CONFIG_MACH_AG5EVM)	+= board-ag5evm.o
+ obj-$(CONFIG_MACH_MACKEREL)	+= board-mackerel.o
+ 
++# PM objects
++pm-$(CONFIG_ARCH_SH7372)	+= pm-sh7372.o
++
+ # Framework support
+ obj-$(CONFIG_SMP)		+= $(smp-y)
+ obj-$(CONFIG_GENERIC_GPIO)	+= $(pfc-y)
++obj-$(CONFIG_PM)		+= $(pm-y)
+Index: linux-2.6/arch/arm/mach-shmobile/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/Kconfig
++++ linux-2.6/arch/arm/mach-shmobile/Kconfig
+@@ -19,6 +19,7 @@ config ARCH_SH7372
+ 	select CPU_V7
+ 	select SH_CLK_CPG
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
++	select PM_GENERIC_DOMAINS
+ 
+ config ARCH_SH73A0
+ 	bool "SH-Mobile AG5 (R8A73A00)"
+Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -15,16 +15,97 @@
+ #include <linux/list.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
++#include <linux/platform_device.h>
+ #include <asm/system.h>
+ #include <asm/io.h>
+ #include <asm/tlbflush.h>
+ #include <mach/common.h>
++#include <mach/sh7372.h>
+ 
+ #define SMFRAM 0xe6a70000
+ #define SYSTBCR 0xe6150024
+ #define SBAR 0xe6180020
+ #define APARMBAREA 0xe6f10020
+ 
++#define SPDCR 0xe6180008
++#define SWUCR 0xe6180014
++#define PSTR 0xe6180080
++
++struct sh7372_domain_data {
++	unsigned int bit_shift;
++};
++
++static int pd_power_down(struct dev_pm_domain *domain)
++{
++	struct sh7372_domain_data *dd = domain->platform_data;
++	unsigned int mask = 1 << dd->bit_shift;
++
++	if (__raw_readl(PSTR) & mask) {
++		__raw_writel(mask, SPDCR);
++
++		while (__raw_readl(SPDCR) & mask) {}
++
++		pr_debug("sh7372 power domain down 0x%08x -> PSTR = 0x%08x\n",
++			 mask, __raw_readl(PSTR));
++	}
++
++	return 0;
++}
++
++static int pd_power_up(struct dev_pm_domain *domain)
++{
++	struct sh7372_domain_data *dd = domain->platform_data;
++	unsigned int mask = 1 << dd->bit_shift;
++
++	if (!(__raw_readl(PSTR) & mask)) {
++		__raw_writel(mask, SWUCR);
++
++		while (__raw_readl(SWUCR) & mask) {}
++
++		pr_debug("sh7372 power domain up 0x%08x -> PSTR = 0x%08x\n",
++			 mask, __raw_readl(PSTR));
++	}
++
++	return 0;
++}
++
++static void sh7372_init_domain(struct generic_pm_domain *domain,
++			       struct sh7372_domain_data *pdata)
++{
++	pm_genpd_init(domain, NULL, false);
++	domain->domain.platform_data = pdata;
++	domain->stop_device = pm_runtime_clk_suspend;
++	domain->start_device = pm_runtime_clk_resume;
++	domain->power_off = pd_power_down;
++	domain->power_on = pd_power_up;
++}
++
++void sh7372_add_device_to_domain(struct generic_pm_domain *domain,
++				 struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++
++	if (!dev->power.subsys_data) {
++		pm_runtime_clk_init(dev);
++		pm_runtime_clk_add(dev, NULL);
++	}
++	pm_genpd_add_device(domain, dev);
++}
++
++static struct sh7372_domain_data sh7372_a4lc_domain_data = {
++	.bit_shift = 1,
++};
++
++struct generic_pm_domain sh7372_a4lc_domain;
++
++static int __init sh7372_power_domains_init(void)
++{
++	sh7372_init_domain(&sh7372_a4lc_domain, &sh7372_a4lc_domain_data);
++	return 0;
++}
++core_initcall(sh7372_power_domains_init);
++
+ static void sh7372_enter_core_standby(void)
+ {
+ 	void __iomem *smfram = (void __iomem *)SMFRAM;
