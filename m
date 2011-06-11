@@ -1,24 +1,17 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Fri, 10 Jun 2011 20:02:33 -0700
-Message-ID: <20110610200233.5ddd5a31__9566.34186809442$1307761205$gmane$org@infradead.org>
-References: <20110610151121.GA2230@linux.vnet.ibm.com>
-	<20110610155954.GA25774@srcf.ucam.org>
-	<20110610165529.GC2230@linux.vnet.ibm.com>
-	<20110610170535.GC25774@srcf.ucam.org>
-	<20110610171939.GE2230@linux.vnet.ibm.com>
-	<20110610172307.GA27630@srcf.ucam.org>
-	<20110610175248.GF2230@linux.vnet.ibm.com>
-	<20110610180807.GB28500@srcf.ucam.org>
-	<20110610184738.GG2230@linux.vnet.ibm.com>
-	<20110610192329.GA30496@srcf.ucam.org>
-	<20110610193713.GJ2230@linux.vnet.ibm.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: calling runtime PM from system PM methods
+Date: Sat, 11 Jun 2011 12:42:39 +0100
+Message-ID: <20110611114239.GC2738__2733.79836367003$1307792626$gmane$org@opensource.wolfsonmicro.com>
+References: <20110610155707.GN26436@opensource.wolfsonmicro.com>
+	<201106102038.22725.rjw@sisk.pl>
+	<20110610184222.GT26436@opensource.wolfsonmicro.com>
+	<201106102227.25391.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110610193713.GJ2230@linux.vnet.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <201106102227.25391.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,40 +21,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paulmck@linux.vnet.ibm.com
-Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 10 Jun 2011 12:37:13 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Fri, Jun 10, 2011 at 10:27:25PM +0200, Rafael J. Wysocki wrote:
 
-> On Fri, Jun 10, 2011 at 08:23:29PM +0100, Matthew Garrett wrote:
-> > On Fri, Jun 10, 2011 at 11:47:38AM -0700, Paul E. McKenney wrote:
-> > 
-> > > And if I understand you correctly, then the patches that Ankita
-> > > posted should help your self-refresh case, along with the
-> > > originally intended the power-down case and special-purpose use
-> > > of memory case.
-> > 
-> > Yeah, I'd hope so once we actually have capable hardware.
-> 
-> Cool!!!
-> 
-> So Ankita's patchset might be useful to you at some point, then.
-> 
-> Does it look like a reasonable implementation?
+> So, there are a few things to consider:
 
-as someone who is working on hardware that is PASR capable right now,
-I have to admit that our plan was to just hook into the buddy allocator,
-and use PASR on the top level of buddy (eg PASR off blocks that are
-free there, and PASR them back on once an allocation required the block
-to be broken up)..... that looked the very most simple to me.
+> * Can the device do things like DMA?
+> * Does the driver use a workqueue?
+> * Does it use timers?
 
-Maybe something much more elaborate is needed, but I didn't see why so
-far.
+> In all of the above cases your system suspend handling will require extra
+> care to make sure those things won't get in the way of the suspend process.
 
+Yes, that's the quiesce operation I think myself or Alan mentioned.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> It's probably fair to say that everithing depends on the subsystem, what it
+> does and what it expects from the driver.  In the extreme case, when the
+> subsystem is like the platform bus type, the driver unfortunately is on its
+> own and has to deal with the whole complexity.
+
+I'm pretty much only working with buses that have no infrastructure and
+for which power is essentially orthogonal to the control bus itself -
+that's a very large proportion of the embedded space.  It really feels
+like we could be doing a better job for drivers using these buses,
+there's a lot of similarities in what many of them need but I can never
+find the time to get my head round it confidently enough to actually
+propose anything.
