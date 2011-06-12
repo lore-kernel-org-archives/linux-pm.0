@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH]drivers:base:power:trace.c Add "UTC"
-	Coordinated Universal Time to the printk.
-Date: Sun, 12 Jun 2011 14:12:09 +0200
-Message-ID: <201106121412.09903.rjw__42535.3960985833$1307880749$gmane$org@sisk.pl>
-References: <1307599301-2524-1-git-send-email-justinmattock@gmail.com>
+Subject: Re: [patch 1/1] [PATCH] include storage keys in
+	hibernation image.
+Date: Sun, 12 Jun 2011 14:41:34 +0200
+Message-ID: <201106121441.35059.rjw@sisk.pl>
+References: <20110608074523.211912903@de.ibm.com>
+	<20110608074648.287491002@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1307599301-2524-1-git-send-email-justinmattock@gmail.com>
+In-Reply-To: <20110608074648.287491002@de.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,53 +19,116 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wednesday, June 08, 2011, Martin Schwidefsky wrote:
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> For s390 there is one additional byte associated with each page,
+> the storage key. This byte contains the referenced and changed
+> bits and needs to be included into the hibernation image.
+> If the storage keys are not restored to their previous state all
+> original pages would appear to be dirty. This can cause
+> inconsistencies e.g. with read-only filesystems.
+> 
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Jiri Slaby <jslaby@suse.cz>
+> Cc: linux-pm@lists.linux-foundation.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-s390@vger.kernel.org
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+> 
+>  arch/s390/kernel/swsusp_asm64.S |    3 
+>  kernel/power/snapshot.c         |  148 ++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 151 insertions(+)
+> 
+> diff -urpN linux-2.6/arch/s390/kernel/swsusp_asm64.S linux-2.6-patched/arch/s390/kernel/swsusp_asm64.S
+> --- linux-2.6/arch/s390/kernel/swsusp_asm64.S	2011-05-19 06:06:34.000000000 +0200
+> +++ linux-2.6-patched/arch/s390/kernel/swsusp_asm64.S	2011-06-06 11:14:43.000000000 +0200
+> @@ -138,11 +138,14 @@ swsusp_arch_resume:
+>  0:
+>  	lg	%r2,8(%r1)
+>  	lg	%r4,0(%r1)
+> +	iske	%r0,%r4
+>  	lghi	%r3,PAGE_SIZE
+>  	lghi	%r5,PAGE_SIZE
+>  1:
+>  	mvcle	%r2,%r4,0
+>  	jo	1b
+> +	lg	%r2,8(%r1)
+> +	sske	%r0,%r2
+>  	lg	%r1,16(%r1)
+>  	ltgr	%r1,%r1
+>  	jnz	0b
 
-On Thursday, June 09, 2011, Justin P. Mattock wrote:
-> From: "Justin P. Mattock" <justinmattock@gmail.com>
-> 
-> sounds stupid, but taking a glance at the time, and seeing the wrong time, or what seemed 
-> wrong in dmesg, caused me to go into total check the time clock panic mode.. So the patch below adds:
-> "UTC" Coordinated Universal Time abreviation to the printk so people like me dont flip out over the time!
-> 
-> before:
-> [    0.114915] Time:  1:47:03  Date: 06/09/11
-> 
-> after:
-> [    0.114728] Time:  5:46:02 UTC Date: 06/09/11
-> 
-> Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+I cannot comment on the assembly.
 
-I suspect the goal is to mark messages printed by the PM trace code so that
-they can be easily distinguished from messages from other sources to avoid
-confusion.  Why do you think it's a good idea to use the "UTC" string for
-this purpose?  The time printed in those messages need not be UTC.
+> diff -urpN linux-2.6/kernel/power/snapshot.c linux-2.6-patched/kernel/power/snapshot.c
+> --- linux-2.6/kernel/power/snapshot.c	2011-06-06 11:14:39.000000000 +0200
+> +++ linux-2.6-patched/kernel/power/snapshot.c	2011-06-06 11:14:43.000000000 +0200
+> @@ -1022,6 +1022,137 @@ static inline void copy_data_page(unsign
+>  }
+>  #endif /* CONFIG_HIGHMEM */
+>  
+> +#ifdef CONFIG_S390
+> +/*
+> + * For s390 there is one additional byte associated with each page,
+> + * the storage key. The key consists of the access-control bits
+> + * (alias the key), the fetch-protection bit, the referenced bit
+> + * and the change bit (alias dirty bit). Linux uses only the
+> + * referenced bit and the change bit for pages in the page cache.
+> + * Any modification of a page will set the change bit, any access
+> + * sets the referenced bit. Overindication of the referenced bits
+> + * after a hibernation cycle does not cause any harm but the
+> + * overindication of the change bits would cause trouble.
+> + * Therefore it is necessary to include the storage keys in the
+> + * hibernation image. The storage keys are saved to the most
+> + * significant byte of each page frame number in the list of pfns
+> + * in the hibernation image.
+> + */
 
-It would be better to simply print "RTC time: ..., date: ..." IMO.
+Let me say that is not exactly straightforward. :-)
+
+One thing I don't really understand is where those storage keys are normally
+stored so that they aren't present in the image without this additional
+mechanism.  Could you explain that a bit more, please?
+
+> +
+> +/*
+> + * Key storage is allocated as a linked list of pages.
+> + * The size of the keys array is (PAGE_SIZE - sizeof(long))
+> + */
+> +struct page_key_data {
+> +	struct page_key_data *next;
+> +	unsigned char data[];
+> +};
+
+This seems to be similar to the data structure for the saving of ACPI NVS
+memory, so perhaps it's possible to combine the two.
+
+> +#define PAGE_KEY_DATA_SIZE	(PAGE_SIZE - sizeof(struct page_key_data *))
+> +
+> +static struct page_key_data *page_key_data;
+> +static struct page_key_data *page_key_rp, *page_key_wp;
+> +static unsigned long page_key_rx, page_key_wx;
+> +
+> +/*
+> + * For each page in the hibernation image one additional byte is
+> + * stored in the most significant byte of the page frame number.
+
+I'm not sure it's really worth the complication.  If you simply store those
+keys in separete pages, you'd need one additional page per PAGE_SIZE
+page frames, so given PAGE_SIZE = 4096 that's one page per 16 MB of memory,
+which is not a whole lot (64 extra pages per GB if I'm not mistaken).
+
+It seems that doing it will simplify things quite a git.
+
+Apart from this, I'm not sure that kernel/power/snapshot.c is the right
+place for all this S390-specific code.  I'd rather see it in arch/s390.
 
 Thanks,
 Rafael
-
-
-> ---
->  drivers/base/power/trace.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-> index c80e138..009f459 100644
-> --- a/drivers/base/power/trace.c
-> +++ b/drivers/base/power/trace.c
-> @@ -112,7 +112,7 @@ static unsigned int read_magic_time(void)
->  	unsigned int val;
->  
->  	get_rtc_time(&time);
-> -	pr_info("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
-> +	pr_info("Time: %2d:%02d:%02d UTC Date: %02d/%02d/%02d\n",
->  		time.tm_hour, time.tm_min, time.tm_sec,
->  		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
->  	val = time.tm_year;				/* 100 years */
-> 
