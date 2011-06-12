@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 1/1] [PATCH] include storage keys in
-	hibernation image.
-Date: Sun, 12 Jun 2011 14:41:34 +0200
-Message-ID: <201106121441.35059.rjw@sisk.pl>
-References: <20110608074523.211912903@de.ibm.com>
-	<20110608074648.287491002@de.ibm.com>
+Subject: Re: [PATCH v5] PM / Core: suspend_again callback for
+	suspend_ops.
+Date: Sun, 12 Jun 2011 15:44:38 +0200
+Message-ID: <201106121544.38679.rjw__17289.9473029704$1307886319$gmane$org@sisk.pl>
+References: <1306999978-4663-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110608074648.287491002@de.ibm.com>
+In-Reply-To: <1306999978-4663-1-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,116 +18,133 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 08, 2011, Martin Schwidefsky wrote:
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Thursday, June 02, 2011, MyungJoo Ham wrote:
+> A system or a device may need to control suspend/wakeup events. It may
+> want to wakeup the system after a predefined amount of time or at a
+> predefined event decided while entering suspend for polling or delayed
+> work. Then, it may want to enter suspend again if its predefined wakeup
+> condition is the only wakeup reason and there is no outstanding events;
+> thus, it does not wakeup the userspace unnecessary or unnecessary
+> devices and keeps suspended as long as possible (saving the power).
 > 
-> For s390 there is one additional byte associated with each page,
-> the storage key. This byte contains the referenced and changed
-> bits and needs to be included into the hibernation image.
-> If the storage keys are not restored to their previous state all
-> original pages would appear to be dirty. This can cause
-> inconsistencies e.g. with read-only filesystems.
+> Enabling a system to wakeup after a specified time can be easily
+> achieved by using RTC. However, to enter suspend again immediately
+> without invoking userland and unrelated devices, we need additional
+> features in the suspend framework.
 > 
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Jiri Slaby <jslaby@suse.cz>
-> Cc: linux-pm@lists.linux-foundation.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-s390@vger.kernel.org
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Such need comes from:
+> 
+> 1. Monitoring a critical device status without interrupts that can
+> wakeup the system. (in-suspend polling)
+>  An example is ambient temperature monitoring that needs to shut down
+> the system or a specific device function if it is too hot or cold. The
+> temperature of a specific device may be needed to be monitored as well;
+> e.g., a charger monitors battery temperature in order to stop charging
+> if overheated.
+> 
+> 2. Execute critical "delayed work" at suspend.
+>  A driver or a system/board may have a delayed work (or any similar
+> things) that it wants to execute at the requested time.
+>  For example, some chargers want to check the battery voltage some
+> time (e.g., 30 seconds) after the battery is fully charged and the
+> charger has stopped. Then, the charger restarts charging if the voltage
+> has dropped more than a threshold, which is smaller than "restart-charger"
+> voltage, which is a threshold to restart charging regardless of the
+> time passed.
+> 
+> This patch allows to add "suspend_again" callback at struct
+> platform_suspend_ops and let the "suspend_again" callback return true if
+> the system is required to enter suspend again after the current instance
+> of wakeup. Device-wise suspend_again implemented at dev_pm_ops or
+> syscore is not done because: a) suspend_again feature is usually under
+> platform-wise decision and controls the behavior of the whole platform
+> and b) There are very limited devices related to the usage cases of
+> suspend_again; chargers and temperature sensors are mentioned so far.
+> 
+> With suspend_again callback registered at struct platform_suspend_ops
+> suspend_ops in kernel/power/suspend.c with suspend_set_ops by the
+> platform, the suspend framework tries to enter suspend again by
+> looping suspend_enter() if suspend_again has returned true and there has
+> been no errors in the suspending sequence or pending wakeups (by
+> pm_wakeup_pending).
+> 
+> Tested at Exynos4-NURI.
+> 
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+
+OK, I'll queue it up for 3.1, but I'm still not sure if executing
+all of the .suspend_noirq() and .resume_noirq() callbacks in each iteration
+of the loop is optimal.
+
+Arguably, we can't do anything more fine grained at the moment, but that's
+something to think of in the future.
+
+> --
+> Thank you for your valuable comments, Pavel, Rafael, Greg, and others.
+> 
+> Changed from v4:
+> 	- rebased on Linux 3.0 rc1
+> 	- removed partial_suspend/resume because they are not needed, for now.
+> Changed from v3:
+> 	- renamed local variable "pm_wkup_pending" to "wakeup_pending".
+> 	pm_wakeup_pending is not used because there is a function with the
+> 	same name.
+> Changed from v2:
+> 	- moved (again) from dev_pm_ops to suspend_ops
+> 	- settled suspend_again point at around suspend_enter().
+> Changes from v1:
+> 	- moved from syscore to dev_pm_ops
+> 	- added generic ops for subsystems.
+> 	- cleaned up suspend_again code at kernel/power/suspend.
 > ---
+>  include/linux/suspend.h |    8 ++++++++
+>  kernel/power/suspend.c  |   13 ++++++++++---
+>  2 files changed, 18 insertions(+), 3 deletions(-)
 > 
->  arch/s390/kernel/swsusp_asm64.S |    3 
->  kernel/power/snapshot.c         |  148 ++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 151 insertions(+)
-> 
-> diff -urpN linux-2.6/arch/s390/kernel/swsusp_asm64.S linux-2.6-patched/arch/s390/kernel/swsusp_asm64.S
-> --- linux-2.6/arch/s390/kernel/swsusp_asm64.S	2011-05-19 06:06:34.000000000 +0200
-> +++ linux-2.6-patched/arch/s390/kernel/swsusp_asm64.S	2011-06-06 11:14:43.000000000 +0200
-> @@ -138,11 +138,14 @@ swsusp_arch_resume:
->  0:
->  	lg	%r2,8(%r1)
->  	lg	%r4,0(%r1)
-> +	iske	%r0,%r4
->  	lghi	%r3,PAGE_SIZE
->  	lghi	%r5,PAGE_SIZE
->  1:
->  	mvcle	%r2,%r4,0
->  	jo	1b
-> +	lg	%r2,8(%r1)
-> +	sske	%r0,%r2
->  	lg	%r1,16(%r1)
->  	ltgr	%r1,%r1
->  	jnz	0b
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index 083ffea..e1e3742 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -92,6 +92,13 @@ typedef int __bitwise suspend_state_t;
+>   *	@enter() and @wake(), even if any of them fails.  It is executed after
+>   *	a failing @prepare.
+>   *
+> + * @suspend_again: Returns whether the system should suspend again (true) or
+> + *	not (false). If the platform wants to poll sensors or execute some
+> + *	code during suspended without invoking userspace and most of devices,
+> + *	suspend_again callback is the place assuming that periodic-wakeup or
+> + *	alarm-wakeup is already setup. This allows to execute some codes while
+> + *	being kept suspended in the view of userland and devices.
+> + *
+>   * @end: Called by the PM core right after resuming devices, to indicate to
+>   *	the platform that the system has returned to the working state or
+>   *	the transition to the sleep state has been aborted.
+> @@ -113,6 +120,7 @@ struct platform_suspend_ops {
+>  	int (*enter)(suspend_state_t state);
+>  	void (*wake)(void);
+>  	void (*finish)(void);
+> +	bool (*suspend_again)(void);
+>  	void (*end)(void);
+>  	void (*recover)(void);
+>  };
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 1c41ba2..d8a6c51 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -128,10 +128,12 @@ void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
+>  /**
+>   *	suspend_enter - enter the desired system sleep state.
+>   *	@state:		state to enter
+> + *	@wakeup_pending:	indicates that the power transition in progress
+> + *				should be aborted.
 
-I cannot comment on the assembly.
-
-> diff -urpN linux-2.6/kernel/power/snapshot.c linux-2.6-patched/kernel/power/snapshot.c
-> --- linux-2.6/kernel/power/snapshot.c	2011-06-06 11:14:39.000000000 +0200
-> +++ linux-2.6-patched/kernel/power/snapshot.c	2011-06-06 11:14:43.000000000 +0200
-> @@ -1022,6 +1022,137 @@ static inline void copy_data_page(unsign
->  }
->  #endif /* CONFIG_HIGHMEM */
->  
-> +#ifdef CONFIG_S390
-> +/*
-> + * For s390 there is one additional byte associated with each page,
-> + * the storage key. The key consists of the access-control bits
-> + * (alias the key), the fetch-protection bit, the referenced bit
-> + * and the change bit (alias dirty bit). Linux uses only the
-> + * referenced bit and the change bit for pages in the page cache.
-> + * Any modification of a page will set the change bit, any access
-> + * sets the referenced bit. Overindication of the referenced bits
-> + * after a hibernation cycle does not cause any harm but the
-> + * overindication of the change bits would cause trouble.
-> + * Therefore it is necessary to include the storage keys in the
-> + * hibernation image. The storage keys are saved to the most
-> + * significant byte of each page frame number in the list of pfns
-> + * in the hibernation image.
-> + */
-
-Let me say that is not exactly straightforward. :-)
-
-One thing I don't really understand is where those storage keys are normally
-stored so that they aren't present in the image without this additional
-mechanism.  Could you explain that a bit more, please?
-
-> +
-> +/*
-> + * Key storage is allocated as a linked list of pages.
-> + * The size of the keys array is (PAGE_SIZE - sizeof(long))
-> + */
-> +struct page_key_data {
-> +	struct page_key_data *next;
-> +	unsigned char data[];
-> +};
-
-This seems to be similar to the data structure for the saving of ACPI NVS
-memory, so perhaps it's possible to combine the two.
-
-> +#define PAGE_KEY_DATA_SIZE	(PAGE_SIZE - sizeof(struct page_key_data *))
-> +
-> +static struct page_key_data *page_key_data;
-> +static struct page_key_data *page_key_rp, *page_key_wp;
-> +static unsigned long page_key_rx, page_key_wx;
-> +
-> +/*
-> + * For each page in the hibernation image one additional byte is
-> + * stored in the most significant byte of the page frame number.
-
-I'm not sure it's really worth the complication.  If you simply store those
-keys in separete pages, you'd need one additional page per PAGE_SIZE
-page frames, so given PAGE_SIZE = 4096 that's one page per 16 MB of memory,
-which is not a whole lot (64 extra pages per GB if I'm not mistaken).
-
-It seems that doing it will simplify things quite a git.
-
-Apart from this, I'm not sure that kernel/power/snapshot.c is the right
-place for all this S390-specific code.  I'd rather see it in arch/s390.
+This should be just one line, otherwise kerneldoc will have problems with it.
+I'll fix it up.
 
 Thanks,
 Rafael
