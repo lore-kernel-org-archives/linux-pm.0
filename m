@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH]drivers:base:power:trace.c Add "UTC"
-	Coordinated Universal Time to the printk.
-Date: Sun, 12 Jun 2011 22:27:32 +0200
-Message-ID: <201106122227.32992.rjw__34225.5268399187$1307910482$gmane$org@sisk.pl>
-References: <1307599301-2524-1-git-send-email-justinmattock@gmail.com>
-	<201106122035.26600.rjw@sisk.pl> <4DF514BC.9030808@gmail.com>
+Subject: 3.0-rc2: Reported regressions from 2.6.39
+Date: Sun, 12 Jun 2011 22:23:10 +0200 (CEST)
+Message-ID: <vv0uv79EvLN.A.jiC.pNS9NB__19931.5866143026$1307911321$gmane$org@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4DF514BC.9030808@gmail.com>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,52 +16,98 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, June 12, 2011, Justin P. Mattock wrote:
-> On 06/12/2011 11:35 AM, Rafael J. Wysocki wrote:
-> > On Sunday, June 12, 2011, Justin P. Mattock wrote:
-> >> On 06/12/2011 05:12 AM, Rafael J. Wysocki wrote:
-> >>> Hi,
-> >>>
-> >>> On Thursday, June 09, 2011, Justin P. Mattock wrote:
-> >>>> From: "Justin P. Mattock"<justinmattock@gmail.com>
-> >>>>
-> >>>> sounds stupid, but taking a glance at the time, and seeing the wrong time, or what seemed
-> >>>> wrong in dmesg, caused me to go into total check the time clock panic mode.. So the patch below adds:
-> >>>> "UTC" Coordinated Universal Time abreviation to the printk so people like me dont flip out over the time!
-> >>>>
-> >>>> before:
-> >>>> [    0.114915] Time:  1:47:03  Date: 06/09/11
-> >>>>
-> >>>> after:
-> >>>> [    0.114728] Time:  5:46:02 UTC Date: 06/09/11
-> >>>>
-> >>>> Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
-> >>>
-> >>> I suspect the goal is to mark messages printed by the PM trace code so that
-> >>> they can be easily distinguished from messages from other sources to avoid
-> >>> confusion.  Why do you think it's a good idea to use the "UTC" string for
-> >>> this purpose?  The time printed in those messages need not be UTC.
-> >>>
-> >>> It would be better to simply print "RTC time: ..., date: ..." IMO.
-> >>>
-> >>> Thanks,
-> >>> Rafael
-> >>>
-> >>
-> >> well.. if thats better, then thats better.. over here(people that dont
-> >> know what RTC time is) would not get so confused with a simple UTC or
-> >> PDT or whatever the time zone is but if RTC is bettr, then its better.
-> >
-> > My point is we don't know this time is always UTC, so we rather shouldn't
-> > label it as UTC unconditionally, should we?
-> >
-> > Rafael
-> >
-> 
-> sounds good to me!!
+This message contains a list of some regressions from 2.6.39,
+for which there are no fixes in the mainline known to the tracking team.
+If any of them have been fixed already, please let us know.
 
-I'm not sure what you mean?
+If you know of any other unresolved regressions from 2.6.39, please let us
+know either and we'll add them to the list.  Also, please let us know
+if any of the entries below are invalid.
+
+Each entry from the list will be sent additionally in an automatic reply
+to this message with CCs to the people involved in reporting and handling
+the issue.
+
+
+Listed regressions statistics:
+
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2011-06-12        8        7           7
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=37242
+Subject		: lockdep deadlock warning in shutdown
+Submitter	: Shaohua Li <shaohua.li@intel.com>
+Date		: 2011-06-03 3:24 (10 days old)
+Message-ID	: <1307071472.15392.60.camel@sli10-conroe>
+References	: http://marc.info/?l=linux-acpi&m=130707148811930&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=37232
+Subject		: [3.0-rc1][NMI/DMAR][iwlagn] errors - PCI system error (SERR) for reason a1 on CPU 0
+Submitter	: Shawn Starr <shawn.starr@rogers.com>
+Date		: 2011-06-03 4:56 (10 days old)
+Message-ID	: <4478124.OuFNgaPiHS@segfault.sh0n.net>
+References	: http://marc.info/?l=linux-kernel&m=130707737616116&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=37222
+Subject		: 3.0.0-rc1-git3 -- kernel/sched.c:619 invoked rcu_dereference_check() without protection!
+Submitter	: Miles Lane <miles.lane@gmail.com>
+Date		: 2011-06-04 3:22 (9 days old)
+Message-ID	: <BANLkTikHS7TuFhm3cfJ+Y=erWDaAwuE_TA@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=130715775803343&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=36982
+Subject		: 3.0-rc1 problem with usb, cdrom
+Submitter	: werner <w.landgraf@ru.ru>
+Date		: 2011-06-01 16:43 (12 days old)
+Message-ID	: <web-538043386@zbackend1.aha.ru>
+References	: http://marc.info/?l=linux-kernel&m=130694663410114&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=36972
+Subject		: 3.0-rc1: DMAR errors from iwlagn
+Submitter	: Jeremy Fitzhardinge <jeremy@goop.org>
+Date		: 2011-05-31 21:14 (13 days old)
+Message-ID	: <4DE55A26.6040702@goop.org>
+References	: http://marc.info/?l=linux-kernel&m=130687723213857&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=36452
+Subject		: Artifacts with 3.0-rc1 on SandyBridge
+Submitter	: Alex Zhavnerchik <alex.vizor@gmail.com>
+Date		: 2011-06-01 13:55 (12 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=36302
+Subject		: SandyBridge can't do s2disk with linux 3.0-rc1
+Submitter	: Alex Zhavnerchik <alex.vizor@gmail.com>
+Date		: 2011-05-30 23:10 (14 days old)
+
+
+Regressions with patches
+------------------------
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.39,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=36912
+
+Please let the tracking team know if there are any Bugzilla entries that
+should be added to the list in there.
+
+Thanks!
