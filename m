@@ -1,15 +1,13 @@
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [PATCH]drivers:base:power:trace.c Add "UTC"
- Coordinated Universal Time to the printk.
-Date: Sun, 12 Jun 2011 08:52:43 -0700
-Message-ID: <4DF4E0CB.4090900__14164.9873731241$1307894072$gmane$org@gmail.com>
-References: <1307599301-2524-1-git-send-email-justinmattock@gmail.com>
-	<201106121412.09903.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: calling runtime PM from system PM methods
+Date: Sun, 12 Jun 2011 11:59:28 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106121153510.18475-100000__29588.8032451787$1307894417$gmane$org@netrider.rowland.org>
+References: <201106120046.36618.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106121412.09903.rjw@sisk.pl>
+In-Reply-To: <201106120046.36618.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,60 +18,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/12/2011 05:12 AM, Rafael J. Wysocki wrote:
-> Hi,
->
-> On Thursday, June 09, 2011, Justin P. Mattock wrote:
->> From: "Justin P. Mattock"<justinmattock@gmail.com>
->>
->> sounds stupid, but taking a glance at the time, and seeing the wrong time, or what seemed
->> wrong in dmesg, caused me to go into total check the time clock panic mode.. So the patch below adds:
->> "UTC" Coordinated Universal Time abreviation to the printk so people like me dont flip out over the time!
->>
->> before:
->> [    0.114915] Time:  1:47:03  Date: 06/09/11
->>
->> after:
->> [    0.114728] Time:  5:46:02 UTC Date: 06/09/11
->>
->> Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
->
-> I suspect the goal is to mark messages printed by the PM trace code so that
-> they can be easily distinguished from messages from other sources to avoid
-> confusion.  Why do you think it's a good idea to use the "UTC" string for
-> this purpose?  The time printed in those messages need not be UTC.
->
-> It would be better to simply print "RTC time: ..., date: ..." IMO.
->
-> Thanks,
-> Rafael
->
+On Sun, 12 Jun 2011, Rafael J. Wysocki wrote:
 
-well.. if thats better, then thats better.. over here(people that dont 
-know what RTC time is) would not get so confused with a simple UTC or 
-PDT or whatever the time zone is but if RTC is bettr, then its better.
+> > Basically, I think what Rafael was saying before referred to the 
+> > general case, where you don't know anything about the subsystem and 
+> > can't afford to make assumptions.  But in the real world you'll be 
+> > writing a driver for a particular subsystem and you'll know how that 
+> > subsystem works.  If the subsystem permits runtime PM calls to be 
+> > nested within the system PM routines, feel free to go ahead and use 
+> > them.
+> 
+> But then we get the problem that user space may echo "on" to the
+> device's "control" file in sysfs and the whole clever plan basically goes
+> south.
 
->
->> ---
->>   drivers/base/power/trace.c |    2 +-
->>   1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
->> index c80e138..009f459 100644
->> --- a/drivers/base/power/trace.c
->> +++ b/drivers/base/power/trace.c
->> @@ -112,7 +112,7 @@ static unsigned int read_magic_time(void)
->>   	unsigned int val;
->>
->>   	get_rtc_time(&time);
->> -	pr_info("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
->> +	pr_info("Time: %2d:%02d:%02d UTC Date: %02d/%02d/%02d\n",
->>   		time.tm_hour, time.tm_min, time.tm_sec,
->>   		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
->>   	val = time.tm_year;				/* 100 years */
->>
->
->
+That would indeed be a problem if we used pm_runtime_suspend() in the
+system suspend code.  But it doesn't prevent us from calling
+pm_runtime_resume() during system suspend.
+
+> Moreover, on some systems devices will belong to PM domains and their
+> drivers may potentially be used with different PM domains on different
+> platforms.  This means that drivers really should not make any assumptions
+> about whether or not they can use runtime PM in their system suspend/resume
+> routines.  They can't.
+
+Yes, clearly one mustn't make assumptions about unknown subsystems or
+PM domains.
+
+Alan Stern
