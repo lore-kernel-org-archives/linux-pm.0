@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v5] PM / Core: suspend_again callback for
-	suspend_ops.
-Date: Sun, 12 Jun 2011 15:44:38 +0200
-Message-ID: <201106121544.38679.rjw__17289.9473029704$1307886319$gmane$org@sisk.pl>
-References: <1306999978-4663-1-git-send-email-myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] PM: export suspend_set_ops,
+	suspend_valid_only_mem
+Date: Sun, 12 Jun 2011 16:20:20 +0200
+Message-ID: <201106121620.20442.rjw__27097.0135265545$1307888421$gmane$org@sisk.pl>
+References: <1306542839-5688-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1306999978-4663-1-git-send-email-myungjoo.ham@samsung.com>
+In-Reply-To: <1306542839-5688-1-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,133 +18,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, kyungmin.park@samsung.com, linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-omap@vger.kernel.org, Jean Pihet <jean.pihet@newoldbits.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 02, 2011, MyungJoo Ham wrote:
-> A system or a device may need to control suspend/wakeup events. It may
-> want to wakeup the system after a predefined amount of time or at a
-> predefined event decided while entering suspend for polling or delayed
-> work. Then, it may want to enter suspend again if its predefined wakeup
-> condition is the only wakeup reason and there is no outstanding events;
-> thus, it does not wakeup the userspace unnecessary or unnecessary
-> devices and keeps suspended as long as possible (saving the power).
+On Saturday, May 28, 2011, Kevin Hilman wrote:
+> Some platforms wish to implement their PM core suspend code as
+> modules.  To do so, these functions need to be exported to modules.
 > 
-> Enabling a system to wakeup after a specified time can be easily
-> achieved by using RTC. However, to enter suspend again immediately
-> without invoking userland and unrelated devices, we need additional
-> features in the suspend framework.
-> 
-> Such need comes from:
-> 
-> 1. Monitoring a critical device status without interrupts that can
-> wakeup the system. (in-suspend polling)
->  An example is ambient temperature monitoring that needs to shut down
-> the system or a specific device function if it is too hot or cold. The
-> temperature of a specific device may be needed to be monitored as well;
-> e.g., a charger monitors battery temperature in order to stop charging
-> if overheated.
-> 
-> 2. Execute critical "delayed work" at suspend.
->  A driver or a system/board may have a delayed work (or any similar
-> things) that it wants to execute at the requested time.
->  For example, some chargers want to check the battery voltage some
-> time (e.g., 30 seconds) after the battery is fully charged and the
-> charger has stopped. Then, the charger restarts charging if the voltage
-> has dropped more than a threshold, which is smaller than "restart-charger"
-> voltage, which is a threshold to restart charging regardless of the
-> time passed.
-> 
-> This patch allows to add "suspend_again" callback at struct
-> platform_suspend_ops and let the "suspend_again" callback return true if
-> the system is required to enter suspend again after the current instance
-> of wakeup. Device-wise suspend_again implemented at dev_pm_ops or
-> syscore is not done because: a) suspend_again feature is usually under
-> platform-wise decision and controls the behavior of the whole platform
-> and b) There are very limited devices related to the usage cases of
-> suspend_again; chargers and temperature sensors are mentioned so far.
-> 
-> With suspend_again callback registered at struct platform_suspend_ops
-> suspend_ops in kernel/power/suspend.c with suspend_set_ops by the
-> platform, the suspend framework tries to enter suspend again by
-> looping suspend_enter() if suspend_again has returned true and there has
-> been no errors in the suspending sequence or pending wakeups (by
-> pm_wakeup_pending).
-> 
-> Tested at Exynos4-NURI.
-> 
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Reported-by: Jean Pihet <j-pihet@ti.com>
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
 
-OK, I'll queue it up for 3.1, but I'm still not sure if executing
-all of the .suspend_noirq() and .resume_noirq() callbacks in each iteration
-of the loop is optimal.
-
-Arguably, we can't do anything more fine grained at the moment, but that's
-something to think of in the future.
-
-> --
-> Thank you for your valuable comments, Pavel, Rafael, Greg, and others.
-> 
-> Changed from v4:
-> 	- rebased on Linux 3.0 rc1
-> 	- removed partial_suspend/resume because they are not needed, for now.
-> Changed from v3:
-> 	- renamed local variable "pm_wkup_pending" to "wakeup_pending".
-> 	pm_wakeup_pending is not used because there is a function with the
-> 	same name.
-> Changed from v2:
-> 	- moved (again) from dev_pm_ops to suspend_ops
-> 	- settled suspend_again point at around suspend_enter().
-> Changes from v1:
-> 	- moved from syscore to dev_pm_ops
-> 	- added generic ops for subsystems.
-> 	- cleaned up suspend_again code at kernel/power/suspend.
-> ---
->  include/linux/suspend.h |    8 ++++++++
->  kernel/power/suspend.c  |   13 ++++++++++---
->  2 files changed, 18 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 083ffea..e1e3742 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -92,6 +92,13 @@ typedef int __bitwise suspend_state_t;
->   *	@enter() and @wake(), even if any of them fails.  It is executed after
->   *	a failing @prepare.
->   *
-> + * @suspend_again: Returns whether the system should suspend again (true) or
-> + *	not (false). If the platform wants to poll sensors or execute some
-> + *	code during suspended without invoking userspace and most of devices,
-> + *	suspend_again callback is the place assuming that periodic-wakeup or
-> + *	alarm-wakeup is already setup. This allows to execute some codes while
-> + *	being kept suspended in the view of userland and devices.
-> + *
->   * @end: Called by the PM core right after resuming devices, to indicate to
->   *	the platform that the system has returned to the working state or
->   *	the transition to the sleep state has been aborted.
-> @@ -113,6 +120,7 @@ struct platform_suspend_ops {
->  	int (*enter)(suspend_state_t state);
->  	void (*wake)(void);
->  	void (*finish)(void);
-> +	bool (*suspend_again)(void);
->  	void (*end)(void);
->  	void (*recover)(void);
->  };
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index 1c41ba2..d8a6c51 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -128,10 +128,12 @@ void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
->  /**
->   *	suspend_enter - enter the desired system sleep state.
->   *	@state:		state to enter
-> + *	@wakeup_pending:	indicates that the power transition in progress
-> + *				should be aborted.
-
-This should be just one line, otherwise kerneldoc will have problems with it.
-I'll fix it up.
+Applied to suspend-2.6/linux-next.
 
 Thanks,
 Rafael
+
+
+> ---
+> Applies against v2.6.39
+> 
+>  kernel/power/suspend.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 6275970..eca495d 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -44,6 +44,7 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
+>  	suspend_ops = ops;
+>  	mutex_unlock(&pm_mutex);
+>  }
+> +EXPORT_SYMBOL(suspend_set_ops);
+>  
+>  bool valid_state(suspend_state_t state)
+>  {
+> @@ -65,6 +66,7 @@ int suspend_valid_only_mem(suspend_state_t state)
+>  {
+>  	return state == PM_SUSPEND_MEM;
+>  }
+> +EXPORT_SYMBOL(suspend_valid_only_mem);
+>  
+>  static int suspend_test(int level)
+>  {
+> 
