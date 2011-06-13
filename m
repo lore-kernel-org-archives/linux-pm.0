@@ -1,14 +1,12 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Mon, 13 Jun 2011 13:47:01 +0900
-Message-ID: <20110613134701.2b23b8d8.kamezawa.hiroyu__3534.64230797744$1307941022$gmane$org@jp.fujitsu.com>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+From: Frank Hofmann <frank.hofmann@tomtom.com>
+Subject: [RFC PATCH v5] ARM hibernation / suspend-to-disk
+Date: Mon, 13 Jun 2011 12:59:42 +0100 (BST)
+Message-ID: <alpine.DEB.2.00.1106131151550.25153__13744.038649793$1307966546$gmane$org@localhost6.localdomain6>
+Reply-To: frank.hofmann@tomtom.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,238 +16,102 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.or
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 27 May 2011 18:01:28 +0530
-Ankita Garg <ankita@in.ibm.com> wrote:
+Hi,
 
-> Hi,
-> 
+to make one thing clear to start with:
 
-I'm sorry if you've answered already.
+This is not a proposal to integrate the hibernation feature into mainline.
 
-Is memory hotplug is too bad and cannot be enhanced for this purpose ?
-
-I wonder
-  - make section-size smaller (IIUC, IBM's system has 16MB section size)
-
-  - add per section statistics
-
-  - add a kind of balloon driver which does software memory offline
-    (which means making a contiguous chunk of free pages of section_size
-     by page migration) in background with regard to memory usage statistics.
-    If system says "need more memory!", balloon driver can online pages.
-
-can work for your purpose. It can allow you page isolatation and
-controls in 16MB unit.  If you need whole rework of memory hotplug, I think
-it's better to rewrite memory hotplug, too.
-
-Thanks,
--Kame
+It's not ripe for that because it's unclear what exactly the differences 
+are between what the hibernation / S2RAM codepaths have to do, and/or how 
+much code sharing between these codepaths is advisable.
 
 
+Therefore, I'm merely putting this out as-is as a reference / base for 
+those who want to do their own experiments with the feature.
+
+Prerequisites:
+
+* The patch requires a working cpu_reset(); for v6/v7, that's in Will
+   Deacon's patch series from last week.
+
+* It also requires being able to take the address of cpu_reset and
+   on MULTI_CPU configs therefore, again see Will Deacon's patch series.
+
+* It uses on cpu_suspend() / cpu_resume(), therefore a recent-enough
+   kernel (or a port of those to whatever you're using) is required.
 
 
+Important / Limitations:
 
-> Modern systems offer higher CPU performance and large amount of memory in
-> each generation in order to support application demands.  Memory subsystem has
-> began to offer wide range of capabilities for managing power consumption,
-> which is driving the need to relook at the way memory is managed by the
-> operating system. Linux VM subsystem has sophisticated algorithms to
-> optimally  manage the scarce resources for best overall system performance.
-> Apart from the capacity and location of memory areas, the VM subsystem tracks
-> special addressability restrictions in zones and relative distance from CPU as
-> NUMA nodes if necessary. Power management capabilities in the memory subsystem
-> and inclusion of different class of main memory like PCM, or non-volatile RAM,
-> brings in new boundaries and attributes that needs to be tagged within the
-> Linux VM subsystem for exploitation by the kernel and applications.
-> 
-> This patchset proposes a generic memory regions infrastructure that can be
-> used to tag boundaries of memory blocks which belongs to a specific memory
-> power management domain and further enable exploitation of platform memory
-> power management capabilities.
-> 
-> How can Linux VM help memory power savings?
-> 
-> o Consolidate memory allocations and/or references such that they are
-> not spread across the entire memory address space.  Basically area of memory
-> that is not being referenced, can reside in low power state.
-> 
-> o Support targeted memory reclaim, where certain areas of memory that can be
-> easily freed can be offlined, allowing those areas of memory to be put into
-> lower power states.
-> 
-> What is a Memory Region ?
-> -------------------------
-> 
-> Memory regions is a generic memory management framework that enables the
-> virtual memory manager to consider memory characteristics when making memory
-> allocation and deallocation decisions. It is a layer of abstraction under the
-> real NUMA nodes, that encapsulate knowledge of the underlying memory hardware.
-> This layer is created at boot time, with information from firmware regarding
-> the granularity at which memory power can be managed on the platform. For
-> example, on platforms with support for Partial Array Self-Refresh (PASR) [1],
-> regions could be aligned to memory unit that can be independently put into
-> self-refresh or turned off (content destructive power off). On the other hand,
-> platforms with support for multiple memory controllers that control the power
-> states of memory, one memory region could be created for all the memory under
-> a single memory controller.
-> 
-> The aim of the alignment is to ensure that memory allocations, deallocations
-> and reclaim are performed within a defined hardware boundary. By creating
-> zones under regions, the buddy allocator would operate at the level of
-> regions. The proposed data structure is as shown in the Figure below:
-> 
-> 
->              -----------------------------
->              |N0 |N1 |N2 |N3 |.. |.. |Nn |   
->              -----------------------------   
->              / \ \
->             /   \  \
->            /     \   \
->  ------------    |  ------------
->  | Mem Rgn0 |    |  | Mem Rgn3 |             
->  ------------    |  ------------             
->     |            |         |
->     |      ------------    | ---------
->     |      | Mem Rgn1 |    ->| zones |
->     |      ------------      ---------
->     |          |     ---------
->     |          ----->| zones |
->     | ---------      ---------
->     ->| zones |
->       ---------
-> 
-> Memory regions enable the following :
-> 
-> o Sequential allocation of memory in the order of memory regions, thus
->   ensuring that greater number of memory regions are devoid of allocations to
->   begin with
-> o With time however, the memory allocations will tend to be spread across
->   different regions. But the notion of a region boundary and region level
->   memory statistics will enable specific regions to be evacuated using
->   targetted allocation and reclaim. 
-> 
-> Lumpy reclaim and other memory compaction work by Mel Gorman, would further
-> aid in consolidation of memory [4].
-> 
-> Memory regions is just a base infrastructure that would enable the Linux VM to
-> be aware of the physical memory hardware characterisitics, a pre-requisite to
-> implementing other sophisticated algorithms and techniques to actually
-> conserve power.
-> 
-> Advantages
-> -----------
-> 
-> Memory regions framework works with existing memory management data
-> structures and only adds one more layer of abstraction that is required to
-> capture special boundaries and properties.  Most VM code paths work similar
-> to current implementation with additional traversal of zone data structures
-> in pre-defined order.
-> 
-> Alternative Approach:
-> 
-> There are other ways in which memory belonging to the same power domain could
-> be grouped together. Fake NUMA nodes under a real NUMA node could encapsulate
-> information about the memory hardware units that can be independently power
-> managed. With minimal code changes, the same functionality as memory regions
-> can be achieved. However, the fake NUMA nodes is a non-intuitive solution, 
-> that breaks the NUMA semantics and is not generic in nature. It would present
-> an incorrect view of the system to the administrator, by showing that it has a
-> greater number of NUMA nodes than actually present.
-> 
-> Challenges
-> ----------
-> 
-> o Memory interleaving is typically used on all platforms to increase the
->   memory bandwidth and hence memory performance. However, in the presence of
->   interleaving, the amount of idle memory within the hardware domain reduces,
->   impacting power savings. For a given platform, it is important to select an
->   interleaving scheme that gives good performance with optimum power savings.
-> 
-> This is a RFC patchset with minimal functionality to demonstrate the
-> requirement and proposed implementation options. It has been tested on TI
-> OMAP4 Panda board with 1Gb RAM and the Samsung Exynos 4210 board. The patch
-> applies on kernel version 2.6.39-rc5, compiled with the default config files
-> for the two platforms. I have turned off cgroup, memory hotplug and kexec to
-> begin. Support to these framework can be easily extended. The u-boot
-> bootloader does not yet export information regarding the physical memory bank
-> boundaries and hence the regions are not correctly aligned to hardware and
-> hence hard coded for test/demo purposes. Also, the code assumes that atleast
-> one region is present in the node. Compile time exclusion of memory regions is
-> a todo.
-> 
-> Results
-> -------
-> Ran pagetest, a simple C program that allocates and touches a required number
-> of pages, on a Samsung Exynos 4210 board with ~2GB RAM, booted with 4 memory
-> regions, each with ~512MB. The allocation size used was 512MB. Below is the
-> free page statistics while running the benchmark:
-> 
-> 		---------------------------------------
-> 	 	|	   | start  | ~480MB |  512MB |	
-> 		---------------------------------------
-> 		| Region 0 | 124013 | 1129   | 484    |
-> 		| Region 1 | 131072 | 131072 | 130824 |
-> 		| Region 2 | 131072 | 131072 | 131072 |
-> 		| Region 3 | 57332  | 57332  | 57332  |
-> 		---------------------------------------
-> 
-> (The total number of pages in Region 3 is 57332, as it contains all the
-> remaining pages and hence the region size is not 512MB).
-> 
-> Column 1 indicates the number of free pages in each region at the start of the
-> benchmark, column 2 at about 480MB allocation and column 3 at 512MB
-> allocation. The memory in regions 1,2 & 3 is free and only region0 is
-> utilized. So if the regions are aligned to the hardware memory units, free
-> regions could potentially be put either into low power state or turned off. It
-> may be possible to allocate from lower address without regions, but once the
-> page reclaim comes into play, the page allocations will tend to get spread
-> around.
-> 
-> References
-> ----------
-> 
-> [1] Partial Array Self Refresh
-> http://focus.ti.com/general/docs/wtbu/wtbudocumentcenter.tsp?templateId=6123&navigationId=12037
-> [2] TI OMAP$ Panda board
-> http://pandaboard.org/node/224/#manual
-> [3] Memory Regions discussion at Ubuntu Development Summit, May 2011
-> https://wiki.linaro.org/Specs/KernelGeneralPerformanceO?action=AttachFile&do=view&target=k81-memregions.odp
-> [4] Memory compaction
-> http://lwn.net/Articles/368869/
-> 
-> Ankita Garg (10):
->   mm: Introduce the memory regions data structure
->   mm: Helper routines
->   mm: Init zones inside memory regions
->   mm: Refer to zones from memory regions
->   mm: Create zonelists
->   mm: Verify zonelists
->   mm: Modify vmstat
->   mm: Modify vmscan
->   mm: Reflect memory region changes in zoneinfo
->   mm: Create memory regions at boot-up
-> 
->  include/linux/mm.h     |   25 +++-
->  include/linux/mmzone.h |   58 +++++++--
->  include/linux/vmstat.h |   22 ++-
->  mm/mm_init.c           |   51 ++++---
->  mm/mmzone.c            |   36 ++++-
->  mm/page_alloc.c        |  368 +++++++++++++++++++++++++++++++-----------------
->  mm/vmscan.c            |  284 ++++++++++++++++++++-----------------
->  mm/vmstat.c            |   77 ++++++----
->  8 files changed, 581 insertions(+), 340 deletions(-)
-> 
-> -- 
-> 1.7.4
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Fight unfair telecom internet charges in Canada: sign http://stopthemeter.ca/
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+A) For platforms that currently use cpu_suspend/cpu_resume in their s2ram
+   codepaths AND DO NOTHING ELSE BEFORE AND NOTHING ELSE AFTER THAT BUT TO
+   "ENTER LOW POWER", the way the hibernation state snapshot for the CPU
+   core is done by this patch is sufficient.
+
+   To make it clear: IF AND ONLY IF your suspend(-to-ram) func looks like:
+
+ 	ENTRY(acmeSoC_cpu_suspend)
+ 		stmfd	sp!, {r4-r12,lr}
+ 		ldr	r3, resume_mmu_done
+ 		bl	cpu_suspend
+ 	resume_mmu_done:
+ 		ldmfd	sp!, {r3-r12,pc}
+ 	ENDPROC(acmeSoC_cpu_suspend)
+
+   then this patch is ok to provide hibernation support for your CPU core.
+
+   In all other cases, item B).
+
+   IN ALL CASES, read item C) below; there's more than the core to the SoC.
+
+B) If there's any cpu-specific / SoC-specific state that needs (re)init
+   over a suspend-to-disk/resume-from-disk cycle, this patch is incomplete
+   because it provides no hooks/code for that.
+
+   This is the case e.g. for "secure" SoCs that have different sets of
+   control registers and/or different CR reg access patterns.
+
+   It's also the case e.g. for SoCs with L2 caches as the activation
+   sequence there is SoC-dependent; a full off-on cycle for L2 is not done
+   by the hibernation support code.
+
+   It's also the case if the SoC requires steps on wakeup _before_ the
+   "generic" parts done by cpu_suspend / cpu_resume can work correctly.
+
+   (OMAP is an example of such a SoC; the patch "works" on OMAP in the
+   sense that it gets you a non-secure OMAP back from hibernation but as
+   mentioned, your mileage may vary; I for example don't know what the
+   consequences  of not disabling / reenabling the L2 cache over cpu_reset
+   are)
+
+C) The current low-power handling may perform SoC-specific tasks such
+   as GPIO state handling, which is currently also not addressed by this
+   patch; the assumption is rather that device suspend/resume deals with
+   this. That is not guaranteed to be complete / sufficient - if your SoC
+   and/or your device drivers have particular needs in this area, you can
+   put hooks performing these actions into save_/restore_processor_state().
+
+D) If you wish to extend this to a SoC for which the generic CPU core
+   hooks (i.e. what cpu_suspend/resume provide) are either insufficient
+   or unavailable, hook your own state snapshot mechanism into the places
+   where this code currently calls cpu_suspend and cpu_resume. The main
+   assumption by the assembly code within swusp_arch_resume() is that
+   __swsusp_arch_restore_image() returns to its caller with the stack
+   restored - how you achieve that is up to you, the patch as-is does it
+   by cpu_reset(cpu_resume) but your mileage may vary.
+
+
+I will, at this point, not send further iterations of this patch.
+
+I'll answer questions about it though, if there are any.
+
+
+Thanks for all the comments during the previous threads - learned a lot !
+
+
+Best regards,
+FrankH.
