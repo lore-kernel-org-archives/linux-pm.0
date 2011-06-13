@@ -1,13 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] CPU PM notifiers
-Date: Mon, 13 Jun 2011 20:37:48 +0200
-Message-ID: <201106132037.49009.rjw__37403.1771709726$1307990420$gmane$org@sisk.pl>
-References: <1307925825-28566-1-git-send-email-ccross@android.com>
+From: Kenneth Heitke <kheitke@codeaurora.org>
+Subject: Re: Question about expected behavior when PM runtime is
+ disabled
+Date: Mon, 13 Jun 2011 12:42:18 -0600
+Message-ID: <4DF65A0A.5030309@codeaurora.org>
+References: <Pine.LNX.4.44L0.1106111204500.3439-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1307925825-28566-1-git-send-email-ccross@android.com>
+In-Reply-To: <Pine.LNX.4.44L0.1106111204500.3439-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,47 +18,89 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-arm-kernel@lists.infradead.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 13, 2011, Colin Cross wrote:
-> This patch set tries to address Russell's concerns with platform
-> pm code calling into the driver for every block in the Cortex A9s
-> during idle, hotplug, and suspend.  The first patch adds cpu pm
-> notifiers that can be called by platform code, the second uses
-> the notifier to save and restore the GIC state, and the third
-> saves the VFP state.
-> 
-> The notifiers are used for two types of events, CPU PM events and
-> CPU complex PM events.  CPU PM events are used to save and restore
-> per-cpu context when a single CPU is preparing to enter or has
-> just exited a low power state.  For example, the VFP saves the
-> last thread context, and the GIC saves banked CPU registers.
-> 
-> CPU complex events are used after all the CPUs in a power domain
-> have been prepared for the low power state.  The GIC uses these
-> events to save global register state.
-> 
-> Platforms that call the cpu_pm APIs must select
-> CONFIG_ARCH_USES_CPU_PM
-> 
-> L2 cache is not covered by this patch set, as the determination
-> of when the L2 is reset and when it is retained is
-> platform-specific, and most of the APIs necessary are already
-> present.
-> 
->  arch/arm/Kconfig              |    7 ++
->  arch/arm/common/gic.c         |  212 +++++++++++++++++++++++++++++++++++++++++
->  arch/arm/include/asm/cpu_pm.h |   54 +++++++++++
->  arch/arm/kernel/Makefile      |    1 +
->  arch/arm/kernel/cpu_pm.c      |  181 +++++++++++++++++++++++++++++++++++
+Alan,
 
-Is there any reason why this has to be ARM-specific?  There are other
-architectures where this kind of feature might make sense (SH and
-powerpc at least).
+Thanks for taking the time to answer my questions.  See inline for 
+additional comments.
 
-Besides, is there any overlap between this feature and the CPU hotplug
-notifiers?
 
-Rafael
+On 06/11/2011 10:12 AM, Alan Stern wrote:
+> On Fri, 10 Jun 2011, Kenneth Heitke wrote:
+>
+>> Hi Rafael,
+>>
+>> Sorry if this question has been raised before.  I actually have two
+>> questions here.  These questions are related to PM runtime being
+>> disabled at runtime (i.e. call to pm_runtime_disable() )
+>>
+>> If I call pm_runtime_enabled() to first determine if PM runtime is
+>> enabled followed conditionally by a call to pm_runtime_get_sync(), it
+>> would be possible for PM runtime to be disabled between these two calls
+>> and the get_sync() will fail.  Is there any reason to even use the
+>> enabled() call?
+>
+> As a general rule, a device won't be enabled or disabled for runtime PM
+> unless its driver or subsystem enables or disables it.  Since you
+> should already know what the driver and subsystem are doing, there
+> usually isn't any reason for using pm_runtime_enabled().
+>
+>>   My goal here was to use the enabled() call to determine
+>> if PM runtime was configured/enabled in the kernel and then to manage my
+>> resources, clocks etc, in a different way if PM runtime is not present.
+>
+> If runtime PM isn't present, why do you want to manage your clocks etc.
+> at all?  The fact that it's not in the kernel means the system manager
+> doesn't care about power usage.
+
+I am trying to be backwards compatible.  There is likely a period of 
+time from when the runtime PM feature was added to when it was turned on 
+by default.  If the feature happens to be disabled, I think it makes 
+sense for the driver to still do what it can to manage its resources. 
+The power guys aren't going to let me off the hook that easily :)
+
+  >> My second question then is what if PM runtime is enabled in the kernel
+>> and then gets disabled at runtime.  What is the expected behavior for a
+>> driver?  Should it fail all requests with EGAIN until PM runtime is
+>> enabled again? (in suspend state, PM runtime gets disable, new i/o
+>> request is made, power and clocks need to be turned on).
+>
+> It's up to the driver and the subsystem, since they are the entities
+> that are responsible for disabling runtime PM.  If you think disabling
+> runtime PM will cause problems, then don't do it.
+
+I'm thinking about within runtime PM itself.  I believe during system 
+suspend, disable() followed by enable() can be called.  If that happens, 
+are there any scenarios that I need to be concerned about?  Can my 
+autosuspend timer just happen to fire during that window between disable 
+and enable resulting in a failure to suspend?  My driver is part of the 
+i2c subsystem, do I know for a fact that disable() won't be used?
+
+>
+>> What about delayed autosuspend?  I believe that if PM runtime is
+>> disabled while there is a delayed autosuspend pending, the suspend will
+>> fail without notification (clocks and power will be left on).
+>
+> That's right.
+>
+>>   Will PM
+>> runtime still be in the idle state once PM runtime is re-enabled?
+>
+> The device will be in the same state as it was when it was disabled,
+> unless you explicitly call pm_runtime_set_active() or
+> pm_runtime_set_suspended().
+>
+> Alan Stern
+>
+>
+
+thanks,
+Ken
+
+
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
