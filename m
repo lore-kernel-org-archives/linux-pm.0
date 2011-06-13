@@ -1,11 +1,17 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: [PATCH] Unfreeze tasks after an oops in the freezer
-Date: Wed, 27 Jul 2011 12:35:58 +0200
-Message-ID: <201107271235.58734.oneukum__14436.0436163426$1311762854$gmane$org@suse.de>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: calling runtime PM from system PM methods
+Date: Mon, 13 Jun 2011 13:22:22 +0100
+Message-ID: <20110613122221.GA19552__16616.55463181$1311769260$gmane$org@opensource.wolfsonmicro.com>
+References: <20110610155707.GN26436@opensource.wolfsonmicro.com>
+	<201106102227.25391.rjw@sisk.pl>
+	<20110611114239.GC2738@opensource.wolfsonmicro.com>
+	<201106112256.37012.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <201106112256.37012.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,107 +21,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
->From ee5849f0bc39d554ef91747ff80c307ac3e05cdd Mon Sep 17 00:00:00 2001
-From: Oliver Neukum <oliver@neukum.org>
-Date: Wed, 27 Jul 2011 12:27:00 +0200
-Subject: [PATCH] Unfreeze tasks after an oops in the freezer
+On Sat, Jun 11, 2011 at 10:56:36PM +0200, Rafael J. Wysocki wrote:
+> On Saturday, June 11, 2011, Mark Brown wrote:
 
-If an oops kills the task suspending or snapshotting
-is system, the system is dead because the action is
-never completed and the tasks never thawed.
+> > that's a very large proportion of the embedded space.  It really feels
+> > like we could be doing a better job for drivers using these buses,
+> > there's a lot of similarities in what many of them need but I can never
+> > find the time to get my head round it confidently enough to actually
+> > propose anything.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
----
- include/linux/freezer.h |    2 ++
- kernel/panic.c          |    8 ++++++++
- kernel/power/process.c  |   11 +++++++++++
- 3 files changed, 21 insertions(+), 0 deletions(-)
+> I agree.  That's one of the reasons why I introduced the struct dev_power_domain
+> thing a while ago and the generic PM domains patchset I've just posted is a step
+> in that direction.
 
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 1effc8b..ab0168a 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -50,6 +50,7 @@ extern int thaw_process(struct task_struct *p);
- extern void refrigerator(void);
- extern int freeze_processes(void);
- extern void thaw_processes(void);
-+extern void thaw_in_oops(void);
- 
- static inline int try_to_freeze(void)
- {
-@@ -181,6 +182,7 @@ static inline void freezer_count(void) {}
- static inline int freezer_should_skip(struct task_struct *p) { return 0; }
- static inline void set_freezable(void) {}
- static inline void set_freezable_with_signal(void) {}
-+static inline void thaw_in_oops(void) {}
- 
- #define wait_event_freezable(wq, condition)				\
- 		wait_event_interruptible(wq, condition)
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 6923167..ccdd834 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -23,6 +23,7 @@
- #include <linux/init.h>
- #include <linux/nmi.h>
- #include <linux/dmi.h>
-+#include <linux/freezer.h>
- 
- #define PANIC_TIMER_STEP 100
- #define PANIC_BLINK_SPD 18
-@@ -355,6 +356,13 @@ void oops_exit(void)
- 	do_oops_enter_exit();
- 	print_oops_end_marker();
- 	kmsg_dump(KMSG_DUMP_OOPS);
-+	/*
-+	 * if we oops while tasks are frozen, the system
-+	 * will stop dead because the task that would thaw it
-+	 * has been killed. So the system must be explicitly
-+	 * thawed here.
-+	 */
-+	thaw_in_oops();
- }
- 
- #ifdef WANT_WARN_ON_SLOWPATH
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 0cf3a27..c03e88b 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -22,6 +22,9 @@
-  */
- #define TIMEOUT	(20 * HZ)
- 
-+/* in case we oops while processes are frozen */
-+static bool tasks_frozen = false;
-+
- static inline int freezable(struct task_struct * p)
- {
- 	if ((p == current) ||
-@@ -131,6 +134,7 @@ static int try_to_freeze_tasks(bool sig_only)
- 			elapsed_csecs % 100);
- 	}
- 
-+	tasks_frozen = (todo == 0);
- 	return todo ? -EBUSY : 0;
- }
- 
-@@ -189,7 +193,14 @@ void thaw_processes(void)
- 	thaw_workqueues();
- 	thaw_tasks(true);
- 	thaw_tasks(false);
-+	tasks_frozen = false;
- 	schedule();
- 	printk("done.\n");
- }
- 
-+void thaw_in_oops(void)
-+{
-+	if (tasks_frozen)
-+		thaw_processes();
-+}
-+
--- 
-1.7.1
+Ah, right - I'd not been thinking of those in the context of
+simplifications for basic devices, I'd been thinking of them as being
+for CPUs with more complex power domains that need managing.  I'll keep
+more of an eye on what's going on there.
