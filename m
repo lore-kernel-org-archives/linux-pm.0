@@ -1,25 +1,14 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
  Memory Power Management
-Date: Sun, 12 Jun 2011 16:07:07 -0700
-Message-ID: <20110612230707.GE2212__33657.6870679439$1307920157$gmane$org@linux.vnet.ibm.com>
-References: <20110610171939.GE2230@linux.vnet.ibm.com>
-	<20110610172307.GA27630@srcf.ucam.org>
-	<20110610175248.GF2230@linux.vnet.ibm.com>
-	<20110610180807.GB28500@srcf.ucam.org>
-	<20110610184738.GG2230@linux.vnet.ibm.com>
-	<20110610192329.GA30496@srcf.ucam.org>
-	<20110610193713.GJ2230@linux.vnet.ibm.com>
-	<20110610200233.5ddd5a31@infradead.org>
-	<20110611170610.GA2212@linux.vnet.ibm.com>
-	<20110611102654.01e5cea9@infradead.org>
-Reply-To: paulmck@linux.vnet.ibm.com
+Date: Mon, 13 Jun 2011 13:47:01 +0900
+Message-ID: <20110613134701.2b23b8d8.kamezawa.hiroyu__3534.64230797744$1307941022$gmane$org@jp.fujitsu.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110611102654.01e5cea9@infradead.org>
+In-Reply-To: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -29,82 +18,238 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Ankita Garg <ankita@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jun 11, 2011 at 10:26:54AM -0700, Arjan van de Ven wrote:
-> On Sat, 11 Jun 2011 10:06:10 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Fri, 27 May 2011 18:01:28 +0530
+Ankita Garg <ankita@in.ibm.com> wrote:
+
+> Hi,
 > 
-> > On Fri, Jun 10, 2011 at 08:02:33PM -0700, Arjan van de Ven wrote:
-> > > On Fri, 10 Jun 2011 12:37:13 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > On Fri, Jun 10, 2011 at 08:23:29PM +0100, Matthew Garrett wrote:
-> > > > > On Fri, Jun 10, 2011 at 11:47:38AM -0700, Paul E. McKenney
-> > > > > wrote:
-> > > > > 
-> > > > > > And if I understand you correctly, then the patches that
-> > > > > > Ankita posted should help your self-refresh case, along with
-> > > > > > the originally intended the power-down case and
-> > > > > > special-purpose use of memory case.
-> > > > > 
-> > > > > Yeah, I'd hope so once we actually have capable hardware.
-> > > > 
-> > > > Cool!!!
-> > > > 
-> > > > So Ankita's patchset might be useful to you at some point, then.
-> > > > 
-> > > > Does it look like a reasonable implementation?
-> > > 
-> > > as someone who is working on hardware that is PASR capable right
-> > > now, I have to admit that our plan was to just hook into the buddy
-> > > allocator, and use PASR on the top level of buddy (eg PASR off
-> > > blocks that are free there, and PASR them back on once an
-> > > allocation required the block to be broken up)..... that looked the
-> > > very most simple to me.
-> > > 
-> > > Maybe something much more elaborate is needed, but I didn't see why
-> > > so far.
-> > 
-> > If I understand correctly, you face the same issue that affects
-> > transparent huge pages, but on a much larger scale.  If you have even
-> > one non-moveable allocation in a given top-level buddy block, you
-> > won't be able to PASR that block.
+
+I'm sorry if you've answered already.
+
+Is memory hotplug is too bad and cannot be enhanced for this purpose ?
+
+I wonder
+  - make section-size smaller (IIUC, IBM's system has 16MB section size)
+
+  - add per section statistics
+
+  - add a kind of balloon driver which does software memory offline
+    (which means making a contiguous chunk of free pages of section_size
+     by page migration) in background with regard to memory usage statistics.
+    If system says "need more memory!", balloon driver can online pages.
+
+can work for your purpose. It can allow you page isolatation and
+controls in 16MB unit.  If you need whole rework of memory hotplug, I think
+it's better to rewrite memory hotplug, too.
+
+Thanks,
+-Kame
+
+
+
+
+
+> Modern systems offer higher CPU performance and large amount of memory in
+> each generation in order to support application demands.  Memory subsystem has
+> began to offer wide range of capabilities for managing power consumption,
+> which is driving the need to relook at the way memory is managed by the
+> operating system. Linux VM subsystem has sophisticated algorithms to
+> optimally  manage the scarce resources for best overall system performance.
+> Apart from the capacity and location of memory areas, the VM subsystem tracks
+> special addressability restrictions in zones and relative distance from CPU as
+> NUMA nodes if necessary. Power management capabilities in the memory subsystem
+> and inclusion of different class of main memory like PCM, or non-volatile RAM,
+> brings in new boundaries and attributes that needs to be tagged within the
+> Linux VM subsystem for exploitation by the kernel and applications.
 > 
-> yep we'd use a non-kernel zone for that; not too big a deal.
-> (the much larger scale you can debate, if your memory controller is
-> configured correctly the PASR regions are not all that much bigger than
-> hugepages)
-
-Ah, OK, so you have a very large number of top-level buddy allocations,
-then.  Either that or very large hugepages.
-
-> > In addition, one of the things that Ankita's patchset is looking to do
-> > is to control allocations in a given region, so that the region can be
-> > easily evacuated.  One use for this is to power off regions of memory,
-> > another is to PASR off regions of memory, and a third is to ensure
-> > that large regions of memory are available for when needed by media
-> > codecs (e.g., cameras), but can be used for other purposes when the
-> > media codecs don't need them (e.g., when viewing photos rather than
-> > taking them).
+> This patchset proposes a generic memory regions infrastructure that can be
+> used to tag boundaries of memory blocks which belongs to a specific memory
+> power management domain and further enable exploitation of platform memory
+> power management capabilities.
 > 
-> the codec issue seems to be solved in time; a previous generation
-> silicon on our (Intel) side had ARM ecosystem blocks that did not do
-> scatter gather, however the current generation ARM ecosystem blocks all
-> seem to have added S/G to them....
-> (in part this is coming from the strong desire to get camera/etc blocks
-> to all use "GPU texture" class memory, so that the camera can directly
-> deposit its information into a gpu texture, and similar for media
-> encode/decode blocks... this avoids copies as well as duplicate memory).
-
-That is indeed a clever approach!
-
-Of course, if the GPU textures are in main memory, there will still
-be memory consumption gains to be had as the image size varies (e.g.,
-displaying image on one hand vs. menus and UI on the other).  In addition,
-I would expect that for quite some time there will continue to be a lot
-of systems with display hardware a bit too simple to qualify as "GPU".
-
-							Thanx, Paul
+> How can Linux VM help memory power savings?
+> 
+> o Consolidate memory allocations and/or references such that they are
+> not spread across the entire memory address space.  Basically area of memory
+> that is not being referenced, can reside in low power state.
+> 
+> o Support targeted memory reclaim, where certain areas of memory that can be
+> easily freed can be offlined, allowing those areas of memory to be put into
+> lower power states.
+> 
+> What is a Memory Region ?
+> -------------------------
+> 
+> Memory regions is a generic memory management framework that enables the
+> virtual memory manager to consider memory characteristics when making memory
+> allocation and deallocation decisions. It is a layer of abstraction under the
+> real NUMA nodes, that encapsulate knowledge of the underlying memory hardware.
+> This layer is created at boot time, with information from firmware regarding
+> the granularity at which memory power can be managed on the platform. For
+> example, on platforms with support for Partial Array Self-Refresh (PASR) [1],
+> regions could be aligned to memory unit that can be independently put into
+> self-refresh or turned off (content destructive power off). On the other hand,
+> platforms with support for multiple memory controllers that control the power
+> states of memory, one memory region could be created for all the memory under
+> a single memory controller.
+> 
+> The aim of the alignment is to ensure that memory allocations, deallocations
+> and reclaim are performed within a defined hardware boundary. By creating
+> zones under regions, the buddy allocator would operate at the level of
+> regions. The proposed data structure is as shown in the Figure below:
+> 
+> 
+>              -----------------------------
+>              |N0 |N1 |N2 |N3 |.. |.. |Nn |   
+>              -----------------------------   
+>              / \ \
+>             /   \  \
+>            /     \   \
+>  ------------    |  ------------
+>  | Mem Rgn0 |    |  | Mem Rgn3 |             
+>  ------------    |  ------------             
+>     |            |         |
+>     |      ------------    | ---------
+>     |      | Mem Rgn1 |    ->| zones |
+>     |      ------------      ---------
+>     |          |     ---------
+>     |          ----->| zones |
+>     | ---------      ---------
+>     ->| zones |
+>       ---------
+> 
+> Memory regions enable the following :
+> 
+> o Sequential allocation of memory in the order of memory regions, thus
+>   ensuring that greater number of memory regions are devoid of allocations to
+>   begin with
+> o With time however, the memory allocations will tend to be spread across
+>   different regions. But the notion of a region boundary and region level
+>   memory statistics will enable specific regions to be evacuated using
+>   targetted allocation and reclaim. 
+> 
+> Lumpy reclaim and other memory compaction work by Mel Gorman, would further
+> aid in consolidation of memory [4].
+> 
+> Memory regions is just a base infrastructure that would enable the Linux VM to
+> be aware of the physical memory hardware characterisitics, a pre-requisite to
+> implementing other sophisticated algorithms and techniques to actually
+> conserve power.
+> 
+> Advantages
+> -----------
+> 
+> Memory regions framework works with existing memory management data
+> structures and only adds one more layer of abstraction that is required to
+> capture special boundaries and properties.  Most VM code paths work similar
+> to current implementation with additional traversal of zone data structures
+> in pre-defined order.
+> 
+> Alternative Approach:
+> 
+> There are other ways in which memory belonging to the same power domain could
+> be grouped together. Fake NUMA nodes under a real NUMA node could encapsulate
+> information about the memory hardware units that can be independently power
+> managed. With minimal code changes, the same functionality as memory regions
+> can be achieved. However, the fake NUMA nodes is a non-intuitive solution, 
+> that breaks the NUMA semantics and is not generic in nature. It would present
+> an incorrect view of the system to the administrator, by showing that it has a
+> greater number of NUMA nodes than actually present.
+> 
+> Challenges
+> ----------
+> 
+> o Memory interleaving is typically used on all platforms to increase the
+>   memory bandwidth and hence memory performance. However, in the presence of
+>   interleaving, the amount of idle memory within the hardware domain reduces,
+>   impacting power savings. For a given platform, it is important to select an
+>   interleaving scheme that gives good performance with optimum power savings.
+> 
+> This is a RFC patchset with minimal functionality to demonstrate the
+> requirement and proposed implementation options. It has been tested on TI
+> OMAP4 Panda board with 1Gb RAM and the Samsung Exynos 4210 board. The patch
+> applies on kernel version 2.6.39-rc5, compiled with the default config files
+> for the two platforms. I have turned off cgroup, memory hotplug and kexec to
+> begin. Support to these framework can be easily extended. The u-boot
+> bootloader does not yet export information regarding the physical memory bank
+> boundaries and hence the regions are not correctly aligned to hardware and
+> hence hard coded for test/demo purposes. Also, the code assumes that atleast
+> one region is present in the node. Compile time exclusion of memory regions is
+> a todo.
+> 
+> Results
+> -------
+> Ran pagetest, a simple C program that allocates and touches a required number
+> of pages, on a Samsung Exynos 4210 board with ~2GB RAM, booted with 4 memory
+> regions, each with ~512MB. The allocation size used was 512MB. Below is the
+> free page statistics while running the benchmark:
+> 
+> 		---------------------------------------
+> 	 	|	   | start  | ~480MB |  512MB |	
+> 		---------------------------------------
+> 		| Region 0 | 124013 | 1129   | 484    |
+> 		| Region 1 | 131072 | 131072 | 130824 |
+> 		| Region 2 | 131072 | 131072 | 131072 |
+> 		| Region 3 | 57332  | 57332  | 57332  |
+> 		---------------------------------------
+> 
+> (The total number of pages in Region 3 is 57332, as it contains all the
+> remaining pages and hence the region size is not 512MB).
+> 
+> Column 1 indicates the number of free pages in each region at the start of the
+> benchmark, column 2 at about 480MB allocation and column 3 at 512MB
+> allocation. The memory in regions 1,2 & 3 is free and only region0 is
+> utilized. So if the regions are aligned to the hardware memory units, free
+> regions could potentially be put either into low power state or turned off. It
+> may be possible to allocate from lower address without regions, but once the
+> page reclaim comes into play, the page allocations will tend to get spread
+> around.
+> 
+> References
+> ----------
+> 
+> [1] Partial Array Self Refresh
+> http://focus.ti.com/general/docs/wtbu/wtbudocumentcenter.tsp?templateId=6123&navigationId=12037
+> [2] TI OMAP$ Panda board
+> http://pandaboard.org/node/224/#manual
+> [3] Memory Regions discussion at Ubuntu Development Summit, May 2011
+> https://wiki.linaro.org/Specs/KernelGeneralPerformanceO?action=AttachFile&do=view&target=k81-memregions.odp
+> [4] Memory compaction
+> http://lwn.net/Articles/368869/
+> 
+> Ankita Garg (10):
+>   mm: Introduce the memory regions data structure
+>   mm: Helper routines
+>   mm: Init zones inside memory regions
+>   mm: Refer to zones from memory regions
+>   mm: Create zonelists
+>   mm: Verify zonelists
+>   mm: Modify vmstat
+>   mm: Modify vmscan
+>   mm: Reflect memory region changes in zoneinfo
+>   mm: Create memory regions at boot-up
+> 
+>  include/linux/mm.h     |   25 +++-
+>  include/linux/mmzone.h |   58 +++++++--
+>  include/linux/vmstat.h |   22 ++-
+>  mm/mm_init.c           |   51 ++++---
+>  mm/mmzone.c            |   36 ++++-
+>  mm/page_alloc.c        |  368 +++++++++++++++++++++++++++++++-----------------
+>  mm/vmscan.c            |  284 ++++++++++++++++++++-----------------
+>  mm/vmstat.c            |   77 ++++++----
+>  8 files changed, 581 insertions(+), 340 deletions(-)
+> 
+> -- 
+> 1.7.4
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Fight unfair telecom internet charges in Canada: sign http://stopthemeter.ca/
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
