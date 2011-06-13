@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Question about expected behavior when PM runtime is
-	disabled
-Date: Mon, 13 Jun 2011 23:20:14 +0200
-Message-ID: <201106132320.14220.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1106131618450.1983-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH]drivers:base:power:trace.c Add "UTC"
+	Coordinated Universal Time to the printk.
+Date: Mon, 13 Jun 2011 23:47:07 +0200
+Message-ID: <201106132347.08007.rjw__12024.1877892569$1308001622$gmane$org@sisk.pl>
+References: <1307599301-2524-1-git-send-email-justinmattock@gmail.com>
+	<201106122227.32992.rjw@sisk.pl> <4DF53DCC.1060604@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106131618450.1983-100000@iolanthe.rowland.org>
+In-Reply-To: <4DF53DCC.1060604@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,54 +19,90 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 13, 2011, Alan Stern wrote:
-> On Mon, 13 Jun 2011, Rafael J. Wysocki wrote:
+On Monday, June 13, 2011, Justin P. Mattock wrote:
+> On 06/12/2011 01:27 PM, Rafael J. Wysocki wrote:
+> > On Sunday, June 12, 2011, Justin P. Mattock wrote:
+> >> On 06/12/2011 11:35 AM, Rafael J. Wysocki wrote:
+> >>> On Sunday, June 12, 2011, Justin P. Mattock wrote:
+> >>>> On 06/12/2011 05:12 AM, Rafael J. Wysocki wrote:
+> >>>>> Hi,
+> >>>>>
+> >>>>> On Thursday, June 09, 2011, Justin P. Mattock wrote:
+> >>>>>> From: "Justin P. Mattock"<justinmattock@gmail.com>
+> >>>>>>
+> >>>>>> sounds stupid, but taking a glance at the time, and seeing the wrong time, or what seemed
+> >>>>>> wrong in dmesg, caused me to go into total check the time clock panic mode.. So the patch below adds:
+> >>>>>> "UTC" Coordinated Universal Time abreviation to the printk so people like me dont flip out over the time!
+> >>>>>>
+> >>>>>> before:
+> >>>>>> [    0.114915] Time:  1:47:03  Date: 06/09/11
+> >>>>>>
+> >>>>>> after:
+> >>>>>> [    0.114728] Time:  5:46:02 UTC Date: 06/09/11
+> >>>>>>
+> >>>>>> Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
+> >>>>>
+> >>>>> I suspect the goal is to mark messages printed by the PM trace code so that
+> >>>>> they can be easily distinguished from messages from other sources to avoid
+> >>>>> confusion.  Why do you think it's a good idea to use the "UTC" string for
+> >>>>> this purpose?  The time printed in those messages need not be UTC.
+> >>>>>
+> >>>>> It would be better to simply print "RTC time: ..., date: ..." IMO.
+> >>>>>
+> >>>>> Thanks,
+> >>>>> Rafael
+> >>>>>
+> >>>>
+> >>>> well.. if thats better, then thats better.. over here(people that dont
+> >>>> know what RTC time is) would not get so confused with a simple UTC or
+> >>>> PDT or whatever the time zone is but if RTC is bettr, then its better.
+> >>>
+> >>> My point is we don't know this time is always UTC, so we rather shouldn't
+> >>> label it as UTC unconditionally, should we?
+> >>>
+> >>> Rafael
+> >>>
+> >>
+> >> sounds good to me!!
+> >
+> > I'm not sure what you mean?
+> >
 > 
-> > > I think we need to have the PM core call pm_runtime_get_noresume()  
-> > > before invoking the resume_noirq (or thaw_noirq or restore_noirq)  
-> > > callback, and then call pm_runtime_put_sync() after invoking the
-> > > complete callback.  This would solve your race: The put_sync would 
-> > > invoke the runtime_idle method, which would start another runtime 
-> > > suspend or autosuspend.
-> > > 
-> > > (It used to be that the PM core called pm_runtime_get_noresume() 
-> > > earlier on, before the prepare callback.  This also solved your race, 
-> > > but it caused other problems and so was changed.)
-> > > 
-> > > It's true that subsystems could do this for themselves, but then they'd
-> > > _all_ have to do it.  So we might as well put it in the PM core.
-> > > 
-> > > Rafael, what do you think?
-> > 
-> > Yes, we can do that.
-> > 
-> > I even suspect that all subsystems will end up calling pm_runtime_disable()
-> > somewhere in the system suspend code path and pm_runtime_enable() during
-> > system resume.  It might be a good idea to do that in the core too, after
-> > calling the subsystem's .suspend() and before calling its .resume(),
-> > respectively.
-> 
-> Will that bring back Kevin's problems?  There was a specific commit:  
-> "PM: Allow pm_runtime_suspend() to succeed during system suspend".  If
-> the core disables runtime PM, won't he be right back where he was
-> before?
+> with what you are saying "RTC" if anything.. rather than "UTC"
 
-Not exactly, because that commit removed the pm_runtime_get_noresume()
-done before .prepare(), which was too early.  As I said before, I don't
-see anything wrong with running pm_runtime_ helpers from .prepare() or
-.complete().  However, to me, it is highly doubtful if there is any valid
-reason for calling them after .suspend() has been executed.  In fact, I
-think that .suspend() should ensure that they won't be executed for the
-given device after it has returned, so doing pm_runtime_disable() in the
-core at this point makes sense.
+So, it looks like you'd like the appended patch to be appiled?
 
-We really shouldn't allow any runtime PM callbacks to race with
-.suspend_noirq() and .resume_noirq(), because allowing that to happen would
-be asking for breakage.
-
-Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM: Add "RTC" to PM trace time stamps to avoid confusion
+
+Some users are apparently confused by dmesg output from
+read_magic_time(), which looks like "real" time and date.
+Add the "RTC" string to time stamps printed by read_magic_time() to
+avoid that confusion.
+
+Reported-by: Justin P. Mattock <justinmattock@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/trace.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/base/power/trace.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/trace.c
++++ linux-2.6/drivers/base/power/trace.c
+@@ -112,7 +112,7 @@ static unsigned int read_magic_time(void
+ 	unsigned int val;
+ 
+ 	get_rtc_time(&time);
+-	pr_info("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
++	pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
+ 		time.tm_hour, time.tm_min, time.tm_sec,
+ 		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
+ 	val = time.tm_year;				/* 100 years */
