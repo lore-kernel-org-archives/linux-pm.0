@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: runtime: return at once for active
-	device in rpm_resume
-Date: Tue, 14 Jun 2011 21:58:21 +0200
-Message-ID: <201106142158.21649.rjw@sisk.pl>
-References: <1308067793-19551-1-git-send-email-tom.leiming@gmail.com>
+Subject: Re: [PATCH]drivers:base:power:trace.c Add "UTC"
+	Coordinated Universal Time to the printk.
+Date: Tue, 14 Jun 2011 22:02:46 +0200
+Message-ID: <201106142202.46411.rjw__23.0026118972049$1308081797$gmane$org@sisk.pl>
+References: <1307599301-2524-1-git-send-email-justinmattock@gmail.com>
+	<201106132347.08007.rjw@sisk.pl> <4DF68D00.8000200@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1308067793-19551-1-git-send-email-tom.leiming@gmail.com>
+In-Reply-To: <4DF68D00.8000200@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,59 +19,105 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: tom.leiming@gmail.com
-Cc: linux-pm@lists.linux-foundation.org
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 14, 2011, tom.leiming@gmail.com wrote:
-> From: Ming Lei <tom.leiming@gmail.com>
+On Tuesday, June 14, 2011, Justin P. Mattock wrote:
+> On 06/13/2011 02:47 PM, Rafael J. Wysocki wrote:
+> > On Monday, June 13, 2011, Justin P. Mattock wrote:
+> >> On 06/12/2011 01:27 PM, Rafael J. Wysocki wrote:
+> >>> On Sunday, June 12, 2011, Justin P. Mattock wrote:
+> >>>> On 06/12/2011 11:35 AM, Rafael J. Wysocki wrote:
+> >>>>> On Sunday, June 12, 2011, Justin P. Mattock wrote:
+> >>>>>> On 06/12/2011 05:12 AM, Rafael J. Wysocki wrote:
+> >>>>>>> Hi,
+> >>>>>>>
+> >>>>>>> On Thursday, June 09, 2011, Justin P. Mattock wrote:
+> >>>>>>>> From: "Justin P. Mattock"<justinmattock@gmail.com>
+> >>>>>>>>
+> >>>>>>>> sounds stupid, but taking a glance at the time, and seeing the wrong time, or what seemed
+> >>>>>>>> wrong in dmesg, caused me to go into total check the time clock panic mode.. So the patch below adds:
+> >>>>>>>> "UTC" Coordinated Universal Time abreviation to the printk so people like me dont flip out over the time!
+> >>>>>>>>
+> >>>>>>>> before:
+> >>>>>>>> [    0.114915] Time:  1:47:03  Date: 06/09/11
+> >>>>>>>>
+> >>>>>>>> after:
+> >>>>>>>> [    0.114728] Time:  5:46:02 UTC Date: 06/09/11
+> >>>>>>>>
+> >>>>>>>> Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
+> >>>>>>>
+> >>>>>>> I suspect the goal is to mark messages printed by the PM trace code so that
+> >>>>>>> they can be easily distinguished from messages from other sources to avoid
+> >>>>>>> confusion.  Why do you think it's a good idea to use the "UTC" string for
+> >>>>>>> this purpose?  The time printed in those messages need not be UTC.
+> >>>>>>>
+> >>>>>>> It would be better to simply print "RTC time: ..., date: ..." IMO.
+> >>>>>>>
+> >>>>>>> Thanks,
+> >>>>>>> Rafael
+> >>>>>>>
+> >>>>>>
+> >>>>>> well.. if thats better, then thats better.. over here(people that dont
+> >>>>>> know what RTC time is) would not get so confused with a simple UTC or
+> >>>>>> PDT or whatever the time zone is but if RTC is bettr, then its better.
+> >>>>>
+> >>>>> My point is we don't know this time is always UTC, so we rather shouldn't
+> >>>>> label it as UTC unconditionally, should we?
+> >>>>>
+> >>>>> Rafael
+> >>>>>
+> >>>>
+> >>>> sounds good to me!!
+> >>>
+> >>> I'm not sure what you mean?
+> >>>
+> >>
+> >> with what you are saying "RTC" if anything.. rather than "UTC"
+> >
+> > So, it looks like you'd like the appended patch to be appiled?
+> >
+> > Rafael
 > 
-> This patch moves ahead check for active rpm state of device,
-> so that rpm_resume can return immediately for device with
-> active rpm state.
 > 
-> Considered rpm_resume is run in atomic context and is often in
-> hot path(such as in usbnet, called before transmitting every
-> network frame), this patch should make sense.
+> whatever works best with you guys...
 
-It ignores the fact that rpm_resume() cancels pending runtime PM requests
-in addition to resuming suspended devices.
+OK, I'll queue up the one below for 3.1, then.
 
-Thanks,
-Rafael
-
-
-> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> ---
->  drivers/base/power/runtime.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
+> I just tripped out on that, and created what I had sent out..
+> >
+> > ---
+> > From: Rafael J. Wysocki<rjw@sisk.pl>
+> > Subject: PM: Add "RTC" to PM trace time stamps to avoid confusion
+> >
+> > Some users are apparently confused by dmesg output from
+> > read_magic_time(), which looks like "real" time and date.
+> > Add the "RTC" string to time stamps printed by read_magic_time() to
+> > avoid that confusion.
+> >
+> > Reported-by: Justin P. Mattock<justinmattock@gmail.com>
+> > Signed-off-by: Rafael J. Wysocki<rjw@sisk.pl>
+> > ---
+> >   drivers/base/power/trace.c |    2 +-
+> >   1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > Index: linux-2.6/drivers/base/power/trace.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/base/power/trace.c
+> > +++ linux-2.6/drivers/base/power/trace.c
+> > @@ -112,7 +112,7 @@ static unsigned int read_magic_time(void
+> >   	unsigned int val;
+> >
+> >   	get_rtc_time(&time);
+> > -	pr_info("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
+> > +	pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
+> >   		time.tm_hour, time.tm_min, time.tm_sec,
+> >   		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
+> >   	val = time.tm_year;				/* 100 years */
+> >
 > 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 0d4587b..dcc3008 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -455,6 +455,11 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  	dev_dbg(dev, "%s flags 0x%x\n", __func__, rpmflags);
->  
->   repeat:
-> +	if (dev->power.runtime_status == RPM_ACTIVE) {
-> +		retval = 1;
-> +		goto out;
-> +	}
-> +
->  	if (dev->power.runtime_error)
->  		retval = -EINVAL;
->  	else if (dev->power.disable_depth > 0)
-> @@ -472,11 +477,6 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  	if (!dev->power.timer_autosuspends)
->  		pm_runtime_deactivate_timer(dev);
->  
-> -	if (dev->power.runtime_status == RPM_ACTIVE) {
-> -		retval = 1;
-> -		goto out;
-> -	}
-> -
->  	if (dev->power.runtime_status == RPM_RESUMING
->  	    || dev->power.runtime_status == RPM_SUSPENDING) {
->  		DEFINE_WAIT(wait);
+> 
+> Justin P. Mattock
+> 
 > 
