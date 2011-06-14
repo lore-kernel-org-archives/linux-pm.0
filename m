@@ -1,16 +1,14 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: pm loss development
-Date: Tue, 14 Jun 2011 15:36:30 +0100
-Message-ID: <20110614153630.023eeeef__24366.6726667017$1308062230$gmane$org@lxorguk.ukuu.org.uk>
-References: <1305220265-9020-1-git-send-email-lamiaposta71@gmail.com>
-	<201105180107.58078.rjw@sisk.pl> <20110518031203.GA3640@gvim.org>
-	<201105182143.13237.rjw@sisk.pl> <20110602222111.GA15414@ucw.cz>
-	<20110614140642.GA14509@gvim.org>
+From: "Menon, Nishanth" <nm@ti.com>
+Subject: Re: [PATCH] power: opp: Fix rcu_dereference_check()
+	without protection!
+Date: Tue, 14 Jun 2011 10:38:37 -0500
+Message-ID: <BANLkTimKHsGCrbZ5FhYOyJC8+pASUD-nDg@mail.gmail.com>
+References: <1308056600-17601-1-git-send-email-santosh.shilimkar@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110614140642.GA14509@gvim.org>
+In-Reply-To: <1308056600-17601-1-git-send-email-santosh.shilimkar@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,29 +18,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: davinci-linux-open-source@linux.davincidsp.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Raffaele Recalcati <lamiaposta71@gmail.com>
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> I know nothing about journalling file systems or how well they limit the
-> critical sections of time where the file system is exposed to corruption
-> from sudden power failure.  Its an interesting question though.
+On Tue, Jun 14, 2011 at 08:03, Santosh Shilimkar
+<santosh.shilimkar@ti.com> wrote:
+> With RCU debug options enabled, below warning is observed.
+>
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D
+> [ INFO: suspicious rcu_dereference_check() usage. ]
+> ---------------------------------------------------
+> drivers/base/power/opp.c:151 invoked rcu_dereference_check() without prot=
+ection!
+>
+> other info that might help us debug this:
+>
+> rcu_scheduler_active =3D 1, debug_locks =3D 1
+> no locks held by swapper/1.
+> ...
+>
+> ---------------------------------------------------
+>
+> Fix the same by protecting it with rcu_read lock.
+>
+> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Kevin Hilman <khilman@deeprootsystems.com>
+> ---
+> =A0drivers/base/power/opp.c | =A0 =A02 ++
+> =A01 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 56a6899..cbed5e1 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -148,7 +148,9 @@ unsigned long opp_get_voltage(struct opp *opp)
+> =A0 =A0 =A0 =A0struct opp *tmp_opp;
+> =A0 =A0 =A0 =A0unsigned long v =3D 0;
+>
+> + =A0 =A0 =A0 rcu_read_lock();
+> =A0 =A0 =A0 =A0tmp_opp =3D rcu_dereference(opp);
+> + =A0 =A0 =A0 rcu_read_unlock();
+> =A0 =A0 =A0 =A0if (unlikely(IS_ERR_OR_NULL(tmp_opp)) || !tmp_opp->availab=
+le)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pr_err("%s: Invalid parameters\n", __func_=
+_);
+> =A0 =A0 =A0 =A0else
+NAK. please read the Documentation/power/opp.txt
+the usage is as follows:
+rcu_read_lock();
+opp =3D opp_find_freq_ceil();
+voltage =3D opp_get_voltage(opp);
+rcu_read_unlock();
 
-A properly written journalling file system has no critical sections. The
-only things it relies upon are
+the reason for this is that the opp pointer is not safe if we lock
+just the dereferencing.
 
-- store ordering in the drive working properly
-- a single disk block write being atomic
-
-the former is well specified even for ATA devices, the latter is a pretty
-safe property of rotating media, although in theory you have a finite
-chance of getting a bad sector.
-
-For flash it's a lot lot more complicated but for a flash device claiming
-to be ATA compliant you ought to get ATA behaviour.
-
-All that said there is still (as ever) a tiny chance your system may
-malfunction. It's all down to probabilities and if your laptop explodes
-you need a backup (trust me, I've tested this case).
-
-Alan
+Regards,
+Nishanth Menon
