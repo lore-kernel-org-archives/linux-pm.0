@@ -1,15 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] CPU PM notifiers
-Date: Wed, 15 Jun 2011 00:12:57 +0200
-Message-ID: <201106150012.57459.rjw__31979.2912378491$1308089682$gmane$org@sisk.pl>
-References: <1307925825-28566-1-git-send-email-ccross@android.com>
-	<201106142334.09362.rjw@sisk.pl>
-	<BANLkTino9JopSw-vxHOsV3SqS+0UT1q_3w@mail.gmail.com>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH] power: opp: Fix rcu_dereference_check()
+	without protection!
+Date: Wed, 15 Jun 2011 11:50:33 +0530
+Message-ID: <4DF84F31.4030108__14762.0634911165$1308118979$gmane$org@ti.com>
+References: <1308056600-17601-1-git-send-email-santosh.shilimkar@ti.com>
+	<BANLkTimKHsGCrbZ5FhYOyJC8+pASUD-nDg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTino9JopSw-vxHOsV3SqS+0UT1q_3w@mail.gmail.com>
+In-Reply-To: <BANLkTimKHsGCrbZ5FhYOyJC8+pASUD-nDg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,100 +19,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: Russell King <linux@arm.linux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Menon, Nishanth" <nm@ti.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 14, 2011, Colin Cross wrote:
-> On Tue, Jun 14, 2011 at 2:34 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, June 14, 2011, Colin Cross wrote:
-> >> On Tue, Jun 14, 2011 at 2:00 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Monday, June 13, 2011, Colin Cross wrote:
-> >> >> On Mon, Jun 13, 2011 at 11:37 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> >> > On Monday, June 13, 2011, Colin Cross wrote:
-> >> >> >> This patch set tries to address Russell's concerns with platform
-> >> >> >> pm code calling into the driver for every block in the Cortex A9s
-> >> >> >> during idle, hotplug, and suspend.  The first patch adds cpu pm
-> >> >> >> notifiers that can be called by platform code, the second uses
-> >> >> >> the notifier to save and restore the GIC state, and the third
-> >> >> >> saves the VFP state.
-> >> >> >>
-> >> >> >> The notifiers are used for two types of events, CPU PM events and
-> >> >> >> CPU complex PM events.  CPU PM events are used to save and restore
-> >> >> >> per-cpu context when a single CPU is preparing to enter or has
-> >> >> >> just exited a low power state.  For example, the VFP saves the
-> >> >> >> last thread context, and the GIC saves banked CPU registers.
-> >> >> >>
-> >> >> >> CPU complex events are used after all the CPUs in a power domain
-> >> >> >> have been prepared for the low power state.  The GIC uses these
-> >> >> >> events to save global register state.
-> >> >> >>
-> >> >> >> Platforms that call the cpu_pm APIs must select
-> >> >> >> CONFIG_ARCH_USES_CPU_PM
-> >> >> >>
-> >> >> >> L2 cache is not covered by this patch set, as the determination
-> >> >> >> of when the L2 is reset and when it is retained is
-> >> >> >> platform-specific, and most of the APIs necessary are already
-> >> >> >> present.
-> >> >> >>
-> >> >> >>  arch/arm/Kconfig              |    7 ++
-> >> >> >>  arch/arm/common/gic.c         |  212 +++++++++++++++++++++++++++++++++++++++++
-> >> >> >>  arch/arm/include/asm/cpu_pm.h |   54 +++++++++++
-> >> >> >>  arch/arm/kernel/Makefile      |    1 +
-> >> >> >>  arch/arm/kernel/cpu_pm.c      |  181 +++++++++++++++++++++++++++++++++++
-> >> >> >
-> >> >> > Is there any reason why this has to be ARM-specific?  There are other
-> >> >> > architectures where this kind of feature might make sense (SH and
-> >> >> > powerpc at least).
-> >> >>
-> >> >> Nothing other than there are currently no adaptations for any drivers
-> >> >> besides ARM, but I can move it somewhere outside ARM.  Any suggestions
-> >> >> where?
-> >> >
-> >> > Well, there is kernel/cpu.c.  It contains mostly CPU hotplug and PM
-> >> > code at the moment, so it looks like a good place.
-> >>
-> >> OK, I'll look at moving it there.
-> >>
-> >> >> > Besides, is there any overlap between this feature and the CPU hotplug
-> >> >> > notifiers?
-> >> >>
-> >> >> I don't think so - the hotplug notifiers are used when a CPU is being
-> >> >> removed from the system, so no saving and restoring is necessary - the
-> >> >> CPU will be rebooted from scratch.  They are used by systems outside
-> >> >> the CPU that need to know that a CPU no longer exists.
-> >> >>
-> >> >> CPU PM notifiers are used when a CPU is going through reset in a way
-> >> >> that should be transparent to most of the system.
-> >> >
-> >> > Do I guess correctly that you mean cpuidle?
-> >>
-> >> cpuidle is the major user, but primary CPUs in suspend have to save
-> >> and restore the same blocks, and tend to use the same platform sleep
-> >> code as idle, so it's logical to use the notifiers for both.  On the
-> >> other hand, some drivers that would use cpu_pm notifiers already use
-> >> syscore ops to handle suspend and resume (like vfp) - maybe these
-> >> notifiers should only be used in cpuidle, and syscore ops added to the
-> >> gic driver?  I could also convert the notifiers to new syscore_ops -
-> >> cpu_idle, cpu_unidle, cpu_cluster_idle, cpu_cluster_unidle, but I
-> >> don't know how well that fits in to the intention for syscore.
-> >
-> > Basically, syscore_ops deal with the situation during system suspend
-> > when all CPUs but one have been switched off (through CPU hotplug)
-> > and interrupts are off on the only active CPU.  If there's anything
-> > you need to do at this point, syscore_ops is the right thing to use.
-> > And analogously for system resume.
-> >
-> > Moreover, for system suspend switching off the "boot" CPU (i.e. the only one
-> > that remains active through the whole sequence) should really be the last
-> > thing done, everything else should have been handled through syscore_ops
-> > before.
-> 
-> Yes, but what to do with idle, which generally needs to do the exact
-> same things as handled in some syscore ops?  Extend syscore ops, or
-> add the new notifier, and each driver can implement both syscore and
-> cpu_pm listeners (and probably call the same helper function to handle
-> both)?
+On 6/14/2011 9:08 PM, Menon, Nishanth wrote:
+> On Tue, Jun 14, 2011 at 08:03, Santosh Shilimkar
+> <santosh.shilimkar@ti.com>  wrote:
+>> With RCU debug options enabled, below warning is observed.
+>>
+>> ===================================================
+>> [ INFO: suspicious rcu_dereference_check() usage. ]
+>> ---------------------------------------------------
+>> drivers/base/power/opp.c:151 invoked rcu_dereference_check() without protection!
+>>
+>> other info that might help us debug this:
+>>
+>> rcu_scheduler_active = 1, debug_locks = 1
+>> no locks held by swapper/1.
+>> ...
+>>
+>> ---------------------------------------------------
+>>
+>> Fix the same by protecting it with rcu_read lock.
+>>
+>> Signed-off-by: Santosh Shilimkar<santosh.shilimkar@ti.com>
+>> Cc: Rafael J. Wysocki<rjw@sisk.pl>
+>> Cc: Nishanth Menon<nm@ti.com>
+>> Cc: Kevin Hilman<khilman@deeprootsystems.com>
+>> ---
+>>   drivers/base/power/opp.c |    2 ++
+>>   1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>> index 56a6899..cbed5e1 100644
+>> --- a/drivers/base/power/opp.c
+>> +++ b/drivers/base/power/opp.c
+>> @@ -148,7 +148,9 @@ unsigned long opp_get_voltage(struct opp *opp)
+>>         struct opp *tmp_opp;
+>>         unsigned long v = 0;
+>>
+>> +       rcu_read_lock();
+>>         tmp_opp = rcu_dereference(opp);
+>> +       rcu_read_unlock();
+>>         if (unlikely(IS_ERR_OR_NULL(tmp_opp)) || !tmp_opp->available)
+>>                 pr_err("%s: Invalid parameters\n", __func__);
+>>         else
+> NAK. please read the Documentation/power/opp.txt
+> the usage is as follows:
+> rcu_read_lock();
+> opp = opp_find_freq_ceil();
+> voltage = opp_get_voltage(opp);
+> rcu_read_unlock();
+>
+> the reason for this is that the opp pointer is not safe if we lock
+> just the dereferencing.
+>
+Fair enough. if the whole fn is under the lock then it's not
+necessary.
 
-Good question.  I don't think I have a good answer to it at the moment, need
-to ponder that a bit more.
+Regards
+Santosh
