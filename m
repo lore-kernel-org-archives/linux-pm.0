@@ -1,16 +1,25 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 8/8] ARM / shmobile: Support for I/O PM
-	domains for SH7372 (v5)
-Date: Wed, 15 Jun 2011 23:17:15 +0900
-Message-ID: <BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw__49646.4865551845$1308148199$gmane$org@mail.gmail.com>
-References: <201106112223.04972.rjw@sisk.pl> <201106112240.11621.rjw@sisk.pl>
-	<BANLkTi=-1Fpp9L17T7CwxoO9JfSes4FeKg@mail.gmail.com>
-	<201106142316.02812.rjw@sisk.pl>
+From: Ankita Garg <ankita@in.ibm.com>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Wed, 15 Jun 2011 22:23:21 +0530
+Message-ID: <20110615165321.GC23151__26285.1518150002$1308156886$gmane$org@in.ibm.com>
+References: <20110610165529.GC2230@linux.vnet.ibm.com>
+	<20110610170535.GC25774@srcf.ucam.org>
+	<20110610171939.GE2230@linux.vnet.ibm.com>
+	<20110610172307.GA27630@srcf.ucam.org>
+	<20110610175248.GF2230@linux.vnet.ibm.com>
+	<20110610180807.GB28500@srcf.ucam.org>
+	<20110610184738.GG2230@linux.vnet.ibm.com>
+	<20110610192329.GA30496@srcf.ucam.org>
+	<20110610193713.GJ2230@linux.vnet.ibm.com>
+	<20110610200233.5ddd5a31@infradead.org>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106142316.02812.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <20110610200233.5ddd5a31@infradead.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,131 +29,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Andrew Morton <akpm@linux-foundation.org>, paulmck@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 15, 2011 at 6:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, June 14, 2011, Magnus Damm wrote:
->> On Sun, Jun 12, 2011 at 5:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > From: Rafael J. Wysocki <rjw@sisk.pl>
->> >
->> > Use the generic power domains support introduced by the previous
->> > patch to implement support for power domains on SH7372.
->> >
->> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->> > ---
->>
->> Thanks for your work on this. I just tried this on my Mackerel board,
->> but I can't seem to get the pd_power_up() and pd_power_down()
->> callbacks to be executed. It is probably a misconfiguration from my
->> side.
->
-> They trigger for me e.g. after doing
->
-> # echo 3 > /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
->
-> Attached is the .config I've been using.
+Hi,
 
-Thanks, I can trigger using sysfs and your kernel configuration.
+On Fri, Jun 10, 2011 at 08:02:33PM -0700, Arjan van de Ven wrote:
+> On Fri, 10 Jun 2011 12:37:13 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Fri, Jun 10, 2011 at 08:23:29PM +0100, Matthew Garrett wrote:
+> > > On Fri, Jun 10, 2011 at 11:47:38AM -0700, Paul E. McKenney wrote:
+> > > 
+> > > > And if I understand you correctly, then the patches that Ankita
+> > > > posted should help your self-refresh case, along with the
+> > > > originally intended the power-down case and special-purpose use
+> > > > of memory case.
+> > > 
+> > > Yeah, I'd hope so once we actually have capable hardware.
+> > 
+> > Cool!!!
+> > 
+> > So Ankita's patchset might be useful to you at some point, then.
+> > 
+> > Does it look like a reasonable implementation?
+> 
+> as someone who is working on hardware that is PASR capable right now,
+> I have to admit that our plan was to just hook into the buddy allocator,
+> and use PASR on the top level of buddy (eg PASR off blocks that are
+> free there, and PASR them back on once an allocation required the block
+> to be broken up)..... that looked the very most simple to me.
+> 
 
-However, I assumed it also would work when the sceen saver kicked in.
-I recall it being fbcon that controls the screen save, perhaps
-something else. So just wait a bit and see if you also can reproduce
-it. The console gets black but the power is still on...
+The maximum order in buddy allocator is by default 1k pages. Isn't this
+too small a granularity to track blocks that might comprise a PASR unit? 
 
-Also forcing to go back to powered-on state (see below) doesn't work that w=
-ell:
-# echo 0 > /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
+> Maybe something much more elaborate is needed, but I didn't see why so
+> far.
+> 
+> 
 
-It looks like we loose the panning information somehow. Most likely a
-LCDC driver bug. Unless the driver callbacks are not being invoked as
-expected.
-
-Also, there is garbage in on the screen if FB_SH_MOBILE_MERAM is
-enabled. The MERAM hardware is a 1.5 MiB memory block that can be used
-as a LCD cache. It sits in the same hardware power domain as the
-LCDCs. I don't think the MERAM software supports power down
-unfortunately. Disabling MERAM support removes the garbage on the
-screen.
-
->> Here's some feedback on the sh7372-specific code:
->>
->> > --- linux-2.6.orig/arch/arm/mach-shmobile/Kconfig
->> > +++ linux-2.6/arch/arm/mach-shmobile/Kconfig
->> > @@ -19,6 +19,7 @@ config ARCH_SH7372
->> > =A0 =A0 =A0 =A0select CPU_V7
->> > =A0 =A0 =A0 =A0select SH_CLK_CPG
->> > =A0 =A0 =A0 =A0select ARCH_WANT_OPTIONAL_GPIOLIB
->> > + =A0 =A0 =A0 select PM_GENERIC_DOMAINS
->>
->> We want to support a single ARM binary for multiple boards,
->
-> Surely CONFIG_ARCH_SH7372 will be set in that binary?
->
->> so this should be enabled for all SoCs in mach-shmobile as a whole.
->
-> OK, where exactly do you want me to move it?
-
-Ideally to ARCH_SHMOBILE in arch/arm/Kconfig.
-
->> > --- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
->> > +++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
->> > @@ -15,16 +15,97 @@
->> > =A0#include <linux/list.h>
->> > =A0#include <linux/err.h>
->> > =A0#include <linux/slab.h>
->> > +#include <linux/pm_runtime.h>
->> > +#include <linux/platform_device.h>
->> > =A0#include <asm/system.h>
->> > =A0#include <asm/io.h>
->> > =A0#include <asm/tlbflush.h>
->> > =A0#include <mach/common.h>
->> > +#include <mach/sh7372.h>
->> >
->> > =A0#define SMFRAM 0xe6a70000
->> > =A0#define SYSTBCR 0xe6150024
->> > =A0#define SBAR 0xe6180020
->> > =A0#define APARMBAREA 0xe6f10020
->> >
->> > +#define SPDCR 0xe6180008
->> > +#define SWUCR 0xe6180014
->> > +#define PSTR 0xe6180080
->> > +
->> > +struct sh7372_domain_data {
->> > + =A0 =A0 =A0 unsigned int bit_shift;
->> > +};
->>
->> Is it possible to make struct sh7372_domain_data include struct
->> generic_pm_domain?
->
-> It should be possible to do that.
->
-> Do I understand it correctly that you want one structure definition per
-> power domain instead of the two?
-
-Yes, at least that's what I would do to keep the data together. I
-don't care that much though, so feel free to implement it however
-you'd like.
-
->> > +core_initcall(sh7372_power_domains_init);
->>
->> This initcall is going to be executed regardless which SoC we're
->> running on. We only want it called for sh7372 though.
->
-> OK
->
->> If you look at other SoC-specific code then you will notice that
->> initcalls are only used for functions in mach-shmobile/ that are
->> common for all SoCs implemented under mach-shmobile.
->>
->> You most likely want to initialize from sh7372_pm_init(), but for that
->> to work you probably have to reorder your code inside mackerel_init().
->
-> OK, I'll figure out how to do the initialization correctly.
-
-Please do!
-
-Thanks,
-
-/ magnus
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs,
+Bangalore, India
