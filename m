@@ -1,16 +1,16 @@
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch 1/1] [PATCH] include storage keys in
-	hibernation image.
-Date: Wed, 15 Jun 2011 09:36:29 +0200
-Message-ID: <20110615093629.07f01779__49109.7026308582$1308123543$gmane$org@mschwide>
-References: <20110608074523.211912903@de.ibm.com>
-	<201106121441.35059.rjw@sisk.pl> <20110614105001.2f991377@mschwide>
-	<201106142250.15041.rjw@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 8/8] ARM / shmobile: Support for I/O PM
+	domains for SH7372 (v5)
+Date: Wed, 15 Jun 2011 23:17:15 +0900
+Message-ID: <BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw__49646.4865551845$1308148199$gmane$org@mail.gmail.com>
+References: <201106112223.04972.rjw@sisk.pl> <201106112240.11621.rjw@sisk.pl>
+	<BANLkTi=-1Fpp9L17T7CwxoO9JfSes4FeKg@mail.gmail.com>
+	<201106142316.02812.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106142250.15041.rjw@sisk.pl>
+In-Reply-To: <201106142316.02812.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,159 +21,130 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 14 Jun 2011 22:50:14 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Wed, Jun 15, 2011 at 6:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, June 14, 2011, Magnus Damm wrote:
+>> On Sun, Jun 12, 2011 at 5:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > From: Rafael J. Wysocki <rjw@sisk.pl>
+>> >
+>> > Use the generic power domains support introduced by the previous
+>> > patch to implement support for power domains on SH7372.
+>> >
+>> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>> > ---
+>>
+>> Thanks for your work on this. I just tried this on my Mackerel board,
+>> but I can't seem to get the pd_power_up() and pd_power_down()
+>> callbacks to be executed. It is probably a misconfiguration from my
+>> side.
+>
+> They trigger for me e.g. after doing
+>
+> # echo 3 > /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
+>
+> Attached is the .config I've been using.
 
-> On Tuesday, June 14, 2011, Martin Schwidefsky wrote:
-> > Hi Rafael,
-> 
-> > On Sun, 12 Jun 2011 14:41:34 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > > diff -urpN linux-2.6/kernel/power/snapshot.c linux-2.6-patched/kernel/power/snapshot.c
-> > > > --- linux-2.6/kernel/power/snapshot.c	2011-06-06 11:14:39.000000000 +0200
-> > > > +++ linux-2.6-patched/kernel/power/snapshot.c	2011-06-06 11:14:43.000000000 +0200
-> > > > @@ -1022,6 +1022,137 @@ static inline void copy_data_page(unsign
-> > > >  }
-> > > >  #endif /* CONFIG_HIGHMEM */
-> > > >  
-> > > > +#ifdef CONFIG_S390
-> > > > +/*
-> > > > + * For s390 there is one additional byte associated with each page,
-> > > > + * the storage key. The key consists of the access-control bits
-> > > > + * (alias the key), the fetch-protection bit, the referenced bit
-> > > > + * and the change bit (alias dirty bit). Linux uses only the
-> > > > + * referenced bit and the change bit for pages in the page cache.
-> > > > + * Any modification of a page will set the change bit, any access
-> > > > + * sets the referenced bit. Overindication of the referenced bits
-> > > > + * after a hibernation cycle does not cause any harm but the
-> > > > + * overindication of the change bits would cause trouble.
-> > > > + * Therefore it is necessary to include the storage keys in the
-> > > > + * hibernation image. The storage keys are saved to the most
-> > > > + * significant byte of each page frame number in the list of pfns
-> > > > + * in the hibernation image.
-> > > > + */
-> > > 
-> > > Let me say that is not exactly straightforward. :-)
-> > > 
-> > > One thing I don't really understand is where those storage keys are normally
-> > > stored so that they aren't present in the image without this additional
-> > > mechanism.  Could you explain that a bit more, please?
-> > 
-> > The storage keys are outside of the directly addressable memory, the only
-> > way to get to them is with special instructions:
-> > iske - insert storage key extended, ivsk - insert virtual storage key,
-> > sske - set storage key extended, and rrbe - reset reference bit extended.
-> > The storage key of a page has 7 bits, 4 bit for access-control, the
-> > fetch-protection-bit, the reference-bit and the change-bit. In Linux only
-> > the reference and change bits are used.
-> 
-> OK, so it looks like we would only need to store 2 bits per page in additional
-> allocations.
+Thanks, I can trigger using sysfs and your kernel configuration.
 
-For now we'd only need two bits, but with KVM guests we will have to store the
-complete storage key. The guest OS could make use of all the bits in the storage
-key, the KVM host needs to preserve them.
+However, I assumed it also would work when the sceen saver kicked in.
+I recall it being fbcon that controls the screen save, perhaps
+something else. So just wait a bit and see if you also can reproduce
+it. The console gets black but the power is still on...
 
-> > These bits are per physical page, one of the major differences of the s390
-> > machines compared to other architectures. We had a number of interesting
-> > problems because of pte dirty & referenced vs page dirty & referenced.
-> > For e.g. x86 a page is implicitly clean if it has no mapper. On s390 is
-> > depends on the contents of the storage key. Which is why SetPageUptodate
-> > clears the storage key.
-> > 
-> > In regard to hibernation the important aspect is that each and every write
-> > to a page sets the dirty bit even if it is done by I/O. The restore of the
-> > hibernation image therefore makes all pages dirty. To get the correct
-> > original combination of page content and storage key content the storage
-> > key needs to be set after the last access to the page content.
-> 
-> What, in your opinion, is the right time for restoring the original storage
-> keys after the image has been loaded?  It seems that should happen after
-> passing control to the hibernated kernel.
+Also forcing to go back to powered-on state (see below) doesn't work that w=
+ell:
+# echo 0 > /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
 
-Anytime after the final write of the page content completed and before the
-hibernated kernel gets control (or shortly after in the resume code of the
-restored kernel).
+It looks like we loose the panning information somehow. Most likely a
+LCDC driver bug. Unless the driver callbacks are not being invoked as
+expected.
 
-> > > > +
-> > > > +/*
-> > > > + * Key storage is allocated as a linked list of pages.
-> > > > + * The size of the keys array is (PAGE_SIZE - sizeof(long))
-> > > > + */
-> > > > +struct page_key_data {
-> > > > +	struct page_key_data *next;
-> > > > +	unsigned char data[];
-> > > > +};
-> > > 
-> > > This seems to be similar to the data structure for the saving of ACPI NVS
-> > > memory, so perhaps it's possible to combine the two.
-> > 
-> > Almost the same, I thought about ways to merge them. I dropped the idea in
-> > order to keep the patch as small as possible.
-> 
-> I think, however, that we really should try to merge them.  The only
-> difference seems to be how the additionally allocated pages will be populated
-> and what's going to happen to their contents during restore.
-> 
-> ACPI will simply copy the NVS memory to those pages, while S390 will save
-> the relevant storage key bits in there.
+Also, there is garbage in on the screen if FB_SH_MOBILE_MERAM is
+enabled. The MERAM hardware is a 1.5 MiB memory block that can be used
+as a LCD cache. It sits in the same hardware power domain as the
+LCDCs. I don't think the MERAM software supports power down
+unfortunately. Disabling MERAM support removes the garbage on the
+screen.
 
-One complication to keep in mind is that we need to know which storage key
-goes to which page frame. We need something like the orig_bm/copy_bm or
-we'd have to store the pfn with the key. Simply storing the key for every
-page will make the array unnecessarily big.
+>> Here's some feedback on the sh7372-specific code:
+>>
+>> > --- linux-2.6.orig/arch/arm/mach-shmobile/Kconfig
+>> > +++ linux-2.6/arch/arm/mach-shmobile/Kconfig
+>> > @@ -19,6 +19,7 @@ config ARCH_SH7372
+>> > =A0 =A0 =A0 =A0select CPU_V7
+>> > =A0 =A0 =A0 =A0select SH_CLK_CPG
+>> > =A0 =A0 =A0 =A0select ARCH_WANT_OPTIONAL_GPIOLIB
+>> > + =A0 =A0 =A0 select PM_GENERIC_DOMAINS
+>>
+>> We want to support a single ARM binary for multiple boards,
+>
+> Surely CONFIG_ARCH_SH7372 will be set in that binary?
+>
+>> so this should be enabled for all SoCs in mach-shmobile as a whole.
+>
+> OK, where exactly do you want me to move it?
 
-> > > > +#define PAGE_KEY_DATA_SIZE	(PAGE_SIZE - sizeof(struct page_key_data *))
-> > > > +
-> > > > +static struct page_key_data *page_key_data;
-> > > > +static struct page_key_data *page_key_rp, *page_key_wp;
-> > > > +static unsigned long page_key_rx, page_key_wx;
-> > > > +
-> > > > +/*
-> > > > + * For each page in the hibernation image one additional byte is
-> > > > + * stored in the most significant byte of the page frame number.
-> > > 
-> > > I'm not sure it's really worth the complication.  If you simply store those
-> > > keys in separete pages, you'd need one additional page per PAGE_SIZE
-> > > page frames, so given PAGE_SIZE = 4096 that's one page per 16 MB of memory,
-> > > which is not a whole lot (64 extra pages per GB if I'm not mistaken).
-> > > 
-> > > It seems that doing it will simplify things quite a git.
-> > 
-> > One of the versions of the patch actually did that and it turned out to
-> > be much larger then the proposed solution. That older version had another
-> > step in snapshot_read_next / snapshot_write_next to copy the storage keys
-> > to pages allocated for that purpose. I had some trouble with the way how
-> > the code deals with the orig_bm and the copy_bm though. Not trivial code..
-> 
-> Well, I'm sure we can handle that. :-)
-> 
-> I thought of the following approach:
-> 
-> * Allocate memory for saving the relevant bits of the storage keys before
->   the memory preallocation kicks in.
-> 
-> * Save the storage key bits to that memory before creating the image (be
->   careful about the storage keys of the pages they are being stored into).
-> 
-> * After getting control from the boot kernel, restore the storage key bits
->   saved before creating the image.
-> 
-> * Free additional memory used for storing them.
-> 
-> This way we wouldn't have to worry about any interactions with
-> snapshot_read_next / snapshot_write_next etc.
+Ideally to ARCH_SHMOBILE in arch/arm/Kconfig.
 
-Well before the preallocation kicked in we don't know which are the relevant
-storage keys. The only other option would be to store all of them which I
-consider to be a inferior solution. 
+>> > --- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
+>> > +++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+>> > @@ -15,16 +15,97 @@
+>> > =A0#include <linux/list.h>
+>> > =A0#include <linux/err.h>
+>> > =A0#include <linux/slab.h>
+>> > +#include <linux/pm_runtime.h>
+>> > +#include <linux/platform_device.h>
+>> > =A0#include <asm/system.h>
+>> > =A0#include <asm/io.h>
+>> > =A0#include <asm/tlbflush.h>
+>> > =A0#include <mach/common.h>
+>> > +#include <mach/sh7372.h>
+>> >
+>> > =A0#define SMFRAM 0xe6a70000
+>> > =A0#define SYSTBCR 0xe6150024
+>> > =A0#define SBAR 0xe6180020
+>> > =A0#define APARMBAREA 0xe6f10020
+>> >
+>> > +#define SPDCR 0xe6180008
+>> > +#define SWUCR 0xe6180014
+>> > +#define PSTR 0xe6180080
+>> > +
+>> > +struct sh7372_domain_data {
+>> > + =A0 =A0 =A0 unsigned int bit_shift;
+>> > +};
+>>
+>> Is it possible to make struct sh7372_domain_data include struct
+>> generic_pm_domain?
+>
+> It should be possible to do that.
+>
+> Do I understand it correctly that you want one structure definition per
+> power domain instead of the two?
 
--- 
-blue skies,
-   Martin.
+Yes, at least that's what I would do to keep the data together. I
+don't care that much though, so feel free to implement it however
+you'd like.
 
-"Reality continues to ruin my life." - Calvin.
+>> > +core_initcall(sh7372_power_domains_init);
+>>
+>> This initcall is going to be executed regardless which SoC we're
+>> running on. We only want it called for sh7372 though.
+>
+> OK
+>
+>> If you look at other SoC-specific code then you will notice that
+>> initcalls are only used for functions in mach-shmobile/ that are
+>> common for all SoCs implemented under mach-shmobile.
+>>
+>> You most likely want to initialize from sh7372_pm_init(), but for that
+>> to work you probably have to reorder your code inside mackerel_init().
+>
+> OK, I'll figure out how to do the initialization correctly.
+
+Please do!
+
+Thanks,
+
+/ magnus
