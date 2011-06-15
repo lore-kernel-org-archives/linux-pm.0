@@ -1,15 +1,15 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: calling runtime PM from system PM methods
-Date: Wed, 15 Jun 2011 14:54:00 -0700
-Message-ID: <87fwna3gnb.fsf__37797.1500777223$1308175002$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1106111227580.3439-100000@netrider.rowland.org>
-	<201106120046.36618.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 8/8] ARM / shmobile: Support for I/O PM
+	domains for SH7372 (v5)
+Date: Thu, 16 Jun 2011 01:06:40 +0200
+Message-ID: <201106160106.40553.rjw__598.390369168733$1308179237$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl> <201106142316.02812.rjw@sisk.pl>
+	<BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106120046.36618.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sun, 12 Jun 2011 00:46:36 +0200")
+In-Reply-To: <BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,228 +19,125 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Wednesday, June 15, 2011, Magnus Damm wrote:
+> On Wed, Jun 15, 2011 at 6:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Tuesday, June 14, 2011, Magnus Damm wrote:
+> >> On Sun, Jun 12, 2011 at 5:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >> >
+> >> > Use the generic power domains support introduced by the previous
+> >> > patch to implement support for power domains on SH7372.
+> >> >
+> >> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >> > ---
+> >>
+> >> Thanks for your work on this. I just tried this on my Mackerel board,
+> >> but I can't seem to get the pd_power_up() and pd_power_down()
+> >> callbacks to be executed. It is probably a misconfiguration from my
+> >> side.
+> >
+> > They trigger for me e.g. after doing
+> >
+> > # echo 3 > /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
+> >
+> > Attached is the .config I've been using.
+> 
+> Thanks, I can trigger using sysfs and your kernel configuration.
 
-> On Saturday, June 11, 2011, Alan Stern wrote:
->> On Fri, 10 Jun 2011, Kevin Hilman wrote:
->> 
->> > Alan Stern <stern@rowland.harvard.edu> writes:
->> > 
->> > [...]
->> 
->> > > If the wakeup setting is not correct, it has to be changed.  That 
->> > > often implies going back to full power in order to change the 
->> > > wakeup setting, then going to low power again.
->> > 
->> > OK, but how should this be implemented?  
->> > 
->> > If the device is runtime suspended at system suspend time, it implies
->> > that somwhere in the system suspend path, the device has to be powered
->> > on and enabled (a.k.a. runtime resumed.)
->> > 
->> > From a driver writer's perspective, doing a pm_runtime_get_sync() would
->> > be the obvious choice, but that causes nesting of ->runtime_resume
->> > callbacks within ->suspend callbacks which is apparently forbidden (or
->> > rather strongly recommended against :)
->> > 
->> > Now, assuming the driver's suspend can't do a pm_runtime_get()...
->> > 
->> > In order to power on & enable the device, the driver has to essentially
->> > duplicate everything that would be done by a runtime resume.
->> 
->> Again, this depends on the subsystem and the driver.  For example, the
->> USB subsystem does call pm_runtime_resume() in order to bring a device
->> back to full power if the wakeup setting needs to be changed.  This is
->> done in the subsystem code, and the subsystem is designed to allow it.
->> 
->> (Actually, it could be improved.  In theory the driver doesn't need to
->> be involved at all; a USB device's wakeup setting can be changed purely
->> by the subsystem.  Nevertheless, the pm_runtime_resume call does wake
->> up the driver, which then needs to be quiesced again shortly thereafter
->> -- overall a waste of time.  This was the easiest approach.)
->> 
->> > The problem comes because this work is shared between the driver and the
->> > subsystem.  IOW, it's the driver's ->suspend() callback that decides
->> > whether or not the device needs to be powered-on/enabled (e.g. to
->> > enable/disable wakeups), but it might be the subsystem that actually has
->> > does the magic_device_set_full_power(), magic_device_enable().
->> > 
->> > So once the driver's ->suspend() realizes it needs to power on & enable
->> > the device, it has no way to tell the subsystem to do so, wait for it to
->> > happen, and then enable/disable its wakeups.
->> 
->> Then the subsystem should _provide_ a way, if that's how you decide to
->> handle things.
->> 
->> > Maybe I'm being really dense, really blind, or really stubborn (or all
->> > three), but it seems to be that using runtime PM calls to implement
->> > these things would be the most obvious and the most readable.
->> 
->> Have you tried actually doing it in a situation where you control both
->> the driver and the subsystem?
->> 
->> Basically, I think what Rafael was saying before referred to the 
->> general case, where you don't know anything about the subsystem and 
->> can't afford to make assumptions.  But in the real world you'll be 
->> writing a driver for a particular subsystem and you'll know how that 
->> subsystem works.  If the subsystem permits runtime PM calls to be 
->> nested within the system PM routines, feel free to go ahead and use 
->> them.
->
-> But then we get the problem that user space may echo "on" to the
-> device's "control" file in sysfs and the whole clever plan basically goes
-> south.
->
-> Moreover, on some systems devices will belong to PM domains and their
-> drivers may potentially be used with different PM domains on different
-> platforms.  This means that drivers really should not make any assumptions
-> about whether or not they can use runtime PM in their system suspend/resume
-> routines.  They can't.
+Good.
 
-Sure, but it's easy enough for subsystems that need protection to add
-it.  Why not just better document that driver & subsytem runtime PM
-callbacks *could* be called during a system suspend (and same for
-resume.)  Any subsystems that want/need protection can prevent nesting
-simply with pm_runtime_get_noresume() and _put_noidle().
+> However, I assumed it also would work when the sceen saver kicked in.
+> I recall it being fbcon that controls the screen save, perhaps
+> something else. So just wait a bit and see if you also can reproduce
+> it. The console gets black but the power is still on...
 
-As I mentioned earlier in the thread, this can already happen today
-without .suspend() callbacks directly calling pm_runtime_suspend()
-(e.g. driver xfer finishes and does pm_runtime_put_sync() anytime after
-system suspend has started.)
+I noticed that, but I think it simply means pm_runtime_put() isn't
+called in that code path.
 
-> Now, Kevin, I think that the problem you really want to address is this:
-> Suppose a driver needs to do one thing in its .runtime_suspend() callback
-> (e.g. "save state") and it wants to do two things in its .suspend()
-> callback (e.g. "quiesce device" and "save state").  Then, it seems, the
-> simplest approach would be to call its .runtie_suspend() routine from
-> its .suspend() routine (after doing the "quiesce device" thing).
+> Also forcing to go back to powered-on state (see below) doesn't work that well:
+> # echo 0 > /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
+> 
+> It looks like we loose the panning information somehow. Most likely a
+> LCDC driver bug. Unless the driver callbacks are not being invoked as
+> expected.
 
-Partially, yes.  But I'm not primarily concerned about the callbacks.
-Many of our simple drivers don't even need runtime PM callbacks
-(e.g. state is saved using shadow regs, or device is re-init'd for for
-every xfer etc.)
+That should be easy to verify, I'll do that.
 
-More important to me is how driver writers for embedded devices think
-about PM for embedded systems.  IMO, driver writers should think
-primarily in terms of runtime PM, and use that as the primary API for
-all driver PM.
+> Also, there is garbage in on the screen if FB_SH_MOBILE_MERAM is
+> enabled. The MERAM hardware is a 1.5 MiB memory block that can be used
+> as a LCD cache. It sits in the same hardware power domain as the
+> LCDCs. I don't think the MERAM software supports power down
+> unfortunately. Disabling MERAM support removes the garbage on the
+> screen.
 
->From my POV, system PM for embedded devices is just a special case of
-runtime PM.  From a device driver perspective, system PM is just runtime
-PM where the "idleness" was forced and only a subset of possible wakeup
-sources are enabled.   I think this runtime-PM-centric view of the world
-is maybe where our differences of opinion are coming from.
+Well, I can't really comment here.
 
-So with that perspecive, I'd like the code to reflect a
-runtime-PM-centric view as well.  The development effort is primarily
-focused on implementing efficient runtime PM for an _active_ system.
-When this is working, implementing system PM is easy: all that is needed
-is to enable/disable relevant wakeups and force the device to idle.
-This allows runtime PM to trigger, and the device is suspended.
+> >> Here's some feedback on the sh7372-specific code:
+> >>
+> >> > --- linux-2.6.orig/arch/arm/mach-shmobile/Kconfig
+> >> > +++ linux-2.6/arch/arm/mach-shmobile/Kconfig
+> >> > @@ -19,6 +19,7 @@ config ARCH_SH7372
+> >> >        select CPU_V7
+> >> >        select SH_CLK_CPG
+> >> >        select ARCH_WANT_OPTIONAL_GPIOLIB
+> >> > +       select PM_GENERIC_DOMAINS
+> >>
+> >> We want to support a single ARM binary for multiple boards,
+> >
+> > Surely CONFIG_ARCH_SH7372 will be set in that binary?
+> >
+> >> so this should be enabled for all SoCs in mach-shmobile as a whole.
+> >
+> > OK, where exactly do you want me to move it?
+> 
+> Ideally to ARCH_SHMOBILE in arch/arm/Kconfig.
 
-> So far, so good, but suppose there's a subsystem, different from the platform
-> bus type, or a PM domain such that it's not sufficient to call the driver's
-> .runtime_suspend() alone, because the subsystem-level .runtime_suspend() does
-> something that's necessary for "really suspending" the device.  
+OK
 
-Yes, for OMAP, the "really suspending" work is done by the subsystem.
+> >> > --- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
+> >> > +++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+> >> > @@ -15,16 +15,97 @@
+> >> >  #include <linux/list.h>
+> >> >  #include <linux/err.h>
+> >> >  #include <linux/slab.h>
+> >> > +#include <linux/pm_runtime.h>
+> >> > +#include <linux/platform_device.h>
+> >> >  #include <asm/system.h>
+> >> >  #include <asm/io.h>
+> >> >  #include <asm/tlbflush.h>
+> >> >  #include <mach/common.h>
+> >> > +#include <mach/sh7372.h>
+> >> >
+> >> >  #define SMFRAM 0xe6a70000
+> >> >  #define SYSTBCR 0xe6150024
+> >> >  #define SBAR 0xe6180020
+> >> >  #define APARMBAREA 0xe6f10020
+> >> >
+> >> > +#define SPDCR 0xe6180008
+> >> > +#define SWUCR 0xe6180014
+> >> > +#define PSTR 0xe6180080
+> >> > +
+> >> > +struct sh7372_domain_data {
+> >> > +       unsigned int bit_shift;
+> >> > +};
+> >>
+> >> Is it possible to make struct sh7372_domain_data include struct
+> >> generic_pm_domain?
+> >
+> > It should be possible to do that.
+> >
+> > Do I understand it correctly that you want one structure definition per
+> > power domain instead of the two?
+> 
+> Yes, at least that's what I would do to keep the data together. I
+> don't care that much though, so feel free to implement it however
+> you'd like.
 
-> Then, apparently, one can simply call pm_runtime_suspend() from the
-> driver's .suspend() callback and that will take care of runniung the
-> subsystem-level .runtime_suspend() too.
+OK, I think I can merge them.
 
-Exactly.
-
-> Unfortunately, the problem with subsystem-level PM callbacks is that, in
-> general, the subsystem-level .runtime_suspend() needs to do something slightly
-> different that the subsystem-level system suspend callbacks.  The reason why is,
-> more or less, wakeup (plus the fact that hibernate callbacks need not power
-> down things, which is a detail and I'll ignore it from now on).  More precisely,
-> the set of wakeup devices for system suspend is determined by user space, while
-> for runtime PM all devices that can do remote wakeup should be set up to do it.
-> That's why, in general, the subsystem-level .runtime_suspend() may do wrong
-> things when it's invoked via the driver's .suspend() routine, during system
-> suspend.  
-
-I still don't quite see what runtime_suspend() would do wrong in terms
-of wakeups.  Do you mean that subsys->runtime_suspend() might enable
-wakeups even though subsys->suspend() has just disabled them?  If so, it
-should be the responsibility of the subsystem to manage this correctly.  
-
-It would be pretty straightforward for the subsystem to know if its
-.runtime_suspend() is being called during system suspend (e.g. flag set
-during ->prepare, etc.) and not mess with wakeup settings.
-
-At least on OMAP, this isn't an issue since the runtime PM path doesn't
-touch wakeups at all.  Wakeup-capable devices have wakeups enabled
-during device init, and remain wakeup capable during runtime PM.
-Neither the driver or subsystem runtime PM callbacks do anything for
-wakeups.  Only the driver (or possibly subsystem) .suspend() and
-.resume() do any changing of wakeup settings.
-
-> Apart from this, of course, the subsystem-level .suspend() that
-> has invoked the driver's .suspend() might already do something that won't
-> play well with the subsystem-level .runtime_suspend(), if it's called at this
-> point, or even more likely the subsystem-level .suspend_noirq() that will be
-> run later may not play well with whatever the subsystem-level .runtime_suspend()
-> does.
-
-Do you have something in mind about how they wouldn't play well
-together?  
-
-I'm starting from the assumption that subsystems need to be aware or
-potential nesting of callbacks (which can happen today), and either take
-care of it or prevent it.
-
-If the HW really needs different handling for system suspend and runtime
-PM, then I see your point, and the subsystem is free to treat them more
-independently, and even to prevent them from nesting.  My point is that
-for embedded systems, there is no difference at the HW other than wakeup
-programming, and wakeups are easy enough to handle.
-
-Yes, all of this means that the subsystem has to be written with this
-runtime-PM-centric view in mind, but I am pursuaded that doing so is the
-best model for the PM domains on embedded devices.
-
-Put differently, with a runtime-PM-centric view of the world, the
-subsystem .suspend really has nothing to do, so it is rather easy for it
-to play well with .runtime_suspend().  The driver .suspend will
-enable/disable wakeups, quiesce the HW, and as a result a runtime PM
-transition will occur.   Then there's nothing left for the subsystem
-.suspend to do.
-
-Maybe it helps to show the flow of how I think this would work for a
-typical device during system suspend:
-
-subsys->suspend()
-    driver->suspend()
-        /* check device_may_wakeup(), enable/disable wakeups */
-        /* quiesce HW, triggers runtime PM _put() or _suspend() */
-        subsys->runtime_suspend()
-            driver->runtime_suspend()
-                driver_save_context()
-            /* subsys idles HW, sets low-power state */
-        /* nothing left for driver to do */
-    /* nothing left for subsys to do */
-
-> So, we seem to be in a "Catch 22" situation, in which the driver needs to run
-> its .runtime_suspend() code during system suspend, but it has to do it through
-> the subsystem-level .runtime_suspend() that cannot be run at that time.
-> Fortunately, however, there is a way out of it, because the driver has an
-> option to point its .suspend_noirq() callback to the same routine pointed to
-> by its .runtime_suspend() and get the subsystem-level .suspend_noirq() to
-> execute it.  The subsystem-level (e.g. PM domain) callbacks, in turn, may be
-> designed so that this always works.
-
-I don't follow this part.
-
-So you're not OK with running the subsystem or driver .runtime_suspend()
-during .suspend(), but it is OK during .suspend_noirq()? 
-
-Also, where/when would the subsystem .runtime_suspend() be called?
-
-Kevin
+Thanks,
+Rafael
