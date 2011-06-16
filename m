@@ -1,13 +1,13 @@
-From: Andrey Rahmatullin <wrar@wrar.name>
-Subject: Re: ASUS K53E fails to suspend if ehci_hcd is loaded
-Date: Fri, 17 Jun 2011 03:36:05 +0600
-Message-ID: <20110616213605.GI7253__266.445233910595$1308261961$gmane$org@belkar.wrar.name>
-References: <20110616201228.GG7253@belkar.wrar.name>
-	<Pine.LNX.4.44L0.1106161656190.1697-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: calling runtime PM from system PM methods
+Date: Fri, 17 Jun 2011 00:48:36 +0200
+Message-ID: <201106170048.37072.rjw__22008.5613117137$1308266271$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106161017310.2204-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5571555686406604179=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106161656190.1697-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1106161017310.2204-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,86 +15,78 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thursday, June 16, 2011, Alan Stern wrote:
+> On Wed, 15 Jun 2011, Kevin Hilman wrote:
+> 
+> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> > 
+> > > On Wednesday, June 15, 2011, Kevin Hilman wrote:
+> > 
+> > [...]
+> > 
+> > >>
+> > >> From a device driver perspective, system PM is just runtime
+> > >> PM where the "idleness" was forced and only a subset of possible wakeup
+> > >> sources are enabled.
+> > >
+> > > Oh well, I wonder how much of a difference would make you think those things
+> > > are really different. ;-)
+> > 
+> > Seeing a description of the differences would help.  So far the list is
+> > rather short: wakeups and forcibly quieting the hardware.
+> 
+> Another difference is that the user can forbid runtime power management 
+> of any device through the power/control attribute, independently of 
+> system sleeps.
+> 
+> Yet another difference arises because during system PM, the PM
+> workqueue is frozen.  If a driver relies on asynchronous runtime PM
+> then nothing will happen.  This may not apply to you, but it applies to
+> plenty of other drivers.
+> 
+> > I guess I still don't see why system PM cannot be viewed as a special
+> > case of runtime PM, so how about a specific question: From a device
+> > driver perspective, how is system PM anything other than
+> > manually/forcibly creating the right conditions for a runtime PM
+> > transition to happen?
+> 
+> What you're missing is that runtime PM has two separate aspects: a 
+> hardware/power aspect and an administrative aspect.  In terms of 
+> hardware/power it is very similar to system PM, but in administrative 
+> terms it is quite different.
+> 
+> Another thing you need to realize: Rafael is open to the idea that
+> subsystems may be designed specifically to allow drivers to use runtime
+> PM during their ->suspend and ->resume callbacks.  However in the
+> period between ->suspend returning and ->resume being called, runtime
+> PM should _not_ be used.  In particular, this includes the times when
+> ->suspend_noirq and ->resume_noirq are called -- and these are the
+> routines which are often expected to do the real work of setting the
+> device's power state.
 
---===============5571555686406604179==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="SLfjTIIQuAzj8yil"
-Content-Disposition: inline
+To be precise, my opinion is that calling pm_runtime_suspend() or
+pm_runtime_put_sync() from a driver's .suspend() callback always is a bad
+idea, because it leads to unnecessary complications and doesn't guarantee
+that the desired action will take place at all.  That said I don't really
+think that the PM core should actively prevent that from being done,
+because it's not a direct correctness issue.  Using the runtime PM framework
+after suspend_device_irqs() has run is a different problem, though, and
+in my opinion the PM core should prevent that from being done, this way or
+another.
 
+Moreover, I don't have any problems with subsystems calling pm_runtime_resume()
+or pm_runtime_get_sync() from their .prepare() callbacks, because that simply
+causes devices to be put into a well known state before the "real" system
+suspend callbacks are run.  In principle, drivers can do the same thing if
+their subsystems don't, but that's not so obviously clean (given that the
+same driver may be used with a few different PM domain implementations, for
+example).
 
---SLfjTIIQuAzj8yil
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Jun 16, 2011 at 04:57:59PM -0400, Alan Stern wrote:
-> > > > When I try to suspend my ASUS K53E laptop, the process hangs after
-> > > > spinning down the disk unless I unload ehci_hcd. This happens on 2.=
-6.38,
-> > > > 2.6.39 and 3.0-rc3+. Some details are at
-> > > > https://bugzilla.kernel.org/show_bug.cgi?id=3D37632
-> > > > What additional info can I provide to help fix this if this is poss=
-ible?
-> > > Set CONFIG_USB_DEBUG=3Dy and boot with "no_console_suspend" on the=20
-> > > command line.  What appears on the console when the system is hung?
-> > PM: Entering mem sleep
-> > usb usb2: usb auto-resume
-> > sd blah-blah syncing cache
-> > ehci_hcd 0000:00:1d.0: resume root hub
-> > usb 1-1.1: usb suspend
-> > sd blah-blah stopping disk
-> > hub 1-1:1.0: hub_suspend
-> > usb 1-1: unlink qh256-0001/ffff88013b411000 start 1 [1/0 us]
-> > usb 1-1: usb suspend
-> >=20
-> >=20
-> > and that's all.
->=20
-> Okay, the next step is to try and find out exactly where the ehci=20
-> suspend procedure is hanging.  The patch below adds a bunch of=20
-> printouts at various spots throughout the procedure.  Let's see what=20
-> shows up.
-I don't see any of these new messages.
-
---=20
-WBR, wRAR
-
---SLfjTIIQuAzj8yil
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBCAAGBQJN+ndFAAoJEDNi9wMaSZLhQpUQAJZahIkGge76dJNeR9ejurgw
-eSlClF9tEIJENPtBdH2xYaGY+yodwC7z2SX3zaL4ltakz5SjCE1NzTEN9pBDOtHj
-vSrmY0wS8nELviBOIDHRlo815nDvjC9AJaBUZ8YElLHTuw0n8qVyntKQALLA20tq
-yMERiRhwD8z1374VosLNwUyZgMXVhCEcgcJWwP64nb4kVjxM1Nv/5yWP7aZEMvyE
-3uYeDI4a5zXZrRG71+YoToFEKB7nPKcPiMgol2D1XA5hm3ovLbRA4IK+buDS0312
-dbeBgIoygUzpBtu8YX1fBF3Ig4paGXOYrbR+COeohgvN0CQIaaTgXx4qM1gxY3/s
-wG/8uVD0IuroFBJu2qtsmKXZdKmcoJEBtW5yEK4UK1oJByQYAlgxnUUwbsoxU2Jj
-5k06ucCi0VVMHWwAynrZgF4scmP4lqCvqE6nqdEy+eowXk/BlwciE9UyC9u3S1dJ
-Mv4BwLmhSb45JHYGSq1BsT8oDMAwxYI21W+FZ95iC5LKjxww2a1pCFWhL3cdKu25
-Qua11C3GCKUXnrk0romS5HoSKCVuFgRvx50lpGHkDALzDcma3zdvXyezizwZ3Rmh
-kG9veeC7eJS2ijIBJUQd+ls/NQYQ5t9UTVxISerZIy30js6Z4heZDw/sy3RqRgz4
-GHqqu7ytIEliVTSxcrag
-=8ya0
------END PGP SIGNATURE-----
-
---SLfjTIIQuAzj8yil--
-
---===============5571555686406604179==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============5571555686406604179==--
+Thanks,
+Rafael
