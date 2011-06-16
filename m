@@ -1,16 +1,13 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Thu, 16 Jun 2011 18:12:51 +0900
-Message-ID: <20110616181251.caf484b6.kamezawa.hiroyu__16289.0898217031$1308216062$gmane$org@jp.fujitsu.com>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<20110613134701.2b23b8d8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20110616042044.GA28563@in.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: calling runtime PM from system PM methods
+Date: Thu, 16 Jun 2011 10:27:58 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106161017310.2204-100000__33186.2368541353$1308234559$gmane$org@iolanthe.rowland.org>
+References: <87boxytw05.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110616042044.GA28563@in.ibm.com>
+In-Reply-To: <87boxytw05.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,67 +17,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 16 Jun 2011 09:50:44 +0530
-Ankita Garg <ankita@in.ibm.com> wrote:
+On Wed, 15 Jun 2011, Kevin Hilman wrote:
 
-> Hi,
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> On Mon, Jun 13, 2011 at 01:47:01PM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Fri, 27 May 2011 18:01:28 +0530
-> > Ankita Garg <ankita@in.ibm.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > 
-> > I'm sorry if you've answered already.
-> > 
-> > Is memory hotplug is too bad and cannot be enhanced for this purpose ?
-> > 
-> > I wonder
-> >   - make section-size smaller (IIUC, IBM's system has 16MB section size)
-> > 
-> >   - add per section statistics
-> > 
-> >   - add a kind of balloon driver which does software memory offline
-> >     (which means making a contiguous chunk of free pages of section_size
-> >      by page migration) in background with regard to memory usage statistics.
-> >     If system says "need more memory!", balloon driver can online pages.
-> > 
-> > can work for your purpose. It can allow you page isolatation and
-> > controls in 16MB unit.  If you need whole rework of memory hotplug, I think
-> > it's better to rewrite memory hotplug, too.
+> > On Wednesday, June 15, 2011, Kevin Hilman wrote:
+> 
+> [...]
+> 
+> >>
+> >> From a device driver perspective, system PM is just runtime
+> >> PM where the "idleness" was forced and only a subset of possible wakeup
+> >> sources are enabled.
 > >
+> > Oh well, I wonder how much of a difference would make you think those things
+> > are really different. ;-)
 > 
-> Interesting idea, but a few issues -
-> 
-> - Correctly predicting memory pressure is difficult and thereby being
->   able to online the required pages at the right time could be a
->   challenge
+> Seeing a description of the differences would help.  So far the list is
+> rather short: wakeups and forcibly quieting the hardware.
 
-But it will be required for your purpose, anyway. Isn't it ?
+Another difference is that the user can forbid runtime power management 
+of any device through the power/control attribute, independently of 
+system sleeps.
 
-> - Memory hotplug is a heavy operation, so the overhead involved may be
->   high
+Yet another difference arises because during system PM, the PM
+workqueue is frozen.  If a driver relies on asynchronous runtime PM
+then nothing will happen.  This may not apply to you, but it applies to
+plenty of other drivers.
 
-soft-offline of small amount of pages will not very heavy.
-compaction and cma patches use the same kind of logic.
+> I guess I still don't see why system PM cannot be viewed as a special
+> case of runtime PM, so how about a specific question: From a device
+> driver perspective, how is system PM anything other than
+> manually/forcibly creating the right conditions for a runtime PM
+> transition to happen?
 
+What you're missing is that runtime PM has two separate aspects: a 
+hardware/power aspect and an administrative aspect.  In terms of 
+hardware/power it is very similar to system PM, but in administrative 
+terms it is quite different.
 
-> - Powering off memory is just one of the ways in which memory power could
->   be saved. The platform can also dynamically transition areas of memory
->   into a  content-preserving lower power state if it is not referenced
->   for a pre-defined threshold of time. In such a case, we would need a
->   mechanism to soft offline the pages - i.e, no new allocations to be
->   directed to that memory
-> 
+Another thing you need to realize: Rafael is open to the idea that
+subsystems may be designed specifically to allow drivers to use runtime
+PM during their ->suspend and ->resume callbacks.  However in the
+period between ->suspend returning and ->resume being called, runtime
+PM should _not_ be used.  In particular, this includes the times when
+->suspend_noirq and ->resume_noirq are called -- and these are the
+routines which are often expected to do the real work of setting the
+device's power state.
 
-Hmm, sounds like a similar idea of CleanCache ?
-
-Reusing section is much easier than adding new one.., I think.
-
-Thanks,
--Kame
+Alan Stern
