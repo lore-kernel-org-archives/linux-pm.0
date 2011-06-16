@@ -1,16 +1,17 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: calling runtime PM from system PM methods
-Date: Wed, 15 Jun 2011 18:17:46 -0700
-Message-ID: <87boxytw05.fsf__34979.9676253044$1308187218$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1106111227580.3439-100000@netrider.rowland.org>
-	<201106120046.36618.rjw@sisk.pl> <87fwna3gnb.fsf@ti.com>
-	<201106160201.47123.rjw@sisk.pl>
+From: Ankita Garg <ankita@in.ibm.com>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Thu, 16 Jun 2011 09:50:44 +0530
+Message-ID: <20110616042044.GA28563__35460.1412000649$1308198284$gmane$org@in.ibm.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110613134701.2b23b8d8.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106160201.47123.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Thu, 16 Jun 2011 02:01:46 +0200")
+Content-Disposition: inline
+In-Reply-To: <20110613134701.2b23b8d8.kamezawa.hiroyu@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,54 +21,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Hi,
 
-> On Wednesday, June 15, 2011, Kevin Hilman wrote:
-
-[...]
-
->>
->> From a device driver perspective, system PM is just runtime
->> PM where the "idleness" was forced and only a subset of possible wakeup
->> sources are enabled.
+On Mon, Jun 13, 2011 at 01:47:01PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Fri, 27 May 2011 18:01:28 +0530
+> Ankita Garg <ankita@in.ibm.com> wrote:
+> 
+> > Hi,
+> > 
+> 
+> I'm sorry if you've answered already.
+> 
+> Is memory hotplug is too bad and cannot be enhanced for this purpose ?
+> 
+> I wonder
+>   - make section-size smaller (IIUC, IBM's system has 16MB section size)
+> 
+>   - add per section statistics
+> 
+>   - add a kind of balloon driver which does software memory offline
+>     (which means making a contiguous chunk of free pages of section_size
+>      by page migration) in background with regard to memory usage statistics.
+>     If system says "need more memory!", balloon driver can online pages.
+> 
+> can work for your purpose. It can allow you page isolatation and
+> controls in 16MB unit.  If you need whole rework of memory hotplug, I think
+> it's better to rewrite memory hotplug, too.
 >
-> Oh well, I wonder how much of a difference would make you think those things
-> are really different. ;-)
 
-Seeing a description of the differences would help.  So far the list is
-rather short: wakeups and forcibly quieting the hardware.
+Interesting idea, but a few issues -
 
-I guess I still don't see why system PM cannot be viewed as a special
-case of runtime PM, so how about a specific question: From a device
-driver perspective, how is system PM anything other than
-manually/forcibly creating the right conditions for a runtime PM
-transition to happen?
+- Correctly predicting memory pressure is difficult and thereby being
+  able to online the required pages at the right time could be a
+  challenge
+- Memory hotplug is a heavy operation, so the overhead involved may be
+  high
+- Powering off memory is just one of the ways in which memory power could
+  be saved. The platform can also dynamically transition areas of memory
+  into a  content-preserving lower power state if it is not referenced
+  for a pre-defined threshold of time. In such a case, we would need a
+  mechanism to soft offline the pages - i.e, no new allocations to be
+  directed to that memory
 
-[...]
-
->> The development effort is primarily
->> focused on implementing efficient runtime PM for an _active_ system.
->> When this is working, implementing system PM is easy: all that is needed
->> is to enable/disable relevant wakeups and force the device to idle.
->> This allows runtime PM to trigger, and the device is suspended.
->
-> No, it doesn't.  What you're trying to do is to "maunally" trigger runtime PM
-
-No.  
-
-What I'm trying to do in .suspend() is create the conditions necessary
-such that a runtime PM transition will occur *by itself*.  If the right
-conditions exist (namely, idle HW, no pending activity, etc.) a runtime
-PM transition will happen *on its own*, and will not need to be manually
-triggered.  IOW, a runtime PM transition is a side effect of creating
-the right idle conditions.
-
-> when _you_ think is suitable.
-
-No, only when a system suspend is requested by the user.
-
-Kevin
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs,
+Bangalore, India
