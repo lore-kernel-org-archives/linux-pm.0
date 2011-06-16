@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: calling runtime PM from system PM methods
-Date: Fri, 17 Jun 2011 00:30:26 +0200
-Message-ID: <201106170030.26261.rjw__882.591497111385$1308268315$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1106111227580.3439-100000@netrider.rowland.org>
-	<201106160201.47123.rjw@sisk.pl> <87boxytw05.fsf@ti.com>
+Subject: Re: 32 bit s2disk on 64 bit kernel
+Date: Thu, 16 Jun 2011 19:58:23 +0200
+Message-ID: <201106161958.23398.rjw@sisk.pl>
+References: <4DFA1DA5.1010502@wasp.net.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87boxytw05.fsf@ti.com>
+In-Reply-To: <4DFA1DA5.1010502@wasp.net.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,92 +17,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: Brad Campbell <brad@wasp.net.au>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 16, 2011, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thursday, June 16, 2011, Brad Campbell wrote:
+> <oops, sent this to the wrong list..>
+
+Not really, the list is exactly right. :-)
+
+> I run an entirely 32 bit userspace on a 64bit kernel. I've compiled suspend-utils from todays git 
+> tree. trying to use s2disk results in the following :
 > 
-> > On Wednesday, June 15, 2011, Kevin Hilman wrote:
+> Is this a supported configuration?
+
+No, it isn't.
+
+> brad@bklaptop:~$ sudo s2disk
+> s2disk: Could not use the resume device (try swapon -a). Reason: Invalid argument
+> brad@bklaptop:~$ dmesg | tail -n3
+> [  823.530812] video LNXVIDEO:00: Restoring backlight state
+> [  834.100071] iwlagn 0000:02:00.0: iwlagn_tx_agg_start on ra = 00:26:f2:94:ba:59 tid = 0
+> [  842.392066] iwlagn 0000:02:00.0: iwlagn_tx_agg_start on ra = 00:26:f2:94:ba:59 tid = 0
 > 
-> [...]
+> snip of strace
+> open("resume", O_RDWR|O_LARGEFILE)      = 3
+> stat64("/dev/snapshot", {st_mode=S_IFCHR|0660, st_rdev=makedev(10, 231), ...}) = 0
+> open("/dev/snapshot", O_RDONLY|O_LARGEFILE) = 4
+> ioctl(4, 0x400c330d, 0xffe07a3c)        = -1 EINVAL (Invalid argument)
+> ioctl(4, 0x4004330a, 0x805)             = -1 EINVAL (Invalid argument)
+> write(2, "s2disk: Could not use the resume"..., 82s2disk: Could not use the resume device (try 
+> swapon -a). Reason: Invalid argument
 > 
-> >>
-> >> From a device driver perspective, system PM is just runtime
-> >> PM where the "idleness" was forced and only a subset of possible wakeup
-> >> sources are enabled.
-> >
-> > Oh well, I wonder how much of a difference would make you think those things
-> > are really different. ;-)
-> 
-> Seeing a description of the differences would help.  So far the list is
-> rather short: wakeups and forcibly quieting the hardware.
+> echo mem > /sys/power/state
+> .. works fine, but no compression, status or encryption.
 
-Alan has given some more examples in his reply already, I don't think
-I'd do it better. :-)
-
-> I guess I still don't see why system PM cannot be viewed as a special
-> case of runtime PM, so how about a specific question: From a device
-> driver perspective, how is system PM anything other than
-> manually/forcibly creating the right conditions for a runtime PM
-> transition to happen?
-
-Because it doesn't create those conditions?  It doesn't make runtime PM
-usage counters magically drop to zero, for one example, and it can't do
-that because of the user space part.
-
-Still, I'm not saying you can't use the same _code_ for both runtime PM
-and system suspend.  In the majority of cases this really is necessary to
-avoid code duplication.  However, you really need not use the same callback
-pointers to that code in both cases.  You may use common functions that will
-be called by your .suspend() or .suspend_noirq() callbacks and by your
-.runtime_suspend().  You may make .suspend_norq() and .runtime_suspend()
-point to the same routine if that's suitable.  You don't necessarily have
-to call pm_runtime_suspend() from your .suspend() callback to make that
-code run and that applies to subsystems too.
-
-As I said before, at one point we decided to use different PM callback
-pointers for different purposes and that's why we have so many of them.
-We could use multipurpose .suspend(dev, arg) instead, where arg would
-determine the action to be taken (e.g. SYSTEM_SUSPEND, RUNTIME_SUSPEND etc.).
-Now imagine we've done so and, at the subsystem level,
-.suspend(dev, SYSTEM_SUSPEND) is called during system suspend by the PM core.
-Suppose further that it calls a driver's .suspend(dev, SYSTEM_SUSPEND) and
-that, in turn, does pm_runtime_suspend() which calls back to the very same
-function it came from, but with different arg.  So we have:
-
-subsys->suspend(dev, SYSTEM_SUSPEND)
-    driver->suspend(dev, SYSTEMS_SUSPEND)
-        subsys->suspend(dev, RUNTIME_SUSPEND)
-
-So it effectively makes subsys->suspend() call itself recursively with
-a different second argument without knowing that this is going to happen.
-Do you still not see any problem with that?
-
-There's more, though, because pm_runtime_suspend() not only invokes the
-subsystem's callback, but also uses infrastructure that's designed to be
-used in the system's working state, when user space is available and so on.
-The state of the system during system suspend/resume is different however.
-
-So, what I'm saying is that (1) calling things like pm_runtime_suspend()
-from system suspend callbacks is pointless, because it doesn't guarantee
-that the device will be really suspended, and unnecessary, because the
-code it is supposed to invoke may be called into in a different way, and
-(2) you can always design your subsystem-level code to make use of system
-suspend callbacks in such a way that all of the necessary code will be
-executed without calling pm_runtime_suspend() etc. from system suspend
-callbacks.
-
-It really doesn't matter that in your picture of the world system suspend
-is a degenerate case of runtime PM, just because your model hardware
-platform doesn't provide any "suspend the system" magic.  We have two
-different frameworks for both and that's for a reason (there are platforms
-where we need to use different hardware/firmware mechanisms in both cases)
-and those frameworks are kind of mutually exclusive (i.e. you're not supposed
-to use them both at the same time).  Nevertheless, you _can_ use the same
-code, when necessary, in each case, but each case requires that code to be
-called in a different way.
+That is a totally different thing, it simply preserves the contents of RAM.
 
 Thanks,
 Rafael
