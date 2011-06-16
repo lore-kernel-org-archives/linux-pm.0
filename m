@@ -1,16 +1,13 @@
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Thu, 16 Jun 2011 09:04:00 -0700
-Message-ID: <1308240240.11430.115.camel__46801.8637192019$1308240439$gmane$org@nimitz>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<20110613134701.2b23b8d8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20110616042044.GA28563@in.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: ASUS K53E fails to suspend if ehci_hcd is loaded
+Date: Thu, 16 Jun 2011 16:57:59 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106161656190.1697-100000__41506.1522312046$1308259837$gmane$org@iolanthe.rowland.org>
+References: <20110616201228.GG7253@belkar.wrar.name>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110616042044.GA28563@in.ibm.com>
+In-Reply-To: <20110616201228.GG7253@belkar.wrar.name>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,53 +17,111 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Andrey Rahmatullin <wrar@wrar.name>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2011-06-16 at 09:50 +0530, Ankita Garg wrote:
-> - Correctly predicting memory pressure is difficult and thereby being
->   able to online the required pages at the right time could be a
->   challenge
+On Fri, 17 Jun 2011, Andrey Rahmatullin wrote:
 
-For the sake of this discussion, let's forget about this.  There are
-certainly a lot of scenarios where turning memory on/off is necessary
-and useful _without_ knowing what kind of load the system is under.  "We
-just shut down our huge database, and now have 99% of RAM free" is a
-fine, dumb, metric.  We don't have to have magical pony memory pressure
-detection as a prerequisite.
+> On Thu, Jun 16, 2011 at 03:52:02PM -0400, Alan Stern wrote:
+> > > When I try to suspend my ASUS K53E laptop, the process hangs after
+> > > spinning down the disk unless I unload ehci_hcd. This happens on 2.6.38,
+> > > 2.6.39 and 3.0-rc3+. Some details are at
+> > > https://bugzilla.kernel.org/show_bug.cgi?id=37632
+> > > What additional info can I provide to help fix this if this is possible?
+> > Set CONFIG_USB_DEBUG=y and boot with "no_console_suspend" on the 
+> > command line.  What appears on the console when the system is hung?
+> 
+> PM: Entering mem sleep
+> usb usb2: usb auto-resume
+> sd blah-blah syncing cache
+> ehci_hcd 0000:00:1d.0: resume root hub
+> usb 1-1.1: usb suspend
+> sd blah-blah stopping disk
+> hub 1-1:1.0: hub_suspend
+> usb 1-1: unlink qh256-0001/ffff88013b411000 start 1 [1/0 us]
+> usb 1-1: usb suspend
+> 
+> 
+> and that's all.
 
-> - Memory hotplug is a heavy operation, so the overhead involved may be
->   high
+Okay, the next step is to try and find out exactly where the ehci 
+suspend procedure is hanging.  The patch below adds a bunch of 
+printouts at various spots throughout the procedure.  Let's see what 
+shows up.
 
-I'm curious.  Why do you say this?  Could you elaborate a bit on _how_
-memory hotplug is different from what you're doing here?  On powerpc, at
-least, we can do memory hotplug in areas as small as 16MB.  That's _way_
-smaller than what you're talking about here, and I would assume that
-smaller here means less overhead.
+Alan Stern
 
-> - Powering off memory is just one of the ways in which memory power could
->   be saved. The platform can also dynamically transition areas of memory
->   into a  content-preserving lower power state if it is not referenced
->   for a pre-defined threshold of time. In such a case, we would need a
->   mechanism to soft offline the pages - i.e, no new allocations to be
->   directed to that memory
 
-OK...  That's fine, but I think you're avoiding the question a bit.  You
-need to demonstrate that this 'regions' thing is necessary to do this,
-and that we can not get by just modifying what we have now.  For
-instance:
+ drivers/usb/host/ehci-hub.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-1. Have something like khugepaged try to find region-sized chunks of
-   memory to free.
-2. Modify the buddy allocator to be "picky" about when it lets you get 
-   access to these regions.
-3. Try to bunch up 'like allocations' like ZONE_MOVABLE does.
-
-(2) could easily mean that we take the MAX_ORDER-1 buddy pages and treat
-them differently.  If the page being freed is going (or trying to go) in
-to a low power state, insert freed pages on to the tail, or on a special
-list.  When satisfying allocations, we'd make some bit of effort to
-return pages which are powered on.
-
--- Dave
+Index: usb-3.0/drivers/usb/host/ehci-hub.c
+===================================================================
+--- usb-3.0.orig/drivers/usb/host/ehci-hub.c
++++ usb-3.0/drivers/usb/host/ehci-hub.c
+@@ -208,7 +208,7 @@ static int ehci_bus_suspend (struct usb_
+ 	int			mask;
+ 	int			changed;
+ 
+-	ehci_dbg(ehci, "suspend root hub\n");
++	ehci_info(ehci, "suspend root hub\n");
+ 
+ 	if (time_before (jiffies, ehci->next_statechange))
+ 		msleep(5);
+@@ -216,6 +216,7 @@ static int ehci_bus_suspend (struct usb_
+ 	del_timer_sync(&ehci->iaa_watchdog);
+ 
+ 	spin_lock_irq (&ehci->lock);
++ehci_info(ehci, "A\n");
+ 
+ 	/* Once the controller is stopped, port resumes that are already
+ 	 * in progress won't complete.  Hence if remote wakeup is enabled
+@@ -242,6 +243,7 @@ static int ehci_bus_suspend (struct usb_
+ 	}
+ 	ehci->command = ehci_readl(ehci, &ehci->regs->command);
+ 	ehci_work(ehci);
++ehci_info(ehci, "B\n");
+ 
+ 	/* Unlike other USB host controller types, EHCI doesn't have
+ 	 * any notion of "global" or bus-wide suspend.  The driver has
+@@ -285,6 +287,7 @@ static int ehci_bus_suspend (struct usb_
+ 			changed = 1;
+ 		}
+ 	}
++ehci_info(ehci, "C\n");
+ 
+ 	if (changed && ehci->has_hostpc) {
+ 		spin_unlock_irq(&ehci->lock);
+@@ -306,6 +309,7 @@ static int ehci_bus_suspend (struct usb_
+ 					"succeeded" : "failed");
+ 		}
+ 	}
++ehci_info(ehci, "D\n");
+ 
+ 	/* Apparently some devices need a >= 1-uframe delay here */
+ 	if (ehci->bus_suspended)
+@@ -314,6 +318,7 @@ static int ehci_bus_suspend (struct usb_
+ 	/* turn off now-idle HC */
+ 	ehci_halt (ehci);
+ 	hcd->state = HC_STATE_SUSPENDED;
++ehci_info(ehci, "E\n");
+ 
+ 	if (ehci->reclaim)
+ 		end_unlink_async(ehci);
+@@ -324,6 +329,7 @@ static int ehci_bus_suspend (struct usb_
+ 		mask &= ~STS_PCD;
+ 	ehci_writel(ehci, mask, &ehci->regs->intr_enable);
+ 	ehci_readl(ehci, &ehci->regs->intr_enable);
++ehci_info(ehci, "F\n");
+ 
+ 	ehci->next_statechange = jiffies + msecs_to_jiffies(10);
+ 	spin_unlock_irq (&ehci->lock);
+@@ -332,6 +338,7 @@ static int ehci_bus_suspend (struct usb_
+ 	 * want, and so we must delete any pending watchdog timer events.
+ 	 */
+ 	del_timer_sync(&ehci->watchdog);
++ehci_info(ehci, "G\n");
+ 	return 0;
+ }
+ 
