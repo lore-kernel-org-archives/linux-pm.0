@@ -1,14 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Question about expected behavior when PM runtime is
- disabled
-Date: Fri, 17 Jun 2011 11:08:15 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106171103020.2143-100000@iolanthe.rowland.org>
-References: <201106142201.35264.rjw@sisk.pl>
+Subject: Re: ASUS K53E fails to suspend if ehci_hcd is loaded
+Date: Fri, 17 Jun 2011 11:17:01 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1106171109370.2143-100000__25029.554431285$1308323970$gmane$org@iolanthe.rowland.org>
+References: <20110617145302.GD4307@belkar.wrar.name>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106142201.35264.rjw@sisk.pl>
+In-Reply-To: <20110617145302.GD4307@belkar.wrar.name>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,31 +17,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: Andrey Rahmatullin <wrar@wrar.name>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 14 Jun 2011, Rafael J. Wysocki wrote:
+On Fri, 17 Jun 2011, Andrey Rahmatullin wrote:
 
-> > Then you suggest:
+> On Fri, Jun 17, 2011 at 10:14:16AM -0400, Alan Stern wrote:
+> > > > Okay, the next step is to try and find out exactly where the ehci 
+> > > > suspend procedure is hanging.  The patch below adds a bunch of 
+> > > > printouts at various spots throughout the procedure.  Let's see what 
+> > > > shows up.
+> > > I don't see any of these new messages.
+> > Are you sure the new ehci-hcd.ko module was loaded when you ran the 
+> > test?
+> Yes. I'll triple-check though.
+>  
+> > Another thing you should do when testing:
 > > 
-> > 	Call pm_runtime_disable after .suspend;
+> > 	echo 9 >/proc/sys/kernel/printk
 > > 
-> > 	Call pm_runtime_get_noresume and pm_runtime_enable before
-> > 	.resume;
-> > 
-> > 	Call pm_runtime_put_sync after .complete.
-> > 
-> > Right?
-> 
-> Yes, that would be resonable IMO.
+> > (Or equivalently, Alt-SysRq-9 on the keyboard.)  I should have
+> > mentioned that before sending the test patch.  Oh well....
+> I used dmesg -n8.
 
-This turns out to be harder than it looks.  If an error occurs, we may
-run the complete callback for devices that never were suspended or
-resumed and hence never had their usage_count incremented.  How can we
-tell that we need to skip the pm_runtime_put_sync for these devices?
+Okay, then you must have seen all the verbose PM debugging messages.  
+Which means the last suspend callback to run was for the 1-1 device
+rather than the usb1 device, right?
 
-Would it be okay to call pm_runtime_put_sync immediately after the
-resume callback instead of after complete?
+If so, it means I was looking in the wrong place.  1-1 is the internal
+rate-matching hub, whereas usb1 is the EHCI controller's root hub.
+
+Can you add your own dev_info() statements to the hub_quiesce() and 
+hub_suspend() routines in drivers/usb/core/hub.c, or should I send a 
+patch?
 
 Alan Stern
