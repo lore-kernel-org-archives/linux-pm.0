@@ -1,12 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH 2/2] PM: fix async resume following suspend
-	failure
-Date: Fri, 17 Jun 2011 16:08:22 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106171606430.2143-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: calling runtime PM from system PM methods
+Date: Fri, 17 Jun 2011 23:29:36 +0200
+Message-ID: <201106172329.37087.rjw__42636.7915854373$1308346298$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106171554510.2143-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1106171554510.2143-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,90 +17,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The PM core doesn't handle suspend failures correctly when it comes to
-asynchronously suspended devices.  These devices are moved onto the
-dpm_suspended_list as soon as the corresponding async thread is
-started up, and they remain on the list even if they fail to suspend
-or the sleep transition is cancelled before they get suspended.  As a
-result, when the PM core unwinds the transition, it tries to resume
-the devices even though they were never suspended.
+On Friday, June 17, 2011, Alan Stern wrote:
+> On Fri, 17 Jun 2011, Rafael J. Wysocki wrote:
+> 
+> > Having considered that a bit more I see that, in fact, commit
+> > e8665002477f0278f84f898145b1f141ba26ee26 (PM: Allow pm_runtime_suspend() to
+> > succeed during system suspend) has introduced at least one regression.
+> > Namely, the PCI bus type runs pm_runtime_resume() in its .prepare()
+> > callback to guarantee that devices will be in a well known state before
+> > the PCI .suspend() and .suspend_noirq() callbacks are executed.
+> > Unfortunately, after commit e8665002477f0278f84f898145b1f141ba26ee26 this
+> > isn't valid any more, because devices can be runtime-suspend after the
+> > pm_runtime_resume() in .prepare() has run.
+> > 
+> > USB seems to do something similar in choose_wakeup().
+> > 
+> > So, either the both of these subsystems should be modified to use
+> > pm_runtime_get_sync() and then pm_runtime_put_<something>() some time
+> > during resume, or we should revert commit e8665002477f0278f84f898145b1f141ba26ee26.
+> 
+> pm_runtime_put_noidle would be appropriate.
+> 
+> > Quite frankly, which shouldn't be a surprise to anyone at this point, I'd
+> > prefer to revert that commit for 3.0.
+> 
+> Maybe we can compromise.  Instead of reverting that commit outright,
+> put the get_noresume just before the suspend callback and put the
+> put_sync just after the resume callback.
 
-This patch (as1474) fixes the problem by adding a new "is_suspended"
-flag to dev_pm_info.  Devices are resumed only if the flag is set.
+That wouldn't fix the PCI problem, though, because it would leave a small
+window in which the device could be suspended after the pm_runtime_resume()
+in pci_pm_prepare() had run.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-
----
-
-Rafael, you may want these two patches to go into the stable kernels.  
-I'll leave that decision to you.
-
-
-
- drivers/base/power/main.c |    8 +++++---
- include/linux/pm.h        |    1 +
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-Index: usb-3.0/include/linux/pm.h
-===================================================================
---- usb-3.0.orig/include/linux/pm.h
-+++ usb-3.0/include/linux/pm.h
-@@ -426,6 +426,7 @@ struct dev_pm_info {
- 	unsigned int		can_wakeup:1;
- 	unsigned int		async_suspend:1;
- 	bool			is_prepared:1;	/* Owned by the PM core */
-+	bool			is_suspended:1;	/* Ditto */
- 	spinlock_t		lock;
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
-Index: usb-3.0/drivers/base/power/main.c
-===================================================================
---- usb-3.0.orig/drivers/base/power/main.c
-+++ usb-3.0/drivers/base/power/main.c
-@@ -57,7 +57,7 @@ static int async_error;
-  */
- void device_pm_init(struct device *dev)
- {
--	dev->power.is_prepared = false;
-+	dev->power.is_prepared = dev->power.is_suspended = false;
- 	init_completion(&dev->power.completion);
- 	complete_all(&dev->power.completion);
- 	dev->power.wakeup = NULL;
-@@ -552,6 +552,7 @@ static int device_resume(struct device *
- 	}
- 
-  End:
-+	dev->power.is_suspended = false;
- 	device_unlock(dev);
- 	complete_all(&dev->power.completion);
- 
-@@ -596,7 +597,7 @@ void dpm_resume(pm_message_t state)
- 
- 	list_for_each_entry(dev, &dpm_suspended_list, power.entry) {
- 		INIT_COMPLETION(dev->power.completion);
--		if (is_async(dev)) {
-+		if (is_async(dev) && dev->power.is_suspended) {
- 			get_device(dev);
- 			async_schedule(async_resume, dev);
- 		}
-@@ -605,7 +606,7 @@ void dpm_resume(pm_message_t state)
- 	while (!list_empty(&dpm_suspended_list)) {
- 		dev = to_device(dpm_suspended_list.next);
- 		get_device(dev);
--		if (!is_async(dev)) {
-+		if (!is_async(dev) && dev->power.is_suspended) {
- 			int error;
- 
- 			mutex_unlock(&dpm_list_mtx);
-@@ -881,6 +882,7 @@ static int __device_suspend(struct devic
- 	}
- 
-  End:
-+	dev->power.is_suspended = !error;
- 	device_unlock(dev);
- 	complete_all(&dev->power.completion);
- 
+Thanks,
+Rafael
