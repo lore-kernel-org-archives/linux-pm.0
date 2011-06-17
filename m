@@ -1,15 +1,19 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH V1 5/7] cpuidle: (POWER) cpuidle driver
-	for pSeries
-Date: Fri, 17 Jun 2011 14:36:38 +1000
-Message-ID: <1308285398.32158.12.camel__760.086594573472$1308285466$gmane$org@pasglop>
-References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
-	<20110607163012.6848.19268.stgit@tringupt.in.ibm.com>
+From: Ankita Garg <ankita@in.ibm.com>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Fri, 17 Jun 2011 15:33:00 +0530
+Message-ID: <20110617100300.GA24954__22136.5663259805$1308305068$gmane$org@in.ibm.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110613134701.2b23b8d8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20110616042044.GA28563@in.ibm.com>
+	<1308240240.11430.115.camel@nimitz>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110607163012.6848.19268.stgit@tringupt.in.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <1308240240.11430.115.camel@nimitz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,351 +23,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2011-06-07 at 22:00 +0530, Trinabh Gupta wrote:
+Hi,
 
-> +static int snooze_loop(struct cpuidle_device *dev,
-> +			struct cpuidle_driver *drv,
-> +			int index)
-> +{
-> +	unsigned long in_purr, out_purr;
-> +	ktime_t kt_before, kt_after;
-> +	s64 usec_delta;
-> +
-> +	/*
-> +	 * Indicate to the HV that we are idle. Now would be
-> +	 * a good time to find other work to dispatch.
-> +	 */
-> +	get_lppaca()->idle = 1;
-> +	get_lppaca()->donate_dedicated_cpu = 1;
-> +	in_purr = mfspr(SPRN_PURR);
-> +
-> +	kt_before = ktime_get_real();
-
-Don't you want to timestamp before you tell the HV that you are idle ?
-Or is the above stuff only polled by phyp when partition interrupts are
-enabled ?
-
-> +	local_irq_enable();
-> +	set_thread_flag(TIF_POLLING_NRFLAG);
-> +	while (!need_resched()) {
-> +		ppc64_runlatch_off();
-> +		HMT_low();
-> +		HMT_very_low();
-> +	}
-> +	HMT_medium();
-> +	clear_thread_flag(TIF_POLLING_NRFLAG);
-> +	smp_mb();
-> +	local_irq_disable();
-> +
-> +	kt_after = ktime_get_real();
-> +	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
-> +
-> +	out_purr = mfspr(SPRN_PURR);
-> +	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-> +	get_lppaca()->donate_dedicated_cpu = 0;
-> +	get_lppaca()->idle = 0;
-> +
-> +	dev->last_residency = (int)usec_delta;
-> +
-> +	return index;
-> +}
-> +
-> +static int dedicated_cede_loop(struct cpuidle_device *dev,
-> +				struct cpuidle_driver *drv,
-> +				int index)
-> +{
-> +	unsigned long in_purr, out_purr;
-> +	ktime_t kt_before, kt_after;
-> +	s64 usec_delta;
-> +
-> +	/*
-> +	 * Indicate to the HV that we are idle. Now would be
-> +	 * a good time to find other work to dispatch.
-> +	 */
-> +	get_lppaca()->idle = 1;
-> +	get_lppaca()->donate_dedicated_cpu = 1;
-> +	in_purr = mfspr(SPRN_PURR);
-> +
-> +	kt_before = ktime_get_real();
-
-There's a bit too much code duplication for my taste here between the
-two functions. Not sure if it can be helped, maybe with some inlines
-for the prolog/epilogue ... Looks like stuff that's easy to "fix" in one
-place and forget the other...
-
-> +	ppc64_runlatch_off();
-> +	HMT_medium();
-> +	cede_processor();
-> +
-> +	kt_after = ktime_get_real();
-> +	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
-> +
-> +	out_purr = mfspr(SPRN_PURR);
-> +	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-> +	get_lppaca()->donate_dedicated_cpu = 0;
-> +	get_lppaca()->idle = 0;
-> +
-> +	dev->last_residency = (int)usec_delta;
-> +
-> +	return index;
-> +}
-> +
-> +static int shared_cede_loop(struct cpuidle_device *dev,
-> +			struct cpuidle_driver *drv,
-> +			int index)
-> +{
-> +	unsigned long in_purr, out_purr;
-> +	ktime_t kt_before, kt_after;
-> +	s64 usec_delta;
-> +
-> +	/*
-> +	 * Indicate to the HV that we are idle. Now would be
-> +	 * a good time to find other work to dispatch.
-> +	 */
-> +	get_lppaca()->idle = 1;
-> +	get_lppaca()->donate_dedicated_cpu = 1;
-> +	in_purr = mfspr(SPRN_PURR);
-> +
-> +	kt_before = ktime_get_real();
-> +	/*
-> +	 * Yield the processor to the hypervisor.  We return if
-> +	 * an external interrupt occurs (which are driven prior
-> +	 * to returning here) or if a prod occurs from another
-> +	 * processor. When returning here, external interrupts
-> +	 * are enabled.
-> +	 */
-> +	cede_processor();
-> +
-> +	kt_after = ktime_get_real();
-> +
-> +	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
-> +
-> +	out_purr = mfspr(SPRN_PURR);
-> +	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-> +	get_lppaca()->donate_dedicated_cpu = 0;
-> +	get_lppaca()->idle = 0;
-> +
-> +	dev->last_residency = (int)usec_delta;
-> +
-> +	return index;
-> +}
-> +
-> +/*
-> + * States for dedicated partition case.
-> + */
-> +static struct cpuidle_state dedicated_states[MAX_IDLE_STATE_COUNT] = {
-> +	{ /* Snooze */
-> +		.name = "snooze",
-> +		.desc = "snooze",
-> +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> +		.exit_latency = 0,
-> +		.target_residency = 0,
-> +		.enter = &snooze_loop },
-> +	{ /* CEDE */
-> +		.name = "CEDE",
-> +		.desc = "CEDE",
-> +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> +		.exit_latency = 1,
-> +		.target_residency = 10,
-> +		.enter = &dedicated_cede_loop },
-> +};
-> +
-> +/*
-> + * States for shared partition case.
-> + */
-> +static struct cpuidle_state shared_states[MAX_IDLE_STATE_COUNT] = {
-> +	{ /* Shared Cede */
-> +		.name = "Shared Cede",
-> +		.desc = "Shared Cede",
-> +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> +		.exit_latency = 0,
-> +		.target_residency = 0,
-> +		.enter = &shared_cede_loop },
-> +};
-> +
-> +int pseries_notify_cpuidle_add_cpu(int cpu)
-> +{
-> +	struct cpuidle_device *dev =
-> +			per_cpu_ptr(pseries_idle_cpuidle_devices, cpu);
-> +	if (dev && cpuidle_get_driver()) {
-> +		cpuidle_disable_device(dev);
-> +		cpuidle_enable_device(dev);
-> +	}
-> +	return 0;
-> +}
-> +
-> +/*
-> + * pseries_idle_cpuidle_driver_init()
-> + */
-> +static int pseries_idle_cpuidle_driver_init(void)
-> +{
-> +	int cstate;
-> +	struct cpuidle_driver *drv = &pseries_idle_driver;
-> +
-> +	drv->state_count = 0;
-> +
-> +	for (cstate = 0; cstate < MAX_IDLE_STATE_COUNT; ++cstate) {
-> +
-> +		if (cstate > max_cstate)
-> +			break;
-> +
-> +		/* is the state not enabled? */
-> +		if (cpuidle_state_table[cstate].enter == NULL)
-> +			continue;
-> +
-> +		drv->states[drv->state_count] =	/* structure copy */
-> +			cpuidle_state_table[cstate];
-> +
-> +		if (cpuidle_state_table == dedicated_states)
-> +			drv->states[drv->state_count].target_residency =
-> +				__get_cpu_var(smt_snooze_delay);
-> +
-> +		drv->state_count += 1;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/* pseries_idle_devices_uninit(void)
-> + * unregister cpuidle devices and de-allocate memory
-> + */
-> +static void pseries_idle_devices_uninit(void)
-> +{
-> +	int i;
-> +	struct cpuidle_device *dev;
-> +
-> +	for_each_possible_cpu(i) {
-> +		dev = per_cpu_ptr(pseries_idle_cpuidle_devices, i);
-> +		cpuidle_unregister_device(dev);
-> +	}
-> +
-> +	free_percpu(pseries_idle_cpuidle_devices);
-> +	return;
-> +}
-> +
-> +/* pseries_idle_devices_init()
-> + * allocate, initialize and register cpuidle device
-> + */
-> +static int pseries_idle_devices_init(void)
-> +{
-> +	int i;
-> +	struct cpuidle_driver *drv = &pseries_idle_driver;
-> +	struct cpuidle_device *dev;
-> +
-> +	pseries_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
-> +	if (pseries_idle_cpuidle_devices == NULL)
-> +		return -ENOMEM;
-> +
-> +	for_each_possible_cpu(i) {
-> +		dev = per_cpu_ptr(pseries_idle_cpuidle_devices, i);
-> +		dev->state_count = drv->state_count;
-> +		dev->cpu = i;
-> +		if (cpuidle_register_device(dev)) {
-> +			printk(KERN_DEBUG "cpuidle_register_device %d failed!\n",
-> +				 i);
-> +			return -EIO;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * pseries_idle_probe()
-> + * Choose state table for shared versus dedicated partition
-> + */
-> +static int pseries_idle_probe(void)
-> +{
-> +	if (max_cstate == 0) {
-> +		printk(KERN_DEBUG "pseries processor idle disabled.\n");
-> +		return -EPERM;
-> +	}
-> +
-> +	if (!firmware_has_feature(FW_FEATURE_SPLPAR)) {
-> +		printk(KERN_DEBUG "Using default idle\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	if (get_lppaca()->shared_proc)
-> +		cpuidle_state_table = shared_states;
-> +	else
-> +		cpuidle_state_table = dedicated_states;
-> +
-> +	return 0;
-> +}
-> +
-> +static int __init pseries_processor_idle_init(void)
-> +{
-> +	int retval;
-> +
-> +	retval = pseries_idle_probe();
-> +	if (retval)
-> +		return retval;
-> +
-> +	pseries_idle_cpuidle_driver_init();
-> +	retval = cpuidle_register_driver(&pseries_idle_driver);
-> +	if (retval) {
-> +		printk(KERN_DEBUG "Registration of pseries driver failed.\n");
-> +		return retval;
-> +	}
-> +
-> +	retval = pseries_idle_devices_init();
-> +	if (retval) {
-> +		pseries_idle_devices_uninit();
-> +		cpuidle_unregister_driver(&pseries_idle_driver);
-> +		return retval;
-> +	}
-> +
-> +	printk(KERN_DEBUG "pseries_idle_driver registered\n");
-> +
-> +	return 0;
-> +}
-> +
-> +device_initcall(pseries_processor_idle_init);
-> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-> index e9f6d28..7c60380 100644
-> --- a/arch/powerpc/platforms/pseries/pseries.h
-> +++ b/arch/powerpc/platforms/pseries/pseries.h
-> @@ -56,4 +56,7 @@ extern struct device_node *dlpar_configure_connector(u32);
->  extern int dlpar_attach_node(struct device_node *);
->  extern int dlpar_detach_node(struct device_node *);
->  
-> +/* Snooze Delay, pseries_idle */
-> +DECLARE_PER_CPU(long, smt_snooze_delay);
-> +
->  #endif /* _PSERIES_PSERIES_H */
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index 593acce..6893a0c 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -584,9 +584,6 @@ static int __init pSeries_probe(void)
->  	return 1;
->  }
->  
-> -
-> -DECLARE_PER_CPU(long, smt_snooze_delay);
-> -
->  static void pseries_dedicated_idle_sleep(void)
->  { 
->  	unsigned int cpu = smp_processor_id();
-> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-> index fbffd7e..2e46883 100644
-> --- a/arch/powerpc/platforms/pseries/smp.c
-> +++ b/arch/powerpc/platforms/pseries/smp.c
-> @@ -150,6 +150,7 @@ static void __devinit smp_xics_setup_cpu(int cpu)
->  	set_cpu_current_state(cpu, CPU_STATE_ONLINE);
->  	set_default_offline_state(cpu);
->  #endif
-> +	pseries_notify_cpuidle_add_cpu(cpu);
->  }
->  
->  static int __devinit smp_pSeries_kick_cpu(int nr)
+On Thu, Jun 16, 2011 at 09:04:00AM -0700, Dave Hansen wrote:
+> On Thu, 2011-06-16 at 09:50 +0530, Ankita Garg wrote:
+> > - Correctly predicting memory pressure is difficult and thereby being
+> >   able to online the required pages at the right time could be a
+> >   challenge
 > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> For the sake of this discussion, let's forget about this.  There are
+> certainly a lot of scenarios where turning memory on/off is necessary
+> and useful _without_ knowing what kind of load the system is under.  "We
+> just shut down our huge database, and now have 99% of RAM free" is a
+> fine, dumb, metric.  We don't have to have magical pony memory pressure
+> detection as a prerequisite.
+>
+
+I agree, but when using memory hotplug for managing memory power, it
+would be important to correctly predict pressure so that performance is
+not affected too much. Also, especially since memory would be offlined
+only when memory is mostly idle. While in the case of CPU, a user space
+daemon can automatically online/offline cpus based on load, but in the
+case of memory, I guess a kernel thread that maintains global statistics
+might have to be used.
+
+> > - Memory hotplug is a heavy operation, so the overhead involved may be
+> >   high
+> 
+> I'm curious.  Why do you say this?  Could you elaborate a bit on _how_
+> memory hotplug is different from what you're doing here?  On powerpc, at
+> least, we can do memory hotplug in areas as small as 16MB.  That's _way_
+> smaller than what you're talking about here, and I would assume that
+> smaller here means less overhead.
+> 
+
+To save any power, the entire memory unit (like a bank for PASR) will
+have to be turned off (and hence offlined). The overhead in memory
+hotplug is to migrate/free pages belonging to the sections and
+creating/deleting the various memory management structures. Instead, if
+we could have a framework like you mentiond below that could target
+allocations away from certain areas of memory, the migration step will
+not be needed. Further, the hardware would just turn off the memory and
+the OS would retain all the memory management structures.
+
+We intend to use memory regions to group the memory together into units
+that can be independently power managed. We propose to achieve this by
+re-ordering zones within the zonelist, such that zones from regions that
+are the target for evacuation would be at the tail of the zonelist and
+thus will not be prefered for allocations.
+
+> > - Powering off memory is just one of the ways in which memory power could
+> >   be saved. The platform can also dynamically transition areas of memory
+> >   into a  content-preserving lower power state if it is not referenced
+> >   for a pre-defined threshold of time. In such a case, we would need a
+> >   mechanism to soft offline the pages - i.e, no new allocations to be
+> >   directed to that memory
+> 
+> OK...  That's fine, but I think you're avoiding the question a bit.  You
+> need to demonstrate that this 'regions' thing is necessary to do this,
+> and that we can not get by just modifying what we have now.  For
+> instance:
+> 
+> 1. Have something like khugepaged try to find region-sized chunks of
+>    memory to free.
+> 2. Modify the buddy allocator to be "picky" about when it lets you get 
+>    access to these regions.
+
+Managing pages belonging to multiple regions on the same buddy list
+might make the buddy allocator more complex. But thanks for suggesting
+the different approaches, will looking into these and get back to you.
+
+> 3. Try to bunch up 'like allocations' like ZONE_MOVABLE does.
+> 
+> (2) could easily mean that we take the MAX_ORDER-1 buddy pages and treat
+> them differently.  If the page being freed is going (or trying to go) in
+> to a low power state, insert freed pages on to the tail, or on a special
+> list.  When satisfying allocations, we'd make some bit of effort to
+> return pages which are powered on.
+> 
+
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs,
+Bangalore, India
