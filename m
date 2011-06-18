@@ -1,13 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: calling runtime PM from system PM methods
-Date: Fri, 17 Jun 2011 23:29:36 +0200
-Message-ID: <201106172329.37087.rjw__42636.7915854373$1308346298$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1106171554510.2143-100000@iolanthe.rowland.org>
+From: Brad Campbell <brad@wasp.net.au>
+Subject: Re: 32 bit s2disk on 64 bit kernel
+Date: Sat, 18 Jun 2011 08:52:58 +0800
+Message-ID: <4DFBF6EA.30609@wasp.net.au>
+References: <4DFA1DA5.1010502@wasp.net.au> <4DFA96CB.8080806@wasp.net.au>
+	<4DFAC174.7040904@wasp.net.au> <201106172125.02276.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106171554510.2143-100000@iolanthe.rowland.org>
+In-Reply-To: <201106172125.02276.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,41 +18,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 17, 2011, Alan Stern wrote:
-> On Fri, 17 Jun 2011, Rafael J. Wysocki wrote:
-> 
-> > Having considered that a bit more I see that, in fact, commit
-> > e8665002477f0278f84f898145b1f141ba26ee26 (PM: Allow pm_runtime_suspend() to
-> > succeed during system suspend) has introduced at least one regression.
-> > Namely, the PCI bus type runs pm_runtime_resume() in its .prepare()
-> > callback to guarantee that devices will be in a well known state before
-> > the PCI .suspend() and .suspend_noirq() callbacks are executed.
-> > Unfortunately, after commit e8665002477f0278f84f898145b1f141ba26ee26 this
-> > isn't valid any more, because devices can be runtime-suspend after the
-> > pm_runtime_resume() in .prepare() has run.
-> > 
-> > USB seems to do something similar in choose_wakeup().
-> > 
-> > So, either the both of these subsystems should be modified to use
-> > pm_runtime_get_sync() and then pm_runtime_put_<something>() some time
-> > during resume, or we should revert commit e8665002477f0278f84f898145b1f141ba26ee26.
-> 
-> pm_runtime_put_noidle would be appropriate.
-> 
-> > Quite frankly, which shouldn't be a surprise to anyone at this point, I'd
-> > prefer to revert that commit for 3.0.
-> 
-> Maybe we can compromise.  Instead of reverting that commit outright,
-> put the get_noresume just before the suspend callback and put the
-> put_sync just after the resume callback.
+On 18/06/11 03:25, Rafael J. Wysocki wrote:
+>>
+>> Scratch that. I compiled up suspend-utils on a 64 bit machine with an added -all-static ld flag and
+>> it's working great.
+>>
+>> I would have thought that with the proliferation of 64 bit procs in laptops that this configuration
+>> would be more prevalent, but perhaps I'm an oddball.
+>
+> Do you mean 32-bit user space with 64-bit kernel?
 
-That wouldn't fix the PCI problem, though, because it would leave a small
-window in which the device could be suspended after the pm_runtime_resume()
-in pci_pm_prepare() had run.
+Yes.
 
-Thanks,
-Rafael
+It turns out Virtualbox can't cope with a 32bit userspace on a 64bit kernel either (which is no 
+bother as I now have a kvm capable CPU, and kvm copes nicely).
+
+I have it working, but of course it's too much of a pain to get splashy & directfb and the rest of 
+the playground fun to compile and link statically. The text screen is enough for me anyway.
+
+Regards,
+Brad
+-- 
+Dolphins are so intelligent that within a few weeks they can
+train Americans to stand at the edge of the pool and throw them
+fish.
