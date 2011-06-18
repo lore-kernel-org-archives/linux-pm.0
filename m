@@ -1,24 +1,14 @@
-From: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Fri, 17 Jun 2011 21:08:56 -0700
-Message-ID: <20110617210856.1dd3b482__44993.0994226181$1308373349$gmane$org@infradead.org>
-References: <20110610165529.GC2230@linux.vnet.ibm.com>
-	<20110610170535.GC25774@srcf.ucam.org>
-	<20110610171939.GE2230@linux.vnet.ibm.com>
-	<20110610172307.GA27630@srcf.ucam.org>
-	<20110610175248.GF2230@linux.vnet.ibm.com>
-	<20110610180807.GB28500@srcf.ucam.org>
-	<20110610184738.GG2230@linux.vnet.ibm.com>
-	<20110610192329.GA30496@srcf.ucam.org>
-	<20110610193713.GJ2230@linux.vnet.ibm.com>
-	<20110610200233.5ddd5a31@infradead.org>
-	<20110615165321.GC23151@in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 32 bit s2disk on 64 bit kernel
+Date: Sat, 18 Jun 2011 12:44:09 +0200
+Message-ID: <201106181244.09906.rjw@sisk.pl>
+References: <4DFA1DA5.1010502@wasp.net.au> <201106172125.02276.rjw@sisk.pl>
+	<4DFBF6EA.30609@wasp.net.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110615165321.GC23151@in.ibm.com>
+In-Reply-To: <4DFBF6EA.30609@wasp.net.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,17 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Andrew Morton <akpm@linux-foundation.org>, paulmck@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Brad Campbell <brad@wasp.net.au>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 15 Jun 2011 22:23:21 +0530
-Ankita Garg <ankita@in.ibm.com> wrote:
+On Saturday, June 18, 2011, Brad Campbell wrote:
+> On 18/06/11 03:25, Rafael J. Wysocki wrote:
+> >>
+> >> Scratch that. I compiled up suspend-utils on a 64 bit machine with an added -all-static ld flag and
+> >> it's working great.
+> >>
+> >> I would have thought that with the proliferation of 64 bit procs in laptops that this configuration
+> >> would be more prevalent, but perhaps I'm an oddball.
+> >
+> > Do you mean 32-bit user space with 64-bit kernel?
+> 
+> Yes.
 
-> The maximum order in buddy allocator is by default 1k pages. Isn't
-> this too small a granularity to track blocks that might comprise a
-> PASR unit? 
+It's not too common as far as I can tell.  User space can get some
+advantage from 64-bitness too. :-)
 
-we had to bump the default up a little, but not all that much
+> It turns out Virtualbox can't cope with a 32bit userspace on a 64bit kernel
+> either (which is no bother as I now have a kvm capable CPU, and kvm copes nicely).
+> 
+> I have it working, but of course it's too much of a pain to get splashy & directfb
+> and the rest of the playground fun to compile and link statically. The text screen
+> is enough for me anyway.
 
-(like 4x)
+Good, thanks for your feedback!
+
+Rafael
