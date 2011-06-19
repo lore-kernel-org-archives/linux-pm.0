@@ -1,15 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] PM: fix async resume following suspend
-	failure
-Date: Sun, 19 Jun 2011 21:46:52 +0200
-Message-ID: <201106192146.52941.rjw__36858.5091121078$1308512800$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1106182134290.3523-100000@netrider.rowland.org>
-	<201106191547.15512.rjw@sisk.pl>
+Subject: [PATCH] PCI / PM: Block races between runtime PM and
+	system sleep
+Date: Sun, 19 Jun 2011 21:49:19 +0200
+Message-ID: <201106192149.19401.rjw__1740.68964920497$1308512946$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106191547.15512.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,34 +16,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, June 19, 2011, Rafael J. Wysocki wrote:
-> On Sunday, June 19, 2011, Alan Stern wrote:
-> > On Sat, 18 Jun 2011, Rafael J. Wysocki wrote:
-> > 
-> > > > Okay; I should have been more careful.  Thanks for fixing this up.
-> > > 
-> > > No problem. :-)
-> > > 
-> > > Appended is what I'm going to push to Linus.
-> > > 
-> > > Thanks,
-> > > Rafael
-> > > 
-> > > ---
-> > > From: Alan Stern <stern@rowland.harvard.edu>
-> > > Subject: PM: Fix async resume following suspend failure
-> > 
-> > This looks fine.  It's a little hard to test; you have to create an 
-> > artificial suspend failure.  Have you tried doing that?
-> 
-> Not yet, but I have a plan to do that. :-)
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-It appears to work.  I've tested it using a fake battery module whose
-.suspend() always returns error code.
+After commit e8665002477f0278f84f898145b1f141ba26ee26
+(PM: Allow pm_runtime_suspend() to succeed during system suspend) it
+is possible that a device resumed by the pm_runtime_resume(dev) in
+pci_pm_prepare() will be suspended immediately from a work item,
+timer function or otherwise, defeating the very purpose of calling
+pm_runtime_resume(dev) from there.  To prevent that from happening
+it is necessary to increment the runtime PM usage counter of the
+device by replacing pm_runtime_resume() with pm_runtime_get_sync().
+Moreover, the incremented runtime PM usage counter has to be
+decremented by the corresponding pci_pm_complete(), via
+pm_runtime_put_noidle().
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: stable@kernel.org
+---
+ drivers/pci/pci-driver.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/pci/pci-driver.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -624,7 +624,7 @@ static int pci_pm_prepare(struct device
+ 	 * system from the sleep state, we'll have to prevent it from signaling
+ 	 * wake-up.
+ 	 */
+-	pm_runtime_resume(dev);
++	pm_runtime_get_sync(dev);
+ 
+ 	if (drv && drv->pm && drv->pm->prepare)
+ 		error = drv->pm->prepare(dev);
+@@ -638,6 +638,8 @@ static void pci_pm_complete(struct devic
+ 
+ 	if (drv && drv->pm && drv->pm->complete)
+ 		drv->pm->complete(dev);
++
++	pm_runtime_put_noidle(dev);
+ }
+ 
+ #else /* !CONFIG_PM_SLEEP */
