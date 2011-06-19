@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: calling runtime PM from system PM methods
-Date: Sun, 19 Jun 2011 21:36:51 +0200
-Message-ID: <201106192136.51572.rjw__42269.3223845728$1308512345$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1106191042510.11375-100000@netrider.rowland.org>
+Subject: Re: [PATCH 2/2] PM: fix async resume following suspend
+	failure
+Date: Sun, 19 Jun 2011 21:46:52 +0200
+Message-ID: <201106192146.52941.rjw__36858.5091121078$1308512800$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106182134290.3523-100000@netrider.rowland.org>
+	<201106191547.15512.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106191042510.11375-100000@netrider.rowland.org>
+In-Reply-To: <201106191547.15512.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,109 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, June 19, 2011, Alan Stern wrote:
-> On Sun, 19 Jun 2011, Rafael J. Wysocki wrote:
-> 
-> > Well, that was kind of difficult to debug, but not impossible. :-)
+On Sunday, June 19, 2011, Rafael J. Wysocki wrote:
+> On Sunday, June 19, 2011, Alan Stern wrote:
+> > On Sat, 18 Jun 2011, Rafael J. Wysocki wrote:
 > > 
-> > The problem here turns out to be related to the SCSI subsystem.
-> > Namely, when the AHCI controller is suspended, it uses the SCSI error
-> > handling mechanism for scheduling the suspend operation (I'm still at a little
-> > loss why that is necessary, but Tejun says it is :-)).  This (after several
-> > convoluted operations) causes scsi_error_handler() to be woken up and
-> > it calls scsi_autopm_get_host(shost), which returns error code (-EAGAIN),
-> > because the runtime PM has been disabled at the host level.
+> > > > Okay; I should have been more careful.  Thanks for fixing this up.
+> > > 
+> > > No problem. :-)
+> > > 
+> > > Appended is what I'm going to push to Linus.
+> > > 
+> > > Thanks,
+> > > Rafael
+> > > 
+> > > ---
+> > > From: Alan Stern <stern@rowland.harvard.edu>
+> > > Subject: PM: Fix async resume following suspend failure
+> > 
+> > This looks fine.  It's a little hard to test; you have to create an 
+> > artificial suspend failure.  Have you tried doing that?
 > 
-> Oh no.  I was afraid something like this was going to happen 
-> eventually.
-> 
-> It's clear that we don't want runtime PM kicking in while the SCSI 
-> error handler is running.  That's why I added the 
-> scsi_autopm_get_host().  But this also means we will run into trouble 
-> if the error handler needs to be used during a power transition.
-> 
-> > This happens because scsi_autopm_get_host() uses
-> > pm_runtime_get_sync(&shost->shost_gendev) and returns error code when
-> > shost_gendev.power.disable_depth is nonzero.
-> 
-> Maybe get_sync doesn't need to return an error if the runtime status is 
-> already ACTIVE.  I'm not sure about this; it's just an idea...
+> Not yet, but I have a plan to do that. :-)
 
-Well, if disable_depth > 0, ACTIVE isn't really well defined.  As I said,
-though, I think it makes sense for pm_runtime_get_sync() to return 0 when
-disable_depth > 0, because the grabbing of a reference is successful anyway and
-the caller may assume that the device is accessible in that case.
-
-In the meantime I rethought the __pm_runtime_disable() part of my previous
-patch and I now think it's not necessary to complicate it any more.  Of course,
-we need not check if runtime resume is pending in __device_suspend(), because
-we've done it already in dpm_prepare(), but the barrier part should better be
-done in there too.
-
-Updated patch is appended.
+It appears to work.  I've tested it using a fake battery module whose
+.suspend() always returns error code.
 
 Thanks,
 Rafael
-
----
- drivers/base/power/main.c    |    6 ++++++
- drivers/base/power/runtime.c |   10 ++++++----
- 2 files changed, 12 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -521,6 +521,9 @@ static int device_resume(struct device *
- 	if (!dev->power.is_suspended)
- 		goto Unlock;
- 
-+	pm_runtime_get_noresume(dev);
-+	pm_runtime_enable(dev);
-+
- 	if (dev->pwr_domain) {
- 		pm_dev_dbg(dev, state, "power domain ");
- 		error = pm_op(dev, &dev->pwr_domain->ops, state);
-@@ -557,6 +560,7 @@ static int device_resume(struct device *
- 
-  End:
- 	dev->power.is_suspended = false;
-+	pm_runtime_put_noidle(dev);
- 
-  Unlock:
- 	device_unlock(dev);
-@@ -896,6 +900,8 @@ static int __device_suspend(struct devic
- 
- 	if (error)
- 		async_error = error;
-+	else if (dev->power.is_suspended)
-+		__pm_runtime_disable(dev, false);
- 
- 	return error;
- }
-Index: linux-2.6/drivers/base/power/runtime.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -455,12 +455,14 @@ static int rpm_resume(struct device *dev
- 	dev_dbg(dev, "%s flags 0x%x\n", __func__, rpmflags);
- 
-  repeat:
--	if (dev->power.runtime_error)
-+	if (dev->power.runtime_error) {
- 		retval = -EINVAL;
--	else if (dev->power.disable_depth > 0)
--		retval = -EAGAIN;
--	if (retval)
- 		goto out;
-+	} else if (dev->power.disable_depth > 0) {
-+		if (!(rpmflags & RPM_GET_PUT))
-+			retval = -EAGAIN;
-+		goto out;
-+	}
- 
- 	/*
- 	 * Other scheduled or pending requests need to be canceled.  Small
