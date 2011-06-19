@@ -1,13 +1,13 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: calling runtime PM from system PM methods
-Date: Sun, 19 Jun 2011 11:01:06 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106191042510.11375-100000__35832.2832304568$1308495908$gmane$org@netrider.rowland.org>
-References: <201106191604.11074.rjw@sisk.pl>
+Date: Sun, 19 Jun 2011 21:36:51 +0200
+Message-ID: <201106192136.51572.rjw__42269.3223845728$1308512345$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106191042510.11375-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106191604.11074.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1106191042510.11375-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,48 +17,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 19 Jun 2011, Rafael J. Wysocki wrote:
-
-> Well, that was kind of difficult to debug, but not impossible. :-)
+On Sunday, June 19, 2011, Alan Stern wrote:
+> On Sun, 19 Jun 2011, Rafael J. Wysocki wrote:
 > 
-> The problem here turns out to be related to the SCSI subsystem.
-> Namely, when the AHCI controller is suspended, it uses the SCSI error
-> handling mechanism for scheduling the suspend operation (I'm still at a little
-> loss why that is necessary, but Tejun says it is :-)).  This (after several
-> convoluted operations) causes scsi_error_handler() to be woken up and
-> it calls scsi_autopm_get_host(shost), which returns error code (-EAGAIN),
-> because the runtime PM has been disabled at the host level.
+> > Well, that was kind of difficult to debug, but not impossible. :-)
+> > 
+> > The problem here turns out to be related to the SCSI subsystem.
+> > Namely, when the AHCI controller is suspended, it uses the SCSI error
+> > handling mechanism for scheduling the suspend operation (I'm still at a little
+> > loss why that is necessary, but Tejun says it is :-)).  This (after several
+> > convoluted operations) causes scsi_error_handler() to be woken up and
+> > it calls scsi_autopm_get_host(shost), which returns error code (-EAGAIN),
+> > because the runtime PM has been disabled at the host level.
+> 
+> Oh no.  I was afraid something like this was going to happen 
+> eventually.
+> 
+> It's clear that we don't want runtime PM kicking in while the SCSI 
+> error handler is running.  That's why I added the 
+> scsi_autopm_get_host().  But this also means we will run into trouble 
+> if the error handler needs to be used during a power transition.
+> 
+> > This happens because scsi_autopm_get_host() uses
+> > pm_runtime_get_sync(&shost->shost_gendev) and returns error code when
+> > shost_gendev.power.disable_depth is nonzero.
+> 
+> Maybe get_sync doesn't need to return an error if the runtime status is 
+> already ACTIVE.  I'm not sure about this; it's just an idea...
 
-Oh no.  I was afraid something like this was going to happen 
-eventually.
+Well, if disable_depth > 0, ACTIVE isn't really well defined.  As I said,
+though, I think it makes sense for pm_runtime_get_sync() to return 0 when
+disable_depth > 0, because the grabbing of a reference is successful anyway and
+the caller may assume that the device is accessible in that case.
 
-It's clear that we don't want runtime PM kicking in while the SCSI 
-error handler is running.  That's why I added the 
-scsi_autopm_get_host().  But this also means we will run into trouble 
-if the error handler needs to be used during a power transition.
+In the meantime I rethought the __pm_runtime_disable() part of my previous
+patch and I now think it's not necessary to complicate it any more.  Of course,
+we need not check if runtime resume is pending in __device_suspend(), because
+we've done it already in dpm_prepare(), but the barrier part should better be
+done in there too.
 
-> This happens because scsi_autopm_get_host() uses
-> pm_runtime_get_sync(&shost->shost_gendev) and returns error code when
-> shost_gendev.power.disable_depth is nonzero.
+Updated patch is appended.
 
-Maybe get_sync doesn't need to return an error if the runtime status is 
-already ACTIVE.  I'm not sure about this; it's just an idea...
+Thanks,
+Rafael
 
-> So, the problem is either in scsi_autopm_get_host() that should check the
-> error code returned by pm_runtime_get_sync(), or in rpm_suspend() that should
-> return 0 if RPM_GET_PUT is set in flags.  I'm inclined to say that the
-> problem should be fixed in rpm_suspend() and hence the appended patch that
-> works (well, it probably should be split into three separate patches).
+---
+ drivers/base/power/main.c    |    6 ++++++
+ drivers/base/power/runtime.c |   10 ++++++----
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-Maybe it would be good enough if the error handler ended up doing a 
-get_noresume instead of get_sync?  Although I could be wrong, I don't 
-think scsi_error_handler() will ever run in a situation where the host 
-adapter is not runtime-active.
-
-Tejun, does that sound right to you?
-
-Alan Stern
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -521,6 +521,9 @@ static int device_resume(struct device *
+ 	if (!dev->power.is_suspended)
+ 		goto Unlock;
+ 
++	pm_runtime_get_noresume(dev);
++	pm_runtime_enable(dev);
++
+ 	if (dev->pwr_domain) {
+ 		pm_dev_dbg(dev, state, "power domain ");
+ 		error = pm_op(dev, &dev->pwr_domain->ops, state);
+@@ -557,6 +560,7 @@ static int device_resume(struct device *
+ 
+  End:
+ 	dev->power.is_suspended = false;
++	pm_runtime_put_noidle(dev);
+ 
+  Unlock:
+ 	device_unlock(dev);
+@@ -896,6 +900,8 @@ static int __device_suspend(struct devic
+ 
+ 	if (error)
+ 		async_error = error;
++	else if (dev->power.is_suspended)
++		__pm_runtime_disable(dev, false);
+ 
+ 	return error;
+ }
+Index: linux-2.6/drivers/base/power/runtime.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/runtime.c
++++ linux-2.6/drivers/base/power/runtime.c
+@@ -455,12 +455,14 @@ static int rpm_resume(struct device *dev
+ 	dev_dbg(dev, "%s flags 0x%x\n", __func__, rpmflags);
+ 
+  repeat:
+-	if (dev->power.runtime_error)
++	if (dev->power.runtime_error) {
+ 		retval = -EINVAL;
+-	else if (dev->power.disable_depth > 0)
+-		retval = -EAGAIN;
+-	if (retval)
+ 		goto out;
++	} else if (dev->power.disable_depth > 0) {
++		if (!(rpmflags & RPM_GET_PUT))
++			retval = -EAGAIN;
++		goto out;
++	}
+ 
+ 	/*
+ 	 * Other scheduled or pending requests need to be canceled.  Small
