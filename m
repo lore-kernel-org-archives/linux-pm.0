@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Update][PATCH 8/8] ARM / shmobile: Support for I/O
-	power domains for SH7372 (v6)
-Date: Mon, 20 Jun 2011 00:07:47 +0200
-Message-ID: <201106200007.47828.rjw__31130.4782903337$1308521254$gmane$org@sisk.pl>
-References: <201106112223.04972.rjw@sisk.pl>
-	<BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw@mail.gmail.com>
-	<201106160106.40553.rjw@sisk.pl>
+Subject: [Update][PATCH 4/8] PM / Domains: Support for generic
+	I/O PM domains (v6)
+Date: Mon, 20 Jun 2011 00:02:19 +0200
+Message-ID: <201106200002.19377.rjw__33108.7711420425$1308522915$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl> <201106112231.11269.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106160106.40553.rjw@sisk.pl>
+In-Reply-To: <201106112231.11269.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,209 +18,672 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Use the generic power domains support introduced by the previous
-patch to implement support for power domains on SH7372.
+Introduce common headers, helper functions and callbacks allowing
+platforms to use simple generic power domains for runtime power
+management.
+
+Introduce struct generic_pm_domain to be used for representing
+power domains that each contain a number of devices and may be
+parent domains or subdomains with respect to other power domains.
+Among other things, this structure includes callbacks to be
+provided by platforms for performing specific tasks related to
+power management (i.e. ->stop_device() may disable a device's
+clocks, while ->start_device() may enable them, ->power_off() is
+supposed to remove power from the entire power domain
+and ->power_on() is supposed to restore it).
+
+Introduce functions that can be used as power domain runtime PM
+callbacks, pm_genpd_runtime_suspend() and pm_genpd_runtime_resume(),
+as well as helper functions for the initialization of a power
+domain represented by a struct generic_power_domain object,
+adding a device to or removing a device from it and adding or
+removing subdomains.
+
+Introduce configuration option CONFIG_PM_GENERIC_DOMAINS to be
+selected by the platforms that want to use the new code.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
 
 Hi,
 
-I think that all of the previous comments have been addressed in this
-version of the patch.
+I this version of the patch I made the following modifications:
+
+* Removed the change adding platform_data to struct dev_pm_domain,
+  because that field is not going to be necessary in the near future.
+
+* Moved the code calling drv->pm->runtime_suspend(dev) to a separate
+  function that returns immediately if dle->need_restore is set for the
+  given device (meaning that drv->pm->runtime_suspend(dev) has already
+  been called for it and the corresponding ->runtime_resume() hasn't).
+  This fixes a bug where drv->pm->runtime_suspend() could be called for
+  a device whose state hasn't been restored after power cycling its
+  PM domain.
+
+* Made pm_genpd_add_device() return error code on an attempt to add a device
+  do a PM domain whose power_is_off is set (that complemets the previous
+  modification).
+
+* Makde the .power_on() and .power_off() generic PM domain callbacks take
+  (struct generic_pm_domain *) arguments instead of (struct dev_pm_domain *).
 
 Thanks,
 Rafael
 
 ---
- arch/arm/Kconfig                             |    1 
- arch/arm/mach-shmobile/Makefile              |    4 +
- arch/arm/mach-shmobile/board-mackerel.c      |    4 +
- arch/arm/mach-shmobile/include/mach/sh7372.h |   28 ++++++++++
- arch/arm/mach-shmobile/pm-sh7372.c           |   71 +++++++++++++++++++++++++++
- 5 files changed, 108 insertions(+)
+ drivers/base/power/Makefile |    1 
+ drivers/base/power/domain.c |  490 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |   78 +++++++
+ kernel/power/Kconfig        |    4 
+ 4 files changed, 573 insertions(+)
 
-Index: linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+Index: linux-2.6/include/linux/pm_domain.h
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
-+++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
-@@ -1582,6 +1582,10 @@ static void __init mackerel_init(void)
- 
- 	platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel_devices));
- 
-+	sh7372_init_pm_domain(&sh7372_a4lc_domain);
-+	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
-+	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
+--- /dev/null
++++ linux-2.6/include/linux/pm_domain.h
+@@ -0,0 +1,78 @@
++/*
++ * pm_domain.h - Definitions and headers related to device power domains.
++ *
++ * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
++ *
++ * This file is released under the GPLv2.
++ */
 +
- 	hdmi_init_pm_clock();
- 	sh7372_pm_init();
- }
-Index: linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/sh7372.h
-+++ linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
-@@ -12,6 +12,7 @@
- #define __ASM_SH7372_H__
- 
- #include <linux/sh_clk.h>
-+#include <linux/pm_domain.h>
- 
- /*
-  * Pin Function Controller:
-@@ -470,4 +471,31 @@ extern struct clk sh7372_fsibck_clk;
- extern struct clk sh7372_fsidiva_clk;
- extern struct clk sh7372_fsidivb_clk;
- 
-+struct platform_device;
++#ifndef _LINUX_PM_DOMAIN_H
++#define _LINUX_PM_DOMAIN_H
 +
-+struct sh7372_pm_domain {
-+	struct generic_pm_domain genpd;
-+	unsigned int bit_shift;
++#include <linux/device.h>
++
++struct dev_power_governor {
++	bool (*power_down_ok)(struct dev_pm_domain *domain);
 +};
 +
-+static inline struct sh7372_pm_domain *to_sh7372_pd(struct generic_pm_domain *d)
-+{
-+	return container_of(d, struct sh7372_pm_domain, genpd);
-+}
++struct generic_pm_domain {
++	struct dev_pm_domain domain;	/* PM domain operations */
++	struct list_head sd_node;	/* Node in the parent's subdomain list */
++	struct generic_pm_domain *parent;	/* Parent PM domain */
++	struct list_head sd_list;	/* List of dubdomains */
++	struct list_head dev_list;	/* List of devices */
++	struct mutex lock;
++	struct dev_power_governor *gov;
++	struct work_struct power_off_work;
++	unsigned int in_progress;	/* Number of devices being suspended now */
++	unsigned int sd_count;	/* Number of subdomains with power "on" */
++	bool power_is_off;	/* Whether or not power has been removed */
++	int (*power_off)(struct generic_pm_domain *domain);
++	int (*power_on)(struct generic_pm_domain *domain);
++	int (*start_device)(struct device *dev);
++	int (*stop_device)(struct device *dev);
++};
 +
-+#ifdef CONFIG_PM
-+extern struct sh7372_pm_domain sh7372_a4lc_domain;
-+#define SH7372_A4LC	(&sh7372_a4lc_domain)
++struct dev_list_entry {
++	struct list_head node;
++	struct device *dev;
++	bool need_restore;
++};
 +
-+extern void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd);
-+extern void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
-+					struct platform_device *pdev);
++#ifdef CONFIG_PM_GENERIC_DOMAINS
++extern int pm_genpd_add_device(struct generic_pm_domain *genpd,
++			       struct device *dev);
++extern int pm_genpd_remove_device(struct generic_pm_domain *genpd,
++				  struct device *dev);
++extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
++				  struct generic_pm_domain *new_subdomain);
++extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
++				     struct generic_pm_domain *target);
++extern void pm_genpd_init(struct generic_pm_domain *genpd,
++			  struct dev_power_governor *gov, bool is_off);
 +#else
-+#define SH7372_A4LC	NULL
++static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
++				      struct device *dev)
++{
++	return -ENOSYS;
++}
++static inline int pm_genpd_remove_device(struct generic_pm_domain *genpd,
++					 struct device *dev)
++{
++	return -ENOSYS;
++}
++static inline int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
++					 struct generic_pm_domain *new_sd)
++{
++	return -ENOSYS;
++}
++static inline int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
++					    struct generic_pm_domain *target)
++{
++	return -ENOSYS;
++}
++static inline void pm_genpd_init(struct generic_pm_domain *genpd,
++				 struct dev_power_governor *gov, bool is_off) {}
++#endif
 +
-+static inline void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd) {}
-+static inline void sh7372_add_device_to_domain(struct sh7372_pm_domain *pd,
-+					       struct platform_device *pdev) {}
-+#endif /* CONFIG_PM */
-+
- #endif /* __ASM_SH7372_H__ */
-Index: linux-2.6/arch/arm/mach-shmobile/Makefile
++#endif /* _LINUX_PM_DOMAIN_H */
+Index: linux-2.6/drivers/base/power/Makefile
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/Makefile
-+++ linux-2.6/arch/arm/mach-shmobile/Makefile
-@@ -42,6 +42,10 @@ obj-$(CONFIG_MACH_AP4EVB)	+= board-ap4ev
- obj-$(CONFIG_MACH_AG5EVM)	+= board-ag5evm.o
- obj-$(CONFIG_MACH_MACKEREL)	+= board-mackerel.o
+--- linux-2.6.orig/drivers/base/power/Makefile
++++ linux-2.6/drivers/base/power/Makefile
+@@ -3,6 +3,7 @@ obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.
+ obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+ obj-$(CONFIG_PM_OPP)	+= opp.o
++obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o
+ obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
  
-+# PM objects
-+pm-$(CONFIG_ARCH_SH7372)	+= pm-sh7372.o
-+
- # Framework support
- obj-$(CONFIG_SMP)		+= $(smp-y)
- obj-$(CONFIG_GENERIC_GPIO)	+= $(pfc-y)
-+obj-$(CONFIG_PM)		+= $(pm-y)
-Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+ ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+\ No newline at end of file
+Index: linux-2.6/drivers/base/power/domain.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
-+++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -15,16 +15,87 @@
- #include <linux/list.h>
- #include <linux/err.h>
- #include <linux/slab.h>
+--- /dev/null
++++ linux-2.6/drivers/base/power/domain.c
+@@ -0,0 +1,490 @@
++/*
++ * drivers/base/power/domain.c - Common code related to device power domains.
++ *
++ * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
++ *
++ * This file is released under the GPLv2.
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/io.h>
 +#include <linux/pm_runtime.h>
-+#include <linux/platform_device.h>
- #include <asm/system.h>
- #include <asm/io.h>
- #include <asm/tlbflush.h>
- #include <mach/common.h>
-+#include <mach/sh7372.h>
- 
- #define SMFRAM 0xe6a70000
- #define SYSTBCR 0xe6150024
- #define SBAR 0xe6180020
- #define APARMBAREA 0xe6f10020
- 
-+#define SPDCR 0xe6180008
-+#define SWUCR 0xe6180014
-+#define PSTR 0xe6180080
++#include <linux/pm_domain.h>
++#include <linux/slab.h>
++#include <linux/err.h>
 +
-+static int pd_power_down(struct generic_pm_domain *genpd)
++#ifdef CONFIG_PM_RUNTIME
++
++static void genpd_sd_counter_dec(struct generic_pm_domain *genpd)
 +{
-+	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
-+	unsigned int mask = 1 << sh7372_pd->bit_shift;
++	if (!WARN_ON(genpd->sd_count == 0))
++			genpd->sd_count--;
++}
 +
-+	if (__raw_readl(PSTR) & mask) {
-+		__raw_writel(mask, SPDCR);
++/**
++ * __pm_genpd_save_device - Save the pre-suspend state of a device.
++ * @dle: Device list entry of the device to save the state of.
++ * @genpd: PM domain the device belongs to.
++ */
++static int __pm_genpd_save_device(struct dev_list_entry *dle,
++				  struct generic_pm_domain *genpd)
++{
++	struct device *dev = dle->dev;
++	struct device_driver *drv = dev->driver;
++	int ret = 0;
 +
-+		while (__raw_readl(SPDCR) & mask)
-+			cpu_relax();
++	if (dle->need_restore)
++		return 0;
 +
-+		pr_debug("sh7372 power domain down 0x%08x -> PSTR = 0x%08x\n",
-+			 mask, __raw_readl(PSTR));
++	if (genpd->start_device)
++		genpd->start_device(dev);
++
++	if (drv && drv->pm && drv->pm->runtime_suspend)
++		ret = drv->pm->runtime_suspend(dev);
++
++	if (genpd->stop_device)
++		genpd->stop_device(dev);
++
++	if (!ret)
++		dle->need_restore = true;
++
++	return ret;
++}
++
++/**
++ * __pm_genpd_restore_device - Restore the pre-suspend state of a device.
++ * @dle: Device list entry of the device to restore the state of.
++ * @genpd: PM domain the device belongs to.
++ */
++static void __pm_genpd_restore_device(struct dev_list_entry *dle,
++				      struct generic_pm_domain *genpd)
++{
++	struct device *dev = dle->dev;
++	struct device_driver *drv = dev->driver;
++
++	if (!dle->need_restore)
++		return;
++
++	if (genpd->start_device)
++		genpd->start_device(dev);
++
++	if (drv && drv->pm && drv->pm->runtime_resume)
++		drv->pm->runtime_resume(dev);
++
++	if (genpd->stop_device)
++		genpd->stop_device(dev);
++
++	dle->need_restore = false;
++}
++
++/**
++ * pm_genpd_poweroff - Remove power from a given PM domain.
++ * @genpd: PM domain to power down.
++ *
++ * If all of the @genpd's devices have been suspended and all of its subdomains
++ * have been powered down, run the runtime suspend callbacks provided by all of
++ * the @genpd's devices' drivers and remove power from @genpd.
++ */
++static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
++{
++	struct generic_pm_domain *parent;
++	struct dev_list_entry *dle;
++	unsigned int not_suspended;
++	int ret;
++
++	if (genpd->power_is_off)
++		return 0;
++
++	if (genpd->sd_count > 0)
++		return -EBUSY;
++
++	not_suspended = 0;
++	list_for_each_entry(dle, &genpd->dev_list, node)
++		if (dle->dev->driver && !pm_runtime_suspended(dle->dev))
++			not_suspended++;
++
++	if (not_suspended > genpd->in_progress)
++		return -EBUSY;
++
++	if (genpd->gov && genpd->gov->power_down_ok) {
++		if (!genpd->gov->power_down_ok(&genpd->domain))
++			return -EAGAIN;
 +	}
++
++	list_for_each_entry_reverse(dle, &genpd->dev_list, node) {
++		ret = __pm_genpd_save_device(dle, genpd);
++		if (ret)
++			goto err_dev;
++	}
++
++	if (genpd->power_off)
++		genpd->power_off(genpd);
++
++	genpd->power_is_off = true;
++
++	parent = genpd->parent;
++	if (parent) {
++		genpd_sd_counter_dec(parent);
++		if (parent->sd_count == 0)
++			queue_work(pm_wq, &parent->power_off_work);
++	}
++
++	return 0;
++
++ err_dev:
++	list_for_each_entry_continue(dle, &genpd->dev_list, node)
++		__pm_genpd_restore_device(dle, genpd);
++
++	return ret;
++}
++
++/**
++ * genpd_power_off_work_fn - Power off PM domain whose subdomain count is 0.
++ * @work: Work structure used for scheduling the execution of this function.
++ */
++static void genpd_power_off_work_fn(struct work_struct *work)
++{
++	struct generic_pm_domain *genpd;
++
++	genpd = container_of(work, struct generic_pm_domain, power_off_work);
++
++	if (genpd->parent)
++		mutex_lock(&genpd->parent->lock);
++	mutex_lock(&genpd->lock);
++	pm_genpd_poweroff(genpd);
++	mutex_unlock(&genpd->lock);
++	if (genpd->parent)
++		mutex_unlock(&genpd->parent->lock);
++}
++
++/**
++ * pm_genpd_runtime_suspend - Suspend a device belonging to I/O PM domain.
++ * @dev: Device to suspend.
++ *
++ * Carry out a runtime suspend of a device under the assumption that its
++ * pm_domain field points to the domain member of an object of type
++ * struct generic_pm_domain representing a PM domain consisting of I/O devices.
++ */
++static int pm_genpd_runtime_suspend(struct device *dev)
++{
++	struct generic_pm_domain *genpd;
++
++	dev_dbg(dev, "%s()\n", __func__);
++
++	if (IS_ERR_OR_NULL(dev->pm_domain))
++		return -EINVAL;
++
++	genpd = container_of(dev->pm_domain, struct generic_pm_domain, domain);
++
++	if (genpd->parent)
++		mutex_lock(&genpd->parent->lock);
++	mutex_lock(&genpd->lock);
++
++	if (genpd->stop_device) {
++		int ret = genpd->stop_device(dev);
++		if (ret)
++			goto out;
++	}
++	genpd->in_progress++;
++	pm_genpd_poweroff(genpd);
++	genpd->in_progress--;
++
++ out:
++	mutex_unlock(&genpd->lock);
++	if (genpd->parent)
++		mutex_unlock(&genpd->parent->lock);
 +
 +	return 0;
 +}
 +
-+static int pd_power_up(struct generic_pm_domain *genpd)
++/**
++ * pm_genpd_poweron - Restore power to a given PM domain and its parents.
++ * @genpd: PM domain to power up.
++ *
++ * Restore power to @genpd and all of its parents so that it is possible to
++ * resume a device belonging to it.
++ */
++static int pm_genpd_poweron(struct generic_pm_domain *genpd)
 +{
-+	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
-+	unsigned int mask = 1 << sh7372_pd->bit_shift;
++	int ret = 0;
 +
-+	if (!(__raw_readl(PSTR) & mask)) {
-+		__raw_writel(mask, SWUCR);
++ start:
++	if (genpd->parent)
++		mutex_lock(&genpd->parent->lock);
++	mutex_lock(&genpd->lock);
 +
-+		while (__raw_readl(SWUCR) & mask)
-+			cpu_relax();
++	if (!genpd->power_is_off)
++		goto out;
 +
-+		pr_debug("sh7372 power domain up 0x%08x -> PSTR = 0x%08x\n",
-+			 mask, __raw_readl(PSTR));
++	if (genpd->parent && genpd->parent->power_is_off) {
++		mutex_unlock(&genpd->lock);
++		mutex_unlock(&genpd->parent->lock);
++
++		ret = pm_genpd_poweron(genpd->parent);
++		if (ret)
++			return ret;
++
++		goto start;
 +	}
++
++	if (genpd->power_on) {
++		int ret = genpd->power_on(genpd);
++		if (ret)
++			goto out;
++	}
++
++	genpd->power_is_off = false;
++	if (genpd->parent)
++		genpd->parent->sd_count++;
++
++ out:
++	mutex_unlock(&genpd->lock);
++	if (genpd->parent)
++		mutex_unlock(&genpd->parent->lock);
++
++	return ret;
++}
++
++/**
++ * pm_genpd_runtime_resume - Resume a device belonging to I/O PM domain.
++ * @dev: Device to resume.
++ *
++ * Carry out a runtime resume of a device under the assumption that its
++ * pm_domain field points to the domain member of an object of type
++ * struct generic_pm_domain representing a PM domain consisting of I/O devices.
++ */
++static int pm_genpd_runtime_resume(struct device *dev)
++{
++	struct generic_pm_domain *genpd;
++	struct dev_list_entry *dle;
++	int ret;
++
++	dev_dbg(dev, "%s()\n", __func__);
++
++	if (IS_ERR_OR_NULL(dev->pm_domain))
++		return -EINVAL;
++
++	genpd = container_of(dev->pm_domain, struct generic_pm_domain, domain);
++
++	ret = pm_genpd_poweron(genpd);
++	if (ret)
++		return ret;
++
++	mutex_lock(&genpd->lock);
++
++	list_for_each_entry(dle, &genpd->dev_list, node) {
++		if (dle->dev == dev) {
++			__pm_genpd_restore_device(dle, genpd);
++			break;
++		}
++	}
++
++	if (genpd->start_device)
++		genpd->start_device(dev);
++
++	mutex_unlock(&genpd->lock);
 +
 +	return 0;
 +}
 +
-+void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd)
++#else
++
++#define pm_genpd_runtime_suspend	NULL
++#define pm_genpd_runtime_resume		NULL
++
++#endif /* CONFIG_PM_RUNTIME */
++
++/**
++ * pm_genpd_add_device - Add a device to an I/O PM domain.
++ * @genpd: PM domain to add the device to.
++ * @dev: Device to be added.
++ */
++int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
 +{
-+	struct generic_pm_domain *genpd = &sh7372_pd->genpd;
++	struct dev_list_entry *dle;
++	int ret = 0;
 +
-+	pm_genpd_init(genpd, NULL, false);
-+	genpd->stop_device = pm_runtime_clk_suspend;
-+	genpd->start_device = pm_runtime_clk_resume;
-+	genpd->power_off = pd_power_down;
-+	genpd->power_on = pd_power_up;
-+	pd_power_up(&sh7372_pd->genpd);
-+}
++	dev_dbg(dev, "%s()\n", __func__);
 +
-+void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
-+				 struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
++	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
++		return -EINVAL;
 +
-+	if (!dev->power.subsys_data) {
-+		pm_runtime_clk_init(dev);
-+		pm_runtime_clk_add(dev, NULL);
++	mutex_lock(&genpd->lock);
++
++	if (genpd->power_is_off) {
++		ret = -EINVAL;
++		goto out;
 +	}
-+	pm_genpd_add_device(&sh7372_pd->genpd, dev);
++
++	list_for_each_entry(dle, &genpd->dev_list, node)
++		if (dle->dev == dev) {
++			ret = -EINVAL;
++			goto out;
++		}
++
++	dle = kzalloc(sizeof(*dle), GFP_KERNEL);
++	if (!dle) {
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	dle->dev = dev;
++	dle->need_restore = false;
++	list_add_tail(&dle->node, &genpd->dev_list);
++
++	spin_lock_irq(&dev->power.lock);
++	dev->pm_domain = &genpd->domain;
++	spin_unlock_irq(&dev->power.lock);
++
++ out:
++	mutex_unlock(&genpd->lock);
++
++	return ret;
 +}
 +
-+struct sh7372_pm_domain sh7372_a4lc_domain = {
-+	.bit_shift = 1,
-+};
++/**
++ * pm_genpd_remove_device - Remove a device from an I/O PM domain.
++ * @genpd: PM domain to remove the device from.
++ * @dev: Device to be removed.
++ */
++int pm_genpd_remove_device(struct generic_pm_domain *genpd,
++			   struct device *dev)
++{
++	struct dev_list_entry *dle;
++	int ret = -EINVAL;
 +
- static void sh7372_enter_core_standby(void)
- {
- 	void __iomem *smfram = (void __iomem *)SMFRAM;
-Index: linux-2.6/arch/arm/Kconfig
++	dev_dbg(dev, "%s()\n", __func__);
++
++	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
++		return -EINVAL;
++
++	mutex_lock(&genpd->lock);
++
++	list_for_each_entry(dle, &genpd->dev_list, node) {
++		if (dle->dev != dev)
++			continue;
++
++		spin_lock_irq(&dev->power.lock);
++		dev->pm_domain = NULL;
++		spin_unlock_irq(&dev->power.lock);
++
++		list_del(&dle->node);
++		kfree(dle);
++
++		ret = 0;
++		break;
++	}
++
++	mutex_unlock(&genpd->lock);
++
++	return ret;
++}
++
++/**
++ * pm_genpd_add_subdomain - Add a subdomain to an I/O PM domain.
++ * @genpd: Master PM domain to add the subdomain to.
++ * @new_subdomain: Subdomain to be added.
++ */
++int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
++			   struct generic_pm_domain *new_subdomain)
++{
++	struct generic_pm_domain *subdomain;
++	int ret = 0;
++
++	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(new_subdomain))
++		return -EINVAL;
++
++	mutex_lock(&genpd->lock);
++
++	if (genpd->power_is_off && !new_subdomain->power_is_off) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	list_for_each_entry(subdomain, &genpd->sd_list, sd_node) {
++		if (subdomain == new_subdomain) {
++			ret = -EINVAL;
++			goto out;
++		}
++	}
++
++	mutex_lock(&new_subdomain->lock);
++
++	list_add_tail(&new_subdomain->sd_node, &genpd->sd_list);
++	new_subdomain->parent = genpd;
++	if (!subdomain->power_is_off)
++		genpd->sd_count++;
++
++	mutex_unlock(&new_subdomain->lock);
++
++ out:
++	mutex_unlock(&genpd->lock);
++
++	return ret;
++}
++
++/**
++ * pm_genpd_remove_subdomain - Remove a subdomain from an I/O PM domain.
++ * @genpd: Master PM domain to remove the subdomain from.
++ * @target: Subdomain to be removed.
++ */
++int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
++			      struct generic_pm_domain *target)
++{
++	struct generic_pm_domain *subdomain;
++	int ret = -EINVAL;
++
++	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(target))
++		return -EINVAL;
++
++	mutex_lock(&genpd->lock);
++
++	list_for_each_entry(subdomain, &genpd->sd_list, sd_node) {
++		if (subdomain != target)
++			continue;
++
++		mutex_lock(&subdomain->lock);
++
++		list_del(&subdomain->sd_node);
++		subdomain->parent = NULL;
++		if (!subdomain->power_is_off)
++			genpd_sd_counter_dec(genpd);
++
++		mutex_unlock(&subdomain->lock);
++
++		ret = 0;
++		break;
++	}
++
++	mutex_unlock(&genpd->lock);
++
++	return ret;
++}
++
++/**
++ * pm_genpd_init - Initialize a generic I/O PM domain object.
++ * @genpd: PM domain object to initialize.
++ * @gov: PM domain governor to associate with the domain (may be NULL).
++ * @is_off: Initial value of the domain's power_is_off field.
++ */
++void pm_genpd_init(struct generic_pm_domain *genpd,
++		   struct dev_power_governor *gov, bool is_off)
++{
++	if (IS_ERR_OR_NULL(genpd))
++		return;
++
++	INIT_LIST_HEAD(&genpd->sd_node);
++	genpd->parent = NULL;
++	INIT_LIST_HEAD(&genpd->dev_list);
++	INIT_LIST_HEAD(&genpd->sd_list);
++	mutex_init(&genpd->lock);
++	genpd->gov = gov;
++	INIT_WORK(&genpd->power_off_work, genpd_power_off_work_fn);
++	genpd->in_progress = 0;
++	genpd->sd_count = 0;
++	genpd->power_is_off = is_off;
++	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
++	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
++	genpd->domain.ops.runtime_idle = pm_generic_runtime_idle;
++}
+Index: linux-2.6/kernel/power/Kconfig
 ===================================================================
---- linux-2.6.orig/arch/arm/Kconfig
-+++ linux-2.6/arch/arm/Kconfig
-@@ -642,6 +642,7 @@ config ARCH_SHMOBILE
- 	select NO_IOPORT
- 	select SPARSE_IRQ
- 	select MULTI_IRQ_HANDLER
-+	select PM_GENERIC_DOMAINS
- 	help
- 	  Support for Renesas's SH-Mobile and R-Mobile ARM platforms.
- 
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -227,3 +227,7 @@ config PM_OPP
+ config PM_RUNTIME_CLK
+ 	def_bool y
+ 	depends on PM_RUNTIME && HAVE_CLK
++
++config PM_GENERIC_DOMAINS
++	bool
++	depends on PM
