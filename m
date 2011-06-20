@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: System PM QoS patches
-Date: Mon, 20 Jun 2011 21:28:21 +0200
-Message-ID: <201106202128.21395.rjw@sisk.pl>
-References: <alpine.DEB.2.00.1106021505090.26852@utopia.booyaka.com>
-	<alpine.DEB.2.00.1106021614140.26852@utopia.booyaka.com>
-	<BANLkTikPaUDQSYuUXO8-s5+gbBmM_0AuVA@mail.gmail.com>
+Subject: Re: [PATCH] PCI / PM: Block races between runtime PM and
+	system sleep
+Date: Mon, 20 Jun 2011 21:42:45 +0200
+Message-ID: <201106202142.45802.rjw__47382.1566127755$1308598963$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106201039580.2113-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTikPaUDQSYuUXO8-s5+gbBmM_0AuVA@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1106201039580.2113-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,84 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Pihet-XID, Jean" <j-pihet@ti.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-[CCing linux-pm]
-
-On Monday, June 20, 2011, Pihet-XID, Jean wrote:
-> Hi,
+On Monday, June 20, 2011, Alan Stern wrote:
+> On Sun, 19 Jun 2011, Rafael J. Wysocki wrote:
 > 
-> On Fri, Jun 3, 2011 at 12:23 AM, Paul Walmsley <paul@pwsan.com> wrote:
-> > On Thu, 2 Jun 2011, Kevin Hilman wrote:
-> >
-> >> The main idea is to start from the PM QoS API, and just make all those
-> >> APIs take a 'struct device *', and the constraints would be assoicated
-> >> with a struct device.  The current system-wide constratints would then
-> >> be a special case of the per-device constratints.  Maybe when the struct
-> >> device pointer is NULL, that means set a system-wide constraint.  The
-> >> existing users of PM QoS could then be easily converted to the new API
-> >> by just passing in NULL.
-> >
-> > There are so few current in-tree users, I'm not sure if that's needed.
-> >
-> > Of the three system-wide PM QoS parameters, CPU_DMA_LATENCY is the only
-> > one that is really set by in-kernel drivers.  And there are only five
-> > drivers that use it (fgrep -r PM_QOS_CPU .).
-> >
-> > mac80211 uses network latency, but only as a way to get some requirements
-> > from userspace.  And that's almost certainly the wrong way to do it, since
-> > not all network devices have the same latency requirements.  Network
-> > throughput isn't used at all.
-> >
-> >
-> > - Paul
-> >
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > After commit e8665002477f0278f84f898145b1f141ba26ee26
+> > (PM: Allow pm_runtime_suspend() to succeed during system suspend) it
+> > is possible that a device resumed by the pm_runtime_resume(dev) in
+> > pci_pm_prepare() will be suspended immediately from a work item,
+> > timer function or otherwise, defeating the very purpose of calling
+> > pm_runtime_resume(dev) from there.  To prevent that from happening
+> > it is necessary to increment the runtime PM usage counter of the
+> > device by replacing pm_runtime_resume() with pm_runtime_get_sync().
+> > Moreover, the incremented runtime PM usage counter has to be
+> > decremented by the corresponding pci_pm_complete(), via
+> > pm_runtime_put_noidle().
 > 
-> I see 3 implementation options:
-> 
-> 1) Add an extra parameter to the PM QoS API to take an extra parameter
-> for the device ptr, e.g. changing
->     void pm_qos_add_request(struct pm_qos_request_list *dep, int
-> pm_qos_class, s32 value)
-> to
->     void pm_qos_add_request(struct pm_qos_request_list *dep, struct
-> device *dev, int pm_qos_class, s32 value)
-> 
-> 2) Use a constraints parameter instead of the current parameter list
-> of the PM QoS API, e.g. changing
->     void pm_qos_add_request(struct pm_qos_request_list *dep, int
-> pm_qos_class, s32 value)
-> to
->     void pm_qos_add_request(struct pm_qos_request_list *dep, struct
-> pm_qos_params *params), with:
->     struct pm_qos_params { device *dev; int pm_qos_class; s32 value };
-> 
-> 3) Keep the current API and add a new API for the device wake-up
-> latency constraints.
+> In both this and the previous patch, the final decrement should be done 
+> by pm_runtime_put_sync() instead of pm_runtime_put_idle().  Otherwise 
+> you face the possibility that the usage_count may go to 0 but the 
+> device will be left active.
 
-I'm opting for 3, with a twist that the new implementation would use the
-majority of the exsiting code (with some modifications).
+OK, that's how the old code worked, BTW, I overlooked that.
 
-> The options 1 & 2 have the advantage of keeping the code generic while
-> option 3 means duplicating most of the code in kernel/pm_qos_params.c.
+> Furthermore, since we're going to disable runtime PM as soon as the
+> suspend callback returns anyway, why not increment usage_count before
+> invoking the callback?  This will prevent runtime suspends from 
+> occurring while the callback runs, so no changes will be needed in the 
+> PCI or USB subsystems.
 
-You don't need to duplicate it.  Just modify it so that it works with both
-the existing API and the new one.
+The PCI case is different from the USB one.  PCI needs to resume devices
+before calling their drivers' .suspend() callbacks, so it does that in
+.prepare().  If the core acquired a reference to every device  before executing
+the subsystem .suspend(), then pm_runtime_resume() could be moved from
+pci_pm_prepare() to pci_prepare_suspend(), but then additionally it would
+have to be called from pci_pm_freeze() and pci_pm_poweroff().  It simply is
+more efficient to call it once from pci_pm_prepare(), but then PCI needs to
+take the reference by itself.
 
-> Also the options 1 & 2 are impacting the current API users but as Paul
-> reported it there are so few users so it is not an issue to do so.
-> Option 3 has the advantage of being flexible when more parameters will
-> be needed in the future.
-> 
-> What do you think?
-> 
-> I am currently trying to implement the option 2. More to come!
+Also the core doesn't call the subsystem-level .runtime_idle() after the
+subsystem-level .complete() has run, which is useful as you pointed out above. :-)
 
-Good, looking forward to seeing the code. ;-)
+> It also will prevent Kevin from calling pm_runtime_suspend from within
+> his suspend callbacks, but you have already determined that subsystems
+> and drivers should never do that in any case.
+
+Then reverting commit e8665002477f0278f84f898145b1f141ba26ee26 would be
+even better. :-)
 
 Thanks,
 Rafael
