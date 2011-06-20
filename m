@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PCI / PM: Block races between runtime PM and
-	system sleep
-Date: Mon, 20 Jun 2011 23:28:53 +0200
-Message-ID: <201106202328.54100.rjw__4204.80852849341$1308606899$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1106201651270.2113-100000@iolanthe.rowland.org>
+Subject: Re: [Update][PATCH 8/8] ARM / shmobile: Support for I/O
+	power domains for SH7372 (v6)
+Date: Tue, 21 Jun 2011 00:30:01 +0200
+Message-ID: <201106210030.01922.rjw__17799.9766813175$1308609023$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl> <201106200007.47828.rjw@sisk.pl>
+	<20110620020125.GA26125@linux-sh.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106201651270.2113-100000@iolanthe.rowland.org>
+In-Reply-To: <20110620020125.GA26125@linux-sh.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,167 +19,269 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 20, 2011, Alan Stern wrote:
-> On Mon, 20 Jun 2011, Rafael J. Wysocki wrote:
-> 
-> > > Furthermore, since we're going to disable runtime PM as soon as the
-> > > suspend callback returns anyway, why not increment usage_count before
-> > > invoking the callback?  This will prevent runtime suspends from 
-> > > occurring while the callback runs, so no changes will be needed in the 
-> > > PCI or USB subsystems.
-> > 
-> > The PCI case is different from the USB one.  PCI needs to resume devices
-> > before calling their drivers' .suspend() callbacks, so it does that in
-> > .prepare().  If the core acquired a reference to every device  before executing
-> > the subsystem .suspend(), then pm_runtime_resume() could be moved from
-> > pci_pm_prepare() to pci_prepare_suspend(), but then additionally it would
-> > have to be called from pci_pm_freeze() and pci_pm_poweroff().  It simply is
-> > more efficient to call it once from pci_pm_prepare(), but then PCI needs to
-> > take the reference by itself.
-> 
-> Ah, okay.  The PCI part makes sense then.
+On Monday, June 20, 2011, Paul Mundt wrote:
+> On Mon, Jun 20, 2011 at 12:07:47AM +0200, Rafael J. Wysocki wrote:
+> > +static int pd_power_down(struct generic_pm_domain *genpd)
+> > +{
+> > +	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
+> > +	unsigned int mask = 1 << sh7372_pd->bit_shift;
+> > +
+> > +	if (__raw_readl(PSTR) & mask) {
+> > +		__raw_writel(mask, SPDCR);
+> > +
+> > +		while (__raw_readl(SPDCR) & mask)
+> > +			cpu_relax();
+> > +
+> > +		pr_debug("sh7372 power domain down 0x%08x -> PSTR = 0x%08x\n",
+> > +			 mask, __raw_readl(PSTR));
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int pd_power_up(struct generic_pm_domain *genpd)
+> > +{
+> > +	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
+> > +	unsigned int mask = 1 << sh7372_pd->bit_shift;
+> > +
+> > +	if (!(__raw_readl(PSTR) & mask)) {
+> > +		__raw_writel(mask, SWUCR);
+> > +
+> > +		while (__raw_readl(SWUCR) & mask)
+> > +			cpu_relax();
+> > +
+> > +		pr_debug("sh7372 power domain up 0x%08x -> PSTR = 0x%08x\n",
+> > +			 mask, __raw_readl(PSTR));
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> Given that these functions can return errors, it's probably more prudent
+> to implement some timeout logic on top of the busy loop. Hardware does
+> get stuck, after all.
 
-OK, so the appended patch is a modification of the $subject one using
-pm_runtime_put_sync() instead of pm_runtime_put_noidle().
+Yes, it does, but we don't really know what timeout value to use in there.
 
-> > > It also will prevent Kevin from calling pm_runtime_suspend from within
-> > > his suspend callbacks, but you have already determined that subsystems
-> > > and drivers should never do that in any case.
-> > 
-> > Then reverting commit e8665002477f0278f84f898145b1f141ba26ee26 would be
-> > even better. :-)
-> 
-> See below.
-> 
-> 
-> > > As I see it, we never want a suspend or suspend_noirq callback to call 
-> > > pm_runtime_suspend().  However it's okay for the suspend callback to 
-> > > invoke pm_runtime_resume(), as long as this is all done in subsystem 
-> > > code.
-> > 
-> > First off, I don't really see a reason for a subsystem to call
-> > pm_runtime_resume() from its .suspend_noirq() callback.
-> 
-> I was referring to .suspend(), not .suspend_noirq().
-> 
-> >  Now, if
-> > pm_runtime_resume() is to be called concurrently with the subsystem's
-> > .suspend_noirq() callback, I'd rather won't let that happen. :-)
-> 
-> Me too.  But I see no reason to prevent pm_runtime_resume() from being 
-> called by .suspend().
+In fact, failures of pd_power_down() don't really matter (at worst the power
+domain won't be powered off really) and pd_power_up() should only return error
+code if the error is known to be unrecoverable.
 
-Hmm.
-
-> > > And in between the prepare and suspend callbacks, runtime PM should be
-> > > more or less fully functional, right?  For most devices it will never
-> > > be triggered, because it has to run in process context and both
-> > > userspace and pm_wq are frozen.  It may trigger for devices marked as
-> > > IRQ-safe, though.
-> > 
-> > It also may trigger for drivers using non-freezable workqueues and calling
-> > runtime PM synchronously from there.
-> 
-> Right.  So we shouldn't ignore this window.
-
-So, your point is that while .suspend() or .resume() are running, the
-synchronization between runtime PM and system suspend/resume should be the
-subsystem's problem, right?
-
-> > > Maybe the barrier should be moved into __device_suspend().
-> > 
-> > I _really_ think that the initial approach, i.e. before commit
-> > e8665002477f0278f84f898145b1f141ba26ee26, made the most sense.  It didn't
-> > cover the "pm_runtime_resume() called during system suspend" case, but
-> > it did cover everything else.
-> 
-> But it prevented runtime PM from working during the window between 
-> .prepare() and .suspend(), and also between .resume() and .complete().
-> If a subsystem like PCI wants to rule out runtime PM during those 
-> windows, then fine -- it can do whatever it wants.  But the PM core 
-> shouldn't do this.
-
-I actually see a reason for doing this.  Namely, I don't really think
-driver writers should be bothered with preventing races between different
-PM callbacks from happening.  Runtime PM takes care of that at run time,
-the design of the system suspend/resume code ensures that the callbacks
-for the same device are executed sequentially, but if we allow runtime PM
-callbacks to be executed in parallel with system suspend/resume callbacks,
-someone has to prevent those callbacks from racing with each other.
-
-Now, if you agree that that shouldn't be a driver's task, then it has to
-be the subsystem's one and I'm not sure what a subsystem can do other than
-disabling runtime PM or at least taking a reference on every device before
-calling device drivers' .suspend() callbacks.
-
-Please note, I think that .prepare() and .complete() are somewhat special,
-so perhaps we should allow those to race with runtime PM callbacks, but IMO
-allowing .suspend() and .resume() to race with .runtime_suspend() and
-.runtime_resume() is not a good idea.
-
-> > So, I think there are serious technical arguments for reverting that commit.
-> > 
-> > I think we went really far trying to avoid that, but I'm not sure I want to go
-> > any further.
-> 
-> What I'm suggesting is to revert the commit but at the same time,
-> move the get_noresume() into __device_suspend() and the put_sync() into 
-> device_resume().
-
-What about doing pm_runtime_get_noresume() and the pm_runtime_barrier()
-in dpm_prepare(), but _after_ calling device_prepare() and doing
-pm_runtime_put_noidle() in dpm_complete() _before_ calling .complete()
-from the subsystem (a _put_sync() at this point will likely invoke
-.runtime_idle() from the subsystem before executing .complete(), which may
-not be desirable)?
+So, what about this: repeat certain number of times (I verified that it took
+several iterations of the loop until the new value settled on my hardware)
+and then return from pd_power_down() or go to sleep for a short time and repeat
+in pd_power_up()?
 
 Rafael
 
 ---
 From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI / PM: Block races between runtime PM and system sleep
+Subject: ARM / shmobile: Support for I/O power domains for SH7372 (v7)
 
-After commit e8665002477f0278f84f898145b1f141ba26ee26
-(PM: Allow pm_runtime_suspend() to succeed during system suspend) it
-is possible that a device resumed by the pm_runtime_resume(dev) in
-pci_pm_prepare() will be suspended immediately from a work item,
-timer function or otherwise, defeating the very purpose of calling
-pm_runtime_resume(dev) from there.  To prevent that from happening
-it is necessary to increment the runtime PM usage counter of the
-device by replacing pm_runtime_resume() with pm_runtime_get_sync().
-Moreover, the incremented runtime PM usage counter has to be
-decremented by the corresponding pci_pm_complete(), via
-pm_runtime_put_sync().
+Use the generic power domains support introduced by the previous
+patch to implement support for power domains on SH7372.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: stable@kernel.org
 ---
- drivers/pci/pci-driver.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/arm/Kconfig                             |    1 
+ arch/arm/mach-shmobile/Makefile              |    4 +
+ arch/arm/mach-shmobile/board-mackerel.c      |    4 +
+ arch/arm/mach-shmobile/include/mach/sh7372.h |   28 +++++++++
+ arch/arm/mach-shmobile/pm-sh7372.c           |   84 +++++++++++++++++++++++++++
+ 5 files changed, 121 insertions(+)
 
-Index: linux-2.6/drivers/pci/pci-driver.c
+Index: linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -624,7 +624,7 @@ static int pci_pm_prepare(struct device
- 	 * system from the sleep state, we'll have to prevent it from signaling
- 	 * wake-up.
- 	 */
--	pm_runtime_resume(dev);
-+	pm_runtime_get_sync(dev);
+--- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
++++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+@@ -1582,6 +1582,10 @@ static void __init mackerel_init(void)
  
- 	if (drv && drv->pm && drv->pm->prepare)
- 		error = drv->pm->prepare(dev);
-@@ -638,6 +638,8 @@ static void pci_pm_complete(struct devic
+ 	platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel_devices));
  
- 	if (drv && drv->pm && drv->pm->complete)
- 		drv->pm->complete(dev);
++	sh7372_init_pm_domain(&sh7372_a4lc_domain);
++	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
++	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
 +
-+	pm_runtime_put_sync(dev);
+ 	hdmi_init_pm_clock();
+ 	sh7372_pm_init();
  }
+Index: linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/sh7372.h
++++ linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+@@ -12,6 +12,7 @@
+ #define __ASM_SH7372_H__
  
- #else /* !CONFIG_PM_SLEEP */
+ #include <linux/sh_clk.h>
++#include <linux/pm_domain.h>
+ 
+ /*
+  * Pin Function Controller:
+@@ -470,4 +471,31 @@ extern struct clk sh7372_fsibck_clk;
+ extern struct clk sh7372_fsidiva_clk;
+ extern struct clk sh7372_fsidivb_clk;
+ 
++struct platform_device;
++
++struct sh7372_pm_domain {
++	struct generic_pm_domain genpd;
++	unsigned int bit_shift;
++};
++
++static inline struct sh7372_pm_domain *to_sh7372_pd(struct generic_pm_domain *d)
++{
++	return container_of(d, struct sh7372_pm_domain, genpd);
++}
++
++#ifdef CONFIG_PM
++extern struct sh7372_pm_domain sh7372_a4lc_domain;
++#define SH7372_A4LC	(&sh7372_a4lc_domain)
++
++extern void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd);
++extern void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
++					struct platform_device *pdev);
++#else
++#define SH7372_A4LC	NULL
++
++static inline void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd) {}
++static inline void sh7372_add_device_to_domain(struct sh7372_pm_domain *pd,
++					       struct platform_device *pdev) {}
++#endif /* CONFIG_PM */
++
+ #endif /* __ASM_SH7372_H__ */
+Index: linux-2.6/arch/arm/mach-shmobile/Makefile
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/Makefile
++++ linux-2.6/arch/arm/mach-shmobile/Makefile
+@@ -42,6 +42,10 @@ obj-$(CONFIG_MACH_AP4EVB)	+= board-ap4ev
+ obj-$(CONFIG_MACH_AG5EVM)	+= board-ag5evm.o
+ obj-$(CONFIG_MACH_MACKEREL)	+= board-mackerel.o
+ 
++# PM objects
++pm-$(CONFIG_ARCH_SH7372)	+= pm-sh7372.o
++
+ # Framework support
+ obj-$(CONFIG_SMP)		+= $(smp-y)
+ obj-$(CONFIG_GENERIC_GPIO)	+= $(pfc-y)
++obj-$(CONFIG_PM)		+= $(pm-y)
+Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -15,16 +15,100 @@
+ #include <linux/list.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
+ #include <asm/system.h>
+ #include <asm/io.h>
+ #include <asm/tlbflush.h>
+ #include <mach/common.h>
++#include <mach/sh7372.h>
+ 
+ #define SMFRAM 0xe6a70000
+ #define SYSTBCR 0xe6150024
+ #define SBAR 0xe6180020
+ #define APARMBAREA 0xe6f10020
+ 
++#define SPDCR 0xe6180008
++#define SWUCR 0xe6180014
++#define PSTR 0xe6180080
++
++#define PSTR_RETRIES 100
++#define PSTR_DELAY_MS 10
++
++static int pd_power_down(struct generic_pm_domain *genpd)
++{
++	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
++	unsigned int mask = 1 << sh7372_pd->bit_shift;
++
++	if (__raw_readl(PSTR) & mask) {
++		unsigned int retry_count = PSTR_RETRIES;
++
++		__raw_writel(mask, SPDCR);
++		while ((__raw_readl(SPDCR) & mask) && retry_count--)
++			cpu_relax();
++	}
++
++	pr_debug("sh7372 power domain down 0x%08x -> PSTR = 0x%08x\n",
++		 mask, __raw_readl(PSTR));
++
++	return 0;
++}
++
++static int pd_power_up(struct generic_pm_domain *genpd)
++{
++	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
++	unsigned int mask = 1 << sh7372_pd->bit_shift;
++
++	if (!(__raw_readl(PSTR) & mask)) {
++		do {
++			unsigned int retry_count = PSTR_RETRIES;
++
++			__raw_writel(mask, SWUCR);
++			while ((__raw_readl(SWUCR) & mask) && retry_count--)
++				cpu_relax();
++
++			if (!(__raw_readl(SWUCR) & mask))
++				break;
++
++			msleep(PSTR_DELAY_MS);
++		} while (true);
++	}
++
++	pr_debug("sh7372 power domain up 0x%08x -> PSTR = 0x%08x\n",
++		 mask, __raw_readl(PSTR));
++
++	return 0;
++}
++
++void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd)
++{
++	struct generic_pm_domain *genpd = &sh7372_pd->genpd;
++
++	pm_genpd_init(genpd, NULL, false);
++	genpd->stop_device = pm_runtime_clk_suspend;
++	genpd->start_device = pm_runtime_clk_resume;
++	genpd->power_off = pd_power_down;
++	genpd->power_on = pd_power_up;
++	pd_power_up(&sh7372_pd->genpd);
++}
++
++void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
++				 struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++
++	if (!dev->power.subsys_data) {
++		pm_runtime_clk_init(dev);
++		pm_runtime_clk_add(dev, NULL);
++	}
++	pm_genpd_add_device(&sh7372_pd->genpd, dev);
++}
++
++struct sh7372_pm_domain sh7372_a4lc_domain = {
++	.bit_shift = 1,
++};
++
+ static void sh7372_enter_core_standby(void)
+ {
+ 	void __iomem *smfram = (void __iomem *)SMFRAM;
+Index: linux-2.6/arch/arm/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/arm/Kconfig
++++ linux-2.6/arch/arm/Kconfig
+@@ -642,6 +642,7 @@ config ARCH_SHMOBILE
+ 	select NO_IOPORT
+ 	select SPARSE_IRQ
+ 	select MULTI_IRQ_HANDLER
++	select PM_GENERIC_DOMAINS
+ 	help
+ 	  Support for Renesas's SH-Mobile and R-Mobile ARM platforms.
+ 
