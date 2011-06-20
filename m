@@ -1,14 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PCI / PM: Block races between runtime PM and
- system sleep
-Date: Mon, 20 Jun 2011 10:46:13 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106201039580.2113-100000__25159.4484238469$1308581314$gmane$org@iolanthe.rowland.org>
-References: <201106192149.19401.rjw@sisk.pl>
+From: deepthi <deepthi@linux.vnet.ibm.com>
+Subject: Re: [PATCH] perf_events: Enable idle state tracing for
+	pseries (ppc64)
+Date: Mon, 20 Jun 2011 22:48:53 +0530
+Message-ID: <4DFF80FD.8080600__23689.9535092109$1308591484$gmane$org@linux.vnet.ibm.com>
+References: <20110601123554.GA12492@deepthi.in.ibm.com>
+	<1308284659.32158.4.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106192149.19401.rjw@sisk.pl>
+In-Reply-To: <1308284659.32158.4.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +19,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 19 Jun 2011, Rafael J. Wysocki wrote:
-
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Friday 17 June 2011 09:54 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2011-06-01 at 18:05 +0530, Deepthi Dharwar wrote:
+>> Hi,
+>>
+>> Please find below a patch, which has perf_events added for pseries (ppc64)
+>> platform in order to emit the trace required for perf timechart. 
+>> It essentially enables perf timechart for pseries platfrom to analyse
+>> power savings events like cpuidle states.
 > 
-> After commit e8665002477f0278f84f898145b1f141ba26ee26
-> (PM: Allow pm_runtime_suspend() to succeed during system suspend) it
-> is possible that a device resumed by the pm_runtime_resume(dev) in
-> pci_pm_prepare() will be suspended immediately from a work item,
-> timer function or otherwise, defeating the very purpose of calling
-> pm_runtime_resume(dev) from there.  To prevent that from happening
-> it is necessary to increment the runtime PM usage counter of the
-> device by replacing pm_runtime_resume() with pm_runtime_get_sync().
-> Moreover, the incremented runtime PM usage counter has to be
-> decremented by the corresponding pci_pm_complete(), via
-> pm_runtime_put_noidle().
+> Unless I'm mistaken, you added traces to dedicated CPU idle sleep but
+> not shared processor. Any reason ?
+> 
+Yes, the traces were added only to dedicated CPU idle sleep and not for 
+shared processor. This was added only for RFC purpose, and looking for 
+comments from trace implementation point of view. This can be
+easily extended to the latter too.
 
-In both this and the previous patch, the final decrement should be done 
-by pm_runtime_put_sync() instead of pm_runtime_put_idle().  Otherwise 
-you face the possibility that the usage_count may go to 0 but the 
-device will be left active.
+> Also I don't really know that tracing stuff but what's the point of
+> having start/end _and trace_cpu_idle if you're going to always start &
+> end around a single occurence of trace_cpu_idle ?
+> 
+power_start/end are the APIs that were used initially
+and they are going to be deprecated in the upcoming kernel releases.
+trace_cpu_idle call is going to replace power start/end routines. 
+To maintain backward compatibility and uniformity, both the routines 
+have been used.
+(ref:https://lkml.org/lkml/2010/11/14/60)
 
-Furthermore, since we're going to disable runtime PM as soon as the
-suspend callback returns anyway, why not increment usage_count before
-invoking the callback?  This will prevent runtime suspends from 
-occurring while the callback runs, so no changes will be needed in the 
-PCI or USB subsystems.
+> Wouldn't there be a way to start/end and then trace the snooze and
+> subsequent cede within the same start/end section or that makes no
+> sense ?
+> 
+We wanted to find the residency time of both Snooze as well as cede 
+separately. Knowing this will help us tweak our cpuidle code. So, both 
+have been captured separately.
 
-It also will prevent Kevin from calling pm_runtime_suspend from within
-his suspend callbacks, but you have already determined that subsystems
-and drivers should never do that in any case.
+> Also would there be any interest in doing the tracing more generically
+> in idle.c ?
+> 
+Yes, this tracing is already implemented for Intel platform. This would
+be a part of cpuidle framework. Going further, once the power cpuidle 
+framework is ported and ready, we will extend this trace there as well.
+(ref:https://lkml.org/lkml/2011/6/7/375)
 
-Alan Stern
+> Cheers,
+> Ben.
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+Regards,
+Deepthi
