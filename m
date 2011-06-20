@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PCI / PM: Block races between runtime PM and
-	system sleep
-Date: Mon, 20 Jun 2011 21:42:45 +0200
-Message-ID: <201106202142.45802.rjw__47382.1566127755$1308598963$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1106201039580.2113-100000@iolanthe.rowland.org>
+Subject: Re: calling runtime PM from system PM methods
+Date: Mon, 20 Jun 2011 21:53:59 +0200
+Message-ID: <201106202153.59329.rjw__46224.199087783$1308599719$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106201028470.2113-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106201039580.2113-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1106201028470.2113-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,57 +18,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On Monday, June 20, 2011, Alan Stern wrote:
 > On Sun, 19 Jun 2011, Rafael J. Wysocki wrote:
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > After commit e8665002477f0278f84f898145b1f141ba26ee26
-> > (PM: Allow pm_runtime_suspend() to succeed during system suspend) it
-> > is possible that a device resumed by the pm_runtime_resume(dev) in
-> > pci_pm_prepare() will be suspended immediately from a work item,
-> > timer function or otherwise, defeating the very purpose of calling
-> > pm_runtime_resume(dev) from there.  To prevent that from happening
-> > it is necessary to increment the runtime PM usage counter of the
-> > device by replacing pm_runtime_resume() with pm_runtime_get_sync().
-> > Moreover, the incremented runtime PM usage counter has to be
-> > decremented by the corresponding pci_pm_complete(), via
-> > pm_runtime_put_noidle().
+> > In the meantime I rethought the __pm_runtime_disable() part of my previous
+> > patch and I now think it's not necessary to complicate it any more.  Of course,
+> > we need not check if runtime resume is pending in __device_suspend(), because
+> > we've done it already in dpm_prepare(), but the barrier part should better be
+> > done in there too.
 > 
-> In both this and the previous patch, the final decrement should be done 
-> by pm_runtime_put_sync() instead of pm_runtime_put_idle().  Otherwise 
-> you face the possibility that the usage_count may go to 0 but the 
-> device will be left active.
+> Does this really make sense?  What use is a barrier in dpm_prepare() if 
+> runtime PM is allowed to continue functioning up to the 
+> suspend callback?
 
-OK, that's how the old code worked, BTW, I overlooked that.
+It checks if a resume request is pending and executes runtime resume in that
+case.
 
-> Furthermore, since we're going to disable runtime PM as soon as the
-> suspend callback returns anyway, why not increment usage_count before
-> invoking the callback?  This will prevent runtime suspends from 
-> occurring while the callback runs, so no changes will be needed in the 
-> PCI or USB subsystems.
+> As I see it, we never want a suspend or suspend_noirq callback to call 
+> pm_runtime_suspend().  However it's okay for the suspend callback to 
+> invoke pm_runtime_resume(), as long as this is all done in subsystem 
+> code.
 
-The PCI case is different from the USB one.  PCI needs to resume devices
-before calling their drivers' .suspend() callbacks, so it does that in
-.prepare().  If the core acquired a reference to every device  before executing
-the subsystem .suspend(), then pm_runtime_resume() could be moved from
-pci_pm_prepare() to pci_prepare_suspend(), but then additionally it would
-have to be called from pci_pm_freeze() and pci_pm_poweroff().  It simply is
-more efficient to call it once from pci_pm_prepare(), but then PCI needs to
-take the reference by itself.
+First off, I don't really see a reason for a subsystem to call
+pm_runtime_resume() from its .suspend_noirq() callback.  Now, if
+pm_runtime_resume() is to be called concurrently with the subsystem's
+.suspend_noirq() callback, I'd rather won't let that happen. :-)
 
-Also the core doesn't call the subsystem-level .runtime_idle() after the
-subsystem-level .complete() has run, which is useful as you pointed out above. :-)
+> And in between the prepare and suspend callbacks, runtime PM should be
+> more or less fully functional, right?  For most devices it will never
+> be triggered, because it has to run in process context and both
+> userspace and pm_wq are frozen.  It may trigger for devices marked as
+> IRQ-safe, though.
 
-> It also will prevent Kevin from calling pm_runtime_suspend from within
-> his suspend callbacks, but you have already determined that subsystems
-> and drivers should never do that in any case.
+It also may trigger for drivers using non-freezable workqueues and calling
+runtime PM synchronously from there.
 
-Then reverting commit e8665002477f0278f84f898145b1f141ba26ee26 would be
-even better. :-)
+> Maybe the barrier should be moved into __device_suspend().
+
+I _really_ think that the initial approach, i.e. before commit
+e8665002477f0278f84f898145b1f141ba26ee26, made the most sense.  It didn't
+cover the "pm_runtime_resume() called during system suspend" case, but
+it did cover everything else.
+
+So, I think there are serious technical arguments for reverting that commit.
+
+I think we went really far trying to avoid that, but I'm not sure I want to go
+any further.
 
 Thanks,
 Rafael
