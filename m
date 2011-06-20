@@ -1,16 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] perf_events: Enable idle state tracing for
- pseries (ppc64)
-Date: Tue, 21 Jun 2011 07:42:13 +1000
-Message-ID: <1308606133.32158.143.camel__44756.3952453949$1308606295$gmane$org@pasglop>
-References: <20110601123554.GA12492@deepthi.in.ibm.com>
-	<1308284659.32158.4.camel@pasglop>
-	<4DFF80FD.8080600@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PCI / PM: Block races between runtime PM and
+	system sleep
+Date: Mon, 20 Jun 2011 23:28:53 +0200
+Message-ID: <201106202328.54100.rjw__4204.80852849341$1308606899$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106201651270.2113-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4DFF80FD.8080600@linux.vnet.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.1106201651270.2113-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,62 +18,167 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: deepthi <deepthi@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2011-06-20 at 22:48 +0530, deepthi wrote:
-> On Friday 17 June 2011 09:54 AM, Benjamin Herrenschmidt wrote:
-> > On Wed, 2011-06-01 at 18:05 +0530, Deepthi Dharwar wrote:
-> >> Hi,
-> >>
-> >> Please find below a patch, which has perf_events added for pseries (ppc64)
-> >> platform in order to emit the trace required for perf timechart. 
-> >> It essentially enables perf timechart for pseries platfrom to analyse
-> >> power savings events like cpuidle states.
-> > 
-> > Unless I'm mistaken, you added traces to dedicated CPU idle sleep but
-> > not shared processor. Any reason ?
-> > 
-> Yes, the traces were added only to dedicated CPU idle sleep and not for 
-> shared processor. This was added only for RFC purpose, and looking for 
-> comments from trace implementation point of view. This can be
-> easily extended to the latter too.
-
-Please do both.
-
-> > Also I don't really know that tracing stuff but what's the point of
-> > having start/end _and trace_cpu_idle if you're going to always start &
-> > end around a single occurence of trace_cpu_idle ?
-> > 
-> power_start/end are the APIs that were used initially
-> and they are going to be deprecated in the upcoming kernel releases.
-> trace_cpu_idle call is going to replace power start/end routines. 
-> To maintain backward compatibility and uniformity, both the routines 
-> have been used.
-> (ref:https://lkml.org/lkml/2010/11/14/60ref:https://lkml.org/lkml/2010/11/14/60)
-
-Backward compatible with what ? Userspace ? Do we care in that specific
-case since it's a new feature ?
-
-> > Wouldn't there be a way to start/end and then trace the snooze and
-> > subsequent cede within the same start/end section or that makes no
-> > sense ?
-> > 
-> We wanted to find the residency time of both Snooze as well as cede 
-> separately. Knowing this will help us tweak our cpuidle code. So, both 
-> have been captured separately.
+On Monday, June 20, 2011, Alan Stern wrote:
+> On Mon, 20 Jun 2011, Rafael J. Wysocki wrote:
 > 
-> > Also would there be any interest in doing the tracing more generically
-> > in idle.c ?
+> > > Furthermore, since we're going to disable runtime PM as soon as the
+> > > suspend callback returns anyway, why not increment usage_count before
+> > > invoking the callback?  This will prevent runtime suspends from 
+> > > occurring while the callback runs, so no changes will be needed in the 
+> > > PCI or USB subsystems.
 > > 
-> Yes, this tracing is already implemented for Intel platform. This would
-> be a part of cpuidle framework. Going further, once the power cpuidle 
-> framework is ported and ready, we will extend this trace there as well.
-> (ref:https://lkml.org/lkml/2011/6/7/375)
+> > The PCI case is different from the USB one.  PCI needs to resume devices
+> > before calling their drivers' .suspend() callbacks, so it does that in
+> > .prepare().  If the core acquired a reference to every device  before executing
+> > the subsystem .suspend(), then pm_runtime_resume() could be moved from
+> > pci_pm_prepare() to pci_prepare_suspend(), but then additionally it would
+> > have to be called from pci_pm_freeze() and pci_pm_poweroff().  It simply is
+> > more efficient to call it once from pci_pm_prepare(), but then PCI needs to
+> > take the reference by itself.
+> 
+> Ah, okay.  The PCI part makes sense then.
 
-So do we need to apply this patch at all since the cpuidle stuff is
-happening too ?
+OK, so the appended patch is a modification of the $subject one using
+pm_runtime_put_sync() instead of pm_runtime_put_noidle().
 
-Cheers,
-Ben.
+> > > It also will prevent Kevin from calling pm_runtime_suspend from within
+> > > his suspend callbacks, but you have already determined that subsystems
+> > > and drivers should never do that in any case.
+> > 
+> > Then reverting commit e8665002477f0278f84f898145b1f141ba26ee26 would be
+> > even better. :-)
+> 
+> See below.
+> 
+> 
+> > > As I see it, we never want a suspend or suspend_noirq callback to call 
+> > > pm_runtime_suspend().  However it's okay for the suspend callback to 
+> > > invoke pm_runtime_resume(), as long as this is all done in subsystem 
+> > > code.
+> > 
+> > First off, I don't really see a reason for a subsystem to call
+> > pm_runtime_resume() from its .suspend_noirq() callback.
+> 
+> I was referring to .suspend(), not .suspend_noirq().
+> 
+> >  Now, if
+> > pm_runtime_resume() is to be called concurrently with the subsystem's
+> > .suspend_noirq() callback, I'd rather won't let that happen. :-)
+> 
+> Me too.  But I see no reason to prevent pm_runtime_resume() from being 
+> called by .suspend().
+
+Hmm.
+
+> > > And in between the prepare and suspend callbacks, runtime PM should be
+> > > more or less fully functional, right?  For most devices it will never
+> > > be triggered, because it has to run in process context and both
+> > > userspace and pm_wq are frozen.  It may trigger for devices marked as
+> > > IRQ-safe, though.
+> > 
+> > It also may trigger for drivers using non-freezable workqueues and calling
+> > runtime PM synchronously from there.
+> 
+> Right.  So we shouldn't ignore this window.
+
+So, your point is that while .suspend() or .resume() are running, the
+synchronization between runtime PM and system suspend/resume should be the
+subsystem's problem, right?
+
+> > > Maybe the barrier should be moved into __device_suspend().
+> > 
+> > I _really_ think that the initial approach, i.e. before commit
+> > e8665002477f0278f84f898145b1f141ba26ee26, made the most sense.  It didn't
+> > cover the "pm_runtime_resume() called during system suspend" case, but
+> > it did cover everything else.
+> 
+> But it prevented runtime PM from working during the window between 
+> .prepare() and .suspend(), and also between .resume() and .complete().
+> If a subsystem like PCI wants to rule out runtime PM during those 
+> windows, then fine -- it can do whatever it wants.  But the PM core 
+> shouldn't do this.
+
+I actually see a reason for doing this.  Namely, I don't really think
+driver writers should be bothered with preventing races between different
+PM callbacks from happening.  Runtime PM takes care of that at run time,
+the design of the system suspend/resume code ensures that the callbacks
+for the same device are executed sequentially, but if we allow runtime PM
+callbacks to be executed in parallel with system suspend/resume callbacks,
+someone has to prevent those callbacks from racing with each other.
+
+Now, if you agree that that shouldn't be a driver's task, then it has to
+be the subsystem's one and I'm not sure what a subsystem can do other than
+disabling runtime PM or at least taking a reference on every device before
+calling device drivers' .suspend() callbacks.
+
+Please note, I think that .prepare() and .complete() are somewhat special,
+so perhaps we should allow those to race with runtime PM callbacks, but IMO
+allowing .suspend() and .resume() to race with .runtime_suspend() and
+.runtime_resume() is not a good idea.
+
+> > So, I think there are serious technical arguments for reverting that commit.
+> > 
+> > I think we went really far trying to avoid that, but I'm not sure I want to go
+> > any further.
+> 
+> What I'm suggesting is to revert the commit but at the same time,
+> move the get_noresume() into __device_suspend() and the put_sync() into 
+> device_resume().
+
+What about doing pm_runtime_get_noresume() and the pm_runtime_barrier()
+in dpm_prepare(), but _after_ calling device_prepare() and doing
+pm_runtime_put_noidle() in dpm_complete() _before_ calling .complete()
+from the subsystem (a _put_sync() at this point will likely invoke
+.runtime_idle() from the subsystem before executing .complete(), which may
+not be desirable)?
+
+Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI / PM: Block races between runtime PM and system sleep
+
+After commit e8665002477f0278f84f898145b1f141ba26ee26
+(PM: Allow pm_runtime_suspend() to succeed during system suspend) it
+is possible that a device resumed by the pm_runtime_resume(dev) in
+pci_pm_prepare() will be suspended immediately from a work item,
+timer function or otherwise, defeating the very purpose of calling
+pm_runtime_resume(dev) from there.  To prevent that from happening
+it is necessary to increment the runtime PM usage counter of the
+device by replacing pm_runtime_resume() with pm_runtime_get_sync().
+Moreover, the incremented runtime PM usage counter has to be
+decremented by the corresponding pci_pm_complete(), via
+pm_runtime_put_sync().
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: stable@kernel.org
+---
+ drivers/pci/pci-driver.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/pci/pci-driver.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -624,7 +624,7 @@ static int pci_pm_prepare(struct device
+ 	 * system from the sleep state, we'll have to prevent it from signaling
+ 	 * wake-up.
+ 	 */
+-	pm_runtime_resume(dev);
++	pm_runtime_get_sync(dev);
+ 
+ 	if (drv && drv->pm && drv->pm->prepare)
+ 		error = drv->pm->prepare(dev);
+@@ -638,6 +638,8 @@ static void pci_pm_complete(struct devic
+ 
+ 	if (drv && drv->pm && drv->pm->complete)
+ 		drv->pm->complete(dev);
++
++	pm_runtime_put_sync(dev);
+ }
+ 
+ #else /* !CONFIG_PM_SLEEP */
