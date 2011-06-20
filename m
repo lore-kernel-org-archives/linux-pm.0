@@ -1,18 +1,17 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
- Memory Power Management
-Date: Mon, 20 Jun 2011 08:53:07 +0900
-Message-ID: <20110620085307.76e16c8f.kamezawa.hiroyu__43750.692861113$1308528079$gmane$org@jp.fujitsu.com>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<20110613134701.2b23b8d8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20110616042044.GA28563@in.ibm.com>
-	<20110616181251.caf484b6.kamezawa.hiroyu@jp.fujitsu.com>
-	<20110617152845.GA13574@in.ibm.com>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [Update][PATCH 8/8] ARM / shmobile: Support for I/O
+	power domains for SH7372 (v6)
+Date: Mon, 20 Jun 2011 11:01:32 +0900
+Message-ID: <20110620020125.GA26125__20036.4261320376$1308535383$gmane$org@linux-sh.org>
+References: <201106112223.04972.rjw@sisk.pl>
+	<BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw@mail.gmail.com>
+	<201106160106.40553.rjw@sisk.pl> <201106200007.47828.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110617152845.GA13574@in.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <201106200007.47828.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,82 +21,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 17 Jun 2011 20:58:45 +0530
-Ankita Garg <ankita@in.ibm.com> wrote:
-
-> Hi,
-> 
-> On Thu, Jun 16, 2011 at 06:12:51PM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 16 Jun 2011 09:50:44 +0530
-> > Ankita Garg <ankita@in.ibm.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > On Mon, Jun 13, 2011 at 01:47:01PM +0900, KAMEZAWA Hiroyuki wrote:
-> > > > On Fri, 27 May 2011 18:01:28 +0530
-> > > > Ankita Garg <ankita@in.ibm.com> wrote:
-> > > > 
-> > > > > Hi,
-> > > > > 
-> > > > 
-> > > > I'm sorry if you've answered already.
-> > > > 
-> > > > Is memory hotplug is too bad and cannot be enhanced for this purpose ?
-> > > > 
-> > > > I wonder
-> > > >   - make section-size smaller (IIUC, IBM's system has 16MB section size)
-> > > > 
-> > > >   - add per section statistics
-> > > > 
-> > > >   - add a kind of balloon driver which does software memory offline
-> > > >     (which means making a contiguous chunk of free pages of section_size
-> > > >      by page migration) in background with regard to memory usage statistics.
-> > > >     If system says "need more memory!", balloon driver can online pages.
-> > > > 
-> > > > can work for your purpose. It can allow you page isolatation and
-> > > > controls in 16MB unit.  If you need whole rework of memory hotplug, I think
-> > > > it's better to rewrite memory hotplug, too.
-> > > >
-> > > 
-> > > Interesting idea, but a few issues -
-> > > 
-> > > - Correctly predicting memory pressure is difficult and thereby being
-> > >   able to online the required pages at the right time could be a
-> > >   challenge
-> > 
-> > But it will be required for your purpose, anyway. Isn't it ?
-> > 
-> > > - Memory hotplug is a heavy operation, so the overhead involved may be
-> > >   high
-> > 
-> > soft-offline of small amount of pages will not very heavy.
-> > compaction and cma patches use the same kind of logic.
-> > 
-> > 
-> > > - Powering off memory is just one of the ways in which memory power could
-> > >   be saved. The platform can also dynamically transition areas of memory
-> > >   into a  content-preserving lower power state if it is not referenced
-> > >   for a pre-defined threshold of time. In such a case, we would need a
-> > >   mechanism to soft offline the pages - i.e, no new allocations to be
-> > >   directed to that memory
-> > > 
-> > 
-> > Hmm, sounds like a similar idea of CleanCache ?
-> > 
-> > Reusing section is much easier than adding new one.., I think.
-> > 
-> 
-> But sections do not define the granualarity at which memory operations
-> are done right ? i.e, allocations/deallocations or reclaim cannot be
-> directed to a section or a group of sections ?
-
-
-Just because there are no users. If you'll be a 1st user, you can
-add codes, I think.
-
-Thanks,
--Kame
+On Mon, Jun 20, 2011 at 12:07:47AM +0200, Rafael J. Wysocki wrote:
+> +static int pd_power_down(struct generic_pm_domain *genpd)
+> +{
+> +	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
+> +	unsigned int mask = 1 << sh7372_pd->bit_shift;
+> +
+> +	if (__raw_readl(PSTR) & mask) {
+> +		__raw_writel(mask, SPDCR);
+> +
+> +		while (__raw_readl(SPDCR) & mask)
+> +			cpu_relax();
+> +
+> +		pr_debug("sh7372 power domain down 0x%08x -> PSTR = 0x%08x\n",
+> +			 mask, __raw_readl(PSTR));
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int pd_power_up(struct generic_pm_domain *genpd)
+> +{
+> +	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
+> +	unsigned int mask = 1 << sh7372_pd->bit_shift;
+> +
+> +	if (!(__raw_readl(PSTR) & mask)) {
+> +		__raw_writel(mask, SWUCR);
+> +
+> +		while (__raw_readl(SWUCR) & mask)
+> +			cpu_relax();
+> +
+> +		pr_debug("sh7372 power domain up 0x%08x -> PSTR = 0x%08x\n",
+> +			 mask, __raw_readl(PSTR));
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+Given that these functions can return errors, it's probably more prudent
+to implement some timeout logic on top of the busy loop. Hardware does
+get stuck, after all.
