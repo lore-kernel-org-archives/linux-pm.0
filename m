@@ -1,16 +1,14 @@
-From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH V1 4/7] cpuidle: (powerpc) Add
- cpu_idle_wait() to allow switching idle routines
-Date: Tue, 21 Jun 2011 11:30:09 +0530
-Message-ID: <4E003369.3000006__21601.3087462217$1308636110$gmane$org@linux.vnet.ibm.com>
-References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
-	<20110607162959.6848.26918.stgit@tringupt.in.ibm.com>
-	<1308285128.32158.8.camel@pasglop>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH] PM / Runtime: Handle clocks correctly if
+ CONFIG_PM_RUNTIME is unset
+Date: Tue, 21 Jun 2011 16:10:44 +0900
+Message-ID: <BANLkTin0dq07rquuAmE-jE1nmkRnKH7aSA__42907.4282212698$1308640303$gmane$org@mail.gmail.com>
+References: <201106210128.52101.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1308285128.32158.8.camel@pasglop>
+In-Reply-To: <201106210128.52101.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,70 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 06/17/2011 10:02 AM, Benjamin Herrenschmidt wrote:
-> On Tue, 2011-06-07 at 22:00 +0530, Trinabh Gupta wrote:
+On Tue, Jun 21, 2011 at 8:28 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 >
->> diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
->> index 39a2baa..932392b 100644
->> --- a/arch/powerpc/kernel/idle.c
->> +++ b/arch/powerpc/kernel/idle.c
->> @@ -102,6 +102,24 @@ void cpu_idle(void)
->>   	}
->>   }
->>
->> +static void do_nothing(void *unused)
->> +{
->> +}
->> +
->> +/*
->> + * cpu_idle_wait - Used to ensure that all the CPUs come out of the old
->> + * idle loop and start using the new idle loop.
->> + * Required while changing idle handler on SMP systems.
->> + * Caller must have changed idle handler to the new value before the call.
->> + */
->> +void cpu_idle_wait(void)
->> +{
->> +	smp_mb();
->> +	/* kick all the CPUs so that they exit out of old idle routine */
->> +	smp_call_function(do_nothing, NULL, 1);
->> +}
->> +EXPORT_SYMBOL_GPL(cpu_idle_wait);
->> +
->>   int powersave_nap;
->>
->>   #ifdef CONFIG_SYSCTL
+> Commit 85eb8c8d0b0900c073b0e6f89979ac9c439ade1a (PM / Runtime:
+> Generic clock manipulation rountines for runtime PM (v6)) converted
+> the shmobile platform to using generic code for runtime PM clock
+> management, but it changed the behavior for CONFIG_PM_RUNTIME unset
+> incorrectly.
 >
-> This is gross :-)
-
-Well this is what exists today for x86; so didn't think too
-much into this. Maybe there is cleaner way. The requirement
-is to completely exit the idle loop and call cpuidle_idle_call()
-again. I think sending reschedule may be enough.
-
-With respect to current implementation the arch-independent cpuidle
-code needs a cpu_idle_wait() function for any architecture where
-CONFIG_SMP is defined. This cpu_idle_wait function is called
-whenever we have to pause usage of cpuidle; to switch driver
-or governor etc. So maybe there is a cleaner implementation of
-cpu_idle_wait instead of smp_call_function(do_nothing...); sending
-reschedule may work.
-
-Thanks
--Trinabh
-
+> Specifically, for CONFIG_PM_RUNTIME unset pm_runtime_clk_notify()
+> should enable clocks for action equal to BUS_NOTIFY_BIND_DRIVER and
+> it should disable them for action equal to BUS_NOTIFY_UNBOUND_DRIVER
+> (instead of BUS_NOTIFY_ADD_DEVICE and BUS_NOTIFY_DEL_DEVICE,
+> respectively). =A0Make this function behave as appropriate.
 >
-> Do you need to absolutely ensure the idle task has changed or just
-> kicking it with a send reschedule is enough ?
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
+Thanks Rafael!
 
->
-> Cheers,
-> Ben.
->
->
+Acked-by: Magnus Damm <damm@opensource.se>
