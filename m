@@ -1,16 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [Update][PATCH 4/8] PM / Domains: Support for
-	generic I/O PM domains (v6)
-Date: Tue, 21 Jun 2011 10:42:19 -0700
-Message-ID: <874o3jt72c.fsf__31746.0594735623$1308678767$gmane$org@ti.com>
-References: <201106112223.04972.rjw@sisk.pl> <201106112231.11269.rjw@sisk.pl>
-	<201106200002.19377.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PCI / PM: Block races between runtime PM and
+	system sleep
+Date: Wed, 22 Jun 2011 01:49:17 +0200
+Message-ID: <201106220149.17380.rjw__48342.5343096771$1308700183$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106211031410.2327-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106200002.19377.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Mon, 20 Jun 2011 00:02:19 +0200")
+In-Reply-To: <Pine.LNX.4.44L0.1106211031410.2327-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,189 +18,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Tuesday, June 21, 2011, Alan Stern wrote:
+> On Mon, 20 Jun 2011, Rafael J. Wysocki wrote:
+> 
+> > > Ah, okay.  The PCI part makes sense then.
+> > 
+> > OK, so the appended patch is a modification of the $subject one using
+> > pm_runtime_put_sync() instead of pm_runtime_put_noidle().
+> 
+> Yes, it looks good.
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Introduce common headers, helper functions and callbacks allowing
-> platforms to use simple generic power domains for runtime power
-> management.
->
-> Introduce struct generic_pm_domain to be used for representing
-> power domains that each contain a number of devices and may be
-> parent domains or subdomains with respect to other power domains.
-> Among other things, this structure includes callbacks to be
-> provided by platforms for performing specific tasks related to
-> power management (i.e. ->stop_device() may disable a device's
-> clocks, while ->start_device() may enable them, ->power_off() is
-> supposed to remove power from the entire power domain
-> and ->power_on() is supposed to restore it).
->
-> Introduce functions that can be used as power domain runtime PM
-> callbacks, pm_genpd_runtime_suspend() and pm_genpd_runtime_resume(),
-> as well as helper functions for the initialization of a power
-> domain represented by a struct generic_power_domain object,
-> adding a device to or removing a device from it and adding or
-> removing subdomains.
->
-> Introduce configuration option CONFIG_PM_GENERIC_DOMAINS to be
-> selected by the platforms that want to use the new code.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->
-> Hi,
->
-> I this version of the patch I made the following modifications:
->
-> * Removed the change adding platform_data to struct dev_pm_domain,
->   because that field is not going to be necessary in the near future.
->
-> * Moved the code calling drv->pm->runtime_suspend(dev) to a separate
->   function that returns immediately if dle->need_restore is set for the
->   given device (meaning that drv->pm->runtime_suspend(dev) has already
->   been called for it and the corresponding ->runtime_resume() hasn't).
->   This fixes a bug where drv->pm->runtime_suspend() could be called for
->   a device whose state hasn't been restored after power cycling its
->   PM domain.
->
-> * Made pm_genpd_add_device() return error code on an attempt to add a device
->   do a PM domain whose power_is_off is set (that complemets the previous
->   modification).
->
-> * Makde the .power_on() and .power_off() generic PM domain callbacks take
->   (struct generic_pm_domain *) arguments instead of (struct dev_pm_domain *).
->
-> Thanks,
-> Rafael
+Cool, thanks!
 
-There's a guiding assumption in this generic PM domain layer that the
-runtime PM callbacks need only be called if power to the underlying PM
-domain is actually being cut.  As a result, devices no longer have a
-callback called for other low-power states where the power may not
-actually be cut (a.k.a low-power with memory & logic retention.)
+> > So, your point is that while .suspend() or .resume() are running, the
+> > synchronization between runtime PM and system suspend/resume should be the
+> > subsystem's problem, right?
+> 
+> Almost but not quite.  I was talking about the time period between 
+> .prepare() and .suspend() (and also the time period between .resume() 
+> and .complete()).
+> 
+> It's probably okay to prevent pm_runtime_suspend() from working during
+> .suspend() or .resume(), but it's not a good idea to prevent
+> pm_runtime_resume() from working then.
 
-However, there are devices (at least on OMAP, but I presume on all SoCs)
-where the driver will need to do other "stuff" for *all* low-power
-transitions, not just the power-off ones (e.g. device specific idle mode
-registers, clearing device-specific events/state that prevent low power
-transitions, etc.)
+OK, but taking a reference by means of pm_runtime_get_noresume() won't
+block pm_runtime_resume().
 
-Because of this, I don't currently see how to use these generic PM
-domains on devices with multiple power states since the runtime PM
-callbacks are only called for a subset of the power states.
+> > I actually see a reason for doing this.  Namely, I don't really think
+> > driver writers should be bothered with preventing races between different
+> > PM callbacks from happening.  Runtime PM takes care of that at run time,
+> > the design of the system suspend/resume code ensures that the callbacks
+> > for the same device are executed sequentially, but if we allow runtime PM
+> > callbacks to be executed in parallel with system suspend/resume callbacks,
+> > someone has to prevent those callbacks from racing with each other.
+> > 
+> > Now, if you agree that that shouldn't be a driver's task, then it has to
+> > be the subsystem's one and I'm not sure what a subsystem can do other than
+> > disabling runtime PM or at least taking a reference on every device before
+> > calling device drivers' .suspend() callbacks.
+> > 
+> > Please note, I think that .prepare() and .complete() are somewhat special,
+> > so perhaps we should allow those to race with runtime PM callbacks, but IMO
+> > allowing .suspend() and .resume() to race with .runtime_suspend() and
+> > .runtime_resume() is not a good idea.
+> 
+> Races in the period after .suspend() and before .resume() will be 
+> handled by disabling runtime PM when .suspend() returns and enabling it 
+> before calling .resume().
 
-I haven't given this too much thought yet (especially the system PM
-aspects), but in order for generic PM domains to be more broadly useful
-for runtime PM, I'm starting to think that this series should add
-another set of callbacks: .power_off, .power_on or something similar.
-The .runtime_suspend/.runtime_resume callbacks would then be used for
-all power states and the .power_off/.power_on callbacks used only when
-power is actually cut.
+OK
 
-[...]
+> During the .suspend and .resume callbacks, races with
+> .runtime_suspend() can be prevented by calling
+> pm_runtime_get_noresume() just before .suspend() and then calling
+> pm_runtime_put_sync() just after .resume().
 
-> Index: linux-2.6/drivers/base/power/domain.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/drivers/base/power/domain.c
-> @@ -0,0 +1,490 @@
-> +/*
-> + * drivers/base/power/domain.c - Common code related to device power domains.
-> + *
-> + * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
-> + *
-> + * This file is released under the GPLv2.
-> + */
-> +
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/io.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/pm_domain.h>
-> +#include <linux/slab.h>
-> +#include <linux/err.h>
-> +
-> +#ifdef CONFIG_PM_RUNTIME
-> +
-> +static void genpd_sd_counter_dec(struct generic_pm_domain *genpd)
-> +{
-> +	if (!WARN_ON(genpd->sd_count == 0))
-> +			genpd->sd_count--;
-> +}
-> +
-> +/**
-> + * __pm_genpd_save_device - Save the pre-suspend state of a device.
-> + * @dle: Device list entry of the device to save the state of.
-> + * @genpd: PM domain the device belongs to.
-> + */
-> +static int __pm_genpd_save_device(struct dev_list_entry *dle,
-> +				  struct generic_pm_domain *genpd)
-> +{
-> +	struct device *dev = dle->dev;
-> +	struct device_driver *drv = dev->driver;
-> +	int ret = 0;
-> +
-> +	if (dle->need_restore)
-> +		return 0;
-> +
-> +	if (genpd->start_device)
-> +		genpd->start_device(dev);
-> +
-> +	if (drv && drv->pm && drv->pm->runtime_suspend)
+So, you seem to suggest to call pm_runtime_get_noresume() in
+__device_suspend() and pm_runtime_put_sync() in device_resume().
+That would be fine by me, perhaps up to the "sync" part of the "put".
 
-The start/stop device calls should probably be included inside this 'if'
-since there's no reason to restart and re-stop the device if there is no
-callback to be run.
+> Races with .runtime_resume() can be handled to some extent by putting a
+> runtime barrier immediately after the pm_runtime_get_noresume() call,
+> but that's not a perfect solution.  Is it good enough?
 
-Some drivers have alterntive ways of saving context (shadow registers,
-manual save/restore per-xfer, etc.) and thus have no callbacks for
-context save/restore.
+It's not worse than what we had before, so I guess it should be enough.
 
-> +		ret = drv->pm->runtime_suspend(dev);
-> +
-> +	if (genpd->stop_device)
-> +		genpd->stop_device(dev);
-> +
-> +	if (!ret)
-> +		dle->need_restore = true;
-> +
-> +	return ret;
-> +}
-> +
-> +/**
-> + * __pm_genpd_restore_device - Restore the pre-suspend state of a device.
-> + * @dle: Device list entry of the device to restore the state of.
-> + * @genpd: PM domain the device belongs to.
-> + */
-> +static void __pm_genpd_restore_device(struct dev_list_entry *dle,
-> +				      struct generic_pm_domain *genpd)
-> +{
-> +	struct device *dev = dle->dev;
-> +	struct device_driver *drv = dev->driver;
-> +
-> +	if (!dle->need_restore)
-> +		return;
-> +
-> +	if (genpd->start_device)
-> +		genpd->start_device(dev);
-> +
-> +	if (drv && drv->pm && drv->pm->runtime_resume)
+> > > What I'm suggesting is to revert the commit but at the same time,
+> > > move the get_noresume() into __device_suspend() and the put_sync() into 
+> > > device_resume().
+> > 
+> > What about doing pm_runtime_get_noresume() and the pm_runtime_barrier()
+> > in dpm_prepare(), but _after_ calling device_prepare() and doing
+> > pm_runtime_put_noidle() in dpm_complete() _before_ calling .complete()
+> > from the subsystem
+> 
+> This does not address the issue of allowing runtime suspends in the 
+> windows between .prepare() - .suspend() and .resume() - .complete().
 
-Similar to the 'save' case, the start/stop device calls should also be
-included inside this 'if'.
+OK
 
-> +		drv->pm->runtime_resume(dev);
-> +
-> +	if (genpd->stop_device)
-> +		genpd->stop_device(dev);
-> +
-> +	dle->need_restore = false;
-> +}
+> >  (a _put_sync() at this point will likely invoke
+> > .runtime_idle() from the subsystem before executing .complete(), which may
+> > not be desirable)?
+> 
+> It should be allowed.  The purpose of .complete() is not to re-enable
+> runtime power management of the device; it is to release resources
+> (like memory) allocated during .prepare() and perhaps also to allow new
+> children to be registered under the device.
 
-Kevin
+Right.  But does "allowed" mean the core _should_ do it at this point?
+We may as well call pm_runtime_idle() directly from rpm_complete(), but
+perhaps it's better to call it from device_resume(), so that it runs in
+parallel for async devices.
+
+Thanks,
+Rafael
