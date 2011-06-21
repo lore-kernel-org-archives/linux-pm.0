@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/8] PM / Domains: Support for generic I/O PM
-	domains (v5)
-Date: Tue, 21 Jun 2011 13:06:25 +0200
-Message-ID: <201106211306.26016.rjw__28283.5552738563$1308654403$gmane$org@sisk.pl>
-References: <201106112223.04972.rjw@sisk.pl> <87boxs3vd3.fsf@ti.com>
+Subject: Re: [Update][PATCH 8/8] ARM / shmobile: Support for I/O
+	power domains for SH7372 (v6)
+Date: Tue, 21 Jun 2011 13:57:08 +0200
+Message-ID: <201106211357.09202.rjw__32985.0028422245$1308657434$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl>
+	<20110620020125.GA26125@linux-sh.org>
+	<201106210030.01922.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87boxs3vd3.fsf@ti.com>
+In-Reply-To: <201106210030.01922.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,118 +20,285 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
+To: Paul Mundt <lethal@linux-sh.org>
 Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 21, 2011, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Tuesday, June 21, 2011, Rafael J. Wysocki wrote:
+> On Monday, June 20, 2011, Paul Mundt wrote:
+> > On Mon, Jun 20, 2011 at 12:07:47AM +0200, Rafael J. Wysocki wrote:
+> > > +static int pd_power_down(struct generic_pm_domain *genpd)
+> > > +{
+> > > +	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
+> > > +	unsigned int mask = 1 << sh7372_pd->bit_shift;
+> > > +
+> > > +	if (__raw_readl(PSTR) & mask) {
+> > > +		__raw_writel(mask, SPDCR);
+> > > +
+> > > +		while (__raw_readl(SPDCR) & mask)
+> > > +			cpu_relax();
+> > > +
+> > > +		pr_debug("sh7372 power domain down 0x%08x -> PSTR = 0x%08x\n",
+> > > +			 mask, __raw_readl(PSTR));
+> > > +	}
+> > > +
+> > > +	return 0;
+> > > +}
+> > > +
+> > > +static int pd_power_up(struct generic_pm_domain *genpd)
+> > > +{
+> > > +	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
+> > > +	unsigned int mask = 1 << sh7372_pd->bit_shift;
+> > > +
+> > > +	if (!(__raw_readl(PSTR) & mask)) {
+> > > +		__raw_writel(mask, SWUCR);
+> > > +
+> > > +		while (__raw_readl(SWUCR) & mask)
+> > > +			cpu_relax();
+> > > +
+> > > +		pr_debug("sh7372 power domain up 0x%08x -> PSTR = 0x%08x\n",
+> > > +			 mask, __raw_readl(PSTR));
+> > > +	}
+> > > +
+> > > +	return 0;
+> > > +}
+> > > +
+> > Given that these functions can return errors, it's probably more prudent
+> > to implement some timeout logic on top of the busy loop. Hardware does
+> > get stuck, after all.
 > 
-> > Hi,
-> >
-> > This is the 4th update of the patchset adding support for generic I/O PM
-> > domains.  
-> >
-> > The patches have been reworked quite a bit to take feedback into
-> > account, but I left the Greg's ACK in [4/8] in the hope it still applies
-> > (Greg, please let me know in case it doesn't :-)).
-> >
-> > The model here is that a bunch of devices share a common power resource
-> > that can be turned on and off by software.  In addition to that, there
-> > are means to start and stop the activity of each device, for example
-> > by manipulating their clocks.  Moreover, there may be hierarchy of
-> > such things, for example power resource A may be necessary for devices
-> > a, b, c, which don't rely on any other power resources, and for devices
-> > x, y, z that also rely on power resource X.  In that case there one PM
-> > domain object representing devices a, b, c and power resource A, and 
-> > another PM domain object will represent devices x, y, z with power
-> > resource X, plus the first object will be the second one's parent.
-> >
-> > Note to Kevin: I know you'd like each PM domain to be able to go into several
-> > different states, but the situation will always be that in some of those
-> > states the devices' registers will remain intact, while in the rest of those
-> > states they will be reset.  Say, there are states 1, 2, 3, 4 and states
-> > 1-3 preserve device registers.  Then it is not necessary to save device
-> > registers for "domain" states 1-3 and it only is necessary to save them
-> > when going to state 4.  In that case, .power_off() may map to the "go to
-> > state 4" operation (and analogously .power_on()), while the rest may be
-> > done by .stop_device() and .start_device().  IOW, .power_is_off == true
-> > means "the devices' registers have to be restored", so it need not map to
-> > any particular physical state of a (hardware) power domain.
+> Yes, it does, but we don't really know what timeout value to use in there.
 > 
-> Sure, but it's not only about register context save/restore.  It's about
-> the the governor hook and how you decide which state to enter.  IOW, the
-> governor decision is not only about whether or not you will lose
-> register context but also about the latency involved in entering &
-> exiting those states.
+> In fact, failures of pd_power_down() don't really matter (at worst the power
+> domain won't be powered off really) and pd_power_up() should only return error
+> code if the error is known to be unrecoverable.
 > 
-> So from my perspective, having only 2-states at this level makes the
-> governor rather pointless since any decision making will have to be done
-> where ever the knowledge of the mulitple power states lives.
+> So, what about this: repeat certain number of times (I verified that it took
+> several iterations of the loop until the new value settled on my hardware)
+> and then return from pd_power_down() or go to sleep for a short time and repeat
+> in pd_power_up()?
 
-Well, in principle you can make the governor whatever you want, so it may
-as well know of multiple states.
+Having discussed that with Magnus I changed pd_power_down() to use a timeout.
+Specifically, it will bail out if the state doesn't change after approximately
+1 ms.
 
-Anyway, if using multiple domain states turns out to be useful at the core
-level, it may be added later with a separate patch.
-
-> > Note to Magnus and Paul: I didn't use a global lock as suggested, because
-> > I think it may lead to completely unnecessary congestion in situations in
-> > which there are no hierarchies of PM domains.  It is quite easy to show that
-> > the code doesn't deadlock, because (1) no more than 2 locks are held by the
-> > same thread at a time (parent lock and child lock) and (2) they are always
-> > acquired in the same order (parent before the child).
-> >
-> > Overall, I think I've taken all of the important dependencies into
-> > consideration, but if you spot something suspicious, please let me know. :-)
-> > Wakeup is not covered at this point, because it's not necessary for the
-> > SH7372's A4LC power domain that's the first user of the new code, but it
-> > is quite clear how add the support for it.  Also, for more complicated
-> > cases it is necessary to take QoS requirements (latencies) into account,
-> > which is in the works (kind of).
-> >
-> > [1/8] - Update documentation to reflect the fact that struct dev_power_domain
-> >         callbacks take precedence over subsystem PM callbacks.
-> >
-> > [2/8] - Rename struct dev_power_domain to struct dev_pm_domain to reflect the
-> >         fact that those objects need not correspond to hardware power domains
-> >         directly.
-> >
-> > [3/8] - Move subsys_data in struct dev_pm_info out of #ifdef CONFIG_PM_RUNTIME
-> >
-> > [4/8] - Introduce runtime PM support for generic I/O PM domains.
-> >
-> > [5/8] - Introduce generic "noirq" callbacks for system suspend/hibernation
-> >         (that's necessary for the next patches).
-> >
-> > [6/8] - Move some PM domains support code fro under #ifdef CONFIG_PM_RUNTIME
-> >
-> > [7/8] - Add system-wide PM support for generic I/O PM domains.
-> >
-> > [8/8] - Use the new code to represent the SH7372's A4MP power domain.
-> >
-> > The patchset has been tested on SH7372 Mackerel board and appears to work
-> > correctly.
-> >
-> > I'd like to push [1/8] for 3.0 (it may be regarded as a fix), but I _think_
-> > that it may be a good idea to push [2/8] for 3.0 too, to limit the time in
-> > which people may possibly use the naming that's going to change in their new
-> > code.  If you agree with that, please let me know, I'll need some serious
-> > ACKs below that patch if it's to be pushed for 3.0. ;-)
-> 
-> Just gave you my ack,
-
-I thought the ACK was for [2/8] only, so do I understand correctly that it's
-for the entire series? :-)
-
-> but [2/8] will need a minor update to apply on
-> Linus' master branch since another fix to mach-omap1/pm_bus.c just got
-> merged[1] via the OMAP tree.
-
-Yes, I already rebased my patches on top of 3.0-rc4.
-
-> I don't have any other fixes touching those files queued for v3.0 so I
-> don't expect any other conflicts there.
+Updated patch is appended.
 
 Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: ARM / shmobile: Support for I/O power domains for SH7372 (v7)
+
+Use the generic power domains support introduced by the previous
+patch to implement support for power domains on SH7372.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/arm/Kconfig                             |    1 
+ arch/arm/mach-shmobile/Makefile              |    4 +
+ arch/arm/mach-shmobile/board-mackerel.c      |    4 +
+ arch/arm/mach-shmobile/include/mach/sh7372.h |   28 ++++++++
+ arch/arm/mach-shmobile/pm-sh7372.c           |   92 +++++++++++++++++++++++++++
+ 5 files changed, 129 insertions(+)
+
+Index: linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
++++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+@@ -1582,6 +1582,10 @@ static void __init mackerel_init(void)
+ 
+ 	platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel_devices));
+ 
++	sh7372_init_pm_domain(&sh7372_a4lc_domain);
++	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
++	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
++
+ 	hdmi_init_pm_clock();
+ 	sh7372_pm_init();
+ }
+Index: linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/sh7372.h
++++ linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+@@ -12,6 +12,7 @@
+ #define __ASM_SH7372_H__
+ 
+ #include <linux/sh_clk.h>
++#include <linux/pm_domain.h>
+ 
+ /*
+  * Pin Function Controller:
+@@ -470,4 +471,31 @@ extern struct clk sh7372_fsibck_clk;
+ extern struct clk sh7372_fsidiva_clk;
+ extern struct clk sh7372_fsidivb_clk;
+ 
++struct platform_device;
++
++struct sh7372_pm_domain {
++	struct generic_pm_domain genpd;
++	unsigned int bit_shift;
++};
++
++static inline struct sh7372_pm_domain *to_sh7372_pd(struct generic_pm_domain *d)
++{
++	return container_of(d, struct sh7372_pm_domain, genpd);
++}
++
++#ifdef CONFIG_PM
++extern struct sh7372_pm_domain sh7372_a4lc_domain;
++#define SH7372_A4LC	(&sh7372_a4lc_domain)
++
++extern void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd);
++extern void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
++					struct platform_device *pdev);
++#else
++#define SH7372_A4LC	NULL
++
++static inline void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd) {}
++static inline void sh7372_add_device_to_domain(struct sh7372_pm_domain *pd,
++					       struct platform_device *pdev) {}
++#endif /* CONFIG_PM */
++
+ #endif /* __ASM_SH7372_H__ */
+Index: linux-2.6/arch/arm/mach-shmobile/Makefile
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/Makefile
++++ linux-2.6/arch/arm/mach-shmobile/Makefile
+@@ -42,6 +42,10 @@ obj-$(CONFIG_MACH_AP4EVB)	+= board-ap4ev
+ obj-$(CONFIG_MACH_AG5EVM)	+= board-ag5evm.o
+ obj-$(CONFIG_MACH_MACKEREL)	+= board-mackerel.o
+ 
++# PM objects
++pm-$(CONFIG_ARCH_SH7372)	+= pm-sh7372.o
++
+ # Framework support
+ obj-$(CONFIG_SMP)		+= $(smp-y)
+ obj-$(CONFIG_GENERIC_GPIO)	+= $(pfc-y)
++obj-$(CONFIG_PM)		+= $(pm-y)
+Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -15,16 +15,108 @@
+ #include <linux/list.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
+ #include <asm/system.h>
+ #include <asm/io.h>
+ #include <asm/tlbflush.h>
+ #include <mach/common.h>
++#include <mach/sh7372.h>
+ 
+ #define SMFRAM 0xe6a70000
+ #define SYSTBCR 0xe6150024
+ #define SBAR 0xe6180020
+ #define APARMBAREA 0xe6f10020
+ 
++#define SPDCR 0xe6180008
++#define SWUCR 0xe6180014
++#define PSTR 0xe6180080
++
++#define PSTR_RETRIES 100
++#define PSTR_DELAY_US 10
++
++static int pd_power_down(struct generic_pm_domain *genpd)
++{
++	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
++	unsigned int mask = 1 << sh7372_pd->bit_shift;
++
++	if (__raw_readl(PSTR) & mask) {
++		unsigned int retry_count;
++
++		__raw_writel(mask, SPDCR);
++
++		for (retry_count = PSTR_RETRIES; retry_count; retry_count--) {
++			if (!(__raw_readl(SPDCR) & mask))
++				break;
++			cpu_relax();
++		}
++	}
++
++	pr_debug("sh7372 power domain down 0x%08x -> PSTR = 0x%08x\n",
++		 mask, __raw_readl(PSTR));
++
++	return 0;
++}
++
++static int pd_power_up(struct generic_pm_domain *genpd)
++{
++	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
++	unsigned int mask = 1 << sh7372_pd->bit_shift;
++	unsigned int retry_count;
++	int ret = 0;
++
++	if (__raw_readl(PSTR) & mask)
++		goto out;
++
++	__raw_writel(mask, SWUCR);
++
++	for (retry_count = 2 * PSTR_RETRIES; retry_count; retry_count--) {
++		if (!(__raw_readl(SWUCR) & mask))
++			goto out;
++		if (retry_count > PSTR_RETRIES)
++			udelay(PSTR_DELAY_US);
++		else
++			cpu_relax();
++	}
++	if (__raw_readl(SWUCR) & mask)
++		ret = -EIO;
++
++ out:
++	pr_debug("sh7372 power domain up 0x%08x -> PSTR = 0x%08x\n",
++		 mask, __raw_readl(PSTR));
++
++	return ret;
++}
++
++void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd)
++{
++	struct generic_pm_domain *genpd = &sh7372_pd->genpd;
++
++	pm_genpd_init(genpd, NULL, false);
++	genpd->stop_device = pm_runtime_clk_suspend;
++	genpd->start_device = pm_runtime_clk_resume;
++	genpd->power_off = pd_power_down;
++	genpd->power_on = pd_power_up;
++	pd_power_up(&sh7372_pd->genpd);
++}
++
++void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
++				 struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++
++	if (!dev->power.subsys_data) {
++		pm_runtime_clk_init(dev);
++		pm_runtime_clk_add(dev, NULL);
++	}
++	pm_genpd_add_device(&sh7372_pd->genpd, dev);
++}
++
++struct sh7372_pm_domain sh7372_a4lc_domain = {
++	.bit_shift = 1,
++};
++
+ static void sh7372_enter_core_standby(void)
+ {
+ 	void __iomem *smfram = (void __iomem *)SMFRAM;
+Index: linux-2.6/arch/arm/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/arm/Kconfig
++++ linux-2.6/arch/arm/Kconfig
+@@ -642,6 +642,7 @@ config ARCH_SHMOBILE
+ 	select NO_IOPORT
+ 	select SPARSE_IRQ
+ 	select MULTI_IRQ_HANDLER
++	select PM_GENERIC_DOMAINS
+ 	help
+ 	  Support for Renesas's SH-Mobile and R-Mobile ARM platforms.
+ 
