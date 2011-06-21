@@ -1,15 +1,16 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 0/8] PM / Domains: Support for generic I/O PM
-	domains (v5)
-Date: Mon, 20 Jun 2011 17:02:00 -0700
-Message-ID: <87boxs3vd3.fsf__23656.6625339494$1308614668$gmane$org@ti.com>
-References: <201106112223.04972.rjw@sisk.pl>
+From: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH V1 1/7] cpuidle: create bootparam
+	"cpuidle.off=1"
+Date: Tue, 21 Jun 2011 10:06:18 +0530
+Message-ID: <4E001FC2.1000006__8595.54269486598$1308631155$gmane$org@linux.vnet.ibm.com>
+References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
+	<20110607162922.6848.71783.stgit@tringupt.in.ibm.com>
+	<1308284948.32158.6.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106112223.04972.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sat, 11 Jun 2011 22:23:04 +0200")
+In-Reply-To: <1308284948.32158.6.camel@pasglop>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,122 +20,152 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Hi,
->
-> This is the 4th update of the patchset adding support for generic I/O PM
-> domains.  
->
-> The patches have been reworked quite a bit to take feedback into
-> account, but I left the Greg's ACK in [4/8] in the hope it still applies
-> (Greg, please let me know in case it doesn't :-)).
->
-> The model here is that a bunch of devices share a common power resource
-> that can be turned on and off by software.  In addition to that, there
-> are means to start and stop the activity of each device, for example
-> by manipulating their clocks.  Moreover, there may be hierarchy of
-> such things, for example power resource A may be necessary for devices
-> a, b, c, which don't rely on any other power resources, and for devices
-> x, y, z that also rely on power resource X.  In that case there one PM
-> domain object representing devices a, b, c and power resource A, and 
-> another PM domain object will represent devices x, y, z with power
-> resource X, plus the first object will be the second one's parent.
->
-> Note to Kevin: I know you'd like each PM domain to be able to go into several
-> different states, but the situation will always be that in some of those
-> states the devices' registers will remain intact, while in the rest of those
-> states they will be reset.  Say, there are states 1, 2, 3, 4 and states
-> 1-3 preserve device registers.  Then it is not necessary to save device
-> registers for "domain" states 1-3 and it only is necessary to save them
-> when going to state 4.  In that case, .power_off() may map to the "go to
-> state 4" operation (and analogously .power_on()), while the rest may be
-> done by .stop_device() and .start_device().  IOW, .power_is_off == true
-> means "the devices' registers have to be restored", so it need not map to
-> any particular physical state of a (hardware) power domain.
 
-Sure, but it's not only about register context save/restore.  It's about
-the the governor hook and how you decide which state to enter.  IOW, the
-governor decision is not only about whether or not you will lose
-register context but also about the latency involved in entering &
-exiting those states.
+On 06/17/2011 09:59 AM, Benjamin Herrenschmidt wrote:
+> On Tue, 2011-06-07 at 21:59 +0530, Trinabh Gupta wrote:
+>> From: Len Brown<len.brown@intel.com>
+>>
+>> useful for disabling cpuidle to fall back
+>> to architecture-default idle loop
+>>
+>> cpuidle drivers and governors will fail to register.
+>> on x86 they'll say so:
+>>
+>> intel_idle: intel_idle yielding to (null)
+>> ACPI: acpi_idle yielding to (null)
+>>
+>> Signed-off-by: Len Brown<len.brown@intel.com>
+>> ---
 
-So from my perspective, having only 2-states at this level makes the
-governor rather pointless since any decision making will have to be done
-where ever the knowledge of the mulitple power states lives.
+Hi Ben,
 
-> Note to Magnus and Paul: I didn't use a global lock as suggested, because
-> I think it may lead to completely unnecessary congestion in situations in
-> which there are no hierarchies of PM domains.  It is quite easy to show that
-> the code doesn't deadlock, because (1) no more than 2 locks are held by the
-> same thread at a time (parent lock and child lock) and (2) they are always
-> acquired in the same order (parent before the child).
+Thanks for the review.
 >
-> Overall, I think I've taken all of the important dependencies into
-> consideration, but if you spot something suspicious, please let me know. :-)
-> Wakeup is not covered at this point, because it's not necessary for the
-> SH7372's A4LC power domain that's the first user of the new code, but it
-> is quite clear how add the support for it.  Also, for more complicated
-> cases it is necessary to take QoS requirements (latencies) into account,
-> which is in the works (kind of).
->
-> [1/8] - Update documentation to reflect the fact that struct dev_power_domain
->         callbacks take precedence over subsystem PM callbacks.
->
-> [2/8] - Rename struct dev_power_domain to struct dev_pm_domain to reflect the
->         fact that those objects need not correspond to hardware power domains
->         directly.
->
-> [3/8] - Move subsys_data in struct dev_pm_info out of #ifdef CONFIG_PM_RUNTIME
->
-> [4/8] - Introduce runtime PM support for generic I/O PM domains.
->
-> [5/8] - Introduce generic "noirq" callbacks for system suspend/hibernation
->         (that's necessary for the next patches).
->
-> [6/8] - Move some PM domains support code fro under #ifdef CONFIG_PM_RUNTIME
->
-> [7/8] - Add system-wide PM support for generic I/O PM domains.
->
-> [8/8] - Use the new code to represent the SH7372's A4MP power domain.
->
-> The patchset has been tested on SH7372 Mackerel board and appears to work
-> correctly.
->
-> I'd like to push [1/8] for 3.0 (it may be regarded as a fix), but I _think_
-> that it may be a good idea to push [2/8] for 3.0 too, to limit the time in
-> which people may possibly use the naming that's going to change in their new
-> code.  If you agree with that, please let me know, I'll need some serious
-> ACKs below that patch if it's to be pushed for 3.0. ;-)
+> When you carry over somebody's patch like this you need to also add your
+> own signed-off-by.
 
-Just gave you my ack, but [2/8] will need a minor update to apply on
-Linus' master branch since another fix to mach-omap1/pm_bus.c just got
-merged[1] via the OMAP tree.
+Ok, thanks
+>
+> Have those generic changes been reviewed by whoever is in charge of that
+> cpuidle framework ?
 
-I don't have any other fixes touching those files queued for v3.0 so I
-don't expect any other conflicts there.
+These patches were posted by Len Brown himself who is ACPI, Intel Idle
+cpuidle driver maintainer. He pulled in most of the patches that were
+part of that series (https://lkml.org/lkml/2011/4/2/8)
+in 3.0-rc1, but these few patches are still out there. These changes
+(removal of pm_idle) have already been agreed upon as they were
+initially reported by Peter Zijlstra himself
+(http://lkml.org/lkml/2009/8/28/43).
 
-Kevin
-
-[1]
-commit e9e35c5a2b2c803b5e2f25906d8ffe110670ceb6
-Author: Kevin Hilman <khilman@ti.com>
-Date:   Tue Jun 14 05:53:18 2011 -0700
-
-    OMAP1: PM: register notifiers with generic clock ops even when !PM_RUNTIME
-    
-    When runtime PM is disabled, device clocks need to be enabled on
-    device add and disabled on device remove.  This currently is not
-    happening because in the !PM_RUNTIME case, no notifiers are registered
-    for OMAP1 devices.
-    
-    Fix this by ensuring notifiers are registered, even in the !PM_RUNTIME case.
-    
-    Reported-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-    Tested-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-    Signed-off-by: Kevin Hilman <khilman@ti.com>
-    Signed-off-by: Tony Lindgren <tony@atomide.com>
+Thanks
+-Trinabh
+>
+> Cheers,
+> Ben.
+>
+>>   Documentation/kernel-parameters.txt |    3 +++
+>>   drivers/cpuidle/cpuidle.c           |   10 ++++++++++
+>>   drivers/cpuidle/cpuidle.h           |    1 +
+>>   drivers/cpuidle/driver.c            |    3 +++
+>>   drivers/cpuidle/governor.c          |    3 +++
+>>   5 files changed, 20 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>> index d9a203b..5697faf 100644
+>> --- a/Documentation/kernel-parameters.txt
+>> +++ b/Documentation/kernel-parameters.txt
+>> @@ -546,6 +546,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+>>   			/proc/<pid>/coredump_filter.
+>>   			See also Documentation/filesystems/proc.txt.
+>>
+>> +	cpuidle.off=1	[CPU_IDLE]
+>> +			disable the cpuidle sub-system
+>> +
+>>   	cpcihp_generic=	[HW,PCI] Generic port I/O CompactPCI driver
+>>   			Format:
+>>   			<first_slot>,<last_slot>,<port>,<enum_bit>[,<debug>]
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index 406be83..a171b9e 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -28,6 +28,12 @@ LIST_HEAD(cpuidle_detected_devices);
+>>   static void (*pm_idle_old)(void);
+>>
+>>   static int enabled_devices;
+>> +static int off __read_mostly;
+>> +
+>> +int cpuidle_disabled(void)
+>> +{
+>> +	return off;
+>> +}
+>>
+>>   #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
+>>   static void cpuidle_kick_cpus(void)
+>> @@ -397,6 +403,9 @@ static int __init cpuidle_init(void)
+>>   {
+>>   	int ret;
+>>
+>> +	if (cpuidle_disabled())
+>> +		return -ENODEV;
+>> +
+>>   	pm_idle_old = pm_idle;
+>>
+>>   	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+>> @@ -408,4 +417,5 @@ static int __init cpuidle_init(void)
+>>   	return 0;
+>>   }
+>>
+>> +module_param(off, int, 0444);
+>>   core_initcall(cpuidle_init);
+>> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+>> index 33e50d5..38c3fd8 100644
+>> --- a/drivers/cpuidle/cpuidle.h
+>> +++ b/drivers/cpuidle/cpuidle.h
+>> @@ -13,6 +13,7 @@ extern struct list_head cpuidle_governors;
+>>   extern struct list_head cpuidle_detected_devices;
+>>   extern struct mutex cpuidle_lock;
+>>   extern spinlock_t cpuidle_driver_lock;
+>> +extern int cpuidle_disabled(void);
+>>
+>>   /* idle loop */
+>>   extern void cpuidle_install_idle_handler(void);
+>> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+>> index 33e3189..284d7af 100644
+>> --- a/drivers/cpuidle/driver.c
+>> +++ b/drivers/cpuidle/driver.c
+>> @@ -50,6 +50,9 @@ int cpuidle_register_driver(struct cpuidle_driver *drv)
+>>   	if (!drv)
+>>   		return -EINVAL;
+>>
+>> +	if (cpuidle_disabled())
+>> +		return -ENODEV;
+>> +
+>>   	spin_lock(&cpuidle_driver_lock);
+>>   	if (cpuidle_curr_driver) {
+>>   		spin_unlock(&cpuidle_driver_lock);
+>> diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+>> index 724c164..ea2f8e7 100644
+>> --- a/drivers/cpuidle/governor.c
+>> +++ b/drivers/cpuidle/governor.c
+>> @@ -81,6 +81,9 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
+>>   	if (!gov || !gov->select)
+>>   		return -EINVAL;
+>>
+>> +	if (cpuidle_disabled())
+>> +		return -ENODEV;
+>> +
+>>   	mutex_lock(&cpuidle_lock);
+>>   	if (__cpuidle_find_governor(gov->name) == NULL) {
+>>   		ret = 0;
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>
