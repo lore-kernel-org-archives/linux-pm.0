@@ -1,17 +1,16 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [PATCH] perf_events: Enable idle state tracing for
-	pseries (ppc64)
-Date: Tue, 21 Jun 2011 22:10:23 +0530
-Message-ID: <4E00C977.1060800__3607.0998445668$1308674656$gmane$org@linux.vnet.ibm.com>
-References: <20110601123554.GA12492@deepthi.in.ibm.com>
-	<1308284659.32158.4.camel@pasglop>	<4DFF80FD.8080600@linux.vnet.ibm.com>
-	<1308606133.32158.143.camel@pasglop>
-	<4E00C6DE.1030001@linux.vnet.ibm.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [Update][PATCH 4/8] PM / Domains: Support for
+	generic I/O PM domains (v6)
+Date: Tue, 21 Jun 2011 10:42:19 -0700
+Message-ID: <874o3jt72c.fsf__31746.0594735623$1308678767$gmane$org@ti.com>
+References: <201106112223.04972.rjw@sisk.pl> <201106112231.11269.rjw@sisk.pl>
+	<201106200002.19377.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4E00C6DE.1030001@linux.vnet.ibm.com>
+In-Reply-To: <201106200002.19377.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Mon, 20 Jun 2011 00:02:19 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,94 +20,189 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 21 June 2011 09:59 PM, deepthi wrote:
-> On Tuesday 21 June 2011 03:12 AM, Benjamin Herrenschmidt wrote:
->> On Mon, 2011-06-20 at 22:48 +0530, deepthi wrote:
->>> On Friday 17 June 2011 09:54 AM, Benjamin Herrenschmidt wrote:
->>>> On Wed, 2011-06-01 at 18:05 +0530, Deepthi Dharwar wrote:
->>>>> Hi,
->>>>>
->>>>> Please find below a patch, which has perf_events added for pseries (ppc64)
->>>>> platform in order to emit the trace required for perf timechart. 
->>>>> It essentially enables perf timechart for pseries platfrom to analyse
->>>>> power savings events like cpuidle states.
->>>>
->>>> Unless I'm mistaken, you added traces to dedicated CPU idle sleep but
->>>> not shared processor. Any reason ?
->>>>
->>> Yes, the traces were added only to dedicated CPU idle sleep and not for 
->>> shared processor. This was added only for RFC purpose, and looking for 
->>> comments from trace implementation point of view. This can be
->>> easily extended to the latter too.
->>
->> Please do both.
->>
-> Yes, I ll do so.
-> 
->>>> Also I don't really know that tracing stuff but what's the point of
->>>> having start/end _and trace_cpu_idle if you're going to always start &
->>>> end around a single occurence of trace_cpu_idle ?
->>>>
->>> power_start/end are the APIs that were used initially
->>> and they are going to be deprecated in the upcoming kernel releases.
->>> trace_cpu_idle call is going to replace power start/end routines. 
->>> To maintain backward compatibility and uniformity, both the routines 
->>> have been used.
->>> (ref:https://lkml.org/lkml/2010/11/14/60ref:https://lkml.org/lkml/2010/11/14/60)
->>
->> Backward compatible with what ? Userspace ? Do we care in that specific
->> case since it's a new feature ?
->>
-> Going forward, we can just have trace_cpu_idle call and 
-> remove the power_start/end calls.
-> 
->>>> Wouldn't there be a way to start/end and then trace the snooze and
->>>> subsequent cede within the same start/end section or that makes no
->>>> sense ?
->>>>
->>> We wanted to find the residency time of both Snooze as well as cede 
->>> separately. Knowing this will help us tweak our cpuidle code. So, both 
->>> have been captured separately.
->>>
->>>> Also would there be any interest in doing the tracing more generically
->>>> in idle.c ?
->>>>
->>> Yes, this tracing is already implemented for Intel platform. This would
->>> be a part of cpuidle framework. Going further, once the power cpuidle 
->>> framework is ported and ready, we will extend this trace there as well.
->>> (ref:https://lkml.org/lkml/2011/6/7/375)
->>
->> So do we need to apply this patch at all since the cpuidle stuff is
->> happening too ?
->>
-> 
-> Well, not really. This is more for RFC purpose. 
-> I just wanted to share this patch, as we are using it to evaluate
-> cpu idle on ppc64.
-> 
-  I will re-base the patch and move it to the cpu idle for power 
-  framework. So the tracing too gets in along with the 
-  cpu idle support. 
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-  Thanks Ben. 
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Introduce common headers, helper functions and callbacks allowing
+> platforms to use simple generic power domains for runtime power
+> management.
+>
+> Introduce struct generic_pm_domain to be used for representing
+> power domains that each contain a number of devices and may be
+> parent domains or subdomains with respect to other power domains.
+> Among other things, this structure includes callbacks to be
+> provided by platforms for performing specific tasks related to
+> power management (i.e. ->stop_device() may disable a device's
+> clocks, while ->start_device() may enable them, ->power_off() is
+> supposed to remove power from the entire power domain
+> and ->power_on() is supposed to restore it).
+>
+> Introduce functions that can be used as power domain runtime PM
+> callbacks, pm_genpd_runtime_suspend() and pm_genpd_runtime_resume(),
+> as well as helper functions for the initialization of a power
+> domain represented by a struct generic_power_domain object,
+> adding a device to or removing a device from it and adding or
+> removing subdomains.
+>
+> Introduce configuration option CONFIG_PM_GENERIC_DOMAINS to be
+> selected by the platforms that want to use the new code.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>
+> Hi,
+>
+> I this version of the patch I made the following modifications:
+>
+> * Removed the change adding platform_data to struct dev_pm_domain,
+>   because that field is not going to be necessary in the near future.
+>
+> * Moved the code calling drv->pm->runtime_suspend(dev) to a separate
+>   function that returns immediately if dle->need_restore is set for the
+>   given device (meaning that drv->pm->runtime_suspend(dev) has already
+>   been called for it and the corresponding ->runtime_resume() hasn't).
+>   This fixes a bug where drv->pm->runtime_suspend() could be called for
+>   a device whose state hasn't been restored after power cycling its
+>   PM domain.
+>
+> * Made pm_genpd_add_device() return error code on an attempt to add a device
+>   do a PM domain whose power_is_off is set (that complemets the previous
+>   modification).
+>
+> * Makde the .power_on() and .power_off() generic PM domain callbacks take
+>   (struct generic_pm_domain *) arguments instead of (struct dev_pm_domain *).
+>
+> Thanks,
+> Rafael
 
->> Cheers,
->> Ben.
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+There's a guiding assumption in this generic PM domain layer that the
+runtime PM callbacks need only be called if power to the underlying PM
+domain is actually being cut.  As a result, devices no longer have a
+callback called for other low-power states where the power may not
+actually be cut (a.k.a low-power with memory & logic retention.)
 
-Regards,
-Deepthi
+However, there are devices (at least on OMAP, but I presume on all SoCs)
+where the driver will need to do other "stuff" for *all* low-power
+transitions, not just the power-off ones (e.g. device specific idle mode
+registers, clearing device-specific events/state that prevent low power
+transitions, etc.)
+
+Because of this, I don't currently see how to use these generic PM
+domains on devices with multiple power states since the runtime PM
+callbacks are only called for a subset of the power states.
+
+I haven't given this too much thought yet (especially the system PM
+aspects), but in order for generic PM domains to be more broadly useful
+for runtime PM, I'm starting to think that this series should add
+another set of callbacks: .power_off, .power_on or something similar.
+The .runtime_suspend/.runtime_resume callbacks would then be used for
+all power states and the .power_off/.power_on callbacks used only when
+power is actually cut.
+
+[...]
+
+> Index: linux-2.6/drivers/base/power/domain.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/drivers/base/power/domain.c
+> @@ -0,0 +1,490 @@
+> +/*
+> + * drivers/base/power/domain.c - Common code related to device power domains.
+> + *
+> + * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
+> + *
+> + * This file is released under the GPLv2.
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/io.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/slab.h>
+> +#include <linux/err.h>
+> +
+> +#ifdef CONFIG_PM_RUNTIME
+> +
+> +static void genpd_sd_counter_dec(struct generic_pm_domain *genpd)
+> +{
+> +	if (!WARN_ON(genpd->sd_count == 0))
+> +			genpd->sd_count--;
+> +}
+> +
+> +/**
+> + * __pm_genpd_save_device - Save the pre-suspend state of a device.
+> + * @dle: Device list entry of the device to save the state of.
+> + * @genpd: PM domain the device belongs to.
+> + */
+> +static int __pm_genpd_save_device(struct dev_list_entry *dle,
+> +				  struct generic_pm_domain *genpd)
+> +{
+> +	struct device *dev = dle->dev;
+> +	struct device_driver *drv = dev->driver;
+> +	int ret = 0;
+> +
+> +	if (dle->need_restore)
+> +		return 0;
+> +
+> +	if (genpd->start_device)
+> +		genpd->start_device(dev);
+> +
+> +	if (drv && drv->pm && drv->pm->runtime_suspend)
+
+The start/stop device calls should probably be included inside this 'if'
+since there's no reason to restart and re-stop the device if there is no
+callback to be run.
+
+Some drivers have alterntive ways of saving context (shadow registers,
+manual save/restore per-xfer, etc.) and thus have no callbacks for
+context save/restore.
+
+> +		ret = drv->pm->runtime_suspend(dev);
+> +
+> +	if (genpd->stop_device)
+> +		genpd->stop_device(dev);
+> +
+> +	if (!ret)
+> +		dle->need_restore = true;
+> +
+> +	return ret;
+> +}
+> +
+> +/**
+> + * __pm_genpd_restore_device - Restore the pre-suspend state of a device.
+> + * @dle: Device list entry of the device to restore the state of.
+> + * @genpd: PM domain the device belongs to.
+> + */
+> +static void __pm_genpd_restore_device(struct dev_list_entry *dle,
+> +				      struct generic_pm_domain *genpd)
+> +{
+> +	struct device *dev = dle->dev;
+> +	struct device_driver *drv = dev->driver;
+> +
+> +	if (!dle->need_restore)
+> +		return;
+> +
+> +	if (genpd->start_device)
+> +		genpd->start_device(dev);
+> +
+> +	if (drv && drv->pm && drv->pm->runtime_resume)
+
+Similar to the 'save' case, the start/stop device calls should also be
+included inside this 'if'.
+
+> +		drv->pm->runtime_resume(dev);
+> +
+> +	if (genpd->stop_device)
+> +		genpd->stop_device(dev);
+> +
+> +	dle->need_restore = false;
+> +}
+
+Kevin
