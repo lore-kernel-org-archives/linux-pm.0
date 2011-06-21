@@ -1,23 +1,14 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC PATCH v4] ARM
-	hibernation/suspend-to-disk	support
-Date: Tue, 21 Jun 2011 11:11:08 +0100
-Message-ID: <20110621101108.GE23234__42981.8131066442$1308651312$gmane$org@n2100.arm.linux.org.uk>
-References: <alpine.DEB.2.00.1106071722040.2236@localhost6.localdomain6>
-	<201106072348.44624.rjw@sisk.pl>
-	<alpine.DEB.2.00.1106091604180.11513@localhost6.localdomain6>
-	<20110609154058.GA24424@n2100.arm.linux.org.uk>
-	<4DF0F45A.3030103@ti.com>
-	<20110609164024.GB24424@n2100.arm.linux.org.uk>
-	<4DF0FA73.8050607@ti.com>
-	<20110609171255.GD24424@n2100.arm.linux.org.uk>
-	<20110609175313.GG24424@n2100.arm.linux.org.uk>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/8] PM / Domains: Support for generic I/O PM
+	domains (v5)
+Date: Tue, 21 Jun 2011 13:06:25 +0200
+Message-ID: <201106211306.26016.rjw__28283.5552738563$1308654403$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl> <87boxs3vd3.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110609175313.GG24424@n2100.arm.linux.org.uk>
+In-Reply-To: <87boxs3vd3.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,59 +18,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Frank Hofmann <frank.hofmann@tomtom.com>, linux-pm@lists.linux-foundation.org, tuxonice-devel@tuxonice.net, linux-arm-kernel@lists.infradead.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 09, 2011 at 06:53:13PM +0100, Russell King - ARM Linux wrote:
-> On Thu, Jun 09, 2011 at 06:12:55PM +0100, Russell King - ARM Linux wrote:
-> > > 3. Avoid direct write to AUXCTRL in generic suspend code.
-> > 
-> > This is the only problematical one that I can see.  We need to restore
-> > this on systems running in secure mode.  What we could do is rather than
-> > writing to the register, read it first and compare its value with what
-> > was saved to see whether we need to write it.
-> > 
-> > Then, if platforms run in non-secure mode, they are responsible for
-> > restoring that register back to its pre-suspend value before their
-> > assembly calls cpu_resume().
+On Tuesday, June 21, 2011, Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> And here's a patch which does that:
+> > Hi,
+> >
+> > This is the 4th update of the patchset adding support for generic I/O PM
+> > domains.  
+> >
+> > The patches have been reworked quite a bit to take feedback into
+> > account, but I left the Greg's ACK in [4/8] in the hope it still applies
+> > (Greg, please let me know in case it doesn't :-)).
+> >
+> > The model here is that a bunch of devices share a common power resource
+> > that can be turned on and off by software.  In addition to that, there
+> > are means to start and stop the activity of each device, for example
+> > by manipulating their clocks.  Moreover, there may be hierarchy of
+> > such things, for example power resource A may be necessary for devices
+> > a, b, c, which don't rely on any other power resources, and for devices
+> > x, y, z that also rely on power resource X.  In that case there one PM
+> > domain object representing devices a, b, c and power resource A, and 
+> > another PM domain object will represent devices x, y, z with power
+> > resource X, plus the first object will be the second one's parent.
+> >
+> > Note to Kevin: I know you'd like each PM domain to be able to go into several
+> > different states, but the situation will always be that in some of those
+> > states the devices' registers will remain intact, while in the rest of those
+> > states they will be reset.  Say, there are states 1, 2, 3, 4 and states
+> > 1-3 preserve device registers.  Then it is not necessary to save device
+> > registers for "domain" states 1-3 and it only is necessary to save them
+> > when going to state 4.  In that case, .power_off() may map to the "go to
+> > state 4" operation (and analogously .power_on()), while the rest may be
+> > done by .stop_device() and .start_device().  IOW, .power_is_off == true
+> > means "the devices' registers have to be restored", so it need not map to
+> > any particular physical state of a (hardware) power domain.
+> 
+> Sure, but it's not only about register context save/restore.  It's about
+> the the governor hook and how you decide which state to enter.  IOW, the
+> governor decision is not only about whether or not you will lose
+> register context but also about the latency involved in entering &
+> exiting those states.
+> 
+> So from my perspective, having only 2-states at this level makes the
+> governor rather pointless since any decision making will have to be done
+> where ever the knowledge of the mulitple power states lives.
 
-Ping.
+Well, in principle you can make the governor whatever you want, so it may
+as well know of multiple states.
 
-> 8<-----------
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
-> ARM: Avoid writing to auxctrl register unless it needs to be updated
+Anyway, if using multiple domain states turns out to be useful at the core
+level, it may be added later with a separate patch.
+
+> > Note to Magnus and Paul: I didn't use a global lock as suggested, because
+> > I think it may lead to completely unnecessary congestion in situations in
+> > which there are no hierarchies of PM domains.  It is quite easy to show that
+> > the code doesn't deadlock, because (1) no more than 2 locks are held by the
+> > same thread at a time (parent lock and child lock) and (2) they are always
+> > acquired in the same order (parent before the child).
+> >
+> > Overall, I think I've taken all of the important dependencies into
+> > consideration, but if you spot something suspicious, please let me know. :-)
+> > Wakeup is not covered at this point, because it's not necessary for the
+> > SH7372's A4LC power domain that's the first user of the new code, but it
+> > is quite clear how add the support for it.  Also, for more complicated
+> > cases it is necessary to take QoS requirements (latencies) into account,
+> > which is in the works (kind of).
+> >
+> > [1/8] - Update documentation to reflect the fact that struct dev_power_domain
+> >         callbacks take precedence over subsystem PM callbacks.
+> >
+> > [2/8] - Rename struct dev_power_domain to struct dev_pm_domain to reflect the
+> >         fact that those objects need not correspond to hardware power domains
+> >         directly.
+> >
+> > [3/8] - Move subsys_data in struct dev_pm_info out of #ifdef CONFIG_PM_RUNTIME
+> >
+> > [4/8] - Introduce runtime PM support for generic I/O PM domains.
+> >
+> > [5/8] - Introduce generic "noirq" callbacks for system suspend/hibernation
+> >         (that's necessary for the next patches).
+> >
+> > [6/8] - Move some PM domains support code fro under #ifdef CONFIG_PM_RUNTIME
+> >
+> > [7/8] - Add system-wide PM support for generic I/O PM domains.
+> >
+> > [8/8] - Use the new code to represent the SH7372's A4MP power domain.
+> >
+> > The patchset has been tested on SH7372 Mackerel board and appears to work
+> > correctly.
+> >
+> > I'd like to push [1/8] for 3.0 (it may be regarded as a fix), but I _think_
+> > that it may be a good idea to push [2/8] for 3.0 too, to limit the time in
+> > which people may possibly use the naming that's going to change in their new
+> > code.  If you agree with that, please let me know, I'll need some serious
+> > ACKs below that patch if it's to be pushed for 3.0. ;-)
 > 
-> As the auxiliary control register is not writable in non-secure mode
-> such as on OMAP, we must avoid writing the register when resuming in
-> non-secure mode.  Avoid this by moving the responsibility to the
-> SoC code in this case to ensure that the auxiliary control register
-> is restored before cpu_resume() is called.
-> 
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> --
->  arch/arm/mm/proc-v7.S |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/mm/proc-v7.S b/arch/arm/mm/proc-v7.S
-> index 3c38678..fa1e6d5 100644
-> --- a/arch/arm/mm/proc-v7.S
-> +++ b/arch/arm/mm/proc-v7.S
-> @@ -237,7 +237,9 @@ ENTRY(cpu_v7_do_resume)
->  	mcr	p15, 0, r7, c2, c0, 0	@ TTB 0
->  	mcr	p15, 0, r8, c2, c0, 1	@ TTB 1
->  	mcr	p15, 0, ip, c2, c0, 2	@ TTB control register
-> -	mcr	p15, 0, r10, c1, c0, 1	@ Auxiliary control register
-> +	mrc	p15, 0, r4, c1, c0, 1	@ Read auxiliary control register
-> +	teq	r4, r10
-> +	mcrne	p15, 0, r10, c1, c0, 1	@ Auxiliary control register
->  	mcr	p15, 0, r11, c1, c0, 2	@ Co-processor access control
->  	ldr	r4, =PRRR		@ PRRR
->  	ldr	r5, =NMRR		@ NMRR
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> Just gave you my ack,
+
+I thought the ACK was for [2/8] only, so do I understand correctly that it's
+for the entire series? :-)
+
+> but [2/8] will need a minor update to apply on
+> Linus' master branch since another fix to mach-omap1/pm_bus.c just got
+> merged[1] via the OMAP tree.
+
+Yes, I already rebased my patches on top of 3.0-rc4.
+
+> I don't have any other fixes touching those files queued for v3.0 so I
+> don't expect any other conflicts there.
+
+Thanks,
+Rafael
