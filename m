@@ -1,15 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH 4/8] PM / Domains: Support for
-	generic I/O PM domains (v6)
-Date: Wed, 22 Jun 2011 02:07:01 +0200
-Message-ID: <201106220207.01434.rjw__19509.821807924$1308701307$gmane$org@sisk.pl>
-References: <201106112223.04972.rjw@sisk.pl> <201106200002.19377.rjw@sisk.pl>
-	<874o3jt72c.fsf@ti.com>
+From: Amerigo Wang <amwang@redhat.com>
+Subject: [PATCH 4/5] pm: move pm notifiers into suspend.h
+Date: Wed, 22 Jun 2011 14:35:21 +0800
+Message-ID: <1308724522-32461-5-git-send-email-amwang__26621.3187286214$1308724789$gmane$org@redhat.com>
+References: <1308724522-32461-1-git-send-email-amwang@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <874o3jt72c.fsf@ti.com>
+In-Reply-To: <1308724522-32461-1-git-send-email-amwang@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,211 +17,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Philip Rakity <prakity@marvell.com>, Amerigo Wang <amwang@redhat.com>, Lucas De Marchi <lucas.demarchi@profusion.mobi>, netdev@vger.kernel.org, linux-mmc@vger.kernel.org, Josh Triplett <josh@joshtriplett.org>, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, akpm@linux-foundation.org, Chris Ball <cjb@laptop.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 21, 2011, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >
-> > Introduce common headers, helper functions and callbacks allowing
-> > platforms to use simple generic power domains for runtime power
-> > management.
-> >
-> > Introduce struct generic_pm_domain to be used for representing
-> > power domains that each contain a number of devices and may be
-> > parent domains or subdomains with respect to other power domains.
-> > Among other things, this structure includes callbacks to be
-> > provided by platforms for performing specific tasks related to
-> > power management (i.e. ->stop_device() may disable a device's
-> > clocks, while ->start_device() may enable them, ->power_off() is
-> > supposed to remove power from the entire power domain
-> > and ->power_on() is supposed to restore it).
-> >
-> > Introduce functions that can be used as power domain runtime PM
-> > callbacks, pm_genpd_runtime_suspend() and pm_genpd_runtime_resume(),
-> > as well as helper functions for the initialization of a power
-> > domain represented by a struct generic_power_domain object,
-> > adding a device to or removing a device from it and adding or
-> > removing subdomains.
-> >
-> > Introduce configuration option CONFIG_PM_GENERIC_DOMAINS to be
-> > selected by the platforms that want to use the new code.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > ---
-> >
-> > Hi,
-> >
-> > I this version of the patch I made the following modifications:
-> >
-> > * Removed the change adding platform_data to struct dev_pm_domain,
-> >   because that field is not going to be necessary in the near future.
-> >
-> > * Moved the code calling drv->pm->runtime_suspend(dev) to a separate
-> >   function that returns immediately if dle->need_restore is set for the
-> >   given device (meaning that drv->pm->runtime_suspend(dev) has already
-> >   been called for it and the corresponding ->runtime_resume() hasn't).
-> >   This fixes a bug where drv->pm->runtime_suspend() could be called for
-> >   a device whose state hasn't been restored after power cycling its
-> >   PM domain.
-> >
-> > * Made pm_genpd_add_device() return error code on an attempt to add a device
-> >   do a PM domain whose power_is_off is set (that complemets the previous
-> >   modification).
-> >
-> > * Makde the .power_on() and .power_off() generic PM domain callbacks take
-> >   (struct generic_pm_domain *) arguments instead of (struct dev_pm_domain *).
-> >
-> > Thanks,
-> > Rafael
-> 
-> There's a guiding assumption in this generic PM domain layer that the
-> runtime PM callbacks need only be called if power to the underlying PM
-> domain is actually being cut.  As a result, devices no longer have a
-> callback called for other low-power states where the power may not
-> actually be cut (a.k.a low-power with memory & logic retention.)
-> 
-> However, there are devices (at least on OMAP, but I presume on all SoCs)
-> where the driver will need to do other "stuff" for *all* low-power
-> transitions, not just the power-off ones (e.g. device specific idle mode
-> registers, clearing device-specific events/state that prevent low power
-> transitions, etc.)
-> 
-> Because of this, I don't currently see how to use these generic PM
-> domains on devices with multiple power states since the runtime PM
-> callbacks are only called for a subset of the power states.
-> 
-> I haven't given this too much thought yet (especially the system PM
-> aspects), but in order for generic PM domains to be more broadly useful
-> for runtime PM, I'm starting to think that this series should add
-> another set of callbacks: .power_off, .power_on or something similar.
-> The .runtime_suspend/.runtime_resume callbacks would then be used for
-> all power states and the .power_off/.power_on callbacks used only when
-> power is actually cut.
+It is not necessary to share the same notifier.h.
 
-Well, I _really_ would like to avoid adding more callbacks to struct
-dev_pm_ops, if that's what you mean, because we already seem to have
-problems with managing the existing ones.
+Signed-off-by: WANG Cong <amwang@redhat.com>
 
-Also, IMO, you can always map every system with more power states to the
-model where there are only "device active" (runtime PM RPM_ACTIVE) "device
-stopped" (runtime PM RPM_SUSPENDED, need not save state) and "device
-power off" (runtime PM RPM_SUSPENDED, must save state) "software" states
-represented here.
+---
+ drivers/mmc/core/core.c  |    3 +++
+ include/linux/notifier.h |   10 ++--------
+ include/linux/suspend.h  |    8 ++++++++
+ 3 files changed, 13 insertions(+), 8 deletions(-)
 
-If anything more fine grained is necessary or useful, I'd say you need a
-more complicated model, but I'd prefer to avoid further complications in this
-patchset.
-
-> [...]
-> 
-> > Index: linux-2.6/drivers/base/power/domain.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/drivers/base/power/domain.c
-> > @@ -0,0 +1,490 @@
-> > +/*
-> > + * drivers/base/power/domain.c - Common code related to device power domains.
-> > + *
-> > + * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
-> > + *
-> > + * This file is released under the GPLv2.
-> > + */
-> > +
-> > +#include <linux/init.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/io.h>
-> > +#include <linux/pm_runtime.h>
-> > +#include <linux/pm_domain.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/err.h>
-> > +
-> > +#ifdef CONFIG_PM_RUNTIME
-> > +
-> > +static void genpd_sd_counter_dec(struct generic_pm_domain *genpd)
-> > +{
-> > +	if (!WARN_ON(genpd->sd_count == 0))
-> > +			genpd->sd_count--;
-> > +}
-> > +
-> > +/**
-> > + * __pm_genpd_save_device - Save the pre-suspend state of a device.
-> > + * @dle: Device list entry of the device to save the state of.
-> > + * @genpd: PM domain the device belongs to.
-> > + */
-> > +static int __pm_genpd_save_device(struct dev_list_entry *dle,
-> > +				  struct generic_pm_domain *genpd)
-> > +{
-> > +	struct device *dev = dle->dev;
-> > +	struct device_driver *drv = dev->driver;
-> > +	int ret = 0;
-> > +
-> > +	if (dle->need_restore)
-> > +		return 0;
-> > +
-> > +	if (genpd->start_device)
-> > +		genpd->start_device(dev);
-> > +
-> > +	if (drv && drv->pm && drv->pm->runtime_suspend)
-> 
-> The start/stop device calls should probably be included inside this 'if'
-> since there's no reason to restart and re-stop the device if there is no
-> callback to be run.
-
-That's a good point, I'll do that.
-
-> Some drivers have alterntive ways of saving context (shadow registers,
-> manual save/restore per-xfer, etc.) and thus have no callbacks for
-> context save/restore.
-> 
-> > +		ret = drv->pm->runtime_suspend(dev);
-> > +
-> > +	if (genpd->stop_device)
-> > +		genpd->stop_device(dev);
-> > +
-> > +	if (!ret)
-> > +		dle->need_restore = true;
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +/**
-> > + * __pm_genpd_restore_device - Restore the pre-suspend state of a device.
-> > + * @dle: Device list entry of the device to restore the state of.
-> > + * @genpd: PM domain the device belongs to.
-> > + */
-> > +static void __pm_genpd_restore_device(struct dev_list_entry *dle,
-> > +				      struct generic_pm_domain *genpd)
-> > +{
-> > +	struct device *dev = dle->dev;
-> > +	struct device_driver *drv = dev->driver;
-> > +
-> > +	if (!dle->need_restore)
-> > +		return;
-> > +
-> > +	if (genpd->start_device)
-> > +		genpd->start_device(dev);
-> > +
-> > +	if (drv && drv->pm && drv->pm->runtime_resume)
-> 
-> Similar to the 'save' case, the start/stop device calls should also be
-> included inside this 'if'.
-
-Agreed.
-
-> > +		drv->pm->runtime_resume(dev);
-> > +
-> > +	if (genpd->stop_device)
-> > +		genpd->stop_device(dev);
-> > +
-> > +	dle->need_restore = false;
-> > +}
-
-Thanks for the comments, I'm going to implement your suggestions.
-
-Take care,
-Rafael
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 68091dd..2cd4ec5 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -23,6 +23,9 @@
+ #include <linux/log2.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/pm_runtime.h>
++#ifdef CONFIG_PM
++#include <linux/suspend.h>
++#endif
+ 
+ #include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index 145c436..ae8f7d9 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -191,15 +191,9 @@ static inline int notifier_to_errno(int ret)
+ 
+ /* reboot notifiers are defined in include/linux/reboot.h. */
+ 
+-#define NETLINK_URELEASE	0x0001	/* Unicast netlink socket released */
++/* Hibernation and suspend events are defined in include/linux/suspend.h. */
+ 
+-/* Hibernation and suspend events */
+-#define PM_HIBERNATION_PREPARE	0x0001 /* Going to hibernate */
+-#define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+-#define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+-#define PM_POST_SUSPEND		0x0004 /* Suspend finished */
+-#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
+-#define PM_POST_RESTORE		0x0006 /* Restore failed */
++#define NETLINK_URELEASE	0x0001	/* Unicast netlink socket released */
+ 
+ /* Console keyboard events.
+  * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 083ffea..95bc81c 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -260,6 +260,14 @@ static inline int hibernate(void) { return -ENOSYS; }
+ static inline bool system_entering_hibernation(void) { return false; }
+ #endif /* CONFIG_HIBERNATION */
+ 
++/* Hibernation and suspend events */
++#define PM_HIBERNATION_PREPARE	0x0001 /* Going to hibernate */
++#define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
++#define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
++#define PM_POST_SUSPEND		0x0004 /* Suspend finished */
++#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
++#define PM_POST_RESTORE		0x0006 /* Restore failed */
++
+ #ifdef CONFIG_PM_SLEEP
+ void save_processor_state(void);
+ void restore_processor_state(void);
+-- 
+1.7.4.4
