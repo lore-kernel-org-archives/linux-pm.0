@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PCI / PM: Block races between runtime PM and
- system sleep
-Date: Wed, 22 Jun 2011 10:20:28 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106221011240.1977-100000__35897.6957192228$1308752586$gmane$org@iolanthe.rowland.org>
-References: <201106220149.17380.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 4/5] pm: move pm notifiers into suspend.h
+Date: Wed, 22 Jun 2011 21:49:27 +0200
+Message-ID: <201106222149.28252.rjw__19980.2938419909$1308772206$gmane$org@sisk.pl>
+References: <1308724522-32461-1-git-send-email-amwang@redhat.com>
+	<1308724522-32461-5-git-send-email-amwang@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106220149.17380.rjw@sisk.pl>
+In-Reply-To: <1308724522-32461-5-git-send-email-amwang@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,58 +18,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, Philip Rakity <prakity@marvell.com>, Lucas De Marchi <lucas.demarchi@profusion.mobi>, netdev@vger.kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Josh Triplett <josh@joshtriplett.org>, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, akpm@linux-foundation.org, Chris Ball <cjb@laptop.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 22 Jun 2011, Rafael J. Wysocki wrote:
-
-> > It's probably okay to prevent pm_runtime_suspend() from working during
-> > .suspend() or .resume(), but it's not a good idea to prevent
-> > pm_runtime_resume() from working then.
+On Wednesday, June 22, 2011, Amerigo Wang wrote:
+> It is not necessary to share the same notifier.h.
 > 
-> OK, but taking a reference by means of pm_runtime_get_noresume() won't
-> block pm_runtime_resume().
-
-Exactly my point -- we don't need to (and don't want to) block 
-pm_runtime_resume during the .suspend() and .resume() callbacks.
-
-> > During the .suspend and .resume callbacks, races with
-> > .runtime_suspend() can be prevented by calling
-> > pm_runtime_get_noresume() just before .suspend() and then calling
-> > pm_runtime_put_sync() just after .resume().
+> Signed-off-by: WANG Cong <amwang@redhat.com>
 > 
-> So, you seem to suggest to call pm_runtime_get_noresume() in
-> __device_suspend() and pm_runtime_put_sync() in device_resume().
-
-Yes.  Also perhaps call pm_runtime_barrier() immediately after 
-get_noresume.
-
-> That would be fine by me, perhaps up to the "sync" part of the "put".
-
-The main feature of this design is that it allows runtime PM to work 
-between .resume() and .complete().  If you do a put_noidle instead of 
-put_sync then you may prevent runtime PM from working properly.
-
-> > >  (a _put_sync() at this point will likely invoke
-> > > .runtime_idle() from the subsystem before executing .complete(), which may
-> > > not be desirable)?
-> > 
-> > It should be allowed.  The purpose of .complete() is not to re-enable
-> > runtime power management of the device; it is to release resources
-> > (like memory) allocated during .prepare() and perhaps also to allow new
-> > children to be registered under the device.
+> ---
+>  drivers/mmc/core/core.c  |    3 +++
+>  include/linux/notifier.h |   10 ++--------
+>  include/linux/suspend.h  |    8 ++++++++
+>  3 files changed, 13 insertions(+), 8 deletions(-)
 > 
-> Right.  But does "allowed" mean the core _should_ do it at this point?
-> We may as well call pm_runtime_idle() directly from rpm_complete(), but
-> perhaps it's better to call it from device_resume(), so that it runs in
-> parallel for async devices.
+> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+> index 68091dd..2cd4ec5 100644
+> --- a/drivers/mmc/core/core.c
+> +++ b/drivers/mmc/core/core.c
+> @@ -23,6 +23,9 @@
+>  #include <linux/log2.h>
+>  #include <linux/regulator/consumer.h>
+>  #include <linux/pm_runtime.h>
+> +#ifdef CONFIG_PM
+> +#include <linux/suspend.h>
+> +#endif
 
-Calling pm_runtime_put_noidle() followed by pm_runtime_idle() is 
-essentially the same as calling pm_runtime_put_sync() anyway.
+I don't think the #ifdef in necessary.  Any dependencies on CONFIG_PM
+(or CONFIG_SUSPEND etc.) should be taken care of inside of suspend.h.
+This file should be fixed if they aren't.
 
-If a subsystem really does want to block runtime PM between the 
-.resume() and .complete() callbacks, it can do its own get_noresume and 
-put_sync -- just as you have done with PCI.
+>  #include <linux/mmc/card.h>
+>  #include <linux/mmc/host.h>
+> diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+> index 145c436..ae8f7d9 100644
+> --- a/include/linux/notifier.h
+> +++ b/include/linux/notifier.h
+> @@ -191,15 +191,9 @@ static inline int notifier_to_errno(int ret)
+>  
+>  /* reboot notifiers are defined in include/linux/reboot.h. */
+>  
+> -#define NETLINK_URELEASE	0x0001	/* Unicast netlink socket released */
+> +/* Hibernation and suspend events are defined in include/linux/suspend.h. */
+>  
+> -/* Hibernation and suspend events */
+> -#define PM_HIBERNATION_PREPARE	0x0001 /* Going to hibernate */
+> -#define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+> -#define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+> -#define PM_POST_SUSPEND		0x0004 /* Suspend finished */
+> -#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
+> -#define PM_POST_RESTORE		0x0006 /* Restore failed */
+> +#define NETLINK_URELEASE	0x0001	/* Unicast netlink socket released */
+>  
+>  /* Console keyboard events.
+>   * Note: KBD_KEYCODE is always sent before KBD_UNBOUND_KEYCODE, KBD_UNICODE and
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index 083ffea..95bc81c 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -260,6 +260,14 @@ static inline int hibernate(void) { return -ENOSYS; }
+>  static inline bool system_entering_hibernation(void) { return false; }
+>  #endif /* CONFIG_HIBERNATION */
+>  
+> +/* Hibernation and suspend events */
+> +#define PM_HIBERNATION_PREPARE	0x0001 /* Going to hibernate */
+> +#define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+> +#define PM_SUSPEND_PREPARE	0x0003 /* Going to suspend the system */
+> +#define PM_POST_SUSPEND		0x0004 /* Suspend finished */
+> +#define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image */
+> +#define PM_POST_RESTORE		0x0006 /* Restore failed */
+> +
+>  #ifdef CONFIG_PM_SLEEP
+>  void save_processor_state(void);
+>  void restore_processor_state(void);
+> 
 
-Alan Stern
+Thanks,
+Rafael
