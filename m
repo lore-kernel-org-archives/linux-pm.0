@@ -1,11 +1,14 @@
-From: Brad Campbell <brad@wasp.net.au>
-Subject: Linux 3.0-rc4 intermittent failure to resume
-Date: Thu, 23 Jun 2011 08:21:07 +0800
-Message-ID: <4E0286F3.6030003@wasp.net.au>
+From: Cong Wang <amwang@redhat.com>
+Subject: Re: [PATCH 4/5] pm: move pm notifiers into suspend.h
+Date: Thu, 23 Jun 2011 13:03:54 +0800
+Message-ID: <4E02C93A.7010601__27110.7916407802$1308805533$gmane$org@redhat.com>
+References: <1308724522-32461-1-git-send-email-amwang@redhat.com>
+	<1308724522-32461-5-git-send-email-amwang@redhat.com>
+	<201106222149.28252.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="------------040106060502030605060003"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201106222149.28252.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,22 +18,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Philip Rakity <prakity@marvell.com>, Lucas De Marchi <lucas.demarchi@profusion.mobi>, netdev@vger.kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Josh Triplett <josh@joshtriplett.org>, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, akpm@linux-foundation.org, Chris Ball <cjb@laptop.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-G'day all,
+This is a multi-part message in MIME format.
+--------------040106060502030605060003
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id p5N54YlU019336
 
-I've recently moved from tuxonice to mainline uswsusp. I'm getting intermittent failure to resume 
-problems. No message in dmesg that I can find, it just boots clean. Is there something I can do to 
-get some debug info on this? It's really, really annoying.
+=E4=BA=8E 2011=E5=B9=B406=E6=9C=8823=E6=97=A5 03:49, Rafael J. Wysocki =E5=
+=86=99=E9=81=93:
+>> +#ifdef CONFIG_PM
+>> >  +#include<linux/suspend.h>
+>> >  +#endif
+> I don't think the #ifdef in necessary.  Any dependencies on CONFIG_PM
+> (or CONFIG_SUSPEND etc.) should be taken care of inside of suspend.h.
+> This file should be fixed if they aren't.
+>
 
-About 75% of the time it works perfectly, and I can find no rhyme or reason to why it suddenly just 
-decides to ignore the saved state.
+Ok, please check the updated version below.
 
-32 bit userspace with a statically linked 64 bit s2disk, s2both & resume. 64 bit kernel.
+Thanks.
 
-Brad
--- 
-Dolphins are so intelligent that within a few weeks they can
-train Americans to stand at the edge of the pool and throw them
-fish.
+
+--------------040106060502030605060003
+Content-Type: text/plain;
+ name="pm-move-pm-notifiers-into-suspend.h.patch"
+Content-Disposition: attachment;
+ filename="pm-move-pm-notifiers-into-suspend.h.patch"
+Content-Transfer-Encoding: base64
+
+QXV0aG9yOiBBbWVyaWdvIFdhbmcgPGFtd2FuZ0ByZWRoYXQuY29tPgoKICAgIHBtOiBtb3Zl
+IHBtIG5vdGlmaWVycyBpbnRvIHN1c3BlbmQuaAoKU2lnbmVkLW9mZi1ieTogV0FORyBDb25n
+IDxhbXdhbmdAcmVkaGF0LmNvbT4KCi0tLQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9tbWMvY29y
+ZS9jb3JlLmMgYi9kcml2ZXJzL21tYy9jb3JlL2NvcmUuYwppbmRleCA2ODA5MWRkLi41MDNk
+YmM5IDEwMDY0NAotLS0gYS9kcml2ZXJzL21tYy9jb3JlL2NvcmUuYworKysgYi9kcml2ZXJz
+L21tYy9jb3JlL2NvcmUuYwpAQCAtMjMsNiArMjMsNyBAQAogI2luY2x1ZGUgPGxpbnV4L2xv
+ZzIuaD4KICNpbmNsdWRlIDxsaW51eC9yZWd1bGF0b3IvY29uc3VtZXIuaD4KICNpbmNsdWRl
+IDxsaW51eC9wbV9ydW50aW1lLmg+CisjaW5jbHVkZSA8bGludXgvc3VzcGVuZC5oPgogCiAj
+aW5jbHVkZSA8bGludXgvbW1jL2NhcmQuaD4KICNpbmNsdWRlIDxsaW51eC9tbWMvaG9zdC5o
+PgpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9ub3RpZmllci5oIGIvaW5jbHVkZS9saW51
+eC9ub3RpZmllci5oCmluZGV4IDE0NWM0MzYuLmFlOGY3ZDkgMTAwNjQ0Ci0tLSBhL2luY2x1
+ZGUvbGludXgvbm90aWZpZXIuaAorKysgYi9pbmNsdWRlL2xpbnV4L25vdGlmaWVyLmgKQEAg
+LTE5MSwxNSArMTkxLDkgQEAgc3RhdGljIGlubGluZSBpbnQgbm90aWZpZXJfdG9fZXJybm8o
+aW50IHJldCkKIAogLyogcmVib290IG5vdGlmaWVycyBhcmUgZGVmaW5lZCBpbiBpbmNsdWRl
+L2xpbnV4L3JlYm9vdC5oLiAqLwogCi0jZGVmaW5lIE5FVExJTktfVVJFTEVBU0UJMHgwMDAx
+CS8qIFVuaWNhc3QgbmV0bGluayBzb2NrZXQgcmVsZWFzZWQgKi8KKy8qIEhpYmVybmF0aW9u
+IGFuZCBzdXNwZW5kIGV2ZW50cyBhcmUgZGVmaW5lZCBpbiBpbmNsdWRlL2xpbnV4L3N1c3Bl
+bmQuaC4gKi8KIAotLyogSGliZXJuYXRpb24gYW5kIHN1c3BlbmQgZXZlbnRzICovCi0jZGVm
+aW5lIFBNX0hJQkVSTkFUSU9OX1BSRVBBUkUJMHgwMDAxIC8qIEdvaW5nIHRvIGhpYmVybmF0
+ZSAqLwotI2RlZmluZSBQTV9QT1NUX0hJQkVSTkFUSU9OCTB4MDAwMiAvKiBIaWJlcm5hdGlv
+biBmaW5pc2hlZCAqLwotI2RlZmluZSBQTV9TVVNQRU5EX1BSRVBBUkUJMHgwMDAzIC8qIEdv
+aW5nIHRvIHN1c3BlbmQgdGhlIHN5c3RlbSAqLwotI2RlZmluZSBQTV9QT1NUX1NVU1BFTkQJ
+CTB4MDAwNCAvKiBTdXNwZW5kIGZpbmlzaGVkICovCi0jZGVmaW5lIFBNX1JFU1RPUkVfUFJF
+UEFSRQkweDAwMDUgLyogR29pbmcgdG8gcmVzdG9yZSBhIHNhdmVkIGltYWdlICovCi0jZGVm
+aW5lIFBNX1BPU1RfUkVTVE9SRQkJMHgwMDA2IC8qIFJlc3RvcmUgZmFpbGVkICovCisjZGVm
+aW5lIE5FVExJTktfVVJFTEVBU0UJMHgwMDAxCS8qIFVuaWNhc3QgbmV0bGluayBzb2NrZXQg
+cmVsZWFzZWQgKi8KIAogLyogQ29uc29sZSBrZXlib2FyZCBldmVudHMuCiAgKiBOb3RlOiBL
+QkRfS0VZQ09ERSBpcyBhbHdheXMgc2VudCBiZWZvcmUgS0JEX1VOQk9VTkRfS0VZQ09ERSwg
+S0JEX1VOSUNPREUgYW5kCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3N1c3BlbmQuaCBi
+L2luY2x1ZGUvbGludXgvc3VzcGVuZC5oCmluZGV4IDA4M2ZmZWEuLjk1YmM4MWMgMTAwNjQ0
+Ci0tLSBhL2luY2x1ZGUvbGludXgvc3VzcGVuZC5oCisrKyBiL2luY2x1ZGUvbGludXgvc3Vz
+cGVuZC5oCkBAIC0yNjAsNiArMjYwLDE0IEBAIHN0YXRpYyBpbmxpbmUgaW50IGhpYmVybmF0
+ZSh2b2lkKSB7IHJldHVybiAtRU5PU1lTOyB9CiBzdGF0aWMgaW5saW5lIGJvb2wgc3lzdGVt
+X2VudGVyaW5nX2hpYmVybmF0aW9uKHZvaWQpIHsgcmV0dXJuIGZhbHNlOyB9CiAjZW5kaWYg
+LyogQ09ORklHX0hJQkVSTkFUSU9OICovCiAKKy8qIEhpYmVybmF0aW9uIGFuZCBzdXNwZW5k
+IGV2ZW50cyAqLworI2RlZmluZSBQTV9ISUJFUk5BVElPTl9QUkVQQVJFCTB4MDAwMSAvKiBH
+b2luZyB0byBoaWJlcm5hdGUgKi8KKyNkZWZpbmUgUE1fUE9TVF9ISUJFUk5BVElPTgkweDAw
+MDIgLyogSGliZXJuYXRpb24gZmluaXNoZWQgKi8KKyNkZWZpbmUgUE1fU1VTUEVORF9QUkVQ
+QVJFCTB4MDAwMyAvKiBHb2luZyB0byBzdXNwZW5kIHRoZSBzeXN0ZW0gKi8KKyNkZWZpbmUg
+UE1fUE9TVF9TVVNQRU5ECQkweDAwMDQgLyogU3VzcGVuZCBmaW5pc2hlZCAqLworI2RlZmlu
+ZSBQTV9SRVNUT1JFX1BSRVBBUkUJMHgwMDA1IC8qIEdvaW5nIHRvIHJlc3RvcmUgYSBzYXZl
+ZCBpbWFnZSAqLworI2RlZmluZSBQTV9QT1NUX1JFU1RPUkUJCTB4MDAwNiAvKiBSZXN0b3Jl
+IGZhaWxlZCAqLworCiAjaWZkZWYgQ09ORklHX1BNX1NMRUVQCiB2b2lkIHNhdmVfcHJvY2Vz
+c29yX3N0YXRlKHZvaWQpOwogdm9pZCByZXN0b3JlX3Byb2Nlc3Nvcl9zdGF0ZSh2b2lkKTsK
+
+--------------040106060502030605060003
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+
+
+--------------040106060502030605060003--
