@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PCI / PM: Block races between runtime PM and
- system sleep
-Date: Thu, 23 Jun 2011 14:35:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106231433130.2033-100000__12412.4970207506$1308857100$gmane$org@iolanthe.rowland.org>
-References: <201106231946.30004.rjw@sisk.pl>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 4/5] pm: move pm notifiers into suspend.h
+Date: Thu, 23 Jun 2011 22:24:36 +0200
+Message-ID: <20110623202436.GB8514__26793.20094544$1308867634$gmane$org@elf.ucw.cz>
+References: <1308724522-32461-1-git-send-email-amwang@redhat.com>
+	<1308724522-32461-5-git-send-email-amwang@redhat.com>
+	<201106222149.28252.rjw@sisk.pl> <4E02C93A.7010601@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106231946.30004.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <4E02C93A.7010601@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,130 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Cong Wang <amwang@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, Philip Rakity <prakity@marvell.com>, Lucas De Marchi <lucas.demarchi@profusion.mobi>, netdev@vger.kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Josh Triplett <josh@joshtriplett.org>, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, akpm@linux-foundation.org, Chris Ball <cjb@laptop.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 23 Jun 2011, Rafael J. Wysocki wrote:
-
-> OK, so what about the appended patch (the last hunk is necessary to make the
-> SCSI error handling work when runtime PM is disabled, it should be a separate
-> patch)?
+On Thu 2011-06-23 13:03:54, Cong Wang wrote:
+> ??? 2011???06???23??? 03:49, Rafael J. Wysocki ??????:
+> >>+#ifdef CONFIG_PM
+> >>>  +#include<linux/suspend.h>
+> >>>  +#endif
+> >I don't think the #ifdef in necessary.  Any dependencies on CONFIG_PM
+> >(or CONFIG_SUSPEND etc.) should be taken care of inside of suspend.h.
+> >This file should be fixed if they aren't.
+> >
 > 
-> Rafael
+> Ok, please check the updated version below.
 > 
-> ---
->  drivers/base/power/main.c    |   27 ++++++++++++++++++++++-----
->  drivers/base/power/runtime.c |   10 ++++++----
->  2 files changed, 28 insertions(+), 9 deletions(-)
+> Thanks.
 > 
-> Index: linux-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/main.c
-> +++ linux-2.6/drivers/base/power/main.c
-> @@ -505,6 +505,7 @@ static int legacy_resume(struct device *
->  static int device_resume(struct device *dev, pm_message_t state, bool async)
->  {
->  	int error = 0;
-> +	bool put = false;
->  
->  	TRACE_DEVICE(dev);
->  	TRACE_RESUME(0);
-> @@ -521,6 +522,9 @@ static int device_resume(struct device *
->  	if (!dev->power.is_suspended)
->  		goto Unlock;
->  
-> +	pm_runtime_enable(dev);
-> +	put = true;
-> +
->  	if (dev->pwr_domain) {
->  		pm_dev_dbg(dev, state, "power domain ");
->  		error = pm_op(dev, &dev->pwr_domain->ops, state);
-> @@ -563,6 +567,10 @@ static int device_resume(struct device *
->  	complete_all(&dev->power.completion);
->  
->  	TRACE_RESUME(error);
-> +
-> +	if (put)
-> +		pm_runtime_put_sync(dev);
-> +
->  	return error;
->  }
->  
-> @@ -843,16 +851,22 @@ static int __device_suspend(struct devic
->  	int error = 0;
->  
->  	dpm_wait_for_children(dev, async);
-> -	device_lock(dev);
->  
->  	if (async_error)
-> -		goto Unlock;
-> +		return 0;
-> +
-> +	pm_runtime_get_noresume(dev);
-> +	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
-> +		pm_wakeup_event(dev, 0);
->  
->  	if (pm_wakeup_pending()) {
-> +		pm_runtime_put_sync(dev);
->  		async_error = -EBUSY;
-> -		goto Unlock;
-> +		return 0;
->  	}
->  
-> +	device_lock(dev);
-> +
->  	if (dev->pwr_domain) {
->  		pm_dev_dbg(dev, state, "power domain ");
->  		error = pm_op(dev, &dev->pwr_domain->ops, state);
-> @@ -890,12 +904,15 @@ static int __device_suspend(struct devic
->   End:
->  	dev->power.is_suspended = !error;
->  
-> - Unlock:
->  	device_unlock(dev);
->  	complete_all(&dev->power.completion);
->  
-> -	if (error)
-> +	if (error) {
-> +		pm_runtime_put_sync(dev);
->  		async_error = error;
-> +	} else if (dev->power.is_suspended) {
-> +		__pm_runtime_disable(dev, false);
-> +	}
->  
->  	return error;
->  }
 
-Looks right.
+> Author: Amerigo Wang <amwang@redhat.com>
+> 
+>     pm: move pm notifiers into suspend.h
+> 
+> Signed-off-by: WANG Cong <amwang@redhat.com>
 
+ACK.
 
-> Index: linux-2.6/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/runtime.c
-> +++ linux-2.6/drivers/base/power/runtime.c
-> @@ -455,12 +455,14 @@ static int rpm_resume(struct device *dev
->  	dev_dbg(dev, "%s flags 0x%x\n", __func__, rpmflags);
->  
->   repeat:
-> -	if (dev->power.runtime_error)
-> +	if (dev->power.runtime_error) {
->  		retval = -EINVAL;
-> -	else if (dev->power.disable_depth > 0)
-> -		retval = -EAGAIN;
-> -	if (retval)
->  		goto out;
-> +	} else if (dev->power.disable_depth > 0) {
-> +		if (!(rpmflags & RPM_GET_PUT))
-> +			retval = -EAGAIN;
-
-Do you also want to check the current status?  If it isn't RPM_ACTIVE 
-then perhaps you should return an error.
-
-> +		goto out;
-> +	}
->  
->  	/*
->  	 * Other scheduled or pending requests need to be canceled.  Small
-
-Alan Stern
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
