@@ -1,14 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH 7/8] PM / Domains: System-wide
-	transitions support for generic domains (v3)
-Date: Thu, 23 Jun 2011 16:44:50 +0200
-Message-ID: <201106231644.50965.rjw__41085.6564915322$1308840337$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1106231016580.2033-100000@iolanthe.rowland.org>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: Runtime PM discussion notes
+Date: Thu, 23 Jun 2011 08:51:15 -0600 (MDT)
+Message-ID: <alpine.DEB.2.00.1106211703110.9531__12424.7331791141$1308840829$gmane$org@utopia.booyaka.com>
+References: <BANLkTim=aunvBDLincgXX5yYNhvDTk+fhQ@mail.gmail.com>
+	<201106102015.47146.rjw@sisk.pl>
+	<BANLkTimgiJGKASGx80=hTBPBQ52ttmp+Kw@mail.gmail.com>
+	<201106150048.43187.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106231016580.2033-100000@iolanthe.rowland.org>
+In-Reply-To: <201106150048.43187.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +20,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 23, 2011, Alan Stern wrote:
-> On Thu, 23 Jun 2011, Rafael J. Wysocki wrote:
+(cc'ing some lists)
+
+Hi
+
+a few thoughts here:
+
+On Wed, 15 Jun 2011, Rafael J. Wysocki wrote:
+
+> On Tuesday, June 14, 2011, Magnus Damm wrote:
+>
+> > As for freezing user space, yes, I agree. The other feature including
+> > a different set of wakeup sources, not so sure why you would want to
+> > have that. I can't think of any good use case for that, from my point
+> > of view system-wide suspend is more like the limping cousin of the
+> > full-blown kernel.
 > 
-> > Well, let's say this part of the documentation is slightly outdated.
-> > 
-> > It basically refers to the model in which system suspend is a separate global
-> > hardware or firmware operation, so the state of devices may be changed by the
-> > BIOS or whatever takes over control in the meantime.  In that case the kernel
-> > has to ensure that the states of devices are consistent with what it thinks
-> > about them and the simplest way to achieve that is to put the devices to
-> > full power during resume (and back to low power if that's desirable).
-> > 
-> > However, in the case of the systems this patchset is intended for system
-> > suspend is achieved by putting various hardware components into low-power
-> > states directly in a coordinated way and the system sleep state effectively
-> > follows from the low-power states the hardware components end up in.  The
-> > system is woken up from this state by an interrupt or another mechanism under
-> > the kernel's control.  As a result, the kernel never gives control away, so
-> > the state of devices after the resume is precisely known to it.
-> > In consequence, it need not ensure that the state of devices is consistent with
-> > its view, because it knows that this is the case. :-)
+> Well, the freezing of user space by itself doesn't buy you anything
+> power management-wise, you pretty much need to do the other things too to
+> really save energy this way. 
+
+Freezing user space stops CPU-hogging processes from running.  When the 
+runqueue is empty, the scheduler can go idle.  This in turn allows the 
+CPU(s) to enter low power sleep states via CPUIdle.
+
+As I understand it, this is really the basis for the modern Android 
+use-case for wakelocks and opportunistic suspend.  They prevent 
+non-power-privileged userspace applications from keeping the system from 
+entering a low-power state.  (Secondarily, suspend also prevents kernel 
+code from running, e.g., timers set by filesystems, the networking stack, 
+etc.; but problems here should be fixed in the offending kernel code, 
+rather than hacked around, since some of the users of those timers could 
+be important)
+
+> Anyway, the value of system suspend is to allow the user to tell the system
+> "OK, now I'm not going to use you for a while and I don't want the USB mouse
+> to wake you up", so that the system can go into a state in which it draws
+> minimum energy.
 > 
-> That's true for system suspend, but it's probably not true for
-> hibernation, even in embedded systems.  Of course, many embedded
-> systems don't use hibernation at all -- but those that do should be
-> aware of this issue.
-> 
-> > So the documentation should be updated to say what hardware model it is
-> > referring to.
-> 
-> It might be worthwhile to include a little warning about the difference 
-> between suspend and hibernate.
+> Of course, you can argue that the system may detect when it's not used and
+> put itself into that state, which is somewhat correct, but the system can
+> _never_ know two things by itself: (1) that it's not going to be used _in_
+> _advance_
 
-Well, there already is one:
+But suspend users don't know this either, since they can't predict when 
+the next external wakeup can happen.
 
-"* The driver's idea of the device state may not agree with the device's
-    physical state.  This can happen during resume from hibernation."
+Having some kind of indication that the user is done using a device for 
+the time being is definitely useful.  But that's separate from system 
+suspend.  System suspend is just one of many actions that the system might 
+choose to take when the user gives that indication.
 
-(in Documentation/power/runtime_pm.txt).  Also, the new text in the patch
-https://lkml.org/lkml/2011/6/23/200 I've just sent says literally:
+Consider something like a screensaver.  Usually, the longer latency the 
+wakeup operation is, the longer the screensaver waits before deciding to, 
+say, power the monitor off, or put the system into suspend (as we 
+discussed that Mac OS X does at LinuxCon Boston).  Similarly, if there is 
+some background task that really needs to run, an intelligent system will 
+not allow a power economization mode to prevent that from happening.
 
-"If that is the case and none of the situations listed above takes place, it
- may be more efficient to leave the devices that had been suspended before
- the system sleep began in the suspended state."
+> and (2) that it is supposed to ignore wakeup signals from certain
+> sources. 
 
-where the "situations listed above" include it.
+Isn't this configurable now without system suspend with the wakeup sources 
+code?
 
-Do you think that's not sufficient?
+> As I said, support for system suspend allows the user to do more with the
+> system and you really can't implement that functionality differently.  You
+> may choose not to implement it at all, but why should you?
 
-Rafael
+The individual components of system suspend are definitely useful:
+
+1. preventing userspace processes from keeping the system from entering 
+   idle
+2. preventing userspace processes from waking the system back up
+3. preventing kernel code from keeping the system from entering idle
+4. preventing kernel code from waking the system back up
+5. requesting that drivers abort what they are currently doing
+
+The main issues are that these:
+
+1. are all bundled up into one operation
+
+2. target the entire universe of entities that they manage, rather than 
+selectively targeting non-power-privileged entities
+
+
+- Paul
