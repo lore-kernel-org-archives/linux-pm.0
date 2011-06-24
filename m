@@ -1,14 +1,12 @@
-From: jean.pihet@newoldbits.com
-Subject: [RFC/PATCH 0/9] PM QoS: add a per-device wake-up latency
-	constraint class
-Date: Fri, 24 Jun 2011 17:30:45 +0200
-Message-ID: <1308929445-31289-1-git-send-email-j-pihet__12155.815450433$1308929525$gmane$org@ti.com>
-References: <1308926286-30445-1-git-send-email-j-pihet@ti.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH] ARM: EXYNOS4: Support for generic I/O power
+ domains on EXYNOS4210
+Date: Fri, 24 Jun 2011 19:06:54 +0900
+Message-ID: <4E0461BE.5030304__34226.8254411922$1308936163$gmane$org@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1308926286-30445-1-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,108 +16,315 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, Kevin Hilman <khilman@ti.com>, Magnus Damm <magnus.damm@gmail.com>, Linux PM mailing list <linux-pm@lis>
-Cc: Jean Pihet <j-pihet@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Pihet <j-pihet@ti.com>
+Use the generic power domains support to implement support
+for power domain on EXYNOS4210.
 
-This patch set is in an RFC state, for review and comments.
+This patch is based on your "pm-domains" branch.(v7)
 
-In order to implement the new class in PM QoS the following changes have been
-made:
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Kyungmin.park <kyungmin.park@samsung.com>
+---
+ arch/arm/mach-exynos4/Kconfig                      |    1 +
+ arch/arm/mach-exynos4/Makefile                     |    1 +
+ arch/arm/mach-exynos4/include/mach/pm-exynos4210.h |   78 ++++++++++++
+ arch/arm/mach-exynos4/mach-nuri.c                  |   20 +++
+ arch/arm/mach-exynos4/pm-exynos4210.c              |  131 ++++++++++++++++++++
+ 5 files changed, 231 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+ create mode 100644 arch/arm/mach-exynos4/pm-exynos4210.c
 
-1. Add a new PM QoS class for device wake-up constraints
-(PM_QOS_DEV_WAKEUP_LATENCY).
-Due to the per-device nature of the new class the constraints lists are stored
-inside the device dev_pm_info struct instead of the internal per-class
-constraints lists.
-The new class is only available from kernel drivers and so is not exported to
-user space.
-
-2. Make the pm_qos_add_request API more generic by using a
-struct pm_qos_parameters parameter. This allows easy extension in the future.
-
-3. Upon a change of the strongest constraint in the PM_QOS_DEV_WAKEUP_LATENCY
-class a notification chain mechanism is used to take action on the system.
-This is the proposed way to have PM QoS and the platform dependant code to
-interact with each other, cf. 4 below.
-The notification mechanism now passes the constraint request struct ptr in
-order for the notifier callback to have access to the full set of constraint
-data, e.g. the struct device ptr.
-
-4. cpuidle interaction with the OMAP3 cpuidle handler
-Since cpuidle is a CPU centric framework it decides the MPU next power state
-based on the MPU exit_latency and target_residency figures.
-    
-The rest of the power domains get their next power state programmed from
-the PM_QOS_DEV_WAKEUP_LATENCY class of the PM QoS framework, via the device
-wake-up latency constraints.
-
-Note: the exit_latency and target_residency figures of the MPU include the MPU
-itself and the peripherals needed for the MPU to execute instructions (e.g.
-main memory, caches, IRQ controller, MMU etc).
-Some of those peripherals can belong to other power domains than the MPU
-subsystem and so the corresponding latencies must be included in this figure.
-
-5. Update the pm_qos_add_request callers to the generic API
-
-6. Minor clean-ups and rename of struct fields
-
-Questions:
-1. How to retrieve the device ptr from a given device driver in order to add
-a constraint on it?
-2. The device struct has recently been extended with the power domain
-information. Can this be used to apply the constraints on power domains?
-
-On-going developments, patches in preparation:
-1. write Documentation for the new PM QoS class
-2. validate the constraints framework on OMAP3&4 HW
-3. refine the power domains wake-up latency and the cpuidle figures
-
-Based on the master branch of the linux-omap git tree (3.0.0-rc3). Compile
-tested only using OMAP and x86 generic defconfigs.
-
-
-Jean Pihet (8):
-  PM: add a per-device wake-up latency constraints plist
-  PM: extend PM QoS with per-device wake-up constraints
-  OMAP PM: create a PM layer plugin for per-device constraints
-  OMAP2+: powerdomain: control power domains next state
-  OMAP3: powerdomain data: add wake-up latency figures
-  OMAP2+: omap_hwmod: manage the wake-up latency constraints
-  OMAP: PM CONSTRAINTS: implement the devices wake-up latency
-    constraints
-  OMAP2+: cpuidle only influences the MPU state
-
-Vishwanath BS (1):
-  OMAP4: powerdomain data: add wake-up latency figures
-
- arch/arm/mach-omap2/cpuidle34xx.c            |   42 +---
- arch/arm/mach-omap2/omap_hwmod.c             |   26 ++-
- arch/arm/mach-omap2/pm.h                     |   17 ++-
- arch/arm/mach-omap2/powerdomain.c            |  187 ++++++++++++++
- arch/arm/mach-omap2/powerdomain.h            |   33 +++-
- arch/arm/mach-omap2/powerdomains3xxx_data.c  |   77 ++++++
- arch/arm/mach-omap2/powerdomains44xx_data.c  |   85 +++++++
- arch/arm/plat-omap/Kconfig                   |    7 +
- arch/arm/plat-omap/Makefile                  |    1 +
- arch/arm/plat-omap/i2c.c                     |   20 --
- arch/arm/plat-omap/include/plat/omap-pm.h    |  128 ----------
- arch/arm/plat-omap/include/plat/omap_hwmod.h |    2 +
- arch/arm/plat-omap/omap-pm-constraints.c     |  344 ++++++++++++++++++++++++++
- arch/arm/plat-omap/omap-pm-noop.c            |   89 -------
- drivers/base/power/main.c                    |    1 +
- drivers/i2c/busses/i2c-omap.c                |   35 ++-
- drivers/media/video/via-camera.c             |    5 +-
- drivers/net/e1000e/netdev.c                  |    9 +-
- drivers/net/wireless/ipw2x00/ipw2100.c       |    6 +-
- include/linux/pm.h                           |    2 +
- include/linux/pm_qos_params.h                |   40 ++--
- kernel/pm_qos_params.c                       |  142 ++++++-----
- sound/core/pcm_native.c                      |    8 +-
- 23 files changed, 939 insertions(+), 367 deletions(-)
- create mode 100644 arch/arm/plat-omap/omap-pm-constraints.c
-
--- 
-1.7.4.1
+diff --git a/arch/arm/mach-exynos4/Kconfig b/arch/arm/mach-exynos4/Kconfig
+index 1435fc3..266e7f6 100644
+--- a/arch/arm/mach-exynos4/Kconfig
++++ b/arch/arm/mach-exynos4/Kconfig
+@@ -183,6 +183,7 @@ config MACH_NURI
+ 	select EXYNOS4_SETUP_SDHCI
+ 	select EXYNOS4_SETUP_USB_PHY
+ 	select SAMSUNG_DEV_PWM
++	select PM_GENERIC_DOMAINS
+ 	help
+ 	  Machine support for Samsung Mobile NURI Board.
+ 
+diff --git a/arch/arm/mach-exynos4/Makefile b/arch/arm/mach-exynos4/Makefile
+index 60fe5ec..0e9461f 100644
+--- a/arch/arm/mach-exynos4/Makefile
++++ b/arch/arm/mach-exynos4/Makefile
+@@ -17,6 +17,7 @@ obj-$(CONFIG_CPU_EXYNOS4210)	+= setup-i2c0.o irq-eint.o dma.o
+ obj-$(CONFIG_PM)		+= pm.o sleep.o
+ obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
+ obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
++obj-$(CONFIG_CPU_EXYNOS4210)	+= pm-exynos4210.o
+ 
+ obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
+ 
+diff --git a/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+new file mode 100644
+index 0000000..fa1c7a0
+--- /dev/null
++++ b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+@@ -0,0 +1,78 @@
++/* linux/arch/arm/mach-exynos4/include/mach/pm-exynos4.h
++ *
++ * Exynos4 Power management support
++ *
++ * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
++ *		http://www.samsung.com
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __PM_EXYNOS4210_H__
++#define __PM_EXYNOS4210_H__
++
++#include <linux/pm_domain.h>
++
++struct platform_device;
++
++struct exynos4210_pm_domain {
++	struct generic_pm_domain genpd;
++
++	const char *name;
++	void __iomem *base;
++	int boot_on;
++};
++
++static inline struct exynos4210_pm_domain *to_exynos4210_pd(
++		struct generic_pm_domain *pd)
++{
++	return container_of(pd, struct exynos4210_pm_domain, genpd);
++}
++
++#ifdef CONFIG_PM
++enum exynos4210_pd_data {
++	EXYNOS4210_PD_MFC,
++	EXYNOS4210_PD_G3D,
++	EXYNOS4210_PD_LCD0,
++	EXYNOS4210_PD_LCD1,
++	EXYNOS4210_PD_TV,
++	EXYNOS4210_PD_CAM,
++	EXYNOS4210_PD_GPS,
++	EXYNOS4210_PD_MAX_NUM
++};
++
++extern struct exynos4210_pm_domain exynos4210_pd_list[EXYNOS4210_PD_MAX_NUM];
++#define EXYNOS4210_MFC		(&exynos4210_pd_list[EXYNOS4210_PD_MFC])
++#define EXYNOS4210_G3D		(&exynos4210_pd_list[EXYNOS4210_PD_G3D])
++#define EXYNOS4210_LCD0		(&exynos4210_pd_list[EXYNOS4210_PD_LCD0])
++#define EXYNOS4210_LCD1		(&exynos4210_pd_list[EXYNOS4210_PD_LCD1])
++#define EXYNOS4210_TV		(&exynos4210_pd_list[EXYNOS4210_PD_TV])
++#define EXYNOS4210_CAM		(&exynos4210_pd_list[EXYNOS4210_PD_CAM])
++#define EXYNOS4210_GPS		(&exynos4210_pd_list[EXYNOS4210_PD_GPS])
++
++extern int exynos4210_pd_init(struct exynos4210_pm_domain *domain);
++extern int exynos4210_add_device_to_domain(struct exynos4210_pm_domain *domain,
++				struct platform_device *pdev);
++#else
++#define EXYNOS4210_MFC		NULL
++#define EXYNOS4210_G3D		NULL
++#define EXYNOS4210_LCD0		NULL
++#define EXYNOS4210_LCD1		NULL
++#define EXYNOS4210_TV		NULL
++#define EXYNOS4210_CAM		NULL
++#define EXYNOS4210_GPS		NULL
++
++extern int exynos4210_pd_init(struct exynos4210_pm_domain *domain)
++{
++	return 0;
++}
++extern int exynos4_add_device_to_domain(struct exynos4210_pm_domain *domain,
++				struct platform_device *pdev)
++{
++	return 0;
++}
++#endif /* CONFIG_PM */
++
++#endif /* __PM_EXYNOS4210_H__ */
+diff --git a/arch/arm/mach-exynos4/mach-nuri.c b/arch/arm/mach-exynos4/mach-nuri.c
+index 642702b..3e5c42c 100644
+--- a/arch/arm/mach-exynos4/mach-nuri.c
++++ b/arch/arm/mach-exynos4/mach-nuri.c
+@@ -37,6 +37,7 @@
+ #include <plat/iic.h>
+ 
+ #include <mach/map.h>
++#include <mach/pm-exynos4210.h>
+ 
+ /* Following are default values for UCON, ULCON and UFCON UART registers */
+ #define NURI_UCON_DEFAULT	(S3C2410_UCON_TXILEVEL |	\
+@@ -376,6 +377,23 @@ static struct platform_device *nuri_devices[] __initdata = {
+ 	&nuri_backlight_device,
+ };
+ 
++static void __init nuri_power_domain_init(void)
++{
++	int i;
++
++	for (i = 0 ; i < EXYNOS4210_PD_MAX_NUM ; i++)
++		exynos4210_pd_init(&exynos4210_pd_list[i]);
++
++	/* Add device to power-domain */
++	exynos4210_add_device_to_domain(EXYNOS4210_MFC, NULL);
++	exynos4210_add_device_to_domain(EXYNOS4210_G3D, NULL);
++	exynos4210_add_device_to_domain(EXYNOS4210_LCD0, &nuri_lcd_device);
++	exynos4210_add_device_to_domain(EXYNOS4210_LCD1, NULL);
++	exynos4210_add_device_to_domain(EXYNOS4210_TV, NULL);
++	exynos4210_add_device_to_domain(EXYNOS4210_CAM, NULL);
++	exynos4210_add_device_to_domain(EXYNOS4210_GPS, NULL);
++}
++
+ static void __init nuri_map_io(void)
+ {
+ 	s5p_init_io(NULL, 0, S5P_VA_CHIPID);
+@@ -398,6 +416,8 @@ static void __init nuri_machine_init(void)
+ 
+ 	/* Last */
+ 	platform_add_devices(nuri_devices, ARRAY_SIZE(nuri_devices));
++
++	nuri_power_domain_init();
+ }
+ 
+ MACHINE_START(NURI, "NURI")
+diff --git a/arch/arm/mach-exynos4/pm-exynos4210.c b/arch/arm/mach-exynos4/pm-exynos4210.c
+new file mode 100644
+index 0000000..8e95d49
+--- /dev/null
++++ b/arch/arm/mach-exynos4/pm-exynos4210.c
+@@ -0,0 +1,131 @@
++/* linux/arch/arm/mach-exynos4/pm-exynos4210.c
++ *
++ * Exynos4210 Power management support
++ *
++ * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
++ *		http://www.samsung.com
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/pm.h>
++#include <linux/module.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/slab.h>
++#include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
++#include <linux/pm_domain.h>
++#include <linux/io.h>
++
++#include <mach/regs-pmu.h>
++#include <mach/regs-clock.h>
++#include <mach/pm-exynos4210.h>
++
++struct exynos4210_pm_domain exynos4210_pd_list[] = {
++	{
++		.name		= "PD_MFC",
++		.base		= S5P_PMU_MFC_CONF,
++		.boot_on	= 0,
++	}, {
++		.name		= "PD_G3D",
++		.base		= S5P_PMU_G3D_CONF,
++		.boot_on	= 0,
++	}, {
++		.name		= "PD_LCD0",
++		.base		= S5P_PMU_LCD0_CONF,
++		.boot_on	= 1,
++	}, {
++		.name		= "PD_LCD1",
++		.base		= S5P_PMU_LCD1_CONF,
++		.boot_on	= 0,
++	}, {
++		.name		= "PD_TV",
++		.base		= S5P_PMU_TV_CONF,
++		.boot_on	= 0,
++	}, {
++		.name		= "PD_CAM",
++		.base		= S5P_PMU_CAM_CONF,
++		.boot_on	= 0,
++	}, {
++		.name		= "PD_GPS",
++		.base		= S5P_PMU_GPS_CONF,
++		.boot_on	= 0,
++	},
++};
++
++static int pd_power_down(struct generic_pm_domain *genpd)
++{
++	struct exynos4210_pm_domain *domain = to_exynos4210_pd(genpd);
++	u32 timeout;
++
++	__raw_writel(0, domain->base);
++
++	/* Wait max 1ms */
++	timeout = 10;
++	while (__raw_readl(domain->base + 0x4) & S5P_INT_LOCAL_PWR_EN) {
++		if (timeout == 0) {
++			printk(KERN_ERR "Power domain %s disable failed.\n",
++				domain->name);
++			return -ETIMEDOUT;
++		}
++		timeout--;
++		udelay(100);
++	}
++
++	return 0;
++}
++
++static int pd_power_up(struct generic_pm_domain *genpd)
++{
++	struct exynos4210_pm_domain *domain = to_exynos4210_pd(genpd);
++	u32 timeout;
++
++	__raw_writel(S5P_INT_LOCAL_PWR_EN, domain->base);
++
++	/* Wait max 1ms */
++	timeout = 10;
++	while ((__raw_readl(domain->base + 0x4) & S5P_INT_LOCAL_PWR_EN)
++		!= S5P_INT_LOCAL_PWR_EN) {
++		if (timeout == 0) {
++			printk(KERN_ERR "Power domain %s enable failed.\n",
++				domain->name);
++			return -ETIMEDOUT;
++		}
++		timeout--;
++		udelay(100);
++	}
++
++	return 0;
++}
++
++int exynos4210_pd_init(struct exynos4210_pm_domain *domain)
++{
++	struct generic_pm_domain *genpd = &domain->genpd;
++
++	pm_genpd_init(genpd, NULL, false);
++
++	genpd->stop_device = pm_runtime_clk_suspend;
++	genpd->start_device = pm_runtime_clk_resume;
++	genpd->power_off = pd_power_down;
++	genpd->power_on = pd_power_up;
++
++	if (domain->boot_on)
++		pd_power_up(genpd);
++
++	return 0;
++}
++
++int exynos4210_add_device_to_domain(struct exynos4210_pm_domain *domain,
++				struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct generic_pm_domain *genpd = &domain->genpd;
++
++	if (pdev != NULL)
++		return pm_genpd_add_device(genpd, dev);
++	else
++		return -EINVAL;
++}
