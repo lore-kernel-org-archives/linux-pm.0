@@ -1,16 +1,13 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH] PM / Runtime: Update documentation of
-	interactions with system sleep
-Date: Fri, 24 Jun 2011 11:25:26 -0700
-Message-ID: <87sjqz13zd.fsf__27652.5534027771$1308940031$gmane$org@ti.com>
-References: <201106112223.04972.rjw@sisk.pl> <871uyljys6.fsf@ti.com>
-	<201106230022.56462.rjw@sisk.pl> <201106231557.43653.rjw@sisk.pl>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: Runtime PM discussion notes
+Date: Fri, 24 Jun 2011 12:36:02 -0600 (MDT)
+Message-ID: <alpine.DEB.2.00.1106240935450.18931__30448.431595187$1308940755$gmane$org@utopia.booyaka.com>
+References: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106231557.43653.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Thu, 23 Jun 2011 15:57:43 +0200")
+In-Reply-To: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,25 +17,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Hi Alan,
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu, 23 Jun 2011, Alan Stern wrote:
+
+> On Thu, 23 Jun 2011, Paul Walmsley wrote:
+> > 
+> > On Wed, 15 Jun 2011, Rafael J. Wysocki wrote:
 >
-> The documents describing the interactions between runtime PM and
-> system sleep generally refer to the model in which the system sleep
-> state is entered through a global firmware or hardware operation.
-> As a result, some recommendations given in there are not entirely
-> suitable for systems in which this is not the case.  Update the
-> documentation take the existence of those systems into accout.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> At the moment, isn't it possible for the userspace ioctl PM interface to 
+> freeze processes without going all the way through to a system sleep?
 
-Looks good, thanks for updating this.
+Something like cgroup_freezer is probably more useful, since it can freeze 
+a configurable subset of processes.  Consider the common mobile use-case 
+of audio playback while the display, touchscreen, etc. are disabled.  
+In such a case, large portions of userspace can be frozen or paused, but 
+not all.
 
-Reviewed-by: Kevin Hilman <khilman@ti.com>
+> > But suspend users don't know this either, since they can't predict when 
+> > the next external wakeup can happen.
+> 
+> But they do know (or should know) that they don't intend to use the 
+> system in the near future.  It might be good to have a separate way to 
+> express that idea to the kernel.
 
-Kevin
+Are you thinking of the current userspace interfaces to suspend, or 
+something else?
+
+> > > and (2) that it is supposed to ignore wakeup signals from certain
+> > > sources. 
+> > 
+> > Isn't this configurable now without system suspend with the wakeup sources 
+> > code?
+> 
+> The wakeup code does two things: It tells the system which devices 
+> should be enabled for wakeup when the system sleeps (as opposed to 
+> cpuidle, when all devices should be able to generate interrupts),
+
+Perhaps the same interface would be useful for CPUIdle-based approaches.
+
+> > The individual components of system suspend are definitely useful:
+> > 
+> > 1. preventing userspace processes from keeping the system from entering 
+> >    idle
+> > 2. preventing userspace processes from waking the system back up
+> 
+> It's not clear what this means.  How can a user process wake the system 
+> up?  Are you referring to user timers?
+
+Yes.
+
+> > 3. preventing kernel code from keeping the system from entering idle
+> 
+> Relatively few kernel threads are freezable.  The ones that are tend to 
+> be involved in device management.  Did you have something specific in 
+> mind?
+
+No, nothing specific.
+
+> > 4. preventing kernel code from waking the system back up
+> > 5. requesting that drivers abort what they are currently doing
+> 
+> Not exactly "abort".  More like "stop processing their I/O queues".
+
+Yes, that's a better way of putting it; hopefully most drivers are doing 
+that.
+
+
+- Paul
