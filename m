@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 8/10 v6] PM: Allow the clocks management code to
-	be used during system suspend
-Date: Sat, 25 Jun 2011 23:30:05 +0200
-Message-ID: <201106252330.05596.rjw__39937.9393588335$1309037621$gmane$org@sisk.pl>
+Subject: [PATCH 10/10 v6] ARM / shmobile: Support for I/O power
+	domains for SH7372 (v8)
+Date: Sat, 25 Jun 2011 23:31:43 +0200
+Message-ID: <201106252331.43354.rjw__12606.2759235085$1309037633$gmane$org@sisk.pl>
 References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,137 +24,219 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The common clocks management code in drivers/base/power/clock_ops.c
-is going to be used during system-wide power transitions as well as
-for runtime PM, so it shouldn't depend on CONFIG_PM_RUNTIME.
-However, the suspend/resume functions provided by it for
-CONFIG_PM_RUNTIME unset, to be used during system-wide power
-transitions, should not behave in the same way as their counterparts
-defined for CONFIG_PM_RUNTIME set, because in that case the clocks
-are managed differently at run time.
-
-The names of the functions still contain the word "runtime" after
-this change, but that is going to be modified by a separate patch
-later.
+Use the generic power domains support introduced by the previous
+patch to implement support for power domains on SH7372.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Paul Mundt <lethal@linux-sh.org>
 ---
- drivers/base/power/clock_ops.c |   60 ++++++++++++++++++++++++++++++++++++++++-
- include/linux/pm_runtime.h     |    2 -
- kernel/power/Kconfig           |    4 +-
- 3 files changed, 62 insertions(+), 4 deletions(-)
+ arch/arm/Kconfig                             |    1 
+ arch/arm/mach-shmobile/Makefile              |    4 +
+ arch/arm/mach-shmobile/board-mackerel.c      |    4 +
+ arch/arm/mach-shmobile/include/mach/sh7372.h |   28 +++++++
+ arch/arm/mach-shmobile/pm-sh7372.c           |   96 +++++++++++++++++++++++++++
+ 5 files changed, 133 insertions(+)
 
-Index: linux-2.6/include/linux/pm_runtime.h
+Index: linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
 ===================================================================
---- linux-2.6.orig/include/linux/pm_runtime.h
-+++ linux-2.6/include/linux/pm_runtime.h
-@@ -251,7 +251,7 @@ struct pm_clk_notifier_block {
- 	char *con_ids[];
- };
+--- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
++++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+@@ -1582,6 +1582,10 @@ static void __init mackerel_init(void)
  
--#ifdef CONFIG_PM_RUNTIME_CLK
-+#ifdef CONFIG_PM_CLK
- extern int pm_runtime_clk_init(struct device *dev);
- extern void pm_runtime_clk_destroy(struct device *dev);
- extern int pm_runtime_clk_add(struct device *dev, const char *con_id);
-Index: linux-2.6/kernel/power/Kconfig
-===================================================================
---- linux-2.6.orig/kernel/power/Kconfig
-+++ linux-2.6/kernel/power/Kconfig
-@@ -224,9 +224,9 @@ config PM_OPP
- 	  implementations a ready to use framework to manage OPPs.
- 	  For more information, read <file:Documentation/power/opp.txt>
+ 	platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel_devices));
  
--config PM_RUNTIME_CLK
-+config PM_CLK
- 	def_bool y
--	depends on PM_RUNTIME && HAVE_CLK
-+	depends on PM && HAVE_CLK
- 
- config PM_GENERIC_DOMAINS
- 	bool
-Index: linux-2.6/drivers/base/power/clock_ops.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/clock_ops.c
-+++ linux-2.6/drivers/base/power/clock_ops.c
-@@ -15,7 +15,7 @@
- #include <linux/slab.h>
- #include <linux/err.h>
- 
--#ifdef CONFIG_PM_RUNTIME
-+#ifdef CONFIG_PM
- 
- struct pm_runtime_clk_data {
- 	struct list_head clock_list;
-@@ -191,6 +191,10 @@ void pm_runtime_clk_destroy(struct devic
- 	kfree(prd);
++	sh7372_init_pm_domain(SH7372_A4LC);
++	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
++	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
++
+ 	hdmi_init_pm_clock();
+ 	sh7372_pm_init();
  }
+Index: linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/sh7372.h
++++ linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+@@ -12,6 +12,7 @@
+ #define __ASM_SH7372_H__
  
+ #include <linux/sh_clk.h>
++#include <linux/pm_domain.h>
+ 
+ /*
+  * Pin Function Controller:
+@@ -470,4 +471,31 @@ extern struct clk sh7372_fsibck_clk;
+ extern struct clk sh7372_fsidiva_clk;
+ extern struct clk sh7372_fsidivb_clk;
+ 
++struct platform_device;
++
++struct sh7372_pm_domain {
++	struct generic_pm_domain genpd;
++	unsigned int bit_shift;
++};
++
++static inline struct sh7372_pm_domain *to_sh7372_pd(struct generic_pm_domain *d)
++{
++	return container_of(d, struct sh7372_pm_domain, genpd);
++}
++
++#ifdef CONFIG_PM
++extern struct sh7372_pm_domain sh7372_a4lc_domain;
++#define SH7372_A4LC	(&sh7372_a4lc_domain)
++
++extern void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd);
++extern void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
++					struct platform_device *pdev);
++#else
++#define SH7372_A4LC	NULL
++
++static inline void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd) {}
++static inline void sh7372_add_device_to_domain(struct sh7372_pm_domain *pd,
++					       struct platform_device *pdev) {}
 +#endif /* CONFIG_PM */
 +
-+#ifdef CONFIG_PM_RUNTIME
+ #endif /* __ASM_SH7372_H__ */
+Index: linux-2.6/arch/arm/mach-shmobile/Makefile
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/Makefile
++++ linux-2.6/arch/arm/mach-shmobile/Makefile
+@@ -42,6 +42,10 @@ obj-$(CONFIG_MACH_AP4EVB)	+= board-ap4ev
+ obj-$(CONFIG_MACH_AG5EVM)	+= board-ag5evm.o
+ obj-$(CONFIG_MACH_MACKEREL)	+= board-mackerel.o
+ 
++# PM objects
++pm-$(CONFIG_ARCH_SH7372)	+= pm-sh7372.o
 +
- /**
-  * pm_runtime_clk_acquire - Acquire a device clock.
-  * @dev: Device whose clock is to be acquired.
-@@ -330,6 +334,60 @@ static int pm_runtime_clk_notify(struct
+ # Framework support
+ obj-$(CONFIG_SMP)		+= $(smp-y)
+ obj-$(CONFIG_GENERIC_GPIO)	+= $(pfc-y)
++obj-$(CONFIG_PM)		+= $(pm-y)
+Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -15,16 +15,112 @@
+ #include <linux/list.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
+ #include <asm/system.h>
+ #include <asm/io.h>
+ #include <asm/tlbflush.h>
+ #include <mach/common.h>
++#include <mach/sh7372.h>
  
- #else /* !CONFIG_PM_RUNTIME */
+ #define SMFRAM 0xe6a70000
+ #define SYSTBCR 0xe6150024
+ #define SBAR 0xe6180020
+ #define APARMBAREA 0xe6f10020
  
++#define SPDCR 0xe6180008
++#define SWUCR 0xe6180014
++#define PSTR 0xe6180080
++
++#define PSTR_RETRIES 100
++#define PSTR_DELAY_US 10
++
 +#ifdef CONFIG_PM
 +
-+/**
-+ * pm_runtime_clk_suspend - Disable clocks in a device's PM clock list.
-+ * @dev: Device to disable the clocks for.
-+ */
-+int pm_runtime_clk_suspend(struct device *dev)
++static int pd_power_down(struct generic_pm_domain *genpd)
 +{
-+	struct pm_runtime_clk_data *prd = __to_prd(dev);
-+	struct pm_clock_entry *ce;
++	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
++	unsigned int mask = 1 << sh7372_pd->bit_shift;
 +
-+	dev_dbg(dev, "%s()\n", __func__);
++	if (__raw_readl(PSTR) & mask) {
++		unsigned int retry_count;
 +
-+	/* If there is no driver, the clocks are already disabled. */
-+	if (!prd || !dev->driver)
-+		return 0;
++		__raw_writel(mask, SPDCR);
 +
-+	mutex_lock(&prd->lock);
++		for (retry_count = PSTR_RETRIES; retry_count; retry_count--) {
++			if (!(__raw_readl(SPDCR) & mask))
++				break;
++			cpu_relax();
++		}
++	}
 +
-+	list_for_each_entry_reverse(ce, &prd->clock_list, node)
-+		clk_disable(ce->clk);
-+
-+	mutex_unlock(&prd->lock);
++	pr_debug("sh7372 power domain down 0x%08x -> PSTR = 0x%08x\n",
++		 mask, __raw_readl(PSTR));
 +
 +	return 0;
 +}
 +
-+/**
-+ * pm_runtime_clk_resume - Enable clocks in a device's PM clock list.
-+ * @dev: Device to enable the clocks for.
-+ */
-+int pm_runtime_clk_resume(struct device *dev)
++static int pd_power_up(struct generic_pm_domain *genpd)
 +{
-+	struct pm_runtime_clk_data *prd = __to_prd(dev);
-+	struct pm_clock_entry *ce;
++	struct sh7372_pm_domain *sh7372_pd = to_sh7372_pd(genpd);
++	unsigned int mask = 1 << sh7372_pd->bit_shift;
++	unsigned int retry_count;
++	int ret = 0;
 +
-+	dev_dbg(dev, "%s()\n", __func__);
++	if (__raw_readl(PSTR) & mask)
++		goto out;
 +
-+	/* If there is no driver, the clocks should remain disabled. */
-+	if (!prd || !dev->driver)
-+		return 0;
++	__raw_writel(mask, SWUCR);
 +
-+	mutex_lock(&prd->lock);
++	for (retry_count = 2 * PSTR_RETRIES; retry_count; retry_count--) {
++		if (!(__raw_readl(SWUCR) & mask))
++			goto out;
++		if (retry_count > PSTR_RETRIES)
++			udelay(PSTR_DELAY_US);
++		else
++			cpu_relax();
++	}
++	if (__raw_readl(SWUCR) & mask)
++		ret = -EIO;
 +
-+	list_for_each_entry(ce, &prd->clock_list, node)
-+		clk_enable(ce->clk);
++ out:
++	pr_debug("sh7372 power domain up 0x%08x -> PSTR = 0x%08x\n",
++		 mask, __raw_readl(PSTR));
 +
-+	mutex_unlock(&prd->lock);
-+
-+	return 0;
++	return ret;
 +}
++
++void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd)
++{
++	struct generic_pm_domain *genpd = &sh7372_pd->genpd;
++
++	pm_genpd_init(genpd, NULL, false);
++	genpd->stop_device = pm_clk_suspend;
++	genpd->start_device = pm_clk_resume;
++	genpd->power_off = pd_power_down;
++	genpd->power_on = pd_power_up;
++	pd_power_up(&sh7372_pd->genpd);
++}
++
++void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
++				 struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++
++	if (!dev->power.subsys_data) {
++		pm_clk_init(dev);
++		pm_clk_add(dev, NULL);
++	}
++	pm_genpd_add_device(&sh7372_pd->genpd, dev);
++}
++
++struct sh7372_pm_domain sh7372_a4lc_domain = {
++	.bit_shift = 1,
++};
 +
 +#endif /* CONFIG_PM */
 +
- /**
-  * enable_clock - Enable a device clock.
-  * @dev: Device whose clock is to be enabled.
+ static void sh7372_enter_core_standby(void)
+ {
+ 	void __iomem *smfram = (void __iomem *)SMFRAM;
+Index: linux-2.6/arch/arm/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/arm/Kconfig
++++ linux-2.6/arch/arm/Kconfig
+@@ -642,6 +642,7 @@ config ARCH_SHMOBILE
+ 	select NO_IOPORT
+ 	select SPARSE_IRQ
+ 	select MULTI_IRQ_HANDLER
++	select PM_GENERIC_DOMAINS if PM
+ 	help
+ 	  Support for Renesas's SH-Mobile and R-Mobile ARM platforms.
+ 
