@@ -1,16 +1,15 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: Runtime PM discussion notes
-Date: Sat, 25 Jun 2011 14:33:35 +0900
-Message-ID: <BANLkTimopuwk91vP6uS3fR8Lc5tf9VF9gw__26398.0793803514$1308980081$gmane$org@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
-	<201106232234.21930.rjw@sisk.pl>
-	<alpine.DEB.2.00.1106241239340.25533@utopia.booyaka.com>
-	<BANLkTinaa2W0mTUGCzfLAgBsgC5nP57x9ZXC0PfOvqa7x16kvw@mail.gmail.com>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [RFC/PATCH 9/9] OMAP2+: cpuidle only influences the
+	MPU state
+Date: Sat, 25 Jun 2011 06:23:31 -0700
+Message-ID: <4E05E153.9030006__12985.6495805599$1309008372$gmane$org@ti.com>
+References: <1308926286-30445-1-git-send-email-j-pihet@ti.com>
+	<1308926286-30445-10-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTinaa2W0mTUGCzfLAgBsgC5nP57x9ZXC0PfOvqa7x16kvw@mail.gmail.com>
+In-Reply-To: <1308926286-30445-10-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,55 +19,79 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: jean.pihet@newoldbits.com
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-2011/6/25 Arve Hj=F8nnev=E5g <arve@android.com>:
-> On Fri, Jun 24, 2011 at 12:53 PM, Paul Walmsley <paul@pwsan.com> wrote:
-> ...
->>
->> As I understand it, in the original Android implementation, the hardware
->> that they were using didn't have fine-grained power management. =A0So
->> system-wide suspend made more sense in that context. =A0But that shouldn=
-'t
->> be confused with the modern rationale for wakelocks:
->>
->> https://lists.linux-foundation.org/pipermail/linux-pm/2010-May/025668.ht=
-ml
->>
->> "On the hardware that shipped we enter the same power state from idle
->> and suspend, so the only power savings we get from suspend that we
->> don't get in idle is from not respecting the scheduler and timers."
->>
+On 6/24/2011 7:38 AM, jean.pihet@newoldbits.com wrote:
+> From: Jean Pihet<j-pihet@ti.com>
 >
-> This is no longer the case. Both the Nexus-S and Xoom enter lower
-> power states from suspend than idle.
+> Since cpuidle is a CPU centric framework it decides the MPU
+> next power state based on the MPU exit_latency and target_residency
+> figures.
+>
+> The rest of the power domains get their next power state programmed
+> from the PM_QOS_DEV_WAKEUP_LATENCY class of the PM QoS framework,
+> via the device wake-up latency constraints.
+>
+> Note: the exit_latency and target_residency figures of the MPU
+> include the MPU itself and the peripherals needed for the MPU to
+> execute instructions (e.g. main memory, caches, IRQ controller,
+> MMU etc). Some of those peripherals can belong to other power domains
+> than the MPU subsystem and so the corresponding latencies must be
+> included in this figure.
+>
+With above comment, I was expecting that the latency numbers
+in the table will change.
 
-Interesting, thanks for pointing that out. So this lower-power-state
-in system suspend, is that a hardware limitation, or just a reflection
-on effort spent on the CPUIdle portion of the current software
-implementation? I suspect it's the latter.
+> Tested on OMAP3 Beagleboard in RET/OFF using wake-up latency constraints
+> on MPU, CORE and PER.
+>
+> Signed-off-by: Jean Pihet<j-pihet@ti.com>
+> ---
+>   arch/arm/mach-omap2/cpuidle34xx.c |   42 +++++++++++-------------------------
+>   1 files changed, 13 insertions(+), 29 deletions(-)
+>
+> diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
+> index 4bf6e6e..b43d1d2 100644
+> --- a/arch/arm/mach-omap2/cpuidle34xx.c
+> +++ b/arch/arm/mach-omap2/cpuidle34xx.c
+> @@ -37,26 +37,26 @@
+>   #ifdef CONFIG_CPU_IDLE
+>
+>   /*
+> - * The latencies/thresholds for various C states have
+> + * The MPU latencies/thresholds for various C states have
+>    * to be configured from the respective board files.
+>    * These are some default values (which might not provide
+>    * the best power savings) used on boards which do not
+>    * pass these details from the board file.
+>    */
+>   static struct cpuidle_params cpuidle_params_table[] = {
+> -	/* C1 */
+> +	/* C1 . MPU WFI + Core active */
+>   	{2 + 2, 5, 1},
+> -	/* C2 */
+> +	/* C2 . MPU WFI + Core inactive */
+>   	{10 + 10, 30, 1},
+> -	/* C3 */
+> +	/* C3 . MPU CSWR + Core inactive */
+>   	{50 + 50, 300, 1},
+> -	/* C4 */
+> +	/* C4 . MPU OFF + Core inactive */
+>   	{1500 + 1800, 4000, 1},
+> -	/* C5 */
+> +	/* C5 . MPU RET + Core RET */
+>   	{2500 + 7500, 12000, 1},
+> -	/* C6 */
+> +	/* C6 . MPU OFF + Core RET */
+>   	{3000 + 8500, 15000, 1},
+> -	/* C7 */
+> +	/* C7 . MPU OFF + Core OFF */
+>   	{10000 + 30000, 300000, 1},
 
-I've recently been working towards implementing software support for
-deeper sleep modes on sh7372 in the mainline kernel. With my
-experimental patch the system suspend case may be able to sleep deeper
-that current CPUIdle, but that's only because I have not yet tied in
-enough dependency tracking to make proper decisions from CPUIdle
-context.
+Latency numbers still seems to include CORE PD latency as
+well. Am I missing something Jean?
 
-Getting sleep modes working transparently with CPUIdle is currently a
-bit more difficult than simply using system suspend IMO, so I would
-not be surprised if some vendors simply skip implementing some deeper
-sleep modes in CPUIdle due to the added complexity.
-
->From the hardware perspective nothing is stopping us to use CPUIdle
-with the lowest sleep states. This is true for all SH-Mobile SoCs
-including sh7372. Also, we don't rely on firmware for control of the
-PM states - if anyone is restricted by a firmware interface then
-obviously it's going to be difficult to do more fine grained power
-management.
-
-Cheers,
-
-/ magnus
+Regards
+Santosh
