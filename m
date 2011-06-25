@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 5/10 v6] PM / Domains: Move code from under
-	#ifdef CONFIG_PM_RUNTIME (v2)
-Date: Sat, 25 Jun 2011 23:27:49 +0200
-Message-ID: <201106252327.49552.rjw@sisk.pl>
+Subject: [PATCH 8/10 v6] PM: Allow the clocks management code to
+	be used during system suspend
+Date: Sat, 25 Jun 2011 23:30:05 +0200
+Message-ID: <201106252330.05596.rjw__39937.9393588335$1309037621$gmane$org@sisk.pl>
 References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,175 +24,137 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-There is some code in drivers/base/power/domain.c that will be useful
-for both runtime PM and system-wide power transitions, so make it
-depend on CONFIG_PM instead of CONFIG_PM_RUNTIME.
+The common clocks management code in drivers/base/power/clock_ops.c
+is going to be used during system-wide power transitions as well as
+for runtime PM, so it shouldn't depend on CONFIG_PM_RUNTIME.
+However, the suspend/resume functions provided by it for
+CONFIG_PM_RUNTIME unset, to be used during system-wide power
+transitions, should not behave in the same way as their counterparts
+defined for CONFIG_PM_RUNTIME set, because in that case the clocks
+are managed differently at run time.
+
+The names of the functions still contain the word "runtime" after
+this change, but that is going to be modified by a separate patch
+later.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/domain.c |  120 +++++++++++++++++++++++---------------------
- 1 file changed, 65 insertions(+), 55 deletions(-)
+ drivers/base/power/clock_ops.c |   60 ++++++++++++++++++++++++++++++++++++++++-
+ include/linux/pm_runtime.h     |    2 -
+ kernel/power/Kconfig           |    4 +-
+ 3 files changed, 62 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/drivers/base/power/domain.c
+Index: linux-2.6/include/linux/pm_runtime.h
 ===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -14,7 +14,15 @@
+--- linux-2.6.orig/include/linux/pm_runtime.h
++++ linux-2.6/include/linux/pm_runtime.h
+@@ -251,7 +251,7 @@ struct pm_clk_notifier_block {
+ 	char *con_ids[];
+ };
+ 
+-#ifdef CONFIG_PM_RUNTIME_CLK
++#ifdef CONFIG_PM_CLK
+ extern int pm_runtime_clk_init(struct device *dev);
+ extern void pm_runtime_clk_destroy(struct device *dev);
+ extern int pm_runtime_clk_add(struct device *dev, const char *con_id);
+Index: linux-2.6/kernel/power/Kconfig
+===================================================================
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -224,9 +224,9 @@ config PM_OPP
+ 	  implementations a ready to use framework to manage OPPs.
+ 	  For more information, read <file:Documentation/power/opp.txt>
+ 
+-config PM_RUNTIME_CLK
++config PM_CLK
+ 	def_bool y
+-	depends on PM_RUNTIME && HAVE_CLK
++	depends on PM && HAVE_CLK
+ 
+ config PM_GENERIC_DOMAINS
+ 	bool
+Index: linux-2.6/drivers/base/power/clock_ops.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/clock_ops.c
++++ linux-2.6/drivers/base/power/clock_ops.c
+@@ -15,7 +15,7 @@
  #include <linux/slab.h>
  #include <linux/err.h>
  
 -#ifdef CONFIG_PM_RUNTIME
 +#ifdef CONFIG_PM
-+
-+static struct generic_pm_domain *dev_to_genpd(struct device *dev)
-+{
-+	if (IS_ERR_OR_NULL(dev->pm_domain))
-+		return ERR_PTR(-EINVAL);
-+
-+	return container_of(dev->pm_domain, struct generic_pm_domain, domain);
-+}
  
- static void genpd_sd_counter_dec(struct generic_pm_domain *genpd)
- {
-@@ -23,6 +31,58 @@ static void genpd_sd_counter_dec(struct
+ struct pm_runtime_clk_data {
+ 	struct list_head clock_list;
+@@ -191,6 +191,10 @@ void pm_runtime_clk_destroy(struct devic
+ 	kfree(prd);
  }
  
- /**
-+ * pm_genpd_poweron - Restore power to a given PM domain and its parents.
-+ * @genpd: PM domain to power up.
-+ *
-+ * Restore power to @genpd and all of its parents so that it is possible to
-+ * resume a device belonging to it.
-+ */
-+static int pm_genpd_poweron(struct generic_pm_domain *genpd)
-+{
-+	int ret = 0;
-+
-+ start:
-+	if (genpd->parent)
-+		mutex_lock(&genpd->parent->lock);
-+	mutex_lock(&genpd->lock);
-+
-+	if (!genpd->power_is_off)
-+		goto out;
-+
-+	if (genpd->parent && genpd->parent->power_is_off) {
-+		mutex_unlock(&genpd->lock);
-+		mutex_unlock(&genpd->parent->lock);
-+
-+		ret = pm_genpd_poweron(genpd->parent);
-+		if (ret)
-+			return ret;
-+
-+		goto start;
-+	}
-+
-+	if (genpd->power_on) {
-+		int ret = genpd->power_on(genpd);
-+		if (ret)
-+			goto out;
-+	}
-+
-+	genpd->power_is_off = false;
-+	if (genpd->parent)
-+		genpd->parent->sd_count++;
-+
-+ out:
-+	mutex_unlock(&genpd->lock);
-+	if (genpd->parent)
-+		mutex_unlock(&genpd->parent->lock);
-+
-+	return ret;
-+}
-+
 +#endif /* CONFIG_PM */
 +
 +#ifdef CONFIG_PM_RUNTIME
 +
-+/**
-  * __pm_genpd_save_device - Save the pre-suspend state of a device.
-  * @dle: Device list entry of the device to save the state of.
-  * @genpd: PM domain the device belongs to.
-@@ -174,11 +234,10 @@ static int pm_genpd_runtime_suspend(stru
- 
- 	dev_dbg(dev, "%s()\n", __func__);
- 
--	if (IS_ERR_OR_NULL(dev->pm_domain))
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	genpd = container_of(dev->pm_domain, struct generic_pm_domain, domain);
--
- 	if (genpd->parent)
- 		mutex_lock(&genpd->parent->lock);
- 	mutex_lock(&genpd->lock);
-@@ -201,54 +260,6 @@ static int pm_genpd_runtime_suspend(stru
- }
- 
  /**
-- * pm_genpd_poweron - Restore power to a given PM domain and its parents.
-- * @genpd: PM domain to power up.
-- *
-- * Restore power to @genpd and all of its parents so that it is possible to
-- * resume a device belonging to it.
-- */
--static int pm_genpd_poweron(struct generic_pm_domain *genpd)
--{
--	int ret = 0;
--
-- start:
--	if (genpd->parent)
--		mutex_lock(&genpd->parent->lock);
--	mutex_lock(&genpd->lock);
--
--	if (!genpd->power_is_off)
--		goto out;
--
--	if (genpd->parent && genpd->parent->power_is_off) {
--		mutex_unlock(&genpd->lock);
--		mutex_unlock(&genpd->parent->lock);
--
--		ret = pm_genpd_poweron(genpd->parent);
--		if (ret)
--			return ret;
--
--		goto start;
--	}
--
--	if (genpd->power_on) {
--		int ret = genpd->power_on(genpd);
--		if (ret)
--			goto out;
--	}
--
--	genpd->power_is_off = false;
--	if (genpd->parent)
--		genpd->parent->sd_count++;
--
-- out:
--	mutex_unlock(&genpd->lock);
--	if (genpd->parent)
--		mutex_unlock(&genpd->parent->lock);
--
--	return ret;
--}
--
--/**
-  * pm_genpd_runtime_resume - Resume a device belonging to I/O PM domain.
-  * @dev: Device to resume.
-  *
-@@ -264,11 +275,10 @@ static int pm_genpd_runtime_resume(struc
+  * pm_runtime_clk_acquire - Acquire a device clock.
+  * @dev: Device whose clock is to be acquired.
+@@ -330,6 +334,60 @@ static int pm_runtime_clk_notify(struct
  
- 	dev_dbg(dev, "%s()\n", __func__);
+ #else /* !CONFIG_PM_RUNTIME */
  
--	if (IS_ERR_OR_NULL(dev->pm_domain))
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	genpd = container_of(dev->pm_domain, struct generic_pm_domain, domain);
--
- 	ret = pm_genpd_poweron(genpd);
- 	if (ret)
- 		return ret;
++#ifdef CONFIG_PM
++
++/**
++ * pm_runtime_clk_suspend - Disable clocks in a device's PM clock list.
++ * @dev: Device to disable the clocks for.
++ */
++int pm_runtime_clk_suspend(struct device *dev)
++{
++	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clock_entry *ce;
++
++	dev_dbg(dev, "%s()\n", __func__);
++
++	/* If there is no driver, the clocks are already disabled. */
++	if (!prd || !dev->driver)
++		return 0;
++
++	mutex_lock(&prd->lock);
++
++	list_for_each_entry_reverse(ce, &prd->clock_list, node)
++		clk_disable(ce->clk);
++
++	mutex_unlock(&prd->lock);
++
++	return 0;
++}
++
++/**
++ * pm_runtime_clk_resume - Enable clocks in a device's PM clock list.
++ * @dev: Device to enable the clocks for.
++ */
++int pm_runtime_clk_resume(struct device *dev)
++{
++	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clock_entry *ce;
++
++	dev_dbg(dev, "%s()\n", __func__);
++
++	/* If there is no driver, the clocks should remain disabled. */
++	if (!prd || !dev->driver)
++		return 0;
++
++	mutex_lock(&prd->lock);
++
++	list_for_each_entry(ce, &prd->clock_list, node)
++		clk_enable(ce->clk);
++
++	mutex_unlock(&prd->lock);
++
++	return 0;
++}
++
++#endif /* CONFIG_PM */
++
+ /**
+  * enable_clock - Enable a device clock.
+  * @dev: Device whose clock is to be enabled.
