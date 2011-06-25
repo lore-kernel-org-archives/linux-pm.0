@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/10 v6] PM / Domains: Support for generic I/O PM
-	domains
-Date: Sat, 25 Jun 2011 23:24:13 +0200
-Message-ID: <201106252324.13454.rjw__19794.7529996329$1309037556$gmane$org@sisk.pl>
-References: <201106112223.04972.rjw@sisk.pl>
+Subject: [PATCH 4/10 v6] PM: Introduce generic "noirq" callback
+	routines for subsystems (v2)
+Date: Sat, 25 Jun 2011 23:27:05 +0200
+Message-ID: <201106252327.05799.rjw__6174.11502539671$1309037581$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106112223.04972.rjw@sisk.pl>
+In-Reply-To: <201106252324.13454.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,65 +22,334 @@ To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Well, one more update. :-)
+Introduce generic "noirq" power management callback routines for
+subsystems in addition to the "regular" generic PM callback routines.
 
-This is the 6th version of the patchset adding support for generic I/O PM
-domains.  The majority of patches have had some small fixes here and there
-to make things work when CONFIG_PM_RUNTIME is unset.  In addition to that,
-to make the shmobile code introduced by the last patch work for
-CONFIG_PM_RUNTIME unset I had to add patches [8-9/10].  Patch [7/10]
-adds wakeup support that was missing from the previous version and I
-decided not to push patch [1/10] for 3.0 after all.
+The new routines will be used, among other things, for implementing
+system-wide PM transitions support for generic PM domains.
 
-On Saturday, June 11, 2011, Rafael J. Wysocki wrote:
-> 
-> The model here is that a bunch of devices share a common power resource
-> that can be turned on and off by software.  In addition to that, there
-> are means to start and stop the activity of each device, for example
-> by manipulating their clocks.  Moreover, there may be hierarchy of
-> such things, for example power resource A may be necessary for devices
-> a, b, c, which don't rely on any other power resources, and for devices
-> x, y, z that also rely on power resource X.  In that case there one PM
-> domain object representing devices a, b, c and power resource A, and 
-> another PM domain object will represent devices x, y, z with power
-> resource X, plus the first object will be the second one's parent.
-> 
-> Overall, I think I've taken all of the important dependencies into
-> consideration, but if you spot something suspicious, please let me know. :-)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/power/runtime_pm.txt |   32 +++++++++++-
+ drivers/base/power/generic_ops.c   |   98 +++++++++++++++++++++++++++++++------
+ include/linux/pm.h                 |    6 ++
+ 3 files changed, 119 insertions(+), 17 deletions(-)
 
-[ 1/10] - Rename struct dev_power_domain to struct dev_pm_domain to reflect the
-          fact that those objects need not correspond to hardware power domains
-          directly.
-
-[ 2/10] - Move subsys_data in struct dev_pm_info out of #ifdef CONFIG_PM_RUNTIME
-
-[ 3/10] - Introduce runtime PM support for generic I/O PM domains.
-
-[ 4/10] - Introduce generic "noirq" callbacks for system suspend/hibernation
-          (that's necessary for the next patches).
+Index: linux-2.6/drivers/base/power/generic_ops.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/generic_ops.c
++++ linux-2.6/drivers/base/power/generic_ops.c
+@@ -94,12 +94,13 @@ int pm_generic_prepare(struct device *de
+  * __pm_generic_call - Generic suspend/freeze/poweroff/thaw subsystem callback.
+  * @dev: Device to handle.
+  * @event: PM transition of the system under way.
++ * @bool: Whether or not this is the "noirq" stage.
+  *
+  * If the device has not been suspended at run time, execute the
+  * suspend/freeze/poweroff/thaw callback provided by its driver, if defined, and
+  * return its error code.  Otherwise, return zero.
+  */
+-static int __pm_generic_call(struct device *dev, int event)
++static int __pm_generic_call(struct device *dev, int event, bool noirq)
+ {
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 	int (*callback)(struct device *);
+@@ -109,16 +110,16 @@ static int __pm_generic_call(struct devi
  
-[ 5/10] - Move some PM domains support code fro under #ifdef CONFIG_PM_RUNTIME
-
-[ 6/10] - Add system-wide PM support for generic I/O PM domains.
-
-[ 7/10] - Add support for wakeup from system sleep to the I/O PM domains code.
-
-[ 8/10] - Allow PM clocks management code to be used during system suspend.
-
-[ 9/10] - Rename PM clock management functions so that they names reflect the
-          fact that they can be used during system suspend too.
-
-[10/10] - Use the new code to represent the SH7372's A4MP power domain.
-
-All of these patches are regarded as 3.1 material and they are available
-from the git branch at:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-domains  
-
-The patchset has been tested on SH7372 Mackerel board for both
-CONFIG_PM_RUNTIME set and unset.
-
-Thanks,
-Rafael
+ 	switch (event) {
+ 	case PM_EVENT_SUSPEND:
+-		callback = pm->suspend;
++		callback = noirq ? pm->suspend_noirq : pm->suspend;
+ 		break;
+ 	case PM_EVENT_FREEZE:
+-		callback = pm->freeze;
++		callback = noirq ? pm->freeze_noirq : pm->freeze;
+ 		break;
+ 	case PM_EVENT_HIBERNATE:
+-		callback = pm->poweroff;
++		callback = noirq ? pm->poweroff_noirq : pm->poweroff;
+ 		break;
+ 	case PM_EVENT_THAW:
+-		callback = pm->thaw;
++		callback = noirq ? pm->thaw_noirq : pm->thaw;
+ 		break;
+ 	default:
+ 		callback = NULL;
+@@ -129,42 +130,82 @@ static int __pm_generic_call(struct devi
+ }
+ 
+ /**
++ * pm_generic_suspend_noirq - Generic suspend_noirq callback for subsystems.
++ * @dev: Device to suspend.
++ */
++int pm_generic_suspend_noirq(struct device *dev)
++{
++	return __pm_generic_call(dev, PM_EVENT_SUSPEND, true);
++}
++EXPORT_SYMBOL_GPL(pm_generic_suspend_noirq);
++
++/**
+  * pm_generic_suspend - Generic suspend callback for subsystems.
+  * @dev: Device to suspend.
+  */
+ int pm_generic_suspend(struct device *dev)
+ {
+-	return __pm_generic_call(dev, PM_EVENT_SUSPEND);
++	return __pm_generic_call(dev, PM_EVENT_SUSPEND, false);
+ }
+ EXPORT_SYMBOL_GPL(pm_generic_suspend);
+ 
+ /**
++ * pm_generic_freeze_noirq - Generic freeze_noirq callback for subsystems.
++ * @dev: Device to freeze.
++ */
++int pm_generic_freeze_noirq(struct device *dev)
++{
++	return __pm_generic_call(dev, PM_EVENT_FREEZE, true);
++}
++EXPORT_SYMBOL_GPL(pm_generic_freeze_noirq);
++
++/**
+  * pm_generic_freeze - Generic freeze callback for subsystems.
+  * @dev: Device to freeze.
+  */
+ int pm_generic_freeze(struct device *dev)
+ {
+-	return __pm_generic_call(dev, PM_EVENT_FREEZE);
++	return __pm_generic_call(dev, PM_EVENT_FREEZE, false);
+ }
+ EXPORT_SYMBOL_GPL(pm_generic_freeze);
+ 
+ /**
++ * pm_generic_poweroff_noirq - Generic poweroff_noirq callback for subsystems.
++ * @dev: Device to handle.
++ */
++int pm_generic_poweroff_noirq(struct device *dev)
++{
++	return __pm_generic_call(dev, PM_EVENT_HIBERNATE, true);
++}
++EXPORT_SYMBOL_GPL(pm_generic_poweroff_noirq);
++
++/**
+  * pm_generic_poweroff - Generic poweroff callback for subsystems.
+  * @dev: Device to handle.
+  */
+ int pm_generic_poweroff(struct device *dev)
+ {
+-	return __pm_generic_call(dev, PM_EVENT_HIBERNATE);
++	return __pm_generic_call(dev, PM_EVENT_HIBERNATE, false);
+ }
+ EXPORT_SYMBOL_GPL(pm_generic_poweroff);
+ 
+ /**
++ * pm_generic_thaw_noirq - Generic thaw_noirq callback for subsystems.
++ * @dev: Device to thaw.
++ */
++int pm_generic_thaw_noirq(struct device *dev)
++{
++	return __pm_generic_call(dev, PM_EVENT_THAW, true);
++}
++EXPORT_SYMBOL_GPL(pm_generic_thaw_noirq);
++
++/**
+  * pm_generic_thaw - Generic thaw callback for subsystems.
+  * @dev: Device to thaw.
+  */
+ int pm_generic_thaw(struct device *dev)
+ {
+-	return __pm_generic_call(dev, PM_EVENT_THAW);
++	return __pm_generic_call(dev, PM_EVENT_THAW, false);
+ }
+ EXPORT_SYMBOL_GPL(pm_generic_thaw);
+ 
+@@ -172,12 +213,13 @@ EXPORT_SYMBOL_GPL(pm_generic_thaw);
+  * __pm_generic_resume - Generic resume/restore callback for subsystems.
+  * @dev: Device to handle.
+  * @event: PM transition of the system under way.
++ * @bool: Whether or not this is the "noirq" stage.
+  *
+  * Execute the resume/resotre callback provided by the @dev's driver, if
+  * defined.  If it returns 0, change the device's runtime PM status to 'active'.
+  * Return the callback's error code.
+  */
+-static int __pm_generic_resume(struct device *dev, int event)
++static int __pm_generic_resume(struct device *dev, int event, bool noirq)
+ {
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 	int (*callback)(struct device *);
+@@ -188,10 +230,10 @@ static int __pm_generic_resume(struct de
+ 
+ 	switch (event) {
+ 	case PM_EVENT_RESUME:
+-		callback = pm->resume;
++		callback = noirq ? pm->resume_noirq : pm->resume;
+ 		break;
+ 	case PM_EVENT_RESTORE:
+-		callback = pm->restore;
++		callback = noirq ? pm->restore_noirq : pm->restore;
+ 		break;
+ 	default:
+ 		callback = NULL;
+@@ -202,7 +244,7 @@ static int __pm_generic_resume(struct de
+ 		return 0;
+ 
+ 	ret = callback(dev);
+-	if (!ret && pm_runtime_enabled(dev)) {
++	if (!ret && !noirq && pm_runtime_enabled(dev)) {
+ 		pm_runtime_disable(dev);
+ 		pm_runtime_set_active(dev);
+ 		pm_runtime_enable(dev);
+@@ -212,22 +254,42 @@ static int __pm_generic_resume(struct de
+ }
+ 
+ /**
++ * pm_generic_resume_noirq - Generic resume_noirq callback for subsystems.
++ * @dev: Device to resume.
++ */
++int pm_generic_resume_noirq(struct device *dev)
++{
++	return __pm_generic_resume(dev, PM_EVENT_RESUME, true);
++}
++EXPORT_SYMBOL_GPL(pm_generic_resume_noirq);
++
++/**
+  * pm_generic_resume - Generic resume callback for subsystems.
+  * @dev: Device to resume.
+  */
+ int pm_generic_resume(struct device *dev)
+ {
+-	return __pm_generic_resume(dev, PM_EVENT_RESUME);
++	return __pm_generic_resume(dev, PM_EVENT_RESUME, false);
+ }
+ EXPORT_SYMBOL_GPL(pm_generic_resume);
+ 
+ /**
++ * pm_generic_restore_noirq - Generic restore_noirq callback for subsystems.
++ * @dev: Device to restore.
++ */
++int pm_generic_restore_noirq(struct device *dev)
++{
++	return __pm_generic_resume(dev, PM_EVENT_RESTORE, true);
++}
++EXPORT_SYMBOL_GPL(pm_generic_restore_noirq);
++
++/**
+  * pm_generic_restore - Generic restore callback for subsystems.
+  * @dev: Device to restore.
+  */
+ int pm_generic_restore(struct device *dev)
+ {
+-	return __pm_generic_resume(dev, PM_EVENT_RESTORE);
++	return __pm_generic_resume(dev, PM_EVENT_RESTORE, false);
+ }
+ EXPORT_SYMBOL_GPL(pm_generic_restore);
+ 
+@@ -256,11 +318,17 @@ struct dev_pm_ops generic_subsys_pm_ops
+ #ifdef CONFIG_PM_SLEEP
+ 	.prepare = pm_generic_prepare,
+ 	.suspend = pm_generic_suspend,
++	.suspend_noirq = pm_generic_suspend_noirq,
+ 	.resume = pm_generic_resume,
++	.resume_noirq = pm_generic_resume_noirq,
+ 	.freeze = pm_generic_freeze,
++	.freeze_noirq = pm_generic_freeze_noirq,
+ 	.thaw = pm_generic_thaw,
++	.thaw_noirq = pm_generic_thaw_noirq,
+ 	.poweroff = pm_generic_poweroff,
++	.poweroff_noirq = pm_generic_poweroff_noirq,
+ 	.restore = pm_generic_restore,
++	.restore_noirq = pm_generic_restore_noirq,
+ 	.complete = pm_generic_complete,
+ #endif
+ #ifdef CONFIG_PM_RUNTIME
+Index: linux-2.6/include/linux/pm.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -553,11 +553,17 @@ extern void __suspend_report_result(cons
+ extern int device_pm_wait_for_dev(struct device *sub, struct device *dev);
+ 
+ extern int pm_generic_prepare(struct device *dev);
++extern int pm_generic_suspend_noirq(struct device *dev);
+ extern int pm_generic_suspend(struct device *dev);
++extern int pm_generic_resume_noirq(struct device *dev);
+ extern int pm_generic_resume(struct device *dev);
++extern int pm_generic_freeze_noirq(struct device *dev);
+ extern int pm_generic_freeze(struct device *dev);
++extern int pm_generic_thaw_noirq(struct device *dev);
+ extern int pm_generic_thaw(struct device *dev);
++extern int pm_generic_restore_noirq(struct device *dev);
+ extern int pm_generic_restore(struct device *dev);
++extern int pm_generic_poweroff_noirq(struct device *dev);
+ extern int pm_generic_poweroff(struct device *dev);
+ extern void pm_generic_complete(struct device *dev);
+ 
+Index: linux-2.6/Documentation/power/runtime_pm.txt
+===================================================================
+--- linux-2.6.orig/Documentation/power/runtime_pm.txt
++++ linux-2.6/Documentation/power/runtime_pm.txt
+@@ -590,32 +590,60 @@ driver/base/power/generic_ops.c:
+       callback provided by its driver and return its result, or return 0 if not
+       defined
+ 
++  int pm_generic_suspend_noirq(struct device *dev);
++    - if pm_runtime_suspended(dev) returns "false", invoke the ->suspend_noirq()
++      callback provided by the device's driver and return its result, or return
++      0 if not defined
++
+   int pm_generic_resume(struct device *dev);
+     - invoke the ->resume() callback provided by the driver of this device and,
+       if successful, change the device's runtime PM status to 'active'
+ 
++  int pm_generic_resume_noirq(struct device *dev);
++    - invoke the ->resume_noirq() callback provided by the driver of this device
++
+   int pm_generic_freeze(struct device *dev);
+     - if the device has not been suspended at run time, invoke the ->freeze()
+       callback provided by its driver and return its result, or return 0 if not
+       defined
+ 
++  int pm_generic_freeze_noirq(struct device *dev);
++    - if pm_runtime_suspended(dev) returns "false", invoke the ->freeze_noirq()
++      callback provided by the device's driver and return its result, or return
++      0 if not defined
++
+   int pm_generic_thaw(struct device *dev);
+     - if the device has not been suspended at run time, invoke the ->thaw()
+       callback provided by its driver and return its result, or return 0 if not
+       defined
+ 
++  int pm_generic_thaw_noirq(struct device *dev);
++    - if pm_runtime_suspended(dev) returns "false", invoke the ->thaw_noirq()
++      callback provided by the device's driver and return its result, or return
++      0 if not defined
++
+   int pm_generic_poweroff(struct device *dev);
+     - if the device has not been suspended at run time, invoke the ->poweroff()
+       callback provided by its driver and return its result, or return 0 if not
+       defined
+ 
++  int pm_generic_poweroff_noirq(struct device *dev);
++    - if pm_runtime_suspended(dev) returns "false", run the ->poweroff_noirq()
++      callback provided by the device's driver and return its result, or return
++      0 if not defined
++
+   int pm_generic_restore(struct device *dev);
+     - invoke the ->restore() callback provided by the driver of this device and,
+       if successful, change the device's runtime PM status to 'active'
+ 
++  int pm_generic_restore_noirq(struct device *dev);
++    - invoke the ->restore_noirq() callback provided by the device's driver
++
+ These functions can be assigned to the ->runtime_idle(), ->runtime_suspend(),
+-->runtime_resume(), ->suspend(), ->resume(), ->freeze(), ->thaw(), ->poweroff(),
+-or ->restore() callback pointers in the subsystem-level dev_pm_ops structures.
++->runtime_resume(), ->suspend(), ->suspend_noirq(), ->resume(),
++->resume_noirq(), ->freeze(), ->freeze_noirq(), ->thaw(), ->thaw_noirq(),
++->poweroff(), ->poweroff_noirq(), ->restore(), ->restore_noirq() callback
++pointers in the subsystem-level dev_pm_ops structures.
+ 
+ If a subsystem wishes to use all of them at the same time, it can simply assign
+ the GENERIC_SUBSYS_PM_OPS macro, defined in include/linux/pm.h, to its
