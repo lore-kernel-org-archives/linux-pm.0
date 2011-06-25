@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/10 v6] PM / Domains: System-wide transitions
-	support for generic domains (v4)
-Date: Sat, 25 Jun 2011 23:28:31 +0200
-Message-ID: <201106252328.31882.rjw__49911.332227248$1309037640$gmane$org@sisk.pl>
+Subject: [PATCH 9/10 v6] PM: Rename clock management functions
+Date: Sat, 25 Jun 2011 23:30:47 +0200
+Message-ID: <201106252330.48129.rjw__48191.2082912915$1309037644$gmane$org@sisk.pl>
 References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,720 +23,579 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make generic PM domains support system-wide power transitions
-(system suspend and hibernation).  Add suspend, resume, freeze, thaw,
-poweroff and restore callbacks to be associated with struct
-generic_pm_domain objects and make pm_genpd_init() use them as
-appropriate.
-
-The new callbacks do nothing for devices belonging to power domains
-that were powered down at run time (before the transition).  For the
-other devices the action carried out depends on the type of the
-transition.  During system suspend the power domain .suspend()
-callback executes pm_generic_suspend() for the device, while the
-PM domain .suspend_noirq() callback runs pm_generic_suspend_noirq()
-for it, stops it and eventually removes power from the PM domain it
-belongs to (after all devices in the domain have been stopped and its
-subdomains have been powered off).
-
-During system resume the PM domain .resume_noirq() callback
-restores power to the PM domain (when executed for it first time),
-starts the device and executes pm_generic_resume_noirq() for it,
-while the .resume() callback executes pm_generic_resume() for the
-device.  Finally, the .complete() callback executes pm_runtime_idle()
-for the device which should put it back into the suspended state if
-its runtime PM usage count is equal to zero at that time.
-
-The actions carried out during hibernation and resume from it are
-analogous to the ones described above.
+The common PM clock management functions may be used for system
+suspend/resume as well as for runtime PM, so rename them
+accordingly.  Modify kerneldoc comments describing these functions
+and kernel messages printed by them, so that they refer to power
+management in general rather that to runtime PM.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/domain.c |  546 ++++++++++++++++++++++++++++++++++++++++++--
- include/linux/pm_domain.h   |   12 
- 2 files changed, 543 insertions(+), 15 deletions(-)
+ arch/arm/mach-omap1/pm_bus.c        |    6 -
+ arch/arm/mach-shmobile/pm_runtime.c |    6 -
+ drivers/base/power/clock_ops.c      |  188 ++++++++++++++++++------------------
+ include/linux/pm_runtime.h          |   28 ++---
+ 4 files changed, 114 insertions(+), 114 deletions(-)
 
-Index: linux-2.6/drivers/base/power/domain.c
+Index: linux-2.6/drivers/base/power/clock_ops.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -21,7 +21,7 @@ static struct generic_pm_domain *dev_to_
- 	if (IS_ERR_OR_NULL(dev->pm_domain))
- 		return ERR_PTR(-EINVAL);
+--- linux-2.6.orig/drivers/base/power/clock_ops.c
++++ linux-2.6/drivers/base/power/clock_ops.c
+@@ -17,7 +17,7 @@
  
--	return container_of(dev->pm_domain, struct generic_pm_domain, domain);
-+	return pd_to_genpd(dev->pm_domain);
- }
+ #ifdef CONFIG_PM
  
- static void genpd_sd_counter_dec(struct generic_pm_domain *genpd)
-@@ -46,7 +46,8 @@ static int pm_genpd_poweron(struct gener
- 		mutex_lock(&genpd->parent->lock);
- 	mutex_lock(&genpd->lock);
+-struct pm_runtime_clk_data {
++struct pm_clk_data {
+ 	struct list_head clock_list;
+ 	struct mutex lock;
+ };
+@@ -36,25 +36,25 @@ struct pm_clock_entry {
+ 	enum pce_status status;
+ };
  
--	if (!genpd->power_is_off)
-+	if (!genpd->power_is_off
-+	    || (genpd->prepared_count > 0 && genpd->suspend_power_off))
- 		goto out;
- 
- 	if (genpd->parent && genpd->parent->power_is_off) {
-@@ -155,7 +156,7 @@ static int pm_genpd_poweroff(struct gene
- 	unsigned int not_suspended;
- 	int ret;
- 
--	if (genpd->power_is_off)
-+	if (genpd->power_is_off || genpd->prepared_count > 0)
- 		return 0;
- 
- 	if (genpd->sd_count > 0)
-@@ -260,6 +261,27 @@ static int pm_genpd_runtime_suspend(stru
- }
- 
- /**
-+ * __pm_genpd_runtime_resume - Resume a device belonging to I/O PM domain.
-+ * @dev: Device to resume.
-+ * @genpd: PM domain the device belongs to.
-+ */
-+static void __pm_genpd_runtime_resume(struct device *dev,
-+				      struct generic_pm_domain *genpd)
-+{
-+	struct dev_list_entry *dle;
-+
-+	list_for_each_entry(dle, &genpd->dev_list, node) {
-+		if (dle->dev == dev) {
-+			__pm_genpd_restore_device(dle, genpd);
-+			break;
-+		}
-+	}
-+
-+	if (genpd->start_device)
-+		genpd->start_device(dev);
-+}
-+
-+/**
-  * pm_genpd_runtime_resume - Resume a device belonging to I/O PM domain.
-  * @dev: Device to resume.
-  *
-@@ -270,7 +292,6 @@ static int pm_genpd_runtime_suspend(stru
- static int pm_genpd_runtime_resume(struct device *dev)
+-static struct pm_runtime_clk_data *__to_prd(struct device *dev)
++static struct pm_clk_data *__to_pcd(struct device *dev)
  {
- 	struct generic_pm_domain *genpd;
--	struct dev_list_entry *dle;
- 	int ret;
+ 	return dev ? dev->power.subsys_data : NULL;
+ }
  
- 	dev_dbg(dev, "%s()\n", __func__);
-@@ -284,17 +305,7 @@ static int pm_genpd_runtime_resume(struc
- 		return ret;
- 
- 	mutex_lock(&genpd->lock);
--
--	list_for_each_entry(dle, &genpd->dev_list, node) {
--		if (dle->dev == dev) {
--			__pm_genpd_restore_device(dle, genpd);
--			break;
--		}
--	}
--
--	if (genpd->start_device)
--		genpd->start_device(dev);
--
-+	__pm_genpd_runtime_resume(dev, genpd);
- 	mutex_unlock(&genpd->lock);
- 
- 	return 0;
-@@ -303,12 +314,488 @@ static int pm_genpd_runtime_resume(struc
- #else
- 
- static inline void genpd_power_off_work_fn(struct work_struct *work) {}
-+static inline void __pm_genpd_runtime_resume(struct device *dev,
-+					     struct generic_pm_domain *genpd) {}
- 
- #define pm_genpd_runtime_suspend	NULL
- #define pm_genpd_runtime_resume		NULL
- 
- #endif /* CONFIG_PM_RUNTIME */
- 
-+#ifdef CONFIG_PM_SLEEP
-+
-+/**
-+ * pm_genpd_sync_poweroff - Synchronously power off a PM domain and its parents.
-+ * @genpd: PM domain to power off, if possible.
-+ *
-+ * Check if the given PM domain can be powered off (during system suspend or
-+ * hibernation) and do that if so.  Also, in that case propagate to its parent.
-+ *
-+ * This function is only called in "noirq" stages of system power transitions,
-+ * so it need not acquire locks (all of the "noirq" callbacks are executed
-+ * sequentially, so it is guaranteed that it will never run twice in parallel).
-+ */
-+static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd)
-+{
-+	struct generic_pm_domain *parent = genpd->parent;
-+
-+	if (genpd->power_is_off)
-+		return;
-+
-+	if (genpd->suspended_count != genpd->device_count || genpd->sd_count > 0)
-+		return;
-+
-+	if (genpd->power_off)
-+		genpd->power_off(genpd);
-+
-+	genpd->power_is_off = true;
-+	if (parent) {
-+		genpd_sd_counter_dec(parent);
-+		pm_genpd_sync_poweroff(parent);
-+	}
-+}
-+
-+/**
-+ * pm_genpd_prepare - Start power transition of a device in a PM domain.
-+ * @dev: Device to start the transition of.
-+ *
-+ * Start a power transition of a device (during a system-wide power transition)
-+ * under the assumption that its pm_domain field points to the domain member of
-+ * an object of type struct generic_pm_domain representing a PM domain
-+ * consisting of I/O devices.
-+ */
-+static int pm_genpd_prepare(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	mutex_lock(&genpd->lock);
-+
-+	if (genpd->prepared_count++ == 0)
-+		genpd->suspend_power_off = genpd->power_is_off;
-+
-+	if (genpd->suspend_power_off) {
-+		mutex_unlock(&genpd->lock);
-+		return 0;
-+	}
-+
-+	/*
-+	 * If the device is in the (runtime) "suspended" state, call
-+	 * .start_device() for it, if defined.
-+	 */
-+	if (pm_runtime_suspended(dev))
-+		__pm_genpd_runtime_resume(dev, genpd);
-+
-+	pm_runtime_disable(dev);
-+
-+	mutex_unlock(&genpd->lock);
-+
-+	return pm_generic_prepare(dev);
-+}
-+
-+/**
-+ * pm_genpd_suspend - Suspend a device belonging to an I/O PM domain.
-+ * @dev: Device to suspend.
-+ *
-+ * Suspend a device under the assumption that its pm_domain field points to the
-+ * domain member of an object of type struct generic_pm_domain representing
-+ * a PM domain consisting of I/O devices.
-+ */
-+static int pm_genpd_suspend(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	return genpd->suspend_power_off ? 0 : pm_generic_suspend(dev);
-+}
-+
-+/**
-+ * pm_genpd_suspend_noirq - Late suspend of a device from an I/O PM domain.
-+ * @dev: Device to suspend.
-+ *
-+ * Carry out a late suspend of a device under the assumption that its
-+ * pm_domain field points to the domain member of an object of type
-+ * struct generic_pm_domain representing a PM domain consisting of I/O devices.
-+ */
-+static int pm_genpd_suspend_noirq(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+	int ret;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	if (genpd->suspend_power_off)
-+		return 0;
-+
-+	ret = pm_generic_suspend_noirq(dev);
-+	if (ret)
-+		return ret;
-+
-+	if (genpd->stop_device)
-+		genpd->stop_device(dev);
-+
-+	/*
-+	 * Since all of the "noirq" callbacks are executed sequentially, it is
-+	 * guaranteed that this function will never run twice in parallel for
-+	 * the same PM domain, so it is not necessary to use locking here.
-+	 */
-+	genpd->suspended_count++;
-+	pm_genpd_sync_poweroff(genpd);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pm_genpd_resume_noirq - Early resume of a device from an I/O power domain.
-+ * @dev: Device to resume.
-+ *
-+ * Carry out an early resume of a device under the assumption that its
-+ * pm_domain field points to the domain member of an object of type
-+ * struct generic_pm_domain representing a power domain consisting of I/O
-+ * devices.
-+ */
-+static int pm_genpd_resume_noirq(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	if (genpd->suspend_power_off)
-+		return 0;
-+
-+	/*
-+	 * Since all of the "noirq" callbacks are executed sequentially, it is
-+	 * guaranteed that this function will never run twice in parallel for
-+	 * the same PM domain, so it is not necessary to use locking here.
-+	 */
-+	pm_genpd_poweron(genpd);
-+	genpd->suspended_count--;
-+	if (genpd->start_device)
-+		genpd->start_device(dev);
-+
-+	return pm_generic_resume_noirq(dev);
-+}
-+
-+/**
-+ * pm_genpd_resume - Resume a device belonging to an I/O power domain.
-+ * @dev: Device to resume.
-+ *
-+ * Resume a device under the assumption that its pm_domain field points to the
-+ * domain member of an object of type struct generic_pm_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static int pm_genpd_resume(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	return genpd->suspend_power_off ? 0 : pm_generic_resume(dev);
-+}
-+
-+/**
-+ * pm_genpd_freeze - Freeze a device belonging to an I/O power domain.
-+ * @dev: Device to freeze.
-+ *
-+ * Freeze a device under the assumption that its pm_domain field points to the
-+ * domain member of an object of type struct generic_pm_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static int pm_genpd_freeze(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	return genpd->suspend_power_off ? 0 : pm_generic_freeze(dev);
-+}
-+
-+/**
-+ * pm_genpd_freeze_noirq - Late freeze of a device from an I/O power domain.
-+ * @dev: Device to freeze.
-+ *
-+ * Carry out a late freeze of a device under the assumption that its
-+ * pm_domain field points to the domain member of an object of type
-+ * struct generic_pm_domain representing a power domain consisting of I/O
-+ * devices.
-+ */
-+static int pm_genpd_freeze_noirq(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+	int ret;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	if (genpd->suspend_power_off)
-+		return 0;
-+
-+	ret = pm_generic_freeze_noirq(dev);
-+	if (ret)
-+		return ret;
-+
-+	if (genpd->stop_device)
-+		genpd->stop_device(dev);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pm_genpd_thaw_noirq - Early thaw of a device from an I/O power domain.
-+ * @dev: Device to thaw.
-+ *
-+ * Carry out an early thaw of a device under the assumption that its
-+ * pm_domain field points to the domain member of an object of type
-+ * struct generic_pm_domain representing a power domain consisting of I/O
-+ * devices.
-+ */
-+static int pm_genpd_thaw_noirq(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	if (genpd->suspend_power_off)
-+		return 0;
-+
-+	if (genpd->start_device)
-+		genpd->start_device(dev);
-+
-+	return pm_generic_thaw_noirq(dev);
-+}
-+
-+/**
-+ * pm_genpd_thaw - Thaw a device belonging to an I/O power domain.
-+ * @dev: Device to thaw.
-+ *
-+ * Thaw a device under the assumption that its pm_domain field points to the
-+ * domain member of an object of type struct generic_pm_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static int pm_genpd_thaw(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	return genpd->suspend_power_off ? 0 : pm_generic_thaw(dev);
-+}
-+
-+/**
-+ * pm_genpd_dev_poweroff - Power off a device belonging to an I/O PM domain.
-+ * @dev: Device to suspend.
-+ *
-+ * Power off a device under the assumption that its pm_domain field points to
-+ * the domain member of an object of type struct generic_pm_domain representing
-+ * a PM domain consisting of I/O devices.
-+ */
-+static int pm_genpd_dev_poweroff(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	return genpd->suspend_power_off ? 0 : pm_generic_poweroff(dev);
-+}
-+
-+/**
-+ * pm_genpd_dev_poweroff_noirq - Late power off of a device from a PM domain.
-+ * @dev: Device to suspend.
-+ *
-+ * Carry out a late powering off of a device under the assumption that its
-+ * pm_domain field points to the domain member of an object of type
-+ * struct generic_pm_domain representing a PM domain consisting of I/O devices.
-+ */
-+static int pm_genpd_dev_poweroff_noirq(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+	int ret;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	if (genpd->suspend_power_off)
-+		return 0;
-+
-+	ret = pm_generic_poweroff_noirq(dev);
-+	if (ret)
-+		return ret;
-+
-+	if (genpd->stop_device)
-+		genpd->stop_device(dev);
-+
-+	/*
-+	 * Since all of the "noirq" callbacks are executed sequentially, it is
-+	 * guaranteed that this function will never run twice in parallel for
-+	 * the same PM domain, so it is not necessary to use locking here.
-+	 */
-+	genpd->suspended_count++;
-+	pm_genpd_sync_poweroff(genpd);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pm_genpd_restore_noirq - Early restore of a device from an I/O power domain.
-+ * @dev: Device to resume.
-+ *
-+ * Carry out an early restore of a device under the assumption that its
-+ * pm_domain field points to the domain member of an object of type
-+ * struct generic_pm_domain representing a power domain consisting of I/O
-+ * devices.
-+ */
-+static int pm_genpd_restore_noirq(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	/*
-+	 * Since all of the "noirq" callbacks are executed sequentially, it is
-+	 * guaranteed that this function will never run twice in parallel for
-+	 * the same PM domain, so it is not necessary to use locking here.
-+	 */
-+	genpd->power_is_off = true;
-+	if (genpd->suspend_power_off) {
-+		/*
-+		 * The boot kernel might put the domain into the power on state,
-+		 * so make sure it really is powered off.
-+		 */
-+		if (genpd->power_off)
-+			genpd->power_off(genpd);
-+		return 0;
-+	}
-+
-+	pm_genpd_poweron(genpd);
-+	genpd->suspended_count--;
-+	if (genpd->start_device)
-+		genpd->start_device(dev);
-+
-+	return pm_generic_restore_noirq(dev);
-+}
-+
-+/**
-+ * pm_genpd_restore - Restore a device belonging to an I/O power domain.
-+ * @dev: Device to resume.
-+ *
-+ * Restore a device under the assumption that its pm_domain field points to the
-+ * domain member of an object of type struct generic_pm_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static int pm_genpd_restore(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	return genpd->suspend_power_off ? 0 : pm_generic_restore(dev);
-+}
-+
-+/**
-+ * pm_genpd_complete - Complete power transition of a device in a power domain.
-+ * @dev: Device to complete the transition of.
-+ *
-+ * Complete a power transition of a device (during a system-wide power
-+ * transition) under the assumption that its pm_domain field points to the
-+ * domain member of an object of type struct generic_pm_domain representing
-+ * a power domain consisting of I/O devices.
-+ */
-+static void pm_genpd_complete(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+	bool run_complete;
-+
-+	dev_dbg(dev, "%s()\n", __func__);
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return;
-+
-+	mutex_lock(&genpd->lock);
-+
-+	run_complete = !genpd->suspend_power_off;
-+	if (--genpd->prepared_count == 0)
-+		genpd->suspend_power_off = false;
-+
-+	mutex_unlock(&genpd->lock);
-+
-+	if (run_complete)
-+		pm_generic_complete(dev);
-+
-+	pm_runtime_enable(dev);
-+}
-+
-+#else
-+
-+#define pm_genpd_prepare		NULL
-+#define pm_genpd_suspend		NULL
-+#define pm_genpd_suspend_noirq		NULL
-+#define pm_genpd_resume_noirq		NULL
-+#define pm_genpd_resume			NULL
-+#define pm_genpd_freeze			NULL
-+#define pm_genpd_freeze_noirq		NULL
-+#define pm_genpd_thaw_noirq		NULL
-+#define pm_genpd_thaw			NULL
-+#define pm_genpd_dev_poweroff_noirq	NULL
-+#define pm_genpd_dev_poweroff		NULL
-+#define pm_genpd_restore_noirq		NULL
-+#define pm_genpd_restore		NULL
-+#define pm_genpd_complete		NULL
-+
-+#endif /* CONFIG_PM_SLEEP */
-+
  /**
-  * pm_genpd_add_device - Add a device to an I/O PM domain.
-  * @genpd: PM domain to add the device to.
-@@ -331,6 +818,11 @@ int pm_genpd_add_device(struct generic_p
- 		goto out;
+- * pm_runtime_clk_add - Start using a device clock for runtime PM.
+- * @dev: Device whose clock is going to be used for runtime PM.
++ * pm_clk_add - Start using a device clock for power management.
++ * @dev: Device whose clock is going to be used for power management.
+  * @con_id: Connection ID of the clock.
+  *
+  * Add the clock represented by @con_id to the list of clocks used for
+- * the runtime PM of @dev.
++ * the power management of @dev.
+  */
+-int pm_runtime_clk_add(struct device *dev, const char *con_id)
++int pm_clk_add(struct device *dev, const char *con_id)
+ {
+-	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clk_data *pcd = __to_pcd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+-	if (!prd)
++	if (!pcd)
+ 		return -EINVAL;
+ 
+ 	ce = kzalloc(sizeof(*ce), GFP_KERNEL);
+@@ -73,20 +73,20 @@ int pm_runtime_clk_add(struct device *de
+ 		}
  	}
  
-+	if (genpd->prepared_count > 0) {
-+		ret = -EAGAIN;
-+		goto out;
-+	}
-+
- 	list_for_each_entry(dle, &genpd->dev_list, node)
- 		if (dle->dev == dev) {
- 			ret = -EINVAL;
-@@ -346,6 +838,7 @@ int pm_genpd_add_device(struct generic_p
- 	dle->dev = dev;
- 	dle->need_restore = false;
- 	list_add_tail(&dle->node, &genpd->dev_list);
-+	genpd->device_count++;
+-	mutex_lock(&prd->lock);
+-	list_add_tail(&ce->node, &prd->clock_list);
+-	mutex_unlock(&prd->lock);
++	mutex_lock(&pcd->lock);
++	list_add_tail(&ce->node, &pcd->clock_list);
++	mutex_unlock(&pcd->lock);
+ 	return 0;
+ }
  
- 	spin_lock_irq(&dev->power.lock);
- 	dev->pm_domain = &genpd->domain;
-@@ -375,6 +868,11 @@ int pm_genpd_remove_device(struct generi
+ /**
+- * __pm_runtime_clk_remove - Destroy runtime PM clock entry.
+- * @ce: Runtime PM clock entry to destroy.
++ * __pm_clk_remove - Destroy PM clock entry.
++ * @ce: PM clock entry to destroy.
+  *
+- * This routine must be called under the mutex protecting the runtime PM list
+- * of clocks corresponding the the @ce's device.
++ * This routine must be called under the mutex protecting the PM list of clocks
++ * corresponding the the @ce's device.
+  */
+-static void __pm_runtime_clk_remove(struct pm_clock_entry *ce)
++static void __pm_clk_remove(struct pm_clock_entry *ce)
+ {
+ 	if (!ce)
+ 		return;
+@@ -108,87 +108,87 @@ static void __pm_runtime_clk_remove(stru
+ }
  
- 	mutex_lock(&genpd->lock);
+ /**
+- * pm_runtime_clk_remove - Stop using a device clock for runtime PM.
+- * @dev: Device whose clock should not be used for runtime PM any more.
++ * pm_clk_remove - Stop using a device clock for power management.
++ * @dev: Device whose clock should not be used for PM any more.
+  * @con_id: Connection ID of the clock.
+  *
+  * Remove the clock represented by @con_id from the list of clocks used for
+- * the runtime PM of @dev.
++ * the power management of @dev.
+  */
+-void pm_runtime_clk_remove(struct device *dev, const char *con_id)
++void pm_clk_remove(struct device *dev, const char *con_id)
+ {
+-	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clk_data *pcd = __to_pcd(dev);
+ 	struct pm_clock_entry *ce;
  
-+	if (genpd->prepared_count > 0) {
-+		ret = -EAGAIN;
-+		goto out;
-+	}
-+
- 	list_for_each_entry(dle, &genpd->dev_list, node) {
- 		if (dle->dev != dev)
+-	if (!prd)
++	if (!pcd)
+ 		return;
+ 
+-	mutex_lock(&prd->lock);
++	mutex_lock(&pcd->lock);
+ 
+-	list_for_each_entry(ce, &prd->clock_list, node) {
++	list_for_each_entry(ce, &pcd->clock_list, node) {
+ 		if (!con_id && !ce->con_id) {
+-			__pm_runtime_clk_remove(ce);
++			__pm_clk_remove(ce);
+ 			break;
+ 		} else if (!con_id || !ce->con_id) {
  			continue;
-@@ -383,6 +881,7 @@ int pm_genpd_remove_device(struct generi
+ 		} else if (!strcmp(con_id, ce->con_id)) {
+-			__pm_runtime_clk_remove(ce);
++			__pm_clk_remove(ce);
+ 			break;
+ 		}
+ 	}
+ 
+-	mutex_unlock(&prd->lock);
++	mutex_unlock(&pcd->lock);
+ }
+ 
+ /**
+- * pm_runtime_clk_init - Initialize a device's list of runtime PM clocks.
+- * @dev: Device to initialize the list of runtime PM clocks for.
++ * pm_clk_init - Initialize a device's list of power management clocks.
++ * @dev: Device to initialize the list of PM clocks for.
+  *
+- * Allocate a struct pm_runtime_clk_data object, initialize its lock member and
++ * Allocate a struct pm_clk_data object, initialize its lock member and
+  * make the @dev's power.subsys_data field point to it.
+  */
+-int pm_runtime_clk_init(struct device *dev)
++int pm_clk_init(struct device *dev)
+ {
+-	struct pm_runtime_clk_data *prd;
++	struct pm_clk_data *pcd;
+ 
+-	prd = kzalloc(sizeof(*prd), GFP_KERNEL);
+-	if (!prd) {
+-		dev_err(dev, "Not enough memory fo runtime PM data.\n");
++	pcd = kzalloc(sizeof(*pcd), GFP_KERNEL);
++	if (!pcd) {
++		dev_err(dev, "Not enough memory for PM clock data.\n");
+ 		return -ENOMEM;
+ 	}
+ 
+-	INIT_LIST_HEAD(&prd->clock_list);
+-	mutex_init(&prd->lock);
+-	dev->power.subsys_data = prd;
++	INIT_LIST_HEAD(&pcd->clock_list);
++	mutex_init(&pcd->lock);
++	dev->power.subsys_data = pcd;
+ 	return 0;
+ }
+ 
+ /**
+- * pm_runtime_clk_destroy - Destroy a device's list of runtime PM clocks.
+- * @dev: Device to destroy the list of runtime PM clocks for.
++ * pm_clk_destroy - Destroy a device's list of power management clocks.
++ * @dev: Device to destroy the list of PM clocks for.
+  *
+  * Clear the @dev's power.subsys_data field, remove the list of clock entries
+- * from the struct pm_runtime_clk_data object pointed to by it before and free
++ * from the struct pm_clk_data object pointed to by it before and free
+  * that object.
+  */
+-void pm_runtime_clk_destroy(struct device *dev)
++void pm_clk_destroy(struct device *dev)
+ {
+-	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clk_data *pcd = __to_pcd(dev);
+ 	struct pm_clock_entry *ce, *c;
+ 
+-	if (!prd)
++	if (!pcd)
+ 		return;
+ 
+ 	dev->power.subsys_data = NULL;
+ 
+-	mutex_lock(&prd->lock);
++	mutex_lock(&pcd->lock);
+ 
+-	list_for_each_entry_safe_reverse(ce, c, &prd->clock_list, node)
+-		__pm_runtime_clk_remove(ce);
++	list_for_each_entry_safe_reverse(ce, c, &pcd->clock_list, node)
++		__pm_clk_remove(ce);
+ 
+-	mutex_unlock(&prd->lock);
++	mutex_unlock(&pcd->lock);
+ 
+-	kfree(prd);
++	kfree(pcd);
+ }
+ 
+ #endif /* CONFIG_PM */
+@@ -196,11 +196,11 @@ void pm_runtime_clk_destroy(struct devic
+ #ifdef CONFIG_PM_RUNTIME
+ 
+ /**
+- * pm_runtime_clk_acquire - Acquire a device clock.
++ * pm_clk_acquire - Acquire a device clock.
+  * @dev: Device whose clock is to be acquired.
+  * @con_id: Connection ID of the clock.
+  */
+-static void pm_runtime_clk_acquire(struct device *dev,
++static void pm_clk_acquire(struct device *dev,
+ 				    struct pm_clock_entry *ce)
+ {
+ 	ce->clk = clk_get(dev, ce->con_id);
+@@ -213,24 +213,24 @@ static void pm_runtime_clk_acquire(struc
+ }
+ 
+ /**
+- * pm_runtime_clk_suspend - Disable clocks in a device's runtime PM clock list.
++ * pm_clk_suspend - Disable clocks in a device's PM clock list.
+  * @dev: Device to disable the clocks for.
+  */
+-int pm_runtime_clk_suspend(struct device *dev)
++int pm_clk_suspend(struct device *dev)
+ {
+-	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clk_data *pcd = __to_pcd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+-	if (!prd)
++	if (!pcd)
+ 		return 0;
+ 
+-	mutex_lock(&prd->lock);
++	mutex_lock(&pcd->lock);
+ 
+-	list_for_each_entry_reverse(ce, &prd->clock_list, node) {
++	list_for_each_entry_reverse(ce, &pcd->clock_list, node) {
+ 		if (ce->status == PCE_STATUS_NONE)
+-			pm_runtime_clk_acquire(dev, ce);
++			pm_clk_acquire(dev, ce);
+ 
+ 		if (ce->status < PCE_STATUS_ERROR) {
+ 			clk_disable(ce->clk);
+@@ -238,30 +238,30 @@ int pm_runtime_clk_suspend(struct device
+ 		}
+ 	}
+ 
+-	mutex_unlock(&prd->lock);
++	mutex_unlock(&pcd->lock);
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * pm_runtime_clk_resume - Enable clocks in a device's runtime PM clock list.
++ * pm_clk_resume - Enable clocks in a device's PM clock list.
+  * @dev: Device to enable the clocks for.
+  */
+-int pm_runtime_clk_resume(struct device *dev)
++int pm_clk_resume(struct device *dev)
+ {
+-	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clk_data *pcd = __to_pcd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+-	if (!prd)
++	if (!pcd)
+ 		return 0;
+ 
+-	mutex_lock(&prd->lock);
++	mutex_lock(&pcd->lock);
+ 
+-	list_for_each_entry(ce, &prd->clock_list, node) {
++	list_for_each_entry(ce, &pcd->clock_list, node) {
+ 		if (ce->status == PCE_STATUS_NONE)
+-			pm_runtime_clk_acquire(dev, ce);
++			pm_clk_acquire(dev, ce);
+ 
+ 		if (ce->status < PCE_STATUS_ERROR) {
+ 			clk_enable(ce->clk);
+@@ -269,13 +269,13 @@ int pm_runtime_clk_resume(struct device
+ 		}
+ 	}
+ 
+-	mutex_unlock(&prd->lock);
++	mutex_unlock(&pcd->lock);
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * pm_runtime_clk_notify - Notify routine for device addition and removal.
++ * pm_clk_notify - Notify routine for device addition and removal.
+  * @nb: Notifier block object this function is a member of.
+  * @action: Operation being carried out by the caller.
+  * @data: Device the routine is being run for.
+@@ -284,13 +284,13 @@ int pm_runtime_clk_resume(struct device
+  * struct pm_clk_notifier_block containing all of the requisite data.
+  * Specifically, the pm_domain member of that object is copied to the device's
+  * pm_domain field and its con_ids member is used to populate the device's list
+- * of runtime PM clocks, depending on @action.
++ * of PM clocks, depending on @action.
+  *
+  * If the device's pm_domain field is already populated with a value different
+  * from the one stored in the struct pm_clk_notifier_block object, the function
+  * does nothing.
+  */
+-static int pm_runtime_clk_notify(struct notifier_block *nb,
++static int pm_clk_notify(struct notifier_block *nb,
+ 				 unsigned long action, void *data)
+ {
+ 	struct pm_clk_notifier_block *clknb;
+@@ -307,16 +307,16 @@ static int pm_runtime_clk_notify(struct
+ 		if (dev->pm_domain)
+ 			break;
+ 
+-		error = pm_runtime_clk_init(dev);
++		error = pm_clk_init(dev);
+ 		if (error)
+ 			break;
+ 
+ 		dev->pm_domain = clknb->pm_domain;
+ 		if (clknb->con_ids[0]) {
+ 			for (con_id = clknb->con_ids; *con_id; con_id++)
+-				pm_runtime_clk_add(dev, *con_id);
++				pm_clk_add(dev, *con_id);
+ 		} else {
+-			pm_runtime_clk_add(dev, NULL);
++			pm_clk_add(dev, NULL);
+ 		}
+ 
+ 		break;
+@@ -325,7 +325,7 @@ static int pm_runtime_clk_notify(struct
+ 			break;
+ 
  		dev->pm_domain = NULL;
- 		spin_unlock_irq(&dev->power.lock);
- 
-+		genpd->device_count--;
- 		list_del(&dle->node);
- 		kfree(dle);
- 
-@@ -390,6 +889,7 @@ int pm_genpd_remove_device(struct generi
+-		pm_runtime_clk_destroy(dev);
++		pm_clk_destroy(dev);
  		break;
  	}
  
-+ out:
- 	mutex_unlock(&genpd->lock);
+@@ -337,51 +337,51 @@ static int pm_runtime_clk_notify(struct
+ #ifdef CONFIG_PM
  
- 	return ret;
-@@ -498,7 +998,23 @@ void pm_genpd_init(struct generic_pm_dom
- 	genpd->in_progress = 0;
- 	genpd->sd_count = 0;
- 	genpd->power_is_off = is_off;
-+	genpd->device_count = 0;
-+	genpd->suspended_count = 0;
- 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
- 	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
- 	genpd->domain.ops.runtime_idle = pm_generic_runtime_idle;
-+	genpd->domain.ops.prepare = pm_genpd_prepare;
-+	genpd->domain.ops.suspend = pm_genpd_suspend;
-+	genpd->domain.ops.suspend_noirq = pm_genpd_suspend_noirq;
-+	genpd->domain.ops.resume_noirq = pm_genpd_resume_noirq;
-+	genpd->domain.ops.resume = pm_genpd_resume;
-+	genpd->domain.ops.freeze = pm_genpd_freeze;
-+	genpd->domain.ops.freeze_noirq = pm_genpd_freeze_noirq;
-+	genpd->domain.ops.thaw_noirq = pm_genpd_thaw_noirq;
-+	genpd->domain.ops.thaw = pm_genpd_thaw;
-+	genpd->domain.ops.poweroff = pm_genpd_dev_poweroff;
-+	genpd->domain.ops.poweroff_noirq = pm_genpd_dev_poweroff_noirq;
-+	genpd->domain.ops.restore_noirq = pm_genpd_restore_noirq;
-+	genpd->domain.ops.restore = pm_genpd_restore;
-+	genpd->domain.ops.complete = pm_genpd_complete;
+ /**
+- * pm_runtime_clk_suspend - Disable clocks in a device's PM clock list.
++ * pm_clk_suspend - Disable clocks in a device's PM clock list.
+  * @dev: Device to disable the clocks for.
+  */
+-int pm_runtime_clk_suspend(struct device *dev)
++int pm_clk_suspend(struct device *dev)
+ {
+-	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clk_data *pcd = __to_pcd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+ 	/* If there is no driver, the clocks are already disabled. */
+-	if (!prd || !dev->driver)
++	if (!pcd || !dev->driver)
+ 		return 0;
+ 
+-	mutex_lock(&prd->lock);
++	mutex_lock(&pcd->lock);
+ 
+-	list_for_each_entry_reverse(ce, &prd->clock_list, node)
++	list_for_each_entry_reverse(ce, &pcd->clock_list, node)
+ 		clk_disable(ce->clk);
+ 
+-	mutex_unlock(&prd->lock);
++	mutex_unlock(&pcd->lock);
+ 
+ 	return 0;
  }
-Index: linux-2.6/include/linux/pm_domain.h
+ 
+ /**
+- * pm_runtime_clk_resume - Enable clocks in a device's PM clock list.
++ * pm_clk_resume - Enable clocks in a device's PM clock list.
+  * @dev: Device to enable the clocks for.
+  */
+-int pm_runtime_clk_resume(struct device *dev)
++int pm_clk_resume(struct device *dev)
+ {
+-	struct pm_runtime_clk_data *prd = __to_prd(dev);
++	struct pm_clk_data *pcd = __to_pcd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+ 	/* If there is no driver, the clocks should remain disabled. */
+-	if (!prd || !dev->driver)
++	if (!pcd || !dev->driver)
+ 		return 0;
+ 
+-	mutex_lock(&prd->lock);
++	mutex_lock(&pcd->lock);
+ 
+-	list_for_each_entry(ce, &prd->clock_list, node)
++	list_for_each_entry(ce, &pcd->clock_list, node)
+ 		clk_enable(ce->clk);
+ 
+-	mutex_unlock(&prd->lock);
++	mutex_unlock(&pcd->lock);
+ 
+ 	return 0;
+ }
+@@ -423,7 +423,7 @@ static void disable_clock(struct device
+ }
+ 
+ /**
+- * pm_runtime_clk_notify - Notify routine for device addition and removal.
++ * pm_clk_notify - Notify routine for device addition and removal.
+  * @nb: Notifier block object this function is a member of.
+  * @action: Operation being carried out by the caller.
+  * @data: Device the routine is being run for.
+@@ -433,7 +433,7 @@ static void disable_clock(struct device
+  * Specifically, the con_ids member of that object is used to enable or disable
+  * the device's clocks, depending on @action.
+  */
+-static int pm_runtime_clk_notify(struct notifier_block *nb,
++static int pm_clk_notify(struct notifier_block *nb,
+ 				 unsigned long action, void *data)
+ {
+ 	struct pm_clk_notifier_block *clknb;
+@@ -469,21 +469,21 @@ static int pm_runtime_clk_notify(struct
+ #endif /* !CONFIG_PM_RUNTIME */
+ 
+ /**
+- * pm_runtime_clk_add_notifier - Add bus type notifier for runtime PM clocks.
++ * pm_clk_add_notifier - Add bus type notifier for power management clocks.
+  * @bus: Bus type to add the notifier to.
+  * @clknb: Notifier to be added to the given bus type.
+  *
+  * The nb member of @clknb is not expected to be initialized and its
+- * notifier_call member will be replaced with pm_runtime_clk_notify().  However,
++ * notifier_call member will be replaced with pm_clk_notify().  However,
+  * the remaining members of @clknb should be populated prior to calling this
+  * routine.
+  */
+-void pm_runtime_clk_add_notifier(struct bus_type *bus,
++void pm_clk_add_notifier(struct bus_type *bus,
+ 				 struct pm_clk_notifier_block *clknb)
+ {
+ 	if (!bus || !clknb)
+ 		return;
+ 
+-	clknb->nb.notifier_call = pm_runtime_clk_notify;
++	clknb->nb.notifier_call = pm_clk_notify;
+ 	bus_register_notifier(bus, &clknb->nb);
+ }
+Index: linux-2.6/include/linux/pm_runtime.h
 ===================================================================
---- linux-2.6.orig/include/linux/pm_domain.h
-+++ linux-2.6/include/linux/pm_domain.h
-@@ -11,6 +11,9 @@
- 
- #include <linux/device.h>
- 
-+#define GPD_IN_SUSPEND	1
-+#define GPD_POWER_OFF	2
-+
- struct dev_power_governor {
- 	bool (*power_down_ok)(struct dev_pm_domain *domain);
- };
-@@ -27,12 +30,21 @@ struct generic_pm_domain {
- 	unsigned int in_progress;	/* Number of devices being suspended now */
- 	unsigned int sd_count;	/* Number of subdomains with power "on" */
- 	bool power_is_off;	/* Whether or not power has been removed */
-+	unsigned int device_count;	/* Number of devices */
-+	unsigned int suspended_count;	/* System suspend device counter */
-+	unsigned int prepared_count;	/* Suspend counter of prepared devices */
-+	bool suspend_power_off;	/* Power status before system suspend */
- 	int (*power_off)(struct generic_pm_domain *domain);
- 	int (*power_on)(struct generic_pm_domain *domain);
- 	int (*start_device)(struct device *dev);
- 	int (*stop_device)(struct device *dev);
+--- linux-2.6.orig/include/linux/pm_runtime.h
++++ linux-2.6/include/linux/pm_runtime.h
+@@ -252,36 +252,36 @@ struct pm_clk_notifier_block {
  };
  
-+static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
-+{
-+	return container_of(pd, struct generic_pm_domain, domain);
-+}
-+
- struct dev_list_entry {
- 	struct list_head node;
- 	struct device *dev;
+ #ifdef CONFIG_PM_CLK
+-extern int pm_runtime_clk_init(struct device *dev);
+-extern void pm_runtime_clk_destroy(struct device *dev);
+-extern int pm_runtime_clk_add(struct device *dev, const char *con_id);
+-extern void pm_runtime_clk_remove(struct device *dev, const char *con_id);
+-extern int pm_runtime_clk_suspend(struct device *dev);
+-extern int pm_runtime_clk_resume(struct device *dev);
++extern int pm_clk_init(struct device *dev);
++extern void pm_clk_destroy(struct device *dev);
++extern int pm_clk_add(struct device *dev, const char *con_id);
++extern void pm_clk_remove(struct device *dev, const char *con_id);
++extern int pm_clk_suspend(struct device *dev);
++extern int pm_clk_resume(struct device *dev);
+ #else
+-static inline int pm_runtime_clk_init(struct device *dev)
++static inline int pm_clk_init(struct device *dev)
+ {
+ 	return -EINVAL;
+ }
+-static inline void pm_runtime_clk_destroy(struct device *dev)
++static inline void pm_clk_destroy(struct device *dev)
+ {
+ }
+-static inline int pm_runtime_clk_add(struct device *dev, const char *con_id)
++static inline int pm_clk_add(struct device *dev, const char *con_id)
+ {
+ 	return -EINVAL;
+ }
+-static inline void pm_runtime_clk_remove(struct device *dev, const char *con_id)
++static inline void pm_clk_remove(struct device *dev, const char *con_id)
+ {
+ }
+-#define pm_runtime_clock_suspend	NULL
+-#define pm_runtime_clock_resume		NULL
++#define pm_clk_suspend	NULL
++#define pm_clk_resume	NULL
+ #endif
+ 
+ #ifdef CONFIG_HAVE_CLK
+-extern void pm_runtime_clk_add_notifier(struct bus_type *bus,
++extern void pm_clk_add_notifier(struct bus_type *bus,
+ 					struct pm_clk_notifier_block *clknb);
+ #else
+-static inline void pm_runtime_clk_add_notifier(struct bus_type *bus,
++static inline void pm_clk_add_notifier(struct bus_type *bus,
+ 					struct pm_clk_notifier_block *clknb)
+ {
+ }
+Index: linux-2.6/arch/arm/mach-omap1/pm_bus.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-omap1/pm_bus.c
++++ linux-2.6/arch/arm/mach-omap1/pm_bus.c
+@@ -32,7 +32,7 @@ static int omap1_pm_runtime_suspend(stru
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = pm_runtime_clk_suspend(dev);
++	ret = pm_clk_suspend(dev);
+ 	if (ret) {
+ 		pm_generic_runtime_resume(dev);
+ 		return ret;
+@@ -45,7 +45,7 @@ static int omap1_pm_runtime_resume(struc
+ {
+ 	dev_dbg(dev, "%s\n", __func__);
+ 
+-	pm_runtime_clk_resume(dev);
++	pm_clk_resume(dev);
+ 	return pm_generic_runtime_resume(dev);
+ }
+ 
+@@ -71,7 +71,7 @@ static int __init omap1_pm_runtime_init(
+ 	if (!cpu_class_is_omap1())
+ 		return -ENODEV;
+ 
+-	pm_runtime_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
++	pm_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
+ 
+ 	return 0;
+ }
+Index: linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm_runtime.c
++++ linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+@@ -30,8 +30,8 @@ static int default_platform_runtime_idle
+ 
+ static struct dev_pm_domain default_pm_domain = {
+ 	.ops = {
+-		.runtime_suspend = pm_runtime_clk_suspend,
+-		.runtime_resume = pm_runtime_clk_resume,
++		.runtime_suspend = pm_clk_suspend,
++		.runtime_resume = pm_clk_resume,
+ 		.runtime_idle = default_platform_runtime_idle,
+ 		USE_PLATFORM_PM_SLEEP_OPS
+ 	},
+@@ -52,7 +52,7 @@ static struct pm_clk_notifier_block plat
+ 
+ static int __init sh_pm_runtime_init(void)
+ {
+-	pm_runtime_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
++	pm_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
+ 	return 0;
+ }
+ core_initcall(sh_pm_runtime_init);
