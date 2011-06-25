@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Runtime PM discussion notes
-Date: Sat, 25 Jun 2011 14:59:02 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106251444340.5999-100000__44892.749496694$1309028417$gmane$org@netrider.rowland.org>
-References: <alpine.DEB.2.00.1106240935450.18931@utopia.booyaka.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 0/10 v6] PM / Domains: Support for generic I/O PM
+	domains
+Date: Sat, 25 Jun 2011 23:24:13 +0200
+Message-ID: <201106252324.13454.rjw__19794.7529996329$1309037556$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1106240935450.18931@utopia.booyaka.com>
+In-Reply-To: <201106112223.04972.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,70 +18,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 24 Jun 2011, Paul Walmsley wrote:
+Hi,
 
-> > > But suspend users don't know this either, since they can't predict when 
-> > > the next external wakeup can happen.
-> > 
-> > But they do know (or should know) that they don't intend to use the 
-> > system in the near future.  It might be good to have a separate way to 
-> > express that idea to the kernel.
+Well, one more update. :-)
+
+This is the 6th version of the patchset adding support for generic I/O PM
+domains.  The majority of patches have had some small fixes here and there
+to make things work when CONFIG_PM_RUNTIME is unset.  In addition to that,
+to make the shmobile code introduced by the last patch work for
+CONFIG_PM_RUNTIME unset I had to add patches [8-9/10].  Patch [7/10]
+adds wakeup support that was missing from the previous version and I
+decided not to push patch [1/10] for 3.0 after all.
+
+On Saturday, June 11, 2011, Rafael J. Wysocki wrote:
 > 
-> Are you thinking of the current userspace interfaces to suspend, or 
-> something else?
-
-I'm not thinking of anything in particular.  Just brainstorming...
-
-If somebody decides to freeze userspace without putting the entire 
-system to sleep, how will they know when to unfreeze?  A certain amount 
-of specialized kernel/userspace interaction would be needed.
-
-> > > 1. preventing userspace processes from keeping the system from entering 
-> > >    idle
-> > > 2. preventing userspace processes from waking the system back up
-> > 
-> > It's not clear what this means.  How can a user process wake the system 
-> > up?  Are you referring to user timers?
+> The model here is that a bunch of devices share a common power resource
+> that can be turned on and off by software.  In addition to that, there
+> are means to start and stop the activity of each device, for example
+> by manipulating their clocks.  Moreover, there may be hierarchy of
+> such things, for example power resource A may be necessary for devices
+> a, b, c, which don't rely on any other power resources, and for devices
+> x, y, z that also rely on power resource X.  In that case there one PM
+> domain object representing devices a, b, c and power resource A, and 
+> another PM domain object will represent devices x, y, z with power
+> resource X, plus the first object will be the second one's parent.
 > 
-> Yes.
+> Overall, I think I've taken all of the important dependencies into
+> consideration, but if you spot something suspicious, please let me know. :-)
 
-Then those two are almost the same thing.  It doesn't seem to make much 
-sense to say "I want to stop these processes from running now, but 
-allow them to run if one of them gets a timer or I/O signal".
+[ 1/10] - Rename struct dev_power_domain to struct dev_pm_domain to reflect the
+          fact that those objects need not correspond to hardware power domains
+          directly.
 
-> > > 3. preventing kernel code from keeping the system from entering idle
-> > 
-> > Relatively few kernel threads are freezable.  The ones that are tend to 
-> > be involved in device management.  Did you have something specific in 
-> > mind?
-> 
-> No, nothing specific.
-> 
-> > > 4. preventing kernel code from waking the system back up
+[ 2/10] - Move subsys_data in struct dev_pm_info out of #ifdef CONFIG_PM_RUNTIME
 
-Once userspace is inactive, the kernel probably doesn't have very much
-to do.  Responding to some network packets, maybe, if the network
-interfaces are left running (like a router but without support for
-dynamic routing protocols).  In general, I don't think a system could
-do a whole lot of useful work in such a state.
+[ 3/10] - Introduce runtime PM support for generic I/O PM domains.
 
-> > > 5. requesting that drivers abort what they are currently doing
-> > 
-> > Not exactly "abort".  More like "stop processing their I/O queues".
-> 
-> Yes, that's a better way of putting it; hopefully most drivers are doing 
-> that.
+[ 4/10] - Introduce generic "noirq" callbacks for system suspend/hibernation
+          (that's necessary for the next patches).
+ 
+[ 5/10] - Move some PM domains support code fro under #ifdef CONFIG_PM_RUNTIME
 
-This is more of a "transition" issue than a "steady-state" concern.  
-When userspace is frozen, it can't generate new I/O requests.  If the 
-old ones were left to terminate normally, pretty soon the I/O queues 
-would drain by themselves.
+[ 6/10] - Add system-wide PM support for generic I/O PM domains.
 
-In short, I'm not sure how these ideas would yield anything new and 
-worthwhile.  Maybe I'm just slow today...
+[ 7/10] - Add support for wakeup from system sleep to the I/O PM domains code.
 
-Alan Stern
+[ 8/10] - Allow PM clocks management code to be used during system suspend.
+
+[ 9/10] - Rename PM clock management functions so that they names reflect the
+          fact that they can be used during system suspend too.
+
+[10/10] - Use the new code to represent the SH7372's A4MP power domain.
+
+All of these patches are regarded as 3.1 material and they are available
+from the git branch at:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-domains  
+
+The patchset has been tested on SH7372 Mackerel board for both
+CONFIG_PM_RUNTIME set and unset.
+
+Thanks,
+Rafael
