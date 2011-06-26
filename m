@@ -1,14 +1,14 @@
-From: Jesper Juhl <jj@chaosbits.net>
-Subject: Re: [PATCH 1/3] PM / Runtime: Update documentation of
- interactions with system sleep
-Date: Sun, 26 Jun 2011 00:58:41 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1106260055270.23991__16242.2741218053$1309213534$gmane$org@swampdragon.chaosbits.net>
-References: <201106260054.20578.rjw@sisk.pl> <201106260055.09150.rjw@sisk.pl>
+From: Sylwester Nawrocki <snjw23@gmail.com>
+Subject: Re: [PATCH] ARM: EXYNOS4: Support for generic I/O power
+ domains on EXYNOS4210
+Date: Sun, 26 Jun 2011 19:30:45 +0200
+Message-ID: <4E076CC5.3000908__31094.1656273373$1309213589$gmane$org@gmail.com>
+References: <4E0461BE.5030304@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106260055.09150.rjw@sisk.pl>
+In-Reply-To: <4E0461BE.5030304@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +18,242 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-scsi@vger.kernel.org, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, linux-kernel@vger.kernel.org, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 26 Jun 2011, Rafael J. Wysocki wrote:
+Hello,
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On 06/24/2011 12:06 PM, Chanwoo Choi wrote:
+> Use the generic power domains support to implement support
+> for power domain on EXYNOS4210.
 > 
-
-A few tiny nit-picks..
-
-> The documents describing the interactions between runtime PM and
-> system sleep generally refer to the model in which the system sleep
-> state is entered through a global firmware or hardware operation.
-> As a result, some recommendations given in there are not entirely
-> suitable for systems in which this is not the case.  Update the
-> documentation take the existence of those systems into accout.
+> This patch is based on your "pm-domains" branch.(v7)
 > 
+> Signed-off-by: Chanwoo Choi<cw00.choi@samsung.com>
+> Signed-off-by: Myungjoo Ham<myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin.park<kyungmin.park@samsung.com>
+> ---
+>   arch/arm/mach-exynos4/Kconfig                      |    1 +
+>   arch/arm/mach-exynos4/Makefile                     |    1 +
+>   arch/arm/mach-exynos4/include/mach/pm-exynos4210.h |   78 ++++++++++++
+>   arch/arm/mach-exynos4/mach-nuri.c                  |   20 +++
+>   arch/arm/mach-exynos4/pm-exynos4210.c              |  131 ++++++++++++++++++++
+>   5 files changed, 231 insertions(+), 0 deletions(-)
+>   create mode 100644 arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+>   create mode 100644 arch/arm/mach-exynos4/pm-exynos4210.c
+> 
+...
 
-I believe this should read "... documentation to take the existence of 
-those systems ..."
-
-
-<...>
->  
-> +On some systems, however, system sleep is not entered through a global firmware
-> +or hardware operation.  Instead, all hardware components are put into low-power
-> +states directly by the kernel in a coordinated way.  Then, the system sleep
-> +state effectively follows from the states the hardware components end up in
-> +and the system is woken up from that state by a hardware interrupt or a similar
-> +mechanism entirely under the kernel's control.  As a result, the kernel never
-> +gives control away and the states of all devices during resume are precisely
-> +known to it.  If that is the case and none of the situations listed above takes
-> +place (in particular, if the system is not waking up from hibernation), it may
-> +be more efficient to leave the devices that had been suspended before the system
-> +suspend began in the suspended state.
+> diff --git a/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+> new file mode 100644
+> index 0000000..fa1c7a0
+> --- /dev/null
+> +++ b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+> @@ -0,0 +1,78 @@
+> +/* linux/arch/arm/mach-exynos4/include/mach/pm-exynos4.h
+> + *
+> + * Exynos4 Power management support
+> + *
+> + * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
+> + *		http://www.samsung.com
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
 > +
+> +#ifndef __PM_EXYNOS4210_H__
+> +#define __PM_EXYNOS4210_H__
+> +
+> +#include<linux/pm_domain.h>
+> +
+> +struct platform_device;
+> +
+> +struct exynos4210_pm_domain {
+> +	struct generic_pm_domain genpd;
+> +
+> +	const char *name;
+> +	void __iomem *base;
+> +	int boot_on;
+> +};
+> +
+> +static inline struct exynos4210_pm_domain *to_exynos4210_pd(
+> +		struct generic_pm_domain *pd)
+> +{
+> +	return container_of(pd, struct exynos4210_pm_domain, genpd);
+> +}
+> +
+> +#ifdef CONFIG_PM
+> +enum exynos4210_pd_data {
+> +	EXYNOS4210_PD_MFC,
+> +	EXYNOS4210_PD_G3D,
+> +	EXYNOS4210_PD_LCD0,
+> +	EXYNOS4210_PD_LCD1,
+> +	EXYNOS4210_PD_TV,
+> +	EXYNOS4210_PD_CAM,
+> +	EXYNOS4210_PD_GPS,
+> +	EXYNOS4210_PD_MAX_NUM
+> +};
+> +
+> +extern struct exynos4210_pm_domain exynos4210_pd_list[EXYNOS4210_PD_MAX_NUM];
 
-You are refering to device*s*, so I believe this last bit should be "... 
-in the suspended states".
+Could this array be made static in ../pm-exynos4210.c ?
+It looks like all functions using it are there. Plus you have already
+enum exynos4210_pd_data to identify each power domain.
 
--- 
-Jesper Juhl <jj@chaosbits.net>       http://www.chaosbits.net/
-Don't top-post http://www.catb.org/jargon/html/T/top-post.html
-Plain text mails only, please.
+> +#define EXYNOS4210_MFC		(&exynos4210_pd_list[EXYNOS4210_PD_MFC])
+> +#define EXYNOS4210_G3D		(&exynos4210_pd_list[EXYNOS4210_PD_G3D])
+> +#define EXYNOS4210_LCD0		(&exynos4210_pd_list[EXYNOS4210_PD_LCD0])
+> +#define EXYNOS4210_LCD1		(&exynos4210_pd_list[EXYNOS4210_PD_LCD1])
+> +#define EXYNOS4210_TV		(&exynos4210_pd_list[EXYNOS4210_PD_TV])
+> +#define EXYNOS4210_CAM		(&exynos4210_pd_list[EXYNOS4210_PD_CAM])
+> +#define EXYNOS4210_GPS		(&exynos4210_pd_list[EXYNOS4210_PD_GPS])
+> +
+> +extern int exynos4210_pd_init(struct exynos4210_pm_domain *domain);
+> +extern int exynos4210_add_device_to_domain(struct exynos4210_pm_domain *domain,
+> +				struct platform_device *pdev);
+
+Is there any advantage of having these functions marked as "extern" ?
+
+> +#else
+> +#define EXYNOS4210_MFC		NULL
+> +#define EXYNOS4210_G3D		NULL
+> +#define EXYNOS4210_LCD0		NULL
+> +#define EXYNOS4210_LCD1		NULL
+> +#define EXYNOS4210_TV		NULL
+> +#define EXYNOS4210_CAM		NULL
+> +#define EXYNOS4210_GPS		NULL
+> +
+> +extern int exynos4210_pd_init(struct exynos4210_pm_domain *domain)
+
+Shouldn't it be "static inline" instead ?
+
+> +{
+> +	return 0;
+> +}
+> +extern int exynos4_add_device_to_domain(struct exynos4210_pm_domain *domain,
+> +				struct platform_device *pdev)
+
+Ditto.
+
+...
+> diff --git a/arch/arm/mach-exynos4/mach-nuri.c b/arch/arm/mach-exynos4/mach-nuri.c
+> index 642702b..3e5c42c 100644
+> --- a/arch/arm/mach-exynos4/mach-nuri.c
+> +++ b/arch/arm/mach-exynos4/mach-nuri.c
+> @@ -37,6 +37,7 @@
+>   #include<plat/iic.h>
+> 
+>   #include<mach/map.h>
+> +#include<mach/pm-exynos4210.h>
+> 
+>   /* Following are default values for UCON, ULCON and UFCON UART registers */
+>   #define NURI_UCON_DEFAULT	(S3C2410_UCON_TXILEVEL |	\
+> @@ -376,6 +377,23 @@ static struct platform_device *nuri_devices[] __initdata = {
+>   	&nuri_backlight_device,
+>   };
+> 
+> +static void __init nuri_power_domain_init(void)
+> +{
+> +	int i;
+> +
+> +	for (i = 0 ; i<  EXYNOS4210_PD_MAX_NUM ; i++)
+> +		exynos4210_pd_init(&exynos4210_pd_list[i]);
+> +
+> +	/* Add device to power-domain */
+> +	exynos4210_add_device_to_domain(EXYNOS4210_MFC, NULL);
+> +	exynos4210_add_device_to_domain(EXYNOS4210_G3D, NULL);
+> +	exynos4210_add_device_to_domain(EXYNOS4210_LCD0,&nuri_lcd_device);
+> +	exynos4210_add_device_to_domain(EXYNOS4210_LCD1, NULL);
+> +	exynos4210_add_device_to_domain(EXYNOS4210_TV, NULL);
+> +	exynos4210_add_device_to_domain(EXYNOS4210_CAM, NULL);
+> +	exynos4210_add_device_to_domain(EXYNOS4210_GPS, NULL);
+> +}
+> +
+>   static void __init nuri_map_io(void)
+>   {
+>   	s5p_init_io(NULL, 0, S5P_VA_CHIPID);
+> @@ -398,6 +416,8 @@ static void __init nuri_machine_init(void)
+> 
+>   	/* Last */
+>   	platform_add_devices(nuri_devices, ARRAY_SIZE(nuri_devices));
+> +
+> +	nuri_power_domain_init();
+>   }
+> 
+>   MACHINE_START(NURI, "NURI")
+> diff --git a/arch/arm/mach-exynos4/pm-exynos4210.c b/arch/arm/mach-exynos4/pm-exynos4210.c
+> new file mode 100644
+> index 0000000..8e95d49
+> --- /dev/null
+> +++ b/arch/arm/mach-exynos4/pm-exynos4210.c
+> @@ -0,0 +1,131 @@
+> +/* linux/arch/arm/mach-exynos4/pm-exynos4210.c
+> + *
+...
+> +
+> +struct exynos4210_pm_domain exynos4210_pd_list[] = {
+> +	{
+> +		.name		= "PD_MFC",
+> +		.base		= S5P_PMU_MFC_CONF,
+> +		.boot_on	= 0,
+> +	}, {
+> +		.name		= "PD_G3D",
+> +		.base		= S5P_PMU_G3D_CONF,
+> +		.boot_on	= 0,
+> +	}, {
+...
+> +
+> +int exynos4210_pd_init(struct exynos4210_pm_domain *domain)
+> +{
+> +	struct generic_pm_domain *genpd =&domain->genpd;
+> +
+> +	pm_genpd_init(genpd, NULL, false);
+> +
+> +	genpd->stop_device = pm_runtime_clk_suspend;
+> +	genpd->start_device = pm_runtime_clk_resume;
+
+Have you considered handling the S5P_CLKGATE_BLOCK register to make
+sure the clock domains are enabled ? AFAICS it is not properly handled
+by current clock API on mach-exynos4. Thus if bootloader clears
+S5P_CLKGATE_BLOCK register clocks remain globally masked.
+
+This issue have been attempted to be resolved in this patch:
+http://git.infradead.org/users/kmpark/linux-2.6-samsung/commit/39a81876d034dcbdc2a4c4c4b847b3b49e38870c
+
+While at here, it might be good to resolve this either on power domains
+or the clock API level.
+
+> +	genpd->power_off = pd_power_down;
+> +	genpd->power_on = pd_power_up;
+> +
+> +	if (domain->boot_on)
+> +		pd_power_up(genpd);
+> +
+> +	return 0;
+> +}
+> +
+> +int exynos4210_add_device_to_domain(struct exynos4210_pm_domain *domain,
+> +				struct platform_device *pdev)
+> +{
+> +	struct device *dev =&pdev->dev;
+> +	struct generic_pm_domain *genpd =&domain->genpd;
+> +
+> +	if (pdev != NULL)
+> +		return pm_genpd_add_device(genpd, dev);
+> +	else
+> +		return -EINVAL;
+
+You could do instead:
+
++	if (pdev)
++		return pm_genpd_add_device(genpd, dev);
++
++	return -EINVAL;
+
+> +}
+
+--
+Regards,
+Sylwester
