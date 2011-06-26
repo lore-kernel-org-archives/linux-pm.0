@@ -1,14 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/3] PM / Runtime: Update documentation of
- interactions with system sleep
-Date: Sat, 25 Jun 2011 23:01:21 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1106252257440.10907-100000__12467.7999680445$1309057329$gmane$org@netrider.rowland.org>
-References: <alpine.LNX.2.00.1106260055270.23991@swampdragon.chaosbits.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM: export suspend_set_ops,
+	suspend_valid_only_mem
+Date: Sun, 26 Jun 2011 11:08:43 +0000
+Message-ID: <20110626110843.GC1101__31866.0069875934$1309086607$gmane$org@localhost.ucw.cz>
+References: <1306542839-5688-1-git-send-email-khilman@ti.com>
+	<201106121620.20442.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LNX.2.00.1106260055270.23991@swampdragon.chaosbits.net>
+Content-Disposition: inline
+In-Reply-To: <201106121620.20442.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,48 +20,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesper Juhl <jj@chaosbits.net>
-Cc: linux-scsi@vger.kernel.org, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 26 Jun 2011, Jesper Juhl wrote:
-
-> On Sun, 26 Jun 2011, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Sun 2011-06-12 16:20:20, Rafael J. Wysocki wrote:
+> On Saturday, May 28, 2011, Kevin Hilman wrote:
+> > Some platforms wish to implement their PM core suspend code as
+> > modules.  To do so, these functions need to be exported to modules.
 > > 
+> > Reported-by: Jean Pihet <j-pihet@ti.com>
+> > Signed-off-by: Kevin Hilman <khilman@ti.com>
 > 
-> A few tiny nit-picks..
+> Applied to suspend-2.6/linux-next.
 
-And a few more...
+I'd do export_symbol_gpl on those; it is really tightly coupled...
 
-> > The documents describing the interactions between runtime PM and
-> > system sleep generally refer to the model in which the system sleep
-> > state is entered through a global firmware or hardware operation.
-> > As a result, some recommendations given in there are not entirely
-> > suitable for systems in which this is not the case.  Update the
-> > documentation take the existence of those systems into accout.
-> > 
-> 
-> I believe this should read "... documentation to take the existence of 
-> those systems ..."
+       			    	      pavel
 
-Also add the missing 'n' in "account".
+> > @@ -44,6 +44,7 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
+> >  	suspend_ops = ops;
+> >  	mutex_unlock(&pm_mutex);
+> >  }
+> > +EXPORT_SYMBOL(suspend_set_ops);
+> >  
+> >  bool valid_state(suspend_state_t state)
+> >  {
 
-> > +known to it.  If that is the case and none of the situations listed above takes
-> > +place (in particular, if the system is not waking up from hibernation), it may
-> > +be more efficient to leave the devices that had been suspended before the system
-> > +suspend began in the suspended state.
-> > +
-> 
-> You are refering to device*s*, so I believe this last bit should be "... 
-> in the suspended states".
-
-No, the text is correct as it stands.  There are many devices, but
-there are only two power states: active and suspended.  For example,
-it's perfectly correct to say "All five devices are in the suspended
-state" -- and it would be wrong to say "All five are in the suspended
-states" (that makes it sound as if the states are suspended rather 
-than the devices being suspended).
-
-Alan Stern
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
