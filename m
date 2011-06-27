@@ -1,15 +1,16 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 10/10 v6] ARM / shmobile: Support for I/O
- power domains for SH7372 (v8)
-Date: Mon, 27 Jun 2011 13:07:13 +0900
-Message-ID: <BANLkTi=2kiNh4YgiCxVUV+32XXL9_ya59g@mail.gmail.com>
-References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
-	<201106252331.43354.rjw@sisk.pl>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [RFC/PATCH 9/9] OMAP2+: cpuidle only influences the
+	MPU state
+Date: Mon, 27 Jun 2011 08:53:25 +0200
+Message-ID: <BANLkTin0TKXLB_UtySAnf4JM1q1oPgP+iQ@mail.gmail.com>
+References: <1308926286-30445-1-git-send-email-j-pihet@ti.com>
+	<1308926286-30445-10-git-send-email-j-pihet@ti.com>
+	<4E05E153.9030006@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106252331.43354.rjw@sisk.pl>
+In-Reply-To: <4E05E153.9030006@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,167 +20,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 26, 2011 at 6:31 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi Santosh,
+
+On Sat, Jun 25, 2011 at 3:23 PM, Santosh Shilimkar
+<santosh.shilimkar@ti.com> wrote:
+> On 6/24/2011 7:38 AM, jean.pihet@newoldbits.com wrote:
+>>
+>> From: Jean Pihet<j-pihet@ti.com>
+>>
+>> Since cpuidle is a CPU centric framework it decides the MPU
+>> next power state based on the MPU exit_latency and target_residency
+>> figures.
+>>
+>> The rest of the power domains get their next power state programmed
+>> from the PM_QOS_DEV_WAKEUP_LATENCY class of the PM QoS framework,
+>> via the device wake-up latency constraints.
+>>
+>> Note: the exit_latency and target_residency figures of the MPU
+>> include the MPU itself and the peripherals needed for the MPU to
+>> execute instructions (e.g. main memory, caches, IRQ controller,
+>> MMU etc). Some of those peripherals can belong to other power domains
+>> than the MPU subsystem and so the corresponding latencies must be
+>> included in this figure.
+>>
+> With above comment, I was expecting that the latency numbers
+> in the table will change.
+Not necessarily. I just wanted to have it clearly stated in the commit
+description.
+In any case I will review the figures and update them if needed.
+...
+
+>> =A0static struct cpuidle_params cpuidle_params_table[] =3D {
+>> - =A0 =A0 =A0 /* C1 */
+>> + =A0 =A0 =A0 /* C1 . MPU WFI + Core active */
+>> =A0 =A0 =A0 =A0{2 + 2, 5, 1},
+>> - =A0 =A0 =A0 /* C2 */
+>> + =A0 =A0 =A0 /* C2 . MPU WFI + Core inactive */
+>> =A0 =A0 =A0 =A0{10 + 10, 30, 1},
+>> - =A0 =A0 =A0 /* C3 */
+>> + =A0 =A0 =A0 /* C3 . MPU CSWR + Core inactive */
+>> =A0 =A0 =A0 =A0{50 + 50, 300, 1},
+>> - =A0 =A0 =A0 /* C4 */
+>> + =A0 =A0 =A0 /* C4 . MPU OFF + Core inactive */
+>> =A0 =A0 =A0 =A0{1500 + 1800, 4000, 1},
+>> - =A0 =A0 =A0 /* C5 */
+>> + =A0 =A0 =A0 /* C5 . MPU RET + Core RET */
+>> =A0 =A0 =A0 =A0{2500 + 7500, 12000, 1},
+>> - =A0 =A0 =A0 /* C6 */
+>> + =A0 =A0 =A0 /* C6 . MPU OFF + Core RET */
+>> =A0 =A0 =A0 =A0{3000 + 8500, 15000, 1},
+>> - =A0 =A0 =A0 /* C7 */
+>> + =A0 =A0 =A0 /* C7 . MPU OFF + Core OFF */
+>> =A0 =A0 =A0 =A0{10000 + 30000, 300000, 1},
 >
-> Use the generic power domains support introduced by the previous
-> patch to implement support for power domains on SH7372.
+> Latency numbers still seems to include CORE PD latency as
+> well. Am I missing something Jean?
+The figures are looking OK.
+
+Thanks,
+Jean
+
 >
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Acked-by: Paul Mundt <lethal@linux-sh.org>
-> ---
-
-Hi Rafael,
-
-Thanks for your work on this. I've been working on up-porting my A3RV
-prototype, and I came across these minor details:
-
-> --- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
-> +++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
-> @@ -1582,6 +1582,10 @@ static void __init mackerel_init(void)
+> Regards
+> Santosh
 >
-> =A0 =A0 =A0 =A0platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel=
-_devices));
->
-> + =A0 =A0 =A0 sh7372_init_pm_domain(SH7372_A4LC);
-> + =A0 =A0 =A0 sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
-> + =A0 =A0 =A0 sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
-> +
-> =A0 =A0 =A0 =A0hdmi_init_pm_clock();
-> =A0 =A0 =A0 =A0sh7372_pm_init();
-> =A0}
-> Index: linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/sh7372.h
-> +++ linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
-> @@ -12,6 +12,7 @@
-> =A0#define __ASM_SH7372_H__
->
-> =A0#include <linux/sh_clk.h>
-> +#include <linux/pm_domain.h>
->
-> =A0/*
-> =A0* Pin Function Controller:
-> @@ -470,4 +471,31 @@ extern struct clk sh7372_fsibck_clk;
-> =A0extern struct clk sh7372_fsidiva_clk;
-> =A0extern struct clk sh7372_fsidivb_clk;
->
-> +struct platform_device;
-> +
-> +struct sh7372_pm_domain {
-> + =A0 =A0 =A0 struct generic_pm_domain genpd;
-> + =A0 =A0 =A0 unsigned int bit_shift;
-> +};
-> +
-> +static inline struct sh7372_pm_domain *to_sh7372_pd(struct generic_pm_do=
-main *d)
-> +{
-> + =A0 =A0 =A0 return container_of(d, struct sh7372_pm_domain, genpd);
-> +}
-> +
-> +#ifdef CONFIG_PM
-> +extern struct sh7372_pm_domain sh7372_a4lc_domain;
-> +#define SH7372_A4LC =A0 =A0(&sh7372_a4lc_domain)
-> +
-> +extern void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd);
-> +extern void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_=
-pd,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 struct platform_device *pdev);
-> +#else
-> +#define SH7372_A4LC =A0 =A0NULL
-> +
-> +static inline void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372=
-_pd) {}
-> +static inline void sh7372_add_device_to_domain(struct sh7372_pm_domain *=
-pd,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0struct platform_device *pdev) {}
-> +#endif /* CONFIG_PM */
-> +
-> =A0#endif /* __ASM_SH7372_H__ */
-
-Wouldn't it be easier to simply get rid of SH7372_A4LC? Perhaps you
-have some special intention behind your #define, but for me the
-following change is working just fine:
-
---- 0001/arch/arm/mach-shmobile/board-mackerel.c
-+++ work/arch/arm/mach-shmobile/board-mackerel.c	2011-06-27
-13:04:22.000000000 +0900
-@@ -1582,9 +1582,9 @@ static void __init mackerel_init(void)
-
- 	platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel_devices));
-
--	sh7372_init_pm_domain(SH7372_A4LC);
--	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
--	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
-+	sh7372_init_pm_domain(&sh7372_a4lc);
-+	sh7372_add_device_to_domain(&sh7372_a4lc, &lcdc_device);
-+	sh7372_add_device_to_domain(&sh7372_a4lc, &hdmi_lcdc_device);
-
- 	hdmi_init_pm_clock();
- 	sh7372_pm_init();
---- 0001/arch/arm/mach-shmobile/include/mach/sh7372.h
-+++ work/arch/arm/mach-shmobile/include/mach/sh7372.h	2011-06-27
-13:03:46.000000000 +0900
-@@ -484,15 +484,12 @@ static inline struct sh7372_pm_domain *t
- }
-
- #ifdef CONFIG_PM
--extern struct sh7372_pm_domain sh7372_a4lc_domain;
--#define SH7372_A4LC	(&sh7372_a4lc_domain)
-+extern struct sh7372_pm_domain sh7372_a4lc;
-
- extern void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd);
- extern void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
- 					struct platform_device *pdev);
- #else
--#define SH7372_A4LC	NULL
--
- static inline void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_p=
-d) {}
- static inline void sh7372_add_device_to_domain(struct sh7372_pm_domain *pd,
- 					       struct platform_device *pdev) {}
---- 0001/arch/arm/mach-shmobile/pm-sh7372.c
-+++ work/arch/arm/mach-shmobile/pm-sh7372.c	2011-06-27 13:04:02.000000000 +=
-0900
-@@ -115,7 +115,7 @@ void sh7372_add_device_to_domain(struct
- 	pm_genpd_add_device(&sh7372_pd->genpd, dev);
- }
-
--struct sh7372_pm_domain sh7372_a4lc_domain =3D {
-+struct sh7372_pm_domain sh7372_a4lc =3D {
- 	.bit_shift =3D 1,
- };
-
-Also, one more thing:
-
-> --- linux-2.6.orig/arch/arm/mach-shmobile/Makefile
-> +++ linux-2.6/arch/arm/mach-shmobile/Makefile
-> @@ -42,6 +42,10 @@ obj-$(CONFIG_MACH_AP4EVB) =A0 =A0+=3D board-ap4ev
-> =A0obj-$(CONFIG_MACH_AG5EVM) =A0 =A0 =A0+=3D board-ag5evm.o
-> =A0obj-$(CONFIG_MACH_MACKEREL) =A0 =A0+=3D board-mackerel.o
->
-> +# PM objects
-> +pm-$(CONFIG_ARCH_SH7372) =A0 =A0 =A0 +=3D pm-sh7372.o
-> +
-> =A0# Framework support
-> =A0obj-$(CONFIG_SMP) =A0 =A0 =A0 =A0 =A0 =A0 =A0+=3D $(smp-y)
-> =A0obj-$(CONFIG_GENERIC_GPIO) =A0 =A0 +=3D $(pfc-y)
-> +obj-$(CONFIG_PM) =A0 =A0 =A0 =A0 =A0 =A0 =A0 +=3D $(pm-y)
-
-I don't think this hunk is needed. It must be a left over from some
-older version of the patch when pm-sh7372.c didn't exist.
-
-Would you like me to submit incremental patches, or do you prefer to
-fix up your current patch?
-
-Thanks!
-
-/ magnus
