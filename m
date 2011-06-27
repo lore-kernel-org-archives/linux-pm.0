@@ -1,12 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 3.0-rc4: Reported regressions 2.6.38 -> 2.6.39
-Date: Mon, 27 Jun 2011 00:26:04 +0200 (CEST)
-Message-ID: <fvHbBUhG0PD.A.IGE.HM7BOB__41593.7961698093$1309128668$gmane$org@chimera>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 10/10 v6] ARM / shmobile: Support for I/O
+ power domains for SH7372 (v8)
+Date: Mon, 27 Jun 2011 13:07:13 +0900
+Message-ID: <BANLkTi=2kiNh4YgiCxVUV+32XXL9_ya59g@mail.gmail.com>
+References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
+	<201106252331.43354.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+In-Reply-To: <201106252331.43354.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,147 +19,167 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHBvc3QtMi42LjM4IHJlZ3Jlc3Np
-b25zIGludHJvZHVjZWQgYmVmb3JlCjIuNi4zOSwgZm9yIHdoaWNoIHRoZXJlIGFyZSBubyBmaXhl
-cyBpbiB0aGUgbWFpbmxpbmUga25vd24gdG8gdGhlIHRyYWNraW5nIHRlYW0uCklmIGFueSBvZiB0
-aGVtIGhhdmUgYmVlbiBmaXhlZCBhbHJlYWR5LCBwbGVhc2UgbGV0IHVzIGtub3cuCgpJZiB5b3Ug
-a25vdyBvZiBhbnkgb3RoZXIgdW5yZXNvbHZlZCBwb3N0LTIuNi4zOCByZWdyZXNzaW9ucywgcGxl
-YXNlIGxldCB1cyBrbm93CmVpdGhlciBhbmQgd2UnbGwgYWRkIHRoZW0gdG8gdGhlIGxpc3QuICBB
-bHNvLCBwbGVhc2UgbGV0IHVzIGtub3cgaWYgYW55Cm9mIHRoZSBlbnRyaWVzIGJlbG93IGFyZSBp
-bnZhbGlkLgoKRWFjaCBlbnRyeSBmcm9tIHRoZSBsaXN0IHdpbGwgYmUgc2VudCBhZGRpdGlvbmFs
-bHkgaW4gYW4gYXV0b21hdGljIHJlcGx5IHRvCnRoaXMgbWVzc2FnZSB3aXRoIENDcyB0byB0aGUg
-cGVvcGxlIGludm9sdmVkIGluIHJlcG9ydGluZyBhbmQgaGFuZGxpbmcgdGhlCmlzc3VlLgoKCkxp
-c3RlZCByZWdyZXNzaW9ucyBzdGF0aXN0aWNzOgoKICBEYXRlICAgICAgICAgIFRvdGFsICBQZW5k
-aW5nICBVbnJlc29sdmVkCiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LQogIDIwMTEtMDYtMjcgICAgICAgOTQgICAgICAgMjUgICAgICAgICAgMjMKICAyMDExLTA2LTEy
-ICAgICAgIDgxICAgICAgIDIxICAgICAgICAgIDE4CiAgMjAxMS0wNS0xNSAgICAgICA1MCAgICAg
-ICAxMiAgICAgICAgICAxMQogIDIwMTEtMDQtMzAgICAgICAgMzggICAgICAgMTcgICAgICAgICAg
-MTYKICAyMDExLTA0LTE3ICAgICAgIDE3ICAgICAgIDExICAgICAgICAgIDEwCgoKVW5yZXNvbHZl
-ZCByZWdyZXNzaW9ucwotLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpCdWctRW50cnkJOiBodHRwOi8v
-YnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzgxMzIKU3ViamVjdAkJOiBbT09Q
-U10gMi42LjM5LnggbGF0ZW5jeXRvcApTdWJtaXR0ZXIJOiBBbmRyZXcgV2F0dHMgPGFrd2F0dHNA
-eW1haWwuY29tPgpEYXRlCQk6IDIwMTEtMDYtMTQgMTc6MDcgKDEzIGRheXMgb2xkKQpNZXNzYWdl
-LUlECTogPDgwMDk4LjU2MzMucW1Ad2ViMTExMDEzLm1haWwuZ3ExLnlhaG9vLmNvbT4KUmVmZXJl
-bmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMwODA3MTI4NTA2NDkw
-Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
-aT9pZD0zNzc3MgpTdWJqZWN0CQk6IFNvbWV0aW1lcywgc291bmQgZGlzYXBwZWFycyBhbmQgZG9l
-c24ndCB3YW50IHRvIGlkbGUuClN1Ym1pdHRlcgk6ICA8bWVya2lsQHNhdmhvbi5vcmc+CkRhdGUJ
-CTogMjAxMS0wNi0xNyAyMjowNiAoMTAgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTM3NzUyClN1YmplY3QJCTogS2VybmVs
-IFBhbmljIGluIGRybV92YmxhbmtfcHV0KzB4MTMvMHg1MCBvbiBQNCBIVCBtYWNoaW5lIHdpdGgg
-ODI5MTVHL0dWLzkxMEdMIEludGVncmF0ZWQgR3JhcGhpY3MgQ29udHJvbGxlcgpTdWJtaXR0ZXIJ
-OiBNYXJ0aW4gUm9nZ2UgPG1hcm9nZ2VAb25saW5laG9tZS5kZT4KRGF0ZQkJOiAyMDExLTA2LTE3
-IDEzOjAyICgxMCBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVs
-Lm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mzc3MTIKU3ViamVjdAkJOiByZWJvb3QgIC8gInNodXRkb3du
-IC1yIG5vdyIgaGFuZ3MgOyAgd29ya3MgZmluZSBvbiAyLjYuMzguNy0xClN1Ym1pdHRlcgk6IERh
-dmUgSG9vcGVyIDxkYXZlQGJlZXJtZXguY29tPgpEYXRlCQk6IDIwMTEtMDYtMTYgMjA6NTAgKDEx
-IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0zNzY5MgpTdWJqZWN0CQk6IExpbnV4IDIuNi4zOS54IGZhaWxzIHRvIGJvb3Qg
-LSB1bmFibGUgdG8gbW91bnQgcm9vdCBmcwpTdWJtaXR0ZXIJOiBEYW4gRGFydCA8ZGFuZGFydEBn
-b29nbGVtYWlsLmNvbT4KRGF0ZQkJOiAyMDExLTA2LTE2IDE4OjU1ICgxMSBkYXlzIG9sZCkKCgpC
-dWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9Mzc2
-MjIKU3ViamVjdAkJOiBQb29yIHdpcmVsZXNzIHBlcmZvcm1hbmNlIHdpdGggSW50ZWwgNDk2NUFH
-TiB3aXRoIGl3bC1sZWdhY3kvaXdsNDk2NQpTdWJtaXR0ZXIJOiAgPE1Ec3RyXzFAaG90bWFpbC5j
-b20+CkRhdGUJCTogMjAxMS0wNi0xNiAxMToyMiAoMTEgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTog
-aHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTM3NDcyClN1YmplY3QJ
-CTogTGVub3ZvIFUxNjAgKGk5MTUgYmxhY2sgc2NyZWVuKQpTdWJtaXR0ZXIJOiBSb2JzZSA8cm9i
-LXNlQGxpdmUuZGU+CkRhdGUJCTogMjAxMS0wNi0xNCAxNToxNyAoMTMgZGF5cyBvbGQpCgoKQnVn
-LUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTM3MzIy
-ClN1YmplY3QJCTogaGlnaCBsb2FkLCB1bnJlc3BvbnNpdmUgc3lzdGVtIHNwaW5uaW5nIGluIHJj
-dV9rdGhyZWFkClN1Ym1pdHRlcgk6IEZlcmVuYyBXw6FnbmVyIDx3ZmVyaUBuaWlmLmh1PgpEYXRl
-CQk6IDIwMTEtMDYtMTIgMTQ6NTMgKDE1IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9i
-dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0zNzMxMgpTdWJqZWN0CQk6IEludGVs
-IDUxMDAgd2lmaSBzdG9wcGVkIHdvcmtpbmcgd2l0aCAyLjYuMzkuMQpTdWJtaXR0ZXIJOiBUaGli
-YXVsdCBEb3J5IDxkb3J5LnRoaWJhdWx0QGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDExLTA2LTEyIDEy
-OjQzICgxNSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9y
-Zy9zaG93X2J1Zy5jZ2k/aWQ9MzcyOTIKU3ViamVjdAkJOiBrZXJuZWwgQlVHIGF0IGZzL2Vjcnlw
-dGZzL3JlYWRfd3JpdGUuYzo0NyEKU3VibWl0dGVyCTogIDxyZW1zMTRAbGVzdG91dG91cy5jb20+
-CkRhdGUJCTogMjAxMS0wNi0xMiAxMDoyNSAoMTUgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0
-cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTM3MDQyClN1YmplY3QJCTog
-bGludXggMy4wLjAtcmMyIGxpYmF0YS1laC5jOjQwMTggYXRhX3Njc2lfcG9ydF9lcnJvcl9oYW5k
-bGVyKzB4ODAvMHg1M2Qgb24gczJkaXNrClN1Ym1pdHRlcgk6IEFsZXggWmhhdm5lcmNoaWsgPGFs
-ZXgudml6b3JAZ21haWwuY29tPgpEYXRlCQk6IDIwMTEtMDYtMDkgMDg6MjIgKDE4IGRheXMgb2xk
-KQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
-ZD0zNjk1MgpTdWJqZWN0CQk6IFsyLjYuMzldIENJRlMgd3JpdGUgZmFpbHVyZXMgd2hlcmUgMi42
-LjM4IHdvcmtzClN1Ym1pdHRlcgk6IEhlbGdlIEhhZnRpbmcgPGhlbGdlLmhhZnRpbmdAaGlzdC5u
-bz4KRGF0ZQkJOiAyMDExLTA2LTAxIDEwOjExICgyNiBkYXlzIG9sZCkKTWVzc2FnZS1JRAk6IDw0
-REU2MTAzRS42MDEwMTAwQGhpc3Qubm8+ClJlZmVyZW5jZXMJOiBodHRwOi8vbWFyYy5pbmZvLz9s
-PWxpbnV4LWtlcm5lbCZtPTEzMDY5MjM4NzYxMzQyMyZ3PTIKCgpCdWctRW50cnkJOiBodHRwOi8v
-YnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzY3MDIKU3ViamVjdAkJOiAyLjYu
-Mzkga2VybmVsIHBhbmljIHcvc2NyZWVuc2hvdHMgJiBrZXJuZWwgY2ZnIGxpbmsgcHJvdmlkZWQK
-U3VibWl0dGVyCTogSnVzdGluIFBpc3pjeiA8anBpc3pjekBsdWNpZHBpeGVscy5jb20+CkRhdGUJ
-CTogMjAxMS0wNS0yOCAxMjowMSAoMzAgZGF5cyBvbGQpCk1lc3NhZ2UtSUQJOiA8YWxwaW5lLkRF
-Qi4yLjAyLjExMDUyODA3NTUwNTAuNDM0NUBwMzQuaW50ZXJuYWwubGFuPgpSZWZlcmVuY2VzCTog
-aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzA2NTg0MTEwMDgxMjcmdz0yCgoK
-QnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTM2
-NjYyClN1YmplY3QJCTogSW50ZWwgR000NTogTG93IHJlc29sdXRpb24gb24gZXh0ZXJuYWwgc2Ny
-ZWVuLgpTdWJtaXR0ZXIJOiBBbGV4IEZlcnJhbmRvIDxhbGZlcnBhbEBnbWFpbC5jb20+CkRhdGUJ
-CTogMjAxMS0wNi0wNCAxNzozNyAoMjMgZGF5cyBvbGQpCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTM2MzkyClN1YmplY3QJCTogMi42LjM5
-LCAzLjAtcmMyIEludGVsIERSSSBSZWdyZXNzaW9uOiBCbGFjayBTY3JlZW4gYWZ0ZXIgdHJ5aW5n
-IHRvIHBsYXkgdmlkZW8KU3VibWl0dGVyCTogRGVubmlzIEphbnNlbiA8ZGVubmlzLmphbnNlbkB3
-ZWIuZGU+CkRhdGUJCTogMjAxMS0wNi0wMSAwNDo0MSAoMjYgZGF5cyBvbGQpCgoKQnVnLUVudHJ5
-CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTM2MzMyClN1Ympl
-Y3QJCTogSW50ZWwgZ3B1IHR1cm5zIGV4dGVybmFsIG1vbml0b3Igb2ZmIHdoZW4gWCBzdGFydHMK
-U3VibWl0dGVyCTogcm9ja28gPHJvY2tvcmVxdWluQGhvdG1haWwuY29tPgpEYXRlCQk6IDIwMTEt
-MDUtMzEgMDI6NTMgKDI3IGRheXMgb2xkKQoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5r
-ZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0zNjE4MgpTdWJqZWN0CQk6IEVycm9uZW91cyBwYWNr
-YWdlIHBvd2VyIGxpbWl0IG5vdGlmaWNhdGlvbiBzaW5jZSBrZXJuZWwgMi42LjM5ClN1Ym1pdHRl
-cgk6IE9sYWYgRnJleWVyIDxhYXJvbjY2N0BnbXgubmV0PgpEYXRlCQk6IDIwMTEtMDUtMjIgMTM6
-MDEgKDM2IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPDRERDkwOTJBLjQwODA1MDdAZ214Lm5ldD4K
-UmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMwNjA2OTMw
-NjMxMTMxJnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0zNjA5MgpTdWJqZWN0CQk6IEZpbGVzeXN0ZW0gbG9ja3VwIG9uIFVTQiBIREQg
-cGx1Zy1pbgpTdWJtaXR0ZXIJOiBBcm5vIFdhZ25lciA8YXJub0B3YWduZXIubmFtZT4KRGF0ZQkJ
-OiAyMDExLTA1LTI4IDEyOjM0ICgzMCBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVn
-emlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzU5MjIKU3ViamVjdAkJOiBTTkRfVVNC
-X0FVRElPIHJlY29yZGluZyBkZXZpY2Ugbm90IGluaXRpYWxpemluZyBjb3JyZWN0bHkKU3VibWl0
-dGVyCTogIDxiam9lcm4ub25saW5lQGdtYWlsLmNvbT4KRGF0ZQkJOiAyMDExLTA1LTI2IDEwOjMw
-ICgzMiBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MzU2NjIKU3ViamVjdAkJOiBzb2Z0bG9ja3VwIHdpdGgga2VybmVsIDIu
-Ni4zOQpTdWJtaXR0ZXIJOiBIdXNzYW0gQWwtVGF5ZWIgPGh0OTkwMzMyQGdtYWlsLmNvbT4KRGF0
-ZQkJOiAyMDExLTA1LTIzIDA4OjEzICgzNSBkYXlzIG9sZCkKCgpCdWctRW50cnkJOiBodHRwOi8v
-YnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MzUyNDIKU3ViamVjdAkJOiBOVUxM
-IHBvaW50ZXIgZGVyZWZlcmVuY2UgaW4gaW50ZWxfc2R2b193cml0ZV9jbWQgKHdhcyBCbGFjayBz
-Y3JlZW4gYWZ0ZXIgYm9vdCkKU3VibWl0dGVyCTogS28gTWkgPGNoYW9zdHlhLnRlc3RAaG90bWFp
-bC5jb20+CkRhdGUJCTogMjAxMS0wNS0xNyAxMDoyNyAoNDEgZGF5cyBvbGQpCgoKQnVnLUVudHJ5
-CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTM1MTQyClN1Ympl
-Y3QJCTogMi42LjM5LXJjNy1naXQxIGJvb3QgZXJyb3IgbWVzc2FnZSAobm8gY3Jhc2gpClN1Ym1p
-dHRlcgk6IHdlcm5lciA8dy5sYW5kZ3JhZkBydS5ydT4KRGF0ZQkJOiAyMDExLTA1LTExIDQ6NTgg
-KDQ3IGRheXMgb2xkKQpNZXNzYWdlLUlECTogPHdlYi01MjA4MzAwNTdAemJhY2tlbmQxLmFoYS5y
-dT4KUmVmZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMwNTEy
-OTUyNzA2NDQ0Jnc9MgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD0zNDk0MgpTdWJqZWN0CQk6IFtCdWddIEtkdW1wIGRvZXMgbm90IHdvcmsg
-d2hlbiBwYW5pYyB0cmlnZ2VyZWQgZHVlIHRvIE1DRQpTdWJtaXR0ZXIJOiBLLlByYXNhZCA8cHJh
-c2FkQGxpbnV4LnZuZXQuaWJtLmNvbT4KRGF0ZQkJOiAyMDExLTA1LTA2IDE2OjU0ICg1MiBkYXlz
-IG9sZCkKTWVzc2FnZS1JRAk6IDwyMDExMDUwNjE2NTQxMi5HQjI3MTlAaW4uaWJtLmNvbT4KUmVm
-ZXJlbmNlcwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMwNDcwMDg3MjI2
-MjcwJnc9MgoKClJlZ3Jlc3Npb25zIHdpdGggcGF0Y2hlcwotLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0KCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
-ZD0zNTY0MgpTdWJqZWN0CQk6IE9uIHJlc3VtZSwgSSBzb21ldGltZXMgZ2V0IGEga2VybmVsIG9v
-cHMgd2l0aCBsZWRfdHJpZ2dlcl91bnJlZ2lzdGVyX3NpbXBsZQpTdWJtaXR0ZXIJOiBTdmVuLUhl
-bmRyaWsgSGFhc2UgPHNoQGx1dHpoYWFzZS5jb20+CkRhdGUJCTogMjAxMS0wNS0yMyAwMDoxNSAo
-MzUgZGF5cyBvbGQpClBhdGNoCQk6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9hdHRhY2ht
-ZW50LmNnaT9pZD02MzAyMgoKCkJ1Zy1FbnRyeQk6IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
-L3Nob3dfYnVnLmNnaT9pZD0zMzI0MgpTdWJqZWN0CQk6IExvY2tkZXAgc3BsYXQgaW4gYXV0b2Zz
-IHdpdGggMi42LjM5LXJjMgpTdWJtaXR0ZXIJOiBOaWNrIEJvd2xlciA8bmJvd2xlckBlbGxpcHRp
-Y3RlY2guY29tPgpEYXRlCQk6IDIwMTEtMDQtMDcgMTk6NDQgKDgxIGRheXMgb2xkKQpNZXNzYWdl
-LUlECTogPDIwMTEwNDA3MTk0NDAzLkdBMjk0MDRAZWxsaXB0aWN0ZWNoLmNvbT4KUmVmZXJlbmNl
-cwk6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMwMjIwNTQ1NjE0NjgyJnc9
-MgpQYXRjaAkJOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEzMDM0MjExNTAw
-ODY1OSZ3PTIKCgpGb3IgZGV0YWlscywgcGxlYXNlIHZpc2l0IHRoZSBidWcgZW50cmllcyBhbmQg
-Zm9sbG93IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVuY2VzLgoKQXMgeW91IGNhbiBzZWUsIHRo
-ZXJlIGlzIGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2ggb2YgdGhlIGxpc3RlZCByZWdyZXNzaW9u
-cy4KVGhlcmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5IHVzZWQgZm9yIHRyYWNraW5nIHRoZSBy
-ZWdyZXNzaW9ucyBpbnRyb2R1Y2VkCmJldHdlZW4gMi42LjM4IGFuZCAyLjYuMzksIHVucmVzb2x2
-ZWQgYXMgd2VsbCBhcyByZXNvbHZlZCwgYXQ6CgpodHRwOi8vYnVnemlsbGEua2VybmVsLm9yZy9z
-aG93X2J1Zy5jZ2k/aWQ9MzIwMTIKClBsZWFzZSBsZXQgdGhlIHRyYWNraW5nIHRlYW0ga25vdyBp
-ZiB0aGVyZSBhcmUgYW55IEJ1Z3ppbGxhIGVudHJpZXMgdGhhdApzaG91bGQgYmUgYWRkZWQgdG8g
-dGhlIGxpc3QgaW4gdGhlcmUuCgpUaGFua3MhCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+On Sun, Jun 26, 2011 at 6:31 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Use the generic power domains support introduced by the previous
+> patch to implement support for power domains on SH7372.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Paul Mundt <lethal@linux-sh.org>
+> ---
+
+Hi Rafael,
+
+Thanks for your work on this. I've been working on up-porting my A3RV
+prototype, and I came across these minor details:
+
+> --- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
+> +++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+> @@ -1582,6 +1582,10 @@ static void __init mackerel_init(void)
+>
+> =A0 =A0 =A0 =A0platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel=
+_devices));
+>
+> + =A0 =A0 =A0 sh7372_init_pm_domain(SH7372_A4LC);
+> + =A0 =A0 =A0 sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
+> + =A0 =A0 =A0 sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
+> +
+> =A0 =A0 =A0 =A0hdmi_init_pm_clock();
+> =A0 =A0 =A0 =A0sh7372_pm_init();
+> =A0}
+> Index: linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/sh7372.h
+> +++ linux-2.6/arch/arm/mach-shmobile/include/mach/sh7372.h
+> @@ -12,6 +12,7 @@
+> =A0#define __ASM_SH7372_H__
+>
+> =A0#include <linux/sh_clk.h>
+> +#include <linux/pm_domain.h>
+>
+> =A0/*
+> =A0* Pin Function Controller:
+> @@ -470,4 +471,31 @@ extern struct clk sh7372_fsibck_clk;
+> =A0extern struct clk sh7372_fsidiva_clk;
+> =A0extern struct clk sh7372_fsidivb_clk;
+>
+> +struct platform_device;
+> +
+> +struct sh7372_pm_domain {
+> + =A0 =A0 =A0 struct generic_pm_domain genpd;
+> + =A0 =A0 =A0 unsigned int bit_shift;
+> +};
+> +
+> +static inline struct sh7372_pm_domain *to_sh7372_pd(struct generic_pm_do=
+main *d)
+> +{
+> + =A0 =A0 =A0 return container_of(d, struct sh7372_pm_domain, genpd);
+> +}
+> +
+> +#ifdef CONFIG_PM
+> +extern struct sh7372_pm_domain sh7372_a4lc_domain;
+> +#define SH7372_A4LC =A0 =A0(&sh7372_a4lc_domain)
+> +
+> +extern void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd);
+> +extern void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_=
+pd,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 struct platform_device *pdev);
+> +#else
+> +#define SH7372_A4LC =A0 =A0NULL
+> +
+> +static inline void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372=
+_pd) {}
+> +static inline void sh7372_add_device_to_domain(struct sh7372_pm_domain *=
+pd,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0struct platform_device *pdev) {}
+> +#endif /* CONFIG_PM */
+> +
+> =A0#endif /* __ASM_SH7372_H__ */
+
+Wouldn't it be easier to simply get rid of SH7372_A4LC? Perhaps you
+have some special intention behind your #define, but for me the
+following change is working just fine:
+
+--- 0001/arch/arm/mach-shmobile/board-mackerel.c
++++ work/arch/arm/mach-shmobile/board-mackerel.c	2011-06-27
+13:04:22.000000000 +0900
+@@ -1582,9 +1582,9 @@ static void __init mackerel_init(void)
+
+ 	platform_add_devices(mackerel_devices, ARRAY_SIZE(mackerel_devices));
+
+-	sh7372_init_pm_domain(SH7372_A4LC);
+-	sh7372_add_device_to_domain(SH7372_A4LC, &lcdc_device);
+-	sh7372_add_device_to_domain(SH7372_A4LC, &hdmi_lcdc_device);
++	sh7372_init_pm_domain(&sh7372_a4lc);
++	sh7372_add_device_to_domain(&sh7372_a4lc, &lcdc_device);
++	sh7372_add_device_to_domain(&sh7372_a4lc, &hdmi_lcdc_device);
+
+ 	hdmi_init_pm_clock();
+ 	sh7372_pm_init();
+--- 0001/arch/arm/mach-shmobile/include/mach/sh7372.h
++++ work/arch/arm/mach-shmobile/include/mach/sh7372.h	2011-06-27
+13:03:46.000000000 +0900
+@@ -484,15 +484,12 @@ static inline struct sh7372_pm_domain *t
+ }
+
+ #ifdef CONFIG_PM
+-extern struct sh7372_pm_domain sh7372_a4lc_domain;
+-#define SH7372_A4LC	(&sh7372_a4lc_domain)
++extern struct sh7372_pm_domain sh7372_a4lc;
+
+ extern void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd);
+ extern void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
+ 					struct platform_device *pdev);
+ #else
+-#define SH7372_A4LC	NULL
+-
+ static inline void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_p=
+d) {}
+ static inline void sh7372_add_device_to_domain(struct sh7372_pm_domain *pd,
+ 					       struct platform_device *pdev) {}
+--- 0001/arch/arm/mach-shmobile/pm-sh7372.c
++++ work/arch/arm/mach-shmobile/pm-sh7372.c	2011-06-27 13:04:02.000000000 +=
+0900
+@@ -115,7 +115,7 @@ void sh7372_add_device_to_domain(struct
+ 	pm_genpd_add_device(&sh7372_pd->genpd, dev);
+ }
+
+-struct sh7372_pm_domain sh7372_a4lc_domain =3D {
++struct sh7372_pm_domain sh7372_a4lc =3D {
+ 	.bit_shift =3D 1,
+ };
+
+Also, one more thing:
+
+> --- linux-2.6.orig/arch/arm/mach-shmobile/Makefile
+> +++ linux-2.6/arch/arm/mach-shmobile/Makefile
+> @@ -42,6 +42,10 @@ obj-$(CONFIG_MACH_AP4EVB) =A0 =A0+=3D board-ap4ev
+> =A0obj-$(CONFIG_MACH_AG5EVM) =A0 =A0 =A0+=3D board-ag5evm.o
+> =A0obj-$(CONFIG_MACH_MACKEREL) =A0 =A0+=3D board-mackerel.o
+>
+> +# PM objects
+> +pm-$(CONFIG_ARCH_SH7372) =A0 =A0 =A0 +=3D pm-sh7372.o
+> +
+> =A0# Framework support
+> =A0obj-$(CONFIG_SMP) =A0 =A0 =A0 =A0 =A0 =A0 =A0+=3D $(smp-y)
+> =A0obj-$(CONFIG_GENERIC_GPIO) =A0 =A0 +=3D $(pfc-y)
+> +obj-$(CONFIG_PM) =A0 =A0 =A0 =A0 =A0 =A0 =A0 +=3D $(pm-y)
+
+I don't think this hunk is needed. It must be a left over from some
+older version of the patch when pm-sh7372.c didn't exist.
+
+Would you like me to submit incremental patches, or do you prefer to
+fix up your current patch?
+
+Thanks!
+
+/ magnus
