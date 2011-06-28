@@ -1,15 +1,15 @@
-From: Paul Walmsley <paul@pwsan.com>
-Subject: Re: Runtime PM discussion notes
-Date: Tue, 28 Jun 2011 13:47:47 -0600 (MDT)
-Message-ID: <alpine.DEB.2.00.1106281346160.2874__23901.0417288684$1309291939$gmane$org@utopia.booyaka.com>
-References: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
-	<201106232234.21930.rjw@sisk.pl>
-	<alpine.DEB.2.00.1106241239340.25533@utopia.booyaka.com>
-	<BANLkTinaa2W0mTUGCzfLAgBsgC5nP57x9ZXC0PfOvqa7x16kvw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 3/3] PM: Limit race conditions between
+	runtime PM and system sleep
+Date: Tue, 28 Jun 2011 23:42:24 +0200
+Message-ID: <201106282342.25003.rjw__6693.84636353261$1309297425$gmane$org@sisk.pl>
+References: <201106260054.20578.rjw@sisk.pl> <201106260056.32221.rjw@sisk.pl>
+	<20110628235643.4cf7cff0@tom-ThinkPad-T410>
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="155748971-293461756-1309290467=:2874"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTinaa2W0mTUGCzfLAgBsgC5nP57x9ZXC0PfOvqa7x16kvw@mail.gmail.com>
+In-Reply-To: <20110628235643.4cf7cff0@tom-ThinkPad-T410>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +19,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: Ming Lei <tom.leiming@gmail.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-scsi@vger.kernel.org, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tuesday, June 28, 2011, Ming Lei wrote:
+> 
+> Hi Rafael,
+> 
+> On Sun, 26 Jun 2011 00:56:31 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > Index: linux-2.6/Documentation/power/runtime_pm.txt
+> > ===================================================================
+> > --- linux-2.6.orig/Documentation/power/runtime_pm.txt
+> > +++ linux-2.6/Documentation/power/runtime_pm.txt
+> > @@ -567,6 +567,11 @@ this is:
+> >  	pm_runtime_set_active(dev);
+> >  	pm_runtime_enable(dev);
+> >  
+> > +The PM core always increments the run-time usage counter before calling the
+> > +->suspend() callback and decrements it after calling the ->resume() callback.
+> > +Hence disabling run-time PM temporarily like this will not cause any run-time
+> > +suspend callbacks to be lost.
+> 
+> Could you explain why the above is that "this will not cause any run-time suspend
+> callbacks to be lost"? 
+> 
+> Looks like it should be "this will not cause any run-time suspend callbacks to
+> be called", but not sure.
 
---155748971-293461756-1309290467=:2874
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+You're right the wording is not perfect.  The problem is that if it's done
+this way without incrementing the usage counter beforehand, the status may
+change to "suspended" right before the pm_runtime_set_active() and then the
+new status will not reflect the actual state of the device.
 
-Hello Arve,
+So, it may be better to say "Hence disabling runtime PM temporarily like this
+will not cause the runtime PM status of the device to conflict with the actual
+device state".
 
-On Fri, 24 Jun 2011, Arve Hj=F8nnev=E5g wrote:
+Alan, what do you think?
 
-> On Fri, Jun 24, 2011 at 12:53 PM, Paul Walmsley <paul@pwsan.com> wrote:
-> >
-> > As I understand it, in the original Android implementation, the hardwar=
-e
-> > that they were using didn't have fine-grained power management. =A0So
-> > system-wide suspend made more sense in that context. =A0But that should=
-n't
-> > be confused with the modern rationale for wakelocks:
-> >
-> > https://lists.linux-foundation.org/pipermail/linux-pm/2010-May/025668.h=
-tml
-> >
-> > "On the hardware that shipped we enter the same power state from idle
-> > and suspend, so the only power savings we get from suspend that we
-> > don't get in idle is from not respecting the scheduler and timers."
-> >
->=20
-> This is no longer the case. Both the Nexus-S and Xoom enter lower
-> power states from suspend than idle.
-
-Just out of curiosity, is that due to some kind of hardware limitation on=
-=20
-those platforms, or is it because the software infrastructure for dynamic=
-=20
-deep idle hasn't been fully implemented in that subarchitecture code?
-
-
-- Paul
---155748971-293461756-1309290467=:2874
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---155748971-293461756-1309290467=:2874--
+Rafael
