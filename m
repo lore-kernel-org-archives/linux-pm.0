@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 3.0-rc4 intermittent failure to resume
-Date: Wed, 29 Jun 2011 21:34:34 +0200
-Message-ID: <201106292134.34485.rjw@sisk.pl>
-References: <4E0286F3.6030003@wasp.net.au> <4E093ECD.7040600@fnarfbargle.com>
-	<4E0B2737.2010505@fnarfbargle.com>
+Subject: Re: [PATCH 3/3] PM: Limit race conditions between
+	runtime PM and system sleep
+Date: Wed, 29 Jun 2011 21:35:46 +0200
+Message-ID: <201106292135.47147.rjw__7133.27079215578$1309376139$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1106291004180.2064-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4E0B2737.2010505@fnarfbargle.com>
+In-Reply-To: <Pine.LNX.4.44L0.1106291004180.2064-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,45 +18,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brad Campbell <lists2009@fnarfbargle.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 29, 2011, Brad Campbell wrote:
-> On 28/06/11 10:39, Brad Campbell wrote:
-> > On 24/06/11 10:41, Brad Campbell wrote:
-> >> On 23/06/11 20:02, Rafael J. Wysocki wrote:
-> >>> On Thursday, June 23, 2011, Brad Campbell wrote:
-> >>>> G'day all,
-> >>>>
-> >>>> I've recently moved from tuxonice to mainline uswsusp. I'm getting intermittent failure to resume
-> >>>> problems. No message in dmesg that I can find, it just boots clean. Is there something I can do to
-> >>>> get some debug info on this? It's really, really annoying.
-> >>>>
-> >>>> About 75% of the time it works perfectly, and I can find no rhyme or reason to why it suddenly just
-> >>>> decides to ignore the saved state.
-> >>>>
-> >>>> 32 bit userspace with a statically linked 64 bit s2disk, s2both&    resume. 64 bit kernel.
-> >>> Do you use the i915 driver?
-> >>>
-> >> Indeed I do.
-> > Just a follow up to this.
-> > It looks like adding "early writeout = y" to my /etc/suspend.conf has worked around the problem.
-> >
+On Wednesday, June 29, 2011, Alan Stern wrote:
+> On Tue, 28 Jun 2011, Rafael J. Wysocki wrote:
 > 
-> Ok, so after _lots_ of investigating it was not early writeout. The 
-> culprit was/is the Ubuntu initramfs scripts.
+> > On Tuesday, June 28, 2011, Ming Lei wrote:
+> > > 
+> > > Hi Rafael,
+> > > 
+> > > On Sun, 26 Jun 2011 00:56:31 +0200
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > Index: linux-2.6/Documentation/power/runtime_pm.txt
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/Documentation/power/runtime_pm.txt
+> > > > +++ linux-2.6/Documentation/power/runtime_pm.txt
+> > > > @@ -567,6 +567,11 @@ this is:
+> > > >  	pm_runtime_set_active(dev);
+> > > >  	pm_runtime_enable(dev);
+> > > >  
+> > > > +The PM core always increments the run-time usage counter before calling the
+> > > > +->suspend() callback and decrements it after calling the ->resume() callback.
+> > > > +Hence disabling run-time PM temporarily like this will not cause any run-time
+> > > > +suspend callbacks to be lost.
+> > > 
+> > > Could you explain why the above is that "this will not cause any run-time suspend
+> > > callbacks to be lost"? 
+> > > 
+> > > Looks like it should be "this will not cause any run-time suspend callbacks to
+> > > be called", but not sure.
+> > 
+> > You're right the wording is not perfect.  The problem is that if it's done
+> > this way without incrementing the usage counter beforehand, the status may
+> > change to "suspended" right before the pm_runtime_set_active() and then the
+> > new status will not reflect the actual state of the device.
+> > 
+> > So, it may be better to say "Hence disabling runtime PM temporarily like this
+> > will not cause the runtime PM status of the device to conflict with the actual
+> > device state".
+> > 
+> > Alan, what do you think?
 > 
-> On the occasions it failed to resume (which were many) it turns out 
-> /bin/resume was being called prior to udev having created /dev/snapshot.
-> 
-> I put a simple wait loop in the resume script to wait for the creation 
-> of /dev/snapshot and I've not had a fail to resume since.
-> 
-> Curse you asynchronous dynamic device creation <shakes fist>
+> How about: "... will not cause any runtime suspend attempts to be 
+> permanently lost.  If the usage count goes to zero following the return 
+> of the ->resume() callback, the ->runtime_idle() callback will be 
+> invoked as usual."
 
-Thank you very  much for nailing this down, I was afraid there were some
-obscure bug lurking in the kernel code.
+That's better, thanks!
 
-Take care,
 Rafael
