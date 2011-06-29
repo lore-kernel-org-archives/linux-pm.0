@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/6 v2] PM / Runtime: Return special error code
-	if runtime PM is disabled
-Date: Wed, 29 Jun 2011 23:32:34 +0200
-Message-ID: <201106292332.35170.rjw__1372.61236454851$1309383836$gmane$org@sisk.pl>
+Subject: [PATCH 5/6 v2] PM / Runtime: Improve documentation of
+	enable, disable and barrier
+Date: Wed, 29 Jun 2011 23:35:06 +0200
+Message-ID: <201106292335.06366.rjw__32497.8972007104$1309383884$gmane$org@sisk.pl>
 References: <201106260054.20578.rjw@sisk.pl> <201106292329.04163.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,107 +24,52 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Some callers of pm_runtime_get_sync() and other runtime PM helper
-functions, scsi_autopm_get_host() and scsi_autopm_get_device() in
-particular, need to distinguish error codes returned when runtime PM
-is disabled (i.e. power.disable_depth is nonzero for the given
-device) from error codes returned in other situations.  For this
-reason, make the runtime PM helper functions return -EACCES when
-power.disable_depth is nonzero and ensure that this error code
-won't be returned by them in any other circumstances.  Modify
-scsi_autopm_get_host() and scsi_autopm_get_device() to check the
-error code returned by pm_runtime_get_sync() and ignore -EACCES.
+The runtime PM documentation in Documentation/power/runtime_pm.txt
+doesn't say that pm_runtime_enable() and pm_runtime_disable() work by
+operating on power.disable_depth, which is wrong, because the
+possibility of nesting disables doesn't follow from the description
+of these functions.  Also, there is no description of
+pm_runtime_barrier() at all in the document, which is confusing.
+Improve the documentation by fixing those issues.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/power/runtime_pm.txt |    6 ++++--
- drivers/base/power/runtime.c       |    9 +++++----
- drivers/scsi/scsi_pm.c             |    8 ++++----
- 3 files changed, 13 insertions(+), 10 deletions(-)
+ Documentation/power/runtime_pm.txt |   18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/drivers/base/power/runtime.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/runtime.c
-+++ linux-2.6/drivers/base/power/runtime.c
-@@ -135,8 +135,9 @@ static int rpm_check_suspend_allowed(str
- 
- 	if (dev->power.runtime_error)
- 		retval = -EINVAL;
--	else if (atomic_read(&dev->power.usage_count) > 0
--	    || dev->power.disable_depth > 0)
-+	else if (dev->power.disable_depth > 0)
-+		retval = -EACCES;
-+	else if (atomic_read(&dev->power.usage_count) > 0)
- 		retval = -EAGAIN;
- 	else if (!pm_children_suspended(dev))
- 		retval = -EBUSY;
-@@ -262,7 +263,7 @@ static int rpm_callback(int (*cb)(struct
- 		spin_lock_irq(&dev->power.lock);
- 	}
- 	dev->power.runtime_error = retval;
--	return retval;
-+	return retval != -EACCES ? retval : -EIO;
- }
- 
- /**
-@@ -458,7 +459,7 @@ static int rpm_resume(struct device *dev
- 	if (dev->power.runtime_error)
- 		retval = -EINVAL;
- 	else if (dev->power.disable_depth > 0)
--		retval = -EAGAIN;
-+		retval = -EACCES;
- 	if (retval)
- 		goto out;
- 
-Index: linux-2.6/drivers/scsi/scsi_pm.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/scsi_pm.c
-+++ linux-2.6/drivers/scsi/scsi_pm.c
-@@ -144,9 +144,9 @@ int scsi_autopm_get_device(struct scsi_d
- 	int	err;
- 
- 	err = pm_runtime_get_sync(&sdev->sdev_gendev);
--	if (err < 0)
-+	if (err < 0 && err !=-EACCES)
- 		pm_runtime_put_sync(&sdev->sdev_gendev);
--	else if (err > 0)
-+	else
- 		err = 0;
- 	return err;
- }
-@@ -173,9 +173,9 @@ int scsi_autopm_get_host(struct Scsi_Hos
- 	int	err;
- 
- 	err = pm_runtime_get_sync(&shost->shost_gendev);
--	if (err < 0)
-+	if (err < 0 && err !=-EACCES)
- 		pm_runtime_put_sync(&shost->shost_gendev);
--	else if (err > 0)
-+	else
- 		err = 0;
- 	return err;
- }
 Index: linux-2.6/Documentation/power/runtime_pm.txt
 ===================================================================
 --- linux-2.6.orig/Documentation/power/runtime_pm.txt
 +++ linux-2.6/Documentation/power/runtime_pm.txt
-@@ -291,7 +291,8 @@ drivers/base/power/runtime.c and include
-     - execute the subsystem-level suspend callback for the device; returns 0 on
-       success, 1 if the device's run-time PM status was already 'suspended', or
-       error code on failure, where -EAGAIN or -EBUSY means it is safe to attempt
--      to suspend the device again in future
-+      to suspend the device again in future and -EACCES means that
-+      'power.disable_depth' is different from 0
+@@ -369,17 +369,27 @@ drivers/base/power/runtime.c and include
+       pm_runtime_autosuspend(dev) and return its result
  
-   int pm_runtime_autosuspend(struct device *dev);
-     - same as pm_runtime_suspend() except that the autosuspend delay is taken
-@@ -304,7 +305,8 @@ drivers/base/power/runtime.c and include
-       success, 1 if the device's run-time PM status was already 'active' or
-       error code on failure, where -EAGAIN means it may be safe to attempt to
-       resume the device again in future, but 'power.runtime_error' should be
--      checked additionally
-+      checked additionally, and -EACCES means that 'power.disable_depth' is
-+      different from 0
+   void pm_runtime_enable(struct device *dev);
+-    - enable the run-time PM helper functions to run the device bus type's
+-      run-time PM callbacks described in Section 2
++    - decrement the device's 'power.disable_depth' field; if that field is equal
++      to zero, the run-time PM helper functions can execute subsystem-level
++      callbacks described in Section 2 for the device
  
-   int pm_request_idle(struct device *dev);
-     - submit a request to execute the subsystem-level idle callback for the
+   int pm_runtime_disable(struct device *dev);
+-    - prevent the run-time PM helper functions from running subsystem-level
+-      run-time PM callbacks for the device, make sure that all of the pending
++    - increment the device's 'power.disable_depth' field (if the value of that
++      field was previously zero, this prevents subsystem-level runtime PM
++      callbacks from being run for the device), make sure that all of the pending
+       run-time PM operations on the device are either completed or canceled;
+       returns 1 if there was a resume request pending and it was necessary to
+       execute the subsystem-level resume callback for the device to satisfy that
+       request, otherwise 0 is returned
+ 
++  int pm_runtime_barrier(struct device *dev);
++    - check if there's a resume request pending for the device and resume it
++      (synchronously) in that case, cancel any other pending runtime PM requests
++      regarding it and wait for all runtime PM operations on it in progress to
++      complete; returns 1 if there was a resume request pending and it was
++      necessary to execute the subsystem-level resume callback for the device to
++      satisfy that request, otherwise 0 is returned
++
+   void pm_suspend_ignore_children(struct device *dev, bool enable);
+     - set/unset the power.ignore_children flag of the device
+ 
