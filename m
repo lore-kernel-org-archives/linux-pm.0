@@ -1,7 +1,7 @@
-From: Brad Campbell <lists2009@fnarfbargle.com>
+From: Brad Campbell <brad@fnarfbargle.com>
 Subject: Re: Linux 3.0-rc4 intermittent failure to resume
-Date: Wed, 29 Jun 2011 21:23:03 +0800
-Message-ID: <4E0B2737.2010505@fnarfbargle.com>
+Date: Wed, 29 Jun 2011 13:34:16 +0800
+Message-ID: <4E0AB958.8020704@fnarfbargle.com>
 References: <4E0286F3.6030003@wasp.net.au>
 	<201106231402.59491.rjw@sisk.pl>	<4E03F95B.9030101@fnarfbargle.com>
 	<4E093ECD.7040600@fnarfbargle.com>
