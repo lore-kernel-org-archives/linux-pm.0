@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/6 v2] PM / Runtime: Update documentation of
-	interactions with system sleep
-Date: Wed, 29 Jun 2011 23:31:52 +0200
-Message-ID: <201106292331.53324.rjw__46764.4062628553$1309383600$gmane$org@sisk.pl>
+Subject: [PATCH 3/6 v2] PCI / PM: Detect early wakeup in
+	pci_pm_prepare()
+Date: Wed, 29 Jun 2011 23:33:17 +0200
+Message-ID: <201106292333.17308.rjw__30342.1424505816$1309383712$gmane$org@sisk.pl>
 References: <201106260054.20578.rjw@sisk.pl> <201106292329.04163.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,82 +24,61 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The documents describing the interactions between runtime PM and
-system sleep generally refer to the model in which the system sleep
-state is entered through a global firmware or hardware operation.
-As a result, some recommendations given in there are not entirely
-suitable for systems in which this is not the case.  Update the
-documentation to take the existence of those systems into account.
+A subsequent patch is going to move the invocation of
+pm_runtime_barrier() from dpm_prepare() to __device_suspend().
+Consequently, early wakeup events resulting from runtime resume
+requests for wakeup devices queued up right before system suspend
+will only be detected after all of the subsystem-level .prepare()
+callbacks have run.  However, the PCI bus type calls
+pm_runtime_get_sync() from its pci_pm_prepare() callback routine,
+so it would destroy the early wakeup events information regarding PCI
+devices.  To prevent this from happening add an early wakeup
+detection mechanism, analogous to the one currently in dpm_prepare(),
+to pci_pm_prepare().
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reviewed-by: Kevin Hilman <khilman@ti.com>
 ---
- Documentation/power/devices.txt    |    6 +++---
- Documentation/power/runtime_pm.txt |   27 +++++++++++++++++++--------
- 2 files changed, 22 insertions(+), 11 deletions(-)
+ drivers/pci/pci-driver.c |   16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/Documentation/power/runtime_pm.txt
+Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
---- linux-2.6.orig/Documentation/power/runtime_pm.txt
-+++ linux-2.6/Documentation/power/runtime_pm.txt
-@@ -537,9 +537,9 @@ suspend routine).  It may be necessary t
- in order to do so.  The same is true if the driver uses different power levels
- or other settings for run-time suspend and system sleep.
+--- linux-2.6.orig/drivers/pci/pci-driver.c
++++ linux-2.6/drivers/pci/pci-driver.c
+@@ -18,6 +18,7 @@
+ #include <linux/sched.h>
+ #include <linux/cpu.h>
+ #include <linux/pm_runtime.h>
++#include <linux/suspend.h>
+ #include "pci.h"
  
--During system resume, devices generally should be brought back to full power,
--even if they were suspended before the system sleep began.  There are several
--reasons for this, including:
-+During system resume, the simplest approach is to bring all devices back to full
-+power, even if they had been suspended before the system suspend began.  There
-+are several reasons for this, including:
+ struct pci_dynid {
+@@ -616,6 +617,19 @@ static int pci_pm_prepare(struct device
+ 	int error = 0;
  
-   * The device might need to switch power levels, wake-up settings, etc.
- 
-@@ -556,16 +556,27 @@ reasons for this, including:
-   * Even though the device was suspended, if its usage counter was > 0 then most
-     likely it would need a run-time resume in the near future anyway.
- 
--  * Always going back to full power is simplest.
--
--If the device was suspended before the sleep began, then its run-time PM status
--will have to be updated to reflect the actual post-system sleep status.  The way
--to do this is:
-+If the device had been suspended before the system suspend began and it's
-+brought back to full power during resume, then its run-time PM status will have
-+to be updated to reflect the actual post-system sleep status.  The way to do
-+this is:
- 
- 	pm_runtime_disable(dev);
- 	pm_runtime_set_active(dev);
- 	pm_runtime_enable(dev);
- 
-+On some systems, however, system sleep is not entered through a global firmware
-+or hardware operation.  Instead, all hardware components are put into low-power
-+states directly by the kernel in a coordinated way.  Then, the system sleep
-+state effectively follows from the states the hardware components end up in
-+and the system is woken up from that state by a hardware interrupt or a similar
-+mechanism entirely under the kernel's control.  As a result, the kernel never
-+gives control away and the states of all devices during resume are precisely
-+known to it.  If that is the case and none of the situations listed above takes
-+place (in particular, if the system is not waking up from hibernation), it may
-+be more efficient to leave the devices that had been suspended before the system
-+suspend began in the suspended state.
+ 	/*
++	 * If a PCI device configured to wake up the system from sleep states
++	 * has been suspended at run time and there's a resume request pending
++	 * for it, this is equivalent to the device signaling wakeup, so the
++	 * system suspend operation should be aborted.
++	 */
++	pm_runtime_get_noresume(dev);
++	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
++		pm_wakeup_event(dev, 0);
 +
- 7. Generic subsystem callbacks
++	if (pm_wakeup_pending())
++		return -EBUSY;
++
++	/*
+ 	 * PCI devices suspended at run time need to be resumed at this
+ 	 * point, because in general it is necessary to reconfigure them for
+ 	 * system suspend.  Namely, if the device is supposed to wake up the
+@@ -624,7 +638,7 @@ static int pci_pm_prepare(struct device
+ 	 * system from the sleep state, we'll have to prevent it from signaling
+ 	 * wake-up.
+ 	 */
+-	pm_runtime_get_sync(dev);
++	pm_runtime_resume(dev);
  
- Subsystems may wish to conserve code space by using the set of generic power
-Index: linux-2.6/Documentation/power/devices.txt
-===================================================================
---- linux-2.6.orig/Documentation/power/devices.txt
-+++ linux-2.6/Documentation/power/devices.txt
-@@ -604,7 +604,7 @@ state temporarily, for example so that i
- disabled.  This all depends on the hardware and the design of the subsystem and
- device driver in question.
- 
--During system-wide resume from a sleep state it's best to put devices into the
--full-power state, as explained in Documentation/power/runtime_pm.txt.  Refer to
--that document for more information regarding this particular issue as well as
-+During system-wide resume from a sleep state it's easiest to put devices into
-+the full-power state, as explained in Documentation/power/runtime_pm.txt.  Refer
-+to that document for more information regarding this particular issue as well as
- for information on the device runtime power management framework in general.
+ 	if (drv && drv->pm && drv->pm->prepare)
+ 		error = drv->pm->prepare(dev);
