@@ -1,14 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/3] PM: Limit race conditions between
-	runtime PM and system sleep
-Date: Wed, 29 Jun 2011 21:35:46 +0200
-Message-ID: <201106292135.47147.rjw__7133.27079215578$1309376139$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1106291004180.2064-100000@iolanthe.rowland.org>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+	Memory Power Management
+Date: Wed, 29 Jun 2011 13:11:00 -0700
+Message-ID: <m2y60k1jqj.fsf__1948.797729756$1309378540$gmane$org@firstfloor.org>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110629130038.GA7909@in.ibm.com> <1309367184.11430.594.camel@nimitz>
+	<20110629174220.GA9152@in.ibm.com> <1309370342.11430.604.camel@nimitz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1106291004180.2064-100000@iolanthe.rowland.org>
+In-Reply-To: <1309370342.11430.604.camel@nimitz> (Dave Hansen's message of
+	"Wed, 29 Jun 2011 10:59:02 -0700")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,55 +21,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 29, 2011, Alan Stern wrote:
-> On Tue, 28 Jun 2011, Rafael J. Wysocki wrote:
-> 
-> > On Tuesday, June 28, 2011, Ming Lei wrote:
-> > > 
-> > > Hi Rafael,
-> > > 
-> > > On Sun, 26 Jun 2011 00:56:31 +0200
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > Index: linux-2.6/Documentation/power/runtime_pm.txt
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/Documentation/power/runtime_pm.txt
-> > > > +++ linux-2.6/Documentation/power/runtime_pm.txt
-> > > > @@ -567,6 +567,11 @@ this is:
-> > > >  	pm_runtime_set_active(dev);
-> > > >  	pm_runtime_enable(dev);
-> > > >  
-> > > > +The PM core always increments the run-time usage counter before calling the
-> > > > +->suspend() callback and decrements it after calling the ->resume() callback.
-> > > > +Hence disabling run-time PM temporarily like this will not cause any run-time
-> > > > +suspend callbacks to be lost.
-> > > 
-> > > Could you explain why the above is that "this will not cause any run-time suspend
-> > > callbacks to be lost"? 
-> > > 
-> > > Looks like it should be "this will not cause any run-time suspend callbacks to
-> > > be called", but not sure.
-> > 
-> > You're right the wording is not perfect.  The problem is that if it's done
-> > this way without incrementing the usage counter beforehand, the status may
-> > change to "suspended" right before the pm_runtime_set_active() and then the
-> > new status will not reflect the actual state of the device.
-> > 
-> > So, it may be better to say "Hence disabling runtime PM temporarily like this
-> > will not cause the runtime PM status of the device to conflict with the actual
-> > device state".
-> > 
-> > Alan, what do you think?
-> 
-> How about: "... will not cause any runtime suspend attempts to be 
-> permanently lost.  If the usage count goes to zero following the return 
-> of the ->resume() callback, the ->runtime_idle() callback will be 
-> invoked as usual."
+Dave Hansen <dave@linux.vnet.ibm.com> writes:
+>
+> It's also going to be a pain to track kernel references.  On x86, our
 
-That's better, thanks!
+Even if you tracked them what would you do with them?
 
-Rafael
+It's quite hard to stop using arbitary kernel memory (see all the dancing
+memory-failure does) 
+
+You need to track the direct accesses to user data which happens
+to be accessed through the direct mapping.
+
+Also it will be always unreliable because this all won't track DMA.
+For that you would also need to track in the dma_* infrastructure,
+which will likely get seriously expensive.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only
