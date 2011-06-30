@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: runtime PM usage_count during driver_probe_device()?
-Date: Fri, 1 Jul 2011 02:33:12 +0200
-Message-ID: <201107010233.12377.rjw__23568.4928288267$1309480375$gmane$org@sisk.pl>
-References: <87k4c3dktm.fsf@ti.com> <87vcvmaml6.fsf@ti.com>
+From: Marc Koschewski <marc@osknowledge.org>
+Subject: Re: [REGRESSION] suspend/resume broken on T510
+Date: Fri, 1 Jul 2011 00:53:52 +0200
+Message-ID: <20110630225351.GA17981__14110.5692288422$1309481407$gmane$org@marc.osknowledge.org>
+References: <20110630220050.GB30291@marc.osknowledge.org>
+	<201107010007.27588.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87vcvmaml6.fsf@ti.com>
+Content-Disposition: inline
+In-Reply-To: <201107010007.27588.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,68 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 01, 2011, Kevin Hilman wrote:
-> Kevin Hilman <khilman@ti.com> writes:
-> 
-> > Continuing on the theme of runtime PM interactions with other parts of
-> > the driver core...
-> >
-> > In drivers/base/dd.c:driver_probe_device(), the driver core increments
-> > the usage count around ->probe():
-> >
-> >         [...]
-> > 	pm_runtime_get_noresume(dev);
-> > 	pm_runtime_barrier(dev);
-> > 	ret = really_probe(dev, drv);
-> > 	pm_runtime_put_sync(dev);
-> >
-> > I'm not following the reason for this.  On driver's I'm familar with,
-> > it's not until ->probe where pm_runtime_enable() is called.  What is
-> > being protected against here?
-> >
-> > These seem to exist since the introduction of the runtime PM core, but I
-> > can't find any explanation.
-> >
-> > The documentation refers to the increment by the core, but not the
-> > reasons why:
-> >
-> >     If the device bus type's or driver's ->probe() or ->remove()
-> >     callback runs pm_runtime_suspend() or pm_runtime_idle() or their
-> >     asynchronous counterparts, they will fail returning -EAGAIN, because
-> >     the device's usage counter is incremented by the core before
-> >     executing ->probe() and ->remove().  Still, it may be desirable to
-> >     suspend the device as soon as ->probe() or ->remove() has finished,
-> >     so the PM core uses pm_runtime_idle_sync() to invoke the
-> >     subsystem-level idle callback for the device at that time.
-> >
-> > On a side note, the bit about -EAGAIN above is not accurate with today's
-> > code.  For example, __pm_runtime_suspend() returns zero when the usage
-> > count decrement is non-zero, so callers can't currently know that doing
-> > a pm_runtime_suspend() or pm_runtime_put_sync() in their ->probe()
-> > actually didn't happen.
-> 
-> Oops, I'm not quite right here. 
-> 
-> The doc is actually right here if the driver uses pm_runtime_suspend()
-> or pm_runtime_idle() in ->probe().  It's only when drivers use
-> pm_runtime_put_sync() where there wouldn't be an -EAGAIN, but that seems
-> correct.  Sorry for the noise.
-> 
-> I'm still confused about the usage_count increment around ->probe
-> though.
+* Rafael J. Wysocki <rjw@sisk.pl> [2011-07-01 00:07:27 +0200]:
 
-In theory it is possible that a subsystem (e.g. bus type) will enable
-runtime PM for devices without drivers and will (for example) put them
-into low power states until the drivers are loaded.  Then, it makes
-sense for the core to prevent such transitions from racing with .probe().
+Hi,
 
-I'm not sure if this happens in practice, though, but also I'm not sure
-whether or not that's used by USB.  Moreover, even if that doesn't happen
-right now, it may start to happen at one point.
+here's the bug: https://bugzilla.kernel.org/show_bug.cgi?id=38582
 
-Thanks,
-Rafael
+> Hi,
+> 
+> On Friday, July 01, 2011, Marc Koschewski wrote:
+> > Hi guys,
+> > 
+> > I just thought to wait some what longer than -rc3 to report: suspend/resume is
+> > broken in the current git. I blacklisted the 'mei' module so the suspend worked
+> > as of rc4 (last 'first tested and working' version) with knowledge of the
+> > mei-bug.
+> > 
+> > However, my system does not resume anymore on my T510. After suspend the 'moon'
+> > turns on as usual on 3.0.0-git and the box sleeps. After opening the lid it somehow
+> > wakes up but doesn't boot/resume. It just stalls after some HDD activity.
+> > 
+> > If have no idea what it could be - and I unfortunately cannot bisect it down to
+> > anything > 2.6.39. I left out rc1 and rc2 this time due to having no time to
+> > experiment this month. However, my .config is attached if anyone needs it...
+> 
+> Well, perhaps let us know the hardware configuration (attach dmesg?).
+> 
+> Anyway, I'm not sure if there's anyone who can figure out what _may_ be wrong
+> on the basis of your description alone.  It would be good if you could file
+> a bug in http://bugzilla.kernel.org and let me know its number.
+> 
+> Thanks,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
+-- 
+Marc Koschewski
