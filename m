@@ -1,16 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 7/10 v6] PM / Domains: Don't stop wakeup
-	devices during system sleep transitions
-Date: Wed, 29 Jun 2011 16:50:35 -0700
-Message-ID: <87fwmsnqno.fsf__22900.5928188146$1309391500$gmane$org@ti.com>
-References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
-	<201106252329.24342.rjw@sisk.pl>
+From: Brad Campbell <lists2009@fnarfbargle.com>
+Subject: Re: Linux 3.0-rc4 intermittent failure to resume
+Date: Thu, 30 Jun 2011 08:21:44 +0800
+Message-ID: <4E0BC198.4040305@fnarfbargle.com>
+References: <4E0286F3.6030003@wasp.net.au> <4E093ECD.7040600@fnarfbargle.com>
+	<4E0B2737.2010505@fnarfbargle.com> <201106292134.34485.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106252329.24342.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sat, 25 Jun 2011 23:29:24 +0200")
+In-Reply-To: <201106292134.34485.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,44 +19,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On 30/06/11 03:34, Rafael J. Wysocki wrote:
+> On Wednesday, June 29, 2011, Brad Campbell wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+>> On the occasions it failed to resume (which were many) it turns out
+>> /bin/resume was being called prior to udev having created /dev/snapshot.
+>>
+>> I put a simple wait loop in the resume script to wait for the creation
+>> of /dev/snapshot and I've not had a fail to resume since.
+>>
+>> Curse you asynchronous dynamic device creation<shakes fist>
 >
-> Devices that are set up to wake up the system from sleep states
-> should not be stopped and power should not be removed from them
-> when the system goes into a sleep state.  
+> Thank you very  much for nailing this down, I was afraid there were some
+> obscure bug lurking in the kernel code.
 
-I don't think this belongs in the generic layer since the two
-assumptions above are not generally true on embedded systems, and would
-result in rather significant power consumption unnecessarily.
+Yeah, no worries.
 
-First, whether the device should be stopped on device_may_wakeup():
+I set up a loop to do automated suspend/resume cycles.
+I managed over 100 cycles while compiling 2 kernels in the background.
 
-Some IP blocks (at least on OMAP) have "asynchronous" wakeups.  Meaning
-that they can generate wakeups even when they're not clocked (a.k.a
-stopped).  So in this case, even after a ->stop_device (which clock
-gates the IP), it can still generate wakeups.
-
-Second, whether the device should be powered off if device_may_wakeup():
-
-Embedded SoCs have other ways to wakeup than device-level wakeups.
-
-For example, on OMAP, every pad on the SoC can be configured as a wakeup
-source So, for example, you could completely power down the UART IP
-blocks (and the enclosing power domain), configure the UART RX pad as a
-wakeup source, and still wakeup the system on UART activity.  The OMAP
-docs call these IO pad wakeups.
-
-On OMAP in fact, this is the common, default behavior when we enable
-"off-mode" in idle and/or suspend, since most of the IPs are powered off
-but can still wake up the system.
-
-So in summary, even if device_may_wakeup() is true, many devices (with
-additional SoC magic) can still generate wakeups even when stopped and
-powered off.
-
-Kevin
+Over the 100 cycles the kernel locked up twice, but both times were in 
+very early boot. I power cycled the machine and it resumed with no 
+problems, so the issue is not with the suspend/resume code.
