@@ -1,11 +1,16 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: runtime PM usage_count during driver_probe_device()?
-Date: Thu, 30 Jun 2011 15:19:01 -0700
-Message-ID: <87k4c3dktm.fsf__32957.7881064781$1309472455$gmane$org@ti.com>
+Subject: Re: [PATCH 7/10 v6] PM / Domains: Don't stop wakeup
+	devices during system sleep transitions
+Date: Thu, 30 Jun 2011 15:42:50 -0700
+Message-ID: <878vsjdjpx.fsf__16257.4989525185$1309474227$gmane$org@ti.com>
+References: <201106112223.04972.rjw@sisk.pl> <201106252329.24342.rjw@sisk.pl>
+	<87fwmsnqno.fsf@ti.com> <201106302137.23801.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201106302137.23801.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Thu, 30 Jun 2011 21:37:23 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,83 +20,128 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Continuing on the theme of runtime PM interactions with other parts of
-the driver core...
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-In drivers/base/dd.c:driver_probe_device(), the driver core increments
-the usage count around ->probe():
+> On Thursday, June 30, 2011, Kevin Hilman wrote:
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>> > From: Rafael J. Wysocki <rjw@sisk.pl>
+>> >
+>> > Devices that are set up to wake up the system from sleep states
+>> > should not be stopped and power should not be removed from them
+>> > when the system goes into a sleep state.  
+>> 
+>> I don't think this belongs in the generic layer since the two
+>> assumptions above are not generally true on embedded systems, and would
+>> result in rather significant power consumption unnecessarily.
+>
+> As to whether or not this belongs to the generic layer, I don't quite agree
+> (see below), but the changelog seems to be a bit inaccurate.
+>
+>> First, whether the device should be stopped on device_may_wakeup():
+>> b
+>> Some IP blocks (at least on OMAP) have "asynchronous" wakeups.  Meaning
+>> that they can generate wakeups even when they're not clocked (a.k.a
+>> stopped).  So in this case, even after a ->stop_device (which clock
+>> gates the IP), it can still generate wakeups.
+>> 
+>> Second, whether the device should be powered off if device_may_wakeup():
+>> 
+>> Embedded SoCs have other ways to wakeup than device-level wakeups.
+>> 
+>> For example, on OMAP, every pad on the SoC can be configured as a wakeup
+>> source So, for example, you could completely power down the UART IP
+>> blocks (and the enclosing power domain), configure the UART RX pad as a
+>> wakeup source, and still wakeup the system on UART activity.  The OMAP
+>> docs call these IO pad wakeups.
+>> 
+>> On OMAP in fact, this is the common, default behavior when we enable
+>> "off-mode" in idle and/or suspend, since most of the IPs are powered off
+>> but can still wake up the system.
+>> 
+>> So in summary, even if device_may_wakeup() is true, many devices (with
+>> additional SoC magic) can still generate wakeups even when stopped and
+>> powered off.
+>
+> Well, on the other hand, on some SoCs there are devices that can't be
+> powered off (or "declocked") if they are supposed to generate wakeups.
 
-        [...]
-	pm_runtime_get_noresume(dev);
-	pm_runtime_barrier(dev);
-	ret = really_probe(dev, drv);
-	pm_runtime_put_sync(dev);
+Correct.
 
-I'm not following the reason for this.  On driver's I'm familar with,
-it's not until ->probe where pm_runtime_enable() is called.  What is
-being protected against here?
+> Also, I'm sure there are cases in which wakeups can be generated for devices
+> with their clocks off, but only if power is present.  
 
-These seem to exist since the introduction of the runtime PM core, but I
-can't find any explanation.
+Yes.
 
-The documentation refers to the increment by the core, but not the
-reasons why:
+> So there are multiple
+> cases, but not so many overall.  So, IMO, it makes sense to handle that at
+> the generic level, although not necessarily in such a simplistic way.
+>
+> Now, at this point, I want to do something very simple, which I think is
+> done by this patch. 
+>
+> Is this optimal power comsumption-wise for every potential
+> user of the framework?  
 
-    If the device bus type's or driver's ->probe() or ->remove()
-    callback runs pm_runtime_suspend() or pm_runtime_idle() or their
-    asynchronous counterparts, they will fail returning -EAGAIN, because
-    the device's usage counter is incremented by the core before
-    executing ->probe() and ->remove().  Still, it may be desirable to
-    suspend the device as soon as ->probe() or ->remove() has finished,
-    so the PM core uses pm_runtime_idle_sync() to invoke the
-    subsystem-level idle callback for the device at that time.
+Well, sub-optimal would be an understatement.  I would consider this a
+major regression since if we were to use this for OMAP, we would never
+hit the full-chip low-power states if *any* device had wakeups enabled,
+whereas today we can.
 
-On a side note, the bit about -EAGAIN above is not accurate with today's
-code.  For example, __pm_runtime_suspend() returns zero when the usage
-count decrement is non-zero, so callers can't currently know that doing
-a pm_runtime_suspend() or pm_runtime_put_sync() in their ->probe()
-actually didn't happen.
+> No, but certainly for some it's sufficient.  Is it
+> going to work in general?  I think it is.
+>
+> Of course, there's the question how to handle that more accurately and I have
+> some ideas.  If you have any, please let me know.
+>
+> In the meantime, I'm going to modify the changelog so that it's clear that
+> it's a "first approximation" thing, like in the patch below.
+>
+> Thanks,
+> Rafael
+>
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM / Domains: Don't stop wakeup devices during system sleep transitions
+>
+> There is the problem how to handle devices set up to wake up the
+> system from sleep states during system-wide power transitions.
+> In some cases, those devices can be turned off entirely, because the
+> wakeup signals will be generated on their behalf anyway.  In some
+> other cases, they will generate wakeup signals if their clocks are
+> stopped, but only if power is not removed from them.  Finally, in
+> some cases, they can only generate wakeup signals if power is not
+> removed from them and their clocks are enabled.
 
-Another curiosity is that, contrary to the above documentation, there is
-no usage_count increment before the bus/driver ->remove() (although
-there is a _get_sync/_put_sync around the sysfs_remove and notifier just
-before the bus/driver->remove().
+That's a good summary.
 
-Also, below is a patch for a typo in the above Documentation exerpt.
+> In the future, it will be necessary to take all of the above
+> situations into account, but for starters it is possible to use
+> the observation that if all wakeup devices are treated like the
+> last group (i.e. their clocks are enabled and power in not removed
+> from them during system suspend transitions), they all will be able
+> to generate wakeups, although power consumption in the resulting
+> system sleep state may not be optimal in some cases.
+
+I'm not opposed to this kind of check happening.  I'm only opposed to it
+happening in this "generic" layer because..., well, it's not generic.
+
+Not only is it not generic, it would be a major regression in power
+consumption for anyone moving to this layer that has the various
+different wakeup capabilities already described.
+
+The decision of whether or not to clock gate and/or power gate based on
+wakeup capabilies has to be made somewhere (and in fact is already made
+by existing code.)  But IMO, that decision should only be made where
+wakeup capabilies are known, so that sensible decisions (for power
+management) can be made.
+
+Until there is a way in the generic code to distinguish between the
+various ways a device can wakeup, this decision should be left up to the
+code that knows how.
 
 Kevin
-
-
-
->From 069484f8d2bb86473a271c27733e10fbfd410c2c Mon Sep 17 00:00:00 2001
-From: Kevin Hilman <khilman@ti.com>
-Date: Thu, 30 Jun 2011 15:07:31 -0700
-Subject: [PATCH] PM: Documentation: fix typo: pm_runtime_idle_sync() doesn't exist.
-
-Replace reference to pm_runtime_idle_sync() in the driver core with
-pm_runtime_put_sync() which is used in the code.
-
-Signed-off-by: Kevin Hilman <khilman@ti.com>
----
- Documentation/power/runtime_pm.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index 22accb3..518d9be 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -506,7 +506,7 @@ pm_runtime_suspend() or pm_runtime_idle() or their asynchronous counterparts,
- they will fail returning -EAGAIN, because the device's usage counter is
- incremented by the core before executing ->probe() and ->remove().  Still, it
- may be desirable to suspend the device as soon as ->probe() or ->remove() has
--finished, so the PM core uses pm_runtime_idle_sync() to invoke the
-+finished, so the PM core uses pm_runtime_put_sync() to invoke the
- subsystem-level idle callback for the device at that time.
- 
- The user space can effectively disallow the driver of the device to power manage
--- 
-1.7.4
