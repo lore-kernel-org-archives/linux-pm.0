@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: prevent runtime_resume from racing with
-	probe
-Date: Fri, 1 Jul 2011 23:42:19 +0200
-Message-ID: <201107012342.19924.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1107011132070.1988-100000@iolanthe.rowland.org>
+Subject: Re: runtime PM usage_count during driver_probe_device()?
+Date: Fri, 1 Jul 2011 23:42:46 +0200
+Message-ID: <201107012342.46292.rjw__43017.9899478846$1309556735$gmane$org@sisk.pl>
+References: <87k4c3dktm.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1107011132070.1988-100000@iolanthe.rowland.org>
+In-Reply-To: <87k4c3dktm.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,18 +17,68 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 01, 2011, Alan Stern wrote:
-> This patch (as1475) adds device_lock() and device_unlock() calls to
-> the store methods for the power/control and power/autosuspend_delay_ms
-> sysfs attribute files.  We don't want badly timed writes to these
-> files to cause runtime_resume callbacks to occur while a driver is
-> being probed for a device.
+On Friday, July 01, 2011, Kevin Hilman wrote:
+> Continuing on the theme of runtime PM interactions with other parts of
+> the driver core...
 > 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> In drivers/base/dd.c:driver_probe_device(), the driver core increments
+> the usage count around ->probe():
+> 
+>         [...]
+> 	pm_runtime_get_noresume(dev);
+> 	pm_runtime_barrier(dev);
+> 	ret = really_probe(dev, drv);
+> 	pm_runtime_put_sync(dev);
+> 
+> I'm not following the reason for this.  On driver's I'm familar with,
+> it's not until ->probe where pm_runtime_enable() is called.  What is
+> being protected against here?
+> 
+> These seem to exist since the introduction of the runtime PM core, but I
+> can't find any explanation.
+> 
+> The documentation refers to the increment by the core, but not the
+> reasons why:
+> 
+>     If the device bus type's or driver's ->probe() or ->remove()
+>     callback runs pm_runtime_suspend() or pm_runtime_idle() or their
+>     asynchronous counterparts, they will fail returning -EAGAIN, because
+>     the device's usage counter is incremented by the core before
+>     executing ->probe() and ->remove().  Still, it may be desirable to
+>     suspend the device as soon as ->probe() or ->remove() has finished,
+>     so the PM core uses pm_runtime_idle_sync() to invoke the
+>     subsystem-level idle callback for the device at that time.
+> 
+> On a side note, the bit about -EAGAIN above is not accurate with today's
+> code.  For example, __pm_runtime_suspend() returns zero when the usage
+> count decrement is non-zero, so callers can't currently know that doing
+> a pm_runtime_suspend() or pm_runtime_put_sync() in their ->probe()
+> actually didn't happen.
+> 
+> Another curiosity is that, contrary to the above documentation, there is
+> no usage_count increment before the bus/driver ->remove() (although
+> there is a _get_sync/_put_sync around the sysfs_remove and notifier just
+> before the bus/driver->remove().
+> 
+> Also, below is a patch for a typo in the above Documentation exerpt.
+> 
+> Kevin
+> 
+> 
+> 
+> From 069484f8d2bb86473a271c27733e10fbfd410c2c Mon Sep 17 00:00:00 2001
+> From: Kevin Hilman <khilman@ti.com>
+> Date: Thu, 30 Jun 2011 15:07:31 -0700
+> Subject: [PATCH] PM: Documentation: fix typo: pm_runtime_idle_sync() doesn't exist.
+> 
+> Replace reference to pm_runtime_idle_sync() in the driver core with
+> pm_runtime_put_sync() which is used in the code.
+> 
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
 
 Applied to suspend-2.6/linux-next.
 
@@ -38,40 +87,20 @@ Rafael
 
 
 > ---
+>  Documentation/power/runtime_pm.txt |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
->  drivers/base/power/sysfs.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> Index: usb-3.0/drivers/base/power/sysfs.c
-> ===================================================================
-> --- usb-3.0.orig/drivers/base/power/sysfs.c
-> +++ usb-3.0/drivers/base/power/sysfs.c
-> @@ -116,12 +116,14 @@ static ssize_t control_store(struct devi
->  	cp = memchr(buf, '\n', n);
->  	if (cp)
->  		len = cp - buf;
-> +	device_lock(dev);
->  	if (len == sizeof ctrl_auto - 1 && strncmp(buf, ctrl_auto, len) == 0)
->  		pm_runtime_allow(dev);
->  	else if (len == sizeof ctrl_on - 1 && strncmp(buf, ctrl_on, len) == 0)
->  		pm_runtime_forbid(dev);
->  	else
-> -		return -EINVAL;
-> +		n = -EINVAL;
-> +	device_unlock(dev);
->  	return n;
->  }
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 22accb3..518d9be 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -506,7 +506,7 @@ pm_runtime_suspend() or pm_runtime_idle() or their asynchronous counterparts,
+>  they will fail returning -EAGAIN, because the device's usage counter is
+>  incremented by the core before executing ->probe() and ->remove().  Still, it
+>  may be desirable to suspend the device as soon as ->probe() or ->remove() has
+> -finished, so the PM core uses pm_runtime_idle_sync() to invoke the
+> +finished, so the PM core uses pm_runtime_put_sync() to invoke the
+>  subsystem-level idle callback for the device at that time.
 >  
-> @@ -205,7 +207,9 @@ static ssize_t autosuspend_delay_ms_stor
->  	if (strict_strtol(buf, 10, &delay) != 0 || delay != (int) delay)
->  		return -EINVAL;
->  
-> +	device_lock(dev);
->  	pm_runtime_set_autosuspend_delay(dev, delay);
-> +	device_unlock(dev);
->  	return n;
->  }
->  
-> 
-> 
+>  The user space can effectively disallow the driver of the device to power manage
 > 
