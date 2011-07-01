@@ -1,16 +1,13 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 7/10 v6] PM / Domains: Don't stop wakeup
-	devices during system sleep transitions
-Date: Fri, 01 Jul 2011 07:34:16 -0700
-Message-ID: <87tyb66pef.fsf__11005.0000170761$1309530933$gmane$org@ti.com>
-References: <201106112223.04972.rjw@sisk.pl> <201107010128.03732.rjw@sisk.pl>
-	<8762nmc1hs.fsf@ti.com> <201107010224.37609.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: runtime PM usage_count during driver_probe_device()?
+Date: Fri, 1 Jul 2011 10:43:34 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1107011040570.1988-100000__33339.1079017476$1309531550$gmane$org@iolanthe.rowland.org>
+References: <87k4c3dktm.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107010224.37609.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri, 1 Jul 2011 02:24:37 +0200")
+In-Reply-To: <87k4c3dktm.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,59 +17,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thu, 30 Jun 2011, Kevin Hilman wrote:
 
-> On Friday, July 01, 2011, Kevin Hilman wrote:
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> ...
->> > So the only way forward I can see is to add a special PM domain callback,
->> > say .active_wakeup(), that will return "true" if the device is to be left
->> > active when wakeup-enabled.  So the check you don't like will become
->> > something like:
->> >
->> > if (device_may_wakeup(dev) && genpd->active_wakeup
->> >     && genpd->active_wakeup(dev))
->> >         return 0;
->> >
->> > Would that be better?
->> 
->> Yes, much better.  And I like the default behavior if no hooks are provided.
->
-> So, what about the appended patch instead of the $subject one?
->
-> Rafael
->
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM / Domains: Wakeup devices support for system sleep transitions
->
-> There is the problem how to handle devices set up to wake up the
-> system from sleep states during system-wide power transitions.
-> In some cases, those devices can be turned off entirely, because the
-> wakeup signals will be generated on their behalf anyway.  In some
-> other cases, they will generate wakeup signals if their clocks are
-> stopped, but only if power is not removed from them.  Finally, in
-> some cases, they can only generate wakeup signals if power is not
-> removed from them and their clocks are enabled.
->
-> To allow platform-specific code to decide whether or not to put
-> wakeup devices (and their PM domains) into low-power state during
-> system-wide transitions, such as system suspend, introduce a new
-> generic PM domain callback, .active_wakeup(), that will be used
-> during the "noirq" phase of system suspend and hibernation (after
-> image creation) to decide what to do with wakeup devices.
-> Specifically, if this callback is present and returns "true", the
-> generic PM domain code will not execute .stop_device() for the
-> given wakeup device and its PM domain won't be powered off.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Another curiosity is that, contrary to the above documentation, there is
+> no usage_count increment before the bus/driver ->remove() (although
+> there is a _get_sync/_put_sync around the sysfs_remove and notifier just
+> before the bus/driver->remove().
 
-Acked-by: Kevin Hilman <khilman@ti.com>
+I hadn't noticed that.  There may be a reason for using get_sync 
+instead of get_noresume, but it isn't explained anywhere.  And it 
+certainly looks like a mistake for the put_sync to occur before the 
+->remove() call instead of after.
 
-Thanks,
+This needs to be fixed.
 
-Kevin
+Alan Stern
