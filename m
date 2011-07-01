@@ -1,7 +1,7 @@
-From: Ohad Ben-Cohen <ohad@wizery.com>
+From: Ming Lei <tom.leiming@gmail.com>
 Subject: Re: runtime PM usage_count during driver_probe_device()?
-Date: Fri, 1 Jul 2011 08:57:40 +0300
-Message-ID: <BANLkTikLna-jbrNfD2fz_QC1BfrCHpByNA__22212.6781860881$1309499947$gmane$org@mail.gmail.com>
+Date: Fri, 1 Jul 2011 19:32:33 +0800
+Message-ID: <BANLkTimRRZ9Ld5rtpQMT3PhmOCn+qOxBcQ__14372.832401614$1309520025$gmane$org@mail.gmail.com>
 References: <87k4c3dktm.fsf@ti.com> <87vcvmaml6.fsf@ti.com>
 	<201107010233.12377.rjw@sisk.pl>
 Mime-Version: 1.0
@@ -22,12 +22,31 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 1, 2011 at 3:33 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Hi,
+
+On Fri, Jul 1, 2011 at 8:33 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
 > In theory it is possible that a subsystem (e.g. bus type) will enable
 > runtime PM for devices without drivers and will (for example) put them
 > into low power states until the drivers are loaded. =A0Then, it makes
 > sense for the core to prevent such transitions from racing with .probe().
 >
-> I'm not sure if this happens in practice, though,
+> I'm not sure if this happens in practice, though, but also I'm not sure
+> whether or not that's used by USB. =A0Moreover, even if that doesn't happ=
+en
+> right now, it may start to happen at one point.
 
-Yeah, this is exactly what the SDIO subsystem is doing.
+It should be used by USB, for example, uvcvideo driver has enabled
+auto suspend already:
+
+    - rmmod uvcvideo
+
+    - usb video class device auto suspended
+
+    - modprobe uvcvideo       #driver_probe_device()
+
+
+thanks,
+-- =
+
+Ming Lei
