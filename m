@@ -1,13 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: runtime PM usage_count during driver_probe_device()?
-Date: Fri, 1 Jul 2011 10:54:05 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1107011045160.1988-100000__48236.8376026445$1309532093$gmane$org@iolanthe.rowland.org>
-References: <87vcvmaml6.fsf@ti.com>
+Date: Fri, 1 Jul 2011 11:25:56 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1107011123590.1988-100000__16457.294781185$1309534008$gmane$org@iolanthe.rowland.org>
+References: <87d3hu6oxo.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87vcvmaml6.fsf@ti.com>
+In-Reply-To: <87d3hu6oxo.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,26 +21,60 @@ To: Kevin Hilman <khilman@ti.com>
 Cc: linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 30 Jun 2011, Kevin Hilman wrote:
+On Fri, 1 Jul 2011, Kevin Hilman wrote:
 
-> I'm still confused about the usage_count increment around ->probe
-> though.
+> OK, so the ->probe() part has been explained and makes sense, but I
+> would expect ->remove() to be similarily protected (as the documentation
+> states.)  But that is not the case.  Is that a bug?  If so, patch below
+> makes the code match the documentation.
 
-As a few people have already pointed out, some subsystems do perform 
-runtime PM on driverless devices.
+I suspect it is a bug, but it's hard to be sure.  It's so _blatantly_ 
+wrong that it looks like it was done deliberately.
 
-The basic idea is simple: We don't want any PM callbacks to race with
-each other or with other driver-core callbacks.  Incrementing the
-usage_count prevents runtime_suspend callbacks while the probe callback
-is running.
+> Kevin
+> 
+> From eef73ab2feb203bacb57dc35862f2a9969b61593 Mon Sep 17 00:00:00 2001
+> From: Kevin Hilman <khilman@ti.com>
+> Date: Fri, 1 Jul 2011 07:37:47 -0700
+> Subject: [PATCH] driver core: prevent runtime PM races with ->remove()
+> 
+> Runtime PM Documentation states that the runtime PM usage count is
+> incremented during driver ->probe() and ->remove().  This is designed
+> to prevent driver runtime PM races with subsystems which may initiate
+> runtime PM transitions before during and after drivers are loaded.
+> 
+> Current code increments the usage_count during ->probe() but not
+> during ->remove().  This patch fixes the ->remove() part and makes the
+> code match the documentation.
+> 
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
+> ---
+>  drivers/base/dd.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 6658da7..47e079d 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -329,13 +329,13 @@ static void __device_release_driver(struct device *dev)
+>  			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+>  						     BUS_NOTIFY_UNBIND_DRIVER,
+>  						     dev);
+> -
+> -		pm_runtime_put_sync(dev);
+> -
+>  		if (dev->bus && dev->bus->remove)
+>  			dev->bus->remove(dev);
+>  		else if (drv->remove)
+>  			drv->remove(dev);
+> +
+> +		pm_runtime_put_sync(dev);
+> +
+>  		devres_release_all(dev);
+>  		dev->driver = NULL;
+>  		klist_remove(&dev->p->knode_driver);
 
-This does leave open the possibility of runtime_resume occurring 
-concurrently with probe.  For the most part this should be okay 
-because without a driver, no part of the kernel will try to resume the 
-device.
-
-Hmmm, but a resume could occur as a result of userspace writing to a 
-sysfs attribute.  It looks like we need to add some lock_device() calls 
-to control_store() and autosuspend_delay_ms_store().
+To be safer, the put_sync() call should be moved down here.  Or maybe 
+even after the blocking_notifier_call_chain() that occurs here.
 
 Alan Stern
