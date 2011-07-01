@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: runtime PM usage_count during driver_probe_device()?
-Date: Fri, 1 Jul 2011 23:44:03 +0200
-Message-ID: <201107012344.03981.rjw__39261.4214834341$1309556861$gmane$org@sisk.pl>
+Subject: [PATCH] PM / Runtime: Update documentation regarding
+	driver removal
+Date: Sat, 2 Jul 2011 00:12:29 +0200
+Message-ID: <201107020012.29661.rjw__6850.2279966653$1309558359$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.1107011711370.1624-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,49 +22,55 @@ To: Alan Stern <stern@rowland.harvard.edu>
 Cc: linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 01, 2011, Alan Stern wrote:
-> On Fri, 1 Jul 2011, Rafael J. Wysocki wrote:
-> 
-> > Hi,
-> > 
-> > On Friday, July 01, 2011, Kevin Hilman wrote:
-> > > Alan Stern <stern@rowland.harvard.edu> writes:
-> > > 
-> > > > On Fri, 1 Jul 2011, Kevin Hilman wrote:
-> > > >
-> > > >> OK, so the ->probe() part has been explained and makes sense, but I
-> > > >> would expect ->remove() to be similarily protected (as the documentation
-> > > >> states.)  But that is not the case.  Is that a bug?  If so, patch below
-> > > >> makes the code match the documentation.
-> > > >
-> > > > I suspect it is a bug, but it's hard to be sure.  It's so _blatantly_ 
-> > > > wrong that it looks like it was done deliberately.
-> > > 
-> > > heh
-> > 
-> > I seem to remeber having a problem with the pm_runtime_put_sync() after
-> > drv->remove(dev) ...
-> > 
-> > So the code in question was introduced by
-> > 
-> > commit e1866b33b1e89f077b7132daae3dfd9a594e9a1a
-> > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > Date:   Fri Apr 29 00:33:45 2011 +0200
-> > 
-> >     PM / Runtime: Rework runtime PM handling during driver removal
-> > 
-> > with a long changelog explaining the reason why.  Which seems to make sense. ;-)
-> 
-> Okay, that seems fair enough.  Looks like the documentation needs to be 
-> updated to match, though.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Yes, it does.
+Commit e1866b33b1e89f077b7132daae3dfd9a594e9a1a (PM / Runtime: Rework
+runtime PM handling during driver removal) forgot to update the
+documentation in Documentation/power/runtime_pm.txt to match the new
+code in drivers/base/dd.c.  Update that documentation to match the
+code it describes.
 
-> And we probably still want to make sure that access to the 
-> power/control and related attribute files is mutually exclusive with 
-> probe and remove.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/power/runtime_pm.txt |   26 +++++++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
 
-I agree.
-
-Thanks,
-Rafael
+Index: linux-2.6/Documentation/power/runtime_pm.txt
+===================================================================
+--- linux-2.6.orig/Documentation/power/runtime_pm.txt
++++ linux-2.6/Documentation/power/runtime_pm.txt
+@@ -513,13 +513,29 @@ helper functions described in Section 4.
+ should be used.  Of course, for this purpose the device's runtime PM has to be
+ enabled earlier by calling pm_runtime_enable().
+ 
+-If the device bus type's or driver's ->probe() or ->remove() callback runs
++If the device bus type's or driver's ->probe() callback runs
+ pm_runtime_suspend() or pm_runtime_idle() or their asynchronous counterparts,
+ they will fail returning -EAGAIN, because the device's usage counter is
+-incremented by the core before executing ->probe() and ->remove().  Still, it
+-may be desirable to suspend the device as soon as ->probe() or ->remove() has
+-finished, so the PM core uses pm_runtime_put_sync() to invoke the
+-subsystem-level idle callback for the device at that time.
++incremented by the driver core before executing ->probe().  Still, it may be
++desirable to suspend the device as soon as ->probe() has finished, so the driver
++core uses pm_runtime_put_sync() to invoke the subsystem-level idle callback for
++the device at that time.
++
++Moreover, the driver core prevents runtime PM callbacks from racing with the bus
++notifier callback in __device_release_driver(), which is necessary, because the
++notifier is used by some subsystems to carry out operations affecting the
++runtime PM functionality.  It does so by calling pm_runtime_get_sync() before
++driver_sysfs_remove() and the BUS_NOTIFY_UNBIND_DRIVER notifications.  This
++resumes the device if it's in the suspended state and prevents it from
++being suspended again while those routines are being executed.
++
++To allow bus types and drivers to put devices into the suspended state by
++calling pm_runtime_suspend() from their ->remove() routines, the driver core
++executes pm_runtime_put_sync() after running the BUS_NOTIFY_UNBIND_DRIVER
++notifications in __device_release_driver().  This requires bus types and
++drivers to make their ->remove() callbacks avoid races with runtime PM directly,
++but also it allows of more flexibility in the handling of devices during the
++removal of their drivers.
+ 
+ The user space can effectively disallow the driver of the device to power manage
+ it at run time by changing the value of its /sys/devices/.../power/control
