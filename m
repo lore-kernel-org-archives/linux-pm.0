@@ -1,14 +1,13 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 7/10 v6] PM / Domains: Don't stop wakeup
- devices during system sleep transitions
-Date: Fri, 1 Jul 2011 10:45:02 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1107011043410.1988-100000__7187.71029864929$1309531707$gmane$org@iolanthe.rowland.org>
-References: <201107010125.25875.rjw@sisk.pl>
+Subject: Re: runtime PM usage_count during driver_probe_device()?
+Date: Fri, 1 Jul 2011 10:54:05 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1107011045160.1988-100000__48236.8376026445$1309532093$gmane$org@iolanthe.rowland.org>
+References: <87vcvmaml6.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107010125.25875.rjw@sisk.pl>
+In-Reply-To: <87vcvmaml6.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,25 +17,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 1 Jul 2011, Rafael J. Wysocki wrote:
+On Thu, 30 Jun 2011, Kevin Hilman wrote:
 
-> So the only way forward I can see is to add a special PM domain callback,
-> say .active_wakeup(), that will return "true" if the device is to be left
-> active if wakeup-enabled.  So the check you don't like will become
-> something like:
-> 
-> if (device_may_wakeup(dev) && genpd->active_wakeup
->     && genpd->active_wakeup(dev))
->         return 0;
-> 
-> Would that be better?
+> I'm still confused about the usage_count increment around ->probe
+> though.
 
-Another option, less flexible but perhaps easier to use, would be to 
-set a couple of bitflags indicating whether the device needs power or 
-clocks to handle wakeup signals.
+As a few people have already pointed out, some subsystems do perform 
+runtime PM on driverless devices.
+
+The basic idea is simple: We don't want any PM callbacks to race with
+each other or with other driver-core callbacks.  Incrementing the
+usage_count prevents runtime_suspend callbacks while the probe callback
+is running.
+
+This does leave open the possibility of runtime_resume occurring 
+concurrently with probe.  For the most part this should be okay 
+because without a driver, no part of the kernel will try to resume the 
+device.
+
+Hmmm, but a resume could occur as a result of userspace writing to a 
+sysfs attribute.  It looks like we need to add some lock_device() calls 
+to control_store() and autosuspend_delay_ms_store().
 
 Alan Stern
