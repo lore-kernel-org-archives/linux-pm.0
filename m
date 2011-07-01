@@ -1,16 +1,15 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 3/10 v6] PM / Domains: Support for generic
-	I/O PM domains (v7)
-Date: Fri, 01 Jul 2011 11:11:13 -0700
-Message-ID: <87tyb5yipq.fsf__29024.4282842197$1309544031$gmane$org@ti.com>
+Subject: Re: [PATCH 0/10 v6] PM / Domains: Support for generic
+	I/O PM domains
+Date: Fri, 01 Jul 2011 11:27:22 -0700
+Message-ID: <87fwmpyhyt.fsf__9063.03618471629$1309544894$gmane$org@ti.com>
 References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
-	<201106252326.23837.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201106252326.23837.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sat, 25 Jun 2011 23:26:23 +0200")
+In-Reply-To: <201106252324.13454.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sat, 25 Jun 2011 23:24:13 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,43 +25,23 @@ List-Id: linux-pm@vger.kernel.org
 
 "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Hi,
 >
-> Introduce common headers, helper functions and callbacks allowing
-> platforms to use simple generic power domains for runtime power
-> management.
+> Well, one more update. :-)
 >
-> Introduce struct generic_pm_domain to be used for representing
-> power domains that each contain a number of devices and may be
-> parent domains or subdomains with respect to other power domains.
-> Among other things, this structure includes callbacks to be
-> provided by platforms for performing specific tasks related to
-> power management (i.e. ->stop_device() may disable a device's
-> clocks, while ->start_device() may enable them, ->power_off() is
-> supposed to remove power from the entire power domain
-> and ->power_on() is supposed to restore it).
->
-> Introduce functions that can be used as power domain runtime PM
-> callbacks, pm_genpd_runtime_suspend() and pm_genpd_runtime_resume(),
-> as well as helper functions for the initialization of a power
-> domain represented by a struct generic_power_domain object,
-> adding a device to or removing a device from it and adding or
-> removing subdomains.
->
-> Introduce configuration option CONFIG_PM_GENERIC_DOMAINS to be
-> selected by the platforms that want to use the new code.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> This is the 6th version of the patchset adding support for generic I/O PM
+> domains.  The majority of patches have had some small fixes here and there
+> to make things work when CONFIG_PM_RUNTIME is unset.  In addition to that,
+> to make the shmobile code introduced by the last patch work for
+> CONFIG_PM_RUNTIME unset I had to add patches [8-9/10].  Patch [7/10]
+> adds wakeup support that was missing from the previous version and I
+> decided not to push patch [1/10] for 3.0 after all.
+
+For everything but the shmobile specifics, which I didn't look at too
+closely, and the changes for [7/10] that we agreed on:
 
 Reviewed-by: Kevin Hilman <khilman@ti.com>
 
-While I still don't think this is generic enough for some more
-complicated SoCs, it most certainly a huge step in the right direction,
-and I think we can address the other complexities with additional
-patches as needed.
-
-Thanks Rafael for all your hard work on this and putting up with my
-nagging. ;)
+Thanks!
 
 Kevin
