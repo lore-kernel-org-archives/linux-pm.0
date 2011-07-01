@@ -1,14 +1,15 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: runtime PM usage_count during driver_probe_device()?
-Date: Thu, 30 Jun 2011 17:09:09 -0700
-Message-ID: <87vcvmaml6.fsf__27119.2139866345$1309479086$gmane$org@ti.com>
-References: <87k4c3dktm.fsf@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 7/10 v6] PM / Domains: Don't stop wakeup
+	devices during system sleep transitions
+Date: Fri, 1 Jul 2011 02:24:37 +0200
+Message-ID: <201107010224.37609.rjw__45342.4749001444$1309480273$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl> <201107010128.03732.rjw@sisk.pl>
+	<8762nmc1hs.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87k4c3dktm.fsf@ti.com> (Kevin Hilman's message of "Thu, 30 Jun
-	2011 15:19:01 -0700")
+In-Reply-To: <8762nmc1hs.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,96 +19,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Kevin Hilman <khilman@ti.com> writes:
+On Friday, July 01, 2011, Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+...
+> > So the only way forward I can see is to add a special PM domain callback,
+> > say .active_wakeup(), that will return "true" if the device is to be left
+> > active when wakeup-enabled.  So the check you don't like will become
+> > something like:
+> >
+> > if (device_may_wakeup(dev) && genpd->active_wakeup
+> >     && genpd->active_wakeup(dev))
+> >         return 0;
+> >
+> > Would that be better?
+> 
+> Yes, much better.  And I like the default behavior if no hooks are provided.
 
-> Continuing on the theme of runtime PM interactions with other parts of
-> the driver core...
->
-> In drivers/base/dd.c:driver_probe_device(), the driver core increments
-> the usage count around ->probe():
->
->         [...]
-> 	pm_runtime_get_noresume(dev);
-> 	pm_runtime_barrier(dev);
-> 	ret = really_probe(dev, drv);
-> 	pm_runtime_put_sync(dev);
->
-> I'm not following the reason for this.  On driver's I'm familar with,
-> it's not until ->probe where pm_runtime_enable() is called.  What is
-> being protected against here?
->
-> These seem to exist since the introduction of the runtime PM core, but I
-> can't find any explanation.
->
-> The documentation refers to the increment by the core, but not the
-> reasons why:
->
->     If the device bus type's or driver's ->probe() or ->remove()
->     callback runs pm_runtime_suspend() or pm_runtime_idle() or their
->     asynchronous counterparts, they will fail returning -EAGAIN, because
->     the device's usage counter is incremented by the core before
->     executing ->probe() and ->remove().  Still, it may be desirable to
->     suspend the device as soon as ->probe() or ->remove() has finished,
->     so the PM core uses pm_runtime_idle_sync() to invoke the
->     subsystem-level idle callback for the device at that time.
->
-> On a side note, the bit about -EAGAIN above is not accurate with today's
-> code.  For example, __pm_runtime_suspend() returns zero when the usage
-> count decrement is non-zero, so callers can't currently know that doing
-> a pm_runtime_suspend() or pm_runtime_put_sync() in their ->probe()
-> actually didn't happen.
+So, what about the appended patch instead of the $subject one?
 
-Oops, I'm not quite right here. 
+Rafael
 
-The doc is actually right here if the driver uses pm_runtime_suspend()
-or pm_runtime_idle() in ->probe().  It's only when drivers use
-pm_runtime_put_sync() where there wouldn't be an -EAGAIN, but that seems
-correct.  Sorry for the noise.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM / Domains: Wakeup devices support for system sleep transitions
 
-I'm still confused about the usage_count increment around ->probe
-though.
+There is the problem how to handle devices set up to wake up the
+system from sleep states during system-wide power transitions.
+In some cases, those devices can be turned off entirely, because the
+wakeup signals will be generated on their behalf anyway.  In some
+other cases, they will generate wakeup signals if their clocks are
+stopped, but only if power is not removed from them.  Finally, in
+some cases, they can only generate wakeup signals if power is not
+removed from them and their clocks are enabled.
 
-Kevin
+To allow platform-specific code to decide whether or not to put
+wakeup devices (and their PM domains) into low-power state during
+system-wide transitions, such as system suspend, introduce a new
+generic PM domain callback, .active_wakeup(), that will be used
+during the "noirq" phase of system suspend and hibernation (after
+image creation) to decide what to do with wakeup devices.
+Specifically, if this callback is present and returns "true", the
+generic PM domain code will not execute .stop_device() for the
+given wakeup device and its PM domain won't be powered off.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/domain.c |    8 ++++++++
+ include/linux/pm_domain.h   |    1 +
+ 2 files changed, 9 insertions(+)
 
-> Another curiosity is that, contrary to the above documentation, there is
-> no usage_count increment before the bus/driver ->remove() (although
-> there is a _get_sync/_put_sync around the sysfs_remove and notifier just
-> before the bus/driver->remove().
->
-> Also, below is a patch for a typo in the above Documentation exerpt.
->
-> Kevin
->
->
->
-> From 069484f8d2bb86473a271c27733e10fbfd410c2c Mon Sep 17 00:00:00 2001
-> From: Kevin Hilman <khilman@ti.com>
-> Date: Thu, 30 Jun 2011 15:07:31 -0700
-> Subject: [PATCH] PM: Documentation: fix typo: pm_runtime_idle_sync() doesn't exist.
->
-> Replace reference to pm_runtime_idle_sync() in the driver core with
-> pm_runtime_put_sync() which is used in the code.
->
-> Signed-off-by: Kevin Hilman <khilman@ti.com>
-> ---
->  Documentation/power/runtime_pm.txt |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> index 22accb3..518d9be 100644
-> --- a/Documentation/power/runtime_pm.txt
-> +++ b/Documentation/power/runtime_pm.txt
-> @@ -506,7 +506,7 @@ pm_runtime_suspend() or pm_runtime_idle() or their asynchronous counterparts,
->  they will fail returning -EAGAIN, because the device's usage counter is
->  incremented by the core before executing ->probe() and ->remove().  Still, it
->  may be desirable to suspend the device as soon as ->probe() or ->remove() has
-> -finished, so the PM core uses pm_runtime_idle_sync() to invoke the
-> +finished, so the PM core uses pm_runtime_put_sync() to invoke the
->  subsystem-level idle callback for the device at that time.
->  
->  The user space can effectively disallow the driver of the device to power manage
+Index: linux-2.6/drivers/base/power/domain.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/domain.c
++++ linux-2.6/drivers/base/power/domain.c
+@@ -450,6 +450,10 @@ static int pm_genpd_suspend_noirq(struct
+ 	if (ret)
+ 		return ret;
+ 
++	if (device_may_wakeup(dev)
++	    && genpd->active_wakeup && genpd->active_wakeup(dev))
++		return 0;
++
+ 	if (genpd->stop_device)
+ 		genpd->stop_device(dev);
+ 
+@@ -670,6 +674,10 @@ static int pm_genpd_dev_poweroff_noirq(s
+ 	if (ret)
+ 		return ret;
+ 
++	if (device_may_wakeup(dev)
++	    && genpd->active_wakeup && genpd->active_wakeup(dev))
++		return 0;
++
+ 	if (genpd->stop_device)
+ 		genpd->stop_device(dev);
+ 
+Index: linux-2.6/include/linux/pm_domain.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm_domain.h
++++ linux-2.6/include/linux/pm_domain.h
+@@ -38,6 +38,7 @@ struct generic_pm_domain {
+ 	int (*power_on)(struct generic_pm_domain *domain);
+ 	int (*start_device)(struct device *dev);
+ 	int (*stop_device)(struct device *dev);
++	bool (*active_wakeup)(struct device *dev);
+ };
+ 
+ static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
