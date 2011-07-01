@@ -1,14 +1,16 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: Re: runtime PM usage_count during driver_probe_device()?
-Date: Fri, 01 Jul 2011 09:54:32 -0700
-Message-ID: <87vcvm0wmv.fsf__19789.714847184$1309539332$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1107011154120.1988-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 3/10 v6] PM / Domains: Support for generic
+	I/O PM domains (v7)
+Date: Fri, 01 Jul 2011 11:11:13 -0700
+Message-ID: <87tyb5yipq.fsf__29024.4282842197$1309544031$gmane$org@ti.com>
+References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
+	<201106252326.23837.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1107011154120.1988-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Fri, 1 Jul 2011 11:59:09 -0400 (EDT)")
+In-Reply-To: <201106252326.23837.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sat, 25 Jun 2011 23:26:23 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,65 +20,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> On Fri, 1 Jul 2011, Kevin Hilman wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 >
->> >> --- a/drivers/base/dd.c
->> >> +++ b/drivers/base/dd.c
->> >> @@ -329,13 +329,13 @@ static void __device_release_driver(struct device *dev)
->> >>  			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
->> >>  						     BUS_NOTIFY_UNBIND_DRIVER,
->> >>  						     dev);
->> >> -
->> >> -		pm_runtime_put_sync(dev);
->> >> -
->> >>  		if (dev->bus && dev->bus->remove)
->> >>  			dev->bus->remove(dev);
->> >>  		else if (drv->remove)
->> >>  			drv->remove(dev);
->> >> +
->> >> +		pm_runtime_put_sync(dev);
->> >> +
->> >>  		devres_release_all(dev);
->> >>  		dev->driver = NULL;
->> >>  		klist_remove(&dev->p->knode_driver);
->> >
->> > To be safer, the put_sync() call should be moved down here.  Or maybe 
->> > even after the blocking_notifier_call_chain() that occurs here.
->> 
->> I was actually thinking about the other direction: moving the get_sync
->> after the first notifier chain.  IOW, the get_sync/put_sync only
->> protects the ->remove() calls, not the notifiers.
->> 
->> The protection around the notifiers doesn't make sense to me, at least
->> in the context of driver runtime PM racing with the subsystem.
->> Especially since these notifiers are likely how the
->> subsystem/bus/pm_domain code getting notified that there may be a device
->> to manage in the first place.
+> Introduce common headers, helper functions and callbacks allowing
+> platforms to use simple generic power domains for runtime power
+> management.
 >
-> The get_sync part doesn't matter so much.  Moving it past the notifier 
-> call would probably be okay -- unless one of the listeners on the 
-> notifier chain expects the device to be active.  Changing the get_sync 
-> to get_noresume would probably also be okay -- subject to a similar 
-> reservation.
+> Introduce struct generic_pm_domain to be used for representing
+> power domains that each contain a number of devices and may be
+> parent domains or subdomains with respect to other power domains.
+> Among other things, this structure includes callbacks to be
+> provided by platforms for performing specific tasks related to
+> power management (i.e. ->stop_device() may disable a device's
+> clocks, while ->start_device() may enable them, ->power_off() is
+> supposed to remove power from the entire power domain
+> and ->power_on() is supposed to restore it).
+>
+> Introduce functions that can be used as power domain runtime PM
+> callbacks, pm_genpd_runtime_suspend() and pm_genpd_runtime_resume(),
+> as well as helper functions for the initialization of a power
+> domain represented by a struct generic_power_domain object,
+> adding a device to or removing a device from it and adding or
+> removing subdomains.
+>
+> Introduce configuration option CONFIG_PM_GENERIC_DOMAINS to be
+> selected by the platforms that want to use the new code.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-There are enough "probably"s in the above to make me a bit uncomfortable
-making this change.  Maybe you can take this patch forward?
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+
+While I still don't think this is generic enough for some more
+complicated SoCs, it most certainly a huge step in the right direction,
+and I think we can address the other complexities with additional
+patches as needed.
+
+Thanks Rafael for all your hard work on this and putting up with my
+nagging. ;)
 
 Kevin
-
-> The problem with the put_sync isn't the notifier.  If you leave it
-> where you've got it now, you'll end up invoking a callback at a time
-> when the driver thinks it no longer controls the device but the
-> driver-model core still thinks it does.  You certainly want to do the
->
-> 	dev->driver = NULL;
->
-> first.
->
-> Alan Stern
