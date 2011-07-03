@@ -1,15 +1,17 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/7] fault-injection: notifier error injection
-Date: Sun, 3 Jul 2011 19:16:26 +0200
-Message-ID: <20110703171626.GG21127__12281.4576760449$1309713677$gmane$org@elf.ucw.cz>
-References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
-	<1309702581-16863-4-git-send-email-akinobu.mita@gmail.com>
+Subject: Re: [patch 1/1] [PATCH] include storage keys in
+	hibernation image.
+Date: Sun, 3 Jul 2011 19:46:16 +0200
+Message-ID: <20110703174616.GB26790__24345.3215611682$1309715314$gmane$org@elf.ucw.cz>
+References: <20110608074523.211912903@de.ibm.com>
+	<201106121441.35059.rjw@sisk.pl> <20110614105001.2f991377@mschwide>
+	<201106142250.15041.rjw@sisk.pl> <20110615093629.07f01779@mschwide>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1309702581-16863-4-git-send-email-akinobu.mita@gmail.com>
+In-Reply-To: <20110615093629.07f01779@mschwide>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,21 +21,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, linux-pm@lists.linux-foundation.org
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
+Hi!
 
-> +	for (action = enb->actions; action->name; action++) {
-> +		struct dentry *file = debugfs_create_int(action->name, mode,
-> +						enb->dir, &action->error);
-> +
-> +		if (!file) {
-> +			debugfs_remove_recursive(enb->dir);
-> +			return -ENOMEM;
-> +		}
+> > I think, however, that we really should try to merge them.  The only
+> > difference seems to be how the additionally allocated pages will be populated
+> > and what's going to happen to their contents during restore.
+> > 
+> > ACPI will simply copy the NVS memory to those pages, while S390 will save
+> > the relevant storage key bits in there.
+> 
+> One complication to keep in mind is that we need to know which storage key
+> goes to which page frame. We need something like the orig_bm/copy_bm or
+> we'd have to store the pfn with the key. Simply storing the key for every
+> page will make the array unnecessarily big.
 
-Few lines how this work would be welcome...?
+How big is the overhead? In percent / in megabytes?
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
