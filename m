@@ -1,16 +1,15 @@
 From: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: Re: [PATCH 1/7] pm: improve error code of
-	pm_notifier_call_chain()
-Date: Mon, 4 Jul 2011 14:32:44 +0900
-Message-ID: <CAC5umyibWo===0Lr5Wz2moOvnf0qiAvFLo4--sLCRmx4sJrdRA__9276.21845989979$1309757630$gmane$org@mail.gmail.com>
+Subject: Re: [PATCH 3/7] fault-injection: notifier error injection
+Date: Mon, 4 Jul 2011 14:35:04 +0900
+Message-ID: <CAC5umyhKafTgUe6T2vfLupwmBwt5COj6X2nUH2b5ekhzQNi5mg__46937.9361290068$1309757841$gmane$org@mail.gmail.com>
 References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
-	<1309702581-16863-2-git-send-email-akinobu.mita@gmail.com>
-	<20110703171539.GF21127@elf.ucw.cz>
+	<1309702581-16863-4-git-send-email-akinobu.mita@gmail.com>
+	<20110703171626.GG21127@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110703171539.GF21127@elf.ucw.cz>
+In-Reply-To: <20110703171626.GG21127@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,19 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-s390@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 2011/7/4 Pavel Machek <pavel@ucw.cz>:
-> On Sun 2011-07-03 23:16:15, Akinobu Mita wrote:
->> This enables pm_notifier_call_chain() to get the actual error code
->> in the callback rather than always assume -EINVAL by converting all
->> PM notifier calls to return encapsulate error code with
->> notifier_from_errno().
->>
->> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
->> Cc: Pavel Machek <pavel@ucw.cz>
 >
-> Nothing obviously wrong here.
+>> + =A0 =A0 for (action =3D enb->actions; action->name; action++) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 struct dentry *file =3D debugfs_create_int(act=
+ion->name, mode,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 enb->dir, &action->error);
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (!file) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 debugfs_remove_recursive(enb->=
+dir);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 }
+>
+> Few lines how this work would be welcome...?
 
-Thanks. Can I add your ACK for this patch?
+OK, I'll add a comment like below.
+
+/*
+ * Create debugfs r/w file containing action->error. If notifier call
+ * chain is called with action->val, it will fail with the error code
+ */
