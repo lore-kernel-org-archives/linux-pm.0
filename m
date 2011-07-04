@@ -1,16 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v3 1/3] PM: Introduce DEVFREQ: generic DVFS
- framework with device-specific OPPs
-Date: Mon, 4 Jul 2011 17:34:12 +0900
-Message-ID: <CAJ0PZbSBCK96uw5x_o6ZsMtvFo4U5Hexe10JoaJfPQisLbAshg__16652.6983761743$1309768521$gmane$org@mail.gmail.com>
-References: <1306471995-4048-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107022356.24952.rjw@sisk.pl>
-Reply-To: myungjoo.ham@gmail.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 00/11] PM QoS: add a per-device wake-up
+	latency constraint class
+Date: Mon, 4 Jul 2011 10:38:42 +0200
+Message-ID: <201107041038.42716.rjw__43581.2324205928$1309768703$gmane$org@sisk.pl>
+References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
+	<201107022120.47221.rjw@sisk.pl>
+	<62b1cfbe626e329338b9f0a9b69ef2d3@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107022356.24952.rjw@sisk.pl>
+In-Reply-To: <62b1cfbe626e329338b9f0a9b69ef2d3@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,177 +20,154 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Vishwanath Sripathy <vishwanath.bs@ti.com>
+Cc: markgross@thegnar.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet-XID <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMS83LzMgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPjoKPiBIaSwKPgo+IEknbSBu
-b3Qgc3VyZSBpZiBzcGVsbGluZyBERVZGUkVRIGluIHRoZSBrZXJuZWxkb2MgY29tbWVudHMgd2l0
-aCBjYXBpdGFscyBpcwo+IGEgZ29vZCBpZGVhLCBpdCBsb29rcyBraW5kIG9mIG9kZC4gwqBJJ20g
-bm90IHN1cmUgd2hhdCB3b3VsZCBiZSBsb29rIGJldHRlciwKPiB0aG91Z2guCgpVbW0uLiB3aGF0
-IGFib3V0ICJkZXZmcmVxIiB1c2luZyBhbGwgbm9uLWNhcGl0YWxzPyBJdCBsb29rcyBmaW5lIHRv
-IG1lIGFzIHdlbGwuCgo+Cj4gT24gRnJpZGF5LCBNYXkgMjcsIDIwMTEsIE15dW5nSm9vIEhhbSB3
-cm90ZToKPgo+IC4uLgo+PiArLyoqCj4+ICsgKiBkZXZmcmVxX21vbml0b3IoKSAtIFJlZ3VsYXJs
-eSBydW4gZGV2ZnJlcV9kbygpIGFuZCBzdXBwb3J0IGRldmljZSBERVZGUkVRIHRpY2tsZS4KPgo+
-IEknZCBzYXkgInBlcmlvZGljYWxseSIgaXN0ZWFkIG9mICJyZWd1bGFybHkiLgoKWWVzLCB0aGF0
-IGlzIHRoZSBwcm9wZXIgdGVybS4gVGhhbmtzLgoKPgo+PiArICogQHdvcms6IHRoZSB3b3JrIHN0
-cnVjdCB1c2VkIHRvIHJ1biBkZXZmcmVxX21vbml0b3IgcGVyaW9kaWNhbGx5Lgo+Cj4gQWxzbyBw
-bGVhc2Ugc2F5IHNvbWV0aGluZyBtb3JlIGFib3V0IHRoZSAidGlja2xlIiB0aGlua2cgaGVyZS4K
-ClN1cmUuCgo+Cj4+ICsgKi8KPj4gK3N0YXRpYyB2b2lkIGRldmZyZXFfbW9uaXRvcihzdHJ1Y3Qg
-d29ya19zdHJ1Y3QgKndvcmspCj4+ICt7Cj4+ICsgwqAgwqAgc3RydWN0IGRldmZyZXEgKmRldmZy
-ZXE7Cj4+ICsgwqAgwqAgaW50IGVycm9yOwo+PiArIMKgIMKgIGJvb2wgY29udGludWVfcG9sbGlu
-ZyA9IGZhbHNlOwo+PiArIMKgIMKgIHN0cnVjdCBkZXZmcmVxICp0b19yZW1vdmUgPSBOVUxMOwo+
-PiArCj4+ICsgwqAgwqAgbXV0ZXhfbG9jaygmZGV2ZnJlcV9saXN0X2xvY2spOwo+PiArCj4+ICsg
-wqAgwqAgbGlzdF9mb3JfZWFjaF9lbnRyeShkZXZmcmVxLCAmZGV2ZnJlcV9saXN0LCBub2RlKSB7
-Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgLyogUmVtb3ZlIHRoZSBkZXZmcmVxIGVudHJ5IHRoYXQg
-ZmFpbGVkICovCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgaWYgKHRvX3JlbW92ZSkgewo+PiArIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGxpc3RfZGVsKCZ0b19yZW1vdmUtPm5vZGUpOwo+
-PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGtmcmVlKHRvX3JlbW92ZSk7Cj4+ICsg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgdG9fcmVtb3ZlID0gTlVMTDsKPj4gKyDCoCDC
-oCDCoCDCoCDCoCDCoCB9Cj4+ICsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCAvKgo+PiArIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgKiBJZiB0aGUgZGV2aWNlIGlzIHRpY2tsZWQgYW5kIHRoZSB0aWNrbGUg
-ZHVyYXRpb24gaXMgbGVmdCwKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCogZG8gbm90IGNoYW5n
-ZSB0aGUgZnJlcXVlbmN5IGZvciBhIHdoaWxlCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAqLwo+
-PiArIMKgIMKgIMKgIMKgIMKgIMKgIGlmIChkZXZmcmVxLT50aWNrbGUpIHsKPj4gKyDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBjb250aW51ZV9wb2xsaW5nID0gdHJ1ZTsKPj4gKyDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkZXZmcmVxLT50aWNrbGUtLTsKPj4gKwo+PiArIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIC8qCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAqIElmIHRoZSB0aWNrbGUgaXMgZW5kaW5nIGFuZCB0aGUgZGV2aWNlIGlzIG5v
-dCBnb2luZwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgKiB0byBwb2xsLCBm
-b3JjZSB0aGUgZGV2aWNlIHRvIHBvbGwgbmV4dCB0aW1lIHNvIHRoYXQKPj4gKyDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCogaXQgY2FuIHJldHVybiB0byB0aGUgb3JpZ2luYWwgZnJl
-cXVlbmN5IGFmdGVyd2FyZHMuCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAq
-IEhvd2V2ZXIsIG5vbi1wb2xsaW5nIGRldmljZSB3aWxsIGhhdmUgMCBwb2xsaW5nX21zLAo+PiAr
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgKiBpdCB3aWxsIG5vdCBwb2xsIGFnYWlu
-IGxhdGVyLgo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgKi8KPj4gKyDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpZiAoZGV2ZnJlcS0+dGlja2xlID09IDAgJiYgZGV2
-ZnJlcS0+bmV4dF9wb2xsaW5nID09IDApCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgZGV2ZnJlcS0+bmV4dF9wb2xsaW5nID0gMTsKPj4gKwo+PiArIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGNvbnRpbnVlOwo+PiArIMKgIMKgIMKgIMKgIMKgIMKg
-IH0KPj4gKwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIC8qIFRoaXMgZGV2aWNlIGRvZXMgbm90IHJl
-cXVpcmUgcG9sbGluZyAqLwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIGlmIChkZXZmcmVxLT5uZXh0
-X3BvbGxpbmcgPT0gMCkKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBjb250aW51
-ZTsKPj4gKwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIGNvbnRpbnVlX3BvbGxpbmcgPSB0cnVlOwo+
-PiArCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgaWYgKGRldmZyZXEtPm5leHRfcG9sbGluZyA9PSAx
-KSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgLyogVGhpcyBkZXZpY2UgaXMg
-cG9sbGluZyB0aGlzIHRpbWUgKi8KPgo+IEknZCByZW1vdmUgdGhpcyBjb21tZW50LCBpdCdzIGNv
-bmZ1c2luZyBJTU8uIMKgQmVzaWRlcywgaXQgbWF5IGJlIGJldHRlcgo+IHRvIHN0cnVjdHVyZSB0
-aGUgY29kZSBsaWtlIHRoaXM6Cj4KPiBpZiAoZGV2ZnJlcS0+bmV4dF9wb2xsaW5nLS0gPT0gMSkg
-ewo+IH0KPgo+IGFuZCB0aGVuIHlvdSB3b3VsZG4ndCBuZWVkIHRoZSAiZWxzZSIgYXQgYWxsLgoK
-T2ssIEknbGwgdHJ5IHRoYXQgc3R5bGUuCgo+Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgZXJyb3IgPSBkZXZmcmVxX2RvKGRldmZyZXEpOwo+PiArIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIGlmIChlcnJvciAmJiBlcnJvciAhPSAtRUFHQUlOKSB7Cj4+ICsgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgLyoKPj4gKyDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCogUmVtb3ZlIGEgZGV2ZnJlcSB3aXRoIGVy
-cm9yLiBIb3dldmVyLAo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgKiBXZSBjYW5ub3QgcmVtb3ZlIGl0IHJpZ2h0IGhlcmUgYmVjYXVzZSB0aGUKPgo+IENv
-bW1hIGFmdGVyICJoZXJlIiwgcGxlYXNlLgoKIldlIiBzaG91bGQgYmUgIndlIiBoZXJlLCBidXQg
-bm8gY29tbWEgdGhlcmUgdGhvdWdoOgpodHRwOi8vb3dsLmVuZ2xpc2gucHVyZHVlLmVkdS9vd2wv
-cmVzb3VyY2UvNjA3LzAyLwoKSG93ZXZlciwgIkhvd2V2ZXIsIGJlY2F1c2UgdGhlIC4uLi4uIGFi
-b3ZlLCB3ZSBjYW5ub3QgcmVtb3ZlIGl0IHJpZ2h0CmhlcmUiIGlzIGNvcnJlY3QuCgo+Cj4+ICsg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAqIGRldmZyZXEgcG9p
-bnRlciBpcyBnb2luZyB0byBiZSB1c2VkIGJ5Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAqIGxpc3RfZm9yX2VhY2hfZW50cnkgYWJvdmUuIFRodXMsIGl0
-IGlzCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAqIHJl
-bW92ZWQgYWZ0ZXJ3YXJkcy4KPgo+IFdoeSBkb24ndCB5b3UgdXNlIGxpc3RfZm9yX2VhY2hfZW50
-cnlfc2FmZSgpLCB0aGVuPwoKQWguLiB0aGF0J3MgYSBnb29kIGlkZWEuIFRoYW5rcyEgTm93LCBJ
-IGNhbiByZW9yZ2FuaXplIHRoaXMgb25lLgoKPgo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgKi8KPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCB0b19yZW1vdmUgPSBkZXZmcmVxLT5kZXY7Cj4+ICsgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZGV2X2VycihkZXZmcmVxLT5kZXYsICJkZXZm
-cmVxX2RvIGVycm9yKCVkKS4gIgo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgICJERVZGUkVRIGlzIHJlbW92ZWQgZnJvbSB0aGUgZGV2aWNl
-XG4iLAo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIGVycm9yKTsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCBjb250aW51ZTsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCB9Cj4+ICsg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZGV2ZnJlcS0+bmV4dF9wb2xsaW5nID0gRElW
-X1JPVU5EX1VQKAo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGRldmZyZXEtPnByb2ZpbGUtPnBvbGxpbmdfbXMsCj4+
-ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgREVWRlJFUV9JTlRFUlZBTCk7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgfSBl
-bHNlIHsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCAvKiBUaGUgZGV2aWNlIHdp
-bGwgcG9sbCBsYXRlciB3aGVuIG5leHRfcG9sbGluZyA9IDEgKi8KPj4gKyDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCBkZXZmcmVxLT5uZXh0X3BvbGxpbmctLTsKPj4gKyDCoCDCoCDCoCDC
-oCDCoCDCoCB9Cj4+ICsgwqAgwqAgfQo+PiArCj4+ICsgwqAgwqAgaWYgKHRvX3JlbW92ZSkgewo+
-PiArIMKgIMKgIMKgIMKgIMKgIMKgIGxpc3RfZGVsKCZ0b19yZW1vdmUtPm5vZGUpOwo+PiArIMKg
-IMKgIMKgIMKgIMKgIMKgIGtmcmVlKHRvX3JlbW92ZSk7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAg
-dG9fcmVtb3ZlID0gTlVMTDsKPj4gKyDCoCDCoCB9Cj4+ICsKPj4gKyDCoCDCoCBpZiAoY29udGlu
-dWVfcG9sbGluZykgewo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIHBvbGxpbmcgPSB0cnVlOwo+PiAr
-IMKgIMKgIMKgIMKgIMKgIMKgIHF1ZXVlX2RlbGF5ZWRfd29yayhkZXZmcmVxX3dxLCAmZGV2ZnJl
-cV93b3JrLAo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgbXNlY3NfdG9famlmZmllcyhERVZGUkVRX0lOVEVSVkFMKSk7Cj4+ICsgwqAgwqAgfSBlbHNl
-IHsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCBwb2xsaW5nID0gZmFsc2U7Cj4+ICsgwqAgwqAgfQo+
-Cj4gT0ssIHNvIHdoeSBleGFjdGx5IGNvbnRpbnVlX3BvbGxpbmcgaXMgbmVlZGVkPyDCoEl0IHNl
-ZW1zIHlvdSBtaWdodCBzaXBseSB1c2UKPiAicG9sbGluZyIgaW5zdGVhZCBvZiBpdCBhYm92ZS4K
-ClRoZSBwdXJwb3NlIG9mIGNvbnRpbnVlX3BvbGxpbmcgc2VlbXMgdG8gZGlzYXBwZWFyIGluIHRo
-ZSBtaWRkbGUgb2YKZGV2ZWxvcG1lbnQuIEknbGwgcmVtb3ZlIGl0LgoKPgo+PiArCj4+ICsgwqAg
-wqAgbXV0ZXhfdW5sb2NrKCZkZXZmcmVxX2xpc3RfbG9jayk7Cj4+ICt9Cj4gLi4uCj4+ICsvKioK
-Pj4gKyAqIGRldmZyZXFfdXBkYXRlKCkgLSBOb3RpZnkgdGhhdCB0aGUgZGV2aWNlIE9QUCBoYXMg
-YmVlbiBjaGFuZ2VkLgo+PiArICogQGRldjogwqAgwqAgdGhlIGRldmljZSB3aG9zZSBPUFAgaGFz
-IGJlZW4gY2hhbmdlZC4KPj4gKyAqIEBtYXlfbm90X2V4aXN0OiDCoCBkbyBub3QgcHJpbnQgZXJy
-b3IgbWVzc2FnZSBldmVuIGlmIHRoZSBkZXZpY2UKPj4gKyAqIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIGRvZXMgbm90IGhhdmUgZGV2ZnJlcSBlbnRyeS4KPgo+IFRoaXMgYXJndW1lbnQgaXNu
-J3QgdXNlZCBhbnkgbW9yZS4KCkFoLi4geWVzLiBzdXJlLgoKPgo+PiArICovCj4+ICtpbnQgZGV2
-ZnJlcV91cGRhdGUoc3RydWN0IGRldmljZSAqZGV2KQo+PiArewo+PiArIMKgIMKgIHN0cnVjdCBk
-ZXZmcmVxICpkZXZmcmVxOwo+PiArIMKgIMKgIGludCBlcnIgPSAwOwo+PiArCj4+ICsgwqAgwqAg
-bXV0ZXhfbG9jaygmZGV2ZnJlcV9saXN0X2xvY2spOwo+PiArCj4+ICsgwqAgwqAgZGV2ZnJlcSA9
-IGZpbmRfZGV2aWNlX2RldmZyZXEoZGV2KTsKPj4gKyDCoCDCoCBpZiAoSVNfRVJSKGRldmZyZXEp
-KSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgZXJyID0gUFRSX0VSUihkZXZmcmVxKTsKPj4gKyDC
-oCDCoCDCoCDCoCDCoCDCoCBnb3RvIG91dDsKPj4gKyDCoCDCoCB9Cj4+ICsKPj4gKyDCoCDCoCBp
-ZiAoZGV2ZnJlcS0+dGlja2xlKSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgLyogSWYgdGhlIG1h
-eCBmcmVxIGF2YWlsYWJsZSBpcyBjaGFuZ2VkLCByZS10aWNrbGUgKi8KPgo+IEl0IHdvdWxkIGJl
-IGdvb2QgdG8gZXhwbGFpbiB3aGF0ICJyZS10aWNrbGUiIG1lYW5zLgoKT2YgY291cnNlLiBJJ2xs
-IGV4cGxhaW4gdGhhdC4KCj4KPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCB1bnNpZ25lZCBsb25nIGZy
-ZXEgPSBkZXZmcmVxLT5wcm9maWxlLT5tYXhfZnJlcTsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCBz
-dHJ1Y3Qgb3BwICpvcHAgPSBvcHBfZmluZF9mcmVxX2Zsb29yKGRldmZyZXEtPmRldiwgJmZyZXEp
-Owo+PiArCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgaWYgKElTX0VSUihvcHApKSB7Cj4+ICsgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZXJyID0gUFRSX0VSUihvcHApOwo+PiArIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGdvdG8gb3V0Owo+PiArIMKgIMKgIMKgIMKgIMKgIMKg
-IH0KPj4gKwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIC8qIE1heCBmcmVxIGF2YWlsYWJsZSBpcyBu
-b3QgY2hhbmdlZCAqLwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIGlmIChkZXZmcmVxLT5wcmV2aW91
-c19mcmVxID09IGZyZXEpCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZ290byBv
-dXQ7Cj4+ICsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCBlcnIgPSBkZXZmcmVxLT5wcm9maWxlLT50
-YXJnZXQoZGV2ZnJlcS0+ZGV2LCBvcHApOwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIGlmICghZXJy
-KQo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGRldmZyZXEtPnByZXZpb3VzX2Zy
-ZXEgPSBmcmVxOwo+Cj4gV2h5IGRvbid0IHdlIHJ1biBkZXZmcmVxX2RvKCkgaW4gdGhpcyBjYXNl
-PwoKV2hlbiB0aGUgbGlzdCBvZiBhdmFpbGFibGUgZnJlcXVlbmNpZXMgaXMgdXBkYXRlZCBhbmQg
-dGhlIGRldmljZSBpcyB0bwpiZSBrZXB0IGF0IGl0cyBtYXhpbXVtIGZyZXF1ZW5jeSwgd2UgZG8g
-bm90IG5lZWQgdG8gcmVldmFsdWF0ZSB0aGUKZGV2aWNlJ3MgYWN0aXZpdGllcyB0byBzZXR1cCB0
-aGUgbmV3IGZyZXF1ZW5jeS4gSW4gc3VjaCBjYXNlcywgd2Ugb25seQpuZWVkIHRvIGtlZXAgaXQg
-YXQgaXRzIG1heGltdW0gZnJldXFlbmN5LiBJZiB0aGUgbWF4aW11bSBmcmVxdWVuY3kgaXMKbm90
-IGNoYW5nZWQsIHdlIGRvbid0IG5lZWQgYW55dGhpbmcgdG8gZG8gKHdoZW4gInRpY2tsaW5nIiBp
-cwpjb21wbGV0ZWQsIGRldmZyZXFfZG8oKSB3aWxsIHJlZXZhbHVhdGUgYXV0b21hdGljYWxseSk7
-IG90aGVyd2lzZSwKdGlja2xpbmcgYWdhaW4gYXQgdGhlIG5ldyBmcmVxdWVuY3kgaXMgbmVlZGVk
-IChyZS10aWNrbGUpLgoKPgo+PiArIMKgIMKgIH0gZWxzZSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAg
-wqAgLyogUmVldmFsdWF0ZSB0aGUgcHJvcGVyIGZyZXF1ZW5jeSAqLwo+PiArIMKgIMKgIMKgIMKg
-IMKgIMKgIGVyciA9IGRldmZyZXFfZG8oZGV2ZnJlcSk7Cj4+ICsgwqAgwqAgfQo+PiArCj4+ICtv
-dXQ6Cj4+ICsgwqAgwqAgbXV0ZXhfdW5sb2NrKCZkZXZmcmVxX2xpc3RfbG9jayk7Cj4+ICsgwqAg
-wqAgcmV0dXJuIGVycjsKPj4gK30KPj4gKwo+Cj4gQWRkIGEga2VybmVsZG9jIGNvbW1lbnQgaGVy
-ZSwgcGxlYXNlLgoKWWVzLiBJJ2xsIGFkZCBvbmUuIChhbmQgZm9yIGFueSBvdGhlciBmdW5jdGlv
-bnMgbWlzc2luZyBrZXJuZWxkb2MgY29tbWVudHMpCgo+Cj4+ICtzdGF0aWMgaW50IF9kZXZmcmVx
-X3RpY2tsZV9kZXZpY2Uoc3RydWN0IGRldmZyZXEgKmRmLCB1bnNpZ25lZCBsb25nIGRlbGF5KQo+
-PiArewo+PiArIMKgIMKgIGludCBlcnIgPSAwOwo+PiArIMKgIMKgIHVuc2lnbmVkIGxvbmcgZnJl
-cTsKPj4gKyDCoCDCoCBzdHJ1Y3Qgb3BwICpvcHA7Cj4+ICsKPj4gKyDCoCDCoCBmcmVxID0gZGYt
-PnByb2ZpbGUtPm1heF9mcmVxOwo+PiArIMKgIMKgIG9wcCA9IG9wcF9maW5kX2ZyZXFfZmxvb3Io
-ZGYtPmRldiwgJmZyZXEpOwo+PiArIMKgIMKgIGlmIChJU19FUlIob3BwKSkKPj4gKyDCoCDCoCDC
-oCDCoCDCoCDCoCByZXR1cm4gUFRSX0VSUihvcHApOwo+PiArCj4+ICsgwqAgwqAgaWYgKGRmLT5w
-cmV2aW91c19mcmVxICE9IGZyZXEpIHsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCBlcnIgPSBkZi0+
-cHJvZmlsZS0+dGFyZ2V0KGRmLT5kZXYsIG9wcCk7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgaWYg
-KCFlcnIpCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZGYtPnByZXZpb3VzX2Zy
-ZXEgPSBmcmVxOwo+PiArIMKgIMKgIH0KPj4gKyDCoCDCoCBpZiAoZXJyKSB7Cj4+ICsgwqAgwqAg
-wqAgwqAgwqAgwqAgZGV2X2VycihkZi0+ZGV2LCAiJXM6IENhbm5vdCBzZXQgZnJlcXVlbmN5Llxu
-IiwgX19mdW5jX18pOwo+PiArIMKgIMKgIH0gZWxzZSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAg
-ZGYtPnRpY2tsZSA9IGRlbGF5Owo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIGRmLT5udW1fdGlja2xl
-Kys7Cj4+ICsgwqAgwqAgfQo+PiArCj4+ICsgwqAgwqAgaWYgKGRldmZyZXFfd3EgJiYgIXBvbGxp
-bmcpIHsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCBwb2xsaW5nID0gdHJ1ZTsKPj4gKyDCoCDCoCDC
-oCDCoCDCoCDCoCBxdWV1ZV9kZWxheWVkX3dvcmsoZGV2ZnJlcV93cSwgJmRldmZyZXFfd29yaywK
-Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBtc2Vjc190b19q
-aWZmaWVzKERFVkZSRVFfSU5URVJWQUwpKTsKPj4gKyDCoCDCoCB9Cj4+ICsKPj4gKyDCoCDCoCBy
-ZXR1cm4gZXJyOwo+PiArfQo+Cj4gVGhhbmtzLAo+IFJhZmFlbAo+CgpUaGFuayB5b3Ugc28gbXVj
-aCBmb3IgdGhlIGNvbW1lbnRzIQoKQ2hlZXJzIQoKLSBNeXVuZ0pvbwoKLS0gCk15dW5nSm9vIEhh
-bSAo7ZWo66qF7KO8KSwgUGguRC4KTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwKRGlnaXRh
-bCBNZWRpYSBhbmQgQ29tbXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKU2Ftc3VuZyBFbGVjdHJv
-bmljcwpjZWxsOiA4Mi0xMC02NzE0LTI4NTgKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
-bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Monday, July 04, 2011, Vishwanath Sripathy wrote:
+> > -----Original Message-----
+> > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+> > Sent: Sunday, July 03, 2011 12:51 AM
+> > To: jean.pihet@newoldbits.com
+> > Cc: Paul Walmsley; Kevin Hilman; Magnus Damm; Linux PM mailing list;
+> > linux-omap@vger.kernel.org; markgross@thegnar.org; Jean Pihet
+> > Subject: Re: [PATCH v2 00/11] PM QoS: add a per-device wake-up
+> > latency constraint class
+> >
+> > Hi,
+> >
+> > On Thursday, June 30, 2011, jean.pihet@newoldbits.com wrote:
+> > > From: Jean Pihet <j-pihet@ti.com>
+> > >
+> > > This patch set is in an RFC state, for review and comments.
+> >
+> > First off, I'm sorry I couldn't review the patchset earlier.
+> >
+> > > In order to implement the new class in PM QoS the following
+> > changes have been
+> > > made:
+> > >
+> > > 1. Add a new PM QoS class for device wake-up constraints
+> > > (PM_QOS_DEV_WAKEUP_LATENCY).
+> > > Due to the per-device nature of the new class the constraints
+> > lists are stored
+> > > inside the device dev_pm_info struct instead of the internal per-
+> > class
+> > > constraints lists.
+> > > The new class is only available from kernel drivers and so is not
+> > exported to
+> > > user space.
+> >
+> > Have you considered a design in which multiple devices may use the
+> > same
+> > list of constraints?  It seems plausible that the constraints will
+> > be the
+> > same, for example, for all Ethernet adapters in the system, in which
+> > case it
+> > will be wasteful to duplicate the list of constraints for each of
+> > them.
+> >
+> > > 2. Added a notification of device insertion/removal from the
+> > device PM framework
+> > > to PM QoS.
+> > > This allows to init/de-init the per-device constraints list upon
+> > device insertion
+> > > and removal.
+> > > RFC state for comments and review, barely tested
+> >
+> > I need to have a look at the details, but in principle this means
+> > that the
+> > per-device lists will be usable only after the devices have been
+> > registered.
+> > In particular, this means that it will only be possible to add new
+> > constraints
+> > after registering the device, which may be too late for some use
+> > cases.
+> >
+> > > 3. Make the pm_qos_add_request API more generic by using a
+> > > struct pm_qos_parameters parameter. This allows easy extension in
+> > the future.
+> > >
+> > > 4. Upon a change of the strongest constraint in the
+> > PM_QOS_DEV_WAKEUP_LATENCY
+> > > class a notification chain mechanism is used to take action on the
+> > system.
+> > > This is the proposed way to have PM QoS and the platform dependant
+> > code to
+> > > interact with each other, cf. 4 below.
+> >
+> > I guess you mean 5.?
+> >
+> > I think we will need something in addition to the notifier here.
+> > For example,
+> > I wouldn't like any core code, like runtime PM or cpuidle, to have
+> > to register
+> > a notifier with PM QoS.
+> >
+> > > The notification mechanism now passes the constraint request
+> > struct ptr in
+> > > order for the notifier callback to have access to the full set of
+> > constraint
+> > > data, e.g. the struct device ptr.
+> > >
+> > > 5. cpuidle interaction with the OMAP3 cpuidle handler
+> > > Since cpuidle is a CPU centric framework it decides the MPU next
+> > power state
+> > > based on the MPU exit_latency and target_residency figures.
+> > >
+> > > The rest of the power domains get their next power state
+> > programmed from
+> > > the PM_QOS_DEV_WAKEUP_LATENCY class of the PM QoS framework, via
+> > the device
+> > > wake-up latency constraints.
+> > >
+> > > Note: the exit_latency and target_residency figures of the MPU
+> > include the MPU
+> > > itself and the peripherals needed for the MPU to execute
+> > instructions (e.g.
+> > > main memory, caches, IRQ controller, MMU etc).
+> > > Some of those peripherals can belong to other power domains than
+> > the MPU
+> > > subsystem and so the corresponding latencies must be included in
+> > those figures.
+> > >
+> > > 6. Update the pm_qos_add_request callers to the generic API
+> > >
+> > > 7. Minor clean-ups and rename of struct fields
+> > >
+> > > Questions:
+> > > 1. How to retrieve the device ptr from a given device driver in
+> > order to add
+> > > a constraint on it?
+> > > 2. The device struct has recently been extended with the power
+> > domain
+> > > information. Can this be used to apply the constraints on power
+> > domains?
+> >
+> > Yes, it can in principle, but that will require some work.
+> >
+> > > On-going developments, patches in preparation:
+> > > 1. write Documentation for the new PM QoS class
+> >
+> > I'd wait with that until the code has settled.
+> >
+> > > 2. validate the constraints framework on OMAP4 HW (done on OMAP3)
+> > > 3. refine the power domains wake-up latency and the cpuidle
+> > figures
+> > >
+> > > Based on the master branch of the linux-omap git tree (3.0.0-rc3).
+> > Compile
+> > > tested using OMAP and x86 generic defconfigs.
+> > > Tested on OMAP3 Beagleboard (ES2.x) with full RETention and OFF
+> > modes.
+> >
+> > More detailed comments will follow.
+> Thanks Rafael for reviewing the patches. Jean is currently on summer
+> vacation for 2 weeks and will take this discussion forward once he is back
+> to work on July 18.
+
+OK, thanks for letting me know.
+
+Regards,
+Rafael
