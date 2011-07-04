@@ -1,16 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v3 2/3] PM / DEVFREQ: add example governors
-Date: Mon, 4 Jul 2011 10:37:00 +0900
-Message-ID: <CAJ0PZbQuiwkW-Z+1Wrqmr3r_U+LdWS312RggkkjFBGFHES4wCw@mail.gmail.com>
-References: <1306471995-4048-1-git-send-email-myungjoo.ham@samsung.com>
-	<1306471995-4048-2-git-send-email-myungjoo.ham@samsung.com>
-	<201107022358.58319.rjw@sisk.pl>
-Reply-To: myungjoo.ham@gmail.com
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Re: [PATCH 1/7] pm: improve error code of
+	pm_notifier_call_chain()
+Date: Mon, 4 Jul 2011 14:32:44 +0900
+Message-ID: <CAC5umyibWo===0Lr5Wz2moOvnf0qiAvFLo4--sLCRmx4sJrdRA__9276.21845989979$1309757630$gmane$org@mail.gmail.com>
+References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
+	<1309702581-16863-2-git-send-email-akinobu.mita@gmail.com>
+	<20110703171539.GF21127@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107022358.58319.rjw@sisk.pl>
+In-Reply-To: <20110703171539.GF21127@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,43 +20,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-s390@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgoyMDExLzcvMyBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+Ogo+IEhpLAo+
-Cj4gT24gRnJpZGF5LCBNYXkgMjcsIDIwMTEsIE15dW5nSm9vIEhhbSB3cm90ZToKPj4gVGhyZWUg
-Q1BVRlJFUS1saWtlIGdvdmVybm9ycyBhcmUgcHJvdmlkZWQgYXMgZXhhbXBsZXMuCj4+Cj4+IHBv
-d2Vyc2F2ZTogdXNlIHRoZSBsb3dlc3QgZnJlcXVlbmN5IHBvc3NpYmxlLiBUaGUgdXNlciAoZGV2
-aWNlKSBzaG91bGQKPj4gc2V0IHRoZSBwb2xsaW5nX21zIGFzIDAgYmVjYXVzZSBwb2xsaW5nIGlz
-IHVzZWxlc3MgZm9yIHRoaXMgZ292ZXJub3IuCj4+Cj4+IHBlcmZvcm1hbmNlOiB1c2UgdGhlIGhp
-Z2hlc3QgZnJlcWV1bmN5IHBvc3NpYmxlLiBUaGUgdXNlciAoZGV2aWNlKQo+PiBzaG91bGQgc2V0
-IHRoZSBwb2xsaW5nX21zIGFzIDAgYmVjYXVzZSBwb2xsaW5nIGlzIHVzZWxlc3MgZm9yIHRoaXMK
-Pj4gZ292ZXJub3IuCj4+Cj4+IHNpbXBsZV9vbmRlbWFuZDogc2ltcGxpZmllZCB2ZXJzaW9uIG9m
-IENQVUZSRVEncyBPTkRFTUFORCBnb3Zlcm5vci4KPj4KPj4gV2hlbiBhIHVzZXIgdXBkYXRlcyBP
-UFAgZW50cmllcyAoZW5hYmxlL2Rpc2FibGUvYWRkKSwgT1BQIGZyYW1ld29yawo+PiBhdXRvbWF0
-aWNhbGx5IG5vdGlmaWVzIERFVkZSRVEgdG8gdXBkYXRlIG9wZXJhdGluZyBmcmVxdWVuY3kKPj4g
-YWNjb3JkaW5nbHkuIFRodXMsIERFVkZSRVEgdXNlcnMgKGRldmljZSBkcml2ZXJzKSBkbyBub3Qg
-bmVlZCB0byB1cGRhdGUKPj4gREVWRlJFUSBtYW51YWxseSB3aXRoIE9QUCBlbnRyeSB1cGRhdGVz
-IG9yIHNldCBwb2xsaW5nX21zIGZvciBwb3dlcnNhdmUKPj4gLCBwZXJmb3JtYW5jZSwgb3IgYW55
-IG90aGVyICJzdGF0aWMiIGdvdmVybm9ycy4KPj4KPj4gU2lnbmVkLW9mZi1ieTogTXl1bmdKb28g
-SGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+Cj4+IFNpZ25lZC1vZmYtYnk6IEt5dW5nbWlu
-IFBhcmsgPGt5dW5nbWluLnBhcmtAc2Ftc3VuZy5jb20+CltdCj4+ICsKPj4gKyDCoCDCoCAvKiBT
-ZXQgdGhlIGRlc2lyZWQgZnJlcXVlbmN5IGJhc2VkIG9uIHRoZSBsb2FkICovCj4+ICsgwqAgwqAg
-YSA9ICh1bnNpZ25lZCBsb25nIGxvbmcpIHN0YXQuYnVzeV90aW1lICogc3RhdC5jdXJyZW50X2Zy
-ZXF1ZW5jeTsKPgo+IFdoYXQncyB0aGUgcHVycG9zZSBvZiB0aGUgY29udmVyc2lvbj8KCkFzc3Vt
-aW5nIHRoYXQgdGhlIHdvcmsgc3BlZWQgb2YgYSBkZXZpY2UgaXMgcHJvcG9ydGlvbmFsIHRvIGl0
-cwpmcmVxdWVuY3ksIGl0IG1lYXN1cmVzIHRoZSBhbW91bnQgb2Ygd29yayBkb25lLgpJdCdzIHRp
-bWUgKiB3b3JrL3RpbWUuIEZvciBleGFtcGxlLCBkdXJpbmcgdGhlIGxhc3QgMTAgc2Vjb25kLCBp
-ZiB0aGUKYnVzeV90aW1lIHdhcyA1IHNlYyBhbmQgZnJlcXVlbmN5IHdhcyAxME1IeiwKaXQncyAi
-NTBNIiwgd2hpY2ggaXMgc2FtZSBhcyAyME1IeiBhbmQgMi41IHNlYy4KCj4KPj4gKyDCoCDCoCBi
-ID0gZGl2X3U2NChhLCBzdGF0LnRvdGFsX3RpbWUpOwo+PiArIMKgIMKgIGIgKj0gMTAwOwo+PiAr
-IMKgIMKgIGIgPSBkaXZfdTY0KGIsIChERlNPX1VQVEhSRVNIT0xEIC0gREZTT19ET1dORElGRkVS
-RU5DVElBTCAvIDIpKTsKPj4gKyDCoCDCoCAqZnJlcSA9ICh1bnNpZ25lZCBsb25nKSBiOwo+PiAr
-Cj4+ICsgwqAgwqAgcmV0dXJuIDA7Cj4+ICt9Cj4KPiBSYWZhZWwKPgoKCgotLSAKTXl1bmdKb28g
-SGFtICjtlajrqoXso7wpLCBQaC5ELgpNb2JpbGUgU29mdHdhcmUgUGxhdGZvcm0gTGFiLApEaWdp
-dGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBCdXNpbmVzcwpTYW1zdW5nIEVsZWN0
-cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQtMjg1OApfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMu
-bGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+2011/7/4 Pavel Machek <pavel@ucw.cz>:
+> On Sun 2011-07-03 23:16:15, Akinobu Mita wrote:
+>> This enables pm_notifier_call_chain() to get the actual error code
+>> in the callback rather than always assume -EINVAL by converting all
+>> PM notifier calls to return encapsulate error code with
+>> notifier_from_errno().
+>>
+>> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+>> Cc: Pavel Machek <pavel@ucw.cz>
+>
+> Nothing obviously wrong here.
+
+Thanks. Can I add your ACK for this patch?
