@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 3/3] PM / DEVFREQ: add sysfs interface
-	(including user tickling)
-Date: Mon, 4 Jul 2011 10:48:46 +0200
-Message-ID: <201107041048.46969.rjw__38896.7670187869$1309769315$gmane$org@sisk.pl>
+Subject: Re: [PATCH v3 1/3] PM: Introduce DEVFREQ: generic DVFS
+	framework with device-specific OPPs
+Date: Mon, 4 Jul 2011 10:57:43 +0200
+Message-ID: <201107041057.43744.rjw__6578.66167971424$1309769851$gmane$org@sisk.pl>
 References: <1306471995-4048-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107030013.10438.rjw@sisk.pl>
-	<CAJ0PZbQJadxCu=b4JWun29gdPpdsJPiP0WdqmSJK5px5nQRpgA@mail.gmail.com>
+	<201107022356.24952.rjw@sisk.pl>
+	<CAJ0PZbSBCK96uw5x_o6ZsMtvFo4U5Hexe10JoaJfPQisLbAshg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbQJadxCu=b4JWun29gdPpdsJPiP0WdqmSJK5px5nQRpgA@mail.gmail.com>
+In-Reply-To: <CAJ0PZbSBCK96uw5x_o6ZsMtvFo4U5Hexe10JoaJfPQisLbAshg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,379 +25,282 @@ Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-
 List-Id: linux-pm@vger.kernel.org
 
 On Monday, July 04, 2011, MyungJoo Ham wrote:
-> Hello,
-> 
 > 2011/7/3 Rafael J. Wysocki <rjw@sisk.pl>:
+> > Hi,
+> >
+> > I'm not sure if spelling DEVFREQ in the kerneldoc comments with capitals is
+> > a good idea, it looks kind of odd.  I'm not sure what would be look better,
+> > though.
+> 
+> Umm.. what about "devfreq" using all non-capitals? It looks fine to me as well.
+
+Works for me.
+
+> >
 > > On Friday, May 27, 2011, MyungJoo Ham wrote:
-> >> 1. System-wide sysfs interface
-> >> - tickle_all  R: number of tickle_all execution
-> >>               W: tickle all devfreq devices
-> >> - min_interval        R: devfreq monitoring base interval in ms
-> >> - monitoring  R: shows whether devfreq monitoring is active or
-> >>   not.
-> >>
-> >> 2. Device specific sysfs interface
-> >> - tickle      R: number of tickle execution for the device
-> >>               W: tickle the device
-> >>
-> >> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> >>
-> >> --
-> >> Changed from v2
-> >> - add ABI entries for devfreq sysfs interface
-> >> ---
-> >>  Documentation/ABI/testing/sysfs-devices-devfreq |   21 ++++
-> >>  Documentation/ABI/testing/sysfs-power           |   43 ++++++++
-> >>  drivers/base/power/devfreq.c                    |  133 ++++++++++++++++++++++-
-> >>  include/linux/devfreq.h                         |    3 +
-> >>  4 files changed, 199 insertions(+), 1 deletions(-)
-> >>  create mode 100644 Documentation/ABI/testing/sysfs-devices-devfreq
-> >>
-> >> diff --git a/Documentation/ABI/testing/sysfs-devices-devfreq b/Documentation/ABI/testing/sysfs-devices-devfreq
-> >> new file mode 100644
-> >> index 0000000..7f35a64
-> >> --- /dev/null
-> >> +++ b/Documentation/ABI/testing/sysfs-devices-devfreq
-> >> @@ -0,0 +1,21 @@
-> >> +What:                /sys/devices/.../devfreq/
-> >> +Date:                May 2011
-> >> +Contact:     MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> +Description:
-> >> +             The /sys/device/.../devfreq directory will contain files
-> >> +             that provide interfaces to DEVFREQ for a specific device.
-> >> +
-> >> +What:                /sys/devices/.../devfreq/tickle
-> >> +Date:                May 2011
-> >> +Contact:     MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> +Description:
-> >> +             The /sys/devices/.../devfreq/tickle file allows user space
-> >> +             to force the corresponding device to operate at its maximum
-> >> +             operable frequency instaneously and temporarily. After a
-> >> +             designated duration has passed, the operating frequency returns
-> >> +             to normal. When a user reads the tickle entry, it returns
-> >> +             the number of tickle executions for the device. When a user
-> >> +             writes to the tickle entry with the tickle duration in ms,
-> >> +             the effect of device tickling is held for the designated
-> >> +             duration. Note that the duration is rounded-up by
-> >> +             the value DEVFREQ_INTERVAL defined in devfreq.c
-> >> diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-> >> index b464d12..4d8434b 100644
-> >> --- a/Documentation/ABI/testing/sysfs-power
-> >> +++ b/Documentation/ABI/testing/sysfs-power
-> >> @@ -172,3 +172,46 @@ Description:
-> >>
-> >>               Reading from this file will display the current value, which is
-> >>               set to 1 MB by default.
-> >> +
-> >> +What:                /sys/power/devfreq/
-> >> +Date:                May 2011
-> >> +Contact:     MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> +Description:
-> >> +             The /sys/power/devfreq directory will contain files that will
-> >> +             provide a unified interface to the DEVFREQ, a generic DVFS
-> >> +             (dynamic voltage and frequency scaling) framework.
-> >> +
-> >> +What:                /sys/power/devfreq/tickle_all
-> >> +Date:                May 2011
-> >> +Contact:     MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> +Description:
-> >> +             The /sys/power/devfreq/tickle_all file allows user space to
-> >> +             force every device with DEVFREQ to operate at the maximum
-> >> +             frequency of the device instaneously and temporarily. After
-> >> +             a designated delay has passed, the operating frequency returns
-> >> +             to normal. If a user reads the tickle_all entry, it returns
-> >> +             the number of tickle_all executions. When writing to the
-> >> +             tickle_all entry, the user should supply with the duration of
-> >> +             tickle in ms (the "designated delay" mentioned before). Then,
-> >> +             the effect of tickle_all will hold for the denoted duration.
-> >> +             Note that the duration is rounded by the monitoring period
-> >> +             defined by DEVFREQ_INTERVAL in /drivers/base/power/devfreq.c.
-> >> +
-> >> +What:                /sys/power/devfreq/min_interval
-> >> +Date:                May 2011
-> >> +Contact:     MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> +Description:
-> >> +             The /sys/power/devfreq/min_interval file shows the monitoring
-> >> +             period defined by DEVFREQ_INTERVAL in
-> >> +             /drivers/base/power/devfreq.c. The duration of device tickling
-> >> +             is rounded-up by DEVFREQ_INTERVAL.
-> >> +
-> >> +What:                /sys/power/devfreq/monitoring
-> >> +Date:                May 2011
-> >> +Contact:     MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> +Description:
-> >> +             The /sys/power/devfreq/monitoring file shows whether DEVFREQ
-> >> +             is periodically monitoring. Periodic monitoring is activated
-> >> +             if there is a device that wants periodic monitoring for DVFS or
-> >> +             there is a device that is tickled (and the tickling duration is
-> >> +             not yet expired).
-> >> diff --git a/drivers/base/power/devfreq.c b/drivers/base/power/devfreq.c
-> >> index 7648a94..709c138 100644
-> >> --- a/drivers/base/power/devfreq.c
-> >> +++ b/drivers/base/power/devfreq.c
-> >> @@ -40,6 +40,9 @@ static LIST_HEAD(devfreq_list);
-> >>  /* Exclusive access to devfreq_list and its elements */
-> >>  static DEFINE_MUTEX(devfreq_list_lock);
-> >>
-> >> +static struct kobject *devfreq_kobj;
-> >> +static struct attribute_group dev_attr_group;
-> >> +
-> >>  /**
-> >>   * find_device_devfreq() - find devfreq struct using device pointer
-> >>   * @dev:     device pointer used to lookup device DEVFREQ.
-> >> @@ -237,6 +240,8 @@ int devfreq_add_device(struct device *dev, struct devfreq_dev_profile *profile,
-> >>               queue_delayed_work(devfreq_wq, &devfreq_work,
-> >>                                  msecs_to_jiffies(DEVFREQ_INTERVAL));
-> >>       }
-> >> +
-> >> +     sysfs_update_group(&dev->kobj, &dev_attr_group);
 > >
-> > This appears to modify the attributes of the device, but anything like it is
-> > not mentioned in the documentation.  What's up?
+> > ...
+> >> +/**
+> >> + * devfreq_monitor() - Regularly run devfreq_do() and support device DEVFREQ tickle.
+> >
+> > I'd say "periodically" istead of "regularly".
 > 
-> It is mentioned "Documentation/ABI/testing/sysfs-devices-devfreq".
+> Yes, that is the proper term. Thanks.
+> 
+> >
+> >> + * @work: the work struct used to run devfreq_monitor periodically.
+> >
+> > Also please say something more about the "tickle" thinkg here.
+> 
+> Sure.
+> 
+> >
+> >> + */
+> >> +static void devfreq_monitor(struct work_struct *work)
+> >> +{
+> >> +     struct devfreq *devfreq;
+> >> +     int error;
+> >> +     bool continue_polling = false;
+> >> +     struct devfreq *to_remove = NULL;
+> >> +
+> >> +     mutex_lock(&devfreq_list_lock);
+> >> +
+> >> +     list_for_each_entry(devfreq, &devfreq_list, node) {
+> >> +             /* Remove the devfreq entry that failed */
+> >> +             if (to_remove) {
+> >> +                     list_del(&to_remove->node);
+> >> +                     kfree(to_remove);
+> >> +                     to_remove = NULL;
+> >> +             }
+> >> +
+> >> +             /*
+> >> +              * If the device is tickled and the tickle duration is left,
+> >> +              * do not change the frequency for a while
+> >> +              */
+> >> +             if (devfreq->tickle) {
+> >> +                     continue_polling = true;
+> >> +                     devfreq->tickle--;
+> >> +
+> >> +                     /*
+> >> +                      * If the tickle is ending and the device is not going
+> >> +                      * to poll, force the device to poll next time so that
+> >> +                      * it can return to the original frequency afterwards.
+> >> +                      * However, non-polling device will have 0 polling_ms,
+> >> +                      * it will not poll again later.
+> >> +                      */
+> >> +                     if (devfreq->tickle == 0 && devfreq->next_polling == 0)
+> >> +                             devfreq->next_polling = 1;
+> >> +
+> >> +                     continue;
+> >> +             }
+> >> +
+> >> +             /* This device does not require polling */
+> >> +             if (devfreq->next_polling == 0)
+> >> +                     continue;
+> >> +
+> >> +             continue_polling = true;
+> >> +
+> >> +             if (devfreq->next_polling == 1) {
+> >> +                     /* This device is polling this time */
+> >
+> > I'd remove this comment, it's confusing IMO.  Besides, it may be better
+> > to structure the code like this:
+> >
+> > if (devfreq->next_polling-- == 1) {
+> > }
+> >
+> > and then you wouldn't need the "else" at all.
+> 
+> Ok, I'll try that style.
+> 
+> >
+> >> +                     error = devfreq_do(devfreq);
+> >> +                     if (error && error != -EAGAIN) {
+> >> +                             /*
+> >> +                              * Remove a devfreq with error. However,
+> >> +                              * We cannot remove it right here because the
+> >
+> > Comma after "here", please.
+> 
+> "We" should be "we" here, but no comma there though:
+> http://owl.english.purdue.edu/owl/resource/607/02/
 
-Yes, it is, sorry.  But it should be under /sys/devices/.../power/ .
+OK, whatever.
+
+> However, "However, because the ..... above, we cannot remove it right
+> here" is correct.
+
+Yes, it is.
 
 > >
-> >>  out:
-> >>       mutex_unlock(&devfreq_list_lock);
-> >>
-> >> @@ -263,6 +268,8 @@ int devfreq_remove_device(struct device *dev)
-> >>               return -EINVAL;
-> >>       }
-> >>
-> >> +     sysfs_remove_group(&dev->kobj, &dev_attr_group);
+> >> +                              * devfreq pointer is going to be used by
+> >> +                              * list_for_each_entry above. Thus, it is
+> >> +                              * removed afterwards.
+> >
+> > Why don't you use list_for_each_entry_safe(), then?
+> 
+> Ah.. that's a good idea. Thanks! Now, I can reorganize this one.
+> 
+> >
+> >> +                              */
+> >> +                             to_remove = devfreq->dev;
+> >> +                             dev_err(devfreq->dev, "devfreq_do error(%d). "
+> >> +                                     "DEVFREQ is removed from the device\n",
+> >> +                                     error);
+> >> +                             continue;
+> >> +                     }
+> >> +                     devfreq->next_polling = DIV_ROUND_UP(
+> >> +                                             devfreq->profile->polling_ms,
+> >> +                                             DEVFREQ_INTERVAL);
+> >> +             } else {
+> >> +                     /* The device will poll later when next_polling = 1 */
+> >> +                     devfreq->next_polling--;
+> >> +             }
+> >> +     }
 > >> +
-> >>       list_del(&devfreq->node);
-> >>
-> >>       kfree(devfreq);
-> >> @@ -344,7 +351,7 @@ static int _devfreq_tickle_device(struct devfreq *df, unsigned long delay)
-> >>       if (devfreq_wq && !polling) {
-> >>               polling = true;
-> >>               queue_delayed_work(devfreq_wq, &devfreq_work,
-> >> -                             msecs_to_jiffies(DEVFREQ_INTERVAL));
+> >> +     if (to_remove) {
+> >> +             list_del(&to_remove->node);
+> >> +             kfree(to_remove);
+> >> +             to_remove = NULL;
+> >> +     }
+> >> +
+> >> +     if (continue_polling) {
+> >> +             polling = true;
+> >> +             queue_delayed_work(devfreq_wq, &devfreq_work,
 > >> +                                msecs_to_jiffies(DEVFREQ_INTERVAL));
+> >> +     } else {
+> >> +             polling = false;
+> >> +     }
 > >
-> > This change doesn't seem to belong to this patch.
+> > OK, so why exactly continue_polling is needed?  It seems you might siply use
+> > "polling" instead of it above.
 > 
-> Oops. I'll rearrange the patch series.
+> The purpose of continue_polling seems to disappear in the middle of
+> development. I'll remove it.
 > 
 > >
-> >>       }
-> >>
-> >>       return err;
-> >> @@ -382,6 +389,116 @@ int devfreq_tickle_device(struct device *dev, unsigned long duration_ms)
-> >>       return err;
-> >>  }
-> >>
-> >> +static int num_tickle_all;
-> >> +static ssize_t tickle_all(struct device *dev, struct device_attribute *attr,
-> >> +                       const char *buf, size_t count)
+> >> +
+> >> +     mutex_unlock(&devfreq_list_lock);
+> >> +}
+> > ...
+> >> +/**
+> >> + * devfreq_update() - Notify that the device OPP has been changed.
+> >> + * @dev:     the device whose OPP has been changed.
+> >> + * @may_not_exist:   do not print error message even if the device
+> >> + *                   does not have devfreq entry.
+> >
+> > This argument isn't used any more.
+> 
+> Ah.. yes. sure.
+> 
+> >
+> >> + */
+> >> +int devfreq_update(struct device *dev)
 > >> +{
-> >> +     int duration = 0;
-> >> +     struct devfreq *tmp;
-> >> +     unsigned long delay;
+> >> +     struct devfreq *devfreq;
+> >> +     int err = 0;
 > >> +
-> >> +     sscanf(buf, "%d", &duration);
-> >> +     if (duration < DEVFREQ_INTERVAL)
-> >> +             duration = DEVFREQ_INTERVAL;
+> >> +     mutex_lock(&devfreq_list_lock);
 > >> +
-> >> +     if (unlikely(IS_ERR_OR_NULL(dev))) {
-> >> +             pr_err("%s: Invalid parameters\n", __func__);
+> >> +     devfreq = find_device_devfreq(dev);
+> >> +     if (IS_ERR(devfreq)) {
+> >> +             err = PTR_ERR(devfreq);
+> >> +             goto out;
+> >> +     }
+> >> +
+> >> +     if (devfreq->tickle) {
+> >> +             /* If the max freq available is changed, re-tickle */
 > >
-> > Please say "null device" instead of in addition to the above.
+> > It would be good to explain what "re-tickle" means.
 > 
-> Ok. I'll let it say "Null or invalid device" as it's IS_ERR_OR_NULL.
+> Of course. I'll explain that.
+> 
+> >
+> >> +             unsigned long freq = devfreq->profile->max_freq;
+> >> +             struct opp *opp = opp_find_freq_floor(devfreq->dev, &freq);
+> >> +
+> >> +             if (IS_ERR(opp)) {
+> >> +                     err = PTR_ERR(opp);
+> >> +                     goto out;
+> >> +             }
+> >> +
+> >> +             /* Max freq available is not changed */
+> >> +             if (devfreq->previous_freq == freq)
+> >> +                     goto out;
+> >> +
+> >> +             err = devfreq->profile->target(devfreq->dev, opp);
+> >> +             if (!err)
+> >> +                     devfreq->previous_freq = freq;
+> >
+> > Why don't we run devfreq_do() in this case?
+> 
+> When the list of available frequencies is updated and the device is to
+> be kept at its maximum frequency, we do not need to reevaluate the
+> device's activities to setup the new frequency. In such cases, we only
+> need to keep it at its maximum freuqency. If the maximum frequency is
+> not changed, we don't need anything to do (when "tickling" is
+> completed, devfreq_do() will reevaluate automatically); otherwise,
+> tickling again at the new frequency is needed (re-tickle).
 
 OK
 
-> >
-> >> +             return -EINVAL;
+> >> +     } else {
+> >> +             /* Reevaluate the proper frequency */
+> >> +             err = devfreq_do(devfreq);
 > >> +     }
 > >> +
-> >> +     delay = DIV_ROUND_UP(duration, DEVFREQ_INTERVAL);
-> >> +
-> >> +     mutex_lock(&devfreq_list_lock);
-> >> +     list_for_each_entry(tmp, &devfreq_list, node) {
-> >> +             _devfreq_tickle_device(tmp, delay);
-> >> +     }
-> >> +     mutex_unlock(&devfreq_list_lock);
-> >> +
-> >> +     num_tickle_all++;
-> >> +     return count;
-> >> +}
-> >> +
-> >> +static ssize_t show_num_tickle_all(struct device *dev,
-> >> +                                struct device_attribute *attr, char *buf)
-> >> +{
-> >> +     return sprintf(buf, "%d\n", num_tickle_all);
-> >> +}
-> >> +
-> >> +static ssize_t show_min_interval(struct device *dev,
-> >> +                              struct device_attribute *attr, char *buf)
-> >> +{
-> >> +     return sprintf(buf, "%d\n", DEVFREQ_INTERVAL);
-> >> +}
-> >> +
-> >> +static ssize_t show_monitoring(struct device *dev,
-> >> +                            struct device_attribute *attr, char *buf)
-> >> +{
-> >> +     return sprintf(buf, "%d\n", monitoring ? 1 : 0);
-> >> +}
-> >> +
-> >> +static DEVICE_ATTR(tickle_all, 0644, show_num_tickle_all, tickle_all);
-> >> +static DEVICE_ATTR(min_interval, 0444, show_min_interval, NULL);
-> >> +static DEVICE_ATTR(monitoring, 0444, show_monitoring, NULL);
-> >> +static struct attribute *devfreq_entries[] = {
-> >> +     &dev_attr_tickle_all.attr,
-> >> +     &dev_attr_min_interval.attr,
-> >> +     &dev_attr_monitoring.attr,
-> >> +     NULL,
-> >> +};
-> >> +static struct attribute_group devfreq_attr_group = {
-> >> +     .name   = NULL,
-> >> +     .attrs  = devfreq_entries,
-> >> +};
-> >> +
-> >> +static ssize_t tickle(struct device *dev, struct device_attribute *attr,
-> >> +                   const char *buf, size_t count)
-> >> +{
-> >> +     int duration;
-> >> +     struct devfreq *df;
-> >> +     unsigned long delay;
-> >> +
-> >> +     sscanf(buf, "%d", &duration);
-> >> +     if (duration < DEVFREQ_INTERVAL)
-> >> +             duration = DEVFREQ_INTERVAL;
-> >> +
-> >> +     if (unlikely(IS_ERR_OR_NULL(dev))) {
-> >> +             pr_err("%s: Invalid parameters\n", __func__);
-> >
-> > Like above.
-> 
-> Yup.
-> 
-> >
-> >> +             return -EINVAL;
-> >> +     }
-> >> +
-> >> +     delay = DIV_ROUND_UP(duration, DEVFREQ_INTERVAL);
-> >> +
-> >> +     mutex_lock(&devfreq_list_lock);
-> >> +     df = find_device_devfreq(dev);
-> >> +     _devfreq_tickle_device(df, delay);
-> >> +     mutex_unlock(&devfreq_list_lock);
-> >> +
-> >> +     return count;
-> >> +}
-> >> +
-> >> +static ssize_t show_num_tickle(struct device *dev,
-> >> +                            struct device_attribute *attr, char *buf)
-> >> +{
-> >> +     struct devfreq *df;
-> >> +
-> >> +     df = find_device_devfreq(dev);
-> >> +
-> >> +     if (!IS_ERR(df))
-> >> +             return sprintf(buf, "%d\n", df->num_tickle);
-> >> +
-> >> +     return PTR_ERR(df);
-> >> +}
-> >> +
-> >> +static DEVICE_ATTR(tickle, 0644, show_num_tickle, tickle);
-> >> +static struct attribute *dev_entries[] = {
-> >> +     &dev_attr_tickle.attr,
-> >> +     NULL,
-> >> +};
-> >> +static struct attribute_group dev_attr_group = {
-> >> +     .name   = "devfreq",
-> >> +     .attrs  = dev_entries,
-> >> +};
-> >> +
-> >>  static int __init devfreq_init(void)
-> >>  {
-> >>       mutex_lock(&devfreq_list_lock);
-> >> @@ -389,6 +506,20 @@ static int __init devfreq_init(void)
-> >>       polling = false;
-> >>       devfreq_wq = create_freezable_workqueue("devfreq_wq");
-> >>       INIT_DELAYED_WORK_DEFERRABLE(&devfreq_work, devfreq_monitor);
-> >> +
-> >> +#ifdef CONFIG_PM
-> >> +     /* Create sysfs */
-> >> +     devfreq_kobj = kobject_create_and_add("devfreq", power_kobj);
-> >
-> > Hmm, so power_kobj is global?  It shouldn't be.
-> 
-> Yes, it is global and it's declared at include/linux/kobject.h.
-
-Oh, well.
-
-> >
-> > Generally, whatever adds attributes to /sys/power should be located in
-> > kernel/power/ .
-> 
-> I've put it at /sys/power because these attributes are global to every
-> device with devfreq.
-
-That's fine.
-
-What I wanted to say was that all code adding attributes into /sys/power
-should be located under kernel/power/ in the kernel source tree.
-
-Otherwise we'll end up with a mess of dependencies that's hard to maintain.
-
-> Anyway, if you think that's a weird location for it, could you please
-> give me some hints on where would be proper to locate system-wide
-> devfreq sysfs attributes?
-> Or, do you think kernel/power/devfreq.c would be a proper location for devfreq?
-> 
-> Or, what about allowing every /sys/devices/.../devfreq/global/* to be
-> the same "global" attributes of devfreq?
-> 
-> >
-> >> +     if (!devfreq_kobj) {
-> >> +             pr_err("Unable to create DEVFREQ kobject.\n");
-> >> +             goto out;
-> >> +     }
-> >> +     if (sysfs_create_group(devfreq_kobj, &devfreq_attr_group)) {
-> >> +             pr_err("Unable to create DEVFREQ sysfs entries.\n");
-> >> +             goto out;
-> >> +     }
-> >> +#endif
 > >> +out:
-> >>       mutex_unlock(&devfreq_list_lock);
-> >>
-> >>       devfreq_monitor(&devfreq_work.work);
-> >> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> >> index 1ec9a40..69334e7 100644
-> >> --- a/include/linux/devfreq.h
-> >> +++ b/include/linux/devfreq.h
-> >> @@ -59,6 +59,7 @@ struct devfreq_governor {
-> >>   *           at each executino of devfreq_monitor, tickle is decremented.
-> >>   *           User may tickle a device-devfreq in order to set maximum
-> >>   *           frequency instaneously with some guaranteed duration.
-> >> + * @num_tickle       number of tickle calls.
-> >>   *
-> >>   * This structure stores the DEVFREQ information for a give device.
-> >>   */
-> >> @@ -72,6 +73,8 @@ struct devfreq {
-> >>       unsigned long previous_freq;
-> >>       unsigned int next_polling;
-> >>       unsigned int tickle;
+> >> +     mutex_unlock(&devfreq_list_lock);
+> >> +     return err;
+> >> +}
 > >> +
-> >> +     unsigned int num_tickle;
-> >>  };
-> >>
-> >>  #if defined(CONFIG_PM_DEVFREQ)
 > >
-> > It looks like the above two changes should be moved to a separate patch.
+> > Add a kerneldoc comment here, please.
 > 
-> These two changes are for the sysfs interface as counting number of
-> tickle is added with sysfs interface.
+> Yes. I'll add one. (and for any other functions missing kerneldoc comments)
 
-OK
+Well, if the function is a static one-liner, you can skip the kerneldoc IMHO
+However, that one below is not really a one-liner.. :-)
+
+> >> +static int _devfreq_tickle_device(struct devfreq *df, unsigned long delay)
+> >> +{
+> >> +     int err = 0;
+> >> +     unsigned long freq;
+> >> +     struct opp *opp;
+> >> +
+> >> +     freq = df->profile->max_freq;
+> >> +     opp = opp_find_freq_floor(df->dev, &freq);
+> >> +     if (IS_ERR(opp))
+> >> +             return PTR_ERR(opp);
+> >> +
+> >> +     if (df->previous_freq != freq) {
+> >> +             err = df->profile->target(df->dev, opp);
+> >> +             if (!err)
+> >> +                     df->previous_freq = freq;
+> >> +     }
+> >> +     if (err) {
+> >> +             dev_err(df->dev, "%s: Cannot set frequency.\n", __func__);
+> >> +     } else {
+> >> +             df->tickle = delay;
+> >> +             df->num_tickle++;
+> >> +     }
+> >> +
+> >> +     if (devfreq_wq && !polling) {
+> >> +             polling = true;
+> >> +             queue_delayed_work(devfreq_wq, &devfreq_work,
+> >> +                             msecs_to_jiffies(DEVFREQ_INTERVAL));
+> >> +     }
+> >> +
+> >> +     return err;
+> >> +}
+> >
+> > Thanks,
+> > Rafael
+> >
+> 
+> Thank you so much for the comments!
+
+You're welcome.
 
 Thanks,
 Rafael
