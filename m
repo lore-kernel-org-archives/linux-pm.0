@@ -1,16 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: [PATCH v3 2/3] PM / DEVFREQ: add example governors
-Date: Mon, 4 Jul 2011 17:58:27 +0900
-Message-ID: <CAJ0PZbQ0ENk-vEebqiD=DGHZVtswHQkPre8wUqM2vwR_r+V=Uw__48757.9854591333$1309770421$gmane$org@mail.gmail.com>
-References: <1306471995-4048-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107022358.58319.rjw@sisk.pl>
-	<CAJ0PZbQuiwkW-Z+1Wrqmr3r_U+LdWS312RggkkjFBGFHES4wCw@mail.gmail.com>
-	<201107041043.25150.rjw@sisk.pl>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: Random freezing failure with NFS and automount
+Date: Mon, 4 Jul 2011 22:44:49 +0530
+Message-ID: <20110704171449.GC5357@dirshya.in.ibm.com>
+References: <20110628155054.GA23242@dirshya.in.ibm.com>
+	<201107030907.18203.rjw@sisk.pl>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107041043.25150.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201107030907.18203.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,81 +21,45 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 4, 2011 at 5:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, July 04, 2011, MyungJoo Ham wrote:
->> Hello,
->>
->> 2011/7/3 Rafael J. Wysocki <rjw@sisk.pl>:
->> > Hi,
->> >
->> > On Friday, May 27, 2011, MyungJoo Ham wrote:
->> >> Three CPUFREQ-like governors are provided as examples.
->> >>
->> >> powersave: use the lowest frequency possible. The user (device) should
->> >> set the polling_ms as 0 because polling is useless for this governor.
->> >>
->> >> performance: use the highest freqeuncy possible. The user (device)
->> >> should set the polling_ms as 0 because polling is useless for this
->> >> governor.
->> >>
->> >> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
->> >>
->> >> When a user updates OPP entries (enable/disable/add), OPP framework
->> >> automatically notifies DEVFREQ to update operating frequency
->> >> accordingly. Thus, DEVFREQ users (device drivers) do not need to upda=
-te
->> >> DEVFREQ manually with OPP entry updates or set polling_ms for powersa=
-ve
->> >> , performance, or any other "static" governors.
->> >>
->> >> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
->> >> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->> []
->> >> +
->> >> + =A0 =A0 /* Set the desired frequency based on the load */
->> >> + =A0 =A0 a =3D (unsigned long long) stat.busy_time * stat.current_fr=
-equency;
->> >
->> > What's the purpose of the conversion?
->>
->> Assuming that the work speed of a device is proportional to its
->> frequency, it measures the amount of work done.
->> It's time * work/time. For example, during the last 10 second, if the
->> busy_time was 5 sec and frequency was 10MHz,
->> it's "50M", which is same as 20MHz and 2.5 sec.
->
-> I understand that, but my question was why you're doing a forced conversi=
-on
-> to (unsigned long long).
+* Rafael J. Wysocki <rjw@sisk.pl> [2011-07-03 09:07:18]:
 
-Ah.. that was for the 64bit operations.
+> Hi,
+> 
+> On Tuesday, June 28, 2011, Vaidyanathan Srinivasan wrote:
+> > Hi,
+> > 
+> > I have random freezing failures on my laptop running 2.6.39 kernel.
+> > The laptop has NFS client and automount.  Network could have been
+> > disconnected by the time suspend is attempted, hence nfs client should
+> > fail all operations, just freeze and allow laptop to suspend.
+> > 
+> > I need some help to drill deeper at this log and also suggestions on
+> > config options to try and get more information to help me root cause
+> > this issue.
+> > 
+> > This happens once in 4-5 suspend/resume cycles, does not succeed on
+> > retry, eventually I have to reboot.
+> 
+> This is a tasks freezer failure, ie. the freezing of tasks fails, because
+> one of them refuses to handle signals for 20 s.  This is probably related
+> to waiting on a VFS mutex in the TASK_UNINTERRUPTIBLE state.
+> 
+> We don't handle those cases nicely right now, sorry about that.
 
-Both busy_time and current_frequency are 32bit and current_frequency
-may be a big number.
+Hi Rafael,
 
-Thus, in order to get "freq" value without losing bits (e.g., if
-current_frequency =3D 1GHz and busy_time =3D 8000, we get an overflow
-without 64bit operations), I've inserted 64bit operations with the
-conversion. For the cosmetic reasons, it appears that "u64" looks
-better though.
+Thanks for taking a look.  The NFS mount option in hard,intr so
+I would expect an interruptible sleep.  I will take this to file
+system folks and see if they can help.  I will also review my mount
+options to improve the situation.
 
->
-> Thanks,
-> Rafael
->
+When you said we are not handling the situation, what did you mean?
+We seem to cleanly unfreeze the tasks and return the system to working
+state (though suspend fails).  Maybe we should send some signals and
+try to prod the failing task to get to freeze?  What is needed here to
+improve our framework?
 
-Thank you.
-
-- MyungJoo
-
-
--- =
-
-MyungJoo Ham, Ph.D.
-Mobile Software Platform Lab,
-Digital Media and Communications (DMC) Business
-Samsung Electronics
-cell: 82-10-6714-2858
+--Vaidy
