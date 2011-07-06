@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/5 v1] PM / Domains: Set device state to
-	"active" during system resume
-Date: Wed, 6 Jul 2011 22:50:53 +0200
-Message-ID: <201107062250.54261.rjw__35458.2824315459$1309986322$gmane$org@sisk.pl>
+Subject: [PATCH 5/5 v1] PM / Domains: Do not restore all devices
+	on power off error
+Date: Wed, 6 Jul 2011 23:01:21 +0200
+Message-ID: <201107062301.22277.rjw__13760.9507459731$1309986442$gmane$org@sisk.pl>
 References: <201107062248.35586.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,28 +24,27 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The runtime PM status of devices in a power domain that is not
-powered off in pm_genpd_complete() should be set to "active", because
-those devices are operational at this point.  Some of them may not be
-in use, though, so make pm_genpd_complete() call pm_runtime_idle()
-in addition to pm_runtime_set_active() for each of them.
+Since every device in a PM domain has its own need_restore
+flag, which is set by __pm_genpd_save_device(), there's no need to
+walk the domain's device list and restore all devices on an error
+from one of the drivers' .runtime_suspend() callbacks.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/domain.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/base/power/domain.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
 Index: linux-2.6/drivers/base/power/domain.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/domain.c
 +++ linux-2.6/drivers/base/power/domain.c
-@@ -786,7 +786,9 @@ static void pm_genpd_complete(struct dev
+@@ -299,9 +299,6 @@ static int pm_genpd_poweroff(struct gene
+ 	return 0;
  
- 	if (run_complete) {
- 		pm_generic_complete(dev);
-+		pm_runtime_set_active(dev);
- 		pm_runtime_enable(dev);
-+		pm_runtime_idle(dev);
- 	}
- }
+  err_dev:
+-	list_for_each_entry_continue(dle, &genpd->dev_list, node)
+-		__pm_genpd_restore_device(dle, genpd);
+-
+ 	genpd_set_active(genpd);
+ 	wake_up_all(&genpd->status_wait_queue);
  
