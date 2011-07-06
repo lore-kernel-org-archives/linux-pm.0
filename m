@@ -1,11 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PM / Hibernate: Fix free_unnecessary_pages()
-Date: Wed, 6 Jul 2011 20:46:23 +0200
-Message-ID: <201107062046.23967.rjw__33959.101609844$1309978080$gmane$org@sisk.pl>
+From: Pekka Enberg <penberg@kernel.org>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+	Memory Power Management
+Date: Wed, 6 Jul 2011 11:45:41 +0300
+Message-ID: <CAOJsxLHQP=-srK_uYYBsPb7+rUBnPZG7bzwtCd-rRaQa4ikUFg__49968.0865942084$1309978481$gmane$org@mail.gmail.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110629130038.GA7909@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20110629130038.GA7909@in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,47 +19,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>
+To: Ankita Garg <ankita@in.ibm.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org, thomas.abraham@linaro.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-pm@lists.linux-foundation.org, Christoph Lameter <cl@linux.com>, linux-arm-kernel@lists.infradead.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi Ankita,
 
-There is a bug in free_unnecessary_pages() that causes it to
-attempt to free too many pages in some cases, which triggers the
-BUG_ON() in memory_bm_clear_bit() for copy_bm.  Namely, if
-count_data_pages() is initially greater than alloc_normal, we get
-to_free_normal equal to 0 and "save" greater from 0.  In that case,
-if the sum of "save" and count_highmem_pages() is greater than
-alloc_highmem, we subtract a positive number from to_free_normal.
-Hence, since to_free_normal was 0 before the subtraction and is
-an unsigned int, the result is converted to a huge positive number
-that is used as the number of pages to free.
+[ I don't really know anything about memory power management but
+  here's my two cents since you asked for it. ]
 
-Fix this bug by checking if to_free_normal is actually greater
-than or equal to the number we're going to subtract from it.
+On Wed, Jun 29, 2011 at 4:00 PM, Ankita Garg <ankita@in.ibm.com> wrote:
+> I) Dynamic Power Transition
+>
+> The goal here is to ensure that as much as possible, on an idle system,
+> the memory references do not get spread across the entire RAM, a problem
+> similar to memory fragmentation. The proposed approach is as below:
+>
+> 1) One of the first things is to ensure that the memory allocations do
+> not spill over to more number of regions. Thus the allocator needs to
+> be aware of the address boundary of the different regions.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-and-tested-by: Matthew Garrett <mjg@redhat.com>
-Cc: stable@kernel.org
----
- kernel/power/snapshot.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Why does the allocator need to know about address boundaries? Why
+isn't it enough to make the page allocator and reclaim policies favor using
+memory from lower addresses as aggressively as possible? That'd mean
+we'd favor the first memory banks and could keep the remaining ones
+powered off as much as possible.
 
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -1211,7 +1211,11 @@ static void free_unnecessary_pages(void)
- 		to_free_highmem = alloc_highmem - save;
- 	} else {
- 		to_free_highmem = 0;
--		to_free_normal -= save - alloc_highmem;
-+		save -= alloc_highmem;
-+		if (to_free_normal > save)
-+			to_free_normal -= save;
-+		else
-+			to_free_normal = 0;
- 	}
- 
- 	memory_bm_position_reset(&copy_bm);
+IOW, why do we need to support scenarios such as this:
+
+   bank 0     bank 1   bank 2    bank3
+ | online  | offline | online  | offline |
+
+instead of using memory compaction and possibly something like the
+SLUB defragmentation patches to turn the memory map into this:
+
+   bank 0     bank 1   bank 2   bank3
+ | online  | online  | offline | offline |
+
+> 2) At the time of allocation, before spilling over allocations to the
+> next logical region, the allocator needs to make a best attempt to
+> reclaim some memory from within the existing region itself first. The
+> reclaim here needs to be in LRU order within the region. =A0However, if
+> it is ascertained that the reclaim would take a lot of time, like there
+> are quite a fe write-backs needed, then we can spill over to the next
+> memory region (just like our NUMA node allocation policy now).
+
+I think a much more important question is what happens _after_ we've
+allocated and free'd tons of memory few times. AFAICT, memory
+regions don't help with that kind of fragmentation that will eventually
+happen anyway.
+
+					Pekka
