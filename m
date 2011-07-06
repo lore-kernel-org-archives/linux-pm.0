@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/5 v1] PM / Domains: Make failing
-	pm_genpd_prepare() clean up properly
-Date: Wed, 6 Jul 2011 22:51:55 +0200
-Message-ID: <201107062251.55481.rjw__1724.74168143726$1309986203$gmane$org@sisk.pl>
+Subject: [PATCH 1/5 v1] PM / Domains: Set device state to
+	"active" during system resume
+Date: Wed, 6 Jul 2011 22:50:53 +0200
+Message-ID: <201107062250.54261.rjw__35458.2824315459$1309986322$gmane$org@sisk.pl>
 References: <201107062248.35586.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,45 +24,28 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-If pm_generic_prepare() in pm_genpd_prepare() returns error code,
-the PM domains counter of "prepared" devices should be decremented
-and its suspend_power_off flag should be reset if this counter drops
-down to zero.  Otherwise, the PM domain runtime PM code will not
-handle the domain correctly (it will permanently think that system
-suspend is in progress).
+The runtime PM status of devices in a power domain that is not
+powered off in pm_genpd_complete() should be set to "active", because
+those devices are operational at this point.  Some of them may not be
+in use, though, so make pm_genpd_complete() call pm_runtime_idle()
+in addition to pm_runtime_set_active() for each of them.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/domain.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/base/power/domain.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 Index: linux-2.6/drivers/base/power/domain.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/domain.c
 +++ linux-2.6/drivers/base/power/domain.c
-@@ -367,6 +367,7 @@ static void pm_genpd_sync_poweroff(struc
- static int pm_genpd_prepare(struct device *dev)
- {
- 	struct generic_pm_domain *genpd;
-+	int ret;
+@@ -786,7 +786,9 @@ static void pm_genpd_complete(struct dev
  
- 	dev_dbg(dev, "%s()\n", __func__);
- 
-@@ -400,7 +401,16 @@ static int pm_genpd_prepare(struct devic
- 
- 	mutex_unlock(&genpd->lock);
- 
--	return pm_generic_prepare(dev);
-+	ret = pm_generic_prepare(dev);
-+	if (ret) {
-+		mutex_lock(&genpd->lock);
-+
-+		if (--genpd->prepared_count == 0)
-+			genpd->suspend_power_off = false;
-+
-+		mutex_unlock(&genpd->lock);
-+	}
-+	return ret;
+ 	if (run_complete) {
+ 		pm_generic_complete(dev);
++		pm_runtime_set_active(dev);
+ 		pm_runtime_enable(dev);
++		pm_runtime_idle(dev);
+ 	}
  }
  
- /**
