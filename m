@@ -1,11 +1,14 @@
-From: asinghal@codeaurora.org
-Subject: [RFC] Unprepare callback for cpuidle_device
-Date: Wed, 6 Jul 2011 13:23:48 -0700 (PDT)
-Message-ID: <a619d8bbefd2f390a13d09084583dd39.squirrel@www.codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/5 v1] PM / Domains: Generic PM domains
+	improvements
+Date: Wed, 6 Jul 2011 23:12:49 +0200
+Message-ID: <201107062312.49584.rjw__27300.0588560992$1309988231$gmane$org@sisk.pl>
+References: <201107062248.35586.rjw@sisk.pl> <20110706210856.GA1215@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20110706210856.GA1215@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,24 +18,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: johlstei@codeaurora.org
+To: Greg KH <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-We plan to use high resolution timers in one of our modules, with the
-requirement that we cancel these timers when the cpu goes idle and restart
-them when the cpu comes out of idle.
+On Wednesday, July 06, 2011, Greg KH wrote:
+> On Wed, Jul 06, 2011 at 10:48:35PM +0200, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > For the last few days I've been working on modifications of the generic
+> > PM domains code allowing .start_device()/.stop_device() and drivers'
+> > .runtime_suspend()/.runtime_resume() callbacks to execute things like
+> > pm_runtime_resume() for other devices in the same PM domain safely
+> > without deadlocking (the original motivation was a console driver on
+> > shmobile that pm_runtime_get_*()/pm_runtime_put_*() are called for from
+> > the other devices' .runtime_suspend()/.runtime_resume() callbacks).
+> > 
+> > I think I solved that problem, but in the process I found a few places
+> > where fixes and/on improvements were necessary.  The patches in this
+> > series address those issues.  They are on top of the branch at:
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-domains
+> > 
+> > Patches [1-2/5] are regarded as 3.1 material, the others not necessarily,
+> > but I'd like to push them for 3.1 too if there are no complaints.
+> 
+> No complaints from me, looks nice.
 
-We are cancelling the timers in cpuidle prepare callback. The problem is
-that if the need_resched() call in drivers/cpuidle/cpuidle.c returns true,
-how do we restart the timer? If the call returns false, we can restart the
-timer in the cpuidle enter callback.
+Thanks!
 
-The solution to the problem that we have in mind is adding an unprepare
-callback to the cpuidle_device struct, and calling it if needs_resched()
-returns true. Another option is to implement deferred timers for hrtimers.
-Which of the two options is the better solution, or is there another
-feasible alternative?
-
-sincerely,
-Amar Singhal
+Rafael
