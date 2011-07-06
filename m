@@ -1,15 +1,18 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Random freezing failure with NFS and automount
-Date: Tue, 5 Jul 2011 01:29:01 +0200
-Message-ID: <201107050129.01936.rjw@sisk.pl>
-References: <20110628155054.GA23242@dirshya.in.ibm.com>
-	<201107030907.18203.rjw@sisk.pl>
-	<20110704171449.GC5357@dirshya.in.ibm.com>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Wed, 6 Jul 2011 22:11:46 +0530
+Message-ID: <20110706164146.GD4356__44034.905700437$1309970671$gmane$org@dirshya.in.ibm.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110629130038.GA7909@in.ibm.com>
+	<CAOJsxLHQP=-srK_uYYBsPb7+rUBnPZG7bzwtCd-rRaQa4ikUFg@mail.gmail.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110704171449.GC5357@dirshya.in.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <CAOJsxLHQP=-srK_uYYBsPb7+rUBnPZG7bzwtCd-rRaQa4ikUFg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +22,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: svaidy@linux.vnet.ibm.com
-Cc: linux-pm@lists.linux-foundation.org
+To: Pekka Enberg <penberg@kernel.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, linux-pm@lists.linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Christoph Lameter <cl@linux.com>, linux-arm-kernel@lists.infradead.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 04, 2011, Vaidyanathan Srinivasan wrote:
-> * Rafael J. Wysocki <rjw@sisk.pl> [2011-07-03 09:07:18]:
-> 
-> > Hi,
-> > 
-> > On Tuesday, June 28, 2011, Vaidyanathan Srinivasan wrote:
-> > > Hi,
-> > > 
-> > > I have random freezing failures on my laptop running 2.6.39 kernel.
-> > > The laptop has NFS client and automount.  Network could have been
-> > > disconnected by the time suspend is attempted, hence nfs client should
-> > > fail all operations, just freeze and allow laptop to suspend.
-> > > 
-> > > I need some help to drill deeper at this log and also suggestions on
-> > > config options to try and get more information to help me root cause
-> > > this issue.
-> > > 
-> > > This happens once in 4-5 suspend/resume cycles, does not succeed on
-> > > retry, eventually I have to reboot.
-> > 
-> > This is a tasks freezer failure, ie. the freezing of tasks fails, because
-> > one of them refuses to handle signals for 20 s.  This is probably related
-> > to waiting on a VFS mutex in the TASK_UNINTERRUPTIBLE state.
-> > 
-> > We don't handle those cases nicely right now, sorry about that.
-> 
-> Hi Rafael,
-> 
-> Thanks for taking a look.  The NFS mount option in hard,intr so
-> I would expect an interruptible sleep.  I will take this to file
-> system folks and see if they can help.  I will also review my mount
-> options to improve the situation.
-> 
-> When you said we are not handling the situation, what did you mean?
+* Pekka Enberg <penberg@kernel.org> [2011-07-06 11:45:41]:
 
-I meant that the freezing fails in those cases.
+> Hi Ankita,
+> =
 
-> We seem to cleanly unfreeze the tasks and return the system to working
-> state (though suspend fails).  Maybe we should send some signals and
-> try to prod the failing task to get to freeze?  What is needed here to
-> improve our framework?
+> [ I don't really know anything about memory power management but
+>   here's my two cents since you asked for it. ]
+> =
 
-Probably there is a bug (or more bugs) in our error code paths.  That wouldn't
-suprpise me too much, because those code paths are not tested very hard ...
+> On Wed, Jun 29, 2011 at 4:00 PM, Ankita Garg <ankita@in.ibm.com> wrote:
+> > I) Dynamic Power Transition
+> >
+> > The goal here is to ensure that as much as possible, on an idle system,
+> > the memory references do not get spread across the entire RAM, a problem
+> > similar to memory fragmentation. The proposed approach is as below:
+> >
+> > 1) One of the first things is to ensure that the memory allocations do
+> > not spill over to more number of regions. Thus the allocator needs to
+> > be aware of the address boundary of the different regions.
+> =
 
-Thanks,
-Rafael
+> Why does the allocator need to know about address boundaries? Why
+> isn't it enough to make the page allocator and reclaim policies favor usi=
+ng
+> memory from lower addresses as aggressively as possible? That'd mean
+> we'd favor the first memory banks and could keep the remaining ones
+> powered off as much as possible.
+
+Yes, this will work to a limited extent when we have few regions to
+account for.  However if applications start and stop leaving large
+holes in the address map, it may not worth the effort of migrating
+pages to lower addresses to pack the holes.
+
+> IOW, why do we need to support scenarios such as this:
+> =
+
+>    bank 0     bank 1   bank 2    bank3
+>  | online  | offline | online  | offline |
+> =
+
+> instead of using memory compaction and possibly something like the
+> SLUB defragmentation patches to turn the memory map into this:
+> =
+
+>    bank 0     bank 1   bank 2   bank3
+>  | online  | online  | offline | offline |
+
+Yes, this is what we need, but also have a notion of how many pages
+are used in each bank so that we can pack pages from under utilized
+banks into a reasonably used bank and thereby free more banks.
+
+Freeing more banks + clustering all used or free banks gives us more
+power saving benefits.
+
+> > 2) At the time of allocation, before spilling over allocations to the
+> > next logical region, the allocator needs to make a best attempt to
+> > reclaim some memory from within the existing region itself first. The
+> > reclaim here needs to be in LRU order within the region. =A0However, if
+> > it is ascertained that the reclaim would take a lot of time, like there
+> > are quite a fe write-backs needed, then we can spill over to the next
+> > memory region (just like our NUMA node allocation policy now).
+> =
+
+> I think a much more important question is what happens _after_ we've
+> allocated and free'd tons of memory few times. AFAICT, memory
+> regions don't help with that kind of fragmentation that will eventually
+> happen anyway.
+ =
+
+Memory regions allow us to have a zone per-region.  This helps in the
+cases were allocations are fragments into multiple regions by
+potentially reclaiming very low utilized regions and packing the pages
+into higher utilized regions.  The requirement is a standard
+de-fragmentation approach, except that the cluster of allocations
+should fall within a region (any region) as much as possible.
+
+--Vaidy
