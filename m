@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/7] pm: improve error code of
-	pm_notifier_call_chain()
-Date: Thu, 7 Jul 2011 23:06:02 +0200
-Message-ID: <201107072306.02708.rjw__29342.713885899$1310072783$gmane$org@sisk.pl>
-References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
-	<20110703171539.GF21127@elf.ucw.cz>
-	<CAC5umyibWo===0Lr5Wz2moOvnf0qiAvFLo4--sLCRmx4sJrdRA@mail.gmail.com>
+Subject: Re: [PATCH v3 2/3] PM / DEVFREQ: add example governors
+Date: Thu, 7 Jul 2011 23:08:38 +0200
+Message-ID: <201107072308.38622.rjw__22134.1657256291$1310072890$gmane$org@sisk.pl>
+References: <1306471995-4048-1-git-send-email-myungjoo.ham@samsung.com>
+	<201107041043.25150.rjw@sisk.pl>
+	<CAJ0PZbQ0ENk-vEebqiD=DGHZVtswHQkPre8wUqM2vwR_r+V=Uw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAC5umyibWo===0Lr5Wz2moOvnf0qiAvFLo4--sLCRmx4sJrdRA@mail.gmail.com>
+In-Reply-To: <CAJ0PZbQ0ENk-vEebqiD=DGHZVtswHQkPre8wUqM2vwR_r+V=Uw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,25 +19,69 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-s390@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: MyungJoo Ham <myungjoo.ham@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 04, 2011, Akinobu Mita wrote:
-> 2011/7/4 Pavel Machek <pavel@ucw.cz>:
-> > On Sun 2011-07-03 23:16:15, Akinobu Mita wrote:
-> >> This enables pm_notifier_call_chain() to get the actual error code
-> >> in the callback rather than always assume -EINVAL by converting all
-> >> PM notifier calls to return encapsulate error code with
-> >> notifier_from_errno().
+On Monday, July 04, 2011, MyungJoo Ham wrote:
+> On Mon, Jul 4, 2011 at 5:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Monday, July 04, 2011, MyungJoo Ham wrote:
+> >> Hello,
 > >>
-> >> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> >> Cc: Pavel Machek <pavel@ucw.cz>
+> >> 2011/7/3 Rafael J. Wysocki <rjw@sisk.pl>:
+> >> > Hi,
+> >> >
+> >> > On Friday, May 27, 2011, MyungJoo Ham wrote:
+> >> >> Three CPUFREQ-like governors are provided as examples.
+> >> >>
+> >> >> powersave: use the lowest frequency possible. The user (device) should
+> >> >> set the polling_ms as 0 because polling is useless for this governor.
+> >> >>
+> >> >> performance: use the highest freqeuncy possible. The user (device)
+> >> >> should set the polling_ms as 0 because polling is useless for this
+> >> >> governor.
+> >> >>
+> >> >> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
+> >> >>
+> >> >> When a user updates OPP entries (enable/disable/add), OPP framework
+> >> >> automatically notifies DEVFREQ to update operating frequency
+> >> >> accordingly. Thus, DEVFREQ users (device drivers) do not need to update
+> >> >> DEVFREQ manually with OPP entry updates or set polling_ms for powersave
+> >> >> , performance, or any other "static" governors.
+> >> >>
+> >> >> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> >> >> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> >> []
+> >> >> +
+> >> >> +     /* Set the desired frequency based on the load */
+> >> >> +     a = (unsigned long long) stat.busy_time * stat.current_frequency;
+> >> >
+> >> > What's the purpose of the conversion?
+> >>
+> >> Assuming that the work speed of a device is proportional to its
+> >> frequency, it measures the amount of work done.
+> >> It's time * work/time. For example, during the last 10 second, if the
+> >> busy_time was 5 sec and frequency was 10MHz,
+> >> it's "50M", which is same as 20MHz and 2.5 sec.
 > >
-> > Nothing obviously wrong here.
+> > I understand that, but my question was why you're doing a forced conversion
+> > to (unsigned long long).
 > 
-> Thanks. Can I add your ACK for this patch?
+> Ah.. that was for the 64bit operations.
+> 
+> Both busy_time and current_frequency are 32bit and current_frequency
+> may be a big number.
+> 
+> Thus, in order to get "freq" value without losing bits (e.g., if
+> current_frequency = 1GHz and busy_time = 8000, we get an overflow
+> without 64bit operations), I've inserted 64bit operations with the
+> conversion. For the cosmetic reasons, it appears that "u64" looks
+> better though.
 
-Do you want me to take this patch?
+You wouldn't need the explicit type casting if you did
 
+a = stat.busy_time;
+a *= stat.current_frequency;
+
+Thanks,
 Rafael
