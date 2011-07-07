@@ -1,8 +1,8 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 02/05] ARM: mach-shmobile: Runtime PM late init
-	callback
-Date: Thu, 07 Jul 2011 22:32:29 +0900
-Message-ID: <20110707133229.22347.51430.sendpatchset__12714.2444871881$1310045228$gmane$org@t400s>
+Subject: [PATCH 03/05] ARM: mach-shmobile: sh7372 late pm domain
+	off
+Date: Thu, 07 Jul 2011 22:32:37 +0900
+Message-ID: <20110707133237.22347.5463.sendpatchset__12269.3035439172$1310045244$gmane$org@t400s>
 References: <20110707133212.22347.68775.sendpatchset@t400s>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,40 +24,44 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@opensource.se>
 
-Add a mach-shmobile specific callback for SoC-specific code
-to hook into. By having the late_initcall() in a common place
-we can have multi-SoC/board support in the same kernel binary.
+Add sh7372 specific code to power down unused pm domains.
+
+This should really be replaced by some generic PM core
+code IMO, but until that happens this patch makes sure
+we don't waste power by leaving unused power domains on.
 
 Signed-off-by: Magnus Damm <damm@opensource.se>
 ---
 
- arch/arm/mach-shmobile/include/mach/common.h |    1 +
- arch/arm/mach-shmobile/pm_runtime.c          |   10 ++++++++++
- 2 files changed, 11 insertions(+)
+ arch/arm/mach-shmobile/pm-sh7372.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
---- 0001/arch/arm/mach-shmobile/include/mach/common.h
-+++ work/arch/arm/mach-shmobile/include/mach/common.h	2011-07-07 19:39:49.000000000 +0900
-@@ -12,6 +12,7 @@ extern struct platform_suspend_ops shmob
- struct cpuidle_device;
- extern void (*shmobile_cpuidle_modes[])(void);
- extern void (*shmobile_cpuidle_setup)(struct cpuidle_device *dev);
-+extern void (*shmobile_runtime_pm_late_init)(void);
- 
- extern void sh7367_init_irq(void);
- extern void sh7367_add_early_devices(void);
---- 0001/arch/arm/mach-shmobile/pm_runtime.c
-+++ work/arch/arm/mach-shmobile/pm_runtime.c	2011-07-07 19:39:28.000000000 +0900
-@@ -56,3 +56,13 @@ static int __init sh_pm_runtime_init(voi
- 	return 0;
+--- 0005/arch/arm/mach-shmobile/pm-sh7372.c
++++ work/arch/arm/mach-shmobile/pm-sh7372.c	2011-07-07 20:15:19.000000000 +0900
+@@ -96,6 +96,17 @@ static bool pd_active_wakeup(struct devi
+ 	return true;
  }
- core_initcall(sh_pm_runtime_init);
-+
-+void (*shmobile_runtime_pm_late_init)(void);
-+
-+static int __init sh_pm_runtime_late_init(void)
+ 
++static void sh7372_late_pm_domain_off(void)
 +{
-+	if (shmobile_runtime_pm_late_init)
-+		shmobile_runtime_pm_late_init();
-+	return 0;
++	/* request power down of unused pm domains */
++	queue_work(pm_wq, &sh7372_a4lc.genpd.power_off_work);
++	queue_work(pm_wq, &sh7372_a4mp.genpd.power_off_work);
++	queue_work(pm_wq, &sh7372_d4.genpd.power_off_work);
++	queue_work(pm_wq, &sh7372_a3rv.genpd.power_off_work);
++	queue_work(pm_wq, &sh7372_a3ri.genpd.power_off_work);
++	queue_work(pm_wq, &sh7372_a3sg.genpd.power_off_work);
 +}
-+late_initcall(sh_pm_runtime_late_init);
++
+ void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd)
+ {
+ 	struct generic_pm_domain *genpd = &sh7372_pd->genpd;
+@@ -107,6 +118,8 @@ void sh7372_init_pm_domain(struct sh7372
+ 	genpd->power_off = pd_power_down;
+ 	genpd->power_on = pd_power_up;
+ 	pd_power_up(&sh7372_pd->genpd);
++
++	shmobile_runtime_pm_late_init = sh7372_late_pm_domain_off;
+ }
+ 
+ void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
