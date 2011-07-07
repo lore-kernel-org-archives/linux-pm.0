@@ -1,14 +1,17 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 05/05] ARM: mach-shmobile: sh7372 A3RV requires
-	A4LC
-Date: Thu, 07 Jul 2011 22:32:53 +0900
-Message-ID: <20110707133253.22347.66361.sendpatchset__24909.7338798039$1310045257$gmane$org@t400s>
-References: <20110707133212.22347.68775.sendpatchset@t400s>
+From: Pekka Enberg <penberg@kernel.org>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+ Memory Power Management
+Date: Thu, 7 Jul 2011 21:00:44 +0300 (EEST)
+Message-ID: <alpine.DEB.2.00.1107072058390.5978__25586.2000085928$1310063233$gmane$org@tiger>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110629130038.GA7909@in.ibm.com>
+	<CAOJsxLHQP=-srK_uYYBsPb7+rUBnPZG7bzwtCd-rRaQa4ikUFg@mail.gmail.com>
+	<alpine.DEB.2.02.1107061318190.2535@asgard.lang.hm>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110707133212.22347.68775.sendpatchset@t400s>
+In-Reply-To: <alpine.DEB.2.02.1107061318190.2535@asgard.lang.hm>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,92 +21,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-sh@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org
+To: david@lang.hm
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, linux-pm@lists.linux-foundation.org, Christoph Lameter <cl@linux.com>, linux-arm-kernel@lists.infradead.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm@opensource.se>
+On Wed, 6 Jul 2011, Pekka Enberg wrote:
+>> Why does the allocator need to know about address boundaries? Why
+>> isn't it enough to make the page allocator and reclaim policies favor using
+>> memory from lower addresses as aggressively as possible? That'd mean
+>> we'd favor the first memory banks and could keep the remaining ones
+>> powered off as much as possible.
+>> 
+>> IOW, why do we need to support scenarios such as this:
+>>
+>>   bank 0     bank 1   bank 2    bank3
+>> | online  | offline | online  | offline |
+>
+On Wed, 6 Jul 2011, david@lang.hm wrote:
+> I believe that there are memory allocations that cannot be moved after they 
+> are made (think about regions allocated to DMA from hardware where the 
+> hardware has already been given the address space to DMA into)
+>
+> As a result, you may not be able to take bank 2 offline, so your option is to 
+> either leave banks 0-2 all online, or support emptying bank 1 and taking it 
+> offline.
 
-Add a power domain workaround for the VPU and A3RV on sh7372.
+But drivers allocate DMA memory for hardware during module load and stay 
+pinned there until the driver is unloaded, no? So in practice DMA buffers 
+are going to be in banks 0-1?
 
-The sh7372 data sheet mentions that the VPU is located in the
-A3RV power domain. The A3RV power domain is not related to A4LC
-in any way, but testing shows that unless A3RV _and_ A4LC are
-powered on the VPU test program will bomb out.
-
-This issue may be caused by a more or less undocumented dependency
-on the MERAM block that happens to be located in A4LC. So now we
-know that the out-of-reset requirement of the VPU is that the MERAM
-is powered on.
-
-This patch adds a workaround for A3RV to make sure A4LC is powered
-on - this so we can use the VPU even though the LCDCs are in blanking
-state and A4LC is supposed to be off.
-
-Signed-off-by: Magnus Damm <damm@opensource.se>
----
-
- arch/arm/mach-shmobile/pm-sh7372.c |   45 +++++++++++++++++++++++++++++++++---
- 1 file changed, 42 insertions(+), 3 deletions(-)
-
---- 0006/arch/arm/mach-shmobile/pm-sh7372.c
-+++ work/arch/arm/mach-shmobile/pm-sh7372.c	2011-07-07 21:57:14.000000000 +0900
-@@ -91,6 +91,36 @@ static int pd_power_up(struct generic_pm
- 	return ret;
- }
- 
-+static int pd_power_up_a3rv(struct generic_pm_domain *genpd)
-+{
-+	int ret = pd_power_up(genpd);
-+
-+	/* force A4LC on after A3RV has been requested on */
-+	pm_genpd_poweron(&sh7372_a4lc.genpd);
-+
-+	return ret;
-+}
-+
-+static int pd_power_down_a3rv(struct generic_pm_domain *genpd)
-+{
-+	int ret = pd_power_down(genpd);
-+
-+	/* try to power down A4LC after A3RV is requested off */
-+	pm_genpd_poweron(&sh7372_a4lc.genpd);
-+	queue_work(pm_wq, &sh7372_a4lc.genpd.power_off_work);
-+
-+	return ret;
-+}
-+
-+static int pd_power_down_a4lc(struct generic_pm_domain *genpd)
-+{
-+	/* only power down A4LC if A3RV is off */
-+	if (!(__raw_readl(PSTR) & (1 << sh7372_a3rv.bit_shift)))
-+		return pd_power_down(genpd);
-+
-+	return 0;
-+}
-+
- static bool pd_active_wakeup(struct device *dev)
- {
- 	return true;
-@@ -115,9 +145,18 @@ void sh7372_init_pm_domain(struct sh7372
- 	genpd->stop_device = pm_clk_suspend;
- 	genpd->start_device = pm_clk_resume;
- 	genpd->active_wakeup = pd_active_wakeup;
--	genpd->power_off = pd_power_down;
--	genpd->power_on = pd_power_up;
--	pd_power_up(&sh7372_pd->genpd);
-+
-+	if (sh7372_pd == &sh7372_a4lc) {
-+		genpd->power_off = pd_power_down_a4lc;
-+		genpd->power_on = pd_power_up;
-+	} else if (sh7372_pd == &sh7372_a3rv) {
-+		genpd->power_off = pd_power_down_a3rv;
-+		genpd->power_on = pd_power_up_a3rv;
-+	} else {
-+		genpd->power_off = pd_power_down;
-+		genpd->power_on = pd_power_up;
-+	}
-+	genpd->power_on(&sh7372_pd->genpd);
- 
- 	shmobile_runtime_pm_late_init = sh7372_late_pm_domain_off;
- }
+ 				Pekka
