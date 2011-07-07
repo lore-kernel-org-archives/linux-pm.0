@@ -1,7 +1,8 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 01/05] ARM: mach-shmobile: sh7372 D4 support
-Date: Thu, 07 Jul 2011 22:32:20 +0900
-Message-ID: <20110707133220.22347.53762.sendpatchset__26341.4308814847$1310045226$gmane$org@t400s>
+Subject: [PATCH 02/05] ARM: mach-shmobile: Runtime PM late init
+	callback
+Date: Thu, 07 Jul 2011 22:32:29 +0900
+Message-ID: <20110707133229.22347.51430.sendpatchset__12714.2444871881$1310045228$gmane$org@t400s>
 References: <20110707133212.22347.68775.sendpatchset@t400s>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,47 +24,40 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@opensource.se>
 
-Add support for the sh7372 D4 power domain. This power domain
-contains the Coresight-ETM hardware block.
+Add a mach-shmobile specific callback for SoC-specific code
+to hook into. By having the late_initcall() in a common place
+we can have multi-SoC/board support in the same kernel binary.
 
 Signed-off-by: Magnus Damm <damm@opensource.se>
 ---
 
- arch/arm/mach-shmobile/include/mach/sh7372.h |    1 +
- arch/arm/mach-shmobile/pm-sh7372.c           |    4 ++++
- arch/arm/mach-shmobile/setup-sh7372.c        |    1 +
- 3 files changed, 6 insertions(+)
+ arch/arm/mach-shmobile/include/mach/common.h |    1 +
+ arch/arm/mach-shmobile/pm_runtime.c          |   10 ++++++++++
+ 2 files changed, 11 insertions(+)
 
---- 0002/arch/arm/mach-shmobile/include/mach/sh7372.h
-+++ work/arch/arm/mach-shmobile/include/mach/sh7372.h	2011-07-07 19:20:09.000000000 +0900
-@@ -486,6 +486,7 @@ static inline struct sh7372_pm_domain *t
- #ifdef CONFIG_PM
- extern struct sh7372_pm_domain sh7372_a4lc;
- extern struct sh7372_pm_domain sh7372_a4mp;
-+extern struct sh7372_pm_domain sh7372_d4;
- extern struct sh7372_pm_domain sh7372_a3rv;
- extern struct sh7372_pm_domain sh7372_a3ri;
- extern struct sh7372_pm_domain sh7372_a3sg;
---- 0002/arch/arm/mach-shmobile/pm-sh7372.c
-+++ work/arch/arm/mach-shmobile/pm-sh7372.c	2011-07-07 19:24:26.000000000 +0900
-@@ -129,6 +129,10 @@ struct sh7372_pm_domain sh7372_a4mp = {
- 	.bit_shift = 2,
- };
+--- 0001/arch/arm/mach-shmobile/include/mach/common.h
++++ work/arch/arm/mach-shmobile/include/mach/common.h	2011-07-07 19:39:49.000000000 +0900
+@@ -12,6 +12,7 @@ extern struct platform_suspend_ops shmob
+ struct cpuidle_device;
+ extern void (*shmobile_cpuidle_modes[])(void);
+ extern void (*shmobile_cpuidle_setup)(struct cpuidle_device *dev);
++extern void (*shmobile_runtime_pm_late_init)(void);
  
-+struct sh7372_pm_domain sh7372_d4 = {
-+	.bit_shift = 3,
-+};
+ extern void sh7367_init_irq(void);
+ extern void sh7367_add_early_devices(void);
+--- 0001/arch/arm/mach-shmobile/pm_runtime.c
++++ work/arch/arm/mach-shmobile/pm_runtime.c	2011-07-07 19:39:28.000000000 +0900
+@@ -56,3 +56,13 @@ static int __init sh_pm_runtime_init(voi
+ 	return 0;
+ }
+ core_initcall(sh_pm_runtime_init);
 +
- struct sh7372_pm_domain sh7372_a3rv = {
- 	.bit_shift = 6,
- };
---- 0002/arch/arm/mach-shmobile/setup-sh7372.c
-+++ work/arch/arm/mach-shmobile/setup-sh7372.c	2011-07-07 19:20:33.000000000 +0900
-@@ -843,6 +843,7 @@ void __init sh7372_add_standard_devices(
- {
- 	sh7372_init_pm_domain(&sh7372_a4lc);
- 	sh7372_init_pm_domain(&sh7372_a4mp);
-+	sh7372_init_pm_domain(&sh7372_d4);
- 	sh7372_init_pm_domain(&sh7372_a3rv);
- 	sh7372_init_pm_domain(&sh7372_a3ri);
- 	sh7372_init_pm_domain(&sh7372_a3sg);
++void (*shmobile_runtime_pm_late_init)(void);
++
++static int __init sh_pm_runtime_late_init(void)
++{
++	if (shmobile_runtime_pm_late_init)
++		shmobile_runtime_pm_late_init();
++	return 0;
++}
++late_initcall(sh_pm_runtime_late_init);
