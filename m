@@ -1,8 +1,7 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 03/05] ARM: mach-shmobile: sh7372 late pm domain
-	off
-Date: Thu, 07 Jul 2011 22:32:37 +0900
-Message-ID: <20110707133237.22347.5463.sendpatchset__12269.3035439172$1310045244$gmane$org@t400s>
+Subject: [PATCH 04/05] PM: export pm_genpd_poweron() in header
+Date: Thu, 07 Jul 2011 22:32:45 +0900
+Message-ID: <20110707133245.22347.42754.sendpatchset__38218.7584219084$1310045247$gmane$org@t400s>
 References: <20110707133212.22347.68775.sendpatchset@t400s>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,44 +23,46 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm@opensource.se>
 
-Add sh7372 specific code to power down unused pm domains.
-
-This should really be replaced by some generic PM core
-code IMO, but until that happens this patch makes sure
-we don't waste power by leaving unused power domains on.
+Allow SoC-specific code to call pm_genpd_poweron().
 
 Signed-off-by: Magnus Damm <damm@opensource.se>
 ---
 
- arch/arm/mach-shmobile/pm-sh7372.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ Perhaps there are better ways to deal with this?
 
---- 0005/arch/arm/mach-shmobile/pm-sh7372.c
-+++ work/arch/arm/mach-shmobile/pm-sh7372.c	2011-07-07 20:15:19.000000000 +0900
-@@ -96,6 +96,17 @@ static bool pd_active_wakeup(struct devi
- 	return true;
- }
- 
-+static void sh7372_late_pm_domain_off(void)
-+{
-+	/* request power down of unused pm domains */
-+	queue_work(pm_wq, &sh7372_a4lc.genpd.power_off_work);
-+	queue_work(pm_wq, &sh7372_a4mp.genpd.power_off_work);
-+	queue_work(pm_wq, &sh7372_d4.genpd.power_off_work);
-+	queue_work(pm_wq, &sh7372_a3rv.genpd.power_off_work);
-+	queue_work(pm_wq, &sh7372_a3ri.genpd.power_off_work);
-+	queue_work(pm_wq, &sh7372_a3sg.genpd.power_off_work);
-+}
-+
- void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd)
+ drivers/base/power/domain.c |    2 +-
+ include/linux/pm_domain.h   |    5 +++++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+--- 0001/drivers/base/power/domain.c
++++ work/drivers/base/power/domain.c	2011-07-07 21:37:49.000000000 +0900
+@@ -37,7 +37,7 @@ static void genpd_sd_counter_dec(struct
+  * Restore power to @genpd and all of its parents so that it is possible to
+  * resume a device belonging to it.
+  */
+-static int pm_genpd_poweron(struct generic_pm_domain *genpd)
++int pm_genpd_poweron(struct generic_pm_domain *genpd)
  {
- 	struct generic_pm_domain *genpd = &sh7372_pd->genpd;
-@@ -107,6 +118,8 @@ void sh7372_init_pm_domain(struct sh7372
- 	genpd->power_off = pd_power_down;
- 	genpd->power_on = pd_power_up;
- 	pd_power_up(&sh7372_pd->genpd);
-+
-+	shmobile_runtime_pm_late_init = sh7372_late_pm_domain_off;
- }
+ 	int ret = 0;
  
- void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
+--- 0001/include/linux/pm_domain.h
++++ work/include/linux/pm_domain.h	2011-07-07 21:37:49.000000000 +0900
+@@ -63,6 +63,7 @@ extern int pm_genpd_remove_subdomain(str
+ 				     struct generic_pm_domain *target);
+ extern void pm_genpd_init(struct generic_pm_domain *genpd,
+ 			  struct dev_power_governor *gov, bool is_off);
++extern int pm_genpd_poweron(struct generic_pm_domain *genpd);
+ #else
+ static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 				      struct device *dev)
+@@ -86,6 +87,10 @@ static inline int pm_genpd_remove_subdom
+ }
+ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+ 				 struct dev_power_governor *gov, bool is_off) {}
++static inline int pm_genpd_poweron(struct generic_pm_domain *genpd)
++{
++	return -ENOSYS;
++}
+ #endif
+ 
+ #endif /* _LINUX_PM_DOMAIN_H */
