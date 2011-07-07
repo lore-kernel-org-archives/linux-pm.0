@@ -1,11 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management fix for 3.0
-Date: Thu, 7 Jul 2011 22:11:29 +0200
-Message-ID: <201107072211.29206.rjw__2920.07219181887$1310069563$gmane$org@sisk.pl>
+Subject: Re: [PATCH 1/7] pm: improve error code of
+	pm_notifier_call_chain()
+Date: Thu, 7 Jul 2011 23:06:02 +0200
+Message-ID: <201107072306.02708.rjw__29342.713885899$1310072783$gmane$org@sisk.pl>
+References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
+	<20110703171539.GF21127@elf.ucw.cz>
+	<CAC5umyibWo===0Lr5Wz2moOvnf0qiAvFLo4--sLCRmx4sJrdRA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAC5umyibWo===0Lr5Wz2moOvnf0qiAvFLo4--sLCRmx4sJrdRA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,24 +20,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-s390@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Monday, July 04, 2011, Akinobu Mita wrote:
+> 2011/7/4 Pavel Machek <pavel@ucw.cz>:
+> > On Sun 2011-07-03 23:16:15, Akinobu Mita wrote:
+> >> This enables pm_notifier_call_chain() to get the actual error code
+> >> in the callback rather than always assume -EINVAL by converting all
+> >> PM notifier calls to return encapsulate error code with
+> >> notifier_from_errno().
+> >>
+> >> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> >> Cc: Pavel Machek <pavel@ucw.cz>
+> >
+> > Nothing obviously wrong here.
+> 
+> Thanks. Can I add your ACK for this patch?
 
-Please pull a power management fix for 3.0 from:
+Do you want me to take this patch?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-fixes
-
-It fixes an old bug, but such that causes a BUG_ON() to trigger and it is
--stable material.
-
-
- kernel/power/snapshot.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
----------------
-
-Rafael J. Wysocki (1):
-      PM / Hibernate: Fix free_unnecessary_pages()
+Rafael
