@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 2/3] PM / DEVFREQ: add example governors
-Date: Thu, 7 Jul 2011 23:08:38 +0200
-Message-ID: <201107072308.38622.rjw__22134.1657256291$1310072890$gmane$org@sisk.pl>
-References: <1306471995-4048-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107041043.25150.rjw@sisk.pl>
-	<CAJ0PZbQ0ENk-vEebqiD=DGHZVtswHQkPre8wUqM2vwR_r+V=Uw@mail.gmail.com>
+Subject: Re: [PATCH 5/7] PM: PM notifier error injection
+Date: Thu, 7 Jul 2011 23:14:58 +0200
+Message-ID: <201107072314.59052.rjw__21395.2341619462$1310073362$gmane$org@sisk.pl>
+References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
+	<1309702581-16863-6-git-send-email-akinobu.mita@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbQ0ENk-vEebqiD=DGHZVtswHQkPre8wUqM2vwR_r+V=Uw@mail.gmail.com>
+In-Reply-To: <1309702581-16863-6-git-send-email-akinobu.mita@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,69 +18,95 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 04, 2011, MyungJoo Ham wrote:
-> On Mon, Jul 4, 2011 at 5:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday, July 04, 2011, MyungJoo Ham wrote:
-> >> Hello,
-> >>
-> >> 2011/7/3 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> > Hi,
-> >> >
-> >> > On Friday, May 27, 2011, MyungJoo Ham wrote:
-> >> >> Three CPUFREQ-like governors are provided as examples.
-> >> >>
-> >> >> powersave: use the lowest frequency possible. The user (device) should
-> >> >> set the polling_ms as 0 because polling is useless for this governor.
-> >> >>
-> >> >> performance: use the highest freqeuncy possible. The user (device)
-> >> >> should set the polling_ms as 0 because polling is useless for this
-> >> >> governor.
-> >> >>
-> >> >> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
-> >> >>
-> >> >> When a user updates OPP entries (enable/disable/add), OPP framework
-> >> >> automatically notifies DEVFREQ to update operating frequency
-> >> >> accordingly. Thus, DEVFREQ users (device drivers) do not need to update
-> >> >> DEVFREQ manually with OPP entry updates or set polling_ms for powersave
-> >> >> , performance, or any other "static" governors.
-> >> >>
-> >> >> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> >> >> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> >> []
-> >> >> +
-> >> >> +     /* Set the desired frequency based on the load */
-> >> >> +     a = (unsigned long long) stat.busy_time * stat.current_frequency;
-> >> >
-> >> > What's the purpose of the conversion?
-> >>
-> >> Assuming that the work speed of a device is proportional to its
-> >> frequency, it measures the amount of work done.
-> >> It's time * work/time. For example, during the last 10 second, if the
-> >> busy_time was 5 sec and frequency was 10MHz,
-> >> it's "50M", which is same as 20MHz and 2.5 sec.
-> >
-> > I understand that, but my question was why you're doing a forced conversion
-> > to (unsigned long long).
+On Sunday, July 03, 2011, Akinobu Mita wrote:
+> This provides the ability to inject artifical errors to PM notifier
+> chain callbacks.  It is controlled through debugfs interface under
+> /sys/kernel/debug/pm-notifier-error-inject/
 > 
-> Ah.. that was for the 64bit operations.
+> Each of the files in the directory represents an event which can be
+> failed and contains the error code.  If the notifier call chain should
+> be failed with some events notified, write the error code to the files.
 > 
-> Both busy_time and current_frequency are 32bit and current_frequency
-> may be a big number.
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: linux-pm@lists.linux-foundation.org
+> ---
+>  kernel/power/main.c |   30 ++++++++++++++++++++++++++++++
+>  lib/Kconfig.debug   |    8 ++++++++
+>  2 files changed, 38 insertions(+), 0 deletions(-)
 > 
-> Thus, in order to get "freq" value without losing bits (e.g., if
-> current_frequency = 1GHz and busy_time = 8000, we get an overflow
-> without 64bit operations), I've inserted 64bit operations with the
-> conversion. For the cosmetic reasons, it appears that "u64" looks
-> better though.
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 6c601f8..04b3774 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -42,6 +42,36 @@ int pm_notifier_call_chain(unsigned long val)
+>  	return notifier_to_errno(ret);
+>  }
+>  
+> +#ifdef CONFIG_PM_NOTIFIER_ERROR_INJECTION
+> +
+> +static struct err_inject_notifier_block err_inject_pm_notifier = {
+> +	.actions = {
+> +		{ ERR_INJECT_NOTIFIER_ACTION(PM_HIBERNATION_PREPARE) },
+> +		{ ERR_INJECT_NOTIFIER_ACTION(PM_SUSPEND_PREPARE) },
+> +		{ ERR_INJECT_NOTIFIER_ACTION(PM_RESTORE_PREPARE) },
+> +		{}
 
-You wouldn't need the explicit type casting if you did
+Why have you omitted the PM_POST_* actions?
 
-a = stat.busy_time;
-a *= stat.current_frequency;
+> +	}
+> +};
+> +
+> +static int __init err_inject_pm_notifier_init(void)
+> +{
+> +	int err;
+> +
+> +	err = err_inject_notifier_block_init(&err_inject_pm_notifier,
+> +				"pm-notifier-error-inject", -1);
+> +	if (err)
+> +		return err;
+> +
+> +	err = register_pm_notifier(&err_inject_pm_notifier.nb);
+> +	if (err)
+> +		err_inject_notifier_block_cleanup(&err_inject_pm_notifier);
+> +
+> +	return err;
+> +}
+> +late_initcall(err_inject_pm_notifier_init);
+> +
+> +#endif /* CONFIG_PM_NOTIFIER_ERROR_INJECTION */
+> +
+>  /* If set, devices may be suspended and resumed asynchronously. */
+>  int pm_async_enabled = 1;
+>  
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index d944b32..3ffb38b 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -1043,6 +1043,14 @@ config CPU_NOTIFIER_ERROR_INJECTION
+>  	  # echo 0 > /sys/devices/system/cpu/cpu1/online
+>  	  bash: echo: write error: Operation not permitted
+>  
+> +config PM_NOTIFIER_ERROR_INJECTION
+> +	bool "PM notifier error injection"
+> +	depends on PM_DEBUG && NOTIFIER_ERROR_INJECTION
+> +	help
+> +	  This option provides the ability to inject artifical errors to
+> +	  PM notifier chain callbacks.  It is controlled through debugfs
+> +	  interface under /sys/kernel/debug/pm-notifier-error-inject/
+
+I'm not sure the help is necessary.  I think it should be selected
+automatically if both PM_DEBUG and NOTIFIER_ERROR_INJECTION are set.
+
+> +
+>  config CPU_NOTIFIER_ERROR_INJECT
+>  	tristate "CPU notifier error injection module"
+>  	depends on HOTPLUG_CPU && DEBUG_KERNEL
 
 Thanks,
 Rafael
