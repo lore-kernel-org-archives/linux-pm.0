@@ -1,15 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH] power: introduce Charger-Manager
-Date: Fri, 8 Jul 2011 09:16:25 +0900
-Message-ID: <CAJ0PZbS0oaaaGPqdOVrcL-Y9J-F_cD1EAy+wNLKBv4uc7Rshbg__25428.4926377752$1310084335$gmane$org@mail.gmail.com>
-References: <1309424069-15965-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107072318.45500.rjw@sisk.pl>
-Reply-To: myungjoo.ham@gmail.com
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [Update][PATCH 6/10] PM / Domains: System-wide
+	transitions support for generic domains (v5)
+Date: Thu, 07 Jul 2011 17:29:35 -0700
+Message-ID: <871uy1d380.fsf__44807.0578896024$1310085044$gmane$org@ti.com>
+References: <201106112223.04972.rjw@sisk.pl> <201106252324.13454.rjw@sisk.pl>
+	<201106252328.31882.rjw@sisk.pl> <201106290144.01186.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107072318.45500.rjw@sisk.pl>
+In-Reply-To: <201106290144.01186.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 29 Jun 2011 01:44:00 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,63 +21,35 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, dg77.kim@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, Anton Vorontsov <cbouatmailru@gmail.com>, linux-pm@lists.linux-foundation.org
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMS83LzggUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPjoKPiBPbiBUaHVyc2RheSwg
-SnVuZSAzMCwgMjAxMSwgTXl1bmdKb28gSGFtIHdyb3RlOgo+PiBDaGFyZ2VyIE1hbmFnZXIgcHJv
-dmlkZXMgaW4ta2VybmVsIGJhdHRlcnkgY2hhcmdlciBtYW5hZ2VtZW50IHRoYXQKPj4gcmVxdWly
-ZXMgdGVtcGVyYXR1cmUgbW9uaXRvcmluZyBkdXJpbmcgYm90aCBub3JtYWwgYW5kIHN1c3BlbmQt
-dG8tUkFNIHN0YXRlcwo+PiBhbmQgd2hlcmUgZWFjaCBiYXR0ZXJ5IG1heSBoYXZlIG11bHRpcGxl
-IGNoYXJnZXJzIGF0dGFjaGVkIGFuZCB0aGUgdXNlcmxhbmQKPj4gd2FudHMgdG8gbG9vayBhdCB0
-aGUgYWdncmVnYXRlZCBpbmZvcm1hdGlvbiBvZiB0aGUgbXVsdGlwbGUgY2hhcmdlcnMuCj4+Cj4+
-IEZvciB0aGUgZGlzY3Vzc2lvbnMgYWJvdXQgdGhlIG5lZWQgZm9yIGluLXN1c3BlbmQgbW9uaXRv
-cmluZywgcGxlYXNlCj4+IHJlZmVyIHRvIHRoZSBkaXNjdXNzaW9ucyBvZiBzdXNwZW5kLWFnYWlu
-IGluIFBNOgo+PiB2MSBodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL3BpcGVybWFp
-bC9saW51eC1wbS8yMDExLUFwcmlsLzAzMTA1Mi5odG1sCj4+IHYyIGh0dHBzOi8vbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmcvcGlwZXJtYWlsL2xpbnV4LXBtLzIwMTEtQXByaWwvMDMxMTExLmh0
-bWwKPj4gdjMgaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9waXBlcm1haWwvbGlu
-dXgtcG0vMjAxMS1NYXkvMDMxMjY3Lmh0bWwKPj4gdjQgaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZy9waXBlcm1haWwvbGludXgtcG0vMjAxMS1NYXkvMDMxMzU3Lmh0bWwKPj4gdjUg
-KGxhc3QsIGFwcGxpZWQpIGh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvcGlwZXJt
-YWlsL2xpbnV4LXBtLzIwMTEtSnVuZS8wMzE1NjEuaHRtbAo+Pgo+PiBUbyBzZWUgdGhlIHVzYWdl
-IGV4YW1wbGUsIHBsZWFzZSByZWZlciB0bzoKPj4gaHR0cDovL2dpdC5pbmZyYWRlYWQub3JnL3Vz
-ZXJzL2ttcGFyay9saW51eC0yLjYtc2Ftc3VuZy9zaG9ydGxvZy9yZWZzL2hlYWRzL2NoYXJnZXIt
-bWFuYWdlcgo+PiBJbiB0aGlzIGdpdCBicmFuY2gsIGEgdGVzdCBjb2RlIGZvciBFeHlub3M0LU5V
-UkkgaXMgc2hvd24uCj4+Cj4+IENoYXJnZXIgTWFuYWdlciBpcyBhIHBsYXRmb3JtX2RyaXZlciB3
-aXRoIHBvd2VyLXN1cHBseS1jbGFzcyBlbnRyaWVzLgo+PiBBbiBpbnN0YW5jZSBvZiBDaGFyZ2Vy
-IE1hbmFnZXIgKGEgcGxhdGZvcm0tZGV2aWNlIGNyZWF0ZWQgd2l0aAo+PiBDaGFyZ2VyLU1hbmFn
-ZXIpIHJlcHJlc2VudHMgYSBiYXR0ZXJ5IHdpdGggY2hhcmdlcnMuIElmIHRoZXJlIGFyZSBtdWx0
-aXBsZQo+PiBiYXR0ZXJpZXMgd2l0aCB0aGVpciBvd24gY2hhcmdlcnMgYWN0aW5nIGluZGVwZW5k
-ZW50bHkgaW4gYSBzeXN0ZW0sCj4+IHRoZSBzeXN0ZW0gbWF5IG5lZWQgbXVsdGlwbGUgaW5zdGFu
-Y2VzIG9mIENoYXJnZXIgTWFuYWdlci4KPj4KPj4gQ2hhcmdlciBNYW5hZ2VyIGdsdWVzIG11bHRp
-cGxlIGNoYXJnZXItcmVsYXRlZCBmcmFtZXdvcmtzIChyZWd1bGF0b3JzIG9mCj4+IGNoYXJnZXJz
-LCBwb3dlci1zdXBwbHktY2xhc3MgZnJvbSBjaGFyZ2VycyBhbmQgZnVlbC1nYXVnZSwgUlRDLAo+
-PiBzdXNwZW5kLWFnYWluLCAuLi4pIHRvZ2V0aGVyIHRvIHByb3ZpZGUgYWdncmVnYXRlZCBpbmZv
-cm1hdGlvbiBhbmQKPj4gdHJhbnNwYXJlbnQgYmF0dGVyeSBtb25pdG9yaW5nIHRvIHVzZXJzcGFj
-ZS4KPj4KPj4gQmVjYXVzZSBiYXR0ZXJ5IGhlYWx0aCBtb25pdG9yaW5nIHNob3VsZCBiZSBkb25l
-IGV2ZW4gd2hlbiBzdXNwZW5kZWQsCj4+IGl0IG5lZWRzIHRvIHdha2UgdXAgYW5kIHN1c3BlbmQg
-cGVyaW9kaWNhbGx5LiBUaHVzLCB1c2Vyc3BhY2UgYmF0dGVyeQo+PiBtb25pdG9yaW5nIG1heSBp
-bmN1ciB0b28gbXVjaCBvdmVyaGVhZDsgZXZlcnkgZGV2aWNlIGFuZCB0YXNrIGlzIHdha2VkCj4+
-IHVwIHBlcmlvZGljYWxseS4gQ2hhcmdlciBNYW5hZ2VyIHVzZXMgc3VzcGVuZC1hZ2FpbiAoaW4g
-bmV4dCBQTSkgdG8gcHJvdmlkZQo+PiBpbi1zdXNwZW5kIG1vbml0b3JpbmcuIE11bHRpcGxlIGNo
-YXJnZXJzIChlLmcuLCBVU0IsIHdpcmVsZXNzLCBhbmQgc29sYXIKPj4gcGFuZWxzKSBtYXkgYmUg
-aW5jbHVkZWQgYXMgcGFpcnMgb2YgYSByZWd1bGF0b3IgYW5kIGEgcG93ZXItc3VwcGx5LWNsYXNz
-Cj4+IHBlciBjaGFyZ2VyLiBDaGFyZ2VyIE1hbmFnZXIgcHJvdmlkZXMgcG93ZXItc3VwcGx5LWNs
-YXNzIGFnZ3JlZ2F0aW5nCj4+IGluZm9ybWF0aW9uIGZyb20gbXVsdGlwbGUgY2hhcmdlcnMgYW5k
-IGEgZnVlbC1nYXVnZSBhbmQgVUVWRU5UIG5vdGlmeWluZwo+PiBzdGF0dXMgY2hhbmdlcy4gwqBN
-dWx0aXBsZSBpbnN0YW5jZXMgb2YgQ2hhcmdlciBNYW5hZ2VyIGVuYWJsZSBtdWx0aXBsZQo+PiBi
-YXR0ZXJpZXMuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
-QHNhbXN1bmcuY29tPgo+PiBTaWduZWQtb2ZmLWJ5OiBLeXVuZ21pbiBQYXJrIDxreXVuZ21pbi5w
-YXJrQHNhbXN1bmcuY29tPgo+Cj4gSSBoYXZlIHRyaWVkIHRvIHJldmlldyB0aGlzIHBhdGNoLCBi
-dXQgaXQgaXMgX2h1Z2VfLiDCoElzIHRoZXJlIGFueSByZWFzb25hYmxlCj4gd2F5IHRvIHNwbGl0
-IGl0IGludG8gYSBzZXJpZXMgb2Ygc21hbGxlciBwYXRjaGVzIHRoYXQgd291bGQgYmUgZWFzaWVy
-IHRvCj4gY29tcHJlaGVuZD8KPgo+IFJhZmFlbAo+CgpBaC4uIG9rLi4KCkknbGwgdHJ5IHRvIHNw
-bGl0IGl0IGludG8gbXVsdGlwbGUgcGF0Y2hlcyBieSBpbnRyb2R1Y2luZyBtYWpvciBmdW5jdGlv
-bnMgZmlyc3QuCgpUaGFua3MuCgoKLSBNeXVuZ0pvby4KLS0gCk15dW5nSm9vIEhhbSAo7ZWo66qF
-7KO8KSwgUGguRC4KTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwKRGlnaXRhbCBNZWRpYSBh
-bmQgQ29tbXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKU2Ftc3VuZyBFbGVjdHJvbmljcwpjZWxs
-OiA4Mi0xMC02NzE0LTI4NTgKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1wbQ==
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Make generic PM domains support system-wide power transitions
+> (system suspend and hibernation).  Add suspend, resume, freeze, thaw,
+> poweroff and restore callbacks to be associated with struct
+> generic_pm_domain objects and make pm_genpd_init() use them as
+> appropriate.
+>
+> The new callbacks do nothing for devices belonging to power domains
+> that were powered down at run time (before the transition).  
+
+Thinking about this some more, how is a driver supposed to reconfigure
+wakeups during suspend if it has already been runtime suspended?
+
+For example, assume a device where device_may_wakeup() == false.  This
+means wakeups during *suspend* are disabled, but wakeups wakeups are
+assumed to enabled when it is runtime suspended.
+
+So now, assume this device is RPM_SUSPENDED, it has wakeups *enabled*,
+and then system suspend comes along.  
+
+With this current patch, the driver will never receive any callbacks, so
+it can never disable its wakeups.  
+
+Am I missing something?
+
+Kevin
