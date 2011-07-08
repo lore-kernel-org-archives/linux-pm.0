@@ -1,16 +1,15 @@
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch 1/1] [PATCH] include storage keys in
-	hibernation image.
-Date: Fri, 8 Jul 2011 10:29:11 +0200
-Message-ID: <20110708102911.3c4d83b6__23843.9713408754$1310113827$gmane$org@mschwide>
-References: <20110608074523.211912903@de.ibm.com>
-	<201106142250.15041.rjw@sisk.pl> <20110615093629.07f01779@mschwide>
-	<201107072336.26151.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Update][PATCH 6/10] PM / Domains: System-wide
+	transitions support for generic domains (v5)
+Date: Fri, 8 Jul 2011 11:24:17 +0200
+Message-ID: <201107081124.17463.rjw__11694.5445108742$1310117053$gmane$org@sisk.pl>
+References: <201106112223.04972.rjw@sisk.pl> <201106290144.01186.rjw@sisk.pl>
+	<871uy1d380.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107072336.26151.rjw@sisk.pl>
+In-Reply-To: <871uy1d380.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +19,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 7 Jul 2011 23:36:25 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Wednesday, June 15, 2011, Martin Schwidefsky wrote:
-> > On Tue, 14 Jun 2011 22:50:14 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> ...
-> > 
-> > Well before the preallocation kicked in we don't know which are the relevant
-> > storage keys. The only other option would be to store all of them which I
-> > consider to be a inferior solution. 
+On Friday, July 08, 2011, Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> I've been thinking about that recently a bit.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > Make generic PM domains support system-wide power transitions
+> > (system suspend and hibernation).  Add suspend, resume, freeze, thaw,
+> > poweroff and restore callbacks to be associated with struct
+> > generic_pm_domain objects and make pm_genpd_init() use them as
+> > appropriate.
+> >
+> > The new callbacks do nothing for devices belonging to power domains
+> > that were powered down at run time (before the transition).  
 > 
-> Don't we need to restore the keys of the page frames that aren't copied
-> into the image too?
+> Thinking about this some more, how is a driver supposed to reconfigure
+> wakeups during suspend if it has already been runtime suspended?
 
-Pages that are free (= not part of the image) will get a zero storage key
-once they are allocated again. So no, we do not need to include these
-keys into the hibernation image.
+If the device belongs to a PM domain that has been powered off, it
+won't be notified.
 
+> For example, assume a device where device_may_wakeup() == false.  This
+> means wakeups during *suspend* are disabled, but wakeups wakeups are
+> assumed to enabled when it is runtime suspended.
+> 
+> So now, assume this device is RPM_SUSPENDED, it has wakeups *enabled*,
+> and then system suspend comes along.  
+> 
+> With this current patch, the driver will never receive any callbacks, so
+> it can never disable its wakeups.  
+>
+> Am I missing something?
 
--- 
-blue skies,
-   Martin.
+As I said above, this only happens with devices that belog to PM domains
+that were powered off before system suspend has started, so the problem
+is limited to devices that wakeup is signaled on behalf of even when they
+have no power.
 
-"Reality continues to ruin my life." - Calvin.
+So this is a limitation, but not affecting all platforms.
+
+There are a few ways to avoid this limitation I can think of:
+(1) Add a "make me operational during system suspend" flag to struct dev_pm_info
+    and run pm_runtime_resume() on such devices from the core (either dpm_prepare()
+    core, or pm_genpd_prepare()).
+(2) Add a "my .prepare() is safe to run if device is not accessible" flag to
+    struct dev_pm_info and make pm_genpd_prepare() execute .prepare() for such
+    devices regardless of whether or not their PM domains are off.
+(3) Call .prepare() from all drivers unconditionally during system suspend
+    (and probably .complete() too) in the hope they won't access inaccessible
+    devices.
+Probably, there's more.
+
+In any case I think it's material for future work.
+
+Thanks,
+Rafael
