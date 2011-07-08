@@ -1,14 +1,15 @@
-From: asinghal@codeaurora.org
-Subject: Re: [RFC] Unprepare callback for cpuidle_device
-Date: Thu, 7 Jul 2011 12:52:59 -0700 (PDT)
-Message-ID: <82b596dce7b84db206d3afb6da564fb9.squirrel@www.codeaurora.org>
-References: <a619d8bbefd2f390a13d09084583dd39.squirrel@www.codeaurora.org>
-	<4E15516E.5040209@gmail.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] power: introduce Charger-Manager
+Date: Fri, 8 Jul 2011 09:16:25 +0900
+Message-ID: <CAJ0PZbS0oaaaGPqdOVrcL-Y9J-F_cD1EAy+wNLKBv4uc7Rshbg__25428.4926377752$1310084335$gmane$org@mail.gmail.com>
+References: <1309424069-15965-1-git-send-email-myungjoo.ham@samsung.com>
+	<201107072318.45500.rjw@sisk.pl>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4E15516E.5040209@gmail.com>
+In-Reply-To: <201107072318.45500.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,61 +19,64 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Trinabh Gupta <g.trinabh@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, asinghal@codeaurora.org, johlstei@codeaurora.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, dg77.kim@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, Anton Vorontsov <cbouatmailru@gmail.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Trinabh,
-              i cannot use the enter callback due to the following reason:
-
-the residency calculation(tick)nohz_get_sleep_length) and the idle state
-selection happens in the menu governor. The enter callback is called with
-the selected state.
-
-So cancelling the hrtimer that would affect the residency value calculated
-in the menu governor, in the enter callback is not possible. The timer
-needs to be cancelled before the select call is made.
-
-thanks,
-amar
-
-
-
-> On 07/06/2011 04:23 PM, asinghal@codeaurora.org wrote:
->> We plan to use high resolution timers in one of our modules, with the
->> requirement that we cancel these timers when the cpu goes idle and
->> restart
->> them when the cpu comes out of idle.
->>
->> We are cancelling the timers in cpuidle prepare callback. The problem is
->> that if the need_resched() call in drivers/cpuidle/cpuidle.c returns
->> true,
->> how do we restart the timer? If the call returns false, we can restart
->> the
->> timer in the cpuidle enter callback.
->
-> Hi Amar,
->
-> I think you should not use cpuidle prepare callback at all. It may be
-> removed soon (see https://lkml.org/lkml/2011/6/6/261) and I think
-> there are better ways to achieve what you are trying to do.
->
-> I think everything should go into the enter routines (the idle routines
-> provided by the driver). That way you would not have to worry about
-> need_resched() in cpuidle.c. Also it would be a cleaner implementation
-> as you wouldn't touch generic cpuidle code.
->
->>
->> The solution to the problem that we have in mind is adding an unprepare
->> callback to the cpuidle_device struct, and calling it if needs_resched()
->> returns true. Another option is to implement deferred timers for
->> hrtimers.
->> Which of the two options is the better solution, or is there another
->> feasible alternative?
->
-> As i said, everything should go inside enter routine and
-> you wouldn't have to use/implement prepare/unprepare callbacks.
->
-> Thanks
-> -Trinabh
->
+MjAxMS83LzggUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPjoKPiBPbiBUaHVyc2RheSwg
+SnVuZSAzMCwgMjAxMSwgTXl1bmdKb28gSGFtIHdyb3RlOgo+PiBDaGFyZ2VyIE1hbmFnZXIgcHJv
+dmlkZXMgaW4ta2VybmVsIGJhdHRlcnkgY2hhcmdlciBtYW5hZ2VtZW50IHRoYXQKPj4gcmVxdWly
+ZXMgdGVtcGVyYXR1cmUgbW9uaXRvcmluZyBkdXJpbmcgYm90aCBub3JtYWwgYW5kIHN1c3BlbmQt
+dG8tUkFNIHN0YXRlcwo+PiBhbmQgd2hlcmUgZWFjaCBiYXR0ZXJ5IG1heSBoYXZlIG11bHRpcGxl
+IGNoYXJnZXJzIGF0dGFjaGVkIGFuZCB0aGUgdXNlcmxhbmQKPj4gd2FudHMgdG8gbG9vayBhdCB0
+aGUgYWdncmVnYXRlZCBpbmZvcm1hdGlvbiBvZiB0aGUgbXVsdGlwbGUgY2hhcmdlcnMuCj4+Cj4+
+IEZvciB0aGUgZGlzY3Vzc2lvbnMgYWJvdXQgdGhlIG5lZWQgZm9yIGluLXN1c3BlbmQgbW9uaXRv
+cmluZywgcGxlYXNlCj4+IHJlZmVyIHRvIHRoZSBkaXNjdXNzaW9ucyBvZiBzdXNwZW5kLWFnYWlu
+IGluIFBNOgo+PiB2MSBodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL3BpcGVybWFp
+bC9saW51eC1wbS8yMDExLUFwcmlsLzAzMTA1Mi5odG1sCj4+IHYyIGh0dHBzOi8vbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmcvcGlwZXJtYWlsL2xpbnV4LXBtLzIwMTEtQXByaWwvMDMxMTExLmh0
+bWwKPj4gdjMgaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9waXBlcm1haWwvbGlu
+dXgtcG0vMjAxMS1NYXkvMDMxMjY3Lmh0bWwKPj4gdjQgaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZy9waXBlcm1haWwvbGludXgtcG0vMjAxMS1NYXkvMDMxMzU3Lmh0bWwKPj4gdjUg
+KGxhc3QsIGFwcGxpZWQpIGh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvcGlwZXJt
+YWlsL2xpbnV4LXBtLzIwMTEtSnVuZS8wMzE1NjEuaHRtbAo+Pgo+PiBUbyBzZWUgdGhlIHVzYWdl
+IGV4YW1wbGUsIHBsZWFzZSByZWZlciB0bzoKPj4gaHR0cDovL2dpdC5pbmZyYWRlYWQub3JnL3Vz
+ZXJzL2ttcGFyay9saW51eC0yLjYtc2Ftc3VuZy9zaG9ydGxvZy9yZWZzL2hlYWRzL2NoYXJnZXIt
+bWFuYWdlcgo+PiBJbiB0aGlzIGdpdCBicmFuY2gsIGEgdGVzdCBjb2RlIGZvciBFeHlub3M0LU5V
+UkkgaXMgc2hvd24uCj4+Cj4+IENoYXJnZXIgTWFuYWdlciBpcyBhIHBsYXRmb3JtX2RyaXZlciB3
+aXRoIHBvd2VyLXN1cHBseS1jbGFzcyBlbnRyaWVzLgo+PiBBbiBpbnN0YW5jZSBvZiBDaGFyZ2Vy
+IE1hbmFnZXIgKGEgcGxhdGZvcm0tZGV2aWNlIGNyZWF0ZWQgd2l0aAo+PiBDaGFyZ2VyLU1hbmFn
+ZXIpIHJlcHJlc2VudHMgYSBiYXR0ZXJ5IHdpdGggY2hhcmdlcnMuIElmIHRoZXJlIGFyZSBtdWx0
+aXBsZQo+PiBiYXR0ZXJpZXMgd2l0aCB0aGVpciBvd24gY2hhcmdlcnMgYWN0aW5nIGluZGVwZW5k
+ZW50bHkgaW4gYSBzeXN0ZW0sCj4+IHRoZSBzeXN0ZW0gbWF5IG5lZWQgbXVsdGlwbGUgaW5zdGFu
+Y2VzIG9mIENoYXJnZXIgTWFuYWdlci4KPj4KPj4gQ2hhcmdlciBNYW5hZ2VyIGdsdWVzIG11bHRp
+cGxlIGNoYXJnZXItcmVsYXRlZCBmcmFtZXdvcmtzIChyZWd1bGF0b3JzIG9mCj4+IGNoYXJnZXJz
+LCBwb3dlci1zdXBwbHktY2xhc3MgZnJvbSBjaGFyZ2VycyBhbmQgZnVlbC1nYXVnZSwgUlRDLAo+
+PiBzdXNwZW5kLWFnYWluLCAuLi4pIHRvZ2V0aGVyIHRvIHByb3ZpZGUgYWdncmVnYXRlZCBpbmZv
+cm1hdGlvbiBhbmQKPj4gdHJhbnNwYXJlbnQgYmF0dGVyeSBtb25pdG9yaW5nIHRvIHVzZXJzcGFj
+ZS4KPj4KPj4gQmVjYXVzZSBiYXR0ZXJ5IGhlYWx0aCBtb25pdG9yaW5nIHNob3VsZCBiZSBkb25l
+IGV2ZW4gd2hlbiBzdXNwZW5kZWQsCj4+IGl0IG5lZWRzIHRvIHdha2UgdXAgYW5kIHN1c3BlbmQg
+cGVyaW9kaWNhbGx5LiBUaHVzLCB1c2Vyc3BhY2UgYmF0dGVyeQo+PiBtb25pdG9yaW5nIG1heSBp
+bmN1ciB0b28gbXVjaCBvdmVyaGVhZDsgZXZlcnkgZGV2aWNlIGFuZCB0YXNrIGlzIHdha2VkCj4+
+IHVwIHBlcmlvZGljYWxseS4gQ2hhcmdlciBNYW5hZ2VyIHVzZXMgc3VzcGVuZC1hZ2FpbiAoaW4g
+bmV4dCBQTSkgdG8gcHJvdmlkZQo+PiBpbi1zdXNwZW5kIG1vbml0b3JpbmcuIE11bHRpcGxlIGNo
+YXJnZXJzIChlLmcuLCBVU0IsIHdpcmVsZXNzLCBhbmQgc29sYXIKPj4gcGFuZWxzKSBtYXkgYmUg
+aW5jbHVkZWQgYXMgcGFpcnMgb2YgYSByZWd1bGF0b3IgYW5kIGEgcG93ZXItc3VwcGx5LWNsYXNz
+Cj4+IHBlciBjaGFyZ2VyLiBDaGFyZ2VyIE1hbmFnZXIgcHJvdmlkZXMgcG93ZXItc3VwcGx5LWNs
+YXNzIGFnZ3JlZ2F0aW5nCj4+IGluZm9ybWF0aW9uIGZyb20gbXVsdGlwbGUgY2hhcmdlcnMgYW5k
+IGEgZnVlbC1nYXVnZSBhbmQgVUVWRU5UIG5vdGlmeWluZwo+PiBzdGF0dXMgY2hhbmdlcy4gwqBN
+dWx0aXBsZSBpbnN0YW5jZXMgb2YgQ2hhcmdlciBNYW5hZ2VyIGVuYWJsZSBtdWx0aXBsZQo+PiBi
+YXR0ZXJpZXMuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
+QHNhbXN1bmcuY29tPgo+PiBTaWduZWQtb2ZmLWJ5OiBLeXVuZ21pbiBQYXJrIDxreXVuZ21pbi5w
+YXJrQHNhbXN1bmcuY29tPgo+Cj4gSSBoYXZlIHRyaWVkIHRvIHJldmlldyB0aGlzIHBhdGNoLCBi
+dXQgaXQgaXMgX2h1Z2VfLiDCoElzIHRoZXJlIGFueSByZWFzb25hYmxlCj4gd2F5IHRvIHNwbGl0
+IGl0IGludG8gYSBzZXJpZXMgb2Ygc21hbGxlciBwYXRjaGVzIHRoYXQgd291bGQgYmUgZWFzaWVy
+IHRvCj4gY29tcHJlaGVuZD8KPgo+IFJhZmFlbAo+CgpBaC4uIG9rLi4KCkknbGwgdHJ5IHRvIHNw
+bGl0IGl0IGludG8gbXVsdGlwbGUgcGF0Y2hlcyBieSBpbnRyb2R1Y2luZyBtYWpvciBmdW5jdGlv
+bnMgZmlyc3QuCgpUaGFua3MuCgoKLSBNeXVuZ0pvby4KLS0gCk15dW5nSm9vIEhhbSAo7ZWo66qF
+7KO8KSwgUGguRC4KTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwKRGlnaXRhbCBNZWRpYSBh
+bmQgQ29tbXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKU2Ftc3VuZyBFbGVjdHJvbmljcwpjZWxs
+OiA4Mi0xMC02NzE0LTI4NTgKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1wbQ==
