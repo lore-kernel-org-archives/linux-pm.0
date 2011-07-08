@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH 6/10] PM / Domains: System-wide
-	transitions support for generic domains (v5)
-Date: Fri, 8 Jul 2011 20:06:49 +0200
-Message-ID: <201107082006.49660.rjw__41137.5966309153$1310148392$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1107081033000.2208-100000@iolanthe.rowland.org>
-	<87y6088z9n.fsf@ti.com>
+Subject: Re: [PATCH 6/7] ARM / Samsung: Use struct syscore_ops
+	for "core" power management
+Date: Fri, 8 Jul 2011 20:12:07 +0200
+Message-ID: <201107082012.07610.rjw__21644.3581659862$1310148706$gmane$org@sisk.pl>
+References: <201103280125.11750.rjw@sisk.pl> <201103280129.50192.rjw@sisk.pl>
+	<20110327234521.GH9995@trinity.fluff.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87y6088z9n.fsf@ti.com>
+In-Reply-To: <20110327234521.GH9995@trinity.fluff.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,85 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: linux-arm-kernel@lists.infradead.org
+Cc: Russell King <linux@arm.linux.org.uk>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Ben Dooks <ben-linux@fluff.org>, Kay Sievers <kay.sievers@suse.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 08, 2011, Kevin Hilman wrote:
-> Alan Stern <stern@rowland.harvard.edu> writes:
+On Monday, March 28, 2011, Ben Dooks wrote:
+> On Mon, Mar 28, 2011 at 01:29:49AM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Replace sysdev classes and struct sys_device objects used for "core"
+> > power management by Samsung platforms with struct syscore_ops objects
+> > that are simpler.
+> > 
+> > This generally reduces the code size and the kernel memory footprint.
+> > It also is necessary for removing sysdevs entirely from the kernel in
+> > the future.
 > 
-> > On Fri, 8 Jul 2011, Rafael J. Wysocki wrote:
-> >
-> >> On Friday, July 08, 2011, Kevin Hilman wrote:
-> >> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> > 
-> >> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >> > >
-> >> > > Make generic PM domains support system-wide power transitions
-> >> > > (system suspend and hibernation).  Add suspend, resume, freeze, thaw,
-> >> > > poweroff and restore callbacks to be associated with struct
-> >> > > generic_pm_domain objects and make pm_genpd_init() use them as
-> >> > > appropriate.
-> >> > >
-> >> > > The new callbacks do nothing for devices belonging to power domains
-> >> > > that were powered down at run time (before the transition).  
-> >> > 
-> >> > Thinking about this some more, how is a driver supposed to reconfigure
-> >> > wakeups during suspend if it has already been runtime suspended?
-> >> 
-> >> If the device belongs to a PM domain that has been powered off, it
-> >> won't be notified.
-> >> 
-> >> > For example, assume a device where device_may_wakeup() == false.  This
-> >> > means wakeups during *suspend* are disabled, but wakeups wakeups are
-> >> > assumed to enabled when it is runtime suspended.
-> >> > 
-> >> > So now, assume this device is RPM_SUSPENDED, it has wakeups *enabled*,
-> >> > and then system suspend comes along.  
-> >> > 
-> >> > With this current patch, the driver will never receive any callbacks, so
-> >> > it can never disable its wakeups.  
-> >> >
-> >> > Am I missing something?
-> >> 
-> >> As I said above, this only happens with devices that belog to PM domains
-> >> that were powered off before system suspend has started, so the problem
-> >> is limited to devices that wakeup is signaled on behalf of even when they
-> >> have no power.
-> 
-> Which on OMAP, is *all* devices, so that's a pretty major limitation.  :)
+> Hmm, does it still allow the system to choose which bits are bound
+> depending on the cpu being registered, as for the s3c stuff it isn't
+> just about the suspend/resume, it's binding items that get registered
+> early in the startup sequence?
 
-So we'll need to avoid it _for_ _OMAP_.  Any of the platforms that will use
-this code in near future doesn't have this limitation, AFAICS, so I don't
-really see a point coding for it right now.
+Yes, it does, AFAICS.  It didn't change the bits that weren't directly
+related to suspend/resume (at least that wasn't the intention).
 
-Your point seems to be that the whole thing has to be ready for OMAP
-in advance and my point is that we can make it ready for OMAP later.
-Which I believe is more pragmatic, because if every platform had adopted
-the other viewpoint, we wouldn't have made any progress at all.
-
-> >> So this is a limitation, but not affecting all platforms.
-> >> 
-> >> There are a few ways to avoid this limitation I can think of:
-> >> (1) Add a "make me operational during system suspend" flag to struct dev_pm_info
-> >>     and run pm_runtime_resume() on such devices from the core (either dpm_prepare()
-> >>     core, or pm_genpd_prepare()).
-> >
-> > What's to prevent the device from being runtime-suspended again before 
-> > the wakeup setting can be changed?
-> >
-> >> (2) Add a "my .prepare() is safe to run if device is not accessible" flag to
-> >>     struct dev_pm_info and make pm_genpd_prepare() execute .prepare() for such
-> >>     devices regardless of whether or not their PM domains are off.
-> >> (3) Call .prepare() from all drivers unconditionally during system suspend
-> >>     (and probably .complete() too) in the hope they won't access inaccessible
-> >>     devices.
-> 
-> Like Alan's comment above for (1), I think the same applies for (3)
-> since runtime PM transitions can still happen between .prepare() and
-> .suspend()
-
-Not with the current PM domains code (and please see my reply to Alan).
+That said, using sysdevs for the initialization of things the way you describe
+will have to change anyway, because sysdevs are going to be removed entirely
+from the kernel at one point.
 
 Thanks,
 Rafael
