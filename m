@@ -1,15 +1,14 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [RFC] Unprepare callback for cpuidle_device
-Date: Fri, 08 Jul 2011 18:33:12 +0530
-Message-ID: <4E170010.2000403@linux.vnet.ibm.com>
-References: <a619d8bbefd2f390a13d09084583dd39.squirrel@www.codeaurora.org>
-	<4E15516E.5040209@gmail.com>
-	<82b596dce7b84db206d3afb6da564fb9.squirrel@www.codeaurora.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Update][PATCH 6/10] PM / Domains: System-wide
+ transitions support for generic domains (v5)
+Date: Fri, 8 Jul 2011 10:37:32 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1107081033000.2208-100000__27951.2186338708$1310135925$gmane$org@iolanthe.rowland.org>
+References: <201107081124.17463.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <82b596dce7b84db206d3afb6da564fb9.squirrel@www.codeaurora.org>
+In-Reply-To: <201107081124.17463.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,80 +18,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: asinghal@codeaurora.org
-Cc: linux-pm@lists.linux-foundation.org, johlstei@codeaurora.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Amar,
+On Fri, 8 Jul 2011, Rafael J. Wysocki wrote:
 
-On Friday 08 July 2011 01:22 AM, asinghal@codeaurora.org wrote:
-> Hello Trinabh,
->               i cannot use the enter callback due to the following reason:
+> On Friday, July 08, 2011, Kevin Hilman wrote:
+> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> > 
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > >
+> > > Make generic PM domains support system-wide power transitions
+> > > (system suspend and hibernation).  Add suspend, resume, freeze, thaw,
+> > > poweroff and restore callbacks to be associated with struct
+> > > generic_pm_domain objects and make pm_genpd_init() use them as
+> > > appropriate.
+> > >
+> > > The new callbacks do nothing for devices belonging to power domains
+> > > that were powered down at run time (before the transition).  
+> > 
+> > Thinking about this some more, how is a driver supposed to reconfigure
+> > wakeups during suspend if it has already been runtime suspended?
 > 
-> the residency calculation(tick)nohz_get_sleep_length) and the idle state
-> selection happens in the menu governor. The enter callback is called with
-> the selected state.
+> If the device belongs to a PM domain that has been powered off, it
+> won't be notified.
+> 
+> > For example, assume a device where device_may_wakeup() == false.  This
+> > means wakeups during *suspend* are disabled, but wakeups wakeups are
+> > assumed to enabled when it is runtime suspended.
+> > 
+> > So now, assume this device is RPM_SUSPENDED, it has wakeups *enabled*,
+> > and then system suspend comes along.  
+> > 
+> > With this current patch, the driver will never receive any callbacks, so
+> > it can never disable its wakeups.  
+> >
+> > Am I missing something?
+> 
+> As I said above, this only happens with devices that belog to PM domains
+> that were powered off before system suspend has started, so the problem
+> is limited to devices that wakeup is signaled on behalf of even when they
+> have no power.
+> 
+> So this is a limitation, but not affecting all platforms.
+> 
+> There are a few ways to avoid this limitation I can think of:
+> (1) Add a "make me operational during system suspend" flag to struct dev_pm_info
+>     and run pm_runtime_resume() on such devices from the core (either dpm_prepare()
+>     core, or pm_genpd_prepare()).
 
-  One would first execute prepare then call select and enter .
-  So in the newer proposed code, there is no prepare routine. One would
-  just execute select() and then enter() (Prepare functionality is part of the 
-  enter routine itself) Is it not possible to cancel the timer,
-  calculate the execute nohz_get_sleep in enter routine again, 
-  then select the idle state depending on the time . Automatically promote or demote 
-  idle state based on the latest value returned in the driver ?
- 
-> So cancelling the hrtimer that would affect the residency value calculated
-> in the menu governor, in the enter callback is not possible. The timer
-> needs to be cancelled before the select call is made.
-> 
-> thanks,
-> amar
-> 
-> 
-> 
->> On 07/06/2011 04:23 PM, asinghal@codeaurora.org wrote:
->>> We plan to use high resolution timers in one of our modules, with the
->>> requirement that we cancel these timers when the cpu goes idle and
->>> restart
->>> them when the cpu comes out of idle.
->>>
->>> We are cancelling the timers in cpuidle prepare callback. The problem is
->>> that if the need_resched() call in drivers/cpuidle/cpuidle.c returns
->>> true,
->>> how do we restart the timer? If the call returns false, we can restart
->>> the
->>> timer in the cpuidle enter callback.
->>
->> Hi Amar,
->>
->> I think you should not use cpuidle prepare callback at all. It may be
->> removed soon (see https://lkml.org/lkml/2011/6/6/261) and I think
->> there are better ways to achieve what you are trying to do.
->>
->> I think everything should go into the enter routines (the idle routines
->> provided by the driver). That way you would not have to worry about
->> need_resched() in cpuidle.c. Also it would be a cleaner implementation
->> as you wouldn't touch generic cpuidle code.
->>
->>>
->>> The solution to the problem that we have in mind is adding an unprepare
->>> callback to the cpuidle_device struct, and calling it if needs_resched()
->>> returns true. Another option is to implement deferred timers for
->>> hrtimers.
->>> Which of the two options is the better solution, or is there another
->>> feasible alternative?
->>
->> As i said, everything should go inside enter routine and
->> you wouldn't have to use/implement prepare/unprepare callbacks.
->>
->> Thanks
->> -Trinabh
->>
-> 
-> 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-Regards,
-Deepthi
+What's to prevent the device from being runtime-suspended again before 
+the wakeup setting can be changed?
+
+> (2) Add a "my .prepare() is safe to run if device is not accessible" flag to
+>     struct dev_pm_info and make pm_genpd_prepare() execute .prepare() for such
+>     devices regardless of whether or not their PM domains are off.
+> (3) Call .prepare() from all drivers unconditionally during system suspend
+>     (and probably .complete() too) in the hope they won't access inaccessible
+>     devices.
+> Probably, there's more.
+
+In the PM domain's suspend code, do a runtime resume if the wakeup
+setting needs to be changed, rather than simply skipping over the
+device.
+
+> In any case I think it's material for future work.
+
+Alan Stern
