@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] runtime-pm: consistent utilization of
-	deferred_resume
-Date: Fri, 8 Jul 2011 20:59:37 +0200
-Message-ID: <201107082059.37210.rjw__46409.1656999246$1310151740$gmane$org@sisk.pl>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B59E040012A@shsmsx502.ccr.corp.intel.com>
+Subject: Re: [PATCH 1/7] pm: improve error code of
+	pm_notifier_call_chain()
+Date: Fri, 8 Jul 2011 20:59:57 +0200
+Message-ID: <201107082059.57530.rjw__42137.0134027258$1310151916$gmane$org@sisk.pl>
+References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
+	<201107072306.02708.rjw@sisk.pl>
+	<CAC5umyhZ35AXtwA=Uy1+zp9N=NwLths=h6jKUK53f0U+tZMZZA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <6E3BC7F7C9A4BF4286DD4C043110F30B59E040012A@shsmsx502.ccr.corp.intel.com>
+In-Reply-To: <CAC5umyhZ35AXtwA=Uy1+zp9N=NwLths=h6jKUK53f0U+tZMZZA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,42 +20,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Liu, ShuoX" <shuox.liu@intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "gregkh@suse.de" <gregkh@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-s390@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 08, 2011, Liu, ShuoX wrote:
-> From 10bb3c851a0a9c9ca4d552743a371e3cfda81075 Mon Sep 17 00:00:00 2001
-> From: ShuoX Liu <shuox.liu@intel.com>
-> Date: Thu, 7 Jul 2011 15:59:06 +0800
-> Subject: [PATCH] runtime-pm: consistent utilization of deferred_resume
+On Friday, July 08, 2011, Akinobu Mita wrote:
+> 2011/7/8 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Monday, July 04, 2011, Akinobu Mita wrote:
+> >> 2011/7/4 Pavel Machek <pavel@ucw.cz>:
+> >> > On Sun 2011-07-03 23:16:15, Akinobu Mita wrote:
+> >> >> This enables pm_notifier_call_chain() to get the actual error code
+> >> >> in the callback rather than always assume -EINVAL by converting all
+> >> >> PM notifier calls to return encapsulate error code with
+> >> >> notifier_from_errno().
+> >> >>
+> >> >> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> >> >> Cc: Pavel Machek <pavel@ucw.cz>
+> >> >
+> >> > Nothing obviously wrong here.
+> >>
+> >> Thanks. Can I add your ACK for this patch?
+> >
+> > Do you want me to take this patch?
 > 
-> dev->power.deferred_resume is used as a bool typically, so change
-> one assignment to false from 0, like other places.
-> 
-> Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
+> Yes, please merge it to your tree.
 
-Applied to suspend-2.6/linux-next, will push for 3.1.
+Applied.
 
 Thanks,
 Rafael
-
-
-> ---
->  drivers/base/power/runtime.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 0d4587b..af3d1a5 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -388,7 +388,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  	retval = rpm_callback(callback, dev);
->  	if (retval) {
->  		__update_runtime_status(dev, RPM_ACTIVE);
-> -		dev->power.deferred_resume = 0;
-> +		dev->power.deferred_resume = false;
->  		if (retval == -EAGAIN || retval == -EBUSY)
->  			dev->power.runtime_error = 0;
->  		else
-> 
