@@ -1,13 +1,15 @@
-From: "Liu, ShuoX" <shuox.liu@intel.com>
-Subject: [PATCH] runtime-pm: consistent utilization of
-	deferred_resume
-Date: Fri, 8 Jul 2011 12:57:07 +0800
-Message-ID: <6E3BC7F7C9A4BF4286DD4C043110F30B59E040012A__12353.8588210524$1310146910$gmane$org@shsmsx502.ccr.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 5/7] PM: PM notifier error injection
+Date: Fri, 8 Jul 2011 19:43:20 +0200
+Message-ID: <201107081943.20482.rjw__34975.4479052082$1310147003$gmane$org@sisk.pl>
+References: <1309702581-16863-1-git-send-email-akinobu.mita@gmail.com>
+	<201107072314.59052.rjw@sisk.pl>
+	<CAC5umyifMvVTG29JyvBtc_YThorK=AZHZypheUvbtvmShnbTog@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Language: en-US
+In-Reply-To: <CAC5umyifMvVTG29JyvBtc_YThorK=AZHZypheUvbtvmShnbTog@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,35 +19,52 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, "gregkh@suse.de" <gregkh@suse.de>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
->From 10bb3c851a0a9c9ca4d552743a371e3cfda81075 Mon Sep 17 00:00:00 2001
-From: ShuoX Liu <shuox.liu@intel.com>
-Date: Thu, 7 Jul 2011 15:59:06 +0800
-Subject: [PATCH] runtime-pm: consistent utilization of deferred_resume
+On Friday, July 08, 2011, Akinobu Mita wrote:
+> >> --- a/kernel/power/main.c
+> >> +++ b/kernel/power/main.c
+> >> @@ -42,6 +42,36 @@ int pm_notifier_call_chain(unsigned long val)
+> >>       return notifier_to_errno(ret);
+> >>  }
+> >>
+> >> +#ifdef CONFIG_PM_NOTIFIER_ERROR_INJECTION
+> >> +
+> >> +static struct err_inject_notifier_block err_inject_pm_notifier = {
+> >> +     .actions = {
+> >> +             { ERR_INJECT_NOTIFIER_ACTION(PM_HIBERNATION_PREPARE) },
+> >> +             { ERR_INJECT_NOTIFIER_ACTION(PM_SUSPEND_PREPARE) },
+> >> +             { ERR_INJECT_NOTIFIER_ACTION(PM_RESTORE_PREPARE) },
+> >> +             {}
+> >
+> > Why have you omitted the PM_POST_* actions?
+> 
+> Because the callbacks of PM_POST_* are not supposed to fail (i.e.
+> the return value of pm_notifier_call() is ignored).
 
-dev->power.deferred_resume is used as a bool typically, so change
-one assignment to false from 0, like other places.
+OK, fair enough.
 
-Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
----
- drivers/base/power/runtime.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> >> --- a/lib/Kconfig.debug
+> >> +++ b/lib/Kconfig.debug
+> >> @@ -1043,6 +1043,14 @@ config CPU_NOTIFIER_ERROR_INJECTION
+> >>         # echo 0 > /sys/devices/system/cpu/cpu1/online
+> >>         bash: echo: write error: Operation not permitted
+> >>
+> >> +config PM_NOTIFIER_ERROR_INJECTION
+> >> +     bool "PM notifier error injection"
+> >> +     depends on PM_DEBUG && NOTIFIER_ERROR_INJECTION
+> >> +     help
+> >> +       This option provides the ability to inject artifical errors to
+> >> +       PM notifier chain callbacks.  It is controlled through debugfs
+> >> +       interface under /sys/kernel/debug/pm-notifier-error-inject/
+> >
+> > I'm not sure the help is necessary.  I think it should be selected
+> > automatically if both PM_DEBUG and NOTIFIER_ERROR_INJECTION are set.
+> 
+> OK, I'll try to tweak the option to be better.
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 0d4587b..af3d1a5 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -388,7 +388,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 	retval = rpm_callback(callback, dev);
- 	if (retval) {
- 		__update_runtime_status(dev, RPM_ACTIVE);
--		dev->power.deferred_resume = 0;
-+		dev->power.deferred_resume = false;
- 		if (retval == -EAGAIN || retval == -EBUSY)
- 			dev->power.runtime_error = 0;
- 		else
--- 
-1.7.1
+Thanks!
+
+Rafael
