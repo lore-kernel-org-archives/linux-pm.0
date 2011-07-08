@@ -1,14 +1,12 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2] ARM: EXYNOS4: Support for generic I/O
- power domains on EXYNOS4210
-Date: Fri, 08 Jul 2011 09:58:25 +0900
-Message-ID: <4E165631.9060901__4240.62819588489$1310086753$gmane$org@samsung.com>
-References: <4E0824B1.6070501@samsung.com> <201107072323.44155.rjw@sisk.pl>
+Subject: [PATCHv3] ARM: EXYNOS4: Support for generic I/O power
+ domains on EXYNOS4210
+Date: Fri, 08 Jul 2011 10:24:52 +0900
+Message-ID: <4E165C64.8090808__46141.8001250879$1310088335$gmane$org@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <201107072323.44155.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,208 +17,367 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel@vger.kernel.org, Sylwester Nawrocki <snjw23@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Sylwester Nawrocki <snjw23@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Use the generic power domains support to implement support for
+power domain on EXYNOS4210.
 
-Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Monday, June 27, 2011, Chanwoo Choi wrote:
->> Use the generic power domains support to implement support for
->> power domain on EXYNOS4210.
->>
->> I refer to the following patch to implement what configure
->> the clock-gating control register for block to turn off/on:
->> http://git.infradead.org/users/kmpark/linux-2.6-samsung/commit/39a81876d034dcbdc2a4c4c4b847b3b49e38870c
->>
->> This patch is based on following "pm-domains" branch.
->> http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/pm-domains
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
->> Signed-off-by: Kyungmin.park <kyungmin.park@samsung.com>
->> ---
->>  arch/arm/mach-exynos4/Kconfig                      |    1 +
->>  arch/arm/mach-exynos4/Makefile                     |    1 +
->>  arch/arm/mach-exynos4/include/mach/pm-exynos4210.h |   69 ++++++++
->>  arch/arm/mach-exynos4/include/mach/regs-clock.h    |    8 +
->>  arch/arm/mach-exynos4/mach-nuri.c                  |   20 +++
->>  arch/arm/mach-exynos4/pm-exynos4210.c              |  170 ++++++++++++++++++++
->>  arch/arm/plat-samsung/include/plat/pd.h            |    3 +-
->>  7 files changed, 271 insertions(+), 1 deletions(-)
->>  create mode 100644 arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
->>  create mode 100644 arch/arm/mach-exynos4/pm-exynos4210.c
->>
->> diff --git a/arch/arm/mach-exynos4/Kconfig b/arch/arm/mach-exynos4/Kconfig
->> index 1435fc3..266e7f6 100644
->> --- a/arch/arm/mach-exynos4/Kconfig
->> +++ b/arch/arm/mach-exynos4/Kconfig
->> @@ -183,6 +183,7 @@ config MACH_NURI
->>  	select EXYNOS4_SETUP_SDHCI
->>  	select EXYNOS4_SETUP_USB_PHY
->>  	select SAMSUNG_DEV_PWM
->> +	select PM_GENERIC_DOMAINS
-> 
-> That should be "select PM_GENERIC_DOMAINS if PM".  Otherwise it will be
-> selected even for CONFIG_PM unset.
+I refer to the following patch to implement what configure
+the clock-gating control register for block to turn off/on:
+http://git.infradead.org/users/kmpark/linux-2.6-samsung/commit/39a81876d034dcbdc2a4c4c4b847b3b49e38870c
 
-OK, I will modify it.
+This patch is based on following "pm-domains" branch.
+http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=shortlog;h=refs/heads/pm-domains
 
-> 
->>  	help
->>  	  Machine support for Samsung Mobile NURI Board.
->>  
->> diff --git a/arch/arm/mach-exynos4/Makefile b/arch/arm/mach-exynos4/Makefile
->> index 60fe5ec..0e9461f 100644
->> --- a/arch/arm/mach-exynos4/Makefile
->> +++ b/arch/arm/mach-exynos4/Makefile
->> @@ -17,6 +17,7 @@ obj-$(CONFIG_CPU_EXYNOS4210)	+= setup-i2c0.o irq-eint.o dma.o
->>  obj-$(CONFIG_PM)		+= pm.o sleep.o
->>  obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
->>  obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
->> +obj-$(CONFIG_CPU_EXYNOS4210)	+= pm-exynos4210.o
->>  
->>  obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
->>  
->> diff --git a/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
->> new file mode 100644
->> index 0000000..ff924a8
->> --- /dev/null
->> +++ b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
->> @@ -0,0 +1,69 @@
->> +/* linux/arch/arm/mach-exynos4/include/mach/pm-exynos4.h
->> + *
->> + * Exynos4 Power management support
->> + *
->> + * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
->> + *		http://www.samsung.com
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#ifndef __PM_EXYNOS4210_H__
->> +#define __PM_EXYNOS4210_H__
->> +
->> +#include <linux/pm_domain.h>
->> +#include <plat/pd.h>
->> +
->> +struct platform_device;
->> +
->> +struct exynos4210_pm_domain {
->> +	struct generic_pm_domain genpd;
->> +
->> +	const char *name;
->> +	void __iomem *base;
->> +	unsigned long gate_mask;
->> +	int boot_on;
->> +};
->> +
->> +static inline struct exynos4210_pm_domain *to_exynos4210_pd(
->> +		struct generic_pm_domain *pd)
->> +{
->> +	return container_of(pd, struct exynos4210_pm_domain, genpd);
->> +}
->> +
->> +#ifdef CONFIG_PM
->> +extern struct exynos4210_pm_domain exynos4210_pd_list[PD_MAX_NUM];
->> +#define EXYNOS4210_MFC		(&exynos4210_pd_list[PD_MFC])
->> +#define EXYNOS4210_G3D		(&exynos4210_pd_list[PD_G3D])
->> +#define EXYNOS4210_LCD0		(&exynos4210_pd_list[PD_LCD0])
->> +#define EXYNOS4210_LCD1		(&exynos4210_pd_list[PD_LCD1])
->> +#define EXYNOS4210_TV		(&exynos4210_pd_list[PD_TV])
->> +#define EXYNOS4210_CAM		(&exynos4210_pd_list[PD_CAM])
->> +#define EXYNOS4210_GPS		(&exynos4210_pd_list[PD_GPS])
->> +
->> +int exynos4210_pd_init(struct exynos4210_pm_domain *domain);
->> +int exynos4210_add_device_to_domain(struct exynos4210_pm_domain *domain,
->> +				struct platform_device *pdev);
->> +#else
->> +#define EXYNOS4210_MFC		NULL
->> +#define EXYNOS4210_G3D		NULL
->> +#define EXYNOS4210_LCD0		NULL
->> +#define EXYNOS4210_LCD1		NULL
->> +#define EXYNOS4210_TV		NULL
->> +#define EXYNOS4210_CAM		NULL
->> +#define EXYNOS4210_GPS		NULL
->> +
->> +static inline int exynos4210_pd_init(struct exynos4210_pm_domain *domain)
->> +{
->> +	return 0;
->> +}
->> +static inline int exynos4_add_device_to_domain(struct exynos4210_pm_domain *domain,
->> +				struct platform_device *pdev)
->> +{
->> +	return 0;
->> +}
->> +#endif /* CONFIG_PM */
->> +
->> +#endif /* __PM_EXYNOS4210_H__ */
->> diff --git a/arch/arm/mach-exynos4/include/mach/regs-clock.h b/arch/arm/mach-exynos4/include/mach/regs-clock.h
->> index 6e311c1..bc0fda9 100644
->> --- a/arch/arm/mach-exynos4/include/mach/regs-clock.h
->> +++ b/arch/arm/mach-exynos4/include/mach/regs-clock.h
->> @@ -171,6 +171,14 @@
->>  #define S5P_CLKDIV_BUS_GPLR_SHIFT	(4)
->>  #define S5P_CLKDIV_BUS_GPLR_MASK	(0x7 << S5P_CLKDIV_BUS_GPLR_SHIFT)
->>  
->> +#define S5P_CLKGATE_BLOCK_CAM		(1<<0)
->> +#define S5P_CLKGATE_BLOCK_TV		(1<<1)
->> +#define S5P_CLKGATE_BLOCK_MFC		(1<<2)
->> +#define S5P_CLKGATE_BLOCK_G3D		(1<<3)
->> +#define S5P_CLKGATE_BLOCK_LCD0		(1<<4)
->> +#define S5P_CLKGATE_BLOCK_LCD1		(1<<5)
->> +#define S5P_CLKGATE_BLOCK_GPS		(1<<7)
->> +
->>  /* Compatibility defines and inclusion */
->>  
->>  #include <mach/regs-pmu.h>
->> diff --git a/arch/arm/mach-exynos4/mach-nuri.c b/arch/arm/mach-exynos4/mach-nuri.c
->> index 642702b..805c6d5 100644
->> --- a/arch/arm/mach-exynos4/mach-nuri.c
->> +++ b/arch/arm/mach-exynos4/mach-nuri.c
->> @@ -37,6 +37,7 @@
->>  #include <plat/iic.h>
->>  
->>  #include <mach/map.h>
->> +#include <mach/pm-exynos4210.h>
->>  
->>  /* Following are default values for UCON, ULCON and UFCON UART registers */
->>  #define NURI_UCON_DEFAULT	(S3C2410_UCON_TXILEVEL |	\
->> @@ -376,6 +377,23 @@ static struct platform_device *nuri_devices[] __initdata = {
->>  	&nuri_backlight_device,
->>  };
->>  
->> +static void __init nuri_power_domain_init(void)
->> +{
->> +	int i;
->> +
->> +	for (i = 0 ; i < PD_MAX_NUM ; i++)
->> +		exynos4210_pd_init(&exynos4210_pd_list[i]);
->> +
->> +	/* Add device to power-domain */
->> +	exynos4210_add_device_to_domain(EXYNOS4210_MFC, NULL);
->> +	exynos4210_add_device_to_domain(EXYNOS4210_G3D, NULL);
->> +	exynos4210_add_device_to_domain(EXYNOS4210_LCD0, &nuri_lcd_device);
->> +	exynos4210_add_device_to_domain(EXYNOS4210_LCD1, NULL);
->> +	exynos4210_add_device_to_domain(EXYNOS4210_TV, NULL);
->> +	exynos4210_add_device_to_domain(EXYNOS4210_CAM, NULL);
->> +	exynos4210_add_device_to_domain(EXYNOS4210_GPS, NULL);
-> 
-> It seems the calls with the second NULL argument are redundant.
-> 
-I will fix it.
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Kyungmin.park <kyungmin.park@samsung.com>
+---
+ arch/arm/mach-exynos4/Kconfig                      |    1 +
+ arch/arm/mach-exynos4/Makefile                     |    1 +
+ arch/arm/mach-exynos4/include/mach/pm-exynos4210.h |   53 ++++++
+ arch/arm/mach-exynos4/include/mach/regs-clock.h    |    8 +
+ arch/arm/mach-exynos4/mach-nuri.c                  |   18 ++
+ arch/arm/mach-exynos4/pm-exynos4210.c              |  184 ++++++++++++++++++++
+ 6 files changed, 265 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+ create mode 100644 arch/arm/mach-exynos4/pm-exynos4210.c
 
-> The rest looks OK to me.
-> 
-> Thanks,
-> Rafael
-> 
-
-I will resend the modified patch according to your comment and your "pm-domains" branch.
-
-Thanks,
-Chanwoo Choi
+diff --git a/arch/arm/mach-exynos4/Kconfig b/arch/arm/mach-exynos4/Kconfig
+index 1435fc3..c5357b5 100644
+--- a/arch/arm/mach-exynos4/Kconfig
++++ b/arch/arm/mach-exynos4/Kconfig
+@@ -183,6 +183,7 @@ config MACH_NURI
+ 	select EXYNOS4_SETUP_SDHCI
+ 	select EXYNOS4_SETUP_USB_PHY
+ 	select SAMSUNG_DEV_PWM
++	select PM_GENERIC_DOMAINS if PM
+ 	help
+ 	  Machine support for Samsung Mobile NURI Board.
+ 
+diff --git a/arch/arm/mach-exynos4/Makefile b/arch/arm/mach-exynos4/Makefile
+index 60fe5ec..0e9461f 100644
+--- a/arch/arm/mach-exynos4/Makefile
++++ b/arch/arm/mach-exynos4/Makefile
+@@ -17,6 +17,7 @@ obj-$(CONFIG_CPU_EXYNOS4210)	+= setup-i2c0.o irq-eint.o dma.o
+ obj-$(CONFIG_PM)		+= pm.o sleep.o
+ obj-$(CONFIG_CPU_FREQ)		+= cpufreq.o
+ obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
++obj-$(CONFIG_CPU_EXYNOS4210)	+= pm-exynos4210.o
+ 
+ obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
+ 
+diff --git a/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+new file mode 100644
+index 0000000..ab09034
+--- /dev/null
++++ b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+@@ -0,0 +1,53 @@
++/* linux/arch/arm/mach-exynos4/include/mach/pm-exynos4.h
++ *
++ * Exynos4 Power management support
++ *
++ * Copyright (c) 2011 Samsung Electronics Co., Ltd.
++ *		http://www.samsung.com
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef PM_EXYNOS4210_H
++#define PM_EXYNOS4210_H
++
++#include <linux/pm_domain.h>
++#include <plat/pd.h>
++
++struct platform_device;
++
++struct exynos4210_pm_domain {
++	struct generic_pm_domain genpd;
++
++	const char *name;
++	void __iomem *base;
++	u32 mask;
++	int boot_on;
++};
++
++static inline struct exynos4210_pm_domain *to_exynos4210_pd(
++		struct generic_pm_domain *pd)
++{
++	return container_of(pd, struct exynos4210_pm_domain, genpd);
++}
++
++#ifdef CONFIG_PM
++extern struct exynos4210_pm_domain exynos4210_pd_mfc;
++extern struct exynos4210_pm_domain exynos4210_pd_g3d;
++extern struct exynos4210_pm_domain exynos4210_pd_lcd0;
++extern struct exynos4210_pm_domain exynos4210_pd_lcd1;
++extern struct exynos4210_pm_domain exynos4210_pd_tv;
++extern struct exynos4210_pm_domain exynos4210_pd_cam;
++extern struct exynos4210_pm_domain exynos4210_pd_gps;
++
++extern void exynos4210_init_pm_domain(struct exynos4210_pm_domain *exynos4210_pd);
++extern void exynos4210_add_device_to_domain(struct exynos4210_pm_domain *exynos4210_pd,
++				struct platform_device *pdev);
++#else
++#define exynos4210_init_pm_domain(pd) do { } while(0)
++#define exynos4_add_device_to_domain(pd, pdev) do { } while(0)
++#endif /* CONFIG_PM */
++
++#endif /* PM_EXYNOS4210_H */
+diff --git a/arch/arm/mach-exynos4/include/mach/regs-clock.h b/arch/arm/mach-exynos4/include/mach/regs-clock.h
+index 6e311c1..bc0fda9 100644
+--- a/arch/arm/mach-exynos4/include/mach/regs-clock.h
++++ b/arch/arm/mach-exynos4/include/mach/regs-clock.h
+@@ -171,6 +171,14 @@
+ #define S5P_CLKDIV_BUS_GPLR_SHIFT	(4)
+ #define S5P_CLKDIV_BUS_GPLR_MASK	(0x7 << S5P_CLKDIV_BUS_GPLR_SHIFT)
+ 
++#define S5P_CLKGATE_BLOCK_CAM		(1<<0)
++#define S5P_CLKGATE_BLOCK_TV		(1<<1)
++#define S5P_CLKGATE_BLOCK_MFC		(1<<2)
++#define S5P_CLKGATE_BLOCK_G3D		(1<<3)
++#define S5P_CLKGATE_BLOCK_LCD0		(1<<4)
++#define S5P_CLKGATE_BLOCK_LCD1		(1<<5)
++#define S5P_CLKGATE_BLOCK_GPS		(1<<7)
++
+ /* Compatibility defines and inclusion */
+ 
+ #include <mach/regs-pmu.h>
+diff --git a/arch/arm/mach-exynos4/mach-nuri.c b/arch/arm/mach-exynos4/mach-nuri.c
+index 642702b..816c6f4 100644
+--- a/arch/arm/mach-exynos4/mach-nuri.c
++++ b/arch/arm/mach-exynos4/mach-nuri.c
+@@ -37,6 +37,7 @@
+ #include <plat/iic.h>
+ 
+ #include <mach/map.h>
++#include <mach/pm-exynos4210.h>
+ 
+ /* Following are default values for UCON, ULCON and UFCON UART registers */
+ #define NURI_UCON_DEFAULT	(S3C2410_UCON_TXILEVEL |	\
+@@ -376,6 +377,21 @@ static struct platform_device *nuri_devices[] __initdata = {
+ 	&nuri_backlight_device,
+ };
+ 
++static void __init nuri_power_domain_init(void)
++{
++	/* Initialize power-domain */
++	exynos4210_init_pm_domain(&exynos4210_pd_mfc);
++	exynos4210_init_pm_domain(&exynos4210_pd_g3d);
++	exynos4210_init_pm_domain(&exynos4210_pd_lcd0);
++	exynos4210_init_pm_domain(&exynos4210_pd_lcd1);
++	exynos4210_init_pm_domain(&exynos4210_pd_tv);
++	exynos4210_init_pm_domain(&exynos4210_pd_cam);
++	exynos4210_init_pm_domain(&exynos4210_pd_gps);
++
++	/* Add device to power-domain */
++	exynos4210_add_device_to_domain(&exynos4210_pd_lcd0, &nuri_lcd_device);
++}
++
+ static void __init nuri_map_io(void)
+ {
+ 	s5p_init_io(NULL, 0, S5P_VA_CHIPID);
+@@ -398,6 +414,8 @@ static void __init nuri_machine_init(void)
+ 
+ 	/* Last */
+ 	platform_add_devices(nuri_devices, ARRAY_SIZE(nuri_devices));
++
++	nuri_power_domain_init();
+ }
+ 
+ MACHINE_START(NURI, "NURI")
+diff --git a/arch/arm/mach-exynos4/pm-exynos4210.c b/arch/arm/mach-exynos4/pm-exynos4210.c
+new file mode 100644
+index 0000000..f44dcef
+--- /dev/null
++++ b/arch/arm/mach-exynos4/pm-exynos4210.c
+@@ -0,0 +1,184 @@
++/* linux/arch/arm/mach-exynos4/pm-exynos4210.c
++ *
++ * Exynos4210 Power management support
++ *
++ * Copyright (c) 2011 Samsung Electronics Co., Ltd.
++ *		http://www.samsung.com
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/pm.h>
++#include <linux/module.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/slab.h>
++#include <linux/pm_runtime.h>
++#include <linux/platform_device.h>
++#include <linux/pm_domain.h>
++#include <linux/io.h>
++
++#include <mach/regs-pmu.h>
++#include <mach/regs-clock.h>
++#include <mach/pm-exynos4210.h>
++
++#ifdef CONFIG_PM
++static DEFINE_SPINLOCK(clkgate_block_lock);
++
++static int pd_power_down(struct generic_pm_domain *genpd)
++{
++	struct exynos4210_pm_domain *exynos4210_pd = to_exynos4210_pd(genpd);
++	u32 timeout;
++
++	/* Disable the power of power-domain */
++	__raw_writel(0, exynos4210_pd->base);
++
++	/* Wait max 1ms */
++	timeout = 10;
++	while (__raw_readl(exynos4210_pd->base + 0x4) & S5P_INT_LOCAL_PWR_EN) {
++		if (timeout == 0) {
++			printk(KERN_ERR "Power domain %s disable failed.\n",
++				exynos4210_pd->name);
++			return -ETIMEDOUT;
++		}
++		timeout--;
++		udelay(100);
++	}
++
++	/* Configure the clock-gating control register for block to turn off */
++	if (exynos4210_pd->mask) {
++		unsigned long flags;
++		u32 reg;
++
++		spin_lock_irqsave(&clkgate_block_lock, flags);
++		reg = __raw_readl(S5P_CLKGATE_BLOCK);
++		reg &= ~exynos4210_pd->mask;
++		__raw_writel(reg, S5P_CLKGATE_BLOCK);
++		spin_unlock_irqrestore(&clkgate_block_lock, flags);
++	}
++
++	return 0;
++}
++
++static int pd_power_up(struct generic_pm_domain *genpd)
++{
++	struct exynos4210_pm_domain *exynos4210_pd = to_exynos4210_pd(genpd);
++	u32 timeout;
++
++	/* Enable power domain */
++	__raw_writel(S5P_INT_LOCAL_PWR_EN, exynos4210_pd->base);
++
++	/* Wait max 1ms */
++	timeout = 10;
++	while ((__raw_readl(exynos4210_pd->base + 0x4) & S5P_INT_LOCAL_PWR_EN)
++		!= S5P_INT_LOCAL_PWR_EN) {
++		if (timeout == 0) {
++			printk(KERN_ERR "Power domain %s enable failed.\n",
++				exynos4210_pd->name);
++			return -ETIMEDOUT;
++		}
++		timeout--;
++		udelay(100);
++	}
++
++	/* Configure the clock-gating control register for block to turn on */
++	if (exynos4210_pd->mask) {
++		unsigned long flags;
++		u32 reg;
++
++		spin_lock_irqsave(&clkgate_block_lock, flags);
++		reg = __raw_readl(S5P_CLKGATE_BLOCK);
++		reg |= exynos4210_pd->mask;
++		__raw_writel(reg, S5P_CLKGATE_BLOCK);
++		spin_unlock_irqrestore(&clkgate_block_lock, flags);
++	}
++
++	return 0;
++}
++
++static bool pd_active_wakeup(struct device *dev)
++{
++	return true;
++}
++
++void exynos4210_init_pm_domain(struct exynos4210_pm_domain *exynos4210_pd)
++{
++	struct generic_pm_domain *genpd;
++
++	if (!exynos4210_pd)
++		return;
++
++	genpd = &exynos4210_pd->genpd;
++
++	pm_genpd_init(genpd, NULL, false);
++	genpd->stop_device = pm_clk_suspend;
++	genpd->start_device = pm_clk_resume;
++	genpd->active_wakeup = pd_active_wakeup;
++	genpd->power_off = pd_power_down;
++	genpd->power_on = pd_power_up;
++
++	if (exynos4210_pd->boot_on)
++		pd_power_up(&exynos4210_pd->genpd);
++}
++
++void exynos4210_add_device_to_domain(struct exynos4210_pm_domain *exynos4210_pd,
++				struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++
++	if (exynos4210_pd && pdev)
++		pm_genpd_add_device(&exynos4210_pd->genpd, dev);
++}
++
++struct exynos4210_pm_domain exynos4210_pd_mfc = {
++	.name		= "PD_MFC",
++	.base		= S5P_PMU_MFC_CONF,
++	.mask		= S5P_CLKGATE_BLOCK_MFC,
++	.boot_on	= 0,
++};
++
++struct exynos4210_pm_domain exynos4210_pd_g3d = {
++	.name		= "PD_G3D",
++	.base		= S5P_PMU_G3D_CONF,
++	.mask		= S5P_CLKGATE_BLOCK_G3D,
++	.boot_on	= 0,
++};
++
++struct exynos4210_pm_domain exynos4210_pd_lcd0 = {
++	.name		= "PD_LCD0",
++	.base		= S5P_PMU_LCD0_CONF,
++	.mask		= S5P_CLKGATE_BLOCK_LCD0,
++	.boot_on	= 1,
++};
++
++struct exynos4210_pm_domain exynos4210_pd_lcd1 = {
++	.name		= "PD_LCD1",
++	.base		= S5P_PMU_LCD1_CONF,
++	.mask		= S5P_CLKGATE_BLOCK_LCD1,
++	.boot_on	= 0,
++};
++
++struct exynos4210_pm_domain exynos4210_pd_tv = {
++	.name		= "PD_TV",
++	.base		= S5P_PMU_TV_CONF,
++	.mask		= S5P_CLKGATE_BLOCK_TV,
++	.boot_on	= 0,
++};
++
++struct exynos4210_pm_domain exynos4210_pd_cam = {
++	.name		= "PD_CAM",
++	.base		= S5P_PMU_CAM_CONF,
++	.mask		= S5P_CLKGATE_BLOCK_CAM,
++	.boot_on	= 0,
++};
++
++struct exynos4210_pm_domain exynos4210_pd_gps = {
++	.name		= "PD_GPS",
++	.base		= S5P_PMU_GPS_CONF,
++	.mask		= S5P_CLKGATE_BLOCK_GPS,
++	.boot_on	= 0,
++};
++
++#endif	/* CONFIG_PM */
+-- 
+1.7.0.4
