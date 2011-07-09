@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH 6/10] PM / Domains: System-wide
-	transitions support for generic domains (v5)
-Date: Sat, 9 Jul 2011 16:15:38 +0200
-Message-ID: <201107091615.38915.rjw__46132.1890623823$1310221141$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1107081033000.2208-100000@iolanthe.rowland.org>
-	<201107082006.49660.rjw@sisk.pl> <201107082124.24921.rjw@sisk.pl>
+Subject: Re: PM domain using _noirq methods to "finish" pending
+	runtime PM transistions
+Date: Sat, 9 Jul 2011 23:02:06 +0200
+Message-ID: <201107092302.06618.rjw__8578.96240563623$1310245359$gmane$org@sisk.pl>
+References: <87iprc2t34.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107082124.24921.rjw@sisk.pl>
+In-Reply-To: <87iprc2t34.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,87 +19,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kevin Hilman <khilman@ti.com>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 08, 2011, Rafael J. Wysocki wrote:
-...
+Hi,
+
+On Saturday, July 09, 2011, Kevin Hilman wrote:
+> Hi Rafael,
 > 
-> Well, in fact, since we already have .active_wakeup(), what about the
-> following patch (on top of https://lkml.org/lkml/2011/7/8/223):
-
-Well, it is wrong, because we've been discussing devices that are _not_
-enabled to wake up the system.
-
-> ---
->  drivers/base/power/domain.c |    4 ++++
->  1 file changed, 4 insertions(+)
+> So I'm now experimenting with your suggestion of using the noirq
+> callbacks of the PM domain to ensure device low-power state transitions
+> for the cases where runtime PM has been disabled from userspace (or a
+> driver has used runtime PM calls in it's suspend/resume path but they
+> have no effect since runtime PM is disabled.)
 > 
-> Index: linux-2.6/drivers/base/power/domain.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/domain.c
-> +++ linux-2.6/drivers/base/power/domain.c
-> @@ -519,6 +519,10 @@ static int pm_genpd_prepare(struct devic
->  		return -EBUSY;
->  	}
->  
-> +	if (device_may_wakeup(dev)
+> Before I get too far, I want to be sure I understood your suggestion
+> correctly, and run my current implemtation past you.
+> 
+> For starters, I just set the driver's noirq callbacks to point to the
+> runtime PM callbacks.
+> 
+> Then, in the PM domain's suspend_noirq, I basically do
+> 
+> 	ret = pm_generic_suspend_noirq(dev);
+> 	if (!ret && !(dev->power.runtime_status == RPM_SUSPENDED))
+> 		magic_device_power_down(dev); /* shared with pm_domain runtime PM methods */
+>                 priv->flags |= MAGIC_DEVICE_SUSPENDED;
+> 	}
+> 	return ret;
+> 
+> and in the PM domain's resume_norq, I basically do:
+> 
+> 	if ((priv->flags & MAGIC_DEVICE_SUSPENDED) &&
+> 	    !(dev->power.runtime_status == RPM_SUSPENDED)) {
+> 		priv->flags &= ~OMAP_DEVICE_SUSPENDED;
+> 		magic_device_power_up(dev);
+> 	}
+> 	return pm_generic_resume_noirq(dev);
+> 
+> Note: The MAGIC_DEVICE_SUSPENDED flag is used so resume_noirq only
+> reenables devices that were disabled by suspend_noirq so that devices
+> which were disabled by runtime PM are left untouched (similar to how
+> you've implmented generic PM domains.)
+> 
+> Since the driver's noirq callbacks point to the runtime PM callbacks
+> this all works quite well. 
+> 
+> I believe this was basically the suggestion you were recommending, right?
 
-So, this should have been !device_may_wakeup(dev), _but_ ...
+That's correct.
 
-> +	    && !(genpd->active_wakeup && genpd->active_wakeup(dev)))
-> +		pm_runtime_resume(dev);
-> +
->  	genpd_acquire_lock(genpd);
->  
->  	if (genpd->prepared_count++ == 0)
+> However, what I need is for the driver's runtime PM callbacks not to be
+> called unconditionally, but only if the PM domain's noirq methods are
+> actually going to disable/power-down the device (e.g. it's not already
+> runtime suspended.)
+> 
+> The first obvious solution is to create new driver noirq methods that
+> check if the device is not already RPM_SUSPENDED and only then call the
+> runtime PM callbacks.   That works, but hey, it's a Friday night so I
+> decided to take it to the next level...
+> 
+> Instead of making all the drivers add new noirq methods that just
+> conditionally call the runtime PM methods, what if I just handle it in
+> the PM domain?  IOW, what if I just call pm_generic_runtime_* from the
+> PM domain's noirq methods?  e.g. call pm_generic_runtime_suspend() just
+> before magic_device_power_down() and call pm_generic_runtime_resume()
+> just after magic_device_power_up()?
 
-There's one more case to consider, namely devices that are runtime
-suspended, set up to wake up the system from sleep states (ie. device_may_wakeup(dev)
-returns "true") and such that genpd->active_wakeup(dev) returns "true" for them,
-because they need to be resumed at this point too (arguably, it makes a little
-sense to runtime suspend such devices, but that's possible in principle).
+That should be fine.
 
-So, IMO, the patch should look like this:
+> I tested this today with a handful of our drivers that do all their PM
+> in terms of the runtime PM API (including get_sync/put_sync in their
+> suspend path) and they all work as expected without modification.
+> 
+> I know it's not much to add a couple new callbacks to each of these
+> drivers, but if I can handle it at the PM domain level, I'd rather allow
+> the drivers to stay simple.
+> 
+> What do you think?
 
----
- drivers/base/power/domain.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+I don't see anything wrong with your approach. :-)
 
-Index: linux-2.6/drivers/base/power/domain.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -486,6 +486,22 @@ static void pm_genpd_sync_poweroff(struc
- }
- 
- /**
-+ * resume_needed - Check whether to resume a device before system suspend.
-+ * @dev: Device to handle.
-+ * @genpd: PM domain the device belongs to.
-+ */
-+static bool resume_needed(struct device *dev, struct generic_pm_domain *genpd)
-+{
-+	bool active_wakeup;
-+
-+	if (!device_can_wakeup(dev))
-+		return false;
-+
-+	active_wakeup = genpd->active_wakeup && genpd->active_wakeup(dev);
-+	return device_may_wakeup(dev) ? active_wakeup : !active_wakeup;
-+}
-+
-+/**
-  * pm_genpd_prepare - Start power transition of a device in a PM domain.
-  * @dev: Device to start the transition of.
-  *
-@@ -519,6 +535,9 @@ static int pm_genpd_prepare(struct devic
- 		return -EBUSY;
- 	}
- 
-+	if (resume_needed(dev, genpd))
-+		pm_runtime_resume(dev);
-+
- 	genpd_acquire_lock(genpd);
- 
- 	if (genpd->prepared_count++ == 0)
+Thanks,
+Rafael
+
+
+PS
+I wonder what you think about this patch:
+https://patchwork.kernel.org/patch/959672/
