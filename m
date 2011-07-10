@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 7 v2] PM / Domains: Queue up power off work only
-	if it is not pending
-Date: Sun, 10 Jul 2011 14:29:26 +0200
-Message-ID: <201107101429.26416.rjw__18627.2733765238$1310300972$gmane$org@sisk.pl>
-References: <201107062248.35586.rjw@sisk.pl> <201107101059.30322.rjw@sisk.pl>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH 8/8] ARM / shmobile: Support for I/O PM
+	domains for SH7372 (v5)
+Date: Sun, 10 Jul 2011 13:45:35 +0200
+Message-ID: <201107101345.36135.laurent.pinchart__47328.6498258405$1310306893$gmane$org@ideasonboard.com>
+References: <201106112223.04972.rjw@sisk.pl> <201106142316.02812.rjw@sisk.pl>
+	<BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107101059.30322.rjw@sisk.pl>
+In-Reply-To: <BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,62 +19,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi Magnus,
 
-In theory it is possible that pm_genpd_poweroff() for two different
-subdomains of the same parent domain will attempt to queue up the
-execution of pm_genpd_poweroff() for the parent twice in a row.  This
-would lead to unpleasant consequences, so prevent it from happening
-by checking if genpd->power_off_work is pending before attempting to
-queue it up.
+On Wednesday 15 June 2011 16:17:15 Magnus Damm wrote:
+> On Wed, Jun 15, 2011 at 6:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Tuesday, June 14, 2011, Magnus Damm wrote:
+> >> On Sun, Jun 12, 2011 at 5:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >> > 
+> >> > Use the generic power domains support introduced by the previous
+> >> > patch to implement support for power domains on SH7372.
+> >> > 
+> >> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >> > ---
+> >> 
+> >> Thanks for your work on this. I just tried this on my Mackerel board,
+> >> but I can't seem to get the pd_power_up() and pd_power_down()
+> >> callbacks to be executed. It is probably a misconfiguration from my
+> >> side.
+> > 
+> > They trigger for me e.g. after doing
+> > 
+> > # echo 3 > /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
+> > 
+> > Attached is the .config I've been using.
+> 
+> Thanks, I can trigger using sysfs and your kernel configuration.
+> 
+> However, I assumed it also would work when the sceen saver kicked in.
+> I recall it being fbcon that controls the screen save, perhaps
+> something else. So just wait a bit and see if you also can reproduce
+> it. The console gets black but the power is still on...
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+That's because, by default, the VT layer will use FB_BLANK_NORMAL mode when 
+blanking the console. Switching that to FB_BLANK_VSYNC_SUSPEND, 
+FB_BLANK_HSYNC_SUSPEND or FB_BLANK_POWERDOWN with TIOCLINUX(TIOC_SETVESABLANK) 
+results in the device being runtime-suspended when the console is blanked.
 
-One more patch to the "PM / Domains: Generic PM domains improvements" series,
-the changelog should explain everything. :-)
+> Also forcing to go back to powered-on state (see below) doesn't work that
+> well: # echo 0 >
+> /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
+> 
+> It looks like we loose the panning information somehow. Most likely a LCDC
+> driver bug. Unless the driver callbacks are not being invoked as expected.
+>
+> Also, there is garbage in on the screen if FB_SH_MOBILE_MERAM is
+> enabled. The MERAM hardware is a 1.5 MiB memory block that can be used
+> as a LCD cache. It sits in the same hardware power domain as the
+> LCDCs. I don't think the MERAM software supports power down
+> unfortunately. Disabling MERAM support removes the garbage on the
+> screen.
 
-Thanks,
-Rafael
+-- 
+Regards,
 
----
- drivers/base/power/domain.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/base/power/domain.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -213,6 +213,19 @@ static bool genpd_abort_poweroff(struct
- }
- 
- /**
-+ * genpd_queue_power_off_work - Queue up the execution of pm_genpd_poweroff().
-+ * @genpd: PM domait to power off.
-+ *
-+ * Queue up the execution of pm_genpd_poweroff() unless it's already been done
-+ * before.
-+ */
-+static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
-+{
-+	if (!work_pending(&genpd->power_off_work))
-+		queue_work(pm_wq, &genpd->power_off_work);
-+}
-+
-+/**
-  * pm_genpd_poweroff - Remove power from a given PM domain.
-  * @genpd: PM domain to power down.
-  *
-@@ -304,7 +317,7 @@ static int pm_genpd_poweroff(struct gene
- 	if (parent) {
- 		genpd_sd_counter_dec(parent);
- 		if (parent->sd_count == 0)
--			queue_work(pm_wq, &parent->power_off_work);
-+			genpd_queue_power_off_work(parent);
- 
- 		genpd_release_lock(parent);
- 	}
+Laurent Pinchart
