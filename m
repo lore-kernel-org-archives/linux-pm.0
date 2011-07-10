@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 00/05] ARM: mach-shmobile: another sh7372
-	power domain update
-Date: Sun, 10 Jul 2011 10:46:45 +0200
-Message-ID: <201107101046.45385.rjw__49921.0760034204$1310287641$gmane$org@sisk.pl>
-References: <20110707133212.22347.68775.sendpatchset@t400s>
+Subject: [PATCH 1/6 v2] PM / Domains: Set device state to
+	"active" during system resume
+Date: Sun, 10 Jul 2011 11:05:58 +0200
+Message-ID: <201107101105.58758.rjw__32298.8767213703$1310289078$gmane$org@sisk.pl>
+References: <201107062248.35586.rjw@sisk.pl> <201107101059.30322.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110707133212.22347.68775.sendpatchset@t400s>
+In-Reply-To: <201107101059.30322.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +18,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-sh@vger.kernel.org
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 07, 2011, Magnus Damm wrote:
-> ARM: mach-shmobile: another sh7372 power domain update
-> 
-> [PATCH 01/05] ARM: mach-shmobile: sh7372 D4 support
-> [PATCH 02/05] ARM: mach-shmobile: Runtime PM late init callback
-> [PATCH 03/05] ARM: mach-shmobile: sh7372 late pm domain off
-> [PATCH 04/05] PM: export pm_genpd_poweron() in header
-> [PATCH 05/05] ARM: mach-shmobile: sh7372 A3RV requires A4LC
-> 
-> These patches update the partial hardware power domain support
-> included in the pm-domains branch of the suspend-2.6 git tree.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-All patches applied to suspend-2.6/pm-domains.
+The runtime PM status of devices in a power domain that is not
+powered off in pm_genpd_complete() should be set to "active", because
+those devices are operational at this point.  Some of them may not be
+in use, though, so make pm_genpd_complete() call pm_runtime_idle()
+in addition to pm_runtime_set_active() for each of them.
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/domain.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6/drivers/base/power/domain.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/domain.c
++++ linux-2.6/drivers/base/power/domain.c
+@@ -786,7 +786,9 @@ static void pm_genpd_complete(struct dev
+ 
+ 	if (run_complete) {
+ 		pm_generic_complete(dev);
++		pm_runtime_set_active(dev);
+ 		pm_runtime_enable(dev);
++		pm_runtime_idle(dev);
+ 	}
+ }
+ 
