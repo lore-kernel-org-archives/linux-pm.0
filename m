@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/2] ARM / shmobile: Use
-	pm_genpd_poweroff_unused()
-Date: Sun, 10 Jul 2011 22:47:44 +0200
-Message-ID: <201107102247.45034.rjw__14747.8769570172$1310330989$gmane$org@sisk.pl>
+Subject: [PATCH 1/2] PM / Domains: Introduce function to power
+	off all unused PM domains
+Date: Sun, 10 Jul 2011 22:46:55 +0200
+Message-ID: <201107102246.56059.rjw__44052.4874873974$1310331125$gmane$org@sisk.pl>
 References: <201107102246.05107.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,82 +24,79 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Make shmobile use pm_genpd_poweroff_unused() instead of the
-open-coded powering off PM domains without devices in use.
+Add a new function pm_genpd_poweroff_unused() queuing up the
+execution of pm_genpd_poweroff() for every initialized generic PM
+domain.  Calling it will cause every generic PM domain without
+devices in use to be powered off.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/arm/mach-shmobile/include/mach/common.h |    1 -
- arch/arm/mach-shmobile/pm-sh7372.c           |   13 -------------
- arch/arm/mach-shmobile/pm_runtime.c          |    6 ++----
- 3 files changed, 2 insertions(+), 18 deletions(-)
+ drivers/base/power/domain.c |   21 +++++++++++++++++++++
+ include/linux/pm_domain.h   |    3 +++
+ 2 files changed, 24 insertions(+)
 
-Index: linux-2.6/arch/arm/mach-shmobile/include/mach/common.h
+Index: linux-2.6/include/linux/pm_domain.h
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/common.h
-+++ linux-2.6/arch/arm/mach-shmobile/include/mach/common.h
-@@ -12,7 +12,6 @@ extern struct platform_suspend_ops shmob
- struct cpuidle_device;
- extern void (*shmobile_cpuidle_modes[])(void);
- extern void (*shmobile_cpuidle_setup)(struct cpuidle_device *dev);
--extern void (*shmobile_runtime_pm_late_init)(void);
+--- linux-2.6.orig/include/linux/pm_domain.h
++++ linux-2.6/include/linux/pm_domain.h
+@@ -24,6 +24,7 @@ struct dev_power_governor {
  
- extern void sh7367_init_irq(void);
- extern void sh7367_add_early_devices(void);
-Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
-+++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -126,17 +126,6 @@ static bool pd_active_wakeup(struct devi
- 	return true;
- }
- 
--static void sh7372_late_pm_domain_off(void)
--{
--	/* request power down of unused pm domains */
--	queue_work(pm_wq, &sh7372_a4lc.genpd.power_off_work);
--	queue_work(pm_wq, &sh7372_a4mp.genpd.power_off_work);
--	queue_work(pm_wq, &sh7372_d4.genpd.power_off_work);
--	queue_work(pm_wq, &sh7372_a3rv.genpd.power_off_work);
--	queue_work(pm_wq, &sh7372_a3ri.genpd.power_off_work);
--	queue_work(pm_wq, &sh7372_a3sg.genpd.power_off_work);
--}
--
- void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd)
+ struct generic_pm_domain {
+ 	struct dev_pm_domain domain;	/* PM domain operations */
++	struct list_head gpd_list_node;	/* Node in the global PM domains list */
+ 	struct list_head sd_node;	/* Node in the parent's subdomain list */
+ 	struct generic_pm_domain *parent;	/* Parent PM domain */
+ 	struct list_head sd_list;	/* List of dubdomains */
+@@ -71,6 +72,7 @@ extern int pm_genpd_remove_subdomain(str
+ extern void pm_genpd_init(struct generic_pm_domain *genpd,
+ 			  struct dev_power_governor *gov, bool is_off);
+ extern int pm_genpd_poweron(struct generic_pm_domain *genpd);
++extern void pm_genpd_poweroff_unused(void);
+ #else
+ static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 				      struct device *dev)
+@@ -98,6 +100,7 @@ static inline int pm_genpd_poweron(struc
  {
- 	struct generic_pm_domain *genpd = &sh7372_pd->genpd;
-@@ -157,8 +146,6 @@ void sh7372_init_pm_domain(struct sh7372
- 		genpd->power_on = pd_power_up;
- 	}
- 	genpd->power_on(&sh7372_pd->genpd);
--
--	shmobile_runtime_pm_late_init = sh7372_late_pm_domain_off;
+ 	return -ENOSYS;
  }
++static inline void pm_genpd_poweroff_unused(void) {}
+ #endif
  
- void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
-Index: linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+ #endif /* _LINUX_PM_DOMAIN_H */
+Index: linux-2.6/drivers/base/power/domain.c
 ===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/pm_runtime.c
-+++ linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
-@@ -14,6 +14,7 @@
- #include <linux/kernel.h>
- #include <linux/io.h>
- #include <linux/pm_runtime.h>
-+#include <linux/pm_domain.h>
- #include <linux/platform_device.h>
- #include <linux/clk.h>
- #include <linux/sh_clk.h>
-@@ -57,12 +58,9 @@ static int __init sh_pm_runtime_init(voi
- }
- core_initcall(sh_pm_runtime_init);
+--- linux-2.6.orig/drivers/base/power/domain.c
++++ linux-2.6/drivers/base/power/domain.c
+@@ -16,6 +16,9 @@
+ #include <linux/sched.h>
+ #include <linux/suspend.h>
  
--void (*shmobile_runtime_pm_late_init)(void);
--
- static int __init sh_pm_runtime_late_init(void)
- {
--	if (shmobile_runtime_pm_late_init)
--		shmobile_runtime_pm_late_init();
-+	pm_genpd_poweroff_unused();
- 	return 0;
++static LIST_HEAD(gpd_list);
++static DEFINE_MUTEX(gpd_list_lock);
++
+ #ifdef CONFIG_PM
+ 
+ static struct generic_pm_domain *dev_to_genpd(struct device *dev)
+@@ -1241,4 +1244,22 @@ void pm_genpd_init(struct generic_pm_dom
+ 	genpd->domain.ops.restore_noirq = pm_genpd_restore_noirq;
+ 	genpd->domain.ops.restore = pm_genpd_restore;
+ 	genpd->domain.ops.complete = pm_genpd_complete;
++	mutex_lock(&gpd_list_lock);
++	list_add(&genpd->gpd_list_node, &gpd_list);
++	mutex_unlock(&gpd_list_lock);
++}
++
++/**
++ * pm_genpd_poweroff_unused - Power off all PM domains with no devices in use.
++ */
++void pm_genpd_poweroff_unused(void)
++{
++	struct generic_pm_domain *genpd;
++
++	mutex_lock(&gpd_list_lock);
++
++	list_for_each_entry(genpd, &gpd_list, gpd_list_node)
++		genpd_queue_power_off_work(genpd);
++
++	mutex_unlock(&gpd_list_lock);
  }
- late_initcall(sh_pm_runtime_late_init);
