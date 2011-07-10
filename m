@@ -1,14 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/6 v2] PM / Domains: Improve handling of wakeup
-	devices during system suspend
-Date: Sun, 10 Jul 2011 11:09:35 +0200
-Message-ID: <201107101109.36176.rjw__32475.3169472844$1310289480$gmane$org@sisk.pl>
-References: <201107062248.35586.rjw@sisk.pl> <201107101059.30322.rjw@sisk.pl>
+Subject: 3.0-rc6-git6: Reported regressions from 2.6.39
+Date: Sun, 10 Jul 2011 12:19:24 +0200 (CEST)
+Message-ID: <Y7LyOsOBwFM.A.kJG.kBYGOB__21683.9269538925$1310294858$gmane$org@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107101059.30322.rjw@sisk.pl>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,85 +16,165 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+This message contains a list of some regressions from 2.6.39,
+for which there are no fixes in the mainline known to the tracking team.
+If any of them have been fixed already, please let us know.
 
-Kevin points out that if there's a device that can wake up the system
-from sleep states, but it doesn't generate wakeup signals by itself
-(they are generated on its behalf by other parts of the system) and
-it currently is not enabled to wake up the system (that is,
-device_may_wakeup() returns "false" for it), we may need to change
-its wakeup settings during system suspend (for example, the device
-might have been configured to signal remote wakeup from the system's
-working state, as needed by runtime PM).  Therefore the generic PM
-domains code should invoke the system suspend callbacks provided by
-the device's driver, which it doesn't do if the PM domain is powered
-off during the system suspend's "prepare" stage.  This is a valid
-point.  Moreover, this code also should make sure that system wakeup
-devices that are enabled to wake up the system from sleep states and
-have to remain active for this purpose are not suspended while the
-system is in a sleep state.
+If you know of any other unresolved regressions from 2.6.39, please let us
+know either and we'll add them to the list.  Also, please let us know
+if any of the entries below are invalid.
 
-To avoid the above issues, make the generic PM domains' .prepare()
-routine, pm_genpd_prepare(), force runtime resume of devices whose
-system wakeup settings may need to be changed during system suspend
-or that should remain active while the system is in a sleep state to
-be able to wake it up from that state.
+Each entry from the list will be sent additionally in an automatic reply
+to this message with CCs to the people involved in reporting and handling
+the issue.
 
-Reported-by: Kevin Hilman <khilman@ti.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/domain.c |   30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
 
-Index: linux-2.6/drivers/base/power/domain.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -482,6 +482,33 @@ static void pm_genpd_sync_poweroff(struc
- }
- 
- /**
-+ * resume_needed - Check whether to resume a device before system suspend.
-+ * @dev: Device to check.
-+ * @genpd: PM domain the device belongs to.
-+ *
-+ * There are two cases in which a device that can wake up the system from sleep
-+ * states should be resumed by pm_genpd_prepare(): (1) if the device is enabled
-+ * to wake up the system and it has to remain active for this purpose while the
-+ * system is in the sleep state and (2) if the device is not enabled to wake up
-+ * the system from sleep states and it generally doesn't generate wakeup signals
-+ * by itself (those signals are generated on its behalf by other parts of the
-+ * system).  In the latter case it may be necessary to reconfigure the device's
-+ * wakeup settings during system suspend, because it may have been set up to
-+ * signal remote wakeup from the system's working state as needed by runtime PM.
-+ * Return 'true' in either of the above cases.
-+ */
-+static bool resume_needed(struct device *dev, struct generic_pm_domain *genpd)
-+{
-+	bool active_wakeup;
-+
-+	if (!device_can_wakeup(dev))
-+		return false;
-+
-+	active_wakeup = genpd->active_wakeup && genpd->active_wakeup(dev);
-+	return device_may_wakeup(dev) ? active_wakeup : !active_wakeup;
-+}
-+
-+/**
-  * pm_genpd_prepare - Start power transition of a device in a PM domain.
-  * @dev: Device to start the transition of.
-  *
-@@ -515,6 +542,9 @@ static int pm_genpd_prepare(struct devic
- 		return -EBUSY;
- 	}
- 
-+	if (resume_needed(dev, genpd))
-+		pm_runtime_resume(dev);
-+
- 	genpd_acquire_lock(genpd);
- 
- 	if (genpd->prepared_count++ == 0)
+Listed regressions statistics:
+
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2011-07-10       38       16          13
+  2011-06-26       22       14          12
+  2011-06-12        8        7           7
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=39052
+Subject		: .tmp_depmod owned by root after modules_install
+Submitter	: Christian Kujau <lists@nerdbynature.de>
+Date		: 2011-07-04 9:49 (7 days old)
+Message-ID	: <alpine.DEB.2.01.1107040242180.9183@trent.utfs.org>
+References	: http://marc.info/?l=linux-kernel&m=130977296812731&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38802
+Subject		: Not work hotkey of Microsoft Comfort Curve Keyboard 2000
+Submitter	: Cristian Aravena Romero <caravena@gmail.com>
+Date		: 2011-07-05 20:43 (6 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38732
+Subject		: Linux 3.0-rc5 doesnt boot and hangs at rcu_sched_state ()
+Submitter	: RKK <kulkarni.ravi4@gmail.com>
+Date		: 2011-06-29 13:38 (12 days old)
+Message-ID	: <BANLkTikW6Xk8UMsOHLCnLn7STRzy8RaiJA@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=130935402722869&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38702
+Subject		: 3.0.0-rc4-git6 - INFO: possible circular locking dependency detected - (&rdev->mtx){+.+.+.}, at: [<ffffffffa00e27e0>] cfg80211_netdev_notifier_call+0x275/0x4ff [cfg80211]
+Submitter	: Miles Lane <miles.lane@gmail.com>
+Date		: 2011-06-26 21:54 (15 days old)
+Message-ID	: <BANLkTikztsFnPkJZ7VxRC-zsitwCCvVmeg@mail.gmail.com>
+References	: http://marc.info/?l=linux-kernel&m=130912559804336&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38672
+Subject		: KVM guest boot crashed
+Submitter	: Steve <stefan.bosak@gmail.com>
+Date		: 2011-07-02 06:56 (9 days old)
+First-Bad-Commit: http://git.kernel.org/linus/6506e4f995967b1a48cc34418c77b318df92ce35
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38622
+Subject		: [radeon cayman regresion] artefacts on screen
+Submitter	: Marek Hobler, &apos;neutrinus&apos; <kernellist@neutrinus.com>
+Date		: 2011-07-01 09:35 (10 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38612
+Subject		: Boot time warnings in APIC
+Submitter	: Bill Huey <bill.huey@gmail.com>
+Date		: 2011-07-01 06:44 (10 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38582
+Subject		: T510 43495KG won't resume with 32bit installation
+Submitter	: Marc Koschewski <marc@osknowledge.org>
+Date		: 2011-06-30 22:39 (11 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38522
+Subject		: address space collision error message on boot
+Submitter	: Jools Wills <jools@oxfordinspire.co.uk>
+Date		: 2011-06-29 02:28 (12 days old)
+First-Bad-Commit: http://git.kernel.org/linus/5d94e81f69d4b1d1102d3ab557ce0a817c11fbbb
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38332
+Subject		: System hang when enable rc6
+Submitter	: Gu Rui <chaos.proton@gmail.com>
+Date		: 2011-06-27 08:16 (14 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=37872
+Subject		: CPU lockup during boot
+Submitter	: Bruno Wolff III <bruno@wolff.to>
+Date		: 2011-06-19 15:00 (22 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=37482
+Subject		: Driver: i915 - Starting with kernel 3.0.0-rc3, dual monitor freezes a Dell Latitude E6410 when a second monitor is connected at boot time
+Submitter	: David Hill <hilld@binarystorm.net>
+Date		: 2011-06-14 18:42 (27 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=37432
+Subject		: sdhci-pci fails on 3.0.0-rc1 on Dell E6510
+Submitter	: Oliver Hartkopp <socketcan@hartkopp.net>
+Date		: 2011-06-07 20:06 (34 days old)
+First-Bad-Commit: http://git.kernel.org/linus/da7822e5ad71ec9b745b412639f1e5e0ba795a20
+References	: http://article.gmane.org/gmane.linux.kernel.mmc/8442
+		  https://lkml.org/lkml/2011/6/23/660
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38972
+Subject		: Kernel panic when syncing while cifs is mounted
+Submitter	:  <farbing@web.de>
+Date		: 2011-07-08 15:39 (3 days old)
+First-Bad-Commit: http://git.kernel.org/linus/dd8544661947ad6d8d87b3c9d4333bfa1583d1bc
+Handled-By	: Jeff Layton <jlayton@redhat.com>
+Patch		: https://bugzilla.kernel.org/attachment.cgi?id=65082
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38302
+Subject		: NFS crash in un-modified 3.0.0-rc3+, list corruption.
+Submitter	: Ben Greear <greearb@candelatech.com>
+Date		: 2011-06-20 22:42 (21 days old)
+Message-ID	: <4DFFCCDC.2070106@candelatech.com>
+References	: http://marc.info/?l=linux-kernel&m=130860979610651&w=2
+Patch		: https://bugzilla.kernel.org/attachment.cgi?id=63902
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=38152
+Subject		: acpi_power_off lockdep splat
+Submitter	: Borislav Petkov <bp@alien8.de>
+Date		: 2011-06-19 13:30 (22 days old)
+Message-ID	: <20110619133049.GA18168@liondog.tnic>
+References	: http://marc.info/?l=linux-kernel&m=130849028317365&w=2
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+Patch		: https://patchwork.kernel.org/patch/950852/
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.39,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=36912
+
+Please let the tracking team know if there are any Bugzilla entries that
+should be added to the list in there.
+
+Thanks!
