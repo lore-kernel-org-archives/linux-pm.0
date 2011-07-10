@@ -1,15 +1,14 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH 8/8] ARM / shmobile: Support for I/O PM
-	domains for SH7372 (v5)
-Date: Sun, 10 Jul 2011 13:45:35 +0200
-Message-ID: <201107101345.36135.laurent.pinchart__47328.6498258405$1310306893$gmane$org@ideasonboard.com>
-References: <201106112223.04972.rjw@sisk.pl> <201106142316.02812.rjw@sisk.pl>
-	<BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 2/2] ARM / shmobile: Use
+	pm_genpd_poweroff_unused()
+Date: Sun, 10 Jul 2011 22:47:44 +0200
+Message-ID: <201107102247.45034.rjw__14747.8769570172$1310330989$gmane$org@sisk.pl>
+References: <201107102246.05107.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <BANLkTi=u_eyGZt9e0CuVpyz9B08HarEyVw@mail.gmail.com>
+In-Reply-To: <201107102246.05107.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,62 +18,88 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux-SH <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Magnus,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-On Wednesday 15 June 2011 16:17:15 Magnus Damm wrote:
-> On Wed, Jun 15, 2011 at 6:16 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Tuesday, June 14, 2011, Magnus Damm wrote:
-> >> On Sun, Jun 12, 2011 at 5:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >> > 
-> >> > Use the generic power domains support introduced by the previous
-> >> > patch to implement support for power domains on SH7372.
-> >> > 
-> >> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >> > ---
-> >> 
-> >> Thanks for your work on this. I just tried this on my Mackerel board,
-> >> but I can't seem to get the pd_power_up() and pd_power_down()
-> >> callbacks to be executed. It is probably a misconfiguration from my
-> >> side.
-> > 
-> > They trigger for me e.g. after doing
-> > 
-> > # echo 3 > /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
-> > 
-> > Attached is the .config I've been using.
-> 
-> Thanks, I can trigger using sysfs and your kernel configuration.
-> 
-> However, I assumed it also would work when the sceen saver kicked in.
-> I recall it being fbcon that controls the screen save, perhaps
-> something else. So just wait a bit and see if you also can reproduce
-> it. The console gets black but the power is still on...
+Make shmobile use pm_genpd_poweroff_unused() instead of the
+open-coded powering off PM domains without devices in use.
 
-That's because, by default, the VT layer will use FB_BLANK_NORMAL mode when 
-blanking the console. Switching that to FB_BLANK_VSYNC_SUSPEND, 
-FB_BLANK_HSYNC_SUSPEND or FB_BLANK_POWERDOWN with TIOCLINUX(TIOC_SETVESABLANK) 
-results in the device being runtime-suspended when the console is blanked.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/arm/mach-shmobile/include/mach/common.h |    1 -
+ arch/arm/mach-shmobile/pm-sh7372.c           |   13 -------------
+ arch/arm/mach-shmobile/pm_runtime.c          |    6 ++----
+ 3 files changed, 2 insertions(+), 18 deletions(-)
 
-> Also forcing to go back to powered-on state (see below) doesn't work that
-> well: # echo 0 >
-> /sys/devices/platform/sh_mobile_lcdc_fb.0/graphics/fb0/blank
-> 
-> It looks like we loose the panning information somehow. Most likely a LCDC
-> driver bug. Unless the driver callbacks are not being invoked as expected.
->
-> Also, there is garbage in on the screen if FB_SH_MOBILE_MERAM is
-> enabled. The MERAM hardware is a 1.5 MiB memory block that can be used
-> as a LCD cache. It sits in the same hardware power domain as the
-> LCDCs. I don't think the MERAM software supports power down
-> unfortunately. Disabling MERAM support removes the garbage on the
-> screen.
-
--- 
-Regards,
-
-Laurent Pinchart
+Index: linux-2.6/arch/arm/mach-shmobile/include/mach/common.h
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/include/mach/common.h
++++ linux-2.6/arch/arm/mach-shmobile/include/mach/common.h
+@@ -12,7 +12,6 @@ extern struct platform_suspend_ops shmob
+ struct cpuidle_device;
+ extern void (*shmobile_cpuidle_modes[])(void);
+ extern void (*shmobile_cpuidle_setup)(struct cpuidle_device *dev);
+-extern void (*shmobile_runtime_pm_late_init)(void);
+ 
+ extern void sh7367_init_irq(void);
+ extern void sh7367_add_early_devices(void);
+Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -126,17 +126,6 @@ static bool pd_active_wakeup(struct devi
+ 	return true;
+ }
+ 
+-static void sh7372_late_pm_domain_off(void)
+-{
+-	/* request power down of unused pm domains */
+-	queue_work(pm_wq, &sh7372_a4lc.genpd.power_off_work);
+-	queue_work(pm_wq, &sh7372_a4mp.genpd.power_off_work);
+-	queue_work(pm_wq, &sh7372_d4.genpd.power_off_work);
+-	queue_work(pm_wq, &sh7372_a3rv.genpd.power_off_work);
+-	queue_work(pm_wq, &sh7372_a3ri.genpd.power_off_work);
+-	queue_work(pm_wq, &sh7372_a3sg.genpd.power_off_work);
+-}
+-
+ void sh7372_init_pm_domain(struct sh7372_pm_domain *sh7372_pd)
+ {
+ 	struct generic_pm_domain *genpd = &sh7372_pd->genpd;
+@@ -157,8 +146,6 @@ void sh7372_init_pm_domain(struct sh7372
+ 		genpd->power_on = pd_power_up;
+ 	}
+ 	genpd->power_on(&sh7372_pd->genpd);
+-
+-	shmobile_runtime_pm_late_init = sh7372_late_pm_domain_off;
+ }
+ 
+ void sh7372_add_device_to_domain(struct sh7372_pm_domain *sh7372_pd,
+Index: linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm_runtime.c
++++ linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/pm_runtime.h>
++#include <linux/pm_domain.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/sh_clk.h>
+@@ -57,12 +58,9 @@ static int __init sh_pm_runtime_init(voi
+ }
+ core_initcall(sh_pm_runtime_init);
+ 
+-void (*shmobile_runtime_pm_late_init)(void);
+-
+ static int __init sh_pm_runtime_late_init(void)
+ {
+-	if (shmobile_runtime_pm_late_init)
+-		shmobile_runtime_pm_late_init();
++	pm_genpd_poweroff_unused();
+ 	return 0;
+ }
+ late_initcall(sh_pm_runtime_late_init);
