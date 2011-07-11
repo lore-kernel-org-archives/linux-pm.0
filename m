@@ -1,8 +1,8 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH 2/4] OMAP: PM: omap_device: add system PM methods
-	for PM domain handling
-Date: Mon, 11 Jul 2011 16:29:27 -0700
-Message-ID: <1310426969-30306-3-git-send-email-khilman__38764.1878951856$1310427042$gmane$org@ti.com>
+Subject: [PATCH 4/4] OMAP: PM: disable idle on suspend for GPIO
+	and UART
+Date: Mon, 11 Jul 2011 16:29:29 -0700
+Message-ID: <1310426969-30306-5-git-send-email-khilman__30353.9646127776$1310427046$gmane$org@ti.com>
 References: <1310426969-30306-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,103 +22,42 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, linux-oma
 Cc: linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-In the omap_device PM domain callbacks, use omap_device idle/enable to
-automatically manage device idle states during system suspend/resume.
-
-If an omap_device has not already been runtime suspended, the
-->suspend_noirq() method of the PM domain will use omap_device_idle()
-to idle the HW after calling the driver's ->runtime_suspend()
-callback.  Similarily, upon resume, if the device was suspended during
-->suspend_noirq(), the ->resume_noirq() method of the PM domain will
-use omap_device_enable() to enable the HW and then call the driver's
-->runtime_resume() callback.
-
-If a device has already been runtime suspended, the noirq methods of
-the PM domain leave the device runtime suspended by default.
-
-However, if a driver needs to runtime resume a device during suspend
-(for example, to change its wakeup settings), it may do so using
-pm_runtime_get* in it's ->suspend() callback.
+Until these drivers are runtime PM converted, their device power
+states are managed by calling custom driver hooks late in the
+idle/suspend path.  Therefore, do not let the suspend/resume core code
+automatically idle these devices since they will be managed manually
+by the OMAP PM core very late in the idle/suspend path.
 
 Signed-off-by: Kevin Hilman <khilman@ti.com>
 ---
- arch/arm/plat-omap/include/plat/omap_device.h |    4 +++
- arch/arm/plat-omap/omap_device.c              |   36 +++++++++++++++++++++++++
- 2 files changed, 40 insertions(+), 0 deletions(-)
+ arch/arm/mach-omap2/gpio.c   |    2 ++
+ arch/arm/mach-omap2/serial.c |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/plat-omap/include/plat/omap_device.h b/arch/arm/plat-omap/include/plat/omap_device.h
-index e4c349f..bc36d05 100644
---- a/arch/arm/plat-omap/include/plat/omap_device.h
-+++ b/arch/arm/plat-omap/include/plat/omap_device.h
-@@ -44,6 +44,9 @@ extern struct device omap_device_parent;
- #define OMAP_DEVICE_STATE_IDLE		2
- #define OMAP_DEVICE_STATE_SHUTDOWN	3
- 
-+/* omap_device.flags values */
-+#define OMAP_DEVICE_SUSPENDED BIT(0)
-+
- /**
-  * struct omap_device - omap_device wrapper for platform_devices
-  * @pdev: platform_device
-@@ -73,6 +76,7 @@ struct omap_device {
- 	s8				pm_lat_level;
- 	u8				hwmods_cnt;
- 	u8				_state;
-+	u8                              flags;
- };
- 
- /* Device driver interface (call via platform_data fn ptrs) */
-diff --git a/arch/arm/plat-omap/omap_device.c b/arch/arm/plat-omap/omap_device.c
-index f7d2ff7..b93cfdc 100644
---- a/arch/arm/plat-omap/omap_device.c
-+++ b/arch/arm/plat-omap/omap_device.c
-@@ -566,11 +566,47 @@ static int _od_runtime_resume(struct device *dev)
- }
- #endif
- 
-+#ifdef CONFIG_SUSPEND
-+static int _od_suspend_noirq(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct omap_device *od = to_omap_device(pdev);
-+	int ret;
-+
-+	ret = pm_generic_suspend_noirq(dev);
-+
-+	if (!ret && !pm_runtime_status_suspended(dev)) {
-+		if (pm_generic_runtime_suspend(dev) == 0) {
-+			omap_device_idle(pdev);
-+			od->flags |= OMAP_DEVICE_SUSPENDED;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+static int _od_resume_noirq(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct omap_device *od = to_omap_device(pdev);
-+
-+	if ((od->flags & OMAP_DEVICE_SUSPENDED) &&
-+	    !pm_runtime_status_suspended(dev)) {
-+		od->flags &= ~OMAP_DEVICE_SUSPENDED;
-+		omap_device_enable(pdev);
-+		pm_generic_runtime_resume(dev);
-+	}
-+
-+	return pm_generic_resume_noirq(dev);
-+}
-+#endif
-+
- static struct dev_pm_domain omap_device_pm_domain = {
- 	.ops = {
- 		SET_RUNTIME_PM_OPS(_od_runtime_suspend, _od_runtime_resume,
- 				   _od_runtime_idle)
- 		USE_PLATFORM_PM_SLEEP_OPS
-+		SET_SYSTEM_SLEEP_PM_OPS(_od_suspend_noirq, _od_resume_noirq)
+diff --git a/arch/arm/mach-omap2/gpio.c b/arch/arm/mach-omap2/gpio.c
+index 9529842..48e5ece 100644
+--- a/arch/arm/mach-omap2/gpio.c
++++ b/arch/arm/mach-omap2/gpio.c
+@@ -87,6 +87,8 @@ static int omap2_gpio_dev_init(struct omap_hwmod *oh, void *unused)
+ 		return PTR_ERR(od);
  	}
- };
  
++	omap_device_disable_idle_on_suspend(od);
++
+ 	gpio_bank_count++;
+ 	return 0;
+ }
+diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+index 1ac361b..466fc722 100644
+--- a/arch/arm/mach-omap2/serial.c
++++ b/arch/arm/mach-omap2/serial.c
+@@ -805,6 +805,7 @@ void __init omap_serial_init_port(struct omap_board_data *bdata)
+ 	WARN(IS_ERR(od), "Could not build omap_device for %s: %s.\n",
+ 	     name, oh->name);
+ 
++	omap_device_disable_idle_on_suspend(od);
+ 	oh->mux = omap_hwmod_mux_init(bdata->pads, bdata->pads_cnt);
+ 
+ 	uart->irq = oh->mpu_irqs[0].irq;
 -- 
 1.7.6
