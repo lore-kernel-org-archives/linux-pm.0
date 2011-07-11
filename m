@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Update][PATCH 6/10] PM / Domains: System-wide
-	transitions support for generic domains (v5)
-Date: Mon, 11 Jul 2011 21:39:50 +0200
-Message-ID: <201107112139.50503.rjw__37459.6860645854$1310413257$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1107081033000.2208-100000@iolanthe.rowland.org>
-	<201107091615.38915.rjw@sisk.pl> <87oc10zv4g.fsf@ti.com>
+Subject: Re: pm_runtime_suspended() can be false if RPM_SUSPENDED
+Date: Mon, 11 Jul 2011 22:02:48 +0200
+Message-ID: <201107112202.48280.rjw__19414.6558097147$1310414636$gmane$org@sisk.pl>
+References: <871uy0733n.fsf@ti.com> <201107091219.06089.rjw@sisk.pl>
+	<87fwmcy624.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87oc10zv4g.fsf@ti.com>
+In-Reply-To: <87fwmcy624.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,92 +19,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kevin Hilman <khilman@ti.com>
-Cc: linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, Linux OMAP <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Monday, July 11, 2011, Kevin Hilman wrote:
 > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> [...]
+> > Hi,
+> >
+> > On Saturday, July 09, 2011, Kevin Hilman wrote:
+> >> Hi Rafael,
+> >> 
+> >> Just curious why pm_runtime_suspended() requires the device to be
+> >> enabled for it to return true:
+> >> 
+> >> static inline bool pm_runtime_suspended(struct device *dev)
+> >> {
+> >> 	return dev->power.runtime_status == RPM_SUSPENDED
+> >> 		&& !dev->power.disable_depth;
+> >> }
+> >> 
+> >> I must be misunderstanding something, but I would consider a device that
+> >> has been runtime suspended before runtime PM was disabled to still be
+> >> runtime suspended.
+> >
+> > The problem is that while the runtime PM of the device is disabled
+> > (ie. dev->power.disable_depth > 0), its status may be switched from
+> > RPM_SUSPENDED to RPM_ACTIVE on the fly, using pm_runtime_set_active()
+> > (and the other way around) and it doesn't reflect the real status in
+> > principle.  
 > 
-> >
-> > There's one more case to consider, namely devices that are runtime
-> > suspended, set up to wake up the system from sleep states
-> > (ie. device_may_wakeup(dev) returns "true") and such that
-> > genpd->active_wakeup(dev) returns "true" for them, because they need
-> > to be resumed at this point too (arguably, it makes a little sense to
-> > runtime suspend such devices, but that's possible in principle).
-> >
-> > So, IMO, the patch should look like this:
-> >
-> > ---
-> >  drivers/base/power/domain.c |   19 +++++++++++++++++++
-> >  1 file changed, 19 insertions(+)
-> >
-> >> Index: linux-2.6/drivers/base/power/domain.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/power/domain.c
-> > +++ linux-2.6/drivers/base/power/domain.c
-> > @@ -486,6 +486,22 @@ static void pm_genpd_sync_poweroff(struc
-> >  }
-> >  
-> >  /**
-> > + * resume_needed - Check whether to resume a device before system suspend.
-> > + * @dev: Device to handle.
-> > + * @genpd: PM domain the device belongs to.
-> > + */
-> > +static bool resume_needed(struct device *dev, struct generic_pm_domain *genpd)
-> > +{
-> > +	bool active_wakeup;
-> > +
-> > +	if (!device_can_wakeup(dev))
-> > +		return false;
-> > +
-> > +	active_wakeup = genpd->active_wakeup && genpd->active_wakeup(dev);
-> > +	return device_may_wakeup(dev) ? active_wakeup : !active_wakeup;
+> OK, I guess this is the root of the confusion.  Namely, that
+> dev->power.runtime_status doesn't necessarily reflect the actual device
+> state.
 > 
-> This also returns true and causes a resume if active_wakeup = false and
-> device_may_wakeup() = false.  That doesn't seem right.
-
-This is on purpose. :-)  If active_wakeup is false, the device may signal
-remote wakeup while suspended.  So, if active_wakeup is false and the device
-is suspended, we have to assume that the device has been set up to signal
-remote wakeup for runtime PM (if it is not suspended, attempting to resume it
-will not have any effect).  Now, if device_may_wakeup() returns false in
-addition to that, we may need to change the device's wakeup settings, so the
-driver's callbacks should be invoked during suspend, so we're resuming the
-device (we can't just leave it suspended and then invoke the driver's callbacks
-in the hope they'll do the right thing).
-
-I don't really think we can do anything else without using new device flags.
-
-> > +}
-> > +
-> > +/**
-> >   * pm_genpd_prepare - Start power transition of a device in a PM domain.
-> >   * @dev: Device to start the transition of.
-> >   *
-> > @@ -519,6 +535,9 @@ static int pm_genpd_prepare(struct devic
-> >  		return -EBUSY;
-> >  	}
-> >  
-> > +	if (resume_needed(dev, genpd))
-> > +		pm_runtime_resume(dev);
-> > +
-> >  	genpd_acquire_lock(genpd);
-> >  
-> >  	if (genpd->prepared_count++ == 0)
+> > So it was a tough choice what to do about that and I decided
+> > to go with returning false (in many cases runtime PM disabled means the
+> > device is always operational).
 > 
-> IIUC, if a device is runtime suspended when a system suspend happens,
-> the device will be runtime resumed, but never re-suspended.
+> And with your recent changes (pm_runtime_disable() in suspend path), it
+> also be very common that 
+> 
+> >> I just noticed this when testing with your pm-domains branch.  when I
+> >> noticed that an 'if (pm_runtime_suspended(dev))' check in my PM domain's
+> >> ->suspend_noirq() was always failing since it's after the PM core calls
+> >> pm_runtime_disable().  I had to change my PM domain code to only check
+> >> dev->power.runtime_status for it to work.
+> >
+> > Well, at this point I'm kind of cautious about changing pm_runtime_suspended(),
+> > so perhaps we need a separate callback returnig true in the status is
+> > RPM_SUSPENDED regardless of the value of power.disable_depth, like
+> > pm_runtime_status_suspended() or something similar.
+> 
+> OK, but documentation would probably be needed to describe why you might
+> use one vs. the other.
+> 
+> However, based on the pm_runtime_set_active() problem you mentioned
+> above, I'm not sure this will help either, since what the PM domain's
+> noirq callback will want to do will be based on the actual device
+> hardware state, not on the PM core's view of the device state.
 
-It will be resuspended by the pm_runtime_idle() in pm_genpd_complete()
-(added by one of the new patches I've been posting for the last few days).
+Yes.  For devices whose runtime PM is never enabled, this is quite clear
+(we must assume they are operational).  For devices whose runtime PM is
+temporarily disabled and the reenabled, it's not that clear, but at
+least for the system suspend case we may require drivers not to use
+pm_runtime_set_active/suspended() in their callbacks, so that we may
+assume that the status hasn't changed between .suspend() and .resume().
 
-> Should resumes by the PM core be done with a get (and a corresponding
-> put in .complete())?
-
-Not necessarily. :-)
+So, I think your approach (to check power.runtime_status) is correct in this
+respect.
 
 Thanks,
 Rafael
