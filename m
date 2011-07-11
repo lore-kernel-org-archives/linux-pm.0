@@ -1,14 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: Reintroduce dropped call to
-	check_wakeup_irqs
-Date: Mon, 11 Jul 2011 10:46:55 +0200
-Message-ID: <201107111046.56044.rjw__25078.0609589585$1310374001$gmane$org@sisk.pl>
-References: <1310342666-2493-1-git-send-email-ccross@android.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: Runtime PM discussion notes
+Date: Mon, 11 Jul 2011 02:58:12 -0700
+Message-ID: <20110711095812.GT5783__22264.6955437542$1310378367$gmane$org@atomide.com>
+References: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
+	<201106232234.21930.rjw@sisk.pl>
+	<alpine.DEB.2.00.1106241239340.25533@utopia.booyaka.com>
+	<BANLkTinaa2W0mTUGCzfLAgBsgC5nP57x9ZXC0PfOvqa7x16kvw@mail.gmail.com>
+	<alpine.DEB.2.00.1106281346160.2874@utopia.booyaka.com>
+	<20110709040622.GH26900@sirena.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1310342666-2493-1-git-send-email-ccross@android.com>
+Content-Disposition: inline
+In-Reply-To: <20110709040622.GH26900@sirena.org.uk>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,63 +23,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 11, 2011, Colin Cross wrote:
-> Patch 2e711c04dbbf7a7732a3f7073b1fc285d12b369d
-> (PM: Remove sysdev suspend, resume and shutdown operations)
-> deleted sysdev_suspend, which was being relied on to call
-> check_wakeup_irqs in suspend.  If check_wakeup_irqs is not
-> called, wake interrupts that are pending when suspend is
-> entered may be lost.  It also breaks IRQCHIP_MASK_ON_SUSPEND,
-> which is handled in check_wakeup_irqs.
+* Mark Brown <broonie@opensource.wolfsonmicro.com> [110708 21:01]:
+> On Tue, Jun 28, 2011 at 01:47:47PM -0600, Paul Walmsley wrote:
+> > On Fri, 24 Jun 2011, Arve Hj?nnev?g wrote:
+> > > On Fri, Jun 24, 2011 at 12:53 PM, Paul Walmsley <paul@pwsan.com> wrote:
 > 
-> This patch adds a call to check_wakeup_irqs in syscore_suspend,
-> similar to what was deleted in sysdev_suspend.
+> > > > "On the hardware that shipped we enter the same power state from idle
+> > > > and suspend, so the only power savings we get from suspend that we
+> > > > don't get in idle is from not respecting the scheduler and timers."
 > 
-> CC: Rafael J. Wysocki <rjw@sisk.pl>
-> CC: Thomas Gleixner <tglx@linutronix.de>
-> CC: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-off-by: Colin Cross <ccross@android.com>
-
-Thanks a lot for the patch and sorry for the breakage.
-
-I'll push it to Linus later today (hopefully, that's not to late for 3.0).
-
-Thanks,
-Rafael
-
-
-> ---
->  drivers/base/syscore.c |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
+> > > This is no longer the case. Both the Nexus-S and Xoom enter lower
+> > > power states from suspend than idle.
 > 
-> diff --git a/drivers/base/syscore.c b/drivers/base/syscore.c
-> index c126db3..9b8bbe0 100644
-> --- a/drivers/base/syscore.c
-> +++ b/drivers/base/syscore.c
-> @@ -9,6 +9,7 @@
->  #include <linux/syscore_ops.h>
->  #include <linux/mutex.h>
->  #include <linux/module.h>
-> +#include <linux/interrupt.h>
->  
->  static LIST_HEAD(syscore_ops_list);
->  static DEFINE_MUTEX(syscore_ops_lock);
-> @@ -48,6 +49,13 @@ int syscore_suspend(void)
->  	struct syscore_ops *ops;
->  	int ret = 0;
->  
-> +	pr_debug("Checking wake-up interrupts\n");
-> +
-> +	/* Return error code if there are any wake-up interrupts pending */
-> +	ret = check_wakeup_irqs();
-> +	if (ret)
-> +		return ret;
-> +
->  	WARN_ONCE(!irqs_disabled(),
->  		"Interrupts enabled before system core suspend.\n");
->  
+> > Just out of curiosity, is that due to some kind of hardware limitation on 
+> > those platforms, or is it because the software infrastructure for dynamic 
+> > deep idle hasn't been fully implemented in that subarchitecture code?
 > 
+> At least the Nexus S doesn't implmeent any of the deep idle
+> infrastructure.  However, I'd expect that you can achieve some power
+> saving from entering system suspend as if *everything* is off then the
+> PMIC can be suspended which can enable additional power savings.  Unless
+> I'm missing something that'd be hard to hit with cpuidle only stuff.
+
+You should be able to hit the same states from idle no problem. At that
+point the only things on are memory in retention and some wake-up timer.
+Even the timer could be off if you have hardware wake-up events, but then
+system timer won't work the noral way naturally.
+
+The only way power down everything in suspend to disk :) Most PMICs have
+some functionality always on so they can charge the battery when it's
+empty.
+
+Regards,
+
+Tony
