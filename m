@@ -1,8 +1,8 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH] PM / Runtime: add new helper function:
-	pm_runtime_status_suspended()
-Date: Mon, 11 Jul 2011 15:51:22 -0700
-Message-ID: <1310424682-21255-1-git-send-email-khilman__41100.8865027272$1310424734$gmane$org@ti.com>
+Subject: [PATCH 0/4] OMAP: PM: omap_device: update PM domain
+	support for v3.1
+Date: Mon, 11 Jul 2011 16:29:25 -0700
+Message-ID: <1310426969-30306-1-git-send-email-khilman__45801.6852885068$1310427033$gmane$org@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,61 +16,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org
-Cc: linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, linux-omap@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This boolean function simply returns whether or not the runtime status
-of the device is 'suspended'.  Unlike pm_runtime_suspended(), this
-function returns the runtime status whether or not runtime PM for the
-device has been disabled or not.
+For v3.1, the PM core has some changes that impact various assumptions
+made (by me) during the design and implementation of the PM domain
+support in the omap_device layer.
 
-Also add entry to Documentation/power/runtime.txt
+This series is needed to update our PM domain layer to behave properly
+under the new rules of the PM core code which are planned to be merged
+for v3.1 (see recent linux-pm discussions for the gory details.)
 
-Suggested-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Kevin Hilman <khilman@ti.com>
----
- Documentation/power/runtime_pm.txt |    3 +++
- include/linux/pm_runtime.h         |    6 ++++++
- 2 files changed, 9 insertions(+), 0 deletions(-)
+This series is based on the pm-domains branch of Rafael Wysocki's
+suspend-2.6 tree, and also depends on the patch which adds
+pm_runtime_status_suspended() helper function[1].
 
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index 4b011b1..feca92f 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -400,6 +400,9 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-     - return true if the device's runtime PM status is 'suspended' and its
-       'power.disable_depth' field is equal to zero, or false otherwise
- 
-+  bool pm_runtime_status_suspended(struct device *dev);
-+    - return true if the device's runtime PM status is 'suspended'
-+
-   void pm_runtime_allow(struct device *dev);
-     - set the power.runtime_auto flag for the device and decrease its usage
-       counter (used by the /sys/devices/.../power/control interface to
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index dfb8539..daac05d 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -82,6 +82,11 @@ static inline bool pm_runtime_suspended(struct device *dev)
- 		&& !dev->power.disable_depth;
- }
- 
-+static inline bool pm_runtime_status_suspended(struct device *dev)
-+{
-+	return dev->power.runtime_status == RPM_SUSPENDED;
-+}
-+
- static inline bool pm_runtime_enabled(struct device *dev)
- {
- 	return !dev->power.disable_depth;
-@@ -130,6 +135,7 @@ static inline void pm_runtime_put_noidle(struct device *dev) {}
- static inline bool device_run_wake(struct device *dev) { return false; }
- static inline void device_set_run_wake(struct device *dev, bool enable) {}
- static inline bool pm_runtime_suspended(struct device *dev) { return false; }
-+static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
- static inline bool pm_runtime_enabled(struct device *dev) { return false; }
- 
- static inline int pm_generic_runtime_idle(struct device *dev) { return 0; }
+Rafael, because of the dependencies on your pm-domains branch (due to
+the pwr_domain -> pm_domain rename), it might be easiest to merge
+these via your tree.   Let me know if that's OK with you.
+
+I've tested this series with all of the PM core changes planned for
+v3.1 (Rafael's linux-next branch[2]) and have done various
+suspend/resume testing (including off-mode) with individual devices
+disabled via /sys/devices/.../power/control.
+
+Kevin
+
+[1] https://patchwork.kernel.org/patch/966732/
+[2] git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git
+
+Kevin Hilman (4):
+  OMAP: PM: omap_device: conditionally use PM domain runtime helpers
+  OMAP: PM: omap_device: add system PM methods for PM domain handling
+  OMAP: PM: omap_device: add API to disable idle on suspend
+  OMAP: PM: disable idle on suspend for GPIO and UART
+
+ arch/arm/mach-omap2/Kconfig                   |    4 +-
+ arch/arm/mach-omap2/gpio.c                    |    2 +
+ arch/arm/mach-omap2/serial.c                  |    1 +
+ arch/arm/plat-omap/include/plat/omap_device.h |    9 +++++
+ arch/arm/plat-omap/omap_device.c              |   49 +++++++++++++++++++++++--
+ 5 files changed, 60 insertions(+), 5 deletions(-)
+
 -- 
 1.7.6
