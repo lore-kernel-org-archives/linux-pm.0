@@ -1,19 +1,15 @@
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [RFC] Unprepare callback for cpuidle_device
-Date: Tue, 12 Jul 2011 00:38:56 +0530
-Message-ID: <20110711190856.GC25533@dirshya.in.ibm.com>
-References: <a619d8bbefd2f390a13d09084583dd39.squirrel@www.codeaurora.org>
-	<4E15516E.5040209@gmail.com>
-	<82b596dce7b84db206d3afb6da564fb9.squirrel@www.codeaurora.org>
-	<4E170010.2000403@linux.vnet.ibm.com>
-	<473338c2d56302337f83871ce1c201e4.squirrel@www.codeaurora.org>
-Reply-To: svaidy@linux.vnet.ibm.com
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: PM domain using _noirq methods to "finish" pending
+	runtime PM transistions
+Date: Mon, 11 Jul 2011 12:24:36 -0700
+Message-ID: <87aacky617.fsf__9097.3042104908$1310412422$gmane$org@ti.com>
+References: <87iprc2t34.fsf@ti.com> <201107092302.06618.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <473338c2d56302337f83871ce1c201e4.squirrel@www.codeaurora.org>
+In-Reply-To: <201107092302.06618.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sat, 9 Jul 2011 23:02:06 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,80 +19,96 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: asinghal@codeaurora.org
-Cc: linux-pm@lists.linux-foundation.org, johlstei@codeaurora.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-* asinghal@codeaurora.org <asinghal@codeaurora.org> [2011-07-11 10:26:56]:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> hello Deepthi,
->           please see my replies inline:
-> 
-> 
-> > Hi Amar,
-> >
-> > On Friday 08 July 2011 01:22 AM, asinghal@codeaurora.org wrote:
-> >> Hello Trinabh,
-> >>               i cannot use the enter callback due to the following
-> >> reason:
-> >>
-> >> the residency calculation(tick)nohz_get_sleep_length) and the idle state
-> >> selection happens in the menu governor. The enter callback is called
-> >> with
-> >> the selected state.
-> >
-> >   One would first execute prepare then call select and enter .
-> >   So in the newer proposed code, there is no prepare routine. One would
-> >   just execute select() and then enter() (Prepare functionality is part of
-> > the
-> >   enter routine itself) Is it not possible to cancel the timer,
-> >   calculate the execute nohz_get_sleep in enter routine again,
-> >   then select the idle state depending on the time . Automatically promote
-> > or demote
-> >   idle state based on the latest value returned in the driver ?
-> >
-> Cancelling the timer and calculating the sleep length again in the enter
-> callback is possible; but what does not make sense is calling the select
-> routine again ; definitely the select routine of the governor needs to be
-> called only once.  And actually, the sleep length is calculated in the
+> Hi,
+>
+> On Saturday, July 09, 2011, Kevin Hilman wrote:
+>> Hi Rafael,
+>> 
+>> So I'm now experimenting with your suggestion of using the noirq
+>> callbacks of the PM domain to ensure device low-power state transitions
+>> for the cases where runtime PM has been disabled from userspace (or a
+>> driver has used runtime PM calls in it's suspend/resume path but they
+>> have no effect since runtime PM is disabled.)
+>> 
+>> Before I get too far, I want to be sure I understood your suggestion
+>> correctly, and run my current implemtation past you.
+>> 
+>> For starters, I just set the driver's noirq callbacks to point to the
+>> runtime PM callbacks.
+>> 
+>> Then, in the PM domain's suspend_noirq, I basically do
+>> 
+>> 	ret = pm_generic_suspend_noirq(dev);
+>> 	if (!ret && !(dev->power.runtime_status == RPM_SUSPENDED))
+>> 		magic_device_power_down(dev); /* shared with pm_domain runtime PM methods */
+>>                 priv->flags |= MAGIC_DEVICE_SUSPENDED;
+>> 	}
+>> 	return ret;
+>> 
+>> and in the PM domain's resume_norq, I basically do:
+>> 
+>> 	if ((priv->flags & MAGIC_DEVICE_SUSPENDED) &&
+>> 	    !(dev->power.runtime_status == RPM_SUSPENDED)) {
+>> 		priv->flags &= ~OMAP_DEVICE_SUSPENDED;
+>> 		magic_device_power_up(dev);
+>> 	}
+>> 	return pm_generic_resume_noirq(dev);
+>> 
+>> Note: The MAGIC_DEVICE_SUSPENDED flag is used so resume_noirq only
+>> reenables devices that were disabled by suspend_noirq so that devices
+>> which were disabled by runtime PM are left untouched (similar to how
+>> you've implmented generic PM domains.)
+>> 
+>> Since the driver's noirq callbacks point to the runtime PM callbacks
+>> this all works quite well. 
+>> 
+>> I believe this was basically the suggestion you were recommending, right?
+>
+> That's correct.
+>
+>> However, what I need is for the driver's runtime PM callbacks not to be
+>> called unconditionally, but only if the PM domain's noirq methods are
+>> actually going to disable/power-down the device (e.g. it's not already
+>> runtime suspended.)
+>> 
+>> The first obvious solution is to create new driver noirq methods that
+>> check if the device is not already RPM_SUSPENDED and only then call the
+>> runtime PM callbacks.   That works, but hey, it's a Friday night so I
+>> decided to take it to the next level...
+>> 
+>> Instead of making all the drivers add new noirq methods that just
+>> conditionally call the runtime PM methods, what if I just handle it in
+>> the PM domain?  IOW, what if I just call pm_generic_runtime_* from the
+>> PM domain's noirq methods?  e.g. call pm_generic_runtime_suspend() just
+>> before magic_device_power_down() and call pm_generic_runtime_resume()
+>> just after magic_device_power_up()?
+>
+> That should be fine.
+>
+>> I tested this today with a handful of our drivers that do all their PM
+>> in terms of the runtime PM API (including get_sync/put_sync in their
+>> suspend path) and they all work as expected without modification.
+>> 
+>> I know it's not much to add a couple new callbacks to each of these
+>> drivers, but if I can handle it at the PM domain level, I'd rather allow
+>> the drivers to stay simple.
+>> 
+>> What do you think?
+>
+> I don't see anything wrong with your approach. :-)
 
-Can you promote the idle state within the driver based on the new
-information provided by tick_nohz_get_sleep_length() after canceling
-the timer?  This will be a hack... but better than calling select()
-again.  You are right, we need to design in such a way that select()
-makes the right choice.
+Thanks.
 
-> function tick_nohz_stop_sched_tick.( so shld the prepare callback be moved
-> before that in cpu_idle ??)
+> PS
+> I wonder what you think about this patch:
+> https://patchwork.kernel.org/patch/959672/
 
-The prepare callback is in the right place now... if you cancel the
-timer in prepare, then subsequent select() which calls
-tick_nohz_get_sleep_length() will get the correct idle time.  Your
-problem is in restarting the timer in case we abort the idle.  The
-current place of prepare is fine and more over we are heading in the
-direction to deprecate the prepare itself.
+I responded to that thread.
 
-> I am looking for a nice way to cancel and restart the high resolution
-> timers in the idle code; even if that means rearranging the cpu_idle code.
-
-Slight difference, you can cancel and restart within the driver, the
-problem is that you want the ->select() to be executed _after_
-canceling your hrtimer because it will predict idle much shorter
-otherwise.  This is where the cpuidle framework should help.
-
-> Another way i was looking to solve this issue was add deferrable feature
-> to HR timers; if someone has thoughts on that please chime in.
-
-This seems to be a much better idea, where the
-tick_nohz_get_sleep_length() can automatically skip your deferred
-hrtimer with a hope that it will be canceled.  We don't have
-a mechanism to actually defer it.
-
-You can try to add deferred flag in hrtimer_mode { } similar to how
-pinned was added.  Enhance tick_nohz_get_sleep_length() to skip over
-deferred hrtimer as well.
-
-But the number of users for this feature will be very little to
-justify the complexity.
-
---Vaidy
+Kevin
