@@ -1,7 +1,7 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Tony Lindgren <tony@atomide.com>
 Subject: Re: Runtime PM discussion notes
-Date: Mon, 11 Jul 2011 20:26:22 +0900
-Message-ID: <20110711112619.GH5092__4942.89568528092$1310383648$gmane$org@opensource.wolfsonmicro.com>
+Date: Mon, 11 Jul 2011 04:32:12 -0700
+Message-ID: <20110711113212.GW5783__22214.4881300212$1310383993$gmane$org@atomide.com>
 References: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
 	<201106232234.21930.rjw@sisk.pl>
 	<alpine.DEB.2.00.1106241239340.25533@utopia.booyaka.com>
@@ -11,12 +11,13 @@ References: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
 	<20110711095812.GT5783@atomide.com>
 	<20110711110435.GF5092@opensource.wolfsonmicro.com>
 	<20110711111424.GV5783@atomide.com>
+	<20110711112619.GH5092@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110711111424.GV5783@atomide.com>
+In-Reply-To: <20110711112619.GH5092@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,32 +27,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tony Lindgren <tony@atomide.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 11, 2011 at 04:14:24AM -0700, Tony Lindgren wrote:
-> * Mark Brown <broonie@opensource.wolfsonmicro.com> [110711 03:59]:
+* Mark Brown <broonie@opensource.wolfsonmicro.com> [110711 04:21]:
+> On Mon, Jul 11, 2011 at 04:14:24AM -0700, Tony Lindgren wrote:
+> > * Mark Brown <broonie@opensource.wolfsonmicro.com> [110711 03:59]:
+> 
+> > > Right, but it can be interesting to tell the PMIC that we went into this
+> > > mode.  Possibly cpuidle will end up doing this as a result of signals
+> > > generated as the CPU core goes down, but at that point it's just s2ram
+> > > by another name.
+> 
+> > All PMIC devices should be shut down when not in use, so I don't know
+> > what else you would configure in the PMIC. Maybe you have something else
+> > there to configure? Just curious what kind of mess you have to deal with
+> > compared to the mess I need to deal with :)
+> 
+> The interesting bits are things like being able to kill lots of the SoC
+> core supplies when the RAM is in retention mode - the CPU needs to go
+> through its shutdown procedures.
 
-> > Right, but it can be interesting to tell the PMIC that we went into this
-> > mode.  Possibly cpuidle will end up doing this as a result of signals
-> > generated as the CPU core goes down, but at that point it's just s2ram
-> > by another name.
+I see. I've seen cases these are pre-programmed to the PMIC and then
+automatically triggered based on some event like WFI.
+ 
+> > Also, hitting deeper sleep states from idle is not same as suspend to ram.
+> > With suspend to ram the system timer is killed while timers behave in a
+> > normal way when hitting deeper sleep states from idle.
+> 
+> Actually, it just occurred to me that if we're waiting for a system
+> timer and can hand that off to a suitable timer in the PMIC then we can
+> do a suspend to RAM for the deep idle state from the hardware point of
+> view.
 
-> All PMIC devices should be shut down when not in use, so I don't know
-> what else you would configure in the PMIC. Maybe you have something else
-> there to configure? Just curious what kind of mess you have to deal with
-> compared to the mess I need to deal with :)
+Cool, it would be nice to have a Linux generic way for programming a
+separate hardware wake-up timer. Not RTC, but some more accurate timer that
+might be too slow to access for general purpose usage.
 
-The interesting bits are things like being able to kill lots of the SoC
-core supplies when the RAM is in retention mode - the CPU needs to go
-through its shutdown procedures.
+Regards,
 
-> Also, hitting deeper sleep states from idle is not same as suspend to ram.
-> With suspend to ram the system timer is killed while timers behave in a
-> normal way when hitting deeper sleep states from idle.
-
-Actually, it just occurred to me that if we're waiting for a system
-timer and can hand that off to a suitable timer in the PMIC then we can
-do a suspend to RAM for the deep idle state from the hardware point of
-view.
+Tony
