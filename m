@@ -1,15 +1,12 @@
-From: "Hilman, Kevin" <khilman@ti.com>
-Subject: Re: pm_runtime_suspended() can be false if RPM_SUSPENDED
-Date: Mon, 11 Jul 2011 15:50:50 -0700
-Message-ID: <CALyTGOCdYb8eMGh9UFdmQkOvJhZUd3638tMb2DQXOF6_W6zovQ__1897.11059579185$1310424703$gmane$org@mail.gmail.com>
-References: <871uy0733n.fsf@ti.com> <201107112222.18917.rjw@sisk.pl>
-	<CALyTGOANs9ZUKmWH43s7H1Aod-y=jAueo045yzao66ze7Wko5g@mail.gmail.com>
-	<201107120036.49823.rjw@sisk.pl>
+From: Kevin Hilman <khilman@ti.com>
+Subject: [PATCH] PM / Runtime: add new helper function:
+	pm_runtime_status_suspended()
+Date: Mon, 11 Jul 2011 15:51:22 -0700
+Message-ID: <1310424682-21255-1-git-send-email-khilman__41100.8865027272$1310424734$gmane$org@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107120036.49823.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,54 +16,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Linux OMAP <linux-omap@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org
+Cc: linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 11, 2011 at 3:36 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, July 11, 2011, Hilman, Kevin wrote:
->> On Mon, Jul 11, 2011 at 1:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Monday, July 11, 2011, Kevin Hilman wrote:
->> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> >>
->> >> [...]
->> >>
->> >> >>
->> >> >> However, based on the pm_runtime_set_active() problem you mentioned
->> >> >> above, I'm not sure this will help either, since what the PM domai=
-n's
->> >> >> noirq callback will want to do will be based on the actual device
->> >> >> hardware state, not on the PM core's view of the device state.
->> >> >
->> >> > Yes. =A0For devices whose runtime PM is never enabled, this is quit=
-e clear
->> >> > (we must assume they are operational). =A0For devices whose runtime=
- PM is
->> >> > temporarily disabled and the reenabled, it's not that clear, but at
->> >> > least for the system suspend case we may require drivers not to use
->> >> > pm_runtime_set_active/suspended() in their callbacks, so that we may
->> >> > assume that the status hasn't changed between .suspend() and .resum=
-e().
->> >> >
->> >> > So, I think your approach (to check power.runtime_status) is correc=
-t in this
->> >> > respect.
->> >>
->> >> OK, I'll just directly check power.runtime_status in the noirq method=
-s,
->> >> since at that point I always know that disable_depth > 0.
->> >
->> > That's what I wanted to say. :-) =A0The only problem with that is if
->> > CONFIG_PM_RUNTIME is unset, power.runtime_status is not present, so I =
-think
->> > we'll need a static inline to work around that.
->> >
->>
->> OK, I can prepare a patch for a static inline for
->> pm_runtime_status_suspended(), unless you have one already in
->> progress.
->
-> No, I don't, please send me one if you can. :-)
->
+This boolean function simply returns whether or not the runtime status
+of the device is 'suspended'.  Unlike pm_runtime_suspended(), this
+function returns the runtime status whether or not runtime PM for the
+device has been disabled or not.
 
-OK, coming right up...
+Also add entry to Documentation/power/runtime.txt
+
+Suggested-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ Documentation/power/runtime_pm.txt |    3 +++
+ include/linux/pm_runtime.h         |    6 ++++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index 4b011b1..feca92f 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -400,6 +400,9 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+     - return true if the device's runtime PM status is 'suspended' and its
+       'power.disable_depth' field is equal to zero, or false otherwise
+ 
++  bool pm_runtime_status_suspended(struct device *dev);
++    - return true if the device's runtime PM status is 'suspended'
++
+   void pm_runtime_allow(struct device *dev);
+     - set the power.runtime_auto flag for the device and decrease its usage
+       counter (used by the /sys/devices/.../power/control interface to
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index dfb8539..daac05d 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -82,6 +82,11 @@ static inline bool pm_runtime_suspended(struct device *dev)
+ 		&& !dev->power.disable_depth;
+ }
+ 
++static inline bool pm_runtime_status_suspended(struct device *dev)
++{
++	return dev->power.runtime_status == RPM_SUSPENDED;
++}
++
+ static inline bool pm_runtime_enabled(struct device *dev)
+ {
+ 	return !dev->power.disable_depth;
+@@ -130,6 +135,7 @@ static inline void pm_runtime_put_noidle(struct device *dev) {}
+ static inline bool device_run_wake(struct device *dev) { return false; }
+ static inline void device_set_run_wake(struct device *dev, bool enable) {}
+ static inline bool pm_runtime_suspended(struct device *dev) { return false; }
++static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
+ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 
+ static inline int pm_generic_runtime_idle(struct device *dev) { return 0; }
+-- 
+1.7.6
