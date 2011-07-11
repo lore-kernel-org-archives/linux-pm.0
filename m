@@ -1,23 +1,14 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: Runtime PM discussion notes
-Date: Mon, 11 Jul 2011 04:32:12 -0700
-Message-ID: <20110711113212.GW5783__22214.4881300212$1310383993$gmane$org@atomide.com>
-References: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
-	<201106232234.21930.rjw@sisk.pl>
-	<alpine.DEB.2.00.1106241239340.25533@utopia.booyaka.com>
-	<BANLkTinaa2W0mTUGCzfLAgBsgC5nP57x9ZXC0PfOvqa7x16kvw@mail.gmail.com>
-	<alpine.DEB.2.00.1106281346160.2874@utopia.booyaka.com>
-	<20110709040622.GH26900@sirena.org.uk>
-	<20110711095812.GT5783@atomide.com>
-	<20110711110435.GF5092@opensource.wolfsonmicro.com>
-	<20110711111424.GV5783@atomide.com>
-	<20110711112619.GH5092@opensource.wolfsonmicro.com>
+From: Daniel Drake <dsd@laptop.org>
+Subject: Re: [PATCH v2] Input: enable i8042-level wakeup control
+Date: Mon, 11 Jul 2011 14:22:22 +0100
+Message-ID: <CAGq3pz5D=qDyfodEB2ikNsP0V94nTKNJ8-jyrb7=irH571bUPA__36433.6932813332$1310390661$gmane$org@mail.gmail.com>
+References: <20110709211321.5FE139D401C@zog.reactivated.net>
+	<201107102300.14064.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110711112619.GH5092@opensource.wolfsonmicro.com>
+In-Reply-To: <201107102300.14064.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,44 +18,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: dilinger@queued.net, dtor@mail.ru, linux-pm@lists.linux-foundation.org, dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-* Mark Brown <broonie@opensource.wolfsonmicro.com> [110711 04:21]:
-> On Mon, Jul 11, 2011 at 04:14:24AM -0700, Tony Lindgren wrote:
-> > * Mark Brown <broonie@opensource.wolfsonmicro.com> [110711 03:59]:
-> 
-> > > Right, but it can be interesting to tell the PMIC that we went into this
-> > > mode.  Possibly cpuidle will end up doing this as a result of signals
-> > > generated as the CPU core goes down, but at that point it's just s2ram
-> > > by another name.
-> 
-> > All PMIC devices should be shut down when not in use, so I don't know
-> > what else you would configure in the PMIC. Maybe you have something else
-> > there to configure? Just curious what kind of mess you have to deal with
-> > compared to the mess I need to deal with :)
-> 
-> The interesting bits are things like being able to kill lots of the SoC
-> core supplies when the RAM is in retention mode - the CPU needs to go
-> through its shutdown procedures.
+Hi Rafael, many thanks for looking at this.
 
-I see. I've seen cases these are pre-programmed to the PMIC and then
-automatically triggered based on some event like WFI.
- 
-> > Also, hitting deeper sleep states from idle is not same as suspend to ram.
-> > With suspend to ram the system timer is killed while timers behave in a
-> > normal way when hitting deeper sleep states from idle.
-> 
-> Actually, it just occurred to me that if we're waiting for a system
-> timer and can hand that off to a suitable timer in the PMIC then we can
-> do a suspend to RAM for the deep idle state from the hardware point of
-> view.
+2011/7/10 Rafael J. Wysocki <rjw@sisk.pl>:
+>> @@ -1602,6 +1611,15 @@ static int input_dev_resume(struct device *dev)
+>> =A0{
+>> =A0 =A0 =A0 struct input_dev *input_dev =3D to_input_dev(dev);
+>>
+>> + =A0 =A0 /*
+>> + =A0 =A0 =A0* If this device is a child of serio, which is a child of i=
+8042, and
+>> + =A0 =A0 =A0* i8042 wakeup is enabled (i.e. this input device was not s=
+uspended),
+>> + =A0 =A0 =A0* do nothing.
+>> + =A0 =A0 =A0*/
+>> + =A0 =A0 if (dev->parent && dev->parent->parent
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 && device_may_wakeup(dev->pare=
+nt->parent))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+>> +
+>
+> You check exactly the same condition in two places with very similar comm=
+ents.
+> I'd put it into a bool function and add a kerneldoc description to it ins=
+tead.
 
-Cool, it would be nice to have a Linux generic way for programming a
-separate hardware wake-up timer. Not RTC, but some more accurate timer that
-might be too slow to access for general purpose usage.
+OK, I agree. I was hoping that you'd be able to point out a better way
+of doing this though - I think you'd agree that this code is not very
+nice. But maybe explaining it better and hiding it away in its own
+function is the best approach we have.
 
-Regards,
+It is a strange case, because the device hierarchy is as follows:
 
-Tony
+i8042 -> serio -> input
+
+Yet the kernel sees the i8042 and input devices as somewhat
+independent devices on different busses, so each one has its own
+independent suspend/resume implementation called from the PM layer.
+And in this particular case, I need to make the i8042 controller
+communicate the fact that its grandchild input device should not be
+suspended or reset.
+
+> The fact that you need provide several empty definitions of
+> i8042_platform_suspend() is a bit worrisome. =A0Have you considered using=
+ a
+> different approach?
+
+This seems quite the norm in i8042-land - those .h files already
+include a number of empty functions that were presumably added just
+because a small selection of the other supported arches needed to do
+something. Nevertheless I'd be happy to convert these drivers to a new
+"struct i8042_platform_ops" type system if that helps with the merge
+of this patch.
+
+Thanks,
+Daniel
