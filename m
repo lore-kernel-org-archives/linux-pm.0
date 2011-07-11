@@ -1,16 +1,19 @@
-From: asinghal@codeaurora.org
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Subject: Re: [RFC] Unprepare callback for cpuidle_device
-Date: Mon, 11 Jul 2011 10:26:56 -0700 (PDT)
-Message-ID: <473338c2d56302337f83871ce1c201e4.squirrel@www.codeaurora.org>
+Date: Tue, 12 Jul 2011 00:38:56 +0530
+Message-ID: <20110711190856.GC25533@dirshya.in.ibm.com>
 References: <a619d8bbefd2f390a13d09084583dd39.squirrel@www.codeaurora.org>
 	<4E15516E.5040209@gmail.com>
 	<82b596dce7b84db206d3afb6da564fb9.squirrel@www.codeaurora.org>
 	<4E170010.2000403@linux.vnet.ibm.com>
+	<473338c2d56302337f83871ce1c201e4.squirrel@www.codeaurora.org>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4E170010.2000403@linux.vnet.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <473338c2d56302337f83871ce1c201e4.squirrel@www.codeaurora.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,112 +23,80 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Cc: linux-pm@lists.linux-foundation.org, asinghal@codeaurora.org, johlstei@codeaurora.org
+To: asinghal@codeaurora.org
+Cc: linux-pm@lists.linux-foundation.org, johlstei@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-hello Deepthi,
-          please see my replies inline:
+* asinghal@codeaurora.org <asinghal@codeaurora.org> [2011-07-11 10:26:56]:
 
+> hello Deepthi,
+>           please see my replies inline:
+> 
+> 
+> > Hi Amar,
+> >
+> > On Friday 08 July 2011 01:22 AM, asinghal@codeaurora.org wrote:
+> >> Hello Trinabh,
+> >>               i cannot use the enter callback due to the following
+> >> reason:
+> >>
+> >> the residency calculation(tick)nohz_get_sleep_length) and the idle state
+> >> selection happens in the menu governor. The enter callback is called
+> >> with
+> >> the selected state.
+> >
+> >   One would first execute prepare then call select and enter .
+> >   So in the newer proposed code, there is no prepare routine. One would
+> >   just execute select() and then enter() (Prepare functionality is part of
+> > the
+> >   enter routine itself) Is it not possible to cancel the timer,
+> >   calculate the execute nohz_get_sleep in enter routine again,
+> >   then select the idle state depending on the time . Automatically promote
+> > or demote
+> >   idle state based on the latest value returned in the driver ?
+> >
+> Cancelling the timer and calculating the sleep length again in the enter
+> callback is possible; but what does not make sense is calling the select
+> routine again ; definitely the select routine of the governor needs to be
+> called only once.  And actually, the sleep length is calculated in the
 
-> Hi Amar,
->
-> On Friday 08 July 2011 01:22 AM, asinghal@codeaurora.org wrote:
->> Hello Trinabh,
->>               i cannot use the enter callback due to the following
->> reason:
->>
->> the residency calculation(tick)nohz_get_sleep_length) and the idle state
->> selection happens in the menu governor. The enter callback is called
->> with
->> the selected state.
->
->   One would first execute prepare then call select and enter .
->   So in the newer proposed code, there is no prepare routine. One would
->   just execute select() and then enter() (Prepare functionality is part of
-> the
->   enter routine itself) Is it not possible to cancel the timer,
->   calculate the execute nohz_get_sleep in enter routine again,
->   then select the idle state depending on the time . Automatically promote
-> or demote
->   idle state based on the latest value returned in the driver ?
->
-Cancelling the timer and calculating the sleep length again in the enter
-callback is possible; but what does not make sense is calling the select
-routine again ; definitely the select routine of the governor needs to be
-called only once.  And actually, the sleep length is calculated in the
-function tick_nohz_stop_sched_tick.( so shld the prepare callback be moved
-before that in cpu_idle ??)
+Can you promote the idle state within the driver based on the new
+information provided by tick_nohz_get_sleep_length() after canceling
+the timer?  This will be a hack... but better than calling select()
+again.  You are right, we need to design in such a way that select()
+makes the right choice.
 
-I am looking for a nice way to cancel and restart the high resolution
-timers in the idle code; even if that means rearranging the cpu_idle code.
+> function tick_nohz_stop_sched_tick.( so shld the prepare callback be moved
+> before that in cpu_idle ??)
 
-Another way i was looking to solve this issue was add deferrable feature
-to HR timers; if someone has thoughts on that please chime in.
+The prepare callback is in the right place now... if you cancel the
+timer in prepare, then subsequent select() which calls
+tick_nohz_get_sleep_length() will get the correct idle time.  Your
+problem is in restarting the timer in case we abort the idle.  The
+current place of prepare is fine and more over we are heading in the
+direction to deprecate the prepare itself.
 
-thanks,
-amar
+> I am looking for a nice way to cancel and restart the high resolution
+> timers in the idle code; even if that means rearranging the cpu_idle code.
 
+Slight difference, you can cancel and restart within the driver, the
+problem is that you want the ->select() to be executed _after_
+canceling your hrtimer because it will predict idle much shorter
+otherwise.  This is where the cpuidle framework should help.
 
+> Another way i was looking to solve this issue was add deferrable feature
+> to HR timers; if someone has thoughts on that please chime in.
 
+This seems to be a much better idea, where the
+tick_nohz_get_sleep_length() can automatically skip your deferred
+hrtimer with a hope that it will be canceled.  We don't have
+a mechanism to actually defer it.
 
->> So cancelling the hrtimer that would affect the residency value
->> calculated
->> in the menu governor, in the enter callback is not possible. The timer
->> needs to be cancelled before the select call is made.
->>
->> thanks,
->> amar
->>
->>
->>
->>> On 07/06/2011 04:23 PM, asinghal@codeaurora.org wrote:
->>>> We plan to use high resolution timers in one of our modules, with the
->>>> requirement that we cancel these timers when the cpu goes idle and
->>>> restart
->>>> them when the cpu comes out of idle.
->>>>
->>>> We are cancelling the timers in cpuidle prepare callback. The problem
->>>> is
->>>> that if the need_resched() call in drivers/cpuidle/cpuidle.c returns
->>>> true,
->>>> how do we restart the timer? If the call returns false, we can restart
->>>> the
->>>> timer in the cpuidle enter callback.
->>>
->>> Hi Amar,
->>>
->>> I think you should not use cpuidle prepare callback at all. It may be
->>> removed soon (see https://lkml.org/lkml/2011/6/6/261) and I think
->>> there are better ways to achieve what you are trying to do.
->>>
->>> I think everything should go into the enter routines (the idle routines
->>> provided by the driver). That way you would not have to worry about
->>> need_resched() in cpuidle.c. Also it would be a cleaner implementation
->>> as you wouldn't touch generic cpuidle code.
->>>
->>>>
->>>> The solution to the problem that we have in mind is adding an
->>>> unprepare
->>>> callback to the cpuidle_device struct, and calling it if
->>>> needs_resched()
->>>> returns true. Another option is to implement deferred timers for
->>>> hrtimers.
->>>> Which of the two options is the better solution, or is there another
->>>> feasible alternative?
->>>
->>> As i said, everything should go inside enter routine and
->>> you wouldn't have to use/implement prepare/unprepare callbacks.
->>>
->>> Thanks
->>> -Trinabh
->>>
->>
->>
->> _______________________________________________
->> linux-pm mailing list
->> linux-pm@lists.linux-foundation.org
->> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-> Regards,
-> Deepthi
->
+You can try to add deferred flag in hrtimer_mode { } similar to how
+pinned was added.  Enhance tick_nohz_get_sleep_length() to skip over
+deferred hrtimer as well.
+
+But the number of users for this feature will be very little to
+justify the complexity.
+
+--Vaidy
