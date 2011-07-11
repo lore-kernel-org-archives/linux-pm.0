@@ -1,18 +1,14 @@
-From: asinghal@codeaurora.org
-Subject: Re: [RFC] Unprepare callback for cpuidle_device
-Date: Mon, 11 Jul 2011 14:45:58 -0700 (PDT)
-Message-ID: <57f0d61f9e15b2af262607e872746317.squirrel@www.codeaurora.org>
-References: <a619d8bbefd2f390a13d09084583dd39.squirrel@www.codeaurora.org>
-	<4E15516E.5040209@gmail.com>
-	<82b596dce7b84db206d3afb6da564fb9.squirrel@www.codeaurora.org>
-	<4E170010.2000403@linux.vnet.ibm.com>
-	<473338c2d56302337f83871ce1c201e4.squirrel@www.codeaurora.org>
-	<20110711190856.GC25533@dirshya.in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: pm_runtime_suspended() can be false if RPM_SUSPENDED
+Date: Tue, 12 Jul 2011 00:36:49 +0200
+Message-ID: <201107120036.49823.rjw__38937.6668412753$1310423883$gmane$org@sisk.pl>
+References: <871uy0733n.fsf@ti.com> <201107112222.18917.rjw@sisk.pl>
+	<CALyTGOANs9ZUKmWH43s7H1Aod-y=jAueo045yzao66ze7Wko5g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110711190856.GC25533@dirshya.in.ibm.com>
+In-Reply-To: <CALyTGOANs9ZUKmWH43s7H1Aod-y=jAueo045yzao66ze7Wko5g@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,104 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: svaidy@linux.vnet.ibm.com
-Cc: linux-pm@lists.linux-foundation.org, asinghal@codeaurora.org, johlstei@codeaurora.org
+To: "Hilman, Kevin" <khilman@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, Linux OMAP <linux-omap@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-hello Vaidy,
-           doesn't tick_nohz_get_sleep_length just return ts->sleep_length
+On Monday, July 11, 2011, Hilman, Kevin wrote:
+> On Mon, Jul 11, 2011 at 1:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Monday, July 11, 2011, Kevin Hilman wrote:
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >>
+> >> [...]
+> >>
+> >> >>
+> >> >> However, based on the pm_runtime_set_active() problem you mentioned
+> >> >> above, I'm not sure this will help either, since what the PM domain's
+> >> >> noirq callback will want to do will be based on the actual device
+> >> >> hardware state, not on the PM core's view of the device state.
+> >> >
+> >> > Yes.  For devices whose runtime PM is never enabled, this is quite clear
+> >> > (we must assume they are operational).  For devices whose runtime PM is
+> >> > temporarily disabled and the reenabled, it's not that clear, but at
+> >> > least for the system suspend case we may require drivers not to use
+> >> > pm_runtime_set_active/suspended() in their callbacks, so that we may
+> >> > assume that the status hasn't changed between .suspend() and .resume().
+> >> >
+> >> > So, I think your approach (to check power.runtime_status) is correct in this
+> >> > respect.
+> >>
+> >> OK, I'll just directly check power.runtime_status in the noirq methods,
+> >> since at that point I always know that disable_depth > 0.
+> >
+> > That's what I wanted to say. :-)  The only problem with that is if
+> > CONFIG_PM_RUNTIME is unset, power.runtime_status is not present, so I think
+> > we'll need a static inline to work around that.
+> >
+> 
+> OK, I can prepare a patch for a static inline for
+> pm_runtime_status_suspended(), unless you have one already in
+> progress.
 
-variable value from the tick_sched structure for that cpu ?
+No, I don't, please send me one if you can. :-)
 
-The calculation of this sleep_length variable happens in function
-
-tick_nohz_stop_Sched_tick after call to function get_next_timer_interrupt ??
-
-thanks,
-amar
-
-
-
-> * asinghal@codeaurora.org <asinghal@codeaurora.org> [2011-07-11 10:26:56]:
->
->> hello Deepthi,
->>           please see my replies inline:
->>
->>
->> > Hi Amar,
->> >
->> > On Friday 08 July 2011 01:22 AM, asinghal@codeaurora.org wrote:
->> >> Hello Trinabh,
->> >>               i cannot use the enter callback due to the following
->> >> reason:
->> >>
->> >> the residency calculation(tick)nohz_get_sleep_length) and the idle
->> state
->> >> selection happens in the menu governor. The enter callback is called
->> >> with
->> >> the selected state.
->> >
->> >   One would first execute prepare then call select and enter .
->> >   So in the newer proposed code, there is no prepare routine. One
->> would
->> >   just execute select() and then enter() (Prepare functionality is
->> part of
->> > the
->> >   enter routine itself) Is it not possible to cancel the timer,
->> >   calculate the execute nohz_get_sleep in enter routine again,
->> >   then select the idle state depending on the time . Automatically
->> promote
->> > or demote
->> >   idle state based on the latest value returned in the driver ?
->> >
->> Cancelling the timer and calculating the sleep length again in the enter
->> callback is possible; but what does not make sense is calling the select
->> routine again ; definitely the select routine of the governor needs to
->> be
->> called only once.  And actually, the sleep length is calculated in the
->
-> Can you promote the idle state within the driver based on the new
-> information provided by tick_nohz_get_sleep_length() after canceling
-> the timer?  This will be a hack... but better than calling select()
-> again.  You are right, we need to design in such a way that select()
-> makes the right choice.
->
->> function tick_nohz_stop_sched_tick.( so shld the prepare callback be
->> moved
->> before that in cpu_idle ??)
->
-> The prepare callback is in the right place now... if you cancel the
-> timer in prepare, then subsequent select() which calls
-> tick_nohz_get_sleep_length() will get the correct idle time.  Your
-> problem is in restarting the timer in case we abort the idle.  The
-> current place of prepare is fine and more over we are heading in the
-> direction to deprecate the prepare itself.
->
->> I am looking for a nice way to cancel and restart the high resolution
->> timers in the idle code; even if that means rearranging the cpu_idle
->> code.
->
-> Slight difference, you can cancel and restart within the driver, the
-> problem is that you want the ->select() to be executed _after_
-> canceling your hrtimer because it will predict idle much shorter
-> otherwise.  This is where the cpuidle framework should help.
->
->> Another way i was looking to solve this issue was add deferrable feature
->> to HR timers; if someone has thoughts on that please chime in.
->
-> This seems to be a much better idea, where the
-> tick_nohz_get_sleep_length() can automatically skip your deferred
-> hrtimer with a hope that it will be canceled.  We don't have
-> a mechanism to actually defer it.
->
-> You can try to add deferred flag in hrtimer_mode { } similar to how
-> pinned was added.  Enhance tick_nohz_get_sleep_length() to skip over
-> deferred hrtimer as well.
->
-> But the number of users for this feature will be very little to
-> justify the complexity.
->
-> --Vaidy
->
->
->
+Thanks,
+Rafael
