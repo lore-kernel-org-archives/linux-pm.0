@@ -1,14 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: [PATCH 3/4] OMAP: PM: omap_device: add API to disable
-	idle on suspend
-Date: Mon, 11 Jul 2011 16:29:28 -0700
-Message-ID: <1310426969-30306-4-git-send-email-khilman__10394.835464149$1310427047$gmane$org@ti.com>
-References: <1310426969-30306-1-git-send-email-khilman@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM / Runtime: add new helper function:
+	pm_runtime_status_suspended()
+Date: Tue, 12 Jul 2011 11:33:48 +0200
+Message-ID: <201107121133.48591.rjw__48381.2374332503$1310463244$gmane$org@sisk.pl>
+References: <1310424682-21255-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1310426969-30306-1-git-send-email-khilman@ti.com>
+In-Reply-To: <1310424682-21255-1-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,69 +18,67 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, linux-omap@vger.kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-By default, omap_devices will be automatically idled on suspend
-(and re-enabled on resume.)  Using this new API, device init code
-can disable this feature if desired.
+On Tuesday, July 12, 2011, Kevin Hilman wrote:
+> This boolean function simply returns whether or not the runtime status
+> of the device is 'suspended'.  Unlike pm_runtime_suspended(), this
+> function returns the runtime status whether or not runtime PM for the
+> device has been disabled or not.
+> 
+> Also add entry to Documentation/power/runtime.txt
+> 
+> Suggested-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
 
-NOTE: any driver/device that has been runtime PM converted should
-      not be using this API.
+Applied to suspend-2.6/pm-runtime, thanks!
 
-Signed-off-by: Kevin Hilman <khilman@ti.com>
----
- arch/arm/plat-omap/include/plat/omap_device.h |    5 +++++
- arch/arm/plat-omap/omap_device.c              |    6 ++++++
- 2 files changed, 11 insertions(+), 0 deletions(-)
+Rafael
 
-diff --git a/arch/arm/plat-omap/include/plat/omap_device.h b/arch/arm/plat-omap/include/plat/omap_device.h
-index bc36d05..ee405b36 100644
---- a/arch/arm/plat-omap/include/plat/omap_device.h
-+++ b/arch/arm/plat-omap/include/plat/omap_device.h
-@@ -46,6 +46,7 @@ extern struct device omap_device_parent;
- 
- /* omap_device.flags values */
- #define OMAP_DEVICE_SUSPENDED BIT(0)
-+#define OMAP_DEVICE_NO_IDLE_ON_SUSPEND BIT(1)
- 
- /**
-  * struct omap_device - omap_device wrapper for platform_devices
-@@ -121,6 +122,10 @@ int omap_device_enable_hwmods(struct omap_device *od);
- int omap_device_disable_clocks(struct omap_device *od);
- int omap_device_enable_clocks(struct omap_device *od);
- 
-+static inline void omap_device_disable_idle_on_suspend(struct omap_device *od)
-+{
-+	od->flags |= OMAP_DEVICE_NO_IDLE_ON_SUSPEND;
-+}
- 
- /*
-  * Entries should be kept in latency order ascending
-diff --git a/arch/arm/plat-omap/omap_device.c b/arch/arm/plat-omap/omap_device.c
-index b93cfdc..2526fa3 100644
---- a/arch/arm/plat-omap/omap_device.c
-+++ b/arch/arm/plat-omap/omap_device.c
-@@ -573,6 +573,9 @@ static int _od_suspend_noirq(struct device *dev)
- 	struct omap_device *od = to_omap_device(pdev);
- 	int ret;
- 
-+	if (od->flags & OMAP_DEVICE_NO_IDLE_ON_SUSPEND)
-+		return pm_generic_suspend_noirq(dev);
-+
- 	ret = pm_generic_suspend_noirq(dev);
- 
- 	if (!ret && !pm_runtime_status_suspended(dev)) {
-@@ -590,6 +593,9 @@ static int _od_resume_noirq(struct device *dev)
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct omap_device *od = to_omap_device(pdev);
- 
-+	if (od->flags & OMAP_DEVICE_NO_IDLE_ON_SUSPEND)
-+		return pm_generic_resume_noirq(dev);
-+
- 	if ((od->flags & OMAP_DEVICE_SUSPENDED) &&
- 	    !pm_runtime_status_suspended(dev)) {
- 		od->flags &= ~OMAP_DEVICE_SUSPENDED;
--- 
-1.7.6
+
+> ---
+>  Documentation/power/runtime_pm.txt |    3 +++
+>  include/linux/pm_runtime.h         |    6 ++++++
+>  2 files changed, 9 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 4b011b1..feca92f 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -400,6 +400,9 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+>      - return true if the device's runtime PM status is 'suspended' and its
+>        'power.disable_depth' field is equal to zero, or false otherwise
+>  
+> +  bool pm_runtime_status_suspended(struct device *dev);
+> +    - return true if the device's runtime PM status is 'suspended'
+> +
+>    void pm_runtime_allow(struct device *dev);
+>      - set the power.runtime_auto flag for the device and decrease its usage
+>        counter (used by the /sys/devices/.../power/control interface to
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index dfb8539..daac05d 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -82,6 +82,11 @@ static inline bool pm_runtime_suspended(struct device *dev)
+>  		&& !dev->power.disable_depth;
+>  }
+>  
+> +static inline bool pm_runtime_status_suspended(struct device *dev)
+> +{
+> +	return dev->power.runtime_status == RPM_SUSPENDED;
+> +}
+> +
+>  static inline bool pm_runtime_enabled(struct device *dev)
+>  {
+>  	return !dev->power.disable_depth;
+> @@ -130,6 +135,7 @@ static inline void pm_runtime_put_noidle(struct device *dev) {}
+>  static inline bool device_run_wake(struct device *dev) { return false; }
+>  static inline void device_set_run_wake(struct device *dev, bool enable) {}
+>  static inline bool pm_runtime_suspended(struct device *dev) { return false; }
+> +static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
+>  static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+>  
+>  static inline int pm_generic_runtime_idle(struct device *dev) { return 0; }
+> 
