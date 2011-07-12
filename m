@@ -1,13 +1,15 @@
-From: Vishwanath Sripathy <vishwanath.bs@ti.com>
-Subject: Re: Issues using runtime API's with console uart
-Date: Tue, 12 Jul 2011 17:21:52 +0530
-Message-ID: <054381c0ba1688bfc51e3ac309a99a6a__3372.13892858035$1310471581$gmane$org@mail.gmail.com>
-References: <CAAL8m4yeT9Qm0WFP-7rVH6dMuLd0YHB9zGS4NiHL8thOY4QWFg@mail.gmail.com>
+From: amit kachhap <amit.kachhap@linaro.org>
+Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
+	Memory Power Management
+Date: Tue, 12 Jul 2011 11:01:53 +0530
+Message-ID: <CADGdYn7VCKemAgdbNw76vj7E9swxtK=z8+9uv=omG89QNE0uxg__23409.3342595317$1310494439$gmane$org@mail.gmail.com>
+References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
+	<20110528005640.9076c0b1.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAAL8m4yeT9Qm0WFP-7rVH6dMuLd0YHB9zGS4NiHL8thOY4QWFg@mail.gmail.com>
+In-Reply-To: <20110528005640.9076c0b1.akpm@linux-foundation.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,109 +19,85 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Govindraj <govindraj.ti@gmail.com>, linux-omap@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Partha Basak <p-basak2@ti.com>, linux-arm-kernel@lists.infradead.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-+linux_pm.
+Hi All,
 
-Vishwa
+In response to the discussion about power savings with memory regions
+features following measurements are done.
 
-> -----Original Message-----
-> From: Govindraj [mailto:govindraj.ti@gmail.com]
-> Sent: Tuesday, July 12, 2011 5:14 PM
-> To: linux-omap@vger.kernel.org
-> Cc: Kevin Hilman; Paul Walmsley; Basak, Partha; Tony Lindgren;
-> Sripathy, Vishwanath; linux-arm-kernel@lists.infradead.org; Rajendra
-> Nayak; Shilimkar, Santosh
-> Subject: RFC: Issues using runtime API's with console uart
+Title:
+On a system with 2GB memory , 1GB is static and the other 1GB in
+various power states.
+
+Brief environment description:
+Samsung smdk-exynos board is used for this work and full board level
+power consumption is measured that comprises of cpu and other
+components. It has 2 DMC's(Dynamic memory controller) with each
+supporting 1 GB DDR3 memory. Power characteristics of DMC0 controlled
+memory remain same but memory controlled by DMC1 is changed to 4
+different power states. The following numbers describe the maximum
+power savings measured after executing the software from DMC0
+controlled memory which changes the power states of DMC1 controlled
+memory. Here the actual numbers are not mentioned but the percentage
+power savings is shown in reference to the change in overall power
+consumption. The memory region patches are expected to facilitate
+transition of memory into into one of the following low power states.
+
+1) Percentage power savings when DMC1(1GB) moved to self refresh mode
+from idle/unaccess mode=3D 2.69%
+2) Percentage power savings when DMC1(1GB) moved to precharge mode
+from idle/unaccess mode=3D 3.23%
+3) Percentage power savings when DMC1(1GB) clock is gated  =3D 6.32%
+
+The above power savings is indicative of the benefits that memory
+regions could provide in this platform.
+
+Thanks & Regards,
+Amit Daniel Kachhap
+Samsung India s/w operations, Bangalore
+
+On Sat, May 28, 2011 at 1:26 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Fri, 27 May 2011 18:01:28 +0530 Ankita Garg <ankita@in.ibm.com> wrote:
 >
-> Hi All,
+>> This patchset proposes a generic memory regions infrastructure that can =
+be
+>> used to tag boundaries of memory blocks which belongs to a specific memo=
+ry
+>> power management domain and further enable exploitation of platform memo=
+ry
+>> power management capabilities.
 >
-> With recent uart runtime conversion I am facing some issues with
-> runtime
-> API usage with console.
+> A couple of quick thoughts...
 >
-> With runtime adaptation the clock cutting is done aggressively with
-> get and put.
+> I'm seeing no estimate of how much energy we might save when this work
+> is completed. =A0But saving energy is the entire point of the entire
+> patchset! =A0So please spend some time thinking about that and update and
+> maintain the [patch 0/n] description so others can get some idea of the
+> benefit we might get from all of this. =A0That estimate should include an
+> estimate of what proportion of machines are likely to have hardware
+> which can use this feature and in what timeframe.
 >
-> as below with console_write API in uart code.
->
-> serial_omap_console_write(.....)
-> {
->       get_sync();
->       .
->       .
->       .
->       put();
-> }
->
-> serial_omap_set_mctrl(..)
-> {
->      get_sync();
->       .
->       .
->       .
->       put()
-> }
->
-> Now if debug messages(pr_debug) from hwmod and omap_device are
-> enabled
-> then get_sync and put will internally have prints which get
-> redirected to
-> console_write and will call get_sync.
->
-> so from a runtime API context I call another runtime API which leads
-> to power lock contention, since every runtime API entrant tries to
-> get
-> a power lock.
->
-> To elaborate further from above code snippets consider set_mctrl
-> calling get_sync and printk from omap_hwmod calling console_write
-> which calls get_sync.
->
-> -> leads to get_sync calling get_sync.
->
-> similarly with put_sync having prints calling console driver calling
-> get_sync
-> leading to power_lock contention.
->
-> As of today I don't see any clean approaches to be available.
->
-> Some of the approaches I am considering is
->
-> 1.) let the clock gating for uart be handled with idle path as done
-> today with
->      prepare and resume calls.
->
-> 2.) Aggressively binding all get and put with console lock to
-> suppress
->      prints from get/put and to printed during console_unlock.
->
->     uart_port_enb(..)
->     {
->           if (console_trylock()) {
->               get_sync();
->               console_unlock();
->           }
->     }
->
->     Even this approach doesn't seem fool proof, Similarly if I have
-> port_disable
->     console unlock(has not yet released the console lock)
->     will have a print stating uart clock is disabled will call
-> console_write
->     which will call port_enb since above trylock fails and
-> eventually
->     might oops out trying
->     to print the message as put has already disabled the uart
-> clocks.
+> IOW, if it saves one microwatt on 0.001% of machines, not interested ;)
 >
 >
-> I don't see any clean method rather using approach[1] as of today.
+> Also, all this code appears to be enabled on all machines? =A0So machines
+> which don't have the requisite hardware still carry any additional
+> overhead which is added here. =A0I can see that ifdeffing a feature like
+> this would be ghastly but please also have a think about the
+> implications of this and add that discussion also.
 >
-> So any suggestions on any other approach will be helpful.
+> If possible, it would be good to think up some microbenchmarks which
+> probe the worst-case performance impact and describe those and present
+> the results. =A0So others can gain an understanding of the runtime costs.
 >
-> ---
-> Thanks,
-> Govindraj.R
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>
