@@ -1,15 +1,21 @@
-From: amit kachhap <amit.kachhap@linaro.org>
-Subject: Re: [PATCH 00/10] mm: Linux VM Infrastructure to support
-	Memory Power Management
-Date: Tue, 12 Jul 2011 11:01:53 +0530
-Message-ID: <CADGdYn7VCKemAgdbNw76vj7E9swxtK=z8+9uv=omG89QNE0uxg__23409.3342595317$1310494439$gmane$org@mail.gmail.com>
-References: <1306499498-14263-1-git-send-email-ankita@in.ibm.com>
-	<20110528005640.9076c0b1.akpm@linux-foundation.org>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [RFC] Unprepare callback for cpuidle_device
+Date: Wed, 13 Jul 2011 00:02:00 +0530
+Message-ID: <20110712183200.GC6292@dirshya.in.ibm.com>
+References: <a619d8bbefd2f390a13d09084583dd39.squirrel@www.codeaurora.org>
+	<4E15516E.5040209@gmail.com>
+	<82b596dce7b84db206d3afb6da564fb9.squirrel@www.codeaurora.org>
+	<4E170010.2000403@linux.vnet.ibm.com>
+	<473338c2d56302337f83871ce1c201e4.squirrel@www.codeaurora.org>
+	<20110711190856.GC25533@dirshya.in.ibm.com>
+	<57f0d61f9e15b2af262607e872746317.squirrel@www.codeaurora.org>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110528005640.9076c0b1.akpm@linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <57f0d61f9e15b2af262607e872746317.squirrel@www.codeaurora.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,85 +25,125 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linaro-mm-sig@lists.linaro.org, linux-mm@kvack.org, thomas.abraham@linaro.org, Ankita Garg <ankita@in.ibm.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: asinghal@codeaurora.org
+Cc: linux-pm@lists.linux-foundation.org, johlstei@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
+* asinghal@codeaurora.org <asinghal@codeaurora.org> [2011-07-11 14:45:58]:
 
-In response to the discussion about power savings with memory regions
-features following measurements are done.
+> hello Vaidy,
+>            doesn't tick_nohz_get_sleep_length just return ts->sleep_length
+> 
+> variable value from the tick_sched structure for that cpu ?
 
-Title:
-On a system with 2GB memory , 1GB is static and the other 1GB in
-various power states.
+Yes, I assumed tick_nohz_get_sleep_length() was going to look for the
+next timer, but it seems to return the sleep_length that was computed
+during tick_nohz_stop_sched_tick() as you have mentioned.
 
-Brief environment description:
-Samsung smdk-exynos board is used for this work and full board level
-power consumption is measured that comprises of cpu and other
-components. It has 2 DMC's(Dynamic memory controller) with each
-supporting 1 GB DDR3 memory. Power characteristics of DMC0 controlled
-memory remain same but memory controlled by DMC1 is changed to 4
-different power states. The following numbers describe the maximum
-power savings measured after executing the software from DMC0
-controlled memory which changes the power states of DMC1 controlled
-memory. Here the actual numbers are not mentioned but the percentage
-power savings is shown in reference to the change in overall power
-consumption. The memory region patches are expected to facilitate
-transition of memory into into one of the following low power states.
+> The calculation of this sleep_length variable happens in function
+> 
+> tick_nohz_stop_Sched_tick after call to function get_next_timer_interrupt ??
 
-1) Percentage power savings when DMC1(1GB) moved to self refresh mode
-from idle/unaccess mode=3D 2.69%
-2) Percentage power savings when DMC1(1GB) moved to precharge mode
-from idle/unaccess mode=3D 3.23%
-3) Percentage power savings when DMC1(1GB) clock is gated  =3D 6.32%
+This makes the implementation more complex.  Even if we keep the
+prepare() and add an unprepare(), all of these will be called within
+pm_idle() only which is much later than tick_nohz_stop_sched_tick() in
+cpu_idle().  So it is not easy to have a cpuidle callback before the
+ts->sleep_length is updated.
 
-The above power savings is indicative of the benefits that memory
-regions could provide in this platform.
+This leaves us with the option of exploring deferrable hrtimers that
+will be skipped during idle entry.
 
-Thanks & Regards,
-Amit Daniel Kachhap
-Samsung India s/w operations, Bangalore
+--Vaidy
 
-On Sat, May 28, 2011 at 1:26 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Fri, 27 May 2011 18:01:28 +0530 Ankita Garg <ankita@in.ibm.com> wrote:
->
->> This patchset proposes a generic memory regions infrastructure that can =
-be
->> used to tag boundaries of memory blocks which belongs to a specific memo=
-ry
->> power management domain and further enable exploitation of platform memo=
-ry
->> power management capabilities.
->
-> A couple of quick thoughts...
->
-> I'm seeing no estimate of how much energy we might save when this work
-> is completed. =A0But saving energy is the entire point of the entire
-> patchset! =A0So please spend some time thinking about that and update and
-> maintain the [patch 0/n] description so others can get some idea of the
-> benefit we might get from all of this. =A0That estimate should include an
-> estimate of what proportion of machines are likely to have hardware
-> which can use this feature and in what timeframe.
->
-> IOW, if it saves one microwatt on 0.001% of machines, not interested ;)
->
->
-> Also, all this code appears to be enabled on all machines? =A0So machines
-> which don't have the requisite hardware still carry any additional
-> overhead which is added here. =A0I can see that ifdeffing a feature like
-> this would be ghastly but please also have a think about the
-> implications of this and add that discussion also.
->
-> If possible, it would be good to think up some microbenchmarks which
-> probe the worst-case performance impact and describe those and present
-> the results. =A0So others can gain an understanding of the runtime costs.
->
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->
+PS: Please reply inline to keep the discussion well structured.
+
+> thanks,
+> amar
+> 
+> 
+> 
+> > * asinghal@codeaurora.org <asinghal@codeaurora.org> [2011-07-11 10:26:56]:
+> >
+> >> hello Deepthi,
+> >>           please see my replies inline:
+> >>
+> >>
+> >> > Hi Amar,
+> >> >
+> >> > On Friday 08 July 2011 01:22 AM, asinghal@codeaurora.org wrote:
+> >> >> Hello Trinabh,
+> >> >>               i cannot use the enter callback due to the following
+> >> >> reason:
+> >> >>
+> >> >> the residency calculation(tick)nohz_get_sleep_length) and the idle
+> >> state
+> >> >> selection happens in the menu governor. The enter callback is called
+> >> >> with
+> >> >> the selected state.
+> >> >
+> >> >   One would first execute prepare then call select and enter .
+> >> >   So in the newer proposed code, there is no prepare routine. One
+> >> would
+> >> >   just execute select() and then enter() (Prepare functionality is
+> >> part of
+> >> > the
+> >> >   enter routine itself) Is it not possible to cancel the timer,
+> >> >   calculate the execute nohz_get_sleep in enter routine again,
+> >> >   then select the idle state depending on the time . Automatically
+> >> promote
+> >> > or demote
+> >> >   idle state based on the latest value returned in the driver ?
+> >> >
+> >> Cancelling the timer and calculating the sleep length again in the enter
+> >> callback is possible; but what does not make sense is calling the select
+> >> routine again ; definitely the select routine of the governor needs to
+> >> be
+> >> called only once.  And actually, the sleep length is calculated in the
+> >
+> > Can you promote the idle state within the driver based on the new
+> > information provided by tick_nohz_get_sleep_length() after canceling
+> > the timer?  This will be a hack... but better than calling select()
+> > again.  You are right, we need to design in such a way that select()
+> > makes the right choice.
+> >
+> >> function tick_nohz_stop_sched_tick.( so shld the prepare callback be
+> >> moved
+> >> before that in cpu_idle ??)
+> >
+> > The prepare callback is in the right place now... if you cancel the
+> > timer in prepare, then subsequent select() which calls
+> > tick_nohz_get_sleep_length() will get the correct idle time.  Your
+> > problem is in restarting the timer in case we abort the idle.  The
+> > current place of prepare is fine and more over we are heading in the
+> > direction to deprecate the prepare itself.
+> >
+> >> I am looking for a nice way to cancel and restart the high resolution
+> >> timers in the idle code; even if that means rearranging the cpu_idle
+> >> code.
+> >
+> > Slight difference, you can cancel and restart within the driver, the
+> > problem is that you want the ->select() to be executed _after_
+> > canceling your hrtimer because it will predict idle much shorter
+> > otherwise.  This is where the cpuidle framework should help.
+> >
+> >> Another way i was looking to solve this issue was add deferrable feature
+> >> to HR timers; if someone has thoughts on that please chime in.
+> >
+> > This seems to be a much better idea, where the
+> > tick_nohz_get_sleep_length() can automatically skip your deferred
+> > hrtimer with a hope that it will be canceled.  We don't have
+> > a mechanism to actually defer it.
+> >
+> > You can try to add deferred flag in hrtimer_mode { } similar to how
+> > pinned was added.  Enhance tick_nohz_get_sleep_length() to skip over
+> > deferred hrtimer as well.
+> >
+> > But the number of users for this feature will be very little to
+> > justify the complexity.
+> >
+> > --Vaidy
+> >
+> >
+> >
+> 
+> 
