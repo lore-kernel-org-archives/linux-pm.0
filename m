@@ -1,14 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/3] PM / Domains: Take .power_off() error code
-	into account
-Date: Wed, 13 Jul 2011 23:55:27 +0200
-Message-ID: <201107132355.27355.rjw__49368.7283866622$1310594681$gmane$org@sisk.pl>
-References: <201107132352.59801.rjw@sisk.pl>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86 intel power: Initialize
+	MSR_IA32_ENERGY_PERF_BIAS
+Date: Wed, 13 Jul 2011 14:38:54 -0700
+Message-ID: <4E1E106E.4060408__14580.5709566504$1310594800$gmane$org@zytor.com>
+References: <alpine.LFD.2.02.1103301819250.31342@x980>
+	<20110414090854.GB9248@elte.hu>
+	<alpine.LFD.2.02.1104150202310.29365@x980>
+	<20110415101712.GB28007@elte.hu>
+	<alpine.LFD.2.02.1107131640280.9546@x980>
+	<CA+55aFxBkgwBbnqwO7DuizsWiVcULYtPzqr-mYrT6aHmXV0zZw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107132352.59801.rjw@sisk.pl>
+In-Reply-To: <CA+55aFxBkgwBbnqwO7DuizsWiVcULYtPzqr-mYrT6aHmXV0zZw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,44 +23,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On 07/13/2011 01:49 PM, Linus Torvalds wrote:
+> Ack. Let's just do this. Ingo?
+> 
+>             Linus
 
-Currently pm_genpd_poweroff() discards error codes returned by
-the PM domain's .power_off() callback, because it's safer to always
-regard the domain as inaccessible to drivers after a failing
-.power_off().  Still, there are situations in which the low-level
-code may want to indicate that it doesn't want to power off the
-domain, so allow it to do that by returning -EBUSY from .power_off().
+Ingo is travelling this week, but this seems to have converged.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/domain.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/drivers/base/power/domain.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -312,8 +312,16 @@ static int pm_genpd_poweroff(struct gene
- 		}
- 	}
- 
--	if (genpd->power_off)
--		genpd->power_off(genpd);
-+	if (genpd->power_off) {
-+		ret = genpd->power_off(genpd);
-+		if (ret == -EBUSY) {
-+			genpd_set_active(genpd);
-+			if (parent)
-+				genpd_release_lock(parent);
-+
-+			goto out;
-+		}
-+	}
- 
- 	genpd->status = GPD_STATE_POWER_OFF;
- 
+	-hpa
