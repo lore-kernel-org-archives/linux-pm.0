@@ -1,12 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ARM / shmobile: Make A3RV be a subdomain of A4LC
-	on SH7372
-Date: Wed, 13 Jul 2011 00:40:02 +0200
-Message-ID: <201107130040.02752.rjw__36527.9728816406$1310510418$gmane$org@sisk.pl>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH] ARM / shmobile: Make A3RV be a subdomain of
+	A4LC on SH7372
+Date: Wed, 13 Jul 2011 10:39:41 +0900
+Message-ID: <CANqRtoSW9jQwQLU4kMP1UOpPp0i-KunZKnNaegriFT74LEovhQ__37601.3559791774$1310521244$gmane$org@mail.gmail.com>
+References: <201107130040.02752.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201107130040.02752.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,109 +18,50 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed, Jul 13, 2011 at 7:40 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> Instead of coding the undocumented dependencies between power domains
+> A3RV and A4LC on SH7372 directly into the low-level power up/down
+> routines, make A3RV be a subdomain of A4LC, which will cause the
+> same dependecies to hold.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
 
-Instead of coding the undocumented dependencies between power domains
-A3RV and A4LC on SH7372 directly into the low-level power up/down
-routines, make A3RV be a subdomain of A4LC, which will cause the
-same dependecies to hold.
+Thanks for your effort of cleaning up the code!
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+You are correct that putting A3RV as a subdomain of A4LC will help
+with one side of the problem. The not so visible problem at this point
+is the connection between A4R and A3RV. A4R is a power domain which
+contains some I/O devices and the two power domains A3RV and A3RI.
 
-This patch hasn't been tested yet, so caveat emptor!
+Because of the hardware dependency between A4R and A3RV we would need
+to force A4R to be powered on whenever A3RV is being used. So A4R is
+the "real" parent pm domain from the data sheet point of view.
+
+To simplify the software side one option could be to make A4LC the
+parent of A3RV and A4R the parent of A4LC. This is not however a very
+good fit either - the hardware allows us to have A4LC powered on
+without A4R or A3RV. This case is quite common and happens when any
+LCD panel is enabled but the rest of the system is idle.
+
+For the case when no A4R support is in place your suggestion is fine.
+But to support A4R we need to deal with something similar to what my
+patch does anyway. It is worth nothing that A4R contains an interrupt
+controller and needs special care that way too. Also the I/O devices
+in A4R require QoS software to be in place before we can start
+powering down A4R for real.
+
+So the reason behind my somewhat ugly existing A3RV and A4LC power
+domain code is to make sure the framework code can do whatever we need
+to do for A4R support. Or perhaps it can be done in a better way? Any
+ideas?
 
 Thanks,
-Rafael
 
----
- arch/arm/mach-shmobile/pm-sh7372.c    |   43 +---------------------------------
- arch/arm/mach-shmobile/setup-sh7372.c |    3 ++
- 2 files changed, 5 insertions(+), 41 deletions(-)
-
-Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
-+++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -91,36 +91,6 @@ static int pd_power_up(struct generic_pm
- 	return ret;
- }
- 
--static int pd_power_up_a3rv(struct generic_pm_domain *genpd)
--{
--	int ret = pd_power_up(genpd);
--
--	/* force A4LC on after A3RV has been requested on */
--	pm_genpd_poweron(&sh7372_a4lc.genpd);
--
--	return ret;
--}
--
--static int pd_power_down_a3rv(struct generic_pm_domain *genpd)
--{
--	int ret = pd_power_down(genpd);
--
--	/* try to power down A4LC after A3RV is requested off */
--	pm_genpd_poweron(&sh7372_a4lc.genpd);
--	queue_work(pm_wq, &sh7372_a4lc.genpd.power_off_work);
--
--	return ret;
--}
--
--static int pd_power_down_a4lc(struct generic_pm_domain *genpd)
--{
--	/* only power down A4LC if A3RV is off */
--	if (!(__raw_readl(PSTR) & (1 << sh7372_a3rv.bit_shift)))
--		return pd_power_down(genpd);
--
--	return 0;
--}
--
- static bool pd_active_wakeup(struct device *dev)
- {
- 	return true;
-@@ -134,17 +104,8 @@ void sh7372_init_pm_domain(struct sh7372
- 	genpd->stop_device = pm_clk_suspend;
- 	genpd->start_device = pm_clk_resume;
- 	genpd->active_wakeup = pd_active_wakeup;
--
--	if (sh7372_pd == &sh7372_a4lc) {
--		genpd->power_off = pd_power_down_a4lc;
--		genpd->power_on = pd_power_up;
--	} else if (sh7372_pd == &sh7372_a3rv) {
--		genpd->power_off = pd_power_down_a3rv;
--		genpd->power_on = pd_power_up_a3rv;
--	} else {
--		genpd->power_off = pd_power_down;
--		genpd->power_on = pd_power_up;
--	}
-+	genpd->power_off = pd_power_down;
-+	genpd->power_on = pd_power_up;
- 	genpd->power_on(&sh7372_pd->genpd);
- }
- 
-Index: linux-2.6/arch/arm/mach-shmobile/setup-sh7372.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/setup-sh7372.c
-+++ linux-2.6/arch/arm/mach-shmobile/setup-sh7372.c
-@@ -30,6 +30,7 @@
- #include <linux/sh_dma.h>
- #include <linux/sh_intc.h>
- #include <linux/sh_timer.h>
-+#include <linux/pm_domain.h>
- #include <mach/hardware.h>
- #include <mach/sh7372.h>
- #include <asm/mach-types.h>
-@@ -848,6 +849,8 @@ void __init sh7372_add_standard_devices(
- 	sh7372_init_pm_domain(&sh7372_a3ri);
- 	sh7372_init_pm_domain(&sh7372_a3sg);
- 
-+	pm_genpd_add_subdomain(&sh7372_a4lc.genpd, &sh7372_a3sg.genpd);
-+
- 	platform_add_devices(sh7372_early_devices,
- 			    ARRAY_SIZE(sh7372_early_devices));
- 
+/ magnus
