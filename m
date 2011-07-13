@@ -1,18 +1,17 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Len Brown <lenb@kernel.org>
 Subject: Re: [PATCH] x86 intel power: Initialize
 	MSR_IA32_ENERGY_PERF_BIAS
-Date: Wed, 13 Jul 2011 13:49:06 -0700
-Message-ID: <CA+55aFxBkgwBbnqwO7DuizsWiVcULYtPzqr-mYrT6aHmXV0zZw@mail.gmail.com>
+Date: Wed, 13 Jul 2011 16:51:01 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1107131647140.9546__38904.9012250782$1310590465$gmane$org@x980>
 References: <alpine.LFD.2.02.1103301819250.31342@x980>
 	<20110414090854.GB9248@elte.hu>
 	<alpine.LFD.2.02.1104150202310.29365@x980>
-	<20110415101712.GB28007@elte.hu>
-	<alpine.LFD.2.02.1107131640280.9546@x980>
+	<20110420131442.GA29418@atrey.karlin.mff.cuni.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.02.1107131640280.9546@x980>
+In-reply-to: <20110420131442.GA29418@atrey.karlin.mff.cuni.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,38 +21,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, stable@kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Ack. Let's just do this. Ingo?
+> Ok. So... what "serious bug" does this fix? You really need to use cc:
+> stable less. Tweaking performance/power ratio is _not_ serious bug.
 
-            Linus
+While the performance difference may not be significant,
+the energy difference may be.
 
-On Wed, Jul 13, 2011 at 1:44 PM, Len Brown <lenb@kernel.org> wrote:
->
->> So how about informing users, how about making it non-silent? An informa=
-tive
->> printk that also mentions the power configuration tool, etc. This solves=
- the
->> concerns i mentioned.
->
-> Something like this?
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if ((epb & 0xF) =3D=3D 0) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0printk_once(KERN_WARN, "x8=
-6: updated energy_perf_bias"
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0" to 'norm=
-al' from 'performance'\n"
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0"You can v=
-iew and update epb via utility,"
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0" such as =
-x86_energy_perf_policy(8)\n");
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0epb =3D (epb & ~0xF) | ENE=
-RGY_PERF_BIAS_NORMAL;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0wrmsrl(MSR_IA32_ENERGY_PER=
-F_BIAS, epb);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
->
->
+Some people think it is serious when Linux has worse out-of-box
+energy efficiency than Windows on the same hardware.
+
+Some people think that it is serious when their Linux distribution
+has worse energy efficiency than competing Linux distributions.
+
+Greg has given me a hard time for not cc'ing stable _enough_.
+I guess the folks that answer the stable mail get to decide...
+
+cheers,
+-Len
