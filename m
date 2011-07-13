@@ -1,17 +1,14 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] x86 intel power: Initialize
-	MSR_IA32_ENERGY_PERF_BIAS
-Date: Wed, 13 Jul 2011 16:51:01 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1107131647140.9546__38904.9012250782$1310590465$gmane$org@x980>
-References: <alpine.LFD.2.02.1103301819250.31342@x980>
-	<20110414090854.GB9248@elte.hu>
-	<alpine.LFD.2.02.1104150202310.29365@x980>
-	<20110420131442.GA29418@atrey.karlin.mff.cuni.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 3/3] ARM / shmobile: Return -EBUSY from A4LC
+	power off if A3RV is active
+Date: Wed, 13 Jul 2011 23:56:44 +0200
+Message-ID: <201107132356.45037.rjw__21550.0480182984$1310594288$gmane$org@sisk.pl>
+References: <201107132352.59801.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <20110420131442.GA29418@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <201107132352.59801.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,24 +18,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, linux-pm@lists.linux-foundation.org, stable@kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> Ok. So... what "serious bug" does this fix? You really need to use cc:
-> stable less. Tweaking performance/power ratio is _not_ serious bug.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-While the performance difference may not be significant,
-the energy difference may be.
+Since the A4LC should only be powered off if the A3RV is off, make
+the A4LC's power down routine return -EBUSY if A3RV is not off to
+indicate to the core that it doesn't want to power off the domain in
+that case.  This will cause the core to regard A4LC as active, so
+the pm_genpd_poweron() in pd_power_down_a3rv() is not necessary any
+more.
 
-Some people think it is serious when Linux has worse out-of-box
-energy efficiency than Windows on the same hardware.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/arm/mach-shmobile/pm-sh7372.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Some people think that it is serious when their Linux distribution
-has worse energy efficiency than competing Linux distributions.
-
-Greg has given me a hard time for not cc'ing stable _enough_.
-I guess the folks that answer the stable mail get to decide...
-
-cheers,
--Len
+Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -106,7 +106,6 @@ static int pd_power_down_a3rv(struct gen
+ 	int ret = pd_power_down(genpd);
+ 
+ 	/* try to power down A4LC after A3RV is requested off */
+-	pm_genpd_poweron(&sh7372_a4lc.genpd);
+ 	genpd_queue_power_off_work(&sh7372_a4lc.genpd);
+ 
+ 	return ret;
+@@ -118,7 +117,7 @@ static int pd_power_down_a4lc(struct gen
+ 	if (!(__raw_readl(PSTR) & (1 << sh7372_a3rv.bit_shift)))
+ 		return pd_power_down(genpd);
+ 
+-	return 0;
++	return -EBUSY;
+ }
+ 
+ static bool pd_active_wakeup(struct device *dev)
