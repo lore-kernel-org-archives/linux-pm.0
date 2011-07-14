@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] PM / Domains / shmobile fixes
-Date: Thu, 14 Jul 2011 21:34:40 +0200
-Message-ID: <201107142134.40432.rjw__23733.5331542001$1310672114$gmane$org@sisk.pl>
-References: <201107132352.59801.rjw@sisk.pl>
-	<CANqRtoTLO=DqehwanGdE+rgxL_ofa5YCJjsx47doHzwZDP4Ocw@mail.gmail.com>
+Subject: Re: [PATCH v2] x86 intel power: Initialize
+	MSR_IA32_ENERGY_PERF_BIAS
+Date: Thu, 14 Jul 2011 21:35:37 +0200
+Message-ID: <201107142135.37330.rjw__37874.1979286589$1310672116$gmane$org@sisk.pl>
+References: <alpine.LFD.2.02.1103301819250.31342@x980>
+	<4E1E106E.4060408@zytor.com>
+	<alpine.LFD.2.02.1107140051020.18606@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CANqRtoTLO=DqehwanGdE+rgxL_ofa5YCJjsx47doHzwZDP4Ocw@mail.gmail.com>
+In-Reply-To: <alpine.LFD.2.02.1107140051020.18606@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,34 +20,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 14, 2011, Magnus Damm wrote:
-> On Thu, Jul 14, 2011 at 6:52 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Hi,
-> >
-> > The following three patches fix a couple of issues in the code currently
-> > in my pm-domains branch at:
-> >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git pm-domains
-> >
-> > [1/3] - Use genpd_queue_power_off_work() for queuing up the powering off
-> >        of A4LC (this avoids attempting to queue up a work item while it is
-> >        pending).
-> >
-> > [2/3] - Make the generic PM domains code react to -EBUSY returned from a
-> >        PM domain's .power_down() callback (needed for [3/3]).
-> >
-> > [3/3] - Return -EBUSY from the A4LC's .power_down() callback to indicate that
-> >        the domain hasn't been powered down on purpose and remove the confusing
-> >        (and now redundant) pm_genpd_poweron(A4LC) from pd_power_down_a3rv().
+On Thursday, July 14, 2011, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
 > 
-> All patches above look great, thanks a lot for your help!
+> Since 2.6.36 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
+> Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility has
+> been available in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
 > 
-> Acked-by: Magnus Damm <damm@opensource.se>
+> However, the typical BIOS fails to initialize the MSR, presumably
+> because this is handled by high-volume shrink-wrap operating systems...
+> 
+> Linux distros, on the other hand, do not yet invoke x86_energy_perf_policy(8).
+> As a result, WSM-EP, SNB, and later hardware from Intel will run in its
+> default hardware power-on state (performance), which assumes that users
+> care for performance at all costs and not for energy efficiency.
+> While that is fine for performance benchmarks, the hardware's intended default
+> operating point is "normal" mode...
+> 
+> Initialize the MSR to the "normal" by default during kernel boot.
+> 
+> x86_energy_perf_policy(8) is available to change the default after boot,
+> should the user have a different preference.
+> 
+> cc: stable@kernel.org
+> Signed-off-by: Len Brown <len.brown@intel.com>
 
-Thanks!
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Rafael
+> ---
+>  arch/x86/include/asm/msr-index.h |    3 +++
+>  arch/x86/kernel/cpu/intel.c      |   18 ++++++++++++++++++
+>  2 files changed, 21 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+> index 43a18c7..91fedd9 100644
+> --- a/arch/x86/include/asm/msr-index.h
+> +++ b/arch/x86/include/asm/msr-index.h
+> @@ -250,6 +250,9 @@
+>  #define MSR_IA32_TEMPERATURE_TARGET	0x000001a2
+>  
+>  #define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
+> +#define ENERGY_PERF_BIAS_PERFORMANCE	0
+> +#define ENERGY_PERF_BIAS_NORMAL		6
+> +#define ENERGY_PERF_BIAS_POWERSWAVE	15
+>  
+>  #define MSR_IA32_PACKAGE_THERM_STATUS		0x000001b1
+>  
+> diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+> index d16c2c5..7c1ca07 100644
+> --- a/arch/x86/kernel/cpu/intel.c
+> +++ b/arch/x86/kernel/cpu/intel.c
+> @@ -448,6 +448,24 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+>  
+>  	if (cpu_has(c, X86_FEATURE_VMX))
+>  		detect_vmx_virtcap(c);
+> +
+> +	/*
+> +	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if BIOS did not.
+> +	 * x86_energy_perf_policy(8) is available to change it at run-time
+> +	 */
+> +	if (cpu_has(c, X86_FEATURE_EPB)) {
+> +		u64 epb;
+> +
+> +		rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+> +		if ((epb & 0xF) == 0) {
+> +			printk_once(KERN_WARNING, "x86: updated energy_perf_bias"
+> +				" to 'normal' from 'performance'\n"
+> +				"You can view and update epb via utility,"
+> +				" such as x86_energy_perf_policy(8)\n");
+> +			epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
+> +			wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
+> +		}
+> +	}
+>  }
+>  
+>  #ifdef CONFIG_X86_32
+> 
