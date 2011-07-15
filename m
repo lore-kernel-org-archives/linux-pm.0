@@ -1,16 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] x86 intel power: Initialize
-	MSR_IA32_ENERGY_PERF_BIAS
-Date: Thu, 14 Jul 2011 21:35:37 +0200
-Message-ID: <201107142135.37330.rjw__37874.1979286589$1310672116$gmane$org@sisk.pl>
-References: <alpine.LFD.2.02.1103301819250.31342@x980>
-	<4E1E106E.4060408@zytor.com>
-	<alpine.LFD.2.02.1107140051020.18606@x980>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH v4 0/3] DEVFREQ,
+	DVFS framework for non-CPU devices
+Date: Fri, 15 Jul 2011 17:11:47 +0900
+Message-ID: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.02.1107140051020.18606@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,83 +16,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 14, 2011, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
-> 
-> Since 2.6.36 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
-> Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility has
-> been available in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
-> 
-> However, the typical BIOS fails to initialize the MSR, presumably
-> because this is handled by high-volume shrink-wrap operating systems...
-> 
-> Linux distros, on the other hand, do not yet invoke x86_energy_perf_policy(8).
-> As a result, WSM-EP, SNB, and later hardware from Intel will run in its
-> default hardware power-on state (performance), which assumes that users
-> care for performance at all costs and not for energy efficiency.
-> While that is fine for performance benchmarks, the hardware's intended default
-> operating point is "normal" mode...
-> 
-> Initialize the MSR to the "normal" by default during kernel boot.
-> 
-> x86_energy_perf_policy(8) is available to change the default after boot,
-> should the user have a different preference.
-> 
-> cc: stable@kernel.org
-> Signed-off-by: Len Brown <len.brown@intel.com>
+For a usage example, please look at
+http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs/heads/devfreq
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+In the above git tree, DVFS (dynamic voltage and frequency scaling) mechanism
+is applied to the memory bus of Exynos4210 for Exynos4210-NURI boards.
+In the example, the LPDDR2 DRAM frequency changes between 133, 266, and 400MHz
+and other related clocks simply follow the determined DDR RAM clock.
 
-> ---
->  arch/x86/include/asm/msr-index.h |    3 +++
->  arch/x86/kernel/cpu/intel.c      |   18 ++++++++++++++++++
->  2 files changed, 21 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-> index 43a18c7..91fedd9 100644
-> --- a/arch/x86/include/asm/msr-index.h
-> +++ b/arch/x86/include/asm/msr-index.h
-> @@ -250,6 +250,9 @@
->  #define MSR_IA32_TEMPERATURE_TARGET	0x000001a2
->  
->  #define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
-> +#define ENERGY_PERF_BIAS_PERFORMANCE	0
-> +#define ENERGY_PERF_BIAS_NORMAL		6
-> +#define ENERGY_PERF_BIAS_POWERSWAVE	15
->  
->  #define MSR_IA32_PACKAGE_THERM_STATUS		0x000001b1
->  
-> diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-> index d16c2c5..7c1ca07 100644
-> --- a/arch/x86/kernel/cpu/intel.c
-> +++ b/arch/x86/kernel/cpu/intel.c
-> @@ -448,6 +448,24 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
->  
->  	if (cpu_has(c, X86_FEATURE_VMX))
->  		detect_vmx_virtcap(c);
-> +
-> +	/*
-> +	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if BIOS did not.
-> +	 * x86_energy_perf_policy(8) is available to change it at run-time
-> +	 */
-> +	if (cpu_has(c, X86_FEATURE_EPB)) {
-> +		u64 epb;
-> +
-> +		rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-> +		if ((epb & 0xF) == 0) {
-> +			printk_once(KERN_WARNING, "x86: updated energy_perf_bias"
-> +				" to 'normal' from 'performance'\n"
-> +				"You can view and update epb via utility,"
-> +				" such as x86_energy_perf_policy(8)\n");
-> +			epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
-> +			wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-> +		}
-> +	}
->  }
->  
->  #ifdef CONFIG_X86_32
-> 
+The DEVFREQ driver for Exynos4210 memory bus is at
+/arch/arm/mach-exynos4/devfreq_bus.c in the git tree.
+
+MyungJoo Ham (3):
+  PM: Introduce DEVFREQ: generic DVFS framework with device-specific
+    OPPs
+  PM / DEVFREQ: add example governors
+  PM / DEVFREQ: add sysfs interface (including user tickling)
+
+ Documentation/ABI/testing/sysfs-devices-power |   50 ++
+ Documentation/ABI/testing/sysfs-power         |   43 ++
+ drivers/base/power/Makefile                   |    1 +
+ drivers/base/power/devfreq.c                  |  714 +++++++++++++++++++++++++
+ drivers/base/power/opp.c                      |    9 +
+ include/linux/devfreq.h                       |  119 ++++
+ kernel/power/Kconfig                          |   34 ++
+ 7 files changed, 970 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/base/power/devfreq.c
+ create mode 100644 include/linux/devfreq.h
+
+-- 
+1.7.4.1
