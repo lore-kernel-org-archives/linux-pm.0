@@ -1,16 +1,20 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [PATCH 08/18] cpuidle: create bootparam
-	"cpuidle.off=1"
-Date: Fri, 15 Jul 2011 16:57:54 +0530
-Message-ID: <4E20243A.8090209__20665.6662900516$1310729358$gmane$org@linux.vnet.ibm.com>
-References: <alpine.LFD.2.02.1104010020280.2797@x980>
-	<1301725380-10579-1-git-send-email-lenb@kernel.org>
-	<d0d4b0749cf60042ce56636fdb019ab496fb45ff.1301724243.git.len.brown@intel.com>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH v3] x86 intel power: Initialize
+	MSR_IA32_ENERGY_PERF_BIAS
+Date: Fri, 15 Jul 2011 17:37:15 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1107151732480.18606__17585.8108712875$1310767224$gmane$org@x980>
+References: <alpine.LFD.2.02.1103301819250.31342@x980>
+	<20110414090854.GB9248@elte.hu>
+	<alpine.LFD.2.02.1104150202310.29365@x980>
+	<20110415101712.GB28007@elte.hu>
+	<alpine.LFD.2.02.1107131640280.9546@x980>
+	<CA+55aFxBkgwBbnqwO7DuizsWiVcULYtPzqr-mYrT6aHmXV0zZw@mail.gmail.com>
+	<4E1E106E.4060408@zytor.com> <alpine.LFD.2.02.1107140051020.18606@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <d0d4b0749cf60042ce56636fdb019ab496fb45ff.1301724243.git.len.brown@intel.com>
+In-reply-to: <alpine.LFD.2.02.1107140051020.18606@x980>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,129 +24,84 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Len Brown <len.brown@intel.com>
 
-On Saturday 02 April 2011 11:52 AM, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
-> 
-> useful for disabling cpuidle to fall back
-> to architecture-default idle loop
-> 
-> cpuidle drivers and governors will fail to register.
-> on x86 they'll say so:
-> 
-> intel_idle: intel_idle yielding to (null)
-> ACPI: acpi_idle yielding to (null)
-> 
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  Documentation/kernel-parameters.txt |    3 +++
->  drivers/cpuidle/cpuidle.c           |   10 ++++++++++
->  drivers/cpuidle/cpuidle.h           |    1 +
->  drivers/cpuidle/driver.c            |    3 +++
->  drivers/cpuidle/governor.c          |    3 +++
->  5 files changed, 20 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index f4a04c0..08e8a22 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -546,6 +546,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  			/proc/<pid>/coredump_filter.
->  			See also Documentation/filesystems/proc.txt.
-> 
-> +	cpuidle.off=1	[CPU_IDLE]
-> +			disable the cpuidle sub-system
-> +
->  	cpcihp_generic=	[HW,PCI] Generic port I/O CompactPCI driver
->  			Format:
->  			<first_slot>,<last_slot>,<port>,<enum_bit>[,<debug>]
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index bf50924..faae2c3 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -28,6 +28,12 @@ LIST_HEAD(cpuidle_detected_devices);
->  static void (*pm_idle_old)(void);
-> 
->  static int enabled_devices;
-> +static int off __read_mostly;
-> +
-> +int cpuidle_disabled(void)
-> +{
-> +	return off;
-> +}
-> 
->  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
->  static void cpuidle_kick_cpus(void)
-> @@ -427,6 +433,9 @@ static int __init cpuidle_init(void)
->  {
->  	int ret;
-> 
-> +	if (cpuidle_disabled())
-> +		return -ENODEV;
-> +
->  	pm_idle_old = pm_idle;
-> 
->  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
-> @@ -438,4 +447,5 @@ static int __init cpuidle_init(void)
->  	return 0;
->  }
-> 
-> +module_param(off, int, 0444);
->  core_initcall(cpuidle_init);
-> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
-> index 33e50d5..38c3fd8 100644
-> --- a/drivers/cpuidle/cpuidle.h
-> +++ b/drivers/cpuidle/cpuidle.h
-> @@ -13,6 +13,7 @@ extern struct list_head cpuidle_governors;
->  extern struct list_head cpuidle_detected_devices;
->  extern struct mutex cpuidle_lock;
->  extern spinlock_t cpuidle_driver_lock;
-> +extern int cpuidle_disabled(void);
-> 
->  /* idle loop */
->  extern void cpuidle_install_idle_handler(void);
-> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-> index fd1601e..3f7e3ce 100644
-> --- a/drivers/cpuidle/driver.c
-> +++ b/drivers/cpuidle/driver.c
-> @@ -26,6 +26,9 @@ int cpuidle_register_driver(struct cpuidle_driver *drv)
->  	if (!drv)
->  		return -EINVAL;
-> 
-> +	if (cpuidle_disabled())
-> +		return -ENODEV;
-> +
->  	spin_lock(&cpuidle_driver_lock);
->  	if (cpuidle_curr_driver) {
->  		spin_unlock(&cpuidle_driver_lock);
-> diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
-> index 724c164..ea2f8e7 100644
-> --- a/drivers/cpuidle/governor.c
-> +++ b/drivers/cpuidle/governor.c
-> @@ -81,6 +81,9 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
->  	if (!gov || !gov->select)
->  		return -EINVAL;
-> 
-> +	if (cpuidle_disabled())
-> +		return -ENODEV;
-> +
->  	mutex_lock(&cpuidle_lock);
->  	if (__cpuidle_find_governor(gov->name) == NULL) {
->  		ret = 0;
+Since 2.6.36 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
+Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility has
+been available in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
 
-Hi Len,
-We would like to know as to when the patch that completely removes
-pm_idle for x86 "cpuidle: stop using pm_idle" and that which introduces
-bootparam cpuidle.off "cpuidle: create bootparam cpuidle.off=1"
-be pushed ? Are there any dependencies that needs to be addressed
-before queuing it up for the next merge window ? If yes, can you please
-let us know what the dependencies are. We need these patches for running 
-cpuidle driver for pseries.  
-https://lkml.org/lkml/2011/6/7/375
+However, the typical BIOS fails to initialize the MSR, presumably
+because this is handled by high-volume shrink-wrap operating systems...
 
-Thanks
-- Deepthi
+Linux distros, on the other hand, do not yet invoke x86_energy_perf_policy(8).
+As a result, WSM-EP, SNB, and later hardware from Intel will run in its
+default hardware power-on state (performance), which assumes that users
+care for performance at all costs and not for energy efficiency.
+While that is fine for performance benchmarks, the hardware's intended default
+operating point is "normal" mode...
+
+Initialize the MSR to the "normal" by default during kernel boot.
+
+x86_energy_perf_policy(8) is available to change the default after boot,
+should the user have a different preference.
+
+cc: stable@kernel.org
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+v3: fix #define typo in header and ',' typo in printk
+shorten printk to fix in 80 columns
+
+ arch/x86/include/asm/msr-index.h |    3 +++
+ arch/x86/kernel/cpu/intel.c      |   18 ++++++++++++++++++
+ 2 files changed, 21 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 43a18c7..55a11e0 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -250,6 +250,9 @@
+ #define MSR_IA32_TEMPERATURE_TARGET	0x000001a2
+ 
+ #define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
++#define ENERGY_PERF_BIAS_PERFORMANCE	0
++#define ENERGY_PERF_BIAS_NORMAL		6
++#define ENERGY_PERF_BIAS_POWERSAVE	15
+ 
+ #define MSR_IA32_PACKAGE_THERM_STATUS		0x000001b1
+ 
+diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+index d16c2c5..24cba78 100644
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -448,6 +448,24 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ 
+ 	if (cpu_has(c, X86_FEATURE_VMX))
+ 		detect_vmx_virtcap(c);
++
++	/*
++	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if BIOS did not.
++	 * x86_energy_perf_policy(8) is available to change it at run-time
++	 */
++	if (cpu_has(c, X86_FEATURE_EPB)) {
++		u64 epb;
++
++		rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
++		if ((epb & 0xF) == ENERGY_PERF_BIAS_PERFORMANCE) {
++			printk_once(KERN_WARNING "ENERGY_PERF_BIAS:"
++				" Set to 'normal', was 'performance'\n"
++				"ENERGY_PERF_BIAS: View and update with"
++				" x86_energy_perf_policy(8)\n");
++			epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
++			wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
++		}
++	}
+ }
+ 
+ #ifdef CONFIG_X86_32
+-- 
+1.7.6.134.gcf13f
