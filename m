@@ -1,20 +1,15 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH v3] x86 intel power: Initialize
-	MSR_IA32_ENERGY_PERF_BIAS
-Date: Fri, 15 Jul 2011 17:37:15 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1107151732480.18606__17585.8108712875$1310767224$gmane$org@x980>
-References: <alpine.LFD.2.02.1103301819250.31342@x980>
-	<20110414090854.GB9248@elte.hu>
-	<alpine.LFD.2.02.1104150202310.29365@x980>
-	<20110415101712.GB28007@elte.hu>
-	<alpine.LFD.2.02.1107131640280.9546@x980>
-	<CA+55aFxBkgwBbnqwO7DuizsWiVcULYtPzqr-mYrT6aHmXV0zZw@mail.gmail.com>
-	<4E1E106E.4060408@zytor.com> <alpine.LFD.2.02.1107140051020.18606@x980>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] MIPS: Convert i8259.c to using syscore_ops (was:
+	Re: Status of MIPS on 3.0.0-rc6 kernel)
+Date: Fri, 15 Jul 2011 23:53:37 +0200
+Message-ID: <201107152353.38004.rjw__22745.0271755972$1310767527$gmane$org@sisk.pl>
+References: <4E1ECE3B.10308@broadcom.com> <201107142151.24763.rjw@sisk.pl>
+	<4E2032D7.9000704@broadcom.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <alpine.LFD.2.02.1107140051020.18606@x980>
+In-Reply-To: <4E2032D7.9000704@broadcom.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,84 +19,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@lists.linux-foundation.org, Alan Cox <alan@lxorguk.ukuu.org.uk>, Arjan van de Ven <arjan@infradead.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, Roland Vossen <rvossen@broadcom.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jonas Gorski <jonas.gorski@gmail.com>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+On Friday, July 15, 2011, Roland Vossen wrote:
+> > Please check if the appended patch helps.
+> 
+> It does, I am able to build a big endian MIPS kernel now. Can you notify 
+> me if you submit this patch ?
 
-Since 2.6.36 (23016bf0d25), Linux prints the existence of "epb" in /proc/cpuinfo,
-Since 2.6.38 (d5532ee7b40), the x86_energy_perf_policy(8) utility has
-been available in-tree to update MSR_IA32_ENERGY_PERF_BIAS.
+Well, it's been submitted already. :-)
 
-However, the typical BIOS fails to initialize the MSR, presumably
-because this is handled by high-volume shrink-wrap operating systems...
+Ralf, the appended patch is necessary to fix build on MIPS due to a
+missing conversion to syscore_ops.  Please take it to your tree or
+let me know if you want me to push it myself.
 
-Linux distros, on the other hand, do not yet invoke x86_energy_perf_policy(8).
-As a result, WSM-EP, SNB, and later hardware from Intel will run in its
-default hardware power-on state (performance), which assumes that users
-care for performance at all costs and not for energy efficiency.
-While that is fine for performance benchmarks, the hardware's intended default
-operating point is "normal" mode...
+Thanks,
+Rafael
 
-Initialize the MSR to the "normal" by default during kernel boot.
-
-x86_energy_perf_policy(8) is available to change the default after boot,
-should the user have a different preference.
-
-cc: stable@kernel.org
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Len Brown <len.brown@intel.com>
 ---
-v3: fix #define typo in header and ',' typo in printk
-shorten printk to fix in 80 columns
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: MIPS: Convert i8259.c to using syscore_ops
 
- arch/x86/include/asm/msr-index.h |    3 +++
- arch/x86/kernel/cpu/intel.c      |   18 ++++++++++++++++++
- 2 files changed, 21 insertions(+), 0 deletions(-)
+The code in arch/mips/kernel/i8259.c still hasn't been converted to
+using struct syscore_ops instead of a sysdev for resume and shutdown.
+As a result, this code doesn't build any more after suspend, resume
+and shutdown callbacks have been removed from struct sysdev_class.
+Fix this problem by converting i8259.c to using syscore_ops.
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 43a18c7..55a11e0 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -250,6 +250,9 @@
- #define MSR_IA32_TEMPERATURE_TARGET	0x000001a2
+Reported-and-tested-by: Roland Vossen <rvossen@broadcom.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/mips/kernel/i8259.c |   22 ++++++----------------
+ 1 file changed, 6 insertions(+), 16 deletions(-)
+
+Index: linux-2.6/arch/mips/kernel/i8259.c
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/i8259.c
++++ linux-2.6/arch/mips/kernel/i8259.c
+@@ -14,7 +14,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/spinlock.h>
+-#include <linux/sysdev.h>
++#include <linux/syscore_ops.h>
+ #include <linux/irq.h>
  
- #define MSR_IA32_ENERGY_PERF_BIAS	0x000001b0
-+#define ENERGY_PERF_BIAS_PERFORMANCE	0
-+#define ENERGY_PERF_BIAS_NORMAL		6
-+#define ENERGY_PERF_BIAS_POWERSAVE	15
- 
- #define MSR_IA32_PACKAGE_THERM_STATUS		0x000001b1
- 
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index d16c2c5..24cba78 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -448,6 +448,24 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- 
- 	if (cpu_has(c, X86_FEATURE_VMX))
- 		detect_vmx_virtcap(c);
-+
-+	/*
-+	 * Initialize MSR_IA32_ENERGY_PERF_BIAS if BIOS did not.
-+	 * x86_energy_perf_policy(8) is available to change it at run-time
-+	 */
-+	if (cpu_has(c, X86_FEATURE_EPB)) {
-+		u64 epb;
-+
-+		rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-+		if ((epb & 0xF) == ENERGY_PERF_BIAS_PERFORMANCE) {
-+			printk_once(KERN_WARNING "ENERGY_PERF_BIAS:"
-+				" Set to 'normal', was 'performance'\n"
-+				"ENERGY_PERF_BIAS: View and update with"
-+				" x86_energy_perf_policy(8)\n");
-+			epb = (epb & ~0xF) | ENERGY_PERF_BIAS_NORMAL;
-+			wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-+		}
-+	}
+ #include <asm/i8259.h>
+@@ -215,14 +215,13 @@ spurious_8259A_irq:
+ 	}
  }
  
- #ifdef CONFIG_X86_32
--- 
-1.7.6.134.gcf13f
+-static int i8259A_resume(struct sys_device *dev)
++static void i8259A_resume(void)
+ {
+ 	if (i8259A_auto_eoi >= 0)
+ 		init_8259A(i8259A_auto_eoi);
+-	return 0;
+ }
+ 
+-static int i8259A_shutdown(struct sys_device *dev)
++static void i8259A_shutdown(void)
+ {
+ 	/* Put the i8259A into a quiescent state that
+ 	 * the kernel initialization code can get it
+@@ -232,26 +231,17 @@ static int i8259A_shutdown(struct sys_de
+ 		outb(0xff, PIC_MASTER_IMR);	/* mask all of 8259A-1 */
+ 		outb(0xff, PIC_SLAVE_IMR);	/* mask all of 8259A-1 */
+ 	}
+-	return 0;
+ }
+ 
+-static struct sysdev_class i8259_sysdev_class = {
+-	.name = "i8259",
++static struct syscore_ops i8259_syscore_ops = {
+ 	.resume = i8259A_resume,
+ 	.shutdown = i8259A_shutdown,
+ };
+ 
+-static struct sys_device device_i8259A = {
+-	.id	= 0,
+-	.cls	= &i8259_sysdev_class,
+-};
+-
+ static int __init i8259A_init_sysfs(void)
+ {
+-	int error = sysdev_class_register(&i8259_sysdev_class);
+-	if (!error)
+-		error = sysdev_register(&device_i8259A);
+-	return error;
++	register_syscore_ops(&i8259_syscore_ops);
++	return 0;
+ }
+ 
+ device_initcall(i8259A_init_sysfs);
+ 
