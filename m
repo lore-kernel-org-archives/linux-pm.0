@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] MIPS: Convert i8259.c to using syscore_ops (was:
-	Re: Status of MIPS on 3.0.0-rc6 kernel)
-Date: Fri, 15 Jul 2011 23:53:37 +0200
-Message-ID: <201107152353.38004.rjw__22745.0271755972$1310767527$gmane$org@sisk.pl>
-References: <4E1ECE3B.10308@broadcom.com> <201107142151.24763.rjw@sisk.pl>
-	<4E2032D7.9000704@broadcom.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCHv3] ARM: EXYNOS4: Support for generic I/O
+ power domains on EXYNOS4210
+Date: Sat, 16 Jul 2011 12:19:19 +0900
+Message-ID: <035201cc4367$2b165c80$81431580$%kim__3055.52506256408$1310786451$gmane$org@samsung.com>
+References: <4E165C64.8090808@samsung.com>
+	<000e01cc3d2f$eca5d530$c5f17f90$%kim@samsung.com>
+	<4E16A171.7040509@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4E2032D7.9000704@broadcom.com>
+In-reply-to: <4E16A171.7040509@samsung.com>
+Content-language: ko
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,99 +21,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>, Roland Vossen <rvossen@broadcom.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jonas Gorski <jonas.gorski@gmail.com>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: 'Chanwoo Choi' <cw00.choi@samsung.com>
+Cc: 'Sylwester Nawrocki' <snjw23@gmail.com>, 'linux-samsung-soc' <linux-samsung-soc@vger.kernel.org>, 'linux-kernel' <linux-kernel@vger.kernel.org>, 'Kyungmin Park' <kyungmin.park@samsung.com>, 'MyungJoo Ham' <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 15, 2011, Roland Vossen wrote:
-> > Please check if the appended patch helps.
+Chanwoo Choi wrote:
 > 
-> It does, I am able to build a big endian MIPS kernel now. Can you notify 
-> me if you submit this patch ?
+> Kukjin Kim wrote:
 
-Well, it's been submitted already. :-)
+(snip)
 
-Ralf, the appended patch is necessary to fix build on MIPS due to a
-missing conversion to syscore_ops.  Please take it to your tree or
-let me know if you want me to push it myself.
+> >> @@ -183,6 +183,7 @@ config MACH_NURI
+> >>  	select EXYNOS4_SETUP_SDHCI
+> >>  	select EXYNOS4_SETUP_USB_PHY
+> >>  	select SAMSUNG_DEV_PWM
+> >> +	select PM_GENERIC_DOMAINS if PM
+> >
+> > Do you _really_ think this should be under MACH_NURI?
+> >
+> This patch apply the generic power-domain to NURI board.
 
-Thanks,
-Rafael
+I mean, the PM_GENERIC_DOMAINS feature depends on CPU not board even though this is for only NURI board.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: MIPS: Convert i8259.c to using syscore_ops
+(snip)
 
-The code in arch/mips/kernel/i8259.c still hasn't been converted to
-using struct syscore_ops instead of a sysdev for resume and shutdown.
-As a result, this code doesn't build any more after suspend, resume
-and shutdown callbacks have been removed from struct sysdev_class.
-Fix this problem by converting i8259.c to using syscore_ops.
+> >> diff --git a/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+> >> b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+> >> new file mode 100644
+> >> index 0000000..ab09034
+> >> --- /dev/null
+> >> +++ b/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
+> >> @@ -0,0 +1,53 @@
+> >> +/* linux/arch/arm/mach-exynos4/include/mach/pm-exynos4.h
+> >
+> > According to your file name, should be linux/arch/arm/mach-
+> exynos4/include/mach/pm-exynos4210.h ?
+> 
+I said just typo...
 
-Reported-and-tested-by: Roland Vossen <rvossen@broadcom.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/mips/kernel/i8259.c |   22 ++++++----------------
- 1 file changed, 6 insertions(+), 16 deletions(-)
++/* linux/arch/arm/mach-exynos4/include/mach/pm-exynos4210.h
 
-Index: linux-2.6/arch/mips/kernel/i8259.c
-===================================================================
---- linux-2.6.orig/arch/mips/kernel/i8259.c
-+++ linux-2.6/arch/mips/kernel/i8259.c
-@@ -14,7 +14,7 @@
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/spinlock.h>
--#include <linux/sysdev.h>
-+#include <linux/syscore_ops.h>
- #include <linux/irq.h>
- 
- #include <asm/i8259.h>
-@@ -215,14 +215,13 @@ spurious_8259A_irq:
- 	}
- }
- 
--static int i8259A_resume(struct sys_device *dev)
-+static void i8259A_resume(void)
- {
- 	if (i8259A_auto_eoi >= 0)
- 		init_8259A(i8259A_auto_eoi);
--	return 0;
- }
- 
--static int i8259A_shutdown(struct sys_device *dev)
-+static void i8259A_shutdown(void)
- {
- 	/* Put the i8259A into a quiescent state that
- 	 * the kernel initialization code can get it
-@@ -232,26 +231,17 @@ static int i8259A_shutdown(struct sys_de
- 		outb(0xff, PIC_MASTER_IMR);	/* mask all of 8259A-1 */
- 		outb(0xff, PIC_SLAVE_IMR);	/* mask all of 8259A-1 */
- 	}
--	return 0;
- }
- 
--static struct sysdev_class i8259_sysdev_class = {
--	.name = "i8259",
-+static struct syscore_ops i8259_syscore_ops = {
- 	.resume = i8259A_resume,
- 	.shutdown = i8259A_shutdown,
- };
- 
--static struct sys_device device_i8259A = {
--	.id	= 0,
--	.cls	= &i8259_sysdev_class,
--};
--
- static int __init i8259A_init_sysfs(void)
- {
--	int error = sysdev_class_register(&i8259_sysdev_class);
--	if (!error)
--		error = sysdev_register(&device_i8259A);
--	return error;
-+	register_syscore_ops(&i8259_syscore_ops);
-+	return 0;
- }
- 
- device_initcall(i8259A_init_sysfs);
- 
+> This patch support only power-domain of EXYNOS4210, so I named "pm-
+> exynos4210.h"
+> If EXYNOS4 series board will be released, I will modify include file name
+> from "pm-exynos4210.h" to "pm-exynos4.h" to support all EXYNOS4 series.
+
+No need it, it's different.
+
+(snip)
+
+> > Would be better if you could add some common function for pd_power_up and
+> _down...
+> 
+> What do you mean about common function?
+> 
+I thought, pd_power_up and _down can be implemented in one function.
+
+(snip)
+
+> > I wonder why we need to add this for handling power domain not update current
+> pd.
+> 
+See arch/arm/mach-exynos4/dev-pd.c
+
+I mean, we _really_ need to keep duplication files for handling power domain?...
+
+(snip)
+
+Thanks.
+
+Best regards,
+Kgene.
+--
+Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+SW Solution Development Team, Samsung Electronics Co., Ltd.
