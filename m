@@ -1,16 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
 Subject: Re: [PATCH v4 3/3] PM / DEVFREQ: add sysfs interface
- (including user tickling)
-Date: Thu, 9 Jun 2011 19:11:58 +0200
-Message-ID: <20110609171157.GA3877@ucw.cz>
+	(including user tickling)
+Date: Tue, 19 Jul 2011 11:14:56 +0900
+Message-ID: <CAJ0PZbTYNAssXYiOq8zjU9uv-zu-tK1msiMyYz0F0p_DkENMQQ@mail.gmail.com>
 References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
 	<1310717510-19002-4-git-send-email-myungjoo.ham@samsung.com>
+	<20110609171157.GA3877@ucw.cz>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1310717510-19002-4-git-send-email-myungjoo.ham@samsung.com>
+In-Reply-To: <20110609171157.GA3877@ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,22 +21,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> +What:		/sys/devices/.../power/devfreq_polling_interval
-> +Date:		July 2011
-> +Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-> +Description:
-> +		The /sys/devices/.../power/devfreq_polling_interval shows the
-> +		requested polling interval of the corresponding device.
-
-AFAICT, polling only makes sense for one governor; and I guess more
-governor parameters will be needed in future. Should polling interval
-be governor-specific?
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+T24gRnJpLCBKdW4gMTAsIDIwMTEgYXQgMjoxMSBBTSwgUGF2ZWwgTWFjaGVrIDxwYXZlbEB1Y3cu
+Y3o+IHdyb3RlOgo+IEhpIQo+Cj4+ICtXaGF0OiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoC9zeXMv
+ZGV2aWNlcy8uLi4vcG93ZXIvZGV2ZnJlcV9wb2xsaW5nX2ludGVydmFsCj4+ICtEYXRlOiDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoEp1bHkgMjAxMQo+PiArQ29udGFjdDogwqAgwqAgTXl1bmdKb28g
+SGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+Cj4+ICtEZXNjcmlwdGlvbjoKPj4gKyDCoCDC
+oCDCoCDCoCDCoCDCoCBUaGUgL3N5cy9kZXZpY2VzLy4uLi9wb3dlci9kZXZmcmVxX3BvbGxpbmdf
+aW50ZXJ2YWwgc2hvd3MgdGhlCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgcmVxdWVzdGVkIHBvbGxp
+bmcgaW50ZXJ2YWwgb2YgdGhlIGNvcnJlc3BvbmRpbmcgZGV2aWNlLgo+Cj4gQUZBSUNULCBwb2xs
+aW5nIG9ubHkgbWFrZXMgc2Vuc2UgZm9yIG9uZSBnb3Zlcm5vcjsgYW5kIEkgZ3Vlc3MgbW9yZQo+
+IGdvdmVybm9yIHBhcmFtZXRlcnMgd2lsbCBiZSBuZWVkZWQgaW4gZnV0dXJlLiBTaG91bGQgcG9s
+bGluZyBpbnRlcnZhbAo+IGJlIGdvdmVybm9yLXNwZWNpZmljPwoKc3RydWN0IGRldmZyZXFfZ292
+ZXJub3IgewogICAgICAgIGNoYXIgbmFtZVtERVZGUkVRX05BTUVfTEVOXTsKICAgICAgICB2b2lk
+ICpkYXRhOyAvKiBwcml2YXRlIGRhdGEgZm9yIGdldF90YXJnZXRfZnJlcSAqLwogICAgICAgIGlu
+dCAoKmdldF90YXJnZXRfZnJlcSkoc3RydWN0IGRldmZyZXEgKnRoaXMsIHVuc2lnbmVkIGxvbmcg
+KmZyZXEpOwp9OwoKVGhlICJkYXRhIiBlbnRyeSBpbiBzdHJ1Y3QgZGV2ZnJlcV9nb3Zlcm5vciBp
+cyBtZWFudCB0byBiZSB0aGUKcGFyYW1ldGVycyBhcyB3ZWxsIGFzIGludGVybmFsIGdvdmVybm9y
+IGRhdGEgaW4gdGhlIGZ1dHVyZTsgdGhlCmN1cnJlbnQgdGhyZWUgZXhhbXBsZSBnb3Zlcm5vcnMg
+ZG8gbm90IG5lZWQgaXQgYW55d2F5LgoKVW5saWtlIENQVUZSRVEsIHdlIGhhdmUgbWFueSBoZXRl
+cm9nZW5lb3VzIGRldmljZXMgdG8gc3VwcG9ydCB3aXRoCkRFVkZSRVEuIFRodXMsIGEgc3BlY2lm
+aWMgZGV2aWNlIG1heSBuZWVkIGEgZ292ZXJub3Igd2l0aCBpdHMgb3duCnVuaXF1ZSBkZXNpZ24g
+YW5kIHN1cHBseSBzdWNoIGEgZ292ZXJub3IgKG5vdCBkZWZpbmVkIGFzIHRob3NlCmV4YW1wbGVz
+IGluIGRldmZyZXEuYykgd2l0aCBkZXZmcmVxX2FkZF9kZXZpY2UuCgoKQW5kLCB5ZXMuIEFtb25n
+IHRob3NlIHRocmVlIGV4YW1wbGVzLCBvbmx5ICJzaW1wbGUtb25kZW1hbmQiIGlzCnJlcXVpcmVk
+IHRvIHVzZSBwb2xsaW5nIGludGVydmFsLgoKSG93ZXZlciwgYW55IGRyaXZlcnMgbWF5IGFkZCBp
+dHMgb3duIGdvdmVybm9ycyB3aXRoIHBvbGxpbmcgYW5kCnRpY2tsaW5nIHJlcXVpcmVzIHBvbGxp
+bmcgaW50ZXJ2YWwgcmVnYXJkbGVzcyBvZiB0aGUgZ292ZXJub3IgdXNlZC4KClRoZXJlZm9yZSwg
+SSB0aGluayBwb2xsaW5nIGludGVydmFsIGlzIG5vdCBnb3Zlcm5vciBzcGVjaWZpYyBpbiBkZXZm
+cmVxLgoKClRoYW5rIHlvdS4KLSBNeXVuZ0pvbwoKPiAtLQo+IChlbmdsaXNoKSBodHRwOi8vd3d3
+LmxpdmVqb3VybmFsLmNvbS9+cGF2ZWxtYWNoZWsKPiAoY2Vza3ksIHBpY3R1cmVzKSBodHRwOi8v
+YXRyZXkua2FybGluLm1mZi5jdW5pLmN6L35wYXZlbC9waWN0dXJlL2hvcnNlcy9ibG9nLmh0bWwK
+PgoKCgotLSAKTXl1bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELgpNb2JpbGUgU29mdHdhcmUg
+UGxhdGZvcm0gTGFiLApEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBCdXNp
+bmVzcwpTYW1zdW5nIEVsZWN0cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQtMjg1OApfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxp
+c3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51
+eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
