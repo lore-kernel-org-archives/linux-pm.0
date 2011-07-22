@@ -1,15 +1,12 @@
-From: Douglas Gilbert <dgilbert@interlog.com>
-Subject: Re: [RFC] Disable disk spinup during system resume
-Date: Fri, 22 Jul 2011 13:38:48 -0400
-Message-ID: <4E29B5A8.4030204__9019.46204617179$1311365691$gmane$org@interlog.com>
-References: <Pine.LNX.4.44L0.1107220951280.1923-100000@iolanthe.rowland.org>
-	<4E299C4A.6060802@draigBrady.com>
-Reply-To: dgilbert@interlog.com
+From: Kevin Hilman <khilman@ti.com>
+Subject: [RFC/PATCH] PM / Runtime: allow _put_sync() from
+	interrupts-disabled context
+Date: Fri, 22 Jul 2011 14:17:11 -0700
+Message-ID: <1311369431-28775-1-git-send-email-khilman__18281.0150356547$1311369477$gmane$org@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4E299C4A.6060802@draigBrady.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +16,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>
-Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTEtMDctMjIgMTE6NTAgQU0sIFDDoWRyYWlnIEJyYWR5IHdyb3RlOgo+IE9uIDIyLzA3LzEx
-IDE1OjA1LCBBbGFuIFN0ZXJuIHdyb3RlOgo+PiBPbiBGcmksIDIyIEp1bCAyMDExLCBQw6FkcmFp
-ZyBCcmFkeSB3cm90ZToKPj4KPj4+IE9uIDIxLzA3LzExIDE3OjQ5LCBBbGFuIFN0ZXJuIHdyb3Rl
-Ogo+Pj4+IE9uIFRodSwgMjEgSnVsIDIwMTEsIFDDoWRyYWlnIEJyYWR5IHdyb3RlOgo+Pj4+Cj4+
-Pj4+IE9uIDIxLzA3LzExIDE1OjQ5LCBBbGFuIFN0ZXJuIHdyb3RlOgo+Pj4+Pj4gT24gVGh1LCAy
-MSBKdWwgMjAxMSwgUMOhZHJhaWcgQnJhZHkgd3JvdGU6Cj4+Pj4+Pgo+Pj4+Pj4+IEhpLAo+Pj4+
-Pj4+Cj4+Pj4+Pj4gSSBoYXZlIGEgc2Vjb25kYXJ5IHNhdGEgZGlzayAoc2RhKSAgaW4gbXkgc3lz
-dGVtIHRoYXQKPj4+Pj4+PiBJIHdvdWxkIGxpa2Ugbm90IHRvIHNwaW51cCBvbiByZXN1bWUuCj4+
-Pj4+Cj4+Pj4+Cj4+Pgo+Pj4+IFdoYXQgaGFwcGVucyBpZiB5b3Uga2lsbCBhbGwgdGhlIHJ1bm5p
-bmcgcHJvY2Vzc2VzIChvciBhcyBtYW55IGFzCj4+Pj4gcG9zc2libGUpIGJlZm9yZSBzdGFydGlu
-ZyB0aGUgc3VzcGVuZD8KPj4+Pgo+Pj4+IEFsc28sIGhvdyBkbyB5b3UgaW5pdGlhdGUgdGhlIHN1
-c3BlbmQ/ICBEbyB5b3UgdXNlIGEgcHJvZ3JhbSwgb3IgZG8geW91Cj4+Pj4gc2ltcGx5ICJlY2hv
-IG1lbT4vc3lzL3Bvd2VyL3N0YXRlIj8KPj4+Cj4+PiBJIGp1c3QgcmVib290ZWQgd2l0aCBpbml0
-PS9iaW4vc2ggYW5kIGRpZAo+Pj4KPj4+IHNkcGFybSAtciAtQyBTVE9QIC9kZXYvc2RhCj4+PiBl
-Y2hvIDA+ICAvc3lzL2Jsb2NrL3NkYS9kZXZpY2Uvc2NzaV9kaXNrLyovbWFuYWdlX3N0YXJ0X3N0
-b3AKPj4+IGVjaG8gbWVtPiAgL3N5cy9wb3dlci9zdGF0ZQo+Pj4KPj4+IFdoZW4gSSBoaXQgdGhl
-IHBvd2VyIGJ1dHRvbiB0byByZXN1bWUKPj4+IHNkYSBzdGFydGVkIHNwaW5uaW5nIGFnYWluIDoo
-Cj4+Cj4+IEkgaGF2ZSBubyBpZGVhIHdoeS4gIFVubGVzcyBtYXliZSB0aGUgQklPUyBzdGFydGVk
-IHRoZSBkcml2ZS4KPj4KPj4gSGVyZSdzIGFub3RoZXIgdGVzdCB5b3UgY2FuIHRyeS4gIEJlZm9y
-ZSBzdGFydGluZyB0aGUgc3VzcGVuZCwgbWFrZQo+PiBzdXJlIG5vIGZpbGVzeXN0ZW1zIGFyZSBt
-b3VudGVkIG9uIHNkYSBhbmQgZG86Cj4+Cj4+IAllY2hvIHNjc2kgcmVtb3ZlLXNpbmdsZS1kZXZp
-Y2UgMCAwIDAgMD4vcHJvYy9zY3NpL3Njc2kKPj4KPj4gKHJlcGxhY2UgdGhlICIwIDAgMCAwIiB3
-aXRoIHRoZSBhcHByb3ByaWF0ZSBIb3N0LCBDaGFubmVsLCBJRCwgYW5kIExVTgo+PiB2YWx1ZXMg
-Zm9yIHlvdXIgc2RhIGRyaXZlKS4gIFRoaXMgd2lsbCBlcmFzZSBhbGwga25vd2xlZGdlIG9mIHRo
-YXQKPj4gZHJpdmUgZnJvbSB0aGUga2VybmVsLiAgSWYgaXQgc3RpbGwgc3BpbnMgdXAgZHVyaW5n
-IHJlc3VtZSwgeW91IGNhbiBiZQo+PiBzdXJlIHRoZSBrZXJuZWwgaXNuJ3QgcmVzcG9uc2libGUu
-Cj4KPiBkcml2ZSBzdGlsbCBzcGlucyB1cCBvbiByZXN1bWUuCgpEaWQgdGhlIGRpc2sgKC9kZXYv
-c2RhKSBzcGluIGRvd24gYWZ0ZXIKICAgIHNkcGFybSAtciAtQyBTVE9QIC9kZXYvc2RhCj8gSSdt
-IGd1ZXNzaW5nIHRoYXQgbmVpdGhlciB0aGUgcm9vdCBmaWxlIHN5c3RlbSBub3Igc3dhcAphcmUg
-bG9jYXRlZCBvbiAvZGV2L3NkYSA/CgpEb3VnIEdpbGJlcnQKX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBt
-QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
-bi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+Currently the use of pm_runtime_put_sync() is not safe from
+interrupts-disabled context because rpm_idle() will release the
+spinlock and enable interrupts for the idle callbacks.  This enables
+interrupts during a time where interrupts were expected to be
+disabled, and can have strange side effects on drivers that expected
+interrupts to be disabled.
+
+This is not a bug since the documentation clearly states that only
+_put_sync_suspend() is safe in IRQ-safe mode.
+
+However, pm_runtime_put_sync() could be made safe when in IRQ-safe
+mode by releasing the spinlock but not re-enabling interrupts, which
+is what this patch aims to do.
+
+Problem was found when using some buggy drivers that set
+pm_runtime_irq_safe() and used _put_sync() in interrupts-disabled
+context.
+
+The offending drivers have been fixed to use _put_sync_suspend(),
+But this patch is an RFC to see if it might make sense to allow
+using _put_sync() from interrupts-disabled context.
+
+Reported-by: Colin Cross <ccross@google.com>
+Tested-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Kevin Hilman <khilman@ti.com>
+---
+ drivers/base/power/runtime.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 8dc247c..acb3f83 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -226,11 +226,17 @@ static int rpm_idle(struct device *dev, int rpmflags)
+ 		callback = NULL;
+ 
+ 	if (callback) {
+-		spin_unlock_irq(&dev->power.lock);
++		if (dev->power.irq_safe)
++			spin_unlock(&dev->power.lock);
++		else
++			spin_unlock_irq(&dev->power.lock);
+ 
+ 		callback(dev);
+ 
+-		spin_lock_irq(&dev->power.lock);
++		if (dev->power.irq_safe)
++			spin_lock(&dev->power.lock);
++		else
++			spin_lock_irq(&dev->power.lock);
+ 	}
+ 
+ 	dev->power.idle_notification = false;
+-- 
+1.7.6
