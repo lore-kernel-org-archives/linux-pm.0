@@ -1,11 +1,13 @@
-From: Nathan Viray <ethan23m@yahoo.com>
-Subject: BUG: soft lockup - CPU#1 stuck for 193s
-	[vmware-tools-up:6468]
-Date: Fri, 22 Jul 2011 06:22:22 -0700 (PDT)
-Message-ID: <1311340942.73911.YahooMailClassic@web121713.mail.ne1.yahoo.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Disable disk spinup during system resume
+Date: Fri, 22 Jul 2011 10:05:15 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1107220951280.1923-100000__4319.37008766017$1311343664$gmane$org@iolanthe.rowland.org>
+References: <4E293D20.3080403@draigBrady.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4040119791935413629=="
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4E293D20.3080403@draigBrady.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -13,30 +15,41 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, SCSI development list <linux-scsi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============4040119791935413629==
-Content-Type: multipart/alternative; boundary="0-1032031557-1311340942=:73911"
-
---0-1032031557-1311340942=:73911
-Content-Type: text/plain; charset=us-ascii
-
-BUG: soft lockup - CPU#1 stuck for 193s [vmware-tools-up:6468]
---0-1032031557-1311340942=:73911
-Content-Type: text/html; charset=us-ascii
-
-<table cellspacing="0" cellpadding="0" border="0" ><tr><td valign="top" style="font: inherit;"><font class="Apple-style-span" face="arial"><span class="Apple-style-span" style="font-size: 13px;">BUG: soft lockup - CPU#1 stuck for 193s [vmware-tools-up:6468]</span></font></td></tr></table>
---0-1032031557-1311340942=:73911--
-
---===============4040119791935413629==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4040119791935413629==--
+T24gRnJpLCAyMiBKdWwgMjAxMSwgUMOhZHJhaWcgQnJhZHkgd3JvdGU6Cgo+IE9uIDIxLzA3LzEx
+IDE3OjQ5LCBBbGFuIFN0ZXJuIHdyb3RlOgo+ID4gT24gVGh1LCAyMSBKdWwgMjAxMSwgUMOhZHJh
+aWcgQnJhZHkgd3JvdGU6Cj4gPiAKPiA+PiBPbiAyMS8wNy8xMSAxNTo0OSwgQWxhbiBTdGVybiB3
+cm90ZToKPiA+Pj4gT24gVGh1LCAyMSBKdWwgMjAxMSwgUMOhZHJhaWcgQnJhZHkgd3JvdGU6Cj4g
+Pj4+Cj4gPj4+PiBIaSwKPiA+Pj4+Cj4gPj4+PiBJIGhhdmUgYSBzZWNvbmRhcnkgc2F0YSBkaXNr
+IChzZGEpICBpbiBteSBzeXN0ZW0gdGhhdAo+ID4+Pj4gSSB3b3VsZCBsaWtlIG5vdCB0byBzcGlu
+dXAgb24gcmVzdW1lLgo+ID4+Cj4gPj4KPiAKPiA+IFdoYXQgaGFwcGVucyBpZiB5b3Uga2lsbCBh
+bGwgdGhlIHJ1bm5pbmcgcHJvY2Vzc2VzIChvciBhcyBtYW55IGFzIAo+ID4gcG9zc2libGUpIGJl
+Zm9yZSBzdGFydGluZyB0aGUgc3VzcGVuZD8KPiA+IAo+ID4gQWxzbywgaG93IGRvIHlvdSBpbml0
+aWF0ZSB0aGUgc3VzcGVuZD8gIERvIHlvdSB1c2UgYSBwcm9ncmFtLCBvciBkbyB5b3UgCj4gPiBz
+aW1wbHkgImVjaG8gbWVtID4vc3lzL3Bvd2VyL3N0YXRlIj8KPiAKPiBJIGp1c3QgcmVib290ZWQg
+d2l0aCBpbml0PS9iaW4vc2ggYW5kIGRpZAo+IAo+IHNkcGFybSAtciAtQyBTVE9QIC9kZXYvc2Rh
+Cj4gZWNobyAwID4gL3N5cy9ibG9jay9zZGEvZGV2aWNlL3Njc2lfZGlzay8qL21hbmFnZV9zdGFy
+dF9zdG9wCj4gZWNobyBtZW0gPiAvc3lzL3Bvd2VyL3N0YXRlCj4gCj4gV2hlbiBJIGhpdCB0aGUg
+cG93ZXIgYnV0dG9uIHRvIHJlc3VtZQo+IHNkYSBzdGFydGVkIHNwaW5uaW5nIGFnYWluIDooCgpJ
+IGhhdmUgbm8gaWRlYSB3aHkuICBVbmxlc3MgbWF5YmUgdGhlIEJJT1Mgc3RhcnRlZCB0aGUgZHJp
+dmUuCgpIZXJlJ3MgYW5vdGhlciB0ZXN0IHlvdSBjYW4gdHJ5LiAgQmVmb3JlIHN0YXJ0aW5nIHRo
+ZSBzdXNwZW5kLCBtYWtlIApzdXJlIG5vIGZpbGVzeXN0ZW1zIGFyZSBtb3VudGVkIG9uIHNkYSBh
+bmQgZG86CgoJZWNobyBzY3NpIHJlbW92ZS1zaW5nbGUtZGV2aWNlIDAgMCAwIDAgPi9wcm9jL3Nj
+c2kvc2NzaQoKKHJlcGxhY2UgdGhlICIwIDAgMCAwIiB3aXRoIHRoZSBhcHByb3ByaWF0ZSBIb3N0
+LCBDaGFubmVsLCBJRCwgYW5kIExVTiAKdmFsdWVzIGZvciB5b3VyIHNkYSBkcml2ZSkuICBUaGlz
+IHdpbGwgZXJhc2UgYWxsIGtub3dsZWRnZSBvZiB0aGF0IApkcml2ZSBmcm9tIHRoZSBrZXJuZWwu
+ICBJZiBpdCBzdGlsbCBzcGlucyB1cCBkdXJpbmcgcmVzdW1lLCB5b3UgY2FuIGJlIApzdXJlIHRo
+ZSBrZXJuZWwgaXNuJ3QgcmVzcG9uc2libGUuCgo+IFRoZXJlIGtlcm5lbCBsb2dzIGFib3V0IHNh
+dGEgcG9ydHMgc3RhcnRpbmcgdXAuCj4gTWF5YmUgSSBuZWVkIHRvIHB1dCB0aGUgZHJpdmUgaW50
+byBhIGRpZmZlcmVudAo+IHNsZWVwIHN0YXRlIG9yIHNvbWV0aGluZyB0byBzdG9wIGl0IHN0YXJ0
+aW5nLgoKSSByZWFsbHkgZG9uJ3Qga25vdyB3aGF0J3MgZ29pbmcgb24uICBNYXliZSBzb21lYm9k
+eSBvbiB0aGUgbGludXgtc2NzaQptYWlsaW5nIGxpc3QgY2FuIGV4cGxhaW4gdGhpcy4KCkFsYW4g
+U3Rlcm4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
+bnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpo
+dHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
+cG0=
