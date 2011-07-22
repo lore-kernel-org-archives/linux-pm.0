@@ -1,8 +1,8 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: [RFC/PATCH] PM / Runtime: allow _put_sync() from
+Subject: [RFC/PATCH v2] PM / Runtime: allow _put_sync() from
 	interrupts-disabled context
-Date: Fri, 22 Jul 2011 14:17:11 -0700
-Message-ID: <1311369431-28775-1-git-send-email-khilman__18281.0150356547$1311369477$gmane$org@ti.com>
+Date: Fri, 22 Jul 2011 14:46:28 -0700
+Message-ID: <1311371188-28879-1-git-send-email-khilman__12614.9695170627$1311371241$gmane$org@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -46,9 +46,40 @@ Reported-by: Colin Cross <ccross@google.com>
 Tested-by: Nishanth Menon <nm@ti.com>
 Signed-off-by: Kevin Hilman <khilman@ti.com>
 ---
- drivers/base/power/runtime.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+v2: update documentation also
 
+ Documentation/power/runtime_pm.txt |   10 +++++-----
+ drivers/base/power/runtime.c       |   10 ++++++++--
+ 2 files changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index 14dd3c6..4ce5450 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -54,11 +54,10 @@ referred to as subsystem-level callbacks in what follows.
+ By default, the callbacks are always invoked in process context with interrupts
+ enabled.  However, subsystems can use the pm_runtime_irq_safe() helper function
+ to tell the PM core that a device's ->runtime_suspend() and ->runtime_resume()
+-callbacks should be invoked in atomic context with interrupts disabled
+-(->runtime_idle() is still invoked the default way).  This implies that these
+-callback routines must not block or sleep, but it also means that the
+-synchronous helper functions listed at the end of Section 4 can be used within
+-an interrupt handler or in an atomic context.
++callbacks should be invoked in atomic context with interrupts disabled.
++This implies that these callback routines must not block or sleep, but it also
++means that the synchronous helper functions listed at the end of Section 4 can
++be used within an interrupt handler or in an atomic context.
+ 
+ The subsystem-level suspend callback is _entirely_ _responsible_ for handling
+ the suspend of the device as appropriate, which may, but need not include
+@@ -483,6 +482,7 @@ pm_runtime_suspend()
+ pm_runtime_autosuspend()
+ pm_runtime_resume()
+ pm_runtime_get_sync()
++pm_runtime_put_sync()
+ pm_runtime_put_sync_suspend()
+ 
+ 5. Runtime PM Initialization, Device Probing and Removal
 diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
 index 8dc247c..acb3f83 100644
 --- a/drivers/base/power/runtime.c
