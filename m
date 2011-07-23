@@ -1,11 +1,12 @@
 From: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [PATCH v3 3/6] PM: PM notifier error injection module
-Date: Sat, 23 Jul 2011 17:50:57 +0900
-Message-ID: <1311411060-30124-4-git-send-email-akinobu.mita__13257.1165021092$1311411078$gmane$org@gmail.com>
+Subject: [PATCH v3 6/6] fault-injection: add notifier error
+	injection testing scripts
+Date: Sat, 23 Jul 2011 17:51:00 +0900
+Message-ID: <1311411060-30124-7-git-send-email-akinobu.mita__27599.2029732608$1311411080$gmane$org@gmail.com>
 References: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -18,134 +19,153 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: linux-pm@lists.linux-foundation.org, Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, =?UTF-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>, linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-This provides the ability to inject artifical errors to PM notifier chain
-callbacks.  It is controlled through debugfs interface under
-/sys/kernel/debug/pm-notifier-error-inject/
-
-Each of the files in the directory represents an event which can be
-failed and contains the error code.  If the notifier call chain should
-be failed with some events notified, write the error code to the files.
-
-Example: Inject PM suspend error (-12 = -ENOMEM)
-
-	# cd /sys/kernel/debug/pm-notifier-error-inject
-	# echo -12 > PM_SUSPEND_PREPARE
-	# echo mem > /sys/power/state
-	bash: echo: write error: Cannot allocate memory
-
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
----
-* v3
-- rewrite to be kernel modules instead of initializing at late_initcall()s
-- notifier priority can be specified as a module parameter
-
- lib/Kconfig.debug              |   21 ++++++++++++++++++
- lib/Makefile                   |    1 +
- lib/pm-notifier-error-inject.c |   46 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 68 insertions(+), 0 deletions(-)
- create mode 100644 lib/pm-notifier-error-inject.c
-
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 55d56bb..69ecd50 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1058,6 +1058,27 @@ config CPU_NOTIFIER_ERROR_INJECT
- 
- 	  If unsure, say N.
- 
-+config PM_NOTIFIER_ERROR_INJECT
-+	tristate "PM notifier error injection module"
-+	depends on PM && NOTIFIER_ERROR_INJECTION
-+	default m if PM_DEBUG
-+	help
-+	  This option provides the ability to inject artifical errors to
-+	  PM notifier chain callbacks.  It is controlled through debugfs
-+	  interface.
-+
-+	  Example: Inject PM suspend error (-12 = -ENOMEM)
-+
-+	  # cd /sys/kernel/debug/pm-notifier-error-inject
-+	  # echo -12 > PM_SUSPEND_PREPARE
-+	  # echo mem > /sys/power/state
-+	  bash: echo: write error: Cannot allocate memory
-+
-+	  To compile this code as a module, choose M here: the module will
-+	  be called pm-notifier-error-inject.
-+
-+	  If unsure, say N.
-+
- config FAULT_INJECTION
- 	bool "Fault-injection framework"
- 	depends on DEBUG_KERNEL
-diff --git a/lib/Makefile b/lib/Makefile
-index 892f4e2..4dca6c0 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -90,6 +90,7 @@ obj-$(CONFIG_SWIOTLB) += swiotlb.o
- obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
- obj-$(CONFIG_CPU_NOTIFIER_ERROR_INJECT) += cpu-notifier-error-inject.o
-+obj-$(CONFIG_PM_NOTIFIER_ERROR_INJECT) += pm-notifier-error-inject.o
- 
- lib-$(CONFIG_GENERIC_BUG) += bug.o
- 
-diff --git a/lib/pm-notifier-error-inject.c b/lib/pm-notifier-error-inject.c
-new file mode 100644
-index 0000000..821b3db
---- /dev/null
-+++ b/lib/pm-notifier-error-inject.c
-@@ -0,0 +1,46 @@
-+#include <linux/kernel.h>
-+#include <linux/suspend.h>
-+#include <linux/module.h>
-+#include <linux/notifier.h>
-+
-+static int priority;
-+module_param(priority, int, 0);
-+MODULE_PARM_DESC(priority, "specify PM notifier priority");
-+
-+static struct err_inject_notifier_block err_inject_pm_notifier = {
-+	.actions = {
-+		{ ERR_INJECT_NOTIFIER_ACTION(PM_HIBERNATION_PREPARE) },
-+		{ ERR_INJECT_NOTIFIER_ACTION(PM_SUSPEND_PREPARE) },
-+		{ ERR_INJECT_NOTIFIER_ACTION(PM_RESTORE_PREPARE) },
-+		{}
-+	}
-+};
-+
-+static int err_inject_init(void)
-+{
-+	int err;
-+
-+	err = err_inject_notifier_block_init(&err_inject_pm_notifier,
-+				"pm-notifier-error-inject", priority);
-+	if (err)
-+		return err;
-+
-+	err = register_pm_notifier(&err_inject_pm_notifier.nb);
-+	if (err)
-+		err_inject_notifier_block_cleanup(&err_inject_pm_notifier);
-+
-+	return err;
-+}
-+
-+static void err_inject_exit(void)
-+{
-+	unregister_pm_notifier(&err_inject_pm_notifier.nb);
-+	err_inject_notifier_block_cleanup(&err_inject_pm_notifier);
-+}
-+
-+module_init(err_inject_init);
-+module_exit(err_inject_exit);
-+
-+MODULE_DESCRIPTION("PM notifier error injection module");
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Akinobu Mita <akinobu.mita@gmail.com>");
--- 
-1.7.4.4
+KiB0b29scy90ZXN0aW5nL2ZhdWx0LWluamVjdGlvbi9jcHUtbm90aWZpZXIuc2ggaXMgdGVzdGlu
+ZyBzY3JpcHQgZm9yCkNQVSBub3RpZmllciBlcnJvciBoYW5kbGluZyBieSB1c2luZyBjcHUtbm90
+aWZpZXItZXJyb3ItaW5qZWN0LmtvLgoKMS4gT2ZmbGluZSBhbGwgaG90LXBsdWdnYWJsZSBDUFVz
+IGluIHByZXBhcmF0aW9uIGZvciB0ZXN0aW5nCjIuIFRlc3QgQ1BVIGhvdC1hZGQgZXJyb3IgaGFu
+ZGxpbmcgYnkgaW5qZWN0aW5nIG5vdGlmaWVyIGVycm9ycwozLiBPbmxpbmUgYWxsIGhvdC1wbHVn
+Z2FibGUgQ1BVcyBpbiBwcmVwYXJhdGlvbiBmb3IgdGVzdGluZwo0LiBUZXN0IENQVSBob3QtcmVt
+b3ZlIGVycm9yIGhhbmRsaW5nIGJ5IGluamVjdGluZyBub3RpZmllciBlcnJvcnMKCiogdG9vbHMv
+dGVzdGluZy9mYXVsdC1pbmplY3Rpb24vbWVtb3J5LW5vdGlmaWVyLnNoIGlzIGRvaW5nIHRoZSBz
+YW1lIHRoaW5nCmZvciBtZW1vcnkgaG90cGx1ZyBub3RpZmllci4KClNpZ25lZC1vZmYtYnk6IEFr
+aW5vYnUgTWl0YSA8YWtpbm9idS5taXRhQGdtYWlsLmNvbT4KU3VnZ2VzdGVkLWJ5OiBBbmRyZXcg
+TW9ydG9uIDxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnPgpDYzogUGF2ZWwgTWFjaGVrIDxwYXZl
+bEB1Y3cuY3o+CkNjOiAiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lzay5wbD4KQ2M6IGxpbnV4
+LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCkNjOiBHcmVnIEtIIDxncmVnQGtyb2FoLmNv
+bT4KQ2M6IGxpbnV4LW1tQGt2YWNrLm9yZwpDYzogQmVuamFtaW4gSGVycmVuc2NobWlkdCA8YmVu
+aEBrZXJuZWwuY3Jhc2hpbmcub3JnPgpDYzogUGF1bCBNYWNrZXJyYXMgPHBhdWx1c0BzYW1iYS5v
+cmc+CkNjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwpDYzogQW3DqXJpY28gV2FuZyA8
+eGl5b3Uud2FuZ2NvbmdAZ21haWwuY29tPgotLS0KKiB2MwotIG5ldyBwYXRjaAoKIHRvb2xzL3Rl
+c3RpbmcvZmF1bHQtaW5qZWN0aW9uL2NwdS1ub3RpZmllci5zaCAgICB8ICAxNjIgKysrKysrKysr
+KysrKysrKysrKysrCiB0b29scy90ZXN0aW5nL2ZhdWx0LWluamVjdGlvbi9tZW1vcnktbm90aWZp
+ZXIuc2ggfCAgMTYzICsrKysrKysrKysrKysrKysrKysrKysKIDIgZmlsZXMgY2hhbmdlZCwgMzI1
+IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCiBjcmVhdGUgbW9kZSAxMDA3NTUgdG9vbHMv
+dGVzdGluZy9mYXVsdC1pbmplY3Rpb24vY3B1LW5vdGlmaWVyLnNoCiBjcmVhdGUgbW9kZSAxMDA3
+NTUgdG9vbHMvdGVzdGluZy9mYXVsdC1pbmplY3Rpb24vbWVtb3J5LW5vdGlmaWVyLnNoCgpkaWZm
+IC0tZ2l0IGEvdG9vbHMvdGVzdGluZy9mYXVsdC1pbmplY3Rpb24vY3B1LW5vdGlmaWVyLnNoIGIv
+dG9vbHMvdGVzdGluZy9mYXVsdC1pbmplY3Rpb24vY3B1LW5vdGlmaWVyLnNoCm5ldyBmaWxlIG1v
+ZGUgMTAwNzU1CmluZGV4IDAwMDAwMDAuLmJlMDJhODUKLS0tIC9kZXYvbnVsbAorKysgYi90b29s
+cy90ZXN0aW5nL2ZhdWx0LWluamVjdGlvbi9jcHUtbm90aWZpZXIuc2gKQEAgLTAsMCArMSwxNjIg
+QEAKKyMhL2Jpbi9iYXNoCisKKyMKKyMgbGlzdCBhbGwgaG90LXBsdWdnYWJsZSBDUFVzCisjCito
+b3RwbHVnZ2FibGVfY3B1cygpCit7CisJbG9jYWwgc3RhdGU9JHsxOi0uXCp9CisKKwlmb3IgY3B1
+IGluIC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdSo7IGRvCisJCWlmIFsgLWYgJGNwdS9vbmxp
+bmUgXSAmJiBncmVwIC1xICRzdGF0ZSAkY3B1L29ubGluZTsgdGhlbgorCQkJZWNobyAke2NwdSMj
+LyovY3B1fQorCQlmaQorCWRvbmUKK30KKworaG90cGxhZ2dhYmxlX29mZmxpbmVfY3B1cygpCit7
+CisJaG90cGx1Z2dhYmxlX2NwdXMgMAorfQorCitob3RwbHVnZ2FibGVfb25saW5lX2NwdXMoKQor
+eworCWhvdHBsdWdnYWJsZV9jcHVzIDEKK30KKworY3B1X2lzX29ubGluZSgpCit7CisJZ3JlcCAt
+cSAxIC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdSQxL29ubGluZQorfQorCitjcHVfaXNfb2Zm
+bGluZSgpCit7CisJZ3JlcCAtcSAwIC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdSQxL29ubGlu
+ZQorfQorCithZGRfY3B1KCkKK3sKKwllY2hvIDEgPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9j
+cHUkMS9vbmxpbmUKK30KKworcmVtb3ZlX2NwdSgpCit7CisJZWNobyAwID4gL3N5cy9kZXZpY2Vz
+L3N5c3RlbS9jcHUvY3B1JDEvb25saW5lCit9CisKK2FkZF9jcHVfZXhwZWN0X3N1Y2Nlc3MoKQor
+eworCWxvY2FsIGNwdT0kMQorCisJaWYgISBhZGRfY3B1ICRjcHU7IHRoZW4KKwkJZWNobyAkRlVO
+Q05BTUUgJGNwdTogdW5leHBlY3RlZCBmYWlsID4mMgorCWVsaWYgISBjcHVfaXNfb25saW5lICRj
+cHU7IHRoZW4KKwkJZWNobyAkRlVOQ05BTUUgJGNwdTogdW5leHBlY3RlZCBvZmZsaW5lID4mMgor
+CWZpCit9CisKK2FkZF9jcHVfZXhwZWN0X2ZhaWwoKQoreworCWxvY2FsIGNwdT0kMQorCisJaWYg
+YWRkX2NwdSAkY3B1IDI+IC9kZXYvbnVsbDsgdGhlbgorCQllY2hvICRGVU5DTkFNRSAkY3B1OiB1
+bmV4cGVjdGVkIHN1Y2Nlc3MgPiYyCisJZWxpZiAhIGNwdV9pc19vZmZsaW5lICRjcHU7IHRoZW4K
+KwkJZWNobyAkRlVOQ05BTUUgJGNwdTogdW5leHBlY3RlZCBvbmxpbmUgPiYyCisJZmkKK30KKwor
+cmVtb3ZlX2NwdV9leHBlY3Rfc3VjY2VzcygpCit7CisJbG9jYWwgY3B1PSQxCisKKwlpZiAhIHJl
+bW92ZV9jcHUgJGNwdTsgdGhlbgorCQllY2hvICRGVU5DTkFNRSAkY3B1OiB1bmV4cGVjdGVkIGZh
+aWwgPiYyCisJZWxpZiAhIGNwdV9pc19vZmZsaW5lICRjcHU7IHRoZW4KKwkJZWNobyAkRlVOQ05B
+TUUgJGNwdTogdW5leHBlY3RlZCBvZmZsaW5lID4mMgorCWZpCit9CisKK3JlbW92ZV9jcHVfZXhw
+ZWN0X2ZhaWwoKQoreworCWxvY2FsIGNwdT0kMQorCisJaWYgcmVtb3ZlX2NwdSAkY3B1IDI+IC9k
+ZXYvbnVsbDsgdGhlbgorCQllY2hvICRGVU5DTkFNRSAkY3B1OiB1bmV4cGVjdGVkIHN1Y2Nlc3Mg
+PiYyCisJZWxpZiAhIGNwdV9pc19vbmxpbmUgJGNwdTsgdGhlbgorCQllY2hvICRGVU5DTkFNRSAk
+Y3B1OiB1bmV4cGVjdGVkIG9mZmxpbmUgPiYyCisJZmkKK30KKworaWYgWyAkVUlEICE9IDAgXTsg
+dGhlbgorCWVjaG8gbXVzdCBiZSBydW4gYXMgcm9vdCA+JjIKKwlleGl0IDEKK2ZpCisKK2Vycm9y
+PS0xMgorcHJpb3JpdHk9MAorCit3aGlsZSBnZXRvcHRzIGU6cDogb3B0OyBkbworCWNhc2UgJG9w
+dCBpbgorCWUpCisJCWVycm9yPSRPUFRBUkcKKwkJOzsKKwlwKQorCQlwcmlvcml0eT0kT1BUQVJH
+CisJCTs7CisJZXNhYworZG9uZQorCitpZiAhIFsgIiRlcnJvciIgLWdlIC00MDk1IC1hICIkZXJy
+b3IiIC1sdCAwIF07IHRoZW4KKwllY2hvICJlcnJvciBjb2RlIG11c3QgYmUgLTQwOTUgPD0gZXJy
+bm8gPCAwIiA+JjIKKwlleGl0IDEKK2ZpCisKK0RFQlVHRlM9YG1vdW50IC10IGRlYnVnZnMgfCBo
+ZWFkIC0xIHwgYXdrICd7IHByaW50ICQzIH0nYAorCitpZiBbICEgLWQgIiRERUJVR0ZTIiBdOyB0
+aGVuCisJZWNobyBkZWJ1Z2ZzIGlzIG5vdCBtb3VudGVkID4mMgorCWV4aXQgMQorZmkKKworL3Ni
+aW4vbW9kcHJvYmUgLXIgY3B1LW5vdGlmaWVyLWVycm9yLWluamVjdAorL3NiaW4vbW9kcHJvYmUg
+LXEgY3B1LW5vdGlmaWVyLWVycm9yLWluamVjdCBwcmlvcml0eT0kcHJpb3JpdHkKKworaWYgWyAh
+IC1kICRERUJVR0ZTL2NwdS1ub3RpZmllci1lcnJvci1pbmplY3QgXTsgdGhlbgorCWVjaG8gY3B1
+LW5vdGlmaWVyLWVycm9yLWluamVjdCBtb2R1bGUgaXMgbm90IGF2YWlsYWJsZSA+JjIKKwlleGl0
+IDEKK2ZpCisKKyMKKyMgT2ZmbGluZSBhbGwgaG90LXBsdWdnYWJsZSBDUFVzCisjCitlY2hvIDAg
+PiAkREVCVUdGUy9jcHUtbm90aWZpZXItZXJyb3ItaW5qZWN0L0NQVV9ET1dOX1BSRVBBUkUKK2Zv
+ciBjcHUgaW4gYGhvdHBsdWdnYWJsZV9vbmxpbmVfY3B1c2A7IGRvCisJcmVtb3ZlX2NwdV9leHBl
+Y3Rfc3VjY2VzcyAkY3B1Citkb25lCisKKyMKKyMgVGVzdCBDUFUgaG90LWFkZCBlcnJvciBoYW5k
+bGluZyAob2ZmbGluZSA9PiBvbmxpbmUpCisjCitlY2hvICRlcnJvciA+ICRERUJVR0ZTL2NwdS1u
+b3RpZmllci1lcnJvci1pbmplY3QvQ1BVX1VQX1BSRVBBUkUKK2ZvciBjcHUgaW4gYGhvdHBsYWdn
+YWJsZV9vZmZsaW5lX2NwdXNgOyBkbworCWFkZF9jcHVfZXhwZWN0X2ZhaWwgJGNwdQorZG9uZQor
+CisjCisjIE9ubGluZSBhbGwgaG90LXBsdWdnYWJsZSBDUFVzCisjCitlY2hvIDAgPiAkREVCVUdG
+Uy9jcHUtbm90aWZpZXItZXJyb3ItaW5qZWN0L0NQVV9VUF9QUkVQQVJFCitmb3IgY3B1IGluIGBo
+b3RwbGFnZ2FibGVfb2ZmbGluZV9jcHVzYDsgZG8KKwlhZGRfY3B1X2V4cGVjdF9zdWNjZXNzICRj
+cHUKK2RvbmUKKworIworIyBUZXN0IENQVSBob3QtcmVtb3ZlIGVycm9yIGhhbmRsaW5nIChvbmxp
+bmUgPT4gb2ZmbGluZSkKKyMKK2VjaG8gJGVycm9yID4gJERFQlVHRlMvY3B1LW5vdGlmaWVyLWVy
+cm9yLWluamVjdC9DUFVfRE9XTl9QUkVQQVJFCitmb3IgY3B1IGluIGBob3RwbHVnZ2FibGVfb25s
+aW5lX2NwdXNgOyBkbworCXJlbW92ZV9jcHVfZXhwZWN0X2ZhaWwgJGNwdQorZG9uZQorCisvc2Jp
+bi9tb2Rwcm9iZSAtciBjcHUtbm90aWZpZXItZXJyb3ItaW5qZWN0CmRpZmYgLS1naXQgYS90b29s
+cy90ZXN0aW5nL2ZhdWx0LWluamVjdGlvbi9tZW1vcnktbm90aWZpZXIuc2ggYi90b29scy90ZXN0
+aW5nL2ZhdWx0LWluamVjdGlvbi9tZW1vcnktbm90aWZpZXIuc2gKbmV3IGZpbGUgbW9kZSAxMDA3
+NTUKaW5kZXggMDAwMDAwMC4uYjdlN2ZhNQotLS0gL2Rldi9udWxsCisrKyBiL3Rvb2xzL3Rlc3Rp
+bmcvZmF1bHQtaW5qZWN0aW9uL21lbW9yeS1ub3RpZmllci5zaApAQCAtMCwwICsxLDE2MyBAQAor
+IyEvYmluL2Jhc2gKKworIworIyBsaXN0IGFsbCBob3QtcGx1Z2dhYmxlIG1lbW9yeQorIworaG90
+cGx1Z2dhYmxlX21lbW9yeSgpCit7CisJbG9jYWwgc3RhdGU9JHsxOi0uXCp9CisKKwlmb3IgbWVt
+b3J5IGluIC9zeXMvZGV2aWNlcy9zeXN0ZW0vbWVtb3J5L21lbW9yeSo7IGRvCisJCWlmIGdyZXAg
+LXEgMSAkbWVtb3J5L3JlbW92YWJsZSAmJgorCQkgICBncmVwIC1xICRzdGF0ZSAkbWVtb3J5L3N0
+YXRlOyB0aGVuCisJCQllY2hvICR7bWVtb3J5IyMvKi9tZW1vcnl9CisJCWZpCisJZG9uZQorfQor
+Citob3RwbGFnZ2FibGVfb2ZmbGluZV9tZW1vcnkoKQoreworCWhvdHBsdWdnYWJsZV9tZW1vcnkg
+b2ZmbGluZQorfQorCitob3RwbHVnZ2FibGVfb25saW5lX21lbW9yeSgpCit7CisJaG90cGx1Z2dh
+YmxlX21lbW9yeSBvbmxpbmUKK30KKworbWVtb3J5X2lzX29ubGluZSgpCit7CisJZ3JlcCAtcSBv
+bmxpbmUgL3N5cy9kZXZpY2VzL3N5c3RlbS9tZW1vcnkvbWVtb3J5JDEvc3RhdGUKK30KKworbWVt
+b3J5X2lzX29mZmxpbmUoKQoreworCWdyZXAgLXEgb2ZmbGluZSAvc3lzL2RldmljZXMvc3lzdGVt
+L21lbW9yeS9tZW1vcnkkMS9zdGF0ZQorfQorCithZGRfbWVtb3J5KCkKK3sKKwllY2hvIG9ubGlu
+ZSA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vbWVtb3J5L21lbW9yeSQxL3N0YXRlCit9CisKK3JlbW92
+ZV9tZW1vcnkoKQoreworCWVjaG8gb2ZmbGluZSA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vbWVtb3J5
+L21lbW9yeSQxL3N0YXRlCit9CisKK2FkZF9tZW1vcnlfZXhwZWN0X3N1Y2Nlc3MoKQoreworCWxv
+Y2FsIG1lbW9yeT0kMQorCisJaWYgISBhZGRfbWVtb3J5ICRtZW1vcnk7IHRoZW4KKwkJZWNobyAk
+RlVOQ05BTUUgJG1lbW9yeTogdW5leHBlY3RlZCBmYWlsID4mMgorCWVsaWYgISBtZW1vcnlfaXNf
+b25saW5lICRtZW1vcnk7IHRoZW4KKwkJZWNobyAkRlVOQ05BTUUgJG1lbW9yeTogdW5leHBlY3Rl
+ZCBvZmZsaW5lID4mMgorCWZpCit9CisKK2FkZF9tZW1vcnlfZXhwZWN0X2ZhaWwoKQoreworCWxv
+Y2FsIG1lbW9yeT0kMQorCisJaWYgYWRkX21lbW9yeSAkbWVtb3J5IDI+IC9kZXYvbnVsbDsgdGhl
+bgorCQllY2hvICRGVU5DTkFNRSAkbWVtb3J5OiB1bmV4cGVjdGVkIHN1Y2Nlc3MgPiYyCisJZWxp
+ZiAhIG1lbW9yeV9pc19vZmZsaW5lICRtZW1vcnk7IHRoZW4KKwkJZWNobyAkRlVOQ05BTUUgJG1l
+bW9yeTogdW5leHBlY3RlZCBvbmxpbmUgPiYyCisJZmkKK30KKworcmVtb3ZlX21lbW9yeV9leHBl
+Y3Rfc3VjY2VzcygpCit7CisJbG9jYWwgbWVtb3J5PSQxCisKKwlpZiAhIHJlbW92ZV9tZW1vcnkg
+JG1lbW9yeTsgdGhlbgorCQllY2hvICRGVU5DTkFNRSAkbWVtb3J5OiB1bmV4cGVjdGVkIGZhaWwg
+PiYyCisJZWxpZiAhIG1lbW9yeV9pc19vZmZsaW5lICRtZW1vcnk7IHRoZW4KKwkJZWNobyAkRlVO
+Q05BTUUgJG1lbW9yeTogdW5leHBlY3RlZCBvZmZsaW5lID4mMgorCWZpCit9CisKK3JlbW92ZV9t
+ZW1vcnlfZXhwZWN0X2ZhaWwoKQoreworCWxvY2FsIG1lbW9yeT0kMQorCisJaWYgcmVtb3ZlX21l
+bW9yeSAkbWVtb3J5IDI+IC9kZXYvbnVsbDsgdGhlbgorCQllY2hvICRGVU5DTkFNRSAkbWVtb3J5
+OiB1bmV4cGVjdGVkIHN1Y2Nlc3MgPiYyCisJZWxpZiAhIG1lbW9yeV9pc19vbmxpbmUgJG1lbW9y
+eTsgdGhlbgorCQllY2hvICRGVU5DTkFNRSAkbWVtb3J5OiB1bmV4cGVjdGVkIG9mZmxpbmUgPiYy
+CisJZmkKK30KKworaWYgWyAkVUlEICE9IDAgXTsgdGhlbgorCWVjaG8gbXVzdCBiZSBydW4gYXMg
+cm9vdCA+JjIKKwlleGl0IDEKK2ZpCisKK2Vycm9yPS0xMgorcHJpb3JpdHk9MAorCit3aGlsZSBn
+ZXRvcHRzIGU6cDogb3B0OyBkbworCWNhc2UgJG9wdCBpbgorCWUpCisJCWVycm9yPSRPUFRBUkcK
+KwkJOzsKKwlwKQorCQlwcmlvcml0eT0kT1BUQVJHCisJCTs7CisJZXNhYworZG9uZQorCitpZiAh
+IFsgIiRlcnJvciIgLWdlIC00MDk1IC1hICIkZXJyb3IiIC1sdCAwIF07IHRoZW4KKwllY2hvICJl
+cnJvciBjb2RlIG11c3QgYmUgLTQwOTUgPD0gZXJybm8gPCAwIiA+JjIKKwlleGl0IDEKK2ZpCisK
+K0RFQlVHRlM9YG1vdW50IC10IGRlYnVnZnMgfCBoZWFkIC0xIHwgYXdrICd7IHByaW50ICQzIH0n
+YAorCitpZiBbICEgLWQgIiRERUJVR0ZTIiBdOyB0aGVuCisJZWNobyBkZWJ1Z2ZzIGlzIG5vdCBt
+b3VudGVkID4mMgorCWV4aXQgMQorZmkKKworL3NiaW4vbW9kcHJvYmUgLXIgbWVtb3J5LW5vdGlm
+aWVyLWVycm9yLWluamVjdAorL3NiaW4vbW9kcHJvYmUgLXEgbWVtb3J5LW5vdGlmaWVyLWVycm9y
+LWluamVjdCBwcmlvcml0eT0kcHJpb3JpdHkKKworaWYgWyAhIC1kICRERUJVR0ZTL21lbW9yeS1u
+b3RpZmllci1lcnJvci1pbmplY3QgXTsgdGhlbgorCWVjaG8gbWVtb3J5LW5vdGlmaWVyLWVycm9y
+LWluamVjdCBtb2R1bGUgaXMgbm90IGF2YWlsYWJsZSA+JjIKKwlleGl0IDEKK2ZpCisKKyMKKyMg
+T2ZmbGluZSBhbGwgaG90LXBsdWdnYWJsZSBtZW1vcnkKKyMKK2VjaG8gMCA+ICRERUJVR0ZTL21l
+bW9yeS1ub3RpZmllci1lcnJvci1pbmplY3QvTUVNX0dPSU5HX09GRkxJTkUKK2ZvciBtZW1vcnkg
+aW4gYGhvdHBsdWdnYWJsZV9vbmxpbmVfbWVtb3J5YDsgZG8KKwlyZW1vdmVfbWVtb3J5X2V4cGVj
+dF9zdWNjZXNzICRtZW1vcnkKK2RvbmUKKworIworIyBUZXN0IG1lbW9yeSBob3QtYWRkIGVycm9y
+IGhhbmRsaW5nIChvZmZsaW5lID0+IG9ubGluZSkKKyMKK2VjaG8gJGVycm9yID4gJERFQlVHRlMv
+bWVtb3J5LW5vdGlmaWVyLWVycm9yLWluamVjdC9NRU1fR09JTkdfT05MSU5FCitmb3IgbWVtb3J5
+IGluIGBob3RwbGFnZ2FibGVfb2ZmbGluZV9tZW1vcnlgOyBkbworCWFkZF9tZW1vcnlfZXhwZWN0
+X2ZhaWwgJG1lbW9yeQorZG9uZQorCisjCisjIE9ubGluZSBhbGwgaG90LXBsdWdnYWJsZSBtZW1v
+cnkKKyMKK2VjaG8gMCA+ICRERUJVR0ZTL21lbW9yeS1ub3RpZmllci1lcnJvci1pbmplY3QvTUVN
+X0dPSU5HX09OTElORQorZm9yIG1lbW9yeSBpbiBgaG90cGxhZ2dhYmxlX29mZmxpbmVfbWVtb3J5
+YDsgZG8KKwlhZGRfbWVtb3J5X2V4cGVjdF9zdWNjZXNzICRtZW1vcnkKK2RvbmUKKworIworIyBU
+ZXN0IG1lbW9yeSBob3QtcmVtb3ZlIGVycm9yIGhhbmRsaW5nIChvbmxpbmUgPT4gb2ZmbGluZSkK
+KyMKK2VjaG8gJGVycm9yID4gJERFQlVHRlMvbWVtb3J5LW5vdGlmaWVyLWVycm9yLWluamVjdC9N
+RU1fR09JTkdfT0ZGTElORQorZm9yIG1lbW9yeSBpbiBgaG90cGx1Z2dhYmxlX29ubGluZV9tZW1v
+cnlgOyBkbworCXJlbW92ZV9tZW1vcnlfZXhwZWN0X2ZhaWwgJG1lbW9yeQorZG9uZQorCisvc2Jp
+bi9tb2Rwcm9iZSAtciBtZW1vcnktbm90aWZpZXItZXJyb3ItaW5qZWN0Ci0tIAoxLjcuNC40Cgpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
+YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
+aXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
