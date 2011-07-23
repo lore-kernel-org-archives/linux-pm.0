@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: runtime: add might_sleep to PM runtime
-	functions
-Date: Sun, 24 Jul 2011 00:57:00 +0200
-Message-ID: <201107240057.00197.rjw@sisk.pl>
-References: <1311396967-16721-1-git-send-email-ccross@android.com>
+Subject: Re: [RFC/PATCH v2] PM / Runtime: allow _put_sync() from
+	interrupts-disabled context
+Date: Sun, 24 Jul 2011 01:02:09 +0200
+Message-ID: <201107240102.09698.rjw__13773.0700932027$1311462099$gmane$org@sisk.pl>
+References: <1311371188-28879-1-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1311396967-16721-1-git-send-email-ccross@android.com>
+In-Reply-To: <1311371188-28879-1-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,130 +18,99 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Colin Cross <ccross@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, July 23, 2011, Colin Cross wrote:
-> The list of functions that can be called in atomic context is
-> non-intuitive (pm_runtime_put_sync can not, but
-> pm_runtime_put_sync_suspend can, if pm_runtime_irq_safe has
-> been called?).
-
-However, this behavior is documented.
-
-Also, if you have a clean use case for calling rpm_idle() with interrupts
-off, it can be modified to work in analogy with rpm_suspend() in that respect.
-
-> The code is actively misleading - the entry
-> points all start with spin_lock_irqsave, suggesting they
-> are safe to call in atomic context, but may later
-> enable interrupts.
-
-May I say it is this way for a reason?
-
-> Add might_sleep_if to all the __pm_runtime_* entry points
-> to enforce correct usage.
-
-I'm not sure how this makes things better.
-
-> Also add pm_runtime_put_sync_autosuspend to the list of
-> functions that can be called in atomic context.
-
-OK
-
-In addition to that rpm_idle() is missing the __releases __acquires
-annotations.
-
-> Signed-off-by: Colin Cross <ccross@android.com>
-> ---
->  Documentation/power/runtime_pm.txt |    1 +
->  drivers/base/power/runtime.c       |   16 ++++++++++++++--
->  2 files changed, 15 insertions(+), 2 deletions(-)
+On Friday, July 22, 2011, Kevin Hilman wrote:
+> Currently the use of pm_runtime_put_sync() is not safe from
+> interrupts-disabled context because rpm_idle() will release the
+> spinlock and enable interrupts for the idle callbacks.  This enables
+> interrupts during a time where interrupts were expected to be
+> disabled, and can have strange side effects on drivers that expected
+> interrupts to be disabled.
 > 
-> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> index b24875b..22852b3 100644
-> --- a/Documentation/power/runtime_pm.txt
-> +++ b/Documentation/power/runtime_pm.txt
-> @@ -469,6 +469,7 @@ pm_runtime_autosuspend()
->  pm_runtime_resume()
->  pm_runtime_get_sync()
->  pm_runtime_put_sync_suspend()
-> +pm_runtime_put_sync_autosuspend()
->  
->  5. Run-time PM Initialization, Device Probing and Removal
->  
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 0d4587b..fdc4567 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -732,6 +732,8 @@ int __pm_runtime_idle(struct device *dev, int rpmflags)
->  	unsigned long flags;
->  	int retval;
->  
-> +	might_sleep_if(!(rpmflags & RPM_ASYNC));
-> +
->  	if (rpmflags & RPM_GET_PUT) {
->  		if (!atomic_dec_and_test(&dev->power.usage_count))
->  			return 0;
-> @@ -754,13 +756,16 @@ EXPORT_SYMBOL_GPL(__pm_runtime_idle);
->   * return immediately if it is larger than zero.  Then carry out a suspend,
->   * either synchronous or asynchronous.
->   *
-> - * This routine may be called in atomic context if the RPM_ASYNC flag is set.
-> + * This routine may be called in atomic context if the RPM_ASYNC flag is set,
-> + * or if pm_runtime_irq_safe() has been called.
->   */
->  int __pm_runtime_suspend(struct device *dev, int rpmflags)
->  {
->  	unsigned long flags;
->  	int retval;
->  
-> +	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
-> +
->  	if (rpmflags & RPM_GET_PUT) {
->  		if (!atomic_dec_and_test(&dev->power.usage_count))
->  			return 0;
-> @@ -782,13 +787,16 @@ EXPORT_SYMBOL_GPL(__pm_runtime_suspend);
->   * If the RPM_GET_PUT flag is set, increment the device's usage count.  Then
->   * carry out a resume, either synchronous or asynchronous.
->   *
-> - * This routine may be called in atomic context if the RPM_ASYNC flag is set.
-> + * This routine may be called in atomic context if the RPM_ASYNC flag is set,
-> + * or if pm_runtime_irq_safe() has been called.
->   */
->  int __pm_runtime_resume(struct device *dev, int rpmflags)
->  {
->  	unsigned long flags;
->  	int retval;
->  
-> +	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
-> +
->  	if (rpmflags & RPM_GET_PUT)
->  		atomic_inc(&dev->power.usage_count);
->  
-> @@ -978,6 +986,8 @@ EXPORT_SYMBOL_GPL(pm_runtime_barrier);
->   */
->  void __pm_runtime_disable(struct device *dev, bool check_resume)
->  {
-> +	might_sleep();
-> +
-
-Well, it's not correct to call spin_lock_irq() from interrupt context anyway.
-
->  	spin_lock_irq(&dev->power.lock);
->  
->  	if (dev->power.disable_depth > 0) {
-> @@ -1184,6 +1194,8 @@ void __pm_runtime_use_autosuspend(struct device *dev, bool use)
->  {
->  	int old_delay, old_use;
->  
-> +	might_sleep();
-> +
->  	spin_lock_irq(&dev->power.lock);
->  	old_delay = dev->power.autosuspend_delay;
->  	old_use = dev->power.use_autosuspend;
+> This is not a bug since the documentation clearly states that only
+> _put_sync_suspend() is safe in IRQ-safe mode.
 > 
+> However, pm_runtime_put_sync() could be made safe when in IRQ-safe
+> mode by releasing the spinlock but not re-enabling interrupts, which
+> is what this patch aims to do.
+> 
+> Problem was found when using some buggy drivers that set
+> pm_runtime_irq_safe() and used _put_sync() in interrupts-disabled
+> context.
+> 
+> The offending drivers have been fixed to use _put_sync_suspend(),
+> But this patch is an RFC to see if it might make sense to allow
+> using _put_sync() from interrupts-disabled context.
+
+OK, I'm going to take this for 3.2.
 
 Thanks,
 Rafael
+
+
+> Reported-by: Colin Cross <ccross@google.com>
+> Tested-by: Nishanth Menon <nm@ti.com>
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
+> ---
+> v2: update documentation also
+> 
+>  Documentation/power/runtime_pm.txt |   10 +++++-----
+>  drivers/base/power/runtime.c       |   10 ++++++++--
+>  2 files changed, 13 insertions(+), 7 deletions(-)
+> 
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 14dd3c6..4ce5450 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -54,11 +54,10 @@ referred to as subsystem-level callbacks in what follows.
+>  By default, the callbacks are always invoked in process context with interrupts
+>  enabled.  However, subsystems can use the pm_runtime_irq_safe() helper function
+>  to tell the PM core that a device's ->runtime_suspend() and ->runtime_resume()
+> -callbacks should be invoked in atomic context with interrupts disabled
+> -(->runtime_idle() is still invoked the default way).  This implies that these
+> -callback routines must not block or sleep, but it also means that the
+> -synchronous helper functions listed at the end of Section 4 can be used within
+> -an interrupt handler or in an atomic context.
+> +callbacks should be invoked in atomic context with interrupts disabled.
+> +This implies that these callback routines must not block or sleep, but it also
+> +means that the synchronous helper functions listed at the end of Section 4 can
+> +be used within an interrupt handler or in an atomic context.
+>  
+>  The subsystem-level suspend callback is _entirely_ _responsible_ for handling
+>  the suspend of the device as appropriate, which may, but need not include
+> @@ -483,6 +482,7 @@ pm_runtime_suspend()
+>  pm_runtime_autosuspend()
+>  pm_runtime_resume()
+>  pm_runtime_get_sync()
+> +pm_runtime_put_sync()
+>  pm_runtime_put_sync_suspend()
+>  
+>  5. Runtime PM Initialization, Device Probing and Removal
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 8dc247c..acb3f83 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -226,11 +226,17 @@ static int rpm_idle(struct device *dev, int rpmflags)
+>  		callback = NULL;
+>  
+>  	if (callback) {
+> -		spin_unlock_irq(&dev->power.lock);
+> +		if (dev->power.irq_safe)
+> +			spin_unlock(&dev->power.lock);
+> +		else
+> +			spin_unlock_irq(&dev->power.lock);
+>  
+>  		callback(dev);
+>  
+> -		spin_lock_irq(&dev->power.lock);
+> +		if (dev->power.irq_safe)
+> +			spin_lock(&dev->power.lock);
+> +		else
+> +			spin_lock_irq(&dev->power.lock);
+>  	}
+>  
+>  	dev->power.idle_notification = false;
+> 
