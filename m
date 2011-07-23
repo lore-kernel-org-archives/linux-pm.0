@@ -1,12 +1,13 @@
-From: Colin Cross <ccross@android.com>
-Subject: [PATCH] PM: runtime: add might_sleep to PM runtime
-	functions
-Date: Fri, 22 Jul 2011 21:56:07 -0700
-Message-ID: <1311396967-16721-1-git-send-email-ccross@android.com>
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [PATCH v3 1/6] fault-injection: notifier error injection
+Date: Sat, 23 Jul 2011 17:50:55 +0900
+Message-ID: <1311411060-30124-2-git-send-email-akinobu.mita__24543.9182654538$1311411044$gmane$org@gmail.com>
+References: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,108 +17,190 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-The list of functions that can be called in atomic context is
-non-intuitive (pm_runtime_put_sync can not, but
-pm_runtime_put_sync_suspend can, if pm_runtime_irq_safe has
-been called?).  The code is actively misleading - the entry
-points all start with spin_lock_irqsave, suggesting they
-are safe to call in atomic context, but may later
-enable interrupts.
+The notifier error injection provides the ability to inject artifical
+errors to specified notifier chain callbacks.  It is useful to test the
+error handling of notifier call chain failures.
 
-Add might_sleep_if to all the __pm_runtime_* entry points
-to enforce correct usage.
+This adds common basic functions to define which type of events can be
+fail and to initialize the debugfs interface to control what error code
+should be returned and which event should be failed.
 
-Also add pm_runtime_put_sync_autosuspend to the list of
-functions that can be called in atomic context.
-
-Signed-off-by: Colin Cross <ccross@android.com>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Greg KH <greg@kroah.com>
+Cc: linux-mm@kvack.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- Documentation/power/runtime_pm.txt |    1 +
- drivers/base/power/runtime.c       |   16 ++++++++++++++--
- 2 files changed, 15 insertions(+), 2 deletions(-)
+* v3
+- export err_inject_notifier_block_{init,cleanup} for modules
 
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index b24875b..22852b3 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -469,6 +469,7 @@ pm_runtime_autosuspend()
- pm_runtime_resume()
- pm_runtime_get_sync()
- pm_runtime_put_sync_suspend()
-+pm_runtime_put_sync_autosuspend()
+ include/linux/notifier.h |   25 ++++++++++++++
+ kernel/notifier.c        |   83 ++++++++++++++++++++++++++++++++++++++++++++++
+ lib/Kconfig.debug        |   11 ++++++
+ 3 files changed, 119 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index c0688b0..51882d6 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -278,5 +278,30 @@ extern struct blocking_notifier_head reboot_notifier_list;
+ #define VT_UPDATE		0x0004 /* A bigger update occurred */
+ #define VT_PREWRITE		0x0005 /* A char is about to be written to the console */
  
- 5. Run-time PM Initialization, Device Probing and Removal
- 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 0d4587b..fdc4567 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -732,6 +732,8 @@ int __pm_runtime_idle(struct device *dev, int rpmflags)
- 	unsigned long flags;
- 	int retval;
- 
-+	might_sleep_if(!(rpmflags & RPM_ASYNC));
++#ifdef CONFIG_NOTIFIER_ERROR_INJECTION
 +
- 	if (rpmflags & RPM_GET_PUT) {
- 		if (!atomic_dec_and_test(&dev->power.usage_count))
- 			return 0;
-@@ -754,13 +756,16 @@ EXPORT_SYMBOL_GPL(__pm_runtime_idle);
-  * return immediately if it is larger than zero.  Then carry out a suspend,
-  * either synchronous or asynchronous.
-  *
-- * This routine may be called in atomic context if the RPM_ASYNC flag is set.
-+ * This routine may be called in atomic context if the RPM_ASYNC flag is set,
-+ * or if pm_runtime_irq_safe() has been called.
-  */
- int __pm_runtime_suspend(struct device *dev, int rpmflags)
- {
- 	unsigned long flags;
- 	int retval;
- 
-+	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++struct err_inject_notifier_action {
++	unsigned long val;
++	int error;
++	const char *name;
++};
 +
- 	if (rpmflags & RPM_GET_PUT) {
- 		if (!atomic_dec_and_test(&dev->power.usage_count))
- 			return 0;
-@@ -782,13 +787,16 @@ EXPORT_SYMBOL_GPL(__pm_runtime_suspend);
-  * If the RPM_GET_PUT flag is set, increment the device's usage count.  Then
-  * carry out a resume, either synchronous or asynchronous.
-  *
-- * This routine may be called in atomic context if the RPM_ASYNC flag is set.
-+ * This routine may be called in atomic context if the RPM_ASYNC flag is set,
-+ * or if pm_runtime_irq_safe() has been called.
-  */
- int __pm_runtime_resume(struct device *dev, int rpmflags)
- {
- 	unsigned long flags;
- 	int retval;
- 
-+	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++#define ERR_INJECT_NOTIFIER_ACTION(action)	\
++	.name = #action, .val = (action),
 +
- 	if (rpmflags & RPM_GET_PUT)
- 		atomic_inc(&dev->power.usage_count);
- 
-@@ -978,6 +986,8 @@ EXPORT_SYMBOL_GPL(pm_runtime_barrier);
-  */
- void __pm_runtime_disable(struct device *dev, bool check_resume)
- {
-+	might_sleep();
++struct err_inject_notifier_block {
++	struct notifier_block nb;
++	struct dentry *dir;
++	struct err_inject_notifier_action actions[];
++	/* The last slot must be terminated with zero sentinel */
++};
 +
- 	spin_lock_irq(&dev->power.lock);
- 
- 	if (dev->power.disable_depth > 0) {
-@@ -1184,6 +1194,8 @@ void __pm_runtime_use_autosuspend(struct device *dev, bool use)
- {
- 	int old_delay, old_use;
- 
-+	might_sleep();
++extern int err_inject_notifier_block_init(struct err_inject_notifier_block *enb,
++				const char *name, int priority);
++extern void err_inject_notifier_block_cleanup(
++				struct err_inject_notifier_block *enb);
 +
- 	spin_lock_irq(&dev->power.lock);
- 	old_delay = dev->power.autosuspend_delay;
- 	old_use = dev->power.use_autosuspend;
++#endif /* CONFIG_NOTIFIER_ERROR_INJECTION */
++
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_NOTIFIER_H */
+diff --git a/kernel/notifier.c b/kernel/notifier.c
+index 2488ba7..8dcb2cc 100644
+--- a/kernel/notifier.c
++++ b/kernel/notifier.c
+@@ -5,6 +5,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/vmalloc.h>
+ #include <linux/reboot.h>
++#include <linux/debugfs.h>
+ 
+ /*
+  *	Notifier list for kernel code which wants to be called
+@@ -584,3 +585,85 @@ int unregister_die_notifier(struct notifier_block *nb)
+ 	return atomic_notifier_chain_unregister(&die_chain, nb);
+ }
+ EXPORT_SYMBOL_GPL(unregister_die_notifier);
++
++#ifdef CONFIG_NOTIFIER_ERROR_INJECTION
++
++static int debugfs_errno_set(void *data, u64 val)
++{
++	*(int *)data = clamp_t(int, val, -MAX_ERRNO, 0);
++	return 0;
++}
++
++static int debugfs_errno_get(void *data, u64 *val)
++{
++	*val = *(int *)data;
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(fops_errno, debugfs_errno_get, debugfs_errno_set,
++			"%lld\n");
++
++static struct dentry *debugfs_create_errno(const char *name, mode_t mode,
++				struct dentry *parent, int *value)
++{
++	return debugfs_create_file(name, mode, parent, value, &fops_errno);
++}
++
++static int err_inject_notifier_callback(struct notifier_block *nb,
++				unsigned long val, void *p)
++{
++	int err = 0;
++	struct err_inject_notifier_block *enb =
++		container_of(nb, struct err_inject_notifier_block, nb);
++	struct err_inject_notifier_action *action;
++
++	for (action = enb->actions; action->name; action++) {
++		if (action->val == val) {
++			err = action->error;
++			break;
++		}
++	}
++	if (err) {
++		printk(KERN_INFO "Injecting error (%d) to %s\n",
++			err, action->name);
++	}
++
++	return notifier_from_errno(err);
++}
++
++int err_inject_notifier_block_init(struct err_inject_notifier_block *enb,
++				const char *name, int priority)
++{
++	struct err_inject_notifier_action *action;
++	mode_t mode = S_IFREG | S_IRUSR | S_IWUSR;
++
++	enb->nb.notifier_call = err_inject_notifier_callback;
++	enb->nb.priority = priority;
++
++	enb->dir = debugfs_create_dir(name, NULL);
++	if (!enb->dir)
++		return -ENOMEM;
++
++	for (action = enb->actions; action->name; action++) {
++		/*
++		 * Create debugfs r/w file containing action->error. If
++		 * notifier call chain is called with action->val, it will
++		 * fail with the error code
++		 */
++		if (!debugfs_create_errno(action->name, mode, enb->dir,
++					&action->error)) {
++			debugfs_remove_recursive(enb->dir);
++			return -ENOMEM;
++		}
++	}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(err_inject_notifier_block_init);
++
++void err_inject_notifier_block_cleanup(struct err_inject_notifier_block *enb)
++{
++	debugfs_remove_recursive(enb->dir);
++}
++EXPORT_SYMBOL_GPL(err_inject_notifier_block_cleanup);
++
++#endif /* CONFIG_NOTIFIER_ERROR_INJECTION */
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index c0cb9c4..2a62c5a 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -1021,6 +1021,17 @@ config LKDTM
+ 	Documentation on how to use the module can be found in
+ 	Documentation/fault-injection/provoke-crashes.txt
+ 
++config NOTIFIER_ERROR_INJECTION
++	bool "Notifier error injection"
++	depends on DEBUG_KERNEL
++	select DEBUG_FS
++	help
++	  This option provides the ability to inject artifical errors to
++	  specified notifier chain callbacks. It is useful to test the error
++	  handling of notifier call chain failures.
++
++	  Say N if unsure.
++
+ config CPU_NOTIFIER_ERROR_INJECT
+ 	tristate "CPU notifier error injection module"
+ 	depends on HOTPLUG_CPU && DEBUG_KERNEL
 -- 
-1.7.4.1
+1.7.4.4
