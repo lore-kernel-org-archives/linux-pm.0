@@ -1,7 +1,8 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management updates for 3.1
-Date: Sat, 23 Jul 2011 00:27:54 +0200
-Message-ID: <201107230027.54769.rjw__21963.7949871414$1311373800$gmane$org@sisk.pl>
+From: Colin Cross <ccross@android.com>
+Subject: [PATCH] PM: runtime: add might_sleep to PM runtime
+	functions
+Date: Fri, 22 Jul 2011 21:56:07 -0700
+Message-ID: <1311396967-16721-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,138 +16,108 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+The list of functions that can be called in atomic context is
+non-intuitive (pm_runtime_put_sync can not, but
+pm_runtime_put_sync_suspend can, if pm_runtime_irq_safe has
+been called?).  The code is actively misleading - the entry
+points all start with spin_lock_irqsave, suggesting they
+are safe to call in atomic context, but may later
+enable interrupts.
 
-Please pull power management updates for 3.1 from:
+Add might_sleep_if to all the __pm_runtime_* entry points
+to enforce correct usage.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+Also add pm_runtime_put_sync_autosuspend to the list of
+functions that can be called in atomic context.
 
-They include:
+Signed-off-by: Colin Cross <ccross@android.com>
+---
+ Documentation/power/runtime_pm.txt |    1 +
+ drivers/base/power/runtime.c       |   16 ++++++++++++++--
+ 2 files changed, 15 insertions(+), 2 deletions(-)
 
-* Introduction of core PM code to support power domains and related
-  modifications of the ARM shmobile platform which is its first user (the
-  Samsung exynos4 platform is going to use it too).
-
-* Modifications of the runtime PM framework clarifying its interactions with
-  the core system suspend/resume and hibernate code and related changes of the
-  ARM OMAP platform.
-
-* Various PM fixes and extensions.
-
-
- Documentation/power/devices.txt               |   14 +-
- Documentation/power/opp.txt                   |    2 +
- Documentation/power/runtime_pm.txt            |  229 +++--
- arch/arm/Kconfig                              |    1 +
- arch/arm/mach-omap1/pm_bus.c                  |   14 +-
- arch/arm/mach-omap2/gpio.c                    |    2 +
- arch/arm/mach-omap2/serial.c                  |    1 +
- arch/arm/mach-shmobile/board-ap4evb.c         |    5 +
- arch/arm/mach-shmobile/board-mackerel.c       |    5 +
- arch/arm/mach-shmobile/clock-sh7372.c         |    1 +
- arch/arm/mach-shmobile/include/mach/sh7372.h  |   29 +
- arch/arm/mach-shmobile/pm-sh7372.c            |  160 ++++
- arch/arm/mach-shmobile/pm_runtime.c           |   22 +-
- arch/arm/mach-shmobile/setup-sh7372.c         |   11 +
- arch/arm/plat-omap/include/plat/omap_device.h |    9 +
- arch/arm/plat-omap/omap_device.c              |   53 +-
- arch/sh/kernel/cpu/shmobile/pm_runtime.c      |    6 +-
- drivers/base/power/Makefile                   |    1 +
- drivers/base/power/clock_ops.c                |  234 +++--
- drivers/base/power/domain.c                   | 1273 +++++++++++++++++++++++++
- drivers/base/power/generic_ops.c              |   98 ++-
- drivers/base/power/main.c                     |   65 +-
- drivers/base/power/opp.c                      |   17 +
- drivers/base/power/runtime.c                  |   89 +-
- drivers/base/power/sysfs.c                    |    6 +-
- drivers/base/power/trace.c                    |    2 +-
- drivers/char/apm-emulation.c                  |    2 +-
- drivers/pci/pci-driver.c                      |   18 +-
- drivers/s390/char/vmwatchdog.c                |    4 +-
- drivers/s390/cio/css.c                        |    8 +-
- drivers/scsi/scsi_pm.c                        |    8 +-
- include/linux/device.h                        |    4 +-
- include/linux/opp.h                           |    8 +
- include/linux/pm.h                            |   10 +-
- include/linux/pm_domain.h                     |  108 +++
- include/linux/pm_runtime.h                    |   38 +-
- include/linux/suspend.h                       |    8 +
- kernel/power/Kconfig                          |    8 +-
- kernel/power/main.c                           |    5 +-
- kernel/power/suspend.c                        |   20 +-
- 40 files changed, 2274 insertions(+), 324 deletions(-)
-
----------------
-
-Akinobu Mita (1):
-      PM: Improve error code of pm_notifier_call_chain()
-
-Alan Stern (1):
-      PM / Runtime: Prevent runtime_resume from racing with probe
-
-Kevin Hilman (6):
-      PM / Runtime: Add new helper function: pm_runtime_status_suspended()
-      OMAP: PM: omap_device: conditionally use PM domain runtime helpers
-      OMAP: PM: omap_device: add system PM methods for PM domain handling
-      OMAP: PM: omap_device: add API to disable idle on suspend
-      OMAP: PM: disable idle on suspend for GPIO and UART
-      PM / Suspend: Export suspend_set_ops, suspend_valid_only_mem
-
-Kuninori Morimoto (2):
-      ARM: mach-shmobile: sh7372: make sure that fsi is peripheral of spu2
-      ARM: mach-shmobile: sh7372 A4MP support
-
-Magnus Damm (9):
-      ARM: mach-shmobile: sh7372 A4LC support for AP4EVB
-      ARM: mach-shmobile: sh7372 A3RV support
-      ARM: mach-shmobile: sh7372 A3RI support
-      ARM: mach-shmobile: sh7372 A3SG support
-      ARM: mach-shmobile: sh7372 D4 support
-      ARM: mach-shmobile: Runtime PM late init callback
-      ARM: mach-shmobile: sh7372 late pm domain off
-      PM / Domains: Export pm_genpd_poweron() in header
-      ARM: mach-shmobile: sh7372 A3RV requires A4LC
-
-MyungJoo Ham (1):
-      PM / Suspend: Add .suspend_again() callback to suspend_ops
-
-Nishanth Menon (1):
-      PM / OPP: Introduce function to free cpufreq table
-
-Rafael J. Wysocki (29):
-      PM / Domains: Rename struct dev_power_domain to struct dev_pm_domain
-      PM: subsys_data in struct dev_pm_info need not depend on RM_RUNTIME
-      PM / Domains: Support for generic I/O PM domains (v8)
-      PM: Introduce generic "noirq" callback routines for subsystems (v2)
-      PM / Domains: Move code from under #ifdef CONFIG_PM_RUNTIME (v2)
-      PM / Domains: System-wide transitions support for generic domains (v5)
-      PM / Domains: Wakeup devices support for system sleep transitions
-      PM: Allow the clocks management code to be used during system suspend
-      PM: Rename clock management functions
-      ARM / shmobile: Support for I/O power domains for SH7372 (v9)
-      PM / Runtime: Update documentation of interactions with system sleep
-      PM / Runtime: Return special error code if runtime PM is disabled
-      PCI / PM: Detect early wakeup in pci_pm_prepare()
-      PM: Limit race conditions between runtime PM and system sleep (v2)
-      PM / Runtime: Improve documentation of enable, disable and barrier
-      PM / Runtime: Replace "run-time" with "runtime" in documentation
-      PM / Domains: Set device state to "active" during system resume
-      PM / Domains: Make failing pm_genpd_prepare() clean up properly
-      PM / Domains: Do not execute device callbacks under locks
-      PM / Domains: Allow callbacks to execute all runtime PM helpers
-      PM / Domains: Do not restore all devices on power off error
-      PM / Domains: Improve handling of wakeup devices during system suspend
-      PM / Domains: Queue up power off work only if it is not pending
-      PM / Domains: Introduce function to power off all unused PM domains
-      ARM / shmobile: Use pm_genpd_poweroff_unused()
-      ARM / shmobile: Use genpd_queue_power_off_work()
-      PM / Domains: Take .power_off() error code into account
-      ARM / shmobile: Return -EBUSY from A4LC power off if A3RV is active
-      PM: Add "RTC" to PM trace time stamps to avoid confusion
-
-ShuoX Liu (1):
-      PM / Runtime: Consistent utilization of deferred_resume
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index b24875b..22852b3 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -469,6 +469,7 @@ pm_runtime_autosuspend()
+ pm_runtime_resume()
+ pm_runtime_get_sync()
+ pm_runtime_put_sync_suspend()
++pm_runtime_put_sync_autosuspend()
+ 
+ 5. Run-time PM Initialization, Device Probing and Removal
+ 
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 0d4587b..fdc4567 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -732,6 +732,8 @@ int __pm_runtime_idle(struct device *dev, int rpmflags)
+ 	unsigned long flags;
+ 	int retval;
+ 
++	might_sleep_if(!(rpmflags & RPM_ASYNC));
++
+ 	if (rpmflags & RPM_GET_PUT) {
+ 		if (!atomic_dec_and_test(&dev->power.usage_count))
+ 			return 0;
+@@ -754,13 +756,16 @@ EXPORT_SYMBOL_GPL(__pm_runtime_idle);
+  * return immediately if it is larger than zero.  Then carry out a suspend,
+  * either synchronous or asynchronous.
+  *
+- * This routine may be called in atomic context if the RPM_ASYNC flag is set.
++ * This routine may be called in atomic context if the RPM_ASYNC flag is set,
++ * or if pm_runtime_irq_safe() has been called.
+  */
+ int __pm_runtime_suspend(struct device *dev, int rpmflags)
+ {
+ 	unsigned long flags;
+ 	int retval;
+ 
++	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++
+ 	if (rpmflags & RPM_GET_PUT) {
+ 		if (!atomic_dec_and_test(&dev->power.usage_count))
+ 			return 0;
+@@ -782,13 +787,16 @@ EXPORT_SYMBOL_GPL(__pm_runtime_suspend);
+  * If the RPM_GET_PUT flag is set, increment the device's usage count.  Then
+  * carry out a resume, either synchronous or asynchronous.
+  *
+- * This routine may be called in atomic context if the RPM_ASYNC flag is set.
++ * This routine may be called in atomic context if the RPM_ASYNC flag is set,
++ * or if pm_runtime_irq_safe() has been called.
+  */
+ int __pm_runtime_resume(struct device *dev, int rpmflags)
+ {
+ 	unsigned long flags;
+ 	int retval;
+ 
++	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++
+ 	if (rpmflags & RPM_GET_PUT)
+ 		atomic_inc(&dev->power.usage_count);
+ 
+@@ -978,6 +986,8 @@ EXPORT_SYMBOL_GPL(pm_runtime_barrier);
+  */
+ void __pm_runtime_disable(struct device *dev, bool check_resume)
+ {
++	might_sleep();
++
+ 	spin_lock_irq(&dev->power.lock);
+ 
+ 	if (dev->power.disable_depth > 0) {
+@@ -1184,6 +1194,8 @@ void __pm_runtime_use_autosuspend(struct device *dev, bool use)
+ {
+ 	int old_delay, old_use;
+ 
++	might_sleep();
++
+ 	spin_lock_irq(&dev->power.lock);
+ 	old_delay = dev->power.autosuspend_delay;
+ 	old_use = dev->power.use_autosuspend;
+-- 
+1.7.4.1
