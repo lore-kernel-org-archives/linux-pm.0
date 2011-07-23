@@ -1,7 +1,7 @@
 From: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [PATCH v3 1/6] fault-injection: notifier error injection
-Date: Sat, 23 Jul 2011 17:50:55 +0900
-Message-ID: <1311411060-30124-2-git-send-email-akinobu.mita__24543.9182654538$1311411044$gmane$org@gmail.com>
+Subject: [PATCH v3 3/6] PM: PM notifier error injection module
+Date: Sat, 23 Jul 2011 17:50:57 +0900
+Message-ID: <1311411060-30124-4-git-send-email-akinobu.mita__13257.1165021092$1311411078$gmane$org@gmail.com>
 References: <1311411060-30124-1-git-send-email-akinobu.mita@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,189 +18,134 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-pm@lists.linux-foundation.org, Akinobu Mita <akinobu.mita@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The notifier error injection provides the ability to inject artifical
-errors to specified notifier chain callbacks.  It is useful to test the
-error handling of notifier call chain failures.
+This provides the ability to inject artifical errors to PM notifier chain
+callbacks.  It is controlled through debugfs interface under
+/sys/kernel/debug/pm-notifier-error-inject/
 
-This adds common basic functions to define which type of events can be
-fail and to initialize the debugfs interface to control what error code
-should be returned and which event should be failed.
+Each of the files in the directory represents an event which can be
+failed and contains the error code.  If the notifier call chain should
+be failed with some events notified, write the error code to the files.
+
+Example: Inject PM suspend error (-12 = -ENOMEM)
+
+	# cd /sys/kernel/debug/pm-notifier-error-inject
+	# echo -12 > PM_SUSPEND_PREPARE
+	# echo mem > /sys/power/state
+	bash: echo: write error: Cannot allocate memory
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 Cc: Pavel Machek <pavel@ucw.cz>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@lists.linux-foundation.org
-Cc: Greg KH <greg@kroah.com>
-Cc: linux-mm@kvack.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
 ---
 * v3
-- export err_inject_notifier_block_{init,cleanup} for modules
+- rewrite to be kernel modules instead of initializing at late_initcall()s
+- notifier priority can be specified as a module parameter
 
- include/linux/notifier.h |   25 ++++++++++++++
- kernel/notifier.c        |   83 ++++++++++++++++++++++++++++++++++++++++++++++
- lib/Kconfig.debug        |   11 ++++++
- 3 files changed, 119 insertions(+), 0 deletions(-)
+ lib/Kconfig.debug              |   21 ++++++++++++++++++
+ lib/Makefile                   |    1 +
+ lib/pm-notifier-error-inject.c |   46 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 68 insertions(+), 0 deletions(-)
+ create mode 100644 lib/pm-notifier-error-inject.c
 
-diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-index c0688b0..51882d6 100644
---- a/include/linux/notifier.h
-+++ b/include/linux/notifier.h
-@@ -278,5 +278,30 @@ extern struct blocking_notifier_head reboot_notifier_list;
- #define VT_UPDATE		0x0004 /* A bigger update occurred */
- #define VT_PREWRITE		0x0005 /* A char is about to be written to the console */
- 
-+#ifdef CONFIG_NOTIFIER_ERROR_INJECTION
-+
-+struct err_inject_notifier_action {
-+	unsigned long val;
-+	int error;
-+	const char *name;
-+};
-+
-+#define ERR_INJECT_NOTIFIER_ACTION(action)	\
-+	.name = #action, .val = (action),
-+
-+struct err_inject_notifier_block {
-+	struct notifier_block nb;
-+	struct dentry *dir;
-+	struct err_inject_notifier_action actions[];
-+	/* The last slot must be terminated with zero sentinel */
-+};
-+
-+extern int err_inject_notifier_block_init(struct err_inject_notifier_block *enb,
-+				const char *name, int priority);
-+extern void err_inject_notifier_block_cleanup(
-+				struct err_inject_notifier_block *enb);
-+
-+#endif /* CONFIG_NOTIFIER_ERROR_INJECTION */
-+
- #endif /* __KERNEL__ */
- #endif /* _LINUX_NOTIFIER_H */
-diff --git a/kernel/notifier.c b/kernel/notifier.c
-index 2488ba7..8dcb2cc 100644
---- a/kernel/notifier.c
-+++ b/kernel/notifier.c
-@@ -5,6 +5,7 @@
- #include <linux/rcupdate.h>
- #include <linux/vmalloc.h>
- #include <linux/reboot.h>
-+#include <linux/debugfs.h>
- 
- /*
-  *	Notifier list for kernel code which wants to be called
-@@ -584,3 +585,85 @@ int unregister_die_notifier(struct notifier_block *nb)
- 	return atomic_notifier_chain_unregister(&die_chain, nb);
- }
- EXPORT_SYMBOL_GPL(unregister_die_notifier);
-+
-+#ifdef CONFIG_NOTIFIER_ERROR_INJECTION
-+
-+static int debugfs_errno_set(void *data, u64 val)
-+{
-+	*(int *)data = clamp_t(int, val, -MAX_ERRNO, 0);
-+	return 0;
-+}
-+
-+static int debugfs_errno_get(void *data, u64 *val)
-+{
-+	*val = *(int *)data;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_errno, debugfs_errno_get, debugfs_errno_set,
-+			"%lld\n");
-+
-+static struct dentry *debugfs_create_errno(const char *name, mode_t mode,
-+				struct dentry *parent, int *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_errno);
-+}
-+
-+static int err_inject_notifier_callback(struct notifier_block *nb,
-+				unsigned long val, void *p)
-+{
-+	int err = 0;
-+	struct err_inject_notifier_block *enb =
-+		container_of(nb, struct err_inject_notifier_block, nb);
-+	struct err_inject_notifier_action *action;
-+
-+	for (action = enb->actions; action->name; action++) {
-+		if (action->val == val) {
-+			err = action->error;
-+			break;
-+		}
-+	}
-+	if (err) {
-+		printk(KERN_INFO "Injecting error (%d) to %s\n",
-+			err, action->name);
-+	}
-+
-+	return notifier_from_errno(err);
-+}
-+
-+int err_inject_notifier_block_init(struct err_inject_notifier_block *enb,
-+				const char *name, int priority)
-+{
-+	struct err_inject_notifier_action *action;
-+	mode_t mode = S_IFREG | S_IRUSR | S_IWUSR;
-+
-+	enb->nb.notifier_call = err_inject_notifier_callback;
-+	enb->nb.priority = priority;
-+
-+	enb->dir = debugfs_create_dir(name, NULL);
-+	if (!enb->dir)
-+		return -ENOMEM;
-+
-+	for (action = enb->actions; action->name; action++) {
-+		/*
-+		 * Create debugfs r/w file containing action->error. If
-+		 * notifier call chain is called with action->val, it will
-+		 * fail with the error code
-+		 */
-+		if (!debugfs_create_errno(action->name, mode, enb->dir,
-+					&action->error)) {
-+			debugfs_remove_recursive(enb->dir);
-+			return -ENOMEM;
-+		}
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(err_inject_notifier_block_init);
-+
-+void err_inject_notifier_block_cleanup(struct err_inject_notifier_block *enb)
-+{
-+	debugfs_remove_recursive(enb->dir);
-+}
-+EXPORT_SYMBOL_GPL(err_inject_notifier_block_cleanup);
-+
-+#endif /* CONFIG_NOTIFIER_ERROR_INJECTION */
 diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index c0cb9c4..2a62c5a 100644
+index 55d56bb..69ecd50 100644
 --- a/lib/Kconfig.debug
 +++ b/lib/Kconfig.debug
-@@ -1021,6 +1021,17 @@ config LKDTM
- 	Documentation on how to use the module can be found in
- 	Documentation/fault-injection/provoke-crashes.txt
+@@ -1058,6 +1058,27 @@ config CPU_NOTIFIER_ERROR_INJECT
  
-+config NOTIFIER_ERROR_INJECTION
-+	bool "Notifier error injection"
-+	depends on DEBUG_KERNEL
-+	select DEBUG_FS
+ 	  If unsure, say N.
+ 
++config PM_NOTIFIER_ERROR_INJECT
++	tristate "PM notifier error injection module"
++	depends on PM && NOTIFIER_ERROR_INJECTION
++	default m if PM_DEBUG
 +	help
 +	  This option provides the ability to inject artifical errors to
-+	  specified notifier chain callbacks. It is useful to test the error
-+	  handling of notifier call chain failures.
++	  PM notifier chain callbacks.  It is controlled through debugfs
++	  interface.
 +
-+	  Say N if unsure.
++	  Example: Inject PM suspend error (-12 = -ENOMEM)
 +
- config CPU_NOTIFIER_ERROR_INJECT
- 	tristate "CPU notifier error injection module"
- 	depends on HOTPLUG_CPU && DEBUG_KERNEL
++	  # cd /sys/kernel/debug/pm-notifier-error-inject
++	  # echo -12 > PM_SUSPEND_PREPARE
++	  # echo mem > /sys/power/state
++	  bash: echo: write error: Cannot allocate memory
++
++	  To compile this code as a module, choose M here: the module will
++	  be called pm-notifier-error-inject.
++
++	  If unsure, say N.
++
+ config FAULT_INJECTION
+ 	bool "Fault-injection framework"
+ 	depends on DEBUG_KERNEL
+diff --git a/lib/Makefile b/lib/Makefile
+index 892f4e2..4dca6c0 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -90,6 +90,7 @@ obj-$(CONFIG_SWIOTLB) += swiotlb.o
+ obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
+ obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
+ obj-$(CONFIG_CPU_NOTIFIER_ERROR_INJECT) += cpu-notifier-error-inject.o
++obj-$(CONFIG_PM_NOTIFIER_ERROR_INJECT) += pm-notifier-error-inject.o
+ 
+ lib-$(CONFIG_GENERIC_BUG) += bug.o
+ 
+diff --git a/lib/pm-notifier-error-inject.c b/lib/pm-notifier-error-inject.c
+new file mode 100644
+index 0000000..821b3db
+--- /dev/null
++++ b/lib/pm-notifier-error-inject.c
+@@ -0,0 +1,46 @@
++#include <linux/kernel.h>
++#include <linux/suspend.h>
++#include <linux/module.h>
++#include <linux/notifier.h>
++
++static int priority;
++module_param(priority, int, 0);
++MODULE_PARM_DESC(priority, "specify PM notifier priority");
++
++static struct err_inject_notifier_block err_inject_pm_notifier = {
++	.actions = {
++		{ ERR_INJECT_NOTIFIER_ACTION(PM_HIBERNATION_PREPARE) },
++		{ ERR_INJECT_NOTIFIER_ACTION(PM_SUSPEND_PREPARE) },
++		{ ERR_INJECT_NOTIFIER_ACTION(PM_RESTORE_PREPARE) },
++		{}
++	}
++};
++
++static int err_inject_init(void)
++{
++	int err;
++
++	err = err_inject_notifier_block_init(&err_inject_pm_notifier,
++				"pm-notifier-error-inject", priority);
++	if (err)
++		return err;
++
++	err = register_pm_notifier(&err_inject_pm_notifier.nb);
++	if (err)
++		err_inject_notifier_block_cleanup(&err_inject_pm_notifier);
++
++	return err;
++}
++
++static void err_inject_exit(void)
++{
++	unregister_pm_notifier(&err_inject_pm_notifier.nb);
++	err_inject_notifier_block_cleanup(&err_inject_pm_notifier);
++}
++
++module_init(err_inject_init);
++module_exit(err_inject_exit);
++
++MODULE_DESCRIPTION("PM notifier error injection module");
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Akinobu Mita <akinobu.mita@gmail.com>");
 -- 
 1.7.4.4
