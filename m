@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: runtime: add might_sleep to PM runtime
-	functions
-Date: Sun, 24 Jul 2011 23:26:12 +0200
-Message-ID: <201107242326.12810.rjw__10140.479313168$1311542730$gmane$org@sisk.pl>
-References: <1311396967-16721-1-git-send-email-ccross@android.com>
-	<201107240057.00197.rjw@sisk.pl>
-	<CAMbhsRTdQLd5GRew9GMx6O287k3O17SKE18jvK2k7oyZpOrZfg@mail.gmail.com>
+From: Toralf =?iso-8859-2?q?F=F6rster?= <toralf.foerster@gmx.de>
+Subject: Re: suspend/resume problems w/ kernel 3.0 and a *docked*
+	ThinkPad T400
+Date: Sun, 24 Jul 2011 23:49:08 +0200
+Message-ID: <201107242349.08560.toralf.foerster__31018.1441986517$1311544206$gmane$org@gmx.de>
+References: <201107232127.34255.toralf.foerster@gmx.de>
+	<201107241036.20538.toralf.foerster@gmx.de>
+	<201107242323.54819.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAMbhsRTdQLd5GRew9GMx6O287k3O17SKE18jvK2k7oyZpOrZfg@mail.gmail.com>
+In-Reply-To: <201107242323.54819.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,77 +20,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, July 24, 2011, Colin Cross wrote:
-> On Sat, Jul 23, 2011 at 3:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Saturday, July 23, 2011, Colin Cross wrote:
-> >> The list of functions that can be called in atomic context is
-> >> non-intuitive (pm_runtime_put_sync can not, but
-> >> pm_runtime_put_sync_suspend can, if pm_runtime_irq_safe has
-> >> been called?).
-> >
-> > However, this behavior is documented.
-> >
-> > Also, if you have a clean use case for calling rpm_idle() with interrupts
-> > off, it can be modified to work in analogy with rpm_suspend() in that respect.
-> 
-> Yes, Kevin posted that patch in response to a bug that would never
-> have existed with this patch.  Even with Kevin's change, this patch
-> still detects drivers that are missing pm_runtime_irq_safe().
-> 
-> >> The code is actively misleading - the entry
-> >> points all start with spin_lock_irqsave, suggesting they
-> >> are safe to call in atomic context, but may later
-> >> enable interrupts.
-> >
-> > May I say it is this way for a reason?
-> 
-> I'll reword that
-> 
-> >> Add might_sleep_if to all the __pm_runtime_* entry points
-> >> to enforce correct usage.
-> >
-> > I'm not sure how this makes things better.
-> 
-> I spent hours tracking down a bug that was caused by
-> pm_runtime_put_sync enabling interrupts when entering idle, which was
-> causing the timer interrupt to be serviced before the cpu entered
-> idle, and the cpu to idle forever until a non-timer interrupt
-> occurred.  The bug would never have been introduced with this patch.
-> When I ran with this patch, it immediately caught 3 other cases of
-> incorrect usage in atomic context, any of which could cause deadlocks:
-> spin_lock_irqsave(driver lock)
-> pm_runtime_put_sync
-> spin_lock_irqsave(dev lock)
-> spin_unlock_irq(dev_lock) - enables interrupts
-> driver irq
-> spin_lock(driver lock)
-> 
-> One of the bugs was put_sync instead of put_sync_suspend, which would
-> not be a problem after Kevin's patch, but the other two were missing
-> pm_runtime_irq_safe.
-> 
-> Not every developer who calls a pm_runtime function is going to read
-> the documentation, and this patch will catch the common incorrect
-> usage the first time it is run.
-> 
-> I'll update this patch on top of Kevin's.
-> 
-> >> Also add pm_runtime_put_sync_autosuspend to the list of
-> >> functions that can be called in atomic context.
-> >
-> > OK
-> >
-> > In addition to that rpm_idle() is missing the __releases __acquires
-> > annotations.
-> 
-> Do you want that added to this patch?  It seems like that fits better
-> into Kevin's patch, or a third patch.
 
-OK, I'll do a separate patch adding those.
+Rafael J. Wysocki wrote at 23:23:54
+> So the failure happens only if the machine is in the dock?
 
-Thanks,
-Rafael
+No - if the machine was booted (or rebooted) while docked and later was =
+
+s2ramed (even if the machine was undocked before) - then the kernel crashed =
+
+(and can only be avoided by unloading the module iwlagn before).
+
+-- =
+
+MfG/Sincerely
+Toralf F=F6rster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
