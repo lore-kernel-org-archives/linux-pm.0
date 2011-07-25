@@ -1,17 +1,12 @@
-From: Dmitry Nezhevenko <dion@inhex.net>
-Subject: Re: suspend/resume problems w/ kernel 3.0 and a *docked*
- ThinkPad T400
-Date: Mon, 25 Jul 2011 21:31:03 +0300
-Message-ID: <20110725183102.GA31638@laptop.local>
-References: <201107232127.34255.toralf.foerster@gmx.de>
-	<201107232148.44702.rjw@sisk.pl>
-	<201107232227.37429.toralf.foerster@gmx.de>
+From: Colin Cross <ccross@android.com>
+Subject: [PATCH v2] PM: runtime: add might_sleep to PM runtime
+	functions
+Date: Mon, 25 Jul 2011 13:55:44 -0700
+Message-ID: <1311627344-8097-1-git-send-email-ccross__49325.5559159026$1311627445$gmane$org@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201107232227.37429.toralf.foerster@gmx.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,15 +17,101 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCBKdWwgMjMsIDIwMTEgYXQgMTA6Mjc6MzdQTSArMDIwMCwgVG9yYWxmIEbDtnJzdGVy
-IHdyb3RlOgo+IAo+IFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlIGF0IDIxOjQ4OjQ0Cj4gPiAKPiA+
-IEkgd29uZGVyIHdoYXQgaGFwcGVucyBpZiB0aGUgbWFjaGluZSBpcyB1bmRvY2tlZD8KPiBOby4K
-PiBCVFcgd2l0aCAibm9fY29uc29sZV9zdXNwZW5kIiBJIGdvdCB0aGUgYXR0YWNoZWQga2VybmVs
-IGNyYXNoLgo+IAoKTG9va3MgbGlrZToKaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0zOTc2MgoKSSd2ZSBiaXNlY3RlZCBpdC4gQWxzbyB0aGVyZSBpcyBzb21lIGNv
-bW1pdCB0aGF0IGZpeGVzIHRoaXMgaXNzdWUgZm9yIG1lLgogCi0tIApXQlIsIERtaXRyeQpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWls
-aW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Some of the entry points to pm runtime are not safe to
+call in atomic context unless pm_runtime_irq_safe() has
+been called.  Inspecting the code, it is not immediately
+obvious that the functions sleep at all, as they run
+inside a spin_lock_irqsave, but under some conditions
+they can drop the lock and turn on irqs.
+
+If a driver incorrectly calls the pm_runtime apis, it can
+cause sleeping and irq processing when it expects to stay
+in atomic context.
+
+Add might_sleep_if to all the __pm_runtime_* entry points
+to enforce correct usage.
+
+Add pm_runtime_put_sync_autosuspend to the list of
+functions that can be called in atomic context.
+
+Signed-off-by: Colin Cross <ccross@android.com>
+---
+ Documentation/power/runtime_pm.txt |    1 +
+ drivers/base/power/runtime.c       |   15 ++++++++++++---
+ 2 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index c291233..1ad507c 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -469,6 +469,7 @@ pm_runtime_resume()
+ pm_runtime_get_sync()
+ pm_runtime_put_sync()
+ pm_runtime_put_sync_suspend()
++pm_runtime_put_sync_autosuspend()
+ 
+ 5. Run-time PM Initialization, Device Probing and Removal
+ 
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 2e746f8..f3d8583 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -731,13 +731,16 @@ EXPORT_SYMBOL_GPL(pm_schedule_suspend);
+  * return immediately if it is larger than zero.  Then carry out an idle
+  * notification, either synchronous or asynchronous.
+  *
+- * This routine may be called in atomic context if the RPM_ASYNC flag is set.
++ * This routine may be called in atomic context if the RPM_ASYNC flag is set,
++ * or if pm_runtime_irq_safe() has been called.
+  */
+ int __pm_runtime_idle(struct device *dev, int rpmflags)
+ {
+ 	unsigned long flags;
+ 	int retval;
+ 
++	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++
+ 	if (rpmflags & RPM_GET_PUT) {
+ 		if (!atomic_dec_and_test(&dev->power.usage_count))
+ 			return 0;
+@@ -760,13 +763,16 @@ EXPORT_SYMBOL_GPL(__pm_runtime_idle);
+  * return immediately if it is larger than zero.  Then carry out a suspend,
+  * either synchronous or asynchronous.
+  *
+- * This routine may be called in atomic context if the RPM_ASYNC flag is set.
++ * This routine may be called in atomic context if the RPM_ASYNC flag is set,
++ * or if pm_runtime_irq_safe() has been called.
+  */
+ int __pm_runtime_suspend(struct device *dev, int rpmflags)
+ {
+ 	unsigned long flags;
+ 	int retval;
+ 
++	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++
+ 	if (rpmflags & RPM_GET_PUT) {
+ 		if (!atomic_dec_and_test(&dev->power.usage_count))
+ 			return 0;
+@@ -788,13 +794,16 @@ EXPORT_SYMBOL_GPL(__pm_runtime_suspend);
+  * If the RPM_GET_PUT flag is set, increment the device's usage count.  Then
+  * carry out a resume, either synchronous or asynchronous.
+  *
+- * This routine may be called in atomic context if the RPM_ASYNC flag is set.
++ * This routine may be called in atomic context if the RPM_ASYNC flag is set,
++ * or if pm_runtime_irq_safe() has been called.
+  */
+ int __pm_runtime_resume(struct device *dev, int rpmflags)
+ {
+ 	unsigned long flags;
+ 	int retval;
+ 
++	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++
+ 	if (rpmflags & RPM_GET_PUT)
+ 		atomic_inc(&dev->power.usage_count);
+ 
+-- 
+1.7.4.1
