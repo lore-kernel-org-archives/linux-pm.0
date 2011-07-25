@@ -1,16 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend/resume problems w/ kernel 3.0 and a *docked*
-	ThinkPad T400
-Date: Mon, 25 Jul 2011 00:34:33 +0200
-Message-ID: <201107250034.33633.rjw__28022.4057766192$1311546865$gmane$org@sisk.pl>
-References: <201107232127.34255.toralf.foerster@gmx.de>
-	<201107242323.54819.rjw@sisk.pl>
-	<201107242349.08560.toralf.foerster@gmx.de>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: better oopsing when frozen
+Date: Mon, 25 Jul 2011 10:43:19 +0200
+Message-ID: <201107251043.19932.oneukum__32851.9614100971$1311583299$gmane$org@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-2"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107242349.08560.toralf.foerster@gmx.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,28 +15,127 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Toralf =?iso-8859-2?q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, rjw@sisk.pl
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, July 24, 2011, Toralf F=F6rster wrote:
-> =
+Hi Rafael,
 
-> Rafael J. Wysocki wrote at 23:23:54
-> > So the failure happens only if the machine is in the dock?
-> =
+I had a problem with the kernel stopping the machine forever because I got =
+an
+oops while tasks were frozen. It seems to me that we should thaw when this
+happens. How about this approach?
 
-> No - if the machine was booted (or rebooted) while docked and later was =
+	Regards
+		Oliver
 
-> s2ramed (even if the machine was undocked before) - then the kernel crash=
-ed =
+>From 6f3b5e7a5c7ccf3564bdd2e703eba7eee753ecdc Mon Sep 17 00:00:00 2001
+From: Oliver Neukum <oliver@neukum.org>
+Date: Fri, 22 Jul 2011 11:20:19 +0200
+Subject: [PATCH] unfreeze tasks if an oops happens while tasks are frozen
 
-> (and can only be avoided by unloading the module iwlagn before).
+If an oops kills the task suspending or snapshotting
+is system, the system is dead because the action is
+never completed and the tasks never thawed.
 
-That's strange.  It seems that the wireless adapter depends on something
-in the dock on your system.
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+---
+ include/linux/freezer.h |    1 +
+ kernel/panic.c          |    2 ++
+ kernel/power/process.c  |   11 +++++++++++
+ 3 files changed, 14 insertions(+), 0 deletions(-)
 
-Please attach dmesg after booting in the dock and outside of it.
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index 1effc8b..9907cf6 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -50,6 +50,7 @@ extern int thaw_process(struct task_struct *p);
+ extern void refrigerator(void);
+ extern int freeze_processes(void);
+ extern void thaw_processes(void);
++extern void thaw_in_oops(void);
+ =
 
-Thanks,
-Rafael
+ static inline int try_to_freeze(void)
+ {
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 6923167..255e662 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -23,6 +23,7 @@
+ #include <linux/init.h>
+ #include <linux/nmi.h>
+ #include <linux/dmi.h>
++#include <linux/freezer.h>
+ =
+
+ #define PANIC_TIMER_STEP 100
+ #define PANIC_BLINK_SPD 18
+@@ -355,6 +356,7 @@ void oops_exit(void)
+ 	do_oops_enter_exit();
+ 	print_oops_end_marker();
+ 	kmsg_dump(KMSG_DUMP_OOPS);
++	thaw_in_oops();
+ }
+ =
+
+ #ifdef WANT_WARN_ON_SLOWPATH
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index 0cf3a27..20994cd 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -22,6 +22,9 @@
+  */
+ #define TIMEOUT	(20 * HZ)
+ =
+
++/* in case we oops while processes are frozen */
++static bool tasks_fozen =3D false;
++
+ static inline int freezable(struct task_struct * p)
+ {
+ 	if ((p =3D=3D current) ||
+@@ -131,6 +134,7 @@ static int try_to_freeze_tasks(bool sig_only)
+ 			elapsed_csecs % 100);
+ 	}
+ =
+
++	tasks_fozen =3D (todo =3D=3D 0);
+ 	return todo ? -EBUSY : 0;
+ }
+ =
+
+@@ -189,7 +193,14 @@ void thaw_processes(void)
+ 	thaw_workqueues();
+ 	thaw_tasks(true);
+ 	thaw_tasks(false);
++	tasks_fozen =3D false;
+ 	schedule();
+ 	printk("done.\n");
+ }
+ =
+
++void thaw_in_oops(void)
++{
++	if (tasks_fozen)
++		thaw_processes();
++}
++
+-- =
+
+1.7.1
+
+
+-- =
+
+- - - =
+
+SUSE LINUX Products GmbH, GF: Jeff Hawn, Jennifer Guild, Felix Imend=F6rffe=
+r, HRB 16746 (AG N=FCrnberg) =
+
+Maxfeldstra=DFe 5                         =
+
+90409 N=FCrnberg =
+
+Germany =
+
+- - - =
