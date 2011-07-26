@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: PM / hibernate xfs lock up / xfs_reclaim_inodes_ag
-Date: Tue, 26 Jul 2011 22:28:11 +0200
-Message-ID: <201107262228.12099.rjw@sisk.pl>
-References: <4E1C70AD.1010101@u-club.de> <20110713000332.GM23038@dastard>
+Subject: Re: [PATCH v2] PM: runtime: add might_sleep to PM
+	runtime functions
+Date: Wed, 27 Jul 2011 00:14:36 +0200
+Message-ID: <201107270014.36910.rjw__35485.3541277864$1311718484$gmane$org@sisk.pl>
+References: <1311627344-8097-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110713000332.GM23038@dastard>
+In-Reply-To: <1311627344-8097-1-git-send-email-ccross@android.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,166 +18,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Chinner <david@fromorbit.com>
-Cc: Christoph <cr2005@u-club.de>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, xfs@oss.sgi.com
+To: Colin Cross <ccross@android.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 13, 2011, Dave Chinner wrote:
-> On Tue, Jul 12, 2011 at 06:05:01PM +0200, Christoph wrote:
-> > Hi!
-> > 
-> > I'd like you to have a look into this issue:
-> > 
-> > pm-hibernate locks up when using xfs while "Preallocating image memory".
-> > 
-> > https://bugzilla.kernel.org/show_bug.cgi?id=33622
-> > 
-> > I got at least this backtrace (2.6.39.3)
-> > 
-> > tia
-> > 
-> > chris
-> > 
-> > 
-> > 
-> > SysRq : Show Blocked State
-> > 
-> > pm-hibernate    D 0000000000000000     0  3638   3637 0x00000000
-> >  ffff8800017bf918 0000000000000082 ffff8800017be010 ffff880000000000
-> >  ffff8800017be010 ffff88000b8a6170 0000000000013900 ffff8800017bffd8
-> >  ffff8800017bffd8 0000000000013900 ffffffff8148b020 ffff88000b8a6170
-> > Call Trace:
-> >  [<ffffffff81344ce2>] schedule_timeout+0x22/0xbb
-> >  [<ffffffff81344b64>] wait_for_common+0xcb/0x148
-> >  [<ffffffff810408ea>] ? try_to_wake_up+0x18c/0x18c
-> >  [<ffffffff81345527>] ? down_write+0x2d/0x31
-> >  [<ffffffff81344c7b>] wait_for_completion+0x18/0x1a
-> >  [<ffffffffa02374da>] xfs_reclaim_inode+0x74/0x258 [xfs]
-> >  [<ffffffffa0237853>] xfs_reclaim_inodes_ag+0x195/0x264 [xfs]
-> >  [<ffffffffa0237974>] xfs_reclaim_inode_shrink+0x52/0x90 [xfs]
-> >  [<ffffffff810c4e21>] shrink_slab+0xdb/0x151
-> >  [<ffffffff810c625a>] do_try_to_free_pages+0x204/0x39a
-> >  [<ffffffff8134ce4e>] ? apic_timer_interrupt+0xe/0x20
-> >  [<ffffffff810c647f>] shrink_all_memory+0x8f/0xa8
-> >  [<ffffffff810cc41a>] ? next_online_pgdat+0x20/0x41
-> >  [<ffffffff8107937d>] hibernate_preallocate_memory+0x1c4/0x30f
-> >  [<ffffffff811a8fa2>] ? kobject_put+0x47/0x4b
-> >  [<ffffffff81077eb2>] hibernation_snapshot+0x45/0x281
-> >  [<ffffffff810781bf>] hibernate+0xd1/0x1b8
-> >  [<ffffffff81076c58>] state_store+0x57/0xce
-> >  [<ffffffff811a8d0b>] kobj_attr_store+0x17/0x19
-> >  [<ffffffff81152bda>] sysfs_write_file+0xfc/0x138
-> >  [<ffffffff810fca74>] vfs_write+0xa9/0x105
-> >  [<ffffffff810fcb89>] sys_write+0x45/0x6c
-> >  [<ffffffff8134c492>] system_call_fastpath+0x16/0x1b
+On Monday, July 25, 2011, Colin Cross wrote:
+> Some of the entry points to pm runtime are not safe to
+> call in atomic context unless pm_runtime_irq_safe() has
+> been called.  Inspecting the code, it is not immediately
+> obvious that the functions sleep at all, as they run
+> inside a spin_lock_irqsave, but under some conditions
+> they can drop the lock and turn on irqs.
 > 
-> It's waiting for IO completion, and holding an AG scan lock.
+> If a driver incorrectly calls the pm_runtime apis, it can
+> cause sleeping and irq processing when it expects to stay
+> in atomic context.
 > 
-> And IO completion requires a workqueue to run. Just FYI, this
-> process of inode reclaim can dirty the filesystem, long after
-> hibernate have assumed that it is clean due to the sys_sync() call
-> you do after freezing the processes. I pointed out this flaw in
-> using sync to write dirty data prior to hibernate a couple of years
-> ago.
+> Add might_sleep_if to all the __pm_runtime_* entry points
+> to enforce correct usage.
+> 
+> Add pm_runtime_put_sync_autosuspend to the list of
+> functions that can be called in atomic context.
+> 
+> Signed-off-by: Colin Cross <ccross@android.com>
+> ---
+>  Documentation/power/runtime_pm.txt |    1 +
+>  drivers/base/power/runtime.c       |   15 ++++++++++++---
+>  2 files changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index c291233..1ad507c 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -469,6 +469,7 @@ pm_runtime_resume()
+>  pm_runtime_get_sync()
+>  pm_runtime_put_sync()
+>  pm_runtime_put_sync_suspend()
+> +pm_runtime_put_sync_autosuspend()
+>  
+>  5. Run-time PM Initialization, Device Probing and Removal
+>  
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 2e746f8..f3d8583 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -731,13 +731,16 @@ EXPORT_SYMBOL_GPL(pm_schedule_suspend);
+>   * return immediately if it is larger than zero.  Then carry out an idle
+>   * notification, either synchronous or asynchronous.
+>   *
+> - * This routine may be called in atomic context if the RPM_ASYNC flag is set.
+> + * This routine may be called in atomic context if the RPM_ASYNC flag is set,
+> + * or if pm_runtime_irq_safe() has been called.
+>   */
+>  int __pm_runtime_idle(struct device *dev, int rpmflags)
+>  {
+>  	unsigned long flags;
+>  	int retval;
+>  
+> +	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
+> +
 
-However, attempts to remove the sys_sync() from the hibernate code
-were objected to by some developers, since they believe it will increase
-the probability of data loss in case of a failing hibernation in general. 
+Now that I think of it, perhaps it's better to put the might_sleep()
+annotations into the actual code paths that should trigger them instead of
+checking the conditions upfront on every call?  This way we'll avoid quite
+some overhead that's only necessary for debugging.
 
-> Anyway, it's a good thing that XFS doesn't use freezable work
-> queues, otherwise it would hang on every hibernate. Perhaps I should
-> do that to force hibernate to do things properly in filesystems
-> land.
-
-Well, I'd say it's a very well known fact that filesystems are not
-handled in any special way during hibernation, which is not a good
-thing.  Nevertheless, I've never seen anyone from the filesystems land
-pay any kind of attention to this issue.
-
-> However, it is entirely possible that something else that XFS relies
-> on for IO completion has been put to sleep by this point.
-> 
-> /me finds the smoking cannon:
-> 
-> [  648.794455] xfsbufd/sda3    D 0000000000000000     0   192      2 0x00000000
-> [  648.794455]  ffff88003720be00 0000000000000046 ffff88003720bd90 ffffffff00000000
-> [  648.794455]  ffff88003720a010 ffff880056bc3580 0000000000013900 ffff88003720bfd8
-> [  648.794455]  ffff88003720bfd8 0000000000013900 ffffffff8148b020 ffff880056bc3580
-> [  648.794455] Call Trace:
-> [  648.794455]  [<ffffffff81065c0a>] refrigerator+0xbd/0xd3
-> [  648.794455]  [<ffffffffa022d072>] xfsbufd+0x93/0x14d [xfs]
-> [  648.794455]  [<ffffffffa022cfdf>] ? xfs_free_buftarg+0x4c/0x4c [xfs]
-> [  648.794455]  [<ffffffff8105f25a>] kthread+0x7d/0x85
-> [  648.794455]  [<ffffffff8134d6e4>] kernel_thread_helper+0x4/0x10
-> [  648.794455]  [<ffffffff8105f1dd>] ? kthread_worker_fn+0x148/0x148
-> [  648.794455]  [<ffffffff8134d6e0>] ? gs_change+0x13/0x13
-> 
-> The xfsbufd, responsible for pushing out dirty metadata, has been
-> been frozen. sys_sync() does not push out dirty metadata because it
-> is already on stable storage in the journal. If the flush lock is
-> already held on the inode, then inode reclaim will wait for the
-> xfsbufd to flush the backing buffer because reclaim can't do it
-> directly. And hibernate has already frozen the xfsbufd.
-> 
-> IOWs, what hibernate does is:
-> 
-> 	freeze_processes()
-> 	sys_sync()
-> 	allocate a large amount of memory
-> 
-> Freezing the processes causes parts of filesystems to be put in the
-> fridge, which means there is no guarantee that sys_sync() actually
-> does what it is supposed to. As it is, sys_sync() really only
-> guarantees file data is clean in memory - metadata does not need to
-> be clean as long s it has been journalled and the journal is safe on
-> disk.
->
-> Further, allocating memory can cause memory reclaim to enter the
-> filesystem and try to free memory held by the filesystem. In XFS (at
-> least) this can cause the filesystem to issue tranactions and
-> metadata IO to clean the dirty metadata to enable it to be
-> reclaimed. So hibernate is effectively guaranteed to dirty the
-> filesystem after it has frozen all the worker threads the filesystem
-> might rely on.
-> 
-> Also, by this point kswapd has already been frozen, so hibernate is
-> relying totally on direct memory reclaim to free up the memory it
-> requires. I'm not sure that's a good idea.
-> 
-> IOWs, hibernate is still broken by design - and broken in exactly
-> the way that was pointed out a couple of years ago by myself and
-> others in the filesystem world: sys_sync() does not quiesce or
-> guarantee a clean filesystem in memory after it completes.
-> 
-> There is a solution to this, and it already exists - it's called
-> freezing the filesystem. Effectively hibernate needs to allocate
-> memory before it freezes kernel/filesystem worker threads:
-> 
-> 	freeze_userspace_processes()
-> 
-> 	// just to clean the page cache quickly
-> 	sys_sync()
-> 
-> 	// optionally to free page/inode/dentry caches:
-> 		iterate_supers(drop_pagecache_sb, NULL);
-> 		drop_slab()
-> 
-> 	allocate a large amount of memory
-> 
-> 	// Now quiesce the filesystems and clean remaining metadata
-> 	iterate_supers(freeze_super, NULL);
-> 
-> 	freeze_remaining_processes()
-> 
-> This guarantees that filesystems are still working when memory
-> reclaim comes along to free memory for the hibernate image, and that
-> once it is allocated that filesystems will not be changed until
-> thawed on the hibernate wakeup.
-> 
-> So, like I said a couple of years ago: fix hibernate to quiesce
-> filesystems properly, and the hibernate will be much more reliable
-> and robust and less likely to break randomly in the future.
-
-Why don't you simply submit a patch to do that?
-
+Thanks,
 Rafael
