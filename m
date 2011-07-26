@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] PM: runtime: add might_sleep to PM
-	runtime functions
-Date: Wed, 27 Jul 2011 00:14:36 +0200
-Message-ID: <201107270014.36910.rjw__35485.3541277864$1311718484$gmane$org@sisk.pl>
-References: <1311627344-8097-1-git-send-email-ccross@android.com>
+Subject: Re: better oopsing when frozen
+Date: Wed, 27 Jul 2011 00:24:11 +0200
+Message-ID: <201107270024.11194.rjw__5315.04946197874$1311719142$gmane$org@sisk.pl>
+References: <201107251043.19932.oneukum@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1311627344-8097-1-git-send-email-ccross@android.com>
+In-Reply-To: <201107251043.19932.oneukum@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,70 +17,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 25, 2011, Colin Cross wrote:
-> Some of the entry points to pm runtime are not safe to
-> call in atomic context unless pm_runtime_irq_safe() has
-> been called.  Inspecting the code, it is not immediately
-> obvious that the functions sleep at all, as they run
-> inside a spin_lock_irqsave, but under some conditions
-> they can drop the lock and turn on irqs.
-> 
-> If a driver incorrectly calls the pm_runtime apis, it can
-> cause sleeping and irq processing when it expects to stay
-> in atomic context.
-> 
-> Add might_sleep_if to all the __pm_runtime_* entry points
-> to enforce correct usage.
-> 
-> Add pm_runtime_put_sync_autosuspend to the list of
-> functions that can be called in atomic context.
-> 
-> Signed-off-by: Colin Cross <ccross@android.com>
-> ---
->  Documentation/power/runtime_pm.txt |    1 +
->  drivers/base/power/runtime.c       |   15 ++++++++++++---
->  2 files changed, 13 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> index c291233..1ad507c 100644
-> --- a/Documentation/power/runtime_pm.txt
-> +++ b/Documentation/power/runtime_pm.txt
-> @@ -469,6 +469,7 @@ pm_runtime_resume()
->  pm_runtime_get_sync()
->  pm_runtime_put_sync()
->  pm_runtime_put_sync_suspend()
-> +pm_runtime_put_sync_autosuspend()
->  
->  5. Run-time PM Initialization, Device Probing and Removal
->  
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 2e746f8..f3d8583 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -731,13 +731,16 @@ EXPORT_SYMBOL_GPL(pm_schedule_suspend);
->   * return immediately if it is larger than zero.  Then carry out an idle
->   * notification, either synchronous or asynchronous.
->   *
-> - * This routine may be called in atomic context if the RPM_ASYNC flag is set.
-> + * This routine may be called in atomic context if the RPM_ASYNC flag is set,
-> + * or if pm_runtime_irq_safe() has been called.
->   */
->  int __pm_runtime_idle(struct device *dev, int rpmflags)
->  {
->  	unsigned long flags;
->  	int retval;
->  
-> +	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
-> +
+Hi,
 
-Now that I think of it, perhaps it's better to put the might_sleep()
-annotations into the actual code paths that should trigger them instead of
-checking the conditions upfront on every call?  This way we'll avoid quite
-some overhead that's only necessary for debugging.
+On Monday, July 25, 2011, Oliver Neukum wrote:
+> Hi Rafael,
+> 
+> I had a problem with the kernel stopping the machine forever because I got an
+> oops while tasks were frozen. It seems to me that we should thaw when this
+> happens. How about this approach?
+
+Well, we do something like this already for the OOM killer (see
+oom_killer_disable() and friends), so I think it would be better to
+simply extend/modify that mechanism instead of adding a new one
+doing almost exactly the same thing.
+
+I have no complaints about adding thaw_in_oops(), though, so long as
+Andrew thinks it makes sense.
 
 Thanks,
-Rafael
+Rafael 
+
+
+> From 6f3b5e7a5c7ccf3564bdd2e703eba7eee753ecdc Mon Sep 17 00:00:00 2001
+> From: Oliver Neukum <oliver@neukum.org>
+> Date: Fri, 22 Jul 2011 11:20:19 +0200
+> Subject: [PATCH] unfreeze tasks if an oops happens while tasks are frozen
+> 
+> If an oops kills the task suspending or snapshotting
+> is system, the system is dead because the action is
+> never completed and the tasks never thawed.
+> 
+> Signed-off-by: Oliver Neukum <oneukum@suse.de>
+> ---
+>  include/linux/freezer.h |    1 +
+>  kernel/panic.c          |    2 ++
+>  kernel/power/process.c  |   11 +++++++++++
+>  3 files changed, 14 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+> index 1effc8b..9907cf6 100644
+> --- a/include/linux/freezer.h
+> +++ b/include/linux/freezer.h
+> @@ -50,6 +50,7 @@ extern int thaw_process(struct task_struct *p);
+>  extern void refrigerator(void);
+>  extern int freeze_processes(void);
+>  extern void thaw_processes(void);
+> +extern void thaw_in_oops(void);
+>  
+>  static inline int try_to_freeze(void)
+>  {
+> diff --git a/kernel/panic.c b/kernel/panic.c
+> index 6923167..255e662 100644
+> --- a/kernel/panic.c
+> +++ b/kernel/panic.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/init.h>
+>  #include <linux/nmi.h>
+>  #include <linux/dmi.h>
+> +#include <linux/freezer.h>
+>  
+>  #define PANIC_TIMER_STEP 100
+>  #define PANIC_BLINK_SPD 18
+> @@ -355,6 +356,7 @@ void oops_exit(void)
+>  	do_oops_enter_exit();
+>  	print_oops_end_marker();
+>  	kmsg_dump(KMSG_DUMP_OOPS);
+> +	thaw_in_oops();
+>  }
+>  
+>  #ifdef WANT_WARN_ON_SLOWPATH
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 0cf3a27..20994cd 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -22,6 +22,9 @@
+>   */
+>  #define TIMEOUT	(20 * HZ)
+>  
+> +/* in case we oops while processes are frozen */
+> +static bool tasks_fozen = false;
+> +
+>  static inline int freezable(struct task_struct * p)
+>  {
+>  	if ((p == current) ||
+> @@ -131,6 +134,7 @@ static int try_to_freeze_tasks(bool sig_only)
+>  			elapsed_csecs % 100);
+>  	}
+>  
+> +	tasks_fozen = (todo == 0);
+>  	return todo ? -EBUSY : 0;
+>  }
+>  
+> @@ -189,7 +193,14 @@ void thaw_processes(void)
+>  	thaw_workqueues();
+>  	thaw_tasks(true);
+>  	thaw_tasks(false);
+> +	tasks_fozen = false;
+>  	schedule();
+>  	printk("done.\n");
+>  }
+>  
+> +void thaw_in_oops(void)
+> +{
+> +	if (tasks_fozen)
+> +		thaw_processes();
+> +}
+> +
+> 
