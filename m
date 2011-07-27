@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] PM: runtime: add might_sleep to PM
-	runtime functions
-Date: Wed, 27 Jul 2011 11:37:21 +0200
-Message-ID: <201107271137.21183.rjw__43856.49696128$1311759409$gmane$org@sisk.pl>
-References: <1311627344-8097-1-git-send-email-ccross@android.com>
-	<201107270014.36910.rjw@sisk.pl>
-	<CAMbhsRTrnPxXUt8Q-VDz5GG8=607QSpcoXJsPLQtPaAZfHKjRA@mail.gmail.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: better oopsing when frozen
+Date: Wed, 27 Jul 2011 12:23:43 +0200
+Message-ID: <201107271223.43874.oneukum__42625.750861089$1311762226$gmane$org@suse.de>
+References: <201107251043.19932.oneukum@suse.de>
+	<20110726154502.14c7b51b.akpm@linux-foundation.org>
+	<201107271121.21348.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAMbhsRTrnPxXUt8Q-VDz5GG8=607QSpcoXJsPLQtPaAZfHKjRA@mail.gmail.com>
+In-Reply-To: <201107271121.21348.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,93 +19,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 27, 2011, Colin Cross wrote:
-> On Tue, Jul 26, 2011 at 3:14 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday, July 25, 2011, Colin Cross wrote:
-> >> Some of the entry points to pm runtime are not safe to
-> >> call in atomic context unless pm_runtime_irq_safe() has
-> >> been called.  Inspecting the code, it is not immediately
-> >> obvious that the functions sleep at all, as they run
-> >> inside a spin_lock_irqsave, but under some conditions
-> >> they can drop the lock and turn on irqs.
-> >>
-> >> If a driver incorrectly calls the pm_runtime apis, it can
-> >> cause sleeping and irq processing when it expects to stay
-> >> in atomic context.
-> >>
-> >> Add might_sleep_if to all the __pm_runtime_* entry points
-> >> to enforce correct usage.
-> >>
-> >> Add pm_runtime_put_sync_autosuspend to the list of
-> >> functions that can be called in atomic context.
-> >>
-> >> Signed-off-by: Colin Cross <ccross@android.com>
-> >> ---
-> >>  Documentation/power/runtime_pm.txt |    1 +
-> >>  drivers/base/power/runtime.c       |   15 ++++++++++++---
-> >>  2 files changed, 13 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> >> index c291233..1ad507c 100644
-> >> --- a/Documentation/power/runtime_pm.txt
-> >> +++ b/Documentation/power/runtime_pm.txt
-> >> @@ -469,6 +469,7 @@ pm_runtime_resume()
-> >>  pm_runtime_get_sync()
-> >>  pm_runtime_put_sync()
-> >>  pm_runtime_put_sync_suspend()
-> >> +pm_runtime_put_sync_autosuspend()
-> >>
-> >>  5. Run-time PM Initialization, Device Probing and Removal
-> >>
-> >> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> >> index 2e746f8..f3d8583 100644
-> >> --- a/drivers/base/power/runtime.c
-> >> +++ b/drivers/base/power/runtime.c
-> >> @@ -731,13 +731,16 @@ EXPORT_SYMBOL_GPL(pm_schedule_suspend);
-> >>   * return immediately if it is larger than zero.  Then carry out an idle
-> >>   * notification, either synchronous or asynchronous.
-> >>   *
-> >> - * This routine may be called in atomic context if the RPM_ASYNC flag is set.
-> >> + * This routine may be called in atomic context if the RPM_ASYNC flag is set,
-> >> + * or if pm_runtime_irq_safe() has been called.
-> >>   */
-> >>  int __pm_runtime_idle(struct device *dev, int rpmflags)
-> >>  {
-> >>       unsigned long flags;
-> >>       int retval;
-> >>
-> >> +     might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
-> >> +
-> >
-> > Now that I think of it, perhaps it's better to put the might_sleep()
-> > annotations into the actual code paths that should trigger them instead of
-> > checking the conditions upfront on every call?  This way we'll avoid quite
-> > some overhead that's only necessary for debugging.
-> >
-> 
-> You can't put the might_sleep after the spin_lock_irqsave(), because
-> you are always in atomic context, and you can't put it after the
-> spin_unlock_irq() that triggers the problem because you have already
-> unconditionally left atomic context.
-> 
-> Anyways, the sleeps happen in a farily rare case, so putting the
-> might_sleep in a more specific location will hide the errors when
-> developers perform simple tests.  For example, every kmalloc ends up
-> calling might_sleep_if(flags & __GFP_WAIT), so that putting
-> kmalloc(..., GFP_KERNEL) will print a stack trace every time, instead
-> of only the very rare case when kmalloc has to block in a low memory
-> condition.
-> 
-> The calls are very low overhead - the condition in the
-> might_sleep_if(), and then in the common case:
-> 	if ((preempt_count_equals(preempt_offset) && !irqs_disabled()) || ...)
-> 		return;
+Am Mittwoch, 27. Juli 2011, 11:21:21 schrieb Rafael J. Wysocki:
+> > mm...  The patch as proposed is very simple, direct, explicit.  I
+> > suspect that trying to embed this operation within some other one would
+> > end up producing a less clear result.  Sometimes we do exceptional and
+> > weird things, and leaving the code exceptional and weird-looking is
+> > better than hiding it in some framework, if you follow what I mean.
+> =
 
-OK, I'm going to take the $subject patch for 3.2.
+> My point is that instead of using the oom_killer_disabled variable in
+> page_alloc.c, we could use a oom_killer_disabled() function returning
+> the value of the new tasks_are_frozen variable.  Then,
+> oom_killer_disable/enable() won't be necessary any more.
 
-Thanks,
-Rafael
+Well, if we do this, it'll be a separate change. Not that I disagree. =
+
+
+	Regards
+		Oliver
+-- =
+
+- - - =
+
+SUSE LINUX Products GmbH, GF: Jeff Hawn, Jennifer Guild, Felix Imend=F6rffe=
+r, HRB 16746 (AG N=FCrnberg) =
+
+Maxfeldstra=DFe 5                         =
+
+90409 N=FCrnberg =
+
+Germany =
+
+- - - =
