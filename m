@@ -1,15 +1,16 @@
 From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH v2] PM: runtime: add might_sleep to PM
-	runtime functions
-Date: Tue, 26 Jul 2011 17:26:42 -0700
-Message-ID: <871uxcr2kd.fsf__7731.87078671089$1311726544$gmane$org@ti.com>
-References: <1311627344-8097-1-git-send-email-ccross@android.com>
+Subject: Re: [RFC/PATCH v2] PM / Runtime: allow _put_sync() from
+	interrupts-disabled context
+Date: Tue, 26 Jul 2011 17:28:39 -0700
+Message-ID: <87r55cpnwo.fsf__1261.65460465035$1311726703$gmane$org@ti.com>
+References: <1311371188-28879-1-git-send-email-khilman@ti.com>
+	<201107240102.09698.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1311627344-8097-1-git-send-email-ccross@android.com> (Colin
-	Cross's message of "Mon, 25 Jul 2011 13:55:44 -0700")
+In-Reply-To: <201107240102.09698.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Sun, 24 Jul 2011 01:02:09 +0200")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,37 +20,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Colin Cross <ccross@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-Colin Cross <ccross@android.com> writes:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Some of the entry points to pm runtime are not safe to
-> call in atomic context unless pm_runtime_irq_safe() has
-> been called.  Inspecting the code, it is not immediately
-> obvious that the functions sleep at all, as they run
-> inside a spin_lock_irqsave, but under some conditions
-> they can drop the lock and turn on irqs.
+> On Friday, July 22, 2011, Kevin Hilman wrote:
+>> Currently the use of pm_runtime_put_sync() is not safe from
+>> interrupts-disabled context because rpm_idle() will release the
+>> spinlock and enable interrupts for the idle callbacks.  This enables
+>> interrupts during a time where interrupts were expected to be
+>> disabled, and can have strange side effects on drivers that expected
+>> interrupts to be disabled.
+>> 
+>> This is not a bug since the documentation clearly states that only
+>> _put_sync_suspend() is safe in IRQ-safe mode.
+>> 
+>> However, pm_runtime_put_sync() could be made safe when in IRQ-safe
+>> mode by releasing the spinlock but not re-enabling interrupts, which
+>> is what this patch aims to do.
+>> 
+>> Problem was found when using some buggy drivers that set
+>> pm_runtime_irq_safe() and used _put_sync() in interrupts-disabled
+>> context.
+>> 
+>> The offending drivers have been fixed to use _put_sync_suspend(),
+>> But this patch is an RFC to see if it might make sense to allow
+>> using _put_sync() from interrupts-disabled context.
 >
-> If a driver incorrectly calls the pm_runtime apis, it can
-> cause sleeping and irq processing when it expects to stay
-> in atomic context.
+> OK, I'm going to take this for 3.2.
 >
-> Add might_sleep_if to all the __pm_runtime_* entry points
-> to enforce correct usage.
 
-Minor: s/all/most of/, or something similar since in v2, it doesn't
-annotate all of the functions anymore, just the main ones likely to be
-(mis)used by drivers.
+OK, great.  Thanks.
 
-Other than that, looks good...
-
-> Add pm_runtime_put_sync_autosuspend to the list of
-> functions that can be called in atomic context.
->
-> Signed-off-by: Colin Cross <ccross@android.com>
-
-Reviewed-by: Kevin Hilman <khilman@ti.com>
+Might want to just drop the last paragraph from the changelog since it
+doesn't really belong in the permanant history.
 
 Kevin
