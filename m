@@ -1,15 +1,15 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: better oopsing when frozen
-Date: Wed, 27 Jul 2011 12:23:43 +0200
-Message-ID: <201107271223.43874.oneukum__42625.750861089$1311762226$gmane$org@suse.de>
-References: <201107251043.19932.oneukum@suse.de>
-	<20110726154502.14c7b51b.akpm@linux-foundation.org>
-	<201107271121.21348.rjw@sisk.pl>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: PM / hibernate xfs lock up / xfs_reclaim_inodes_ag
+Date: Wed, 27 Jul 2011 06:33:08 -0400
+Message-ID: <20110727103308.GA20805@infradead.org>
+References: <4E1C70AD.1010101@u-club.de> <201107262228.12099.rjw@sisk.pl>
+	<20110727004543.GE8048@dastard> <201107271135.13297.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107271121.21348.rjw@sisk.pl>
+Content-Disposition: inline
+In-Reply-To: <201107271135.13297.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,38 +20,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Christoph <cr2005@u-club.de>, Dave Chinner <david@fromorbit.com>, xfs@oss.sgi.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Mittwoch, 27. Juli 2011, 11:21:21 schrieb Rafael J. Wysocki:
-> > mm...  The patch as proposed is very simple, direct, explicit.  I
-> > suspect that trying to embed this operation within some other one would
-> > end up producing a less clear result.  Sometimes we do exceptional and
-> > weird things, and leaving the code exceptional and weird-looking is
-> > better than hiding it in some framework, if you follow what I mean.
-> =
+On Wed, Jul 27, 2011 at 11:35:13AM +0200, Rafael J. Wysocki wrote:
+> The Pavel's objection, if I remember it correctly, was that some
+> (or the majority of?) filesystems didn't implement the freezing operation,
+> so they would be more vulnerable to data loss in case of a failing hibernation
+> after this change.  However, that's better than actively causing pain to XFS
+> users.
 
-> My point is that instead of using the oom_killer_disabled variable in
-> page_alloc.c, we could use a oom_killer_disabled() function returning
-> the value of the new tasks_are_frozen variable.  Then,
-> oom_killer_disable/enable() won't be necessary any more.
-
-Well, if we do this, it'll be a separate change. Not that I disagree. =
-
-
-	Regards
-		Oliver
--- =
-
-- - - =
-
-SUSE LINUX Products GmbH, GF: Jeff Hawn, Jennifer Guild, Felix Imend=F6rffe=
-r, HRB 16746 (AG N=FCrnberg) =
-
-Maxfeldstra=DFe 5                         =
-
-90409 N=FCrnberg =
-
-Germany =
-
-- - - =
+The objection never made sense and only means he never read the code.
+freeze_super (or freeze_bdev back then) always does a sync_filesystem
+before even checking if we have a freeze method, and sync_filesystem is
+what we iterate over for each superblock in sync().
