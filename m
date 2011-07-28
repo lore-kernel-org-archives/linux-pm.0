@@ -1,14 +1,14 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Fw: Panic while enabling 2nd CPU core after suspend
- to ram on Intel Atom CPU
-Date: Thu, 28 Jul 2011 10:40:35 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1107281030570.1990-100000@iolanthe.rowland.org>
-References: <20110727155452.913e913a.akpm@linux-foundation.org>
+Subject: Re: [PATCH v3 1/2] Input: enable i8042-level wakeup
+ control
+Date: Thu, 28 Jul 2011 10:53:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1107281051220.1990-100000__14874.666176229$1311864847$gmane$org@iolanthe.rowland.org>
+References: <20110728143121.E57469D401C@zog.reactivated.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110727155452.913e913a.akpm@linux-foundation.org>
+In-Reply-To: <20110728143121.E57469D401C@zog.reactivated.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +18,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: Daniel Drake <dsd@laptop.org>
+Cc: dtor@mail.ru, linux-pm@lists.linux-foundation.org, dmitry.torokhov@gmail.com, linux-input@vger.kernel.org, dilinger@queued.net
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 27 Jul 2011, Andrew Morton wrote:
+On Thu, 28 Jul 2011, Daniel Drake wrote:
 
-> On Tue, 26 Jul 2011 22:03:25 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> The OLPC XO laptop is able to use the PS/2 controller as a wakeup source.
+> When used as a wakeup source, the key press/mouse motion must not be lost.
 > 
-> > On Thursday, July 21, 2011, Andrew Morton wrote:
-> > > 
-> > > who would be an appropriate person to look at this one? 
-> > > 
-> > > The suspend_test warning is Rafael, I guess.  But the mwait_idle oops?
-> > 
-> > The suspend_test warning only means that the resuming of devices took
-> > too much time.
+> Add infrastructure to allow controllers to be marked as wakeup-capable,
+> and avoid doing power control/reset on the i8042/serio/input devices when
+> running in this mode.
 > 
-> OK, but why did mwait_idle() oops?
+> Signed-off-by: Daniel Drake <dsd@laptop.org>
 
-I ran across a similar problem some time ago on a UP system (Bugzilla
-#15385).  It has since been fixed (commit 85a0e7539781d), but maybe
-this is related.
+> --- a/drivers/input/input.c
+> +++ b/drivers/input/input.c
+> @@ -1584,10 +1584,30 @@ void input_reset_device(struct input_dev *dev)
+>  EXPORT_SYMBOL(input_reset_device);
+>  
+>  #ifdef CONFIG_PM
+> +static bool input_may_wakeup(struct device *dev)
+> +{
+> +	/*
+> +	 * Handle an i8042 wakeup corner case. The kernel sees the i8042 device
+> +	 * and its grandchild input device as independent devices on different
+> +	 * buses, so each one has its own suspend/resume implementation called
+> +	 * from the PM layer.
+> +	 *
+> +	 * In this particular case, the wakeup enable setting on the
+> +	 * grandparent i8042 device must take effect here, indicating that the
+> +	 * input device is powered up and should not be touched during
+> +	 * suspend/resume.
+> +	 */
+> +	return dev->parent && dev->parent->parent
+> +		&& device_may_wakeup(dev->parent->parent);
+> +}
 
-By default, Intel CPUs do not accept the mwait instruction.  It has to 
-be enabled specifically by setting a bit in a machine-specific 
-register.  Normally the BIOS handles this, but some BIOSes don't when 
-resuming from suspend.  As a result, the first mwait executed during 
-the resume causes an invalid instruction exception.
-
-The kernel now restores the register value when bringing the primary
-CPU back up (that was the fix for my bug), but maybe this doesn't
-happen for secondary CPUs.
+Shouldn't this also check device_may_wakeup(dev)?  The user might 
+disable wakeup for the input device while leaving it enabled for the 
+i8042 device.
 
 Alan Stern
