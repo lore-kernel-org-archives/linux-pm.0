@@ -1,13 +1,12 @@
-From: Randy Dunlap <rdunlap@xenotime.net>
-Subject: [PATCH -next] x86/platform: mrst/pmu.c needs module.h
-Date: Fri, 29 Jul 2011 21:14:59 -0700
-Message-ID: <20110729211459.148eb8cc.rdunlap__49997.338144067$1311999393$gmane$org@xenotime.net>
-References: <20110729173827.716f57ff6e00095a3efc6449@canb.auug.org.au>
+From: "Govindraj.R" <govindraj.raja@ti.com>
+Subject: [RFC v2]: Issues implementing clock handling mechanism
+	within UART driver
+Date: Thu, 28 Jul 2011 14:59:55 +0530
+Message-ID: <1311845395-31917-1-git-send-email-govindraj.raja__42155.9357936077$1312057832$gmane$org@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110729173827.716f57ff6e00095a3efc6449@canb.auug.org.au>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,27 +16,82 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org
-Cc: platform-driver-x86@vger.kernel.org, akpm <akpm@linux-foundation.org>, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>
+To: linux-omap@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, Felipe Balbi <balbi@ti.com>, Govindraj R <govindraj.raja@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Randy Dunlap <rdunlap@xenotime.net>
+To handle uart clocks within uart driver we need the *semantics of clock enable
+API should not internally trigger any UART PORT operation* even before
+completing clock_enable.
 
-mrst/pmu.c uses interfaces from linux/module.h, so it should
-include that file.  This fixes build errors.
+Ex: while configuring baud rate we may use runtime api's to enable uart port.
+get_sync -> printk -> call console uart to print
 
-Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
----
- arch/x86/platform/mrst/pmu.c |    1 +
- 1 file changed, 1 insertion(+)
+For example, say we are calling Uart_configure baud to configure the baud-rate.
+Even before this operation completes, if there is print, we may switch to uart
+write operation which is undesirable.
 
---- linux-next-20110729.orig/arch/x86/platform/mrst/pmu.c
-+++ linux-next-20110729/arch/x86/platform/mrst/pmu.c
-@@ -21,6 +21,7 @@
- #include <linux/debugfs.h>
- #include <linux/delay.h>
- #include <linux/interrupt.h>
-+#include <linux/module.h>
- #include <linux/pci.h>
- #include <linux/seq_file.h>
- #include <linux/sfi.h>
+This occurs due to any printks called from omap_device ()/omap_hwmod ()/clk layers
+which come in the flow from pm_runtime_get_sync/ pm_runtime_put_autosuspend API's.
+
+	1. pm_runtime_get _sync -> printk -> console_write -> pm_runtime_get_sync
+	2. pm_runtime_ put_autosuspend -> rpm_suspend -> pm_generic suspend ->
+	   omap_device_disable -> debug prints -> console_write -> pm_runtime_get_sync
+
+This leads to a deadlock caused by contention of the power_lock from
+the same runtime API context.
+
+Work-around explored:
+--------------------
+Use console lock aggressively around each get_sync/put_sync.
+
+	Uart_configure baud {
+		1. Console_lock
+		2. pm_runtime_get_sync
+		3. Console_unlock (and send the prints accumulated in the
+		   log buffer to the console) which leads to a console_write .
+		4. This console_write in turn leads to a console_lock+pm_runtime_get_sync
+		5. Also  Console_unlock is undesirable here since it jumps to
+		   console write even before baud config was complete.
+	}
+
+Locking the console around a pm_runtime_get_sync()will make sure that all prints
+are sent to the log-buffer until the console in unlocked, thereby getting rid of
+recursively jumping from one port op to another even before current port
+operation is complete.
+
+However, this leads to:
+	1. Cant bind put_autosuspend with console lock as they get scheduled later
+	   put -> print -> console_write -> get_sync (one runtime API context we
+	   may enter another runtime API power lock contention)
+	2. Using console_lock wrapper everywhere in driver to suppress prints
+	   from get_sync is too aggressive in nature.
+	3. During Boot-up, console_lock is not available until uart driver
+	   completes its registration with kernel console_driver.
+
+Observing the semantics of console_lock/unlock, it seems undesirable to be used
+within uart driver. But can rather be used form global stand point to suppress
+uart prints.
+
+Example:
+1. While system wide suspending
+2. In cpu idle path., etc.
+
+Proposal:
+--------
+	1. For the UART, follow the current approach of locking the console in
+	   Idle/Suspend path before cutting the clock but using pm_runtime_putsync.
+	   That is, continue using the prepare/resume Idle calls in idle path.
+	2. Other Approach would be adding conditions to debug prints from
+	   omap_device/ omap_hwmod/clock_framework avoid calling these debug
+	   prints for uart.
+	   Or Even a debug macro that would not debug prints if the context is
+	   from uart.
+
+Any further approaches are welcome.
+
+Have captured little more details compared to v1 posted erlier:
+http://www.mail-archive.com/linux-omap@vger.kernel.org/msg52707.html
+
+-- 
+1.7.4.1
