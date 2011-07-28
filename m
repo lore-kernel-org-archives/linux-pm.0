@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 1/1] [PATCH] include storage keys in
-	hibernation image.
-Date: Fri, 29 Jul 2011 00:01:14 +0200
-Message-ID: <201107290001.14465.rjw@sisk.pl>
-References: <20110608074523.211912903@de.ibm.com>
-	<20110608074648.287491002@de.ibm.com>
+Subject: Re: [PATCH v4 0/3] DEVFREQ,
+	DVFS framework for non-CPU devices
+Date: Fri, 29 Jul 2011 00:10:53 +0200
+Message-ID: <201107290010.53788.rjw@sisk.pl>
+References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110608074648.287491002@de.ibm.com>
+In-Reply-To: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,206 +18,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-Sorry for the extreme delay.
-
-On Wednesday, June 08, 2011, Martin Schwidefsky wrote:
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Friday, July 15, 2011, MyungJoo Ham wrote:
+> For a usage example, please look at
+> http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs/heads/devfreq
 > 
-> For s390 there is one additional byte associated with each page,
-> the storage key. This byte contains the referenced and changed
-> bits and needs to be included into the hibernation image.
-> If the storage keys are not restored to their previous state all
-> original pages would appear to be dirty. This can cause
-> inconsistencies e.g. with read-only filesystems.
+> In the above git tree, DVFS (dynamic voltage and frequency scaling) mechanism
+> is applied to the memory bus of Exynos4210 for Exynos4210-NURI boards.
+> In the example, the LPDDR2 DRAM frequency changes between 133, 266, and 400MHz
+> and other related clocks simply follow the determined DDR RAM clock.
 > 
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Jiri Slaby <jslaby@suse.cz>
-> Cc: linux-pm@lists.linux-foundation.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-s390@vger.kernel.org
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
+> The DEVFREQ driver for Exynos4210 memory bus is at
+> /arch/arm/mach-exynos4/devfreq_bus.c in the git tree.
 > 
->  arch/s390/kernel/swsusp_asm64.S |    3 
->  kernel/power/snapshot.c         |  148 ++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 151 insertions(+)
-> 
-> diff -urpN linux-2.6/arch/s390/kernel/swsusp_asm64.S linux-2.6-patched/arch/s390/kernel/swsusp_asm64.S
-> --- linux-2.6/arch/s390/kernel/swsusp_asm64.S	2011-05-19 06:06:34.000000000 +0200
-> +++ linux-2.6-patched/arch/s390/kernel/swsusp_asm64.S	2011-06-06 11:14:43.000000000 +0200
-> @@ -138,11 +138,14 @@ swsusp_arch_resume:
->  0:
->  	lg	%r2,8(%r1)
->  	lg	%r4,0(%r1)
-> +	iske	%r0,%r4
->  	lghi	%r3,PAGE_SIZE
->  	lghi	%r5,PAGE_SIZE
->  1:
->  	mvcle	%r2,%r4,0
->  	jo	1b
-> +	lg	%r2,8(%r1)
-> +	sske	%r0,%r2
->  	lg	%r1,16(%r1)
->  	ltgr	%r1,%r1
->  	jnz	0b
-> diff -urpN linux-2.6/kernel/power/snapshot.c linux-2.6-patched/kernel/power/snapshot.c
-> --- linux-2.6/kernel/power/snapshot.c	2011-06-06 11:14:39.000000000 +0200
-> +++ linux-2.6-patched/kernel/power/snapshot.c	2011-06-06 11:14:43.000000000 +0200
-> @@ -1022,6 +1022,137 @@ static inline void copy_data_page(unsign
->  }
->  #endif /* CONFIG_HIGHMEM */
->  
-> +#ifdef CONFIG_S390
-> +/*
-> + * For s390 there is one additional byte associated with each page,
-> + * the storage key. The key consists of the access-control bits
-> + * (alias the key), the fetch-protection bit, the referenced bit
-> + * and the change bit (alias dirty bit). Linux uses only the
-> + * referenced bit and the change bit for pages in the page cache.
-> + * Any modification of a page will set the change bit, any access
-> + * sets the referenced bit. Overindication of the referenced bits
-> + * after a hibernation cycle does not cause any harm but the
-> + * overindication of the change bits would cause trouble.
-> + * Therefore it is necessary to include the storage keys in the
-> + * hibernation image. The storage keys are saved to the most
-> + * significant byte of each page frame number in the list of pfns
-> + * in the hibernation image.
-> + */
-> +
-> +/*
-> + * Key storage is allocated as a linked list of pages.
-> + * The size of the keys array is (PAGE_SIZE - sizeof(long))
-> + */
-> +struct page_key_data {
-> +	struct page_key_data *next;
-> +	unsigned char data[];
-> +};
-> +
-> +#define PAGE_KEY_DATA_SIZE	(PAGE_SIZE - sizeof(struct page_key_data *))
-> +
-> +static struct page_key_data *page_key_data;
-> +static struct page_key_data *page_key_rp, *page_key_wp;
-> +static unsigned long page_key_rx, page_key_wx;
-> +
-> +/*
-> + * For each page in the hibernation image one additional byte is
-> + * stored in the most significant byte of the page frame number.
-> + * On suspend no additional memory is required but on resume the
-> + * keys need to be memorized until the page data has been restored.
-> + * Only then can the storage keys be set to their old state.
-> + */
-> +static inline unsigned long page_key_additional_pages(unsigned long pages)
-> +{
-> +	return DIV_ROUND_UP(pages, PAGE_KEY_DATA_SIZE);
-> +}
-> +
-> +/*
-> + * Free page_key_data list of arrays.
-> + */
-> +static void page_key_free(void)
-> +{
-> +	struct page_key_data *pkd;
-> +
-> +	while (page_key_data) {
-> +		pkd = page_key_data;
-> +		page_key_data = pkd->next;
-> +		free_page((unsigned long) pkd);
-> +	}
-> +}
-> +
-> +/*
-> + * Allocate page_key_data list of arrays with enough room to store
-> + * one byte for each page in the hibernation image.
-> + */
-> +static int page_key_alloc(unsigned long pages)
-> +{
-> +	struct page_key_data *pk;
-> +	unsigned long size;
-> +
-> +	size = DIV_ROUND_UP(pages, PAGE_KEY_DATA_SIZE);
-> +	while (size--) {
-> +		pk = (struct page_key_data *) get_zeroed_page(GFP_KERNEL);
-> +		if (!pk) {
-> +			page_key_free();
-> +			return -ENOMEM;
-> +		}
-> +		pk->next = page_key_data;
-> +		page_key_data = pk;
-> +	}
-> +	page_key_rp = page_key_wp = page_key_data;
-> +	page_key_rx = page_key_wx = 0;
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Save the storage key into the upper 8 bits of the page frame number.
-> + */
-> +static inline void page_key_read(unsigned long *pfn)
-> +{
-> +	unsigned long addr;
-> +
-> +	addr = (unsigned long) page_address(pfn_to_page(*pfn));
-> +	*(unsigned char *) pfn = (unsigned char) page_get_storage_key(addr);
-> +}
-> +
-> +/*
-> + * Extract the storage key from the upper 8 bits of the page frame number
-> + * and store it in the page_key_data list of arrays.
-> + */
-> +static inline void page_key_memorize(unsigned long *pfn)
-> +{
-> +	page_key_wp->data[page_key_wx] = *(unsigned char *) pfn;
-> +	*(unsigned char *) pfn = 0;
-> +	if (++page_key_wx < PAGE_KEY_DATA_SIZE)
-> +		return;
-> +	page_key_wp = page_key_wp->next;
-> +	page_key_wx = 0;
-> +}
-> +
-> +/*
-> + * Get the next key from the page_key_data list of arrays and set the
-> + * storage key of the page referred by @address. If @address refers to
-> + * a "safe" page the swsusp_arch_resume code will transfer the storage
-> + * key from the buffer page to the original page.
-> + */
-> +static void page_key_write(void *address)
-> +{
-> +	page_set_storage_key((unsigned long) address,
-> +			     page_key_rp->data[page_key_rx], 0);
-> +	if (++page_key_rx >= PAGE_KEY_DATA_SIZE)
-> +		return;
-> +	page_key_rp = page_key_rp->next;
-> +	page_key_rx = 0;
-> +}
-> +#else
-> +static unsigned long page_key_additional_pages(unsigned long pages) { return 0; }
-> +static inline int  page_key_alloc(unsigned long pages) { return 0; }
-> +static inline void page_key_free(void) { }
-> +static inline void page_key_read(unsigned long *pfn) { }
-> +static inline void page_key_memorize(unsigned long *pfn) { }
-> +static inline void page_key_write(void *address) { }
-> +#endif
+> MyungJoo Ham (3):
+>   PM: Introduce DEVFREQ: generic DVFS framework with device-specific
+>     OPPs
+>   PM / DEVFREQ: add example governors
+>   PM / DEVFREQ: add sysfs interface (including user tickling)
 
-Having reconsidered things I think the code under the #ifdef above
-should really go to arch/s390.
-
-Now, for the purpose of exporting the headers I'd introduce
-CONFIG_ARCH_SAVE_PAGE_KEYS and make S390 do
-
-select ARCH_SAVE_PAGE_KEYS if HIBERNATION
-
-and I'd put a #ifdef depending on that into include/linux/suspend.h.
-
-Apart from this, I have only one complaint, which is that the kerneldoc
-comments should follow the standard (the other comments in snapshot.c don't,
-but that's a matter for a separate patch).
+OK, I'm going to take the patches for 3.2.
 
 Thanks,
 Rafael
+
+
+>  Documentation/ABI/testing/sysfs-devices-power |   50 ++
+>  Documentation/ABI/testing/sysfs-power         |   43 ++
+>  drivers/base/power/Makefile                   |    1 +
+>  drivers/base/power/devfreq.c                  |  714 +++++++++++++++++++++++++
+>  drivers/base/power/opp.c                      |    9 +
+>  include/linux/devfreq.h                       |  119 ++++
+>  kernel/power/Kconfig                          |   34 ++
+>  7 files changed, 970 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/base/power/devfreq.c
+>  create mode 100644 include/linux/devfreq.h
+> 
+> 
