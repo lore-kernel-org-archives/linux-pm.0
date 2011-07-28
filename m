@@ -1,13 +1,15 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Daniel Drake <dsd@laptop.org>
 Subject: Re: [PATCH v3 1/2] Input: enable i8042-level wakeup
- control
-Date: Thu, 28 Jul 2011 11:08:49 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1107281103180.1990-100000__28154.1468030357$1311865894$gmane$org@iolanthe.rowland.org>
+	control
+Date: Thu, 28 Jul 2011 16:21:08 +0100
+Message-ID: <CAGq3pz6J2pma1TxcqUreQ-qi37Tk4VU15uAvH1=dwyAAvxAPLg__41306.3620719642$1311866528$gmane$org@mail.gmail.com>
 References: <CAGq3pz6vr2gOq91Cz6KByhF4vdWEZqOOWECZhOCVD38kcyuEFQ@mail.gmail.com>
+	<Pine.LNX.4.44L0.1107281103180.1990-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6715959970123041974=="
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAGq3pz6vr2gOq91Cz6KByhF4vdWEZqOOWECZhOCVD38kcyuEFQ@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.44L0.1107281103180.1990-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,49 +17,42 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Drake <dsd@laptop.org>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: dtor@mail.ru, linux-pm@lists.linux-foundation.org, dmitry.torokhov@gmail.com, linux-input@vger.kernel.org, dilinger@queued.net
 List-Id: linux-pm@vger.kernel.org
 
---===============6715959970123041974==
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by smtp1.linux-foundation.org id p6SF9dKm032634
+On 28 July 2011 16:08, Alan Stern <stern@rowland.harvard.edu> wrote:
+> Aren't there? =A0I have no idea. =A0But if input devices are never
+> wakeup-capable, why do you name your function "input_may_wakeup()"?
 
-On Thu, 28 Jul 2011, Daniel Drake wrote:
+I guess i8042_may_wakeup() would be a better name for it. In this
+case, the only device in the hierarchy (i8042 -> serio -> input) that
+is marked wakeup capable is the i8042 device (and only via my
+patches). I'd welcome a better design.
 
-> On 28 July 2011 15:53, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > Shouldn't this also check device_may_wakeup(dev)? =A0The user might
-> > disable wakeup for the input device while leaving it enabled for the
-> > i8042 device.
->=20
-> As far as I'm aware, there aren't any instances where input devices
-> are marked as wakeup-capable. So, we're speaking theoretically.
+> I'm using a normal PC with PS/2 mouse and keyboard. =A0It is set up with
+> the keyboard as a wakeup source but not the mouse. =A0Of course, this
+> uses ACPI, which I assume isn't present on OLPC.
 
-Aren't there?  I have no idea.  But if input devices are never=20
-wakeup-capable, why do you name your function "input_may_wakeup()"?
+It does depend on how the system is designed, yes. I suspect that the
+device that is actually marked as wakeup capable on your setup is not
+an input device, but rather another part of the /sys tree (perhaps
+part of the ACPI tree?). Also, I suspect that if your system is woken
+up by the keyboard, it loses the keypress which was used to wake it
+up.
 
-> But, what would this mean? On OLPC for example, we can only control
-> i8042 wakeups. This means we don't get to choose that we want keyboard
-> wakeups and not mouse. If you enable i8042 wakeups you get both, and
-> we can't change that, as the wakeup mechanism revolves around the
-> i8042 controller.
+I'm definitely open to better ways of doing this. The key considerations ar=
+e:
+1. We only have control over wakeups at the i8042 level; i.e. we
+cannot ask for keyboard wakeups but not mouse.
+2. Our keyboard and mouse hardware is guaranteed to be powered
+throughout suspend
+3. The key press or mouse movement or click that woke the system must
+not be lost during resume. This means that all 3 layers (i8042, serio,
+input) must not reset or really do anything with the device during
+suspend/resume.
 
-I'm using a normal PC with PS/2 mouse and keyboard.  It is set up with
-the keyboard as a wakeup source but not the mouse.  Of course, this=20
-uses ACPI, which I assume isn't present on OLPC.
-
-Alan Stern
-
-
---===============6715959970123041974==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-
---===============6715959970123041974==--
+Thanks,
+Daniel
