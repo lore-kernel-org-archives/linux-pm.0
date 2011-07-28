@@ -1,13 +1,15 @@
-From: jean.pihet@newoldbits.com
-Subject: [PATCH 13/13] OMAP2+: cpuidle only influences the MPU
-	state
-Date: Thu, 28 Jul 2011 10:30:20 +0200
-Message-ID: <1311841821-10252-14-git-send-email-j-pihet__26424.3201738738$1311842294$gmane$org@ti.com>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [RFC/PATCH v3 00/13] PM QoS: add a per-device
+ latency constraints class
+Date: Thu, 28 Jul 2011 06:14:54 -0700
+Message-ID: <20110728131454.GA2579@gvim.org>
 References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -18,216 +20,187 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, Kevin Hilman <khilman@ti.com>, Magnus Damm <magnus.damm@gmail.com>, Linux PM mailing list <linux-pm@lis>
-Cc: Jean Pihet <j-pihet@ti.com>
+To: jean.pihet@newoldbits.com
+Cc: markgross@thegnar.org, broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Pihet <j-pihet@ti.com>
+On Thu, Jul 28, 2011 at 10:30:07AM +0200, jean.pihet@newoldbits.com wrote:
+> From: Jean Pihet <j-pihet@ti.com>
+> 
+> This patch set is in an RFC state, for review and comments.
+> 
+> High level implementation:
+> 
+> 1. Add a new PM QoS class for device wake-up constraints (PM_QOS_DEV_LATENCY).
+> . Define a pm_qos_constraints struct for the storage of the constraints list
+> and associated values (target_value, default_value, type ...).
+> . Update the pm_qos_object struct with the information related to a PM QoS
+> class: ptr to constraints list, notifer ptr, name ...
+> . Each PM QoS class statically declare objects for pm_qos_object and
+> pm_qos_constraints. The only exception is the devices constraints, cf. below.
+> . The device constraints class is statically declaring a pm_qos_object. The
+> pm_qos_constraints are per-device and so are embedded into the device struct.
+> 
+> The new class is available from kernel drivers and shall be made available
+> to user space through a per-device sysfs entry. User space API to come as a 
+> subsequent patch.
+> 
+> 2. Added a notification of device insertion/removal from the device PM framework
+> to PM QoS.
+> This allows to init/de-init the per-device constraints list upon device insertion
+> and removal.
+> RFC state for comments and review, lightly tested
+> 
+> 3. Make the pm_qos_add_request API more generic by using a
+> struct pm_qos_parameters parameter. This allows easy extension in the future.
+> 
+> 4. Upon a change of the aggregated constraint value in the PM_QOS_DEV_LATENCY class
+> a notification chain mechanism is used to take action on the system.
+> This is the proposed way to have PM QoS and the platform dependant code to
+> interact with each other, cf. 5 below.
+> The notification mechanism now passes the constraint request struct ptr in
+> order for the notifier callback to have access to the full set of constraint
+> data, e.g. the struct device ptr.
+> 
+> 5. cpuidle interaction with the OMAP3 cpuidle handler
+> Since cpuidle is a CPU centric framework it decides the MPU next power state
+> based on the MPU exit_latency and target_residency figures.
+>     
+> The rest of the power domains get their next power state programmed from
+> the PM_QOS_DEV_LATENCY class of the PM QoS framework, via the device
+> wake-up latency constraints callback to the OMAP_PM_CONSTRAINTS framework.
+> 
+> Note: the exit_latency and target_residency figures of the MPU include the MPU
+> itself and the peripherals needed for the MPU to execute instructions (e.g.
+> main memory, caches, IRQ controller, MMU etc).
+> Some of those peripherals can belong to other power domains than the MPU
+> subsystem and so the corresponding latencies must be included in those figures.
+> 
+> 6. Update the pm_qos_add_request callers to the generic API
+> 
+> 7. Misc fixes to improve code readability:
+> . rename of the PM QoS implementation file from pm_qos_params.[ch] to pm_qos.[ch]
+I picked the name for the file as pm_qos_params over pm_qos because I
+wanted to make it implicitly clear that this was not an full QOS
+implementation.  True QOS carries expectations similar to real time and
+as the infrastructure is closer to "good intentioned" than even "best
+effort" and offers no notification when the QOS request is not able to
+be met and really doesn't implement a true QOS at all, (it just provides
+the parameter interface for part of one its missing the notification
+interface when the service level is not met and I think a few other
+things.) So I wanted to have it named a bit different from just pm_qos.
 
-Since cpuidle is a CPU centric framework it decides the MPU
-next power state based on the MPU exit_latency and target_residency
-figures.
+This said I'm not supper attached to the naming of the modules.  If
+folks want to change it I wouldn't complain (too much anyway;).
 
-The rest of the power domains get their next power state programmed
-from the PM_QOS_DEV_LATENCY class of the PM QoS framework,
-via the devices wake-up latency constraints.
+--mark
+PS I'll look at the rest of the patches tomorrow, this time for real as
+I'm about to have more free time to focus on non-work stuff :)
+FWIW this write up sounds interesting.
 
-Note: the exit_latency and target_residency figures of the MPU
-include the MPU itself and the peripherals needed for the MPU to
-execute instructions (e.g. main memory, caches, IRQ controller,
-MMU etc). Some of those peripherals can belong to other power domains
-than the MPU subsystem and so the corresponding latencies must be
-included in this figure.
 
-Tested on OMAP3 Beagleboard in RET/OFF using wake-up latency constraints
-on MPU, CORE and PER.
-
-Signed-off-by: Jean Pihet <j-pihet@ti.com>
----
- arch/arm/mach-omap2/cpuidle34xx.c |   42 +++++++++++-------------------------
- arch/arm/mach-omap2/pm.h          |   17 +++++++++++++-
- 2 files changed, 28 insertions(+), 31 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
-index 4bf6e6e..b43d1d2 100644
---- a/arch/arm/mach-omap2/cpuidle34xx.c
-+++ b/arch/arm/mach-omap2/cpuidle34xx.c
-@@ -37,26 +37,26 @@
- #ifdef CONFIG_CPU_IDLE
- 
- /*
-- * The latencies/thresholds for various C states have
-+ * The MPU latencies/thresholds for various C states have
-  * to be configured from the respective board files.
-  * These are some default values (which might not provide
-  * the best power savings) used on boards which do not
-  * pass these details from the board file.
-  */
- static struct cpuidle_params cpuidle_params_table[] = {
--	/* C1 */
-+	/* C1 . MPU WFI + Core active */
- 	{2 + 2, 5, 1},
--	/* C2 */
-+	/* C2 . MPU WFI + Core inactive */
- 	{10 + 10, 30, 1},
--	/* C3 */
-+	/* C3 . MPU CSWR + Core inactive */
- 	{50 + 50, 300, 1},
--	/* C4 */
-+	/* C4 . MPU OFF + Core inactive */
- 	{1500 + 1800, 4000, 1},
--	/* C5 */
-+	/* C5 . MPU RET + Core RET */
- 	{2500 + 7500, 12000, 1},
--	/* C6 */
-+	/* C6 . MPU OFF + Core RET */
- 	{3000 + 8500, 15000, 1},
--	/* C7 */
-+	/* C7 . MPU OFF + Core OFF */
- 	{10000 + 30000, 300000, 1},
- };
- #define OMAP3_NUM_STATES ARRAY_SIZE(cpuidle_params_table)
-@@ -64,7 +64,6 @@ static struct cpuidle_params cpuidle_params_table[] = {
- /* Mach specific information to be recorded in the C-state driver_data */
- struct omap3_idle_statedata {
- 	u32 mpu_state;
--	u32 core_state;
- 	u8 valid;
- };
- struct omap3_idle_statedata omap3_idle_data[OMAP3_NUM_STATES];
-@@ -98,7 +97,7 @@ static int omap3_enter_idle(struct cpuidle_device *dev,
- {
- 	struct omap3_idle_statedata *cx = cpuidle_get_statedata(state);
- 	struct timespec ts_preidle, ts_postidle, ts_idle;
--	u32 mpu_state = cx->mpu_state, core_state = cx->core_state;
-+	u32 mpu_state = cx->mpu_state;
- 
- 	/* Used to keep track of the total time in idle */
- 	getnstimeofday(&ts_preidle);
-@@ -107,7 +106,6 @@ static int omap3_enter_idle(struct cpuidle_device *dev,
- 	local_fiq_disable();
- 
- 	pwrdm_set_next_pwrst(mpu_pd, mpu_state);
--	pwrdm_set_next_pwrst(core_pd, core_state);
- 
- 	if (omap_irq_pending() || need_resched())
- 		goto return_sleep_time;
-@@ -156,6 +154,7 @@ static struct cpuidle_state *next_valid_state(struct cpuidle_device *dev,
- 	struct omap3_idle_statedata *cx = cpuidle_get_statedata(curr);
- 	u32 mpu_deepest_state = PWRDM_POWER_RET;
- 	u32 core_deepest_state = PWRDM_POWER_RET;
-+	u32 core_next_state = pwrdm_read_next_pwrst(core_pd);
- 
- 	if (enable_off_mode) {
- 		mpu_deepest_state = PWRDM_POWER_OFF;
-@@ -171,7 +170,7 @@ static struct cpuidle_state *next_valid_state(struct cpuidle_device *dev,
- 	/* Check if current state is valid */
- 	if ((cx->valid) &&
- 	    (cx->mpu_state >= mpu_deepest_state) &&
--	    (cx->core_state >= core_deepest_state)) {
-+	    (core_next_state >= core_deepest_state)) {
- 		return curr;
- 	} else {
- 		int idx = OMAP3_NUM_STATES - 1;
-@@ -196,7 +195,7 @@ static struct cpuidle_state *next_valid_state(struct cpuidle_device *dev,
- 			cx = cpuidle_get_statedata(&dev->states[idx]);
- 			if ((cx->valid) &&
- 			    (cx->mpu_state >= mpu_deepest_state) &&
--			    (cx->core_state >= core_deepest_state)) {
-+			    (core_next_state >= core_deepest_state)) {
- 				next = &dev->states[idx];
- 				break;
- 			}
-@@ -242,19 +241,11 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
- 	}
- 
- 	/*
--	 * FIXME: we currently manage device-specific idle states
--	 *        for PER and CORE in combination with CPU-specific
--	 *        idle states.  This is wrong, and device-specific
--	 *        idle management needs to be separated out into
--	 *        its own code.
--	 */
--
--	/*
- 	 * Prevent PER off if CORE is not in retention or off as this
- 	 * would disable PER wakeups completely.
- 	 */
- 	cx = cpuidle_get_statedata(state);
--	core_next_state = cx->core_state;
-+	core_next_state = pwrdm_read_next_pwrst(core_pd);
- 	per_next_state = per_saved_state = pwrdm_read_next_pwrst(per_pd);
- 	if ((per_next_state == PWRDM_POWER_OFF) &&
- 	    (core_next_state > PWRDM_POWER_RET))
-@@ -346,32 +337,26 @@ int __init omap3_idle_init(void)
- 	dev->safe_state = &dev->states[0];
- 	cx->valid = 1;	/* C1 is always valid */
- 	cx->mpu_state = PWRDM_POWER_ON;
--	cx->core_state = PWRDM_POWER_ON;
- 
- 	/* C2 . MPU WFI + Core inactive */
- 	cx = _fill_cstate(dev, 1, "MPU ON + CORE ON");
- 	cx->mpu_state = PWRDM_POWER_ON;
--	cx->core_state = PWRDM_POWER_ON;
- 
- 	/* C3 . MPU CSWR + Core inactive */
- 	cx = _fill_cstate(dev, 2, "MPU RET + CORE ON");
- 	cx->mpu_state = PWRDM_POWER_RET;
--	cx->core_state = PWRDM_POWER_ON;
- 
- 	/* C4 . MPU OFF + Core inactive */
- 	cx = _fill_cstate(dev, 3, "MPU OFF + CORE ON");
- 	cx->mpu_state = PWRDM_POWER_OFF;
--	cx->core_state = PWRDM_POWER_ON;
- 
- 	/* C5 . MPU RET + Core RET */
- 	cx = _fill_cstate(dev, 4, "MPU RET + CORE RET");
- 	cx->mpu_state = PWRDM_POWER_RET;
--	cx->core_state = PWRDM_POWER_RET;
- 
- 	/* C6 . MPU OFF + Core RET */
- 	cx = _fill_cstate(dev, 5, "MPU OFF + CORE RET");
- 	cx->mpu_state = PWRDM_POWER_OFF;
--	cx->core_state = PWRDM_POWER_RET;
- 
- 	/* C7 . MPU OFF + Core OFF */
- 	cx = _fill_cstate(dev, 6, "MPU OFF + CORE OFF");
-@@ -386,7 +371,6 @@ int __init omap3_idle_init(void)
- 			__func__);
- 	}
- 	cx->mpu_state = PWRDM_POWER_OFF;
--	cx->core_state = PWRDM_POWER_OFF;
- 
- 	dev->state_count = OMAP3_NUM_STATES;
- 	if (cpuidle_register_device(dev)) {
-diff --git a/arch/arm/mach-omap2/pm.h b/arch/arm/mach-omap2/pm.h
-index babac19..38327dc 100644
---- a/arch/arm/mach-omap2/pm.h
-+++ b/arch/arm/mach-omap2/pm.h
-@@ -43,9 +43,22 @@ static inline int omap4_opp_init(void)
-  * omap3_pm_init_cpuidle
-  */
- struct cpuidle_params {
--	u32 exit_latency;	/* exit_latency = sleep + wake-up latencies */
-+	/*
-+	 * exit_latency = sleep + wake-up latencies of the MPU,
-+	 * which include the MPU itself and the peripherals needed
-+	 * for the MPU to execute instructions (e.g. main memory,
-+	 * caches, IRQ controller, MMU etc). Some of those peripherals
-+	 * can belong to other power domains than the MPU subsystem and so
-+	 * the corresponding latencies must be included in this figure.
-+	 */
-+	u32 exit_latency;
-+	/*
-+	 * target_residency: required amount of time in the C state
-+	 * to break even on energy cost
-+	 */
- 	u32 target_residency;
--	u8 valid;		/* validates the C-state */
-+	/* validates the C-state on the given board */
-+	u8 valid;
- };
- 
- #if defined(CONFIG_PM) && defined(CONFIG_CPU_IDLE)
--- 
-1.7.2.5
+> . rename of fields names (request, list, constraints, class),
+> . simplification of the in-kernel PM QoS API implementation. The main logic part
+> is now implemented in the update_target function.
+> 
+> Questions:
+> 1. per-device user-space API: since sysfs does not provide open/close
+> callbacks it is not possible to support multiple and simultaneous users of
+> the per-device sysfs entry. A user-space constraints aggregation application is
+> needed in case of multiple constraints for a device. Is this the way to go?
+> 
+> On-going developments, patches in preparation:
+> 1. add a user-space API for the devices constratins PM QoS, using a sysfs entry
+>    per device
+> 2. write Documentation for the new PM QoS class, once the RFC is agreed on
+> 3. validate the constraints framework on OMAP4 HW (done on OMAP3)
+> 4. refine the power domains wake-up latency and the cpuidle figures
+> 
+> Based on the master branch of the linux-omap git tree (3.0.0-rc7). Compile
+> tested using OMAP and x86 generic defconfigs.
+> Lightly tested on OMAP3 Beagleboard (ES2.x).
+> 
+> 
+> Changelog:
+> 
+> v3:
+> . Complete PM QoS re-design after the comments on MLs
+> . Patch set split up for improved readability and easier maintenance
+> 
+> v2:
+> . Rework after comments on the mailing lists
+> . Added a notification of device insertion/removal from the device PM framework
+> . Validated on OMAP3 HW
+> 
+> v1:
+> . Initial implementation
+> 
+> 
+> Jean Pihet (12):
+>   PM: QoS: rename pm_qos_params files to pm_qos
+>   PM: add a per-device wake-up latency constraints plist
+>   PM: QoS: extend the in-kernel API with per-device latency constraints
+>   PM: QoS: implement the per-device latency constraints
+>   PM: QoS: support the dynamic insertion and removal of devices
+>   OMAP PM: create a PM layer plugin for per-device constraints
+>   OMAP PM: early init of the pwrdms states
+>   OMAP2+: powerdomain: control power domains next state
+>   OMAP3: powerdomain data: add wake-up latency figures
+>   OMAP2+: omap_hwmod: manage the wake-up latency constraints
+>   OMAP: PM CONSTRAINTS: implement the devices wake-up latency
+>     constraints
+>   OMAP2+: cpuidle only influences the MPU state
+> 
+> Vishwanath BS (1):
+>   OMAP4: powerdomain data: add wake-up latency figures
+> 
+>  arch/arm/mach-msm/clock.c                    |    2 +-
+>  arch/arm/mach-omap2/cpuidle34xx.c            |   42 +--
+>  arch/arm/mach-omap2/omap_hwmod.c             |   26 ++-
+>  arch/arm/mach-omap2/pm.h                     |   17 +-
+>  arch/arm/mach-omap2/pm34xx.c                 |    2 +-
+>  arch/arm/mach-omap2/pm44xx.c                 |    2 +-
+>  arch/arm/mach-omap2/powerdomain.c            |  190 +++++++++
+>  arch/arm/mach-omap2/powerdomain.h            |   33 ++-
+>  arch/arm/mach-omap2/powerdomains3xxx_data.c  |   77 ++++
+>  arch/arm/mach-omap2/powerdomains44xx_data.c  |   84 ++++
+>  arch/arm/plat-omap/Kconfig                   |    7 +
+>  arch/arm/plat-omap/Makefile                  |    1 +
+>  arch/arm/plat-omap/i2c.c                     |   20 -
+>  arch/arm/plat-omap/include/plat/omap-pm.h    |  128 ------
+>  arch/arm/plat-omap/include/plat/omap_hwmod.h |    2 +
+>  arch/arm/plat-omap/omap-pm-constraints.c     |  344 ++++++++++++++++
+>  arch/arm/plat-omap/omap-pm-noop.c            |   89 ----
+>  drivers/acpi/processor_idle.c                |    2 +-
+>  drivers/base/power/main.c                    |    4 +
+>  drivers/cpuidle/cpuidle.c                    |    2 +-
+>  drivers/cpuidle/governors/ladder.c           |    2 +-
+>  drivers/cpuidle/governors/menu.c             |    2 +-
+>  drivers/i2c/busses/i2c-omap.c                |   35 +-
+>  drivers/media/video/via-camera.c             |    9 +-
+>  drivers/net/e1000e/netdev.c                  |   11 +-
+>  drivers/net/wireless/ipw2x00/ipw2100.c       |   10 +-
+>  drivers/staging/msm/lcdc.c                   |    2 +-
+>  drivers/staging/msm/tvenc.c                  |    2 +-
+>  include/linux/netdevice.h                    |    4 +-
+>  include/linux/pm.h                           |    4 +
+>  include/linux/pm_qos.h                       |   68 ++++
+>  include/linux/pm_qos_params.h                |   38 --
+>  include/sound/pcm.h                          |    4 +-
+>  kernel/Makefile                              |    2 +-
+>  kernel/pm_qos.c                              |  557 ++++++++++++++++++++++++++
+>  kernel/pm_qos_params.c                       |  481 ----------------------
+>  net/mac80211/main.c                          |    2 +-
+>  net/mac80211/mlme.c                          |    2 +-
+>  net/mac80211/scan.c                          |    2 +-
+>  sound/core/pcm_native.c                      |   10 +-
+>  40 files changed, 1487 insertions(+), 834 deletions(-)
+>  create mode 100644 arch/arm/plat-omap/omap-pm-constraints.c
+>  create mode 100644 include/linux/pm_qos.h
+>  delete mode 100644 include/linux/pm_qos_params.h
+>  create mode 100644 kernel/pm_qos.c
+>  delete mode 100644 kernel/pm_qos_params.c
+> 
+> -- 
+> 1.7.2.5
+> 
