@@ -1,13 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Unfreeze tasks after an oops in the freezer
-Date: Thu, 28 Jul 2011 23:14:05 +0200
-Message-ID: <201107282314.05894.rjw__5848.96583245627$1311889728$gmane$org@sisk.pl>
-References: <201107271235.58734.oneukum@suse.de>
+Subject: Re: [patch 1/1] [PATCH] include storage keys in
+	hibernation image.
+Date: Fri, 29 Jul 2011 00:01:14 +0200
+Message-ID: <201107290001.14465.rjw@sisk.pl>
+References: <20110608074523.211912903@de.ibm.com>
+	<20110608074648.287491002@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107271235.58734.oneukum@suse.de>
+In-Reply-To: <20110608074648.287491002@de.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,114 +19,206 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 27, 2011, Oliver Neukum wrote:
-> From ee5849f0bc39d554ef91747ff80c307ac3e05cdd Mon Sep 17 00:00:00 2001
-> From: Oliver Neukum <oliver@neukum.org>
-> Date: Wed, 27 Jul 2011 12:27:00 +0200
-> Subject: [PATCH] Unfreeze tasks after an oops in the freezer
+Hi,
+
+Sorry for the extreme delay.
+
+On Wednesday, June 08, 2011, Martin Schwidefsky wrote:
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> If an oops kills the task suspending or snapshotting
-> is system, the system is dead because the action is
-> never completed and the tasks never thawed.
+> For s390 there is one additional byte associated with each page,
+> the storage key. This byte contains the referenced and changed
+> bits and needs to be included into the hibernation image.
+> If the storage keys are not restored to their previous state all
+> original pages would appear to be dirty. This can cause
+> inconsistencies e.g. with read-only filesystems.
 > 
-> Signed-off-by: Oliver Neukum <oneukum@suse.de>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Jiri Slaby <jslaby@suse.cz>
+> Cc: linux-pm@lists.linux-foundation.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-s390@vger.kernel.org
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > ---
->  include/linux/freezer.h |    2 ++
->  kernel/panic.c          |    8 ++++++++
->  kernel/power/process.c  |   11 +++++++++++
->  3 files changed, 21 insertions(+), 0 deletions(-)
 > 
-> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-> index 1effc8b..ab0168a 100644
-> --- a/include/linux/freezer.h
-> +++ b/include/linux/freezer.h
-> @@ -50,6 +50,7 @@ extern int thaw_process(struct task_struct *p);
->  extern void refrigerator(void);
->  extern int freeze_processes(void);
->  extern void thaw_processes(void);
-> +extern void thaw_in_oops(void);
->  
->  static inline int try_to_freeze(void)
->  {
-> @@ -181,6 +182,7 @@ static inline void freezer_count(void) {}
->  static inline int freezer_should_skip(struct task_struct *p) { return 0; }
->  static inline void set_freezable(void) {}
->  static inline void set_freezable_with_signal(void) {}
-> +static inline void thaw_in_oops(void) {}
->  
->  #define wait_event_freezable(wq, condition)				\
->  		wait_event_interruptible(wq, condition)
-> diff --git a/kernel/panic.c b/kernel/panic.c
-> index 6923167..ccdd834 100644
-> --- a/kernel/panic.c
-> +++ b/kernel/panic.c
-> @@ -23,6 +23,7 @@
->  #include <linux/init.h>
->  #include <linux/nmi.h>
->  #include <linux/dmi.h>
-> +#include <linux/freezer.h>
->  
->  #define PANIC_TIMER_STEP 100
->  #define PANIC_BLINK_SPD 18
-> @@ -355,6 +356,13 @@ void oops_exit(void)
->  	do_oops_enter_exit();
->  	print_oops_end_marker();
->  	kmsg_dump(KMSG_DUMP_OOPS);
-> +	/*
-> +	 * if we oops while tasks are frozen, the system
-> +	 * will stop dead because the task that would thaw it
-> +	 * has been killed. So the system must be explicitly
-> +	 * thawed here.
-> +	 */
-> +	thaw_in_oops();
+>  arch/s390/kernel/swsusp_asm64.S |    3 
+>  kernel/power/snapshot.c         |  148 ++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 151 insertions(+)
+> 
+> diff -urpN linux-2.6/arch/s390/kernel/swsusp_asm64.S linux-2.6-patched/arch/s390/kernel/swsusp_asm64.S
+> --- linux-2.6/arch/s390/kernel/swsusp_asm64.S	2011-05-19 06:06:34.000000000 +0200
+> +++ linux-2.6-patched/arch/s390/kernel/swsusp_asm64.S	2011-06-06 11:14:43.000000000 +0200
+> @@ -138,11 +138,14 @@ swsusp_arch_resume:
+>  0:
+>  	lg	%r2,8(%r1)
+>  	lg	%r4,0(%r1)
+> +	iske	%r0,%r4
+>  	lghi	%r3,PAGE_SIZE
+>  	lghi	%r5,PAGE_SIZE
+>  1:
+>  	mvcle	%r2,%r4,0
+>  	jo	1b
+> +	lg	%r2,8(%r1)
+> +	sske	%r0,%r2
+>  	lg	%r1,16(%r1)
+>  	ltgr	%r1,%r1
+>  	jnz	0b
+> diff -urpN linux-2.6/kernel/power/snapshot.c linux-2.6-patched/kernel/power/snapshot.c
+> --- linux-2.6/kernel/power/snapshot.c	2011-06-06 11:14:39.000000000 +0200
+> +++ linux-2.6-patched/kernel/power/snapshot.c	2011-06-06 11:14:43.000000000 +0200
+> @@ -1022,6 +1022,137 @@ static inline void copy_data_page(unsign
 >  }
+>  #endif /* CONFIG_HIGHMEM */
 >  
->  #ifdef WANT_WARN_ON_SLOWPATH
-> diff --git a/kernel/power/process.c b/kernel/power/process.c
-> index 0cf3a27..c03e88b 100644
-> --- a/kernel/power/process.c
-> +++ b/kernel/power/process.c
-> @@ -22,6 +22,9 @@
->   */
->  #define TIMEOUT	(20 * HZ)
->  
-> +/* in case we oops while processes are frozen */
-> +static bool tasks_frozen = false;
+> +#ifdef CONFIG_S390
+> +/*
+> + * For s390 there is one additional byte associated with each page,
+> + * the storage key. The key consists of the access-control bits
+> + * (alias the key), the fetch-protection bit, the referenced bit
+> + * and the change bit (alias dirty bit). Linux uses only the
+> + * referenced bit and the change bit for pages in the page cache.
+> + * Any modification of a page will set the change bit, any access
+> + * sets the referenced bit. Overindication of the referenced bits
+> + * after a hibernation cycle does not cause any harm but the
+> + * overindication of the change bits would cause trouble.
+> + * Therefore it is necessary to include the storage keys in the
+> + * hibernation image. The storage keys are saved to the most
+> + * significant byte of each page frame number in the list of pfns
+> + * in the hibernation image.
+> + */
 > +
->  static inline int freezable(struct task_struct * p)
->  {
->  	if ((p == current) ||
-> @@ -131,6 +134,7 @@ static int try_to_freeze_tasks(bool sig_only)
->  			elapsed_csecs % 100);
->  	}
->  
-> +	tasks_frozen = (todo == 0);
-
-I'd prefer it to be set by freeze_processes(), when oom_killer_disable()
-is called.
-
->  	return todo ? -EBUSY : 0;
->  }
->  
-> @@ -189,7 +193,14 @@ void thaw_processes(void)
->  	thaw_workqueues();
->  	thaw_tasks(true);
->  	thaw_tasks(false);
-> +	tasks_frozen = false;
->  	schedule();
->  	printk("done.\n");
->  }
->  
-> +void thaw_in_oops(void)
+> +/*
+> + * Key storage is allocated as a linked list of pages.
+> + * The size of the keys array is (PAGE_SIZE - sizeof(long))
+> + */
+> +struct page_key_data {
+> +	struct page_key_data *next;
+> +	unsigned char data[];
+> +};
+> +
+> +#define PAGE_KEY_DATA_SIZE	(PAGE_SIZE - sizeof(struct page_key_data *))
+> +
+> +static struct page_key_data *page_key_data;
+> +static struct page_key_data *page_key_rp, *page_key_wp;
+> +static unsigned long page_key_rx, page_key_wx;
+> +
+> +/*
+> + * For each page in the hibernation image one additional byte is
+> + * stored in the most significant byte of the page frame number.
+> + * On suspend no additional memory is required but on resume the
+> + * keys need to be memorized until the page data has been restored.
+> + * Only then can the storage keys be set to their old state.
+> + */
+> +static inline unsigned long page_key_additional_pages(unsigned long pages)
 > +{
-> +	if (tasks_frozen)
-> +		thaw_processes();
+> +	return DIV_ROUND_UP(pages, PAGE_KEY_DATA_SIZE);
 > +}
 > +
+> +/*
+> + * Free page_key_data list of arrays.
+> + */
+> +static void page_key_free(void)
+> +{
+> +	struct page_key_data *pkd;
+> +
+> +	while (page_key_data) {
+> +		pkd = page_key_data;
+> +		page_key_data = pkd->next;
+> +		free_page((unsigned long) pkd);
+> +	}
+> +}
+> +
+> +/*
+> + * Allocate page_key_data list of arrays with enough room to store
+> + * one byte for each page in the hibernation image.
+> + */
+> +static int page_key_alloc(unsigned long pages)
+> +{
+> +	struct page_key_data *pk;
+> +	unsigned long size;
+> +
+> +	size = DIV_ROUND_UP(pages, PAGE_KEY_DATA_SIZE);
+> +	while (size--) {
+> +		pk = (struct page_key_data *) get_zeroed_page(GFP_KERNEL);
+> +		if (!pk) {
+> +			page_key_free();
+> +			return -ENOMEM;
+> +		}
+> +		pk->next = page_key_data;
+> +		page_key_data = pk;
+> +	}
+> +	page_key_rp = page_key_wp = page_key_data;
+> +	page_key_rx = page_key_wx = 0;
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Save the storage key into the upper 8 bits of the page frame number.
+> + */
+> +static inline void page_key_read(unsigned long *pfn)
+> +{
+> +	unsigned long addr;
+> +
+> +	addr = (unsigned long) page_address(pfn_to_page(*pfn));
+> +	*(unsigned char *) pfn = (unsigned char) page_get_storage_key(addr);
+> +}
+> +
+> +/*
+> + * Extract the storage key from the upper 8 bits of the page frame number
+> + * and store it in the page_key_data list of arrays.
+> + */
+> +static inline void page_key_memorize(unsigned long *pfn)
+> +{
+> +	page_key_wp->data[page_key_wx] = *(unsigned char *) pfn;
+> +	*(unsigned char *) pfn = 0;
+> +	if (++page_key_wx < PAGE_KEY_DATA_SIZE)
+> +		return;
+> +	page_key_wp = page_key_wp->next;
+> +	page_key_wx = 0;
+> +}
+> +
+> +/*
+> + * Get the next key from the page_key_data list of arrays and set the
+> + * storage key of the page referred by @address. If @address refers to
+> + * a "safe" page the swsusp_arch_resume code will transfer the storage
+> + * key from the buffer page to the original page.
+> + */
+> +static void page_key_write(void *address)
+> +{
+> +	page_set_storage_key((unsigned long) address,
+> +			     page_key_rp->data[page_key_rx], 0);
+> +	if (++page_key_rx >= PAGE_KEY_DATA_SIZE)
+> +		return;
+> +	page_key_rp = page_key_rp->next;
+> +	page_key_rx = 0;
+> +}
+> +#else
+> +static unsigned long page_key_additional_pages(unsigned long pages) { return 0; }
+> +static inline int  page_key_alloc(unsigned long pages) { return 0; }
+> +static inline void page_key_free(void) { }
+> +static inline void page_key_read(unsigned long *pfn) { }
+> +static inline void page_key_memorize(unsigned long *pfn) { }
+> +static inline void page_key_write(void *address) { }
+> +#endif
+
+Having reconsidered things I think the code under the #ifdef above
+should really go to arch/s390.
+
+Now, for the purpose of exporting the headers I'd introduce
+CONFIG_ARCH_SAVE_PAGE_KEYS and make S390 do
+
+select ARCH_SAVE_PAGE_KEYS if HIBERNATION
+
+and I'd put a #ifdef depending on that into include/linux/suspend.h.
+
+Apart from this, I have only one complaint, which is that the kerneldoc
+comments should follow the standard (the other comments in snapshot.c don't,
+but that's a matter for a separate patch).
 
 Thanks,
 Rafael
