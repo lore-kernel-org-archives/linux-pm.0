@@ -1,16 +1,15 @@
-From: Todd Poynor <toddpoynor@google.com>
-Subject: Re: [PATCH 07/13] OMAP PM: early init of the pwrdms
-	states
-Date: Fri, 29 Jul 2011 01:08:20 -0700
-Message-ID: <20110729080820.GB26959__6341.91364883936$1311926959$gmane$org@google.com>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [RFC/PATCH v3 00/13] PM QoS: add a per-device
+	latency constraints class
+Date: Fri, 29 Jul 2011 10:37:52 +0200
+Message-ID: <CAORVsuVoJ5-1hx2+6+gCuuWDd9A9h_RTS=U1228BM7EYiG=gxA__16322.9623380632$1311928729$gmane$org@mail.gmail.com>
 References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
-	<1311841821-10252-8-git-send-email-j-pihet@ti.com>
+	<20110728131454.GA2579@gvim.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1311841821-10252-8-git-send-email-j-pihet@ti.com>
+In-Reply-To: <20110728131454.GA2579@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,49 +19,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: jean.pihet@newoldbits.com
-Cc: markgross@thegnar.org, broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: markgross@thegnar.org
+Cc: broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 28, 2011 at 10:30:14AM +0200, jean.pihet@newoldbits.com wrote:
-> From: Jean Pihet <j-pihet@ti.com>
-> 
-> The powerdomains next states are initialized in pwrdms_setup as a
-> late_initcall. Because the PM QoS devices constraint can be requested
-> early in the boot sequence, the power domains next states can be
-> overwritten by pwrdms_setup.
-> 
-> This patch fixes it by initializing the power domains next states
-> early at boot, so that the constraints can be applied.
-> Later in the pwrdms_setup function the currently programmed
-> next states are re-used as next state values.
-> 
-> Applies to OMAP3 and OMAP4.
-> 
-> Tested on OMAP3 Beagleboard and OMAP4 Pandaboard in RET/OFF using
-> wake-up latency constraints on MPU, CORE and PER.
-> 
-> Signed-off-by: Jean Pihet <j-pihet@ti.com>
-> ---
+Mark,
+
+On Thu, Jul 28, 2011 at 3:14 PM, mark gross <markgross@thegnar.org> wrote:
+> On Thu, Jul 28, 2011 at 10:30:07AM +0200, jean.pihet@newoldbits.com wrote:
+>> From: Jean Pihet <j-pihet@ti.com>
+>>
+>> This patch set is in an RFC state, for review and comments.
+>>
+>> High level implementation:
+>>
 ...
-> diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
-> index 9af0847..63c3e7a 100644
-> --- a/arch/arm/mach-omap2/powerdomain.c
-> +++ b/arch/arm/mach-omap2/powerdomain.c
-> @@ -108,6 +108,9 @@ static int _pwrdm_register(struct powerdomain *pwrdm)
->  	pwrdm->state = pwrdm_read_pwrst(pwrdm);
->  	pwrdm->state_counter[pwrdm->state] = 1;
->  
-> +	/* Early init of the next power state */
-> +	pwrdm_set_next_pwrst(pwrdm, PWRDM_POWER_RET);
-> +
 
-Wanted to check that it's OK to initialize the next state of a power
-domain to RETENTION early in the boot sequence.  I believe patches
-have been previously discussed that set the state to ON to ensure the
-domain doesn't go to a lower state, and possibly lose context, before
-the PM subsystem is setup to handle it?  Not sure, thought maybe worth
-a doublecheck.
+>> 7. Misc fixes to improve code readability:
+>> . rename of the PM QoS implementation file from pm_qos_params.[ch] to pm=
+_qos.[ch]
+> I picked the name for the file as pm_qos_params over pm_qos because I
+> wanted to make it implicitly clear that this was not an full QOS
+> implementation. =A0True QOS carries expectations similar to real time and
+> as the infrastructure is closer to "good intentioned" than even "best
+> effort" and offers no notification when the QOS request is not able to
+> be met and really doesn't implement a true QOS at all, (it just provides
+> the parameter interface for part of one its missing the notification
+> interface when the service level is not met and I think a few other
+> things.) So I wanted to have it named a bit different from just pm_qos.
+>
+> This said I'm not supper attached to the naming of the modules. =A0If
+> folks want to change it I wouldn't complain (too much anyway;).
+Ok got the idea. I do not know what name to chose though. As suggested
+previously the name pm_qos_params does not reflect the implementation,
+that is why I renamed it.
 
+>
+> --mark
+> PS I'll look at the rest of the patches tomorrow, this time for real as
+> I'm about to have more free time to focus on non-work stuff :)
+Thanks you for reviewing!
 
-Todd
+> FWIW this write up sounds interesting.
+Hope it is readable ;p
+
+Regards,
+Jean
