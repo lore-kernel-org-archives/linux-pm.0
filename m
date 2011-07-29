@@ -1,7 +1,7 @@
-From: Oliver Neukum <oliver@neukum.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: better oopsing when frozen
-Date: Fri, 29 Jul 2011 22:27:36 +0200
-Message-ID: <201107292227.36424.oliver__27188.6387643919$1311971233$gmane$org@neukum.org>
+Date: Fri, 29 Jul 2011 22:27:54 +0200
+Message-ID: <201107292227.54948.rjw@sisk.pl>
 References: <201107251043.19932.oneukum@suse.de> <20110729195430.GB1720@ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,10 +18,10 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Oliver Neukum <oneukum@suse.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Freitag, 29. Juli 2011, 21:54:30 schrieb Pavel Machek:
+On Friday, July 29, 2011, Pavel Machek wrote:
 > On Mon 2011-07-25 10:43:19, Oliver Neukum wrote:
 > > Hi Rafael,
 > > 
@@ -35,8 +35,13 @@ Am Freitag, 29. Juli 2011, 21:54:30 schrieb Pavel Machek:
 > It should be safe to thaw as long as final suspend signature is not
 > on disk and will not be written there.
 
-Yes. But this applies only if I use kernel-space hibernation, doesn't it?
-So I need a second flag for the signature being written. Any other problem?
+This only applies to hibernation and only when we're going to restore
+from the image the presumably hasn't been saved yet, right?
 
-	Regards
-		Oliver
+However, there's another problem I didn't think of before.  Namely,
+we cannot thaw tasks before resuming devices in case we've already
+suspended them, because that will defeat the very purpose of the
+freezing in the first place.
+
+Thanks,
+Rafael
