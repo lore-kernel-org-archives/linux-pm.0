@@ -1,18 +1,14 @@
 From: Felipe Balbi <balbi@ti.com>
 Subject: Re: [RFC v2]: Issues implementing clock handling
  mechanism within UART driver
-Date: Fri, 29 Jul 2011 15:19:08 +0300
-Message-ID: <20110729121907.GM31013__41114.9806729101$1312057848$gmane$org@legolas.emea.dhcp.ti.com>
+Date: Fri, 29 Jul 2011 12:55:13 +0300
+Message-ID: <20110729095512.GE31013__42311.0493146398$1312057849$gmane$org@legolas.emea.dhcp.ti.com>
 References: <1311845395-31917-1-git-send-email-govindraj.raja@ti.com>
-	<20110729095512.GE31013@legolas.emea.dhcp.ti.com>
-	<CAAL8m4xjN15RfwbDd_c1HdoKY327CWOn5qwuoUT=fop4J0K5cw@mail.gmail.com>
-	<20110729113713.GK31013@legolas.emea.dhcp.ti.com>
-	<CAAL8m4wq7RQ_Rp-+LMWYY=dtTnhtR5UY+8HpO5C_54goKezaTg@mail.gmail.com>
 Reply-To: balbi@ti.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4715887810601780207=="
+Content-Type: multipart/mixed; boundary="===============5336734855076164969=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAAL8m4wq7RQ_Rp-+LMWYY=dtTnhtR5UY+8HpO5C_54goKezaTg@mail.gmail.com>
+In-Reply-To: <1311845395-31917-1-git-send-email-govindraj.raja@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,86 +19,78 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Govindraj <govindraj.ti@gmail.com>
-Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, balbi@ti.com, "Govindraj.R" <govindraj.raja@ti.com>, linux-serial@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Govindraj.R" <govindraj.raja@ti.com>
+Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, Felipe Balbi <balbi@ti.com>, linux-serial@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============4715887810601780207==
+--===============5336734855076164969==
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mI5TpPl/qDRoXxBg"
+	protocol="application/pgp-signature"; boundary="Qz2CZ664xQdCRdPu"
 Content-Disposition: inline
 
 
---mI5TpPl/qDRoXxBg
+--Qz2CZ664xQdCRdPu
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Jul 29, 2011 at 05:29:12PM +0530, Govindraj wrote:
-> Yes fine, But there are scenarios even before first runtime_suspend happe=
-ns,
->=20
-> ex: uart_port_configure -> get_sync -> pm_generic_runtime_resume
-> (omap_device_enable in this case) debug printk -> console_write -> get_sy=
+On Thu, Jul 28, 2011 at 02:59:55PM +0530, Govindraj.R wrote:
+> Proposal:
+> --------
+> 	1. For the UART, follow the current approach of locking the console in
+> 	   Idle/Suspend path before cutting the clock but using pm_runtime_putsy=
 nc.
->=20
-> there are numerous such scenarios where we end from runtime context
-> to runtime api context again, or jumping from one uart port operation
-> to uart print operation.
+> 	   That is, continue using the prepare/resume Idle calls in idle path.
 
-calling pm_runtime_get_sync() should not be a problem. It should only
-increase the usage counters... This sounds like a race condition on the
-driver, no ?
+I believe you should be using ->prepare() to prevent that any other
+work on UART won't trigger a console_write() right now. Maybe only
+queueing the work for after ->complete() or, maybe, just ignoring the
+work and loosing some prints, dunno.
 
-What you're experiencing, if I understood correctly, is a deadlock ? In
-that case, can you try to track the locking mechanism on the omap-serial
-driver to try to find if there isn't anything obviously wrong ?
+> 	2. Other Approach would be adding conditions to debug prints from
+> 	   omap_device/ omap_hwmod/clock_framework avoid calling these debug
+> 	   prints for uart.
+> 	   Or Even a debug macro that would not debug prints if the context is
+> 	   from uart.
 
-> So either we should not have those prints from pm_generic layers or suppr=
-ess
-> them(seems pretty much a problem for a clean design within the driver
-> using console_lock/unlock for every get_sync, and for
-> runtime_put we cannot suppress the prints as it gets scheduled later)
->=20
-> or if other folks who really need those prints form pm_generic* layers
-> to debug and analysis then we have no other choice rather control
-> the clk_enable/disable from outside driver code in idle path.
+yeah, that might work but then again, if we were using 8250.c, would we
+have this limitation ??
 
-yeah, none of these would be nice :-(
+I think that, maybe, your best call would be to capture console_write()
+calls into an internal temporary buffer on ->prepare() and flush it once
+->complete() is called ?
 
-I think this needs more debugging to be sure what's exactly going on.
-What's exactly causing the deadlock ? Which lock is held and never
-released ?
+BTW, where are the patches ? :-)
 
 --=20
 balbi
 
---mI5TpPl/qDRoXxBg
+--Qz2CZ664xQdCRdPu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJOMqU7AAoJEAv8Txj19kN1g4oH/188EVO7WsJ7AruGD1YLbS4Q
-ikA+ECceM8E1JmoxdMMXNJRzN45WZW2SyCA61yjiwjMrGbh2/Q88u4cfncXaOVl7
-+xZEFg8TZz0RVvtarJf+R6mmJdRMiuvxKPZz1552aopKFOLqpgrU6kes3tDjepkq
-Z6E4Gv8Ijx8rBrGbR9YLkGTsQEW7bSXDeCr9pxIV/624p+gAp6lauizfpKKxGD4X
-lvwNJybZn1se7+NYXdSjJIpd5dHwub7D/Np6n4uo3WfHMMDHyFXaVvz1mBf+UyEX
-D33tExXx8RMkOhmYuwe7eB4sT2sg9r6nLnOnJ2t1c1PFiHce3Od1BuRVV7dqgko=
-=t6Co
+iQEcBAEBAgAGBQJOMoOAAAoJEAv8Txj19kN16FAH/RaPeEYhHbADkBrNm7vHHAIq
+CYYUXN8jZ0IiUUUpo7Z7H98nWXuq92KeaScP6OYgDg8WcyZT3TM0wWPsznT+Raov
+U9VnhNO6vhE1GbGUj2rt/jw2CeLGU8Zm7x6LG3UcL6jPACUigN69+WVlDUs8kGM/
+AzmIOXjaSyWZdT9vXa0evAHLNYtDXsJzTZnXyb39abBJ8czTRsW809HdR3kFLXJ7
+N+gc/oHG6WigC4R65k3Z/Kp7CeBiKgtaUdY9W2wNoGbcsb7x8oY7mSa0qU9BFrw4
+p1uPU8fgC4EJ3EHJarzeu0+AdEBDNpsKwoTN/MH55Tz9cW+T3ak2FduJFhDSO7o=
+=5/TQ
 -----END PGP SIGNATURE-----
 
---mI5TpPl/qDRoXxBg--
+--Qz2CZ664xQdCRdPu--
 
---===============4715887810601780207==
+--===============5336734855076164969==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============4715887810601780207==--
+--===============5336734855076164969==--
