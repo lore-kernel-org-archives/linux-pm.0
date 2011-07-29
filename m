@@ -1,18 +1,14 @@
-From: Todd Poynor <toddpoynor@google.com>
-Subject: Re: [PATCH 08/13] OMAP2+: powerdomain: control power
- domains next state
-Date: Fri, 29 Jul 2011 11:00:47 -0700
-Message-ID: <20110729180047.GA14228__23844.2223555923$1311962552$gmane$org@google.com>
-References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
-	<1311841821-10252-9-git-send-email-j-pihet@ti.com>
-	<20110729075942.GA26959@google.com>
-	<CAORVsuV68JhpV5XzXNV3Z9xxRUBbgDen7NDRG+h=in7-ZL=JhQ@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: better oopsing when frozen
+Date: Fri, 29 Jul 2011 21:54:30 +0200
+Message-ID: <20110729195430.GB1720__41467.5561398782$1311969542$gmane$org@ucw.cz>
+References: <201107251043.19932.oneukum@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <CAORVsuV68JhpV5XzXNV3Z9xxRUBbgDen7NDRG+h=in7-ZL=JhQ@mail.gmail.com>
+In-Reply-To: <201107251043.19932.oneukum@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,36 +18,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Pihet <jean.pihet@newoldbits.com>
-Cc: markgross@thegnar.org, broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: Oliver Neukum <oneukum@suse.de>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 29, 2011 at 10:47:43AM +0200, Jean Pihet wrote:
-> On Fri, Jul 29, 2011 at 9:59 AM, Todd Poynor <toddpoynor@google.com> wrote:
-...
-> > All min_latency != PM_QOS_DEV_LAT_DEFAULT_VALUE paths need
-> > free_new_user = 1.
-> free_new_user = 1 is only needed if no existing constraint has been
-> found, i.e. user stays at NULL. This is implemented in the check for
-> an existing constraint (plist_for_each_entry(...)).
+On Mon 2011-07-25 10:43:19, Oliver Neukum wrote:
+> Hi Rafael,
+> 
+> I had a problem with the kernel stopping the machine forever because I got an
+> oops while tasks were frozen. It seems to me that we should thaw when this
+> happens. How about this approach?
 
-Oops, I meant to say it applies in all cases where min_latency ==
-PM_QOS_DEV_LAT_DEFAULT_VALUE, since the new node is only used for
-adding a constraint (and no existing constraint found).  I'd suggest
-something like:
+Danger, Will Robinson. You must not write to the filesystems after
+hibernation started. By thawing, you may do just that.
 
-        if (min_latency != PM_QOS_DEV_LAT_DEFAULT_VALUE) {
-                new_user = kzalloc(sizeof(struct pwrdm_wkup_constraints_entry),
-                        GFP_KERNEL);
-                <check NULL return>
-                free_new_user = 1;
-        }
+It should be safe to thaw as long as final suspend signature is not
+on disk and will not be written there.
 
-and then set free_new_user = 0 only if no existing constraint is found
-for the add case.  Because it's easy to miss cases where the
-allocated memory needs to be freed when that's not the default, and you
-might as well skip the allocate on a constraint removal.  Pretty minor
-point, though.
-
-
-Todd
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
