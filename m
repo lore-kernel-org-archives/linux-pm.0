@@ -1,12 +1,16 @@
-From: "Govindraj.R" <govindraj.raja@ti.com>
-Subject: [RFC v2]: Issues implementing clock handling mechanism
-	within UART driver
-Date: Thu, 28 Jul 2011 14:59:55 +0530
-Message-ID: <1311845395-31917-1-git-send-email-govindraj.raja__42155.9357936077$1312057832$gmane$org@ti.com>
+From: Felipe Balbi <balbi@ti.com>
+Subject: Re: [RFC v2]: Issues implementing clock handling
+ mechanism within UART driver
+Date: Fri, 29 Jul 2011 14:37:14 +0300
+Message-ID: <20110729113713.GK31013__20979.2362562895$1312057847$gmane$org@legolas.emea.dhcp.ti.com>
+References: <1311845395-31917-1-git-send-email-govindraj.raja@ti.com>
+	<20110729095512.GE31013@legolas.emea.dhcp.ti.com>
+	<CAAL8m4xjN15RfwbDd_c1HdoKY327CWOn5qwuoUT=fop4J0K5cw@mail.gmail.com>
+Reply-To: balbi@ti.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============0086720396215370107=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAAL8m4xjN15RfwbDd_c1HdoKY327CWOn5qwuoUT=fop4J0K5cw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -14,84 +18,91 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-omap@vger.kernel.org, linux-serial@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, Felipe Balbi <balbi@ti.com>, Govindraj R <govindraj.raja@ti.com>
+To: Govindraj <govindraj.ti@gmail.com>
+Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, balbi@ti.com, "Govindraj.R" <govindraj.raja@ti.com>, linux-serial@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-To handle uart clocks within uart driver we need the *semantics of clock enable
-API should not internally trigger any UART PORT operation* even before
-completing clock_enable.
 
-Ex: while configuring baud rate we may use runtime api's to enable uart port.
-get_sync -> printk -> call console uart to print
+--===============0086720396215370107==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="KaGhPsiNaI6/sRd6"
+Content-Disposition: inline
 
-For example, say we are calling Uart_configure baud to configure the baud-rate.
-Even before this operation completes, if there is print, we may switch to uart
-write operation which is undesirable.
 
-This occurs due to any printks called from omap_device ()/omap_hwmod ()/clk layers
-which come in the flow from pm_runtime_get_sync/ pm_runtime_put_autosuspend API's.
+--KaGhPsiNaI6/sRd6
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	1. pm_runtime_get _sync -> printk -> console_write -> pm_runtime_get_sync
-	2. pm_runtime_ put_autosuspend -> rpm_suspend -> pm_generic suspend ->
-	   omap_device_disable -> debug prints -> console_write -> pm_runtime_get_sync
+Hi,
 
-This leads to a deadlock caused by contention of the power_lock from
-the same runtime API context.
+On Fri, Jul 29, 2011 at 04:54:44PM +0530, Govindraj wrote:
+> On Fri, Jul 29, 2011 at 3:25 PM, Felipe Balbi <balbi@ti.com> wrote:
+> > Hi,
+> >
+>=20
+> Thanks for replying.
+>=20
+> > On Thu, Jul 28, 2011 at 02:59:55PM +0530, Govindraj.R wrote:
+> >> Proposal:
+> >> --------
+> >> =A0 =A0 =A0 1. For the UART, follow the current approach of locking th=
+e console in
+> >> =A0 =A0 =A0 =A0 =A0Idle/Suspend path before cutting the clock but usin=
+g pm_runtime_putsync.
+> >> =A0 =A0 =A0 =A0 =A0That is, continue using the prepare/resume Idle cal=
+ls in idle path.
+> >
+> > I believe you should be using ->prepare() to prevent that any other
+> > work on UART won't trigger a console_write() right now. Maybe only
+> > queueing the work for after ->complete() or, maybe, just ignoring the
+> > work and loosing some prints, dunno.
+> >
+>=20
+> Yes true, for suspend path but for Idle path we don't have any such
+> mechanism.
 
-Work-around explored:
---------------------
-Use console lock aggressively around each get_sync/put_sync.
+aha... good point ;-)
 
-	Uart_configure baud {
-		1. Console_lock
-		2. pm_runtime_get_sync
-		3. Console_unlock (and send the prints accumulated in the
-		   log buffer to the console) which leads to a console_write .
-		4. This console_write in turn leads to a console_lock+pm_runtime_get_sync
-		5. Also  Console_unlock is undesirable here since it jumps to
-		   console write even before baud config was complete.
-	}
+> I have done clock gating in idle path integrating irq chaining patches.
+> hosted in gitorious here[1].
+>=20
+> Was consolidating whether this approach is OK,
+> or
+> Are there any other approaches that I should consider?
 
-Locking the console around a pm_runtime_get_sync()will make sure that all prints
-are sent to the log-buffer until the console in unlocked, thereby getting rid of
-recursively jumping from one port op to another even before current port
-operation is complete.
+why don't you also start queueing writes after the first call to
+runtime_suspend() and flush them after the first call runtime_resume()??
 
-However, this leads to:
-	1. Cant bind put_autosuspend with console lock as they get scheduled later
-	   put -> print -> console_write -> get_sync (one runtime API context we
-	   may enter another runtime API power lock contention)
-	2. Using console_lock wrapper everywhere in driver to suppress prints
-	   from get_sync is too aggressive in nature.
-	3. During Boot-up, console_lock is not available until uart driver
-	   completes its registration with kernel console_driver.
+--=20
+balbi
 
-Observing the semantics of console_lock/unlock, it seems undesirable to be used
-within uart driver. But can rather be used form global stand point to suppress
-uart prints.
+--KaGhPsiNaI6/sRd6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Example:
-1. While system wide suspending
-2. In cpu idle path., etc.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
-Proposal:
---------
-	1. For the UART, follow the current approach of locking the console in
-	   Idle/Suspend path before cutting the clock but using pm_runtime_putsync.
-	   That is, continue using the prepare/resume Idle calls in idle path.
-	2. Other Approach would be adding conditions to debug prints from
-	   omap_device/ omap_hwmod/clock_framework avoid calling these debug
-	   prints for uart.
-	   Or Even a debug macro that would not debug prints if the context is
-	   from uart.
+iQEcBAEBAgAGBQJOMptpAAoJEAv8Txj19kN1a1EIAIMHs3SqnpCS+xNzpHLMKZTI
+AbajLXZhYv62xoCKjOr/V1gNlsbEn1/P8cyufgOqrzy4nA1NGli1rUMqDbkfhYDy
+3oRccBYLovJ3duxgqLhdKzj1FSP9cPE6mbeBlq2U7YplJKJtZRk5l3r/4LoMWwkf
+Bdfod4rMXsQwGKZQI1hBsCrlupnVrozi0YIL/Ntj3Mtu9DQDPB+pjMie2URURegO
+MK0O+JNO0Mz23NCljteBMOF4rEEAVI5ubYUzHvxm+cPYFuT9EjjtCutkoD3flJut
+6HWKUVM+5I1MY3Cx47z2QNaAxESPSFZnfCQ6PD7xN3wxfdM+PCpUVWvwfG8iz9Q=
+=DE5E
+-----END PGP SIGNATURE-----
 
-Any further approaches are welcome.
+--KaGhPsiNaI6/sRd6--
 
-Have captured little more details compared to v1 posted erlier:
-http://www.mail-archive.com/linux-omap@vger.kernel.org/msg52707.html
+--===============0086720396215370107==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
--- 
-1.7.4.1
+
+--===============0086720396215370107==--
