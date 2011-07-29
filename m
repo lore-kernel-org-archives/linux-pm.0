@@ -1,16 +1,16 @@
 From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 08/13] OMAP2+: powerdomain: control power
-	domains next state
-Date: Fri, 29 Jul 2011 10:47:43 +0200
-Message-ID: <CAORVsuV68JhpV5XzXNV3Z9xxRUBbgDen7NDRG+h=in7-ZL=JhQ__26867.0539524921$1311929310$gmane$org@mail.gmail.com>
+Subject: Re: [PATCH 07/13] OMAP PM: early init of the pwrdms
+	states
+Date: Fri, 29 Jul 2011 10:50:19 +0200
+Message-ID: <CAORVsuUovg7px5SGC+mt7CoDcXZ8r2d09obkXqSp=g44U1G9EQ__46491.8757709258$1311929479$gmane$org@mail.gmail.com>
 References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
-	<1311841821-10252-9-git-send-email-j-pihet@ti.com>
-	<20110729075942.GA26959@google.com>
+	<1311841821-10252-8-git-send-email-j-pihet@ti.com>
+	<20110729080820.GB26959@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110729075942.GA26959@google.com>
+In-Reply-To: <20110729080820.GB26959@google.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,219 +24,56 @@ To: Todd Poynor <toddpoynor@google.com>
 Cc: markgross@thegnar.org, broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Todd,
-
-On Fri, Jul 29, 2011 at 9:59 AM, Todd Poynor <toddpoynor@google.com> wrote:
-> On Thu, Jul 28, 2011 at 10:30:15AM +0200, jean.pihet@newoldbits.com wrote:
+On Fri, Jul 29, 2011 at 10:08 AM, Todd Poynor <toddpoynor@google.com> wrote:
+> On Thu, Jul 28, 2011 at 10:30:14AM +0200, jean.pihet@newoldbits.com wrote:
+>> From: Jean Pihet <j-pihet@ti.com>
+>>
+>> The powerdomains next states are initialized in pwrdms_setup as a
+>> late_initcall. Because the PM QoS devices constraint can be requested
+>> early in the boot sequence, the power domains next states can be
+>> overwritten by pwrdms_setup.
+>>
+>> This patch fixes it by initializing the power domains next states
+>> early at boot, so that the constraints can be applied.
+>> Later in the pwrdms_setup function the currently programmed
+>> next states are re-used as next state values.
+>>
+>> Applies to OMAP3 and OMAP4.
+>>
+>> Tested on OMAP3 Beagleboard and OMAP4 Pandaboard in RET/OFF using
+>> wake-up latency constraints on MPU, CORE and PER.
+>>
+>> Signed-off-by: Jean Pihet <j-pihet@ti.com>
+>> ---
 > ...
->> +int pwrdm_set_wkup_lat_constraint(struct powerdomain *pwrdm, void *cook=
-ie,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 long min_l=
-atency)
->> +{
->> + =A0 =A0 struct pwrdm_wkup_constraints_entry *user =3D NULL;
->> + =A0 =A0 struct pwrdm_wkup_constraints_entry *tmp_user, *new_user;
->> + =A0 =A0 int ret =3D 0, free_new_user =3D 0, free_node =3D 0;
->> + =A0 =A0 long value =3D 0;
->> + =A0 =A0 unsigned long flags;
+>> diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/pow=
+erdomain.c
+>> index 9af0847..63c3e7a 100644
+>> --- a/arch/arm/mach-omap2/powerdomain.c
+>> +++ b/arch/arm/mach-omap2/powerdomain.c
+>> @@ -108,6 +108,9 @@ static int _pwrdm_register(struct powerdomain *pwrdm)
+>> =A0 =A0 =A0 pwrdm->state =3D pwrdm_read_pwrst(pwrdm);
+>> =A0 =A0 =A0 pwrdm->state_counter[pwrdm->state] =3D 1;
+>>
+>> + =A0 =A0 /* Early init of the next power state */
+>> + =A0 =A0 pwrdm_set_next_pwrst(pwrdm, PWRDM_POWER_RET);
 >> +
->> + =A0 =A0 pr_debug("powerdomain: %s: pwrdm %s, cookie=3D0x%p, min_latenc=
-y=3D%ld\n",
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__, pwrdm->name, cookie, min_latency);
->> +
->> + =A0 =A0 new_user =3D kzalloc(sizeof(struct pwrdm_wkup_constraints_entr=
-y),
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0GFP_KERNEL);
->> + =A0 =A0 if (!new_user) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: FATAL ERROR: kzalloc failed\n", __=
-func__);
->> + =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
->> + =A0 =A0 }
->> +
->> + =A0 =A0 spin_lock_irqsave(&pwrdm->wkup_lat_plist_lock, flags);
->> +
->> + =A0 =A0 /* Check if there already is a constraint for cookie */
->> + =A0 =A0 plist_for_each_entry(tmp_user, &pwrdm->wkup_lat_plist_head, no=
-de) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (tmp_user->cookie =3D=3D cookie) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 user =3D tmp_user;
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 free_new_user =3D 1;
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->> + =A0 =A0 }
->> +
->> + =A0 =A0 if (min_latency !=3D PM_QOS_DEV_LAT_DEFAULT_VALUE) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 /* If nothing to update, job done */
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (user && (user->node.prio =3D=3D min_latenc=
-y))
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto exit_ok;
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (!user) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Add new entry to the list */
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 user =3D new_user;
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 user->cookie =3D cookie;
->> + =A0 =A0 =A0 =A0 =A0 =A0 } else {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Update existing entry */
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 plist_del(&user->node, &pwrdm-=
->wkup_lat_plist_head);
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 plist_node_init(&user->node, min_latency);
->> + =A0 =A0 =A0 =A0 =A0 =A0 plist_add(&user->node, &pwrdm->wkup_lat_plist_=
-head);
->> + =A0 =A0 } else {
->> + =A0 =A0 =A0 =A0 =A0 =A0 /* Remove the constraint from the list */
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (!user) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: Error: no prior co=
-nstraint to release\n",
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto exit_error;
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 plist_del(&user->node, &pwrdm->wkup_lat_plist_=
-head);
->> + =A0 =A0 =A0 =A0 =A0 =A0 free_node =3D 1;
 >
-> All min_latency !=3D PM_QOS_DEV_LAT_DEFAULT_VALUE paths need
-> free_new_user =3D 1.
-free_new_user =3D 1 is only needed if no existing constraint has been
-found, i.e. user stays at NULL. This is implemented in the check for
-an existing constraint (plist_for_each_entry(...)).
+> Wanted to check that it's OK to initialize the next state of a power
+> domain to RETENTION early in the boot sequence. =A0I believe patches
+> have been previously discussed that set the state to ON to ensure the
+> domain doesn't go to a lower state, and possibly lose context, before
+> the PM subsystem is setup to handle it? =A0Not sure, thought maybe worth
+> a doublecheck.
+Indeed I need to check the behavior for OMAP3 & 4 which seem to
+initialize the pwrdm states differently.
+BTW the patch that inits all pwrdms to ON is not yet in l-o master
+that is why I (lazily) submitted this one for now.
 
->(Or maybe change the logic to check user !=3D
-> new_user and free new_user if so.)
-That could be done as well.
-
->
->> + =A0 =A0 }
->> +
->> +exit_ok:
->> + =A0 =A0 /* Find the strongest constraint from the list */
->> + =A0 =A0 if (!plist_head_empty(&pwrdm->wkup_lat_plist_head))
->> + =A0 =A0 =A0 =A0 =A0 =A0 value =3D plist_first(&pwrdm->wkup_lat_plist_h=
-ead)->prio;
->> +
->> + =A0 =A0 spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
->> +
->> + =A0 =A0 if (free_node)
->> + =A0 =A0 =A0 =A0 =A0 =A0 kfree(user);
->> +
->> + =A0 =A0 if (free_new_user)
->> + =A0 =A0 =A0 =A0 =A0 =A0 kfree(new_user);
->> +
->> + =A0 =A0 /* Apply the constraint to the pwrdm */
->> + =A0 =A0 pr_debug("powerdomain: %s: pwrdm %s, value=3D%ld\n",
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__, pwrdm->name, value);
->> + =A0 =A0 pwrdm_wakeuplat_update_pwrst(pwrdm, value);
->> +
->> + =A0 =A0 return 0;
->> +
->> +exit_error:
->> + =A0 =A0 spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
->
-> Need:
-> =A0 =A0 =A0 =A0kfree(new_user);
-Correct!
-BTW I have a new version (patch here below) that improves the cases
-with latency =3D PM_QOS_DEV_LAT_DEFAULT_VALUE. This will come in v4
-after testing.
-
->
->> + =A0 =A0 return ret;
->> +}
 >
 >
 > Todd
 >
+>
 
-Thanks for reviewing!
-
-Regards,
 Jean
-
----
-Patch for cases with latency =3D PM_QOS_DEV_LAT_DEFAULT_VALUE:
-
-diff --git a/arch/arm/mach-omap2/powerdomain.c
-b/arch/arm/mach-omap2/powerdomain.c
-index c0f48ab..2e9379b 100644
---- a/arch/arm/mach-omap2/powerdomain.c
-+++ b/arch/arm/mach-omap2/powerdomain.c
-@@ -206,7 +206,7 @@ static int _pwrdm_post_transition_cb(struct
-powerdomain *pwrdm, void *unused)
-  * pwrdm_wakeuplat_update_pwrst - Update power domain power state if needed
-  * @pwrdm: struct powerdomain * to which requesting device belongs to.
-  * @min_latency: the allowed wake-up latency for the given power domain. A
-- *  value of 0 means 'no constraint' on the pwrdm.
-+ *  value of PM_QOS_DEV_LAT_DEFAULT_VALUE means 'no constraint' on the pwr=
-dm.
-  *
-  * Finds the power domain next power state that fulfills the constraint.
-  * Programs a new target state if it is different from current power state.
-@@ -232,7 +232,7 @@ static int pwrdm_wakeuplat_update_pwrst(struct
-powerdomain *pwrdm,
-
- 	/* Find power state with wakeup latency < minimum constraint */
- 	for (new_state =3D 0x0; new_state < PWRDM_MAX_PWRSTS; new_state++) {
--		if (min_latency =3D=3D 0 ||
-+		if (min_latency =3D=3D PM_QOS_DEV_LAT_DEFAULT_VALUE ||
- 		    pwrdm->wakeup_lat[new_state] <=3D min_latency)
- 			break;
- 	}
-@@ -1018,8 +1018,8 @@ int pwrdm_post_transition(void)
-  * @pwrdm: struct powerdomain * which the constraint applies to
-  * @cookie: constraint identifier, used for tracking.
-  * @min_latency: minimum wakeup latency constraint (in microseconds) for
-- *  the given pwrdm. The value of PM_QOS_DEV_WAKEUP_LAT_DEFAULT_VALUE
-- *  removes the constraint.
-+ *  the given pwrdm. The value of PM_QOS_DEV_LAT_DEFAULT_VALUE removes
-+ *  the constraint.
-  *
-  * Tracks the constraints by @cookie.
-  * Constraint set/update: Adds a new entry to powerdomain's wake-up latency
-@@ -1042,7 +1042,7 @@ int pwrdm_set_wkup_lat_constraint(struct
-powerdomain *pwrdm, void *cookie,
- 	struct pwrdm_wkup_constraints_entry *user =3D NULL;
- 	struct pwrdm_wkup_constraints_entry *tmp_user, *new_user;
- 	int ret =3D 0, free_new_user =3D 0, free_node =3D 0;
--	long value =3D 0;
-+	long value =3D PM_QOS_DEV_LAT_DEFAULT_VALUE;
- 	unsigned long flags;
-
- 	pr_debug("powerdomain: %s: pwrdm %s, cookie=3D0x%p, min_latency=3D%ld\n",
-@@ -1083,16 +1083,17 @@ int pwrdm_set_wkup_lat_constraint(struct
-powerdomain *pwrdm, void *cookie,
- 		plist_node_init(&user->node, min_latency);
- 		plist_add(&user->node, &pwrdm->wkup_lat_plist_head);
- 	} else {
--		/* Remove the constraint from the list */
--		if (!user) {
--			pr_err("%s: Error: no prior constraint to release\n",
--			       __func__);
-+		if (user) {
-+			/* Remove the constraint from the list */
-+			plist_del(&user->node, &pwrdm->wkup_lat_plist_head);
-+			free_node =3D 1;
-+		} else {
-+			/* Constraint not existing or list empty, do nothing */
-+			free_new_user =3D 1;
- 			ret =3D -EINVAL;
- 			goto exit_error;
- 		}
-
--		plist_del(&user->node, &pwrdm->wkup_lat_plist_head);
--		free_node =3D 1;
- 	}
-
- exit_ok:
-@@ -1117,6 +1118,10 @@ exit_ok:
-
- exit_error:
- 	spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
-+
-+	if (free_new_user)
-+		kfree(new_user);
-+
- 	return ret;
- }
