@@ -1,15 +1,16 @@
 From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [RFC/PATCH v3 00/13] PM QoS: add a per-device
-	latency constraints class
-Date: Fri, 29 Jul 2011 10:37:52 +0200
-Message-ID: <CAORVsuVoJ5-1hx2+6+gCuuWDd9A9h_RTS=U1228BM7EYiG=gxA__16322.9623380632$1311928729$gmane$org@mail.gmail.com>
+Subject: Re: [PATCH 08/13] OMAP2+: powerdomain: control power
+	domains next state
+Date: Fri, 29 Jul 2011 10:47:43 +0200
+Message-ID: <CAORVsuV68JhpV5XzXNV3Z9xxRUBbgDen7NDRG+h=in7-ZL=JhQ__26867.0539524921$1311929310$gmane$org@mail.gmail.com>
 References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
-	<20110728131454.GA2579@gvim.org>
+	<1311841821-10252-9-git-send-email-j-pihet@ti.com>
+	<20110729075942.GA26959@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110728131454.GA2579@gvim.org>
+In-Reply-To: <20110729075942.GA26959@google.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,49 +20,223 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: Todd Poynor <toddpoynor@google.com>
+Cc: markgross@thegnar.org, broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Mark,
+Todd,
 
-On Thu, Jul 28, 2011 at 3:14 PM, mark gross <markgross@thegnar.org> wrote:
-> On Thu, Jul 28, 2011 at 10:30:07AM +0200, jean.pihet@newoldbits.com wrote:
->> From: Jean Pihet <j-pihet@ti.com>
->>
->> This patch set is in an RFC state, for review and comments.
->>
->> High level implementation:
->>
-...
-
->> 7. Misc fixes to improve code readability:
->> . rename of the PM QoS implementation file from pm_qos_params.[ch] to pm=
-_qos.[ch]
-> I picked the name for the file as pm_qos_params over pm_qos because I
-> wanted to make it implicitly clear that this was not an full QOS
-> implementation. =A0True QOS carries expectations similar to real time and
-> as the infrastructure is closer to "good intentioned" than even "best
-> effort" and offers no notification when the QOS request is not able to
-> be met and really doesn't implement a true QOS at all, (it just provides
-> the parameter interface for part of one its missing the notification
-> interface when the service level is not met and I think a few other
-> things.) So I wanted to have it named a bit different from just pm_qos.
+On Fri, Jul 29, 2011 at 9:59 AM, Todd Poynor <toddpoynor@google.com> wrote:
+> On Thu, Jul 28, 2011 at 10:30:15AM +0200, jean.pihet@newoldbits.com wrote:
+> ...
+>> +int pwrdm_set_wkup_lat_constraint(struct powerdomain *pwrdm, void *cook=
+ie,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 long min_l=
+atency)
+>> +{
+>> + =A0 =A0 struct pwrdm_wkup_constraints_entry *user =3D NULL;
+>> + =A0 =A0 struct pwrdm_wkup_constraints_entry *tmp_user, *new_user;
+>> + =A0 =A0 int ret =3D 0, free_new_user =3D 0, free_node =3D 0;
+>> + =A0 =A0 long value =3D 0;
+>> + =A0 =A0 unsigned long flags;
+>> +
+>> + =A0 =A0 pr_debug("powerdomain: %s: pwrdm %s, cookie=3D0x%p, min_latenc=
+y=3D%ld\n",
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__, pwrdm->name, cookie, min_latency);
+>> +
+>> + =A0 =A0 new_user =3D kzalloc(sizeof(struct pwrdm_wkup_constraints_entr=
+y),
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0GFP_KERNEL);
+>> + =A0 =A0 if (!new_user) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: FATAL ERROR: kzalloc failed\n", __=
+func__);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
+>> + =A0 =A0 }
+>> +
+>> + =A0 =A0 spin_lock_irqsave(&pwrdm->wkup_lat_plist_lock, flags);
+>> +
+>> + =A0 =A0 /* Check if there already is a constraint for cookie */
+>> + =A0 =A0 plist_for_each_entry(tmp_user, &pwrdm->wkup_lat_plist_head, no=
+de) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (tmp_user->cookie =3D=3D cookie) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 user =3D tmp_user;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 free_new_user =3D 1;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 }
+>> + =A0 =A0 }
+>> +
+>> + =A0 =A0 if (min_latency !=3D PM_QOS_DEV_LAT_DEFAULT_VALUE) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 /* If nothing to update, job done */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (user && (user->node.prio =3D=3D min_latenc=
+y))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto exit_ok;
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (!user) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Add new entry to the list */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 user =3D new_user;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 user->cookie =3D cookie;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 } else {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Update existing entry */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 plist_del(&user->node, &pwrdm-=
+>wkup_lat_plist_head);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 }
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 plist_node_init(&user->node, min_latency);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 plist_add(&user->node, &pwrdm->wkup_lat_plist_=
+head);
+>> + =A0 =A0 } else {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 /* Remove the constraint from the list */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (!user) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: Error: no prior co=
+nstraint to release\n",
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto exit_error;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 }
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 plist_del(&user->node, &pwrdm->wkup_lat_plist_=
+head);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 free_node =3D 1;
 >
-> This said I'm not supper attached to the naming of the modules. =A0If
-> folks want to change it I wouldn't complain (too much anyway;).
-Ok got the idea. I do not know what name to chose though. As suggested
-previously the name pm_qos_params does not reflect the implementation,
-that is why I renamed it.
+> All min_latency !=3D PM_QOS_DEV_LAT_DEFAULT_VALUE paths need
+> free_new_user =3D 1.
+free_new_user =3D 1 is only needed if no existing constraint has been
+found, i.e. user stays at NULL. This is implemented in the check for
+an existing constraint (plist_for_each_entry(...)).
+
+>(Or maybe change the logic to check user !=3D
+> new_user and free new_user if so.)
+That could be done as well.
 
 >
-> --mark
-> PS I'll look at the rest of the patches tomorrow, this time for real as
-> I'm about to have more free time to focus on non-work stuff :)
-Thanks you for reviewing!
+>> + =A0 =A0 }
+>> +
+>> +exit_ok:
+>> + =A0 =A0 /* Find the strongest constraint from the list */
+>> + =A0 =A0 if (!plist_head_empty(&pwrdm->wkup_lat_plist_head))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 value =3D plist_first(&pwrdm->wkup_lat_plist_h=
+ead)->prio;
+>> +
+>> + =A0 =A0 spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
+>> +
+>> + =A0 =A0 if (free_node)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 kfree(user);
+>> +
+>> + =A0 =A0 if (free_new_user)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 kfree(new_user);
+>> +
+>> + =A0 =A0 /* Apply the constraint to the pwrdm */
+>> + =A0 =A0 pr_debug("powerdomain: %s: pwrdm %s, value=3D%ld\n",
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__, pwrdm->name, value);
+>> + =A0 =A0 pwrdm_wakeuplat_update_pwrst(pwrdm, value);
+>> +
+>> + =A0 =A0 return 0;
+>> +
+>> +exit_error:
+>> + =A0 =A0 spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
+>
+> Need:
+> =A0 =A0 =A0 =A0kfree(new_user);
+Correct!
+BTW I have a new version (patch here below) that improves the cases
+with latency =3D PM_QOS_DEV_LAT_DEFAULT_VALUE. This will come in v4
+after testing.
 
-> FWIW this write up sounds interesting.
-Hope it is readable ;p
+>
+>> + =A0 =A0 return ret;
+>> +}
+>
+>
+> Todd
+>
+
+Thanks for reviewing!
 
 Regards,
 Jean
+
+---
+Patch for cases with latency =3D PM_QOS_DEV_LAT_DEFAULT_VALUE:
+
+diff --git a/arch/arm/mach-omap2/powerdomain.c
+b/arch/arm/mach-omap2/powerdomain.c
+index c0f48ab..2e9379b 100644
+--- a/arch/arm/mach-omap2/powerdomain.c
++++ b/arch/arm/mach-omap2/powerdomain.c
+@@ -206,7 +206,7 @@ static int _pwrdm_post_transition_cb(struct
+powerdomain *pwrdm, void *unused)
+  * pwrdm_wakeuplat_update_pwrst - Update power domain power state if needed
+  * @pwrdm: struct powerdomain * to which requesting device belongs to.
+  * @min_latency: the allowed wake-up latency for the given power domain. A
+- *  value of 0 means 'no constraint' on the pwrdm.
++ *  value of PM_QOS_DEV_LAT_DEFAULT_VALUE means 'no constraint' on the pwr=
+dm.
+  *
+  * Finds the power domain next power state that fulfills the constraint.
+  * Programs a new target state if it is different from current power state.
+@@ -232,7 +232,7 @@ static int pwrdm_wakeuplat_update_pwrst(struct
+powerdomain *pwrdm,
+
+ 	/* Find power state with wakeup latency < minimum constraint */
+ 	for (new_state =3D 0x0; new_state < PWRDM_MAX_PWRSTS; new_state++) {
+-		if (min_latency =3D=3D 0 ||
++		if (min_latency =3D=3D PM_QOS_DEV_LAT_DEFAULT_VALUE ||
+ 		    pwrdm->wakeup_lat[new_state] <=3D min_latency)
+ 			break;
+ 	}
+@@ -1018,8 +1018,8 @@ int pwrdm_post_transition(void)
+  * @pwrdm: struct powerdomain * which the constraint applies to
+  * @cookie: constraint identifier, used for tracking.
+  * @min_latency: minimum wakeup latency constraint (in microseconds) for
+- *  the given pwrdm. The value of PM_QOS_DEV_WAKEUP_LAT_DEFAULT_VALUE
+- *  removes the constraint.
++ *  the given pwrdm. The value of PM_QOS_DEV_LAT_DEFAULT_VALUE removes
++ *  the constraint.
+  *
+  * Tracks the constraints by @cookie.
+  * Constraint set/update: Adds a new entry to powerdomain's wake-up latency
+@@ -1042,7 +1042,7 @@ int pwrdm_set_wkup_lat_constraint(struct
+powerdomain *pwrdm, void *cookie,
+ 	struct pwrdm_wkup_constraints_entry *user =3D NULL;
+ 	struct pwrdm_wkup_constraints_entry *tmp_user, *new_user;
+ 	int ret =3D 0, free_new_user =3D 0, free_node =3D 0;
+-	long value =3D 0;
++	long value =3D PM_QOS_DEV_LAT_DEFAULT_VALUE;
+ 	unsigned long flags;
+
+ 	pr_debug("powerdomain: %s: pwrdm %s, cookie=3D0x%p, min_latency=3D%ld\n",
+@@ -1083,16 +1083,17 @@ int pwrdm_set_wkup_lat_constraint(struct
+powerdomain *pwrdm, void *cookie,
+ 		plist_node_init(&user->node, min_latency);
+ 		plist_add(&user->node, &pwrdm->wkup_lat_plist_head);
+ 	} else {
+-		/* Remove the constraint from the list */
+-		if (!user) {
+-			pr_err("%s: Error: no prior constraint to release\n",
+-			       __func__);
++		if (user) {
++			/* Remove the constraint from the list */
++			plist_del(&user->node, &pwrdm->wkup_lat_plist_head);
++			free_node =3D 1;
++		} else {
++			/* Constraint not existing or list empty, do nothing */
++			free_new_user =3D 1;
+ 			ret =3D -EINVAL;
+ 			goto exit_error;
+ 		}
+
+-		plist_del(&user->node, &pwrdm->wkup_lat_plist_head);
+-		free_node =3D 1;
+ 	}
+
+ exit_ok:
+@@ -1117,6 +1118,10 @@ exit_ok:
+
+ exit_error:
+ 	spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
++
++	if (free_new_user)
++		kfree(new_user);
++
+ 	return ret;
+ }
