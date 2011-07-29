@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 1/2] Input: enable i8042-level wakeup
-	control
-Date: Fri, 29 Jul 2011 23:04:26 +0200
-Message-ID: <201107292304.27055.rjw__46292.6766289913$1311974671$gmane$org@sisk.pl>
-References: <CAGq3pz6vr2gOq91Cz6KByhF4vdWEZqOOWECZhOCVD38kcyuEFQ@mail.gmail.com>
-	<Pine.LNX.4.44L0.1107281103180.1990-100000@iolanthe.rowland.org>
-	<CAGq3pz6J2pma1TxcqUreQ-qi37Tk4VU15uAvH1=dwyAAvxAPLg@mail.gmail.com>
+Subject: Re: [RFC/PATCH v3 00/13] PM QoS: add a per-device
+	latency constraints class
+Date: Fri, 29 Jul 2011 23:25:20 +0200
+Message-ID: <201107292325.20637.rjw__3980.49599393762$1311974685$gmane$org@sisk.pl>
+References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAGq3pz6J2pma1TxcqUreQ-qi37Tk4VU15uAvH1=dwyAAvxAPLg@mail.gmail.com>
+In-Reply-To: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,58 +18,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-input@vger.kernel.org, Daniel Drake <dsd@laptop.org>, dtor@mail.ru, dmitry.torokhov@gmail.com, dilinger@queued.net
+To: jean.pihet@newoldbits.com
+Cc: markgross@thegnar.org, broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 28, 2011, Daniel Drake wrote:
-> On 28 July 2011 16:08, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > Aren't there?  I have no idea.  But if input devices are never
-> > wakeup-capable, why do you name your function "input_may_wakeup()"?
+On Thursday, July 28, 2011, jean.pihet@newoldbits.com wrote:
+> From: Jean Pihet <j-pihet@ti.com>
 > 
-> I guess i8042_may_wakeup() would be a better name for it.
-
-Yes, it would.
-
-> In this case, the only device in the hierarchy (i8042 -> serio -> input) that
-> is marked wakeup capable is the i8042 device (and only via my patches). I'd
-> welcome a better design.
+> This patch set is in an RFC state, for review and comments.
 > 
-> > I'm using a normal PC with PS/2 mouse and keyboard.  It is set up with
-> > the keyboard as a wakeup source but not the mouse.  Of course, this
-> > uses ACPI, which I assume isn't present on OLPC.
+> High level implementation:
 > 
-> It does depend on how the system is designed, yes. I suspect that the
-> device that is actually marked as wakeup capable on your setup is not
-> an input device, but rather another part of the /sys tree (perhaps
-> part of the ACPI tree?).
+> 1. Add a new PM QoS class for device wake-up constraints (PM_QOS_DEV_LATENCY).
+> . Define a pm_qos_constraints struct for the storage of the constraints list
+> and associated values (target_value, default_value, type ...).
+> . Update the pm_qos_object struct with the information related to a PM QoS
+> class: ptr to constraints list, notifer ptr, name ...
+> . Each PM QoS class statically declare objects for pm_qos_object and
+> pm_qos_constraints. The only exception is the devices constraints, cf. below.
+> . The device constraints class is statically declaring a pm_qos_object. The
+> pm_qos_constraints are per-device and so are embedded into the device struct.
+> 
+> The new class is available from kernel drivers and shall be made available
+> to user space through a per-device sysfs entry. User space API to come as a 
+> subsequent patch.
+> 
+> 2. Added a notification of device insertion/removal from the device PM framework
+> to PM QoS.
+> This allows to init/de-init the per-device constraints list upon device insertion
+> and removal.
+> RFC state for comments and review, lightly tested
+> 
+> 3. Make the pm_qos_add_request API more generic by using a
+> struct pm_qos_parameters parameter. This allows easy extension in the future.
+> 
+> 4. Upon a change of the aggregated constraint value in the PM_QOS_DEV_LATENCY class
+> a notification chain mechanism is used to take action on the system.
+> This is the proposed way to have PM QoS and the platform dependant code to
+> interact with each other, cf. 5 below.
+> The notification mechanism now passes the constraint request struct ptr in
+> order for the notifier callback to have access to the full set of constraint
+> data, e.g. the struct device ptr.
+> 
+> 5. cpuidle interaction with the OMAP3 cpuidle handler
+> Since cpuidle is a CPU centric framework it decides the MPU next power state
+> based on the MPU exit_latency and target_residency figures.
+>     
+> The rest of the power domains get their next power state programmed from
+> the PM_QOS_DEV_LATENCY class of the PM QoS framework, via the device
+> wake-up latency constraints callback to the OMAP_PM_CONSTRAINTS framework.
+> 
+> Note: the exit_latency and target_residency figures of the MPU include the MPU
+> itself and the peripherals needed for the MPU to execute instructions (e.g.
+> main memory, caches, IRQ controller, MMU etc).
+> Some of those peripherals can belong to other power domains than the MPU
+> subsystem and so the corresponding latencies must be included in those figures.
+> 
+> 6. Update the pm_qos_add_request callers to the generic API
+> 
+> 7. Misc fixes to improve code readability:
+> . rename of the PM QoS implementation file from pm_qos_params.[ch] to pm_qos.[ch]
+> . rename of fields names (request, list, constraints, class),
+> . simplification of the in-kernel PM QoS API implementation. The main logic part
+> is now implemented in the update_target function.
+> 
+> Questions:
+> 1. per-device user-space API: since sysfs does not provide open/close
+> callbacks it is not possible to support multiple and simultaneous users of
+> the per-device sysfs entry. A user-space constraints aggregation application is
+> needed in case of multiple constraints for a device. Is this the way to go?
 
-If there's an ACPI object corresponding to the device and it allows the
-device to be configured for wakeup, then device_can_wakeup() will be true
-for the device's struct device object (not the ACPI one).
-
-> Also, I suspect that if your system is woken up by the keyboard, it loses the
-> keypress which was used to wake it up.
-
-Yes, it does, because we don't even try to handle the ACPI case.  One reason
-is that on some systems keyboard wakeup is handled entirely by the BIOS behind
-our back.
- 
-> I'm definitely open to better ways of doing this. The key considerations are:
-> 1. We only have control over wakeups at the i8042 level; i.e. we
-> cannot ask for keyboard wakeups but not mouse.
-> 2. Our keyboard and mouse hardware is guaranteed to be powered
-> throughout suspend
-> 3. The key press or mouse movement or click that woke the system must
-> not be lost during resume. This means that all 3 layers (i8042, serio,
-> input) must not reset or really do anything with the device during
-> suspend/resume.
-
-Have you considered marking all of the devices in the chain as "wakeup
-capable" in that case?  Then, one would have to enable wakeup for all of
-them for things to work, in analogy with the USB case (a USB mouse or
-keyboard may be a wakeup-capable device, but you also need to enable the
-controller it's attached to to wake up).
+I'd say so.
 
 Thanks,
 Rafael
