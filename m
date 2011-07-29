@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v4 0/3] DEVFREQ,
-	DVFS framework for non-CPU devices
-Date: Fri, 29 Jul 2011 11:10:41 +0200
-Message-ID: <201107291110.41801.rjw@sisk.pl>
-References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107290010.53788.rjw@sisk.pl>
-	<CAJOA=zNpmQpCyh0ow2q6gUTxkLMcWDsoMOaQEGzV4Sw__BszHg@mail.gmail.com>
+From: Govindraj <govindraj.ti@gmail.com>
+Subject: Re: [RFC v2]: Issues implementing clock handling
+ mechanism within UART driver
+Date: Fri, 29 Jul 2011 16:54:44 +0530
+Message-ID: <CAAL8m4xjN15RfwbDd_c1HdoKY327CWOn5qwuoUT=fop4J0K5cw__9029.59319432757$1311938772$gmane$org@mail.gmail.com>
+References: <1311845395-31917-1-git-send-email-govindraj.raja@ti.com>
+	<20110729095512.GE31013@legolas.emea.dhcp.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJOA=zNpmQpCyh0ow2q6gUTxkLMcWDsoMOaQEGzV4Sw__BszHg@mail.gmail.com>
+In-Reply-To: <20110729095512.GE31013@legolas.emea.dhcp.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,37 +19,83 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Turquette, Mike" <mturquette@ti.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: balbi@ti.com
+Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, "Govindraj.R" <govindraj.raja@ti.com>, linux-serial@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 29, 2011, Turquette, Mike wrote:
-> On Thu, Jul 28, 2011 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday, July 15, 2011, MyungJoo Ham wrote:
-> >> For a usage example, please look at
-> >> http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs/heads/devfreq
-> >>
-> >> In the above git tree, DVFS (dynamic voltage and frequency scaling) mechanism
-> >> is applied to the memory bus of Exynos4210 for Exynos4210-NURI boards.
-> >> In the example, the LPDDR2 DRAM frequency changes between 133, 266, and 400MHz
-> >> and other related clocks simply follow the determined DDR RAM clock.
-> >>
-> >> The DEVFREQ driver for Exynos4210 memory bus is at
-> >> /arch/arm/mach-exynos4/devfreq_bus.c in the git tree.
-> >>
-> >> MyungJoo Ham (3):
-> >>   PM: Introduce DEVFREQ: generic DVFS framework with device-specific
-> >>     OPPs
-> >>   PM / DEVFREQ: add example governors
-> >>   PM / DEVFREQ: add sysfs interface (including user tickling)
-> >
-> > OK, I'm going to take the patches for 3.2.
-> 
-> Have any other platforms signed up to use this mechanism to manage
-> their peripheral DVFS?
+On Fri, Jul 29, 2011 at 3:25 PM, Felipe Balbi <balbi@ti.com> wrote:
+> Hi,
+>
 
-Not that I know of, but one initial user is sufficient for me.
-So if you have anything _against_ the patches, please speak up.
+Thanks for replying.
 
+> On Thu, Jul 28, 2011 at 02:59:55PM +0530, Govindraj.R wrote:
+>> Proposal:
+>> --------
+>> =A0 =A0 =A0 1. For the UART, follow the current approach of locking the =
+console in
+>> =A0 =A0 =A0 =A0 =A0Idle/Suspend path before cutting the clock but using =
+pm_runtime_putsync.
+>> =A0 =A0 =A0 =A0 =A0That is, continue using the prepare/resume Idle calls=
+ in idle path.
+>
+> I believe you should be using ->prepare() to prevent that any other
+> work on UART won't trigger a console_write() right now. Maybe only
+> queueing the work for after ->complete() or, maybe, just ignoring the
+> work and loosing some prints, dunno.
+>
+
+Yes true, for suspend path but for Idle path we don't have any such
+mechanism.
+
+>> =A0 =A0 =A0 2. Other Approach would be adding conditions to debug prints=
+ from
+>> =A0 =A0 =A0 =A0 =A0omap_device/ omap_hwmod/clock_framework avoid calling=
+ these debug
+>> =A0 =A0 =A0 =A0 =A0prints for uart.
+>> =A0 =A0 =A0 =A0 =A0Or Even a debug macro that would not debug prints if =
+the context is
+>> =A0 =A0 =A0 =A0 =A0from uart.
+>
+> yeah, that might work but then again, if we were using 8250.c, would we
+> have this limitation ??
+>
+
+Its not necessary which driver we use, its about clock handling mechanism
+where it has to be done.
+
+if we add clock handling mechanism into the driver, from driver context
+handling clocks + managing the printks for the same uart port is a
+issue, due to reasons said earlier.
+
+> I think that, maybe, your best call would be to capture console_write()
+> calls into an internal temporary buffer on ->prepare() and flush it once
+> ->complete() is called ?
+>
+
+IIUC ->prepare and -> complete are only for suspend path
+when we do system wide suspend
+
+for normal idle path get_sync and put_sycn we dont have any ->prepare
+or -> complete where we can buffer the contents and flush later.
+
+> BTW, where are the patches ? :-)
+
+I have done clock gating in idle path integrating irq chaining patches.
+hosted in gitorious here[1].
+
+Was consolidating whether this approach is OK,
+or
+Are there any other approaches that I should consider?
+
+--
 Thanks,
-Rafael
+Govindraj.R
+
+[1]: https://gitorious.org/runtime_3-0/runtime_3-0/commits/wip_irqchn
+
+
+>
+> --
+> balbi
+>
