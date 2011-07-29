@@ -1,13 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: better oopsing when frozen
-Date: Fri, 29 Jul 2011 22:27:54 +0200
-Message-ID: <201107292227.54948.rjw@sisk.pl>
+Date: Fri, 29 Jul 2011 22:29:02 +0200
+Message-ID: <201107292229.02402.rjw__42224.2250097499$1311971572$gmane$org@sisk.pl>
 References: <201107251043.19932.oneukum@suse.de> <20110729195430.GB1720@ucw.cz>
+	<201107292227.36424.oliver@neukum.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110729195430.GB1720@ucw.cz>
+In-Reply-To: <201107292227.36424.oliver@neukum.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,31 +18,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Oliver Neukum <oneukum@suse.de>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 29, 2011, Pavel Machek wrote:
-> On Mon 2011-07-25 10:43:19, Oliver Neukum wrote:
-> > Hi Rafael,
+On Friday, July 29, 2011, Oliver Neukum wrote:
+> Am Freitag, 29. Juli 2011, 21:54:30 schrieb Pavel Machek:
+> > On Mon 2011-07-25 10:43:19, Oliver Neukum wrote:
+> > > Hi Rafael,
+> > > 
+> > > I had a problem with the kernel stopping the machine forever because I got an
+> > > oops while tasks were frozen. It seems to me that we should thaw when this
+> > > happens. How about this approach?
 > > 
-> > I had a problem with the kernel stopping the machine forever because I got an
-> > oops while tasks were frozen. It seems to me that we should thaw when this
-> > happens. How about this approach?
+> > Danger, Will Robinson. You must not write to the filesystems after
+> > hibernation started. By thawing, you may do just that.
+> > 
+> > It should be safe to thaw as long as final suspend signature is not
+> > on disk and will not be written there.
 > 
-> Danger, Will Robinson. You must not write to the filesystems after
-> hibernation started. By thawing, you may do just that.
-> 
-> It should be safe to thaw as long as final suspend signature is not
-> on disk and will not be written there.
+> Yes. But this applies only if I use kernel-space hibernation, doesn't it?
+> So I need a second flag for the signature being written. Any other problem?
 
-This only applies to hibernation and only when we're going to restore
-from the image the presumably hasn't been saved yet, right?
-
-However, there's another problem I didn't think of before.  Namely,
-we cannot thaw tasks before resuming devices in case we've already
-suspended them, because that will defeat the very purpose of the
-freezing in the first place.
+Yes, please see my reply to Pavel.
 
 Thanks,
 Rafael
