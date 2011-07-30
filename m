@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Runtime PM discussion notes
-Date: Sat, 30 Jul 2011 23:05:00 +0200
-Message-ID: <201107302305.00212.rjw__18337.9958886237$1312061686$gmane$org@sisk.pl>
+Date: Sat, 30 Jul 2011 23:36:06 +0200
+Message-ID: <201107302336.06428.rjw__33414.5811306827$1312061728$gmane$org@sisk.pl>
 References: <Pine.LNX.4.44L0.1106231113170.2033-100000@iolanthe.rowland.org>
-	<201107292152.27066.rjw@sisk.pl> <20110730203737.GA8762@elf.ucw.cz>
+	<201107302309.19169.rjw@sisk.pl>
+	<20110730212523.GA10450@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110730203737.GA8762@elf.ucw.cz>
+In-Reply-To: <20110730212523.GA10450@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,32 +24,29 @@ Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-pm@lists.linux-found
 List-Id: linux-pm@vger.kernel.org
 
 On Saturday, July 30, 2011, Pavel Machek wrote:
-> Hi!
 > 
-> > > Well, auto suspending when screensaver is active would still be
-> > > useful.
+> > > > IIRC I solved it by just calling _PTS when sleepy Linux was
+> > > > enabled. It had side effect of lighting up moon icon, but otherwise
+> > > > seemed to work ok.
+> > > > 
+> > > > I do not think ACPI says what can and can not be done after _PTS...
 > > > 
-> > > (And IIRC some machines kept screen on when in S-state unless driver
-> > > powered it down... but that might be S1.
-> > > 
-> > > > The reason why you can't enter ACPI S-states from CPUidle is because you
-> > > > need to go out of the idle loop to execute some ACPI-specific stuff.  Which
-> > > > is not even specific to Intel chips, but to ACPI in general.
-> > > 
-> > > The code was little tricky/unclean, but it "worked" for me at one
-> > > point... I called it  "sleepy linux".
+> > > Yes, it does.
 > > 
-> > Yes, you can find a system where it might kind of work (just because
-> > _PTS is empty or something like this).  Is it going to work in general?
-> > No way.
+> > And even if _PTS will work, you're certainly not supposed to execute _WAK
+> > with interrupts off.
 > 
-> IIRC I solved it by just calling _PTS when sleepy Linux was
-> enabled. It had side effect of lighting up moon icon, but otherwise
-> seemed to work ok.
-> 
-> I do not think ACPI says what can and can not be done after _PTS...
+> It should be ok to execute _WAK in process context once system is
+> resumed. ... or maybe not executing _WAK at all. User can probably
+> live with moon icon lighted up.
 
-Yes, it does.
+But I don't think the user can live with certain functionality missing,
+like battery status or such things.
+
+This is completely unrealistic to think that your prototype can be safely
+implemented on _every_ ACPI-based system.  Period.
+
+And that's even without taking SMP into account, BTW.
 
 Thanks,
 Rafael
