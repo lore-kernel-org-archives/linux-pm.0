@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 03/13] PM: QoS: extend the in-kernel API with
-	per-device latency constraints
-Date: Sat, 30 Jul 2011 00:55:49 +0200
-Message-ID: <201107300055.49468.rjw__24698.6608290628$1311981801$gmane$org@sisk.pl>
-References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
-	<1311841821-10252-4-git-send-email-j-pihet@ti.com>
+From: "Turquette, Mike" <mturquette@ti.com>
+Subject: Re: [PATCH v4 0/3] DEVFREQ,
+	DVFS framework for non-CPU devices
+Date: Fri, 29 Jul 2011 18:02:03 -0700
+Message-ID: <CAJOA=zPL_DUBb2miytFH6s3AKqroGDBsOPts=SdCb3p0c=cP=A@mail.gmail.com>
+References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
+	<201107290010.53788.rjw@sisk.pl>
+	<CAJOA=zNpmQpCyh0ow2q6gUTxkLMcWDsoMOaQEGzV4Sw__BszHg@mail.gmail.com>
+	<201107291110.41801.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1311841821-10252-4-git-send-email-j-pihet@ti.com>
+In-Reply-To: <201107291110.41801.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,359 +21,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: jean.pihet@newoldbits.com
-Cc: markgross@thegnar.org, broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 28, 2011, jean.pihet@newoldbits.com wrote:
-> From: Jean Pihet <j-pihet@ti.com>
-> 
-> Extend the PM QoS kernel API:
-> - add a new PM QoS class PM_QOS_DEV_LATENCY for device wake-up latency
-> constraints
-> - make the pm_qos_add_request API more generic by using a parameter of
-> type struct pm_qos_parameters
-> - minor clean-ups and rename of struct fields:
->   . rename pm_qos_class to class and pm_qos_req to req in internal code
->   . consistenly use req and params as the API parameters
->   . rename struct pm_qos_request_list to struct pm_qos_request
-> - update the in-kernel API callers to the new API
+On Fri, Jul 29, 2011 at 2:10 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday, July 29, 2011, Turquette, Mike wrote:
+>> On Thu, Jul 28, 2011 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Friday, July 15, 2011, MyungJoo Ham wrote:
+>> >> For a usage example, please look at
+>> >> http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs=
+/heads/devfreq
+>> >>
+>> >> In the above git tree, DVFS (dynamic voltage and frequency scaling) m=
+echanism
+>> >> is applied to the memory bus of Exynos4210 for Exynos4210-NURI boards.
+>> >> In the example, the LPDDR2 DRAM frequency changes between 133, 266, a=
+nd 400MHz
+>> >> and other related clocks simply follow the determined DDR RAM clock.
+>> >>
+>> >> The DEVFREQ driver for Exynos4210 memory bus is at
+>> >> /arch/arm/mach-exynos4/devfreq_bus.c in the git tree.
+>> >>
+>> >> MyungJoo Ham (3):
+>> >> =A0 PM: Introduce DEVFREQ: generic DVFS framework with device-specific
+>> >> =A0 =A0 OPPs
+>> >> =A0 PM / DEVFREQ: add example governors
+>> >> =A0 PM / DEVFREQ: add sysfs interface (including user tickling)
+>> >
+>> > OK, I'm going to take the patches for 3.2.
+>>
+>> Have any other platforms signed up to use this mechanism to manage
+>> their peripheral DVFS?
+>
+> Not that I know of, but one initial user is sufficient for me.
+> So if you have anything _against_ the patches, please speak up.
 
-There should be more about the motivation in the changelog.  It says
-what the patch is doing, but it doesn't say a word of _why_ it is done in
-the first place.
+I do have some concerns.  Let me start by saying that I'm defining a
+"governor" as some active piece of executing code, probably a looping
+workqueue that inspects activity/idleness of a device and then makes a
+determination regarding clock frequency.
 
-Second, you're renaming a lot of things in the same patch that makes
-functional changes.  This is confusing and makes it very difficult to
-understand what's going on.  Please use separate patches to rename
-things, when possible, and avoid renaming things that don't need to be
-renamed.
+devfreq seems to be good framework for creating DVFS governors.
+However I think that most scalable devices on an SoC do *not* need a
+governor, and many scalable devices won't have performance counters or
+any other way to implement such introspection.
 
-> Signed-off-by: Jean Pihet <j-pihet@ti.com>
-> ---
->  arch/arm/plat-omap/i2c.c               |   20 -----
->  drivers/i2c/busses/i2c-omap.c          |   35 ++++++---
->  drivers/media/video/via-camera.c       |    7 +-
->  drivers/net/e1000e/netdev.c            |    9 ++-
->  drivers/net/wireless/ipw2x00/ipw2100.c |    8 +-
->  include/linux/netdevice.h              |    2 +-
->  include/linux/pm_qos.h                 |   39 ++++++----
->  include/sound/pcm.h                    |    2 +-
->  kernel/pm_qos.c                        |  130 +++++++++++++++++--------------
->  sound/core/pcm_native.c                |    8 ++-
->  10 files changed, 141 insertions(+), 119 deletions(-)
+Some examples include a MMC controller, which might change its clock
+rate depending on the class of card that the user has inserted.  Or
+even a "smartish" device like a GPU lacking performance counters; it's
+driver will ramp up frequency when there is work to be done and kick
+off a timeout.  If no new work comes in before the timeout then the
+driver will drop the frequency.
 
-I'm going to comment the core changes this time.
+A governor is not required in these cases (as they are event driven)
+and devfreq is quite heavyweight for such applications.  What is
+needed is a QoS-style software layer that allows throughput requests
+to be made from an initiator device towards a target device.  This
+layer should aggregate requests since many initator devices may make
+requests to the same target device.  This layer I'm describing, which
+does not exist today, should be where the actual DVFS transition takes
+place.  That could take the form of a clk_set_rate call in the clock
+framework (as described by Colin in V1 of this series), or some other
+not-yet-realized dvfs_set_opp ,or something like Jean Pihet's
+per-device PM QoS patches or whatever.  For the purposes of this email
+I don't really care which framework implements the QoS request
+aggregation.
 
-...
-> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> index 9cc0224..a2e4409 100644
-> --- a/include/linux/pm_qos.h
-> +++ b/include/linux/pm_qos.h
-> @@ -8,31 +8,40 @@
->  #include <linux/notifier.h>
->  #include <linux/miscdevice.h>
->  
-> -#define PM_QOS_RESERVED 0
-> -#define PM_QOS_CPU_DMA_LATENCY 1
-> -#define PM_QOS_NETWORK_LATENCY 2
-> -#define PM_QOS_NETWORK_THROUGHPUT 3
-> +#define PM_QOS_RESERVED			0
-> +#define PM_QOS_CPU_DMA_LATENCY		1
-> +#define PM_QOS_DEV_LATENCY		2
-> +#define PM_QOS_NETWORK_LATENCY		3
-> +#define PM_QOS_NETWORK_THROUGHPUT	4
->  
-> -#define PM_QOS_NUM_CLASSES 4
-> +#define PM_QOS_NUM_CLASSES 5
->  #define PM_QOS_DEFAULT_VALUE -1
->  
->  #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
-> +#define PM_QOS_DEV_LAT_DEFAULT_VALUE		0
->  #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
->  #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
->  
-> -struct pm_qos_request_list {
-> +struct pm_qos_request {
+The point of describing this non-existant API is that devfreq should
+really be just another input into it.  A governor that can measure bus
+saturation is really cool, but it may not yield optimal results
+compared to several drivers which make QoS-style requests and insure
+that performance is guaranteed for their particular needs during their
+transactions.  The good news is that we don't have to choose between
+performance counter introspection and software QoS requests: both the
+driver requests and the governor should all feed as inputs into the
+QoS-style DVFS mechanism.
 
-This renaming should go in a separate patch, really.
+Taking that logic to its inevitable conclusion, tickle doesn't belong
+inside the governor at all.  If some device X wants to ramp up the
+frequency of device Y, it should just make a QoS-style throughput
+request towards device Y, possibly with a timeout (keeping the
+original idea of tickle intact).  This is entirely a separate idea
+from a governor's introspective workqueue loop.
 
->  	struct plist_node list;
-> -	int pm_qos_class;
-> +	int class;
+For userspace, a sysfs entry for tickle would also not feed into the
+governor, but some dummy struct device *user would probably be the
+initiator device and it would simply call the QoS-style throughput
+API.
 
-This renaming doesn't seem to be necessary.  Moreover, it's confusing,
-because there already is struct class (for device classes) and a member
-called "class" in struct device and they aren't related to this one.
+In summary my objections to this series are:
+1) devfreq should not be the *final* software layer to invoke a DVFS
+transition as it has not taken all constraints into account.
+2) a devfreq governor represents just one constraint out of many to be
+considered for any given scalable device.
 
-> +	struct device *dev;
->  };
->  
-> -void pm_qos_add_request(struct pm_qos_request_list *l, int pm_qos_class, s32 value);
-> -void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-> -		s32 new_value);
-> -void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req);
-> +struct pm_qos_parameters {
-> +	int class;
-> +	struct device *dev;
-> +	s32 value;
-> +};
+My objection to these patches getting merged is that I think they are
+a bit ahead of their time.  We need to know what the real DVFS API
+looks like underneath devfreq first, since devfreq should really be
+built on top of it.
 
-What exactly is the "dev" member needed for?
+Regards,
+Mike
 
-> +
-> +void pm_qos_add_request(struct pm_qos_request *req,
-> +			struct pm_qos_parameters *params);
-> +void pm_qos_update_request(struct pm_qos_request *req, s32 new_value);
-> +void pm_qos_remove_request(struct pm_qos_request *req);
->  
-> -int pm_qos_request(int pm_qos_class);
-> -int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
-> -int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
-> -int pm_qos_request_active(struct pm_qos_request_list *req);
-> +int pm_qos_request(int class);
-> +int pm_qos_add_notifier(int class, struct notifier_block *notifier);
-> +int pm_qos_remove_notifier(int class, struct notifier_block *notifier);
-> +int pm_qos_request_active(struct pm_qos_request *req);
->  
->  #endif
-> diff --git a/include/sound/pcm.h b/include/sound/pcm.h
-> index 1204f17..d3b068f 100644
-> --- a/include/sound/pcm.h
-> +++ b/include/sound/pcm.h
-> @@ -373,7 +373,7 @@ struct snd_pcm_substream {
->  	int number;
->  	char name[32];			/* substream name */
->  	int stream;			/* stream (direction) */
-> -	struct pm_qos_request_list latency_pm_qos_req; /* pm_qos request */
-> +	struct pm_qos_request latency_pm_qos_req; /* pm_qos request */
->  	size_t buffer_bytes_max;	/* limit ring buffer size */
->  	struct snd_dma_buffer dma_buffer;
->  	unsigned int dma_buf_id;
-> diff --git a/kernel/pm_qos.c b/kernel/pm_qos.c
-> index 3bf69f1..4ede3cd 100644
-> --- a/kernel/pm_qos.c
-> +++ b/kernel/pm_qos.c
-> @@ -82,6 +82,16 @@ static struct pm_qos_object cpu_dma_pm_qos = {
->  	.type = PM_QOS_MIN,
->  };
->  
-> +static BLOCKING_NOTIFIER_HEAD(dev_lat_notifier);
-> +static struct pm_qos_object dev_pm_qos = {
-> +	.requests = PLIST_HEAD_INIT(dev_pm_qos.requests, pm_qos_lock),
-> +	.notifiers = &dev_lat_notifier,
-> +	.name = "dev_latency",
-> +	.target_value = PM_QOS_DEV_LAT_DEFAULT_VALUE,
-> +	.default_value = PM_QOS_DEV_LAT_DEFAULT_VALUE,
-> +	.type = PM_QOS_MIN,
-> +};
-> +
-
-You seem to be confusing things here.  Since devices will have their own lists
-of requests now (as per the previous patch), the .requests member above is not
-necessary.  Moreover, it seems to be used incorrectly below.
-
->  static BLOCKING_NOTIFIER_HEAD(network_lat_notifier);
->  static struct pm_qos_object network_lat_pm_qos = {
->  	.requests = PLIST_HEAD_INIT(network_lat_pm_qos.requests, pm_qos_lock),
-> @@ -107,6 +117,7 @@ static struct pm_qos_object network_throughput_pm_qos = {
->  static struct pm_qos_object *pm_qos_array[] = {
->  	&null_pm_qos,
->  	&cpu_dma_pm_qos,
-> +	&dev_pm_qos,
->  	&network_lat_pm_qos,
->  	&network_throughput_pm_qos
->  };
-> @@ -212,132 +223,132 @@ static int find_pm_qos_object_by_minor(int minor)
->  
->  /**
->   * pm_qos_request - returns current system wide qos expectation
-> - * @pm_qos_class: identification of which qos value is requested
-> + * @class: identification of which qos value is requested
->   *
->   * This function returns the current target value.
->   */
-> -int pm_qos_request(int pm_qos_class)
-> +int pm_qos_request(int class)
->  {
-> -	return pm_qos_read_value(pm_qos_array[pm_qos_class]);
-> +	return pm_qos_read_value(pm_qos_array[class]);
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_request);
-
-As I said, it is completely unnecessary (and confusing) to rename
-"pm_qos_class" to "class".
-
-> -int pm_qos_request_active(struct pm_qos_request_list *req)
-> +int pm_qos_request_active(struct pm_qos_request *req)
->  {
-> -	return req->pm_qos_class != 0;
-> +	return req->class != 0;
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_request_active);
->  
->  /**
->   * pm_qos_add_request - inserts new qos request into the list
-> - * @dep: pointer to a preallocated handle
-> - * @pm_qos_class: identifies which list of qos request to use
-> - * @value: defines the qos request
-> + * @req: pointer to a preallocated handle
-> + * @params: request parameters
->   *
-> - * This function inserts a new entry in the pm_qos_class list of requested qos
-> + * This function inserts a new entry in the class list of requested qos
->   * performance characteristics.  It recomputes the aggregate QoS expectations
-> - * for the pm_qos_class of parameters and initializes the pm_qos_request_list
-> + * for the class of parameters and initializes the pm_qos_request
->   * handle.  Caller needs to save this handle for later use in updates and
->   * removal.
->   */
->  
-> -void pm_qos_add_request(struct pm_qos_request_list *dep,
-> -			int pm_qos_class, s32 value)
-> +void pm_qos_add_request(struct pm_qos_request *req,
-> +			struct pm_qos_parameters *params)
->  {
-> -	struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
-> +	struct pm_qos_object *o =  pm_qos_array[params->class];
->  	int new_value;
->  
-> -	if (pm_qos_request_active(dep)) {
-> -		WARN(1, KERN_ERR "pm_qos_add_request() called for already added request\n");
-> +	if (pm_qos_request_active(req)) {
-> +		WARN(1, KERN_ERR "pm_qos_add_request() called for already "
-> +			"added request\n");
->  		return;
->  	}
-> -	if (value == PM_QOS_DEFAULT_VALUE)
-> +	if (params->value == PM_QOS_DEFAULT_VALUE)
->  		new_value = o->default_value;
->  	else
-> -		new_value = value;
-> -	plist_node_init(&dep->list, new_value);
-> -	dep->pm_qos_class = pm_qos_class;
-> -	update_target(o, &dep->list, 0, PM_QOS_DEFAULT_VALUE);
-> +		new_value = params->value;
-> +	plist_node_init(&req->list, new_value);
-> +	req->class = params->class;
-> +	req->dev = params->dev;
-> +	update_target(o, &req->list, 0, PM_QOS_DEFAULT_VALUE);
-
-This causes update_target() to use the .requests member of dev_pm_qos
-as a list of requests for every device, which doesn't seem to be correct.
-
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_add_request);
->  
->  /**
->   * pm_qos_update_request - modifies an existing qos request
-> - * @pm_qos_req : handle to list element holding a pm_qos request to use
-> + * @req : handle to list element holding a pm_qos request to use
->   * @value: defines the qos request
->   *
-> - * Updates an existing qos request for the pm_qos_class of parameters along
-> - * with updating the target pm_qos_class value.
-> + * Updates an existing qos request for the class of parameters along
-> + * with updating the target class value.
->   *
->   * Attempts are made to make this code callable on hot code paths.
->   */
-> -void pm_qos_update_request(struct pm_qos_request_list *pm_qos_req,
-> -			   s32 new_value)
-> +void pm_qos_update_request(struct pm_qos_request *req, s32 new_value)
->  {
->  	s32 temp;
->  	struct pm_qos_object *o;
->  
-> -	if (!pm_qos_req) /*guard against callers passing in null */
-> +	if (!req) /*guard against callers passing in null */
->  		return;
->  
-> -	if (!pm_qos_request_active(pm_qos_req)) {
-> +	if (!pm_qos_request_active(req)) {
->  		WARN(1, KERN_ERR "pm_qos_update_request() called for unknown object\n");
->  		return;
->  	}
->  
-> -	o = pm_qos_array[pm_qos_req->pm_qos_class];
-> +	o = pm_qos_array[req->class];
->  
->  	if (new_value == PM_QOS_DEFAULT_VALUE)
->  		temp = o->default_value;
->  	else
->  		temp = new_value;
->  
-> -	if (temp != pm_qos_req->list.prio)
-> -		update_target(o, &pm_qos_req->list, 0, temp);
-> +	if (temp != req->list.prio)
-> +		update_target(o, &req->list, 0, temp);
-
-Same here.
-
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_update_request);
->  
->  /**
->   * pm_qos_remove_request - modifies an existing qos request
-> - * @pm_qos_req: handle to request list element
-> + * @req: handle to request list element
->   *
->   * Will remove pm qos request from the list of requests and
-> - * recompute the current target value for the pm_qos_class.  Call this
-> + * recompute the current target value for the class.  Call this
->   * on slow code paths.
->   */
-> -void pm_qos_remove_request(struct pm_qos_request_list *pm_qos_req)
-> +void pm_qos_remove_request(struct pm_qos_request *req)
->  {
->  	struct pm_qos_object *o;
->  
-> -	if (pm_qos_req == NULL)
-> +	if (req == NULL)
->  		return;
->  		/* silent return to keep pcm code cleaner */
->  
-> -	if (!pm_qos_request_active(pm_qos_req)) {
-> +	if (!pm_qos_request_active(req)) {
->  		WARN(1, KERN_ERR "pm_qos_remove_request() called for unknown object\n");
->  		return;
->  	}
->  
-> -	o = pm_qos_array[pm_qos_req->pm_qos_class];
-> -	update_target(o, &pm_qos_req->list, 1, PM_QOS_DEFAULT_VALUE);
-> -	memset(pm_qos_req, 0, sizeof(*pm_qos_req));
-> +	o = pm_qos_array[req->class];
-> +	update_target(o, &req->list, 1, PM_QOS_DEFAULT_VALUE);
-
-Same here.
-
-> +	memset(req, 0, sizeof(*req));
->  }
->  EXPORT_SYMBOL_GPL(pm_qos_remove_request);
->  
->  /**
->   * pm_qos_add_notifier - sets notification entry for changes to target value
-> - * @pm_qos_class: identifies which qos target changes should be notified.
-> + * @class: identifies which qos target changes should be notified.
->   * @notifier: notifier block managed by caller.
->   *
->   * will register the notifier into a notification chain that gets called
-> - * upon changes to the pm_qos_class target value.
-> + * upon changes to the class target value.
->   */
-> -int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
-> +int pm_qos_add_notifier(int class, struct notifier_block *notifier)
->  {
->  	int retval;
->  
->  	retval = blocking_notifier_chain_register(
-> -			pm_qos_array[pm_qos_class]->notifiers, notifier);
-> +			pm_qos_array[class]->notifiers, notifier);
-
-Now, there's a question if we want to have one notifier chain for all
-devices or if it's better to have a per-device notifier chain.  Both
-approaches have their own advantages and drawbacks, but in the latter
-case this code will have to be reworked.
-
-Thanks,
-Rafael
+> Thanks,
+> Rafael
+>
