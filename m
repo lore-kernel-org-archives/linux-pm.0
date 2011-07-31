@@ -1,18 +1,14 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: [RFC/PATCH v3 00/13] PM QoS: add a per-device
- latency constraints class
-Date: Sun, 31 Jul 2011 10:38:46 -0700
-Message-ID: <20110731173846.GA19112__46620.2477495701$1312134000$gmane$org@gvim.org>
-References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
-	<CAORVsuVoJ5-1hx2+6+gCuuWDd9A9h_RTS=U1228BM7EYiG=gxA@mail.gmail.com>
-	<20110729142459.GA5509@gvim.org> <201107292346.22211.rjw@sisk.pl>
-Reply-To: markgross@thegnar.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 4/9] PM / Domains: Make pm_genpd_poweron() always
+	survive parent removal
+Date: Sun, 31 Jul 2011 19:49:12 +0200
+Message-ID: <201107311949.12503.rjw@sisk.pl>
+References: <201107311946.06654.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201107292346.22211.rjw@sisk.pl>
+In-Reply-To: <201107311946.06654.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,58 +18,91 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, broonie@opensource.wolfsonmicro.com, Jean Pihet <j-pihet@ti.com>, linux-omap@vger.kernel.org, markgross@thegnar.org
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 29, 2011 at 11:46:21PM +0200, Rafael J. Wysocki wrote:
-> On Friday, July 29, 2011, mark gross wrote:
-> > On Fri, Jul 29, 2011 at 10:37:52AM +0200, Jean Pihet wrote:
-> > > Mark,
-> > > 
-> > > On Thu, Jul 28, 2011 at 3:14 PM, mark gross <markgross@thegnar.org> wrote:
-> > > > On Thu, Jul 28, 2011 at 10:30:07AM +0200, jean.pihet@newoldbits.com wrote:
-> > > >> From: Jean Pihet <j-pihet@ti.com>
-> > > >>
-> > > >> This patch set is in an RFC state, for review and comments.
-> > > >>
-> > > >> High level implementation:
-> > > >>
-> > > ...
-> > > 
-> > > >> 7. Misc fixes to improve code readability:
-> > > >> . rename of the PM QoS implementation file from pm_qos_params.[ch] to pm_qos.[ch]
-> > > > I picked the name for the file as pm_qos_params over pm_qos because I
-> > > > wanted to make it implicitly clear that this was not an full QOS
-> > > > implementation.  True QOS carries expectations similar to real time and
-> > > > as the infrastructure is closer to "good intentioned" than even "best
-> > > > effort" and offers no notification when the QOS request is not able to
-> > > > be met and really doesn't implement a true QOS at all, (it just provides
-> > > > the parameter interface for part of one its missing the notification
-> > > > interface when the service level is not met and I think a few other
-> > > > things.) So I wanted to have it named a bit different from just pm_qos.
-> > > >
-> > > > This said I'm not supper attached to the naming of the modules.  If
-> > > > folks want to change it I wouldn't complain (too much anyway;).
-> > > Ok got the idea. I do not know what name to chose though. As suggested
-> > > previously the name pm_qos_params does not reflect the implementation,
-> > > that is why I renamed it.
-> > 
-> > I must have missed the part where the name doesn't reflect the
-> > implementation was talked about.  I look at the interface and I see
-> > parameters all over the place and a small bit of notification.
-> 
-> The interface is for specifying PM QoS requirements or constraints that
-> may or may not be regarded as "parameters", depending on ones definition
-> of the last term.  Moreover, the code not only implements the interface,
-> but also defines data structures and API to be used throughout the kernel
-> which is quite a bit more than just "parameters".
-> 
-> In my not so humble opinion the name isn't good and the .c file should be
-> in kernel/power in the first place.  I would call it simply qos.c (the fact
-> that _right_ _now_ it's not a full QoS implementation doesn't matter, because
-> it may become one in the future).
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Sounds ok to me.
+If pm_genpd_remove_subdomain() is called to remove a PM domain's
+subdomain and pm_genpd_poweron() is called for that subdomain at
+the same time, and the pm_genpd_poweron() called by it recursively
+for the parent returns an error, the first pm_genpd_poweron()'s
+error code path will attempt to decrement the subdomain counter of
+a PM domain that it's not a subdomain of any more.
 
---mark
+Rearrange the code in pm_genpd_poweron() to prevent this from
+happening.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/domain.c |   33 ++++++++++++++++++++-------------
+ 1 file changed, 20 insertions(+), 13 deletions(-)
+
+Index: linux-2.6/drivers/base/power/domain.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/domain.c
++++ linux-2.6/drivers/base/power/domain.c
+@@ -89,12 +89,14 @@ static void genpd_set_active(struct gene
+  */
+ int pm_genpd_poweron(struct generic_pm_domain *genpd)
+ {
+-	struct generic_pm_domain *parent = genpd->parent;
++	struct generic_pm_domain *parent;
+ 	int ret = 0;
+ 
+- start:
+ 	mutex_lock(&genpd->lock);
+ 
++	parent = genpd->parent;
++
++ start:
+ 	if (genpd->status == GPD_STATE_ACTIVE
+ 	    || (genpd->prepared_count > 0 && genpd->suspend_power_off))
+ 		goto out;
+@@ -110,29 +112,34 @@ int pm_genpd_poweron(struct generic_pm_d
+ 		mutex_unlock(&genpd->lock);
+ 
+ 		ret = pm_genpd_poweron(parent);
+-		if (ret) {
+-			genpd_sd_counter_dec(parent);
+-			return ret;
+-		}
++
++		mutex_lock(&genpd->lock);
++
++		if (ret)
++			goto err;
+ 
+ 		parent = NULL;
+ 		goto start;
+ 	}
+ 
+-	if (genpd->power_on)
++	if (genpd->power_on) {
+ 		ret = genpd->power_on(genpd);
+-
+-	if (ret) {
+-		if (genpd->parent)
+-			genpd_sd_counter_dec(genpd->parent);
+-	} else {
+-		genpd_set_active(genpd);
++		if (ret)
++			goto err;
+ 	}
+ 
++	genpd_set_active(genpd);
++
+  out:
+ 	mutex_unlock(&genpd->lock);
+ 
+ 	return ret;
++
++ err:
++	if (genpd->parent)
++		genpd_sd_counter_dec(genpd->parent);
++
++	goto out;
+ }
+ 
+ #endif /* CONFIG_PM */
