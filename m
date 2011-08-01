@@ -1,17 +1,19 @@
 From: "Turquette, Mike" <mturquette@ti.com>
 Subject: Re: [PATCH v4 0/3] DEVFREQ,
 	DVFS framework for non-CPU devices
-Date: Mon, 1 Aug 2011 14:47:14 -0700
-Message-ID: <CAJOA=zOCt5XVOqeazr+upc+dMW5OsjuCACgQH2p0DwzFyAgpyA@mail.gmail.com>
+Date: Mon, 1 Aug 2011 15:01:06 -0700
+Message-ID: <CAJOA=zPz6oqga=gM7bh7762Vr=43VjweDy30KUb4EcgaWZavNg@mail.gmail.com>
 References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
+	<201107290010.53788.rjw@sisk.pl>
+	<CAJOA=zNpmQpCyh0ow2q6gUTxkLMcWDsoMOaQEGzV4Sw__BszHg@mail.gmail.com>
 	<201107291110.41801.rjw@sisk.pl>
 	<CAJOA=zPL_DUBb2miytFH6s3AKqroGDBsOPts=SdCb3p0c=cP=A@mail.gmail.com>
-	<201107302323.06066.rjw@sisk.pl>
+	<CAJ0PZbT0+ovjPAnVKaaJNVChG+kU3cgjC9sEU4ppnMGqGL+UoA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107302323.06066.rjw@sisk.pl>
+In-Reply-To: <CAJ0PZbT0+ovjPAnVKaaJNVChG+kU3cgjC9sEU4ppnMGqGL+UoA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,167 +23,212 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: myungjoo.ham@gmail.com
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 30, 2011 at 2:23 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, July 30, 2011, Turquette, Mike wrote:
->> On Fri, Jul 29, 2011 at 2:10 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Friday, July 29, 2011, Turquette, Mike wrote:
->> >> On Thu, Jul 28, 2011 at 3:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrot=
-e:
->> >> > On Friday, July 15, 2011, MyungJoo Ham wrote:
->> >> >> For a usage example, please look at
->> >> >> http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/r=
-efs/heads/devfreq
->> >> >>
->> >> >> In the above git tree, DVFS (dynamic voltage and frequency scaling=
-) mechanism
->> >> >> is applied to the memory bus of Exynos4210 for Exynos4210-NURI boa=
-rds.
->> >> >> In the example, the LPDDR2 DRAM frequency changes between 133, 266=
-, and 400MHz
->> >> >> and other related clocks simply follow the determined DDR RAM cloc=
-k.
->> >> >>
->> >> >> The DEVFREQ driver for Exynos4210 memory bus is at
->> >> >> /arch/arm/mach-exynos4/devfreq_bus.c in the git tree.
->> >> >>
->> >> >> MyungJoo Ham (3):
->> >> >> =A0 PM: Introduce DEVFREQ: generic DVFS framework with device-spec=
-ific
->> >> >> =A0 =A0 OPPs
->> >> >> =A0 PM / DEVFREQ: add example governors
->> >> >> =A0 PM / DEVFREQ: add sysfs interface (including user tickling)
->> >> >
->> >> > OK, I'm going to take the patches for 3.2.
->> >>
->> >> Have any other platforms signed up to use this mechanism to manage
->> >> their peripheral DVFS?
->> >
->> > Not that I know of, but one initial user is sufficient for me.
->> > So if you have anything _against_ the patches, please speak up.
->>
->> I do have some concerns. =A0Let me start by saying that I'm defining a
->> "governor" as some active piece of executing code, probably a looping
->> workqueue that inspects activity/idleness of a device and then makes a
->> determination regarding clock frequency.
->>
->> devfreq seems to be good framework for creating DVFS governors.
->> However I think that most scalable devices on an SoC do *not* need a
->> governor, and many scalable devices won't have performance counters or
->> any other way to implement such introspection.
->
-> OK, so I'd like to see what the author of the patch series has to say
-> in the face of your comments below.
->
->> Some examples include a MMC controller, which might change its clock
->> rate depending on the class of card that the user has inserted. =A0Or
->> even a "smartish" device like a GPU lacking performance counters; it's
->> driver will ramp up frequency when there is work to be done and kick
->> off a timeout. =A0If no new work comes in before the timeout then the
->> driver will drop the frequency.
->>
->> A governor is not required in these cases (as they are event driven)
->> and devfreq is quite heavyweight for such applications. =A0What is
->> needed is a QoS-style software layer that allows throughput requests
->> to be made from an initiator device towards a target device. =A0This
->> layer should aggregate requests since many initator devices may make
->> requests to the same target device. =A0This layer I'm describing, which
->> does not exist today, should be where the actual DVFS transition takes
->> place. =A0That could take the form of a clk_set_rate call in the clock
->> framework (as described by Colin in V1 of this series), or some other
->> not-yet-realized dvfs_set_opp ,or something like Jean Pihet's
->> per-device PM QoS patches or whatever. =A0For the purposes of this email
->> I don't really care which framework implements the QoS request
->> aggregation.
->>
->> The point of describing this non-existant API is that devfreq should
->> really be just another input into it. =A0A governor that can measure bus
->> saturation is really cool, but it may not yield optimal results
->> compared to several drivers which make QoS-style requests and insure
->> that performance is guaranteed for their particular needs during their
->> transactions. =A0The good news is that we don't have to choose between
->> performance counter introspection and software QoS requests: both the
->> driver requests and the governor should all feed as inputs into the
->> QoS-style DVFS mechanism.
->>
->> Taking that logic to its inevitable conclusion, tickle doesn't belong
->> inside the governor at all. =A0If some device X wants to ramp up the
->> frequency of device Y, it should just make a QoS-style throughput
->> request towards device Y, possibly with a timeout (keeping the
->> original idea of tickle intact). =A0This is entirely a separate idea
->> from a governor's introspective workqueue loop.
->>
->> For userspace, a sysfs entry for tickle would also not feed into the
->> governor, but some dummy struct device *user would probably be the
->> initiator device and it would simply call the QoS-style throughput
->> API.
->>
->> In summary my objections to this series are:
->> 1) devfreq should not be the *final* software layer to invoke a DVFS
->> transition as it has not taken all constraints into account.
->> 2) a devfreq governor represents just one constraint out of many to be
->> considered for any given scalable device.
->>
->> My objection to these patches getting merged is that I think they are
->> a bit ahead of their time.
->
-> Still, we're merging quite a number of patches being ahead of their time.
-> The resulting code is then modified as we learn what's wrong with it or
-> how to improve it.
->
-> Why exactly do you think this approach will not work in this particular c=
-ase?
-
-I shouldn't have objected to the patches being merged, because I think
-they are OK for a subset of the bigger DVFS problem.  The "governor"
-method seems fine for devices with performance counters and whose
-drivers do not express performance constraints.
-
->> We need to know what the real DVFS API looks like underneath devfreq fir=
-st,
->> since devfreq should really be built on top of it.
->
-> Well, quite frankly, if we generally adopted that point of view, much of =
-the
-> useful functionality we have in the kernel right now wouldn't be merged a=
-t all.
-
-Yes yes, I got ahead of myself; my real goal is to restart the
-discussion that popped up in the V1 patchset regarding some API for
-handling clock/voltage scaling for DVFS transitions.  However it
-doesn't mean that these patches need to be blocked.
-
-I do have an overall concern about the approach mentioned by MyungJoo
-where drivers start enabling/disabling OPPs and then the governors
-compensate by raising frequency/voltage the next time their workqueues
-loop around.  That seems entirely backwards for devices that express
-performance needs on an event-driven basis, so my concerns are more
-for how these patches *might* be used in the future, and less about
-how they look right now.
-
-We still don't have a good way to manage DVFS transitions and
-aggregate QoS requests for an SoC.  My hope is when that problem gets
-solved devfreq will use those new APIs in its ->target function.  I
-also hope that too many drivers won't start using "tickle" as a
-substitute for a real DVFS API.
-
-Regards,
-Mike
-
-> Think of the USB subsystem, for one example, that has been rewritten from
-> scratch no fewer that three times.
->
-> The code appears to be reasonably isolated and simple enough to merge.
-> There is a subsystem wanting to use it and I don't see anyone forcing
-> anybody else to adopt it. =A0If it's not suitable to you, you won't be us=
-ing it,
-> plain and simple. =A0And if you come up with some better code to replace =
-it,
-> I won't have any problems with taking that too.
->
-> Thanks,
-> Rafael
->
+T24gU3VuLCBKdWwgMzEsIDIwMTEgYXQgMTE6MjIgUE0sIE15dW5nSm9vIEhhbSA8bXl1bmdqb28u
+aGFtQHNhbXN1bmcuY29tPiB3cm90ZToKPiBIZWxsby4KPgo+IE9uIFNhdCwgSnVsIDMwLCAyMDEx
+IGF0IDEwOjAyIEFNLCBUdXJxdWV0dGUsIE1pa2UgPG10dXJxdWV0dGVAdGkuY29tPiB3cm90ZToK
+Pj4gT24gRnJpLCBKdWwgMjksIDIwMTEgYXQgMjoxMCBBTSwgUmFmYWVsIEouIFd5c29ja2kgPHJq
+d0BzaXNrLnBsPiB3cm90ZToKPj4+IE9uIEZyaWRheSwgSnVseSAyOSwgMjAxMSwgVHVycXVldHRl
+LCBNaWtlIHdyb3RlOgo+Pj4+IE9uIFRodSwgSnVsIDI4LCAyMDExIGF0IDM6MTAgUE0sIFJhZmFl
+bCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD4gd3JvdGU6Cj4+Pj4gPiBPbiBGcmlkYXksIEp1bHkg
+MTUsIDIwMTEsIE15dW5nSm9vIEhhbSB3cm90ZToKPj4+PiA+PiBGb3IgYSB1c2FnZSBleGFtcGxl
+LCBwbGVhc2UgbG9vayBhdAo+Pj4+ID4+IGh0dHA6Ly9naXQuaW5mcmFkZWFkLm9yZy91c2Vycy9r
+bXBhcmsvbGludXgtMi42LXNhbXN1bmcvc2hvcnRsb2cvcmVmcy9oZWFkcy9kZXZmcmVxCj4+Pj4g
+Pj4KPj4+PiA+PiBJbiB0aGUgYWJvdmUgZ2l0IHRyZWUsIERWRlMgKGR5bmFtaWMgdm9sdGFnZSBh
+bmQgZnJlcXVlbmN5IHNjYWxpbmcpIG1lY2hhbmlzbQo+Pj4+ID4+IGlzIGFwcGxpZWQgdG8gdGhl
+IG1lbW9yeSBidXMgb2YgRXh5bm9zNDIxMCBmb3IgRXh5bm9zNDIxMC1OVVJJIGJvYXJkcy4KPj4+
+PiA+PiBJbiB0aGUgZXhhbXBsZSwgdGhlIExQRERSMiBEUkFNIGZyZXF1ZW5jeSBjaGFuZ2VzIGJl
+dHdlZW4gMTMzLCAyNjYsIGFuZCA0MDBNSHoKPj4+PiA+PiBhbmQgb3RoZXIgcmVsYXRlZCBjbG9j
+a3Mgc2ltcGx5IGZvbGxvdyB0aGUgZGV0ZXJtaW5lZCBERFIgUkFNIGNsb2NrLgo+Pj4+ID4+Cj4+
+Pj4gPj4gVGhlIERFVkZSRVEgZHJpdmVyIGZvciBFeHlub3M0MjEwIG1lbW9yeSBidXMgaXMgYXQK
+Pj4+PiA+PiAvYXJjaC9hcm0vbWFjaC1leHlub3M0L2RldmZyZXFfYnVzLmMgaW4gdGhlIGdpdCB0
+cmVlLgo+Pj4+ID4+Cj4+Pj4gPj4gTXl1bmdKb28gSGFtICgzKToKPj4+PiA+PiDCoCBQTTogSW50
+cm9kdWNlIERFVkZSRVE6IGdlbmVyaWMgRFZGUyBmcmFtZXdvcmsgd2l0aCBkZXZpY2Utc3BlY2lm
+aWMKPj4+PiA+PiDCoCDCoCBPUFBzCj4+Pj4gPj4gwqAgUE0gLyBERVZGUkVROiBhZGQgZXhhbXBs
+ZSBnb3Zlcm5vcnMKPj4+PiA+PiDCoCBQTSAvIERFVkZSRVE6IGFkZCBzeXNmcyBpbnRlcmZhY2Ug
+KGluY2x1ZGluZyB1c2VyIHRpY2tsaW5nKQo+Pj4+ID4KPj4+PiA+IE9LLCBJJ20gZ29pbmcgdG8g
+dGFrZSB0aGUgcGF0Y2hlcyBmb3IgMy4yLgo+Pj4+Cj4+Pj4gSGF2ZSBhbnkgb3RoZXIgcGxhdGZv
+cm1zIHNpZ25lZCB1cCB0byB1c2UgdGhpcyBtZWNoYW5pc20gdG8gbWFuYWdlCj4+Pj4gdGhlaXIg
+cGVyaXBoZXJhbCBEVkZTPwo+Pj4KPj4+IE5vdCB0aGF0IEkga25vdyBvZiwgYnV0IG9uZSBpbml0
+aWFsIHVzZXIgaXMgc3VmZmljaWVudCBmb3IgbWUuCj4+PiBTbyBpZiB5b3UgaGF2ZSBhbnl0aGlu
+ZyBfYWdhaW5zdF8gdGhlIHBhdGNoZXMsIHBsZWFzZSBzcGVhayB1cC4KPj4KPj4gSSBkbyBoYXZl
+IHNvbWUgY29uY2VybnMuIMKgTGV0IG1lIHN0YXJ0IGJ5IHNheWluZyB0aGF0IEknbSBkZWZpbmlu
+ZyBhCj4+ICJnb3Zlcm5vciIgYXMgc29tZSBhY3RpdmUgcGllY2Ugb2YgZXhlY3V0aW5nIGNvZGUs
+IHByb2JhYmx5IGEgbG9vcGluZwo+PiB3b3JrcXVldWUgdGhhdCBpbnNwZWN0cyBhY3Rpdml0eS9p
+ZGxlbmVzcyBvZiBhIGRldmljZSBhbmQgdGhlbiBtYWtlcyBhCj4+IGRldGVybWluYXRpb24gcmVn
+YXJkaW5nIGNsb2NrIGZyZXF1ZW5jeS4KPj4KPj4gZGV2ZnJlcSBzZWVtcyB0byBiZSBnb29kIGZy
+YW1ld29yayBmb3IgY3JlYXRpbmcgRFZGUyBnb3Zlcm5vcnMuCj4+IEhvd2V2ZXIgSSB0aGluayB0
+aGF0IG1vc3Qgc2NhbGFibGUgZGV2aWNlcyBvbiBhbiBTb0MgZG8gKm5vdCogbmVlZCBhCj4+IGdv
+dmVybm9yLCBhbmQgbWFueSBzY2FsYWJsZSBkZXZpY2VzIHdvbid0IGhhdmUgcGVyZm9ybWFuY2Ug
+Y291bnRlcnMgb3IKPj4gYW55IG90aGVyIHdheSB0byBpbXBsZW1lbnQgc3VjaCBpbnRyb3NwZWN0
+aW9uLgo+Cj4gWWVzLCBnb3Zlcm5vcnMgZXhjZXB0IGZvciBzb21lIHN0YXRpYyBvciB1c2Vyc3Bh
+Y2UtZHJpdmVuIG9uZXMgKHN1Y2gKPiBhcyAicGVyZm9ybWFuY2UiLCAicG93ZXJzYXZlIiwgYW5k
+ICJ1c2Vyc3BhY2UiIGFsdGhvdWdoICJ1c2Vyc3BhY2UiIGlzCj4gbm90IGltcGxlbWVudGVkIGZv
+ciBkZXZmcmVxIHlldCksIHRoZXkgbG9vcCB3b3JrcXVldWUgdGhhdCBpbnNwZWN0cwo+IGFjdGl2
+aXR5L2lkbGVuZXNzIG9mIGEgZGV2aWNlIGFuZCBkZXRlcm1pbmVzIGZyZXF1ZW5jeS4gSG93ZXZl
+ciwgdGhlCj4gaW5zcGVjdGlvbiBpcyBkb25lIHdpdGggYSBjYWxsYmFjayBwcm92aWRlZCBieSBl
+YWNoIGRldmljZSwgbm90IGRvbmUKPiBkaXJlY3RseSBieSB0aGUgZGV2ZnJlcSBpdHNlbGYuIFRo
+ZXJlZm9yZSwgaWYgdGhlcmUgaXMgYW55IHdheSB0bwo+IG1lYXN1cmUgdGhlIGFjdGl2aXRpZXMg
+KG5vdCBqdXN0IHBlcmZvcm1hbmNlIGNvdW50ZXJzLCBudW1iZXIgb2YKPiByZXF1ZXN0cy9mdW5j
+dGlvbiBjYWxscyBzaG91bGQgYmUgZmluZSBmb3IgbWF5IGNhc2VzKSwgbm9ybWFsCj4gZ292ZXJu
+b3JzIGxpa2UgInNpbXBsZS1vbmRlbWFuZCIgd2lsbCB3b3JrLgoKTWF5YmUgSSdtIG5vdCB1bmRl
+cnN0YW5kaW5nIGhvdyB0aGUgZGV2ZnJlcSByZXF1ZXN0cyB3b3VsZCBiZSBtYWRlCmZyb20gZHJp
+dmVycy4gIENhbiB5b3UgZXhwbGFpbiBhbiBleGFtcGxlIHdoZXJlIGEgc2luZ2xlIHRhcmdldCBk
+ZXZpY2UKbmFtZWQgWCBoYXMgY29uc3RyYWludHMgcGxhY2VkIG9uIGl0J3MgY2xvY2sgcmF0ZSBm
+cm9tIHR3byBkaWZmZXJlbnQKZHJpdmVycyBZICYgWj8gIEltYWdpbmUgaW4gdGhpcyBjYXNlIHRo
+YXQgdGhlcmUgYXJlIG5vIHBlcmZvcm1hbmNlCmNvdW50ZXJzIG9yIGFueSB3YXkgaW4gaGFyZHdh
+cmUgdG8gbW9uaXRvciBkZXZpY2Ugc2F0dXJhdGlvbi4KCj4+IFNvbWUgZXhhbXBsZXMgaW5jbHVk
+ZSBhIE1NQyBjb250cm9sbGVyLCB3aGljaCBtaWdodCBjaGFuZ2UgaXRzIGNsb2NrCj4+IHJhdGUg
+ZGVwZW5kaW5nIG9uIHRoZSBjbGFzcyBvZiBjYXJkIHRoYXQgdGhlIHVzZXIgaGFzIGluc2VydGVk
+LiDCoE9yCj4+IGV2ZW4gYSAic21hcnRpc2giIGRldmljZSBsaWtlIGEgR1BVIGxhY2tpbmcgcGVy
+Zm9ybWFuY2UgY291bnRlcnM7IGl0J3MKPj4gZHJpdmVyIHdpbGwgcmFtcCB1cCBmcmVxdWVuY3kg
+d2hlbiB0aGVyZSBpcyB3b3JrIHRvIGJlIGRvbmUgYW5kIGtpY2sKPj4gb2ZmIGEgdGltZW91dC4g
+wqBJZiBubyBuZXcgd29yayBjb21lcyBpbiBiZWZvcmUgdGhlIHRpbWVvdXQgdGhlbiB0aGUKPj4g
+ZHJpdmVyIHdpbGwgZHJvcCB0aGUgZnJlcXVlbmN5Lgo+Cj4gSW4gdGhlICJzaW1wbGUgTU1DIGNv
+bnRyb2xsZXIgdy9vIHBlcmZvcm1hbmNlIGNvdW50ZXIiIGNhc2UsIHRoZXJlIGFyZQo+IGZvbGxv
+d2luZyB3YXlzIHRvIHVzZSBkZXZmcmVxIGV2ZW4gaWYgdXNpbmcgdGhlIG51bWJlciBvZiByZXF1
+ZXN0cyBvcgo+IGZ1bmN0aW9ucyBjYWxscyBpcyBub3QgcG9zc2libGUuCj4KPiBNZXRob2QgMSkg
+dXNlICJ1c2Vyc3BhY2UiIGdvdmVybm9yIGFuZCBsZXQgdXNlciBwcm9jZXNzIGNob29zZQo+IGZy
+ZXF1ZW5jeSBiYXNlZCBvbiB0aGUgY2xhc3MKCkknbSBsZXNzIGludGVyZXN0ZWQgaW4gdXNlcnNw
+YWNlIGNvbnRyb2wgb2YgTU1DIGNvbnRyb2xsZXIgb3BlcmF0aW5nCmZyZXF1ZW5jeSBhbmQgbXVj
+aCBtb3JlIGludGVyZXN0ZWQgaW4gaG93IGRldmZyZXEgbWlnaHQgYXJiaXRyYXRlIFFvUwpyZXF1
+ZXN0cyBmcm9tIG11bHRpcGxlICJjbGllbnQiIGRldmljZXMuCgo+IE1ldGhvZCAyKSB1c2UgYW55
+ICJyZWFzb25hYmxlIiBnb3Zlcm5vciBhbmQgbGV0IHRoZSBkZXZpY2UgZHJpdmVyIHNldAo+IG9u
+bHkgInZhbGlkIiBmcmVxdWVuY2llcyBlbmFibGVkLgoKQ2FuIHlvdSBlbGFib3JhdGUgb24gdGhp
+cz8gIEknbSBub3Qgc3VyZSBJIHVuZGVyc3RhbmQgaG93IHRoaXMgd2lsbApsb29rIGluIGRyaXZl
+ciBjb2RlLiAgTWF5YmUgdGhlIGV4YW1wbGUgSSByZXF1ZXN0ZWQgYWJvdmUgd2lsbCBzaGVkCnNv
+bWUgbGlnaHQuCgo+IMKgIEZvciBhIHJvdWdoIGV4YW1wbGUsIHdlIG1heSBkbyBpZiBjbGFzcyA8
+IDYsIGRpc2FibGUgZnJlcSA+IDQwTUh6LAo+IGNsYXNzIDwgMTAsIGRpc2FibGUgZnJlcSA+IDgw
+TUh6LCBhbmQgc28gb24uIElmIHdlIGRvIG5vdCBoYXZlCj4gcGVyZm9ybWFuY2UgY291bnRlcnMg
+b3IgYW55IG90aGVyIG1lY2hhbmlzbXMgdG8gbW9uaXRvciB0aGUKPiBhY3Rpdml0aWVzLCAicGVy
+Zm9ybWFuY2UiIGdvdmVybm9yIGFsb25nIHdpdGggY2xvY2stZ2F0ZWQgTU1DIGRyaXZlcgo+IHdp
+bGwgc2F2ZSBlbm91Z2ggcG93ZXIuCj4KPiBGb3IgR1BVcyB3aXRob3V0IGFueXRoaW5nIHRvIG1v
+bml0b3IgdGhlIGFjdGl2aXRpZXMsIHdlIG1heSBkbyB0aGUKPiBzYW1lIGFzIHRoZSBNTUMgY2Fz
+ZS4KPgo+IEhvd2V2ZXIsIHdpdGggdGhlIEgvVyBJJ3ZlIGdvdCBub3csIChFeHlub3M0MjEwKSwg
+d2UgaGF2ZSBwZXJmb3JtYW5jZQo+IGNvdW50ZXJzIChQUE1VKSBmb3IgbWFueSBibG9ja3M6IDNE
+KE1BTEkgR1BVKSwgQUNQLCBDQU1JRiwgQ1BVLCBETUMwLAo+IERNQzEgKG1lbW9yeSBjb250cm9s
+bGVycyksIEZTWVMsIElNQUdFLCBMQ0QwLCBMQ0QxLCBNRkNfTCwgTUZDX1IsIFRWLAo+IExFRlRf
+QlVTLCBhbmQgUklHSFRfQlVTLiBJIGRvbid0IHRoaW5rIEV4eW5vczQgaXMgYW4gZXhjZXB0aW9u
+YWxseQo+IGZhbmN5IFNvQyAoYWxyZWFkeSBtaWxsaW9ucyBhcmUgc29sZCBmb3IgcGhvbmVzKSBh
+bmQgb3RoZXIgbW9iaWxlIFNvQ3MKPiAoYXQgbGVhc3QgZm9yIGZsYWdzaGlwIG1vZGVscykgd2ls
+bCBoYXZlIHRoZW0gdmVyeSBzb29uIChvciBhbHJlYWR5Cj4gaGF2ZSB0aGVtKS4gQWxvbmcgd2l0
+aCB0aGlzIHBhdGNoLCBpbiB0aGUgZXhhbXBsZSB3aXRoIGdpdCBicmFuY2gKPiBsaW5rLCB3ZSBj
+b250cm9sIERNQzAvRE1DMSBibG9ja3MuIEFuZCwKCkkgYWdyZWUgZGV2ZnJlcSBpcyB3ZWxsLXN1
+aXRlZCBmb3Igc3VjaCBoYXJkd2FyZS4KCj4+IEEgZ292ZXJub3IgaXMgbm90IHJlcXVpcmVkIGlu
+IHRoZXNlIGNhc2VzIChhcyB0aGV5IGFyZSBldmVudCBkcml2ZW4pCj4+IGFuZCBkZXZmcmVxIGlz
+IHF1aXRlIGhlYXZ5d2VpZ2h0IGZvciBzdWNoIGFwcGxpY2F0aW9ucy4gwqBXaGF0IGlzCj4+IG5l
+ZWRlZCBpcyBhIFFvUy1zdHlsZSBzb2Z0d2FyZSBsYXllciB0aGF0IGFsbG93cyB0aHJvdWdocHV0
+IHJlcXVlc3RzCj4+IHRvIGJlIG1hZGUgZnJvbSBhbiBpbml0aWF0b3IgZGV2aWNlIHRvd2FyZHMg
+YSB0YXJnZXQgZGV2aWNlLiDCoFRoaXMKPj4gbGF5ZXIgc2hvdWxkIGFnZ3JlZ2F0ZSByZXF1ZXN0
+cyBzaW5jZSBtYW55IGluaXRhdG9yIGRldmljZXMgbWF5IG1ha2UKPj4gcmVxdWVzdHMgdG8gdGhl
+IHNhbWUgdGFyZ2V0IGRldmljZS4gwqBUaGlzIGxheWVyIEknbSBkZXNjcmliaW5nLCB3aGljaAo+
+PiBkb2VzIG5vdCBleGlzdCB0b2RheSwgc2hvdWxkIGJlIHdoZXJlIHRoZSBhY3R1YWwgRFZGUyB0
+cmFuc2l0aW9uIHRha2VzCj4+IHBsYWNlLiDCoFRoYXQgY291bGQgdGFrZSB0aGUgZm9ybSBvZiBh
+IGNsa19zZXRfcmF0ZSBjYWxsIGluIHRoZSBjbG9jawo+PiBmcmFtZXdvcmsgKGFzIGRlc2NyaWJl
+ZCBieSBDb2xpbiBpbiBWMSBvZiB0aGlzIHNlcmllcyksIG9yIHNvbWUgb3RoZXIKPj4gbm90LXll
+dC1yZWFsaXplZCBkdmZzX3NldF9vcHAgLG9yIHNvbWV0aGluZyBsaWtlIEplYW4gUGloZXQncwo+
+PiBwZXItZGV2aWNlIFBNIFFvUyBwYXRjaGVzIG9yIHdoYXRldmVyLiDCoEZvciB0aGUgcHVycG9z
+ZXMgb2YgdGhpcyBlbWFpbAo+PiBJIGRvbid0IHJlYWxseSBjYXJlIHdoaWNoIGZyYW1ld29yayBp
+bXBsZW1lbnRzIHRoZSBRb1MgcmVxdWVzdAo+PiBhZ2dyZWdhdGlvbi4KPgo+IFN1Y2ggYWdncmVn
+YXRpb24gY291bGQgYmUgYWxzbyBkb25lIHdpdGggZ292ZXJub3JzLiBJZiB0aGUKPiBnb3Zlcm5v
+ci1kZXZpY2UgcGFpciBkb2VzIG5vdCB3YW50IHRvIHBvbGwgZGV2ZnJlcSB3b3VsZG4ndCBsb29w
+Cj4gdW5sZXNzIHRoZXJlIGlzIGFueSBnb3Zlcm5vci1kZXZpY2UgcGFpciB0aGF0IHdhbnRzIHRv
+IGRvIHNvLiBJZiBpdCBpcwo+IGV2ZW50LWRyaXZlbiwgdXNlcnMgbWF5IGp1c3QgImFsbG93L2Rp
+c2FsbG93IiBmcmVxdWVuY2llcyB3aXRoIE9QUAo+IGZyYW1ld29yayBhbmQgZGV2ZnJlcSB3aWxs
+IGNob29zZSBwcm9wZXIgZnJlcXVlbmN5IHdpdGggdGhlIGdpdmVuCj4gZ292ZXJub3IgZm9yIHRo
+ZSBkZXZpY2UuIElmIGV2ZXJ5IGRldmljZSB1c2VzICJzdGF0aWMiIG9yCj4gImV2ZW50LWRyaXZl
+biIgZ292ZXJub3JzIHN1Y2ggYXMgcG93ZXJzYXZlL3BlcmZvcm1hbmNlL3VzZXJzcGFjZSwKPiB0
+aGVyZSB3aWxsIGJlIG5vIHBvbGxpbmcvbG9vcGluZy4KClNvIGRyaXZlcnMgbXVzdCBkaXNhYmxl
+IE9QUHMsIGFuZCB0aGVuIHRoZSBub24tcG9sbGluZyBkZXZmcmVxCmdvdmVybm9yIHdpbGwgaGF2
+ZSB0byBiZSBub3RpZmllZCBieSB0aGUgT1BQIGNvZGUgYW5kIHRoZW4gcnVuIGl0J3MKLT50YXJn
+ZXQgY29kZSBhZ2Fpbj8gIFRoaXMgc291bmRzIGJhY2t3YXJkcyB0byBtZS4KCmRldmZyZXEgc2Vl
+bXMgbGlrZSBhbiBpZGVhbCBiaXQgb2YgY29kZSB0byB1bmRlcnN0YW5kIHRoZSBjb25zdHJhaW50
+cwpuZWVkZWQgYnkgYSBkZXZpY2UgKHZpYSB0aGUgd29ya3F1ZXVlL21vbml0b3IgbG9vcCkgYW5k
+IHRoZW4gcmVxdWVzdAp0aG9zZSBuZWVkcyB2aWEgdGhlIHByb3BlciBBUEkuICBJdCBzZWVtcyBl
+bnRpcmVseSB3cm9uZyB0byBtZSB0byBoYXZlCm90aGVyIGRldmljZSBkcml2ZXJzIHNlbmQgdGhl
+aXIgUW9TIG5lZWRzIHRvIGRldmZyZXEuCgpJJ20gc3RhcnRpbmcgdG8gc291bmQgbGlrZSBhIGJy
+b2tlbiByZWNvcmQgdGhvdWdoLCBhbmQgSSd2ZSByZXNjaW5kZWQKbXkgTkFLIGluIG15IHJlcGx5
+IHRvIFJhZmFlbC4gIElmIHlvdSBjb3VsZCBleHBsYWluIGhvdyBtdWx0aXBsZQpkcml2ZXJzIGNh
+biByZXF1ZXN0IHRoZWlyIHBlcmZvcm1hbmNlIG5lZWRzIHRvIGEgZGV2ZnJlcSBnb3Zlcm5vcgoo
+c2FtZSBxdWVzdGlvbiBJIGFza2VkIGFib3ZlKSB0aGVuIHRoYXQgd291bGQgYmUgcmVhbGx5IGhl
+bHBmdWwuCgpUaGFua3MsCk1pa2UKCj4gV2hlbiBpdCBpcyBnb2luZyB0byBiZSBkaXJlY3RseSBj
+b250cm9sbGVkIGJ5IHVzZXJzcGFjZSwgd2UnbGwgbmVlZCBhCj4gInVzZXJzcGFjZSIgZ292ZXJu
+b3IgKHNhbWUgd2l0aCB1c2Vyc3BhY2UgZ292ZXJub3Igb2YgY3B1ZnJlcSkuCj4KPiBJZiB0aGVy
+ZSBpcyBhIFFvUyByZXF1ZXN0IGZvciBhIGRldmZyZXEtZWQgZGV2aWNlLCB0aGUgcmVxdWVzdCBj
+b3VsZAo+IGJlIGRvbmUgd2l0aCBPUFAncyBmcmVxdWVuY3kgZW5hYmxlL2Rpc2FibGUuIElmIGEg
+ZGV2aWNlIGlzIHRvIGJlCj4gZXhlY3V0ZWQgYXQgNDAwTUh6IG9yIGZhc3RlciwgYWxsIGZyZXF1
+ZW5jaWVzIHVuZGVyIDQwME1IeiBjb3VsZCBiZQo+IHNpbXBseSBkaXNhYmxlZCB3LyBPUFAuIERl
+dmZyZXEgZ292ZXJub3JzIGNhbm5vdCBvdmVycmlkZSBzdWNoCj4gZnJlcXVlbmN5IGVuYWJsZS9k
+aXNhYmxlIGNvbmZpZ3VyYXRpb25zLgo+Cj4gSG93ZXZlciwgaWYgc3VjaCBRb1MgcmVxdWVzdHMg
+bmVlZCBkZWxheXMgKHRpbWVycykgbGlrZSB0aWNrbGUsIGEKPiBnZW5lcmFsaXplZCB0aWNrbGUg
+c3VwcGxpZWQgd2l0aCBmcmVxdWVuY3kgb3IgcGVyY2VudCBvZiBtYXgtZnJlcXVlbmN5Cj4gbWln
+aHQgd29yay4gKGkuZS4sIHRpY2tsZShkZXYsIGZyZXVxZW5jeSwgZHVyYXRpb24pOyApIFRoZW4s
+IHRoaXMKPiBnZW5lcmFsaXplZCB0aWNrbGUgd2lsbCBob2xkIGF0IHRoZSByZXF1ZXN0IGZyZXF1
+ZW5jeSBvciBoaWdoZXIgYnkKPiBkaXNhYmxpbmcgbG93ZXIgZnJlcXVlbmNpZXMgdGVtcG9yYXJp
+bHkuCj4KPj4KPj4gVGhlIHBvaW50IG9mIGRlc2NyaWJpbmcgdGhpcyBub24tZXhpc3RhbnQgQVBJ
+IGlzIHRoYXQgZGV2ZnJlcSBzaG91bGQKPj4gcmVhbGx5IGJlIGp1c3QgYW5vdGhlciBpbnB1dCBp
+bnRvIGl0LiDCoEEgZ292ZXJub3IgdGhhdCBjYW4gbWVhc3VyZSBidXMKPj4gc2F0dXJhdGlvbiBp
+cyByZWFsbHkgY29vbCwgYnV0IGl0IG1heSBub3QgeWllbGQgb3B0aW1hbCByZXN1bHRzCj4+IGNv
+bXBhcmVkIHRvIHNldmVyYWwgZHJpdmVycyB3aGljaCBtYWtlIFFvUy1zdHlsZSByZXF1ZXN0cyBh
+bmQgaW5zdXJlCj4+IHRoYXQgcGVyZm9ybWFuY2UgaXMgZ3VhcmFudGVlZCBmb3IgdGhlaXIgcGFy
+dGljdWxhciBuZWVkcyBkdXJpbmcgdGhlaXIKPj4gdHJhbnNhY3Rpb25zLiDCoFRoZSBnb29kIG5l
+d3MgaXMgdGhhdCB3ZSBkb24ndCBoYXZlIHRvIGNob29zZSBiZXR3ZWVuCj4+IHBlcmZvcm1hbmNl
+IGNvdW50ZXIgaW50cm9zcGVjdGlvbiBhbmQgc29mdHdhcmUgUW9TIHJlcXVlc3RzOiBib3RoIHRo
+ZQo+PiBkcml2ZXIgcmVxdWVzdHMgYW5kIHRoZSBnb3Zlcm5vciBzaG91bGQgYWxsIGZlZWQgYXMg
+aW5wdXRzIGludG8gdGhlCj4+IFFvUy1zdHlsZSBEVkZTIG1lY2hhbmlzbS4KPj4KPj4gVGFraW5n
+IHRoYXQgbG9naWMgdG8gaXRzIGluZXZpdGFibGUgY29uY2x1c2lvbiwgdGlja2xlIGRvZXNuJ3Qg
+YmVsb25nCj4+IGluc2lkZSB0aGUgZ292ZXJub3IgYXQgYWxsLiDCoElmIHNvbWUgZGV2aWNlIFgg
+d2FudHMgdG8gcmFtcCB1cCB0aGUKPj4gZnJlcXVlbmN5IG9mIGRldmljZSBZLCBpdCBzaG91bGQg
+anVzdCBtYWtlIGEgUW9TLXN0eWxlIHRocm91Z2hwdXQKPj4gcmVxdWVzdCB0b3dhcmRzIGRldmlj
+ZSBZLCBwb3NzaWJseSB3aXRoIGEgdGltZW91dCAoa2VlcGluZyB0aGUKPj4gb3JpZ2luYWwgaWRl
+YSBvZiB0aWNrbGUgaW50YWN0KS4gwqBUaGlzIGlzIGVudGlyZWx5IGEgc2VwYXJhdGUgaWRlYQo+
+PiBmcm9tIGEgZ292ZXJub3IncyBpbnRyb3NwZWN0aXZlIHdvcmtxdWV1ZSBsb29wLgo+Cj4gQWx0
+aG91Z2ggdGlja2xlIGlzIHNoYXJpbmcgdGhlIHNhbWUgbG9vcCB3aXRoIGdvdmVybm9ycywgdGlj
+a2xlIGRvZXMKPiBub3QgYmVsb25nIGluc2lkZSBnb3Zlcm5vcnMuIFRpY2tsZSBvdmVycmlkZXMg
+dGhlIGRlY2lzaW9ucyBvZgo+IGdvdmVybm9yczsgZ292ZXJub3IncyBkZWNpc2lvbiBmdW5jdGlv
+biBpcyBub3QgY2FsbGVkIGlmIHRoZSBkZXZpY2UgaXMKPiBiZWluZyB0aWNrbGVkLiBIb3dldmVy
+LCBnZW5lcmFsaXppbmcgdGhlIHRpY2tsZSBmdW5jdGlvbiBzbyB0aGF0IGl0Cj4gbWF5IHRha2Ug
+ImF0IGxlYXN0IGF0IHh4ICUgb2YgbWF4IGZyZXF1ZW5jeSIgb3IgIm9wZXJhdGUgYXQgbGVhc3Qg
+eHgKPiBraHoiIGFzIGFuIG9wdGlvbiBzZWVtcyByZWFzb25hYmxlIGZvciBRb1MgcmVxdWVzdHMu
+IEFuZCBzdWNoIG9wdGlvbnMKPiBtaWdodCBiZSBpbXBsZW1lbnRlZCBmb3IgbmV4dCB2ZXJzaW9u
+IG9mIGRldmZyZXEgbGF0ZXIuIFRoaXMgcmVxdWlyZXMKPiBtb2RpZmljYXRpb24gaW4gdGlja2xl
+IGZ1bmN0aW9uIGludGVyZmFjZSBvciBhZGRpbmcgYW5vdGhlciBpbnRlcmZhY2UKPiBmb3IgdGlj
+a2xlIGZ1bmN0aW9uLiBIb3dldmVyLCBpZiBzdWNoIFFvUyByZXF1ZXN0cyBkbyBub3QgbmVlZAo+
+IGR1cmF0aW9uIHNldCwgd2UgY2FuIGp1c3QgZ28gd2l0aCBPUFAncyBmcmVxdWVuY3kgZW5hYmxl
+L2Rpc2FibGUgYW5kCj4gZGlzYWJsZSBsb3dlci10aGFuLVFvUy1yZXF1aXJlbWVudCBmcmVxdWVu
+Y2llcy4KPgo+IFRodXMsIEkgZ3Vlc3MgdGhpcyBRb1MgaXNzdWUgaXMgc29tZXdoYXQgbm90IHZl
+cnkgc2lnbmlmaWNhbnQgZm9yCj4gZGV2ZnJlcS4gQW5kIGl0IGNhbiBiZSBlYXNpbHkgbWl0aWdh
+dGVkIGJ5IGFkZGluZyBhbm90aGVyIGludGVyZmFjZSBvcgo+IG1vZGlmeWluZyB0aGUgaW50ZXJm
+YWNlIG9mIHRpY2tsZSBmdW5jdGlvbi4KPgo+Pgo+PiBGb3IgdXNlcnNwYWNlLCBhIHN5c2ZzIGVu
+dHJ5IGZvciB0aWNrbGUgd291bGQgYWxzbyBub3QgZmVlZCBpbnRvIHRoZQo+PiBnb3Zlcm5vciwg
+YnV0IHNvbWUgZHVtbXkgc3RydWN0IGRldmljZSAqdXNlciB3b3VsZCBwcm9iYWJseSBiZSB0aGUK
+Pj4gaW5pdGlhdG9yIGRldmljZSBhbmQgaXQgd291bGQgc2ltcGx5IGNhbGwgdGhlIFFvUy1zdHls
+ZSB0aHJvdWdocHV0Cj4+IEFQSS4KPj4KPj4gSW4gc3VtbWFyeSBteSBvYmplY3Rpb25zIHRvIHRo
+aXMgc2VyaWVzIGFyZToKPj4gMSkgZGV2ZnJlcSBzaG91bGQgbm90IGJlIHRoZSAqZmluYWwqIHNv
+ZnR3YXJlIGxheWVyIHRvIGludm9rZSBhIERWRlMKPj4gdHJhbnNpdGlvbiBhcyBpdCBoYXMgbm90
+IHRha2VuIGFsbCBjb25zdHJhaW50cyBpbnRvIGFjY291bnQuCj4+IDIpIGEgZGV2ZnJlcSBnb3Zl
+cm5vciByZXByZXNlbnRzIGp1c3Qgb25lIGNvbnN0cmFpbnQgb3V0IG9mIG1hbnkgdG8gYmUKPj4g
+Y29uc2lkZXJlZCBmb3IgYW55IGdpdmVuIHNjYWxhYmxlIGRldmljZS4KPgo+IElmIHRoZSBjb25j
+ZXJuIGlzIGFib3V0IHRoZSBRb1MgcmVxdWVzdHMsIEkgZ3Vlc3MgZ2VuZXJhbGl6aW5nIHRpY2ts
+ZQo+IHdvdWxkIGJlIHN1ZmZpY2llbnQgYXMgYWJvdmUuIEZvciBkZXZpY2VzIHdpdGhvdXQgcGVy
+Zm9ybWFuY2UgY291bnRlcnMKPiBhbmQgYW55IG90aGVyIG1lY2hhbmlzbXMgdG8gaW5mZXIgdGhl
+IHVzYWdlIHN0YXRpc3RpY3MsICJwZXJmb3JtYW5jZSIKPiBnb3Zlcm5vciB3aXRoIGV2ZW50LWRy
+aXZlbiBPUFAgZnJlcS1lbmFibGUvZGlzYWJsZSBzaG91bGQgYmUgZmluZS4KPgo+Pgo+PiBNeSBv
+YmplY3Rpb24gdG8gdGhlc2UgcGF0Y2hlcyBnZXR0aW5nIG1lcmdlZCBpcyB0aGF0IEkgdGhpbmsg
+dGhleSBhcmUKPj4gYSBiaXQgYWhlYWQgb2YgdGhlaXIgdGltZS4gwqBXZSBuZWVkIHRvIGtub3cg
+d2hhdCB0aGUgcmVhbCBEVkZTIEFQSQo+PiBsb29rcyBsaWtlIHVuZGVybmVhdGggZGV2ZnJlcSBm
+aXJzdCwgc2luY2UgZGV2ZnJlcSBzaG91bGQgcmVhbGx5IGJlCj4+IGJ1aWx0IG9uIHRvcCBvZiBp
+dC4KPj4KPj4gUmVnYXJkcywKPj4gTWlrZQo+Pgo+Pj4gVGhhbmtzLAo+Pj4gUmFmYWVsCj4+Pgo+
+PiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+PiBsaW51
+eC1wbSBtYWlsaW5nIGxpc3QKPj4gbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcK
+Pj4gaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
+bnV4LXBtCj4+Cj4KPiBDaGVlcnMhCj4gTXl1bmdKb28uCj4KPgo+IC0tCj4gTXl1bmdKb28gSGFt
+ICjtlajrqoXso7wpLCBQaC5ELgo+IE1vYmlsZSBTb2Z0d2FyZSBQbGF0Zm9ybSBMYWIsCj4gRGln
+aXRhbCBNZWRpYSBhbmQgQ29tbXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKPiBTYW1zdW5nIEVs
+ZWN0cm9uaWNzCj4gY2VsbDogODItMTAtNjcxNC0yODU4Cj4KX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBt
+QGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
