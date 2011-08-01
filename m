@@ -1,10 +1,9 @@
 From: Govindraj <govindraj.ti@gmail.com>
 Subject: Re: [RFC v2]: Issues implementing clock handling
  mechanism within UART driver
-Date: Mon, 1 Aug 2011 15:30:21 +0530
-Message-ID: <CAAL8m4zxkmhLB3t9L3vziZe86MdXbk0Mqze-ARgDscqeYqDFTQ__21094.2736048766$1312192923$gmane$org@mail.gmail.com>
-References: <1311845395-31917-1-git-send-email-govindraj.raja@ti.com>
-	<20110729095512.GE31013@legolas.emea.dhcp.ti.com>
+Date: Mon, 1 Aug 2011 18:16:59 +0530
+Message-ID: <CAAL8m4xTiwH4dKYMWm1M=xMSEzZD=hgL_dxUZeSBkda_58VF7g__35423.1710233309$1312202926$gmane$org@mail.gmail.com>
+References: <20110729095512.GE31013@legolas.emea.dhcp.ti.com>
 	<CAAL8m4xjN15RfwbDd_c1HdoKY327CWOn5qwuoUT=fop4J0K5cw@mail.gmail.com>
 	<20110729113713.GK31013@legolas.emea.dhcp.ti.com>
 	<CAAL8m4wq7RQ_Rp-+LMWYY=dtTnhtR5UY+8HpO5C_54goKezaTg@mail.gmail.com>
@@ -13,11 +12,13 @@ References: <1311845395-31917-1-git-send-email-govindraj.raja@ti.com>
 	<20110729140210.GT31013@legolas.emea.dhcp.ti.com>
 	<CAAL8m4wdKu_XGFaGxuAJ9uypRyyQMkR8HL7Y6E=pBkwX=L43nA@mail.gmail.com>
 	<20110801090328.GG31013@legolas.emea.dhcp.ti.com>
+	<CAMrsUdL_9mzKsjrKf=spihxcRTQc6Tsr+MAP9GFAz_7sE27B6Q@mail.gmail.com>
+	<20110801100203.GN31013@legolas.emea.dhcp.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110801090328.GG31013@legolas.emea.dhcp.ti.com>
+In-Reply-To: <20110801100203.GN31013@legolas.emea.dhcp.ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,311 +29,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: balbi@ti.com
-Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, "Govindraj.R" <govindraj.raja@ti.com>, linux-serial@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, "Raja,
+	Govindraj" <govindraj.raja@ti.com>, linux-serial@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> Hi,
->
-> On Fri, Jul 29, 2011 at 08:43:49PM +0530, Govindraj wrote:
->
-> [giant snip]
->
-> > Actually there is much more than this:
-> >
-> > <<SNIP>>
-> >
-> > diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-> > index 180299e..221ffb9 100644
-> > --- a/arch/arm/mach-omap2/clock.c
-> > +++ b/arch/arm/mach-omap2/clock.c
-> > @@ -12,7 +12,8 @@
-> >   * it under the terms of the GNU General Public License version 2 as
-> >   * published by the Free Software Foundation.
-> >   */
-> > -#undef DEBUG
-> > +//#undef DEBUG
-> > +#define DEBUG
->
-> trailing... but you know that :-p
->
-
-yes true.
-
-
-> > @@ -254,14 +255,14 @@ void omap2_clk_disable(struct clk *clk)
-> >               return;
-> >       }
-> >
-> > -     pr_debug("clock: %s: decrementing usecount\n", clk->name);
-> > +//   pr_debug("clock: %s: decrementing usecount\n", clk->name);
-> >
-> >       clk->usecount--;
-> >
-> >       if (clk->usecount > 0)
-> >               return;
-> >
-> > -     pr_debug("clock: %s: disabling in hardware\n", clk->name);
-> > +//   pr_debug("clock: %s: disabling in hardware\n", clk->name);
-> >
-> >       if (clk->ops && clk->ops->disable) {
-> >               trace_clock_disable(clk->name, 0, smp_processor_id());
->
-> this hunk is unnecessary. Clocks are always on when they are called.
->
-
-The problem is:
-
-[1]:
-
-runtime_put -> *power.lock* - > rpm->suspend -> above pr_debug ->
-console_write -> get_sync
-
--> *power.lock* -> rpm resume
-
-power.lock contention.
-
-
-
->
-> > @@ -290,14 +291,14 @@ int omap2_clk_enable(struct clk *clk)
-> >  {
-> >       int ret;
-> >
-> > -     pr_debug("clock: %s: incrementing usecount\n", clk->name);
-> > +//   pr_debug("clock: %s: incrementing usecount\n", clk->name);
-> >
-> >       clk->usecount++;
-> >
-> >       if (clk->usecount > 1)
-> >               return 0;
-> >
-> > -     pr_debug("clock: %s: enabling in hardware\n", clk->name);
-> > +//   pr_debug("clock: %s: enabling in hardware\n", clk->name);
->
-> these two is ok.
->
-> > diff --git a/arch/arm/mach-omap2/omap_hwmod.c
-> b/arch/arm/mach-omap2/omap_hwmod.c
-> > index 7ed0479..8ca7d40 100644
-> > --- a/arch/arm/mach-omap2/omap_hwmod.c
-> > +++ b/arch/arm/mach-omap2/omap_hwmod.c
-> > @@ -124,7 +124,8 @@
-> >   * XXX error return values should be checked to ensure that they are
-> >   * appropriate
-> >   */
-> > -#undef DEBUG
-> > +//#undef DEBUG
-> > +#define DEBUG
->
-> trailing.
->
-> > @@ -597,7 +598,8 @@ static int _enable_clocks(struct omap_hwmod *oh)
-> >  {
-> >       int i;
-> >
-> > -     pr_debug("omap_hwmod: %s: enabling clocks\n", oh->name);
-> > +     if (strcmp(oh->class->name, "uart"))
-> > +             pr_debug("omap_hwmod: %s: enabling clocks\n", oh->name);
->
-> instead of doing checks, you could move the print to the end of the
-> function, when clocks are already enabled. When doind that, of course,
-> update the comment to say "%s: clocks enabled\n".
->
-
-
-the problem is the prints causing power.lock contention same as
-the scenario in [1] above.
-
-
-
->
-> > @@ -627,7 +629,8 @@ static int _disable_clocks(struct omap_hwmod *oh)
-> >  {
-> >       int i;
-> >
-> > -     pr_debug("omap_hwmod: %s: disabling clocks\n", oh->name);
-> > +     if (strcmp(oh->class->name, "uart"))
-> > +             pr_debug("omap_hwmod: %s: disabling clocks\n", oh->name);
->
-> check not needed, clocks are still on.
->
-
-scenario [1]
-
-
-
->
-> >
-> >       if (oh->_clk)
-> >               clk_disable(oh->_clk);
-> > @@ -1232,7 +1235,8 @@ static int _enable(struct omap_hwmod *oh)
-> >               return -EINVAL;
-> >       }
-> >
-> > -     pr_debug("omap_hwmod: %s: enabling\n", oh->name);
-> > +     if (strcmp(oh->class->name, "uart"))
-> > +             pr_debug("omap_hwmod: %s: enabling\n", oh->name);
->
-> move it further down.
->
-> > @@ -1264,8 +1268,9 @@ static int _enable(struct omap_hwmod *oh)
-> >               }
-> >       } else {
-> >               _disable_clocks(oh);
-> > -             pr_debug("omap_hwmod: %s: _wait_target_ready: %d\n",
-> > -                      oh->name, r);
-> > +             if (strcmp(oh->class->name, "uart"))
-> > +                     pr_debug("omap_hwmod: %s: _wait_target_ready:
-> %d\n",
-> > +                              oh->name, r);
->
-> instead of adding check, move the print before _disable_clocks(oh).
->
-> > @@ -1287,7 +1292,8 @@ static int _idle(struct omap_hwmod *oh)
-> >               return -EINVAL;
-> >       }
-> >
-> > -     pr_debug("omap_hwmod: %s: idling\n", oh->name);
-> > +     if (strcmp(oh->class->name, "uart"))
-> > +             pr_debug("omap_hwmod: %s: idling\n", oh->name);
->
-> I believe clocks are still on here too, no checks needed.
->
-> > diff --git a/arch/arm/plat-omap/omap_device.c
-> b/arch/arm/plat-omap/omap_device.c
-> > index 49fc0df..7b27704 100644
-> > --- a/arch/arm/plat-omap/omap_device.c
-> > +++ b/arch/arm/plat-omap/omap_device.c
-> > @@ -75,7 +75,8 @@
-> >   * (device must be reinitialized at this point to use it again)
-> >   *
-> >   */
-> > -#undef DEBUG
-> > +//#undef DEBUG
-> > +#define DEBUG
->
-> trailing.
->
-> > @@ -114,7 +115,8 @@ static int _omap_device_activate(struct
-> > omap_device *od, u8 ignore_lat)
-> >  {
-> >       struct timespec a, b, c;
-> >
-> > -     pr_debug("omap_device: %s: activating\n", od->pdev.name);
-> > +     if (strcmp(od->hwmods[0]->class->name, "uart"))
-> > +             pr_debug("omap_device: %s: activating\n", od->pdev.name);
->
-> move it to the end of the function.
->
-> > @@ -138,25 +140,29 @@ static int _omap_device_activate(struct
-> > omap_device *od, u8 ignore_lat)
-> >               c = timespec_sub(b, a);
-> >               act_lat = timespec_to_ns(&c);
-> >
-> > -             pr_debug("omap_device: %s: pm_lat %d: activate: elapsed
-> time "
-> > -                      "%llu nsec\n", od->pdev.name, od->pm_lat_level,
-> > -                      act_lat);
-> > +             if (strcmp(od->hwmods[0]->class->name, "uart"))
-> > +                     pr_debug("omap_device: %s: pm_lat %d: activate:
-> elapsed time "
-> > +                              "%llu nsec\n", od->pdev.name,
-> od->pm_lat_level,
-> > +                              act_lat);
->
-> move it further down.
->
-> >
-> >               if (act_lat > odpl->activate_lat) {
-> >                       odpl->activate_lat_worst = act_lat;
-> >                       if (odpl->flags & OMAP_DEVICE_LATENCY_AUTO_ADJUST)
-> {
-> >                               odpl->activate_lat = act_lat;
-> > -                             pr_warning("omap_device: %s.%d: new worst
-> case "
-> > -                                        "activate latency %d: %llu\n",
-> > -                                        od->pdev.name, od->pdev.id,
-> > -                                        od->pm_lat_level, act_lat);
-> > -                     } else
-> > -                             pr_warning("omap_device: %s.%d: activate "
-> > -                                        "latency %d higher than
-> exptected. "
-> > -                                        "(%llu > %d)\n",
-> > -                                        od->pdev.name, od->pdev.id,
-> > -                                        od->pm_lat_level, act_lat,
-> > -                                        odpl->activate_lat);
-> > +                             if (strcmp(od->hwmods[0]->class->name,
-> "uart"))
-> > +                                     pr_warning("omap_device: %s.%d: new
-> worst case "
-> > +                                             "activate latency %d:
-> %llu\n",
-> > +                                             od->pdev.name, od->pdev.id
-> ,
-> > +                                             od->pm_lat_level, act_lat);
-> > +                     } else {
-> > +                             if (strcmp(od->hwmods[0]->class->name,
-> "uart"))
-> > +                                     pr_warning("omap_device: %s.%d:
-> activate "
-> > +                                             "latency %d higher than
-> exptected. "
-> > +                                             "(%llu > %d)\n",
-> > +                                             od->pdev.name, od->pdev.id
-> ,
-> > +                                             od->pm_lat_level, act_lat,
-> > +                                             odpl->activate_lat);
->
-> ->activate_func() has already been called here, clocks are already on.
->
-> > @@ -183,7 +189,8 @@ static int _omap_device_deactivate(struct
-> > omap_device *od, u8 ignore_lat)
-> >  {
-> >       struct timespec a, b, c;
-> >
-> > -     pr_debug("omap_device: %s: deactivating\n", od->pdev.name);
-> > +     if (strcmp(od->hwmods[0]->class->name, "uart"))
-> > +             pr_debug("omap_device: %s: deactivating\n", od->pdev.name
-> );
->
-> clocks are still on here.
->
-> > @@ -206,25 +213,29 @@ static int _omap_device_deactivate(struct
-> > omap_device *od, u8 ignore_lat)
-> >               c = timespec_sub(b, a);
-> >               deact_lat = timespec_to_ns(&c);
-> >
-> > -             pr_debug("omap_device: %s: pm_lat %d: deactivate: elapsed
-> time "
-> > -                      "%llu nsec\n", od->pdev.name, od->pm_lat_level,
-> > -                      deact_lat);
-> > +             if (strcmp(od->hwmods[0]->class->name, "uart"))
-> > +                     pr_debug("omap_device: %s: pm_lat %d: deactivate:
-> elapsed time "
-> > +                              "%llu nsec\n", od->pdev.name,
-> od->pm_lat_level,
-> > +                              deact_lat);
->
-> I'll leave this to Kevin to decide what to do, but clocks are off
-> here...
->
-
-Yes fine.
-
-Since most of these prints will be printed if DEBUG macro
-is defined in respective files and *debug* is used in command line.
-
-Can't leave uart clocks active always on debug cases.
-[If *debug*  used as command line]
-and gate uart clocks only for non debug cases.
-
-With this approach at least we can have a clean solution
-in uart driver also without adding clock gating from idle path.
-
-Not sure if this agreeable.
-
-As of now gating from idle path seems to be only clean approach.
-
--- 
-Thanks,
-Govindraj.R
+T24gTW9uLCBBdWcgMSwgMjAxMSBhdCAzOjMyIFBNLCBGZWxpcGUgQmFsYmkgPGJhbGJpQHRpLmNv
+bT4gd3JvdGU6Cj4gSGksCj4KPiAoZml4IHlvdXIgbWFpbGVyIGR1ZGUpCgpTb3JyeSBzb21lIHNl
+dHRpbmdzIGdvdCBzY3Jld2VkIHVwIHdpdGggbXkgbWFpbGVyCgo+Cj4gT24gTW9uLCBBdWcgMDEs
+IDIwMTEgYXQgMDM6MjY6NTJQTSArMDUzMCwgUmFqYSwgR292aW5kcmFqIHdyb3RlOgoKWy4uXQoK
+Pj4gwqAgwqAgwqB0aGlzIGh1bmsgaXMgdW5uZWNlc3NhcnkuIENsb2NrcyBhcmUgYWx3YXlzIG9u
+IHdoZW4gdGhleSBhcmUgY2FsbGVkLgo+Pgo+PiDCoCDCoFRoZSBwcm9ibGVtIGlzOgo+PiDCoCDC
+oFsxXToKPj4gwqAgwqBydW50aW1lX3B1dCAtPiAqcG93ZXIubG9jayogLSA+IHJwbS0+c3VzcGVu
+ZCAtPiBhYm92ZSBwcl9kZWJ1ZyAtPgo+PiDCoCDCoGNvbnNvbGVfd3JpdGUgLT4gZ2V0X3N5bmMK
+Pj4gwqAgwqAtPiAqcG93ZXIubG9jayogLT4gcnBtIHJlc3VtZQo+PiDCoCDCoHBvd2VyLmxvY2sg
+Y29udGVudGlvbi4KPgo+IEFyZSB5b3Ugc3VyZSA/IElmIHRoZSBkZXZpY2UgaXMgc3RpbGwgb24s
+IHdvbid0IHRoYXQgZ2V0X3N5bmMoKSBvbmx5Cj4gaW5jcmVhc2UgdGhlIHBtIGNvdW50ZXIgPyBJ
+bnN0ZWFkIG9mIGdvaW5nIHRocm91Z2ggZXZlcnl0aGluZyA/PyBPaAo+IHdlbGwsIHRoaXMgaXMg
+YmVjb21pbmcgcXVpdGUgcmFjeSA6LSgKClllcyB0cnVlLCBidXQgYmVmb3JlIGl0IGluY3JlbWVu
+dHMgdGhlIGNvdW50ZXIgaXQgd2lsbCB0YWtlCnBvd2VyLmxvY2sKCmlmIHdlIGxvb2sgaW50byBp
+bnRlcm5hbHMuCgpwbV9ydW50aW1lX2dldF9zeW5jIC0+ICpfX3BtX3J1bnRpbWVfcmVzdW1lKiAt
+LT4gcnBtX3Jlc3VtZQoKaW50IF9fcG1fcnVudGltZV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2
+LCBpbnQgcnBtZmxhZ3MpCnsKIFsuLl0KICAgICAgICBzcGluX2xvY2tfaXJxc2F2ZSgmZGV2LT5w
+b3dlci5sb2NrLCBmbGFncyk7CiAgICAgICAgcmV0dmFsID0gcnBtX3Jlc3VtZShkZXYsIHJwbWZs
+YWdzKTsKICAgICAgICBzcGluX3VubG9ja19pcnFyZXN0b3JlKCZkZXYtPnBvd2VyLmxvY2ssIGZs
+YWdzKTsKWy4uXQp9CgpTYW1lIGFwcGxpY2FibGUgZm9yIHJ1bnRpbWVfcHV0CgpbLi5dCj4+IMKg
+IMKgIMKgSSdsbCBsZWF2ZSB0aGlzIHRvIEtldmluIHRvIGRlY2lkZSB3aGF0IHRvIGRvLCBidXQg
+Y2xvY2tzIGFyZSBvZmYKPj4gwqAgwqAgwqBoZXJlLi4uCj4+Cj4+IMKgIMKgWWVzIGZpbmUu77+9
+Cj4+IMKgIMKgU2luY2UgbW9zdCBvZiB0aGVzZSBwcmludHMgd2lsbCBiZSBwcmludGVkIGlmIERF
+QlVHIG1hY3JvCj4+IMKgIMKgaXMgZGVmaW5lZCBpbiByZXNwZWN0aXZlIGZpbGVzIGFuZCAqZGVi
+dWcqIGlzIHVzZWQgaW4gY29tbWFuZCBsaW5lLgo+PiDCoCDCoENhbid0IGxlYXZlIHVhcnQgY2xv
+Y2tzIGFjdGl2ZSBhbHdheXMgb24gZGVidWcgY2FzZXMuCj4+IMKgIMKgW0lmICpkZWJ1Zyog77+9
+dXNlZCBhcyBjb21tYW5kIGxpbmVdCj4+IMKgIMKgYW5kIGdhdGUgdWFydCBjbG9ja3Mgb25seSBm
+b3Igbm9uIGRlYnVnIGNhc2VzLgo+PiDCoCDCoFdpdGggdGhpcyBhcHByb2FjaO+/vWF0IGxlYXN0
+77+9d2UgY2FuIGhhdmUgYSBjbGVhbiBzb2x1dGlvbgo+PiDCoCDCoGluIHVhcnQgZHJpdmVyIGFs
+c28gd2l0aG91dCBhZGRpbmcgY2xvY2sgZ2F0aW5nIGZyb20gaWRsZSBwYXRoLgo+PiDCoCDCoE5v
+dCBzdXJlIGlmIHRoaXPvv71hZ3JlZWFibGUuCj4+IMKgIMKgQXMgb2Ygbm93IGdhdGluZyBmcm9t
+IGlkbGUgcGF0aCBzZWVtcyB0byBiZSBvbmx5IGNsZWFuIGFwcHJvYWNoLgo+Cj4gSSBzZWUuLiB0
+aGF0IGNvdWxkIGJlIG9uZSB3YXkuLi4gbGV0J3Mgc2VlIGhvdyBLZXZpbiBmZWVscyBhYm91dCBp
+dAo+IHRob3VnaC4KPgoKT0suCgotLQpUaGFua3MsCkdvdmluZHJhai5SCl9fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdAps
+aW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZv
+dW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
