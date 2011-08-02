@@ -1,14 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [Regression] Commit
-	02c24a82187d5a628c68edfe71ae60dc135cd178 breaks s2disk
-Date: Tue, 2 Aug 2011 02:17:48 +0200
-Message-ID: <201108020217.48952.rjw@sisk.pl>
-References: <201108020147.01136.rjw@sisk.pl>
+ 02c24a82187d5a628c68edfe71ae60dc135cd178 breaks s2disk
+Date: Mon, 1 Aug 2011 15:22:02 -1000
+Message-ID: <CA+55aFxPAowBwgK7JqN0uH-ytvg+BKdE3yBGF0z_6kNDNcOYcQ__22486.5485368811$1312248206$gmane$org@mail.gmail.com>
+References: <201108020147.01136.rjw@sisk.pl> <201108020217.48952.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108020147.01136.rjw@sisk.pl>
+In-Reply-To: <201108020217.48952.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,50 +18,23 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Josef Bacik <josef@redhat.com>
-Cc: Jan Kara <jack@suse.cz>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>, Josef Bacik <josef@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 02, 2011, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> Unfortunately s2disk (which is a user space tool for saving hibernate images)
-> doesn't work any more after your commit 02c24a82187d5a628c68edfe71ae60dc135cd178
-> (fs: push i_mutex and filemap_write_and_wait down into ->fsync() handlers).
-> The symptom is that the s2disk's resume counterpart cannot find the image in
-> the device even though s2disk considers it as successfully saved.
-> 
-> What happens is that s2disk opens a block device (disk partition to be precise)
-> directly and writes to it eventually calling fsync().  My interpretation of the
-> failure is that before commit 02c24a82187d5a628c68ed, when s2disk called fsync()
-> the VFS layer would run filemap_write_and_wait_range() that in turn would cause
-> the data to go to the disk, but after that commit this doesn't happen any more.
-> 
-> If I'm right, then not only s2disk, but any process writing directly to a block
-> device will have a problem with fsync().
+On Mon, Aug 1, 2011 at 2:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> Well, I'm not sure if the patch below is the right fix, but it evidently makes
+> s2disk work for me again.
 
-Well, I'm not sure if the patch below is the right fix, but it evidently makes
-s2disk work for me again.
+Looks right to me.
 
-Thanks,
-Rafael
+The only issue is whether we should use "db_mapping->i_mapping" or
+"file->f_mapping". I think they are the same for block devices.
 
----
- fs/block_dev.c |    4 ++++
- 1 file changed, 4 insertions(+)
+Al?
 
-Index: linux-2.6/fs/block_dev.c
-===================================================================
---- linux-2.6.orig/fs/block_dev.c
-+++ linux-2.6/fs/block_dev.c
-@@ -387,6 +387,10 @@ int blkdev_fsync(struct file *filp, loff
- 	struct inode *bd_inode = filp->f_mapping->host;
- 	struct block_device *bdev = I_BDEV(bd_inode);
- 	int error;
-+	
-+	error = filemap_write_and_wait_range(filp->f_mapping, start, end);
-+	if (error)
-+		return error;
- 
- 	/*
- 	 * There is no need to serialise calls to blkdev_issue_flush with
+Also, what about some of the other fsync things that apparently
+weren't updated to write back page caches. ps3flash_fsync? Others?
+
+                Linus
