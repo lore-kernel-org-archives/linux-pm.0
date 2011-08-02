@@ -1,16 +1,11 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] tools/power turbostat: fit output into 80
-	columns on snb-ep
-Date: Tue, 02 Aug 2011 18:36:07 -0400
-Message-ID: <d30c4b7a87e8b19583d5ef1402d9b38f51e30f44.1312324497.git.len.brown@intel.com>
-References: <1312324567-4374-1-git-send-email-lenb@kernel.org>
+Subject: [GIT PATCH] tools/power patches for Linux 3.1
+Date: Tue, 02 Aug 2011 18:40:15 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1108021838520.25237__424.705053637986$1312324948$gmane$org@x980>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1312324567-4374-1-git-send-email-lenb@kernel.org>
-In-reply-to: <e4c0d0e22ce5cf84b3993b5af6c2dac08d52f06b.1312324497.git.len.brown@intel.com>
-References: <e4c0d0e22ce5cf84b3993b5af6c2dac08d52f06b.1312324497.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,122 +15,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+Hi Linus,
 
-Reduce columns for package number to 1.
-If you can afford more than 9 packages,
-you can also afford a terminal with more than 80 columns:-)
+please pull from: 
 
-Also shave a column also off the package C-states
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git tools-release
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- tools/power/x86/turbostat/turbostat.c |   46 ++++++++++++++++----------------
- 1 files changed, 23 insertions(+), 23 deletions(-)
+This will update the files shown below.
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 6d8ef4a..8b2d37b 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -128,34 +128,34 @@ unsigned long long get_msr(int cpu, off_t offset)
- void print_header(void)
- {
- 	if (show_pkg)
--		fprintf(stderr, "pkg ");
-+		fprintf(stderr, "pk");
- 	if (show_core)
--		fprintf(stderr, "core");
-+		fprintf(stderr, " cr");
- 	if (show_cpu)
- 		fprintf(stderr, " CPU");
- 	if (do_nhm_cstates)
--		fprintf(stderr, "   %%c0 ");
-+		fprintf(stderr, "    %%c0 ");
- 	if (has_aperf)
--		fprintf(stderr, "  GHz");
-+		fprintf(stderr, " GHz");
- 	fprintf(stderr, "  TSC");
- 	if (do_nhm_cstates)
--		fprintf(stderr, "   %%c1 ");
-+		fprintf(stderr, "    %%c1");
- 	if (do_nhm_cstates)
--		fprintf(stderr, "   %%c3 ");
-+		fprintf(stderr, "    %%c3");
- 	if (do_nhm_cstates)
--		fprintf(stderr, "   %%c6 ");
-+		fprintf(stderr, "    %%c6");
- 	if (do_snb_cstates)
--		fprintf(stderr, "   %%c7 ");
-+		fprintf(stderr, "    %%c7");
- 	if (do_snb_cstates)
--		fprintf(stderr, "  %%pc2 ");
-+		fprintf(stderr, "  %%pc2");
- 	if (do_nhm_cstates)
--		fprintf(stderr, "  %%pc3 ");
-+		fprintf(stderr, "  %%pc3");
- 	if (do_nhm_cstates)
--		fprintf(stderr, "  %%pc6 ");
-+		fprintf(stderr, "  %%pc6");
- 	if (do_snb_cstates)
--		fprintf(stderr, "  %%pc7 ");
-+		fprintf(stderr, "  %%pc7");
- 	if (extra_msr_offset)
--		fprintf(stderr, "       MSR 0x%x ", extra_msr_offset);
-+		fprintf(stderr, "        MSR 0x%x ", extra_msr_offset);
- 
- 	putc('\n', stderr);
- }
-@@ -194,14 +194,14 @@ void print_cnt(struct counters *p)
- 	/* topology columns, print blanks on 1st (average) line */
- 	if (p == cnt_average) {
- 		if (show_pkg)
--			fprintf(stderr, "    ");
-+			fprintf(stderr, " ");
- 		if (show_core)
- 			fprintf(stderr, "    ");
- 		if (show_cpu)
- 			fprintf(stderr, "    ");
- 	} else {
- 		if (show_pkg)
--			fprintf(stderr, "%4d", p->pkg);
-+			fprintf(stderr, "%d", p->pkg);
- 		if (show_core)
- 			fprintf(stderr, "%4d", p->core);
- 		if (show_cpu)
-@@ -241,22 +241,22 @@ void print_cnt(struct counters *p)
- 		if (!skip_c1)
- 			fprintf(stderr, "%7.2f", 100.0 * p->c1/p->tsc);
- 		else
--			fprintf(stderr, "   ****");
-+			fprintf(stderr, "  ****");
- 	}
- 	if (do_nhm_cstates)
--		fprintf(stderr, "%7.2f", 100.0 * p->c3/p->tsc);
-+		fprintf(stderr, " %6.2f", 100.0 * p->c3/p->tsc);
- 	if (do_nhm_cstates)
--		fprintf(stderr, "%7.2f", 100.0 * p->c6/p->tsc);
-+		fprintf(stderr, " %6.2f", 100.0 * p->c6/p->tsc);
- 	if (do_snb_cstates)
--		fprintf(stderr, "%7.2f", 100.0 * p->c7/p->tsc);
-+		fprintf(stderr, " %6.2f", 100.0 * p->c7/p->tsc);
- 	if (do_snb_cstates)
--		fprintf(stderr, "%7.2f", 100.0 * p->pc2/p->tsc);
-+		fprintf(stderr, " %5.2f", 100.0 * p->pc2/p->tsc);
- 	if (do_nhm_cstates)
--		fprintf(stderr, "%7.2f", 100.0 * p->pc3/p->tsc);
-+		fprintf(stderr, " %5.2f", 100.0 * p->pc3/p->tsc);
- 	if (do_nhm_cstates)
--		fprintf(stderr, "%7.2f", 100.0 * p->pc6/p->tsc);
-+		fprintf(stderr, " %5.2f", 100.0 * p->pc6/p->tsc);
- 	if (do_snb_cstates)
--		fprintf(stderr, "%7.2f", 100.0 * p->pc7/p->tsc);
-+		fprintf(stderr, " %5.2f", 100.0 * p->pc7/p->tsc);
- 	if (extra_msr_offset)
- 		fprintf(stderr, "  0x%016llx", p->extra_msr);
- 	putc('\n', stderr);
--- 
-1.7.6.396.ge0613
+thanks!
+
+Len Brown
+Intel Open Source Technology Center
+
+ps. individual patches are available on linux-pm@lists.linux-foundation.org
+
+ tools/power/x86/turbostat/turbostat.c              |   46 ++++++++++----------
+ .../x86_energy_perf_policy.c                       |    5 +-
+ 2 files changed, 25 insertions(+), 26 deletions(-)
+
+through these commits:
+
+Len Brown (2):
+      tools/power x86_energy_perf_policy: fix print of uninitialized string
+      tools/power turbostat: fit output into 80 columns on snb-ep
+
+with this log:
+
+commit d30c4b7a87e8b19583d5ef1402d9b38f51e30f44
+Author: Len Brown <len.brown@intel.com>
+Date:   Sun Jul 31 18:19:33 2011 -0400
+
+    tools/power turbostat: fit output into 80 columns on snb-ep
+    
+    Reduce columns for package number to 1.
+    If you can afford more than 9 packages,
+    you can also afford a terminal with more than 80 columns:-)
+    
+    Also shave a column also off the package C-states
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+commit e4c0d0e22ce5cf84b3993b5af6c2dac08d52f06b
+Author: Len Brown <len.brown@intel.com>
+Date:   Fri Jul 15 23:39:00 2011 -0400
+
+    tools/power x86_energy_perf_policy: fix print of uninitialized string
+    
+    Looks like I was going to stick the brand string
+    in the verbose ouput, but didn't get around to it.
+    
+    Signed-off-by: Len Brown <len.brown@intel.com>
