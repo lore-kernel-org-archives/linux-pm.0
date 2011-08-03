@@ -1,15 +1,17 @@
-From: Daniel Drake <dsd@laptop.org>
-Subject: Re: [PATCH v4 1/2] Input: enable i8042-level wakeup
-	control
-Date: Wed, 3 Aug 2011 09:04:56 +0100
-Message-ID: <CAMLZHHTTXvThE5bWfyjJu-UFJbaKAhzORKWV8ay4RZW-ZVifLg__32450.2890151509$1312358766$gmane$org@mail.gmail.com>
-References: <20110802154916.624619D401C@zog.reactivated.net>
-	<20110803065920.GC23399@core.coreip.homeip.net>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v4 1/3] PM: Introduce DEVFREQ: generic DVFS
+ framework with device-specific OPPs
+Date: Wed, 3 Aug 2011 17:06:00 +0900
+Message-ID: <CAJ0PZbQq0LnYjUcf0R4JrcmbrXyDBJzgbjvgq8jSyEd5VKaUHA@mail.gmail.com>
+References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
+	<1310717510-19002-2-git-send-email-myungjoo.ham@samsung.com>
+	<87mxfrire4.fsf@ti.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110803065920.GC23399@core.coreip.homeip.net>
+In-Reply-To: <87mxfrire4.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,122 +21,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, dilinger@queued.net, linux-input@vger.kernel.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 3, 2011 at 7:59 AM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> I am not sure that we should be marking input devices themselves as
-> wakeup capable - they are in no way physical devices. I'd stop at serio
-> level...
-
-We need a way to make sure the device state is untouched during
-suspend/resume. Would you be happier if an input device looked at the
-device_may_wakeup() of its parent?
-
->>
->> diff --git a/drivers/input/input.c b/drivers/input/input.c
->> index da38d97..639aba7 100644
->> --- a/drivers/input/input.c
->> +++ b/drivers/input/input.c
->> @@ -1588,6 +1588,9 @@ static int input_dev_suspend(struct device *dev)
->> =A0{
->> =A0 =A0 =A0 struct input_dev *input_dev =3D to_input_dev(dev);
->>
->> + =A0 =A0 if (device_may_wakeup(dev))
->> + =A0 =A0 =A0 =A0 =A0 =A0 return 0;
->> +
->
-> On suspend should we not try to shut off leds and sound?
-
-Thats right. The setup is that the system appears to be running as
-normal, our display also remains on during suspend (and wifi, and so
-on). Bar the laptop's power LED which goes from always-on to flashing,
-the user is unaware that the laptop has suspended.
-
->> =A0 =A0 =A0 mutex_lock(&input_dev->mutex);
->>
->> =A0 =A0 =A0 if (input_dev->users)
->> @@ -1602,7 +1605,8 @@ static int input_dev_resume(struct device *dev)
->> =A0{
->> =A0 =A0 =A0 struct input_dev *input_dev =3D to_input_dev(dev);
->>
->> - =A0 =A0 input_reset_device(input_dev);
->> + =A0 =A0 if (!device_may_wakeup(dev))
->> + =A0 =A0 =A0 =A0 =A0 =A0 input_reset_device(input_dev);
->>
->
-> Does the controller wakes up the system on key release or only press? My
-> concern is with cases when we suspend with a key pressed and wake up
-> with it already released.
-
-It wakes up on key press, but our EC buffers communication, so both
-the key press and key release event would be delivered in the above
-scenario.
-
->> @@ -87,6 +87,7 @@ MODULE_PARM_DESC(debug, "Turn i8042 debugging mode on =
-and off");
->> =A0#endif
->>
->> =A0static bool i8042_bypass_aux_irq_test;
->> +static bool i8042_enable_wakeup;
->>
->> =A0#include "i8042.h"
->>
->> @@ -1082,10 +1083,17 @@ static void i8042_dritek_enable(void)
->> =A0 * before suspending.
->> =A0 */
->>
->> -static int i8042_controller_resume(bool force_reset)
->> +static int i8042_controller_resume(bool force_reset, bool soft_resume)
->> =A0{
->> =A0 =A0 =A0 int error;
->>
->> + =A0 =A0 /*
->> + =A0 =A0 =A0* If device is selected as a wakeup source, it was not powe=
-red down
->> + =A0 =A0 =A0* or reset during suspend, so we have very little to do.
->> + =A0 =A0 =A0*/
->> + =A0 =A0 if (soft_resume)
->> + =A0 =A0 =A0 =A0 =A0 =A0 goto soft;
->
-> Maybe instead of adding a parameter simply not call the function and
-> move i8042_interrupt as well?
-
-OK
-
->> =A0static int i8042_pm_resume(struct device *dev)
->> =A0{
->> =A0 =A0 =A0 /*
->> =A0 =A0 =A0 =A0* On resume from S2R we always try to reset the controller
->> =A0 =A0 =A0 =A0* to bring it in a sane state. (In case of S2D we expect
->> =A0 =A0 =A0 =A0* BIOS to reset the controller for us.)
->> + =A0 =A0 =A0* This function call will also handle any pending keypress =
-event
->> + =A0 =A0 =A0* (perhaps the system wakeup reason)
->> + =A0 =A0 =A0*/
->> + =A0 =A0 int r =3D i8042_controller_resume(true, device_may_wakeup(dev)=
-);
->> +
->> + =A0 =A0 /* If the device was left running during suspend, enable IRQs =
-again
->> + =A0 =A0 =A0* now. Must be done last to avoid races with interrupt proc=
-essing
->> + =A0 =A0 =A0* inside i8042_controller_resume.
->> =A0 =A0 =A0 =A0*/
->
-> Hmm, we have proper locking so I am not sure how true this statement is.
-
-What happens is that the event used to wake up the system is not
-delivered as an interrupt (consistent with the fact that the resume
-handler already calls i8042_interrupt() manually). However, there is a
-race window. If the system was woken up with a key press, and then the
-key was released during early resume, the key press event will not be
-presented as an interrupt, but the key release event will. That
-interrupt can arrive before i8042_controller_resume() reaches
-i8042_interrupt(), which would result in those 2 events being
-processed in the wrong order. I'll make this clearer in the comment.
-
-Thanks for the fast review comments!
-Daniel
+T24gV2VkLCBBdWcgMywgMjAxMSBhdCAzOjQ1IEFNLCBLZXZpbiBIaWxtYW4gPGtoaWxtYW5AdGku
+Y29tPiB3cm90ZToKPiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4gd3Jp
+dGVzOgo+Cj4+IFdpdGggT1BQcywgYSBkZXZpY2UgbWF5IGhhdmUgbXVsdGlwbGUgb3BlcmFibGUg
+ZnJlcXVlbmN5IGFuZCB2b2x0YWdlCj4+IHNldHMuIEhvd2V2ZXIsIHRoZXJlIGNhbiBiZSBtdWx0
+aXBsZSBwb3NzaWJsZSBvcGVyYWJsZSBzZXRzIGFuZCBhIHN5c3RlbQo+PiB3aWxsIG5lZWQgdG8g
+Y2hvb3NlIG9uZSBmcm9tIHRoZW0uIEluIG9yZGVyIHRvIHJlZHVjZSB0aGUgcG93ZXIKPj4gY29u
+c3VtcHRpb24gKGJ5IHJlZHVjaW5nIGZyZXF1ZW5jeSBhbmQgdm9sdGFnZSkgd2l0aG91dCBhZmZl
+Y3RpbmcgdGhlCj4+IHBlcmZvcm1hbmNlIHRvbyBtdWNoLCBhIER5bmFtaWMgVm9sdGFnZSBhbmQg
+RnJlcXVlbmN5IFNjYWxpbmcgKERWRlMpCj4+IHNjaGVtZSBtYXkgYmUgdXNlZC4KPj4KPj4gVGhp
+cyBwYXRjaCBpbnRyb2R1Y2VzIHRoZSBEVkZTIGNhcGFiaWxpdHkgdG8gbm9uLUNQVSBkZXZpY2Vz
+IHdpdGggT1BQcy4KPj4gRFZGUyBpcyBhIHRlY2hpcXVlIHdoZXJlYnkgdGhlIGZyZXF1ZW5jeSBh
+bmQgc3VwcGxpZWQgdm9sdGFnZSBvZiBhCj4+IGRldmljZSBpcyBhZGp1c3RlZCBvbi10aGUtZmx5
+LiBEVkZTIHVzdWFsbHkgc2V0cyB0aGUgZnJlcXVlbmN5IGFzIGxvdwo+PiBhcyBwb3NzaWJsZSB3
+aXRoIGdpdmVuIGNvbmRpdGlvbnMgKHN1Y2ggYXMgUW9TIGFzc3VyYW5jZSkgYW5kIGFkanVzdHMK
+Pj4gdm9sdGFnZSBhY2NvcmRpbmcgdG8gdGhlIGNob3NlbiBmcmVxdWVuY3kgaW4gb3JkZXIgdG8g
+cmVkdWNlIHBvd2VyCj4+IGNvbnN1bXB0aW9uIGFuZCBoZWF0IGRpc3NpcGF0aW9uLgo+Pgo+PiBU
+aGUgZ2VuZXJpYyBEVkZTIGZvciBkZXZpY2VzLCBERVZGUkVRLCBtYXkgYXBwZWFyIHF1aXRlIHNp
+bWlsYXIgd2l0aAo+PiAvZHJpdmVycy9jcHVmcmVxLiDCoEhvd2V2ZXIsIENQVUZSRVEgZG9lcyBu
+b3QgYWxsb3cgdG8gaGF2ZSBtdWx0aXBsZQo+PiBkZXZpY2VzIHJlZ2lzdGVyZWQgYW5kIGlzIG5v
+dCBzdWl0YWJsZSB0byBoYXZlIG11bHRpcGxlIGhldGVyb2dlbm91cwo+PiBkZXZpY2VzIHdpdGgg
+ZGlmZmVyZW50IChidXQgc2ltcGxlKSBnb3Zlcm5vcnMuCj4+Cj4+IE5vcm1hbGx5LCBEVkZTIG1l
+Y2hhbmlzbSBjb250cm9scyBmcmVxdWVuY3kgYmFzZWQgb24gdGhlIGRlbWFuZCBmb3IKPj4gdGhl
+IGRldmljZSwgYW5kIHRoZW4sIGNob29zZXMgdm9sdGFnZSBiYXNlZCBvbiB0aGUgY2hvc2VuIGZy
+ZXF1ZW5jeS4KPj4gREVWRlJFUSBhbHNvIGNvbnRyb2xzIHRoZSBmcmVxdWVuY3kgYmFzZWQgb24g
+dGhlIGdvdmVybm9yJ3MgZnJlcXVlbmN5Cj4+IHJlY29tbWVuZGF0aW9uIGFuZCBsZXQgT1BQIHBp
+Y2sgdXAgdGhlIHBhaXIgb2YgZnJlcXVlbmN5IGFuZCB2b2x0YWdlCj4+IGJhc2VkIG9uIHRoZSBy
+ZWNvbW1lbmRlZCBmcmVxdWVuY3kuIFRoZW4sIHRoZSBjaG9zZW4gT1BQIGlzIHBhc3NlZCB0bwo+
+PiBkZXZpY2UgZHJpdmVyJ3MgInRhcmdldCIgY2FsbGJhY2suCj4+Cj4+IFRlc3RlZCB3aXRoIG1l
+bW9yeSBidXMgb2YgRXh5bm9zNC1OVVJJIGJvYXJkLgo+Pgo+PiBUaGUgdGVzdCBjb2RlIHdpdGgg
+Ym9hcmQgc3VwcG9ydCBmb3IgRXh5bm9zNC1OVVJJIGlzIGF0Cj4+IGh0dHA6Ly9naXQuaW5mcmFk
+ZWFkLm9yZy91c2Vycy9rbXBhcmsvbGludXgtMi42LXNhbXN1bmcvc2hvcnRsb2cvcmVmcy9oZWFk
+cy9kZXZmcmVxCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
+QHNhbXN1bmcuY29tPgo+PiBTaWduZWQtb2ZmLWJ5OiBLeXVuZ21pbiBQYXJrIDxreXVuZ21pbi5w
+YXJrQHNhbXN1bmcuY29tPgo+Pgo+PiAtLQo+PiBUaGFuayB5b3UgZm9yIHlvdXIgdmFsdWFibGUg
+Y29tbWVudHMsIFJhZmFlbCwgR3JlZywgUGF2ZWwsIGFuZCBDb2xpbi4KPj4KPj4gQ2hhbmdlZCBm
+cm9tIHYzCj4+IC0gSW4ga2VybmVsZG9jIGNvbW1lbnRzLCBERVZGUkVRIGhhcyBiZW4gcmVwbGFj
+ZWQgYnkgZGV2ZnJlcQo+Cj4gRllJLi4uIHRoZXJlIGFyZSBzdGlsbCBsb3RzIG9mIGtlcm5lbGRv
+YyBjb21tZW50cyBpbiB0aGlzIHZlcnNpb24gd2l0aAo+IERFVkZSRVEgaW5zdGVhZCBvZiBkZXZm
+cmVxLCBwYXJ0aWN1bGFyaWx5IGluIGRldmZyZXEuaC4KPgo+IEtldmluCj4gX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KCkFoLi4gSSdsbCBjb3JyZWN0IHRo
+ZW0uCgpCZXNpZGVzLCBJJ3ZlIGZvdW5kIHRoYXQgdGhlIHByaXZhdGUgZGF0YSBmb3IgZ292ZXJu
+b3IgaXMgYmV0dGVyCmxvY2F0ZWQgYXQgc3RydWN0IGRldmZyZXEgdGhhbiBhdCBzdHJ1Y3QgZGV2
+ZnJlcV9nb3Zlcm5vciBhcyBzdWNoCnByaXZhdGUgZGF0YSBpcyAicGVyLWRldmljZSIgYW5kIHRo
+ZSBzYW1lIGdvdmVybm9yICh3aXRoIHNhbWUgbWVtb3J5CmxvY2F0aW9uKSBtYXkgYmUgc2hhcmVk
+IGJldHdlZW4gZGlmZmVyZW50IGRldmljZXMuCgoKQ2hlZXJzIQpNeXVuZ0pvbwoKLS0gCk15dW5n
+Sm9vIEhhbSAo7ZWo66qF7KO8KSwgUGguRC4KTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwK
+RGlnaXRhbCBNZWRpYSBhbmQgQ29tbXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKU2Ftc3VuZyBF
+bGVjdHJvbmljcwpjZWxsOiA4Mi0xMC02NzE0LTI4NTgKX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
+cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
