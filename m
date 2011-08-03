@@ -1,17 +1,17 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+From: Daniel Drake <dsd@laptop.org>
 Subject: Re: [PATCH v4 1/2] Input: enable i8042-level wakeup
 	control
-Date: Wed, 3 Aug 2011 11:43:32 -0700
-Message-ID: <20110803184332.GA17880__14733.921227935$1312397071$gmane$org@core.coreip.homeip.net>
+Date: Wed, 3 Aug 2011 20:24:46 +0100
+Message-ID: <CAMLZHHQAjarobktUFiZF7aEVvLuaaAFSBuzrMj4pT_67BFssjA__24384.9380095073$1312399555$gmane$org@mail.gmail.com>
 References: <20110802154916.624619D401C@zog.reactivated.net>
 	<20110803065920.GC23399@core.coreip.homeip.net>
 	<CAMLZHHTTXvThE5bWfyjJu-UFJbaKAhzORKWV8ay4RZW-ZVifLg@mail.gmail.com>
+	<20110803184332.GA17880@core.coreip.homeip.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <CAMLZHHTTXvThE5bWfyjJu-UFJbaKAhzORKWV8ay4RZW-ZVifLg@mail.gmail.com>
+In-Reply-To: <20110803184332.GA17880@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,90 +21,65 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Drake <dsd@laptop.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: linux-pm@lists.linux-foundation.org, dilinger@queued.net, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 03, 2011 at 09:04:56AM +0100, Daniel Drake wrote:
-> On Wed, Aug 3, 2011 at 7:59 AM, Dmitry Torokhov
-> <dmitry.torokhov@gmail.com> wrote:
-> > I am not sure that we should be marking input devices themselves as
-> > wakeup capable - they are in no way physical devices. I'd stop at serio
-> > level...
-> =
+On Wed, Aug 3, 2011 at 7:43 PM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
+> No, I do not believe we can do what you are doing in input core. You are
+> changing behavior for one platform and one (or 2 drivers) that will not
+> be matched (at least I don't think so) by anything else out there. What
+> will happen if you plug a random USB keyboard into OLPC box? Will it keep
+> leds powered?
 
-> We need a way to make sure the device state is untouched during
-> suspend/resume. Would you be happier if an input device looked at the
-> device_may_wakeup() of its parent?
+In all other cases, behaviour is unchanged. The input device is not
+marked as wakeup capable, therefore the user cannot mark it as
+wakeup-enabled, therefore this code does not execute.
 
-I think we should leave input core out of it completely, see below...
+So a USB keyboard on an OLPC laptop would behave exactly as it does
+before this patch, as would devices on other systems.
 
-> =
+The only way this functionality gets enabled is at the code level (as
+it does in patch 2/2), and then once the user has requested wakeups on
+all devices in the chain.
 
-> >>
-> >> diff --git a/drivers/input/input.c b/drivers/input/input.c
-> >> index da38d97..639aba7 100644
-> >> --- a/drivers/input/input.c
-> >> +++ b/drivers/input/input.c
-> >> @@ -1588,6 +1588,9 @@ static int input_dev_suspend(struct device *dev)
-> >> =A0{
-> >> =A0 =A0 =A0 struct input_dev *input_dev =3D to_input_dev(dev);
-> >>
-> >> + =A0 =A0 if (device_may_wakeup(dev))
-> >> + =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> >> +
-> >
-> > On suspend should we not try to shut off leds and sound?
-> =
+>> > Does the controller wakes up the system on key release or only press? My
+>> > concern is with cases when we suspend with a key pressed and wake up
+>> > with it already released.
+>>
+>> It wakes up on key press, but our EC buffers communication, so both
+>> the key press and key release event would be delivered in the above
+>> scenario.
+>
+> Just to confirm, we 3 events will be delivered in this case:
 
-> Thats right. The setup is that the system appears to be running as
-> normal, our display also remains on during suspend (and wifi, and so
-> on). Bar the laptop's power LED which goes from always-on to flashing,
-> the user is unaware that the laptop has suspended.
+Sorry, I misunderstood the question and answered "what happens if the
+system is sleeping and you press and quickly release a key before the
+system is fully running" - in which case the system wakes up and
+delivers both events.
 
-No, I do not believe we can do what you are doing in input core. You are
-changing behavior for one platform and one (or 2 drivers) that will not
-be matched (at least I don't think so) by anything else out there. What
-will happen if you plug a random USB keyboard into OLPC box? Will it keep
-leds powered?
+For the question you asked, regarding a key being pressed as the
+system goes into suspend, the system wakes up from suspend
+immediately.
+I just tested this by holding the 'i' key down while going into suspend.
+While the key is being held down, the system receives repeated
+interrupts with data 0x17 ('i' key pressed). The system suspends, but
+then immediately wakes up, and continues the flood of 0x17 interrupts.
+When I release the key a few seconds later, a 0x97 ('i' released)
+interrupt arrives.
 
-> =
+I guess the more accurate way to describe the wakeup condition is that
+it wakes up on any i8042 interrupt.
 
-> >> =A0 =A0 =A0 mutex_lock(&input_dev->mutex);
-> >>
-> >> =A0 =A0 =A0 if (input_dev->users)
-> >> @@ -1602,7 +1605,8 @@ static int input_dev_resume(struct device *dev)
-> >> =A0{
-> >> =A0 =A0 =A0 struct input_dev *input_dev =3D to_input_dev(dev);
-> >>
-> >> - =A0 =A0 input_reset_device(input_dev);
-> >> + =A0 =A0 if (!device_may_wakeup(dev))
-> >> + =A0 =A0 =A0 =A0 =A0 =A0 input_reset_device(input_dev);
-> >>
-> >
-> > Does the controller wakes up the system on key release or only press? My
-> > concern is with cases when we suspend with a key pressed and wake up
-> > with it already released.
-> =
+> I also wonder what will happen with non-PS2 devices...
 
-> It wakes up on key press, but our EC buffers communication, so both
-> the key press and key release event would be delivered in the above
-> scenario.
+Again - other devices are not affected.
 
-Just to confirm, we 3 events will be delivered in this case:
+> Instead of wiring it all through input core could we contain this in
+> atkbd and hgpk by registering pm_notifiers and ignoring certain requests
+> from input/serio cores during system state transition on OLPC only?
 
-1 - old key release
-2 - wakeup key press
-3 - wakeup key release
+I'll look into this, thanks for the suggestion.
 
-?
-
-I also wonder what will happen with non-PS2 devices...
-
-Instead of wiring it all through input core could we contain this in
-atkbd and hgpk by registering pm_notifiers and ignoring certain requests
-from input/serio cores during system state transition on OLPC only?
-
--- =
-
-Dmitry
+Daniel
