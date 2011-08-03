@@ -1,16 +1,14 @@
-From: "Turquette, Mike" <mturquette@ti.com>
-Subject: Re: [PATCH v4 0/3] DEVFREQ,
-	DVFS framework for non-CPU devices
-Date: Wed, 3 Aug 2011 10:31:51 -0700
-Message-ID: <CAJOA=zPyS61b=SR-CF7vW8dzK6qLm34WVu=sAm5OLc_BO8ZX5Q@mail.gmail.com>
-References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
-	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [RFC PATCH V1 3/7] cpuidle: stop using pm_idle
+Date: Wed, 03 Aug 2011 13:45:32 -0400 (EDT)
+Message-ID: <alpine.LFD.2.02.1108031341200.22067__21883.6463093341$1312393696$gmane$org@x980>
+References: <20110607162847.6848.44707.stgit@tringupt.in.ibm.com>
+	<20110607162947.6848.79430.stgit@tringupt.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
+In-reply-to: <20110607162947.6848.79430.stgit@tringupt.in.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,149 +18,278 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: myungjoo.ham@gmail.com
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: Trinabh Gupta <trinabh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBdWcgMywgMjAxMSBhdCAxMjowMyBBTSwgTXl1bmdKb28gSGFtIDxteXVuZ2pvby5o
-YW1Ac2Ftc3VuZy5jb20+IHdyb3RlOgo+IE9uIFdlZCwgQXVnIDMsIDIwMTEgYXQgNzowMiBBTSwg
-S2V2aW4gSGlsbWFuIDxraGlsbWFuQHRpLmNvbT4gd3JvdGU6Cj4+ICJSYWZhZWwgSi4gV3lzb2Nr
-aSIgPHJqd0BzaXNrLnBsPiB3cml0ZXM6Cj4+Cj4+PiBPbiBGcmlkYXksIEp1bHkgMTUsIDIwMTEs
-IE15dW5nSm9vIEhhbSB3cm90ZToKPj4+PiBGb3IgYSB1c2FnZSBleGFtcGxlLCBwbGVhc2UgbG9v
-ayBhdAo+Pj4+IGh0dHA6Ly9naXQuaW5mcmFkZWFkLm9yZy91c2Vycy9rbXBhcmsvbGludXgtMi42
-LXNhbXN1bmcvc2hvcnRsb2cvcmVmcy9oZWFkcy9kZXZmcmVxCj4+Pj4KPj4+PiBJbiB0aGUgYWJv
-dmUgZ2l0IHRyZWUsIERWRlMgKGR5bmFtaWMgdm9sdGFnZSBhbmQgZnJlcXVlbmN5IHNjYWxpbmcp
-IG1lY2hhbmlzbQo+Pj4+IGlzIGFwcGxpZWQgdG8gdGhlIG1lbW9yeSBidXMgb2YgRXh5bm9zNDIx
-MCBmb3IgRXh5bm9zNDIxMC1OVVJJIGJvYXJkcy4KPj4+PiBJbiB0aGUgZXhhbXBsZSwgdGhlIExQ
-RERSMiBEUkFNIGZyZXF1ZW5jeSBjaGFuZ2VzIGJldHdlZW4gMTMzLCAyNjYsIGFuZCA0MDBNSHoK
-Pj4+PiBhbmQgb3RoZXIgcmVsYXRlZCBjbG9ja3Mgc2ltcGx5IGZvbGxvdyB0aGUgZGV0ZXJtaW5l
-ZCBERFIgUkFNIGNsb2NrLgo+Pj4+Cj4+Pj4gVGhlIERFVkZSRVEgZHJpdmVyIGZvciBFeHlub3M0
-MjEwIG1lbW9yeSBidXMgaXMgYXQKPj4+PiAvYXJjaC9hcm0vbWFjaC1leHlub3M0L2RldmZyZXFf
-YnVzLmMgaW4gdGhlIGdpdCB0cmVlLgo+Pj4+Cj4+Pj4gTXl1bmdKb28gSGFtICgzKToKPj4+PiDC
-oCBQTTogSW50cm9kdWNlIERFVkZSRVE6IGdlbmVyaWMgRFZGUyBmcmFtZXdvcmsgd2l0aCBkZXZp
-Y2Utc3BlY2lmaWMKPj4+PiDCoCDCoCBPUFBzCj4+Pj4gwqAgUE0gLyBERVZGUkVROiBhZGQgZXhh
-bXBsZSBnb3Zlcm5vcnMKPj4+PiDCoCBQTSAvIERFVkZSRVE6IGFkZCBzeXNmcyBpbnRlcmZhY2Ug
-KGluY2x1ZGluZyB1c2VyIHRpY2tsaW5nKQo+Pj4KPj4+IE9LLCBJJ20gZ29pbmcgdG8gdGFrZSB0
-aGUgcGF0Y2hlcyBmb3IgMy4yLgo+Pgo+PiBTb3JyeSBmb3IgYmVpbmcgbGF0ZSB0byB0aGUgZGlz
-Y3Vzc2lvbiwgYnV0IHBlcnNvbmFsbHkgSSBkb24ndCB0aGluawo+PiB0aGlzIHNob3VsZCBiZSBt
-ZXJnZWQgZm9yIHYzLjIuCj4+Cj4+IEZpcnN0LCBJIHRoaW5rIHRoZSBnb3Zlcm5vciBwYXJ0IG9m
-IHRoaXMgc2VyaWVzIGlzIGJhc2ljYWxseSBmaW5lLCBhbmQKPj4gY2FuIHNlZSBzb21lIGNhc2Vz
-IHdoZXJlIGl0IHdvdWxkIGJlIHVzZWZ1bCwgYnV0IGFzIE1pa2UgaGFzIHBvaW50ZWQKPj4gb3V0
-LCB0aGVyZSBpcyBzdGlsbCBhIG1ham9yaXR5IG9mIGRldmljZXMgZm9yIHdoaWNoIGEgZ292ZXJu
-b3IgbGlrZSB0aGlzCj4+IHdvdWxkIGJlIG92ZXJraWxsLgo+Pgo+PiBNeSBtYWluIHByb2JsZW0g
-aXMgd2l0aCB0aGUgUW9TIGFzcGVjdHMuIMKgVGhlcmUgaXMgc2lnbmlmaWNhbnQgb3ZlcmxhcAo+
-PiBiZXR3ZWVuIHRoaXMgYXBwcm9hY2ggYW5kIHRoZSBwZXItZGV2aWNlIFBNIFFvUyBhcHByb2Fj
-aCBjdXJyZW50bHkgYmVpbmcKPj4gcHJvcG9zZWQgYnkgSmVhbiBQaWhldCwgYW5kIEkgdGhpbmsg
-YW55IHNvcnQgb2YgcGVyLWRldmljZSBEVkZTIHNob3VsZAo+PiBiZSBidWlsdCBvbiB0b3Agb2Yg
-YSBtb3JlIGdlbmVyaWMgcGVyLWRldmljZSBRb1MgbGF5ZXIgKHN1Y2ggYXMgSmVhbidzLikKPgo+
-IFRoZW4sIHdoYXQgYWJvdXQgYWRkaW5nIGEgZ292ZXJub3I/IEJlc2lkZXMsIERFVkZSRVEgaXMg
-ZGVzaWduZWQgdG8KCk5vIG9uZSBpcyBzYXlpbmcgdGhhdCB5b3UgY2FuJ3QgaGF2ZSBhIGdvdmVy
-bm9yIHRvIGNvbnRyb2wgRFZGUwp0cmFuc2l0aW9ucyBmb3IgeW91ciBkZXZpY2UuICBUaGUgcG9p
-bnQgaXMgdGhhdCB0aGUgZ292ZXJub3Igc2hvdWxkCm1ha2UgYSBjYWxsIHRvIHRoZSBwZXItZGV2
-aWNlIFBNIFFvUyBEVkZTIEFQSSBpbiBpdCdzIC0+dGFyZ2V0KCkKZnVuY3Rpb24uCgpUaGUgZnVu
-ZGFtZW50YWwgZGlmZmVyZW5jZSBpcyB0aGlzOiB5b3Ugd2FudCBkZXZmcmVxIHRvIGJlIHRoZSBm
-aW5hbApwbGFjZSB3aGVyZSBEVkZTIHRyYW5zaXRpb25zIGFjdHVhbGx5IG9jY3VyIChtZWFuaW5n
-IGNsb2NrcyBhbmQKdm9sdGFnZSByYWlscyBnZXQgc2NhbGVkKS4gIEtldmluIGFuZCBJIGFyZSBi
-b3RoIGFyZ3VpbmcgZm9yIGRldmZyZXEKdG8gYmUgcG9saWN5IGJ1aWx0IG9uIHRvcCBvZiBhIGRl
-ZGljYXRlZCBEVkZTIEFQSSBmb3IgbWFuYWdpbmcgdGhvc2UKdHJhbnNpdGlvbnMuCgooS2V2aW4s
-IGxldCBtZSBrbm93IGlmIEknbSBwdXR0aW5nIHdvcmRzIGluIHlvdXIgbW91dGgpCgo+IGFsbG93
-IGVhY2ggZGV2aWNlIHRvIGNyZWF0ZSBpdHMgb3duIGdvdmVybm9ycy4gVGhlIGdvdmVybm9ycyBp
-biB0aGUKPiBkZXZmcmVxLmMgYXJlIG1lYW50IHRvIGJlIHVzZWQgY29tbW9ubHkgYnkgIm1hbnki
-IGRldmljZXMuCj4KPiBGb3IgUE0gUW9TLCB3ZSBtYXkgaGF2ZSBzZXZlcmFsIGFwcHJvYWNoZXM6
-Cj4gMS4gQWRkaW5nIGEgZ292ZXJub3IgYXdhcmUgb2YgUE0gUW9TIHRha2luZyBQTSBRb1MgcGFy
-YW1ldGVycy4KPiAyLiBNb2RpZnlpbmcgT1BQIHRvIGJlIGF3YXJlIG9mIFBNIFFvUyBzbyB0aGF0
-IG9ubHkgT1BQcyBtZWV0aW5nIHRoZQo+IHJlcXVpcmVtZW50IGFyZSBlbmFibGVkIGlmIHRoZSBQ
-TSBRb1MgcmVxdWlyZW1lbnQgc3BlY2lmaWVzIGZyZXF1ZW5jeQo+IG9yIHZvbHRhZ2UgY29uZGl0
-aW9ucyBleHBsaWNpdGx5Lgo+IDMuIE1vZGlmeWluZyBERVZGUkVRIHRvIGJlIGF3YXJlIG9mIFBN
-IFFvUyBhbmQgbGV0IERFVkZSRVEgaWdub3JlCj4gZnJlcXVlbmNpZXMgdGhhdCBkbyBub3Qgc2F0
-aXNmeSB0aGUgUE0gUW9TIHJlcXVpcmVtZW50LiBBcyBpbiBhcHByb2FjaAo+IDIsIHRoZSByZXF1
-aXJlbWVudCBhbHNvIG5lZWRzIHRvIGJlIGV4cGxpY2l0IGFib3V0IGZyZXF1ZW5jeSAvIHZvbHRh
-Z2UKPiBjb25kaXRpb25zIG9yIHdlIG5lZWQgdG8gaW50ZXJwcmV0IGRldmZyZXFfZGV2X3N0YXR1
-cyByZXN1bHQgaW4gdGVybXMKPiBvZiBQTSBRb1MuCj4KPj4KPj4gVGhpcyBzZXJpZXMgY3VycmVu
-dGx5IHByb3ZpZGVzIGEgKnZlcnkqIGJhc2ljIFFvUyBtZWNoYW5pc20gKGUuZy4gZml4ZWQKPj4g
-ZHVyYXRpb24gZnJlcXVlbmN5IGNvbnN0cmFpbnQpIGluIHRoZSBmb3JtIG9mICJ0aWNrbGUiLCB3
-aGljaCBCVFcgSSBzZWVtCj4+IHRvIGhhdmluZyBhIGhhcmQgdGltZSB1bmRlcnN0YW5kaW5nICht
-b3JlIG9uIHRoYXQgYmVsb3cuLi4pCj4+Cj4+IE1vcmUgaW1wb3J0YW50bHkgdGhvdWdoLCB0aGlz
-IHNlcmllcyBhbHNvIGludHJvZHVjZXMgYSBzeXNmcyBsYXllciBmb3IKPj4gZG9pbmcgaXRzIFFv
-Uy1saWtlIHN0dWZmLCBzbyBhZGRpbmcgdGhpcyBhbmQgdGhlbiBhZGRpbmcgYSBtb3JlIGdlbmVy
-aWMKPj4gcGVyLWRldmljZSBRb1MgaXMgYXNraW5nIGZvciBjb25mdXNpb24gYWJvdXQgaG93IHVz
-ZXJzcGFjZSBpcyB0byBkbyBRb1MuCj4+IEFuZCBhZGRpbmcgYSBzeXNmcyBpbnRlcmZhY2UgbWF5
-IGJlIHR1cm4gb3V0IHRvIGJlIGRpZmZpY3VsdCB0byByZW1vdmUuCj4+Cj4+IEJhc2ljYWxseSwg
-d2l0aG91dCBhIG1vcmUgZ2VuZXJhbCBjb25zdHJhaW50cyBtZWNoYW5pc20gaW4gcGxhY2UsIEkK
-Pj4gZG9uJ3Qgc2VlIGhvdyB0aGlzIGNhbiBiZSBnZW5lcmFsbHkgdXNlZnVsIHNpbmNlIHRoZXJl
-IGFyZSB0b28gbWFueQo+PiBhc3N1bXB0aW9ucyBtYWRlIHdpdGggdGhlIGN1cnJlbnQgInRpY2ts
-ZSIgYXBwcm9hY2gsIGFuZCBhcyBNaWtlIGhhcwo+PiBwb2ludGVkIG91dCwgaXQgY2Fubm90IGNs
-ZWFubHkgaGFuZGxlIGNhc2VzIHdoZXJlIHRoZXJlIG1pZ2h0IGJlCj4+IG11bHRpcGxlIERWRlMt
-cmVsYXRlZCBjb25zdHJhaW50cyBvbiBhIGdpdmVuIGRldmljZS4KPj4KPj4gT0ssIGJhY2sgdG8g
-InRpY2tsZSIuLi4gwqBJIGhhdmVuJ3QgeWV0IGZ1bGx5IHVuZGVyc3Rvb2QgaG93IHRoYXQKPj4g
-aW50ZXJmYWNlIGlzIGludGVuZGVkIHRvIGJlIHVzZWQsIG9yIHdobyB0aGUgcG90ZW50aWFsIHVz
-ZXJzIG1pZ2h0IGJlCj4+IGFuZCBpdCBpcyBub3QgZG9jdW1lbnRlZCBpbiB0aGUgY29kZSBvciBj
-aGFuZ2Vsb2cuIMKgSSBhbHNvIGRpZG4ndCBzZWUKPj4gYW55IHVzZXJzIG9mIHRoYXQgQVBJIChl
-eGNlcHQgdGhlIHN5c2ZzIGNvZGUuKQo+Pgo+PiBJSVVDLCB0aWNrbGUgaXMganVzdCBiYXNpY2Fs
-bHkgYSB3YXkgdG8gc2V0IGEgZnJlcXVlbmN5IGNvbnN0cmFpbnQgb24gYQo+PiBkZXZpY2UgZm9y
-IGEgZml4ZWQgZHVyYXRpb24uIMKgSG93ZXZlciwgaWYgdGlja2xlIGhhcyBiZWVuIHJlcXVlc3Rl
-ZCwgYW55Cj4+IE9QUCBjaGFuZ2Ugd2lsbCBhbHNvIGZvcmNlIGEgY2hhbmdlIHRvIHRoZSBoaWdo
-ZXN0IHBlcmZvcm1hbmNlIE9QUAo+PiB0ZW1wb3JhcmlseSBiZWZvcmUgY2hhbmdpbmcgdG8gdGhl
-IHRhcmdldCBPUFAuCj4+Cj4+IE1heWJlIEknbSBub3QgdW5kZXJzdGFuZGluZyB0aGUgdXNhZ2Ug
-b2YgaXQgZnVsbHksIGJ1dCB0aGF0IHNlZW1zIGxpa2UKPj4gaGFyZC1jb2RpbmcgcG9saWN5IGlu
-dG8gdGhlIGZyYW1ld29yayB0aGF0IG1pZ2h0IG5vdCBiZSBhcHByb3ByaWF0ZS4KPj4gRm9yIGV4
-YW1wbGUsIHdoYXQgaWYgdGhlcmUgYXJlIG90aGVyIGRldmljZXMgd2l0aCBjb25zdHJhaW50cyBz
-dWNoIHRoYXQKPj4gdGhleSBjYW5ub3QgY3VycmVudGx5IHNjYWxlIGZyZXF1ZW5jeS92b2x0YWdl
-Pwo+Pgo+PiBNYWJ5ZSBNeXVuZ0pvbyBjYW4gZXhwbGFpbiBpbiBtb3JlIGRldGFpbCB0aGUgdXNl
-Y2FzZXMgZm9yIHRpY2tsZT8KPgo+IFRpY2tsZSBpcyBub3QgZm9yIFFvUyBiZXR3ZWVuIGRldmlj
-ZXMuIEl0IGlzIGZvciBmYXN0ZXIgcmVhY3Rpb24gdG8KPiAoaHVtYW4pIHVzZXIgaW5wdXRzIGF0
-IERWRlMgc2lkZSB3aGVyZSB3YWl0aW5nIGZvciBEVkZTJ3MgcmVhY3Rpb24KPiB0YWtlcyB0b28g
-bXVjaCB0aW1lIGFuZCByZWR1Y2luZyBwb2xsaW5nIGludGVydmFsIGNvc3RzIHRvbyBtdWNoLiBJ
-bgo+IGZhY3QsIHRoaXMgdGlja2xpbmcgbWV0aG9kIHdhcyBxdWl0ZSBlZmZlY3RpdmUgd2l0aCBD
-UFVGUkVRJ3Mgb25kZW1hbmQKPiBnb3Zlcm5vciAobm90IHVwc3RyZWFtZWQpLiBXZSBtYXkgdHVu
-ZSBEVkZTIGNvbnN0YW50cyB0byBsZXQgaXQgcmVhY3QKPiBmYXN0ZXIgd2l0aCBsb3dlciB0aHJl
-c2hvbGQ7IGhvd2V2ZXIsIHRoaXMgcmVzdWx0cyBpbiBoaWdoZXIgcG93ZXIKPiBjb25zdW1wdGlv
-biB3aXRoIHNtYWxsIGxvYWQuCgpEbyB5b3UgdGhpbmsgdGhhdCB5b3VyICJ0aWNrbGUiIG1ldGhv
-ZCB3b3VsZCBnbyB1cHN0cmVhbSBmb3IgQ1BVZnJlcT8KZGV2ZnJlcSBpcyBhbmFsb2dvdXMgdG8g
-Q1BVZnJlcSBpcyBhbG1vc3QgZXZlcnkgd2F5LCBzbyBpZiB0aGF0CnNvbHV0aW9uIHdvdWxkIG5v
-dCBiZSBhY2NlcHRlZCBmb3IgQ1BVZnJlcSwgdGhlbiBpdCBzaG91bGQgbm90IGJlCmFjY2VwdGVk
-IGZvciBkZXZmcmVxIGVpdGhlci4KCj4gSGVyZSBnb2VzIG1vcmUgZGV0YWlsZWQgZGVzY3JpcHRp
-b24gYWJvdXQgdGhlIGlzc3VlIGludGVuZGVkIHRvIGJlCj4gdGFja2xlZCBieSB0aWNrbGluZywg
-dGhlIHJlc3BvbnNlIHRpbWUgb2YgR1VJLiBXaXRoIERWRlMgKENQVUZSRVEpLCB3ZQo+IGhhdmUg
-YmVlbiBzdWZmZXJpbmcgZnJvbSBzbG93ZXIgdXNlciByZXNwb25zZSB0aW1lIChlLmcuLCBkcmFn
-Z2luZwo+IHRvdWNoIHNjcmVlbiBvZiBtb2JpbGUgZGV2aWNlcyBhdCAiYXBwbGljYXRpb24gZHJh
-d2VyIiBvciAid2ViCj4gYnJvd3NlcnMiKS4gTGV0J3MgYXNzdW1lIGEgc3lzdGVtIHdpdGggYSBD
-UFUgdGhhdCBydW5zIGF0IHRoZSByYW5nZSBvZgo+IDEwME1IeiB+IDJHSHogYW5kIGEgR1VJIHRo
-YXQgcmVxdWlyZXMgYXQgbGVhc3QxLjVHSHogZm9yIHNtb290aAo+IHRyYW5zaXRpb25zLiBJZiB3
-ZSBhcmUgZ29pbmcgdG8gdXNlIDYwSHogYmFzZWQgZGlzcGxheSBhbmQgMjBtcwo+IENQVUZSRVEg
-cG9sbGluZyBpbnRlcnZhbCwgYSBzdWRkZW4gdXNlciBpbnB1dCByZXF1aXJlcyAzMG1zIG9mIGRl
-bGF5Cj4gaW4gYXZlcmFnZSB0byBnZXQgQ1BVIHRvIHdvcmsgYXQgaGlnaCBzcGVlZCwgd2hpY2gg
-bG9zZXMgMiBmcmFtZXMKPiAob2Z0ZW4sIGl0IHRha2VzIG1vcmUgdGltZS9mcmFtZXMgZm9yIENQ
-VUZSRVEgdG8gcmVhY3Q7IEkgZG9uJ3Qga25vdwo+IHdoeSkuIElmIGEgdXNlciByZXBlYXRlZGx5
-IGRyYWdzIGFuZCBzdG9wcyB0aGUgdG91Y2ggc2NyZWVuLCBzdWNoCj4gZGVsYXkgYW5kIGxvc3Qg
-ZnJhbWVzIGJlY29tZSB2ZXJ5IG5vdGljZWFibGUgYW5kIHRoZSBzY3JlZW4gZm9sbG93cwo+IHVz
-ZXIncyBmaW5nZXIgcmV0YXJkZWQuIFdpdGggQ1BVRlJFUS1vbmRlbWFuZCwgdGlja2xpbmcgaGFz
-IGJlZW4gbWFkZQo+IHN1Y2ggdGVzdCB0byBoYXZlIGFsbW9zdCBzYW1lIHJlc3VsdCB3aXRoIHRo
-YXQgb2YgInBlcmZvcm1hbmNlIgo+IGdvdmVybm9yLgoKVGhpcyBjYW4gYmUgYWNoaWV2ZWQgZW50
-aXJlbHkgd2l0aCBhIERWRlMgZnJhbWV3b3JrIHRoYXQgZGV2aWNlcyBjYW4KdXNlIHRvIHNjYWxl
-IHRoZSBDUFUncyBmcmVxdWVuY3kuICBJdCByZXF1aXJlcyBubyBjaGFuZ2VzIHRvIENQVWZyZXEK
-Y29yZSBvciB0byB0aGUgb25kZW1hbmQgZ292ZXJub3IuICBUaGUgQ1BVZnJlcSBkcml2ZXIgbWFr
-ZXMgYSBjYWxsIHRvCnRoZSBEVkZTIHNjYWxpbmcgQVBJIGluIGl0J3MgLT50YXJnZXQgZnVuY3Rp
-b24sIGFzIGRvIGFueSBvdGhlcgpkZXZpY2VzIHdoaWNoIG5lZWRzIHRvIGhvbGQgYSBjb25zdHJh
-aW50IGFnYWluc3QgdGhlIENQVSdzIGNsb2NrIHNwZWVkCihpbiB5b3VyIGNhc2UgaXQgc291bmRz
-IGxpa2UgdGhlIHRvdWNoc2NyZWVuIGRyaXZlciB3b3VsZCBob2xkIHRoaXMKY29uc3RyYWludCku
-ICBBZ2FpbiwgdGhlICJ0aWNrbGUiIGNvbmNlcHQgaGVyZSBpcyBtYWRlIHJlZHVuZGFudC4KClJl
-Z2FyZHMsCk1pa2UKCj4gRm9yIHRoZSBzeXNmcyBpbnRlcmZhY2UuLi4gd2UgYWN0dWFsbHkgZG8g
-bm90IG5lZWQgc3lzZnMgaW50ZXJmYWNlIGZvcgo+IHRpY2tsaW5nIGlmIHdlIGFyZSBnb2luZyB0
-byBhbGxvdyB0aWNrbGUgZnVuY3Rpb24gdG8gdGhlIGludGVycnVwdAo+IGhhbmRsZXIgb2YgSENJ
-IGRldmljZXMgKHRvdWNoIHNjcmVlbiwga2V5Ym9hcmRzLCBtaWNlLCAuLi4pLiBIb3dldmVyLAo+
-IGl0IHNlZW1zIHRoYXQgbWFueSBwZW9wbGUgZG9uJ3QgbGlrZSB0aGF0IGlkZWE7IHRodXMsIEkg
-dGhvdWdodCBJIG5lZWQKPiB0byBhbGxvdyB1c2Vyc3BhY2UgdXNlci1pbnB1dCBoYW5kbGVycyB0
-byB0aWNrbGUuCj4KPj4KPj4gVGhhbmtzLAo+Pgo+PiBLZXZpbgo+PiBfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+PiBsaW51eC1wbSBtYWlsaW5nIGxpc3QK
-Pj4gbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKPj4gaHR0cHM6Ly9saXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBtCj4+Cj4KPgo+Cj4g
-LS0KPiBNeXVuZ0pvbyBIYW0gKO2VqOuqheyjvCksIFBoLkQuCj4gTW9iaWxlIFNvZnR3YXJlIFBs
-YXRmb3JtIExhYiwKPiBEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBCdXNp
-bmVzcwo+IFNhbXN1bmcgRWxlY3Ryb25pY3MKPiBjZWxsOiA4Mi0xMC02NzE0LTI4NTgKPiBfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IGxpbnV4LXBtIG1h
-aWxpbmcgbGlzdAo+IGxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCj4gaHR0cHM6
-Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBtCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1h
-aWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Tue, 7 Jun 2011, Trinabh Gupta wrote:
+
+> From: Len Brown <len.brown@intel.com>
+> 
+> pm_idle does not scale as an idle handler registration mechanism.
+> Don't use it for cpuidle.  Instead, call cpuidle directly, and
+> allow architectures to use pm_idle as an arch-specific default
+> if they need it.  ie.
+> 
+> cpu_idle()
+> 	...
+> 	if(cpuidle_call_idle())
+
+Looks like you forgot to correct my typo that you pointed out earlier,
+s/cpuidle_call_idle/cpuidle_idle_call/
+
+both in the comment here and for arm and sh below.
+
+Thanks for including the From: above, that is correct form.
+But note in the future that when you modify somebody else's patch,
+you should append a note about what you changed,
+and also add your signed-off-by, so we can
+track the changes.
+
+thanks,
+-Len
+
+> 		pm_idle();
+> 
+> cc: x86@kernel.org
+> cc: Kevin Hilman <khilman@deeprootsystems.com>
+> cc: Paul Mundt <lethal@linux-sh.org>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> ---
+> 
+>  arch/arm/kernel/process.c    |    4 +++-
+>  arch/sh/kernel/idle.c        |    6 ++++--
+>  arch/x86/kernel/process_32.c |    4 +++-
+>  arch/x86/kernel/process_64.c |    4 +++-
+>  drivers/cpuidle/cpuidle.c    |   39 ++++++++++++++++++---------------------
+>  include/linux/cpuidle.h      |    2 ++
+>  6 files changed, 33 insertions(+), 26 deletions(-)
+> 
+> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+> index 5e1e541..d7ee0d4 100644
+> --- a/arch/arm/kernel/process.c
+> +++ b/arch/arm/kernel/process.c
+> @@ -30,6 +30,7 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/random.h>
+>  #include <linux/hw_breakpoint.h>
+> +#include <linux/cpuidle.h>
+>  
+>  #include <asm/cacheflush.h>
+>  #include <asm/leds.h>
+> @@ -196,7 +197,8 @@ void cpu_idle(void)
+>  				cpu_relax();
+>  			} else {
+>  				stop_critical_timings();
+> -				pm_idle();
+> +				if (cpuidle_call_idle())
+> +					pm_idle();
+>  				start_critical_timings();
+>  				/*
+>  				 * This will eventually be removed - pm_idle
+> diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
+> index 425d604..9c7099e 100644
+> --- a/arch/sh/kernel/idle.c
+> +++ b/arch/sh/kernel/idle.c
+> @@ -16,12 +16,13 @@
+>  #include <linux/thread_info.h>
+>  #include <linux/irqflags.h>
+>  #include <linux/smp.h>
+> +#include <linux/cpuidle.h>
+>  #include <asm/pgalloc.h>
+>  #include <asm/system.h>
+>  #include <asm/atomic.h>
+>  #include <asm/smp.h>
+>  
+> -void (*pm_idle)(void) = NULL;
+> +static void (*pm_idle)(void);
+>  
+>  static int hlt_counter;
+>  
+> @@ -100,7 +101,8 @@ void cpu_idle(void)
+>  			local_irq_disable();
+>  			/* Don't trace irqs off for idle */
+>  			stop_critical_timings();
+> -			pm_idle();
+> +			if (cpuidle_call_idle())
+> +				pm_idle();
+>  			/*
+>  			 * Sanity check to ensure that pm_idle() returns
+>  			 * with IRQs enabled
+> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> index 8d12878..61fadbe 100644
+> --- a/arch/x86/kernel/process_32.c
+> +++ b/arch/x86/kernel/process_32.c
+> @@ -38,6 +38,7 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/io.h>
+>  #include <linux/kdebug.h>
+> +#include <linux/cpuidle.h>
+>  
+>  #include <asm/pgtable.h>
+>  #include <asm/system.h>
+> @@ -109,7 +110,8 @@ void cpu_idle(void)
+>  			local_irq_disable();
+>  			/* Don't trace irqs off for idle */
+>  			stop_critical_timings();
+> -			pm_idle();
+> +			if (cpuidle_idle_call())
+> +				pm_idle();
+>  			start_critical_timings();
+>  		}
+>  		tick_nohz_restart_sched_tick();
+> diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+> index 6c9dd92..62c219a 100644
+> --- a/arch/x86/kernel/process_64.c
+> +++ b/arch/x86/kernel/process_64.c
+> @@ -37,6 +37,7 @@
+>  #include <linux/uaccess.h>
+>  #include <linux/io.h>
+>  #include <linux/ftrace.h>
+> +#include <linux/cpuidle.h>
+>  
+>  #include <asm/pgtable.h>
+>  #include <asm/system.h>
+> @@ -136,7 +137,8 @@ void cpu_idle(void)
+>  			enter_idle();
+>  			/* Don't trace irqs off for idle */
+>  			stop_critical_timings();
+> -			pm_idle();
+> +			if (cpuidle_idle_call())
+> +				pm_idle();
+>  			start_critical_timings();
+>  
+>  			/* In many cases the interrupt that ended idle
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 8d7303b..304e378 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -25,10 +25,10 @@ DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+>  
+>  DEFINE_MUTEX(cpuidle_lock);
+>  LIST_HEAD(cpuidle_detected_devices);
+> -static void (*pm_idle_old)(void);
+>  
+>  static int enabled_devices;
+>  static int off __read_mostly;
+> +static int initialized __read_mostly;
+>  
+>  int cpuidle_disabled(void)
+>  {
+> @@ -56,27 +56,24 @@ static int __cpuidle_register_device(struct cpuidle_device *dev);
+>   * cpuidle_idle_call - the main idle loop
+>   *
+>   * NOTE: no locks or semaphores should be used here
+> + * return non-zero on failure
+>   */
+> -static void cpuidle_idle_call(void)
+> +int cpuidle_idle_call(void)
+>  {
+>  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+>  	struct cpuidle_driver *drv = cpuidle_get_driver();
+>  	struct cpuidle_state *target_state;
+>  	int next_state, entered_state;
+>  
+> -	/* check if the device is ready */
+> -	if (!dev || !dev->enabled) {
+> -		if (pm_idle_old)
+> -			pm_idle_old();
+> -		else
+> -#if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
+> -			default_idle();
+> -#else
+> -			local_irq_enable();
+> -#endif
+> -		return;
+> -	}
+> +	if (off)
+> +		return -ENODEV;
+> +
+> +	if (!initialized)
+> +		return -ENODEV;
+>  
+> +	/* check if the device is ready */
+> +	if (!dev || !dev->enabled)
+> +		return -EBUSY;
+>  #if 0
+>  	/* shows regressions, re-enable for 2.6.29 */
+>  	/*
+> @@ -90,7 +87,7 @@ static void cpuidle_idle_call(void)
+>  	next_state = cpuidle_curr_governor->select(drv, dev);
+>  	if (need_resched()) {
+>  		local_irq_enable();
+> -		return;
+> +		return 0;
+>  	}
+>  
+>  	target_state = &drv->states[next_state];
+> @@ -116,6 +113,8 @@ static void cpuidle_idle_call(void)
+>  	/* give the governor an opportunity to reflect on the outcome */
+>  	if (cpuidle_curr_governor->reflect)
+>  		cpuidle_curr_governor->reflect(dev, entered_state);
+> +
+> +	return 0;
+>  }
+>  
+>  /**
+> @@ -123,10 +122,10 @@ static void cpuidle_idle_call(void)
+>   */
+>  void cpuidle_install_idle_handler(void)
+>  {
+> -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+> +	if (enabled_devices) {
+>  		/* Make sure all changes finished before we switch to new idle */
+>  		smp_wmb();
+> -		pm_idle = cpuidle_idle_call;
+> +		initialized = 1;
+>  	}
+>  }
+>  
+> @@ -135,8 +134,8 @@ void cpuidle_install_idle_handler(void)
+>   */
+>  void cpuidle_uninstall_idle_handler(void)
+>  {
+> -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+> -		pm_idle = pm_idle_old;
+> +	if (enabled_devices) {
+> +		initialized = 0;
+>  		cpuidle_kick_cpus();
+>  	}
+>  }
+> @@ -410,8 +409,6 @@ static int __init cpuidle_init(void)
+>  	if (cpuidle_disabled())
+>  		return -ENODEV;
+>  
+> -	pm_idle_old = pm_idle;
+> -
+>  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+>  	if (ret)
+>  		return ret;
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 2786787..c904188 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -128,6 +128,7 @@ struct cpuidle_driver {
+>  
+>  #ifdef CONFIG_CPU_IDLE
+>  extern void disable_cpuidle(void);
+> +extern int cpuidle_idle_call(void);
+>  
+>  extern int cpuidle_register_driver(struct cpuidle_driver *drv);
+>  struct cpuidle_driver *cpuidle_get_driver(void);
+> @@ -142,6 +143,7 @@ extern void cpuidle_disable_device(struct cpuidle_device *dev);
+>  
+>  #else
+>  static inline void disable_cpuidle(void) { }
+> +static inline int cpuidle_idle_call(void) { return -ENODEV; }
+>  
+>  static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
+>  {return -ENODEV; }
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
