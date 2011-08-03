@@ -1,17 +1,15 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v4 1/3] PM: Introduce DEVFREQ: generic DVFS
- framework with device-specific OPPs
-Date: Wed, 3 Aug 2011 15:02:09 +0900
-Message-ID: <CAJ0PZbTrpksWObozK=XkQ6=0MaKMLnmBGTG-R3Au678z5S-GhQ@mail.gmail.com>
-References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
-	<1310717510-19002-2-git-send-email-myungjoo.ham@samsung.com>
-	<877h6vbhq1.fsf@ti.com>
-Reply-To: myungjoo.ham@gmail.com
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v4 1/2] Input: enable i8042-level wakeup
+	control
+Date: Tue, 2 Aug 2011 23:59:20 -0700
+Message-ID: <20110803065920.GC23399__2999.5814468295$1312354822$gmane$org@core.coreip.homeip.net>
+References: <20110802154916.624619D401C@zog.reactivated.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <877h6vbhq1.fsf@ti.com>
+Content-Disposition: inline
+In-Reply-To: <20110802154916.624619D401C@zog.reactivated.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,92 +19,473 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Greg Kroah-Hartman <gregkh@suse.de>, Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Drake <dsd@laptop.org>
+Cc: linux-pm@lists.linux-foundation.org, dilinger@queued.net, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBdWcgMywgMjAxMSBhdCA2OjU2IEFNLCBLZXZpbiBIaWxtYW4gPGtoaWxtYW5AdGku
-Y29tPiB3cm90ZToKPiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4gd3Jp
-dGVzOgo+Cj4+IFdpdGggT1BQcywgYSBkZXZpY2UgbWF5IGhhdmUgbXVsdGlwbGUgb3BlcmFibGUg
-ZnJlcXVlbmN5IGFuZCB2b2x0YWdlCj4+IHNldHMuIEhvd2V2ZXIsIHRoZXJlIGNhbiBiZSBtdWx0
-aXBsZSBwb3NzaWJsZSBvcGVyYWJsZSBzZXRzIGFuZCBhIHN5c3RlbQo+PiB3aWxsIG5lZWQgdG8g
-Y2hvb3NlIG9uZSBmcm9tIHRoZW0uIEluIG9yZGVyIHRvIHJlZHVjZSB0aGUgcG93ZXIKPj4gY29u
-c3VtcHRpb24gKGJ5IHJlZHVjaW5nIGZyZXF1ZW5jeSBhbmQgdm9sdGFnZSkgd2l0aG91dCBhZmZl
-Y3RpbmcgdGhlCj4+IHBlcmZvcm1hbmNlIHRvbyBtdWNoLCBhIER5bmFtaWMgVm9sdGFnZSBhbmQg
-RnJlcXVlbmN5IFNjYWxpbmcgKERWRlMpCj4+IHNjaGVtZSBtYXkgYmUgdXNlZC4KPj4KPj4gVGhp
-cyBwYXRjaCBpbnRyb2R1Y2VzIHRoZSBEVkZTIGNhcGFiaWxpdHkgdG8gbm9uLUNQVSBkZXZpY2Vz
-IHdpdGggT1BQcy4KPj4gRFZGUyBpcyBhIHRlY2hpcXVlIHdoZXJlYnkgdGhlIGZyZXF1ZW5jeSBh
-bmQgc3VwcGxpZWQgdm9sdGFnZSBvZiBhCj4+IGRldmljZSBpcyBhZGp1c3RlZCBvbi10aGUtZmx5
-LiBEVkZTIHVzdWFsbHkgc2V0cyB0aGUgZnJlcXVlbmN5IGFzIGxvdwo+PiBhcyBwb3NzaWJsZSB3
-aXRoIGdpdmVuIGNvbmRpdGlvbnMgKHN1Y2ggYXMgUW9TIGFzc3VyYW5jZSkgYW5kIGFkanVzdHMK
-Pj4gdm9sdGFnZSBhY2NvcmRpbmcgdG8gdGhlIGNob3NlbiBmcmVxdWVuY3kgaW4gb3JkZXIgdG8g
-cmVkdWNlIHBvd2VyCj4+IGNvbnN1bXB0aW9uIGFuZCBoZWF0IGRpc3NpcGF0aW9uLgo+Pgo+PiBU
-aGUgZ2VuZXJpYyBEVkZTIGZvciBkZXZpY2VzLCBERVZGUkVRLCBtYXkgYXBwZWFyIHF1aXRlIHNp
-bWlsYXIgd2l0aAo+PiAvZHJpdmVycy9jcHVmcmVxLiDCoEhvd2V2ZXIsIENQVUZSRVEgZG9lcyBu
-b3QgYWxsb3cgdG8gaGF2ZSBtdWx0aXBsZQo+PiBkZXZpY2VzIHJlZ2lzdGVyZWQgYW5kIGlzIG5v
-dCBzdWl0YWJsZSB0byBoYXZlIG11bHRpcGxlIGhldGVyb2dlbm91cwo+PiBkZXZpY2VzIHdpdGgg
-ZGlmZmVyZW50IChidXQgc2ltcGxlKSBnb3Zlcm5vcnMuCj4+Cj4+IE5vcm1hbGx5LCBEVkZTIG1l
-Y2hhbmlzbSBjb250cm9scyBmcmVxdWVuY3kgYmFzZWQgb24gdGhlIGRlbWFuZCBmb3IKPj4gdGhl
-IGRldmljZSwgYW5kIHRoZW4sIGNob29zZXMgdm9sdGFnZSBiYXNlZCBvbiB0aGUgY2hvc2VuIGZy
-ZXF1ZW5jeS4KPj4gREVWRlJFUSBhbHNvIGNvbnRyb2xzIHRoZSBmcmVxdWVuY3kgYmFzZWQgb24g
-dGhlIGdvdmVybm9yJ3MgZnJlcXVlbmN5Cj4+IHJlY29tbWVuZGF0aW9uIGFuZCBsZXQgT1BQIHBp
-Y2sgdXAgdGhlIHBhaXIgb2YgZnJlcXVlbmN5IGFuZCB2b2x0YWdlCj4+IGJhc2VkIG9uIHRoZSBy
-ZWNvbW1lbmRlZCBmcmVxdWVuY3kuIFRoZW4sIHRoZSBjaG9zZW4gT1BQIGlzIHBhc3NlZCB0bwo+
-PiBkZXZpY2UgZHJpdmVyJ3MgInRhcmdldCIgY2FsbGJhY2suCj4+Cj4+IFRlc3RlZCB3aXRoIG1l
-bW9yeSBidXMgb2YgRXh5bm9zNC1OVVJJIGJvYXJkLgo+Pgo+PiBUaGUgdGVzdCBjb2RlIHdpdGgg
-Ym9hcmQgc3VwcG9ydCBmb3IgRXh5bm9zNC1OVVJJIGlzIGF0Cj4+IGh0dHA6Ly9naXQuaW5mcmFk
-ZWFkLm9yZy91c2Vycy9rbXBhcmsvbGludXgtMi42LXNhbXN1bmcvc2hvcnRsb2cvcmVmcy9oZWFk
-cy9kZXZmcmVxCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
-QHNhbXN1bmcuY29tPgo+PiBTaWduZWQtb2ZmLWJ5OiBLeXVuZ21pbiBQYXJrIDxreXVuZ21pbi5w
-YXJrQHNhbXN1bmcuY29tPgo+Cj4gWy4uLl0KPgo+PiAraW50IGRldmZyZXFfdXBkYXRlKHN0cnVj
-dCBkZXZpY2UgKmRldikKPj4gK3sKPj4gKyDCoCDCoCBzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcTsK
-Pj4gKyDCoCDCoCBpbnQgZXJyID0gMDsKPj4gKwo+PiArIMKgIMKgIG11dGV4X2xvY2soJmRldmZy
-ZXFfbGlzdF9sb2NrKTsKPj4gKwo+PiArIMKgIMKgIGRldmZyZXEgPSBmaW5kX2RldmljZV9kZXZm
-cmVxKGRldik7Cj4+ICsgwqAgwqAgaWYgKElTX0VSUihkZXZmcmVxKSkgewo+PiArIMKgIMKgIMKg
-IMKgIMKgIMKgIGVyciA9IFBUUl9FUlIoZGV2ZnJlcSk7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAg
-Z290byBvdXQ7Cj4+ICsgwqAgwqAgfQo+PiArCj4+ICsgwqAgwqAgLyoKPj4gKyDCoCDCoCDCoCog
-SWYgdGhlIG1heGltdW0gZnJlcXVlbmN5IGF2YWlsYWJsZSBpcyBjaGFuZ2VkIGVpdGhlciBieQo+
-PiArIMKgIMKgIMKgKiBlbmFibGluZyBoaWdoZXIgZnJlcXVlbmN5IG9yIGRpc2FibGluZyB0aGUg
-Y3VycmVudAo+PiArIMKgIMKgIMKgKiBtYXhpbXVtIGZyZXF1ZW5jeSwgd2UgbmVlZCB0byBhZGp1
-c3QgdGhlIGZyZXF1ZW5jeQo+PiArIMKgIMKgIMKgKiAodGlja2xlKSBhZ2FpbiBpZiB0aGUgZGV2
-aWNlIGhhcyBiZWVuIGJlaW5nIHRpY2tsZWQuCj4+ICsgwqAgwqAgwqAqLwo+PiArIMKgIMKgIGlm
-IChkZXZmcmVxLT50aWNrbGUpIHsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCB1bnNpZ25lZCBsb25n
-IGZyZXEgPSBkZXZmcmVxLT5wcm9maWxlLT5tYXhfZnJlcTsKPj4gKyDCoCDCoCDCoCDCoCDCoCDC
-oCBzdHJ1Y3Qgb3BwICpvcHAgPSBvcHBfZmluZF9mcmVxX2Zsb29yKGRldmZyZXEtPmRldiwgJmZy
-ZXEpOwo+PiArCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgaWYgKElTX0VSUihvcHApKSB7Cj4+ICsg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZXJyID0gUFRSX0VSUihvcHApOwo+PiArIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGdvdG8gb3V0Owo+PiArIMKgIMKgIMKgIMKgIMKg
-IMKgIH0KPj4gKwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIC8qIE1heCBmcmVxIGF2YWlsYWJsZSBp
-cyBub3QgY2hhbmdlZCAqLwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIGlmIChkZXZmcmVxLT5wcmV2
-aW91c19mcmVxID09IGZyZXEpCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZ290
-byBvdXQ7Cj4+ICsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCAvKiBUaWNrbGUgYWdhaW4uIE1heCBm
-cmVxIGF2YWlsYWJsZSBpcyBjaGFuZ2VkICovCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgZXJyID0g
-ZGV2ZnJlcS0+cHJvZmlsZS0+dGFyZ2V0KGRldmZyZXEtPmRldiwgb3BwKTsKPj4gKyDCoCDCoCDC
-oCDCoCDCoCDCoCBpZiAoIWVycikKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBk
-ZXZmcmVxLT5wcmV2aW91c19mcmVxID0gZnJlcTsKPgo+IFRoaXMgbG9va3MgYW4gYXdmdWwgbG90
-IGxpa2UgX2RldmZyZXFfdGlja2xlX2RldmljZSgpLi4uIHdvbmRlcmluZyB3aHkKPiB0aGF0IGlz
-IG5vdCBjYWxsZWQgaGVyZS4KPgoKVGhlIGRldmljZSBpcyBhbHJlYWR5IHRpY2tsZWQgYnkgYSB1
-c2VyIGFuZCB3ZSBkbyBub3QgbmVlZCB0byB1cGRhdGUKdGhlIHRpbWluZy9kZWxheSBpbmZvcm1h
-dGlvbiBhYm91dCB0aGUgY3VycmVudCB0aWNrbGUuIFdlIG9ubHkgbmVlZCB0bwphZGp1c3QgZnJl
-cXVlbmN5IGluIGNhc2UgdGhlIG1heGltdW0gYXZhaWxhYmxlIGZyZXF1ZW5jeSBoYXMgYmVlbgpj
-aGFuZ2VkLgoKQW55d2F5LCBpbiBvcmRlciB0byByZWR1Y2UgcmVkdW5kYW50IGNvZGUsIEkgd2ls
-bCBtb2RpZnkKX2RldmZyZXFfdGlja2xlX2RldmljZSB0byBiZSBhYmxlIHRvIGJlIGNhbGxlZCBi
-eSBkZXZmcmVxX3VwZGF0ZSgpLgpGb3Igbm93LCBpZiBkZXZmcmVxX3VwZGF0ZSgpIHVzZXMgX2Rl
-dmZyZXFfdGlja2xlX2RldmljZSB3aXRob3V0Cm1vZGlmaWNhdGlvbiwgaXQgd2lsbCBjYWxjdWxh
-dGUgbnVtX3RpY2tsZSBpbmNvcnJlY3RseSBhbmQgc2V0dGluZwpkZWxheSBvZiBfZGV2ZnJlcV90
-aWNrbGVfZGV2aWNlIGFnYWluIGlzIHJlcXVpcmVkLiBJIHdpbGwgbGV0Cl9kZXZmcmVxX3RpY2ts
-ZV9kZXZpY2UgdGFrZSBkZWxheSA9IDAgZm9yIGRldmZyZXFfdXBkYXRlKCkuCgpUaGFua3MuCgot
-IE15dW5nSm9vCgo+PiArIMKgIMKgIH0gZWxzZSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgLyog
-UmVldmFsdWF0ZSB0aGUgcHJvcGVyIGZyZXF1ZW5jeSAqLwo+PiArIMKgIMKgIMKgIMKgIMKgIMKg
-IGVyciA9IGRldmZyZXFfZG8oZGV2ZnJlcSk7Cj4+ICsgwqAgwqAgfQo+PiArCj4+ICtvdXQ6Cj4+
-ICsgwqAgwqAgbXV0ZXhfdW5sb2NrKCZkZXZmcmVxX2xpc3RfbG9jayk7Cj4+ICsgwqAgwqAgcmV0
-dXJuIGVycjsKPj4gK30KPgo+IEtldmluCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KPiBsaW51eC1wbSBtYWlsaW5nIGxpc3QKPiBsaW51eC1wbUBsaXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZwo+IGh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5v
-cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQo+CgoKCi0tIApNeXVuZ0pvbyBIYW0gKO2VqOuq
-heyjvCksIFBoLkQuCk1vYmlsZSBTb2Z0d2FyZSBQbGF0Zm9ybSBMYWIsCkRpZ2l0YWwgTWVkaWEg
-YW5kIENvbW11bmljYXRpb25zIChETUMpIEJ1c2luZXNzClNhbXN1bmcgRWxlY3Ryb25pY3MKY2Vs
-bDogODItMTAtNjcxNC0yODU4Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlz
-dGluZm8vbGludXgtcG0=
+Hi Daniel,
+
+On Tue, Aug 02, 2011 at 04:49:15PM +0100, Daniel Drake wrote:
+> The OLPC XO laptop is able to use the PS/2 controller as a wakeup source.
+> When used as a wakeup source, the key press/mouse motion must not be lost.
+> 
+> Add infrastructure to allow controllers to be marked as wakeup-capable,
+> and avoid doing power control/reset on the i8042/serio/input devices when
+> running in this mode. For systems where this functionality is available,
+> you are expected to enable wakeups on the i8042 device, the serio
+> devices, and the relevant input devices, to ensure that the hardware is
+> left powered and untouched throughout the suspend/resume.
+> 
+> Signed-off-by: Daniel Drake <dsd@laptop.org>
+> ---
+>  drivers/input/input.c                 |    6 +++-
+>  drivers/input/keyboard/atkbd.c        |    4 ++-
+>  drivers/input/mouse/hgpk.c            |    2 +
+>  drivers/input/mouse/psmouse-base.c    |    4 ++-
+>  drivers/input/serio/i8042-io.h        |    4 ++
+>  drivers/input/serio/i8042-ip22io.h    |    4 ++
+>  drivers/input/serio/i8042-jazzio.h    |    4 ++
+>  drivers/input/serio/i8042-ppcio.h     |    4 ++
+>  drivers/input/serio/i8042-snirm.h     |    4 ++
+>  drivers/input/serio/i8042-sparcio.h   |    4 ++
+>  drivers/input/serio/i8042-x86ia64io.h |    4 ++
+>  drivers/input/serio/i8042.c           |   62 +++++++++++++++++++++++++++++---
+>  drivers/input/serio/serio.c           |   29 +++++++++++++--
+>  13 files changed, 122 insertions(+), 13 deletions(-)
+> 
+> On original submission, Dmitry was worried about this functionality not
+> working at all on other platforms. I agree, it will only work where the
+> hardware has been specifically designed with this consideration. v2 of
+> the patch therefore removes the module param option, meaning that it
+> will only be activated on platforms that explicitly enable it at the
+> code level.
+> 
+> v2 also performs a more extensive job. We avoid resetting the device
+> at the input_device level during suspend/resume. We also disable i8042
+> interrupts when going into suspend, to avoid races handling interrupts
+> in the wrong order during resume.
+> 
+> v3 includes a cleanup suggested by Rafael, and explains the corner case
+> that we have to handle in the input layer.
+> 
+> v4 changes direction a little: each layer now just looks at the wakeup
+> capability of its own device, avoiding some of the earlier tree
+> traversal. Userspace must now enable wakeups on 5 devices:
+> 	i8042
+> 	i8042/serio0
+> 	i8042/serio0/input*
+> 	i8042/serio1
+> 	i8042/serio1/input*
+> This matches the behaviour of USB devices, where both the device and the
+> parent controller must have wakeups enabled for wakeup functionality
+> to work. Suggested by Rafael J. Wysocki.
+
+I am not sure that we should be marking input devices themselves as
+wakeup capable - they are in no way physical devices. I'd stop at serio
+level...
+
+> 
+> diff --git a/drivers/input/input.c b/drivers/input/input.c
+> index da38d97..639aba7 100644
+> --- a/drivers/input/input.c
+> +++ b/drivers/input/input.c
+> @@ -1588,6 +1588,9 @@ static int input_dev_suspend(struct device *dev)
+>  {
+>  	struct input_dev *input_dev = to_input_dev(dev);
+>  
+> +	if (device_may_wakeup(dev))
+> +		return 0;
+> +
+
+On suspend should we not try to shut off leds and sound?
+
+>  	mutex_lock(&input_dev->mutex);
+>  
+>  	if (input_dev->users)
+> @@ -1602,7 +1605,8 @@ static int input_dev_resume(struct device *dev)
+>  {
+>  	struct input_dev *input_dev = to_input_dev(dev);
+>  
+> -	input_reset_device(input_dev);
+> +	if (!device_may_wakeup(dev))
+> +		input_reset_device(input_dev);
+>  
+
+Does the controller wakes up the system on key release or only press? My
+concern is with cases when we suspend with a key pressed and wake up
+with it already released.
+
+>  	return 0;
+>  }
+> diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+> index 19cfc0c..4bb81c2 100644
+> --- a/drivers/input/keyboard/atkbd.c
+> +++ b/drivers/input/keyboard/atkbd.c
+> @@ -1027,6 +1027,7 @@ static void atkbd_set_keycode_table(struct atkbd *atkbd)
+>  static void atkbd_set_device_attrs(struct atkbd *atkbd)
+>  {
+>  	struct input_dev *input_dev = atkbd->dev;
+> +	struct device *parent = &atkbd->ps2dev.serio->dev;
+>  	int i;
+>  
+>  	if (atkbd->extra)
+> @@ -1047,7 +1048,8 @@ static void atkbd_set_device_attrs(struct atkbd *atkbd)
+>  	input_dev->id.product = atkbd->translated ? 1 : atkbd->set;
+>  	input_dev->id.version = atkbd->id;
+>  	input_dev->event = atkbd_event;
+> -	input_dev->dev.parent = &atkbd->ps2dev.serio->dev;
+> +	input_dev->dev.parent = parent;
+> +	device_set_wakeup_capable(&input_dev->dev, device_can_wakeup(parent));
+>  
+>  	input_set_drvdata(input_dev, atkbd);
+>  
+> diff --git a/drivers/input/mouse/hgpk.c b/drivers/input/mouse/hgpk.c
+> index 95577c1..d5dd990 100644
+> --- a/drivers/input/mouse/hgpk.c
+> +++ b/drivers/input/mouse/hgpk.c
+> @@ -548,6 +548,8 @@ static void hgpk_setup_input_device(struct input_dev *input,
+>  		input->phys = old_input->phys;
+>  		input->id = old_input->id;
+>  		input->dev.parent = old_input->dev.parent;
+> +		device_set_wakeup_capable(&input->dev,
+> +			device_can_wakeup(&old_input->dev));
+>  	}
+>  
+>  	memset(input->evbit, 0, sizeof(input->evbit));
+> diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
+> index 3f74bae..de8ecd5 100644
+> --- a/drivers/input/mouse/psmouse-base.c
+> +++ b/drivers/input/mouse/psmouse-base.c
+> @@ -1232,8 +1232,10 @@ static int psmouse_switch_protocol(struct psmouse *psmouse,
+>  {
+>  	const struct psmouse_protocol *selected_proto;
+>  	struct input_dev *input_dev = psmouse->dev;
+> +	struct device *parent = &psmouse->ps2dev.serio->dev;
+>  
+> -	input_dev->dev.parent = &psmouse->ps2dev.serio->dev;
+> +	input_dev->dev.parent = parent;
+> +	device_set_wakeup_capable(&input_dev->dev, device_can_wakeup(parent));
+>  
+>  	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REL);
+>  	input_dev->keybit[BIT_WORD(BTN_MOUSE)] =
+> diff --git a/drivers/input/serio/i8042-io.h b/drivers/input/serio/i8042-io.h
+> index 5d48bb6..296633c 100644
+> --- a/drivers/input/serio/i8042-io.h
+> +++ b/drivers/input/serio/i8042-io.h
+> @@ -92,4 +92,8 @@ static inline void i8042_platform_exit(void)
+>  #endif
+>  }
+>  
+> +static inline void i8042_platform_suspend(struct device *dev, bool may_wakeup)
+> +{
+> +}
+
+This is ugly but I guess it's the best option without switching to
+i8042_ops or something.
+
+> +
+>  #endif /* _I8042_IO_H */
+> diff --git a/drivers/input/serio/i8042-ip22io.h b/drivers/input/serio/i8042-ip22io.h
+> index ee1ad27..c5b76a4 100644
+> --- a/drivers/input/serio/i8042-ip22io.h
+> +++ b/drivers/input/serio/i8042-ip22io.h
+> @@ -73,4 +73,8 @@ static inline void i8042_platform_exit(void)
+>  #endif
+>  }
+>  
+> +static inline void i8042_platform_suspend(struct device *dev, bool may_wakeup)
+> +{
+> +}
+> +
+>  #endif /* _I8042_IP22_H */
+> diff --git a/drivers/input/serio/i8042-jazzio.h b/drivers/input/serio/i8042-jazzio.h
+> index 13fd710..a11913a 100644
+> --- a/drivers/input/serio/i8042-jazzio.h
+> +++ b/drivers/input/serio/i8042-jazzio.h
+> @@ -66,4 +66,8 @@ static inline void i8042_platform_exit(void)
+>  #endif
+>  }
+>  
+> +static inline void i8042_platform_suspend(struct device *dev, bool may_wakeup)
+> +{
+> +}
+> +
+>  #endif /* _I8042_JAZZ_H */
+> diff --git a/drivers/input/serio/i8042-ppcio.h b/drivers/input/serio/i8042-ppcio.h
+> index f708c75..c9f4292 100644
+> --- a/drivers/input/serio/i8042-ppcio.h
+> +++ b/drivers/input/serio/i8042-ppcio.h
+> @@ -52,6 +52,10 @@ static inline void i8042_platform_exit(void)
+>  {
+>  }
+>  
+> +static inline void i8042_platform_suspend(struct device *dev, bool may_wakeup)
+> +{
+> +}
+> +
+>  #else
+>  
+>  #include "i8042-io.h"
+> diff --git a/drivers/input/serio/i8042-snirm.h b/drivers/input/serio/i8042-snirm.h
+> index 409a934..96d034f 100644
+> --- a/drivers/input/serio/i8042-snirm.h
+> +++ b/drivers/input/serio/i8042-snirm.h
+> @@ -72,4 +72,8 @@ static inline void i8042_platform_exit(void)
+>  
+>  }
+>  
+> +static inline void i8042_platform_suspend(struct device *dev, bool may_wakeup)
+> +{
+> +}
+> +
+>  #endif /* _I8042_SNIRM_H */
+> diff --git a/drivers/input/serio/i8042-sparcio.h b/drivers/input/serio/i8042-sparcio.h
+> index 395a9af..e5381d3 100644
+> --- a/drivers/input/serio/i8042-sparcio.h
+> +++ b/drivers/input/serio/i8042-sparcio.h
+> @@ -154,4 +154,8 @@ static inline void i8042_platform_exit(void)
+>  }
+>  #endif /* !CONFIG_PCI */
+>  
+> +static inline void i8042_platform_suspend(struct device *dev, bool may_wakeup)
+> +{
+> +}
+> +
+>  #endif /* _I8042_SPARCIO_H */
+> diff --git a/drivers/input/serio/i8042-x86ia64io.h b/drivers/input/serio/i8042-x86ia64io.h
+> index bb9f5d3..76b2e58 100644
+> --- a/drivers/input/serio/i8042-x86ia64io.h
+> +++ b/drivers/input/serio/i8042-x86ia64io.h
+> @@ -875,6 +875,10 @@ static inline int i8042_pnp_init(void) { return 0; }
+>  static inline void i8042_pnp_exit(void) { }
+>  #endif
+>  
+> +static inline void i8042_platform_suspend(struct device *dev, bool may_wakeup)
+> +{
+> +}
+> +
+>  static int __init i8042_platform_init(void)
+>  {
+>  	int retval;
+> diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+> index d37a48e..d275130 100644
+> --- a/drivers/input/serio/i8042.c
+> +++ b/drivers/input/serio/i8042.c
+> @@ -87,6 +87,7 @@ MODULE_PARM_DESC(debug, "Turn i8042 debugging mode on and off");
+>  #endif
+>  
+>  static bool i8042_bypass_aux_irq_test;
+> +static bool i8042_enable_wakeup;
+>  
+>  #include "i8042.h"
+>  
+> @@ -1082,10 +1083,17 @@ static void i8042_dritek_enable(void)
+>   * before suspending.
+>   */
+>  
+> -static int i8042_controller_resume(bool force_reset)
+> +static int i8042_controller_resume(bool force_reset, bool soft_resume)
+>  {
+>  	int error;
+>  
+> +	/*
+> +	 * If device is selected as a wakeup source, it was not powered down
+> +	 * or reset during suspend, so we have very little to do.
+> +	 */
+> +	if (soft_resume)
+> +		goto soft;
+
+Maybe instead of adding a parameter simply not call the function and
+move i8042_interrupt as well?
+
+> +
+>  	error = i8042_controller_check();
+>  	if (error)
+>  		return error;
+> @@ -1129,6 +1137,7 @@ static int i8042_controller_resume(bool force_reset)
+>  	if (i8042_ports[I8042_KBD_PORT_NO].serio)
+>  		i8042_enable_kbd_port();
+>  
+> +soft:
+>  	i8042_interrupt(0, NULL);
+>  
+>  	return 0;
+> @@ -1146,14 +1155,48 @@ static int i8042_pm_reset(struct device *dev)
+>  	return 0;
+>  }
+>  
+> +static int i8042_pm_suspend(struct device *dev)
+> +{
+> +	i8042_platform_suspend(dev, device_may_wakeup(dev));
+> +
+> +	/*
+> +	 * If device is selected as a wakeup source, don't powerdown or reset
+> +	 * during suspend. Just disable IRQs to ensure race-free resume.
+> +	 */
+> +	if (device_may_wakeup(dev)) {
+> +		if (i8042_kbd_irq_registered)
+> +			disable_irq(I8042_KBD_IRQ);
+> +		if (i8042_aux_irq_registered)
+> +			disable_irq(I8042_AUX_IRQ);
+> +		return 0;
+> +	}
+> +
+> +	return i8042_pm_reset(dev);
+> +}
+> +
+>  static int i8042_pm_resume(struct device *dev)
+>  {
+>  	/*
+>  	 * On resume from S2R we always try to reset the controller
+>  	 * to bring it in a sane state. (In case of S2D we expect
+>  	 * BIOS to reset the controller for us.)
+> +	 * This function call will also handle any pending keypress event
+> +	 * (perhaps the system wakeup reason)
+> +	 */
+> +	int r = i8042_controller_resume(true, device_may_wakeup(dev));
+> +
+> +	/* If the device was left running during suspend, enable IRQs again
+> +	 * now. Must be done last to avoid races with interrupt processing
+> +	 * inside i8042_controller_resume.
+>  	 */
+
+Hmm, we have proper locking so I am not sure how true this statement is.
+
+> -	return i8042_controller_resume(true);
+> +	if (device_may_wakeup(dev)) {
+> +		if (i8042_kbd_irq_registered)
+> +			enable_irq(I8042_KBD_IRQ);
+> +		if (i8042_aux_irq_registered)
+> +			enable_irq(I8042_AUX_IRQ);
+> +	}
+> +
+> +	return r;
+>  }
+>  
+>  static int i8042_pm_thaw(struct device *dev)
+> @@ -1165,11 +1208,11 @@ static int i8042_pm_thaw(struct device *dev)
+>  
+>  static int i8042_pm_restore(struct device *dev)
+>  {
+> -	return i8042_controller_resume(false);
+> +	return i8042_controller_resume(false, false);
+>  }
+>  
+>  static const struct dev_pm_ops i8042_pm_ops = {
+> -	.suspend	= i8042_pm_reset,
+> +	.suspend	= i8042_pm_suspend,
+>  	.resume		= i8042_pm_resume,
+>  	.thaw		= i8042_pm_thaw,
+>  	.poweroff	= i8042_pm_reset,
+> @@ -1192,6 +1235,7 @@ static int __init i8042_create_kbd_port(void)
+>  {
+>  	struct serio *serio;
+>  	struct i8042_port *port = &i8042_ports[I8042_KBD_PORT_NO];
+> +	struct device *parent = &i8042_platform_device->dev;
+>  
+>  	serio = kzalloc(sizeof(struct serio), GFP_KERNEL);
+>  	if (!serio)
+> @@ -1203,7 +1247,8 @@ static int __init i8042_create_kbd_port(void)
+>  	serio->stop		= i8042_stop;
+>  	serio->close		= i8042_port_close;
+>  	serio->port_data	= port;
+> -	serio->dev.parent	= &i8042_platform_device->dev;
+> +	serio->dev.parent	= parent;
+> +	device_set_wakeup_capable(&serio->dev, device_can_wakeup(parent));
+>  	strlcpy(serio->name, "i8042 KBD port", sizeof(serio->name));
+>  	strlcpy(serio->phys, I8042_KBD_PHYS_DESC, sizeof(serio->phys));
+>  
+> @@ -1218,6 +1263,7 @@ static int __init i8042_create_aux_port(int idx)
+>  	struct serio *serio;
+>  	int port_no = idx < 0 ? I8042_AUX_PORT_NO : I8042_MUX_PORT_NO + idx;
+>  	struct i8042_port *port = &i8042_ports[port_no];
+> +	struct device *parent = &i8042_platform_device->dev;
+>  
+>  	serio = kzalloc(sizeof(struct serio), GFP_KERNEL);
+>  	if (!serio)
+> @@ -1228,7 +1274,8 @@ static int __init i8042_create_aux_port(int idx)
+>  	serio->start		= i8042_start;
+>  	serio->stop		= i8042_stop;
+>  	serio->port_data	= port;
+> -	serio->dev.parent	= &i8042_platform_device->dev;
+> +	serio->dev.parent	= parent;
+> +	device_set_wakeup_capable(&serio->dev, device_can_wakeup(parent));
+>  	if (idx < 0) {
+>  		strlcpy(serio->name, "i8042 AUX port", sizeof(serio->name));
+>  		strlcpy(serio->phys, I8042_AUX_PHYS_DESC, sizeof(serio->phys));
+> @@ -1403,6 +1450,9 @@ static int __init i8042_probe(struct platform_device *dev)
+>  		i8042_dritek_enable();
+>  #endif
+>  
+> +	if (i8042_enable_wakeup)
+> +		device_set_wakeup_capable(&dev->dev, true);
+> +
+
+	device_set_wakeup_capable(&dev->dev, i8042_enable_wakeup); ?
+
+>  	if (!i8042_noaux) {
+>  		error = i8042_setup_aux();
+>  		if (error && error != -ENODEV && error != -EBUSY)
+> diff --git a/drivers/input/serio/serio.c b/drivers/input/serio/serio.c
+> index ba70058..9e2fdb4 100644
+> --- a/drivers/input/serio/serio.c
+> +++ b/drivers/input/serio/serio.c
+> @@ -931,7 +931,7 @@ static int serio_uevent(struct device *dev, struct kobj_uevent_env *env)
+>  #endif /* CONFIG_HOTPLUG */
+>  
+>  #ifdef CONFIG_PM
+> -static int serio_suspend(struct device *dev)
+> +static int serio_poweroff(struct device *dev)
+>  {
+>  	struct serio *serio = to_serio_port(dev);
+>  
+> @@ -940,7 +940,16 @@ static int serio_suspend(struct device *dev)
+>  	return 0;
+>  }
+>  
+> -static int serio_resume(struct device *dev)
+> +static int serio_suspend(struct device *dev)
+> +{
+> +	/* If configured as a wakeup source, don't power off. */
+> +	if (device_may_wakeup(dev))
+> +		return 0;
+> +
+> +	return serio_poweroff(dev);
+> +}
+> +
+> +static int serio_restore(struct device *dev)
+>  {
+>  	struct serio *serio = to_serio_port(dev);
+>  
+> @@ -953,11 +962,23 @@ static int serio_resume(struct device *dev)
+>  	return 0;
+>  }
+>  
+> +static int serio_resume(struct device *dev)
+> +{
+> +	/*
+> +	 * If configured as a wakeup source, we didn't power off during
+> +	 * suspend, and hence have nothing to do.
+> +	 */
+> +	if (device_may_wakeup(dev))
+> +		return 0;
+> +
+> +	return serio_restore(dev);
+> +}
+> +
+>  static const struct dev_pm_ops serio_pm_ops = {
+>  	.suspend	= serio_suspend,
+>  	.resume		= serio_resume,
+> -	.poweroff	= serio_suspend,
+> -	.restore	= serio_resume,
+> +	.poweroff	= serio_poweroff,
+> +	.restore	= serio_restore,
+>  };
+>  #endif /* CONFIG_PM */
+>  
+> -- 
+> 1.7.6
+> 
+
+-- 
+Dmitry
