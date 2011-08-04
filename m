@@ -1,8 +1,8 @@
 From: Greg KH <gregkh@suse.de>
 Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
 	ram
-Date: Wed, 3 Aug 2011 22:16:21 -0700
-Message-ID: <20110804051621.GA12336@suse.de>
+Date: Wed, 3 Aug 2011 22:17:45 -0700
+Message-ID: <20110804051745.GB12336@suse.de>
 References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E573B@shsmsx502.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,27 +24,41 @@ Cc: "Brown, Len" <len.brown@intel.com>, "linux-pm@lists.linux-foundation.org" <l
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, Aug 04, 2011 at 01:09:51PM +0800, Liu, ShuoX wrote:
-> From a906b0b5b4ff3414ceb9fc7a69a3d7c9d66e46b1 Mon Sep 17 00:00:00 2001
-> From: ShuoX Liu <shuox.liu@intel.com>
-> Date: Thu, 28 Jul 2011 10:54:22 +0800
-> Subject: [PATCH] PM: add statistics sysfs file for suspend to ram.
-> 
-> Record S3 failure time about each reason and the latest two failed
-> devices' name in S3 progress.
-> We can check it through /sys/power/suspend_stats.
-> 
-> Change-Id: Ieed7fd74e27d3b482675a20cb0bb26b9054a1624
+> +static ssize_t suspend_stats_show(struct kobject *kobj,
+> +               struct kobj_attribute *attr, char *buf)
+> +{
+> +   int i, index, last_index;
+> +   char *s = buf;
+> +
+> +   last_index = suspend_stats.last_failed + REC_FAILED_DEV_NUM - 1;
+> +   last_index %= REC_FAILED_DEV_NUM;
+> +   s += sprintf(s, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
+> +           "%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
+> +           "success", suspend_stats.success,
+> +           "fail", suspend_stats.fail,
+> +           "failed_freeze", suspend_stats.failed_freeze,
+> +           "failed_prepare", suspend_stats.failed_prepare,
+> +           "failed_suspend", suspend_stats.failed_suspend,
+> +           "failed_suspend_noirq",
+> +               suspend_stats.failed_suspend_noirq,
+> +           "failed_resume", suspend_stats.failed_resume,
+> +           "failed_resume_noirq",
+> +               suspend_stats.failed_resume_noirq);
+> +   s += sprintf(s, "failed_devs:\n  last_failed:\t%s\n",
+> +           suspend_stats.failed_devs[last_index]);
+> +   for (i = 1; i < REC_FAILED_DEV_NUM; i++) {
+> +       index = last_index + REC_FAILED_DEV_NUM - i;
+> +       index %= REC_FAILED_DEV_NUM;
+> +       s += sprintf(s, "\t\t%s\n",
+> +           suspend_stats.failed_devs[index]);
+> +   }
 
-What is that line for?
+And, to top it all of, this is NOT allowed in sysfs at all.
 
-Also, your patch is corrupted and can not be applied.
+Remember, sysfs is one text field per file.  Not something huge like
+this.
 
-Oh, and, as you are adding a sysfs file, you MUST add a
-Documentation/ABI file that describes the file and what it is for and
-what it does.
-
-Also, why is this file needed?  Who needs this file?  What's wrong with
-the kernel log instead?
+Perhaps you should use debugfs instead?
 
 thanks,
 
