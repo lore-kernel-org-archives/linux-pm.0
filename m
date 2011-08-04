@@ -1,23 +1,12 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [RFC v2]: Issues implementing clock handling
- mechanism within UART driver
-Date: Mon, 1 Aug 2011 13:02:04 +0300
-Message-ID: <20110801100203.GN31013__17758.4297875457$1312482184$gmane$org@legolas.emea.dhcp.ti.com>
-References: <20110729095512.GE31013@legolas.emea.dhcp.ti.com>
-	<CAAL8m4xjN15RfwbDd_c1HdoKY327CWOn5qwuoUT=fop4J0K5cw@mail.gmail.com>
-	<20110729113713.GK31013@legolas.emea.dhcp.ti.com>
-	<CAAL8m4wq7RQ_Rp-+LMWYY=dtTnhtR5UY+8HpO5C_54goKezaTg@mail.gmail.com>
-	<20110729121907.GM31013@legolas.emea.dhcp.ti.com>
-	<CAAL8m4wQqS64xG0Vi9YCOdy3f2=1V7UkJCErpikHOra4X=g7+w@mail.gmail.com>
-	<20110729140210.GT31013@legolas.emea.dhcp.ti.com>
-	<CAAL8m4wdKu_XGFaGxuAJ9uypRyyQMkR8HL7Y6E=pBkwX=L43nA@mail.gmail.com>
-	<20110801090328.GG31013@legolas.emea.dhcp.ti.com>
-	<CAMrsUdL_9mzKsjrKf=spihxcRTQc6Tsr+MAP9GFAz_7sE27B6Q@mail.gmail.com>
-Reply-To: balbi@ti.com
+From: "Liu, ShuoX" <shuox.liu@intel.com>
+Subject: [PATCH] PM: add statistics sysfs file for suspend to ram
+Date: Thu, 4 Aug 2011 13:13:38 +0800
+Message-ID: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============6139480636948580856=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAMrsUdL_9mzKsjrKf=spihxcRTQc6Tsr+MAP9GFAz_7sE27B6Q@mail.gmail.com>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,455 +14,262 @@ List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
 List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Mime-version: 1.0
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Raja, Govindraj" <govindraj.raja@ti.com>
-Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, balbi@ti.com, linux-serial@vger.kernel.org, Govindraj <govindraj.ti@gmail.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, "gregkh@suse.de" <gregkh@suse.de>
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
+>From a906b0b5b4ff3414ceb9fc7a69a3d7c9d66e46b1 Mon Sep 17 00:00:00 2001
+From: ShuoX Liu <shuox.liu@intel.com>
+Date: Thu, 28 Jul 2011 10:54:22 +0800
+Subject: [PATCH] PM: add statistics sysfs file for suspend to ram.
 
---===============6139480636948580856==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fBycuDTqZgS1bANG"
-Content-Disposition: inline
+Record S3 failure time about each reason and the latest two failed
+devices' name in S3 progress.
+We can check it through /sys/power/suspend_stats.
 
+Change-Id: Ieed7fd74e27d3b482675a20cb0bb26b9054a1624
+Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
+---
+ drivers/base/power/main.c |   31 +++++++++++++++++++++++++--
+ include/linux/suspend.h   |   16 ++++++++++++++
+ kernel/power/main.c       |   49 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/suspend.c    |   13 ++++++++++-
+ 4 files changed, 104 insertions(+), 5 deletions(-)
 
---fBycuDTqZgS1bANG
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-(fix your mailer dude)
-
-On Mon, Aug 01, 2011 at 03:26:52PM +0530, Raja, Govindraj wrote:
->      > @@ -254,14 +255,14 @@ void omap2_clk_disable(struct clk *clk)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD return;
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD }
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("clock: %s: decrementing usecount\n=
-", clk->name);
->      > +// =EF=BF=BD pr_debug("clock: %s: decrementing usecount\n", clk->=
-name);
->      >
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD clk->usecount--;
->      >
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD if (clk->usecount > 0)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD return;
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("clock: %s: disabling in hardware\n=
-", clk->name);
->      > +// =EF=BF=BD pr_debug("clock: %s: disabling in hardware\n", clk->=
-name);
->      >
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD if (clk->ops && clk->ops->disable) {
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD trace_clock_disable(clk->name, 0, smp_processor_id());
->=20
->      this hunk is unnecessary. Clocks are always on when they are called.
->=20
->    The problem is:
->    [1]:
->    runtime_put -> *power.lock* - > rpm->suspend -> above pr_debug ->
->    console_write -> get_sync
->    -> *power.lock* -> rpm resume
->    power.lock contention.
-
-Are you sure ? If the device is still on, won't that get_sync() only
-increase the pm counter ? Instead of going through everything ?? Oh
-well, this is becoming quite racy :-(
-
->      > @@ -290,14 +291,14 @@ int omap2_clk_enable(struct clk *clk)
->      > =EF=BF=BD{
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD int ret;
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("clock: %s: incrementing usecount\n=
-", clk->name);
->      > +// =EF=BF=BD pr_debug("clock: %s: incrementing usecount\n", clk->=
-name);
->      >
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD clk->usecount++;
->      >
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD if (clk->usecount > 1)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD return 0;
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("clock: %s: enabling in hardware\n"=
-, clk->name);
->      > +// =EF=BF=BD pr_debug("clock: %s: enabling in hardware\n", clk->n=
-ame);
->=20
->      these two is ok.
->      > diff --git a/arch/arm/mach-omap2/omap_hwmod.c
->      b/arch/arm/mach-omap2/omap_hwmod.c
->      > index 7ed0479..8ca7d40 100644
->      > --- a/arch/arm/mach-omap2/omap_hwmod.c
->      > +++ b/arch/arm/mach-omap2/omap_hwmod.c
->      > @@ -124,7 +124,8 @@
->      > =EF=BF=BD * XXX error return values should be checked to ensure th=
-at they are
->      > =EF=BF=BD * appropriate
->      > =EF=BF=BD */
->      > -#undef DEBUG
->      > +//#undef DEBUG
->      > +#define DEBUG
->=20
->      trailing.
->      > @@ -597,7 +598,8 @@ static int _enable_clocks(struct omap_hwmod *o=
-h)
->      > =EF=BF=BD{
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD int i;
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("omap_hwmod: %s: enabling clocks\n"=
-, oh->name);
->      > + =EF=BF=BD =EF=BF=BD if (strcmp(oh->class->name, "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_hwmod: %s: enabling clocks\n", oh->name);
->=20
->      instead of doing checks, you could move the print to the end of the
->      function, when clocks are already enabled. When doind that, of cours=
-e,
->      update the comment to say "%s: clocks enabled\n".
->=20
->    the problem is the prints causing power.lock contention same as=EF=BF=
-=BD
->    the=EF=BF=BDscenario=EF=BF=BDin [1] above.
->    =EF=BF=BD
->=20
->      > @@ -627,7 +629,8 @@ static int _disable_clocks(struct omap_hwmod *=
-oh)
->      > =EF=BF=BD{
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD int i;
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("omap_hwmod: %s: disabling clocks\n=
-", oh->name);
->      > + =EF=BF=BD =EF=BF=BD if (strcmp(oh->class->name, "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_hwmod: %s: disabling clocks\n",
->      oh->name);
->=20
->      check not needed, clocks are still on.
->=20
->    scenario=EF=BF=BD[1]
->    =EF=BF=BD
->=20
->      >
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD if (oh->_clk)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD clk_disable(oh->_clk);
->      > @@ -1232,7 +1235,8 @@ static int _enable(struct omap_hwmod *oh)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD return -EINVAL;
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD }
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("omap_hwmod: %s: enabling\n", oh->n=
-ame);
->      > + =EF=BF=BD =EF=BF=BD if (strcmp(oh->class->name, "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_hwmod: %s: enabling\n", oh->name);
->=20
->      move it further down.
->      > @@ -1264,8 +1268,9 @@ static int _enable(struct omap_hwmod *oh)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD }
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD } else {
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD _disable_clocks(oh);
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_hwmod: %s: _wait_target_ready: %d\n",
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDoh->name, r);
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD if (=
-strcmp(oh->class->name, "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_debug("omap_hwmod: %s: _wait_target=
-_ready:
->      %d\n",
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BDoh->name, r);
->=20
->      instead of adding check, move the print before _disable_clocks(oh).
->      > @@ -1287,7 +1292,8 @@ static int _idle(struct omap_hwmod *oh)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD return -EINVAL;
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD }
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("omap_hwmod: %s: idling\n", oh->nam=
-e);
->      > + =EF=BF=BD =EF=BF=BD if (strcmp(oh->class->name, "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_hwmod: %s: idling\n", oh->name);
->=20
->      I believe clocks are still on here too, no checks needed.
->      > diff --git a/arch/arm/plat-omap/omap_device.c
->      b/arch/arm/plat-omap/omap_device.c
->      > index 49fc0df..7b27704 100644
->      > --- a/arch/arm/plat-omap/omap_device.c
->      > +++ b/arch/arm/plat-omap/omap_device.c
->      > @@ -75,7 +75,8 @@
->      > =EF=BF=BD * (device must be reinitialized at this point to use it =
-again)
->      > =EF=BF=BD *
->      > =EF=BF=BD */
->      > -#undef DEBUG
->      > +//#undef DEBUG
->      > +#define DEBUG
->=20
->      trailing.
->      > @@ -114,7 +115,8 @@ static int _omap_device_activate(struct
->      > omap_device *od, u8 ignore_lat)
->      > =EF=BF=BD{
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD struct timespec a, b, c;
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("omap_device: %s: activating\n", od=
-->[2]pdev.name);
->      > + =EF=BF=BD =EF=BF=BD if (strcmp(od->hwmods[0]->class->name, "uart=
-"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_device: %s: activating\n",
->      od->[3]pdev.name);
->=20
->      move it to the end of the function.
->      > @@ -138,25 +140,29 @@ static int _omap_device_activate(struct
->      > omap_device *od, u8 ignore_lat)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD c =3D timespec_sub(b, a);
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD act_lat =3D timespec_to_ns(&c);
->      >
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_device: %s: pm_lat %d: activate: elapsed
->      time "
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD"%llu nsec\n", od->[4]pdev.na=
-me,
->      od->pm_lat_level,
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDact_lat);
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD if (=
-strcmp(od->hwmods[0]->class->name, "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_debug("omap_device: %s: pm_lat %d: =
-activate:
->      elapsed time "
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD"%llu nsec\n", od->[5]pdev.name,
->      od->pm_lat_level,
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BDact_lat);
->=20
->      move it further down.
->      >
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD if (act_lat > odpl->activate_lat) {
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD odpl->activate_lat_worst =3D ac=
-t_lat;
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD if (odpl->flags &
->      OMAP_DEVICE_LATENCY_AUTO_ADJUST) {
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD odpl->activate_lat =3D act_lat;
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD pr_warning("omap_device: %s.%d: new
->      worst case "
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD"activate la=
-tency %d:
->      %llu\n",
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDod->[6]pdev.=
-name,
->      od->[7]pdev.id,
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDod->pm_lat_l=
-evel, act_lat);
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD } else
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD pr_warning("omap_device: %s.%d: activate
->      "
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD"latency %d =
-higher than
->      exptected. "
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD"(%llu > %d)=
-\n",
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDod->[8]pdev.=
-name,
->      od->[9]pdev.id,
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDod->pm_lat_l=
-evel, act_lat,
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDodpl->activa=
-te_lat);
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD if (strcmp(od->hwmods[0]->class->name,
->      "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_warning("omap_device: %s.%d:
->      new worst case "
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD "activate latency %d:
->      %llu\n",
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD od->[10]pdev.name,
->      od->[11]pdev.id,
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD od->pm_lat_level,
->      act_lat);
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD } else {
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD if (strcmp(od->hwmods[0]->class->name,
->      "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_warning("omap_device: %s.%d:
->      activate "
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD "latency %d higher than
->      exptected. "
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD "(%llu > %d)\n",
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD od->[12]pdev.name,
->      od->[13]pdev.id,
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD od->pm_lat_level,
->      act_lat,
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =
-=EF=BF=BD odpl->activate_lat);
->=20
->      ->activate_func() has already been called here, clocks are already o=
-n.
->      > @@ -183,7 +189,8 @@ static int _omap_device_deactivate(struct
->      > omap_device *od, u8 ignore_lat)
->      > =EF=BF=BD{
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD struct timespec a, b, c;
->      >
->      > - =EF=BF=BD =EF=BF=BD pr_debug("omap_device: %s: deactivating\n", =
-od->[14]pdev.name);
->      > + =EF=BF=BD =EF=BF=BD if (strcmp(od->hwmods[0]->class->name, "uart=
-"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_device: %s: deactivating\n",
->      od->[15]pdev.name);
->=20
->      clocks are still on here.
->      > @@ -206,25 +213,29 @@ static int _omap_device_deactivate(struct
->      > omap_device *od, u8 ignore_lat)
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD c =3D timespec_sub(b, a);
->      > =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD deact_lat =3D timespec_to_ns(&c);
->      >
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_d=
-ebug("omap_device: %s: pm_lat %d: deactivate:
->      elapsed time "
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD"%llu nsec\n", od->[16]pdev.n=
-ame,
->      od->pm_lat_level,
->      > - =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BDdeact_lat);
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD if (=
-strcmp(od->hwmods[0]->class->name, "uart"))
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD pr_debug("omap_device: %s: pm_lat %d:
->      deactivate: elapsed time "
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BD"%llu nsec\n", od->[17]pdev.name,
->      od->pm_lat_level,
->      > + =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=
-=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=BD =EF=BF=
-=BD =EF=BF=BDdeact_lat);
->=20
->      I'll leave this to Kevin to decide what to do, but clocks are off
->      here...
->=20
->    Yes fine.=EF=BF=BD
->    Since most of these prints will be printed if DEBUG macro
->    is defined in respective files and *debug* is used in command line.
->    Can't leave uart clocks active always on debug cases.
->    [If *debug* =EF=BF=BDused as command line]
->    and gate uart clocks only for non debug cases.
->    With this approach=EF=BF=BDat least=EF=BF=BDwe can have a clean soluti=
-on
->    in uart driver also without adding clock gating from idle path.
->    Not sure if this=EF=BF=BDagreeable.
->    As of now gating from idle path seems to be only clean approach.
-
-I see.. that could be one way... let's see how Kevin feels about it
-though.
-
---=20
-balbi
-
---fBycuDTqZgS1bANG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQEcBAEBAgAGBQJONnmbAAoJEAv8Txj19kN1l0gIAKnJleANT8uvGiGZQB2gDJNV
-HRqsBjl+eWSLv/1s2ZrUg3JTuOcW9erUCc3oqJkMzCQpFgWBBibxAM8eT5T/8sn2
-mzrfDxeX3ymViASYEHcBlhxvS9bfVG/d2YG7Kr09xfJWzWJNabcIGZiRpYqmsWT3
-cv97NH8NYKjzTzq+papMQG5GgjICTcPJ20vQzWsJUqq0TrN8T/rIRQGciC5G3ZUe
-oAsbEX6ywDXqPFTO2B/Fx5MuS9edsA82TavzRWvbbYMRKw95gWdONhNKnanIPYCg
-21B2FuvvJJErHnkjwMcjJOMTBHJa2OG2ZGponykvLFZIqhRDfVDIN9tWGGY7qGg=
-=gg/B
------END PGP SIGNATURE-----
-
---fBycuDTqZgS1bANG--
-
---===============6139480636948580856==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============6139480636948580856==--
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index a854591..da1c561 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -46,6 +46,7 @@ LIST_HEAD(dpm_prepared_list);
+ LIST_HEAD(dpm_suspended_list);
+ LIST_HEAD(dpm_noirq_list);
+ 
++struct suspend_stats suspend_stats;
+ static DEFINE_MUTEX(dpm_list_mtx);
+ static pm_message_t pm_transition;
+ 
+@@ -180,6 +181,15 @@ static void initcall_debug_report(struct device *dev, ktime_t calltime,
+ 	}
+ }
+ 
++static void dpm_save_dev_name(const char *name)
++{
++	strlcpy(suspend_stats.failed_devs[suspend_stats.last_failed],
++		name,
++		sizeof(suspend_stats.failed_devs[0]));
++	suspend_stats.last_failed++;
++	suspend_stats.last_failed %= REC_FAILED_DEV_NUM;
++}
++
+ /**
+  * dpm_wait - Wait for a PM operation to complete.
+  * @dev: Device to wait for.
+@@ -464,8 +474,11 @@ void dpm_resume_noirq(pm_message_t state)
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+ 		error = device_resume_noirq(dev, state);
+-		if (error)
++		if (error) {
++			suspend_stats.failed_resume_noirq++;
++			dpm_save_dev_name(dev_name(dev));
+ 			pm_dev_err(dev, state, " early", error);
++		}
+ 
+ 		mutex_lock(&dpm_list_mtx);
+ 		put_device(dev);
+@@ -626,8 +639,11 @@ void dpm_resume(pm_message_t state)
+ 			mutex_unlock(&dpm_list_mtx);
+ 
+ 			error = device_resume(dev, state, false);
+-			if (error)
++			if (error) {
++				suspend_stats.failed_resume++;
++				dpm_save_dev_name(dev_name(dev));
+ 				pm_dev_err(dev, state, "", error);
++			}
+ 
+ 			mutex_lock(&dpm_list_mtx);
+ 		}
+@@ -802,6 +818,8 @@ int dpm_suspend_noirq(pm_message_t state)
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			pm_dev_err(dev, state, " late", error);
++			suspend_stats.failed_suspend_noirq++;
++			dpm_save_dev_name(dev_name(dev));
+ 			put_device(dev);
+ 			break;
+ 		}
+@@ -923,8 +941,10 @@ static void async_suspend(void *data, async_cookie_t cookie)
+ 	int error;
+ 
+ 	error = __device_suspend(dev, pm_transition, true);
+-	if (error)
++	if (error) {
++		dpm_save_dev_name(dev_name(dev));
+ 		pm_dev_err(dev, pm_transition, " async", error);
++	}
+ 
+ 	put_device(dev);
+ }
+@@ -967,6 +987,7 @@ int dpm_suspend(pm_message_t state)
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			pm_dev_err(dev, state, "", error);
++			dpm_save_dev_name(dev_name(dev));
+ 			put_device(dev);
+ 			break;
+ 		}
+@@ -982,6 +1003,8 @@ int dpm_suspend(pm_message_t state)
+ 		error = async_error;
+ 	if (!error)
+ 		dpm_show_time(starttime, state, NULL);
++	else
++		suspend_stats.failed_suspend++;
+ 	return error;
+ }
+ 
+@@ -1090,6 +1113,8 @@ int dpm_suspend_start(pm_message_t state)
+ 	error = dpm_prepare(state);
+ 	if (!error)
+ 		error = dpm_suspend(state);
++	else
++		suspend_stats.failed_prepare++;
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(dpm_suspend_start);
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 6bbcef2..6a8ff23 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -34,6 +34,22 @@ typedef int __bitwise suspend_state_t;
+ #define PM_SUSPEND_MEM		((__force suspend_state_t) 3)
+ #define PM_SUSPEND_MAX		((__force suspend_state_t) 4)
+ 
++struct suspend_stats {
++	int	success;
++	int	fail;
++	int	failed_freeze;
++	int	failed_prepare;
++	int	failed_suspend;
++	int	failed_suspend_noirq;
++	int	failed_resume;
++	int	failed_resume_noirq;
++#define	REC_FAILED_DEV_NUM	2
++	char	failed_devs[REC_FAILED_DEV_NUM][40];
++	int	last_failed;
++};
++
++extern struct suspend_stats suspend_stats;
++
+ /**
+  * struct platform_suspend_ops - Callbacks for managing platform dependent
+  *	system sleep states.
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 6c601f8..32eb67b 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -133,6 +133,50 @@ power_attr(pm_test);
+ 
+ #endif /* CONFIG_PM_SLEEP */
+ 
++static ssize_t suspend_stats_show(struct kobject *kobj,
++				struct kobj_attribute *attr, char *buf)
++{
++	int i, index, last_index;
++	char *s = buf;
++
++	last_index = suspend_stats.last_failed + REC_FAILED_DEV_NUM - 1;
++	last_index %= REC_FAILED_DEV_NUM;
++	s += sprintf(s, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
++			"%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
++			"success", suspend_stats.success,
++			"fail", suspend_stats.fail,
++			"failed_freeze", suspend_stats.failed_freeze,
++			"failed_prepare", suspend_stats.failed_prepare,
++			"failed_suspend", suspend_stats.failed_suspend,
++			"failed_suspend_noirq",
++				suspend_stats.failed_suspend_noirq,
++			"failed_resume", suspend_stats.failed_resume,
++			"failed_resume_noirq",
++				suspend_stats.failed_resume_noirq);
++	s += sprintf(s,	"failed_devs:\n  last_failed:\t%s\n",
++			suspend_stats.failed_devs[last_index]);
++	for (i = 1; i < REC_FAILED_DEV_NUM; i++) {
++		index = last_index + REC_FAILED_DEV_NUM - i;
++		index %= REC_FAILED_DEV_NUM;
++		s += sprintf(s, "\t\t%s\n",
++			suspend_stats.failed_devs[index]);
++	}
++
++	if (s != buf)
++		/* convert the last space to a newline */
++		*(s-1) = '\n';
++
++	return s - buf;
++}
++
++static ssize_t suspend_stats_store(struct kobject *kobj,
++		struct kobj_attribute *attr, const char *buf, size_t n)
++{
++	return n;
++}
++
++power_attr(suspend_stats);
++
+ struct kobject *power_kobj;
+ 
+ /**
+@@ -194,6 +238,10 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 	}
+ 	if (state < PM_SUSPEND_MAX && *s)
+ 		error = enter_state(state);
++		if (error)
++			suspend_stats.fail++;
++		else
++			suspend_stats.success++;
+ #endif
+ 
+  Exit:
+@@ -310,6 +358,7 @@ static struct attribute * g[] = {
+ #ifdef CONFIG_PM_DEBUG
+ 	&pm_test_attr.attr,
+ #endif
++	&suspend_stats_attr.attr,
+ #endif
+ 	NULL,
+ };
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index b6b71ad..9bb4281 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -106,6 +106,8 @@ static int suspend_prepare(void)
+ 	error = suspend_freeze_processes();
+ 	if (!error)
+ 		return 0;
++	else
++		suspend_stats.failed_freeze++;
+ 
+ 	suspend_thaw_processes();
+ 	usermodehelper_enable();
+@@ -315,8 +317,15 @@ int enter_state(suspend_state_t state)
+  */
+ int pm_suspend(suspend_state_t state)
+ {
+-	if (state > PM_SUSPEND_ON && state <= PM_SUSPEND_MAX)
+-		return enter_state(state);
++	int ret;
++	if (state > PM_SUSPEND_ON && state <= PM_SUSPEND_MAX) {
++		ret = enter_state(state);
++		if (ret)
++			suspend_stats.fail++;
++		else
++			suspend_stats.success++;
++		return ret;
++	}
+ 	return -EINVAL;
+ }
+ EXPORT_SYMBOL(pm_suspend);
+-- 
+1.7.1
