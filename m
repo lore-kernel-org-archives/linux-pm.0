@@ -1,18 +1,16 @@
-From: "Turquette, Mike" <mturquette@ti.com>
-Subject: Re: [PATCH v4 0/3] DEVFREQ,
-	DVFS framework for non-CPU devices
-Date: Thu, 4 Aug 2011 14:59:22 -0700
-Message-ID: <CAJOA=zMNToQq=RVrRh2p+kko=n67BWwHjcWX3DGFuYCfAcksOQ@mail.gmail.com>
-References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
-	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
-	<87aabq5oqo.fsf@ti.com>
-	<CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH] PM / Freezer: Freeze filesystems along
+	with freezing processes (was: Re: PM / hibernate xfs lock up
+	/ xfs_reclaim_inodes_ag)
+Date: Fri, 5 Aug 2011 00:25:09 +0200
+Message-ID: <201108050025.09792.rjw__25167.2386577868$1312496692$gmane$org@sisk.pl>
+References: <4E1C70AD.1010101@u-club.de> <20110803172922.GA2126@ucw.cz>
+	<201108041127.30944.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
+In-Reply-To: <201108041127.30944.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,85 +20,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Christoph <cr2005@u-club.de>, Theodore Ts'o <tytso@mit.edu>, Dave Chinner <david@fromorbit.com>, LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, Christoph Hellwig <hch@infradead.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-ext4@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 4, 2011 at 1:15 AM, MyungJoo Ham <myungjoo.ham@gmail.com> wrote:
-> On Thu, Aug 4, 2011 at 3:33 AM, Kevin Hilman <khilman@ti.com> wrote:
->> MyungJoo Ham <myungjoo.ham@samsung.com> writes:
->>
->>> On Wed, Aug 3, 2011 at 7:02 AM, Kevin Hilman <khilman@ti.com> wrote:
->>
->> [...]
->>
->>>> Maybe I'm not understanding the usage of it fully, but that seems like
->>>> hard-coding policy into the framework that might not be appropriate.
->>>> For example, what if there are other devices with constraints such that
->>>> they cannot currently scale frequency/voltage?
->>>>
->>>> Mabye MyungJoo can explain in more detail the usecases for tickle?
->>>
->>> Tickle is not for QoS between devices. It is for faster reaction to
->>> (human) user inputs at DVFS side where waiting for DVFS's reaction
->>> takes too much time and reducing polling interval costs too much.
->>
->> This is exactly what quality of service (QoS) is about.
->>
->> The user (whether it's a human user input or another device) has low
->> quality and expects higher quality. =A0It wants to request better qualit=
-y,
->> so it needs a way to request it.
->>
->> The proposed "tickle" approach proposed here is simply a "request max
->> frequency for duration X" QoS request.
->>
->> Kevin
->>
->
-> Ok.. I see.
->
-> Now, I can agree with you that tickle is subset of QoS request.
->
-> As long as we have QoS request feature on devices with either OPP or
-> DEVFREQ, tickling is not needed.
->
-> I'll remove tickle in the next revision (along with some bugfixes for
-> bugs found recently).
->
->
-> Anyway, it appears that clock-rate-wise QoS request may be dealt at
-> OPP so that the OPPs meeting the QoS requests w/ frequency or voltage
-> specifications are enabled and returned with opp_find_* functions.
-> Maybe we will need to separate enable/disable by
-> opp_enable()/opp_disable() from enable/disable by QoS requests so that
-> the two may have different semantics. Then, QoS requests cannot
-> override opp_disable and opp_enable cannot override QoS requests. This
-> way, any clock-setting code properly based on OPP (including any
-> customized devfreq governors) cannot violate QoS requests.
+On Thursday, August 04, 2011, Rafael J. Wysocki wrote:
+> On Wednesday, August 03, 2011, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > Freeze all filesystems during the freezing of tasks by calling
+> > > freeze_bdev() for each of them and thaw them during the thawing
+> > > of tasks with the help of thaw_bdev().
+> > > 
+> > > This is needed by hibernation, because some filesystems (e.g. XFS)
+> > > deadlock with the preallocation of memory used by it if the memory
+> > > pressure caused by it is too heavy.
+> > > 
+> > > The additional benefit of this change is that, if something goes
+> > > wrong after filesystems have been frozen, they will stay in a
+> > > consistent state and journal replays won't be necessary (e.g. after
+> > > a failing suspend or resume).  In particular, this should help to
+> > > solve a long-standing issue that in some cases during resume from
+> > > hibernation the boot loader causes the journal to be replied for the
+> > > filesystem containing the kernel image and initrd causing it to
+> > > become inconsistent with the information stored in the hibernation
+> > > image.
+> > 
+> > > +/**
+> > > + * freeze_filesystems - Force all filesystems into a consistent state.
+> > > + */
+> > > +void freeze_filesystems(void)
+> > > +{
+> > > +	struct super_block *sb;
+> > > +
+> > > +	lockdep_off();
+> > 
+> > Ouch. So... why do we need to silence this?
+> 
+> So that it doesn't complain? :-)
+> 
+> I'll need some time to get the exact details here.
 
-If devfreq used the QoS API in it's ->target() call then this would
-not be an issue, and further illustrates the idea of devfreq simply
-being a policy into a proper QoS API.
+So, this is because ext3_freeze() that doesn't call
+journal_unlock_updates() on success, which quite frankly looks like
+a bug in ext3 to me.  At least that's different from what ext4 does
+in exactly the same situation (which looks correct).
 
-Regards,
-Mike
+If ext3_freeze() called journal_unlock_updates() on success too and
+the call to journal_unlock_updates() is removed from ext3_unfreeze(),
+we wouldn't need that lockdep_off()/lockdep_on() around the loop.
 
-> How about this concept of getting QoS requests associated with clock rate=
-s?
->
->
->
-> Cheers!
-> MyungJoo.
-> --
-> MyungJoo Ham, Ph.D.
-> Mobile Software Platform Lab,
-> Digital Media and Communications (DMC) Business
-> Samsung Electronics
-> cell: 82-10-6714-2858
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->
+I need someone with ext3/ext4 knowledge to comment here, though.
+
+Moreover, I'm not sure if other filesystems don't do such things.
+
+Anyway, this is just a false-positive, even with the ext3 code as is.
+
+> > > +	/*
+> > > +	 * Freeze in reverse order so filesystems dependant upon others are
+> > > +	 * frozen in the right order (eg. loopback on ext3).
+> > > +	 */
+> > > +	list_for_each_entry_reverse(sb, &super_blocks, s_list) {
+> > > +		if (!sb->s_root || !sb->s_bdev ||
+> > > +		    (sb->s_frozen == SB_FREEZE_TRANS) ||
+> > > +		    (sb->s_flags & MS_RDONLY) ||
+> > > +		    (sb->s_flags & MS_FROZEN))
+> > > +			continue;
+> > 
+> > Should we stop NFS from modifying remote server, too?
+> 
+> What do you mean exactly?
+> 
+> > Plus... ext3 writes to read-only filesystems on mount; not sure if it
+> > does it later. But RDONLY means 'user cant write to it' not 'bdev will
+> > not be modified'. Should we freeze all?
+> > 
+> > How can 'already frozen' happen?
+> > 
+> > > +	list_for_each_entry(sb, &super_blocks, s_list)
+> > > +		if (sb->s_flags & MS_FROZEN) {
+> > > +			sb->s_flags &= ~MS_FROZEN;
+> > > +			thaw_bdev(sb->s_bdev, sb);
+> > > +		}
+> > 
+> > ...because we'll unfreeze it even if we did not freeze it...
+> 
+> So we need not check MS_FROZEN in freeze_filesystems().  OK
+
+Thanks,
+Rafael
