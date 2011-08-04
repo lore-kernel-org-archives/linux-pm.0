@@ -1,16 +1,17 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
-	ram
-Date: Wed, 3 Aug 2011 19:37:57 +0200
-Message-ID: <20110803173757.GB2126@ucw.cz>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E573B@shsmsx502.ccr.corp.intel.com>
-	<20110804051745.GB12336@suse.de>
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Re: [PATCH v4 0/3] DEVFREQ,
+	DVFS framework for non-CPU devices
+Date: Thu, 4 Aug 2011 17:15:54 +0900
+Message-ID: <CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
+References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
+	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
+	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
+	<87aabq5oqo.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110804051745.GB12336@suse.de>
+In-Reply-To: <87aabq5oqo.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,44 +21,71 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: "Liu, ShuoX" <shuox.liu@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Brown, Len" <len.brown@intel.com>
+To: Kevin Hilman <khilman@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Aug 4, 2011 at 3:33 AM, Kevin Hilman <khilman@ti.com> wrote:
+> MyungJoo Ham <myungjoo.ham@samsung.com> writes:
+>
+>> On Wed, Aug 3, 2011 at 7:02 AM, Kevin Hilman <khilman@ti.com> wrote:
+>
+> [...]
+>
+>>> Maybe I'm not understanding the usage of it fully, but that seems like
+>>> hard-coding policy into the framework that might not be appropriate.
+>>> For example, what if there are other devices with constraints such that
+>>> they cannot currently scale frequency/voltage?
+>>>
+>>> Mabye MyungJoo can explain in more detail the usecases for tickle?
+>>
+>> Tickle is not for QoS between devices. It is for faster reaction to
+>> (human) user inputs at DVFS side where waiting for DVFS's reaction
+>> takes too much time and reducing polling interval costs too much.
+>
+> This is exactly what quality of service (QoS) is about.
+>
+> The user (whether it's a human user input or another device) has low
+> quality and expects higher quality. =A0It wants to request better quality,
+> so it needs a way to request it.
+>
+> The proposed "tickle" approach proposed here is simply a "request max
+> frequency for duration X" QoS request.
+>
+> Kevin
+>
+
+Ok.. I see.
+
+Now, I can agree with you that tickle is subset of QoS request.
+
+As long as we have QoS request feature on devices with either OPP or
+DEVFREQ, tickling is not needed.
+
+I'll remove tickle in the next revision (along with some bugfixes for
+bugs found recently).
 
 
-> > +   last_index = suspend_stats.last_failed + REC_FAILED_DEV_NUM - 1;
-> > +   last_index %= REC_FAILED_DEV_NUM;
-> > +   s += sprintf(s, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
-> > +           "%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
-> > +           "success", suspend_stats.success,
-> > +           "fail", suspend_stats.fail,
-> > +           "failed_freeze", suspend_stats.failed_freeze,
-> > +           "failed_prepare", suspend_stats.failed_prepare,
-> > +           "failed_suspend", suspend_stats.failed_suspend,
-> > +           "failed_suspend_noirq",
-> > +               suspend_stats.failed_suspend_noirq,
-> > +           "failed_resume", suspend_stats.failed_resume,
-> > +           "failed_resume_noirq",
-> > +               suspend_stats.failed_resume_noirq);
-> > +   s += sprintf(s, "failed_devs:\n  last_failed:\t%s\n",
-> > +           suspend_stats.failed_devs[last_index]);
-> > +   for (i = 1; i < REC_FAILED_DEV_NUM; i++) {
-> > +       index = last_index + REC_FAILED_DEV_NUM - i;
-> > +       index %= REC_FAILED_DEV_NUM;
-> > +       s += sprintf(s, "\t\t%s\n",
-> > +           suspend_stats.failed_devs[index]);
-> > +   }
-> 
-> And, to top it all of, this is NOT allowed in sysfs at all.
-> 
-> Remember, sysfs is one text field per file.  Not something huge like
-> this.
-> 
-> Perhaps you should use debugfs instead?
+Anyway, it appears that clock-rate-wise QoS request may be dealt at
+OPP so that the OPPs meeting the QoS requests w/ frequency or voltage
+specifications are enabled and returned with opp_find_* functions.
+Maybe we will need to separate enable/disable by
+opp_enable()/opp_disable() from enable/disable by QoS requests so that
+the two may have different semantics. Then, QoS requests cannot
+override opp_disable and opp_enable cannot override QoS requests. This
+way, any clock-setting code properly based on OPP (including any
+customized devfreq governors) cannot violate QoS requests.
 
-Or perhaps dmesg. NAK.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+How about this concept of getting QoS requests associated with clock rates?
+
+
+
+Cheers!
+MyungJoo.
+-- =
+
+MyungJoo Ham, Ph.D.
+Mobile Software Platform Lab,
+Digital Media and Communications (DMC) Business
+Samsung Electronics
+cell: 82-10-6714-2858
