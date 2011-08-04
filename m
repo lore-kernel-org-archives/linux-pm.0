@@ -1,14 +1,15 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [GIT PULL] idle patches for Linux 3.1
-Date: Thu, 04 Aug 2011 01:03:40 -0400 (EDT)
-Message-ID: <alpine.LFD.2.02.1108040030550.29492__27868.5822537684$1312434382$gmane$org@x980>
-References: <alpine.LFD.2.02.1108031627060.19398@x980>
-	<CA+55aFxikiro4cEwGEOMCGUswyPsaAwyspP1cFUviJ5OUKOZJw@mail.gmail.com>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
+	ram
+Date: Wed, 3 Aug 2011 22:16:21 -0700
+Message-ID: <20110804051621.GA12336@suse.de>
+References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E573B@shsmsx502.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <CA+55aFxikiro4cEwGEOMCGUswyPsaAwyspP1cFUviJ5OUKOZJw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E573B@shsmsx502.ccr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,38 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Liu, ShuoX" <shuox.liu@intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> On Wed, Aug 3, 2011 at 10:54 AM, Len Brown <lenb@kernel.org> wrote:
-> >
-> > please pull from:
-> >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git idle-release
+On Thu, Aug 04, 2011 at 01:09:51PM +0800, Liu, ShuoX wrote:
+> From a906b0b5b4ff3414ceb9fc7a69a3d7c9d66e46b1 Mon Sep 17 00:00:00 2001
+> From: ShuoX Liu <shuox.liu@intel.com>
+> Date: Thu, 28 Jul 2011 10:54:22 +0800
+> Subject: [PATCH] PM: add statistics sysfs file for suspend to ram.
 > 
-> As with the APEI tree, the commits are all recent and cannot have been
-> in -next.  It's the last day before the merge window closes, please
-> tell me why I should take this in this cycle at all?
+> Record S3 failure time about each reason and the latest two failed
+> devices' name in S3 progress.
+> We can check it through /sys/power/suspend_stats.
+> 
+> Change-Id: Ieed7fd74e27d3b482675a20cb0bb26b9054a1624
 
-I re-based this branch immediately before pushing
-in order to add "Acked-by" annotations.
+What is that line for?
 
-The cpuidle patches were in linux-next back in April.
-But they were on a branch with other patches that got
-deferred till 2012 b/c some folks were uneasy with
-me deleting so much code so suddenly.  I cherry-picked
-some simple ones here b/c IBM asked me to in order to
-make their upcoming p-series cpuidle patches cleaner.
+Also, your patch is corrupted and can not be applied.
 
-The mrst pmu.c driver is new.  MRST doesn't work without it.
-Of course, if you don't have CONFIG_X86_MRST=y, you don't care.
+Oh, and, as you are adding a sysfs file, you MUST add a
+Documentation/ABI file that describes the file and what it is for and
+what it does.
 
-Yes, this pull request is late, and if you skip it,
-life will still go on.  You'll simply see the same
-patches wating for you in 10 weeks.  On the other hand,
-some developers will have a happier summer if these get upstream now,
-and I'm here to support them if anything goes wrong.
+Also, why is this file needed?  Who needs this file?  What's wrong with
+the kernel log instead?
 
 thanks,
--Len
+
+greg k-h
