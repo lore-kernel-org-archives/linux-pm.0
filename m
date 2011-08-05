@@ -1,13 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Crash when suspending Lenovo T510 laptop (2.6.39.3)
-Date: Fri, 5 Aug 2011 22:13:40 +0200
-Message-ID: <201108052213.40969.rjw__13430.4073559635$1312575189$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1108051557500.2055-100000@iolanthe.rowland.org>
+Date: Fri, 5 Aug 2011 16:21:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1108051617430.2055-100000__31698.5320103869$1312575755$gmane$org@iolanthe.rowland.org>
+References: <201108052213.40969.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1108051557500.2055-100000@iolanthe.rowland.org>
+In-Reply-To: <201108052213.40969.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,107 +17,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Jesper Juhl <jj@chaosbits.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 05, 2011, Alan Stern wrote:
-> On Fri, 5 Aug 2011, Rafael J. Wysocki wrote:
-> 
-> > On Friday, August 05, 2011, Jesper Juhl wrote:
-> > > Hi
-> > > 
-> > > I just experienced a kernel crash when trying to suspend my Lenovo 
-> > > Thinkpad T510 (model 4384-GJG) laptop.
-> > > 
-> > > Normally I just shut the lid and the little moon icon lights up telling me 
-> > > that the laptop has suspended. This time was different; the moon icon 
-> > > didn't light up as it usually does, so I opened the lid again and found a 
-> > > kernel crash dump on the screen. The machine was completely dead at this 
-> > > point, so all I could do was take a photo of the screen - nothing had made 
-> > > it to the log files either (checked after a reboot).
-> > > 
-> > > The image I took of the screen with the crash info is available here:
-> > >  http://personal.chaosbits.net/suspend-crash.jpg
-> > > 
-> > > The kernel version is 2.6.39.3
-> > > The kernel config is attached as '2.6.39.3-config.gz'
-> > > The distribution is Arch Linux 64bit.
-> > > 
-> > > Here is a partial transcript of the image (typed in manually, so check the 
-> > > image if you suspect an error - I also left out function addresses/offsets 
-> > > and other details before/after the backtrace to save me some typing, so 
-> > > check the image for the full details) :
-> > > 
-> > > Call Trace:
-> > >   ? wq_worker_sleeping
-> > >   schedule
-> > >   ? cfq_put_queue
-> > >   ? cic_free_func
-> > >   ? kmem_cache_free
-> > >   ? put_io_context
-> > >   do_exit
-> > >   oops_end
-> > >   die
-> > >   do_trap
-> > >   do_invalid_op
-> > >   ? free_msi_irqs
-> > >   ? find_busiest_group
-> > >   ? pci_conf1_write
-> > >   pci_disable_msi
-> > >   e1000e_reset_interrupt_capabillity
-> > >   __e1000_runtime_suspend
-> > >   ? __switch_to
-> > >   pci_pm_runtime_suspend
-> > >   ? pci_legacy_suspend_late
-> > >   rpm_callback
-> > >   ? schedule
-> > >   rpm_suspend
-> > >   ? linkwatch_do_dev
-> > >   ? pm_schedule_suspend
-> > >   pm_runtime_work
-> > >   process_one_work
-> > >   worker_thread
-> > >   ? manage_workers.isra.29
-> > >   kthread
-> > >   kernel_thread_helper
-> > >   ? kthread_worker
-> > >   ? gs_change
-> > > 
-> > > I've not experienced this before with this kernel, nor with earlier or 
-> > > newer ones, so it's not exactely reproducible on demand, so it's anyones 
-> > > guess when this was introduced (or if it's been there for ages, just 
-> > > triggers rarely)...
-> > > 
-> > > One detail that may be relevant; normally when I suspend the laptop I do 
-> > > so before unplugging any cables or suspend after not having anything 
-> > > plugged in for ages (or at all). This time I was in a hurry, so I quickly 
-> > > unplugged the power, 3 usb cables and the ethernet cable and then quickly 
-> > > slammed the lid shut. Not sure if that has an impact on triggering this 
-> > > though. I tried reproducing that scenario 4-5 times, but the laptop 
-> > > suspended fine when I did that.
-> > > 
-> > > If you require further information then please let me know and I'll be 
-> > > happy to provide it. 
-> > > 
-> > > I'll of course try to submit more details if it happens again, but if 
-> > > someone has a good guess as to how to provoke it or an idea for a fix I'd 
-> > > sure like to know.
+On Fri, 5 Aug 2011, Rafael J. Wysocki wrote:
+
+> > > I don't know how to fix it yet, but I think I know what the problem is.
+> > > Namely, a runtime suspend of the Ethernet adapter as occured in parallel with
+> > > the system-wide suspend and they clashed.  The runtime suspend has probably
+> > > been provoked by detaching the Ethernet cable from the box.
 > > 
-> > I don't know how to fix it yet, but I think I know what the problem is.
-> > Namely, a runtime suspend of the Ethernet adapter as occured in parallel with
-> > the system-wide suspend and they clashed.  The runtime suspend has probably
-> > been provoked by detaching the Ethernet cable from the box.
+> > For them to clash in that way would mean that the PM workqueue didn't
+> > get frozen.
 > 
-> For them to clash in that way would mean that the PM workqueue didn't
-> get frozen.
+> Not necessarily, I think.  It's sufficient that system suspend is started
+> while the runtime PM operation is in progress.
 
-Not necessarily, I think.  It's sufficient that system suspend is started
-while the runtime PM operation is in progress.
+How so?  The system suspend doesn't call down to the subsystems or 
+drivers until after all the threads are frozen.  In this case the stack 
+dump shows that the runtime PM operation was asynchronous, running in a 
+workqueue thread (pm_runtime_work is one of the routines near the end 
+of the stack dump).  The thread wouldn't have frozen until the runtime 
+PM operation was complete.
 
-> Is that possible?
-
-Shouldn't be.
-
-Thanks,
-Rafael
+Alan Stern
