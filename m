@@ -1,18 +1,13 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
- wake-up constraints
-Date: Sat, 6 Aug 2011 01:11:49 +0900
-Message-ID: <20110805161147.GA3438__37142.196778632$1312560776$gmane$org@opensource.wolfsonmicro.com>
-References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
-	<201108030016.18174.rjw@sisk.pl>
-	<20110804132426.GB14921@sirena.org.uk>
-	<201108042115.30983.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Crash when suspending Lenovo T510 laptop (2.6.39.3)
+Date: Fri, 5 Aug 2011 21:18:12 +0200
+Message-ID: <201108052118.12955.rjw__37987.7366511666$1312571947$gmane$org@sisk.pl>
+References: <alpine.LNX.2.00.1108050215300.9745@swampdragon.chaosbits.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201108042115.30983.rjw@sisk.pl>
+In-Reply-To: <alpine.LNX.2.00.1108050215300.9745@swampdragon.chaosbits.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,34 +17,94 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+To: Jesper Juhl <jj@chaosbits.net>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 04, 2011 at 09:15:30PM +0200, Rafael J. Wysocki wrote:
-> On Thursday, August 04, 2011, Mark Brown wrote:
+On Friday, August 05, 2011, Jesper Juhl wrote:
+> Hi
+> 
+> I just experienced a kernel crash when trying to suspend my Lenovo 
+> Thinkpad T510 (model 4384-GJG) laptop.
+> 
+> Normally I just shut the lid and the little moon icon lights up telling me 
+> that the laptop has suspended. This time was different; the moon icon 
+> didn't light up as it usually does, so I opened the lid again and found a 
+> kernel crash dump on the screen. The machine was completely dead at this 
+> point, so all I could do was take a photo of the screen - nothing had made 
+> it to the log files either (checked after a reboot).
+> 
+> The image I took of the screen with the crash info is available here:
+>  http://personal.chaosbits.net/suspend-crash.jpg
+> 
+> The kernel version is 2.6.39.3
+> The kernel config is attached as '2.6.39.3-config.gz'
+> The distribution is Arch Linux 64bit.
+> 
+> Here is a partial transcript of the image (typed in manually, so check the 
+> image if you suspect an error - I also left out function addresses/offsets 
+> and other details before/after the backtrace to save me some typing, so 
+> check the image for the full details) :
+> 
+> Call Trace:
+>   ? wq_worker_sleeping
+>   schedule
+>   ? cfq_put_queue
+>   ? cic_free_func
+>   ? kmem_cache_free
+>   ? put_io_context
+>   do_exit
+>   oops_end
+>   die
+>   do_trap
+>   do_invalid_op
+>   ? free_msi_irqs
+>   ? find_busiest_group
+>   ? pci_conf1_write
+>   pci_disable_msi
+>   e1000e_reset_interrupt_capabillity
+>   __e1000_runtime_suspend
+>   ? __switch_to
+>   pci_pm_runtime_suspend
+>   ? pci_legacy_suspend_late
+>   rpm_callback
+>   ? schedule
+>   rpm_suspend
+>   ? linkwatch_do_dev
+>   ? pm_schedule_suspend
+>   pm_runtime_work
+>   process_one_work
+>   worker_thread
+>   ? manage_workers.isra.29
+>   kthread
+>   kernel_thread_helper
+>   ? kthread_worker
+>   ? gs_change
+> 
+> I've not experienced this before with this kernel, nor with earlier or 
+> newer ones, so it's not exactely reproducible on demand, so it's anyones 
+> guess when this was introduced (or if it's been there for ages, just 
+> triggers rarely)...
+> 
+> One detail that may be relevant; normally when I suspend the laptop I do 
+> so before unplugging any cables or suspend after not having anything 
+> plugged in for ages (or at all). This time I was in a hurry, so I quickly 
+> unplugged the power, 3 usb cables and the ethernet cable and then quickly 
+> slammed the lid shut. Not sure if that has an impact on triggering this 
+> though. I tried reproducing that scenario 4-5 times, but the laptop 
+> suspended fine when I did that.
+> 
+> If you require further information then please let me know and I'll be 
+> happy to provide it. 
+> 
+> I'll of course try to submit more details if it happens again, but if 
+> someone has a good guess as to how to provoke it or an idea for a fix I'd 
+> sure like to know.
 
-> > On the one hand that's true.  On the other hand that just seems like
-> > going down a bad road where we have drivers that only work when run with
-> > a magic userspace that may or may not be published which is just going
+I don't know how to fix it yet, but I think I know what the problem is.
+Namely, a runtime suspend of the Ethernet adapter as occured in parallel with
+the system-wide suspend and they clashed.  The runtime suspend has probably
+been provoked by detaching the Ethernet cable from the box.
 
-> First off, we're doing this already (user space can block runtime PM, for
-> one example, because there are systems where runtime PM doesn't work
-> although it works on other systems with analogous hardware and pretty
-> much the same set of drivers).
-
-Yeah, I've never been terribly convinced about that and for the things
-that drivers need to manualy implement (like wake configuration) it's
-widely ignored.
-
-> Second, I think there are valid use cases in which user space _really_ knows
-> better than the kernel.  I'm opposed to the idea that users shouldn't be given
-> control of their systems, because they may not know what they're doing.
-
-Do you have any examples of this that aren't better expressed in device
-specific terms?  It's not that users don't know what they're doing, it's
-that working around system integration and stability issues in userspace
-isn't really progressing things well or helping with maintainability.
-Generally if the user has sufficient access to be able to do anything
-with this stuff they've got just as much access to the kernel as to
-userspace.
+Thanks,
+Rafael
