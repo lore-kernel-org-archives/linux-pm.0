@@ -1,13 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Crash when suspending Lenovo T510 laptop (2.6.39.3)
-Date: Fri, 5 Aug 2011 16:21:36 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1108051617430.2055-100000__31698.5320103869$1312575755$gmane$org@iolanthe.rowland.org>
-References: <201108052213.40969.rjw@sisk.pl>
+Date: Fri, 5 Aug 2011 22:36:12 +0200
+Message-ID: <201108052236.12404.rjw__17809.9219142043$1312576609$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1108051617430.2055-100000@iolanthe.rowland.org>
+	<201108052230.48862.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108052213.40969.rjw@sisk.pl>
+In-Reply-To: <201108052230.48862.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,28 +18,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, Jesper Juhl <jj@chaosbits.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 5 Aug 2011, Rafael J. Wysocki wrote:
-
-> > > I don't know how to fix it yet, but I think I know what the problem is.
-> > > Namely, a runtime suspend of the Ethernet adapter as occured in parallel with
-> > > the system-wide suspend and they clashed.  The runtime suspend has probably
-> > > been provoked by detaching the Ethernet cable from the box.
+On Friday, August 05, 2011, Rafael J. Wysocki wrote:
+> On Friday, August 05, 2011, Alan Stern wrote:
+> > On Fri, 5 Aug 2011, Rafael J. Wysocki wrote:
 > > 
-> > For them to clash in that way would mean that the PM workqueue didn't
-> > get frozen.
+> > > > > I don't know how to fix it yet, but I think I know what the problem is.
+> > > > > Namely, a runtime suspend of the Ethernet adapter as occured in parallel with
+> > > > > the system-wide suspend and they clashed.  The runtime suspend has probably
+> > > > > been provoked by detaching the Ethernet cable from the box.
+> > > > 
+> > > > For them to clash in that way would mean that the PM workqueue didn't
+> > > > get frozen.
+> > > 
+> > > Not necessarily, I think.  It's sufficient that system suspend is started
+> > > while the runtime PM operation is in progress.
+> > 
+> > How so?  The system suspend doesn't call down to the subsystems or 
+> > drivers until after all the threads are frozen.  In this case the stack 
+> > dump shows that the runtime PM operation was asynchronous, running in a 
+> > workqueue thread (pm_runtime_work is one of the routines near the end 
+> > of the stack dump).  The thread wouldn't have frozen until the runtime 
+> > PM operation was complete.
 > 
-> Not necessarily, I think.  It's sufficient that system suspend is started
-> while the runtime PM operation is in progress.
+> You're right, sorry.  System suspend was not involved, so the problem
+> was triggerend by runtime suspend alone, resulting from unplugging the
+> Ethernet cable.
+> 
+> It looks like the crash started in pci_disable_msi().
 
-How so?  The system suspend doesn't call down to the subsystems or 
-drivers until after all the threads are frozen.  In this case the stack 
-dump shows that the runtime PM operation was asynchronous, running in a 
-workqueue thread (pm_runtime_work is one of the routines near the end 
-of the stack dump).  The thread wouldn't have frozen until the runtime 
-PM operation was complete.
+OTOH, I'm not sure how pci_legacy_suspend_late() was called.
+In theory it is only called by the system suspend code and it surely
+is not called for e1000e.
 
-Alan Stern
+Thanks,
+Rafael
