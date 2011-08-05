@@ -1,16 +1,19 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [RFC/PATCH v2] PM / Runtime: allow _put_sync() from
-	interrupts-disabled context
-Date: Thu, 04 Aug 2011 16:29:57 -0700
-Message-ID: <87vcuczrey.fsf__46344.1178006635$1312500691$gmane$org@ti.com>
-References: <1311371188-28879-1-git-send-email-khilman@ti.com>
-	<201107240102.09698.rjw@sisk.pl>
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Re: [PATCH v4 0/3] DEVFREQ,
+	DVFS framework for non-CPU devices
+Date: Fri, 5 Aug 2011 15:18:42 +0900
+Message-ID: <CAJ0PZbQx-T+36eX7MiZqWSMxD-achZ9Z7G_kDWNQ2n0h1NTWSQ@mail.gmail.com>
+References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
+	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
+	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
+	<87aabq5oqo.fsf@ti.com>
+	<CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
+	<CAJOA=zMNToQq=RVrRh2p+kko=n67BWwHjcWX3DGFuYCfAcksOQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107240102.09698.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sun, 24 Jul 2011 01:02:09 +0200")
+In-Reply-To: <CAJOA=zMNToQq=RVrRh2p+kko=n67BWwHjcWX3DGFuYCfAcksOQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,42 +23,93 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Colin Cross <ccross@android.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Turquette, Mike" <mturquette@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
-
-> On Friday, July 22, 2011, Kevin Hilman wrote:
->> Currently the use of pm_runtime_put_sync() is not safe from
->> interrupts-disabled context because rpm_idle() will release the
->> spinlock and enable interrupts for the idle callbacks.  This enables
->> interrupts during a time where interrupts were expected to be
->> disabled, and can have strange side effects on drivers that expected
->> interrupts to be disabled.
->> 
->> This is not a bug since the documentation clearly states that only
->> _put_sync_suspend() is safe in IRQ-safe mode.
->> 
->> However, pm_runtime_put_sync() could be made safe when in IRQ-safe
->> mode by releasing the spinlock but not re-enabling interrupts, which
->> is what this patch aims to do.
->> 
->> Problem was found when using some buggy drivers that set
->> pm_runtime_irq_safe() and used _put_sync() in interrupts-disabled
->> context.
->> 
->> The offending drivers have been fixed to use _put_sync_suspend(),
->> But this patch is an RFC to see if it might make sense to allow
->> using _put_sync() from interrupts-disabled context.
+On Fri, Aug 5, 2011 at 6:59 AM, Turquette, Mike <mturquette@ti.com> wrote:
+> On Thu, Aug 4, 2011 at 1:15 AM, MyungJoo Ham <myungjoo.ham@gmail.com> wrote:
+>>
+>> Ok.. I see.
+>>
+>> Now, I can agree with you that tickle is subset of QoS request.
+>>
+>> As long as we have QoS request feature on devices with either OPP or
+>> DEVFREQ, tickling is not needed.
+>>
+>> I'll remove tickle in the next revision (along with some bugfixes for
+>> bugs found recently).
+>>
+>>
+>> Anyway, it appears that clock-rate-wise QoS request may be dealt at
+>> OPP so that the OPPs meeting the QoS requests w/ frequency or voltage
+>> specifications are enabled and returned with opp_find_* functions.
+>> Maybe we will need to separate enable/disable by
+>> opp_enable()/opp_disable() from enable/disable by QoS requests so that
+>> the two may have different semantics. Then, QoS requests cannot
+>> override opp_disable and opp_enable cannot override QoS requests. This
+>> way, any clock-setting code properly based on OPP (including any
+>> customized devfreq governors) cannot violate QoS requests.
 >
-> OK, I'm going to take this for 3.2.
+> If devfreq used the QoS API in it's ->target() call then this would
+> not be an issue, and further illustrates the idea of devfreq simply
+> being a policy into a proper QoS API.
+>
+> Regards,
+> Mike
+>
 
-Rafael, 
+Yes, if we choose an OPP that meets the PM-QoS requests before calling
+->target() in devfreq_do(), there wouldn't be an issue.
 
-Since you're planning to merge this, maybe we should consider merging
-this as a fix for v3.1, and possibly even for v3.0 stable.  That way,
-any current drivers using irq_safe and the normal _put_sync() will not
-have this problem.
+However, if a device is using DEVFREQ, it also means the device has
+OPPs (mandatory for DEVFREQ). If the device is using PM QoS as well as
+OPP, I guess the correctly implemented device driver needs to call
+opp_enable() and opp_disable() according to PM QoS's update_target()
+calls through the PM QoS notifier cb.
 
-Kevin
+Then, for such drivers, DEVFREQ automatically meets PM QoS requests
+without any modification; as long as QoS meeting OPPs are enabled at
+the device driver's PM QoS callback, there is no QoS issue.
+
+Therefore, now, it appears that neither OPP or DEVFREQ should be
+allowed to directly touch PM QoS APIs, but, the device driver should
+do so with notifier by simply calling opp-enable/disable if the
+frequency is the key QoS "actuator".
+
+If we are going to let DEVFREQ handle its corresponding devices' PM
+QoS APIs, it would mean that both device driver and its DEVFREQ codes
+will be handling PM QoS API duplicated (or worse, inconsistently).
+
+
+
+Cheers,
+MyungJoo
+
+>> How about this concept of getting QoS requests associated with clock rates?
+>>
+>>
+>>
+>> Cheers!
+>> MyungJoo.
+>> --
+>> MyungJoo Ham, Ph.D.
+>> Mobile Software Platform Lab,
+>> Digital Media and Communications (DMC) Business
+>> Samsung Electronics
+>> cell: 82-10-6714-2858
+>> _______________________________________________
+>> linux-pm mailing list
+>> linux-pm@lists.linux-foundation.org
+>> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>>
+>
+
+
+
+-- 
+MyungJoo Ham, Ph.D.
+Mobile Software Platform Lab,
+Digital Media and Communications (DMC) Business
+Samsung Electronics
+cell: 82-10-6714-2858
