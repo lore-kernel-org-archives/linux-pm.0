@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC/PATCH v2] PM / Runtime: allow _put_sync() from
-	interrupts-disabled context
-Date: Fri, 5 Aug 2011 21:22:06 +0200
-Message-ID: <201108052122.06949.rjw__29518.3016839021$1312572080$gmane$org@sisk.pl>
-References: <1311371188-28879-1-git-send-email-khilman@ti.com>
-	<201107240102.09698.rjw@sisk.pl> <87vcuczrey.fsf@ti.com>
+Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
+	wake-up constraints
+Date: Fri, 5 Aug 2011 21:37:36 +0200
+Message-ID: <201108052137.37011.rjw__46958.3106846132$1312573020$gmane$org@sisk.pl>
+References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
+	<201108042115.30983.rjw@sisk.pl>
+	<20110805161147.GA3438@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87vcuczrey.fsf@ti.com>
+In-Reply-To: <20110805161147.GA3438@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,46 +20,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Colin Cross <ccross@android.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 05, 2011, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Friday, August 05, 2011, Mark Brown wrote:
+> On Thu, Aug 04, 2011 at 09:15:30PM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, August 04, 2011, Mark Brown wrote:
 > 
-> > On Friday, July 22, 2011, Kevin Hilman wrote:
-> >> Currently the use of pm_runtime_put_sync() is not safe from
-> >> interrupts-disabled context because rpm_idle() will release the
-> >> spinlock and enable interrupts for the idle callbacks.  This enables
-> >> interrupts during a time where interrupts were expected to be
-> >> disabled, and can have strange side effects on drivers that expected
-> >> interrupts to be disabled.
-> >> 
-> >> This is not a bug since the documentation clearly states that only
-> >> _put_sync_suspend() is safe in IRQ-safe mode.
-> >> 
-> >> However, pm_runtime_put_sync() could be made safe when in IRQ-safe
-> >> mode by releasing the spinlock but not re-enabling interrupts, which
-> >> is what this patch aims to do.
-> >> 
-> >> Problem was found when using some buggy drivers that set
-> >> pm_runtime_irq_safe() and used _put_sync() in interrupts-disabled
-> >> context.
-> >> 
-> >> The offending drivers have been fixed to use _put_sync_suspend(),
-> >> But this patch is an RFC to see if it might make sense to allow
-> >> using _put_sync() from interrupts-disabled context.
-> >
-> > OK, I'm going to take this for 3.2.
+> > > On the one hand that's true.  On the other hand that just seems like
+> > > going down a bad road where we have drivers that only work when run with
+> > > a magic userspace that may or may not be published which is just going
 > 
-> Rafael, 
+> > First off, we're doing this already (user space can block runtime PM, for
+> > one example, because there are systems where runtime PM doesn't work
+> > although it works on other systems with analogous hardware and pretty
+> > much the same set of drivers).
 > 
-> Since you're planning to merge this, maybe we should consider merging
-> this as a fix for v3.1, and possibly even for v3.0 stable.  That way,
-> any current drivers using irq_safe and the normal _put_sync() will not
-> have this problem.
+> Yeah, I've never been terribly convinced about that and for the things
+> that drivers need to manualy implement (like wake configuration) it's
+> widely ignored.
+> 
+> > Second, I think there are valid use cases in which user space _really_ knows
+> > better than the kernel.  I'm opposed to the idea that users shouldn't be given
+> > control of their systems, because they may not know what they're doing.
+> 
+> Do you have any examples of this that aren't better expressed in device
+> specific terms?
 
-I think I can push it for 3.1, but I don't think it's stable material.
+I'm not sure what you mean exactly, but if you take two PC-like systems
+with similar hardware configurations, but different BIOS-es and motherboard
+layouts, it's very likely that on one of them PCI PME won't be routed
+correctly, for example.  In that case the kernel has no way to figure out
+that that system is broken, the problem can only be worked around from user
+space by diabling runtime PM on the affected PCI devices.  I expect similar
+problems to appear for the PM QoS settings.
+
+> It's not that users don't know what they're doing, it's
+> that working around system integration and stability issues in userspace
+> isn't really progressing things well or helping with maintainability.
+
+No, it's not, but sometimes we simply don't have the choice.  Besides,
+in the particular case of PM QoS, the constraints set by user space will
+simply be added to the constraints set by kernel subsystems.  Thus they
+won't prevent any kernel subsystem from specifying its own constraints,
+but they will give user space the option to override the constraints
+originating from the kernel.
+
+> Generally if the user has sufficient access to be able to do anything
+> with this stuff they've got just as much access to the kernel as to
+> userspace.
+
+Do you mean they may rebuild the kernel?  That isn't always possible.
 
 Thanks,
 Rafael
