@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
-	ram
-Date: Fri, 5 Aug 2011 21:20:14 +0200
-Message-ID: <201108052120.14901.rjw@sisk.pl>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
-	<6E3BC7F7C9A4BF4286DD4C043110F30B5B7932BF1D@shsmsx502.ccr.corp.intel.com>
-	<1312514389.2043.27.camel@ymzhang>
+Subject: Re: [RFC/PATCH v2] PM / Runtime: allow _put_sync() from
+	interrupts-disabled context
+Date: Fri, 5 Aug 2011 21:22:06 +0200
+Message-ID: <201108052122.06949.rjw__29518.3016839021$1312572080$gmane$org@sisk.pl>
+References: <1311371188-28879-1-git-send-email-khilman@ti.com>
+	<201107240102.09698.rjw@sisk.pl> <87vcuczrey.fsf@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1312514389.2043.27.camel@ymzhang>
+In-Reply-To: <87vcuczrey.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,53 +19,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: yanmin_zhang@linux.intel.com
-Cc: "Liu, ShuoX" <shuox.liu@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, "Brown, Len" <len.brown@intel.com>
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Colin Cross <ccross@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 05, 2011, Yanmin Zhang wrote:
-> On Fri, 2011-08-05 at 09:57 +0800, Liu, ShuoX wrote:
-> > > On Thursday, August 04, 2011, Greg KH wrote:
-> > > > On Thu, Aug 04, 2011 at 01:13:38PM +0800, Liu, ShuoX wrote:
-> > > > > >From a906b0b5b4ff3414ceb9fc7a69a3d7c9d66e46b1 Mon Sep 17
-> > > 00:00:00 2001
-> > > > > From: ShuoX Liu <shuox.liu@intel.com>
-> > > > > Date: Thu, 28 Jul 2011 10:54:22 +0800
-> > > > > Subject: [PATCH] PM: add statistics sysfs file for suspend to ram.
-> > > >
-> > > > What's this stuff here for?  That's not needed (hint, I would have to
-> > > > edit it out by hand to be able to apply this patch.)
-> > > >
-> > > > Thanks for resending a version that passes checkpatch.pl and could be
-> > > > applied, but all of my previous comments still stand.  This patch, as
-> > > > is, is totally unacceptable.
-> > > 
-> > > Agreed, plus I'd like to know the motivation behind it.  That is, we have
-> > > quite a few debug facilities in that code, so why are they insufficient?
-> Thanks Greg, Rafael. We are changing the patch based on your comments.
+On Friday, August 05, 2011, Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> > 
-> > Some explanation from Yanmin,
-> > "We are enabling power features on Medfield. Some testers and developers
-> > complain they don't know if system tries suspend-2-ram, and what device 
-> > fails to suspend. They need such info for a quick check. If turning on 
-> > CONFIG_PM_DEBUG, we get too much info and testers need recompile 
-> > the system.
-> Comparing with PC/notebook, a mobile enters/exits suspend-2-ram (we call it s3 on
-> Medfield) far more frequently. If it can't enter suspend-2-ram in time, the power
-> might be used up soon.
+> > On Friday, July 22, 2011, Kevin Hilman wrote:
+> >> Currently the use of pm_runtime_put_sync() is not safe from
+> >> interrupts-disabled context because rpm_idle() will release the
+> >> spinlock and enable interrupts for the idle callbacks.  This enables
+> >> interrupts during a time where interrupts were expected to be
+> >> disabled, and can have strange side effects on drivers that expected
+> >> interrupts to be disabled.
+> >> 
+> >> This is not a bug since the documentation clearly states that only
+> >> _put_sync_suspend() is safe in IRQ-safe mode.
+> >> 
+> >> However, pm_runtime_put_sync() could be made safe when in IRQ-safe
+> >> mode by releasing the spinlock but not re-enabling interrupts, which
+> >> is what this patch aims to do.
+> >> 
+> >> Problem was found when using some buggy drivers that set
+> >> pm_runtime_irq_safe() and used _put_sync() in interrupts-disabled
+> >> context.
+> >> 
+> >> The offending drivers have been fixed to use _put_sync_suspend(),
+> >> But this patch is an RFC to see if it might make sense to allow
+> >> using _put_sync() from interrupts-disabled context.
+> >
+> > OK, I'm going to take this for 3.2.
 > 
-> We often find sometimes, a device suspend fails. Then, system retries s3 over
-> and over again. As display is off, testers/developers don't know what happens.
-> Teh system 
+> Rafael, 
 > 
-> With the patch, we could know what the bad device is.
-> 
-> The patch doesn't hurt performance as it's just statistics collector.
-> 
-> CONFIG_PM_DEBUG is very useful for finer investigation about what happens behind. What
-> we provide by the patch is to analyze the issues quickly, even by an ordinary tester.
+> Since you're planning to merge this, maybe we should consider merging
+> this as a fix for v3.1, and possibly even for v3.0 stable.  That way,
+> any current drivers using irq_safe and the normal _put_sync() will not
+> have this problem.
 
-Well, what about using dynamic debug?
+I think I can push it for 3.1, but I don't think it's stable material.
 
+Thanks,
 Rafael
