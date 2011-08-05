@@ -1,13 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Crash when suspending Lenovo T510 laptop (2.6.39.3)
-Date: Fri, 5 Aug 2011 21:18:12 +0200
-Message-ID: <201108052118.12955.rjw__37987.7366511666$1312571947$gmane$org@sisk.pl>
-References: <alpine.LNX.2.00.1108050215300.9745@swampdragon.chaosbits.net>
+Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
+	ram
+Date: Fri, 5 Aug 2011 21:20:14 +0200
+Message-ID: <201108052120.14901.rjw@sisk.pl>
+References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
+	<6E3BC7F7C9A4BF4286DD4C043110F30B5B7932BF1D@shsmsx502.ccr.corp.intel.com>
+	<1312514389.2043.27.camel@ymzhang>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <alpine.LNX.2.00.1108050215300.9745@swampdragon.chaosbits.net>
+In-Reply-To: <1312514389.2043.27.camel@ymzhang>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,94 +20,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jesper Juhl <jj@chaosbits.net>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: yanmin_zhang@linux.intel.com
+Cc: "Liu, ShuoX" <shuox.liu@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, "Brown, Len" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 05, 2011, Jesper Juhl wrote:
-> Hi
+On Friday, August 05, 2011, Yanmin Zhang wrote:
+> On Fri, 2011-08-05 at 09:57 +0800, Liu, ShuoX wrote:
+> > > On Thursday, August 04, 2011, Greg KH wrote:
+> > > > On Thu, Aug 04, 2011 at 01:13:38PM +0800, Liu, ShuoX wrote:
+> > > > > >From a906b0b5b4ff3414ceb9fc7a69a3d7c9d66e46b1 Mon Sep 17
+> > > 00:00:00 2001
+> > > > > From: ShuoX Liu <shuox.liu@intel.com>
+> > > > > Date: Thu, 28 Jul 2011 10:54:22 +0800
+> > > > > Subject: [PATCH] PM: add statistics sysfs file for suspend to ram.
+> > > >
+> > > > What's this stuff here for?  That's not needed (hint, I would have to
+> > > > edit it out by hand to be able to apply this patch.)
+> > > >
+> > > > Thanks for resending a version that passes checkpatch.pl and could be
+> > > > applied, but all of my previous comments still stand.  This patch, as
+> > > > is, is totally unacceptable.
+> > > 
+> > > Agreed, plus I'd like to know the motivation behind it.  That is, we have
+> > > quite a few debug facilities in that code, so why are they insufficient?
+> Thanks Greg, Rafael. We are changing the patch based on your comments.
 > 
-> I just experienced a kernel crash when trying to suspend my Lenovo 
-> Thinkpad T510 (model 4384-GJG) laptop.
+> > 
+> > Some explanation from Yanmin,
+> > "We are enabling power features on Medfield. Some testers and developers
+> > complain they don't know if system tries suspend-2-ram, and what device 
+> > fails to suspend. They need such info for a quick check. If turning on 
+> > CONFIG_PM_DEBUG, we get too much info and testers need recompile 
+> > the system.
+> Comparing with PC/notebook, a mobile enters/exits suspend-2-ram (we call it s3 on
+> Medfield) far more frequently. If it can't enter suspend-2-ram in time, the power
+> might be used up soon.
 > 
-> Normally I just shut the lid and the little moon icon lights up telling me 
-> that the laptop has suspended. This time was different; the moon icon 
-> didn't light up as it usually does, so I opened the lid again and found a 
-> kernel crash dump on the screen. The machine was completely dead at this 
-> point, so all I could do was take a photo of the screen - nothing had made 
-> it to the log files either (checked after a reboot).
+> We often find sometimes, a device suspend fails. Then, system retries s3 over
+> and over again. As display is off, testers/developers don't know what happens.
+> Teh system 
 > 
-> The image I took of the screen with the crash info is available here:
->  http://personal.chaosbits.net/suspend-crash.jpg
+> With the patch, we could know what the bad device is.
 > 
-> The kernel version is 2.6.39.3
-> The kernel config is attached as '2.6.39.3-config.gz'
-> The distribution is Arch Linux 64bit.
+> The patch doesn't hurt performance as it's just statistics collector.
 > 
-> Here is a partial transcript of the image (typed in manually, so check the 
-> image if you suspect an error - I also left out function addresses/offsets 
-> and other details before/after the backtrace to save me some typing, so 
-> check the image for the full details) :
-> 
-> Call Trace:
->   ? wq_worker_sleeping
->   schedule
->   ? cfq_put_queue
->   ? cic_free_func
->   ? kmem_cache_free
->   ? put_io_context
->   do_exit
->   oops_end
->   die
->   do_trap
->   do_invalid_op
->   ? free_msi_irqs
->   ? find_busiest_group
->   ? pci_conf1_write
->   pci_disable_msi
->   e1000e_reset_interrupt_capabillity
->   __e1000_runtime_suspend
->   ? __switch_to
->   pci_pm_runtime_suspend
->   ? pci_legacy_suspend_late
->   rpm_callback
->   ? schedule
->   rpm_suspend
->   ? linkwatch_do_dev
->   ? pm_schedule_suspend
->   pm_runtime_work
->   process_one_work
->   worker_thread
->   ? manage_workers.isra.29
->   kthread
->   kernel_thread_helper
->   ? kthread_worker
->   ? gs_change
-> 
-> I've not experienced this before with this kernel, nor with earlier or 
-> newer ones, so it's not exactely reproducible on demand, so it's anyones 
-> guess when this was introduced (or if it's been there for ages, just 
-> triggers rarely)...
-> 
-> One detail that may be relevant; normally when I suspend the laptop I do 
-> so before unplugging any cables or suspend after not having anything 
-> plugged in for ages (or at all). This time I was in a hurry, so I quickly 
-> unplugged the power, 3 usb cables and the ethernet cable and then quickly 
-> slammed the lid shut. Not sure if that has an impact on triggering this 
-> though. I tried reproducing that scenario 4-5 times, but the laptop 
-> suspended fine when I did that.
-> 
-> If you require further information then please let me know and I'll be 
-> happy to provide it. 
-> 
-> I'll of course try to submit more details if it happens again, but if 
-> someone has a good guess as to how to provoke it or an idea for a fix I'd 
-> sure like to know.
+> CONFIG_PM_DEBUG is very useful for finer investigation about what happens behind. What
+> we provide by the patch is to analyze the issues quickly, even by an ordinary tester.
 
-I don't know how to fix it yet, but I think I know what the problem is.
-Namely, a runtime suspend of the Ethernet adapter as occured in parallel with
-the system-wide suspend and they clashed.  The runtime suspend has probably
-been provoked by detaching the Ethernet cable from the box.
+Well, what about using dynamic debug?
 
-Thanks,
 Rafael
