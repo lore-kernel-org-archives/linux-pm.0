@@ -1,16 +1,13 @@
-From: "Liu, ShuoX" <shuox.liu@intel.com>
-Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
-	ram
-Date: Fri, 5 Aug 2011 09:57:12 +0800
-Message-ID: <6E3BC7F7C9A4BF4286DD4C043110F30B5B7932BF1D@shsmsx502.ccr.corp.intel.com>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
-	<20110804052729.GA12707@suse.de> <201108041132.35399.rjw@sisk.pl>
+From: Jesper Juhl <jj@chaosbits.net>
+Subject: Re: Crash when suspending Lenovo T510 laptop (2.6.39.3)
+Date: Sat, 6 Aug 2011 10:56:16 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1108061049510.4163__1113.30534932694$1312816851$gmane$org@swampdragon.chaosbits.net>
+References: <Pine.LNX.4.44L0.1108051641040.2055-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108041132.35399.rjw@sisk.pl>
-Content-Language: en-US
+In-Reply-To: <Pine.LNX.4.44L0.1108051641040.2055-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,38 +17,188 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <gregkh@suse.de>
-Cc: "Brown, Len" <len.brown@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Yanmin_zhang@linux.intel.com" <Yanmin_zhang@linux.intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> On Thursday, August 04, 2011, Greg KH wrote:
-> > On Thu, Aug 04, 2011 at 01:13:38PM +0800, Liu, ShuoX wrote:
-> > > >From a906b0b5b4ff3414ceb9fc7a69a3d7c9d66e46b1 Mon Sep 17
-> 00:00:00 2001
-> > > From: ShuoX Liu <shuox.liu@intel.com>
-> > > Date: Thu, 28 Jul 2011 10:54:22 +0800
-> > > Subject: [PATCH] PM: add statistics sysfs file for suspend to ram.
-> >
-> > What's this stuff here for?  That's not needed (hint, I would have to
-> > edit it out by hand to be able to apply this patch.)
-> >
-> > Thanks for resending a version that passes checkpatch.pl and could be
-> > applied, but all of my previous comments still stand.  This patch, as
-> > is, is totally unacceptable.
+On Fri, 5 Aug 2011, Alan Stern wrote:
+
+> On Fri, 5 Aug 2011, Rafael J. Wysocki wrote:
 > 
-> Agreed, plus I'd like to know the motivation behind it.  That is, we have
-> quite a few debug facilities in that code, so why are they insufficient?
+> > > You're right, sorry.  System suspend was not involved, so the problem
+> > > was triggerend by runtime suspend alone, resulting from unplugging the
+> > > Ethernet cable.
+> > > 
+> > > It looks like the crash started in pci_disable_msi().
+> > 
+> > OTOH, I'm not sure how pci_legacy_suspend_late() was called.
+> > In theory it is only called by the system suspend code and it surely
+> > is not called for e1000e.
+> 
+> The ? indicates that pci_legacy_suspend_late() wasn't necessarily on
+> the task's call stack; it may simply have been a leftover pointer from
+> some other operation, sitting somewhere in the middle of the stack
+> page.
+> 
 
-Some explanation from Yanmin,
-"We are enabling power features on Medfield. Some testers and developers
-complain they don't know if system tries suspend-2-ram, and what device 
-fails to suspend. They need such info for a quick check. If turning on 
-CONFIG_PM_DEBUG, we get too much info and testers need recompile 
-the system.
+Not sure if it helps, but I've been trying to reproduce the crash and 
+although I've not succeeded doing that yet, I've got something else.
 
-The patch records the suspend-2-ram fail/success statistics and the last 2 
-failed devices. Users could find what device causes the failure quickly."
+While trying to reproduce by unplugging/replugging ethernet and 
+resuming/suspending a lot I found the following in dmesg after one of the 
+resumes - the system seems to be working fine though and network works 
+as well, so it's not the same complete crash but it looks 
+potentially related :
 
-If you guys agree, I will modify the patch as Greg said and resend.
+[ 6564.921192] e1000e 0000:00:19.0: restoring config space at offset 0x1 (was 0x100103, writing 0x100107)
+[ 6564.921222] ehci_hcd 0000:00:1a.0: restoring config space at offset 0xf (was 0x400, writing 0x40b)
+[ 6564.921240] ehci_hcd 0000:00:1a.0: restoring config space at offset 0x4 (was 0x0, writing 0xf2828000)
+[ 6564.921247] ehci_hcd 0000:00:1a.0: restoring config space at offset 0x1 (was 0x2900000, writing 0x2900102)
+[ 6564.937545] ehci_hcd 0000:00:1a.0: power state changed by ACPI to D0
+[ 6564.937554] ehci_hcd 0000:00:1a.0: power state changed by ACPI to D0
+[ 6564.937708] pcieport 0000:00:1c.1: restoring config space at offset 0x7 (was 0xf0, writing 0x200000f0)
+[ 6564.937805] pcieport 0000:00:1c.4: restoring config space at offset 0xf (was 0x100, writing 0x4010b)
+[ 6564.937815] pcieport 0000:00:1c.4: restoring config space at offset 0x9 (was 0x10001, writing 0x1fff1)
+[ 6564.937820] pcieport 0000:00:1c.4: restoring config space at offset 0x8 (was 0x0, writing 0xf250f250)
+[ 6564.937824] pcieport 0000:00:1c.4: restoring config space at offset 0x7 (was 0x20000000, writing 0x200000f0)
+[ 6564.937832] pcieport 0000:00:1c.4: restoring config space at offset 0x3 (was 0x810000, writing 0x810010)
+[ 6564.937838] pcieport 0000:00:1c.4: restoring config space at offset 0x1 (was 0x100000, writing 0x100107)
+[ 6564.937872] ehci_hcd 0000:00:1d.0: restoring config space at offset 0xf (was 0x400, writing 0x40b)
+[ 6564.937890] ehci_hcd 0000:00:1d.0: restoring config space at offset 0x4 (was 0x0, writing 0xf2828400)
+[ 6564.937897] ehci_hcd 0000:00:1d.0: restoring config space at offset 0x1 (was 0x2900000, writing 0x2900102)
+[ 6564.937915] ehci_hcd 0000:00:1d.0: power state changed by ACPI to D0
+[ 6564.937918] ehci_hcd 0000:00:1d.0: power state changed by ACPI to D0
+[ 6564.938019] ahci 0000:00:1f.2: restoring config space at offset 0x1 (was 0x2b00007, writing 0x2b00407)
+[ 6564.938085] intel ips 0000:00:1f.6: restoring config space at offset 0xf (was 0x400, writing 0x40b)
+[ 6564.938107] intel ips 0000:00:1f.6: restoring config space at offset 0x1 (was 0x100000, writing 0x100002)
+[ 6564.938674] PM: early resume of devices complete after 17.784 msecs[ 6564.939048] sdhci-pci 0000:0d:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[ 6564.939053] iwlagn 0000:03:00.0: RF_KILL bit toggled to disable radio.
+[ 6564.939118] e1000e 0000:00:19.0: irq 41 for MSI/MSI-X
+[ 6564.942219] ehci_hcd 0000:00:1a.0: power state changed by ACPI to D0
+[ 6564.942229] pci 0000:00:1e.0: setting latency timer to 64
+[ 6564.942236] ehci_hcd 0000:00:1d.0: power state changed by ACPI to D0
+[ 6564.942246] HDA Intel 0000:00:1b.0: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+[ 6564.942253] HDA Intel 0000:00:1b.0: setting latency timer to 64
+[ 6564.942261] ehci_hcd 0000:00:1a.0: power state changed by ACPI to D0
+[ 6564.942265] ahci 0000:00:1f.2: setting latency timer to 64
+[ 6564.942276] ehci_hcd 0000:00:1a.0: PCI INT D -> GSI 23 (level, low) -> IRQ 23
+[ 6564.942344] ehci_hcd 0000:00:1a.0: setting latency timer to 64
+[ 6564.942360] HDA Intel 0000:00:1b.0: irq 44 for MSI/MSI-X
+[ 6564.942436] ehci_hcd 0000:00:1d.0: power state changed by ACPI to D0
+[ 6564.942444] ehci_hcd 0000:00:1d.0: PCI INT D -> GSI 19 (level, low) -> IRQ 19
+[ 6564.942452] ehci_hcd 0000:00:1d.0: setting latency timer to 64
+[ 6564.942456] sd 0:0:0:0: [sda] Starting disk
+[ 6564.942458] i915 0000:00:02.0: power state changed by ACPI to D0
+[ 6564.942463] i915 0000:00:02.0: power state changed by ACPI to D0
+[ 6564.942466] i915 0000:00:02.0: setting latency timer to 64
+[ 6564.997449] firewire_ohci 0000:0d:00.3: irq 45 for MSI/MSI-X
+[ 6564.997785] firewire_core: skipped bus generations, destroying all nodes
+[ 6565.123881] usb 2-1.1: reset full speed USB device number 3 using ehci_hcd
+[ 6565.256738] ata6: SATA link down (SStatus 0 SControl 300)
+[ 6565.256782] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[ 6565.259348] ata2.00: ACPI cmd e3/00:1f:00:00:00:a0 (IDLE) succeeded
+[ 6565.259563] ata2.00: ACPI cmd e3/00:02:00:00:00:a0 (IDLE) succeeded
+[ 6565.263747] ata2.00: ACPI cmd e3/00:1f:00:00:00:a0 (IDLE) succeeded
+[ 6565.263990] ata2.00: ACPI cmd e3/00:02:00:00:00:a0 (IDLE) succeeded
+[ 6565.265544] ata2.00: configured for UDMA/66
+[ 6565.276723] ata5: SATA link down (SStatus 0 SControl 300)
+[ 6565.439619] sdhci-pci 0000:0d:00.0: Will use DMA mode even though HW doesn't fully claim to support it.
+[ 6565.439631] sdhci-pci 0000:0d:00.0: setting latency timer to 64
+[ 6565.463009] usb 1-1.2: reset low speed USB device number 3 using ehci_hcd
+[ 6565.496163] firewire_core: rediscovered device fw0
+[ 6565.802321] usb 1-1.3: reset full speed USB device number 4 using ehci_hcd
+[ 6565.951782] usb 1-1.6: reset high speed USB device number 6 using ehci_hcd
+[ 6566.014871] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[ 6566.021871] ata1.00: ACPI cmd ef/02:00:00:00:00:a0 (SET FEATURES) succeeded
+[ 6566.021877] ata1.00: ACPI cmd f5/00:00:00:00:00:a0 (SECURITY FREEZE LOCK) filtered out
+[ 6566.022178] ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 (SET FEATURES) succeeded
+[ 6566.022183] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 (SET FEATURES) filtered out
+[ 6566.024813] ata1.00: ACPI cmd ef/02:00:00:00:00:a0 (SET FEATURES) succeeded
+[ 6566.024819] ata1.00: ACPI cmd f5/00:00:00:00:00:a0 (SECURITY FREEZE LOCK) filtered out
+[ 6566.025080] ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 (SET FEATURES) succeeded
+[ 6566.025085] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 (SET FEATURES) filtered out
+[ 6566.026327] ata1.00: configured for UDMA/100
+[ 6566.104911] usb 2-1.1.4: reset full speed USB device number 4 using ehci_hcd
+[ 6566.190354] PM: resume of devices complete after 1254.565 msecs
+[ 6566.191321] PM: Finishing wakeup.
+[ 6566.191323] Restarting tasks ... done.
+[ 6566.199706] video LNXVIDEO:00: Restoring backlight state
+[ 6566.661832] e1000e: eth0 NIC Link is Up 100 Mbps Full Duplex, Flow Control: Rx
+[ 6566.661839] e1000e 0000:00:19.0: eth0: 10/100 speed: disabling TSO
+[ 6566.662160] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+[ 6568.525731] e1000e 0000:00:19.0: PME# enabled
+[ 6568.551863] e1000e 0000:00:19.0: BAR 0: set to [mem 0xf2600000-0xf261ffff] (PCI address [0xf2600000-0xf261ffff])
+[ 6568.551876] e1000e 0000:00:19.0: BAR 1: set to [mem 0xf2625000-0xf2625fff] (PCI address [0xf2625000-0xf2625fff])
+[ 6568.551886] e1000e 0000:00:19.0: BAR 2: set to [io  0x1820-0x183f] (PCI address [0x1820-0x183f])
+[ 6568.551909] e1000e 0000:00:19.0: restoring config space at offset 0xf (was 0x100, writing 0x10b)
+[ 6568.551936] e1000e 0000:00:19.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100107)
+[ 6568.551999] e1000e 0000:00:19.0: PME# disabled
+[ 6568.645183] e1000e 0000:00:19.0: irq 41 for MSI/MSI-X
+[ 6568.698271] e1000e 0000:00:19.0: irq 41 for MSI/MSI-X
+[ 6568.699163] ADDRCONF(NETDEV_UP): eth0: link is not ready
+[ 6568.814811] e1000e 0000:00:19.0: PME# enabled
+[ 6568.844535] e1000e 0000:00:19.0: BAR 0: set to [mem 0xf2600000-0xf261ffff] (PCI address [0xf2600000-0xf261ffff])
+[ 6568.844548] e1000e 0000:00:19.0: BAR 1: set to [mem 0xf2625000-0xf2625fff] (PCI address [0xf2625000-0xf2625fff])
+[ 6568.844558] e1000e 0000:00:19.0: BAR 2: set to [io  0x1820-0x183f] (PCI address [0x1820-0x183f])
+[ 6568.844580] e1000e 0000:00:19.0: restoring config space at offset 0xf (was 0x100, writing 0x10b)
+[ 6568.844607] e1000e 0000:00:19.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100507)
+[ 6568.844668] e1000e 0000:00:19.0: PME# disabled
+[ 6568.937809] e1000e 0000:00:19.0: irq 41 for MSI/MSI-X
+[ 6568.990871] e1000e 0000:00:19.0: irq 41 for MSI/MSI-X
+[ 6568.991756] ADDRCONF(NETDEV_UP): eth0: link is not ready
+[ 6569.991674] ------------[ cut here ]------------
+[ 6569.991694] WARNING: at drivers/net/e1000e/netdev.c:5221 __e1000_shutdown+0x43f/0x4c0 [e1000e]()
+[ 6569.991698] Hardware name: 4384GJG
+[ 6569.991699] Modules linked in: snd_seq snd_seq_device aesni_intel cryptd aes_x86_64 aes_generic ipv6 uvcvideo videodev media v4l2_compat_ioctl32 usbhid hid snd_hda_codec_hdmi btusb bluetooth snd_hda_codec_conexant arc4 ecb snd_hda_intel snd_hda_codec snd_hwdep e1000e i915 snd_pcm iwlagn ehci_hcd snd_timer drm_kms_helper usbcore snd_page_alloc sdhci_pci sdhci pcspkr mmc_core sg drm vboxnetadp vboxnetflt evdev tpm_tis i2c_algo_bit mac80211 serio_raw psmouse iTCO_wdt vboxdrv firewire_ohci firewire_core i2c_i801 crc_itu_t i2c_core iTCO_vendor_support cfg80211 battery thermal intel_ips wmi tpm intel_agp video ac tpm_bios button intel_gtt cpufreq_ondemand msr acpi_cpufreq freq_table processor mperf thinkpad_acpi rfkill snd soundcore nvram ext4 mbcache jbd2 crc16 sr_mod sd_mod cdrom ahci libah
+ ci libata scsi_mod
+[ 6569.991778] Pid: 7847, comm: kworker/1:0 Not tainted 2.6.39-ARCH #1
+[ 6569.991781] Call Trace:
+[ 6569.991792]  [<ffffffff8105b90f>] warn_slowpath_common+0x7f/0xc0
+[ 6569.991797]  [<ffffffff8105b96a>] warn_slowpath_null+0x1a/0x20
+[ 6569.991804]  [<ffffffffa064df7f>] __e1000_shutdown+0x43f/0x4c0 [e1000e]
+[ 6569.991816]  [<ffffffff81012fc9>] ? sched_clock+0x9/0x10
+[ 6569.991819]  [<ffffffffa064e039>] e1000_runtime_suspend+0x39/0x50 [e1000e]
+[ 6569.991823]  [<ffffffff8100a6cf>] ? __switch_to+0xbf/0x2f0
+[ 6569.991828]  [<ffffffff812392dd>] pci_pm_runtime_suspend+0x4d/0x100
+[ 6569.991830]  [<ffffffff81239290>] ? pci_legacy_suspend_late+0x100/0x100
+[ 6569.991834]  [<ffffffff812e7d52>] rpm_callback+0x42/0x80
+[ 6569.991837]  [<ffffffff813e4faf>] ? schedule+0x33f/0xad0
+[ 6569.991839]  [<ffffffff812e82fa>] rpm_suspend+0x1da/0x3f0
+[ 6569.991843]  [<ffffffff8107701c>] ? queue_delayed_work_on+0xbc/0x150
+[ 6569.991846]  [<ffffffff812e9380>] ? pm_schedule_suspend+0xe0/0xe0
+[ 6569.991848]  [<ffffffff812e941a>] pm_runtime_work+0x9a/0xc0
+[ 6569.991850]  [<ffffffff81077f6e>] process_one_work+0x11e/0x4c0
+[ 6569.991852]  [<ffffffff810788ff>] worker_thread+0x15f/0x350
+[ 6569.991854]  [<ffffffff810787a0>] ? manage_workers.isra.29+0x230/0x230
+[ 6569.991857]  [<ffffffff8107d6ec>] kthread+0x8c/0xa0
+[ 6569.991860]  [<ffffffff813e9fe4>] kernel_thread_helper+0x4/0x10
+[ 6569.991862]  [<ffffffff8107d660>] ? kthread_worker_fn+0x190/0x190
+[ 6569.991864]  [<ffffffff813e9fe0>] ? gs_change+0x13/0x13
+[ 6569.991865] ---[ end trace c54917cde5791882 ]---
+[ 6570.221032] e1000e 0000:00:19.0: PME# enabled
+[ 6570.464118] EXT4-fs (sda3): re-mounted. Opts: commit=0
+[ 6570.466279] EXT4-fs (sda1): re-mounted. Opts: commit=0
+[ 6570.644945] EXT4-fs (sda4): re-mounted. Opts: commit=0
+[ 6571.823780] e1000e 0000:00:19.0: BAR 0: set to [mem 0xf2600000-0xf261ffff] (PCI address [0xf2600000-0xf261ffff])
+[ 6571.823791] e1000e 0000:00:19.0: BAR 1: set to [mem 0xf2625000-0xf2625fff] (PCI address [0xf2625000-0xf2625fff])
+[ 6571.823800] e1000e 0000:00:19.0: BAR 2: set to [io  0x1820-0x183f] (PCI address [0x1820-0x183f])
+[ 6571.823821] e1000e 0000:00:19.0: restoring config space at offset 0xf (was 0x100, writing 0x10b)
+[ 6571.823847] e1000e 0000:00:19.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100107)
+[ 6571.823885] e1000e 0000:00:19.0: PME# disabled
+[ 6571.823965] e1000e 0000:00:19.0: irq 41 for MSI/MSI-X
+[ 6571.826445] e1000e 0000:00:19.0: eth0: PHY Wakeup cause - Link Status  Change
+[ 6573.521494] e1000e: eth0 NIC Link is Up 100 Mbps Full Duplex, Flow Control: Rx
+[ 6573.521500] e1000e 0000:00:19.0: eth0: 10/100 speed: disabling TSO
+[ 6573.521814] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
 
-Shuo
+The kernel is still the same 2.6.39.3
+
+Hope that helps.
+
+I'll keep trying to reproduce the crash - will probably build a 3.0.1 with 
+lots of debug options enabled and try to reproduce with that.
+
+-- 
+Jesper Juhl <jj@chaosbits.net>       http://www.chaosbits.net/
+Don't top-post http://www.catb.org/jargon/html/T/top-post.html
+Plain text mails only, please.
