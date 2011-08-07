@@ -1,16 +1,18 @@
-From: Dave Chinner <david@fromorbit.com>
-Subject: Re: [PATCH] PM / Freezer: Freeze filesystems while
- freezing processes (v2)
-Date: Sun, 7 Aug 2011 10:14:46 +1000
-Message-ID: <20110807001446.GI3162__4799.32558159835$1312676172$gmane$org@dastard>
-References: <4E1C70AD.1010101@u-club.de> <201108041127.30944.rjw@sisk.pl>
-	<201108050025.09792.rjw@sisk.pl> <201108062317.19033.rjw@sisk.pl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
+ wake-up constraints
+Date: Sun, 7 Aug 2011 11:47:14 +0900
+Message-ID: <20110807024712.GA5887__13306.3781694093$1312685402$gmane$org@opensource.wolfsonmicro.com>
+References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
+	<201108052137.37011.rjw@sisk.pl>
+	<20110806033711.GA18987@opensource.wolfsonmicro.com>
+	<201108062146.20423.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201108062317.19033.rjw@sisk.pl>
+In-Reply-To: <201108062146.20423.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,186 +23,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Christoph <cr2005@u-club.de>, Theodore Ts'o <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-ext4@vger.kernel.org
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 06, 2011 at 11:17:18PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Freeze all filesystems during the freezing of tasks by calling
-> freeze_bdev() for each of them and thaw them during the thawing
-> of tasks with the help of thaw_bdev().
-> 
-> This is needed by hibernation, because some filesystems (e.g. XFS)
-> deadlock with the preallocation of memory used by it if the memory
-> pressure caused by it is too heavy.
-> 
-> The additional benefit of this change is that, if something goes
-> wrong after filesystems have been frozen, they will stay in a
-> consistent state and journal replays won't be necessary (e.g. after
-> a failing suspend or resume).  In particular, this should help to
-> solve a long-standing issue that in some cases during resume from
-> hibernation the boot loader causes the journal to be replied for the
-> filesystem containing the kernel image and initrd causing it to
-> become inconsistent with the information stored in the hibernation
-> image.
-> 
-> This change is based on earlier work by Nigel Cunningham.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
-> 
-> OK, so nobody except for Pavel appears to have any comments, so I assume
-> that everyone except for Pavel is fine with the approach, interestingly enough.
-> 
-> I've removed the MS_FROZEN Pavel complained about from freeze_filesystems()
-> and added comments explaining why lockdep_off/on() are used.
-> 
-> Thanks,
-> Rafael
-> 
-> ---
->  fs/block_dev.c         |   56 +++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/fs.h     |    6 +++++
->  kernel/power/process.c |    7 +++++-
->  3 files changed, 68 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/fs.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/fs.h
-> +++ linux-2.6/include/linux/fs.h
-> @@ -211,6 +211,7 @@ struct inodes_stat_t {
->  #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
->  #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
->  #define MS_STRICTATIME	(1<<24) /* Always perform atime updates */
-> +#define MS_FROZEN	(1<<25) /* bdev has been frozen */
->  #define MS_NOSEC	(1<<28)
->  #define MS_BORN		(1<<29)
->  #define MS_ACTIVE	(1<<30)
-> @@ -2047,6 +2048,8 @@ extern struct super_block *freeze_bdev(s
->  extern void emergency_thaw_all(void);
->  extern int thaw_bdev(struct block_device *bdev, struct super_block *sb);
->  extern int fsync_bdev(struct block_device *);
-> +extern void freeze_filesystems(void);
-> +extern void thaw_filesystems(void);
->  #else
->  static inline void bd_forget(struct inode *inode) {}
->  static inline int sync_blockdev(struct block_device *bdev) { return 0; }
-> @@ -2061,6 +2064,9 @@ static inline int thaw_bdev(struct block
->  {
->  	return 0;
->  }
-> +
-> +static inline void freeze_filesystems(void) {}
-> +static inline void thaw_filesystems(void) {}
->  #endif
->  extern int sync_filesystem(struct super_block *);
->  extern const struct file_operations def_blk_fops;
-> Index: linux-2.6/fs/block_dev.c
-> ===================================================================
-> --- linux-2.6.orig/fs/block_dev.c
-> +++ linux-2.6/fs/block_dev.c
-> @@ -314,6 +314,62 @@ out:
->  }
->  EXPORT_SYMBOL(thaw_bdev);
->  
-> +/**
-> + * freeze_filesystems - Force all filesystems into a consistent state.
-> + */
-> +void freeze_filesystems(void)
-> +{
-> +	struct super_block *sb;
-> +
-> +	/*
-> +	 * This is necessary, because some filesystems (e.g. ext3) lock
-> +	 * mutexes in their .freeze_fs() callbacks and leave them locked for
-> +	 * their .unfreeze_fs() callbacks to unlock.  This is done under
-> +	 * bdev->bd_fsfreeze_mutex, which is then released, but it makes
-> +	 * lockdep think something may be wrong when freeze_bdev() attempts
-> +	 * to acquire bdev->bd_fsfreeze_mutex for the next filesystem.
-> +	 */
-> +	lockdep_off();
+On Sat, Aug 06, 2011 at 09:46:20PM +0200, Rafael J. Wysocki wrote:
+> On Saturday, August 06, 2011, Mark Brown wrote:
 
-I thought those problems were fixed. If they aren't, then they most
-certainly need to be because holding mutexes over system calls is a
-bug.
+> > I wouldn't say we've got to rely on userspace here - it seems like we
+> > ought to be able to use DMI or other system data to identify the
+> > affected systems and activate the workarounds.
 
-Well, well:
+> That's only practical on systems where the kernel can be rebuilt.
+> Moreover, if that affects individual devices, using DMI-based blacklists
+> is not really practical at all.
 
-[252182.603134] ================================================
-[252182.604832] [ BUG: lock held when returning to user space! ]
-[252182.606086] ------------------------------------------------
-[252182.607400] xfs_io/4917 is leaving the kernel with locks still held!
-[252182.608905] 1 lock held by xfs_io/4917:
-[252182.609739]  #0:  (&journal->j_barrier){+.+...}, at: [<ffffffff812a2aaf>] journal_lock_updates+0xef/0x100
+OK, so this does sound like there's probably a genuine issue on PCs due
+to limitations in the environment.  Is it possible to expose these
+things to userspace in a way that's limited to the affected platforms?
 
-<sigh>
+> > You're right that it doesn't stop the kernel doing anything, the concern
+> > is that people just won't bother making the kernel work properly and
+> > will just do their power management in userspace and not bother fixing
+> > the kernel.
 
-Looks like the problem was fixed for ext4, but not ext3.  Please
-report this to the ext3/4 list and get it fixed, don't work around
-it here.
+> I wouldn't call it "fixing the kernel".  I'd rather say "putting workarounds
+> into the kernel", which I'm not sure is the right thing to at least in some
+> cases.
 
-> +	/*
-> +	 * Freeze in reverse order so filesystems depending on others are
-> +	 * frozen in the right order (eg. loopback on ext3).
-> +	 */
-> +	list_for_each_entry_reverse(sb, &super_blocks, s_list) {
-> +		if (!sb->s_root || !sb->s_bdev ||
-> +		    (sb->s_frozen == SB_FREEZE_TRANS) ||
-> +		    (sb->s_flags & MS_RDONLY))
-> +			continue;
-> +
-> +		freeze_bdev(sb->s_bdev);
-> +		sb->s_flags |= MS_FROZEN;
-> +	}
+That does sound like a fair characterization for PCs.  For embedded
+systems where we have a *much* better knowledge of the hardware we're
+running on you're just working with the basics of what the hardware
+needs to run - the hardware needs whatever it needs and no matter what
+you think of the quality of the hardware there's an expectation that the
+kernel is ging to be able to work.
 
-AFAIK, that won't work for btrfs - you have to call freeze_super()
-directly for btrfs because it has a special relationship with
-sb->s_bdev. And besides, all freeze_bdev does is get an active
-reference on the superblock and call freeze_super().
+> > Punting to userspace seems like it is creating the
+> > expectation that we can't make the kernel work and isn't great from a
+> > usability perspective since users shouldn't really be worrying about bus
+> > performance or so on, it's not something that's visible at the level
+> > applications work at.
 
-Also, that's traversing the list of superblock with locking and
-dereferencing the superblock without properly checking that the
-superblock is not being torn down. You should probably use
-iterate_supers (or at least copy the code), with a function that
-drops the s_umount read lock befor calling freeze_super() and then
-picks it back up afterwards.
+> However, platform builders may want to fine tuned things and I'm not sure
+> we should require them to patch the kernel for this purpose.
 
-> +
-> +	lockdep_on();
-> +}
-> +
-> +/**
-> + * thaw_filesystems - Make all filesystems active again.
-> + */
-> +void thaw_filesystems(void)
-> +{
-> +	struct super_block *sb;
-> +
-> +	/*
-> +	 * This is necessary for the same reason as in freeze_filesystems()
-> +	 * above.
-> +	 */
-> +	lockdep_off();
-> +
-> +	list_for_each_entry(sb, &super_blocks, s_list)
-> +		if (sb->s_flags & MS_FROZEN) {
-> +			sb->s_flags &= ~MS_FROZEN;
-> +			thaw_bdev(sb->s_bdev, sb);
-> +		}
+As I've said it's not the fine tuning that I'm worried about, it's the
+specific mechanism that's being suggested.  Being able to tune things in
+a way that's relevant to the device being tuned seems entirely sensible.
 
-And once again, iterate_supers() is what you want here. And you
-should only call thaw_bdev() as it needs to do checks other than
-checking MS_FROZEN e.g. the above will unfreeze filesystems that
-were already frozen at the time a suspend occurs, and that could
-lead to corruption depending on why the filesystem was frozen...
+> > I'm not sure I can see a lot of cases where you'd have root access and
+> > not be able to do kernel updates if required?  Having stuff in debugfs
+> > for diagnostics doesn't strike me as a problem if that's the issue.
 
-Also, you still need to check for a valid sb->s_bdev here, otherwise
-<splat>.
+> Root access doesn't necessarily mean you have all of the requisite
+> tools (like compilers etc.) and installing them isn't always trivial
+> (think of systems like phones etc.), let alone building the kernel from
+> sources (where you don't necessarily know the original .config used for
+> building your device's kernel).
 
-Cheers,
+Phones are exactly the sort of case I'm primarily concerned with here.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Realistically if you're in a position where you need to work at this
+very low level on an embedded device you can replace the entire firmware
+on the device.  We don't want to end up in the situation where we've got
+kernel support for a device and the only way to get it to actually run
+sensibly is to install the silicon vendor's proprietary userspace, and
+we especially don't want to end up in the situation where that userspace
+is using standard and supported kernel interfaces to do its thing.
+
+> IOW, I don't buy the "you can always rebuild the kernel if necessary"
+> argument.  It simply is not true in general.
+
+You can push that argument to extremes, of course.
