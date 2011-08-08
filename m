@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
-	ram
-Date: Mon, 8 Aug 2011 23:14:23 +0200
-Message-ID: <201108082314.23860.rjw@sisk.pl>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
-	<20110808210104.GA2926@suse.de> <20110808210537.GA22709@elf.ucw.cz>
+Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
+	wake-up constraints
+Date: Mon, 8 Aug 2011 23:31:35 +0200
+Message-ID: <201108082331.35853.rjw__23532.0555083037$1312839088$gmane$org@sisk.pl>
+References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
+	<201108062146.20423.rjw@sisk.pl>
+	<20110807024712.GA5887@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110808210537.GA22709@elf.ucw.cz>
+In-Reply-To: <20110807024712.GA5887@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,91 +20,92 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Liu, ShuoX" <shuox.liu@intel.com>, yanmin_zhang@linux.intel.com, Greg KH <gregkh@suse.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Brown, Len" <len.brown@intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 08, 2011, Pavel Machek wrote:
-> On Mon 2011-08-08 14:01:04, Greg KH wrote:
-> > On Mon, Aug 08, 2011 at 10:37:03PM +0200, Rafael J. Wysocki wrote:
-> > > On Monday, August 08, 2011, Yanmin Zhang wrote:
-> > > > On Fri, 2011-08-05 at 21:20 +0200, Rafael J. Wysocki wrote:
-> > > > > On Friday, August 05, 2011, Yanmin Zhang wrote:
-> > > > > > On Fri, 2011-08-05 at 09:57 +0800, Liu, ShuoX wrote:
-> > > > > > > > On Thursday, August 04, 2011, Greg KH wrote:
-> > > > > > > > > On Thu, Aug 04, 2011 at 01:13:38PM +0800, Liu, ShuoX wrote:
-> > > > > > > > > > >From a906b0b5b4ff3414ceb9fc7a69a3d7c9d66e46b1 Mon Sep 17
-> > > > > > > > 00:00:00 2001
-> > > > > > > > > > From: ShuoX Liu <shuox.liu@intel.com>
-> > > > > > > > > > Date: Thu, 28 Jul 2011 10:54:22 +0800
-> > > > > > > > > > Subject: [PATCH] PM: add statistics sysfs file for suspend to ram.
-> > > > > > > > >
-> > > > > > > > > What's this stuff here for?  That's not needed (hint, I would have to
-> > > > > > > > > edit it out by hand to be able to apply this patch.)
-> > > > > > > > >
-> > > > > > > > > Thanks for resending a version that passes checkpatch.pl and could be
-> > > > > > > > > applied, but all of my previous comments still stand.  This patch, as
-> > > > > > > > > is, is totally unacceptable.
-> > > > > > > > 
-> > > > > > > > Agreed, plus I'd like to know the motivation behind it.  That is, we have
-> > > > > > > > quite a few debug facilities in that code, so why are they insufficient?
-> > > > > > Thanks Greg, Rafael. We are changing the patch based on your comments.
-> > > > > > 
-> > > > > > > 
-> > > > > > > Some explanation from Yanmin,
-> > > > > > > "We are enabling power features on Medfield. Some testers and developers
-> > > > > > > complain they don't know if system tries suspend-2-ram, and what device 
-> > > > > > > fails to suspend. They need such info for a quick check. If turning on 
-> > > > > > > CONFIG_PM_DEBUG, we get too much info and testers need recompile 
-> > > > > > > the system.
-> > > > > > Comparing with PC/notebook, a mobile enters/exits suspend-2-ram (we call it s3 on
-> > > > > > Medfield) far more frequently. If it can't enter suspend-2-ram in time, the power
-> > > > > > might be used up soon.
-> > > > > > 
-> > > > > > We often find sometimes, a device suspend fails. Then, system retries s3 over
-> > > > > > and over again. As display is off, testers/developers don't know what happens.
-> > > > > > Teh system 
-> > > > > > 
-> > > > > > With the patch, we could know what the bad device is.
-> > > > > > 
-> > > > > > The patch doesn't hurt performance as it's just statistics collector.
-> > > > > > 
-> > > > > > CONFIG_PM_DEBUG is very useful for finer investigation about what happens behind. What
-> > > > > > we provide by the patch is to analyze the issues quickly, even by an ordinary tester.
-> > > > > 
-> > > > > Well, what about using dynamic debug?
-> > > > Thanks for the nice pointer. I checked dynamic debug. It's really a good debug tool.
-> > > > With the dynamic debug:
-> > > > 1) user need write a user space parser to process the syslog output;
-> > > > 2) Our testing scenario is we leave the mobile for at least hours. Then, check its status.
-> > > > No serial console available during the testing. One is because console would be suspended,
-> > > > and the other is serial console connecting with spi or HSU devices would consume power. These
-> > > > devices are powered off at suspend-2-ram.
-> > > > 
-> > > > Below is an example output of the statistics from my mobile (we are changing the output
-> > > > from sysfs to debugfs now):
-> > > > #adb shell cat /sys/power/suspend_stats
-> > > > success: 5
-> > > > fail: 1
-> > > > failed_freeze: 0
-> > > > failed_prepare: 0
-> > > > failed_suspend: 1
-> > > > failed_suspend_noirq: 0
-> > > > failed_resume: 0
-> > > > failed_resume_noirq: 0
-> > > > failed_devs:
-> > > >   last_failed:	alarm
-> > > 
-> > > OK, I see.  Greg, what do you think?
-> > 
-> > Files in debugfs like this are fine with me.  If you think the
-> > information is valid, and useful to people, I have no objection to the
-> > patch.
+On Sunday, August 07, 2011, Mark Brown wrote:
+> On Sat, Aug 06, 2011 at 09:46:20PM +0200, Rafael J. Wysocki wrote:
+> > On Saturday, August 06, 2011, Mark Brown wrote:
 > 
-> Dunno. Just parsing relevant part of dmesg after each suspend should
-> be enough.
+> > > I wouldn't say we've got to rely on userspace here - it seems like we
+> > > ought to be able to use DMI or other system data to identify the
+> > > affected systems and activate the workarounds.
+> 
+> > That's only practical on systems where the kernel can be rebuilt.
+> > Moreover, if that affects individual devices, using DMI-based blacklists
+> > is not really practical at all.
+> 
+> OK, so this does sound like there's probably a genuine issue on PCs due
+> to limitations in the environment.  Is it possible to expose these
+> things to userspace in a way that's limited to the affected platforms?
 
-Not in the case described by Yanmin.
+Well, in principle we could make it depend in CONFIG_ACPI or something like
+this, but I'm not sure that will be well-received. :-)
+
+> > > You're right that it doesn't stop the kernel doing anything, the concern
+> > > is that people just won't bother making the kernel work properly and
+> > > will just do their power management in userspace and not bother fixing
+> > > the kernel.
+> 
+> > I wouldn't call it "fixing the kernel".  I'd rather say "putting workarounds
+> > into the kernel", which I'm not sure is the right thing to at least in some
+> > cases.
+> 
+> That does sound like a fair characterization for PCs.  For embedded
+> systems where we have a *much* better knowledge of the hardware we're
+> running on you're just working with the basics of what the hardware
+> needs to run - the hardware needs whatever it needs and no matter what
+> you think of the quality of the hardware there's an expectation that the
+> kernel is ging to be able to work.
+
+In the particular case in question, though, there's some freedom.  Namely,
+the hardware will work for many different QoS constraints and it's not
+precisely known in principle and upfront which one would be optimal for
+a given workload.
+
+> > > Punting to userspace seems like it is creating the
+> > > expectation that we can't make the kernel work and isn't great from a
+> > > usability perspective since users shouldn't really be worrying about bus
+> > > performance or so on, it's not something that's visible at the level
+> > > applications work at.
+> 
+> > However, platform builders may want to fine tuned things and I'm not sure
+> > we should require them to patch the kernel for this purpose.
+> 
+> As I've said it's not the fine tuning that I'm worried about, it's the
+> specific mechanism that's being suggested.  Being able to tune things in
+> a way that's relevant to the device being tuned seems entirely sensible.
+
+Do you know any better mechanism consistent accross all devices?
+Please be specific. :-)
+
+> > > I'm not sure I can see a lot of cases where you'd have root access and
+> > > not be able to do kernel updates if required?  Having stuff in debugfs
+> > > for diagnostics doesn't strike me as a problem if that's the issue.
+> 
+> > Root access doesn't necessarily mean you have all of the requisite
+> > tools (like compilers etc.) and installing them isn't always trivial
+> > (think of systems like phones etc.), let alone building the kernel from
+> > sources (where you don't necessarily know the original .config used for
+> > building your device's kernel).
+> 
+> Phones are exactly the sort of case I'm primarily concerned with here.
+> 
+> Realistically if you're in a position where you need to work at this
+> very low level on an embedded device you can replace the entire firmware
+> on the device.  We don't want to end up in the situation where we've got
+> kernel support for a device and the only way to get it to actually run
+> sensibly is to install the silicon vendor's proprietary userspace, and
+> we especially don't want to end up in the situation where that userspace
+> is using standard and supported kernel interfaces to do its thing.
+
+Well, the wakelocks example shows clearly that preventing certain interfaces
+from being merged into mainline doesn't actually prevent people from using
+them in actual products.  I claim it's way better if a vendor uses its
+proprietary user space with the mainline kernel than if that vendor patches
+the kernel and _then_ uses its proprietary user space with it.  Your
+argumentation seems to suggest that we encourage the latter.
 
 Thanks,
 Rafael
