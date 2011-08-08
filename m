@@ -1,16 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
-	wake-up constraints
-Date: Mon, 8 Aug 2011 23:31:35 +0200
-Message-ID: <201108082331.35853.rjw__23532.0555083037$1312839088$gmane$org@sisk.pl>
-References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
-	<201108062146.20423.rjw@sisk.pl>
-	<20110807024712.GA5887@opensource.wolfsonmicro.com>
+From: Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH v5 0/3] DEVFREQ,
+	DVFS Framework for Non-CPU Devices.
+Date: Mon, 8 Aug 2011 14:35:20 -0700
+Message-ID: <20110808213520.GA9803@suse.de>
+References: <1312794188-9823-1-git-send-email-myungjoo.ham@samsung.com>
+	<CAJ0PZbSgVujLSW9Ea_iWHZVbq2_H3EWGJg_1Zh5rUfvG3sxgsw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110807024712.GA5887@opensource.wolfsonmicro.com>
+Content-Disposition: inline
+In-Reply-To: <CAJ0PZbSgVujLSW9Ea_iWHZVbq2_H3EWGJg_1Zh5rUfvG3sxgsw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,92 +20,31 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+To: MyungJoo Ham <myungjoo.ham@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, August 07, 2011, Mark Brown wrote:
-> On Sat, Aug 06, 2011 at 09:46:20PM +0200, Rafael J. Wysocki wrote:
-> > On Saturday, August 06, 2011, Mark Brown wrote:
+On Mon, Aug 08, 2011 at 06:53:31PM +0900, MyungJoo Ham wrote:
+> Hello all,
 > 
-> > > I wouldn't say we've got to rely on userspace here - it seems like we
-> > > ought to be able to use DMI or other system data to identify the
-> > > affected systems and activate the workarounds.
 > 
-> > That's only practical on systems where the kernel can be rebuilt.
-> > Moreover, if that affects individual devices, using DMI-based blacklists
-> > is not really practical at all.
+> I've got one issue requesting some comments: whether to create devfreq
+> directory or not.
 > 
-> OK, so this does sound like there's probably a genuine issue on PCs due
-> to limitations in the environment.  Is it possible to expose these
-> things to userspace in a way that's limited to the affected platforms?
+> For now, we only have four basic governors and one not-yet-posted
+> devfreq user for DEVFREQ; thus, it seems not necessary for just now.
+> 
+> However, like CPUFREQ, DEVFREQ may have several users later and we may
+> want to gather these files to one location: /drivers/devfreq or
+> somewhere else in /drivers/*. For example, Exynos4210 Memory DEVFREQ
+> user is located at arch/arm/mach-exynos4/devfreq_bus.c and with a
+> separated directory, we may have it at
+> drivers/devfreq/exynos4_memory_bus.c.
+> 
+> How do you think about separating DEVFREQ directory? Should I do so or
+> wait until we have several DEVFREQ users?
 
-Well, in principle we could make it depend in CONFIG_ACPI or something like
-this, but I'm not sure that will be well-received. :-)
+A new subdir is fine, it's not an issue, and seems to make sense here,
+as you point out.
 
-> > > You're right that it doesn't stop the kernel doing anything, the concern
-> > > is that people just won't bother making the kernel work properly and
-> > > will just do their power management in userspace and not bother fixing
-> > > the kernel.
-> 
-> > I wouldn't call it "fixing the kernel".  I'd rather say "putting workarounds
-> > into the kernel", which I'm not sure is the right thing to at least in some
-> > cases.
-> 
-> That does sound like a fair characterization for PCs.  For embedded
-> systems where we have a *much* better knowledge of the hardware we're
-> running on you're just working with the basics of what the hardware
-> needs to run - the hardware needs whatever it needs and no matter what
-> you think of the quality of the hardware there's an expectation that the
-> kernel is ging to be able to work.
-
-In the particular case in question, though, there's some freedom.  Namely,
-the hardware will work for many different QoS constraints and it's not
-precisely known in principle and upfront which one would be optimal for
-a given workload.
-
-> > > Punting to userspace seems like it is creating the
-> > > expectation that we can't make the kernel work and isn't great from a
-> > > usability perspective since users shouldn't really be worrying about bus
-> > > performance or so on, it's not something that's visible at the level
-> > > applications work at.
-> 
-> > However, platform builders may want to fine tuned things and I'm not sure
-> > we should require them to patch the kernel for this purpose.
-> 
-> As I've said it's not the fine tuning that I'm worried about, it's the
-> specific mechanism that's being suggested.  Being able to tune things in
-> a way that's relevant to the device being tuned seems entirely sensible.
-
-Do you know any better mechanism consistent accross all devices?
-Please be specific. :-)
-
-> > > I'm not sure I can see a lot of cases where you'd have root access and
-> > > not be able to do kernel updates if required?  Having stuff in debugfs
-> > > for diagnostics doesn't strike me as a problem if that's the issue.
-> 
-> > Root access doesn't necessarily mean you have all of the requisite
-> > tools (like compilers etc.) and installing them isn't always trivial
-> > (think of systems like phones etc.), let alone building the kernel from
-> > sources (where you don't necessarily know the original .config used for
-> > building your device's kernel).
-> 
-> Phones are exactly the sort of case I'm primarily concerned with here.
-> 
-> Realistically if you're in a position where you need to work at this
-> very low level on an embedded device you can replace the entire firmware
-> on the device.  We don't want to end up in the situation where we've got
-> kernel support for a device and the only way to get it to actually run
-> sensibly is to install the silicon vendor's proprietary userspace, and
-> we especially don't want to end up in the situation where that userspace
-> is using standard and supported kernel interfaces to do its thing.
-
-Well, the wakelocks example shows clearly that preventing certain interfaces
-from being merged into mainline doesn't actually prevent people from using
-them in actual products.  I claim it's way better if a vendor uses its
-proprietary user space with the mainline kernel than if that vendor patches
-the kernel and _then_ uses its proprietary user space with it.  Your
-argumentation seems to suggest that we encourage the latter.
-
-Thanks,
-Rafael
+greg k-h
