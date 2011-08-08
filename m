@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/4] PM: Reference counting of power.subsys_data
-Date: Tue, 9 Aug 2011 00:31:42 +0200
-Message-ID: <201108090031.42691.rjw__8267.15347725457$1312842805$gmane$org@sisk.pl>
+Subject: [PATCH 4/4] PM: Move clock-related definitions and
+	headers to separate file
+Date: Tue, 9 Aug 2011 00:33:07 +0200
+Message-ID: <201108090033.08017.rjw__8574.01059843159$1312842807$gmane$org@sisk.pl>
 References: <201108090028.12698.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,196 +24,251 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Since the power.subsys_data device field will be used by multiple
-filesystems, introduce a reference counting mechanism for it to avoid
-freeing it prematurely or changing its value at a wrong time.
-
-Make the PM clocks management code that currently is the only user of
-power.subsys_data use the new reference counting.
+Since the PM clock management code in drivers/base/power/clock_ops.c
+is used for both runtime PM and system suspend/hibernation, the
+definitions of data structures and headers related to it should not
+be located in include/linux/pm_rumtime.h.  Move them to a separate
+header file.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/Makefile    |    2 
- drivers/base/power/clock_ops.c |   24 ++---------
- drivers/base/power/common.c    |   86 +++++++++++++++++++++++++++++++++++++++++
- include/linux/pm.h             |    3 +
- 4 files changed, 95 insertions(+), 20 deletions(-)
+ arch/arm/mach-omap1/pm_bus.c            |    1 
+ arch/arm/mach-shmobile/board-ap4evb.c   |    1 
+ arch/arm/mach-shmobile/board-mackerel.c |    2 
+ arch/arm/mach-shmobile/pm-sh7372.c      |    2 
+ arch/arm/mach-shmobile/pm_runtime.c     |    1 
+ drivers/base/power/clock_ops.c          |    2 
+ drivers/base/power/common.c             |    3 -
+ include/linux/pm_clock.h                |   70 ++++++++++++++++++++++++++++++++
+ include/linux/pm_runtime.h              |   56 -------------------------
+ 9 files changed, 77 insertions(+), 61 deletions(-)
 
 Index: linux-2.6/drivers/base/power/common.c
 ===================================================================
---- /dev/null
+--- linux-2.6.orig/drivers/base/power/common.c
 +++ linux-2.6/drivers/base/power/common.c
-@@ -0,0 +1,86 @@
+@@ -9,8 +9,7 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+-#include <linux/device.h>
+-#include <linux/pm_runtime.h>
++#include <linux/pm_clock.h>
+ 
+ /**
+  * dev_pm_get_subsys_data - Create or refcount power.subsys_data for device.
+Index: linux-2.6/include/linux/pm_clock.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/linux/pm_clock.h
+@@ -0,0 +1,70 @@
 +/*
-+ * drivers/base/power/common.c - Common device power management code.
++ * pm_clock.h - Definitions and headers related to device clocks.
 + *
 + * Copyright (C) 2011 Rafael J. Wysocki <rjw@sisk.pl>, Renesas Electronics Corp.
 + *
 + * This file is released under the GPLv2.
 + */
 +
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/slab.h>
++#ifndef _LINUX_PM_CLOCK_H
++#define _LINUX_PM_CLOCK_H
++
 +#include <linux/device.h>
-+#include <linux/pm_runtime.h>
 +
-+/**
-+ * dev_pm_get_subsys_data - Create or refcount power.subsys_data for device.
-+ * @dev: Device to handle.
-+ *
-+ * If power.subsys_data is NULL, point it to a new object, otherwise increment
-+ * its reference counter.  Return 1 if a new object has been created, otherwise
-+ * return 0 or error code.
-+ */
-+int dev_pm_get_subsys_data(struct device *dev)
++struct pm_clk_notifier_block {
++	struct notifier_block nb;
++	struct dev_pm_domain *pm_domain;
++	char *con_ids[];
++};
++
++#ifdef CONFIG_PM_CLK
++static inline bool pm_clk_no_clocks(struct device *dev)
 +{
-+	struct pm_subsys_data *psd;
-+	int ret = 0;
-+
-+	psd = kzalloc(sizeof(*psd), GFP_KERNEL);
-+	if (!psd)
-+		return -ENOMEM;
-+
-+	spin_lock_irq(&dev->power.lock);
-+
-+	if (dev->power.subsys_data) {
-+		dev->power.subsys_data->refcount++;
-+	} else {
-+		mutex_init(&psd->lock);
-+		psd->refcount = 1;
-+		dev->power.subsys_data = psd;
-+		pm_clk_init(dev);
-+		psd = NULL;
-+		ret = 1;
-+	}
-+
-+	spin_unlock_irq(&dev->power.lock);
-+
-+	/* kfree() verifies that its argument is nonzero. */
-+	kfree(psd);
-+
-+	return ret;
++	return dev && dev->power.subsys_data
++		&& list_empty(&dev->power.subsys_data->clock_list);
 +}
-+EXPORT_SYMBOL_GPL(dev_pm_get_subsys_data);
 +
-+/**
-+ * dev_pm_put_subsys_data - Drop reference to power.subsys_data.
-+ * @dev: Device to handle.
-+ *
-+ * If the reference counter of power.subsys_data is zero after dropping the
-+ * reference, power.subsys_data is removed.  Return 1 if that happens or 0
-+ * otherwise.
-+ */
-+int dev_pm_put_subsys_data(struct device *dev)
++extern void pm_clk_init(struct device *dev);
++extern int pm_clk_create(struct device *dev);
++extern void pm_clk_destroy(struct device *dev);
++extern int pm_clk_add(struct device *dev, const char *con_id);
++extern void pm_clk_remove(struct device *dev, const char *con_id);
++extern int pm_clk_suspend(struct device *dev);
++extern int pm_clk_resume(struct device *dev);
++#else
++static inline bool pm_clk_no_clocks(struct device *dev)
 +{
-+	struct pm_subsys_data *psd;
-+	int ret = 0;
-+
-+	spin_lock_irq(&dev->power.lock);
-+
-+	psd = dev_to_psd(dev);
-+	if (!psd) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (--psd->refcount == 0) {
-+		dev->power.subsys_data = NULL;
-+		kfree(psd);
-+		ret = 1;
-+	}
-+
-+ out:
-+	spin_unlock_irq(&dev->power.lock);
-+
-+	return ret;
++	return true;
 +}
-+EXPORT_SYMBOL_GPL(dev_pm_put_subsys_data);
-Index: linux-2.6/include/linux/pm.h
++static inline void pm_clk_init(struct device *dev)
++{
++}
++static inline int pm_clk_create(struct device *dev)
++{
++	return -EINVAL;
++}
++static inline void pm_clk_destroy(struct device *dev)
++{
++}
++static inline int pm_clk_add(struct device *dev, const char *con_id)
++{
++	return -EINVAL;
++}
++static inline void pm_clk_remove(struct device *dev, const char *con_id)
++{
++}
++#define pm_clk_suspend	NULL
++#define pm_clk_resume	NULL
++#endif
++
++#ifdef CONFIG_HAVE_CLK
++extern void pm_clk_add_notifier(struct bus_type *bus,
++					struct pm_clk_notifier_block *clknb);
++#else
++static inline void pm_clk_add_notifier(struct bus_type *bus,
++					struct pm_clk_notifier_block *clknb)
++{
++}
++#endif
++
++#endif
+Index: linux-2.6/include/linux/pm_runtime.h
 ===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -424,6 +424,7 @@ struct wakeup_source;
+--- linux-2.6.orig/include/linux/pm_runtime.h
++++ linux-2.6/include/linux/pm_runtime.h
+@@ -251,60 +251,4 @@ static inline void pm_runtime_dont_use_a
+ 	__pm_runtime_use_autosuspend(dev, false);
+ }
  
- struct pm_subsys_data {
- 	struct mutex lock;
-+	unsigned int refcount;
- #ifdef CONFIG_PM_CLK
- 	struct list_head clock_list;
+-struct pm_clk_notifier_block {
+-	struct notifier_block nb;
+-	struct dev_pm_domain *pm_domain;
+-	char *con_ids[];
+-};
+-
+-#ifdef CONFIG_PM_CLK
+-static inline bool pm_clk_no_clocks(struct device *dev)
+-{
+-	return dev && dev->power.subsys_data
+-		&& list_empty(&dev->power.subsys_data->clock_list);
+-}
+-
+-extern void pm_clk_init(struct device *dev);
+-extern int pm_clk_create(struct device *dev);
+-extern void pm_clk_destroy(struct device *dev);
+-extern int pm_clk_add(struct device *dev, const char *con_id);
+-extern void pm_clk_remove(struct device *dev, const char *con_id);
+-extern int pm_clk_suspend(struct device *dev);
+-extern int pm_clk_resume(struct device *dev);
+-#else
+-static inline bool pm_clk_no_clocks(struct device *dev)
+-{
+-	return true;
+-}
+-static inline void pm_clk_init(struct device *dev)
+-{
+-}
+-static inline int pm_clk_create(struct device *dev)
+-{
+-	return -EINVAL;
+-}
+-static inline void pm_clk_destroy(struct device *dev)
+-{
+-}
+-static inline int pm_clk_add(struct device *dev, const char *con_id)
+-{
+-	return -EINVAL;
+-}
+-static inline void pm_clk_remove(struct device *dev, const char *con_id)
+-{
+-}
+-#define pm_clk_suspend	NULL
+-#define pm_clk_resume	NULL
+-#endif
+-
+-#ifdef CONFIG_HAVE_CLK
+-extern void pm_clk_add_notifier(struct bus_type *bus,
+-					struct pm_clk_notifier_block *clknb);
+-#else
+-static inline void pm_clk_add_notifier(struct bus_type *bus,
+-					struct pm_clk_notifier_block *clknb)
+-{
+-}
+-#endif
+-
  #endif
-@@ -474,6 +475,8 @@ struct dev_pm_info {
- };
- 
- extern void update_pm_runtime_accounting(struct device *dev);
-+extern int dev_pm_get_subsys_data(struct device *dev);
-+extern int dev_pm_put_subsys_data(struct device *dev);
- 
- /*
-  * Power domains provide callbacks that are executed during system suspend,
-Index: linux-2.6/drivers/base/power/Makefile
+Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
 ===================================================================
---- linux-2.6.orig/drivers/base/power/Makefile
-+++ linux-2.6/drivers/base/power/Makefile
-@@ -1,4 +1,4 @@
--obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o
-+obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o
- obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
- obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
- obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -15,7 +15,7 @@
+ #include <linux/list.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
+-#include <linux/pm_runtime.h>
++#include <linux/pm_clock.h>
+ #include <linux/platform_device.h>
+ #include <linux/delay.h>
+ #include <asm/system.h>
 Index: linux-2.6/drivers/base/power/clock_ops.c
 ===================================================================
 --- linux-2.6.orig/drivers/base/power/clock_ops.c
 +++ linux-2.6/drivers/base/power/clock_ops.c
-@@ -140,12 +140,8 @@ void pm_clk_remove(struct device *dev, c
- void pm_clk_init(struct device *dev)
- {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
--
--	if (!psd)
--		return;
--
--	INIT_LIST_HEAD(&psd->clock_list);
--	mutex_init(&psd->lock);
-+	if (psd)
-+		INIT_LIST_HEAD(&psd->clock_list);
- }
+@@ -10,7 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/pm.h>
+-#include <linux/pm_runtime.h>
++#include <linux/pm_clock.h>
+ #include <linux/clk.h>
+ #include <linux/slab.h>
+ #include <linux/err.h>
+Index: linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/pm_runtime.c
++++ linux-2.6/arch/arm/mach-shmobile/pm_runtime.c
+@@ -15,6 +15,7 @@
+ #include <linux/io.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/pm_domain.h>
++#include <linux/pm_clock.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/sh_clk.h>
+Index: linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/board-mackerel.c
++++ linux-2.6/arch/arm/mach-shmobile/board-mackerel.c
+@@ -39,7 +39,7 @@
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+ #include <linux/mtd/physmap.h>
+-#include <linux/pm_runtime.h>
++#include <linux/pm_clock.h>
+ #include <linux/smsc911x.h>
+ #include <linux/sh_intc.h>
+ #include <linux/tca6416_keypad.h>
+Index: linux-2.6/arch/arm/mach-shmobile/board-ap4evb.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-shmobile/board-ap4evb.c
++++ linux-2.6/arch/arm/mach-shmobile/board-ap4evb.c
+@@ -42,6 +42,7 @@
+ #include <linux/leds.h>
+ #include <linux/input/sh_keysc.h>
+ #include <linux/usb/r8a66597.h>
++#include <linux/pm_clock.h>
  
- /**
-@@ -157,16 +153,8 @@ void pm_clk_init(struct device *dev)
-  */
- int pm_clk_create(struct device *dev)
- {
--	struct pm_subsys_data *psd;
--
--	psd = kzalloc(sizeof(*psd), GFP_KERNEL);
--	if (!psd) {
--		dev_err(dev, "Not enough memory for PM clock data.\n");
--		return -ENOMEM;
--	}
--	dev->power.subsys_data = psd;
--	pm_clk_init(dev);
--	return 0;
-+	int ret = dev_pm_get_subsys_data(dev);
-+	return ret < 0 ? ret : 0;
- }
- 
- /**
-@@ -185,8 +173,6 @@ void pm_clk_destroy(struct device *dev)
- 	if (!psd)
- 		return;
- 
--	dev->power.subsys_data = NULL;
--
- 	mutex_lock(&psd->lock);
- 
- 	list_for_each_entry_safe_reverse(ce, c, &psd->clock_list, node)
-@@ -194,7 +180,7 @@ void pm_clk_destroy(struct device *dev)
- 
- 	mutex_unlock(&psd->lock);
- 
--	kfree(psd);
-+	dev_pm_put_subsys_data(dev);
- }
- 
- #endif /* CONFIG_PM */
+ #include <media/sh_mobile_ceu.h>
+ #include <media/sh_mobile_csi2.h>
+Index: linux-2.6/arch/arm/mach-omap1/pm_bus.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-omap1/pm_bus.c
++++ linux-2.6/arch/arm/mach-omap1/pm_bus.c
+@@ -13,6 +13,7 @@
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/pm_runtime.h>
++#include <linux/pm_clock.h>
+ #include <linux/platform_device.h>
+ #include <linux/mutex.h>
+ #include <linux/clk.h>
