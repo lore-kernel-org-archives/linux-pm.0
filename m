@@ -1,20 +1,14 @@
-From: "Turquette, Mike" <mturquette@ti.com>
-Subject: Re: [PATCH v4 0/3] DEVFREQ,
-	DVFS framework for non-CPU devices
-Date: Mon, 8 Aug 2011 12:13:30 -0700
-Message-ID: <CAJOA=zOi9HzM7M72C+QS6iLcYD_xDeQkEZ3fYpVo_v4f4mfAyQ@mail.gmail.com>
-References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
-	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
-	<87aabq5oqo.fsf@ti.com>
-	<CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
-	<CAJOA=zMNToQq=RVrRh2p+kko=n67BWwHjcWX3DGFuYCfAcksOQ@mail.gmail.com>
-	<CAJ0PZbQx-T+36eX7MiZqWSMxD-achZ9Z7G_kDWNQ2n0h1NTWSQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2] PM: add statistics debugfs file for
+	suspend to ram
+Date: Mon, 8 Aug 2011 22:46:24 +0200
+Message-ID: <201108082246.24726.rjw__27795.2648270459$1312836450$gmane$org@sisk.pl>
+References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B8057C04B@shsmsx502.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbQx-T+36eX7MiZqWSMxD-achZ9Z7G_kDWNQ2n0h1NTWSQ@mail.gmail.com>
+In-Reply-To: <6E3BC7F7C9A4BF4286DD4C043110F30B5B8057C04B@shsmsx502.ccr.corp.intel.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,129 +18,168 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: "Liu, ShuoX" <shuox.liu@intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 4, 2011 at 11:18 PM, MyungJoo Ham <myungjoo.ham@gmail.com> wrote:
-> On Fri, Aug 5, 2011 at 6:59 AM, Turquette, Mike <mturquette@ti.com> wrote:
->> On Thu, Aug 4, 2011 at 1:15 AM, MyungJoo Ham <myungjoo.ham@gmail.com> wrote:
->>>
->>> Ok.. I see.
->>>
->>> Now, I can agree with you that tickle is subset of QoS request.
->>>
->>> As long as we have QoS request feature on devices with either OPP or
->>> DEVFREQ, tickling is not needed.
->>>
->>> I'll remove tickle in the next revision (along with some bugfixes for
->>> bugs found recently).
->>>
->>>
->>> Anyway, it appears that clock-rate-wise QoS request may be dealt at
->>> OPP so that the OPPs meeting the QoS requests w/ frequency or voltage
->>> specifications are enabled and returned with opp_find_* functions.
->>> Maybe we will need to separate enable/disable by
->>> opp_enable()/opp_disable() from enable/disable by QoS requests so that
->>> the two may have different semantics. Then, QoS requests cannot
->>> override opp_disable and opp_enable cannot override QoS requests. This
->>> way, any clock-setting code properly based on OPP (including any
->>> customized devfreq governors) cannot violate QoS requests.
->>
->> If devfreq used the QoS API in it's ->target() call then this would
->> not be an issue, and further illustrates the idea of devfreq simply
->> being a policy into a proper QoS API.
->>
->> Regards,
->> Mike
->>
->
-> Yes, if we choose an OPP that meets the PM-QoS requests before calling
-> ->target() in devfreq_do(), there wouldn't be an issue.
->
-> However, if a device is using DEVFREQ, it also means the device has
-> OPPs (mandatory for DEVFREQ). If the device is using PM QoS as well as
-> OPP, I guess the correctly implemented device driver needs to call
-> opp_enable() and opp_disable() according to PM QoS's update_target()
-> calls through the PM QoS notifier cb.
->
-> Then, for such drivers, DEVFREQ automatically meets PM QoS requests
-> without any modification; as long as QoS meeting OPPs are enabled at
-> the device driver's PM QoS callback, there is no QoS issue.
->
-> Therefore, now, it appears that neither OPP or DEVFREQ should be
-> allowed to directly touch PM QoS APIs, but, the device driver should
-> do so with notifier by simply calling opp-enable/disable if the
-> frequency is the key QoS "actuator".
->
-> If we are going to let DEVFREQ handle its corresponding devices' PM
-> QoS APIs, it would mean that both device driver and its DEVFREQ codes
-> will be handling PM QoS API duplicated (or worse, inconsistently).
+Hi,
 
-I'm not getting too bogged down with the OPP specifics because I don't
-know if that interface is going to be used in the future, and I don't
-think that devfreq will need to know about OPPs once the DVFS QoS API
-exists.  In that case, devfreq can just requests clock frequencies
-through the QoS API.  I view devfreq's usage of the OPP library as
-temporary.
+On Monday, August 08, 2011, Liu, ShuoX wrote:
+...
+> @@ -982,6 +1003,8 @@ int dpm_suspend(pm_message_t state)
+>  		error = async_error;
+>  	if (!error)
+>  		dpm_show_time(starttime, state, NULL);
+> +	else
+> +		suspend_stats.failed_suspend++;
+>  	return error;
+>  }
 
-The real issue here is that we don't want some weird feedback loop
-with device QoS requests and devfreq targets stepping on each other.
+I'd prefer it to be
 
-One way to handle this is to partition QoS use in drivers away from
-devfreq usage.  For example, if a GPU supports performance counters
-and can introspect its own usage, then it is a perfect candidate for
-devfreq; on the flip-side device drivers should *not* be allowed to
-put performance/qos constraints on this particular GPU, since we
-assume that the performance counters/devfreq governor will handle the
-whole job for us.  Since this centralizes the decision-making for the
-GPU it is safe for the devfreq->target() call to use the QoS APIs for
-controlling the GPU, since no one else will.  This avoids the feedback
-loop.
+  if (error)
+      something;
+  else
+      something else;
 
-On the other hand, if the GPU does not support performance counters
-then it should not use devfreq at all and rely 100% of QoS constraints
-from various sources: the GPU driver might request a high OPP every
-time work comes in, coupled with a timeout; if a QoS knob is exported
-to userspace then some OpenGL library might hold constraints through
-it; or some other kernel driver (video-related?) needs to use the GPU
-then it can hold a constraint through the QoS API.
+> @@ -1090,6 +1113,8 @@ int dpm_suspend_start(pm_message_t state)
+>  	error = dpm_prepare(state);
+>  	if (!error)
+>  		error = dpm_suspend(state);
+> +	else
+> +		suspend_stats.failed_prepare++;
+>  	return error;
+>  }
 
-So there is a clear partition of QoS API usage between devices that
-support performance counters and ones that do not.  We want to avoid a
-feedback loop here.
+Same here.
 
-Regards,
-Mike
+>  EXPORT_SYMBOL_GPL(dpm_suspend_start);
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index 6bbcef2..6a8ff23 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -34,6 +34,22 @@ typedef int __bitwise suspend_state_t;
+>  #define PM_SUSPEND_MEM		((__force suspend_state_t) 3)
+>  #define PM_SUSPEND_MAX		((__force suspend_state_t) 4)
+>  
+> +struct suspend_stats {
+> +	int	success;
+> +	int	fail;
+> +	int	failed_freeze;
+> +	int	failed_prepare;
+> +	int	failed_suspend;
+> +	int	failed_suspend_noirq;
+> +	int	failed_resume;
+> +	int	failed_resume_noirq;
+> +#define	REC_FAILED_DEV_NUM	2
+> +	char	failed_devs[REC_FAILED_DEV_NUM][40];
+> +	int	last_failed;
+> +};
+> +
+> +extern struct suspend_stats suspend_stats;
+> +
+>  /**
+>   * struct platform_suspend_ops - Callbacks for managing platform dependent
+>   *	system sleep states.
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 6c601f8..0977f5d 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -12,6 +12,8 @@
+>  #include <linux/string.h>
+>  #include <linux/resume-trace.h>
+>  #include <linux/workqueue.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/seq_file.h>
+>  
+>  #include "power.h"
+>  
+> @@ -133,6 +135,59 @@ power_attr(pm_test);
+>  
+>  #endif /* CONFIG_PM_SLEEP */
+>  
+> +#ifdef CONFIG_DEBUG_FS
+> +static int suspend_stats_show(struct seq_file *s, void *unused)
+> +{
+> +	int i, index, last_index;
+> +
+> +	last_index = suspend_stats.last_failed + REC_FAILED_DEV_NUM - 1;
+> +	last_index %= REC_FAILED_DEV_NUM;
+> +	seq_printf(s, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
+> +			"%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
+> +			"success", suspend_stats.success,
+> +			"fail", suspend_stats.fail,
+> +			"failed_freeze", suspend_stats.failed_freeze,
+> +			"failed_prepare", suspend_stats.failed_prepare,
+> +			"failed_suspend", suspend_stats.failed_suspend,
+> +			"failed_suspend_noirq",
+> +				suspend_stats.failed_suspend_noirq,
+> +			"failed_resume", suspend_stats.failed_resume,
+> +			"failed_resume_noirq",
+> +				suspend_stats.failed_resume_noirq);
+> +	seq_printf(s,	"failed_devs:\n  last_failed:\t%s\n",
+> +			suspend_stats.failed_devs[last_index]);
+> +	for (i = 1; i < REC_FAILED_DEV_NUM; i++) {
+> +		index = last_index + REC_FAILED_DEV_NUM - i;
+> +		index %= REC_FAILED_DEV_NUM;
+> +		seq_printf(s, "\t\t%s\n",
+> +			suspend_stats.failed_devs[index]);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int suspend_stats_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, suspend_stats_show, NULL);
+> +}
+> +
+> +static const struct file_operations suspend_stats_operations = {
+> +	.open           = suspend_stats_open,
+> +	.read           = seq_read,
+> +	.llseek         = seq_lseek,
+> +	.release        = single_release,
+> +};
+> +
+> +static int __init pm_debugfs_init(void)
+> +{
+> +	debugfs_create_file("suspend_stats", S_IFREG | S_IRUGO,
+> +			NULL, NULL, &suspend_stats_operations);
+> +	return 0;
+> +}
+> +
+> +late_initcall(pm_debugfs_init);
+> +#endif /* CONFIG_DEBUG_FS */
+> +
+>  struct kobject *power_kobj;
+>  
+>  /**
+> @@ -194,6 +249,10 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
+>  	}
+>  	if (state < PM_SUSPEND_MAX && *s)
+>  		error = enter_state(state);
+> +		if (error)
+> +			suspend_stats.fail++;
+> +		else
+> +			suspend_stats.success++;
+>  #endif
+>  
+>   Exit:
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index b6b71ad..9bb4281 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -106,6 +106,8 @@ static int suspend_prepare(void)
+>  	error = suspend_freeze_processes();
+>  	if (!error)
+>  		return 0;
+> +	else
+> +		suspend_stats.failed_freeze++;
+>  
 
-> Cheers,
-> MyungJoo
->
->>> How about this concept of getting QoS requests associated with clock rates?
->>>
->>>
->>>
->>> Cheers!
->>> MyungJoo.
->>> --
->>> MyungJoo Ham, Ph.D.
->>> Mobile Software Platform Lab,
->>> Digital Media and Communications (DMC) Business
->>> Samsung Electronics
->>> cell: 82-10-6714-2858
->>> _______________________________________________
->>> linux-pm mailing list
->>> linux-pm@lists.linux-foundation.org
->>> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->>>
->>
->
->
->
-> --
-> MyungJoo Ham, Ph.D.
-> Mobile Software Platform Lab,
-> Digital Media and Communications (DMC) Business
-> Samsung Electronics
-> cell: 82-10-6714-2858
->
+And same here.
+
+Apart from the above, I don't have complaints.
+
+Thanks,
+Rafael
