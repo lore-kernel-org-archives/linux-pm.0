@@ -1,16 +1,11 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
-	ram
-Date: Tue, 9 Aug 2011 00:09:42 +0200
-Message-ID: <201108090009.42342.rjw@sisk.pl>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
-	<201108082314.23860.rjw@sisk.pl>
-	<20110808215452.GB22709@elf.ucw.cz>
+Subject: [Announcement] The PM tree has been renamed
+Date: Mon, 8 Aug 2011 23:57:12 +0200
+Message-ID: <201108082357.12169.rjw__42854.6608928174$1312841849$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110808215452.GB22709@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,36 +15,18 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Liu, ShuoX" <shuox.liu@intel.com>, yanmin_zhang@linux.intel.com, Greg KH <gregkh@suse.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Brown, Len" <len.brown@intel.com>
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 08, 2011, Pavel Machek wrote:
-> Hi!
-> 
-> > > > > > Thanks for the nice pointer. I checked dynamic debug. It's really a good debug tool.
-> > > > > > With the dynamic debug:
-> > > > > > 1) user need write a user space parser to process the syslog output;
-> > > > > > 2) Our testing scenario is we leave the mobile for at least hours. Then, check its status.
-> > > > > > No serial console available during the testing. One is because console would be suspended,
-> > > > > > and the other is serial console connecting with spi or HSU devices would consume power. These
-> > > > > > devices are powered off at suspend-2-ram.
-> ...
-> > Not in the case described by Yanmin.
-> 
-> Really? I see the description above.
-> 
-> Yes, they'd need to set up syslog to only log >= KERN_ERR, then parse
-> the (small) results. Even hours worth of suspends should not cause
-> _that_ many errors.
-> 
-> Serial console is irrelevant. You need live machine to dump dmesg, but
-> again, you need live machine to access debugfs, too.
+Hi,
 
-This sounds like substantial overhead to collect statistics that we can
-collect at a much lower cost in the kernel.
+I've just renamed the PM tree at kernel.org to linux-pm (from suspend-2.6),
+so please use
 
-The patch isn't very intrusive and rather straightforward.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+
+to access it.  The old one is going to be around until necessary.
 
 Thanks,
 Rafael
