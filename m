@@ -1,17 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
-	ram
-Date: Mon, 8 Aug 2011 23:05:37 +0200
-Message-ID: <20110808210537.GA22709@elf.ucw.cz>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
-	<201108052120.14901.rjw@sisk.pl> <1312775304.2043.37.camel@ymzhang>
-	<201108082237.03559.rjw@sisk.pl> <20110808210104.GA2926@suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM / Freezer: Freeze filesystems while
+	freezing processes (v2)
+Date: Mon, 8 Aug 2011 23:11:27 +0200
+Message-ID: <201108082311.28190.rjw__36142.424963373$1312837864$gmane$org@sisk.pl>
+References: <4E1C70AD.1010101@u-club.de> <201108062317.19033.rjw@sisk.pl>
+	<20110807001446.GI3162@dastard>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110808210104.GA2926@suse.de>
+In-Reply-To: <20110807001446.GI3162@dastard>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,92 +19,200 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Greg KH <gregkh@suse.de>
-Cc: "Liu, ShuoX" <shuox.liu@intel.com>, yanmin_zhang@linux.intel.com, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Brown, Len" <len.brown@intel.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Christoph <cr2005@u-club.de>, Theodore Ts'o <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com, Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-ext4@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2011-08-08 14:01:04, Greg KH wrote:
-> On Mon, Aug 08, 2011 at 10:37:03PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, August 08, 2011, Yanmin Zhang wrote:
-> > > On Fri, 2011-08-05 at 21:20 +0200, Rafael J. Wysocki wrote:
-> > > > On Friday, August 05, 2011, Yanmin Zhang wrote:
-> > > > > On Fri, 2011-08-05 at 09:57 +0800, Liu, ShuoX wrote:
-> > > > > > > On Thursday, August 04, 2011, Greg KH wrote:
-> > > > > > > > On Thu, Aug 04, 2011 at 01:13:38PM +0800, Liu, ShuoX wrote:
-> > > > > > > > > >From a906b0b5b4ff3414ceb9fc7a69a3d7c9d66e46b1 Mon Sep 17
-> > > > > > > 00:00:00 2001
-> > > > > > > > > From: ShuoX Liu <shuox.liu@intel.com>
-> > > > > > > > > Date: Thu, 28 Jul 2011 10:54:22 +0800
-> > > > > > > > > Subject: [PATCH] PM: add statistics sysfs file for suspend to ram.
-> > > > > > > >
-> > > > > > > > What's this stuff here for?  That's not needed (hint, I would have to
-> > > > > > > > edit it out by hand to be able to apply this patch.)
-> > > > > > > >
-> > > > > > > > Thanks for resending a version that passes checkpatch.pl and could be
-> > > > > > > > applied, but all of my previous comments still stand.  This patch, as
-> > > > > > > > is, is totally unacceptable.
-> > > > > > > 
-> > > > > > > Agreed, plus I'd like to know the motivation behind it.  That is, we have
-> > > > > > > quite a few debug facilities in that code, so why are they insufficient?
-> > > > > Thanks Greg, Rafael. We are changing the patch based on your comments.
-> > > > > 
-> > > > > > 
-> > > > > > Some explanation from Yanmin,
-> > > > > > "We are enabling power features on Medfield. Some testers and developers
-> > > > > > complain they don't know if system tries suspend-2-ram, and what device 
-> > > > > > fails to suspend. They need such info for a quick check. If turning on 
-> > > > > > CONFIG_PM_DEBUG, we get too much info and testers need recompile 
-> > > > > > the system.
-> > > > > Comparing with PC/notebook, a mobile enters/exits suspend-2-ram (we call it s3 on
-> > > > > Medfield) far more frequently. If it can't enter suspend-2-ram in time, the power
-> > > > > might be used up soon.
-> > > > > 
-> > > > > We often find sometimes, a device suspend fails. Then, system retries s3 over
-> > > > > and over again. As display is off, testers/developers don't know what happens.
-> > > > > Teh system 
-> > > > > 
-> > > > > With the patch, we could know what the bad device is.
-> > > > > 
-> > > > > The patch doesn't hurt performance as it's just statistics collector.
-> > > > > 
-> > > > > CONFIG_PM_DEBUG is very useful for finer investigation about what happens behind. What
-> > > > > we provide by the patch is to analyze the issues quickly, even by an ordinary tester.
-> > > > 
-> > > > Well, what about using dynamic debug?
-> > > Thanks for the nice pointer. I checked dynamic debug. It's really a good debug tool.
-> > > With the dynamic debug:
-> > > 1) user need write a user space parser to process the syslog output;
-> > > 2) Our testing scenario is we leave the mobile for at least hours. Then, check its status.
-> > > No serial console available during the testing. One is because console would be suspended,
-> > > and the other is serial console connecting with spi or HSU devices would consume power. These
-> > > devices are powered off at suspend-2-ram.
-> > > 
-> > > Below is an example output of the statistics from my mobile (we are changing the output
-> > > from sysfs to debugfs now):
-> > > #adb shell cat /sys/power/suspend_stats
-> > > success: 5
-> > > fail: 1
-> > > failed_freeze: 0
-> > > failed_prepare: 0
-> > > failed_suspend: 1
-> > > failed_suspend_noirq: 0
-> > > failed_resume: 0
-> > > failed_resume_noirq: 0
-> > > failed_devs:
-> > >   last_failed:	alarm
+On Sunday, August 07, 2011, Dave Chinner wrote:
+> On Sat, Aug 06, 2011 at 11:17:18PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > OK, I see.  Greg, what do you think?
+> > Freeze all filesystems during the freezing of tasks by calling
+> > freeze_bdev() for each of them and thaw them during the thawing
+> > of tasks with the help of thaw_bdev().
+> > 
+> > This is needed by hibernation, because some filesystems (e.g. XFS)
+> > deadlock with the preallocation of memory used by it if the memory
+> > pressure caused by it is too heavy.
+> > 
+> > The additional benefit of this change is that, if something goes
+> > wrong after filesystems have been frozen, they will stay in a
+> > consistent state and journal replays won't be necessary (e.g. after
+> > a failing suspend or resume).  In particular, this should help to
+> > solve a long-standing issue that in some cases during resume from
+> > hibernation the boot loader causes the journal to be replied for the
+> > filesystem containing the kernel image and initrd causing it to
+> > become inconsistent with the information stored in the hibernation
+> > image.
+> > 
+> > This change is based on earlier work by Nigel Cunningham.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> > 
+> > OK, so nobody except for Pavel appears to have any comments, so I assume
+> > that everyone except for Pavel is fine with the approach, interestingly enough.
+> > 
+> > I've removed the MS_FROZEN Pavel complained about from freeze_filesystems()
+> > and added comments explaining why lockdep_off/on() are used.
+> > 
+> > Thanks,
+> > Rafael
+> > 
+> > ---
+> >  fs/block_dev.c         |   56 +++++++++++++++++++++++++++++++++++++++++++++++++
+> >  include/linux/fs.h     |    6 +++++
+> >  kernel/power/process.c |    7 +++++-
+> >  3 files changed, 68 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/include/linux/fs.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/fs.h
+> > +++ linux-2.6/include/linux/fs.h
+> > @@ -211,6 +211,7 @@ struct inodes_stat_t {
+> >  #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
+> >  #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
+> >  #define MS_STRICTATIME	(1<<24) /* Always perform atime updates */
+> > +#define MS_FROZEN	(1<<25) /* bdev has been frozen */
+> >  #define MS_NOSEC	(1<<28)
+> >  #define MS_BORN		(1<<29)
+> >  #define MS_ACTIVE	(1<<30)
+> > @@ -2047,6 +2048,8 @@ extern struct super_block *freeze_bdev(s
+> >  extern void emergency_thaw_all(void);
+> >  extern int thaw_bdev(struct block_device *bdev, struct super_block *sb);
+> >  extern int fsync_bdev(struct block_device *);
+> > +extern void freeze_filesystems(void);
+> > +extern void thaw_filesystems(void);
+> >  #else
+> >  static inline void bd_forget(struct inode *inode) {}
+> >  static inline int sync_blockdev(struct block_device *bdev) { return 0; }
+> > @@ -2061,6 +2064,9 @@ static inline int thaw_bdev(struct block
+> >  {
+> >  	return 0;
+> >  }
+> > +
+> > +static inline void freeze_filesystems(void) {}
+> > +static inline void thaw_filesystems(void) {}
+> >  #endif
+> >  extern int sync_filesystem(struct super_block *);
+> >  extern const struct file_operations def_blk_fops;
+> > Index: linux-2.6/fs/block_dev.c
+> > ===================================================================
+> > --- linux-2.6.orig/fs/block_dev.c
+> > +++ linux-2.6/fs/block_dev.c
+> > @@ -314,6 +314,62 @@ out:
+> >  }
+> >  EXPORT_SYMBOL(thaw_bdev);
+> >  
+> > +/**
+> > + * freeze_filesystems - Force all filesystems into a consistent state.
+> > + */
+> > +void freeze_filesystems(void)
+> > +{
+> > +	struct super_block *sb;
+> > +
+> > +	/*
+> > +	 * This is necessary, because some filesystems (e.g. ext3) lock
+> > +	 * mutexes in their .freeze_fs() callbacks and leave them locked for
+> > +	 * their .unfreeze_fs() callbacks to unlock.  This is done under
+> > +	 * bdev->bd_fsfreeze_mutex, which is then released, but it makes
+> > +	 * lockdep think something may be wrong when freeze_bdev() attempts
+> > +	 * to acquire bdev->bd_fsfreeze_mutex for the next filesystem.
+> > +	 */
+> > +	lockdep_off();
 > 
-> Files in debugfs like this are fine with me.  If you think the
-> information is valid, and useful to people, I have no objection to the
-> patch.
+> I thought those problems were fixed. If they aren't, then they most
+> certainly need to be because holding mutexes over system calls is a
+> bug.
+> 
+> Well, well:
+> 
+> [252182.603134] ================================================
+> [252182.604832] [ BUG: lock held when returning to user space! ]
+> [252182.606086] ------------------------------------------------
+> [252182.607400] xfs_io/4917 is leaving the kernel with locks still held!
+> [252182.608905] 1 lock held by xfs_io/4917:
+> [252182.609739]  #0:  (&journal->j_barrier){+.+...}, at: [<ffffffff812a2aaf>] journal_lock_updates+0xef/0x100
+> 
+> <sigh>
+> 
+> Looks like the problem was fixed for ext4, but not ext3.  Please
+> report this to the ext3/4 list and get it fixed, don't work around
+> it here.
 
-Dunno. Just parsing relevant part of dmesg after each suspend should
-be enough.
+OK, but I guess I'll have to post a patch to fix this myself so that
+anyone notices. :-)
 
-Actually, kernel messages should probably be adjusted so that
-filtering for KERN_ERR will get exactly the relevant info... ?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> > +	/*
+> > +	 * Freeze in reverse order so filesystems depending on others are
+> > +	 * frozen in the right order (eg. loopback on ext3).
+> > +	 */
+> > +	list_for_each_entry_reverse(sb, &super_blocks, s_list) {
+> > +		if (!sb->s_root || !sb->s_bdev ||
+> > +		    (sb->s_frozen == SB_FREEZE_TRANS) ||
+> > +		    (sb->s_flags & MS_RDONLY))
+> > +			continue;
+> > +
+> > +		freeze_bdev(sb->s_bdev);
+> > +		sb->s_flags |= MS_FROZEN;
+> > +	}
+> 
+> AFAIK, that won't work for btrfs - you have to call freeze_super()
+> directly for btrfs because it has a special relationship with
+> sb->s_bdev. And besides, all freeze_bdev does is get an active
+> reference on the superblock and call freeze_super().
+
+OK, so do you mean I should call freeze_super() rather than freeze_bdev()?
+
+> Also, that's traversing the list of superblock with locking and
+> dereferencing the superblock without properly checking that the
+> superblock is not being torn down. You should probably use
+> iterate_supers (or at least copy the code), with a function that
+> drops the s_umount read lock befor calling freeze_super() and then
+> picks it back up afterwards.
+
+Hmm, I'll try that, but I doubt I'll get it right first time. :-)
+
+> > +
+> > +	lockdep_on();
+> > +}
+> > +
+> > +/**
+> > + * thaw_filesystems - Make all filesystems active again.
+> > + */
+> > +void thaw_filesystems(void)
+> > +{
+> > +	struct super_block *sb;
+> > +
+> > +	/*
+> > +	 * This is necessary for the same reason as in freeze_filesystems()
+> > +	 * above.
+> > +	 */
+> > +	lockdep_off();
+> > +
+> > +	list_for_each_entry(sb, &super_blocks, s_list)
+> > +		if (sb->s_flags & MS_FROZEN) {
+> > +			sb->s_flags &= ~MS_FROZEN;
+> > +			thaw_bdev(sb->s_bdev, sb);
+> > +		}
+> 
+> And once again, iterate_supers() is what you want here.
+
+OK
+
+> And you should only call thaw_bdev() as it needs to do checks other
+> than checking MS_FROZEN
+
+Hmm, I'm not really sure what you mean?
+
+> e.g. the above will unfreeze filesystems that
+> were already frozen at the time a suspend occurs, and that could
+> lead to corruption depending on why the filesystem was frozen...
+> 
+> Also, you still need to check for a valid sb->s_bdev here, otherwise
+> <splat>.
+
+I see.
+
+Thanks,
+Rafael
