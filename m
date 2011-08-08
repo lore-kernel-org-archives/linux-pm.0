@@ -1,8 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/4] PM / Domains: Use power.sybsys_data to
-	reduce overhead
-Date: Tue, 9 Aug 2011 00:32:25 +0200
-Message-ID: <201108090032.25499.rjw__24960.6179226705$1312842811$gmane$org@sisk.pl>
+Subject: [PATCH 1/4] PM: Introduce struct pm_subsys_data
+Date: Tue, 9 Aug 2011 00:30:59 +0200
+Message-ID: <201108090030.59408.rjw__44555.9431952008$1312842817$gmane$org@sisk.pl>
 References: <201108090028.12698.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,324 +23,397 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Currently pm_genpd_runtime_resume() has to walk the list of devices
-from the device's PM domain to find the corresponding device list
-object containing the need_restore field to check if the driver's
-.runtime_resume() callback should be executed for the device.
-This is suboptimal and can be simplified by using power.sybsys_data
-to store device information used by the generic PM domains code.
+Introduce struct pm_subsys_data that may be subclassed by subsystems
+to store subsystem-specific information related to the device.  Move
+the clock management fields accessed through the power.subsys_data
+pointer in struct device to the new strucutre.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/arm/mach-shmobile/pm-sh7372.c |    6 --
- drivers/base/power/domain.c        |   87 ++++++++++++-------------------------
- include/linux/pm.h                 |    9 +++
- include/linux/pm_domain.h          |    6 --
- include/linux/pm_runtime.h         |   10 ++++
- 5 files changed, 51 insertions(+), 67 deletions(-)
+ arch/arm/mach-shmobile/pm-sh7372.c |    2 
+ drivers/base/power/clock_ops.c     |  122 +++++++++++++++++++------------------
+ include/linux/device.h             |    5 +
+ include/linux/pm.h                 |   10 ++-
+ include/linux/pm_runtime.h         |    8 +-
+ 5 files changed, 85 insertions(+), 62 deletions(-)
 
+Index: linux-2.6/drivers/base/power/clock_ops.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/clock_ops.c
++++ linux-2.6/drivers/base/power/clock_ops.c
+@@ -17,11 +17,6 @@
+ 
+ #ifdef CONFIG_PM
+ 
+-struct pm_clk_data {
+-	struct list_head clock_list;
+-	struct mutex lock;
+-};
+-
+ enum pce_status {
+ 	PCE_STATUS_NONE = 0,
+ 	PCE_STATUS_ACQUIRED,
+@@ -36,11 +31,6 @@ struct pm_clock_entry {
+ 	enum pce_status status;
+ };
+ 
+-static struct pm_clk_data *__to_pcd(struct device *dev)
+-{
+-	return dev ? dev->power.subsys_data : NULL;
+-}
+-
+ /**
+  * pm_clk_add - Start using a device clock for power management.
+  * @dev: Device whose clock is going to be used for power management.
+@@ -51,10 +41,10 @@ static struct pm_clk_data *__to_pcd(stru
+  */
+ int pm_clk_add(struct device *dev, const char *con_id)
+ {
+-	struct pm_clk_data *pcd = __to_pcd(dev);
++	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+-	if (!pcd)
++	if (!psd)
+ 		return -EINVAL;
+ 
+ 	ce = kzalloc(sizeof(*ce), GFP_KERNEL);
+@@ -73,9 +63,9 @@ int pm_clk_add(struct device *dev, const
+ 		}
+ 	}
+ 
+-	mutex_lock(&pcd->lock);
+-	list_add_tail(&ce->node, &pcd->clock_list);
+-	mutex_unlock(&pcd->lock);
++	mutex_lock(&psd->lock);
++	list_add_tail(&ce->node, &psd->clock_list);
++	mutex_unlock(&psd->lock);
+ 	return 0;
+ }
+ 
+@@ -117,15 +107,15 @@ static void __pm_clk_remove(struct pm_cl
+  */
+ void pm_clk_remove(struct device *dev, const char *con_id)
+ {
+-	struct pm_clk_data *pcd = __to_pcd(dev);
++	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+-	if (!pcd)
++	if (!psd)
+ 		return;
+ 
+-	mutex_lock(&pcd->lock);
++	mutex_lock(&psd->lock);
+ 
+-	list_for_each_entry(ce, &pcd->clock_list, node) {
++	list_for_each_entry(ce, &psd->clock_list, node) {
+ 		if (!con_id && !ce->con_id) {
+ 			__pm_clk_remove(ce);
+ 			break;
+@@ -137,29 +127,45 @@ void pm_clk_remove(struct device *dev, c
+ 		}
+ 	}
+ 
+-	mutex_unlock(&pcd->lock);
++	mutex_unlock(&psd->lock);
+ }
+ 
+ /**
+  * pm_clk_init - Initialize a device's list of power management clocks.
+  * @dev: Device to initialize the list of PM clocks for.
+  *
+- * Allocate a struct pm_clk_data object, initialize its lock member and
+- * make the @dev's power.subsys_data field point to it.
++ * Initialize the lock and clock_list members of the device's pm_subsys_data
++ * object.
+  */
+-int pm_clk_init(struct device *dev)
++void pm_clk_init(struct device *dev)
+ {
+-	struct pm_clk_data *pcd;
++	struct pm_subsys_data *psd = dev_to_psd(dev);
++
++	if (!psd)
++		return;
+ 
+-	pcd = kzalloc(sizeof(*pcd), GFP_KERNEL);
+-	if (!pcd) {
++	INIT_LIST_HEAD(&psd->clock_list);
++	mutex_init(&psd->lock);
++}
++
++/**
++ * pm_clk_create - Create and initialize a device's list of PM clocks.
++ * @dev: Device to create and initialize the list of PM clocks for.
++ *
++ * Allocate a struct pm_subsys_data object, initialize its lock and clock_list
++ * members and make the @dev's power.subsys_data field point to it.
++ */
++int pm_clk_create(struct device *dev)
++{
++	struct pm_subsys_data *psd;
++
++	psd = kzalloc(sizeof(*psd), GFP_KERNEL);
++	if (!psd) {
+ 		dev_err(dev, "Not enough memory for PM clock data.\n");
+ 		return -ENOMEM;
+ 	}
+-
+-	INIT_LIST_HEAD(&pcd->clock_list);
+-	mutex_init(&pcd->lock);
+-	dev->power.subsys_data = pcd;
++	dev->power.subsys_data = psd;
++	pm_clk_init(dev);
+ 	return 0;
+ }
+ 
+@@ -168,27 +174,27 @@ int pm_clk_init(struct device *dev)
+  * @dev: Device to destroy the list of PM clocks for.
+  *
+  * Clear the @dev's power.subsys_data field, remove the list of clock entries
+- * from the struct pm_clk_data object pointed to by it before and free
++ * from the struct pm_subsys_data object pointed to by it before and free
+  * that object.
+  */
+ void pm_clk_destroy(struct device *dev)
+ {
+-	struct pm_clk_data *pcd = __to_pcd(dev);
++	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce, *c;
+ 
+-	if (!pcd)
++	if (!psd)
+ 		return;
+ 
+ 	dev->power.subsys_data = NULL;
+ 
+-	mutex_lock(&pcd->lock);
++	mutex_lock(&psd->lock);
+ 
+-	list_for_each_entry_safe_reverse(ce, c, &pcd->clock_list, node)
++	list_for_each_entry_safe_reverse(ce, c, &psd->clock_list, node)
+ 		__pm_clk_remove(ce);
+ 
+-	mutex_unlock(&pcd->lock);
++	mutex_unlock(&psd->lock);
+ 
+-	kfree(pcd);
++	kfree(psd);
+ }
+ 
+ #endif /* CONFIG_PM */
+@@ -218,17 +224,17 @@ static void pm_clk_acquire(struct device
+  */
+ int pm_clk_suspend(struct device *dev)
+ {
+-	struct pm_clk_data *pcd = __to_pcd(dev);
++	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+-	if (!pcd)
++	if (!psd)
+ 		return 0;
+ 
+-	mutex_lock(&pcd->lock);
++	mutex_lock(&psd->lock);
+ 
+-	list_for_each_entry_reverse(ce, &pcd->clock_list, node) {
++	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
+ 		if (ce->status == PCE_STATUS_NONE)
+ 			pm_clk_acquire(dev, ce);
+ 
+@@ -238,7 +244,7 @@ int pm_clk_suspend(struct device *dev)
+ 		}
+ 	}
+ 
+-	mutex_unlock(&pcd->lock);
++	mutex_unlock(&psd->lock);
+ 
+ 	return 0;
+ }
+@@ -249,17 +255,17 @@ int pm_clk_suspend(struct device *dev)
+  */
+ int pm_clk_resume(struct device *dev)
+ {
+-	struct pm_clk_data *pcd = __to_pcd(dev);
++	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+-	if (!pcd)
++	if (!psd)
+ 		return 0;
+ 
+-	mutex_lock(&pcd->lock);
++	mutex_lock(&psd->lock);
+ 
+-	list_for_each_entry(ce, &pcd->clock_list, node) {
++	list_for_each_entry(ce, &psd->clock_list, node) {
+ 		if (ce->status == PCE_STATUS_NONE)
+ 			pm_clk_acquire(dev, ce);
+ 
+@@ -269,7 +275,7 @@ int pm_clk_resume(struct device *dev)
+ 		}
+ 	}
+ 
+-	mutex_unlock(&pcd->lock);
++	mutex_unlock(&psd->lock);
+ 
+ 	return 0;
+ }
+@@ -307,7 +313,7 @@ static int pm_clk_notify(struct notifier
+ 		if (dev->pm_domain)
+ 			break;
+ 
+-		error = pm_clk_init(dev);
++		error = pm_clk_create(dev);
+ 		if (error)
+ 			break;
+ 
+@@ -342,21 +348,21 @@ static int pm_clk_notify(struct notifier
+  */
+ int pm_clk_suspend(struct device *dev)
+ {
+-	struct pm_clk_data *pcd = __to_pcd(dev);
++	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+ 	/* If there is no driver, the clocks are already disabled. */
+-	if (!pcd || !dev->driver)
++	if (!psd || !dev->driver)
+ 		return 0;
+ 
+-	mutex_lock(&pcd->lock);
++	mutex_lock(&psd->lock);
+ 
+-	list_for_each_entry_reverse(ce, &pcd->clock_list, node)
++	list_for_each_entry_reverse(ce, &psd->clock_list, node)
+ 		clk_disable(ce->clk);
+ 
+-	mutex_unlock(&pcd->lock);
++	mutex_unlock(&psd->lock);
+ 
+ 	return 0;
+ }
+@@ -367,21 +373,21 @@ int pm_clk_suspend(struct device *dev)
+  */
+ int pm_clk_resume(struct device *dev)
+ {
+-	struct pm_clk_data *pcd = __to_pcd(dev);
++	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clock_entry *ce;
+ 
+ 	dev_dbg(dev, "%s()\n", __func__);
+ 
+ 	/* If there is no driver, the clocks should remain disabled. */
+-	if (!pcd || !dev->driver)
++	if (!psd || !dev->driver)
+ 		return 0;
+ 
+-	mutex_lock(&pcd->lock);
++	mutex_lock(&psd->lock);
+ 
+-	list_for_each_entry(ce, &pcd->clock_list, node)
++	list_for_each_entry(ce, &psd->clock_list, node)
+ 		clk_enable(ce->clk);
+ 
+-	mutex_unlock(&pcd->lock);
++	mutex_unlock(&psd->lock);
+ 
+ 	return 0;
+ }
+Index: linux-2.6/include/linux/device.h
+===================================================================
+--- linux-2.6.orig/include/linux/device.h
++++ linux-2.6/include/linux/device.h
+@@ -636,6 +636,11 @@ static inline void set_dev_node(struct d
+ }
+ #endif
+ 
++static inline struct pm_subsys_data *dev_to_psd(struct device *dev)
++{
++	return dev ? dev->power.subsys_data : NULL;
++}
++
+ static inline unsigned int dev_get_uevent_suppress(const struct device *dev)
+ {
+ 	return dev->kobj.uevent_suppress;
 Index: linux-2.6/include/linux/pm.h
 ===================================================================
 --- linux-2.6.orig/include/linux/pm.h
 +++ linux-2.6/include/linux/pm.h
-@@ -422,12 +422,21 @@ enum rpm_request {
+@@ -24,6 +24,7 @@
+ #include <linux/list.h>
+ #include <linux/workqueue.h>
+ #include <linux/spinlock.h>
++#include <linux/mutex.h>
+ #include <linux/wait.h>
+ #include <linux/timer.h>
+ #include <linux/completion.h>
+@@ -421,6 +422,13 @@ enum rpm_request {
  
  struct wakeup_source;
  
-+struct pm_domain_data {
-+	struct list_head list_node;
-+	struct device *dev;
-+	bool need_restore;
++struct pm_subsys_data {
++	struct mutex lock;
++#ifdef CONFIG_PM_CLK
++	struct list_head clock_list;
++#endif
 +};
 +
- struct pm_subsys_data {
- 	struct mutex lock;
- 	unsigned int refcount;
- #ifdef CONFIG_PM_CLK
- 	struct list_head clock_list;
- #endif
-+#ifdef CONFIG_PM_GENERIC_DOMAINS
-+	struct pm_domain_data domain_data;
-+#endif
- };
- 
  struct dev_pm_info {
-Index: linux-2.6/include/linux/pm_domain.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_domain.h
-+++ linux-2.6/include/linux/pm_domain.h
-@@ -61,12 +61,6 @@ struct gpd_link {
- 	struct list_head slave_node;
+ 	pm_message_t		power_state;
+ 	unsigned int		can_wakeup:1;
+@@ -462,7 +470,7 @@ struct dev_pm_info {
+ 	unsigned long		suspended_jiffies;
+ 	unsigned long		accounting_timestamp;
+ #endif
+-	void			*subsys_data;  /* Owned by the subsystem. */
++	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
  };
  
--struct dev_list_entry {
--	struct list_head node;
--	struct device *dev;
--	bool need_restore;
--};
--
- #ifdef CONFIG_PM_GENERIC_DOMAINS
- extern int pm_genpd_add_device(struct generic_pm_domain *genpd,
- 			       struct device *dev);
-Index: linux-2.6/drivers/base/power/domain.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/domain.c
-+++ linux-2.6/drivers/base/power/domain.c
-@@ -181,18 +181,18 @@ int pm_genpd_poweron(struct generic_pm_d
- 
- /**
-  * __pm_genpd_save_device - Save the pre-suspend state of a device.
-- * @dle: Device list entry of the device to save the state of.
-+ * @pdd: Domain data of the device to save the state of.
-  * @genpd: PM domain the device belongs to.
-  */
--static int __pm_genpd_save_device(struct dev_list_entry *dle,
-+static int __pm_genpd_save_device(struct pm_domain_data *pdd,
- 				  struct generic_pm_domain *genpd)
- 	__releases(&genpd->lock) __acquires(&genpd->lock)
- {
--	struct device *dev = dle->dev;
-+	struct device *dev = pdd->dev;
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
- 
--	if (dle->need_restore)
-+	if (pdd->need_restore)
- 		return 0;
- 
- 	mutex_unlock(&genpd->lock);
-@@ -210,24 +210,24 @@ static int __pm_genpd_save_device(struct
- 	mutex_lock(&genpd->lock);
- 
- 	if (!ret)
--		dle->need_restore = true;
-+		pdd->need_restore = true;
- 
- 	return ret;
- }
- 
- /**
-  * __pm_genpd_restore_device - Restore the pre-suspend state of a device.
-- * @dle: Device list entry of the device to restore the state of.
-+ * @pdd: Domain data of the device to restore the state of.
-  * @genpd: PM domain the device belongs to.
-  */
--static void __pm_genpd_restore_device(struct dev_list_entry *dle,
-+static void __pm_genpd_restore_device(struct pm_domain_data *pdd,
- 				      struct generic_pm_domain *genpd)
- 	__releases(&genpd->lock) __acquires(&genpd->lock)
- {
--	struct device *dev = dle->dev;
-+	struct device *dev = pdd->dev;
- 	struct device_driver *drv = dev->driver;
- 
--	if (!dle->need_restore)
-+	if (!pdd->need_restore)
- 		return;
- 
- 	mutex_unlock(&genpd->lock);
-@@ -244,7 +244,7 @@ static void __pm_genpd_restore_device(st
- 
- 	mutex_lock(&genpd->lock);
- 
--	dle->need_restore = false;
-+	pdd->need_restore = false;
- }
- 
- /**
-@@ -286,7 +286,7 @@ void genpd_queue_power_off_work(struct g
- static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 	__releases(&genpd->lock) __acquires(&genpd->lock)
- {
--	struct dev_list_entry *dle;
-+	struct pm_domain_data *pdd;
- 	struct gpd_link *link;
- 	unsigned int not_suspended;
- 	int ret = 0;
-@@ -308,8 +308,8 @@ static int pm_genpd_poweroff(struct gene
- 		return -EBUSY;
- 
- 	not_suspended = 0;
--	list_for_each_entry(dle, &genpd->dev_list, node)
--		if (dle->dev->driver && !pm_runtime_suspended(dle->dev))
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node)
-+		if (pdd->dev->driver && !pm_runtime_suspended(pdd->dev))
- 			not_suspended++;
- 
- 	if (not_suspended > genpd->in_progress)
-@@ -332,9 +332,9 @@ static int pm_genpd_poweroff(struct gene
- 	genpd->status = GPD_STATE_BUSY;
- 	genpd->poweroff_task = current;
- 
--	list_for_each_entry_reverse(dle, &genpd->dev_list, node) {
-+	list_for_each_entry_reverse(pdd, &genpd->dev_list, list_node) {
- 		ret = atomic_read(&genpd->sd_count) == 0 ?
--			__pm_genpd_save_device(dle, genpd) : -EBUSY;
-+			__pm_genpd_save_device(pdd, genpd) : -EBUSY;
- 
- 		if (genpd_abort_poweroff(genpd))
- 			goto out;
-@@ -433,24 +433,6 @@ static int pm_genpd_runtime_suspend(stru
- }
- 
- /**
-- * __pm_genpd_runtime_resume - Resume a device belonging to I/O PM domain.
-- * @dev: Device to resume.
-- * @genpd: PM domain the device belongs to.
-- */
--static void __pm_genpd_runtime_resume(struct device *dev,
--				      struct generic_pm_domain *genpd)
--{
--	struct dev_list_entry *dle;
--
--	list_for_each_entry(dle, &genpd->dev_list, node) {
--		if (dle->dev == dev) {
--			__pm_genpd_restore_device(dle, genpd);
--			break;
--		}
--	}
--}
--
--/**
-  * pm_genpd_runtime_resume - Resume a device belonging to I/O PM domain.
-  * @dev: Device to resume.
-  *
-@@ -495,7 +477,7 @@ static int pm_genpd_runtime_resume(struc
- 		mutex_lock(&genpd->lock);
- 	}
- 	finish_wait(&genpd->status_wait_queue, &wait);
--	__pm_genpd_runtime_resume(dev, genpd);
-+	__pm_genpd_restore_device(&dev->power.subsys_data->domain_data, genpd);
- 	genpd->resume_count--;
- 	genpd_set_active(genpd);
- 	wake_up_all(&genpd->status_wait_queue);
-@@ -510,8 +492,6 @@ static int pm_genpd_runtime_resume(struc
- #else
- 
- static inline void genpd_power_off_work_fn(struct work_struct *work) {}
--static inline void __pm_genpd_runtime_resume(struct device *dev,
--					     struct generic_pm_domain *genpd) {}
- 
- #define pm_genpd_runtime_suspend	NULL
- #define pm_genpd_runtime_resume		NULL
-@@ -1068,7 +1048,7 @@ static void pm_genpd_complete(struct dev
-  */
- int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
- {
--	struct dev_list_entry *dle;
-+	struct pm_domain_data *pdd;
- 	int ret = 0;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
-@@ -1088,26 +1068,20 @@ int pm_genpd_add_device(struct generic_p
- 		goto out;
- 	}
- 
--	list_for_each_entry(dle, &genpd->dev_list, node)
--		if (dle->dev == dev) {
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node)
-+		if (pdd->dev == dev) {
- 			ret = -EINVAL;
- 			goto out;
- 		}
- 
--	dle = kzalloc(sizeof(*dle), GFP_KERNEL);
--	if (!dle) {
--		ret = -ENOMEM;
--		goto out;
--	}
--
--	dle->dev = dev;
--	dle->need_restore = false;
--	list_add_tail(&dle->node, &genpd->dev_list);
- 	genpd->device_count++;
- 
--	spin_lock_irq(&dev->power.lock);
- 	dev->pm_domain = &genpd->domain;
--	spin_unlock_irq(&dev->power.lock);
-+	dev_pm_get_subsys_data(dev);
-+	pdd = &dev->power.subsys_data->domain_data;
-+	pdd->dev = dev;
-+	pdd->need_restore = false;
-+	list_add_tail(&pdd->list_node, &genpd->dev_list);
- 
-  out:
- 	genpd_release_lock(genpd);
-@@ -1123,7 +1097,7 @@ int pm_genpd_add_device(struct generic_p
- int pm_genpd_remove_device(struct generic_pm_domain *genpd,
- 			   struct device *dev)
- {
--	struct dev_list_entry *dle;
-+	struct pm_domain_data *pdd;
- 	int ret = -EINVAL;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
-@@ -1138,17 +1112,16 @@ int pm_genpd_remove_device(struct generi
- 		goto out;
- 	}
- 
--	list_for_each_entry(dle, &genpd->dev_list, node) {
--		if (dle->dev != dev)
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-+		if (pdd->dev != dev)
- 			continue;
- 
--		spin_lock_irq(&dev->power.lock);
-+		list_del_init(&pdd->list_node);
-+		pdd->dev = NULL;
-+		dev_pm_put_subsys_data(dev);
- 		dev->pm_domain = NULL;
--		spin_unlock_irq(&dev->power.lock);
- 
- 		genpd->device_count--;
--		list_del(&dle->node);
--		kfree(dle);
- 
- 		ret = 0;
- 		break;
+ extern void update_pm_runtime_accounting(struct device *dev);
 Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
 ===================================================================
 --- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
 +++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -114,11 +114,9 @@ void sh7372_add_device_to_domain(struct
- {
+@@ -115,7 +115,7 @@ void sh7372_add_device_to_domain(struct
  	struct device *dev = &pdev->dev;
  
--	if (!dev->power.subsys_data) {
--		pm_clk_create(dev);
--		pm_clk_add(dev, NULL);
--	}
+ 	if (!dev->power.subsys_data) {
+-		pm_clk_init(dev);
++		pm_clk_create(dev);
+ 		pm_clk_add(dev, NULL);
+ 	}
  	pm_genpd_add_device(&sh7372_pd->genpd, dev);
-+	if (pm_clk_no_clocks(dev))
-+		pm_clk_add(dev, NULL);
- }
- 
- struct sh7372_pm_domain sh7372_a4lc = {
 Index: linux-2.6/include/linux/pm_runtime.h
 ===================================================================
 --- linux-2.6.orig/include/linux/pm_runtime.h
 +++ linux-2.6/include/linux/pm_runtime.h
-@@ -258,6 +258,12 @@ struct pm_clk_notifier_block {
+@@ -258,14 +258,18 @@ struct pm_clk_notifier_block {
  };
  
  #ifdef CONFIG_PM_CLK
-+static inline bool pm_clk_no_clocks(struct device *dev)
-+{
-+	return dev && dev->power.subsys_data
-+		&& list_empty(&dev->power.subsys_data->clock_list);
-+}
-+
- extern void pm_clk_init(struct device *dev);
- extern int pm_clk_create(struct device *dev);
+-extern int pm_clk_init(struct device *dev);
++extern void pm_clk_init(struct device *dev);
++extern int pm_clk_create(struct device *dev);
  extern void pm_clk_destroy(struct device *dev);
-@@ -266,6 +272,10 @@ extern void pm_clk_remove(struct device
+ extern int pm_clk_add(struct device *dev, const char *con_id);
+ extern void pm_clk_remove(struct device *dev, const char *con_id);
  extern int pm_clk_suspend(struct device *dev);
  extern int pm_clk_resume(struct device *dev);
  #else
-+static inline bool pm_clk_no_clocks(struct device *dev)
+-static inline int pm_clk_init(struct device *dev)
++static inline void pm_clk_init(struct device *dev)
 +{
-+	return true;
 +}
- static inline void pm_clk_init(struct device *dev)
++static inline int pm_clk_create(struct device *dev)
  {
+ 	return -EINVAL;
  }
