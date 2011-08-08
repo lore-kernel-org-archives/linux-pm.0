@@ -1,16 +1,17 @@
-From: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH v5 0/3] DEVFREQ,
-	DVFS Framework for Non-CPU Devices.
-Date: Mon, 8 Aug 2011 14:35:20 -0700
-Message-ID: <20110808213520.GA9803@suse.de>
-References: <1312794188-9823-1-git-send-email-myungjoo.ham@samsung.com>
-	<CAJ0PZbSgVujLSW9Ea_iWHZVbq2_H3EWGJg_1Zh5rUfvG3sxgsw@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
+	ram
+Date: Mon, 8 Aug 2011 23:54:52 +0200
+Message-ID: <20110808215452.GB22709@elf.ucw.cz>
+References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
+	<20110808210104.GA2926@suse.de> <20110808210537.GA22709@elf.ucw.cz>
+	<201108082314.23860.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <CAJ0PZbSgVujLSW9Ea_iWHZVbq2_H3EWGJg_1Zh5rUfvG3sxgsw@mail.gmail.com>
+In-Reply-To: <201108082314.23860.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +21,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Liu, ShuoX" <shuox.liu@intel.com>, yanmin_zhang@linux.intel.com, Greg KH <gregkh@suse.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Brown, Len" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 08, 2011 at 06:53:31PM +0900, MyungJoo Ham wrote:
-> Hello all,
-> 
-> 
-> I've got one issue requesting some comments: whether to create devfreq
-> directory or not.
-> 
-> For now, we only have four basic governors and one not-yet-posted
-> devfreq user for DEVFREQ; thus, it seems not necessary for just now.
-> 
-> However, like CPUFREQ, DEVFREQ may have several users later and we may
-> want to gather these files to one location: /drivers/devfreq or
-> somewhere else in /drivers/*. For example, Exynos4210 Memory DEVFREQ
-> user is located at arch/arm/mach-exynos4/devfreq_bus.c and with a
-> separated directory, we may have it at
-> drivers/devfreq/exynos4_memory_bus.c.
-> 
-> How do you think about separating DEVFREQ directory? Should I do so or
-> wait until we have several DEVFREQ users?
+Hi!
 
-A new subdir is fine, it's not an issue, and seems to make sense here,
-as you point out.
+> > > > > Thanks for the nice pointer. I checked dynamic debug. It's really a good debug tool.
+> > > > > With the dynamic debug:
+> > > > > 1) user need write a user space parser to process the syslog output;
+> > > > > 2) Our testing scenario is we leave the mobile for at least hours. Then, check its status.
+> > > > > No serial console available during the testing. One is because console would be suspended,
+> > > > > and the other is serial console connecting with spi or HSU devices would consume power. These
+> > > > > devices are powered off at suspend-2-ram.
+...
+> Not in the case described by Yanmin.
 
-greg k-h
+Really? I see the description above.
+
+Yes, they'd need to set up syslog to only log >= KERN_ERR, then parse
+the (small) results. Even hours worth of suspends should not cause
+_that_ many errors.
+
+Serial console is irrelevant. You need live machine to dump dmesg, but
+again, you need live machine to access debugfs, too.
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
