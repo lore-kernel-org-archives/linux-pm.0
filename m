@@ -1,14 +1,21 @@
 From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: [PATCH v3] PM: add statistics debugfs file for
- suspend to ram
-Date: Tue, 9 Aug 2011 13:49:57 +0900
-Message-ID: <CAJ0PZbQ4Bk7Up9texX2hU8NP583da7UP9Hk3GRHE6-VKsg69kA__27245.92079544$1312865455$gmane$org@mail.gmail.com>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B8057C306@shsmsx502.ccr.corp.intel.com>
+Subject: Re: [PATCH v4 0/3] DEVFREQ,
+	DVFS framework for non-CPU devices
+Date: Tue, 9 Aug 2011 14:27:19 +0900
+Message-ID: <CAJ0PZbQNOybrwu=Vxbjgbh-U1YA1Gve=jzpt3wwqA8kgEEPcXA@mail.gmail.com>
+References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
+	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
+	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
+	<87aabq5oqo.fsf@ti.com>
+	<CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
+	<CAJOA=zMNToQq=RVrRh2p+kko=n67BWwHjcWX3DGFuYCfAcksOQ@mail.gmail.com>
+	<CAJ0PZbQx-T+36eX7MiZqWSMxD-achZ9Z7G_kDWNQ2n0h1NTWSQ@mail.gmail.com>
+	<CAJOA=zOi9HzM7M72C+QS6iLcYD_xDeQkEZ3fYpVo_v4f4mfAyQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <6E3BC7F7C9A4BF4286DD4C043110F30B5B8057C306@shsmsx502.ccr.corp.intel.com>
+In-Reply-To: <CAJOA=zOi9HzM7M72C+QS6iLcYD_xDeQkEZ3fYpVo_v4f4mfAyQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,426 +25,177 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Liu, ShuoX" <shuox.liu@intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, "Yanmin_zhang@linux.intel.com" <Yanmin_zhang@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Turquette, Mike" <mturquette@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 9, 2011 at 11:27 AM, Liu, ShuoX <shuox.liu@intel.com> wrote:
-> From: ShuoX Liu <shuox.liu@intel.com>
+On Tue, Aug 9, 2011 at 4:13 AM, Turquette, Mike <mturquette@ti.com> wrote:
+> On Thu, Aug 4, 2011 at 11:18 PM, MyungJoo Ham <myungjoo.ham@gmail.com> wr=
+ote:
+>> On Fri, Aug 5, 2011 at 6:59 AM, Turquette, Mike <mturquette@ti.com> wrot=
+e:
+>>> On Thu, Aug 4, 2011 at 1:15 AM, MyungJoo Ham <myungjoo.ham@gmail.com> w=
+rote:
+>>>>
+>>>> Ok.. I see.
+>>>>
+>>>> Now, I can agree with you that tickle is subset of QoS request.
+>>>>
+>>>> As long as we have QoS request feature on devices with either OPP or
+>>>> DEVFREQ, tickling is not needed.
+>>>>
+>>>> I'll remove tickle in the next revision (along with some bugfixes for
+>>>> bugs found recently).
+>>>>
+>>>>
+>>>> Anyway, it appears that clock-rate-wise QoS request may be dealt at
+>>>> OPP so that the OPPs meeting the QoS requests w/ frequency or voltage
+>>>> specifications are enabled and returned with opp_find_* functions.
+>>>> Maybe we will need to separate enable/disable by
+>>>> opp_enable()/opp_disable() from enable/disable by QoS requests so that
+>>>> the two may have different semantics. Then, QoS requests cannot
+>>>> override opp_disable and opp_enable cannot override QoS requests. This
+>>>> way, any clock-setting code properly based on OPP (including any
+>>>> customized devfreq governors) cannot violate QoS requests.
+>>>
+>>> If devfreq used the QoS API in it's ->target() call then this would
+>>> not be an issue, and further illustrates the idea of devfreq simply
+>>> being a policy into a proper QoS API.
+>>>
+>>> Regards,
+>>> Mike
+>>>
+>>
+>> Yes, if we choose an OPP that meets the PM-QoS requests before calling
+>> ->target() in devfreq_do(), there wouldn't be an issue.
+>>
+>> However, if a device is using DEVFREQ, it also means the device has
+>> OPPs (mandatory for DEVFREQ). If the device is using PM QoS as well as
+>> OPP, I guess the correctly implemented device driver needs to call
+>> opp_enable() and opp_disable() according to PM QoS's update_target()
+>> calls through the PM QoS notifier cb.
+>>
+>> Then, for such drivers, DEVFREQ automatically meets PM QoS requests
+>> without any modification; as long as QoS meeting OPPs are enabled at
+>> the device driver's PM QoS callback, there is no QoS issue.
+>>
+>> Therefore, now, it appears that neither OPP or DEVFREQ should be
+>> allowed to directly touch PM QoS APIs, but, the device driver should
+>> do so with notifier by simply calling opp-enable/disable if the
+>> frequency is the key QoS "actuator".
+>>
+>> If we are going to let DEVFREQ handle its corresponding devices' PM
+>> QoS APIs, it would mean that both device driver and its DEVFREQ codes
+>> will be handling PM QoS API duplicated (or worse, inconsistently).
 >
-> Record S3 failure time about each reason and the latest two failed
-> devices' names in S3 progress.
-> We can check it through 'suspend_stats' entry in debugfs.
+> I'm not getting too bogged down with the OPP specifics because I don't
+> know if that interface is going to be used in the future, and I don't
+> think that devfreq will need to know about OPPs once the DVFS QoS API
+> exists. =A0In that case, devfreq can just requests clock frequencies
+> through the QoS API. =A0I view devfreq's usage of the OPP library as
+> temporary.
 >
-> The motivation of the patch:
+> The real issue here is that we don't want some weird feedback loop
+> with device QoS requests and devfreq targets stepping on each other.
 >
-> We are enabling power features on Medfield. Comparing with PC/notebook,
-> a mobile enters/exits suspend-2-ram (we call it s3 on Medfield) far
-> more frequently. If it can't enter suspend-2-ram in time, the power
-> might be used up soon.
+> One way to handle this is to partition QoS use in drivers away from
+> devfreq usage. =A0For example, if a GPU supports performance counters
+> and can introspect its own usage, then it is a perfect candidate for
+> devfreq; on the flip-side device drivers should *not* be allowed to
+> put performance/qos constraints on this particular GPU, since we
+> assume that the performance counters/devfreq governor will handle the
+> whole job for us. =A0Since this centralizes the decision-making for the
+> GPU it is safe for the devfreq->target() call to use the QoS APIs for
+> controlling the GPU, since no one else will. =A0This avoids the feedback
+> loop.
 >
-> We often find sometimes, a device suspend fails. Then, system retries
-> s3 over and over again. As display is off, testers and developers
-> don't know what happens.
+> On the other hand, if the GPU does not support performance counters
+> then it should not use devfreq at all and rely 100% of QoS constraints
+> from various sources: the GPU driver might request a high OPP every
+> time work comes in, coupled with a timeout; if a QoS knob is exported
+> to userspace then some OpenGL library might hold constraints through
+> it; or some other kernel driver (video-related?) needs to use the GPU
+> then it can hold a constraint through the QoS API.
 >
-> Some testers and developers complain they don't know if system
-> tries suspend-2-ram, and what device fails to suspend. They need
-> such info for a quick check. The patch adds suspend_stats under
-> debugfs for users to check suspend to RAM statistics quickly.
->
-> If not using this patch, we have other methods to get info about
-> what device fails. One is to turn on =A0CONFIG_PM_DEBUG, but users
-> would get too much info and testers need recompile the system.
->
-> In addition, dynamic debug is another good tool to dump debug info.
-> But it still doesn't match our utilization scenario closely.
-> 1) user need write a user space parser to process the syslog output;
-> 2) Our testing scenario is we leave the mobile for at least hours.
-> =A0 Then, check its status. No serial console available during the
-> =A0 testing. One is because console would be suspended, and the other
-> =A0 is serial console connecting with spi or HSU devices would consume
-> =A0 power. These devices are powered off at suspend-2-ram.
->
-> Thank Greg and Rafael for their great comments.
->
-> Change Log:
-> =A0V3: Change some programming styles.
-> =A0V2:
-> =A0 =A0 =A0 =A01) Change the sysfs entry to debugfs.
-> =A0 =A0 =A0 =A02) Add some explanation in document file.
->
-> Contribution:
-> =A0 =A0 =A0 =A0yanmin_zhang@linux.intel.com
->
-> Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
-> ---
-> =A0Documentation/power/basic-pm-debugging.txt | =A0 19 +++++++++
-> =A0drivers/base/power/main.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 35 =
-++++++++++++++--
-> =A0include/linux/suspend.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 1=
-6 +++++++
-> =A0kernel/power/main.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =
-=A0 59 ++++++++++++++++++++++++++++
-> =A0kernel/power/suspend.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 1=
-5 ++++++-
-> =A05 files changed, 136 insertions(+), 8 deletions(-)
->
+> So there is a clear partition of QoS API usage between devices that
+> support performance counters and ones that do not. =A0We want to avoid a
+> feedback loop here.
 
-This patch looks very helpful. Great! :)
+Such weird feedback loop may happen if the result frequency ranges
+from QoS are inconsistent with those from DEVFREQ. However, if DEVFREQ
+provides frequencies that do not violate QoS requirements, there would
+be no such feedback loop. If they are consistent (DEVFREQ never gives
+frequencies that do NOT satisfy QoS), DEVFREQ is transparent to PM
+QoS.
 
-Anyway, how about including the error value induced by the device
-along with the device name?
-For example,
+For now, with OPPs, DEVFREQ will always select frequencies that
+satisfy QoS requirements if the driver implementation is correct.
 
-failed_devs:
-         last_failed: alarm -5
-                      adc -10
+However, as you mentioned, if we assume that OPP is going to disappear
+in the future kernel, then we will somehow need to design an interface
+for device drivers to provide lists of available frequencies to
+DEVFREQ and those lists are going to be runtime-update-able and where
+QoS requirements are applied. As with the current DEVFREQ
+implementation, if DEVFREQ chooses frequencies only from those enabled
+by the driver (meeting the QoS requirements), things are same with the
+cases with OPPs. The reason why QoS requirements are being interpreted
+at device drivers, not at DEVFREQ, is that the device driver itself is
+the only entity that can interpret QoS requests to frequencies
+(latency/#ops/... --> Hz).
 
-or
-
-failed_devs:
-         last_failed: alarm
-                      adc
-         last_errorno: -5
-                      -10
-
-Or, even, we may consider including the failed step:
-failed_devs:
-         last_failed: alarm
-                      adc
-         last_errorno: -5
-                      -10
-         last_step: suspend
-                      suspend_noirq
+And, for the another point, making PM QoS disabled (or ignored?) for
+devices with DEVFREQ, I guess that should be left for each device
+driver's decision. Even when DVFS is used for a device, there are
+cases where QoS requests are needed as well because DEVFREQ is based
+on polling which incurs response time that is not acceptable for some
+cases: e.g., a sudden user input at idle in a system with high-speed
+displays. Besides, there could be another type of PM QoS requirements:
+"under xxx MHz" in order to restrict (or as a response to) the
+temperature or power consumption rate, which should affect DEVFREQ's
+behavior. For battery-powered devices (laptops will want to do so as
+well at userspace), I guess such features will be soon needed; at
+least, we are working on it.
 
 
 Cheers!
 MyungJoo
 
-> diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/p=
-ower/basic-pm-debugging.txt
-> index ddd7817..acbd3e0 100644
-> --- a/Documentation/power/basic-pm-debugging.txt
-> +++ b/Documentation/power/basic-pm-debugging.txt
-> @@ -201,3 +201,22 @@ case, you may be able to search for failing drivers =
-by following the procedure
-> =A0analogous to the one described in section 1. =A0If you find some faili=
-ng drivers,
-> =A0you will have to unload them every time before an STR transition (ie. =
-before
-> =A0you run s2ram), and please report the problems with them.
-> +
-> +There is a debugfs entry which shows the suspend to RAM statistics. Here=
- is an
-> +example of its output.
-> + =A0 =A0 =A0 # mount -t debugfs none /sys/kernel/debug
-> + =A0 =A0 =A0 # cat /sys/kernel/debug/suspend_stats
-> + =A0 =A0 =A0 success: 20
-> + =A0 =A0 =A0 fail: 5
-> + =A0 =A0 =A0 failed_freeze: 0
-> + =A0 =A0 =A0 failed_prepare: 0
-> + =A0 =A0 =A0 failed_suspend: 5
-> + =A0 =A0 =A0 failed_suspend_noirq: 0
-> + =A0 =A0 =A0 failed_resume: 0
-> + =A0 =A0 =A0 failed_resume_noirq: 0
-> + =A0 =A0 =A0 failed_devs:
-> + =A0 =A0 =A0 =A0 last_failed: alarm
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0adc
-> +Field success means the success number of suspend to RAM, and field fail=
- means
-> +the failure number. Others are the failure number of different steps of =
-suspend
-> +to RAM. suspend_stats just lists the last 2 failed devices.
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index a854591..111f86c 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -46,6 +46,7 @@ LIST_HEAD(dpm_prepared_list);
-> =A0LIST_HEAD(dpm_suspended_list);
-> =A0LIST_HEAD(dpm_noirq_list);
 >
-> +struct suspend_stats suspend_stats;
-> =A0static DEFINE_MUTEX(dpm_list_mtx);
-> =A0static pm_message_t pm_transition;
+> Regards,
+> Mike
 >
-> @@ -180,6 +181,15 @@ static void initcall_debug_report(struct device *dev=
-, ktime_t calltime,
-> =A0 =A0 =A0 =A0}
-> =A0}
->
-> +static void dpm_save_dev_name(const char *name)
-> +{
-> + =A0 =A0 =A0 strlcpy(suspend_stats.failed_devs[suspend_stats.last_failed=
-],
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 name,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 sizeof(suspend_stats.failed_devs[0]));
-> + =A0 =A0 =A0 suspend_stats.last_failed++;
-> + =A0 =A0 =A0 suspend_stats.last_failed %=3D REC_FAILED_DEV_NUM;
-> +}
-> +
-> =A0/**
-> =A0* dpm_wait - Wait for a PM operation to complete.
-> =A0* @dev: Device to wait for.
-> @@ -464,8 +474,11 @@ void dpm_resume_noirq(pm_message_t state)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_unlock(&dpm_list_mtx);
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0error =3D device_resume_noirq(dev, state);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (error)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (error) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.failed_resume=
-_noirq++;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dpm_save_dev_name(dev_name(=
-dev));
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm_dev_err(dev, state, " e=
-arly", error);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_lock(&dpm_list_mtx);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0put_device(dev);
-> @@ -626,8 +639,11 @@ void dpm_resume(pm_message_t state)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_unlock(&dpm_list_mtx=
-);
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0error =3D device_resume(de=
-v, state, false);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (error)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (error) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_sta=
-ts.failed_resume++;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dpm_save_de=
-v_name(dev_name(dev));
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm_dev_err=
-(dev, state, "", error);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_lock(&dpm_list_mtx);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> @@ -802,6 +818,8 @@ int dpm_suspend_noirq(pm_message_t state)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_lock(&dpm_list_mtx);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (error) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm_dev_err(dev, state, " l=
-ate", error);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.failed_suspen=
-d_noirq++;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dpm_save_dev_name(dev_name(=
-dev));
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0put_device(dev);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> @@ -923,8 +941,10 @@ static void async_suspend(void *data, async_cookie_t=
- cookie)
-> =A0 =A0 =A0 =A0int error;
->
-> =A0 =A0 =A0 =A0error =3D __device_suspend(dev, pm_transition, true);
-> - =A0 =A0 =A0 if (error)
-> + =A0 =A0 =A0 if (error) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dpm_save_dev_name(dev_name(dev));
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm_dev_err(dev, pm_transition, " async", e=
-rror);
-> + =A0 =A0 =A0 }
->
-> =A0 =A0 =A0 =A0put_device(dev);
-> =A0}
-> @@ -967,6 +987,7 @@ int dpm_suspend(pm_message_t state)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_lock(&dpm_list_mtx);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (error) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pm_dev_err(dev, state, "",=
- error);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dpm_save_dev_name(dev_name(=
-dev));
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0put_device(dev);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> @@ -980,7 +1001,9 @@ int dpm_suspend(pm_message_t state)
-> =A0 =A0 =A0 =A0async_synchronize_full();
-> =A0 =A0 =A0 =A0if (!error)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0error =3D async_error;
-> - =A0 =A0 =A0 if (!error)
-> + =A0 =A0 =A0 if (error)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.failed_suspend++;
-> + =A0 =A0 =A0 else
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dpm_show_time(starttime, state, NULL);
-> =A0 =A0 =A0 =A0return error;
-> =A0}
-> @@ -1088,7 +1111,9 @@ int dpm_suspend_start(pm_message_t state)
-> =A0 =A0 =A0 =A0int error;
->
-> =A0 =A0 =A0 =A0error =3D dpm_prepare(state);
-> - =A0 =A0 =A0 if (!error)
-> + =A0 =A0 =A0 if (error)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.failed_prepare++;
-> + =A0 =A0 =A0 else
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0error =3D dpm_suspend(state);
-> =A0 =A0 =A0 =A0return error;
-> =A0}
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 6bbcef2..6a8ff23 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -34,6 +34,22 @@ typedef int __bitwise suspend_state_t;
-> =A0#define PM_SUSPEND_MEM =A0 =A0 =A0 =A0 ((__force suspend_state_t) 3)
-> =A0#define PM_SUSPEND_MAX =A0 =A0 =A0 =A0 ((__force suspend_state_t) 4)
->
-> +struct suspend_stats {
-> + =A0 =A0 =A0 int =A0 =A0 success;
-> + =A0 =A0 =A0 int =A0 =A0 fail;
-> + =A0 =A0 =A0 int =A0 =A0 failed_freeze;
-> + =A0 =A0 =A0 int =A0 =A0 failed_prepare;
-> + =A0 =A0 =A0 int =A0 =A0 failed_suspend;
-> + =A0 =A0 =A0 int =A0 =A0 failed_suspend_noirq;
-> + =A0 =A0 =A0 int =A0 =A0 failed_resume;
-> + =A0 =A0 =A0 int =A0 =A0 failed_resume_noirq;
-> +#define =A0 =A0 =A0 =A0REC_FAILED_DEV_NUM =A0 =A0 =A02
-> + =A0 =A0 =A0 char =A0 =A0failed_devs[REC_FAILED_DEV_NUM][40];
-> + =A0 =A0 =A0 int =A0 =A0 last_failed;
-> +};
-> +
-> +extern struct suspend_stats suspend_stats;
-> +
-> =A0/**
-> =A0* struct platform_suspend_ops - Callbacks for managing platform depend=
-ent
-> =A0* =A0 =A0 system sleep states.
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 6c601f8..0977f5d 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -12,6 +12,8 @@
-> =A0#include <linux/string.h>
-> =A0#include <linux/resume-trace.h>
-> =A0#include <linux/workqueue.h>
-> +#include <linux/debugfs.h>
-> +#include <linux/seq_file.h>
->
-> =A0#include "power.h"
->
-> @@ -133,6 +135,59 @@ power_attr(pm_test);
->
-> =A0#endif /* CONFIG_PM_SLEEP */
->
-> +#ifdef CONFIG_DEBUG_FS
-> +static int suspend_stats_show(struct seq_file *s, void *unused)
-> +{
-> + =A0 =A0 =A0 int i, index, last_index;
-> +
-> + =A0 =A0 =A0 last_index =3D suspend_stats.last_failed + REC_FAILED_DEV_N=
-UM - 1;
-> + =A0 =A0 =A0 last_index %=3D REC_FAILED_DEV_NUM;
-> + =A0 =A0 =A0 seq_printf(s, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "%s: %d\n%s: %d\n%s: %d\n%s=
-: %d\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "success", suspend_stats.su=
-ccess,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "fail", suspend_stats.fail,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "failed_freeze", suspend_st=
-ats.failed_freeze,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "failed_prepare", suspend_s=
-tats.failed_prepare,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "failed_suspend", suspend_s=
-tats.failed_suspend,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "failed_suspend_noirq",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_sta=
-ts.failed_suspend_noirq,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "failed_resume", suspend_st=
-ats.failed_resume,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "failed_resume_noirq",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_sta=
-ts.failed_resume_noirq);
-> + =A0 =A0 =A0 seq_printf(s, =A0 "failed_devs:\n =A0last_failed:\t%s\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.failed_devs[l=
-ast_index]);
-> + =A0 =A0 =A0 for (i =3D 1; i < REC_FAILED_DEV_NUM; i++) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 index =3D last_index + REC_FAILED_DEV_NUM -=
- i;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 index %=3D REC_FAILED_DEV_NUM;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 seq_printf(s, "\t\t%s\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.failed_devs[i=
-ndex]);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return 0;
-> +}
-> +
-> +static int suspend_stats_open(struct inode *inode, struct file *file)
-> +{
-> + =A0 =A0 =A0 return single_open(file, suspend_stats_show, NULL);
-> +}
-> +
-> +static const struct file_operations suspend_stats_operations =3D {
-> + =A0 =A0 =A0 .open =A0 =A0 =A0 =A0 =A0 =3D suspend_stats_open,
-> + =A0 =A0 =A0 .read =A0 =A0 =A0 =A0 =A0 =3D seq_read,
-> + =A0 =A0 =A0 .llseek =A0 =A0 =A0 =A0 =3D seq_lseek,
-> + =A0 =A0 =A0 .release =A0 =A0 =A0 =A0=3D single_release,
-> +};
-> +
-> +static int __init pm_debugfs_init(void)
-> +{
-> + =A0 =A0 =A0 debugfs_create_file("suspend_stats", S_IFREG | S_IRUGO,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 NULL, NULL, &suspend_stats_=
-operations);
-> + =A0 =A0 =A0 return 0;
-> +}
-> +
-> +late_initcall(pm_debugfs_init);
-> +#endif /* CONFIG_DEBUG_FS */
-> +
-> =A0struct kobject *power_kobj;
->
-> =A0/**
-> @@ -194,6 +249,10 @@ static ssize_t state_store(struct kobject *kobj, str=
-uct kobj_attribute *attr,
-> =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0if (state < PM_SUSPEND_MAX && *s)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0error =3D enter_state(state);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (error)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.fail++;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.success++;
-> =A0#endif
->
-> =A0Exit:
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index b6b71ad..e5197a0 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -104,7 +104,9 @@ static int suspend_prepare(void)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto Finish;
->
-> =A0 =A0 =A0 =A0error =3D suspend_freeze_processes();
-> - =A0 =A0 =A0 if (!error)
-> + =A0 =A0 =A0 if (error)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.failed_freeze++;
-> + =A0 =A0 =A0 else
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return 0;
->
-> =A0 =A0 =A0 =A0suspend_thaw_processes();
-> @@ -315,8 +317,15 @@ int enter_state(suspend_state_t state)
-> =A0*/
-> =A0int pm_suspend(suspend_state_t state)
-> =A0{
-> - =A0 =A0 =A0 if (state > PM_SUSPEND_ON && state <=3D PM_SUSPEND_MAX)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return enter_state(state);
-> + =A0 =A0 =A0 int ret;
-> + =A0 =A0 =A0 if (state > PM_SUSPEND_ON && state <=3D PM_SUSPEND_MAX) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D enter_state(state);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (ret)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.fail++;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 suspend_stats.success++;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return ret;
-> + =A0 =A0 =A0 }
-> =A0 =A0 =A0 =A0return -EINVAL;
-> =A0}
-> =A0EXPORT_SYMBOL(pm_suspend);
-> --
-> 1.7.1
->
->
->
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>> Cheers,
+>> MyungJoo
+>>
+>>>> How about this concept of getting QoS requests associated with clock r=
+ates?
+>>>>
+>>>>
+>>>>
+>>>> Cheers!
+>>>> MyungJoo.
+>>>> --
+>>>> MyungJoo Ham, Ph.D.
+>>>> Mobile Software Platform Lab,
+>>>> Digital Media and Communications (DMC) Business
+>>>> Samsung Electronics
+>>>> cell: 82-10-6714-2858
+>>>> _______________________________________________
+>>>> linux-pm mailing list
+>>>> linux-pm@lists.linux-foundation.org
+>>>> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>>>>
+>>>
+>>
+>>
+>>
+>> --
+>> MyungJoo Ham, Ph.D.
+>> Mobile Software Platform Lab,
+>> Digital Media and Communications (DMC) Business
+>> Samsung Electronics
+>> cell: 82-10-6714-2858
+>>
 >
 
 
