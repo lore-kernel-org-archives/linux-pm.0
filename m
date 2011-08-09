@@ -1,13 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/4] PM: Introduce struct pm_subsys_data
-Date: Tue, 9 Aug 2011 00:30:59 +0200
-Message-ID: <201108090030.59408.rjw__44555.9431952008$1312842817$gmane$org@sisk.pl>
-References: <201108090028.12698.rjw@sisk.pl>
+From: "Liu, ShuoX" <shuox.liu@intel.com>
+Subject: [PATCH v3] PM: add statistics debugfs file for suspend
+	to ram
+Date: Tue, 9 Aug 2011 10:27:46 +0800
+Message-ID: <6E3BC7F7C9A4BF4286DD4C043110F30B5B8057C306__41555.0382611856$1312857855$gmane$org@shsmsx502.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108090028.12698.rjw@sisk.pl>
+Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,403 +17,340 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: "Brown, Len" <len.brown@intel.com>, "Yanmin_zhang@linux.intel.com" <Yanmin_zhang@linux.intel.com>, Greg KH <gregkh@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: ShuoX Liu <shuox.liu@intel.com>
 
-Introduce struct pm_subsys_data that may be subclassed by subsystems
-to store subsystem-specific information related to the device.  Move
-the clock management fields accessed through the power.subsys_data
-pointer in struct device to the new strucutre.
+Record S3 failure time about each reason and the latest two failed
+devices' names in S3 progress.
+We can check it through 'suspend_stats' entry in debugfs.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+The motivation of the patch:
+
+We are enabling power features on Medfield. Comparing with PC/notebook,
+a mobile enters/exits suspend-2-ram (we call it s3 on Medfield) far
+more frequently. If it can't enter suspend-2-ram in time, the power
+might be used up soon.
+
+We often find sometimes, a device suspend fails. Then, system retries
+s3 over and over again. As display is off, testers and developers
+don't know what happens.
+
+Some testers and developers complain they don't know if system
+tries suspend-2-ram, and what device fails to suspend. They need
+such info for a quick check. The patch adds suspend_stats under
+debugfs for users to check suspend to RAM statistics quickly.
+
+If not using this patch, we have other methods to get info about
+what device fails. One is to turn on  CONFIG_PM_DEBUG, but users
+would get too much info and testers need recompile the system.
+
+In addition, dynamic debug is another good tool to dump debug info.
+But it still doesn't match our utilization scenario closely.
+1) user need write a user space parser to process the syslog output;
+2) Our testing scenario is we leave the mobile for at least hours.
+   Then, check its status. No serial console available during the
+   testing. One is because console would be suspended, and the other
+   is serial console connecting with spi or HSU devices would consume
+   power. These devices are powered off at suspend-2-ram.
+
+Thank Greg and Rafael for their great comments.
+
+Change Log:
+  V3: Change some programming styles.
+  V2:
+	1) Change the sysfs entry to debugfs.
+	2) Add some explanation in document file.
+
+Contribution:
+	yanmin_zhang@linux.intel.com
+
+Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
 ---
- arch/arm/mach-shmobile/pm-sh7372.c |    2 
- drivers/base/power/clock_ops.c     |  122 +++++++++++++++++++------------------
- include/linux/device.h             |    5 +
- include/linux/pm.h                 |   10 ++-
- include/linux/pm_runtime.h         |    8 +-
- 5 files changed, 85 insertions(+), 62 deletions(-)
+ Documentation/power/basic-pm-debugging.txt |   19 +++++++++
+ drivers/base/power/main.c                  |   35 ++++++++++++++--
+ include/linux/suspend.h                    |   16 +++++++
+ kernel/power/main.c                        |   59 ++++++++++++++++++++++++++++
+ kernel/power/suspend.c                     |   15 ++++++-
+ 5 files changed, 136 insertions(+), 8 deletions(-)
 
-Index: linux-2.6/drivers/base/power/clock_ops.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/clock_ops.c
-+++ linux-2.6/drivers/base/power/clock_ops.c
-@@ -17,11 +17,6 @@
- 
- #ifdef CONFIG_PM
- 
--struct pm_clk_data {
--	struct list_head clock_list;
--	struct mutex lock;
--};
--
- enum pce_status {
- 	PCE_STATUS_NONE = 0,
- 	PCE_STATUS_ACQUIRED,
-@@ -36,11 +31,6 @@ struct pm_clock_entry {
- 	enum pce_status status;
- };
- 
--static struct pm_clk_data *__to_pcd(struct device *dev)
--{
--	return dev ? dev->power.subsys_data : NULL;
--}
--
- /**
-  * pm_clk_add - Start using a device clock for power management.
-  * @dev: Device whose clock is going to be used for power management.
-@@ -51,10 +41,10 @@ static struct pm_clk_data *__to_pcd(stru
-  */
- int pm_clk_add(struct device *dev, const char *con_id)
- {
--	struct pm_clk_data *pcd = __to_pcd(dev);
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
- 
--	if (!pcd)
-+	if (!psd)
- 		return -EINVAL;
- 
- 	ce = kzalloc(sizeof(*ce), GFP_KERNEL);
-@@ -73,9 +63,9 @@ int pm_clk_add(struct device *dev, const
- 		}
- 	}
- 
--	mutex_lock(&pcd->lock);
--	list_add_tail(&ce->node, &pcd->clock_list);
--	mutex_unlock(&pcd->lock);
-+	mutex_lock(&psd->lock);
-+	list_add_tail(&ce->node, &psd->clock_list);
-+	mutex_unlock(&psd->lock);
- 	return 0;
- }
- 
-@@ -117,15 +107,15 @@ static void __pm_clk_remove(struct pm_cl
-  */
- void pm_clk_remove(struct device *dev, const char *con_id)
- {
--	struct pm_clk_data *pcd = __to_pcd(dev);
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
- 
--	if (!pcd)
-+	if (!psd)
- 		return;
- 
--	mutex_lock(&pcd->lock);
-+	mutex_lock(&psd->lock);
- 
--	list_for_each_entry(ce, &pcd->clock_list, node) {
-+	list_for_each_entry(ce, &psd->clock_list, node) {
- 		if (!con_id && !ce->con_id) {
- 			__pm_clk_remove(ce);
- 			break;
-@@ -137,29 +127,45 @@ void pm_clk_remove(struct device *dev, c
- 		}
- 	}
- 
--	mutex_unlock(&pcd->lock);
-+	mutex_unlock(&psd->lock);
- }
- 
- /**
-  * pm_clk_init - Initialize a device's list of power management clocks.
-  * @dev: Device to initialize the list of PM clocks for.
-  *
-- * Allocate a struct pm_clk_data object, initialize its lock member and
-- * make the @dev's power.subsys_data field point to it.
-+ * Initialize the lock and clock_list members of the device's pm_subsys_data
-+ * object.
-  */
--int pm_clk_init(struct device *dev)
-+void pm_clk_init(struct device *dev)
- {
--	struct pm_clk_data *pcd;
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
+diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
+index ddd7817..acbd3e0 100644
+--- a/Documentation/power/basic-pm-debugging.txt
++++ b/Documentation/power/basic-pm-debugging.txt
+@@ -201,3 +201,22 @@ case, you may be able to search for failing drivers by following the procedure
+ analogous to the one described in section 1.  If you find some failing drivers,
+ you will have to unload them every time before an STR transition (ie. before
+ you run s2ram), and please report the problems with them.
 +
-+	if (!psd)
-+		return;
++There is a debugfs entry which shows the suspend to RAM statistics. Here is an
++example of its output.
++	# mount -t debugfs none /sys/kernel/debug
++	# cat /sys/kernel/debug/suspend_stats
++	success: 20
++	fail: 5
++	failed_freeze: 0
++	failed_prepare: 0
++	failed_suspend: 5
++	failed_suspend_noirq: 0
++	failed_resume: 0
++	failed_resume_noirq: 0
++	failed_devs:
++	  last_failed: alarm
++		       adc
++Field success means the success number of suspend to RAM, and field fail means
++the failure number. Others are the failure number of different steps of suspend
++to RAM. suspend_stats just lists the last 2 failed devices.
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index a854591..111f86c 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -46,6 +46,7 @@ LIST_HEAD(dpm_prepared_list);
+ LIST_HEAD(dpm_suspended_list);
+ LIST_HEAD(dpm_noirq_list);
  
--	pcd = kzalloc(sizeof(*pcd), GFP_KERNEL);
--	if (!pcd) {
-+	INIT_LIST_HEAD(&psd->clock_list);
-+	mutex_init(&psd->lock);
++struct suspend_stats suspend_stats;
+ static DEFINE_MUTEX(dpm_list_mtx);
+ static pm_message_t pm_transition;
+ 
+@@ -180,6 +181,15 @@ static void initcall_debug_report(struct device *dev, ktime_t calltime,
+ 	}
+ }
+ 
++static void dpm_save_dev_name(const char *name)
++{
++	strlcpy(suspend_stats.failed_devs[suspend_stats.last_failed],
++		name,
++		sizeof(suspend_stats.failed_devs[0]));
++	suspend_stats.last_failed++;
++	suspend_stats.last_failed %= REC_FAILED_DEV_NUM;
 +}
 +
-+/**
-+ * pm_clk_create - Create and initialize a device's list of PM clocks.
-+ * @dev: Device to create and initialize the list of PM clocks for.
-+ *
-+ * Allocate a struct pm_subsys_data object, initialize its lock and clock_list
-+ * members and make the @dev's power.subsys_data field point to it.
-+ */
-+int pm_clk_create(struct device *dev)
-+{
-+	struct pm_subsys_data *psd;
-+
-+	psd = kzalloc(sizeof(*psd), GFP_KERNEL);
-+	if (!psd) {
- 		dev_err(dev, "Not enough memory for PM clock data.\n");
- 		return -ENOMEM;
- 	}
--
--	INIT_LIST_HEAD(&pcd->clock_list);
--	mutex_init(&pcd->lock);
--	dev->power.subsys_data = pcd;
-+	dev->power.subsys_data = psd;
-+	pm_clk_init(dev);
- 	return 0;
- }
+ /**
+  * dpm_wait - Wait for a PM operation to complete.
+  * @dev: Device to wait for.
+@@ -464,8 +474,11 @@ void dpm_resume_noirq(pm_message_t state)
+ 		mutex_unlock(&dpm_list_mtx);
  
-@@ -168,27 +174,27 @@ int pm_clk_init(struct device *dev)
-  * @dev: Device to destroy the list of PM clocks for.
-  *
-  * Clear the @dev's power.subsys_data field, remove the list of clock entries
-- * from the struct pm_clk_data object pointed to by it before and free
-+ * from the struct pm_subsys_data object pointed to by it before and free
-  * that object.
-  */
- void pm_clk_destroy(struct device *dev)
- {
--	struct pm_clk_data *pcd = __to_pcd(dev);
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce, *c;
+ 		error = device_resume_noirq(dev, state);
+-		if (error)
++		if (error) {
++			suspend_stats.failed_resume_noirq++;
++			dpm_save_dev_name(dev_name(dev));
+ 			pm_dev_err(dev, state, " early", error);
++		}
  
--	if (!pcd)
-+	if (!psd)
- 		return;
+ 		mutex_lock(&dpm_list_mtx);
+ 		put_device(dev);
+@@ -626,8 +639,11 @@ void dpm_resume(pm_message_t state)
+ 			mutex_unlock(&dpm_list_mtx);
  
- 	dev->power.subsys_data = NULL;
+ 			error = device_resume(dev, state, false);
+-			if (error)
++			if (error) {
++				suspend_stats.failed_resume++;
++				dpm_save_dev_name(dev_name(dev));
+ 				pm_dev_err(dev, state, "", error);
++			}
  
--	mutex_lock(&pcd->lock);
-+	mutex_lock(&psd->lock);
- 
--	list_for_each_entry_safe_reverse(ce, c, &pcd->clock_list, node)
-+	list_for_each_entry_safe_reverse(ce, c, &psd->clock_list, node)
- 		__pm_clk_remove(ce);
- 
--	mutex_unlock(&pcd->lock);
-+	mutex_unlock(&psd->lock);
- 
--	kfree(pcd);
-+	kfree(psd);
- }
- 
- #endif /* CONFIG_PM */
-@@ -218,17 +224,17 @@ static void pm_clk_acquire(struct device
-  */
- int pm_clk_suspend(struct device *dev)
- {
--	struct pm_clk_data *pcd = __to_pcd(dev);
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
- 
--	if (!pcd)
-+	if (!psd)
- 		return 0;
- 
--	mutex_lock(&pcd->lock);
-+	mutex_lock(&psd->lock);
- 
--	list_for_each_entry_reverse(ce, &pcd->clock_list, node) {
-+	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
- 		if (ce->status == PCE_STATUS_NONE)
- 			pm_clk_acquire(dev, ce);
- 
-@@ -238,7 +244,7 @@ int pm_clk_suspend(struct device *dev)
+ 			mutex_lock(&dpm_list_mtx);
  		}
- 	}
- 
--	mutex_unlock(&pcd->lock);
-+	mutex_unlock(&psd->lock);
- 
- 	return 0;
- }
-@@ -249,17 +255,17 @@ int pm_clk_suspend(struct device *dev)
-  */
- int pm_clk_resume(struct device *dev)
- {
--	struct pm_clk_data *pcd = __to_pcd(dev);
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
- 
--	if (!pcd)
-+	if (!psd)
- 		return 0;
- 
--	mutex_lock(&pcd->lock);
-+	mutex_lock(&psd->lock);
- 
--	list_for_each_entry(ce, &pcd->clock_list, node) {
-+	list_for_each_entry(ce, &psd->clock_list, node) {
- 		if (ce->status == PCE_STATUS_NONE)
- 			pm_clk_acquire(dev, ce);
- 
-@@ -269,7 +275,7 @@ int pm_clk_resume(struct device *dev)
+@@ -802,6 +818,8 @@ int dpm_suspend_noirq(pm_message_t state)
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			pm_dev_err(dev, state, " late", error);
++			suspend_stats.failed_suspend_noirq++;
++			dpm_save_dev_name(dev_name(dev));
+ 			put_device(dev);
+ 			break;
  		}
- 	}
+@@ -923,8 +941,10 @@ static void async_suspend(void *data, async_cookie_t cookie)
+ 	int error;
  
--	mutex_unlock(&pcd->lock);
-+	mutex_unlock(&psd->lock);
+ 	error = __device_suspend(dev, pm_transition, true);
+-	if (error)
++	if (error) {
++		dpm_save_dev_name(dev_name(dev));
+ 		pm_dev_err(dev, pm_transition, " async", error);
++	}
  
- 	return 0;
+ 	put_device(dev);
  }
-@@ -307,7 +313,7 @@ static int pm_clk_notify(struct notifier
- 		if (dev->pm_domain)
+@@ -967,6 +987,7 @@ int dpm_suspend(pm_message_t state)
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			pm_dev_err(dev, state, "", error);
++			dpm_save_dev_name(dev_name(dev));
+ 			put_device(dev);
  			break;
- 
--		error = pm_clk_init(dev);
-+		error = pm_clk_create(dev);
- 		if (error)
- 			break;
- 
-@@ -342,21 +348,21 @@ static int pm_clk_notify(struct notifier
-  */
- int pm_clk_suspend(struct device *dev)
- {
--	struct pm_clk_data *pcd = __to_pcd(dev);
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
- 
- 	/* If there is no driver, the clocks are already disabled. */
--	if (!pcd || !dev->driver)
-+	if (!psd || !dev->driver)
- 		return 0;
- 
--	mutex_lock(&pcd->lock);
-+	mutex_lock(&psd->lock);
- 
--	list_for_each_entry_reverse(ce, &pcd->clock_list, node)
-+	list_for_each_entry_reverse(ce, &psd->clock_list, node)
- 		clk_disable(ce->clk);
- 
--	mutex_unlock(&pcd->lock);
-+	mutex_unlock(&psd->lock);
- 
- 	return 0;
+ 		}
+@@ -980,7 +1001,9 @@ int dpm_suspend(pm_message_t state)
+ 	async_synchronize_full();
+ 	if (!error)
+ 		error = async_error;
+-	if (!error)
++	if (error)
++		suspend_stats.failed_suspend++;
++	else
+ 		dpm_show_time(starttime, state, NULL);
+ 	return error;
  }
-@@ -367,21 +373,21 @@ int pm_clk_suspend(struct device *dev)
-  */
- int pm_clk_resume(struct device *dev)
- {
--	struct pm_clk_data *pcd = __to_pcd(dev);
-+	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
+@@ -1088,7 +1111,9 @@ int dpm_suspend_start(pm_message_t state)
+ 	int error;
  
- 	dev_dbg(dev, "%s()\n", __func__);
- 
- 	/* If there is no driver, the clocks should remain disabled. */
--	if (!pcd || !dev->driver)
-+	if (!psd || !dev->driver)
- 		return 0;
- 
--	mutex_lock(&pcd->lock);
-+	mutex_lock(&psd->lock);
- 
--	list_for_each_entry(ce, &pcd->clock_list, node)
-+	list_for_each_entry(ce, &psd->clock_list, node)
- 		clk_enable(ce->clk);
- 
--	mutex_unlock(&pcd->lock);
-+	mutex_unlock(&psd->lock);
- 
- 	return 0;
+ 	error = dpm_prepare(state);
+-	if (!error)
++	if (error)
++		suspend_stats.failed_prepare++;
++	else
+ 		error = dpm_suspend(state);
+ 	return error;
  }
-Index: linux-2.6/include/linux/device.h
-===================================================================
---- linux-2.6.orig/include/linux/device.h
-+++ linux-2.6/include/linux/device.h
-@@ -636,6 +636,11 @@ static inline void set_dev_node(struct d
- }
- #endif
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 6bbcef2..6a8ff23 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -34,6 +34,22 @@ typedef int __bitwise suspend_state_t;
+ #define PM_SUSPEND_MEM		((__force suspend_state_t) 3)
+ #define PM_SUSPEND_MAX		((__force suspend_state_t) 4)
  
-+static inline struct pm_subsys_data *dev_to_psd(struct device *dev)
-+{
-+	return dev ? dev->power.subsys_data : NULL;
-+}
-+
- static inline unsigned int dev_get_uevent_suppress(const struct device *dev)
- {
- 	return dev->kobj.uevent_suppress;
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -24,6 +24,7 @@
- #include <linux/list.h>
- #include <linux/workqueue.h>
- #include <linux/spinlock.h>
-+#include <linux/mutex.h>
- #include <linux/wait.h>
- #include <linux/timer.h>
- #include <linux/completion.h>
-@@ -421,6 +422,13 @@ enum rpm_request {
- 
- struct wakeup_source;
- 
-+struct pm_subsys_data {
-+	struct mutex lock;
-+#ifdef CONFIG_PM_CLK
-+	struct list_head clock_list;
-+#endif
++struct suspend_stats {
++	int	success;
++	int	fail;
++	int	failed_freeze;
++	int	failed_prepare;
++	int	failed_suspend;
++	int	failed_suspend_noirq;
++	int	failed_resume;
++	int	failed_resume_noirq;
++#define	REC_FAILED_DEV_NUM	2
++	char	failed_devs[REC_FAILED_DEV_NUM][40];
++	int	last_failed;
 +};
 +
- struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned int		can_wakeup:1;
-@@ -462,7 +470,7 @@ struct dev_pm_info {
- 	unsigned long		suspended_jiffies;
- 	unsigned long		accounting_timestamp;
- #endif
--	void			*subsys_data;  /* Owned by the subsystem. */
-+	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
- };
++extern struct suspend_stats suspend_stats;
++
+ /**
+  * struct platform_suspend_ops - Callbacks for managing platform dependent
+  *	system sleep states.
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 6c601f8..0977f5d 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -12,6 +12,8 @@
+ #include <linux/string.h>
+ #include <linux/resume-trace.h>
+ #include <linux/workqueue.h>
++#include <linux/debugfs.h>
++#include <linux/seq_file.h>
  
- extern void update_pm_runtime_accounting(struct device *dev);
-Index: linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-===================================================================
---- linux-2.6.orig/arch/arm/mach-shmobile/pm-sh7372.c
-+++ linux-2.6/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -115,7 +115,7 @@ void sh7372_add_device_to_domain(struct
- 	struct device *dev = &pdev->dev;
+ #include "power.h"
  
- 	if (!dev->power.subsys_data) {
--		pm_clk_init(dev);
-+		pm_clk_create(dev);
- 		pm_clk_add(dev, NULL);
- 	}
- 	pm_genpd_add_device(&sh7372_pd->genpd, dev);
-Index: linux-2.6/include/linux/pm_runtime.h
-===================================================================
---- linux-2.6.orig/include/linux/pm_runtime.h
-+++ linux-2.6/include/linux/pm_runtime.h
-@@ -258,14 +258,18 @@ struct pm_clk_notifier_block {
- };
+@@ -133,6 +135,59 @@ power_attr(pm_test);
  
- #ifdef CONFIG_PM_CLK
--extern int pm_clk_init(struct device *dev);
-+extern void pm_clk_init(struct device *dev);
-+extern int pm_clk_create(struct device *dev);
- extern void pm_clk_destroy(struct device *dev);
- extern int pm_clk_add(struct device *dev, const char *con_id);
- extern void pm_clk_remove(struct device *dev, const char *con_id);
- extern int pm_clk_suspend(struct device *dev);
- extern int pm_clk_resume(struct device *dev);
- #else
--static inline int pm_clk_init(struct device *dev)
-+static inline void pm_clk_init(struct device *dev)
+ #endif /* CONFIG_PM_SLEEP */
+ 
++#ifdef CONFIG_DEBUG_FS
++static int suspend_stats_show(struct seq_file *s, void *unused)
 +{
++	int i, index, last_index;
++
++	last_index = suspend_stats.last_failed + REC_FAILED_DEV_NUM - 1;
++	last_index %= REC_FAILED_DEV_NUM;
++	seq_printf(s, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
++			"%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
++			"success", suspend_stats.success,
++			"fail", suspend_stats.fail,
++			"failed_freeze", suspend_stats.failed_freeze,
++			"failed_prepare", suspend_stats.failed_prepare,
++			"failed_suspend", suspend_stats.failed_suspend,
++			"failed_suspend_noirq",
++				suspend_stats.failed_suspend_noirq,
++			"failed_resume", suspend_stats.failed_resume,
++			"failed_resume_noirq",
++				suspend_stats.failed_resume_noirq);
++	seq_printf(s,	"failed_devs:\n  last_failed:\t%s\n",
++			suspend_stats.failed_devs[last_index]);
++	for (i = 1; i < REC_FAILED_DEV_NUM; i++) {
++		index = last_index + REC_FAILED_DEV_NUM - i;
++		index %= REC_FAILED_DEV_NUM;
++		seq_printf(s, "\t\t%s\n",
++			suspend_stats.failed_devs[index]);
++	}
++
++	return 0;
 +}
-+static inline int pm_clk_create(struct device *dev)
++
++static int suspend_stats_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, suspend_stats_show, NULL);
++}
++
++static const struct file_operations suspend_stats_operations = {
++	.open           = suspend_stats_open,
++	.read           = seq_read,
++	.llseek         = seq_lseek,
++	.release        = single_release,
++};
++
++static int __init pm_debugfs_init(void)
++{
++	debugfs_create_file("suspend_stats", S_IFREG | S_IRUGO,
++			NULL, NULL, &suspend_stats_operations);
++	return 0;
++}
++
++late_initcall(pm_debugfs_init);
++#endif /* CONFIG_DEBUG_FS */
++
+ struct kobject *power_kobj;
+ 
+ /**
+@@ -194,6 +249,10 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 	}
+ 	if (state < PM_SUSPEND_MAX && *s)
+ 		error = enter_state(state);
++		if (error)
++			suspend_stats.fail++;
++		else
++			suspend_stats.success++;
+ #endif
+ 
+  Exit:
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index b6b71ad..e5197a0 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -104,7 +104,9 @@ static int suspend_prepare(void)
+ 		goto Finish;
+ 
+ 	error = suspend_freeze_processes();
+-	if (!error)
++	if (error)
++		suspend_stats.failed_freeze++;
++	else
+ 		return 0;
+ 
+ 	suspend_thaw_processes();
+@@ -315,8 +317,15 @@ int enter_state(suspend_state_t state)
+  */
+ int pm_suspend(suspend_state_t state)
  {
+-	if (state > PM_SUSPEND_ON && state <= PM_SUSPEND_MAX)
+-		return enter_state(state);
++	int ret;
++	if (state > PM_SUSPEND_ON && state <= PM_SUSPEND_MAX) {
++		ret = enter_state(state);
++		if (ret)
++			suspend_stats.fail++;
++		else
++			suspend_stats.success++;
++		return ret;
++	}
  	return -EINVAL;
  }
+ EXPORT_SYMBOL(pm_suspend);
+-- 
+1.7.1
