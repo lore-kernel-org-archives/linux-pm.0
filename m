@@ -1,15 +1,11 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [patch 1/1] [PATCH] include storage keys in
-	hibernation image.
-Date: Tue, 9 Aug 2011 21:56:12 +0200
-Message-ID: <201108092156.12451.rjw__27154.6612064869$1312921881$gmane$org@sisk.pl>
-References: <20110608074523.211912903@de.ibm.com>
-	<201107290001.14465.rjw@sisk.pl> <20110809174524.45cd496d@mschwide>
+From: Mike Turquette <mturquette@ti.com>
+Subject: [PATCH 0/2] new cpumask for hotpluggable CPUs
+Date: Tue,  9 Aug 2011 18:33:25 -0700
+Message-ID: <1312940007-26069-1-git-send-email-mturquette__13837.2445399456$1312940243$gmane$org@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110809174524.45cd496d@mschwide>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,36 +15,30 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 09, 2011, Martin Schwidefsky wrote:
-> On Fri, 29 Jul 2011 00:01:14 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > Sorry for the extreme delay.
-> 
-> No big deal, I have been busy with other things anyway.
->  
-> > Having reconsidered things I think the code under the #ifdef above
-> > should really go to arch/s390.
-> 
-> Ok, that is reasonable.
->  
-> > Now, for the purpose of exporting the headers I'd introduce
-> > CONFIG_ARCH_SAVE_PAGE_KEYS and make S390 do
-> > 
-> > select ARCH_SAVE_PAGE_KEYS if HIBERNATION
-> > 
-> > and I'd put a #ifdef depending on that into include/linux/suspend.h.
-> > 
-> > Apart from this, I have only one complaint, which is that the kerneldoc
-> > comments should follow the standard (the other comments in snapshot.c don't,
-> > but that's a matter for a separate patch).
-> 
-> Sounds good. I will come up with new patches for this and resend them
-> for review. Might be one or two weeks though, currently conferencing in
-> Orlando..
+This patch series introduces a new cpumask which tracks CPUs that
+support hotplugging.  The purpose of this patch series is to provide a
+simple method for kernel code to know which CPUs can be hotplugged and
+which ones cannot.  Potential users of this code might be a thermal
+mitigation technique which uses hotplug to lower temperature, or a power
+capping mechanism which uses hotplug to lower power consumption.
 
-OK, thanks!
+All the of usual cpumask helper functions are created for this new mask.
+The second patch in this series simply sets the bit for elligible CPUs
+while they are being registered.  The cpumask itself is static after
+boot and should not change (like the possbile mask).
+
+Mike Turquette (2):
+  cpumask: introduce cpumask for hotpluggable CPUs
+  cpu: update cpu_hotpluggable_mask in register_cpu
+
+ drivers/base/cpu.c      |    4 +++-
+ include/linux/cpumask.h |   27 ++++++++++++++++++++++-----
+ kernel/cpu.c            |   18 ++++++++++++++++++
+ 3 files changed, 43 insertions(+), 6 deletions(-)
+
+-- 
+1.7.4.1
