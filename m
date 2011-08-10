@@ -1,15 +1,18 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v4] PM: add statistics debugfs file for
-	suspend to ram
-Date: Wed, 10 Aug 2011 23:44:18 +0200
-Message-ID: <20110810214418.GC9320@atrey.karlin.mff.cuni.cz>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B847F42F9@shsmsx502.ccr.corp.intel.com>
+Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
+	ram
+Date: Thu, 11 Aug 2011 00:27:25 +0200
+Message-ID: <20110810222725.GA2012@elf.ucw.cz>
+References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
+	<201108082314.23860.rjw@sisk.pl>
+	<20110808215452.GB22709@elf.ucw.cz>
+	<201108090009.42342.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <6E3BC7F7C9A4BF4286DD4C043110F30B5B847F42F9@shsmsx502.ccr.corp.intel.com>
+In-Reply-To: <201108090009.42342.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,80 +22,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Liu, ShuoX" <shuox.liu@intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "Yanmin_zhang@linux.intel.com" <Yanmin_zhang@linux.intel.com>, Greg KH <gregkh@suse.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Liu, ShuoX" <shuox.liu@intel.com>, yanmin_zhang@linux.intel.com, Greg KH <gregkh@suse.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Brown, Len" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-> If not using this patch, we have other methods to get info about
-> what device fails. One is to turn on  CONFIG_PM_DEBUG, but users
-> would get too much info and testers need recompile the system.
+On Tue 2011-08-09 00:09:42, Rafael J. Wysocki wrote:
+> On Monday, August 08, 2011, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > > > > Thanks for the nice pointer. I checked dynamic debug. It's really a good debug tool.
+> > > > > > > With the dynamic debug:
+> > > > > > > 1) user need write a user space parser to process the syslog output;
+> > > > > > > 2) Our testing scenario is we leave the mobile for at least hours. Then, check its status.
+> > > > > > > No serial console available during the testing. One is because console would be suspended,
+> > > > > > > and the other is serial console connecting with spi or HSU devices would consume power. These
+> > > > > > > devices are powered off at suspend-2-ram.
+> > ...
+> > > Not in the case described by Yanmin.
+> > 
+> > Really? I see the description above.
+> > 
+> > Yes, they'd need to set up syslog to only log >= KERN_ERR, then parse
+> > the (small) results. Even hours worth of suspends should not cause
+> > _that_ many errors.
+> > 
+> > Serial console is irrelevant. You need live machine to dump dmesg, but
+> > again, you need live machine to access debugfs, too.
 > 
-> In addition, dynamic debug is another good tool to dump debug info.
-> But it still doesn't match our utilization scenario closely.
-> 1) user need write a user space parser to process the syslog output;
-> 2) Our testing scenario is we leave the mobile for at least hours.
->    Then, check its status. No serial console available during the
->    testing. One is because console would be suspended, and the other
->    is serial console connecting with spi or HSU devices would consume
->    power. These devices are powered off at suspend-2-ram.
+> This sounds like substantial overhead to collect statistics that we can
+> collect at a much lower cost in the kernel.
 
-1) yes you need parser
+That's always the case, right? Everyone wants different subsets of
+syslog, and doing selection in kernel is always lowest overhead.
 
-1a) Yes, you need CONFIG_PM_DEBUG; but that's better than forcing 200
-lines of pure debugging code onto everyone
+> The patch isn't very intrusive and rather straightforward.
 
-2)  You can do that. Just check and parse dmesg from userland after
-each resume.
+No, it is not _too_ bad; but
 
-If dmesg provides too little/too much information, improve loglevels
-so that it is not spammed.
- 
-								Pavel
+1) the code stays there when not debugging
 
+2) different users want different syslog subsets. Putting all the
+"interesting" subsets into /sys/debug/my_syslog_subset just does not
+seem like a way to go.
 
-> Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
-> ---
->  Documentation/power/basic-pm-debugging.txt |   24 +++++++
->  drivers/base/power/main.c                  |   31 +++++++--
->  include/linux/suspend.h                    |   52 ++++++++++++++
->  kernel/power/main.c                        |  102 ++++++++++++++++++++++++++++
->  kernel/power/suspend.c                     |   17 ++++-
->  5 files changed, 218 insertions(+), 8 deletions(-)
-> 
-> diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
-> index ddd7817..62eca08 100644
-> --- a/Documentation/power/basic-pm-debugging.txt
-> +++ b/Documentation/power/basic-pm-debugging.txt
-> @@ -201,3 +201,27 @@ case, you may be able to search for failing drivers by following the procedure
->  analogous to the one described in section 1.  If you find some failing drivers,
->  you will have to unload them every time before an STR transition (ie. before
->  you run s2ram), and please report the problems with them.
-> +
-> +There is a debugfs entry which shows the suspend to RAM statistics. Here is an
-> +example of its output.
-> +	# mount -t debugfs none /sys/kernel/debug
-> +	# cat /sys/kernel/debug/suspend_stats
-> +	success: 20
-> +	fail: 5
-> +	failed_freeze: 0
-> +	failed_prepare: 0
-> +	failed_suspend: 5
-> +	failed_suspend_noirq: 0
-> +	failed_resume: 0
-> +	failed_resume_noirq: 0
-> +	failures:
-> +	  last_failed_dev:	alarm
-> +				adc
-> +	  last_failed_errno:	-16
-> +				-16
-> +	  last_failed_step:	suspend
-> +				suspend
-> +Field success means the success number of suspend to RAM, and field fail means
-> +the failure number. Others are the failure number of different steps of suspend
-> +to RAM. suspend_stats just lists the last 2 failed devices, error number and
-> +failed step of suspend.
+(If anything simpler could be done to help debugging, like generating
+udev event on each failed suspend, so that can trigger their
+processing, I guess that would be acceptable.)
+
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
