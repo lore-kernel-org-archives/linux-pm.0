@@ -1,20 +1,15 @@
-From: "Mansoor, Illyas" <illyas.mansoor@intel.com>
-Subject: Re: [PATCH v4] PM: add statistics debugfs file for
- suspend	to ram
-Date: Thu, 11 Aug 2011 01:55:47 +0530
-Message-ID: <EB6073F1DF78F9439DFDCC701BC6466007B36A0D19__18299.4646639147$1313008012$gmane$org@bgsmsx502.gar.corp.intel.com>
-References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B847F42F9@shsmsx502.ccr.corp.intel.com>
-	<EB6073F1DF78F9439DFDCC701BC6466007B36A0CCE@bgsmsx502.gar.corp.intel.com>
-	<20110810194529.GA5590@suse.de>
-	<EB6073F1DF78F9439DFDCC701BC6466007B36A0D12@bgsmsx502.gar.corp.intel.com>
-	<20110810195854.GA5939@suse.de>
-	<EB6073F1DF78F9439DFDCC701BC6466007B36A0D14@bgsmsx502.gar.corp.intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2 1/2] cpumask: introduce cpumask for
+	hotpluggable CPUs
+Date: Wed, 10 Aug 2011 22:53:31 +0200
+Message-ID: <4E42EFCB.1030005__7428.04541155255$1313009669$gmane$org@linaro.org>
+References: <1313006614-28702-1-git-send-email-mturquette@ti.com>
+	<1313006614-28702-2-git-send-email-mturquette@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <EB6073F1DF78F9439DFDCC701BC6466007B36A0D14@bgsmsx502.gar.corp.intel.com>
-Content-Language: en-US
+In-Reply-To: <1313006614-28702-2-git-send-email-mturquette@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,49 +19,53 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Mansoor, Illyas" <illyas.mansoor@intel.com>, Greg KH <gregkh@suse.de>
-Cc: "Liu, ShuoX" <shuox.liu@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Yanmin_zhang@linux.intel.com" <Yanmin_zhang@linux.intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Mike Turquette <mturquette@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, gregkh@suse.de, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-> 
-> > On Thu, Aug 11, 2011 at 01:22:56AM +0530, Mansoor, Illyas wrote:
-> > > static pm_message_t pm_transition;
-> > > > > >
-> > > > > > @@ -464,8 +465,12 @@ void dpm_resume_noirq(pm_message_t state)
-> > > > > >  		mutex_unlock(&dpm_list_mtx);
-> > > > > >
-> > > > > >  		error = device_resume_noirq(dev, state);
-> > > > > > -		if (error)
-> > > > > > +		if (error) {
-> > > > > > +			suspend_stats.failed_resume_noirq++;
-> > > > > > +			dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
-> > > > > > +			dpm_save_failed_dev(dev_name(dev));
-> > > > >
-> > > > > Please make these statistics conditionally enabled, so on a production
-> > system
-> > > > > If we need to disable these statistics code we should be able to do so.
-> > > >
-> > > > Why, are they taking time or space that is needed for something else?
-> > > > What's the downside here of just not always having this enabled?
-> > >
-> > > Why have something that is not required/Used?
-> >
-> > Because someone might need it and rebuilding a kernel isn't possible on
-> > lots of devices.
-> 
-> Agreed.
-> 
-> >
-> > > Its only useful if DEBUGFS is configured anyways
-> >
-> > Almost all systems these days have debugfs enabled, so that's a moot
-> > point.
-> 
-> We could do the same for this as well, since DEBUGFS is still a compile time
-> Option even thou many enable it by default we don't make it part of the kernel
-> isn't it.
-> 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-May be it's not worth debating on this one, I'm okay if it's part of the kernel as well.
+On 08/10/2011 10:03 PM, Mike Turquette wrote:
+> On some platforms it is possible to have some CPUs which support CPU
+> hotplug and some which do not.  Currently the prescence of an 'online'
+> sysfs entry in userspace is adequate for applications to know that a CPU
+> supports hotplug, but there is no convenient way to make the same
+> determination in the kernel.
+> 
+> To better model this relationship this patch introduces a new cpumask to
+> track CPUs that support CPU hotplug operations.
+> 
+> This new cpumask is populated at boot-time and remains static for the
+> life of the machine.  Bits set in the mask indicate a CPU which supports
+> hotplug, but make no guarantees about whether that CPU is currently
+> online or not.  Likewise a cleared bit in the mask indicates either a
+> CPU which cannot hotplug or a lack of a populated CPU.
+> 
+> The purpose of this new cpumask is to aid kernel code which uses CPU to
+> take CPUs online and offline.  Possible uses are as a thermal event
+> mitigation technique or as a power capping mechanism.
+> 
+> Signed-off-by: Mike Turquette <mturquette@ti.com>
 
--Illyas
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+- -- 
+ <http://www.linaro.org/> Linaro.org ? Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iQEcBAEBAgAGBQJOQu/KAAoJEAKBbMCpUGYAxnoH/0+WtrRGq0oOjkU8jIxzAEUP
+OW6S7EQT13v97YapaEwUZpHOzrdeEa9bV5sVI3uc3H9n6dnQbh25eMuhiH/dTwF6
+LHV1Tdv7/+ghiSc4NJunpXjAsObezUgTV9n2Zoip3kAfhMdV5DntJu0Izkdb5lkA
+AD5CqV6oHqC0spa2/nMMeOYsdp3hLP3hA5wCyE8a2rxvbytxl2jRVommXOpF3AnI
+s3OS7oyVFLpdvxVdAio1cXvM6vILtJFArAqw88AJUBsUsuehRxeOYVvTR3/z4RZD
+LNEH72IkGY/8OVYp9/VoixWgWTUhXUR5BZwAjCP7a+xQk/1qK1LAM+/CXimwND0=
+=90gJ
+-----END PGP SIGNATURE-----
