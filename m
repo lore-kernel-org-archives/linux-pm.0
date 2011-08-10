@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 1/2] cpumask: introduce cpumask for
-	hotpluggable CPUs
-Date: Wed, 10 Aug 2011 22:53:31 +0200
-Message-ID: <4E42EFCB.1030005__7428.04541155255$1313009669$gmane$org@linaro.org>
+Subject: Re: [PATCH v2 2/2] cpu: update cpu_hotpluggable_mask in
+	register_cpu
+Date: Wed, 10 Aug 2011 22:54:45 +0200
+Message-ID: <4E42F015.1090801__6223.41850908032$1313009732$gmane$org@linaro.org>
 References: <1313006614-28702-1-git-send-email-mturquette@ti.com>
-	<1313006614-28702-2-git-send-email-mturquette@ti.com>
+	<1313006614-28702-3-git-send-email-mturquette@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1313006614-28702-2-git-send-email-mturquette@ti.com>
+In-Reply-To: <1313006614-28702-3-git-send-email-mturquette@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,28 +27,13 @@ List-Id: linux-pm@vger.kernel.org
 Hash: SHA1
 
 On 08/10/2011 10:03 PM, Mike Turquette wrote:
-> On some platforms it is possible to have some CPUs which support CPU
-> hotplug and some which do not.  Currently the prescence of an 'online'
-> sysfs entry in userspace is adequate for applications to know that a CPU
-> supports hotplug, but there is no convenient way to make the same
-> determination in the kernel.
-> 
-> To better model this relationship this patch introduces a new cpumask to
-> track CPUs that support CPU hotplug operations.
-> 
-> This new cpumask is populated at boot-time and remains static for the
-> life of the machine.  Bits set in the mask indicate a CPU which supports
-> hotplug, but make no guarantees about whether that CPU is currently
-> online or not.  Likewise a cleared bit in the mask indicates either a
-> CPU which cannot hotplug or a lack of a populated CPU.
-> 
-> The purpose of this new cpumask is to aid kernel code which uses CPU to
-> take CPUs online and offline.  Possible uses are as a thermal event
-> mitigation technique or as a power capping mechanism.
+> Update the cpu_hotpluggable_mask for each registered CPU which supports
+> hotplug.  This makes it trivial for kernel code to know which CPUs
+> support hotplug operations.
 > 
 > Signed-off-by: Mike Turquette <mturquette@ti.com>
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: <Daniel Lezcano> daniel.lezcano@linaro.org
 
 - -- 
  <http://www.linaro.org/> Linaro.org ? Open source software for ARM SoCs
@@ -61,11 +46,11 @@ Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 Version: GnuPG v1.4.11 (GNU/Linux)
 Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iQEcBAEBAgAGBQJOQu/KAAoJEAKBbMCpUGYAxnoH/0+WtrRGq0oOjkU8jIxzAEUP
-OW6S7EQT13v97YapaEwUZpHOzrdeEa9bV5sVI3uc3H9n6dnQbh25eMuhiH/dTwF6
-LHV1Tdv7/+ghiSc4NJunpXjAsObezUgTV9n2Zoip3kAfhMdV5DntJu0Izkdb5lkA
-AD5CqV6oHqC0spa2/nMMeOYsdp3hLP3hA5wCyE8a2rxvbytxl2jRVommXOpF3AnI
-s3OS7oyVFLpdvxVdAio1cXvM6vILtJFArAqw88AJUBsUsuehRxeOYVvTR3/z4RZD
-LNEH72IkGY/8OVYp9/VoixWgWTUhXUR5BZwAjCP7a+xQk/1qK1LAM+/CXimwND0=
-=90gJ
+iQEcBAEBAgAGBQJOQvAUAAoJEAKBbMCpUGYADTYH/3jGeK5pryiVKaxQ7wUBwsG6
+7ugSLCCgBVUL6ueuVmlphhfW8Vv9Uz72LlJnaJUmJ0deK/Rf5x1ccFulBTtIsyjK
+Zbw4Wg0MYxfNo0OAi7OSjWMUw31PC8kKVBSUZd3zHeqi6TanKUtxR5im4EWGhQbc
++Njhx2jAqZBEEcPnODiRx+CbYJX17N2Cesmk8Z+Tk00LIpM30iGGX15ZWXnV6KWM
+zD3vG7ATLa/rv1/xPa67SDXdZIo99wDodjtjTFPClygM/XTSNBiIxsm9LnnUkmyw
+gw1Q6Ng+wo2XyhxJ//b+kM0natnc7Tl6RtDIL7T+j9rIAdf8Sz9DPgmafWQRxYY=
+=hwkF
 -----END PGP SIGNATURE-----
