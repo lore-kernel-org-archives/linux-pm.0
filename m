@@ -1,15 +1,15 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 0/2] new cpumask for hotpluggable CPUs
-Date: Thu, 11 Aug 2011 21:38:39 +0200
-Message-ID: <1313091519.8491.31.camel__19780.3779425614$1313091671$gmane$org@twins>
-References: <1313006614-28702-1-git-send-email-mturquette@ti.com>
-	<1313087423.8491.11.camel@twins>
-	<CAJOA=zNoTbPViL81esyD0So_D70_0_BAxrM2ks3SgV5=FSTWHQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: add statistics sysfs file for suspend to
+	ram
+Date: Thu, 11 Aug 2011 21:48:08 +0200
+Message-ID: <201108112148.08220.rjw@sisk.pl>
+References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B790E5741@shsmsx502.ccr.corp.intel.com>
+	<201108090009.42342.rjw@sisk.pl> <20110810222725.GA2012@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJOA=zNoTbPViL81esyD0So_D70_0_BAxrM2ks3SgV5=FSTWHQ@mail.gmail.com>
+In-Reply-To: <20110810222725.GA2012@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,40 +19,60 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Turquette, Mike" <mturquette@ti.com>
-Cc: linux-pm@lists.linux-foundation.org, gregkh@suse.de, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, patches@linaro.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Liu, ShuoX" <shuox.liu@intel.com>, yanmin_zhang@linux.intel.com, Greg KH <gregkh@suse.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Brown, Len" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2011-08-11 at 12:25 -0700, Turquette, Mike wrote:
-> On Thu, Aug 11, 2011 at 11:30 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Wed, 2011-08-10 at 13:03 -0700, Mike Turquette wrote:
-> >> This patch series introduces a new cpumask which tracks CPUs that
-> >> support hotplugging.  The purpose of this patch series is to provide a
-> >> simple method for kernel code to know which CPUs can be hotplugged and
-> >> which ones cannot.  Potential users of this code might be a thermal
-> >> mitigation technique which uses hotplug to lower temperature, or a power
-> >> capping mechanism which uses hotplug to lower power consumption.
-> >>
-> >> All the of usual cpumask helper functions are created for this new mask.
-> >> The second patch in this series simply sets the bit for elligible CPUs
-> >> while they are being registered.  The cpumask itself is static after
-> >> boot and should not change (like the possbile mask).
-> >
-> > I still most strongly object to people using hotplug for these goals.
-> >
-> > Why do you need to go through the entire dance of hotplug just to idle a
-> > cpu? Hotplug not only idles the cpu but tears down (and rebuilds) an
-> > insane amount of resources associated with the cpu.
+On Thursday, August 11, 2011, Pavel Machek wrote:
+> On Tue 2011-08-09 00:09:42, Rafael J. Wysocki wrote:
+> > On Monday, August 08, 2011, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > > > > > Thanks for the nice pointer. I checked dynamic debug. It's really a good debug tool.
+> > > > > > > > With the dynamic debug:
+> > > > > > > > 1) user need write a user space parser to process the syslog output;
+> > > > > > > > 2) Our testing scenario is we leave the mobile for at least hours. Then, check its status.
+> > > > > > > > No serial console available during the testing. One is because console would be suspended,
+> > > > > > > > and the other is serial console connecting with spi or HSU devices would consume power. These
+> > > > > > > > devices are powered off at suspend-2-ram.
+> > > ...
+> > > > Not in the case described by Yanmin.
+> > > 
+> > > Really? I see the description above.
+> > > 
+> > > Yes, they'd need to set up syslog to only log >= KERN_ERR, then parse
+> > > the (small) results. Even hours worth of suspends should not cause
+> > > _that_ many errors.
+> > > 
+> > > Serial console is irrelevant. You need live machine to dump dmesg, but
+> > > again, you need live machine to access debugfs, too.
+> > 
+> > This sounds like substantial overhead to collect statistics that we can
+> > collect at a much lower cost in the kernel.
 > 
-> I think you're nacking the wrong series.  This patchset simply allows
-> kernel space to know which CPUs can go offline and which one can't,
-> which seems pretty innocuous.  Are you fundamentally opposed to the
-> kernel having better accessor functions to this data?
+> That's always the case, right? Everyone wants different subsets of
+> syslog, and doing selection in kernel is always lowest overhead.
+> 
+> > The patch isn't very intrusive and rather straightforward.
+> 
+> No, it is not _too_ bad; but
+> 
+> 1) the code stays there when not debugging
 
-Yeah, people might think its sane to use it..
+Fine.  I don't really think that matters a lot, does it?
 
-> I'll soon be posting some code which does implement hotplug as a
-> power-capping feature.  I think *that* is the patch that you'll want
-> to nack.
+> 2) different users want different syslog subsets. Putting all the
+> "interesting" subsets into /sys/debug/my_syslog_subset just does not
+> seem like a way to go.
 
-That too of course..
+I don't agree with such a broad generalization.  From the system management
+point of view suspend is rather special and the information the patch
+collects is useful and would require substantial overhead to collect from
+user space (and I can imagine test setups where it can't be collected from
+user space).
+
+I think that the explanation why dynamic debug isn't sufficient provided
+by Yanmin is convincing.  Apparently, you think it isn't, but you haven't
+proven him wrong yet.
+
+Rafael
