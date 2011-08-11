@@ -1,22 +1,14 @@
 From: "Turquette, Mike" <mturquette@ti.com>
-Subject: Re: [PATCH v4 0/3] DEVFREQ,
-	DVFS framework for non-CPU devices
-Date: Wed, 10 Aug 2011 18:28:41 -0700
-Message-ID: <CAJOA=zNRidM+y6FokWH9xorinQMWKHTyCGXoTNYCpLOfNPsYNA@mail.gmail.com>
-References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
-	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
-	<87aabq5oqo.fsf@ti.com>
-	<CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
-	<CAJOA=zMNToQq=RVrRh2p+kko=n67BWwHjcWX3DGFuYCfAcksOQ@mail.gmail.com>
-	<CAJ0PZbQx-T+36eX7MiZqWSMxD-achZ9Z7G_kDWNQ2n0h1NTWSQ@mail.gmail.com>
-	<CAJOA=zOi9HzM7M72C+QS6iLcYD_xDeQkEZ3fYpVo_v4f4mfAyQ@mail.gmail.com>
-	<CAJ0PZbQNOybrwu=Vxbjgbh-U1YA1Gve=jzpt3wwqA8kgEEPcXA@mail.gmail.com>
+Subject: Re: [PATCH v5 2/3] PM / DEVFREQ: add basic governors
+Date: Wed, 10 Aug 2011 18:35:14 -0700
+Message-ID: <CAJOA=zMJogYGS9xtcUmU3_a3QmBTy_wz7pf1tk6KUtf4cT1J=A@mail.gmail.com>
+References: <1312794188-9823-1-git-send-email-myungjoo.ham@samsung.com>
+	<1312794188-9823-3-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbQNOybrwu=Vxbjgbh-U1YA1Gve=jzpt3wwqA8kgEEPcXA@mail.gmail.com>
+In-Reply-To: <1312794188-9823-3-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,210 +18,245 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 8, 2011 at 10:27 PM, MyungJoo Ham <myungjoo.ham@gmail.com> wrot=
-e:
-> On Tue, Aug 9, 2011 at 4:13 AM, Turquette, Mike <mturquette@ti.com> wrote:
->> On Thu, Aug 4, 2011 at 11:18 PM, MyungJoo Ham <myungjoo.ham@gmail.com> w=
-rote:
->>> On Fri, Aug 5, 2011 at 6:59 AM, Turquette, Mike <mturquette@ti.com> wro=
+On Mon, Aug 8, 2011 at 2:03 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wro=
 te:
->>>> On Thu, Aug 4, 2011 at 1:15 AM, MyungJoo Ham <myungjoo.ham@gmail.com> =
-wrote:
->>>>>
->>>>> Ok.. I see.
->>>>>
->>>>> Now, I can agree with you that tickle is subset of QoS request.
->>>>>
->>>>> As long as we have QoS request feature on devices with either OPP or
->>>>> DEVFREQ, tickling is not needed.
->>>>>
->>>>> I'll remove tickle in the next revision (along with some bugfixes for
->>>>> bugs found recently).
->>>>>
->>>>>
->>>>> Anyway, it appears that clock-rate-wise QoS request may be dealt at
->>>>> OPP so that the OPPs meeting the QoS requests w/ frequency or voltage
->>>>> specifications are enabled and returned with opp_find_* functions.
->>>>> Maybe we will need to separate enable/disable by
->>>>> opp_enable()/opp_disable() from enable/disable by QoS requests so that
->>>>> the two may have different semantics. Then, QoS requests cannot
->>>>> override opp_disable and opp_enable cannot override QoS requests. This
->>>>> way, any clock-setting code properly based on OPP (including any
->>>>> customized devfreq governors) cannot violate QoS requests.
->>>>
->>>> If devfreq used the QoS API in it's ->target() call then this would
->>>> not be an issue, and further illustrates the idea of devfreq simply
->>>> being a policy into a proper QoS API.
->>>>
->>>> Regards,
->>>> Mike
->>>>
->>>
->>> Yes, if we choose an OPP that meets the PM-QoS requests before calling
->>> ->target() in devfreq_do(), there wouldn't be an issue.
->>>
->>> However, if a device is using DEVFREQ, it also means the device has
->>> OPPs (mandatory for DEVFREQ). If the device is using PM QoS as well as
->>> OPP, I guess the correctly implemented device driver needs to call
->>> opp_enable() and opp_disable() according to PM QoS's update_target()
->>> calls through the PM QoS notifier cb.
->>>
->>> Then, for such drivers, DEVFREQ automatically meets PM QoS requests
->>> without any modification; as long as QoS meeting OPPs are enabled at
->>> the device driver's PM QoS callback, there is no QoS issue.
->>>
->>> Therefore, now, it appears that neither OPP or DEVFREQ should be
->>> allowed to directly touch PM QoS APIs, but, the device driver should
->>> do so with notifier by simply calling opp-enable/disable if the
->>> frequency is the key QoS "actuator".
->>>
->>> If we are going to let DEVFREQ handle its corresponding devices' PM
->>> QoS APIs, it would mean that both device driver and its DEVFREQ codes
->>> will be handling PM QoS API duplicated (or worse, inconsistently).
->>
->> I'm not getting too bogged down with the OPP specifics because I don't
->> know if that interface is going to be used in the future, and I don't
->> think that devfreq will need to know about OPPs once the DVFS QoS API
->> exists. =A0In that case, devfreq can just requests clock frequencies
->> through the QoS API. =A0I view devfreq's usage of the OPP library as
->> temporary.
->>
->> The real issue here is that we don't want some weird feedback loop
->> with device QoS requests and devfreq targets stepping on each other.
->>
->> One way to handle this is to partition QoS use in drivers away from
->> devfreq usage. =A0For example, if a GPU supports performance counters
->> and can introspect its own usage, then it is a perfect candidate for
->> devfreq; on the flip-side device drivers should *not* be allowed to
->> put performance/qos constraints on this particular GPU, since we
->> assume that the performance counters/devfreq governor will handle the
->> whole job for us. =A0Since this centralizes the decision-making for the
->> GPU it is safe for the devfreq->target() call to use the QoS APIs for
->> controlling the GPU, since no one else will. =A0This avoids the feedback
->> loop.
->>
->> On the other hand, if the GPU does not support performance counters
->> then it should not use devfreq at all and rely 100% of QoS constraints
->> from various sources: the GPU driver might request a high OPP every
->> time work comes in, coupled with a timeout; if a QoS knob is exported
->> to userspace then some OpenGL library might hold constraints through
->> it; or some other kernel driver (video-related?) needs to use the GPU
->> then it can hold a constraint through the QoS API.
->>
->> So there is a clear partition of QoS API usage between devices that
->> support performance counters and ones that do not. =A0We want to avoid a
->> feedback loop here.
+> Four CPUFREQ-like governors are provided as examples.
 >
-> Such weird feedback loop may happen if the result frequency ranges
-> from QoS are inconsistent with those from DEVFREQ. However, if DEVFREQ
-> provides frequencies that do not violate QoS requirements, there would
-> be no such feedback loop. If they are consistent (DEVFREQ never gives
-> frequencies that do NOT satisfy QoS), DEVFREQ is transparent to PM
-> QoS.
-
-If two devices, x and y both place frequency constraints on device z,
-then QoS should probably aggregate their requests instead of just
-taking the max.  Then if devfreq also determines that it needs to make
-a QoS request against device z, then that will get aggregated on top
-of x and y's requests.  This isn't really what we want since x and y's
-requests may be adequate and devfreq's performance counter sampling is
-just requesting performance for operations which have already placed
-requests.
-
-> For now, with OPPs, DEVFREQ will always select frequencies that
-> satisfy QoS requirements if the driver implementation is correct.
+> powersave: use the lowest frequency possible. The user (device) should
+> set the polling_ms as 0 because polling is useless for this governor.
 >
-> However, as you mentioned, if we assume that OPP is going to disappear
-> in the future kernel, then we will somehow need to design an interface
-> for device drivers to provide lists of available frequencies to
-> DEVFREQ and those lists are going to be runtime-update-able and where
-> QoS requirements are applied. As with the current DEVFREQ
+> performance: use the highest freqeuncy possible. The user (device)
+> should set the polling_ms as 0 because polling is useless for this
+> governor.
 
-I'm not saying that OPP is going to disappear because I have no idea
-what the future holds.
+Polling is the only practical use for devfreq, assuming a QoS API
+exists for DVFS.  As such powersave and performance governors should
+be removed.
 
-My point is that devfreq doesn't need to know about OPP at all.  The
-code assumes that OPPs exist for the device and take a frequency as
-part of devfreq->profile->get_target_freq (or something like that) and
-they can just pass that frequency to devfreq->profile->target.  If
-that device has support for the OPP library than it can do the job of
-looking up OPPs, etc.
+> userspace: use the user specified frequency stored at
+> devfreq.user_set_freq. With sysfs support in the following patch, a user
+> may set the value with the sysfs interface.
+>
+> simple_ondemand: simplified version of CPUFREQ's ONDEMAND governor.
+
+I won't repeate everything from patch 1 of this series, but the
+governors should implement the queue/loop logic in the same way that
+CPUfreq does, and the individual devices should have their own
+delayed_work.
+
+> When a user updates OPP entries (enable/disable/add), OPP framework
+> automatically notifies DEVFREQ to update operating frequency
+> accordingly. Thus, DEVFREQ users (device drivers) do not need to update
+
+It would be nice if OPP library "notified" devfreq but it does not
+today.  OPP library needs notifiers and devfreq can provide handlers
+for them.
+
+> DEVFREQ manually with OPP entry updates or set polling_ms for powersave
+> , performance, userspace, or any other "static" governors.
+>
+> Note that these are given only as basic examples for governors and any
+> devices with DEVFREQ may implement their own governors with the drivers
+> and use them.
+>
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>
+> ---
+> Changes from v4:
+> - Added userspace governor
+>
+> Changes from v3:
+> - Bugfixes on simple-ondemand governor (divide by zero / overflow)
+> - Style fixes
+> - Give names to governors
+> ---
+> =A0drivers/base/power/devfreq.c | =A0100 ++++++++++++++++++++++++++++++++=
+++++++++++
+> =A0include/linux/devfreq.h =A0 =A0 =A0| =A0 =A08 +++
+> =A02 files changed, 108 insertions(+), 0 deletions(-)
+
+Governors should be split out into their own file, especially since
+they need to grow to include polling/queueing logic.
+
+>
+> diff --git a/drivers/base/power/devfreq.c b/drivers/base/power/devfreq.c
+> index 6f4bd3a..c53bca9 100644
+> --- a/drivers/base/power/devfreq.c
+> +++ b/drivers/base/power/devfreq.c
+> @@ -301,3 +301,103 @@ static int __init devfreq_init(void)
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+> =A0late_initcall(devfreq_init);
+> +
+> +static int devfreq_powersave_func(struct devfreq *df,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 unsigne=
+d long *freq)
+> +{
+> + =A0 =A0 =A0 *freq =3D 0; /* devfreq_do will run "ceiling" to 0 */
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +struct devfreq_governor devfreq_powersave =3D {
+> + =A0 =A0 =A0 .name =3D "powersave",
+> + =A0 =A0 =A0 .get_target_freq =3D devfreq_powersave_func,
+> +};
+> +
+> +static int devfreq_performance_func(struct devfreq *df,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 uns=
+igned long *freq)
+> +{
+> + =A0 =A0 =A0 *freq =3D UINT_MAX; /* devfreq_do will run "floor" */
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +struct devfreq_governor devfreq_performance =3D {
+> + =A0 =A0 =A0 .name =3D "performance",
+> + =A0 =A0 =A0 .get_target_freq =3D devfreq_performance_func,
+> +};
+> +
+> +static int devfreq_userspace_func(struct devfreq *df, unsigned long *fre=
+q)
+> +{
+> + =A0 =A0 =A0 if (df->user_set_freq =3D=3D 0)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *freq =3D df->previous_freq; /* No user fre=
+q specified yet */
+> + =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *freq =3D df->user_set_freq;
+> +
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +struct devfreq_governor devfreq_userspace =3D {
+> + =A0 =A0 =A0 .name =3D "userspace",
+> + =A0 =A0 =A0 .get_target_freq =3D devfreq_userspace_func,
+> +};
+> +
+> +/* Constants for DevFreq-Simple-Ondemand (DFSO) */
+> +#define DFSO_UPTHRESHOLD =A0 =A0 =A0 (90)
+> +#define DFSO_DOWNDIFFERENCTIAL (5)
+> +static int devfreq_simple_ondemand_func(struct devfreq *df,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 unsigned long *freq)
+> +{
+> + =A0 =A0 =A0 struct devfreq_dev_status stat;
+> + =A0 =A0 =A0 int err =3D df->profile->get_dev_status(df->dev, &stat);
+> + =A0 =A0 =A0 unsigned long long a, b;
+> +
+> + =A0 =A0 =A0 if (err)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return err;
+> +
+> + =A0 =A0 =A0 /* Assume MAX if it is going to be divided by zero */
+> + =A0 =A0 =A0 if (stat.total_time =3D=3D 0) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *freq =3D UINT_MAX;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 /* Prevent overflow */
+> + =A0 =A0 =A0 if (stat.busy_time >=3D (1 << 24) || stat.total_time >=3D (=
+1 << 24)) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 stat.busy_time >>=3D 7;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 stat.total_time >>=3D 7;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 /* Set MAX if it's busy enough */
+> + =A0 =A0 =A0 if (stat.busy_time * 100 >
+> + =A0 =A0 =A0 =A0 =A0 stat.total_time * DFSO_UPTHRESHOLD) {
+
+Thresholds should not be constants, but should be tuneable parameters,
+per-device.  This is yet another reason for revising the existing
+relationship between devfreq core code, governors and devices.
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *freq =3D UINT_MAX;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 /* Set MAX if we do not know the initial frequency */
+> + =A0 =A0 =A0 if (stat.current_frequency =3D=3D 0) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *freq =3D UINT_MAX;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 /* Keep the current frequency */
+> + =A0 =A0 =A0 if (stat.busy_time * 100 >
+> + =A0 =A0 =A0 =A0 =A0 stat.total_time * (DFSO_UPTHRESHOLD - DFSO_DOWNDIFF=
+ERENCTIAL)) {
+
+Same as above.
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *freq =3D stat.current_frequency;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+> + =A0 =A0 =A0 }
+> +
+> + =A0 =A0 =A0 /* Set the desired frequency based on the load */
+> + =A0 =A0 =A0 a =3D stat.busy_time;
+> + =A0 =A0 =A0 a *=3D stat.current_frequency;
+> + =A0 =A0 =A0 b =3D div_u64(a, stat.total_time);
+> + =A0 =A0 =A0 b *=3D 100;
+> + =A0 =A0 =A0 b =3D div_u64(b, (DFSO_UPTHRESHOLD - DFSO_DOWNDIFFERENCTIAL=
+ / 2));
+
+Same as above.
 
 Regards,
 Mike
 
-> implementation, if DEVFREQ chooses frequencies only from those enabled
-> by the driver (meeting the QoS requirements), things are same with the
-> cases with OPPs. The reason why QoS requirements are being interpreted
-> at device drivers, not at DEVFREQ, is that the device driver itself is
-> the only entity that can interpret QoS requests to frequencies
-> (latency/#ops/... --> Hz).
+> + =A0 =A0 =A0 *freq =3D (unsigned long) b;
+> +
+> + =A0 =A0 =A0 return 0;
+> +}
+> +
+> +struct devfreq_governor devfreq_simple_ondemand =3D {
+> + =A0 =A0 =A0 .name =3D "simple_ondemand",
+> + =A0 =A0 =A0 .get_target_freq =3D devfreq_simple_ondemand_func,
+> +};
+> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> index 6ec630b..7131d2a 100644
+> --- a/include/linux/devfreq.h
+> +++ b/include/linux/devfreq.h
+> @@ -57,6 +57,8 @@ struct devfreq_governor {
+> =A0* @next_polling =A0 =A0 =A0 the number of remaining "devfreq_monitor" =
+executions to
+> =A0* =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 reevaluate frequency/voltage=
+ of the device. Set by
+> =A0* =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 profile's polling_ms interva=
+l.
+> + * @user_set_freq =A0 =A0 =A0User specified adequete frequency value (th=
+ru sysfs
+> + * =A0 =A0 =A0 =A0 =A0 =A0 interface). Governors may and may not use thi=
+s value.
+> =A0* @data =A0 =A0 =A0 Private data of the governor. The devfreq framewor=
+k does not
+> =A0* =A0 =A0 =A0 =A0 =A0 =A0 touch this.
+> =A0*
+> @@ -72,6 +74,7 @@ struct devfreq {
+> =A0 =A0 =A0 =A0unsigned long previous_freq;
+> =A0 =A0 =A0 =A0unsigned int next_polling;
 >
-> And, for the another point, making PM QoS disabled (or ignored?) for
-> devices with DEVFREQ, I guess that should be left for each device
-> driver's decision. Even when DVFS is used for a device, there are
-> cases where QoS requests are needed as well because DEVFREQ is based
-> on polling which incurs response time that is not acceptable for some
-> cases: e.g., a sudden user input at idle in a system with high-speed
-> displays. Besides, there could be another type of PM QoS requirements:
-> "under xxx MHz" in order to restrict (or as a response to) the
-> temperature or power consumption rate, which should affect DEVFREQ's
-> behavior. For battery-powered devices (laptops will want to do so as
-> well at userspace), I guess such features will be soon needed; at
-> least, we are working on it.
+> + =A0 =A0 =A0 unsigned long user_set_freq; /* governors may ignore this. =
+*/
+> =A0 =A0 =A0 =A0void *data; /* private data for governors */
+> =A0};
 >
->
-> Cheers!
-> MyungJoo
->
->>
->> Regards,
->> Mike
->>
->>> Cheers,
->>> MyungJoo
->>>
->>>>> How about this concept of getting QoS requests associated with clock =
-rates?
->>>>>
->>>>>
->>>>>
->>>>> Cheers!
->>>>> MyungJoo.
->>>>> --
->>>>> MyungJoo Ham, Ph.D.
->>>>> Mobile Software Platform Lab,
->>>>> Digital Media and Communications (DMC) Business
->>>>> Samsung Electronics
->>>>> cell: 82-10-6714-2858
->>>>> _______________________________________________
->>>>> linux-pm mailing list
->>>>> linux-pm@lists.linux-foundation.org
->>>>> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->>>>>
->>>>
->>>
->>>
->>>
->>> --
->>> MyungJoo Ham, Ph.D.
->>> Mobile Software Platform Lab,
->>> Digital Media and Communications (DMC) Business
->>> Samsung Electronics
->>> cell: 82-10-6714-2858
->>>
->>
->
->
->
+> @@ -81,6 +84,11 @@ extern int devfreq_add_device(struct device *dev,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct devfreq_govern=
+or *governor);
+> =A0extern int devfreq_remove_device(struct device *dev);
+> =A0extern int devfreq_update(struct device *dev);
+> +
+> +extern struct devfreq_governor devfreq_powersave;
+> +extern struct devfreq_governor devfreq_performance;
+> +extern struct devfreq_governor devfreq_userspace;
+> +extern struct devfreq_governor devfreq_simple_ondemand;
+> =A0#else /* !CONFIG_PM_DEVFREQ */
+> =A0static int devfreq_add_device(struct device *dev,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct devfreq_dev_pr=
+ofile *profile,
 > --
-> MyungJoo Ham, Ph.D.
-> Mobile Software Platform Lab,
-> Digital Media and Communications (DMC) Business
-> Samsung Electronics
-> cell: 82-10-6714-2858
+> 1.7.4.1
+>
 >
