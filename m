@@ -1,18 +1,18 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 07/13] OMAP PM: early init of the pwrdms
-	states
-Date: Thu, 11 Aug 2011 17:12:39 +0200
-Message-ID: <CAORVsuU-YqpPH_XY0rKjJkFuNZLF0VByFA8mCKeDPgLtMM_RJA__20995.3590333045$1313077305$gmane$org@mail.gmail.com>
-References: <1311841821-10252-1-git-send-email-j-pihet@ti.com>
-	<1311841821-10252-8-git-send-email-j-pihet@ti.com>
-	<20110729080820.GB26959@google.com>
-	<CAORVsuUovg7px5SGC+mt7CoDcXZ8r2d09obkXqSp=g44U1G9EQ@mail.gmail.com>
-	<CAORVsuVHAvQRxPz8cCfQ0L1jN1nT5aNDVZ7fpuajAUosyvumeA@mail.gmail.com>
+From: Daniel Drake <dsd@laptop.org>
+Subject: Re: [PATCH v4 1/2] Input: enable i8042-level wakeup
+	control
+Date: Thu, 11 Aug 2011 19:02:17 +0100
+Message-ID: <CAMLZHHTie_u40NZ40o+LCwffk=3LbY96YTwxQt5wcVtbTc53qg__28890.4513618492$1313085813$gmane$org@mail.gmail.com>
+References: <20110802154916.624619D401C@zog.reactivated.net>
+	<20110803065920.GC23399@core.coreip.homeip.net>
+	<CAMLZHHTTXvThE5bWfyjJu-UFJbaKAhzORKWV8ay4RZW-ZVifLg@mail.gmail.com>
+	<20110803184332.GA17880@core.coreip.homeip.net>
+	<CAMLZHHTnTTbD7mn_QsjwyFZ=XU6paddrtXEVuLYossk9qBGFfw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAORVsuVHAvQRxPz8cCfQ0L1jN1nT5aNDVZ7fpuajAUosyvumeA@mail.gmail.com>
+In-Reply-To: <CAMLZHHTnTTbD7mn_QsjwyFZ=XU6paddrtXEVuLYossk9qBGFfw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,70 +22,55 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Todd Poynor <toddpoynor@google.com>
-Cc: markgross@thegnar.org, broonie@opensource.wolfsonmicro.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, dilinger@queued.net, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Todd,
+Hi Dmitry,
 
-On Tue, Aug 2, 2011 at 10:57 AM, Jean Pihet <jean.pihet@newoldbits.com> wro=
-te:
-> Todd,
->
-> On Fri, Jul 29, 2011 at 10:50 AM, Jean Pihet <jean.pihet@newoldbits.com> =
-wrote:
->> On Fri, Jul 29, 2011 at 10:08 AM, Todd Poynor <toddpoynor@google.com> wr=
-ote:
->>> On Thu, Jul 28, 2011 at 10:30:14AM +0200, jean.pihet@newoldbits.com wro=
-te:
-> ...
->
->>>> diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/p=
-owerdomain.c
->>>> index 9af0847..63c3e7a 100644
->>>> --- a/arch/arm/mach-omap2/powerdomain.c
->>>> +++ b/arch/arm/mach-omap2/powerdomain.c
->>>> @@ -108,6 +108,9 @@ static int _pwrdm_register(struct powerdomain *pwr=
-dm)
->>>> =A0 =A0 =A0 pwrdm->state =3D pwrdm_read_pwrst(pwrdm);
->>>> =A0 =A0 =A0 pwrdm->state_counter[pwrdm->state] =3D 1;
->>>>
->>>> + =A0 =A0 /* Early init of the next power state */
->>>> + =A0 =A0 pwrdm_set_next_pwrst(pwrdm, PWRDM_POWER_RET);
->>>> +
->>>
->>> Wanted to check that it's OK to initialize the next state of a power
->>> domain to RETENTION early in the boot sequence. =A0I believe patches
->>> have been previously discussed that set the state to ON to ensure the
->>> domain doesn't go to a lower state, and possibly lose context, before
->>> the PM subsystem is setup to handle it? =A0Not sure, thought maybe worth
->>> a doublecheck.
->> Indeed I need to check the behavior for OMAP3 & 4 which seem to
->> initialize the pwrdm states differently.
->> BTW the patch that inits all pwrdms to ON is not yet in l-o master
->> that is why I (lazily) submitted this one for now.
->
-> Ok I will update the patch to make it compliant with [1]. v4 will
-> include this change.
->
-> Thanks,
-> Jean
->
-> [1] http://marc.info/?l=3Dlinux-arm-kernel&m=3D131052762623823&w=3D2
+On Fri, Aug 5, 2011 at 4:24 PM, Daniel Drake <dsd@laptop.org> wrote:
+> I've started looking at this, but my first problem is that when the
+> input layer asks atkbd to turn off LEDs, atkbd schedules a workqueue
+> item to undertake this work. However, as there is no synchronization,
+> this work only seems to get executed during or after system resume.
+> This makes it hard to catch with such a scheme. Any ideas?
 
-After more thinking I now realize there is a problem with the PM early
-init, PM late init and the constraints framework which all setup the
-power domains next states in a non-coherent way.
-Definitely this needs to be revisited. More to come on this!
+I've looked closer, and am keeping my eyes open for other options too.
 
-There is a comment about that in [00/15] of the v4 patch set.
+During suspend of the input layer, input_dev_suspend() calls
+input_dev_toggle(dev, false) which turns off LEDs and sounds.
 
-Regards,
-Jean
+On the XO laptops, we don't have LEDs, nor sounds, and we don't have
+num lock, scroll lock or caps lock keys. So the suspend code does
+nothing - there are no lights to turn off. So far so good.
 
->
->>
->>>
->>>
->>> Todd
->
+Moving to the resume case: input_dev_resume() calls
+input_reset_device(). This calls input_dev_toggle(dev, true), which
+asks atkbd to turn the non-existent keyboard LEDs off. I guess this is
+harmless and is unlikely to be the cause of the problems which led us
+to need to disable this code in light of the following:
+
+After calling input_dev_toggle(), input_dev_resume() does this:
+
+		/*
+		 * Keys that have been pressed at suspend time are unlikely
+		 * to be still pressed when we resume.
+		 */
+		spin_lock_irq(&dev->event_lock);
+		input_dev_release_keys(dev);
+		spin_unlock_irq(&dev->event_lock);
+
+We definitely don't want this to happen in our case, where we have
+maintained full control and power of the device during suspend/resume.
+
+This particular important code snippet would not even have been
+disabled by your suggestion of blocking data transfer at the
+i8042-level.
+
+So, I think we need a new approach at solving this, and I think it has
+to be one that interacts at the input_dev layer.
+
+Thoughts?
+
+Thanks,
+Daniel
