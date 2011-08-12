@@ -1,15 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: linux-next: Tree for Aug 11 (suspend_stats build
-	error)
-Date: Thu, 11 Aug 2011 22:44:12 +0200
-Message-ID: <201108112244.12547.rjw__18600.1040194698$1313095493$gmane$org@sisk.pl>
-References: <20110811162058.42b462bc80e67d7a80ecff93@canb.auug.org.au>
-	<20110811115931.8007900d.rdunlap@xenotime.net>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: LPC2011 Power Management Micro Conf
+Date: Fri, 12 Aug 2011 04:32:21 +0100
+Message-ID: <20110812033221.GA5671__25416.7340267033$1313120021$gmane$org@sirena.org.uk>
+References: <201105011353.44809.rjw@sisk.pl> <201107030929.28555.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110811115931.8007900d.rdunlap@xenotime.net>
+Content-Disposition: inline
+In-Reply-To: <201107030929.28555.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,26 +18,17 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-pm@lists.linux-foundation.org, linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: tytso@mit.edu, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@suse.de>, Stephen Boyd <sboyd@codeaurora.org>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org, Jean Pihet <j-pihet@ti.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 11, 2011, Randy Dunlap wrote:
-> On Thu, 11 Aug 2011 16:20:58 +1000 Stephen Rothwell wrote:
-> 
-> > Hi all,
-> 
-> When CONFIG_PM_SLEEP is not enabled:
-> 
-> kernel/built-in.o: In function `suspend_stats_show':
-> main.c:(.text+0x40a25): undefined reference to `suspend_stats'
-> main.c:(.text+0x40a2c): undefined reference to `suspend_stats'
-> main.c:(.text+0x40a32): undefined reference to `suspend_stats'
-> main.c:(.text+0x40a73): undefined reference to `suspend_stats'
-> main.c:(.text+0x40a82): undefined reference to `suspend_stats'
-> kernel/built-in.o:main.c:(.text+0x40a91): more undefined references to `suspend_stats' follow
+On Sun, Jul 03, 2011 at 09:29:28AM +0200, Rafael J. Wysocki wrote:
 
-Should be fixed in my tree now.
+> If there's anything you'd like to discuss or give a presentation on related to
+> Power Management, please let me know, preferably by replying to this message.
 
-Thanks,
-Rafael
+The issue of cross-bus sequencing within suspend has come up again - we
+really need to work out how we make sure that dependencies between
+devices that aren't accounted for in the control bus sorting we do as
+standard.  This may be worth bringing up a KS also as it's device model
+related.
