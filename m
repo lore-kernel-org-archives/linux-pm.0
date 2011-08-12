@@ -1,14 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: LPC2011 Power Management Micro Conf
-Date: Fri, 12 Aug 2011 09:01:37 +0200
-Message-ID: <201108120901.37632.rjw__30853.4218966544$1313132472$gmane$org@sisk.pl>
-References: <201105011353.44809.rjw@sisk.pl> <201107030929.28555.rjw@sisk.pl>
-	<20110812033221.GA5671@sirena.org.uk>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v4] PM: add statistics debugfs file for
+ suspend	to ram
+Date: Fri, 12 Aug 2011 09:04:24 +0200
+Message-ID: <20110812070424.GA5249__41752.9854029$1313132918$gmane$org@ucw.cz>
+References: <6E3BC7F7C9A4BF4286DD4C043110F30B5B847F42F9@shsmsx502.ccr.corp.intel.com>
+	<EB6073F1DF78F9439DFDCC701BC6466007B36A0CCE@bgsmsx502.gar.corp.intel.com>
+	<20110810194529.GA5590@suse.de>
+	<EB6073F1DF78F9439DFDCC701BC6466007B36A0D12@bgsmsx502.gar.corp.intel.com>
+	<20110810195854.GA5939@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110812033221.GA5671@sirena.org.uk>
+Content-Disposition: inline
+In-Reply-To: <20110810195854.GA5939@suse.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,23 +23,44 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: tytso@mit.edu, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@suse.de>, Stephen Boyd <sboyd@codeaurora.org>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org, Jean Pihet <j-pihet@ti.com>, Arjan van de Ven <arjan@infradead.org>
+To: Greg KH <gregkh@suse.de>
+Cc: "Brown, Len" <len.brown@intel.com>, "Yanmin_zhang@linux.intel.com" <Yanmin_zhang@linux.intel.com>, "Liu, ShuoX" <shuox.liu@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 12, 2011, Mark Brown wrote:
-> On Sun, Jul 03, 2011 at 09:29:28AM +0200, Rafael J. Wysocki wrote:
+On Wed 2011-08-10 12:58:54, Greg KH wrote:
+> On Thu, Aug 11, 2011 at 01:22:56AM +0530, Mansoor, Illyas wrote:
+> > static pm_message_t pm_transition;
+> > > > >
+> > > > > @@ -464,8 +465,12 @@ void dpm_resume_noirq(pm_message_t state)
+> > > > >  		mutex_unlock(&dpm_list_mtx);
+> > > > >
+> > > > >  		error = device_resume_noirq(dev, state);
+> > > > > -		if (error)
+> > > > > +		if (error) {
+> > > > > +			suspend_stats.failed_resume_noirq++;
+> > > > > +			dpm_save_failed_step(SUSPEND_RESUME_NOIRQ);
+> > > > > +			dpm_save_failed_dev(dev_name(dev));
+> > > >
+> > > > Please make these statistics conditionally enabled, so on a production system
+> > > > If we need to disable these statistics code we should be able to do so.
+> > > 
+> > > Why, are they taking time or space that is needed for something else?
+> > > What's the downside here of just not always having this enabled?
+> > 
+> > Why have something that is not required/Used?
 > 
-> > If there's anything you'd like to discuss or give a presentation on related to
-> > Power Management, please let me know, preferably by replying to this message.
-> 
-> The issue of cross-bus sequencing within suspend has come up again - we
-> really need to work out how we make sure that dependencies between
-> devices that aren't accounted for in the control bus sorting we do as
-> standard.  This may be worth bringing up a KS also as it's device model
-> related.
+> Because someone might need it and rebuilding a kernel isn't possible on
+> lots of devices.
 
-I agree, I'll add it to the agenda of the LPC microconf.
+Yeah, and someone may need tetris, lets put  it into kernel and enable
+unconditionaly :-(.
 
-Thanks,
-Rafael
+Really, this is just patch to provide dmesg subset, because someone is
+cool enough to hack kernel, but will not just use grep.
+
+The patch should be just dropped. Use perf or dmesg parsing to collect
+data; fix printks() to be easier to grep for if needed.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
