@@ -1,14 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Update][PATCH 9/9] ARM / shmobile: Make A3RV be a
-	subdomain of A4LC on SH7372
-Date: Sat, 13 Aug 2011 21:43:47 +0200
-Message-ID: <201108132143.47649.rjw__4763.34024356237$1313264602$gmane$org@sisk.pl>
-References: <201107311946.06654.rjw@sisk.pl> <201107311952.51969.rjw@sisk.pl>
+Subject: Re: [PATCH 05/15] PM QoS: generalize and export the
+	constraints management code
+Date: Sat, 13 Aug 2011 22:34:17 +0200
+Message-ID: <201108132234.17377.rjw__44865.87114302$1313267711$gmane$org@sisk.pl>
+References: <1313075212-8366-1-git-send-email-j-pihet@ti.com>
+	<1313075212-8366-6-git-send-email-j-pihet@ti.com>
+	<20110813030937.GE639@gvim.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201107311952.51969.rjw@sisk.pl>
+In-Reply-To: <20110813030937.GE639@gvim.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,106 +20,246 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
+To: markgross@thegnar.org
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Saturday, August 13, 2011, mark gross wrote:
+> On Thu, Aug 11, 2011 at 05:06:42PM +0200, jean.pihet@newoldbits.com wrote:
+> > From: Jean Pihet <j-pihet@ti.com>
+> > 
+> > In preparation for the per-device constratins support:
+> > - rename update_target to pm_qos_update_target
+> > - generalize and export pm_qos_update_target for usage by the upcoming
+> > per-device latency constraints framework:
+> >    . operate on struct pm_qos_constraints for constraints management,
+> >    . introduce an 'action' parameter for constraints add/update/remove,
+> >    . the return value indicates if the aggregated constraint value has
+> >      changed,
+> > - update the internal code to operate on struct pm_qos_constraints
+> > - add a NULL pointer check in the API functions
+> > 
+> > Signed-off-by: Jean Pihet <j-pihet@ti.com>
+> > 
+> > ---
+> >  include/linux/pm_qos.h |   14 ++++++
+> >  kernel/power/qos.c     |  123 ++++++++++++++++++++++++++----------------------
+> >  2 files changed, 81 insertions(+), 56 deletions(-)
+> > 
+> > diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> > index 9772311..84aa150 100644
+> > --- a/include/linux/pm_qos.h
+> > +++ b/include/linux/pm_qos.h
+> > @@ -44,7 +44,16 @@ struct pm_qos_constraints {
+> >  	struct blocking_notifier_head *notifiers;
+> >  };
+> >  
+> > +/* Action requested to pm_qos_update_target */
+> > +enum pm_qos_req_action {
+> > +	PM_QOS_ADD_REQ,		/* Add a new request */
+> > +	PM_QOS_UPDATE_REQ,	/* Update an existing request */
+> > +	PM_QOS_REMOVE_REQ	/* Remove an existing request */
+> > +};
+> > +
+> 
+> What do you need this enum for?  The function names *_update_*, *_add_*,
+> and  *_remove_* seem to be pretty redundant if you have to pass an enum
+> that could possibly conflict with the function name.
+> 
+> >  #ifdef CONFIG_PM
+> > +int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+> > +			 enum pm_qos_req_action action, int value);
+> The action for update_target better damn well be "PM_QOS_UPDATE_REQ" or
+> there is something strange going on....  BTW what shold this function do
+> if the pm_qos_req_action was *not* the UPDATE one?
+> 
+> 
+> pm_qos_update_target should be a static to the C- file along with the
+> enum pm_qos_req_action.
+> 
+> 
+> >  void pm_qos_add_request(struct pm_qos_request *req, int pm_qos_class,
+> >  			s32 value);
+> >  void pm_qos_update_request(struct pm_qos_request *req,
+> > @@ -56,6 +65,11 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
+> >  int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+> >  int pm_qos_request_active(struct pm_qos_request *req);
+> >  #else
+> > +static inline int pm_qos_update_target(struct pm_qos_constraints *c,
+> > +				       struct plist_node *node,
+> > +				       enum pm_qos_req_action action,
+> > +				       int value)
+> > +			{ return 0; }
+> >  static inline void pm_qos_add_request(struct pm_qos_request *req,
+> >  				      int pm_qos_class, s32 value)
+> >  			{ return; }
+> > diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> > index 66e8d6f..fc60f96 100644
+> > --- a/kernel/power/qos.c
+> > +++ b/kernel/power/qos.c
+> > @@ -121,17 +121,17 @@ static const struct file_operations pm_qos_power_fops = {
+> >  };
+> >  
+> >  /* unlocked internal variant */
+> > -static inline int pm_qos_get_value(struct pm_qos_object *o)
+> > +static inline int pm_qos_get_value(struct pm_qos_constraints *c)
+> >  {
+> > -	if (plist_head_empty(&o->constraints->list))
+> > -		return o->constraints->default_value;
+> > +	if (plist_head_empty(&c->list))
+> > +		return c->default_value;
+> >  
+> > -	switch (o->constraints->type) {
+> > +	switch (c->type) {
+> >  	case PM_QOS_MIN:
+> > -		return plist_first(&o->constraints->list)->prio;
+> > +		return plist_first(&c->list)->prio;
+> >  
+> >  	case PM_QOS_MAX:
+> > -		return plist_last(&o->constraints->list)->prio;
+> > +		return plist_last(&c->list)->prio;
+> >  
+> >  	default:
+> >  		/* runtime check for not using enum */
+> > @@ -139,47 +139,73 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
+> >  	}
+> >  }
+> >  
+> > -static inline s32 pm_qos_read_value(struct pm_qos_object *o)
+> > +static inline s32 pm_qos_read_value(struct pm_qos_constraints *c)
+> >  {
+> > -	return o->constraints->target_value;
+> > +	return c->target_value;
+> >  }
+> >  
+> > -static inline void pm_qos_set_value(struct pm_qos_object *o, s32 value)
+> > +static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
+> >  {
+> > -	o->constraints->target_value = value;
+> > +	c->target_value = value;
+> >  }
+> >  
+> > -static void update_target(struct pm_qos_object *o, struct plist_node *node,
+> > -			  int del, int value)
+> > +/**
+> > + * pm_qos_update_target - manages the constraints list and calls the notifiers
+> > + *  if needed
+> > + * @c: constraints data struct
+> > + * @node: request to add to the list, to update or to remove
+> > + * @action: action to take on the constraints list
+> > + * @value: value of the request to add or update
+> > + *
+> > + * This function returns 1 if the aggregated constraint value has changed, 0
+> > + *  otherwise.
+> > + */
+> > +int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+> > +			 enum pm_qos_req_action action, int value)
+> >  {
+> >  	unsigned long flags;
+> > -	int prev_value, curr_value;
+> > +	int prev_value, curr_value, new_value;
+> >  
+> >  	spin_lock_irqsave(&pm_qos_lock, flags);
+> > -	prev_value = pm_qos_get_value(o);
+> > -	/* PM_QOS_DEFAULT_VALUE is a signal that the value is unchanged */
+> > -	if (value != PM_QOS_DEFAULT_VALUE) {
+> > +	prev_value = pm_qos_get_value(c);
+> > +	if (value == PM_QOS_DEFAULT_VALUE)
+> > +		new_value = c->default_value;
+> > +	else
+> > +		new_value = value;
+> > +
+> > +	switch (action) {
+> > +	case PM_QOS_REMOVE_REQ:
+> We have a remove request API already.  This overloading of this
+> interface feels wrong to me.
+> 
+> > +		plist_del(node, &c->list);
+> > +		break;
+> > +	case PM_QOS_UPDATE_REQ:
+> >  		/*
+> >  		 * to change the list, we atomically remove, reinit
+> >  		 * with new value and add, then see if the extremal
+> >  		 * changed
+> >  		 */
+> > -		plist_del(node, &o->constraints->list);
+> > -		plist_node_init(node, value);
+> > -		plist_add(node, &o->constraints->list);
+> > -	} else if (del) {
+> > -		plist_del(node, &o->constraints->list);
+> > -	} else {
+> > -		plist_add(node, &o->constraints->list);
+> > +		plist_del(node, &c->list);
+> > +	case PM_QOS_ADD_REQ:
+> Don't we have an API for adding a request?  if you want to overload
+> update like this then either we lose the add API or this shouldn't be
+> here.
+> 
+> 
+> > +		plist_node_init(node, new_value);
+> > +		plist_add(node, &c->list);
+> > +		break;
+> > +	default:
+> > +		/* no action */
+> > +		;
+> >  	}
+> > -	curr_value = pm_qos_get_value(o);
+> > -	pm_qos_set_value(o, curr_value);
+> > +
+> > +	curr_value = pm_qos_get_value(c);
+> > +	pm_qos_set_value(c, curr_value);
+> > +
+> >  	spin_unlock_irqrestore(&pm_qos_lock, flags);
+> >  
+> > -	if (prev_value != curr_value)
+> > -		blocking_notifier_call_chain(o->constraints->notifiers,
+> > +	if (prev_value != curr_value) {
+> > +		blocking_notifier_call_chain(c->notifiers,
+> >  					     (unsigned long)curr_value,
+> >  					     NULL);
+> > +		return 1;
+> > +	} else {
+> > +		return 0;
+> > +	}
+> >  }
+> >  
+> >  /**
+> > @@ -190,7 +216,7 @@ static void update_target(struct pm_qos_object *o, struct plist_node *node,
+> >   */
+> >  int pm_qos_request(int pm_qos_class)
+> >  {
+> > -	return pm_qos_read_value(pm_qos_array[pm_qos_class]);
+> > +	return pm_qos_read_value(pm_qos_array[pm_qos_class]->constraints);
+> >  }
+> >  EXPORT_SYMBOL_GPL(pm_qos_request);
+> >  
+> > @@ -216,20 +242,16 @@ EXPORT_SYMBOL_GPL(pm_qos_request_active);
+> >  void pm_qos_add_request(struct pm_qos_request *req,
+> >  			int pm_qos_class, s32 value)
+> >  {
+> > -	struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
+> > -	int new_value;
+> > +	if (!req) /*guard against callers passing in null */
+> > +		return;
+> >  
+> >  	if (pm_qos_request_active(req)) {
+> >  		WARN(1, KERN_ERR "pm_qos_add_request() called for already added request\n");
+> >  		return;
+> >  	}
+> > -	if (value == PM_QOS_DEFAULT_VALUE)
+> > -		new_value = o->constraints->default_value;
+> > -	else
+> > -		new_value = value;
+> > -	plist_node_init(&req->node, new_value);
+> >  	req->pm_qos_class = pm_qos_class;
+> > -	update_target(o, &req->node, 0, PM_QOS_DEFAULT_VALUE);
+> > +	pm_qos_update_target(pm_qos_array[pm_qos_class]->constraints,
+> > +			     &req->node, PM_QOS_ADD_REQ, value);
+> 
+> Ok, using pm_qos_update_target to reduce the LOC is ok but I don't think
+> this function and the enum should be exported outside of pm_qos.c
 
-Instead of coding the undocumented dependencies between power domains
-A3RV and A4LC on SH7372 directly into the low-level power up/down
-routines, make A3RV be a subdomain of A4LC, which will cause the
-same dependecies to hold.
+They are used by the next patches adding the per-device QoS.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
-
-Well, the patch should actually do what's advertised in the changelog
-(ie. make A3RV, _not_ A3SG, a subdomain of A4LC).
-
----
- arch/arm/mach-shmobile/pm-sh7372.c    |   42 +---------------------------------
- arch/arm/mach-shmobile/setup-sh7372.c |    3 ++
- 2 files changed, 5 insertions(+), 40 deletions(-)
-
-Index: linux/arch/arm/mach-shmobile/pm-sh7372.c
-===================================================================
---- linux.orig/arch/arm/mach-shmobile/pm-sh7372.c
-+++ linux/arch/arm/mach-shmobile/pm-sh7372.c
-@@ -91,35 +91,6 @@ static int pd_power_up(struct generic_pm
- 	return ret;
- }
- 
--static int pd_power_up_a3rv(struct generic_pm_domain *genpd)
--{
--	int ret = pd_power_up(genpd);
--
--	/* force A4LC on after A3RV has been requested on */
--	pm_genpd_poweron(&sh7372_a4lc.genpd);
--
--	return ret;
--}
--
--static int pd_power_down_a3rv(struct generic_pm_domain *genpd)
--{
--	int ret = pd_power_down(genpd);
--
--	/* try to power down A4LC after A3RV is requested off */
--	genpd_queue_power_off_work(&sh7372_a4lc.genpd);
--
--	return ret;
--}
--
--static int pd_power_down_a4lc(struct generic_pm_domain *genpd)
--{
--	/* only power down A4LC if A3RV is off */
--	if (!(__raw_readl(PSTR) & (1 << sh7372_a3rv.bit_shift)))
--		return pd_power_down(genpd);
--
--	return -EBUSY;
--}
--
- static bool pd_active_wakeup(struct device *dev)
- {
- 	return true;
-@@ -133,17 +104,8 @@ void sh7372_init_pm_domain(struct sh7372
- 	genpd->stop_device = pm_clk_suspend;
- 	genpd->start_device = pm_clk_resume;
- 	genpd->active_wakeup = pd_active_wakeup;
--
--	if (sh7372_pd == &sh7372_a4lc) {
--		genpd->power_off = pd_power_down_a4lc;
--		genpd->power_on = pd_power_up;
--	} else if (sh7372_pd == &sh7372_a3rv) {
--		genpd->power_off = pd_power_down_a3rv;
--		genpd->power_on = pd_power_up_a3rv;
--	} else {
--		genpd->power_off = pd_power_down;
--		genpd->power_on = pd_power_up;
--	}
-+	genpd->power_off = pd_power_down;
-+	genpd->power_on = pd_power_up;
- 	genpd->power_on(&sh7372_pd->genpd);
- }
- 
-Index: linux/arch/arm/mach-shmobile/setup-sh7372.c
-===================================================================
---- linux.orig/arch/arm/mach-shmobile/setup-sh7372.c
-+++ linux/arch/arm/mach-shmobile/setup-sh7372.c
-@@ -30,6 +30,7 @@
- #include <linux/sh_dma.h>
- #include <linux/sh_intc.h>
- #include <linux/sh_timer.h>
-+#include <linux/pm_domain.h>
- #include <mach/hardware.h>
- #include <mach/sh7372.h>
- #include <asm/mach-types.h>
-@@ -848,6 +849,8 @@ void __init sh7372_add_standard_devices(
- 	sh7372_init_pm_domain(&sh7372_a3ri);
- 	sh7372_init_pm_domain(&sh7372_a3sg);
- 
-+	pm_genpd_add_subdomain(&sh7372_a4lc.genpd, &sh7372_a3rv.genpd);
-+
- 	platform_add_devices(sh7372_early_devices,
- 			    ARRAY_SIZE(sh7372_early_devices));
- 
+Thanks,
+Rafael
