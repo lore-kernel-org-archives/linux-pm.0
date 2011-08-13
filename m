@@ -1,16 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 05/15] PM QoS: generalize and export the
-	constraints management code
-Date: Sat, 13 Aug 2011 22:34:17 +0200
-Message-ID: <201108132234.17377.rjw__44865.87114302$1313267711$gmane$org@sisk.pl>
+Subject: Re: [PATCH 06/15] PM QoS: implement the per-device PM
+	QoS constraints
+Date: Sat, 13 Aug 2011 23:08:26 +0200
+Message-ID: <201108132308.26265.rjw__26200.8636528209$1313269684$gmane$org@sisk.pl>
 References: <1313075212-8366-1-git-send-email-j-pihet@ti.com>
-	<1313075212-8366-6-git-send-email-j-pihet@ti.com>
-	<20110813030937.GE639@gvim.org>
+	<1313075212-8366-7-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110813030937.GE639@gvim.org>
+In-Reply-To: <1313075212-8366-7-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,246 +19,401 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: jean.pihet@newoldbits.com
+Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, August 13, 2011, mark gross wrote:
-> On Thu, Aug 11, 2011 at 05:06:42PM +0200, jean.pihet@newoldbits.com wrote:
-> > From: Jean Pihet <j-pihet@ti.com>
-> > 
-> > In preparation for the per-device constratins support:
-> > - rename update_target to pm_qos_update_target
-> > - generalize and export pm_qos_update_target for usage by the upcoming
-> > per-device latency constraints framework:
-> >    . operate on struct pm_qos_constraints for constraints management,
-> >    . introduce an 'action' parameter for constraints add/update/remove,
-> >    . the return value indicates if the aggregated constraint value has
-> >      changed,
-> > - update the internal code to operate on struct pm_qos_constraints
-> > - add a NULL pointer check in the API functions
-> > 
-> > Signed-off-by: Jean Pihet <j-pihet@ti.com>
-> > 
-> > ---
-> >  include/linux/pm_qos.h |   14 ++++++
-> >  kernel/power/qos.c     |  123 ++++++++++++++++++++++++++----------------------
-> >  2 files changed, 81 insertions(+), 56 deletions(-)
-> > 
-> > diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> > index 9772311..84aa150 100644
-> > --- a/include/linux/pm_qos.h
-> > +++ b/include/linux/pm_qos.h
-> > @@ -44,7 +44,16 @@ struct pm_qos_constraints {
-> >  	struct blocking_notifier_head *notifiers;
-> >  };
-> >  
-> > +/* Action requested to pm_qos_update_target */
-> > +enum pm_qos_req_action {
-> > +	PM_QOS_ADD_REQ,		/* Add a new request */
-> > +	PM_QOS_UPDATE_REQ,	/* Update an existing request */
-> > +	PM_QOS_REMOVE_REQ	/* Remove an existing request */
-> > +};
-> > +
-> 
-> What do you need this enum for?  The function names *_update_*, *_add_*,
-> and  *_remove_* seem to be pretty redundant if you have to pass an enum
-> that could possibly conflict with the function name.
-> 
-> >  #ifdef CONFIG_PM
-> > +int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
-> > +			 enum pm_qos_req_action action, int value);
-> The action for update_target better damn well be "PM_QOS_UPDATE_REQ" or
-> there is something strange going on....  BTW what shold this function do
-> if the pm_qos_req_action was *not* the UPDATE one?
-> 
-> 
-> pm_qos_update_target should be a static to the C- file along with the
-> enum pm_qos_req_action.
-> 
-> 
-> >  void pm_qos_add_request(struct pm_qos_request *req, int pm_qos_class,
-> >  			s32 value);
-> >  void pm_qos_update_request(struct pm_qos_request *req,
-> > @@ -56,6 +65,11 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
-> >  int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
-> >  int pm_qos_request_active(struct pm_qos_request *req);
-> >  #else
-> > +static inline int pm_qos_update_target(struct pm_qos_constraints *c,
-> > +				       struct plist_node *node,
-> > +				       enum pm_qos_req_action action,
-> > +				       int value)
-> > +			{ return 0; }
-> >  static inline void pm_qos_add_request(struct pm_qos_request *req,
-> >  				      int pm_qos_class, s32 value)
-> >  			{ return; }
-> > diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> > index 66e8d6f..fc60f96 100644
-> > --- a/kernel/power/qos.c
-> > +++ b/kernel/power/qos.c
-> > @@ -121,17 +121,17 @@ static const struct file_operations pm_qos_power_fops = {
-> >  };
-> >  
-> >  /* unlocked internal variant */
-> > -static inline int pm_qos_get_value(struct pm_qos_object *o)
-> > +static inline int pm_qos_get_value(struct pm_qos_constraints *c)
-> >  {
-> > -	if (plist_head_empty(&o->constraints->list))
-> > -		return o->constraints->default_value;
-> > +	if (plist_head_empty(&c->list))
-> > +		return c->default_value;
-> >  
-> > -	switch (o->constraints->type) {
-> > +	switch (c->type) {
-> >  	case PM_QOS_MIN:
-> > -		return plist_first(&o->constraints->list)->prio;
-> > +		return plist_first(&c->list)->prio;
-> >  
-> >  	case PM_QOS_MAX:
-> > -		return plist_last(&o->constraints->list)->prio;
-> > +		return plist_last(&c->list)->prio;
-> >  
-> >  	default:
-> >  		/* runtime check for not using enum */
-> > @@ -139,47 +139,73 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
-> >  	}
-> >  }
-> >  
-> > -static inline s32 pm_qos_read_value(struct pm_qos_object *o)
-> > +static inline s32 pm_qos_read_value(struct pm_qos_constraints *c)
-> >  {
-> > -	return o->constraints->target_value;
-> > +	return c->target_value;
-> >  }
-> >  
-> > -static inline void pm_qos_set_value(struct pm_qos_object *o, s32 value)
-> > +static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
-> >  {
-> > -	o->constraints->target_value = value;
-> > +	c->target_value = value;
-> >  }
-> >  
-> > -static void update_target(struct pm_qos_object *o, struct plist_node *node,
-> > -			  int del, int value)
-> > +/**
-> > + * pm_qos_update_target - manages the constraints list and calls the notifiers
-> > + *  if needed
-> > + * @c: constraints data struct
-> > + * @node: request to add to the list, to update or to remove
-> > + * @action: action to take on the constraints list
-> > + * @value: value of the request to add or update
-> > + *
-> > + * This function returns 1 if the aggregated constraint value has changed, 0
-> > + *  otherwise.
-> > + */
-> > +int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
-> > +			 enum pm_qos_req_action action, int value)
-> >  {
-> >  	unsigned long flags;
-> > -	int prev_value, curr_value;
-> > +	int prev_value, curr_value, new_value;
-> >  
-> >  	spin_lock_irqsave(&pm_qos_lock, flags);
-> > -	prev_value = pm_qos_get_value(o);
-> > -	/* PM_QOS_DEFAULT_VALUE is a signal that the value is unchanged */
-> > -	if (value != PM_QOS_DEFAULT_VALUE) {
-> > +	prev_value = pm_qos_get_value(c);
-> > +	if (value == PM_QOS_DEFAULT_VALUE)
-> > +		new_value = c->default_value;
-> > +	else
-> > +		new_value = value;
-> > +
-> > +	switch (action) {
-> > +	case PM_QOS_REMOVE_REQ:
-> We have a remove request API already.  This overloading of this
-> interface feels wrong to me.
-> 
-> > +		plist_del(node, &c->list);
-> > +		break;
-> > +	case PM_QOS_UPDATE_REQ:
-> >  		/*
-> >  		 * to change the list, we atomically remove, reinit
-> >  		 * with new value and add, then see if the extremal
-> >  		 * changed
-> >  		 */
-> > -		plist_del(node, &o->constraints->list);
-> > -		plist_node_init(node, value);
-> > -		plist_add(node, &o->constraints->list);
-> > -	} else if (del) {
-> > -		plist_del(node, &o->constraints->list);
-> > -	} else {
-> > -		plist_add(node, &o->constraints->list);
-> > +		plist_del(node, &c->list);
-> > +	case PM_QOS_ADD_REQ:
-> Don't we have an API for adding a request?  if you want to overload
-> update like this then either we lose the add API or this shouldn't be
-> here.
-> 
-> 
-> > +		plist_node_init(node, new_value);
-> > +		plist_add(node, &c->list);
-> > +		break;
-> > +	default:
-> > +		/* no action */
-> > +		;
-> >  	}
-> > -	curr_value = pm_qos_get_value(o);
-> > -	pm_qos_set_value(o, curr_value);
-> > +
-> > +	curr_value = pm_qos_get_value(c);
-> > +	pm_qos_set_value(c, curr_value);
-> > +
-> >  	spin_unlock_irqrestore(&pm_qos_lock, flags);
-> >  
-> > -	if (prev_value != curr_value)
-> > -		blocking_notifier_call_chain(o->constraints->notifiers,
-> > +	if (prev_value != curr_value) {
-> > +		blocking_notifier_call_chain(c->notifiers,
-> >  					     (unsigned long)curr_value,
-> >  					     NULL);
-> > +		return 1;
-> > +	} else {
-> > +		return 0;
-> > +	}
-> >  }
-> >  
-> >  /**
-> > @@ -190,7 +216,7 @@ static void update_target(struct pm_qos_object *o, struct plist_node *node,
-> >   */
-> >  int pm_qos_request(int pm_qos_class)
-> >  {
-> > -	return pm_qos_read_value(pm_qos_array[pm_qos_class]);
-> > +	return pm_qos_read_value(pm_qos_array[pm_qos_class]->constraints);
-> >  }
-> >  EXPORT_SYMBOL_GPL(pm_qos_request);
-> >  
-> > @@ -216,20 +242,16 @@ EXPORT_SYMBOL_GPL(pm_qos_request_active);
-> >  void pm_qos_add_request(struct pm_qos_request *req,
-> >  			int pm_qos_class, s32 value)
-> >  {
-> > -	struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
-> > -	int new_value;
-> > +	if (!req) /*guard against callers passing in null */
-> > +		return;
-> >  
-> >  	if (pm_qos_request_active(req)) {
-> >  		WARN(1, KERN_ERR "pm_qos_add_request() called for already added request\n");
-> >  		return;
-> >  	}
-> > -	if (value == PM_QOS_DEFAULT_VALUE)
-> > -		new_value = o->constraints->default_value;
-> > -	else
-> > -		new_value = value;
-> > -	plist_node_init(&req->node, new_value);
-> >  	req->pm_qos_class = pm_qos_class;
-> > -	update_target(o, &req->node, 0, PM_QOS_DEFAULT_VALUE);
-> > +	pm_qos_update_target(pm_qos_array[pm_qos_class]->constraints,
-> > +			     &req->node, PM_QOS_ADD_REQ, value);
-> 
-> Ok, using pm_qos_update_target to reduce the LOC is ok but I don't think
-> this function and the enum should be exported outside of pm_qos.c
+Hi,
 
-They are used by the next patches adding the per-device QoS.
+Well, it looks like I should have reviewed this one more carefully.
+
+On Thursday, August 11, 2011, jean.pihet@newoldbits.com wrote:
+> From: Jean Pihet <j-pihet@ti.com>
+> 
+> Implement the per-device PM QoS constraints by creating a device
+> PM QoS API, which calls the PM QoS constraints management core code.
+> 
+> The per-device latency constraints data strctures are stored
+> in the device dev_pm_info struct.
+> 
+> The device PM code calls the init and destroy of the per-device constraints
+> data struct in order to support the dynamic insertion and removal of the
+> devices in the system.
+> 
+> To minimize the data usage by the per-device constraints, the data struct
+> is only allocated at the first call to dev_pm_qos_add_request.
+> The data is later free'd when the device is removed from the system.
+> 
+> Signed-off-by: Jean Pihet <j-pihet@ti.com>
+> ---
+>  drivers/base/power/Makefile |    4 +-
+>  drivers/base/power/main.c   |    3 +
+>  drivers/base/power/qos.c    |  262 +++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm.h          |    9 ++
+>  include/linux/pm_qos.h      |   39 +++++++
+>  5 files changed, 315 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/base/power/qos.c
+> 
+> diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+> index 3647e11..1a61f89 100644
+> --- a/drivers/base/power/Makefile
+> +++ b/drivers/base/power/Makefile
+> @@ -1,8 +1,8 @@
+> -obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o
+> +obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o qos.o
+>  obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
+>  obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+>  obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+>  obj-$(CONFIG_PM_OPP)	+= opp.o
+>  obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
+>  
+> -ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+> \ No newline at end of file
+> +ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 06f09bf..f5c0e0e 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/pm.h>
+>  #include <linux/pm_runtime.h>
+> +#include <linux/pm_qos.h>
+>  #include <linux/resume-trace.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/sched.h>
+> @@ -97,6 +98,7 @@ void device_pm_add(struct device *dev)
+>  			dev_name(dev->parent));
+>  	list_add_tail(&dev->power.entry, &dpm_list);
+>  	mutex_unlock(&dpm_list_mtx);
+> +	dev_pm_qos_constraints_init(dev);
+>  }
+>  
+>  /**
+> @@ -107,6 +109,7 @@ void device_pm_remove(struct device *dev)
+>  {
+>  	pr_debug("PM: Removing info for %s:%s\n",
+>  		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+> +	dev_pm_qos_constraints_destroy(dev);
+>  	complete_all(&dev->power.completion);
+>  	mutex_lock(&dpm_list_mtx);
+>  	list_del_init(&dev->power.entry);
+> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+> new file mode 100644
+> index 0000000..465e419
+> --- /dev/null
+> +++ b/drivers/base/power/qos.c
+> @@ -0,0 +1,262 @@
+> +/*
+> + * This module exposes the interface to kernel space for specifying
+> + * per-device PM QoS dependencies. It provides infrastructure for registration
+> + * of:
+> + *
+> + * Dependents on a QoS value : register requests
+> + * Watchers of QoS value : get notified when target QoS value changes
+> + *
+> + * This QoS design is best effort based. Dependents register their QoS needs.
+> + * Watchers register to keep track of the current QoS needs of the system.
+> + *
+> + * Note about the per-device constraint data struct allocation:
+> + * . The per-device constraints data struct ptr is tored into the device
+> + *    dev_pm_info.
+> + * . To minimize the data usage by the per-device constraints, the data struct
+> + *   is only allocated at the first call to dev_pm_qos_add_request.
+> + * . The data is later free'd when the device is removed from the system.
+> + * . The constraints_state variable from dev_pm_info tracks the data struct
+> + *    allocation state:
+> + *    DEV_PM_QOS_NO_DEVICE: No device present or device removed, no data
+> + *     allocated,
+> + *    DEV_PM_QOS_DEVICE_PRESENT: Device present, data not allocated and will be
+> + *     allocated at the first call to dev_pm_qos_add_request,
+> + *    DEV_PM_QOS_ALLOCATED: Device present, data allocated. The per-device
+> + *     PM QoS constraints framework is operational and constraints can be
+> + *     added, updated or removed using the dev_pm_qos_* API.
+> + */
+> +
+> +/*#define DEBUG*/
+
+Please remove this.
+
+> +
+> +#include <linux/pm_qos.h>
+> +#include <linux/sched.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/slab.h>
+> +#include <linux/time.h>
+> +#include <linux/fs.h>
+> +#include <linux/device.h>
+> +#include <linux/string.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+
+Are you sure all of the headers are necessary?
+
+> +
+> +
+> +static void dev_pm_qos_constraints_allocate(struct device *dev);
+> +
+> +int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
+> +{
+> +	return req->dev != 0;
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_qos_request_active);
+
+That should be a static inline in a header.
+
+> +
+> +/**
+> + * dev_pm_qos_add_request - inserts new qos request into the list
+> + * @req: pointer to a preallocated handle
+> + * @dev: target device for the constraint
+> + * @value: defines the qos request
+> + *
+> + * This function inserts a new entry in the device constraints list of
+> + * requested qos performance characteristics. It recomputes the aggregate
+> + * QoS expectations of parameters and initializes the dev_pm_qos_request
+> + * handle.  Caller needs to save this handle for later use in updates and
+> + * removal.
+> + */
+> +void dev_pm_qos_add_request(struct dev_pm_qos_request *req, struct device *dev,
+> +			    s32 value)
+
+I'd use a different ordering of arguments, namely (dev, req, value).
+
+> +{
+> +	if (!req) /*guard against callers passing in null */
+> +		return;
+
+Why not to check for !dev too?
+
+> +
+> +	if (dev_pm_qos_request_active(req)) {
+> +		WARN(1, KERN_ERR "dev_pm_qos_add_request() called for already "
+> +			"added request\n");
+> +		return;
+> +	}
+> +	req->dev = dev;
+> +
+> +	/* Allocate the constraints struct on the first call to add_request */
+> +	if (req->dev->power.constraints_state == DEV_PM_QOS_DEVICE_PRESENT)
+> +		dev_pm_qos_constraints_allocate(dev);
+
+Why not to do
+
++	if (!req->dev->power.constraints)
++		dev_pm_qos_constraints_allocate(dev);
+
+> +
+> +	/* Silently return if the device has been removed */
+> +	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+> +		return;
+> +
+
+Hmm.  What will happen if two callers run dev_pm_qos_add_request()
+concurrently for the same device?
+
+> +	pm_qos_update_target(dev->power.constraints,
+> +			     &req->node, PM_QOS_ADD_REQ, value);
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
+> +
+> +/**
+> + * dev_pm_qos_update_request - modifies an existing qos request
+> + * @req : handle to list element holding a dev_pm_qos request to use
+> + * @value: defines the qos request
+> + *
+> + * Updates an existing dev PM qos request along with updating the
+> + * target value.
+> + *
+> + * Attempts are made to make this code callable on hot code paths.
+> + */
+> +void dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+> +			   s32 new_value)
+> +{
+> +	if (!req) /*guard against callers passing in null */
+> +		return;
+> +
+> +	if (!dev_pm_qos_request_active(req)) {
+> +		WARN(1, KERN_ERR "dev_pm_qos_update_request() called for "
+> +			"unknown object\n");
+> +		return;
+> +	}
+> +
+> +	/* Silently return if the device has been removed */
+> +	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+> +		return;
+> +
+> +	if (new_value != req->node.prio)
+> +		pm_qos_update_target(
+> +			req->dev->power.constraints,
+> +			&req->node, PM_QOS_UPDATE_REQ, new_value);
+
+I'm not sure what prevents dev_pm_qos_constraints_destroy() from removing
+the list from under us while we're executing this?
+
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_qos_update_request);
+> +
+> +/**
+> + * dev_pm_qos_remove_request - modifies an existing qos request
+> + * @req: handle to request list element
+> + *
+> + * Will remove pm qos request from the list of constraints and
+> + * recompute the current target value. Call this on slow code paths.
+> + */
+> +void dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
+> +{
+> +	if (!req) /*guard against callers passing in null */
+> +		return;
+> +
+> +	if (!dev_pm_qos_request_active(req)) {
+> +		WARN(1, KERN_ERR "dev_pm_qos_remove_request() called for "
+> +			"unknown object\n");
+> +		return;
+> +	}
+> +
+> +	/* Silently return if the device has been removed */
+> +	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+> +		return;
+> +
+> +	pm_qos_update_target(req->dev->power.constraints,
+> +			     &req->node, PM_QOS_REMOVE_REQ,
+> +			     PM_QOS_DEFAULT_VALUE);
+
+Same here.
+
+> +	memset(req, 0, sizeof(*req));
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
+> +
+> +/**
+> + * dev_pm_qos_add_notifier - sets notification entry for changes to target value
+> + * of per-device PM QoS constraints
+> + *
+> + * @dev: target device for the constraint
+> + * @notifier: notifier block managed by caller.
+> + *
+> + * Will register the notifier into a notification chain that gets called
+> + * upon changes to the target value for the device.
+> + */
+> +int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
+> +{
+> +	int retval = 0;
+> +
+> +	/* Silently return if the device has been removed */
+> +	if (dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+> +		return retval;
+> +
+> +	retval = blocking_notifier_chain_register(
+> +			dev->power.constraints->notifiers,
+> +			notifier);
+
+That may be racing with dev_pm_qos_constraints_destroy() too.
+
+> +
+> +	return retval;
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_qos_add_notifier);
+> +
+> +/**
+> + * dev_pm_qos_remove_notifier - deletes notification for changes to target value
+> + * of per-device PM QoS constraints
+> + *
+> + * @dev: target device for the constraint
+> + * @notifier: notifier block to be removed.
+> + *
+> + * Will remove the notifier from the notification chain that gets called
+> + * upon changes to the target value.
+> + */
+> +int dev_pm_qos_remove_notifier(struct device *dev,
+> +			       struct notifier_block *notifier)
+> +{
+> +	int retval = 0;
+> +
+> +	/* Silently return if the device has been removed */
+> +	if (dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+> +		return retval;
+> +
+> +	retval = blocking_notifier_chain_unregister(
+> +			dev->power.constraints->notifiers,
+> +			notifier);
+
+Same here.
+
+> +
+> +	return retval;
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_qos_remove_notifier);
+> +
+> +/* Called at the first call to add_request, for constraint data allocation */
+> +static void dev_pm_qos_constraints_allocate(struct device *dev)
+> +{
+> +	struct pm_qos_constraints *c;
+> +	struct blocking_notifier_head *n;
+> +
+> +	c = kzalloc(sizeof(*c), GFP_KERNEL);
+> +	if (!c)
+> +		return;
+> +
+> +	n = kzalloc(sizeof(*n), GFP_KERNEL);
+> +	if (!n) {
+> +		kfree(c);
+> +		return;
+> +	}
+> +	BLOCKING_INIT_NOTIFIER_HEAD(n);
+> +
+> +	dev->power.constraints = c;
+> +	plist_head_init(&dev->power.constraints->list, &dev->power.lock);
+> +	dev->power.constraints->target_value = PM_QOS_DEV_LAT_DEFAULT_VALUE;
+> +	dev->power.constraints->default_value =	PM_QOS_DEV_LAT_DEFAULT_VALUE;
+> +	dev->power.constraints->type = PM_QOS_MIN;
+> +	dev->power.constraints->notifiers = n;
+> +	dev->power.constraints_state = DEV_PM_QOS_ALLOCATED;
+> +}
+> +
+> +/* Called from the device PM subsystem at device insertion */
+> +void dev_pm_qos_constraints_init(struct device *dev)
+> +{
+> +	dev->power.constraints_state = DEV_PM_QOS_DEVICE_PRESENT;
+
+Hmm.  Is it insufficient to check if "constraints" is not NULL?
+
+> +}
+> +
+> +/* Called from the device PM subsystem at device removal */
+> +void dev_pm_qos_constraints_destroy(struct device *dev)
+> +{
+> +	struct dev_pm_qos_request *req, *tmp;
+> +	enum dev_pm_qos_state constraints_state = dev->power.constraints_state;
+> +
+> +	dev->power.constraints_state = DEV_PM_QOS_NO_DEVICE;
+
+I'm not sure what the purpose of this is.  I'd simply check if "constraints"
+is not NULL and I'd flush the list if not.
+
+Moreover, that has to go under a lock so that it doesn't race with
+the other functions above.  I think you can reuse power.lock for that.
+
+> +	if (constraints_state == DEV_PM_QOS_ALLOCATED) {
+> +		/* Flush the constraints list for the device */
+> +		plist_for_each_entry_safe(req, tmp,
+> +					  &dev->power.constraints->list,
+> +					  node)
+> +			/*
+> +			 * Update constraints list and call the per-device
+> +			 * callbacks if needed
+> +			 */
+> +			pm_qos_update_target(req->dev->power.constraints,
+> +					     &req->node, PM_QOS_REMOVE_REQ,
+> +					     PM_QOS_DEFAULT_VALUE);
+> +
+> +		kfree(dev->power.constraints->notifiers);
+> +		kfree(dev->power.constraints);
+> +		dev->power.constraints = NULL;
+> +	}
+> +}
+> +
 
 Thanks,
 Rafael
