@@ -1,8 +1,8 @@
 From: jean.pihet@newoldbits.com
-Subject: [PATCH 14/15] OMAP: PM CONSTRAINTS: implement the
-	devices wake-up latency constraints
-Date: Tue, 16 Aug 2011 15:43:17 +0200
-Message-ID: <1313502198-9298-15-git-send-email-j-pihet__141.447914256965$1313503638$gmane$org@ti.com>
+Subject: [PATCH 06/15] PM QoS: implement the per-device PM QoS
+	constraints
+Date: Tue, 16 Aug 2011 15:43:09 +0200
+Message-ID: <1313502198-9298-7-git-send-email-j-pihet__27850.0019260266$1313503658$gmane$org@ti.com>
 References: <1313502198-9298-1-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,499 +24,480 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Jean Pihet <j-pihet@ti.com>
 
-Implement the devices wake-up latency constraints using the global
-device PM QoS notification handler which applies the constraints to the
-underlying layer by calling the corresponding function at hwmod level.
+Implement the per-device PM QoS constraints by creating a device
+PM QoS API, which calls the PM QoS constraints management core code.
 
-Note: the bus throughput function is implemented but currently is
-a no-op. A new PM QoS class for the bus throughput needs to be
-added.
+The per-device latency constraints data strctures are stored
+in the device dev_pm_info struct.
 
-Tested on OMAP3 Beagleboard and OMAP4 Pandaboard in RET/OFF using wake-up
-latency constraints on MPU, CORE and PER.
+The device PM code calls the init and destroy of the per-device constraints
+data struct in order to support the dynamic insertion and removal of the
+devices in the system.
+
+To minimize the data usage by the per-device constraints, the data struct
+is only allocated at the first call to dev_pm_qos_add_request.
+The data is later free'd when the device is removed from the system.
+A global mutex protects the constraints users from the data being
+allocated and free'd.
 
 Signed-off-by: Jean Pihet <j-pihet@ti.com>
 ---
- arch/arm/plat-omap/include/plat/omap-pm.h |  128 ---------------------
- arch/arm/plat-omap/omap-pm-constraints.c  |  173 +++++++++++++---------------
- arch/arm/plat-omap/omap-pm-noop.c         |   89 ---------------
- 3 files changed, 80 insertions(+), 310 deletions(-)
+ drivers/base/power/Makefile |    4 +-
+ drivers/base/power/main.c   |    3 +
+ drivers/base/power/qos.c    |  291 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm.h          |    9 ++
+ include/linux/pm_qos.h      |   42 ++++++
+ 5 files changed, 347 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/base/power/qos.c
 
-diff --git a/arch/arm/plat-omap/include/plat/omap-pm.h b/arch/arm/plat-omap/include/plat/omap-pm.h
-index 0840df8..d276082 100644
---- a/arch/arm/plat-omap/include/plat/omap-pm.h
-+++ b/arch/arm/plat-omap/include/plat/omap-pm.h
-@@ -62,136 +62,8 @@ void omap_pm_if_exit(void);
-  * Device-driver-originated constraints (via board-*.c files, platform_data)
-  */
+diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+index 2639ae7..b707447 100644
+--- a/drivers/base/power/Makefile
++++ b/drivers/base/power/Makefile
+@@ -1,4 +1,4 @@
+-obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o
++obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o qos.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
+ obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+@@ -6,4 +6,4 @@ obj-$(CONFIG_PM_OPP)	+= opp.o
+ obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o
+ obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
  
--
--/**
-- * omap_pm_set_max_mpu_wakeup_lat - set the maximum MPU wakeup latency
-- * @dev: struct device * requesting the constraint
-- * @t: maximum MPU wakeup latency in microseconds
-- *
-- * Request that the maximum interrupt latency for the MPU to be no
-- * greater than @t microseconds. "Interrupt latency" in this case is
-- * defined as the elapsed time from the occurrence of a hardware or
-- * timer interrupt to the time when the device driver's interrupt
-- * service routine has been entered by the MPU.
-- *
-- * It is intended that underlying PM code will use this information to
-- * determine what power state to put the MPU powerdomain into, and
-- * possibly the CORE powerdomain as well, since interrupt handling
-- * code currently runs from SDRAM.  Advanced PM or board*.c code may
-- * also configure interrupt controller priorities, OCP bus priorities,
-- * CPU speed(s), etc.
-- *
-- * This function will not affect device wakeup latency, e.g., time
-- * elapsed from when a device driver enables a hardware device with
-- * clk_enable(), to when the device is ready for register access or
-- * other use.  To control this device wakeup latency, use
-- * omap_pm_set_max_dev_wakeup_lat()
-- *
-- * Multiple calls to omap_pm_set_max_mpu_wakeup_lat() will replace the
-- * previous t value.  To remove the latency target for the MPU, call
-- * with t = -1.
-- *
-- * XXX This constraint will be deprecated soon in favor of the more
-- * general omap_pm_set_max_dev_wakeup_lat()
-- *
-- * Returns -EINVAL for an invalid argument, -ERANGE if the constraint
-- * is not satisfiable, or 0 upon success.
-- */
--int omap_pm_set_max_mpu_wakeup_lat(struct device *dev, long t);
--
--
--/**
-- * omap_pm_set_min_bus_tput - set minimum bus throughput needed by device
-- * @dev: struct device * requesting the constraint
-- * @tbus_id: interconnect to operate on (OCP_{INITIATOR,TARGET}_AGENT)
-- * @r: minimum throughput (in KiB/s)
-- *
-- * Request that the minimum data throughput on the OCP interconnect
-- * attached to device @dev interconnect agent @tbus_id be no less
-- * than @r KiB/s.
-- *
-- * It is expected that the OMAP PM or bus code will use this
-- * information to set the interconnect clock to run at the lowest
-- * possible speed that satisfies all current system users.  The PM or
-- * bus code will adjust the estimate based on its model of the bus, so
-- * device driver authors should attempt to specify an accurate
-- * quantity for their device use case, and let the PM or bus code
-- * overestimate the numbers as necessary to handle request/response
-- * latency, other competing users on the system, etc.  On OMAP2/3, if
-- * a driver requests a minimum L4 interconnect speed constraint, the
-- * code will also need to add an minimum L3 interconnect speed
-- * constraint,
-- *
-- * Multiple calls to omap_pm_set_min_bus_tput() will replace the
-- * previous rate value for this device.  To remove the interconnect
-- * throughput restriction for this device, call with r = 0.
-- *
-- * Returns -EINVAL for an invalid argument, -ERANGE if the constraint
-- * is not satisfiable, or 0 upon success.
-- */
- int omap_pm_set_min_bus_tput(struct device *dev, u8 agent_id, unsigned long r);
- 
--
--/**
-- * omap_pm_set_max_dev_wakeup_lat - set the maximum device enable latency
-- * @req_dev: struct device * requesting the constraint, or NULL if none
-- * @dev: struct device * to set the constraint one
-- * @t: maximum device wakeup latency in microseconds
-- *
-- * Request that the maximum amount of time necessary for a device @dev
-- * to become accessible after its clocks are enabled should be no
-- * greater than @t microseconds.  Specifically, this represents the
-- * time from when a device driver enables device clocks with
-- * clk_enable(), to when the register reads and writes on the device
-- * will succeed.  This function should be called before clk_disable()
-- * is called, since the power state transition decision may be made
-- * during clk_disable().
-- *
-- * It is intended that underlying PM code will use this information to
-- * determine what power state to put the powerdomain enclosing this
-- * device into.
-- *
-- * Multiple calls to omap_pm_set_max_dev_wakeup_lat() will replace the
-- * previous wakeup latency values for this device.  To remove the
-- * wakeup latency restriction for this device, call with t = -1.
-- *
-- * Returns -EINVAL for an invalid argument, -ERANGE if the constraint
-- * is not satisfiable, or 0 upon success.
-- */
--int omap_pm_set_max_dev_wakeup_lat(struct device *req_dev, struct device *dev,
--				   long t);
--
--
--/**
-- * omap_pm_set_max_sdma_lat - set the maximum system DMA transfer start latency
-- * @dev: struct device *
-- * @t: maximum DMA transfer start latency in microseconds
-- *
-- * Request that the maximum system DMA transfer start latency for this
-- * device 'dev' should be no greater than 't' microseconds.  "DMA
-- * transfer start latency" here is defined as the elapsed time from
-- * when a device (e.g., McBSP) requests that a system DMA transfer
-- * start or continue, to the time at which data starts to flow into
-- * that device from the system DMA controller.
-- *
-- * It is intended that underlying PM code will use this information to
-- * determine what power state to put the CORE powerdomain into.
-- *
-- * Since system DMA transfers may not involve the MPU, this function
-- * will not affect MPU wakeup latency.  Use set_max_cpu_lat() to do
-- * so.  Similarly, this function will not affect device wakeup latency
-- * -- use set_max_dev_wakeup_lat() to affect that.
-- *
-- * Multiple calls to set_max_sdma_lat() will replace the previous t
-- * value for this device.  To remove the maximum DMA latency for this
-- * device, call with t = -1.
-- *
-- * Returns -EINVAL for an invalid argument, -ERANGE if the constraint
-- * is not satisfiable, or 0 upon success.
-- */
--int omap_pm_set_max_sdma_lat(struct device *dev, long t);
--
--
- /**
-  * omap_pm_set_min_clk_rate - set minimum clock rate requested by @dev
-  * @dev: struct device * requesting the constraint
-diff --git a/arch/arm/plat-omap/omap-pm-constraints.c b/arch/arm/plat-omap/omap-pm-constraints.c
-index c8b4e4c..efec5df 100644
---- a/arch/arm/plat-omap/omap-pm-constraints.c
-+++ b/arch/arm/plat-omap/omap-pm-constraints.c
-@@ -17,132 +17,112 @@
- #undef DEBUG
- 
- #include <linux/init.h>
-+#include <linux/notifier.h>
- #include <linux/cpufreq.h>
- #include <linux/device.h>
- #include <linux/platform_device.h>
+-ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+\ No newline at end of file
++ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index a854591..956443f 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -22,6 +22,7 @@
+ #include <linux/mutex.h>
+ #include <linux/pm.h>
+ #include <linux/pm_runtime.h>
 +#include <linux/pm_qos.h>
- 
- /* Interface documentation is in mach/omap-pm.h */
- #include <plat/omap-pm.h>
- #include <plat/omap_device.h>
-+#include <plat/common.h>
-+#include <plat/omap_hwmod.h>
- 
- static bool off_mode_enabled;
- static u32 dummy_context_loss_counter;
- 
--/*
-- * Device-driver-originated constraints (via board-*.c files)
-- */
-+static int _dev_pm_qos_wakeup_latency_handler(struct notifier_block *,
-+					      unsigned long, void *);
-+static struct notifier_block _dev_pm_qos_wakeup_latency_notifier = {
-+	.notifier_call	= _dev_pm_qos_wakeup_latency_handler,
-+};
- 
--int omap_pm_set_max_mpu_wakeup_lat(struct device *dev, long t)
-+
-+static int _apply_dev_pm_qos_constraint(void *req, unsigned long new_value)
- {
--	if (!dev || t < -1) {
--		WARN(1, "OMAP PM: %s: invalid parameter(s)", __func__);
--		return -EINVAL;
--	};
-+	struct omap_device *od;
-+	struct omap_hwmod *oh;
-+	struct platform_device *pdev;
-+	struct dev_pm_qos_request *dev_pm_qos_req = req;
- 
--	if (t == -1)
--		pr_debug("OMAP PM: remove max MPU wakeup latency constraint: "
--			 "dev %s\n", dev_name(dev));
--	else
--		pr_debug("OMAP PM: add max MPU wakeup latency constraint: "
--			 "dev %s, t = %ld usec\n", dev_name(dev), t);
-+	pr_debug("OMAP PM CONSTRAINTS: req@0x%p, new_value=%lu\n",
-+		 req, new_value);
- 
--	/*
--	 * For current Linux, this needs to map the MPU to a
--	 * powerdomain, then go through the list of current max lat
--	 * constraints on the MPU and find the smallest.  If
--	 * the latency constraint has changed, the code should
--	 * recompute the state to enter for the next powerdomain
--	 * state.
--	 *
--	 * TI CDP code can call constraint_set here.
--	 */
-+	/* Look for the platform device for the constraint target device */
-+	pdev = to_platform_device(dev_pm_qos_req->dev);
- 
--	return 0;
--}
-+	/* Try to catch non platform devices */
-+	if (pdev->name == NULL) {
-+		pr_err("%s: Error: platform device for device %s not valid\n",
-+		       __func__, dev_name(dev_pm_qos_req->dev));
-+		return -EINVAL;
-+	}
- 
--int omap_pm_set_min_bus_tput(struct device *dev, u8 agent_id, unsigned long r)
--{
--	if (!dev || (agent_id != OCP_INITIATOR_AGENT &&
--	    agent_id != OCP_TARGET_AGENT)) {
--		WARN(1, "OMAP PM: %s: invalid parameter(s)", __func__);
-+	/* Find the associated omap_device for dev */
-+	od = container_of(pdev, struct omap_device, pdev);
-+	if (od->hwmods_cnt != 1) {
-+		pr_err("%s: Error: No unique hwmod for device %s\n",
-+		       __func__, dev_name(dev_pm_qos_req->dev));
- 		return -EINVAL;
--	};
-+	}
- 
--	if (r == 0)
--		pr_debug("OMAP PM: remove min bus tput constraint: "
--			 "dev %s for agent_id %d\n", dev_name(dev), agent_id);
--	else
--		pr_debug("OMAP PM: add min bus tput constraint: "
--			 "dev %s for agent_id %d: rate %ld KiB\n",
--			 dev_name(dev), agent_id, r);
-+	/* Find the primary omap_hwmod for dev */
-+	oh = od->hwmods[0];
- 
--	/*
--	 * This code should model the interconnect and compute the
--	 * required clock frequency, convert that to a VDD2 OPP ID, then
--	 * set the VDD2 OPP appropriately.
--	 *
--	 * TI CDP code can call constraint_set here on the VDD2 OPP.
--	 */
-+	pr_debug("OMAP PM CONSTRAINTS: req@0x%p, dev=0x%p, new_value=%lu\n",
-+		 req, dev_pm_qos_req->dev, new_value);
- 
--	return 0;
-+	/* Apply the constraint */
-+	return omap_hwmod_set_wkup_lat_constraint(oh, dev_pm_qos_req,
-+						  new_value);
+ #include <linux/resume-trace.h>
+ #include <linux/interrupt.h>
+ #include <linux/sched.h>
+@@ -97,6 +98,7 @@ void device_pm_add(struct device *dev)
+ 			dev_name(dev->parent));
+ 	list_add_tail(&dev->power.entry, &dpm_list);
+ 	mutex_unlock(&dpm_list_mtx);
++	dev_pm_qos_constraints_init(dev);
  }
  
--int omap_pm_set_max_dev_wakeup_lat(struct device *req_dev, struct device *dev,
--				   long t)
-+/* PM QoS classes handlers */
-+static int _dev_pm_qos_wakeup_latency_handler(struct notifier_block *nb,
-+					      unsigned long new_value,
-+					      void *req)
+ /**
+@@ -107,6 +109,7 @@ void device_pm_remove(struct device *dev)
  {
--	if (!req_dev || !dev || t < -1) {
--		WARN(1, "OMAP PM: %s: invalid parameter(s)", __func__);
--		return -EINVAL;
--	};
--
--	if (t == -1)
--		pr_debug("OMAP PM: remove max device latency constraint: "
--			 "dev %s\n", dev_name(dev));
--	else
--		pr_debug("OMAP PM: add max device latency constraint: "
--			 "dev %s, t = %ld usec\n", dev_name(dev), t);
--
--	/*
--	 * For current Linux, this needs to map the device to a
--	 * powerdomain, then go through the list of current max lat
--	 * constraints on that powerdomain and find the smallest.  If
--	 * the latency constraint has changed, the code should
--	 * recompute the state to enter for the next powerdomain
--	 * state.  Conceivably, this code should also determine
--	 * whether to actually disable the device clocks or not,
--	 * depending on how long it takes to re-enable the clocks.
--	 *
--	 * TI CDP code can call constraint_set here.
--	 */
--
--	return 0;
-+	return _apply_dev_pm_qos_constraint(req, new_value);
- }
- 
--int omap_pm_set_max_sdma_lat(struct device *dev, long t)
+ 	pr_debug("PM: Removing info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
++	dev_pm_qos_constraints_destroy(dev);
+ 	complete_all(&dev->power.completion);
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_del_init(&dev->power.entry);
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+new file mode 100644
+index 0000000..304d68d
+--- /dev/null
++++ b/drivers/base/power/qos.c
+@@ -0,0 +1,291 @@
 +/*
-+ * omap_pm_set_min_bus_tput - set/release bus throughput constraints
-+ * ToDo: currently is a no-op, to be converted to a PM QoS handler
-+ * for the TPUT class
++ * This module exposes the interface to kernel space for specifying
++ * per-device PM QoS dependencies. It provides infrastructure for registration
++ * of:
++ *
++ * Dependents on a QoS value : register requests
++ * Watchers of QoS value : get notified when target QoS value changes
++ *
++ * This QoS design is best effort based. Dependents register their QoS needs.
++ * Watchers register to keep track of the current QoS needs of the system.
++ *
++ * Note about the per-device constraint data struct allocation:
++ * . The per-device constraints data struct ptr is tored into the device
++ *    dev_pm_info.
++ * . To minimize the data usage by the per-device constraints, the data struct
++ *   is only allocated at the first call to dev_pm_qos_add_request.
++ * . The data is later free'd when the device is removed from the system.
++ * . The constraints_state variable from dev_pm_info tracks the data struct
++ *    allocation state:
++ *    DEV_PM_QOS_NO_DEVICE: No device present or device removed, no data
++ *     allocated,
++ *    DEV_PM_QOS_DEVICE_PRESENT: Device present, data not allocated and will be
++ *     allocated at the first call to dev_pm_qos_add_request,
++ *    DEV_PM_QOS_ALLOCATED: Device present, data allocated. The per-device
++ *     PM QoS constraints framework is operational and constraints can be
++ *     added, updated or removed using the dev_pm_qos_* API.
++ *  . A global mutex protects the constraints users from the data being
++ *     allocated and free'd.
 + */
-+int omap_pm_set_min_bus_tput(struct device *dev, u8 agent_id, unsigned long r)
- {
--	if (!dev || t < -1) {
-+	long t;
-+	struct device *req_dev = NULL;
 +
-+	if (!dev || (agent_id != OCP_INITIATOR_AGENT &&
-+	    agent_id != OCP_TARGET_AGENT)) {
- 		WARN(1, "OMAP PM: %s: invalid parameter(s)", __func__);
- 		return -EINVAL;
- 	};
- 
--	if (t == -1)
--		pr_debug("OMAP PM: remove max DMA latency constraint: "
--			 "dev %s\n", dev_name(dev));
-+	/*
-+	 * A value of r == 0 removes the constraint. Convert it to the
-+	 * generic _set_dev_constraint convention (-1 for constraint removal)
-+	 */
-+	if (r == 0)
-+		t = -1;
- 	else
--		pr_debug("OMAP PM: add max DMA latency constraint: "
--			 "dev %s, t = %ld usec\n", dev_name(dev), t);
-+		t = r;
- 
- 	/*
--	 * For current Linux PM QOS params, this code should scan the
--	 * list of maximum CPU and DMA latencies and select the
--	 * smallest, then set cpu_dma_latency pm_qos_param
--	 * accordingly.
--	 *
--	 * For future Linux PM QOS params, with separate CPU and DMA
--	 * latency params, this code should just set the dma_latency param.
--	 *
--	 * TI CDP code can call constraint_set here.
-+	 * Assign the device for L3 or L4 interconnect to req_dev,
-+	 * based on the value of agent_id
- 	 */
-+	switch (agent_id) {
-+	case OCP_INITIATOR_AGENT:
-+		req_dev = omap2_get_l3_device();
-+		break;
-+	case OCP_TARGET_AGENT:
-+		/* Fixme: need the device for L4 interconnect */
-+		break;
++#include <linux/pm_qos.h>
++#include <linux/spinlock.h>
++#include <linux/slab.h>
++#include <linux/device.h>
++#include <linux/mutex.h>
++
++
++static DEFINE_MUTEX(dev_pm_qos_mtx);
++static void dev_pm_qos_constraints_allocate(struct device *dev);
++
++/**
++ * dev_pm_qos_add_request - inserts new qos request into the list
++ * @dev: target device for the constraint
++ * @req: pointer to a preallocated handle
++ * @value: defines the qos request
++ *
++ * This function inserts a new entry in the device constraints list of
++ * requested qos performance characteristics. It recomputes the aggregate
++ * QoS expectations of parameters and initializes the dev_pm_qos_request
++ * handle.  Caller needs to save this handle for later use in updates and
++ * removal.
++ */
++void dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
++			    s32 value)
++{
++	if (!dev || !req) /*guard against callers passing in null */
++		return;
++
++	if (dev_pm_qos_request_active(req)) {
++		WARN(1, KERN_ERR "dev_pm_qos_add_request() called for already "
++			"added request\n");
++		return;
 +	}
- 
- 	return 0;
- }
-@@ -350,10 +330,17 @@ int __init omap_pm_if_early_init(void)
- 	return 0;
- }
- 
--/* Must be called after clock framework is initialized */
-+/* Must be called after the clock framework is initialized */
- int __init omap_pm_if_init(void)
- {
--	return 0;
-+	int ret;
 +
-+	ret = dev_pm_qos_add_global_notifier(
-+			&_dev_pm_qos_wakeup_latency_notifier);
-+	if (ret)
-+		WARN(1, KERN_ERR "Cannot add global notifier for dev PM QoS\n");
++	/* Allocate the constraints struct on the first call to add_request */
++	dev_pm_qos_constraints_allocate(dev);
 +
-+	return ret;
- }
++	mutex_lock(&dev_pm_qos_mtx);
++
++	req->dev = dev;
++
++	/* Silently return if the device has been removed */
++	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
++		goto out;
++
++	pm_qos_update_target(dev->power.constraints,
++			     &req->node, PM_QOS_ADD_REQ, value);
++
++out:
++	mutex_unlock(&dev_pm_qos_mtx);
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
++
++/**
++ * dev_pm_qos_update_request - modifies an existing qos request
++ * @req : handle to list element holding a dev_pm_qos request to use
++ * @value: defines the qos request
++ *
++ * Updates an existing dev PM qos request along with updating the
++ * target value.
++ *
++ * Attempts are made to make this code callable on hot code paths.
++ */
++void dev_pm_qos_update_request(struct dev_pm_qos_request *req,
++			   s32 new_value)
++{
++	if (!req) /*guard against callers passing in null */
++		return;
++
++	if (!dev_pm_qos_request_active(req)) {
++		WARN(1, KERN_ERR "dev_pm_qos_update_request() called for "
++			"unknown object\n");
++		return;
++	}
++
++	mutex_lock(&dev_pm_qos_mtx);
++
++	/* Silently return if the device has been removed */
++	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
++		goto out;
++
++	if (new_value != req->node.prio)
++		pm_qos_update_target(
++			req->dev->power.constraints,
++			&req->node, PM_QOS_UPDATE_REQ, new_value);
++
++out:
++	mutex_unlock(&dev_pm_qos_mtx);
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_update_request);
++
++/**
++ * dev_pm_qos_remove_request - modifies an existing qos request
++ * @req: handle to request list element
++ *
++ * Will remove pm qos request from the list of constraints and
++ * recompute the current target value. Call this on slow code paths.
++ */
++void dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
++{
++	if (!req) /*guard against callers passing in null */
++		return;
++
++	if (!dev_pm_qos_request_active(req)) {
++		WARN(1, KERN_ERR "dev_pm_qos_remove_request() called for "
++			"unknown object\n");
++		return;
++	}
++
++	mutex_lock(&dev_pm_qos_mtx);
++
++	/* Silently return if the device has been removed */
++	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
++		goto out;
++
++	pm_qos_update_target(req->dev->power.constraints,
++			     &req->node, PM_QOS_REMOVE_REQ,
++			     PM_QOS_DEFAULT_VALUE);
++	memset(req, 0, sizeof(*req));
++
++out:
++	mutex_unlock(&dev_pm_qos_mtx);
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
++
++/**
++ * dev_pm_qos_add_notifier - sets notification entry for changes to target value
++ * of per-device PM QoS constraints
++ *
++ * @dev: target device for the constraint
++ * @notifier: notifier block managed by caller.
++ *
++ * Will register the notifier into a notification chain that gets called
++ * upon changes to the target value for the device.
++ */
++int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
++{
++	int retval = 0;
++
++	mutex_lock(&dev_pm_qos_mtx);
++
++	/* Silently return if the device has been removed */
++	if (dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
++		goto out;
++
++	retval = blocking_notifier_chain_register(
++			dev->power.constraints->notifiers,
++			notifier);
++
++out:
++	mutex_unlock(&dev_pm_qos_mtx);
++	return retval;
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_add_notifier);
++
++/**
++ * dev_pm_qos_remove_notifier - deletes notification for changes to target value
++ * of per-device PM QoS constraints
++ *
++ * @dev: target device for the constraint
++ * @notifier: notifier block to be removed.
++ *
++ * Will remove the notifier from the notification chain that gets called
++ * upon changes to the target value.
++ */
++int dev_pm_qos_remove_notifier(struct device *dev,
++			       struct notifier_block *notifier)
++{
++	int retval = 0;
++
++	mutex_lock(&dev_pm_qos_mtx);
++
++	/* Silently return if the device has been removed */
++	if (dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
++		goto out;
++
++	retval = blocking_notifier_chain_unregister(
++			dev->power.constraints->notifiers,
++			notifier);
++
++out:
++	mutex_unlock(&dev_pm_qos_mtx);
++	return retval;
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_remove_notifier);
++
++/* Called at the first call to add_request, for constraint data allocation */
++static void dev_pm_qos_constraints_allocate(struct device *dev)
++{
++	struct pm_qos_constraints *c;
++	struct blocking_notifier_head *n;
++
++	mutex_lock(&dev_pm_qos_mtx);
++
++	/*
++	 * Return if the data is already allocated or
++	 * if the device has been removed
++	 */
++	if (dev->power.constraints_state != DEV_PM_QOS_DEVICE_PRESENT)
++		goto out;
++
++	c = kzalloc(sizeof(*c), GFP_KERNEL);
++	if (!c)
++		goto out;
++
++	n = kzalloc(sizeof(*n), GFP_KERNEL);
++	if (!n) {
++		kfree(c);
++		goto out;
++	}
++	BLOCKING_INIT_NOTIFIER_HEAD(n);
++
++	dev->power.constraints = c;
++	plist_head_init(&dev->power.constraints->list);
++	dev->power.constraints->target_value = PM_QOS_DEV_LAT_DEFAULT_VALUE;
++	dev->power.constraints->default_value =	PM_QOS_DEV_LAT_DEFAULT_VALUE;
++	dev->power.constraints->type = PM_QOS_MIN;
++	dev->power.constraints->notifiers = n;
++	dev->power.constraints_state = DEV_PM_QOS_ALLOCATED;
++
++out:
++	mutex_unlock(&dev_pm_qos_mtx);
++}
++
++/* Called from the device PM subsystem at device insertion */
++void dev_pm_qos_constraints_init(struct device *dev)
++{
++	mutex_lock(&dev_pm_qos_mtx);
++	dev->power.constraints_state = DEV_PM_QOS_DEVICE_PRESENT;
++	mutex_unlock(&dev_pm_qos_mtx);
++}
++
++/* Called from the device PM subsystem at device removal */
++void dev_pm_qos_constraints_destroy(struct device *dev)
++{
++	struct dev_pm_qos_request *req, *tmp;
++
++	mutex_lock(&dev_pm_qos_mtx);
++
++	if (dev->power.constraints_state == DEV_PM_QOS_ALLOCATED) {
++		/* Flush the constraints list for the device */
++		plist_for_each_entry_safe(req, tmp,
++					  &dev->power.constraints->list,
++					  node)
++			/*
++			 * Update constraints list and call the per-device
++			 * callbacks if needed
++			 */
++			pm_qos_update_target(req->dev->power.constraints,
++					     &req->node, PM_QOS_REMOVE_REQ,
++					     PM_QOS_DEFAULT_VALUE);
++
++		kfree(dev->power.constraints->notifiers);
++		kfree(dev->power.constraints);
++		dev->power.constraints = NULL;
++	}
++	dev->power.constraints_state = DEV_PM_QOS_NO_DEVICE;
++
++	mutex_unlock(&dev_pm_qos_mtx);
++}
++
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index f7c84c9..7a48951 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -421,6 +421,13 @@ enum rpm_request {
  
- void omap_pm_if_exit(void)
-diff --git a/arch/arm/plat-omap/omap-pm-noop.c b/arch/arm/plat-omap/omap-pm-noop.c
-index b0471bb2..8ad902f 100644
---- a/arch/arm/plat-omap/omap-pm-noop.c
-+++ b/arch/arm/plat-omap/omap-pm-noop.c
-@@ -32,35 +32,6 @@ static u32 dummy_context_loss_counter;
- /*
-  * Device-driver-originated constraints (via board-*.c files)
-  */
--
--int omap_pm_set_max_mpu_wakeup_lat(struct device *dev, long t)
--{
--	if (!dev || t < -1) {
--		WARN(1, "OMAP PM: %s: invalid parameter(s)", __func__);
--		return -EINVAL;
--	};
--
--	if (t == -1)
--		pr_debug("OMAP PM: remove max MPU wakeup latency constraint: "
--			 "dev %s\n", dev_name(dev));
--	else
--		pr_debug("OMAP PM: add max MPU wakeup latency constraint: "
--			 "dev %s, t = %ld usec\n", dev_name(dev), t);
--
--	/*
--	 * For current Linux, this needs to map the MPU to a
--	 * powerdomain, then go through the list of current max lat
--	 * constraints on the MPU and find the smallest.  If
--	 * the latency constraint has changed, the code should
--	 * recompute the state to enter for the next powerdomain
--	 * state.
--	 *
--	 * TI CDP code can call constraint_set here.
--	 */
--
--	return 0;
--}
--
- int omap_pm_set_min_bus_tput(struct device *dev, u8 agent_id, unsigned long r)
- {
- 	if (!dev || (agent_id != OCP_INITIATOR_AGENT &&
-@@ -88,66 +59,6 @@ int omap_pm_set_min_bus_tput(struct device *dev, u8 agent_id, unsigned long r)
- 	return 0;
- }
+ struct wakeup_source;
  
--int omap_pm_set_max_dev_wakeup_lat(struct device *req_dev, struct device *dev,
--				   long t)
--{
--	if (!req_dev || !dev || t < -1) {
--		WARN(1, "OMAP PM: %s: invalid parameter(s)", __func__);
--		return -EINVAL;
--	};
--
--	if (t == -1)
--		pr_debug("OMAP PM: remove max device latency constraint: "
--			 "dev %s\n", dev_name(dev));
--	else
--		pr_debug("OMAP PM: add max device latency constraint: "
--			 "dev %s, t = %ld usec\n", dev_name(dev), t);
--
--	/*
--	 * For current Linux, this needs to map the device to a
--	 * powerdomain, then go through the list of current max lat
--	 * constraints on that powerdomain and find the smallest.  If
--	 * the latency constraint has changed, the code should
--	 * recompute the state to enter for the next powerdomain
--	 * state.  Conceivably, this code should also determine
--	 * whether to actually disable the device clocks or not,
--	 * depending on how long it takes to re-enable the clocks.
--	 *
--	 * TI CDP code can call constraint_set here.
--	 */
--
--	return 0;
--}
--
--int omap_pm_set_max_sdma_lat(struct device *dev, long t)
--{
--	if (!dev || t < -1) {
--		WARN(1, "OMAP PM: %s: invalid parameter(s)", __func__);
--		return -EINVAL;
--	};
--
--	if (t == -1)
--		pr_debug("OMAP PM: remove max DMA latency constraint: "
--			 "dev %s\n", dev_name(dev));
--	else
--		pr_debug("OMAP PM: add max DMA latency constraint: "
--			 "dev %s, t = %ld usec\n", dev_name(dev), t);
--
--	/*
--	 * For current Linux PM QOS params, this code should scan the
--	 * list of maximum CPU and DMA latencies and select the
--	 * smallest, then set cpu_dma_latency pm_qos_param
--	 * accordingly.
--	 *
--	 * For future Linux PM QOS params, with separate CPU and DMA
--	 * latency params, this code should just set the dma_latency param.
--	 *
--	 * TI CDP code can call constraint_set here.
--	 */
--
--	return 0;
--}
--
- int omap_pm_set_min_clk_rate(struct device *dev, struct clk *c, long r)
- {
- 	if (!dev || !c || r < 0) {
++/* Per-device PM QoS constraints data struct state */
++enum dev_pm_qos_state {
++	DEV_PM_QOS_NO_DEVICE,		/* No device present */
++	DEV_PM_QOS_DEVICE_PRESENT,	/* Device present, data not allocated */
++	DEV_PM_QOS_ALLOCATED,		/* Device present, data allocated */
++};
++
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+ 	unsigned int		can_wakeup:1;
+@@ -463,6 +470,8 @@ struct dev_pm_info {
+ 	unsigned long		accounting_timestamp;
+ #endif
+ 	void			*subsys_data;  /* Owned by the subsystem. */
++	struct pm_qos_constraints *constraints;
++	enum dev_pm_qos_state	constraints_state;
+ };
+ 
+ extern void update_pm_runtime_accounting(struct device *dev);
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 84aa150..d3e2d80 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -19,12 +19,18 @@
+ #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+ #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+ #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
++#define PM_QOS_DEV_LAT_DEFAULT_VALUE		0
+ 
+ struct pm_qos_request {
+ 	struct plist_node node;
+ 	int pm_qos_class;
+ };
+ 
++struct dev_pm_qos_request {
++	struct plist_node node;
++	struct device *dev;
++};
++
+ enum pm_qos_type {
+ 	PM_QOS_UNITIALIZED,
+ 	PM_QOS_MAX,		/* return the largest value */
+@@ -51,6 +57,11 @@ enum pm_qos_req_action {
+ 	PM_QOS_REMOVE_REQ	/* Remove an existing request */
+ };
+ 
++static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
++{
++	return req->dev != 0;
++}
++
+ #ifdef CONFIG_PM
+ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+ 			 enum pm_qos_req_action action, int value);
+@@ -64,6 +75,17 @@ int pm_qos_request(int pm_qos_class);
+ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
+ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+ int pm_qos_request_active(struct pm_qos_request *req);
++
++void dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
++			    s32 value);
++void dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value);
++void dev_pm_qos_remove_request(struct dev_pm_qos_request *req);
++int dev_pm_qos_add_notifier(struct device *dev,
++			    struct notifier_block *notifier);
++int dev_pm_qos_remove_notifier(struct device *dev,
++			       struct notifier_block *notifier);
++void dev_pm_qos_constraints_init(struct device *dev);
++void dev_pm_qos_constraints_destroy(struct device *dev);
+ #else
+ static inline int pm_qos_update_target(struct pm_qos_constraints *c,
+ 				       struct plist_node *node,
+@@ -89,6 +111,26 @@ static inline int pm_qos_remove_notifier(int pm_qos_class,
+ 			{ return 0; }
+ static inline int pm_qos_request_active(struct pm_qos_request *req)
+ 			{ return 0; }
++
++static inline void dev_pm_qos_add_request(struct device *dev,
++					  struct dev_pm_qos_request *req,
++					  s32 value)
++			{ return; }
++static inline void dev_pm_qos_update_request(struct dev_pm_qos_request *req,
++					     s32 new_value)
++			{ return; }
++static inline void dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
++			{ return; }
++static inline int dev_pm_qos_add_notifier(struct device *dev,
++					  struct notifier_block *notifier)
++			{ return 0; }
++static inline int dev_pm_qos_remove_notifier(struct device *dev,
++					     struct notifier_block *notifier)
++			{ return 0; }
++static inline void dev_pm_qos_constraints_init(struct device *dev)
++			{ return; }
++static inline void dev_pm_qos_constraints_destroy(struct device *dev)
++			{ return; }
+ #endif
+ 
+ #endif
 -- 
 1.7.4.1
