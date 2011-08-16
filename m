@@ -1,16 +1,12 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 07/15] PM QoS: add a global notification
- mechanism for the device constraints
-Date: Tue, 16 Aug 2011 11:58:38 +0200
-Message-ID: <CAORVsuUNxCN7+KZnpJT5Urd07cB+raX6e23ah_9Mp8M07SAyLw__39425.1238358722$1313488882$gmane$org@mail.gmail.com>
-References: <1313075212-8366-1-git-send-email-j-pihet@ti.com>
-	<1313075212-8366-8-git-send-email-j-pihet@ti.com>
-	<201108142350.42260.rjw@sisk.pl>
+From: jean.pihet@newoldbits.com
+Subject: [PATCH v5 00/15] PM QoS: add a per-device latency
+	constraints framework
+Date: Tue, 16 Aug 2011 15:43:03 +0200
+Message-ID: <1313502198-9298-1-git-send-email-j-pihet__5866.10475224933$1313502329$gmane$org@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108142350.42260.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,114 +16,185 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>, Kevin Hilman <khilman@ti.com>, markgross@thegnar.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+From: Jean Pihet <j-pihet@ti.com>
 
-2011/8/14 Rafael J. Wysocki <rjw@sisk.pl>:
-> Hi,
->
-> There is some code duplication in this patch that should better be
-> avoided (details below).
->
-> On Thursday, August 11, 2011, jean.pihet@newoldbits.com wrote:
->> From: Jean Pihet <j-pihet@ti.com>
->>
->> Add a global notification chain that gets called upon changes to the
->> aggregated constraint value for any device.
->> The notification callbacks are passing the full constraint request data
->> in order for the callees to have access to it. The current use is for the
->> platform low-level code to access the target device of the constraint.
->>
-...
+High level implementation:
 
->
-> The following code:
->
->> + =A0 =A0 /*
->> + =A0 =A0 =A0* Update constraints list and call the per-device callbacks=
- if needed
->> + =A0 =A0 =A0*/
->> + =A0 =A0 ret =3D pm_qos_update_target(dev->power.constraints,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&req->n=
-ode, PM_QOS_ADD_REQ, value);
->> +
->> + =A0 =A0 if (ret) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 /* Call the global callbacks if needed */
->> + =A0 =A0 =A0 =A0 =A0 =A0 curr_value =3D pm_qos_read_value(req->dev->pow=
-er.constraints);
->> + =A0 =A0 =A0 =A0 =A0 =A0 blocking_notifier_call_chain(&dev_pm_notifiers,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0(unsigned long)curr_value,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0req);
->> + =A0 =A0 }
->
-> is used in dev_pm_qos_update_request() and dev_pm_qos_remove_request()
-> with the only difference being the command given to pm_qos_update_target(=
-).
-> This asks for a common function, eg. dev_pm_qos_update_target(), containi=
-ng
-> that code that will be called by all of them (and, apparently, by
-> dev_pm_qos_constraints_destroy()).
-Ok that makes the code cleaner.
+1. Preparation of the PM QoS for the addition of a device PM QoS constraints
+   framework:
+  . rename and move of the PM QoS implementation files to kernel/power/qos.c
+    and include/linux/pm_qos.h
+  . rename of API parameters and internal fields names
+  . Move around the PM QoS misc devices management code for better readability
+  . re-organize the internal data structs
+  . generalize and export the constraints management core code
 
->
-> ...
->> @@ -250,9 +329,18 @@ void dev_pm_qos_constraints_destroy(struct device *=
-dev)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* Update constraints list=
- and call the per-device
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* callbacks if needed
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_qos_update_target(req->dev-=
->power.constraints,
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0&req->node, PM_QOS_REMOVE_REQ,
->> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0PM_QOS_DEFAULT_VALUE);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret |=3D pm_qos_update_target(=
-req->dev->power.constraints,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 &req->node,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 PM_QOS_REMOVE_REQ,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 PM_QOS_DEFAULT_VALUE);
->
-> I'm not sure why you're using the binary or operator here. =A0Shouldn't t=
-hat be
-> a simple assignment?
->
->> +
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (ret) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Call the global callbacks i=
-f needed */
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 curr_value =3D dev->power.cons=
-traints->default_value;
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 blocking_notifier_call_chain(&=
-dev_pm_notifiers,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(unsigned long)curr_value,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0req);
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
-In the sake of optimization I had a single return value that
-aggregates the return values of the calls target_value and calls the
-global notifier callbacks _only once_.
+2. Implementation of the per-device PM QoS constraints:
+  . create drivers/base/power/qos.c for the implementation
+  . create a device PM QoS API, which calls the PM QoS constraints management
+    core code
+  . the per-device latency constraints data strctures are stored in the device
+    dev_pm_info struct
+  . the device PM code calls the init and destroy of the per-device constraints
+    data struct in order to support the dynamic insertion and removal of the
+    devices in the system.
+  . to minimize the data usage by the per-device constraints, the data struct
+    is only allocated at the first call to dev_pm_qos_add_request. The data
+    is later free'd when the device is removed from the system
+  . per-device notification callbacks can be registered and called upon a
+    change to the aggregated constraint value
+  . a global mutex protects the constraints users from the data being
+    allocated and free'd.
 
-As you suggested it is better to use the common update code, which
-makes the code cleaner but also removes this optimization.
+3. add a global notification mechanism for the device constraints
+  . add a global notification chain that gets called upon changes to the
+    aggregated constraint value for any device.
+  . the notification callbacks are passing the full constraint request data
+    in order for the callees to have access to it. The current use is for the
+    platform low-level code to access the target device of the constraint
 
->>
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(dev->power.constraints->notifiers);
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(dev->power.constraints);
->
-> Thanks,
-> Rafael
->
+4. Implement the OMAP low level constraints management code
+  . create a PM layer plugin for per-device constraints, compiled under
+    CONFIG_OMAP_PM_CONSTRAINTS=y
+  . implement the devices wake-up latency constraints using the global
+    device PM QoS notification handler which applies the constraints to the
+    underlying layer
+  . implement the low level code which controls the power domains next power
+    states, through the hwmod and pwrdm layers
+  . add (preliminary) power domains wake-up latency figures for OMAP3&4
+  . cpuidle is a CPU centric framework so it decides the MPU next power state
+    based on the MPU exit_latency and target_residency figures. The rest of
+    the power domains get their next power state programmed from the devices
+    PM QoS framework, via the devices wake-up latency constraints.
+  . convert the OMAP I2C driver to the PM QoS API for MPU latency constraints
 
-Regards,
-Jean
+
+Questions:
+1. the user space API is still under discussions on linux-omap and linux-pm MLs,
+   cf. [1]. The idea is to add a user-space API for the devices constratins
+   PM QoS, using a sysfs entry per device
+
+[1] http://marc.info/?l=linux-omap&m=131232344503327&w=2
+
+ToDo:
+1. write Documentation for the new PM QoS class, once the code is agreed on
+2. validate the constraints framework on OMAP4 HW (done on OMAP3)
+3. Need testing on platforms other than OMAP
+4. refine the power domains wake-up latency and the cpuidle figures
+5. re-visit the OMAP power domains states initialization procedure. Currently
+   the power states that have been changed from the constraints API which were
+   applied before the initialization of the power domains are lost
+
+   
+Based on the master branch of the linux-omap git tree (3.1.0-rc1). Compile
+tested using OMAP and x86 generic defconfigs.
+
+Tested on OMAP3 Beagleboard (ES2.x).
+Need testing on platforms other than OMAP, because of the impact on the
+device insertion/removal in device_pm_add/remove
+
+
+Changelog:
+
+v5:
+. Added a global mutex to protect the per-device data allocation/free from
+  the users
+. More robust error checking in the device PM QoS code
+. Clean-up of the device PM QoS code: refactor some duplicated code, removal
+  of unneeded includes
+
+v4:
+. Complete devices PM QoS re-design:
+  . Separation from the existing PM QoS classes by adding a device PM QoS
+    API. The device code is re-using the PM QoS core code for constraints
+    lists management and notification mechanism
+  . Addition of a devices PM QoS global notification mechanism, for interaction
+    with the low level platform code
+
+v3:
+. Complete PM QoS re-design after the comments on MLs
+. Patch set split up for improved readability and easier maintenance
+
+v2:
+. Rework after comments on the mailing lists
+. Added a notification of device insertion/removal from the device PM framework
+. Validated on OMAP3 HW
+
+v1:
+. Initial implementation
+
+
+Jean Pihet (14):
+  PM QoS: move and rename the implementation files
+  PM QoS: minor clean-ups
+  PM QoS: code re-organization
+  PM QoS: re-organize data structs
+  PM QoS: generalize and export the constraints management code
+  PM QoS: implement the per-device PM QoS constraints
+  PM QoS: add a global notification mechanism for the device
+    constraints
+  OMAP: convert I2C driver to PM QoS for latency constraints
+  OMAP: PM: create a PM layer plugin for per-device constraints
+  OMAP2+: powerdomain: control power domains next state
+  OMAP3: powerdomain data: add wake-up latency figures
+  OMAP2+: omap_hwmod: manage the wake-up latency constraints
+  OMAP: PM CONSTRAINTS: implement the devices wake-up latency
+    constraints
+  OMAP2+: cpuidle only influences the MPU state
+
+Vishwanath BS (1):
+  OMAP4: powerdomain data: add wake-up latency figures
+
+ arch/arm/mach-msm/clock.c                    |    2 +-
+ arch/arm/mach-omap2/cpuidle34xx.c            |   42 +--
+ arch/arm/mach-omap2/omap_hwmod.c             |   26 ++-
+ arch/arm/mach-omap2/pm.h                     |   17 +-
+ arch/arm/mach-omap2/powerdomain.c            |  190 ++++++++++
+ arch/arm/mach-omap2/powerdomain.h            |   33 ++-
+ arch/arm/mach-omap2/powerdomains3xxx_data.c  |   77 ++++
+ arch/arm/mach-omap2/powerdomains44xx_data.c  |   84 +++++
+ arch/arm/plat-omap/Kconfig                   |    7 +
+ arch/arm/plat-omap/Makefile                  |    1 +
+ arch/arm/plat-omap/i2c.c                     |   20 -
+ arch/arm/plat-omap/include/plat/omap-pm.h    |  128 -------
+ arch/arm/plat-omap/include/plat/omap_hwmod.h |    2 +
+ arch/arm/plat-omap/omap-pm-constraints.c     |  350 ++++++++++++++++++
+ arch/arm/plat-omap/omap-pm-noop.c            |   89 -----
+ drivers/acpi/processor_idle.c                |    2 +-
+ drivers/base/power/Makefile                  |    4 +-
+ drivers/base/power/main.c                    |    3 +
+ drivers/base/power/qos.c                     |  339 ++++++++++++++++++
+ drivers/cpuidle/cpuidle.c                    |    2 +-
+ drivers/cpuidle/governors/ladder.c           |    2 +-
+ drivers/cpuidle/governors/menu.c             |    2 +-
+ drivers/i2c/busses/i2c-omap.c                |   31 +-
+ drivers/media/video/via-camera.c             |    4 +-
+ drivers/net/e1000e/netdev.c                  |    2 +-
+ drivers/net/wireless/ipw2x00/ipw2100.c       |    4 +-
+ include/linux/netdevice.h                    |    4 +-
+ include/linux/pm.h                           |    9 +
+ include/linux/pm_qos.h                       |  147 ++++++++
+ include/linux/pm_qos_params.h                |   38 --
+ include/sound/pcm.h                          |    4 +-
+ kernel/Makefile                              |    2 +-
+ kernel/pm_qos_params.c                       |  481 -------------------------
+ kernel/power/Makefile                        |    2 +-
+ kernel/power/qos.c                           |  490 ++++++++++++++++++++++++++
+ net/mac80211/main.c                          |    2 +-
+ net/mac80211/mlme.c                          |    2 +-
+ net/mac80211/scan.c                          |    2 +-
+ sound/core/pcm_native.c                      |    2 +-
+ 39 files changed, 1823 insertions(+), 825 deletions(-)
+ create mode 100644 arch/arm/plat-omap/omap-pm-constraints.c
+ create mode 100644 drivers/base/power/qos.c
+ create mode 100644 include/linux/pm_qos.h
+ delete mode 100644 include/linux/pm_qos_params.h
+ delete mode 100644 kernel/pm_qos_params.c
+ create mode 100644 kernel/power/qos.c
+
+-- 
+1.7.4.1
