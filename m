@@ -1,17 +1,16 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 05/15] PM QoS: generalize and export the
- constraints management code
-Date: Tue, 16 Aug 2011 08:44:19 +0200
-Message-ID: <CAORVsuXDp4vYGg9BCLkJm6iMPobSCtE9s_1j4zNV5frKjQY1jg__35362.8974561163$1313477234$gmane$org@mail.gmail.com>
-References: <1313075212-8366-1-git-send-email-j-pihet@ti.com>
-	<201108132234.17377.rjw@sisk.pl>
-	<CAORVsuUz9qXFvUTsYOs4Z7rLQFXROKOcWVi=bZWTKJuA2Xu1Og@mail.gmail.com>
-	<201108141537.43752.rjw@sisk.pl> <20110816040809.GA11921@gvim.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v5 2/3] PM / DEVFREQ: add basic governors
+Date: Tue, 16 Aug 2011 17:52:29 +0900
+Message-ID: <CAJ0PZbTh-YZB9kTNw3uAhukU-2fJ2g5KRy8HC+1B00TjoxQn2Q@mail.gmail.com>
+References: <1312794188-9823-1-git-send-email-myungjoo.ham@samsung.com>
+	<1312794188-9823-3-git-send-email-myungjoo.ham@samsung.com>
+	<CAJOA=zMJogYGS9xtcUmU3_a3QmBTy_wz7pf1tk6KUtf4cT1J=A@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110816040809.GA11921@gvim.org>
+In-Reply-To: <CAJOA=zMJogYGS9xtcUmU3_a3QmBTy_wz7pf1tk6KUtf4cT1J=A@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,84 +20,106 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: "Turquette, Mike" <mturquette@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 16, 2011 at 6:08 AM, mark gross <markgross@thegnar.org> wrote:
-> On Sun, Aug 14, 2011 at 03:37:43PM +0200, Rafael J. Wysocki wrote:
->> On Sunday, August 14, 2011, Jean Pihet wrote:
->> > Hi Rafael, Mark,
->> >
->> > On Sat, Aug 13, 2011 at 10:34 PM, Rafael J. Wysocki <rjw@sisk.pl> wrot=
-e:
->> > > On Saturday, August 13, 2011, mark gross wrote:
->> > >> On Thu, Aug 11, 2011 at 05:06:42PM +0200, jean.pihet@newoldbits.com=
- wrote:
->> > >> > From: Jean Pihet <j-pihet@ti.com>
->> > >> >
->> > >> > In preparation for the per-device constratins support:
->> > >> > - rename update_target to pm_qos_update_target
->> > >> > - generalize and export pm_qos_update_target for usage by the upc=
-oming
->> > >> > per-device latency constraints framework:
->> > >> > =A0 =A0. operate on struct pm_qos_constraints for constraints man=
-agement,
->> > >> > =A0 =A0. introduce an 'action' parameter for constraints add/upda=
-te/remove,
->> > >> > =A0 =A0. the return value indicates if the aggregated constraint =
-value has
->> > >> > =A0 =A0 =A0changed,
->> > >> > - update the internal code to operate on struct pm_qos_constraints
->> > >> > - add a NULL pointer check in the API functions
->> > >> >
->> > >> > Signed-off-by: Jean Pihet <j-pihet@ti.com>
->> > ...
->> > >> > +/* Action requested to pm_qos_update_target */
->> > >> > +enum pm_qos_req_action {
->> > >> > + =A0 PM_QOS_ADD_REQ, =A0 =A0 =A0 =A0 /* Add a new request */
->> > >> > + =A0 PM_QOS_UPDATE_REQ, =A0 =A0 =A0/* Update an existing request=
- */
->> > >> > + =A0 PM_QOS_REMOVE_REQ =A0 =A0 =A0 /* Remove an existing request=
- */
->> > >> > +};
->> > >> > +
->> > >>
->> > >> What do you need this enum for? =A0The function names *_update_*, *=
-_add_*,
->> > >> and =A0*_remove_* seem to be pretty redundant if you have to pass a=
-n enum
->> > >> that could possibly conflict with the function name.
->> > >>
->> > >> > =A0#ifdef CONFIG_PM
->> > >> > +int pm_qos_update_target(struct pm_qos_constraints *c, struct pl=
-ist_node *node,
->> > >> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0enum pm_qos_req_action a=
-ction, int value);
->> > >> The action for update_target better damn well be "PM_QOS_UPDATE_REQ=
-" or
->> > >> there is something strange going on.... =A0BTW what shold this func=
-tion do
->> > >> if the pm_qos_req_action was *not* the UPDATE one?
->> >
->> > The meaning of pm_qos_update_target is 'update the PM QoS target
->> > constraints lists'. As described in the changelog the intention of
->> > this patch is to implement the constraints lists management logic in
->> > update_target and simplify the API functions (add/update/remove). It
->> > is also exported for the upcoming (patch 06/15]) to use it as well.
->>
->> The enums are fine by me and they allow us to simplify the code
->> quite a bit.
->>
-> Ok, but they look a bit sloppy to me as we now have an API that says
-> "add" we can actually pass in an enum that says "remove".
-We have an API that says 'update target' that we pass in a parameter
-that says 'add request', 'update request' or 'remove request'.
-If it is required I could just rename the internal function
-update_target, in a later patch.
-
->
-> --mark
->
-
-Jean
+T24gVGh1LCBBdWcgMTEsIDIwMTEgYXQgMTA6MzUgQU0sIFR1cnF1ZXR0ZSwgTWlrZSA8bXR1cnF1
+ZXR0ZUB0aS5jb20+IHdyb3RlOgpbXQo+Cj4gUG9sbGluZyBpcyB0aGUgb25seSBwcmFjdGljYWwg
+dXNlIGZvciBkZXZmcmVxLCBhc3N1bWluZyBhIFFvUyBBUEkKPiBleGlzdHMgZm9yIERWRlMuIMKg
+QXMgc3VjaCBwb3dlcnNhdmUgYW5kIHBlcmZvcm1hbmNlIGdvdmVybm9ycyBzaG91bGQKPiBiZSBy
+ZW1vdmVkLgoKQWx0aG91Z2ggcG93ZXJzYXZlL3BlcmZvcm1hbmNlIGdvdmVybm9ycyBtYXkgc2Vl
+bSB1c2VsZXNzLCB0aGV5IGFyZQp1c2VkIGFzIGJhc2lzIG9uIG1lYXN1cmluZyB0aGUgdXNlZnVs
+bmVzcyBvZiBEVkZTIG1lY2hhbmlzbSBvZgpzcGVjaWZpYyBkZXZpY2VzLiBJZiBhIGRldmljZSBp
+cyBnb2luZyB0byB1c2UgRFZGUywgd2UgY2FuIHRlc3QgdGhlCmRldmljZSB3aXRoIHRoZW0gdG8g
+ZmluZCBvdXQgdGhlIHBvdGVudGlhbCBwb3dlciBzYXZlIChjb21wYXJlCnBvd2Vyc2F2ZSB0byBw
+ZXJmb3JtYW5jZSkgYW5kIHRoZSBwZXJmb3JtYW5jZSBkZXRlcmlvcmF0aW9uIChjb21wYXJlZAp0
+byBwZXJmb3JtYW5jZSkuIE9mdGVuLCBpbiB0ZXN0aW5nIHBoYXNlLCBRQSB0ZWFtcyB1c2UgcGVy
+Zm9ybWFuY2UgdG8KZmluZCBvdXQgYW55IGlzc3VlcyB3aXRoIERWRlMgZmVhdHVyZXMgKGluIENQ
+VUZSRVEpLiBVc2VycyBtYXkgc2ltcGx5CndhbnQgdG8gdXNlIHBlcmZvcm1hbmNlIGdvdmVybm9y
+IGluIHNvbWUgY2FzZXMgKHBvd2VyIGlzIG5vdCBhbiBpc3N1ZQpzb21ldGltZXMpLgoKVXNpbmcg
+UW9TIEFQSXMgc2ltcGx5IHRvIHNldCAibWluaW11bSIgb3IgIm1heGltdW0iIGlzIHBvc3NpYmxl
+LgpIb3dldmVyLCB0aGV5IGFyZSBub3QgdGhhdCBzdHJhaWdodGZvcndhcmQ7IGUuZy4sIGhvdyBz
+aG91bGQgd2Ugc2V0CiJETUEgbGF0ZW5jeSIgdG8gYmUgZml4ZWQgYXQgdGhlIG1pbmltdW0gZnJl
+cXVlbmN5IHJlZ2FyZGxlc3Mgb2YKb3RoZXJzLCBvciBob3cgc2hvdWxkIHdlIHNldCAiTmV0d29y
+ayBsYXRlbmN5IiB0byBiZSBmaXhlZCBhdCB0aGUKbWF4aW11bSBmcmVxdWVuY3k/IGVzcGVjaWFs
+bHkgd2l0aG91dCBrbm93aW5nIHRoZSBzcGVjaWZpY2F0aW9ucyBvZgplYWNoIERWRlMtY2FwYWJs
+ZSBkZXZpY2UgKHN1Y2ggYXMgYXZhaWxhYmxlIGZyZXF1ZW5jaWVzLCB2YWxpZCBsYXRlbmN5CnZh
+bHVlcywgLi4uKS4KCj4KPj4gdXNlcnNwYWNlOiB1c2UgdGhlIHVzZXIgc3BlY2lmaWVkIGZyZXF1
+ZW5jeSBzdG9yZWQgYXQKPj4gZGV2ZnJlcS51c2VyX3NldF9mcmVxLiBXaXRoIHN5c2ZzIHN1cHBv
+cnQgaW4gdGhlIGZvbGxvd2luZyBwYXRjaCwgYSB1c2VyCj4+IG1heSBzZXQgdGhlIHZhbHVlIHdp
+dGggdGhlIHN5c2ZzIGludGVyZmFjZS4KPj4KPj4gc2ltcGxlX29uZGVtYW5kOiBzaW1wbGlmaWVk
+IHZlcnNpb24gb2YgQ1BVRlJFUSdzIE9OREVNQU5EIGdvdmVybm9yLgo+Cj4gSSB3b24ndCByZXBl
+YXRlIGV2ZXJ5dGhpbmcgZnJvbSBwYXRjaCAxIG9mIHRoaXMgc2VyaWVzLCBidXQgdGhlCj4gZ292
+ZXJub3JzIHNob3VsZCBpbXBsZW1lbnQgdGhlIHF1ZXVlL2xvb3AgbG9naWMgaW4gdGhlIHNhbWUg
+d2F5IHRoYXQKPiBDUFVmcmVxIGRvZXMsIGFuZCB0aGUgaW5kaXZpZHVhbCBkZXZpY2VzIHNob3Vs
+ZCBoYXZlIHRoZWlyIG93bgo+IGRlbGF5ZWRfd29yay4KCkZpcnN0LCBpbiBjYXNlIHdoZXJlIHdl
+IHdhbnQgdG8gbGV0IGVhY2ggRFZGUy1jYXBhYmxlIGRldmljZSBoYXZlCmV4YWN0IHBvbGxpbmcg
+ZnJlcXVlbmN5ICh1cCB0byBqaWZmeSByZXNvbHV0aW9uKSwgd2Ugb25seSBuZWVkIHRvIHNldApw
+b2xsaW5nX2ludGVydmFsID0gamlmZmllc190b19tc2VjcygxKTsuCgpJbiBjYXNlIG9mIENQVUZS
+RVEsIHRoZXJlIHdvdWxkIGJlIG9ubHkgb25lIHBvbGxpbmcgbG9vcCBhdCBtb3N0IGZvcgplYWNo
+IGNvcmUuIEhvd2V2ZXIsIGluIGNhc2Ugb2YgREVWRlJFUSwgdGhlcmUgY291bGQgYmUgbXVsdGlw
+bGUKcG9sbGluZyBsb29wcyBhdCBhIGNvcmUgaWYgQ1BVRlJFUS1saWtlIGxvb3BpbmcgbG9naWMg
+aXMgaW50cm9kdWNlZC4KV2h5IGRvbid0IHdlIHJlZHVjZSB0aGF0IG92ZXJoZWFkIHdoaWxlIHRo
+ZWlyIGZ1bmN0aW9uIGlzIHNhbWUsIGl0IGlzCmVhc2lseSBkb2FibGUsIGFuZCBpdCByZWR1Y2Vz
+IHJlZHVuZGFuY3k/Cgo+Cj4+IFdoZW4gYSB1c2VyIHVwZGF0ZXMgT1BQIGVudHJpZXMgKGVuYWJs
+ZS9kaXNhYmxlL2FkZCksIE9QUCBmcmFtZXdvcmsKPj4gYXV0b21hdGljYWxseSBub3RpZmllcyBE
+RVZGUkVRIHRvIHVwZGF0ZSBvcGVyYXRpbmcgZnJlcXVlbmN5Cj4+IGFjY29yZGluZ2x5LiBUaHVz
+LCBERVZGUkVRIHVzZXJzIChkZXZpY2UgZHJpdmVycykgZG8gbm90IG5lZWQgdG8gdXBkYXRlCj4K
+PiBJdCB3b3VsZCBiZSBuaWNlIGlmIE9QUCBsaWJyYXJ5ICJub3RpZmllZCIgZGV2ZnJlcSBidXQg
+aXQgZG9lcyBub3QKPiB0b2RheS4gwqBPUFAgbGlicmFyeSBuZWVkcyBub3RpZmllcnMgYW5kIGRl
+dmZyZXEgY2FuIHByb3ZpZGUgaGFuZGxlcnMKPiBmb3IgdGhlbS4KClRoYXQncyB3aHkgZGV2ZnJl
+cV91cGRhdGUoKSBpcyBhZGRlZCBpbiB0aGUgcGF0Y2guIFdoaWxlIERFVkZSRVEgaXMKdGhlIG9u
+bHkgb25lIHJlcXVpcmluZyBub3RpZmljYXRpb25zIGZyb20gT1BQLCBkbyB5b3UgdGhpbmsgd2Ug
+bWF5CmluY3VyIHRoZSBvdmVyaGVhZCBvZiBub3RpZmllciBhdCBPUFAgYnkgcmVwbGFjaW5nIGRl
+dmZyZXFfdXBkYXRlIHdpdGgKbm90aWZpZXI/IElmIHdlIHNvbWVob3cgYWRkIGFub3RoZXIgbW9k
+dWxlIHRoYXQgcmVxdWlyZXMgbm90aWZpY2F0aW9ucwpmcm9tIE9QUCBmb3IgZnJlcXVlbmN5IGF2
+YWlsYWJpbGl0eSBjaGFuZ2VzLCB3ZSB3aWxsIG5lZWQgdG8gaW1wbGVtZW50Cm5vdGlmaWVyIGF0
+IE9QUCBzaWRlLCBidXQgbm90IGp1c3QgeWV0LCBJIGd1ZXNzOiAoZGlzY3Vzc2VkIGJlZm9yZSBh
+dApodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL3BpcGVybWFpbC9saW51eC1wbS8y
+MDExLUp1bHkvMDMyMDUzLmh0bWwKKQoKPgpbXQo+PiAtLS0KPj4gwqBkcml2ZXJzL2Jhc2UvcG93
+ZXIvZGV2ZnJlcS5jIHwgwqAxMDAgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrCj4+IMKgaW5jbHVkZS9saW51eC9kZXZmcmVxLmggwqAgwqAgwqB8IMKgIMKgOCArKysK
+Pj4gwqAyIGZpbGVzIGNoYW5nZWQsIDEwOCBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQo+
+Cj4gR292ZXJub3JzIHNob3VsZCBiZSBzcGxpdCBvdXQgaW50byB0aGVpciBvd24gZmlsZSwgZXNw
+ZWNpYWxseSBzaW5jZQo+IHRoZXkgbmVlZCB0byBncm93IHRvIGluY2x1ZGUgcG9sbGluZy9xdWV1
+ZWluZyBsb2dpYy4KCldlIHdpbGwgbmVlZCB0byBkZWNpZGUgd2hlcmUgdG8gc2V0dGxlIGRldmZy
+ZXEgY29yZSwgZHJpdmVycywgYW5kCmdvdmVybm9ycyBmaXJzdC4gV291bGQgL2RyaXZlcnMvZGV2
+ZnJlcS8gYmUgYXBwcm9wcmlhdGU/CgpbXQo+PiArCj4+ICsgwqAgwqAgwqAgLyogU2V0IE1BWCBp
+ZiBpdCdzIGJ1c3kgZW5vdWdoICovCj4+ICsgwqAgwqAgwqAgaWYgKHN0YXQuYnVzeV90aW1lICog
+MTAwID4KPj4gKyDCoCDCoCDCoCDCoCDCoCBzdGF0LnRvdGFsX3RpbWUgKiBERlNPX1VQVEhSRVNI
+T0xEKSB7Cj4KPiBUaHJlc2hvbGRzIHNob3VsZCBub3QgYmUgY29uc3RhbnRzLCBidXQgc2hvdWxk
+IGJlIHR1bmVhYmxlIHBhcmFtZXRlcnMsCj4gcGVyLWRldmljZS4gwqBUaGlzIGlzIHlldCBhbm90
+aGVyIHJlYXNvbiBmb3IgcmV2aXNpbmcgdGhlIGV4aXN0aW5nCj4gcmVsYXRpb25zaGlwIGJldHdl
+ZW4gZGV2ZnJlcSBjb3JlIGNvZGUsIGdvdmVybm9ycyBhbmQgZGV2aWNlcy4KPgoKSSBhZ3JlZS4g
+SSB0aGluayBJIHNob3VsZCBhZGQgZ292ZXJub3Igc3BlY2lmaWMgInNldHVwIiB2YWx1ZSBhdApk
+ZXZmcmVxX2FkZF9kZXZpY2UoKTsgbW9kaWZ5aW5nIHRoZSBpbnRlcmZhY2UgZnJvbQoKZXh0ZXJu
+IGludCBkZXZmcmVxX2FkZF9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QKZGV2ZnJl
+cV9kZXZfcHJvZmlsZSAqcHJvZmlsZSwgc3RydWN0IGRldmZyZXFfZ292ZXJub3IgKmdvdmVybm9y
+KTsKPT0+CmV4dGVybiBpbnQgZGV2ZnJlcV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldiwg
+c3RydWN0CmRldmZyZXFfZGV2X3Byb2ZpbGUgKnByb2ZpbGUsIHN0cnVjdCBkZXZmcmVxX2dvdmVy
+bm9yICpnb3Zlcm5vciwgdm9pZAoqZ292X2RhdGEpOwoKd2hlcmUgZ292X2RhdGEgaXMgZmVkIHRv
+IHN0cnVjdCBkZXZmcmVxJ3MgZGF0YSBmaWVsZC4KCgo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+ICpmcmVxID0gVUlOVF9NQVg7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcmV0dXJuIDA7Cj4+
+ICsgwqAgwqAgwqAgfQo+PiArCj4+ICsgwqAgwqAgwqAgLyogU2V0IE1BWCBpZiB3ZSBkbyBub3Qg
+a25vdyB0aGUgaW5pdGlhbCBmcmVxdWVuY3kgKi8KPj4gKyDCoCDCoCDCoCBpZiAoc3RhdC5jdXJy
+ZW50X2ZyZXF1ZW5jeSA9PSAwKSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgKmZyZXEgPSBV
+SU5UX01BWDsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gMDsKPj4gKyDCoCDCoCDC
+oCB9Cj4+ICsKPj4gKyDCoCDCoCDCoCAvKiBLZWVwIHRoZSBjdXJyZW50IGZyZXF1ZW5jeSAqLwo+
+PiArIMKgIMKgIMKgIGlmIChzdGF0LmJ1c3lfdGltZSAqIDEwMCA+Cj4+ICsgwqAgwqAgwqAgwqAg
+wqAgc3RhdC50b3RhbF90aW1lICogKERGU09fVVBUSFJFU0hPTEQgLSBERlNPX0RPV05ESUZGRVJF
+TkNUSUFMKSkgewo+Cj4gU2FtZSBhcyBhYm92ZS4KWWVzLgoKPgo+PiArIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgICpmcmVxID0gc3RhdC5jdXJyZW50X2ZyZXF1ZW5jeTsKPj4gKyDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCByZXR1cm4gMDsKPj4gKyDCoCDCoCDCoCB9Cj4+ICsKPj4gKyDCoCDCoCDCoCAvKiBT
+ZXQgdGhlIGRlc2lyZWQgZnJlcXVlbmN5IGJhc2VkIG9uIHRoZSBsb2FkICovCj4+ICsgwqAgwqAg
+wqAgYSA9IHN0YXQuYnVzeV90aW1lOwo+PiArIMKgIMKgIMKgIGEgKj0gc3RhdC5jdXJyZW50X2Zy
+ZXF1ZW5jeTsKPj4gKyDCoCDCoCDCoCBiID0gZGl2X3U2NChhLCBzdGF0LnRvdGFsX3RpbWUpOwo+
+PiArIMKgIMKgIMKgIGIgKj0gMTAwOwo+PiArIMKgIMKgIMKgIGIgPSBkaXZfdTY0KGIsIChERlNP
+X1VQVEhSRVNIT0xEIC0gREZTT19ET1dORElGRkVSRU5DVElBTCAvIDIpKTsKPgo+IFNhbWUgYXMg
+YWJvdmUuClllcy4KCj4KPiBSZWdhcmRzLAo+IE1pa2UKPgoKCkNoZWVycyEKTXl1bmdKb28KCi0t
+IApNeXVuZ0pvbyBIYW0gKO2VqOuqheyjvCksIFBoLkQuCk1vYmlsZSBTb2Z0d2FyZSBQbGF0Zm9y
+bSBMYWIsCkRpZ2l0YWwgTWVkaWEgYW5kIENvbW11bmljYXRpb25zIChETUMpIEJ1c2luZXNzClNh
+bXN1bmcgRWxlY3Ryb25pY3MKY2VsbDogODItMTAtNjcxNC0yODU4Cl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
+eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
+YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
