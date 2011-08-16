@@ -1,14 +1,14 @@
-From: jean.pihet@newoldbits.com
-Subject: [PATCH 06/15] PM QoS: implement the per-device PM QoS
-	constraints
-Date: Tue, 16 Aug 2011 15:43:09 +0200
-Message-ID: <1313502198-9298-7-git-send-email-j-pihet__27850.0019260266$1313503658$gmane$org@ti.com>
-References: <1313502198-9298-1-git-send-email-j-pihet@ti.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Regression] GPF in usb_driver_release_interface
+ during/after resume
+Date: Tue, 16 Aug 2011 10:06:43 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1108160956170.2028-100000__22674.5213069536$1313503856$gmane$org@iolanthe.rowland.org>
+References: <201108152252.49863.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1313502198-9298-1-git-send-email-j-pihet@ti.com>
+In-Reply-To: <201108152252.49863.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,486 +18,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>, Kevin Hilman <khilman@ti.com>, markgross@thegnar.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: Jean Pihet <j-pihet@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-usb@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>, LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Pihet <j-pihet@ti.com>
+On Mon, 15 Aug 2011, Rafael J. Wysocki wrote:
 
-Implement the per-device PM QoS constraints by creating a device
-PM QoS API, which calls the PM QoS constraints management core code.
+> Hi,
+> 
+> I get the following general protection fault sometimes (but sufficiently
+> often for it to be annoying) during resume from system suspend on Toshiba
+> Portege R500:
+> 
+> [  330.839651] PM: Finishing wakeup.
+> [  330.839656] Restarting tasks ... 
+> [  330.839742] e1000e 0000:01:00.0: PME# enabled
+> [  330.840121] usb 2-2: USB disconnect, device number 3
+> [  330.841626] option1 ttyUSB0: GSM modem (1-port) converter now disconnected from ttyUSB0
+> [  330.841835] option 2-2:1.0: device disconnected
+> [  330.842626] option1 ttyUSB1: GSM modem (1-port) converter now disconnected from ttyUSB1
+> [  330.842770] option 2-2:1.1: device disconnected
+> [  330.843506] option1 ttyUSB2: GSM modem (1-port) converter now disconnected from ttyUSB2
+> [  330.843648] option 2-2:1.2: device disconnected
+> [  330.857550] done.
+> [  330.857591] video LNXVIDEO:00: Restoring backlight state
+> [  330.915075] option1 ttyUSB3: GSM modem (1-port) converter now disconnected from ttyUSB3
+> [  330.924372] option 2-2:1.3: device disconnected
+> [  330.964520] usb 5-2: USB disconnect, device number 4
+> [  331.218859] general protection fault: 0000 [#1] PREEMPT SMP 
+> [  331.218889] CPU 0 
+> [  331.218894] Modules linked in: bnep cryptd aes_x86_64 aes_generic xt_tcpudp xt_pkttype af_packet snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 ip6table_raw xt_NOTRACK ipt_REJECT iptable_raw iptable_filter ip6table_mangle nf_conntrack_netbios_ns nf_conntrack_broadcast nf_conntrack_ipv4 nf_defrag_ipv4 ip_tables xt_conntrack nf_conntrack ip6table_filter ip6_tables x_tables ipv6 cpufreq_conservative cpufreq_ondemand cpufreq_userspace cpufreq_powersave acpi_cpufreq microcode freq_table mperf fuse dm_mod sr_mod cdrom arc4 joydev btusb bluetooth option usb_wwan iwl4965 pcmcia iwl_legacy mac80211 psmouse snd_hda_codec_realtek usbhid serio_raw sdhci_pci usb_storage hid usbserial sdhci firewire_ohci snd_hda_intel yenta_socket snd_hda_codec pcmcia_
+ rsrc sg firewire_core mmc_core snd_hwdep pcmcia_core crc_itu_t cfg80211 snd_pcm iTCO_wdt iTCO_vendor_support snd_timer snd soundcore e1000e rfkill snd_page_alloc toshiba_bluetooth battery a!
+ c uhci_hcd sd_mod crc_t10dif ehci_hcd usbcore rtc_cmos ext3 jbd ahci libahci libata fan processor thermal
+> [  331.219207] 
+> [  331.219216] Pid: 906, comm: khubd Not tainted 2.6.39+ #388 TOSHIBA PORTEGE R500/Portable PC
+> [  331.219237] RIP: 0010:[<ffffffffa00c5bd1>]  [<ffffffffa00c5bd1>] usb_driver_release_interface+0x32/0x9f [usbcore]
+> [  331.219289] RSP: 0018:ffff880078899be0  EFLAGS: 00010282
+> [  331.219301] RAX: 0000000000000000 RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000006
+> [  331.219314] RDX: 0000000000000006 RSI: 00000000000001e3 RDI: ffffffffa0011020
+> [  331.219327] RBP: ffff880078899c00 R08: ffff880078899be0 R09: 09f911029d74e35b
+> [  331.219341] R10: ffff880078899bb0 R11: 0000000000000000 R12: ffff88007a5e6548
+> [  331.219354] R13: ffff880040a8d000 R14: ffffffffa0011020 R15: ffffffffa00110b8
+> [  331.219368] FS:  0000000000000000(0000) GS:ffff88007f400000(0000) knlGS:0000000000000000
+> [  331.219382] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [  331.219394] CR2: 00007f4b2fd01080 CR3: 0000000079cf9000 CR4: 00000000000006f0
+> [  331.219407] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  331.219420] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [  331.219434] Process khubd (pid: 906, threadinfo ffff880078898000, task ffff88003798ee80)
+> [  331.219448] Stack:
+> [  331.219455]  ffff880078899c00 ffff880037070388 ffff88007a5e6548 ffff880040a8d000
+> [  331.219477]  ffff880078899c30 ffffffffa000fdb4 ffff88007a5e6578 ffff88007a5e6578
+> [  331.219497]  ffff88007a5e6548 ffff88007856c188 ffff880078899c70 ffffffffa00c5af0
+> [  331.219518] Call Trace:
+> [  331.219535]  [<ffffffffa000fdb4>] btusb_disconnect+0x9c/0xc2 [btusb]
+> [  331.219566]  [<ffffffffa00c5af0>] usb_unbind_interface+0x5a/0x109 [usbcore]
+> [  331.219590]  [<ffffffff812a3818>] __device_release_driver+0x81/0xca
+> [  331.219606]  [<ffffffff812a387a>] device_release_driver+0x19/0x26
+> [  331.219622]  [<ffffffff812a33e1>] bus_remove_device+0xc2/0xd3
+> [  331.219637]  [<ffffffff812a0e96>] device_del+0x12b/0x17a
+> [  331.219666]  [<ffffffffa00c477f>] usb_disable_device+0x8a/0x176 [usbcore]
+> [  331.219695]  [<ffffffffa00bdac4>] usb_disconnect+0xcd/0x137 [usbcore]
+> [  331.219724]  [<ffffffffa00bf1c2>] hub_thread+0x74b/0x113e [usbcore]
+> [  331.219745]  [<ffffffff81033ab7>] ? get_parent_ip+0x11/0x41
+> [  331.219760]  [<ffffffff8102c835>] ? need_resched+0x1e/0x28
+> [  331.219777]  [<ffffffff81057f49>] ? wake_up_bit+0x25/0x25
+> [  331.219804]  [<ffffffffa00bea77>] ? usb_new_device+0x1ca/0x1ca [usbcore]
+> [  331.219821]  [<ffffffff81057aa9>] kthread+0x7d/0x85
+> [  331.219838]  [<ffffffff8136af54>] kernel_thread_helper+0x4/0x10
+> [  331.219854]  [<ffffffff81369a44>] ? retint_restore_args+0xe/0xe
+> [  331.219870]  [<ffffffff81057a2c>] ? __init_kthread_worker+0x56/0x56
+> [  331.219885]  [<ffffffff8136af50>] ? gs_change+0xb/0xb
+> [  331.219896] Code: 54 53 48 89 f3 48 83 ec 08 be e3 01 00 00 48 85 db 74 0a 48 85 ff 75 13 be e6 01 00 00 48 c7 c7 9c 25 0d a0 e8 b6 6d f7 e0 eb 65 
+> [  331.219983]  8b 83 20 01 00 00 48 85 c0 74 59 48 81 c7 98 00 00 00 48 39 
+> [  331.220031] RIP  [<ffffffffa00c5bd1>] usb_driver_release_interface+0x32/0x9f [usbcore]
+> [  331.220065]  RSP <ffff880078899be0>
+> [  331.240771] ---[ end trace be6a0c945bcc56b9 ]---
+> 
+> This started to happen during the 3.0 development cycle, as far as I can say.
+> 
+> According to GDB, usb_driver_release_interface+0x32 is line 484 in
+> drivers/usb/core/driver.c:
+> 
+> void usb_driver_release_interface(struct usb_driver *driver,
+>                                         struct usb_interface *iface)
+> {
+>         struct device *dev = &iface->dev;
+> 
+>         /* this should never happen, don't release something that's not ours */
+> --->    if (!dev->driver || dev->driver != &driver->drvwrap.driver)
+> 
+> so this looks like a use-after-free to me and since it doesn't occur every
+> time, there seems to be a race condition in the USB stack.
 
-The per-device latency constraints data strctures are stored
-in the device dev_pm_info struct.
+That's what it looks like to me too.  But I don't see how iface could 
+have been freed at this point, because the USB core still has a 
+reference to it.
 
-The device PM code calls the init and destroy of the per-device constraints
-data struct in order to support the dynamic insertion and removal of the
-devices in the system.
+> I tried to figure it out myself, but apparently it's too tricky to me. :-)
 
-To minimize the data usage by the per-device constraints, the data struct
-is only allocated at the first call to dev_pm_qos_add_request.
-The data is later free'd when the device is removed from the system.
-A global mutex protects the constraints users from the data being
-allocated and free'd.
+Does the same thing happen if you simply unload the btusb driver, 
+without suspending?
 
-Signed-off-by: Jean Pihet <j-pihet@ti.com>
----
- drivers/base/power/Makefile |    4 +-
- drivers/base/power/main.c   |    3 +
- drivers/base/power/qos.c    |  291 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm.h          |    9 ++
- include/linux/pm_qos.h      |   42 ++++++
- 5 files changed, 347 insertions(+), 2 deletions(-)
- create mode 100644 drivers/base/power/qos.c
+Also, can you add some debugging statements to
+drivers/bluetooth/btusb.c?  in btusb_disconnect(), it would be good to
+see the values of intf, data, data->intf, and data->isoc.  In addition
+(with caution), data->intf->dev.driver and data->isoc->dev.driver.
 
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index 2639ae7..b707447 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -1,4 +1,4 @@
--obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o
-+obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o qos.o
- obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
- obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
- obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
-@@ -6,4 +6,4 @@ obj-$(CONFIG_PM_OPP)	+= opp.o
- obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o
- obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
- 
--ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-\ No newline at end of file
-+ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index a854591..956443f 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -22,6 +22,7 @@
- #include <linux/mutex.h>
- #include <linux/pm.h>
- #include <linux/pm_runtime.h>
-+#include <linux/pm_qos.h>
- #include <linux/resume-trace.h>
- #include <linux/interrupt.h>
- #include <linux/sched.h>
-@@ -97,6 +98,7 @@ void device_pm_add(struct device *dev)
- 			dev_name(dev->parent));
- 	list_add_tail(&dev->power.entry, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
-+	dev_pm_qos_constraints_init(dev);
- }
- 
- /**
-@@ -107,6 +109,7 @@ void device_pm_remove(struct device *dev)
- {
- 	pr_debug("PM: Removing info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
-+	dev_pm_qos_constraints_destroy(dev);
- 	complete_all(&dev->power.completion);
- 	mutex_lock(&dpm_list_mtx);
- 	list_del_init(&dev->power.entry);
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-new file mode 100644
-index 0000000..304d68d
---- /dev/null
-+++ b/drivers/base/power/qos.c
-@@ -0,0 +1,291 @@
-+/*
-+ * This module exposes the interface to kernel space for specifying
-+ * per-device PM QoS dependencies. It provides infrastructure for registration
-+ * of:
-+ *
-+ * Dependents on a QoS value : register requests
-+ * Watchers of QoS value : get notified when target QoS value changes
-+ *
-+ * This QoS design is best effort based. Dependents register their QoS needs.
-+ * Watchers register to keep track of the current QoS needs of the system.
-+ *
-+ * Note about the per-device constraint data struct allocation:
-+ * . The per-device constraints data struct ptr is tored into the device
-+ *    dev_pm_info.
-+ * . To minimize the data usage by the per-device constraints, the data struct
-+ *   is only allocated at the first call to dev_pm_qos_add_request.
-+ * . The data is later free'd when the device is removed from the system.
-+ * . The constraints_state variable from dev_pm_info tracks the data struct
-+ *    allocation state:
-+ *    DEV_PM_QOS_NO_DEVICE: No device present or device removed, no data
-+ *     allocated,
-+ *    DEV_PM_QOS_DEVICE_PRESENT: Device present, data not allocated and will be
-+ *     allocated at the first call to dev_pm_qos_add_request,
-+ *    DEV_PM_QOS_ALLOCATED: Device present, data allocated. The per-device
-+ *     PM QoS constraints framework is operational and constraints can be
-+ *     added, updated or removed using the dev_pm_qos_* API.
-+ *  . A global mutex protects the constraints users from the data being
-+ *     allocated and free'd.
-+ */
-+
-+#include <linux/pm_qos.h>
-+#include <linux/spinlock.h>
-+#include <linux/slab.h>
-+#include <linux/device.h>
-+#include <linux/mutex.h>
-+
-+
-+static DEFINE_MUTEX(dev_pm_qos_mtx);
-+static void dev_pm_qos_constraints_allocate(struct device *dev);
-+
-+/**
-+ * dev_pm_qos_add_request - inserts new qos request into the list
-+ * @dev: target device for the constraint
-+ * @req: pointer to a preallocated handle
-+ * @value: defines the qos request
-+ *
-+ * This function inserts a new entry in the device constraints list of
-+ * requested qos performance characteristics. It recomputes the aggregate
-+ * QoS expectations of parameters and initializes the dev_pm_qos_request
-+ * handle.  Caller needs to save this handle for later use in updates and
-+ * removal.
-+ */
-+void dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
-+			    s32 value)
-+{
-+	if (!dev || !req) /*guard against callers passing in null */
-+		return;
-+
-+	if (dev_pm_qos_request_active(req)) {
-+		WARN(1, KERN_ERR "dev_pm_qos_add_request() called for already "
-+			"added request\n");
-+		return;
-+	}
-+
-+	/* Allocate the constraints struct on the first call to add_request */
-+	dev_pm_qos_constraints_allocate(dev);
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+
-+	req->dev = dev;
-+
-+	/* Silently return if the device has been removed */
-+	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
-+		goto out;
-+
-+	pm_qos_update_target(dev->power.constraints,
-+			     &req->node, PM_QOS_ADD_REQ, value);
-+
-+out:
-+	mutex_unlock(&dev_pm_qos_mtx);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
-+
-+/**
-+ * dev_pm_qos_update_request - modifies an existing qos request
-+ * @req : handle to list element holding a dev_pm_qos request to use
-+ * @value: defines the qos request
-+ *
-+ * Updates an existing dev PM qos request along with updating the
-+ * target value.
-+ *
-+ * Attempts are made to make this code callable on hot code paths.
-+ */
-+void dev_pm_qos_update_request(struct dev_pm_qos_request *req,
-+			   s32 new_value)
-+{
-+	if (!req) /*guard against callers passing in null */
-+		return;
-+
-+	if (!dev_pm_qos_request_active(req)) {
-+		WARN(1, KERN_ERR "dev_pm_qos_update_request() called for "
-+			"unknown object\n");
-+		return;
-+	}
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+
-+	/* Silently return if the device has been removed */
-+	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
-+		goto out;
-+
-+	if (new_value != req->node.prio)
-+		pm_qos_update_target(
-+			req->dev->power.constraints,
-+			&req->node, PM_QOS_UPDATE_REQ, new_value);
-+
-+out:
-+	mutex_unlock(&dev_pm_qos_mtx);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_qos_update_request);
-+
-+/**
-+ * dev_pm_qos_remove_request - modifies an existing qos request
-+ * @req: handle to request list element
-+ *
-+ * Will remove pm qos request from the list of constraints and
-+ * recompute the current target value. Call this on slow code paths.
-+ */
-+void dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
-+{
-+	if (!req) /*guard against callers passing in null */
-+		return;
-+
-+	if (!dev_pm_qos_request_active(req)) {
-+		WARN(1, KERN_ERR "dev_pm_qos_remove_request() called for "
-+			"unknown object\n");
-+		return;
-+	}
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+
-+	/* Silently return if the device has been removed */
-+	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
-+		goto out;
-+
-+	pm_qos_update_target(req->dev->power.constraints,
-+			     &req->node, PM_QOS_REMOVE_REQ,
-+			     PM_QOS_DEFAULT_VALUE);
-+	memset(req, 0, sizeof(*req));
-+
-+out:
-+	mutex_unlock(&dev_pm_qos_mtx);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
-+
-+/**
-+ * dev_pm_qos_add_notifier - sets notification entry for changes to target value
-+ * of per-device PM QoS constraints
-+ *
-+ * @dev: target device for the constraint
-+ * @notifier: notifier block managed by caller.
-+ *
-+ * Will register the notifier into a notification chain that gets called
-+ * upon changes to the target value for the device.
-+ */
-+int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
-+{
-+	int retval = 0;
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+
-+	/* Silently return if the device has been removed */
-+	if (dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
-+		goto out;
-+
-+	retval = blocking_notifier_chain_register(
-+			dev->power.constraints->notifiers,
-+			notifier);
-+
-+out:
-+	mutex_unlock(&dev_pm_qos_mtx);
-+	return retval;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_qos_add_notifier);
-+
-+/**
-+ * dev_pm_qos_remove_notifier - deletes notification for changes to target value
-+ * of per-device PM QoS constraints
-+ *
-+ * @dev: target device for the constraint
-+ * @notifier: notifier block to be removed.
-+ *
-+ * Will remove the notifier from the notification chain that gets called
-+ * upon changes to the target value.
-+ */
-+int dev_pm_qos_remove_notifier(struct device *dev,
-+			       struct notifier_block *notifier)
-+{
-+	int retval = 0;
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+
-+	/* Silently return if the device has been removed */
-+	if (dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
-+		goto out;
-+
-+	retval = blocking_notifier_chain_unregister(
-+			dev->power.constraints->notifiers,
-+			notifier);
-+
-+out:
-+	mutex_unlock(&dev_pm_qos_mtx);
-+	return retval;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_qos_remove_notifier);
-+
-+/* Called at the first call to add_request, for constraint data allocation */
-+static void dev_pm_qos_constraints_allocate(struct device *dev)
-+{
-+	struct pm_qos_constraints *c;
-+	struct blocking_notifier_head *n;
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+
-+	/*
-+	 * Return if the data is already allocated or
-+	 * if the device has been removed
-+	 */
-+	if (dev->power.constraints_state != DEV_PM_QOS_DEVICE_PRESENT)
-+		goto out;
-+
-+	c = kzalloc(sizeof(*c), GFP_KERNEL);
-+	if (!c)
-+		goto out;
-+
-+	n = kzalloc(sizeof(*n), GFP_KERNEL);
-+	if (!n) {
-+		kfree(c);
-+		goto out;
-+	}
-+	BLOCKING_INIT_NOTIFIER_HEAD(n);
-+
-+	dev->power.constraints = c;
-+	plist_head_init(&dev->power.constraints->list);
-+	dev->power.constraints->target_value = PM_QOS_DEV_LAT_DEFAULT_VALUE;
-+	dev->power.constraints->default_value =	PM_QOS_DEV_LAT_DEFAULT_VALUE;
-+	dev->power.constraints->type = PM_QOS_MIN;
-+	dev->power.constraints->notifiers = n;
-+	dev->power.constraints_state = DEV_PM_QOS_ALLOCATED;
-+
-+out:
-+	mutex_unlock(&dev_pm_qos_mtx);
-+}
-+
-+/* Called from the device PM subsystem at device insertion */
-+void dev_pm_qos_constraints_init(struct device *dev)
-+{
-+	mutex_lock(&dev_pm_qos_mtx);
-+	dev->power.constraints_state = DEV_PM_QOS_DEVICE_PRESENT;
-+	mutex_unlock(&dev_pm_qos_mtx);
-+}
-+
-+/* Called from the device PM subsystem at device removal */
-+void dev_pm_qos_constraints_destroy(struct device *dev)
-+{
-+	struct dev_pm_qos_request *req, *tmp;
-+
-+	mutex_lock(&dev_pm_qos_mtx);
-+
-+	if (dev->power.constraints_state == DEV_PM_QOS_ALLOCATED) {
-+		/* Flush the constraints list for the device */
-+		plist_for_each_entry_safe(req, tmp,
-+					  &dev->power.constraints->list,
-+					  node)
-+			/*
-+			 * Update constraints list and call the per-device
-+			 * callbacks if needed
-+			 */
-+			pm_qos_update_target(req->dev->power.constraints,
-+					     &req->node, PM_QOS_REMOVE_REQ,
-+					     PM_QOS_DEFAULT_VALUE);
-+
-+		kfree(dev->power.constraints->notifiers);
-+		kfree(dev->power.constraints);
-+		dev->power.constraints = NULL;
-+	}
-+	dev->power.constraints_state = DEV_PM_QOS_NO_DEVICE;
-+
-+	mutex_unlock(&dev_pm_qos_mtx);
-+}
-+
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index f7c84c9..7a48951 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -421,6 +421,13 @@ enum rpm_request {
- 
- struct wakeup_source;
- 
-+/* Per-device PM QoS constraints data struct state */
-+enum dev_pm_qos_state {
-+	DEV_PM_QOS_NO_DEVICE,		/* No device present */
-+	DEV_PM_QOS_DEVICE_PRESENT,	/* Device present, data not allocated */
-+	DEV_PM_QOS_ALLOCATED,		/* Device present, data allocated */
-+};
-+
- struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned int		can_wakeup:1;
-@@ -463,6 +470,8 @@ struct dev_pm_info {
- 	unsigned long		accounting_timestamp;
- #endif
- 	void			*subsys_data;  /* Owned by the subsystem. */
-+	struct pm_qos_constraints *constraints;
-+	enum dev_pm_qos_state	constraints_state;
- };
- 
- extern void update_pm_runtime_accounting(struct device *dev);
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 84aa150..d3e2d80 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -19,12 +19,18 @@
- #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
-+#define PM_QOS_DEV_LAT_DEFAULT_VALUE		0
- 
- struct pm_qos_request {
- 	struct plist_node node;
- 	int pm_qos_class;
- };
- 
-+struct dev_pm_qos_request {
-+	struct plist_node node;
-+	struct device *dev;
-+};
-+
- enum pm_qos_type {
- 	PM_QOS_UNITIALIZED,
- 	PM_QOS_MAX,		/* return the largest value */
-@@ -51,6 +57,11 @@ enum pm_qos_req_action {
- 	PM_QOS_REMOVE_REQ	/* Remove an existing request */
- };
- 
-+static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
-+{
-+	return req->dev != 0;
-+}
-+
- #ifdef CONFIG_PM
- int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 			 enum pm_qos_req_action action, int value);
-@@ -64,6 +75,17 @@ int pm_qos_request(int pm_qos_class);
- int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
- int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
- int pm_qos_request_active(struct pm_qos_request *req);
-+
-+void dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
-+			    s32 value);
-+void dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value);
-+void dev_pm_qos_remove_request(struct dev_pm_qos_request *req);
-+int dev_pm_qos_add_notifier(struct device *dev,
-+			    struct notifier_block *notifier);
-+int dev_pm_qos_remove_notifier(struct device *dev,
-+			       struct notifier_block *notifier);
-+void dev_pm_qos_constraints_init(struct device *dev);
-+void dev_pm_qos_constraints_destroy(struct device *dev);
- #else
- static inline int pm_qos_update_target(struct pm_qos_constraints *c,
- 				       struct plist_node *node,
-@@ -89,6 +111,26 @@ static inline int pm_qos_remove_notifier(int pm_qos_class,
- 			{ return 0; }
- static inline int pm_qos_request_active(struct pm_qos_request *req)
- 			{ return 0; }
-+
-+static inline void dev_pm_qos_add_request(struct device *dev,
-+					  struct dev_pm_qos_request *req,
-+					  s32 value)
-+			{ return; }
-+static inline void dev_pm_qos_update_request(struct dev_pm_qos_request *req,
-+					     s32 new_value)
-+			{ return; }
-+static inline void dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
-+			{ return; }
-+static inline int dev_pm_qos_add_notifier(struct device *dev,
-+					  struct notifier_block *notifier)
-+			{ return 0; }
-+static inline int dev_pm_qos_remove_notifier(struct device *dev,
-+					     struct notifier_block *notifier)
-+			{ return 0; }
-+static inline void dev_pm_qos_constraints_init(struct device *dev)
-+			{ return; }
-+static inline void dev_pm_qos_constraints_destroy(struct device *dev)
-+			{ return; }
- #endif
- 
- #endif
--- 
-1.7.4.1
+Alan Stern
