@@ -1,14 +1,14 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Regression] GPF in usb_driver_release_interface
- during/after resume
-Date: Tue, 16 Aug 2011 10:06:43 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1108160956170.2028-100000__22674.5213069536$1313503856$gmane$org@iolanthe.rowland.org>
-References: <201108152252.49863.rjw@sisk.pl>
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 1/1] [PATCH] include storage keys in hibernation
+	image.
+Date: Tue, 16 Aug 2011 16:14:42 +0200
+Message-ID: <20110816141541.237704940__18888.9571385973$1313504294$gmane$org@de.ibm.com>
+References: <20110816141441.898339466@de.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108152252.49863.rjw@sisk.pl>
+Content-Disposition: inline; filename=201-hibernate-storage-keys.diff
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,110 +18,322 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-usb@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>, LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>, Jiri
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 15 Aug 2011, Rafael J. Wysocki wrote:
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-> Hi,
-> 
-> I get the following general protection fault sometimes (but sufficiently
-> often for it to be annoying) during resume from system suspend on Toshiba
-> Portege R500:
-> 
-> [  330.839651] PM: Finishing wakeup.
-> [  330.839656] Restarting tasks ... 
-> [  330.839742] e1000e 0000:01:00.0: PME# enabled
-> [  330.840121] usb 2-2: USB disconnect, device number 3
-> [  330.841626] option1 ttyUSB0: GSM modem (1-port) converter now disconnected from ttyUSB0
-> [  330.841835] option 2-2:1.0: device disconnected
-> [  330.842626] option1 ttyUSB1: GSM modem (1-port) converter now disconnected from ttyUSB1
-> [  330.842770] option 2-2:1.1: device disconnected
-> [  330.843506] option1 ttyUSB2: GSM modem (1-port) converter now disconnected from ttyUSB2
-> [  330.843648] option 2-2:1.2: device disconnected
-> [  330.857550] done.
-> [  330.857591] video LNXVIDEO:00: Restoring backlight state
-> [  330.915075] option1 ttyUSB3: GSM modem (1-port) converter now disconnected from ttyUSB3
-> [  330.924372] option 2-2:1.3: device disconnected
-> [  330.964520] usb 5-2: USB disconnect, device number 4
-> [  331.218859] general protection fault: 0000 [#1] PREEMPT SMP 
-> [  331.218889] CPU 0 
-> [  331.218894] Modules linked in: bnep cryptd aes_x86_64 aes_generic xt_tcpudp xt_pkttype af_packet snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 ip6table_raw xt_NOTRACK ipt_REJECT iptable_raw iptable_filter ip6table_mangle nf_conntrack_netbios_ns nf_conntrack_broadcast nf_conntrack_ipv4 nf_defrag_ipv4 ip_tables xt_conntrack nf_conntrack ip6table_filter ip6_tables x_tables ipv6 cpufreq_conservative cpufreq_ondemand cpufreq_userspace cpufreq_powersave acpi_cpufreq microcode freq_table mperf fuse dm_mod sr_mod cdrom arc4 joydev btusb bluetooth option usb_wwan iwl4965 pcmcia iwl_legacy mac80211 psmouse snd_hda_codec_realtek usbhid serio_raw sdhci_pci usb_storage hid usbserial sdhci firewire_ohci snd_hda_intel yenta_socket snd_hda_codec pcmcia_
- rsrc sg firewire_core mmc_core snd_hwdep pcmcia_core crc_itu_t cfg80211 snd_pcm iTCO_wdt iTCO_vendor_support snd_timer snd soundcore e1000e rfkill snd_page_alloc toshiba_bluetooth battery a!
- c uhci_hcd sd_mod crc_t10dif ehci_hcd usbcore rtc_cmos ext3 jbd ahci libahci libata fan processor thermal
-> [  331.219207] 
-> [  331.219216] Pid: 906, comm: khubd Not tainted 2.6.39+ #388 TOSHIBA PORTEGE R500/Portable PC
-> [  331.219237] RIP: 0010:[<ffffffffa00c5bd1>]  [<ffffffffa00c5bd1>] usb_driver_release_interface+0x32/0x9f [usbcore]
-> [  331.219289] RSP: 0018:ffff880078899be0  EFLAGS: 00010282
-> [  331.219301] RAX: 0000000000000000 RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000006
-> [  331.219314] RDX: 0000000000000006 RSI: 00000000000001e3 RDI: ffffffffa0011020
-> [  331.219327] RBP: ffff880078899c00 R08: ffff880078899be0 R09: 09f911029d74e35b
-> [  331.219341] R10: ffff880078899bb0 R11: 0000000000000000 R12: ffff88007a5e6548
-> [  331.219354] R13: ffff880040a8d000 R14: ffffffffa0011020 R15: ffffffffa00110b8
-> [  331.219368] FS:  0000000000000000(0000) GS:ffff88007f400000(0000) knlGS:0000000000000000
-> [  331.219382] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> [  331.219394] CR2: 00007f4b2fd01080 CR3: 0000000079cf9000 CR4: 00000000000006f0
-> [  331.219407] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [  331.219420] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [  331.219434] Process khubd (pid: 906, threadinfo ffff880078898000, task ffff88003798ee80)
-> [  331.219448] Stack:
-> [  331.219455]  ffff880078899c00 ffff880037070388 ffff88007a5e6548 ffff880040a8d000
-> [  331.219477]  ffff880078899c30 ffffffffa000fdb4 ffff88007a5e6578 ffff88007a5e6578
-> [  331.219497]  ffff88007a5e6548 ffff88007856c188 ffff880078899c70 ffffffffa00c5af0
-> [  331.219518] Call Trace:
-> [  331.219535]  [<ffffffffa000fdb4>] btusb_disconnect+0x9c/0xc2 [btusb]
-> [  331.219566]  [<ffffffffa00c5af0>] usb_unbind_interface+0x5a/0x109 [usbcore]
-> [  331.219590]  [<ffffffff812a3818>] __device_release_driver+0x81/0xca
-> [  331.219606]  [<ffffffff812a387a>] device_release_driver+0x19/0x26
-> [  331.219622]  [<ffffffff812a33e1>] bus_remove_device+0xc2/0xd3
-> [  331.219637]  [<ffffffff812a0e96>] device_del+0x12b/0x17a
-> [  331.219666]  [<ffffffffa00c477f>] usb_disable_device+0x8a/0x176 [usbcore]
-> [  331.219695]  [<ffffffffa00bdac4>] usb_disconnect+0xcd/0x137 [usbcore]
-> [  331.219724]  [<ffffffffa00bf1c2>] hub_thread+0x74b/0x113e [usbcore]
-> [  331.219745]  [<ffffffff81033ab7>] ? get_parent_ip+0x11/0x41
-> [  331.219760]  [<ffffffff8102c835>] ? need_resched+0x1e/0x28
-> [  331.219777]  [<ffffffff81057f49>] ? wake_up_bit+0x25/0x25
-> [  331.219804]  [<ffffffffa00bea77>] ? usb_new_device+0x1ca/0x1ca [usbcore]
-> [  331.219821]  [<ffffffff81057aa9>] kthread+0x7d/0x85
-> [  331.219838]  [<ffffffff8136af54>] kernel_thread_helper+0x4/0x10
-> [  331.219854]  [<ffffffff81369a44>] ? retint_restore_args+0xe/0xe
-> [  331.219870]  [<ffffffff81057a2c>] ? __init_kthread_worker+0x56/0x56
-> [  331.219885]  [<ffffffff8136af50>] ? gs_change+0xb/0xb
-> [  331.219896] Code: 54 53 48 89 f3 48 83 ec 08 be e3 01 00 00 48 85 db 74 0a 48 85 ff 75 13 be e6 01 00 00 48 c7 c7 9c 25 0d a0 e8 b6 6d f7 e0 eb 65 
-> [  331.219983]  8b 83 20 01 00 00 48 85 c0 74 59 48 81 c7 98 00 00 00 48 39 
-> [  331.220031] RIP  [<ffffffffa00c5bd1>] usb_driver_release_interface+0x32/0x9f [usbcore]
-> [  331.220065]  RSP <ffff880078899be0>
-> [  331.240771] ---[ end trace be6a0c945bcc56b9 ]---
-> 
-> This started to happen during the 3.0 development cycle, as far as I can say.
-> 
-> According to GDB, usb_driver_release_interface+0x32 is line 484 in
-> drivers/usb/core/driver.c:
-> 
-> void usb_driver_release_interface(struct usb_driver *driver,
->                                         struct usb_interface *iface)
-> {
->         struct device *dev = &iface->dev;
-> 
->         /* this should never happen, don't release something that's not ours */
-> --->    if (!dev->driver || dev->driver != &driver->drvwrap.driver)
-> 
-> so this looks like a use-after-free to me and since it doesn't occur every
-> time, there seems to be a race condition in the USB stack.
+For s390 there is one additional byte associated with each page,
+the storage key. This byte contains the referenced and changed
+bits and needs to be included into the hibernation image.
+If the storage keys are not restored to their previous state all
+original pages would appear to be dirty. This can cause
+inconsistencies e.g. with read-only filesystems.
 
-That's what it looks like to me too.  But I don't see how iface could 
-have been freed at this point, because the USB core still has a 
-reference to it.
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-pm@lists.linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-s390@vger.kernel.org
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-> I tried to figure it out myself, but apparently it's too tricky to me. :-)
+---
 
-Does the same thing happen if you simply unload the btusb driver, 
-without suspending?
+ arch/s390/Kconfig               |    1 
+ arch/s390/kernel/suspend.c      |  118 ++++++++++++++++++++++++++++++++++++++++
+ arch/s390/kernel/swsusp_asm64.S |    3 +
+ include/linux/suspend.h         |   34 +++++++++++
+ kernel/power/Kconfig            |    3 +
+ kernel/power/snapshot.c         |   18 ++++++
+ 6 files changed, 177 insertions(+)
 
-Also, can you add some debugging statements to
-drivers/bluetooth/btusb.c?  in btusb_disconnect(), it would be good to
-see the values of intf, data, data->intf, and data->isoc.  In addition
-(with caution), data->intf->dev.driver and data->isoc->dev.driver.
-
-Alan Stern
+Index: hibernate-2.6/arch/s390/Kconfig
+===================================================================
+--- hibernate-2.6.orig/arch/s390/Kconfig	2011-08-09 17:40:09.220010373 +0200
++++ hibernate-2.6/arch/s390/Kconfig	2011-08-16 16:06:09.845540931 +0200
+@@ -91,6 +91,7 @@
+ 	select HAVE_ARCH_MUTEX_CPU_RELAX
+ 	select HAVE_ARCH_JUMP_LABEL if !MARCH_G5
+ 	select HAVE_RCU_TABLE_FREE if SMP
++	select ARCH_SAVE_PAGE_KEYS if HIBERNATION
+ 	select ARCH_INLINE_SPIN_TRYLOCK
+ 	select ARCH_INLINE_SPIN_TRYLOCK_BH
+ 	select ARCH_INLINE_SPIN_LOCK
+Index: hibernate-2.6/arch/s390/kernel/suspend.c
+===================================================================
+--- hibernate-2.6.orig/arch/s390/kernel/suspend.c	2009-09-24 09:06:44.000000000 +0200
++++ hibernate-2.6/arch/s390/kernel/suspend.c	2011-08-16 16:06:09.845540931 +0200
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <linux/pfn.h>
++#include <linux/mm.h>
+ #include <asm/system.h>
+ 
+ /*
+@@ -14,6 +15,123 @@
+  */
+ extern const void __nosave_begin, __nosave_end;
+ 
++/*
++ * The restore of the saved pages in an hibernation image will set
++ * the change and referenced bits in the storage key for each page.
++ * Overindication of the referenced bits after an hibernation cycle
++ * does not cause any harm but the overindication of the change bits
++ * would cause trouble.
++ * Use the ARCH_SAVE_PAGE_KEYS hooks to save the storage key of each
++ * page to the most significant byte of the associated page frame
++ * number in the hibernation image.
++ */
++
++/*
++ * Key storage is allocated as a linked list of pages.
++ * The size of the keys array is (PAGE_SIZE - sizeof(long))
++ */
++struct page_key_data {
++	struct page_key_data *next;
++	unsigned char data[];
++};
++
++#define PAGE_KEY_DATA_SIZE	(PAGE_SIZE - sizeof(struct page_key_data *))
++
++static struct page_key_data *page_key_data;
++static struct page_key_data *page_key_rp, *page_key_wp;
++static unsigned long page_key_rx, page_key_wx;
++
++/*
++ * For each page in the hibernation image one additional byte is
++ * stored in the most significant byte of the page frame number.
++ * On suspend no additional memory is required but on resume the
++ * keys need to be memorized until the page data has been restored.
++ * Only then can the storage keys be set to their old state.
++ */
++unsigned long page_key_additional_pages(unsigned long pages)
++{
++	return DIV_ROUND_UP(pages, PAGE_KEY_DATA_SIZE);
++}
++
++/*
++ * Free page_key_data list of arrays.
++ */
++void page_key_free(void)
++{
++	struct page_key_data *pkd;
++
++	while (page_key_data) {
++		pkd = page_key_data;
++		page_key_data = pkd->next;
++		free_page((unsigned long) pkd);
++	}
++}
++
++/*
++ * Allocate page_key_data list of arrays with enough room to store
++ * one byte for each page in the hibernation image.
++ */
++int page_key_alloc(unsigned long pages)
++{
++	struct page_key_data *pk;
++	unsigned long size;
++
++	size = DIV_ROUND_UP(pages, PAGE_KEY_DATA_SIZE);
++	while (size--) {
++		pk = (struct page_key_data *) get_zeroed_page(GFP_KERNEL);
++		if (!pk) {
++			page_key_free();
++			return -ENOMEM;
++		}
++		pk->next = page_key_data;
++		page_key_data = pk;
++	}
++	page_key_rp = page_key_wp = page_key_data;
++	page_key_rx = page_key_wx = 0;
++	return 0;
++}
++
++/*
++ * Save the storage key into the upper 8 bits of the page frame number.
++ */
++void page_key_read(unsigned long *pfn)
++{
++	unsigned long addr;
++
++	addr = (unsigned long) page_address(pfn_to_page(*pfn));
++	*(unsigned char *) pfn = (unsigned char) page_get_storage_key(addr);
++}
++
++/*
++ * Extract the storage key from the upper 8 bits of the page frame number
++ * and store it in the page_key_data list of arrays.
++ */
++void page_key_memorize(unsigned long *pfn)
++{
++	page_key_wp->data[page_key_wx] = *(unsigned char *) pfn;
++	*(unsigned char *) pfn = 0;
++	if (++page_key_wx < PAGE_KEY_DATA_SIZE)
++		return;
++	page_key_wp = page_key_wp->next;
++	page_key_wx = 0;
++}
++
++/*
++ * Get the next key from the page_key_data list of arrays and set the
++ * storage key of the page referred by @address. If @address refers to
++ * a "safe" page the swsusp_arch_resume code will transfer the storage
++ * key from the buffer page to the original page.
++ */
++void page_key_write(void *address)
++{
++	page_set_storage_key((unsigned long) address,
++			     page_key_rp->data[page_key_rx], 0);
++	if (++page_key_rx >= PAGE_KEY_DATA_SIZE)
++		return;
++	page_key_rp = page_key_rp->next;
++	page_key_rx = 0;
++}
++
+ int pfn_is_nosave(unsigned long pfn)
+ {
+ 	unsigned long nosave_begin_pfn = PFN_DOWN(__pa(&__nosave_begin));
+Index: hibernate-2.6/arch/s390/kernel/swsusp_asm64.S
+===================================================================
+--- hibernate-2.6.orig/arch/s390/kernel/swsusp_asm64.S	2011-08-09 17:40:09.228010544 +0200
++++ hibernate-2.6/arch/s390/kernel/swsusp_asm64.S	2011-08-16 16:06:09.845540931 +0200
+@@ -136,11 +136,14 @@
+ 0:
+ 	lg	%r2,8(%r1)
+ 	lg	%r4,0(%r1)
++	iske	%r0,%r4
+ 	lghi	%r3,PAGE_SIZE
+ 	lghi	%r5,PAGE_SIZE
+ 1:
+ 	mvcle	%r2,%r4,0
+ 	jo	1b
++	lg	%r2,8(%r1)
++	sske	%r0,%r2
+ 	lg	%r1,16(%r1)
+ 	ltgr	%r1,%r1
+ 	jnz	0b
+Index: hibernate-2.6/include/linux/suspend.h
+===================================================================
+--- hibernate-2.6.orig/include/linux/suspend.h	2011-08-09 17:40:10.164030551 +0200
++++ hibernate-2.6/include/linux/suspend.h	2011-08-16 16:06:09.845540931 +0200
+@@ -334,4 +334,38 @@
+ }
+ #endif
+ 
++#ifdef CONFIG_ARCH_SAVE_PAGE_KEYS
++/*
++ * The ARCH_SAVE_PAGE_KEYS functions can be used by an architecture
++ * to save/restore additional information to/from the array of page
++ * frame numbers in the hibernation image. For s390 this is used to
++ * save and restore the storage key for each page that is included
++ * in the hibernation image.
++ */
++unsigned long page_key_additional_pages(unsigned long pages);
++int page_key_alloc(unsigned long pages);
++void page_key_free(void);
++void page_key_read(unsigned long *pfn);
++void page_key_memorize(unsigned long *pfn);
++void page_key_write(void *address);
++
++#else /* !CONFIG_ARCH_SAVE_PAGE_KEYS */
++
++static inline unsigned long page_key_additional_pages(unsigned long pages)
++{
++	return 0;
++}
++
++static inline int  page_key_alloc(unsigned long pages)
++{
++	return 0;
++}
++
++static inline void page_key_free(void) {}
++static inline void page_key_read(unsigned long *pfn) {}
++static inline void page_key_memorize(unsigned long *pfn) {}
++static inline void page_key_write(void *address) {}
++
++#endif /* !CONFIG_ARCH_SAVE_PAGE_KEYS */
++
+ #endif /* _LINUX_SUSPEND_H */
+Index: hibernate-2.6/kernel/power/Kconfig
+===================================================================
+--- hibernate-2.6.orig/kernel/power/Kconfig	2011-08-09 17:40:10.192031153 +0200
++++ hibernate-2.6/kernel/power/Kconfig	2011-08-16 16:06:09.845540931 +0200
+@@ -65,6 +65,9 @@
+ 
+ 	  For more information take a look at <file:Documentation/power/swsusp.txt>.
+ 
++config ARCH_SAVE_PAGE_KEYS
++	bool
++
+ config PM_STD_PARTITION
+ 	string "Default resume partition"
+ 	depends on HIBERNATION
+Index: hibernate-2.6/kernel/power/snapshot.c
+===================================================================
+--- hibernate-2.6.orig/kernel/power/snapshot.c	2011-07-08 11:25:06.293203483 +0200
++++ hibernate-2.6/kernel/power/snapshot.c	2011-08-16 16:06:09.845540931 +0200
+@@ -1339,6 +1339,9 @@
+ 	count += highmem;
+ 	count -= totalreserve_pages;
+ 
++	/* Add number of pages required for page keys (s390 only). */
++	size += page_key_additional_pages(saveable);
++
+ 	/* Compute the maximum number of saveable pages to leave in memory. */
+ 	max_size = (count - (size + PAGES_FOR_IO)) / 2
+ 			- 2 * DIV_ROUND_UP(reserved_size, PAGE_SIZE);
+@@ -1662,6 +1665,8 @@
+ 		buf[j] = memory_bm_next_pfn(bm);
+ 		if (unlikely(buf[j] == BM_END_OF_MAP))
+ 			break;
++		/* Save page key for data page (s390 only). */
++		page_key_read(buf + j);
+ 	}
+ }
+ 
+@@ -1821,6 +1826,9 @@
+ 		if (unlikely(buf[j] == BM_END_OF_MAP))
+ 			break;
+ 
++		/* Extract and buffer page key for data page (s390 only). */
++		page_key_memorize(buf + j);
++
+ 		if (memory_bm_pfn_present(bm, buf[j]))
+ 			memory_bm_set_bit(bm, buf[j]);
+ 		else
+@@ -2223,6 +2231,11 @@
+ 		if (error)
+ 			return error;
+ 
++		/* Allocate buffer for page keys. */
++		error = page_key_alloc(nr_copy_pages);
++		if (error)
++			return error;
++
+ 	} else if (handle->cur <= nr_meta_pages + 1) {
+ 		error = unpack_orig_pfns(buffer, &copy_bm);
+ 		if (error)
+@@ -2243,6 +2256,8 @@
+ 		}
+ 	} else {
+ 		copy_last_highmem_page();
++		/* Restore page key for data page (s390 only). */
++		page_key_write(handle->buffer);
+ 		handle->buffer = get_buffer(&orig_bm, &ca);
+ 		if (IS_ERR(handle->buffer))
+ 			return PTR_ERR(handle->buffer);
+@@ -2264,6 +2279,9 @@
+ void snapshot_write_finalize(struct snapshot_handle *handle)
+ {
+ 	copy_last_highmem_page();
++	/* Restore page key for data page (s390 only). */
++	page_key_write(handle->buffer);
++	page_key_free();
+ 	/* Free only if we have loaded the image entirely */
+ 	if (handle->cur > 1 && handle->cur > nr_meta_pages + nr_copy_pages) {
+ 		memory_bm_free(&orig_bm, PG_UNSAFE_CLEAR);
