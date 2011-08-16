@@ -1,8 +1,8 @@
 From: jean.pihet@newoldbits.com
-Subject: [PATCH 05/15] PM QoS: generalize and export the
-	constraints management code
-Date: Tue, 16 Aug 2011 15:43:08 +0200
-Message-ID: <1313502198-9298-6-git-send-email-j-pihet__1598.88853454522$1313502979$gmane$org@ti.com>
+Subject: [PATCH 07/15] PM QoS: add a global notification
+	mechanism for the device constraints
+Date: Tue, 16 Aug 2011 15:43:10 +0200
+Message-ID: <1313502198-9298-8-git-send-email-j-pihet__45598.0438659482$1313502982$gmane$org@ti.com>
 References: <1313502198-9298-1-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,284 +24,226 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Jean Pihet <j-pihet@ti.com>
 
-In preparation for the per-device constratins support:
-- rename update_target to pm_qos_update_target
-- generalize and export pm_qos_update_target for usage by the upcoming
-per-device latency constraints framework:
-   . operate on struct pm_qos_constraints for constraints management,
-   . introduce an 'action' parameter for constraints add/update/remove,
-   . the return value indicates if the aggregated constraint value has
-     changed,
-- update the internal code to operate on struct pm_qos_constraints
-- add a NULL pointer check in the API functions
+Add a global notification chain that gets called upon changes to the
+aggregated constraint value for any device.
+The notification callbacks are passing the full constraint request data
+in order for the callees to have access to it. The current use is for the
+platform low-level code to access the target device of the constraint.
 
 Signed-off-by: Jean Pihet <j-pihet@ti.com>
 ---
- include/linux/pm_qos.h |   14 ++++++
- kernel/power/qos.c     |  123 ++++++++++++++++++++++++++----------------------
- 2 files changed, 81 insertions(+), 56 deletions(-)
+ drivers/base/power/qos.c |   84 ++++++++++++++++++++++++++++++++++++----------
+ include/linux/pm_qos.h   |   11 ++++++
+ kernel/power/qos.c       |    2 +-
+ 3 files changed, 78 insertions(+), 19 deletions(-)
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 9772311..84aa150 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -44,7 +44,16 @@ struct pm_qos_constraints {
- 	struct blocking_notifier_head *notifiers;
- };
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index 304d68d..b52b3e8 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -8,6 +8,12 @@
+  *
+  * This QoS design is best effort based. Dependents register their QoS needs.
+  * Watchers register to keep track of the current QoS needs of the system.
++ * Watchers can register different types of notification callbacks:
++ *  . a per-device notification callback using the dev_pm_qos_*_notifier API.
++ *    The notification chain data is stored in the per-device constraint
++ *    data struct.
++ *  . a system-wide notification callback using the dev_pm_qos_*_global_notifier
++ *    API. The notification chain data is stored in a static variable.
+  *
+  * Note about the per-device constraint data struct allocation:
+  * . The per-device constraints data struct ptr is tored into the device
+@@ -36,8 +42,32 @@
  
-+/* Action requested to pm_qos_update_target */
-+enum pm_qos_req_action {
-+	PM_QOS_ADD_REQ,		/* Add a new request */
-+	PM_QOS_UPDATE_REQ,	/* Update an existing request */
-+	PM_QOS_REMOVE_REQ	/* Remove an existing request */
-+};
-+
- #ifdef CONFIG_PM
-+int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
-+			 enum pm_qos_req_action action, int value);
- void pm_qos_add_request(struct pm_qos_request *req, int pm_qos_class,
- 			s32 value);
- void pm_qos_update_request(struct pm_qos_request *req,
-@@ -56,6 +65,11 @@ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
- int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
- int pm_qos_request_active(struct pm_qos_request *req);
- #else
-+static inline int pm_qos_update_target(struct pm_qos_constraints *c,
-+				       struct plist_node *node,
-+				       enum pm_qos_req_action action,
-+				       int value)
-+			{ return 0; }
- static inline void pm_qos_add_request(struct pm_qos_request *req,
- 				      int pm_qos_class, s32 value)
- 			{ return; }
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 4a35fe5..7c7cd18 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -122,17 +122,17 @@ static const struct file_operations pm_qos_power_fops = {
- };
  
- /* unlocked internal variant */
--static inline int pm_qos_get_value(struct pm_qos_object *o)
-+static inline int pm_qos_get_value(struct pm_qos_constraints *c)
- {
--	if (plist_head_empty(&o->constraints->list))
--		return o->constraints->default_value;
-+	if (plist_head_empty(&c->list))
-+		return c->default_value;
+ static DEFINE_MUTEX(dev_pm_qos_mtx);
++static BLOCKING_NOTIFIER_HEAD(dev_pm_notifiers);
+ static void dev_pm_qos_constraints_allocate(struct device *dev);
  
--	switch (o->constraints->type) {
-+	switch (c->type) {
- 	case PM_QOS_MIN:
--		return plist_first(&o->constraints->list)->prio;
-+		return plist_first(&c->list)->prio;
- 
- 	case PM_QOS_MAX:
--		return plist_last(&o->constraints->list)->prio;
-+		return plist_last(&c->list)->prio;
- 
- 	default:
- 		/* runtime check for not using enum */
-@@ -140,47 +140,73 @@ static inline int pm_qos_get_value(struct pm_qos_object *o)
- 	}
- }
- 
--static inline s32 pm_qos_read_value(struct pm_qos_object *o)
-+static inline s32 pm_qos_read_value(struct pm_qos_constraints *c)
- {
--	return o->constraints->target_value;
-+	return c->target_value;
- }
- 
--static inline void pm_qos_set_value(struct pm_qos_object *o, s32 value)
-+static inline void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
- {
--	o->constraints->target_value = value;
-+	c->target_value = value;
- }
- 
--static void update_target(struct pm_qos_object *o, struct plist_node *node,
--			  int del, int value)
-+/**
-+ * pm_qos_update_target - manages the constraints list and calls the notifiers
-+ *  if needed
-+ * @c: constraints data struct
-+ * @node: request to add to the list, to update or to remove
-+ * @action: action to take on the constraints list
-+ * @value: value of the request to add or update
-+ *
-+ * This function returns 1 if the aggregated constraint value has changed, 0
-+ *  otherwise.
++/*
++ * Update the constraints list using the PM QoS core code and
++ * if needed call the per-device and the global notification callbacks
 + */
-+int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
-+			 enum pm_qos_req_action action, int value)
- {
- 	unsigned long flags;
--	int prev_value, curr_value;
-+	int prev_value, curr_value, new_value;
- 
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	prev_value = pm_qos_get_value(o);
--	/* PM_QOS_DEFAULT_VALUE is a signal that the value is unchanged */
--	if (value != PM_QOS_DEFAULT_VALUE) {
-+	prev_value = pm_qos_get_value(c);
-+	if (value == PM_QOS_DEFAULT_VALUE)
-+		new_value = c->default_value;
-+	else
-+		new_value = value;
++static int _apply_constraint(struct dev_pm_qos_request *req,
++			     enum pm_qos_req_action action, int value)
++{
++	int ret, curr_value;
 +
-+	switch (action) {
-+	case PM_QOS_REMOVE_REQ:
-+		plist_del(node, &c->list);
-+		break;
-+	case PM_QOS_UPDATE_REQ:
- 		/*
- 		 * to change the list, we atomically remove, reinit
- 		 * with new value and add, then see if the extremal
- 		 * changed
- 		 */
--		plist_del(node, &o->constraints->list);
--		plist_node_init(node, value);
--		plist_add(node, &o->constraints->list);
--	} else if (del) {
--		plist_del(node, &o->constraints->list);
--	} else {
--		plist_add(node, &o->constraints->list);
-+		plist_del(node, &c->list);
-+	case PM_QOS_ADD_REQ:
-+		plist_node_init(node, new_value);
-+		plist_add(node, &c->list);
-+		break;
-+	default:
-+		/* no action */
-+		;
- 	}
--	curr_value = pm_qos_get_value(o);
--	pm_qos_set_value(o, curr_value);
++	ret = pm_qos_update_target(req->dev->power.constraints,
++				   &req->node, action, value);
 +
-+	curr_value = pm_qos_get_value(c);
-+	pm_qos_set_value(c, curr_value);
-+
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
--	if (prev_value != curr_value)
--		blocking_notifier_call_chain(o->constraints->notifiers,
-+	if (prev_value != curr_value) {
-+		blocking_notifier_call_chain(c->notifiers,
- 					     (unsigned long)curr_value,
- 					     NULL);
-+		return 1;
-+	} else {
-+		return 0;
++	if (ret) {
++		/* Call the global callbacks if needed */
++		curr_value = pm_qos_read_value(req->dev->power.constraints);
++		blocking_notifier_call_chain(&dev_pm_notifiers,
++					     (unsigned long)curr_value,
++					     req);
 +	}
- }
- 
++
++	return ret;
++}
++
  /**
-@@ -191,7 +217,7 @@ static void update_target(struct pm_qos_object *o, struct plist_node *node,
-  */
- int pm_qos_request(int pm_qos_class)
- {
--	return pm_qos_read_value(pm_qos_array[pm_qos_class]);
-+	return pm_qos_read_value(pm_qos_array[pm_qos_class]->constraints);
- }
- EXPORT_SYMBOL_GPL(pm_qos_request);
+  * dev_pm_qos_add_request - inserts new qos request into the list
+  * @dev: target device for the constraint
+@@ -66,16 +96,13 @@ void dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+ 	dev_pm_qos_constraints_allocate(dev);
  
-@@ -217,20 +243,16 @@ EXPORT_SYMBOL_GPL(pm_qos_request_active);
- void pm_qos_add_request(struct pm_qos_request *req,
- 			int pm_qos_class, s32 value)
- {
--	struct pm_qos_object *o =  pm_qos_array[pm_qos_class];
--	int new_value;
-+	if (!req) /*guard against callers passing in null */
-+		return;
- 
- 	if (pm_qos_request_active(req)) {
- 		WARN(1, KERN_ERR "pm_qos_add_request() called for already added request\n");
- 		return;
- 	}
--	if (value == PM_QOS_DEFAULT_VALUE)
--		new_value = o->constraints->default_value;
--	else
--		new_value = value;
--	plist_node_init(&req->node, new_value);
- 	req->pm_qos_class = pm_qos_class;
--	update_target(o, &req->node, 0, PM_QOS_DEFAULT_VALUE);
-+	pm_qos_update_target(pm_qos_array[pm_qos_class]->constraints,
-+			     &req->node, PM_QOS_ADD_REQ, value);
- }
- EXPORT_SYMBOL_GPL(pm_qos_add_request);
- 
-@@ -247,9 +269,6 @@ EXPORT_SYMBOL_GPL(pm_qos_add_request);
- void pm_qos_update_request(struct pm_qos_request *req,
- 			   s32 new_value)
- {
--	s32 temp;
--	struct pm_qos_object *o;
+ 	mutex_lock(&dev_pm_qos_mtx);
 -
+ 	req->dev = dev;
+ 
+ 	/* Silently return if the device has been removed */
+ 	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+ 		goto out;
+ 
+-	pm_qos_update_target(dev->power.constraints,
+-			     &req->node, PM_QOS_ADD_REQ, value);
+-
++	_apply_constraint(req, PM_QOS_ADD_REQ, value);
+ out:
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ }
+@@ -92,7 +119,7 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
+  * Attempts are made to make this code callable on hot code paths.
+  */
+ void dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+-			   s32 new_value)
++			       s32 new_value)
+ {
  	if (!req) /*guard against callers passing in null */
  		return;
+@@ -110,9 +137,7 @@ void dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+ 		goto out;
  
-@@ -258,15 +277,10 @@ void pm_qos_update_request(struct pm_qos_request *req,
- 		return;
- 	}
+ 	if (new_value != req->node.prio)
+-		pm_qos_update_target(
+-			req->dev->power.constraints,
+-			&req->node, PM_QOS_UPDATE_REQ, new_value);
++		_apply_constraint(req, PM_QOS_UPDATE_REQ, new_value);
  
--	o = pm_qos_array[req->pm_qos_class];
--
--	if (new_value == PM_QOS_DEFAULT_VALUE)
--		temp = o->constraints->default_value;
--	else
--		temp = new_value;
--
--	if (temp != req->node.prio)
--		update_target(o, &req->node, 0, temp);
-+	if (new_value != req->node.prio)
-+		pm_qos_update_target(
-+			pm_qos_array[req->pm_qos_class]->constraints,
-+			&req->node, PM_QOS_UPDATE_REQ, new_value);
- }
- EXPORT_SYMBOL_GPL(pm_qos_update_request);
+ out:
+ 	mutex_unlock(&dev_pm_qos_mtx);
+@@ -143,9 +168,7 @@ void dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
+ 	if (req->dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+ 		goto out;
  
-@@ -280,9 +294,7 @@ EXPORT_SYMBOL_GPL(pm_qos_update_request);
-  */
- void pm_qos_remove_request(struct pm_qos_request *req)
- {
--	struct pm_qos_object *o;
--
--	if (req == NULL)
-+	if (!req) /*guard against callers passing in null */
- 		return;
- 		/* silent return to keep pcm code cleaner */
- 
-@@ -291,8 +303,9 @@ void pm_qos_remove_request(struct pm_qos_request *req)
- 		return;
- 	}
- 
--	o = pm_qos_array[req->pm_qos_class];
--	update_target(o, &req->node, 1, PM_QOS_DEFAULT_VALUE);
-+	pm_qos_update_target(pm_qos_array[req->pm_qos_class]->constraints,
-+			     &req->node, PM_QOS_REMOVE_REQ,
-+			     PM_QOS_DEFAULT_VALUE);
+-	pm_qos_update_target(req->dev->power.constraints,
+-			     &req->node, PM_QOS_REMOVE_REQ,
+-			     PM_QOS_DEFAULT_VALUE);
++	_apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
  	memset(req, 0, sizeof(*req));
+ 
+ out:
+@@ -214,6 +237,36 @@ out:
  }
- EXPORT_SYMBOL_GPL(pm_qos_remove_request);
-@@ -396,7 +409,6 @@ static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
+ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_notifier);
+ 
++/**
++ * dev_pm_qos_add_global_notifier - sets notification entry for changes to
++ * target value of the PM QoS constraints for any device
++ *
++ * @notifier: notifier block managed by caller.
++ *
++ * Will register the notifier into a notification chain that gets called
++ * upon changes to the target value for any device.
++ */
++int dev_pm_qos_add_global_notifier(struct notifier_block *notifier)
++{
++	return blocking_notifier_chain_register(&dev_pm_notifiers, notifier);
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_add_global_notifier);
++
++/**
++ * dev_pm_qos_remove_global_notifier - deletes notification for changes to
++ * target value of PM QoS constraints for any device
++ *
++ * @notifier: notifier block to be removed.
++ *
++ * Will remove the notifier from the notification chain that gets called
++ * upon changes to the target value for any device.
++ */
++int dev_pm_qos_remove_global_notifier(struct notifier_block *notifier)
++{
++	return blocking_notifier_chain_unregister(&dev_pm_notifiers, notifier);
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_remove_global_notifier);
++
+ /* Called at the first call to add_request, for constraint data allocation */
+ static void dev_pm_qos_constraints_allocate(struct device *dev)
  {
- 	s32 value;
- 	unsigned long flags;
--	struct pm_qos_object *o;
- 	struct pm_qos_request *req = filp->private_data;
+@@ -272,13 +325,8 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+ 		plist_for_each_entry_safe(req, tmp,
+ 					  &dev->power.constraints->list,
+ 					  node)
+-			/*
+-			 * Update constraints list and call the per-device
+-			 * callbacks if needed
+-			 */
+-			pm_qos_update_target(req->dev->power.constraints,
+-					     &req->node, PM_QOS_REMOVE_REQ,
+-					     PM_QOS_DEFAULT_VALUE);
++			_apply_constraint(req, PM_QOS_REMOVE_REQ,
++					  PM_QOS_DEFAULT_VALUE);
  
- 	if (!req)
-@@ -404,9 +416,8 @@ static ssize_t pm_qos_power_read(struct file *filp, char __user *buf,
- 	if (!pm_qos_request_active(req))
- 		return -EINVAL;
+ 		kfree(dev->power.constraints->notifiers);
+ 		kfree(dev->power.constraints);
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index d3e2d80..950c1b2 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -75,6 +75,7 @@ int pm_qos_request(int pm_qos_class);
+ int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier);
+ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+ int pm_qos_request_active(struct pm_qos_request *req);
++s32 pm_qos_read_value(struct pm_qos_constraints *c);
  
--	o = pm_qos_array[req->pm_qos_class];
- 	spin_lock_irqsave(&pm_qos_lock, flags);
--	value = pm_qos_get_value(o);
-+	value = pm_qos_get_value(pm_qos_array[req->pm_qos_class]->constraints);
- 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ void dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+ 			    s32 value);
+@@ -84,6 +85,8 @@ int dev_pm_qos_add_notifier(struct device *dev,
+ 			    struct notifier_block *notifier);
+ int dev_pm_qos_remove_notifier(struct device *dev,
+ 			       struct notifier_block *notifier);
++int dev_pm_qos_add_global_notifier(struct notifier_block *notifier);
++int dev_pm_qos_remove_global_notifier(struct notifier_block *notifier);
+ void dev_pm_qos_constraints_init(struct device *dev);
+ void dev_pm_qos_constraints_destroy(struct device *dev);
+ #else
+@@ -111,6 +114,8 @@ static inline int pm_qos_remove_notifier(int pm_qos_class,
+ 			{ return 0; }
+ static inline int pm_qos_request_active(struct pm_qos_request *req)
+ 			{ return 0; }
++static inline s32 pm_qos_read_value(struct pm_qos_constraints *c)
++			{ return 0; }
  
- 	return simple_read_from_buffer(buf, count, f_pos, &value, sizeof(s32));
+ static inline void dev_pm_qos_add_request(struct device *dev,
+ 					  struct dev_pm_qos_request *req,
+@@ -127,6 +132,12 @@ static inline int dev_pm_qos_add_notifier(struct device *dev,
+ static inline int dev_pm_qos_remove_notifier(struct device *dev,
+ 					     struct notifier_block *notifier)
+ 			{ return 0; }
++static inline int dev_pm_qos_add_global_notifier(
++					struct notifier_block *notifier)
++			{ return 0; }
++static inline int dev_pm_qos_remove_global_notifier(
++					struct notifier_block *notifier)
++			{ return 0; }
+ static inline void dev_pm_qos_constraints_init(struct device *dev)
+ 			{ return; }
+ static inline void dev_pm_qos_constraints_destroy(struct device *dev)
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 7c7cd18..1c1797d 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -140,7 +140,7 @@ static inline int pm_qos_get_value(struct pm_qos_constraints *c)
+ 	}
+ }
+ 
+-static inline s32 pm_qos_read_value(struct pm_qos_constraints *c)
++s32 pm_qos_read_value(struct pm_qos_constraints *c)
+ {
+ 	return c->target_value;
+ }
 -- 
 1.7.4.1
