@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 3.0-rc2 failed s2ram: Freezing of tasks failed after
-	20.00 seconds
-Date: Tue, 16 Aug 2011 23:20:28 +0200
-Message-ID: <201108162320.28297.rjw__9960.79814290187$1313529628$gmane$org@sisk.pl>
-References: <20110816094245.GA2042@Pilar.site> <201108162013.55341.rjw@sisk.pl>
-	<20110816211358.GA2251@Pilar.site>
+Subject: Re: [PATCH 06/15] PM QoS: implement the per-device PM
+	QoS constraints
+Date: Tue, 16 Aug 2011 23:40:32 +0200
+Message-ID: <201108162340.32357.rjw__45253.3889365897$1313530931$gmane$org@sisk.pl>
+References: <1313502198-9298-1-git-send-email-j-pihet@ti.com>
+	<1313502198-9298-7-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110816211358.GA2251@Pilar.site>
+In-Reply-To: <1313502198-9298-7-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,115 +19,175 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Carlos R. Mafra" <crmafra@gmail.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: jean.pihet@newoldbits.com
+Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 16, 2011, Carlos R. Mafra wrote:
-> On Tue, 16 Aug 2011 at 20:13:55 +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, August 16, 2011, Carlos R. Mafra wrote:
-> > > I started testing 3.0-rc2 yesterday and after a few successful suspend to ram
-> > > it did not suspend anymore and I got this:
-> > > 
-> > >  PM: Syncing filesystems ... done.
-> > >  PM: Preparing system for mem sleep
-> > >  Freezing user space processes ... 
-> > >  Freezing of tasks failed after 20.00 seconds (1 tasks refusing to freeze, wq_busy=0):
-> > >  udisks-daemon   D ffff8800a641e5d0     0  5848   5845 0x00800004
-> > >   ffff8800a6741928 0000000000000082 ffff880000000000 00000000000105c0
-> > >   ffff8800a641e200 00000000000105c0 ffff8800a6741fd8 00000000000105c0
-> > >   00000000000105c0 ffff8800a6740000 ffff8800a6741fd8 00000000000105c0
-> > >  Call Trace:
-> > >   [<ffffffff814cf355>] schedule_timeout+0x1c5/0x230
-> > >   [<ffffffff814ce8c9>] ? schedule+0x399/0x8a0
-> > >   [<ffffffff814ce3e0>] wait_for_common+0xc0/0x160
-> > >   [<ffffffff8103ec60>] ? try_to_wake_up+0x290/0x290
-> > >   [<ffffffff814d10ba>] ? _raw_spin_unlock_irq+0x2a/0x40
-> > >   [<ffffffff814ce528>] wait_for_completion+0x18/0x20
-> > >   [<ffffffff81059afb>] flush_work+0x2b/0x40
-> > >   [<ffffffff81058fd0>] ? do_work_for_cpu+0x30/0x30
-> > >   [<ffffffff8105a076>] flush_delayed_work+0x46/0x50
-> > >   [<ffffffff8121e6b6>] disk_clear_events+0x76/0x110
-> > >   [<ffffffff81106052>] check_disk_change+0x32/0x80
-> > >   [<ffffffff812ee649>] sd_open+0xb9/0x190
-> > >   [<ffffffff81106f81>] __blkdev_get+0x91/0x3d0
-> > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
-> > >   [<ffffffff8110730e>] blkdev_get+0x4e/0x340
-> > >   [<ffffffff810e1b17>] ? do_lookup+0xb7/0x380
-> > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
-> > >   [<ffffffff8110765d>] blkdev_open+0x5d/0x80
-> > >   [<ffffffff810d3d80>] __dentry_open+0x130/0x320
-> > >   [<ffffffff810d5021>] nameidata_to_filp+0x71/0x80
-> > >   [<ffffffff810e2ab1>] do_last+0xb1/0x800
-> > >   [<ffffffff810e4603>] path_openat+0xd3/0x3f0
-> > >   [<ffffffff81229077>] ? kobject_put+0x27/0x60
-> > >   [<ffffffff812ced62>] ? put_device+0x12/0x20
-> > >   [<ffffffff810e4984>] do_filp_open+0x44/0xa0
-> > >   [<ffffffff810f0a44>] ? alloc_fd+0xf4/0x150
-> > >   [<ffffffff810d512c>] do_sys_open+0xfc/0x1e0
-> > >   [<ffffffff810d3a86>] ? filp_close+0x56/0x80
-> > >   [<ffffffff810d522b>] sys_open+0x1b/0x20
-> > >   [<ffffffff814d1c3b>] system_call_fastpath+0x16/0x1b
-> > >  
-> > >  Restarting tasks ... done.
-> > >  video LNXVIDEO:01: Restoring backlight state
-> > >  acpid: 1 client rule loaded
-> > >  EXT4-fs (sda2): re-mounted. Opts: discard,commit=600
-> > >  INFO: task udisks-daemon:5848 blocked for more than 120 seconds.
-> > >  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > >  udisks-daemon   D ffff8800a641e5d0     0  5848   5845 0x00000004
-> > >   ffff8800a6741928 0000000000000082 ffff880000000000 00000000000105c0
-> > >   ffff8800a641e200 00000000000105c0 ffff8800a6741fd8 00000000000105c0
-> > >   00000000000105c0 ffff8800a6740000 ffff8800a6741fd8 00000000000105c0
-> > >  Call Trace:
-> > >   [<ffffffff814cf355>] schedule_timeout+0x1c5/0x230
-> > >   [<ffffffff814ce8c9>] ? schedule+0x399/0x8a0
-> > >   [<ffffffff814ce3e0>] wait_for_common+0xc0/0x160
-> > >   [<ffffffff8103ec60>] ? try_to_wake_up+0x290/0x290
-> > >   [<ffffffff814d10ba>] ? _raw_spin_unlock_irq+0x2a/0x40
-> > >   [<ffffffff814ce528>] wait_for_completion+0x18/0x20
-> > >   [<ffffffff81059afb>] flush_work+0x2b/0x40
-> > >   [<ffffffff81058fd0>] ? do_work_for_cpu+0x30/0x30
-> > >   [<ffffffff8105a076>] flush_delayed_work+0x46/0x50
-> > >   [<ffffffff8121e6b6>] disk_clear_events+0x76/0x110
-> > >   [<ffffffff81106052>] check_disk_change+0x32/0x80
-> > >   [<ffffffff812ee649>] sd_open+0xb9/0x190
-> > >   [<ffffffff81106f81>] __blkdev_get+0x91/0x3d0
-> > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
-> > >   [<ffffffff8110730e>] blkdev_get+0x4e/0x340
-> > >   [<ffffffff810e1b17>] ? do_lookup+0xb7/0x380
-> > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
-> > >   [<ffffffff8110765d>] blkdev_open+0x5d/0x80
-> > >   [<ffffffff810d3d80>] __dentry_open+0x130/0x320
-> > >   [<ffffffff810d5021>] nameidata_to_filp+0x71/0x80
-> > >   [<ffffffff810e2ab1>] do_last+0xb1/0x800
-> > >   [<ffffffff810e4603>] path_openat+0xd3/0x3f0
-> > >   [<ffffffff81229077>] ? kobject_put+0x27/0x60
-> > >   [<ffffffff812ced62>] ? put_device+0x12/0x20
-> > >   [<ffffffff810e4984>] do_filp_open+0x44/0xa0
-> > >   [<ffffffff810f0a44>] ? alloc_fd+0xf4/0x150
-> > >   [<ffffffff810d512c>] do_sys_open+0xfc/0x1e0
-> > >   [<ffffffff810d3a86>] ? filp_close+0x56/0x80
-> > >   [<ffffffff810d522b>] sys_open+0x1b/0x20
-> > >   [<ffffffff814d1c3b>] system_call_fastpath+0x16/0x1b
-> > >   
-> > > 
-> > > and there are some more of these traces in the logs, but they all look the 
-> > > same.
-> > 
-> > It looks like udisks-daemon is waiting for a completion that's
-> > never completed.
-> > 
-> > Do you use any removable storage devices?
+Hi,
+
+On Tuesday, August 16, 2011, jean.pihet@newoldbits.com wrote:
+> From: Jean Pihet <j-pihet@ti.com>
 > 
-> Yes, external harddisks connected via USB. But none were mounted
-> when I closed the lid to suspend.
+> Implement the per-device PM QoS constraints by creating a device
+> PM QoS API, which calls the PM QoS constraints management core code.
+> 
+> The per-device latency constraints data strctures are stored
+> in the device dev_pm_info struct.
+> 
+> The device PM code calls the init and destroy of the per-device constraints
+> data struct in order to support the dynamic insertion and removal of the
+> devices in the system.
+> 
+> To minimize the data usage by the per-device constraints, the data struct
+> is only allocated at the first call to dev_pm_qos_add_request.
+> The data is later free'd when the device is removed from the system.
+> A global mutex protects the constraints users from the data being
+> allocated and free'd.
+> 
+> Signed-off-by: Jean Pihet <j-pihet@ti.com>
+> ---
+>  drivers/base/power/Makefile |    4 +-
+>  drivers/base/power/main.c   |    3 +
+>  drivers/base/power/qos.c    |  291 +++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm.h          |    9 ++
+>  include/linux/pm_qos.h      |   42 ++++++
+>  5 files changed, 347 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/base/power/qos.c
+> 
+> diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+> index 2639ae7..b707447 100644
+> --- a/drivers/base/power/Makefile
+> +++ b/drivers/base/power/Makefile
+> @@ -1,4 +1,4 @@
+> -obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o
+> +obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o qos.o
+>  obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
+>  obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+>  obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+> @@ -6,4 +6,4 @@ obj-$(CONFIG_PM_OPP)	+= opp.o
+>  obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o
+>  obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
+>  
+> -ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+> \ No newline at end of file
+> +ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index a854591..956443f 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/pm.h>
+>  #include <linux/pm_runtime.h>
+> +#include <linux/pm_qos.h>
+>  #include <linux/resume-trace.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/sched.h>
+> @@ -97,6 +98,7 @@ void device_pm_add(struct device *dev)
+>  			dev_name(dev->parent));
+>  	list_add_tail(&dev->power.entry, &dpm_list);
+>  	mutex_unlock(&dpm_list_mtx);
+> +	dev_pm_qos_constraints_init(dev);
+>  }
+>  
+>  /**
+> @@ -107,6 +109,7 @@ void device_pm_remove(struct device *dev)
+>  {
+>  	pr_debug("PM: Removing info for %s:%s\n",
+>  		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+> +	dev_pm_qos_constraints_destroy(dev);
+>  	complete_all(&dev->power.completion);
+>  	mutex_lock(&dpm_list_mtx);
+>  	list_del_init(&dev->power.entry);
+> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+> new file mode 100644
+> index 0000000..304d68d
+> --- /dev/null
+> +++ b/drivers/base/power/qos.c
+> @@ -0,0 +1,291 @@
+> +/*
 
-Were they connected to the USB ports?
+Please add a copyright notice.
 
-> PS: I made a mistake in the Subject:, the kernel is 3.1-rc2 and
-> not 3.0-rc2.
+> + * This module exposes the interface to kernel space for specifying
+> + * per-device PM QoS dependencies. It provides infrastructure for registration
+> + * of:
+> + *
+> + * Dependents on a QoS value : register requests
+> + * Watchers of QoS value : get notified when target QoS value changes
+> + *
+> + * This QoS design is best effort based. Dependents register their QoS needs.
+> + * Watchers register to keep track of the current QoS needs of the system.
+> + *
+> + * Note about the per-device constraint data struct allocation:
+> + * . The per-device constraints data struct ptr is tored into the device
+> + *    dev_pm_info.
+> + * . To minimize the data usage by the per-device constraints, the data struct
+> + *   is only allocated at the first call to dev_pm_qos_add_request.
+> + * . The data is later free'd when the device is removed from the system.
+> + * . The constraints_state variable from dev_pm_info tracks the data struct
+> + *    allocation state:
+> + *    DEV_PM_QOS_NO_DEVICE: No device present or device removed, no data
+> + *     allocated,
+> + *    DEV_PM_QOS_DEVICE_PRESENT: Device present, data not allocated and will be
+> + *     allocated at the first call to dev_pm_qos_add_request,
+> + *    DEV_PM_QOS_ALLOCATED: Device present, data allocated. The per-device
+> + *     PM QoS constraints framework is operational and constraints can be
+> + *     added, updated or removed using the dev_pm_qos_* API.
+> + *  . A global mutex protects the constraints users from the data being
+> + *     allocated and free'd.
+> + */
+> +
+> +#include <linux/pm_qos.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/slab.h>
+> +#include <linux/device.h>
+> +#include <linux/mutex.h>
+> +
+> +
+> +static DEFINE_MUTEX(dev_pm_qos_mtx);
+> +static void dev_pm_qos_constraints_allocate(struct device *dev);
 
-Did 3.0 work correctly?
+This header wouldn't be necessary if you put the definition of
+dev_pm_qos_constraints_allocate() before dev_pm_qos_add_request().
 
+> +
+> +/**
+> + * dev_pm_qos_add_request - inserts new qos request into the list
+> + * @dev: target device for the constraint
+> + * @req: pointer to a preallocated handle
+> + * @value: defines the qos request
+> + *
+> + * This function inserts a new entry in the device constraints list of
+> + * requested qos performance characteristics. It recomputes the aggregate
+> + * QoS expectations of parameters and initializes the dev_pm_qos_request
+> + * handle.  Caller needs to save this handle for later use in updates and
+> + * removal.
+> + */
+> +void dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+> +			    s32 value)
+> +{
+> +	if (!dev || !req) /*guard against callers passing in null */
+> +		return;
+> +
+> +	if (dev_pm_qos_request_active(req)) {
+> +		WARN(1, KERN_ERR "dev_pm_qos_add_request() called for already "
+> +			"added request\n");
+> +		return;
+> +	}
+> +
+> +	/* Allocate the constraints struct on the first call to add_request */
+> +	dev_pm_qos_constraints_allocate(dev);
+
+I would remove the locking from dev_pm_qos_constraints_allocate() and
+put it under the lock below.  The code would be cleaner this way.
+
+Also, the name is slightly misleading, because it suggests that the
+allocation happens every time, so I'd move the condition from there
+into the caller too.
+
+The remaning part of the patch looks OK to me, but I'll have another
+look at it tomorrow, when I'm less tired.
+
+Thanks,
 Rafael
