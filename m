@@ -1,15 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 07/15] PM QoS: add a global notification
-	mechanism for the device constraints
-Date: Tue, 16 Aug 2011 23:44:01 +0200
-Message-ID: <201108162344.02059.rjw__29392.7104947672$1313531075$gmane$org@sisk.pl>
-References: <1313502198-9298-1-git-send-email-j-pihet@ti.com>
-	<1313502198-9298-8-git-send-email-j-pihet@ti.com>
+From: "Carlos R. Mafra" <crmafra@gmail.com>
+Subject: Re: 3.0-rc2 failed s2ram: Freezing of tasks failed after
+ 20.00 seconds
+Date: Wed, 17 Aug 2011 00:45:00 +0200
+Message-ID: <20110816224500.GA3152__1391.11023531786$1313545032$gmane$org@Pilar.site>
+References: <20110816094245.GA2042@Pilar.site> <201108162013.55341.rjw@sisk.pl>
+	<20110816211358.GA2251@Pilar.site> <201108162320.28297.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1313502198-9298-8-git-send-email-j-pihet@ti.com>
+Content-Disposition: inline
+In-Reply-To: <201108162320.28297.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,65 +20,118 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: jean.pihet@newoldbits.com
-Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Tuesday, August 16, 2011, jean.pihet@newoldbits.com wrote:
-> From: Jean Pihet <j-pihet@ti.com>
+On Tue, 16 Aug 2011 at 23:20:28 +0200, Rafael J. Wysocki wrote:
+> On Tuesday, August 16, 2011, Carlos R. Mafra wrote:
+> > On Tue, 16 Aug 2011 at 20:13:55 +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, August 16, 2011, Carlos R. Mafra wrote:
+> > > > I started testing 3.0-rc2 yesterday and after a few successful suspend to ram
+> > > > it did not suspend anymore and I got this:
+> > > > 
+> > > >  PM: Syncing filesystems ... done.
+> > > >  PM: Preparing system for mem sleep
+> > > >  Freezing user space processes ... 
+> > > >  Freezing of tasks failed after 20.00 seconds (1 tasks refusing to freeze, wq_busy=0):
+> > > >  udisks-daemon   D ffff8800a641e5d0     0  5848   5845 0x00800004
+> > > >   ffff8800a6741928 0000000000000082 ffff880000000000 00000000000105c0
+> > > >   ffff8800a641e200 00000000000105c0 ffff8800a6741fd8 00000000000105c0
+> > > >   00000000000105c0 ffff8800a6740000 ffff8800a6741fd8 00000000000105c0
+> > > >  Call Trace:
+> > > >   [<ffffffff814cf355>] schedule_timeout+0x1c5/0x230
+> > > >   [<ffffffff814ce8c9>] ? schedule+0x399/0x8a0
+> > > >   [<ffffffff814ce3e0>] wait_for_common+0xc0/0x160
+> > > >   [<ffffffff8103ec60>] ? try_to_wake_up+0x290/0x290
+> > > >   [<ffffffff814d10ba>] ? _raw_spin_unlock_irq+0x2a/0x40
+> > > >   [<ffffffff814ce528>] wait_for_completion+0x18/0x20
+> > > >   [<ffffffff81059afb>] flush_work+0x2b/0x40
+> > > >   [<ffffffff81058fd0>] ? do_work_for_cpu+0x30/0x30
+> > > >   [<ffffffff8105a076>] flush_delayed_work+0x46/0x50
+> > > >   [<ffffffff8121e6b6>] disk_clear_events+0x76/0x110
+> > > >   [<ffffffff81106052>] check_disk_change+0x32/0x80
+> > > >   [<ffffffff812ee649>] sd_open+0xb9/0x190
+> > > >   [<ffffffff81106f81>] __blkdev_get+0x91/0x3d0
+> > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
+> > > >   [<ffffffff8110730e>] blkdev_get+0x4e/0x340
+> > > >   [<ffffffff810e1b17>] ? do_lookup+0xb7/0x380
+> > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
+> > > >   [<ffffffff8110765d>] blkdev_open+0x5d/0x80
+> > > >   [<ffffffff810d3d80>] __dentry_open+0x130/0x320
+> > > >   [<ffffffff810d5021>] nameidata_to_filp+0x71/0x80
+> > > >   [<ffffffff810e2ab1>] do_last+0xb1/0x800
+> > > >   [<ffffffff810e4603>] path_openat+0xd3/0x3f0
+> > > >   [<ffffffff81229077>] ? kobject_put+0x27/0x60
+> > > >   [<ffffffff812ced62>] ? put_device+0x12/0x20
+> > > >   [<ffffffff810e4984>] do_filp_open+0x44/0xa0
+> > > >   [<ffffffff810f0a44>] ? alloc_fd+0xf4/0x150
+> > > >   [<ffffffff810d512c>] do_sys_open+0xfc/0x1e0
+> > > >   [<ffffffff810d3a86>] ? filp_close+0x56/0x80
+> > > >   [<ffffffff810d522b>] sys_open+0x1b/0x20
+> > > >   [<ffffffff814d1c3b>] system_call_fastpath+0x16/0x1b
+> > > >  
+> > > >  Restarting tasks ... done.
+> > > >  video LNXVIDEO:01: Restoring backlight state
+> > > >  acpid: 1 client rule loaded
+> > > >  EXT4-fs (sda2): re-mounted. Opts: discard,commit=600
+> > > >  INFO: task udisks-daemon:5848 blocked for more than 120 seconds.
+> > > >  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> > > >  udisks-daemon   D ffff8800a641e5d0     0  5848   5845 0x00000004
+> > > >   ffff8800a6741928 0000000000000082 ffff880000000000 00000000000105c0
+> > > >   ffff8800a641e200 00000000000105c0 ffff8800a6741fd8 00000000000105c0
+> > > >   00000000000105c0 ffff8800a6740000 ffff8800a6741fd8 00000000000105c0
+> > > >  Call Trace:
+> > > >   [<ffffffff814cf355>] schedule_timeout+0x1c5/0x230
+> > > >   [<ffffffff814ce8c9>] ? schedule+0x399/0x8a0
+> > > >   [<ffffffff814ce3e0>] wait_for_common+0xc0/0x160
+> > > >   [<ffffffff8103ec60>] ? try_to_wake_up+0x290/0x290
+> > > >   [<ffffffff814d10ba>] ? _raw_spin_unlock_irq+0x2a/0x40
+> > > >   [<ffffffff814ce528>] wait_for_completion+0x18/0x20
+> > > >   [<ffffffff81059afb>] flush_work+0x2b/0x40
+> > > >   [<ffffffff81058fd0>] ? do_work_for_cpu+0x30/0x30
+> > > >   [<ffffffff8105a076>] flush_delayed_work+0x46/0x50
+> > > >   [<ffffffff8121e6b6>] disk_clear_events+0x76/0x110
+> > > >   [<ffffffff81106052>] check_disk_change+0x32/0x80
+> > > >   [<ffffffff812ee649>] sd_open+0xb9/0x190
+> > > >   [<ffffffff81106f81>] __blkdev_get+0x91/0x3d0
+> > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
+> > > >   [<ffffffff8110730e>] blkdev_get+0x4e/0x340
+> > > >   [<ffffffff810e1b17>] ? do_lookup+0xb7/0x380
+> > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
+> > > >   [<ffffffff8110765d>] blkdev_open+0x5d/0x80
+> > > >   [<ffffffff810d3d80>] __dentry_open+0x130/0x320
+> > > >   [<ffffffff810d5021>] nameidata_to_filp+0x71/0x80
+> > > >   [<ffffffff810e2ab1>] do_last+0xb1/0x800
+> > > >   [<ffffffff810e4603>] path_openat+0xd3/0x3f0
+> > > >   [<ffffffff81229077>] ? kobject_put+0x27/0x60
+> > > >   [<ffffffff812ced62>] ? put_device+0x12/0x20
+> > > >   [<ffffffff810e4984>] do_filp_open+0x44/0xa0
+> > > >   [<ffffffff810f0a44>] ? alloc_fd+0xf4/0x150
+> > > >   [<ffffffff810d512c>] do_sys_open+0xfc/0x1e0
+> > > >   [<ffffffff810d3a86>] ? filp_close+0x56/0x80
+> > > >   [<ffffffff810d522b>] sys_open+0x1b/0x20
+> > > >   [<ffffffff814d1c3b>] system_call_fastpath+0x16/0x1b
+> > > >   
+> > > > 
+> > > > and there are some more of these traces in the logs, but they all look the 
+> > > > same.
+> > > 
+> > > It looks like udisks-daemon is waiting for a completion that's
+> > > never completed.
+> > > 
+> > > Do you use any removable storage devices?
+> > 
+> > Yes, external harddisks connected via USB. But none were mounted
+> > when I closed the lid to suspend.
 > 
-> Add a global notification chain that gets called upon changes to the
-> aggregated constraint value for any device.
-> The notification callbacks are passing the full constraint request data
-> in order for the callees to have access to it. The current use is for the
-> platform low-level code to access the target device of the constraint.
+> Were they connected to the USB ports?
+
+No.
+
+> > PS: I made a mistake in the Subject:, the kernel is 3.1-rc2 and
+> > not 3.0-rc2.
 > 
-> Signed-off-by: Jean Pihet <j-pihet@ti.com>
-> ---
->  drivers/base/power/qos.c |   84 ++++++++++++++++++++++++++++++++++++----------
->  include/linux/pm_qos.h   |   11 ++++++
->  kernel/power/qos.c       |    2 +-
->  3 files changed, 78 insertions(+), 19 deletions(-)
-> 
-> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-> index 304d68d..b52b3e8 100644
-> --- a/drivers/base/power/qos.c
-> +++ b/drivers/base/power/qos.c
-> @@ -8,6 +8,12 @@
->   *
->   * This QoS design is best effort based. Dependents register their QoS needs.
->   * Watchers register to keep track of the current QoS needs of the system.
-> + * Watchers can register different types of notification callbacks:
-> + *  . a per-device notification callback using the dev_pm_qos_*_notifier API.
-> + *    The notification chain data is stored in the per-device constraint
-> + *    data struct.
-> + *  . a system-wide notification callback using the dev_pm_qos_*_global_notifier
-> + *    API. The notification chain data is stored in a static variable.
->   *
->   * Note about the per-device constraint data struct allocation:
->   * . The per-device constraints data struct ptr is tored into the device
-> @@ -36,8 +42,32 @@
->  
->  
->  static DEFINE_MUTEX(dev_pm_qos_mtx);
-> +static BLOCKING_NOTIFIER_HEAD(dev_pm_notifiers);
->  static void dev_pm_qos_constraints_allocate(struct device *dev);
->  
-> +/*
-> + * Update the constraints list using the PM QoS core code and
-> + * if needed call the per-device and the global notification callbacks
-> + */
+> Did 3.0 work correctly?
 
-Well, if you add kerneldoc comments, please make them follow the standard,
-even if that's a static function.
-
-> +static int _apply_constraint(struct dev_pm_qos_request *req,
-
-The initial underscore looks odd and is not really necessary.  Please drop it.
-
-The rest of the patch looks fine.
-
-Thanks,
-Rafael
+I didn't test 3.0, but 2.6.39 always worked.
