@@ -1,12 +1,19 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Regression] GPF in usb_driver_release_interface
-	during/after resume
-Date: Mon, 15 Aug 2011 22:52:49 +0200
-Message-ID: <201108152252.49863.rjw__14625.8642933846$1313441571$gmane$org@sisk.pl>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [PATCH 05/15] PM QoS: generalize and export the
+ constraints management code
+Date: Mon, 15 Aug 2011 21:08:09 -0700
+Message-ID: <20110816040809.GA11921__4433.55957181684$1313467788$gmane$org@gvim.org>
+References: <1313075212-8366-1-git-send-email-j-pihet@ti.com>
+	<201108132234.17377.rjw@sisk.pl>
+	<CAORVsuUz9qXFvUTsYOs4Z7rLQFXROKOcWVi=bZWTKJuA2Xu1Og@mail.gmail.com>
+	<201108141537.43752.rjw@sisk.pl>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <201108141537.43752.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,97 +23,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-usb@vger.kernel.org
-Cc: Marcel Holtmann <marcel@holtmann.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Sun, Aug 14, 2011 at 03:37:43PM +0200, Rafael J. Wysocki wrote:
+> On Sunday, August 14, 2011, Jean Pihet wrote:
+> > Hi Rafael, Mark,
+> > 
+> > On Sat, Aug 13, 2011 at 10:34 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > On Saturday, August 13, 2011, mark gross wrote:
+> > >> On Thu, Aug 11, 2011 at 05:06:42PM +0200, jean.pihet@newoldbits.com wrote:
+> > >> > From: Jean Pihet <j-pihet@ti.com>
+> > >> >
+> > >> > In preparation for the per-device constratins support:
+> > >> > - rename update_target to pm_qos_update_target
+> > >> > - generalize and export pm_qos_update_target for usage by the upcoming
+> > >> > per-device latency constraints framework:
+> > >> >    . operate on struct pm_qos_constraints for constraints management,
+> > >> >    . introduce an 'action' parameter for constraints add/update/remove,
+> > >> >    . the return value indicates if the aggregated constraint value has
+> > >> >      changed,
+> > >> > - update the internal code to operate on struct pm_qos_constraints
+> > >> > - add a NULL pointer check in the API functions
+> > >> >
+> > >> > Signed-off-by: Jean Pihet <j-pihet@ti.com>
+> > ...
+> > >> > +/* Action requested to pm_qos_update_target */
+> > >> > +enum pm_qos_req_action {
+> > >> > +   PM_QOS_ADD_REQ,         /* Add a new request */
+> > >> > +   PM_QOS_UPDATE_REQ,      /* Update an existing request */
+> > >> > +   PM_QOS_REMOVE_REQ       /* Remove an existing request */
+> > >> > +};
+> > >> > +
+> > >>
+> > >> What do you need this enum for?  The function names *_update_*, *_add_*,
+> > >> and  *_remove_* seem to be pretty redundant if you have to pass an enum
+> > >> that could possibly conflict with the function name.
+> > >>
+> > >> >  #ifdef CONFIG_PM
+> > >> > +int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+> > >> > +                    enum pm_qos_req_action action, int value);
+> > >> The action for update_target better damn well be "PM_QOS_UPDATE_REQ" or
+> > >> there is something strange going on....  BTW what shold this function do
+> > >> if the pm_qos_req_action was *not* the UPDATE one?
+> > 
+> > The meaning of pm_qos_update_target is 'update the PM QoS target
+> > constraints lists'. As described in the changelog the intention of
+> > this patch is to implement the constraints lists management logic in
+> > update_target and simplify the API functions (add/update/remove). It
+> > is also exported for the upcoming (patch 06/15]) to use it as well.
+> 
+> The enums are fine by me and they allow us to simplify the code
+> quite a bit.
+>
+Ok, but they look a bit sloppy to me as we now have an API that says
+"add" we can actually pass in an enum that says "remove".
 
-I get the following general protection fault sometimes (but sufficiently
-often for it to be annoying) during resume from system suspend on Toshiba
-Portege R500:
-
-[  330.839651] PM: Finishing wakeup.
-[  330.839656] Restarting tasks ... 
-[  330.839742] e1000e 0000:01:00.0: PME# enabled
-[  330.840121] usb 2-2: USB disconnect, device number 3
-[  330.841626] option1 ttyUSB0: GSM modem (1-port) converter now disconnected from ttyUSB0
-[  330.841835] option 2-2:1.0: device disconnected
-[  330.842626] option1 ttyUSB1: GSM modem (1-port) converter now disconnected from ttyUSB1
-[  330.842770] option 2-2:1.1: device disconnected
-[  330.843506] option1 ttyUSB2: GSM modem (1-port) converter now disconnected from ttyUSB2
-[  330.843648] option 2-2:1.2: device disconnected
-[  330.857550] done.
-[  330.857591] video LNXVIDEO:00: Restoring backlight state
-[  330.915075] option1 ttyUSB3: GSM modem (1-port) converter now disconnected from ttyUSB3
-[  330.924372] option 2-2:1.3: device disconnected
-[  330.964520] usb 5-2: USB disconnect, device number 4
-[  331.218859] general protection fault: 0000 [#1] PREEMPT SMP 
-[  331.218889] CPU 0 
-[  331.218894] Modules linked in: bnep cryptd aes_x86_64 aes_generic xt_tcpudp xt_pkttype af_packet snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 ip6table_raw xt_NOTRACK ipt_REJECT iptable_raw iptable_filter ip6table_mangle nf_conntrack_netbios_ns nf_conntrack_broadcast nf_conntrack_ipv4 nf_defrag_ipv4 ip_tables xt_conntrack nf_conntrack ip6table_filter ip6_tables x_tables ipv6 cpufreq_conservative cpufreq_ondemand cpufreq_userspace cpufreq_powersave acpi_cpufreq microcode freq_table mperf fuse dm_mod sr_mod cdrom arc4 joydev btusb bluetooth option usb_wwan iwl4965 pcmcia iwl_legacy mac80211 psmouse snd_hda_codec_realtek usbhid serio_raw sdhci_pci usb_storage hid usbserial sdhci firewire_ohci snd_hda_intel yenta_socket snd_hda_codec pcmcia_rs
- rc sg firewire_core mmc_core snd_hwdep pcmcia_core crc_itu_t cfg80211 snd_pcm iTCO_wdt iTCO_vendor_support snd_timer snd soundcore e1000e rfkill snd_page_alloc toshiba_bluetooth battery ac !
- uhci_hcd sd_mod crc_t10dif ehci_hcd usbcore rtc_cmos ext3 jbd ahci libahci libata fan processor thermal
-[  331.219207] 
-[  331.219216] Pid: 906, comm: khubd Not tainted 2.6.39+ #388 TOSHIBA PORTEGE R500/Portable PC
-[  331.219237] RIP: 0010:[<ffffffffa00c5bd1>]  [<ffffffffa00c5bd1>] usb_driver_release_interface+0x32/0x9f [usbcore]
-[  331.219289] RSP: 0018:ffff880078899be0  EFLAGS: 00010282
-[  331.219301] RAX: 0000000000000000 RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000006
-[  331.219314] RDX: 0000000000000006 RSI: 00000000000001e3 RDI: ffffffffa0011020
-[  331.219327] RBP: ffff880078899c00 R08: ffff880078899be0 R09: 09f911029d74e35b
-[  331.219341] R10: ffff880078899bb0 R11: 0000000000000000 R12: ffff88007a5e6548
-[  331.219354] R13: ffff880040a8d000 R14: ffffffffa0011020 R15: ffffffffa00110b8
-[  331.219368] FS:  0000000000000000(0000) GS:ffff88007f400000(0000) knlGS:0000000000000000
-[  331.219382] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[  331.219394] CR2: 00007f4b2fd01080 CR3: 0000000079cf9000 CR4: 00000000000006f0
-[  331.219407] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[  331.219420] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[  331.219434] Process khubd (pid: 906, threadinfo ffff880078898000, task ffff88003798ee80)
-[  331.219448] Stack:
-[  331.219455]  ffff880078899c00 ffff880037070388 ffff88007a5e6548 ffff880040a8d000
-[  331.219477]  ffff880078899c30 ffffffffa000fdb4 ffff88007a5e6578 ffff88007a5e6578
-[  331.219497]  ffff88007a5e6548 ffff88007856c188 ffff880078899c70 ffffffffa00c5af0
-[  331.219518] Call Trace:
-[  331.219535]  [<ffffffffa000fdb4>] btusb_disconnect+0x9c/0xc2 [btusb]
-[  331.219566]  [<ffffffffa00c5af0>] usb_unbind_interface+0x5a/0x109 [usbcore]
-[  331.219590]  [<ffffffff812a3818>] __device_release_driver+0x81/0xca
-[  331.219606]  [<ffffffff812a387a>] device_release_driver+0x19/0x26
-[  331.219622]  [<ffffffff812a33e1>] bus_remove_device+0xc2/0xd3
-[  331.219637]  [<ffffffff812a0e96>] device_del+0x12b/0x17a
-[  331.219666]  [<ffffffffa00c477f>] usb_disable_device+0x8a/0x176 [usbcore]
-[  331.219695]  [<ffffffffa00bdac4>] usb_disconnect+0xcd/0x137 [usbcore]
-[  331.219724]  [<ffffffffa00bf1c2>] hub_thread+0x74b/0x113e [usbcore]
-[  331.219745]  [<ffffffff81033ab7>] ? get_parent_ip+0x11/0x41
-[  331.219760]  [<ffffffff8102c835>] ? need_resched+0x1e/0x28
-[  331.219777]  [<ffffffff81057f49>] ? wake_up_bit+0x25/0x25
-[  331.219804]  [<ffffffffa00bea77>] ? usb_new_device+0x1ca/0x1ca [usbcore]
-[  331.219821]  [<ffffffff81057aa9>] kthread+0x7d/0x85
-[  331.219838]  [<ffffffff8136af54>] kernel_thread_helper+0x4/0x10
-[  331.219854]  [<ffffffff81369a44>] ? retint_restore_args+0xe/0xe
-[  331.219870]  [<ffffffff81057a2c>] ? __init_kthread_worker+0x56/0x56
-[  331.219885]  [<ffffffff8136af50>] ? gs_change+0xb/0xb
-[  331.219896] Code: 54 53 48 89 f3 48 83 ec 08 be e3 01 00 00 48 85 db 74 0a 48 85 ff 75 13 be e6 01 00 00 48 c7 c7 9c 25 0d a0 e8 b6 6d f7 e0 eb 65 
-[  331.219983]  8b 83 20 01 00 00 48 85 c0 74 59 48 81 c7 98 00 00 00 48 39 
-[  331.220031] RIP  [<ffffffffa00c5bd1>] usb_driver_release_interface+0x32/0x9f [usbcore]
-[  331.220065]  RSP <ffff880078899be0>
-[  331.240771] ---[ end trace be6a0c945bcc56b9 ]---
-
-This started to happen during the 3.0 development cycle, as far as I can say.
-
-According to GDB, usb_driver_release_interface+0x32 is line 484 in
-drivers/usb/core/driver.c:
-
-void usb_driver_release_interface(struct usb_driver *driver,
-                                        struct usb_interface *iface)
-{
-        struct device *dev = &iface->dev;
-
-        /* this should never happen, don't release something that's not ours */
---->    if (!dev->driver || dev->driver != &driver->drvwrap.driver)
-
-so this looks like a use-after-free to me and since it doesn't occur every
-time, there seems to be a race condition in the USB stack.
-
-I tried to figure it out myself, but apparently it's too tricky to me. :-)
-
-Thanks,
-Rafael
+--mark 
