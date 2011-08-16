@@ -1,16 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v5 2/3] PM / DEVFREQ: add basic governors
-Date: Tue, 16 Aug 2011 17:52:29 +0900
-Message-ID: <CAJ0PZbTh-YZB9kTNw3uAhukU-2fJ2g5KRy8HC+1B00TjoxQn2Q@mail.gmail.com>
-References: <1312794188-9823-1-git-send-email-myungjoo.ham@samsung.com>
-	<1312794188-9823-3-git-send-email-myungjoo.ham@samsung.com>
-	<CAJOA=zMJogYGS9xtcUmU3_a3QmBTy_wz7pf1tk6KUtf4cT1J=A@mail.gmail.com>
-Reply-To: myungjoo.ham@gmail.com
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [PATCH 07/15] PM QoS: add a global notification
+ mechanism for the device constraints
+Date: Tue, 16 Aug 2011 11:58:38 +0200
+Message-ID: <CAORVsuUNxCN7+KZnpJT5Urd07cB+raX6e23ah_9Mp8M07SAyLw__39425.1238358722$1313488882$gmane$org@mail.gmail.com>
+References: <1313075212-8366-1-git-send-email-j-pihet@ti.com>
+	<1313075212-8366-8-git-send-email-j-pihet@ti.com>
+	<201108142350.42260.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJOA=zMJogYGS9xtcUmU3_a3QmBTy_wz7pf1tk6KUtf4cT1J=A@mail.gmail.com>
+In-Reply-To: <201108142350.42260.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,106 +20,114 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Turquette, Mike" <mturquette@ti.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBdWcgMTEsIDIwMTEgYXQgMTA6MzUgQU0sIFR1cnF1ZXR0ZSwgTWlrZSA8bXR1cnF1
-ZXR0ZUB0aS5jb20+IHdyb3RlOgpbXQo+Cj4gUG9sbGluZyBpcyB0aGUgb25seSBwcmFjdGljYWwg
-dXNlIGZvciBkZXZmcmVxLCBhc3N1bWluZyBhIFFvUyBBUEkKPiBleGlzdHMgZm9yIERWRlMuIMKg
-QXMgc3VjaCBwb3dlcnNhdmUgYW5kIHBlcmZvcm1hbmNlIGdvdmVybm9ycyBzaG91bGQKPiBiZSBy
-ZW1vdmVkLgoKQWx0aG91Z2ggcG93ZXJzYXZlL3BlcmZvcm1hbmNlIGdvdmVybm9ycyBtYXkgc2Vl
-bSB1c2VsZXNzLCB0aGV5IGFyZQp1c2VkIGFzIGJhc2lzIG9uIG1lYXN1cmluZyB0aGUgdXNlZnVs
-bmVzcyBvZiBEVkZTIG1lY2hhbmlzbSBvZgpzcGVjaWZpYyBkZXZpY2VzLiBJZiBhIGRldmljZSBp
-cyBnb2luZyB0byB1c2UgRFZGUywgd2UgY2FuIHRlc3QgdGhlCmRldmljZSB3aXRoIHRoZW0gdG8g
-ZmluZCBvdXQgdGhlIHBvdGVudGlhbCBwb3dlciBzYXZlIChjb21wYXJlCnBvd2Vyc2F2ZSB0byBw
-ZXJmb3JtYW5jZSkgYW5kIHRoZSBwZXJmb3JtYW5jZSBkZXRlcmlvcmF0aW9uIChjb21wYXJlZAp0
-byBwZXJmb3JtYW5jZSkuIE9mdGVuLCBpbiB0ZXN0aW5nIHBoYXNlLCBRQSB0ZWFtcyB1c2UgcGVy
-Zm9ybWFuY2UgdG8KZmluZCBvdXQgYW55IGlzc3VlcyB3aXRoIERWRlMgZmVhdHVyZXMgKGluIENQ
-VUZSRVEpLiBVc2VycyBtYXkgc2ltcGx5CndhbnQgdG8gdXNlIHBlcmZvcm1hbmNlIGdvdmVybm9y
-IGluIHNvbWUgY2FzZXMgKHBvd2VyIGlzIG5vdCBhbiBpc3N1ZQpzb21ldGltZXMpLgoKVXNpbmcg
-UW9TIEFQSXMgc2ltcGx5IHRvIHNldCAibWluaW11bSIgb3IgIm1heGltdW0iIGlzIHBvc3NpYmxl
-LgpIb3dldmVyLCB0aGV5IGFyZSBub3QgdGhhdCBzdHJhaWdodGZvcndhcmQ7IGUuZy4sIGhvdyBz
-aG91bGQgd2Ugc2V0CiJETUEgbGF0ZW5jeSIgdG8gYmUgZml4ZWQgYXQgdGhlIG1pbmltdW0gZnJl
-cXVlbmN5IHJlZ2FyZGxlc3Mgb2YKb3RoZXJzLCBvciBob3cgc2hvdWxkIHdlIHNldCAiTmV0d29y
-ayBsYXRlbmN5IiB0byBiZSBmaXhlZCBhdCB0aGUKbWF4aW11bSBmcmVxdWVuY3k/IGVzcGVjaWFs
-bHkgd2l0aG91dCBrbm93aW5nIHRoZSBzcGVjaWZpY2F0aW9ucyBvZgplYWNoIERWRlMtY2FwYWJs
-ZSBkZXZpY2UgKHN1Y2ggYXMgYXZhaWxhYmxlIGZyZXF1ZW5jaWVzLCB2YWxpZCBsYXRlbmN5CnZh
-bHVlcywgLi4uKS4KCj4KPj4gdXNlcnNwYWNlOiB1c2UgdGhlIHVzZXIgc3BlY2lmaWVkIGZyZXF1
-ZW5jeSBzdG9yZWQgYXQKPj4gZGV2ZnJlcS51c2VyX3NldF9mcmVxLiBXaXRoIHN5c2ZzIHN1cHBv
-cnQgaW4gdGhlIGZvbGxvd2luZyBwYXRjaCwgYSB1c2VyCj4+IG1heSBzZXQgdGhlIHZhbHVlIHdp
-dGggdGhlIHN5c2ZzIGludGVyZmFjZS4KPj4KPj4gc2ltcGxlX29uZGVtYW5kOiBzaW1wbGlmaWVk
-IHZlcnNpb24gb2YgQ1BVRlJFUSdzIE9OREVNQU5EIGdvdmVybm9yLgo+Cj4gSSB3b24ndCByZXBl
-YXRlIGV2ZXJ5dGhpbmcgZnJvbSBwYXRjaCAxIG9mIHRoaXMgc2VyaWVzLCBidXQgdGhlCj4gZ292
-ZXJub3JzIHNob3VsZCBpbXBsZW1lbnQgdGhlIHF1ZXVlL2xvb3AgbG9naWMgaW4gdGhlIHNhbWUg
-d2F5IHRoYXQKPiBDUFVmcmVxIGRvZXMsIGFuZCB0aGUgaW5kaXZpZHVhbCBkZXZpY2VzIHNob3Vs
-ZCBoYXZlIHRoZWlyIG93bgo+IGRlbGF5ZWRfd29yay4KCkZpcnN0LCBpbiBjYXNlIHdoZXJlIHdl
-IHdhbnQgdG8gbGV0IGVhY2ggRFZGUy1jYXBhYmxlIGRldmljZSBoYXZlCmV4YWN0IHBvbGxpbmcg
-ZnJlcXVlbmN5ICh1cCB0byBqaWZmeSByZXNvbHV0aW9uKSwgd2Ugb25seSBuZWVkIHRvIHNldApw
-b2xsaW5nX2ludGVydmFsID0gamlmZmllc190b19tc2VjcygxKTsuCgpJbiBjYXNlIG9mIENQVUZS
-RVEsIHRoZXJlIHdvdWxkIGJlIG9ubHkgb25lIHBvbGxpbmcgbG9vcCBhdCBtb3N0IGZvcgplYWNo
-IGNvcmUuIEhvd2V2ZXIsIGluIGNhc2Ugb2YgREVWRlJFUSwgdGhlcmUgY291bGQgYmUgbXVsdGlw
-bGUKcG9sbGluZyBsb29wcyBhdCBhIGNvcmUgaWYgQ1BVRlJFUS1saWtlIGxvb3BpbmcgbG9naWMg
-aXMgaW50cm9kdWNlZC4KV2h5IGRvbid0IHdlIHJlZHVjZSB0aGF0IG92ZXJoZWFkIHdoaWxlIHRo
-ZWlyIGZ1bmN0aW9uIGlzIHNhbWUsIGl0IGlzCmVhc2lseSBkb2FibGUsIGFuZCBpdCByZWR1Y2Vz
-IHJlZHVuZGFuY3k/Cgo+Cj4+IFdoZW4gYSB1c2VyIHVwZGF0ZXMgT1BQIGVudHJpZXMgKGVuYWJs
-ZS9kaXNhYmxlL2FkZCksIE9QUCBmcmFtZXdvcmsKPj4gYXV0b21hdGljYWxseSBub3RpZmllcyBE
-RVZGUkVRIHRvIHVwZGF0ZSBvcGVyYXRpbmcgZnJlcXVlbmN5Cj4+IGFjY29yZGluZ2x5LiBUaHVz
-LCBERVZGUkVRIHVzZXJzIChkZXZpY2UgZHJpdmVycykgZG8gbm90IG5lZWQgdG8gdXBkYXRlCj4K
-PiBJdCB3b3VsZCBiZSBuaWNlIGlmIE9QUCBsaWJyYXJ5ICJub3RpZmllZCIgZGV2ZnJlcSBidXQg
-aXQgZG9lcyBub3QKPiB0b2RheS4gwqBPUFAgbGlicmFyeSBuZWVkcyBub3RpZmllcnMgYW5kIGRl
-dmZyZXEgY2FuIHByb3ZpZGUgaGFuZGxlcnMKPiBmb3IgdGhlbS4KClRoYXQncyB3aHkgZGV2ZnJl
-cV91cGRhdGUoKSBpcyBhZGRlZCBpbiB0aGUgcGF0Y2guIFdoaWxlIERFVkZSRVEgaXMKdGhlIG9u
-bHkgb25lIHJlcXVpcmluZyBub3RpZmljYXRpb25zIGZyb20gT1BQLCBkbyB5b3UgdGhpbmsgd2Ug
-bWF5CmluY3VyIHRoZSBvdmVyaGVhZCBvZiBub3RpZmllciBhdCBPUFAgYnkgcmVwbGFjaW5nIGRl
-dmZyZXFfdXBkYXRlIHdpdGgKbm90aWZpZXI/IElmIHdlIHNvbWVob3cgYWRkIGFub3RoZXIgbW9k
-dWxlIHRoYXQgcmVxdWlyZXMgbm90aWZpY2F0aW9ucwpmcm9tIE9QUCBmb3IgZnJlcXVlbmN5IGF2
-YWlsYWJpbGl0eSBjaGFuZ2VzLCB3ZSB3aWxsIG5lZWQgdG8gaW1wbGVtZW50Cm5vdGlmaWVyIGF0
-IE9QUCBzaWRlLCBidXQgbm90IGp1c3QgeWV0LCBJIGd1ZXNzOiAoZGlzY3Vzc2VkIGJlZm9yZSBh
-dApodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL3BpcGVybWFpbC9saW51eC1wbS8y
-MDExLUp1bHkvMDMyMDUzLmh0bWwKKQoKPgpbXQo+PiAtLS0KPj4gwqBkcml2ZXJzL2Jhc2UvcG93
-ZXIvZGV2ZnJlcS5jIHwgwqAxMDAgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrCj4+IMKgaW5jbHVkZS9saW51eC9kZXZmcmVxLmggwqAgwqAgwqB8IMKgIMKgOCArKysK
-Pj4gwqAyIGZpbGVzIGNoYW5nZWQsIDEwOCBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQo+
-Cj4gR292ZXJub3JzIHNob3VsZCBiZSBzcGxpdCBvdXQgaW50byB0aGVpciBvd24gZmlsZSwgZXNw
-ZWNpYWxseSBzaW5jZQo+IHRoZXkgbmVlZCB0byBncm93IHRvIGluY2x1ZGUgcG9sbGluZy9xdWV1
-ZWluZyBsb2dpYy4KCldlIHdpbGwgbmVlZCB0byBkZWNpZGUgd2hlcmUgdG8gc2V0dGxlIGRldmZy
-ZXEgY29yZSwgZHJpdmVycywgYW5kCmdvdmVybm9ycyBmaXJzdC4gV291bGQgL2RyaXZlcnMvZGV2
-ZnJlcS8gYmUgYXBwcm9wcmlhdGU/CgpbXQo+PiArCj4+ICsgwqAgwqAgwqAgLyogU2V0IE1BWCBp
-ZiBpdCdzIGJ1c3kgZW5vdWdoICovCj4+ICsgwqAgwqAgwqAgaWYgKHN0YXQuYnVzeV90aW1lICog
-MTAwID4KPj4gKyDCoCDCoCDCoCDCoCDCoCBzdGF0LnRvdGFsX3RpbWUgKiBERlNPX1VQVEhSRVNI
-T0xEKSB7Cj4KPiBUaHJlc2hvbGRzIHNob3VsZCBub3QgYmUgY29uc3RhbnRzLCBidXQgc2hvdWxk
-IGJlIHR1bmVhYmxlIHBhcmFtZXRlcnMsCj4gcGVyLWRldmljZS4gwqBUaGlzIGlzIHlldCBhbm90
-aGVyIHJlYXNvbiBmb3IgcmV2aXNpbmcgdGhlIGV4aXN0aW5nCj4gcmVsYXRpb25zaGlwIGJldHdl
-ZW4gZGV2ZnJlcSBjb3JlIGNvZGUsIGdvdmVybm9ycyBhbmQgZGV2aWNlcy4KPgoKSSBhZ3JlZS4g
-SSB0aGluayBJIHNob3VsZCBhZGQgZ292ZXJub3Igc3BlY2lmaWMgInNldHVwIiB2YWx1ZSBhdApk
-ZXZmcmVxX2FkZF9kZXZpY2UoKTsgbW9kaWZ5aW5nIHRoZSBpbnRlcmZhY2UgZnJvbQoKZXh0ZXJu
-IGludCBkZXZmcmVxX2FkZF9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QKZGV2ZnJl
-cV9kZXZfcHJvZmlsZSAqcHJvZmlsZSwgc3RydWN0IGRldmZyZXFfZ292ZXJub3IgKmdvdmVybm9y
-KTsKPT0+CmV4dGVybiBpbnQgZGV2ZnJlcV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldiwg
-c3RydWN0CmRldmZyZXFfZGV2X3Byb2ZpbGUgKnByb2ZpbGUsIHN0cnVjdCBkZXZmcmVxX2dvdmVy
-bm9yICpnb3Zlcm5vciwgdm9pZAoqZ292X2RhdGEpOwoKd2hlcmUgZ292X2RhdGEgaXMgZmVkIHRv
-IHN0cnVjdCBkZXZmcmVxJ3MgZGF0YSBmaWVsZC4KCgo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-ICpmcmVxID0gVUlOVF9NQVg7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcmV0dXJuIDA7Cj4+
-ICsgwqAgwqAgwqAgfQo+PiArCj4+ICsgwqAgwqAgwqAgLyogU2V0IE1BWCBpZiB3ZSBkbyBub3Qg
-a25vdyB0aGUgaW5pdGlhbCBmcmVxdWVuY3kgKi8KPj4gKyDCoCDCoCDCoCBpZiAoc3RhdC5jdXJy
-ZW50X2ZyZXF1ZW5jeSA9PSAwKSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgKmZyZXEgPSBV
-SU5UX01BWDsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gMDsKPj4gKyDCoCDCoCDC
-oCB9Cj4+ICsKPj4gKyDCoCDCoCDCoCAvKiBLZWVwIHRoZSBjdXJyZW50IGZyZXF1ZW5jeSAqLwo+
-PiArIMKgIMKgIMKgIGlmIChzdGF0LmJ1c3lfdGltZSAqIDEwMCA+Cj4+ICsgwqAgwqAgwqAgwqAg
-wqAgc3RhdC50b3RhbF90aW1lICogKERGU09fVVBUSFJFU0hPTEQgLSBERlNPX0RPV05ESUZGRVJF
-TkNUSUFMKSkgewo+Cj4gU2FtZSBhcyBhYm92ZS4KWWVzLgoKPgo+PiArIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgICpmcmVxID0gc3RhdC5jdXJyZW50X2ZyZXF1ZW5jeTsKPj4gKyDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCByZXR1cm4gMDsKPj4gKyDCoCDCoCDCoCB9Cj4+ICsKPj4gKyDCoCDCoCDCoCAvKiBT
-ZXQgdGhlIGRlc2lyZWQgZnJlcXVlbmN5IGJhc2VkIG9uIHRoZSBsb2FkICovCj4+ICsgwqAgwqAg
-wqAgYSA9IHN0YXQuYnVzeV90aW1lOwo+PiArIMKgIMKgIMKgIGEgKj0gc3RhdC5jdXJyZW50X2Zy
-ZXF1ZW5jeTsKPj4gKyDCoCDCoCDCoCBiID0gZGl2X3U2NChhLCBzdGF0LnRvdGFsX3RpbWUpOwo+
-PiArIMKgIMKgIMKgIGIgKj0gMTAwOwo+PiArIMKgIMKgIMKgIGIgPSBkaXZfdTY0KGIsIChERlNP
-X1VQVEhSRVNIT0xEIC0gREZTT19ET1dORElGRkVSRU5DVElBTCAvIDIpKTsKPgo+IFNhbWUgYXMg
-YWJvdmUuClllcy4KCj4KPiBSZWdhcmRzLAo+IE1pa2UKPgoKCkNoZWVycyEKTXl1bmdKb28KCi0t
-IApNeXVuZ0pvbyBIYW0gKO2VqOuqheyjvCksIFBoLkQuCk1vYmlsZSBTb2Z0d2FyZSBQbGF0Zm9y
-bSBMYWIsCkRpZ2l0YWwgTWVkaWEgYW5kIENvbW11bmljYXRpb25zIChETUMpIEJ1c2luZXNzClNh
-bXN1bmcgRWxlY3Ryb25pY3MKY2VsbDogODItMTAtNjcxNC0yODU4Cl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51
-eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5k
-YXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+Hi Rafael,
+
+2011/8/14 Rafael J. Wysocki <rjw@sisk.pl>:
+> Hi,
+>
+> There is some code duplication in this patch that should better be
+> avoided (details below).
+>
+> On Thursday, August 11, 2011, jean.pihet@newoldbits.com wrote:
+>> From: Jean Pihet <j-pihet@ti.com>
+>>
+>> Add a global notification chain that gets called upon changes to the
+>> aggregated constraint value for any device.
+>> The notification callbacks are passing the full constraint request data
+>> in order for the callees to have access to it. The current use is for the
+>> platform low-level code to access the target device of the constraint.
+>>
+...
+
+>
+> The following code:
+>
+>> + =A0 =A0 /*
+>> + =A0 =A0 =A0* Update constraints list and call the per-device callbacks=
+ if needed
+>> + =A0 =A0 =A0*/
+>> + =A0 =A0 ret =3D pm_qos_update_target(dev->power.constraints,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0&req->n=
+ode, PM_QOS_ADD_REQ, value);
+>> +
+>> + =A0 =A0 if (ret) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 /* Call the global callbacks if needed */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 curr_value =3D pm_qos_read_value(req->dev->pow=
+er.constraints);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 blocking_notifier_call_chain(&dev_pm_notifiers,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0(unsigned long)curr_value,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0req);
+>> + =A0 =A0 }
+>
+> is used in dev_pm_qos_update_request() and dev_pm_qos_remove_request()
+> with the only difference being the command given to pm_qos_update_target(=
+).
+> This asks for a common function, eg. dev_pm_qos_update_target(), containi=
+ng
+> that code that will be called by all of them (and, apparently, by
+> dev_pm_qos_constraints_destroy()).
+Ok that makes the code cleaner.
+
+>
+> ...
+>> @@ -250,9 +329,18 @@ void dev_pm_qos_constraints_destroy(struct device *=
+dev)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* Update constraints list=
+ and call the per-device
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* callbacks if needed
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pm_qos_update_target(req->dev-=
+>power.constraints,
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0&req->node, PM_QOS_REMOVE_REQ,
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0PM_QOS_DEFAULT_VALUE);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret |=3D pm_qos_update_target(=
+req->dev->power.constraints,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 &req->node,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 PM_QOS_REMOVE_REQ,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 PM_QOS_DEFAULT_VALUE);
+>
+> I'm not sure why you're using the binary or operator here. =A0Shouldn't t=
+hat be
+> a simple assignment?
+>
+>> +
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (ret) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Call the global callbacks i=
+f needed */
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 curr_value =3D dev->power.cons=
+traints->default_value;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 blocking_notifier_call_chain(&=
+dev_pm_notifiers,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0(unsigned long)curr_value,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0req);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 }
+In the sake of optimization I had a single return value that
+aggregates the return values of the calls target_value and calls the
+global notifier callbacks _only once_.
+
+As you suggested it is better to use the common update code, which
+makes the code cleaner but also removes this optimization.
+
+>>
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(dev->power.constraints->notifiers);
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(dev->power.constraints);
+>
+> Thanks,
+> Rafael
+>
+
+Regards,
+Jean
