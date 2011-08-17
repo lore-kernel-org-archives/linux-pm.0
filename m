@@ -1,20 +1,17 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v4 1/2] Input: enable i8042-level wakeup
-	control
-Date: Wed, 17 Aug 2011 00:03:51 -0700
-Message-ID: <20110817070351.GE29361__49735.4206898764$1313565110$gmane$org@core.coreip.homeip.net>
-References: <20110802154916.624619D401C@zog.reactivated.net>
-	<20110803065920.GC23399@core.coreip.homeip.net>
-	<CAMLZHHTTXvThE5bWfyjJu-UFJbaKAhzORKWV8ay4RZW-ZVifLg@mail.gmail.com>
-	<20110803184332.GA17880@core.coreip.homeip.net>
-	<CAMLZHHTnTTbD7mn_QsjwyFZ=XU6paddrtXEVuLYossk9qBGFfw@mail.gmail.com>
-	<CAMLZHHTie_u40NZ40o+LCwffk=3LbY96YTwxQt5wcVtbTc53qg@mail.gmail.com>
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Re: [PATCH v5 2/3] PM / DEVFREQ: add basic governors
+Date: Wed, 17 Aug 2011 16:32:17 +0900
+Message-ID: <CAJ0PZbS38-=CD=whkUxt5++sDLhXxE35m-v-PKRkg7J6vQR4xg@mail.gmail.com>
+References: <1312794188-9823-1-git-send-email-myungjoo.ham@samsung.com>
+	<1312794188-9823-3-git-send-email-myungjoo.ham@samsung.com>
+	<CAJOA=zMJogYGS9xtcUmU3_a3QmBTy_wz7pf1tk6KUtf4cT1J=A@mail.gmail.com>
+	<CAJ0PZbTh-YZB9kTNw3uAhukU-2fJ2g5KRy8HC+1B00TjoxQn2Q@mail.gmail.com>
+	<CAJOA=zMesvkapbU8LLFBw_=abtpp2CB1HSn4scwB4O06L-1Pjg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <CAMLZHHTie_u40NZ40o+LCwffk=3LbY96YTwxQt5wcVtbTc53qg@mail.gmail.com>
+In-Reply-To: <CAJOA=zMesvkapbU8LLFBw_=abtpp2CB1HSn4scwB4O06L-1Pjg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,74 +21,128 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Drake <dsd@laptop.org>
-Cc: linux-pm@lists.linux-foundation.org, dilinger@queued.net, linux-input@vger.kernel.org
+To: "Turquette, Mike" <mturquette@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
-
-On Thu, Aug 11, 2011 at 07:02:17PM +0100, Daniel Drake wrote:
-> Hi Dmitry,
-> 
-> On Fri, Aug 5, 2011 at 4:24 PM, Daniel Drake <dsd@laptop.org> wrote:
-> > I've started looking at this, but my first problem is that when the
-> > input layer asks atkbd to turn off LEDs, atkbd schedules a workqueue
-> > item to undertake this work. However, as there is no synchronization,
-> > this work only seems to get executed during or after system resume.
-> > This makes it hard to catch with such a scheme. Any ideas?
-> 
-> I've looked closer, and am keeping my eyes open for other options too.
-> 
-> During suspend of the input layer, input_dev_suspend() calls
-> input_dev_toggle(dev, false) which turns off LEDs and sounds.
-> 
-> On the XO laptops, we don't have LEDs, nor sounds, and we don't have
-> num lock, scroll lock or caps lock keys. So the suspend code does
-> nothing - there are no lights to turn off. So far so good.
-> 
-> Moving to the resume case: input_dev_resume() calls
-> input_reset_device(). This calls input_dev_toggle(dev, true), which
-> asks atkbd to turn the non-existent keyboard LEDs off. I guess this is
-> harmless and is unlikely to be the cause of the problems which led us
-> to need to disable this code in light of the following:
-> 
-> After calling input_dev_toggle(), input_dev_resume() does this:
-> 
-> 		/*
-> 		 * Keys that have been pressed at suspend time are unlikely
-> 		 * to be still pressed when we resume.
-> 		 */
-> 		spin_lock_irq(&dev->event_lock);
-> 		input_dev_release_keys(dev);
-> 		spin_unlock_irq(&dev->event_lock);
-> 
-> We definitely don't want this to happen in our case, where we have
-> maintained full control and power of the device during suspend/resume.
-> 
-> This particular important code snippet would not even have been
-> disabled by your suggestion of blocking data transfer at the
-> i8042-level.
-> 
-> So, I think we need a new approach at solving this, and I think it has
-> to be one that interacts at the input_dev layer.
-
-OK, so we have the following scenario:
-
-- we do not need to worry about SND and LED on OLPC;
-
-- we do not need to worry about releasing the key that was pressed
-  when we went to sleep because they system would not go to sleep while
-  there is a key pressed. So the code in input_dev_resume() won't
-  actually release any keys unless a key was held pressed and we forced
-  system to sleep somehow.
-
-- we need to make sure we do not loose key press (and following events)
-  when we are waking up.
-
-Can atkbd driver stash away serio byte data (when not in command mode)
-and replay it when pm notifier signals us that resume process is done?
-
-Thanks.
-
--- 
-Dmitry
+T24gV2VkLCBBdWcgMTcsIDIwMTEgYXQgMzoxMSBBTSwgVHVycXVldHRlLCBNaWtlIDxtdHVycXVl
+dHRlQHRpLmNvbT4gd3JvdGU6Cj4gT24gVHVlLCBBdWcgMTYsIDIwMTEgYXQgMTo1MiBBTSwgTXl1
+bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+IHdyb3RlOgo+Pgo+PiBGaXJzdCwg
+aW4gY2FzZSB3aGVyZSB3ZSB3YW50IHRvIGxldCBlYWNoIERWRlMtY2FwYWJsZSBkZXZpY2UgaGF2
+ZQo+PiBleGFjdCBwb2xsaW5nIGZyZXF1ZW5jeSAodXAgdG8gamlmZnkgcmVzb2x1dGlvbiksIHdl
+IG9ubHkgbmVlZCB0byBzZXQKPj4gcG9sbGluZ19pbnRlcnZhbCA9IGppZmZpZXNfdG9fbXNlY3Mo
+MSk7Lgo+Cj4gVGhhdCByZXF1aXJlcyBhIHNvdXJjZSBjb2RlIGNoYW5nZSBmb3IgYW55b25lIHRo
+YXQgd2FudHMgdG8gZG8gaXQuIMKgTXkKPiBtYWluIGNvbXBsYWludCB3aXRoIHRoaXMgbWV0aG9k
+IGlzIHRoYXQgaXQgaXMgcmVzdHJpY3RpdmUgdG8gYmVnaW4KPiB3aXRoIGFuZCB0aGUgd2hvbGUg
+bWV0aG9kIGZvciBkZXRlcm1pbmluZyB0aGUgbmV4dF9wb2xsaW5nIHRpbWUKPiByZXByb2R1Y2Vz
+IHdoYXQgd29ya3F1ZXVlcyBhbHJlYWR5IGdpdmUgdXMuCj4KPj4gSW4gY2FzZSBvZiBDUFVGUkVR
+LCB0aGVyZSB3b3VsZCBiZSBvbmx5IG9uZSBwb2xsaW5nIGxvb3AgYXQgbW9zdCBmb3IKPj4gZWFj
+aCBjb3JlLiBIb3dldmVyLCBpbiBjYXNlIG9mIERFVkZSRVEsIHRoZXJlIGNvdWxkIGJlIG11bHRp
+cGxlCj4+IHBvbGxpbmcgbG9vcHMgYXQgYSBjb3JlIGlmIENQVUZSRVEtbGlrZSBsb29waW5nIGxv
+Z2ljIGlzIGludHJvZHVjZWQuCj4+IFdoeSBkb24ndCB3ZSByZWR1Y2UgdGhhdCBvdmVyaGVhZCB3
+aGlsZSB0aGVpciBmdW5jdGlvbiBpcyBzYW1lLCBpdCBpcwo+PiBlYXNpbHkgZG9hYmxlLCBhbmQg
+aXQgcmVkdWNlcyByZWR1bmRhbmN5Pwo+Cj4gSSdtIGFmcmFpZCBJIGRvbid0IGZvbGxvdy4gwqBJ
+IHdhcyB0aGlua2luZyBvZiBoYXZpbmcgYSBzaW5nbGUgd3EgbG9vcAo+IGZvciBlYWNoIGRldmlj
+ZS4gwqBVbmRlciB3aGF0IGNvbmRpdGlvbnMgd291bGQgYSBzaW5nbGUgZGV2aWNlIGhhdmUKPiBt
+dWx0aXBsZSB3cSBsb29wcyBvcGVyYXRpbmcgYWdhaW5zdCBpdD8KCkkgbWVhbnQgYSBzaW5nbGUg
+d3EgbG9vcCBmb3IgZWFjaCBkZXZpY2UgYW5kIG11bHRpcGxlIERFVkZSRVEgZGV2aWNlcwpmb3Ig
+YSBzeXN0ZW0uCgpJIGFnZ3JlZ2F0ZWQgbXVsdGlwbGUgaW5zdGFuY2VzIG9mIERFVkZSRVEgcG9s
+bGluZyBpbnRvIG9uZSBwb2xsaW5nIGxvb3AgYmVjYXVzZQoxLiByZW1vdmUgcmVkdW5kYW50IHBv
+bGxpbmcgbG9vcHMsCjIuIHNpbXBsaWZ5IGdvdmVybm9ycyBpbXBsZW1lbnRhdGlvbjsgSSdtIHBy
+ZXN1bWluZyB0aGF0IHNvbWUgZGV2aWNlcwooZXNwZWNpYWxseSBHUFVzIGFuZCBNTUMgaG9zdHMp
+IG1pZ2h0IHdhbnQgdGhlaXIgb3duIGN1c3RvbSBnb3Zlcm5vcnMKYWx0aG91Z2ggdGhlIGdvdmVy
+bm9ycyB3b24ndCBiZSBjb21wbGV4LCBhbmQKMy4gcmVkdWNlIG92ZXJoZWFkLgoKSSBkb24ndCBz
+ZWUgYW55IGJlbmVmaXQgb2YgbG9vcGluZyBhdCBlYWNoIERFVkZSRVEgZGV2aWNlLCB5ZXQuCgpU
+aGUgY2FzZSBvZiBDUFVGUkVRIGlzIGEgYml0IGRpZmZlcmVudCBiZWNhdXNlIGVhY2ggQ1BVRlJF
+USBkZXZpY2UKKENQVSkgaXMgY2FwYWJsZSBvZiBsb29waW5nIGl0c2VsZiBhbmQgZWFjaCBsb29w
+aW5nIHNob3VsZCByZXByZXNlbnQKb25lIENQVS4gRWFjaCBsb29waW5nIGRldmljZSAoQ1BVKSB3
+aWxsIGhhdmUgb25seSB1cCB0byBvbmUgQ1BVRlJFUQpwb2xsaW5nIGxvb3AgYW5kIGVhY2ggaW5z
+dGFuY2Ugb2YgQ1BVRlJFUSBzaG91bGQgYmUgZXhlY3V0ZWQgb24gdGhlCmNvcnJlc3BvbmRpbmcg
+Q1BVIGluIG9yZGVyIHRvIGF2b2lkIGJlaW5nIHNsZXB0IHdoaWxlIHRoZSByZXByZXNlbnRlZApD
+UFUgaXMgcnVubmluZy4KCj4KPj4+PiBXaGVuIGEgdXNlciB1cGRhdGVzIE9QUCBlbnRyaWVzIChl
+bmFibGUvZGlzYWJsZS9hZGQpLCBPUFAgZnJhbWV3b3JrCj4+Pj4gYXV0b21hdGljYWxseSBub3Rp
+ZmllcyBERVZGUkVRIHRvIHVwZGF0ZSBvcGVyYXRpbmcgZnJlcXVlbmN5Cj4+Pj4gYWNjb3JkaW5n
+bHkuIFRodXMsIERFVkZSRVEgdXNlcnMgKGRldmljZSBkcml2ZXJzKSBkbyBub3QgbmVlZCB0byB1
+cGRhdGUKPj4+Cj4+PiBJdCB3b3VsZCBiZSBuaWNlIGlmIE9QUCBsaWJyYXJ5ICJub3RpZmllZCIg
+ZGV2ZnJlcSBidXQgaXQgZG9lcyBub3QKPj4+IHRvZGF5LiDCoE9QUCBsaWJyYXJ5IG5lZWRzIG5v
+dGlmaWVycyBhbmQgZGV2ZnJlcSBjYW4gcHJvdmlkZSBoYW5kbGVycwo+Pj4gZm9yIHRoZW0uCj4+
+Cj4+IFRoYXQncyB3aHkgZGV2ZnJlcV91cGRhdGUoKSBpcyBhZGRlZCBpbiB0aGUgcGF0Y2guIFdo
+aWxlIERFVkZSRVEgaXMKPj4gdGhlIG9ubHkgb25lIHJlcXVpcmluZyBub3RpZmljYXRpb25zIGZy
+b20gT1BQLCBkbyB5b3UgdGhpbmsgd2UgbWF5Cj4+IGluY3VyIHRoZSBvdmVyaGVhZCBvZiBub3Rp
+ZmllciBhdCBPUFAgYnkgcmVwbGFjaW5nIGRldmZyZXFfdXBkYXRlIHdpdGgKPj4gbm90aWZpZXI/
+IElmIHdlIHNvbWVob3cgYWRkIGFub3RoZXIgbW9kdWxlIHRoYXQgcmVxdWlyZXMgbm90aWZpY2F0
+aW9ucwo+PiBmcm9tIE9QUCBmb3IgZnJlcXVlbmN5IGF2YWlsYWJpbGl0eSBjaGFuZ2VzLCB3ZSB3
+aWxsIG5lZWQgdG8gaW1wbGVtZW50Cj4+IG5vdGlmaWVyIGF0IE9QUCBzaWRlLCBidXQgbm90IGp1
+c3QgeWV0LCBJIGd1ZXNzOiAoZGlzY3Vzc2VkIGJlZm9yZSBhdAo+PiBodHRwczovL2xpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnL3BpcGVybWFpbC9saW51eC1wbS8yMDExLUp1bHkvMDMyMDUzLmh0
+bWwKPj4gKQo+Cj4gUmVhZGluZyB0aGF0IHRocmVhZCBtYWtlcyBtZSB0aGluayB0aGF0IHdlIHJl
+YWxseSBzaG91bGQgaW1wbGVtZW50Cj4gbm90aWZpZXJzIGluIHRoZSBPUFAgbGlicmFyeS4gwqBB
+biBvYnZpb3VzIHVzZXIgb2YgT1BQIG5vdGlmaWVycyB3b3VsZAo+IGJlIENQVWZyZXEuIMKgSSB0
+aGluayBpdCBpcyBzYWZlIHRvIHNheSB0aGF0IHRoZXJlIG1heSBiZQo+IGltcGxlbWVudGF0aW9u
+cyBvZiBkZXZmcmVxIGFuZCBDUFVmcmVxIHRoYXQgbGl2ZSBzaWRlLWJ5LXNpZGUgaW4gdGhlCj4g
+bmVhciBmdXR1cmU7IE9QUHMgbWlnaHQgYmUgZW5hYmxlZC9kaXNhYmxlZCBkeW5hbWljYWxseSwg
+d2hpY2ggbWVhbnMKPiBib3RoIG9mIHRoZW0gbmVlZCBjYWxsYmFja3MuIMKgQmV0dGVyIHRvIGFi
+c3RyYWN0IGl0IG91dCBlYXJseSwgSQo+IHRoaW5rLgoKT2ssIGFzc3VtaW5nIHRoYXQgdGhlcmUg
+d291bGQgYmUgYW5vdGhlciByZXF1ZXN0aW5nIG5vdGlmaWNhdGlvbnMgZnJvbQpPUFAsIEkndmUg
+YWRkZWQgIm9wcF9nZXRfbm90aWZpZXIoKSIgdGhhdCByZXR1cm5zIHN0cnVjdApzcmN1X25vdGlm
+aWVyX2hlYWQgKiByZW1vdmluZyBkZXZmcmVxX3VwZGF0ZSgpIGF0IHBhdGNoc2V0IHY2CmNhbmRp
+ZGF0ZS4KCj4KPj4+Cj4+IFtdCj4+Pj4gLS0tCj4+Pj4gwqBkcml2ZXJzL2Jhc2UvcG93ZXIvZGV2
+ZnJlcS5jIHwgwqAxMDAgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+Cj4+Pj4gwqBpbmNsdWRlL2xpbnV4L2RldmZyZXEuaCDCoCDCoCDCoHwgwqAgwqA4ICsrKwo+Pj4+
+IMKgMiBmaWxlcyBjaGFuZ2VkLCAxMDggaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKPj4+
+Cj4+PiBHb3Zlcm5vcnMgc2hvdWxkIGJlIHNwbGl0IG91dCBpbnRvIHRoZWlyIG93biBmaWxlLCBl
+c3BlY2lhbGx5IHNpbmNlCj4+PiB0aGV5IG5lZWQgdG8gZ3JvdyB0byBpbmNsdWRlIHBvbGxpbmcv
+cXVldWVpbmcgbG9naWMuCj4+Cj4+IFdlIHdpbGwgbmVlZCB0byBkZWNpZGUgd2hlcmUgdG8gc2V0
+dGxlIGRldmZyZXEgY29yZSwgZHJpdmVycywgYW5kCj4+IGdvdmVybm9ycyBmaXJzdC4gV291bGQg
+L2RyaXZlcnMvZGV2ZnJlcS8gYmUgYXBwcm9wcmlhdGU/Cj4KPiBJIHRoaW5rIEdLSCBhbHJlYWR5
+IEFDSydkIGRyaXZlcnMvZGV2ZnJlcSBpbiBhIHByZXZpb3VzIHRocmVhZDoKPiBodHRwczovL2xp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL3BpcGVybWFpbC9saW51eC1wbS8yMDExLUF1Z3VzdC8w
+MzI1MzcuaHRtbAoKWXVwLiBJJ20gbW92aW5nIHRoZW0gdG8gL2RyaXZlcnMvZGV2ZnJlcS8KCj4K
+Pj4gW10KPj4+PiArCj4+Pj4gKyDCoCDCoCDCoCAvKiBTZXQgTUFYIGlmIGl0J3MgYnVzeSBlbm91
+Z2ggKi8KPj4+PiArIMKgIMKgIMKgIGlmIChzdGF0LmJ1c3lfdGltZSAqIDEwMCA+Cj4+Pj4gKyDC
+oCDCoCDCoCDCoCDCoCBzdGF0LnRvdGFsX3RpbWUgKiBERlNPX1VQVEhSRVNIT0xEKSB7Cj4+Pgo+
+Pj4gVGhyZXNob2xkcyBzaG91bGQgbm90IGJlIGNvbnN0YW50cywgYnV0IHNob3VsZCBiZSB0dW5l
+YWJsZSBwYXJhbWV0ZXJzLAo+Pj4gcGVyLWRldmljZS4gwqBUaGlzIGlzIHlldCBhbm90aGVyIHJl
+YXNvbiBmb3IgcmV2aXNpbmcgdGhlIGV4aXN0aW5nCj4+PiByZWxhdGlvbnNoaXAgYmV0d2VlbiBk
+ZXZmcmVxIGNvcmUgY29kZSwgZ292ZXJub3JzIGFuZCBkZXZpY2VzLgo+Pj4KPj4KPj4gSSBhZ3Jl
+ZS4gSSB0aGluayBJIHNob3VsZCBhZGQgZ292ZXJub3Igc3BlY2lmaWMgInNldHVwIiB2YWx1ZSBh
+dAo+PiBkZXZmcmVxX2FkZF9kZXZpY2UoKTsgbW9kaWZ5aW5nIHRoZSBpbnRlcmZhY2UgZnJvbQo+
+Pgo+PiBleHRlcm4gaW50IGRldmZyZXFfYWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0
+cnVjdAo+PiBkZXZmcmVxX2Rldl9wcm9maWxlICpwcm9maWxlLCBzdHJ1Y3QgZGV2ZnJlcV9nb3Zl
+cm5vciAqZ292ZXJub3IpOwo+PiA9PT4KPj4gZXh0ZXJuIGludCBkZXZmcmVxX2FkZF9kZXZpY2Uo
+c3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QKPj4gZGV2ZnJlcV9kZXZfcHJvZmlsZSAqcHJvZmls
+ZSwgc3RydWN0IGRldmZyZXFfZ292ZXJub3IgKmdvdmVybm9yLCB2b2lkCj4+ICpnb3ZfZGF0YSk7
+Cj4+Cj4+IHdoZXJlIGdvdl9kYXRhIGlzIGZlZCB0byBzdHJ1Y3QgZGV2ZnJlcSdzIGRhdGEgZmll
+bGQuCj4KPiBJdCB3b3VsZCBiZSBuaWNlIGZvciB0aGUgdGhyZXNob2xkIHZhbHVlcyB0byBiZSBy
+dW4tdGltZSB0dW5hYmxlIHZpYQo+IHN5c2ZzLiDCoENQVWZyZXEgZG9lcyB0aGlzIHdlbGwgdG9k
+YXkgZm9yIG9uZGVtYW5kL2NvbnNlcnZhdGl2ZQo+IGdvdmVybm9ycyBhbmQgaXQgcmVhbGx5IGhl
+bHBzIHdoZW4gZG9pbmcgcG93ZXIvcGVyZm9ybWFuY2UgdHVuaW5nLgo+Cj4gUmVnYXJkcywKPiBN
+aWtlCj4KClRoaXMgd2lsbCBiZSBkb25lIHdpdGggdGhlIG5leHQgcmV2aXNpb24uCgpUaGFuayB5
+b3UuCgpNeXVuZ0pvbwoKPj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgICpmcmVxID0gVUlOVF9N
+QVg7Cj4+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gMDsKPj4+PiArIMKgIMKgIMKg
+IH0KPj4+PiArCj4+Pj4gKyDCoCDCoCDCoCAvKiBTZXQgTUFYIGlmIHdlIGRvIG5vdCBrbm93IHRo
+ZSBpbml0aWFsIGZyZXF1ZW5jeSAqLwo+Pj4+ICsgwqAgwqAgwqAgaWYgKHN0YXQuY3VycmVudF9m
+cmVxdWVuY3kgPT0gMCkgewo+Pj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgKmZyZXEgPSBVSU5U
+X01BWDsKPj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHJldHVybiAwOwo+Pj4+ICsgwqAgwqAg
+wqAgfQo+Pj4+ICsKPj4+PiArIMKgIMKgIMKgIC8qIEtlZXAgdGhlIGN1cnJlbnQgZnJlcXVlbmN5
+ICovCj4+Pj4gKyDCoCDCoCDCoCBpZiAoc3RhdC5idXN5X3RpbWUgKiAxMDAgPgo+Pj4+ICsgwqAg
+wqAgwqAgwqAgwqAgc3RhdC50b3RhbF90aW1lICogKERGU09fVVBUSFJFU0hPTEQgLSBERlNPX0RP
+V05ESUZGRVJFTkNUSUFMKSkgewo+Pj4KPj4+IFNhbWUgYXMgYWJvdmUuCj4+IFllcy4KPj4KPj4+
+Cj4+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCAqZnJlcSA9IHN0YXQuY3VycmVudF9mcmVxdWVu
+Y3k7Cj4+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gMDsKPj4+PiArIMKgIMKgIMKg
+IH0KPj4+PiArCj4+Pj4gKyDCoCDCoCDCoCAvKiBTZXQgdGhlIGRlc2lyZWQgZnJlcXVlbmN5IGJh
+c2VkIG9uIHRoZSBsb2FkICovCj4+Pj4gKyDCoCDCoCDCoCBhID0gc3RhdC5idXN5X3RpbWU7Cj4+
+Pj4gKyDCoCDCoCDCoCBhICo9IHN0YXQuY3VycmVudF9mcmVxdWVuY3k7Cj4+Pj4gKyDCoCDCoCDC
+oCBiID0gZGl2X3U2NChhLCBzdGF0LnRvdGFsX3RpbWUpOwo+Pj4+ICsgwqAgwqAgwqAgYiAqPSAx
+MDA7Cj4+Pj4gKyDCoCDCoCDCoCBiID0gZGl2X3U2NChiLCAoREZTT19VUFRIUkVTSE9MRCAtIERG
+U09fRE9XTkRJRkZFUkVOQ1RJQUwgLyAyKSk7Cj4+Pgo+Pj4gU2FtZSBhcyBhYm92ZS4KPj4gWWVz
+Lgo+Pgo+Pj4KPj4+IFJlZ2FyZHMsCj4+PiBNaWtlCj4+Pgo+Pgo+Pgo+PiBDaGVlcnMhCj4+IE15
+dW5nSm9vCj4+Cj4+IC0tCj4+IE15dW5nSm9vIEhhbSAo7ZWo66qF7KO8KSwgUGguRC4KPj4gTW9i
+aWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwKPj4gRGlnaXRhbCBNZWRpYSBhbmQgQ29tbXVuaWNh
+dGlvbnMgKERNQykgQnVzaW5lc3MKPj4gU2Ftc3VuZyBFbGVjdHJvbmljcwo+PiBjZWxsOiA4Mi0x
+MC02NzE0LTI4NTgKPj4KPgoKCgotLSAKTXl1bmdKb28gSGFtLCBQaC5ELgpNb2JpbGUgU29mdHdh
+cmUgUGxhdGZvcm0gTGFiLApEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBC
+dXNpbmVzcwpTYW1zdW5nIEVsZWN0cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQtMjg1OApfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5n
+IGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
