@@ -1,23 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: [PATCH v4 0/3] DEVFREQ,
-	DVFS framework for non-CPU devices
-Date: Wed, 17 Aug 2011 19:07:37 +0900
-Message-ID: <CAJ0PZbSJoxNPn=E0y=52+y9uW+y1S7bZXc4vsBUm1QR2RQEPvg@mail.gmail.com>
-References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
-	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
-	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
-	<87aabq5oqo.fsf@ti.com>
-	<CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
-	<CAJOA=zMNToQq=RVrRh2p+kko=n67BWwHjcWX3DGFuYCfAcksOQ@mail.gmail.com>
-	<CAJ0PZbQx-T+36eX7MiZqWSMxD-achZ9Z7G_kDWNQ2n0h1NTWSQ@mail.gmail.com>
-	<CAJOA=zOi9HzM7M72C+QS6iLcYD_xDeQkEZ3fYpVo_v4f4mfAyQ@mail.gmail.com>
-	<CAJ0PZbQNOybrwu=Vxbjgbh-U1YA1Gve=jzpt3wwqA8kgEEPcXA@mail.gmail.com>
-	<CAJOA=zNRidM+y6FokWH9xorinQMWKHTyCGXoTNYCpLOfNPsYNA@mail.gmail.com>
+From: "Carlos R. Mafra" <crmafra@gmail.com>
+Subject: Re: 3.0-rc2 failed s2ram: Freezing of tasks failed after
+ 20.00 seconds
+Date: Wed, 17 Aug 2011 15:47:05 +0200
+Message-ID: <20110817134705.GA3160__37281.4911454499$1313594384$gmane$org@Pilar.site>
+References: <20110816094245.GA2042@Pilar.site> <201108162320.28297.rjw@sisk.pl>
+	<20110816224500.GA3152@Pilar.site> <201108171114.45096.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJOA=zNRidM+y6FokWH9xorinQMWKHTyCGXoTNYCpLOfNPsYNA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <201108171114.45096.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -27,110 +20,132 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Turquette, Mike" <mturquette@ti.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 11, 2011 at 10:28 AM, Turquette, Mike <mturquette@ti.com> wrote:
-> On Mon, Aug 8, 2011 at 10:27 PM, MyungJoo Ham <myungjoo.ham@gmail.com> wr=
-ote:
->> On Tue, Aug 9, 2011 at 4:13 AM, Turquette, Mike <mturquette@ti.com> wrot=
-e:
->>> I'm not getting too bogged down with the OPP specifics because I don't
->>> know if that interface is going to be used in the future, and I don't
->>> think that devfreq will need to know about OPPs once the DVFS QoS API
->>> exists. =A0In that case, devfreq can just requests clock frequencies
->>> through the QoS API. =A0I view devfreq's usage of the OPP library as
->>> temporary.
->>>
->>> The real issue here is that we don't want some weird feedback loop
->>> with device QoS requests and devfreq targets stepping on each other.
->>>
->>> One way to handle this is to partition QoS use in drivers away from
->>> devfreq usage. =A0For example, if a GPU supports performance counters
->>> and can introspect its own usage, then it is a perfect candidate for
->>> devfreq; on the flip-side device drivers should *not* be allowed to
->>> put performance/qos constraints on this particular GPU, since we
->>> assume that the performance counters/devfreq governor will handle the
->>> whole job for us. =A0Since this centralizes the decision-making for the
->>> GPU it is safe for the devfreq->target() call to use the QoS APIs for
->>> controlling the GPU, since no one else will. =A0This avoids the feedback
->>> loop.
->>>
->>> On the other hand, if the GPU does not support performance counters
->>> then it should not use devfreq at all and rely 100% of QoS constraints
->>> from various sources: the GPU driver might request a high OPP every
->>> time work comes in, coupled with a timeout; if a QoS knob is exported
->>> to userspace then some OpenGL library might hold constraints through
->>> it; or some other kernel driver (video-related?) needs to use the GPU
->>> then it can hold a constraint through the QoS API.
->>>
->>> So there is a clear partition of QoS API usage between devices that
->>> support performance counters and ones that do not. =A0We want to avoid a
->>> feedback loop here.
->>
->> Such weird feedback loop may happen if the result frequency ranges
->> from QoS are inconsistent with those from DEVFREQ. However, if DEVFREQ
->> provides frequencies that do not violate QoS requirements, there would
->> be no such feedback loop. If they are consistent (DEVFREQ never gives
->> frequencies that do NOT satisfy QoS), DEVFREQ is transparent to PM
->> QoS.
->
-> If two devices, x and y both place frequency constraints on device z,
-> then QoS should probably aggregate their requests instead of just
-> taking the max. =A0Then if devfreq also determines that it needs to make
-> a QoS request against device z, then that will get aggregated on top
-> of x and y's requests. =A0This isn't really what we want since x and y's
-> requests may be adequate and devfreq's performance counter sampling is
-> just requesting performance for operations which have already placed
-> requests.
+On Wed, 17 Aug 2011 at 11:14:44 +0200, Rafael J. Wysocki wrote:
+> On Wednesday, August 17, 2011, Carlos R. Mafra wrote:
+> > On Tue, 16 Aug 2011 at 23:20:28 +0200, Rafael J. Wysocki wrote:
+> > > On Tuesday, August 16, 2011, Carlos R. Mafra wrote:
+> > > > On Tue, 16 Aug 2011 at 20:13:55 +0200, Rafael J. Wysocki wrote:
+> > > > > On Tuesday, August 16, 2011, Carlos R. Mafra wrote:
+> > > > > > I started testing 3.0-rc2 yesterday and after a few successful suspend to ram
+> > > > > > it did not suspend anymore and I got this:
+> > > > > > 
+> > > > > >  PM: Syncing filesystems ... done.
+> > > > > >  PM: Preparing system for mem sleep
+> > > > > >  Freezing user space processes ... 
+> > > > > >  Freezing of tasks failed after 20.00 seconds (1 tasks refusing to freeze, wq_busy=0):
+> > > > > >  udisks-daemon   D ffff8800a641e5d0     0  5848   5845 0x00800004
+> > > > > >   ffff8800a6741928 0000000000000082 ffff880000000000 00000000000105c0
+> > > > > >   ffff8800a641e200 00000000000105c0 ffff8800a6741fd8 00000000000105c0
+> > > > > >   00000000000105c0 ffff8800a6740000 ffff8800a6741fd8 00000000000105c0
+> > > > > >  Call Trace:
+> > > > > >   [<ffffffff814cf355>] schedule_timeout+0x1c5/0x230
+> > > > > >   [<ffffffff814ce8c9>] ? schedule+0x399/0x8a0
+> > > > > >   [<ffffffff814ce3e0>] wait_for_common+0xc0/0x160
+> > > > > >   [<ffffffff8103ec60>] ? try_to_wake_up+0x290/0x290
+> > > > > >   [<ffffffff814d10ba>] ? _raw_spin_unlock_irq+0x2a/0x40
+> > > > > >   [<ffffffff814ce528>] wait_for_completion+0x18/0x20
+> > > > > >   [<ffffffff81059afb>] flush_work+0x2b/0x40
+> > > > > >   [<ffffffff81058fd0>] ? do_work_for_cpu+0x30/0x30
+> > > > > >   [<ffffffff8105a076>] flush_delayed_work+0x46/0x50
+> > > > > >   [<ffffffff8121e6b6>] disk_clear_events+0x76/0x110
+> > > > > >   [<ffffffff81106052>] check_disk_change+0x32/0x80
+> > > > > >   [<ffffffff812ee649>] sd_open+0xb9/0x190
+> > > > > >   [<ffffffff81106f81>] __blkdev_get+0x91/0x3d0
+> > > > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
+> > > > > >   [<ffffffff8110730e>] blkdev_get+0x4e/0x340
+> > > > > >   [<ffffffff810e1b17>] ? do_lookup+0xb7/0x380
+> > > > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
+> > > > > >   [<ffffffff8110765d>] blkdev_open+0x5d/0x80
+> > > > > >   [<ffffffff810d3d80>] __dentry_open+0x130/0x320
+> > > > > >   [<ffffffff810d5021>] nameidata_to_filp+0x71/0x80
+> > > > > >   [<ffffffff810e2ab1>] do_last+0xb1/0x800
+> > > > > >   [<ffffffff810e4603>] path_openat+0xd3/0x3f0
+> > > > > >   [<ffffffff81229077>] ? kobject_put+0x27/0x60
+> > > > > >   [<ffffffff812ced62>] ? put_device+0x12/0x20
+> > > > > >   [<ffffffff810e4984>] do_filp_open+0x44/0xa0
+> > > > > >   [<ffffffff810f0a44>] ? alloc_fd+0xf4/0x150
+> > > > > >   [<ffffffff810d512c>] do_sys_open+0xfc/0x1e0
+> > > > > >   [<ffffffff810d3a86>] ? filp_close+0x56/0x80
+> > > > > >   [<ffffffff810d522b>] sys_open+0x1b/0x20
+> > > > > >   [<ffffffff814d1c3b>] system_call_fastpath+0x16/0x1b
+> > > > > >  
+> > > > > >  Restarting tasks ... done.
+> > > > > >  video LNXVIDEO:01: Restoring backlight state
+> > > > > >  acpid: 1 client rule loaded
+> > > > > >  EXT4-fs (sda2): re-mounted. Opts: discard,commit=600
+> > > > > >  INFO: task udisks-daemon:5848 blocked for more than 120 seconds.
+> > > > > >  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> > > > > >  udisks-daemon   D ffff8800a641e5d0     0  5848   5845 0x00000004
+> > > > > >   ffff8800a6741928 0000000000000082 ffff880000000000 00000000000105c0
+> > > > > >   ffff8800a641e200 00000000000105c0 ffff8800a6741fd8 00000000000105c0
+> > > > > >   00000000000105c0 ffff8800a6740000 ffff8800a6741fd8 00000000000105c0
+> > > > > >  Call Trace:
+> > > > > >   [<ffffffff814cf355>] schedule_timeout+0x1c5/0x230
+> > > > > >   [<ffffffff814ce8c9>] ? schedule+0x399/0x8a0
+> > > > > >   [<ffffffff814ce3e0>] wait_for_common+0xc0/0x160
+> > > > > >   [<ffffffff8103ec60>] ? try_to_wake_up+0x290/0x290
+> > > > > >   [<ffffffff814d10ba>] ? _raw_spin_unlock_irq+0x2a/0x40
+> > > > > >   [<ffffffff814ce528>] wait_for_completion+0x18/0x20
+> > > > > >   [<ffffffff81059afb>] flush_work+0x2b/0x40
+> > > > > >   [<ffffffff81058fd0>] ? do_work_for_cpu+0x30/0x30
+> > > > > >   [<ffffffff8105a076>] flush_delayed_work+0x46/0x50
+> > > > > >   [<ffffffff8121e6b6>] disk_clear_events+0x76/0x110
+> > > > > >   [<ffffffff81106052>] check_disk_change+0x32/0x80
+> > > > > >   [<ffffffff812ee649>] sd_open+0xb9/0x190
+> > > > > >   [<ffffffff81106f81>] __blkdev_get+0x91/0x3d0
+> > > > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
+> > > > > >   [<ffffffff8110730e>] blkdev_get+0x4e/0x340
+> > > > > >   [<ffffffff810e1b17>] ? do_lookup+0xb7/0x380
+> > > > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
+> > > > > >   [<ffffffff8110765d>] blkdev_open+0x5d/0x80
+> > > > > >   [<ffffffff810d3d80>] __dentry_open+0x130/0x320
+> > > > > >   [<ffffffff810d5021>] nameidata_to_filp+0x71/0x80
+> > > > > >   [<ffffffff810e2ab1>] do_last+0xb1/0x800
+> > > > > >   [<ffffffff810e4603>] path_openat+0xd3/0x3f0
+> > > > > >   [<ffffffff81229077>] ? kobject_put+0x27/0x60
+> > > > > >   [<ffffffff812ced62>] ? put_device+0x12/0x20
+> > > > > >   [<ffffffff810e4984>] do_filp_open+0x44/0xa0
+> > > > > >   [<ffffffff810f0a44>] ? alloc_fd+0xf4/0x150
+> > > > > >   [<ffffffff810d512c>] do_sys_open+0xfc/0x1e0
+> > > > > >   [<ffffffff810d3a86>] ? filp_close+0x56/0x80
+> > > > > >   [<ffffffff810d522b>] sys_open+0x1b/0x20
+> > > > > >   [<ffffffff814d1c3b>] system_call_fastpath+0x16/0x1b
+> > > > > >   
+> > > > > > 
+> > > > > > and there are some more of these traces in the logs, but they all look the 
+> > > > > > same.
+> > > > > 
+> > > > > It looks like udisks-daemon is waiting for a completion that's
+> > > > > never completed.
+> > > > > 
+> > > > > Do you use any removable storage devices?
+> > > > 
+> > > > Yes, external harddisks connected via USB. But none were mounted
+> > > > when I closed the lid to suspend.
+> > > 
+> > > Were they connected to the USB ports?
+> > 
+> > No.
+> > 
+> > > > PS: I made a mistake in the Subject:, the kernel is 3.1-rc2 and
+> > > > not 3.0-rc2.
+> > > 
+> > > Did 3.0 work correctly?
+> > 
+> > I didn't test 3.0, but 2.6.39 always worked.
+> 
+> Can you try 3.0.y too, please?  It would give us the time frame the
+> error started to happen.
 
-DEVFREQ won't give contradicting frequencies with PM QoS inputs to the
-target device. DEVFREQ will choose one from frequencies that satisfy
-the PM QoS inputs from both x and y (probably aggregated by PM QoS
-framework) as long as the PM QoS part of the target device driver is
-properly implemented by enabling satisfying OPPs and disabling
-not-satisfying OPPs.
+I tested 3.0.2 this morning and it survived (suspended it about 5-6 times
+with some mount/unmount of external harddisks in between).
 
->
->> For now, with OPPs, DEVFREQ will always select frequencies that
->> satisfy QoS requirements if the driver implementation is correct.
->>
->> However, as you mentioned, if we assume that OPP is going to disappear
->> in the future kernel, then we will somehow need to design an interface
->> for device drivers to provide lists of available frequencies to
->> DEVFREQ and those lists are going to be runtime-update-able and where
->> QoS requirements are applied. As with the current DEVFREQ
->
-> I'm not saying that OPP is going to disappear because I have no idea
-> what the future holds.
->
-> My point is that devfreq doesn't need to know about OPP at all. =A0The
-> code assumes that OPPs exist for the device and take a frequency as
-> part of devfreq->profile->get_target_freq (or something like that) and
-> they can just pass that frequency to devfreq->profile->target. =A0If
-> that device has support for the OPP library than it can do the job of
-> looking up OPPs, etc.
+Now I'm back to testing 3.1-rc2 and it survived the first two suspends.
+So this is not something which I can bisect with 100% certainty. I was 
+hoping the above traces could somehow indicate where the problem might be.
 
-As discussed in the other thread, OPP is the one that describes the
-data every DVFS-able device have. Is there any reason to redundantly
-define the same data structure and functions that are publicly
-available and represent the same things? Every DEVFREQ device will
-have multiple pairs of frequencies and voltages associated with the
-specific device and use the functions equivalent to those in OPP
-library.
-
->
-> Regards,
-> Mike
->
-
-Cheers!
-MyungJoo
--- =
-
-MyungJoo Ham, Ph.D.
-Mobile Software Platform Lab,
-Digital Media and Communications (DMC) Business
-Samsung Electronics
-cell: 82-10-6714-2858
+I will keep testing though.
