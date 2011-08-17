@@ -1,16 +1,20 @@
-From: "Carlos R. Mafra" <crmafra@gmail.com>
-Subject: Re: 3.0-rc2 failed s2ram: Freezing of tasks failed after
- 20.00 seconds
-Date: Wed, 17 Aug 2011 00:45:00 +0200
-Message-ID: <20110816224500.GA3152__1391.11023531786$1313545032$gmane$org@Pilar.site>
-References: <20110816094245.GA2042@Pilar.site> <201108162013.55341.rjw@sisk.pl>
-	<20110816211358.GA2251@Pilar.site> <201108162320.28297.rjw@sisk.pl>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v4 1/2] Input: enable i8042-level wakeup
+	control
+Date: Wed, 17 Aug 2011 00:03:51 -0700
+Message-ID: <20110817070351.GE29361__49735.4206898764$1313565110$gmane$org@core.coreip.homeip.net>
+References: <20110802154916.624619D401C@zog.reactivated.net>
+	<20110803065920.GC23399@core.coreip.homeip.net>
+	<CAMLZHHTTXvThE5bWfyjJu-UFJbaKAhzORKWV8ay4RZW-ZVifLg@mail.gmail.com>
+	<20110803184332.GA17880@core.coreip.homeip.net>
+	<CAMLZHHTnTTbD7mn_QsjwyFZ=XU6paddrtXEVuLYossk9qBGFfw@mail.gmail.com>
+	<CAMLZHHTie_u40NZ40o+LCwffk=3LbY96YTwxQt5wcVtbTc53qg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201108162320.28297.rjw@sisk.pl>
+In-Reply-To: <CAMLZHHTie_u40NZ40o+LCwffk=3LbY96YTwxQt5wcVtbTc53qg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,118 +24,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Daniel Drake <dsd@laptop.org>
+Cc: linux-pm@lists.linux-foundation.org, dilinger@queued.net, linux-input@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 16 Aug 2011 at 23:20:28 +0200, Rafael J. Wysocki wrote:
-> On Tuesday, August 16, 2011, Carlos R. Mafra wrote:
-> > On Tue, 16 Aug 2011 at 20:13:55 +0200, Rafael J. Wysocki wrote:
-> > > On Tuesday, August 16, 2011, Carlos R. Mafra wrote:
-> > > > I started testing 3.0-rc2 yesterday and after a few successful suspend to ram
-> > > > it did not suspend anymore and I got this:
-> > > > 
-> > > >  PM: Syncing filesystems ... done.
-> > > >  PM: Preparing system for mem sleep
-> > > >  Freezing user space processes ... 
-> > > >  Freezing of tasks failed after 20.00 seconds (1 tasks refusing to freeze, wq_busy=0):
-> > > >  udisks-daemon   D ffff8800a641e5d0     0  5848   5845 0x00800004
-> > > >   ffff8800a6741928 0000000000000082 ffff880000000000 00000000000105c0
-> > > >   ffff8800a641e200 00000000000105c0 ffff8800a6741fd8 00000000000105c0
-> > > >   00000000000105c0 ffff8800a6740000 ffff8800a6741fd8 00000000000105c0
-> > > >  Call Trace:
-> > > >   [<ffffffff814cf355>] schedule_timeout+0x1c5/0x230
-> > > >   [<ffffffff814ce8c9>] ? schedule+0x399/0x8a0
-> > > >   [<ffffffff814ce3e0>] wait_for_common+0xc0/0x160
-> > > >   [<ffffffff8103ec60>] ? try_to_wake_up+0x290/0x290
-> > > >   [<ffffffff814d10ba>] ? _raw_spin_unlock_irq+0x2a/0x40
-> > > >   [<ffffffff814ce528>] wait_for_completion+0x18/0x20
-> > > >   [<ffffffff81059afb>] flush_work+0x2b/0x40
-> > > >   [<ffffffff81058fd0>] ? do_work_for_cpu+0x30/0x30
-> > > >   [<ffffffff8105a076>] flush_delayed_work+0x46/0x50
-> > > >   [<ffffffff8121e6b6>] disk_clear_events+0x76/0x110
-> > > >   [<ffffffff81106052>] check_disk_change+0x32/0x80
-> > > >   [<ffffffff812ee649>] sd_open+0xb9/0x190
-> > > >   [<ffffffff81106f81>] __blkdev_get+0x91/0x3d0
-> > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
-> > > >   [<ffffffff8110730e>] blkdev_get+0x4e/0x340
-> > > >   [<ffffffff810e1b17>] ? do_lookup+0xb7/0x380
-> > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
-> > > >   [<ffffffff8110765d>] blkdev_open+0x5d/0x80
-> > > >   [<ffffffff810d3d80>] __dentry_open+0x130/0x320
-> > > >   [<ffffffff810d5021>] nameidata_to_filp+0x71/0x80
-> > > >   [<ffffffff810e2ab1>] do_last+0xb1/0x800
-> > > >   [<ffffffff810e4603>] path_openat+0xd3/0x3f0
-> > > >   [<ffffffff81229077>] ? kobject_put+0x27/0x60
-> > > >   [<ffffffff812ced62>] ? put_device+0x12/0x20
-> > > >   [<ffffffff810e4984>] do_filp_open+0x44/0xa0
-> > > >   [<ffffffff810f0a44>] ? alloc_fd+0xf4/0x150
-> > > >   [<ffffffff810d512c>] do_sys_open+0xfc/0x1e0
-> > > >   [<ffffffff810d3a86>] ? filp_close+0x56/0x80
-> > > >   [<ffffffff810d522b>] sys_open+0x1b/0x20
-> > > >   [<ffffffff814d1c3b>] system_call_fastpath+0x16/0x1b
-> > > >  
-> > > >  Restarting tasks ... done.
-> > > >  video LNXVIDEO:01: Restoring backlight state
-> > > >  acpid: 1 client rule loaded
-> > > >  EXT4-fs (sda2): re-mounted. Opts: discard,commit=600
-> > > >  INFO: task udisks-daemon:5848 blocked for more than 120 seconds.
-> > > >  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > > >  udisks-daemon   D ffff8800a641e5d0     0  5848   5845 0x00000004
-> > > >   ffff8800a6741928 0000000000000082 ffff880000000000 00000000000105c0
-> > > >   ffff8800a641e200 00000000000105c0 ffff8800a6741fd8 00000000000105c0
-> > > >   00000000000105c0 ffff8800a6740000 ffff8800a6741fd8 00000000000105c0
-> > > >  Call Trace:
-> > > >   [<ffffffff814cf355>] schedule_timeout+0x1c5/0x230
-> > > >   [<ffffffff814ce8c9>] ? schedule+0x399/0x8a0
-> > > >   [<ffffffff814ce3e0>] wait_for_common+0xc0/0x160
-> > > >   [<ffffffff8103ec60>] ? try_to_wake_up+0x290/0x290
-> > > >   [<ffffffff814d10ba>] ? _raw_spin_unlock_irq+0x2a/0x40
-> > > >   [<ffffffff814ce528>] wait_for_completion+0x18/0x20
-> > > >   [<ffffffff81059afb>] flush_work+0x2b/0x40
-> > > >   [<ffffffff81058fd0>] ? do_work_for_cpu+0x30/0x30
-> > > >   [<ffffffff8105a076>] flush_delayed_work+0x46/0x50
-> > > >   [<ffffffff8121e6b6>] disk_clear_events+0x76/0x110
-> > > >   [<ffffffff81106052>] check_disk_change+0x32/0x80
-> > > >   [<ffffffff812ee649>] sd_open+0xb9/0x190
-> > > >   [<ffffffff81106f81>] __blkdev_get+0x91/0x3d0
-> > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
-> > > >   [<ffffffff8110730e>] blkdev_get+0x4e/0x340
-> > > >   [<ffffffff810e1b17>] ? do_lookup+0xb7/0x380
-> > > >   [<ffffffff81107600>] ? blkdev_get+0x340/0x340
-> > > >   [<ffffffff8110765d>] blkdev_open+0x5d/0x80
-> > > >   [<ffffffff810d3d80>] __dentry_open+0x130/0x320
-> > > >   [<ffffffff810d5021>] nameidata_to_filp+0x71/0x80
-> > > >   [<ffffffff810e2ab1>] do_last+0xb1/0x800
-> > > >   [<ffffffff810e4603>] path_openat+0xd3/0x3f0
-> > > >   [<ffffffff81229077>] ? kobject_put+0x27/0x60
-> > > >   [<ffffffff812ced62>] ? put_device+0x12/0x20
-> > > >   [<ffffffff810e4984>] do_filp_open+0x44/0xa0
-> > > >   [<ffffffff810f0a44>] ? alloc_fd+0xf4/0x150
-> > > >   [<ffffffff810d512c>] do_sys_open+0xfc/0x1e0
-> > > >   [<ffffffff810d3a86>] ? filp_close+0x56/0x80
-> > > >   [<ffffffff810d522b>] sys_open+0x1b/0x20
-> > > >   [<ffffffff814d1c3b>] system_call_fastpath+0x16/0x1b
-> > > >   
-> > > > 
-> > > > and there are some more of these traces in the logs, but they all look the 
-> > > > same.
-> > > 
-> > > It looks like udisks-daemon is waiting for a completion that's
-> > > never completed.
-> > > 
-> > > Do you use any removable storage devices?
-> > 
-> > Yes, external harddisks connected via USB. But none were mounted
-> > when I closed the lid to suspend.
+Hi Daniel,
+
+On Thu, Aug 11, 2011 at 07:02:17PM +0100, Daniel Drake wrote:
+> Hi Dmitry,
 > 
-> Were they connected to the USB ports?
-
-No.
-
-> > PS: I made a mistake in the Subject:, the kernel is 3.1-rc2 and
-> > not 3.0-rc2.
+> On Fri, Aug 5, 2011 at 4:24 PM, Daniel Drake <dsd@laptop.org> wrote:
+> > I've started looking at this, but my first problem is that when the
+> > input layer asks atkbd to turn off LEDs, atkbd schedules a workqueue
+> > item to undertake this work. However, as there is no synchronization,
+> > this work only seems to get executed during or after system resume.
+> > This makes it hard to catch with such a scheme. Any ideas?
 > 
-> Did 3.0 work correctly?
+> I've looked closer, and am keeping my eyes open for other options too.
+> 
+> During suspend of the input layer, input_dev_suspend() calls
+> input_dev_toggle(dev, false) which turns off LEDs and sounds.
+> 
+> On the XO laptops, we don't have LEDs, nor sounds, and we don't have
+> num lock, scroll lock or caps lock keys. So the suspend code does
+> nothing - there are no lights to turn off. So far so good.
+> 
+> Moving to the resume case: input_dev_resume() calls
+> input_reset_device(). This calls input_dev_toggle(dev, true), which
+> asks atkbd to turn the non-existent keyboard LEDs off. I guess this is
+> harmless and is unlikely to be the cause of the problems which led us
+> to need to disable this code in light of the following:
+> 
+> After calling input_dev_toggle(), input_dev_resume() does this:
+> 
+> 		/*
+> 		 * Keys that have been pressed at suspend time are unlikely
+> 		 * to be still pressed when we resume.
+> 		 */
+> 		spin_lock_irq(&dev->event_lock);
+> 		input_dev_release_keys(dev);
+> 		spin_unlock_irq(&dev->event_lock);
+> 
+> We definitely don't want this to happen in our case, where we have
+> maintained full control and power of the device during suspend/resume.
+> 
+> This particular important code snippet would not even have been
+> disabled by your suggestion of blocking data transfer at the
+> i8042-level.
+> 
+> So, I think we need a new approach at solving this, and I think it has
+> to be one that interacts at the input_dev layer.
 
-I didn't test 3.0, but 2.6.39 always worked.
+OK, so we have the following scenario:
+
+- we do not need to worry about SND and LED on OLPC;
+
+- we do not need to worry about releasing the key that was pressed
+  when we went to sleep because they system would not go to sleep while
+  there is a key pressed. So the code in input_dev_resume() won't
+  actually release any keys unless a key was held pressed and we forced
+  system to sleep somehow.
+
+- we need to make sure we do not loose key press (and following events)
+  when we are waking up.
+
+Can atkbd driver stash away serio byte data (when not in command mode)
+and replay it when pm notifier signals us that resume process is done?
+
+Thanks.
+
+-- 
+Dmitry
