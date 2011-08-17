@@ -1,17 +1,23 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v5 1/3] PM: Introduce DEVFREQ: generic DVFS
- framework with device-specific OPPs
-Date: Wed, 17 Aug 2011 18:40:13 +0900
-Message-ID: <CAJ0PZbQnSuMmFdpcuvUEnJasn=ffrE6puHrZLEVe61qukRLFwg@mail.gmail.com>
-References: <1312794188-9823-1-git-send-email-myungjoo.ham@samsung.com>
-	<1312794188-9823-2-git-send-email-myungjoo.ham@samsung.com>
-	<CAJOA=zNb_S-CXDBE0VH98A-0OTB7HRiCAeV89LW7t8ZoaydBVg@mail.gmail.com>
-Reply-To: myungjoo.ham@gmail.com
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Re: [PATCH v4 0/3] DEVFREQ,
+	DVFS framework for non-CPU devices
+Date: Wed, 17 Aug 2011 19:07:37 +0900
+Message-ID: <CAJ0PZbSJoxNPn=E0y=52+y9uW+y1S7bZXc4vsBUm1QR2RQEPvg@mail.gmail.com>
+References: <1310717510-19002-1-git-send-email-myungjoo.ham@samsung.com>
+	<201107290010.53788.rjw@sisk.pl> <87livba2w6.fsf@ti.com>
+	<CAJ0PZbTMn_pzFBWbhtMrMo9ZGsnwMNKENgMSDa=oOZCrGh03Gg@mail.gmail.com>
+	<87aabq5oqo.fsf@ti.com>
+	<CAJ0PZbQQkAPHNwzh0tL9BiNAjjMtUOCoKV1JDzUqj0utx8COgg@mail.gmail.com>
+	<CAJOA=zMNToQq=RVrRh2p+kko=n67BWwHjcWX3DGFuYCfAcksOQ@mail.gmail.com>
+	<CAJ0PZbQx-T+36eX7MiZqWSMxD-achZ9Z7G_kDWNQ2n0h1NTWSQ@mail.gmail.com>
+	<CAJOA=zOi9HzM7M72C+QS6iLcYD_xDeQkEZ3fYpVo_v4f4mfAyQ@mail.gmail.com>
+	<CAJ0PZbQNOybrwu=Vxbjgbh-U1YA1Gve=jzpt3wwqA8kgEEPcXA@mail.gmail.com>
+	<CAJOA=zNRidM+y6FokWH9xorinQMWKHTyCGXoTNYCpLOfNPsYNA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJOA=zNb_S-CXDBE0VH98A-0OTB7HRiCAeV89LW7t8ZoaydBVg@mail.gmail.com>
+In-Reply-To: <CAJOA=zNRidM+y6FokWH9xorinQMWKHTyCGXoTNYCpLOfNPsYNA@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,153 +28,109 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Turquette, Mike" <mturquette@ti.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBdWcgMTEsIDIwMTEgYXQgMTA6MDAgQU0sIFR1cnF1ZXR0ZSwgTWlrZSA8bXR1cnF1
-ZXR0ZUB0aS5jb20+IHdyb3RlOgo+PiArc3RhdGljIHVuc2lnbmVkIGludCBkZXZmcmVxX2ludGVy
-dmFsID0gMjA7Cj4KPiBJbnN0ZWFkIG9mIGRldmZyZXFfaW50ZXJ2YWwsIGhvdyBhYm91dCBkZXZp
-Y2VzIHNwZWNpZnkgdGhlaXIKPiBkZXZmcmVxLT5wcm9maWxlLT5wb2xsaW5nX21zIHdoaWNoIGdl
-dHMgdHVybmVkIGludG8gYSBqaWZmaWVzIHZhbHVlCj4gY2FsbGVkIGRldmZyZXEtPnByb2ZpbGUt
-Pm5leHRfbW9uaXRvcj8gwqBkZXZmcmVxLT5wcm9maWxlLT5uZXh0X21vbml0b3IKPiBpcyBhIGpp
-ZmZpZXMgdmFsdWUgc29tZSB0aW1lIGluIHRoZSBmdXR1cmUuCj4KPiBXaGVuIHRoZSBtb25pdG9y
-IGlzIHJ1biB0aGVuIGRldmZyZXEtPnByb2ZpbGUtPm5leHRfbW9uaXRvciB3aWxsCj4gc2ltcGx5
-IGJlICJqaWZmaWVzICsgbXNlY3NfdG9famlmZmllcyhkZXZmcmVxLT5wcm9maWxlLT5wb2xsaW5n
-X21zKSIuCj4gVGhhdCB3b3VsZCByZW1vdmUgdGhlIHVubmVjZXNzYXJ5IGludGVydmFsIHdoaWNo
-IGlzIHByZXR0eSByZXN0cmljdGl2ZQo+IGZvciBzb21lb25lIHRoYXQgKnJlYWxseSogd2FudHMg
-YSA1MG1zIHBvbGxpbmcgaW50ZXJ2YWwgKG5vdCBhCj4gbXVsdGlwbGUgb2YgMjApLgo+Cj4gVGhl
-biBzb21ldGhpbmcgbGlrZSB0aGUgZm9sbG93aW5nIGNhbiBiZSBkb25lIGluIGRldmZyZXFfbW9u
-aXRvcjoKPgo+IMKgIMKgIMKgIMKgdW5zaWduZWQgbG9uZyBuZXh0X21vbml0b3IgPSBVSU5UX01B
-WDsKPiDCoCDCoCDCoCDCoGZvcl9lYWNoX2VudHJ5KGRldmZyZXEsICZkZXZmcmVxX2xpc3QsIG5v
-ZGUpIHsKPiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoG5leHRfbW9uaXRvciA9IG1pbmltdW0obmV4
-dF9tb25pdG9yLCBkZXZmcmVxLT5uZXh0X21vbml0b3IpOwo+IMKgIMKgIMKgIMKgfQo+IMKgIMKg
-IMKgIMKgcXVldWVfZGVsYXllZF93b3JrKGRldmZyZXFfd3EsICZkZXZmcmVxX3dvcmssIG5leHRf
-bW9uaXRvcik7Cj4KClRoYW5rcy4gSW4gdGhlIHBhdGNoc2V0IHY2LCBJJ2xsIGxldCBpdCBiYXNl
-ZCBvbiBzaW1wbHkgSklGRlkuIEluIHRoZQp2NiByYywgSSd2ZSByZW1vdmVkIGRldmZyZXFfaW50
-ZXJ2YWwuCgo+PiArCj4+ICsvKgo+PiArICogZGV2ZnJlcV93b3JrIHBlcmlvZGljYWxseSAoZ2l2
-ZW4gYnkgZGV2ZnJlcV9pbnRlcnZhbCkgbW9uaXRvcnMgZXZlcnkKPj4gKyAqIHJlZ2lzdGVyZWQg
-ZGV2aWNlLgo+PiArICovCj4+ICtzdGF0aWMgYm9vbCBwb2xsaW5nOwo+Cj4gU2luY2UgcGF0Y2hz
-ZXQgdjUgcmVtb3ZlcyB0aWNrbGUgKHNvIGFzIG5vdCB0byBkdXBsaWNhdGUgYSBRb1MKPiBjb25z
-dHJhaW50KSwgZGV2ZnJlcSBzaG91bGQgbm8gbG9uZ2VyIGhhbmRsZSBhbnkgbm9uLXBvbGxpbmcg
-RFZGUwo+IHRyYW5zaXRpb25zLCB3aGljaCBjYW4gYWxzbyBiZSBleHByZXNzZWQgdGhyb3VnaCBh
-IFFvUyBjb25zdHJhaW50Lgo+IEFueSBzdGF0aWMgY29uc3RyYWludCByZXF1ZXN0cyBmcm9tIG90
-aGVyIGRyaXZlcnMgd2lsbCB1c2UgdGhlIFFvUyBBUEkKPiBhbmQgbm90IGRldmZyZXEuIMKgQXMg
-c3VjaCAicG9sbGluZyIgY2FuIGJlIHJlbW92ZWQgYW5kIGFsbCB0aGUgY29kZQo+IHRoYXQgdG91
-Y2hlcyBpdCBzaW5jZSBwb2xsaW5nIGlzIGFzc3VtZWQuIMKgV2h5IHVzZSBkZXZmcmVxIGlmIHlv
-dSdyZQo+IG5vdCBnb2luZyB0byBwb2xsPwo+Cj4gVGhpcyBhbHNvIG1ha2VzIHRoZSBwZXJmb3Jt
-YW5jZSBhbmQgcG93ZXJzYXZlIGdvdmVybm9ycyByZWR1bmRhbnQsIGFuZAo+IHBvc3NpYmx5IHRo
-ZSB1c2Vyc3BhY2UgZ292ZXJub3IgYXMgd2VsbCBzaW5jZSBRb1MgcmVxdWVzdHMgY2FuIGp1c3Qg
-YXMKPiBlYXNpbHkgYWNoaWV2ZSB0aGUgc29ydCBvZiBjb25zdHJhaW50cyBkZXNpcmFibGUgZm9y
-IGEgbm9uLXBvbGxpbmcKPiBpbXBsZW1lbnRhdGlvbi4KPgoKSSBndWVzcyB0aGlzIGlzIHJlc29s
-dmVkIGluIHRoZSBvdGhlciB0aHJlYWQgcmVnYXJkaW5nIHBhdGNoIDIvMy4KCj4gVGhpcyBhbHNv
-IHRvdWNoZXMgb24gYW5vdGhlciBwb2ludCB0aGF0IEknbGwgZWxhYm9yYXRlIG1vcmUgb24gYmVs
-b3csCj4gd2hpY2ggaXMgdGhhdCB0aW1lciBxdWV1ZWluZy9zY2hlZHVsaW5nIHNob3VsZCBiZSBp
-bXBsZW1lbnRlZCBieSB0aGUKPiBnb3Zlcm5vcnMsIG5vdCB0aGUgY29yZSBjb2RlLgpbXQo+IFBv
-bGxpbmcgc2hvdWxkIG5vdCBiZSBpbXBsZW1lbnRlZCBpbiBjb3JlIGNvZGUuIMKgSW5zdGVhZCB0
-aGUgZGV2ZnJlcQo+IGRldmljZXMgc2hvdWxkIGRlZmluZSB0aGVpciBvd24gZGVsYXllZF93b3Jr
-IGFuZCBnb3Zlcm5vcnMgc2hvdWxkCj4gc2NoZWR1bGUgdGhhdCB3b3JrLCBwb3NzaWJseSB3aXRo
-IGdvdmVybm9yLXNwZWNpZmljIHdvcmsgcXVldWVzLCBvcgo+IHVzaW5nIHRoZSBrZXJuZWwgZ2xv
-YmFsIHdvcmtxdWV1ZS4gwqBFLmc6IHNpbXBsZS1vbmRlbWFuZCBzaG91bGQgaGF2ZQo+IGl0cyBv
-d24gd29ya3F1ZXVlIGFuZCBlYWNoIGRldmljZSBoYXZlIGl0J3Mgb3duIGRlbGF5ZWRfd29yazsK
-PiBzb21ldGhpbmcgbGlrZSBkZXZmcmVxLT5nb3Zlcm5vci0+d3EgYW5kIGRldmZyZXEtPndvcmsg
-d291bGQgc3VmZmljZS4KPgo+IFRoaXMgaXMgYmV0dGVyIGFsaWduZWQgd2l0aCBDUFVmcmVxLCB3
-aGljaCBsZWF2ZXMgcG9sbGluZyBkZXRhaWxzIHRvCj4gdGhlIGdvdmVybm9ycy4gwqBGb3IgZXhh
-bXBsZSBjcHVmcmVxLW9uZGVtYW5kIGhhcyBkZWxheWVkX3dvcmsgZm9yIGVhY2gKPiBDUFUgYW5k
-IHRoYXQgZ292ZXJub3Igc2NoZWR1bGVzIHRoZSB3b3JrLCBub3QgY29yZSBjb2RlLiDCoENvcmUg
-Y29kZQo+IGhhbmRsZXMgbGl0dGxlIG1vcmUgdGhhbiByZWdpc3RyYXRpb24gYW5kIHN5c2ZzIGV2
-ZW50cyAoaW5jbHVkaW5nCj4gc3dpdGNoaW5nIGdvdmVybm9ycykuCgpUaGUgZmlyc3QgcGFyYWdy
-YXBocyBpbiB0aGUgcmVwbHkgb2YgdGhlIHRocmVhZCBvZiBwYXRjaCAyLzMgZGlzY3Vzc2VzCnRo
-aXMgaXNzdWU6IGluIGJyaWVmLAp1bmxpa2UgQ1BVRlJFUSwgYWxsb3dpbmcgZ292ZXJub3JzIHRv
-IGxvb3AgaXRzZWxmIGluY3JlYXNlcyBvdmVyaGVhZAphbmQgZHVwbGljYXRlZCBjb2RlLgoKPgo+
-IFNvbWUgb3RoZXIgYmVuZWZpdHMgYXJlIGluY3JlYXNlZCBkZWJ1Z2dpbmcgY2FwYWJpbGl0eSAo
-d2Uga25vdyB3aGljaAo+IGdvdmVybm9yIGZhaWxlZCwgd2Uga25vdyB3aGljaCBkZXZpY2UgZmFp
-bGVkLCBldGMpIGJ5IHNlcGFyYXRpbmcgdGhlCj4gd29yayBxdWV1ZXMgYW5kIHRoZSB3b3JrIHN0
-cnVjdHMgYW5kIGl0IHNpbXBsaWZpZXMgaGF2aW5nIHRvIGZpZ3VyZQo+IG91dCBzb21lIG1pbl9w
-b2xsaW5nL25leHRfcG9sbGluZyBzaW5jZSB3b3JrcXVldWVzIGRvIHRoYXQgZm9yIHVzIHdoZW4K
-PiB3ZSBzY2hlZHVsZSBtdWx0aXBsZSBwaWVjZXMgb2Ygd29yaywgYWxsIHdpdGggZGlmZmVyZW50
-IGRlbGF5cy4KCkF0IGFuIGVycm9yIGluIERFVkZSRVEgcG9sbGluZyBwcm9jZXNzLCB0aGUgY29y
-cmVzcG9uZGluZyBkZXZpY2UncwpERVZGUkVRIGlzIHJlbW92ZWQgZnJvbSBwb2xsaW5nIGFuZCBh
-biBlcnJvciBtZXNzYWdlIGlzIHByaW50ZWQuIFRodXMsCnRoZSB1c2VyIHNob3VsZCBiZSBhYmxl
-IHRvIGtub3cgd2hpY2ggZGV2aWNlIGhhcyBmYWlsZWQgd2l0aCB3aGF0CmVycm5vIGFscmVhZHku
-IFRoZSBnb3Zlcm5vciBpcyBkZXNpZ25hdGVkIGJ5IERFVkZSRVEgdXNlciwgc28gdGhlIHVzZXIK
-c2hvdWxkIGtub3cgd2hpY2ggZ292ZXJub3IgaXMgZmFpbGluZyBieSBrbm93aW5nIHdoaWNoIGRl
-dmljZSBpcwpmYWlsaW5nLiBPciwgd2UgbWF5IHNpbXBseSBhZGQgZ292ZXJub3IgbmFtZSBhdCB0
-aGUgZXJyb3IgbWVzc2FnZSBpbgpkZXZmcmVxX21vbml0b3IoKS4KCj4KPj4gK3N0YXRpYyBpbnQg
-ZGV2ZnJlcV9kbyhzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcSkKPj4gK3sKPj4gKyDCoCDCoCDCoCBz
-dHJ1Y3Qgb3BwICpvcHA7Cj4+ICsgwqAgwqAgwqAgdW5zaWduZWQgbG9uZyBmcmVxOwo+PiArIMKg
-IMKgIMKgIGludCBlcnI7Cj4+ICsKPj4gKyDCoCDCoCDCoCBlcnIgPSBkZXZmcmVxLT5nb3Zlcm5v
-ci0+Z2V0X3RhcmdldF9mcmVxKGRldmZyZXEsICZmcmVxKTsKPgo+IEZvbGxvd2luZyBhbG9uZyB3
-aXRoIG15IGNvbW1lbnRzIGFib3ZlLCB0aGUgc2VtYW50aWNzIG9mIGNhbGxpbmcKPiBnZXRfdGFy
-Z2V0X2ZyZXEgaW4gZGV2ZnJlcV9kbyBhcmUgYmFja3dhcmRzLiDCoFRoaXMgY29kZSBzaG91bGQg
-Z28gaW4KPiB0aGUgZ292ZXJub3IgYW5kIGlzIGFuYWxvZ291cyB0byB0aGUgdmFyaW91cyBkYnNf
-Y2hlY2tfY3B1IGZ1bmN0aW9ucwo+IGluIHRob3NlIGdvdmVybm9ycy4KCkJ5IGxpbWl0aW5nIHRo
-ZSBnb3Zlcm5vcnMnIHJvbGUgYXMgcmVjb21tZW5kaW5nIGFwcHJvcHJpYXRlCmZyZXF1ZW5jaWVz
-IG9ubHksIHdlIHJlZHVjZSByZWR1bmRhbnQgY29kZSBhY3Jvc3MgZ292ZXJub3JzIGFuZApzaW1w
-bGlmaWVzIGltcGxlbWVudGF0aW9uIG9mIGdvdmVybm9ycy4gQXMgbG9uZyBhcyB3ZSBtaWdodCBu
-ZWVkIHRvCmltcGxlbWVudCBjdXN0b20gZ292ZXJub3JzIGZvciBkaWZmZXJlbnQgdHlwZSBvZiBk
-ZXZpY2VzIChlc3BlY2lhbGx5CmZvciBHUFVzIGFuZCBNTUNzKSwgdGhpcyBjYW4gZWFzZSB0aGUg
-ZWZmb3J0IGxhdGVyLiBJIGRvbid0IHRoaW5rIHdlCm5lZWQgdG8gY3JlYXRlIHJlZHVuZGFudCBj
-b2RlIGhlcmUgYWNyb3NzIGdvdmVybm9ycyBhdCBsZWFzdCBhdCB0aGlzCnN0YWdlLgoKPgo+PiAr
-IMKgIMKgIMKgIGlmIChlcnIpCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcmV0dXJuIGVycjsK
-Pj4gKwo+PiArIMKgIMKgIMKgIG9wcCA9IG9wcF9maW5kX2ZyZXFfY2VpbChkZXZmcmVxLT5kZXYs
-ICZmcmVxKTsKPgo+IEkga25vdyB0aGF0IGRldmZyZXEgd2FzIG9yaWdpbmFsbHkgZGV2ZWxvcGVk
-IHdpdGggT1BQIGFzIGEKPiByZXF1aXJlbWVudCwgYnV0IHRoZXJlIGlzIG5vIHJlYXNvbiB0byBp
-bmNsdWRlIHN1Y2ggZGV0YWlscyBpbgo+IGRldmZyZXEuIMKgTWFueSBwbGF0Zm9ybXMgbWF5IG5v
-dCBhZG9wdCB0aGUgT1BQIGxpYmFyeS4KPgo+IEhvdyBhYm91dCB0aGUgZ292ZXJub3IgY2FsbHMg
-ZGV2ZnJlcS0+cHJvZmlsZS0+Z2V0X3RhcmdldF9mcmVxIGluIGl0J3MKPiBkZWNpc2lvbiBtYWtp
-bmcgZnVuY3Rpb24gKGUuZy4gZGJzX2NoZWNrX2NwdSkgYW5kIHRoZW4gY2FsbHMKPiBkZXZmcmVx
-LT5wcm9maWxlLT50YXJnZXQgd2l0aCB0aGUgZnJlcXVlbmN5IGZyb20gdGhhdCBzYW1lIGZ1bmN0
-aW9uLAo+IG9ubHkgdGhpcyB0aW1lIHBhc3NpbmcgaW4gdGhlIGZyZXF1ZW5jeSBpbnN0ZWFkIG9m
-IGFuIE9QUD8KPgo+IFRoYXQgdGFyZ2V0IGZ1bmN0aW9uIGNhbiBkZXRlcm1pbmUgd2hhdCB0byBk
-byB3aXRoIHRoZSBmcmVxdWVuY3kuIMKgSW4KPiB0aGUgY2FzZSBvZiBFeG95bnM0IHRoZSB0YXJn
-ZXQgZnVuY3Rpb24gY2FuIHVzZSB0aGUgT1BQIGxpYnJhcnkuIMKgSW4KPiB0aGUgY2FzZSBvZiBh
-IHNpbXBsZXIgZGV2aWNlIGl0IG1pZ2h0IGp1c3QgbWFrZSBhIGNsa19zZXRfcmF0ZSBjYWxsLgo+
-IFRoaXMgYWxzbyByZW1vdmVzIHRoZSBkcmFtYSBmcm9tIFYxIG9mIHRoaXMgcGF0Y2hzZXQgd2hl
-cmUgdGhlIHVzZSBvZgo+IE9QUCBsaWJyYXJ5IGl0c2VsZiB3YXMgZGlzcHV0ZWQgYW5kIGFsbG93
-cyBkZXZmcmVxIHRvIGJlIG1vcmUgZ2VuZXJpYy4KPgoKQSBkZXZpY2UgdGhhdCBpcyBjYXBhYmxl
-IG9mIERWRlMgaGFzIG11bHRpcGxlIHBhaXJzIG9mIGZyZXF1ZW5jeSBhbmQKdm9sdGFnZS4gT1BQ
-IGlzIGEgZGF0YSBzdHJ1Y3R1cmUgdG8gcmVwcmVzZW50IG11bHRpcGxlIHBhaXJzIG9mCmZyZXF1
-ZW5jeSBhbmQgdm9sdGFnZSBvZiBhIGRldmljZS4gV2l0aG91dCBPUFAsIERFVkZSRVEgcmVxdWly
-ZXMgdG8KaW1wbGVtZW50IGRhdGEgc3RydWN0dXJlIHRvIHJlcHJlc2VudCBtdWx0aXBsZSBwYWly
-cyBvZiBmcmVxdWVuY3kgYW5kCnZvbHRhZ2UgcGVyIGRldmljZS4gV2h5IHdvdWxkIHdlIGltcGxl
-bWVudCBhbm90aGVyIGRhdGEgc3RydWN0dXJlIHRoYXQKcmVwcmVzZW50cyB0aGUgc2FtZSB0aGlu
-Zz8gQmVzaWRlcywgZm9yIGRldmljZXMgYWxyZWFkeSB3aXRoIE9QUHMsCnRoZWlyIGRldmljZSBk
-cml2ZXIgbmVlZHMgdG8gbWFrZSB0d28gY29waWVzIG9mIGRhdGEgd2l0aCBkaWZmZXJlbnQKdHlw
-ZSByZXByZXNlbnRpbmcgdGhlIGV4YWN0bHkgc2FtZSB0aGluZ3MuCgpBY3R1YWxseSwgbGF0ZXIg
-b24gKHNlZW1zIG5vdCBqdXN0IHlldCBhbnl3YXkpLCBPUFAgbWF5IG5lZWQgdG8gbG9vc2VuCnVw
-IHRoZSBjb25kaXRpb24gaW4gS2NvbmZpZyBpbiBjYXNlIG5vbi1Tb0MtZGVwZW5kZW50IGRldmlj
-ZXMgc3RhcnRpbmcKdG8gdXNlIERWRlMgZmVhdHVyZSwgb3IgZXZlbiwgQ1BVRlJFUSBtYXkgdXNl
-IE9QUCBhcyBpdHMgZGF0YQpzdHJ1Y3R1cmUgZm9yIGxpc3RpbmcgYXZhaWxhYmxlIGZyZXF1ZW5j
-aWVzLgoKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBuZXh0X3BvbGxfbWluID0gKG5leHRfcG9s
-bF9taW4gPiBkZXZmcmVxLT5uZXh0X3BvbGxpbmcpID8KPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkZXZmcmVxLT5uZXh0X3BvbGxpbmcgOiBuZXh0X3Bv
-bGxfbWluOwo+PiArIMKgIMKgIMKgIH0KPgo+IEFnYWluLCBJIGZpbmQgdGhpcyB3aG9sZSBtZXRo
-b2Qgb2YgdXNpbmcgZGV2ZnJlcV9pbnRlcnZhbCBhbmQKPiBldmFsdWF0aW5nIGV2ZXJ5IHNpbmds
-ZSBkZXZpY2UgaW4gYSBzaW5nbGUgZGVsYXllZF93b3JrIGluIGEgc2luZ2xlCj4gd29ya3F1ZXVl
-IHVuaW50dWl0aXZlLiDCoHdvcmtxdWV1ZXMgYWxyZWFkeSBkbyB0aGUgam9iIG9mIHRha2luZyBt
-YW55Cj4gcGllY2VzIG9mIGZ1dHVyZSB3b3JrIGFuZCBvcmRlcmluZyB0aGVtIGJhc2VkIG9uIHRo
-ZWlyIGRlbGF5LCBzbyB3aHkKPiBzaG91bGQgd2UgcmVwbGljYXRlIHRoYXQgcGF0dGVybiBoZXJl
-IGJ5IGdyb3VwaW5nIGFsbCB3b3JrIHRvZ2V0aGVyCj4gYW5kIG1hbnVhbGx5IGRldGVybWluaW5n
-IHdoZW4gdG8gcnVuIHRoZSBtb25pdG9yPwoKCj4KPj4gKyDCoCDCoCDCoCBzdHJ1Y3QgZGV2ZnJl
-cSAqbmV3X2RldmZyZXEsICpkZXZmcmVxOwo+Cj4gV2h5IHVzZSBuZXdfZGV2ZnJlcSBhdCBhbGw/
-IMKgZGV2ZnJlcSBjYW4gYmUgcmV1c2VkIGFmdGVyIGNoZWNraW5nIGZvcgo+IGVycm9yIGNvbmRp
-dGlvbnMuCgpUaGFua3MuIEkgd2lsbCByZW1vdmUgbmV3X2RldmZyZXEuCgo+Cj4+ICsgwqAgwqAg
-wqAgaWYgKCFJU19FUlIoZGV2ZnJlcSkpIHsKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkZXZf
-ZXJyKGRldiwgIiVzOiBVbmFibGUgdG8gY3JlYXRlIGRldmZyZXEgZm9yIHRoZSBkZXZpY2UuICIK
-Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCAiSXQgYWxyZWFkeSBoYXMgb25l
-LlxuIiwgX19mdW5jX18pOwo+Cj4gUHV0IHRoZSBlcnJvciBzdHJpbmcgYWxsIG9uIG9uZSBsaW5l
-LCBldmVuIGlmIGl0IGdvZXMgcGFzdCA4MCBjaGFycy4KCndpbGwgY29ycmVjdCB0aGF0IG9uZS4K
-Cj4+ICtpbnQgZGV2ZnJlcV91cGRhdGUoc3RydWN0IGRldmljZSAqZGV2KQo+Cj4gT1BQIGxpYnJh
-cnkgc2hvdWxkIGltcGxlbWVudCBub3RpZmllcnMgd2hpY2ggZGV2ZnJlcSBjYW4gc3Vic2NyaWJl
-IHRvLAo+IGluc3RlYWQgb2YgaGFja2luZyB0aGlzIGNvZGUgaW50byB0aGUgT1BQIGxpYmFyeS4g
-wqBJJ3ZlIGxvb3BlZCBpbgo+IE5pc2hhbnRoIE1lbm9uLCBhdXRob3Igb2YgT1BQIGxpYnJhcnks
-IHRvIGNvbW1lbnQuCj4KPj4gKyDCoCDCoCDCoCBkZXZmcmVxX3VwZGF0ZShkZXYpOwo+Cj4gU2Ft
-ZSBjb21tZW50IGFzIGFib3ZlLgo+Cj4+ICsgwqAgwqAgwqAgZGV2ZnJlcV91cGRhdGUoZGV2KTsK
-Pgo+IFNhbWUgY29tbWVudCBhcyBhYm92ZS4KPgoKVGhlIG5leHQgcmV2aXNpb24gd29uJ3QgdXNl
-IGRldmZyZXFfdXBkYXRlLiBUaGFua3MuCgoKQ2hlZXJzIQpNeXVuZ0pvbwoKLS0gCk15dW5nSm9v
-IEhhbSAo7ZWo66qF7KO8KSwgUGguRC4KTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3JtIExhYiwKRGln
-aXRhbCBNZWRpYSBhbmQgQ29tbXVuaWNhdGlvbnMgKERNQykgQnVzaW5lc3MKU2Ftc3VuZyBFbGVj
-dHJvbmljcwpjZWxsOiA4Mi0xMC02NzE0LTI4NTgKX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Thu, Aug 11, 2011 at 10:28 AM, Turquette, Mike <mturquette@ti.com> wrote:
+> On Mon, Aug 8, 2011 at 10:27 PM, MyungJoo Ham <myungjoo.ham@gmail.com> wr=
+ote:
+>> On Tue, Aug 9, 2011 at 4:13 AM, Turquette, Mike <mturquette@ti.com> wrot=
+e:
+>>> I'm not getting too bogged down with the OPP specifics because I don't
+>>> know if that interface is going to be used in the future, and I don't
+>>> think that devfreq will need to know about OPPs once the DVFS QoS API
+>>> exists. =A0In that case, devfreq can just requests clock frequencies
+>>> through the QoS API. =A0I view devfreq's usage of the OPP library as
+>>> temporary.
+>>>
+>>> The real issue here is that we don't want some weird feedback loop
+>>> with device QoS requests and devfreq targets stepping on each other.
+>>>
+>>> One way to handle this is to partition QoS use in drivers away from
+>>> devfreq usage. =A0For example, if a GPU supports performance counters
+>>> and can introspect its own usage, then it is a perfect candidate for
+>>> devfreq; on the flip-side device drivers should *not* be allowed to
+>>> put performance/qos constraints on this particular GPU, since we
+>>> assume that the performance counters/devfreq governor will handle the
+>>> whole job for us. =A0Since this centralizes the decision-making for the
+>>> GPU it is safe for the devfreq->target() call to use the QoS APIs for
+>>> controlling the GPU, since no one else will. =A0This avoids the feedback
+>>> loop.
+>>>
+>>> On the other hand, if the GPU does not support performance counters
+>>> then it should not use devfreq at all and rely 100% of QoS constraints
+>>> from various sources: the GPU driver might request a high OPP every
+>>> time work comes in, coupled with a timeout; if a QoS knob is exported
+>>> to userspace then some OpenGL library might hold constraints through
+>>> it; or some other kernel driver (video-related?) needs to use the GPU
+>>> then it can hold a constraint through the QoS API.
+>>>
+>>> So there is a clear partition of QoS API usage between devices that
+>>> support performance counters and ones that do not. =A0We want to avoid a
+>>> feedback loop here.
+>>
+>> Such weird feedback loop may happen if the result frequency ranges
+>> from QoS are inconsistent with those from DEVFREQ. However, if DEVFREQ
+>> provides frequencies that do not violate QoS requirements, there would
+>> be no such feedback loop. If they are consistent (DEVFREQ never gives
+>> frequencies that do NOT satisfy QoS), DEVFREQ is transparent to PM
+>> QoS.
+>
+> If two devices, x and y both place frequency constraints on device z,
+> then QoS should probably aggregate their requests instead of just
+> taking the max. =A0Then if devfreq also determines that it needs to make
+> a QoS request against device z, then that will get aggregated on top
+> of x and y's requests. =A0This isn't really what we want since x and y's
+> requests may be adequate and devfreq's performance counter sampling is
+> just requesting performance for operations which have already placed
+> requests.
+
+DEVFREQ won't give contradicting frequencies with PM QoS inputs to the
+target device. DEVFREQ will choose one from frequencies that satisfy
+the PM QoS inputs from both x and y (probably aggregated by PM QoS
+framework) as long as the PM QoS part of the target device driver is
+properly implemented by enabling satisfying OPPs and disabling
+not-satisfying OPPs.
+
+>
+>> For now, with OPPs, DEVFREQ will always select frequencies that
+>> satisfy QoS requirements if the driver implementation is correct.
+>>
+>> However, as you mentioned, if we assume that OPP is going to disappear
+>> in the future kernel, then we will somehow need to design an interface
+>> for device drivers to provide lists of available frequencies to
+>> DEVFREQ and those lists are going to be runtime-update-able and where
+>> QoS requirements are applied. As with the current DEVFREQ
+>
+> I'm not saying that OPP is going to disappear because I have no idea
+> what the future holds.
+>
+> My point is that devfreq doesn't need to know about OPP at all. =A0The
+> code assumes that OPPs exist for the device and take a frequency as
+> part of devfreq->profile->get_target_freq (or something like that) and
+> they can just pass that frequency to devfreq->profile->target. =A0If
+> that device has support for the OPP library than it can do the job of
+> looking up OPPs, etc.
+
+As discussed in the other thread, OPP is the one that describes the
+data every DVFS-able device have. Is there any reason to redundantly
+define the same data structure and functions that are publicly
+available and represent the same things? Every DEVFREQ device will
+have multiple pairs of frequencies and voltages associated with the
+specific device and use the functions equivalent to those in OPP
+library.
+
+>
+> Regards,
+> Mike
+>
+
+Cheers!
+MyungJoo
+-- =
+
+MyungJoo Ham, Ph.D.
+Mobile Software Platform Lab,
+Digital Media and Communications (DMC) Business
+Samsung Electronics
+cell: 82-10-6714-2858
