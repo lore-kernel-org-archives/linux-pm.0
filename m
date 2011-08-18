@@ -1,13 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] thermal: Rename generate_netlink_event
-Date: Thu, 18 Aug 2011 10:51:51 +0200
-Message-ID: <201108181051.51492.rjw__46477.5167558857$1313657478$gmane$org@sisk.pl>
-References: <20110818094944.3ce83401@endymion.delvare>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH v6 0/4] DEVFREQ,
+	DVFS Framework for Non-CPU Devices.
+Date: Thu, 18 Aug 2011 19:27:38 +0900
+Message-ID: <1313663262-15308-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110818094944.3ce83401@endymion.delvare>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,74 +16,70 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Len Brown <len.brown@intel.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "R.Durgadoss" <durgadoss.r@intel.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 18, 2011, Jean Delvare wrote:
-> It doesn't seem right for the thermal subsystem to export a symbol
-> named generate_netlink_event. This function is thermal-specific and
-> its name should reflect that fact. Rename it to
-> thermal_generate_netlink_event.
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: R.Durgadoss <durgadoss.r@intel.com>
-> Cc: Len Brown <len.brown@intel.com>
+For a usage example, please look at
+http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs/heads/devfreq
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+In the above git tree, DVFS (dynamic voltage and frequency scaling) mechanism
+is applied to the memory bus of Exynos4210 for Exynos4210-NURI boards.
+In the example, the LPDDR2 DRAM frequency changes between 133, 266, and 400MHz
+and other related clocks simply follow the determined DDR RAM clock.
 
-> ---
->  Documentation/thermal/sysfs-api.txt |    2 +-
->  drivers/thermal/thermal_sys.c       |    4 ++--
->  include/linux/thermal.h             |    4 ++--
->  3 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> --- linux-3.1-rc2.orig/Documentation/thermal/sysfs-api.txt	2011-07-22 04:17:23.000000000 +0200
-> +++ linux-3.1-rc2/Documentation/thermal/sysfs-api.txt	2011-08-17 22:36:57.000000000 +0200
-> @@ -284,7 +284,7 @@ method, the sys I/F structure will be bu
->  The framework includes a simple notification mechanism, in the form of a
->  netlink event. Netlink socket initialization is done during the _init_
->  of the framework. Drivers which intend to use the notification mechanism
-> -just need to call generate_netlink_event() with two arguments viz
-> +just need to call thermal_generate_netlink_event() with two arguments viz
->  (originator, event). Typically the originator will be an integer assigned
->  to a thermal_zone_device when it registers itself with the framework. The
->  event will be one of:{THERMAL_AUX0, THERMAL_AUX1, THERMAL_CRITICAL,
-> --- linux-3.1-rc2.orig/drivers/thermal/thermal_sys.c	2011-08-16 11:49:57.000000000 +0200
-> +++ linux-3.1-rc2/drivers/thermal/thermal_sys.c	2011-08-17 22:37:22.000000000 +0200
-> @@ -1304,7 +1304,7 @@ static struct genl_multicast_group therm
->  	.name = THERMAL_GENL_MCAST_GROUP_NAME,
->  };
->  
-> -int generate_netlink_event(u32 orig, enum events event)
-> +int thermal_generate_netlink_event(u32 orig, enum events event)
->  {
->  	struct sk_buff *skb;
->  	struct nlattr *attr;
-> @@ -1363,7 +1363,7 @@ int generate_netlink_event(u32 orig, enu
->  
->  	return result;
->  }
-> -EXPORT_SYMBOL(generate_netlink_event);
-> +EXPORT_SYMBOL(thermal_generate_netlink_event);
->  
->  static int genetlink_init(void)
->  {
-> --- linux-3.1-rc2.orig/include/linux/thermal.h	2011-08-16 11:50:04.000000000 +0200
-> +++ linux-3.1-rc2/include/linux/thermal.h	2011-08-17 22:36:47.000000000 +0200
-> @@ -152,9 +152,9 @@ struct thermal_cooling_device *thermal_c
->  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
->  
->  #ifdef CONFIG_NET
-> -extern int generate_netlink_event(u32 orig, enum events event);
-> +extern int thermal_generate_netlink_event(u32 orig, enum events event);
->  #else
-> -static inline int generate_netlink_event(u32 orig, enum events event)
-> +static inline int thermal_generate_netlink_event(u32 orig, enum events event)
->  {
->  	return 0;
->  }
-> 
-> 
-> 
+The DEVFREQ driver for Exynos4210 memory bus is at
+/drivers/devfreq/exynos4210_memorybus.c in the git tree.
+
+In the dd (writing and reading 360MiB) test with NURI board, the memory
+throughput was not changed (the performance is not deteriorated) while
+the SoC power consumption has been reduced by 1%. When the memory access
+is not that intense while the CPU is heavily used, the SoC power consumption
+has been reduced by 6%. The power consumption has been compared with the
+case using the conventional Exynos4210 CPUFREQ driver, which sets memory
+bus frequency according to the CPU core frequency. Besides, when the CPU core
+running slow and the memory access is intense, the performance (memory
+throughput) has been increased by 11% (with higher SoC power consumption of
+5%). The tested governor is "simple-ondemand".
+
+Major changes since the last revision (v5)
+- Moved from drivers/base/power to drivers/devfreq
+- Removed devfreq_update() interface.
+- Added OPP availability update notifier
+- Removed devfreq_interval, using jiffy as the basis interval
+- Seperated governors from devfreq core.
+- Allow tunable values to be given at devfreq_add_device().
+- And some minor revisions.
+
+MyungJoo Ham (4):
+  PM / OPP: Add OPP availability change notifier.
+  PM: Introduce DEVFREQ: generic DVFS framework with device-specific
+    OPPs
+  PM / DEVFREQ: add basic governors
+  PM / DEVFREQ: add sysfs interface
+
+ Documentation/ABI/testing/sysfs-devices-power |   45 +++
+ drivers/Kconfig                               |    2 +
+ drivers/Makefile                              |    2 +
+ drivers/base/power/opp.c                      |   28 ++
+ drivers/devfreq/Kconfig                       |   75 ++++
+ drivers/devfreq/Makefile                      |    5 +
+ drivers/devfreq/devfreq.c                     |  454 +++++++++++++++++++++++++
+ drivers/devfreq/governor_performance.c        |   24 ++
+ drivers/devfreq/governor_powersave.c          |   24 ++
+ drivers/devfreq/governor_simpleondemand.c     |   88 +++++
+ drivers/devfreq/governor_userspace.c          |   27 ++
+ include/linux/devfreq.h                       |  146 ++++++++
+ include/linux/opp.h                           |   12 +
+ 13 files changed, 932 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/devfreq/Kconfig
+ create mode 100644 drivers/devfreq/Makefile
+ create mode 100644 drivers/devfreq/devfreq.c
+ create mode 100644 drivers/devfreq/governor_performance.c
+ create mode 100644 drivers/devfreq/governor_powersave.c
+ create mode 100644 drivers/devfreq/governor_simpleondemand.c
+ create mode 100644 drivers/devfreq/governor_userspace.c
+ create mode 100644 include/linux/devfreq.h
+
+-- 
+1.7.4.1
