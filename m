@@ -1,13 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: add macro to test for runtime PM events
-Date: Thu, 18 Aug 2011 22:52:10 +0200
-Message-ID: <201108182252.10364.rjw__26400.7464437329$1313700719$gmane$org@sisk.pl>
-References: <Pine.LNX.4.44L0.1108181600020.1628-100000@iolanthe.rowland.org>
+From: "Turquette, Mike" <mturquette@ti.com>
+Subject: Re: [PATCH v6 1/4] PM / OPP: Add OPP availability change
+	notifier.
+Date: Thu, 18 Aug 2011 15:06:03 -0700
+Message-ID: <CAJOA=zO-MVEzC9bceapJZ-UH=i8xP=VRTD=f=LzZibW3rwmqsw@mail.gmail.com>
+References: <1313663262-15308-1-git-send-email-myungjoo.ham@samsung.com>
+	<1313663262-15308-2-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1108181600020.1628-100000@iolanthe.rowland.org>
+In-Reply-To: <1313663262-15308-2-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,362 +19,186 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Takashi Iwai <tiwai@suse.de>, Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>, linux-bluetooth@vger.kernel.org, netdev@vger.kernel.org, linux-input@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Thursday, August 18, 2011, Alan Stern wrote:
-> This patch (as1482) adds a macro for testing whether or not a
-> pm_message value represents an autosuspend or autoresume (i.e., a
-> runtime PM) event.  Encapsulating this notion seems preferable to
-> open-coding the test all over the place.
-> 
-> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> 
+On Thu, Aug 18, 2011 at 3:27 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wr=
+ote:
+> The patch enables to register notifier_block for an OPP-device in order
+> to get notified for any changes in the availability of OPPs of the
+> device. For example, if a new OPP is inserted or enable/disable status
+> of an OPP is changed, the notifier is executed.
+>
+> This enables the usage of opp_add, opp_enable, and opp_disable to
+> directly take effect with any connected entities such as CPUFREQ or
+> DEVFREQ.
+>
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>
 > ---
-> 
-> This is a minor change in the PM API, but most of the affected files 
-> are in the USB subsystem.  Therefore either Rafael or Greg might prefer 
-> to accept this patch.
-
-I can take the patch if Greg is fine with that.
-
-Thanks,
-Rafael
-
- 
->  Documentation/usb/power-management.txt |    8 ++++----
->  drivers/bluetooth/btusb.c              |    2 +-
->  drivers/hid/hid-picolcd.c              |    2 +-
->  drivers/hid/usbhid/hid-core.c          |    7 +++----
->  drivers/net/usb/usbnet.c               |    2 +-
->  drivers/net/wimax/i2400m/usb.c         |    4 ++--
->  drivers/usb/class/cdc-acm.c            |    2 +-
->  drivers/usb/class/cdc-wdm.c            |    6 +++---
->  drivers/usb/core/driver.c              |    9 ++++-----
->  drivers/usb/core/hcd.c                 |    4 ++--
->  drivers/usb/core/hub.c                 |   10 +++++-----
->  drivers/usb/serial/sierra.c            |    2 +-
->  drivers/usb/serial/usb_wwan.c          |    2 +-
->  include/linux/pm.h                     |    2 ++
->  sound/usb/card.c                       |    2 +-
->  15 files changed, 32 insertions(+), 32 deletions(-)
-> 
-> Index: usb-3.1/include/linux/pm.h
-> ===================================================================
-> --- usb-3.1.orig/include/linux/pm.h
-> +++ usb-3.1/include/linux/pm.h
-> @@ -366,6 +366,8 @@ extern struct dev_pm_ops generic_subsys_
->  #define PMSG_AUTO_RESUME	((struct pm_message) \
->  					{ .event = PM_EVENT_AUTO_RESUME, })
->  
-> +#define PMSG_IS_AUTO(msg)	(((msg).event & PM_EVENT_AUTO) != 0)
+> Added at devfreq patch set v6 replacing devfreq_update calls at OPP.
+> ---
+> =A0drivers/base/power/opp.c | =A0 28 ++++++++++++++++++++++++++++
+> =A0include/linux/opp.h =A0 =A0 =A0| =A0 12 ++++++++++++
+> =A02 files changed, 40 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index b23de18..39e16c3 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -73,6 +73,7 @@ struct opp {
+> =A0* =A0 =A0 =A0 =A0 =A0 =A0 RCU usage: nodes are not modified in the lis=
+t of device_opp,
+> =A0* =A0 =A0 =A0 =A0 =A0 =A0 however addition is possible and is secured =
+by dev_opp_list_lock
+> =A0* @dev: =A0 =A0 =A0 device pointer
+> + * @head: =A0 =A0 =A0notifier head to notify the OPP availability change=
+s.
+> =A0* @opp_list: =A0list of opps
+> =A0*
+> =A0* This is an internal data structure maintaining the link to opps atta=
+ched to
+> @@ -83,6 +84,8 @@ struct device_opp {
+> =A0 =A0 =A0 =A0struct list_head node;
+>
+> =A0 =A0 =A0 =A0struct device *dev;
+> + =A0 =A0 =A0 struct srcu_notifier_head head;
 > +
->  /**
->   * Device run-time power management status.
->   *
-> Index: usb-3.1/Documentation/usb/power-management.txt
-> ===================================================================
-> --- usb-3.1.orig/Documentation/usb/power-management.txt
-> +++ usb-3.1/Documentation/usb/power-management.txt
-> @@ -439,10 +439,10 @@ cause autosuspends to fail with -EBUSY i
->  device.
->  
->  External suspend calls should never be allowed to fail in this way,
-> -only autosuspend calls.  The driver can tell them apart by checking
-> -the PM_EVENT_AUTO bit in the message.event argument to the suspend
-> -method; this bit will be set for internal PM events (autosuspend) and
-> -clear for external PM events.
-> +only autosuspend calls.  The driver can tell them apart by applying
-> +the PMSG_IS_AUTO() macro to the message argument to the suspend
-> +method; it will return True for internal PM events (autosuspend) and
-> +False for external PM events.
->  
->  
->  	Mutual exclusion
-> Index: usb-3.1/drivers/net/usb/usbnet.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/net/usb/usbnet.c
-> +++ usb-3.1/drivers/net/usb/usbnet.c
-> @@ -1470,7 +1470,7 @@ int usbnet_suspend (struct usb_interface
->  	if (!dev->suspend_count++) {
->  		spin_lock_irq(&dev->txq.lock);
->  		/* don't autosuspend while transmitting */
-> -		if (dev->txq.qlen && (message.event & PM_EVENT_AUTO)) {
-> +		if (dev->txq.qlen && PMSG_IS_AUTO(message)) {
->  			spin_unlock_irq(&dev->txq.lock);
->  			return -EBUSY;
->  		} else {
-> Index: usb-3.1/drivers/net/wimax/i2400m/usb.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/net/wimax/i2400m/usb.c
-> +++ usb-3.1/drivers/net/wimax/i2400m/usb.c
-> @@ -599,7 +599,7 @@ void i2400mu_disconnect(struct usb_inter
->   *
->   *    As well, the device might refuse going to sleep for whichever
->   *    reason. In this case we just fail. For system suspend/hibernate,
-> - *    we *can't* fail. We check PM_EVENT_AUTO to see if the
-> + *    we *can't* fail. We check PMSG_IS_AUTO to see if the
->   *    suspend call comes from the USB stack or from the system and act
->   *    in consequence.
->   *
-> @@ -615,7 +615,7 @@ int i2400mu_suspend(struct usb_interface
->  	struct i2400m *i2400m = &i2400mu->i2400m;
->  
->  #ifdef CONFIG_PM
-> -	if (pm_msg.event & PM_EVENT_AUTO)
-> +	if (PMSG_IS_AUTO(pm_msg))
->  		is_autosuspend = 1;
->  #endif
->  
-> Index: usb-3.1/sound/usb/card.c
-> ===================================================================
-> --- usb-3.1.orig/sound/usb/card.c
-> +++ usb-3.1/sound/usb/card.c
-> @@ -628,7 +628,7 @@ static int usb_audio_suspend(struct usb_
->  	if (chip == (void *)-1L)
->  		return 0;
->  
-> -	if (!(message.event & PM_EVENT_AUTO)) {
-> +	if (!PMSG_IS_AUTO(message)) {
->  		snd_power_change_state(chip->card, SNDRV_CTL_POWER_D3hot);
->  		if (!chip->num_suspended_intf++) {
->  			list_for_each(p, &chip->pcm_list) {
-> Index: usb-3.1/drivers/bluetooth/btusb.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/bluetooth/btusb.c
-> +++ usb-3.1/drivers/bluetooth/btusb.c
-> @@ -1103,7 +1103,7 @@ static int btusb_suspend(struct usb_inte
->  		return 0;
->  
->  	spin_lock_irq(&data->txlock);
-> -	if (!((message.event & PM_EVENT_AUTO) && data->tx_in_flight)) {
-> +	if (!(PMSG_IS_AUTO(message) && data->tx_in_flight)) {
->  		set_bit(BTUSB_SUSPENDING, &data->flags);
->  		spin_unlock_irq(&data->txlock);
->  	} else {
-> Index: usb-3.1/drivers/hid/hid-picolcd.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/hid/hid-picolcd.c
-> +++ usb-3.1/drivers/hid/hid-picolcd.c
-> @@ -2409,7 +2409,7 @@ static int picolcd_raw_event(struct hid_
->  #ifdef CONFIG_PM
->  static int picolcd_suspend(struct hid_device *hdev, pm_message_t message)
->  {
-> -	if (message.event & PM_EVENT_AUTO)
-> +	if (PMSG_IS_AUTO(message))
->  		return 0;
->  
->  	picolcd_suspend_backlight(hid_get_drvdata(hdev));
-> Index: usb-3.1/drivers/hid/usbhid/hid-core.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/hid/usbhid/hid-core.c
-> +++ usb-3.1/drivers/hid/usbhid/hid-core.c
-> @@ -1332,7 +1332,7 @@ static int hid_suspend(struct usb_interf
->  	struct usbhid_device *usbhid = hid->driver_data;
->  	int status;
->  
-> -	if (message.event & PM_EVENT_AUTO) {
-> +	if (PMSG_IS_AUTO(message)) {
->  		spin_lock_irq(&usbhid->lock);	/* Sync with error handler */
->  		if (!test_bit(HID_RESET_PENDING, &usbhid->iofl)
->  		    && !test_bit(HID_CLEAR_HALT, &usbhid->iofl)
-> @@ -1367,7 +1367,7 @@ static int hid_suspend(struct usb_interf
->  			return -EIO;
->  	}
->  
-> -	if (!ignoreled && (message.event & PM_EVENT_AUTO)) {
-> +	if (!ignoreled && PMSG_IS_AUTO(message)) {
->  		spin_lock_irq(&usbhid->lock);
->  		if (test_bit(HID_LED_ON, &usbhid->iofl)) {
->  			spin_unlock_irq(&usbhid->lock);
-> @@ -1380,8 +1380,7 @@ static int hid_suspend(struct usb_interf
->  	hid_cancel_delayed_stuff(usbhid);
->  	hid_cease_io(usbhid);
->  
-> -	if ((message.event & PM_EVENT_AUTO) &&
-> -			test_bit(HID_KEYS_PRESSED, &usbhid->iofl)) {
-> +	if (PMSG_IS_AUTO(message) && test_bit(HID_KEYS_PRESSED, &usbhid->iofl)) {
->  		/* lost race against keypresses */
->  		status = hid_start_in(hid);
->  		if (status < 0)
-> Index: usb-3.1/drivers/usb/class/cdc-acm.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/usb/class/cdc-acm.c
-> +++ usb-3.1/drivers/usb/class/cdc-acm.c
-> @@ -1305,7 +1305,7 @@ static int acm_suspend(struct usb_interf
->  	struct acm *acm = usb_get_intfdata(intf);
->  	int cnt;
->  
-> -	if (message.event & PM_EVENT_AUTO) {
-> +	if (PMSG_IS_AUTO(message)) {
->  		int b;
->  
->  		spin_lock_irq(&acm->write_lock);
-> Index: usb-3.1/drivers/usb/class/cdc-wdm.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/usb/class/cdc-wdm.c
-> +++ usb-3.1/drivers/usb/class/cdc-wdm.c
-> @@ -798,11 +798,11 @@ static int wdm_suspend(struct usb_interf
->  	dev_dbg(&desc->intf->dev, "wdm%d_suspend\n", intf->minor);
->  
->  	/* if this is an autosuspend the caller does the locking */
-> -	if (!(message.event & PM_EVENT_AUTO))
-> +	if (!PMSG_IS_AUTO(message))
->  		mutex_lock(&desc->lock);
->  	spin_lock_irq(&desc->iuspin);
->  
-> -	if ((message.event & PM_EVENT_AUTO) &&
-> +	if (PMSG_IS_AUTO(message) &&
->  			(test_bit(WDM_IN_USE, &desc->flags)
->  			|| test_bit(WDM_RESPONDING, &desc->flags))) {
->  		spin_unlock_irq(&desc->iuspin);
-> @@ -815,7 +815,7 @@ static int wdm_suspend(struct usb_interf
->  		kill_urbs(desc);
->  		cancel_work_sync(&desc->rxwork);
->  	}
-> -	if (!(message.event & PM_EVENT_AUTO))
-> +	if (!PMSG_IS_AUTO(message))
->  		mutex_unlock(&desc->lock);
->  
->  	return rv;
-> Index: usb-3.1/drivers/usb/core/driver.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/usb/core/driver.c
-> +++ usb-3.1/drivers/usb/core/driver.c
-> @@ -1046,8 +1046,7 @@ static int usb_resume_device(struct usb_
->  	/* Non-root devices on a full/low-speed bus must wait for their
->  	 * companion high-speed root hub, in case a handoff is needed.
->  	 */
-> -	if (!(msg.event & PM_EVENT_AUTO) && udev->parent &&
-> -			udev->bus->hs_companion)
-> +	if (!PMSG_IS_AUTO(msg) && udev->parent && udev->bus->hs_companion)
->  		device_pm_wait_for_dev(&udev->dev,
->  				&udev->bus->hs_companion->root_hub->dev);
->  
-> @@ -1075,7 +1074,7 @@ static int usb_suspend_interface(struct 
->  
->  	if (driver->suspend) {
->  		status = driver->suspend(intf, msg);
-> -		if (status && !(msg.event & PM_EVENT_AUTO))
-> +		if (status && !PMSG_IS_AUTO(msg))
->  			dev_err(&intf->dev, "%s error %d\n",
->  					"suspend", status);
->  	} else {
-> @@ -1189,7 +1188,7 @@ static int usb_suspend_both(struct usb_d
->  			status = usb_suspend_interface(udev, intf, msg);
->  
->  			/* Ignore errors during system sleep transitions */
-> -			if (!(msg.event & PM_EVENT_AUTO))
-> +			if (!PMSG_IS_AUTO(msg))
->  				status = 0;
->  			if (status != 0)
->  				break;
-> @@ -1199,7 +1198,7 @@ static int usb_suspend_both(struct usb_d
->  		status = usb_suspend_device(udev, msg);
->  
->  		/* Again, ignore errors during system sleep transitions */
-> -		if (!(msg.event & PM_EVENT_AUTO))
-> +		if (!PMSG_IS_AUTO(msg))
->  			status = 0;
->  	}
->  
-> Index: usb-3.1/drivers/usb/core/hcd.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/usb/core/hcd.c
-> +++ usb-3.1/drivers/usb/core/hcd.c
-> @@ -1960,7 +1960,7 @@ int hcd_bus_suspend(struct usb_device *r
->  	int		old_state = hcd->state;
->  
->  	dev_dbg(&rhdev->dev, "bus %s%s\n",
-> -			(msg.event & PM_EVENT_AUTO ? "auto-" : ""), "suspend");
-> +			(PMSG_IS_AUTO(msg) ? "auto-" : ""), "suspend");
->  	if (HCD_DEAD(hcd)) {
->  		dev_dbg(&rhdev->dev, "skipped %s of dead bus\n", "suspend");
->  		return 0;
-> @@ -1996,7 +1996,7 @@ int hcd_bus_resume(struct usb_device *rh
->  	int		old_state = hcd->state;
->  
->  	dev_dbg(&rhdev->dev, "usb %s%s\n",
-> -			(msg.event & PM_EVENT_AUTO ? "auto-" : ""), "resume");
-> +			(PMSG_IS_AUTO(msg) ? "auto-" : ""), "resume");
->  	if (HCD_DEAD(hcd)) {
->  		dev_dbg(&rhdev->dev, "skipped %s of dead bus\n", "resume");
->  		return 0;
-> Index: usb-3.1/drivers/usb/core/hub.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/usb/core/hub.c
-> +++ usb-3.1/drivers/usb/core/hub.c
-> @@ -2342,7 +2342,7 @@ int usb_port_suspend(struct usb_device *
->  			dev_dbg(&udev->dev, "won't remote wakeup, status %d\n",
->  					status);
->  			/* bail if autosuspend is requested */
-> -			if (msg.event & PM_EVENT_AUTO)
-> +			if (PMSG_IS_AUTO(msg))
->  				return status;
->  		}
->  	}
-> @@ -2367,12 +2367,12 @@ int usb_port_suspend(struct usb_device *
->  				USB_CTRL_SET_TIMEOUT);
->  
->  		/* System sleep transitions should never fail */
-> -		if (!(msg.event & PM_EVENT_AUTO))
-> +		if (!PMSG_IS_AUTO(msg))
->  			status = 0;
->  	} else {
->  		/* device has up to 10 msec to fully suspend */
->  		dev_dbg(&udev->dev, "usb %ssuspend\n",
-> -				(msg.event & PM_EVENT_AUTO ? "auto-" : ""));
-> +				(PMSG_IS_AUTO(msg) ? "auto-" : ""));
->  		usb_set_device_state(udev, USB_STATE_SUSPENDED);
->  		msleep(10);
->  	}
-> @@ -2523,7 +2523,7 @@ int usb_port_resume(struct usb_device *u
->  	} else {
->  		/* drive resume for at least 20 msec */
->  		dev_dbg(&udev->dev, "usb %sresume\n",
-> -				(msg.event & PM_EVENT_AUTO ? "auto-" : ""));
-> +				(PMSG_IS_AUTO(msg) ? "auto-" : ""));
->  		msleep(25);
->  
->  		/* Virtual root hubs can trigger on GET_PORT_STATUS to
-> @@ -2625,7 +2625,7 @@ static int hub_suspend(struct usb_interf
->  		udev = hdev->children [port1-1];
->  		if (udev && udev->can_submit) {
->  			dev_warn(&intf->dev, "port %d nyet suspended\n", port1);
-> -			if (msg.event & PM_EVENT_AUTO)
-> +			if (PMSG_IS_AUTO(msg))
->  				return -EBUSY;
->  		}
->  	}
-> Index: usb-3.1/drivers/usb/serial/sierra.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/usb/serial/sierra.c
-> +++ usb-3.1/drivers/usb/serial/sierra.c
-> @@ -1009,7 +1009,7 @@ static int sierra_suspend(struct usb_ser
->  	struct sierra_intf_private *intfdata;
->  	int b;
->  
-> -	if (message.event & PM_EVENT_AUTO) {
-> +	if (PMSG_IS_AUTO(message)) {
->  		intfdata = serial->private;
->  		spin_lock_irq(&intfdata->susp_lock);
->  		b = intfdata->in_flight;
-> Index: usb-3.1/drivers/usb/serial/usb_wwan.c
-> ===================================================================
-> --- usb-3.1.orig/drivers/usb/serial/usb_wwan.c
-> +++ usb-3.1/drivers/usb/serial/usb_wwan.c
-> @@ -651,7 +651,7 @@ int usb_wwan_suspend(struct usb_serial *
->  
->  	dbg("%s entered", __func__);
->  
-> -	if (message.event & PM_EVENT_AUTO) {
-> +	if (PMSG_IS_AUTO(message)) {
->  		spin_lock_irq(&intfdata->susp_lock);
->  		b = intfdata->in_flight;
->  		spin_unlock_irq(&intfdata->susp_lock);
-> 
-> 
-> 
+> =A0 =A0 =A0 =A0struct list_head opp_list;
+> =A0};
+>
+> @@ -404,6 +407,7 @@ int opp_add(struct device *dev, unsigned long freq, u=
+nsigned long u_volt)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_opp->dev =3D dev;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 srcu_init_notifier_head(&dev_opp->head);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0INIT_LIST_HEAD(&dev_opp->opp_list);
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0/* Secure the device list modification */
+> @@ -428,6 +432,11 @@ int opp_add(struct device *dev, unsigned long freq, =
+unsigned long u_volt)
+> =A0 =A0 =A0 =A0list_add_rcu(&new_opp->node, head);
+> =A0 =A0 =A0 =A0mutex_unlock(&dev_opp_list_lock);
+>
+> + =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0* Notify the changes in the availability of the operable
+> + =A0 =A0 =A0 =A0* frequency/voltage list.
+> + =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new=
+_opp);
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+>
+> @@ -504,6 +513,11 @@ static int opp_set_availability(struct device *dev, =
+unsigned long freq,
+> =A0 =A0 =A0 =A0mutex_unlock(&dev_opp_list_lock);
+> =A0 =A0 =A0 =A0synchronize_rcu();
+
+I'm not an RCU expert.  Is the above synchronize_rcu call still needed
+with the addition of the srcu_notifier_call_chain below?  The newly
+added src_notifier_call_chain will result in the following call graph:
+
+srcu_notifier_call_chain
+ -> __srcu_notifier_call_chain
+    -> srcu_read_lock
+        -> __srcu_read_lock
+            -> srcu_barrier
+
+>
+> + =A0 =A0 =A0 /* Notify the change of the OPP availability */
+> + =A0 =A0 =A0 srcu_notifier_call_chain(&dev_opp->head, availability_req ?
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0OPP_EVEN=
+T_ENABLE : OPP_EVENT_DISABLE,
+
+Nitpick: I'm not a fan of conditional statements as func parameters.
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0new_opp);
+> +
+> =A0 =A0 =A0 =A0/* clean up old opp */
+> =A0 =A0 =A0 =A0new_opp =3D opp;
+> =A0 =A0 =A0 =A0goto out;
+> @@ -512,6 +526,7 @@ unlock:
+> =A0 =A0 =A0 =A0mutex_unlock(&dev_opp_list_lock);
+> =A0out:
+> =A0 =A0 =A0 =A0kfree(new_opp);
+> +
+
+Nitpick: unnecessary whitespace addition.
+
+> =A0 =A0 =A0 =A0return r;
+> =A0}
+>
+> @@ -643,3 +658,16 @@ void opp_free_cpufreq_table(struct device *dev,
+> =A0 =A0 =A0 =A0*table =3D NULL;
+> =A0}
+> =A0#endif =A0 =A0 =A0 =A0 /* CONFIG_CPU_FREQ */
+> +
+> +/** opp_get_notifier() - find notifier_head of the device with opp
+> + * @dev: =A0 =A0 =A0 device pointer used to lookup device OPPs.
+> + */
+> +struct srcu_notifier_head *opp_get_notifier(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct device_opp *dev_opp =3D find_device_opp(dev);
+> +
+> + =A0 =A0 =A0 if (IS_ERR(dev_opp))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return ERR_PTR(PTR_ERR(dev_opp)); /* matchi=
+ng type */
+> +
+> + =A0 =A0 =A0 return &dev_opp->head;
+> +}
+> diff --git a/include/linux/opp.h b/include/linux/opp.h
+> index 7020e97..53d4538 100644
+> --- a/include/linux/opp.h
+> +++ b/include/linux/opp.h
+> @@ -16,9 +16,14 @@
+>
+> =A0#include <linux/err.h>
+> =A0#include <linux/cpufreq.h>
+> +#include <linux/notifier.h>
+>
+> =A0struct opp;
+>
+> +enum opp_event {
+> + =A0 =A0 =A0 OPP_EVENT_ADD, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE, OPP_EVE=
+NT_MAX
+
+I don't see OPP_EVENT_MAX used anywhere else in the code.  What is it's pur=
+pose?
+
+Regards,
+Mike
+
+> +};
+> +
+> =A0#if defined(CONFIG_PM_OPP)
+>
+> =A0unsigned long opp_get_voltage(struct opp *opp);
+> @@ -40,6 +45,8 @@ int opp_enable(struct device *dev, unsigned long freq);
+>
+> =A0int opp_disable(struct device *dev, unsigned long freq);
+>
+> +struct srcu_notifier_head *opp_get_notifier(struct device *dev);
+> +
+> =A0#else
+> =A0static inline unsigned long opp_get_voltage(struct opp *opp)
+> =A0{
+> @@ -89,6 +96,11 @@ static inline int opp_disable(struct device *dev, unsi=
+gned long freq)
+> =A0{
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+> +
+> +struct srcu_notifier_head *opp_get_notifier(struct device *dev)
+> +{
+> + =A0 =A0 =A0 return ERR_PTR(-EINVAL);
+> +}
+> =A0#endif =A0 =A0 =A0 =A0 /* CONFIG_PM */
+>
+> =A0#if defined(CONFIG_CPU_FREQ) && defined(CONFIG_PM_OPP)
+> --
+> 1.7.4.1
+>
+>
