@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v6 0/7] PM QoS: add a per-device latency
-	constraints framework
-Date: Thu, 18 Aug 2011 09:59:00 +0200
-Message-ID: <201108180959.00827.rjw__17650.0878333629$1313656069$gmane$org@sisk.pl>
-References: <1313609965-6568-1-git-send-email-j-pihet@ti.com>
+Subject: Re: [PATCH] thermal: Rename generate_netlink_event
+Date: Thu, 18 Aug 2011 10:51:51 +0200
+Message-ID: <201108181051.51492.rjw__46477.5167558857$1313657478$gmane$org@sisk.pl>
+References: <20110818094944.3ce83401@endymion.delvare>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1313609965-6568-1-git-send-email-j-pihet@ti.com>
+In-Reply-To: <20110818094944.3ce83401@endymion.delvare>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,76 +17,74 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: jean.pihet@newoldbits.com
-Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Len Brown <len.brown@intel.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, "R.Durgadoss" <durgadoss.r@intel.com>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thursday, August 18, 2011, Jean Delvare wrote:
+> It doesn't seem right for the thermal subsystem to export a symbol
+> named generate_netlink_event. This function is thermal-specific and
+> its name should reflect that fact. Rename it to
+> thermal_generate_netlink_event.
+> 
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: R.Durgadoss <durgadoss.r@intel.com>
+> Cc: Len Brown <len.brown@intel.com>
 
-On Wednesday, August 17, 2011, jean.pihet@newoldbits.com wrote:
-> From: Jean Pihet <j-pihet@ti.com>
-> 
-> High level implementation:
-> 
-> 1. Preparation of the PM QoS for the addition of a device PM QoS constraints
->    framework:
->   . rename and move of the PM QoS implementation files to kernel/power/qos.c
->     and include/linux/pm_qos.h
->   . rename of API parameters and internal fields names
->   . Move around the PM QoS misc devices management code for better readability
->   . re-organize the internal data structs
->   . generalize and export the constraints management core code
-> 
-> 2. Implementation of the per-device PM QoS constraints:
->   . create drivers/base/power/qos.c for the implementation
->   . create a device PM QoS API, which calls the PM QoS constraints management
->     core code
->   . the per-device latency constraints data strctures are stored in the device
->     dev_pm_info struct
->   . the device PM code calls the init and destroy of the per-device constraints
->     data struct in order to support the dynamic insertion and removal of the
->     devices in the system.
->   . to minimize the data usage by the per-device constraints, the data struct
->     is only allocated at the first call to dev_pm_qos_add_request. The data
->     is later free'd when the device is removed from the system
->   . per-device notification callbacks can be registered and called upon a
->     change to the aggregated constraint value
->   . a global mutex protects the constraints users from the data being
->     allocated and free'd.
-> 
-> 3. add a global notification mechanism for the device constraints
->   . add a global notification chain that gets called upon changes to the
->     aggregated constraint value for any device.
->   . the notification callbacks are passing the full constraint request data
->     in order for the callees to have access to it. The current use is for the
->     platform low-level code to access the target device of the constraint
-> 
-> 
-> Questions:
-> 1. the user space API is still under discussions on linux-omap and linux-pm MLs,
->    cf. [1]. The idea is to add a user-space API for the devices constratins
->    PM QoS, using a sysfs entry per device
-> 
-> [1] http://marc.info/?l=linux-omap&m=131232344503327&w=2
-> 
-> ToDo:
-> 1. write Documentation for the new PM QoS class, once the code is agreed on
-> 2. submit patches for the OMAP low level code to control the power domains
->    states from the device constraints, using a global notification callback
-> 
->    
-> Based on the master branch of the linux-omap git tree (3.1.0-rc1). Compile
-> tested using OMAP and x86 generic defconfigs.
-> 
-> Tested on OMAP3 Beagleboard (ES2.x).
-> Need testing on platforms other than OMAP, because of the impact on the
-> device insertion/removal in device_pm_add/remove
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-OK
-
-If that were my code, I'd probably change a couple of things more, but
-it looks good enough to me to take as is.  I'm going to push this patchset
-for 3.2.
-
-Thanks a lot for your hard work on it,
-Rafael
+> ---
+>  Documentation/thermal/sysfs-api.txt |    2 +-
+>  drivers/thermal/thermal_sys.c       |    4 ++--
+>  include/linux/thermal.h             |    4 ++--
+>  3 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> --- linux-3.1-rc2.orig/Documentation/thermal/sysfs-api.txt	2011-07-22 04:17:23.000000000 +0200
+> +++ linux-3.1-rc2/Documentation/thermal/sysfs-api.txt	2011-08-17 22:36:57.000000000 +0200
+> @@ -284,7 +284,7 @@ method, the sys I/F structure will be bu
+>  The framework includes a simple notification mechanism, in the form of a
+>  netlink event. Netlink socket initialization is done during the _init_
+>  of the framework. Drivers which intend to use the notification mechanism
+> -just need to call generate_netlink_event() with two arguments viz
+> +just need to call thermal_generate_netlink_event() with two arguments viz
+>  (originator, event). Typically the originator will be an integer assigned
+>  to a thermal_zone_device when it registers itself with the framework. The
+>  event will be one of:{THERMAL_AUX0, THERMAL_AUX1, THERMAL_CRITICAL,
+> --- linux-3.1-rc2.orig/drivers/thermal/thermal_sys.c	2011-08-16 11:49:57.000000000 +0200
+> +++ linux-3.1-rc2/drivers/thermal/thermal_sys.c	2011-08-17 22:37:22.000000000 +0200
+> @@ -1304,7 +1304,7 @@ static struct genl_multicast_group therm
+>  	.name = THERMAL_GENL_MCAST_GROUP_NAME,
+>  };
+>  
+> -int generate_netlink_event(u32 orig, enum events event)
+> +int thermal_generate_netlink_event(u32 orig, enum events event)
+>  {
+>  	struct sk_buff *skb;
+>  	struct nlattr *attr;
+> @@ -1363,7 +1363,7 @@ int generate_netlink_event(u32 orig, enu
+>  
+>  	return result;
+>  }
+> -EXPORT_SYMBOL(generate_netlink_event);
+> +EXPORT_SYMBOL(thermal_generate_netlink_event);
+>  
+>  static int genetlink_init(void)
+>  {
+> --- linux-3.1-rc2.orig/include/linux/thermal.h	2011-08-16 11:50:04.000000000 +0200
+> +++ linux-3.1-rc2/include/linux/thermal.h	2011-08-17 22:36:47.000000000 +0200
+> @@ -152,9 +152,9 @@ struct thermal_cooling_device *thermal_c
+>  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
+>  
+>  #ifdef CONFIG_NET
+> -extern int generate_netlink_event(u32 orig, enum events event);
+> +extern int thermal_generate_netlink_event(u32 orig, enum events event);
+>  #else
+> -static inline int generate_netlink_event(u32 orig, enum events event)
+> +static inline int thermal_generate_netlink_event(u32 orig, enum events event)
+>  {
+>  	return 0;
+>  }
+> 
+> 
+> 
