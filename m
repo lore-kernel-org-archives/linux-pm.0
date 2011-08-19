@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCHSET] freezer: fix various bugs and simplify
-	implementation
-Date: Fri, 19 Aug 2011 23:00:55 +0200
-Message-ID: <201108192300.55405.rjw__43579.7592079782$1313787726$gmane$org@sisk.pl>
+Subject: Re: [PATCH 07/16] freezer: don't distinguish nosig tasks
+	on thaw
+Date: Fri, 19 Aug 2011 23:14:52 +0200
+Message-ID: <201108192314.53010.rjw__5252.54509780115$1313788453$gmane$org@sisk.pl>
 References: <1313763382-12341-1-git-send-email-tj@kernel.org>
+	<1313763382-12341-8-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1313763382-12341-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1313763382-12341-8-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,57 +19,76 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, oleg@redhat.com, arnd@arndb.de
+To: Tejun Heo <tj@kernel.org>
+Cc: menage@google.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, arnd@arndb.de, oleg@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
 On Friday, August 19, 2011, Tejun Heo wrote:
-> Hello,
-> 
-> The freezer code has developed a number of convolutions and bugs.
-> It's now using five per-task flags - TIF_FREEZE, PF_FREEZING,
-> PF_NOFREEZE, PF_FROZEN, PF_FREEZER_SKIP and PF_FREEZER_NOSIG, and at
-> the same time has quite a few race conditions.  PF_NOFREEZE
-> modifications can race against PM freezer, cgroup_freezer can race
-> against PM freezer, and so on.
-> 
-> This patchset tries to simplify the freezer implementation and fix the
-> various bugs.  It makes the synchronization more straight forward and
-> replaces TIF_FREEZE with directly checking freeze conditions which are
-> in effect, which makes the whole thing much saner.
-> 
-> This patchset removes TIF_FREEZE and PF_FREEZING.  Also,
-> PF_FREEZER_SKIP users are planned to move away from the flag and will
-> be removed.  It contains the following 16 patches.
-> 
->  0001-freezer-fix-current-state-restoration-race-in-refrig.patch
->  0002-freezer-don-t-unnecessarily-set-PF_NOFREEZE-explicit.patch
->  0003-freezer-unexport-refrigerator-and-update-try_to_free.patch
->  0004-freezer-implement-and-use-kthread_freezable_should_s.patch
->  0005-freezer-rename-thaw_process-to-__thaw_task-and-simpl.patch
->  0006-freezer-make-exiting-tasks-properly-unfreezable.patch
->  0007-freezer-don-t-distinguish-nosig-tasks-on-thaw.patch
->  0008-freezer-use-dedicated-lock-instead-of-task_lock-memo.patch
->  0009-freezer-make-freezing-indicate-freeze-condition-in-e.patch
->  0010-freezer-fix-set_freezable-_with_signal-race.patch
->  0011-freezer-kill-PF_FREEZING.patch
->  0012-freezer-clean-up-freeze_processes-failure-path.patch
->  0013-cgroup_freezer-prepare-for-removal-of-TIF_FREEZE.patch
->  0014-freezer-make-freezing-test-freeze-conditions-in-effe.patch
->  0015-freezer-remove-now-unused-TIF_FREEZE.patch
->  0016-freezer-remove-should_send_signal-and-update-frozen.patch
-> 
-> This patchset is on top of the current linus#master (01b883358b "Merge
-> git://git.kernel.org/pub/scm/linux/kernel/git/davem/sparc") and
-> available in the following git branch.
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
+> There's no point in thawing nosig tasks before others.  There's no
+> ordering requirement between the two groups on thaw, which the staged
+> thawing can't guarantee anyway.  Simplify thaw_processes() by removing
+> the distinction and collapsing thaw_tasks() into thaw_processes().
+> This will help further updates to freezer.
 
-Good work, thanks for doing this.  I'd like this to go through my
-tree if you don't mind, so please let me know when the patchset is
-ready for me to pull from your branch.
+I'm not sure if I like this patch.
 
-Also please CC linux-pm on PM-related patches.
+Right now there are no ordering requirements between the two groups
+of processes, but if we decide to freeze filesystems on suspend,
+we'll need to thaw them between nosig and sig I suppose.
 
 Thanks,
 Rafael
+
+
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+>  kernel/power/process.c |   20 +++++++-------------
+>  1 files changed, 7 insertions(+), 13 deletions(-)
+> 
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index ddfaba4..3eee548 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -160,34 +160,28 @@ int freeze_processes(void)
+>  	return error;
+>  }
+>  
+> -static void thaw_tasks(bool nosig_only)
+> +void thaw_processes(void)
+>  {
+>  	struct task_struct *g, *p;
+>  
+> +	oom_killer_enable();
+> +
+> +	printk("Restarting tasks ... ");
+> +
+> +	thaw_workqueues();
+> +
+>  	read_lock(&tasklist_lock);
+>  	do_each_thread(g, p) {
+>  		if (!freezable(p))
+>  			continue;
+>  
+> -		if (nosig_only && should_send_signal(p))
+> -			continue;
+> -
+>  		if (cgroup_freezing_or_frozen(p))
+>  			continue;
+>  
+>  		__thaw_task(p);
+>  	} while_each_thread(g, p);
+>  	read_unlock(&tasklist_lock);
+> -}
+> -
+> -void thaw_processes(void)
+> -{
+> -	oom_killer_enable();
+>  
+> -	printk("Restarting tasks ... ");
+> -	thaw_workqueues();
+> -	thaw_tasks(true);
+> -	thaw_tasks(false);
+>  	schedule();
+>  	printk("done.\n");
+>  }
+> 
