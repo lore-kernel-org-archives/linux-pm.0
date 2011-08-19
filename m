@@ -1,15 +1,17 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] PM: add macro to test for runtime PM events
-Date: Thu, 18 Aug 2011 16:26:56 -0700
-Message-ID: <20110818232656.GA29608__26574.1192423322$1313710309$gmane$org@kroah.com>
-References: <Pine.LNX.4.44L0.1108181600020.1628-100000@iolanthe.rowland.org>
-	<201108182252.10364.rjw@sisk.pl>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v6 1/4] PM / OPP: Add OPP availability change
+	notifier.
+Date: Fri, 19 Aug 2011 10:42:18 +0900
+Message-ID: <CAJ0PZbQZqjoMCHPmBc+8RGpU6xHTZCjkD9p8D-H-Rvw0Q=-HYA@mail.gmail.com>
+References: <1313663262-15308-1-git-send-email-myungjoo.ham@samsung.com>
+	<1313663262-15308-2-git-send-email-myungjoo.ham@samsung.com>
+	<CAJOA=zO-MVEzC9bceapJZ-UH=i8xP=VRTD=f=LzZibW3rwmqsw@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201108182252.10364.rjw@sisk.pl>
+In-Reply-To: <CAJOA=zO-MVEzC9bceapJZ-UH=i8xP=VRTD=f=LzZibW3rwmqsw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,28 +21,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Takashi Iwai <tiwai@suse.de>, netdev@vger.kernel.org, USB list <linux-usb@vger.kernel.org>, linux-bluetooth@vger.kernel.org, linux-input@vger.kernel.org, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+To: "Turquette, Mike" <mturquette@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 18, 2011 at 10:52:10PM +0200, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Thursday, August 18, 2011, Alan Stern wrote:
-> > This patch (as1482) adds a macro for testing whether or not a
-> > pm_message value represents an autosuspend or autoresume (i.e., a
-> > runtime PM) event.  Encapsulating this notion seems preferable to
-> > open-coding the test all over the place.
-> > 
-> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> > 
-> > ---
-> > 
-> > This is a minor change in the PM API, but most of the affected files 
-> > are in the USB subsystem.  Therefore either Rafael or Greg might prefer 
-> > to accept this patch.
-> 
-> I can take the patch if Greg is fine with that.
-
-Fine with me:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+T24gRnJpLCBBdWcgMTksIDIwMTEgYXQgNzowNiBBTSwgVHVycXVldHRlLCBNaWtlIDxtdHVycXVl
+dHRlQHRpLmNvbT4gd3JvdGU6Cj4gT24gVGh1LCBBdWcgMTgsIDIwMTEgYXQgMzoyNyBBTSwgTXl1
+bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+IHdyb3RlOgo+Pgo+PiBAQCAtNTA0
+LDYgKzUxMywxMSBAQCBzdGF0aWMgaW50IG9wcF9zZXRfYXZhaWxhYmlsaXR5KHN0cnVjdCBkZXZp
+Y2UgKmRldiwgdW5zaWduZWQgbG9uZyBmcmVxLAo+PiDCoCDCoCDCoCDCoG11dGV4X3VubG9jaygm
+ZGV2X29wcF9saXN0X2xvY2spOwo+PiDCoCDCoCDCoCDCoHN5bmNocm9uaXplX3JjdSgpOwo+Cj4g
+SSdtIG5vdCBhbiBSQ1UgZXhwZXJ0LiDCoElzIHRoZSBhYm92ZSBzeW5jaHJvbml6ZV9yY3UgY2Fs
+bCBzdGlsbCBuZWVkZWQKPiB3aXRoIHRoZSBhZGRpdGlvbiBvZiB0aGUgc3JjdV9ub3RpZmllcl9j
+YWxsX2NoYWluIGJlbG93PyDCoFRoZSBuZXdseQo+IGFkZGVkIHNyY19ub3RpZmllcl9jYWxsX2No
+YWluIHdpbGwgcmVzdWx0IGluIHRoZSBmb2xsb3dpbmcgY2FsbCBncmFwaDoKPgo+IHNyY3Vfbm90
+aWZpZXJfY2FsbF9jaGFpbgo+IMKgLT4gX19zcmN1X25vdGlmaWVyX2NhbGxfY2hhaW4KPiDCoCDC
+oC0+IHNyY3VfcmVhZF9sb2NrCj4gwqAgwqAgwqAgwqAtPiBfX3NyY3VfcmVhZF9sb2NrCj4gwqAg
+wqAgwqAgwqAgwqAgwqAtPiBzcmN1X2JhcnJpZXIKClRob3VnaCBkaWRuJ3QgcmVhZCB0aG9yb3Vn
+aCBrZXJuZWwvcmN1dHJlZV9wbHVnaW4uaCwgc3luY2hyb25pemVfcmN1KCkKYXBwZWFycyB0byBk
+byBhIGxvdCBtb3JlIHRoYW4gc2xlZXBhYmxlIFJDVSdzIHNyY3VfYmFycmllci4Kc3JjdV9iYXJy
+aWVyKCkgcHJvdmlkZXMgImJhcnJpZXIiIGZvciBjb21waWxlciBhdCBjb21waWxlLXRpbWUgYW5k
+CnN5bmNocm9uaXplX3JjdSgpIHByb3ZpZGVzICJiYXJyaWVyIiBmb3IgcHJvY2Vzc2VzIGF0IHJ1
+bi10aW1lLiBGb3IKZGlzdHJpYnV0ZWQgc3lzdGVtcyAoaW5jbHVkaW5nIG11bHRpLWNvcmUgc3lz
+dGVtcykgaW4gZ2VuZXJhbCwgSSB0aGluawp1c2luZyBzcmN1X2JhcnJpZXIoKSBpbnN0ZWFkIG9m
+IHN5bmNocm9uaXplX3JjdSgpIGlzIHZlcnkgZGFuZ2Vyb3VzLgoKPgpbXQo+Cj4gTml0cGljazog
+SSdtIG5vdCBhIGZhbiBvZiBjb25kaXRpb25hbCBzdGF0ZW1lbnRzIGFzIGZ1bmMgcGFyYW1ldGVy
+cy4KPgpbXQo+Cj4gTml0cGljazogdW5uZWNlc3Nhcnkgd2hpdGVzcGFjZSBhZGRpdGlvbi4KPgoK
+T2ssIEknbGwgcmV2aXNlIHRoZW0uCgpbXQo+Pgo+PiArZW51bSBvcHBfZXZlbnQgewo+PiArIMKg
+IMKgIMKgIE9QUF9FVkVOVF9BREQsIE9QUF9FVkVOVF9FTkFCTEUsIE9QUF9FVkVOVF9ESVNBQkxF
+LCBPUFBfRVZFTlRfTUFYCj4KPiBJIGRvbid0IHNlZSBPUFBfRVZFTlRfTUFYIHVzZWQgYW55d2hl
+cmUgZWxzZSBpbiB0aGUgY29kZS4gwqBXaGF0IGlzIGl0J3MgcHVycG9zZT8KPgoKSXQgd2FzIHBs
+YWNlZCB0byBtYXJrICJ0aGUgZW5kIG9mIHRoZSBsaXN0IiBmb3Igb3BwIG5vdGlmaWVyIHVzZXJz
+LgpIb3dldmVyLCBpdCBzZWVtcyB1c2VsZXNzLiBJJ2xsIHJlbW92ZSBpdC4KCgpJJ2xsIHJlc3Vi
+bWl0IHRoaXMgcGFydCBvZiB0aGUgcGF0Y2hzZXQuCgoKVGhhbmtzLgoKTXl1bmdKb28KCi0tIApN
+eXVuZ0pvbyBIYW0gKO2VqOuqheyjvCksIFBoLkQuCk1vYmlsZSBTb2Z0d2FyZSBQbGF0Zm9ybSBM
+YWIsCkRpZ2l0YWwgTWVkaWEgYW5kIENvbW11bmljYXRpb25zIChETUMpIEJ1c2luZXNzClNhbXN1
+bmcgRWxlY3Ryb25pY3MKY2VsbDogODItMTAtNjcxNC0yODU4Cl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1w
+bUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRp
+b24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
