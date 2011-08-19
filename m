@@ -1,14 +1,17 @@
-From: "Turquette, Mike" <mturquette@ti.com>
-Subject: Re: [PATCH v6 4/4] PM / DEVFREQ: add sysfs interface
-Date: Thu, 18 Aug 2011 20:15:27 -0700
-Message-ID: <CAJOA=zO6oCH1pO8mj_HmjgvHOALxSs6M4sXMuQpombmdLaKqiw@mail.gmail.com>
-References: <1313663262-15308-1-git-send-email-myungjoo.ham@samsung.com>
-	<1313663262-15308-5-git-send-email-myungjoo.ham@samsung.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
+ wake-up constraints
+Date: Fri, 19 Aug 2011 12:11:04 +0900
+Message-ID: <1313723464.19990.124.camel__12763.1423682489$1313729348$gmane$org@finisterre.wolfsonmicro.main>
+References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
+	<201108062146.20423.rjw@sisk.pl>
+	<20110807024712.GA5887@opensource.wolfsonmicro.com>
+	<201108082331.35853.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1313663262-15308-5-git-send-email-myungjoo.ham@samsung.com>
+In-Reply-To: <201108082331.35853.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,343 +21,77 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 18, 2011 at 3:27 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wr=
-ote:
-> Device specific sysfs interface /sys/devices/.../power/devfreq_*
-> - governor =A0 =A0 =A0R: name of governor
-> - cur_freq =A0 =A0 =A0R: current frequency
-> - max_freq =A0 =A0 =A0R: maximum operable frequency
-> - min_freq =A0 =A0 =A0R: minimum operable frequency
-> - set_freq =A0 =A0 =A0R: read user specified frequency (0 if not specifie=
-d yet)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0W: set user specified frequency
-> - polling_interval =A0 =A0 =A0R: polling interval in ms given with devfre=
-q profile
+On Mon, 2011-08-08 at 23:31 +0200, Rafael J. Wysocki wrote:
+> On Sunday, August 07, 2011, Mark Brown wrote:
 
-This code still does not export up_threshold/down_threshold entries
-for simple-ondemand which I requested in V5.  However there is a much
-bigger issue here brought out in patch 3.  Those values shouldn't be
-global, since devices might want different thresholds.
+> > OK, so this does sound like there's probably a genuine issue on PCs due
+> > to limitations in the environment.  Is it possible to expose these
+> > things to userspace in a way that's limited to the affected platforms?
 
-The solution is not to put those tunables in struct devfreq.
-up_threshold and down_threshold must be parameters of the governor,
-and there must be a per-device instance of the governor.
+> Well, in principle we could make it depend in CONFIG_ACPI or something like
+> this, but I'm not sure that will be well-received. :-)
 
-Regards,
-Mike
+Or the drivers for the particular buses in use?
 
->
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->
-> --
-> Changed from v5
-> - updated devferq_update usage.
->
-> Changed from v4
-> - removed system-wide sysfs interface
-> - removed tickling sysfs interface
-> - added set_freq for userspace governor (and any other governors that
-> =A0require user input)
->
-> Changed from v3
-> - corrected sysfs API usage
-> - corrected error messages
-> - moved sysfs entry location
-> - added sysfs entries
->
-> Changed from v2
-> - add ABI entries for devfreq sysfs interface
-> ---
-> =A0Documentation/ABI/testing/sysfs-devices-power | =A0 45 +++++++
-> =A0drivers/devfreq/devfreq.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
-=A0152 +++++++++++++++++++++++++
-> =A02 files changed, 197 insertions(+), 0 deletions(-)
->
-> diff --git a/Documentation/ABI/testing/sysfs-devices-power b/Documentatio=
-n/ABI/testing/sysfs-devices-power
-> index 8ffbc25..6e77604 100644
-> --- a/Documentation/ABI/testing/sysfs-devices-power
-> +++ b/Documentation/ABI/testing/sysfs-devices-power
-> @@ -165,3 +165,48 @@ Description:
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Not all drivers support this attribute. =
-=A0If it isn't supported,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0attempts to read or write it will yield I/=
-O errors.
-> +
-> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_governor
-> +Date: =A0 =A0 =A0 =A0 =A0July 2011
-> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
-> +Description:
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_governor=
- shows the name
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 of the governor used by the corresponding d=
-evice.
-> +
-> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_cur_freq
-> +Date: =A0 =A0 =A0 =A0 =A0July 2011
-> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
-> +Description:
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_cur_freq=
- shows the current
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 frequency of the corresponding device.
-> +
-> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_max_freq
-> +Date: =A0 =A0 =A0 =A0 =A0July 2011
-> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
-> +Description:
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_cur_freq=
- shows the
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 maximum operable frequency of the correspon=
-ding device.
-> +
-> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_min_freq
-> +Date: =A0 =A0 =A0 =A0 =A0July 2011
-> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
-> +Description:
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_cur_freq=
- shows the
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 minimum operable frequency of the correspon=
-ding device.
-> +
-> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_set_freq
-> +Date: =A0 =A0 =A0 =A0 =A0August 2011
-> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
-> +Description:
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_set_freq=
- sets and shows
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 the user specified desired frequency of the=
- device. The
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 governor may and may not use the value. Wit=
-h the basic
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 governors given with devfreq.c, userspace g=
-overnor is
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 using the value.
-> +
-> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_polling_interval
-> +Date: =A0 =A0 =A0 =A0 =A0July 2011
-> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
-> +Description:
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_polling_=
-interval shows the
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 requested polling interval of the correspon=
-ding device.
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 2036f2c..13b422f 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -37,6 +37,8 @@ static struct delayed_work devfreq_work;
-> =A0static LIST_HEAD(devfreq_list);
-> =A0static DEFINE_MUTEX(devfreq_list_lock);
->
-> +static struct attribute_group dev_attr_group;
-> +
-> =A0/**
-> =A0* find_device_devfreq() - find devfreq struct using device pointer
-> =A0* @dev: =A0 =A0 =A0 device pointer used to lookup device devfreq.
-> @@ -154,6 +156,8 @@ static void devfreq_monitor(struct work_struct *work)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(de=
-vfreq->dev, "Due to devfreq_do error(%d), devfreq(%s) is removed from the d=
-evice\n",
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0error, devfreq->governor->name);
->
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 sysfs_unmer=
-ge_group(&devfreq->dev->kobj,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 &dev_attr_group);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0list_del(&=
-devfreq->node);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0kfree(devf=
-req);
->
-> @@ -244,6 +248,8 @@ int devfreq_add_device(struct device *dev, struct dev=
-freq_dev_profile *profile,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0queue_delayed_work(devfreq_wq, &devfreq_wo=
-rk,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfr=
-eq->next_polling);
-> =A0 =A0 =A0 =A0}
-> +
-> + =A0 =A0 =A0 sysfs_merge_group(&dev->kobj, &dev_attr_group);
-> =A0out:
-> =A0 =A0 =A0 =A0mutex_unlock(&devfreq_list_lock);
->
-> @@ -276,6 +282,8 @@ int devfreq_remove_device(struct device *dev)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out;
-> =A0 =A0 =A0 =A0}
->
-> + =A0 =A0 =A0 sysfs_unmerge_group(&dev->kobj, &dev_attr_group);
-> +
-> =A0 =A0 =A0 =A0list_del(&devfreq->node);
-> =A0 =A0 =A0 =A0srcu_notifier_chain_unregister(nh, &devfreq->nb);
-> =A0 =A0 =A0 =A0kfree(devfreq);
-> @@ -284,6 +292,150 @@ out:
-> =A0 =A0 =A0 =A0return 0;
-> =A0}
->
-> +static ssize_t show_governor(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_at=
-tribute *attr, char *buf)
-> +{
-> + =A0 =A0 =A0 struct devfreq *df =3D find_device_devfreq(dev);
-> +
-> + =A0 =A0 =A0 if (IS_ERR(df))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
-> + =A0 =A0 =A0 if (!df->governor)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
-> +
-> + =A0 =A0 =A0 return sprintf(buf, "%s\n", df->governor->name);
-> +}
-> +
-> +static ssize_t show_freq(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_attribute =
-*attr, char *buf)
-> +{
-> + =A0 =A0 =A0 struct devfreq *df =3D find_device_devfreq(dev);
-> +
-> + =A0 =A0 =A0 if (IS_ERR(df))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
-> +
-> + =A0 =A0 =A0 return sprintf(buf, "%lu\n", df->previous_freq);
-> +}
-> +
-> +static ssize_t show_max_freq(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_at=
-tribute *attr, char *buf)
-> +{
-> + =A0 =A0 =A0 struct devfreq *df =3D find_device_devfreq(dev);
-> + =A0 =A0 =A0 unsigned long freq =3D ULONG_MAX;
-> + =A0 =A0 =A0 struct opp *opp;
-> +
-> + =A0 =A0 =A0 if (IS_ERR(df))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
-> + =A0 =A0 =A0 if (!df->dev)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
-> +
-> + =A0 =A0 =A0 opp =3D opp_find_freq_floor(df->dev, &freq);
-> + =A0 =A0 =A0 if (IS_ERR(opp))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(opp);
-> +
-> + =A0 =A0 =A0 return sprintf(buf, "%lu\n", freq);
-> +}
-> +
-> +static ssize_t show_min_freq(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_at=
-tribute *attr, char *buf)
-> +{
-> + =A0 =A0 =A0 struct devfreq *df =3D find_device_devfreq(dev);
-> + =A0 =A0 =A0 unsigned long freq =3D 0;
-> + =A0 =A0 =A0 struct opp *opp;
-> +
-> + =A0 =A0 =A0 if (IS_ERR(df))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
-> + =A0 =A0 =A0 if (!df->dev)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
-> +
-> + =A0 =A0 =A0 opp =3D opp_find_freq_ceil(df->dev, &freq);
-> + =A0 =A0 =A0 if (IS_ERR(opp))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(opp);
-> +
-> + =A0 =A0 =A0 return sprintf(buf, "%lu\n", freq);
-> +}
-> +
-> +static ssize_t show_polling_interval(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-struct device_attribute *attr, char *buf)
-> +{
-> + =A0 =A0 =A0 struct devfreq *df =3D find_device_devfreq(dev);
-> +
-> + =A0 =A0 =A0 if (IS_ERR(df))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
-> + =A0 =A0 =A0 if (!df->profile)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
-> +
-> + =A0 =A0 =A0 return sprintf(buf, "%d\n", df->profile->polling_ms);
-> +}
-> +
-> +static ssize_t set_user_frequency(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct =
-device_attribute *attr,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 const c=
-har *buf, size_t count)
-> +{
-> + =A0 =A0 =A0 struct devfreq *devfreq;
-> + =A0 =A0 =A0 unsigned long wanted;
-> + =A0 =A0 =A0 int err =3D 0;
-> +
-> + =A0 =A0 =A0 sscanf(buf, "%lu", &wanted);
-> +
-> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
-> + =A0 =A0 =A0 devfreq =3D find_device_devfreq(dev);
-> +
-> + =A0 =A0 =A0 if (IS_ERR(devfreq)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D PTR_ERR(devfreq);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 devfreq->user_set_freq =3D wanted;
-> + =A0 =A0 =A0 err =3D count;
-> +out:
-> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
-> + =A0 =A0 =A0 if (err >=3D 0)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq_update(&devfreq->nb, 0, NULL);
-> + =A0 =A0 =A0 return err;
-> +}
-> +
-> +static ssize_t show_user_frequency(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0stru=
-ct device_attribute *attr, char *buf)
-> +{
-> + =A0 =A0 =A0 struct devfreq *devfreq;
-> + =A0 =A0 =A0 int err =3D 0;
-> +
-> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
-> + =A0 =A0 =A0 devfreq =3D find_device_devfreq(dev);
-> +
-> + =A0 =A0 =A0 if (IS_ERR(devfreq)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D PTR_ERR(devfreq);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 err =3D sprintf(buf, "%lu\n", devfreq->user_set_freq);
-> +out:
-> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
-> + =A0 =A0 =A0 return err;
-> +
-> +}
-> +
-> +static DEVICE_ATTR(devfreq_governor, 0444, show_governor, NULL);
-> +static DEVICE_ATTR(devfreq_cur_freq, 0444, show_freq, NULL);
-> +static DEVICE_ATTR(devfreq_max_freq, 0444, show_max_freq, NULL);
-> +static DEVICE_ATTR(devfreq_min_freq, 0444, show_min_freq, NULL);
-> +static DEVICE_ATTR(devfreq_polling_interval, 0444, show_polling_interval=
-, NULL);
-> +static DEVICE_ATTR(devfreq_set_freq, 0644, show_user_frequency,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0set_user_frequency);
-> +static struct attribute *dev_entries[] =3D {
-> + =A0 =A0 =A0 &dev_attr_devfreq_governor.attr,
-> + =A0 =A0 =A0 &dev_attr_devfreq_cur_freq.attr,
-> + =A0 =A0 =A0 &dev_attr_devfreq_max_freq.attr,
-> + =A0 =A0 =A0 &dev_attr_devfreq_min_freq.attr,
-> + =A0 =A0 =A0 &dev_attr_devfreq_polling_interval.attr,
-> + =A0 =A0 =A0 &dev_attr_devfreq_set_freq.attr,
-> + =A0 =A0 =A0 NULL,
-> +};
-> +static struct attribute_group dev_attr_group =3D {
-> + =A0 =A0 =A0 .name =A0 =3D power_group_name,
-> + =A0 =A0 =A0 .attrs =A0=3D dev_entries,
-> +};
-> +
-> =A0/**
-> =A0* devfreq_init() - Initialize data structure for devfreq framework and
-> =A0* =A0 =A0 =A0 =A0 =A0 =A0 =A0 start polling registered devfreq devices.
-> --
-> 1.7.4.1
->
->
+> > That does sound like a fair characterization for PCs.  For embedded
+> > systems where we have a *much* better knowledge of the hardware we're
+> > running on you're just working with the basics of what the hardware
+> > needs to run - the hardware needs whatever it needs and no matter what
+> > you think of the quality of the hardware there's an expectation that the
+> > kernel is ging to be able to work.
+
+> In the particular case in question, though, there's some freedom.  Namely,
+> the hardware will work for many different QoS constraints and it's not
+> precisely known in principle and upfront which one would be optimal for
+> a given workload.
+
+But are these tunings things that we can usefully represent in a generic
+API or are they specific parameters of the subsystem in question? I
+don't think anyone has suggested that having tuning for things where
+there are genuine choices is a good thing.
+
+> > As I've said it's not the fine tuning that I'm worried about, it's the
+> > specific mechanism that's being suggested.  Being able to tune things in
+> > a way that's relevant to the device being tuned seems entirely sensible.
+
+> Do you know any better mechanism consistent accross all devices?
+> Please be specific. :-)
+
+Well, I'm suggesting that we shouldn't have a standard userspace API for
+this in the first place but should instead be doing things on the
+subsystem or driver level. I'm not sure we can sensibly do anything that
+works usefully for all devices.
+
+> > Realistically if you're in a position where you need to work at this
+> > very low level on an embedded device you can replace the entire firmware
+> > on the device.  We don't want to end up in the situation where we've got
+> > kernel support for a device and the only way to get it to actually run
+> > sensibly is to install the silicon vendor's proprietary userspace, and
+> > we especially don't want to end up in the situation where that userspace
+> > is using standard and supported kernel interfaces to do its thing.
+
+> Well, the wakelocks example shows clearly that preventing certain interfaces
+> from being merged into mainline doesn't actually prevent people from using
+> them in actual products.  I claim it's way better if a vendor uses its
+> proprietary user space with the mainline kernel than if that vendor patches
+> the kernel and _then_ uses its proprietary user space with it.  Your
+> argumentation seems to suggest that we encourage the latter.
+
+We can't stop people doing questionable things out of tree but that
+doesn't mean lowering standards in mainline is a good idea. Keeping
+things out of tree creates a range of costs - the effort required to
+write the code and update for new kernel releases, support issues when
+the out of tree code causes problems and so on - and makes it clear to
+people using the code where the costs came from. If the code looks like
+it's standard code using standard interfaces much of that pressure goes
+away.
+
+This is similar to all the stuff that's going on in the ARM tree at the
+minute - there's nothing we can do to prevent vendors shipping random
+code of any quality in out of tree BSPs but we can set high standards
+for the quality of code we accept into mainline and let the resulting
+pressures push people towards mainline solutions.
