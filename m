@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
-	wake-up constraints
-Date: Fri, 19 Aug 2011 22:42:20 +0200
-Message-ID: <201108192242.20471.rjw__46464.0790284195$1313786519$gmane$org@sisk.pl>
-References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
-	<201108082331.35853.rjw@sisk.pl>
-	<1313723464.19990.124.camel@finisterre.wolfsonmicro.main>
+Subject: Re: [PATCHSET] freezer: fix various bugs and simplify
+	implementation
+Date: Fri, 19 Aug 2011 23:00:55 +0200
+Message-ID: <201108192300.55405.rjw__43579.7592079782$1313787726$gmane$org@sisk.pl>
+References: <1313763382-12341-1-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1313723464.19990.124.camel@finisterre.wolfsonmicro.main>
+In-Reply-To: <1313763382-12341-1-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,17 +18,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+To: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, oleg@redhat.com, arnd@arndb.de
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Friday, August 19, 2011, Tejun Heo wrote:
+> Hello,
+> 
+> The freezer code has developed a number of convolutions and bugs.
+> It's now using five per-task flags - TIF_FREEZE, PF_FREEZING,
+> PF_NOFREEZE, PF_FROZEN, PF_FREEZER_SKIP and PF_FREEZER_NOSIG, and at
+> the same time has quite a few race conditions.  PF_NOFREEZE
+> modifications can race against PM freezer, cgroup_freezer can race
+> against PM freezer, and so on.
+> 
+> This patchset tries to simplify the freezer implementation and fix the
+> various bugs.  It makes the synchronization more straight forward and
+> replaces TIF_FREEZE with directly checking freeze conditions which are
+> in effect, which makes the whole thing much saner.
+> 
+> This patchset removes TIF_FREEZE and PF_FREEZING.  Also,
+> PF_FREEZER_SKIP users are planned to move away from the flag and will
+> be removed.  It contains the following 16 patches.
+> 
+>  0001-freezer-fix-current-state-restoration-race-in-refrig.patch
+>  0002-freezer-don-t-unnecessarily-set-PF_NOFREEZE-explicit.patch
+>  0003-freezer-unexport-refrigerator-and-update-try_to_free.patch
+>  0004-freezer-implement-and-use-kthread_freezable_should_s.patch
+>  0005-freezer-rename-thaw_process-to-__thaw_task-and-simpl.patch
+>  0006-freezer-make-exiting-tasks-properly-unfreezable.patch
+>  0007-freezer-don-t-distinguish-nosig-tasks-on-thaw.patch
+>  0008-freezer-use-dedicated-lock-instead-of-task_lock-memo.patch
+>  0009-freezer-make-freezing-indicate-freeze-condition-in-e.patch
+>  0010-freezer-fix-set_freezable-_with_signal-race.patch
+>  0011-freezer-kill-PF_FREEZING.patch
+>  0012-freezer-clean-up-freeze_processes-failure-path.patch
+>  0013-cgroup_freezer-prepare-for-removal-of-TIF_FREEZE.patch
+>  0014-freezer-make-freezing-test-freeze-conditions-in-effe.patch
+>  0015-freezer-remove-now-unused-TIF_FREEZE.patch
+>  0016-freezer-remove-should_send_signal-and-update-frozen.patch
+> 
+> This patchset is on top of the current linus#master (01b883358b "Merge
+> git://git.kernel.org/pub/scm/linux/kernel/git/davem/sparc") and
+> available in the following git branch.
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
 
-I really wouldn't like the discussion to go in circles.
+Good work, thanks for doing this.  I'd like this to go through my
+tree if you don't mind, so please let me know when the patchset is
+ready for me to pull from your branch.
 
-First, please tell me what in particular you are objecting to,
-because I don't think that's any of the patches that have been
-sent to the linux-pm list to date.
+Also please CC linux-pm on PM-related patches.
 
 Thanks,
 Rafael
