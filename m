@@ -1,16 +1,12 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
-	wake-up constraints
-Date: Sat, 20 Aug 2011 21:18:33 +0200
-Message-ID: <201108202118.33433.rjw__27707.4042278857$1313867867$gmane$org@sisk.pl>
-References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
-	<201108201851.42839.rjw@sisk.pl>
-	<20110820172237.GB27040@opensource.wolfsonmicro.com>
+Subject: [PATCH] PM / Domains: Preliminary support for devices
+	with power.irq_safe set
+Date: Sat, 20 Aug 2011 21:24:58 +0200
+Message-ID: <201108202124.58851.rjw__22529.7696925283$1313868359$gmane$org@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110820172237.GB27040@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,70 +16,117 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, August 20, 2011, Mark Brown wrote:
-> On Sat, Aug 20, 2011 at 06:51:42PM +0200, Rafael J. Wysocki wrote:
-> > On Saturday, August 20, 2011, Mark Brown wrote:
-> 
-> > > Coming at this from the embedded perspective modifying the kernel just
-> > > isn't an issue.  It's quite depressing in other cases too but some of
-> > > the circumstances you mentioned in previous messages are sensible do
-> > > make sense to me.  It does seem like this is a system specific problem
-> > > which we should be able to enable as part of the support for those
-> > > systems.
-> 
-> > I don't think that's platform-specific in general.  For example, there are
-> > devices that don't really belong to any media-streaming-alike framework
-> > and we may (and probably will) want to use PM QoS with them, because they
-> > may be included in PM domains and influence power management of other
-> > devices.  Think of a serial console.
-> 
-> Using PM QoS doesn't seem platform specific of course.  Having userspace
-> need to go in and do per-device overrides in order to get things working
-> does.
-> 
-> > > > without modifying the kernel.  Also, it will help to test and debug new drivers
-> > > > and subsystems.
-> 
-> > > If it were a debugfs facility I'd not be concerned.
-> 
-> > If that's going to be per-device, it really is much easier to put it into
-> > sysfs (we already have per-device PM debug interfaces in there).  It may
-> > depend on CONFIG_PM_ADVANCED_DEBUG or something like this, though, at least
-> > to start with.
-> 
-> Yeah, the debugfs device attachment stuff is slightly annoying but it's
-> fairly straightforward to create an appropriate heirachy - there's
-> several subsystems doing that sort of stuff by using dev_name().
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-I'm not a big fan of that, sorry.  Besides, as I said, we already have
-debug PM interfaces in sysfs, so I don't see the reason not to add
-another one.
+The generic PM domains framework currently doesn't work with devices
+whose power.irq_safe flag is set, because runtime PM callbacks for
+such devices are run with interrupts disabled and the callbacks
+provided by the generic PM domains framework use domain mutexes
+and may sleep.  However, such devices very well may belong to
+power domains on some systems, so the generic PM domains framework
+should take them into account.
 
-> > > That's not really a problem - if people are adding their own crazy
-> > > interfaces it's clear that they've done that.  It'll show up as a red
-> > > flag to anyone looking at their stuff and this will create pressure on
-> > > them to fix their code or at least do a better job for the next thing.
-> 
-> > > The goal isn't to tie people's hands to stop them doing silly things,
-> > > it's to make it clear that that is what they're doing.
-> 
-> > The same applies to using kernel interfaces.  If someone uses a sane
-> > interface for doing crazy stuff, that's their problem and should show
-> > up as a red flag just as well.
-> 
-> The big problem I'm seeing here is that there's nothing about having
-> userspace do all the knob twiddling that looks crazy just from looking
-> at the system.  The controls are there and in the standard kernel
-> interface, it's not like there's any ABIs or large piles of in kernel
-> code that need to be added (if anything the in kernel code should look
-> simpler as there's less going on).
+For this reason, make modify the generic PM domains framework so
+that the domain .power_off() and .power_on() callbacks are never
+executed for a domain containing devices with power.irq_safe set,
+although the .stop_device() and .start_device() callbacks are
+still run for them.
 
-Well, I'm kind of not seeing that as a big problem.  At least, this is not
-a technical issue, but a social one.
+Additionally, introduce a flag allowing the creator of a
+struct generic_pm_domain object to indicate that its .stop_device()
+and .start_device() callbacks may be run in interrupt context
+(might_sleep_if() triggers if that flag is not set and one of those
+callbacks is run in interrupt context).
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/arm/mach-shmobile/pm-sh7372.c |    1 +
+ drivers/base/power/domain.c        |   19 ++++++++++++++++++-
+ include/linux/pm_domain.h          |    1 +
+ 3 files changed, 20 insertions(+), 1 deletion(-)
+
+Index: linux/drivers/base/power/domain.c
+===================================================================
+--- linux.orig/drivers/base/power/domain.c
++++ linux/drivers/base/power/domain.c
+@@ -309,7 +309,8 @@ static int pm_genpd_poweroff(struct gene
+ 
+ 	not_suspended = 0;
+ 	list_for_each_entry(pdd, &genpd->dev_list, list_node)
+-		if (pdd->dev->driver && !pm_runtime_suspended(pdd->dev))
++		if (pdd->dev->driver && (!pm_runtime_suspended(pdd->dev)
++		    || pdd->dev->power.irq_safe))
+ 			not_suspended++;
+ 
+ 	if (not_suspended > genpd->in_progress)
+@@ -417,12 +418,21 @@ static int pm_genpd_runtime_suspend(stru
+ 	if (IS_ERR(genpd))
+ 		return -EINVAL;
+ 
++	might_sleep_if(!genpd->dev_irq_safe);
++
+ 	if (genpd->stop_device) {
+ 		int ret = genpd->stop_device(dev);
+ 		if (ret)
+ 			return ret;
+ 	}
+ 
++	/*
++	 * If power.irq_safe is set, this routine will be run with interrupts
++	 * off, so it can't use mutexes.
++	 */
++	if (dev->power.irq_safe)
++		return 0;
++
+ 	mutex_lock(&genpd->lock);
+ 	genpd->in_progress++;
+ 	pm_genpd_poweroff(genpd);
+@@ -452,6 +462,12 @@ static int pm_genpd_runtime_resume(struc
+ 	if (IS_ERR(genpd))
+ 		return -EINVAL;
+ 
++	might_sleep_if(!genpd->dev_irq_safe);
++
++	/* If power.irq_safe, the PM domain is never powered off. */
++	if (dev->power.irq_safe)
++		goto out;
++
+ 	mutex_lock(&genpd->lock);
+ 	ret = __pm_genpd_poweron(genpd);
+ 	if (ret) {
+@@ -483,6 +499,7 @@ static int pm_genpd_runtime_resume(struc
+ 	wake_up_all(&genpd->status_wait_queue);
+ 	mutex_unlock(&genpd->lock);
+ 
++ out:
+ 	if (genpd->start_device)
+ 		genpd->start_device(dev);
+ 
+Index: linux/include/linux/pm_domain.h
+===================================================================
+--- linux.orig/include/linux/pm_domain.h
++++ linux/include/linux/pm_domain.h
+@@ -42,6 +42,7 @@ struct generic_pm_domain {
+ 	unsigned int suspended_count;	/* System suspend device counter */
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
+ 	bool suspend_power_off;	/* Power status before system suspend */
++	bool dev_irq_safe;	/* Device callbacks are IRQ-safe */
+ 	int (*power_off)(struct generic_pm_domain *domain);
+ 	int (*power_on)(struct generic_pm_domain *domain);
+ 	int (*start_device)(struct device *dev);
+Index: linux/arch/arm/mach-shmobile/pm-sh7372.c
+===================================================================
+--- linux.orig/arch/arm/mach-shmobile/pm-sh7372.c
++++ linux/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -103,6 +103,7 @@ void sh7372_init_pm_domain(struct sh7372
+ 	pm_genpd_init(genpd, NULL, false);
+ 	genpd->stop_device = pm_clk_suspend;
+ 	genpd->start_device = pm_clk_resume;
++	genpd->dev_irq_safe = true;
+ 	genpd->active_wakeup = pd_active_wakeup;
+ 	genpd->power_off = pd_power_down;
+ 	genpd->power_on = pd_power_up;
