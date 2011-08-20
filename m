@@ -1,14 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/2] PM / Runtime: Introduce
-	pm_runtime_irq_unsafe()
-Date: Sat, 20 Aug 2011 21:32:13 +0200
-Message-ID: <201108202132.13304.rjw__38733.1532351256$1313869088$gmane$org@sisk.pl>
-References: <201108202131.19479.rjw@sisk.pl>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Subject: [PATCH] Add regulator driver for the bq2407x family of
+	charger ICs
+Date: Sat, 20 Aug 2011 22:24:51 +0200
+Message-ID: <201108202224.52250.heiko@sntech.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108202131.19479.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,104 +16,307 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-sh@vger.kernel.org
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Liam Girdwood <lrg@ti.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+This driver controls a TI bq2407x charger attached via GPIOs.
+The provided current regulator can enable/disable charging and
+select between 100 mA, 500 mA and a machine specific current limit.
 
-Add a helper function allowing drivers and subsystems to clear
-the power.irq_safe device flag.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
 ---
- Documentation/power/runtime_pm.txt |    4 ++++
- drivers/base/power/runtime.c       |    9 +++++----
- include/linux/pm_runtime.h         |   13 ++++++++++++-
- 3 files changed, 21 insertions(+), 5 deletions(-)
+ drivers/regulator/Kconfig         |    8 ++
+ drivers/regulator/Makefile        |    1 +
+ drivers/regulator/bq2407x.c       |  205 +++++++++++++++++++++++++++++++++++++
+ include/linux/regulator/bq2407x.h |   36 +++++++
+ 4 files changed, 250 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/bq2407x.c
+ create mode 100644 include/linux/regulator/bq2407x.h
 
-Index: linux/include/linux/pm_runtime.h
-===================================================================
---- linux.orig/include/linux/pm_runtime.h
-+++ linux/include/linux/pm_runtime.h
-@@ -40,7 +40,7 @@ extern int pm_generic_runtime_idle(struc
- extern int pm_generic_runtime_suspend(struct device *dev);
- extern int pm_generic_runtime_resume(struct device *dev);
- extern void pm_runtime_no_callbacks(struct device *dev);
--extern void pm_runtime_irq_safe(struct device *dev);
-+extern void __pm_runtime_irq_safe(struct device *dev, bool irq_safe);
- extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
- extern void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);
- extern unsigned long pm_runtime_autosuspend_expiration(struct device *dev);
-@@ -102,6 +102,16 @@ static inline void pm_runtime_mark_last_
- 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
- }
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index c7fd2c0..921e271 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -72,6 +72,14 @@ config REGULATOR_BQ24022
+ 	  charging select between 100 mA and 500 mA charging current
+ 	  limit.
  
-+static inline void pm_runtime_irq_safe(struct device *dev)
++config REGULATOR_BQ2407x
++	tristate "TI bq2407x Li-Ion Charger IC"
++	help
++	  This driver controls a TI bq2407x Charger attached via
++	  GPIOs. The provided current regulator can enable/disable
++	  charging select between 100 mA, 500 mA and a machine specific
++	  charging current limit.
++
+ config REGULATOR_MAX1586
+ 	tristate "Maxim 1586/1587 voltage regulator"
+ 	depends on I2C
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 040d5aa..ce65493 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -10,6 +10,7 @@ obj-$(CONFIG_REGULATOR_USERSPACE_CONSUMER) += userspace-consumer.o
+ 
+ obj-$(CONFIG_REGULATOR_AD5398) += ad5398.o
+ obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
++obj-$(CONFIG_REGULATOR_BQ2407x) += bq2407x.o
+ obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
+ obj-$(CONFIG_REGULATOR_LP3972) += lp3972.o
+ obj-$(CONFIG_REGULATOR_MAX1586) += max1586.o
+diff --git a/drivers/regulator/bq2407x.c b/drivers/regulator/bq2407x.c
+new file mode 100644
+index 0000000..2338540
+--- /dev/null
++++ b/drivers/regulator/bq2407x.c
+@@ -0,0 +1,205 @@
++/*
++ * Support for TI bq2407x USB-friendly
++ * Li-Ion Charger connected via GPIOs.
++ *
++ * Copyright (c) 2011 Heiko Stuebner
++ *
++ * based on the bq24022 driver
++ * Copyright (c) 2008 Philipp Zabel
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/gpio.h>
++#include <linux/regulator/bq2407x.h>
++#include <linux/regulator/driver.h>
++
++
++static int bq2407x_set_current_limit(struct regulator_dev *rdev,
++					int min_uA, int max_uA)
 +{
-+	__pm_runtime_irq_safe(dev, true);
++	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
++
++	if (pdata->max_uA && pdata->max_uA > 500000
++			      && max_uA >= pdata->max_uA) {
++		dev_dbg(rdev_get_dev(rdev),
++			"setting current limit to %d mA\n",
++			pdata->max_uA / 1000);
++		gpio_set_value(pdata->gpio_en2, 1);
++		gpio_set_value(pdata->gpio_en1, 0);
++	} else if (max_uA >= 500000) {
++		dev_dbg(rdev_get_dev(rdev),
++			"setting current limit to 500 mA\n");
++		gpio_set_value(pdata->gpio_en2, 0);
++		gpio_set_value(pdata->gpio_en1, 1);
++	} else if (max_uA >= 100000) {
++		dev_dbg(rdev_get_dev(rdev),
++			"setting current limit to 100 mA\n");
++		gpio_set_value(pdata->gpio_en2, 0);
++		gpio_set_value(pdata->gpio_en1, 0);
++	} else {
++		dev_dbg(rdev_get_dev(rdev),
++			"setting current limit to 0 mA\n");
++		gpio_set_value(pdata->gpio_en2, 1);
++		gpio_set_value(pdata->gpio_en1, 1);
++	}
++
++	/* REVISIT: maybe return error if min_uA != 0 ? */
++	return 0;
 +}
 +
-+static inline void pm_runtime_irq_unsafe(struct device *dev)
++static int bq2407x_get_current_limit(struct regulator_dev *rdev)
 +{
-+	__pm_runtime_irq_safe(dev, false);
++	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
++
++	int en2 = gpio_get_value(pdata->gpio_en2);
++	int en1 = gpio_get_value(pdata->gpio_en1);
++
++	if (en2 && en1)
++		return 0;
++	else if (en2 && !en1)
++		return pdata->max_uA;
++	else if (!en2 && en1)
++		return 500000;
++	else
++		return 100000;
 +}
 +
- #else /* !CONFIG_PM_RUNTIME */
- 
- static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
-@@ -143,6 +153,7 @@ static inline int pm_generic_runtime_sus
- static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
- static inline void pm_runtime_irq_safe(struct device *dev) {}
-+static inline void pm_runtime_irq_unsafe(struct device *dev) {}
- 
- static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
- static inline void pm_runtime_mark_last_busy(struct device *dev) {}
-Index: linux/drivers/base/power/runtime.c
-===================================================================
---- linux.orig/drivers/base/power/runtime.c
-+++ linux/drivers/base/power/runtime.c
-@@ -1109,22 +1109,23 @@ void pm_runtime_no_callbacks(struct devi
- EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
- 
- /**
-- * pm_runtime_irq_safe - Leave interrupts disabled during callbacks.
-+ * __pm_runtime_irq_safe - Manipulate a device's power.irq_safe flag.
-  * @dev: Device to handle
-+ * @irq_safe: Whether or not to leave interrupts disabled during callbacks.
-  *
-- * Set the power.irq_safe flag, which tells the PM core that the
-+ * Set or unset the power.irq_safe flag, which tells the PM core that the
-  * ->runtime_suspend() and ->runtime_resume() callbacks for this device should
-  * always be invoked with the spinlock held and interrupts disabled.  It also
-  * causes the parent's usage counter to be permanently incremented, preventing
-  * the parent from runtime suspending -- otherwise an irq-safe child might have
-  * to wait for a non-irq-safe parent.
-  */
--void pm_runtime_irq_safe(struct device *dev)
-+void __pm_runtime_irq_safe(struct device *dev, bool irq_safe)
- {
- 	if (dev->parent)
- 		pm_runtime_get_sync(dev->parent);
- 	spin_lock_irq(&dev->power.lock);
--	dev->power.irq_safe = 1;
-+	dev->power.irq_safe = irq_safe;
- 	spin_unlock_irq(&dev->power.lock);
- }
- EXPORT_SYMBOL_GPL(pm_runtime_irq_safe);
-Index: linux/Documentation/power/runtime_pm.txt
-===================================================================
---- linux.orig/Documentation/power/runtime_pm.txt
-+++ linux/Documentation/power/runtime_pm.txt
-@@ -434,6 +434,10 @@ drivers/base/power/runtime.c and include
-       suspend and resume callbacks (but not the idle callback) to be invoked
-       with interrupts disabled
- 
-+  void pm_runtime_irq_unsafe(struct device *dev);
-+    - clear the power.irq_safe flag for the device, causing the runtime-PM
-+      callbacks to be invoked with interrupts enabled
++static int bq2407x_enable(struct regulator_dev *rdev)
++{
++	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
 +
-   void pm_runtime_mark_last_busy(struct device *dev);
-     - set the power.last_busy field to the current time
- 
++	dev_dbg(rdev_get_dev(rdev), "enabling charger\n");
++
++	gpio_set_value(pdata->gpio_nce, 0);
++	return 0;
++}
++
++static int bq2407x_disable(struct regulator_dev *rdev)
++{
++	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
++
++	dev_dbg(rdev_get_dev(rdev), "disabling charger\n");
++
++	gpio_set_value(pdata->gpio_nce, 1);
++	return 0;
++}
++
++static int bq2407x_is_enabled(struct regulator_dev *rdev)
++{
++	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
++
++	return !gpio_get_value(pdata->gpio_nce);
++}
++
++static struct regulator_ops bq2407x_ops = {
++	.set_current_limit = bq2407x_set_current_limit,
++	.get_current_limit = bq2407x_get_current_limit,
++	.enable            = bq2407x_enable,
++	.disable           = bq2407x_disable,
++	.is_enabled        = bq2407x_is_enabled,
++};
++
++static struct regulator_desc bq2407x_desc = {
++	.name  = "bq2407x",
++	.ops   = &bq2407x_ops,
++	.type  = REGULATOR_CURRENT,
++	.owner = THIS_MODULE,
++};
++
++static int __init bq2407x_probe(struct platform_device *pdev)
++{
++	struct bq2407x_mach_info *pdata = pdev->dev.platform_data;
++	struct regulator_dev *bq2407x;
++	int ret;
++
++	if (!pdata || !pdata->gpio_nce || !pdata->gpio_en1 || !pdata->gpio_en2)
++		return -EINVAL;
++
++	ret = gpio_request(pdata->gpio_nce, "ncharge_en");
++	if (ret) {
++		dev_dbg(&pdev->dev, "couldn't request nCE GPIO: %d\n",
++			pdata->gpio_nce);
++		goto err_ce;
++	}
++	ret = gpio_request(pdata->gpio_en2, "charge_mode_en2");
++	if (ret) {
++		dev_dbg(&pdev->dev, "couldn't request EN2 GPIO: %d\n",
++			pdata->gpio_en2);
++		goto err_en2;
++	}
++	ret = gpio_request(pdata->gpio_en1, "charge_mode_en1");
++	if (ret) {
++		dev_dbg(&pdev->dev, "couldn't request EN1 GPIO: %d\n",
++			pdata->gpio_en1);
++		goto err_en1;
++	}
++	ret = gpio_direction_output(pdata->gpio_en2, 0);
++	ret = gpio_direction_output(pdata->gpio_en1, 0);
++	ret = gpio_direction_output(pdata->gpio_nce, 1);
++
++	bq2407x = regulator_register(&bq2407x_desc, &pdev->dev,
++				     pdata->init_data, pdata);
++	if (IS_ERR(bq2407x)) {
++		dev_dbg(&pdev->dev, "couldn't register regulator\n");
++		ret = PTR_ERR(bq2407x);
++		goto err_reg;
++	}
++	platform_set_drvdata(pdev, bq2407x);
++	dev_dbg(&pdev->dev, "registered regulator\n");
++
++	return 0;
++err_reg:
++	gpio_free(pdata->gpio_en1);
++err_en1:
++	gpio_free(pdata->gpio_en2);
++err_en2:
++	gpio_free(pdata->gpio_nce);
++err_ce:
++	return ret;
++}
++
++static int __devexit bq2407x_remove(struct platform_device *pdev)
++{
++	struct bq2407x_mach_info *pdata = pdev->dev.platform_data;
++	struct regulator_dev *bq2407x = platform_get_drvdata(pdev);
++
++	regulator_unregister(bq2407x);
++	gpio_free(pdata->gpio_en1);
++	gpio_free(pdata->gpio_en2);
++	gpio_free(pdata->gpio_nce);
++
++	return 0;
++}
++
++static struct platform_driver bq2407x_driver = {
++	.driver = {
++		.name = "bq2407x",
++	},
++	.remove = __devexit_p(bq2407x_remove),
++};
++
++static int __init bq2407x_init(void)
++{
++	return platform_driver_probe(&bq2407x_driver, bq2407x_probe);
++}
++
++static void __exit bq2407x_exit(void)
++{
++	platform_driver_unregister(&bq2407x_driver);
++}
++
++module_init(bq2407x_init);
++module_exit(bq2407x_exit);
++
++MODULE_AUTHOR("Heiko Stuebner");
++MODULE_DESCRIPTION("TI bq2407x Li-Ion Charger driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/regulator/bq2407x.h b/include/linux/regulator/bq2407x.h
+new file mode 100644
+index 0000000..8145150
+--- /dev/null
++++ b/include/linux/regulator/bq2407x.h
+@@ -0,0 +1,36 @@
++/*
++ * Support for TI bq2407x 1.5A USB-friendly
++ * Li-Ion Charger connected via GPIOs.
++ *
++ * Copyright (c) 2011 Heiko Stuebner
++ *
++ * based on the bq24022 driver
++ * Copyright (c) 2008 Philipp Zabel
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++struct regulator_init_data;
++
++/**
++ * bq2407x_mach_info - platform data for bq2407x
++ * @gpio_nce: GPIO line connected to the nCE pin, used to control charging
++ * @gpio_en2: GPIO line connected to the EN2 pin, used to limit charging
++ * @gpio_en1: GPIO line connected to the EN1 pin, used to limit charging
++ * @max_uA: maximum current defined by resistor on ILIM connector
++ * Modes of operation:
++ * EN2 = 0, EN1 = 0: 100mA
++ * EN2 = 0, EN1 = 1: 500mA
++ * EN2 = 1, EN1 = 0: max_current
++ * EN2 = 1, EN1 = 1: Standby (usb suspend)
++ */
++struct bq2407x_mach_info {
++	int gpio_nce;
++	int gpio_en2;
++	int gpio_en1;
++	int max_uA;
++	struct regulator_init_data *init_data;
++};
+-- 
+1.7.2.3
