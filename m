@@ -1,16 +1,13 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
-	wake-up constraints
-Date: Sat, 20 Aug 2011 11:35:58 +0200
-Message-ID: <201108201135.58886.rjw__18820.2300844297$1313833019$gmane$org@sisk.pl>
-References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
-	<201108192242.20471.rjw@sisk.pl>
-	<20110819231419.GA3981@sirena.org.uk>
+From: Tejun Heo <tj@kernel.org>
+Subject: [GIT PULL pm-next] freezer: fix various bugs and
+ simplify implementation
+Date: Sat, 20 Aug 2011 11:44:34 +0200
+Message-ID: <20110820094434.GA24151__8347.02363140441$1313833542$gmane$org@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110819231419.GA3981@sirena.org.uk>
+Content-Disposition: inline
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,72 +17,110 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: arnd@arndb.de, paul@paulmenage.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, August 20, 2011, Mark Brown wrote:
-> On Fri, Aug 19, 2011 at 10:42:20PM +0200, Rafael J. Wysocki wrote:
-> 
-> > I really wouldn't like the discussion to go in circles.
-> 
-> > First, please tell me what in particular you are objecting to,
-> > because I don't think that's any of the patches that have been
-> > sent to the linux-pm list to date.
-> 
-> The original issue that Kevin raised and CCed me in on was the idea of
-> exposing raw per-device wakeup latency constraints to userspace; it
-> seems much better to expose user level requirements via subsystem
-> interfaces and let the subsystem and driver translate these into actual
-> wakeup latency constraints:
-> 
->   https://lists.linux-foundation.org/pipermail/linux-pm/2011-August/032422.html
->   https://lists.linux-foundation.org/pipermail/linux-pm/2011-August/032428.html
+Hello, Rafael.
 
-OK, so let's clarify things.
+Please consider pulling from the following branch to receive freezer
+fixes and simplifications patchset[1].  The only changes from the
+posting are addition of acked-by's, minor patch description updates
+and rebase on top of pm-next (af0fa9cb79 "PM / Hibernate: Include
+storage keys in hibernation image on s390").
 
-I'm not sure what you mean by "exposing per-device wakeup latency constraints
-to user space".  I simply thought it might be useful to allow user space to
-add and remove those, in analogy to what it can do with the currently available
-PM QoS constraints.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
 
-My point is that this won't prevent kernel subsystems from adding their
-own PM QoS constraints to devices and the constraints added by user space
-will only have effect if they make the devices stay active for longer
-times.  In consequence, they may only increase the energy usage of the system
-and shouldn't affect functionality.
+The HEAD should be 7b5b95b3f51a28ec008a295e5247436637220f41.  If
+git.korg doesn't show it yet.  Please pull from master.korg.
 
-The reason why I think this may be useful is that I can readily imagine
-scenarios in which user space (think a distribution or system vendor) will
-want to do something that hasn't been anticipated by kernel developers
-and the ability to add per-device PM QoS constraints will allow it to do that
-without modifying the kernel.  Also, it will help to test and debug new drivers
-and subsystems.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
 
-I don't want to prevent kernel subsystems from using their own interfaces to
-acquire user-level input that translates into PM QoS constraints.  I simply
-think it won't _hurt_ to provide user space with an additional level of
-control over per-device PM QoS constraints.
+FYI, this patchset will cause a conflict with s390 TIF flag fix patch.
+The conflict is trivial and Stephen should be able to handle it
+without any problem.  Also, I'm planning on doing some further work on
+cgroup freezer and then will try to bridge it with job control.  If
+that plan fans out, I might ask Oleg to pull from the pm tree.  This
+shouldn't matter too much either way but it *might* be a good idea to
+keep this line of patches in a separate branch.
 
-> This is much easier for users as it translates into something they're
-> actually doing (and in most cases the driver can make it Just Work) and
-> it means that off the shelf applications will end up tuning the system
-> appropriately by themselves.
+Thank you.
 
-The _end_ users really don't care.  They'll use whatever settings the user
-interface exposes to them.  Moreover, even if there is an interface for
-user space to add per-device PM QoS constraints, that doesn't mean the
-user space is _required_ to use it.  If it doesn't, everything will work
-as you describe.
+[1] http://thread.gmane.org/gmane.linux.kernel/1181594
 
-> I'm additionally concerned that if we expose this stuff directly to userspace
-> that's an open invitation to driver authors to not even bother trying to make
-> the kernel figure this stuff out by itself and to instead tie the system
-> together with magic userspace.
+Tejun Heo (16):
+      freezer: fix current->state restoration race in refrigerator()
+      freezer: don't unnecessarily set PF_NOFREEZE explicitly
+      freezer: unexport refrigerator() and update try_to_freeze() slightly
+      freezer: implement and use kthread_freezable_should_stop()
+      freezer: rename thaw_process() to __thaw_task() and simplify the implementation
+      freezer: make exiting tasks properly unfreezable
+      freezer: don't distinguish nosig tasks on thaw
+      freezer: use dedicated lock instead of task_lock() + memory barrier
+      freezer: make freezing indicate freeze condition in effect
+      freezer: fix set_freezable[_with_signal]() race
+      freezer: kill PF_FREEZING
+      freezer: clean up freeze_processes() failure path
+      cgroup_freezer: prepare for removal of TIF_FREEZE
+      freezer: make freezing() test freeze conditions in effect instead of TIF_FREEZE
+      freezer: remove now unused TIF_FREEZE
+      freezer: remove should_send_signal() and update frozen()
 
-As I said, I don't think we can prevent that from happening anyway.
-Worst case people will add strange interfaces to drivers making them
-incompatible with anything except for their crazy user space.
+ Documentation/power/freezing-of-tasks.txt |   14 +-
+ arch/alpha/include/asm/thread_info.h      |    2 -
+ arch/arm/include/asm/thread_info.h        |    2 -
+ arch/avr32/include/asm/thread_info.h      |    2 -
+ arch/blackfin/include/asm/thread_info.h   |    2 -
+ arch/cris/include/asm/thread_info.h       |    2 -
+ arch/frv/include/asm/thread_info.h        |    2 -
+ arch/h8300/include/asm/thread_info.h      |    2 -
+ arch/ia64/include/asm/thread_info.h       |    2 -
+ arch/m32r/include/asm/thread_info.h       |    2 -
+ arch/m68k/include/asm/thread_info.h       |    1 -
+ arch/microblaze/include/asm/thread_info.h |    2 -
+ arch/mips/include/asm/thread_info.h       |    2 -
+ arch/mn10300/include/asm/thread_info.h    |    2 -
+ arch/parisc/include/asm/thread_info.h     |    2 -
+ arch/powerpc/include/asm/thread_info.h    |    2 -
+ arch/s390/include/asm/thread_info.h       |    2 -
+ arch/sh/include/asm/thread_info.h         |    2 -
+ arch/sparc/include/asm/thread_info_32.h   |    2 -
+ arch/sparc/include/asm/thread_info_64.h   |    2 -
+ arch/um/include/asm/thread_info.h         |    2 -
+ arch/unicore32/include/asm/thread_info.h  |    2 -
+ arch/x86/include/asm/thread_info.h        |    2 -
+ arch/xtensa/include/asm/thread_info.h     |    2 -
+ drivers/bluetooth/btmrvl_main.c           |    2 -
+ drivers/mfd/twl4030-irq.c                 |    3 -
+ drivers/mfd/twl6030-irq.c                 |    2 -
+ drivers/net/irda/stir4200.c               |    2 +-
+ drivers/platform/x86/thinkpad_acpi.c      |   15 +--
+ drivers/staging/rts_pstor/rtsx.c          |    2 -
+ fs/btrfs/async-thread.c                   |    2 +-
+ fs/btrfs/disk-io.c                        |    8 +-
+ fs/ext4/super.c                           |    3 +-
+ fs/fs-writeback.c                         |    4 +-
+ fs/gfs2/log.c                             |    4 +-
+ fs/gfs2/quota.c                           |    4 +-
+ fs/jbd/journal.c                          |    2 +-
+ fs/jbd2/journal.c                         |    2 +-
+ fs/jfs/jfs_logmgr.c                       |    2 +-
+ fs/jfs/jfs_txnmgr.c                       |    4 +-
+ fs/nilfs2/segment.c                       |    2 +-
+ fs/xfs/linux-2.6/xfs_buf.c                |    2 +-
+ include/linux/freezer.h                   |   78 +++++--------
+ include/linux/kthread.h                   |    1 +
+ include/linux/sched.h                     |    3 +-
+ kernel/cgroup_freezer.c                   |   51 ++++-----
+ kernel/exit.c                             |    8 +-
+ kernel/fork.c                             |    1 -
+ kernel/freezer.c                          |  179 +++++++++++++++++------------
+ kernel/kthread.c                          |   25 ++++
+ kernel/power/hibernate.c                  |   15 +--
+ kernel/power/process.c                    |   65 ++++-------
+ kernel/power/user.c                       |    4 +-
+ mm/backing-dev.c                          |    8 +-
+ 54 files changed, 247 insertions(+), 315 deletions(-)
 
-Thanks,
-Rafael
+--
+tejun
