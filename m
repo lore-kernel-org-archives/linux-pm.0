@@ -1,7 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/2] sh-sci / PM: Use power.irq_safe
-Date: Sat, 20 Aug 2011 21:33:09 +0200
-Message-ID: <201108202133.09222.rjw__29212.2983177707$1313868962$gmane$org@sisk.pl>
+Subject: [PATCH 1/2] PM / Runtime: Introduce
+	pm_runtime_irq_unsafe()
+Date: Sat, 20 Aug 2011 21:32:13 +0200
+Message-ID: <201108202132.13304.rjw__38733.1532351256$1313869088$gmane$org@sisk.pl>
 References: <201108202131.19479.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,44 +24,98 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Since sci_port_enable() and sci_port_disable() may be run with
-interrupts off and they execute pm_runtime_get_sync() and
-pm_runtime_put_sync(), respectively, the SCI device's
-power.irq_safe flags has to be used to indicate that it is safe
-to execute runtime PM callbacks for this device with interrupts off.
+Add a helper function allowing drivers and subsystems to clear
+the power.irq_safe device flag.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/tty/serial/sh-sci.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ Documentation/power/runtime_pm.txt |    4 ++++
+ drivers/base/power/runtime.c       |    9 +++++----
+ include/linux/pm_runtime.h         |   13 ++++++++++++-
+ 3 files changed, 21 insertions(+), 5 deletions(-)
 
-Index: linux/drivers/tty/serial/sh-sci.c
+Index: linux/include/linux/pm_runtime.h
 ===================================================================
---- linux.orig/drivers/tty/serial/sh-sci.c
-+++ linux/drivers/tty/serial/sh-sci.c
-@@ -1582,11 +1582,15 @@ static int sci_startup(struct uart_port
- 
- 	dev_dbg(port->dev, "%s(%d)\n", __func__, port->line);
- 
-+	pm_runtime_irq_safe(port->dev);
-+
- 	sci_port_enable(s);
- 
- 	ret = sci_request_irq(s);
--	if (unlikely(ret < 0))
-+	if (unlikely(ret < 0)) {
-+		pm_runtime_irq_unsafe(port->dev);
- 		return ret;
-+	}
- 
- 	sci_request_dma(port);
- 
-@@ -1609,6 +1613,8 @@ static void sci_shutdown(struct uart_por
- 	sci_free_irq(s);
- 
- 	sci_port_disable(s);
-+
-+	pm_runtime_irq_unsafe(port->dev);
+--- linux.orig/include/linux/pm_runtime.h
++++ linux/include/linux/pm_runtime.h
+@@ -40,7 +40,7 @@ extern int pm_generic_runtime_idle(struc
+ extern int pm_generic_runtime_suspend(struct device *dev);
+ extern int pm_generic_runtime_resume(struct device *dev);
+ extern void pm_runtime_no_callbacks(struct device *dev);
+-extern void pm_runtime_irq_safe(struct device *dev);
++extern void __pm_runtime_irq_safe(struct device *dev, bool irq_safe);
+ extern void __pm_runtime_use_autosuspend(struct device *dev, bool use);
+ extern void pm_runtime_set_autosuspend_delay(struct device *dev, int delay);
+ extern unsigned long pm_runtime_autosuspend_expiration(struct device *dev);
+@@ -102,6 +102,16 @@ static inline void pm_runtime_mark_last_
+ 	ACCESS_ONCE(dev->power.last_busy) = jiffies;
  }
  
- static unsigned int sci_scbrr_calc(unsigned int algo_id, unsigned int bps,
++static inline void pm_runtime_irq_safe(struct device *dev)
++{
++	__pm_runtime_irq_safe(dev, true);
++}
++
++static inline void pm_runtime_irq_unsafe(struct device *dev)
++{
++	__pm_runtime_irq_safe(dev, false);
++}
++
+ #else /* !CONFIG_PM_RUNTIME */
+ 
+ static inline int __pm_runtime_idle(struct device *dev, int rpmflags)
+@@ -143,6 +153,7 @@ static inline int pm_generic_runtime_sus
+ static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
+ static inline void pm_runtime_no_callbacks(struct device *dev) {}
+ static inline void pm_runtime_irq_safe(struct device *dev) {}
++static inline void pm_runtime_irq_unsafe(struct device *dev) {}
+ 
+ static inline bool pm_runtime_callbacks_present(struct device *dev) { return false; }
+ static inline void pm_runtime_mark_last_busy(struct device *dev) {}
+Index: linux/drivers/base/power/runtime.c
+===================================================================
+--- linux.orig/drivers/base/power/runtime.c
++++ linux/drivers/base/power/runtime.c
+@@ -1109,22 +1109,23 @@ void pm_runtime_no_callbacks(struct devi
+ EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
+ 
+ /**
+- * pm_runtime_irq_safe - Leave interrupts disabled during callbacks.
++ * __pm_runtime_irq_safe - Manipulate a device's power.irq_safe flag.
+  * @dev: Device to handle
++ * @irq_safe: Whether or not to leave interrupts disabled during callbacks.
+  *
+- * Set the power.irq_safe flag, which tells the PM core that the
++ * Set or unset the power.irq_safe flag, which tells the PM core that the
+  * ->runtime_suspend() and ->runtime_resume() callbacks for this device should
+  * always be invoked with the spinlock held and interrupts disabled.  It also
+  * causes the parent's usage counter to be permanently incremented, preventing
+  * the parent from runtime suspending -- otherwise an irq-safe child might have
+  * to wait for a non-irq-safe parent.
+  */
+-void pm_runtime_irq_safe(struct device *dev)
++void __pm_runtime_irq_safe(struct device *dev, bool irq_safe)
+ {
+ 	if (dev->parent)
+ 		pm_runtime_get_sync(dev->parent);
+ 	spin_lock_irq(&dev->power.lock);
+-	dev->power.irq_safe = 1;
++	dev->power.irq_safe = irq_safe;
+ 	spin_unlock_irq(&dev->power.lock);
+ }
+ EXPORT_SYMBOL_GPL(pm_runtime_irq_safe);
+Index: linux/Documentation/power/runtime_pm.txt
+===================================================================
+--- linux.orig/Documentation/power/runtime_pm.txt
++++ linux/Documentation/power/runtime_pm.txt
+@@ -434,6 +434,10 @@ drivers/base/power/runtime.c and include
+       suspend and resume callbacks (but not the idle callback) to be invoked
+       with interrupts disabled
+ 
++  void pm_runtime_irq_unsafe(struct device *dev);
++    - clear the power.irq_safe flag for the device, causing the runtime-PM
++      callbacks to be invoked with interrupts enabled
++
+   void pm_runtime_mark_last_busy(struct device *dev);
+     - set the power.last_busy field to the current time
+ 
