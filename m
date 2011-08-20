@@ -1,16 +1,17 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
- wake-up constraints
-Date: Sat, 20 Aug 2011 07:25:44 +0100
-Message-ID: <20110820062543.GA5011__43520.7958602861$1313821623$gmane$org@opensource.wolfsonmicro.com>
-References: <20110819231419.GA3981@sirena.org.uk>
-	<Pine.LNX.4.44L0.1108192223230.18944-100000@netrider.rowland.org>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 07/16] freezer: don't distinguish nosig tasks
+	on thaw
+Date: Sat, 20 Aug 2011 10:10:10 +0200
+Message-ID: <20110820081010.GI20085__26361.9472542361$1313827893$gmane$org@htj.dyndns.org>
+References: <1313763382-12341-1-git-send-email-tj@kernel.org>
+	<1313763382-12341-8-git-send-email-tj@kernel.org>
+	<201108192314.53010.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1108192223230.18944-100000@netrider.rowland.org>
+In-Reply-To: <201108192314.53010.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,33 +21,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: paul@paulmenage.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, arnd@arndb.de, oleg@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 19, 2011 at 10:24:19PM -0400, Alan Stern wrote:
-> On Sat, 20 Aug 2011, Mark Brown wrote:
+Hello, Rafael.
 
-> > interfaces and let the subsystem and driver translate these into actual
-> > wakeup latency constraints:
+On Fri, Aug 19, 2011 at 11:14:52PM +0200, Rafael J. Wysocki wrote:
+> On Friday, August 19, 2011, Tejun Heo wrote:
+> > There's no point in thawing nosig tasks before others.  There's no
+> > ordering requirement between the two groups on thaw, which the staged
+> > thawing can't guarantee anyway.  Simplify thaw_processes() by removing
+> > the distinction and collapsing thaw_tasks() into thaw_processes().
+> > This will help further updates to freezer.
+> 
+> I'm not sure if I like this patch.
+> 
+> Right now there are no ordering requirements between the two groups
+> of processes, but if we decide to freeze filesystems on suspend,
+> we'll need to thaw them between nosig and sig I suppose.
 
-> >   https://lists.linux-foundation.org/pipermail/linux-pm/2011-August/032422.html
-> >   https://lists.linux-foundation.org/pipermail/linux-pm/2011-August/032428.html
+Hmmm... I'm not really following.  How does staged wake up affect
+thawing filesystems?  Staged freezing makes sense as a crude way to
+define dependency during freezing - ie. userland and freezable tasks
+can't have dependency in their own groups but the former can depend on
+the latter on the way to refrigerator.
 
-> > This is much easier for users as it translates into something they're
-> > actually doing (and in most cases the driver can make it Just Work) and
-> > it means that off the shelf applications will end up tuning the system
-> > appropriately by themselves.  I'm additionally concerned that if we
-> > expose this stuff directly to userspace that's an open invitation to
-> > driver authors to not even bother trying to make the kernel figure this
-> > stuff out by itself and to instead tie the system together with magic
-> > userspace.
+However, during thawing, it doesn't make any difference regardless of
+what was frozen when and how they depend on each other.  They might as
+well have cyclic dependency and waking them in any order wouldn't make
+any difference.  The task which dependes on another task to do
+something would simply block until that task wakes up and resolves the
+dependency; moreover, performing staged wakeups doesn't really
+guarantee execution order.  It's different from staged freezing in
+that way - staged thawing doesn't have the synchronization phase
+between the two stages.  Tasks which were woken up earlier can easily
+start executing after tasks which were woken up later.
 
-> Can you give a couple of examples to illustrate these points?  I think
-> it would help a lot to make the conversation more concrete.
+The only guaranteed effect of staged wakeups is that tasks in the
+earlier group would have had its ->state set to TASK_RUNNING before
+the tasks of the second group.  This again is a moot point because
 
-Examples of what?  Latency constraints from drivers?  That'd be things
-like Kevin listed in the second message linked above - the kernel knows
-it needs to wake up within a given time period in order to have time to
-do what it needs to do in response to a given wake source such as
-filling a buffer before it underflows.
+* __refrigerator() restores task->state afterwards overwriting the
+  TASK_RUNNING once the task starts executing (in unknown order).
+  This is fundamentally broken and should be fixed so that task is
+  left in TASK_RUNNING when leaving the refrigerator.
+
+* However, if you leave it at TASK_RUNNING, it doesn't make any
+  difference w.r.t. synchronization.  The only way task->state can
+  participate in synchronization is through wake_up() - ie. through
+  other tasks setting its state to TASK_RUNNING, so if the
+  refrigerator leaves tast state at TASK_RUNNING on return, it can't
+  hinder any synchronization.
+
+So, AFAICS, no matter which way it's looked at, it just doesn't make
+any difference.
+
+Thanks.
+
+-- 
+tejun
