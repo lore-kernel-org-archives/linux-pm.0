@@ -1,16 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
-	wake-up constraints
-Date: Sun, 21 Aug 2011 20:05:53 +0200
-Message-ID: <201108212005.53898.rjw__30692.4885874198$1313949905$gmane$org@sisk.pl>
-References: <20110820062543.GA5011@opensource.wolfsonmicro.com>
-	<201108202114.37502.rjw@sisk.pl>
-	<20110821082509.GA10380@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/2] PM / Runtime: Introduce
+	pm_runtime_irq_unsafe()
+Date: Sun, 21 Aug 2011 20:09:49 +0200
+Message-ID: <201108212009.49550.rjw__1963.6720339351$1313950233$gmane$org@sisk.pl>
+References: <Pine.LNX.4.44L0.1108211048060.12143-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110821082509.GA10380@opensource.wolfsonmicro.com>
+In-Reply-To: <Pine.LNX.4.44L0.1108211048060.12143-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,28 +18,75 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, August 21, 2011, Mark Brown wrote:
-> On Sat, Aug 20, 2011 at 09:14:37PM +0200, Rafael J. Wysocki wrote:
+On Sunday, August 21, 2011, Alan Stern wrote:
+> On Sat, 20 Aug 2011, Rafael J. Wysocki wrote:
 > 
-> > I guess you mean the driver here and I'm not really sure it can.
-> > For instance, the driver may not know what configuration it works in,
-> > e.g. is there a power domain or a hierarchy of those and how much time
-> > it takes to power them all down and up and what the power break even is.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Add a helper function allowing drivers and subsystems to clear
+> > the power.irq_safe device flag.
 > 
-> I don't understand why the driver would need to know what situation it's
-> in.  I'd been working on the basis that the idea was that the driver
-> said what the constraints it has are and then some code with a more
-> system wide view would make the actual decisions for things outside the
-> driver domian.
+> > --- linux.orig/drivers/base/power/runtime.c
+> > +++ linux/drivers/base/power/runtime.c
+> > @@ -1109,22 +1109,23 @@ void pm_runtime_no_callbacks(struct devi
+> >  EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
+> >  
+> >  /**
+> > - * pm_runtime_irq_safe - Leave interrupts disabled during callbacks.
+> > + * __pm_runtime_irq_safe - Manipulate a device's power.irq_safe flag.
+> >   * @dev: Device to handle
+> > + * @irq_safe: Whether or not to leave interrupts disabled during callbacks.
+> >   *
+> > - * Set the power.irq_safe flag, which tells the PM core that the
+> > + * Set or unset the power.irq_safe flag, which tells the PM core that the
+> >   * ->runtime_suspend() and ->runtime_resume() callbacks for this device should
+> >   * always be invoked with the spinlock held and interrupts disabled.  It also
+> >   * causes the parent's usage counter to be permanently incremented, preventing
+> >   * the parent from runtime suspending -- otherwise an irq-safe child might have
+> >   * to wait for a non-irq-safe parent.
+> >   */
+> > -void pm_runtime_irq_safe(struct device *dev)
+> > +void __pm_runtime_irq_safe(struct device *dev, bool irq_safe)
+> >  {
+> >  	if (dev->parent)
+> >  		pm_runtime_get_sync(dev->parent);
+> >  	spin_lock_irq(&dev->power.lock);
+> > -	dev->power.irq_safe = 1;
+> > +	dev->power.irq_safe = irq_safe;
+> >  	spin_unlock_irq(&dev->power.lock);
+> 
+> It's not quite this easy.  There are two important aspects that must be
+> considered.
+> 
+> Firstly, I originally envisioned pm_runtime_irq_safe() being called
+> just once, before the device is enabled for runtime PM.  If you allow
+> the flag to be turned on and off like this, you raise the possibility
+> of races with runtime PM callbacks.  (That is, if a callback occurs at
+> about the same time as the irq_safe flag is changed, nobody can predict
+> whether the callback will be invoked with interrupts enabled.)  Maybe
+> that's something the driver needs to take care of, but it should at
+> least be mentioned in the documentation.
 
-That's correct, but in order to figure out a "sensible default"
-the driver generally would need to know what the expectations with
-respect to it are.  Otherwise it can very well generate a random
-number and use that.
+Good point.  Perhaps I should make it possible only if runtime PM is
+disabled.
+
+> Secondly, this doesn't manage the parent's usage counter correctly.
+
+Right, I forgot about that.
+
+> Do the pm_runtime_get_sync(dev->parent) at the beginning only when the
+> irq_safe flag was off and is being turned on.  And at the end, if the
+> irq_safe flag was on and is being turned off, do
+> pm_runtime_put_sync(dev->parent).  See pm_runtime_remove() for why this
+> matters.  (Also update the documentation; the change to the parent
+> isn't necessarily permanent any more.)
+
+I'll try to figure out an alternative approach without the $subject change
+first.  If I can't, I'll revisit this idea.
 
 Thanks,
 Rafael
