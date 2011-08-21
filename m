@@ -1,16 +1,14 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [GIT PULL pm-next] freezer: fix various bugs and
- simplify implementation
-Date: Sun, 21 Aug 2011 11:12:00 +0200
-Message-ID: <20110821091200.GB24151__28691.1429990598$1313917982$gmane$org@htj.dyndns.org>
-References: <20110820094434.GA24151@htj.dyndns.org>
-	<201108201833.39089.rjw@sisk.pl>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/2] PM / Runtime: Introduce
+	pm_runtime_irq_unsafe()
+Date: Sun, 21 Aug 2011 10:55:37 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1108211048060.12143-100000__46711.67872516$1313938710$gmane$org@netrider.rowland.org>
+References: <201108202132.13304.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201108201833.39089.rjw@sisk.pl>
+In-Reply-To: <201108202132.13304.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,40 +19,63 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: arnd@arndb.de, paul@paulmenage.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Rafafel.
+On Sat, 20 Aug 2011, Rafael J. Wysocki wrote:
 
-On Sat, Aug 20, 2011 at 06:33:38PM +0200, Rafael J. Wysocki wrote:
-> >   ssh://master.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Pulled and stored in the pm-freezer branch in my tree, and merged into
-> the linux-next branch.
+> Add a helper function allowing drivers and subsystems to clear
+> the power.irq_safe device flag.
 
-Cool.
+> --- linux.orig/drivers/base/power/runtime.c
+> +++ linux/drivers/base/power/runtime.c
+> @@ -1109,22 +1109,23 @@ void pm_runtime_no_callbacks(struct devi
+>  EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
+>  
+>  /**
+> - * pm_runtime_irq_safe - Leave interrupts disabled during callbacks.
+> + * __pm_runtime_irq_safe - Manipulate a device's power.irq_safe flag.
+>   * @dev: Device to handle
+> + * @irq_safe: Whether or not to leave interrupts disabled during callbacks.
+>   *
+> - * Set the power.irq_safe flag, which tells the PM core that the
+> + * Set or unset the power.irq_safe flag, which tells the PM core that the
+>   * ->runtime_suspend() and ->runtime_resume() callbacks for this device should
+>   * always be invoked with the spinlock held and interrupts disabled.  It also
+>   * causes the parent's usage counter to be permanently incremented, preventing
+>   * the parent from runtime suspending -- otherwise an irq-safe child might have
+>   * to wait for a non-irq-safe parent.
+>   */
+> -void pm_runtime_irq_safe(struct device *dev)
+> +void __pm_runtime_irq_safe(struct device *dev, bool irq_safe)
+>  {
+>  	if (dev->parent)
+>  		pm_runtime_get_sync(dev->parent);
+>  	spin_lock_irq(&dev->power.lock);
+> -	dev->power.irq_safe = 1;
+> +	dev->power.irq_safe = irq_safe;
+>  	spin_unlock_irq(&dev->power.lock);
 
-> > FYI, this patchset will cause a conflict with s390 TIF flag fix patch.
-> > The conflict is trivial and Stephen should be able to handle it
-> > without any problem.  Also, I'm planning on doing some further work on
-> > cgroup freezer and then will try to bridge it with job control.  If
-> > that plan fans out, I might ask Oleg to pull from the pm tree.
-> 
-> I'm not sure if Linus likes it.  He generally doesn't want the trees
-> that he pulls from to be entangled this way.
+It's not quite this easy.  There are two important aspects that must be
+considered.
 
-The job control portion has to go through Linus anyway, so let's see
-how that flies.
+Firstly, I originally envisioned pm_runtime_irq_safe() being called
+just once, before the device is enabled for runtime PM.  If you allow
+the flag to be turned on and off like this, you raise the possibility
+of races with runtime PM callbacks.  (That is, if a callback occurs at
+about the same time as the irq_safe flag is changed, nobody can predict
+whether the callback will be invoked with interrupts enabled.)  Maybe
+that's something the driver needs to take care of, but it should at
+least be mentioned in the documentation.
 
-> > This shouldn't matter too much either way but it *might* be a good idea to
-> > keep this line of patches in a separate branch.
-> 
-> I'm going to keep it in the pm-freezer branch anyway (there may be patches
-> on top of it, though)
+Secondly, this doesn't manage the parent's usage counter correctly.  
+Do the pm_runtime_get_sync(dev->parent) at the beginning only when the
+irq_safe flag was off and is being turned on.  And at the end, if the
+irq_safe flag was on and is being turned off, do
+pm_runtime_put_sync(dev->parent).  See pm_runtime_remove() for why this
+matters.  (Also update the documentation; the change to the parent
+isn't necessarily permanent any more.)
 
-Yeah, I'm pretty sure it will need some fix too.
-
-Thanks.
-
--- 
-tejun
+Alan Stern
