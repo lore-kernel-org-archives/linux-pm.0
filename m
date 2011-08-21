@@ -1,18 +1,16 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
- wake-up constraints
-Date: Sun, 21 Aug 2011 09:25:09 +0100
-Message-ID: <20110821082509.GA10380__22328.8451823921$1313915192$gmane$org@opensource.wolfsonmicro.com>
-References: <20110820062543.GA5011@opensource.wolfsonmicro.com>
-	<201108201834.34741.rjw@sisk.pl>
-	<20110820170403.GA27040@opensource.wolfsonmicro.com>
-	<201108202114.37502.rjw@sisk.pl>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [GIT PULL pm-next] freezer: fix various bugs and
+ simplify implementation
+Date: Sun, 21 Aug 2011 11:12:00 +0200
+Message-ID: <20110821091200.GB24151__28691.1429990598$1313917982$gmane$org@htj.dyndns.org>
+References: <20110820094434.GA24151@htj.dyndns.org>
+	<201108201833.39089.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201108202114.37502.rjw@sisk.pl>
+In-Reply-To: <201108201833.39089.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,18 +21,40 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+Cc: arnd@arndb.de, paul@paulmenage.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 20, 2011 at 09:14:37PM +0200, Rafael J. Wysocki wrote:
+Hello, Rafafel.
 
-> I guess you mean the driver here and I'm not really sure it can.
-> For instance, the driver may not know what configuration it works in,
-> e.g. is there a power domain or a hierarchy of those and how much time
-> it takes to power them all down and up and what the power break even is.
+On Sat, Aug 20, 2011 at 06:33:38PM +0200, Rafael J. Wysocki wrote:
+> >   ssh://master.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
+> 
+> Pulled and stored in the pm-freezer branch in my tree, and merged into
+> the linux-next branch.
 
-I don't understand why the driver would need to know what situation it's
-in.  I'd been working on the basis that the idea was that the driver
-said what the constraints it has are and then some code with a more
-system wide view would make the actual decisions for things outside the
-driver domian.
+Cool.
+
+> > FYI, this patchset will cause a conflict with s390 TIF flag fix patch.
+> > The conflict is trivial and Stephen should be able to handle it
+> > without any problem.  Also, I'm planning on doing some further work on
+> > cgroup freezer and then will try to bridge it with job control.  If
+> > that plan fans out, I might ask Oleg to pull from the pm tree.
+> 
+> I'm not sure if Linus likes it.  He generally doesn't want the trees
+> that he pulls from to be entangled this way.
+
+The job control portion has to go through Linus anyway, so let's see
+how that flies.
+
+> > This shouldn't matter too much either way but it *might* be a good idea to
+> > keep this line of patches in a separate branch.
+> 
+> I'm going to keep it in the pm-freezer branch anyway (there may be patches
+> on top of it, though)
+
+Yeah, I'm pretty sure it will need some fix too.
+
+Thanks.
+
+-- 
+tejun
