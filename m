@@ -1,12 +1,18 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Subject: [PATCH] Add regulator driver for the bq2407x family of
-	charger ICs
-Date: Sat, 20 Aug 2011 22:24:51 +0200
-Message-ID: <201108202224.52250.heiko@sntech.de>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
+ wake-up constraints
+Date: Sun, 21 Aug 2011 09:25:09 +0100
+Message-ID: <20110821082509.GA10380__22328.8451823921$1313915192$gmane$org@opensource.wolfsonmicro.com>
+References: <20110820062543.GA5011@opensource.wolfsonmicro.com>
+	<201108201834.34741.rjw@sisk.pl>
+	<20110820170403.GA27040@opensource.wolfsonmicro.com>
+	<201108202114.37502.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <201108202114.37502.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,307 +22,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Liam Girdwood <lrg@ti.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-This driver controls a TI bq2407x charger attached via GPIOs.
-The provided current regulator can enable/disable charging and
-select between 100 mA, 500 mA and a machine specific current limit.
+On Sat, Aug 20, 2011 at 09:14:37PM +0200, Rafael J. Wysocki wrote:
 
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
----
- drivers/regulator/Kconfig         |    8 ++
- drivers/regulator/Makefile        |    1 +
- drivers/regulator/bq2407x.c       |  205 +++++++++++++++++++++++++++++++++++++
- include/linux/regulator/bq2407x.h |   36 +++++++
- 4 files changed, 250 insertions(+), 0 deletions(-)
- create mode 100644 drivers/regulator/bq2407x.c
- create mode 100644 include/linux/regulator/bq2407x.h
+> I guess you mean the driver here and I'm not really sure it can.
+> For instance, the driver may not know what configuration it works in,
+> e.g. is there a power domain or a hierarchy of those and how much time
+> it takes to power them all down and up and what the power break even is.
 
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index c7fd2c0..921e271 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -72,6 +72,14 @@ config REGULATOR_BQ24022
- 	  charging select between 100 mA and 500 mA charging current
- 	  limit.
- 
-+config REGULATOR_BQ2407x
-+	tristate "TI bq2407x Li-Ion Charger IC"
-+	help
-+	  This driver controls a TI bq2407x Charger attached via
-+	  GPIOs. The provided current regulator can enable/disable
-+	  charging select between 100 mA, 500 mA and a machine specific
-+	  charging current limit.
-+
- config REGULATOR_MAX1586
- 	tristate "Maxim 1586/1587 voltage regulator"
- 	depends on I2C
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 040d5aa..ce65493 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -10,6 +10,7 @@ obj-$(CONFIG_REGULATOR_USERSPACE_CONSUMER) += userspace-consumer.o
- 
- obj-$(CONFIG_REGULATOR_AD5398) += ad5398.o
- obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
-+obj-$(CONFIG_REGULATOR_BQ2407x) += bq2407x.o
- obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
- obj-$(CONFIG_REGULATOR_LP3972) += lp3972.o
- obj-$(CONFIG_REGULATOR_MAX1586) += max1586.o
-diff --git a/drivers/regulator/bq2407x.c b/drivers/regulator/bq2407x.c
-new file mode 100644
-index 0000000..2338540
---- /dev/null
-+++ b/drivers/regulator/bq2407x.c
-@@ -0,0 +1,205 @@
-+/*
-+ * Support for TI bq2407x USB-friendly
-+ * Li-Ion Charger connected via GPIOs.
-+ *
-+ * Copyright (c) 2011 Heiko Stuebner
-+ *
-+ * based on the bq24022 driver
-+ * Copyright (c) 2008 Philipp Zabel
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/gpio.h>
-+#include <linux/regulator/bq2407x.h>
-+#include <linux/regulator/driver.h>
-+
-+
-+static int bq2407x_set_current_limit(struct regulator_dev *rdev,
-+					int min_uA, int max_uA)
-+{
-+	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
-+
-+	if (pdata->max_uA && pdata->max_uA > 500000
-+			      && max_uA >= pdata->max_uA) {
-+		dev_dbg(rdev_get_dev(rdev),
-+			"setting current limit to %d mA\n",
-+			pdata->max_uA / 1000);
-+		gpio_set_value(pdata->gpio_en2, 1);
-+		gpio_set_value(pdata->gpio_en1, 0);
-+	} else if (max_uA >= 500000) {
-+		dev_dbg(rdev_get_dev(rdev),
-+			"setting current limit to 500 mA\n");
-+		gpio_set_value(pdata->gpio_en2, 0);
-+		gpio_set_value(pdata->gpio_en1, 1);
-+	} else if (max_uA >= 100000) {
-+		dev_dbg(rdev_get_dev(rdev),
-+			"setting current limit to 100 mA\n");
-+		gpio_set_value(pdata->gpio_en2, 0);
-+		gpio_set_value(pdata->gpio_en1, 0);
-+	} else {
-+		dev_dbg(rdev_get_dev(rdev),
-+			"setting current limit to 0 mA\n");
-+		gpio_set_value(pdata->gpio_en2, 1);
-+		gpio_set_value(pdata->gpio_en1, 1);
-+	}
-+
-+	/* REVISIT: maybe return error if min_uA != 0 ? */
-+	return 0;
-+}
-+
-+static int bq2407x_get_current_limit(struct regulator_dev *rdev)
-+{
-+	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
-+
-+	int en2 = gpio_get_value(pdata->gpio_en2);
-+	int en1 = gpio_get_value(pdata->gpio_en1);
-+
-+	if (en2 && en1)
-+		return 0;
-+	else if (en2 && !en1)
-+		return pdata->max_uA;
-+	else if (!en2 && en1)
-+		return 500000;
-+	else
-+		return 100000;
-+}
-+
-+static int bq2407x_enable(struct regulator_dev *rdev)
-+{
-+	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
-+
-+	dev_dbg(rdev_get_dev(rdev), "enabling charger\n");
-+
-+	gpio_set_value(pdata->gpio_nce, 0);
-+	return 0;
-+}
-+
-+static int bq2407x_disable(struct regulator_dev *rdev)
-+{
-+	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
-+
-+	dev_dbg(rdev_get_dev(rdev), "disabling charger\n");
-+
-+	gpio_set_value(pdata->gpio_nce, 1);
-+	return 0;
-+}
-+
-+static int bq2407x_is_enabled(struct regulator_dev *rdev)
-+{
-+	struct bq2407x_mach_info *pdata = rdev_get_drvdata(rdev);
-+
-+	return !gpio_get_value(pdata->gpio_nce);
-+}
-+
-+static struct regulator_ops bq2407x_ops = {
-+	.set_current_limit = bq2407x_set_current_limit,
-+	.get_current_limit = bq2407x_get_current_limit,
-+	.enable            = bq2407x_enable,
-+	.disable           = bq2407x_disable,
-+	.is_enabled        = bq2407x_is_enabled,
-+};
-+
-+static struct regulator_desc bq2407x_desc = {
-+	.name  = "bq2407x",
-+	.ops   = &bq2407x_ops,
-+	.type  = REGULATOR_CURRENT,
-+	.owner = THIS_MODULE,
-+};
-+
-+static int __init bq2407x_probe(struct platform_device *pdev)
-+{
-+	struct bq2407x_mach_info *pdata = pdev->dev.platform_data;
-+	struct regulator_dev *bq2407x;
-+	int ret;
-+
-+	if (!pdata || !pdata->gpio_nce || !pdata->gpio_en1 || !pdata->gpio_en2)
-+		return -EINVAL;
-+
-+	ret = gpio_request(pdata->gpio_nce, "ncharge_en");
-+	if (ret) {
-+		dev_dbg(&pdev->dev, "couldn't request nCE GPIO: %d\n",
-+			pdata->gpio_nce);
-+		goto err_ce;
-+	}
-+	ret = gpio_request(pdata->gpio_en2, "charge_mode_en2");
-+	if (ret) {
-+		dev_dbg(&pdev->dev, "couldn't request EN2 GPIO: %d\n",
-+			pdata->gpio_en2);
-+		goto err_en2;
-+	}
-+	ret = gpio_request(pdata->gpio_en1, "charge_mode_en1");
-+	if (ret) {
-+		dev_dbg(&pdev->dev, "couldn't request EN1 GPIO: %d\n",
-+			pdata->gpio_en1);
-+		goto err_en1;
-+	}
-+	ret = gpio_direction_output(pdata->gpio_en2, 0);
-+	ret = gpio_direction_output(pdata->gpio_en1, 0);
-+	ret = gpio_direction_output(pdata->gpio_nce, 1);
-+
-+	bq2407x = regulator_register(&bq2407x_desc, &pdev->dev,
-+				     pdata->init_data, pdata);
-+	if (IS_ERR(bq2407x)) {
-+		dev_dbg(&pdev->dev, "couldn't register regulator\n");
-+		ret = PTR_ERR(bq2407x);
-+		goto err_reg;
-+	}
-+	platform_set_drvdata(pdev, bq2407x);
-+	dev_dbg(&pdev->dev, "registered regulator\n");
-+
-+	return 0;
-+err_reg:
-+	gpio_free(pdata->gpio_en1);
-+err_en1:
-+	gpio_free(pdata->gpio_en2);
-+err_en2:
-+	gpio_free(pdata->gpio_nce);
-+err_ce:
-+	return ret;
-+}
-+
-+static int __devexit bq2407x_remove(struct platform_device *pdev)
-+{
-+	struct bq2407x_mach_info *pdata = pdev->dev.platform_data;
-+	struct regulator_dev *bq2407x = platform_get_drvdata(pdev);
-+
-+	regulator_unregister(bq2407x);
-+	gpio_free(pdata->gpio_en1);
-+	gpio_free(pdata->gpio_en2);
-+	gpio_free(pdata->gpio_nce);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver bq2407x_driver = {
-+	.driver = {
-+		.name = "bq2407x",
-+	},
-+	.remove = __devexit_p(bq2407x_remove),
-+};
-+
-+static int __init bq2407x_init(void)
-+{
-+	return platform_driver_probe(&bq2407x_driver, bq2407x_probe);
-+}
-+
-+static void __exit bq2407x_exit(void)
-+{
-+	platform_driver_unregister(&bq2407x_driver);
-+}
-+
-+module_init(bq2407x_init);
-+module_exit(bq2407x_exit);
-+
-+MODULE_AUTHOR("Heiko Stuebner");
-+MODULE_DESCRIPTION("TI bq2407x Li-Ion Charger driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/regulator/bq2407x.h b/include/linux/regulator/bq2407x.h
-new file mode 100644
-index 0000000..8145150
---- /dev/null
-+++ b/include/linux/regulator/bq2407x.h
-@@ -0,0 +1,36 @@
-+/*
-+ * Support for TI bq2407x 1.5A USB-friendly
-+ * Li-Ion Charger connected via GPIOs.
-+ *
-+ * Copyright (c) 2011 Heiko Stuebner
-+ *
-+ * based on the bq24022 driver
-+ * Copyright (c) 2008 Philipp Zabel
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+struct regulator_init_data;
-+
-+/**
-+ * bq2407x_mach_info - platform data for bq2407x
-+ * @gpio_nce: GPIO line connected to the nCE pin, used to control charging
-+ * @gpio_en2: GPIO line connected to the EN2 pin, used to limit charging
-+ * @gpio_en1: GPIO line connected to the EN1 pin, used to limit charging
-+ * @max_uA: maximum current defined by resistor on ILIM connector
-+ * Modes of operation:
-+ * EN2 = 0, EN1 = 0: 100mA
-+ * EN2 = 0, EN1 = 1: 500mA
-+ * EN2 = 1, EN1 = 0: max_current
-+ * EN2 = 1, EN1 = 1: Standby (usb suspend)
-+ */
-+struct bq2407x_mach_info {
-+	int gpio_nce;
-+	int gpio_en2;
-+	int gpio_en1;
-+	int max_uA;
-+	struct regulator_init_data *init_data;
-+};
--- 
-1.7.2.3
+I don't understand why the driver would need to know what situation it's
+in.  I'd been working on the basis that the idea was that the driver
+said what the constraints it has are and then some code with a more
+system wide view would make the actual decisions for things outside the
+driver domian.
