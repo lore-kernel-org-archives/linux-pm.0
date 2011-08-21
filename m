@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL pm-next] freezer: fix various bugs and
-	simplify implementation
-Date: Sun, 21 Aug 2011 20:03:14 +0200
-Message-ID: <201108212003.14722.rjw__15581.2104967938$1313949780$gmane$org@sisk.pl>
-References: <20110820094434.GA24151@htj.dyndns.org>
-	<201108201833.39089.rjw@sisk.pl>
-	<20110821091200.GB24151@htj.dyndns.org>
+Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
+	wake-up constraints
+Date: Sun, 21 Aug 2011 20:05:53 +0200
+Message-ID: <201108212005.53898.rjw__30692.4885874198$1313949905$gmane$org@sisk.pl>
+References: <20110820062543.GA5011@opensource.wolfsonmicro.com>
+	<201108202114.37502.rjw@sisk.pl>
+	<20110821082509.GA10380@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110821091200.GB24151@htj.dyndns.org>
+In-Reply-To: <20110821082509.GA10380@opensource.wolfsonmicro.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,91 +20,28 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: arnd@arndb.de, paul@paulmenage.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-pm@lists.linux-foundation.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, August 21, 2011, Tejun Heo wrote:
-> Hello, Rafafel.
+On Sunday, August 21, 2011, Mark Brown wrote:
+> On Sat, Aug 20, 2011 at 09:14:37PM +0200, Rafael J. Wysocki wrote:
 > 
-> On Sat, Aug 20, 2011 at 06:33:38PM +0200, Rafael J. Wysocki wrote:
-> > >   ssh://master.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
-> > 
-> > Pulled and stored in the pm-freezer branch in my tree, and merged into
-> > the linux-next branch.
+> > I guess you mean the driver here and I'm not really sure it can.
+> > For instance, the driver may not know what configuration it works in,
+> > e.g. is there a power domain or a hierarchy of those and how much time
+> > it takes to power them all down and up and what the power break even is.
 > 
-> Cool.
-> 
-> > > FYI, this patchset will cause a conflict with s390 TIF flag fix patch.
-> > > The conflict is trivial and Stephen should be able to handle it
-> > > without any problem.  Also, I'm planning on doing some further work on
-> > > cgroup freezer and then will try to bridge it with job control.  If
-> > > that plan fans out, I might ask Oleg to pull from the pm tree.
-> > 
-> > I'm not sure if Linus likes it.  He generally doesn't want the trees
-> > that he pulls from to be entangled this way.
-> 
-> The job control portion has to go through Linus anyway, so let's see
-> how that flies.
-> 
-> > > This shouldn't matter too much either way but it *might* be a good idea to
-> > > keep this line of patches in a separate branch.
-> > 
-> > I'm going to keep it in the pm-freezer branch anyway (there may be patches
-> > on top of it, though)
-> 
-> Yeah, I'm pretty sure it will need some fix too.
+> I don't understand why the driver would need to know what situation it's
+> in.  I'd been working on the basis that the idea was that the driver
+> said what the constraints it has are and then some code with a more
+> system wide view would make the actual decisions for things outside the
+> driver domian.
 
-Speaking of which, the addition of might_sleep() to try_to_freeze()
-causes a badly looking backtrace to appear during reboot on ARM,
-so I'd prefer it to go into __refrigerator().
+That's correct, but in order to figure out a "sensible default"
+the driver generally would need to know what the expectations with
+respect to it are.  Otherwise it can very well generate a random
+number and use that.
 
-Please tell me what you think of the patch below.
-
+Thanks,
 Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM / Freezer: Move might_sleep() from try_to_freeze()
-
-There are some code paths that call try_to_freeze() from interrupt
-context, but doing so they know that the current process cannot
-possible be freezing (e.g. during reboot on ARM).  However, the
-recently added might_sleep() annotation in try_to_freeze()
-triggers in those cases, making it look like there were bugs in
-those places, which really isn't the case.
-
-Therefore move might_sleep() from try_to_freeze() to
-__refrigerator() so that it doesn't produce false positives.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/freezer.h |    1 -
- kernel/freezer.c        |    2 ++
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux/include/linux/freezer.h
-===================================================================
---- linux.orig/include/linux/freezer.h
-+++ linux/include/linux/freezer.h
-@@ -41,7 +41,6 @@ extern void thaw_processes(void);
- 
- static inline bool try_to_freeze(void)
- {
--	might_sleep();
- 	if (likely(!freezing(current)))
- 		return false;
- 	return __refrigerator(false);
-Index: linux/kernel/freezer.c
-===================================================================
---- linux.orig/kernel/freezer.c
-+++ linux/kernel/freezer.c
-@@ -54,6 +54,8 @@ bool __refrigerator(bool check_kthr_stop
- 	bool was_frozen = false;
- 	long save;
- 
-+	might_sleep();
-+
- 	/*
- 	 * No point in checking freezing() again - the caller already did.
- 	 * Proceed to enter FROZEN.
