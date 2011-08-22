@@ -1,15 +1,16 @@
 From: "Turquette, Mike" <mturquette@ti.com>
-Subject: Re: [PATCH v6-resubmit of 2/4] PM: Introduce DEVFREQ:
- generic DVFS framework with device-specific OPPs
-Date: Mon, 22 Aug 2011 11:19:32 -0700
-Message-ID: <CAJOA=zMRu52Pcj+ViXbZcX+uzmA8t6v4WiPa4URy3C1YxnXE1g@mail.gmail.com>
-References: <CAJOA=zPyG5Yn1bBR1sPxhsEh=n_+_4+whGWy4fKEzNbTvUvhkA@mail.gmail.com>
-	<1313742609-3446-1-git-send-email-myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v6 3/4] PM / DEVFREQ: add basic governors
+Date: Mon, 22 Aug 2011 11:22:01 -0700
+Message-ID: <CAJOA=zPN7M2Js74DAO9j_zJ3VMCwRBfbJTCROnf6dymamop-ZA@mail.gmail.com>
+References: <1313663262-15308-1-git-send-email-myungjoo.ham@samsung.com>
+	<1313663262-15308-4-git-send-email-myungjoo.ham@samsung.com>
+	<CAJOA=zN++RHMEREcVaqQAQ6jpLEeW6qQLWBM6+nKrfiNLoZ3vA@mail.gmail.com>
+	<CAJ0PZbSYrb_i88UbeK5vD0URt4ZivTgCytaY7iccsE5uJ_K=CQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1313742609-3446-1-git-send-email-myungjoo.ham@samsung.com>
+In-Reply-To: <CAJ0PZbSYrb_i88UbeK5vD0URt4ZivTgCytaY7iccsE5uJ_K=CQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,724 +20,324 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
+To: myungjoo.ham@gmail.com
 Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 19, 2011 at 1:30 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wr=
-ote:
-> With OPPs, a device may have multiple operable frequency and voltage
-> sets. However, there can be multiple possible operable sets and a system
-> will need to choose one from them. In order to reduce the power
-> consumption (by reducing frequency and voltage) without affecting the
-> performance too much, a Dynamic Voltage and Frequency Scaling (DVFS)
-> scheme may be used.
->
-> This patch introduces the DVFS capability to non-CPU devices with OPPs.
-> DVFS is a techique whereby the frequency and supplied voltage of a
-> device is adjusted on-the-fly. DVFS usually sets the frequency as low
-> as possible with given conditions (such as QoS assurance) and adjusts
-> voltage according to the chosen frequency in order to reduce power
-> consumption and heat dissipation.
->
-> The generic DVFS for devices, DEVFREQ, may appear quite similar with
-> /drivers/cpufreq. =A0However, CPUFREQ does not allow to have multiple
-> devices registered and is not suitable to have multiple heterogenous
-> devices with different (but simple) governors.
->
-> Normally, DVFS mechanism controls frequency based on the demand for
-> the device, and then, chooses voltage based on the chosen frequency.
-> DEVFREQ also controls the frequency based on the governor's frequency
-> recommendation and let OPP pick up the pair of frequency and voltage
-> based on the recommended frequency. Then, the chosen OPP is passed to
-> device driver's "target" callback.
->
-> When PM QoS is going to be used with the DEVFREQ device, the device
-> driver should enable OPPs that are appropriate with the current PM QoS
-> requests. In order to do so, the device driver may call opp_enable and
-> opp_disable at the notifier callback of PM QoS so that PM QoS's
-> update_target() call enables the appropriate OPPs. Note that at least
-> one of OPPs should be enabled at any time; be careful when there is a
-> transition.
->
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->
-> ---
-> The test code with board support for Exynos4-NURI is at
-> http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs/hea=
-ds/devfreq
->
-> ---
-> Thank you for your valuable comments, Rafael, Greg, Pavel, Colin, Mike,
-> and Kevin.
->
-> Changes at v6-resubmit from v6
-> - Use jiffy directly instead of ktime
-> - Be prepared for profile->polling_ms changes (not supported fully at
-> =A0this stage)
->
-> Changes from v5
-> - Uses OPP availability change notifier
-> - Removed devfreq_interval. Uses one jiffy instead. DEVFREQ adjusts
-> =A0polling interval based on the interval requirement of DEVFREQ
-> =A0devices.
-> - Moved devfreq to /drivers/devfreq to accomodate devfreq-related files
-> =A0including governors and devfreq drivers.
-> - Coding style revised.
-> - Updated devfreq_add_device interface to get tunable values.
->
-> Changed from v4
-> - Removed tickle, which is a duplicated feature; PM QoS can do the same.
-> - Allow to extend polling interval if devices have longer polling interva=
-ls.
-> - Relocated private data of governors.
-> - Removed system-wide sysfs
->
-> Changed from v3
-> - In kerneldoc comments, DEVFREQ has ben replaced by devfreq
-> - Revised removing devfreq entries with error mechanism
-> - Added and revised comments
-> - Removed unnecessary codes
-> - Allow to give a name to a governor
-> - Bugfix: a tickle call may cancel an older tickle call that is still in
-> =A0effect.
->
-> Changed from v2
-> - Code style revised and cleaned up.
-> - Remove DEVFREQ entries that incur errors except for EAGAIN
-> - Bug fixed: tickle for devices without polling governors
->
-> Changes from v1(RFC)
-> - Rename: DVFS --> DEVFREQ
-> - Revised governor design
-> =A0 =A0 =A0 =A0. Governor receives the whole struct devfreq
-> =A0 =A0 =A0 =A0. Governor should gather usage information (thru get_dev_s=
-tatus) itself
-> - Periodic monitoring runs only when needed.
-> - DEVFREQ no more deals with voltage information directly
-> - Removed some printks.
-> - Some cosmetics update
-> - Use freezable_wq.
-> ---
-> =A0drivers/Kconfig =A0 =A0 =A0 =A0 =A0 | =A0 =A02 +
-> =A0drivers/Makefile =A0 =A0 =A0 =A0 =A0| =A0 =A02 +
-> =A0drivers/devfreq/Kconfig =A0 | =A0 39 ++++++
-> =A0drivers/devfreq/Makefile =A0| =A0 =A01 +
-> =A0drivers/devfreq/devfreq.c | =A0312 +++++++++++++++++++++++++++++++++++=
-++++++++++
-> =A0include/linux/devfreq.h =A0 | =A0111 ++++++++++++++++
-> =A06 files changed, 467 insertions(+), 0 deletions(-)
-> =A0create mode 100644 drivers/devfreq/Kconfig
-> =A0create mode 100644 drivers/devfreq/Makefile
-> =A0create mode 100644 drivers/devfreq/devfreq.c
-> =A0create mode 100644 include/linux/devfreq.h
->
-> diff --git a/drivers/Kconfig b/drivers/Kconfig
-> index 95b9e7e..a1efd75 100644
-> --- a/drivers/Kconfig
-> +++ b/drivers/Kconfig
-> @@ -130,4 +130,6 @@ source "drivers/iommu/Kconfig"
->
-> =A0source "drivers/virt/Kconfig"
->
-> +source "drivers/devfreq/Kconfig"
-> +
-> =A0endmenu
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index 7fa433a..97c957b 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -127,3 +127,5 @@ obj-$(CONFIG_IOMMU_SUPPORT) +=3D iommu/
->
-> =A0# Virtualization drivers
-> =A0obj-$(CONFIG_VIRT_DRIVERS) =A0 =A0 +=3D virt/
-> +
-> +obj-$(CONFIG_PM_DEVFREQ) =A0 =A0 =A0 +=3D devfreq/
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> new file mode 100644
-> index 0000000..1fb42de
-> --- /dev/null
-> +++ b/drivers/devfreq/Kconfig
-> @@ -0,0 +1,39 @@
-> +config ARCH_HAS_DEVFREQ
-> + =A0 =A0 =A0 bool
-> + =A0 =A0 =A0 depends on ARCH_HAS_OPP
-> + =A0 =A0 =A0 help
-> + =A0 =A0 =A0 =A0 Denotes that the architecture supports DEVFREQ. If the =
-architecture
-> + =A0 =A0 =A0 =A0 supports multiple OPP entries per device and the freque=
-ncy of the
-> + =A0 =A0 =A0 =A0 devices with OPPs may be altered dynamically, the archi=
-tecture
-> + =A0 =A0 =A0 =A0 supports DEVFREQ.
-> +
-> +menuconfig PM_DEVFREQ
-> + =A0 =A0 =A0 bool "Generic Dynamic Voltage and Frequency Scaling (DVFS) =
-support"
-> + =A0 =A0 =A0 depends on PM_OPP && ARCH_HAS_DEVFREQ
-> + =A0 =A0 =A0 help
-> + =A0 =A0 =A0 =A0 With OPP support, a device may have a list of frequenci=
-es and
-> + =A0 =A0 =A0 =A0 voltages available. DEVFREQ, a generic DVFS framework c=
-an be
-> + =A0 =A0 =A0 =A0 registered for a device with OPP support in order to le=
-t the
-> + =A0 =A0 =A0 =A0 governor provided to DEVFREQ choose an operating freque=
-ncy
-> + =A0 =A0 =A0 =A0 based on the OPP's list and the policy given with DEVFR=
-EQ.
-> +
-> + =A0 =A0 =A0 =A0 Each device may have its own governor and policy. DEVFR=
-EQ can
-> + =A0 =A0 =A0 =A0 reevaluate the device state periodically and/or based o=
-n the
-> + =A0 =A0 =A0 =A0 OPP list changes (each frequency/voltage pair in OPP ma=
-y be
-> + =A0 =A0 =A0 =A0 disabled or enabled).
-> +
-> + =A0 =A0 =A0 =A0 Like some CPUs with CPUFREQ, a device may have multiple=
- clocks.
-> + =A0 =A0 =A0 =A0 However, because the clock frequencies of a single devi=
-ce are
-> + =A0 =A0 =A0 =A0 determined by the single device's state, an instance of=
- DEVFREQ
-> + =A0 =A0 =A0 =A0 is attached to a single device and returns a "represent=
-ative"
-> + =A0 =A0 =A0 =A0 clock frequency from the OPP of the device, which is al=
-so attached
-> + =A0 =A0 =A0 =A0 to a device by 1-to-1. The device registering DEVFREQ t=
-akes the
-> + =A0 =A0 =A0 =A0 responsiblity to "interpret" the frequency listed in OP=
-P and
-> + =A0 =A0 =A0 =A0 to set its every clock accordingly with the "target" ca=
-llback
-> + =A0 =A0 =A0 =A0 given to DEVFREQ.
-> +
-> +if PM_DEVFREQ
-> +
-> +comment "DEVFREQ Drivers"
-> +
-> +endif # PM_DEVFREQ
-> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> new file mode 100644
-> index 0000000..168934a
-> --- /dev/null
-> +++ b/drivers/devfreq/Makefile
-> @@ -0,0 +1 @@
-> +obj-$(CONFIG_PM_DEVFREQ) =A0 =A0 =A0 +=3D devfreq.o
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> new file mode 100644
-> index 0000000..af848ffa
-> --- /dev/null
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -0,0 +1,312 @@
-> +/*
-> + * devfreq: Generic Dynamic Voltage and Frequency Scaling (DVFS) Framewo=
-rk
-> + * =A0 =A0 =A0 =A0 for Non-CPU Devices Based on OPP.
-> + *
-> + * Copyright (C) 2011 Samsung Electronics
-> + * =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/errno.h>
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/slab.h>
-> +#include <linux/opp.h>
-> +#include <linux/devfreq.h>
-> +#include <linux/workqueue.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/list.h>
-> +#include <linux/printk.h>
-> +#include <linux/hrtimer.h>
-> +
-> +/*
-> + * devfreq_work periodically monitors every registered device.
-> + * The minimum polling interval is one jiffy. The polling interval is
-> + * determined by the minimum polling period among all polling devfreq
-> + * devices. The resolution of polling interval is one jiffy.
-> + */
-> +static bool polling;
-> +static struct workqueue_struct *devfreq_wq;
-> +static struct delayed_work devfreq_work;
-> +
-> +/* The list of all device-devfreq */
-> +static LIST_HEAD(devfreq_list);
-> +static DEFINE_MUTEX(devfreq_list_lock);
-> +
-> +/**
-> + * find_device_devfreq() - find devfreq struct using device pointer
-> + * @dev: =A0 =A0 =A0 device pointer used to lookup device devfreq.
-> + *
-> + * Search the list of device devfreqs and return the matched device's
-> + * devfreq info. devfreq_list_lock should be held by the caller.
-> + */
-> +static struct devfreq *find_device_devfreq(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct devfreq *tmp_devfreq;
-> +
-> + =A0 =A0 =A0 if (unlikely(IS_ERR_OR_NULL(dev))) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("DEVFREQ: %s: Invalid parameters\n",=
- __func__);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return ERR_PTR(-EINVAL);
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 list_for_each_entry(tmp_devfreq, &devfreq_list, node) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (tmp_devfreq->dev =3D=3D dev)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return tmp_devfreq;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return ERR_PTR(-ENODEV);
-> +}
-> +
-> +/**
-> + * devfreq_do() - Check the usage profile of a given device and configure
-> + * =A0 =A0 =A0 =A0 =A0 =A0 frequency and voltage accordingly
-> + * @devfreq: =A0 devfreq info of the given device
-> + */
-> +static int devfreq_do(struct devfreq *devfreq)
-> +{
-> + =A0 =A0 =A0 struct opp *opp;
-> + =A0 =A0 =A0 unsigned long freq;
-> + =A0 =A0 =A0 int err;
-> +
-> + =A0 =A0 =A0 err =3D devfreq->governor->get_target_freq(devfreq, &freq);
-> + =A0 =A0 =A0 if (err)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return err;
-> +
-> + =A0 =A0 =A0 opp =3D opp_find_freq_ceil(devfreq->dev, &freq);
-> + =A0 =A0 =A0 if (opp =3D=3D ERR_PTR(-ENODEV))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 opp =3D opp_find_freq_floor(devfreq->dev, &=
-freq);
-> +
-> + =A0 =A0 =A0 if (IS_ERR(opp))
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(opp);
-> +
-> + =A0 =A0 =A0 if (devfreq->previous_freq =3D=3D freq)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> +
-> + =A0 =A0 =A0 err =3D devfreq->profile->target(devfreq->dev, opp);
-> + =A0 =A0 =A0 if (err)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return err;
-> +
-> + =A0 =A0 =A0 devfreq->previous_freq =3D freq;
-> + =A0 =A0 =A0 return 0;
-> +}
-> +
-> +/**
-> + * devfreq_update() - Notify that the device OPP has been changed.
-> + * @dev: =A0 =A0 =A0 the device whose OPP has been changed.
-> + */
-> +static int devfreq_update(struct notifier_block *nb, unsigned long type,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 void *devp)
-> +{
-> + =A0 =A0 =A0 struct devfreq *devfreq;
-> + =A0 =A0 =A0 int err =3D 0;
-> +
-> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
-> + =A0 =A0 =A0 devfreq =3D container_of(nb, struct devfreq, nb);
-> + =A0 =A0 =A0 /* Reevaluate the proper frequency */
-> + =A0 =A0 =A0 err =3D devfreq_do(devfreq);
-> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
-> + =A0 =A0 =A0 return err;
-> +}
-> +
-> +/**
-> + * devfreq_monitor() - Periodically run devfreq_do()
-> + * @work: the work struct used to run devfreq_monitor periodically.
-> + *
-> + */
-> +static void devfreq_monitor(struct work_struct *work)
-> +{
-> + =A0 =A0 =A0 static unsigned long last_polled_at;
-> + =A0 =A0 =A0 struct devfreq *devfreq, *tmp;
-> + =A0 =A0 =A0 int error;
-> + =A0 =A0 =A0 int jiffies_passed;
-> + =A0 =A0 =A0 unsigned long next_jiffies =3D ULONG_MAX, now =3D jiffies;
-> +
-> + =A0 =A0 =A0 /* Initially last_polled_at =3D 0, polling every device at =
-bootup */
-> + =A0 =A0 =A0 jiffies_passed =3D now - last_polled_at;
-> + =A0 =A0 =A0 last_polled_at =3D now;
-> +
-> + =A0 =A0 =A0 if (jiffies_passed =3D=3D 0)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 jiffies_passed =3D 1;
-> + =A0 =A0 =A0 if (jiffies_passed < 0) /* "Infinite Timeout" */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 jiffies_passed =3D INT_MAX;
-
-This doesn't account for jiffies rollover (~49 days on architectures
-with HZ =3D=3D 1000).  At rollover-time some devices might incorrectly get
-marked as having an infinite timeout.
-
-> +
-> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
-> +
-> + =A0 =A0 =A0 list_for_each_entry_safe(devfreq, tmp, &devfreq_list, node)=
- {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Reflect the changes in profile->polling_=
-ms */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (devfreq->polling_ms !=3D devfreq->profi=
-le->polling_ms) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq->polling_ms =3D dev=
-freq->profile->polling_ms;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq->polling_jiffies =
-=3D msecs_to_jiffies(
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 devfreq->polling_ms);
-
-Does struct devfreq need ->polling_ms?  It seems like useless storage
-since we're really interested in ->polling_jiffies.
-
-How about removing devfreq->polling_ms and then just doing the
-conversion whenever the sysfs file is written to?
-
-Regards,
-Mike
-
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (devfreq->next_polling =
-=3D=3D 0 &&
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq->polling_ji=
-ffies)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq->ne=
-xt_polling =3D 1; /* Poll Now */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else if (devfreq->polling_j=
-iffies =3D=3D 0)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq->ne=
-xt_polling =3D 0; /* Stop Polling */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (devfreq->next_polling =3D=3D 0)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /*
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* Reduce more next_polling if devfreq_wq=
- took an extra
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* delay. (i.e., CPU has been idled.)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (devfreq->next_polling <=3D jiffies_pass=
-ed) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 error =3D devfreq_do(devfre=
-q);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* Remove a devfreq with an=
- error. */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (error && error !=3D -EA=
-GAIN) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev=
-freq->dev, "Due to devfreq_do error(%d), devfreq(%s) is removed from the de=
-vice\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 error, devfreq->governor->name);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 list_del(&d=
-evfreq->node);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 kfree(devfr=
-eq);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq->next_polling =3D d=
-evfreq->polling_jiffies;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* No more polling required=
- (polling_ms changed) */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (devfreq->next_polling =
-=3D=3D 0)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq->next_polling -=3D =
-jiffies_passed;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 next_jiffies =3D (next_jiffies > devfreq->n=
-ext_polling) ?
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq->ne=
-xt_polling : next_jiffies;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 if (next_jiffies > 0 && next_jiffies < ULONG_MAX) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 polling =3D true;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 queue_delayed_work(devfreq_wq, &devfreq_wor=
-k, next_jiffies);
-> + =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 polling =3D false;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
-> +}
-> +
-> +/**
-> + * devfreq_add_device() - Add devfreq feature to the device
-> + * @dev: =A0 =A0 =A0 the device to add devfreq feature.
-> + * @profile: =A0 device-specific profile to run devfreq.
-> + * @governor: =A0the policy to choose frequency.
-> + * @data: =A0 =A0 =A0private data for the governor. The devfreq framewor=
-k does not
-> + * =A0 =A0 =A0 =A0 =A0 =A0 touch this value.
-> + */
-> +int devfreq_add_device(struct device *dev, struct devfreq_dev_profile *p=
-rofile,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct devfreq_governor *gov=
-ernor, void *data)
-> +{
-> + =A0 =A0 =A0 struct devfreq *devfreq;
-> + =A0 =A0 =A0 struct srcu_notifier_head *nh;
-> + =A0 =A0 =A0 int err =3D 0;
-> +
-> + =A0 =A0 =A0 if (!dev || !profile || !governor) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, "%s: Invalid parameters.\n", _=
-_func__);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
-> +
-> + =A0 =A0 =A0 devfreq =3D find_device_devfreq(dev);
-> + =A0 =A0 =A0 if (!IS_ERR(devfreq)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, "%s: Unable to create devfreq =
-for the device. It already has one.\n", __func__);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D -EINVAL;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 devfreq =3D kzalloc(sizeof(struct devfreq), GFP_KERNEL);
-> + =A0 =A0 =A0 if (!devfreq) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, "%s: Unable to create devfreq =
-for the device\n",
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 __func__);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D -ENOMEM;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 devfreq->dev =3D dev;
-> + =A0 =A0 =A0 devfreq->profile =3D profile;
-> + =A0 =A0 =A0 devfreq->governor =3D governor;
-> + =A0 =A0 =A0 devfreq->polling_ms =3D profile->polling_ms;
-> + =A0 =A0 =A0 devfreq->next_polling =3D devfreq->polling_jiffies
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D msecs_to_ji=
-ffies(devfreq->polling_ms);
-> + =A0 =A0 =A0 devfreq->previous_freq =3D profile->initial_freq;
-> + =A0 =A0 =A0 devfreq->data =3D data;
-> +
-> + =A0 =A0 =A0 devfreq->nb.notifier_call =3D devfreq_update;
-> + =A0 =A0 =A0 nh =3D opp_get_notifier(dev);
-> + =A0 =A0 =A0 if (IS_ERR(nh)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D PTR_ERR(nh);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
-> + =A0 =A0 =A0 }
-> + =A0 =A0 =A0 err =3D srcu_notifier_chain_register(nh, &devfreq->nb);
-> + =A0 =A0 =A0 if (err)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
-> +
-> + =A0 =A0 =A0 list_add(&devfreq->node, &devfreq_list);
-> +
-> + =A0 =A0 =A0 if (devfreq_wq && devfreq->next_polling && !polling) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 polling =3D true;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 queue_delayed_work(devfreq_wq, &devfreq_wor=
-k,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0devf=
-req->next_polling);
-> + =A0 =A0 =A0 }
-> +out:
-> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
-> +
-> + =A0 =A0 =A0 return err;
-> +}
-> +
-> +/**
-> + * devfreq_remove_device() - Remove devfreq feature from a device.
-> + * @device: =A0 =A0the device to remove devfreq feature.
-> + */
-> +int devfreq_remove_device(struct device *dev)
-> +{
-> + =A0 =A0 =A0 struct devfreq *devfreq;
-> + =A0 =A0 =A0 struct srcu_notifier_head *nh;
-> + =A0 =A0 =A0 int err =3D 0;
-> +
-> + =A0 =A0 =A0 if (!dev)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
-> +
-> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
-> + =A0 =A0 =A0 devfreq =3D find_device_devfreq(dev);
-> + =A0 =A0 =A0 if (IS_ERR(devfreq)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D PTR_ERR(devfreq);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 nh =3D opp_get_notifier(dev);
-> + =A0 =A0 =A0 if (IS_ERR(nh)) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 err =3D PTR_ERR(nh);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 list_del(&devfreq->node);
-> + =A0 =A0 =A0 srcu_notifier_chain_unregister(nh, &devfreq->nb);
-> + =A0 =A0 =A0 kfree(devfreq);
-> +out:
-> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
-> + =A0 =A0 =A0 return 0;
-> +}
-> +
-> +/**
-> + * devfreq_init() - Initialize data structure for devfreq framework and
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 start polling registered devfreq devices.
-> + */
-> +static int __init devfreq_init(void)
-> +{
-> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
-> + =A0 =A0 =A0 polling =3D false;
-> + =A0 =A0 =A0 devfreq_wq =3D create_freezable_workqueue("devfreq_wq");
-> + =A0 =A0 =A0 INIT_DELAYED_WORK_DEFERRABLE(&devfreq_work, devfreq_monitor=
-);
-> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
-> +
-> + =A0 =A0 =A0 devfreq_monitor(&devfreq_work.work);
-> + =A0 =A0 =A0 return 0;
-> +}
-> +late_initcall(devfreq_init);
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> new file mode 100644
-> index 0000000..18e94cb
-> --- /dev/null
-> +++ b/include/linux/devfreq.h
-> @@ -0,0 +1,111 @@
-> +/*
-> + * devfreq: Generic Dynamic Voltage and Frequency Scaling (DVFS) Framewo=
-rk
-> + * =A0 =A0 =A0 =A0 for Non-CPU Devices Based on OPP.
-> + *
-> + * Copyright (C) 2011 Samsung Electronics
-> + * =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#ifndef __LINUX_DEVFREQ_H__
-> +#define __LINUX_DEVFREQ_H__
-> +
-> +#include <linux/notifier.h>
-> +
-> +#define DEVFREQ_NAME_LEN 16
-> +
-> +struct devfreq;
-> +struct devfreq_dev_status {
-> + =A0 =A0 =A0 /* both since the last measure */
-> + =A0 =A0 =A0 unsigned long total_time;
-> + =A0 =A0 =A0 unsigned long busy_time;
-> + =A0 =A0 =A0 unsigned long current_frequency;
-> +};
-> +
-> +struct devfreq_dev_profile {
-> + =A0 =A0 =A0 unsigned long max_freq; /* may be larger than the actual va=
-lue */
-> + =A0 =A0 =A0 unsigned long initial_freq;
-> + =A0 =A0 =A0 int polling_ms; /* 0 for at opp change only */
-> +
-> + =A0 =A0 =A0 int (*target)(struct device *dev, struct opp *opp);
-> + =A0 =A0 =A0 int (*get_dev_status)(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct devfreq_=
-dev_status *stat);
-> +};
-> +
-> +/**
-> + * struct devfreq_governor - Devfreq policy governor
-> + * @name =A0 =A0 =A0 =A0 =A0 =A0 =A0 Governor's name
-> + * @get_target_freq =A0 =A0Returns desired operating frequency for the d=
-evice.
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 Basically, get_target_freq wi=
-ll run
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfreq_dev_profile.get_dev_s=
-tatus() to get the
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 status of the device (load =
-=3D busy_time / total_time).
-> + */
-> +struct devfreq_governor {
-> + =A0 =A0 =A0 char name[DEVFREQ_NAME_LEN];
-> + =A0 =A0 =A0 int (*get_target_freq)(struct devfreq *this, unsigned long =
-*freq);
-> +};
-> +
-> +/**
-> + * struct devfreq - Device devfreq structure
-> + * @node =A0 =A0 =A0 list node - contains the devices with devfreq that =
-have been
-> + * =A0 =A0 =A0 =A0 =A0 =A0 registered.
-> + * @dev =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0device pointer
-> + * @profile =A0 =A0device-specific devfreq profile
-> + * @governor =A0 method how to choose frequency based on the usage.
-> + * @nb =A0 =A0 =A0 =A0 notifier block registered to the corresponding OP=
-P to get
-> + * =A0 =A0 =A0 =A0 =A0 =A0 notified for frequency availability updates.
-> + * @polling_jiffies =A0 =A0interval in jiffies.
-> + * @polling_ms =A0 =A0 =A0 =A0 interval in ms. to compare with profile's=
- polling_ms
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 and update polling_jiffies if=
- the device has changed
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 the polling interval.
-> + * @previous_freq =A0 =A0 =A0previously configured frequency value.
-> + * @next_polling =A0 =A0 =A0 the number of remaining jiffies to poll with
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 "devfreq_monitor" executions =
-to reevaluate
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 frequency/voltage of the devi=
-ce. Set by
-> + * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 profile's polling_ms interval.
-> + * @data =A0 =A0 =A0 Private data of the governor. The devfreq framework=
- does not
-> + * =A0 =A0 =A0 =A0 =A0 =A0 touch this.
-> + *
-> + * This structure stores the devfreq information for a give device.
-> + */
-> +struct devfreq {
-> + =A0 =A0 =A0 struct list_head node;
-> +
-> + =A0 =A0 =A0 struct device *dev;
-> + =A0 =A0 =A0 struct devfreq_dev_profile *profile;
-> + =A0 =A0 =A0 struct devfreq_governor *governor;
-> + =A0 =A0 =A0 struct notifier_block nb;
-> +
-> + =A0 =A0 =A0 unsigned long polling_jiffies;
-> + =A0 =A0 =A0 int polling_ms;
-> + =A0 =A0 =A0 unsigned long previous_freq;
-> + =A0 =A0 =A0 unsigned int next_polling;
-> +
-> + =A0 =A0 =A0 void *data; /* private data for governors */
-> +};
-> +
-> +#if defined(CONFIG_PM_DEVFREQ)
-> +extern int devfreq_add_device(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct devfreq_dev_p=
-rofile *profile,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct devfreq_gover=
-nor *governor,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0void *data);
-> +extern int devfreq_remove_device(struct device *dev);
-> +#else /* !CONFIG_PM_DEVFREQ */
-> +static int devfreq_add_device(struct device *dev,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct devfreq_dev_p=
-rofile *profile,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct devfreq_gover=
-nor *governor,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0void *data)
-> +{
-> + =A0 =A0 =A0 return 0;
-> +}
-> +
-> +static int devfreq_remove_device(struct device *dev)
-> +{
-> + =A0 =A0 =A0 return 0;
-> +}
-> +#endif /* CONFIG_PM_DEVFREQ */
-> +
-> +#endif /* __LINUX_DEVFREQ_H__ */
-> --
-> 1.7.4.1
->
->
+T24gVGh1LCBBdWcgMTgsIDIwMTEgYXQgMTA6NTggUE0sIE15dW5nSm9vIEhhbSA8bXl1bmdqb28u
+aGFtQHNhbXN1bmcuY29tPiB3cm90ZToKPiBPbiBGcmksIEF1ZyAxOSwgMjAxMSBhdCAxMjoxMiBQ
+TSwgVHVycXVldHRlLCBNaWtlIDxtdHVycXVldHRlQHRpLmNvbT4gd3JvdGU6Cj4+IEluIHBhdGNo
+c2V0IHY1IEkgcmVxdWVzdGVkIGZvciBzeXNmcyBlbnRyaWVzIHRvIGNvbnRyb2wKPj4gdXAtL2Rv
+d24tdGhyZXNob2xkcyBmb3Igc2ltcGxlLW9uZGVtYW5kLiDCoFRob3NlIHN0aWxsIGFyZSBub3Qg
+aGVyZTsKPj4gYnV0IHRoYXQgZ290IG1lIHRoaW5raW5nLi4uIHdoYXQgYWJvdXQgbXVsdGlwbGUg
+ZGV2aWNlcyB0aGF0IHdhbnQgdG8KPj4gdXNlIHNpbXBsZS1vbmRlbWFuZCBidXQgaGF2ZSBkaWZm
+ZXJlbnQgdXAvZG93biB0aHJlc2hvbGRzPyDCoFRoYXQncwo+PiB3aGVuIEkgcmVhbGl6ZWQgdGhh
+dCB0aGlzIGNvZGUgaXMgbW9ub2xpdGhpYyBhbmQgd2lsbCBuZXZlciBzY2FsZS4gwqBJdAo+PiB3
+b3JrcyB0b2RheSBiZWNhdXNlIHRoZXJlIGlzIG9uZSBkZXZpY2Ugb24gb25lIHBsYXRmb3JtIHVz
+aW5nIGl0Lgo+Pgo+PiBCZWxvdyBjb2RlIHNuaXBwZXQgaXMgZnJvbSB0aGUgTnVyaSBjb2RlIHRo
+YXQgaW5pdGlhbGl6ZXMKPj4gZGV2ZnJlcS9zaW1wbGUtb25kZW1hbmQgZm9yIG1lbW9yeSBidXM6
+Cj4+IChodHRwOi8vZ2l0LmluZnJhZGVhZC5vcmcvdXNlcnMva21wYXJrL2xpbnV4LTIuNi1zYW1z
+dW5nL2NvbW1pdGRpZmYvZDk2OTYyNjliNzljYTE3MjQ3NGIyYzFhZTg0MTUwZThhYzI3NjU0Mj9o
+cD03ZGJkMzQxZTA3ODBhYjU5YjJhZWI4NWUyNjkxZGRmYjFhYjJmZDNhKQo+Pgo+PiArc3RhdGlj
+IHN0cnVjdCBkZXZmcmVxX2Rldl9wcm9maWxlIGV4eW5vczRfZGV2ZnJlcV9wcm9maWxlID0gewo+
+PiArIMKgIMKgIMKgIC5tYXhfZnJlcSDCoCDCoCDCoCA9IDQwMDAwMCwgLyogNDAwTUh6ICovCj4+
+ICsgwqAgwqAgwqAgLmluaXRpYWxfZnJlcSDCoCA9IDQwMDAwMCwKPj4gKyDCoCDCoCDCoCAucG9s
+bGluZ19tcyDCoCDCoCA9IDUwLAo+PiArIMKgIMKgIMKgIC50YXJnZXQgwqAgwqAgwqAgwqAgPSBl
+eHlub3M0X2J1c190YXJnZXQsCj4+ICsgwqAgwqAgwqAgLmdldF9kZXZfc3RhdHVzID0gZXh5bm9z
+NF9idXNfZ2V0X2Rldl9zdGF0dXMsCj4+ICt9Owo+PiArc3RhdGljIHN0cnVjdCBkZXZmcmVxX2dv
+dmVybm9yICpkZWZhdWx0X2dvdiA9ICZkZXZmcmVxX3NpbXBsZV9vbmRlbWFuZDsKPj4KPj4gVGhp
+cyBpcyBwcmV0dHkgYmFkLiDCoEJhc2ljYWxseSBvbmx5IG9uZSBpbnN0YW5jZSBvZiBzaW1wbGUt
+b25kZW1hbmQKPj4gZXhpc3RzIGFuZCBhbGwgZGV2aWNlcyBtdXN0IHVzZSBpdC4gwqBUaGVyZSBz
+aG91bGQgcmVhbGx5IGJlIG9uZQo+PiBnb3Zlcm5vciBpbnN0YW5jZSBwZXIgZGV2aWNlLiDCoExh
+dGVyIHRoZXJlIG1pZ2h0IGJlIHNvbWUgb3B0aW1pemF0aW9ucwo+PiBhcm91bmQgZ3JvdXBpbmcg
+bXVsdGlwbGUgZGV2aWNlcyB0b2dldGhlciB0aGF0IG5lZWQgdG8gc2NhbGUKPj4gc2ltdWx0YW5l
+b3VzbHksIGJ1dCBsZXRzIG5vdCBjb25jZXJuIG91cnNlbHZlcyB3aXRoIHRoYXQgbm93Lgo+Pgo+
+PiBzdHJ1Y3QgZGV2ZnJlcSdzIGdvdmVybm9yIG1lbWJlciBzaG91bGQgcG9pbnQgdG8gYSB1bmlx
+dWUgaW5zdGFuY2Ugb2YKPj4gdGhlIGdvdmVybm9yLiDCoFRoYXQgZ292ZXJub3IncyBzdHJ1Y3R1
+cmUgc2hvdWxkIGNvbnRhaW4gYWxsIG9mIHRoZQo+PiBwZXItZ292ZXJub3IgdHVuYWJsZXM6Cj4+
+Cj4+IHRpbWVrZWVwaW5nIChsYXN0X3BvbGxlZF9hdCwgZXRjKQo+PiB1cF90aHJlc2hvbGQKPj4g
+ZG93bl90aHJlc2hvbGQKPj4gZXRjLgo+Pgo+PiBUaGlzIGluIGZhY3QgdG91Y2hlcyB1cG9uIG15
+IHByZXZpb3VzIGNvbXBsYWludHMgYWJvdXQgdGhlIGNvcmUgY29kZQo+PiBtYW5hZ2luZyB0b28g
+bWFueSBvZiB0aGUgZ292ZXJub3JzIHJlc3BvbnNpYmlsaXRpZXMuCj4+Cj4+IFJlZ2FyZHMsCj4+
+IE1pa2UKPj4KPgo+Cj4gTm8sIHRoZSBERVZGUkVRIGdvdmVybm9ycyBhcmUgdHVuZWFibGUgcGVy
+LWRldmljZSBiYXNpcy4gQXQgbGVhc3QsCj4gU0lNUExFLU9OREVNQU5EIGdvdmVybm9yIGlzIGNh
+cGFibGUgb2YgZG9pbmcgc28uIChqdXN0IG5vdCBkaWQgc28gaW4KPiB0aGUgZXhhbXBsZSBjb2Rl
+KSBJJ2xsIGFkZCBhbiBleGFtcGxlIGluIHRoZSBsYXN0IHBhcmFncmFwaC4KPgo+Cj4gQWx0aG91
+Z2ggc3lzZnMgY29udHJvbCBmb3IgZ292ZXJub3JzIGlzIG5vdCB5ZXQgaW1wbGVtZW50ZWQtLUkg
+Z3Vlc3MKPiBpdCBtYXkgd2FpdCBmb3IgbGF0ZXIgdmVyc2lvbnMgYXMgaXQgZG9lcyBub3QgbG9v
+ayBjcml0aWNhbC0tLCBpbiB0aGlzCj4gcGF0Y2hzZXQgdjYsIHRoZSBnb3Zlcm5vcnMgYXJlIHR1
+bmVhYmxlIHBlciBkZXZpY2UuIFBlci1kZXZpY2UgZGF0YSBpcwo+IHN0b3JlZCBhdCBzdHJ1Y3Qg
+ZGV2ZnJlcSBhbmQgc3RydWN0IGRldmZyZXFfZGV2X3Byb2ZpbGUsIG5vdCBpbiBzdHJ1Y3QKPiBk
+ZXZmcmVxX2dvdmVybm9yLiBHb3Zlcm5vcnMgY2FuIGFsdGVyIGl0cyBiZWhhdmlvciBiYXNlZCBv
+biB0aGUKPiAiZGV2ZnJlcS5kYXRhIiBhbmQgc2F2ZSBwZXItZGV2aWNlIGluZm9ybWF0aW9uIChp
+ZiBhbnkpIHRvCj4gImRldmZyZXEuZGF0YSIuIFRoZSAiZGF0YSIgZmllbGQgb2YgZGV2ZnJlcSBt
+YXkgYmUgZGVmaW5lZCBieSBlYWNoCj4gZ292ZXJub3IuCgpBaCwgeW91J3JlIHJpZ2h0LiAgSSBt
+aXNzZWQgdGhlIHVzZSBvZiB0aGUgcHJpdmF0ZSBkYXRhIHNpbmNlIGl0IGlzbid0CnJlYWxseSB1
+c2VkIGluIEV4eW5vczQgZXhhbXBsZS4KClJlZ2FyZHMsCk1pa2UKCj4KPgo+IFtdCj4+PiAtLS0K
+Pj4+IENoYW5nZWQgZnJvbSB2NQo+Pj4gLSBTZXBlcmF0ZWQgZ292ZXJub3IgZmlsZXMgZnJvbSBk
+ZXZmcmVxLmMKPj4+IC0gQWxsb3cgc2ltcGxlIG9uZGVtYW5kIHRvIGJlIHR1bmVkIGZvciBlYWNo
+IGRldmljZQo+Cj4gVGhlIGV4YW1wbGUgY29kZSBvZiBFeHlub3M0MjEwLU1lbW9yeS1CdXMgZG9l
+cyBub3QgdHVuZSB0aGUgdHVuZWFibGUKPiB2YWx1ZSwgYnV0IHNpbXBseSB1c2VzIHRoZSBkZWZh
+dWx0IHZhbHVlLgo+Cj4gSG93ZXZlciwgaW4gb3JkZXIgdG8gdXNlIGN1c3RvbSB2YWx1ZXMsIHdl
+IGNhbiB1c2UgZGV2ZnJlcV9hZGRfZGV2aWNlCj4gd2l0aCB0aGUgY3VzdG9tIHZhbHVlcyBzdXBw
+bGllZC4KPgo+IEluIHRoZSBleGFtcGxlIGNvZGUgKGV4eW5vczQyMTBfbWVtb3J5YnVzLmMpLCBp
+dCBkb2VzOgo+IMKgIMKgIGVyciA9IGRldmZyZXFfYWRkX2RldmljZShkZXYsICZleHlub3M0X2Rl
+dmZyZXFfcHJvZmlsZSwgZGVmYXVsdF9nb3YsCj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBOVUxMKTsKPiBhdCBsaW5lIDUwMi01
+MDMuCj4KPiBJZiB3ZSBhcmUgZ29pbmcgdG8gdXNlIGN1c3RvbSB2YWx1ZXMsIHdlIGNhbiBtb2Rp
+ZnkgdGhhdCBhczoKPiDCoCDCoCBzdHJ1Y3QgZGV2ZnJlcV9zaW1wbGVfb25kZW1hbmRfZGF0YSB0
+dW5laXQgPSB7IC51cHRocmVzaG9sZCA9IDgwLAo+IC5kb3duZGlmZmVyZW50aWFsID0gMTAsIH07
+Cj4gwqAgwqAgZXJyID0gZGV2ZnJlcV9hZGRfZGV2aWNlKGRldiwgJmV4eW5vczRfZGV2ZnJlcV9w
+cm9maWxlLAo+IGRlZmF1bHRfZ292LCAmdHVuZWl0KTsKPgo+IEFuZCwgdGhlIGRldmljZSBjYW4g
+dXBkYXRlICJ0dW5laXQiIGluIHJ1bi10aW1lIHRvIGFsdGVyIHRoZSBiZWhhdmlvci4KPgo+Cj4K
+Pgo+IENoZWVycyEKPgo+IE15dW5nSm9vCj4KPgo+Pj4gLS0tCj4+PiDCoGRyaXZlcnMvZGV2ZnJl
+cS9LY29uZmlnIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHwgwqAgMzYgKysrKysrKysrKysr
+Cj4+PiDCoGRyaXZlcnMvZGV2ZnJlcS9NYWtlZmlsZSDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oHwgwqAgwqA0ICsKPj4+IMKgZHJpdmVycy9kZXZmcmVxL2dvdmVybm9yX3BlcmZvcm1hbmNlLmMg
+wqAgwqB8IMKgIDI0ICsrKysrKysrCj4+PiDCoGRyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5vcl9wb3dl
+cnNhdmUuYyDCoCDCoCDCoHwgwqAgMjQgKysrKysrKysKPj4+IMKgZHJpdmVycy9kZXZmcmVxL2dv
+dmVybm9yX3NpbXBsZW9uZGVtYW5kLmMgfCDCoCA4OCArKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKwo+Pj4gwqBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfdXNlcnNwYWNlLmMgwqAgwqAgwqB8
+IMKgIDI3ICsrKysrKysrKwo+Pj4gwqBpbmNsdWRlL2xpbnV4L2RldmZyZXEuaCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCB8IMKgIDQxICsrKysrKysrKysrKysKPj4+IMKgNyBmaWxlcyBjaGFu
+Z2VkLCAyNDQgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKPj4+IMKgY3JlYXRlIG1vZGUg
+MTAwNjQ0IGRyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5vcl9wZXJmb3JtYW5jZS5jCj4+PiDCoGNyZWF0
+ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfcG93ZXJzYXZlLmMKPj4+IMKg
+Y3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5vcl9zaW1wbGVvbmRlbWFu
+ZC5jCj4+PiDCoGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfdXNl
+cnNwYWNlLmMKPj4+Cj4+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL0tjb25maWcgYi9k
+cml2ZXJzL2RldmZyZXEvS2NvbmZpZwo+Pj4gaW5kZXggMWZiNDJkZS4uNjQzYjA1NSAxMDA2NDQK
+Pj4+IC0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9LY29uZmlnCj4+PiArKysgYi9kcml2ZXJzL2RldmZy
+ZXEvS2NvbmZpZwo+Pj4gQEAgLTM0LDYgKzM0LDQyIEBAIG1lbnVjb25maWcgUE1fREVWRlJFUQo+
+Pj4KPj4+IMKgaWYgUE1fREVWRlJFUQo+Pj4KPj4+ICtjb21tZW50ICJERVZGUkVRIEdvdmVybm9y
+cyIKPj4+ICsKPj4+ICtjb25maWcgREVWRlJFUV9HT1ZfU0lNUExFX09OREVNQU5ECj4+PiArIMKg
+IMKgIMKgIGJvb2wgIlNpbXBsZSBPbmRlbWFuZCIKPj4+ICsgwqAgwqAgwqAgaGVscAo+Pj4gKyDC
+oCDCoCDCoCDCoCBDaG9vc2VzIGZyZXF1ZW5jeSBiYXNlZCBvbiB0aGUgcmVjZW50IGxvYWQgb24g
+dGhlIGRldmljZS4gV29ya3MKPj4+ICsgwqAgwqAgwqAgwqAgc2ltaWxhciBhcyBPTkRFTUFORCBn
+b3Zlcm5vciBvZiBDUFVGUkVRIGRvZXMuIEEgZGV2aWNlIHdpdGgKPj4+ICsgwqAgwqAgwqAgwqAg
+U2ltcGxlLU9uZGVtYW5kIHNob3VsZCBiZSBhYmxlIHRvIHByb3ZpZGUgYnVzeS90b3RhbCBjb3Vu
+dGVyCj4+PiArIMKgIMKgIMKgIMKgIHZhbHVlcyB0aGF0IGltcGx5IHRoZSB1c2FnZSByYXRlLiBB
+IGRldmljZSBtYXkgcHJvdmlkZSB0dW5lZAo+Pj4gKyDCoCDCoCDCoCDCoCB2YWx1ZXMgdG8gdGhl
+IGdvdmVybm9yIHdpdGggZGF0YSBmaWVsZCBhdCBkZXZmcmVxX2FkZF9kZXZpY2UoKS4KPj4+ICsK
+Pj4+ICtjb25maWcgREVWRlJFUV9HT1ZfUEVSRk9STUFOQ0UKPj4+ICsgwqAgwqAgwqAgYm9vbCAi
+UGVyZm9ybWFuY2UiCj4+PiArIMKgIMKgIMKgIGhlbHAKPj4+ICsgwqAgwqAgwqAgwqAgU2V0cyB0
+aGUgZnJlcXVlbmN5IGF0IHRoZSBtYXhpbXVtIGF2YWlsYWJsZSBmcmVxdWVuY3kuCj4+PiArIMKg
+IMKgIMKgIMKgIFRoaXMgZ292ZXJub3IgYWx3YXlzIHJldHVybnMgVUlOVF9NQVggYXMgZnJlcXVl
+bmN5IHNvIHRoYXQKPj4+ICsgwqAgwqAgwqAgwqAgdGhlIERFVkZSRVEgZnJhbWV3b3JrIHJldHVy
+bnMgdGhlIGhpZ2hlc3QgZnJlcXVlbmN5IGF2YWlsYWJsZQo+Pj4gKyDCoCDCoCDCoCDCoCBhdCBh
+bnkgdGltZS4KPj4+ICsKPj4+ICtjb25maWcgREVWRlJFUV9HT1ZfUE9XRVJTQVZFCj4+PiArIMKg
+IMKgIMKgIGJvb2wgIlBvd2Vyc2F2ZSIKPj4+ICsgwqAgwqAgwqAgaGVscAo+Pj4gKyDCoCDCoCDC
+oCDCoCBTZXRzIHRoZSBmcmVxdWVuY3kgYXQgdGhlIG1pbmltdW0gYXZhaWxhYmxlIGZyZXF1ZW5j
+eS4KPj4+ICsgwqAgwqAgwqAgwqAgVGhpcyBnb3Zlcm5vciBhbHdheXMgcmV0dXJucyAwIGFzIGZy
+ZXF1ZW5jeSBzbyB0aGF0Cj4+PiArIMKgIMKgIMKgIMKgIHRoZSBERVZGUkVRIGZyYW1ld29yayBy
+ZXR1cm5zIHRoZSBsb3dlc3QgZnJlcXVlbmN5IGF2YWlsYWJsZQo+Pj4gKyDCoCDCoCDCoCDCoCBh
+dCBhbnkgdGltZS4KPj4+ICsKPj4+ICtjb25maWcgREVWRlJFUV9HT1ZfVVNFUlNQQUNFCj4+PiAr
+IMKgIMKgIMKgIGJvb2wgIlVzZXJzcGFjZSIKPj4+ICsgwqAgwqAgwqAgaGVscAo+Pj4gKyDCoCDC
+oCDCoCDCoCBTZXRzIHRoZSBmcmVxdWVuY3kgYXQgdGhlIHVzZXIgc3BlY2lmaWVkIG9uZS4KPj4+
+ICsgwqAgwqAgwqAgwqAgVGhpcyBnb3Zlcm5vciByZXR1cm5zIHRoZSB1c2VyIGNvbmZpZ3VyZWQg
+ZnJlcXVlbmN5IGlmIHRoZXJlCj4+PiArIMKgIMKgIMKgIMKgIGhhcyBiZWVuIGFuIGlucHV0IHRv
+IC9zeXMvZGV2aWNlcy8uLi4vcG93ZXIvZGV2ZnJlcV9zZXRfZnJlcS4KPj4+ICsgwqAgwqAgwqAg
+wqAgT3RoZXJ3aXNlLCB0aGUgZ292ZXJub3IgZG9lcyBub3QgY2hhbmdlIHRoZSBmcmVxdW5lY3kK
+Pj4+ICsgwqAgwqAgwqAgwqAgZ2l2ZW4gYXQgdGhlIGluaXRpYWxpemF0aW9uLgo+Pj4gKwo+Pj4g
+wqBjb21tZW50ICJERVZGUkVRIERyaXZlcnMiCj4+Pgo+Pj4gwqBlbmRpZiAjIFBNX0RFVkZSRVEK
+Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvTWFrZWZpbGUgYi9kcml2ZXJzL2RldmZy
+ZXEvTWFrZWZpbGUKPj4+IGluZGV4IDE2ODkzNGEuLjQ1NjRhODkgMTAwNjQ0Cj4+PiAtLS0gYS9k
+cml2ZXJzL2RldmZyZXEvTWFrZWZpbGUKPj4+ICsrKyBiL2RyaXZlcnMvZGV2ZnJlcS9NYWtlZmls
+ZQo+Pj4gQEAgLTEgKzEsNSBAQAo+Pj4gwqBvYmotJChDT05GSUdfUE1fREVWRlJFUSkgwqAgwqAg
+wqAgKz0gZGV2ZnJlcS5vCj4+PiArb2JqLSQoQ09ORklHX0RFVkZSRVFfR09WX1NJTVBMRV9PTkRF
+TUFORCkgwqAgwqAgwqArPSBnb3Zlcm5vcl9zaW1wbGVvbmRlbWFuZC5vCj4+PiArb2JqLSQoQ09O
+RklHX0RFVkZSRVFfR09WX1BFUkZPUk1BTkNFKSDCoCs9IGdvdmVybm9yX3BlcmZvcm1hbmNlLm8K
+Pj4+ICtvYmotJChDT05GSUdfREVWRlJFUV9HT1ZfUE9XRVJTQVZFKSDCoCDCoCs9IGdvdmVybm9y
+X3Bvd2Vyc2F2ZS5vCj4+PiArb2JqLSQoQ09ORklHX0RFVkZSRVFfR09WX1VTRVJTUEFDRSkgwqAg
+wqArPSBnb3Zlcm5vcl91c2Vyc3BhY2Uubwo+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJl
+cS9nb3Zlcm5vcl9wZXJmb3JtYW5jZS5jIGIvZHJpdmVycy9kZXZmcmVxL2dvdmVybm9yX3BlcmZv
+cm1hbmNlLmMKPj4+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4+PiBpbmRleCAwMDAwMDAwLi5jNDdl
+ZmY4Cj4+PiAtLS0gL2Rldi9udWxsCj4+PiArKysgYi9kcml2ZXJzL2RldmZyZXEvZ292ZXJub3Jf
+cGVyZm9ybWFuY2UuYwo+Pj4gQEAgLTAsMCArMSwyNCBAQAo+Pj4gKy8qCj4+PiArICogwqBsaW51
+eC9kcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfcGVyZm9ybWFuY2UuYwo+Pj4gKyAqCj4+PiArICog
+wqBDb3B5cmlnaHQgKEMpIDIwMTEgU2Ftc3VuZyBFbGVjdHJvbmljcwo+Pj4gKyAqIMKgIMKgIE15
+dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPgo+Pj4gKyAqCj4+PiArICogVGhp
+cyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9v
+ciBtb2RpZnkKPj4+ICsgKiBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1
+YmxpYyBMaWNlbnNlIHZlcnNpb24gMiBhcwo+Pj4gKyAqIHB1Ymxpc2hlZCBieSB0aGUgRnJlZSBT
+b2Z0d2FyZSBGb3VuZGF0aW9uLgo+Pj4gKyAqLwo+Pj4gKwo+Pj4gKyNpbmNsdWRlIDxsaW51eC9k
+ZXZmcmVxLmg+Cj4+PiArCj4+PiArc3RhdGljIGludCBkZXZmcmVxX3BlcmZvcm1hbmNlX2Z1bmMo
+c3RydWN0IGRldmZyZXEgKmRmLAo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCB1bnNpZ25lZCBsb25nICpmcmVxKQo+Pj4gK3sKPj4+ICsgwqAg
+wqAgwqAgKmZyZXEgPSBVSU5UX01BWDsgLyogZGV2ZnJlcV9kbyB3aWxsIHJ1biAiZmxvb3IiICov
+Cj4+PiArIMKgIMKgIMKgIHJldHVybiAwOwo+Pj4gK30KPj4+ICsKPj4+ICtzdHJ1Y3QgZGV2ZnJl
+cV9nb3Zlcm5vciBkZXZmcmVxX3BlcmZvcm1hbmNlID0gewo+Pj4gKyDCoCDCoCDCoCAubmFtZSA9
+ICJwZXJmb3JtYW5jZSIsCj4+PiArIMKgIMKgIMKgIC5nZXRfdGFyZ2V0X2ZyZXEgPSBkZXZmcmVx
+X3BlcmZvcm1hbmNlX2Z1bmMsCj4+PiArfTsKPj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZy
+ZXEvZ292ZXJub3JfcG93ZXJzYXZlLmMgYi9kcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfcG93ZXJz
+YXZlLmMKPj4+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4+PiBpbmRleCAwMDAwMDAwLi40ZjEyOGQ4
+Cj4+PiAtLS0gL2Rldi9udWxsCj4+PiArKysgYi9kcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfcG93
+ZXJzYXZlLmMKPj4+IEBAIC0wLDAgKzEsMjQgQEAKPj4+ICsvKgo+Pj4gKyAqIMKgbGludXgvZHJp
+dmVycy9kZXZmcmVxL2dvdmVybm9yX3Bvd2Vyc2F2ZS5jCj4+PiArICoKPj4+ICsgKiDCoENvcHly
+aWdodCAoQykgMjAxMSBTYW1zdW5nIEVsZWN0cm9uaWNzCj4+PiArICogwqAgwqAgTXl1bmdKb28g
+SGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+Cj4+PiArICoKPj4+ICsgKiBUaGlzIHByb2dy
+YW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yIG1vZGlm
+eQo+Pj4gKyAqIGl0IHVuZGVyIHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExp
+Y2Vuc2UgdmVyc2lvbiAyIGFzCj4+PiArICogcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJl
+IEZvdW5kYXRpb24uCj4+PiArICovCj4+PiArCj4+PiArI2luY2x1ZGUgPGxpbnV4L2RldmZyZXEu
+aD4KPj4+ICsKPj4+ICtzdGF0aWMgaW50IGRldmZyZXFfcG93ZXJzYXZlX2Z1bmMoc3RydWN0IGRl
+dmZyZXEgKmRmLAo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCB1bnNpZ25lZCBsb25nICpmcmVxKQo+Pj4gK3sKPj4+ICsgwqAgwqAgwqAgKmZyZXEg
+PSAwOyAvKiBkZXZmcmVxX2RvIHdpbGwgcnVuICJjZWlsaW5nIiB0byAwICovCj4+PiArIMKgIMKg
+IMKgIHJldHVybiAwOwo+Pj4gK30KPj4+ICsKPj4+ICtzdHJ1Y3QgZGV2ZnJlcV9nb3Zlcm5vciBk
+ZXZmcmVxX3Bvd2Vyc2F2ZSA9IHsKPj4+ICsgwqAgwqAgwqAgLm5hbWUgPSAicG93ZXJzYXZlIiwK
+Pj4+ICsgwqAgwqAgwqAgLmdldF90YXJnZXRfZnJlcSA9IGRldmZyZXFfcG93ZXJzYXZlX2Z1bmMs
+Cj4+PiArfTsKPj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvZ292ZXJub3Jfc2ltcGxl
+b25kZW1hbmQuYyBiL2RyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5vcl9zaW1wbGVvbmRlbWFuZC5jCj4+
+PiBuZXcgZmlsZSBtb2RlIDEwMDY0NAo+Pj4gaW5kZXggMDAwMDAwMC4uMThmZThiZQo+Pj4gLS0t
+IC9kZXYvbnVsbAo+Pj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL2dvdmVybm9yX3NpbXBsZW9uZGVt
+YW5kLmMKPj4+IEBAIC0wLDAgKzEsODggQEAKPj4+ICsvKgo+Pj4gKyAqIMKgbGludXgvZHJpdmVy
+cy9kZXZmcmVxL2dvdmVybm9yX3NpbXBsZW9uZGVtYW5kLmMKPj4+ICsgKgo+Pj4gKyAqIMKgQ29w
+eXJpZ2h0IChDKSAyMDExIFNhbXN1bmcgRWxlY3Ryb25pY3MKPj4+ICsgKiDCoCDCoCBNeXVuZ0pv
+byBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4KPj4+ICsgKgo+Pj4gKyAqIFRoaXMgcHJv
+Z3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9k
+aWZ5Cj4+PiArICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMg
+TGljZW5zZSB2ZXJzaW9uIDIgYXMKPj4+ICsgKiBwdWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdh
+cmUgRm91bmRhdGlvbi4KPj4+ICsgKi8KPj4+ICsKPj4+ICsjaW5jbHVkZSA8bGludXgvZXJybm8u
+aD4KPj4+ICsjaW5jbHVkZSA8bGludXgvZGV2ZnJlcS5oPgo+Pj4gKyNpbmNsdWRlIDxsaW51eC9t
+YXRoNjQuaD4KPj4+ICsKPj4+ICsvKiBEZWZhdWx0IGNvbnN0YW50cyBmb3IgRGV2RnJlcS1TaW1w
+bGUtT25kZW1hbmQgKERGU08pICovCj4+PiArI2RlZmluZSBERlNPX1VQVEhSRVNIT0xEIMKgIMKg
+IMKgICg5MCkKPj4+ICsjZGVmaW5lIERGU09fRE9XTkRJRkZFUkVOQ1RJQUwgKDUpCj4+PiArc3Rh
+dGljIGludCBkZXZmcmVxX3NpbXBsZV9vbmRlbWFuZF9mdW5jKHN0cnVjdCBkZXZmcmVxICpkZiwK
+Pj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgdW5zaWduZWQgbG9uZyAqZnJlcSkKPj4+ICt7Cj4+PiArIMKgIMKgIMKgIHN0cnVjdCBk
+ZXZmcmVxX2Rldl9zdGF0dXMgc3RhdDsKPj4+ICsgwqAgwqAgwqAgaW50IGVyciA9IGRmLT5wcm9m
+aWxlLT5nZXRfZGV2X3N0YXR1cyhkZi0+ZGV2LCAmc3RhdCk7Cj4+PiArIMKgIMKgIMKgIHVuc2ln
+bmVkIGxvbmcgbG9uZyBhLCBiOwo+Pj4gKyDCoCDCoCDCoCB1bnNpZ25lZCBpbnQgZGZzb191cHRo
+cmVzaG9sZCA9IERGU09fVVBUSFJFU0hPTEQ7Cj4+PiArIMKgIMKgIMKgIHVuc2lnbmVkIGludCBk
+ZnNvX2Rvd25kaWZmZXJlbnRpYWwgPSBERlNPX0RPV05ESUZGRVJFTkNUSUFMOwo+Pj4gKyDCoCDC
+oCDCoCBzdHJ1Y3QgZGV2ZnJlcV9zaW1wbGVfb25kZW1hbmRfZGF0YSAqZGF0YSA9IGRmLT5kYXRh
+Owo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBpZiAoZXJyKQo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCByZXR1cm4gZXJyOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBpZiAoZGF0YSkgewo+Pj4gKyDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCBpZiAoZGF0YS0+dXB0aHJlc2hvbGQpCj4+PiArIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIGRmc29fdXB0aHJlc2hvbGQgPSBkYXRhLT51cHRocmVzaG9s
+ZDsKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgaWYgKGRhdGEtPmRvd25kaWZmZXJlbnRpYWwp
+Cj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGRmc29fZG93bmRpZmZlcmVu
+dGlhbCA9IGRhdGEtPmRvd25kaWZmZXJlbnRpYWw7Cj4+PiArIMKgIMKgIMKgIH0KPj4+ICsgwqAg
+wqAgwqAgaWYgKGRmc29fdXB0aHJlc2hvbGQgPiAxMDAgfHwKPj4+ICsgwqAgwqAgwqAgwqAgwqAg
+ZGZzb191cHRocmVzaG9sZCA8IGRmc29fZG93bmRpZmZlcmVudGlhbCkKPj4+ICsgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgcmV0dXJuIC1FSU5WQUw7Cj4+PiArCj4+PiArIMKgIMKgIMKgIC8qIEFzc3Vt
+ZSBNQVggaWYgaXQgaXMgZ29pbmcgdG8gYmUgZGl2aWRlZCBieSB6ZXJvICovCj4+PiArIMKgIMKg
+IMKgIGlmIChzdGF0LnRvdGFsX3RpbWUgPT0gMCkgewo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCAqZnJlcSA9IFVJTlRfTUFYOwo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gMDsK
+Pj4+ICsgwqAgwqAgwqAgfQo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCAvKiBQcmV2ZW50IG92ZXJmbG93
+ICovCj4+PiArIMKgIMKgIMKgIGlmIChzdGF0LmJ1c3lfdGltZSA+PSAoMSA8PCAyNCkgfHwgc3Rh
+dC50b3RhbF90aW1lID49ICgxIDw8IDI0KSkgewo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBz
+dGF0LmJ1c3lfdGltZSA+Pj0gNzsKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgc3RhdC50b3Rh
+bF90aW1lID4+PSA3Owo+Pj4gKyDCoCDCoCDCoCB9Cj4+PiArCj4+PiArIMKgIMKgIMKgIC8qIFNl
+dCBNQVggaWYgaXQncyBidXN5IGVub3VnaCAqLwo+Pj4gKyDCoCDCoCDCoCBpZiAoc3RhdC5idXN5
+X3RpbWUgKiAxMDAgPgo+Pj4gKyDCoCDCoCDCoCDCoCDCoCBzdGF0LnRvdGFsX3RpbWUgKiBkZnNv
+X3VwdGhyZXNob2xkKSB7Cj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgICpmcmVxID0gVUlOVF9N
+QVg7Cj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHJldHVybiAwOwo+Pj4gKyDCoCDCoCDCoCB9
+Cj4+PiArCj4+PiArIMKgIMKgIMKgIC8qIFNldCBNQVggaWYgd2UgZG8gbm90IGtub3cgdGhlIGlu
+aXRpYWwgZnJlcXVlbmN5ICovCj4+PiArIMKgIMKgIMKgIGlmIChzdGF0LmN1cnJlbnRfZnJlcXVl
+bmN5ID09IDApIHsKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgKmZyZXEgPSBVSU5UX01BWDsK
+Pj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcmV0dXJuIDA7Cj4+PiArIMKgIMKgIMKgIH0KPj4+
+ICsKPj4+ICsgwqAgwqAgwqAgLyogS2VlcCB0aGUgY3VycmVudCBmcmVxdWVuY3kgKi8KPj4+ICsg
+wqAgwqAgwqAgaWYgKHN0YXQuYnVzeV90aW1lICogMTAwID4KPj4+ICsgwqAgwqAgwqAgwqAgwqAg
+c3RhdC50b3RhbF90aW1lICogKGRmc29fdXB0aHJlc2hvbGQgLSBkZnNvX2Rvd25kaWZmZXJlbnRp
+YWwpKSB7Cj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgICpmcmVxID0gc3RhdC5jdXJyZW50X2Zy
+ZXF1ZW5jeTsKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcmV0dXJuIDA7Cj4+PiArIMKgIMKg
+IMKgIH0KPj4+ICsKPj4+ICsgwqAgwqAgwqAgLyogU2V0IHRoZSBkZXNpcmVkIGZyZXF1ZW5jeSBi
+YXNlZCBvbiB0aGUgbG9hZCAqLwo+Pj4gKyDCoCDCoCDCoCBhID0gc3RhdC5idXN5X3RpbWU7Cj4+
+PiArIMKgIMKgIMKgIGEgKj0gc3RhdC5jdXJyZW50X2ZyZXF1ZW5jeTsKPj4+ICsgwqAgwqAgwqAg
+YiA9IGRpdl91NjQoYSwgc3RhdC50b3RhbF90aW1lKTsKPj4+ICsgwqAgwqAgwqAgYiAqPSAxMDA7
+Cj4+PiArIMKgIMKgIMKgIGIgPSBkaXZfdTY0KGIsIChkZnNvX3VwdGhyZXNob2xkIC0gZGZzb19k
+b3duZGlmZmVyZW50aWFsIC8gMikpOwo+Pj4gKyDCoCDCoCDCoCAqZnJlcSA9ICh1bnNpZ25lZCBs
+b25nKSBiOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCByZXR1cm4gMDsKPj4+ICt9Cj4+PiArCj4+PiAr
+c3RydWN0IGRldmZyZXFfZ292ZXJub3IgZGV2ZnJlcV9zaW1wbGVfb25kZW1hbmQgPSB7Cj4+PiAr
+IMKgIMKgIMKgIC5uYW1lID0gInNpbXBsZV9vbmRlbWFuZCIsCj4+PiArIMKgIMKgIMKgIC5nZXRf
+dGFyZ2V0X2ZyZXEgPSBkZXZmcmVxX3NpbXBsZV9vbmRlbWFuZF9mdW5jLAo+Pj4gK307Cj4+PiBk
+aWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL2dvdmVybm9yX3VzZXJzcGFjZS5jIGIvZHJpdmVy
+cy9kZXZmcmVxL2dvdmVybm9yX3VzZXJzcGFjZS5jCj4+PiBuZXcgZmlsZSBtb2RlIDEwMDY0NAo+
+Pj4gaW5kZXggMDAwMDAwMC4uNmFmOGI2ZAo+Pj4gLS0tIC9kZXYvbnVsbAo+Pj4gKysrIGIvZHJp
+dmVycy9kZXZmcmVxL2dvdmVybm9yX3VzZXJzcGFjZS5jCj4+PiBAQCAtMCwwICsxLDI3IEBACj4+
+PiArLyoKPj4+ICsgKiDCoGxpbnV4L2RyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5vcl9zaW1wbGVvbmRl
+bWFuZC5jCj4+PiArICoKPj4+ICsgKiDCoENvcHlyaWdodCAoQykgMjAxMSBTYW1zdW5nIEVsZWN0
+cm9uaWNzCj4+PiArICogwqAgwqAgTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5j
+b20+Cj4+PiArICoKPj4+ICsgKiBUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNh
+biByZWRpc3RyaWJ1dGUgaXQgYW5kL29yIG1vZGlmeQo+Pj4gKyAqIGl0IHVuZGVyIHRoZSB0ZXJt
+cyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzCj4+PiArICog
+cHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb24uCj4+PiArICovCj4+PiAr
+Cj4+PiArI2luY2x1ZGUgPGxpbnV4L2RldmZyZXEuaD4KPj4+ICsKPj4+ICtzdGF0aWMgaW50IGRl
+dmZyZXFfdXNlcnNwYWNlX2Z1bmMoc3RydWN0IGRldmZyZXEgKmRmLCB1bnNpZ25lZCBsb25nICpm
+cmVxKQo+Pj4gK3sKPj4+ICsgwqAgwqAgwqAgaWYgKGRmLT51c2VyX3NldF9mcmVxID09IDApCj4+
+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgICpmcmVxID0gZGYtPnByZXZpb3VzX2ZyZXE7IC8qIE5v
+IHVzZXIgZnJlcSBzcGVjaWZpZWQgeWV0ICovCj4+PiArIMKgIMKgIMKgIGVsc2UKPj4+ICsgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgKmZyZXEgPSBkZi0+dXNlcl9zZXRfZnJlcTsKPj4+ICsKPj4+ICsg
+wqAgwqAgwqAgcmV0dXJuIDA7Cj4+PiArfQo+Pj4gKwo+Pj4gK3N0cnVjdCBkZXZmcmVxX2dvdmVy
+bm9yIGRldmZyZXFfdXNlcnNwYWNlID0gewo+Pj4gKyDCoCDCoCDCoCAubmFtZSA9ICJ1c2Vyc3Bh
+Y2UiLAo+Pj4gKyDCoCDCoCDCoCAuZ2V0X3RhcmdldF9mcmVxID0gZGV2ZnJlcV91c2Vyc3BhY2Vf
+ZnVuYywKPj4+ICt9Owo+Pj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvZGV2ZnJlcS5oIGIv
+aW5jbHVkZS9saW51eC9kZXZmcmVxLmgKPj4+IGluZGV4IDEzZGRmNDkuLmQwODhhZDMgMTAwNjQ0
+Cj4+PiAtLS0gYS9pbmNsdWRlL2xpbnV4L2RldmZyZXEuaAo+Pj4gKysrIGIvaW5jbHVkZS9saW51
+eC9kZXZmcmVxLmgKPj4+IEBAIC0xMyw2ICsxMyw3IEBACj4+PiDCoCNpZm5kZWYgX19MSU5VWF9E
+RVZGUkVRX0hfXwo+Pj4gwqAjZGVmaW5lIF9fTElOVVhfREVWRlJFUV9IX18KPj4+Cj4+PiArI2lu
+Y2x1ZGUgPGxpbnV4L29wcC5oPgo+Pj4gwqAjaW5jbHVkZSA8bGludXgvbm90aWZpZXIuaD4KPj4+
+Cj4+PiDCoCNkZWZpbmUgREVWRlJFUV9OQU1FX0xFTiAxNgo+Pj4gQEAgLTYyLDYgKzYzLDggQEAg
+c3RydWN0IGRldmZyZXFfZ292ZXJub3Igewo+Pj4gwqAqIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgICJkZXZmcmVxX21vbml0b3IiIGV4ZWN1dGlvbnMgdG8gcmVldmFsdWF0ZQo+Pj4gwqAq
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGZyZXF1ZW5jeS92b2x0YWdlIG9mIHRoZSBk
+ZXZpY2UuIFNldCBieQo+Pj4gwqAqIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHByb2Zp
+bGUncyBwb2xsaW5nX21zIGludGVydmFsLgo+Pj4gKyAqIEB1c2VyX3NldF9mcmVxIMKgIMKgIMKg
+VXNlciBzcGVjaWZpZWQgYWRlcXVldGUgZnJlcXVlbmN5IHZhbHVlICh0aHJ1IHN5c2ZzCj4+PiAr
+ICogwqAgwqAgwqAgwqAgwqAgwqAgaW50ZXJmYWNlKS4gR292ZXJub3JzIG1heSBhbmQgbWF5IG5v
+dCB1c2UgdGhpcyB2YWx1ZS4KPj4+IMKgKiBAZGF0YSDCoCDCoCDCoCBQcml2YXRlIGRhdGEgb2Yg
+dGhlIGdvdmVybm9yLiBUaGUgZGV2ZnJlcSBmcmFtZXdvcmsgZG9lcyBub3QKPj4+IMKgKiDCoCDC
+oCDCoCDCoCDCoCDCoCB0b3VjaCB0aGlzLgo+Pj4gwqAqCj4+PiBAQCAtNzgsNiArODEsNyBAQCBz
+dHJ1Y3QgZGV2ZnJlcSB7Cj4+PiDCoCDCoCDCoCDCoHVuc2lnbmVkIGxvbmcgcHJldmlvdXNfZnJl
+cTsKPj4+IMKgIMKgIMKgIMKgdW5zaWduZWQgaW50IG5leHRfcG9sbGluZzsKPj4+Cj4+PiArIMKg
+IMKgIMKgIHVuc2lnbmVkIGxvbmcgdXNlcl9zZXRfZnJlcTsgLyogZ292ZXJub3JzIG1heSBpZ25v
+cmUgdGhpcy4gKi8KPj4+IMKgIMKgIMKgIMKgdm9pZCAqZGF0YTsgLyogcHJpdmF0ZSBkYXRhIGZv
+ciBnb3Zlcm5vcnMgKi8KPj4+IMKgfTsKPj4+Cj4+PiBAQCAtODcsNiArOTEsMzcgQEAgZXh0ZXJu
+IGludCBkZXZmcmVxX2FkZF9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2LAo+Pj4gwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgc3RydWN0IGRldmZyZXFfZ292ZXJub3IgKmdv
+dmVybm9yLAo+Pj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgdm9pZCAq
+ZGF0YSk7Cj4+PiDCoGV4dGVybiBpbnQgZGV2ZnJlcV9yZW1vdmVfZGV2aWNlKHN0cnVjdCBkZXZp
+Y2UgKmRldik7Cj4+PiArCj4+PiArI2lmZGVmIENPTkZJR19ERVZGUkVRX0dPVl9QT1dFUlNBVkUK
+Pj4+ICtleHRlcm4gc3RydWN0IGRldmZyZXFfZ292ZXJub3IgZGV2ZnJlcV9wb3dlcnNhdmU7Cj4+
+PiArI2VuZGlmCj4+PiArI2lmZGVmIENPTkZJR19ERVZGUkVRX0dPVl9QRVJGT1JNQU5DRQo+Pj4g
+K2V4dGVybiBzdHJ1Y3QgZGV2ZnJlcV9nb3Zlcm5vciBkZXZmcmVxX3BlcmZvcm1hbmNlOwo+Pj4g
+KyNlbmRpZgo+Pj4gKyNpZmRlZiBDT05GSUdfREVWRlJFUV9HT1ZfVVNFUlNQQUNFCj4+PiArZXh0
+ZXJuIHN0cnVjdCBkZXZmcmVxX2dvdmVybm9yIGRldmZyZXFfdXNlcnNwYWNlOwo+Pj4gKyNlbmRp
+Zgo+Pj4gKyNpZmRlZiBDT05GSUdfREVWRlJFUV9HT1ZfU0lNUExFX09OREVNQU5ECj4+PiArZXh0
+ZXJuIHN0cnVjdCBkZXZmcmVxX2dvdmVybm9yIGRldmZyZXFfc2ltcGxlX29uZGVtYW5kOwo+Pj4g
+Ky8qKgo+Pj4gKyAqIHN0cnVjdCBkZXZmcmVxX3NpbXBsZV9vbmRlbWFuZF9kYXRhIC0gdm9pZCAq
+ZGF0YSBmZWQgdG8gc3RydWN0IGRldmZyZXEKPj4+ICsgKiDCoCDCoCBhbmQgZGV2ZnJlcV9hZGRf
+ZGV2aWNlCj4+PiArICogQCB1cHRocmVzaG9sZCDCoCDCoCDCoCBJZiB0aGUgbG9hZCBpcyBvdmVy
+IHRoaXMgdmFsdWUsIHRoZSBmcmVxdWVuY3kganVtcHMuCj4+PiArICogwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgU3BlY2lmeSAwIHRvIHVzZSB0aGUgZGVmYXVsdC4gVmFsaWQgdmFsdWUg
+PSAwIHRvIDEwMC4KPj4+ICsgKiBAIGRvd25kaWZmZXJlbnRpYWwgwqBJZiB0aGUgbG9hZCBpcyB1
+bmRlciB1cHRocmVzaG9sZCAtIGRvd25kaWZmZXJlbnRpYWwsCj4+PiArICogwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgdGhlIGdvdmVybm9yIG1heSBjb25zaWRlciBzbG93aW5nIHRoZSBm
+cmVxdWVuY3kgZG93bi4KPj4+ICsgKiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBTcGVj
+aWZ5IDAgdG8gdXNlIHRoZSBkZWZhdWx0LiBWYWxpZCB2YWx1ZSA9IDAgdG8gMTAwLgo+Pj4gKyAq
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGRvd25kaWZmZXJlbnRpYWwgPCB1cHRocmVz
+aG9sZCBtdXN0IGhvbGQuCj4+PiArICoKPj4+ICsgKiBJZiB0aGUgZmVkIGRldmZyZXFfc2ltcGxl
+X29uZGVtYW5kX2RhdGEgcG9pbnRlciBpcyBOVUxMIHRvIHRoZSBnb3Zlcm5vciwKPj4+ICsgKiB0
+aGUgZ292ZXJub3IgdXNlcyB0aGUgZGVmYXVsdCB2YWx1ZXMuCj4+PiArICovCj4+PiArc3RydWN0
+IGRldmZyZXFfc2ltcGxlX29uZGVtYW5kX2RhdGEgewo+Pj4gKyDCoCDCoCDCoCB1bnNpZ25lZCBp
+bnQgdXB0aHJlc2hvbGQ7Cj4+PiArIMKgIMKgIMKgIHVuc2lnbmVkIGludCBkb3duZGlmZmVyZW50
+aWFsOwo+Pj4gK307Cj4+PiArI2VuZGlmCj4+PiArCj4+PiDCoCNlbHNlIC8qICFDT05GSUdfUE1f
+REVWRlJFUSAqLwo+Pj4gwqBzdGF0aWMgaW50IGRldmZyZXFfYWRkX2RldmljZShzdHJ1Y3QgZGV2
+aWNlICpkZXYsCj4+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBzdHJ1
+Y3QgZGV2ZnJlcV9kZXZfcHJvZmlsZSAqcHJvZmlsZSwKPj4+IEBAIC0xMDAsNiArMTM1LDEyIEBA
+IHN0YXRpYyBpbnQgZGV2ZnJlcV9yZW1vdmVfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldikKPj4+
+IMKgewo+Pj4gwqAgwqAgwqAgwqByZXR1cm4gMDsKPj4+IMKgfQo+Pj4gKwo+Pj4gKyNkZWZpbmUg
+ZGV2ZnJlcV9wb3dlcnNhdmUgwqAgwqAgwqBOVUxMCj4+PiArI2RlZmluZSBkZXZmcmVxX3BlcmZv
+cm1hbmNlIMKgIMKgTlVMTAo+Pj4gKyNkZWZpbmUgZGV2ZnJlcV91c2Vyc3BhY2UgwqAgwqAgwqBO
+VUxMCj4+PiArI2RlZmluZSBkZXZmcmVxX3NpbXBsZV9vbmRlbWFuZCDCoCDCoCDCoCDCoE5VTEwK
+Pj4+ICsKPj4+IMKgI2VuZGlmIC8qIENPTkZJR19QTV9ERVZGUkVRICovCj4+Pgo+Pj4gwqAjZW5k
+aWYgLyogX19MSU5VWF9ERVZGUkVRX0hfXyAqLwo+Pj4gLS0KPj4+IDEuNy40LjEKPj4+Cj4+Pgo+
+Pgo+Cj4KPgo+IC0tCj4gTXl1bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELgo+IE1vYmlsZSBT
+b2Z0d2FyZSBQbGF0Zm9ybSBMYWIsCj4gRGlnaXRhbCBNZWRpYSBhbmQgQ29tbXVuaWNhdGlvbnMg
+KERNQykgQnVzaW5lc3MKPiBTYW1zdW5nIEVsZWN0cm9uaWNzCj4gY2VsbDogODItMTAtNjcxNC0y
+ODU4Cj4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGlu
+dXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0
+dHBzOi8vbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1w
+bQ==
