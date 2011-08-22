@@ -1,14 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/2 v2] PM: Change PM subsys_data lock type into
-	spinlock
-Date: Sun, 21 Aug 2011 21:10:45 +0200
-Message-ID: <201108212110.45316.rjw__13197.6389828653$1313954016$gmane$org@sisk.pl>
+Subject: [Replacement][PATCH 1/2 v2] PM: Use spinlock instead of
+	mutex in clock management functions
+Date: Mon, 22 Aug 2011 08:18:48 +0200
+Message-ID: <201108220818.48725.rjw__1107.80789186737$1313993904$gmane$org@sisk.pl>
 References: <201108202131.19479.rjw@sisk.pl> <201108212109.30399.rjw@sisk.pl>
+	<201108212110.45316.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108212109.30399.rjw@sisk.pl>
+In-Reply-To: <201108212110.45316.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,205 +25,200 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The lock member of struct pm_subsys_data is of type struct mutex,
+The lock member of struct pm_clk_data is of type struct mutex,
 which is a problem, because the suspend and resume routines
 defined in drivers/base/power/clock_ops.c cannot be executed
 with interrupts disabled for this reason.  Modify
-struct pm_subsys_data so that its lock member is a spinlock.
+struct pm_clk_data so that its lock member is a spinlock.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/clock_ops.c |   35 +++++++++++++++++++++--------------
- drivers/base/power/common.c    |    2 +-
- include/linux/pm.h             |    2 +-
- 3 files changed, 23 insertions(+), 16 deletions(-)
 
-Index: linux/include/linux/pm.h
-===================================================================
---- linux.orig/include/linux/pm.h
-+++ linux/include/linux/pm.h
-@@ -438,7 +438,7 @@ struct pm_domain_data {
- };
- 
- struct pm_subsys_data {
--	struct mutex lock;
-+	spinlock_t lock;
- 	unsigned int refcount;
- #ifdef CONFIG_PM_CLK
- 	struct list_head clock_list;
+The previous [1/2] in this series was on top of the branch at
+
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-domains
+
+but what is needed now is a version on top of the current mainline tree, which
+is this one.
+
+Thanks,
+Rafael
+
+---
+ drivers/base/power/clock_ops.c |   40 ++++++++++++++++++++++------------------
+ 1 file changed, 22 insertions(+), 18 deletions(-)
+
 Index: linux/drivers/base/power/clock_ops.c
 ===================================================================
 --- linux.orig/drivers/base/power/clock_ops.c
 +++ linux/drivers/base/power/clock_ops.c
-@@ -43,6 +43,7 @@ int pm_clk_add(struct device *dev, const
- {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
-+	unsigned long flags;
+@@ -19,7 +19,7 @@
  
- 	if (!psd)
- 		return -EINVAL;
-@@ -63,9 +64,9 @@ int pm_clk_add(struct device *dev, const
+ struct pm_clk_data {
+ 	struct list_head clock_list;
+-	struct mutex lock;
++	spinlock_t lock;
+ };
+ 
+ enum pce_status {
+@@ -73,9 +73,9 @@ int pm_clk_add(struct device *dev, const
  		}
  	}
  
--	mutex_lock(&psd->lock);
-+	spin_lock_irqsave(&psd->lock, flags);
- 	list_add_tail(&ce->node, &psd->clock_list);
--	mutex_unlock(&psd->lock);
-+	spin_unlock_irqrestore(&psd->lock, flags);
+-	mutex_lock(&pcd->lock);
++	spin_lock_irq(&pcd->lock);
+ 	list_add_tail(&ce->node, &pcd->clock_list);
+-	mutex_unlock(&pcd->lock);
++	spin_unlock_irq(&pcd->lock);
  	return 0;
  }
  
-@@ -109,11 +110,12 @@ void pm_clk_remove(struct device *dev, c
+@@ -83,8 +83,8 @@ int pm_clk_add(struct device *dev, const
+  * __pm_clk_remove - Destroy PM clock entry.
+  * @ce: PM clock entry to destroy.
+  *
+- * This routine must be called under the mutex protecting the PM list of clocks
+- * corresponding the the @ce's device.
++ * This routine must be called under the spinlock protecting the PM list of
++ * clocks corresponding the the @ce's device.
+  */
+ static void __pm_clk_remove(struct pm_clock_entry *ce)
  {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce;
-+	unsigned long flags;
- 
- 	if (!psd)
+@@ -123,7 +123,7 @@ void pm_clk_remove(struct device *dev, c
+ 	if (!pcd)
  		return;
  
--	mutex_lock(&psd->lock);
-+	spin_lock_irqsave(&psd->lock, flags);
+-	mutex_lock(&pcd->lock);
++	spin_lock_irq(&pcd->lock);
  
- 	list_for_each_entry(ce, &psd->clock_list, node) {
+ 	list_for_each_entry(ce, &pcd->clock_list, node) {
  		if (!con_id && !ce->con_id) {
-@@ -127,7 +129,7 @@ void pm_clk_remove(struct device *dev, c
+@@ -137,7 +137,7 @@ void pm_clk_remove(struct device *dev, c
  		}
  	}
  
--	mutex_unlock(&psd->lock);
-+	spin_unlock_irqrestore(&psd->lock, flags);
+-	mutex_unlock(&pcd->lock);
++	spin_unlock_irq(&pcd->lock);
  }
  
  /**
-@@ -169,16 +171,17 @@ void pm_clk_destroy(struct device *dev)
- {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
- 	struct pm_clock_entry *ce, *c;
-+	unsigned long flags;
+@@ -158,7 +158,7 @@ int pm_clk_init(struct device *dev)
+ 	}
  
- 	if (!psd)
- 		return;
+ 	INIT_LIST_HEAD(&pcd->clock_list);
+-	mutex_init(&pcd->lock);
++	spin_lock_init(&pcd->lock);
+ 	dev->power.subsys_data = pcd;
+ 	return 0;
+ }
+@@ -181,12 +181,12 @@ void pm_clk_destroy(struct device *dev)
  
--	mutex_lock(&psd->lock);
-+	spin_lock_irqsave(&psd->lock, flags);
+ 	dev->power.subsys_data = NULL;
  
- 	list_for_each_entry_safe_reverse(ce, c, &psd->clock_list, node)
+-	mutex_lock(&pcd->lock);
++	spin_lock_irq(&pcd->lock);
+ 
+ 	list_for_each_entry_safe_reverse(ce, c, &pcd->clock_list, node)
  		__pm_clk_remove(ce);
  
--	mutex_unlock(&psd->lock);
-+	spin_unlock_irqrestore(&psd->lock, flags);
+-	mutex_unlock(&pcd->lock);
++	spin_unlock_irq(&pcd->lock);
  
- 	dev_pm_put_subsys_data(dev);
+ 	kfree(pcd);
  }
-@@ -212,13 +215,14 @@ int pm_clk_suspend(struct device *dev)
+@@ -220,13 +220,14 @@ int pm_clk_suspend(struct device *dev)
  {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clk_data *pcd = __to_pcd(dev);
  	struct pm_clock_entry *ce;
 +	unsigned long flags;
  
  	dev_dbg(dev, "%s()\n", __func__);
  
- 	if (!psd)
+ 	if (!pcd)
  		return 0;
  
--	mutex_lock(&psd->lock);
-+	spin_lock_irqsave(&psd->lock, flags);
+-	mutex_lock(&pcd->lock);
++	spin_lock_irqsave(&pcd->lock, flags);
  
- 	list_for_each_entry_reverse(ce, &psd->clock_list, node) {
+ 	list_for_each_entry_reverse(ce, &pcd->clock_list, node) {
  		if (ce->status == PCE_STATUS_NONE)
-@@ -230,7 +234,7 @@ int pm_clk_suspend(struct device *dev)
+@@ -238,7 +239,7 @@ int pm_clk_suspend(struct device *dev)
  		}
  	}
  
--	mutex_unlock(&psd->lock);
-+	spin_unlock_irqrestore(&psd->lock, flags);
+-	mutex_unlock(&pcd->lock);
++	spin_unlock_irqrestore(&pcd->lock, flags);
  
  	return 0;
  }
-@@ -243,13 +247,14 @@ int pm_clk_resume(struct device *dev)
+@@ -251,13 +252,14 @@ int pm_clk_resume(struct device *dev)
  {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clk_data *pcd = __to_pcd(dev);
  	struct pm_clock_entry *ce;
 +	unsigned long flags;
  
  	dev_dbg(dev, "%s()\n", __func__);
  
- 	if (!psd)
+ 	if (!pcd)
  		return 0;
  
--	mutex_lock(&psd->lock);
-+	spin_lock_irqsave(&psd->lock, flags);
+-	mutex_lock(&pcd->lock);
++	spin_lock_irqsave(&pcd->lock, flags);
  
- 	list_for_each_entry(ce, &psd->clock_list, node) {
+ 	list_for_each_entry(ce, &pcd->clock_list, node) {
  		if (ce->status == PCE_STATUS_NONE)
-@@ -261,7 +266,7 @@ int pm_clk_resume(struct device *dev)
+@@ -269,7 +271,7 @@ int pm_clk_resume(struct device *dev)
  		}
  	}
  
--	mutex_unlock(&psd->lock);
-+	spin_unlock_irqrestore(&psd->lock, flags);
+-	mutex_unlock(&pcd->lock);
++	spin_unlock_irqrestore(&pcd->lock, flags);
  
  	return 0;
  }
-@@ -336,6 +341,7 @@ int pm_clk_suspend(struct device *dev)
+@@ -344,6 +346,7 @@ int pm_clk_suspend(struct device *dev)
  {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clk_data *pcd = __to_pcd(dev);
  	struct pm_clock_entry *ce;
 +	unsigned long flags;
  
  	dev_dbg(dev, "%s()\n", __func__);
  
-@@ -343,12 +349,12 @@ int pm_clk_suspend(struct device *dev)
- 	if (!psd || !dev->driver)
+@@ -351,12 +354,12 @@ int pm_clk_suspend(struct device *dev)
+ 	if (!pcd || !dev->driver)
  		return 0;
  
--	mutex_lock(&psd->lock);
-+	spin_lock_irqsave(&psd->lock, flags);
+-	mutex_lock(&pcd->lock);
++	spin_lock_irqsave(&pcd->lock, flags);
  
- 	list_for_each_entry_reverse(ce, &psd->clock_list, node)
+ 	list_for_each_entry_reverse(ce, &pcd->clock_list, node)
  		clk_disable(ce->clk);
  
--	mutex_unlock(&psd->lock);
-+	spin_unlock_irqrestore(&psd->lock, flags);
+-	mutex_unlock(&pcd->lock);
++	spin_unlock_irqrestore(&pcd->lock, flags);
  
  	return 0;
  }
-@@ -361,6 +367,7 @@ int pm_clk_resume(struct device *dev)
+@@ -369,6 +372,7 @@ int pm_clk_resume(struct device *dev)
  {
- 	struct pm_subsys_data *psd = dev_to_psd(dev);
+ 	struct pm_clk_data *pcd = __to_pcd(dev);
  	struct pm_clock_entry *ce;
 +	unsigned long flags;
  
  	dev_dbg(dev, "%s()\n", __func__);
  
-@@ -368,12 +375,12 @@ int pm_clk_resume(struct device *dev)
- 	if (!psd || !dev->driver)
+@@ -376,12 +380,12 @@ int pm_clk_resume(struct device *dev)
+ 	if (!pcd || !dev->driver)
  		return 0;
  
--	mutex_lock(&psd->lock);
-+	spin_lock_irqsave(&psd->lock, flags);
+-	mutex_lock(&pcd->lock);
++	spin_lock_irqsave(&pcd->lock, flags);
  
- 	list_for_each_entry(ce, &psd->clock_list, node)
+ 	list_for_each_entry(ce, &pcd->clock_list, node)
  		clk_enable(ce->clk);
  
--	mutex_unlock(&psd->lock);
-+	spin_unlock_irqrestore(&psd->lock, flags);
+-	mutex_unlock(&pcd->lock);
++	spin_unlock_irqrestore(&pcd->lock, flags);
  
  	return 0;
  }
-Index: linux/drivers/base/power/common.c
-===================================================================
---- linux.orig/drivers/base/power/common.c
-+++ linux/drivers/base/power/common.c
-@@ -34,7 +34,7 @@ int dev_pm_get_subsys_data(struct device
- 	if (dev->power.subsys_data) {
- 		dev->power.subsys_data->refcount++;
- 	} else {
--		mutex_init(&psd->lock);
-+		spin_lock_init(&psd->lock);
- 		psd->refcount = 1;
- 		dev->power.subsys_data = psd;
- 		pm_clk_init(dev);
