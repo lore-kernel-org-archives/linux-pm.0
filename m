@@ -1,7 +1,8 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 5/6] cgroup, cpuset: don't use ss->pre_attach()
-Date: Wed, 24 Aug 2011 00:19:59 +0200
-Message-ID: <1314138000-2049-6-git-send-email-tj__27959.8799454563$1314138124$gmane$org@kernel.org>
+Subject: [PATCH 3/6] cgroup: introduce cgroup_taskset and use it
+	in subsys->can_attach(), cancel_attach() and attach()
+Date: Wed, 24 Aug 2011 00:19:57 +0200
+Message-ID: <1314138000-2049-4-git-send-email-tj__1846.80450843206$1314138254$gmane$org@kernel.org>
 References: <1314138000-2049-1-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,128 +19,471 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: rjw@sisk.pl, paul@paulmenage.org, lizf@cn.fujitsu.com
-Cc: Tejun Heo <tj@kernel.org>, containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: containers@lists.linux-foundation.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
 
-->pre_attach() is supposed to be called before migration, which is
-observed during process migration but task migration does it the other
-way around.  The only ->pre_attach() user is cpuset which can do the
-same operaitons in ->can_attach().  Collapse cpuset_pre_attach() into
-cpuset_can_attach().
+Currently, there's no way to pass multiple tasks to cgroup_subsys
+methods necessitating the need for separate per-process and per-task
+methods.  This patch introduces cgroup_taskset which can be used to
+pass multiple tasks and their associated cgroups to cgroup_subsys
+methods.
+
+Three methods - can_attach(), cancel_attach() and attach() - are
+converted to use cgroup_taskset.  This unifies passed parameters so
+that all methods have access to all information.  Conversions in this
+patchset are identical and don't introduce any behavior change.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Paul Menage <paul@paulmenage.org>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Balbir Singh <bsingharora@gmail.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: James Morris <jmorris@namei.org>
 ---
- Documentation/cgroups/cgroups.txt |   20 --------------------
- kernel/cpuset.c                   |   29 ++++++++++++-----------------
- 2 files changed, 12 insertions(+), 37 deletions(-)
+ Documentation/cgroups/cgroups.txt |   26 ++++++----
+ include/linux/cgroup.h            |   28 +++++++++-
+ kernel/cgroup.c                   |   99 +++++++++++++++++++++++++++++++++----
+ kernel/cgroup_freezer.c           |    2 +-
+ kernel/cpuset.c                   |   18 ++++---
+ mm/memcontrol.c                   |   16 +++---
+ security/device_cgroup.c          |    7 ++-
+ 7 files changed, 153 insertions(+), 43 deletions(-)
 
 diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
-index 2eee7cf..afb7cde 100644
+index cd67e90..2eee7cf 100644
 --- a/Documentation/cgroups/cgroups.txt
 +++ b/Documentation/cgroups/cgroups.txt
-@@ -610,13 +610,6 @@ called on a fork. If this method returns 0 (success) then this should
- remain valid while the caller holds cgroup_mutex and it is ensured
- that either attach() or cancel_attach() will be called in future.
+@@ -594,16 +594,21 @@ rmdir() will fail with it. From this behavior, pre_destroy() can be
+ called multiple times against a cgroup.
  
--int can_attach_task(struct cgroup *cgrp, struct task_struct *tsk);
--(cgroup_mutex held by caller)
--
--As can_attach, but for operations that must be run once per task to be
--attached (possibly many when using cgroup_attach_proc). Called after
--can_attach.
--
+ int can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
+-	       struct task_struct *task)
++	       struct cgroup_taskset *tset)
+ (cgroup_mutex held by caller)
+ 
+-Called prior to moving a task into a cgroup; if the subsystem
+-returns an error, this will abort the attach operation.  If a NULL
+-task is passed, then a successful result indicates that *any*
+-unspecified task can be moved into the cgroup. Note that this isn't
++Called prior to moving one or more tasks into a cgroup; if the
++subsystem returns an error, this will abort the attach operation.
++@tset contains the tasks to be attached and is guaranteed to have at
++least one task in it. If there are multiple, it's guaranteed that all
++are from the same thread group, @tset contains all tasks from the
++group whether they're actually switching cgroup or not, and the first
++task is the leader. Each @tset entry also contains the task's old
++cgroup and tasks which aren't switching cgroup can be skipped easily
++using the cgroup_taskset_for_each() iterator. Note that this isn't
+ called on a fork. If this method returns 0 (success) then this should
+-remain valid while the caller holds cgroup_mutex and it is ensured that either
+-attach() or cancel_attach() will be called in future.
++remain valid while the caller holds cgroup_mutex and it is ensured
++that either attach() or cancel_attach() will be called in future.
+ 
+ int can_attach_task(struct cgroup *cgrp, struct task_struct *tsk);
+ (cgroup_mutex held by caller)
+@@ -613,14 +618,14 @@ attached (possibly many when using cgroup_attach_proc). Called after
+ can_attach.
+ 
  void cancel_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 		   struct cgroup_taskset *tset)
+-	       struct task_struct *task, bool threadgroup)
++		   struct cgroup_taskset *tset)
  (cgroup_mutex held by caller)
-@@ -627,12 +620,6 @@ function, so that the subsystem can implement a rollback. If not, not necessary.
+ 
+ Called when a task attach operation has failed after can_attach() has succeeded.
+ A subsystem whose can_attach() has some side-effects should provide this
+ function, so that the subsystem can implement a rollback. If not, not necessary.
  This will be called only about subsystems whose can_attach() operation have
- succeeded. The parameters are identical to can_attach().
+-succeeded.
++succeeded. The parameters are identical to can_attach().
  
--void pre_attach(struct cgroup *cgrp);
--(cgroup_mutex held by caller)
--
--For any non-per-thread attachment work that needs to happen before
--attach_task. Needed by cpuset.
--
- void attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 	    struct cgroup_taskset *tset)
+ void pre_attach(struct cgroup *cgrp);
  (cgroup_mutex held by caller)
-@@ -641,13 +628,6 @@ Called after the task has been attached to the cgroup, to allow any
+@@ -629,11 +634,12 @@ For any non-per-thread attachment work that needs to happen before
+ attach_task. Needed by cpuset.
+ 
+ void attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
+-	    struct cgroup *old_cgrp, struct task_struct *task)
++	    struct cgroup_taskset *tset)
+ (cgroup_mutex held by caller)
+ 
+ Called after the task has been attached to the cgroup, to allow any
  post-attachment activity that requires memory allocations or blocking.
- The parameters are identical to can_attach().
++The parameters are identical to can_attach().
  
--void attach_task(struct cgroup *cgrp, struct task_struct *tsk);
--(cgroup_mutex held by caller)
--
--As attach, but for operations that must be run once per task to be attached,
--like can_attach_task. Called before attach. Currently does not support any
--subsystem that might need the old_cgrp for every thread in the group.
--
- void fork(struct cgroup_subsy *ss, struct task_struct *task)
+ void attach_task(struct cgroup *cgrp, struct task_struct *tsk);
+ (cgroup_mutex held by caller)
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index da7e4bc..2470c8e 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -457,6 +457,28 @@ void cgroup_exclude_rmdir(struct cgroup_subsys_state *css);
+ void cgroup_release_and_wakeup_rmdir(struct cgroup_subsys_state *css);
  
- Called when a task is forked into a cgroup.
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 472ddd6..f0b8df3 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1367,6 +1367,15 @@ static int fmeter_getrate(struct fmeter *fmp)
- 	return val;
+ /*
++ * Control Group taskset, used to pass around set of tasks to cgroup_subsys
++ * methods.
++ */
++struct cgroup_taskset;
++struct task_struct *cgroup_taskset_first(struct cgroup_taskset *tset);
++struct task_struct *cgroup_taskset_next(struct cgroup_taskset *tset);
++struct cgroup *cgroup_taskset_cur_cgroup(struct cgroup_taskset *tset);
++int cgroup_taskset_size(struct cgroup_taskset *tset);
++
++/**
++ * cgroup_taskset_for_each - iterate cgroup_taskset
++ * @task: the loop cursor
++ * @skip_cgrp: skip if task's cgroup matches this, %NULL to iterate through all
++ * @tset: taskset to iterate
++ */
++#define cgroup_taskset_for_each(task, skip_cgrp, tset)			\
++	for ((task) = cgroup_taskset_first((tset)); (task);		\
++	     (task) = cgroup_taskset_next((tset)))			\
++		if (!(skip_cgrp) ||					\
++		    cgroup_taskset_cur_cgroup((tset)) != (skip_cgrp))
++
++/*
+  * Control Group subsystem type.
+  * See Documentation/cgroups/cgroups.txt for details
+  */
+@@ -467,14 +489,14 @@ struct cgroup_subsys {
+ 	int (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+ 	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+ 	int (*can_attach)(struct cgroup_subsys *ss, struct cgroup *cgrp,
+-			  struct task_struct *tsk);
++			  struct cgroup_taskset *tset);
+ 	int (*can_attach_task)(struct cgroup *cgrp, struct task_struct *tsk);
+ 	void (*cancel_attach)(struct cgroup_subsys *ss, struct cgroup *cgrp,
+-			      struct task_struct *tsk);
++			      struct cgroup_taskset *tset);
+ 	void (*pre_attach)(struct cgroup *cgrp);
+ 	void (*attach_task)(struct cgroup *cgrp, struct task_struct *tsk);
+ 	void (*attach)(struct cgroup_subsys *ss, struct cgroup *cgrp,
+-		       struct cgroup *old_cgrp, struct task_struct *tsk);
++		       struct cgroup_taskset *tset);
+ 	void (*fork)(struct cgroup_subsys *ss, struct task_struct *task);
+ 	void (*exit)(struct cgroup_subsys *ss, struct cgroup *cgrp,
+ 			struct cgroup *old_cgrp, struct task_struct *task);
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index cf5f3e3..474674b 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1739,11 +1739,85 @@ int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen)
  }
+ EXPORT_SYMBOL_GPL(cgroup_path);
  
 +/*
-+ * Protected by cgroup_lock. The nodemasks must be stored globally because
-+ * dynamically allocating them is not allowed in can_attach, and they must
-+ * persist until attach.
++ * Control Group taskset
 + */
-+static cpumask_var_t cpus_attach;
-+static nodemask_t cpuset_attach_nodemask_from;
-+static nodemask_t cpuset_attach_nodemask_to;
+ struct task_and_cgroup {
+ 	struct task_struct	*task;
+ 	struct cgroup		*cgrp;
+ };
+ 
++struct cgroup_taskset {
++	struct task_and_cgroup	single;
++	struct flex_array	*tc_array;
++	int			tc_array_len;
++	int			idx;
++	struct cgroup		*cur_cgrp;
++};
 +
- /* Called by cgroups to determine if a cpuset is usable; cgroup_mutex held */
- static int cpuset_can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 			     struct cgroup_taskset *tset)
-@@ -1393,29 +1402,16 @@ static int cpuset_can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 		if ((ret = security_task_setscheduler(task)))
- 			return ret;
++/**
++ * cgroup_taskset_first - reset taskset and return the first task
++ * @tset: taskset of interest
++ *
++ * @tset iteration is initialized and the first task is returned.
++ */
++struct task_struct *cgroup_taskset_first(struct cgroup_taskset *tset)
++{
++	if (tset->tc_array) {
++		tset->idx = 0;
++		return cgroup_taskset_next(tset);
++	} else {
++		tset->cur_cgrp = tset->single.cgrp;
++		return tset->single.task;
++	}
++}
++EXPORT_SYMBOL_GPL(cgroup_taskset_first);
++
++/**
++ * cgroup_taskset_next - iterate to the next task in taskset
++ * @tset: taskset of interest
++ *
++ * Return the next task in @tset.  Iteration must have been initialized
++ * with cgroup_taskset_first().
++ */
++struct task_struct *cgroup_taskset_next(struct cgroup_taskset *tset)
++{
++	struct task_and_cgroup *tc;
++
++	if (!tset->tc_array || tset->idx >= tset->tc_array_len)
++		return NULL;
++
++	tc = flex_array_get(tset->tc_array, tset->idx++);
++	tset->cur_cgrp = tc->cgrp;
++	return tc->task;
++}
++EXPORT_SYMBOL_GPL(cgroup_taskset_next);
++
++/**
++ * cgroup_taskset_cur_cgroup - return the matching cgroup for the current task
++ * @tset: taskset of interest
++ *
++ * Return the cgroup for the current (last returned) task of @tset.  This
++ * function must be preceded by either cgroup_taskset_first() or
++ * cgroup_taskset_next().
++ */
++struct cgroup *cgroup_taskset_cur_cgroup(struct cgroup_taskset *tset)
++{
++	return tset->cur_cgrp;
++}
++EXPORT_SYMBOL_GPL(cgroup_taskset_cur_cgroup);
++
++/**
++ * cgroup_taskset_size - return the number of tasks in taskset
++ * @tset: taskset of interest
++ */
++int cgroup_taskset_size(struct cgroup_taskset *tset)
++{
++	return tset->tc_array ? tset->tc_array_len : 1;
++}
++EXPORT_SYMBOL_GPL(cgroup_taskset_size);
++
++
+ /*
+  * cgroup_task_migrate - move a task from one cgroup to another.
+  *
+@@ -1828,15 +1902,19 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
+ 	struct cgroup_subsys *ss, *failed_ss = NULL;
+ 	struct cgroup *oldcgrp;
+ 	struct cgroupfs_root *root = cgrp->root;
++	struct cgroup_taskset tset = { };
+ 
+ 	/* Nothing to do if the task is already in that cgroup */
+ 	oldcgrp = task_cgroup_from_root(tsk, root);
+ 	if (cgrp == oldcgrp)
+ 		return 0;
+ 
++	tset.single.task = tsk;
++	tset.single.cgrp = oldcgrp;
++
+ 	for_each_subsys(root, ss) {
+ 		if (ss->can_attach) {
+-			retval = ss->can_attach(ss, cgrp, tsk);
++			retval = ss->can_attach(ss, cgrp, &tset);
+ 			if (retval) {
+ 				/*
+ 				 * Remember on which subsystem the can_attach()
+@@ -1867,7 +1945,7 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
+ 		if (ss->attach_task)
+ 			ss->attach_task(cgrp, tsk);
+ 		if (ss->attach)
+-			ss->attach(ss, cgrp, oldcgrp, tsk);
++			ss->attach(ss, cgrp, &tset);
  	}
--	return 0;
--}
--
--/*
-- * Protected by cgroup_lock. The nodemasks must be stored globally because
-- * dynamically allocating them is not allowed in pre_attach, and they must
-- * persist among pre_attach, and attach.
-- */
--static cpumask_var_t cpus_attach;
--static nodemask_t cpuset_attach_nodemask_from;
--static nodemask_t cpuset_attach_nodemask_to;
--
--/* Set-up work for before attaching each task. */
--static void cpuset_pre_attach(struct cgroup *cont)
--{
--	struct cpuset *cs = cgroup_cs(cont);
  
-+	/* prepare for attach */
- 	if (cs == &top_cpuset)
- 		cpumask_copy(cpus_attach, cpu_possible_mask);
- 	else
- 		guarantee_online_cpus(cs, cpus_attach);
+ 	synchronize_rcu();
+@@ -1889,7 +1967,7 @@ out:
+ 				 */
+ 				break;
+ 			if (ss->cancel_attach)
+-				ss->cancel_attach(ss, cgrp, tsk);
++				ss->cancel_attach(ss, cgrp, &tset);
+ 		}
+ 	}
+ 	return retval;
+@@ -2005,6 +2083,7 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+ 	struct task_struct *tsk;
+ 	struct task_and_cgroup *tc;
+ 	struct flex_array *group;
++	struct cgroup_taskset tset = { };
+ 	/*
+ 	 * we need to make sure we have css_sets for all the tasks we're
+ 	 * going to move -before- we actually start moving them, so that in
+@@ -2067,6 +2146,8 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+ 	} while_each_thread(leader, tsk);
+ 	/* remember the number of threads in the array for later. */
+ 	group_size = i;
++	tset.tc_array = group;
++	tset.tc_array_len = group_size;
+ 	rcu_read_unlock();
  
- 	guarantee_online_mems(cs, &cpuset_attach_nodemask_to);
-+
-+	return 0;
+ 	/* methods shouldn't be called if no task is actually migrating */
+@@ -2079,7 +2160,7 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+ 	 */
+ 	for_each_subsys(root, ss) {
+ 		if (ss->can_attach) {
+-			retval = ss->can_attach(ss, cgrp, leader);
++			retval = ss->can_attach(ss, cgrp, &tset);
+ 			if (retval) {
+ 				failed_ss = ss;
+ 				goto out_cancel_attach;
+@@ -2169,10 +2250,8 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+ 	 * being moved, this call will need to be reworked to communicate that.
+ 	 */
+ 	for_each_subsys(root, ss) {
+-		if (ss->attach) {
+-			tc = flex_array_get(group, 0);
+-			ss->attach(ss, cgrp, tc->cgrp, tc->task);
+-		}
++		if (ss->attach)
++			ss->attach(ss, cgrp, &tset);
+ 	}
+ 
+ 	/*
+@@ -2194,11 +2273,11 @@ out_cancel_attach:
+ 		for_each_subsys(root, ss) {
+ 			if (ss == failed_ss) {
+ 				if (cancel_failed_ss && ss->cancel_attach)
+-					ss->cancel_attach(ss, cgrp, leader);
++					ss->cancel_attach(ss, cgrp, &tset);
+ 				break;
+ 			}
+ 			if (ss->cancel_attach)
+-				ss->cancel_attach(ss, cgrp, leader);
++				ss->cancel_attach(ss, cgrp, &tset);
+ 		}
+ 	}
+ out_put_tasks:
+diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+index 4e82525..a2b0082 100644
+--- a/kernel/cgroup_freezer.c
++++ b/kernel/cgroup_freezer.c
+@@ -159,7 +159,7 @@ static void freezer_destroy(struct cgroup_subsys *ss,
+  */
+ static int freezer_can_attach(struct cgroup_subsys *ss,
+ 			      struct cgroup *new_cgroup,
+-			      struct task_struct *task)
++			      struct cgroup_taskset *tset)
+ {
+ 	struct freezer *freezer;
+ 
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 10131fd..2e5825b 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1368,10 +1368,10 @@ static int fmeter_getrate(struct fmeter *fmp)
  }
  
- static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
-@@ -1901,7 +1897,6 @@ struct cgroup_subsys cpuset_subsys = {
- 	.create = cpuset_create,
- 	.destroy = cpuset_destroy,
- 	.can_attach = cpuset_can_attach,
--	.pre_attach = cpuset_pre_attach,
- 	.attach = cpuset_attach,
- 	.populate = cpuset_populate,
- 	.post_clone = cpuset_post_clone,
+ /* Called by cgroups to determine if a cpuset is usable; cgroup_mutex held */
+-static int cpuset_can_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+-			     struct task_struct *tsk)
++static int cpuset_can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
++			     struct cgroup_taskset *tset)
+ {
+-	struct cpuset *cs = cgroup_cs(cont);
++	struct cpuset *cs = cgroup_cs(cgrp);
+ 
+ 	if (cpumask_empty(cs->cpus_allowed) || nodes_empty(cs->mems_allowed))
+ 		return -ENOSPC;
+@@ -1384,7 +1384,7 @@ static int cpuset_can_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+ 	 * set_cpus_allowed_ptr() on all attached tasks before cpus_allowed may
+ 	 * be changed.
+ 	 */
+-	if (tsk->flags & PF_THREAD_BOUND)
++	if (cgroup_taskset_first(tset)->flags & PF_THREAD_BOUND)
+ 		return -EINVAL;
+ 
+ 	return 0;
+@@ -1434,12 +1434,14 @@ static void cpuset_attach_task(struct cgroup *cont, struct task_struct *tsk)
+ 	cpuset_update_task_spread_flag(cs, tsk);
+ }
+ 
+-static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cont,
+-			  struct cgroup *oldcont, struct task_struct *tsk)
++static void cpuset_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
++			  struct cgroup_taskset *tset)
+ {
+ 	struct mm_struct *mm;
+-	struct cpuset *cs = cgroup_cs(cont);
+-	struct cpuset *oldcs = cgroup_cs(oldcont);
++	struct task_struct *tsk = cgroup_taskset_first(tset);
++	struct cgroup *oldcgrp = cgroup_taskset_cur_cgroup(tset);
++	struct cpuset *cs = cgroup_cs(cgrp);
++	struct cpuset *oldcs = cgroup_cs(oldcgrp);
+ 
+ 	/*
+ 	 * Change mm, possibly for multiple threads in a threadgroup. This is
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 930de94..b2802cc 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -5460,8 +5460,9 @@ static void mem_cgroup_clear_mc(void)
+ 
+ static int mem_cgroup_can_attach(struct cgroup_subsys *ss,
+ 				struct cgroup *cgroup,
+-				struct task_struct *p)
++				struct cgroup_taskset *tset)
+ {
++	struct task_struct *p = cgroup_taskset_first(tset);
+ 	int ret = 0;
+ 	struct mem_cgroup *mem = mem_cgroup_from_cont(cgroup);
+ 
+@@ -5499,7 +5500,7 @@ static int mem_cgroup_can_attach(struct cgroup_subsys *ss,
+ 
+ static void mem_cgroup_cancel_attach(struct cgroup_subsys *ss,
+ 				struct cgroup *cgroup,
+-				struct task_struct *p)
++				struct cgroup_taskset *tset)
+ {
+ 	mem_cgroup_clear_mc();
+ }
+@@ -5616,9 +5617,9 @@ retry:
+ 
+ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+ 				struct cgroup *cont,
+-				struct cgroup *old_cont,
+-				struct task_struct *p)
++				struct cgroup_taskset *tset)
+ {
++	struct task_struct *p = cgroup_taskset_first(tset);
+ 	struct mm_struct *mm = get_task_mm(p);
+ 
+ 	if (mm) {
+@@ -5633,19 +5634,18 @@ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+ #else	/* !CONFIG_MMU */
+ static int mem_cgroup_can_attach(struct cgroup_subsys *ss,
+ 				struct cgroup *cgroup,
+-				struct task_struct *p)
++				struct cgroup_taskset *tset)
+ {
+ 	return 0;
+ }
+ static void mem_cgroup_cancel_attach(struct cgroup_subsys *ss,
+ 				struct cgroup *cgroup,
+-				struct task_struct *p)
++				struct cgroup_taskset *tset)
+ {
+ }
+ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+ 				struct cgroup *cont,
+-				struct cgroup *old_cont,
+-				struct task_struct *p)
++				struct cgroup_taskset *tset)
+ {
+ }
+ #endif
+diff --git a/security/device_cgroup.c b/security/device_cgroup.c
+index 4450fbe..8b5b5d8 100644
+--- a/security/device_cgroup.c
++++ b/security/device_cgroup.c
+@@ -62,11 +62,12 @@ static inline struct dev_cgroup *task_devcgroup(struct task_struct *task)
+ struct cgroup_subsys devices_subsys;
+ 
+ static int devcgroup_can_attach(struct cgroup_subsys *ss,
+-		struct cgroup *new_cgroup, struct task_struct *task)
++			struct cgroup *new_cgrp, struct cgroup_taskset *set)
+ {
+-	if (current != task && !capable(CAP_SYS_ADMIN))
+-			return -EPERM;
++	struct task_struct *task = cgroup_taskset_first(set);
+ 
++	if (current != task && !capable(CAP_SYS_ADMIN))
++		return -EPERM;
+ 	return 0;
+ }
+ 
 -- 
 1.7.6
