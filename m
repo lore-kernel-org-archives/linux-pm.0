@@ -1,13 +1,14 @@
-From: Govindraj <govindraj.ti@gmail.com>
+From: Kevin Hilman <khilman@ti.com>
 Subject: Re: [POWER DOMAIN suspend callbacks] Observation.
-Date: Tue, 23 Aug 2011 20:31:52 +0530
-Message-ID: <CAAL8m4wnky-FJebTS6HpOaqZBy-FVkPuCd=htkUQkZsCvdR+qA__39792.7578226247$1314111843$gmane$org@mail.gmail.com>
+Date: Tue, 23 Aug 2011 10:06:05 -0700
+Message-ID: <871uwcjbwi.fsf__41386.4342765466$1314119236$gmane$org@ti.com>
 References: <4E53B6FC.8030507@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4E53B6FC.8030507@ti.com>
+In-Reply-To: <4E53B6FC.8030507@ti.com> (Santosh's message of "Tue, 23 Aug 2011
+	19:49:40 +0530")
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,10 +19,13 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Santosh <santosh.shilimkar@ti.com>
-Cc: "Basak, Partha" <p-basak2@ti.com>, Govindraj R <govindraj.raja@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+Cc: Govindraj R <govindraj.raja@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 23, 2011 at 7:49 PM, Santosh <santosh.shilimkar@ti.com> wrote:
+Hi Santosh,
+
+Santosh <santosh.shilimkar@ti.com> writes:
+
 > Rafael, Kevin,
 >
 > On latest kernel( V3.1-rc1+), the subsystem(driver) suspend
@@ -30,69 +34,52 @@ On Tue, Aug 23, 2011 at 7:49 PM, Santosh <santosh.shilimkar@ti.com> wrote:
 >
 > And as per commit 4d27e9dc{PM: Make power domain callbacks take
 > precedence over subsystem ones}, it's expected bahavior.
->
+
+Correct.
+
 > Who is suppose to call the driver suspend callback?
+
+If populated, the PM domain callbacks should call the driver callbacks.
+If there are no PM domain callbacks, then the subsystem (in this case,
+the platform_bus) should be calling the driver callbacks.
+
 > Some drivers/subsystem would have state machine which needs to
 > be suspended.
 >
 > Is the power domain suspend callback, suppose to take care of
 > it ? If yes, then that seems to be missing for OMAP.
->
 
-Looks like from
+Yup, there's a bug.    They're not missing, just misplaced. ;)
 
-_od_suspend_noirq
-      -> pm_generic_suspend_noirq
-             -> __pm_generic_call(dev, PM_EVENT_SUSPEND, true);
-                  -->  [..]
-                      case PM_EVENT_SUSPEND:
-                      callback = noirq ? pm->suspend_noirq : pm->suspend;
+When adding the noirq callbacks to ensure devices are idled late in
+suspend by omap_device, I the patch commited mistakenly uses
+SET_SYSTEM_SLEEP_PM_OPS(), which sets the "normal" suspend/resume
+handlers and not the noirq handlers.
 
+Can you try the patch below?  I only briefly tested it on omap3/n900 so
+far.
 
-shouldn't we call pm_generic_suspend from _od_suspend_noirq
-rather than calling pm_generic_suspend_noirq?
+This populates most of the PM domain methods with the same ones used by
+the subystem (platform_bus) and only overrides the noirq methods with
+custom versions.  This patch should make all the driver's suspend/resume
+methods be called as expected.
 
-Since _noirq seems to call .suspend_noirq hook which
-most of the them have not populated.
+After a bit more sanitiy testing, I'll post a real patch for the -rc
+series.
 
-pm_generic_suspend* calls may fail to call legacy platform .suspend hooks?
-
-Looks like we need below change for driver .suspend hook to be called.
+Kevin
 
 diff --git a/arch/arm/plat-omap/omap_device.c b/arch/arm/plat-omap/omap_device.c
-index b6b4097..c2a18ae 100644
+index d8f2299..7a0d248 100644
 --- a/arch/arm/plat-omap/omap_device.c
 +++ b/arch/arm/plat-omap/omap_device.c
-@@ -584,9 +584,9 @@ static int _od_suspend_noirq(struct device *dev)
-        int ret;
-
-        if (od->flags & OMAP_DEVICE_NO_IDLE_ON_SUSPEND)
--               return pm_generic_suspend_noirq(dev);
-+               return pm_generic_suspend(dev);
-
--       ret = pm_generic_suspend_noirq(dev);
-+       ret = pm_generic_suspend(dev);
-
-        if (!ret && !pm_runtime_status_suspended(dev)) {
-                if (pm_generic_runtime_suspend(dev) == 0) {
-@@ -604,7 +604,7 @@ static int _od_resume_noirq(struct device *dev)
-        struct omap_device *od = to_omap_device(pdev);
-
-        if (od->flags & OMAP_DEVICE_NO_IDLE_ON_SUSPEND)
--               return pm_generic_resume_noirq(dev);
-+               return pm_generic_resume(dev);
-
-        if ((od->flags & OMAP_DEVICE_SUSPENDED) &&
-            !pm_runtime_status_suspended(dev)) {
-@@ -613,7 +613,7 @@ static int _od_resume_noirq(struct device *dev)
-                pm_generic_runtime_resume(dev);
-        }
-
--       return pm_generic_resume_noirq(dev);
-+       return pm_generic_resume(dev);
- }
- #endif
-
---
-Thanks,
-Govindraj.R
+@@ -626,7 +626,8 @@ static struct dev_pm_domain omap_device_pm_domain = {
+ 		SET_RUNTIME_PM_OPS(_od_runtime_suspend, _od_runtime_resume,
+ 				   _od_runtime_idle)
+ 		USE_PLATFORM_PM_SLEEP_OPS
+-		SET_SYSTEM_SLEEP_PM_OPS(_od_suspend_noirq, _od_resume_noirq)
++		.suspend_noirq = _od_suspend_noirq,
++		.resume_noirq = _od_resume_noirq,
+ 	}
+ };
+ 
