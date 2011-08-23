@@ -1,13 +1,12 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH v7 4/4] PM / DEVFREQ: add sysfs interface
-Date: Tue, 23 Aug 2011 16:54:03 +0900
-Message-ID: <1314086044-24659-5-git-send-email-myungjoo.ham@samsung.com>
-References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
+Subject: [PATCH v7 0/4] DEVFREQ,
+	DVFS Framework for Non-CPU Devices.
+Date: Tue, 23 Aug 2011 16:53:59 +0900
+Message-ID: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,323 +20,66 @@ To: linux-pm@lists.linux-foundation.org
 Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Device specific sysfs interface /sys/devices/.../power/devfreq_*
-- governor	R: name of governor
-- cur_freq	R: current frequency
-- max_freq	R: maximum operable frequency
-- min_freq	R: minimum operable frequency
-- set_freq	R: read user specified frequency (0 if not specified yet)
-		W: set user specified frequency
-- polling_interval	R: polling interval in ms given with devfreq profile
-			W: update polling interval.
+For a usage example, please look at
+http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs/heads/devfreq
 
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+In the above git tree, DVFS (dynamic voltage and frequency scaling) mechanism
+is applied to the memory bus of Exynos4210 for Exynos4210-NURI boards.
+In the example, the LPDDR2 DRAM frequency changes between 133, 266, and 400MHz
+and other related clocks simply follow the determined DDR RAM clock.
 
---
-Changed from v6
-- poling_interval is writable.
+The DEVFREQ driver for Exynos4210 memory bus is at
+/drivers/devfreq/exynos4210_memorybus.c in the git tree.
 
-Changed from v5
-- updated devferq_update usage.
+In the dd (writing and reading 360MiB) test with NURI board, the memory
+throughput was not changed (the performance is not deteriorated) while
+the SoC power consumption has been reduced by 1%. When the memory access
+is not that intense while the CPU is heavily used, the SoC power consumption
+has been reduced by 6%. The power consumption has been compared with the
+case using the conventional Exynos4210 CPUFREQ driver, which sets memory
+bus frequency according to the CPU core frequency. Besides, when the CPU core
+running slow and the memory access is intense, the performance (memory
+throughput) has been increased by 11% (with higher SoC power consumption of
+5%). The tested governor is "simple-ondemand".
 
-Changed from v4
-- removed system-wide sysfs interface
-- removed tickling sysfs interface
-- added set_freq for userspace governor (and any other governors that
-  require user input)
+There are no major changes since the last revision (v6 / v6-resubmit)
+The followings are the minor changes
+- type changed for timing variables (signed->unsigned) (2/4)
+- removed unnecessary code and variable (2/4)
+- added sysfs store function for polling interval (4/4)
 
-Changed from v3
-- corrected sysfs API usage
-- corrected error messages
-- moved sysfs entry location
-- added sysfs entries
+In the patchset, the patch 1/4 has no changes and 3/4 has only changes
+in the line numbers due to changes in 2/4 patch.
 
-Changed from v2
-- add ABI entries for devfreq sysfs interface
----
- Documentation/ABI/testing/sysfs-devices-power |   47 +++++++
- drivers/devfreq/devfreq.c                     |  185 +++++++++++++++++++++++++
- 2 files changed, 232 insertions(+), 0 deletions(-)
+MyungJoo Ham (4):
+  PM / OPP: Add OPP availability change notifier.
+  PM: Introduce DEVFREQ: generic DVFS framework with device-specific
+    OPPs
+  PM / DEVFREQ: add basic governors
+  PM / DEVFREQ: add sysfs interface
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-power b/Documentation/ABI/testing/sysfs-devices-power
-index 8ffbc25..ba8bc35 100644
---- a/Documentation/ABI/testing/sysfs-devices-power
-+++ b/Documentation/ABI/testing/sysfs-devices-power
-@@ -165,3 +165,50 @@ Description:
- 
- 		Not all drivers support this attribute.  If it isn't supported,
- 		attempts to read or write it will yield I/O errors.
-+
-+What:		/sys/devices/.../power/devfreq_governor
-+Date:		July 2011
-+Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-+Description:
-+		The /sys/devices/.../power/devfreq_governor shows the name
-+		of the governor used by the corresponding device.
-+
-+What:		/sys/devices/.../power/devfreq_cur_freq
-+Date:		July 2011
-+Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-+Description:
-+		The /sys/devices/.../power/devfreq_cur_freq shows the current
-+		frequency of the corresponding device.
-+
-+What:		/sys/devices/.../power/devfreq_max_freq
-+Date:		July 2011
-+Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-+Description:
-+		The /sys/devices/.../power/devfreq_cur_freq shows the
-+		maximum operable frequency of the corresponding device.
-+
-+What:		/sys/devices/.../power/devfreq_min_freq
-+Date:		July 2011
-+Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-+Description:
-+		The /sys/devices/.../power/devfreq_cur_freq shows the
-+		minimum operable frequency of the corresponding device.
-+
-+What:		/sys/devices/.../power/devfreq_set_freq
-+Date:		August 2011
-+Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-+Description:
-+		The /sys/devices/.../power/devfreq_set_freq sets and shows
-+		the user specified desired frequency of the device. The
-+		governor may and may not use the value. With the basic
-+		governors given with devfreq.c, userspace governor is
-+		using the value.
-+
-+What:		/sys/devices/.../power/devfreq_polling_interval
-+Date:		July 2011
-+Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-+Description:
-+		The /sys/devices/.../power/devfreq_polling_interval sets and
-+		shows the requested polling interval of the corresponding
-+		device. The values are represented in ms. If the value is less
-+		than 1 jiffy, it is considered to be 0, which means no polling.
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index df63bdc..3070250 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -37,6 +37,8 @@ static struct delayed_work devfreq_work;
- static LIST_HEAD(devfreq_list);
- static DEFINE_MUTEX(devfreq_list_lock);
- 
-+static struct attribute_group dev_attr_group;
-+
- /**
-  * find_device_devfreq() - find devfreq struct using device pointer
-  * @dev:	device pointer used to lookup device devfreq.
-@@ -149,6 +151,8 @@ static void devfreq_monitor(struct work_struct *work)
- 				dev_err(devfreq->dev, "Due to devfreq_do error(%d), devfreq(%s) is removed from the device\n",
- 					error, devfreq->governor->name);
- 
-+				sysfs_unmerge_group(&devfreq->dev->kobj,
-+						    &dev_attr_group);
- 				list_del(&devfreq->node);
- 				kfree(devfreq);
- 
-@@ -239,6 +243,8 @@ int devfreq_add_device(struct device *dev, struct devfreq_dev_profile *profile,
- 		queue_delayed_work(devfreq_wq, &devfreq_work,
- 				   devfreq->next_polling);
- 	}
-+
-+	sysfs_merge_group(&dev->kobj, &dev_attr_group);
- out:
- 	mutex_unlock(&devfreq_list_lock);
- 
-@@ -271,6 +277,8 @@ int devfreq_remove_device(struct device *dev)
- 		goto out;
- 	}
- 
-+	sysfs_unmerge_group(&dev->kobj, &dev_attr_group);
-+
- 	list_del(&devfreq->node);
- 	srcu_notifier_chain_unregister(nh, &devfreq->nb);
- 	kfree(devfreq);
-@@ -279,6 +287,183 @@ out:
- 	return 0;
- }
- 
-+static ssize_t show_governor(struct device *dev,
-+			     struct device_attribute *attr, char *buf)
-+{
-+	struct devfreq *df = find_device_devfreq(dev);
-+
-+	if (IS_ERR(df))
-+		return PTR_ERR(df);
-+	if (!df->governor)
-+		return -EINVAL;
-+
-+	return sprintf(buf, "%s\n", df->governor->name);
-+}
-+
-+static ssize_t show_freq(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	struct devfreq *df = find_device_devfreq(dev);
-+
-+	if (IS_ERR(df))
-+		return PTR_ERR(df);
-+
-+	return sprintf(buf, "%lu\n", df->previous_freq);
-+}
-+
-+static ssize_t show_max_freq(struct device *dev,
-+			     struct device_attribute *attr, char *buf)
-+{
-+	struct devfreq *df = find_device_devfreq(dev);
-+	unsigned long freq = ULONG_MAX;
-+	struct opp *opp;
-+
-+	if (IS_ERR(df))
-+		return PTR_ERR(df);
-+	if (!df->dev)
-+		return -EINVAL;
-+
-+	opp = opp_find_freq_floor(df->dev, &freq);
-+	if (IS_ERR(opp))
-+		return PTR_ERR(opp);
-+
-+	return sprintf(buf, "%lu\n", freq);
-+}
-+
-+static ssize_t show_min_freq(struct device *dev,
-+			     struct device_attribute *attr, char *buf)
-+{
-+	struct devfreq *df = find_device_devfreq(dev);
-+	unsigned long freq = 0;
-+	struct opp *opp;
-+
-+	if (IS_ERR(df))
-+		return PTR_ERR(df);
-+	if (!df->dev)
-+		return -EINVAL;
-+
-+	opp = opp_find_freq_ceil(df->dev, &freq);
-+	if (IS_ERR(opp))
-+		return PTR_ERR(opp);
-+
-+	return sprintf(buf, "%lu\n", freq);
-+}
-+
-+static ssize_t show_polling_interval(struct device *dev,
-+				     struct device_attribute *attr, char *buf)
-+{
-+	struct devfreq *df = find_device_devfreq(dev);
-+
-+	if (IS_ERR(df))
-+		return PTR_ERR(df);
-+	if (!df->profile)
-+		return -EINVAL;
-+
-+	return sprintf(buf, "%d\n", df->profile->polling_ms);
-+}
-+
-+static ssize_t store_polling_interval(struct device *dev,
-+				      struct device_attribute *attr,
-+				      const char *buf, size_t count)
-+{
-+	struct devfreq *df = find_device_devfreq(dev);
-+	unsigned int value;
-+	int ret;
-+
-+	if (IS_ERR(df))
-+		return PTR_ERR(df);
-+	if (!df->profile)
-+		return -EINVAL;
-+
-+	ret = sscanf(buf, "%u", &value);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	df->profile->polling_ms = value;
-+	df->next_polling = df->polling_jiffies
-+			 = msecs_to_jiffies(value);
-+
-+	mutex_lock(&devfreq_list_lock);
-+	if (df->next_polling > 0 && !polling) {
-+		polling = true;
-+		queue_delayed_work(devfreq_wq, &devfreq_work,
-+				   df->next_polling);
-+	}
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	return count;
-+}
-+
-+static ssize_t set_user_frequency(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t count)
-+{
-+	struct devfreq *devfreq;
-+	unsigned long wanted;
-+	int err = 0;
-+
-+	sscanf(buf, "%lu", &wanted);
-+
-+	mutex_lock(&devfreq_list_lock);
-+	devfreq = find_device_devfreq(dev);
-+
-+	if (IS_ERR(devfreq)) {
-+		err = PTR_ERR(devfreq);
-+		goto out;
-+	}
-+
-+	devfreq->user_set_freq = wanted;
-+	err = count;
-+out:
-+	mutex_unlock(&devfreq_list_lock);
-+	if (err >= 0)
-+		devfreq_update(&devfreq->nb, 0, NULL);
-+	return err;
-+}
-+
-+static ssize_t show_user_frequency(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	struct devfreq *devfreq;
-+	int err = 0;
-+
-+	mutex_lock(&devfreq_list_lock);
-+	devfreq = find_device_devfreq(dev);
-+
-+	if (IS_ERR(devfreq)) {
-+		err = PTR_ERR(devfreq);
-+		goto out;
-+	}
-+
-+	err = sprintf(buf, "%lu\n", devfreq->user_set_freq);
-+out:
-+	mutex_unlock(&devfreq_list_lock);
-+	return err;
-+
-+}
-+
-+static DEVICE_ATTR(devfreq_governor, 0444, show_governor, NULL);
-+static DEVICE_ATTR(devfreq_cur_freq, 0444, show_freq, NULL);
-+static DEVICE_ATTR(devfreq_max_freq, 0444, show_max_freq, NULL);
-+static DEVICE_ATTR(devfreq_min_freq, 0444, show_min_freq, NULL);
-+static DEVICE_ATTR(devfreq_polling_interval, 0644, show_polling_interval,
-+		   store_polling_interval);
-+static DEVICE_ATTR(devfreq_set_freq, 0644, show_user_frequency,
-+		   set_user_frequency);
-+static struct attribute *dev_entries[] = {
-+	&dev_attr_devfreq_governor.attr,
-+	&dev_attr_devfreq_cur_freq.attr,
-+	&dev_attr_devfreq_max_freq.attr,
-+	&dev_attr_devfreq_min_freq.attr,
-+	&dev_attr_devfreq_polling_interval.attr,
-+	&dev_attr_devfreq_set_freq.attr,
-+	NULL,
-+};
-+static struct attribute_group dev_attr_group = {
-+	.name	= power_group_name,
-+	.attrs	= dev_entries,
-+};
-+
- /**
-  * devfreq_init() - Initialize data structure for devfreq framework and
-  *		  start polling registered devfreq devices.
+ Documentation/ABI/testing/sysfs-devices-power |   47 +++
+ drivers/Kconfig                               |    2 +
+ drivers/Makefile                              |    2 +
+ drivers/base/power/opp.c                      |   29 ++
+ drivers/devfreq/Kconfig                       |   75 ++++
+ drivers/devfreq/Makefile                      |    5 +
+ drivers/devfreq/devfreq.c                     |  482 +++++++++++++++++++++++++
+ drivers/devfreq/governor_performance.c        |   24 ++
+ drivers/devfreq/governor_powersave.c          |   24 ++
+ drivers/devfreq/governor_simpleondemand.c     |   88 +++++
+ drivers/devfreq/governor_userspace.c          |   27 ++
+ include/linux/devfreq.h                       |  148 ++++++++
+ include/linux/opp.h                           |   12 +
+ 13 files changed, 965 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/devfreq/Kconfig
+ create mode 100644 drivers/devfreq/Makefile
+ create mode 100644 drivers/devfreq/devfreq.c
+ create mode 100644 drivers/devfreq/governor_performance.c
+ create mode 100644 drivers/devfreq/governor_powersave.c
+ create mode 100644 drivers/devfreq/governor_simpleondemand.c
+ create mode 100644 drivers/devfreq/governor_userspace.c
+ create mode 100644 include/linux/devfreq.h
+
 -- 
 1.7.4.1
