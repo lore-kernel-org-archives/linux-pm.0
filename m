@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v6 0/7] PM QoS: add a per-device latency
-	constraints framework
-Date: Mon, 22 Aug 2011 20:53:01 +0200
-Message-ID: <201108222053.01639.rjw__38595.1480050155$1314039217$gmane$org@sisk.pl>
-References: <1313609965-6568-1-git-send-email-j-pihet@ti.com>
-	<87mxf1wcrz.fsf@ti.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v6-resubmit of 2/4] PM: Introduce DEVFREQ:
+ generic DVFS framework with device-specific OPPs
+Date: Tue, 23 Aug 2011 13:08:47 +0900
+Message-ID: <CAJ0PZbTO15TdFc6D1PCEwQLsHzzHLJpoNdnZW4USxkkQgi+g5Q@mail.gmail.com>
+References: <CAJOA=zPyG5Yn1bBR1sPxhsEh=n_+_4+whGWy4fKEzNbTvUvhkA@mail.gmail.com>
+	<1313742609-3446-1-git-send-email-myungjoo.ham@samsung.com>
+	<CAJOA=zMRu52Pcj+ViXbZcX+uzmA8t6v4WiPa4URy3C1YxnXE1g@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87mxf1wcrz.fsf@ti.com>
+In-Reply-To: <CAJOA=zMRu52Pcj+ViXbZcX+uzmA8t6v4WiPa4URy3C1YxnXE1g@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,52 +21,48 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: "Turquette, Mike" <mturquette@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 22, 2011, Kevin Hilman wrote:
-> jean.pihet@newoldbits.com writes:
-> 
-> > From: Jean Pihet <j-pihet@ti.com>
-> >
-> > High level implementation:
-> >
-> > 1. Preparation of the PM QoS for the addition of a device PM QoS constraints
-> >    framework:
-> >   . rename and move of the PM QoS implementation files to kernel/power/qos.c
-> >     and include/linux/pm_qos.h
-> >   . rename of API parameters and internal fields names
-> >   . Move around the PM QoS misc devices management code for better readability
-> >   . re-organize the internal data structs
-> >   . generalize and export the constraints management core code
-> >
-> > 2. Implementation of the per-device PM QoS constraints:
-> >   . create drivers/base/power/qos.c for the implementation
-> >   . create a device PM QoS API, which calls the PM QoS constraints management
-> >     core code
-> >   . the per-device latency constraints data strctures are stored in the device
-> >     dev_pm_info struct
-> >   . the device PM code calls the init and destroy of the per-device constraints
-> >     data struct in order to support the dynamic insertion and removal of the
-> >     devices in the system.
-> >   . to minimize the data usage by the per-device constraints, the data struct
-> >     is only allocated at the first call to dev_pm_qos_add_request. The data
-> >     is later free'd when the device is removed from the system
-> >   . per-device notification callbacks can be registered and called upon a
-> >     change to the aggregated constraint value
-> >   . a global mutex protects the constraints users from the data being
-> >     allocated and free'd.
-> >
-> > 3. add a global notification mechanism for the device constraints
-> >   . add a global notification chain that gets called upon changes to the
-> >     aggregated constraint value for any device.
-> >   . the notification callbacks are passing the full constraint request data
-> >     in order for the callees to have access to it. The current use is for the
-> >     platform low-level code to access the target device of the constraint
-> 
-> Reviewed-by: Kevin Hilman <khilman@ti.com>
-
-I guess that applies to the entire patchset?
-
-Rafael
+T24gVHVlLCBBdWcgMjMsIDIwMTEgYXQgMzoxOSBBTSwgVHVycXVldHRlLCBNaWtlIDxtdHVycXVl
+dHRlQHRpLmNvbT4gd3JvdGU6Cj4gT24gRnJpLCBBdWcgMTksIDIwMTEgYXQgMTozMCBBTSwgTXl1
+bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+IHdyb3RlOgo+PiArCj4+ICsgwqAg
+wqAgwqAgaWYgKGppZmZpZXNfcGFzc2VkID09IDApCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+amlmZmllc19wYXNzZWQgPSAxOwo+PiArIMKgIMKgIMKgIGlmIChqaWZmaWVzX3Bhc3NlZCA8IDAp
+IC8qICJJbmZpbml0ZSBUaW1lb3V0IiAqLwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGppZmZp
+ZXNfcGFzc2VkID0gSU5UX01BWDsKPgo+IFRoaXMgZG9lc24ndCBhY2NvdW50IGZvciBqaWZmaWVz
+IHJvbGxvdmVyICh+NDkgZGF5cyBvbiBhcmNoaXRlY3R1cmVzCj4gd2l0aCBIWiA9PSAxMDAwKS4g
+wqBBdCByb2xsb3Zlci10aW1lIHNvbWUgZGV2aWNlcyBtaWdodCBpbmNvcnJlY3RseSBnZXQKPiBt
+YXJrZWQgYXMgaGF2aW5nIGFuIGluZmluaXRlIHRpbWVvdXQuCgpZZXMsIHRoYXQgaXMgdG8gYmUg
+cmVtb3ZlZCBhbmQgamlmZmllc19wYXNzZWQgYXBwZWFycyB0byBiZSBiZXR0ZXIKYmVpbmcgdW5z
+aWduZWQgbG9uZywgbm90IGludC4KCj4KPj4gKwo+PiArIMKgIMKgIMKgIG11dGV4X2xvY2soJmRl
+dmZyZXFfbGlzdF9sb2NrKTsKPj4gKwo+PiArIMKgIMKgIMKgIGxpc3RfZm9yX2VhY2hfZW50cnlf
+c2FmZShkZXZmcmVxLCB0bXAsICZkZXZmcmVxX2xpc3QsIG5vZGUpIHsKPj4gKyDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCAvKiBSZWZsZWN0IHRoZSBjaGFuZ2VzIGluIHByb2ZpbGUtPnBvbGxpbmdfbXMg
+Ki8KPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBpZiAoZGV2ZnJlcS0+cG9sbGluZ19tcyAhPSBk
+ZXZmcmVxLT5wcm9maWxlLT5wb2xsaW5nX21zKSB7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgZGV2ZnJlcS0+cG9sbGluZ19tcyA9IGRldmZyZXEtPnByb2ZpbGUtPnBvbGxp
+bmdfbXM7Cj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZGV2ZnJlcS0+cG9s
+bGluZ19qaWZmaWVzID0gbXNlY3NfdG9famlmZmllcygKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkZXZmcmVxLT5wb2xsaW5nX21z
+KTsKPgo+IERvZXMgc3RydWN0IGRldmZyZXEgbmVlZCAtPnBvbGxpbmdfbXM/IMKgSXQgc2VlbXMg
+bGlrZSB1c2VsZXNzIHN0b3JhZ2UKPiBzaW5jZSB3ZSdyZSByZWFsbHkgaW50ZXJlc3RlZCBpbiAt
+PnBvbGxpbmdfamlmZmllcy4KPgo+IEhvdyBhYm91dCByZW1vdmluZyBkZXZmcmVxLT5wb2xsaW5n
+X21zIGFuZCB0aGVuIGp1c3QgZG9pbmcgdGhlCj4gY29udmVyc2lvbiB3aGVuZXZlciB0aGUgc3lz
+ZnMgZmlsZSBpcyB3cml0dGVuIHRvPwoKSXQgd2UgYXNzdW1lIHRoYXQgcHJvZmlsZS0+cG9sbGlu
+Z19tcyBpcyBuZXZlciBjaGFuZ2VkIGJ5IGVpdGhlciB0aGUKZHJpdmVyIG9yIHRoZSBnb3Zlcm5v
+ciwgd2UgY2FuIHJlbW92ZSBpdCBpbiBkZXZmcmVxLgpJdCB3YXMgYWRkZWQgdG8gc3RydWN0IGRl
+dmZyZXEgaW4gb3JkZXIgdG8gc2VlIGlmIHRoZSB2YWx1ZSBoYXMgYmVlbgpjaGFuZ2VkIGFuZCBn
+ZXQgcG9sbGluZ19qaWZmaWVzIHVwZGF0ZWQgYWNjb3JkaW5nbHkuCkFsdGhvdWdoIHRoZXJlIGlz
+IG5vICJzdG9yZSIgZnVuY3Rpb24gZm9yIHBvbGxpbmdfbXMgaW4gc3lzZnMsIHRoZQpkcml2ZXJz
+IGFuZCBnb3Zlcm5vcnMgYXJlIGFibGUgdG8gdXBkYXRlIHRoZSB2YWx1ZSBhdCBhbnkgdGltZS4K
+Cj4KPiBSZWdhcmRzLAo+IE1pa2UKPgoKSSdsbCBzZW5kICJ2NyIgcGF0Y2ggd2l0aCBzb21lIG1p
+bm9yIHVwZGF0ZXMgc29vbi4gSXQgYXBwZWFycyB0aGF0CmRldmZyZXEucG9sbGluZ19tcyB3b3Vs
+ZCBiZSBiZXR0ZXIgdW5zaWduZWQgYWxvbmcgd2l0aCBqaWZmaWVzX3Bhc3NlZC4KClRoYW5rcwoK
+TXl1bmdKb28KCi0tIApNeXVuZ0pvbyBIYW0gKO2VqOuqheyjvCksIFBoLkQuCk1vYmlsZSBTb2Z0
+d2FyZSBQbGF0Zm9ybSBMYWIsCkRpZ2l0YWwgTWVkaWEgYW5kIENvbW11bmljYXRpb25zIChETUMp
+IEJ1c2luZXNzClNhbXN1bmcgRWxlY3Ryb25pY3MKY2VsbDogODItMTAtNjcxNC0yODU4Cl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
+bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
+LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
