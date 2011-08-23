@@ -1,18 +1,14 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v6-resubmit of 2/4] PM: Introduce DEVFREQ:
- generic DVFS framework with device-specific OPPs
-Date: Tue, 23 Aug 2011 13:48:28 +0900
-Message-ID: <CAJ0PZbQMOzk8en_NMtFzKhTi2sr9C1qCMFQr6dHu1YMuoq8CFQ@mail.gmail.com>
-References: <CAJOA=zPyG5Yn1bBR1sPxhsEh=n_+_4+whGWy4fKEzNbTvUvhkA@mail.gmail.com>
-	<1313742609-3446-1-git-send-email-myungjoo.ham@samsung.com>
-	<CAJOA=zMRu52Pcj+ViXbZcX+uzmA8t6v4WiPa4URy3C1YxnXE1g@mail.gmail.com>
-	<CAJ0PZbTO15TdFc6D1PCEwQLsHzzHLJpoNdnZW4USxkkQgi+g5Q@mail.gmail.com>
-Reply-To: myungjoo.ham@gmail.com
+Subject: [PATCH v7 1/4] PM / OPP: Add OPP availability change
+	notifier.
+Date: Tue, 23 Aug 2011 16:54:00 +0900
+Message-ID: <1314086044-24659-2-git-send-email-myungjoo.ham@samsung.com>
+References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbTO15TdFc6D1PCEwQLsHzzHLJpoNdnZW4USxkkQgi+g5Q@mail.gmail.com>
+In-reply-to: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,56 +18,142 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Turquette, Mike" <mturquette@ti.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBBdWcgMjMsIDIwMTEgYXQgMTowOCBQTSwgTXl1bmdKb28gSGFtIDxteXVuZ2pvby5o
-YW1Ac2Ftc3VuZy5jb20+IHdyb3RlOgo+IE9uIFR1ZSwgQXVnIDIzLCAyMDExIGF0IDM6MTkgQU0s
-IFR1cnF1ZXR0ZSwgTWlrZSA8bXR1cnF1ZXR0ZUB0aS5jb20+IHdyb3RlOgo+PiBPbiBGcmksIEF1
-ZyAxOSwgMjAxMSBhdCAxOjMwIEFNLCBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5n
-LmNvbT4gd3JvdGU6Cj4+PiArCj4+PiArICAgICAgIGlmIChqaWZmaWVzX3Bhc3NlZCA9PSAwKQo+
-Pj4gKyAgICAgICAgICAgICAgIGppZmZpZXNfcGFzc2VkID0gMTsKPj4+ICsgICAgICAgaWYgKGpp
-ZmZpZXNfcGFzc2VkIDwgMCkgLyogIkluZmluaXRlIFRpbWVvdXQiICovCj4+PiArICAgICAgICAg
-ICAgICAgamlmZmllc19wYXNzZWQgPSBJTlRfTUFYOwo+Pgo+PiBUaGlzIGRvZXNuJ3QgYWNjb3Vu
-dCBmb3IgamlmZmllcyByb2xsb3ZlciAofjQ5IGRheXMgb24gYXJjaGl0ZWN0dXJlcwo+PiB3aXRo
-IEhaID09IDEwMDApLiAgQXQgcm9sbG92ZXItdGltZSBzb21lIGRldmljZXMgbWlnaHQgaW5jb3Jy
-ZWN0bHkgZ2V0Cj4+IG1hcmtlZCBhcyBoYXZpbmcgYW4gaW5maW5pdGUgdGltZW91dC4KPgo+IFll
-cywgdGhhdCBpcyB0byBiZSByZW1vdmVkIGFuZCBqaWZmaWVzX3Bhc3NlZCBhcHBlYXJzIHRvIGJl
-IGJldHRlcgo+IGJlaW5nIHVuc2lnbmVkIGxvbmcsIG5vdCBpbnQuCj4KPj4KPj4+ICsKPj4+ICsg
-ICAgICAgbXV0ZXhfbG9jaygmZGV2ZnJlcV9saXN0X2xvY2spOwo+Pj4gKwo+Pj4gKyAgICAgICBs
-aXN0X2Zvcl9lYWNoX2VudHJ5X3NhZmUoZGV2ZnJlcSwgdG1wLCAmZGV2ZnJlcV9saXN0LCBub2Rl
-KSB7Cj4+PiArICAgICAgICAgICAgICAgLyogUmVmbGVjdCB0aGUgY2hhbmdlcyBpbiBwcm9maWxl
-LT5wb2xsaW5nX21zICovCj4+PiArICAgICAgICAgICAgICAgaWYgKGRldmZyZXEtPnBvbGxpbmdf
-bXMgIT0gZGV2ZnJlcS0+cHJvZmlsZS0+cG9sbGluZ19tcykgewo+Pj4gKyAgICAgICAgICAgICAg
-ICAgICAgICAgZGV2ZnJlcS0+cG9sbGluZ19tcyA9IGRldmZyZXEtPnByb2ZpbGUtPnBvbGxpbmdf
-bXM7Cj4+PiArICAgICAgICAgICAgICAgICAgICAgICBkZXZmcmVxLT5wb2xsaW5nX2ppZmZpZXMg
-PSBtc2Vjc190b19qaWZmaWVzKAo+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIGRldmZyZXEtPnBvbGxpbmdfbXMpOwo+Pgo+PiBEb2VzIHN0cnVjdCBkZXZmcmVxIG5l
-ZWQgLT5wb2xsaW5nX21zPyAgSXQgc2VlbXMgbGlrZSB1c2VsZXNzIHN0b3JhZ2UKPj4gc2luY2Ug
-d2UncmUgcmVhbGx5IGludGVyZXN0ZWQgaW4gLT5wb2xsaW5nX2ppZmZpZXMuCj4+Cj4+IEhvdyBh
-Ym91dCByZW1vdmluZyBkZXZmcmVxLT5wb2xsaW5nX21zIGFuZCB0aGVuIGp1c3QgZG9pbmcgdGhl
-Cj4+IGNvbnZlcnNpb24gd2hlbmV2ZXIgdGhlIHN5c2ZzIGZpbGUgaXMgd3JpdHRlbiB0bz8KPgo+
-IEl0IHdlIGFzc3VtZSB0aGF0IHByb2ZpbGUtPnBvbGxpbmdfbXMgaXMgbmV2ZXIgY2hhbmdlZCBi
-eSBlaXRoZXIgdGhlCj4gZHJpdmVyIG9yIHRoZSBnb3Zlcm5vciwgd2UgY2FuIHJlbW92ZSBpdCBp
-biBkZXZmcmVxLgo+IEl0IHdhcyBhZGRlZCB0byBzdHJ1Y3QgZGV2ZnJlcSBpbiBvcmRlciB0byBz
-ZWUgaWYgdGhlIHZhbHVlIGhhcyBiZWVuCj4gY2hhbmdlZCBhbmQgZ2V0IHBvbGxpbmdfamlmZmll
-cyB1cGRhdGVkIGFjY29yZGluZ2x5Lgo+IEFsdGhvdWdoIHRoZXJlIGlzIG5vICJzdG9yZSIgZnVu
-Y3Rpb24gZm9yIHBvbGxpbmdfbXMgaW4gc3lzZnMsIHRoZQo+IGRyaXZlcnMgYW5kIGdvdmVybm9y
-cyBhcmUgYWJsZSB0byB1cGRhdGUgdGhlIHZhbHVlIGF0IGFueSB0aW1lLgoKUGxhc2UgbmV2ZXIg
-bWluZCB0aGlzIHBhcmFncmFwaC4gSSdsbCByZW1vdmUgdGhhdCBkZXZmcmUtPnBvbGxpbmdfbXMK
-YW5kIG1ha2UgYW4gc3lzZnMgZW50cnkgdG8gdXBkYXRlIHBvbGxpbmdfbXMgcHJvcGVybHkgd2l0
-aCBzb29uLXRvLWJlCnJlbGVhc2UgdjcgcGF0Y2hzZXQuIEl0IGxvb2tzIG1vcmUgYmVhdXRpZnVs
-IHRoYXQgd2F5IHRvIG1lIGVpdGhlci4KCj4KPj4KPj4gUmVnYXJkcywKPj4gTWlrZQo+Pgo+Cj4g
-SSdsbCBzZW5kICJ2NyIgcGF0Y2ggd2l0aCBzb21lIG1pbm9yIHVwZGF0ZXMgc29vbi4gSXQgYXBw
-ZWFycyB0aGF0Cj4gZGV2ZnJlcS5wb2xsaW5nX21zIHdvdWxkIGJlIGJldHRlciB1bnNpZ25lZCBh
-bG9uZyB3aXRoIGppZmZpZXNfcGFzc2VkLgo+Cj4gVGhhbmtzCj4KPiBNeXVuZ0pvbwo+Cj4gLS0K
-PiBNeXVuZ0pvbyBIYW0gKMfUuO3B1iksIFBoLkQuCj4gTW9iaWxlIFNvZnR3YXJlIFBsYXRmb3Jt
-IExhYiwKPiBEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBCdXNpbmVzcwo+
-IFNhbXN1bmcgRWxlY3Ryb25pY3MKPiBjZWxsOiA4Mi0xMC02NzE0LTI4NTgKPgoKCgotLSAKTXl1
-bmdKb28gSGFtICjH1LjtwdYpLCBQaC5ELgpNb2JpbGUgU29mdHdhcmUgUGxhdGZvcm0gTGFiLApE
-aWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBCdXNpbmVzcwpTYW1zdW5nIEVs
-ZWN0cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQtMjg1OApfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlz
-dHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+The patch enables to register notifier_block for an OPP-device in order
+to get notified for any changes in the availability of OPPs of the
+device. For example, if a new OPP is inserted or enable/disable status
+of an OPP is changed, the notifier is executed.
+
+This enables the usage of opp_add, opp_enable, and opp_disable to
+directly take effect with any connected entities such as CPUFREQ or
+DEVFREQ.
+
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Reviewed-by: Mike Turquette <mturquette@ti.com>
+
+---
+No changes since v6
+Added at devfreq patch set v6 replacing devfreq_update calls at OPP.
+---
+ drivers/base/power/opp.c |   29 +++++++++++++++++++++++++++++
+ include/linux/opp.h      |   12 ++++++++++++
+ 2 files changed, 41 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index b23de18..e6b4c89 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -73,6 +73,7 @@ struct opp {
+  *		RCU usage: nodes are not modified in the list of device_opp,
+  *		however addition is possible and is secured by dev_opp_list_lock
+  * @dev:	device pointer
++ * @head:	notifier head to notify the OPP availability changes.
+  * @opp_list:	list of opps
+  *
+  * This is an internal data structure maintaining the link to opps attached to
+@@ -83,6 +84,7 @@ struct device_opp {
+ 	struct list_head node;
+ 
+ 	struct device *dev;
++	struct srcu_notifier_head head;
+ 	struct list_head opp_list;
+ };
+ 
+@@ -404,6 +406,7 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 		}
+ 
+ 		dev_opp->dev = dev;
++		srcu_init_notifier_head(&dev_opp->head);
+ 		INIT_LIST_HEAD(&dev_opp->opp_list);
+ 
+ 		/* Secure the device list modification */
+@@ -428,6 +431,11 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 	list_add_rcu(&new_opp->node, head);
+ 	mutex_unlock(&dev_opp_list_lock);
+ 
++	/*
++	 * Notify the changes in the availability of the operable
++	 * frequency/voltage list.
++	 */
++	srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
+ 	return 0;
+ }
+ 
+@@ -504,6 +512,14 @@ static int opp_set_availability(struct device *dev, unsigned long freq,
+ 	mutex_unlock(&dev_opp_list_lock);
+ 	synchronize_rcu();
+ 
++	/* Notify the change of the OPP availability */
++	if (availability_req)
++		srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ENABLE,
++					 new_opp);
++	else
++		srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_DISABLE,
++					 new_opp);
++
+ 	/* clean up old opp */
+ 	new_opp = opp;
+ 	goto out;
+@@ -643,3 +659,16 @@ void opp_free_cpufreq_table(struct device *dev,
+ 	*table = NULL;
+ }
+ #endif		/* CONFIG_CPU_FREQ */
++
++/** opp_get_notifier() - find notifier_head of the device with opp
++ * @dev:	device pointer used to lookup device OPPs.
++ */
++struct srcu_notifier_head *opp_get_notifier(struct device *dev)
++{
++	struct device_opp *dev_opp = find_device_opp(dev);
++
++	if (IS_ERR(dev_opp))
++		return ERR_PTR(PTR_ERR(dev_opp)); /* matching type */
++
++	return &dev_opp->head;
++}
+diff --git a/include/linux/opp.h b/include/linux/opp.h
+index 7020e97..87a9208 100644
+--- a/include/linux/opp.h
++++ b/include/linux/opp.h
+@@ -16,9 +16,14 @@
+ 
+ #include <linux/err.h>
+ #include <linux/cpufreq.h>
++#include <linux/notifier.h>
+ 
+ struct opp;
+ 
++enum opp_event {
++	OPP_EVENT_ADD, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
++};
++
+ #if defined(CONFIG_PM_OPP)
+ 
+ unsigned long opp_get_voltage(struct opp *opp);
+@@ -40,6 +45,8 @@ int opp_enable(struct device *dev, unsigned long freq);
+ 
+ int opp_disable(struct device *dev, unsigned long freq);
+ 
++struct srcu_notifier_head *opp_get_notifier(struct device *dev);
++
+ #else
+ static inline unsigned long opp_get_voltage(struct opp *opp)
+ {
+@@ -89,6 +96,11 @@ static inline int opp_disable(struct device *dev, unsigned long freq)
+ {
+ 	return 0;
+ }
++
++struct srcu_notifier_head *opp_get_notifier(struct device *dev)
++{
++	return ERR_PTR(-EINVAL);
++}
+ #endif		/* CONFIG_PM */
+ 
+ #if defined(CONFIG_CPU_FREQ) && defined(CONFIG_PM_OPP)
+-- 
+1.7.4.1
