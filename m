@@ -1,13 +1,16 @@
-From: Santosh <santosh.shilimkar@ti.com>
-Subject: Re: [POWER DOMAIN suspend callbacks] Observation.
-Date: Wed, 24 Aug 2011 11:47:13 +0530
-Message-ID: <4E549769.2030800__35205.1949514591$1314166700$gmane$org@ti.com>
-References: <4E53B6FC.8030507@ti.com> <871uwcjbwi.fsf@ti.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v7 4/4] PM / DEVFREQ: add sysfs interface
+Date: Wed, 24 Aug 2011 16:40:39 +0900
+Message-ID: <CAJ0PZbQOtRKOcsaG1vJzxcp1jJfhs-H1q9xkMCJPfg=0bs6UFQ@mail.gmail.com>
+References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
+	<1314086044-24659-5-git-send-email-myungjoo.ham@samsung.com>
+	<CAJOA=zNZqz=tHah+z5RHq7SqeG1eGPdO8=PEuGUztmA45cRCxg@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <871uwcjbwi.fsf@ti.com>
+In-Reply-To: <CAJOA=zNZqz=tHah+z5RHq7SqeG1eGPdO8=PEuGUztmA45cRCxg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,59 +20,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: Govindraj R <govindraj.raja@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org
+To: "Turquette, Mike" <mturquette@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 23 August 2011 10:36 PM, Kevin Hilman wrote:
-> Hi Santosh,
->
-> Santosh<santosh.shilimkar@ti.com>  writes:
->
->> Rafael, Kevin,
->>
->> On latest kernel( V3.1-rc1+), the subsystem(driver) suspend
->> callbacks are not getting called because power domain callbcaks
->> are populated.
->>
->> And as per commit 4d27e9dc{PM: Make power domain callbacks take
->> precedence over subsystem ones}, it's expected bahavior.
->
-> Correct.
->
->> Who is suppose to call the driver suspend callback?
->
-> If populated, the PM domain callbacks should call the driver callbacks.
-> If there are no PM domain callbacks, then the subsystem (in this case,
-> the platform_bus) should be calling the driver callbacks.
->
->> Some drivers/subsystem would have state machine which needs to
->> be suspended.
->>
->> Is the power domain suspend callback, suppose to take care of
->> it ? If yes, then that seems to be missing for OMAP.
->
-> Yup, there's a bug.    They're not missing, just misplaced. ;)
->
-> When adding the noirq callbacks to ensure devices are idled late in
-> suspend by omap_device, I the patch commited mistakenly uses
-> SET_SYSTEM_SLEEP_PM_OPS(), which sets the "normal" suspend/resume
-> handlers and not the noirq handlers.
->
-> Can you try the patch below?  I only briefly tested it on omap3/n900 so
-> far.
->
-The patch works like charm.
-
-> This populates most of the PM domain methods with the same ones used by
-> the subystem (platform_bus) and only overrides the noirq methods with
-> custom versions.  This patch should make all the driver's suspend/resume
-> methods be called as expected.
->
-> After a bit more sanitiy testing, I'll post a real patch for the -rc
-> series.
->
-Great.
-
-Regards
-Santosh
+T24gV2VkLCBBdWcgMjQsIDIwMTEgYXQgMjozNCBBTSwgVHVycXVldHRlLCBNaWtlIDxtdHVycXVl
+dHRlQHRpLmNvbT4gd3JvdGU6Cj4gT24gVHVlLCBBdWcgMjMsIDIwMTEgYXQgMTI6NTQgQU0sIE15
+dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPiB3cm90ZToKPj4gKyDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCBUaGUgL3N5cy9kZXZpY2VzLy4uLi9wb3dlci9kZXZmcmVxX2N1cl9mcmVx
+IHNob3dzIHRoZQo+Cj4gQ29weS9wYXN0ZSBlcnJvcj8gwqBEZXNjcmlwdGlvbiBzaG91bGQgcmVm
+ZXJlbmNlIGRldmZyZXFfbWF4X2ZyZXEgbm90Cj4gZGV2ZnJlcV9jdXJfZnJlcS4KPgo+PiArIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIG1pbmltdW0gb3BlcmFibGUgZnJlcXVlbmN5IG9mIHRoZSBjb3Jy
+ZXNwb25kaW5nIGRldmljZS4KPgo+IFNpbWlsYXIgdG8gdGhlIGFib3ZlLgo+CgpUaGFuayB5b3Uu
+IEknbGwgcmVzdWJtaXQgc29vbiB3aXRoIGNvcnJlY3Rpb25zIChhbmQgdy8gc29tZSBmdXJ0aGVy
+CmNoYW5nZXMgdG8gYWxsb3cgZ292ZXJub3JzIHRvIGhhdmUgdGhlaXIgb3duIHN5c2ZzIGVudHJp
+ZXMgYW5kIGFjY2Vzcwptb3JlIG9uIHRoZSBERVZGUkVRIGNvcmUpLgoKPj4gKwo+PiArV2hhdDog
+wqAgwqAgwqAgwqAgwqAvc3lzL2RldmljZXMvLi4uL3Bvd2VyL2RldmZyZXFfc2V0X2ZyZXEKPj4g
+K0RhdGU6IMKgIMKgIMKgIMKgIMKgQXVndXN0IDIwMTEKPj4gK0NvbnRhY3Q6IMKgIMKgIMKgIE15
+dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPgo+PiArRGVzY3JpcHRpb246Cj4+
+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgVGhlIC9zeXMvZGV2aWNlcy8uLi4vcG93ZXIvZGV2ZnJl
+cV9zZXRfZnJlcSBzZXRzIGFuZCBzaG93cwo+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHRoZSB1
+c2VyIHNwZWNpZmllZCBkZXNpcmVkIGZyZXF1ZW5jeSBvZiB0aGUgZGV2aWNlLiBUaGUKPj4gKyDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCBnb3Zlcm5vciBtYXkgYW5kIG1heSBub3QgdXNlIHRoZSB2YWx1
+ZS4gV2l0aCB0aGUgYmFzaWMKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBnb3Zlcm5vcnMgZ2l2
+ZW4gd2l0aCBkZXZmcmVxLmMsIHVzZXJzcGFjZSBnb3Zlcm5vciBpcwo+PiArIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIHVzaW5nIHRoZSB2YWx1ZS4KPgo+IEFzIEkgc3RhdGVkIGluIHBhdGNoIDMsIHRo
+aXMgc2hvdWxkIGNvbmRpdGlvbmFsbHkgZXhpc3Qgb25seSBpZiB0aGUKPiB1c2Vyc3BhY2UgZ292
+ZXJub3IgaXMgYmVpbmcgdXNlZCBmb3IgdGhpcyBkZXZpY2UuCgpPaywgaW4gdGhlIG5leHQgcmV2
+aXNpb24sIHRoaXMgZW50cnkgd2lsbCBiZSByZW1vdmVkIGFuZCByZXBsYWNlZCB3aXRoCmFuIGVu
+dHJ5IGNyZWF0ZWQgYnkgdXNlcnNwYWNlIGdvdmVybm9yLgoKPgo+IFRoZSBleGlzdGluZyBkZXZm
+cmVxX2N1cl9mcmVxIGNvdmVycyB0aGUgcmVhZC1vbmx5IGNhc2Ugd2VsbC4KCkl0IGNvdWxkIGJl
+IGEgYml0IGRpZmZlcmVudCBlc3BlY2lhbGx5IHdpdGggYW5vdGhlciBkZXZpY2UgZHJpdmVyCmVu
+YWJsaW5nIGFuZCBkaXNhYmxpbmcgT1BQcyBhbmQvb3IgUE0gUW9TLgoKRm9yIGV4YW1wbGUsIHdo
+ZW4gdXNlciBzdGF0ZXMgIjEwME1IeiIgb24gYSBkZXZpY2Ugd2l0aAoiNTAvMTAwLzIwME1IeiIs
+IGl0IHdpbGwgdXNlIDEwMC4gSG93ZXZlciwgaWYgc29tZW9uZSBoYXMgZGlzYWJsZWQKMTAwTUh6
+IHdpdGggb3BwX2Rpc2FibGUsIGRldmZyZXFfY3VyX2ZyZXEgd2lsbCBhdXRvbWF0aWNhbGx5IGNo
+YW5nZWQKdG8gMjAwIHdoaWxlIHRoZSB1c2VyIHZhbHVlIHNob3VsZCByZW1haW4gYXQgMTAwIGlu
+IGNhc2Ugd2hlcmUgMTAwIGlzCmxhdGVyIHJlLWVuYWJsZWQuCgo+Cj4gUmVnYXJkcywKPiBNaWtl
+Cj4KClRoYW5rIHlvdS4KCgpDaGVlcnMhCgpNeXVuZ0pvbwoKCi0tIApNeXVuZ0pvbyBIYW0gKO2V
+qOuqheyjvCksIFBoLkQuCk1vYmlsZSBTb2Z0d2FyZSBQbGF0Zm9ybSBMYWIsCkRpZ2l0YWwgTWVk
+aWEgYW5kIENvbW11bmljYXRpb25zIChETUMpIEJ1c2luZXNzClNhbXN1bmcgRWxlY3Ryb25pY3MK
+Y2VsbDogODItMTAtNjcxNC0yODU4Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1m
+b3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4v
+bGlzdGluZm8vbGludXgtcG0=
