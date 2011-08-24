@@ -1,17 +1,17 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] Add regulator driver for the bq2407x family
- of charger ICs
-Date: Wed, 24 Aug 2011 10:07:46 +0100
-Message-ID: <20110824090746.GP9232@opensource.wolfsonmicro.com>
-References: <201108202224.52250.heiko@sntech.de>
-	<20110823115024.GL9232@opensource.wolfsonmicro.com>
-	<201108232215.08788.heiko@sntech.de>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCHSET] cgroup: introduce cgroup_taskset and
+ consolidate subsys methods
+Date: Wed, 24 Aug 2011 15:53:22 +0200
+Message-ID: <20110824135317.GD23979__14492.435186594$1314194165$gmane$org@somewhere>
+References: <1314138000-2049-1-git-send-email-tj@kernel.org>
+	<20110824011428.GC23979@somewhere>
+	<20110824074959.GA14170@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201108232215.08788.heiko@sntech.de>
+In-Reply-To: <20110824074959.GA14170@htj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,33 +21,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Cc: linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@ti.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 23, 2011 at 10:15:07PM +0200, Heiko St=FCbner wrote:
-> Am Dienstag 23 August 2011, 13:50:24 schrieb Mark Brown:
-> > On Sat, Aug 20, 2011 at 10:24:51PM +0200, Heiko St=FCbner wrote:
+On Wed, Aug 24, 2011 at 09:49:59AM +0200, Tejun Heo wrote:
+> Hello, Frederic.
+> 
+> On Wed, Aug 24, 2011 at 03:14:30AM +0200, Frederic Weisbecker wrote:
+> > >  0001-cgroup-subsys-attach_task-should-be-called-after-mig.patch
+> > >  0002-cgroup-improve-old-cgroup-handling-in-cgroup_attach_.patch
+> > >  0003-cgroup-introduce-cgroup_taskset-and-use-it-in-subsys.patch
+> > >  0004-cgroup-don-t-use-subsys-can_attach_task-or-attach_ta.patch
+> > >  0005-cgroup-cpuset-don-t-use-ss-pre_attach.patch
+> > >  0006-cgroup-kill-subsys-can_attach_task-pre_attach-and-at.patch
+> > 
+> > I don't understand the point on patches 3,4,5,6
+> > 
+> > Why pushing the task iterations down to the subsystems?
+> 
+> I'll try again.
+> 
+> It seems like methods were added to serve the immediate need of the
+> particular user at the time and that in turn led to addition of
+> callbacks which were both superflous and incomplete (the bullet points
+> in the original message list them).  This seems to have happened
+> because extra interface was added without trying to make the existing
+> interface complete.
+> 
+> The interface is complicated and cumbersome to use - are
+> [can_]attach() called first or [can_]attach_task()?  What about
+> cancelation?  What if a subsys wants to perform operations across
+> multiple tasks atomically?
+> 
+> In general, iteration-by-callback is painful to use.  Establishing
+> common context (be it synchronization domain or shared variables)
+> becomes very cumbersome and implementation becomes fragmented and
+> difficult to follow.  For example, imagine how it would be like to use
+> list if we had call_for_each_list_entry(func, list_head) instead of
+> the control-loop style iterators we have know.
+> 
+> So, using iterators enables making all relevant information to each
+> stage of attach so that only one callback is required for each step -
+> the way it should be.  In addition, it makes it far easier for
+> subsystems to implement more involved logic in their methods.
+> 
+> I tried to make cgroup_freezer behave better which requires better
+> synchronization against the freezer and, with the current interface,
+> it's extremely ugly and painful.  The new interface is complete, easy
+> to understand and use with far less subtleties.
 
-> > > +	} else if (max_uA >=3D 100000) {
-> > > +		dev_dbg(rdev_get_dev(rdev),
-> > > +			"setting current limit to 100 mA\n");
-> > > +		gpio_set_value(pdata->gpio_en2, 0);
-> > > +		gpio_set_value(pdata->gpio_en1, 0);
-> > > +	} else {
-> > > +		dev_dbg(rdev_get_dev(rdev),
-> > > +			"setting current limit to 0 mA\n");
-> > > +		gpio_set_value(pdata->gpio_en2, 1);
-> > > +		gpio_set_value(pdata->gpio_en1, 1);
-> > > +	}
+Yeah it's true that the order between [can]attach/[can]attach_task plus
+the added mess with pre_attach was not entirely sane. The fact we have
+foo and foo_task is already a problem.
 
-> > I'd rather expect this to return an error sometimes.
-
-> gpio_set_value is a void function, so I'm not sure what could cause an er=
-ror =
-
-> here.
-
-For example if you're asked for a limit below 100mA - disabling the
-charger probably isn't a useful implementation.  The disable should be
-done with enable/disable.
+I guess we indeed need to sacrifice the iteration from the cgroup core
+for that.
