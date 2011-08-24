@@ -1,16 +1,16 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v7 3/4] PM / DEVFREQ: add basic governors
-Date: Wed, 24 Aug 2011 16:46:35 +0900
-Message-ID: <CAJ0PZbRMXh7epkUbpqtytNvnQSJdTETM+O3faE=vhfJySH-aQg@mail.gmail.com>
-References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
-	<1314086044-24659-4-git-send-email-myungjoo.ham@samsung.com>
-	<CAJOA=zM__=_TcuSCF7BOfvHQXJ0u=m_5Y2XHi1uEBBy_z6BJYQ@mail.gmail.com>
-Reply-To: myungjoo.ham@gmail.com
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCHSET] cgroup: introduce cgroup_taskset and
+ consolidate subsys methods
+Date: Wed, 24 Aug 2011 09:49:59 +0200
+Message-ID: <20110824074959.GA14170__38611.5255569623$1314172344$gmane$org@htj.dyndns.org>
+References: <1314138000-2049-1-git-send-email-tj@kernel.org>
+	<20110824011428.GC23979@somewhere>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJOA=zM__=_TcuSCF7BOfvHQXJ0u=m_5Y2XHi1uEBBy_z6BJYQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20110824011428.GC23979@somewhere>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,49 +20,56 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Turquette, Mike" <mturquette@ti.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBdWcgMjQsIDIwMTEgYXQgMjoyOSBBTSwgVHVycXVldHRlLCBNaWtlIDxtdHVycXVl
-dHRlQHRpLmNvbT4gd3JvdGU6Cj4gT24gVHVlLCBBdWcgMjMsIDIwMTEgYXQgMTI6NTQgQU0sIE15
-dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPiB3cm90ZToKPgo+IEkgdGhpbmsg
-dGhhdCB1c2VyX3NldF9mcmVxID09IDAgaXMgYSB2YWxpZCByZXF1ZXN0IGZyb20gYSB1c2VyLiDC
-oEEKPiB1c2VyIG1pZ2h0IG5vdCBrbm93IHdoYXQgdGhlIHZhbGlkIGZyZXF1ZW5jaWVzIGFyZSBm
-b3IgYSBkZXZpY2UsIGJ1dAo+IGtub3dzIHRoYXQgaGUvc2hlIHdhbnRzIHRoZSBsb3dlc3Qgb25l
-LiDCoFdyaXRpbmcgMCB0byB0aGUgc3lzZnMgdmFsdWUKPiBzaG91bGQgZ2l2ZSB0aGUgZmxvb3Ig
-b2YgdGhlIGF2YWlsYWJsZSBmcmVxdWVuY2llcy4KPgoKVXNlcnMgY2FuIGtub3cgd2hhdCBpcyB0
-aGUgbWluaW11bSB2YWxpZCBmcmVxdWVuY3kgd2l0aApkZXZmcmVxX21pbl9mcmVxLiBIb3dldmVy
-LCB3cml0aW5nIDAgdG8gdGhlIHN5c2ZzIGlzIGEgY29tZm9ydGFibGUKbWV0aG9kIGFuZCBJJ2xs
-IGFsbG93IHRoYXQgaW5wdXQgaW4gdGhlIG5leHQgcmV2aXNpb24gYWxvbmcgd2l0aCB0aGUKcGF0
-Y2ggb2YgYWxsb3dpbmcgZ292ZXJub3JzIHRvIGhhdmUgdGhlaXIgb3duIHN5c2ZzIGVudHJpZXMg
-d2l0aApleGFtcGxlIG9mIHVzZXJzcGFjZS4KCj4+ICsgwqAgwqAgwqAgZWxzZQo+PiArIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgICpmcmVxID0gZGYtPnVzZXJfc2V0X2ZyZXE7Cj4+ICsKPj4gKyDCoCDC
-oCDCoCByZXR1cm4gMDsKPj4gK30KPj4gKwo+PiArc3RydWN0IGRldmZyZXFfZ292ZXJub3IgZGV2
-ZnJlcV91c2Vyc3BhY2UgPSB7Cj4+ICsgwqAgwqAgwqAgLm5hbWUgPSAidXNlcnNwYWNlIiwKPj4g
-KyDCoCDCoCDCoCAuZ2V0X3RhcmdldF9mcmVxID0gZGV2ZnJlcV91c2Vyc3BhY2VfZnVuYywKPj4g
-K307Cj4KPiBUaGUgc2V0X3VzZXJfZnJlcXVlbmN5IGF0dHJpYnV0ZSBzaG91bGQgYmUgbW92ZWQg
-b3V0IG9mIGRldmZyZXEuYwo+IChwYXRjaCA0KSBhbmQgbGl2ZSBoZXJlLiDCoFRoZXJlIGlzIG5v
-IHB1cnBvc2UgdG8gdGhhdCBlbnRyeSBleGNlcHQgZm9yCj4gdGhlIHVzZXJzcGFjZSBnb3Zlcm5v
-ciBhbmQgaXQgc2hvdWxkIG5vdCBleGlzdCBpbiBzeXNmcyB1bmxlc3MgdGhpcwo+IGdvdmVybm9y
-IGlzIGluIHVzZS4gwqBUbyBiZSBjbGVhciwgdGhlcmUgc2hvdWxkIHN0aWxsIGJlIGEgcmVhZC1v
-bmx5Cj4gc2hvd19mcmVxdWVuY3kgb3Igc29tZXRoaW5nIGluIGRldmZyZXEuYy4KPgo+IFRoaXMg
-YWdhaW4gdG91Y2hlcyBvbiBteSBsb25nLXN0YW5kaW5nIGNvbXBsYWludHMgd2l0aCB0aGlzIHNl
-cmllcycKPiBkZXNpZ24uIMKgc2V0X3VzZXJfZnJlcXVlbmN5IGlzIGFuIGF0dHJpYnV0ZSB0aGF0
-IGJlbG9uZ3MgdG8gdGhlCj4gZ292ZXJub3IsIG5vdCB0byB0aGUgY29yZS4gwqBTdWNoIG1pc3Bs
-YWNlbWVudCBvZiBhdHRyaWJ1dGUvZW50aXR5Cj4gb3duZXJzaGlwIGlzIGNvbW1vbiBpbiB0aGlz
-IHNlcmllcywgYnV0IEkgd29uJ3QgZ28gZG93biB0aGF0IHJhYmJpdAo+IGhvbGUgYWdhaW4uIMKg
-SW4gdGhlIG1lYW4gdGltZSBhdCBsZWFzdCB0aGlzIG9uZSBpbnN0YW5jZSBvZiB0aGUKPiBwcm9i
-bGVtIGZvciB0aGUgdXNlcnNwYWNlIGdvdiBzaG91bGQgYmUgZml4ZWQgdXAuCj4KPiBSZWdhcmRz
-LAo+IE1pa2UKPgoKCkknbGwgaW5jbHVkZSBhIHBhdGNoIHRoYXQgc2hvd3MgYW4gZXhhbXBsZSBv
-ZiBoYXZpbmcgYSBnb3Zlcm5vcgpzcGVjaWZpYyBzeXNmcyBlbnRyeSBhdCB0aGUgbmV4dCByZXZp
-c2lvbi4gSXQgaXMgZW5hYmxlZCBieQppbnRyb2R1Y2luZyBhIGZ1bmN0aW9uIHRvIGdvdmVybm9y
-cyAic3RydWN0IGRldmZyZXEKKmdldF9kZXZmcmVxKHN0cnVjdCBkZXZpY2UgKmRldik7IiBhdCAv
-ZGV2aWNlL2RldmZyZXEvZ292ZXJub3IuaAoobG9jYWwgdG8gZ292ZXJub3JzKSBhbmQgYWRkaW5n
-IC5pbml0IGFuZCAuZXhpdCBjYWxsYmFja3MgYXQgc3RydWN0CmRldmZyZXFfZ292ZXJub3IuCgoK
-Q2hlZXJzIQoKTXl1bmdKb28KCgotLSAKTXl1bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELgpN
-b2JpbGUgU29mdHdhcmUgUGxhdGZvcm0gTGFiLApEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0
-aW9ucyAoRE1DKSBCdXNpbmVzcwpTYW1zdW5nIEVsZWN0cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQt
-Mjg1OApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
-eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
-cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Hello, Frederic.
+
+On Wed, Aug 24, 2011 at 03:14:30AM +0200, Frederic Weisbecker wrote:
+> >  0001-cgroup-subsys-attach_task-should-be-called-after-mig.patch
+> >  0002-cgroup-improve-old-cgroup-handling-in-cgroup_attach_.patch
+> >  0003-cgroup-introduce-cgroup_taskset-and-use-it-in-subsys.patch
+> >  0004-cgroup-don-t-use-subsys-can_attach_task-or-attach_ta.patch
+> >  0005-cgroup-cpuset-don-t-use-ss-pre_attach.patch
+> >  0006-cgroup-kill-subsys-can_attach_task-pre_attach-and-at.patch
+> 
+> I don't understand the point on patches 3,4,5,6
+> 
+> Why pushing the task iterations down to the subsystems?
+
+I'll try again.
+
+It seems like methods were added to serve the immediate need of the
+particular user at the time and that in turn led to addition of
+callbacks which were both superflous and incomplete (the bullet points
+in the original message list them).  This seems to have happened
+because extra interface was added without trying to make the existing
+interface complete.
+
+The interface is complicated and cumbersome to use - are
+[can_]attach() called first or [can_]attach_task()?  What about
+cancelation?  What if a subsys wants to perform operations across
+multiple tasks atomically?
+
+In general, iteration-by-callback is painful to use.  Establishing
+common context (be it synchronization domain or shared variables)
+becomes very cumbersome and implementation becomes fragmented and
+difficult to follow.  For example, imagine how it would be like to use
+list if we had call_for_each_list_entry(func, list_head) instead of
+the control-loop style iterators we have know.
+
+So, using iterators enables making all relevant information to each
+stage of attach so that only one callback is required for each step -
+the way it should be.  In addition, it makes it far easier for
+subsystems to implement more involved logic in their methods.
+
+I tried to make cgroup_freezer behave better which requires better
+synchronization against the freezer and, with the current interface,
+it's extremely ugly and painful.  The new interface is complete, easy
+to understand and use with far less subtleties.
+
+Thanks.
+
+-- 
+tejun
