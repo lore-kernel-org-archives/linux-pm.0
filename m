@@ -1,16 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
-	wake-up constraints
-Date: Thu, 25 Aug 2011 16:49:06 +0200
-Message-ID: <201108251649.06308.rjw__106.769419699226$1314283811$gmane$org@sisk.pl>
-References: <20110820062543.GA5011@opensource.wolfsonmicro.com>
-	<201108251617.31959.rjw@sisk.pl>
-	<CAORVsuW7M_i6s85X5NFWv=DEeoARqFo47cyrrqq87djJ3nUFDQ@mail.gmail.com>
+From: Paul Menage <paul@paulmenage.org>
+Subject: Re: [PATCH 2/6] cgroup: improve old cgroup handling in
+	cgroup_attach_proc()
+Date: Thu, 25 Aug 2011 01:51:39 -0700
+Message-ID: <CALdu-PAj1ZUmB2ixxA6yeppB8MerBGk1cSeQadobH0H4cRSe7Q__9995.58440312303$1314288026$gmane$org@mail.gmail.com>
+References: <1314138000-2049-1-git-send-email-tj@kernel.org>
+	<1314138000-2049-3-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAORVsuW7M_i6s85X5NFWv=DEeoARqFo47cyrrqq87djJ3nUFDQ@mail.gmail.com>
+In-Reply-To: <1314138000-2049-3-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,31 +19,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Pihet <jean.pihet@newoldbits.com>
-Cc: markgross@thegnar.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 25, 2011, Jean Pihet wrote:
-> On Thu, Aug 25, 2011 at 4:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Thursday, August 25, 2011, Mark Brown wrote:
-> >> On Tue, Aug 23, 2011 at 11:31:54PM +0200, Rafael J. Wysocki wrote:
-> >>
-> >> > Perhaps.  Still, that requires some policy to be put into drivers,
-> >> > which I don't think is entirely correct.
-> >>
-> >> So, I don't really have the bandwidth to discuss this properly for at
-> >> least the next week or so - is it possible to find some time in the
-> >> power track at LPC for this?
-> >
-> > I think so, I'm going to add PM QoS to the agenda anyway.
-> Unfortunately I cannot attend the conference this time.
+On Tue, Aug 23, 2011 at 3:19 PM, Tejun Heo <tj@kernel.org> wrote:
+> cgroup_attach_proc() behaves differently from cgroup_attach_task() in
+> the following aspects.
+>
+> * All hooks are invoked even if no task is actually being moved.
+>
+> * ->can_attach_task() is called for all tasks in the group whether the
+> =A0new cgrp is different from the current cgrp or not; however,
+> =A0->attach_task() is skipped if new equals new. =A0This makes the calls
+> =A0asymmetric.
+>
+> This patch improves old cgroup handling in cgroup_attach_proc() by
+> looking up the current cgroup at the head, recording it in the flex
+> array along with the task itself, and using it to remove the above two
+> differences. =A0This will also ease further changes.
 
-Sorry to hear that.
+While I'm all in favour of making things more consistent, do we need
+such a big change?
 
-> Can you please keep me in the loop of the discussions?
+In particular, making the group flex-array entries contain both a task
+and a cgroup appears to be only necessary in order to skip tasks where
+new_cgroup =3D=3D old_cgroup. Can't we get the same effect by simply
+leaving all such tasks out of the flex-array in the first place?
 
-Sure, we will.
-
-> I am glad to help implementing the code for the user space API.
-
-Great, thanks!
+Paul
