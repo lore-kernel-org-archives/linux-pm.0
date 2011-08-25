@@ -1,17 +1,18 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 2/6] cgroup: improve old cgroup handling in
- cgroup_attach_proc()
-Date: Thu, 25 Aug 2011 11:44:59 +0200
-Message-ID: <20110825094459.GH3286__41810.40664339$1314265693$gmane$org@htj.dyndns.org>
-References: <1314138000-2049-1-git-send-email-tj@kernel.org>
-	<1314138000-2049-3-git-send-email-tj@kernel.org>
-	<CALdu-PBr-tu1qzScvncr-N4EpPaQ7sTdHf28GhEv_MZLbo1eSg@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
+ wake-up constraints
+Date: Thu, 25 Aug 2011 11:38:48 +0100
+Message-ID: <20110825103847.GD31154__43499.7186450802$1314268905$gmane$org@opensource.wolfsonmicro.com>
+References: <20110820062543.GA5011@opensource.wolfsonmicro.com>
+	<201108212005.53898.rjw@sisk.pl>
+	<20110823092155.GJ9232@opensource.wolfsonmicro.com>
+	<201108232331.54844.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <CALdu-PBr-tu1qzScvncr-N4EpPaQ7sTdHf28GhEv_MZLbo1eSg@mail.gmail.com>
+In-Reply-To: <201108232331.54844.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,21 +22,15 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Paul Menage <paul@paulmenage.org>
-Cc: containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 25, 2011 at 02:42:46AM -0700, Paul Menage wrote:
-> > + =A0 =A0 =A0 int retval, i, group_size, nr_todo;
-> =
+On Tue, Aug 23, 2011 at 11:31:54PM +0200, Rafael J. Wysocki wrote:
 
-> I'd be inclined to call "nr_todo" something like "nr_migrating_tasks"
-> for clarity.
+> Perhaps.  Still, that requires some policy to be put into drivers,
+> which I don't think is entirely correct.
 
-Will update.
-
-Thanks.
-
--- =
-
-tejun
+So, I don't really have the bandwidth to discuss this properly for at
+least the next week or so - is it possible to find some time in the
+power track at LPC for this?
