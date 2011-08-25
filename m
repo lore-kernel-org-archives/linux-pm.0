@@ -1,18 +1,15 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
- wake-up constraints
-Date: Thu, 25 Aug 2011 11:38:48 +0100
-Message-ID: <20110825103847.GD31154__43499.7186450802$1314268905$gmane$org@opensource.wolfsonmicro.com>
-References: <20110820062543.GA5011@opensource.wolfsonmicro.com>
-	<201108212005.53898.rjw@sisk.pl>
-	<20110823092155.GJ9232@opensource.wolfsonmicro.com>
-	<201108232331.54844.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/1] OMAP: omap_device: only override _noirq
+	methods, not normal suspend/resume
+Date: Thu, 25 Aug 2011 16:12:42 +0200
+Message-ID: <201108251612.42237.rjw__31769.4402685904$1314281528$gmane$org@sisk.pl>
+References: <1314229437-31836-1-git-send-email-khilman@ti.com>
+	<1314229437-31836-2-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <201108232331.54844.rjw@sisk.pl>
+In-Reply-To: <1314229437-31836-2-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,15 +19,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, markgross@thegnar.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 23, 2011 at 11:31:54PM +0200, Rafael J. Wysocki wrote:
+On Thursday, August 25, 2011, Kevin Hilman wrote:
+> commit c03f007a8bf0e092caeb6856a5c8a850df10b974 (OMAP: PM:
+> omap_device: add system PM methods for PM domain handling) mistakenly
+> used SET_SYSTEM_SLEEP_PM_OPS() when trying to configure custom methods
+> for the PM domains noirq methods.  Fix that by setting only the
+> suspend_noirq and resume_noirq methods with custom versions.
+> 
+> Note that all other PM domain methods (including the "normal"
+> suspend/resume methods) are populated using USE_PLATFORM_PM_SLEEP_OPS,
+> which configures them all to the default subsystem (platform_bus)
+> methods.
+> 
+> Reported-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Signed-off-by: Kevin Hilman <khilman@ti.com>
 
-> Perhaps.  Still, that requires some policy to be put into drivers,
-> which I don't think is entirely correct.
+Applied to linux-pm/pm-fixes, will be pushed for 3.1, thanks!
 
-So, I don't really have the bandwidth to discuss this properly for at
-least the next week or so - is it possible to find some time in the
-power track at LPC for this?
+Rafael
+
+
+> ---
+>  arch/arm/plat-omap/omap_device.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/arm/plat-omap/omap_device.c b/arch/arm/plat-omap/omap_device.c
+> index b6b4097..9a6a538 100644
+> --- a/arch/arm/plat-omap/omap_device.c
+> +++ b/arch/arm/plat-omap/omap_device.c
+> @@ -622,7 +622,8 @@ static struct dev_pm_domain omap_device_pm_domain = {
+>  		SET_RUNTIME_PM_OPS(_od_runtime_suspend, _od_runtime_resume,
+>  				   _od_runtime_idle)
+>  		USE_PLATFORM_PM_SLEEP_OPS
+> -		SET_SYSTEM_SLEEP_PM_OPS(_od_suspend_noirq, _od_resume_noirq)
+> +		.suspend_noirq = _od_suspend_noirq,
+> +		.resume_noirq = _od_resume_noirq,
+>  	}
+>  };
+>  
+> 
