@@ -1,19 +1,16 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 3/6] cgroup: introduce cgroup_taskset and use
- it in subsys->can_attach(), cancel_attach() and attach()
-Date: Thu, 25 Aug 2011 17:37:50 +0900
-Message-ID: <20110825173750.4959360f.kamezawa.hiroyu__20397.3317090005$1314261985$gmane$org@jp.fujitsu.com>
-References: <1314138000-2049-1-git-send-email-tj@kernel.org>
-	<1314138000-2049-4-git-send-email-tj@kernel.org>
-	<20110825093958.75b95bd8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20110825082049.GC3286@htj.dyndns.org>
-	<20110825172140.eb34809f.kamezawa.hiroyu@jp.fujitsu.com>
-	<CAOS58YPM=cuWjAF+VJ4QJ8bnRcVtaDCVXBJCpdWg+2=2GmnKrA@mail.gmail.com>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v2] Add regulator driver for the bq2407x
+	family of charger ICs.
+Date: Thu, 25 Aug 2011 10:51:53 +0200
+Message-ID: <201108251051.53852.heiko@sntech.de>
+References: <201108202224.52250.heiko@sntech.de>
+	<201108242048.27461.heiko@sntech.de>
+	<CAJ0PZbQRGCHAQ1HxDmbf6uN8iz3CCcqjOVRtc63Cjn17EXak1A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAOS58YPM=cuWjAF+VJ4QJ8bnRcVtaDCVXBJCpdWg+2=2GmnKrA@mail.gmail.com>
+In-Reply-To: <CAJ0PZbQRGCHAQ1HxDmbf6uN8iz3CCcqjOVRtc63Cjn17EXak1A@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -23,42 +20,41 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
+To: MyungJoo Ham <myungjoo.ham@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyNSBBdWcgMjAxMSAxMDo0MDowNiArMDIwMApUZWp1biBIZW8gPHRqQGtlcm5lbC5v
-cmc+IHdyb3RlOgoKPiBIZWxsbywKPiAKPiBPbiBUaHUsIEF1ZyAyNSwgMjAxMSBhdCAxMDoyMSBB
-TSwgS0FNRVpBV0EgSGlyb3l1a2kKPiA8a2FtZXphd2EuaGlyb3l1QGpwLmZ1aml0c3UuY29tPiB3
-cm90ZToKPiA+PiBIbW1tLi4uIHRoZSBhYm92ZSBpcyBiYXNpY2FsbHkgaWRlbnRpdHkgdHJhbnNm
-b3JtYXRpb24gb2YgdGhlIGV4aXN0aW5nCj4gPj4gY29kZS4gwqBJZiB0aGUgYWJvdmUgaXMgYnJv
-a2VuLCB0aGUgY3VycmVudCBjb2RlIGlzIGJyb2tlbiB0b28uIMKgSXMgaXQ/Cj4gPj4KPiA+IEN1
-cnJlbnQgY29kZSBpcyBub3QgYnJva2VuLgo+IAo+IFRydXN0IG1lLiAgSWYgdGhlIHBvc3RlZCBj
-b2RlIGlzIGJyb2tlbiwgdGhlIGN1cnJlbnQgY29kZSBpcyB0b28uIEl0Cj4gaXMgYW4gSURFTlRJ
-VFkgdHJhbnNmb3JtYXRpb24uCj4gCj4gPiBtZW1fY2dyb3VwX2Nhbl9hdHRhY2goLi4uLi4sIHRh
-c2spIG5lZWQgdG8gZG8gcmVhbCBqb2Igb25seSB3aGVuIHRhc2stPm1tLT5vd25lcgo+ID4gPT0g
-dGFzay4gSW4gdGhpcyBtb2RpZmljYXRpb24sIHlvdSBwYXNzIGEgc2V0IG9mIHRhc2sgYXQgb25j
-ZS4KPiAKPiBCZWZvcmUgdGhlIGNoYW5nZSwgY2dyb3VwIHdvdWxkIG1pZ3JhdGUgbXVsdGlwbGUg
-dGFza3MgYWxsIHRoZSBzYW1lCj4gYnV0IG1lbWNnIHdvdWxkbid0IGhhdmUgbm90aWNlZCBpdCB1
-bmxlc3MgaXQgb3B0ZWQgaW4gZXhwbGljaXRseSB1c2luZwo+IFtjYW5fXWF0dGFjaF90YXNrKCku
-IFdoZW4gbXVsdGlwbGUgdGFza3Mgd2VyZSBtb3ZpbmcsIFtjYW5fXWF0dGFjaCgpCj4gd291bGQg
-b25seSBiZSBjYWxsZWQgd2l0aCB0aGUgbGVhZGVyIHdoZXRoZXIgdGhlIGxlYWRlciBhY3R1YWxs
-eSBpcwo+IGNoYW5naW5nIGNncm91cCBvciBub3QuIFRoZSBpbnRlcmZhY2Ugc3Vja2VkIGFuZCBp
-dCB3YXNuJ3QgcHJvcGVybHkKPiBkb2N1bWVudGVkIGJ1dCB0aGF0J3Mgd2hhdCB3YXMgaGFwcGVu
-aW5nLiBUaGUgaW50ZXJmYWNlIGNoYW5nZSBpcyBqdXN0Cj4gbWFraW5nIHRoZSBicmVha2FnZSBv
-YnZpb3VzIC0gKzEgZm9yIHRoZSBuZXcgaW50ZXJmYWNlLiA6KQo+IApUaGFuayB5b3UgZm9yIGNs
-YXJpZmljYXRpb24uIE9rLCBjdXJyZW50IGNvZGUgaXMgYnJva2VuLgoKCj4gPiBTbywgbWVtX2Nn
-cm91cF9jYW5fYXR0YWNoKCkgbmVlZCB0byBjaGVjayBfYWxsXyB0YXNrcyBpbiB0c2V0IHJhdGhl
-ciB0aGFuIGEKPiA+IGZpcnN0IHRhc2sgaW4gdHNldC4gcGxlYXNlIHNjYW4gYW5kIGZpbmQgbW0t
-Pm93bmVyLgo+ID4KPiA+IEFueXdheSwgaWYgeW91IG1lcmdlIHRoaXMgb250byBtbS10cmVlIGZp
-cnN0LCBJIHRoaW5rIEkgY2FuIGhhdmUgdGltZSB0bwo+ID4gd3JpdGUgYSBmaXggdXAgaWYgY29t
-cGxpY2F0ZWQuCj4gCj4gQXMgZm9yIHNwZWNpZmljIG1lcmdpbmcgb3JkZXIsIGl0IHNob3VsZG4n
-dCBtYXR0ZXIgYWxsIHRoYXQgbXVjaCBidXQKPiBpZiB5b3Ugd2FubmEgYmFja3BvcnQgZml4ZXMg
-Zm9yIC1zdGFibGUsIG1heWJlIGl0IHdvdWxkIG1ha2UgbW9yZQo+IHNlbnNlIHRvIHNlcXVlbmNl
-IHRoZSBmaXggYmVmb3JlIHRoaXMgY2hhbmdlLgo+IAo+IFRoYW5rIHlvdS4KClN1cmUuIElJVUMs
-IHRoZSBjYXNlIHRocmVhZF9sZWFkZXIgIT0gbW0tPm93bmVyIGlzIHVuY29tbW9uLiAKSSdsbCBj
-b25zaWRlciBhIGZpeCBvbnRvIHlvdXIgZml4LCBmaXJzdC4KCkknbGwgY29zaW5kZXIgYSBmaXgg
-Zm9yIHN0YWJsZSB0cmVlIGlmIHNvbWVvbmUgcmVxdWVzdHMuCgpUaGFua3MsCi1LYW1lCgpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWls
-aW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0
-cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Hi MyungJoo
+
+Am Donnerstag, 25. August 2011, 08:55:29 schrieb MyungJoo Ham:
+> On Thu, Aug 25, 2011 at 3:48 AM, Heiko St=FCbner <heiko@sntech.de> wrote:
+> > This driver controls a TI bq2407x charger attached via GPIOs.
+> > The provided current regulator can enable/disable charging and
+> > select between 100 mA, 500 mA and a machine specific current limit.
+> > =
+
+> > Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+> =
+
+> This looks like a bq24022 driver + max-current-mode ("USB standby"
+> seems not implemented in the driver). Wouldn't it be possible to patch
+> bq24022 driver so that the bq24022 driver becomes compatible with this
+> bq2407x?
+> =
+
+> 2407x's EN1 =3D 24022's iset2
+> 2407x's nce =3D 24022's nce
+> =
+
+> I think you may simply let the driver ignore EN2 (and max-current
+> mode) if the supplied EN2 in pdata is NULL, then, the driver will be
+> compatible for both.
+
+Thanks for adding a new perspective on this. The way you put it, it seems =
+
+quite easy to do it this way and integrate it into the bq24022 driver.
+
+So I will give it shot this evening and will see were it leads me.
+
+Thanks
+Heiko
