@@ -1,16 +1,17 @@
-From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v2] Add regulator driver for the bq2407x
-	family of charger ICs.
-Date: Thu, 25 Aug 2011 10:51:53 +0200
-Message-ID: <201108251051.53852.heiko@sntech.de>
-References: <201108202224.52250.heiko@sntech.de>
-	<201108242048.27461.heiko@sntech.de>
-	<CAJ0PZbQRGCHAQ1HxDmbf6uN8iz3CCcqjOVRtc63Cjn17EXak1A@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 2/6] cgroup: improve old cgroup handling in
+ cgroup_attach_proc()
+Date: Thu, 25 Aug 2011 11:03:23 +0200
+Message-ID: <20110825090323.GD3286__37273.9395629198$1314263096$gmane$org@htj.dyndns.org>
+References: <1314138000-2049-1-git-send-email-tj@kernel.org>
+	<1314138000-2049-3-git-send-email-tj@kernel.org>
+	<CALdu-PAj1ZUmB2ixxA6yeppB8MerBGk1cSeQadobH0H4cRSe7Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbQRGCHAQ1HxDmbf6uN8iz3CCcqjOVRtc63Cjn17EXak1A@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CALdu-PAj1ZUmB2ixxA6yeppB8MerBGk1cSeQadobH0H4cRSe7Q@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,41 +21,36 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>
+To: Paul Menage <paul@paulmenage.org>
+Cc: containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi MyungJoo
+Hello,
 
-Am Donnerstag, 25. August 2011, 08:55:29 schrieb MyungJoo Ham:
-> On Thu, Aug 25, 2011 at 3:48 AM, Heiko St=FCbner <heiko@sntech.de> wrote:
-> > This driver controls a TI bq2407x charger attached via GPIOs.
-> > The provided current regulator can enable/disable charging and
-> > select between 100 mA, 500 mA and a machine specific current limit.
-> > =
+On Thu, Aug 25, 2011 at 01:51:39AM -0700, Paul Menage wrote:
+> In particular, making the group flex-array entries contain both a task
+> and a cgroup appears to be only necessary in order to skip tasks where
+> new_cgroup == old_cgroup. Can't we get the same effect by simply
+> leaving all such tasks out of the flex-array in the first place?
 
-> > Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-> =
+In general, the interface *should* give full information to subsys
+methods at each stage including the old cgroup each task is migrating
+from and the new cgroup; otherwise, they soon end up developing weird
+acrobatics to work around shortcomings in the interface or being
+outright buggy, so let's please look past the fixes which are
+necessary immediately and think about what a proper interface should
+look like.
 
-> This looks like a bq24022 driver + max-current-mode ("USB standby"
-> seems not implemented in the driver). Wouldn't it be possible to patch
-> bq24022 driver so that the bq24022 driver becomes compatible with this
-> bq2407x?
-> =
+I mean, seriously, why did ->attach_task() take @new_cgroup when it's
+called after migration happened while ->attach() had access to the old
+cgroup of the last iterated task in the group?  What the hell does
+that even mean?
 
-> 2407x's EN1 =3D 24022's iset2
-> 2407x's nce =3D 24022's nce
-> =
+And, why is this a big change?  The big part is change of interface
+but that we need to do anyway.  This one is just adding an entry to
+the flex array.
 
-> I think you may simply let the driver ignore EN2 (and max-current
-> mode) if the supplied EN2 in pdata is NULL, then, the driver will be
-> compatible for both.
+Thanks.
 
-Thanks for adding a new perspective on this. The way you put it, it seems =
-
-quite easy to do it this way and integrate it into the bq24022 driver.
-
-So I will give it shot this evening and will see were it leads me.
-
-Thanks
-Heiko
+-- 
+tejun
