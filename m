@@ -1,17 +1,17 @@
-From: Tejun Heo <tj@kernel.org>
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Subject: Re: [PATCH 3/6] cgroup: introduce cgroup_taskset and use
  it in subsys->can_attach(), cancel_attach() and attach()
-Date: Thu, 25 Aug 2011 10:20:49 +0200
-Message-ID: <20110825082049.GC3286__1904.38218783147$1314260541$gmane$org@htj.dyndns.org>
+Date: Thu, 25 Aug 2011 17:21:40 +0900
+Message-ID: <20110825172140.eb34809f.kamezawa.hiroyu__49967.4710831188$1314261208$gmane$org@jp.fujitsu.com>
 References: <1314138000-2049-1-git-send-email-tj@kernel.org>
 	<1314138000-2049-4-git-send-email-tj@kernel.org>
 	<20110825093958.75b95bd8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20110825082049.GC3286@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110825093958.75b95bd8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20110825082049.GC3286@htj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,53 +21,43 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Tejun Heo <tj@kernel.org>
 Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello, KAMEZAWA.
+On Thu, 25 Aug 2011 10:20:49 +0200
+Tejun Heo <tj@kernel.org> wrote:
 
-On Thu, Aug 25, 2011 at 09:39:58AM +0900, KAMEZAWA Hiroyuki wrote:
-> > +Called prior to moving one or more tasks into a cgroup; if the
-> > +subsystem returns an error, this will abort the attach operation.
-> > +@tset contains the tasks to be attached and is guaranteed to have at
-> > +least one task in it. If there are multiple, it's guaranteed that all
-> > +are from the same thread group,
+> Hello, KAMEZAWA.
 > 
+
+> > > @@ -5460,8 +5460,9 @@ static void mem_cgroup_clear_mc(void)
+> > >  
+> > >  static int mem_cgroup_can_attach(struct cgroup_subsys *ss,
+> > >  				struct cgroup *cgroup,
+> > > -				struct task_struct *p)
+> > > +				struct cgroup_taskset *tset)
+> > >  {
+> > > +	struct task_struct *p = cgroup_taskset_first(tset);
+> > >  	int ret = 0;
+> > >  	struct mem_cgroup *mem = mem_cgroup_from_cont(cgroup);
+> > >  
+> > 
+> > Ah..hmm. I think this doesn't work as expected for memcg.
+> > Maybe code like this will be required.
 > 
-> Do this, "If there are multiple, it's guaranteed that all
-> are from the same thread group ", means the 'tset' contains
-> only one mm_struct ?
-
-Yes, CLONE_THREAD requires CLONE_SIGHAND which in turn requires
-CLONE_VM, so they'll all have the same mm.
-
-> And is it guaranteed that any task in tset will not be freed while
-> subsystem routine runs ?
-
-Yeap, that one is guaranteed.  It might die but the the task_struct
-itself won't be released.  However, I think it might be bette to block
-task exits during migration too.
-
-> > @@ -5460,8 +5460,9 @@ static void mem_cgroup_clear_mc(void)
-> >  
-> >  static int mem_cgroup_can_attach(struct cgroup_subsys *ss,
-> >  				struct cgroup *cgroup,
-> > -				struct task_struct *p)
-> > +				struct cgroup_taskset *tset)
-> >  {
-> > +	struct task_struct *p = cgroup_taskset_first(tset);
-> >  	int ret = 0;
-> >  	struct mem_cgroup *mem = mem_cgroup_from_cont(cgroup);
-> >  
+> Hmmm... the above is basically identity transformation of the existing
+> code.  If the above is broken, the current code is broken too.  Is it?
 > 
-> Ah..hmm. I think this doesn't work as expected for memcg.
-> Maybe code like this will be required.
+Current code is not broken.
 
-Hmmm... the above is basically identity transformation of the existing
-code.  If the above is broken, the current code is broken too.  Is it?
+mem_cgroup_can_attach(....., task) need to do real job only when task->mm->owner
+== task. In this modification, you pass a set of task at once.
+So, mem_cgroup_can_attach() need to check _all_ tasks in tset rather than a
+first task in tset. please scan and find mm->owner.
 
-Thanks.
+Anyway, if you merge this onto mm-tree first, I think I can have time to
+write a fix up if complicated.
 
--- 
-tejun
+Thanks,
+-Kame
