@@ -1,14 +1,11 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Issue: Runtime API usage in wake-up device
- irq_handler during wakeup from system-wide-suspend.
-Date: Fri, 26 Aug 2011 14:36:26 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1108261429340.2275-100000__39577.5735764348$1314383952$gmane$org@netrider.rowland.org>
-References: <1314363693-20831-1-git-send-email-govindraj.raja@ti.com>
+From: Jeff Ohlstein <johlstei@codeaurora.org>
+Subject: Sysfs nodes deleted and recreated on SMP suspend
+Date: Fri, 26 Aug 2011 13:08:58 -0700
+Message-ID: <4E57FD5A.5080005__6573.85272575102$1314389793$gmane$org@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1314363693-20831-1-git-send-email-govindraj.raja@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,39 +15,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Govindraj.R" <govindraj.raja@ti.com>
-Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, Felipe Balbi <balbi@ti.com>, Keshava Munegowda <keshava_mgowda@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 26 Aug 2011, Govindraj.R wrote:
+So I have been working with the cpufreq sysfs nodes on an SMP system,
+and one thing I noticed is that they go away each time I suspend and
+resume. This is due to the use of the hotplug mechanism for suspend. I
+am able to handle these failures by checking for the error and reopening
+the file, but having to do this each time the system suspends seems
+unnecessary to me.
 
-> Hello,
-> 
-> During system_wide_suspend pm runtime is disabled.
-> I.e. __pm_runtime_disable is called from __device_suspend.
-> Now, if a wakeup interrupt is triggered and the wakeup device irq handler
-> is called even before device_resume and pm_runtime_enable happens,
-> the device irq_handler proceeds to enable clock with runtime API to
-> handle wakeup event.
->  
-> Wouldn't this result in system wide abort since the pm_runtime is not enabled
-> yet from dpm_resume?
-> As we end up accessing regs after doing runtime get_sync.
->  
-> Looks like this scenario is not handled currently.
-> Or Am I missing something here?
+Does anyone see any value in making these nodes stay around, at least in
+the suspend case of hotplug? I understand that they should go away on
+systems where a cpu can actually be physically removed, but if we are
+just suspending it seems like we should be as transparent to userspace
+as possible.
 
-I don't have the complete picture, but it seems that the IRQ handler 
-needs to check the return code from pm_runtime_get_sync().  If the call 
-fails then the handler shouldn't try to access the device registers.
-
-In the case of a genuine wakeup event, the event should be handled 
-later on as part of the resume or resume_noirq processing.
-
-However, this does raise a potential problem.  What happens if the 
-clocks are needed in order to turn off the IRQ source?  Runtime PM 
-won't allow the clocks to be enabled until after interrupts have been 
-enabled, and by then it will be too late -- the source will have caused 
-an interrupt storm.
-
-Alan Stern
+Jeff
+-- 
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
