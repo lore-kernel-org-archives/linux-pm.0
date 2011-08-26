@@ -1,15 +1,17 @@
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 6/6] cgroup: kill subsys->can_attach_task(),
- pre_attach() and attach_task()
-Date: Fri, 26 Aug 2011 13:20:25 +0900
-Message-ID: <20110826132025.3a47cac3.kamezawa.hiroyu__39308.0315822319$1314333373$gmane$org@jp.fujitsu.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 3/6] cgroup: introduce cgroup_taskset and use
+ it in subsys->can_attach(), cancel_attach() and attach()
+Date: Fri, 26 Aug 2011 08:40:11 +0200
+Message-ID: <20110826064011.GA2632__45103.391345083$1314340891$gmane$org@htj.dyndns.org>
 References: <1314312192-26885-1-git-send-email-tj@kernel.org>
-	<1314312192-26885-7-git-send-email-tj@kernel.org>
+	<1314312192-26885-4-git-send-email-tj@kernel.org>
+	<20110826023818.GC3457@count0.beaverton.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1314312192-26885-7-git-send-email-tj@kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20110826023818.GC3457@count0.beaverton.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,17 +21,57 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 26 Aug 2011 00:43:12 +0200
-Tejun Heo <tj@kernel.org> wrote:
+Hello, Matt.
 
-> These three methods are no longer used.  Kill them.
+On Thu, Aug 25, 2011 at 07:38:18PM -0700, Matt Helsley wrote:
+> On Fri, Aug 26, 2011 at 12:43:09AM +0200, Tejun Heo wrote:
+> > Currently, there's no way to pass multiple tasks to cgroup_subsys
+> > methods necessitating the need for separate per-process and per-task
+> > methods.  This patch introduces cgroup_taskset which can be used to
+> > pass multiple tasks and their associated cgroups to cgroup_subsys
+> > methods.
 > 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Acked-by: Paul Menage <paul@paulmenage.org>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
+> This will be the third iterator-ish pattern in the cgroup code.
+> It's not your fault but it does seem a bit much to have:
+...
+> Is there a sane way to merge all this?
 
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+If merging isn't complicated and simplifies the code and its users,
+definitely but I don't think that will be the case here.  If there are
+different targets to iterate, having matching iterators isn't a weird
+thing after all.  I personally am not too enthusiastic about mixing
+locking with iterator (the implied read_lock in the cgroup iterator)
+or iteration-by-callback but that's a different issue.
+
+> Perhaps we could drop the iterator interfaces in 1) and 2) and replace
+> it with:
+> 
+> 		tset cgroup_taskset_from_cgroup(cgroup)
+> 
+> which would grab the css set lock to construct the tset from the given
+> cgroup -- essentially inlining the current iterator code into a single
+> function.
+
+* It doesn't need to walk the whole cgroup.
+
+* It requires stable set of tasks (ie. atomicity w.r.t. the thread
+  group) with sleepable context which is currently achieved by a rwsem
+  in the task to protect against fork and getting an extra reference
+  to the tasks in the set.
+
+I don't think widening the scope would achieve much (why do we want to
+pass in unrelated tasks to subsystems as a single bundle?) while
+introducing unnecessary scalability limitation (moving out a single
+process ends up being an operation on the whole cgroup).
+
+I don't see how it would be better but, if you do, please go ahead.
+Consolidating stuff is (almost) always a good idea. :)
+
+Thanks.
+
+-- 
+tejun
