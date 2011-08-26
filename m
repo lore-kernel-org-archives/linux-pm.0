@@ -1,16 +1,12 @@
-From: Paul Menage <paul@paulmenage.org>
-Subject: Re: [PATCH 3/6] cgroup: introduce cgroup_taskset and use
- it in subsys->can_attach(), cancel_attach() and attach()
-Date: Fri, 26 Aug 2011 08:54:42 -0700
-Message-ID: <CALdu-PB==1C9NyrbAEqR932DOVLbdtv7Ri9_cUCMiz_PwmvL3g__26530.2992113449$1314375871$gmane$org@mail.gmail.com>
-References: <1314312192-26885-1-git-send-email-tj@kernel.org>
-	<1314312192-26885-4-git-send-email-tj@kernel.org>
-	<20110826023818.GC3457@count0.beaverton.ibm.com>
+From: "Govindraj.R" <govindraj.raja@ti.com>
+Subject: Issue: Runtime API usage in wake-up device irq_handler
+	during wakeup from system-wide-suspend.
+Date: Fri, 26 Aug 2011 18:31:33 +0530
+Message-ID: <1314363693-20831-1-git-send-email-govindraj.raja__455.602483316575$1314375875$gmane$org@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110826023818.GC3457@count0.beaverton.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,99 +16,26 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, Kevin Hilman <khilman@ti.com>
+Cc: Tero Kristo <t-kristo@ti.com>, Felipe Balbi <balbi@ti.com>, Partha Basak <p-basak2@ti.com>, Govindraj R <govindraj.raja@ti.com>, Keshava Munegowda <keshava_mgowda@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 25, 2011 at 7:38 PM, Matt Helsley <matthltc@us.ibm.com> wrote:
-> On Fri, Aug 26, 2011 at 12:43:09AM +0200, Tejun Heo wrote:
->> Currently, there's no way to pass multiple tasks to cgroup_subsys
->> methods necessitating the need for separate per-process and per-task
->> methods. =A0This patch introduces cgroup_taskset which can be used to
->> pass multiple tasks and their associated cgroups to cgroup_subsys
->> methods.
->
-> This will be the third iterator-ish pattern in the cgroup code.
-> It's not your fault but it does seem a bit much to have:
+Hello,
 
-I agree with this sentiment in principle (in fact it was one of the
-first things that I thought when I saw this patch) but I think that
-merging them is a non-trivial process, and so shouldn't hold up the
-introduction of this patch set.
+During system_wide_suspend pm runtime is disabled.
+I.e. __pm_runtime_disable is called from __device_suspend.
+Now, if a wakeup interrupt is triggered and the wakeup device irq handler
+is called even before device_resume and pm_runtime_enable happens,
+the device irq_handler proceeds to enable clock with runtime API to
+handle wakeup event.
+ 
+Wouldn't this result in system wide abort since the pm_runtime is not enabled
+yet from dpm_resume?
+As we end up accessing regs after doing runtime get_sync.
+ 
+Looks like this scenario is not handled currently.
+Or Am I missing something here?
 
-Changing the cgroup_scanner interface to be control-loop rather than
-callback (for the processed tasks, at least - testing tasks will have
-to be a callback still, I think) shouldn't be too hard.
-
-The important differences between the iterators then are how they
-generate a stable set of tasks. If we made the basic callback
-operations be:
-
-start - do any prep work
-fill - return some tasks to process, or none if the iterator is exhausted
-end - undo any prep work
-
-then the user API functions would look something like:
-
-iter_start(iter *i) {
-  i->start();
-  i->avail_task_count =3D i->avail_task_pos =3D 0;
-}
-
-struct task_and_cgroup *iter_next(iter *i) {
-  if (i->avail_task_pos >=3D i->avail_task_count) {
-    i->avail_task_pos =3D 0;
-    i->fill(&i->avail_tasks, &i->avail_task_count);
-    if (!i->avail_tasks)
-      return NULL;
-    }
-  }
-  return i->avail_tasks + i->avail_task_pos++;
-}
-
-iter_end(iter *i) {
-  i->end();
-}
-
-then for the three iteration abstractions:
-
-- cgroup_iter_start/next/end:
-
-creation API: taskset_from_cgroup(cgroup *cg)
-
-start - takes the lock
-fill - returns the next task in the cgroup, or NULL if exhausted
-end - releases the lock
-
-- cgroup_taskset
-
-creation API: taskset_from_array(task_and_cgroup *tg, int count)
-
-start - no-op
-fill - returns a pointer to the array used to set up the taskset
-end - no-op
-
-- cgroup_scanner
-
-creation API: atomic_taskset_from_array(cgroup, test_fn, optional_heap);
-
-start - allocate an array for storing the heap used to build the next
-batch of tasks (if not provided by creator)
-fill - takes css_set lock and makes a pass over the cgroup to find the
-lowest (by start-time) set of unprocessed tasks that match the test_fn
-predicate, releases css_set_lock
-end - frees the array (if not provided by the creator)
-
-I think the progression of patches would be:
-
-- convert the current user of cgroup_scanner to a control-loop API
-rather than a callback API (for process_task) just to verify that this
-fits in the existing model
-
-- convert the initial implementation of cgroup_taskset to use the new
-internal start/fill/end API
-
-- convert the other two iterators (in separate patches) to use the new
-internal and external APIs.
-
-Paul
+--
+Thanks,
+Govindraj.R
