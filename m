@@ -1,18 +1,14 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH 02/11] PM: extend PM QoS with per-device
- wake-up constraints
-Date: Fri, 26 Aug 2011 09:54:27 -0700
-Message-ID: <20110826165427.GC9437__19306.6981657923$1314377729$gmane$org@gvim.org>
-References: <1309446685-17502-1-git-send-email-j-pihet@ti.com>
-	<1309446685-17502-3-git-send-email-j-pihet@ti.com>
-	<CAJ0PZbRCvoh8-rJAR92Ak_JPk4FyR0dp_OeKOUkWtD5AdFsPCw@mail.gmail.com>
-Reply-To: markgross@thegnar.org
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Issue: Runtime API usage in wake-up device
+ irq_handler during wakeup from system-wide-suspend.
+Date: Fri, 26 Aug 2011 14:36:26 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1108261429340.2275-100000__39577.5735764348$1314383952$gmane$org@netrider.rowland.org>
+References: <1314363693-20831-1-git-send-email-govindraj.raja@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <CAJ0PZbRCvoh8-rJAR92Ak_JPk4FyR0dp_OeKOUkWtD5AdFsPCw@mail.gmail.com>
+In-Reply-To: <1314363693-20831-1-git-send-email-govindraj.raja@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,79 +18,39 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: markgross@thegnar.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: "Govindraj.R" <govindraj.raja@ti.com>
+Cc: Partha Basak <p-basak2@ti.com>, Tero Kristo <t-kristo@ti.com>, Felipe Balbi <balbi@ti.com>, Keshava Munegowda <keshava_mgowda@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 26, 2011 at 11:25:13AM +0900, MyungJoo Ham wrote:
-> On Fri, Jul 1, 2011 at 12:11 AM,  <jean.pihet@newoldbits.com> wrote:
-> > @@ -129,19 +146,19 @@ static const struct file_operations pm_qos_power_=
-fops =3D {
-> > =A0/* unlocked internal variant */
-> > =A0static inline int pm_qos_get_value(struct pm_qos_object *o)
-> > =A0{
-> > - =A0 =A0 =A0 if (plist_head_empty(&o->requests))
-> > + =A0 =A0 =A0 if (plist_head_empty(o->requests))
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return o->default_value;
-> >
-> > =A0 =A0 =A0 =A0switch (o->type) {
-> > - =A0 =A0 =A0 case PM_QOS_MIN:
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return plist_first(&o->requests)->prio;
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 case PM_QOS_MIN:
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return plist_first(o->req=
-uests)->prio;
-> >
-> > - =A0 =A0 =A0 case PM_QOS_MAX:
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return plist_last(&o->requests)->prio;
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 case PM_QOS_MAX:
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return plist_last(o->requ=
-ests)->prio;
-> >
-> > - =A0 =A0 =A0 default:
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* runtime check for not using enum */
-> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 BUG();
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 default:
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* runtime check for not =
-using enum */
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 BUG();
-> > =A0 =A0 =A0 =A0}
-> > =A0}
-> =
+On Fri, 26 Aug 2011, Govindraj.R wrote:
 
 > Hello,
-> =
+> 
+> During system_wide_suspend pm runtime is disabled.
+> I.e. __pm_runtime_disable is called from __device_suspend.
+> Now, if a wakeup interrupt is triggered and the wakeup device irq handler
+> is called even before device_resume and pm_runtime_enable happens,
+> the device irq_handler proceeds to enable clock with runtime API to
+> handle wakeup event.
+>  
+> Wouldn't this result in system wide abort since the pm_runtime is not enabled
+> yet from dpm_resume?
+> As we end up accessing regs after doing runtime get_sync.
+>  
+> Looks like this scenario is not handled currently.
+> Or Am I missing something here?
 
-> =
+I don't have the complete picture, but it seems that the IRQ handler 
+needs to check the return code from pm_runtime_get_sync().  If the call 
+fails then the handler shouldn't try to access the device registers.
 
-> Sorry to jump in this late, but, I've got a question in choosing QoS
-> value from the list with pm_qos_get_value function and pm_qos_type.
-> =
+In the case of a genuine wakeup event, the event should be handled 
+later on as part of the resume or resume_noirq processing.
 
-> For QoS objects such as network throughput, wouldn't "PM_QOS_ADD" be
-> more appropriate than PM_QOS_MAX?
-> If A is requesting 10MB/s on NIC-X and B is requesting 5MB/s on NIC-X,
-> I guess PM QOS should say NIC-X that it needs to provide 15MB/s, not
-> 10MB/s. Or, are we assuming that A and B will never put streams at the
-> same time?
+However, this does raise a potential problem.  What happens if the 
+clocks are needed in order to turn off the IRQ source?  Runtime PM 
+won't allow the clocks to be enabled until after interrupts have been 
+enabled, and by then it will be too late -- the source will have caused 
+an interrupt storm.
 
-This was brought up a few years back as well.  The reason we kept the
-aggregate QoS for network Throughput as a max instead of a sum was that
-there where already a number of interfaces for network shaping and we
-didn't have a good answer to the problem of what to do when the
-throughput qos requested exceeds hardware capabilities.  =
-
-
-Now that I have more experience with handsets I'm not sure it makes any
-practical difference to sum or max the throughput qos requests.  So if
-someone would like it to aggregate throughputs by summation of requests
-that could be done.  =
-
-
-It turns out its the latency requests that are really used.
-
-The network qos parameters also have a problem with discriminating
-between what physical interface the QoS is for.  This limitation in the
-ABI is partially addressed with some of the work that Jean Pihet's
-patches are doing.
-
---mark
+Alan Stern
