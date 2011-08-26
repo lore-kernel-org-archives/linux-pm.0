@@ -1,17 +1,14 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 3/6] cgroup: introduce cgroup_taskset and use
- it in subsys->can_attach(), cancel_attach() and attach()
-Date: Fri, 26 Aug 2011 08:40:11 +0200
-Message-ID: <20110826064011.GA2632__45103.391345083$1314340891$gmane$org@htj.dyndns.org>
+From: Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCHSET] cgroup: introduce cgroup_taskset and
+ consolidate subsys methods, take#2
+Date: Fri, 26 Aug 2011 16:05:39 +0800
+Message-ID: <4E5753D3.9080500__14178.929423406$1314346208$gmane$org@cn.fujitsu.com>
 References: <1314312192-26885-1-git-send-email-tj@kernel.org>
-	<1314312192-26885-4-git-send-email-tj@kernel.org>
-	<20110826023818.GC3457@count0.beaverton.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110826023818.GC3457@count0.beaverton.ibm.com>
+In-Reply-To: <1314312192-26885-1-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,57 +18,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
+To: Tejun Heo <tj@kernel.org>
+Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Matt.
-
-On Thu, Aug 25, 2011 at 07:38:18PM -0700, Matt Helsley wrote:
-> On Fri, Aug 26, 2011 at 12:43:09AM +0200, Tejun Heo wrote:
-> > Currently, there's no way to pass multiple tasks to cgroup_subsys
-> > methods necessitating the need for separate per-process and per-task
-> > methods.  This patch introduces cgroup_taskset which can be used to
-> > pass multiple tasks and their associated cgroups to cgroup_subsys
-> > methods.
+Tejun Heo wrote:
+> Hello,
 > 
-> This will be the third iterator-ish pattern in the cgroup code.
-> It's not your fault but it does seem a bit much to have:
-...
-> Is there a sane way to merge all this?
-
-If merging isn't complicated and simplifies the code and its users,
-definitely but I don't think that will be the case here.  If there are
-different targets to iterate, having matching iterators isn't a weird
-thing after all.  I personally am not too enthusiastic about mixing
-locking with iterator (the implied read_lock in the cgroup iterator)
-or iteration-by-callback but that's a different issue.
-
-> Perhaps we could drop the iterator interfaces in 1) and 2) and replace
-> it with:
+> This is the second take of cgroup_taskset patchset.  This patchset
+> introduces cgroup_taskset along with some accessors and iterator,
+> updates methods to use it, consolidates usages and drops superflous
+> methods.  For more info, please read the head message and discussions
+> from the last take[L].
 > 
-> 		tset cgroup_taskset_from_cgroup(cgroup)
+> Changes from the last take[L] are mostly minor.
 > 
-> which would grab the css set lock to construct the tset from the given
-> cgroup -- essentially inlining the current iterator code into a single
-> function.
+> * Acked-by's added
+> * patch contamination fixed
+> * local variable renamed
+> * documentation updated
+> 
+> It contains the following six patches.
+> 
+>  0001-cgroup-subsys-attach_task-should-be-called-after-mig.patch
+>  0002-cgroup-improve-old-cgroup-handling-in-cgroup_attach_.patch
+>  0003-cgroup-introduce-cgroup_taskset-and-use-it-in-subsys.patch
+>  0004-cgroup-don-t-use-subsys-can_attach_task-or-attach_ta.patch
+>  0005-cgroup-cpuset-don-t-use-ss-pre_attach.patch
+>  0006-cgroup-kill-subsys-can_attach_task-pre_attach-and-at.patch
 
-* It doesn't need to walk the whole cgroup.
+This is really nice.
 
-* It requires stable set of tasks (ie. atomicity w.r.t. the thread
-  group) with sleepable context which is currently achieved by a rwsem
-  in the task to protect against fork and getting an extra reference
-  to the tasks in the set.
+Acked-by: Li Zefan <lizf@cn.fujitsu.com>
 
-I don't think widening the scope would achieve much (why do we want to
-pass in unrelated tasks to subsystems as a single bundle?) while
-introducing unnecessary scalability limitation (moving out a single
-process ends up being an operation on the whole cgroup).
+> 
+> and is based on the current linux-pm/pm-freezer (7b5b95b3f5 "freezer:
+> remove should_send_signal() and update frozen()"), and available in
+> the following git tree.
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
+> 
+> Any ideas on how to route these patches?  If we float these in -mm,
+> further freezer patches would have to be in -mm too which in turn will
+> force job control patches depending on them to -mm too.  It would be
+> really nice if we can find a stable git branch to host these.  Routing
+> through pm-freezer might not be such a bad idea either, I think.
+> 
 
-I don't see how it would be better but, if you do, please go ahead.
-Consolidating stuff is (almost) always a good idea. :)
+It's fine for me to route those patches through pm-freezer, since this
+work is initiated and needed for the work on freezer.
 
-Thanks.
-
--- 
-tejun
+> Thank you.
+> 
+>  Documentation/cgroups/cgroups.txt |   51 +++------
+>  block/blk-cgroup.c                |   45 +++++---
+>  include/linux/cgroup.h            |   31 ++++-
+>  kernel/cgroup.c                   |  200 ++++++++++++++++++++++++--------------
+>  kernel/cgroup_freezer.c           |   16 ---
+>  kernel/cpuset.c                   |  105 +++++++++----------
+>  kernel/events/core.c              |   13 +-
+>  kernel/sched.c                    |   31 +++--
+>  mm/memcontrol.c                   |   16 +--
+>  security/device_cgroup.c          |    7 -
+>  10 files changed, 294 insertions(+), 221 deletions(-)
