@@ -1,11 +1,14 @@
-From: Jeff Ohlstein <johlstei@codeaurora.org>
-Subject: Sysfs nodes deleted and recreated on SMP suspend
-Date: Fri, 26 Aug 2011 13:08:58 -0700
-Message-ID: <4E57FD5A.5080005__6573.85272575102$1314389793$gmane$org@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Issue: Runtime API usage in wake-up device
+	irq_handler during wakeup from system-wide-suspend.
+Date: Fri, 26 Aug 2011 22:52:40 +0200
+Message-ID: <201108262252.40366.rjw__28019.6779560812$1314392054$gmane$org@sisk.pl>
+References: <1314363693-20831-1-git-send-email-govindraj.raja@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1314363693-20831-1-git-send-email-govindraj.raja@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,24 +18,27 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: "Govindraj.R" <govindraj.raja@ti.com>
+Cc: Tero Kristo <t-kristo@ti.com>, Felipe Balbi <balbi@ti.com>, Partha Basak <p-basak2@ti.com>, Keshava Munegowda <keshava_mgowda@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-So I have been working with the cpufreq sysfs nodes on an SMP system,
-and one thing I noticed is that they go away each time I suspend and
-resume. This is due to the use of the hotplug mechanism for suspend. I
-am able to handle these failures by checking for the error and reopening
-the file, but having to do this each time the system suspends seems
-unnecessary to me.
+On Friday, August 26, 2011, Govindraj.R wrote:
+> Hello,
+> 
+> During system_wide_suspend pm runtime is disabled.
+> I.e. __pm_runtime_disable is called from __device_suspend.
+> Now, if a wakeup interrupt is triggered and the wakeup device irq handler
+> is called even before device_resume and pm_runtime_enable happens,
+> the device irq_handler proceeds to enable clock with runtime API to
+> handle wakeup event.
+>  
+> Wouldn't this result in system wide abort since the pm_runtime is not enabled
+> yet from dpm_resume?
+> As we end up accessing regs after doing runtime get_sync.
+>  
+> Looks like this scenario is not handled currently.
+> Or Am I missing something here?
 
-Does anyone see any value in making these nodes stay around, at least in
-the suspend case of hotplug? I understand that they should go away on
-systems where a cpu can actually be physically removed, but if we are
-just suspending it seems like we should be as transparent to userspace
-as possible.
+To be precise, what do you mean by "wakeup interrupt"?
 
-Jeff
--- 
-Sent by an employee of the Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum.
+Rafael
