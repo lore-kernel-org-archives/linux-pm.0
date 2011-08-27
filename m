@@ -1,14 +1,14 @@
-From: Maksim Rayskiy <maksim.rayskiy@gmail.com>
-Subject: Re: Function to tell S1 standby from STR
-Date: Fri, 26 Aug 2011 16:00:14 -0700
-Message-ID: <CAFVyGY4Dc0+5h1GF5bEp3PYx6WQtsiUwWD_nuDJtyBc640-gYQ@mail.gmail.com>
-References: <CAFVyGY7NE4P4hZWSkzOhYbD-vX6b6oZT9y15LeZsQeh8S-u8iA@mail.gmail.com>
-	<201108270045.41314.rjw@sisk.pl>
+From: Santosh <santosh.shilimkar@ti.com>
+Subject: Re: Issue: Runtime API usage in wake-up device
+ irq_handler during wakeup from system-wide-suspend.
+Date: Sat, 27 Aug 2011 12:00:02 +0530
+Message-ID: <4E588EEA.7090004__33919.5045679391$1314426681$gmane$org@ti.com>
+References: <Pine.LNX.4.44L0.1108261429340.2275-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108270045.41314.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.1108261429340.2275-100000@netrider.rowland.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,43 +18,59 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tero Kristo <t-kristo@ti.com>, Felipe Balbi <balbi@ti.com>, Partha Basak <p-basak2@ti.com>, "Govindraj.R" <govindraj.raja@ti.com>, Keshava Munegowda <keshava_mgowda@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Alen,
 
-On Fri, Aug 26, 2011 at 3:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Hi,
+On Saturday 27 August 2011 12:06 AM, Alan Stern wrote:
+> On Fri, 26 Aug 2011, Govindraj.R wrote:
 >
-> On Saturday, August 27, 2011, Maksim Rayskiy wrote:
->> Hi,
+>> Hello,
 >>
->> How can a driver in a suspend/resume call tell if the request is for
->> STR or S1? On SoCs I am working with drivers need to take some extra
->> steps to preserve context when STR is requested.
+>> During system_wide_suspend pm runtime is disabled.
+>> I.e. __pm_runtime_disable is called from __device_suspend.
+>> Now, if a wakeup interrupt is triggered and the wakeup device irq handler
+>> is called even before device_resume and pm_runtime_enable happens,
+>> the device irq_handler proceeds to enable clock with runtime API to
+>> handle wakeup event.
 >>
->> I had to add platform-dependent api to do that, but I figured I am not
->> the only one having to deal with this. There are some comments in
->> arch/arm/mach-at91/pm.c regarding having to treat S1 and S3
->> differently because of wakeup source dependency on clock.
+>> Wouldn't this result in system wide abort since the pm_runtime is not enabled
+>> yet from dpm_resume?
+>> As we end up accessing regs after doing runtime get_sync.
 >>
->> And unfortunately these differences has to be taken care of in the
->> drivers, not platform code, because in some cases only device driver
->> knows what represents the hardware context that needs to be saved.
+>> Looks like this scenario is not handled currently.
+>> Or Am I missing something here?
 >
-> Why not to save the same stuff for "S1" and "S3"?
+> I don't have the complete picture, but it seems that the IRQ handler
+> needs to check the return code from pm_runtime_get_sync().  If the call
+> fails then the handler shouldn't try to access the device registers.
+>
+> In the case of a genuine wakeup event, the event should be handled
+> later on as part of the resume or resume_noirq processing.
+>
+> However, this does raise a potential problem.  What happens if the
+> clocks are needed in order to turn off the IRQ source?  Runtime PM
+> won't allow the clocks to be enabled until after interrupts have been
+> enabled, and by then it will be too late -- the source will have caused
+> an interrupt storm.
+>
+I might be wrong here, but after discussion with Govindraj on this
+issue, it seems there is a flaw in the way OMAP chain handler
+handling the child interrupts.
 
-One of the reasons is speed - you want recovery from S1 be as fast as
-possible, restoring S3 context would slow things down.
-The other reason is that device comes up in entirely different states,
-so it has to be treated differently. It is not only a
-matter of saving stuff, you may have to go through different
-re-initialization sequence.
+On OMAP, we have special interrupt wakeup source at PRCM level and
+many devices can trigger wakeup from low power via this common
+interrupt source. The common interrupt source upon wakeup from low
+power state, decodes the source of interrupt and based on that
+source, calls the respective device ISR directly.
 
-If you look at PCI EHCI resume code, you will see that it treats
-complete power down and suspend not in the same way. Unfortunately,
-for some devices it is hard to tell for sure where it is coming from -
-S1 or S3.
+The issue I see here is, the ISR on _a_ device (UART in this case)
+is happening even before UART resume and DPM resume has been completed.
+If this is the case, then it is surely asking for trouble. Because not
+just clocks, but even driver state machine is already in suspend state
+when the ISR is called.
 
-Maksim.
+Regards
+Santosh
