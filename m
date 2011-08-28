@@ -1,11 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management fixes for 3.1
-Date: Sun, 28 Aug 2011 14:58:56 +0200
-Message-ID: <201108281458.57057.rjw__40746.2503215813$1314538335$gmane$org@sisk.pl>
+From: Jonathan Nieder <jrnieder@gmail.com>
+Subject: [regression] Re: [213/474] x86,
+ hotplug: Use mwait to offline a processor, fix the legacy case
+Date: Sun, 28 Aug 2011 13:40:04 -0500
+Message-ID: <20110828184004.GA7690__15996.1738078438$1314557290$gmane$org@elie.gateway.2wire.net>
+References: <20110317213822.GA27980@kroah.com>
+	<20110317212903.394948496@clark.kroah.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20110317212903.394948496@clark.kroah.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -15,53 +20,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org
+To: Len Brown <len.brown@intel.com>
+Cc: Greg KH <gregkh@suse.de>, Robert Scott <bugs@humanleg.org.uk>, x86@kernel.org, =?utf-8?B?RnLDqWTDqXJpYw==?= Boiteux <fboiteux@calistel.com>, stable@kernel.org, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, linux-pm@lists.linux-foundation.org, "H. Peter Anvin" <hpa@linux.intel.com>, stable-review@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
-
-Please pull power management fixes for 3.1 from:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-fixes
-
-They include:
-
-* Fixes related to the sh-sci driver which uses runtime PM helpers in
-  such a way that they may be run with interrupts off, but it doesn't
-  tell the core about that (so the core happily enables interrupts when
-  they should be off), and which also causes pm_clk_suspend() and
-  pm_clk_resume() to be run with interrupts off (so they shouldn't use
-  a mutex).
-
-* shi7372 LCDC suspend fix from Magnus Damm.
-
-* OMAP suspend callbacks fix from Kevin Hilman.
-
-* Runtime PM documentation correction.
-
-Thanks!
-
-
- Documentation/power/runtime_pm.txt      |    3 +-
- arch/arm/mach-shmobile/board-ap4evb.c   |    1 +
- arch/arm/mach-shmobile/board-mackerel.c |    1 +
- arch/arm/mach-shmobile/clock-sh7372.c   |    2 +
- arch/arm/plat-omap/omap_device.c        |    3 +-
- drivers/base/power/clock_ops.c          |   40 +++++++++++++++++--------------
- drivers/tty/serial/sh-sci.c             |    1 +
- 7 files changed, 30 insertions(+), 21 deletions(-)
-
----------------
-
-Kevin Hilman (1):
-      OMAP: omap_device: only override _noirq methods, not normal suspend/resume
-
-Magnus Damm (2):
-      ARM: mach-shmobile: sh7372 LCDC1 suspend fix
-      ARM: mach-shmobile: sh7372 LCDC1 suspend fix V2 (incremental)
-
-Rafael J. Wysocki (3):
-      PM: Use spinlock instead of mutex in clock management functions
-      sh-sci / PM: Use power.irq_safe
-      PM / Runtime: Correct documentation of pm_runtime_irq_safe()
+SGksCgpPbiAyMDExLTAzLTE3LCBHcmVnIEtIIHdyb3RlOgoKPiAyLjYuMzMtbG9uZ3Rlcm0gcmV2
+aWV3IHBhdGNoLiAgSWYgYW55b25lIGhhcyBhbnkgb2JqZWN0aW9ucywgcGxlYXNlIGxldCB1cyBr
+bm93LgpbLi4uXQo+IEZyb206IEguIFBldGVyIEFudmluIDxocGFAbGludXguaW50ZWwuY29tPgo+
+Cj4gdXBzdHJlYW0gZWE1MzA2OTIzMWY5MzE3MDYyOTEwZDZlNzcyY2NhNGNlOTNkZThjOAo+IHg4
+NiwgaG90cGx1ZzogVXNlIG13YWl0IHRvIG9mZmxpbmUgYSBwcm9jZXNzb3IsIGZpeCB0aGUgbGVn
+YWN5IGNhc2UKPgo+IEhlcmUgaW5jbHVkZWQgYWxzbyBzb21lIHNtYWxsIGZvbGxvdy1vbiBwYXRj
+aGVzIHRvIHRoZSBzYW1lIGNvZGU6ClsuLi5dCj4gaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
+L3Nob3dfYnVnLmNnaT9pZD01NDcxCj4KPiBTaWduZWQtb2ZmLWJ5OiBILiBQZXRlciBBbnZpbiA8
+aHBhQGxpbnV4LmludGVsLmNvbT4KPiBTaWduZWQtb2ZmLWJ5OiBMZW4gQnJvd24gPGxlbi5icm93
+bkBpbnRlbC5jb20+Cj4gU2lnbmVkLW9mZi1ieTogR3JlZyBLcm9haC1IYXJ0bWFuIDxncmVna2hA
+c3VzZS5kZT4KClNvcnJ5IGZvciB0aGUgc2xvb3cgcmVzcG9uc2UuICBVbmZvcnR1bmF0ZWx5IHRo
+aXMgaXMgcmVwb3J0ZWQgdG8gaGF2ZQpicm9rZW4gaGliZXJuYXRpb24gb24gdHdvIG1hY2hpbmVz
+OiBhbiBFZWVQQyAxMDAySEEgYW5kIGFuIElkZWFwYWQgUzEwLTMuCkZyw6lkw6lyaWMgd3JpdGVz
+OgoKfCBJJ3ZlIG9ic2VydmVkIHRoYXQgd2hlbiByZXN1bWluZyBmcm9tIGhpYmVybmF0aW9uLCBz
+b21ldGltZXMgbXkgY29tcHV0ZXIgd2FzCnwgcmV0dXJuaW5nIHRvIEdydWIyJ3MgbWVudSAod2l0
+aG91dCBhbnkgZXJyb3IgbWVzc2FnZSksIGFuZCBJIGhhZCB0byBkbyBhCnwgIm5vcm1hbCIgYm9v
+dCBvbiBteSBEZWJpYW4gU3F1ZWV6ZSBzeXN0ZW0gKHdpdGggZmlsZSBzeXN0ZW1zIGNvcnJlY3Rp
+b25zKSwKfCBsb29zaW5nIG15IGhpYmVybmF0aW9uJ3Mgc3RhdGUuCnwgICBUaGUgZmFpbCBpc24n
+dCBhdXRvbWF0aWMsIGJ1dCBzZWVtcyB0byBoYXBwZW4gbW9yZSBmcmVxdWVudGx5IGFmdGVyIGEg
+d2hpbGUKfCBteSBjb21wdXRlciB3YXMgZGlzY29ubmVjdGVkIGZyb20gQUMgYW5kIGJhdHRlcnku
+CgpOb3RpY2VkIG9uIERlYmlhbiBzcXVlZXplICh3aGljaCBpcyBiYXNlZCBvbiB2Mi42LjMyLnkp
+LCBjb25maXJtZWQKd2l0aCB1bnBhdGNoZWQgdjIuNi4zMi40NSBhbmQgdjIuNi4zMy4xOC4gIEJh
+Y2tpbmcgb3V0IHRoZSBwYXRjaAptZW50aW9uZWQgYWJvdmUgYXZvaWRzIHRyb3VibGUuICBBIG5l
+d2VyIGtlcm5lbCAoYmFzZWQgb24gdjIuNi4zOS55KQpkb2VzIF9ub3RfIGV4aGliaXQgdGhlIHNh
+bWUgcHJvYmxlbSwgc28gaXQgbG9va3MgbGlrZSB0aGUgcHJvYmxlbSB3YXMKaW50cm9kdWNlZCBp
+biBiYWNrcG9ydGluZy4gIGh0dHA6Ly9idWdzLmRlYmlhbi5vcmcvNjIyMjU5IGhhcwpkZXRhaWxz
+LgoKSWRlYXM/CgpUaGFua3MsCkpvbmF0aGFuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
+aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnL21h
+aWxtYW4vbGlzdGluZm8vbGludXgtcG0=
