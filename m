@@ -1,14 +1,15 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 3.1-rc3-git6: Reported regressions from 3.0
-Date: Sun, 28 Aug 2011 12:49:26 -0700
-Message-ID: <CA+55aFxuTmfE3iFL7ko=9ZWDuxenssw69hyEG3bgQxy_QDqgZA__10703.5730420195$1314561132$gmane$org@mail.gmail.com>
-References: <lx6sezwGldO.A.IhF.UBpWOB@chimera>
-	<20110828193519.GA14132@redhat.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] spi: Fix builderror in spi-pl022.c
+Date: Sun, 28 Aug 2011 21:06:48 +0100
+Message-ID: <20110828200648.GC13379__15654.5733138502$1314562100$gmane$org@n2100.arm.linux.org.uk>
+References: <E1Qvo1q-0000qv-TQ@rmk-PC.arm.linux.org.uk>
+	<1314559619-19923-1-git-send-email-peterhuewe@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110828193519.GA14132@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <1314559619-19923-1-git-send-email-peterhuewe@gmx.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,26 +19,19 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Jones <davej@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Peter Huewe <peterhuewe@gmx.de>
+Cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 28, 2011 at 12:35 PM, Dave Jones <davej@redhat.com> wrote:
-> On Sun, Aug 28, 2011 at 08:22:05PM +0200, Rafael J. Wysocki wrote:
->
-> =A0> Bug-Entry =A0 =A0: http://bugzilla.kernel.org/show_bug.cgi?id=3D41742
-> =A0> Subject =A0 =A0 =A0 =A0 =A0 =A0 =A0: duplicate filename =A0for intel=
-_backlight with the i915 driver
-> =A0> Submitter =A0 =A0: Fran=E7ois Valenduc <francois.valenduc@tvcablenet=
-.be>
-> =A0> Date =A0 =A0 =A0 =A0 : 2011-08-25 18:51 (4 days old)
-> =A0> First-Bad-Commit: http://git.kernel.org/linus/aaa6fd2a004147bf32fce0=
-5720938236de3361d9
->
-> this should be fixed by b727d20269e8ef1de002bfea8099f5e9db9e9f23
+On Sun, Aug 28, 2011 at 09:26:59PM +0200, Peter Huewe wrote:
+> This patch fixes a build error, introduced by commit (67fc8b9f, "PM: add
+> runtime PM support to core Primecell driver") which unfortunately was a little
+> bit incomplete and did contain a typo (11 instead of 22).
+> I'm not sure how this patch could have been tested back then, if it
+> doesn't even compile ;)
 
-Actually, by a2cc797d2d1a ("i915: do not setup intel_backlight ").
+Maybe it was tested on configs without CONFIG_SUSPEND enabled - which
+is highly likely since my ARM development boards don't support S2RAM.
 
-That b727d20269e is just my merge commit that brings in the fix (and
-the bogus initialization of 'locked') into mainline.
-
-                   Linus
+That's the problem with ifdef'ing code.  It makes it impossible to
+ensure that it's properly tested.
