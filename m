@@ -1,12 +1,14 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 3.1-rc3-git6: Reported regressions from 3.0
-Date: Sun, 28 Aug 2011 20:22:05 +0200 (CEST)
-Message-ID: <lx6sezwGldO.A.IhF.UBpWOB__39466.9291600168$1314558429$gmane$org@chimera>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: 3.1-rc3-git6: Reported regressions from 3.0
+Date: Sun, 28 Aug 2011 15:35:20 -0400
+Message-ID: <20110828193519.GA14132__14118.5206980028$1314560191$gmane$org@redhat.com>
+References: <lx6sezwGldO.A.IhF.UBpWOB@chimera>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
+In-Reply-To: <lx6sezwGldO.A.IhF.UBpWOB@chimera>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,53 +18,22 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMy4w
-LApmb3Igd2hpY2ggdGhlcmUgYXJlIG5vIGZpeGVzIGluIHRoZSBtYWlubGluZSBrbm93biB0byB0
-aGUgdHJhY2tpbmcgdGVhbS4KSWYgYW55IG9mIHRoZW0gaGF2ZSBiZWVuIGZpeGVkIGFscmVhZHks
-IHBsZWFzZSBsZXQgdXMga25vdy4KCklmIHlvdSBrbm93IG9mIGFueSBvdGhlciB1bnJlc29sdmVk
-IHJlZ3Jlc3Npb25zIGZyb20gMy4wLCBwbGVhc2UgbGV0IHVzCmtub3cgZWl0aGVyIGFuZCB3ZSds
-bCBhZGQgdGhlbSB0byB0aGUgbGlzdC4gIEFsc28sIHBsZWFzZSBsZXQgdXMga25vdwppZiBhbnkg
-b2YgdGhlIGVudHJpZXMgYmVsb3cgYXJlIGludmFsaWQuCgpFYWNoIGVudHJ5IGZyb20gdGhlIGxp
-c3Qgd2lsbCBiZSBzZW50IGFkZGl0aW9uYWxseSBpbiBhbiBhdXRvbWF0aWMgcmVwbHkKdG8gdGhp
-cyBtZXNzYWdlIHdpdGggQ0NzIHRvIHRoZSBwZW9wbGUgaW52b2x2ZWQgaW4gcmVwb3J0aW5nIGFu
-ZCBoYW5kbGluZwp0aGUgaXNzdWUuCgoKTGlzdGVkIHJlZ3Jlc3Npb25zIHN0YXRpc3RpY3M6Cgog
-IERhdGUgICAgICAgICAgVG90YWwgIFBlbmRpbmcgIFVucmVzb2x2ZWQKICAtLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgMjAxMS0wOC0yOCAgICAgICAgOCAgICAgICAg
-NCAgICAgICAgICAgNAoKClVucmVzb2x2ZWQgcmVncmVzc2lvbnMKLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLQoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dp
-P2lkPTQxNzQyClN1YmplY3QJCTogZHVwbGljYXRlIGZpbGVuYW1lICBmb3IgaW50ZWxfYmFja2xp
-Z2h0IHdpdGggdGhlIGk5MTUgZHJpdmVyClN1Ym1pdHRlcgk6IEZyYW7Dp29pcyBWYWxlbmR1YyA8
-ZnJhbmNvaXMudmFsZW5kdWNAdHZjYWJsZW5ldC5iZT4KRGF0ZQkJOiAyMDExLTA4LTI1IDE4OjUx
-ICg0IGRheXMgb2xkKQpGaXJzdC1CYWQtQ29tbWl0OiBodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvbGlu
-dXMvYWFhNmZkMmEwMDQxNDdiZjMyZmNlMDU3MjA5MzgyMzZkZTMzNjFkOQoKCkJ1Zy1FbnRyeQk6
-IGh0dHA6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD00MTUxMgpTdWJqZWN0
-CQk6IDMuMS1yYzIgZmFpbGVkIHMycmFtOiBGcmVlemluZyBvZiB0YXNrcyBmYWlsZWQgYWZ0ZXIg
-MjAuMDAgc2Vjb25kcwpTdWJtaXR0ZXIJOiBDYXJsb3MgUi4gTWFmcmEgPGNybWFmcmEyQGdtYWls
-LmNvbT4KRGF0ZQkJOiAyMDExLTA4LTE2IDk6NDIgKDEzIGRheXMgb2xkKQpNZXNzYWdlLUlECTog
-PDIwMTEwODE2MDk0MjQ1LkdBMjA0MkBQaWxhci5zaXRlPgpSZWZlcmVuY2VzCTogaHR0cDovL21h
-cmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzEzNDg3ODIwMTc0MzUmdz0yCgoKQnVnLUVudHJ5
-CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTQxNTAyClN1Ympl
-Y3QJCTogY2ZxLWlvc2NoZWQ6IGEgcmVncmVzc2lvbgpTdWJtaXR0ZXIJOiBTaGFvaHVhIExpIDxz
-aGFvaHVhLmxpQGludGVsLmNvbT4KRGF0ZQkJOiAyMDExLTA4LTE2IDI6NDcgKDEzIGRheXMgb2xk
-KQpNZXNzYWdlLUlECTogPDEzMTM0NjI4MjYuMjczMjEuMjIuY2FtZWxAc2xpMTAtY29ucm9lPgpS
-ZWZlcmVuY2VzCTogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzEzNDYyNzkz
-Mjk5MTEmdz0yCgoKQnVnLUVudHJ5CTogaHR0cDovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
-dWcuY2dpP2lkPTQxNDQyClN1YmplY3QJCTogcmN1X3NjaGVkX3N0YXRlIGRldGVjdGVkIHN0YWxs
-IG9uIENQVSAwLCB3aGVuIGJvb3Rpbmcgb24gWGVuClN1Ym1pdHRlcgk6IFdpdG9sZCBCYXJ5bHVr
-IDxiYXJ5bHVrQHNtcC5pZi51ai5lZHUucGw+CkRhdGUJCTogMjAxMS0wOC0yMSAwNDowNiAoOCBk
-YXlzIG9sZCkKCgpSZWdyZXNzaW9ucyB3aXRoIHBhdGNoZXMKLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tCgpGb3IgZGV0YWlscywgcGxlYXNlIHZpc2l0IHRoZSBidWcgZW50cmllcyBhbmQgZm9sbG93
-IHRoZSBsaW5rcyBnaXZlbiBpbgpyZWZlcmVuY2VzLgoKQXMgeW91IGNhbiBzZWUsIHRoZXJlIGlz
-IGEgQnVnemlsbGEgZW50cnkgZm9yIGVhY2ggb2YgdGhlIGxpc3RlZCByZWdyZXNzaW9ucy4KVGhl
-cmUgYWxzbyBpcyBhIEJ1Z3ppbGxhIGVudHJ5IHVzZWQgZm9yIHRyYWNraW5nIHRoZSByZWdyZXNz
-aW9ucyBmcm9tIDMuMCwKdW5yZXNvbHZlZCBhcyB3ZWxsIGFzIHJlc29sdmVkLCBhdDoKCmh0dHA6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD00MDk4MgoKUGxlYXNlIGxldCB0
-aGUgdHJhY2tpbmcgdGVhbSBrbm93IGlmIHRoZXJlIGFyZSBhbnkgQnVnemlsbGEgZW50cmllcyB0
-aGF0CnNob3VsZCBiZSBhZGRlZCB0byB0aGUgbGlzdCBpbiB0aGVyZS4KClRoYW5rcyEKCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxp
-bmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3Rz
-LmxpbnV4LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Sun, Aug 28, 2011 at 08:22:05PM +0200, Rafael J. Wysocki wrote:
+ =
+
+ > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D41742
+ > Subject		: duplicate filename  for intel_backlight with the i915 driver
+ > Submitter	: Fran=E7ois Valenduc <francois.valenduc@tvcablenet.be>
+ > Date		: 2011-08-25 18:51 (4 days old)
+ > First-Bad-Commit: http://git.kernel.org/linus/aaa6fd2a004147bf32fce05720=
+938236de3361d9
+ =
+
+this should be fixed by b727d20269e8ef1de002bfea8099f5e9db9e9f23
+ =
+
+	Dave
