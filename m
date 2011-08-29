@@ -1,17 +1,11 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH pm-freezer 4/4] freezer: use lock_task_sighand()
- in fake_signal_wake_up()
-Date: Mon, 29 Aug 2011 16:06:21 +0200
-Message-ID: <20110829140621.GE18871__43457.9463246793$1314626976$gmane$org@mtj.dyndns.org>
-References: <20110829140418.GB18871@mtj.dyndns.org>
-	<20110829140509.GC18871@mtj.dyndns.org>
-	<20110829140549.GD18871@mtj.dyndns.org>
+From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
+Subject: [PATCH v2 0/4] bq24022: Add support for bq2407x family
+Date: Mon, 29 Aug 2011 17:55:14 +0200
+Message-ID: <201108291755.15701.heiko@sntech.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110829140549.GD18871@mtj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,38 +15,34 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>, Paul Menage <paul@paulmenage.org>
-Cc: containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>
+Cc: linux-pm@lists.linux-foundation.org, Philipp Zabel <philipp.zabel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-cgroup_freezer calls freeze_task() without holding tasklist_lock and,
-if the task is exiting, its ->sighand may be gone by the time
-fake_signal_wake_up() is called.  Use lock_task_sighand() instead of
-accessing ->sighand directly.
+The bq2407x family is quite similar to the bq24022 charger.
+As suggested by MyungJoo Ham it should be possible to implement
+support for it inside the bq24022 driver instead of adding a new one.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Oleg Nesterov <oleg@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Paul Menage <paul@paulmenage.org>
----
- kernel/freezer.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+The first three patches fix small things Mark Brown identified in my
+submission of a separate bq2407x driver that also exist in the bq24022
+while the fourth implements the bq2407x specifics.
 
-Index: work/kernel/freezer.c
-===================================================================
---- work.orig/kernel/freezer.c
-+++ work/kernel/freezer.c
-@@ -103,9 +103,10 @@ static void fake_signal_wake_up(struct t
- {
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&p->sighand->siglock, flags);
--	signal_wake_up(p, 0);
--	spin_unlock_irqrestore(&p->sighand->siglock, flags);
-+	if (lock_task_sighand(p, &flags)) {
-+		signal_wake_up(p, 0);
-+		unlock_task_sighand(p, &flags);
-+	}
- }
- 
- /**
+This second version fixes some glitches found by Mark Brown and introduces
+the new second patch fixing the other dev_dbg invocations where dev_err
+would be appropriate.
+
+Heiko Stuebner (4):
+  bq24022: Evaluate returns of gpio_direction_output-calls
+  bq24022: Use dev_err instead of dev_dbg for error messages to make
+    them visible
+  bq24022: Keep track of gpio states
+  bq24022: Add support for the bq2407x family
+
+ drivers/regulator/Kconfig         |    7 +-
+ drivers/regulator/bq24022.c       |  144 
+++++++++++++++++++++++++++++++-------
+ include/linux/regulator/bq24022.h |    7 ++
+ 3 files changed, 128 insertions(+), 30 deletions(-)
+
+-- 
+1.7.2.3
