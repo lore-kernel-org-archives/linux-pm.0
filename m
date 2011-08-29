@@ -1,15 +1,13 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 2/3] bq24022: Keep track of gpio states
-Date: Mon, 29 Aug 2011 10:18:07 +0100
-Message-ID: <20110829091805.GC9477@opensource.wolfsonmicro.com>
-References: <201108281507.35105.heiko@sntech.de>
-	<201108281509.24250.heiko@sntech.de>
+From: Tejun Heo <tj@kernel.org>
+Subject: [PATCH pm-freezer 1/4] cgroup_freezer: fix
+ freezer->state setting bug in freezer_change_state()
+Date: Mon, 29 Aug 2011 16:04:18 +0200
+Message-ID: <20110829140418.GB18871__39114.7677008577$1314626942$gmane$org@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201108281509.24250.heiko@sntech.de>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,19 +17,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Cc: linux-pm@lists.linux-foundation.org, Liam Girdwood <lrg@ti.com>, Philipp Zabel <philipp.zabel@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>, Paul Menage <paul@paulmenage.org>
+Cc: containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 28, 2011 at 03:09:23PM +0200, Heiko St=FCbner wrote:
-> gpio_get_value is not definied for output-gpios and can therefore not be
-> used for the is_enabled and get_current_limit methods of the bq24022.
-> =
+d02f52811d0e "cgroup_freezer: prepare for removal of TIF_FREEZE" moved
+setting of freezer->state into freezer_change_state(); unfortunately,
+while doing so, when it's beginning to freeze tasks, it sets the state
+to CGROUP_FROZEN instead of CGROUP_FREEZING ending up skipping the
+whole freezing state.  Fix it.
 
-> This patch introduces a private struct to keep track of the values set.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Oleg Nesterov <oleg@redhat.com>
+Cc: Paul Menage <paul@paulmenage.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+---
+Rafael, these four patches fix the issues spotted by Oleg during
+review of the freezer patchset.  Please apply them on pm-freezer once
+Oleg acks them.  Thanks.
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+ kernel/cgroup_freezer.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-This also fixes the use of platform data after probe - platform data
-should be able to be marked as initdata which may mean that the kernel
-discards it after boot.
+Index: work/kernel/cgroup_freezer.c
+===================================================================
+--- work.orig/kernel/cgroup_freezer.c
++++ work/kernel/cgroup_freezer.c
+@@ -311,14 +311,14 @@ static int freezer_change_state(struct c
+ 	if (goal_state == freezer->state)
+ 		goto out;
+ 
+-	freezer->state = goal_state;
+-
+ 	switch (goal_state) {
+ 	case CGROUP_THAWED:
++		freezer->state = CGROUP_THAWED;
+ 		atomic_dec(&system_freezing_cnt);
+ 		unfreeze_cgroup(cgroup, freezer);
+ 		break;
+ 	case CGROUP_FROZEN:
++		freezer->state = CGROUP_FREEZING;
+ 		atomic_inc(&system_freezing_cnt);
+ 		retval = try_to_freeze_cgroup(cgroup, freezer);
+ 		break;
