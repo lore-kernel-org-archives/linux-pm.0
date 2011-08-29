@@ -1,8 +1,8 @@
 From: Heiko =?iso-8859-1?q?St=FCbner?= <heiko@sntech.de>
-Subject: [PATCH v2 1/4] bq24022: Evaluate returns of
-	gpio_direction_output-calls
-Date: Mon, 29 Aug 2011 17:56:17 +0200
-Message-ID: <201108291756.17516.heiko@sntech.de>
+Subject: [PATCH 2/4] bq24022: Use dev_err instead of dev_dbg for
+	error messages
+Date: Mon, 29 Aug 2011 17:57:29 +0200
+Message-ID: <201108291757.30189.heiko@sntech.de>
 References: <201108291755.15701.heiko@sntech.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,35 +22,42 @@ To: Mark Brown <broonie@opensource.wolfsonmicro.com>, Liam Girdwood <lrg@ti.com>
 Cc: linux-pm@lists.linux-foundation.org, Philipp Zabel <philipp.zabel@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-It wasn't done before.
+This makes error messages visible to the user,
+so he/she can eventually fix them.
 
 Signed-off-by: Heiko Stuebner <heiko@sntech.de>
 ---
- Changes since v1: use dev_err instead of dev_dbg
- drivers/regulator/bq24022.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/regulator/bq24022.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/regulator/bq24022.c b/drivers/regulator/bq24022.c
-index e24d1b7..56627d7 100644
+index 56627d7..7bd906c 100644
 --- a/drivers/regulator/bq24022.c
 +++ b/drivers/regulator/bq24022.c
-@@ -104,7 +104,17 @@ static int __init bq24022_probe(struct platform_device *pdev)
+@@ -93,13 +93,13 @@ static int __init bq24022_probe(struct platform_device *pdev)
+ 
+ 	ret = gpio_request(pdata->gpio_nce, "ncharge_en");
+ 	if (ret) {
+-		dev_dbg(&pdev->dev, "couldn't request nCE GPIO: %d\n",
++		dev_err(&pdev->dev, "couldn't request nCE GPIO: %d\n",
+ 			pdata->gpio_nce);
+ 		goto err_ce;
+ 	}
+ 	ret = gpio_request(pdata->gpio_iset2, "charge_mode");
+ 	if (ret) {
+-		dev_dbg(&pdev->dev, "couldn't request ISET2 GPIO: %d\n",
++		dev_err(&pdev->dev, "couldn't request ISET2 GPIO: %d\n",
+ 			pdata->gpio_iset2);
  		goto err_iset2;
  	}
- 	ret = gpio_direction_output(pdata->gpio_iset2, 0);
-+	if (ret) {
-+		dev_err(&pdev->dev, "couldn't set ISET2 GPIO: %d\n",
-+			pdata->gpio_iset2);
-+		goto err_reg;
-+	}
- 	ret = gpio_direction_output(pdata->gpio_nce, 1);
-+	if (ret) {
-+		dev_err(&pdev->dev, "couldn't set nCE GPIO: %d\n",
-+			pdata->gpio_nce);
-+		goto err_reg;
-+	}
- 
+@@ -119,7 +119,7 @@ static int __init bq24022_probe(struct platform_device *pdev)
  	bq24022 = regulator_register(&bq24022_desc, &pdev->dev,
  				     pdata->init_data, pdata);
+ 	if (IS_ERR(bq24022)) {
+-		dev_dbg(&pdev->dev, "couldn't register regulator\n");
++		dev_err(&pdev->dev, "couldn't register regulator\n");
+ 		ret = PTR_ERR(bq24022);
+ 		goto err_reg;
+ 	}
 -- 
 1.7.2.3
