@@ -1,8 +1,8 @@
 From: "Turquette, Mike" <mturquette@ti.com>
 Subject: Re: [PATCH v8 3/5] PM / DEVFREQ: add common sysfs
 	interfaces
-Date: Mon, 29 Aug 2011 12:17:50 -0700
-Message-ID: <CAJOA=zNHSC0kBMhRw1uf=8E7PE2Da6wXAWnG=mgh2M8-pa6w6g@mail.gmail.com>
+Date: Mon, 29 Aug 2011 11:49:14 -0700
+Message-ID: <CAJOA=zPZbPW=2M7ZuhBDgkvRO-qq2a-yx--Z6fPWis==0pLCiw@mail.gmail.com>
 References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
 	<1314174131-14194-1-git-send-email-myungjoo.ham@samsung.com>
 	<1314174131-14194-4-git-send-email-myungjoo.ham@samsung.com>
@@ -37,6 +37,14 @@ q profile
 >
 > Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+
+Looks good to me.
+
+Reviewed-by: Mike Turquette <mturquette@ti.com>
+
+Regards,
+Mike
+
 >
 > --
 > Changed from v7
@@ -162,29 +170,6 @@ ce *dev)
 > +
 > + =A0 =A0 =A0 return ret;
 > +}
-
-Sorry I'll have to rescind my ACK.  I just reviewed patch 5/5 and the
-show_freq and restore_freq functions for the userspace governor do not
-protect the private data accesses with a mutex.  Looking a bit further
-I see that they do call get_devfreq; I think the semantics for this
-are wrong.
-
-get_devfreq only protects the list as long as it takes to do a lookup.
- However neither struct devfreq or struct userspace_data have a mutex
-associated with them, so concurrent operations are not protected.
-
-One heavy-handed way of solving this is to not have get_devfreq
-release the mutex, and then have those functions call a new
-put_devfreq which does release the mutex.  However that is really bad
-locking.
-
-What do you think about putting a mutex in struct devfreq?  The rule
-for governors can be that access to the governor-specific private data
-requires taking that devfreq's mutex.
-
-Regards,
-Mike
-
 > +
 > +/**
 > =A0* devfreq_do() - Check the usage profile of a given device and configu=
