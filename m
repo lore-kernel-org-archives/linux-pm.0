@@ -1,15 +1,17 @@
 From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH pm-freezer 1/4] cgroup_freezer: fix
-	freezer->state	setting bug in freezer_change_state()
-Date: Mon, 29 Aug 2011 18:00:31 +0200
-Message-ID: <20110829160031.GB8392__49321.4559545324$1314634141$gmane$org@redhat.com>
+Subject: Re: [PATCH pm-freezer 3/4] freezer: check freezing()
+	before	leaving FROZEN state
+Date: Mon, 29 Aug 2011 18:35:33 +0200
+Message-ID: <20110829163533.GB9973__32015.7951479361$1314636012$gmane$org@redhat.com>
 References: <20110829140418.GB18871@mtj.dyndns.org>
+	<20110829140509.GC18871@mtj.dyndns.org>
+	<20110829140549.GD18871@mtj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110829140418.GB18871@mtj.dyndns.org>
+In-Reply-To: <20110829140549.GD18871@mtj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -25,33 +27,26 @@ List-Id: linux-pm@vger.kernel.org
 
 On 08/29, Tejun Heo wrote:
 >
-> --- work.orig/kernel/cgroup_freezer.c
-> +++ work/kernel/cgroup_freezer.c
-> @@ -311,14 +311,14 @@ static int freezer_change_state(struct c
->  	if (goal_state == freezer->state)
->  		goto out;
->  
-> -	freezer->state = goal_state;
-> -
->  	switch (goal_state) {
->  	case CGROUP_THAWED:
-> +		freezer->state = CGROUP_THAWED;
->  		atomic_dec(&system_freezing_cnt);
->  		unfreeze_cgroup(cgroup, freezer);
->  		break;
->  	case CGROUP_FROZEN:
-> +		freezer->state = CGROUP_FREEZING;
+> --- work.orig/kernel/freezer.c
+> +++ work/kernel/freezer.c
+> @@ -60,6 +60,7 @@ bool __refrigerator(bool check_kthr_stop
+>  	 */
+>  	spin_lock_irq(&freezer_lock);
+>  	current->flags |= PF_FROZEN;
+> +refreeze:
+>  	spin_unlock_irq(&freezer_lock);
+>
+>  	save = current->state;
+> @@ -78,8 +79,10 @@ bool __refrigerator(bool check_kthr_stop
+>  		schedule();
+>  	}
+>
+> -	/* leave FROZEN */
+> +	/* leave FROZEN after checking freezing() holding freezer_lock */
+>  	spin_lock_irq(&freezer_lock);
+> +	if (freezing(current))
+> +		goto refreeze;
 
-At first glance, this is correct. I'll try to recheck.
-
-But,
-
->  		atomic_inc(&system_freezing_cnt);
-
-iiuc this becomes wrong... Suppose a user writes "FROZEN" twice,
-before freezer->state becomes CGROUP_FROZEN.
-
-I think we should actually fix the "goal_state == freezer->state"
-check above.
+Looks like, you should move "save = current->state" up then.
 
 Oleg.
