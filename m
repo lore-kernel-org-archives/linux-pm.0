@@ -1,16 +1,16 @@
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH pm-freezer 2/4] freezer: set PF_NOFREEZE on a
-	dying	task right before TASK_DEAD
-Date: Mon, 29 Aug 2011 20:02:48 +0200
-Message-ID: <20110829180248.GA13346__10862.8648719334$1314641259$gmane$org@redhat.com>
-References: <20110829140418.GB18871@mtj.dyndns.org>
-	<20110829140509.GC18871@mtj.dyndns.org>
+From: "Turquette, Mike" <mturquette@ti.com>
+Subject: Re: [PATCH v8 3/5] PM / DEVFREQ: add common sysfs
+	interfaces
+Date: Mon, 29 Aug 2011 12:17:50 -0700
+Message-ID: <CAJOA=zNHSC0kBMhRw1uf=8E7PE2Da6wXAWnG=mgh2M8-pa6w6g@mail.gmail.com>
+References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
+	<1314174131-14194-1-git-send-email-myungjoo.ham@samsung.com>
+	<1314174131-14194-4-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110829140509.GC18871@mtj.dyndns.org>
+In-Reply-To: <1314174131-14194-4-git-send-email-myungjoo.ham@samsung.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,38 +20,358 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Paul Menage <paul@paulmenage.org>, containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/29, Tejun Heo wrote:
+On Wed, Aug 24, 2011 at 1:22 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wr=
+ote:
+> Device specific sysfs interface /sys/devices/.../power/devfreq_*
+> - governor =A0 =A0 =A0R: name of governor
+> - cur_freq =A0 =A0 =A0R: current frequency
+> - max_freq =A0 =A0 =A0R: maximum operable frequency
+> - min_freq =A0 =A0 =A0R: minimum operable frequency
+> - polling_interval =A0 =A0 =A0R: polling interval in ms given with devfre=
+q profile
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0W: update polling interval.
 >
-> There's no try_to_freeze() call in the exit path and the only
-> necessary guarantee is that freezer doesn't hang waiting for zombies.
-> Set PF_NOFREEZE right before setting tsk->state to TASK_DEAD instead.
-
-Agreed.
-
-But I'd like to repeat, this looks "asymmetrical". do_each_thread()
-can't see the (auto)reaped tasks after they do exit_notify(). So we
-can only see this PF_NOFREEZE if the thread becomes a zombie.
-
-> @@ -1044,6 +1038,10 @@ NORET_TYPE void do_exit(long code)
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 >
->  	preempt_disable();
->  	exit_rcu();
+> --
+> Changed from v7
+> - removed set_freq from the common devfreq interface
+> - added get_devfreq, a mutex-protected wrapper for find_device_devfreq
+> (for sysfs interfaces and later with governor-support)
+> - corrected ABI documentation.
+>
+> Changed from v6
+> - poling_interval is writable.
+>
+> Changed from v5
+> - updated devferq_update usage.
+>
+> Changed from v4
+> - removed system-wide sysfs interface
+> - removed tickling sysfs interface
+> - added set_freq for userspace governor (and any other governors that
+> =A0require user input)
+>
+> Changed from v3
+> - corrected sysfs API usage
+> - corrected error messages
+> - moved sysfs entry location
+> - added sysfs entries
+>
+> Changed from v2
+> - add ABI entries for devfreq sysfs interface
+> ---
+> =A0Documentation/ABI/testing/sysfs-devices-power | =A0 37 ++++++
+> =A0drivers/devfreq/devfreq.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =
+=A0150 +++++++++++++++++++++++++
+> =A02 files changed, 187 insertions(+), 0 deletions(-)
+>
+> diff --git a/Documentation/ABI/testing/sysfs-devices-power b/Documentatio=
+n/ABI/testing/sysfs-devices-power
+> index 8ffbc25..57f4591 100644
+> --- a/Documentation/ABI/testing/sysfs-devices-power
+> +++ b/Documentation/ABI/testing/sysfs-devices-power
+> @@ -165,3 +165,40 @@ Description:
+>
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0Not all drivers support this attribute. =
+=A0If it isn't supported,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0attempts to read or write it will yield I/=
+O errors.
 > +
-> +	/* this task is now dead and freezer should ignore it */
-> +	current->flags |= PF_NOFREEZE;
+> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_governor
+> +Date: =A0 =A0 =A0 =A0 =A0July 2011
+> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
+> +Description:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_governor=
+ shows the name
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 of the governor used by the corresponding d=
+evice.
 > +
->  	/* causes final put_task_struct in finish_task_switch(). */
->  	tsk->state = TASK_DEAD;
+> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_cur_freq
+> +Date: =A0 =A0 =A0 =A0 =A0July 2011
+> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
+> +Description:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_cur_freq=
+ shows the current
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 frequency of the corresponding device.
+> +
+> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_max_freq
+> +Date: =A0 =A0 =A0 =A0 =A0July 2011
+> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
+> +Description:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_max_freq=
+ shows the
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 maximum operable frequency of the correspon=
+ding device.
+> +
+> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_min_freq
+> +Date: =A0 =A0 =A0 =A0 =A0July 2011
+> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
+> +Description:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_min_freq=
+ shows the
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 minimum operable frequency of the correspon=
+ding device.
+> +
+> +What: =A0 =A0 =A0 =A0 =A0/sys/devices/.../power/devfreq_polling_interval
+> +Date: =A0 =A0 =A0 =A0 =A0July 2011
+> +Contact: =A0 =A0 =A0 MyungJoo Ham <myungjoo.ham@samsung.com>
+> +Description:
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 The /sys/devices/.../power/devfreq_polling_=
+interval sets and
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 shows the requested polling interval of the=
+ corresponding
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 device. The values are represented in ms. I=
+f the value is less
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 than 1 jiffy, it is considered to be 0, whi=
+ch means no polling.
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index df63bdc..5bbece6 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -37,6 +37,8 @@ static struct delayed_work devfreq_work;
+> =A0static LIST_HEAD(devfreq_list);
+> =A0static DEFINE_MUTEX(devfreq_list_lock);
+>
+> +static struct attribute_group dev_attr_group;
+> +
+> =A0/**
+> =A0* find_device_devfreq() - find devfreq struct using device pointer
+> =A0* @dev: =A0 =A0 =A0 device pointer used to lookup device devfreq.
+> @@ -62,6 +64,22 @@ static struct devfreq *find_device_devfreq(struct devi=
+ce *dev)
+> =A0}
+>
+> =A0/**
+> + * get_devfreq() - find devfreq struct. a wrapped find_device_devfreq()
+> + * =A0 =A0 =A0 =A0 =A0 =A0 with mutex protection.
+> + * @dev: =A0 =A0 =A0 device pointer used to lookup device devfreq.
+> + */
+> +static struct devfreq *get_devfreq(struct device *dev)
+> +{
+> + =A0 =A0 =A0 struct devfreq *ret;
+> +
+> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
+> + =A0 =A0 =A0 ret =3D find_device_devfreq(dev);
+> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
+> +
+> + =A0 =A0 =A0 return ret;
+> +}
 
-May be freezing_slow_path() can check TASK_DEAD along with PF_NOFREEZE
-instead? (or tsk->exit_state != 0 to avoid the asymmetry above). Just
-to keep this logic in the freezer code. I dunno.
+Sorry I'll have to rescind my ACK.  I just reviewed patch 5/5 and the
+show_freq and restore_freq functions for the userspace governor do not
+protect the private data accesses with a mutex.  Looking a bit further
+I see that they do call get_devfreq; I think the semantics for this
+are wrong.
 
-But this all is up to you and Rafael, I am not arguing. Just random
-thoughts.
+get_devfreq only protects the list as long as it takes to do a lookup.
+ However neither struct devfreq or struct userspace_data have a mutex
+associated with them, so concurrent operations are not protected.
 
-Oleg.
+One heavy-handed way of solving this is to not have get_devfreq
+release the mutex, and then have those functions call a new
+put_devfreq which does release the mutex.  However that is really bad
+locking.
+
+What do you think about putting a mutex in struct devfreq?  The rule
+for governors can be that access to the governor-specific private data
+requires taking that devfreq's mutex.
+
+Regards,
+Mike
+
+> +
+> +/**
+> =A0* devfreq_do() - Check the usage profile of a given device and configu=
+re
+> =A0* =A0 =A0 =A0 =A0 =A0 =A0 frequency and voltage accordingly
+> =A0* @devfreq: =A0 devfreq info of the given device
+> @@ -149,6 +167,8 @@ static void devfreq_monitor(struct work_struct *work)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dev_err(de=
+vfreq->dev, "Due to devfreq_do error(%d), devfreq(%s) is removed from the d=
+evice\n",
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0error, devfreq->governor->name);
+>
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 sysfs_unmer=
+ge_group(&devfreq->dev->kobj,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 &dev_attr_group);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0list_del(&=
+devfreq->node);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0kfree(devf=
+req);
+>
+> @@ -239,6 +259,8 @@ int devfreq_add_device(struct device *dev, struct dev=
+freq_dev_profile *profile,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0queue_delayed_work(devfreq_wq, &devfreq_wo=
+rk,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 devfr=
+eq->next_polling);
+> =A0 =A0 =A0 =A0}
+> +
+> + =A0 =A0 =A0 sysfs_merge_group(&dev->kobj, &dev_attr_group);
+> =A0out:
+> =A0 =A0 =A0 =A0mutex_unlock(&devfreq_list_lock);
+>
+> @@ -271,6 +293,8 @@ int devfreq_remove_device(struct device *dev)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto out;
+> =A0 =A0 =A0 =A0}
+>
+> + =A0 =A0 =A0 sysfs_unmerge_group(&dev->kobj, &dev_attr_group);
+> +
+> =A0 =A0 =A0 =A0list_del(&devfreq->node);
+> =A0 =A0 =A0 =A0srcu_notifier_chain_unregister(nh, &devfreq->nb);
+> =A0 =A0 =A0 =A0kfree(devfreq);
+> @@ -279,6 +303,132 @@ out:
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+>
+> +static ssize_t show_governor(struct device *dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_at=
+tribute *attr, char *buf)
+> +{
+> + =A0 =A0 =A0 struct devfreq *df =3D get_devfreq(dev);
+> +
+> + =A0 =A0 =A0 if (IS_ERR(df))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
+> + =A0 =A0 =A0 if (!df->governor)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 return sprintf(buf, "%s\n", df->governor->name);
+> +}
+> +
+> +static ssize_t show_freq(struct device *dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_attribute =
+*attr, char *buf)
+> +{
+> + =A0 =A0 =A0 struct devfreq *df =3D get_devfreq(dev);
+> +
+> + =A0 =A0 =A0 if (IS_ERR(df))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
+> +
+> + =A0 =A0 =A0 return sprintf(buf, "%lu\n", df->previous_freq);
+> +}
+> +
+> +static ssize_t show_max_freq(struct device *dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_at=
+tribute *attr, char *buf)
+> +{
+> + =A0 =A0 =A0 struct devfreq *df =3D get_devfreq(dev);
+> + =A0 =A0 =A0 unsigned long freq =3D ULONG_MAX;
+> + =A0 =A0 =A0 struct opp *opp;
+> +
+> + =A0 =A0 =A0 if (IS_ERR(df))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
+> + =A0 =A0 =A0 if (!df->dev)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 opp =3D opp_find_freq_floor(df->dev, &freq);
+> + =A0 =A0 =A0 if (IS_ERR(opp))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(opp);
+> +
+> + =A0 =A0 =A0 return sprintf(buf, "%lu\n", freq);
+> +}
+> +
+> +static ssize_t show_min_freq(struct device *dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_at=
+tribute *attr, char *buf)
+> +{
+> + =A0 =A0 =A0 struct devfreq *df =3D get_devfreq(dev);
+> + =A0 =A0 =A0 unsigned long freq =3D 0;
+> + =A0 =A0 =A0 struct opp *opp;
+> +
+> + =A0 =A0 =A0 if (IS_ERR(df))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
+> + =A0 =A0 =A0 if (!df->dev)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 opp =3D opp_find_freq_ceil(df->dev, &freq);
+> + =A0 =A0 =A0 if (IS_ERR(opp))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(opp);
+> +
+> + =A0 =A0 =A0 return sprintf(buf, "%lu\n", freq);
+> +}
+> +
+> +static ssize_t show_polling_interval(struct device *dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+struct device_attribute *attr, char *buf)
+> +{
+> + =A0 =A0 =A0 struct devfreq *df =3D get_devfreq(dev);
+> +
+> + =A0 =A0 =A0 if (IS_ERR(df))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
+> + =A0 =A0 =A0 if (!df->profile)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 return sprintf(buf, "%d\n", df->profile->polling_ms);
+> +}
+> +
+> +static ssize_t store_polling_interval(struct device *dev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ struct device_attribute *attr,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ const char *buf, size_t count)
+> +{
+> + =A0 =A0 =A0 struct devfreq *df =3D get_devfreq(dev);
+> + =A0 =A0 =A0 unsigned int value;
+> + =A0 =A0 =A0 int ret;
+> +
+> + =A0 =A0 =A0 if (IS_ERR(df))
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return PTR_ERR(df);
+> + =A0 =A0 =A0 if (!df->profile)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 ret =3D sscanf(buf, "%u", &value);
+> + =A0 =A0 =A0 if (ret !=3D 1)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> + =A0 =A0 =A0 df->profile->polling_ms =3D value;
+> + =A0 =A0 =A0 df->next_polling =3D df->polling_jiffies
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=3D msecs_to_jiffies(val=
+ue);
+> +
+> + =A0 =A0 =A0 mutex_lock(&devfreq_list_lock);
+> + =A0 =A0 =A0 if (df->next_polling > 0 && !polling) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 polling =3D true;
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 queue_delayed_work(devfreq_wq, &devfreq_wor=
+k,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0df->=
+next_polling);
+> + =A0 =A0 =A0 }
+> + =A0 =A0 =A0 mutex_unlock(&devfreq_list_lock);
+> +
+> + =A0 =A0 =A0 return count;
+> +}
+> +
+> +static DEVICE_ATTR(devfreq_governor, 0444, show_governor, NULL);
+> +static DEVICE_ATTR(devfreq_cur_freq, 0444, show_freq, NULL);
+> +static DEVICE_ATTR(devfreq_max_freq, 0444, show_max_freq, NULL);
+> +static DEVICE_ATTR(devfreq_min_freq, 0444, show_min_freq, NULL);
+> +static DEVICE_ATTR(devfreq_polling_interval, 0644, show_polling_interval,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0store_polling_interval);
+> +static struct attribute *dev_entries[] =3D {
+> + =A0 =A0 =A0 &dev_attr_devfreq_governor.attr,
+> + =A0 =A0 =A0 &dev_attr_devfreq_cur_freq.attr,
+> + =A0 =A0 =A0 &dev_attr_devfreq_max_freq.attr,
+> + =A0 =A0 =A0 &dev_attr_devfreq_min_freq.attr,
+> + =A0 =A0 =A0 &dev_attr_devfreq_polling_interval.attr,
+> + =A0 =A0 =A0 NULL,
+> +};
+> +static struct attribute_group dev_attr_group =3D {
+> + =A0 =A0 =A0 .name =A0 =3D power_group_name,
+> + =A0 =A0 =A0 .attrs =A0=3D dev_entries,
+> +};
+> +
+> =A0/**
+> =A0* devfreq_init() - Initialize data structure for devfreq framework and
+> =A0* =A0 =A0 =A0 =A0 =A0 =A0 =A0 start polling registered devfreq devices.
+> --
+> 1.7.4.1
+>
+>
