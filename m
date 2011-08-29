@@ -1,18 +1,18 @@
 From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH pm-freezer 4/4] freezer: use
-	lock_task_sighand() in	fake_signal_wake_up()
-Date: Mon, 29 Aug 2011 18:36:47 +0200
-Message-ID: <20110829163647.GC9973__2386.58133098415$1314636073$gmane$org@redhat.com>
+Subject: Re: [PATCH pm-freezer 3/4] freezer: check freezing()
+	before	leaving FROZEN state
+Date: Mon, 29 Aug 2011 19:12:28 +0200
+Message-ID: <20110829171228.GA11339__41227.7500181974$1314638446$gmane$org@redhat.com>
 References: <20110829140418.GB18871@mtj.dyndns.org>
 	<20110829140509.GC18871@mtj.dyndns.org>
 	<20110829140549.GD18871@mtj.dyndns.org>
-	<20110829140621.GE18871@mtj.dyndns.org>
+	<20110829163533.GB9973@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110829140621.GE18871@mtj.dyndns.org>
+In-Reply-To: <20110829163533.GB9973@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,22 +26,82 @@ To: Tejun Heo <tj@kernel.org>
 Cc: linux-kernel@vger.kernel.org, Paul Menage <paul@paulmenage.org>, containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/29, Tejun Heo wrote:
+On 08/29, Oleg Nesterov wrote:
 >
-> --- work.orig/kernel/freezer.c
-> +++ work/kernel/freezer.c
-> @@ -103,9 +103,10 @@ static void fake_signal_wake_up(struct t
->  {
->  	unsigned long flags;
->  
-> -	spin_lock_irqsave(&p->sighand->siglock, flags);
-> -	signal_wake_up(p, 0);
-> -	spin_unlock_irqrestore(&p->sighand->siglock, flags);
-> +	if (lock_task_sighand(p, &flags)) {
-> +		signal_wake_up(p, 0);
-> +		unlock_task_sighand(p, &flags);
-> +	}
+> On 08/29, Tejun Heo wrote:
+> >
+> > --- work.orig/kernel/freezer.c
+> > +++ work/kernel/freezer.c
+> > @@ -60,6 +60,7 @@ bool __refrigerator(bool check_kthr_stop
+> >  	 */
+> >  	spin_lock_irq(&freezer_lock);
+> >  	current->flags |= PF_FROZEN;
+> > +refreeze:
+> >  	spin_unlock_irq(&freezer_lock);
+> >
+> >  	save = current->state;
+> > @@ -78,8 +79,10 @@ bool __refrigerator(bool check_kthr_stop
+> >  		schedule();
+> >  	}
+> >
+> > -	/* leave FROZEN */
+> > +	/* leave FROZEN after checking freezing() holding freezer_lock */
+> >  	spin_lock_irq(&freezer_lock);
+> > +	if (freezing(current))
+> > +		goto refreeze;
+>
+> Looks like, you should move "save = current->state" up then.
 
-Yes, this looks correct.
+Hmm. And afaics there is another problem. This can "livelock" if
+check_kthr_stop && kthread_should_stop().
+
+May be we should consolidate the freezer_lock's sections, something
+like below?
+
+Hmm. But I got lost a bit. Why do we need freezer_lock to set/clear
+PF_FROZEN ? OK, the code below takes freezer_lock for freezing().
+Is there any other reason?
 
 Oleg.
+
+bool __refrigerator(bool check_kthr_stop)
+{
+	/* Hmm, should we be allowed to suspend when there are realtime
+	   processes around? */
+	bool was_frozen = false;
+	long save;
+
+	save = current->state;
+	pr_debug("%s entered refrigerator\n", current->comm);
+
+	for (;;) {
+		set_current_state(TASK_UNINTERRUPTIBLE);
+
+		spin_lock_irq(&freezer_lock);
+		current->flags |= PF_FROZEN;
+		if (!freezing(current) ||
+		    (check_kthr_stop && kthread_should_stop()))
+			current->flags &= ~PF_FROZEN;
+		spin_unlock_irq(&freezer_lock);
+
+		if (!current->flags & PF_FROZEN)
+			break;
+
+		was_frozen = true;
+		schedule();
+	}
+
+	spin_lock_irq(&current->sighand->siglock);
+	recalc_sigpending(); /* We sent fake signal, clean it up */
+	spin_unlock_irq(&current->sighand->siglock);
+
+	pr_debug("%s left refrigerator\n", current->comm);
+	/*
+	 * Restore saved task state before returning.  The mb'd version
+	 * needs to be used; otherwise, it might silently break
+	 * synchronization which depends on ordered task state change.
+	 */
+	set_current_state(save);
+
+	return was_frozen;
+}
