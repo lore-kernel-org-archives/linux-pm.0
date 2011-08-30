@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/5] PM / Domains: Split device PM domain data
-	into base and need_restore
-Date: Wed, 31 Aug 2011 00:18:43 +0200
-Message-ID: <201108310018.43385.rjw__34488.836877472$1314846998$gmane$org@sisk.pl>
+Subject: [PATCH 2/5] PM / Runtime: Do not run callbacks under
+	lock for power.irq_safe set
+Date: Wed, 31 Aug 2011 00:20:25 +0200
+Message-ID: <201108310020.26104.rjw__16456.4673476436$1314846999$gmane$org@sisk.pl>
 References: <201108310017.03103.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,165 +24,100 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The struct pm_domain_data data type is defined in such a way that
-adding new fields specific to the generic PM domains code will
-require include/linux/pm.h to be modified.  As a result, data types
-used only by the generic PM domains code will be defined in two
-headers, although they all should be defined in pm_domain.h and
-pm.h will need to include more headers, which won't be very nice.
-
-For this reason change the definition of struct pm_subsys_data
-so that its domain_data member is a pointer, which will allow
-struct pm_domain_data to be subclassed by various PM domains
-implementations.  Remove the need_restore member from
-struct pm_domain_data and make the generic PM domains code
-subclass it by adding the need_restore member to the new data type.
+The rpm_suspend() and rpm_resume() routines execute subsystem or PM
+domain callbacks under power.lock if power.irq_safe is set for the
+given device.  This is inconsistent with that rpm_idle() does after
+commit 02b2677 (PM / Runtime: Allow _put_sync() from
+interrupts-disabled context) and is problematic for subsystems and PM
+domains wanting to use power.lock for synchronization in their
+runtime PM callbacks.  For this reason, make runtime PM core functions
+always release power.lock before invoking subsystem or PM domain
+callbacks.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/base/power/domain.c |   28 +++++++++++++++++++---------
- include/linux/pm.h          |    3 +--
- include/linux/pm_domain.h   |   10 ++++++++++
- 3 files changed, 30 insertions(+), 11 deletions(-)
+ drivers/base/power/runtime.c |   50 ++++++++++++++++++++++++-------------------
+ 1 file changed, 28 insertions(+), 22 deletions(-)
 
-Index: linux/include/linux/pm.h
+Index: linux/drivers/base/power/runtime.c
 ===================================================================
---- linux.orig/include/linux/pm.h
-+++ linux/include/linux/pm.h
-@@ -433,7 +433,6 @@ struct wakeup_source;
- struct pm_domain_data {
- 	struct list_head list_node;
- 	struct device *dev;
--	bool need_restore;
- };
- 
- struct pm_subsys_data {
-@@ -443,7 +442,7 @@ struct pm_subsys_data {
- 	struct list_head clock_list;
- #endif
- #ifdef CONFIG_PM_GENERIC_DOMAINS
--	struct pm_domain_data domain_data;
-+	struct pm_domain_data *domain_data;
- #endif
- };
- 
-Index: linux/include/linux/pm_domain.h
-===================================================================
---- linux.orig/include/linux/pm_domain.h
-+++ linux/include/linux/pm_domain.h
-@@ -62,6 +62,16 @@ struct gpd_link {
- 	struct list_head slave_node;
- };
- 
-+struct generic_pm_domain_data {
-+	struct pm_domain_data base;
-+	bool need_restore;
-+};
-+
-+static inline struct generic_pm_domain_data *to_gpd_data(struct pm_domain_data *pdd)
-+{
-+	return container_of(pdd, struct generic_pm_domain_data, base);
-+}
-+
- #ifdef CONFIG_PM_GENERIC_DOMAINS
- extern int pm_genpd_add_device(struct generic_pm_domain *genpd,
- 			       struct device *dev);
-Index: linux/drivers/base/power/domain.c
-===================================================================
---- linux.orig/drivers/base/power/domain.c
-+++ linux/drivers/base/power/domain.c
-@@ -188,11 +188,12 @@ static int __pm_genpd_save_device(struct
- 				  struct generic_pm_domain *genpd)
- 	__releases(&genpd->lock) __acquires(&genpd->lock)
- {
-+	struct generic_pm_domain_data *gpd_data = to_gpd_data(pdd);
- 	struct device *dev = pdd->dev;
- 	struct device_driver *drv = dev->driver;
- 	int ret = 0;
- 
--	if (pdd->need_restore)
-+	if (gpd_data->need_restore)
- 		return 0;
- 
- 	mutex_unlock(&genpd->lock);
-@@ -210,7 +211,7 @@ static int __pm_genpd_save_device(struct
- 	mutex_lock(&genpd->lock);
- 
- 	if (!ret)
--		pdd->need_restore = true;
-+		gpd_data->need_restore = true;
- 
- 	return ret;
- }
-@@ -224,10 +225,11 @@ static void __pm_genpd_restore_device(st
- 				      struct generic_pm_domain *genpd)
- 	__releases(&genpd->lock) __acquires(&genpd->lock)
- {
-+	struct generic_pm_domain_data *gpd_data = to_gpd_data(pdd);
- 	struct device *dev = pdd->dev;
- 	struct device_driver *drv = dev->driver;
- 
--	if (!pdd->need_restore)
-+	if (!gpd_data->need_restore)
- 		return;
- 
- 	mutex_unlock(&genpd->lock);
-@@ -244,7 +246,7 @@ static void __pm_genpd_restore_device(st
- 
- 	mutex_lock(&genpd->lock);
- 
--	pdd->need_restore = false;
-+	gpd_data->need_restore = false;
+--- linux.orig/drivers/base/power/runtime.c
++++ linux/drivers/base/power/runtime.c
+@@ -155,6 +155,31 @@ static int rpm_check_suspend_allowed(str
  }
  
  /**
-@@ -493,7 +495,7 @@ static int pm_genpd_runtime_resume(struc
- 		mutex_lock(&genpd->lock);
- 	}
- 	finish_wait(&genpd->status_wait_queue, &wait);
--	__pm_genpd_restore_device(&dev->power.subsys_data->domain_data, genpd);
-+	__pm_genpd_restore_device(dev->power.subsys_data->domain_data, genpd);
- 	genpd->resume_count--;
- 	genpd_set_active(genpd);
- 	wake_up_all(&genpd->status_wait_queue);
-@@ -1080,6 +1082,7 @@ static void pm_genpd_complete(struct dev
-  */
- int pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev)
- {
-+	struct generic_pm_domain_data *gpd_data;
- 	struct pm_domain_data *pdd;
- 	int ret = 0;
- 
-@@ -1106,14 +1109,20 @@ int pm_genpd_add_device(struct generic_p
- 			goto out;
- 		}
- 
-+	gpd_data = kzalloc(sizeof(*gpd_data), GFP_KERNEL);
-+	if (!gpd_data) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
++ * __rpm_callback - Run a given runtime PM callback for a given device.
++ * @cb: Runtime PM callback to run.
++ * @dev: Device to run the callback for.
++ */
++static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
++	__releases(&dev->power.lock) __acquires(&dev->power.lock)
++{
++	int retval;
 +
- 	genpd->device_count++;
++	if (dev->power.irq_safe)
++		spin_unlock(&dev->power.lock);
++	else
++		spin_unlock_irq(&dev->power.lock);
++
++	retval = cb(dev);
++
++	if (dev->power.irq_safe)
++		spin_lock(&dev->power.lock);
++	else
++		spin_lock_irq(&dev->power.lock);
++
++	return retval;
++}
++
++/**
+  * rpm_idle - Notify device bus type if the device can be suspended.
+  * @dev: Device to notify the bus type about.
+  * @rpmflags: Flag bits.
+@@ -225,19 +250,8 @@ static int rpm_idle(struct device *dev,
+ 	else
+ 		callback = NULL;
  
- 	dev->pm_domain = &genpd->domain;
- 	dev_pm_get_subsys_data(dev);
--	pdd = &dev->power.subsys_data->domain_data;
--	pdd->dev = dev;
--	pdd->need_restore = false;
--	list_add_tail(&pdd->list_node, &genpd->dev_list);
-+	dev->power.subsys_data->domain_data = &gpd_data->base;
-+	gpd_data->base.dev = dev;
-+	gpd_data->need_restore = false;
-+	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
+-	if (callback) {
+-		if (dev->power.irq_safe)
+-			spin_unlock(&dev->power.lock);
+-		else
+-			spin_unlock_irq(&dev->power.lock);
+-
+-		callback(dev);
+-
+-		if (dev->power.irq_safe)
+-			spin_lock(&dev->power.lock);
+-		else
+-			spin_lock_irq(&dev->power.lock);
+-	}
++	if (callback)
++		__rpm_callback(callback, dev);
  
-  out:
- 	genpd_release_lock(genpd);
-@@ -1152,6 +1161,7 @@ int pm_genpd_remove_device(struct generi
- 		pdd->dev = NULL;
- 		dev_pm_put_subsys_data(dev);
- 		dev->pm_domain = NULL;
-+		kfree(to_gpd_data(pdd));
+ 	dev->power.idle_notification = false;
+ 	wake_up_all(&dev->power.wait_queue);
+@@ -252,22 +266,14 @@ static int rpm_idle(struct device *dev,
+  * @dev: Device to run the callback for.
+  */
+ static int rpm_callback(int (*cb)(struct device *), struct device *dev)
+-	__releases(&dev->power.lock) __acquires(&dev->power.lock)
+ {
+ 	int retval;
  
- 		genpd->device_count--;
+ 	if (!cb)
+ 		return -ENOSYS;
  
+-	if (dev->power.irq_safe) {
+-		retval = cb(dev);
+-	} else {
+-		spin_unlock_irq(&dev->power.lock);
+-
+-		retval = cb(dev);
++	retval = __rpm_callback(cb, dev);
+ 
+-		spin_lock_irq(&dev->power.lock);
+-	}
+ 	dev->power.runtime_error = retval;
+ 	return retval != -EACCES ? retval : -EIO;
+ }
