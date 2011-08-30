@@ -1,18 +1,16 @@
-From: "Turquette, Mike" <mturquette@ti.com>
-Subject: Re: [PATCH v8 3/5] PM / DEVFREQ: add common sysfs
-	interfaces
-Date: Tue, 30 Aug 2011 10:10:40 -0700
-Message-ID: <CAJOA=zMGobnNVr3FJcJ6oCjmWEkLP3trVX+Kj=Qvx1tW6QtzzQ@mail.gmail.com>
-References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
-	<1314174131-14194-1-git-send-email-myungjoo.ham@samsung.com>
-	<1314174131-14194-4-git-send-email-myungjoo.ham@samsung.com>
-	<CAJOA=zNHSC0kBMhRw1uf=8E7PE2Da6wXAWnG=mgh2M8-pa6w6g@mail.gmail.com>
-	<CAJ0PZbQY0Li-uYQGxFqzjuuzCR4ViNy2AHE=8SiNCbADoG8z=g@mail.gmail.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 6/6] cgroup: kill subsys->can_attach_task(),
+ pre_attach() and attach_task()
+Date: Tue, 30 Aug 2011 22:10:32 +0200
+Message-ID: <20110830201030.GC15953__864.046955439512$1314811009$gmane$org@somewhere.redhat.com>
+References: <1314312192-26885-1-git-send-email-tj@kernel.org>
+	<1314312192-26885-7-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbQY0Li-uYQGxFqzjuuzCR4ViNy2AHE=8SiNCbADoG8z=g@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1314312192-26885-7-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,169 +20,103 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: myungjoo.ham@gmail.com
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Tejun Heo <tj@kernel.org>
+Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBBdWcgMjksIDIwMTEgYXQgOToyOCBQTSwgTXl1bmdKb28gSGFtIDxteXVuZ2pvby5o
-YW1Ac2Ftc3VuZy5jb20+IHdyb3RlOgo+IE9uIFR1ZSwgQXVnIDMwLCAyMDExIGF0IDQ6MTcgQU0s
-IFR1cnF1ZXR0ZSwgTWlrZSA8bXR1cnF1ZXR0ZUB0aS5jb20+IHdyb3RlOgo+Pgo+PiBTb3JyeSBJ
-J2xsIGhhdmUgdG8gcmVzY2luZCBteSBBQ0suIMKgSSBqdXN0IHJldmlld2VkIHBhdGNoIDUvNSBh
-bmQgdGhlCj4+IHNob3dfZnJlcSBhbmQgcmVzdG9yZV9mcmVxIGZ1bmN0aW9ucyBmb3IgdGhlIHVz
-ZXJzcGFjZSBnb3Zlcm5vciBkbyBub3QKPj4gcHJvdGVjdCB0aGUgcHJpdmF0ZSBkYXRhIGFjY2Vz
-c2VzIHdpdGggYSBtdXRleC4gwqBMb29raW5nIGEgYml0IGZ1cnRoZXIKPj4gSSBzZWUgdGhhdCB0
-aGV5IGRvIGNhbGwgZ2V0X2RldmZyZXE7IEkgdGhpbmsgdGhlIHNlbWFudGljcyBmb3IgdGhpcwo+
-PiBhcmUgd3JvbmcuCj4+Cj4+IGdldF9kZXZmcmVxIG9ubHkgcHJvdGVjdHMgdGhlIGxpc3QgYXMg
-bG9uZyBhcyBpdCB0YWtlcyB0byBkbyBhIGxvb2t1cC4KPj4gwqBIb3dldmVyIG5laXRoZXIgc3Ry
-dWN0IGRldmZyZXEgb3Igc3RydWN0IHVzZXJzcGFjZV9kYXRhIGhhdmUgYSBtdXRleAo+PiBhc3Nv
-Y2lhdGVkIHdpdGggdGhlbSwgc28gY29uY3VycmVudCBvcGVyYXRpb25zIGFyZSBub3QgcHJvdGVj
-dGVkLgo+Pgo+PiBPbmUgaGVhdnktaGFuZGVkIHdheSBvZiBzb2x2aW5nIHRoaXMgaXMgdG8gbm90
-IGhhdmUgZ2V0X2RldmZyZXEKPj4gcmVsZWFzZSB0aGUgbXV0ZXgsIGFuZCB0aGVuIGhhdmUgdGhv
-c2UgZnVuY3Rpb25zIGNhbGwgYSBuZXcKPj4gcHV0X2RldmZyZXEgd2hpY2ggZG9lcyByZWxlYXNl
-IHRoZSBtdXRleC4gwqBIb3dldmVyIHRoYXQgaXMgcmVhbGx5IGJhZAo+PiBsb2NraW5nLgo+Pgo+
-PiBXaGF0IGRvIHlvdSB0aGluayBhYm91dCBwdXR0aW5nIGEgbXV0ZXggaW4gc3RydWN0IGRldmZy
-ZXE/IMKgVGhlIHJ1bGUKPj4gZm9yIGdvdmVybm9ycyBjYW4gYmUgdGhhdCBhY2Nlc3MgdG8gdGhl
-IGdvdmVybm9yLXNwZWNpZmljIHByaXZhdGUgZGF0YQo+PiByZXF1aXJlcyB0YWtpbmcgdGhhdCBk
-ZXZmcmVxJ3MgbXV0ZXguCj4KPgo+IEEgbG9jayBpbiBwcml2YXRlIGRhdGEgYXQgREVWRlJFUSBm
-cmFtZXdvcmsgd29uJ3QgYmUgbmVlZGVkIGFzIGl0IGlzIGEKPiBnb3Zlcm5vci1zcGVjaWZpYyBp
-c3N1ZTsgaG93ZXZlciwgaXQgYXBwZWFycyB0aGF0IHdlIG5lZWQgYSBsb2NraW5nCj4gbWVjaGFu
-aXNtIGZvciBhY2Nlc3Npbmcgc3RydWN0IGRldmZyZXEgaW4gZ2VuZXJhbCBmb3IgZ292ZXJub3Jz
-Lgo+IEFsdGhvdWdoIHdlIGRvIG5vdCBoYXZlIGFueSBnb3Zlcm5vciB0aGF0IHdyaXRlcyBzb21l
-dGhpbmcgb3IgcmVhZHMKPiBtdWx0aXBsZSB0aW1lcyBvbiBzdHJ1Y3QgZGV2ZnJlcSAoZXhjZXB0
-IGZvciB0aGUgcHJpdmF0ZSBkYXRhKSBvdXQgb2YKPiBnZXRfdGFyZ2V0X2ZyZXEgb3BzLCB3aGlj
-aCBkb2VzIG5vdCBuZWVkIGFuIGFkZGl0aW9uYWwgbG9jaywgd2UgbWF5Cj4gaGF2ZSBvbmUgc29v
-bi4KPgo+IFRoZW4sIEkgd2lsbCBuZWVkIHRvIHVwZGF0ZSB0aGUgREVWRlJFUSBjb3JlIGFzIHdl
-bGwuCj4gVGhlcmUgd2lsbCBiZSB0d28gbG9ja3MgaW4gZGV2ZnJlcS5jOiB0aGUgZ2xvYmFsIGRl
-dmZyZXFfbGlzdF9sb2NrIGFuZAo+IHBlci1kZXZmcmVxIGRldmZyZXFfbG9jayBpbiBzdHJ1Y3Qg
-ZGV2ZnJlcS4KPiBBbmQgdGhlIHJvbGUgb2YgZGV2ZnJlcV9sb2NrIHdpbGwgYmUgcHJvdGVjdGlu
-ZyB0aGUgYWNjZXNzIHRvIHN0cnVjdAo+IGRldmZyZXEgKHNvbWUgZnVuY3Rpb25zIGluIGRldmZy
-ZXEuYyB3aWxsIHVzZSB0aGlzIGxvY2sgYW5kIHNvbWUgdXNhZ2UKPiBvZiBkZXZmcmVxX2xpc3Rf
-bG9jayB3aWxsIGJlIHJlbW92ZWQpLgo+Cj4gVGhpcyB3aWxsIHJlc3VsdCBpbiBtb3JlIGdlbmVy
-YWwgc3lzZnMgaW50ZXJmYWNlIChvciBmdW5jdGlvbnMgb3RoZXIKPiB0aGFuIHRoZSBzdGFuZGFy
-ZCBvcHMpIHN1cHBvcnQgaW4gZ292ZXJub3JzLgoKU291bmRzIGdvb2QuICBBbHNvLCBwbGVhc2Ug
-YWRkIGEgY29tbWVudCBzb21ld2hlcmUgaW4gZGV2ZnJlcS5oCihwcm9iYWJseSBhYm92ZSBkZWZp
-bml0aW9uIGZvciBzdHJ1Y3QgZGV2ZnJlcSkgdGhhdCB0aGUgbG9jayBtdXN0IGFsc28KYmUgaGVs
-ZCBieSBnb3Zlcm5vcnMgd2hlbiBhY2Nlc3NpbmcgZGV2ZnJlcS0+ZGF0YS4KClJlZ2FyZHMsCk1p
-a2UKCj4gVGhhbmsgeW91IHNvIG11Y2ghCj4KPgo+IENoZWVycywKPiBNeXVuZ0pvby4KPgo+Pgo+
-PiBSZWdhcmRzLAo+PiBNaWtlCj4+Cj4+PiArCj4+PiArLyoqCj4+PiDCoCogZGV2ZnJlcV9kbygp
-IC0gQ2hlY2sgdGhlIHVzYWdlIHByb2ZpbGUgb2YgYSBnaXZlbiBkZXZpY2UgYW5kIGNvbmZpZ3Vy
-ZQo+Pj4gwqAqIMKgIMKgIMKgIMKgIMKgIMKgIGZyZXF1ZW5jeSBhbmQgdm9sdGFnZSBhY2NvcmRp
-bmdseQo+Pj4gwqAqIEBkZXZmcmVxOiDCoCBkZXZmcmVxIGluZm8gb2YgdGhlIGdpdmVuIGRldmlj
-ZQo+Pj4gQEAgLTE0OSw2ICsxNjcsOCBAQCBzdGF0aWMgdm9pZCBkZXZmcmVxX21vbml0b3Ioc3Ry
-dWN0IHdvcmtfc3RydWN0ICp3b3JrKQo+Pj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqBkZXZfZXJyKGRldmZyZXEtPmRldiwgIkR1ZSB0byBkZXZmcmVxX2Rv
-IGVycm9yKCVkKSwgZGV2ZnJlcSglcykgaXMgcmVtb3ZlZCBmcm9tIHRoZSBkZXZpY2VcbiIsCj4+
-PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoGVycm9yLCBkZXZmcmVxLT5nb3Zlcm5vci0+bmFtZSk7Cj4+Pgo+Pj4gKyDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBzeXNmc191bm1lcmdlX2dyb3VwKCZk
-ZXZmcmVxLT5kZXYtPmtvYmosCj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgICZkZXZfYXR0cl9ncm91
-cCk7Cj4+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGxp
-c3RfZGVsKCZkZXZmcmVxLT5ub2RlKTsKPj4+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKga2ZyZWUoZGV2ZnJlcSk7Cj4+Pgo+Pj4gQEAgLTIzOSw2ICsyNTks
-OCBAQCBpbnQgZGV2ZnJlcV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRl
-dmZyZXFfZGV2X3Byb2ZpbGUgKnByb2ZpbGUsCj4+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoHF1
-ZXVlX2RlbGF5ZWRfd29yayhkZXZmcmVxX3dxLCAmZGV2ZnJlcV93b3JrLAo+Pj4gwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgZGV2ZnJlcS0+bmV4dF9w
-b2xsaW5nKTsKPj4+IMKgIMKgIMKgIMKgfQo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBzeXNmc19tZXJn
-ZV9ncm91cCgmZGV2LT5rb2JqLCAmZGV2X2F0dHJfZ3JvdXApOwo+Pj4gwqBvdXQ6Cj4+PiDCoCDC
-oCDCoCDCoG11dGV4X3VubG9jaygmZGV2ZnJlcV9saXN0X2xvY2spOwo+Pj4KPj4+IEBAIC0yNzEs
-NiArMjkzLDggQEAgaW50IGRldmZyZXFfcmVtb3ZlX2RldmljZShzdHJ1Y3QgZGV2aWNlICpkZXYp
-Cj4+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGdvdG8gb3V0Owo+Pj4gwqAgwqAgwqAgwqB9Cj4+
-Pgo+Pj4gKyDCoCDCoCDCoCBzeXNmc191bm1lcmdlX2dyb3VwKCZkZXYtPmtvYmosICZkZXZfYXR0
-cl9ncm91cCk7Cj4+PiArCj4+PiDCoCDCoCDCoCDCoGxpc3RfZGVsKCZkZXZmcmVxLT5ub2RlKTsK
-Pj4+IMKgIMKgIMKgIMKgc3JjdV9ub3RpZmllcl9jaGFpbl91bnJlZ2lzdGVyKG5oLCAmZGV2ZnJl
-cS0+bmIpOwo+Pj4gwqAgwqAgwqAgwqBrZnJlZShkZXZmcmVxKTsKPj4+IEBAIC0yNzksNiArMzAz
-LDEzMiBAQCBvdXQ6Cj4+PiDCoCDCoCDCoCDCoHJldHVybiAwOwo+Pj4gwqB9Cj4+Pgo+Pj4gK3N0
-YXRpYyBzc2l6ZV90IHNob3dfZ292ZXJub3Ioc3RydWN0IGRldmljZSAqZGV2LAo+Pj4gKyDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoHN0cnVjdCBkZXZpY2VfYXR0cmli
-dXRlICphdHRyLCBjaGFyICpidWYpCj4+PiArewo+Pj4gKyDCoCDCoCDCoCBzdHJ1Y3QgZGV2ZnJl
-cSAqZGYgPSBnZXRfZGV2ZnJlcShkZXYpOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBpZiAoSVNfRVJS
-KGRmKSkKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcmV0dXJuIFBUUl9FUlIoZGYpOwo+Pj4g
-KyDCoCDCoCDCoCBpZiAoIWRmLT5nb3Zlcm5vcikKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-cmV0dXJuIC1FSU5WQUw7Cj4+PiArCj4+PiArIMKgIMKgIMKgIHJldHVybiBzcHJpbnRmKGJ1Ziwg
-IiVzXG4iLCBkZi0+Z292ZXJub3ItPm5hbWUpOwo+Pj4gK30KPj4+ICsKPj4+ICtzdGF0aWMgc3Np
-emVfdCBzaG93X2ZyZXEoc3RydWN0IGRldmljZSAqZGV2LAo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoHN0cnVjdCBkZXZpY2VfYXR0cmlidXRlICphdHRyLCBjaGFyICpi
-dWYpCj4+PiArewo+Pj4gKyDCoCDCoCDCoCBzdHJ1Y3QgZGV2ZnJlcSAqZGYgPSBnZXRfZGV2ZnJl
-cShkZXYpOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBpZiAoSVNfRVJSKGRmKSkKPj4+ICsgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgcmV0dXJuIFBUUl9FUlIoZGYpOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBy
-ZXR1cm4gc3ByaW50ZihidWYsICIlbHVcbiIsIGRmLT5wcmV2aW91c19mcmVxKTsKPj4+ICt9Cj4+
-PiArCj4+PiArc3RhdGljIHNzaXplX3Qgc2hvd19tYXhfZnJlcShzdHJ1Y3QgZGV2aWNlICpkZXYs
-Cj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgc3RydWN0IGRl
-dmljZV9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1ZikKPj4+ICt7Cj4+PiArIMKgIMKgIMKgIHN0
-cnVjdCBkZXZmcmVxICpkZiA9IGdldF9kZXZmcmVxKGRldik7Cj4+PiArIMKgIMKgIMKgIHVuc2ln
-bmVkIGxvbmcgZnJlcSA9IFVMT05HX01BWDsKPj4+ICsgwqAgwqAgwqAgc3RydWN0IG9wcCAqb3Bw
-Owo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBpZiAoSVNfRVJSKGRmKSkKPj4+ICsgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgcmV0dXJuIFBUUl9FUlIoZGYpOwo+Pj4gKyDCoCDCoCDCoCBpZiAoIWRmLT5kZXYp
-Cj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHJldHVybiAtRUlOVkFMOwo+Pj4gKwo+Pj4gKyDC
-oCDCoCDCoCBvcHAgPSBvcHBfZmluZF9mcmVxX2Zsb29yKGRmLT5kZXYsICZmcmVxKTsKPj4+ICsg
-wqAgwqAgwqAgaWYgKElTX0VSUihvcHApKQo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1
-cm4gUFRSX0VSUihvcHApOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCByZXR1cm4gc3ByaW50ZihidWYs
-ICIlbHVcbiIsIGZyZXEpOwo+Pj4gK30KPj4+ICsKPj4+ICtzdGF0aWMgc3NpemVfdCBzaG93X21p
-bl9mcmVxKHN0cnVjdCBkZXZpY2UgKmRldiwKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgwqBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hhciAqYnVm
-KQo+Pj4gK3sKPj4+ICsgwqAgwqAgwqAgc3RydWN0IGRldmZyZXEgKmRmID0gZ2V0X2RldmZyZXEo
-ZGV2KTsKPj4+ICsgwqAgwqAgwqAgdW5zaWduZWQgbG9uZyBmcmVxID0gMDsKPj4+ICsgwqAgwqAg
-wqAgc3RydWN0IG9wcCAqb3BwOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBpZiAoSVNfRVJSKGRmKSkK
-Pj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcmV0dXJuIFBUUl9FUlIoZGYpOwo+Pj4gKyDCoCDC
-oCDCoCBpZiAoIWRmLT5kZXYpCj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHJldHVybiAtRUlO
-VkFMOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBvcHAgPSBvcHBfZmluZF9mcmVxX2NlaWwoZGYtPmRl
-diwgJmZyZXEpOwo+Pj4gKyDCoCDCoCDCoCBpZiAoSVNfRVJSKG9wcCkpCj4+PiArIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIHJldHVybiBQVFJfRVJSKG9wcCk7Cj4+PiArCj4+PiArIMKgIMKgIMKgIHJl
-dHVybiBzcHJpbnRmKGJ1ZiwgIiVsdVxuIiwgZnJlcSk7Cj4+PiArfQo+Pj4gKwo+Pj4gK3N0YXRp
-YyBzc2l6ZV90IHNob3dfcG9sbGluZ19pbnRlcnZhbChzdHJ1Y3QgZGV2aWNlICpkZXYsCj4+PiAr
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgc3Ry
-dWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1ZikKPj4+ICt7Cj4+PiArIMKgIMKg
-IMKgIHN0cnVjdCBkZXZmcmVxICpkZiA9IGdldF9kZXZmcmVxKGRldik7Cj4+PiArCj4+PiArIMKg
-IMKgIMKgIGlmIChJU19FUlIoZGYpKQo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4g
-UFRSX0VSUihkZik7Cj4+PiArIMKgIMKgIMKgIGlmICghZGYtPnByb2ZpbGUpCj4+PiArIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIHJldHVybiAtRUlOVkFMOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCByZXR1
-cm4gc3ByaW50ZihidWYsICIlZFxuIiwgZGYtPnByb2ZpbGUtPnBvbGxpbmdfbXMpOwo+Pj4gK30K
-Pj4+ICsKPj4+ICtzdGF0aWMgc3NpemVfdCBzdG9yZV9wb2xsaW5nX2ludGVydmFsKHN0cnVjdCBk
-ZXZpY2UgKmRldiwKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqAgwqAgwqAgc3RydWN0IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsCj4+PiArIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGNvbnN0IGNo
-YXIgKmJ1Ziwgc2l6ZV90IGNvdW50KQo+Pj4gK3sKPj4+ICsgwqAgwqAgwqAgc3RydWN0IGRldmZy
-ZXEgKmRmID0gZ2V0X2RldmZyZXEoZGV2KTsKPj4+ICsgwqAgwqAgwqAgdW5zaWduZWQgaW50IHZh
-bHVlOwo+Pj4gKyDCoCDCoCDCoCBpbnQgcmV0Owo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBpZiAoSVNf
-RVJSKGRmKSkKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcmV0dXJuIFBUUl9FUlIoZGYpOwo+
-Pj4gKyDCoCDCoCDCoCBpZiAoIWRmLT5wcm9maWxlKQo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCByZXR1cm4gLUVJTlZBTDsKPj4+ICsKPj4+ICsgwqAgwqAgwqAgcmV0ID0gc3NjYW5mKGJ1Ziwg
-IiV1IiwgJnZhbHVlKTsKPj4+ICsgwqAgwqAgwqAgaWYgKHJldCAhPSAxKQo+Pj4gKyDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCByZXR1cm4gLUVJTlZBTDsKPj4+ICsKPj4+ICsgwqAgwqAgwqAgZGYtPnBy
-b2ZpbGUtPnBvbGxpbmdfbXMgPSB2YWx1ZTsKPj4+ICsgwqAgwqAgwqAgZGYtPm5leHRfcG9sbGlu
-ZyA9IGRmLT5wb2xsaW5nX2ppZmZpZXMKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
-wqAgwqAgwqA9IG1zZWNzX3RvX2ppZmZpZXModmFsdWUpOwo+Pj4gKwo+Pj4gKyDCoCDCoCDCoCBt
-dXRleF9sb2NrKCZkZXZmcmVxX2xpc3RfbG9jayk7Cj4+PiArIMKgIMKgIMKgIGlmIChkZi0+bmV4
-dF9wb2xsaW5nID4gMCAmJiAhcG9sbGluZykgewo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBw
-b2xsaW5nID0gdHJ1ZTsKPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgcXVldWVfZGVsYXllZF93
-b3JrKGRldmZyZXFfd3EsICZkZXZmcmVxX3dvcmssCj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIMKg
-IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZGYtPm5leHRfcG9sbGluZyk7Cj4+PiArIMKg
-IMKgIMKgIH0KPj4+ICsgwqAgwqAgwqAgbXV0ZXhfdW5sb2NrKCZkZXZmcmVxX2xpc3RfbG9jayk7
-Cj4+PiArCj4+PiArIMKgIMKgIMKgIHJldHVybiBjb3VudDsKPj4+ICt9Cj4+PiArCj4+PiArc3Rh
-dGljIERFVklDRV9BVFRSKGRldmZyZXFfZ292ZXJub3IsIDA0NDQsIHNob3dfZ292ZXJub3IsIE5V
-TEwpOwo+Pj4gK3N0YXRpYyBERVZJQ0VfQVRUUihkZXZmcmVxX2N1cl9mcmVxLCAwNDQ0LCBzaG93
-X2ZyZXEsIE5VTEwpOwo+Pj4gK3N0YXRpYyBERVZJQ0VfQVRUUihkZXZmcmVxX21heF9mcmVxLCAw
-NDQ0LCBzaG93X21heF9mcmVxLCBOVUxMKTsKPj4+ICtzdGF0aWMgREVWSUNFX0FUVFIoZGV2ZnJl
-cV9taW5fZnJlcSwgMDQ0NCwgc2hvd19taW5fZnJlcSwgTlVMTCk7Cj4+PiArc3RhdGljIERFVklD
-RV9BVFRSKGRldmZyZXFfcG9sbGluZ19pbnRlcnZhbCwgMDY0NCwgc2hvd19wb2xsaW5nX2ludGVy
-dmFsLAo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoHN0b3JlX3BvbGxpbmdfaW50ZXJ2
-YWwpOwo+Pj4gK3N0YXRpYyBzdHJ1Y3QgYXR0cmlidXRlICpkZXZfZW50cmllc1tdID0gewo+Pj4g
-KyDCoCDCoCDCoCAmZGV2X2F0dHJfZGV2ZnJlcV9nb3Zlcm5vci5hdHRyLAo+Pj4gKyDCoCDCoCDC
-oCAmZGV2X2F0dHJfZGV2ZnJlcV9jdXJfZnJlcS5hdHRyLAo+Pj4gKyDCoCDCoCDCoCAmZGV2X2F0
-dHJfZGV2ZnJlcV9tYXhfZnJlcS5hdHRyLAo+Pj4gKyDCoCDCoCDCoCAmZGV2X2F0dHJfZGV2ZnJl
-cV9taW5fZnJlcS5hdHRyLAo+Pj4gKyDCoCDCoCDCoCAmZGV2X2F0dHJfZGV2ZnJlcV9wb2xsaW5n
-X2ludGVydmFsLmF0dHIsCj4+PiArIMKgIMKgIMKgIE5VTEwsCj4+PiArfTsKPj4+ICtzdGF0aWMg
-c3RydWN0IGF0dHJpYnV0ZV9ncm91cCBkZXZfYXR0cl9ncm91cCA9IHsKPj4+ICsgwqAgwqAgwqAg
-Lm5hbWUgwqAgPSBwb3dlcl9ncm91cF9uYW1lLAo+Pj4gKyDCoCDCoCDCoCAuYXR0cnMgwqA9IGRl
-dl9lbnRyaWVzLAo+Pj4gK307Cj4+PiArCj4+PiDCoC8qKgo+Pj4gwqAqIGRldmZyZXFfaW5pdCgp
-IC0gSW5pdGlhbGl6ZSBkYXRhIHN0cnVjdHVyZSBmb3IgZGV2ZnJlcSBmcmFtZXdvcmsgYW5kCj4+
-PiDCoCogwqAgwqAgwqAgwqAgwqAgwqAgwqAgc3RhcnQgcG9sbGluZyByZWdpc3RlcmVkIGRldmZy
-ZXEgZGV2aWNlcy4KPj4+IC0tCj4+PiAxLjcuNC4xCj4+Pgo+Pj4KPj4KPgo+Cj4KPiAtLQo+IE15
-dW5nSm9vIEhhbSAo7ZWo66qF7KO8KSwgUGguRC4KPiBNb2JpbGUgU29mdHdhcmUgUGxhdGZvcm0g
-TGFiLAo+IERpZ2l0YWwgTWVkaWEgYW5kIENvbW11bmljYXRpb25zIChETUMpIEJ1c2luZXNzCj4g
-U2Ftc3VuZyBFbGVjdHJvbmljcwo+IGNlbGw6IDgyLTEwLTY3MTQtMjg1OAo+Cl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlz
-dApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Fri, Aug 26, 2011 at 12:43:12AM +0200, Tejun Heo wrote:
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index f3c7f7a..ce765ec 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -2075,7 +2064,6 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+>  {
+>  	int retval, i, group_size, nr_migrating_tasks;
+>  	struct cgroup_subsys *ss, *failed_ss = NULL;
+> -	bool cancel_failed_ss = false;
+>  	/* guaranteed to be initialized later, but the compiler needs this */
+>  	struct css_set *oldcg;
+>  	struct cgroupfs_root *root = cgrp->root;
+> @@ -2166,21 +2154,6 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+>  				goto out_cancel_attach;
+>  			}
+>  		}
+> -		/* a callback to be run on every thread in the threadgroup. */
+> -		if (ss->can_attach_task) {
+> -			/* run on each task in the threadgroup. */
+> -			for (i = 0; i < group_size; i++) {
+> -				tc = flex_array_get(group, i);
+> -				if (tc->cgrp == cgrp)
+> -					continue;
+> -				retval = ss->can_attach_task(cgrp, tc->task);
+> -				if (retval) {
+> -					failed_ss = ss;
+> -					cancel_failed_ss = true;
+> -					goto out_cancel_attach;
+> -				}
+> -			}
+> -		}
+>  	}
+>  
+>  	/*
+> @@ -2217,15 +2190,10 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+>  	}
+>  
+>  	/*
+> -	 * step 3: now that we're guaranteed success wrt the css_sets, proceed
+> -	 * to move all tasks to the new cgroup, calling ss->attach_task for each
+> -	 * one along the way. there are no failure cases after here, so this is
+> -	 * the commit point.
+> +	 * step 3: now that we're guaranteed success wrt the css_sets,
+> +	 * proceed to move all tasks to the new cgroup.  There are no
+> +	 * failure cases after here, so this is the commit point.
+>  	 */
+> -	for_each_subsys(root, ss) {
+> -		if (ss->pre_attach)
+> -			ss->pre_attach(cgrp);
+> -	}
+>  	for (i = 0; i < group_size; i++) {
+>  		tc = flex_array_get(group, i);
+>  		/* leave current thread as it is if it's already there */
+> @@ -2235,19 +2203,11 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+>  		/* if the thread is PF_EXITING, it can just get skipped. */
+>  		retval = cgroup_task_migrate(cgrp, tc->cgrp, tc->task, true);
+>  		BUG_ON(retval != 0 && retval != -ESRCH);
+> -
+> -		/* attach each task to each subsystem */
+> -		for_each_subsys(root, ss) {
+> -			if (ss->attach_task)
+> -				ss->attach_task(cgrp, tc->task);
+> -		}
+
+In order to keep the fix queued in -mm (https://lkml.org/lkml/2011/8/26/262)
+the tasks that have failed to migrate should be removed from the iterator
+so that they are not included in the batch in ->attach().
+
+>  	}
+>  	/* nothing is sensitive to fork() after this point. */
+>  
+>  	/*
+> -	 * step 4: do expensive, non-thread-specific subsystem callbacks.
+> -	 * TODO: if ever a subsystem needs to know the oldcgrp for each task
+> -	 * being moved, this call will need to be reworked to communicate that.
+> +	 * step 4: do subsystem attach callbacks.
+>  	 */
+>  	for_each_subsys(root, ss) {
+>  		if (ss->attach)
+> @@ -2271,11 +2231,8 @@ out_cancel_attach:
+>  	/* same deal as in cgroup_attach_task */
+>  	if (retval) {
+>  		for_each_subsys(root, ss) {
+> -			if (ss == failed_ss) {
+> -				if (cancel_failed_ss && ss->cancel_attach)
+> -					ss->cancel_attach(ss, cgrp, &tset);
+> +			if (ss == failed_ss)
+>  				break;
+> -			}
+>  			if (ss->cancel_attach)
+>  				ss->cancel_attach(ss, cgrp, &tset);
+>  		}
+> -- 
+> 1.7.6
+> 
