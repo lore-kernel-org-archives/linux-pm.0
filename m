@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFC][PATCH 5/5] PM / Domains: Add default power off
-	governor function
-Date: Wed, 31 Aug 2011 00:22:43 +0200
-Message-ID: <201108310022.43850.rjw__1826.1109515608$1314847014$gmane$org@sisk.pl>
-References: <201108310017.03103.rjw@sisk.pl>
+Subject: [Update] LPC2011 Power Management Micro Conf
+Date: Wed, 31 Aug 2011 00:39:42 +0200
+Message-ID: <201108310039.42862.rjw__34293.935498181$1314848942$gmane$org@sisk.pl>
+References: <201105011353.44809.rjw@sisk.pl> <201107030929.28555.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108310017.03103.rjw@sisk.pl>
+In-Reply-To: <201107030929.28555.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,150 +17,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+To: linux-pm@lists.linux-foundation.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@suse.de>, Stephen Boyd <sboyd@codeaurora.org>, LKML <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, MyungJoo Ham <myungjoo.ham@samsung.com>, Jean Pihet <j-pihet@ti.com>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Hi,
 
-Add a function deciding whether or not a given PM domain should
-be powered off on the basis of that domain's devices' PM QoS
-constraints.
+On Sunday, July 03, 2011, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> Some time ago I sent the following to linux-pm and wasn't really satisfied
+> with the response, so here it goes again.  It is slightly outdated, because
+> we've already started to plan a PM meeting at the Kernel Summit, but I hope
+> some of you will be able to participate in the LPC PM Mini Conf too.
+> 
+> In the previous years we used to organize Power Management Mini Summits to
+> discuss PM-related issues, the last of which took place during LinuxCon in
+> Boston in 2010.  Unfortunately, however, it wasn't particularly well attended
+> and some of the participants generally felt that it had failed its purpose.
+> The power management track at the last LPC, on the other hand, was generally
+> regarded as interesting and successful, so there only seems to be room for
+> one event devoted to power management a year.  For this reason, there won't
+> be a PM Mini Summit in 2011 and the LPC PM Mini Conference will play the role
+> of it.  To this end, in addition to the plenary sessions within the LPC PM
+> track there will be a possibility to discuss specific problems related to
+> power management in smaller groups.
+> 
+> If there's anything you'd like to discuss or give a presentation on related to
+> Power Management, please let me know, preferably by replying to this message.
+> 
+> We have 1.5 hours allocated in the LPC schedule for the plenary session, but
+> we will be able to move to another room (or a number of rooms if that's more
+> suitable) afterwards to discuss things in detail.
 
----
- drivers/base/power/domain_governor.c |   96 +++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h            |    7 ++
- 2 files changed, 103 insertions(+)
+The LPC planned schedule has recently changed so that the PM microconference
+is now scheduled on Thursday, Sep. 8, 2011, at 4:45 PM.  Since the LPC
+organizers have no plans for Thursday evening, we can easily extend the
+discussion part pretty much as far as we want.
 
-Index: linux/include/linux/pm_domain.h
-===================================================================
---- linux.orig/include/linux/pm_domain.h
-+++ linux/include/linux/pm_domain.h
-@@ -49,6 +49,10 @@ struct generic_pm_domain {
- 	int (*start_device)(struct device *dev);
- 	int (*stop_device)(struct device *dev);
- 	bool (*active_wakeup)(struct device *dev);
-+	ktime_t power_off_latency;
-+	ktime_t power_on_latency;
-+	s64 break_even_ns;
-+	s64 min_delta_ns;
- };
- 
- static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
-@@ -64,6 +68,9 @@ struct gpd_link {
- };
- 
- struct gpd_gov_dev_data {
-+	ktime_t start_latency;
-+	ktime_t suspend_latency;
-+	ktime_t resume_latency;
- 	s64 break_even_ns;
- };
- 
-Index: linux/drivers/base/power/domain_governor.c
-===================================================================
---- linux.orig/drivers/base/power/domain_governor.c
-+++ linux/drivers/base/power/domain_governor.c
-@@ -35,6 +35,102 @@ static bool default_stop_ok(struct devic
- 	return constraint_ns > gov_data->break_even_ns;
- }
- 
-+/* This routine must be executed under the PM domain's lock. */
-+static bool default_power_down_ok(struct dev_pm_domain *pd)
-+{
-+	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-+	struct gpd_link *link;
-+	struct pm_domain_data *pdd;
-+	ktime_t off_time, on_time;
-+	s64 delta_ns, min_delta_ns;
-+
-+	on_time = genpd->power_on_latency;
-+	/* Check if slave domains can be off for enough time. */
-+	delta_ns = ktime_to_ns(ktime_add(genpd->power_off_latency, on_time));
-+	min_delta_ns = 0;
-+	/* All slave domains have been powered off at this point. */
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
-+		if (delta_ns > link->slave->min_delta_ns)
-+			return false;
-+
-+		delta_ns = link->slave->min_delta_ns - delta_ns;
-+		if (delta_ns < min_delta_ns)
-+			min_delta_ns = delta_ns;
-+	}
-+
-+	genpd->min_delta_ns = min_delta_ns;
-+
-+	/* Compute the total time needed to power off the domain. */
-+	off_time = ktime_set(0, 0);
-+	/* All devices have been stopped at this point. */
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-+		struct gpd_gov_dev_data *gov_data;
-+
-+		if (!pdd->dev->driver)
-+			continue;
-+
-+		gov_data = to_gpd_data(pdd)->gov_data;
-+		if (!gov_data)
-+			continue;
-+
-+		off_time = ktime_add(off_time, gov_data->suspend_latency);
-+	}
-+	off_time = ktime_add(off_time, genpd->power_off_latency);
-+
-+	/*
-+	 * For each device in the domain compute the difference between the
-+	 * QoS value and the total time required to bring the device back
-+	 * assuming that the domain will be powered off and compute the minimum
-+	 * of those.
-+	 */
-+	min_delta_ns = 0;
-+	on_time = ktime_add(on_time, off_time);
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-+		struct gpd_gov_dev_data *gov_data;
-+		struct device *dev = pdd->dev;
-+		ktime_t dev_up_time;
-+		s32 constraint;
-+		s64 constraint_ns;
-+
-+		if (!dev->driver)
-+			continue;
-+
-+		gov_data = to_gpd_data(pdd)->gov_data;
-+		if (gov_data) {
-+			dev_up_time = ktime_add(on_time,
-+						gov_data->resume_latency);
-+			dev_up_time = ktime_add(dev_up_time,
-+						gov_data->start_latency);
-+		} else {
-+			dev_up_time = on_time;
-+		}
-+
-+		constraint = dev_pm_qos_read_value(dev);
-+		if (constraint < 0)
-+			return false;
-+		else if (constraint == 0) /* 0 means "don't care" */
-+			continue;
-+
-+		constraint_ns = constraint;
-+		constraint_ns *= NSEC_PER_USEC;
-+		delta_ns = constraint_ns - ktime_to_ns(dev_up_time);
-+		if (min_delta_ns > delta_ns)
-+			min_delta_ns = delta_ns;
-+	}
-+
-+	/* Compare the computed delta with the break even value. */
-+	if (min_delta_ns < genpd->break_even_ns)
-+		return false;
-+
-+	/* Store the computed value for the masters to use. */
-+	if (genpd->min_delta_ns > min_delta_ns)
-+		genpd->min_delta_ns = min_delta_ns;
-+
-+	/* The domain can be powered off. */
-+	return true;
-+}
-+
- struct dev_power_governor default_qos_governor = {
- 	.stop_ok = default_stop_ok,
-+	.power_down_ok = default_power_down_ok,
- };
+Please review the updated agenda at
+http://wiki.linuxplumbersconf.org/2011:power_management
+and adjust your plans.  Sorry for the inconveniences, if any.
+
+Thanks,
+Rafael
