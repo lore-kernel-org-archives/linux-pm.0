@@ -1,11 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/5] PM: Generic PM domains and device PM QoS
-Date: Wed, 31 Aug 2011 00:17:02 +0200
-Message-ID: <201108310017.03103.rjw__28111.004891298$1314846980$gmane$org@sisk.pl>
+Subject: [PATCH 3/5] PM / QoS: Add function
+	dev_pm_qos_read_value()
+Date: Wed, 31 Aug 2011 00:21:13 +0200
+Message-ID: <201108310021.13800.rjw__47905.4913660095$1314846996$gmane$org@sisk.pl>
+References: <201108310017.03103.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201108310017.03103.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -19,30 +22,380 @@ To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This patchset illustrates how device PM QoS may be used along with
-PM domains in my view.
+To read the current PM QoS value for a given device we need to
+make sure that the device's power.constraints object won't be
+removed while we're doing that.  For this reason, put the
+operation under dev->power.lock and acquire the lock
+around the initialization and removal of power.constraints.
 
-Actually, it consists of two parts.  Namely, patches [1-3/5] seem to be
-suitable for 3.2, unless somebody hates them, but patches [4-5/5] are
-total RFC.  They haven't been tested, only compiled, so the use of them
-is not encouraged (they may kill your dog or make your cat go wild, or
-do something equally nasty, so beware).  Their purpose is to illustrate
-an idea that I'd like to discuss at the PM miniconference during the
-LPC.
+Moreover, since we're using the value of power.constraints to
+determine whether or not the object is present, the
+power.constraints_state field isn't necessary any more and may be
+removed.  However, dev_pm_qos_add_request() needs to check if the
+device is being removed from the system before allocating a new
+PM QoS constraints object for it, so it has to use device_pm_lock()
+and the device PM QoS initialization and destruction should be done
+under device_pm_lock() as well.
 
-[1/5] - Split device PM domain data into a "base" and additional fields
-        (one need_restore field at the moment, but the subsequent patches
-        add more fields).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c |    4 -
+ drivers/base/power/qos.c  |  167 ++++++++++++++++++++++++++--------------------
+ include/linux/pm.h        |    8 --
+ include/linux/pm_qos.h    |    3 
+ 4 files changed, 101 insertions(+), 81 deletions(-)
 
-[2/5] - Make runtime PM always release power.lock if power.irq_safe is set.
-
-[3/5] - Add function for reading device PM QoS values safely.
-
-[4/5] - Add governor function for stopping devices.
-
-[5/5] - Add generic PM domain power off governor function.
-
-Thanks,
-Rafael
+Index: linux/drivers/base/power/qos.c
+===================================================================
+--- linux.orig/drivers/base/power/qos.c
++++ linux/drivers/base/power/qos.c
+@@ -30,15 +30,6 @@
+  * . To minimize the data usage by the per-device constraints, the data struct
+  *   is only allocated at the first call to dev_pm_qos_add_request.
+  * . The data is later free'd when the device is removed from the system.
+- * . The constraints_state variable from dev_pm_info tracks the data struct
+- *    allocation state:
+- *    DEV_PM_QOS_NO_DEVICE: No device present or device removed, no data
+- *     allocated,
+- *    DEV_PM_QOS_DEVICE_PRESENT: Device present, data not allocated and will be
+- *     allocated at the first call to dev_pm_qos_add_request,
+- *    DEV_PM_QOS_ALLOCATED: Device present, data allocated. The per-device
+- *     PM QoS constraints framework is operational and constraints can be
+- *     added, updated or removed using the dev_pm_qos_* API.
+  *  . A global mutex protects the constraints users from the data being
+  *     allocated and free'd.
+  */
+@@ -51,8 +42,30 @@
+ 
+ 
+ static DEFINE_MUTEX(dev_pm_qos_mtx);
++
+ static BLOCKING_NOTIFIER_HEAD(dev_pm_notifiers);
+ 
++/**
++ * dev_pm_qos_read_value - Get PM QoS constraint for a given device.
++ * @dev: Device to get the PM QoS constraint value for.
++ */
++s32 dev_pm_qos_read_value(struct device *dev)
++{
++	struct pm_qos_constraints *c;
++	unsigned long flags;
++	s32 ret = 0;
++
++	spin_lock_irqsave(&dev->power.lock, flags);
++
++	c = dev->power.constraints;
++	if (c)
++		ret = pm_qos_read_value(c);
++
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++
++	return ret;
++}
++
+ /*
+  * apply_constraint
+  * @req: constraint request to apply
+@@ -105,27 +118,37 @@ static int dev_pm_qos_constraints_alloca
+ 	}
+ 	BLOCKING_INIT_NOTIFIER_HEAD(n);
+ 
++	plist_head_init(&c->list);
++	c->target_value = PM_QOS_DEV_LAT_DEFAULT_VALUE;
++	c->default_value = PM_QOS_DEV_LAT_DEFAULT_VALUE;
++	c->type = PM_QOS_MIN;
++	c->notifiers = n;
++
++	spin_lock_irq(&dev->power.lock);
+ 	dev->power.constraints = c;
+-	plist_head_init(&dev->power.constraints->list);
+-	dev->power.constraints->target_value = PM_QOS_DEV_LAT_DEFAULT_VALUE;
+-	dev->power.constraints->default_value =	PM_QOS_DEV_LAT_DEFAULT_VALUE;
+-	dev->power.constraints->type = PM_QOS_MIN;
+-	dev->power.constraints->notifiers = n;
+-	dev->power.constraints_state = DEV_PM_QOS_ALLOCATED;
++	spin_unlock_irq(&dev->power.lock);
+ 
+ 	return 0;
+ }
+ 
++static void __dev_pm_qos_constraints_init(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	dev->power.constraints = NULL;
++	spin_unlock_irq(&dev->power.lock);
++}
++
+ /**
+- * dev_pm_qos_constraints_init
++ * dev_pm_qos_constraints_init - Initalize device's PM QoS constraints pointer.
+  * @dev: target device
+  *
+- * Called from the device PM subsystem at device insertion
++ * Called from the device PM subsystem at device insertion under
++ * device_pm_lock().
+  */
+ void dev_pm_qos_constraints_init(struct device *dev)
+ {
+ 	mutex_lock(&dev_pm_qos_mtx);
+-	dev->power.constraints_state = DEV_PM_QOS_DEVICE_PRESENT;
++	dev->power.constraints = NULL;
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ }
+ 
+@@ -133,34 +156,35 @@ void dev_pm_qos_constraints_init(struct
+  * dev_pm_qos_constraints_destroy
+  * @dev: target device
+  *
+- * Called from the device PM subsystem at device removal
++ * Called from the device PM subsystem at device removal under device_pm_lock().
+  */
+ void dev_pm_qos_constraints_destroy(struct device *dev)
+ {
+ 	struct dev_pm_qos_request *req, *tmp;
++	struct pm_qos_constraints *c;
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (dev->power.constraints_state == DEV_PM_QOS_ALLOCATED) {
+-		/* Flush the constraints list for the device */
+-		plist_for_each_entry_safe(req, tmp,
+-					  &dev->power.constraints->list,
+-					  node) {
+-			/*
+-			 * Update constraints list and call the notification
+-			 * callbacks if needed
+-			 */
+-			apply_constraint(req, PM_QOS_REMOVE_REQ,
+-					 PM_QOS_DEFAULT_VALUE);
+-			memset(req, 0, sizeof(*req));
+-		}
++	c = dev->power.constraints;
++	if (!c)
++		goto out;
+ 
+-		kfree(dev->power.constraints->notifiers);
+-		kfree(dev->power.constraints);
+-		dev->power.constraints = NULL;
++	/* Flush the constraints list for the device */
++	plist_for_each_entry_safe(req, tmp, &c->list, node) {
++		/*
++		 * Update constraints list and call the notification
++		 * callbacks if needed
++		 */
++		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
++		memset(req, 0, sizeof(*req));
+ 	}
+-	dev->power.constraints_state = DEV_PM_QOS_NO_DEVICE;
+ 
++	__dev_pm_qos_constraints_init(dev);
++
++	kfree(c->notifiers);
++	kfree(c);
++
++ out:
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ }
+ 
+@@ -178,8 +202,8 @@ void dev_pm_qos_constraints_destroy(stru
+  *
+  * Returns 1 if the aggregated constraint value has changed,
+  * 0 if the aggregated constraint value has not changed,
+- * -EINVAL in case of wrong parameters, -ENODEV if the device has been
+- * removed from the system
++ * -EINVAL in case of wrong parameters, -ENOMEM if there's not enough memory
++ * to allocate for data structures.
+  */
+ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+ 			   s32 value)
+@@ -195,28 +219,35 @@ int dev_pm_qos_add_request(struct device
+ 		return -EINVAL;
+ 	}
+ 
+-	mutex_lock(&dev_pm_qos_mtx);
+ 	req->dev = dev;
+ 
+-	/* Return if the device has been removed */
+-	if (req->dev->power.constraints_state == DEV_PM_QOS_NO_DEVICE) {
+-		ret = -ENODEV;
+-		goto out;
+-	}
++	device_pm_lock();
++	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	/*
+-	 * Allocate the constraints data on the first call to add_request,
+-	 * i.e. only if the data is not already allocated and if the device has
+-	 * not been removed
+-	 */
+-	if (dev->power.constraints_state == DEV_PM_QOS_DEVICE_PRESENT)
+-		ret = dev_pm_qos_constraints_allocate(dev);
++	if (dev->power.constraints) {
++		device_pm_unlock();
++	} else {
++		if (list_empty(&dev->power.entry)) {
++			/* The device has been removed from the system. */
++			device_pm_unlock();
++			goto out;
++		} else {
++			device_pm_unlock();
++			/*
++			 * Allocate the constraints data on the first call to
++			 * add_request, i.e. only if the data is not already
++			 * allocated and if the device has not been removed.
++			 */
++			ret = dev_pm_qos_constraints_allocate(dev);
++		}
++	}
+ 
+ 	if (!ret)
+ 		ret = apply_constraint(req, PM_QOS_ADD_REQ, value);
+ 
+-out:
++ out:
+ 	mutex_unlock(&dev_pm_qos_mtx);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
+@@ -252,13 +283,13 @@ int dev_pm_qos_update_request(struct dev
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (req->dev->power.constraints_state == DEV_PM_QOS_ALLOCATED) {
++	if (req->dev->power.constraints) {
+ 		if (new_value != req->node.prio)
+ 			ret = apply_constraint(req, PM_QOS_UPDATE_REQ,
+ 					       new_value);
+ 	} else {
+ 		/* Return if the device has been removed */
+-		ret = -ENODEV;
++		ret = -EINVAL;
+ 	}
+ 
+ 	mutex_unlock(&dev_pm_qos_mtx);
+@@ -293,7 +324,7 @@ int dev_pm_qos_remove_request(struct dev
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (req->dev->power.constraints_state == DEV_PM_QOS_ALLOCATED) {
++	if (req->dev->power.constraints) {
+ 		ret = apply_constraint(req, PM_QOS_REMOVE_REQ,
+ 				       PM_QOS_DEFAULT_VALUE);
+ 		memset(req, 0, sizeof(*req));
+@@ -323,15 +354,12 @@ int dev_pm_qos_add_notifier(struct devic
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	/* Silently return if the device has been removed */
+-	if (dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+-		goto out;
+-
+-	retval = blocking_notifier_chain_register(
+-			dev->power.constraints->notifiers,
+-			notifier);
++	/* Silently return if the constraints object is not present. */
++	if (dev->power.constraints)
++		retval = blocking_notifier_chain_register(
++				dev->power.constraints->notifiers,
++				notifier);
+ 
+-out:
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ 	return retval;
+ }
+@@ -354,15 +382,12 @@ int dev_pm_qos_remove_notifier(struct de
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	/* Silently return if the device has been removed */
+-	if (dev->power.constraints_state != DEV_PM_QOS_ALLOCATED)
+-		goto out;
+-
+-	retval = blocking_notifier_chain_unregister(
+-			dev->power.constraints->notifiers,
+-			notifier);
++	/* Silently return if the constraints object is not present. */
++	if (dev->power.constraints)
++		retval = blocking_notifier_chain_unregister(
++				dev->power.constraints->notifiers,
++				notifier);
+ 
+-out:
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ 	return retval;
+ }
+Index: linux/include/linux/pm_qos.h
+===================================================================
+--- linux.orig/include/linux/pm_qos.h
++++ linux/include/linux/pm_qos.h
+@@ -77,6 +77,7 @@ int pm_qos_remove_notifier(int pm_qos_cl
+ int pm_qos_request_active(struct pm_qos_request *req);
+ s32 pm_qos_read_value(struct pm_qos_constraints *c);
+ 
++s32 dev_pm_qos_read_value(struct device *dev);
+ int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
+ 			   s32 value);
+ int dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value);
+@@ -117,6 +118,8 @@ static inline int pm_qos_request_active(
+ static inline s32 pm_qos_read_value(struct pm_qos_constraints *c)
+ 			{ return 0; }
+ 
++static inline s32 dev_pm_qos_read_value(struct device *dev)
++			{ return 0; }
+ static inline int dev_pm_qos_add_request(struct device *dev,
+ 					 struct dev_pm_qos_request *req,
+ 					 s32 value)
+Index: linux/drivers/base/power/main.c
+===================================================================
+--- linux.orig/drivers/base/power/main.c
++++ linux/drivers/base/power/main.c
+@@ -98,8 +98,8 @@ void device_pm_add(struct device *dev)
+ 		dev_warn(dev, "parent %s should not be sleeping\n",
+ 			dev_name(dev->parent));
+ 	list_add_tail(&dev->power.entry, &dpm_list);
+-	mutex_unlock(&dpm_list_mtx);
+ 	dev_pm_qos_constraints_init(dev);
++	mutex_unlock(&dpm_list_mtx);
+ }
+ 
+ /**
+@@ -110,9 +110,9 @@ void device_pm_remove(struct device *dev
+ {
+ 	pr_debug("PM: Removing info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+-	dev_pm_qos_constraints_destroy(dev);
+ 	complete_all(&dev->power.completion);
+ 	mutex_lock(&dpm_list_mtx);
++	dev_pm_qos_constraints_destroy(dev);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+ 	device_wakeup_disable(dev);
+Index: linux/include/linux/pm.h
+===================================================================
+--- linux.orig/include/linux/pm.h
++++ linux/include/linux/pm.h
+@@ -421,13 +421,6 @@ enum rpm_request {
+ 	RPM_REQ_RESUME,
+ };
+ 
+-/* Per-device PM QoS constraints data struct state */
+-enum dev_pm_qos_state {
+-	DEV_PM_QOS_NO_DEVICE,		/* No device present */
+-	DEV_PM_QOS_DEVICE_PRESENT,	/* Device present, data not allocated */
+-	DEV_PM_QOS_ALLOCATED,		/* Device present, data allocated */
+-};
+-
+ struct wakeup_source;
+ 
+ struct pm_domain_data {
+@@ -489,7 +482,6 @@ struct dev_pm_info {
+ #endif
+ 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
+ 	struct pm_qos_constraints *constraints;
+-	enum dev_pm_qos_state	constraints_state;
+ };
+ 
+ extern void update_pm_runtime_accounting(struct device *dev);
