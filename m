@@ -1,14 +1,14 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 3/7] x86/acpi/sleep: Provide registration for
-	acpi_suspend_lowlevel.
-Date: Wed, 31 Aug 2011 14:31:20 -0400
-Message-ID: <1314815484-4668-4-git-send-email-konrad.wilk__34004.7090816826$1314918889$gmane$org@oracle.com>
-References: <1314815484-4668-1-git-send-email-konrad.wilk@oracle.com>
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [BUG] Soft-lockup during cpu-hotplug in VFS callpaths
+Date: Wed, 31 Aug 2011 20:40:32 +0200
+Message-ID: <201108312040.32531.maciej.rutecki__9890.78999632529$1314919354$gmane$org@gmail.com>
+References: <4E550057.9070609@linux.vnet.ibm.com>
+Reply-To: maciej.rutecki@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1314815484-4668-1-git-send-email-konrad.wilk@oracle.com>
+In-Reply-To: <4E550057.9070609@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -18,109 +18,58 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: x86@kernel.org, tglx@linutronix.de, tboot-devel@lists.sourceforge.net, shane.wang@intel.com, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, len.brown@in
-Cc: xen-devel@lists.xensource.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Liang Tang <liang.tang@oracle.com>
-
-Which by default will be x86_acpi_suspend_lowlevel.
-This registration allows us to register another callback
-if there is a need to use another platform specific callback.
-
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: x86@kernel.org
-CC: Len Brown <len.brown@intel.com>
-CC: Joseph Cihula <joseph.cihula@intel.com>
-CC: Shane Wang <shane.wang@intel.com>
-CC: linux-pm@lists.linux-foundation.org
-CC: linux-acpi@vger.kernel.org
-CC: Len Brown <len.brown@intel.com>
-Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Signed-off-by: Liang Tang <liang.tang@oracle.com>
----
- arch/x86/include/asm/acpi.h  |    2 +-
- arch/x86/kernel/acpi/boot.c  |    2 ++
- arch/x86/kernel/acpi/sleep.c |    4 ++--
- arch/x86/kernel/acpi/sleep.h |    2 ++
- drivers/acpi/sleep.c         |    2 ++
- 5 files changed, 9 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/include/asm/acpi.h b/arch/x86/include/asm/acpi.h
-index 49864a1..a5f0b73 100644
---- a/arch/x86/include/asm/acpi.h
-+++ b/arch/x86/include/asm/acpi.h
-@@ -118,7 +118,7 @@ static inline void acpi_disable_pci(void)
- }
- 
- /* Low-level suspend routine. */
--extern int acpi_suspend_lowlevel(void);
-+extern int (*acpi_suspend_lowlevel)(void);
- 
- extern const unsigned char acpi_wakeup_code[];
- #define acpi_wakeup_address (__pa(TRAMPOLINE_SYM(acpi_wakeup_code)))
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index d191b4c..92f4f38 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -44,6 +44,7 @@
- #include <asm/mpspec.h>
- #include <asm/smp.h>
- 
-+#include "sleep.h" /* To include x86_acpi_suspend_lowlevel */
- static int __initdata acpi_force = 0;
- u32 acpi_rsdt_forced;
- int acpi_disabled;
-@@ -555,6 +556,7 @@ int (*__acpi_register_gsi)(struct device *dev, u32 gsi,
- int (*__acpi_override_sleep)(u8 sleep_state, u32 pm1a_ctrl,
- 			     u32 pm1b_ctrl, bool *skip_rest) = NULL;
- 
-+int (*acpi_suspend_lowlevel)(void) = x86_acpi_suspend_lowlevel;
- /*
-  * success: return IRQ number (>=0)
-  * failure: return < 0
-diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-index 103b6ab..4d2d0b1 100644
---- a/arch/x86/kernel/acpi/sleep.c
-+++ b/arch/x86/kernel/acpi/sleep.c
-@@ -25,12 +25,12 @@ static char temp_stack[4096];
- #endif
- 
- /**
-- * acpi_suspend_lowlevel - save kernel state
-+ * x86_acpi_suspend_lowlevel - save kernel state
-  *
-  * Create an identity mapped page table and copy the wakeup routine to
-  * low memory.
-  */
--int acpi_suspend_lowlevel(void)
-+int x86_acpi_suspend_lowlevel(void)
- {
- 	struct wakeup_header *header;
- 	/* address in low memory of the wakeup routine. */
-diff --git a/arch/x86/kernel/acpi/sleep.h b/arch/x86/kernel/acpi/sleep.h
-index 416d4be..4d3feb5 100644
---- a/arch/x86/kernel/acpi/sleep.h
-+++ b/arch/x86/kernel/acpi/sleep.h
-@@ -13,3 +13,5 @@ extern unsigned long acpi_copy_wakeup_routine(unsigned long);
- extern void wakeup_long64(void);
- 
- extern void do_suspend_lowlevel(void);
-+
-+extern int x86_acpi_suspend_lowlevel(void);
-diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-index 6c94960..a6da454 100644
---- a/drivers/acpi/sleep.c
-+++ b/drivers/acpi/sleep.c
-@@ -254,6 +254,8 @@ static int acpi_suspend_enter(suspend_state_t pm_state)
- 		break;
- 
- 	case ACPI_STATE_S3:
-+		if (!acpi_suspend_lowlevel)
-+			return -ENODEV;
- 		error = acpi_suspend_lowlevel();
- 		if (error)
- 			return error;
--- 
-1.7.4.1
+T24gxZtyb2RhLCAyNCBzaWVycG5pYSAyMDExIG8gMTU6NDQ6NTUgU3JpdmF0c2EgUy4gQmhhdCB3
+cm90ZToKPiBIaSwKPiAKPiBXaGlsZSBydW5uaW5nIHN0cmVzc2Z1bCBjcHUgaG90cGx1ZyB0ZXN0
+cyBhbG9uZyB3aXRoIGtlcm5lbCBjb21waWxhdGlvbgo+IHJ1bm5pbmcgaW4gYmFja2dyb3VuZCwg
+c29mdC1sb2NrdXBzIGFyZSBkZXRlY3RlZCBvbiBtdWx0aXBsZSBDUFVzLgo+IFNvbWV0aW1lcyB0
+aGlzIGFsc28gbGVhZHMgdG8gaGFyZCBsb2NrdXBzIGFuZCBrZXJuZWwgcGFuaWMuCj4gQWxsIHRo
+ZSBzb2Z0LWxvY2t1cHMgc2VlbSB0byBvY2N1ciBhdCB2ZnNtb3VudF9sb2NrX2xvY2FsX2NwdSgp
+IG9yIG90aGVyCj4gVkZTIGNhbGxwYXRocy4KPiAKPiAKPiBbMzcxMDguNDEwODEzXSBCVUc6IHNv
+ZnQgbG9ja3VwIC0gQ1BVIzUgc3R1Y2sgZm9yIDIycyEgW2NjMToyOTY2OV0KPiA8c25pcD4KPiBb
+MzcxMDguNjk0NzgxXSBDYWxsIFRyYWNlOgo+IFszNzEwOC42OTczMDZdICBbPGZmZmZmZmZmODEx
+OTllNzA+XSA/Cj4gdmZzbW91bnRfbG9ja19sb2NhbF9sb2NrX2NwdSsweDcwLzB4NzAgWzM3MTA4
+LjcwNDI1OF0gCj4gWzxmZmZmZmZmZjgxMTg3Y2I1Pl0gcGF0aF9pbml0KzB4MzE1LzB4NDAwCj4g
+WzM3MTA4LjcwOTU1OF0gIFs8ZmZmZmZmZmY4MTI3YzM5OD5dID8gX19yYXdfc3Bpbl9sb2NrX2lu
+aXQrMHgzOC8weDcwCj4gWzM3MTA4LjcxNTgxMl0gIFs8ZmZmZmZmZmY4MTE4OTYxYz5dIHBhdGhf
+b3BlbmF0KzB4OGMvMHgzZjAKPiBbMzcxMDguNzIxMjAzXSAgWzxmZmZmZmZmZjgxMDEyMTI5Pl0g
+PyBzY2hlZF9jbG9jaysweDkvMHgxMAo+IFszNzEwOC43MjY1OTddICBbPGZmZmZmZmZmODEwOTQx
+NmQ+XSA/IHNjaGVkX2Nsb2NrX2NwdSsweGNkLzB4MTEwCj4gWzM3MTA4LjczMjUwOF0gIFs8ZmZm
+ZmZmZmY4MTBhMTc4ZD5dID8gdHJhY2VfaGFyZGlycXNfb2ZmKzB4ZC8weDEwCj4gWzM3MTA4Ljcz
+ODQ5OF0gIFs8ZmZmZmZmZmY4MTA5NDIxZj5dID8gbG9jYWxfY2xvY2srMHg2Zi8weDgwCj4gWzM3
+MTA4Ljc0Mzk3MF0gIFs8ZmZmZmZmZmY4MTE4OWE5OT5dIGRvX2ZpbHBfb3BlbisweDQ5LzB4YTAK
+PiBbMzcxMDguNzQ5MzYyXSAgWzxmZmZmZmZmZjgxMTk4MmYzPl0gPyBhbGxvY19mZCsweGMzLzB4
+MjEwCj4gWzM3MTA4Ljc1NDY2NV0gIFs8ZmZmZmZmZmY4MTUyNTg0Yj5dID8gX3Jhd19zcGluX3Vu
+bG9jaysweDJiLzB4NDAKPiBbMzcxMDguNzYwNTc1XSAgWzxmZmZmZmZmZjgxMTk4MmYzPl0gPyBh
+bGxvY19mZCsweGMzLzB4MjEwCj4gWzM3MTA4Ljc2NTg3NV0gIFs8ZmZmZmZmZmY4MTE3OTYwNz5d
+IGRvX3N5c19vcGVuKzB4MTA3LzB4MWUwCj4gWzM3MTA4Ljc3MTM1Ml0gIFs8ZmZmZmZmZmY4MTBk
+NjEwZj5dID8gYXVkaXRfc3lzY2FsbF9lbnRyeSsweDFiZi8weDFmMAo+IFszNzEwOC43Nzc2OTVd
+ICBbPGZmZmZmZmZmODExNzk3MjA+XSBzeXNfb3BlbisweDIwLzB4MzAKPiBbMzcxMDguNzgyNzQx
+XSAgWzxmZmZmZmZmZjgxNTJlMjAyPl0gc3lzdGVtX2NhbGxfZmFzdHBhdGgrMHgxNi8weDFiCj4g
+Cj4gS2VybmVsIHZlcnNpb246IDMuMC4xLCAzLjAuMwo+IEhhcmR3YXJlOiBEdWFsIHNvY2tldCBx
+dWFkLWNvcmUgaHlwZXItdGhyZWFkZWQgSW50ZWwgeDg2IG1hY2hpbmUKPiBTY2VuYXJpbzoKPiAo
+YSkgU3RyZXNzZnVsIGNwdSBob3RwbHVnIHRlc3RzICsga2VybmVsIGNvbXBpbGF0aW9uCj4gCj4g
+KGIpIElSUSBiYWxhbmNpbmcgaGFkIGJlZW4gZGlzYWJsZWQgYW5kIGFsbCB0aGUgSVJRcyAgd2Vy
+ZSBtYWRlIHRvIGJlCj4gICAgIHJvdXRlZCB0byBDUFUgMCAoZXhjZXB0IHRoZSBvbmVzIHRoYXQg
+Y291bGRuJ3QgYmUgcm91dGVkKS4KPiAKPiAoYykgTG9ja2RlcCB3YXMgZW5hYmxlZCBkdXJpbmcg
+a2VybmVsIGNvbmZpZ3VyYXRpb24uCj4gCj4gU3RlcHMgKGIpIGFuZCAoYykgd2VyZSBkb25lIHRv
+IGRpZyBkZWVwZXIgaW50byB0aGUgaXNzdWUuIEhvd2V2ZXIgdGhlIHNhbWUKPiBpc3N1ZSB3YXMg
+b2JzZXJ2ZWQgYnkganVzdCBkb2luZyBzdGVwIChhKS4KPiAKPiBEZWZpbml0ZWx5IHRoZXJlIHNl
+ZW1zIHRvIGJlIGEgcmFjZSBjb25kaXRpb24gb2NjdXJyaW5nIGhlcmUsIGJlY2F1c2UgdGhpcwo+
+IGlzc3VlIGlzIGhpdCBhZnRlciBzb21ldGltZSwgYWZ0ZXIgc3RhcnRpbmcgdGhlIHRlc3RzLiBB
+bmQgdGhlIHRpbWUgaXQKPiB0YWtlcyB0byBoaXQgdGhlIGlzc3VlIGluY3JlYXNlcyBhcyB3ZSBp
+bmNyZWFzZSB0aGUgbnVtYmVyIG9mIGRlYnVnIHByaW50Cj4gc3RhdGVtZW50cy4gSW4gc29tZSBj
+YXNlcyAoZXNwZWNpYWxseSB3aGVuIHRoZSBudW1iZXIgb2YgZGVidWcgcHJpbnQKPiBzdGF0ZW1l
+bnRzIHdlcmUgcXVpdGUgaGlnaCksIHRoZSBzdHJlc3Mgb24gdGhlIG1hY2hpbmUgaGFkIHRvIGJl
+IGluY3JlYXNlZAo+IGluIG9yZGVyIHRvIGhpdCB0aGUgaXNzdWUgd2l0aGluIG1lYXN1cmFibGUg
+dGltZS4gSW4gbXkgdGVzdHMsIGEgbWF4aW11bQo+IG9mIGFib3V0IDIgdG8gMi41IGhvdXJzIHdh
+cyBzdWZmaWNpZW50LCB0byBoaXQgdGhpcyBidWcuCj4gCj4gUGxlYXNlIGZpbmQgdGhlIGNvbnNv
+bGUgbG9nIGF0dGFjaGVkIHdpdGggdGhpcyBtYWlsLgo+IAo+IEFueSBpZGVhcyBvbiBob3cgdG8g
+Z28gYWJvdXQgZml4aW5nIHRoaXMgYnVnPwoKSXQgaXMgYSByZWdyZXNzaW9uPwoKUmVnYXJkcwot
+LSAKTWFjaWVqIFJ1dGVja2kKaHR0cDovL3d3dy5tYWNpZWsudW5peHkucGwKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0
+CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
