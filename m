@@ -1,17 +1,12 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 6/6] cgroup: kill subsys->can_attach_task(),
- pre_attach() and attach_task()
-Date: Wed, 31 Aug 2011 09:03:13 +0200
-Message-ID: <20110831070313.GA29179__45596.2140033536$1314903648$gmane$org@mtj.dyndns.org>
-References: <1314312192-26885-1-git-send-email-tj@kernel.org>
-	<1314312192-26885-7-git-send-email-tj@kernel.org>
-	<20110830201030.GC15953@somewhere.redhat.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH v9 0/4] Devfreq,
+	DVFS Framework for Non-CPU Devices
+Date: Wed, 31 Aug 2011 16:29:35 +0900
+Message-ID: <1314775779-21399-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110830201030.GC15953@somewhere.redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,25 +16,73 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
+To: linux-pm@lists.linux-foundation.org
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Frederic.
+The main update from the patchset v8:
+- Add per-devfreq-device locking mechanism (devfreq->lock)
+- Provide the per-devfreq-device locking mechanism to governors
+- Merged 4/5 patch to 2/5 (devfreq internal interface for governors)
 
-On Tue, Aug 30, 2011 at 10:10:32PM +0200, Frederic Weisbecker wrote:
-> In order to keep the fix queued in -mm (https://lkml.org/lkml/2011/8/26/262)
-> the tasks that have failed to migrate should be removed from the iterator
-> so that they are not included in the batch in ->attach().
+Patch 1/4 has no changes.
+Patch 2/4 has major update on synchronization and merged another patch; thus, dropped "Reviewed-By".
+Patch 3/4 has minor udpate (affected by the update on 2/4: mutex added)
+Patch 4/4 has minor update (affected by the update on 2/4: mutex added) + removed unused variable.
 
-I don't think that's a good approach.  It breaks the symmetry when
-calling different callbacks.  What if ->can_attach() allocates
-per-task resources and the task exits in the middle?  I think we
-better lock down fork/exit/exec.  I'll send patches but I'm currently
-moving / traveling w/ limited access to my toys so it might take some
-time.
+For a usage example, please look at
+http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs/heads/devfreq
 
-Thanks.
+In the above git tree, DVFS (dynamic voltage and frequency scaling) mechanism
+is applied to the memory bus of Exynos4210 for Exynos4210-NURI boards.
+In the example, the LPDDR2 DRAM frequency changes between 133, 266, and 400MHz
+and other related clocks simply follow the determined DDR RAM clock.
+
+The devfreq driver for Exynos4210 memory bus is at
+/drivers/devfreq/exynos4210_memorybus.c in the git tree.
+
+In the dd (writing and reading 360MiB) test with NURI board, the memory
+throughput was not changed (the performance is not deteriorated) while
+the SoC power consumption has been reduced by 1%. When the memory access
+is not that intense while the CPU is heavily used, the SoC power consumption
+has been reduced by 6%. The power consumption has been compared with the
+case using the conventional Exynos4210 cpufreq driver, which sets memory
+bus frequency according to the CPU core frequency. Besides, when the CPU core
+running slow and the memory access is intense, the performance (memory
+throughput) has been increased by 11% (with higher SoC power consumption of
+5%). The tested governor is "simple-ondemand".
+
+MyungJoo Ham (4):
+  PM / OPP: Add OPP availability change notifier.
+  PM: Introduce devfreq: generic DVFS framework with device-specific
+    OPPs
+  PM / devfreq: add common sysfs interfaces
+  PM / devfreq: add basic governors
+
+ Documentation/ABI/testing/sysfs-devices-power |   46 ++
+ drivers/Kconfig                               |    2 +
+ drivers/Makefile                              |    2 +
+ drivers/base/power/opp.c                      |   29 ++
+ drivers/devfreq/Kconfig                       |   75 ++++
+ drivers/devfreq/Makefile                      |    5 +
+ drivers/devfreq/devfreq.c                     |  567 +++++++++++++++++++++++++
+ drivers/devfreq/governor.h                    |   22 +
+ drivers/devfreq/governor_performance.c        |   24 +
+ drivers/devfreq/governor_powersave.c          |   24 +
+ drivers/devfreq/governor_simpleondemand.c     |   88 ++++
+ drivers/devfreq/governor_userspace.c          |  126 ++++++
+ include/linux/devfreq.h                       |  160 +++++++
+ include/linux/opp.h                           |   12 +
+ 14 files changed, 1182 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/devfreq/Kconfig
+ create mode 100644 drivers/devfreq/Makefile
+ create mode 100644 drivers/devfreq/devfreq.c
+ create mode 100644 drivers/devfreq/governor.h
+ create mode 100644 drivers/devfreq/governor_performance.c
+ create mode 100644 drivers/devfreq/governor_powersave.c
+ create mode 100644 drivers/devfreq/governor_simpleondemand.c
+ create mode 100644 drivers/devfreq/governor_userspace.c
+ create mode 100644 include/linux/devfreq.h
 
 -- 
-tejun
+1.7.4.1
