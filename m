@@ -1,16 +1,17 @@
-From: Kevin Hilman <khilman@ti.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
 Subject: Re: [PATCH v8 0/5] DEVFREQ,
 	DVFS Framework for Non-CPU Devices.
-Date: Tue, 30 Aug 2011 16:32:15 -0700
-Message-ID: <871uw2lbls.fsf@ti.com>
+Date: Wed, 31 Aug 2011 12:59:47 +0900
+Message-ID: <CAJ0PZbRrqQbpi2Su6sT18i2uXeSdNCBg3FP1AbFg2ACmDFXS5w@mail.gmail.com>
 References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
 	<1314174131-14194-1-git-send-email-myungjoo.ham@samsung.com>
+	<871uw2lbls.fsf@ti.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1314174131-14194-1-git-send-email-myungjoo.ham@samsung.com>
-	(MyungJoo Ham's message of "Wed, 24 Aug 2011 17:22:06 +0900")
+In-Reply-To: <871uw2lbls.fsf@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,34 +21,37 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
+To: Kevin Hilman <khilman@ti.com>
 Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-MyungJoo Ham <myungjoo.ham@samsung.com> writes:
-
-> The patchset revision v8 has minor updates since v7 and v6.
-> - Allow governors to have their own sysfs interface and init/exit callbacks.
->
-> The patches 1/5 (OPP notifier) and 2/5 (DEVFREQ core) have no changes since v7.
-> There has been reordering between "add common sysfs interfaces" patch
-> and "add basic governors" (3/5 and 5/5)
-> "add internal interfaces for governors (4/5)" patch has been newly
-> introduced at v8 patchset.
->
-> For a usage example, please look at
-> http://git.infradead.org/users/kmpark/linux-2.6-samsung/shortlog/refs/heads/devfreq
->
-> In the above git tree, DVFS (dynamic voltage and frequency scaling) mechanism
-> is applied to the memory bus of Exynos4210 for Exynos4210-NURI boards.
-> In the example, the LPDDR2 DRAM frequency changes between 133, 266, and 400MHz
-> and other related clocks simply follow the determined DDR RAM clock.
->
-> The DEVFREQ driver for Exynos4210 memory bus is at
-> /drivers/devfreq/exynos4210_memorybus.c in the git tree.
-
-Minor nit: you continue to use DEVFREQ (all caps) throughout subjects
-and changelogs etc. when it should be called devfreq since it's not an
-acryonym.
-
-Kevin
+T24gV2VkLCBBdWcgMzEsIDIwMTEgYXQgODozMiBBTSwgS2V2aW4gSGlsbWFuIDxraGlsbWFuQHRp
+LmNvbT4gd3JvdGU6Cj4gTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+IHdy
+aXRlczoKPgo+PiBUaGUgcGF0Y2hzZXQgcmV2aXNpb24gdjggaGFzIG1pbm9yIHVwZGF0ZXMgc2lu
+Y2UgdjcgYW5kIHY2Lgo+PiAtIEFsbG93IGdvdmVybm9ycyB0byBoYXZlIHRoZWlyIG93biBzeXNm
+cyBpbnRlcmZhY2UgYW5kIGluaXQvZXhpdCBjYWxsYmFja3MuCj4+Cj4+IFRoZSBwYXRjaGVzIDEv
+NSAoT1BQIG5vdGlmaWVyKSBhbmQgMi81IChERVZGUkVRIGNvcmUpIGhhdmUgbm8gY2hhbmdlcyBz
+aW5jZSB2Ny4KPj4gVGhlcmUgaGFzIGJlZW4gcmVvcmRlcmluZyBiZXR3ZWVuICJhZGQgY29tbW9u
+IHN5c2ZzIGludGVyZmFjZXMiIHBhdGNoCj4+IGFuZCAiYWRkIGJhc2ljIGdvdmVybm9ycyIgKDMv
+NSBhbmQgNS81KQo+PiAiYWRkIGludGVybmFsIGludGVyZmFjZXMgZm9yIGdvdmVybm9ycyAoNC81
+KSIgcGF0Y2ggaGFzIGJlZW4gbmV3bHkKPj4gaW50cm9kdWNlZCBhdCB2OCBwYXRjaHNldC4KPj4K
+Pj4gRm9yIGEgdXNhZ2UgZXhhbXBsZSwgcGxlYXNlIGxvb2sgYXQKPj4gaHR0cDovL2dpdC5pbmZy
+YWRlYWQub3JnL3VzZXJzL2ttcGFyay9saW51eC0yLjYtc2Ftc3VuZy9zaG9ydGxvZy9yZWZzL2hl
+YWRzL2RldmZyZXEKPj4KPj4gSW4gdGhlIGFib3ZlIGdpdCB0cmVlLCBEVkZTIChkeW5hbWljIHZv
+bHRhZ2UgYW5kIGZyZXF1ZW5jeSBzY2FsaW5nKSBtZWNoYW5pc20KPj4gaXMgYXBwbGllZCB0byB0
+aGUgbWVtb3J5IGJ1cyBvZiBFeHlub3M0MjEwIGZvciBFeHlub3M0MjEwLU5VUkkgYm9hcmRzLgo+
+PiBJbiB0aGUgZXhhbXBsZSwgdGhlIExQRERSMiBEUkFNIGZyZXF1ZW5jeSBjaGFuZ2VzIGJldHdl
+ZW4gMTMzLCAyNjYsIGFuZCA0MDBNSHoKPj4gYW5kIG90aGVyIHJlbGF0ZWQgY2xvY2tzIHNpbXBs
+eSBmb2xsb3cgdGhlIGRldGVybWluZWQgRERSIFJBTSBjbG9jay4KPj4KPj4gVGhlIERFVkZSRVEg
+ZHJpdmVyIGZvciBFeHlub3M0MjEwIG1lbW9yeSBidXMgaXMgYXQKPj4gL2RyaXZlcnMvZGV2ZnJl
+cS9leHlub3M0MjEwX21lbW9yeWJ1cy5jIGluIHRoZSBnaXQgdHJlZS4KPgo+IE1pbm9yIG5pdDog
+eW91IGNvbnRpbnVlIHRvIHVzZSBERVZGUkVRIChhbGwgY2FwcykgdGhyb3VnaG91dCBzdWJqZWN0
+cwo+IGFuZCBjaGFuZ2Vsb2dzIGV0Yy4gd2hlbiBpdCBzaG91bGQgYmUgY2FsbGVkIGRldmZyZXEg
+c2luY2UgaXQncyBub3QgYW4KPiBhY3J5b255bS4KPgo+IEtldmluCj4KCkZpbmUsIEknbGwgcmVn
+YXJkIGRldmZyZXEgYXMgYSBjb21tb24gbm91bi4KCgpDaGVlcnMsCk15dW5nSm9vCgotLSAKTXl1
+bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELgpNb2JpbGUgU29mdHdhcmUgUGxhdGZvcm0gTGFi
+LApEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBCdXNpbmVzcwpTYW1zdW5n
+IEVsZWN0cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQtMjg1OApfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
+bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
