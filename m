@@ -1,18 +1,13 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 6/6] cgroup: kill subsys->can_attach_task(),
- pre_attach() and attach_task()
-Date: Wed, 31 Aug 2011 15:42:24 +0200
-Message-ID: <20110831134220.GB20598__20454.239115543$1314913316$gmane$org@somewhere>
-References: <1314312192-26885-1-git-send-email-tj@kernel.org>
-	<1314312192-26885-7-git-send-email-tj@kernel.org>
-	<20110830201030.GC15953@somewhere.redhat.com>
-	<20110831070313.GA29179@mtj.dyndns.org>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: [PATCH 4/7] xen: Utilize the restore_msi_irqs hook.
+Date: Wed, 31 Aug 2011 14:31:21 -0400
+Message-ID: <1314815484-4668-5-git-send-email-konrad.wilk__49559.7870824442$1314916922$gmane$org@oracle.com>
+References: <1314815484-4668-1-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110831070313.GA29179@mtj.dyndns.org>
+In-Reply-To: <1314815484-4668-1-git-send-email-konrad.wilk@oracle.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,30 +17,66 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
+To: x86@kernel.org, tglx@linutronix.de, tboot-devel@lists.sourceforge.net, shane.wang@intel.com, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, len.brown@in
+Cc: xen-devel@lists.xensource.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 31, 2011 at 09:03:13AM +0200, Tejun Heo wrote:
-> Hello, Frederic.
-> 
-> On Tue, Aug 30, 2011 at 10:10:32PM +0200, Frederic Weisbecker wrote:
-> > In order to keep the fix queued in -mm (https://lkml.org/lkml/2011/8/26/262)
-> > the tasks that have failed to migrate should be removed from the iterator
-> > so that they are not included in the batch in ->attach().
-> 
-> I don't think that's a good approach.  It breaks the symmetry when
-> calling different callbacks.  What if ->can_attach() allocates
-> per-task resources and the task exits in the middle?  I think we
-> better lock down fork/exit/exec.  I'll send patches but I'm currently
-> moving / traveling w/ limited access to my toys so it might take some
-> time.
+to make a hypercall to restore the vectors in the MSI/MSI-X
+configuration space.
 
-My task counter subsystem patchset brings a cancel_attach_task() callback
-that cancels can_attach_task() effects.
+Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+---
+ arch/x86/pci/xen.c              |   12 ++++++++++++
+ include/xen/interface/physdev.h |    7 +++++++
+ 2 files changed, 19 insertions(+), 0 deletions(-)
 
-I thought that rebased on top of your patch it's going to be merged inside
-cancel_attach() but OTOH we can't cancel the effect of failed migration
-on a thread that way.
-
-May be we need to keep a cancel_attach_task() just for that purpose?
+diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
+index f567965..f140999 100644
+--- a/arch/x86/pci/xen.c
++++ b/arch/x86/pci/xen.c
+@@ -241,6 +241,17 @@ static int xen_initdom_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ out:
+ 	return ret;
+ }
++
++static void xen_initdom_restore_msi_irqs(struct pci_dev *dev, int irq)
++{
++	int ret = 0;
++	struct physdev_restore_msi restore;
++
++	restore.bus = dev->bus->number;
++	restore.devfn = dev->devfn;
++	ret = HYPERVISOR_physdev_op(PHYSDEVOP_restore_msi, &restore);
++	WARN(ret && ret != -ENOSYS, "restore_msi -> %d\n", ret);
++}
+ #endif
+ #endif
+ 
+@@ -458,6 +469,7 @@ static int __init pci_xen_initial_domain(void)
+ #ifdef CONFIG_PCI_MSI
+ 	x86_msi.setup_msi_irqs = xen_initdom_setup_msi_irqs;
+ 	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
++	x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
+ #endif
+ 	xen_setup_acpi_sci();
+ 	__acpi_register_gsi = acpi_register_gsi_xen;
+diff --git a/include/xen/interface/physdev.h b/include/xen/interface/physdev.h
+index 534cac8..44aefa9 100644
+--- a/include/xen/interface/physdev.h
++++ b/include/xen/interface/physdev.h
+@@ -144,6 +144,13 @@ struct physdev_manage_pci {
+ 	uint8_t devfn;
+ };
+ 
++#define PHYSDEVOP_restore_msi            19
++struct physdev_restore_msi {
++	/* IN */
++	uint8_t bus;
++	uint8_t devfn;
++};
++
+ #define PHYSDEVOP_manage_pci_add_ext	20
+ struct physdev_manage_pci_ext {
+ 	/* IN */
+-- 
+1.7.4.1
