@@ -1,7 +1,8 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH v9 4/4] PM / devfreq: add basic governors
-Date: Wed, 31 Aug 2011 16:29:39 +0900
-Message-ID: <1314775779-21399-5-git-send-email-myungjoo.ham@samsung.com>
+Subject: [PATCH v9 1/4] PM / OPP: Add OPP availability change
+	notifier.
+Date: Wed, 31 Aug 2011 16:29:36 +0900
+Message-ID: <1314775779-21399-2-git-send-email-myungjoo.ham@samsung.com>
 References: <1314775779-21399-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,473 +22,139 @@ To: linux-pm@lists.linux-foundation.org
 Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Four cpufreq-like governors are provided as examples.
+The patch enables to register notifier_block for an OPP-device in order
+to get notified for any changes in the availability of OPPs of the
+device. For example, if a new OPP is inserted or enable/disable status
+of an OPP is changed, the notifier is executed.
 
-powersave: use the lowest frequency possible. The user (device) should
-set the polling_ms as 0 because polling is useless for this governor.
-
-performance: use the highest freqeuncy possible. The user (device)
-should set the polling_ms as 0 because polling is useless for this
-governor.
-
-userspace: use the user specified frequency stored at
-devfreq.user_set_freq. With sysfs support in the following patch, a user
-may set the value with the sysfs interface.
-
-simple_ondemand: simplified version of cpufreq's ondemand governor.
-
-When a user updates OPP entries (enable/disable/add), OPP framework
-automatically notifies devfreq to update operating frequency
-accordingly. Thus, devfreq users (device drivers) do not need to update
-devfreq manually with OPP entry updates or set polling_ms for powersave
-, performance, userspace, or any other "static" governors.
-
-Note that these are given only as basic examples for governors and any
-devices with devfreq may implement their own governors with the drivers
-and use them.
+This enables the usage of opp_add, opp_enable, and opp_disable to
+directly take effect with any connected entities such as cpufreq or
+devfreq.
 
 Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Reviewed-by: Mike Turquette <mturquette@ti.com>
 
 ---
-Changed from v8
-- Removed unnecessary header entries
+No changes since v7
 
-Changed from v7
-- Userspace uses its own sysfs interface.
-
-Changed from v5
-- Seperated governor files from devfreq.c
-- Allow simple ondemand to be tuned for each device
+Added at devfreq patch set v6 replacing devfreq_update calls at OPP.
 ---
- Documentation/ABI/testing/sysfs-devices-power |    9 ++
- drivers/devfreq/Kconfig                       |   36 +++++++
- drivers/devfreq/Makefile                      |    4 +
- drivers/devfreq/governor_performance.c        |   24 +++++
- drivers/devfreq/governor_powersave.c          |   24 +++++
- drivers/devfreq/governor_simpleondemand.c     |   88 +++++++++++++++++
- drivers/devfreq/governor_userspace.c          |  126 +++++++++++++++++++++++++
- include/linux/devfreq.h                       |   37 +++++++
- 8 files changed, 348 insertions(+), 0 deletions(-)
- create mode 100644 drivers/devfreq/governor_performance.c
- create mode 100644 drivers/devfreq/governor_powersave.c
- create mode 100644 drivers/devfreq/governor_simpleondemand.c
- create mode 100644 drivers/devfreq/governor_userspace.c
+ drivers/base/power/opp.c |   29 +++++++++++++++++++++++++++++
+ include/linux/opp.h      |   12 ++++++++++++
+ 2 files changed, 41 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-power b/Documentation/ABI/testing/sysfs-devices-power
-index 57f4591..c7f6977 100644
---- a/Documentation/ABI/testing/sysfs-devices-power
-+++ b/Documentation/ABI/testing/sysfs-devices-power
-@@ -202,3 +202,12 @@ Description:
- 		shows the requested polling interval of the corresponding
- 		device. The values are represented in ms. If the value is less
- 		than 1 jiffy, it is considered to be 0, which means no polling.
-+
-+What:		/sys/devices/.../power/devfreq_userspace_set_freq
-+Date:		August 2011
-+Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-+Description:
-+		The /sys/devices/.../power/devfreq_userspace_set_freq sets
-+		and shows the user specified frequency in kHz. This sysfs
-+		entry is created and managed by userspace DEVFREQ governor.
-+		If other governors are used, it won't be supported.
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 1fb42de..643b055 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -34,6 +34,42 @@ menuconfig PM_DEVFREQ
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index b23de18..e6b4c89 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -73,6 +73,7 @@ struct opp {
+  *		RCU usage: nodes are not modified in the list of device_opp,
+  *		however addition is possible and is secured by dev_opp_list_lock
+  * @dev:	device pointer
++ * @head:	notifier head to notify the OPP availability changes.
+  * @opp_list:	list of opps
+  *
+  * This is an internal data structure maintaining the link to opps attached to
+@@ -83,6 +84,7 @@ struct device_opp {
+ 	struct list_head node;
  
- if PM_DEVFREQ
+ 	struct device *dev;
++	struct srcu_notifier_head head;
+ 	struct list_head opp_list;
+ };
  
-+comment "DEVFREQ Governors"
-+
-+config DEVFREQ_GOV_SIMPLE_ONDEMAND
-+	bool "Simple Ondemand"
-+	help
-+	  Chooses frequency based on the recent load on the device. Works
-+	  similar as ONDEMAND governor of CPUFREQ does. A device with
-+	  Simple-Ondemand should be able to provide busy/total counter
-+	  values that imply the usage rate. A device may provide tuned
-+	  values to the governor with data field at devfreq_add_device().
-+
-+config DEVFREQ_GOV_PERFORMANCE
-+	bool "Performance"
-+	help
-+	  Sets the frequency at the maximum available frequency.
-+	  This governor always returns UINT_MAX as frequency so that
-+	  the DEVFREQ framework returns the highest frequency available
-+	  at any time.
-+
-+config DEVFREQ_GOV_POWERSAVE
-+	bool "Powersave"
-+	help
-+	  Sets the frequency at the minimum available frequency.
-+	  This governor always returns 0 as frequency so that
-+	  the DEVFREQ framework returns the lowest frequency available
-+	  at any time.
-+
-+config DEVFREQ_GOV_USERSPACE
-+	bool "Userspace"
-+	help
-+	  Sets the frequency at the user specified one.
-+	  This governor returns the user configured frequency if there
-+	  has been an input to /sys/devices/.../power/devfreq_set_freq.
-+	  Otherwise, the governor does not change the frequnecy
-+	  given at the initialization.
-+
- comment "DEVFREQ Drivers"
+@@ -404,6 +406,7 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 		}
  
- endif # PM_DEVFREQ
-diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-index 168934a..4564a89 100644
---- a/drivers/devfreq/Makefile
-+++ b/drivers/devfreq/Makefile
-@@ -1 +1,5 @@
- obj-$(CONFIG_PM_DEVFREQ)	+= devfreq.o
-+obj-$(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)	+= governor_simpleondemand.o
-+obj-$(CONFIG_DEVFREQ_GOV_PERFORMANCE)	+= governor_performance.o
-+obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
-+obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
-diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
-new file mode 100644
-index 0000000..c47eff8
---- /dev/null
-+++ b/drivers/devfreq/governor_performance.c
-@@ -0,0 +1,24 @@
-+/*
-+ *  linux/drivers/devfreq/governor_performance.c
-+ *
-+ *  Copyright (C) 2011 Samsung Electronics
-+ *	MyungJoo Ham <myungjoo.ham@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/devfreq.h>
-+
-+static int devfreq_performance_func(struct devfreq *df,
-+				    unsigned long *freq)
-+{
-+	*freq = UINT_MAX; /* devfreq_do will run "floor" */
-+	return 0;
-+}
-+
-+struct devfreq_governor devfreq_performance = {
-+	.name = "performance",
-+	.get_target_freq = devfreq_performance_func,
-+};
-diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
-new file mode 100644
-index 0000000..4f128d8
---- /dev/null
-+++ b/drivers/devfreq/governor_powersave.c
-@@ -0,0 +1,24 @@
-+/*
-+ *  linux/drivers/devfreq/governor_powersave.c
-+ *
-+ *  Copyright (C) 2011 Samsung Electronics
-+ *	MyungJoo Ham <myungjoo.ham@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/devfreq.h>
-+
-+static int devfreq_powersave_func(struct devfreq *df,
-+				  unsigned long *freq)
-+{
-+	*freq = 0; /* devfreq_do will run "ceiling" to 0 */
-+	return 0;
-+}
-+
-+struct devfreq_governor devfreq_powersave = {
-+	.name = "powersave",
-+	.get_target_freq = devfreq_powersave_func,
-+};
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-new file mode 100644
-index 0000000..18fe8be
---- /dev/null
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -0,0 +1,88 @@
-+/*
-+ *  linux/drivers/devfreq/governor_simpleondemand.c
-+ *
-+ *  Copyright (C) 2011 Samsung Electronics
-+ *	MyungJoo Ham <myungjoo.ham@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/errno.h>
-+#include <linux/devfreq.h>
-+#include <linux/math64.h>
-+
-+/* Default constants for DevFreq-Simple-Ondemand (DFSO) */
-+#define DFSO_UPTHRESHOLD	(90)
-+#define DFSO_DOWNDIFFERENCTIAL	(5)
-+static int devfreq_simple_ondemand_func(struct devfreq *df,
-+					unsigned long *freq)
-+{
-+	struct devfreq_dev_status stat;
-+	int err = df->profile->get_dev_status(df->dev, &stat);
-+	unsigned long long a, b;
-+	unsigned int dfso_upthreshold = DFSO_UPTHRESHOLD;
-+	unsigned int dfso_downdifferential = DFSO_DOWNDIFFERENCTIAL;
-+	struct devfreq_simple_ondemand_data *data = df->data;
-+
-+	if (err)
-+		return err;
-+
-+	if (data) {
-+		if (data->upthreshold)
-+			dfso_upthreshold = data->upthreshold;
-+		if (data->downdifferential)
-+			dfso_downdifferential = data->downdifferential;
-+	}
-+	if (dfso_upthreshold > 100 ||
-+	    dfso_upthreshold < dfso_downdifferential)
-+		return -EINVAL;
-+
-+	/* Assume MAX if it is going to be divided by zero */
-+	if (stat.total_time == 0) {
-+		*freq = UINT_MAX;
-+		return 0;
-+	}
-+
-+	/* Prevent overflow */
-+	if (stat.busy_time >= (1 << 24) || stat.total_time >= (1 << 24)) {
-+		stat.busy_time >>= 7;
-+		stat.total_time >>= 7;
-+	}
-+
-+	/* Set MAX if it's busy enough */
-+	if (stat.busy_time * 100 >
-+	    stat.total_time * dfso_upthreshold) {
-+		*freq = UINT_MAX;
-+		return 0;
-+	}
-+
-+	/* Set MAX if we do not know the initial frequency */
-+	if (stat.current_frequency == 0) {
-+		*freq = UINT_MAX;
-+		return 0;
-+	}
-+
-+	/* Keep the current frequency */
-+	if (stat.busy_time * 100 >
-+	    stat.total_time * (dfso_upthreshold - dfso_downdifferential)) {
-+		*freq = stat.current_frequency;
-+		return 0;
-+	}
-+
-+	/* Set the desired frequency based on the load */
-+	a = stat.busy_time;
-+	a *= stat.current_frequency;
-+	b = div_u64(a, stat.total_time);
-+	b *= 100;
-+	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
-+	*freq = (unsigned long) b;
-+
-+	return 0;
-+}
-+
-+struct devfreq_governor devfreq_simple_ondemand = {
-+	.name = "simple_ondemand",
-+	.get_target_freq = devfreq_simple_ondemand_func,
-+};
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-new file mode 100644
-index 0000000..490167f
---- /dev/null
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -0,0 +1,126 @@
-+/*
-+ *  linux/drivers/devfreq/governor_simpleondemand.c
-+ *
-+ *  Copyright (C) 2011 Samsung Electronics
-+ *	MyungJoo Ham <myungjoo.ham@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/slab.h>
-+#include <linux/device.h>
-+#include <linux/devfreq.h>
-+#include <linux/pm.h>
-+#include <linux/mutex.h>
-+#include "governor.h"
-+
-+struct userspace_data {
-+	unsigned long user_frequency;
-+	bool valid;
-+};
-+
-+static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
-+{
-+	struct userspace_data *data = df->data;
-+
-+	if (!data->valid)
-+		*freq = df->previous_freq; /* No user freq specified yet */
+ 		dev_opp->dev = dev;
++		srcu_init_notifier_head(&dev_opp->head);
+ 		INIT_LIST_HEAD(&dev_opp->opp_list);
+ 
+ 		/* Secure the device list modification */
+@@ -428,6 +431,11 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 	list_add_rcu(&new_opp->node, head);
+ 	mutex_unlock(&dev_opp_list_lock);
+ 
++	/*
++	 * Notify the changes in the availability of the operable
++	 * frequency/voltage list.
++	 */
++	srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
+ 	return 0;
+ }
+ 
+@@ -504,6 +512,14 @@ static int opp_set_availability(struct device *dev, unsigned long freq,
+ 	mutex_unlock(&dev_opp_list_lock);
+ 	synchronize_rcu();
+ 
++	/* Notify the change of the OPP availability */
++	if (availability_req)
++		srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ENABLE,
++					 new_opp);
 +	else
-+		*freq = data->user_frequency;
-+	return 0;
-+}
++		srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_DISABLE,
++					 new_opp);
 +
-+static ssize_t store_freq(struct device *dev, struct device_attribute *attr,
-+			  const char *buf, size_t count)
-+{
-+	struct devfreq *devfreq = get_devfreq(dev);
-+	struct userspace_data *data;
-+	unsigned long wanted;
-+	int err = 0;
+ 	/* clean up old opp */
+ 	new_opp = opp;
+ 	goto out;
+@@ -643,3 +659,16 @@ void opp_free_cpufreq_table(struct device *dev,
+ 	*table = NULL;
+ }
+ #endif		/* CONFIG_CPU_FREQ */
 +
-+	if (IS_ERR(devfreq)) {
-+		err = PTR_ERR(devfreq);
-+		goto out;
-+	}
-+
-+	mutex_lock(&devfreq->lock);
-+	data = devfreq->data;
-+
-+	sscanf(buf, "%lu", &wanted);
-+	data->user_frequency = wanted;
-+	data->valid = true;
-+	err = update_devfreq(devfreq);
-+	if (err == 0)
-+		err = count;
-+	mutex_unlock(&devfreq->lock);
-+out:
-+	return err;
-+}
-+
-+static ssize_t show_freq(struct device *dev, struct device_attribute *attr,
-+			 char *buf)
-+{
-+	struct devfreq *devfreq = get_devfreq(dev);
-+	struct userspace_data *data;
-+	int err = 0;
-+
-+	if (IS_ERR(devfreq)) {
-+		err = PTR_ERR(devfreq);
-+		goto out;
-+	}
-+
-+	mutex_lock(&devfreq->lock);
-+	data = devfreq->data;
-+
-+	if (data->valid)
-+		err = sprintf(buf, "%lu\n", data->user_frequency);
-+	else
-+		err = sprintf(buf, "undefined\n");
-+	mutex_unlock(&devfreq->lock);
-+out:
-+	return err;
-+}
-+
-+static DEVICE_ATTR(devfreq_userspace_set_freq, 0644, show_freq, store_freq);
-+static struct attribute *dev_entries[] = {
-+	&dev_attr_devfreq_userspace_set_freq.attr,
-+	NULL,
-+};
-+static struct attribute_group dev_attr_group = {
-+	.name	= power_group_name,
-+	.attrs	= dev_entries,
-+};
-+
-+static int userspace_init(struct devfreq *devfreq)
-+{
-+	int err = 0;
-+	struct userspace_data *data = kzalloc(sizeof(struct userspace_data),
-+					      GFP_KERNEL);
-+
-+	if (!data) {
-+		err = -ENOMEM;
-+		goto out;
-+	}
-+	data->valid = false;
-+	devfreq->data = data;
-+
-+	sysfs_merge_group(&devfreq->dev->kobj, &dev_attr_group);
-+out:
-+	return err;
-+}
-+
-+static void userspace_exit(struct devfreq *devfreq)
-+{
-+	sysfs_unmerge_group(&devfreq->dev->kobj, &dev_attr_group);
-+	kfree(devfreq->data);
-+	devfreq->data = NULL;
-+}
-+
-+struct devfreq_governor devfreq_userspace = {
-+	.name = "userspace",
-+	.get_target_freq = devfreq_userspace_func,
-+	.init = userspace_init,
-+	.exit = userspace_exit,
-+};
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index f14b57d..5b802a6 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -105,6 +105,37 @@ extern int devfreq_add_device(struct device *dev,
- 			   struct devfreq_governor *governor,
- 			   void *data);
- extern int devfreq_remove_device(struct device *dev);
-+
-+#ifdef CONFIG_DEVFREQ_GOV_POWERSAVE
-+extern struct devfreq_governor devfreq_powersave;
-+#endif
-+#ifdef CONFIG_DEVFREQ_GOV_PERFORMANCE
-+extern struct devfreq_governor devfreq_performance;
-+#endif
-+#ifdef CONFIG_DEVFREQ_GOV_USERSPACE
-+extern struct devfreq_governor devfreq_userspace;
-+#endif
-+#ifdef CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND
-+extern struct devfreq_governor devfreq_simple_ondemand;
-+/**
-+ * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
-+ *	and devfreq_add_device
-+ * @ upthreshold	If the load is over this value, the frequency jumps.
-+ *			Specify 0 to use the default. Valid value = 0 to 100.
-+ * @ downdifferential	If the load is under upthreshold - downdifferential,
-+ *			the governor may consider slowing the frequency down.
-+ *			Specify 0 to use the default. Valid value = 0 to 100.
-+ *			downdifferential < upthreshold must hold.
-+ *
-+ * If the fed devfreq_simple_ondemand_data pointer is NULL to the governor,
-+ * the governor uses the default values.
++/** opp_get_notifier() - find notifier_head of the device with opp
++ * @dev:	device pointer used to lookup device OPPs.
 + */
-+struct devfreq_simple_ondemand_data {
-+	unsigned int upthreshold;
-+	unsigned int downdifferential;
-+};
-+#endif
++struct srcu_notifier_head *opp_get_notifier(struct device *dev)
++{
++	struct device_opp *dev_opp = find_device_opp(dev);
 +
- #else /* !CONFIG_PM_DEVFREQ */
- static int devfreq_add_device(struct device *dev,
- 			   struct devfreq_dev_profile *profile,
-@@ -118,6 +149,12 @@ static int devfreq_remove_device(struct device *dev)
++	if (IS_ERR(dev_opp))
++		return ERR_PTR(PTR_ERR(dev_opp)); /* matching type */
++
++	return &dev_opp->head;
++}
+diff --git a/include/linux/opp.h b/include/linux/opp.h
+index 7020e97..87a9208 100644
+--- a/include/linux/opp.h
++++ b/include/linux/opp.h
+@@ -16,9 +16,14 @@
+ 
+ #include <linux/err.h>
+ #include <linux/cpufreq.h>
++#include <linux/notifier.h>
+ 
+ struct opp;
+ 
++enum opp_event {
++	OPP_EVENT_ADD, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
++};
++
+ #if defined(CONFIG_PM_OPP)
+ 
+ unsigned long opp_get_voltage(struct opp *opp);
+@@ -40,6 +45,8 @@ int opp_enable(struct device *dev, unsigned long freq);
+ 
+ int opp_disable(struct device *dev, unsigned long freq);
+ 
++struct srcu_notifier_head *opp_get_notifier(struct device *dev);
++
+ #else
+ static inline unsigned long opp_get_voltage(struct opp *opp)
+ {
+@@ -89,6 +96,11 @@ static inline int opp_disable(struct device *dev, unsigned long freq)
  {
  	return 0;
  }
 +
-+#define devfreq_powersave	NULL
-+#define devfreq_performance	NULL
-+#define devfreq_userspace	NULL
-+#define devfreq_simple_ondemand	NULL
-+
- #endif /* CONFIG_PM_DEVFREQ */
++struct srcu_notifier_head *opp_get_notifier(struct device *dev)
++{
++	return ERR_PTR(-EINVAL);
++}
+ #endif		/* CONFIG_PM */
  
- #endif /* __LINUX_DEVFREQ_H__ */
+ #if defined(CONFIG_CPU_FREQ) && defined(CONFIG_PM_OPP)
 -- 
 1.7.4.1
