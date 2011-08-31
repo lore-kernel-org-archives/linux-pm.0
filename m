@@ -1,17 +1,17 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v8 0/5] DEVFREQ,
-	DVFS Framework for Non-CPU Devices.
-Date: Wed, 31 Aug 2011 12:59:47 +0900
-Message-ID: <CAJ0PZbRrqQbpi2Su6sT18i2uXeSdNCBg3FP1AbFg2ACmDFXS5w@mail.gmail.com>
-References: <1314086044-24659-1-git-send-email-myungjoo.ham@samsung.com>
-	<1314174131-14194-1-git-send-email-myungjoo.ham@samsung.com>
-	<871uw2lbls.fsf@ti.com>
-Reply-To: myungjoo.ham@gmail.com
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 6/6] cgroup: kill subsys->can_attach_task(),
+ pre_attach() and attach_task()
+Date: Wed, 31 Aug 2011 09:03:13 +0200
+Message-ID: <20110831070313.GA29179__45596.2140033536$1314903648$gmane$org@mtj.dyndns.org>
+References: <1314312192-26885-1-git-send-email-tj@kernel.org>
+	<1314312192-26885-7-git-send-email-tj@kernel.org>
+	<20110830201030.GC15953@somewhere.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <871uw2lbls.fsf@ti.com>
+Content-Disposition: inline
+In-Reply-To: <20110830201030.GC15953@somewhere.redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,37 +21,25 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBdWcgMzEsIDIwMTEgYXQgODozMiBBTSwgS2V2aW4gSGlsbWFuIDxraGlsbWFuQHRp
-LmNvbT4gd3JvdGU6Cj4gTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+IHdy
-aXRlczoKPgo+PiBUaGUgcGF0Y2hzZXQgcmV2aXNpb24gdjggaGFzIG1pbm9yIHVwZGF0ZXMgc2lu
-Y2UgdjcgYW5kIHY2Lgo+PiAtIEFsbG93IGdvdmVybm9ycyB0byBoYXZlIHRoZWlyIG93biBzeXNm
-cyBpbnRlcmZhY2UgYW5kIGluaXQvZXhpdCBjYWxsYmFja3MuCj4+Cj4+IFRoZSBwYXRjaGVzIDEv
-NSAoT1BQIG5vdGlmaWVyKSBhbmQgMi81IChERVZGUkVRIGNvcmUpIGhhdmUgbm8gY2hhbmdlcyBz
-aW5jZSB2Ny4KPj4gVGhlcmUgaGFzIGJlZW4gcmVvcmRlcmluZyBiZXR3ZWVuICJhZGQgY29tbW9u
-IHN5c2ZzIGludGVyZmFjZXMiIHBhdGNoCj4+IGFuZCAiYWRkIGJhc2ljIGdvdmVybm9ycyIgKDMv
-NSBhbmQgNS81KQo+PiAiYWRkIGludGVybmFsIGludGVyZmFjZXMgZm9yIGdvdmVybm9ycyAoNC81
-KSIgcGF0Y2ggaGFzIGJlZW4gbmV3bHkKPj4gaW50cm9kdWNlZCBhdCB2OCBwYXRjaHNldC4KPj4K
-Pj4gRm9yIGEgdXNhZ2UgZXhhbXBsZSwgcGxlYXNlIGxvb2sgYXQKPj4gaHR0cDovL2dpdC5pbmZy
-YWRlYWQub3JnL3VzZXJzL2ttcGFyay9saW51eC0yLjYtc2Ftc3VuZy9zaG9ydGxvZy9yZWZzL2hl
-YWRzL2RldmZyZXEKPj4KPj4gSW4gdGhlIGFib3ZlIGdpdCB0cmVlLCBEVkZTIChkeW5hbWljIHZv
-bHRhZ2UgYW5kIGZyZXF1ZW5jeSBzY2FsaW5nKSBtZWNoYW5pc20KPj4gaXMgYXBwbGllZCB0byB0
-aGUgbWVtb3J5IGJ1cyBvZiBFeHlub3M0MjEwIGZvciBFeHlub3M0MjEwLU5VUkkgYm9hcmRzLgo+
-PiBJbiB0aGUgZXhhbXBsZSwgdGhlIExQRERSMiBEUkFNIGZyZXF1ZW5jeSBjaGFuZ2VzIGJldHdl
-ZW4gMTMzLCAyNjYsIGFuZCA0MDBNSHoKPj4gYW5kIG90aGVyIHJlbGF0ZWQgY2xvY2tzIHNpbXBs
-eSBmb2xsb3cgdGhlIGRldGVybWluZWQgRERSIFJBTSBjbG9jay4KPj4KPj4gVGhlIERFVkZSRVEg
-ZHJpdmVyIGZvciBFeHlub3M0MjEwIG1lbW9yeSBidXMgaXMgYXQKPj4gL2RyaXZlcnMvZGV2ZnJl
-cS9leHlub3M0MjEwX21lbW9yeWJ1cy5jIGluIHRoZSBnaXQgdHJlZS4KPgo+IE1pbm9yIG5pdDog
-eW91IGNvbnRpbnVlIHRvIHVzZSBERVZGUkVRIChhbGwgY2FwcykgdGhyb3VnaG91dCBzdWJqZWN0
-cwo+IGFuZCBjaGFuZ2Vsb2dzIGV0Yy4gd2hlbiBpdCBzaG91bGQgYmUgY2FsbGVkIGRldmZyZXEg
-c2luY2UgaXQncyBub3QgYW4KPiBhY3J5b255bS4KPgo+IEtldmluCj4KCkZpbmUsIEknbGwgcmVn
-YXJkIGRldmZyZXEgYXMgYSBjb21tb24gbm91bi4KCgpDaGVlcnMsCk15dW5nSm9vCgotLSAKTXl1
-bmdKb28gSGFtICjtlajrqoXso7wpLCBQaC5ELgpNb2JpbGUgU29mdHdhcmUgUGxhdGZvcm0gTGFi
-LApEaWdpdGFsIE1lZGlhIGFuZCBDb21tdW5pY2F0aW9ucyAoRE1DKSBCdXNpbmVzcwpTYW1zdW5n
-IEVsZWN0cm9uaWNzCmNlbGw6IDgyLTEwLTY3MTQtMjg1OApfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
-bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Hello, Frederic.
+
+On Tue, Aug 30, 2011 at 10:10:32PM +0200, Frederic Weisbecker wrote:
+> In order to keep the fix queued in -mm (https://lkml.org/lkml/2011/8/26/262)
+> the tasks that have failed to migrate should be removed from the iterator
+> so that they are not included in the batch in ->attach().
+
+I don't think that's a good approach.  It breaks the symmetry when
+calling different callbacks.  What if ->can_attach() allocates
+per-task resources and the task exits in the middle?  I think we
+better lock down fork/exit/exec.  I'll send patches but I'm currently
+moving / traveling w/ limited access to my toys so it might take some
+time.
+
+Thanks.
+
+-- 
+tejun
