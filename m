@@ -1,16 +1,13 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH pm-freezer 3/4] freezer: restructure
-	__refrigerator()
-Date: Wed, 31 Aug 2011 12:22:10 +0200
-Message-ID: <20110831102210.GC2828__5047.76339880681$1314909593$gmane$org@mtj.dyndns.org>
-References: <20110831102100.GA2828@mtj.dyndns.org>
-	<20110831102143.GB2828@mtj.dyndns.org>
+Subject: [PATCH pm-freezer 1/4] cgroup_freezer: fix
+ freezer->state setting bug in freezer_change_state()
+Date: Wed, 31 Aug 2011 12:21:07 +0200
+Message-ID: <20110831102100.GA2828__2778.27269533208$1314909904$gmane$org@mtj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110831102143.GB2828@mtj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,76 +21,67 @@ To: "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>, Paul Men
 Cc: containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+d02f52811d0e "cgroup_freezer: prepare for removal of TIF_FREEZE" moved
+setting of freezer->state into freezer_change_state(); unfortunately,
+while doing so, when it's beginning to freeze tasks, it sets the state
+to CGROUP_FROZEN instead of CGROUP_FREEZING ending up skipping the
+whole freezing state.  Fix it.
 
-If another freeze happens before all tasks leave FROZEN state after
-being thawed, the freezer can see the existing FROZEN and consider the
-tasks to be frozen but they can clear FROZEN without checking the new
-freezing().
-
-Oleg suggested restructuring __refrigerator() such that there's single
-condition check section inside freezer_lock and sigpending is cleared
-afterwards, which fixes the problem and simplifies the code.
-Restructure accordingly.
+-v2: Oleg pointed out that re-freezing FROZEN cgroup could increment
+     system_freezing_cnt.  Fixed.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Reported-by: Oleg Nesterov <oleg@redhat.com>
+Cc: Paul Menage <paul@paulmenage.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 ---
- kernel/freezer.c |   33 ++++++++++++++-------------------
- 1 file changed, 14 insertions(+), 19 deletions(-)
+I'm in the process of moving and can only use a quite old laptop.  I
+tested compile but couldn't really do much else, so please proceed
+with caution.  Oleg, can you please ack the patches if you agree with
+the updated versions?
 
-Index: work/kernel/freezer.c
+Thanks.
+
+ kernel/cgroup_freezer.c |   20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
+
+Index: work/kernel/cgroup_freezer.c
 ===================================================================
---- work.orig/kernel/freezer.c
-+++ work/kernel/freezer.c
-@@ -52,36 +52,31 @@ bool __refrigerator(bool check_kthr_stop
- 	/* Hmm, should we be allowed to suspend when there are realtime
- 	   processes around? */
- 	bool was_frozen = false;
--	long save;
-+	long save = current->state;
+--- work.orig/kernel/cgroup_freezer.c
++++ work/kernel/cgroup_freezer.c
+@@ -308,24 +308,26 @@ static int freezer_change_state(struct c
+ 	spin_lock_irq(&freezer->lock);
  
--	/*
--	 * No point in checking freezing() again - the caller already did.
--	 * Proceed to enter FROZEN.
--	 */
--	spin_lock_irq(&freezer_lock);
--	current->flags |= PF_FROZEN;
--	spin_unlock_irq(&freezer_lock);
+ 	update_if_frozen(cgroup, freezer);
+-	if (goal_state == freezer->state)
+-		goto out;
 -
--	save = current->state;
- 	pr_debug("%s entered refrigerator\n", current->comm);
+-	freezer->state = goal_state;
  
--	spin_lock_irq(&current->sighand->siglock);
--	recalc_sigpending(); /* We sent fake signal, clean it up */
--	spin_unlock_irq(&current->sighand->siglock);
--
- 	for (;;) {
- 		set_current_state(TASK_UNINTERRUPTIBLE);
-+
-+		spin_lock_irq(&freezer_lock);
-+		current->flags |= PF_FROZEN;
- 		if (!freezing(current) ||
--		    (check_kthr_stop && kthread_should_stop()))
-+		    (check_kthr_stop && kthread_should_stop())) {
-+			current->flags &= ~PF_FROZEN;
-+			break;
+ 	switch (goal_state) {
+ 	case CGROUP_THAWED:
+-		atomic_dec(&system_freezing_cnt);
+-		unfreeze_cgroup(cgroup, freezer);
++		if (freezer->state != CGROUP_THAWED) {
++			freezer->state = CGROUP_THAWED;
++			atomic_dec(&system_freezing_cnt);
++			unfreeze_cgroup(cgroup, freezer);
 +		}
-+		spin_unlock_irq(&freezer_lock);
-+
-+		if (!(current->flags & PF_FROZEN))
- 			break;
- 		was_frozen = true;
- 		schedule();
+ 		break;
+ 	case CGROUP_FROZEN:
+-		atomic_inc(&system_freezing_cnt);
+-		retval = try_to_freeze_cgroup(cgroup, freezer);
++		if (freezer->state == CGROUP_THAWED) {
++			freezer->state = CGROUP_FREEZING;
++			atomic_inc(&system_freezing_cnt);
++			retval = try_to_freeze_cgroup(cgroup, freezer);
++		}
+ 		break;
+ 	default:
+ 		BUG();
  	}
+-out:
++
+ 	spin_unlock_irq(&freezer->lock);
  
--	/* leave FROZEN */
--	spin_lock_irq(&freezer_lock);
--	current->flags &= ~PF_FROZEN;
--	spin_unlock_irq(&freezer_lock);
-+	spin_lock_irq(&current->sighand->siglock);
-+	recalc_sigpending(); /* We sent fake signal, clean it up */
-+	spin_unlock_irq(&current->sighand->siglock);
- 
- 	pr_debug("%s left refrigerator\n", current->comm);
- 
+ 	return retval;
