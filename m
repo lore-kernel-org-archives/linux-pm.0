@@ -1,8 +1,7 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH v9 1/4] PM / OPP: Add OPP availability change
-	notifier.
-Date: Wed, 31 Aug 2011 16:29:36 +0900
-Message-ID: <1314775779-21399-2-git-send-email-myungjoo.ham@samsung.com>
+Subject: [PATCH v9 3/4] PM / devfreq: add common sysfs interfaces
+Date: Wed, 31 Aug 2011 16:29:38 +0900
+Message-ID: <1314775779-21399-4-git-send-email-myungjoo.ham@samsung.com>
 References: <1314775779-21399-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,139 +21,338 @@ To: linux-pm@lists.linux-foundation.org
 Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-The patch enables to register notifier_block for an OPP-device in order
-to get notified for any changes in the availability of OPPs of the
-device. For example, if a new OPP is inserted or enable/disable status
-of an OPP is changed, the notifier is executed.
-
-This enables the usage of opp_add, opp_enable, and opp_disable to
-directly take effect with any connected entities such as cpufreq or
-devfreq.
+Device specific sysfs interface /sys/devices/.../power/devfreq_*
+- governor	R: name of governor
+- cur_freq	R: current frequency
+- max_freq	R: maximum operable frequency
+- min_freq	R: minimum operable frequency
+- polling_interval	R: polling interval in ms given with devfreq profile
+			W: update polling interval.
 
 Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Reviewed-by: Mike Turquette <mturquette@ti.com>
 
+--
+Changes from v8
+- applied per-devfreq locking mechanism
+
+Changes from v7
+- removed set_freq from the common devfreq interface
+- added get_devfreq, a mutex-protected wrapper for find_device_devfreq
+(for sysfs interfaces and later with governor-support)
+- corrected ABI documentation.
+
+Changes from v6
+- poling_interval is writable.
+
+Changes from v5
+- updated devferq_update usage.
+
+Changes from v4
+- removed system-wide sysfs interface
+- removed tickling sysfs interface
+- added set_freq for userspace governor (and any other governors that
+  require user input)
+
+Changes from v3
+- corrected sysfs API usage
+- corrected error messages
+- moved sysfs entry location
+- added sysfs entries
+
+Changes from v2
+- add ABI entries for devfreq sysfs interface
 ---
-No changes since v7
+ Documentation/ABI/testing/sysfs-devices-power |   37 +++++
+ drivers/devfreq/devfreq.c                     |  203 +++++++++++++++++++++++++
+ 2 files changed, 240 insertions(+), 0 deletions(-)
 
-Added at devfreq patch set v6 replacing devfreq_update calls at OPP.
----
- drivers/base/power/opp.c |   29 +++++++++++++++++++++++++++++
- include/linux/opp.h      |   12 ++++++++++++
- 2 files changed, 41 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index b23de18..e6b4c89 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -73,6 +73,7 @@ struct opp {
-  *		RCU usage: nodes are not modified in the list of device_opp,
-  *		however addition is possible and is secured by dev_opp_list_lock
-  * @dev:	device pointer
-+ * @head:	notifier head to notify the OPP availability changes.
-  * @opp_list:	list of opps
-  *
-  * This is an internal data structure maintaining the link to opps attached to
-@@ -83,6 +84,7 @@ struct device_opp {
- 	struct list_head node;
+diff --git a/Documentation/ABI/testing/sysfs-devices-power b/Documentation/ABI/testing/sysfs-devices-power
+index 8ffbc25..57f4591 100644
+--- a/Documentation/ABI/testing/sysfs-devices-power
++++ b/Documentation/ABI/testing/sysfs-devices-power
+@@ -165,3 +165,40 @@ Description:
  
- 	struct device *dev;
-+	struct srcu_notifier_head head;
- 	struct list_head opp_list;
- };
+ 		Not all drivers support this attribute.  If it isn't supported,
+ 		attempts to read or write it will yield I/O errors.
++
++What:		/sys/devices/.../power/devfreq_governor
++Date:		July 2011
++Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
++Description:
++		The /sys/devices/.../power/devfreq_governor shows the name
++		of the governor used by the corresponding device.
++
++What:		/sys/devices/.../power/devfreq_cur_freq
++Date:		July 2011
++Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
++Description:
++		The /sys/devices/.../power/devfreq_cur_freq shows the current
++		frequency of the corresponding device.
++
++What:		/sys/devices/.../power/devfreq_max_freq
++Date:		July 2011
++Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
++Description:
++		The /sys/devices/.../power/devfreq_max_freq shows the
++		maximum operable frequency of the corresponding device.
++
++What:		/sys/devices/.../power/devfreq_min_freq
++Date:		July 2011
++Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
++Description:
++		The /sys/devices/.../power/devfreq_min_freq shows the
++		minimum operable frequency of the corresponding device.
++
++What:		/sys/devices/.../power/devfreq_polling_interval
++Date:		July 2011
++Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
++Description:
++		The /sys/devices/.../power/devfreq_polling_interval sets and
++		shows the requested polling interval of the corresponding
++		device. The values are represented in ms. If the value is less
++		than 1 jiffy, it is considered to be 0, which means no polling.
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 621b863..1c46052 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -37,6 +37,8 @@ static struct delayed_work devfreq_work;
+ static LIST_HEAD(devfreq_list);
+ static DEFINE_MUTEX(devfreq_list_lock);
  
-@@ -404,6 +406,7 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- 		}
++static struct attribute_group dev_attr_group;
++
+ /**
+  * find_device_devfreq() - find devfreq struct using device pointer
+  * @dev:	device pointer used to lookup device devfreq.
+@@ -191,6 +193,8 @@ static void devfreq_monitor(struct work_struct *work)
+ 				dev_err(devfreq->dev, "Due to devfreq_do error(%d), devfreq(%s) is removed from the device\n",
+ 					error, devfreq->governor->name);
  
- 		dev_opp->dev = dev;
-+		srcu_init_notifier_head(&dev_opp->head);
- 		INIT_LIST_HEAD(&dev_opp->opp_list);
++				sysfs_unmerge_group(&devfreq->dev->kobj,
++						    &dev_attr_group);
+ 				list_del(&devfreq->node);
+ 				mutex_unlock(&devfreq->lock);
+ 				kfree(devfreq);
+@@ -293,6 +297,8 @@ int devfreq_add_device(struct device *dev, struct devfreq_dev_profile *profile,
+ 		queue_delayed_work(devfreq_wq, &devfreq_work,
+ 				   devfreq->next_polling);
+ 	}
++
++	sysfs_merge_group(&dev->kobj, &dev_attr_group);
+ 	mutex_unlock(&devfreq->lock);
+ 	goto out;
+ err_init:
+@@ -333,6 +339,8 @@ int devfreq_remove_device(struct device *dev)
+ 		goto out;
+ 	}
  
- 		/* Secure the device list modification */
-@@ -428,6 +431,11 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- 	list_add_rcu(&new_opp->node, head);
- 	mutex_unlock(&dev_opp_list_lock);
++	sysfs_unmerge_group(&dev->kobj, &dev_attr_group);
++
+ 	list_del(&devfreq->node);
  
-+	/*
-+	 * Notify the changes in the availability of the operable
-+	 * frequency/voltage list.
-+	 */
-+	srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ADD, new_opp);
+ 	if (devfreq->governor->exit)
+@@ -346,6 +354,201 @@ out:
  	return 0;
  }
  
-@@ -504,6 +512,14 @@ static int opp_set_availability(struct device *dev, unsigned long freq,
- 	mutex_unlock(&dev_opp_list_lock);
- 	synchronize_rcu();
- 
-+	/* Notify the change of the OPP availability */
-+	if (availability_req)
-+		srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_ENABLE,
-+					 new_opp);
-+	else
-+		srcu_notifier_call_chain(&dev_opp->head, OPP_EVENT_DISABLE,
-+					 new_opp);
-+
- 	/* clean up old opp */
- 	new_opp = opp;
- 	goto out;
-@@ -643,3 +659,16 @@ void opp_free_cpufreq_table(struct device *dev,
- 	*table = NULL;
- }
- #endif		/* CONFIG_CPU_FREQ */
-+
-+/** opp_get_notifier() - find notifier_head of the device with opp
-+ * @dev:	device pointer used to lookup device OPPs.
-+ */
-+struct srcu_notifier_head *opp_get_notifier(struct device *dev)
++static ssize_t show_governor(struct device *dev,
++			     struct device_attribute *attr, char *buf)
 +{
-+	struct device_opp *dev_opp = find_device_opp(dev);
++	struct devfreq *df;
++	ssize_t ret;
 +
-+	if (IS_ERR(dev_opp))
-+		return ERR_PTR(PTR_ERR(dev_opp)); /* matching type */
++	mutex_lock(&devfreq_list_lock);
++	df = find_device_devfreq(dev);
++	if (IS_ERR(df)) {
++		ret = PTR_ERR(df);
++		goto out;
++	}
 +
-+	return &dev_opp->head;
++	mutex_lock(&df->lock);
++	if (!df->governor) {
++		ret = -EINVAL;
++		goto out_l;
++	}
++
++	ret = sprintf(buf, "%s\n", df->governor->name);
++out_l:
++	mutex_unlock(&df->lock);
++out:
++	mutex_unlock(&devfreq_list_lock);
++	return ret;
 +}
-diff --git a/include/linux/opp.h b/include/linux/opp.h
-index 7020e97..87a9208 100644
---- a/include/linux/opp.h
-+++ b/include/linux/opp.h
-@@ -16,9 +16,14 @@
- 
- #include <linux/err.h>
- #include <linux/cpufreq.h>
-+#include <linux/notifier.h>
- 
- struct opp;
- 
-+enum opp_event {
-+	OPP_EVENT_ADD, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
++
++static ssize_t show_freq(struct device *dev,
++			 struct device_attribute *attr, char *buf)
++{
++	struct devfreq *df;
++	ssize_t ret;
++
++	mutex_lock(&devfreq_list_lock);
++	df = find_device_devfreq(dev);
++	if (IS_ERR(df)) {
++		ret = PTR_ERR(df);
++		goto out;
++	}
++
++	ret = sprintf(buf, "%lu\n", df->previous_freq);
++out:
++	mutex_unlock(&devfreq_list_lock);
++	return ret;
++}
++
++static ssize_t show_max_freq(struct device *dev,
++			     struct device_attribute *attr, char *buf)
++{
++	struct devfreq *df;
++	ssize_t ret;
++	unsigned long freq = ULONG_MAX;
++	struct opp *opp;
++
++	mutex_lock(&devfreq_list_lock);
++	df = find_device_devfreq(dev);
++	if (IS_ERR(df)) {
++		ret = PTR_ERR(df);
++		goto out;
++	}
++
++	mutex_lock(&df->lock);
++	opp = opp_find_freq_floor(df->dev, &freq);
++	if (IS_ERR(opp)) {
++		ret = PTR_ERR(opp);
++		goto out_l;
++	}
++
++	ret = sprintf(buf, "%lu\n", freq);
++out_l:
++	mutex_unlock(&df->lock);
++out:
++	mutex_unlock(&devfreq_list_lock);
++	return ret;
++}
++
++static ssize_t show_min_freq(struct device *dev,
++			     struct device_attribute *attr, char *buf)
++{
++	struct devfreq *df;
++	ssize_t ret;
++	unsigned long freq = 0;
++	struct opp *opp;
++
++	mutex_lock(&devfreq_list_lock);
++	df = find_device_devfreq(dev);
++	if (IS_ERR(df)) {
++		ret = PTR_ERR(df);
++		goto out;
++	}
++
++	mutex_lock(&df->lock);
++	opp = opp_find_freq_ceil(df->dev, &freq);
++	if (IS_ERR(opp)) {
++		ret = PTR_ERR(opp);
++		goto out_l;
++	}
++
++	ret = sprintf(buf, "%lu\n", freq);
++out_l:
++	mutex_unlock(&df->lock);
++out:
++	mutex_unlock(&devfreq_list_lock);
++	return ret;
++}
++
++static ssize_t show_polling_interval(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	struct devfreq *df;
++	ssize_t ret;
++
++	mutex_lock(&devfreq_list_lock);
++	df = find_device_devfreq(dev);
++	if (IS_ERR(df)) {
++		ret = PTR_ERR(df);
++		goto out;
++	}
++
++	mutex_lock(&df->lock);
++	if (!df->profile) {
++		ret = -EINVAL;
++		goto out_l;
++	}
++
++	ret = sprintf(buf, "%d\n", df->profile->polling_ms);
++out_l:
++	mutex_unlock(&df->lock);
++out:
++	mutex_unlock(&devfreq_list_lock);
++	return ret;
++}
++
++static ssize_t store_polling_interval(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf, size_t count)
++{
++	struct devfreq *df;
++	unsigned int value;
++	int ret;
++
++	mutex_lock(&devfreq_list_lock);
++	df = find_device_devfreq(dev);
++	if (IS_ERR(df)) {
++		count = PTR_ERR(df);
++		goto out;
++	}
++	mutex_lock(&df->lock);
++	if (!df->profile) {
++		count = -EINVAL;
++		goto out_l;
++	}
++
++	ret = sscanf(buf, "%u", &value);
++	if (ret != 1) {
++		count = -EINVAL;
++		goto out_l;
++	}
++
++	df->profile->polling_ms = value;
++	df->next_polling = df->polling_jiffies
++			 = msecs_to_jiffies(value);
++
++	if (df->next_polling > 0 && !polling) {
++		polling = true;
++		queue_delayed_work(devfreq_wq, &devfreq_work,
++				   df->next_polling);
++	}
++out_l:
++	mutex_unlock(&df->lock);
++out:
++	mutex_unlock(&devfreq_list_lock);
++
++	return count;
++}
++
++static DEVICE_ATTR(devfreq_governor, 0444, show_governor, NULL);
++static DEVICE_ATTR(devfreq_cur_freq, 0444, show_freq, NULL);
++static DEVICE_ATTR(devfreq_max_freq, 0444, show_max_freq, NULL);
++static DEVICE_ATTR(devfreq_min_freq, 0444, show_min_freq, NULL);
++static DEVICE_ATTR(devfreq_polling_interval, 0644, show_polling_interval,
++		   store_polling_interval);
++static struct attribute *dev_entries[] = {
++	&dev_attr_devfreq_governor.attr,
++	&dev_attr_devfreq_cur_freq.attr,
++	&dev_attr_devfreq_max_freq.attr,
++	&dev_attr_devfreq_min_freq.attr,
++	&dev_attr_devfreq_polling_interval.attr,
++	NULL,
++};
++static struct attribute_group dev_attr_group = {
++	.name	= power_group_name,
++	.attrs	= dev_entries,
 +};
 +
- #if defined(CONFIG_PM_OPP)
- 
- unsigned long opp_get_voltage(struct opp *opp);
-@@ -40,6 +45,8 @@ int opp_enable(struct device *dev, unsigned long freq);
- 
- int opp_disable(struct device *dev, unsigned long freq);
- 
-+struct srcu_notifier_head *opp_get_notifier(struct device *dev);
-+
- #else
- static inline unsigned long opp_get_voltage(struct opp *opp)
- {
-@@ -89,6 +96,11 @@ static inline int opp_disable(struct device *dev, unsigned long freq)
- {
- 	return 0;
- }
-+
-+struct srcu_notifier_head *opp_get_notifier(struct device *dev)
-+{
-+	return ERR_PTR(-EINVAL);
-+}
- #endif		/* CONFIG_PM */
- 
- #if defined(CONFIG_CPU_FREQ) && defined(CONFIG_PM_OPP)
+ /**
+  * devfreq_init() - Initialize data structure for devfreq framework and
+  *		  start polling registered devfreq devices.
 -- 
 1.7.4.1
