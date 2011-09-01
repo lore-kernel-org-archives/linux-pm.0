@@ -1,20 +1,14 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 6/6] cgroup: kill subsys->can_attach_task(),
- pre_attach() and attach_task()
-Date: Thu, 1 Sep 2011 14:58:24 +0200
-Message-ID: <20110901125822.GB24650__15733.7488759824$1314929417$gmane$org@somewhere.redhat.com>
-References: <1314312192-26885-1-git-send-email-tj@kernel.org>
-	<1314312192-26885-7-git-send-email-tj@kernel.org>
-	<20110830201030.GC15953@somewhere.redhat.com>
-	<20110831070313.GA29179@mtj.dyndns.org>
-	<20110831134220.GB20598@somewhere>
-	<20110901112221.GA2752@htj.dyndns.org>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [PATCH 3/5] PM / QoS: Add function
+	dev_pm_qos_read_value()
+Date: Thu, 1 Sep 2011 17:13:44 +0200
+Message-ID: <CAORVsuX=vKiGxHrR4hZjeT4DV0vhUh+MXLwNjoOwgBDu1HRR5A__18069.4931689233$1314930018$gmane$org@mail.gmail.com>
+References: <201108310017.03103.rjw@sisk.pl> <201108310021.13800.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110901112221.GA2752@htj.dyndns.org>
+In-Reply-To: <201108310021.13800.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,50 +18,135 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 01, 2011 at 08:22:21PM +0900, Tejun Heo wrote:
-> Hello,
-> 
-> On Wed, Aug 31, 2011 at 03:42:24PM +0200, Frederic Weisbecker wrote:
-> > My task counter subsystem patchset brings a cancel_attach_task() callback
-> > that cancels can_attach_task() effects.
-> > 
-> > I thought that rebased on top of your patch it's going to be merged inside
-> > cancel_attach() but OTOH we can't cancel the effect of failed migration
-> > on a thread that way.
-> > 
-> > May be we need to keep a cancel_attach_task() just for that purpose?
-> 
-> We can do that but I think that becomes a bit too complex and fragile.
-> That path won't be traveled unless it races against exit.  Bugs will
-> be difficult to detect and reproduce.  In this respect, the current
-> code already seems racy.  ->can_attach (or other methods in the attach
-> path) and ->exit can race each other and I don't think all subsystems
-> handle that properly.
+Hi Rafael,
 
-I guess subsystems don't care about that currently, although I haven't
-checked. But the task counter will need this per thread cancellation in
-migration failure, without the need for any synchronization between
-can_attach, attach and exit.
+On Wed, Aug 31, 2011 at 12:21 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> To read the current PM QoS value for a given device we need to
+> make sure that the device's power.constraints object won't be
+> removed while we're doing that. =A0For this reason, put the
+> operation under dev->power.lock and acquire the lock
+> around the initialization and removal of power.constraints.
+Ok.
 
-Now if we want to solve this with a synchronization there, either
-we task_lock() every tasks in the group in the beginning of cgroup_attach_proc().
-But that's not very nice. Or we use cgroup_mutex on cgroup_exit() exit,
-but that's even worse.
+> Moreover, since we're using the value of power.constraints to
+> determine whether or not the object is present, the
+> power.constraints_state field isn't necessary any more and may be
+> removed. =A0However, dev_pm_qos_add_request() needs to check if the
+> device is being removed from the system before allocating a new
+> PM QoS constraints object for it, so it has to use device_pm_lock()
+> and the device PM QoS initialization and destruction should be done
+> under device_pm_lock() as well.
+Ok that makes sense.
+The constraints_state field can be replaced by a combination of
+dev->power.constraints and list_empty(&dev->power.entry), which makes
+the code more compact and less redundant.
 
-I guess we need the leader->sighand->siglock on both cgroup_attach_proc()
-and cgroup_exit(). Besides we may have more reasons to have that:
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> =A0drivers/base/power/main.c | =A0 =A04 -
+> =A0drivers/base/power/qos.c =A0| =A0167 ++++++++++++++++++++++++++-------=
+-------------
+> =A0include/linux/pm.h =A0 =A0 =A0 =A0| =A0 =A08 --
+> =A0include/linux/pm_qos.h =A0 =A0| =A0 =A03
+> =A04 files changed, 101 insertions(+), 81 deletions(-)
+>
+> Index: linux/drivers/base/power/qos.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux.orig/drivers/base/power/qos.c
+> +++ linux/drivers/base/power/qos.c
+> @@ -30,15 +30,6 @@
+...
 
-https://lkml.org/lkml/2011/8/15/342
+>
+> @@ -178,8 +202,8 @@ void dev_pm_qos_constraints_destroy(stru
+> =A0*
+> =A0* Returns 1 if the aggregated constraint value has changed,
+> =A0* 0 if the aggregated constraint value has not changed,
+> - * -EINVAL in case of wrong parameters, -ENODEV if the device has been
+> - * removed from the system
+> + * -EINVAL in case of wrong parameters, -ENOMEM if there's not enough me=
+mory
+> + * to allocate for data structures.
+Why not use -ENODEV in case there is no device?
 
-> 
-> IMHO the right thing to do here is simplifying synchronization rules
-> so that nothing else happens while migration is in progress.
-> 
-> Thanks.
-> 
-> -- 
-> tejun
+> =A0*/
+> =A0int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_reque=
+st *req,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 s32 value)
+> @@ -195,28 +219,35 @@ int dev_pm_qos_add_request(struct device
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
+> =A0 =A0 =A0 =A0}
+>
+> - =A0 =A0 =A0 mutex_lock(&dev_pm_qos_mtx);
+> =A0 =A0 =A0 =A0req->dev =3D dev;
+>
+> - =A0 =A0 =A0 /* Return if the device has been removed */
+> - =A0 =A0 =A0 if (req->dev->power.constraints_state =3D=3D DEV_PM_QOS_NO_=
+DEVICE) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -ENODEV;
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
+> - =A0 =A0 =A0 }
+> + =A0 =A0 =A0 device_pm_lock();
+> + =A0 =A0 =A0 mutex_lock(&dev_pm_qos_mtx);
+>
+> - =A0 =A0 =A0 /*
+> - =A0 =A0 =A0 =A0* Allocate the constraints data on the first call to add=
+_request,
+> - =A0 =A0 =A0 =A0* i.e. only if the data is not already allocated and if =
+the device has
+> - =A0 =A0 =A0 =A0* not been removed
+> - =A0 =A0 =A0 =A0*/
+> - =A0 =A0 =A0 if (dev->power.constraints_state =3D=3D DEV_PM_QOS_DEVICE_P=
+RESENT)
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D dev_pm_qos_constraints_allocate(dev=
+);
+> + =A0 =A0 =A0 if (dev->power.constraints) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_pm_unlock();
+> + =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (list_empty(&dev->power.entry)) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* The device has been remo=
+ved from the system. */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_pm_unlock();
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
+0 is silently returned in case the device has been removed. Is that
+the intention?
+
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_pm_unlock();
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /*
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* Allocate the constrain=
+ts data on the first call to
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* add_request, i.e. only=
+ if the data is not already
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0* allocated and if the d=
+evice has not been removed.
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*/
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D dev_pm_qos_constrai=
+nts_allocate(dev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+> + =A0 =A0 =A0 }
+>
+> =A0 =A0 =A0 =A0if (!ret)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ret =3D apply_constraint(req, PM_QOS_ADD_R=
+EQ, value);
+>
+> -out:
+> + out:
+> =A0 =A0 =A0 =A0mutex_unlock(&dev_pm_qos_mtx);
+> +
+> =A0 =A0 =A0 =A0return ret;
+> =A0}
+> =A0EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
+...
+
+Thanks,
+Jean
