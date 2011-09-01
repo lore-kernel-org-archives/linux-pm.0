@@ -1,14 +1,13 @@
 From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [RFC][PATCH 5/5] PM / Domains: Add default power off
-	governor function
-Date: Thu, 1 Sep 2011 17:17:51 +0200
-Message-ID: <CAORVsuW7rFEN8u7RCpmWJamtG2iUbA_zz3ax4hgBjGAZW9vU=A__14869.1484508619$1314930032$gmane$org@mail.gmail.com>
-References: <201108310017.03103.rjw@sisk.pl> <201108310022.43850.rjw@sisk.pl>
+Subject: Re: [PATCH 0/5] PM: Generic PM domains and device PM QoS
+Date: Thu, 1 Sep 2011 17:28:20 +0200
+Message-ID: <CAORVsuVJEbLRXLuQFUh3_rDf+DfNFpOhEuBr33SRKqxBos=6Bw__22750.1336289153$1314930064$gmane$org@mail.gmail.com>
+References: <201108310017.03103.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108310022.43850.rjw@sisk.pl>
+In-Reply-To: <201108310017.03103.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,53 +23,57 @@ List-Id: linux-pm@vger.kernel.org
 
 Rafael,
 
-On Wed, Aug 31, 2011 at 12:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wed, Aug 31, 2011 at 12:17 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Hi,
 >
-> Add a function deciding whether or not a given PM domain should
-> be powered off on the basis of that domain's devices' PM QoS
-> constraints.
+> This patchset illustrates how device PM QoS may be used along with
+> PM domains in my view.
 >
-> ---
-> =A0drivers/base/power/domain_governor.c | =A0 96 ++++++++++++++++++++++++=
-+++++++++++
-> =A0include/linux/pm_domain.h =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A07 ++
-> =A02 files changed, 103 insertions(+)
->
-> Index: linux/include/linux/pm_domain.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux.orig/include/linux/pm_domain.h
-> +++ linux/include/linux/pm_domain.h
-> @@ -49,6 +49,10 @@ struct generic_pm_domain {
-> =A0 =A0 =A0 =A0int (*start_device)(struct device *dev);
-> =A0 =A0 =A0 =A0int (*stop_device)(struct device *dev);
-> =A0 =A0 =A0 =A0bool (*active_wakeup)(struct device *dev);
-> + =A0 =A0 =A0 ktime_t power_off_latency;
-> + =A0 =A0 =A0 ktime_t power_on_latency;
-> + =A0 =A0 =A0 s64 break_even_ns;
-> + =A0 =A0 =A0 s64 min_delta_ns;
-How are those values populated? Is there a mechanism that dynamically
-updates the values?
+> Actually, it consists of two parts. =A0Namely, patches [1-3/5] seem to be
+> suitable for 3.2, unless somebody hates them,
+The patches [1-3/5] are ok (reviewed only) excepted some remarks I have.
 
-> =A0};
->
-> =A0static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_doma=
-in *pd)
-> @@ -64,6 +68,9 @@ struct gpd_link {
-> =A0};
->
-> =A0struct gpd_gov_dev_data {
-> + =A0 =A0 =A0 ktime_t start_latency;
-> + =A0 =A0 =A0 ktime_t suspend_latency;
-> + =A0 =A0 =A0 ktime_t resume_latency;
-Same question here.
+> but patches [4-5/5] are
+> total RFC. =A0They haven't been tested, only compiled, so the use of them
+> is not encouraged (they may kill your dog or make your cat go wild, or
+> do something equally nasty, so beware).
+That looks like a disclaimer ;p
 
-> =A0 =A0 =A0 =A0s64 break_even_ns;
-> =A0};
+> Their purpose is to illustrate
+> an idea that I'd like to discuss at the PM miniconference during the
+> LPC.
+There is some code for OMAP that dynamically updates the worst case
+values for devices activation and de-activation;
+cf._omap_device_activate and _omap_device_deactivate in
+arch/arm/plat-omap/omap_device.c. The idea is to start with reference
+figures (worst case measured on board) at boot and then update the
+worst case values at runtime.
+Based on the PM QoS values and the worst case latency values the next
+power domains states can be determined. Unfortunately this is not
+(yet) implemented.
+
+I am wondering if the patches [4-5/5] are meant to replace the OMAP
+code, which would be really nice.
+
 >
-...
+> [1/5] - Split device PM domain data into a "base" and additional fields
+> =A0 =A0 =A0 =A0(one need_restore field at the moment, but the subsequent =
+patches
+> =A0 =A0 =A0 =A0add more fields).
+>
+> [2/5] - Make runtime PM always release power.lock if power.irq_safe is se=
+t.
+>
+> [3/5] - Add function for reading device PM QoS values safely.
+>
+> [4/5] - Add governor function for stopping devices.
+>
+> [5/5] - Add generic PM domain power off governor function.
+>
+> Thanks,
+> Rafael
+>
+>
 
 Regards,
 Jean
