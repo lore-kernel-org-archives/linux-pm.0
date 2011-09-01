@@ -1,15 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC][PATCH 5/5] PM / Domains: Add default power off
-	governor function
-Date: Fri, 2 Sep 2011 00:11:12 +0200
-Message-ID: <201109020011.12264.rjw__29563.8780612082$1314932961$gmane$org@sisk.pl>
-References: <201108310017.03103.rjw@sisk.pl> <201108310022.43850.rjw@sisk.pl>
-	<CAORVsuW7rFEN8u7RCpmWJamtG2iUbA_zz3ax4hgBjGAZW9vU=A@mail.gmail.com>
+Subject: Re: [PATCH 0/5] PM: Generic PM domains and device PM QoS
+Date: Fri, 2 Sep 2011 00:14:38 +0200
+Message-ID: <201109020014.39027.rjw__34887.3482239016$1314932968$gmane$org@sisk.pl>
+References: <201108310017.03103.rjw@sisk.pl>
+	<CAORVsuVJEbLRXLuQFUh3_rDf+DfNFpOhEuBr33SRKqxBos=6Bw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAORVsuW7rFEN8u7RCpmWJamtG2iUbA_zz3ax4hgBjGAZW9vU=A@mail.gmail.com>
+In-Reply-To: <CAORVsuVJEbLRXLuQFUh3_rDf+DfNFpOhEuBr33SRKqxBos=6Bw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,39 +27,44 @@ Hi,
 On Thursday, September 01, 2011, Jean Pihet wrote:
 > Rafael,
 > 
-> On Wed, Aug 31, 2011 at 12:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> On Wed, Aug 31, 2011 at 12:17 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Hi,
 > >
-> > Add a function deciding whether or not a given PM domain should
-> > be powered off on the basis of that domain's devices' PM QoS
-> > constraints.
+> > This patchset illustrates how device PM QoS may be used along with
+> > PM domains in my view.
 > >
-> > ---
-> >  drivers/base/power/domain_governor.c |   96 +++++++++++++++++++++++++++++++++++
-> >  include/linux/pm_domain.h            |    7 ++
-> >  2 files changed, 103 insertions(+)
-> >
-> > Index: linux/include/linux/pm_domain.h
-> > ===================================================================
-> > --- linux.orig/include/linux/pm_domain.h
-> > +++ linux/include/linux/pm_domain.h
-> > @@ -49,6 +49,10 @@ struct generic_pm_domain {
-> >        int (*start_device)(struct device *dev);
-> >        int (*stop_device)(struct device *dev);
-> >        bool (*active_wakeup)(struct device *dev);
-> > +       ktime_t power_off_latency;
-> > +       ktime_t power_on_latency;
-> > +       s64 break_even_ns;
-> > +       s64 min_delta_ns;
-> How are those values populated?
+> > Actually, it consists of two parts.  Namely, patches [1-3/5] seem to be
+> > suitable for 3.2, unless somebody hates them,
+> The patches [1-3/5] are ok (reviewed only) excepted some remarks I have.
 
-I'm not sure.  There are a few possible ways to do that, but I simply
-don't know which one is going to be the most useful.  That's one of
-the reasons why patches [4-5/5] are RFCs.
+OK, thanks for the comments.
 
-> Is there a mechanism that dynamically updates the values?
+> > but patches [4-5/5] are
+> > total RFC.  They haven't been tested, only compiled, so the use of them
+> > is not encouraged (they may kill your dog or make your cat go wild, or
+> > do something equally nasty, so beware).
+> That looks like a disclaimer ;p
+> 
+> > Their purpose is to illustrate
+> > an idea that I'd like to discuss at the PM miniconference during the
+> > LPC.
+> There is some code for OMAP that dynamically updates the worst case
+> values for devices activation and de-activation;
+> cf._omap_device_activate and _omap_device_deactivate in
+> arch/arm/plat-omap/omap_device.c. The idea is to start with reference
+> figures (worst case measured on board) at boot and then update the
+> worst case values at runtime.
+> Based on the PM QoS values and the worst case latency values the next
+> power domains states can be determined. Unfortunately this is not
+> (yet) implemented.
 
-Obviously not at the moment.
+I thought about that too, but I'd like to discuss the basic idea first.
+
+> I am wondering if the patches [4-5/5] are meant to replace the OMAP
+> code, which would be really nice.
+
+I certainly hope they will be useful for multiple platforms.  Whether
+or not OMAP turns out to be one of them I can't tell at the moment.
 
 Thanks,
 Rafael
