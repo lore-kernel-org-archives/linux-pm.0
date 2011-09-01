@@ -1,13 +1,15 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 0/5] PM: Generic PM domains and device PM QoS
-Date: Thu, 1 Sep 2011 17:28:20 +0200
-Message-ID: <CAORVsuVJEbLRXLuQFUh3_rDf+DfNFpOhEuBr33SRKqxBos=6Bw__22750.1336289153$1314930064$gmane$org@mail.gmail.com>
-References: <201108310017.03103.rjw@sisk.pl>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/1] OMAP: omap_device: only override _noirq
+	methods, not normal suspend/resume
+Date: Thu, 1 Sep 2011 18:00:55 +0200
+Message-ID: <201109011800.55516.arnd__34380.9594087817$1314930188$gmane$org@arndb.de>
+References: <1314229437-31836-1-git-send-email-khilman@ti.com>
+	<1314229437-31836-2-git-send-email-khilman@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201108310017.03103.rjw@sisk.pl>
+In-Reply-To: <1314229437-31836-2-git-send-email-khilman@ti.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,63 +19,24 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Rafael,
+On Thursday 25 August 2011, Kevin Hilman wrote:
+> --- a/arch/arm/plat-omap/omap_device.c
+> +++ b/arch/arm/plat-omap/omap_device.c
+> @@ -622,7 +622,8 @@ static struct dev_pm_domain omap_device_pm_domain = {
+>                 SET_RUNTIME_PM_OPS(_od_runtime_suspend, _od_runtime_resume,
+>                                    _od_runtime_idle)
+>                 USE_PLATFORM_PM_SLEEP_OPS
+> -               SET_SYSTEM_SLEEP_PM_OPS(_od_suspend_noirq, _od_resume_noirq)
+> +               .suspend_noirq = _od_suspend_noirq,
+> +               .resume_noirq = _od_resume_noirq,
+>         }
+>  };
 
-On Wed, Aug 31, 2011 at 12:17 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Hi,
->
-> This patchset illustrates how device PM QoS may be used along with
-> PM domains in my view.
->
-> Actually, it consists of two parts. =A0Namely, patches [1-3/5] seem to be
-> suitable for 3.2, unless somebody hates them,
-The patches [1-3/5] are ok (reviewed only) excepted some remarks I have.
+This breaks if CONFIG_SUSPEND is not set and the _od_suspend_noirq/_od_resume_noirq
+functions are not defined.
 
-> but patches [4-5/5] are
-> total RFC. =A0They haven't been tested, only compiled, so the use of them
-> is not encouraged (they may kill your dog or make your cat go wild, or
-> do something equally nasty, so beware).
-That looks like a disclaimer ;p
-
-> Their purpose is to illustrate
-> an idea that I'd like to discuss at the PM miniconference during the
-> LPC.
-There is some code for OMAP that dynamically updates the worst case
-values for devices activation and de-activation;
-cf._omap_device_activate and _omap_device_deactivate in
-arch/arm/plat-omap/omap_device.c. The idea is to start with reference
-figures (worst case measured on board) at boot and then update the
-worst case values at runtime.
-Based on the PM QoS values and the worst case latency values the next
-power domains states can be determined. Unfortunately this is not
-(yet) implemented.
-
-I am wondering if the patches [4-5/5] are meant to replace the OMAP
-code, which would be really nice.
-
->
-> [1/5] - Split device PM domain data into a "base" and additional fields
-> =A0 =A0 =A0 =A0(one need_restore field at the moment, but the subsequent =
-patches
-> =A0 =A0 =A0 =A0add more fields).
->
-> [2/5] - Make runtime PM always release power.lock if power.irq_safe is se=
-t.
->
-> [3/5] - Add function for reading device PM QoS values safely.
->
-> [4/5] - Add governor function for stopping devices.
->
-> [5/5] - Add generic PM domain power off governor function.
->
-> Thanks,
-> Rafael
->
->
-
-Regards,
-Jean
+	Arnd
