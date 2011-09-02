@@ -1,8 +1,8 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 1/6] cgroup_freezer: fix freezer->state setting
-	bug in freezer_change_state()
-Date: Sat,  3 Sep 2011 03:27:45 +0900
-Message-ID: <1314988070-12244-2-git-send-email-tj__4619.11610696024$1314988194$gmane$org@kernel.org>
+Subject: [PATCH 2/6] freezer: set PF_NOFREEZE on a dying task
+	right before TASK_DEAD setting bug in freezer_change_state()
+Date: Sat,  3 Sep 2011 03:27:46 +0900
+Message-ID: <1314988070-12244-3-git-send-email-tj__25233.8233440698$1314988197$gmane$org@kernel.org>
 References: <1314988070-12244-1-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,65 +22,50 @@ To: oleg@redhat.com, matthltc@us.ibm.com, rjw@sisk.pl, paul@paulmenage.org
 Cc: Tejun Heo <tj@kernel.org>, containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-d02f52811d0e "cgroup_freezer: prepare for removal of TIF_FREEZE" moved
-setting of freezer->state into freezer_change_state(); unfortunately,
-while doing so, when it's beginning to freeze tasks, it sets the state
-to CGROUP_FROZEN instead of CGROUP_FREEZING ending up skipping the
-whole freezing state.  Fix it.
+3fb45733df "freezer: make exiting tasks properly unfreezable" removed
+clear_freeze_flag() from exit path and set PF_NOFREEZE right after
+PTRACE_EVENT_EXIT; however, Oleg pointed out that following exit paths
+may cause interaction with device drivers after PM freezer consider
+the system frozen.
 
--v2: Oleg pointed out that re-freezing FROZEN cgroup could increment
-     system_freezing_cnt.  Fixed.
-
--v3: Matt pointed out that setting CGROUP_FROZEN always invoked
-     try_to_freeze_cgroup() regardless of the current state.  Patch
-     updated such that the actual freeze/thaw operations are always
-     performed on state changes.  This shouldn't make any difference
-     unless something is broken.
+There's no try_to_freeze() call in the exit path and the only
+necessary guarantee is that freezer doesn't hang waiting for zombies.
+Set PF_NOFREEZE right before setting tsk->state to TASK_DEAD instead.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Reported-by: Oleg Nesterov <oleg@redhat.com>
-Cc: Paul Menage <paul@paulmenage.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Matt Helsley <matthltc@us.ibm.com>
 ---
- kernel/cgroup_freezer.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ kernel/exit.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-index 4e82525..56a457a 100644
---- a/kernel/cgroup_freezer.c
-+++ b/kernel/cgroup_freezer.c
-@@ -308,24 +308,24 @@ static int freezer_change_state(struct cgroup *cgroup,
- 	spin_lock_irq(&freezer->lock);
+diff --git a/kernel/exit.c b/kernel/exit.c
+index ac58259..7b6c4fa 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -913,12 +913,6 @@ NORET_TYPE void do_exit(long code)
  
- 	update_if_frozen(cgroup, freezer);
--	if (goal_state == freezer->state)
--		goto out;
+ 	ptrace_event(PTRACE_EVENT_EXIT, code);
+ 
+-	/*
+-	 * With ptrace notification done, there's no point in freezing from
+-	 * here on.  Disallow freezing.
+-	 */
+-	current->flags |= PF_NOFREEZE;
 -
--	freezer->state = goal_state;
+ 	validate_creds_for_do_exit(tsk);
  
- 	switch (goal_state) {
- 	case CGROUP_THAWED:
--		atomic_dec(&system_freezing_cnt);
-+		if (freezer->state != CGROUP_THAWED)
-+			atomic_dec(&system_freezing_cnt);
-+		freezer->state = CGROUP_THAWED;
- 		unfreeze_cgroup(cgroup, freezer);
- 		break;
- 	case CGROUP_FROZEN:
--		atomic_inc(&system_freezing_cnt);
-+		if (freezer->state == CGROUP_THAWED)
-+			atomic_inc(&system_freezing_cnt);
-+		freezer->state = CGROUP_FREEZING;
- 		retval = try_to_freeze_cgroup(cgroup, freezer);
- 		break;
- 	default:
- 		BUG();
- 	}
--out:
+ 	/*
+@@ -1044,6 +1038,10 @@ NORET_TYPE void do_exit(long code)
+ 
+ 	preempt_disable();
+ 	exit_rcu();
 +
- 	spin_unlock_irq(&freezer->lock);
- 
- 	return retval;
++	/* this task is now dead and freezer should ignore it */
++	current->flags |= PF_NOFREEZE;
++
+ 	/* causes final put_task_struct in finish_task_switch(). */
+ 	tsk->state = TASK_DEAD;
+ 	schedule();
 -- 
 1.7.6
