@@ -1,18 +1,11 @@
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH pm-freezer 1/4] cgroup_freezer: fix
-	freezer->state	setting bug in freezer_change_state()
-Date: Fri, 2 Sep 2011 19:30:39 +0200
-Message-ID: <20110902173039.GA9039__3159.53169852055$1314984933$gmane$org@redhat.com>
-References: <20110831102100.GA2828@mtj.dyndns.org>
-	<20110902004231.GF1919@count0.beaverton.ibm.com>
-	<20110902165839.GA7478@redhat.com>
-	<20110902170844.GJ2752@htj.dyndns.org>
+From: Tejun Heo <tj@kernel.org>
+Subject: [PATCHSET pm-freezer] freezer: fixes & simplifications
+Date: Sat,  3 Sep 2011 03:27:44 +0900
+Message-ID: <1314988070-12244-1-git-send-email-tj__24364.1370595016$1314988183$gmane$org@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110902170844.GJ2752@htj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -22,57 +15,49 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, Paul Menage <paul@paulmenage.org>
+To: oleg@redhat.com, matthltc@us.ibm.com, rjw@sisk.pl, paul@paulmenage.org
+Cc: containers@lists.linux-foundation.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/03, Tejun Heo wrote:
->
-> Can you please wait a bit?
+Hello,
 
-Sure. But just in case, I mean the simple patch below.
+These six patches are fixes and simplifications for the recent freezer
+changes.  The first four have been posted twice.  Changes since the
+last posting[L] are
 
-Feel free to incorporate into 4/4, or I can resend it later.
+* freezer->state setting bug fix updated per Matt Helsley so that the
+  actual per-task freeze/thaw operations are always performed.
 
-Oleg.
+* fixed a bug caused by forgetting to unlock freezer_lock in "freezer:
+  restructure __refrigerator()".
 
-------------------------------------------------------------------------------
-[PATCH] freezer: remove the pointless/unsafe __thaw_task()->recalc_sigpending_and_wake()
+* Two patches added.  The fifth one is mostly trivial.  The sixth a
+  bit more involved but still shouldn't cause any noticeable
+  functional difference.  This removes the buggy and unused
+  freezable_with_signal.
 
-Remove __thaw_task()->recalc_sigpending_and_wake(). It was copied from
-cancel_freezing() recently, but it was always wrong.
+Properly tested this time.  As hera is still down, no git branch
+available at this point.  Patch list and diffstat follow.
 
-It is pointless, contary to the comment it can't clear TIF_SIGPENDING.
-Not to mention, we must never do this with !current task, this is wrong.
+Thanks.
 
-The usage of ->sighand is not safe if the caller is cgroup_freezer, we
-can racw with exit.
+ [PATCH 1/6] cgroup_freezer: fix freezer->state setting bug in
+ [PATCH 2/6] freezer: set PF_NOFREEZE on a dying task right before
+ [PATCH 3/6] freezer: restructure __refrigerator()
+ [PATCH 4/6] freezer: use lock_task_sighand() in
+ [PATCH 5/6] freezer: remove unused @sig_only from freeze_task()
+ [PATCH 6/6] freezer: kill unused set_freezable_with_signal()
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+ include/linux/freezer.h |   22 +------------
+ include/linux/sched.h   |    1
+ kernel/cgroup_freezer.c |   18 +++++------
+ kernel/exit.c           |   10 ++----
+ kernel/freezer.c        |   78 ++++++++++++++++--------------------------------
+ kernel/kthread.c        |    2 -
+ kernel/power/process.c  |    8 ++--
+ 7 files changed, 47 insertions(+), 92 deletions(-)
 
- kernel/freezer.c |   10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+--
+tejun
 
---- 3.1/kernel/freezer.c~kill_rspaw	2011-09-02 18:52:46.000000000 +0200
-+++ 3.1/kernel/freezer.c	2011-09-02 19:03:30.000000000 +0200
-@@ -150,18 +150,10 @@ void __thaw_task(struct task_struct *p)
- 	 * be visible to @p as waking up implies wmb.  Waking up inside
- 	 * freezer_lock also prevents wakeups from leaking outside
- 	 * refrigerator.
--	 *
--	 * If !FROZEN, @p hasn't reached refrigerator, recalc sigpending to
--	 * avoid leaving dangling TIF_SIGPENDING behind.
- 	 */
- 	spin_lock_irqsave(&freezer_lock, flags);
--	if (frozen(p)) {
-+	if (frozen(p))
- 		wake_up_process(p);
--	} else {
--		spin_lock(&p->sighand->siglock);
--		recalc_sigpending_and_wake(p);
--		spin_unlock(&p->sighand->siglock);
--	}
- 	spin_unlock_irqrestore(&freezer_lock, flags);
- }
- 
+[L] http://thread.gmane.org/gmane.linux.kernel/1186387
