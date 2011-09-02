@@ -1,8 +1,8 @@
 From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: [PATCH 1/8] OMAP: convert I2C driver to PM QoS for
-	latency constraints
-Date: Fri,  2 Sep 2011 15:13:17 +0200
-Message-ID: <1314969204-21704-2-git-send-email-j-pihet__13330.4208670326$1314969289$gmane$org@ti.com>
+Subject: [PATCH 3/8] OMAP2+: powerdomain: control power domains
+	next state
+Date: Fri,  2 Sep 2011 15:13:19 +0200
+Message-ID: <1314969204-21704-4-git-send-email-j-pihet__39847.18533834$1314969291$gmane$org@ti.com>
 References: <1314969204-21704-1-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,143 +22,317 @@ To: Kevin Hilman <khilman@ti.com>, Linux PM mailing list <linux-pm@lists.linux-f
 Cc: Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Convert the driver from the outdated omap_pm_set_max_mpu_wakeup_lat
-API to the new PM QoS API.
-Since the constraint is on the MPU subsystem, use the PM_QOS_CPU_DMA_LATENCY
-class of PM QoS. The resulting MPU constraints are used by cpuidle to
-decide the next power state of the MPU subsystem.
+When a PM QoS device latency constraint is requested or removed the
+PM QoS layer notifies the underlying layer with the updated aggregated
+constraint value. The constraint is stored in the powerdomain constraints
+list and then applied to the corresponding power domain.
+The power domains get the next power state programmed directly in the
+registers via pwrdm_wakeuplat_update_pwrst.
 
-Currently only OMAP3 is placing constraints on the MPU.
+Tested on OMAP3 Beagleboard and OMAP4 Pandaboard in RET/OFF using
+wake-up latency constraints on MPU, CORE and PER.
 
 Signed-off-by: Jean Pihet <j-pihet@ti.com>
 ---
- arch/arm/plat-omap/i2c.c      |   20 --------------------
- drivers/i2c/busses/i2c-omap.c |   31 ++++++++++++++++++-------------
- 2 files changed, 18 insertions(+), 33 deletions(-)
+ arch/arm/mach-omap2/powerdomain.c |  190 +++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/powerdomain.h |   33 ++++++-
+ 2 files changed, 221 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/plat-omap/i2c.c b/arch/arm/plat-omap/i2c.c
-index 3341ca4..e1e2502 100644
---- a/arch/arm/plat-omap/i2c.c
-+++ b/arch/arm/plat-omap/i2c.c
-@@ -34,7 +34,6 @@
- #include <mach/irqs.h>
- #include <plat/mux.h>
- #include <plat/i2c.h>
--#include <plat/omap-pm.h>
- #include <plat/omap_device.h>
- 
- #define OMAP_I2C_SIZE		0x3f
-@@ -113,16 +112,6 @@ static inline int omap1_i2c_add_bus(int bus_id)
- 
- 
- #ifdef CONFIG_ARCH_OMAP2PLUS
--/*
-- * XXX This function is a temporary compatibility wrapper - only
-- * needed until the I2C driver can be converted to call
-- * omap_pm_set_max_dev_wakeup_lat() and handle a return code.
-- */
--static void omap_pm_set_max_mpu_wakeup_lat_compat(struct device *dev, long t)
--{
--	omap_pm_set_max_mpu_wakeup_lat(dev, t);
--}
--
- static struct omap_device_pm_latency omap_i2c_latency[] = {
- 	[0] = {
- 		.deactivate_func	= omap_device_idle_hwmods,
-@@ -151,15 +140,6 @@ static inline int omap2_i2c_add_bus(int bus_id)
- 	}
- 
- 	pdata = &i2c_pdata[bus_id - 1];
--	/*
--	 * When waiting for completion of a i2c transfer, we need to
--	 * set a wake up latency constraint for the MPU. This is to
--	 * ensure quick enough wakeup from idle, when transfer
--	 * completes.
--	 * Only omap3 has support for constraints
--	 */
--	if (cpu_is_omap34xx())
--		pdata->set_mpu_wkup_lat = omap_pm_set_max_mpu_wakeup_lat_compat;
- 	od = omap_device_build(name, bus_id, oh, pdata,
- 			sizeof(struct omap_i2c_bus_platform_data),
- 			omap_i2c_latency, ARRAY_SIZE(omap_i2c_latency), 0);
-diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
-index 1a766cf..1c762ba 100644
---- a/drivers/i2c/busses/i2c-omap.c
-+++ b/drivers/i2c/busses/i2c-omap.c
-@@ -40,6 +40,7 @@
- #include <linux/slab.h>
- #include <linux/i2c-omap.h>
- #include <linux/pm_runtime.h>
+diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
+index 9af0847..afa8153 100644
+--- a/arch/arm/mach-omap2/powerdomain.c
++++ b/arch/arm/mach-omap2/powerdomain.c
+@@ -17,8 +17,10 @@
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/list.h>
++#include <linux/slab.h>
+ #include <linux/errno.h>
+ #include <linux/string.h>
 +#include <linux/pm_qos.h>
+ #include <trace/events/power.h>
  
- /* I2C controller revisions */
- #define OMAP_I2C_REV_2			0x20
-@@ -179,8 +180,7 @@ struct omap_i2c_dev {
- 	struct completion	cmd_complete;
- 	struct resource		*ioarea;
- 	u32			latency;	/* maximum mpu wkup latency */
--	void			(*set_mpu_wkup_lat)(struct device *dev,
--						    long latency);
-+	struct pm_qos_request	pm_qos_request;
- 	u32			speed;		/* Speed of bus in Khz */
- 	u16			cmd_err;
- 	u8			*buf;
-@@ -648,8 +648,16 @@ omap_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
- 	if (r < 0)
- 		goto out;
+ #include "cm2xxx_3xxx.h"
+@@ -104,6 +106,11 @@ static int _pwrdm_register(struct powerdomain *pwrdm)
+ 	for (i = 0; i < pwrdm->banks; i++)
+ 		pwrdm->ret_mem_off_counter[i] = 0;
  
--	if (dev->set_mpu_wkup_lat != NULL)
--		dev->set_mpu_wkup_lat(dev->dev, dev->latency);
++	/* Initialize the per-od wake-up constraints list and spinlock */
++	spin_lock_init(&pwrdm->wkup_lat_plist_lock);
++	plist_head_init(&pwrdm->wkup_lat_plist_head);
++
++	/* Initialize the pwrdm state */
+ 	pwrdm_wait_transition(pwrdm);
+ 	pwrdm->state = pwrdm_read_pwrst(pwrdm);
+ 	pwrdm->state_counter[pwrdm->state] = 1;
+@@ -191,6 +198,77 @@ static int _pwrdm_post_transition_cb(struct powerdomain *pwrdm, void *unused)
+ 	return 0;
+ }
+ 
++/**
++ * pwrdm_wakeuplat_update_pwrst - Update power domain power state if needed
++ * @pwrdm: struct powerdomain * to which requesting device belongs to.
++ * @min_latency: the allowed wake-up latency for the given power domain. A
++ *  value of PM_QOS_DEV_LAT_DEFAULT_VALUE means 'no constraint' on the pwrdm.
++ *
++ * Finds the power domain next power state that fulfills the constraint.
++ * Programs a new target state if it is different from current power state.
++ * The power domains get the next power state programmed directly in the
++ * registers.
++ *
++ * Returns 0 upon success.
++ */
++static int pwrdm_wakeuplat_update_pwrst(struct powerdomain *pwrdm,
++					long min_latency)
++{
++	int ret = 0, new_state = 0;
++
++	if (!pwrdm) {
++		WARN(1, "powerdomain: %s: invalid parameter(s)", __func__);
++		return -EINVAL;
++	}
++
 +	/*
-+	 * When waiting for completion of a i2c transfer, we need to
-+	 * set a wake up latency constraint for the MPU. This is to
-+	 * ensure quick enough wakeup from idle, when transfer
-+	 * completes.
-+	 * Used on OMAP3 Only
++	 * Apply constraints to power domains by programming
++	 * the pwrdm next power state.
 +	 */
-+	if (cpu_is_omap34xx())
-+		pm_qos_add_request(&dev->pm_qos_request, PM_QOS_CPU_DMA_LATENCY,
-+				   dev->latency);
++
++	/* Find power state with wakeup latency < minimum constraint */
++	for (new_state = 0x0; new_state < PWRDM_MAX_PWRSTS; new_state++) {
++		if (min_latency == PM_QOS_DEV_LAT_DEFAULT_VALUE ||
++		    pwrdm->wakeup_lat[new_state] <= min_latency)
++			break;
++	}
++
++	switch (new_state) {
++	case PWRDM_FUNC_PWRST_OFF:
++		new_state = PWRDM_POWER_OFF;
++		break;
++	case PWRDM_FUNC_PWRST_OSWR:
++		pwrdm_set_logic_retst(pwrdm, PWRDM_POWER_OFF);
++		new_state = PWRDM_POWER_RET;
++		break;
++	case PWRDM_FUNC_PWRST_CSWR:
++		pwrdm_set_logic_retst(pwrdm, PWRDM_POWER_RET);
++		new_state = PWRDM_POWER_RET;
++		break;
++	case PWRDM_FUNC_PWRST_INACTIVE:
++		new_state = PWRDM_POWER_INACTIVE;
++		break;
++	case PWRDM_FUNC_PWRST_ON:
++		new_state = PWRDM_POWER_ON;
++		break;
++	default:
++		pr_warn("powerdomain: requested latency constraint not "
++			"supported %s set to ON state\n", pwrdm->name);
++		new_state = PWRDM_POWER_ON;
++		break;
++	}
++
++	if (pwrdm_read_next_pwrst(pwrdm) != new_state)
++		ret = omap_set_pwrdm_state(pwrdm, new_state);
++
++	pr_debug("powerdomain: %s pwrst: curr=%d, prev=%d next=%d "
++		 "min_latency=%ld, set_state=%d\n", pwrdm->name,
++		 pwrdm_read_pwrst(pwrdm), pwrdm_read_prev_pwrst(pwrdm),
++		 pwrdm_read_next_pwrst(pwrdm), min_latency, new_state);
++
++	return ret;
++}
++
+ /* Public functions */
  
- 	for (i = 0; i < num; i++) {
- 		r = omap_i2c_xfer_msg(adap, &msgs[i], (i == (num - 1)));
-@@ -657,8 +665,8 @@ omap_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
- 			break;
- 	}
+ /**
+@@ -930,6 +1008,118 @@ int pwrdm_post_transition(void)
+ 	return 0;
+ }
  
--	if (dev->set_mpu_wkup_lat != NULL)
--		dev->set_mpu_wkup_lat(dev->dev, -1);
-+	if (cpu_is_omap34xx())
-+		pm_qos_remove_request(&dev->pm_qos_request);
++/*
++ * pwrdm_set_wkup_lat_constraint - Set/update/remove a powerdomain wakeup
++ *  latency constraint and apply it
++ * @pwrdm: struct powerdomain * which the constraint applies to
++ * @cookie: constraint identifier, used for tracking.
++ * @min_latency: minimum wakeup latency constraint (in microseconds) for
++ *  the given pwrdm. The value of PM_QOS_DEV_LAT_DEFAULT_VALUE removes
++ *  the constraint.
++ *
++ * Tracks the constraints by @cookie.
++ * Constraint set/update: Adds a new entry to powerdomain's wake-up latency
++ * constraint list.
++ * If the constraint identifier already exists in the list, the old value is
++ * overwritten.
++ * Constraint removal: Removes the identifier's entry from powerdomain's
++ * wakeup latency constraint list.
++ *
++ * Applies the strongest constraint value for the given pwrdm by calling
++ * pwrdm_wakeuplat_update_pwrst.
++ *
++ * Returns 0 upon success or a negative value in case of error.
++ *
++ * The caller must check the validity of the parameters.
++ */
++int pwrdm_set_wkup_lat_constraint(struct powerdomain *pwrdm, void *cookie,
++				  long min_latency)
++{
++	struct pwrdm_wkup_constraints_entry *user = NULL;
++	struct pwrdm_wkup_constraints_entry *tmp_user, *new_user = NULL;
++	int ret = 0, free_new_user = 0, free_node = 0;
++	long value = PM_QOS_DEV_LAT_DEFAULT_VALUE;
++	unsigned long flags;
++
++	pr_debug("powerdomain: %s: pwrdm %s, cookie=0x%p, min_latency=%ld\n",
++		 __func__, pwrdm->name, cookie, min_latency);
++
++	if (min_latency != PM_QOS_DEV_LAT_DEFAULT_VALUE) {
++		new_user = kzalloc(sizeof(struct pwrdm_wkup_constraints_entry),
++				   GFP_KERNEL);
++		if (!new_user) {
++			pr_err("%s: FATAL ERROR: kzalloc failed\n", __func__);
++			return -ENOMEM;
++		}
++		free_new_user = 1;
++	}
++
++	spin_lock_irqsave(&pwrdm->wkup_lat_plist_lock, flags);
++
++	/* Check if there already is a constraint for cookie */
++	plist_for_each_entry(tmp_user, &pwrdm->wkup_lat_plist_head, node) {
++		if (tmp_user->cookie == cookie) {
++			user = tmp_user;
++			break;
++		}
++	}
++
++	if (min_latency != PM_QOS_DEV_LAT_DEFAULT_VALUE) {
++		/* If nothing to update, job done */
++		if (user && (user->node.prio == min_latency))
++			goto exit_ok;
++
++		if (!user) {
++			/* Add new entry to the list */
++			user = new_user;
++			user->cookie = cookie;
++			free_new_user = 0;
++		} else {
++			/* Update existing entry */
++			plist_del(&user->node, &pwrdm->wkup_lat_plist_head);
++		}
++
++		plist_node_init(&user->node, min_latency);
++		plist_add(&user->node, &pwrdm->wkup_lat_plist_head);
++	} else {
++		if (user) {
++			/* Remove the constraint from the list */
++			plist_del(&user->node, &pwrdm->wkup_lat_plist_head);
++			free_node = 1;
++		} else {
++			/* Constraint not existing or list empty, do nothing */
++			ret = -EINVAL;
++			goto exit_error;
++		}
++
++	}
++
++exit_ok:
++	/* Find the strongest constraint from the list */
++	if (!plist_head_empty(&pwrdm->wkup_lat_plist_head))
++		value = plist_first(&pwrdm->wkup_lat_plist_head)->prio;
++
++	spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
++
++	if (free_node)
++		kfree(user);
++
++	if (free_new_user)
++		kfree(new_user);
++
++	/* Apply the constraint to the pwrdm */
++	pr_debug("powerdomain: %s: pwrdm %s, value=%ld\n",
++		 __func__, pwrdm->name, value);
++	pwrdm_wakeuplat_update_pwrst(pwrdm, value);
++
++	return 0;
++
++exit_error:
++	spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
++
++	return ret;
++}
++
+ /**
+  * pwrdm_get_context_loss_count - get powerdomain's context loss count
+  * @pwrdm: struct powerdomain * to wait for
+diff --git a/arch/arm/mach-omap2/powerdomain.h b/arch/arm/mach-omap2/powerdomain.h
+index d23d979..f2b0ed7 100644
+--- a/arch/arm/mach-omap2/powerdomain.h
++++ b/arch/arm/mach-omap2/powerdomain.h
+@@ -19,7 +19,9 @@
  
- 	if (r == 0)
- 		r = num;
-@@ -1007,13 +1015,10 @@ omap_i2c_probe(struct platform_device *pdev)
- 		goto err_release_region;
- 	}
+ #include <linux/types.h>
+ #include <linux/list.h>
+-
++#include <linux/plist.h>
++#include <linux/mutex.h>
++#include <linux/spinlock.h>
+ #include <linux/atomic.h>
  
--	if (pdata != NULL) {
-+	if (pdata != NULL)
- 		speed = pdata->clkrate;
--		dev->set_mpu_wkup_lat = pdata->set_mpu_wkup_lat;
--	} else {
-+	else
- 		speed = 100;	/* Default speed */
--		dev->set_mpu_wkup_lat = NULL;
--	}
+ #include <plat/cpu.h>
+@@ -43,6 +45,16 @@
+ #define PWRSTS_RET_ON		(PWRSTS_RET | PWRSTS_ON)
+ #define PWRSTS_OFF_RET_ON	(PWRSTS_OFF_RET | PWRSTS_ON)
  
- 	dev->speed = speed;
- 	dev->idle = 1;
-@@ -1066,8 +1071,8 @@ omap_i2c_probe(struct platform_device *pdev)
- 			dev->fifo_size = (dev->fifo_size / 2);
- 			dev->b_hw = 1; /* Enable hardware fixes */
- 		}
--		/* calculate wakeup latency constraint for MPU */
--		if (dev->set_mpu_wkup_lat != NULL)
-+		/* calculate wakeup latency constraint */
-+		if (cpu_is_omap34xx())
- 			dev->latency = (1000000 * dev->fifo_size) /
- 				       (1000 * speed / 8);
- 	}
++/* Powerdomain functional power states */
++#define PWRDM_FUNC_PWRST_OFF		0x0
++#define PWRDM_FUNC_PWRST_OSWR		0x1
++#define PWRDM_FUNC_PWRST_CSWR		0x2
++#define PWRDM_FUNC_PWRST_INACTIVE	0x3
++#define PWRDM_FUNC_PWRST_ON		0x4
++
++#define PWRDM_MAX_FUNC_PWRSTS	5
++
++#define UNSUP_STATE		-1
+ 
+ /* Powerdomain flags */
+ #define PWRDM_HAS_HDWR_SAR	(1 << 0) /* hardware save-and-restore support */
+@@ -93,7 +105,12 @@ struct powerdomain;
+  * @state_counter:
+  * @timer:
+  * @state_timer:
+- *
++ * @wakeup_lat: wakeup latencies (in us) for possible powerdomain power states
++ * Note about the wakeup latencies ordering: the values must be sorted
++ *  in decremental order
++ * @wkup_lat_plist_head: pwrdm wake-up latency constraints list
++ * @wkup_lat_plist_lock: spinlock that protects the constraints lists
++ *  domains states
+  * @prcm_partition possible values are defined in mach-omap2/prcm44xx.h.
+  */
+ struct powerdomain {
+@@ -118,6 +135,15 @@ struct powerdomain {
+ 	s64 timer;
+ 	s64 state_timer[PWRDM_MAX_PWRSTS];
+ #endif
++	const u32 wakeup_lat[PWRDM_MAX_FUNC_PWRSTS];
++	struct plist_head wkup_lat_plist_head;
++	spinlock_t wkup_lat_plist_lock;
++};
++
++/* Linked list for the wake-up latency constraints */
++struct pwrdm_wkup_constraints_entry {
++	void			*cookie;
++	struct plist_node	node;
+ };
+ 
+ /**
+@@ -207,6 +233,9 @@ int pwrdm_clkdm_state_switch(struct clockdomain *clkdm);
+ int pwrdm_pre_transition(void);
+ int pwrdm_post_transition(void);
+ int pwrdm_set_lowpwrstchange(struct powerdomain *pwrdm);
++
++int pwrdm_set_wkup_lat_constraint(struct powerdomain *pwrdm, void *cookie,
++				  long min_latency);
+ u32 pwrdm_get_context_loss_count(struct powerdomain *pwrdm);
+ bool pwrdm_can_ever_lose_context(struct powerdomain *pwrdm);
+ 
 -- 
 1.7.4.1
