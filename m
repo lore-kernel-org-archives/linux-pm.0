@@ -1,8 +1,8 @@
 From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: [PATCH 4/8] OMAP3: powerdomain data: add wake-up latency
-	figures
-Date: Fri,  2 Sep 2011 15:13:20 +0200
-Message-ID: <1314969204-21704-5-git-send-email-j-pihet__28428.1786102385$1314969285$gmane$org@ti.com>
+Subject: [PATCH 1/8] OMAP: convert I2C driver to PM QoS for
+	latency constraints
+Date: Fri,  2 Sep 2011 15:13:17 +0200
+Message-ID: <1314969204-21704-2-git-send-email-j-pihet__13330.4208670326$1314969289$gmane$org@ti.com>
 References: <1314969204-21704-1-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,179 +22,143 @@ To: Kevin Hilman <khilman@ti.com>, Linux PM mailing list <linux-pm@lists.linux-f
 Cc: Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Figures are added to the power domains structs for RET and OFF modes.
+Convert the driver from the outdated omap_pm_set_max_mpu_wakeup_lat
+API to the new PM QoS API.
+Since the constraint is on the MPU subsystem, use the PM_QOS_CPU_DMA_LATENCY
+class of PM QoS. The resulting MPU constraints are used by cpuidle to
+decide the next power state of the MPU subsystem.
 
-Note: the latency figures for MPU, PER, CORE, NEON have been obtained
-from actual measurements.
-The latency figures for the other power domains are preliminary and
-shall be added.
-
-Tested on OMAP3 Beagleboard in RET/OFF using wake-up latency constraints
-on MPU, CORE and PER.
+Currently only OMAP3 is placing constraints on the MPU.
 
 Signed-off-by: Jean Pihet <j-pihet@ti.com>
 ---
- arch/arm/mach-omap2/powerdomains3xxx_data.c |   78 +++++++++++++++++++++++++++
- 1 files changed, 78 insertions(+), 0 deletions(-)
+ arch/arm/plat-omap/i2c.c      |   20 --------------------
+ drivers/i2c/busses/i2c-omap.c |   31 ++++++++++++++++++-------------
+ 2 files changed, 18 insertions(+), 33 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/powerdomains3xxx_data.c b/arch/arm/mach-omap2/powerdomains3xxx_data.c
-index 469a920..32922bb 100644
---- a/arch/arm/mach-omap2/powerdomains3xxx_data.c
-+++ b/arch/arm/mach-omap2/powerdomains3xxx_data.c
-@@ -31,6 +31,14 @@
+diff --git a/arch/arm/plat-omap/i2c.c b/arch/arm/plat-omap/i2c.c
+index 3341ca4..e1e2502 100644
+--- a/arch/arm/plat-omap/i2c.c
++++ b/arch/arm/plat-omap/i2c.c
+@@ -34,7 +34,6 @@
+ #include <mach/irqs.h>
+ #include <plat/mux.h>
+ #include <plat/i2c.h>
+-#include <plat/omap-pm.h>
+ #include <plat/omap_device.h>
  
- /*
-  * Powerdomains
-+ *
-+ * The wakeup_lat values are derived from measurements on
-+ * the actual target.
-+ *
-+ * Note: the latency figures for MPU, PER, CORE, NEON have been obtained
-+ * from actual measurements.
-+ * The latency figures for the other power domains are preliminary and
-+ * shall be added.
-  */
+ #define OMAP_I2C_SIZE		0x3f
+@@ -113,16 +112,6 @@ static inline int omap1_i2c_add_bus(int bus_id)
  
- static struct powerdomain iva2_pwrdm = {
-@@ -52,6 +60,13 @@ static struct powerdomain iva2_pwrdm = {
- 		[2] = PWRSTS_OFF_ON,
- 		[3] = PWRSTS_ON,
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 1100,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 350,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
  
- static struct powerdomain mpu_3xxx_pwrdm = {
-@@ -68,6 +83,13 @@ static struct powerdomain mpu_3xxx_pwrdm = {
- 	.pwrsts_mem_on	  = {
- 		[0] = PWRSTS_OFF_ON,
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 1830,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 121,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
+ #ifdef CONFIG_ARCH_OMAP2PLUS
+-/*
+- * XXX This function is a temporary compatibility wrapper - only
+- * needed until the I2C driver can be converted to call
+- * omap_pm_set_max_dev_wakeup_lat() and handle a return code.
+- */
+-static void omap_pm_set_max_mpu_wakeup_lat_compat(struct device *dev, long t)
+-{
+-	omap_pm_set_max_mpu_wakeup_lat(dev, t);
+-}
+-
+ static struct omap_device_pm_latency omap_i2c_latency[] = {
+ 	[0] = {
+ 		.deactivate_func	= omap_device_idle_hwmods,
+@@ -151,15 +140,6 @@ static inline int omap2_i2c_add_bus(int bus_id)
+ 	}
  
- /*
-@@ -98,6 +120,13 @@ static struct powerdomain core_3xxx_pre_es3_1_pwrdm = {
- 		[0] = PWRSTS_OFF_RET_ON, /* MEM1ONSTATE */
- 		[1] = PWRSTS_OFF_RET_ON, /* MEM2ONSTATE */
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 3082,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 153,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
+ 	pdata = &i2c_pdata[bus_id - 1];
+-	/*
+-	 * When waiting for completion of a i2c transfer, we need to
+-	 * set a wake up latency constraint for the MPU. This is to
+-	 * ensure quick enough wakeup from idle, when transfer
+-	 * completes.
+-	 * Only omap3 has support for constraints
+-	 */
+-	if (cpu_is_omap34xx())
+-		pdata->set_mpu_wkup_lat = omap_pm_set_max_mpu_wakeup_lat_compat;
+ 	od = omap_device_build(name, bus_id, oh, pdata,
+ 			sizeof(struct omap_i2c_bus_platform_data),
+ 			omap_i2c_latency, ARRAY_SIZE(omap_i2c_latency), 0);
+diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
+index 1a766cf..1c762ba 100644
+--- a/drivers/i2c/busses/i2c-omap.c
++++ b/drivers/i2c/busses/i2c-omap.c
+@@ -40,6 +40,7 @@
+ #include <linux/slab.h>
+ #include <linux/i2c-omap.h>
+ #include <linux/pm_runtime.h>
++#include <linux/pm_qos.h>
  
- static struct powerdomain core_3xxx_es3_1_pwrdm = {
-@@ -121,6 +150,13 @@ static struct powerdomain core_3xxx_es3_1_pwrdm = {
- 		[0] = PWRSTS_OFF_RET_ON, /* MEM1ONSTATE */
- 		[1] = PWRSTS_OFF_RET_ON, /* MEM2ONSTATE */
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 3082,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 153,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
+ /* I2C controller revisions */
+ #define OMAP_I2C_REV_2			0x20
+@@ -179,8 +180,7 @@ struct omap_i2c_dev {
+ 	struct completion	cmd_complete;
+ 	struct resource		*ioarea;
+ 	u32			latency;	/* maximum mpu wkup latency */
+-	void			(*set_mpu_wkup_lat)(struct device *dev,
+-						    long latency);
++	struct pm_qos_request	pm_qos_request;
+ 	u32			speed;		/* Speed of bus in Khz */
+ 	u16			cmd_err;
+ 	u8			*buf;
+@@ -648,8 +648,16 @@ omap_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
+ 	if (r < 0)
+ 		goto out;
  
- static struct powerdomain dss_pwrdm = {
-@@ -136,6 +172,13 @@ static struct powerdomain dss_pwrdm = {
- 	.pwrsts_mem_on	  = {
- 		[0] = PWRSTS_ON,  /* MEMONSTATE */
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 70,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 20,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
+-	if (dev->set_mpu_wkup_lat != NULL)
+-		dev->set_mpu_wkup_lat(dev->dev, dev->latency);
++	/*
++	 * When waiting for completion of a i2c transfer, we need to
++	 * set a wake up latency constraint for the MPU. This is to
++	 * ensure quick enough wakeup from idle, when transfer
++	 * completes.
++	 * Used on OMAP3 Only
++	 */
++	if (cpu_is_omap34xx())
++		pm_qos_add_request(&dev->pm_qos_request, PM_QOS_CPU_DMA_LATENCY,
++				   dev->latency);
  
- /*
-@@ -157,6 +200,13 @@ static struct powerdomain sgx_pwrdm = {
- 	.pwrsts_mem_on	  = {
- 		[0] = PWRSTS_ON,  /* MEMONSTATE */
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 1000,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
+ 	for (i = 0; i < num; i++) {
+ 		r = omap_i2c_xfer_msg(adap, &msgs[i], (i == (num - 1)));
+@@ -657,8 +665,8 @@ omap_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
+ 			break;
+ 	}
  
- static struct powerdomain cam_pwrdm = {
-@@ -172,6 +222,13 @@ static struct powerdomain cam_pwrdm = {
- 	.pwrsts_mem_on	  = {
- 		[0] = PWRSTS_ON,  /* MEMONSTATE */
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 850,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 35,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
+-	if (dev->set_mpu_wkup_lat != NULL)
+-		dev->set_mpu_wkup_lat(dev->dev, -1);
++	if (cpu_is_omap34xx())
++		pm_qos_remove_request(&dev->pm_qos_request);
  
- static struct powerdomain per_pwrdm = {
-@@ -187,6 +244,13 @@ static struct powerdomain per_pwrdm = {
- 	.pwrsts_mem_on	  = {
- 		[0] = PWRSTS_ON,  /* MEMONSTATE */
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 671,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 31,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
+ 	if (r == 0)
+ 		r = num;
+@@ -1007,13 +1015,10 @@ omap_i2c_probe(struct platform_device *pdev)
+ 		goto err_release_region;
+ 	}
  
- static struct powerdomain emu_pwrdm = {
-@@ -201,6 +265,13 @@ static struct powerdomain neon_pwrdm = {
- 	.omap_chip	  = OMAP_CHIP_INIT(CHIP_IS_OMAP3430),
- 	.pwrsts		  = PWRSTS_OFF_RET_ON,
- 	.pwrsts_logic_ret = PWRSTS_RET,
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 0,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 0,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
+-	if (pdata != NULL) {
++	if (pdata != NULL)
+ 		speed = pdata->clkrate;
+-		dev->set_mpu_wkup_lat = pdata->set_mpu_wkup_lat;
+-	} else {
++	else
+ 		speed = 100;	/* Default speed */
+-		dev->set_mpu_wkup_lat = NULL;
+-	}
  
- static struct powerdomain usbhost_pwrdm = {
-@@ -223,6 +294,13 @@ static struct powerdomain usbhost_pwrdm = {
- 	.pwrsts_mem_on	  = {
- 		[0] = PWRSTS_ON,  /* MEMONSTATE */
- 	},
-+	.wakeup_lat = {
-+		[PWRDM_FUNC_PWRST_OFF] = 800,
-+		[PWRDM_FUNC_PWRST_OSWR] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_CSWR] = 150,
-+		[PWRDM_FUNC_PWRST_INACTIVE] = UNSUP_STATE,
-+		[PWRDM_FUNC_PWRST_ON] = 0,
-+	},
- };
- 
- static struct powerdomain dpll1_pwrdm = {
+ 	dev->speed = speed;
+ 	dev->idle = 1;
+@@ -1066,8 +1071,8 @@ omap_i2c_probe(struct platform_device *pdev)
+ 			dev->fifo_size = (dev->fifo_size / 2);
+ 			dev->b_hw = 1; /* Enable hardware fixes */
+ 		}
+-		/* calculate wakeup latency constraint for MPU */
+-		if (dev->set_mpu_wkup_lat != NULL)
++		/* calculate wakeup latency constraint */
++		if (cpu_is_omap34xx())
+ 			dev->latency = (1000000 * dev->fifo_size) /
+ 				       (1000 * speed / 8);
+ 	}
 -- 
 1.7.4.1
