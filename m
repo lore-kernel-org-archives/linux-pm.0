@@ -1,16 +1,19 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 3/5] PM / QoS: Add function
-	dev_pm_qos_read_value()
-Date: Fri, 2 Sep 2011 08:49:18 +0200
-Message-ID: <CAORVsuVAzc8Q2tG0-WW+96Ad9GhR5OCq2bAuweggs1rimFMcqg__23811.1469465823$1314946235$gmane$org@mail.gmail.com>
-References: <201108310017.03103.rjw@sisk.pl> <201108310021.13800.rjw@sisk.pl>
-	<CAORVsuX=vKiGxHrR4hZjeT4DV0vhUh+MXLwNjoOwgBDu1HRR5A@mail.gmail.com>
-	<201109020007.22743.rjw@sisk.pl>
+From: "Turquette, Mike" <mturquette@ti.com>
+Subject: Re: [PATCH v9 2/4] PM: Introduce devfreq: generic DVFS
+ framework with device-specific OPPs
+Date: Thu, 1 Sep 2011 23:55:34 -0700
+Message-ID: <CAJOA=zPcjwgV_gtNOiHC1sc_kX62mpiwL30zduK_HNDgvdLD3Q@mail.gmail.com>
+References: <1314775779-21399-1-git-send-email-myungjoo.ham@samsung.com>
+	<1314775779-21399-3-git-send-email-myungjoo.ham@samsung.com>
+	<CAJOA=zM+MOAd9cCo04EzsegvkbOHRykZpiyappPptpC95b18=w@mail.gmail.com>
+	<CAJ0PZbQiv0eKcTu4gzdtvXGAm9MbETeHQ7AgOcXA4gYCF8H9-g@mail.gmail.com>
+	<CAJOA=zMnkNmDrCpO4Y+1TJOAPUcNwsJn0Cp+zY_NNYeFxGdzkw@mail.gmail.com>
+	<CAJ0PZbQb4T1TeCLb4ZD1tLQYcVaq4z4FbG9dMCeNSXX6TiQt4Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201109020007.22743.rjw@sisk.pl>
+In-Reply-To: <CAJ0PZbQb4T1TeCLb4ZD1tLQYcVaq4z4FbG9dMCeNSXX6TiQt4Q@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,125 +23,81 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+To: MyungJoo Ham <myungjoo.ham@gmail.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 2, 2011 at 12:07 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Hi,
+On Thu, Sep 1, 2011 at 9:38 PM, MyungJoo Ham <myungjoo.ham@gmail.com> wrote:
+> I'm considering to allow a governor to declare that it will run its own l=
+oop
+> .
+> Because we have .init/.exit callbacks and an update in OPP triggers to
+> call devfreq->profile->target anyway, we only need to add one bit in
+> struct devfreq_governor, "bool own_loop". Then, we just need to modify
+> devfreq_add_device to omit from the list or mark them not to be looped
+> if the "own_loop" bit is true for the given governor.
 >
-> On Thursday, September 01, 2011, Jean Pihet wrote:
->> Hi Rafael,
->>
->> On Wed, Aug 31, 2011 at 12:21 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > From: Rafael J. Wysocki <rjw@sisk.pl>
->> >
->> > To read the current PM QoS value for a given device we need to
->> > make sure that the device's power.constraints object won't be
->> > removed while we're doing that. =A0For this reason, put the
->> > operation under dev->power.lock and acquire the lock
->> > around the initialization and removal of power.constraints.
->> Ok.
->>
->> > Moreover, since we're using the value of power.constraints to
->> > determine whether or not the object is present, the
->> > power.constraints_state field isn't necessary any more and may be
->> > removed. =A0However, dev_pm_qos_add_request() needs to check if the
->> > device is being removed from the system before allocating a new
->> > PM QoS constraints object for it, so it has to use device_pm_lock()
->> > and the device PM QoS initialization and destruction should be done
->> > under device_pm_lock() as well.
->> Ok that makes sense.
->> The constraints_state field can be replaced by a combination of
->> dev->power.constraints and list_empty(&dev->power.entry), which makes
->> the code more compact and less redundant.
->>
->> >
->> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->> > ---
->> > =A0drivers/base/power/main.c | =A0 =A04 -
->> > =A0drivers/base/power/qos.c =A0| =A0167 ++++++++++++++++++++++++++----=
-----------------
->> > =A0include/linux/pm.h =A0 =A0 =A0 =A0| =A0 =A08 --
->> > =A0include/linux/pm_qos.h =A0 =A0| =A0 =A03
->> > =A04 files changed, 101 insertions(+), 81 deletions(-)
->> >
->> > Index: linux/drivers/base/power/qos.c
->> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->> > --- linux.orig/drivers/base/power/qos.c
->> > +++ linux/drivers/base/power/qos.c
->> > @@ -30,15 +30,6 @@
->> ...
->>
->> >
->> > @@ -178,8 +202,8 @@ void dev_pm_qos_constraints_destroy(stru
->> > =A0*
->> > =A0* Returns 1 if the aggregated constraint value has changed,
->> > =A0* 0 if the aggregated constraint value has not changed,
->> > - * -EINVAL in case of wrong parameters, -ENODEV if the device has been
->> > - * removed from the system
->> > + * -EINVAL in case of wrong parameters, -ENOMEM if there's not enough=
- memory
->> > + * to allocate for data structures.
->> Why not use -ENODEV in case there is no device?
->
-> I don't think it's useful for the caller. =A0If the device is gone, the
-> constraing simply doesn't matter, so there's no error to handle.
->
->> > =A0*/
->> > =A0int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_re=
-quest *req,
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 s32 value)
->> > @@ -195,28 +219,35 @@ int dev_pm_qos_add_request(struct device
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
->> > =A0 =A0 =A0 =A0}
->> >
->> > - =A0 =A0 =A0 mutex_lock(&dev_pm_qos_mtx);
->> > =A0 =A0 =A0 =A0req->dev =3D dev;
->> >
->> > - =A0 =A0 =A0 /* Return if the device has been removed */
->> > - =A0 =A0 =A0 if (req->dev->power.constraints_state =3D=3D DEV_PM_QOS_=
-NO_DEVICE) {
->> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -ENODEV;
->> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
->> > - =A0 =A0 =A0 }
->> > + =A0 =A0 =A0 device_pm_lock();
->> > + =A0 =A0 =A0 mutex_lock(&dev_pm_qos_mtx);
->> >
->> > - =A0 =A0 =A0 /*
->> > - =A0 =A0 =A0 =A0* Allocate the constraints data on the first call to =
-add_request,
->> > - =A0 =A0 =A0 =A0* i.e. only if the data is not already allocated and =
-if the device has
->> > - =A0 =A0 =A0 =A0* not been removed
->> > - =A0 =A0 =A0 =A0*/
->> > - =A0 =A0 =A0 if (dev->power.constraints_state =3D=3D DEV_PM_QOS_DEVIC=
-E_PRESENT)
->> > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D dev_pm_qos_constraints_allocate(=
-dev);
->> > + =A0 =A0 =A0 if (dev->power.constraints) {
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_pm_unlock();
->> > + =A0 =A0 =A0 } else {
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (list_empty(&dev->power.entry)) {
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* The device has been r=
-emoved from the system. */
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 device_pm_unlock();
->> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto out;
->> 0 is silently returned in case the device has been removed. Is that
->> the intention?
->
-> Pretty much it is. =A0Is that a problem?
-I think the caller needs to know if the constraint has been applied
-correctly or not. That is why I changed the API functions to int.
+> That way, we can keep most governors simple as cpufreq's drivers and
+> as not complex as cpufreq's governors. For those governors that really
+> need to run their own loop, we can give the option. I want most
+> devfreq governors to be general enough for devfreq devices so that the
+> device drivers may use any of them without altering the parameters
+> much and easy and short enough for subsystems to have their own
+> governors. Thus, common things such as looping and getting usage
+> statistics are moved from governors to devfreq framework.
 
-Note: I still need to come with an API documentation patch after the
-code is settled down.
+I can understand wanting to keep the governors simpler than their
+CPUfreq counterparts.  However I also disagree with polling boolean
+and the use of devfreq for non-polling purposes (with the exception of
+powersave & performance, which are mostly for testing, and for
+userspace which is a special case).
+
+Also my version of the patch removes the dependency on the opp library
+and abstracts those details away in a frequency table, which might use
+OPPs as a backing store, or might accept arbitrary rates given min/max
+limitations (such as for a device connected to a clock with a very
+wide divider).  There are probably devices out there than can simply
+change rates with clk_set_rate that would benefit from devfreq, but do
+not have OPPs.
+
+> You are welcome to post an RFC patch to allow governors to have their
+> own loop implemented in governors; however, I think that should be
+> optional, not mandatory for governors. And, that degree of
+> synchronization issue in devfreq ain't that badly complex, isn't it?
+
+Thanks for being open to the idea.  I don't think that the list walk
+is wildly complex but some of the differences run deeper than that.
+I'm at LPC next week so I'm not sure when my RFC will hit the list.
+Hopefully the week after LPC.  Until then I'll continue to review your
+devfreq patches as usual.
 
 >
-> Rafael
+> Thank you.
 >
+>
+> Cheers! It's Friday.
+> MyungJoo
+>
+> ps. Ah.. and for the kobject thing that you've mentioned in the other
+> thread, I'm experimenting it (a kobject class "devfreq"). However, it
+> will relocate devfreq sysfs entries from /sys/devices/.../power/* to
+> /sys/devices/.../devfreq/*.
 
-Thanks,
-Jean
+Just my $0.02, but my patch does the same thing and I think it's a
+good thing.  The code lives drivers/devfreq/ so placing it under
+/sys/device/.../power/ wasn't a perfect fit anyways.
+
+Regards,
+Mike
+
+> To Rafael:
+> =A0Would it be fine for the devfreq sys entries to move to such a
+> location by creating "devfreq" class? I remember you've objected to an
+> independent per-device sysfs directory for devfreq entries. However,
+> it is sort of "sideeffect" in reducing overhead of searching struct
+> devfreq again and again for sysfs callbacks.
+>
+> --
+> MyungJoo Ham, Ph.D.
+> Mobile Software Platform Lab, DMC Business, Samsung Electronics
+>
