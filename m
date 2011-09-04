@@ -1,18 +1,16 @@
 From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 1/6] cgroup_freezer: fix freezer->state
-	setting bug in	freezer_change_state()
-Date: Sun, 4 Sep 2011 20:20:19 +0200
-Message-ID: <20110904182019.GA29525__1878.35356123305$1315160675$gmane$org@redhat.com>
+Subject: Re: [PATCH 6/6] freezer: kill unused
+	set_freezable_with_signal()
+Date: Sun, 4 Sep 2011 20:46:26 +0200
+Message-ID: <20110904184626.GA30101__40485.0387400531$1315162239$gmane$org@redhat.com>
 References: <1314988070-12244-1-git-send-email-tj@kernel.org>
-	<1314988070-12244-2-git-send-email-tj@kernel.org>
-	<20110904180206.GA28520@redhat.com>
-	<20110904181139.GA9807@htj.dyndns.org>
+	<1314988070-12244-7-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110904181139.GA9807@htj.dyndns.org>
+In-Reply-To: <1314988070-12244-7-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,26 +24,38 @@ To: Tejun Heo <tj@kernel.org>
 Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/05, Tejun Heo wrote:
+On 09/03, Tejun Heo wrote:
 >
-> On Sun, Sep 04, 2011 at 08:02:06PM +0200, Oleg Nesterov wrote:
-> > Cough. Now it doesn't look right to me ;)
-> >
-> > If the user write "FROZEN" into the control file, we should not
-> > turn the CGROUP_FROZEN state into CGROUP_FREEZING. Probably this
-> > is harmless, but this looks wrong and this doesn't match the
-> > current behaviour, user-visible change.
+> This patch removes set_freezable_with_signal() along with
+> PF_FREEZER_NOSIG
+
+Great. I never understood PF_FREEZER_NOSIG logic ;)
+
+One question,
+
+> @@ -72,10 +72,6 @@ bool __refrigerator(bool check_kthr_stop)
+>  		schedule();
+>  	}
 >
-> It's not user-visible as the state is always updated before shown to
-> userland.
+> -	spin_lock_irq(&current->sighand->siglock);
+> -	recalc_sigpending(); /* We sent fake signal, clean it up */
+> -	spin_unlock_irq(&current->sighand->siglock);
+> -
 
-Ah, indeed, thanks.
+Why? This recalc_sigpending() makes sense imho. Otherwise the user-space
+tasks (almost) always return with TIF_SIGPENDING. May be we can do this
+under "if (PF_KTRHREAD)".
 
-OK.
+For example. Suppose the user-space task does wait_event_freezable()...
 
-So, the only proble I can see is that update_if_frozen() can hit
-BUG_ON(nfrozen > 0), but this is off-topic.
+Hmm. OTOH, wait_event_freezable() looks wrong anyway... So probably
+this doesn't matter. ptrace_stop/get_signal_to_deliver doesn't need
+this, probably we do not care about the other callers.
 
-I think this patch is correct.
+It seems, a lot of get_signal_to_deliver() calles also call
+try_to_freeze() for no reason.
+
+
+So, yes, I am starting to think this change is fine too ;)
 
 Oleg.
