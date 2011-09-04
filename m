@@ -1,8 +1,8 @@
 From: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 1/4] cgroup: change locking order in
-	attach_task_by_pid()
-Date: Mon,  5 Sep 2011 03:01:17 +0900
-Message-ID: <1315159280-25032-2-git-send-email-htejun__17302.1059869372$1315159446$gmane$org@gmail.com>
+Subject: [PATCH 3/4] threadgroup: extend threadgroup_lock() to
+	cover exit and exec
+Date: Mon,  5 Sep 2011 03:01:19 +0900
+Message-ID: <1315159280-25032-4-git-send-email-htejun__19562.8821188167$1315159451$gmane$org@gmail.com>
 References: <1315159280-25032-1-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,14 +24,26 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Tejun Heo <tj@kernel.org>
 
-cgroup_mutex is updated to nest inside threadgroup_fork_lock instead
-of the other way around.  threadgroup locking is scheduled to be
-updated to cover all threadgroup altering operations and nesting it
-inside cgroup_mutex complicates locking dependency unnecessarily.
-This also simplifies code a bit.
+threadgroup_lock() protected only protected against new addition to
+the threadgroup, which was inherently somewhat incomplete and
+problematic for its only user cgroup.  On-going migration could race
+against exec and exit leading to interesting problems - the symmetry
+between various attach methods, task exiting during method execution,
+->exit() racing against attach methods, migrating task switching basic
+properties during exec and so on.
 
-The ugly "if (threadgroup)" conditionals for threadgroup locking will
-soon be removed.
+This patch extends threadgroup_lock() such that it protects against
+all three threadgroup altering operations - fork, exit and exec.  For
+exit, threadgroup_change_begin/end() calls are added to exit path.
+For exec, threadgroup_[un]lock() are updated to also grab and release
+cred_guard_mutex.
+
+With this change, threadgroup_lock() guarantees that the target
+threadgroup will remain stable - no new task will be added, no new
+PF_EXITING will be set and exec won't happen.
+
+The next patch will update cgroup so that it can take full advantage
+of this change.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Oleg Nesterov <oleg@redhat.com>
@@ -39,70 +51,114 @@ Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Paul Menage <menage@google.com>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/cgroup.c |   22 ++++++++++------------
- 1 files changed, 10 insertions(+), 12 deletions(-)
+ include/linux/sched.h |   32 ++++++++++++++++++++++++++------
+ kernel/exit.c         |   16 ++++++++++++----
+ 2 files changed, 38 insertions(+), 10 deletions(-)
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 1d2b6ce..bd1fb5f 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2203,15 +2203,11 @@ static int attach_task_by_pid(struct cgroup *cgrp, u64 pid, bool threadgroup)
- 	const struct cred *cred = current_cred(), *tcred;
- 	int ret;
- 
--	if (!cgroup_lock_live_group(cgrp))
--		return -ENODEV;
--
- 	if (pid) {
- 		rcu_read_lock();
- 		tsk = find_task_by_vpid(pid);
- 		if (!tsk) {
- 			rcu_read_unlock();
--			cgroup_unlock();
- 			return -ESRCH;
- 		}
- 		if (threadgroup) {
-@@ -2225,7 +2221,6 @@ static int attach_task_by_pid(struct cgroup *cgrp, u64 pid, bool threadgroup)
- 		} else if (tsk->flags & PF_EXITING) {
- 			/* optimization for the single-task-only case */
- 			rcu_read_unlock();
--			cgroup_unlock();
- 			return -ESRCH;
- 		}
- 
-@@ -2238,7 +2233,6 @@ static int attach_task_by_pid(struct cgroup *cgrp, u64 pid, bool threadgroup)
- 		    cred->euid != tcred->uid &&
- 		    cred->euid != tcred->suid) {
- 			rcu_read_unlock();
--			cgroup_unlock();
- 			return -EACCES;
- 		}
- 		get_task_struct(tsk);
-@@ -2251,15 +2245,19 @@ static int attach_task_by_pid(struct cgroup *cgrp, u64 pid, bool threadgroup)
- 		get_task_struct(tsk);
- 	}
- 
--	if (threadgroup) {
-+	if (threadgroup)
- 		threadgroup_fork_write_lock(tsk);
--		ret = cgroup_attach_proc(cgrp, tsk);
--		threadgroup_fork_write_unlock(tsk);
--	} else {
--		ret = cgroup_attach_task(cgrp, tsk);
-+	ret = -ENODEV;
-+	if (cgroup_lock_live_group(cgrp)) {
-+		if (threadgroup)
-+			ret = cgroup_attach_proc(cgrp, tsk);
-+		else
-+			ret = cgroup_attach_task(cgrp, tsk);
-+		cgroup_unlock();
- 	}
-+	if (threadgroup)
-+		threadgroup_fork_write_unlock(tsk);
- 	put_task_struct(tsk);
--	cgroup_unlock();
- 	return ret;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index da74d6f..179cbdc 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -635,11 +635,12 @@ struct signal_struct {
+ #endif
+ #ifdef CONFIG_CGROUPS
+ 	/*
+-	 * The group_rwsem prevents threads from forking with
+-	 * CLONE_THREAD while held for writing. Use this for fork-sensitive
+-	 * threadgroup-wide operations. It's taken for reading in fork.c in
+-	 * copy_process().
+-	 * Currently only needed write-side by cgroups.
++	 * group_rwsem prevents new tasks from entering the threadgroup and
++	 * member tasks from exiting.  fork and exit paths are protected
++	 * with this rwsem using threadgroup_change_begin/end().  Users
++	 * which require threadgroup to remain stable should use
++	 * threadgroup_[un]lock() which also takes care of exec path.
++	 * Currently, cgroup is the only user.
+ 	 */
+ 	struct rw_semaphore group_rwsem;
+ #endif
+@@ -2364,7 +2365,6 @@ static inline void unlock_task_sighand(struct task_struct *tsk,
+ 	spin_unlock_irqrestore(&tsk->sighand->siglock, *flags);
  }
+ 
+-/* See the declaration of group_rwsem in signal_struct. */
+ #ifdef CONFIG_CGROUPS
+ static inline void threadgroup_change_begin(struct task_struct *tsk)
+ {
+@@ -2374,13 +2374,33 @@ static inline void threadgroup_change_done(struct task_struct *tsk)
+ {
+ 	up_read(&tsk->signal->group_rwsem);
+ }
++
++/**
++ * threadgroup_lock - lock threadgroup
++ * @tsk: member task of the threadgroup to lock
++ *
++ * Lock the threadgroup @tsk belongs to.  No new task is allowed to enter
++ * and member tasks aren't allowed to exit (as indicated by PF_EXITING) or
++ * perform exec.  This is useful for cases where the threadgroup needs to
++ * stay stable across blockable operations.
++ */
+ static inline void threadgroup_lock(struct task_struct *tsk)
+ {
++	/* exec uses exit for de-threading, grab cred_guard_mutex first */
++	mutex_lock(&tsk->signal->cred_guard_mutex);
+ 	down_write(&tsk->signal->group_rwsem);
+ }
++
++/**
++ * threadgroup_unlock - unlock threadgroup
++ * @tsk: member task of the threadgroup to unlock
++ *
++ * Reverse threadgroup_lock().
++ */
+ static inline void threadgroup_unlock(struct task_struct *tsk)
+ {
+ 	up_write(&tsk->signal->group_rwsem);
++	mutex_unlock(&tsk->signal->cred_guard_mutex);
+ }
+ #else
+ static inline void threadgroup_change_begin(struct task_struct *tsk) {}
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 7b6c4fa..a5b40b3 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -936,6 +936,12 @@ NORET_TYPE void do_exit(long code)
+ 		schedule();
+ 	}
+ 
++	/*
++	 * @tsk's threadgroup is going through changes - lock out users
++	 * which expect stable threadgroup.
++	 */
++	threadgroup_change_begin(tsk);
++
+ 	exit_irq_thread();
+ 
+ 	exit_signals(tsk);  /* sets PF_EXITING */
+@@ -1018,10 +1024,6 @@ NORET_TYPE void do_exit(long code)
+ 		kfree(current->pi_state_cache);
+ #endif
+ 	/*
+-	 * Make sure we are holding no locks:
+-	 */
+-	debug_check_no_locks_held(tsk);
+-	/*
+ 	 * We can do this unlocked here. The futex code uses this flag
+ 	 * just to verify whether the pi state cleanup has been done
+ 	 * or not. In the worst case it loops once more.
+@@ -1039,6 +1041,12 @@ NORET_TYPE void do_exit(long code)
+ 	preempt_disable();
+ 	exit_rcu();
+ 
++	/*
++	 * Release threadgroup and make sure we are holding no locks.
++	 */
++	threadgroup_change_done(tsk);
++	debug_check_no_locks_held(tsk);
++
+ 	/* this task is now dead and freezer should ignore it */
+ 	current->flags |= PF_NOFREEZE;
  
 -- 
 1.7.6
