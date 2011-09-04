@@ -1,20 +1,11 @@
-From: Daniel Drake <dsd@laptop.org>
-Subject: Re: [PATCH v4 1/2] Input: enable i8042-level wakeup
-	control
-Date: Sat, 3 Sep 2011 13:45:25 +0100
-Message-ID: <CAMLZHHQ_ErVVg0TqVuaA=R0SbYdn=htMN+2rcTEEqaF-i9LC4w__46076.1989736513$1315054002$gmane$org@mail.gmail.com>
-References: <20110802154916.624619D401C@zog.reactivated.net>
-	<20110803065920.GC23399@core.coreip.homeip.net>
-	<CAMLZHHTTXvThE5bWfyjJu-UFJbaKAhzORKWV8ay4RZW-ZVifLg@mail.gmail.com>
-	<20110803184332.GA17880@core.coreip.homeip.net>
-	<CAMLZHHTnTTbD7mn_QsjwyFZ=XU6paddrtXEVuLYossk9qBGFfw@mail.gmail.com>
-	<CAMLZHHTie_u40NZ40o+LCwffk=3LbY96YTwxQt5wcVtbTc53qg@mail.gmail.com>
-	<20110817070351.GE29361@core.coreip.homeip.net>
+From: Tejun Heo <htejun@gmail.com>
+Subject: [PATCHSET cgroup] extend threadgroup locking
+Date: Mon,  5 Sep 2011 03:01:16 +0900
+Message-ID: <1315159280-25032-1-git-send-email-htejun__48120.1127324768$1315159404$gmane$org@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20110817070351.GE29361@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,45 +15,47 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, dilinger@queued.net, linux-input@vger.kernel.org
+To: rjw@sisk.pl, paul@paulmenage.org, lizf@cn.fujitsu.com
+Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hello,
 
-Sorry for the delay in replying to this - I took sime time off.
+cgroup currently only blocks new threads from joining the target
+threadgroup during migration, and on-going migration could race
+against exec and exit leading to interesting problems - the symmetry
+between various attach methods, task exiting during method execution,
+->exit() racing against attach methods, migrating task switching basic
+properties during exec and so on.
 
+This patchset extends threadgroup locking such that it covers all
+operations which can alter the threadgroup - fork, exit and exec, and
+update cgroup to take advantage of it.  rwsem read ops are added to
+exit path but exec is excluded by grabbing the existing
+cred_guard_mutex from threadgroup locking helper.
 
-On Wed, Aug 17, 2011 at 8:03 AM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> OK, so we have the following scenario:
->
-> - we do not need to worry about SND and LED on OLPC;
->
-> - we do not need to worry about releasing the key that was pressed
-> =A0when we went to sleep because they system would not go to sleep while
-> =A0there is a key pressed. So the code in input_dev_resume() won't
-> =A0actually release any keys unless a key was held pressed and we forced
-> =A0system to sleep somehow.
->
-> - we need to make sure we do not loose key press (and following events)
-> =A0when we are waking up.
+This makes threadgroup locking complete and resolves cgroup issues
+stemming from the target taskset being unstable.
 
-Yes, that seems accurate, with one more addition:
+This patchset is on top of the current pm-freezer + "freezer: fixes &
+simplifications" patchset and contains the following four patches.
+Patch list and diffstat follow.
 
-- we need to make sure we do not loose mouse button press or mouse
-movement (and following events) when we are waking up.
+Thanks.
 
-> Can atkbd driver stash away serio byte data (when not in command mode)
-> and replay it when pm notifier signals us that resume process is done?
+ [PATCH 1/4] cgroup: change locking order in attach_task_by_pid()
+ [PATCH 2/4] threadgroup: rename signal->threadgroup_fork_lock to
+ [PATCH 3/4] threadgroup: extend threadgroup_lock() to cover exit and
+ [PATCH 4/4] cgroup: always lock threadgroup during migration
 
-I'm having trouble understanding this suggestion or relating it to the
-problems in question and the previous patches posted. Are you
-suggesting stashing of data that is sent from the host  to the
-keyboard, or from the keyboard to the host? How does this solve our
-issues? What about the mouse?
+ include/linux/init_task.h |    9 ++----
+ include/linux/sched.h     |   58 ++++++++++++++++++++++++++++---------------
+ kernel/cgroup.c           |   62 +++++++++++++++++++++-------------------------
+ kernel/exit.c             |   16 ++++++++---
+ kernel/fork.c             |    8 ++---
+ 5 files changed, 88 insertions(+), 65 deletions(-)
 
-How is it going to avoid the input-level issues?
+--
+tejun
 
-Thanks,
-Daniel
+[1] http://thread.gmane.org/gmane.linux.kernel/1187553
