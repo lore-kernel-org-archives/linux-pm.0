@@ -1,12 +1,12 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: [BUG] CPU hotplug,
  freezer: Freezing of tasks failed after 20.00 seconds
-Date: Mon, 05 Sep 2011 14:22:42 +0530
-Message-ID: <4E648DDA.8080605__5614.7430245348$1315235542$gmane$org@linux.vnet.ibm.com>
+Date: Mon, 05 Sep 2011 12:19:06 +0530
+Message-ID: <4E6470E2.1030708@linux.vnet.ibm.com>
 References: <1313763382-12341-1-git-send-email-tj@kernel.org>
 	<201108192300.55405.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------020403000107010701000503"
+Content-Type: multipart/mixed; boundary="------------000805000506050700000908"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <201108192300.55405.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
@@ -23,7 +23,7 @@ Cc: Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-found
 List-Id: linux-pm@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------020403000107010701000503
+--------------000805000506050700000908
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
@@ -70,6 +70,11 @@ On 08/20/2011 02:30 AM, Rafael J. Wysocki wrote:
 >>
 >>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git freezer
 > 
+> Good work, thanks for doing this.  I'd like this to go through my
+> tree if you don't mind, so please let me know when the patchset is
+> ready for me to pull from your branch.
+> 
+> Also please CC linux-pm on PM-related patches.
 
 Hi,
 
@@ -134,7 +139,7 @@ Jun  9 11:29:40 istl-vmc-blade9 firmware.sh[23918]: Cannot find  firmware file '
 Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.338039] Restarting tasks ... 
 
 
-I have attached the config file and the log with this mail.
+I have attached the config file and the detailed log with this mail.
 
 -- 
 Regards,
@@ -142,13 +147,85 @@ Srivatsa S. Bhat  <srivatsa.bhat@linux.vnet.ibm.com>
 Linux Technology Center,
 IBM India Systems and Technology Lab
 
---------------020403000107010701000503
+--------------000805000506050700000908
 Content-Type: text/plain;
  name="messages"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
  filename="messages"
 
+Jun  9 11:26:52 istl-vmc-blade9 kernel: [ 6393.532156] PM: Syncing filesystems ... done.
+Jun  9 11:26:57 istl-vmc-blade9 kernel: [ 6393.656978] Freezing user space processes ... (elapsed 0.01 seconds) done.
+Jun  9 11:26:57 istl-vmc-blade9 kernel: [ 6393.676593] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:26:57 istl-vmc-blade9 kernel: [ 6393.695330] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:26:57 istl-vmc-blade9 kernel: [ 6398.691800] Restarting tasks ... done.
+Jun  9 11:26:57 istl-vmc-blade9 kernel: [ 6398.700179] PM: Basic memory bitmaps freed
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.490996] kobject: 'cpufreq' (ffff8801f149eca8): kobject_cleanup
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.497299] kobject: 'cpufreq' (ffff8801f149eca8): auto cleanup 'remove' event
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.504732] kobject: 'cpufreq' (ffff8801f149eca8): kobject_uevent_env
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.517363] kobject: 'cpufreq' (ffff8801f149eca8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cpufreq'
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.547448] kobject: 'cpufreq' (ffff8801f149eca8): auto cleanup kobject_del
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.577271] kobject: 'cpufreq' (ffff8801f149eca8): calling ktype release
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.584267] kobject: 'cpufreq': free name
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.619212] CPU 1 is now offline
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.634165] kobject: 'index0' (ffff88046e138800): kobject_cleanup
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.640415] kobject: 'index0' (ffff88046e138800): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.651222] kobject: 'index0' (ffff88046e138800): auto cleanup 'remove' event
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.658475] kobject: 'index0' (ffff88046e138800): kobject_uevent_env
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.664978] kobject: 'index0' (ffff88046e138800): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index0'
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.684954] kobject: 'index0' (ffff88046e138800): auto cleanup kobject_del
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.692827] kobject: 'index0': free name
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.696874] kobject: 'index1' (ffff88046e138848): kobject_cleanup
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.703089] kobject: 'index1' (ffff88046e138848): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.713895] kobject: 'index1' (ffff88046e138848): auto cleanup 'remove' event
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.721153] kobject: 'index1' (ffff88046e138848): kobject_uevent_env
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.727650] kobject: 'index1' (ffff88046e138848): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index1'
+Jun  9 11:26:58 istl-vmc-blade9 kernel: [ 6399.742246] kobject: 'index1' (ffff88046e138848): auto cleanup kobject_del
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.761629] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.763993] kobject: 'index1': free name
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764000] kobject: 'index2' (ffff88046e138890): kobject_cleanup
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764002] kobject: 'index2' (ffff88046e138890): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764005] kobject: 'index2' (ffff88046e138890): auto cleanup 'remove' event
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764008] kobject: 'index2' (ffff88046e138890): kobject_uevent_env
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764015] kobject: 'index2' (ffff88046e138890): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index2'
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764049] kobject: 'index2' (ffff88046e138890): auto cleanup kobject_del
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764081] kobject: 'index2': free name
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764084] kobject: 'index3' (ffff88046e1388d8): kobject_cleanup
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764086] kobject: 'index3' (ffff88046e1388d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764089] kobject: 'index3' (ffff88046e1388d8): auto cleanup 'remove' event
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764091] kobject: 'index3' (ffff88046e1388d8): kobject_uevent_env
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764096] kobject: 'index3' (ffff88046e1388d8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index3'
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764110] kobject: 'index3' (ffff88046e1388d8): auto cleanup kobject_del
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764190] kobject: 'index3': free name
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764193] kobject: 'cache' (ffff8801f42064c0): kobject_cleanup
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764196] kobject: 'cache' (ffff8801f42064c0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764198] kobject: 'cache' (ffff8801f42064c0): auto cleanup 'remove' event
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764201] kobject: 'cache' (ffff8801f42064c0): kobject_uevent_env
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764206] kobject: 'cache' (ffff8801f42064c0): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache'
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764222] kobject: 'cache' (ffff8801f42064c0): auto cleanup kobject_del
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764228] kobject: 'cache': free name
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764967] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_cleanup
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764970] kobject: 'machinecheck1' (ffff8801f880cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764973] kobject: 'machinecheck1' (ffff8801f880cff0): auto cleanup 'remove' event
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764976] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_uevent_env
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.764982] kobject: 'machinecheck1' (ffff8801f880cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck1'
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.765006] kobject: 'machinecheck1' (ffff8801f880cff0): auto cleanup kobject_del
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.765030] kobject: 'machinecheck1': free name
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.767090] kobject: 'msr1' (ffff8801f4504010): kobject_uevent_env
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.767096] kobject: 'msr1' (ffff8801f4504010): fill_kobj_path: path = '/devices/virtual/msr/msr1'
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.768558] kobject: 'msr1' (ffff8801f4504010): kobject_cleanup
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.768561] kobject: 'msr1' (ffff8801f4504010): calling ktype release
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.768567] kobject: 'msr1': free name
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.774038] kobject: 'cpu1' (ffff88046f4cb810): kobject_uevent_env
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.774045] kobject: 'cpu1' (ffff88046f4cb810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu1'
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.774200] kobject: 'cpu1' (ffff88046f4cb810): kobject_cleanup
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.774203] kobject: 'cpu1' (ffff88046f4cb810): calling ktype release
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6399.774209] kobject: 'cpu1': free name
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6400.047389] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6400.054303] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6400.061206] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6400.068107] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6400.077422] PM: Basic memory bitmaps created
 Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6400.081808] PM: Syncing filesystems ... 
 Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6400.099586] CPU 9 MCA banks CMCI:2 CMCI:3 CMCI:5
 Jun  9 11:26:59 istl-vmc-blade9 kernel: [ 6400.106742] kobject: 'cpu1' (ffff8801f880c338): kobject_uevent_env
@@ -277,6 +354,189 @@ Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.855624]  [<ffffffff8153df02>] sys
 Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.862009] kobject: 'index0' (ffff88046e138a00): kobject_cleanup
 Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.868211] kobject: 'index0' (ffff88046e138a00): does not have a release() function, it is broken and must be fixed.
 Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.878999] kobject: 'index0' (ffff88046e138a00): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.886281] kobject: 'index0' (ffff88046e138a00): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.892850] kobject: 'index0' (ffff88046e138a00): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index0'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.903214] kobject: 'index0' (ffff88046e138a00): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.910301] kobject: 'index0': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.914319] kobject: 'index1' (ffff88046e138a48): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.920493] kobject: 'index1' (ffff88046e138a48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.931307] kobject: 'index1' (ffff88046e138a48): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.938598] kobject: 'index1' (ffff88046e138a48): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.945169] kobject: 'index1' (ffff88046e138a48): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index1'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.955614] kobject: 'index1' (ffff88046e138a48): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.962697] kobject: 'index1': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.966828] kobject: 'index2' (ffff88046e138a90): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.973148] kobject: 'index2' (ffff88046e138a90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.984086] kobject: 'index2' (ffff88046e138a90): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.991420] kobject: 'index2' (ffff88046e138a90): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6400.998067] kobject: 'index2' (ffff88046e138a90): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index2'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.008502] kobject: 'index2' (ffff88046e138a90): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.015568] kobject: 'index2': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.019575] kobject: 'index3' (ffff88046e138ad8): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.025749] kobject: 'index3' (ffff88046e138ad8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.036564] kobject: 'index3' (ffff88046e138ad8): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.043829] kobject: 'index3' (ffff88046e138ad8): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.050382] kobject: 'index3' (ffff88046e138ad8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index3'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.060740] kobject: 'index3' (ffff88046e138ad8): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.067755] kobject: 'index3': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.071766] kobject: 'cache' (ffff8801f4206480): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.077857] kobject: 'cache' (ffff8801f4206480): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.088567] kobject: 'cache' (ffff8801f4206480): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.095749] kobject: 'cache' (ffff8801f4206480): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.102162] kobject: 'cache' (ffff8801f4206480): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.111803] kobject: 'cache' (ffff8801f4206480): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.118675] kobject: 'cache': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.122616] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.129399] kobject: 'machinecheck2' (ffff8801f8a0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.140815] kobject: 'machinecheck2' (ffff8801f8a0cff0): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.148761] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.155859] kobject: 'machinecheck2' (ffff8801f8a0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck2'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.167239] kobject: 'machinecheck2' (ffff8801f8a0cff0): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.174880] kobject: 'machinecheck2': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.179674] kobject: 'msr2' (ffff8801f4506810): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.185960] kobject: 'msr2' (ffff8801f4506810): fill_kobj_path: path = '/devices/virtual/msr/msr2'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.195128] kobject: 'msr2' (ffff8801f4506810): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.201125] kobject: 'msr2' (ffff8801f4506810): calling ktype release
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.207647] kobject: 'msr2': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.211684] kobject: 'cpu2' (ffff88046f59d810): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.217950] kobject: 'cpu2' (ffff88046f59d810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu2'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.227289] kobject: 'cpu2' (ffff88046f59d810): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.233286] kobject: 'cpu2' (ffff88046f59d810): calling ktype release
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.239808] kobject: 'cpu2': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.244541] CPU 10 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.249759] kobject: 'cpu2' (ffff8801f8a0c338): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.256067] kobject: 'cpu2' (ffff8801f8a0c338): fill_kobj_path: path = '/devices/system/cpu/cpu2'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.265860] (elapsed 1.02 seconds) done.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.269977] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6401.288678] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.285306] Restarting tasks ... 
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.294836] bash used greatest stack depth: 3376 bytes left
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.296978] done.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.297221] PM: Basic memory bitmaps freed
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.319126] kobject: 'cpufreq' (ffff8801f23aa4a8): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.325439] kobject: 'cpufreq' (ffff8801f23aa4a8): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.332849] kobject: 'cpufreq' (ffff8801f23aa4a8): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.339420] kobject: 'cpufreq' (ffff8801f23aa4a8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cpufreq'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.352308] kobject: 'cpufreq' (ffff8801f23aa4a8): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.361329] kobject: 'cpufreq' (ffff8801f23aa4a8): calling ktype release
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.368146] kobject: 'cpufreq': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.388396] CPU 3 is now offline
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.394468] kobject: 'index0' (ffff88046e138c00): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.400732] kobject: 'index0' (ffff88046e138c00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.411543] kobject: 'index0' (ffff88046e138c00): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.418805] kobject: 'index0' (ffff88046e138c00): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.425295] kobject: 'index0' (ffff88046e138c00): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index0'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.441114] kobject: 'index0' (ffff88046e138c00): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.451010] kobject: 'index0': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.455209] kobject: 'index1' (ffff88046e138c48): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.461417] kobject: 'index1' (ffff88046e138c48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.472213] kobject: 'index1' (ffff88046e138c48): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.479452] kobject: 'index1' (ffff88046e138c48): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.496677] kobject: 'index1' (ffff88046e138c48): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index1'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.516667] kobject: 'index1' (ffff88046e138c48): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.523696] kobject: 'index1': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.527738] kobject: 'index2' (ffff88046e138c90): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.533942] kobject: 'index2' (ffff88046e138c90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.544732] kobject: 'index2' (ffff88046e138c90): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.551971] kobject: 'index2' (ffff88046e138c90): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.566567] kobject: 'index2' (ffff88046e138c90): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index2'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.586566] kobject: 'index2' (ffff88046e138c90): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.593582] kobject: 'index2': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.597619] kobject: 'index3' (ffff88046e138cd8): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.603821] kobject: 'index3' (ffff88046e138cd8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.614618] kobject: 'index3' (ffff88046e138cd8): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.621864] kobject: 'index3' (ffff88046e138cd8): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.646453] kobject: 'index3' (ffff88046e138cd8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index3'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.666435] kobject: 'index3' (ffff88046e138cd8): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.673449] kobject: 'index3': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.677492] kobject: 'cache' (ffff8801f4206440): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.683607] kobject: 'cache' (ffff8801f4206440): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.694319] kobject: 'cache' (ffff8801f4206440): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.701482] kobject: 'cache' (ffff8801f4206440): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.707884] kobject: 'cache' (ffff8801f4206440): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.719559] kobject: 'cache' (ffff8801f4206440): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.727803] kobject: 'cache': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.731793] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.738612] kobject: 'machinecheck3' (ffff8801f8c0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.750007] kobject: 'machinecheck3' (ffff8801f8c0cff0): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.757939] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.776250] kobject: 'machinecheck3' (ffff8801f8c0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck3'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.793165] kobject: 'machinecheck3' (ffff8801f8c0cff0): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.801077] kobject: 'machinecheck3': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.807578] kobject: 'msr3' (ffff8801f4506010): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.816320] kobject: 'msr3' (ffff8801f4506010): fill_kobj_path: path = '/devices/virtual/msr/msr3'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.830620] kobject: 'msr3' (ffff8801f4506010): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.836668] kobject: 'msr3' (ffff8801f4506010): calling ktype release
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.843222] kobject: 'msr3': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.847560] kobject: 'cpu3' (ffff88046f5a1010): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.853852] kobject: 'cpu3' (ffff88046f5a1010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu3'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.864500] kobject: 'cpu3' (ffff88046f5a1010): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.870555] kobject: 'cpu3' (ffff88046f5a1010): calling ktype release
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.877113] kobject: 'cpu3': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.886703] CPU 11 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.906064] kobject: 'cpu3' (ffff8801f8c0c338): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.912363] kobject: 'cpu3' (ffff8801f8c0c338): fill_kobj_path: path = '/devices/system/cpu/cpu3'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.949796] kobject: 'cpufreq' (ffff8801f1d0d4a8): kobject_cleanup
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.956114] kobject: 'cpufreq' (ffff8801f1d0d4a8): auto cleanup 'remove' event
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.963525] kobject: 'cpufreq' (ffff8801f1d0d4a8): kobject_uevent_env
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.970089] kobject: 'cpufreq' (ffff8801f1d0d4a8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cpufreq'
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.982270] kobject: 'cpufreq' (ffff8801f1d0d4a8): auto cleanup kobject_del
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.990712] kobject: 'cpufreq' (ffff8801f1d0d4a8): calling ktype release
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6406.997540] kobject: 'cpufreq': free name
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6407.004906] CPU 4 is now offline
+Jun  9 11:27:05 istl-vmc-blade9 kernel: [ 6407.010274] kobject: 'index0' (ffff88046e138e00): kobject_cleanup
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.016539] kobject: 'index0' (ffff88046e138e00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.027319] kobject: 'index0' (ffff88046e138e00): auto cleanup 'remove' event
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.034566] kobject: 'index0' (ffff88046e138e00): kobject_uevent_env
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.041033] kobject: 'index0' (ffff88046e138e00): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index0'
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.056251] kobject: 'index0' (ffff88046e138e00): auto cleanup kobject_del
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.063255] kobject: 'index0': free name
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.067297] kobject: 'index1' (ffff88046e138e48): kobject_cleanup
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.073483] kobject: 'index1' (ffff88046e138e48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.084263] kobject: 'index1' (ffff88046e138e48): auto cleanup 'remove' event
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.091495] kobject: 'index1' (ffff88046e138e48): kobject_uevent_env
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.097959] kobject: 'index1' (ffff88046e138e48): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index1'
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.108756] kobject: 'index1' (ffff88046e138e48): auto cleanup kobject_del
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.117105] kobject: 'index1': free name
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.121125] kobject: 'index2' (ffff88046e138e90): kobject_cleanup
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.127325] kobject: 'index2' (ffff88046e138e90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.138115] kobject: 'index2' (ffff88046e138e90): auto cleanup 'remove' event
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.145353] kobject: 'index2' (ffff88046e138e90): kobject_uevent_env
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.151812] kobject: 'index2' (ffff88046e138e90): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index2'
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.175655] kobject: 'index2' (ffff88046e138e90): auto cleanup kobject_del
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.194803] kobject: 'index2': free name
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.198858] kobject: 'index3' (ffff88046e138ed8): kobject_cleanup
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.205059] kobject: 'index3' (ffff88046e138ed8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.215825] kobject: 'index3' (ffff88046e138ed8): auto cleanup 'remove' event
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.223060] kobject: 'index3' (ffff88046e138ed8): kobject_uevent_env
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.234824] kobject: 'index3' (ffff88046e138ed8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index3'
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.284323] kobject: 'index3' (ffff88046e138ed8): auto cleanup kobject_del
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.308015] kobject: 'index3': free name
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.312053] kobject: 'cache' (ffff8801f4206400): kobject_cleanup
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.318163] kobject: 'cache' (ffff8801f4206400): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.328838] kobject: 'cache' (ffff8801f4206400): auto cleanup 'remove' event
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.335987] kobject: 'cache' (ffff8801f4206400): kobject_uevent_env
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.343515] kobject: 'cache' (ffff8801f4206400): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache'
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.353502] kobject: 'cache' (ffff8801f4206400): auto cleanup kobject_del
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.362535] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.362976] kobject: 'cache': free name
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.363011] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_cleanup
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.363013] kobject: 'machinecheck4' (ffff88047e60cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.363015] kobject: 'machinecheck4' (ffff88047e60cff0): auto cleanup 'remove' event
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.363017] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_uevent_env
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.363022] kobject: 'machinecheck4' (ffff88047e60cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck4'
+Jun  9 11:27:06 istl-vmc-blade9 kernel: [ 6407.363038] kobject: 'machinecheck4' (ffff88047e60cff0): auto cleanup kobject_del
+Jun  9 11:28:10 istl-vmc-blade9 kernel: [ 6471.395354] kobject: 'index0' (ffff8801f4a93400): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index0'
+Jun  9 11:28:10 istl-vmc-blade9 kernel: [ 6471.549826] kobject: 'index1' (ffff8801f4a93448): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:10 istl-vmc-blade9 kernel: [ 6471.696916] kobject: 'index1' (ffff8801f4a93448): kobject_uevent_env
+Jun  9 11:28:10 istl-vmc-blade9 kernel: [ 6471.794775] kobject: 'index1' (ffff8801f4a93448): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index1'
+Jun  9 11:28:11 istl-vmc-blade9 kernel: [ 6471.949345] kobject: 'index2' (ffff8801f4a93490): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:11 istl-vmc-blade9 kernel: [ 6471.971787] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:28:11 istl-vmc-blade9 kernel: [ 6471.978713] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:28:11 istl-vmc-blade9 kernel: [ 6471.985588] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:28:11 istl-vmc-blade9 kernel: [ 6471.992460] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:28:11 istl-vmc-blade9 kernel: [ 6471.999333] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:28:11 istl-vmc-blade9 kernel: [ 6472.007542] PM: Basic memory bitmaps created
 Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.011898] PM: Syncing filesystems ... done.
 Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.063003] Freezing user space processes ... 
 Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.067912] kobject: 'index2' (ffff8801f4a93490): kobject_uevent_env
@@ -317,6 +577,852 @@ Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.343845]  [<ffffffff8153df02>] sys
 Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.349932] ---[ end trace cff32f63e15cd493 ]---
 Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.354636] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
 Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.362376] kobject: 'cpufreq' (ffff8801f23602a8): kobject_add_internal: parent: 'cpu2', set: '<NULL>'
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.371891] kobject: 'cpufreq' (ffff8801f23602a8): kobject_uevent_env
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.378418] kobject: 'cpufreq' (ffff8801f23602a8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cpufreq'
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.388440] kobject: 'cpu2' (ffff8801f8a0c338): kobject_uevent_env
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.394736] kobject: 'cpu2' (ffff8801f8a0c338): fill_kobj_path: path = '/devices/system/cpu/cpu2'
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.408007] (elapsed 0.34 seconds) done.
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.412049] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6472.430795] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6477.426685] Restarting tasks ... done.
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6477.557722] PM: Basic memory bitmaps freed
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6477.577476] kobject: 'msr3' (ffff8801f2357010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6477.705770] kobject: 'msr3' (ffff8801f2357010): kobject_uevent_env
+Jun  9 11:28:16 istl-vmc-blade9 kernel: [ 6477.799557] kobject: 'msr3' (ffff8801f2357010): fill_kobj_path: path = '/devices/virtual/msr/msr3'
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6477.938861] kobject: 'cpu3' (ffff8801f17d6010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.097183] kobject: 'cpu3' (ffff8801f17d6010): kobject_uevent_env
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.192953] kobject: 'cpu3' (ffff8801f17d6010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu3'
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.333998] lockdep: fixing up alternatives.
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.339732] Booting Node 0 Processor 3 APIC 0x14
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.344436] smpboot cpu 3: start_ip = 97000
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.359834] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.503528] Switched to NOHz mode on CPU #3
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.719525] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.726405] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.733280] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.740156] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.747049] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.755308] PM: Basic memory bitmaps created
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.759665] PM: Syncing filesystems ... 
+Jun  9 11:28:17 istl-vmc-blade9 kernel: [ 6478.835928] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:28:18 istl-vmc-blade9 kernel: [ 6478.919872] kobject: 'cache' (ffff8801f3118a40): kobject_add_internal: parent: 'cpu3', set: '<NULL>'
+Jun  9 11:28:18 istl-vmc-blade9 kernel: [ 6478.993730] done.
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6478.995767] Freezing user space processes ... 
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.000797] kobject: 'index0' (ffff8801f15fa200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.010596] kobject: 'index0' (ffff8801f15fa200): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.017090] kobject: 'index0' (ffff8801f15fa200): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index0'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.027490] kobject: 'index1' (ffff8801f15fa248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.037017] kobject: 'index1' (ffff8801f15fa248): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.043555] kobject: 'index1' (ffff8801f15fa248): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index1'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.053981] kobject: 'index2' (ffff8801f15fa290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.063453] kobject: 'index2' (ffff8801f15fa290): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.069889] kobject: 'index2' (ffff8801f15fa290): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index2'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.080227] kobject: 'index3' (ffff8801f15fa2d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.089697] kobject: 'index3' (ffff8801f15fa2d8): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.096145] kobject: 'index3' (ffff8801f15fa2d8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index3'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.106480] kobject: 'cache' (ffff8801f3118a40): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.112827] kobject: 'cache' (ffff8801f3118a40): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.122472] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.133669] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.140714] kobject: 'machinecheck3' (ffff8801f8c0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck3'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.152268] microcode: CPU3 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.158192] ------------[ cut here ]------------
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.162900] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.171223] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.176619] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.229871] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.237427] Call Trace:
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.239964]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.246057]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.251978]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.257985]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.263739]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.270873]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.277920]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.284709]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.290715]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.297152]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.302553]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.307603]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.312484]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.317883]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.323282]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.329115]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.334341]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.339475]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.345564] ---[ end trace cff32f63e15cd494 ]---
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.350268] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.358052] kobject: 'cpufreq' (ffff8801f0e350a8): kobject_add_internal: parent: 'cpu3', set: '<NULL>'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.367542] kobject: 'cpufreq' (ffff8801f0e350a8): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.374066] kobject: 'cpufreq' (ffff8801f0e350a8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cpufreq'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.384128] kobject: 'cpu3' (ffff8801f8c0c338): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.390411] kobject: 'cpu3' (ffff8801f8c0c338): fill_kobj_path: path = '/devices/system/cpu/cpu3'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.401286] (elapsed 0.40 seconds) done.
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.405329] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6479.424100] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6484.419972] Restarting tasks ... done.
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6484.494360] PM: Basic memory bitmaps freed
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6484.514303] kobject: 'msr4' (ffff8801f21f6810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6484.571353] kobject: 'msr4' (ffff8801f21f6810): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6484.623117] kobject: 'msr4' (ffff8801f21f6810): fill_kobj_path: path = '/devices/virtual/msr/msr4'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6484.706010] kobject: 'cpu4' (ffff8801f21f0010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6484.799874] kobject: 'cpu4' (ffff8801f21f0010): kobject_uevent_env
+Jun  9 11:28:23 istl-vmc-blade9 kernel: [ 6484.855761] kobject: 'cpu4' (ffff8801f21f0010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu4'
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6484.943658] lockdep: fixing up alternatives.
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6484.953611] Booting Node 1 Processor 4 APIC 0x20
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6484.958401] smpboot cpu 4: start_ip = 97000
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6484.973827] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.040538] Switched to NOHz mode on CPU #4
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.203510] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.263879] kobject: 'cache' (ffff8801f104a340): kobject_add_internal: parent: 'cpu4', set: '<NULL>'
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.353009] kobject: 'index0' (ffff8801f2b31a00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.435971] kobject: 'index0' (ffff8801f2b31a00): kobject_uevent_env
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.501807] kobject: 'index0' (ffff8801f2b31a00): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index0'
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.575689] kobject: 'index1' (ffff8801f2b31a48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.601854] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.608735] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.615612] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.622487] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.629367] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.637583] PM: Basic memory bitmaps created
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.641941] PM: Syncing filesystems ... 
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.651556] kobject: 'index1' (ffff8801f2b31a48): kobject_uevent_env
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.725449] kobject: 'index1' (ffff8801f2b31a48): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index1'
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.815335] kobject: 'index2' (ffff8801f2b31a90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:24 istl-vmc-blade9 kernel: [ 6485.840897] done.
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.842914] Freezing user space processes ... 
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.847915] kobject: 'index2' (ffff8801f2b31a90): kobject_uevent_env
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.854701] kobject: 'index2' (ffff8801f2b31a90): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index2'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.865081] kobject: 'index3' (ffff8801f2b31ad8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.874622] kobject: 'index3' (ffff8801f2b31ad8): kobject_uevent_env
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.881063] kobject: 'index3' (ffff8801f2b31ad8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index3'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.891460] kobject: 'cache' (ffff8801f104a340): kobject_uevent_env
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.897845] kobject: 'cache' (ffff8801f104a340): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.907525] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.918787] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_uevent_env
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.925832] kobject: 'machinecheck4' (ffff88047e60cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck4'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.937469] microcode: CPU4 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.943399] ------------[ cut here ]------------
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.948117] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.956493] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6485.961918] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.015484] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.023102] Call Trace:
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.025648]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.031774]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.037721]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.043750]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.049522]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.056651]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.063733]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.070518]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.076558]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.083026]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.088455]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.093534]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.098442]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.103873]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.109301]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.115166]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.120413]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.125585]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.131703] ---[ end trace cff32f63e15cd495 ]---
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.136435] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.144186] kobject: 'cpufreq' (ffff8804690a78a8): kobject_add_internal: parent: 'cpu4', set: '<NULL>'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.153745] kobject: 'cpufreq' (ffff8804690a78a8): kobject_uevent_env
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.160280] kobject: 'cpufreq' (ffff8804690a78a8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cpufreq'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.170278] kobject: 'cpu4' (ffff88047e60c338): kobject_uevent_env
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.176546] kobject: 'cpu4' (ffff88047e60c338): fill_kobj_path: path = '/devices/system/cpu/cpu4'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.187898] (elapsed 0.34 seconds) done.
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.191942] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6486.210713] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.207347] Restarting tasks ... 
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.309929] kobject: 'msr5' (ffff88046da68010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.313826] done.
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.313909] PM: Basic memory bitmaps freed
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.409753] kobject: 'msr5' (ffff88046da68010): kobject_uevent_env
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.465651] kobject: 'msr5' (ffff88046da68010): fill_kobj_path: path = '/devices/virtual/msr/msr5'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.545561] kobject: 'cpu5' (ffff88046f78b010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.632408] kobject: 'cpu5' (ffff88046f78b010): kobject_uevent_env
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.676338] kobject: 'cpu5' (ffff88046f78b010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu5'
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.755251] lockdep: fixing up alternatives.
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.765190] Booting Node 1 Processor 5 APIC 0x22
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.769899] smpboot cpu 5: start_ip = 97000
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.785292] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:28:30 istl-vmc-blade9 kernel: [ 6491.853105] Switched to NOHz mode on CPU #5
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6491.986300] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.038805] kobject: 'cache' (ffff88046c8d3b00): kobject_add_internal: parent: 'cpu5', set: '<NULL>'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.098845] kobject: 'index0' (ffff88046c96c000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.159067] kobject: 'index0' (ffff88046c96c000): kobject_uevent_env
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.200994] kobject: 'index0' (ffff88046c96c000): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index0'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.267882] kobject: 'index1' (ffff88046c96c048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.336089] kobject: 'index1' (ffff88046c96c048): kobject_uevent_env
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.376989] kobject: 'index1' (ffff88046c96c048): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index1'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.393386] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.400267] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.407149] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.414032] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.420919] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.429232] PM: Basic memory bitmaps created
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.433590] PM: Syncing filesystems ... 
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.497114] kobject: 'index2' (ffff88046c96c090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.554001] kobject: 'index2' (ffff88046c96c090): kobject_uevent_env
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.590803] kobject: 'index2' (ffff88046c96c090): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index2'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.632889] kobject: 'index3' (ffff88046c96c0d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.688980] kobject: 'index3' (ffff88046c96c0d8): kobject_uevent_env
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.712706] kobject: 'index3' (ffff88046c96c0d8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index3'
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.800320] kobject: 'cache' (ffff88046c8d3b00): kobject_uevent_env
+Jun  9 11:28:31 istl-vmc-blade9 kernel: [ 6492.815587] done.
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.817605] Freezing user space processes ... 
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.822774] kobject: 'cache' (ffff88046c8d3b00): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.832732] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.843933] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_uevent_env
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.851020] kobject: 'machinecheck5' (ffff88047e80cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck5'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.862663] microcode: CPU5 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.868614] ------------[ cut here ]------------
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.873368] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.881741] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.887181] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.941108] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.948706] Call Trace:
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.951241]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.957382]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.963355]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.969439]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.975239]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.982373]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.989463]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6492.996302]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.002375]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.008859]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.014318]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.019418]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.024350]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.029796]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.035244]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.041124]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.046349]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.051530]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.057670] ---[ end trace cff32f63e15cd496 ]---
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.062417] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.070391] kobject: 'cpufreq' (ffff88046c96caa8): kobject_add_internal: parent: 'cpu5', set: '<NULL>'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.080008] kobject: 'cpufreq' (ffff88046c96caa8): kobject_uevent_env
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.086668] kobject: 'cpufreq' (ffff88046c96caa8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cpufreq'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.096764] kobject: 'cpu5' (ffff88047e80c338): kobject_uevent_env
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.103071] kobject: 'cpu5' (ffff88047e80c338): fill_kobj_path: path = '/devices/system/cpu/cpu5'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.123323] (elapsed 0.30 seconds) done.
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.127412] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6493.146201] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.142567] Restarting tasks ... done.
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.212117] PM: Basic memory bitmaps freed
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.262178] kobject: 'msr6' (ffff8801f23c5810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.316744] kobject: 'msr6' (ffff8801f23c5810): kobject_uevent_env
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.342972] kobject: 'msr6' (ffff8801f23c5810): fill_kobj_path: path = '/devices/virtual/msr/msr6'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.397875] kobject: 'cpu6' (ffff8801f4b33010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.462080] kobject: 'cpu6' (ffff8801f4b33010): kobject_uevent_env
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.501833] kobject: 'cpu6' (ffff8801f4b33010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu6'
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.532884] lockdep: fixing up alternatives.
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.551807] Booting Node 1 Processor 6 APIC 0x32
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.556534] smpboot cpu 6: start_ip = 97000
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.571927] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.612764] Switched to NOHz mode on CPU #6
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.788968] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:28:37 istl-vmc-blade9 kernel: [ 6498.845404] kobject: 'cache' (ffff8801f0f09c40): kobject_add_internal: parent: 'cpu6', set: '<NULL>'
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6498.947791] kobject: 'index0' (ffff8801f4447600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.045090] kobject: 'index0' (ffff8801f4447600): kobject_uevent_env
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.103966] kobject: 'index0' (ffff8801f4447600): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index0'
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.200603] kobject: 'index1' (ffff8801f4447648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.295015] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.301976] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.308853] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.315726] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.322609] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.330835] PM: Basic memory bitmaps created
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.335195] PM: Syncing filesystems ... 
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.339001] kobject: 'index1' (ffff8801f4447648): kobject_uevent_env
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.404672] kobject: 'index1' (ffff8801f4447648): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index1'
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.507367] kobject: 'index2' (ffff8801f4447690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.602070] kobject: 'index2' (ffff8801f4447690): kobject_uevent_env
+Jun  9 11:28:38 istl-vmc-blade9 kernel: [ 6499.637468] done.
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.639494] Freezing user space processes ... 
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.645344] kobject: 'index2' (ffff8801f4447690): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index2'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.656006] kobject: 'index3' (ffff8801f44476d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.665519] kobject: 'index3' (ffff8801f44476d8): kobject_uevent_env
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.671993] kobject: 'index3' (ffff8801f44476d8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index3'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.682382] kobject: 'cache' (ffff8801f0f09c40): kobject_uevent_env
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.688822] kobject: 'cache' (ffff8801f0f09c40): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.698505] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.709791] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_uevent_env
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.716882] kobject: 'machinecheck6' (ffff88047ea0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck6'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.728476] microcode: CPU6 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.734413] ------------[ cut here ]------------
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.739168] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.747544] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.753017] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.807665] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.815266] Call Trace:
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.817805]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.823943]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.829938]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.835991]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.841787]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.848970]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.856061]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.862903]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.868954]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.875441]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.880891]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.885991]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.890918]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.896366]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.901814]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.907697]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.912968]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.918157]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.924298] ---[ end trace cff32f63e15cd497 ]---
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.929050] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.937031] kobject: 'cpufreq' (ffff8804607416a8): kobject_add_internal: parent: 'cpu6', set: '<NULL>'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.946579] kobject: 'cpufreq' (ffff8804607416a8): kobject_uevent_env
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.953152] kobject: 'cpufreq' (ffff8804607416a8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cpufreq'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.963205] kobject: 'cpu6' (ffff88047ea0c338): kobject_uevent_env
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.969523] kobject: 'cpu6' (ffff88047ea0c338): fill_kobj_path: path = '/devices/system/cpu/cpu6'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.983868] (elapsed 0.34 seconds) done.
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6499.987961] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6500.006682] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.003222] Restarting tasks ... done.
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.112532] PM: Basic memory bitmaps freed
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.151242] kobject: 'msr7' (ffff88046c9d3810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.179123] kobject: 'msr7' (ffff88046c9d3810): kobject_uevent_env
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.233553] kobject: 'msr7' (ffff88046c9d3810): fill_kobj_path: path = '/devices/virtual/msr/msr7'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.315260] kobject: 'cpu7' (ffff8804605d3810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.395373] kobject: 'cpu7' (ffff8804605d3810): kobject_uevent_env
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.455269] kobject: 'cpu7' (ffff8804605d3810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu7'
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.541055] lockdep: fixing up alternatives.
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.584121] Booting Node 1 Processor 7 APIC 0x34
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.588856] smpboot cpu 7: start_ip = 97000
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.604250] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.664979] Switched to NOHz mode on CPU #7
+Jun  9 11:28:44 istl-vmc-blade9 kernel: [ 6505.825240] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6505.878631] kobject: 'cache' (ffff88046cb23ac0): kobject_add_internal: parent: 'cpu7', set: '<NULL>'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6505.958797] kobject: 'index0' (ffff88046ceca200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.044388] kobject: 'index0' (ffff88046ceca200): kobject_uevent_env
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.092278] kobject: 'index0' (ffff88046ceca200): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index0'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.174192] kobject: 'index1' (ffff88046ceca248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.241392] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248059] kobject: 'index1' (ffff88046ceca248): kobject_uevent_env
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248065] kobject: 'index1' (ffff88046ceca248): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index1'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248087] kobject: 'index2' (ffff88046ceca290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248099] kobject: 'index2' (ffff88046ceca290): kobject_uevent_env
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248101] kobject: 'index2' (ffff88046ceca290): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index2'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248109] kobject: 'index3' (ffff88046ceca2d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248120] kobject: 'index3' (ffff88046ceca2d8): kobject_uevent_env
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248123] kobject: 'index3' (ffff88046ceca2d8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index3'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248129] kobject: 'cache' (ffff88046cb23ac0): kobject_uevent_env
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248131] kobject: 'cache' (ffff88046cb23ac0): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248141] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248147] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_uevent_env
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.248149] kobject: 'machinecheck7' (ffff88047ec0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck7'
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.362985] microcode: CPU7 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.363021] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.363029] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.363033] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.363040] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.364384] PM: Basic memory bitmaps created
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.364385] PM: Syncing filesystems ... 
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.404517] ------------[ cut here ]------------
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.409504] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.417844] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.423253] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.476625] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.484181] Call Trace:
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.486733]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.492837]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.498774]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.504789]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.510552]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.517699]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.524763]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.531568]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.537596]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.544049]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.549463]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.554530]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.559422]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.564827]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.570235]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.576079]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.581316]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.586465]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.592567] ---[ end trace cff32f63e15cd498 ]---
+Jun  9 11:28:45 istl-vmc-blade9 kernel: [ 6506.597273] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6506.865594] kobject: 'cpufreq' (ffff88046db266a8): kobject_add_internal: parent: 'cpu7', set: '<NULL>'
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6506.934696] kobject: 'cpufreq' (ffff88046db266a8): kobject_uevent_env
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6506.972019] kobject: 'cpufreq' (ffff88046db266a8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cpufreq'
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.026868] kobject: 'cpu7' (ffff88047ec0c338): kobject_uevent_env
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.058817] kobject: 'cpu7' (ffff88047ec0c338): fill_kobj_path: path = '/devices/system/cpu/cpu7'
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.107818] kobject: 'msr8' (ffff88046f591810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.152688] kobject: 'msr8' (ffff88046f591810): kobject_uevent_env
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.190656] kobject: 'msr8' (ffff88046f591810): fill_kobj_path: path = '/devices/virtual/msr/msr8'
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.240554] kobject: 'cpu8' (ffff88044166f010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.302469] kobject: 'cpu8' (ffff88044166f010): kobject_uevent_env
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.332402] kobject: 'cpu8' (ffff88044166f010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu8'
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.402342] lockdep: fixing up alternatives.
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.418610] Booting Node 0 Processor 8 APIC 0x1
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.423257] smpboot cpu 8: start_ip = 97000
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.438548] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.466174] Switched to NOHz mode on CPU #8
+Jun  9 11:28:46 istl-vmc-blade9 kernel: [ 6507.478924] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.503954] kobject: 'cache' (ffff88046f7f4440): kobject_add_internal: parent: 'cpu8', set: '<NULL>'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.508116] done.
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.508120] Freezing user space processes ... 
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.519849] kobject: 'index0' (ffff88046c25a000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.529651] kobject: 'index0' (ffff88046c25a000): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.536098] kobject: 'index0' (ffff88046c25a000): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index0'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.546443] kobject: 'index1' (ffff88046c25a048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.555948] kobject: 'index1' (ffff88046c25a048): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.562387] kobject: 'index1' (ffff88046c25a048): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index1'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.572719] kobject: 'index2' (ffff88046c25a090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.582216] kobject: 'index2' (ffff88046c25a090): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.588653] kobject: 'index2' (ffff88046c25a090): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index2'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.598984] kobject: 'index3' (ffff88046c25a0d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.608473] kobject: 'index3' (ffff88046c25a0d8): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.614918] kobject: 'index3' (ffff88046c25a0d8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index3'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.625252] kobject: 'cache' (ffff88046f7f4440): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.631598] kobject: 'cache' (ffff88046f7f4440): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.641243] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.652440] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.659480] kobject: 'machinecheck8' (ffff8801f8e0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck8'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.671130] microcode: CPU8 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.677063] ------------[ cut here ]------------
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.681775] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.690104] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.695501] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.748806] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.756360] Call Trace:
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.758897]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.764988]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.770909]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.776959]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.782708]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.789844]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.796887]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.803673]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.809682]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.816122]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.821529]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.826584]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.831461]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.836867]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.842267]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.848098]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.853325]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.858461]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.864554] ---[ end trace cff32f63e15cd499 ]---
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.869274] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.877022] kobject: 'cpufreq' (ffff8801f15faca8): kobject_add_internal: parent: 'cpu8', set: '<NULL>'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.886507] kobject: 'cpufreq' (ffff8801f15faca8): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.893052] kobject: 'cpufreq' (ffff8801f15faca8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cpufreq'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.903060] kobject: 'cpu8' (ffff8801f8e0c338): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.909328] kobject: 'cpu8' (ffff8801f8e0c338): fill_kobj_path: path = '/devices/system/cpu/cpu8'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.918637] (elapsed 0.41 seconds) done.
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.922721] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6507.941618] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6512.937464] Restarting tasks ... done.
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6512.972778] PM: Basic memory bitmaps freed
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.089214] kobject: 'msr9' (ffff8801f37e2810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.103587] kobject: 'msr9' (ffff8801f37e2810): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.140267] kobject: 'msr9' (ffff8801f37e2810): fill_kobj_path: path = '/devices/virtual/msr/msr9'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.224076] kobject: 'cpu9' (ffff8801e9590810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.340194] kobject: 'cpu9' (ffff8801e9590810): kobject_uevent_env
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.383138] kobject: 'cpu9' (ffff8801e9590810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu9'
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.458440] lockdep: fixing up alternatives.
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.497372] Booting Node 0 Processor 9 APIC 0x3
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.501994] smpboot cpu 9: start_ip = 97000
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.517289] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.611771] Switched to NOHz mode on CPU #9
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.766942] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:28:52 istl-vmc-blade9 kernel: [ 6513.827397] kobject: 'cache' (ffff8801f3780b80): kobject_add_internal: parent: 'cpu9', set: '<NULL>'
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6513.908446] kobject: 'index0' (ffff8801f4a93600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.002210] kobject: 'index0' (ffff8801f4a93600): kobject_uevent_env
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.065177] kobject: 'index0' (ffff8801f4a93600): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index0'
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.078324] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.085247] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.092163] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.099057] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.105966] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.114949] PM: Basic memory bitmaps created
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.119328] PM: Syncing filesystems ... 
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.151460] kobject: 'index1' (ffff8801f4a93648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.221867] kobject: 'index1' (ffff8801f4a93648): kobject_uevent_env
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.271780] kobject: 'index1' (ffff8801f4a93648): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index1'
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.362246] kobject: 'index2' (ffff8801f4a93690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:53 istl-vmc-blade9 kernel: [ 6514.377605] done.
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.379645] Freezing user space processes ... 
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.385605] kobject: 'index2' (ffff8801f4a93690): kobject_uevent_env
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.392323] kobject: 'index2' (ffff8801f4a93690): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index2'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.402697] kobject: 'index3' (ffff8801f4a936d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.412207] kobject: 'index3' (ffff8801f4a936d8): kobject_uevent_env
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.418639] kobject: 'index3' (ffff8801f4a936d8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index3'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.428971] kobject: 'cache' (ffff8801f3780b80): kobject_uevent_env
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.435351] kobject: 'cache' (ffff8801f3780b80): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.444987] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.456221] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_uevent_env
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.463262] kobject: 'machinecheck9' (ffff8801f900cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck9'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.474887] microcode: CPU9 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.480815] ------------[ cut here ]------------
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.485516] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.493847] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.499236] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.552380] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.559924] Call Trace:
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.562460]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.568554]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.574470]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.580469]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.586206]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.593335]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.600378]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.607163]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.613164]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.619606]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.625002]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.630051]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.634924]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.640319]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.645712]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.651568]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.656813]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.661976]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.668091] ---[ end trace cff32f63e15cd49a ]---
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.672820] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.680589] kobject: 'cpufreq' (ffff8801f45702a8): kobject_add_internal: parent: 'cpu9', set: '<NULL>'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.690092] kobject: 'cpufreq' (ffff8801f45702a8): kobject_uevent_env
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.696650] kobject: 'cpufreq' (ffff8801f45702a8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cpufreq'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.706665] kobject: 'cpu9' (ffff8801f900c338): kobject_uevent_env
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.712954] kobject: 'cpu9' (ffff8801f900c338): fill_kobj_path: path = '/devices/system/cpu/cpu9'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.727295] (elapsed 0.34 seconds) done.
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.731347] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6514.750195] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6519.746587] Restarting tasks ... done.
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6519.764196] PM: Basic memory bitmaps freed
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6519.779369] kobject: 'msr10' (ffff8801f3b1e810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6519.792338] kobject: 'msr10' (ffff8801f3b1e810): kobject_uevent_env
+Jun  9 11:28:58 istl-vmc-blade9 kernel: [ 6519.816569] kobject: 'msr10' (ffff8801f3b1e810): fill_kobj_path: path = '/devices/virtual/msr/msr10'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6519.841440] kobject: 'cpu10' (ffff8801f3b1e010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6519.871456] kobject: 'cpu10' (ffff8801f3b1e010): kobject_uevent_env
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6519.902980] kobject: 'cpu10' (ffff8801f3b1e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu10'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6519.943162] lockdep: fixing up alternatives.
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6519.947546] Booting Node 0 Processor 10 APIC 0x13
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6519.952367] smpboot cpu 10: start_ip = 97000
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6519.967775] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6519.996006] Switched to NOHz mode on CPU #10
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.004596] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.013030] kobject: 'cache' (ffff8801ee7c1e40): kobject_add_internal: parent: 'cpu10', set: '<NULL>'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.042967] kobject: 'index0' (ffff8801f3a29800): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.092894] kobject: 'index0' (ffff8801f3a29800): kobject_uevent_env
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.122844] kobject: 'index0' (ffff8801f3a29800): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index0'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.167766] kobject: 'index1' (ffff8801f3a29848): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.209707] kobject: 'index1' (ffff8801f3a29848): kobject_uevent_env
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.225667] kobject: 'index1' (ffff8801f3a29848): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index1'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.270606] kobject: 'index2' (ffff8801f3a29890): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.319536] kobject: 'index2' (ffff8801f3a29890): kobject_uevent_env
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.342638] kobject: 'index2' (ffff8801f3a29890): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index2'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.392445] kobject: 'index3' (ffff8801f3a298d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.439358] kobject: 'index3' (ffff8801f3a298d8): kobject_uevent_env
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.465545] kobject: 'index3' (ffff8801f3a298d8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index3'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.522239] kobject: 'cache' (ffff8801ee7c1e40): kobject_uevent_env
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.563078] kobject: 'cache' (ffff8801ee7c1e40): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.612174] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.662018] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_uevent_env
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.691972] kobject: 'machinecheck10' (ffff8801f920cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck10'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.759942] microcode: CPU10 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.792490] kobject: 'firmware' (ffff8801f1616940): kobject_add_internal: parent: 'microcode', set: '(null)'
+Jun  9 11:28:59 istl-vmc-blade9 kernel: [ 6520.829742] kobject: 'microcode' (ffff8801f2022910): kobject_add_internal: parent: 'firmware', set: 'devices'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.871758] kobject: 'microcode' (ffff8801f2022910): kobject_uevent_env
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.878493] kobject: 'microcode' (ffff8801f2022910): kobject_uevent_env: uevent_suppress caused the event to drop!
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.896855] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.903760] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:29:00 istl-vmc-blade9 firmware.sh[22819]: Cannot find  firmware file 'intel-ucode/06-2c-02'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.910668] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.915613] kobject: 'microcode' (ffff8801f2022910): kobject_uevent_env
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.915621] kobject: 'microcode' (ffff8801f2022910): fill_kobj_path: path = '/devices/platform/microcode/firmware/microcode'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926053] kobject: 'microcode' (ffff8801f2022910): kobject_uevent_env
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926060] kobject: 'microcode' (ffff8801f2022910): fill_kobj_path: path = '/devices/platform/microcode/firmware/microcode'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926087] kobject: 'firmware' (ffff8801f1616940): kobject_cleanup
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926090] kobject: 'firmware' (ffff8801f1616940): auto cleanup kobject_del
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926096] kobject: 'firmware' (ffff8801f1616940): calling ktype release
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926099] kobject: 'firmware': free name
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926101] kobject: 'microcode' (ffff8801f2022910): kobject_cleanup
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926103] kobject: 'microcode' (ffff8801f2022910): calling ktype release
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926106] kobject: 'microcode': free name
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926325] kobject: 'cpufreq' (ffff8801f2295ea8): kobject_add_internal: parent: 'cpu10', set: '<NULL>'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926373] kobject: 'cpufreq' (ffff8801f2295ea8): kobject_uevent_env
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926378] kobject: 'cpufreq' (ffff8801f2295ea8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cpufreq'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926392] kobject: 'cpu10' (ffff8801f920c338): kobject_uevent_env
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.926396] kobject: 'cpu10' (ffff8801f920c338): fill_kobj_path: path = '/devices/system/cpu/cpu10'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.971573] kobject: 'msr11' (ffff88046c982010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.971864] kobject: 'msr11' (ffff88046c982010): kobject_uevent_env
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.971869] kobject: 'msr11' (ffff88046c982010): fill_kobj_path: path = '/devices/virtual/msr/msr11'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.973685] kobject: 'cpu11' (ffff88046d77d010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.973796] kobject: 'cpu11' (ffff88046d77d010): kobject_uevent_env
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.973799] kobject: 'cpu11' (ffff88046d77d010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu11'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.974886] lockdep: fixing up alternatives.
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.974892] Booting Node 0 Processor 11 APIC 0x15
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.974894] smpboot cpu 11: start_ip = 97000
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6520.985916] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6521.107640] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6521.114838] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6521.123529] PM: Basic memory bitmaps created
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6521.127881] PM: Syncing filesystems ... 
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6521.153231] Switched to NOHz mode on CPU #11
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6521.246538] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6521.302979] kobject: 'cache' (ffff8804750053c0): kobject_add_internal: parent: 'cpu11', set: '<NULL>'
+Jun  9 11:29:00 istl-vmc-blade9 kernel: [ 6521.321088] done.
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.323125] Freezing user space processes ... 
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.329190] kobject: 'index0' (ffff88046f714c00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.338954] kobject: 'index0' (ffff88046f714c00): kobject_uevent_env
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.345440] kobject: 'index0' (ffff88046f714c00): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index0'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.355917] kobject: 'index1' (ffff88046f714c48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.365445] kobject: 'index1' (ffff88046f714c48): kobject_uevent_env
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.371886] kobject: 'index1' (ffff88046f714c48): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index1'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.382307] kobject: 'index2' (ffff88046f714c90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.391803] kobject: 'index2' (ffff88046f714c90): kobject_uevent_env
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.398237] kobject: 'index2' (ffff88046f714c90): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index2'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.408652] kobject: 'index3' (ffff88046f714cd8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.418148] kobject: 'index3' (ffff88046f714cd8): kobject_uevent_env
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.424584] kobject: 'index3' (ffff88046f714cd8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index3'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.434996] kobject: 'cache' (ffff8804750053c0): kobject_uevent_env
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.441345] kobject: 'cache' (ffff8804750053c0): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.451075] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.462356] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_uevent_env
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.469483] kobject: 'machinecheck11' (ffff8801f940cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck11'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.481296] microcode: CPU11 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.487310] ------------[ cut here ]------------
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.492017] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.500338] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.505729] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.558832] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.566374] Call Trace:
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.568903]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.574989]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.580898]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.586896]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.592637]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.599767]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.606815]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.613594]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.619595]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.626027]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.631420]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.636462]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.641337]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.646728]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.652117]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.657939]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.663158]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.668286]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.674370] ---[ end trace cff32f63e15cd49b ]---
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.679063] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.686803] kobject: 'cpufreq' (ffff8801f33d4ea8): kobject_add_internal: parent: 'cpu11', set: '<NULL>'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.696371] kobject: 'cpufreq' (ffff8801f33d4ea8): kobject_uevent_env
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.702926] kobject: 'cpufreq' (ffff8801f33d4ea8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cpufreq'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.713003] kobject: 'cpu11' (ffff8801f940c338): kobject_uevent_env
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.719355] kobject: 'cpu11' (ffff8801f940c338): fill_kobj_path: path = '/devices/system/cpu/cpu11'
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.735602] (elapsed 0.40 seconds) done.
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.739650] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6521.758365] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6526.755137] Restarting tasks ... done.
+Jun  9 11:29:05 istl-vmc-blade9 kernel: [ 6526.813420] PM: Basic memory bitmaps freed
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6526.832598] kobject: 'msr12' (ffff8801f3786810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6526.882515] kobject: 'msr12' (ffff8801f3786810): kobject_uevent_env
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6526.910428] kobject: 'msr12' (ffff8801f3786810): fill_kobj_path: path = '/devices/virtual/msr/msr12'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6526.941412] kobject: 'cpu12' (ffff8801f3786010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6526.994742] kobject: 'cpu12' (ffff8801f3786010): kobject_uevent_env
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.032269] kobject: 'cpu12' (ffff8801f3786010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu12'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.061139] lockdep: fixing up alternatives.
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.082202] Booting Node 1 Processor 12 APIC 0x21
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.087023] smpboot cpu 12: start_ip = 97000
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.102530] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.170031] Switched to NOHz mode on CPU #12
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.261581] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.295803] kobject: 'cache' (ffff8801f24811c0): kobject_add_internal: parent: 'cpu12', set: '<NULL>'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.331819] kobject: 'index0' (ffff8801f1e70600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.371773] kobject: 'index0' (ffff8801f1e70600): kobject_uevent_env
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.391717] kobject: 'index0' (ffff8801f1e70600): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index0'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.425138] kobject: 'index1' (ffff8801f1e70648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.461640] kobject: 'index1' (ffff8801f1e70648): kobject_uevent_env
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.481605] kobject: 'index1' (ffff8801f1e70648): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index1'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.529776] kobject: 'index2' (ffff8801f1e70690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.568447] kobject: 'index2' (ffff8801f1e70690): kobject_uevent_env
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.591413] kobject: 'index2' (ffff8801f1e70690): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index2'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.636532] kobject: 'index3' (ffff8801f1e706d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.692015] kobject: 'index3' (ffff8801f1e706d8): kobject_uevent_env
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.723079] kobject: 'index3' (ffff8801f1e706d8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index3'
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.777656] kobject: 'cache' (ffff8801f24811c0): kobject_uevent_env
+Jun  9 11:29:06 istl-vmc-blade9 kernel: [ 6527.807643] kobject: 'cache' (ffff8801f24811c0): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache'
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.861935] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.885048] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.891967] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.898871] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.905768] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.912675] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.921908] PM: Basic memory bitmaps created
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.925610] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_uevent_env
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.925617] kobject: 'machinecheck12' (ffff88047ee0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck12'
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.944972] PM: Syncing filesystems ... 
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.948799] microcode: CPU12 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.955096] ------------[ cut here ]------------
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.959830] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.968185] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6527.973604] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.027507] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.035081] Call Trace:
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.037645]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.043758]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.049717]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.055765]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.061536]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.068695]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.075774]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.082585]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.088629]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.095101]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.100544]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.105623]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.110538]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.115959]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.121391]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.127250]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.132517]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.137681]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.143796] ---[ end trace cff32f63e15cd49c ]---
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.148531] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:29:07 istl-vmc-blade9 kernel: [ 6528.159523] done.
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.161562] Freezing user space processes ... 
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.167633] kobject: 'cpufreq' (ffff88046dd62aa8): kobject_add_internal: parent: 'cpu12', set: '<NULL>'
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.177633] kobject: 'cpufreq' (ffff88046dd62aa8): kobject_uevent_env
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.184267] kobject: 'cpufreq' (ffff88046dd62aa8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cpufreq'
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.194406] kobject: 'cpu12' (ffff88047ee0c338): kobject_uevent_env
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.200812] kobject: 'cpu12' (ffff88047ee0c338): fill_kobj_path: path = '/devices/system/cpu/cpu12'
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.211657] (elapsed 0.04 seconds) done.
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.215778] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6528.234534] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.231094] Restarting tasks ... done.
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.323474] PM: Basic memory bitmaps freed
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.367576] kobject: 'msr13' (ffff880460670010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.385395] kobject: 'msr13' (ffff880460670010): kobject_uevent_env
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.421690] kobject: 'msr13' (ffff880460670010): fill_kobj_path: path = '/devices/virtual/msr/msr13'
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.464243] kobject: 'cpu13' (ffff880460764010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.514348] kobject: 'cpu13' (ffff880460764010): kobject_uevent_env
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.550609] kobject: 'cpu13' (ffff880460764010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu13'
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.603059] lockdep: fixing up alternatives.
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.626194] Booting Node 1 Processor 13 APIC 0x23
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.630994] smpboot cpu 13: start_ip = 97000
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.646422] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:29:12 istl-vmc-blade9 kernel: [ 6533.710023] Switched to NOHz mode on CPU #13
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6533.830494] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6533.869976] kobject: 'cache' (ffff8804605f23c0): kobject_add_internal: parent: 'cpu13', set: '<NULL>'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6533.935689] kobject: 'index0' (ffff88043703ce00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.001622] kobject: 'index0' (ffff88043703ce00): kobject_uevent_env
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.041546] kobject: 'index0' (ffff88043703ce00): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index0'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.112103] kobject: 'index1' (ffff88043703ce48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.181345] kobject: 'index1' (ffff88043703ce48): kobject_uevent_env
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.245221] kobject: 'index1' (ffff88043703ce48): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index1'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.321768] kobject: 'index2' (ffff88043703ce90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.405357] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.412312] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.413511] kobject: 'index2' (ffff88043703ce90): kobject_uevent_env
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.413517] kobject: 'index2' (ffff88043703ce90): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index2'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.414298] kobject: 'index3' (ffff88043703ced8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.414313] kobject: 'index3' (ffff88043703ced8): kobject_uevent_env
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.414317] kobject: 'index3' (ffff88043703ced8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index3'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.414325] kobject: 'cache' (ffff8804605f23c0): kobject_uevent_env
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.414673] kobject: 'cache' (ffff8804605f23c0): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.415032] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.415046] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_uevent_env
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.415049] kobject: 'machinecheck13' (ffff88047f00cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck13'
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.508409] microcode: CPU13 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.508417] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.508425] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.508434] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.510734] PM: Basic memory bitmaps created
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.510738] PM: Syncing filesystems ... 
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.543193] ------------[ cut here ]------------
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.548194] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:29:13 istl-vmc-blade9 kernel: [ 6534.556556] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.561983] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.615830] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.623403] Call Trace:
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.625970]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.632092]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.638033]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.644063]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.649826]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.656983]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.664053]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.670870]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.671317] done.
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.671321] Freezing user space processes ...  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.688374]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.693771]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.698818]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.703694]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.709090]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.714487]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.720318]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.725544]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.730684]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.736770] ---[ end trace cff32f63e15cd49d ]---
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.741473] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.749273] kobject: 'cpufreq' (ffff88043703b2a8): kobject_add_internal: parent: 'cpu13', set: '<NULL>'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.758892] kobject: 'cpufreq' (ffff88043703b2a8): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.765451] kobject: 'cpufreq' (ffff88043703b2a8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cpufreq'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.775663] kobject: 'cpu13' (ffff88047f00c338): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.782079] kobject: 'cpu13' (ffff88047f00c338): fill_kobj_path: path = '/devices/system/cpu/cpu13'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.794609] (elapsed 0.12 seconds) done.
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.798662] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6534.817421] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.813944] Restarting tasks ... done.
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.821447] PM: Basic memory bitmaps freed
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.845204] kobject: 'msr14' (ffff8801f0272010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.862898] kobject: 'msr14' (ffff8801f0272010): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.869298] kobject: 'msr14' (ffff8801f0272010): fill_kobj_path: path = '/devices/virtual/msr/msr14'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.895855] kobject: 'cpu14' (ffff8801f3239010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.919248] kobject: 'cpu14' (ffff8801f3239010): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.932536] kobject: 'cpu14' (ffff8801f3239010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu14'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.950924] lockdep: fixing up alternatives.
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.960478] Booting Node 1 Processor 14 APIC 0x33
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.965297] smpboot cpu 14: start_ip = 97000
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6539.980699] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.011384] Switched to NOHz mode on CPU #14
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.063076] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.084896] kobject: 'cache' (ffff8801ee7c1a00): kobject_add_internal: parent: 'cpu14', set: '<NULL>'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.120228] kobject: 'index0' (ffff8801e98b1a00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.151420] kobject: 'index0' (ffff8801e98b1a00): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.182155] kobject: 'index0' (ffff8801e98b1a00): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index0'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.222132] kobject: 'index1' (ffff8801e98b1a48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.264082] kobject: 'index1' (ffff8801e98b1a48): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.294737] kobject: 'index1' (ffff8801e98b1a48): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index1'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.347257] kobject: 'index2' (ffff8801e98b1a90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.391872] kobject: 'index2' (ffff8801e98b1a90): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.414773] kobject: 'index2' (ffff8801e98b1a90): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index2'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.468712] kobject: 'index3' (ffff8801e98b1ad8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.501696] kobject: 'index3' (ffff8801e98b1ad8): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.531628] kobject: 'index3' (ffff8801e98b1ad8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index3'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.578545] kobject: 'cache' (ffff8801ee7c1a00): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.601519] kobject: 'cache' (ffff8801ee7c1a00): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.641553] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.688371] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_uevent_env
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.718306] kobject: 'machinecheck14' (ffff88047f20cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck14'
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.764457] microcode: CPU14 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:29:19 istl-vmc-blade9 kernel: [ 6540.791215] kobject: 'firmware' (ffff88046cdfd540): kobject_add_internal: parent: 'microcode', set: '(null)'
+Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.856377] kobject: 'microcode' (ffff88046da92110): kobject_add_internal: parent: 'firmware', set: 'devices'
+Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.868901] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.875820] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.882709] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.889598] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.896494] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.905590] PM: Basic memory bitmaps created
 Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.909966] PM: Syncing filesystems ... 
 Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.944601] kobject: 'microcode' (ffff88046da92110): kobject_uevent_env
 Jun  9 11:29:20 istl-vmc-blade9 kernel: [ 6540.951655] kobject: 'microcode' (ffff88046da92110): kobject_uevent_env: uevent_suppress caused the event to drop!
@@ -378,8 +1484,6946 @@ Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.424621] done.
 Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.426774] 
 Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.428536] PM: Basic memory bitmaps freed
 Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.470585] kobject: 'firmware' (ffff88046cdfd540): kobject_cleanup
+Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.477083] kobject: 'firmware' (ffff88046cdfd540): auto cleanup kobject_del
+Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.589736] kobject: 'firmware' (ffff88046cdfd540): calling ktype release
+Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.596635] kobject: 'firmware': free name
+Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.600897] kobject: 'microcode' (ffff88046da92110): kobject_cleanup
+Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.607361] kobject: 'microcode' (ffff88046da92110): calling ktype release
+Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.614355] kobject: 'microcode': free name
+Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.702138] kobject: 'cpufreq' (ffff88046c3ff0a8): kobject_add_internal: parent: 'cpu14', set: '<NULL>'
+Jun  9 11:29:40 istl-vmc-blade9 kernel: [ 6561.759206] kobject: 'cpufreq' (ffff88046c3ff0a8): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6561.806380] kobject: 'cpufreq' (ffff88046c3ff0a8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cpufreq'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6561.857997] kobject: 'cpu14' (ffff88047f20c338): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6561.865259] kobject: 'cpu14' (ffff88047f20c338): fill_kobj_path: path = '/devices/system/cpu/cpu14'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6561.960847] kobject: 'msr15' (ffff880469082010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6561.974817] kobject: 'msr15' (ffff880469082010): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6561.984542] kobject: 'msr15' (ffff880469082010): fill_kobj_path: path = '/devices/virtual/msr/msr15'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.020445] kobject: 'cpu15' (ffff8804373e5810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.057120] kobject: 'cpu15' (ffff8804373e5810): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.075781] kobject: 'cpu15' (ffff8804373e5810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu15'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.114608] lockdep: fixing up alternatives.
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.158543] Booting Node 1 Processor 15 APIC 0x35
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.163364] smpboot cpu 15: start_ip = 97000
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.178772] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.207430] Switched to NOHz mode on CPU #15
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.212138] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.222985] kobject: 'cache' (ffff8804693e5c40): kobject_add_internal: parent: 'cpu15', set: '<NULL>'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.237985] kobject: 'index0' (ffff88046c030000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.251523] kobject: 'index0' (ffff88046c030000): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.271229] kobject: 'index0' (ffff88046c030000): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index0'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.320338] kobject: 'index1' (ffff88046c030048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.348263] kobject: 'index1' (ffff88046c030048): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.368217] kobject: 'index1' (ffff88046c030048): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index1'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.405408] kobject: 'index2' (ffff88046c030090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.446624] kobject: 'index2' (ffff88046c030090): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.465039] kobject: 'index2' (ffff88046c030090): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index2'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.508023] kobject: 'index3' (ffff88046c0300d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.546907] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.553835] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.555807] kobject: 'index3' (ffff88046c0300d8): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.555814] kobject: 'index3' (ffff88046c0300d8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index3'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.555836] kobject: 'cache' (ffff8804693e5c40): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.555840] kobject: 'cache' (ffff8804693e5c40): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.555856] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.555868] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_uevent_env
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.555886] kobject: 'machinecheck15' (ffff88047f40cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck15'
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.623630] microcode: CPU15 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.623638] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.623644] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.623652] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.625735] PM: Basic memory bitmaps created
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.625738] PM: Syncing filesystems ... 
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.658392] ------------[ cut here ]------------
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.663404] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.671758] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.677174] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.730910] Pid: 20435, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.738487] Call Trace:
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.741050]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.747169]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.753115]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.759161]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.764945]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:29:41 istl-vmc-blade9 kernel: [ 6562.772112]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.779198]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.786012]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.792053]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.798533]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.803959]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.809037]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.813947]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.819368]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.824793]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:29:42 istl-vmc-blade9 kernel: [ 6562.830662]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.832298] done.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.832302] Freezing user space processes ...  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.846096]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.852180] ---[ end trace cff32f63e15cd49e ]---
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.856879] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.864675] kobject: 'cpufreq' (ffff8804606e64a8): kobject_add_internal: parent: 'cpu15', set: '<NULL>'
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.874307] kobject: 'cpufreq' (ffff8804606e64a8): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.880897] kobject: 'cpufreq' (ffff8804606e64a8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cpufreq'
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.891083] kobject: 'cpu15' (ffff88047f40c338): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.897460] kobject: 'cpu15' (ffff88047f40c338): fill_kobj_path: path = '/devices/system/cpu/cpu15'
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.910662] (elapsed 0.07 seconds) done.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.914712] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6562.933481] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6567.930564] Restarting tasks ... done.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.007390] PM: Basic memory bitmaps freed
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.020682] kobject: 'cpufreq' (ffff8801f4b7f6a8): kobject_cleanup
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.026984] kobject: 'cpufreq' (ffff8801f4b7f6a8): auto cleanup 'remove' event
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.034391] kobject: 'cpufreq' (ffff8801f4b7f6a8): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.041072] kobject: 'cpufreq' (ffff8801f4b7f6a8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cpufreq'
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.066470] kobject: 'cpufreq' (ffff8801f4b7f6a8): auto cleanup kobject_del
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.101619] kobject: 'cpufreq' (ffff8801f4b7f6a8): calling ktype release
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.108477] kobject: 'cpufreq': free name
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.135373] CPU 1 is now offline
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.156336] kobject: 'index0' (ffff8801f1e70200): kobject_cleanup
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.162544] kobject: 'index0' (ffff8801f1e70200): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.173329] kobject: 'index0' (ffff8801f1e70200): auto cleanup 'remove' event
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.180581] kobject: 'index0' (ffff8801f1e70200): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.187492] kobject: 'index0' (ffff8801f1e70200): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index0'
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.198101] kobject: 'index0' (ffff8801f1e70200): auto cleanup kobject_del
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.209512] kobject: 'index0': free name
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.213552] kobject: 'index1' (ffff8801f1e70248): kobject_cleanup
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.219749] kobject: 'index1' (ffff8801f1e70248): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.230543] kobject: 'index1' (ffff8801f1e70248): auto cleanup 'remove' event
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.237786] kobject: 'index1' (ffff8801f1e70248): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.260519] kobject: 'index1' (ffff8801f1e70248): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index1'
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.306741] kobject: 'index1' (ffff8801f1e70248): auto cleanup kobject_del
+Jun  9 11:29:47 istl-vmc-blade9 abrt: Kerneloops: Reported 13 kernel oopses to Abrt
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-13' creation detected
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.329108] kobject: 'index1': free name
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.333143] kobject: 'index2' (ffff8801f1e70290): kobject_cleanup
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.339341] kobject: 'index2' (ffff8801f1e70290): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.350138] kobject: 'index2' (ffff8801f1e70290): auto cleanup 'remove' event
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.357384] kobject: 'index2' (ffff8801f1e70290): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.375868] kobject: 'index2' (ffff8801f1e70290): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index2'
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-13 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-12' creation detected
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.424781] kobject: 'index2' (ffff8801f1e70290): auto cleanup kobject_del
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-12 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-11' creation detected
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-11 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.468149] kobject: 'index2': free name
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.472203] kobject: 'index3' (ffff8801f1e702d8): kobject_cleanup
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.478397] kobject: 'index3' (ffff8801f1e702d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.489182] kobject: 'index3' (ffff8801f1e702d8): auto cleanup 'remove' event
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.496421] kobject: 'index3' (ffff8801f1e702d8): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-10' creation detected
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.517090] kobject: 'index3' (ffff8801f1e702d8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index3'
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-10 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-9' creation detected
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.559151] kobject: 'index3' (ffff8801f1e702d8): auto cleanup kobject_del
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-9 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-8' creation detected
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-8 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-7' creation detected
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.603668] kobject: 'index3': free name
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.607725] kobject: 'cache' (ffff8801f109b400): kobject_cleanup
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.613855] kobject: 'cache' (ffff8801f109b400): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.624548] kobject: 'cache' (ffff8801f109b400): auto cleanup 'remove' event
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.631705] kobject: 'cache' (ffff8801f109b400): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.638098] kobject: 'cache' (ffff8801f109b400): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache'
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.656754] kobject: 'cache' (ffff8801f109b400): auto cleanup kobject_del
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-7 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-6' creation detected
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.685522] kobject: 'cache': free name
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.701338] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_cleanup
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.708147] kobject: 'machinecheck1' (ffff8801f880cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.719555] kobject: 'machinecheck1' (ffff8801f880cff0): auto cleanup 'remove' event
+Jun  9 11:29:47 istl-vmc-blade9 kernel: [ 6568.727483] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_uevent_env
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-6 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-5' creation detected
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-5 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-4' creation detected
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6568.782784] kobject: 'machinecheck1' (ffff8801f880cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck1'
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6568.801844] kobject: 'machinecheck1' (ffff8801f880cff0): auto cleanup kobject_del
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-4 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-3' creation detected
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6568.836306] kobject: 'machinecheck1': free name
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-3 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-2' creation detected
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6568.868291] kobject: 'msr1' (ffff8801f4a21810): kobject_uevent_env
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6568.902392] kobject: 'msr1' (ffff8801f4a21810): fill_kobj_path: path = '/devices/virtual/msr/msr1'
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-2 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373587-2003-1' creation detected
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:29:48 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373587-2003-1 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6568.962354] kobject: 'msr1' (ffff8801f4a21810): kobject_cleanup
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6568.968395] kobject: 'msr1' (ffff8801f4a21810): calling ktype release
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6568.974974] kobject: 'msr1': free name
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.003065] kobject: 'cpu1' (ffff8801f47c5010): kobject_uevent_env
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.032992] kobject: 'cpu1' (ffff8801f47c5010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu1'
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.082941] kobject: 'cpu1' (ffff8801f47c5010): kobject_cleanup
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.088988] kobject: 'cpu1' (ffff8801f47c5010): calling ktype release
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.088994] kobject: 'cpu1': free name
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.101614] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.108649] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.115548] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.122455] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.122465] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.124859] PM: Basic memory bitmaps created
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.124862] PM: Syncing filesystems ... 
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.232933] CPU 9 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:29:48 istl-vmc-blade9 kernel: [ 6569.262987] kobject: 'cpu1' (ffff8801f880c338): kobject_uevent_env
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6569.297610] kobject: 'cpu1' (ffff8801f880c338): fill_kobj_path: path = '/devices/system/cpu/cpu1'
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6569.297622] done.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6569.297626] Freezing user space processes ... (elapsed 0.02 seconds) done.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6569.324585] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6569.343599] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.339802] Restarting tasks ... done.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.346969] PM: Basic memory bitmaps freed
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.372953] kobject: 'cpufreq' (ffff8801f23602a8): kobject_cleanup
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.379273] kobject: 'cpufreq' (ffff8801f23602a8): auto cleanup 'remove' event
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.386681] kobject: 'cpufreq' (ffff8801f23602a8): kobject_uevent_env
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.399802] kobject: 'cpufreq' (ffff8801f23602a8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cpufreq'
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.419793] kobject: 'cpufreq' (ffff8801f23602a8): auto cleanup kobject_del
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.439776] kobject: 'cpufreq' (ffff8801f23602a8): calling ktype release
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.446699] kobject: 'cpufreq': free name
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.452797] CPU 2 is now offline
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.469868] kobject: 'index0' (ffff8801f4a93400): kobject_cleanup
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.476081] kobject: 'index0' (ffff8801f4a93400): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.486875] kobject: 'index0' (ffff8801f4a93400): auto cleanup 'remove' event
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.494115] kobject: 'index0' (ffff8801f4a93400): kobject_uevent_env
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.500901] kobject: 'index0' (ffff8801f4a93400): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index0'
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.511374] kobject: 'index0' (ffff8801f4a93400): auto cleanup kobject_del
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.529630] kobject: 'index0': free name
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.533664] kobject: 'index1' (ffff8801f4a93448): kobject_cleanup
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.539862] kobject: 'index1' (ffff8801f4a93448): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.550650] kobject: 'index1' (ffff8801f4a93448): auto cleanup 'remove' event
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.557892] kobject: 'index1' (ffff8801f4a93448): kobject_uevent_env
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.564579] kobject: 'index1' (ffff8801f4a93448): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index1'
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.589539] kobject: 'index1' (ffff8801f4a93448): auto cleanup kobject_del
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.599519] kobject: 'index1': free name
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.603551] kobject: 'index2' (ffff8801f4a93490): kobject_cleanup
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.609749] kobject: 'index2' (ffff8801f4a93490): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.620535] kobject: 'index2' (ffff8801f4a93490): auto cleanup 'remove' event
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.627777] kobject: 'index2' (ffff8801f4a93490): kobject_uevent_env
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.639443] kobject: 'index2' (ffff8801f4a93490): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index2'
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.659423] kobject: 'index2' (ffff8801f4a93490): auto cleanup kobject_del
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.680841] kobject: 'index2': free name
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.684875] kobject: 'index3' (ffff8801f4a934d8): kobject_cleanup
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.691072] kobject: 'index3' (ffff8801f4a934d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.701864] kobject: 'index3' (ffff8801f4a934d8): auto cleanup 'remove' event
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.709107] kobject: 'index3' (ffff8801f4a934d8): kobject_uevent_env
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.715757] kobject: 'index3' (ffff8801f4a934d8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index3'
+Jun  9 11:29:53 istl-vmc-blade9 kernel: [ 6574.726313] kobject: 'index3' (ffff8801f4a934d8): auto cleanup kobject_del
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.733407] kobject: 'index3': free name
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.737518] kobject: 'cache' (ffff8801f2481280): kobject_cleanup
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.743628] kobject: 'cache' (ffff8801f2481280): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.754329] kobject: 'cache' (ffff8801f2481280): auto cleanup 'remove' event
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.761488] kobject: 'cache' (ffff8801f2481280): kobject_uevent_env
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.768127] kobject: 'cache' (ffff8801f2481280): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache'
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.778031] kobject: 'cache' (ffff8801f2481280): auto cleanup kobject_del
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.785019] kobject: 'cache': free name
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.789251] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_cleanup
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.796061] kobject: 'machinecheck2' (ffff8801f8a0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.807467] kobject: 'machinecheck2' (ffff8801f8a0cff0): auto cleanup 'remove' event
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.815390] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_uevent_env
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.822648] kobject: 'machinecheck2' (ffff8801f8a0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck2'
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.834384] kobject: 'machinecheck2' (ffff8801f8a0cff0): auto cleanup kobject_del
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.842280] kobject: 'machinecheck2': free name
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.849157] kobject: 'msr2' (ffff8801e95a9810): kobject_uevent_env
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.879072] kobject: 'msr2' (ffff8801e95a9810): fill_kobj_path: path = '/devices/virtual/msr/msr2'
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.933994] kobject: 'msr2' (ffff8801e95a9810): kobject_cleanup
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.940130] kobject: 'msr2' (ffff8801e95a9810): calling ktype release
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.946677] kobject: 'msr2': free name
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.973976] kobject: 'cpu2' (ffff8801f1e05010): kobject_uevent_env
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6574.998894] kobject: 'cpu2' (ffff8801f1e05010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu2'
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.043829] kobject: 'cpu2' (ffff8801f1e05010): kobject_cleanup
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.049873] kobject: 'cpu2' (ffff8801f1e05010): calling ktype release
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.056423] kobject: 'cpu2': free name
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.106807] CPU 10 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.144675] kobject: 'cpu2' (ffff8801f8a0c338): kobject_uevent_env
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.183578] kobject: 'cpu2' (ffff8801f8a0c338): fill_kobj_path: path = '/devices/system/cpu/cpu2'
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.269546] kobject: 'cpufreq' (ffff8801f0e350a8): kobject_cleanup
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.275836] kobject: 'cpufreq' (ffff8801f0e350a8): auto cleanup 'remove' event
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.283230] kobject: 'cpufreq' (ffff8801f0e350a8): kobject_uevent_env
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.333423] kobject: 'cpufreq' (ffff8801f0e350a8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cpufreq'
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.403480] kobject: 'cpufreq' (ffff8801f0e350a8): auto cleanup kobject_del
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.439392] kobject: 'cpufreq' (ffff8801f0e350a8): calling ktype release
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.446308] kobject: 'cpufreq': free name
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.452582] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.459641] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.466551] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.473454] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.480377] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.489467] PM: Basic memory bitmaps created
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.493843] PM: Syncing filesystems ... 
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.503086] CPU 3 is now offline
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.538058] kobject: 'index0' (ffff8801f15fa200): kobject_cleanup
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.544248] kobject: 'index0' (ffff8801f15fa200): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.555025] kobject: 'index0' (ffff8801f15fa200): auto cleanup 'remove' event
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.562264] kobject: 'index0' (ffff8801f15fa200): kobject_uevent_env
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.568808] kobject: 'index0' (ffff8801f15fa200): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index0'
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.631968] kobject: 'index0' (ffff8801f15fa200): auto cleanup kobject_del
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.681818] kobject: 'index0': free name
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.685915] kobject: 'index1' (ffff8801f15fa248): kobject_cleanup
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.692120] kobject: 'index1' (ffff8801f15fa248): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.702895] kobject: 'index1' (ffff8801f15fa248): auto cleanup 'remove' event
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.710122] kobject: 'index1' (ffff8801f15fa248): kobject_uevent_env
+Jun  9 11:29:54 istl-vmc-blade9 kernel: [ 6575.734737] done.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.736851] Freezing user space processes ... 
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.742696] kobject: 'index1' (ffff8801f15fa248): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index1'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.753313] kobject: 'index1' (ffff8801f15fa248): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.760320] kobject: 'index1': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.764323] kobject: 'index2' (ffff8801f15fa290): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.770500] kobject: 'index2' (ffff8801f15fa290): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.781296] kobject: 'index2' (ffff8801f15fa290): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.788506] kobject: 'index2' (ffff8801f15fa290): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.794951] kobject: 'index2' (ffff8801f15fa290): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index2'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.805310] kobject: 'index2' (ffff8801f15fa290): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.812271] kobject: 'index2': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.816304] kobject: 'index3' (ffff8801f15fa2d8): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.822475] kobject: 'index3' (ffff8801f15fa2d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.833225] kobject: 'index3' (ffff8801f15fa2d8): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.840432] kobject: 'index3' (ffff8801f15fa2d8): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.846867] kobject: 'index3' (ffff8801f15fa2d8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index3'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.857195] kobject: 'index3' (ffff8801f15fa2d8): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.864156] kobject: 'index3': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.868161] kobject: 'cache' (ffff8801f3118a40): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.874240] kobject: 'cache' (ffff8801f3118a40): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.884903] kobject: 'cache' (ffff8801f3118a40): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.892031] kobject: 'cache' (ffff8801f3118a40): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.898376] kobject: 'cache' (ffff8801f3118a40): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.908005] kobject: 'cache' (ffff8801f3118a40): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.914871] kobject: 'cache': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.918808] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.925588] kobject: 'machinecheck3' (ffff8801f8c0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.936946] kobject: 'machinecheck3' (ffff8801f8c0cff0): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.944839] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.951883] kobject: 'machinecheck3' (ffff8801f8c0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck3'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.963250] kobject: 'machinecheck3' (ffff8801f8c0cff0): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.970880] kobject: 'machinecheck3': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.975609] kobject: 'msr3' (ffff8801f2357010): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.981873] kobject: 'msr3' (ffff8801f2357010): fill_kobj_path: path = '/devices/virtual/msr/msr3'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.991017] kobject: 'msr3' (ffff8801f2357010): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6575.997013] kobject: 'msr3' (ffff8801f2357010): calling ktype release
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.003530] kobject: 'msr3': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.007485] kobject: 'cpu3' (ffff8801f17d6010): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.013743] kobject: 'cpu3' (ffff8801f17d6010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu3'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.023034] kobject: 'cpu3' (ffff8801f17d6010): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.029059] kobject: 'cpu3' (ffff8801f17d6010): calling ktype release
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.035575] kobject: 'cpu3': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.040169] CPU 11 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.045349] kobject: 'cpu3' (ffff8801f8c0c338): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.051652] kobject: 'cpu3' (ffff8801f8c0c338): fill_kobj_path: path = '/devices/system/cpu/cpu3'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.061512] (elapsed 0.32 seconds) done.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.065622] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6576.084300] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.080526] Restarting tasks ... done.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.150295] PM: Basic memory bitmaps freed
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.183619] kobject: 'cpufreq' (ffff8804690a78a8): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.189922] kobject: 'cpufreq' (ffff8804690a78a8): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.197332] kobject: 'cpufreq' (ffff8804690a78a8): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.203902] kobject: 'cpufreq' (ffff8804690a78a8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cpufreq'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.219381] kobject: 'cpufreq' (ffff8804690a78a8): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.226470] kobject: 'cpufreq' (ffff8804690a78a8): calling ktype release
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.233282] kobject: 'cpufreq': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.260843] CPU 4 is now offline
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.269351] kobject: 'index0' (ffff8801f2b31a00): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.275563] kobject: 'index0' (ffff8801f2b31a00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.286365] kobject: 'index0' (ffff8801f2b31a00): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.293617] kobject: 'index0' (ffff8801f2b31a00): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.300097] kobject: 'index0' (ffff8801f2b31a00): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index0'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.319387] kobject: 'index0' (ffff8801f2b31a00): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.326461] kobject: 'index0': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.330500] kobject: 'index1' (ffff8801f2b31a48): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.336698] kobject: 'index1' (ffff8801f2b31a48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.347486] kobject: 'index1' (ffff8801f2b31a48): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.354729] kobject: 'index1' (ffff8801f2b31a48): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.369483] kobject: 'index1' (ffff8801f2b31a48): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index1'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.399468] kobject: 'index1' (ffff8801f2b31a48): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.420412] kobject: 'index1': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.424448] kobject: 'index2' (ffff8801f2b31a90): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.430641] kobject: 'index2' (ffff8801f2b31a90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.441426] kobject: 'index2' (ffff8801f2b31a90): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.448676] kobject: 'index2' (ffff8801f2b31a90): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.455159] kobject: 'index2' (ffff8801f2b31a90): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index2'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.471987] kobject: 'index2' (ffff8801f2b31a90): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.481642] kobject: 'index2': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.485673] kobject: 'index3' (ffff8801f2b31ad8): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.491886] kobject: 'index3' (ffff8801f2b31ad8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.502671] kobject: 'index3' (ffff8801f2b31ad8): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.509909] kobject: 'index3' (ffff8801f2b31ad8): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.516612] kobject: 'index3' (ffff8801f2b31ad8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index3'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.532730] kobject: 'index3' (ffff8801f2b31ad8): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.548874] kobject: 'index3': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.553019] kobject: 'cache' (ffff8801f104a340): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.559127] kobject: 'cache' (ffff8801f104a340): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.569826] kobject: 'cache' (ffff8801f104a340): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.576973] kobject: 'cache' (ffff8801f104a340): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.583360] kobject: 'cache' (ffff8801f104a340): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.596091] kobject: 'cache' (ffff8801f104a340): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.614189] kobject: 'cache': free name
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.618232] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_cleanup
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.625049] kobject: 'machinecheck4' (ffff88047e60cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.636449] kobject: 'machinecheck4' (ffff88047e60cff0): auto cleanup 'remove' event
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.644371] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_uevent_env
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.655675] kobject: 'machinecheck4' (ffff88047e60cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck4'
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.698657] kobject: 'machinecheck4' (ffff88047e60cff0): auto cleanup kobject_del
+Jun  9 11:30:00 istl-vmc-blade9 kernel: [ 6581.728596] kobject: 'machinecheck4': free name
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6581.748595] kobject: 'msr4' (ffff8801f21f6810): kobject_uevent_env
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6581.778510] kobject: 'msr4' (ffff8801f21f6810): fill_kobj_path: path = '/devices/virtual/msr/msr4'
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6581.818473] kobject: 'msr4' (ffff8801f21f6810): kobject_cleanup
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6581.824602] kobject: 'msr4' (ffff8801f21f6810): calling ktype release
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6581.831294] kobject: 'msr4': free name
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6581.907309] kobject: 'cpu4' (ffff8801f21f0010): kobject_uevent_env
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6581.938272] kobject: 'cpu4' (ffff8801f21f0010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu4'
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6581.998174] kobject: 'cpu4' (ffff8801f21f0010): kobject_cleanup
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.004199] kobject: 'cpu4' (ffff8801f21f0010): calling ktype release
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.010750] kobject: 'cpu4': free name
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.133020] CPU 5 MCA banks CMCI:6 CMCI:8
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.181891] CPU 12 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.203046] kobject: 'cpu4' (ffff88047e60c338): kobject_uevent_env
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.226804] kobject: 'cpu4' (ffff88047e60c338): fill_kobj_path: path = '/devices/system/cpu/cpu4'
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.238397] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.245365] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.252254] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.259140] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.266025] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.274247] PM: Basic memory bitmaps created
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.278609] PM: Syncing filesystems ... 
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.291806] kobject: 'cpufreq' (ffff88046c96caa8): kobject_cleanup
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.298372] kobject: 'cpufreq' (ffff88046c96caa8): auto cleanup 'remove' event
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.305771] kobject: 'cpufreq' (ffff88046c96caa8): kobject_uevent_env
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.312641] kobject: 'cpufreq' (ffff88046c96caa8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cpufreq'
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.357647] kobject: 'cpufreq' (ffff88046c96caa8): auto cleanup kobject_del
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.387594] kobject: 'cpufreq' (ffff88046c96caa8): calling ktype release
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.394402] kobject: 'cpufreq': free name
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.417539] CPU 5 is now offline
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.441487] kobject: 'index0' (ffff88046c96c000): kobject_cleanup
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.447698] kobject: 'index0' (ffff88046c96c000): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.458484] kobject: 'index0' (ffff88046c96c000): auto cleanup 'remove' event
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.465729] kobject: 'index0' (ffff88046c96c000): kobject_uevent_env
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.472901] kobject: 'index0' (ffff88046c96c000): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index0'
+Jun  9 11:30:01 istl-vmc-blade9 kernel: [ 6582.504404] kobject: 'index0' (ffff88046c96c000): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.532136] kobject: 'index0': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.536168] kobject: 'index1' (ffff88046c96c048): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.542359] kobject: 'index1' (ffff88046c96c048): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.553148] kobject: 'index1' (ffff88046c96c048): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.560396] kobject: 'index1' (ffff88046c96c048): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.566282] done.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.566286] Freezing user space processes ... 
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.573208] kobject: 'index1' (ffff88046c96c048): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index1'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.583869] kobject: 'index1' (ffff88046c96c048): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.590843] kobject: 'index1': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.594855] kobject: 'index2' (ffff88046c96c090): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.601030] kobject: 'index2' (ffff88046c96c090): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.611787] kobject: 'index2' (ffff88046c96c090): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.619004] kobject: 'index2' (ffff88046c96c090): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.625447] kobject: 'index2' (ffff88046c96c090): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index2'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.635825] kobject: 'index2' (ffff88046c96c090): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.642860] kobject: 'index2': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.646876] kobject: 'index3' (ffff88046c96c0d8): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.653059] kobject: 'index3' (ffff88046c96c0d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.663844] kobject: 'index3' (ffff88046c96c0d8): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.671055] kobject: 'index3' (ffff88046c96c0d8): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.677537] kobject: 'index3' (ffff88046c96c0d8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index3'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.687889] kobject: 'index3' (ffff88046c96c0d8): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.694904] kobject: 'index3': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.698912] kobject: 'cache' (ffff88046c8d3b00): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.705002] kobject: 'cache' (ffff88046c8d3b00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.715669] kobject: 'cache' (ffff88046c8d3b00): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.722803] kobject: 'cache' (ffff88046c8d3b00): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.729158] kobject: 'cache' (ffff88046c8d3b00): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.738797] kobject: 'cache' (ffff88046c8d3b00): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.745665] kobject: 'cache': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.749603] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.756381] kobject: 'machinecheck5' (ffff88047e80cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.767763] kobject: 'machinecheck5' (ffff88047e80cff0): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.775657] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.782703] kobject: 'machinecheck5' (ffff88047e80cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck5'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.794088] kobject: 'machinecheck5' (ffff88047e80cff0): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.801730] kobject: 'machinecheck5': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.806533] kobject: 'msr5' (ffff88046da68010): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.812809] kobject: 'msr5' (ffff88046da68010): fill_kobj_path: path = '/devices/virtual/msr/msr5'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.821981] kobject: 'msr5' (ffff88046da68010): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.827980] kobject: 'msr5' (ffff88046da68010): calling ktype release
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.834501] kobject: 'msr5': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.838520] kobject: 'cpu5' (ffff88046f78b010): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.844796] kobject: 'cpu5' (ffff88046f78b010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu5'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.854103] kobject: 'cpu5' (ffff88046f78b010): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.860145] kobject: 'cpu5' (ffff88046f78b010): calling ktype release
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.866664] kobject: 'cpu5': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.870974] CPU 6 MCA banks CMCI:6 CMCI:8
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.875662] CPU 13 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.880731] kobject: 'cpu5' (ffff88047e80c338): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.887086] kobject: 'cpu5' (ffff88047e80c338): fill_kobj_path: path = '/devices/system/cpu/cpu5'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.898013] (elapsed 0.33 seconds) done.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.902062] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6582.920789] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6587.917040] Restarting tasks ... done.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6587.960447] PM: Basic memory bitmaps freed
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.042035] kobject: 'cpufreq' (ffff8804607416a8): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.048324] kobject: 'cpufreq' (ffff8804607416a8): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.055739] kobject: 'cpufreq' (ffff8804607416a8): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.077031] kobject: 'cpufreq' (ffff8804607416a8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cpufreq'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.128816] kobject: 'cpufreq' (ffff8804607416a8): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.163742] kobject: 'cpufreq' (ffff8804607416a8): calling ktype release
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.170561] kobject: 'cpufreq': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.197108] CPU 6 is now offline
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.232672] kobject: 'index0' (ffff8801f4447600): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.238995] kobject: 'index0' (ffff8801f4447600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.249871] kobject: 'index0' (ffff8801f4447600): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.257157] kobject: 'index0' (ffff8801f4447600): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.263949] kobject: 'index0' (ffff8801f4447600): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index0'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.274679] kobject: 'index0' (ffff8801f4447600): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.281879] kobject: 'index0': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.286078] kobject: 'index1' (ffff8801f4447648): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.292413] kobject: 'index1' (ffff8801f4447648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.303310] kobject: 'index1' (ffff8801f4447648): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.310673] kobject: 'index1' (ffff8801f4447648): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.318500] kobject: 'index1' (ffff8801f4447648): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index1'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.348480] kobject: 'index1' (ffff8801f4447648): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.363425] kobject: 'index1': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.367478] kobject: 'index2' (ffff8801f4447690): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.373784] kobject: 'index2' (ffff8801f4447690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.384628] kobject: 'index2' (ffff8801f4447690): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.391862] kobject: 'index2' (ffff8801f4447690): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.398592] kobject: 'index2' (ffff8801f4447690): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index2'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.409207] kobject: 'index2' (ffff8801f4447690): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.416421] kobject: 'index2': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.420548] kobject: 'index3' (ffff8801f44476d8): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.426894] kobject: 'index3' (ffff8801f44476d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.437737] kobject: 'index3' (ffff8801f44476d8): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.445062] kobject: 'index3' (ffff8801f44476d8): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.451833] kobject: 'index3' (ffff8801f44476d8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index3'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.462399] kobject: 'index3' (ffff8801f44476d8): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.469500] kobject: 'index3': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.473592] kobject: 'cache' (ffff8801f0f09c40): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.479702] kobject: 'cache' (ffff8801f0f09c40): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.490492] kobject: 'cache' (ffff8801f0f09c40): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.497697] kobject: 'cache' (ffff8801f0f09c40): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.504287] kobject: 'cache' (ffff8801f0f09c40): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.514083] kobject: 'cache' (ffff8801f0f09c40): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.521111] kobject: 'cache': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.525178] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.532059] kobject: 'machinecheck6' (ffff88047ea0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.543465] kobject: 'machinecheck6' (ffff88047ea0cff0): auto cleanup 'remove' event
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.551384] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.558531] kobject: 'machinecheck6' (ffff88047ea0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck6'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.570520] kobject: 'machinecheck6' (ffff88047ea0cff0): auto cleanup kobject_del
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.588088] kobject: 'machinecheck6': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.594676] kobject: 'msr6' (ffff8801f23c5810): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.617026] kobject: 'msr6' (ffff8801f23c5810): fill_kobj_path: path = '/devices/virtual/msr/msr6'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.638040] kobject: 'msr6' (ffff8801f23c5810): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.644091] kobject: 'msr6' (ffff8801f23c5810): calling ktype release
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.650641] kobject: 'msr6': free name
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.668130] kobject: 'cpu6' (ffff8801f4b33010): kobject_uevent_env
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.684587] kobject: 'cpu6' (ffff8801f4b33010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu6'
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.702922] kobject: 'cpu6' (ffff8801f4b33010): kobject_cleanup
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.709040] kobject: 'cpu6' (ffff8801f4b33010): calling ktype release
+Jun  9 11:30:07 istl-vmc-blade9 kernel: [ 6588.715684] kobject: 'cpu6': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6588.746859] CPU 7 MCA banks CMCI:6 CMCI:8
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6588.786761] CPU 14 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6588.817760] kobject: 'cpu6' (ffff88047ea0c338): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6588.865646] kobject: 'cpu6' (ffff88047ea0c338): fill_kobj_path: path = '/devices/system/cpu/cpu6'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6588.949270] kobject: 'cpufreq' (ffff88046db266a8): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6588.955579] kobject: 'cpufreq' (ffff88046db266a8): auto cleanup 'remove' event
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6588.962981] kobject: 'cpufreq' (ffff88046db266a8): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6588.969538] kobject: 'cpufreq' (ffff88046db266a8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cpufreq'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.002453] kobject: 'cpufreq' (ffff88046db266a8): auto cleanup kobject_del
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.032423] kobject: 'cpufreq' (ffff88046db266a8): calling ktype release
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.039234] kobject: 'cpufreq': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.074133] CPU 7 is now offline
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.088393] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.095278] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097313] kobject: 'index0' (ffff88046ceca200): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097316] kobject: 'index0' (ffff88046ceca200): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097319] kobject: 'index0' (ffff88046ceca200): auto cleanup 'remove' event
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097321] kobject: 'index0' (ffff88046ceca200): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097334] kobject: 'index0' (ffff88046ceca200): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index0'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097354] kobject: 'index0' (ffff88046ceca200): auto cleanup kobject_del
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097377] kobject: 'index0': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097380] kobject: 'index1' (ffff88046ceca248): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097383] kobject: 'index1' (ffff88046ceca248): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097386] kobject: 'index1' (ffff88046ceca248): auto cleanup 'remove' event
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097388] kobject: 'index1' (ffff88046ceca248): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097392] kobject: 'index1' (ffff88046ceca248): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index1'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097402] kobject: 'index1' (ffff88046ceca248): auto cleanup kobject_del
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097416] kobject: 'index1': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097419] kobject: 'index2' (ffff88046ceca290): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097421] kobject: 'index2' (ffff88046ceca290): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097424] kobject: 'index2' (ffff88046ceca290): auto cleanup 'remove' event
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097427] kobject: 'index2' (ffff88046ceca290): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097431] kobject: 'index2' (ffff88046ceca290): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index2'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097439] kobject: 'index2' (ffff88046ceca290): auto cleanup kobject_del
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097454] kobject: 'index2': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097458] kobject: 'index3' (ffff88046ceca2d8): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097460] kobject: 'index3' (ffff88046ceca2d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097463] kobject: 'index3' (ffff88046ceca2d8): auto cleanup 'remove' event
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097466] kobject: 'index3' (ffff88046ceca2d8): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097469] kobject: 'index3' (ffff88046ceca2d8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index3'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097479] kobject: 'index3' (ffff88046ceca2d8): auto cleanup kobject_del
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097494] kobject: 'index3': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097497] kobject: 'cache' (ffff88046cb23ac0): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097499] kobject: 'cache' (ffff88046cb23ac0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097502] kobject: 'cache' (ffff88046cb23ac0): auto cleanup 'remove' event
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097505] kobject: 'cache' (ffff88046cb23ac0): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097508] kobject: 'cache' (ffff88046cb23ac0): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097516] kobject: 'cache' (ffff88046cb23ac0): auto cleanup kobject_del
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097520] kobject: 'cache': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097561] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097563] kobject: 'machinecheck7' (ffff88047ec0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097566] kobject: 'machinecheck7' (ffff88047ec0cff0): auto cleanup 'remove' event
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097569] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097573] kobject: 'machinecheck7' (ffff88047ec0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck7'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097583] kobject: 'machinecheck7' (ffff88047ec0cff0): auto cleanup kobject_del
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.097588] kobject: 'machinecheck7': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098034] kobject: 'msr7' (ffff88046c9d3810): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098040] kobject: 'msr7' (ffff88046c9d3810): fill_kobj_path: path = '/devices/virtual/msr/msr7'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098055] kobject: 'msr7' (ffff88046c9d3810): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098057] kobject: 'msr7' (ffff88046c9d3810): calling ktype release
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098061] kobject: 'msr7': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098464] kobject: 'cpu7' (ffff8804605d3810): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098469] kobject: 'cpu7' (ffff8804605d3810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu7'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098486] kobject: 'cpu7' (ffff8804605d3810): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098489] kobject: 'cpu7' (ffff8804605d3810): calling ktype release
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.098493] kobject: 'cpu7': free name
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.480228] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.487112] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.493987] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.502211] PM: Basic memory bitmaps created
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.506564] PM: Syncing filesystems ... 
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.519998] CPU 12 MCA banks CMCI:6 CMCI:8
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.524644] CPU 15 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.529565] kobject: 'cpu7' (ffff88047ec0c338): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.535844] kobject: 'cpu7' (ffff88047ec0c338): fill_kobj_path: path = '/devices/system/cpu/cpu7'
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.626157] kobject: 'cpufreq' (ffff8801f15faca8): kobject_cleanup
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.632446] kobject: 'cpufreq' (ffff8801f15faca8): auto cleanup 'remove' event
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.639832] kobject: 'cpufreq' (ffff8801f15faca8): kobject_uevent_env
+Jun  9 11:30:08 istl-vmc-blade9 kernel: [ 6589.662424] kobject: 'cpufreq' (ffff8801f15faca8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cpufreq'
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.746347] kobject: 'cpufreq' (ffff8801f15faca8): auto cleanup kobject_del
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.816217] kobject: 'cpufreq' (ffff8801f15faca8): calling ktype release
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.823014] kobject: 'cpufreq': free name
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.911040] CPU 8 is now offline
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.936377] kobject: 'index0' (ffff88046c25a000): kobject_cleanup
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.942594] kobject: 'index0' (ffff88046c25a000): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.953363] kobject: 'index0' (ffff88046c25a000): auto cleanup 'remove' event
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.960581] kobject: 'index0' (ffff88046c25a000): kobject_uevent_env
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6589.967179] kobject: 'index0' (ffff88046c25a000): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index0'
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6590.053839] kobject: 'index0' (ffff88046c25a000): auto cleanup kobject_del
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6590.115761] kobject: 'index0': free name
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6590.119778] kobject: 'index1' (ffff88046c25a048): kobject_cleanup
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6590.125961] kobject: 'index1' (ffff88046c25a048): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6590.136725] kobject: 'index1' (ffff88046c25a048): auto cleanup 'remove' event
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6590.143948] kobject: 'index1' (ffff88046c25a048): kobject_uevent_env
+Jun  9 11:30:09 istl-vmc-blade9 kernel: [ 6590.166015] done.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.168048] Freezing user space processes ... 
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171640] kobject: 'index1' (ffff88046c25a048): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index1'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171659] kobject: 'index1' (ffff88046c25a048): auto cleanup kobject_del
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171679] kobject: 'index1': free name
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171683] kobject: 'index2' (ffff88046c25a090): kobject_cleanup
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171685] kobject: 'index2' (ffff88046c25a090): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171687] kobject: 'index2' (ffff88046c25a090): auto cleanup 'remove' event
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171688] kobject: 'index2' (ffff88046c25a090): kobject_uevent_env
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171691] kobject: 'index2' (ffff88046c25a090): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index2'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171698] kobject: 'index2' (ffff88046c25a090): auto cleanup kobject_del
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171715] kobject: 'index2': free name
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171718] kobject: 'index3' (ffff88046c25a0d8): kobject_cleanup
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171719] kobject: 'index3' (ffff88046c25a0d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171721] kobject: 'index3' (ffff88046c25a0d8): auto cleanup 'remove' event
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171723] kobject: 'index3' (ffff88046c25a0d8): kobject_uevent_env
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171725] kobject: 'index3' (ffff88046c25a0d8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index3'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171733] kobject: 'index3' (ffff88046c25a0d8): auto cleanup kobject_del
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171751] kobject: 'index3': free name
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171753] kobject: 'cache' (ffff88046f7f4440): kobject_cleanup
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171755] kobject: 'cache' (ffff88046f7f4440): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171757] kobject: 'cache' (ffff88046f7f4440): auto cleanup 'remove' event
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171759] kobject: 'cache' (ffff88046f7f4440): kobject_uevent_env
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171762] kobject: 'cache' (ffff88046f7f4440): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171769] kobject: 'cache' (ffff88046f7f4440): auto cleanup kobject_del
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171773] kobject: 'cache': free name
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171815] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_cleanup
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171816] kobject: 'machinecheck8' (ffff8801f8e0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171819] kobject: 'machinecheck8' (ffff8801f8e0cff0): auto cleanup 'remove' event
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171820] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_uevent_env
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171823] kobject: 'machinecheck8' (ffff8801f8e0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck8'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171830] kobject: 'machinecheck8' (ffff8801f8e0cff0): auto cleanup kobject_del
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.171834] kobject: 'machinecheck8': free name
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.406618] kobject: 'msr8' (ffff88046f591810): kobject_uevent_env
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.412943] kobject: 'msr8' (ffff88046f591810): fill_kobj_path: path = '/devices/virtual/msr/msr8'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.422061] kobject: 'msr8' (ffff88046f591810): kobject_cleanup
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.428100] kobject: 'msr8' (ffff88046f591810): calling ktype release
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.434659] kobject: 'msr8': free name
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.438709] kobject: 'cpu8' (ffff88044166f010): kobject_uevent_env
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.445525] kobject: 'cpu8' (ffff88044166f010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu8'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.454825] kobject: 'cpu8' (ffff88044166f010): kobject_cleanup
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.460862] kobject: 'cpu8' (ffff88044166f010): calling ktype release
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.467427] kobject: 'cpu8': free name
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.472266] kobject: 'cpu8' (ffff8801f8e0c338): kobject_uevent_env
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.478565] kobject: 'cpu8' (ffff8801f8e0c338): fill_kobj_path: path = '/devices/system/cpu/cpu8'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.494383] (elapsed 0.08 seconds) done.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.498480] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6590.517200] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.513639] Restarting tasks ... 
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.541256] kobject: 'cpufreq' (ffff8801f45702a8): kobject_cleanup
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.547806] kobject: 'cpufreq' (ffff8801f45702a8): auto cleanup 'remove' event
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.555195] kobject: 'cpufreq' (ffff8801f45702a8): kobject_uevent_env
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.562200] kobject: 'cpufreq' (ffff8801f45702a8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cpufreq'
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.601353] kobject: 'cpufreq' (ffff8801f45702a8): auto cleanup kobject_del
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.626390] done.
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.628617] PM: Basic memory bitmaps freed
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.664258] kobject: 'cpufreq' (ffff8801f45702a8): calling ktype release
+Jun  9 11:30:14 istl-vmc-blade9 kernel: [ 6595.671162] kobject: 'cpufreq': free name
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.737144] CPU 9 is now offline
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.773080] kobject: 'index0' (ffff8801f4a93600): kobject_cleanup
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.779287] kobject: 'index0' (ffff8801f4a93600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.790065] kobject: 'index0' (ffff8801f4a93600): auto cleanup 'remove' event
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.797299] kobject: 'index0' (ffff8801f4a93600): kobject_uevent_env
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.803761] kobject: 'index0' (ffff8801f4a93600): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index0'
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.874933] kobject: 'index0' (ffff8801f4a93600): auto cleanup kobject_del
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.946491] kobject: 'index0': free name
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.950537] kobject: 'index1' (ffff8801f4a93648): kobject_cleanup
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.956723] kobject: 'index1' (ffff8801f4a93648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.967504] kobject: 'index1' (ffff8801f4a93648): auto cleanup 'remove' event
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6595.974727] kobject: 'index1' (ffff8801f4a93648): kobject_uevent_env
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.016724] kobject: 'index1' (ffff8801f4a93648): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index1'
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.120556] kobject: 'index1' (ffff8801f4a93648): auto cleanup kobject_del
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.181457] kobject: 'index1': free name
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.185480] kobject: 'index2' (ffff8801f4a93690): kobject_cleanup
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.191668] kobject: 'index2' (ffff8801f4a93690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.202437] kobject: 'index2' (ffff8801f4a93690): auto cleanup 'remove' event
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.209669] kobject: 'index2' (ffff8801f4a93690): kobject_uevent_env
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.307498] kobject: 'index2' (ffff8801f4a93690): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index2'
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.425089] kobject: 'index2' (ffff8801f4a93690): auto cleanup kobject_del
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.504980] kobject: 'index2': free name
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.509020] kobject: 'index3' (ffff8801f4a936d8): kobject_cleanup
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.515206] kobject: 'index3' (ffff8801f4a936d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.525990] kobject: 'index3' (ffff8801f4a936d8): auto cleanup 'remove' event
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.533212] kobject: 'index3' (ffff8801f4a936d8): kobject_uevent_env
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.575917] kobject: 'index3' (ffff8801f4a936d8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index3'
+Jun  9 11:30:15 istl-vmc-blade9 kernel: [ 6596.687884] kobject: 'index3' (ffff8801f4a936d8): auto cleanup kobject_del
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.729011] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.735987] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.742860] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.749736] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.756619] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.763630] kobject: 'index3': free name
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.764838] PM: Basic memory bitmaps created
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.764840] PM: Syncing filesystems ... 
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.775766] kobject: 'cache' (ffff8801f3780b80): kobject_cleanup
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.782130] kobject: 'cache' (ffff8801f3780b80): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.792804] kobject: 'cache' (ffff8801f3780b80): auto cleanup 'remove' event
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.799946] kobject: 'cache' (ffff8801f3780b80): kobject_uevent_env
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6596.936240] kobject: 'cache' (ffff8801f3780b80): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache'
+Jun  9 11:30:16 istl-vmc-blade9 kernel: [ 6597.023302] done.
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.025330] Freezing user space processes ... 
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.030805] kobject: 'cache' (ffff8801f3780b80): auto cleanup kobject_del
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.037975] kobject: 'cache': free name
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.041968] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_cleanup
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.048798] kobject: 'machinecheck9' (ffff8801f900cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.060203] kobject: 'machinecheck9' (ffff8801f900cff0): auto cleanup 'remove' event
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.068173] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_uevent_env
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.075288] kobject: 'machinecheck9' (ffff8801f900cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck9'
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.086743] kobject: 'machinecheck9' (ffff8801f900cff0): auto cleanup kobject_del
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.094426] kobject: 'machinecheck9': free name
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.099263] kobject: 'msr9' (ffff8801f37e2810): kobject_uevent_env
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.105548] kobject: 'msr9' (ffff8801f37e2810): fill_kobj_path: path = '/devices/virtual/msr/msr9'
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.114711] kobject: 'msr9' (ffff8801f37e2810): kobject_cleanup
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.120715] kobject: 'msr9' (ffff8801f37e2810): calling ktype release
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.127286] kobject: 'msr9': free name
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.131345] kobject: 'cpu9' (ffff8801e9590810): kobject_uevent_env
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.137621] kobject: 'cpu9' (ffff8801e9590810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu9'
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.146955] kobject: 'cpu9' (ffff8801e9590810): kobject_cleanup
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.152963] kobject: 'cpu9' (ffff8801e9590810): calling ktype release
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.159481] kobject: 'cpu9': free name
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.164203] kobject: 'cpu9' (ffff8801f900c338): kobject_uevent_env
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.170494] kobject: 'cpu9' (ffff8801f900c338): fill_kobj_path: path = '/devices/system/cpu/cpu9'
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.185246] (elapsed 0.15 seconds) done.
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.189293] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6597.208049] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.205010] Restarting tasks ... done.
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.347095] PM: Basic memory bitmaps freed
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.374045] kobject: 'cpufreq' (ffff8801f2295ea8): kobject_cleanup
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.380434] kobject: 'cpufreq' (ffff8801f2295ea8): auto cleanup 'remove' event
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.387821] kobject: 'cpufreq' (ffff8801f2295ea8): kobject_uevent_env
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.426915] kobject: 'cpufreq' (ffff8801f2295ea8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cpufreq'
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.517129] kobject: 'cpufreq' (ffff8801f2295ea8): auto cleanup kobject_del
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.524876] kobject: 'cpufreq' (ffff8801f2295ea8): calling ktype release
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.531680] kobject: 'cpufreq': free name
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.594232] CPU 10 is now offline
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.629586] kobject: 'index0' (ffff8801f3a29800): kobject_cleanup
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.635829] kobject: 'index0' (ffff8801f3a29800): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.646602] kobject: 'index0' (ffff8801f3a29800): auto cleanup 'remove' event
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.653832] kobject: 'index0' (ffff8801f3a29800): kobject_uevent_env
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.660302] kobject: 'index0' (ffff8801f3a29800): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index0'
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.689502] kobject: 'index0' (ffff8801f3a29800): auto cleanup kobject_del
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.696934] kobject: 'index0': free name
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.701052] kobject: 'index1' (ffff8801f3a29848): kobject_cleanup
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.707235] kobject: 'index1' (ffff8801f3a29848): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:21 istl-vmc-blade9 kernel: [ 6602.718012] kobject: 'index1' (ffff8801f3a29848): auto cleanup 'remove' event
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.725247] kobject: 'index1' (ffff8801f3a29848): kobject_uevent_env
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.731704] kobject: 'index1' (ffff8801f3a29848): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index1'
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.751068] kobject: 'index1' (ffff8801f3a29848): auto cleanup kobject_del
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.758634] kobject: 'index1': free name
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.762735] kobject: 'index2' (ffff8801f3a29890): kobject_cleanup
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.768929] kobject: 'index2' (ffff8801f3a29890): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.779701] kobject: 'index2' (ffff8801f3a29890): auto cleanup 'remove' event
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.786929] kobject: 'index2' (ffff8801f3a29890): kobject_uevent_env
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.793397] kobject: 'index2' (ffff8801f3a29890): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index2'
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.803948] kobject: 'index2' (ffff8801f3a29890): auto cleanup kobject_del
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.811562] kobject: 'index2': free name
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.815583] kobject: 'index3' (ffff8801f3a298d8): kobject_cleanup
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.821775] kobject: 'index3' (ffff8801f3a298d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.832537] kobject: 'index3' (ffff8801f3a298d8): auto cleanup 'remove' event
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.839762] kobject: 'index3' (ffff8801f3a298d8): kobject_uevent_env
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.846226] kobject: 'index3' (ffff8801f3a298d8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index3'
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.856769] kobject: 'index3' (ffff8801f3a298d8): auto cleanup kobject_del
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.864372] kobject: 'index3': free name
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.868397] kobject: 'cache' (ffff8801ee7c1e40): kobject_cleanup
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.874495] kobject: 'cache' (ffff8801ee7c1e40): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.885187] kobject: 'cache' (ffff8801ee7c1e40): auto cleanup 'remove' event
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.892336] kobject: 'cache' (ffff8801ee7c1e40): kobject_uevent_env
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.898704] kobject: 'cache' (ffff8801ee7c1e40): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache'
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.908564] kobject: 'cache' (ffff8801ee7c1e40): auto cleanup kobject_del
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.915902] kobject: 'cache': free name
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.919924] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_cleanup
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.926881] kobject: 'machinecheck10' (ffff8801f920cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.938348] kobject: 'machinecheck10' (ffff8801f920cff0): auto cleanup 'remove' event
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.946351] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_uevent_env
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.953503] kobject: 'machinecheck10' (ffff8801f920cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck10'
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.967865] kobject: 'machinecheck10' (ffff8801f920cff0): auto cleanup kobject_del
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.976026] kobject: 'machinecheck10': free name
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6602.984091] kobject: 'msr10' (ffff8801f3b1e810): kobject_uevent_env
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.051515] kobject: 'msr10' (ffff8801f3b1e810): fill_kobj_path: path = '/devices/virtual/msr/msr10'
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.146416] kobject: 'msr10' (ffff8801f3b1e810): kobject_cleanup
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.152536] kobject: 'msr10' (ffff8801f3b1e810): calling ktype release
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.159167] kobject: 'msr10': free name
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.284998] kobject: 'cpu10' (ffff8801f3b1e010): kobject_uevent_env
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.351479] kobject: 'cpu10' (ffff8801f3b1e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu10'
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.452925] kobject: 'cpu10' (ffff8801f3b1e010): kobject_cleanup
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.452928] kobject: 'cpu10' (ffff8801f3b1e010): calling ktype release
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.452932] kobject: 'cpu10': free name
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.470518] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.477402] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.484279] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.491174] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.498052] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.506282] PM: Basic memory bitmaps created
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.510644] PM: Syncing filesystems ... 
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.514454] kobject: 'cpu10' (ffff8801f920c338): kobject_uevent_env
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.575195] kobject: 'cpu10' (ffff8801f920c338): fill_kobj_path: path = '/devices/system/cpu/cpu10'
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.708025] kobject: 'cpufreq' (ffff8801f33d4ea8): kobject_cleanup
+Jun  9 11:30:22 istl-vmc-blade9 kernel: [ 6603.714324] kobject: 'cpufreq' (ffff8801f33d4ea8): auto cleanup 'remove' event
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6603.721716] kobject: 'cpufreq' (ffff8801f33d4ea8): kobject_uevent_env
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6603.841729] kobject: 'cpufreq' (ffff8801f33d4ea8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cpufreq'
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6603.945591] kobject: 'cpufreq' (ffff8801f33d4ea8): auto cleanup kobject_del
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.024478] kobject: 'cpufreq' (ffff8801f33d4ea8): calling ktype release
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.031275] kobject: 'cpufreq': free name
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.138764] CPU 11 is now offline
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.183213] kobject: 'index0' (ffff88046f714c00): kobject_cleanup
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.189474] kobject: 'index0' (ffff88046f714c00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.200234] kobject: 'index0' (ffff88046f714c00): auto cleanup 'remove' event
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.207471] kobject: 'index0' (ffff88046f714c00): kobject_uevent_env
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.213941] kobject: 'index0' (ffff88046f714c00): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index0'
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.234158] kobject: 'index0' (ffff88046f714c00): auto cleanup kobject_del
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.254120] kobject: 'index0': free name
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.258210] kobject: 'index1' (ffff88046f714c48): kobject_cleanup
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.264399] kobject: 'index1' (ffff88046f714c48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.275173] kobject: 'index1' (ffff88046f714c48): auto cleanup 'remove' event
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.282399] kobject: 'index1' (ffff88046f714c48): kobject_uevent_env
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.288859] kobject: 'index1' (ffff88046f714c48): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index1'
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.300732] kobject: 'index1' (ffff88046f714c48): auto cleanup kobject_del
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.314544] kobject: 'index1': free name
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.318649] kobject: 'index2' (ffff88046f714c90): kobject_cleanup
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.324873] kobject: 'index2' (ffff88046f714c90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.335643] kobject: 'index2' (ffff88046f714c90): auto cleanup 'remove' event
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.342871] kobject: 'index2' (ffff88046f714c90): kobject_uevent_env
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.349340] kobject: 'index2' (ffff88046f714c90): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index2'
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.359879] kobject: 'index2' (ffff88046f714c90): auto cleanup kobject_del
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.367079] kobject: 'index2': free name
+Jun  9 11:30:23 istl-vmc-blade9 kernel: [ 6604.371161] kobject: 'index3' (ffff88046f714cd8): kobject_cleanup
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.377355] kobject: 'index3' (ffff88046f714cd8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.383910] done.
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.383913] Freezing user space processes ... 
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.394453] kobject: 'index3' (ffff88046f714cd8): auto cleanup 'remove' event
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.401936] kobject: 'index3' (ffff88046f714cd8): kobject_uevent_env
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.408444] kobject: 'index3' (ffff88046f714cd8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index3'
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.418910] kobject: 'index3' (ffff88046f714cd8): auto cleanup kobject_del
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.425965] kobject: 'index3': free name
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.430029] kobject: 'cache' (ffff8804750053c0): kobject_cleanup
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.436173] kobject: 'cache' (ffff8804750053c0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.446895] kobject: 'cache' (ffff8804750053c0): auto cleanup 'remove' event
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.454066] kobject: 'cache' (ffff8804750053c0): kobject_uevent_env
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.460537] kobject: 'cache' (ffff8804750053c0): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache'
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.470286] kobject: 'cache' (ffff8804750053c0): auto cleanup kobject_del
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.477218] kobject: 'cache': free name
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.481156] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_cleanup
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.488025] kobject: 'machinecheck11' (ffff8801f940cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.499522] kobject: 'machinecheck11' (ffff8801f940cff0): auto cleanup 'remove' event
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.507553] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_uevent_env
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.514741] kobject: 'machinecheck11' (ffff8801f940cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck11'
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.526317] kobject: 'machinecheck11' (ffff8801f940cff0): auto cleanup kobject_del
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.534076] kobject: 'machinecheck11': free name
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.538967] kobject: 'msr11' (ffff88046c982010): kobject_uevent_env
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.545335] kobject: 'msr11' (ffff88046c982010): fill_kobj_path: path = '/devices/virtual/msr/msr11'
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.554716] kobject: 'msr11' (ffff88046c982010): kobject_cleanup
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.560804] kobject: 'msr11' (ffff88046c982010): calling ktype release
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.567409] kobject: 'msr11': free name
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.571511] kobject: 'cpu11' (ffff88046d77d010): kobject_uevent_env
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.577866] kobject: 'cpu11' (ffff88046d77d010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu11'
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.587374] kobject: 'cpu11' (ffff88046d77d010): kobject_cleanup
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.593461] kobject: 'cpu11' (ffff88046d77d010): calling ktype release
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.600066] kobject: 'cpu11': free name
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.604651] kobject: 'cpu11' (ffff8801f940c338): kobject_uevent_env
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.611012] kobject: 'cpu11' (ffff8801f940c338): fill_kobj_path: path = '/devices/system/cpu/cpu11'
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.626738] (elapsed 0.24 seconds) done.
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.630895] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:30:28 istl-vmc-blade9 kernel: [ 6604.649651] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6609.645966] Restarting tasks ... 
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6609.784721] kobject: 'cpufreq' (ffff88046dd62aa8): kobject_cleanup
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6609.791290] kobject: 'cpufreq' (ffff88046dd62aa8): auto cleanup 'remove' event
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6609.798673] kobject: 'cpufreq' (ffff88046dd62aa8): kobject_uevent_env
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6609.806598] done.
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6609.808747] PM: Basic memory bitmaps freed
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6609.848541] kobject: 'cpufreq' (ffff88046dd62aa8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cpufreq'
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6609.981348] kobject: 'cpufreq' (ffff88046dd62aa8): auto cleanup kobject_del
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.071111] kobject: 'cpufreq' (ffff88046dd62aa8): calling ktype release
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.077917] kobject: 'cpufreq': free name
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.177745] CPU 12 is now offline
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.241954] kobject: 'index0' (ffff8801f1e70600): kobject_cleanup
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.248203] kobject: 'index0' (ffff8801f1e70600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.258981] kobject: 'index0' (ffff8801f1e70600): auto cleanup 'remove' event
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.266199] kobject: 'index0' (ffff8801f1e70600): kobject_uevent_env
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.272663] kobject: 'index0' (ffff8801f1e70600): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index0'
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.411517] kobject: 'index0' (ffff8801f1e70600): auto cleanup kobject_del
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.494572] kobject: 'index0': free name
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.498614] kobject: 'index1' (ffff8801f1e70648): kobject_cleanup
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.504791] kobject: 'index1' (ffff8801f1e70648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.515558] kobject: 'index1' (ffff8801f1e70648): auto cleanup 'remove' event
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.522787] kobject: 'index1' (ffff8801f1e70648): kobject_uevent_env
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.529245] kobject: 'index1' (ffff8801f1e70648): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index1'
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.543341] kobject: 'index1' (ffff8801f1e70648): auto cleanup kobject_del
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.550365] kobject: 'index1': free name
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.554429] kobject: 'index2' (ffff8801f1e70690): kobject_cleanup
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.560612] kobject: 'index2' (ffff8801f1e70690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.571386] kobject: 'index2' (ffff8801f1e70690): auto cleanup 'remove' event
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.578613] kobject: 'index2' (ffff8801f1e70690): kobject_uevent_env
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.585068] kobject: 'index2' (ffff8801f1e70690): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index2'
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.595588] kobject: 'index2' (ffff8801f1e70690): auto cleanup kobject_del
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.602608] kobject: 'index2': free name
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.606625] kobject: 'index3' (ffff8801f1e706d8): kobject_cleanup
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.612809] kobject: 'index3' (ffff8801f1e706d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.623571] kobject: 'index3' (ffff8801f1e706d8): auto cleanup 'remove' event
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.630806] kobject: 'index3' (ffff8801f1e706d8): kobject_uevent_env
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.637274] kobject: 'index3' (ffff8801f1e706d8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index3'
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.647784] kobject: 'index3' (ffff8801f1e706d8): auto cleanup kobject_del
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.654777] kobject: 'index3': free name
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.658833] kobject: 'cache' (ffff8801f24811c0): kobject_cleanup
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.664931] kobject: 'cache' (ffff8801f24811c0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.675619] kobject: 'cache' (ffff8801f24811c0): auto cleanup 'remove' event
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.682754] kobject: 'cache' (ffff8801f24811c0): kobject_uevent_env
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.689141] kobject: 'cache' (ffff8801f24811c0): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache'
+Jun  9 11:30:29 istl-vmc-blade9 kernel: [ 6610.698956] kobject: 'cache' (ffff8801f24811c0): auto cleanup kobject_del
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.705841] kobject: 'cache': free name
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.709842] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_cleanup
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.716715] kobject: 'machinecheck12' (ffff88047ee0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.728182] kobject: 'machinecheck12' (ffff88047ee0cff0): auto cleanup 'remove' event
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.736175] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_uevent_env
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.747670] kobject: 'machinecheck12' (ffff88047ee0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck12'
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.760687] kobject: 'machinecheck12' (ffff88047ee0cff0): auto cleanup kobject_del
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.782028] kobject: 'machinecheck12': free name
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.789870] kobject: 'msr12' (ffff8801f3786810): kobject_uevent_env
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.807072] kobject: 'msr12' (ffff8801f3786810): fill_kobj_path: path = '/devices/virtual/msr/msr12'
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.972839] kobject: 'msr12' (ffff8801f3786810): kobject_cleanup
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.978944] kobject: 'msr12' (ffff8801f3786810): calling ktype release
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6610.985567] kobject: 'msr12': free name
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.000981] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.007861] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.014747] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.021626] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.028508] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.036723] PM: Basic memory bitmaps created
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.041086] PM: Syncing filesystems ... 
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.102642] kobject: 'cpu12' (ffff8801f3786010): kobject_uevent_env
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.193496] kobject: 'cpu12' (ffff8801f3786010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu12'
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.289354] kobject: 'cpu12' (ffff8801f3786010): kobject_cleanup
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.295513] kobject: 'cpu12' (ffff8801f3786010): calling ktype release
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.302128] kobject: 'cpu12': free name
+Jun  9 11:30:30 istl-vmc-blade9 kernel: [ 6611.403189] CPU 13 MCA banks CMCI:6 CMCI:8
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6611.472065] kobject: 'cpu12' (ffff88047ee0c338): kobject_uevent_env
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6611.476147] done.
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6611.476150] Freezing user space processes ... 
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6611.485535] kobject: 'cpu12' (ffff88047ee0c338): fill_kobj_path: path = '/devices/system/cpu/cpu12'
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6611.499228] (elapsed 0.02 seconds) done.
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6611.503334] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6611.522117] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6616.518399] Restarting tasks ... done.
+Jun  9 11:30:35 istl-vmc-blade9 kernel: [ 6616.635977] PM: Basic memory bitmaps freed
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6616.788017] kobject: 'cpufreq' (ffff88043703b2a8): kobject_cleanup
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6616.794293] kobject: 'cpufreq' (ffff88043703b2a8): auto cleanup 'remove' event
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6616.801692] kobject: 'cpufreq' (ffff88043703b2a8): kobject_uevent_env
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6616.808332] kobject: 'cpufreq' (ffff88043703b2a8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cpufreq'
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6616.945739] kobject: 'cpufreq' (ffff88043703b2a8): auto cleanup kobject_del
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.061262] kobject: 'cpufreq' (ffff88043703b2a8): calling ktype release
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.068129] kobject: 'cpufreq': free name
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.201285] CPU 13 is now offline
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.291183] kobject: 'index0' (ffff88043703ce00): kobject_cleanup
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.297457] kobject: 'index0' (ffff88043703ce00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.308253] kobject: 'index0' (ffff88043703ce00): auto cleanup 'remove' event
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.315498] kobject: 'index0' (ffff88043703ce00): kobject_uevent_env
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.322186] kobject: 'index0' (ffff88043703ce00): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index0'
+Jun  9 11:30:36 istl-vmc-blade9 kernel: [ 6617.549765] kobject: 'index0' (ffff88043703ce00): auto cleanup kobject_del
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.699538] kobject: 'index0': free name
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.703628] kobject: 'index1' (ffff88043703ce48): kobject_cleanup
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.709836] kobject: 'index1' (ffff88043703ce48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.720652] kobject: 'index1' (ffff88043703ce48): auto cleanup 'remove' event
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.727895] kobject: 'index1' (ffff88043703ce48): kobject_uevent_env
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.830328] kobject: 'index1' (ffff88043703ce48): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index1'
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.890413] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.897383] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.904291] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.911213] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.918156] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.926405] PM: Basic memory bitmaps created
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6617.930808] PM: Syncing filesystems ... 
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.123326] kobject: 'index1' (ffff88043703ce48): auto cleanup kobject_del
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.328560] kobject: 'index1': free name
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.332622] kobject: 'index2' (ffff88043703ce90): kobject_cleanup
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.338837] kobject: 'index2' (ffff88043703ce90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.349637] kobject: 'index2' (ffff88043703ce90): auto cleanup 'remove' event
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.356882] kobject: 'index2' (ffff88043703ce90): kobject_uevent_env
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.365953] kobject: 'index2' (ffff88043703ce90): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index2'
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.421966] kobject: 'index2' (ffff88043703ce90): auto cleanup kobject_del
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.468818] kobject: 'index2': free name
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.472917] kobject: 'index3' (ffff88043703ced8): kobject_cleanup
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.479129] kobject: 'index3' (ffff88043703ced8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.489919] kobject: 'index3' (ffff88043703ced8): auto cleanup 'remove' event
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.497163] kobject: 'index3' (ffff88043703ced8): kobject_uevent_env
+Jun  9 11:30:37 istl-vmc-blade9 kernel: [ 6618.531316] kobject: 'index3' (ffff88043703ced8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index3'
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.596155] done.
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.598177] Freezing user space processes ... 
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.604270] kobject: 'index3' (ffff88043703ced8): auto cleanup kobject_del
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.611614] kobject: 'index3': free name
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.615663] kobject: 'cache' (ffff8804605f23c0): kobject_cleanup
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.621783] kobject: 'cache' (ffff8804605f23c0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.632488] kobject: 'cache' (ffff8804605f23c0): auto cleanup 'remove' event
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.639616] kobject: 'cache' (ffff8804605f23c0): kobject_uevent_env
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.646011] kobject: 'cache' (ffff8804605f23c0): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache'
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.655810] kobject: 'cache' (ffff8804605f23c0): auto cleanup kobject_del
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.662718] kobject: 'cache': free name
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.666677] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_cleanup
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.673547] kobject: 'machinecheck13' (ffff88047f00cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.684999] kobject: 'machinecheck13' (ffff88047f00cff0): auto cleanup 'remove' event
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.692979] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_uevent_env
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.700106] kobject: 'machinecheck13' (ffff88047f00cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck13'
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.711699] kobject: 'machinecheck13' (ffff88047f00cff0): auto cleanup kobject_del
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.719435] kobject: 'machinecheck13': free name
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.724336] kobject: 'msr13' (ffff880460670010): kobject_uevent_env
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.730691] kobject: 'msr13' (ffff880460670010): fill_kobj_path: path = '/devices/virtual/msr/msr13'
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.739993] kobject: 'msr13' (ffff880460670010): kobject_cleanup
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.746126] kobject: 'msr13' (ffff880460670010): calling ktype release
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.752738] kobject: 'msr13': free name
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.756795] kobject: 'cpu13' (ffff880460764010): kobject_uevent_env
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.763149] kobject: 'cpu13' (ffff880460764010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu13'
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.772662] kobject: 'cpu13' (ffff880460764010): kobject_cleanup
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.778754] kobject: 'cpu13' (ffff880460764010): calling ktype release
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.785357] kobject: 'cpu13': free name
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.789673] CPU 14 MCA banks CMCI:6 CMCI:8
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.794040] kobject: 'cpu13' (ffff88047f00c338): kobject_uevent_env
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.800406] kobject: 'cpu13' (ffff88047f00c338): fill_kobj_path: path = '/devices/system/cpu/cpu13'
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.818163] (elapsed 0.21 seconds) done.
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.822271] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6618.840888] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6623.837257] Restarting tasks ... done.
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6623.953776] PM: Basic memory bitmaps freed
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6624.152775] kobject: 'cpufreq' (ffff88046c3ff0a8): kobject_cleanup
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6624.159120] kobject: 'cpufreq' (ffff88046c3ff0a8): auto cleanup 'remove' event
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6624.166529] kobject: 'cpufreq' (ffff88046c3ff0a8): kobject_uevent_env
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6624.273481] kobject: 'cpufreq' (ffff88046c3ff0a8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cpufreq'
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6624.483172] kobject: 'cpufreq' (ffff88046c3ff0a8): auto cleanup kobject_del
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6624.651919] kobject: 'cpufreq' (ffff88046c3ff0a8): calling ktype release
+Jun  9 11:30:43 istl-vmc-blade9 kernel: [ 6624.658761] kobject: 'cpufreq': free name
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6624.816666] CPU 14 is now offline
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6624.939493] kobject: 'index0' (ffff8801e98b1a00): kobject_cleanup
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6624.945722] kobject: 'index0' (ffff8801e98b1a00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6624.956523] kobject: 'index0' (ffff8801e98b1a00): auto cleanup 'remove' event
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6624.963824] kobject: 'index0' (ffff8801e98b1a00): kobject_uevent_env
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6624.973230] kobject: 'index0' (ffff8801e98b1a00): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index0'
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.269270] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.276238] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.283153] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.290065] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.296973] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.305223] PM: Basic memory bitmaps created
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.309616] PM: Syncing filesystems ... 
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.391778] kobject: 'index0' (ffff8801e98b1a00): auto cleanup kobject_del
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.639384] kobject: 'index0': free name
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.643411] kobject: 'index1' (ffff8801e98b1a48): kobject_cleanup
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.649657] kobject: 'index1' (ffff8801e98b1a48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.660416] kobject: 'index1' (ffff8801e98b1a48): auto cleanup 'remove' event
+Jun  9 11:30:44 istl-vmc-blade9 kernel: [ 6625.667671] kobject: 'index1' (ffff8801e98b1a48): kobject_uevent_env
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.674481] kobject: 'index1' (ffff8801e98b1a48): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index1'
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.685011] kobject: 'index1' (ffff8801e98b1a48): auto cleanup kobject_del
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.692125] kobject: 'index1': free name
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.696179] kobject: 'index2' (ffff8801e98b1a90): kobject_cleanup
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.702401] kobject: 'index2' (ffff8801e98b1a90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.713183] kobject: 'index2' (ffff8801e98b1a90): auto cleanup 'remove' event
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.720434] kobject: 'index2' (ffff8801e98b1a90): kobject_uevent_env
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.727104] kobject: 'index2' (ffff8801e98b1a90): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index2'
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.737651] kobject: 'index2' (ffff8801e98b1a90): auto cleanup kobject_del
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.744728] kobject: 'index2': free name
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.748795] kobject: 'index3' (ffff8801e98b1ad8): kobject_cleanup
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.755010] kobject: 'index3' (ffff8801e98b1ad8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.765799] kobject: 'index3' (ffff8801e98b1ad8): auto cleanup 'remove' event
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.773054] kobject: 'index3' (ffff8801e98b1ad8): kobject_uevent_env
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.779807] kobject: 'index3' (ffff8801e98b1ad8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index3'
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.790361] kobject: 'index3' (ffff8801e98b1ad8): auto cleanup kobject_del
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.801433] kobject: 'index3': free name
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.805524] kobject: 'cache' (ffff8801ee7c1a00): kobject_cleanup
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.811674] kobject: 'cache' (ffff8801ee7c1a00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.822379] kobject: 'cache' (ffff8801ee7c1a00): auto cleanup 'remove' event
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.829546] kobject: 'cache' (ffff8801ee7c1a00): kobject_uevent_env
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.836361] kobject: 'cache' (ffff8801ee7c1a00): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache'
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.852856] kobject: 'cache' (ffff8801ee7c1a00): auto cleanup kobject_del
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.862784] kobject: 'cache': free name
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.868597] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_cleanup
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.875518] kobject: 'machinecheck14' (ffff88047f20cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.887019] kobject: 'machinecheck14' (ffff88047f20cff0): auto cleanup 'remove' event
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.895022] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_uevent_env
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.910973] kobject: 'machinecheck14' (ffff88047f20cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck14'
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.934940] kobject: 'machinecheck14' (ffff88047f20cff0): auto cleanup kobject_del
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.950911] kobject: 'machinecheck14': free name
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.960966] kobject: 'msr14' (ffff8801f0272010): kobject_uevent_env
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.977899] kobject: 'msr14' (ffff8801f0272010): fill_kobj_path: path = '/devices/virtual/msr/msr14'
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6625.996869] kobject: 'msr14' (ffff8801f0272010): kobject_cleanup
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6626.003014] kobject: 'msr14' (ffff8801f0272010): calling ktype release
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6626.009652] kobject: 'msr14': free name
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6626.026265] kobject: 'cpu14' (ffff8801f3239010): kobject_uevent_env
+Jun  9 11:30:45 istl-vmc-blade9 kernel: [ 6626.104668] kobject: 'cpu14' (ffff8801f3239010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu14'
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.310468] done.
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.312488] Freezing user space processes ... 
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.318686] kobject: 'cpu14' (ffff8801f3239010): kobject_cleanup
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.325084] kobject: 'cpu14' (ffff8801f3239010): calling ktype release
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.331730] kobject: 'cpu14': free name
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.336004] CPU 15 MCA banks CMCI:6 CMCI:8
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.340296] kobject: 'cpu14' (ffff88047f20c338): kobject_uevent_env
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.346854] kobject: 'cpu14' (ffff88047f20c338): fill_kobj_path: path = '/devices/system/cpu/cpu14'
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.357542] (elapsed 0.04 seconds) done.
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.361585] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6626.380394] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6631.376738] Restarting tasks ... done.
+Jun  9 11:30:50 istl-vmc-blade9 kernel: [ 6631.652999] PM: Basic memory bitmaps freed
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6631.669252] kobject: 'cpufreq' (ffff8804606e64a8): kobject_cleanup
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6631.675562] kobject: 'cpufreq' (ffff8804606e64a8): auto cleanup 'remove' event
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6631.682935] kobject: 'cpufreq' (ffff8804606e64a8): kobject_uevent_env
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6631.899806] kobject: 'cpufreq' (ffff8804606e64a8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cpufreq'
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6632.251285] kobject: 'cpufreq' (ffff8804606e64a8): auto cleanup kobject_del
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6632.258537] kobject: 'cpufreq' (ffff8804606e64a8): calling ktype release
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6632.265364] kobject: 'cpufreq': free name
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6632.531275] CPU 15 is now offline
+Jun  9 11:30:51 istl-vmc-blade9 kernel: [ 6632.534713] lockdep: fixing up alternatives.
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6632.818454] SMP alternatives: switching to UP code
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.563539] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.570451] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.577353] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.584256] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.591157] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.599395] PM: Basic memory bitmaps created
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.603781] PM: Syncing filesystems ... 
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.611211] kobject: 'index0' (ffff88046c030000): kobject_cleanup
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.617884] kobject: 'index0' (ffff88046c030000): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.628669] kobject: 'index0' (ffff88046c030000): auto cleanup 'remove' event
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.635910] kobject: 'index0' (ffff88046c030000): kobject_uevent_env
+Jun  9 11:30:52 istl-vmc-blade9 kernel: [ 6633.642390] kobject: 'index0' (ffff88046c030000): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index0'
+Jun  9 11:30:53 istl-vmc-blade9 kernel: [ 6634.429964] kobject: 'index0' (ffff88046c030000): auto cleanup kobject_del
+Jun  9 11:30:53 istl-vmc-blade9 kernel: [ 6634.437131] kobject: 'index0': free name
+Jun  9 11:30:53 istl-vmc-blade9 kernel: [ 6634.441147] kobject: 'index1' (ffff88046c030048): kobject_cleanup
+Jun  9 11:30:53 istl-vmc-blade9 kernel: [ 6634.447315] kobject: 'index1' (ffff88046c030048): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:30:53 istl-vmc-blade9 kernel: [ 6634.458088] kobject: 'index1' (ffff88046c030048): auto cleanup 'remove' event
+Jun  9 11:30:53 istl-vmc-blade9 kernel: [ 6634.465298] kobject: 'index1' (ffff88046c030048): kobject_uevent_env
+Jun  9 11:30:54 istl-vmc-blade9 kernel: [ 6634.790381] kobject: 'index1' (ffff88046c030048): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index1'
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.393919] done.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.395975] Freezing user space processes ... 
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.402782] kobject: 'index1' (ffff88046c030048): auto cleanup kobject_del
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.410078] kobject: 'index1': free name
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.414159] kobject: 'index2' (ffff88046c030090): kobject_cleanup
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.420359] kobject: 'index2' (ffff88046c030090): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.431140] kobject: 'index2' (ffff88046c030090): auto cleanup 'remove' event
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.438383] kobject: 'index2' (ffff88046c030090): kobject_uevent_env
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.444959] kobject: 'index2' (ffff88046c030090): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index2'
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.455555] kobject: 'index2' (ffff88046c030090): auto cleanup kobject_del
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.462576] kobject: 'index2': free name
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.466615] kobject: 'index3' (ffff88046c0300d8): kobject_cleanup
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.472821] kobject: 'index3' (ffff88046c0300d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.483606] kobject: 'index3' (ffff88046c0300d8): auto cleanup 'remove' event
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.490845] kobject: 'index3' (ffff88046c0300d8): kobject_uevent_env
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.497445] kobject: 'index3' (ffff88046c0300d8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index3'
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.507917] kobject: 'index3' (ffff88046c0300d8): auto cleanup kobject_del
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.515039] kobject: 'index3': free name
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.519108] kobject: 'cache' (ffff8804693e5c40): kobject_cleanup
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.525224] kobject: 'cache' (ffff8804693e5c40): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.535947] kobject: 'cache' (ffff8804693e5c40): auto cleanup 'remove' event
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.543109] kobject: 'cache' (ffff8804693e5c40): kobject_uevent_env
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.549595] kobject: 'cache' (ffff8804693e5c40): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache'
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.559374] kobject: 'cache' (ffff8804693e5c40): auto cleanup kobject_del
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.566345] kobject: 'cache': free name
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.570292] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_cleanup
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.577156] kobject: 'machinecheck15' (ffff88047f40cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.588610] kobject: 'machinecheck15' (ffff88047f40cff0): auto cleanup 'remove' event
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.596579] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_uevent_env
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.603819] kobject: 'machinecheck15' (ffff88047f40cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck15'
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.615456] kobject: 'machinecheck15' (ffff88047f40cff0): auto cleanup kobject_del
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.623174] kobject: 'machinecheck15': free name
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.628054] kobject: 'msr15' (ffff880469082010): kobject_uevent_env
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.634426] kobject: 'msr15' (ffff880469082010): fill_kobj_path: path = '/devices/virtual/msr/msr15'
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.643865] kobject: 'msr15' (ffff880469082010): kobject_cleanup
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.650008] kobject: 'msr15' (ffff880469082010): calling ktype release
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.656646] kobject: 'msr15': free name
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.660753] kobject: 'cpu15' (ffff8804373e5810): kobject_uevent_env
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.667152] kobject: 'cpu15' (ffff8804373e5810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu15'
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.676781] kobject: 'cpu15' (ffff8804373e5810): kobject_cleanup
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.682928] kobject: 'cpu15' (ffff8804373e5810): calling ktype release
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.689538] kobject: 'cpu15': free name
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.693719] kobject: 'cpu15' (ffff88047f40c338): kobject_uevent_env
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.700093] kobject: 'cpu15' (ffff88047f40c338): fill_kobj_path: path = '/devices/system/cpu/cpu15'
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.720260] (elapsed 0.32 seconds) done.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.724302] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6635.742944] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6640.739090] Restarting tasks ... done.
+Jun  9 11:31:00 istl-vmc-blade9 kernel: [ 6641.291198] PM: Basic memory bitmaps freed
+Jun  9 11:31:01 istl-vmc-blade9 kernel: [ 6641.904510] kobject: 'msr1' (ffff8801e9aad810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:01 istl-vmc-blade9 kernel: [ 6642.203930] kobject: 'msr1' (ffff8801e9aad810): kobject_uevent_env
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6642.649534] kobject: 'msr1' (ffff8801e9aad810): fill_kobj_path: path = '/devices/virtual/msr/msr1'
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6642.980954] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6642.987896] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6642.994800] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6643.001700] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6643.008602] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6643.016838] PM: Basic memory bitmaps created
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6643.021224] PM: Syncing filesystems ... 
+Jun  9 11:31:02 istl-vmc-blade9 kernel: [ 6643.392222] kobject: 'cpu1' (ffff8801e9a5c010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:03 istl-vmc-blade9 kernel: [ 6644.164081] kobject: 'cpu1' (ffff8801e9a5c010): kobject_uevent_env
+Jun  9 11:31:04 istl-vmc-blade9 kernel: [ 6644.673256] kobject: 'cpu1' (ffff8801e9a5c010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu1'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.708206] done.
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.710296] Freezing user space processes ... lockdep: fixing up alternatives.
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.720320] SMP alternatives: switching to SMP code
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.730285] Booting Node 0 Processor 1 APIC 0x2
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.734930] smpboot cpu 1: start_ip = 97000
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.750335] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.778141] Switched to NOHz mode on CPU #1
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.782723] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.788609] kobject: 'cache' (ffff8801f2479200): kobject_add_internal: parent: 'cpu1', set: '<NULL>'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.797935] kobject: 'index0' (ffff8801f1475c00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.807476] kobject: 'index0' (ffff8801f1475c00): kobject_uevent_env
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.813967] kobject: 'index0' (ffff8801f1475c00): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index0'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.824301] kobject: 'index1' (ffff8801f1475c48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.833779] kobject: 'index1' (ffff8801f1475c48): kobject_uevent_env
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.840214] kobject: 'index1' (ffff8801f1475c48): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index1'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.850551] kobject: 'index2' (ffff8801f1475c90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.860025] kobject: 'index2' (ffff8801f1475c90): kobject_uevent_env
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.866462] kobject: 'index2' (ffff8801f1475c90): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index2'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.876792] kobject: 'index3' (ffff8801f1475cd8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.886258] kobject: 'index3' (ffff8801f1475cd8): kobject_uevent_env
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.892695] kobject: 'index3' (ffff8801f1475cd8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index3'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.903030] kobject: 'cache' (ffff8801f2479200): kobject_uevent_env
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.909377] kobject: 'cache' (ffff8801f2479200): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.919016] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.930209] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_uevent_env
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.937254] kobject: 'machinecheck1' (ffff8801f880cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck1'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.948802] microcode: CPU1 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.954761] ------------[ cut here ]------------
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.959463] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.967789] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6644.973180] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.026320] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.033868] Call Trace:
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.036396]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.042488]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.048402]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.054396]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.060144]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.067273]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.074315]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.081096]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.087097]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.093530]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.098925]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.103972]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.108846]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.114239]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.119634]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.125456]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.130674]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.135805]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.141891] ---[ end trace cff32f63e15cd49f ]---
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.146590] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.154329] kobject: 'cpufreq' (ffff8801f4b7fca8): kobject_add_internal: parent: 'cpu1', set: '<NULL>'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.163805] kobject: 'cpufreq' (ffff8801f4b7fca8): kobject_uevent_env
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.170330] kobject: 'cpufreq' (ffff8801f4b7fca8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cpufreq'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.180366] kobject: 'cpu1' (ffff8801f880c338): kobject_uevent_env
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.186635] kobject: 'cpu1' (ffff8801f880c338): fill_kobj_path: path = '/devices/system/cpu/cpu1'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.206665] (elapsed 0.49 seconds) done.
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.210708] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6645.229458] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6650.226218] Restarting tasks ... 
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6650.547289] kobject: 'msr2' (ffff8801f2510810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6650.595875] done.
+Jun  9 11:31:09 istl-vmc-blade9 kernel: [ 6650.597950] PM: Basic memory bitmaps freed
+Jun  9 11:31:10 istl-vmc-blade9 kernel: [ 6650.851813] kobject: 'msr2' (ffff8801f2510810): kobject_uevent_env
+Jun  9 11:31:10 istl-vmc-blade9 kernel: [ 6651.078718] kobject: 'msr2' (ffff8801f2510810): fill_kobj_path: path = '/devices/virtual/msr/msr2'
+Jun  9 11:31:10 istl-vmc-blade9 kernel: [ 6651.413539] kobject: 'cpu2' (ffff8801f144c810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6651.773103] kobject: 'cpu2' (ffff8801f144c810): kobject_uevent_env
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.039986] kobject: 'cpu2' (ffff8801f144c810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu2'
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.076180] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.083107] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.090078] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.097000] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.103947] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.112202] PM: Basic memory bitmaps created
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.116600] PM: Syncing filesystems ... lockdep: fixing up alternatives.
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.540263] Booting Node 0 Processor 2 APIC 0x12
+Jun  9 11:31:11 istl-vmc-blade9 kernel: [ 6652.544986] smpboot cpu 2: start_ip = 97000
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.560360] Calibrating delay loop (skipped) already calibrated this CPUdone.
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.738630] Freezing user space processes ... 
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.770420] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.770911] Switched to NOHz mode on CPU #2
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.780903] kobject: 'cache' (ffff8801ee5f5f40): kobject_add_internal: parent: 'cpu2', set: '<NULL>'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.790215] kobject: 'index0' (ffff8801f47d0000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.799710] kobject: 'index0' (ffff8801f47d0000): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.806150] kobject: 'index0' (ffff8801f47d0000): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index0'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.816486] kobject: 'index1' (ffff8801f47d0048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.825951] kobject: 'index1' (ffff8801f47d0048): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.832385] kobject: 'index1' (ffff8801f47d0048): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index1'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.842708] kobject: 'index2' (ffff8801f47d0090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.852167] kobject: 'index2' (ffff8801f47d0090): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.858598] kobject: 'index2' (ffff8801f47d0090): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index2'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.868923] kobject: 'index3' (ffff8801f47d00d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.878384] kobject: 'index3' (ffff8801f47d00d8): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.884819] kobject: 'index3' (ffff8801f47d00d8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index3'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.895137] kobject: 'cache' (ffff8801ee5f5f40): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.901511] kobject: 'cache' (ffff8801ee5f5f40): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.911145] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.922334] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.929374] kobject: 'machinecheck2' (ffff8801f8a0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck2'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.940900] microcode: CPU2 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.946812] ------------[ cut here ]------------
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.951517] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.959844] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6652.965235] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.018365] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.025913] Call Trace:
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.028444]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.034535]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.040451]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.046446]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.052187]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.059313]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.066355]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.073138]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.079135]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.085568]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.090961]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.096007]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.100881]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.106281]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.111674]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.117495]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.122714]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.127847]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.133934] ---[ end trace cff32f63e15cd4a0 ]---
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.138636] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.146416] kobject: 'cpufreq' (ffff8801f457a4a8): kobject_add_internal: parent: 'cpu2', set: '<NULL>'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.155896] kobject: 'cpufreq' (ffff8801f457a4a8): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.162476] kobject: 'cpufreq' (ffff8801f457a4a8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cpufreq'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.172501] kobject: 'cpu2' (ffff8801f8a0c338): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.178765] kobject: 'cpu2' (ffff8801f8a0c338): fill_kobj_path: path = '/devices/system/cpu/cpu2'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.190462] (elapsed 0.44 seconds) done.
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.194507] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6653.213245] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6658.209371] Restarting tasks ... 
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6658.264482] kobject: 'msr3' (ffff8801f3559010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6658.402321] kobject: 'msr3' (ffff8801f3559010): kobject_uevent_env
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6658.449179] done.
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6658.451254] PM: Basic memory bitmaps freed
+Jun  9 11:31:17 istl-vmc-blade9 kernel: [ 6658.551068] kobject: 'msr3' (ffff8801f3559010): fill_kobj_path: path = '/devices/virtual/msr/msr3'
+Jun  9 11:31:18 istl-vmc-blade9 kernel: [ 6658.780913] kobject: 'cpu3' (ffff8801e9777010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:18 istl-vmc-blade9 kernel: [ 6658.978284] kobject: 'cpu3' (ffff8801e9777010): kobject_uevent_env
+Jun  9 11:31:18 istl-vmc-blade9 kernel: [ 6659.114166] kobject: 'cpu3' (ffff8801e9777010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu3'
+Jun  9 11:31:18 istl-vmc-blade9 kernel: [ 6659.341199] lockdep: fixing up alternatives.
+Jun  9 11:31:18 istl-vmc-blade9 kernel: [ 6659.347033] Booting Node 0 Processor 3 APIC 0x14
+Jun  9 11:31:18 istl-vmc-blade9 kernel: [ 6659.351792] smpboot cpu 3: start_ip = 97000
+Jun  9 11:31:18 istl-vmc-blade9 kernel: [ 6659.367164] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:31:18 istl-vmc-blade9 kernel: [ 6659.508609] Switched to NOHz mode on CPU #3
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6659.629600] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6659.636529] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6659.643412] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6659.650285] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6659.657161] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6659.665372] PM: Basic memory bitmaps created
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6659.669726] PM: Syncing filesystems ... 
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6660.070700] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6660.205517] kobject: 'cache' (ffff8801f1f3b640): kobject_add_internal: parent: 'cpu3', set: '<NULL>'
+Jun  9 11:31:19 istl-vmc-blade9 kernel: [ 6660.342287] done.
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.344309] Freezing user space processes ... 
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.349701] kobject: 'index0' (ffff8801f47cf600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.359452] kobject: 'index0' (ffff8801f47cf600): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.365936] kobject: 'index0' (ffff8801f47cf600): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index0'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.376276] kobject: 'index1' (ffff8801f47cf648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.385782] kobject: 'index1' (ffff8801f47cf648): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.392255] kobject: 'index1' (ffff8801f47cf648): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index1'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.402614] kobject: 'index2' (ffff8801f47cf690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.412084] kobject: 'index2' (ffff8801f47cf690): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.418524] kobject: 'index2' (ffff8801f47cf690): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index2'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.428858] kobject: 'index3' (ffff8801f47cf6d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.438328] kobject: 'index3' (ffff8801f47cf6d8): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.444764] kobject: 'index3' (ffff8801f47cf6d8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index3'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.455093] kobject: 'cache' (ffff8801f1f3b640): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.461444] kobject: 'cache' (ffff8801f1f3b640): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.471087] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.482299] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.489341] kobject: 'machinecheck3' (ffff8801f8c0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck3'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.500953] microcode: CPU3 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.506927] ------------[ cut here ]------------
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.511630] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.519953] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.525342] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.578475] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.586018] Call Trace:
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.588552]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.594638]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.600551]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.606553]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.612291]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.619417]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.626452]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.633235]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.639234]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.645667]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.651063]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.656106]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.660979]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.666371]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.671770]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.677595]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.682815]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.687947]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.694032] ---[ end trace cff32f63e15cd4a1 ]---
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.698732] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.706473] kobject: 'cpufreq' (ffff8801f15514a8): kobject_add_internal: parent: 'cpu3', set: '<NULL>'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.715950] kobject: 'cpufreq' (ffff8801f15514a8): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.722522] kobject: 'cpufreq' (ffff8801f15514a8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cpufreq'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.732516] kobject: 'cpu3' (ffff8801f8c0c338): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.738783] kobject: 'cpu3' (ffff8801f8c0c338): fill_kobj_path: path = '/devices/system/cpu/cpu3'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.758896] (elapsed 0.41 seconds) done.
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.762936] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6660.781683] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6665.777885] Restarting tasks ... 
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6665.834937] kobject: 'msr4' (ffff8801f29de810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6665.891915] kobject: 'msr4' (ffff8801f29de810): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6665.952702] kobject: 'msr4' (ffff8801f29de810): fill_kobj_path: path = '/devices/virtual/msr/msr4'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6666.051777] kobject: 'cpu4' (ffff8801f1d0c810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6666.135417] done.
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6666.137551] PM: Basic memory bitmaps freed
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6666.152407] kobject: 'cpu4' (ffff8801f1d0c810): kobject_uevent_env
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6666.282245] kobject: 'cpu4' (ffff8801f1d0c810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu4'
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6666.480282] lockdep: fixing up alternatives.
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6666.558434] Booting Node 1 Processor 4 APIC 0x20
+Jun  9 11:31:25 istl-vmc-blade9 kernel: [ 6666.563156] smpboot cpu 4: start_ip = 97000
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6666.578540] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6666.672664] Switched to NOHz mode on CPU #4
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6666.912586] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6666.999059] kobject: 'cache' (ffff8801f2b2b800): kobject_add_internal: parent: 'cpu4', set: '<NULL>'
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.137950] kobject: 'index0' (ffff8801f4427600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.256720] kobject: 'index0' (ffff8801f4427600): kobject_uevent_env
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.323607] kobject: 'index0' (ffff8801f4427600): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index0'
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.463422] kobject: 'index1' (ffff8801f4427648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.483268] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.490248] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.497132] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.504018] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.510895] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.519108] PM: Basic memory bitmaps created
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.523467] PM: Syncing filesystems ... 
+Jun  9 11:31:26 istl-vmc-blade9 kernel: [ 6667.590211] kobject: 'index1' (ffff8801f4427648): kobject_uevent_env
+Jun  9 11:31:27 istl-vmc-blade9 kernel: [ 6667.685055] kobject: 'index1' (ffff8801f4427648): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index1'
+Jun  9 11:31:27 istl-vmc-blade9 kernel: [ 6667.772935] kobject: 'index2' (ffff8801f4427690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:27 istl-vmc-blade9 kernel: [ 6667.889748] done.
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.891855] Freezing user space processes ... 
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.897346] kobject: 'index2' (ffff8801f4427690): kobject_uevent_env
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.904062] kobject: 'index2' (ffff8801f4427690): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index2'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.914399] kobject: 'index3' (ffff8801f44276d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.923899] kobject: 'index3' (ffff8801f44276d8): kobject_uevent_env
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.930387] kobject: 'index3' (ffff8801f44276d8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index3'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.940791] kobject: 'cache' (ffff8801f2b2b800): kobject_uevent_env
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.947140] kobject: 'cache' (ffff8801f2b2b800): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.956815] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.968005] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_uevent_env
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.975082] kobject: 'machinecheck4' (ffff88047e60cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck4'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.986687] microcode: CPU4 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.992678] ------------[ cut here ]------------
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6667.997414] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.005772] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.011197] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.064760] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.072348] Call Trace:
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.074886]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.081006]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.086952]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.092983]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.098760]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.105885]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.112969]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.119750]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.125787]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.132258]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.137687]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.142771]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.147673]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.153104]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.158533]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.164397]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.169654]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.174823]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.180941] ---[ end trace cff32f63e15cd4a2 ]---
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.185679] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.193526] kobject: 'cpufreq' (ffff88046cb430a8): kobject_add_internal: parent: 'cpu4', set: '<NULL>'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.203087] kobject: 'cpufreq' (ffff88046cb430a8): kobject_uevent_env
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.209627] kobject: 'cpufreq' (ffff88046cb430a8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cpufreq'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.219622] kobject: 'cpu4' (ffff88047e60c338): kobject_uevent_env
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.225881] kobject: 'cpu4' (ffff88047e60c338): fill_kobj_path: path = '/devices/system/cpu/cpu4'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.237454] (elapsed 0.34 seconds) done.
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.241499] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6668.260236] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6673.256539] Restarting tasks ... 
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6673.321454] kobject: 'msr5' (ffff88046d289010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6673.384194] done.
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6673.386306] PM: Basic memory bitmaps freed
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6673.420948] kobject: 'msr5' (ffff88046d289010): kobject_uevent_env
+Jun  9 11:31:32 istl-vmc-blade9 kernel: [ 6673.503788] kobject: 'msr5' (ffff88046d289010): fill_kobj_path: path = '/devices/virtual/msr/msr5'
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6673.639517] kobject: 'cpu5' (ffff88046ce80810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6673.785447] kobject: 'cpu5' (ffff88046ce80810): kobject_uevent_env
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6673.889690] kobject: 'cpu5' (ffff88046ce80810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu5'
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6674.034667] lockdep: fixing up alternatives.
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6674.057317] Booting Node 1 Processor 5 APIC 0x22
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6674.062028] smpboot cpu 5: start_ip = 97000
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6674.077408] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6674.167182] Switched to NOHz mode on CPU #5
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6674.443120] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:31:33 istl-vmc-blade9 kernel: [ 6674.501797] kobject: 'cache' (ffff88046c9b4800): kobject_add_internal: parent: 'cpu5', set: '<NULL>'
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.607491] kobject: 'index0' (ffff88046edca600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.642732] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.649717] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.656599] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.663490] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.670388] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.678675] PM: Basic memory bitmaps created
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.683035] PM: Syncing filesystems ... 
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.748948] kobject: 'index0' (ffff88046edca600): kobject_uevent_env
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.842113] kobject: 'index0' (ffff88046edca600): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index0'
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6674.980941] kobject: 'index1' (ffff88046edca648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:34 istl-vmc-blade9 kernel: [ 6675.064779] done.
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.066869] Freezing user space processes ... 
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.072682] kobject: 'index1' (ffff88046edca648): kobject_uevent_env
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.079398] kobject: 'index1' (ffff88046edca648): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index1'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.089732] kobject: 'index2' (ffff88046edca690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.099195] kobject: 'index2' (ffff88046edca690): kobject_uevent_env
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.105629] kobject: 'index2' (ffff88046edca690): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index2'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.115961] kobject: 'index3' (ffff88046edca6d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.125466] kobject: 'index3' (ffff88046edca6d8): kobject_uevent_env
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.131906] kobject: 'index3' (ffff88046edca6d8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index3'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.142295] kobject: 'cache' (ffff88046c9b4800): kobject_uevent_env
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.148640] kobject: 'cache' (ffff88046c9b4800): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.158279] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.169474] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_uevent_env
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.176558] kobject: 'machinecheck5' (ffff88047e80cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck5'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.188079] microcode: CPU5 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.193998] ------------[ cut here ]------------
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.198699] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.207028] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.212421] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.265608] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.273154] Call Trace:
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.275691]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.281780]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.287695]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.293708]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.299448]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.306579]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.313663]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.320473]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.326476]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.332912]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.338310]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.343357]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.348233]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.353629]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.359025]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.364850]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.370068]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.375202]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.381297] ---[ end trace cff32f63e15cd4a3 ]---
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.385996] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.393744] kobject: 'cpufreq' (ffff88046dc202a8): kobject_add_internal: parent: 'cpu5', set: '<NULL>'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.403265] kobject: 'cpufreq' (ffff88046dc202a8): kobject_uevent_env
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.409844] kobject: 'cpufreq' (ffff88046dc202a8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cpufreq'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.419847] kobject: 'cpu5' (ffff88047e80c338): kobject_uevent_env
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.426120] kobject: 'cpu5' (ffff88047e80c338): fill_kobj_path: path = '/devices/system/cpu/cpu5'
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.435464] (elapsed 0.36 seconds) done.
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.439510] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:31:39 istl-vmc-blade9 kernel: [ 6675.458228] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6680.454551] Restarting tasks ... done.
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6680.627046] PM: Basic memory bitmaps freed
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6680.647270] kobject: 'msr6' (ffff88046eede810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6680.732149] kobject: 'msr6' (ffff88046eede810): kobject_uevent_env
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6680.783019] kobject: 'msr6' (ffff88046eede810): fill_kobj_path: path = '/devices/virtual/msr/msr6'
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6680.886899] kobject: 'cpu6' (ffff880437140010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6681.026672] kobject: 'cpu6' (ffff880437140010): kobject_uevent_env
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6681.113513] kobject: 'cpu6' (ffff880437140010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu6'
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6681.229386] lockdep: fixing up alternatives.
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6681.257484] Booting Node 1 Processor 6 APIC 0x32
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6681.262195] smpboot cpu 6: start_ip = 97000
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6681.277591] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6681.344204] Switched to NOHz mode on CPU #6
+Jun  9 11:31:40 istl-vmc-blade9 kernel: [ 6681.562191] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.638842] kobject: 'cache' (ffff8804692d5cc0): kobject_add_internal: parent: 'cpu6', set: '<NULL>'
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.751545] kobject: 'index0' (ffff88046c0aa200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.786548] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.793436] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.800316] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.807187] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.814068] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.822288] PM: Basic memory bitmaps created
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.826646] PM: Syncing filesystems ... 
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.845320] kobject: 'index0' (ffff88046c0aa200): kobject_uevent_env
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6681.915302] kobject: 'index0' (ffff88046c0aa200): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index0'
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6682.026169] kobject: 'index1' (ffff88046c0aa248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:41 istl-vmc-blade9 kernel: [ 6682.132791] kobject: 'index1' (ffff88046c0aa248): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.206624] kobject: 'index1' (ffff88046c0aa248): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index1'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.206836] done.
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.206838] Freezing user space processes ... 
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.223470] kobject: 'index2' (ffff88046c0aa290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.233262] kobject: 'index2' (ffff88046c0aa290): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.239709] kobject: 'index2' (ffff88046c0aa290): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index2'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.250040] kobject: 'index3' (ffff88046c0aa2d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.259556] kobject: 'index3' (ffff88046c0aa2d8): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.265998] kobject: 'index3' (ffff88046c0aa2d8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index3'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.276390] kobject: 'cache' (ffff8804692d5cc0): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.282740] kobject: 'cache' (ffff8804692d5cc0): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.292375] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.303618] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.310663] kobject: 'machinecheck6' (ffff88047ea0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck6'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.322272] microcode: CPU6 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.328196] ------------[ cut here ]------------
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.332951] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.341273] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.346667] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.399768] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.407310] Call Trace:
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.409843]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.415927]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.421840]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.427837]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.433580]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.440706]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.447746]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.454524]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.460523]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.466952]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.472348]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.477394]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.482269]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.487661]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.493049]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.498876]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.504095]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.509225]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.515308] ---[ end trace cff32f63e15cd4a4 ]---
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.520007] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.527752] kobject: 'cpufreq' (ffff88046c25aaa8): kobject_add_internal: parent: 'cpu6', set: '<NULL>'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.537236] kobject: 'cpufreq' (ffff88046c25aaa8): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.543755] kobject: 'cpufreq' (ffff88046c25aaa8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cpufreq'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.553745] kobject: 'cpu6' (ffff88047ea0c338): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.560008] kobject: 'cpu6' (ffff88047ea0c338): fill_kobj_path: path = '/devices/system/cpu/cpu6'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.574526] (elapsed 0.36 seconds) done.
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.578568] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6682.597304] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.593480] Restarting tasks ... 
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.628582] kobject: 'msr7' (ffff88046bff7810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.646561] kobject: 'msr7' (ffff88046bff7810): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.652839] kobject: 'msr7' (ffff88046bff7810): fill_kobj_path: path = '/devices/virtual/msr/msr7'
+Jun  9 11:31:47 istl-vmc-blade9 abrt: Kerneloops: Reported 6 kernel oopses to Abrt
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373707-2003-6' creation detected
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.671408] kobject: 'cpu7' (ffff88046bff7010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373707-2003-6 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373707-2003-5' creation detected
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.696477] kobject: 'cpu7' (ffff88046bff7010): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.699430] done.
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.699489] PM: Basic memory bitmaps freed
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373707-2003-5 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373707-2003-4' creation detected
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373707-2003-4 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373707-2003-3' creation detected
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.756369] kobject: 'cpu7' (ffff88046bff7010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu7'
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373707-2003-3 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373707-2003-2' creation detected
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373707-2003-2 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373707-2003-1' creation detected
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:31:47 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373707-2003-1 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.838952] lockdep: fixing up alternatives.
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.845430] Booting Node 1 Processor 7 APIC 0x34
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.850151] smpboot cpu 7: start_ip = 97000
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.865541] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.921144] Switched to NOHz mode on CPU #7
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6687.962471] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6688.009992] kobject: 'cache' (ffff88046909e640): kobject_add_internal: parent: 'cpu7', set: '<NULL>'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6688.078117] kobject: 'index0' (ffff880414d44600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6688.175746] kobject: 'index0' (ffff880414d44600): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6688.225652] kobject: 'index0' (ffff880414d44600): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index0'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6688.340367] kobject: 'index1' (ffff880414d44648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6688.445328] kobject: 'index1' (ffff880414d44648): kobject_uevent_env
+Jun  9 11:31:47 istl-vmc-blade9 kernel: [ 6688.498676] kobject: 'index1' (ffff880414d44648): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index1'
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.585791] kobject: 'index2' (ffff880414d44690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.668975] kobject: 'index2' (ffff880414d44690): kobject_uevent_env
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.718151] kobject: 'index2' (ffff880414d44690): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index2'
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.778386] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.785365] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.792246] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.799131] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.806005] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.814225] PM: Basic memory bitmaps created
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.818585] PM: Syncing filesystems ... 
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.865822] kobject: 'index3' (ffff880414d446d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6688.954549] kobject: 'index3' (ffff880414d446d8): kobject_uevent_env
+Jun  9 11:31:48 istl-vmc-blade9 kernel: [ 6689.003442] kobject: 'index3' (ffff880414d446d8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index3'
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.088327] kobject: 'cache' (ffff88046909e640): kobject_uevent_env
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.094323] done.
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.094325] Freezing user space processes ... 
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.101364] kobject: 'cache' (ffff88046909e640): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache'
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.111321] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.122566] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_uevent_env
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.129617] kobject: 'machinecheck7' (ffff88047ec0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck7'
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.141204] microcode: CPU7 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.147122] ------------[ cut here ]------------
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.151829] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.160156] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.165548] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.218758] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.226302] Call Trace:
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.228834]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.234926]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.240843]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.246837]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.252580]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.259708]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.266752]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.273534]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.279536]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.285971]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.291367]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.296418]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.301296]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.306689]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.312084]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.317908]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.323128]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.328260]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.334348] ---[ end trace cff32f63e15cd4a5 ]---
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.339064] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.346810] kobject: 'cpufreq' (ffff880414129ea8): kobject_add_internal: parent: 'cpu7', set: '<NULL>'
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.356328] kobject: 'cpufreq' (ffff880414129ea8): kobject_uevent_env
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.362848] kobject: 'cpufreq' (ffff880414129ea8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cpufreq'
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.372985] kobject: 'cpu7' (ffff88047ec0c338): kobject_uevent_env
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.379260] kobject: 'cpu7' (ffff88047ec0c338): fill_kobj_path: path = '/devices/system/cpu/cpu7'
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.393081] (elapsed 0.29 seconds) done.
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.397128] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6689.415884] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6694.412067] Restarting tasks ... done.
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6694.505124] PM: Basic memory bitmaps freed
+Jun  9 11:31:53 istl-vmc-blade9 kernel: [ 6694.553988] kobject: 'msr8' (ffff88046f715010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6694.595919] kobject: 'msr8' (ffff88046f715010): kobject_uevent_env
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6694.653798] kobject: 'msr8' (ffff88046f715010): fill_kobj_path: path = '/devices/virtual/msr/msr8'
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6694.738105] kobject: 'cpu8' (ffff880441554010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6694.843624] kobject: 'cpu8' (ffff880441554010): kobject_uevent_env
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6694.902205] kobject: 'cpu8' (ffff880441554010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu8'
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.003319] lockdep: fixing up alternatives.
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.049194] Booting Node 0 Processor 8 APIC 0x1
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.053821] smpboot cpu 8: start_ip = 97000
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.069107] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.140053] Switched to NOHz mode on CPU #8
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.325178] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.382712] kobject: 'cache' (ffff8804693e5280): kobject_add_internal: parent: 'cpu8', set: '<NULL>'
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.444617] kobject: 'index0' (ffff88046ec47000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:54 istl-vmc-blade9 kernel: [ 6695.534102] kobject: 'index0' (ffff88046ec47000): kobject_uevent_env
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.586241] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592360] kobject: 'index0' (ffff88046ec47000): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index0'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592384] kobject: 'index1' (ffff88046ec47048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592403] kobject: 'index1' (ffff88046ec47048): kobject_uevent_env
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592406] kobject: 'index1' (ffff88046ec47048): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index1'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592413] kobject: 'index2' (ffff88046ec47090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592427] kobject: 'index2' (ffff88046ec47090): kobject_uevent_env
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592430] kobject: 'index2' (ffff88046ec47090): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index2'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592436] kobject: 'index3' (ffff88046ec470d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592456] kobject: 'index3' (ffff88046ec470d8): kobject_uevent_env
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592458] kobject: 'index3' (ffff88046ec470d8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index3'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592465] kobject: 'cache' (ffff8804693e5280): kobject_uevent_env
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592467] kobject: 'cache' (ffff8804693e5280): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592478] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592483] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_uevent_env
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.592486] kobject: 'machinecheck8' (ffff8801f8e0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck8'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.727636] microcode: CPU8 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.727749] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.727754] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.727758] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.727765] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.729109] PM: Basic memory bitmaps created
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.729111] PM: Syncing filesystems ... 
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.769215] ------------[ cut here ]------------
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.774214] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.782568] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.787992] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.841922] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.849488] Call Trace:
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.852054]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.858172]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.864116]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.870155]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.875936]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.883108]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.890193]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.897011]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.903044]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.909523]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.914952]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.920028]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.924932]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.930364]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.935797]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.941665]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.946921]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.952087]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.958202] ---[ end trace cff32f63e15cd4a6 ]---
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6695.962927] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6696.163689] kobject: 'cpufreq' (ffff8801f47c20a8): kobject_add_internal: parent: 'cpu8', set: '<NULL>'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6696.243431] kobject: 'cpufreq' (ffff8801f47c20a8): kobject_uevent_env
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6696.295536] kobject: 'cpufreq' (ffff8801f47c20a8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cpufreq'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6696.377182] kobject: 'cpu8' (ffff8801f8e0c338): kobject_uevent_env
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6696.423120] kobject: 'cpu8' (ffff8801f8e0c338): fill_kobj_path: path = '/devices/system/cpu/cpu8'
+Jun  9 11:31:55 istl-vmc-blade9 kernel: [ 6696.542084] kobject: 'msr9' (ffff8801ee70a810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:31:56 istl-vmc-blade9 kernel: [ 6696.592874] kobject: 'msr9' (ffff8801ee70a810): kobject_uevent_env
+Jun  9 11:31:56 istl-vmc-blade9 kernel: [ 6696.640757] kobject: 'msr9' (ffff8801ee70a810): fill_kobj_path: path = '/devices/virtual/msr/msr9'
+Jun  9 11:31:56 istl-vmc-blade9 kernel: [ 6696.707727] kobject: 'cpu9' (ffff8801ee7bc810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:31:56 istl-vmc-blade9 kernel: [ 6696.787231] kobject: 'cpu9' (ffff8801ee7bc810): kobject_uevent_env
+Jun  9 11:31:56 istl-vmc-blade9 kernel: [ 6696.830468] kobject: 'cpu9' (ffff8801ee7bc810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu9'
+Jun  9 11:31:56 istl-vmc-blade9 kernel: [ 6696.839905] done.
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.841926] Freezing user space processes ... lockdep: fixing up alternatives.
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.850818] Booting Node 0 Processor 9 APIC 0x3
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.855435] smpboot cpu 9: start_ip = 97000
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.870865] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.899416] Switched to NOHz mode on CPU #9
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.903958] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.909854] kobject: 'cache' (ffff8801f24815c0): kobject_add_internal: parent: 'cpu9', set: '<NULL>'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.919175] kobject: 'index0' (ffff8801f232a200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.928709] kobject: 'index0' (ffff8801f232a200): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.935156] kobject: 'index0' (ffff8801f232a200): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index0'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.945496] kobject: 'index1' (ffff8801f232a248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.954967] kobject: 'index1' (ffff8801f232a248): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.961402] kobject: 'index1' (ffff8801f232a248): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index1'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.971737] kobject: 'index2' (ffff8801f232a290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.981208] kobject: 'index2' (ffff8801f232a290): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.987647] kobject: 'index2' (ffff8801f232a290): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index2'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6696.997981] kobject: 'index3' (ffff8801f232a2d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.007449] kobject: 'index3' (ffff8801f232a2d8): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.013887] kobject: 'index3' (ffff8801f232a2d8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index3'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.024221] kobject: 'cache' (ffff8801f24815c0): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.030565] kobject: 'cache' (ffff8801f24815c0): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.040206] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.051406] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.058451] kobject: 'machinecheck9' (ffff8801f900cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck9'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.070012] microcode: CPU9 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.075944] ------------[ cut here ]------------
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.080652] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.088985] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.094383] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.147656] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.155206] Call Trace:
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.157747]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.163841]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.169759]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.175765]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.181511]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.188646]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.195695]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.202488]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.208497]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.214940]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.220343]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.225397]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.230277]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.235678]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.241076]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.246909]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.252130]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.257267]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.263359] ---[ end trace cff32f63e15cd4a7 ]---
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.268064] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.275878] kobject: 'cpufreq' (ffff8801f45658a8): kobject_add_internal: parent: 'cpu9', set: '<NULL>'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.285378] kobject: 'cpufreq' (ffff8801f45658a8): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.291967] kobject: 'cpufreq' (ffff8801f45658a8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cpufreq'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.301979] kobject: 'cpu9' (ffff8801f900c338): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.308247] kobject: 'cpu9' (ffff8801f900c338): fill_kobj_path: path = '/devices/system/cpu/cpu9'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.319976] (elapsed 0.47 seconds) done.
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.324024] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6697.342764] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6702.338443] Restarting tasks ... 
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6702.486553] kobject: 'msr10' (ffff8801789e3010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6702.499506] kobject: 'msr10' (ffff8801789e3010): kobject_uevent_env
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6702.503805] done.
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6702.503888] PM: Basic memory bitmaps freed
+Jun  9 11:32:01 istl-vmc-blade9 kernel: [ 6702.533502] kobject: 'msr10' (ffff8801789e3010): fill_kobj_path: path = '/devices/virtual/msr/msr10'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.580106] kobject: 'cpu10' (ffff8801f2b63810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.639405] kobject: 'cpu10' (ffff8801f2b63810): kobject_uevent_env
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.673555] kobject: 'cpu10' (ffff8801f2b63810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu10'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.720199] lockdep: fixing up alternatives.
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.738433] Booting Node 0 Processor 10 APIC 0x13
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.743294] smpboot cpu 10: start_ip = 97000
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.758692] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.809319] Switched to NOHz mode on CPU #10
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.883969] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.915974] kobject: 'cache' (ffff8801f1defc00): kobject_add_internal: parent: 'cpu10', set: '<NULL>'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.958855] kobject: 'index0' (ffff8801e9404c00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6702.993088] kobject: 'index0' (ffff8801e9404c00): kobject_uevent_env
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.035413] kobject: 'index0' (ffff8801e9404c00): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index0'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.092934] kobject: 'index1' (ffff8801e9404c48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.142860] kobject: 'index1' (ffff8801e9404c48): kobject_uevent_env
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.188744] kobject: 'index1' (ffff8801e9404c48): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index1'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.262676] kobject: 'index2' (ffff8801e9404c90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.336536] kobject: 'index2' (ffff8801e9404c90): kobject_uevent_env
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.382473] kobject: 'index2' (ffff8801e9404c90): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index2'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.449379] kobject: 'index3' (ffff8801e9404cd8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.507290] kobject: 'index3' (ffff8801e9404cd8): kobject_uevent_env
+Jun  9 11:32:02 istl-vmc-blade9 kernel: [ 6703.552208] kobject: 'index3' (ffff8801e9404cd8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index3'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.605880] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.612132] kobject: 'cache' (ffff8801f1defc00): kobject_uevent_env
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.612139] kobject: 'cache' (ffff8801f1defc00): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.612154] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.612166] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_uevent_env
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.612170] kobject: 'machinecheck10' (ffff8801f920cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck10'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.658889] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.658894] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.658898] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.658904] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.660259] PM: Basic memory bitmaps created
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.660260] PM: Syncing filesystems ... 
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.697412] microcode: CPU10 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.703692] ------------[ cut here ]------------
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.708411] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.716764] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.722179] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.775623] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.783175] Call Trace:
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.785725]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.791828]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.797772]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.803796]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.809548]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.816692]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.823762]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.830559]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.836578]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.843032]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.848445]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.853507]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.858407]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.863818]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.869235]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.875071]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.880311]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.885452]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.891549] ---[ end trace cff32f63e15cd4a8 ]---
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.896259] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.904137] kobject: 'cpufreq' (ffff8804373270a8): kobject_add_internal: parent: 'cpu10', set: '<NULL>'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.914825] kobject: 'cpufreq' (ffff8804373270a8): kobject_uevent_env
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.931397] kobject: 'cpufreq' (ffff8804373270a8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cpufreq'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.971041] kobject: 'cpu10' (ffff8801f920c338): kobject_uevent_env
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6703.978115] kobject: 'cpu10' (ffff8801f920c338): fill_kobj_path: path = '/devices/system/cpu/cpu10'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6704.071448] kobject: 'msr11' (ffff880414cd1010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6704.129319] kobject: 'msr11' (ffff880414cd1010): kobject_uevent_env
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6704.155223] kobject: 'msr11' (ffff880414cd1010): fill_kobj_path: path = '/devices/virtual/msr/msr11'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6704.214530] kobject: 'cpu11' (ffff880437161010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6704.319079] kobject: 'cpu11' (ffff880437161010): kobject_uevent_env
+Jun  9 11:32:03 istl-vmc-blade9 kernel: [ 6704.380956] done.
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.382997] Freezing user space processes ... 
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.388093] kobject: 'cpu11' (ffff880437161010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu11'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.398099] lockdep: fixing up alternatives.
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.402502] Booting Node 0 Processor 11 APIC 0x15
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.407288] smpboot cpu 11: start_ip = 97000
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.422765] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.450866] Switched to NOHz mode on CPU #11
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.455540] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.461605] kobject: 'cache' (ffff88046c0a9540): kobject_add_internal: parent: 'cpu11', set: '<NULL>'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.471029] kobject: 'index0' (ffff88046f6e6e00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.480600] kobject: 'index0' (ffff88046f6e6e00): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.487045] kobject: 'index0' (ffff88046f6e6e00): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index0'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.497511] kobject: 'index1' (ffff88046f6e6e48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.506980] kobject: 'index1' (ffff88046f6e6e48): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.513419] kobject: 'index1' (ffff88046f6e6e48): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index1'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.523831] kobject: 'index2' (ffff88046f6e6e90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.533298] kobject: 'index2' (ffff88046f6e6e90): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.539739] kobject: 'index2' (ffff88046f6e6e90): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index2'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.550158] kobject: 'index3' (ffff88046f6e6ed8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.559639] kobject: 'index3' (ffff88046f6e6ed8): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.566082] kobject: 'index3' (ffff88046f6e6ed8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index3'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.576500] kobject: 'cache' (ffff88046c0a9540): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.582859] kobject: 'cache' (ffff88046c0a9540): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.592585] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.603879] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.611116] kobject: 'machinecheck11' (ffff8801f940cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck11'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.622907] microcode: CPU11 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.628922] ------------[ cut here ]------------
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.633633] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.641961] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.647353] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.700618] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.708180] Call Trace:
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.710719]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.716815]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.722732]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.728739]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.734485]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.741621]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.748665]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.755450]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.761456]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.767897]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.773304]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.778360]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.783242]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.788639]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.794037]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.799868]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.805093]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.810230]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.816322] ---[ end trace cff32f63e15cd4a9 ]---
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.821026] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.828828] kobject: 'cpufreq' (ffff8801f15fa0a8): kobject_add_internal: parent: 'cpu11', set: '<NULL>'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.838414] kobject: 'cpufreq' (ffff8801f15fa0a8): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.845002] kobject: 'cpufreq' (ffff8801f15fa0a8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cpufreq'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.855102] kobject: 'cpu11' (ffff8801f940c338): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.861456] kobject: 'cpu11' (ffff8801f940c338): fill_kobj_path: path = '/devices/system/cpu/cpu11'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.879467] (elapsed 0.49 seconds) done.
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.883514] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6704.902243] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6709.897982] Restarting tasks ... done.
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6709.918304] PM: Basic memory bitmaps freed
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.099576] kobject: 'msr12' (ffff880163cf6010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.112190] kobject: 'msr12' (ffff880163cf6010): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.150097] kobject: 'msr12' (ffff880163cf6010): fill_kobj_path: path = '/devices/virtual/msr/msr12'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.207042] kobject: 'cpu12' (ffff8801f3576810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.265944] kobject: 'cpu12' (ffff8801f3576810): kobject_uevent_env
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.306855] kobject: 'cpu12' (ffff8801f3576810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu12'
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.381809] lockdep: fixing up alternatives.
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.417038] Booting Node 1 Processor 12 APIC 0x21
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.421865] smpboot cpu 12: start_ip = 97000
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.437274] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:32:09 istl-vmc-blade9 kernel: [ 6710.490570] Switched to NOHz mode on CPU #12
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6710.596047] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6710.627398] kobject: 'cache' (ffff880169d64e00): kobject_add_internal: parent: 'cpu12', set: '<NULL>'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6710.686287] kobject: 'index0' (ffff8801f4427a00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6710.721704] kobject: 'index0' (ffff8801f4427a00): kobject_uevent_env
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6710.751200] kobject: 'index0' (ffff8801f4427a00): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index0'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6710.829071] kobject: 'index1' (ffff8801f4427a48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6710.904095] kobject: 'index1' (ffff8801f4427a48): kobject_uevent_env
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6710.942628] kobject: 'index1' (ffff8801f4427a48): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index1'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.022566] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.029582] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030784] kobject: 'index2' (ffff8801f4427a90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030804] kobject: 'index2' (ffff8801f4427a90): kobject_uevent_env
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030810] kobject: 'index2' (ffff8801f4427a90): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index2'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030819] kobject: 'index3' (ffff8801f4427ad8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030832] kobject: 'index3' (ffff8801f4427ad8): kobject_uevent_env
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030836] kobject: 'index3' (ffff8801f4427ad8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index3'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030842] kobject: 'cache' (ffff880169d64e00): kobject_uevent_env
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030846] kobject: 'cache' (ffff880169d64e00): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030856] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030865] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_uevent_env
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.030868] kobject: 'machinecheck12' (ffff88047ee0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck12'
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.135136] microcode: CPU12 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.135154] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.135161] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.135170] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.137746] PM: Basic memory bitmaps created
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.137749] PM: Syncing filesystems ... 
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.169914] ------------[ cut here ]------------
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.174953] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.183313] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.188738] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.242761] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.250339] Call Trace:
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.252913]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.259044]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.265000]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.271039]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.276822]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.283994]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.291079]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.297906]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.303960]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.310440]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.315875]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.320956]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.325863]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.331298]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.336725]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.342585]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.347841]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.353021]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.359153] ---[ end trace cff32f63e15cd4aa ]---
+Jun  9 11:32:10 istl-vmc-blade9 kernel: [ 6711.363892] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:32:11 istl-vmc-blade9 kernel: [ 6711.596538] kobject: 'cpufreq' (ffff8801f45714a8): kobject_add_internal: parent: 'cpu12', set: '<NULL>'
+Jun  9 11:32:11 istl-vmc-blade9 kernel: [ 6711.676217] kobject: 'cpufreq' (ffff8801f45714a8): kobject_uevent_env
+Jun  9 11:32:11 istl-vmc-blade9 kernel: [ 6711.746657] done.
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6711.748696] Freezing user space processes ... 
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6711.755645] kobject: 'cpufreq' (ffff8801f45714a8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cpufreq'
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6711.766042] kobject: 'cpu12' (ffff88047ee0c338): kobject_uevent_env
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6711.772448] kobject: 'cpu12' (ffff88047ee0c338): fill_kobj_path: path = '/devices/system/cpu/cpu12'
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6711.788873] (elapsed 0.03 seconds) done.
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6711.792981] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6711.811704] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6716.807371] Restarting tasks ... done.
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6716.888581] PM: Basic memory bitmaps freed
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6716.962731] kobject: 'msr13' (ffff880469059010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6716.976673] kobject: 'msr13' (ffff880469059010): kobject_uevent_env
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6717.035560] kobject: 'msr13' (ffff880469059010): fill_kobj_path: path = '/devices/virtual/msr/msr13'
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6717.135444] kobject: 'cpu13' (ffff8804148ce810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6717.256244] kobject: 'cpu13' (ffff8804148ce810): kobject_uevent_env
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6717.316583] kobject: 'cpu13' (ffff8804148ce810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu13'
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6717.401076] lockdep: fixing up alternatives.
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6717.424967] Booting Node 1 Processor 13 APIC 0x23
+Jun  9 11:32:16 istl-vmc-blade9 kernel: [ 6717.429799] smpboot cpu 13: start_ip = 97000
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.445522] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.565746] Switched to NOHz mode on CPU #13
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.807009] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.839376] kobject: 'cache' (ffff88046d788380): kobject_add_internal: parent: 'cpu13', set: '<NULL>'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.936197] kobject: 'index0' (ffff8804417b7e00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.998511] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.998516] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.998522] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.998528] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6717.998538] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.000830] PM: Basic memory bitmaps created
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.000833] PM: Syncing filesystems ... 
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018069] kobject: 'index0' (ffff8804417b7e00): kobject_uevent_env
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018077] kobject: 'index0' (ffff8804417b7e00): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index0'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018103] kobject: 'index1' (ffff8804417b7e48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018124] kobject: 'index1' (ffff8804417b7e48): kobject_uevent_env
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018128] kobject: 'index1' (ffff8804417b7e48): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index1'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018139] kobject: 'index2' (ffff8804417b7e90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018155] kobject: 'index2' (ffff8804417b7e90): kobject_uevent_env
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018159] kobject: 'index2' (ffff8804417b7e90): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index2'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018169] kobject: 'index3' (ffff8804417b7ed8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018186] kobject: 'index3' (ffff8804417b7ed8): kobject_uevent_env
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018190] kobject: 'index3' (ffff8804417b7ed8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index3'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018199] kobject: 'cache' (ffff88046d788380): kobject_uevent_env
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018203] kobject: 'cache' (ffff88046d788380): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018215] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018224] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_uevent_env
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.018228] kobject: 'machinecheck13' (ffff88047f00cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck13'
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.183959] microcode: CPU13 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.190011] ------------[ cut here ]------------
+Jun  9 11:32:17 istl-vmc-blade9 kernel: [ 6718.194748] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.203096] done.
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.203100] Freezing user space processes ... 
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.209406] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.215070] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.268299] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.275849] Call Trace:
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.278386]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.284480]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.290395]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.296396]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.302140]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.309269]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.316315]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.323105]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.329110]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.335544]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.340950]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.345996]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.350867]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.356260]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.361655]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.367481]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.372706]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.377844]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.383936] ---[ end trace cff32f63e15cd4ab ]---
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.388639] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.396425] kobject: 'cpufreq' (ffff8804417b72a8): kobject_add_internal: parent: 'cpu13', set: '<NULL>'
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.406029] kobject: 'cpufreq' (ffff8804417b72a8): kobject_uevent_env
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.412616] kobject: 'cpufreq' (ffff8804417b72a8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cpufreq'
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.422835] kobject: 'cpu13' (ffff88047f00c338): kobject_uevent_env
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.429197] kobject: 'cpu13' (ffff88047f00c338): fill_kobj_path: path = '/devices/system/cpu/cpu13'
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.443703] (elapsed 0.24 seconds) done.
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.447750] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6718.466543] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6723.462865] Restarting tasks ... 
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6723.474337] kobject: 'msr14' (ffff88046c2f3810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6723.491734] kobject: 'msr14' (ffff88046c2f3810): kobject_uevent_env
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6723.498125] kobject: 'msr14' (ffff88046c2f3810): fill_kobj_path: path = '/devices/virtual/msr/msr14'
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6723.511673] done.
+Jun  9 11:32:22 istl-vmc-blade9 kernel: [ 6723.513819] PM: Basic memory bitmaps freed
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.525982] kobject: 'cpu14' (ffff88046c2f3010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.535732] kobject: 'cpu14' (ffff88046c2f3010): kobject_uevent_env
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.542565] kobject: 'cpu14' (ffff88046c2f3010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu14'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.581310] lockdep: fixing up alternatives.
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.598530] Booting Node 1 Processor 14 APIC 0x33
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.603500] smpboot cpu 14: start_ip = 97000
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.618892] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.652435] Switched to NOHz mode on CPU #14
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.710895] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.738477] kobject: 'cache' (ffff88046938a340): kobject_add_internal: parent: 'cpu14', set: '<NULL>'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.787643] kobject: 'index0' (ffff880414255e00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.831212] kobject: 'index0' (ffff880414255e00): kobject_uevent_env
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.857613] kobject: 'index0' (ffff880414255e00): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index0'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.911095] kobject: 'index1' (ffff880414255e48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.955999] kobject: 'index1' (ffff880414255e48): kobject_uevent_env
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6723.982690] kobject: 'index1' (ffff880414255e48): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index1'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.030901] kobject: 'index2' (ffff880414255e90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.078808] kobject: 'index2' (ffff880414255e90): kobject_uevent_env
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.107754] kobject: 'index2' (ffff880414255e90): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index2'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.158199] kobject: 'index3' (ffff880414255ed8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.207511] kobject: 'index3' (ffff880414255ed8): kobject_uevent_env
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.242786] kobject: 'index3' (ffff880414255ed8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index3'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.300504] kobject: 'cache' (ffff88046938a340): kobject_uevent_env
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.350442] kobject: 'cache' (ffff88046938a340): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.414054] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:32:23 istl-vmc-blade9 kernel: [ 6724.487867] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_uevent_env
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.530713] kobject: 'machinecheck14' (ffff88047f20cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck14'
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.622053] microcode: CPU14 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.652084] kobject: 'firmware' (ffff880414fef340): kobject_add_internal: parent: 'microcode', set: '(null)'
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.664955] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.671839] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.678733] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.685616] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.692501] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.700721] PM: Basic memory bitmaps created
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.705086] PM: Syncing filesystems ... 
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.729831] kobject: 'microcode' (ffff88046d11c110): kobject_add_internal: parent: 'firmware', set: 'devices'
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.796730] kobject: 'microcode' (ffff88046d11c110): kobject_uevent_env
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.803483] kobject: 'microcode' (ffff88046d11c110): kobject_uevent_env: uevent_suppress caused the event to drop!
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.914521] kobject: 'microcode' (ffff88046d11c110): kobject_uevent_env
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.964433] kobject: 'microcode' (ffff88046d11c110): fill_kobj_path: path = '/devices/platform/microcode/firmware/microcode'
+Jun  9 11:32:24 istl-vmc-blade9 kernel: [ 6724.988331] done.
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6724.990383] Freezing user space processes ... 
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6744.966399] Freezing of tasks failed after 20.00 seconds (2 tasks refusing to freeze, wq_busy=0):
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6744.975461] invert_cpu_stat D 0000000000000000  5304 27020  17329 0x00000084
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6744.982813]  ffff8801e9545ab8 0000000000000046 ffff8801e9545fd8 00000000001d3a00
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6744.990681]  ffff8801e9544010 00000000001d3a00 00000000001d3a00 00000000001d3a00
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6744.998539]  ffff8801e9545fd8 00000000001d3a00 ffff8804143a07c0 ffff8801f4bc2140
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.006410] Call Trace:
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.008999]  [<ffffffff81532de5>] schedule_timeout+0x235/0x320
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.014967]  [<ffffffff810a8630>] ? __lock_acquired+0x280/0x2f0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.021020]  [<ffffffff8153292c>] ? wait_for_common+0x3c/0x170
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.026990]  [<ffffffff81532a03>] ? wait_for_common+0x113/0x170
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.033047]  [<ffffffff81532a0b>] wait_for_common+0x11b/0x170
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.038931]  [<ffffffff81064de0>] ? try_to_wake_up+0x300/0x300
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.044898]  [<ffffffff8107d64a>] ? mod_timer+0x15a/0x2c0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.050430]  [<ffffffff81532b3d>] wait_for_completion+0x1d/0x20
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.056488]  [<ffffffff81364486>] _request_firmware+0x156/0x2c0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.062545]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.068342]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.075533]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.082634]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.089473]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.095480]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.101974]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.107424]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.112527]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.117458]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.122908]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.128361]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.134242]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.139518]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.144708]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.150897] bash            D 0000000000000000  5688 31233  17550 0x00000084
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.158242]  ffff8804141bbd88 0000000000000046 ffff8804141bbfd8 00000000001d3a00
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.166106]  ffff8804141ba010 00000000001d3a00 00000000001d3a00 00000000001d3a00
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.173975]  ffff8804141bbfd8 00000000001d3a00 ffff88046918c080 ffff88046bf8c380
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.181841] Call Trace:
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.184422]  [<ffffffff81533653>] __mutex_lock_common+0x193/0x3f0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.190653]  [<ffffffff810315f7>] ? cpu_hotplug_driver_lock+0x17/0x20
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.197227]  [<ffffffff810315f7>] ? cpu_hotplug_driver_lock+0x17/0x20
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.203804]  [<ffffffff815339d7>] mutex_lock_nested+0x37/0x50
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.209685]  [<ffffffff810315f7>] cpu_hotplug_driver_lock+0x17/0x20
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.216092]  [<ffffffff8151e532>] store_online+0x32/0xd0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.221488]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.226886]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.232777]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.238055]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.243247]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:32:44 istl-vmc-blade9 firmware.sh[31506]: Cannot find  firmware file 'intel-ucode/06-2c-02'
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.249409] Restarting tasks ... 
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.305352] kobject: 'microcode' (ffff88046d11c110): kobject_uevent_env
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.333263] done.
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.335295] 
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.337040] PM: Basic memory bitmaps freed
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.380199] kobject: 'microcode' (ffff88046d11c110): fill_kobj_path: path = '/devices/platform/microcode/firmware/microcode'
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.445128] kobject: 'firmware' (ffff880414fef340): kobject_cleanup
+Jun  9 11:32:44 istl-vmc-blade9 kernel: [ 6745.451534] kobject: 'firmware' (ffff880414fef340): auto cleanup kobject_del
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.542954] kobject: 'firmware' (ffff880414fef340): calling ktype release
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.549854] kobject: 'firmware': free name
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.554070] kobject: 'microcode' (ffff88046d11c110): kobject_cleanup
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.560537] kobject: 'microcode' (ffff88046d11c110): calling ktype release
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.567536] kobject: 'microcode': free name
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.731109] kobject: 'cpufreq' (ffff88041492b6a8): kobject_add_internal: parent: 'cpu14', set: '<NULL>'
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.790612] kobject: 'cpufreq' (ffff88041492b6a8): kobject_uevent_env
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.822521] kobject: 'cpufreq' (ffff88041492b6a8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cpufreq'
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.883455] kobject: 'cpu14' (ffff88047f20c338): kobject_uevent_env
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6745.927393] kobject: 'cpu14' (ffff88047f20c338): fill_kobj_path: path = '/devices/system/cpu/cpu14'
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.016281] kobject: 'msr15' (ffff8803eaf74010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.056187] kobject: 'msr15' (ffff8803eaf74010): kobject_uevent_env
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.107112] kobject: 'msr15' (ffff8803eaf74010): fill_kobj_path: path = '/devices/virtual/msr/msr15'
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.162045] kobject: 'cpu15' (ffff88043730e010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.229062] kobject: 'cpu15' (ffff88043730e010): kobject_uevent_env
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.285811] kobject: 'cpu15' (ffff88043730e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu15'
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.340794] lockdep: fixing up alternatives.
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.371680] Booting Node 1 Processor 15 APIC 0x35
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.376506] smpboot cpu 15: start_ip = 97000
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.391911] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.438471] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.445795] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.452703] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.459606] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.462535] Switched to NOHz mode on CPU #15
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.470870] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:32:45 istl-vmc-blade9 kernel: [ 6746.480177] PM: Basic memory bitmaps created
+Jun  9 11:32:46 istl-vmc-blade9 kernel: [ 6746.484553] PM: Syncing filesystems ... 
+Jun  9 11:32:46 istl-vmc-blade9 kernel: [ 6746.557751] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:32:46 istl-vmc-blade9 kernel: [ 6746.609347] kobject: 'cache' (ffff88046c88de40): kobject_add_internal: parent: 'cpu15', set: '<NULL>'
+Jun  9 11:32:46 istl-vmc-blade9 kernel: [ 6746.692340] kobject: 'index0' (ffff88046922aa00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:46 istl-vmc-blade9 kernel: [ 6746.756163] kobject: 'index0' (ffff88046922aa00): kobject_uevent_env
+Jun  9 11:32:46 istl-vmc-blade9 kernel: [ 6746.800028] done.
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.802065] Freezing user space processes ... 
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.809320] kobject: 'index0' (ffff88046922aa00): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index0'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.820048] kobject: 'index1' (ffff88046922aa48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.829580] kobject: 'index1' (ffff88046922aa48): kobject_uevent_env
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.836014] kobject: 'index1' (ffff88046922aa48): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index1'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.846450] kobject: 'index2' (ffff88046922aa90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.855980] kobject: 'index2' (ffff88046922aa90): kobject_uevent_env
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.862442] kobject: 'index2' (ffff88046922aa90): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index2'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.872911] kobject: 'index3' (ffff88046922aad8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.882383] kobject: 'index3' (ffff88046922aad8): kobject_uevent_env
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.888848] kobject: 'index3' (ffff88046922aad8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index3'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.899327] kobject: 'cache' (ffff88046c88de40): kobject_uevent_env
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.905769] kobject: 'cache' (ffff88046c88de40): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.915496] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.926867] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_uevent_env
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.933995] kobject: 'machinecheck15' (ffff88047f40cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck15'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.945757] microcode: CPU15 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.951763] ------------[ cut here ]------------
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.956470] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.964796] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6746.970191] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.023334] Pid: 27020, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.030882] Call Trace:
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.033415]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.039504]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.045414]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.051416]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.057161]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.064290]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.071329]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.078113]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.084112]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.090546]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.095949]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.100991]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.105867]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.111260]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.116657]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.122487]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.127709]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.132843]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.138929] ---[ end trace cff32f63e15cd4ac ]---
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.143624] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.151362] kobject: 'cpufreq' (ffff88046c9a48a8): kobject_add_internal: parent: 'cpu15', set: '<NULL>'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.160920] kobject: 'cpufreq' (ffff88046c9a48a8): kobject_uevent_env
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.167500] kobject: 'cpufreq' (ffff88046c9a48a8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cpufreq'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.177625] kobject: 'cpu15' (ffff88047f40c338): kobject_uevent_env
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.183973] kobject: 'cpu15' (ffff88047f40c338): fill_kobj_path: path = '/devices/system/cpu/cpu15'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.193719] (elapsed 0.38 seconds) done.
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.197770] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6747.216500] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.212949] Restarting tasks ... done.
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.266473] PM: Basic memory bitmaps freed
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.302734] kobject: 'cpufreq' (ffff8801f4b7fca8): kobject_cleanup
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.309070] kobject: 'cpufreq' (ffff8801f4b7fca8): auto cleanup 'remove' event
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.316485] kobject: 'cpufreq' (ffff8801f4b7fca8): kobject_uevent_env
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.323424] kobject: 'cpufreq' (ffff8801f4b7fca8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cpufreq'
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.352893] kobject: 'cpufreq' (ffff8801f4b7fca8): auto cleanup kobject_del
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.387845] kobject: 'cpufreq' (ffff8801f4b7fca8): calling ktype release
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.394664] kobject: 'cpufreq': free name
+Jun  9 11:32:51 istl-vmc-blade9 kernel: [ 6752.434653] CPU 1 is now offline
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.458540] kobject: 'index0' (ffff8801f1475c00): kobject_cleanup
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.464742] kobject: 'index0' (ffff8801f1475c00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.475534] kobject: 'index0' (ffff8801f1475c00): auto cleanup 'remove' event
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.482768] kobject: 'index0' (ffff8801f1475c00): kobject_uevent_env
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.489553] kobject: 'index0' (ffff8801f1475c00): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index0'
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.519028] kobject: 'index0' (ffff8801f1475c00): auto cleanup kobject_del
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.541126] kobject: 'index0': free name
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.545168] kobject: 'index1' (ffff8801f1475c48): kobject_cleanup
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.551364] kobject: 'index1' (ffff8801f1475c48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.562148] kobject: 'index1' (ffff8801f1475c48): auto cleanup 'remove' event
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.569394] kobject: 'index1' (ffff8801f1475c48): kobject_uevent_env
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.576027] kobject: 'index1' (ffff8801f1475c48): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index1'
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.597191] kobject: 'index1' (ffff8801f1475c48): auto cleanup kobject_del
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.625407] kobject: 'index1': free name
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.629471] kobject: 'index2' (ffff8801f1475c90): kobject_cleanup
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.635658] kobject: 'index2' (ffff8801f1475c90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.646435] kobject: 'index2' (ffff8801f1475c90): auto cleanup 'remove' event
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.653673] kobject: 'index2' (ffff8801f1475c90): kobject_uevent_env
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.682032] kobject: 'index2' (ffff8801f1475c90): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index2'
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.717129] kobject: 'index2' (ffff8801f1475c90): auto cleanup kobject_del
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.741632] kobject: 'index2': free name
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.745667] kobject: 'index3' (ffff8801f1475cd8): kobject_cleanup
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.751868] kobject: 'index3' (ffff8801f1475cd8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.762655] kobject: 'index3' (ffff8801f1475cd8): auto cleanup 'remove' event
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.769890] kobject: 'index3' (ffff8801f1475cd8): kobject_uevent_env
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.776558] kobject: 'index3' (ffff8801f1475cd8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index3'
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.820932] kobject: 'index3' (ffff8801f1475cd8): auto cleanup kobject_del
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.858274] kobject: 'index3': free name
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.862340] kobject: 'cache' (ffff8801f2479200): kobject_cleanup
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.868464] kobject: 'cache' (ffff8801f2479200): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.879159] kobject: 'cache' (ffff8801f2479200): auto cleanup 'remove' event
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.886319] kobject: 'cache' (ffff8801f2479200): kobject_uevent_env
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.892930] kobject: 'cache' (ffff8801f2479200): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache'
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.928222] kobject: 'cache' (ffff8801f2479200): auto cleanup kobject_del
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.946659] kobject: 'cache': free name
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.968914] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_cleanup
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.975782] kobject: 'machinecheck1' (ffff8801f880cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.987181] kobject: 'machinecheck1' (ffff8801f880cff0): auto cleanup 'remove' event
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6752.995106] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_uevent_env
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.020325] kobject: 'machinecheck1' (ffff8801f880cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck1'
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.078960] kobject: 'machinecheck1' (ffff8801f880cff0): auto cleanup kobject_del
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.116859] kobject: 'machinecheck1': free name
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.147003] kobject: 'msr1' (ffff8801e9aad810): kobject_uevent_env
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.189402] kobject: 'msr1' (ffff8801e9aad810): fill_kobj_path: path = '/devices/virtual/msr/msr1'
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.267792] kobject: 'msr1' (ffff8801e9aad810): kobject_cleanup
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.273823] kobject: 'msr1' (ffff8801e9aad810): calling ktype release
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.280377] kobject: 'msr1': free name
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.332352] kobject: 'cpu1' (ffff8801e9a5c010): kobject_uevent_env
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.373905] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.380830] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.387740] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.389478] kobject: 'cpu1' (ffff8801e9a5c010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu1'
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.389506] kobject: 'cpu1' (ffff8801e9a5c010): kobject_cleanup
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.389509] kobject: 'cpu1' (ffff8801e9a5c010): calling ktype release
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.389512] kobject: 'cpu1': free name
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.420308] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.420319] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:32:52 istl-vmc-blade9 kernel: [ 6753.422448] PM: Basic memory bitmaps created
+Jun  9 11:32:53 istl-vmc-blade9 kernel: [ 6753.422451] PM: Syncing filesystems ... 
+Jun  9 11:32:53 istl-vmc-blade9 kernel: [ 6753.540080] CPU 9 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:32:53 istl-vmc-blade9 kernel: [ 6753.579703] kobject: 'cpu1' (ffff8801f880c338): kobject_uevent_env
+Jun  9 11:32:53 istl-vmc-blade9 kernel: [ 6753.623658] kobject: 'cpu1' (ffff8801f880c338): fill_kobj_path: path = '/devices/system/cpu/cpu1'
+Jun  9 11:32:53 istl-vmc-blade9 kernel: [ 6753.686975] done.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6753.689113] Freezing user space processes ... (elapsed 0.01 seconds) done.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6753.709559] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6753.728651] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.724931] Restarting tasks ... done.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.765531] PM: Basic memory bitmaps freed
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.768461] kobject: 'cpufreq' (ffff8801f457a4a8): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.768465] kobject: 'cpufreq' (ffff8801f457a4a8): auto cleanup 'remove' event
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.768468] kobject: 'cpufreq' (ffff8801f457a4a8): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.768474] kobject: 'cpufreq' (ffff8801f457a4a8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cpufreq'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.768494] kobject: 'cpufreq' (ffff8801f457a4a8): auto cleanup kobject_del
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.768514] kobject: 'cpufreq' (ffff8801f457a4a8): calling ktype release
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.768517] kobject: 'cpufreq': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.820014] CPU 2 is now offline
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.820548] kobject: 'index0' (ffff8801f47d0000): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.820551] kobject: 'index0' (ffff8801f47d0000): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.820554] kobject: 'index0' (ffff8801f47d0000): auto cleanup 'remove' event
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.820557] kobject: 'index0' (ffff8801f47d0000): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.820567] kobject: 'index0' (ffff8801f47d0000): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index0'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.820580] kobject: 'index0' (ffff8801f47d0000): auto cleanup kobject_del
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821030] kobject: 'index0': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821034] kobject: 'index1' (ffff8801f47d0048): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821036] kobject: 'index1' (ffff8801f47d0048): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821039] kobject: 'index1' (ffff8801f47d0048): auto cleanup 'remove' event
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821042] kobject: 'index1' (ffff8801f47d0048): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821046] kobject: 'index1' (ffff8801f47d0048): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index1'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821057] kobject: 'index1' (ffff8801f47d0048): auto cleanup kobject_del
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821432] kobject: 'index1': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821435] kobject: 'index2' (ffff8801f47d0090): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821438] kobject: 'index2' (ffff8801f47d0090): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821441] kobject: 'index2' (ffff8801f47d0090): auto cleanup 'remove' event
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821443] kobject: 'index2' (ffff8801f47d0090): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821448] kobject: 'index2' (ffff8801f47d0090): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index2'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821459] kobject: 'index2' (ffff8801f47d0090): auto cleanup kobject_del
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821853] kobject: 'index2': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821857] kobject: 'index3' (ffff8801f47d00d8): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821859] kobject: 'index3' (ffff8801f47d00d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821862] kobject: 'index3' (ffff8801f47d00d8): auto cleanup 'remove' event
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821864] kobject: 'index3' (ffff8801f47d00d8): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821868] kobject: 'index3' (ffff8801f47d00d8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index3'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.821881] kobject: 'index3' (ffff8801f47d00d8): auto cleanup kobject_del
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822247] kobject: 'index3': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822251] kobject: 'cache' (ffff8801ee5f5f40): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822253] kobject: 'cache' (ffff8801ee5f5f40): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822256] kobject: 'cache' (ffff8801ee5f5f40): auto cleanup 'remove' event
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822258] kobject: 'cache' (ffff8801ee5f5f40): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822262] kobject: 'cache' (ffff8801ee5f5f40): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822274] kobject: 'cache' (ffff8801ee5f5f40): auto cleanup kobject_del
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822657] kobject: 'cache': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822685] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822687] kobject: 'machinecheck2' (ffff8801f8a0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822690] kobject: 'machinecheck2' (ffff8801f8a0cff0): auto cleanup 'remove' event
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822693] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822698] kobject: 'machinecheck2' (ffff8801f8a0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck2'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.822710] kobject: 'machinecheck2' (ffff8801f8a0cff0): auto cleanup kobject_del
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.823052] kobject: 'machinecheck2': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.823191] kobject: 'msr2' (ffff8801f2510810): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.823196] kobject: 'msr2' (ffff8801f2510810): fill_kobj_path: path = '/devices/virtual/msr/msr2'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.823826] kobject: 'msr2' (ffff8801f2510810): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.823829] kobject: 'msr2' (ffff8801f2510810): calling ktype release
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.823832] kobject: 'msr2': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.824023] kobject: 'cpu2' (ffff8801f144c810): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.824027] kobject: 'cpu2' (ffff8801f144c810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu2'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.824569] kobject: 'cpu2' (ffff8801f144c810): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.824572] kobject: 'cpu2' (ffff8801f144c810): calling ktype release
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6758.824574] kobject: 'cpu2': free name
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.204149] CPU 10 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.210521] kobject: 'cpu2' (ffff8801f8a0c338): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.216832] kobject: 'cpu2' (ffff8801f8a0c338): fill_kobj_path: path = '/devices/system/cpu/cpu2'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.294031] kobject: 'cpufreq' (ffff8801f15514a8): kobject_cleanup
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.300354] kobject: 'cpufreq' (ffff8801f15514a8): auto cleanup 'remove' event
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.307766] kobject: 'cpufreq' (ffff8801f15514a8): kobject_uevent_env
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.321952] kobject: 'cpufreq' (ffff8801f15514a8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cpufreq'
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.368673] kobject: 'cpufreq' (ffff8801f15514a8): auto cleanup kobject_del
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.417983] kobject: 'cpufreq' (ffff8801f15514a8): calling ktype release
+Jun  9 11:32:58 istl-vmc-blade9 kernel: [ 6759.424808] kobject: 'cpufreq': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.489493] CPU 3 is now offline
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.526585] kobject: 'index0' (ffff8801f47cf600): kobject_cleanup
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.532802] kobject: 'index0' (ffff8801f47cf600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.543591] kobject: 'index0' (ffff8801f47cf600): auto cleanup 'remove' event
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.550839] kobject: 'index0' (ffff8801f47cf600): kobject_uevent_env
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.557331] kobject: 'index0' (ffff8801f47cf600): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index0'
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.588042] kobject: 'index0' (ffff8801f47cf600): auto cleanup kobject_del
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.616459] kobject: 'index0': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.620548] kobject: 'index1' (ffff8801f47cf648): kobject_cleanup
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.626759] kobject: 'index1' (ffff8801f47cf648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.637551] kobject: 'index1' (ffff8801f47cf648): auto cleanup 'remove' event
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.644807] kobject: 'index1' (ffff8801f47cf648): kobject_uevent_env
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.668340] kobject: 'index1' (ffff8801f47cf648): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index1'
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.726268] kobject: 'index1' (ffff8801f47cf648): auto cleanup kobject_del
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.733294] kobject: 'index1': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.737419] kobject: 'index2' (ffff8801f47cf690): kobject_cleanup
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.743623] kobject: 'index2' (ffff8801f47cf690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.754418] kobject: 'index2' (ffff8801f47cf690): auto cleanup 'remove' event
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.761670] kobject: 'index2' (ffff8801f47cf690): kobject_uevent_env
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.772776] kobject: 'index2' (ffff8801f47cf690): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index2'
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.785584] kobject: 'index2' (ffff8801f47cf690): auto cleanup kobject_del
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.808215] kobject: 'index2': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.812314] kobject: 'index3' (ffff8801f47cf6d8): kobject_cleanup
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.818526] kobject: 'index3' (ffff8801f47cf6d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.829309] kobject: 'index3' (ffff8801f47cf6d8): auto cleanup 'remove' event
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.836565] kobject: 'index3' (ffff8801f47cf6d8): kobject_uevent_env
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.873390] kobject: 'index3' (ffff8801f47cf6d8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index3'
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.909083] kobject: 'index3' (ffff8801f47cf6d8): auto cleanup kobject_del
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.943111] kobject: 'index3': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.947190] kobject: 'cache' (ffff8801f1f3b640): kobject_cleanup
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.953304] kobject: 'cache' (ffff8801f1f3b640): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.964004] kobject: 'cache' (ffff8801f1f3b640): auto cleanup 'remove' event
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.971173] kobject: 'cache' (ffff8801f1f3b640): kobject_uevent_env
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6759.986414] kobject: 'cache' (ffff8801f1f3b640): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache'
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.028164] kobject: 'cache' (ffff8801f1f3b640): auto cleanup kobject_del
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.035080] kobject: 'cache': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.088536] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_cleanup
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.095401] kobject: 'machinecheck3' (ffff8801f8c0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.106822] kobject: 'machinecheck3' (ffff8801f8c0cff0): auto cleanup 'remove' event
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.114744] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_uevent_env
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.122461] kobject: 'machinecheck3' (ffff8801f8c0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck3'
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.136650] kobject: 'machinecheck3' (ffff8801f8c0cff0): auto cleanup kobject_del
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.144336] kobject: 'machinecheck3': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.159620] kobject: 'msr3' (ffff8801f3559010): kobject_uevent_env
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.230664] kobject: 'msr3' (ffff8801f3559010): fill_kobj_path: path = '/devices/virtual/msr/msr3'
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.269556] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.276462] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.283389] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.290295] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.297211] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.306523] PM: Basic memory bitmaps created
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.310901] PM: Syncing filesystems ... 
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.311013] kobject: 'msr3' (ffff8801f3559010): kobject_cleanup
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.311017] kobject: 'msr3' (ffff8801f3559010): calling ktype release
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.311020] kobject: 'msr3': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.314363] kobject: 'cpu3' (ffff8801e9777010): kobject_uevent_env
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.314369] kobject: 'cpu3' (ffff8801e9777010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu3'
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.314390] kobject: 'cpu3' (ffff8801e9777010): kobject_cleanup
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.314393] kobject: 'cpu3' (ffff8801e9777010): calling ktype release
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.314396] kobject: 'cpu3': free name
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.380242] CPU 11 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:32:59 istl-vmc-blade9 kernel: [ 6760.410278] kobject: 'cpu3' (ffff8801f8c0c338): kobject_uevent_env
+Jun  9 11:33:00 istl-vmc-blade9 kernel: [ 6760.467680] kobject: 'cpu3' (ffff8801f8c0c338): fill_kobj_path: path = '/devices/system/cpu/cpu3'
+Jun  9 11:33:00 istl-vmc-blade9 kernel: [ 6760.579057] kobject: 'cpufreq' (ffff88046cb430a8): kobject_cleanup
+Jun  9 11:33:00 istl-vmc-blade9 kernel: [ 6760.585360] kobject: 'cpufreq' (ffff88046cb430a8): auto cleanup 'remove' event
+Jun  9 11:33:00 istl-vmc-blade9 kernel: [ 6760.592754] kobject: 'cpufreq' (ffff88046cb430a8): kobject_uevent_env
+Jun  9 11:33:00 istl-vmc-blade9 kernel: [ 6760.602904] kobject: 'cpufreq' (ffff88046cb430a8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cpufreq'
+Jun  9 11:33:00 istl-vmc-blade9 kernel: [ 6760.688784] kobject: 'cpufreq' (ffff88046cb430a8): auto cleanup kobject_del
+Jun  9 11:33:00 istl-vmc-blade9 kernel: [ 6760.734726] done.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.736758] Freezing user space processes ... 
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.743331] kobject: 'cpufreq' (ffff88046cb430a8): calling ktype release
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.750394] kobject: 'cpufreq': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.756518] CPU 4 is now offline
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.760641] kobject: 'index0' (ffff8801f4427600): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.766833] kobject: 'index0' (ffff8801f4427600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.777597] kobject: 'index0' (ffff8801f4427600): auto cleanup 'remove' event
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.784817] kobject: 'index0' (ffff8801f4427600): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.791328] kobject: 'index0' (ffff8801f4427600): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index0'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.801723] kobject: 'index0' (ffff8801f4427600): auto cleanup kobject_del
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.808748] kobject: 'index0': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.812765] kobject: 'index1' (ffff8801f4427648): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.818935] kobject: 'index1' (ffff8801f4427648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.829682] kobject: 'index1' (ffff8801f4427648): auto cleanup 'remove' event
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.836887] kobject: 'index1' (ffff8801f4427648): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.843360] kobject: 'index1' (ffff8801f4427648): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index1'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.853835] kobject: 'index1' (ffff8801f4427648): auto cleanup kobject_del
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.860870] kobject: 'index1': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.864884] kobject: 'index2' (ffff8801f4427690): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.871110] kobject: 'index2' (ffff8801f4427690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.881905] kobject: 'index2' (ffff8801f4427690): auto cleanup 'remove' event
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.889117] kobject: 'index2' (ffff8801f4427690): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.895586] kobject: 'index2' (ffff8801f4427690): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index2'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.905978] kobject: 'index2' (ffff8801f4427690): auto cleanup kobject_del
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.912970] kobject: 'index2': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.917027] kobject: 'index3' (ffff8801f44276d8): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.923201] kobject: 'index3' (ffff8801f44276d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.933957] kobject: 'index3' (ffff8801f44276d8): auto cleanup 'remove' event
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.941168] kobject: 'index3' (ffff8801f44276d8): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.947608] kobject: 'index3' (ffff8801f44276d8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index3'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.957936] kobject: 'index3' (ffff8801f44276d8): auto cleanup kobject_del
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.964899] kobject: 'index3': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.968904] kobject: 'cache' (ffff8801f2b2b800): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.974996] kobject: 'cache' (ffff8801f2b2b800): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.985664] kobject: 'cache' (ffff8801f2b2b800): auto cleanup 'remove' event
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.992785] kobject: 'cache' (ffff8801f2b2b800): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6760.999137] kobject: 'cache' (ffff8801f2b2b800): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.008772] kobject: 'cache' (ffff8801f2b2b800): auto cleanup kobject_del
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.015642] kobject: 'cache': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.019579] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.026358] kobject: 'machinecheck4' (ffff88047e60cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.037719] kobject: 'machinecheck4' (ffff88047e60cff0): auto cleanup 'remove' event
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.045616] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.052659] kobject: 'machinecheck4' (ffff88047e60cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck4'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.064039] kobject: 'machinecheck4' (ffff88047e60cff0): auto cleanup kobject_del
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.071677] kobject: 'machinecheck4': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.076482] kobject: 'msr4' (ffff8801f29de810): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.082752] kobject: 'msr4' (ffff8801f29de810): fill_kobj_path: path = '/devices/virtual/msr/msr4'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.091875] kobject: 'msr4' (ffff8801f29de810): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.097915] kobject: 'msr4' (ffff8801f29de810): calling ktype release
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.104433] kobject: 'msr4': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.108465] kobject: 'cpu4' (ffff8801f1d0c810): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.114737] kobject: 'cpu4' (ffff8801f1d0c810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu4'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.124061] kobject: 'cpu4' (ffff8801f1d0c810): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.130064] kobject: 'cpu4' (ffff8801f1d0c810): calling ktype release
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.136580] kobject: 'cpu4': free name
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.140735] CPU 5 MCA banks CMCI:6 CMCI:8
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.145460] CPU 12 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.150626] kobject: 'cpu4' (ffff88047e60c338): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.156929] kobject: 'cpu4' (ffff88047e60c338): fill_kobj_path: path = '/devices/system/cpu/cpu4'
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.172349] (elapsed 0.43 seconds) done.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.176397] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6761.195082] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6766.191580] Restarting tasks ... 
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6766.335242] kobject: 'cpufreq' (ffff88046dc202a8): kobject_cleanup
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6766.336153] done.
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6766.336348] PM: Basic memory bitmaps freed
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6766.347976] kobject: 'cpufreq' (ffff88046dc202a8): auto cleanup 'remove' event
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6766.347980] kobject: 'cpufreq' (ffff88046dc202a8): kobject_uevent_env
+Jun  9 11:33:05 istl-vmc-blade9 kernel: [ 6766.376093] kobject: 'cpufreq' (ffff88046dc202a8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cpufreq'
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.483920] kobject: 'cpufreq' (ffff88046dc202a8): auto cleanup kobject_del
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.565820] kobject: 'cpufreq' (ffff88046dc202a8): calling ktype release
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.572624] kobject: 'cpufreq': free name
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.718899] CPU 5 is now offline
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.754452] kobject: 'index0' (ffff88046edca600): kobject_cleanup
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.760659] kobject: 'index0' (ffff88046edca600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.771438] kobject: 'index0' (ffff88046edca600): auto cleanup 'remove' event
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.778668] kobject: 'index0' (ffff88046edca600): kobject_uevent_env
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.785144] kobject: 'index0' (ffff88046edca600): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index0'
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.835401] kobject: 'index0' (ffff88046edca600): auto cleanup kobject_del
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.892290] kobject: 'index0': free name
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.896315] kobject: 'index1' (ffff88046edca648): kobject_cleanup
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.902537] kobject: 'index1' (ffff88046edca648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.913312] kobject: 'index1' (ffff88046edca648): auto cleanup 'remove' event
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.920537] kobject: 'index1' (ffff88046edca648): kobject_uevent_env
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.926997] kobject: 'index1' (ffff88046edca648): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index1'
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6766.965221] kobject: 'index1' (ffff88046edca648): auto cleanup kobject_del
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.016217] kobject: 'index1': free name
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.020256] kobject: 'index2' (ffff88046edca690): kobject_cleanup
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.026440] kobject: 'index2' (ffff88046edca690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.037202] kobject: 'index2' (ffff88046edca690): auto cleanup 'remove' event
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.044438] kobject: 'index2' (ffff88046edca690): kobject_uevent_env
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.097398] kobject: 'index2' (ffff88046edca690): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index2'
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.202824] kobject: 'index2' (ffff88046edca690): auto cleanup kobject_del
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.268712] kobject: 'index2': free name
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.272748] kobject: 'index3' (ffff88046edca6d8): kobject_cleanup
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.278934] kobject: 'index3' (ffff88046edca6d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.289704] kobject: 'index3' (ffff88046edca6d8): auto cleanup 'remove' event
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.296930] kobject: 'index3' (ffff88046edca6d8): kobject_uevent_env
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.379574] kobject: 'index3' (ffff88046edca6d8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index3'
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.425951] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.432857] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.439760] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.446637] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:33:06 istl-vmc-blade9 kernel: [ 6767.453527] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.461752] PM: Basic memory bitmaps created
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.466118] PM: Syncing filesystems ... 
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.528344] kobject: 'index3' (ffff88046edca6d8): auto cleanup kobject_del
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.619172] kobject: 'index3': free name
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.623237] kobject: 'cache' (ffff88046c9b4800): kobject_cleanup
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.629355] kobject: 'cache' (ffff88046c9b4800): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.640042] kobject: 'cache' (ffff88046c9b4800): auto cleanup 'remove' event
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.647186] kobject: 'cache' (ffff88046c9b4800): kobject_uevent_env
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.692123] kobject: 'cache' (ffff88046c9b4800): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache'
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.822823] kobject: 'cache' (ffff88046c9b4800): auto cleanup kobject_del
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.903006] kobject: 'cache': free name
+Jun  9 11:33:07 istl-vmc-blade9 kernel: [ 6767.951686] done.
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6767.953715] Freezing user space processes ... 
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6767.960477] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_cleanup
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6767.967545] kobject: 'machinecheck5' (ffff88047e80cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6767.978941] kobject: 'machinecheck5' (ffff88047e80cff0): auto cleanup 'remove' event
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6767.986865] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_uevent_env
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6767.993950] kobject: 'machinecheck5' (ffff88047e80cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck5'
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.005354] kobject: 'machinecheck5' (ffff88047e80cff0): auto cleanup kobject_del
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.013049] kobject: 'machinecheck5': free name
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.017862] kobject: 'msr5' (ffff88046d289010): kobject_uevent_env
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.024183] kobject: 'msr5' (ffff88046d289010): fill_kobj_path: path = '/devices/virtual/msr/msr5'
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.033330] kobject: 'msr5' (ffff88046d289010): kobject_cleanup
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.039331] kobject: 'msr5' (ffff88046d289010): calling ktype release
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.045852] kobject: 'msr5': free name
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.049952] kobject: 'cpu5' (ffff88046ce80810): kobject_uevent_env
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.056242] kobject: 'cpu5' (ffff88046ce80810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu5'
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.065608] kobject: 'cpu5' (ffff88046ce80810): kobject_cleanup
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.071613] kobject: 'cpu5' (ffff88046ce80810): calling ktype release
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.078134] kobject: 'cpu5': free name
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.082377] CPU 6 MCA banks CMCI:6 CMCI:8
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.087091] CPU 13 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.092214] kobject: 'cpu5' (ffff88047e80c338): kobject_uevent_env
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.098511] kobject: 'cpu5' (ffff88047e80c338): fill_kobj_path: path = '/devices/system/cpu/cpu5'
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.118691] (elapsed 0.16 seconds) done.
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.122735] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6768.141482] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.137933] Restarting tasks ... 
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.221726] kobject: 'cpufreq' (ffff88046c25aaa8): kobject_cleanup
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.228291] kobject: 'cpufreq' (ffff88046c25aaa8): auto cleanup 'remove' event
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.235695] kobject: 'cpufreq' (ffff88046c25aaa8): kobject_uevent_env
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.242272] kobject: 'cpufreq' (ffff88046c25aaa8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cpufreq'
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.290514] kobject: 'cpufreq' (ffff88046c25aaa8): auto cleanup kobject_del
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.325459] done.
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.325545] kobject: 'cpufreq' (ffff88046c25aaa8): calling ktype release
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.325548] kobject: 'cpufreq': free name
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.338464] PM: Basic memory bitmaps freed
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.343980] CPU 6 is now offline
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.349695] kobject: 'index0' (ffff88046c0aa200): kobject_cleanup
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.356047] kobject: 'index0' (ffff88046c0aa200): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.366841] kobject: 'index0' (ffff88046c0aa200): auto cleanup 'remove' event
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.374075] kobject: 'index0' (ffff88046c0aa200): kobject_uevent_env
+Jun  9 11:33:12 istl-vmc-blade9 kernel: [ 6773.380554] kobject: 'index0' (ffff88046c0aa200): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index0'
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.460251] kobject: 'index0' (ffff88046c0aa200): auto cleanup kobject_del
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.489201] kobject: 'index0': free name
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.493248] kobject: 'index1' (ffff88046c0aa248): kobject_cleanup
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.499458] kobject: 'index1' (ffff88046c0aa248): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.510248] kobject: 'index1' (ffff88046c0aa248): auto cleanup 'remove' event
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.517486] kobject: 'index1' (ffff88046c0aa248): kobject_uevent_env
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.523964] kobject: 'index1' (ffff88046c0aa248): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index1'
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.549170] kobject: 'index1' (ffff88046c0aa248): auto cleanup kobject_del
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.580065] kobject: 'index1': free name
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.584118] kobject: 'index2' (ffff88046c0aa290): kobject_cleanup
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.590324] kobject: 'index2' (ffff88046c0aa290): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.601109] kobject: 'index2' (ffff88046c0aa290): auto cleanup 'remove' event
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.608350] kobject: 'index2' (ffff88046c0aa290): kobject_uevent_env
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.647973] kobject: 'index2' (ffff88046c0aa290): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index2'
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.687992] kobject: 'index2' (ffff88046c0aa290): auto cleanup kobject_del
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.732834] kobject: 'index2': free name
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.736884] kobject: 'index3' (ffff88046c0aa2d8): kobject_cleanup
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.743072] kobject: 'index3' (ffff88046c0aa2d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.753852] kobject: 'index3' (ffff88046c0aa2d8): auto cleanup 'remove' event
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.761093] kobject: 'index3' (ffff88046c0aa2d8): kobject_uevent_env
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.795639] kobject: 'index3' (ffff88046c0aa2d8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index3'
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.857775] kobject: 'index3' (ffff88046c0aa2d8): auto cleanup kobject_del
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.910701] kobject: 'index3': free name
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.914834] kobject: 'cache' (ffff8804692d5cc0): kobject_cleanup
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.920943] kobject: 'cache' (ffff8804692d5cc0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.931642] kobject: 'cache' (ffff8804692d5cc0): auto cleanup 'remove' event
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.938801] kobject: 'cache' (ffff8804692d5cc0): kobject_uevent_env
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6773.964596] kobject: 'cache' (ffff8804692d5cc0): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache'
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.024416] kobject: 'cache' (ffff8804692d5cc0): auto cleanup kobject_del
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.082285] kobject: 'cache': free name
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.108292] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_cleanup
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.115176] kobject: 'machinecheck6' (ffff88047ea0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.126571] kobject: 'machinecheck6' (ffff88047ea0cff0): auto cleanup 'remove' event
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.134494] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_uevent_env
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.181134] kobject: 'machinecheck6' (ffff88047ea0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck6'
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.259030] kobject: 'machinecheck6' (ffff88047ea0cff0): auto cleanup kobject_del
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.301484] kobject: 'machinecheck6': free name
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.327934] kobject: 'msr6' (ffff88046eede810): kobject_uevent_env
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.361088] kobject: 'msr6' (ffff88046eede810): fill_kobj_path: path = '/devices/virtual/msr/msr6'
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.415049] kobject: 'msr6' (ffff88046eede810): kobject_cleanup
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.421197] kobject: 'msr6' (ffff88046eede810): calling ktype release
+Jun  9 11:33:13 istl-vmc-blade9 kernel: [ 6774.427757] kobject: 'msr6': free name
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.497701] kobject: 'cpu6' (ffff880437140010): kobject_uevent_env
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.553537] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.560517] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.561792] kobject: 'cpu6' (ffff880437140010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu6'
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.561832] kobject: 'cpu6' (ffff880437140010): kobject_cleanup
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.561837] kobject: 'cpu6' (ffff880437140010): calling ktype release
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.561841] kobject: 'cpu6': free name
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.593073] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.593080] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.593089] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.595351] PM: Basic memory bitmaps created
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.595355] PM: Syncing filesystems ... 
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.751266] CPU 7 MCA banks CMCI:6 CMCI:8
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.813188] CPU 14 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:33:14 istl-vmc-blade9 kernel: [ 6774.851226] kobject: 'cpu6' (ffff88047ea0c338): kobject_uevent_env
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6774.897039] kobject: 'cpu6' (ffff88047ea0c338): fill_kobj_path: path = '/devices/system/cpu/cpu6'
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6774.901075] done.
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6774.901079] Freezing user space processes ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6774.919137] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6774.938104] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6779.934554] Restarting tasks ... 
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6779.980463] kobject: 'cpufreq' (ffff880414129ea8): kobject_cleanup
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6779.980466] done.
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6779.980587] PM: Basic memory bitmaps freed
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6779.993249] kobject: 'cpufreq' (ffff880414129ea8): auto cleanup 'remove' event
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6779.993255] kobject: 'cpufreq' (ffff880414129ea8): kobject_uevent_env
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.014206] kobject: 'cpufreq' (ffff880414129ea8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cpufreq'
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.054159] kobject: 'cpufreq' (ffff880414129ea8): auto cleanup kobject_del
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.075157] kobject: 'cpufreq' (ffff880414129ea8): calling ktype release
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.082120] kobject: 'cpufreq': free name
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.121041] CPU 7 is now offline
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.132256] kobject: 'index0' (ffff880414d44600): kobject_cleanup
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.138554] kobject: 'index0' (ffff880414d44600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.149324] kobject: 'index0' (ffff880414d44600): auto cleanup 'remove' event
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.156558] kobject: 'index0' (ffff880414d44600): kobject_uevent_env
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.163028] kobject: 'index0' (ffff880414d44600): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index0'
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.254875] kobject: 'index0' (ffff880414d44600): auto cleanup kobject_del
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.338736] kobject: 'index0': free name
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.342865] kobject: 'index1' (ffff880414d44648): kobject_cleanup
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.349054] kobject: 'index1' (ffff880414d44648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.359826] kobject: 'index1' (ffff880414d44648): auto cleanup 'remove' event
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.367050] kobject: 'index1' (ffff880414d44648): kobject_uevent_env
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.373515] kobject: 'index1' (ffff880414d44648): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index1'
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.383934] kobject: 'index1' (ffff880414d44648): auto cleanup kobject_del
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.390928] kobject: 'index1': free name
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.395053] kobject: 'index2' (ffff880414d44690): kobject_cleanup
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.401237] kobject: 'index2' (ffff880414d44690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.412019] kobject: 'index2' (ffff880414d44690): auto cleanup 'remove' event
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.419246] kobject: 'index2' (ffff880414d44690): kobject_uevent_env
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.425710] kobject: 'index2' (ffff880414d44690): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index2'
+Jun  9 11:33:19 istl-vmc-blade9 kernel: [ 6780.437995] kobject: 'index2' (ffff880414d44690): auto cleanup kobject_del
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.449965] kobject: 'index2': free name
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.454085] kobject: 'index3' (ffff880414d446d8): kobject_cleanup
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.460270] kobject: 'index3' (ffff880414d446d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.471054] kobject: 'index3' (ffff880414d446d8): auto cleanup 'remove' event
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.478275] kobject: 'index3' (ffff880414d446d8): kobject_uevent_env
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.511369] kobject: 'index3' (ffff880414d446d8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index3'
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.596425] kobject: 'index3' (ffff880414d446d8): auto cleanup kobject_del
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.691732] kobject: 'index3': free name
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.695780] kobject: 'cache' (ffff88046909e640): kobject_cleanup
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.701873] kobject: 'cache' (ffff88046909e640): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.712568] kobject: 'cache' (ffff88046909e640): auto cleanup 'remove' event
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.719726] kobject: 'cache' (ffff88046909e640): kobject_uevent_env
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.726336] kobject: 'cache' (ffff88046909e640): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache'
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.764983] kobject: 'cache' (ffff88046909e640): auto cleanup kobject_del
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.820174] kobject: 'cache': free name
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.868322] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_cleanup
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.875165] kobject: 'machinecheck7' (ffff88047ec0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.886563] kobject: 'machinecheck7' (ffff88047ec0cff0): auto cleanup 'remove' event
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.894472] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_uevent_env
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6780.991781] kobject: 'machinecheck7' (ffff88047ec0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck7'
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.067053] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.073964] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.080842] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.087718] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.094604] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.102827] PM: Basic memory bitmaps created
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.107185] PM: Syncing filesystems ... 
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.145052] kobject: 'machinecheck7' (ffff88047ec0cff0): auto cleanup kobject_del
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.258662] kobject: 'machinecheck7': free name
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.327291] kobject: 'msr7' (ffff88046bff7810): kobject_uevent_env
+Jun  9 11:33:20 istl-vmc-blade9 kernel: [ 6781.426738] kobject: 'msr7' (ffff88046bff7810): fill_kobj_path: path = '/devices/virtual/msr/msr7'
+Jun  9 11:33:21 istl-vmc-blade9 kernel: [ 6781.502956] done.
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.505095] Freezing user space processes ... 
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.511719] kobject: 'msr7' (ffff88046bff7810): kobject_cleanup
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.518001] kobject: 'msr7' (ffff88046bff7810): calling ktype release
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.524518] kobject: 'msr7': free name
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.528635] kobject: 'cpu7' (ffff88046bff7010): kobject_uevent_env
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.534944] kobject: 'cpu7' (ffff88046bff7010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu7'
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.544305] kobject: 'cpu7' (ffff88046bff7010): kobject_cleanup
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.550305] kobject: 'cpu7' (ffff88046bff7010): calling ktype release
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.556829] kobject: 'cpu7': free name
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.561410] CPU 12 MCA banks CMCI:6 CMCI:8
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.565866] CPU 15 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.570863] kobject: 'cpu7' (ffff88047ec0c338): kobject_uevent_env
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.577152] kobject: 'cpu7' (ffff88047ec0c338): fill_kobj_path: path = '/devices/system/cpu/cpu7'
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.588097] (elapsed 0.07 seconds) done.
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.592142] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6781.610872] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6786.607358] Restarting tasks ... done.
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6786.744684] PM: Basic memory bitmaps freed
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6786.789933] kobject: 'cpufreq' (ffff8801f47c20a8): kobject_cleanup
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6786.796213] kobject: 'cpufreq' (ffff8801f47c20a8): auto cleanup 'remove' event
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6786.803607] kobject: 'cpufreq' (ffff8801f47c20a8): kobject_uevent_env
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6786.854765] kobject: 'cpufreq' (ffff8801f47c20a8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cpufreq'
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6786.964610] kobject: 'cpufreq' (ffff8801f47c20a8): auto cleanup kobject_del
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.063610] kobject: 'cpufreq' (ffff8801f47c20a8): calling ktype release
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.070430] kobject: 'cpufreq': free name
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.165294] CPU 8 is now offline
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.224229] kobject: 'index0' (ffff88046ec47000): kobject_cleanup
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.230453] kobject: 'index0' (ffff88046ec47000): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.241236] kobject: 'index0' (ffff88046ec47000): auto cleanup 'remove' event
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.248461] kobject: 'index0' (ffff88046ec47000): kobject_uevent_env
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.254924] kobject: 'index0' (ffff88046ec47000): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index0'
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.313052] kobject: 'index0' (ffff88046ec47000): auto cleanup kobject_del
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.386390] kobject: 'index0': free name
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.390415] kobject: 'index1' (ffff88046ec47048): kobject_cleanup
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.396608] kobject: 'index1' (ffff88046ec47048): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.407377] kobject: 'index1' (ffff88046ec47048): auto cleanup 'remove' event
+Jun  9 11:33:26 istl-vmc-blade9 kernel: [ 6787.414606] kobject: 'index1' (ffff88046ec47048): kobject_uevent_env
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.529712] kobject: 'index1' (ffff88046ec47048): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index1'
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.653550] kobject: 'index1' (ffff88046ec47048): auto cleanup kobject_del
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.733591] kobject: 'index1': free name
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.737621] kobject: 'index2' (ffff88046ec47090): kobject_cleanup
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.743815] kobject: 'index2' (ffff88046ec47090): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.754590] kobject: 'index2' (ffff88046ec47090): auto cleanup 'remove' event
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.761811] kobject: 'index2' (ffff88046ec47090): kobject_uevent_env
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.881825] kobject: 'index2' (ffff88046ec47090): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index2'
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.963403] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.970359] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.977245] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.984122] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.991005] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6787.999231] PM: Basic memory bitmaps created
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.003588] PM: Syncing filesystems ... 
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.017143] kobject: 'index2' (ffff88046ec47090): auto cleanup kobject_del
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.119810] kobject: 'index2': free name
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.123849] kobject: 'index3' (ffff88046ec470d8): kobject_cleanup
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.130037] kobject: 'index3' (ffff88046ec470d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.140805] kobject: 'index3' (ffff88046ec470d8): auto cleanup 'remove' event
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.148034] kobject: 'index3' (ffff88046ec470d8): kobject_uevent_env
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.217046] kobject: 'index3' (ffff88046ec470d8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index3'
+Jun  9 11:33:27 istl-vmc-blade9 kernel: [ 6788.342513] kobject: 'index3' (ffff88046ec470d8): auto cleanup kobject_del
+Jun  9 11:33:28 istl-vmc-blade9 kernel: [ 6788.442344] kobject: 'index3': free name
+Jun  9 11:33:28 istl-vmc-blade9 kernel: [ 6788.446439] kobject: 'cache' (ffff8804693e5280): kobject_cleanup
+Jun  9 11:33:28 istl-vmc-blade9 kernel: [ 6788.452546] kobject: 'cache' (ffff8804693e5280): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.463250] kobject: 'cache' (ffff8804693e5280): auto cleanup 'remove' event
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.468282] done.
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.468284] Freezing user space processes ... 
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.476699] kobject: 'cache' (ffff8804693e5280): kobject_uevent_env
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.483352] kobject: 'cache' (ffff8804693e5280): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache'
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.493068] kobject: 'cache' (ffff8804693e5280): auto cleanup kobject_del
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.499936] kobject: 'cache': free name
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.503876] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_cleanup
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.510686] kobject: 'machinecheck8' (ffff8801f8e0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.522042] kobject: 'machinecheck8' (ffff8801f8e0cff0): auto cleanup 'remove' event
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.529946] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_uevent_env
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.537048] kobject: 'machinecheck8' (ffff8801f8e0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck8'
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.548509] kobject: 'machinecheck8' (ffff8801f8e0cff0): auto cleanup kobject_del
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.556228] kobject: 'machinecheck8': free name
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.561034] kobject: 'msr8' (ffff88046f715010): kobject_uevent_env
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.567306] kobject: 'msr8' (ffff88046f715010): fill_kobj_path: path = '/devices/virtual/msr/msr8'
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.576454] kobject: 'msr8' (ffff88046f715010): kobject_cleanup
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.582455] kobject: 'msr8' (ffff88046f715010): calling ktype release
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.589003] kobject: 'msr8': free name
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.592988] kobject: 'cpu8' (ffff880441554010): kobject_uevent_env
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.599251] kobject: 'cpu8' (ffff880441554010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu8'
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.608552] kobject: 'cpu8' (ffff880441554010): kobject_cleanup
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.614589] kobject: 'cpu8' (ffff880441554010): calling ktype release
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.621105] kobject: 'cpu8': free name
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.625863] kobject: 'cpu8' (ffff8801f8e0c338): kobject_uevent_env
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.632158] kobject: 'cpu8' (ffff8801f8e0c338): fill_kobj_path: path = '/devices/system/cpu/cpu8'
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.647266] (elapsed 0.17 seconds) done.
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.651422] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6788.670179] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6793.666622] Restarting tasks ... done.
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6793.770962] PM: Basic memory bitmaps freed
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6793.953963] kobject: 'cpufreq' (ffff8801f45658a8): kobject_cleanup
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6793.960372] kobject: 'cpufreq' (ffff8801f45658a8): auto cleanup 'remove' event
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6793.967821] kobject: 'cpufreq' (ffff8801f45658a8): kobject_uevent_env
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6794.010027] kobject: 'cpufreq' (ffff8801f45658a8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cpufreq'
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6794.109769] kobject: 'cpufreq' (ffff8801f45658a8): auto cleanup kobject_del
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6794.196126] kobject: 'cpufreq' (ffff8801f45658a8): calling ktype release
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6794.203025] kobject: 'cpufreq': free name
+Jun  9 11:33:33 istl-vmc-blade9 kernel: [ 6794.353281] CPU 9 is now offline
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.423239] kobject: 'index0' (ffff8801f232a200): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.429554] kobject: 'index0' (ffff8801f232a200): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.440346] kobject: 'index0' (ffff8801f232a200): auto cleanup 'remove' event
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.447634] kobject: 'index0' (ffff8801f232a200): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.454162] kobject: 'index0' (ffff8801f232a200): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index0'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.603918] kobject: 'index0' (ffff8801f232a200): auto cleanup kobject_del
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.712751] kobject: 'index0': free name
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.716849] kobject: 'index1' (ffff8801f232a248): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.723148] kobject: 'index1' (ffff8801f232a248): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.733979] kobject: 'index1' (ffff8801f232a248): auto cleanup 'remove' event
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.741263] kobject: 'index1' (ffff8801f232a248): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.915744] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922409] kobject: 'index1' (ffff8801f232a248): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index1'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922427] kobject: 'index1' (ffff8801f232a248): auto cleanup kobject_del
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922443] kobject: 'index1': free name
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922445] kobject: 'index2' (ffff8801f232a290): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922446] kobject: 'index2' (ffff8801f232a290): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922448] kobject: 'index2' (ffff8801f232a290): auto cleanup 'remove' event
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922450] kobject: 'index2' (ffff8801f232a290): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922453] kobject: 'index2' (ffff8801f232a290): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index2'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922460] kobject: 'index2' (ffff8801f232a290): auto cleanup kobject_del
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922468] kobject: 'index2': free name
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922469] kobject: 'index3' (ffff8801f232a2d8): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922471] kobject: 'index3' (ffff8801f232a2d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922473] kobject: 'index3' (ffff8801f232a2d8): auto cleanup 'remove' event
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922474] kobject: 'index3' (ffff8801f232a2d8): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922477] kobject: 'index3' (ffff8801f232a2d8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index3'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922482] kobject: 'index3' (ffff8801f232a2d8): auto cleanup kobject_del
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922494] kobject: 'index3': free name
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922496] kobject: 'cache' (ffff8801f24815c0): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922497] kobject: 'cache' (ffff8801f24815c0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922499] kobject: 'cache' (ffff8801f24815c0): auto cleanup 'remove' event
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922501] kobject: 'cache' (ffff8801f24815c0): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922504] kobject: 'cache' (ffff8801f24815c0): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922512] kobject: 'cache' (ffff8801f24815c0): auto cleanup kobject_del
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922516] kobject: 'cache': free name
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922549] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922550] kobject: 'machinecheck9' (ffff8801f900cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922552] kobject: 'machinecheck9' (ffff8801f900cff0): auto cleanup 'remove' event
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922554] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922557] kobject: 'machinecheck9' (ffff8801f900cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck9'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922564] kobject: 'machinecheck9' (ffff8801f900cff0): auto cleanup kobject_del
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.922568] kobject: 'machinecheck9': free name
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.926401] kobject: 'msr9' (ffff8801ee70a810): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.926405] kobject: 'msr9' (ffff8801ee70a810): fill_kobj_path: path = '/devices/virtual/msr/msr9'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.926419] kobject: 'msr9' (ffff8801ee70a810): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.926421] kobject: 'msr9' (ffff8801ee70a810): calling ktype release
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.926423] kobject: 'msr9': free name
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.932402] kobject: 'cpu9' (ffff8801ee7bc810): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.932406] kobject: 'cpu9' (ffff8801ee7bc810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu9'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.932422] kobject: 'cpu9' (ffff8801ee7bc810): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.932424] kobject: 'cpu9' (ffff8801ee7bc810): calling ktype release
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6794.932426] kobject: 'cpu9': free name
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.218479] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.225355] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.232226] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.239101] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.247310] PM: Basic memory bitmaps created
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.251664] PM: Syncing filesystems ... 
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.262487] kobject: 'cpu9' (ffff8801f900c338): kobject_uevent_env
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.269113] kobject: 'cpu9' (ffff8801f900c338): fill_kobj_path: path = '/devices/system/cpu/cpu9'
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.382813] kobject: 'cpufreq' (ffff8804373270a8): kobject_cleanup
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.389089] kobject: 'cpufreq' (ffff8804373270a8): auto cleanup 'remove' event
+Jun  9 11:33:34 istl-vmc-blade9 kernel: [ 6795.396467] kobject: 'cpufreq' (ffff8804373270a8): kobject_uevent_env
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.454221] kobject: 'cpufreq' (ffff8804373270a8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cpufreq'
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.586392] kobject: 'cpufreq' (ffff8804373270a8): auto cleanup kobject_del
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.671281] kobject: 'cpufreq' (ffff8804373270a8): calling ktype release
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.678079] kobject: 'cpufreq': free name
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.751145] CPU 10 is now offline
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.841048] kobject: 'index0' (ffff8801e9404c00): kobject_cleanup
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.847440] kobject: 'index0' (ffff8801e9404c00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.858284] kobject: 'index0' (ffff8801e9404c00): auto cleanup 'remove' event
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.865593] kobject: 'index0' (ffff8801e9404c00): kobject_uevent_env
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.872433] kobject: 'index0' (ffff8801e9404c00): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index0'
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6795.930881] kobject: 'index0' (ffff8801e9404c00): auto cleanup kobject_del
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6796.021824] kobject: 'index0': free name
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6796.025963] kobject: 'index1' (ffff8801e9404c48): kobject_cleanup
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6796.032202] kobject: 'index1' (ffff8801e9404c48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6796.042996] kobject: 'index1' (ffff8801e9404c48): auto cleanup 'remove' event
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6796.050266] kobject: 'index1' (ffff8801e9404c48): kobject_uevent_env
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6796.115595] kobject: 'index1' (ffff8801e9404c48): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index1'
+Jun  9 11:33:35 istl-vmc-blade9 kernel: [ 6796.258079] done.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.260112] Freezing user space processes ... 
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.266883] kobject: 'index1' (ffff8801e9404c48): auto cleanup kobject_del
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.274212] kobject: 'index1': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.278282] kobject: 'index2' (ffff8801e9404c90): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.284492] kobject: 'index2' (ffff8801e9404c90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.295286] kobject: 'index2' (ffff8801e9404c90): auto cleanup 'remove' event
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.302531] kobject: 'index2' (ffff8801e9404c90): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.308999] kobject: 'index2' (ffff8801e9404c90): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index2'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.319475] kobject: 'index2' (ffff8801e9404c90): auto cleanup kobject_del
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.326480] kobject: 'index2': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.330550] kobject: 'index3' (ffff8801e9404cd8): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.336756] kobject: 'index3' (ffff8801e9404cd8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.347542] kobject: 'index3' (ffff8801e9404cd8): auto cleanup 'remove' event
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.354783] kobject: 'index3' (ffff8801e9404cd8): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.361262] kobject: 'index3' (ffff8801e9404cd8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index3'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.371743] kobject: 'index3' (ffff8801e9404cd8): auto cleanup kobject_del
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.378705] kobject: 'index3': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.382709] kobject: 'cache' (ffff8801f1defc00): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.388795] kobject: 'cache' (ffff8801f1defc00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.399457] kobject: 'cache' (ffff8801f1defc00): auto cleanup 'remove' event
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.406584] kobject: 'cache' (ffff8801f1defc00): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.412930] kobject: 'cache' (ffff8801f1defc00): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.422652] kobject: 'cache' (ffff8801f1defc00): auto cleanup kobject_del
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.429519] kobject: 'cache': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.433458] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.440322] kobject: 'machinecheck10' (ffff8801f920cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.451772] kobject: 'machinecheck10' (ffff8801f920cff0): auto cleanup 'remove' event
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.459780] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.466909] kobject: 'machinecheck10' (ffff8801f920cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck10'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.478454] kobject: 'machinecheck10' (ffff8801f920cff0): auto cleanup kobject_del
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.486185] kobject: 'machinecheck10': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.491135] kobject: 'msr10' (ffff8801789e3010): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.497493] kobject: 'msr10' (ffff8801789e3010): fill_kobj_path: path = '/devices/virtual/msr/msr10'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.506803] kobject: 'msr10' (ffff8801789e3010): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.512932] kobject: 'msr10' (ffff8801789e3010): calling ktype release
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.519544] kobject: 'msr10': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.523640] kobject: 'cpu10' (ffff8801f2b63810): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.530013] kobject: 'cpu10' (ffff8801f2b63810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu10'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.539514] kobject: 'cpu10' (ffff8801f2b63810): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.545605] kobject: 'cpu10' (ffff8801f2b63810): calling ktype release
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.552208] kobject: 'cpu10': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.556699] kobject: 'cpu10' (ffff8801f920c338): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.563110] kobject: 'cpu10' (ffff8801f920c338): fill_kobj_path: path = '/devices/system/cpu/cpu10'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.577152] (elapsed 0.31 seconds) done.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.581200] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6796.599939] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.595505] Restarting tasks ... done.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.821616] PM: Basic memory bitmaps freed
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.837882] kobject: 'cpufreq' (ffff8801f15fa0a8): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.844192] kobject: 'cpufreq' (ffff8801f15fa0a8): auto cleanup 'remove' event
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.851594] kobject: 'cpufreq' (ffff8801f15fa0a8): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.858164] kobject: 'cpufreq' (ffff8801f15fa0a8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cpufreq'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.881776] kobject: 'cpufreq' (ffff8801f15fa0a8): auto cleanup kobject_del
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.895682] kobject: 'cpufreq' (ffff8801f15fa0a8): calling ktype release
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.902499] kobject: 'cpufreq': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.921335] CPU 11 is now offline
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.934876] kobject: 'index0' (ffff88046f6e6e00): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.941133] kobject: 'index0' (ffff88046f6e6e00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.951902] kobject: 'index0' (ffff88046f6e6e00): auto cleanup 'remove' event
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.959129] kobject: 'index0' (ffff88046f6e6e00): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6801.965587] kobject: 'index0' (ffff88046f6e6e00): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index0'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6802.009086] kobject: 'index0' (ffff88046f6e6e00): auto cleanup kobject_del
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6802.051528] kobject: 'index0': free name
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6802.055581] kobject: 'index1' (ffff88046f6e6e48): kobject_cleanup
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6802.061761] kobject: 'index1' (ffff88046f6e6e48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6802.072528] kobject: 'index1' (ffff88046f6e6e48): auto cleanup 'remove' event
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6802.079745] kobject: 'index1' (ffff88046f6e6e48): kobject_uevent_env
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6802.116110] kobject: 'index1' (ffff88046f6e6e48): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index1'
+Jun  9 11:33:41 istl-vmc-blade9 kernel: [ 6802.286076] kobject: 'index1' (ffff88046f6e6e48): auto cleanup kobject_del
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.429919] kobject: 'index1': free name
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.433944] kobject: 'index2' (ffff88046f6e6e90): kobject_cleanup
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.440133] kobject: 'index2' (ffff88046f6e6e90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.450903] kobject: 'index2' (ffff88046f6e6e90): auto cleanup 'remove' event
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.458127] kobject: 'index2' (ffff88046f6e6e90): kobject_uevent_env
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.546734] kobject: 'index2' (ffff88046f6e6e90): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index2'
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.756428] kobject: 'index2' (ffff88046f6e6e90): auto cleanup kobject_del
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.885227] kobject: 'index2': free name
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.889257] kobject: 'index3' (ffff88046f6e6ed8): kobject_cleanup
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.895449] kobject: 'index3' (ffff88046f6e6ed8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.906223] kobject: 'index3' (ffff88046f6e6ed8): auto cleanup 'remove' event
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6802.913446] kobject: 'index3' (ffff88046f6e6ed8): kobject_uevent_env
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.108874] kobject: 'index3' (ffff88046f6e6ed8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index3'
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.245931] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.252821] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.259710] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.266587] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.273466] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.281688] PM: Basic memory bitmaps created
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.286050] PM: Syncing filesystems ... 
+Jun  9 11:33:42 istl-vmc-blade9 kernel: [ 6803.305589] kobject: 'index3' (ffff88046f6e6ed8): auto cleanup kobject_del
+Jun  9 11:33:43 istl-vmc-blade9 kernel: [ 6803.453454] kobject: 'index3': free name
+Jun  9 11:33:43 istl-vmc-blade9 kernel: [ 6803.457475] kobject: 'cache' (ffff88046c0a9540): kobject_cleanup
+Jun  9 11:33:43 istl-vmc-blade9 kernel: [ 6803.463575] kobject: 'cache' (ffff88046c0a9540): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:43 istl-vmc-blade9 kernel: [ 6803.474257] kobject: 'cache' (ffff88046c0a9540): auto cleanup 'remove' event
+Jun  9 11:33:43 istl-vmc-blade9 kernel: [ 6803.481395] kobject: 'cache' (ffff88046c0a9540): kobject_uevent_env
+Jun  9 11:33:43 istl-vmc-blade9 kernel: [ 6803.711949] kobject: 'cache' (ffff88046c0a9540): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache'
+Jun  9 11:33:43 istl-vmc-blade9 kernel: [ 6803.868723] done.
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.870746] Freezing user space processes ... 
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.876931] kobject: 'cache' (ffff88046c0a9540): auto cleanup kobject_del
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.884082] kobject: 'cache': free name
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.888127] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_cleanup
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.894994] kobject: 'machinecheck11' (ffff8801f940cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.906446] kobject: 'machinecheck11' (ffff8801f940cff0): auto cleanup 'remove' event
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.914423] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_uevent_env
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.921627] kobject: 'machinecheck11' (ffff8801f940cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck11'
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.933202] kobject: 'machinecheck11' (ffff8801f940cff0): auto cleanup kobject_del
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.941056] kobject: 'machinecheck11': free name
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.945984] kobject: 'msr11' (ffff880414cd1010): kobject_uevent_env
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.952346] kobject: 'msr11' (ffff880414cd1010): fill_kobj_path: path = '/devices/virtual/msr/msr11'
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.961699] kobject: 'msr11' (ffff880414cd1010): kobject_cleanup
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.967785] kobject: 'msr11' (ffff880414cd1010): calling ktype release
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.974388] kobject: 'msr11': free name
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.978499] kobject: 'cpu11' (ffff880437161010): kobject_uevent_env
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.984956] kobject: 'cpu11' (ffff880437161010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu11'
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6803.994494] kobject: 'cpu11' (ffff880437161010): kobject_cleanup
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6804.000584] kobject: 'cpu11' (ffff880437161010): calling ktype release
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6804.007225] kobject: 'cpu11': free name
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6804.011809] kobject: 'cpu11' (ffff8801f940c338): kobject_uevent_env
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6804.018167] kobject: 'cpu11' (ffff8801f940c338): fill_kobj_path: path = '/devices/system/cpu/cpu11'
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6804.030824] (elapsed 0.15 seconds) done.
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6804.034932] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6804.053575] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:33:48 istl-vmc-blade9 abrt: Kerneloops: Reported 8 kernel oopses to Abrt
+Jun  9 11:33:48 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373828-2003-8' creation detected
+Jun  9 11:33:48 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:33:48 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373828-2003-8 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:33:48 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373828-2003-7' creation detected
+Jun  9 11:33:48 istl-vmc-blade9 abrtd: New crash /var/spool/abrt/kerneloops-1970373828-2003-7, processing
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6809.050311] Restarting tasks ... 
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6809.370393] kobject: 'cpufreq' (ffff8801f45714a8): kobject_cleanup
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6809.376994] kobject: 'cpufreq' (ffff8801f45714a8): auto cleanup 'remove' event
+Jun  9 11:33:48 istl-vmc-blade9 kernel: [ 6809.384385] kobject: 'cpufreq' (ffff8801f45714a8): kobject_uevent_env
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6809.592953] kobject: 'cpufreq' (ffff8801f45714a8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cpufreq'
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6809.785670] kobject: 'cpufreq' (ffff8801f45714a8): auto cleanup kobject_del
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6809.852347] done.
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6809.854432] PM: Basic memory bitmaps freed
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6809.935452] kobject: 'cpufreq' (ffff8801f45714a8): calling ktype release
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6809.942255] kobject: 'cpufreq': free name
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6810.182050] CPU 12 is now offline
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6810.308874] kobject: 'index0' (ffff8801f4427a00): kobject_cleanup
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6810.315064] kobject: 'index0' (ffff8801f4427a00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6810.325838] kobject: 'index0' (ffff8801f4427a00): auto cleanup 'remove' event
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6810.333059] kobject: 'index0' (ffff8801f4427a00): kobject_uevent_env
+Jun  9 11:33:49 istl-vmc-blade9 kernel: [ 6810.339512] kobject: 'index0' (ffff8801f4427a00): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index0'
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6810.768217] kobject: 'index0' (ffff8801f4427a00): auto cleanup kobject_del
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6810.779170] kobject: 'index0': free name
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6810.783237] kobject: 'index1' (ffff8801f4427a48): kobject_cleanup
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6810.789417] kobject: 'index1' (ffff8801f4427a48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6810.800186] kobject: 'index1' (ffff8801f4427a48): auto cleanup 'remove' event
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6810.807409] kobject: 'index1' (ffff8801f4427a48): kobject_uevent_env
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6811.150570] kobject: 'index1' (ffff8801f4427a48): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index1'
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6811.214537] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6811.221429] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6811.228304] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6811.235174] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6811.242060] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:33:50 istl-vmc-blade9 kernel: [ 6811.250279] PM: Basic memory bitmaps created
+Jun  9 11:33:51 istl-vmc-blade9 kernel: [ 6811.254641] PM: Syncing filesystems ... 
+Jun  9 11:33:51 istl-vmc-blade9 kernel: [ 6811.454116] kobject: 'index1' (ffff8801f4427a48): auto cleanup kobject_del
+Jun  9 11:33:51 istl-vmc-blade9 kernel: [ 6811.665790] kobject: 'index1': free name
+Jun  9 11:33:51 istl-vmc-blade9 kernel: [ 6811.669848] kobject: 'index2' (ffff8801f4427a90): kobject_cleanup
+Jun  9 11:33:51 istl-vmc-blade9 kernel: [ 6811.676025] kobject: 'index2' (ffff8801f4427a90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:51 istl-vmc-blade9 kernel: [ 6811.686793] kobject: 'index2' (ffff8801f4427a90): auto cleanup 'remove' event
+Jun  9 11:33:51 istl-vmc-blade9 kernel: [ 6811.694008] kobject: 'index2' (ffff8801f4427a90): kobject_uevent_env
+Jun  9 11:33:51 istl-vmc-blade9 kernel: [ 6811.796643] done.
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.798670] Freezing user space processes ... 
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.804531] kobject: 'index2' (ffff8801f4427a90): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index2'
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.815252] kobject: 'index2' (ffff8801f4427a90): auto cleanup kobject_del
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.822267] kobject: 'index2': free name
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.826279] kobject: 'index3' (ffff8801f4427ad8): kobject_cleanup
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.832451] kobject: 'index3' (ffff8801f4427ad8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.843207] kobject: 'index3' (ffff8801f4427ad8): auto cleanup 'remove' event
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.850417] kobject: 'index3' (ffff8801f4427ad8): kobject_uevent_env
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.856859] kobject: 'index3' (ffff8801f4427ad8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index3'
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.867303] kobject: 'index3' (ffff8801f4427ad8): auto cleanup kobject_del
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.874264] kobject: 'index3': free name
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.878266] kobject: 'cache' (ffff880169d64e00): kobject_cleanup
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.884352] kobject: 'cache' (ffff880169d64e00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.895022] kobject: 'cache' (ffff880169d64e00): auto cleanup 'remove' event
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.902150] kobject: 'cache' (ffff880169d64e00): kobject_uevent_env
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.908504] kobject: 'cache' (ffff880169d64e00): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache'
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.918355] kobject: 'cache' (ffff880169d64e00): auto cleanup kobject_del
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.925279] kobject: 'cache': free name
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.929287] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_cleanup
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.936191] kobject: 'machinecheck12' (ffff88047ee0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.947696] kobject: 'machinecheck12' (ffff88047ee0cff0): auto cleanup 'remove' event
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.955702] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_uevent_env
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.962831] kobject: 'machinecheck12' (ffff88047ee0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck12'
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.974428] kobject: 'machinecheck12' (ffff88047ee0cff0): auto cleanup kobject_del
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.982146] kobject: 'machinecheck12': free name
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.987914] kobject: 'msr12' (ffff880163cf6010): kobject_uevent_env
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6811.994268] kobject: 'msr12' (ffff880163cf6010): fill_kobj_path: path = '/devices/virtual/msr/msr12'
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.003567] kobject: 'msr12' (ffff880163cf6010): kobject_cleanup
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.009683] kobject: 'msr12' (ffff880163cf6010): calling ktype release
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.016296] kobject: 'msr12': free name
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.020389] kobject: 'cpu12' (ffff8801f3576810): kobject_uevent_env
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.026752] kobject: 'cpu12' (ffff8801f3576810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu12'
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.036247] kobject: 'cpu12' (ffff8801f3576810): kobject_cleanup
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.042338] kobject: 'cpu12' (ffff8801f3576810): calling ktype release
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.048951] kobject: 'cpu12': free name
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.057194] CPU 13 MCA banks CMCI:6 CMCI:8
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.064608] kobject: 'cpu12' (ffff88047ee0c338): kobject_uevent_env
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.070979] kobject: 'cpu12' (ffff88047ee0c338): fill_kobj_path: path = '/devices/system/cpu/cpu12'
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.083417] (elapsed 0.28 seconds) done.
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.087463] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6812.106219] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6817.102332] Restarting tasks ... done.
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6817.260294] PM: Basic memory bitmaps freed
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6817.353391] kobject: 'cpufreq' (ffff8804417b72a8): kobject_cleanup
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6817.359664] kobject: 'cpufreq' (ffff8804417b72a8): auto cleanup 'remove' event
+Jun  9 11:33:56 istl-vmc-blade9 kernel: [ 6817.367033] kobject: 'cpufreq' (ffff8804417b72a8): kobject_uevent_env
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.447949] kobject: 'cpufreq' (ffff8804417b72a8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cpufreq'
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.637669] kobject: 'cpufreq' (ffff8804417b72a8): auto cleanup kobject_del
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.701240] kobject: 'cpufreq' (ffff8804417b72a8): calling ktype release
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.708089] kobject: 'cpufreq': free name
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.858042] kobject: 'input0' (ffff8801f2280b58): fill_kobj_path: path = '/devices/LNXSYSTM:00/LNXPWRBN:00/input/input0'
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.870282] kobject: 'input3' (ffff8801f2313b58): fill_kobj_path: path = '/devices/pci0000:00/0000:00:1d.7/usb2/2-3/2-3.2/2-3.2.2/2-3.2.2.3/2-3.2.2.3:1.1/input/input3'
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.887312] kobject: 'input4' (ffff8801f0ee3b58): fill_kobj_path: path = '/devices/platform/pcspkr/input/input4'
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.897252] CPU 13 is now offline
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.901198] kobject: 'index0' (ffff8804417b7e00): kobject_cleanup
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.907379] kobject: 'index0' (ffff8804417b7e00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.918132] kobject: 'index0' (ffff8804417b7e00): auto cleanup 'remove' event
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.925347] kobject: 'index0' (ffff8804417b7e00): kobject_uevent_env
+Jun  9 11:33:57 istl-vmc-blade9 kernel: [ 6817.931992] kobject: 'index0' (ffff8804417b7e00): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index0'
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.429444] kobject: 'index0' (ffff8804417b7e00): auto cleanup kobject_del
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.437072] kobject: 'index0': free name
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.441129] kobject: 'index1' (ffff8804417b7e48): kobject_cleanup
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.447303] kobject: 'index1' (ffff8804417b7e48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.458071] kobject: 'index1' (ffff8804417b7e48): auto cleanup 'remove' event
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.465286] kobject: 'index1' (ffff8804417b7e48): kobject_uevent_env
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.556568] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.563558] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.570432] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.577302] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.584180] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.592398] PM: Basic memory bitmaps created
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.596754] PM: Syncing filesystems ... 
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.609157] kobject: 'index1' (ffff8804417b7e48): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index1'
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.669103] kobject: 'index1' (ffff8804417b7e48): auto cleanup kobject_del
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.676671] kobject: 'index1': free name
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.680775] kobject: 'index2' (ffff8804417b7e90): kobject_cleanup
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.686956] kobject: 'index2' (ffff8804417b7e90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.697720] kobject: 'index2' (ffff8804417b7e90): auto cleanup 'remove' event
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.704939] kobject: 'index2' (ffff8804417b7e90): kobject_uevent_env
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6818.858775] kobject: 'index2' (ffff8804417b7e90): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index2'
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6819.282819] kobject: 'index2' (ffff8804417b7e90): auto cleanup kobject_del
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6819.290445] kobject: 'index2': free name
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6819.294465] kobject: 'index3' (ffff8804417b7ed8): kobject_cleanup
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6819.300639] kobject: 'index3' (ffff8804417b7ed8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6819.311397] kobject: 'index3' (ffff8804417b7ed8): auto cleanup 'remove' event
+Jun  9 11:33:58 istl-vmc-blade9 kernel: [ 6819.318608] kobject: 'index3' (ffff8804417b7ed8): kobject_uevent_env
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6819.474843] kobject: 'index3' (ffff8804417b7ed8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index3'
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6819.868309] kobject: 'index3' (ffff8804417b7ed8): auto cleanup kobject_del
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6819.875818] kobject: 'index3': free name
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6819.879873] kobject: 'cache' (ffff88046d788380): kobject_cleanup
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6819.885963] kobject: 'cache' (ffff88046d788380): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6819.896630] kobject: 'cache' (ffff88046d788380): auto cleanup 'remove' event
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6819.903757] kobject: 'cache' (ffff88046d788380): kobject_uevent_env
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6820.046958] kobject: 'cache' (ffff88046d788380): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache'
+Jun  9 11:33:59 istl-vmc-blade9 kernel: [ 6820.118443] done.
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.120521] Freezing user space processes ... 
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.126861] kobject: 'cache' (ffff88046d788380): auto cleanup kobject_del
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.134011] kobject: 'cache': free name
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.137991] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_cleanup
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.144855] kobject: 'machinecheck13' (ffff88047f00cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.156299] kobject: 'machinecheck13' (ffff88047f00cff0): auto cleanup 'remove' event
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.164286] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_uevent_env
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.171485] kobject: 'machinecheck13' (ffff88047f00cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck13'
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.183064] kobject: 'machinecheck13' (ffff88047f00cff0): auto cleanup kobject_del
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.190932] kobject: 'machinecheck13': free name
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.195724] kobject: 'msr13' (ffff880469059010): kobject_uevent_env
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.202071] kobject: 'msr13' (ffff880469059010): fill_kobj_path: path = '/devices/virtual/msr/msr13'
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.211363] kobject: 'msr13' (ffff880469059010): kobject_cleanup
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.217495] kobject: 'msr13' (ffff880469059010): calling ktype release
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.224101] kobject: 'msr13': free name
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.228233] kobject: 'cpu13' (ffff8804148ce810): kobject_uevent_env
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.234595] kobject: 'cpu13' (ffff8804148ce810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu13'
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.244102] kobject: 'cpu13' (ffff8804148ce810): kobject_cleanup
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.250189] kobject: 'cpu13' (ffff8804148ce810): calling ktype release
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.256798] kobject: 'cpu13': free name
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.261118] CPU 14 MCA banks CMCI:6 CMCI:8
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.265449] kobject: 'cpu13' (ffff88047f00c338): kobject_uevent_env
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.271820] kobject: 'cpu13' (ffff88047f00c338): fill_kobj_path: path = '/devices/system/cpu/cpu13'
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.290939] (elapsed 0.16 seconds) done.
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.295043] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6820.313686] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6825.311029] Restarting tasks ... done.
+Jun  9 11:34:04 istl-vmc-blade9 kernel: [ 6825.327180] PM: Basic memory bitmaps freed
+Jun  9 11:34:05 istl-vmc-blade9 kernel: [ 6825.730359] kobject: 'cpufreq' (ffff88041492b6a8): kobject_cleanup
+Jun  9 11:34:05 istl-vmc-blade9 kernel: [ 6825.736688] kobject: 'cpufreq' (ffff88041492b6a8): auto cleanup 'remove' event
+Jun  9 11:34:05 istl-vmc-blade9 kernel: [ 6825.744096] kobject: 'cpufreq' (ffff88041492b6a8): kobject_uevent_env
+Jun  9 11:34:05 istl-vmc-blade9 kernel: [ 6825.754508] kobject: 'cpufreq' (ffff88041492b6a8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cpufreq'
+Jun  9 11:34:05 istl-vmc-blade9 kernel: [ 6825.808701] kobject: 'cpufreq' (ffff88041492b6a8): auto cleanup kobject_del
+Jun  9 11:34:05 istl-vmc-blade9 kernel: [ 6826.322547] kobject: 'cpufreq' (ffff88041492b6a8): calling ktype release
+Jun  9 11:34:05 istl-vmc-blade9 kernel: [ 6826.329419] kobject: 'cpufreq': free name
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6826.430954] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6826.437901] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6826.444853] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6826.451788] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6826.458727] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6826.466993] PM: Basic memory bitmaps created
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6826.471389] PM: Syncing filesystems ... 
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6826.687794] CPU 14 is now offline
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6827.085562] kobject: 'index0' (ffff880414255e00): kobject_cleanup
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6827.091883] kobject: 'index0' (ffff880414255e00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6827.102689] kobject: 'index0' (ffff880414255e00): auto cleanup 'remove' event
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6827.109989] kobject: 'index0' (ffff880414255e00): kobject_uevent_env
+Jun  9 11:34:06 istl-vmc-blade9 kernel: [ 6827.116626] kobject: 'index0' (ffff880414255e00): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index0'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.692318] done.
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.694377] Freezing user space processes ... 
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.701031] kobject: 'index0' (ffff880414255e00): auto cleanup kobject_del
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.708338] kobject: 'index0': free name
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.712409] kobject: 'index1' (ffff880414255e48): kobject_cleanup
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.718620] kobject: 'index1' (ffff880414255e48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.729454] kobject: 'index1' (ffff880414255e48): auto cleanup 'remove' event
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.736697] kobject: 'index1' (ffff880414255e48): kobject_uevent_env
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.743187] kobject: 'index1' (ffff880414255e48): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index1'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.753679] kobject: 'index1' (ffff880414255e48): auto cleanup kobject_del
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.760697] kobject: 'index1': free name
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.764745] kobject: 'index2' (ffff880414255e90): kobject_cleanup
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.770949] kobject: 'index2' (ffff880414255e90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.781734] kobject: 'index2' (ffff880414255e90): auto cleanup 'remove' event
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.788981] kobject: 'index2' (ffff880414255e90): kobject_uevent_env
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.795453] kobject: 'index2' (ffff880414255e90): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index2'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.805936] kobject: 'index2' (ffff880414255e90): auto cleanup kobject_del
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.812910] kobject: 'index2': free name
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.816916] kobject: 'index3' (ffff880414255ed8): kobject_cleanup
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.823083] kobject: 'index3' (ffff880414255ed8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.833841] kobject: 'index3' (ffff880414255ed8): auto cleanup 'remove' event
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.841055] kobject: 'index3' (ffff880414255ed8): kobject_uevent_env
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.847498] kobject: 'index3' (ffff880414255ed8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index3'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.857915] kobject: 'index3' (ffff880414255ed8): auto cleanup kobject_del
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.864877] kobject: 'index3': free name
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.868883] kobject: 'cache' (ffff88046938a340): kobject_cleanup
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.874969] kobject: 'cache' (ffff88046938a340): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.885638] kobject: 'cache' (ffff88046938a340): auto cleanup 'remove' event
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.892762] kobject: 'cache' (ffff88046938a340): kobject_uevent_env
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.899113] kobject: 'cache' (ffff88046938a340): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.908836] kobject: 'cache' (ffff88046938a340): auto cleanup kobject_del
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.915707] kobject: 'cache': free name
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.919638] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_cleanup
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.926504] kobject: 'machinecheck14' (ffff88047f20cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.937963] kobject: 'machinecheck14' (ffff88047f20cff0): auto cleanup 'remove' event
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.945947] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_uevent_env
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.953079] kobject: 'machinecheck14' (ffff88047f20cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck14'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.964625] kobject: 'machinecheck14' (ffff88047f20cff0): auto cleanup kobject_del
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.972355] kobject: 'machinecheck14': free name
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.977550] kobject: 'msr14' (ffff88046c2f3810): kobject_uevent_env
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.983938] kobject: 'msr14' (ffff88046c2f3810): fill_kobj_path: path = '/devices/virtual/msr/msr14'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.993306] kobject: 'msr14' (ffff88046c2f3810): kobject_cleanup
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6827.999393] kobject: 'msr14' (ffff88046c2f3810): calling ktype release
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.006047] kobject: 'msr14': free name
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.010064] kobject: 'cpu14' (ffff88046c2f3010): kobject_uevent_env
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.016448] kobject: 'cpu14' (ffff88046c2f3010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu14'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.025989] kobject: 'cpu14' (ffff88046c2f3010): kobject_cleanup
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.032080] kobject: 'cpu14' (ffff88046c2f3010): calling ktype release
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.038737] kobject: 'cpu14': free name
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.043288] CPU 15 MCA banks CMCI:6 CMCI:8
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.047559] kobject: 'cpu14' (ffff88047f20c338): kobject_uevent_env
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.054118] kobject: 'cpu14' (ffff88047f20c338): fill_kobj_path: path = '/devices/system/cpu/cpu14'
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.064941] (elapsed 0.36 seconds) done.
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.069026] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:34:12 istl-vmc-blade9 kernel: [ 6828.087857] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6833.083441] Restarting tasks ... done.
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6833.474247] PM: Basic memory bitmaps freed
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6833.534404] kobject: 'cpufreq' (ffff88046c9a48a8): kobject_cleanup
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6833.540717] kobject: 'cpufreq' (ffff88046c9a48a8): auto cleanup 'remove' event
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6833.548095] kobject: 'cpufreq' (ffff88046c9a48a8): kobject_uevent_env
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6833.600269] kobject: 'cpufreq' (ffff88046c9a48a8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cpufreq'
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373828-2003-6' creation detected
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373828-2003-6 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373828-2003-5' creation detected
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373828-2003-5 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373828-2003-4' creation detected
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373828-2003-4 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373828-2003-3' creation detected
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373828-2003-3 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373828-2003-2' creation detected
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373828-2003-2 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373828-2003-1' creation detected
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:34:13 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373828-2003-1 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6834.174650] kobject: 'cpufreq' (ffff88046c9a48a8): auto cleanup kobject_del
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6834.184174] kobject: 'cpufreq' (ffff88046c9a48a8): calling ktype release
+Jun  9 11:34:13 istl-vmc-blade9 kernel: [ 6834.191041] kobject: 'cpufreq': free name
+Jun  9 11:34:14 istl-vmc-blade9 kernel: [ 6834.533789] CPU 15 is now offline
+Jun  9 11:34:14 istl-vmc-blade9 kernel: [ 6834.537229] lockdep: fixing up alternatives.
+Jun  9 11:34:14 istl-vmc-blade9 kernel: [ 6834.937170] SMP alternatives: switching to UP code
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.022685] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.029590] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.036497] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.043399] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.050308] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.058538] PM: Basic memory bitmaps created
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.062927] PM: Syncing filesystems ... 
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.071562] kobject: 'index0' (ffff88046922aa00): kobject_cleanup
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.078280] kobject: 'index0' (ffff88046922aa00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.089277] kobject: 'index0' (ffff88046922aa00): auto cleanup 'remove' event
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.096733] kobject: 'index0' (ffff88046922aa00): kobject_uevent_env
+Jun  9 11:34:15 istl-vmc-blade9 kernel: [ 6836.104800] kobject: 'index0' (ffff88046922aa00): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index0'
+Jun  9 11:34:16 istl-vmc-blade9 kernel: [ 6837.274642] kobject: 'index0' (ffff88046922aa00): auto cleanup kobject_del
+Jun  9 11:34:16 istl-vmc-blade9 kernel: [ 6837.284663] kobject: 'index0': free name
+Jun  9 11:34:16 istl-vmc-blade9 kernel: [ 6837.288732] kobject: 'index1' (ffff88046922aa48): kobject_cleanup
+Jun  9 11:34:16 istl-vmc-blade9 kernel: [ 6837.294934] kobject: 'index1' (ffff88046922aa48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:16 istl-vmc-blade9 kernel: [ 6837.305721] kobject: 'index1' (ffff88046922aa48): auto cleanup 'remove' event
+Jun  9 11:34:16 istl-vmc-blade9 kernel: [ 6837.312965] kobject: 'index1' (ffff88046922aa48): kobject_uevent_env
+Jun  9 11:34:17 istl-vmc-blade9 kernel: [ 6837.787850] kobject: 'index1' (ffff88046922aa48): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index1'
+Jun  9 11:34:18 istl-vmc-blade9 kernel: [ 6838.930107] kobject: 'index1' (ffff88046922aa48): auto cleanup kobject_del
+Jun  9 11:34:18 istl-vmc-blade9 kernel: [ 6838.942355] kobject: 'index1': free name
+Jun  9 11:34:18 istl-vmc-blade9 kernel: [ 6838.946422] kobject: 'index2' (ffff88046922aa90): kobject_cleanup
+Jun  9 11:34:18 istl-vmc-blade9 kernel: [ 6838.952594] kobject: 'index2' (ffff88046922aa90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:18 istl-vmc-blade9 kernel: [ 6838.963352] kobject: 'index2' (ffff88046922aa90): auto cleanup 'remove' event
+Jun  9 11:34:18 istl-vmc-blade9 kernel: [ 6838.970560] kobject: 'index2' (ffff88046922aa90): kobject_uevent_env
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.215662] done.
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.217684] Freezing user space processes ... 
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.225264] kobject: 'index2' (ffff88046922aa90): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index2'
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.236143] kobject: 'index2' (ffff88046922aa90): auto cleanup kobject_del
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.243177] kobject: 'index2': free name
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.247215] kobject: 'index3' (ffff88046922aad8): kobject_cleanup
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.253416] kobject: 'index3' (ffff88046922aad8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.264202] kobject: 'index3' (ffff88046922aad8): auto cleanup 'remove' event
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.271443] kobject: 'index3' (ffff88046922aad8): kobject_uevent_env
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.278087] kobject: 'index3' (ffff88046922aad8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index3'
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.288704] kobject: 'index3' (ffff88046922aad8): auto cleanup kobject_del
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.295729] kobject: 'index3': free name
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.299769] kobject: 'cache' (ffff88046c88de40): kobject_cleanup
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.305886] kobject: 'cache' (ffff88046c88de40): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.316587] kobject: 'cache' (ffff88046c88de40): auto cleanup 'remove' event
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.323746] kobject: 'cache' (ffff88046c88de40): kobject_uevent_env
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.330261] kobject: 'cache' (ffff88046c88de40): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache'
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.340039] kobject: 'cache' (ffff88046c88de40): auto cleanup kobject_del
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.347112] kobject: 'cache': free name
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.351112] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_cleanup
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.357982] kobject: 'machinecheck15' (ffff88047f40cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.369436] kobject: 'machinecheck15' (ffff88047f40cff0): auto cleanup 'remove' event
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.377408] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_uevent_env
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.384682] kobject: 'machinecheck15' (ffff88047f40cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck15'
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.396366] kobject: 'machinecheck15' (ffff88047f40cff0): auto cleanup kobject_del
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.404091] kobject: 'machinecheck15': free name
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.409002] kobject: 'msr15' (ffff8803eaf74010): kobject_uevent_env
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.415376] kobject: 'msr15' (ffff8803eaf74010): fill_kobj_path: path = '/devices/virtual/msr/msr15'
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.424890] kobject: 'msr15' (ffff8803eaf74010): kobject_cleanup
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.431041] kobject: 'msr15' (ffff8803eaf74010): calling ktype release
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.437681] kobject: 'msr15': free name
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.441823] kobject: 'cpu15' (ffff88043730e010): kobject_uevent_env
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.448229] kobject: 'cpu15' (ffff88043730e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu15'
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.457903] kobject: 'cpu15' (ffff88043730e010): kobject_cleanup
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.464046] kobject: 'cpu15' (ffff88043730e010): calling ktype release
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.470663] kobject: 'cpu15': free name
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.474941] kobject: 'cpu15' (ffff88047f40c338): kobject_uevent_env
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.481315] kobject: 'cpu15' (ffff88047f40c338): fill_kobj_path: path = '/devices/system/cpu/cpu15'
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.501562] (elapsed 0.28 seconds) done.
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.505603] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6839.524235] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6844.520147] Restarting tasks ... done.
+Jun  9 11:34:24 istl-vmc-blade9 kernel: [ 6845.267166] PM: Basic memory bitmaps freed
+Jun  9 11:34:25 istl-vmc-blade9 kernel: [ 6845.983300] kobject: 'msr1' (ffff8801f1fc7010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:34:26 istl-vmc-blade9 kernel: [ 6846.617362] kobject: 'msr1' (ffff8801f1fc7010): kobject_uevent_env
+Jun  9 11:34:26 istl-vmc-blade9 kernel: [ 6847.264415] kobject: 'msr1' (ffff8801f1fc7010): fill_kobj_path: path = '/devices/virtual/msr/msr1'
+Jun  9 11:34:26 istl-vmc-blade9 kernel: [ 6847.280362] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:34:27 istl-vmc-blade9 kernel: [ 6847.287302] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:34:27 istl-vmc-blade9 kernel: [ 6847.294205] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:34:27 istl-vmc-blade9 kernel: [ 6847.301105] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:34:27 istl-vmc-blade9 kernel: [ 6847.308008] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:34:27 istl-vmc-blade9 kernel: [ 6847.316242] PM: Basic memory bitmaps created
+Jun  9 11:34:27 istl-vmc-blade9 kernel: [ 6847.320632] PM: Syncing filesystems ... 
+Jun  9 11:34:27 istl-vmc-blade9 kernel: [ 6848.298735] kobject: 'cpu1' (ffff8801f44aa010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:34:29 istl-vmc-blade9 kernel: [ 6849.347144] kobject: 'cpu1' (ffff8801f44aa010): kobject_uevent_env
+Jun  9 11:34:29 istl-vmc-blade9 kernel: [ 6850.000547] kobject: 'cpu1' (ffff8801f44aa010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu1'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.183999] done.
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.186117] Freezing user space processes ... lockdep: fixing up alternatives.
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.196799] SMP alternatives: switching to SMP code
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.206802] Booting Node 0 Processor 1 APIC 0x2
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.211447] smpboot cpu 1: start_ip = 97000
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.226875] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.254781] Switched to NOHz mode on CPU #1
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.259355] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.265282] kobject: 'cache' (ffff8801e94b7800): kobject_add_internal: parent: 'cpu1', set: '<NULL>'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.274610] kobject: 'index0' (ffff8801f3a2ea00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.284190] kobject: 'index0' (ffff8801f3a2ea00): kobject_uevent_env
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.290664] kobject: 'index0' (ffff8801f3a2ea00): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index0'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.300999] kobject: 'index1' (ffff8801f3a2ea48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.310466] kobject: 'index1' (ffff8801f3a2ea48): kobject_uevent_env
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.316900] kobject: 'index1' (ffff8801f3a2ea48): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index1'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.327253] kobject: 'index2' (ffff8801f3a2ea90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.336725] kobject: 'index2' (ffff8801f3a2ea90): kobject_uevent_env
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.343162] kobject: 'index2' (ffff8801f3a2ea90): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index2'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.353493] kobject: 'index3' (ffff8801f3a2ead8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.362950] kobject: 'index3' (ffff8801f3a2ead8): kobject_uevent_env
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.369389] kobject: 'index3' (ffff8801f3a2ead8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index3'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.379723] kobject: 'cache' (ffff8801e94b7800): kobject_uevent_env
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.386074] kobject: 'cache' (ffff8801e94b7800): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.395715] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.407054] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_uevent_env
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.414107] kobject: 'machinecheck1' (ffff8801f880cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck1'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.425716] microcode: CPU1 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.431638] ------------[ cut here ]------------
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.436386] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.444717] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.450108] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.503242] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.510702] Call Trace:
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.513230]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.519317]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.525233]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.531228]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.536970]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.544100]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.551139]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.557918]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.563921]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.570355]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.575749]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.580795]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.585667]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.591059]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.596453]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.602274]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.607494]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.612624]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.618713] ---[ end trace cff32f63e15cd4ad ]---
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.623410] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.631175] kobject: 'cpufreq' (ffff8801ee43b0a8): kobject_add_internal: parent: 'cpu1', set: '<NULL>'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.640653] kobject: 'cpufreq' (ffff8801ee43b0a8): kobject_uevent_env
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.647235] kobject: 'cpufreq' (ffff8801ee43b0a8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cpufreq'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.657225] kobject: 'cpu1' (ffff8801f880c338): kobject_uevent_env
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.663490] kobject: 'cpu1' (ffff8801f880c338): fill_kobj_path: path = '/devices/system/cpu/cpu1'
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.677391] (elapsed 0.48 seconds) done.
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.681436] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6850.700143] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6855.697162] Restarting tasks ... done.
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6855.991738] PM: Basic memory bitmaps freed
+Jun  9 11:34:35 istl-vmc-blade9 kernel: [ 6856.191673] kobject: 'msr2' (ffff8801f3745010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:34:36 istl-vmc-blade9 kernel: [ 6856.655959] kobject: 'msr2' (ffff8801f3745010): kobject_uevent_env
+Jun  9 11:34:36 istl-vmc-blade9 kernel: [ 6856.970567] kobject: 'msr2' (ffff8801f3745010): fill_kobj_path: path = '/devices/virtual/msr/msr2'
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6857.429882] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6857.436844] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6857.443773] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6857.450710] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6857.457622] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6857.465876] PM: Basic memory bitmaps created
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6857.470281] PM: Syncing filesystems ... 
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6857.481803] kobject: 'cpu2' (ffff8801e962e810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:34:37 istl-vmc-blade9 kernel: [ 6858.035853] kobject: 'cpu2' (ffff8801e962e810): kobject_uevent_env
+Jun  9 11:34:38 istl-vmc-blade9 kernel: [ 6858.379386] kobject: 'cpu2' (ffff8801e962e810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu2'
+Jun  9 11:34:38 istl-vmc-blade9 kernel: [ 6858.900459] lockdep: fixing up alternatives.
+Jun  9 11:34:38 istl-vmc-blade9 kernel: [ 6858.963417] Booting Node 0 Processor 2 APIC 0x12
+Jun  9 11:34:38 istl-vmc-blade9 kernel: [ 6858.968223] smpboot cpu 2: start_ip = 97000
+Jun  9 11:34:38 istl-vmc-blade9 kernel: [ 6858.983636] Calibrating delay loop (skipped) already calibrated this CPUdone.
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.055001] Freezing user space processes ... 
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.081812] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.082279] Switched to NOHz mode on CPU #2
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.092379] kobject: 'cache' (ffff8801f24a1440): kobject_add_internal: parent: 'cpu2', set: '<NULL>'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.101750] kobject: 'index0' (ffff8801e9426c00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.111255] kobject: 'index0' (ffff8801e9426c00): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.117698] kobject: 'index0' (ffff8801e9426c00): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index0'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.128041] kobject: 'index1' (ffff8801e9426c48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.137508] kobject: 'index1' (ffff8801e9426c48): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.143944] kobject: 'index1' (ffff8801e9426c48): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index1'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.154268] kobject: 'index2' (ffff8801e9426c90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.163731] kobject: 'index2' (ffff8801e9426c90): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.170171] kobject: 'index2' (ffff8801e9426c90): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index2'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.180500] kobject: 'index3' (ffff8801e9426cd8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.189966] kobject: 'index3' (ffff8801e9426cd8): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.196404] kobject: 'index3' (ffff8801e9426cd8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index3'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.206733] kobject: 'cache' (ffff8801f24a1440): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.213077] kobject: 'cache' (ffff8801f24a1440): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.222722] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.233921] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.240966] kobject: 'machinecheck2' (ffff8801f8a0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck2'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.252589] microcode: CPU2 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.258515] ------------[ cut here ]------------
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.263218] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.271540] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.276931] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.330066] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.337517] Call Trace:
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.340051]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.346136]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.352051]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.358050]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.363788]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.370916]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.377963]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.384751]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.390753]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.397186]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.402581]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.407627]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.412504]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.417896]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.423289]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.429114]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.434329]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.439463]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.445548] ---[ end trace cff32f63e15cd4ae ]---
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.450250] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.457992] kobject: 'cpufreq' (ffff8801f44936a8): kobject_add_internal: parent: 'cpu2', set: '<NULL>'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.467463] kobject: 'cpufreq' (ffff8801f44936a8): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.474040] kobject: 'cpufreq' (ffff8801f44936a8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cpufreq'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.484033] kobject: 'cpu2' (ffff8801f8a0c338): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.490292] kobject: 'cpu2' (ffff8801f8a0c338): fill_kobj_path: path = '/devices/system/cpu/cpu2'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.509862] (elapsed 0.45 seconds) done.
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.513909] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6859.532650] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6864.529189] Restarting tasks ... 
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6864.615795] kobject: 'msr3' (ffff8801f3269810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6864.651455] kobject: 'msr3' (ffff8801f3269810): kobject_uevent_env
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6864.855418] kobject: 'msr3' (ffff8801f3269810): fill_kobj_path: path = '/devices/virtual/msr/msr3'
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6864.911315] done.
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6864.913398] PM: Basic memory bitmaps freed
+Jun  9 11:34:44 istl-vmc-blade9 kernel: [ 6865.170938] kobject: 'cpu3' (ffff880178a0e010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:34:45 istl-vmc-blade9 kernel: [ 6865.428535] kobject: 'cpu3' (ffff880178a0e010): kobject_uevent_env
+Jun  9 11:34:45 istl-vmc-blade9 kernel: [ 6865.648190] kobject: 'cpu3' (ffff880178a0e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu3'
+Jun  9 11:34:45 istl-vmc-blade9 kernel: [ 6865.969419] lockdep: fixing up alternatives.
+Jun  9 11:34:45 istl-vmc-blade9 kernel: [ 6866.131453] Booting Node 0 Processor 3 APIC 0x14
+Jun  9 11:34:45 istl-vmc-blade9 kernel: [ 6866.136186] smpboot cpu 3: start_ip = 97000
+Jun  9 11:34:45 istl-vmc-blade9 kernel: [ 6866.151565] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6866.270210] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6866.277362] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6866.284231] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6866.291100] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6866.297974] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6866.306186] PM: Basic memory bitmaps created
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6866.310539] PM: Syncing filesystems ... 
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6866.374125] Switched to NOHz mode on CPU #3
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6867.068195] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:34:46 istl-vmc-blade9 kernel: [ 6867.213733] done.
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.215799] Freezing user space processes ... 
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.221501] kobject: 'cache' (ffff8801f36d1b40): kobject_add_internal: parent: 'cpu3', set: '<NULL>'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.231076] kobject: 'index0' (ffff8801f149ea00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.240581] kobject: 'index0' (ffff8801f149ea00): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.247019] kobject: 'index0' (ffff8801f149ea00): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index0'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.257358] kobject: 'index1' (ffff8801f149ea48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.266864] kobject: 'index1' (ffff8801f149ea48): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.273304] kobject: 'index1' (ffff8801f149ea48): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index1'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.283668] kobject: 'index2' (ffff8801f149ea90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.293185] kobject: 'index2' (ffff8801f149ea90): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.299662] kobject: 'index2' (ffff8801f149ea90): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index2'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.310038] kobject: 'index3' (ffff8801f149ead8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.319553] kobject: 'index3' (ffff8801f149ead8): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.326036] kobject: 'index3' (ffff8801f149ead8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index3'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.336415] kobject: 'cache' (ffff8801f36d1b40): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.342807] kobject: 'cache' (ffff8801f36d1b40): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.352447] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.363692] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.370781] kobject: 'machinecheck3' (ffff8801f8c0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck3'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.382427] microcode: CPU3 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.388400] ------------[ cut here ]------------
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.393152] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.401472] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.406866] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.459996] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.467459] Call Trace:
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.469989]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.476079]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.481991]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.487994]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.493735]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.500870]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.507908]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.514689]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.520686]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.527114]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.532509]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.537557]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.542438]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.547832]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.553227]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.559057]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.564277]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.569404]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.575490] ---[ end trace cff32f63e15cd4af ]---
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.580189] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.587933] kobject: 'cpufreq' (ffff8801f23602a8): kobject_add_internal: parent: 'cpu3', set: '<NULL>'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.597460] kobject: 'cpufreq' (ffff8801f23602a8): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.604035] kobject: 'cpufreq' (ffff8801f23602a8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cpufreq'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.614038] kobject: 'cpu3' (ffff8801f8c0c338): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.620302] kobject: 'cpu3' (ffff8801f8c0c338): fill_kobj_path: path = '/devices/system/cpu/cpu3'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.630446] (elapsed 0.41 seconds) done.
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.634494] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6867.653325] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6872.649155] Restarting tasks ... done.
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6872.836950] PM: Basic memory bitmaps freed
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6872.863183] kobject: 'msr4' (ffff8801f4bd9810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6873.063024] kobject: 'msr4' (ffff8801f4bd9810): kobject_uevent_env
+Jun  9 11:34:52 istl-vmc-blade9 kernel: [ 6873.218605] kobject: 'msr4' (ffff8801f4bd9810): fill_kobj_path: path = '/devices/virtual/msr/msr4'
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6873.456711] kobject: 'cpu4' (ffff880142954810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6873.714858] kobject: 'cpu4' (ffff880142954810): kobject_uevent_env
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6873.882914] kobject: 'cpu4' (ffff880142954810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu4'
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.139907] lockdep: fixing up alternatives.
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.147187] Booting Node 1 Processor 4 APIC 0x20
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.151895] smpboot cpu 4: start_ip = 97000
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.167286] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.176617] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.183763] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.190638] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.197517] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.204399] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:34:53 istl-vmc-blade9 kernel: [ 6874.212612] PM: Basic memory bitmaps created
+Jun  9 11:34:54 istl-vmc-blade9 kernel: [ 6874.216972] PM: Syncing filesystems ... 
+Jun  9 11:34:54 istl-vmc-blade9 kernel: [ 6874.344951] Switched to NOHz mode on CPU #4
+Jun  9 11:34:54 istl-vmc-blade9 kernel: [ 6874.853400] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:34:54 istl-vmc-blade9 kernel: [ 6874.995917] kobject: 'cache' (ffff8801f2b2b280): kobject_add_internal: parent: 'cpu4', set: '<NULL>'
+Jun  9 11:34:54 istl-vmc-blade9 kernel: [ 6875.012027] done.
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.014048] Freezing user space processes ... 
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.020229] kobject: 'index0' (ffff8801f149e600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.030003] kobject: 'index0' (ffff8801f149e600): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.036490] kobject: 'index0' (ffff8801f149e600): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index0'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.046839] kobject: 'index1' (ffff8801f149e648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.056353] kobject: 'index1' (ffff8801f149e648): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.062791] kobject: 'index1' (ffff8801f149e648): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index1'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.073123] kobject: 'index2' (ffff8801f149e690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.082621] kobject: 'index2' (ffff8801f149e690): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.089056] kobject: 'index2' (ffff8801f149e690): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index2'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.099384] kobject: 'index3' (ffff8801f149e6d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.108957] kobject: 'index3' (ffff8801f149e6d8): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.115401] kobject: 'index3' (ffff8801f149e6d8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index3'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.125801] kobject: 'cache' (ffff8801f2b2b280): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.132150] kobject: 'cache' (ffff8801f2b2b280): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.141793] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.152996] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.160038] kobject: 'machinecheck4' (ffff88047e60cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck4'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.171663] microcode: CPU4 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.177587] ------------[ cut here ]------------
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.182317] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.190650] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.196042] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.249192] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.256649] Call Trace:
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.259180]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.265268]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.271181]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.277175]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.282921]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.290053]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.297094]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.303878]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.309878]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.316311]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.321708]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.326755]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.331628]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.337026]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.342421]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.348244]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.353465]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.358599]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.364688] ---[ end trace cff32f63e15cd4b0 ]---
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.369393] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.377140] kobject: 'cpufreq' (ffff88046f7f32a8): kobject_add_internal: parent: 'cpu4', set: '<NULL>'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.386627] kobject: 'cpufreq' (ffff88046f7f32a8): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.393156] kobject: 'cpufreq' (ffff88046f7f32a8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cpufreq'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.403155] kobject: 'cpu4' (ffff88047e60c338): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.409421] kobject: 'cpu4' (ffff88047e60c338): fill_kobj_path: path = '/devices/system/cpu/cpu4'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.423523] (elapsed 0.40 seconds) done.
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.427565] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6875.446310] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6880.442382] Restarting tasks ... done.
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6880.609368] PM: Basic memory bitmaps freed
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6880.678232] kobject: 'msr5' (ffff88014fbe4810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6880.833971] kobject: 'msr5' (ffff88014fbe4810): kobject_uevent_env
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6880.953813] kobject: 'msr5' (ffff88014fbe4810): fill_kobj_path: path = '/devices/virtual/msr/msr5'
+Jun  9 11:35:00 istl-vmc-blade9 kernel: [ 6881.138525] kobject: 'cpu5' (ffff8801f033f810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.323222] kobject: 'cpu5' (ffff8801f033f810): kobject_uevent_env
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.459333] kobject: 'cpu5' (ffff8801f033f810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu5'
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.658915] lockdep: fixing up alternatives.
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.689664] Booting Node 1 Processor 5 APIC 0x22
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.694377] smpboot cpu 5: start_ip = 97000
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.709759] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.871626] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.878848] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.885731] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.892666] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.899593] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.907861] PM: Basic memory bitmaps created
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.912264] PM: Syncing filesystems ... 
+Jun  9 11:35:01 istl-vmc-blade9 kernel: [ 6881.927336] Switched to NOHz mode on CPU #5
+Jun  9 11:35:02 istl-vmc-blade9 kernel: [ 6882.302049] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:02 istl-vmc-blade9 kernel: [ 6882.448529] kobject: 'cache' (ffff8801f16df980): kobject_add_internal: parent: 'cpu5', set: '<NULL>'
+Jun  9 11:35:02 istl-vmc-blade9 kernel: [ 6882.637217] done.
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.639290] Freezing user space processes ... 
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643197] kobject: 'index0' (ffff8801f0fd9200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643209] kobject: 'index0' (ffff8801f0fd9200): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643214] kobject: 'index0' (ffff8801f0fd9200): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index0'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643229] kobject: 'index1' (ffff8801f0fd9248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643240] kobject: 'index1' (ffff8801f0fd9248): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643243] kobject: 'index1' (ffff8801f0fd9248): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index1'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643250] kobject: 'index2' (ffff8801f0fd9290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643260] kobject: 'index2' (ffff8801f0fd9290): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643262] kobject: 'index2' (ffff8801f0fd9290): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index2'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643268] kobject: 'index3' (ffff8801f0fd92d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643281] kobject: 'index3' (ffff8801f0fd92d8): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643283] kobject: 'index3' (ffff8801f0fd92d8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index3'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643289] kobject: 'cache' (ffff8801f16df980): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643292] kobject: 'cache' (ffff8801f16df980): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643299] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643305] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.643307] kobject: 'machinecheck5' (ffff88047e80cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck5'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.794218] microcode: CPU5 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.800174] ------------[ cut here ]------------
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.804880] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.813210] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.818603] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.871778] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.879234] Call Trace:
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.881766]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.887855]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.893770]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.899766]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.905507]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.912635]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.919675]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.926457]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.932458]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.938894]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.944292]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.949338]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.954214]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.959607]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.964999]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.970823]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.976045]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.981177]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.987263] ---[ end trace cff32f63e15cd4b1 ]---
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.991964] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6882.999818] kobject: 'cpufreq' (ffff88046f7f2aa8): kobject_add_internal: parent: 'cpu5', set: '<NULL>'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6883.009303] kobject: 'cpufreq' (ffff88046f7f2aa8): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6883.015825] kobject: 'cpufreq' (ffff88046f7f2aa8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cpufreq'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6883.025885] kobject: 'cpu5' (ffff88047e80c338): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6883.032420] kobject: 'cpu5' (ffff88047e80c338): fill_kobj_path: path = '/devices/system/cpu/cpu5'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6883.049873] (elapsed 0.25 seconds) done.
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6883.053919] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6883.072652] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6888.069554] Restarting tasks ... 
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6888.097933] kobject: 'msr6' (ffff880437046810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6888.125069] kobject: 'msr6' (ffff880437046810): kobject_uevent_env
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6888.181177] kobject: 'msr6' (ffff880437046810): fill_kobj_path: path = '/devices/virtual/msr/msr6'
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6888.268431] done.
+Jun  9 11:35:07 istl-vmc-blade9 kernel: [ 6888.270531] PM: Basic memory bitmaps freed
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6888.314593] kobject: 'cpu6' (ffff880414c9a810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6888.455387] kobject: 'cpu6' (ffff880414c9a810): kobject_uevent_env
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6888.558910] kobject: 'cpu6' (ffff880414c9a810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu6'
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6888.706962] lockdep: fixing up alternatives.
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6888.726885] Booting Node 1 Processor 6 APIC 0x32
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6888.731652] smpboot cpu 6: start_ip = 97000
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6888.747043] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6888.843750] Switched to NOHz mode on CPU #6
+Jun  9 11:35:08 istl-vmc-blade9 kernel: [ 6889.177603] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.276098] kobject: 'cache' (ffff880414ca13c0): kobject_add_internal: parent: 'cpu6', set: '<NULL>'
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.422908] kobject: 'index0' (ffff8804417dbe00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.435911] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.442801] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.449696] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.456569] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.463460] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.471755] PM: Basic memory bitmaps created
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.476115] PM: Syncing filesystems ... 
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.576605] kobject: 'index0' (ffff8804417dbe00): kobject_uevent_env
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.673441] kobject: 'index0' (ffff8804417dbe00): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index0'
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6889.840206] kobject: 'index1' (ffff8804417dbe48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6890.015128] kobject: 'index1' (ffff8804417dbe48): kobject_uevent_env
+Jun  9 11:35:09 istl-vmc-blade9 kernel: [ 6890.132575] kobject: 'index1' (ffff8804417dbe48): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index1'
+Jun  9 11:35:10 istl-vmc-blade9 kernel: [ 6890.302500] kobject: 'index2' (ffff8804417dbe90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:10 istl-vmc-blade9 kernel: [ 6890.446314] kobject: 'index2' (ffff8804417dbe90): kobject_uevent_env
+Jun  9 11:35:10 istl-vmc-blade9 kernel: [ 6890.552097] kobject: 'index2' (ffff8804417dbe90): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index2'
+Jun  9 11:35:10 istl-vmc-blade9 kernel: [ 6890.585051] done.
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.587085] Freezing user space processes ... 
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.593383] kobject: 'index3' (ffff8804417dbed8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.603141] kobject: 'index3' (ffff8804417dbed8): kobject_uevent_env
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.609637] kobject: 'index3' (ffff8804417dbed8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index3'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.620029] kobject: 'cache' (ffff880414ca13c0): kobject_uevent_env
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.626378] kobject: 'cache' (ffff880414ca13c0): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.636071] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.647300] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_uevent_env
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.654344] kobject: 'machinecheck6' (ffff88047ea0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck6'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.665917] microcode: CPU6 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.671834] ------------[ cut here ]------------
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.676535] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.684860] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.690253] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.743400] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.750849] Call Trace:
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.753385]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.759476]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.765391]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.771387]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.777130]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.784260]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.791301]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.798084]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.804086]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.810519]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.815917]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.820963]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.825839]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.831233]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.836627]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.842455]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.847671]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.852805]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.858891] ---[ end trace cff32f63e15cd4b2 ]---
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.863590] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.871332] kobject: 'cpufreq' (ffff8804417db2a8): kobject_add_internal: parent: 'cpu6', set: '<NULL>'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.880807] kobject: 'cpufreq' (ffff8804417db2a8): kobject_uevent_env
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.887337] kobject: 'cpufreq' (ffff8804417db2a8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cpufreq'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.897329] kobject: 'cpu6' (ffff88047ea0c338): kobject_uevent_env
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.903592] kobject: 'cpu6' (ffff88047ea0c338): fill_kobj_path: path = '/devices/system/cpu/cpu6'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.921822] (elapsed 0.33 seconds) done.
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.925868] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6890.944591] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6895.941033] Restarting tasks ... done.
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6896.011529] PM: Basic memory bitmaps freed
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6896.124599] kobject: 'msr7' (ffff88046dd11010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:15 istl-vmc-blade9 kernel: [ 6896.237426] kobject: 'msr7' (ffff88046dd11010): kobject_uevent_env
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6896.327278] kobject: 'msr7' (ffff88046dd11010): fill_kobj_path: path = '/devices/virtual/msr/msr7'
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6896.465328] kobject: 'cpu7' (ffff88046a8ca810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6896.606863] kobject: 'cpu7' (ffff88046a8ca810): kobject_uevent_env
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6896.699694] kobject: 'cpu7' (ffff88046a8ca810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu7'
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6896.835531] lockdep: fixing up alternatives.
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6896.892397] Booting Node 1 Processor 7 APIC 0x34
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6896.897116] smpboot cpu 7: start_ip = 97000
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6896.912523] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6897.003274] Switched to NOHz mode on CPU #7
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6897.225287] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6897.232344] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6897.239324] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6897.246284] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6897.253266] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:16 istl-vmc-blade9 kernel: [ 6897.261582] PM: Basic memory bitmaps created
+Jun  9 11:35:17 istl-vmc-blade9 kernel: [ 6897.266007] PM: Syncing filesystems ... 
+Jun  9 11:35:17 istl-vmc-blade9 kernel: [ 6897.270870] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:17 istl-vmc-blade9 kernel: [ 6897.361415] kobject: 'cache' (ffff88046e2cb240): kobject_add_internal: parent: 'cpu7', set: '<NULL>'
+Jun  9 11:35:17 istl-vmc-blade9 kernel: [ 6897.500847] kobject: 'index0' (ffff88046c1a7000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:17 istl-vmc-blade9 kernel: [ 6897.635295] kobject: 'index0' (ffff88046c1a7000): kobject_uevent_env
+Jun  9 11:35:17 istl-vmc-blade9 kernel: [ 6897.657589] done.
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.659670] Freezing user space processes ... 
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.666181] kobject: 'index0' (ffff88046c1a7000): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index0'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.676797] kobject: 'index1' (ffff88046c1a7048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.686335] kobject: 'index1' (ffff88046c1a7048): kobject_uevent_env
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.692826] kobject: 'index1' (ffff88046c1a7048): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index1'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.703272] kobject: 'index2' (ffff88046c1a7090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.712789] kobject: 'index2' (ffff88046c1a7090): kobject_uevent_env
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.719226] kobject: 'index2' (ffff88046c1a7090): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index2'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.729600] kobject: 'index3' (ffff88046c1a70d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.739121] kobject: 'index3' (ffff88046c1a70d8): kobject_uevent_env
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.745650] kobject: 'index3' (ffff88046c1a70d8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index3'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.755978] kobject: 'cache' (ffff88046e2cb240): kobject_uevent_env
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.762326] kobject: 'cache' (ffff88046e2cb240): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.771962] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.783154] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_uevent_env
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.790195] kobject: 'machinecheck7' (ffff88047ec0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck7'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.801711] microcode: CPU7 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.807632] ------------[ cut here ]------------
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.812336] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.820666] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.826060] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.879231] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.886686] Call Trace:
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.889222]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.895310]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.901249]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.907255]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.913000]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.920129]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.927172]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.933958]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.939961]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.946395]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.951790]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.956834]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.961711]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.967105]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.972497]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.978333]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.983554]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.988689]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.994774] ---[ end trace cff32f63e15cd4b3 ]---
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6897.999470] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6898.007215] kobject: 'cpufreq' (ffff8804693238a8): kobject_add_internal: parent: 'cpu7', set: '<NULL>'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6898.016814] kobject: 'cpufreq' (ffff8804693238a8): kobject_uevent_env
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6898.023336] kobject: 'cpufreq' (ffff8804693238a8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cpufreq'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6898.033328] kobject: 'cpu7' (ffff88047ec0c338): kobject_uevent_env
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6898.039719] kobject: 'cpu7' (ffff88047ec0c338): fill_kobj_path: path = '/devices/system/cpu/cpu7'
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6898.051894] (elapsed 0.38 seconds) done.
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6898.056098] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6898.074724] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6903.071146] Restarting tasks ... done.
+Jun  9 11:35:22 istl-vmc-blade9 kernel: [ 6903.166620] PM: Basic memory bitmaps freed
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.365521] kobject: 'msr8' (ffff880414db0810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.410444] kobject: 'msr8' (ffff880414db0810): kobject_uevent_env
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.500401] kobject: 'msr8' (ffff880414db0810): fill_kobj_path: path = '/devices/virtual/msr/msr8'
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.615999] kobject: 'cpu8' (ffff880469111010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.732502] kobject: 'cpu8' (ffff880469111010): kobject_uevent_env
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.809814] kobject: 'cpu8' (ffff880469111010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu8'
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.931177] lockdep: fixing up alternatives.
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.985567] Booting Node 0 Processor 8 APIC 0x1
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6903.990214] smpboot cpu 8: start_ip = 97000
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6904.005508] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:23 istl-vmc-blade9 kernel: [ 6904.136311] Switched to NOHz mode on CPU #8
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.276768] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.283732] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.290665] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.297588] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.304529] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.312750] PM: Basic memory bitmaps created
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.317169] PM: Syncing filesystems ... 
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.363394] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.452862] kobject: 'cache' (ffff88046dbafd40): kobject_add_internal: parent: 'cpu8', set: '<NULL>'
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.568664] kobject: 'index0' (ffff8804690f7a00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.698468] kobject: 'index0' (ffff8804690f7a00): kobject_uevent_env
+Jun  9 11:35:24 istl-vmc-blade9 kernel: [ 6904.778333] done.
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.780386] Freezing user space processes ... 
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.784690] kobject: 'index0' (ffff8804690f7a00): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index0'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.795537] kobject: 'index1' (ffff8804690f7a48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.805070] kobject: 'index1' (ffff8804690f7a48): kobject_uevent_env
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.811510] kobject: 'index1' (ffff8804690f7a48): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index1'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.821844] kobject: 'index2' (ffff8804690f7a90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.831364] kobject: 'index2' (ffff8804690f7a90): kobject_uevent_env
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.837804] kobject: 'index2' (ffff8804690f7a90): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index2'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.848180] kobject: 'index3' (ffff8804690f7ad8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.857701] kobject: 'index3' (ffff8804690f7ad8): kobject_uevent_env
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.864257] kobject: 'index3' (ffff8804690f7ad8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index3'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.874591] kobject: 'cache' (ffff88046dbafd40): kobject_uevent_env
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.880959] kobject: 'cache' (ffff88046dbafd40): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.890600] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.901796] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_uevent_env
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.908841] kobject: 'machinecheck8' (ffff8801f8e0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck8'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.920476] microcode: CPU8 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.926405] ------------[ cut here ]------------
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.931109] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.939432] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.944825] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6904.998003] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.005465] Call Trace:
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.007999]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.014085]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.020000]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.025998]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.031742]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.038865]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.045906]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.052684]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.058686]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.065121]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.070516]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.075561]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.080434]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.085827]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.091225]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.097058]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.102278]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.107413]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.113500] ---[ end trace cff32f63e15cd4b4 ]---
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.118200] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.125947] kobject: 'cpufreq' (ffff8801f1d0d2a8): kobject_add_internal: parent: 'cpu8', set: '<NULL>'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.135430] kobject: 'cpufreq' (ffff8801f1d0d2a8): kobject_uevent_env
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.141955] kobject: 'cpufreq' (ffff8801f1d0d2a8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cpufreq'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.151997] kobject: 'cpu8' (ffff8801f8e0c338): kobject_uevent_env
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.158324] kobject: 'cpu8' (ffff8801f8e0c338): fill_kobj_path: path = '/devices/system/cpu/cpu8'
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.171024] (elapsed 0.38 seconds) done.
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.175116] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:29 istl-vmc-blade9 kernel: [ 6905.193797] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.190282] Restarting tasks ... 
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.300912] kobject: 'msr9' (ffff88046edbb810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.323845] done.
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.325948] PM: Basic memory bitmaps freed
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.365822] kobject: 'msr9' (ffff88046edbb810): kobject_uevent_env
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.424793] kobject: 'msr9' (ffff88046edbb810): fill_kobj_path: path = '/devices/virtual/msr/msr9'
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.537903] kobject: 'cpu9' (ffff88041412e010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.675542] kobject: 'cpu9' (ffff88041412e010): kobject_uevent_env
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.755210] kobject: 'cpu9' (ffff88041412e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu9'
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.869065] lockdep: fixing up alternatives.
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.934941] Booting Node 0 Processor 9 APIC 0x3
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.939569] smpboot cpu 9: start_ip = 97000
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6910.954907] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:30 istl-vmc-blade9 kernel: [ 6911.104650] Switched to NOHz mode on CPU #9
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.364770] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.448161] kobject: 'cache' (ffff88046c3e6a00): kobject_add_internal: parent: 'cpu9', set: '<NULL>'
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.481382] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.488270] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.495165] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.502048] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.508940] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.517162] PM: Basic memory bitmaps created
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.521525] PM: Syncing filesystems ... 
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.563981] kobject: 'index0' (ffff88046072d600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.727731] kobject: 'index0' (ffff88046072d600): kobject_uevent_env
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.818563] kobject: 'index0' (ffff88046072d600): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index0'
+Jun  9 11:35:31 istl-vmc-blade9 kernel: [ 6911.892450] done.
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.894481] Freezing user space processes ... 
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.900685] kobject: 'index1' (ffff88046072d648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.910438] kobject: 'index1' (ffff88046072d648): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.916925] kobject: 'index1' (ffff88046072d648): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index1'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.927257] kobject: 'index2' (ffff88046072d690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.936764] kobject: 'index2' (ffff88046072d690): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.943198] kobject: 'index2' (ffff88046072d690): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index2'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.953528] kobject: 'index3' (ffff88046072d6d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.963037] kobject: 'index3' (ffff88046072d6d8): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.969479] kobject: 'index3' (ffff88046072d6d8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index3'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.979844] kobject: 'cache' (ffff88046c3e6a00): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.986199] kobject: 'cache' (ffff88046c3e6a00): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6911.995877] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.007081] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.014169] kobject: 'machinecheck9' (ffff8801f900cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck9'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.025809] microcode: CPU9 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.031738] ------------[ cut here ]------------
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.036441] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.044775] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.050166] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.103311] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.110771] Call Trace:
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.113306]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.119395]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.125310]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.131309]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.137056]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.144187]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.151227]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.158007]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.164005]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.170441]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.175836]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.180881]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.185755]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.191151]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.196548]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.202373]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.207592]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.212727]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.218810] ---[ end trace cff32f63e15cd4b5 ]---
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.223510] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.231260] kobject: 'cpufreq' (ffff8801f16262a8): kobject_add_internal: parent: 'cpu9', set: '<NULL>'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.240746] kobject: 'cpufreq' (ffff8801f16262a8): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.247279] kobject: 'cpufreq' (ffff8801f16262a8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cpufreq'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.257334] kobject: 'cpu9' (ffff8801f900c338): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.263604] kobject: 'cpu9' (ffff8801f900c338): fill_kobj_path: path = '/devices/system/cpu/cpu9'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.274154] (elapsed 0.37 seconds) done.
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.278199] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6912.296996] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.293451] Restarting tasks ... 
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.375119] kobject: 'msr10' (ffff880469129010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.421338] done.
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.423436] PM: Basic memory bitmaps freed
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.504904] kobject: 'msr10' (ffff880469129010): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.598813] kobject: 'msr10' (ffff880469129010): fill_kobj_path: path = '/devices/virtual/msr/msr10'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.748525] kobject: 'cpu10' (ffff880414bca010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.868327] kobject: 'cpu10' (ffff880414bca010): kobject_uevent_env
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6917.944429] kobject: 'cpu10' (ffff880414bca010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu10'
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6918.054171] lockdep: fixing up alternatives.
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6918.105067] Booting Node 0 Processor 10 APIC 0x13
+Jun  9 11:35:37 istl-vmc-blade9 kernel: [ 6918.109865] smpboot cpu 10: start_ip = 97000
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.125238] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.253716] Switched to NOHz mode on CPU #10
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.473926] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.543329] kobject: 'cache' (ffff880414db8d80): kobject_add_internal: parent: 'cpu10', set: '<NULL>'
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.604415] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.611359] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.618297] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.625212] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.632132] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.641461] PM: Basic memory bitmaps created
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.645840] PM: Syncing filesystems ... 
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.683297] kobject: 'index0' (ffff88046caa8400): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.802913] kobject: 'index0' (ffff88046caa8400): kobject_uevent_env
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.892816] kobject: 'index0' (ffff88046caa8400): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index0'
+Jun  9 11:35:38 istl-vmc-blade9 kernel: [ 6918.922725] done.
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.924754] Freezing user space processes ... 
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.931727] kobject: 'index1' (ffff88046caa8448): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.941484] kobject: 'index1' (ffff88046caa8448): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.947957] kobject: 'index1' (ffff88046caa8448): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index1'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.958379] kobject: 'index2' (ffff88046caa8490): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.967883] kobject: 'index2' (ffff88046caa8490): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.974326] kobject: 'index2' (ffff88046caa8490): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index2'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.984790] kobject: 'index3' (ffff88046caa84d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6918.994259] kobject: 'index3' (ffff88046caa84d8): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.000736] kobject: 'index3' (ffff88046caa84d8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index3'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.011164] kobject: 'cache' (ffff880414db8d80): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.017629] kobject: 'cache' (ffff880414db8d80): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.027365] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.038653] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.045787] kobject: 'machinecheck10' (ffff8801f920cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck10'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.057577] microcode: CPU10 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.063579] ------------[ cut here ]------------
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.068286] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.076611] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.082002] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.135149] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.142601] Call Trace:
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.145133]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.151222]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.157138]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.163136]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.168879]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.176008]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.183050]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.189833]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.195834]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.202268]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.207665]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.212706]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.217578]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.222973]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.228369]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.234193]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.239417]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.244548]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.250638] ---[ end trace cff32f63e15cd4b6 ]---
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.255332] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.263259] kobject: 'cpufreq' (ffff8801f15faaa8): kobject_add_internal: parent: 'cpu10', set: '<NULL>'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.272861] kobject: 'cpufreq' (ffff8801f15faaa8): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.279382] kobject: 'cpufreq' (ffff8801f15faaa8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cpufreq'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.289456] kobject: 'cpu10' (ffff8801f920c338): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.295806] kobject: 'cpu10' (ffff8801f920c338): fill_kobj_path: path = '/devices/system/cpu/cpu10'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.305399] (elapsed 0.37 seconds) done.
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.309442] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6919.328166] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.324715] Restarting tasks ... done.
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.400214] PM: Basic memory bitmaps freed
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.426986] kobject: 'msr11' (ffff8801ee5d1010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.457581] kobject: 'msr11' (ffff8801ee5d1010): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.493991] kobject: 'msr11' (ffff8801ee5d1010): fill_kobj_path: path = '/devices/virtual/msr/msr11'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.544268] kobject: 'cpu11' (ffff880178802010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.613517] kobject: 'cpu11' (ffff880178802010): kobject_uevent_env
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.683904] kobject: 'cpu11' (ffff880178802010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu11'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.762802] lockdep: fixing up alternatives.
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.802888] Booting Node 0 Processor 11 APIC 0x15
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.807710] smpboot cpu 11: start_ip = 97000
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.823099] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6924.882570] Switched to NOHz mode on CPU #11
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6925.005567] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6925.053366] kobject: 'cache' (ffff8801f1defc00): kobject_add_internal: parent: 'cpu11', set: '<NULL>'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6925.113253] kobject: 'index0' (ffff8801f441a400): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:44 istl-vmc-blade9 kernel: [ 6925.180798] kobject: 'index0' (ffff8801f441a400): kobject_uevent_env
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.223224] kobject: 'index0' (ffff8801f441a400): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index0'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.298957] kobject: 'index1' (ffff8801f441a448): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.355096] kobject: 'index1' (ffff8801f441a448): kobject_uevent_env
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.410323] kobject: 'index1' (ffff8801f441a448): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index1'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.504544] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.511449] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.518344] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.525238] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.532132] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536591] kobject: 'index2' (ffff8801f441a490): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536618] kobject: 'index2' (ffff8801f441a490): kobject_uevent_env
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536623] kobject: 'index2' (ffff8801f441a490): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index2'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536632] kobject: 'index3' (ffff8801f441a4d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536647] kobject: 'index3' (ffff8801f441a4d8): kobject_uevent_env
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536650] kobject: 'index3' (ffff8801f441a4d8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index3'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536658] kobject: 'cache' (ffff8801f1defc00): kobject_uevent_env
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536661] kobject: 'cache' (ffff8801f1defc00): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536670] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536678] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_uevent_env
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.536682] kobject: 'machinecheck11' (ffff8801f940cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck11'
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.637664] microcode: CPU11 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.640028] PM: Basic memory bitmaps created
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.640031] PM: Syncing filesystems ... 
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.651809] ------------[ cut here ]------------
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.656808] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:45 istl-vmc-blade9 kernel: [ 6925.665157] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.670574] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.724442] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.731931] Call Trace:
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.734491]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.740605]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.746547]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.752581]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.758352]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.765514]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.768222] done.
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.768225] Freezing user space processes ...  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.784410]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.790413]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.796845]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.802249]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.807297]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.812171]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.817566]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.822959]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.828789]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.834008]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.839143]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.845227] ---[ end trace cff32f63e15cd4b7 ]---
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.849920] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.857695] kobject: 'cpufreq' (ffff8801f172a4a8): kobject_add_internal: parent: 'cpu11', set: '<NULL>'
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.867292] kobject: 'cpufreq' (ffff8801f172a4a8): kobject_uevent_env
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.873871] kobject: 'cpufreq' (ffff8801f172a4a8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cpufreq'
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.884078] kobject: 'cpu11' (ffff8801f940c338): kobject_uevent_env
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.890447] kobject: 'cpu11' (ffff8801f940c338): fill_kobj_path: path = '/devices/system/cpu/cpu11'
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.904312] (elapsed 0.13 seconds) done.
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.908350] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6925.927181] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6930.924228] Restarting tasks ... done.
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6930.955113] PM: Basic memory bitmaps freed
+Jun  9 11:35:50 istl-vmc-blade9 abrt: Kerneloops: Reported 11 kernel oopses to Abrt
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-11' creation detected
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-11 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-10' creation detected
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6931.075699] kobject: 'msr12' (ffff88046c941810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6931.089515] kobject: 'msr12' (ffff88046c941810): kobject_uevent_env
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-10 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-9' creation detected
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-9 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-8' creation detected
+Jun  9 11:35:50 istl-vmc-blade9 kernel: [ 6931.169793] kobject: 'msr12' (ffff88046c941810): fill_kobj_path: path = '/devices/virtual/msr/msr12'
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-8 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:50 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-7' creation detected
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-7 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-6' creation detected
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-6 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-5' creation detected
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6931.299990] kobject: 'cpu12' (ffff88046df4b810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-5 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-4' creation detected
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-4 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-3' creation detected
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-3 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-2' creation detected
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-2 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970373950-2003-1' creation detected
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6931.470288] kobject: 'cpu12' (ffff88046df4b810): kobject_uevent_env
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:35:51 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970373950-2003-1 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6931.573526] kobject: 'cpu12' (ffff88046df4b810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu12'
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6931.691213] lockdep: fixing up alternatives.
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6931.713146] Booting Node 1 Processor 12 APIC 0x21
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6931.717958] smpboot cpu 12: start_ip = 97000
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6931.733354] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6931.813972] Switched to NOHz mode on CPU #12
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6932.071141] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:51 istl-vmc-blade9 kernel: [ 6932.143020] kobject: 'cache' (ffff8804414c61c0): kobject_add_internal: parent: 'cpu12', set: '<NULL>'
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.246321] kobject: 'index0' (ffff880460639600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.269937] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.276829] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.283712] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.290596] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.297502] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.305724] PM: Basic memory bitmaps created
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.310088] PM: Syncing filesystems ... 
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.366143] kobject: 'index0' (ffff880460639600): kobject_uevent_env
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.444676] kobject: 'index0' (ffff880460639600): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index0'
+Jun  9 11:35:52 istl-vmc-blade9 kernel: [ 6932.576824] kobject: 'index1' (ffff880460639648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.678728] kobject: 'index1' (ffff880460639648): kobject_uevent_env
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.681670] done.
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.681673] Freezing user space processes ... 
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.691745] kobject: 'index1' (ffff880460639648): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index1'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.702499] kobject: 'index2' (ffff880460639690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.712004] kobject: 'index2' (ffff880460639690): kobject_uevent_env
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.718436] kobject: 'index2' (ffff880460639690): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index2'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.728854] kobject: 'index3' (ffff8804606396d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.738374] kobject: 'index3' (ffff8804606396d8): kobject_uevent_env
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.744814] kobject: 'index3' (ffff8804606396d8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index3'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.755279] kobject: 'cache' (ffff8804414c61c0): kobject_uevent_env
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.761626] kobject: 'cache' (ffff8804414c61c0): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.771386] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.782677] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_uevent_env
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.789809] kobject: 'machinecheck12' (ffff88047ee0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck12'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.801639] microcode: CPU12 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.807649] ------------[ cut here ]------------
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.812353] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.820676] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.826067] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.879222] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.886685] Call Trace:
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.889221]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.895313]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.901229]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.907233]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.912977]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.920103]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.927152]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.933931]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.939934]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.946367]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.951766]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.956812]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.961696]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.967092]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.972490]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.978319]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.983541]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.988669]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.994761] ---[ end trace cff32f63e15cd4b8 ]---
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6932.999461] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6933.007217] kobject: 'cpufreq' (ffff88046f595ca8): kobject_add_internal: parent: 'cpu12', set: '<NULL>'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6933.016785] kobject: 'cpufreq' (ffff88046f595ca8): kobject_uevent_env
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6933.023367] kobject: 'cpufreq' (ffff88046f595ca8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cpufreq'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6933.033502] kobject: 'cpu12' (ffff88047ee0c338): kobject_uevent_env
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6933.039899] kobject: 'cpu12' (ffff88047ee0c338): fill_kobj_path: path = '/devices/system/cpu/cpu12'
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6933.057371] (elapsed 0.37 seconds) done.
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6933.061419] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6933.080153] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6938.076265] Restarting tasks ... done.
+Jun  9 11:35:57 istl-vmc-blade9 kernel: [ 6938.093239] PM: Basic memory bitmaps freed
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.252160] kobject: 'msr13' (ffff8803ca409810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.262599] kobject: 'msr13' (ffff8803ca409810): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.290189] kobject: 'msr13' (ffff8803ca409810): fill_kobj_path: path = '/devices/virtual/msr/msr13'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.356996] kobject: 'cpu13' (ffff880178b86010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.430869] kobject: 'cpu13' (ffff880178b86010): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.482805] kobject: 'cpu13' (ffff880178b86010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu13'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.542760] lockdep: fixing up alternatives.
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.576629] Booting Node 1 Processor 13 APIC 0x23
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.581455] smpboot cpu 13: start_ip = 97000
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.596853] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.624550] Switched to NOHz mode on CPU #13
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.629232] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.635596] kobject: 'cache' (ffff8801f3626cc0): kobject_add_internal: parent: 'cpu13', set: '<NULL>'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.645192] kobject: 'index0' (ffff8801f21e2200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.654856] kobject: 'index0' (ffff8801f21e2200): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.661327] kobject: 'index0' (ffff8801f21e2200): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index0'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.671816] kobject: 'index1' (ffff8801f21e2248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.681496] kobject: 'index1' (ffff8801f21e2248): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.687986] kobject: 'index1' (ffff8801f21e2248): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index1'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.698601] kobject: 'index2' (ffff8801f21e2290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.708140] kobject: 'index2' (ffff8801f21e2290): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.714692] kobject: 'index2' (ffff8801f21e2290): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index2'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.737422] kobject: 'index3' (ffff8801f21e22d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.755477] kobject: 'index3' (ffff8801f21e22d8): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.761949] kobject: 'index3' (ffff8801f21e22d8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index3'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.795409] kobject: 'cache' (ffff8801f3626cc0): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.812299] kobject: 'cache' (ffff8801f3626cc0): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.827477] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.849468] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.874107] kobject: 'machinecheck13' (ffff88047f00cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck13'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.927211] microcode: CPU13 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6938.966044] kobject: 'firmware' (ffff88046ec65ec0): kobject_add_internal: parent: 'microcode', set: '(null)'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6939.050922] kobject: 'microcode' (ffff88046ab98910): kobject_add_internal: parent: 'firmware', set: 'devices'
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6939.156776] kobject: 'microcode' (ffff88046ab98910): kobject_uevent_env
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6939.163512] kobject: 'microcode' (ffff88046ab98910): kobject_uevent_env: uevent_suppress caused the event to drop!
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6939.176285] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6939.183210] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6939.190123] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:35:58 istl-vmc-blade9 kernel: [ 6939.197028] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:35:59 istl-vmc-blade9 firmware.sh[7608]: Cannot find  firmware file 'intel-ucode/06-2c-02'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.199459] kobject: 'microcode' (ffff88046ab98910): kobject_uevent_env
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.199468] kobject: 'microcode' (ffff88046ab98910): fill_kobj_path: path = '/devices/platform/microcode/firmware/microcode'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.211718] kobject: 'microcode' (ffff88046ab98910): kobject_uevent_env
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.211727] kobject: 'microcode' (ffff88046ab98910): fill_kobj_path: path = '/devices/platform/microcode/firmware/microcode'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212094] kobject: 'firmware' (ffff88046ec65ec0): kobject_cleanup
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212097] kobject: 'firmware' (ffff88046ec65ec0): auto cleanup kobject_del
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212280] kobject: 'firmware' (ffff88046ec65ec0): calling ktype release
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212283] kobject: 'firmware': free name
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212287] kobject: 'microcode' (ffff88046ab98910): kobject_cleanup
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212289] kobject: 'microcode' (ffff88046ab98910): calling ktype release
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212293] kobject: 'microcode': free name
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212546] kobject: 'cpufreq' (ffff88046072dca8): kobject_add_internal: parent: 'cpu13', set: '<NULL>'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212586] kobject: 'cpufreq' (ffff88046072dca8): kobject_uevent_env
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212591] kobject: 'cpufreq' (ffff88046072dca8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cpufreq'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.212608] kobject: 'cpu13' (ffff88047f00c338): kobject_uevent_env
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.213251] kobject: 'cpu13' (ffff88047f00c338): fill_kobj_path: path = '/devices/system/cpu/cpu13'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.236646] kobject: 'msr14' (ffff88046dfa5810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.236848] kobject: 'msr14' (ffff88046dfa5810): kobject_uevent_env
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.236853] kobject: 'msr14' (ffff88046dfa5810): fill_kobj_path: path = '/devices/virtual/msr/msr14'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.236883] kobject: 'cpu14' (ffff88046dfa5010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.236964] kobject: 'cpu14' (ffff88046dfa5010): kobject_uevent_env
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.236968] kobject: 'cpu14' (ffff88046dfa5010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu14'
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.237003] lockdep: fixing up alternatives.
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.237010] Booting Node 1 Processor 14 APIC 0x33
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.237012] smpboot cpu 14: start_ip = 97000
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.248038] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.393983] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.402933] PM: Basic memory bitmaps created
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.407285] PM: Syncing filesystems ... 
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.448287] Switched to NOHz mode on CPU #14
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.713304] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:35:59 istl-vmc-blade9 kernel: [ 6939.720901] done.
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.722954] Freezing user space processes ... 
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.730145] kobject: 'cache' (ffff880414ca1c80): kobject_add_internal: parent: 'cpu14', set: '<NULL>'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.739879] kobject: 'index0' (ffff88046c12b600): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.749383] kobject: 'index0' (ffff88046c12b600): kobject_uevent_env
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.755871] kobject: 'index0' (ffff88046c12b600): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index0'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.766374] kobject: 'index1' (ffff88046c12b648): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.775885] kobject: 'index1' (ffff88046c12b648): kobject_uevent_env
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.782355] kobject: 'index1' (ffff88046c12b648): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index1'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.792845] kobject: 'index2' (ffff88046c12b690): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.802389] kobject: 'index2' (ffff88046c12b690): kobject_uevent_env
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.808866] kobject: 'index2' (ffff88046c12b690): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index2'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.819282] kobject: 'index3' (ffff88046c12b6d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.828832] kobject: 'index3' (ffff88046c12b6d8): kobject_uevent_env
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.835270] kobject: 'index3' (ffff88046c12b6d8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index3'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.845734] kobject: 'cache' (ffff880414ca1c80): kobject_uevent_env
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.852091] kobject: 'cache' (ffff880414ca1c80): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.861885] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.873170] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_uevent_env
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.880296] kobject: 'machinecheck14' (ffff88047f20cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck14'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.892092] microcode: CPU14 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.898104] ------------[ cut here ]------------
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.902807] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.911128] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.916517] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.969672] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.977136] Call Trace:
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.979670]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.985757]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.991667]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6939.997665]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.003406]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.010535]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.017572]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.024353]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.030353]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.036787]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.042185]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.047233]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.052112]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.057508]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.062902]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.068726]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.073945]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.079074]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.085166] ---[ end trace cff32f63e15cd4b9 ]---
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.089867] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.097610] kobject: 'cpufreq' (ffff880414a8e2a8): kobject_add_internal: parent: 'cpu14', set: '<NULL>'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.107171] kobject: 'cpufreq' (ffff880414a8e2a8): kobject_uevent_env
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.113724] kobject: 'cpufreq' (ffff880414a8e2a8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cpufreq'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.123815] kobject: 'cpu14' (ffff88047f20c338): kobject_uevent_env
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.130196] kobject: 'cpu14' (ffff88047f20c338): fill_kobj_path: path = '/devices/system/cpu/cpu14'
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.148493] (elapsed 0.42 seconds) done.
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.152578] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:04 istl-vmc-blade9 kernel: [ 6940.171332] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.168458] Restarting tasks ... done.
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.236288] PM: Basic memory bitmaps freed
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.316365] kobject: 'msr15' (ffff8803eae39010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.362312] kobject: 'msr15' (ffff8803eae39010): kobject_uevent_env
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.392229] kobject: 'msr15' (ffff8803eae39010): fill_kobj_path: path = '/devices/virtual/msr/msr15'
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.442205] kobject: 'cpu15' (ffff8804691e7810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.511170] kobject: 'cpu15' (ffff8804691e7810): kobject_uevent_env
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.540828] kobject: 'cpu15' (ffff8804691e7810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu15'
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.601958] lockdep: fixing up alternatives.
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.626844] Booting Node 1 Processor 15 APIC 0x35
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.631687] smpboot cpu 15: start_ip = 97000
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.647109] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.712707] Switched to NOHz mode on CPU #15
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.812577] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.848552] kobject: 'cache' (ffff880414db8f00): kobject_add_internal: parent: 'cpu15', set: '<NULL>'
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.896682] kobject: 'index0' (ffff880460639400): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.961381] kobject: 'index0' (ffff880460639400): kobject_uevent_env
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6945.998275] kobject: 'index0' (ffff880460639400): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index0'
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6946.050016] kobject: 'index1' (ffff880460639448): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6946.111161] kobject: 'index1' (ffff880460639448): kobject_uevent_env
+Jun  9 11:36:05 istl-vmc-blade9 kernel: [ 6946.150045] kobject: 'index1' (ffff880460639448): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index1'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.212602] kobject: 'index2' (ffff880460639490): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.271920] kobject: 'index2' (ffff880460639490): kobject_uevent_env
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.304368] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310827] kobject: 'index2' (ffff880460639490): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index2'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310862] kobject: 'index3' (ffff8804606394d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310899] kobject: 'index3' (ffff8804606394d8): kobject_uevent_env
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310904] kobject: 'index3' (ffff8804606394d8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index3'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310916] kobject: 'cache' (ffff880414db8f00): kobject_uevent_env
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310920] kobject: 'cache' (ffff880414db8f00): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310932] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310941] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_uevent_env
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.310945] kobject: 'machinecheck15' (ffff88047f40cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck15'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.394037] microcode: CPU15 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.394063] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.394072] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.394078] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.394088] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.396328] PM: Basic memory bitmaps created
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.396331] PM: Syncing filesystems ... 
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.435698] ------------[ cut here ]------------
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.440702] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.449060] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.454492] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.508366] Pid: 3452, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.515853] Call Trace:
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.518415]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.524532]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.530491]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.536527]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.542302]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.549473]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.556551]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.563376]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.569412]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.575887]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.581321]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.586403]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.591304]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.596724]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.602146]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.608000]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.613239]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.618400]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.624509] ---[ end trace cff32f63e15cd4ba ]---
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.629235] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.637778] kobject: 'cpufreq' (ffff880414b206a8): kobject_add_internal: parent: 'cpu15', set: '<NULL>'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.661307] kobject: 'cpufreq' (ffff880414b206a8): kobject_uevent_env
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.693801] kobject: 'cpufreq' (ffff880414b206a8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cpufreq'
+Jun  9 11:36:06 istl-vmc-blade9 kernel: [ 6946.754147] kobject: 'cpu15' (ffff88047f40c338): kobject_uevent_env
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6946.798124] kobject: 'cpu15' (ffff88047f40c338): fill_kobj_path: path = '/devices/system/cpu/cpu15'
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6946.804048] done.
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6946.804052] Freezing user space processes ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6946.820145] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6946.839109] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6951.835280] Restarting tasks ... done.
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6951.908069] PM: Basic memory bitmaps freed
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6951.995271] kobject: 'cpufreq' (ffff8801ee43b0a8): kobject_cleanup
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6952.001565] kobject: 'cpufreq' (ffff8801ee43b0a8): auto cleanup 'remove' event
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6952.008983] kobject: 'cpufreq' (ffff8801ee43b0a8): kobject_uevent_env
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6952.042060] kobject: 'cpufreq' (ffff8801ee43b0a8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cpufreq'
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6952.106944] kobject: 'cpufreq' (ffff8801ee43b0a8): auto cleanup kobject_del
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6952.141930] kobject: 'cpufreq' (ffff8801ee43b0a8): calling ktype release
+Jun  9 11:36:11 istl-vmc-blade9 kernel: [ 6952.148753] kobject: 'cpufreq': free name
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.204554] CPU 1 is now offline
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.235735] kobject: 'index0' (ffff8801f3a2ea00): kobject_cleanup
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.241945] kobject: 'index0' (ffff8801f3a2ea00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.252739] kobject: 'index0' (ffff8801f3a2ea00): auto cleanup 'remove' event
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.259979] kobject: 'index0' (ffff8801f3a2ea00): kobject_uevent_env
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.266474] kobject: 'index0' (ffff8801f3a2ea00): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index0'
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.281077] kobject: 'index0' (ffff8801f3a2ea00): auto cleanup kobject_del
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.302236] kobject: 'index0': free name
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.306301] kobject: 'index1' (ffff8801f3a2ea48): kobject_cleanup
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.312506] kobject: 'index1' (ffff8801f3a2ea48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.323290] kobject: 'index1' (ffff8801f3a2ea48): auto cleanup 'remove' event
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.330536] kobject: 'index1' (ffff8801f3a2ea48): kobject_uevent_env
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.337013] kobject: 'index1' (ffff8801f3a2ea48): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index1'
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.361582] kobject: 'index1' (ffff8801f3a2ea48): auto cleanup kobject_del
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.377451] kobject: 'index1': free name
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.381539] kobject: 'index2' (ffff8801f3a2ea90): kobject_cleanup
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.387731] kobject: 'index2' (ffff8801f3a2ea90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.398520] kobject: 'index2' (ffff8801f3a2ea90): auto cleanup 'remove' event
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.405783] kobject: 'index2' (ffff8801f3a2ea90): kobject_uevent_env
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.415458] kobject: 'index2' (ffff8801f3a2ea90): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index2'
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.451438] kobject: 'index2' (ffff8801f3a2ea90): auto cleanup kobject_del
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.486510] kobject: 'index2': free name
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.490570] kobject: 'index3' (ffff8801f3a2ead8): kobject_cleanup
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.496779] kobject: 'index3' (ffff8801f3a2ead8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.507569] kobject: 'index3' (ffff8801f3a2ead8): auto cleanup 'remove' event
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.514808] kobject: 'index3' (ffff8801f3a2ead8): kobject_uevent_env
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.651129] kobject: 'index3' (ffff8801f3a2ead8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index3'
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.706025] kobject: 'index3' (ffff8801f3a2ead8): auto cleanup kobject_del
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.765936] kobject: 'index3': free name
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.769996] kobject: 'cache' (ffff8801e94b7800): kobject_cleanup
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.776112] kobject: 'cache' (ffff8801e94b7800): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.786819] kobject: 'cache' (ffff8801e94b7800): auto cleanup 'remove' event
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.793980] kobject: 'cache' (ffff8801e94b7800): kobject_uevent_env
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.800374] kobject: 'cache' (ffff8801e94b7800): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache'
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.814936] kobject: 'cache' (ffff8801e94b7800): auto cleanup kobject_del
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.827949] kobject: 'cache': free name
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.839552] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_cleanup
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.846417] kobject: 'machinecheck1' (ffff8801f880cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.857820] kobject: 'machinecheck1' (ffff8801f880cff0): auto cleanup 'remove' event
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.865751] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_uevent_env
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.883617] kobject: 'machinecheck1' (ffff8801f880cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck1'
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.906380] kobject: 'machinecheck1' (ffff8801f880cff0): auto cleanup kobject_del
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.948539] kobject: 'machinecheck1': free name
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6952.980305] kobject: 'msr1' (ffff8801f1fc7010): kobject_uevent_env
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.016991] kobject: 'msr1' (ffff8801f1fc7010): fill_kobj_path: path = '/devices/virtual/msr/msr1'
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.028339] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.035261] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.042174] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.049075] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.055978] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.065300] PM: Basic memory bitmaps created
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.069684] PM: Syncing filesystems ... 
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.087569] kobject: 'msr1' (ffff8801f1fc7010): kobject_cleanup
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.093890] kobject: 'msr1' (ffff8801f1fc7010): calling ktype release
+Jun  9 11:36:12 istl-vmc-blade9 kernel: [ 6953.100440] kobject: 'msr1': free name
+Jun  9 11:36:13 istl-vmc-blade9 kernel: [ 6953.180333] kobject: 'cpu1' (ffff8801f44aa010): kobject_uevent_env
+Jun  9 11:36:13 istl-vmc-blade9 kernel: [ 6953.234199] kobject: 'cpu1' (ffff8801f44aa010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu1'
+Jun  9 11:36:13 istl-vmc-blade9 kernel: [ 6953.348055] kobject: 'cpu1' (ffff8801f44aa010): kobject_cleanup
+Jun  9 11:36:13 istl-vmc-blade9 kernel: [ 6953.354101] kobject: 'cpu1' (ffff8801f44aa010): calling ktype release
+Jun  9 11:36:13 istl-vmc-blade9 kernel: [ 6953.360630] kobject: 'cpu1': free name
+Jun  9 11:36:13 istl-vmc-blade9 kernel: [ 6953.399978] CPU 9 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:36:13 istl-vmc-blade9 kernel: [ 6953.459895] done.
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6953.461931] Freezing user space processes ... 
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6953.467811] kobject: 'cpu1' (ffff8801f880c338): kobject_uevent_env
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6953.474422] kobject: 'cpu1' (ffff8801f880c338): fill_kobj_path: path = '/devices/system/cpu/cpu1'
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6953.492120] (elapsed 0.02 seconds) done.
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6953.496218] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6953.514980] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.511077] Restarting tasks ... done.
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.609803] PM: Basic memory bitmaps freed
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.679006] kobject: 'cpufreq' (ffff8801f44936a8): kobject_cleanup
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.685316] kobject: 'cpufreq' (ffff8801f44936a8): auto cleanup 'remove' event
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.692735] kobject: 'cpufreq' (ffff8801f44936a8): kobject_uevent_env
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.699300] kobject: 'cpufreq' (ffff8801f44936a8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cpufreq'
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.741867] kobject: 'cpufreq' (ffff8801f44936a8): auto cleanup kobject_del
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.787909] kobject: 'cpufreq' (ffff8801f44936a8): calling ktype release
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.794894] kobject: 'cpufreq': free name
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.875567] CPU 2 is now offline
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.911605] kobject: 'index0' (ffff8801e9426c00): kobject_cleanup
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.917830] kobject: 'index0' (ffff8801e9426c00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.928623] kobject: 'index0' (ffff8801e9426c00): auto cleanup 'remove' event
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.935883] kobject: 'index0' (ffff8801e9426c00): kobject_uevent_env
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.942388] kobject: 'index0' (ffff8801e9426c00): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index0'
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6958.998781] kobject: 'index0' (ffff8801e9426c00): auto cleanup kobject_del
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6959.038358] kobject: 'index0': free name
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6959.042508] kobject: 'index1' (ffff8801e9426c48): kobject_cleanup
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6959.048707] kobject: 'index1' (ffff8801e9426c48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6959.059504] kobject: 'index1' (ffff8801e9426c48): auto cleanup 'remove' event
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6959.066745] kobject: 'index1' (ffff8801e9426c48): kobject_uevent_env
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6959.099229] kobject: 'index1' (ffff8801e9426c48): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index1'
+Jun  9 11:36:18 istl-vmc-blade9 kernel: [ 6959.142022] kobject: 'index1' (ffff8801e9426c48): auto cleanup kobject_del
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.175127] kobject: 'index1': free name
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.179174] kobject: 'index2' (ffff8801e9426c90): kobject_cleanup
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.185396] kobject: 'index2' (ffff8801e9426c90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.196249] kobject: 'index2' (ffff8801e9426c90): auto cleanup 'remove' event
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.203488] kobject: 'index2' (ffff8801e9426c90): kobject_uevent_env
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.263667] kobject: 'index2' (ffff8801e9426c90): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index2'
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.344867] kobject: 'index2' (ffff8801e9426c90): auto cleanup kobject_del
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.388803] kobject: 'index2': free name
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.392849] kobject: 'index3' (ffff8801e9426cd8): kobject_cleanup
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.399051] kobject: 'index3' (ffff8801e9426cd8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.409855] kobject: 'index3' (ffff8801e9426cd8): auto cleanup 'remove' event
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.417130] kobject: 'index3' (ffff8801e9426cd8): kobject_uevent_env
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.423634] kobject: 'index3' (ffff8801e9426cd8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index3'
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.483103] kobject: 'index3' (ffff8801e9426cd8): auto cleanup kobject_del
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.523686] kobject: 'index3': free name
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.527831] kobject: 'cache' (ffff8801f24a1440): kobject_cleanup
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.533950] kobject: 'cache' (ffff8801f24a1440): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.544656] kobject: 'cache' (ffff8801f24a1440): auto cleanup 'remove' event
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.551839] kobject: 'cache' (ffff8801f24a1440): kobject_uevent_env
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.578551] kobject: 'cache' (ffff8801f24a1440): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache'
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.630461] kobject: 'cache' (ffff8801f24a1440): auto cleanup kobject_del
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.665362] kobject: 'cache': free name
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.669421] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_cleanup
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.676264] kobject: 'machinecheck2' (ffff8801f8a0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.687672] kobject: 'machinecheck2' (ffff8801f8a0cff0): auto cleanup 'remove' event
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.695597] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_uevent_env
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.725325] kobject: 'machinecheck2' (ffff8801f8a0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck2'
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.749465] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.756370] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.763299] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.770210] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.777126] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.786278] PM: Basic memory bitmaps created
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.790652] PM: Syncing filesystems ... 
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.888033] kobject: 'machinecheck2' (ffff8801f8a0cff0): auto cleanup kobject_del
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6959.959205] kobject: 'machinecheck2': free name
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6960.006285] kobject: 'msr2' (ffff8801f3745010): kobject_uevent_env
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6960.049805] kobject: 'msr2' (ffff8801f3745010): fill_kobj_path: path = '/devices/virtual/msr/msr2'
+Jun  9 11:36:19 istl-vmc-blade9 kernel: [ 6960.059800] done.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.061859] Freezing user space processes ... 
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.068628] kobject: 'msr2' (ffff8801f3745010): kobject_cleanup
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.074934] kobject: 'msr2' (ffff8801f3745010): calling ktype release
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.081461] kobject: 'msr2': free name
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.085534] kobject: 'cpu2' (ffff8801e962e810): kobject_uevent_env
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.091839] kobject: 'cpu2' (ffff8801e962e810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu2'
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.101212] kobject: 'cpu2' (ffff8801e962e810): kobject_cleanup
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.107221] kobject: 'cpu2' (ffff8801e962e810): calling ktype release
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.113754] kobject: 'cpu2': free name
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.118616] CPU 10 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.123913] kobject: 'cpu2' (ffff8801f8a0c338): kobject_uevent_env
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.130204] kobject: 'cpu2' (ffff8801f8a0c338): fill_kobj_path: path = '/devices/system/cpu/cpu2'
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.146916] (elapsed 0.08 seconds) done.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.151111] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6960.169942] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.165920] Restarting tasks ... done.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.243982] PM: Basic memory bitmaps freed
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.309850] kobject: 'cpufreq' (ffff8801f23602a8): kobject_cleanup
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.316171] kobject: 'cpufreq' (ffff8801f23602a8): auto cleanup 'remove' event
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.323580] kobject: 'cpufreq' (ffff8801f23602a8): kobject_uevent_env
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.343526] kobject: 'cpufreq' (ffff8801f23602a8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cpufreq'
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.401632] kobject: 'cpufreq' (ffff8801f23602a8): auto cleanup kobject_del
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.441589] kobject: 'cpufreq' (ffff8801f23602a8): calling ktype release
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.448405] kobject: 'cpufreq': free name
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.505053] CPU 3 is now offline
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.537398] kobject: 'index0' (ffff8801f149ea00): kobject_cleanup
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.543715] kobject: 'index0' (ffff8801f149ea00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.554508] kobject: 'index0' (ffff8801f149ea00): auto cleanup 'remove' event
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.561760] kobject: 'index0' (ffff8801f149ea00): kobject_uevent_env
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.568265] kobject: 'index0' (ffff8801f149ea00): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index0'
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.621300] kobject: 'index0' (ffff8801f149ea00): auto cleanup kobject_del
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.653297] kobject: 'index0': free name
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.657337] kobject: 'index1' (ffff8801f149ea48): kobject_cleanup
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.663548] kobject: 'index1' (ffff8801f149ea48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.674337] kobject: 'index1' (ffff8801f149ea48): auto cleanup 'remove' event
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.681597] kobject: 'index1' (ffff8801f149ea48): kobject_uevent_env
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.751104] kobject: 'index1' (ffff8801f149ea48): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index1'
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.810718] kobject: 'index1' (ffff8801f149ea48): auto cleanup kobject_del
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.858909] kobject: 'index1': free name
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.862957] kobject: 'index2' (ffff8801f149ea90): kobject_cleanup
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.869166] kobject: 'index2' (ffff8801f149ea90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.879953] kobject: 'index2' (ffff8801f149ea90): auto cleanup 'remove' event
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.887204] kobject: 'index2' (ffff8801f149ea90): kobject_uevent_env
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.893702] kobject: 'index2' (ffff8801f149ea90): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index2'
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.942554] kobject: 'index2' (ffff8801f149ea90): auto cleanup kobject_del
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.970775] kobject: 'index2': free name
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.974877] kobject: 'index3' (ffff8801f149ead8): kobject_cleanup
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.981124] kobject: 'index3' (ffff8801f149ead8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.991942] kobject: 'index3' (ffff8801f149ead8): auto cleanup 'remove' event
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6965.999187] kobject: 'index3' (ffff8801f149ead8): kobject_uevent_env
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6966.040763] kobject: 'index3' (ffff8801f149ead8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index3'
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6966.097541] kobject: 'index3' (ffff8801f149ead8): auto cleanup kobject_del
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6966.138480] kobject: 'index3': free name
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6966.142530] kobject: 'cache' (ffff8801f36d1b40): kobject_cleanup
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6966.148674] kobject: 'cache' (ffff8801f36d1b40): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:25 istl-vmc-blade9 kernel: [ 6966.159372] kobject: 'cache' (ffff8801f36d1b40): auto cleanup 'remove' event
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.166541] kobject: 'cache' (ffff8801f36d1b40): kobject_uevent_env
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.188394] kobject: 'cache' (ffff8801f36d1b40): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache'
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.250754] kobject: 'cache' (ffff8801f36d1b40): auto cleanup kobject_del
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.287700] kobject: 'cache': free name
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.330573] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_cleanup
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.337394] kobject: 'machinecheck3' (ffff8801f8c0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.337398] kobject: 'machinecheck3' (ffff8801f8c0cff0): auto cleanup 'remove' event
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.337403] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_uevent_env
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.340619] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.340624] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.340630] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.340635] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.340643] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.342992] PM: Basic memory bitmaps created
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.342995] PM: Syncing filesystems ... 
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.399062] kobject: 'machinecheck3' (ffff8801f8c0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck3'
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.399096] kobject: 'machinecheck3' (ffff8801f8c0cff0): auto cleanup kobject_del
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.399120] kobject: 'machinecheck3': free name
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.399990] kobject: 'msr3' (ffff8801f3269810): kobject_uevent_env
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.399995] kobject: 'msr3' (ffff8801f3269810): fill_kobj_path: path = '/devices/virtual/msr/msr3'
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.400015] kobject: 'msr3' (ffff8801f3269810): kobject_cleanup
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.400017] kobject: 'msr3' (ffff8801f3269810): calling ktype release
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.400022] kobject: 'msr3': free name
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.400927] kobject: 'cpu3' (ffff880178a0e010): kobject_uevent_env
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.400932] kobject: 'cpu3' (ffff880178a0e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu3'
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.400952] kobject: 'cpu3' (ffff880178a0e010): kobject_cleanup
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.400954] kobject: 'cpu3' (ffff880178a0e010): calling ktype release
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.400959] kobject: 'cpu3': free name
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.496754] CPU 11 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.501757] kobject: 'cpu3' (ffff8801f8c0c338): kobject_uevent_env
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.508090] kobject: 'cpu3' (ffff8801f8c0c338): fill_kobj_path: path = '/devices/system/cpu/cpu3'
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.573953] kobject: 'cpufreq' (ffff88046f7f32a8): kobject_cleanup
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.580394] kobject: 'cpufreq' (ffff88046f7f32a8): auto cleanup 'remove' event
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.587869] kobject: 'cpufreq' (ffff88046f7f32a8): kobject_uevent_env
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.603756] kobject: 'cpufreq' (ffff88046f7f32a8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cpufreq'
+Jun  9 11:36:26 istl-vmc-blade9 kernel: [ 6966.650007] done.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.652064] Freezing user space processes ... 
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.654668] kobject: 'cpufreq' (ffff88046f7f32a8): auto cleanup kobject_del
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.654703] kobject: 'cpufreq' (ffff88046f7f32a8): calling ktype release
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.654707] kobject: 'cpufreq': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.677499] CPU 4 is now offline
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.681350] kobject: 'index0' (ffff8801f149e600): kobject_cleanup
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.687547] kobject: 'index0' (ffff8801f149e600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.698320] kobject: 'index0' (ffff8801f149e600): auto cleanup 'remove' event
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.705542] kobject: 'index0' (ffff8801f149e600): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.711995] kobject: 'index0' (ffff8801f149e600): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index0'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.722365] kobject: 'index0' (ffff8801f149e600): auto cleanup kobject_del
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.729526] kobject: 'index0': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.733588] kobject: 'index1' (ffff8801f149e648): kobject_cleanup
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.739936] kobject: 'index1' (ffff8801f149e648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.750822] kobject: 'index1' (ffff8801f149e648): auto cleanup 'remove' event
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.758142] kobject: 'index1' (ffff8801f149e648): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.764727] kobject: 'index1' (ffff8801f149e648): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index1'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.775083] kobject: 'index1' (ffff8801f149e648): auto cleanup kobject_del
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.782101] kobject: 'index1': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.786167] kobject: 'index2' (ffff8801f149e690): kobject_cleanup
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.792390] kobject: 'index2' (ffff8801f149e690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.803201] kobject: 'index2' (ffff8801f149e690): auto cleanup 'remove' event
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.810471] kobject: 'index2' (ffff8801f149e690): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.816972] kobject: 'index2' (ffff8801f149e690): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index2'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.827327] kobject: 'index2' (ffff8801f149e690): auto cleanup kobject_del
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.834366] kobject: 'index2': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.838436] kobject: 'index3' (ffff8801f149e6d8): kobject_cleanup
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.844663] kobject: 'index3' (ffff8801f149e6d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.855468] kobject: 'index3' (ffff8801f149e6d8): auto cleanup 'remove' event
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.862733] kobject: 'index3' (ffff8801f149e6d8): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.869231] kobject: 'index3' (ffff8801f149e6d8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index3'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.879575] kobject: 'index3' (ffff8801f149e6d8): auto cleanup kobject_del
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.886596] kobject: 'index3': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.890662] kobject: 'cache' (ffff8801f2b2b280): kobject_cleanup
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.896802] kobject: 'cache' (ffff8801f2b2b280): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.907531] kobject: 'cache' (ffff8801f2b2b280): auto cleanup 'remove' event
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.914721] kobject: 'cache' (ffff8801f2b2b280): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.921138] kobject: 'cache' (ffff8801f2b2b280): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.930807] kobject: 'cache' (ffff8801f2b2b280): auto cleanup kobject_del
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.937733] kobject: 'cache': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.941746] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_cleanup
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.948594] kobject: 'machinecheck4' (ffff88047e60cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.960013] kobject: 'machinecheck4' (ffff88047e60cff0): auto cleanup 'remove' event
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.967962] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.975060] kobject: 'machinecheck4' (ffff88047e60cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck4'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.986435] kobject: 'machinecheck4' (ffff88047e60cff0): auto cleanup kobject_del
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.994133] kobject: 'machinecheck4': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6966.998944] kobject: 'msr4' (ffff8801f4bd9810): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.005253] kobject: 'msr4' (ffff8801f4bd9810): fill_kobj_path: path = '/devices/virtual/msr/msr4'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.014463] kobject: 'msr4' (ffff8801f4bd9810): kobject_cleanup
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.020500] kobject: 'msr4' (ffff8801f4bd9810): calling ktype release
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.027060] kobject: 'msr4': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.031274] kobject: 'cpu4' (ffff880142954810): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.037564] kobject: 'cpu4' (ffff880142954810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu4'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.046932] kobject: 'cpu4' (ffff880142954810): kobject_cleanup
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.052964] kobject: 'cpu4' (ffff880142954810): calling ktype release
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.059511] kobject: 'cpu4': free name
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.063790] CPU 5 MCA banks CMCI:6 CMCI:8
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.068379] CPU 12 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.073512] kobject: 'cpu4' (ffff88047e60c338): kobject_uevent_env
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.079807] kobject: 'cpu4' (ffff88047e60c338): fill_kobj_path: path = '/devices/system/cpu/cpu4'
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.095313] (elapsed 0.42 seconds) done.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.099414] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:31 istl-vmc-blade9 kernel: [ 6967.118172] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.114282] Restarting tasks ... 
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.188136] kobject: 'cpufreq' (ffff88046f7f2aa8): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.194817] kobject: 'cpufreq' (ffff88046f7f2aa8): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.202226] kobject: 'cpufreq' (ffff88046f7f2aa8): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.208802] kobject: 'cpufreq' (ffff88046f7f2aa8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cpufreq'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.218969] kobject: 'cpufreq' (ffff88046f7f2aa8): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.228435] kobject: 'cpufreq' (ffff88046f7f2aa8): calling ktype release
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.235264] kobject: 'cpufreq': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.242372] CPU 5 is now offline
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.246337] kobject: 'index0' (ffff8801f0fd9200): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.248105] done.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.248264] PM: Basic memory bitmaps freed
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258840] kobject: 'index0' (ffff8801f0fd9200): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258845] kobject: 'index0' (ffff8801f0fd9200): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258848] kobject: 'index0' (ffff8801f0fd9200): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258875] kobject: 'index0' (ffff8801f0fd9200): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index0'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258896] kobject: 'index0' (ffff8801f0fd9200): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258918] kobject: 'index0': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258922] kobject: 'index1' (ffff8801f0fd9248): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258924] kobject: 'index1' (ffff8801f0fd9248): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258927] kobject: 'index1' (ffff8801f0fd9248): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258929] kobject: 'index1' (ffff8801f0fd9248): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258933] kobject: 'index1' (ffff8801f0fd9248): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index1'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258942] kobject: 'index1' (ffff8801f0fd9248): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258962] kobject: 'index1': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258966] kobject: 'index2' (ffff8801f0fd9290): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258968] kobject: 'index2' (ffff8801f0fd9290): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258971] kobject: 'index2' (ffff8801f0fd9290): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258974] kobject: 'index2' (ffff8801f0fd9290): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258977] kobject: 'index2' (ffff8801f0fd9290): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index2'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.258987] kobject: 'index2' (ffff8801f0fd9290): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259006] kobject: 'index2': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259009] kobject: 'index3' (ffff8801f0fd92d8): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259011] kobject: 'index3' (ffff8801f0fd92d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259014] kobject: 'index3' (ffff8801f0fd92d8): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259017] kobject: 'index3' (ffff8801f0fd92d8): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259020] kobject: 'index3' (ffff8801f0fd92d8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index3'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259030] kobject: 'index3' (ffff8801f0fd92d8): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259051] kobject: 'index3': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259054] kobject: 'cache' (ffff8801f16df980): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259056] kobject: 'cache' (ffff8801f16df980): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259059] kobject: 'cache' (ffff8801f16df980): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259061] kobject: 'cache' (ffff8801f16df980): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259065] kobject: 'cache' (ffff8801f16df980): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259232] kobject: 'cache' (ffff8801f16df980): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259239] kobject: 'cache': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259299] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259302] kobject: 'machinecheck5' (ffff88047e80cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259305] kobject: 'machinecheck5' (ffff88047e80cff0): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259307] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259312] kobject: 'machinecheck5' (ffff88047e80cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck5'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259323] kobject: 'machinecheck5' (ffff88047e80cff0): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259329] kobject: 'machinecheck5': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259698] kobject: 'msr5' (ffff88014fbe4810): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259703] kobject: 'msr5' (ffff88014fbe4810): fill_kobj_path: path = '/devices/virtual/msr/msr5'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259721] kobject: 'msr5' (ffff88014fbe4810): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259723] kobject: 'msr5' (ffff88014fbe4810): calling ktype release
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.259729] kobject: 'msr5': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.260220] kobject: 'cpu5' (ffff8801f033f810): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.260225] kobject: 'cpu5' (ffff8801f033f810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu5'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.260245] kobject: 'cpu5' (ffff8801f033f810): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.260248] kobject: 'cpu5' (ffff8801f033f810): calling ktype release
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.260252] kobject: 'cpu5': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.646532] CPU 6 MCA banks CMCI:6 CMCI:8
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.647933] CPU 13 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.647989] kobject: 'cpu5' (ffff88047e80c338): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.647997] kobject: 'cpu5' (ffff88047e80c338): fill_kobj_path: path = '/devices/system/cpu/cpu5'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.682589] kobject: 'cpufreq' (ffff8804417db2a8): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.688982] kobject: 'cpufreq' (ffff8804417db2a8): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.696387] kobject: 'cpufreq' (ffff8804417db2a8): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.715399] kobject: 'cpufreq' (ffff8804417db2a8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cpufreq'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.755355] kobject: 'cpufreq' (ffff8804417db2a8): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.790415] kobject: 'cpufreq' (ffff8804417db2a8): calling ktype release
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.797242] kobject: 'cpufreq': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.860902] CPU 6 is now offline
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.905115] kobject: 'index0' (ffff8804417dbe00): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.911326] kobject: 'index0' (ffff8804417dbe00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.922121] kobject: 'index0' (ffff8804417dbe00): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.929359] kobject: 'index0' (ffff8804417dbe00): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.935844] kobject: 'index0' (ffff8804417dbe00): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index0'
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6972.970052] kobject: 'index0' (ffff8804417dbe00): auto cleanup kobject_del
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6973.019971] kobject: 'index0': free name
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6973.024006] kobject: 'index1' (ffff8804417dbe48): kobject_cleanup
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6973.030218] kobject: 'index1' (ffff8804417dbe48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6973.040999] kobject: 'index1' (ffff8804417dbe48): auto cleanup 'remove' event
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6973.048242] kobject: 'index1' (ffff8804417dbe48): kobject_uevent_env
+Jun  9 11:36:32 istl-vmc-blade9 kernel: [ 6973.099058] kobject: 'index1' (ffff8804417dbe48): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index1'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.152456] kobject: 'index1' (ffff8804417dbe48): auto cleanup kobject_del
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.183689] kobject: 'index1': free name
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.187728] kobject: 'index2' (ffff8804417dbe90): kobject_cleanup
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.193941] kobject: 'index2' (ffff8804417dbe90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.204729] kobject: 'index2' (ffff8804417dbe90): auto cleanup 'remove' event
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.211978] kobject: 'index2' (ffff8804417dbe90): kobject_uevent_env
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.259592] kobject: 'index2' (ffff8804417dbe90): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index2'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.313362] kobject: 'index2' (ffff8804417dbe90): auto cleanup kobject_del
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.373639] kobject: 'index2': free name
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.377687] kobject: 'index3' (ffff8804417dbed8): kobject_cleanup
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.383901] kobject: 'index3' (ffff8804417dbed8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.394699] kobject: 'index3' (ffff8804417dbed8): auto cleanup 'remove' event
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.401956] kobject: 'index3' (ffff8804417dbed8): kobject_uevent_env
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.464634] kobject: 'index3' (ffff8804417dbed8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index3'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.545159] kobject: 'index3' (ffff8804417dbed8): auto cleanup kobject_del
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.594068] kobject: 'index3': free name
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.598104] kobject: 'cache' (ffff880414ca13c0): kobject_cleanup
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.604250] kobject: 'cache' (ffff880414ca13c0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.614960] kobject: 'cache' (ffff880414ca13c0): auto cleanup 'remove' event
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.622119] kobject: 'cache' (ffff880414ca13c0): kobject_uevent_env
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.648673] kobject: 'cache' (ffff880414ca13c0): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.718899] kobject: 'cache' (ffff880414ca13c0): auto cleanup kobject_del
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.765719] kobject: 'cache': free name
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.786098] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.793089] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.798778] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_cleanup
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.798782] kobject: 'machinecheck6' (ffff88047ea0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.798785] kobject: 'machinecheck6' (ffff88047ea0cff0): auto cleanup 'remove' event
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.798788] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_uevent_env
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.798793] kobject: 'machinecheck6' (ffff88047ea0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck6'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.798814] kobject: 'machinecheck6' (ffff88047ea0cff0): auto cleanup kobject_del
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.798819] kobject: 'machinecheck6': free name
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800053] kobject: 'msr6' (ffff880437046810): kobject_uevent_env
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800058] kobject: 'msr6' (ffff880437046810): fill_kobj_path: path = '/devices/virtual/msr/msr6'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800081] kobject: 'msr6' (ffff880437046810): kobject_cleanup
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800084] kobject: 'msr6' (ffff880437046810): calling ktype release
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800087] kobject: 'msr6': free name
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800226] kobject: 'cpu6' (ffff880414c9a810): kobject_uevent_env
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800231] kobject: 'cpu6' (ffff880414c9a810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu6'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800251] kobject: 'cpu6' (ffff880414c9a810): kobject_cleanup
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800253] kobject: 'cpu6' (ffff880414c9a810): calling ktype release
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.800256] kobject: 'cpu6': free name
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.920249] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.920474] CPU 7 MCA banks CMCI:6 CMCI:8
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.931217] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.938098] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.946330] PM: Basic memory bitmaps created
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.950699] PM: Syncing filesystems ... 
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.954506] CPU 14 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.959867] kobject: 'cpu6' (ffff88047ea0c338): kobject_uevent_env
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6973.966160] kobject: 'cpu6' (ffff88047ea0c338): fill_kobj_path: path = '/devices/system/cpu/cpu6'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6974.037606] kobject: 'cpufreq' (ffff8804693238a8): kobject_cleanup
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6974.043939] kobject: 'cpufreq' (ffff8804693238a8): auto cleanup 'remove' event
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6974.051350] kobject: 'cpufreq' (ffff8804693238a8): kobject_uevent_env
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6974.075431] kobject: 'cpufreq' (ffff8804693238a8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cpufreq'
+Jun  9 11:36:33 istl-vmc-blade9 kernel: [ 6974.112273] kobject: 'cpufreq' (ffff8804693238a8): auto cleanup kobject_del
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.165223] kobject: 'cpufreq' (ffff8804693238a8): calling ktype release
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.172041] kobject: 'cpufreq': free name
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.248199] CPU 7 is now offline
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.278332] kobject: 'index0' (ffff88046c1a7000): kobject_cleanup
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.284553] kobject: 'index0' (ffff88046c1a7000): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.295321] kobject: 'index0' (ffff88046c1a7000): auto cleanup 'remove' event
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.302549] kobject: 'index0' (ffff88046c1a7000): kobject_uevent_env
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.309017] kobject: 'index0' (ffff88046c1a7000): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index0'
+Jun  9 11:36:34 istl-vmc-blade9 kernel: [ 6974.404827] kobject: 'index0' (ffff88046c1a7000): auto cleanup kobject_del
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.425790] done.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.427821] Freezing user space processes ... 
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.434426] kobject: 'index0': free name
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.438730] kobject: 'index1' (ffff88046c1a7048): kobject_cleanup
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.444911] kobject: 'index1' (ffff88046c1a7048): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.455675] kobject: 'index1' (ffff88046c1a7048): auto cleanup 'remove' event
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.462894] kobject: 'index1' (ffff88046c1a7048): kobject_uevent_env
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.469344] kobject: 'index1' (ffff88046c1a7048): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index1'
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.479785] kobject: 'index1' (ffff88046c1a7048): auto cleanup kobject_del
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.486756] kobject: 'index1': free name
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.490776] kobject: 'index2' (ffff88046c1a7090): kobject_cleanup
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.496953] kobject: 'index2' (ffff88046c1a7090): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.507717] kobject: 'index2' (ffff88046c1a7090): auto cleanup 'remove' event
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.514930] kobject: 'index2' (ffff88046c1a7090): kobject_uevent_env
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.521421] kobject: 'index2' (ffff88046c1a7090): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index2'
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.531784] kobject: 'index2' (ffff88046c1a7090): auto cleanup kobject_del
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.538821] kobject: 'index2': free name
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.542833] kobject: 'index3' (ffff88046c1a70d8): kobject_cleanup
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.549009] kobject: 'index3' (ffff88046c1a70d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.559763] kobject: 'index3' (ffff88046c1a70d8): auto cleanup 'remove' event
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.566975] kobject: 'index3' (ffff88046c1a70d8): kobject_uevent_env
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.573414] kobject: 'index3' (ffff88046c1a70d8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index3'
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.583804] kobject: 'index3' (ffff88046c1a70d8): auto cleanup kobject_del
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.590769] kobject: 'index3': free name
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.594817] kobject: 'cache' (ffff88046e2cb240): kobject_cleanup
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.600908] kobject: 'cache' (ffff88046e2cb240): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.611580] kobject: 'cache' (ffff88046e2cb240): auto cleanup 'remove' event
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.618702] kobject: 'cache' (ffff88046e2cb240): kobject_uevent_env
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.625054] kobject: 'cache' (ffff88046e2cb240): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache'
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.634685] kobject: 'cache' (ffff88046e2cb240): auto cleanup kobject_del
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.641556] kobject: 'cache': free name
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.645489] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_cleanup
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.652274] kobject: 'machinecheck7' (ffff88047ec0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.663639] kobject: 'machinecheck7' (ffff88047ec0cff0): auto cleanup 'remove' event
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.671534] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_uevent_env
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.678583] kobject: 'machinecheck7' (ffff88047ec0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck7'
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.689957] kobject: 'machinecheck7' (ffff88047ec0cff0): auto cleanup kobject_del
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.697604] kobject: 'machinecheck7': free name
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.702491] kobject: 'msr7' (ffff88046dd11010): kobject_uevent_env
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.708770] kobject: 'msr7' (ffff88046dd11010): fill_kobj_path: path = '/devices/virtual/msr/msr7'
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.717923] kobject: 'msr7' (ffff88046dd11010): kobject_cleanup
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.723925] kobject: 'msr7' (ffff88046dd11010): calling ktype release
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.730452] kobject: 'msr7': free name
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.734476] kobject: 'cpu7' (ffff88046a8ca810): kobject_uevent_env
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.740753] kobject: 'cpu7' (ffff88046a8ca810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu7'
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.750077] kobject: 'cpu7' (ffff88046a8ca810): kobject_cleanup
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.756076] kobject: 'cpu7' (ffff88046a8ca810): calling ktype release
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.762595] kobject: 'cpu7': free name
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.767098] CPU 12 MCA banks CMCI:6 CMCI:8
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.771605] CPU 15 MCA banks CMCI:2 CMCI:3 CMCI:5
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.776519] kobject: 'cpu7' (ffff88047ec0c338): kobject_uevent_env
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.782862] kobject: 'cpu7' (ffff88047ec0c338): fill_kobj_path: path = '/devices/system/cpu/cpu7'
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.796512] (elapsed 0.36 seconds) done.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.800561] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6974.819294] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6979.815543] Restarting tasks ... done.
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6980.008140] PM: Basic memory bitmaps freed
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6980.049281] kobject: 'cpufreq' (ffff8801f1d0d2a8): kobject_cleanup
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6980.055602] kobject: 'cpufreq' (ffff8801f1d0d2a8): auto cleanup 'remove' event
+Jun  9 11:36:39 istl-vmc-blade9 kernel: [ 6980.062994] kobject: 'cpufreq' (ffff8801f1d0d2a8): kobject_uevent_env
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.182972] kobject: 'cpufreq' (ffff8801f1d0d2a8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cpufreq'
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.298829] kobject: 'cpufreq' (ffff8801f1d0d2a8): auto cleanup kobject_del
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.306733] kobject: 'cpufreq' (ffff8801f1d0d2a8): calling ktype release
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.313635] kobject: 'cpufreq': free name
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.404660] CPU 8 is now offline
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.469855] kobject: 'index0' (ffff8804690f7a00): kobject_cleanup
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.476052] kobject: 'index0' (ffff8804690f7a00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.486836] kobject: 'index0' (ffff8804690f7a00): auto cleanup 'remove' event
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.494063] kobject: 'index0' (ffff8804690f7a00): kobject_uevent_env
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.500531] kobject: 'index0' (ffff8804690f7a00): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index0'
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.664898] kobject: 'index0' (ffff8804690f7a00): auto cleanup kobject_del
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.672478] kobject: 'index0': free name
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.676655] kobject: 'index1' (ffff8804690f7a48): kobject_cleanup
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.682852] kobject: 'index1' (ffff8804690f7a48): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.693634] kobject: 'index1' (ffff8804690f7a48): auto cleanup 'remove' event
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.700862] kobject: 'index1' (ffff8804690f7a48): kobject_uevent_env
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.835973] kobject: 'index1' (ffff8804690f7a48): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index1'
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.931315] kobject: 'index1' (ffff8804690f7a48): auto cleanup kobject_del
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.938961] kobject: 'index1': free name
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.942981] kobject: 'index2' (ffff8804690f7a90): kobject_cleanup
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.949181] kobject: 'index2' (ffff8804690f7a90): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.959953] kobject: 'index2' (ffff8804690f7a90): auto cleanup 'remove' event
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.967185] kobject: 'index2' (ffff8804690f7a90): kobject_uevent_env
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6980.973648] kobject: 'index2' (ffff8804690f7a90): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index2'
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6981.012739] kobject: 'index2' (ffff8804690f7a90): auto cleanup kobject_del
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6981.020438] kobject: 'index2': free name
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6981.024461] kobject: 'index3' (ffff8804690f7ad8): kobject_cleanup
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6981.030662] kobject: 'index3' (ffff8804690f7ad8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6981.041446] kobject: 'index3' (ffff8804690f7ad8): auto cleanup 'remove' event
+Jun  9 11:36:40 istl-vmc-blade9 kernel: [ 6981.048672] kobject: 'index3' (ffff8804690f7ad8): kobject_uevent_env
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.149192] kobject: 'index3' (ffff8804690f7ad8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index3'
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.225888] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.232807] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.239681] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.246556] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.253439] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.261658] PM: Basic memory bitmaps created
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.266023] PM: Syncing filesystems ... 
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.282925] kobject: 'index3' (ffff8804690f7ad8): auto cleanup kobject_del
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.296280] kobject: 'index3': free name
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.300314] kobject: 'cache' (ffff88046dbafd40): kobject_cleanup
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.306411] kobject: 'cache' (ffff88046dbafd40): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.317102] kobject: 'cache' (ffff88046dbafd40): auto cleanup 'remove' event
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.324239] kobject: 'cache' (ffff88046dbafd40): kobject_uevent_env
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.385633] kobject: 'cache' (ffff88046dbafd40): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache'
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.514945] kobject: 'cache' (ffff88046dbafd40): auto cleanup kobject_del
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.610788] kobject: 'cache': free name
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.657544] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_cleanup
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.664425] kobject: 'machinecheck8' (ffff8801f8e0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.675812] kobject: 'machinecheck8' (ffff8801f8e0cff0): auto cleanup 'remove' event
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.683719] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_uevent_env
+Jun  9 11:36:41 istl-vmc-blade9 kernel: [ 6981.693665] done.
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.695711] Freezing user space processes ... 
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.702032] kobject: 'machinecheck8' (ffff8801f8e0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck8'
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.713694] kobject: 'machinecheck8' (ffff8801f8e0cff0): auto cleanup kobject_del
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.721388] kobject: 'machinecheck8': free name
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.726187] kobject: 'msr8' (ffff880414db0810): kobject_uevent_env
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.732474] kobject: 'msr8' (ffff880414db0810): fill_kobj_path: path = '/devices/virtual/msr/msr8'
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.741647] kobject: 'msr8' (ffff880414db0810): kobject_cleanup
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.747650] kobject: 'msr8' (ffff880414db0810): calling ktype release
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.754166] kobject: 'msr8': free name
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.758178] kobject: 'cpu8' (ffff880469111010): kobject_uevent_env
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.764447] kobject: 'cpu8' (ffff880469111010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu8'
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.773747] kobject: 'cpu8' (ffff880469111010): kobject_cleanup
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.779775] kobject: 'cpu8' (ffff880469111010): calling ktype release
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.786296] kobject: 'cpu8': free name
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.791128] kobject: 'cpu8' (ffff8801f8e0c338): kobject_uevent_env
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.797414] kobject: 'cpu8' (ffff8801f8e0c338): fill_kobj_path: path = '/devices/system/cpu/cpu8'
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.811779] (elapsed 0.11 seconds) done.
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.815823] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6981.834550] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6986.830837] Restarting tasks ... done.
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6986.837687] PM: Basic memory bitmaps freed
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6987.038587] kobject: 'cpufreq' (ffff8801f16262a8): kobject_cleanup
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6987.044904] kobject: 'cpufreq' (ffff8801f16262a8): auto cleanup 'remove' event
+Jun  9 11:36:46 istl-vmc-blade9 kernel: [ 6987.052292] kobject: 'cpufreq' (ffff8801f16262a8): kobject_uevent_env
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.148541] kobject: 'cpufreq' (ffff8801f16262a8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cpufreq'
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.256618] kobject: 'cpufreq' (ffff8801f16262a8): auto cleanup kobject_del
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.323085] kobject: 'cpufreq' (ffff8801f16262a8): calling ktype release
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.329930] kobject: 'cpufreq': free name
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.402921] CPU 9 is now offline
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.441871] kobject: 'index0' (ffff88046072d600): kobject_cleanup
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.448101] kobject: 'index0' (ffff88046072d600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.458863] kobject: 'index0' (ffff88046072d600): auto cleanup 'remove' event
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.466081] kobject: 'index0' (ffff88046072d600): kobject_uevent_env
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.472544] kobject: 'index0' (ffff88046072d600): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index0'
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.566687] kobject: 'index0' (ffff88046072d600): auto cleanup kobject_del
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.637595] kobject: 'index0': free name
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.641623] kobject: 'index1' (ffff88046072d648): kobject_cleanup
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.647803] kobject: 'index1' (ffff88046072d648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.658571] kobject: 'index1' (ffff88046072d648): auto cleanup 'remove' event
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.665801] kobject: 'index1' (ffff88046072d648): kobject_uevent_env
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.672266] kobject: 'index1' (ffff88046072d648): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index1'
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.683952] kobject: 'index1' (ffff88046072d648): auto cleanup kobject_del
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.695487] kobject: 'index1': free name
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.699574] kobject: 'index2' (ffff88046072d690): kobject_cleanup
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.705752] kobject: 'index2' (ffff88046072d690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.716532] kobject: 'index2' (ffff88046072d690): auto cleanup 'remove' event
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.723755] kobject: 'index2' (ffff88046072d690): kobject_uevent_env
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.730210] kobject: 'index2' (ffff88046072d690): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index2'
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.742104] kobject: 'index2' (ffff88046072d690): auto cleanup kobject_del
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.758803] kobject: 'index2': free name
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.762904] kobject: 'index3' (ffff88046072d6d8): kobject_cleanup
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.769118] kobject: 'index3' (ffff88046072d6d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.779890] kobject: 'index3' (ffff88046072d6d8): auto cleanup 'remove' event
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.787117] kobject: 'index3' (ffff88046072d6d8): kobject_uevent_env
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.793583] kobject: 'index3' (ffff88046072d6d8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index3'
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.830078] kobject: 'index3' (ffff88046072d6d8): auto cleanup kobject_del
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.861704] kobject: 'index3': free name
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.865737] kobject: 'cache' (ffff88046c3e6a00): kobject_cleanup
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.871850] kobject: 'cache' (ffff88046c3e6a00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.882534] kobject: 'cache' (ffff88046c3e6a00): auto cleanup 'remove' event
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.889697] kobject: 'cache' (ffff88046c3e6a00): kobject_uevent_env
+Jun  9 11:36:47 istl-vmc-blade9 kernel: [ 6987.997760] kobject: 'cache' (ffff88046c3e6a00): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache'
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.133825] kobject: 'cache' (ffff88046c3e6a00): auto cleanup kobject_del
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.230283] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.237242] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.244114] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.250990] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.257867] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.266083] PM: Basic memory bitmaps created
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.270443] PM: Syncing filesystems ... 
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.290569] kobject: 'cache': free name
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.349195] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_cleanup
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.355994] kobject: 'machinecheck9' (ffff8801f900cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.367369] kobject: 'machinecheck9' (ffff8801f900cff0): auto cleanup 'remove' event
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.375280] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_uevent_env
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.382382] kobject: 'machinecheck9' (ffff8801f900cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck9'
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.399431] kobject: 'machinecheck9' (ffff8801f900cff0): auto cleanup kobject_del
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.411018] kobject: 'machinecheck9': free name
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.418895] kobject: 'msr9' (ffff88046edbb810): kobject_uevent_env
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.425190] kobject: 'msr9' (ffff88046edbb810): fill_kobj_path: path = '/devices/virtual/msr/msr9'
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.493283] kobject: 'msr9' (ffff88046edbb810): kobject_cleanup
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.499306] kobject: 'msr9' (ffff88046edbb810): calling ktype release
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.505844] kobject: 'msr9': free name
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.587192] kobject: 'cpu9' (ffff88041412e010): kobject_uevent_env
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.679973] kobject: 'cpu9' (ffff88041412e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu9'
+Jun  9 11:36:48 istl-vmc-blade9 kernel: [ 6988.749865] done.
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.752061] Freezing user space processes ... 
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.758650] kobject: 'cpu9' (ffff88041412e010): kobject_cleanup
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.764976] kobject: 'cpu9' (ffff88041412e010): calling ktype release
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.771511] kobject: 'cpu9': free name
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.776174] kobject: 'cpu9' (ffff8801f900c338): kobject_uevent_env
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.782450] kobject: 'cpu9' (ffff8801f900c338): fill_kobj_path: path = '/devices/system/cpu/cpu9'
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.793088] (elapsed 0.03 seconds) done.
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.797154] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6988.816850] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6993.813215] Restarting tasks ... done.
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6993.908799] PM: Basic memory bitmaps freed
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6993.948091] kobject: 'cpufreq' (ffff8801f15faaa8): kobject_cleanup
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6993.954440] kobject: 'cpufreq' (ffff8801f15faaa8): auto cleanup 'remove' event
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6993.961899] kobject: 'cpufreq' (ffff8801f15faaa8): kobject_uevent_env
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6993.977894] kobject: 'cpufreq' (ffff8801f15faaa8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cpufreq'
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6993.997874] kobject: 'cpufreq' (ffff8801f15faaa8): auto cleanup kobject_del
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6994.014622] kobject: 'cpufreq' (ffff8801f15faaa8): calling ktype release
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6994.021422] kobject: 'cpufreq': free name
+Jun  9 11:36:53 istl-vmc-blade9 kernel: [ 6994.064099] CPU 10 is now offline
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.105673] kobject: 'index0' (ffff88046caa8400): kobject_cleanup
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.111972] kobject: 'index0' (ffff88046caa8400): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.122785] kobject: 'index0' (ffff88046caa8400): auto cleanup 'remove' event
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.130054] kobject: 'index0' (ffff88046caa8400): kobject_uevent_env
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.136664] kobject: 'index0' (ffff88046caa8400): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index0'
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.286408] kobject: 'index0' (ffff88046caa8400): auto cleanup kobject_del
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.392262] kobject: 'index0': free name
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.396289] kobject: 'index1' (ffff88046caa8448): kobject_cleanup
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.402478] kobject: 'index1' (ffff88046caa8448): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.413245] kobject: 'index1' (ffff88046caa8448): auto cleanup 'remove' event
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.420467] kobject: 'index1' (ffff88046caa8448): kobject_uevent_env
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.606022] kobject: 'index1' (ffff88046caa8448): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index1'
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.799624] kobject: 'index1' (ffff88046caa8448): auto cleanup kobject_del
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.934442] kobject: 'index1': free name
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.938468] kobject: 'index2' (ffff88046caa8490): kobject_cleanup
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.944651] kobject: 'index2' (ffff88046caa8490): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.955425] kobject: 'index2' (ffff88046caa8490): auto cleanup 'remove' event
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.962656] kobject: 'index2' (ffff88046caa8490): kobject_uevent_env
+Jun  9 11:36:54 istl-vmc-blade9 kernel: [ 6994.986568] kobject: 'index2' (ffff88046caa8490): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index2'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.118583] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.125507] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.132433] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.139308] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142364] kobject: 'index2' (ffff88046caa8490): auto cleanup kobject_del
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142377] kobject: 'index2': free name
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142380] kobject: 'index3' (ffff88046caa84d8): kobject_cleanup
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142382] kobject: 'index3' (ffff88046caa84d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142384] kobject: 'index3' (ffff88046caa84d8): auto cleanup 'remove' event
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142386] kobject: 'index3' (ffff88046caa84d8): kobject_uevent_env
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142390] kobject: 'index3' (ffff88046caa84d8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index3'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142397] kobject: 'index3' (ffff88046caa84d8): auto cleanup kobject_del
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142404] kobject: 'index3': free name
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142405] kobject: 'cache' (ffff880414db8d80): kobject_cleanup
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142406] kobject: 'cache' (ffff880414db8d80): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142408] kobject: 'cache' (ffff880414db8d80): auto cleanup 'remove' event
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142410] kobject: 'cache' (ffff880414db8d80): kobject_uevent_env
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142413] kobject: 'cache' (ffff880414db8d80): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142419] kobject: 'cache' (ffff880414db8d80): auto cleanup kobject_del
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142423] kobject: 'cache': free name
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142447] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_cleanup
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142449] kobject: 'machinecheck10' (ffff8801f920cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142451] kobject: 'machinecheck10' (ffff8801f920cff0): auto cleanup 'remove' event
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142453] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_uevent_env
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142456] kobject: 'machinecheck10' (ffff8801f920cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck10'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142462] kobject: 'machinecheck10' (ffff8801f920cff0): auto cleanup kobject_del
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.142465] kobject: 'machinecheck10': free name
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.145098] kobject: 'msr10' (ffff880469129010): kobject_uevent_env
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.145103] kobject: 'msr10' (ffff880469129010): fill_kobj_path: path = '/devices/virtual/msr/msr10'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.145121] kobject: 'msr10' (ffff880469129010): kobject_cleanup
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.145123] kobject: 'msr10' (ffff880469129010): calling ktype release
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.145126] kobject: 'msr10': free name
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.146097] kobject: 'cpu10' (ffff880414bca010): kobject_uevent_env
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.146101] kobject: 'cpu10' (ffff880414bca010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu10'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.146115] kobject: 'cpu10' (ffff880414bca010): kobject_cleanup
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.146116] kobject: 'cpu10' (ffff880414bca010): calling ktype release
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.146118] kobject: 'cpu10': free name
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.381791] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.390014] PM: Basic memory bitmaps created
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.394375] PM: Syncing filesystems ... 
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.401158] kobject: 'cpu10' (ffff8801f920c338): kobject_uevent_env
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.409001] kobject: 'cpu10' (ffff8801f920c338): fill_kobj_path: path = '/devices/system/cpu/cpu10'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.578568] kobject: 'cpufreq' (ffff8801f172a4a8): kobject_cleanup
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.584870] kobject: 'cpufreq' (ffff8801f172a4a8): auto cleanup 'remove' event
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.592371] kobject: 'cpufreq' (ffff8801f172a4a8): kobject_uevent_env
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.599602] kobject: 'cpufreq' (ffff8801f172a4a8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cpufreq'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.625375] kobject: 'cpufreq' (ffff8801f172a4a8): auto cleanup kobject_del
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.679009] kobject: 'cpufreq' (ffff8801f172a4a8): calling ktype release
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.685880] kobject: 'cpufreq': free name
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.785263] CPU 11 is now offline
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.835040] kobject: 'index0' (ffff8801f441a400): kobject_cleanup
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.841268] kobject: 'index0' (ffff8801f441a400): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.852079] kobject: 'index0' (ffff8801f441a400): auto cleanup 'remove' event
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.859371] kobject: 'index0' (ffff8801f441a400): kobject_uevent_env
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.866206] kobject: 'index0' (ffff8801f441a400): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index0'
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6995.931340] kobject: 'index0' (ffff8801f441a400): auto cleanup kobject_del
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6996.047737] kobject: 'index0': free name
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6996.051844] kobject: 'index1' (ffff8801f441a448): kobject_cleanup
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6996.058074] kobject: 'index1' (ffff8801f441a448): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6996.068933] kobject: 'index1' (ffff8801f441a448): auto cleanup 'remove' event
+Jun  9 11:36:55 istl-vmc-blade9 kernel: [ 6996.076196] kobject: 'index1' (ffff8801f441a448): kobject_uevent_env
+Jun  9 11:36:56 istl-vmc-blade9 kernel: [ 6996.150796] kobject: 'index1' (ffff8801f441a448): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index1'
+Jun  9 11:36:56 istl-vmc-blade9 kernel: [ 6996.168565] done.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.170643] Freezing user space processes ... 
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.177136] kobject: 'index1' (ffff8801f441a448): auto cleanup kobject_del
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.184384] kobject: 'index1': free name
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.188395] kobject: 'index2' (ffff8801f441a490): kobject_cleanup
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.194571] kobject: 'index2' (ffff8801f441a490): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.205354] kobject: 'index2' (ffff8801f441a490): auto cleanup 'remove' event
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.212565] kobject: 'index2' (ffff8801f441a490): kobject_uevent_env
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.219103] kobject: 'index2' (ffff8801f441a490): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index2'
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.229554] kobject: 'index2' (ffff8801f441a490): auto cleanup kobject_del
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.236603] kobject: 'index2': free name
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.240620] kobject: 'index3' (ffff8801f441a4d8): kobject_cleanup
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.246793] kobject: 'index3' (ffff8801f441a4d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.257546] kobject: 'index3' (ffff8801f441a4d8): auto cleanup 'remove' event
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.264760] kobject: 'index3' (ffff8801f441a4d8): kobject_uevent_env
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.271256] kobject: 'index3' (ffff8801f441a4d8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index3'
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.281703] kobject: 'index3' (ffff8801f441a4d8): auto cleanup kobject_del
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.288729] kobject: 'index3': free name
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.292738] kobject: 'cache' (ffff8801f1defc00): kobject_cleanup
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.298827] kobject: 'cache' (ffff8801f1defc00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.309498] kobject: 'cache' (ffff8801f1defc00): auto cleanup 'remove' event
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.316654] kobject: 'cache' (ffff8801f1defc00): kobject_uevent_env
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.323033] kobject: 'cache' (ffff8801f1defc00): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache'
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.332778] kobject: 'cache' (ffff8801f1defc00): auto cleanup kobject_del
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.339652] kobject: 'cache': free name
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.343588] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_cleanup
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.350453] kobject: 'machinecheck11' (ffff8801f940cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.361899] kobject: 'machinecheck11' (ffff8801f940cff0): auto cleanup 'remove' event
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.369881] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_uevent_env
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.377013] kobject: 'machinecheck11' (ffff8801f940cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck11'
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.388607] kobject: 'machinecheck11' (ffff8801f940cff0): auto cleanup kobject_del
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.396442] kobject: 'machinecheck11': free name
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.401385] kobject: 'msr11' (ffff8801ee5d1010): kobject_uevent_env
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.407750] kobject: 'msr11' (ffff8801ee5d1010): fill_kobj_path: path = '/devices/virtual/msr/msr11'
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.417052] kobject: 'msr11' (ffff8801ee5d1010): kobject_cleanup
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.423138] kobject: 'msr11' (ffff8801ee5d1010): calling ktype release
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.429744] kobject: 'msr11': free name
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.433841] kobject: 'cpu11' (ffff880178802010): kobject_uevent_env
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.440207] kobject: 'cpu11' (ffff880178802010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu11'
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.449712] kobject: 'cpu11' (ffff880178802010): kobject_cleanup
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.455800] kobject: 'cpu11' (ffff880178802010): calling ktype release
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.462407] kobject: 'cpu11': free name
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.466897] kobject: 'cpu11' (ffff8801f940c338): kobject_uevent_env
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.473286] kobject: 'cpu11' (ffff8801f940c338): fill_kobj_path: path = '/devices/system/cpu/cpu11'
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.484298] (elapsed 0.30 seconds) done.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.488401] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 6996.507165] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 7001.503686] Restarting tasks ... done.
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 7001.799714] PM: Basic memory bitmaps freed
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 7001.825959] kobject: 'cpufreq' (ffff88046f595ca8): kobject_cleanup
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 7001.832276] kobject: 'cpufreq' (ffff88046f595ca8): auto cleanup 'remove' event
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 7001.839665] kobject: 'cpufreq' (ffff88046f595ca8): kobject_uevent_env
+Jun  9 11:37:01 istl-vmc-blade9 kernel: [ 7001.938687] kobject: 'cpufreq' (ffff88046f595ca8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cpufreq'
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.151369] kobject: 'cpufreq' (ffff88046f595ca8): auto cleanup kobject_del
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.158947] kobject: 'cpufreq' (ffff88046f595ca8): calling ktype release
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.165790] kobject: 'cpufreq': free name
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.366464] CPU 12 is now offline
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.483851] kobject: 'index0' (ffff880460639600): kobject_cleanup
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.490124] kobject: 'index0' (ffff880460639600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.500929] kobject: 'index0' (ffff880460639600): auto cleanup 'remove' event
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.508201] kobject: 'index0' (ffff880460639600): kobject_uevent_env
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.514687] kobject: 'index0' (ffff880460639600): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index0'
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.793388] kobject: 'index0' (ffff880460639600): auto cleanup kobject_del
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.981096] kobject: 'index0': free name
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.985177] kobject: 'index1' (ffff880460639648): kobject_cleanup
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7002.991411] kobject: 'index1' (ffff880460639648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7003.002199] kobject: 'index1' (ffff880460639648): auto cleanup 'remove' event
+Jun  9 11:37:02 istl-vmc-blade9 kernel: [ 7003.009425] kobject: 'index1' (ffff880460639648): kobject_uevent_env
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.119392] kobject: 'index1' (ffff880460639648): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index1'
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.165001] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.171877] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.178755] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.185632] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.192505] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.200718] PM: Basic memory bitmaps created
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.205080] PM: Syncing filesystems ... 
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.453393] kobject: 'index1' (ffff880460639648): auto cleanup kobject_del
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.461062] kobject: 'index1': free name
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.465196] kobject: 'index2' (ffff880460639690): kobject_cleanup
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.471417] kobject: 'index2' (ffff880460639690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.482249] kobject: 'index2' (ffff880460639690): auto cleanup 'remove' event
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.489505] kobject: 'index2' (ffff880460639690): kobject_uevent_env
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.617648] kobject: 'index2' (ffff880460639690): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index2'
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.922679] kobject: 'index2' (ffff880460639690): auto cleanup kobject_del
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.930322] kobject: 'index2': free name
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.934447] kobject: 'index3' (ffff8804606396d8): kobject_cleanup
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.940711] kobject: 'index3' (ffff8804606396d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.951502] kobject: 'index3' (ffff8804606396d8): auto cleanup 'remove' event
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7003.958781] kobject: 'index3' (ffff8804606396d8): kobject_uevent_env
+Jun  9 11:37:03 istl-vmc-blade9 kernel: [ 7004.090397] kobject: 'index3' (ffff8804606396d8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index3'
+Jun  9 11:37:04 istl-vmc-blade9 kernel: [ 7004.117955] done.
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.120022] Freezing user space processes ... 
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.125903] kobject: 'index3' (ffff8804606396d8): auto cleanup kobject_del
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.133191] kobject: 'index3': free name
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.137259] kobject: 'cache' (ffff8804414c61c0): kobject_cleanup
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.143432] kobject: 'cache' (ffff8804414c61c0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.154137] kobject: 'cache' (ffff8804414c61c0): auto cleanup 'remove' event
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.161300] kobject: 'cache' (ffff8804414c61c0): kobject_uevent_env
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.167689] kobject: 'cache' (ffff8804414c61c0): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache'
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.177554] kobject: 'cache' (ffff8804414c61c0): auto cleanup kobject_del
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.184503] kobject: 'cache': free name
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.188477] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_cleanup
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.195377] kobject: 'machinecheck12' (ffff88047ee0cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.206872] kobject: 'machinecheck12' (ffff88047ee0cff0): auto cleanup 'remove' event
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.214883] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_uevent_env
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.222046] kobject: 'machinecheck12' (ffff88047ee0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck12'
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.233658] kobject: 'machinecheck12' (ffff88047ee0cff0): auto cleanup kobject_del
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.241421] kobject: 'machinecheck12': free name
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.246368] kobject: 'msr12' (ffff88046c941810): kobject_uevent_env
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.252738] kobject: 'msr12' (ffff88046c941810): fill_kobj_path: path = '/devices/virtual/msr/msr12'
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.262065] kobject: 'msr12' (ffff88046c941810): kobject_cleanup
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.268156] kobject: 'msr12' (ffff88046c941810): calling ktype release
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.274765] kobject: 'msr12': free name
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.278832] kobject: 'cpu12' (ffff88046df4b810): kobject_uevent_env
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.285197] kobject: 'cpu12' (ffff88046df4b810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu12'
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.294705] kobject: 'cpu12' (ffff88046df4b810): kobject_cleanup
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.300795] kobject: 'cpu12' (ffff88046df4b810): calling ktype release
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.307399] kobject: 'cpu12': free name
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.311729] CPU 13 MCA banks CMCI:6 CMCI:8
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.316206] kobject: 'cpu12' (ffff88047ee0c338): kobject_uevent_env
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.322584] kobject: 'cpu12' (ffff88047ee0c338): fill_kobj_path: path = '/devices/system/cpu/cpu12'
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.338318] (elapsed 0.21 seconds) done.
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.342363] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7004.361088] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7009.357493] Restarting tasks ... 
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7009.705242] kobject: 'cpufreq' (ffff88046072dca8): kobject_cleanup
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7009.711794] kobject: 'cpufreq' (ffff88046072dca8): auto cleanup 'remove' event
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7009.719185] kobject: 'cpufreq' (ffff88046072dca8): kobject_uevent_env
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7009.726773] done.
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7009.728863] PM: Basic memory bitmaps freed
+Jun  9 11:37:09 istl-vmc-blade9 kernel: [ 7010.079231] kobject: 'cpufreq' (ffff88046072dca8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cpufreq'
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.362826] kobject: 'cpufreq' (ffff88046072dca8): auto cleanup kobject_del
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.542545] kobject: 'cpufreq' (ffff88046072dca8): calling ktype release
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.549361] kobject: 'cpufreq': free name
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.856037] CPU 13 is now offline
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.954905] kobject: 'index0' (ffff8801f21e2200): kobject_cleanup
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.961104] kobject: 'index0' (ffff8801f21e2200): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.971874] kobject: 'index0' (ffff8801f21e2200): auto cleanup 'remove' event
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.979101] kobject: 'index0' (ffff8801f21e2200): kobject_uevent_env
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7010.985555] kobject: 'index0' (ffff8801f21e2200): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index0'
+Jun  9 11:37:10 istl-vmc-blade9 kernel: [ 7011.081035] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.087962] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.094831] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.101707] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.108586] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.116801] PM: Basic memory bitmaps created
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.121155] PM: Syncing filesystems ... 
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.397223] kobject: 'index0' (ffff8801f21e2200): auto cleanup kobject_del
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.650847] kobject: 'index0': free name
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.654871] kobject: 'index1' (ffff8801f21e2248): kobject_cleanup
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.661046] kobject: 'index1' (ffff8801f21e2248): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.671803] kobject: 'index1' (ffff8801f21e2248): auto cleanup 'remove' event
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7011.679020] kobject: 'index1' (ffff8801f21e2248): kobject_uevent_env
+Jun  9 11:37:11 istl-vmc-blade9 kernel: [ 7012.023287] kobject: 'index1' (ffff8801f21e2248): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index1'
+Jun  9 11:37:12 istl-vmc-blade9 kernel: [ 7012.145086] done.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.147161] Freezing user space processes ... 
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.153623] kobject: 'index1' (ffff8801f21e2248): auto cleanup kobject_del
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.160912] kobject: 'index1': free name
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.164970] kobject: 'index2' (ffff8801f21e2290): kobject_cleanup
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.171139] kobject: 'index2' (ffff8801f21e2290): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.181891] kobject: 'index2' (ffff8801f21e2290): auto cleanup 'remove' event
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.189104] kobject: 'index2' (ffff8801f21e2290): kobject_uevent_env
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.195544] kobject: 'index2' (ffff8801f21e2290): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index2'
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.206004] kobject: 'index2' (ffff8801f21e2290): auto cleanup kobject_del
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.212979] kobject: 'index2': free name
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.217040] kobject: 'index3' (ffff8801f21e22d8): kobject_cleanup
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.223211] kobject: 'index3' (ffff8801f21e22d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.233979] kobject: 'index3' (ffff8801f21e22d8): auto cleanup 'remove' event
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.241193] kobject: 'index3' (ffff8801f21e22d8): kobject_uevent_env
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.247630] kobject: 'index3' (ffff8801f21e22d8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index3'
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.258091] kobject: 'index3' (ffff8801f21e22d8): auto cleanup kobject_del
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.265057] kobject: 'index3': free name
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.269100] kobject: 'cache' (ffff8801f3626cc0): kobject_cleanup
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.275192] kobject: 'cache' (ffff8801f3626cc0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.285861] kobject: 'cache' (ffff8801f3626cc0): auto cleanup 'remove' event
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.292985] kobject: 'cache' (ffff8801f3626cc0): kobject_uevent_env
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.299330] kobject: 'cache' (ffff8801f3626cc0): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache'
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.309060] kobject: 'cache' (ffff8801f3626cc0): auto cleanup kobject_del
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.315936] kobject: 'cache': free name
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.319877] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_cleanup
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.326740] kobject: 'machinecheck13' (ffff88047f00cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.338188] kobject: 'machinecheck13' (ffff88047f00cff0): auto cleanup 'remove' event
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.346180] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_uevent_env
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.353313] kobject: 'machinecheck13' (ffff88047f00cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck13'
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.364856] kobject: 'machinecheck13' (ffff88047f00cff0): auto cleanup kobject_del
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.372575] kobject: 'machinecheck13': free name
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.377468] kobject: 'msr13' (ffff8803ca409810): kobject_uevent_env
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.383833] kobject: 'msr13' (ffff8803ca409810): fill_kobj_path: path = '/devices/virtual/msr/msr13'
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.393160] kobject: 'msr13' (ffff8803ca409810): kobject_cleanup
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.399242] kobject: 'msr13' (ffff8803ca409810): calling ktype release
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.405849] kobject: 'msr13': free name
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.409943] kobject: 'cpu13' (ffff880178b86010): kobject_uevent_env
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.416298] kobject: 'cpu13' (ffff880178b86010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu13'
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.425767] kobject: 'cpu13' (ffff880178b86010): kobject_cleanup
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.431884] kobject: 'cpu13' (ffff880178b86010): calling ktype release
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.438506] kobject: 'cpu13': free name
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.442870] CPU 14 MCA banks CMCI:6 CMCI:8
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.447248] kobject: 'cpu13' (ffff88047f00c338): kobject_uevent_env
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.453623] kobject: 'cpu13' (ffff88047f00c338): fill_kobj_path: path = '/devices/system/cpu/cpu13'
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.463116] (elapsed 0.31 seconds) done.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.467159] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7012.485648] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.481573] Restarting tasks ... done.
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.683428] PM: Basic memory bitmaps freed
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.785769] kobject: 'cpufreq' (ffff880414a8e2a8): kobject_cleanup
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.792109] kobject: 'cpufreq' (ffff880414a8e2a8): auto cleanup 'remove' event
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.799484] kobject: 'cpufreq' (ffff880414a8e2a8): kobject_uevent_env
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.806025] kobject: 'cpufreq' (ffff880414a8e2a8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cpufreq'
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.817396] kobject: 'cpufreq' (ffff880414a8e2a8): auto cleanup kobject_del
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.824530] kobject: 'cpufreq' (ffff880414a8e2a8): calling ktype release
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.831369] kobject: 'cpufreq': free name
+Jun  9 11:37:17 istl-vmc-blade9 kernel: [ 7017.931241] CPU 14 is now offline
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.069086] kobject: 'index0' (ffff88046c12b600): kobject_cleanup
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.075321] kobject: 'index0' (ffff88046c12b600): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.086076] kobject: 'index0' (ffff88046c12b600): auto cleanup 'remove' event
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.093288] kobject: 'index0' (ffff88046c12b600): kobject_uevent_env
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.100009] kobject: 'index0' (ffff88046c12b600): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index0'
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.669859] kobject: 'index0' (ffff88046c12b600): auto cleanup kobject_del
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.677077] kobject: 'index0': free name
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.681099] kobject: 'index1' (ffff88046c12b648): kobject_cleanup
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.687269] kobject: 'index1' (ffff88046c12b648): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.698020] kobject: 'index1' (ffff88046c12b648): auto cleanup 'remove' event
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.705234] kobject: 'index1' (ffff88046c12b648): kobject_uevent_env
+Jun  9 11:37:18 istl-vmc-blade9 kernel: [ 7018.919759] kobject: 'index1' (ffff88046c12b648): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index1'
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.245396] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.252270] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.259135] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.266000] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.272870] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.281078] PM: Basic memory bitmaps created
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.285427] PM: Syncing filesystems ... 
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.518273] kobject: 'index1' (ffff88046c12b648): auto cleanup kobject_del
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.525734] kobject: 'index1': free name
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.529814] kobject: 'index2' (ffff88046c12b690): kobject_cleanup
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.535983] kobject: 'index2' (ffff88046c12b690): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.546733] kobject: 'index2' (ffff88046c12b690): auto cleanup 'remove' event
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.553941] kobject: 'index2' (ffff88046c12b690): kobject_uevent_env
+Jun  9 11:37:19 istl-vmc-blade9 kernel: [ 7019.778400] kobject: 'index2' (ffff88046c12b690): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index2'
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.352563] kobject: 'index2' (ffff88046c12b690): auto cleanup kobject_del
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.359756] kobject: 'index2': free name
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.363808] kobject: 'index3' (ffff88046c12b6d8): kobject_cleanup
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.369981] kobject: 'index3' (ffff88046c12b6d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.380736] kobject: 'index3' (ffff88046c12b6d8): auto cleanup 'remove' event
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.387945] kobject: 'index3' (ffff88046c12b6d8): kobject_uevent_env
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.399832] kobject: 'index3' (ffff88046c12b6d8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index3'
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.418887] kobject: 'index3' (ffff88046c12b6d8): auto cleanup kobject_del
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.425988] kobject: 'index3': free name
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.430043] kobject: 'cache' (ffff880414ca1c80): kobject_cleanup
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.436127] kobject: 'cache' (ffff880414ca1c80): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.446796] kobject: 'cache' (ffff880414ca1c80): auto cleanup 'remove' event
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.453920] kobject: 'cache' (ffff880414ca1c80): kobject_uevent_env
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.472151] kobject: 'cache' (ffff880414ca1c80): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache'
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.507286] kobject: 'cache' (ffff880414ca1c80): auto cleanup kobject_del
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.514331] kobject: 'cache': free name
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.531247] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_cleanup
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.538137] kobject: 'machinecheck14' (ffff88047f20cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.549593] kobject: 'machinecheck14' (ffff88047f20cff0): auto cleanup 'remove' event
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.557570] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_uevent_env
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.577176] kobject: 'machinecheck14' (ffff88047f20cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck14'
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.642078] kobject: 'machinecheck14' (ffff88047f20cff0): auto cleanup kobject_del
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.649995] kobject: 'machinecheck14': free name
+Jun  9 11:37:20 istl-vmc-blade9 kernel: [ 7020.786933] kobject: 'msr14' (ffff88046dfa5810): kobject_uevent_env
+Jun  9 11:37:21 istl-vmc-blade9 kernel: [ 7021.128385] kobject: 'msr14' (ffff88046dfa5810): fill_kobj_path: path = '/devices/virtual/msr/msr14'
+Jun  9 11:37:21 istl-vmc-blade9 kernel: [ 7021.253378] done.
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.255399] Freezing user space processes ... 
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.262583] kobject: 'msr14' (ffff88046dfa5810): kobject_cleanup
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.268947] kobject: 'msr14' (ffff88046dfa5810): calling ktype release
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.275550] kobject: 'msr14': free name
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.279554] kobject: 'cpu14' (ffff88046dfa5010): kobject_uevent_env
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.285955] kobject: 'cpu14' (ffff88046dfa5010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu14'
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.295424] kobject: 'cpu14' (ffff88046dfa5010): kobject_cleanup
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.301561] kobject: 'cpu14' (ffff88046dfa5010): calling ktype release
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.308166] kobject: 'cpu14': free name
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.312451] CPU 15 MCA banks CMCI:6 CMCI:8
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.316754] kobject: 'cpu14' (ffff88047f20c338): kobject_uevent_env
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.323103] kobject: 'cpu14' (ffff88047f20c338): fill_kobj_path: path = '/devices/system/cpu/cpu14'
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.338326] (elapsed 0.07 seconds) done.
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.342420] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7021.361119] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7026.357611] Restarting tasks ... done.
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7026.798717] PM: Basic memory bitmaps freed
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7026.844704] kobject: 'cpufreq' (ffff880414b206a8): kobject_cleanup
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7026.851075] kobject: 'cpufreq' (ffff880414b206a8): auto cleanup 'remove' event
+Jun  9 11:37:26 istl-vmc-blade9 kernel: [ 7026.858484] kobject: 'cpufreq' (ffff880414b206a8): kobject_uevent_env
+Jun  9 11:37:27 istl-vmc-blade9 kernel: [ 7027.146119] kobject: 'cpufreq' (ffff880414b206a8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cpufreq'
+Jun  9 11:37:27 istl-vmc-blade9 kernel: [ 7027.686399] kobject: 'cpufreq' (ffff880414b206a8): auto cleanup kobject_del
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.065752] kobject: 'cpufreq' (ffff880414b206a8): calling ktype release
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.072655] kobject: 'cpufreq': free name
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.332163] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.339042] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.345909] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.352774] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.359643] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.367847] PM: Basic memory bitmaps created
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.372206] PM: Syncing filesystems ... 
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.892509] CPU 15 is now offline
+Jun  9 11:37:28 istl-vmc-blade9 kernel: [ 7028.896185] lockdep: fixing up alternatives.
+Jun  9 11:37:29 istl-vmc-blade9 kernel: [ 7029.223202] SMP alternatives: switching to UP code
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.937849] done.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.939906] Freezing user space processes ... 
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.950502] kobject: 'index0' (ffff880460639400): kobject_cleanup
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.957001] kobject: 'index0' (ffff880460639400): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.967779] kobject: 'index0' (ffff880460639400): auto cleanup 'remove' event
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.975038] kobject: 'index0' (ffff880460639400): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.981664] kobject: 'index0' (ffff880460639400): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index0'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.992357] kobject: 'index0' (ffff880460639400): auto cleanup kobject_del
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7029.999381] kobject: 'index0': free name
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.003417] kobject: 'index1' (ffff880460639448): kobject_cleanup
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.009614] kobject: 'index1' (ffff880460639448): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.020392] kobject: 'index1' (ffff880460639448): auto cleanup 'remove' event
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.027629] kobject: 'index1' (ffff880460639448): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.034249] kobject: 'index1' (ffff880460639448): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index1'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.044881] kobject: 'index1' (ffff880460639448): auto cleanup kobject_del
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.051898] kobject: 'index1': free name
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.055966] kobject: 'index2' (ffff880460639490): kobject_cleanup
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.062164] kobject: 'index2' (ffff880460639490): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.072942] kobject: 'index2' (ffff880460639490): auto cleanup 'remove' event
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.080178] kobject: 'index2' (ffff880460639490): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.086788] kobject: 'index2' (ffff880460639490): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index2'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.097252] kobject: 'index2' (ffff880460639490): auto cleanup kobject_del
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.104412] kobject: 'index2': free name
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.108476] kobject: 'index3' (ffff8804606394d8): kobject_cleanup
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.114647] kobject: 'index3' (ffff8804606394d8): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.125405] kobject: 'index3' (ffff8804606394d8): auto cleanup 'remove' event
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.132616] kobject: 'index3' (ffff8804606394d8): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.139218] kobject: 'index3' (ffff8804606394d8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index3'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.149777] kobject: 'index3' (ffff8804606394d8): auto cleanup kobject_del
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.156740] kobject: 'index3': free name
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.160744] kobject: 'cache' (ffff880414db8f00): kobject_cleanup
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.166826] kobject: 'cache' (ffff880414db8f00): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.177492] kobject: 'cache' (ffff880414db8f00): auto cleanup 'remove' event
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.184620] kobject: 'cache' (ffff880414db8f00): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.191110] kobject: 'cache' (ffff880414db8f00): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.200827] kobject: 'cache' (ffff880414db8f00): auto cleanup kobject_del
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.207838] kobject: 'cache': free name
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.211775] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_cleanup
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.218638] kobject: 'machinecheck15' (ffff88047f40cff0): does not have a release() function, it is broken and must be fixed.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.230083] kobject: 'machinecheck15' (ffff88047f40cff0): auto cleanup 'remove' event
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.238051] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.245323] kobject: 'machinecheck15' (ffff88047f40cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck15'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.257016] kobject: 'machinecheck15' (ffff88047f40cff0): auto cleanup kobject_del
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.264732] kobject: 'machinecheck15': free name
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.269652] kobject: 'msr15' (ffff8803eae39010): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.276024] kobject: 'msr15' (ffff8803eae39010): fill_kobj_path: path = '/devices/virtual/msr/msr15'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.285501] kobject: 'msr15' (ffff8803eae39010): kobject_cleanup
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.291646] kobject: 'msr15' (ffff8803eae39010): calling ktype release
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.298282] kobject: 'msr15': free name
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.302486] kobject: 'cpu15' (ffff8804691e7810): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.308865] kobject: 'cpu15' (ffff8804691e7810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu15'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.318506] kobject: 'cpu15' (ffff8804691e7810): kobject_cleanup
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.324649] kobject: 'cpu15' (ffff8804691e7810): calling ktype release
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.331288] kobject: 'cpu15': free name
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.335584] kobject: 'cpu15' (ffff88047f40c338): kobject_uevent_env
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.341962] kobject: 'cpu15' (ffff88047f40c338): fill_kobj_path: path = '/devices/system/cpu/cpu15'
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.362499] (elapsed 0.41 seconds) done.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.366587] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:37:35 istl-vmc-blade9 kernel: [ 7030.385242] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:37:36 istl-vmc-blade9 kernel: [ 7035.381356] Restarting tasks ... done.
+Jun  9 11:37:36 istl-vmc-blade9 kernel: [ 7036.130209] PM: Basic memory bitmaps freed
+Jun  9 11:37:36 istl-vmc-blade9 kernel: [ 7036.786384] kobject: 'msr1' (ffff8801f146e010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:37:37 istl-vmc-blade9 kernel: [ 7037.470408] kobject: 'msr1' (ffff8801f146e010): kobject_uevent_env
+Jun  9 11:37:38 istl-vmc-blade9 kernel: [ 7038.130310] kobject: 'msr1' (ffff8801f146e010): fill_kobj_path: path = '/devices/virtual/msr/msr1'
+Jun  9 11:37:38 istl-vmc-blade9 kernel: [ 7038.142666] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:37:38 istl-vmc-blade9 kernel: [ 7038.149608] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:37:38 istl-vmc-blade9 kernel: [ 7038.156514] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:37:38 istl-vmc-blade9 kernel: [ 7038.163418] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:37:38 istl-vmc-blade9 kernel: [ 7038.170322] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:37:38 istl-vmc-blade9 kernel: [ 7038.178556] PM: Basic memory bitmaps created
+Jun  9 11:37:39 istl-vmc-blade9 kernel: [ 7038.182939] PM: Syncing filesystems ... 
+Jun  9 11:37:39 istl-vmc-blade9 kernel: [ 7039.167441] kobject: 'cpu1' (ffff8801f366d810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:37:40 istl-vmc-blade9 kernel: [ 7040.185292] kobject: 'cpu1' (ffff8801f366d810): kobject_uevent_env
+Jun  9 11:37:40 istl-vmc-blade9 kernel: [ 7040.818230] kobject: 'cpu1' (ffff8801f366d810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu1'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.037846] done.
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.039907] Freezing user space processes ... lockdep: fixing up alternatives.
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.054482] SMP alternatives: switching to SMP code
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.064494] Booting Node 0 Processor 1 APIC 0x2
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.069139] smpboot cpu 1: start_ip = 97000
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.084546] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.112626] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.112789] Switched to NOHz mode on CPU #1
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.123072] kobject: 'cache' (ffff8801f23b6240): kobject_add_internal: parent: 'cpu1', set: '<NULL>'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.132422] kobject: 'index0' (ffff8801f015a200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.141937] kobject: 'index0' (ffff8801f015a200): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.148443] kobject: 'index0' (ffff8801f015a200): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index0'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.158844] kobject: 'index1' (ffff8801f015a248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.168314] kobject: 'index1' (ffff8801f015a248): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.174748] kobject: 'index1' (ffff8801f015a248): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index1'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.185079] kobject: 'index2' (ffff8801f015a290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.194536] kobject: 'index2' (ffff8801f015a290): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.200973] kobject: 'index2' (ffff8801f015a290): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index2'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.211307] kobject: 'index3' (ffff8801f015a2d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.220776] kobject: 'index3' (ffff8801f015a2d8): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.227219] kobject: 'index3' (ffff8801f015a2d8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache/index3'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.237599] kobject: 'cache' (ffff8801f23b6240): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.243946] kobject: 'cache' (ffff8801f23b6240): fill_kobj_path: path = '/devices/system/cpu/cpu1/cache'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.253585] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.264791] kobject: 'machinecheck1' (ffff8801f880cff0): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.271834] kobject: 'machinecheck1' (ffff8801f880cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck1'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.283397] microcode: CPU1 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.289369] ------------[ cut here ]------------
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.294075] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.302398] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.307796] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.360931] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.368475] Call Trace:
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.371009]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.377091]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.383004]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.389002]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.394745]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.401878]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.408917]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.415696]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.421696]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.428131]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.433524]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.438570]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.443445]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.448837]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.454230]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.460058]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.465279]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.470412]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.476496] ---[ end trace cff32f63e15cd4bb ]---
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.481196] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.488932] kobject: 'cpufreq' (ffff8801f22478a8): kobject_add_internal: parent: 'cpu1', set: '<NULL>'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.498409] kobject: 'cpufreq' (ffff8801f22478a8): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.504929] kobject: 'cpufreq' (ffff8801f22478a8): fill_kobj_path: path = '/devices/system/cpu/cpu1/cpufreq'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.514972] kobject: 'cpu1' (ffff8801f880c338): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.521289] kobject: 'cpu1' (ffff8801f880c338): fill_kobj_path: path = '/devices/system/cpu/cpu1'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.541394] (elapsed 0.49 seconds) done.
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.545442] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7041.564148] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7046.560369] Restarting tasks ... 
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7046.599662] kobject: 'msr2' (ffff880163ef2010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7046.930856] kobject: 'msr2' (ffff880163ef2010): kobject_uevent_env
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7047.002734] done.
+Jun  9 11:37:46 istl-vmc-blade9 kernel: [ 7047.004875] PM: Basic memory bitmaps freed
+Jun  9 11:37:47 istl-vmc-blade9 kernel: [ 7047.225396] kobject: 'msr2' (ffff880163ef2010): fill_kobj_path: path = '/devices/virtual/msr/msr2'
+Jun  9 11:37:47 istl-vmc-blade9 kernel: [ 7047.654746] kobject: 'cpu2' (ffff880163e63810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:37:48 istl-vmc-blade9 kernel: [ 7048.161920] kobject: 'cpu2' (ffff880163e63810): kobject_uevent_env
+Jun  9 11:37:48 istl-vmc-blade9 kernel: [ 7048.474497] kobject: 'cpu2' (ffff880163e63810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu2'
+Jun  9 11:37:48 istl-vmc-blade9 kernel: [ 7048.699399] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:37:48 istl-vmc-blade9 kernel: [ 7048.706279] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:37:48 istl-vmc-blade9 kernel: [ 7048.713148] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:37:48 istl-vmc-blade9 kernel: [ 7048.720015] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:37:48 istl-vmc-blade9 kernel: [ 7048.726888] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:37:48 istl-vmc-blade9 kernel: [ 7048.735095] PM: Basic memory bitmaps created
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.739440] PM: Syncing filesystems ... done.
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.838157] Freezing user space processes ... lockdep: fixing up alternatives.
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.847662] Booting Node 0 Processor 2 APIC 0x12
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.852437] smpboot cpu 2: start_ip = 97000
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.867849] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.895558] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.895894] Switched to NOHz mode on CPU #2
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.906257] kobject: 'cache' (ffff88014fb198c0): kobject_add_internal: parent: 'cpu2', set: '<NULL>'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.915624] kobject: 'index0' (ffff8801f1551200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.925148] kobject: 'index0' (ffff8801f1551200): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.931652] kobject: 'index0' (ffff8801f1551200): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index0'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.942034] kobject: 'index1' (ffff8801f1551248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.951571] kobject: 'index1' (ffff8801f1551248): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.958045] kobject: 'index1' (ffff8801f1551248): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index1'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.968377] kobject: 'index2' (ffff8801f1551290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.977850] kobject: 'index2' (ffff8801f1551290): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.984285] kobject: 'index2' (ffff8801f1551290): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index2'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7048.994614] kobject: 'index3' (ffff8801f15512d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.004079] kobject: 'index3' (ffff8801f15512d8): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.010513] kobject: 'index3' (ffff8801f15512d8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache/index3'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.020843] kobject: 'cache' (ffff88014fb198c0): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.027189] kobject: 'cache' (ffff88014fb198c0): fill_kobj_path: path = '/devices/system/cpu/cpu2/cache'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.036828] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.048021] kobject: 'machinecheck2' (ffff8801f8a0cff0): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.055064] kobject: 'machinecheck2' (ffff8801f8a0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck2'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.066616] microcode: CPU2 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.072532] ------------[ cut here ]------------
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.077238] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.085556] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.090948] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.144093] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.151640] Call Trace:
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.154174]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.160263]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.166178]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.172177]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.177918]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.185043]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.192084]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.198861]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.204860]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.211294]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.216694]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.221739]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.226611]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.232008]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.237401]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.243230]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.248449]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.253576]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.259660] ---[ end trace cff32f63e15cd4bc ]---
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.264362] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.272106] kobject: 'cpufreq' (ffff8801f47cf4a8): kobject_add_internal: parent: 'cpu2', set: '<NULL>'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.281590] kobject: 'cpufreq' (ffff8801f47cf4a8): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.288169] kobject: 'cpufreq' (ffff8801f47cf4a8): fill_kobj_path: path = '/devices/system/cpu/cpu2/cpufreq'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.298217] kobject: 'cpu2' (ffff8801f8a0c338): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.304532] kobject: 'cpu2' (ffff8801f8a0c338): fill_kobj_path: path = '/devices/system/cpu/cpu2'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.315500] (elapsed 0.47 seconds) done.
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.319541] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7049.338254] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7054.333820] Restarting tasks ... 
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7054.365107] kobject: 'msr3' (ffff88014f84a810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7054.375383] done.
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7054.377477] PM: Basic memory bitmaps freed
+Jun  9 11:37:54 istl-vmc-blade9 abrt: Kerneloops: Reported 5 kernel oopses to Abrt
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970374074-2003-5' creation detected
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970374074-2003-5 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970374074-2003-4' creation detected
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7054.435880] kobject: 'msr3' (ffff88014f84a810): kobject_uevent_env
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970374074-2003-4 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970374074-2003-3' creation detected
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970374074-2003-3 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970374074-2003-2' creation detected
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970374074-2003-2 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Directory 'kerneloops-1970374074-2003-1' creation detected
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Crash is in database already (dup of /var/spool/abrt/kerneloops-1969139477-1973-1)
+Jun  9 11:37:54 istl-vmc-blade9 abrtd: Deleting crash kerneloops-1970374074-2003-1 (dup of kerneloops-1969139477-1973-1), sending dbus signal
+Jun  9 11:37:54 istl-vmc-blade9 kernel: [ 7054.774860] kobject: 'msr3' (ffff88014f84a810): fill_kobj_path: path = '/devices/virtual/msr/msr3'
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.120326] kobject: 'cpu3' (ffff8801f277e010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.481972] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.488883] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.495752] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.502622] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.509493] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.517709] PM: Basic memory bitmaps created
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.522066] PM: Syncing filesystems ... 
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.548694] kobject: 'cpu3' (ffff8801f277e010): kobject_uevent_env
+Jun  9 11:37:55 istl-vmc-blade9 kernel: [ 7055.817453] kobject: 'cpu3' (ffff8801f277e010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu3'
+Jun  9 11:37:56 istl-vmc-blade9 kernel: [ 7056.222982] lockdep: fixing up alternatives.
+Jun  9 11:37:56 istl-vmc-blade9 kernel: [ 7056.396366] Booting Node 0 Processor 3 APIC 0x14
+Jun  9 11:37:56 istl-vmc-blade9 kernel: [ 7056.401081] smpboot cpu 3: start_ip = 97000
+Jun  9 11:37:56 istl-vmc-blade9 kernel: [ 7056.416457] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:37:56 istl-vmc-blade9 kernel: [ 7056.790808] Switched to NOHz mode on CPU #3
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.813788] done.
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.815803] Freezing user space processes ... 
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.822036] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.828262] kobject: 'cache' (ffff8801f3ab4840): kobject_add_internal: parent: 'cpu3', set: '<NULL>'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.837603] kobject: 'index0' (ffff8801f457a000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.847119] kobject: 'index0' (ffff8801f457a000): kobject_uevent_env
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.853561] kobject: 'index0' (ffff8801f457a000): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index0'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.863897] kobject: 'index1' (ffff8801f457a048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.873395] kobject: 'index1' (ffff8801f457a048): kobject_uevent_env
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.879831] kobject: 'index1' (ffff8801f457a048): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index1'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.890160] kobject: 'index2' (ffff8801f457a090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.899670] kobject: 'index2' (ffff8801f457a090): kobject_uevent_env
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.906108] kobject: 'index2' (ffff8801f457a090): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index2'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.916438] kobject: 'index3' (ffff8801f457a0d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.925908] kobject: 'index3' (ffff8801f457a0d8): kobject_uevent_env
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.932349] kobject: 'index3' (ffff8801f457a0d8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache/index3'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.942679] kobject: 'cache' (ffff8801f3ab4840): kobject_uevent_env
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.949021] kobject: 'cache' (ffff8801f3ab4840): fill_kobj_path: path = '/devices/system/cpu/cpu3/cache'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.958662] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.969863] kobject: 'machinecheck3' (ffff8801f8c0cff0): kobject_uevent_env
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.976903] kobject: 'machinecheck3' (ffff8801f8c0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck3'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.988469] microcode: CPU3 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.994391] ------------[ cut here ]------------
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7056.999101] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.007425] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.012823] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.066075] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.073630] Call Trace:
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.076168]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.082264]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.088183]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.094239]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.099986]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.107171]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.114273]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.121110]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.127164]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.133647]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.139095]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.144196]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.149124]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.154573]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.160018]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.165898]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.171172]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.176358]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.182496] ---[ end trace cff32f63e15cd4bd ]---
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.187250] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.195096] kobject: 'cpufreq' (ffff8801f13342a8): kobject_add_internal: parent: 'cpu3', set: '<NULL>'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.204684] kobject: 'cpufreq' (ffff8801f13342a8): kobject_uevent_env
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.211255] kobject: 'cpufreq' (ffff8801f13342a8): fill_kobj_path: path = '/devices/system/cpu/cpu3/cpufreq'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.221325] kobject: 'cpu3' (ffff8801f8c0c338): kobject_uevent_env
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.227642] kobject: 'cpu3' (ffff8801f8c0c338): fill_kobj_path: path = '/devices/system/cpu/cpu3'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.244374] (elapsed 0.42 seconds) done.
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.248417] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7057.267133] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7062.262733] Restarting tasks ... 
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7062.585573] kobject: 'msr4' (ffff8801f1753010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7062.592892] done.
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7062.592953] PM: Basic memory bitmaps freed
+Jun  9 11:38:02 istl-vmc-blade9 kernel: [ 7062.949513] kobject: 'msr4' (ffff8801f1753010): kobject_uevent_env
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.111094] kobject: 'msr4' (ffff8801f1753010): fill_kobj_path: path = '/devices/virtual/msr/msr4'
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.354742] kobject: 'cpu4' (ffff8801f1dc3010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.651288] kobject: 'cpu4' (ffff8801f1dc3010): kobject_uevent_env
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.814301] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.821202] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.821356] kobject: 'cpu4' (ffff8801f1dc3010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu4'
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.825013] lockdep: fixing up alternatives.
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.825018] Booting Node 1 Processor 4 APIC 0x20
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.825020] smpboot cpu 4: start_ip = 97000
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.836142] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.857179] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.864316] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.871183] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:38:03 istl-vmc-blade9 kernel: [ 7063.879380] PM: Basic memory bitmaps created
+Jun  9 11:38:04 istl-vmc-blade9 kernel: [ 7063.883728] PM: Syncing filesystems ... 
+Jun  9 11:38:04 istl-vmc-blade9 kernel: [ 7064.093646] Switched to NOHz mode on CPU #4
+Jun  9 11:38:04 istl-vmc-blade9 kernel: [ 7064.620084] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:04 istl-vmc-blade9 kernel: [ 7064.636766] done.
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.638793] Freezing user space processes ... 
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.644846] kobject: 'cache' (ffff8801e96b6680): kobject_add_internal: parent: 'cpu4', set: '<NULL>'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.654427] kobject: 'index0' (ffff8801f4565000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.663947] kobject: 'index0' (ffff8801f4565000): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.670384] kobject: 'index0' (ffff8801f4565000): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index0'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.680724] kobject: 'index1' (ffff8801f4565048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.690239] kobject: 'index1' (ffff8801f4565048): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.696680] kobject: 'index1' (ffff8801f4565048): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index1'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.707013] kobject: 'index2' (ffff8801f4565090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.716513] kobject: 'index2' (ffff8801f4565090): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.722960] kobject: 'index2' (ffff8801f4565090): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index2'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.733291] kobject: 'index3' (ffff8801f45650d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.742821] kobject: 'index3' (ffff8801f45650d8): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.749259] kobject: 'index3' (ffff8801f45650d8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache/index3'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.759580] kobject: 'cache' (ffff8801e96b6680): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.765927] kobject: 'cache' (ffff8801e96b6680): fill_kobj_path: path = '/devices/system/cpu/cpu4/cache'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.775567] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.786763] kobject: 'machinecheck4' (ffff88047e60cff0): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.793808] kobject: 'machinecheck4' (ffff88047e60cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck4'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.805396] microcode: CPU4 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.811325] ------------[ cut here ]------------
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.816032] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.824359] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.829751] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.882910] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.890460] Call Trace:
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.892993]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.899083]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.904996]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.910992]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.916735]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.923865]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.930906]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.937693]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.943696]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.950129]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.955526]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.960574]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.965449]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.970844]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.976240]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.982066]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.987291]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.992424]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7064.998513] ---[ end trace cff32f63e15cd4be ]---
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.003224] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.010976] kobject: 'cpufreq' (ffff88046c1a72a8): kobject_add_internal: parent: 'cpu4', set: '<NULL>'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.020457] kobject: 'cpufreq' (ffff88046c1a72a8): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.026982] kobject: 'cpufreq' (ffff88046c1a72a8): fill_kobj_path: path = '/devices/system/cpu/cpu4/cpufreq'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.037028] kobject: 'cpu4' (ffff88047e60c338): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.043365] kobject: 'cpu4' (ffff88047e60c338): fill_kobj_path: path = '/devices/system/cpu/cpu4'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.061398] (elapsed 0.41 seconds) done.
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.065443] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7065.084173] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7070.080813] Restarting tasks ... done.
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7070.324816] PM: Basic memory bitmaps freed
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7070.358594] kobject: 'msr5' (ffff8801ee6f2010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7070.503796] kobject: 'msr5' (ffff8801ee6f2010): kobject_uevent_env
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7070.638581] kobject: 'msr5' (ffff8801ee6f2010): fill_kobj_path: path = '/devices/virtual/msr/msr5'
+Jun  9 11:38:10 istl-vmc-blade9 kernel: [ 7070.829309] kobject: 'cpu5' (ffff8801e9a7a810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.026001] kobject: 'cpu5' (ffff8801e9a7a810): kobject_uevent_env
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.149812] kobject: 'cpu5' (ffff8801e9a7a810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu5'
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.335566] lockdep: fixing up alternatives.
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.418388] Booting Node 1 Processor 5 APIC 0x22
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.423100] smpboot cpu 5: start_ip = 97000
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.438501] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.550242] Switched to NOHz mode on CPU #5
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.569398] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.576333] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.583296] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.590225] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.597112] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.605403] PM: Basic memory bitmaps created
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.609813] PM: Syncing filesystems ... 
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.832121] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:11 istl-vmc-blade9 kernel: [ 7071.934620] kobject: 'cache' (ffff8801f1735740): kobject_add_internal: parent: 'cpu5', set: '<NULL>'
+Jun  9 11:38:12 istl-vmc-blade9 kernel: [ 7072.083376] kobject: 'index0' (ffff8801f4b7fc00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:12 istl-vmc-blade9 kernel: [ 7072.248173] kobject: 'index0' (ffff8801f4b7fc00): kobject_uevent_env
+Jun  9 11:38:12 istl-vmc-blade9 kernel: [ 7072.281491] done.
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.283511] Freezing user space processes ... 
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.289343] kobject: 'index0' (ffff8801f4b7fc00): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index0'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.299973] kobject: 'index1' (ffff8801f4b7fc48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.309473] kobject: 'index1' (ffff8801f4b7fc48): kobject_uevent_env
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.315968] kobject: 'index1' (ffff8801f4b7fc48): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index1'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.326307] kobject: 'index2' (ffff8801f4b7fc90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.335808] kobject: 'index2' (ffff8801f4b7fc90): kobject_uevent_env
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.342247] kobject: 'index2' (ffff8801f4b7fc90): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index2'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.352598] kobject: 'index3' (ffff8801f4b7fcd8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.362069] kobject: 'index3' (ffff8801f4b7fcd8): kobject_uevent_env
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.368538] kobject: 'index3' (ffff8801f4b7fcd8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache/index3'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.378875] kobject: 'cache' (ffff8801f1735740): kobject_uevent_env
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.385222] kobject: 'cache' (ffff8801f1735740): fill_kobj_path: path = '/devices/system/cpu/cpu5/cache'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.394853] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.406100] kobject: 'machinecheck5' (ffff88047e80cff0): kobject_uevent_env
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.413152] kobject: 'machinecheck5' (ffff88047e80cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck5'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.424747] microcode: CPU5 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.430680] ------------[ cut here ]------------
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.435388] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.443717] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.449110] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.502257] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.509802] Call Trace:
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.512343]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.518426]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.524344]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.530345]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.536092]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.543224]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.550263]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.557046]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.563046]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.569485]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.574887]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.579936]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.584810]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.590202]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.595600]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.601435]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.606655]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.611795]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.617880] ---[ end trace cff32f63e15cd4bf ]---
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.622582] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.630329] kobject: 'cpufreq' (ffff88046e36b8a8): kobject_add_internal: parent: 'cpu5', set: '<NULL>'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.639814] kobject: 'cpufreq' (ffff88046e36b8a8): kobject_uevent_env
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.646334] kobject: 'cpufreq' (ffff88046e36b8a8): fill_kobj_path: path = '/devices/system/cpu/cpu5/cpufreq'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.656390] kobject: 'cpu5' (ffff88047e80c338): kobject_uevent_env
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.662722] kobject: 'cpu5' (ffff88047e80c338): fill_kobj_path: path = '/devices/system/cpu/cpu5'
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.673767] (elapsed 0.38 seconds) done.
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.677817] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7072.696529] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7077.692706] Restarting tasks ... done.
+Jun  9 11:38:17 istl-vmc-blade9 kernel: [ 7077.820375] PM: Basic memory bitmaps freed
+Jun  9 11:38:18 istl-vmc-blade9 kernel: [ 7078.102935] kobject: 'msr6' (ffff8801f2622010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:38:18 istl-vmc-blade9 kernel: [ 7078.261932] kobject: 'msr6' (ffff8801f2622010): kobject_uevent_env
+Jun  9 11:38:18 istl-vmc-blade9 kernel: [ 7078.368781] kobject: 'msr6' (ffff8801f2622010): fill_kobj_path: path = '/devices/virtual/msr/msr6'
+Jun  9 11:38:18 istl-vmc-blade9 kernel: [ 7078.535867] kobject: 'cpu6' (ffff8801f222b010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:38:18 istl-vmc-blade9 kernel: [ 7078.718260] kobject: 'cpu6' (ffff8801f222b010): kobject_uevent_env
+Jun  9 11:38:18 istl-vmc-blade9 kernel: [ 7078.857008] kobject: 'cpu6' (ffff8801f222b010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu6'
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.031082] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.037968] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.039410] lockdep: fixing up alternatives.
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.039415] Booting Node 1 Processor 6 APIC 0x32
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.039417] smpboot cpu 6: start_ip = 97000
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.050537] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.064687] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.071823] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.078696] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.086911] PM: Basic memory bitmaps created
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.091262] PM: Syncing filesystems ... 
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.128631] Switched to NOHz mode on CPU #6
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.503561] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.604888] kobject: 'cache' (ffff8801ee791800): kobject_add_internal: parent: 'cpu6', set: '<NULL>'
+Jun  9 11:38:19 istl-vmc-blade9 kernel: [ 7079.704730] done.
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.706758] Freezing user space processes ... 
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.713033] kobject: 'index0' (ffff8801f47d2200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.722796] kobject: 'index0' (ffff8801f47d2200): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.729278] kobject: 'index0' (ffff8801f47d2200): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index0'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.739700] kobject: 'index1' (ffff8801f47d2248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.749174] kobject: 'index1' (ffff8801f47d2248): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.755643] kobject: 'index1' (ffff8801f47d2248): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index1'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.765982] kobject: 'index2' (ffff8801f47d2290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.775481] kobject: 'index2' (ffff8801f47d2290): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.781922] kobject: 'index2' (ffff8801f47d2290): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index2'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.792290] kobject: 'index3' (ffff8801f47d22d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.801749] kobject: 'index3' (ffff8801f47d22d8): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.808191] kobject: 'index3' (ffff8801f47d22d8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache/index3'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.818525] kobject: 'cache' (ffff8801ee791800): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.824868] kobject: 'cache' (ffff8801ee791800): fill_kobj_path: path = '/devices/system/cpu/cpu6/cache'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.834512] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.845706] kobject: 'machinecheck6' (ffff88047ea0cff0): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.852748] kobject: 'machinecheck6' (ffff88047ea0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck6'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.864348] microcode: CPU6 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.870276] ------------[ cut here ]------------
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.874981] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.883308] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.888704] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.941857] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.949410] Call Trace:
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.951942]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.958031]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.963944]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.969942]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.975687]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.982821]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.989862]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7079.996644]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.002646]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.009080]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.014480]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.019527]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.024409]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.029802]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.035199]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.041023]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.046243]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.051376]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.057466] ---[ end trace cff32f63e15cd4c0 ]---
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.062164] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.069913] kobject: 'cpufreq' (ffff88046e36b6a8): kobject_add_internal: parent: 'cpu6', set: '<NULL>'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.079399] kobject: 'cpufreq' (ffff88046e36b6a8): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.085920] kobject: 'cpufreq' (ffff88046e36b6a8): fill_kobj_path: path = '/devices/system/cpu/cpu6/cpufreq'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.095972] kobject: 'cpu6' (ffff88047ea0c338): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.102249] kobject: 'cpu6' (ffff88047ea0c338): fill_kobj_path: path = '/devices/system/cpu/cpu6'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.119383] (elapsed 0.40 seconds) done.
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.123426] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7080.142133] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.138321] Restarting tasks ... done.
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.277959] PM: Basic memory bitmaps freed
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.309238] kobject: 'msr7' (ffff880437341010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.331152] kobject: 'msr7' (ffff880437341010): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.412015] kobject: 'msr7' (ffff880437341010): fill_kobj_path: path = '/devices/virtual/msr/msr7'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.482519] kobject: 'cpu7' (ffff880469084810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.604701] kobject: 'cpu7' (ffff880469084810): kobject_uevent_env
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.687650] kobject: 'cpu7' (ffff880469084810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu7'
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.801904] lockdep: fixing up alternatives.
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.863296] Booting Node 1 Processor 7 APIC 0x34
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.868026] smpboot cpu 7: start_ip = 97000
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.883414] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:38:25 istl-vmc-blade9 kernel: [ 7085.967177] Switched to NOHz mode on CPU #7
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.226159] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.320624] kobject: 'cache' (ffff8804414e45c0): kobject_add_internal: parent: 'cpu7', set: '<NULL>'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.450549] kobject: 'index0' (ffff8803ca638200): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.450565] kobject: 'index0' (ffff8803ca638200): kobject_uevent_env
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.450570] kobject: 'index0' (ffff8803ca638200): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index0'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.451090] kobject: 'index1' (ffff8803ca638248): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.451103] kobject: 'index1' (ffff8803ca638248): kobject_uevent_env
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.451106] kobject: 'index1' (ffff8803ca638248): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index1'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.451500] kobject: 'index2' (ffff8803ca638290): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.451550] kobject: 'index2' (ffff8803ca638290): kobject_uevent_env
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.451554] kobject: 'index2' (ffff8803ca638290): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index2'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.454071] kobject: 'index3' (ffff8803ca6382d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.454086] kobject: 'index3' (ffff8803ca6382d8): kobject_uevent_env
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.454089] kobject: 'index3' (ffff8803ca6382d8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache/index3'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.454099] kobject: 'cache' (ffff8804414e45c0): kobject_uevent_env
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.454496] kobject: 'cache' (ffff8804414e45c0): fill_kobj_path: path = '/devices/system/cpu/cpu7/cache'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.454840] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.454848] kobject: 'machinecheck7' (ffff88047ec0cff0): kobject_uevent_env
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.454852] kobject: 'machinecheck7' (ffff88047ec0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck7'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.547615] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.547619] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.547624] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.547628] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.547634] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.548979] PM: Basic memory bitmaps created
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.548981] PM: Syncing filesystems ... 
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.645007] microcode: CPU7 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.651368] ------------[ cut here ]------------
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.656099] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.664441] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.669837] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.723170] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.730725] Call Trace:
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.733266]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.739366]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.745293]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.751305]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.757061]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.764206]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.771260]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.778056]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.784069]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.790517]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.795930]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.800984]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.805872]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.811277]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.816686]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.822520]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.827774]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.832918]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.839017] ---[ end trace cff32f63e15cd4c1 ]---
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.843727] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.865607] kobject: 'cpufreq' (ffff88046c940ea8): kobject_add_internal: parent: 'cpu7', set: '<NULL>'
+Jun  9 11:38:26 istl-vmc-blade9 kernel: [ 7086.925695] done.
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7086.927724] Freezing user space processes ... 
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7086.934040] kobject: 'cpufreq' (ffff88046c940ea8): kobject_uevent_env
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7086.940845] kobject: 'cpufreq' (ffff88046c940ea8): fill_kobj_path: path = '/devices/system/cpu/cpu7/cpufreq'
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7086.950844] kobject: 'cpu7' (ffff88047ec0c338): kobject_uevent_env
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7086.957167] kobject: 'cpu7' (ffff88047ec0c338): fill_kobj_path: path = '/devices/system/cpu/cpu7'
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7086.976879] (elapsed 0.04 seconds) done.
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7086.980927] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7086.999705] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7091.995855] Restarting tasks ... 
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.123853] kobject: 'msr8' (ffff88041412e010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.155659] done.
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.157867] PM: Basic memory bitmaps freed
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.201609] kobject: 'msr8' (ffff88041412e010): kobject_uevent_env
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.287628] kobject: 'msr8' (ffff88041412e010): fill_kobj_path: path = '/devices/virtual/msr/msr8'
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.384835] kobject: 'cpu8' (ffff880414bf9810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.492946] kobject: 'cpu8' (ffff880414bf9810): kobject_uevent_env
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.577045] kobject: 'cpu8' (ffff880414bf9810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu8'
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.700878] lockdep: fixing up alternatives.
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.754752] Booting Node 0 Processor 8 APIC 0x1
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.759409] smpboot cpu 8: start_ip = 97000
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.774704] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.809663] Switched to NOHz mode on CPU #8
+Jun  9 11:38:32 istl-vmc-blade9 kernel: [ 7092.954988] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.010678] kobject: 'cache' (ffff88046c3a3a00): kobject_add_internal: parent: 'cpu8', set: '<NULL>'
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.057105] kobject: 'index0' (ffff88046dd4fc00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.168551] kobject: 'index0' (ffff88046dd4fc00): kobject_uevent_env
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.251988] kobject: 'index0' (ffff88046dd4fc00): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index0'
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.293274] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.300259] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.307142] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.314027] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.320908] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.329231] PM: Basic memory bitmaps created
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.333589] PM: Syncing filesystems ... 
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.433728] kobject: 'index1' (ffff88046dd4fc48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.585523] kobject: 'index1' (ffff88046dd4fc48): kobject_uevent_env
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.672393] kobject: 'index1' (ffff88046dd4fc48): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index1'
+Jun  9 11:38:33 istl-vmc-blade9 kernel: [ 7093.825138] done.
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.827163] Freezing user space processes ... 
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.833579] kobject: 'index2' (ffff88046dd4fc90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.843340] kobject: 'index2' (ffff88046dd4fc90): kobject_uevent_env
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.849828] kobject: 'index2' (ffff88046dd4fc90): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index2'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.860208] kobject: 'index3' (ffff88046dd4fcd8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.869718] kobject: 'index3' (ffff88046dd4fcd8): kobject_uevent_env
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.876156] kobject: 'index3' (ffff88046dd4fcd8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache/index3'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.886485] kobject: 'cache' (ffff88046c3a3a00): kobject_uevent_env
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.892872] kobject: 'cache' (ffff88046c3a3a00): fill_kobj_path: path = '/devices/system/cpu/cpu8/cache'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.902515] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.913755] kobject: 'machinecheck8' (ffff8801f8e0cff0): kobject_uevent_env
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.920803] kobject: 'machinecheck8' (ffff8801f8e0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck8'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.932440] microcode: CPU8 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.938369] ------------[ cut here ]------------
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.943073] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.951400] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7093.956792] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.009952] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.017504] Call Trace:
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.020044]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.026145]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.032067]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.038070]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.043820]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.050954]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.057999]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.064787]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.070790]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.077227]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.082626]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.087674]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.092554]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.097955]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.103353]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.109186]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.114408]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.119547]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.125639] ---[ end trace cff32f63e15cd4c2 ]---
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.130340] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.138240] kobject: 'cpufreq' (ffff8801f175d8a8): kobject_add_internal: parent: 'cpu8', set: '<NULL>'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.147761] kobject: 'cpufreq' (ffff8801f175d8a8): kobject_uevent_env
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.154288] kobject: 'cpufreq' (ffff8801f175d8a8): fill_kobj_path: path = '/devices/system/cpu/cpu8/cpufreq'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.164288] kobject: 'cpu8' (ffff8801f8e0c338): kobject_uevent_env
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.170558] kobject: 'cpu8' (ffff8801f8e0c338): fill_kobj_path: path = '/devices/system/cpu/cpu8'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.184850] (elapsed 0.35 seconds) done.
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.188894] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7094.207615] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.203858] Restarting tasks ... 
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.224271] kobject: 'msr9' (ffff880178a5e010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.245505] kobject: 'msr9' (ffff880178a5e010): kobject_uevent_env
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.256863] kobject: 'msr9' (ffff880178a5e010): fill_kobj_path: path = '/devices/virtual/msr/msr9'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.310815] kobject: 'cpu9' (ffff8801f30cf810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.396618] kobject: 'cpu9' (ffff8801f30cf810): kobject_uevent_env
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.404571] done.
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.406680] PM: Basic memory bitmaps freed
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.480456] kobject: 'cpu9' (ffff8801f30cf810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu9'
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.594332] lockdep: fixing up alternatives.
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.654200] Booting Node 0 Processor 9 APIC 0x3
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.658821] smpboot cpu 9: start_ip = 97000
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.674480] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:38:39 istl-vmc-blade9 kernel: [ 7099.764024] Switched to NOHz mode on CPU #9
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.046783] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.090250] kobject: 'cache' (ffff8801f2772b00): kobject_add_internal: parent: 'cpu9', set: '<NULL>'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.155461] kobject: 'index0' (ffff8801f3a29400): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.175444] kobject: 'index0' (ffff8801f3a29400): kobject_uevent_env
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.199215] kobject: 'index0' (ffff8801f3a29400): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index0'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.229479] kobject: 'index1' (ffff8801f3a29448): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.297697] kobject: 'index1' (ffff8801f3a29448): kobject_uevent_env
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.335177] kobject: 'index1' (ffff8801f3a29448): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index1'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.415603] kobject: 'index2' (ffff8801f3a29490): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.473862] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.480895] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.487795] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.494703] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.501602] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.510715] PM: Basic memory bitmaps created
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.515093] PM: Syncing filesystems ... 
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.532879] kobject: 'index2' (ffff8801f3a29490): kobject_uevent_env
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.614748] kobject: 'index2' (ffff8801f3a29490): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index2'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.658748] kobject: 'index3' (ffff8801f3a294d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.701621] kobject: 'index3' (ffff8801f3a294d8): kobject_uevent_env
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.737422] kobject: 'index3' (ffff8801f3a294d8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache/index3'
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.821863] kobject: 'cache' (ffff8801f2772b00): kobject_uevent_env
+Jun  9 11:38:40 istl-vmc-blade9 kernel: [ 7100.833148] done.
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.835183] Freezing user space processes ... 
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.841692] kobject: 'cache' (ffff8801f2772b00): fill_kobj_path: path = '/devices/system/cpu/cpu9/cache'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.851624] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.862868] kobject: 'machinecheck9' (ffff8801f900cff0): kobject_uevent_env
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.869913] kobject: 'machinecheck9' (ffff8801f900cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck9'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.881585] microcode: CPU9 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.887510] ------------[ cut here ]------------
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.892256] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.900622] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.906059] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.960631] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.968226] Call Trace:
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.970809]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.976942]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.982896]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.988950]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7100.994736]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.001910]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.008951]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.015780]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.021824]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.028302]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.033742]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.038828]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.043746]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.049183]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.054620]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.060492]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.065753]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.070927]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.077067] ---[ end trace cff32f63e15cd4c3 ]---
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.081813] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.089667] kobject: 'cpufreq' (ffff8801f47d00a8): kobject_add_internal: parent: 'cpu9', set: '<NULL>'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.099186] kobject: 'cpufreq' (ffff8801f47d00a8): kobject_uevent_env
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.105776] kobject: 'cpufreq' (ffff8801f47d00a8): fill_kobj_path: path = '/devices/system/cpu/cpu9/cpufreq'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.115762] kobject: 'cpu9' (ffff8801f900c338): kobject_uevent_env
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.122022] kobject: 'cpu9' (ffff8801f900c338): fill_kobj_path: path = '/devices/system/cpu/cpu9'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.138210] (elapsed 0.29 seconds) done.
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.142252] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7101.160979] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.157349] Restarting tasks ... 
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.212761] kobject: 'msr10' (ffff880178807810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.288580] kobject: 'msr10' (ffff880178807810): kobject_uevent_env
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.323985] done.
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.326152] PM: Basic memory bitmaps freed
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.355910] kobject: 'msr10' (ffff880178807810): fill_kobj_path: path = '/devices/virtual/msr/msr10'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.445867] kobject: 'cpu10' (ffff880163cc5010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.543871] kobject: 'cpu10' (ffff880163cc5010): kobject_uevent_env
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.615578] kobject: 'cpu10' (ffff880163cc5010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu10'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.715456] lockdep: fixing up alternatives.
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.745378] Booting Node 0 Processor 10 APIC 0x13
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.750209] smpboot cpu 10: start_ip = 97000
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.765712] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.795267] Switched to NOHz mode on CPU #10
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.799957] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.807409] kobject: 'cache' (ffff8801ee7c1dc0): kobject_add_internal: parent: 'cpu10', set: '<NULL>'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.819294] kobject: 'index0' (ffff8801efc25000): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.858067] kobject: 'index0' (ffff8801efc25000): kobject_uevent_env
+Jun  9 11:38:46 istl-vmc-blade9 kernel: [ 7106.933060] kobject: 'index0' (ffff8801efc25000): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index0'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.007428] kobject: 'index1' (ffff8801efc25048): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.067889] kobject: 'index1' (ffff8801efc25048): kobject_uevent_env
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.125171] kobject: 'index1' (ffff8801efc25048): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index1'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.188686] kobject: 'index2' (ffff8801efc25090): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.244617] kobject: 'index2' (ffff8801efc25090): kobject_uevent_env
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.290739] kobject: 'index2' (ffff8801efc25090): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index2'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.371488] kobject: 'index3' (ffff8801efc250d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.470464] kobject: 'index3' (ffff8801efc250d8): kobject_uevent_env
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.494866] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.501788] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.508684] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.515629] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.522564] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.524152] kobject: 'index3' (ffff8801efc250d8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache/index3'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.524173] kobject: 'cache' (ffff8801ee7c1dc0): kobject_uevent_env
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.524176] kobject: 'cache' (ffff8801ee7c1dc0): fill_kobj_path: path = '/devices/system/cpu/cpu10/cache'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.524191] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.524202] kobject: 'machinecheck10' (ffff8801f920cff0): kobject_uevent_env
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.524206] kobject: 'machinecheck10' (ffff8801f920cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck10'
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.585834] microcode: CPU10 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.587241] PM: Basic memory bitmaps created
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.587242] PM: Syncing filesystems ... 
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.599973] ------------[ cut here ]------------
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.604967] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.613319] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.618731] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.672537] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.680106] Call Trace:
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.682665]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.688785]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.694736]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.700767]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.706538]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.713701]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.720775]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.727614]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.733644]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.740111]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.745537]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.750615]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.755513]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.760935]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.766350]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.772206]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.777451]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.782607]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.788719] ---[ end trace cff32f63e15cd4c4 ]---
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.793446] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:38:47 istl-vmc-blade9 kernel: [ 7107.801313] kobject: 'cpufreq' (ffff8801f44596a8): kobject_add_internal: parent: 'cpu10', set: '<NULL>'
+Jun  9 11:38:48 istl-vmc-blade9 kernel: [ 7108.257039] done.
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7108.259067] Freezing user space processes ... 
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7108.265661] kobject: 'cpufreq' (ffff8801f44596a8): kobject_uevent_env
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7108.272471] kobject: 'cpufreq' (ffff8801f44596a8): fill_kobj_path: path = '/devices/system/cpu/cpu10/cpufreq'
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7108.282556] kobject: 'cpu10' (ffff8801f920c338): kobject_uevent_env
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7108.288949] kobject: 'cpu10' (ffff8801f920c338): fill_kobj_path: path = '/devices/system/cpu/cpu10'
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7108.309258] (elapsed 0.04 seconds) done.
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7108.313310] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7108.332022] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.328377] Restarting tasks ... done.
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.410989] PM: Basic memory bitmaps freed
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.418162] kobject: 'msr11' (ffff880142901010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.467289] kobject: 'msr11' (ffff880142901010): kobject_uevent_env
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.507152] kobject: 'msr11' (ffff880142901010): fill_kobj_path: path = '/devices/virtual/msr/msr11'
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.566843] kobject: 'cpu11' (ffff880169c9d010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.644832] kobject: 'cpu11' (ffff880169c9d010): kobject_uevent_env
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.677711] kobject: 'cpu11' (ffff880169c9d010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu11'
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.736262] lockdep: fixing up alternatives.
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.754878] Booting Node 0 Processor 11 APIC 0x15
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.759697] smpboot cpu 11: start_ip = 97000
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.775087] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:38:53 istl-vmc-blade9 kernel: [ 7113.855466] Switched to NOHz mode on CPU #11
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7113.973902] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.037272] kobject: 'cache' (ffff88014f9b2800): kobject_add_internal: parent: 'cpu11', set: '<NULL>'
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.087681] kobject: 'index0' (ffff8801e9410e00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.169007] kobject: 'index0' (ffff8801e9410e00): kobject_uevent_env
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.203962] kobject: 'index0' (ffff8801e9410e00): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index0'
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.272267] kobject: 'index1' (ffff8801e9410e48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.323800] kobject: 'index1' (ffff8801e9410e48): kobject_uevent_env
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.359695] kobject: 'index1' (ffff8801e9410e48): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index1'
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.413657] kobject: 'index2' (ffff8801e9410e90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.488522] kobject: 'index2' (ffff8801e9410e90): kobject_uevent_env
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.533460] kobject: 'index2' (ffff8801e9410e90): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index2'
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.547953] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.554859] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.561758] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.568655] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.575554] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.584722] PM: Basic memory bitmaps created
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.589094] PM: Syncing filesystems ... 
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.713430] kobject: 'index3' (ffff8801e9410ed8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.859954] kobject: 'index3' (ffff8801e9410ed8): kobject_uevent_env
+Jun  9 11:38:54 istl-vmc-blade9 kernel: [ 7114.891890] done.
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.893936] Freezing user space processes ... 
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.900693] kobject: 'index3' (ffff8801e9410ed8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache/index3'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.911745] kobject: 'cache' (ffff88014f9b2800): kobject_uevent_env
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.918192] kobject: 'cache' (ffff88014f9b2800): fill_kobj_path: path = '/devices/system/cpu/cpu11/cache'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.927991] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.939373] kobject: 'machinecheck11' (ffff8801f940cff0): kobject_uevent_env
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.946507] kobject: 'machinecheck11' (ffff8801f940cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck11'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.958368] microcode: CPU11 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.964384] ------------[ cut here ]------------
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.969113] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.977462] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7114.982883] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.037364] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.044951] Call Trace:
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.047510]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.053629]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.059541]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.065597]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.071387]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.078547]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.085610]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.092447]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.098498]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.104979]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.110405]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.115494]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.120396]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.125839]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.131259]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.137135]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.142381]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.147513]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.153627] ---[ end trace cff32f63e15cd4c5 ]---
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.158351] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.166233] kobject: 'cpufreq' (ffff8801f00fe2a8): kobject_add_internal: parent: 'cpu11', set: '<NULL>'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.175830] kobject: 'cpufreq' (ffff8801f00fe2a8): kobject_uevent_env
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.182401] kobject: 'cpufreq' (ffff8801f00fe2a8): fill_kobj_path: path = '/devices/system/cpu/cpu11/cpufreq'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.192509] kobject: 'cpu11' (ffff8801f940c338): kobject_uevent_env
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.198869] kobject: 'cpu11' (ffff8801f940c338): fill_kobj_path: path = '/devices/system/cpu/cpu11'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.214677] (elapsed 0.31 seconds) done.
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.218721] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7115.237466] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.234284] Restarting tasks ... done.
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.280472] PM: Basic memory bitmaps freed
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.403540] kobject: 'msr12' (ffff8801f2484010): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.414480] kobject: 'msr12' (ffff8801f2484010): kobject_uevent_env
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.453390] kobject: 'msr12' (ffff8801f2484010): fill_kobj_path: path = '/devices/virtual/msr/msr12'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.528295] kobject: 'cpu12' (ffff880178b8b010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.594213] kobject: 'cpu12' (ffff880178b8b010): kobject_uevent_env
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.625917] kobject: 'cpu12' (ffff880178b8b010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu12'
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.686128] lockdep: fixing up alternatives.
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.708996] Booting Node 1 Processor 12 APIC 0x21
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.713977] smpboot cpu 12: start_ip = 97000
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.729495] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.774883] Switched to NOHz mode on CPU #12
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.834460] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:39:00 istl-vmc-blade9 kernel: [ 7120.863806] kobject: 'cache' (ffff8801f47be2c0): kobject_add_internal: parent: 'cpu12', set: '<NULL>'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7120.933675] kobject: 'index0' (ffff8801f4571400): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.001557] kobject: 'index0' (ffff8801f4571400): kobject_uevent_env
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.043512] kobject: 'index0' (ffff8801f4571400): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index0'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.117381] kobject: 'index1' (ffff8801f4571448): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.187277] kobject: 'index1' (ffff8801f4571448): kobject_uevent_env
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.232189] kobject: 'index1' (ffff8801f4571448): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index1'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.303120] kobject: 'index2' (ffff8801f4571490): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.366815] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.373827] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.380860] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.387839] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.394849] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.403872] PM: Basic memory bitmaps created
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.408263] PM: Syncing filesystems ... 
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.417028] kobject: 'index2' (ffff8801f4571490): kobject_uevent_env
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.452873] kobject: 'index2' (ffff8801f4571490): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index2'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.527749] kobject: 'index3' (ffff8801f45714d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.590653] kobject: 'index3' (ffff8801f45714d8): kobject_uevent_env
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.642581] kobject: 'index3' (ffff8801f45714d8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache/index3'
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.712495] kobject: 'cache' (ffff8801f47be2c0): kobject_uevent_env
+Jun  9 11:39:01 istl-vmc-blade9 kernel: [ 7121.719198] done.
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.721231] Freezing user space processes ... 
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.727555] kobject: 'cache' (ffff8801f47be2c0): fill_kobj_path: path = '/devices/system/cpu/cpu12/cache'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.737661] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.748986] kobject: 'machinecheck12' (ffff88047ee0cff0): kobject_uevent_env
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.756174] kobject: 'machinecheck12' (ffff88047ee0cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck12'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.767999] microcode: CPU12 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.774024] ------------[ cut here ]------------
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.778731] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.787058] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.792452] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.845629] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.853180] Call Trace:
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.855717]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.861807]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.867720]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.873721]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.879463]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.886596]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.893639]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.900425]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.906428]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.912866]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.918263]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.923313]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.928192]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.933588]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.938979]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.944808]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.950033]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.955183]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.961289] ---[ end trace cff32f63e15cd4c6 ]---
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.965989] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.973872] kobject: 'cpufreq' (ffff88043718d0a8): kobject_add_internal: parent: 'cpu12', set: '<NULL>'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.983535] kobject: 'cpufreq' (ffff88043718d0a8): kobject_uevent_env
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7121.990129] kobject: 'cpufreq' (ffff88043718d0a8): fill_kobj_path: path = '/devices/system/cpu/cpu12/cpufreq'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7122.000272] kobject: 'cpu12' (ffff88047ee0c338): kobject_uevent_env
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7122.006693] kobject: 'cpu12' (ffff88047ee0c338): fill_kobj_path: path = '/devices/system/cpu/cpu12'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7122.022235] (elapsed 0.29 seconds) done.
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7122.026341] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7122.045033] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.040897] Restarting tasks ... done.
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.115025] PM: Basic memory bitmaps freed
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.233484] kobject: 'msr13' (ffff8803c9239810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.243130] kobject: 'msr13' (ffff8803c9239810): kobject_uevent_env
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.290910] kobject: 'msr13' (ffff8803c9239810): fill_kobj_path: path = '/devices/virtual/msr/msr13'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.393805] kobject: 'cpu13' (ffff8803eac36010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.509363] kobject: 'cpu13' (ffff8803eac36010): kobject_uevent_env
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.581468] kobject: 'cpu13' (ffff8803eac36010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu13'
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.680721] lockdep: fixing up alternatives.
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.703308] Booting Node 1 Processor 13 APIC 0x23
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.708105] smpboot cpu 13: start_ip = 97000
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.723798] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:39:07 istl-vmc-blade9 kernel: [ 7127.864034] Switched to NOHz mode on CPU #13
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.061457] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.102730] kobject: 'cache' (ffff88046d41df80): kobject_add_internal: parent: 'cpu13', set: '<NULL>'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.162612] kobject: 'index0' (ffff880414bf6800): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.220788] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.227695] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232517] kobject: 'index0' (ffff880414bf6800): kobject_uevent_env
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232526] kobject: 'index0' (ffff880414bf6800): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index0'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232554] kobject: 'index1' (ffff880414bf6848): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232573] kobject: 'index1' (ffff880414bf6848): kobject_uevent_env
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232577] kobject: 'index1' (ffff880414bf6848): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index1'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232588] kobject: 'index2' (ffff880414bf6890): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232605] kobject: 'index2' (ffff880414bf6890): kobject_uevent_env
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232609] kobject: 'index2' (ffff880414bf6890): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index2'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232619] kobject: 'index3' (ffff880414bf68d8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232637] kobject: 'index3' (ffff880414bf68d8): kobject_uevent_env
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232640] kobject: 'index3' (ffff880414bf68d8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache/index3'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232649] kobject: 'cache' (ffff88046d41df80): kobject_uevent_env
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232653] kobject: 'cache' (ffff88046d41df80): fill_kobj_path: path = '/devices/system/cpu/cpu13/cache'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232670] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232680] kobject: 'machinecheck13' (ffff88047f00cff0): kobject_uevent_env
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.232684] kobject: 'machinecheck13' (ffff88047f00cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck13'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.376425] microcode: CPU13 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.376435] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.376443] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.376453] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.378459] PM: Basic memory bitmaps created
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.378462] PM: Syncing filesystems ... 
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.411217] ------------[ cut here ]------------
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.416218] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.424569] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.429997] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.483967] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.491549] Call Trace:
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.494119]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.500238]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.506193]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.512238]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.518035]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.525207]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.532290]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.539105]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.545144]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.551619]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.557052]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.562139]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.567057]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.572484]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.577907]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.583773]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.589032]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.594202]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.600326] ---[ end trace cff32f63e15cd4c7 ]---
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.605051] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.628349] kobject: 'cpufreq' (ffff8804692e1ca8): kobject_add_internal: parent: 'cpu13', set: '<NULL>'
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.657909] kobject: 'cpufreq' (ffff8804692e1ca8): kobject_uevent_env
+Jun  9 11:39:08 istl-vmc-blade9 kernel: [ 7128.665817] done.
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7128.667852] Freezing user space processes ... 
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7128.674766] kobject: 'cpufreq' (ffff8804692e1ca8): fill_kobj_path: path = '/devices/system/cpu/cpu13/cpufreq'
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7128.685207] kobject: 'cpu13' (ffff88047f00c338): kobject_uevent_env
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7128.691586] kobject: 'cpu13' (ffff88047f00c338): fill_kobj_path: path = '/devices/system/cpu/cpu13'
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7128.708058] (elapsed 0.03 seconds) done.
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7128.712107] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7128.730818] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7133.726689] Restarting tasks ... done.
+Jun  9 11:39:13 istl-vmc-blade9 kernel: [ 7133.734651] PM: Basic memory bitmaps freed
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7133.915581] kobject: 'msr14' (ffff8804415cc810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7133.926105] kobject: 'msr14' (ffff8804415cc810): kobject_uevent_env
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7133.962496] kobject: 'msr14' (ffff8804415cc810): fill_kobj_path: path = '/devices/virtual/msr/msr14'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.021024] kobject: 'cpu14' (ffff88046dd16010): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.090014] kobject: 'cpu14' (ffff88046dd16010): kobject_uevent_env
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.143456] kobject: 'cpu14' (ffff88046dd16010): fill_kobj_path: path = '/devices/virtual/cpuid/cpu14'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.170473] lockdep: fixing up alternatives.
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.198348] Booting Node 1 Processor 14 APIC 0x33
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.203230] smpboot cpu 14: start_ip = 97000
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.218636] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.264245] Switched to NOHz mode on CPU #14
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.373887] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.418079] kobject: 'cache' (ffff88046ce4be00): kobject_add_internal: parent: 'cpu14', set: '<NULL>'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.479257] kobject: 'index0' (ffff88046c9e3a00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.552850] kobject: 'index0' (ffff88046c9e3a00): kobject_uevent_env
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.596948] kobject: 'index0' (ffff88046c9e3a00): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index0'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.673624] kobject: 'index1' (ffff88046c9e3a48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.734110] kobject: 'index1' (ffff88046c9e3a48): kobject_uevent_env
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.783244] kobject: 'index1' (ffff88046c9e3a48): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index1'
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.851296] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:39:14 istl-vmc-blade9 kernel: [ 7134.858220] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.863128] kobject: 'index2' (ffff88046c9e3a90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.863157] kobject: 'index2' (ffff88046c9e3a90): kobject_uevent_env
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.863164] kobject: 'index2' (ffff88046c9e3a90): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index2'
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.864533] kobject: 'index3' (ffff88046c9e3ad8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.864558] kobject: 'index3' (ffff88046c9e3ad8): kobject_uevent_env
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.864563] kobject: 'index3' (ffff88046c9e3ad8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache/index3'
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.864578] kobject: 'cache' (ffff88046ce4be00): kobject_uevent_env
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.865165] kobject: 'cache' (ffff88046ce4be00): fill_kobj_path: path = '/devices/system/cpu/cpu14/cache'
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.865669] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.865680] kobject: 'machinecheck14' (ffff88047f20cff0): kobject_uevent_env
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.865685] kobject: 'machinecheck14' (ffff88047f20cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck14'
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.963788] microcode: CPU14 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.963827] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.963835] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.963844] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.965904] PM: Basic memory bitmaps created
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.965907] PM: Syncing filesystems ... 
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7134.998549] ------------[ cut here ]------------
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.003555] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.011914] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.017346] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.071356] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.078936] Call Trace:
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.081506]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.087633]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.093591]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.099626]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.105411]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.112586]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.119673]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.126487]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.132525]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.138999]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.144436]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.149552]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.154459]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.159886]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.165324]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.171181]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.176435]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.181610]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.187734] ---[ end trace cff32f63e15cd4c8 ]---
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.192462] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:39:15 istl-vmc-blade9 kernel: [ 7135.325355] done.
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.327418] Freezing user space processes ... 
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.334268] kobject: 'cpufreq' (ffff88046c9e36a8): kobject_add_internal: parent: 'cpu14', set: '<NULL>'
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.344120] kobject: 'cpufreq' (ffff88046c9e36a8): kobject_uevent_env
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.350698] kobject: 'cpufreq' (ffff88046c9e36a8): fill_kobj_path: path = '/devices/system/cpu/cpu14/cpufreq'
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.360882] kobject: 'cpu14' (ffff88047f20c338): kobject_uevent_env
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.367318] kobject: 'cpu14' (ffff88047f20c338): fill_kobj_path: path = '/devices/system/cpu/cpu14'
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.378822] (elapsed 0.04 seconds) done.
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.382945] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7135.401607] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.397548] Restarting tasks ... done.
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.455093] PM: Basic memory bitmaps freed
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.526702] kobject: 'msr15' (ffff8803e9a14810): kobject_add_internal: parent: 'msr', set: 'devices'
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.537316] kobject: 'msr15' (ffff8803e9a14810): kobject_uevent_env
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.562611] kobject: 'msr15' (ffff8803e9a14810): fill_kobj_path: path = '/devices/virtual/msr/msr15'
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.608723] kobject: 'cpu15' (ffff88046f65f810): kobject_add_internal: parent: 'cpuid', set: 'devices'
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.653511] kobject: 'cpu15' (ffff88046f65f810): kobject_uevent_env
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.688487] kobject: 'cpu15' (ffff88046f65f810): fill_kobj_path: path = '/devices/virtual/cpuid/cpu15'
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.753193] lockdep: fixing up alternatives.
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.773316] Booting Node 1 Processor 15 APIC 0x35
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.778151] smpboot cpu 15: start_ip = 97000
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.793551] Calibrating delay loop (skipped) already calibrated this CPU
+Jun  9 11:39:20 istl-vmc-blade9 kernel: [ 7140.869140] Switched to NOHz mode on CPU #15
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7140.968789] NMI watchdog enabled, takes one hw-pmu counter.
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.012995] kobject: 'cache' (ffff88046f5ca780): kobject_add_internal: parent: 'cpu15', set: '<NULL>'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.067850] kobject: 'index0' (ffff8803eafd6a00): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.131760] kobject: 'index0' (ffff8803eafd6a00): kobject_uevent_env
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.162732] kobject: 'index0' (ffff8803eafd6a00): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index0'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.227622] kobject: 'index1' (ffff8803eafd6a48): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.286536] kobject: 'index1' (ffff8803eafd6a48): kobject_uevent_env
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.337428] kobject: 'index1' (ffff8803eafd6a48): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index1'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.397420] kobject: 'index2' (ffff8803eafd6a90): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.456265] kobject: 'index2' (ffff8803eafd6a90): kobject_uevent_env
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.492216] kobject: 'index2' (ffff8803eafd6a90): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index2'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.552160] kobject: 'index3' (ffff8803eafd6ad8): kobject_add_internal: parent: 'cache', set: '<NULL>'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.585921] PM: Marking nosave pages: 000000000009c000 - 0000000000100000
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.592836] PM: Marking nosave pages: 000000007cdcd000 - 000000007ce91000
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.599740] PM: Marking nosave pages: 000000007d584000 - 000000007d634000
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.606634] PM: Marking nosave pages: 000000007f68f000 - 000000007f7ff000
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.613543] PM: Marking nosave pages: 000000007f800000 - 0000000100000000
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.617016] kobject: 'index3' (ffff8803eafd6ad8): kobject_uevent_env
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.617025] kobject: 'index3' (ffff8803eafd6ad8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache/index3'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.617047] kobject: 'cache' (ffff88046f5ca780): kobject_uevent_env
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.617051] kobject: 'cache' (ffff88046f5ca780): fill_kobj_path: path = '/devices/system/cpu/cpu15/cache'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.617066] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_add_internal: parent: 'machinecheck', set: 'machinecheck'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.617080] kobject: 'machinecheck15' (ffff88047f40cff0): kobject_uevent_env
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.617084] kobject: 'machinecheck15' (ffff88047f40cff0): fill_kobj_path: path = '/devices/system/machinecheck/machinecheck15'
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.683333] microcode: CPU15 sig=0x206c2, pf=0x1, revision=0x13
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.685765] PM: Basic memory bitmaps created
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.685770] PM: Syncing filesystems ... 
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.697499] ------------[ cut here ]------------
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.702505] WARNING: at drivers/base/firmware_class.c:524 _request_firmware+0x279/0x2c0()
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.710861] Hardware name: BladeCenter HS22V -[7871G2A]-
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.716290] Modules linked in: sunrpc cpufreq_ondemand acpi_cpufreq freq_table mperf ipt_REJECT nf_conntrack_ipv4 nf_defrag_ipv4 iptable_filter ip_tables ip6t_REJECT nf_conntrack_ipv6 nf_defrag_ipv6 xt_state nf_conntrack ip6table_filter ip6_tables ipv6 dm_mirror dm_region_hash dm_log microcode serio_raw pcspkr i2c_i801 i2c_core iTCO_wdt iTCO_vendor_support shpchp ioatdma dca i7core_edac edac_core bnx2 sg ext4 mbcache jbd2 sr_mod cdrom sd_mod crc_t10dif usb_storage qla2xxx scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas dm_mod [last unloaded: scsi_wait_scan]
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.770262] Pid: 11848, comm: invert_cpu_stat Tainted: G        W   3.1.0-rc2 #1
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.777851] Call Trace:
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.780420]  [<ffffffff8106af6f>] warn_slowpath_common+0x7f/0xc0
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.786541]  [<ffffffff8106afca>] warn_slowpath_null+0x1a/0x20
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.792499]  [<ffffffff813645a9>] _request_firmware+0x279/0x2c0
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.798547]  [<ffffffff81364686>] request_firmware+0x16/0x20
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.804330]  [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.811502]  [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.818594]  [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.825415]  [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.831458]  [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.837924]  [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.843349]  [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.848425]  [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.853332]  [<ffffffff8151e599>] store_online+0x99/0xd0
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.858766]  [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.864197]  [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.870057]  [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.875313]  [<ffffffff8117f024>] sys_write+0x54/0xa0
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.880480]  [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+Jun  9 11:39:21 istl-vmc-blade9 kernel: [ 7141.886598] ---[ end trace cff32f63e15cd4c9 ]---
+Jun  9 11:39:22 istl-vmc-blade9 kernel: [ 7141.891324] platform microcode: firmware: intel-ucode/06-2c-02 will not be loaded
+Jun  9 11:39:22 istl-vmc-blade9 kernel: [ 7141.965472] done.
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7141.967513] Freezing user space processes ... 
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7141.974770] kobject: 'cpufreq' (ffff8803ca7ad0a8): kobject_add_internal: parent: 'cpu15', set: '<NULL>'
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7141.984628] kobject: 'cpufreq' (ffff8803ca7ad0a8): kobject_uevent_env
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7141.991159] kobject: 'cpufreq' (ffff8803ca7ad0a8): fill_kobj_path: path = '/devices/system/cpu/cpu15/cpufreq'
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7142.001244] kobject: 'cpu15' (ffff88047f40c338): kobject_uevent_env
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7142.007730] kobject: 'cpu15' (ffff88047f40c338): fill_kobj_path: path = '/devices/system/cpu/cpu15'
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7142.018685] (elapsed 0.04 seconds) done.
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7142.022785] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7142.041448] hibernation debug: Waiting for 5 seconds.
+Jun  9 11:39:27 istl-vmc-blade9 kernel: [ 7147.037884] Restarting tasks ... done.
 
---------------020403000107010701000503
+--------------000805000506050700000908
 Content-Type: text/plain;
  name="config"
 Content-Transfer-Encoding: 7bit
@@ -5331,11 +13375,11 @@ CONFIG_NLATTR=y
 CONFIG_AVERAGE=y
 # CONFIG_CORDIC is not set
 
---------------020403000107010701000503
+--------------000805000506050700000908
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---------------020403000107010701000503--
+--------------000805000506050700000908--
