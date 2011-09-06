@@ -1,16 +1,19 @@
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: [BUG] Soft-lockup during cpu-hotplug in VFS callpaths
-Date: Mon, 5 Sep 2011 21:18:48 +0200
-Message-ID: <201109052118.49293.maciej.rutecki__2655.50209810517$1315250438$gmane$org@gmail.com>
-References: <4E550057.9070609@linux.vnet.ibm.com>
-	<201108312040.32531.maciej.rutecki@gmail.com>
-	<4E64916B.4090205@linux.vnet.ibm.com>
-Reply-To: maciej.rutecki@gmail.com
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 6/6] freezer: kill unused
+	set_freezable_with_signal()
+Date: Tue, 6 Sep 2011 12:28:55 +0900
+Message-ID: <20110906032846.GA18425__1326.5099646107$1315279854$gmane$org@mtj.dyndns.org>
+References: <1314988070-12244-1-git-send-email-tj@kernel.org>
+	<1314988070-12244-7-git-send-email-tj@kernel.org>
+	<20110904184626.GA30101@redhat.com>
+	<20110905023315.GB9807@htj.dyndns.org>
+	<20110905162012.GA4445@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4E64916B.4090205@linux.vnet.ibm.com>
+Content-Disposition: inline
+In-Reply-To: <20110905162012.GA4445@redhat.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,69 +23,42 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gcG9uaWVkemlhxYJlaywgNSB3cnplxZtuaWEgMjAxMSBvIDExOjA3OjU1IFNyaXZhdHNhIFMu
-IEJoYXQgd3JvdGU6Cj4gT24gMDkvMDEvMjAxMSAxMjoxMCBBTSwgTWFjaWVqIFJ1dGVja2kgd3Jv
-dGU6Cj4gPiBPbiDFm3JvZGEsIDI0IHNpZXJwbmlhIDIwMTEgbyAxNTo0NDo1NSBTcml2YXRzYSBT
-LiBCaGF0IHdyb3RlOgo+ID4+IEhpLAo+ID4+IAo+ID4+IFdoaWxlIHJ1bm5pbmcgc3RyZXNzZnVs
-IGNwdSBob3RwbHVnIHRlc3RzIGFsb25nIHdpdGgga2VybmVsIGNvbXBpbGF0aW9uCj4gPj4gcnVu
-bmluZyBpbiBiYWNrZ3JvdW5kLCBzb2Z0LWxvY2t1cHMgYXJlIGRldGVjdGVkIG9uIG11bHRpcGxl
-IENQVXMuCj4gPj4gU29tZXRpbWVzIHRoaXMgYWxzbyBsZWFkcyB0byBoYXJkIGxvY2t1cHMgYW5k
-IGtlcm5lbCBwYW5pYy4KPiA+PiBBbGwgdGhlIHNvZnQtbG9ja3VwcyBzZWVtIHRvIG9jY3VyIGF0
-IHZmc21vdW50X2xvY2tfbG9jYWxfY3B1KCkgb3Igb3RoZXIKPiA+PiBWRlMgY2FsbHBhdGhzLgo+
-ID4+IAo+ID4+IAo+ID4+IFszNzEwOC40MTA4MTNdIEJVRzogc29mdCBsb2NrdXAgLSBDUFUjNSBz
-dHVjayBmb3IgMjJzISBbY2MxOjI5NjY5XQo+ID4+IDxzbmlwPgo+ID4+IFszNzEwOC42OTQ3ODFd
-IENhbGwgVHJhY2U6Cj4gPj4gWzM3MTA4LjY5NzMwNl0gIFs8ZmZmZmZmZmY4MTE5OWU3MD5dID8K
-PiA+PiB2ZnNtb3VudF9sb2NrX2xvY2FsX2xvY2tfY3B1KzB4NzAvMHg3MCBbMzcxMDguNzA0MjU4
-XQo+ID4+IFs8ZmZmZmZmZmY4MTE4N2NiNT5dIHBhdGhfaW5pdCsweDMxNS8weDQwMAo+ID4+IFsz
-NzEwOC43MDk1NThdICBbPGZmZmZmZmZmODEyN2MzOTg+XSA/IF9fcmF3X3NwaW5fbG9ja19pbml0
-KzB4MzgvMHg3MAo+ID4+IFszNzEwOC43MTU4MTJdICBbPGZmZmZmZmZmODExODk2MWM+XSBwYXRo
-X29wZW5hdCsweDhjLzB4M2YwCj4gPj4gWzM3MTA4LjcyMTIwM10gIFs8ZmZmZmZmZmY4MTAxMjEy
-OT5dID8gc2NoZWRfY2xvY2srMHg5LzB4MTAKPiA+PiBbMzcxMDguNzI2NTk3XSAgWzxmZmZmZmZm
-ZjgxMDk0MTZkPl0gPyBzY2hlZF9jbG9ja19jcHUrMHhjZC8weDExMAo+ID4+IFszNzEwOC43MzI1
-MDhdICBbPGZmZmZmZmZmODEwYTE3OGQ+XSA/IHRyYWNlX2hhcmRpcnFzX29mZisweGQvMHgxMAo+
-ID4+IFszNzEwOC43Mzg0OThdICBbPGZmZmZmZmZmODEwOTQyMWY+XSA/IGxvY2FsX2Nsb2NrKzB4
-NmYvMHg4MAo+ID4+IFszNzEwOC43NDM5NzBdICBbPGZmZmZmZmZmODExODlhOTk+XSBkb19maWxw
-X29wZW4rMHg0OS8weGEwCj4gPj4gWzM3MTA4Ljc0OTM2Ml0gIFs8ZmZmZmZmZmY4MTE5ODJmMz5d
-ID8gYWxsb2NfZmQrMHhjMy8weDIxMAo+ID4+IFszNzEwOC43NTQ2NjVdICBbPGZmZmZmZmZmODE1
-MjU4NGI+XSA/IF9yYXdfc3Bpbl91bmxvY2srMHgyYi8weDQwCj4gPj4gWzM3MTA4Ljc2MDU3NV0g
-IFs8ZmZmZmZmZmY4MTE5ODJmMz5dID8gYWxsb2NfZmQrMHhjMy8weDIxMAo+ID4+IFszNzEwOC43
-NjU4NzVdICBbPGZmZmZmZmZmODExNzk2MDc+XSBkb19zeXNfb3BlbisweDEwNy8weDFlMAo+ID4+
-IFszNzEwOC43NzEzNTJdICBbPGZmZmZmZmZmODEwZDYxMGY+XSA/IGF1ZGl0X3N5c2NhbGxfZW50
-cnkrMHgxYmYvMHgxZjAKPiA+PiBbMzcxMDguNzc3Njk1XSAgWzxmZmZmZmZmZjgxMTc5NzIwPl0g
-c3lzX29wZW4rMHgyMC8weDMwCj4gPj4gWzM3MTA4Ljc4Mjc0MV0gIFs8ZmZmZmZmZmY4MTUyZTIw
-Mj5dIHN5c3RlbV9jYWxsX2Zhc3RwYXRoKzB4MTYvMHgxYgo+ID4+IAo+ID4+IEtlcm5lbCB2ZXJz
-aW9uOiAzLjAuMSwgMy4wLjMKPiA+PiBIYXJkd2FyZTogRHVhbCBzb2NrZXQgcXVhZC1jb3JlIGh5
-cGVyLXRocmVhZGVkIEludGVsIHg4NiBtYWNoaW5lCj4gPj4gU2NlbmFyaW86Cj4gPj4gKGEpIFN0
-cmVzc2Z1bCBjcHUgaG90cGx1ZyB0ZXN0cyArIGtlcm5lbCBjb21waWxhdGlvbgo+ID4+IAo+ID4+
-IChiKSBJUlEgYmFsYW5jaW5nIGhhZCBiZWVuIGRpc2FibGVkIGFuZCBhbGwgdGhlIElSUXMgIHdl
-cmUgbWFkZSB0byBiZQo+ID4+IAo+ID4+ICAgICByb3V0ZWQgdG8gQ1BVIDAgKGV4Y2VwdCB0aGUg
-b25lcyB0aGF0IGNvdWxkbid0IGJlIHJvdXRlZCkuCj4gPj4gCj4gPj4gKGMpIExvY2tkZXAgd2Fz
-IGVuYWJsZWQgZHVyaW5nIGtlcm5lbCBjb25maWd1cmF0aW9uLgo+ID4+IAo+ID4+IFN0ZXBzIChi
-KSBhbmQgKGMpIHdlcmUgZG9uZSB0byBkaWcgZGVlcGVyIGludG8gdGhlIGlzc3VlLiBIb3dldmVy
-IHRoZQo+ID4+IHNhbWUgaXNzdWUgd2FzIG9ic2VydmVkIGJ5IGp1c3QgZG9pbmcgc3RlcCAoYSku
-Cj4gPj4gCj4gPj4gRGVmaW5pdGVseSB0aGVyZSBzZWVtcyB0byBiZSBhIHJhY2UgY29uZGl0aW9u
-IG9jY3VycmluZyBoZXJlLCBiZWNhdXNlCj4gPj4gdGhpcyBpc3N1ZSBpcyBoaXQgYWZ0ZXIgc29t
-ZXRpbWUsIGFmdGVyIHN0YXJ0aW5nIHRoZSB0ZXN0cy4gQW5kIHRoZQo+ID4+IHRpbWUgaXQgdGFr
-ZXMgdG8gaGl0IHRoZSBpc3N1ZSBpbmNyZWFzZXMgYXMgd2UgaW5jcmVhc2UgdGhlIG51bWJlciBv
-Zgo+ID4+IGRlYnVnIHByaW50IHN0YXRlbWVudHMuIEluIHNvbWUgY2FzZXMgKGVzcGVjaWFsbHkg
-d2hlbiB0aGUgbnVtYmVyIG9mCj4gPj4gZGVidWcgcHJpbnQgc3RhdGVtZW50cyB3ZXJlIHF1aXRl
-IGhpZ2gpLCB0aGUgc3RyZXNzIG9uIHRoZSBtYWNoaW5lIGhhZAo+ID4+IHRvIGJlIGluY3JlYXNl
-ZCBpbiBvcmRlciB0byBoaXQgdGhlIGlzc3VlIHdpdGhpbiBtZWFzdXJhYmxlIHRpbWUuIEluIG15
-Cj4gPj4gdGVzdHMsIGEgbWF4aW11bSBvZiBhYm91dCAyIHRvIDIuNSBob3VycyB3YXMgc3VmZmlj
-aWVudCwgdG8gaGl0IHRoaXMKPiA+PiBidWcuCj4gPj4gCj4gPj4gUGxlYXNlIGZpbmQgdGhlIGNv
-bnNvbGUgbG9nIGF0dGFjaGVkIHdpdGggdGhpcyBtYWlsLgo+ID4+IAo+ID4+IEFueSBpZGVhcyBv
-biBob3cgdG8gZ28gYWJvdXQgZml4aW5nIHRoaXMgYnVnPwo+ID4gCj4gPiBJdCBpcyBhIHJlZ3Jl
-c3Npb24/Cj4gCj4gSGkgTWFjaWVqLAo+IAo+IFRoYW5rIHlvdSBmb3IgdGFraW5nIGEgbG9vay4K
-PiBZZXMsIGl0IHNlZW1zIHRvIGJlIGEgcmVncmVzc2lvbi4gSSB0ZXN0ZWQgb3V0IGtlcm5lbCAy
-LjYuMzkuMyB3aXRoIHNpbWlsYXIKPiB0ZXN0IGNhc2VzIGZvciBxdWl0ZSBhIGxvbmcgdGltZSwg
-YW5kIGl0IGRpZCBub3QgaGl0IGFueSBzb2Z0LWxvY2t1cAo+IGlzc3Vlcy4KClRoYW5rcyBmb3Ig
-dGhlIGFuc3dlci4gSSBjcmVhdGUgYnVnIGVudHJ5OgpodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5v
-cmcvc2hvd19idWcuY2dpP2lkPTQyNDAyCgpSZWdhcmRzCi0tIApNYWNpZWogUnV0ZWNraQpodHRw
-Oi8vd3d3Lm1hY2llay51bml4eS5wbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
-Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2xpbnV4LXBt
+Hello,
+
+On Mon, Sep 05, 2011 at 06:20:12PM +0200, Oleg Nesterov wrote:
+> Perhaps it is correct... Just I do not understand what it should do.
+> I thought it is "wait_for_event && do_not_block_freezer". And at first
+> glance the code looks as if it tries to do this. Say, in the "likely"
+> case we restart wait_event_interruptible() after refrigerator().
+> 
+> But this looks racy. Suppose that freezing() is already false when
+> try_to_freeze() or __refrigerator() is called. Say, cgroup_freezer does
+> freeze_task() + __thaw_task(). Why it returns -ERESTARTSYS in this case?
+
+It may return -ERESTARTSYS when not strictly necessary but given that
+it's supposed to trigger restart anyway I don't think it's actually
+broken (it doesn't break the contract of the wait).  Another thing to
+note is that kthread freezing via cgroup is almost fundamentally
+broken.  With the removal of freezable_with_signal, this shouldn't be
+an issue anymore although cgroup_freezer still needs to be fixed to
+account for kthreads for xstate transitions (it currently triggers
+BUG_ON).
+
+> And if it can be used by the userspace thread, then we should probably
+> do recalc_sigpending() somewhere, otherwise wait_event_freezable() will
+> always return -ERESTARTSYS after __refrigerator().
+
+Thankfully, currently, all the few users are kthreads.  I don't think
+it makes sense for userland tasks at all.  Interruptible sleeps for
+userland tasks necessiate the ability to return to signal delivery
+path and restart or abort the current operation.  There's no point in
+using wait_event_freezable() instead of wait_event_interruptible().
+
+Thanks.
+
+-- 
+tejun
