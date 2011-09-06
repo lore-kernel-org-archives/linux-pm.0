@@ -1,22 +1,15 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 6/6] freezer: kill unused
-	set_freezable_with_signal()
-Date: Wed, 7 Sep 2011 00:53:32 +0900
-Message-ID: <20110906155332.GF18425__18032.9381292269$1315324492$gmane$org@mtj.dyndns.org>
-References: <1314988070-12244-1-git-send-email-tj@kernel.org>
-	<1314988070-12244-7-git-send-email-tj@kernel.org>
-	<20110904184626.GA30101@redhat.com>
-	<20110905023315.GB9807@htj.dyndns.org>
-	<20110905162012.GA4445@redhat.com>
-	<20110906032846.GA18425@mtj.dyndns.org>
-	<20110906151836.GA15568@redhat.com>
-	<20110906152539.GA16899@redhat.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH] OMAP: omap_device: fix !CONFIG_SUSPEND case
+ in _noirq handlers
+Date: Tue, 06 Sep 2011 13:13:21 -0700
+Message-ID: <4E667EE1.1020808__43763.2999419749$1315340126$gmane$org@ti.com>
+References: <1314900722-10252-1-git-send-email-khilman@ti.com>
+	<1876183.c78P8V3ZbL@wuerfel> <201109012357.39873.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110906152539.GA16899@redhat.com>
+In-Reply-To: <201109012357.39873.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -26,44 +19,33 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On 09/01/2011 02:57 PM, Rafael J. Wysocki wrote:
+> On Thursday, September 01, 2011, Arnd Bergmann wrote:
+>> On Thursday 01 September 2011 11:12:02 Kevin Hilman wrote:
+>>> The suspend/resume _noirq handlers were #ifdef'd out in the
+>>> !CONFIG_SUSPEND case, but were still assigned to the dev_pm_ops
+>>> struct.  Fix by defining them to NULL in the !CONFIG_SUSPEND case.
+>>>
+>>> Reported-by: Arnd Bergmann<arnd@arndb.de>
+>>> Signed-off-by: Kevin Hilman<khilman@ti.com>
+>>
+>> Acked-by: Arnd Bergmann<arnd@arndb.de>
+>>
+>> Thansk for the fast response!
+>
+> I'll apply the patch when kernel.org is back in order.
+>
 
-On Tue, Sep 06, 2011 at 05:25:39PM +0200, Oleg Nesterov wrote:
-> On 09/06, Oleg Nesterov wrote:
-> >
-> > Yes, agreed. In this case I think it should be
-> >
-> > 	#define wait_event_freezable(wq, condition)				\
-> > 	({									\
-> > 		int __retval;							\
-> > 		for (;;) {							\
-> > 			__retval = wait_event_interruptible(wq, 		\
-> > 					(condition) || freezing(current));	\
-> > 			if (__retval || (condition))				\
-> > 				break;						\
-> > 			try_to_freeze();					\
-> > 		}								\
-> > 		__retval;							\
-> > 	})
-> >
-> > __retval/ERESTARTSYS is only needed for kthreads which play with allow_signal(),
-> > probably nobody should do this.
-> 
-> I meant, unless the caller plays with allow_signal(), it has all rights to do
-> 
-> 	if (wait_event_freezable(...))
-> 		BUG();
-> 
-> This becomes correct with the code above.
+Tony,
 
-Yeap, sure, w/ freezable_with_signal gone, the above should work fine.
-Care to create a patch?
+I spoke w/Rafael and due to hera being down and Rafael traveling to LPC 
+he wont be able to queue this for v3.1.  Can you queue up this fix? 
+This needs to go in to v3.1-rc.
 
-Thanks.
+Thanks,
 
--- 
-tejun
+Kevin
