@@ -1,16 +1,18 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [BUG] Soft-lockup during cpu-hotplug in VFS callpaths
-Date: Tue, 06 Sep 2011 10:33:43 +0530
-Message-ID: <4E65A9AF.8080804__15536.0642624602$1315285535$gmane$org@linux.vnet.ibm.com>
-References: <4E550057.9070609@linux.vnet.ibm.com>
-	<201108312040.32531.maciej.rutecki@gmail.com>
-	<4E64916B.4090205@linux.vnet.ibm.com>
-	<201109052118.49293.maciej.rutecki@gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [BUG] CPU hotplug,
+ freezer: Freezing of tasks failed after 20.00 seconds
+Date: Tue, 6 Sep 2011 14:08:31 +0900
+Message-ID: <20110906050831.GA16976__512.689262586896$1315285820$gmane$org@htj.dyndns.org>
+References: <1313763382-12341-1-git-send-email-tj@kernel.org>
+	<201108192300.55405.rjw@sisk.pl>
+	<4E648DDA.8080605@linux.vnet.ibm.com>
+	<20110905141512.GE9807@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201109052118.49293.maciej.rutecki@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20110905141512.GE9807@htj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -20,77 +22,61 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: maciej.rutecki@gmail.com
-Cc: linux-fsdevel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Pekka Enberg <penberg@kernel.org>, Christoph Lameter <cl@linux-foundation.org>, arnd@arndb.de, linux-kernel@vger.kernel.org, oleg@redhat.com, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDkvMDYvMjAxMSAxMjo0OCBBTSwgTWFjaWVqIFJ1dGVja2kgd3JvdGU6Cj4gT24gcG9uaWVk
-emlhxYJlaywgNSB3cnplxZtuaWEgMjAxMSBvIDExOjA3OjU1IFNyaXZhdHNhIFMuIEJoYXQgd3Jv
-dGU6Cj4+IE9uIDA5LzAxLzIwMTEgMTI6MTAgQU0sIE1hY2llaiBSdXRlY2tpIHdyb3RlOgo+Pj4g
-T24gxZtyb2RhLCAyNCBzaWVycG5pYSAyMDExIG8gMTU6NDQ6NTUgU3JpdmF0c2EgUy4gQmhhdCB3
-cm90ZToKPj4+PiBIaSwKPj4+Pgo+Pj4+IFdoaWxlIHJ1bm5pbmcgc3RyZXNzZnVsIGNwdSBob3Rw
-bHVnIHRlc3RzIGFsb25nIHdpdGgga2VybmVsIGNvbXBpbGF0aW9uCj4+Pj4gcnVubmluZyBpbiBi
-YWNrZ3JvdW5kLCBzb2Z0LWxvY2t1cHMgYXJlIGRldGVjdGVkIG9uIG11bHRpcGxlIENQVXMuCj4+
-Pj4gU29tZXRpbWVzIHRoaXMgYWxzbyBsZWFkcyB0byBoYXJkIGxvY2t1cHMgYW5kIGtlcm5lbCBw
-YW5pYy4KPj4+PiBBbGwgdGhlIHNvZnQtbG9ja3VwcyBzZWVtIHRvIG9jY3VyIGF0IHZmc21vdW50
-X2xvY2tfbG9jYWxfY3B1KCkgb3Igb3RoZXIKPj4+PiBWRlMgY2FsbHBhdGhzLgo+Pj4+Cj4+Pj4K
-Pj4+PiBbMzcxMDguNDEwODEzXSBCVUc6IHNvZnQgbG9ja3VwIC0gQ1BVIzUgc3R1Y2sgZm9yIDIy
-cyEgW2NjMToyOTY2OV0KPj4+PiA8c25pcD4KPj4+PiBbMzcxMDguNjk0NzgxXSBDYWxsIFRyYWNl
-Ogo+Pj4+IFszNzEwOC42OTczMDZdICBbPGZmZmZmZmZmODExOTllNzA+XSA/Cj4+Pj4gdmZzbW91
-bnRfbG9ja19sb2NhbF9sb2NrX2NwdSsweDcwLzB4NzAgWzM3MTA4LjcwNDI1OF0KPj4+PiBbPGZm
-ZmZmZmZmODExODdjYjU+XSBwYXRoX2luaXQrMHgzMTUvMHg0MDAKPj4+PiBbMzcxMDguNzA5NTU4
-XSAgWzxmZmZmZmZmZjgxMjdjMzk4Pl0gPyBfX3Jhd19zcGluX2xvY2tfaW5pdCsweDM4LzB4NzAK
-Pj4+PiBbMzcxMDguNzE1ODEyXSAgWzxmZmZmZmZmZjgxMTg5NjFjPl0gcGF0aF9vcGVuYXQrMHg4
-Yy8weDNmMAo+Pj4+IFszNzEwOC43MjEyMDNdICBbPGZmZmZmZmZmODEwMTIxMjk+XSA/IHNjaGVk
-X2Nsb2NrKzB4OS8weDEwCj4+Pj4gWzM3MTA4LjcyNjU5N10gIFs8ZmZmZmZmZmY4MTA5NDE2ZD5d
-ID8gc2NoZWRfY2xvY2tfY3B1KzB4Y2QvMHgxMTAKPj4+PiBbMzcxMDguNzMyNTA4XSAgWzxmZmZm
-ZmZmZjgxMGExNzhkPl0gPyB0cmFjZV9oYXJkaXJxc19vZmYrMHhkLzB4MTAKPj4+PiBbMzcxMDgu
-NzM4NDk4XSAgWzxmZmZmZmZmZjgxMDk0MjFmPl0gPyBsb2NhbF9jbG9jaysweDZmLzB4ODAKPj4+
-PiBbMzcxMDguNzQzOTcwXSAgWzxmZmZmZmZmZjgxMTg5YTk5Pl0gZG9fZmlscF9vcGVuKzB4NDkv
-MHhhMAo+Pj4+IFszNzEwOC43NDkzNjJdICBbPGZmZmZmZmZmODExOTgyZjM+XSA/IGFsbG9jX2Zk
-KzB4YzMvMHgyMTAKPj4+PiBbMzcxMDguNzU0NjY1XSAgWzxmZmZmZmZmZjgxNTI1ODRiPl0gPyBf
-cmF3X3NwaW5fdW5sb2NrKzB4MmIvMHg0MAo+Pj4+IFszNzEwOC43NjA1NzVdICBbPGZmZmZmZmZm
-ODExOTgyZjM+XSA/IGFsbG9jX2ZkKzB4YzMvMHgyMTAKPj4+PiBbMzcxMDguNzY1ODc1XSAgWzxm
-ZmZmZmZmZjgxMTc5NjA3Pl0gZG9fc3lzX29wZW4rMHgxMDcvMHgxZTAKPj4+PiBbMzcxMDguNzcx
-MzUyXSAgWzxmZmZmZmZmZjgxMGQ2MTBmPl0gPyBhdWRpdF9zeXNjYWxsX2VudHJ5KzB4MWJmLzB4
-MWYwCj4+Pj4gWzM3MTA4Ljc3NzY5NV0gIFs8ZmZmZmZmZmY4MTE3OTcyMD5dIHN5c19vcGVuKzB4
-MjAvMHgzMAo+Pj4+IFszNzEwOC43ODI3NDFdICBbPGZmZmZmZmZmODE1MmUyMDI+XSBzeXN0ZW1f
-Y2FsbF9mYXN0cGF0aCsweDE2LzB4MWIKPj4+Pgo+Pj4+IEtlcm5lbCB2ZXJzaW9uOiAzLjAuMSwg
-My4wLjMKPj4+PiBIYXJkd2FyZTogRHVhbCBzb2NrZXQgcXVhZC1jb3JlIGh5cGVyLXRocmVhZGVk
-IEludGVsIHg4NiBtYWNoaW5lCj4+Pj4gU2NlbmFyaW86Cj4+Pj4gKGEpIFN0cmVzc2Z1bCBjcHUg
-aG90cGx1ZyB0ZXN0cyArIGtlcm5lbCBjb21waWxhdGlvbgo+Pj4+Cj4+Pj4gKGIpIElSUSBiYWxh
-bmNpbmcgaGFkIGJlZW4gZGlzYWJsZWQgYW5kIGFsbCB0aGUgSVJRcyAgd2VyZSBtYWRlIHRvIGJl
-Cj4+Pj4KPj4+PiAgICAgcm91dGVkIHRvIENQVSAwIChleGNlcHQgdGhlIG9uZXMgdGhhdCBjb3Vs
-ZG4ndCBiZSByb3V0ZWQpLgo+Pj4+Cj4+Pj4gKGMpIExvY2tkZXAgd2FzIGVuYWJsZWQgZHVyaW5n
-IGtlcm5lbCBjb25maWd1cmF0aW9uLgo+Pj4+Cj4+Pj4gU3RlcHMgKGIpIGFuZCAoYykgd2VyZSBk
-b25lIHRvIGRpZyBkZWVwZXIgaW50byB0aGUgaXNzdWUuIEhvd2V2ZXIgdGhlCj4+Pj4gc2FtZSBp
-c3N1ZSB3YXMgb2JzZXJ2ZWQgYnkganVzdCBkb2luZyBzdGVwIChhKS4KPj4+Pgo+Pj4+IERlZmlu
-aXRlbHkgdGhlcmUgc2VlbXMgdG8gYmUgYSByYWNlIGNvbmRpdGlvbiBvY2N1cnJpbmcgaGVyZSwg
-YmVjYXVzZQo+Pj4+IHRoaXMgaXNzdWUgaXMgaGl0IGFmdGVyIHNvbWV0aW1lLCBhZnRlciBzdGFy
-dGluZyB0aGUgdGVzdHMuIEFuZCB0aGUKPj4+PiB0aW1lIGl0IHRha2VzIHRvIGhpdCB0aGUgaXNz
-dWUgaW5jcmVhc2VzIGFzIHdlIGluY3JlYXNlIHRoZSBudW1iZXIgb2YKPj4+PiBkZWJ1ZyBwcmlu
-dCBzdGF0ZW1lbnRzLiBJbiBzb21lIGNhc2VzIChlc3BlY2lhbGx5IHdoZW4gdGhlIG51bWJlciBv
-Zgo+Pj4+IGRlYnVnIHByaW50IHN0YXRlbWVudHMgd2VyZSBxdWl0ZSBoaWdoKSwgdGhlIHN0cmVz
-cyBvbiB0aGUgbWFjaGluZSBoYWQKPj4+PiB0byBiZSBpbmNyZWFzZWQgaW4gb3JkZXIgdG8gaGl0
-IHRoZSBpc3N1ZSB3aXRoaW4gbWVhc3VyYWJsZSB0aW1lLiBJbiBteQo+Pj4+IHRlc3RzLCBhIG1h
-eGltdW0gb2YgYWJvdXQgMiB0byAyLjUgaG91cnMgd2FzIHN1ZmZpY2llbnQsIHRvIGhpdCB0aGlz
-Cj4+Pj4gYnVnLgo+Pj4+Cj4+Pj4gUGxlYXNlIGZpbmQgdGhlIGNvbnNvbGUgbG9nIGF0dGFjaGVk
-IHdpdGggdGhpcyBtYWlsLgo+Pj4+Cj4+Pj4gQW55IGlkZWFzIG9uIGhvdyB0byBnbyBhYm91dCBm
-aXhpbmcgdGhpcyBidWc/Cj4+Pgo+Pj4gSXQgaXMgYSByZWdyZXNzaW9uPwo+Pgo+PiBIaSBNYWNp
-ZWosCj4+Cj4+IFRoYW5rIHlvdSBmb3IgdGFraW5nIGEgbG9vay4KPj4gWWVzLCBpdCBzZWVtcyB0
-byBiZSBhIHJlZ3Jlc3Npb24uIEkgdGVzdGVkIG91dCBrZXJuZWwgMi42LjM5LjMgd2l0aCBzaW1p
-bGFyCj4+IHRlc3QgY2FzZXMgZm9yIHF1aXRlIGEgbG9uZyB0aW1lLCBhbmQgaXQgZGlkIG5vdCBo
-aXQgYW55IHNvZnQtbG9ja3VwCj4+IGlzc3Vlcy4KPiAKPiBUaGFua3MgZm9yIHRoZSBhbnN3ZXIu
-IEkgY3JlYXRlIGJ1ZyBlbnRyeToKPiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19i
-dWcuY2dpP2lkPTQyNDAyCgpPaCB0aGFuayB5b3UuIEJ1dCBJIGhhZCBjcmVhdGVkIGFuIGVudHJ5
-IG15c2VsZiBpbiBidWd6aWxsYSwgaW1tZWRpYXRlbHkgYWZ0ZXIgSSBwb3N0ZWQgb24gdGhlCm1h
-aWxpbmcgbGlzdC4gKGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9
-NDIzODIpCkkgd2lsbCBob3dldmVyIGRlbGV0ZSBteSBlbnRyeSBzaW5jZSB3ZSBkb24ndCB3YW50
-IGR1cGxpY2F0ZXMgYW5kIG1vcmVvdmVyIHRoZSAnUHJvZHVjdCcKYW5kICdDb21wb25lbnQnIGZp
-ZWxkcyBpbiB5b3VyIGVudHJ5IHNlZW1zIG1vcmUgYXBwcm9wcmlhdGUgd2l0aCByZXNwZWN0IHRv
-IHRoZSBidWcuCgpUaGFua3MgYWdhaW4uCgotLSAKUmVnYXJkcywKU3JpdmF0c2EgUy4gQmhhdCAg
-PHNyaXZhdHNhLmJoYXRAbGludXgudm5ldC5pYm0uY29tPgpMaW51eCBUZWNobm9sb2d5IENlbnRl
-ciwKSUJNIEluZGlhIFN5c3RlbXMgYW5kIFRlY2hub2xvZ3kgTGFiCgpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGlu
-dXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Hello, again.
+
+On Mon, Sep 05, 2011 at 11:15:12PM +0900, Tejun Heo wrote:
+> >  Freezing of tasks failed after 20.01 seconds (2 tasks refusing to freeze, wq_busy=0):
+> >  invert_cpu_stat D 0000000000000000  5304 20435  17329 0x00000084
+> >   ffff8801f367bab8 0000000000000046 ffff8801f367bfd8 00000000001d3a00
+> >   ffff8801f367a010 00000000001d3a00 00000000001d3a00 00000000001d3a00
+> >   ffff8801f367bfd8 00000000001d3a00 ffff880414cc6840 ffff8801f36783c0
+> >  Call Trace:
+> >   [<ffffffff81532de5>] schedule_timeout+0x235/0x320
+> >   [<ffffffff81532a0b>] wait_for_common+0x11b/0x170
+> >   [<ffffffff81532b3d>] wait_for_completion+0x1d/0x20
+> >   [<ffffffff81364486>] _request_firmware+0x156/0x2c0
+> >   [<ffffffff81364686>] request_firmware+0x16/0x20
+> >   [<ffffffffa01f0da0>] request_microcode_fw+0x70/0xf0 [microcode]
+> >   [<ffffffffa01f0390>] microcode_init_cpu+0xc0/0x100 [microcode]
+> >   [<ffffffffa01f14b4>] mc_cpu_callback+0x7c/0x11f [microcode]
+> >   [<ffffffff815393a4>] notifier_call_chain+0x94/0xd0
+> >   [<ffffffff8109770e>] __raw_notifier_call_chain+0xe/0x10
+> >   [<ffffffff8106d000>] __cpu_notify+0x20/0x40
+> >   [<ffffffff8152cf5b>] _cpu_up+0xc7/0x10e
+> >   [<ffffffff8152d07b>] cpu_up+0xd9/0xec
+> >   [<ffffffff8151e599>] store_online+0x99/0xd0
+> >   [<ffffffff81355eb0>] sysdev_store+0x20/0x30
+> >   [<ffffffff811f3096>] sysfs_write_file+0xe6/0x170
+> >   [<ffffffff8117ee50>] vfs_write+0xd0/0x1a0
+> >   [<ffffffff8117f024>] sys_write+0x54/0xa0
+> >   [<ffffffff8153df02>] system_call_fastpath+0x16/0x1b
+> 
+> So, this task is trying to bring a CPU up, which triggers firmware
+> helper to load microcode.  Firmware class currently sleeps
+> non-interruptibly to wait for firmware load to complete, which is
+> performed by another userland task.  Now, the PM freezer doesn't
+> assume that there will be non-freezable wait dependencies among
+> userland tasks.  It only knows two levels - userland and kernel tasks
+> - and assumes that the former group may have non-freezable wait
+> dependency on the latter but there's no such dependency among each
+> group itself.  If there's such dependency, PM freezer may fail, which
+> is what happened here.
+> 
+> ie. the firmware loader userland process got frozen first.
+> invert_cpu_stat trying to bring up CPU was waiting for the firmware
+> loader to finish in non-interruptible sleep, so the freezer couldn't
+> proceed.
+
+Hmmm... I went through the code again and usermodehelper_disable()
+seems to be there to prevent deadlocks like this.  usermode helpers
+are drained & plugged before freezing is tried.  Rafael, the above
+shouldn't be happening, right?
+
+Thanks.
+
+-- 
+tejun
