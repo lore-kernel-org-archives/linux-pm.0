@@ -1,13 +1,20 @@
-From: Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCHSET cgroup] extend threadgroup locking
-Date: Tue, 06 Sep 2011 17:00:34 +0800
-Message-ID: <4E65E132.9090201__19527.0499018536$1315299728$gmane$org@cn.fujitsu.com>
-References: <1315159280-25032-1-git-send-email-htejun@gmail.com>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 6/6] freezer: kill unused
+	set_freezable_with_signal()
+Date: Tue, 6 Sep 2011 17:18:36 +0200
+Message-ID: <20110906151836.GA15568__18460.4488000788$1315322609$gmane$org@redhat.com>
+References: <1314988070-12244-1-git-send-email-tj@kernel.org>
+	<1314988070-12244-7-git-send-email-tj@kernel.org>
+	<20110904184626.GA30101@redhat.com>
+	<20110905023315.GB9807@htj.dyndns.org>
+	<20110905162012.GA4445@redhat.com>
+	<20110906032846.GA18425@mtj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1315159280-25032-1-git-send-email-htejun@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20110906032846.GA18425@mtj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -17,54 +24,62 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <htejun@gmail.com>
-Cc: akpm@linux-foundation.org, fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
+To: Tejun Heo <tj@kernel.org>
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
 List-Id: linux-pm@vger.kernel.org
 
-Tejun Heo wrote:
+Hi,
+
+On 09/06, Tejun Heo wrote:
+>
 > Hello,
-> 
-> cgroup currently only blocks new threads from joining the target
-> threadgroup during migration, and on-going migration could race
-> against exec and exit leading to interesting problems - the symmetry
-> between various attach methods, task exiting during method execution,
-> ->exit() racing against attach methods, migrating task switching basic
-> properties during exec and so on.
-> 
-> This patchset extends threadgroup locking such that it covers all
-> operations which can alter the threadgroup - fork, exit and exec, and
-> update cgroup to take advantage of it.  rwsem read ops are added to
-> exit path but exec is excluded by grabbing the existing
-> cred_guard_mutex from threadgroup locking helper.
-> 
-> This makes threadgroup locking complete and resolves cgroup issues
-> stemming from the target taskset being unstable.
-> 
-> This patchset is on top of the current pm-freezer + "freezer: fixes &
-> simplifications" patchset and contains the following four patches.
-> Patch list and diffstat follow.
-> 
-> Thanks.
-> 
->  [PATCH 1/4] cgroup: change locking order in attach_task_by_pid()
->  [PATCH 2/4] threadgroup: rename signal->threadgroup_fork_lock to
->  [PATCH 3/4] threadgroup: extend threadgroup_lock() to cover exit and
->  [PATCH 4/4] cgroup: always lock threadgroup during migration
-> 
+>
+> On Mon, Sep 05, 2011 at 06:20:12PM +0200, Oleg Nesterov wrote:
+> > Perhaps it is correct... Just I do not understand what it should do.
+> > I thought it is "wait_for_event && do_not_block_freezer". And at first
+> > glance the code looks as if it tries to do this. Say, in the "likely"
+> > case we restart wait_event_interruptible() after refrigerator().
+> >
+> > But this looks racy. Suppose that freezing() is already false when
+> > try_to_freeze() or __refrigerator() is called. Say, cgroup_freezer does
+> > freeze_task() + __thaw_task(). Why it returns -ERESTARTSYS in this case?
+>
+> It may return -ERESTARTSYS when not strictly necessary but given that
+> it's supposed to trigger restart anyway I don't think it's actually
+> broken (it doesn't break the contract of the wait).
 
-I've read through the whole patchset, and it looks good to me.
+OK, but still this doesn't look right.
 
-Acked-by: Li Zefan <lizf@cn.fujitsu.com>
+> Another thing to
+> note is that kthread freezing via cgroup is almost fundamentally
+> broken.
 
->  include/linux/init_task.h |    9 ++----
->  include/linux/sched.h     |   58 ++++++++++++++++++++++++++++---------------
->  kernel/cgroup.c           |   62 +++++++++++++++++++++-------------------------
->  kernel/exit.c             |   16 ++++++++---
->  kernel/fork.c             |    8 ++---
->  5 files changed, 88 insertions(+), 65 deletions(-)
-> 
-> --
-> tejun
-> 
-> [1] http://thread.gmane.org/gmane.linux.kernel/1187553
-> 
+OK, let it be freeze_processes()+thaw_tasks(). Of course this is mostly
+theoretical.
+
+> > And if it can be used by the userspace thread, then we should probably
+> > do recalc_sigpending() somewhere, otherwise wait_event_freezable() will
+> > always return -ERESTARTSYS after __refrigerator().
+>
+> Thankfully, currently, all the few users are kthreads.  I don't think
+> it makes sense for userland tasks at all.
+
+Yes, agreed. In this case I think it should be
+
+	#define wait_event_freezable(wq, condition)				\
+	({									\
+		int __retval;							\
+		for (;;) {							\
+			__retval = wait_event_interruptible(wq, 		\
+					(condition) || freezing(current));	\
+			if (__retval || (condition))				\
+				break;						\
+			try_to_freeze();					\
+		}								\
+		__retval;							\
+	})
+
+__retval/ERESTARTSYS is only needed for kthreads which play with allow_signal(),
+probably nobody should do this.
+
+Oleg.
