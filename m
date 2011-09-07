@@ -1,15 +1,15 @@
 From: "Cihula, Joseph" <joseph.cihula@intel.com>
-Subject: Re: [PATCH 2/7] x86, acpi,
- tboot: Have a ACPI sleep override instead of calling tboot_sleep.
-Date: Wed, 7 Sep 2011 04:20:17 +0000
-Message-ID: <9F57BF860713DF4BA3EFA4F8C6DFEDAC16F3F524__32265.8568890349$1315369334$gmane$org@ORSMSX101.amr.corp.intel.com>
+Subject: Re: [PATCH 6/7] xen/acpi/sleep: Enable ACPI sleep via
+ the __acpi_override_sleep
+Date: Wed, 7 Sep 2011 04:36:49 +0000
+Message-ID: <9F57BF860713DF4BA3EFA4F8C6DFEDAC16F3F5BC__1370.43960062346$1315370295$gmane$org@ORSMSX101.amr.corp.intel.com>
 References: <1314815484-4668-1-git-send-email-konrad.wilk@oracle.com>
-	<1314815484-4668-3-git-send-email-konrad.wilk@oracle.com>
+	<1314815484-4668-7-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1314815484-4668-3-git-send-email-konrad.wilk@oracle.com>
+In-Reply-To: <1314815484-4668-7-git-send-email-konrad.wilk@oracle.com>
 Content-Language: en-US
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,155 +27,135 @@ List-Id: linux-pm@vger.kernel.org
 > From: Konrad Rzeszutek Wilk [mailto:konrad.wilk@oracle.com]
 > Sent: Wednesday, August 31, 2011 11:31 AM
 > 
-> The ACPI suspend path makes a call to tboot_sleep right before it writes the PM1A, PM1B values. We
-> replace the direct call to tboot via an registration callback similar to __acpi_register_gsi.
+> Provide the registration callback to call in the Xen's ACPI sleep functionality. This means that
+> during S3/S5 we make a hypercall XENPF_enter_acpi_sleep with the proper PM1A/PM1B registers.
 > 
-> CC: Thomas Gleixner <tglx@linutronix.de>
-> CC: "H. Peter Anvin" <hpa@zytor.com>
-> CC: x86@kernel.org
-> CC: Len Brown <len.brown@intel.com>
-> CC: Joseph Cihula <joseph.cihula@intel.com>
-> CC: Shane Wang <shane.wang@intel.com>
-> CC: xen-devel@lists.xensource.com
-> CC: linux-pm@lists.linux-foundation.org
-> CC: tboot-devel@lists.sourceforge.net
-> CC: linux-acpi@vger.kernel.org
+> Based of Ke Yu's <ke.yu@intel.com> initial idea.
+> [ From http://xenbits.xensource.com/linux-2.6.18-xen.hg
+> change c68699484a65 ]
+> 
 > Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 > ---
->  arch/x86/include/asm/acpi.h   |    3 +++
->  arch/x86/kernel/acpi/boot.c   |    3 +++
->  arch/x86/kernel/tboot.c       |   13 +++++++++----
->  drivers/acpi/acpica/hwsleep.c |   12 ++++++++++--
->  include/linux/tboot.h         |    3 ++-
->  5 files changed, 27 insertions(+), 7 deletions(-)
+>  arch/x86/include/asm/xen/hypercall.h |    8 ++++++++
+>  arch/x86/xen/enlighten.c             |    3 +++
+>  drivers/xen/Makefile                 |    2 +-
+>  drivers/xen/acpi.c                   |   25 +++++++++++++++++++++++++
+>  include/xen/acpi.h                   |   26 ++++++++++++++++++++++++++
+>  5 files changed, 63 insertions(+), 1 deletions(-)  create mode 100644 drivers/xen/acpi.c  create
+> mode 100644 include/xen/acpi.h
 > 
-> diff --git a/arch/x86/include/asm/acpi.h b/arch/x86/include/asm/acpi.h index 610001d..49864a1
-> 100644
-> --- a/arch/x86/include/asm/acpi.h
-> +++ b/arch/x86/include/asm/acpi.h
-> @@ -98,6 +98,9 @@ void acpi_pic_sci_set_trigger(unsigned int, u16);  extern int
-> (*__acpi_register_gsi)(struct device *dev, u32 gsi,
->  				  int trigger, int polarity);
+> diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
+> index d240ea9..0c9894e 100644
+> --- a/arch/x86/include/asm/xen/hypercall.h
+> +++ b/arch/x86/include/asm/xen/hypercall.h
+> @@ -45,6 +45,7 @@
+>  #include <xen/interface/xen.h>
+>  #include <xen/interface/sched.h>
+>  #include <xen/interface/physdev.h>
+> +#include <xen/interface/platform.h>
 > 
-> +extern int (*__acpi_override_sleep)(u8 sleep_state, u32 pm1a_ctrl,
-> +				    u32 pm1b_ctrl, bool *skip_rest);
-> +
->  static inline void disable_acpi(void)
->  {
->  	acpi_disabled = 1;
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c index 4558f0d..d191b4c
-> 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -552,6 +552,9 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,  int
-> (*__acpi_register_gsi)(struct device *dev, u32 gsi,
->  			   int trigger, int polarity) = acpi_register_gsi_pic;
-> 
-> +int (*__acpi_override_sleep)(u8 sleep_state, u32 pm1a_ctrl,
-> +			     u32 pm1b_ctrl, bool *skip_rest) = NULL;
-> +
 >  /*
->   * success: return IRQ number (>=0)
->   * failure: return < 0
-> diff --git a/arch/x86/kernel/tboot.c b/arch/x86/kernel/tboot.c index 30ac65d..a18070c 100644
-> --- a/arch/x86/kernel/tboot.c
-> +++ b/arch/x86/kernel/tboot.c
-> @@ -41,7 +41,7 @@
->  #include <asm/setup.h>
->  #include <asm/e820.h>
->  #include <asm/io.h>
-> -
-> +#include <linux/acpi.h>
->  #include "acpi/realmode/wakeup.h"
+>   * The hypercall asms have to meet several constraints:
+> @@ -299,6 +300,13 @@ HYPERVISOR_set_timer_op(u64 timeout)  }
 > 
->  /* Global pointer to shared data; NULL means no measured launch. */ @@ -270,7 +270,8 @@ static
-> void tboot_copy_fadt(const struct acpi_table_fadt *fadt)
->  		offsetof(struct acpi_table_facs, firmware_waking_vector);  }
+>  static inline int
+> +HYPERVISOR_dom0_op(struct xen_platform_op *platform_op) {
+> +	platform_op->interface_version = XENPF_INTERFACE_VERSION;
+> +	return _hypercall1(int, dom0_op, platform_op); }
+> +
+> +static inline int
+>  HYPERVISOR_set_debugreg(int reg, unsigned long value)  {
+>  	return _hypercall2(int, set_debugreg, reg, value); diff --git a/arch/x86/xen/enlighten.c
+> b/arch/x86/xen/enlighten.c index 5525163..6962653 100644
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -42,6 +42,7 @@
+>  #include <xen/page.h>
+>  #include <xen/hvm.h>
+>  #include <xen/hvc-console.h>
+> +#include <xen/acpi.h>
 > 
-> -void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
-> +int tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control,
-> +		 bool *skip_rest)
-
-Don't you need to use the 'unused' attrib on skip_rest in order to prevent compiler warnings?
-
->  {
->  	static u32 acpi_shutdown_map[ACPI_S_STATE_COUNT] = {
->  		/* S0,1,2: */ -1, -1, -1,
-> @@ -279,7 +280,7 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
->  		/* S5: */ TB_SHUTDOWN_S5 };
-> 
->  	if (!tboot_enabled())
-> -		return;
-> +		return AE_OK;
-> 
->  	tboot_copy_fadt(&acpi_gbl_FADT);
->  	tboot->acpi_sinfo.pm1a_cnt_val = pm1a_control; @@ -290,10 +291,12 @@ void tboot_sleep(u8
-> sleep_state, u32 pm1a_control, u32 pm1b_control)
->  	if (sleep_state >= ACPI_S_STATE_COUNT ||
->  	    acpi_shutdown_map[sleep_state] == -1) {
->  		pr_warning("unsupported sleep state 0x%x\n", sleep_state);
-> -		return;
-> +		return AE_ERROR;
+>  #include <asm/paravirt.h>
+>  #include <asm/apic.h>
+> @@ -1250,6 +1251,8 @@ asmlinkage void __init xen_start_kernel(void)
+>  	} else {
+>  		/* Make sure ACS will be enabled */
+>  		pci_request_acs();
+> +
+> +		xen_acpi_sleep_register();
 >  	}
 > 
->  	tboot_shutdown(acpi_shutdown_map[sleep_state]);
+> 
+> diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile index bbc1825..370552d 100644
+> --- a/drivers/xen/Makefile
+> +++ b/drivers/xen/Makefile
+> @@ -16,7 +16,7 @@ obj-$(CONFIG_XENFS)			+= xenfs/
+>  obj-$(CONFIG_XEN_SYS_HYPERVISOR)	+= sys-hypervisor.o
+>  obj-$(CONFIG_XEN_PLATFORM_PCI)		+= xen-platform-pci.o
+>  obj-$(CONFIG_SWIOTLB_XEN)		+= swiotlb-xen.o
+> -obj-$(CONFIG_XEN_DOM0)			+= pci.o
+> +obj-$(CONFIG_XEN_DOM0)			+= pci.o acpi.o
+> 
+>  xen-evtchn-y				:= evtchn.o
+>  xen-gntdev-y				:= gntdev.o
+> diff --git a/drivers/xen/acpi.c b/drivers/xen/acpi.c new file mode 100644 index 0000000..c0f829f
+> --- /dev/null
+> +++ b/drivers/xen/acpi.c
+> @@ -0,0 +1,25 @@
+
+Copyright and license?
+
+> +#include <xen/acpi.h>
+> +#include <xen/interface/platform.h>
+> +#include <asm/xen/hypercall.h>
+> +#include <asm/xen/hypervisor.h>
 > +
-> +	return AE_OK;
->  }
-> 
->  static atomic_t ap_wfs_count;
-> @@ -343,6 +346,8 @@ static __init int tboot_late_init(void)
-> 
->  	atomic_set(&ap_wfs_count, 0);
->  	register_hotcpu_notifier(&tboot_cpu_notifier);
+> +int xen_acpi_notify_hypervisor_state(u8 sleep_state,
+> +				     u32 pm1a_cnt, u32 pm1b_cnt,
+> +				     bool *skip_rest)
+> +{
+> +	struct xen_platform_op op = {
+> +		.cmd = XENPF_enter_acpi_sleep,
+> +		.interface_version = XENPF_INTERFACE_VERSION,
+> +		.u = {
+> +			.enter_acpi_sleep = {
+> +				.pm1a_cnt_val = (u16)pm1a_cnt,
+> +				.pm1b_cnt_val = (u16)pm1b_cnt,
+> +				.sleep_state = sleep_state,
+> +			},
+> +		},
+> +	};
+> +	if (skip_rest)
+> +		*skip_rest = true;
 > +
-> +	__acpi_override_sleep = tboot_sleep;
->  	return 0;
->  }
-> 
-> diff --git a/drivers/acpi/acpica/hwsleep.c b/drivers/acpi/acpica/hwsleep.c index 2ac28bb..31d1198
-> 100644
-> --- a/drivers/acpi/acpica/hwsleep.c
-> +++ b/drivers/acpi/acpica/hwsleep.c
-> @@ -45,7 +45,6 @@
->  #include <acpi/acpi.h>
->  #include "accommon.h"
->  #include "actables.h"
-> -#include <linux/tboot.h>
-> 
->  #define _COMPONENT          ACPI_HARDWARE
->  ACPI_MODULE_NAME("hwsleep")
-> @@ -343,8 +342,17 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
-> 
->  	ACPI_FLUSH_CPU_CACHE();
-> 
-> -	tboot_sleep(sleep_state, pm1a_control, pm1b_control);
-> +	if (__acpi_override_sleep) {
-> +		bool skip_rest = false;
-> 
-> +		status = __acpi_override_sleep(sleep_state, pm1a_control,
-> +					       pm1b_control, &skip_rest);
+> +	return HYPERVISOR_dom0_op(&op);
+> +}
+> diff --git a/include/xen/acpi.h b/include/xen/acpi.h new file mode 100644 index 0000000..e414f14
+> --- /dev/null
+> +++ b/include/xen/acpi.h
+> @@ -0,0 +1,26 @@
+
+Copyright and license?
+
+> +#ifndef _XEN_ACPI_H
+> +#define _XEN_ACPI_H
 > +
-> +		if (ACPI_FAILURE(status))
-> +			return_ACPI_STATUS(status);
-> +		if (skip_rest)
-> +			return_ACPI_STATUS(AE_OK);
-> +	}
->  	/* Write #2: Write both SLP_TYP + SLP_EN */
-> 
->  	status = acpi_hw_write_pm1_control(pm1a_control, pm1b_control); diff --git
-> a/include/linux/tboot.h b/include/linux/tboot.h index 1dba6ee..19badbd 100644
-> --- a/include/linux/tboot.h
-> +++ b/include/linux/tboot.h
-> @@ -143,7 +143,8 @@ static inline int tboot_enabled(void)
-> 
->  extern void tboot_probe(void);
->  extern void tboot_shutdown(u32 shutdown_type); -extern void tboot_sleep(u8 sleep_state, u32
-> pm1a_control, u32 pm1b_control);
-> +extern int tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control,
-> +		       bool *skip);
->  extern struct acpi_table_header *tboot_get_dmar_table(
->  				      struct acpi_table_header *dmar_tbl);  extern int
-> tboot_force_iommu(void);
+> +#include <linux/types.h>
+> +
+> +#ifdef CONFIG_XEN_DOM0
+> +#include <asm/xen/hypervisor.h>
+> +#include <xen/xen.h>
+> +#include <linux/acpi.h>
+> +
+> +int xen_acpi_notify_hypervisor_state(u8 sleep_state,
+> +				     u32 pm1a_cnt, u32 pm1b_cnd,
+> +				     bool *skip_rest);
+> +
+> +static inline void xen_acpi_sleep_register(void) {
+> +	if (xen_initial_domain())
+> +		__acpi_override_sleep = xen_acpi_notify_hypervisor_state; } #else
+> +static inline void xen_acpi_sleep_register(void) { } #endif
+> +
+> +#endif	/* _XEN_ACPI_H */
 > --
 > 1.7.4.1
