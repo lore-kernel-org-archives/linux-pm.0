@@ -1,20 +1,12 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [Xen-devel] RE: [PATCH 5/7] xen/acpi: Domain0 acpi
- parser related platform hypercall
-Date: Thu, 8 Sep 2011 09:38:48 -0400
-Message-ID: <20110908133847.GC27132__43137.7542358406$1315489436$gmane$org@dumpdata.com>
-References: <1314815484-4668-1-git-send-email-konrad.wilk@oracle.com>
-	<1314815484-4668-6-git-send-email-konrad.wilk@oracle.com>
-	<9F57BF860713DF4BA3EFA4F8C6DFEDAC16F3F665@ORSMSX101.amr.corp.intel.com>
-	<4E67A9E7.2020802@goop.org>
-	<9F57BF860713DF4BA3EFA4F8C6DFEDAC16F40F0B@ORSMSX101.amr.corp.intel.com>
-	<20110907190659.GH7074@dumpdata.com>
+From: tom.leiming@gmail.com
+Subject: [PATCH] PM / Runtime: pm_runtime_idle can be called in
+	atomic context
+Date: Fri,  9 Sep 2011 00:06:01 +0800
+Message-ID: <1315497961-15481-1-git-send-email-tom.leiming@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20110907190659.GH7074@dumpdata.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -24,29 +16,32 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, "keir@xen.org" <keir@xen.org>, "x86@kernel.org" <x86@kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "tboot-devel@lists.sourceforge.net" <tboot-devel@lists.sourceforge.net>, Fitzhardinge <jeremy.fitzhardinge@citrix.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "liang.tang@oracle.com" <liang.tang@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: rjw@sisk.pl, stern@rowland.harvard.edu
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 07, 2011 at 03:06:59PM -0400, Konrad Rzeszutek Wilk wrote:
-> > > >> +#define XENPF_enter_acpi_sleep    51
-> > > >> +struct xenpf_enter_acpi_sleep {
-> > > >> +	/* IN variables */
-> > > >> +	uint16_t pm1a_cnt_val;      /* PM1a control value. */
-> > > >> +	uint16_t pm1b_cnt_val;      /* PM1b control value. */
-> > > > These are uint32_t in native Linux--why truncate in the API and not at use?
-> > > 
-> > > Does ACPI define them as 32 or 16 bit?
-> > 
-> > The spec indicates that the length is variable and could be up to 32 bits (AFAICT).  And Linux uses 32b, which your other patch is truncating for this call.
-> 
-> Yikes! Well, looks like we need to fix the Xen ABI too. Lets get that fixed
-> and also address all the other comments (thanks for looking at it) you pointed
-> out.
+From: Ming Lei <tom.leiming@gmail.com>
 
-So read up the ACPI spec and it says that the minimum is 2 bytes and does not
-say anything about the maximum. The list of what the bits do stops at 16-bits
-(the last two are reserved) so I think we are actually OK.
+Add to pm_runtime_idle the list of functions that can be called
+in atomic context if pm_runtime_irq_safe() has been called for the
+device.
 
-Albeit if the spec starts using more of them - then yes we will need to revist
-this Xen ABI and potentially add a new call.
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ Documentation/power/runtime_pm.txt |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index 08d70e4..1f05404 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -477,6 +477,7 @@ pm_runtime_autosuspend_expiration()
+ If pm_runtime_irq_safe() has been called for a device then the following helper
+ functions may also be used in interrupt context:
+ 
++pm_runtime_idle()
+ pm_runtime_suspend()
+ pm_runtime_autosuspend()
+ pm_runtime_resume()
+-- 
+1.7.4.1
