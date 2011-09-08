@@ -1,24 +1,20 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 1/1] freezer: fix
-	wait_event_freezable/__thaw_task races
-Date: Thu, 8 Sep 2011 10:05:30 +0900
-Message-ID: <20110908010530.GD3987__3019.40847789428$1315444090$gmane$org@mtj.dyndns.org>
-References: <1314988070-12244-7-git-send-email-tj@kernel.org>
-	<20110904184626.GA30101@redhat.com>
-	<20110905023315.GB9807@htj.dyndns.org>
-	<20110905162012.GA4445@redhat.com>
-	<20110906032846.GA18425@mtj.dyndns.org>
-	<20110906151836.GA15568@redhat.com>
-	<20110906152539.GA16899@redhat.com>
-	<20110906155332.GF18425@mtj.dyndns.org>
-	<20110907182156.GA13909@redhat.com>
-	<20110907182217.GB13909@redhat.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [Xen-devel] RE: [PATCH 5/7] xen/acpi: Domain0 acpi
+ parser related platform hypercall
+Date: Thu, 8 Sep 2011 09:38:48 -0400
+Message-ID: <20110908133847.GC27132__43137.7542358406$1315489436$gmane$org@dumpdata.com>
+References: <1314815484-4668-1-git-send-email-konrad.wilk@oracle.com>
+	<1314815484-4668-6-git-send-email-konrad.wilk@oracle.com>
+	<9F57BF860713DF4BA3EFA4F8C6DFEDAC16F3F665@ORSMSX101.amr.corp.intel.com>
+	<4E67A9E7.2020802@goop.org>
+	<9F57BF860713DF4BA3EFA4F8C6DFEDAC16F40F0B@ORSMSX101.amr.corp.intel.com>
+	<20110907190659.GH7074@dumpdata.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110907182217.GB13909@redhat.com>
+In-Reply-To: <20110907190659.GH7074@dumpdata.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,38 +24,29 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
+To: "Cihula, Joseph" <joseph.cihula@intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>, "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, "keir@xen.org" <keir@xen.org>, "x86@kernel.org" <x86@kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "tboot-devel@lists.sourceforge.net" <tboot-devel@lists.sourceforge.net>, Fitzhardinge <jeremy.fitzhardinge@citrix.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "liang.tang@oracle.com" <liang.tang@oracle.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-
-On Wed, Sep 07, 2011 at 08:22:17PM +0200, Oleg Nesterov wrote:
-> wait_event_freezable() and wait_event_freezable_timeout() stop
-> the waiting if try_to_freeze() fails. This is not right, we can
-> race with __thaw_task() and in this case
+On Wed, Sep 07, 2011 at 03:06:59PM -0400, Konrad Rzeszutek Wilk wrote:
+> > > >> +#define XENPF_enter_acpi_sleep    51
+> > > >> +struct xenpf_enter_acpi_sleep {
+> > > >> +	/* IN variables */
+> > > >> +	uint16_t pm1a_cnt_val;      /* PM1a control value. */
+> > > >> +	uint16_t pm1b_cnt_val;      /* PM1b control value. */
+> > > > These are uint32_t in native Linux--why truncate in the API and not at use?
+> > > 
+> > > Does ACPI define them as 32 or 16 bit?
+> > 
+> > The spec indicates that the length is variable and could be up to 32 bits (AFAICT).  And Linux uses 32b, which your other patch is truncating for this call.
 > 
-> 	- wait_event_freezable() returns the wrong ERESTARTSYS
-> 
-> 	- wait_event_freezable_timeout() can return the positive
-> 	  value while condition == F
+> Yikes! Well, looks like we need to fix the Xen ABI too. Lets get that fixed
+> and also address all the other comments (thanks for looking at it) you pointed
+> out.
 
-Indeed, nice catch.  This one actually is pretty dangerous.  We
-probably want to make a separate fix for this and backport it to
--stable?
+So read up the ACPI spec and it says that the minimum is 2 bytes and does not
+say anything about the maximum. The list of what the bits do stops at 16-bits
+(the last two are reserved) so I think we are actually OK.
 
-> Change the code to always check __retval/condition before return.
-> 
-> Note: with or without this patch the timeout logic looks strange,
-> probably we should recalc timeout if try_to_freeze() returns T.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-
-Yeap, with freezable_with_signal gone, this looks correct & simpler to
-me but it would be nice if you can sprinkle some documentation while
-at it. :)
-
-Thanks.
-
--- 
-tejun
+Albeit if the spec starts using more of them - then yes we will need to revist
+this Xen ABI and potentially add a new call.
