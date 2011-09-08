@@ -1,12 +1,20 @@
-From: tom.leiming@gmail.com
-Subject: [PATCH] PM / Runtime: pm_runtime_idle can be called in
-	atomic context
-Date: Fri,  9 Sep 2011 00:06:01 +0800
-Message-ID: <1315497961-15481-1-git-send-email-tom.leiming@gmail.com>
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [PATCH 6/6] freezer: kill unused
+	set_freezable_with_signal()
+Date: Thu, 8 Sep 2011 11:01:59 -0700
+Message-ID: <20110908180159.GA4197__28933.3141329282$1315505867$gmane$org@count0.beaverton.ibm.com>
+References: <1314988070-12244-1-git-send-email-tj@kernel.org>
+	<1314988070-12244-7-git-send-email-tj@kernel.org>
+	<20110904184626.GA30101@redhat.com>
+	<20110905023315.GB9807@htj.dyndns.org>
+	<20110905162012.GA4445@redhat.com>
+	<20110906032846.GA18425@mtj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20110906032846.GA18425@mtj.dyndns.org>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -16,32 +24,46 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl, stern@rowland.harvard.edu
-Cc: linux-pm@lists.linux-foundation.org
+To: Tejun Heo <tj@kernel.org>
+Cc: containers@lists.linux-foundation.org, Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+On Tue, Sep 06, 2011 at 12:28:55PM +0900, Tejun Heo wrote:
+> Hello,
+> 
+> On Mon, Sep 05, 2011 at 06:20:12PM +0200, Oleg Nesterov wrote:
+> > Perhaps it is correct... Just I do not understand what it should do.
+> > I thought it is "wait_for_event && do_not_block_freezer". And at first
+> > glance the code looks as if it tries to do this. Say, in the "likely"
+> > case we restart wait_event_interruptible() after refrigerator().
+> > 
+> > But this looks racy. Suppose that freezing() is already false when
+> > try_to_freeze() or __refrigerator() is called. Say, cgroup_freezer does
+> > freeze_task() + __thaw_task(). Why it returns -ERESTARTSYS in this case?
+> 
+> It may return -ERESTARTSYS when not strictly necessary but given that
+> it's supposed to trigger restart anyway I don't think it's actually
+> broken (it doesn't break the contract of the wait).  Another thing to
+> note is that kthread freezing via cgroup is almost fundamentally
+> broken.  With the removal of freezable_with_signal, this shouldn't be
+> an issue anymore although cgroup_freezer still needs to be fixed to
+> account for kthreads for xstate transitions (it currently triggers
+> BUG_ON).
 
-Add to pm_runtime_idle the list of functions that can be called
-in atomic context if pm_runtime_irq_safe() has been called for the
-device.
+Looking at the code and docs I realize I didn't explicitly mention that
+kthreads could not be frozen by the cgroup freezer. However, the code did
+not allow it. When freezing tasks the cgroup freezer always did:
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- Documentation/power/runtime_pm.txt |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+	freeze_task(task, true)
 
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index 08d70e4..1f05404 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -477,6 +477,7 @@ pm_runtime_autosuspend_expiration()
- If pm_runtime_irq_safe() has been called for a device then the following helper
- functions may also be used in interrupt context:
- 
-+pm_runtime_idle()
- pm_runtime_suspend()
- pm_runtime_autosuspend()
- pm_runtime_resume()
--- 
-1.7.4.1
+which would only freeze tasks without PF_FREEZER_NOSIG due to the second
+"sig_only" parameter. I believe this means it could not be used to
+freeze kthreads.
+
+My feeling is kthreads should not be "managed" directly by userspace.
+Especially if that includes the ability to arbitrarily stop or freeze them.
+So it seems more appropriate to explicitly disallow freezing of kthreads
+via the cgroup freezer.
+
+Cheers,
+	-Matt Helsley
