@@ -1,17 +1,15 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: Issue: Runtime API usage in wake-up device
-	irq_handler during wakeup from system-wide-suspend.
-Date: Thu, 08 Sep 2011 06:51:01 -0700
-Message-ID: <87d3fbm9bu.fsf__22621.9796612442$1315582083$gmane$org@ti.com>
-References: <Pine.LNX.4.44L0.1108271537300.21403-100000@netrider.rowland.org>
-	<1315410513.2679.9.camel@sokoban> <87fwk8qllx.fsf@ti.com>
-	<1315457911.2679.19.camel@sokoban>
+From: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: LPC 2011 Power Management Session notes
+Date: Fri, 9 Sep 2011 17:50:06 +0100
+Message-ID: <20110909165006.GB4302@sirena.org.uk>
+References: <alpine.DEB.2.00.1109081827360.17022@utopia.booyaka.com>
+	<CAORVsuWKd9uvTTNCr_k9W6DeA+z3ZEaD99bqit++4xUy9zqKSQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1315457911.2679.19.camel@sokoban> (Tero Kristo's message of
-	"Thu, 8 Sep 2011 07:58:31 +0300")
+Content-Disposition: inline
+In-Reply-To: <CAORVsuWKd9uvTTNCr_k9W6DeA+z3ZEaD99bqit++4xUy9zqKSQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -21,51 +19,20 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: t-kristo@ti.com
-Cc: "Balbi, Felipe" <balbi@ti.com>, "Basak, Partha" <p-basak2@ti.com>, "R,
-	Govindraj" <govindraj.raja@ti.com>, "Munegowda,
-	Keshava" <keshava_mgowda@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
+To: Jean Pihet <jean.pihet@newoldbits.com>
+Cc: linux-pm@lists.linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tero,
+On Fri, Sep 09, 2011 at 10:09:48AM +0200, Jean Pihet wrote:
+> On Fri, Sep 9, 2011 at 2:28 AM, Paul Walmsley <paul@pwsan.com> wrote:
 
-Tero Kristo <t-kristo@ti.com> writes:
+> About the Device PM QoS user space interface:
+> 1. Proposal: For every device, there will be a sysfs wakeup latency attribute
+> 2. Proposal: Userspace processes should communicate their needs via sysfs
 
-> On Wed, 2011-09-07 at 19:59 +0200, Hilman, Kevin wrote:
->> Tero Kristo <t-kristo@ti.com> writes:
+> I assume there can be only one user app that can open a given sysfs
+> entry at a time, is that correct?
 
-[...]
-
->> > After thinking about this problem and looking at possible ways to fix
->> > it, I am planning to change the PRCM chain handler to be a driver, which
->> > gets suspended along with the rest of the system. This means the PRCM
->> > interrupt would get disabled also during this time, and it would be
->> > enabled in the driver->complete() call, which should happen after rest
->> > of the drivers have been able to enable their PM runtime in the
->> > driver->resume() call chain. Do you see any problems with this approach?
->> 
->> How will the system wakeup from retention or off-mode if the PRCM IRQ is
->> disabled?
->
-> This is actually some sort of an issue with retention if we disable PRCM
-> irq completely, off works purely with wakeup signals as we come out of
-> reset. Anyway, I did some experimentation with this, and OMAP3 is able
-> to wake up if we leave WKUP irq up, but disable IO chain irq. IO chain
-> events seem to trigger a WKUP event also always, we just postpone the
-> processing of IO chain until later. I had to also split the wakeup
-> clearing for OMAP3 into 2 parts, one part handles wakeups and another IO
-> chain. Currently both IO chain and WKUP are acked by the same handler.
-
-Here's another option, which is kind of a hybrid of what's been
-discussed so far.
-
-The PRCM driver would leave the IRQs enabled during suspend, but would
-just delay delivering them to the drivers.  IOW, handle/clear the PRCM
-IRQ normally, but delay delivery of the *device* IRQ until the
-->complete callback of the PRCM driver.
-
-Doing this ensures all the drivers are resumed before any device IRQ is
-delivered, and doesn't require any additional queuing of events in the
-drivers.
-
-Kevin
+No, that's not the case.  The file implementation doesn't get to see
+opens and closes at all, it just gets passed buffers to fill or read
+from.
