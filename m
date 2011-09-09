@@ -1,9 +1,10 @@
-From: Mark Brown <broonie@sirena.org.uk>
+From: mark gross <markgross@thegnar.org>
 Subject: Re: LPC 2011 Power Management Session notes
-Date: Fri, 9 Sep 2011 17:50:06 +0100
-Message-ID: <20110909165006.GB4302@sirena.org.uk>
+Date: Fri, 9 Sep 2011 15:50:52 -0700
+Message-ID: <20110909225052.GA21769@gvim.org>
 References: <alpine.DEB.2.00.1109081827360.17022@utopia.booyaka.com>
 	<CAORVsuWKd9uvTTNCr_k9W6DeA+z3ZEaD99bqit++4xUy9zqKSQ@mail.gmail.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,15 +25,51 @@ Cc: linux-pm@lists.linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, Sep 09, 2011 at 10:09:48AM +0200, Jean Pihet wrote:
+> Hi,
+> 
 > On Fri, Sep 9, 2011 at 2:28 AM, Paul Walmsley <paul@pwsan.com> wrote:
-
+> >
+> > Available at
+> >
+> > http://pad.ubuntu.com/plumbers-2011-pwr-mgt
+> >
+> > in real time if anyone's interested
+> Thanks for the doc!
+> 
+> 
 > About the Device PM QoS user space interface:
 > 1. Proposal: For every device, there will be a sysfs wakeup latency attribute
 > 2. Proposal: Userspace processes should communicate their needs via sysfs
-
+> 
 > I assume there can be only one user app that can open a given sysfs
 > entry at a time, is that correct?
+> 
+> Let me think about it and propose a patch next week.
 
-No, that's not the case.  The file implementation doesn't get to see
-opens and closes at all, it just gets passed buffers to fill or read
-from.
+
+My recollection of the evening was that the exposing of per device qos
+latencies was not considered a good idea without better articulation on
+how it would be used.  (or misused) 
+
+FWIW a few folks (ok maybe just me) are not comfortable with exposing
+raw values without a good enough abstraction for them to user mode such
+that the values used through that user mode ABI would be somewhat
+portable between ISA's or even versions of the same chips / platforms.
+
+--mark
+ 
+> Regards,
+> Jean
+> 
+> >
+> >
+> > - Paul
+> > _______________________________________________
+> > linux-pm mailing list
+> > linux-pm@lists.linux-foundation.org
+> > https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+> >
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
