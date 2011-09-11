@@ -1,24 +1,14 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 1/1] freezer: fix
-	wait_event_freezable/__thaw_task races
-Date: Sun, 11 Sep 2011 10:54:31 +0900
-Message-ID: <20110911015431.GK29319__298.960813279514$1315706185$gmane$org@htj.dyndns.org>
-References: <20110905023315.GB9807@htj.dyndns.org>
-	<20110905162012.GA4445@redhat.com>
-	<20110906032846.GA18425@mtj.dyndns.org>
-	<20110906151836.GA15568@redhat.com>
-	<20110906152539.GA16899@redhat.com>
-	<20110906155332.GF18425@mtj.dyndns.org>
-	<20110907182156.GA13909@redhat.com>
-	<20110907182217.GB13909@redhat.com>
-	<20110908010530.GD3987@mtj.dyndns.org>
-	<20110908175926.GA26986@redhat.com>
+From: Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCHSET cgroup] extend threadgroup locking
+Date: Sun, 11 Sep 2011 12:35:36 +0900
+Message-ID: <20110911033536.GO29319__22369.3934306086$1315712246$gmane$org@htj.dyndns.org>
+References: <1315159280-25032-1-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20110908175926.GA26986@redhat.com>
+In-Reply-To: <1315159280-25032-1-git-send-email-htejun@gmail.com>
 List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
@@ -28,48 +18,54 @@ List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
+To: rjw@sisk.pl, paul@paulmenage.org, lizf@cn.fujitsu.com
+Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-
-On Thu, Sep 08, 2011 at 07:59:26PM +0200, Oleg Nesterov wrote:
-> > Indeed, nice catch.  This one actually is pretty dangerous.  We
-> > probably want to make a separate fix for this and backport it to
-> > -stable?
+On Mon, Sep 05, 2011 at 03:01:16AM +0900, Tejun Heo wrote:
+> Hello,
 > 
-> And I forgot to mention that wait_event_freezable_timeout() doesn't
-> handle -ERESTARTSYS at all.
+> cgroup currently only blocks new threads from joining the target
+> threadgroup during migration, and on-going migration could race
+> against exec and exit leading to interesting problems - the symmetry
+> between various attach methods, task exiting during method execution,
+> ->exit() racing against attach methods, migrating task switching basic
+> properties during exec and so on.
 > 
-> But I don't think -stable needs this fix. According to grep, nobody
-> check the returned value, and none of the callers plays with signals.
-
-Ah, no user, okay.
-
-> > Yeap, with freezable_with_signal gone, this looks correct & simpler to
-> > me
+> This patchset extends threadgroup locking such that it covers all
+> operations which can alter the threadgroup - fork, exit and exec, and
+> update cgroup to take advantage of it.  rwsem read ops are added to
+> exit path but exec is excluded by grabbing the existing
+> cred_guard_mutex from threadgroup locking helper.
 > 
-> I don't really understand this... set_freezable_with_signal() has a
-> lot of problems, yes... But even if it wasn't removed this fix makes
-> sense anyway, afaics.
+> This makes threadgroup locking complete and resolves cgroup issues
+> stemming from the target taskset being unstable.
 > 
-> If freezable_with_signal caller does wait_event_freezable_timeout(),
-> __retval becomes -ERESTARTSYS after freeze_task(). The next iteration
-> will return 0 with the KERN_ERR message from schedule_timeout().
-
-Hmmm... but with the change, if a kthread gets TIF_SIGPENDING from
-freezer and then thawed, it would not enter try_to_freeze() and thus
-won't clear TIF_SIGPENDING.  The original code was racy too but the
-window would be much larger afterwards.  Anyways, this doesn't matter
-anymore.
-
-> > but it would be nice if you can sprinkle some documentation while
-> > at it. :)
+> This patchset is on top of the current pm-freezer + "freezer: fixes &
+> simplifications" patchset and contains the following four patches.
+> Patch list and diffstat follow.
 > 
-> But they already have the comment ;) What can I add?
+> Thanks.
+> 
+>  [PATCH 1/4] cgroup: change locking order in attach_task_by_pid()
+>  [PATCH 2/4] threadgroup: rename signal->threadgroup_fork_lock to
+>  [PATCH 3/4] threadgroup: extend threadgroup_lock() to cover exit and
+>  [PATCH 4/4] cgroup: always lock threadgroup during migration
+> 
+>  include/linux/init_task.h |    9 ++----
+>  include/linux/sched.h     |   58 ++++++++++++++++++++++++++++---------------
+>  kernel/cgroup.c           |   62 +++++++++++++++++++++-------------------------
+>  kernel/exit.c             |   16 ++++++++---
+>  kernel/fork.c             |    8 ++---
+>  5 files changed, 88 insertions(+), 65 deletions(-)
 
-Proper /** - */ comment w/ return value documentation? :P
+Oops, forgot to cc Oleg on this series.
+
+Oleg, this one definitely needs your review.  The original thread is...
+
+  http://thread.gmane.org/gmane.linux.kernel/1187853/focus=1188347
+
+If you want the series in mbox format, please let me know.
 
 Thanks.
 
