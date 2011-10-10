@@ -1,11 +1,19 @@
-From: Mailman Admin <mailman-owner@linuxfoundation.org>
-Subject: Linux Foundation mailing list services restored
-Date: Wed, 26 Oct 2011 17:47:01 -0700
-Message-ID: <4EA8AA05.3080309@linuxfoundation.org>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: [PATCH 8/8] OMAP3: powerdomain data: add wake-up
+ latency figures
+Date: Mon, 10 Oct 2011 16:52:54 -0600 (MDT)
+Message-ID: <alpine.DEB.2.00.1110101652290.5205__31091.8990443044$1319679584$gmane$org@utopia.booyaka.com>
+References: <1316621649-3622-1-git-send-email-j-pihet@ti.com>
+	<1316622258-3892-1-git-send-email-j-pihet@ti.com>
+	<1316622258-3892-9-git-send-email-j-pihet@ti.com>
+	<alpine.DEB.2.00.1110062215270.4611@utopia.booyaka.com>
+	<CAORVsuX2PUubPzO3mWTaO0Lg6Mdog8wjDY6hm93qheMwoz27CA@mail.gmail.com>
+	<alpine.DEB.2.00.1110101636470.5205@utopia.booyaka.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.1110101636470.5205@utopia.booyaka.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -15,17 +23,18 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Jean Pihet <jean.pihet@newoldbits.com>
+Cc: Kevin Hilman <khilman@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On Mon, 10 Oct 2011, Paul Walmsley wrote:
 
-Mailing list services have been restored and we are in the testing
-phase, so please let us know if you see any issues.
+> OK.  sys_offmode only applies to OFF mode.  Voltage scaling can also occur 
+> during RETENTION and INACTIVE ("sleep").  So were these results with 
+> retention and voltage scaling disabled?
 
-Most importantly, we want to thank you for your patience and
-understanding as we worked around the clock to restore services.   For
-web sites associated with particular projects that have not yet been
-restored, we are reaching out this week and next to the project leads to
-begin restoring the web services.   Thanks for your continued patience.
+This last sentence should have read:
 
-The Linux Foundation
+So were these results with retention and sleep voltage scaling disabled?
+
+- Paul
