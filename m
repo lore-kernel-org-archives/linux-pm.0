@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 4/6 v2] PM: Limit race conditions between
-	runtime PM and system sleep (v2)
-Date: Thu, 27 Oct 2011 22:06:34 +0200
-Message-ID: <201110272206.35180.rjw@sisk.pl>
-References: <201106260054.20578.rjw@sisk.pl> <201106292334.24518.rjw@sisk.pl>
-	<CAKnu2Mru4c-2LBCZ_k3ZA+v47u0+um8igYU7EWt8=qOTVgcUjA@mail.gmail.com>
+Subject: Re: [PATCH 1/4] freezer: make fake_signal_wake_up wake
+	TASK_KILLABLE tasks too
+Date: Thu, 27 Oct 2011 22:21:06 +0200
+Message-ID: <201110272221.06782.rjw__37343.3419074447$1319746724$gmane$org@sisk.pl>
+References: <1317210761-11518-1-git-send-email-jlayton@redhat.com>
+	<201110112114.28478.rjw@sisk.pl>
+	<20111026155548.4a7c3dd8@corrin.poochiereds.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAKnu2Mru4c-2LBCZ_k3ZA+v47u0+um8igYU7EWt8=qOTVgcUjA@mail.gmail.com>
+In-Reply-To: <20111026155548.4a7c3dd8@corrin.poochiereds.net>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,39 +20,62 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Kevin Hilman <khilman@ti.com>, linux-scsi@vger.kernel.org, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, stable@kernel.org
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-cifs@vger.kernel.org, linux-nfs@vger.kernel.org, trond.myklebust@netapp.com, linux-kernel@vger.kernel.org, smfrench@gmail.com, john@calva.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, October 27, 2011, Linus Walleij wrote:
-> 2011/6/29 Rafael J. Wysocki <rjw@sisk.pl>:
+On Wednesday, October 26, 2011, Jeff Layton wrote:
+> On Tue, 11 Oct 2011 21:14:28 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> > One of the roles of the PM core is to prevent different PM callbacks
-> > executed for the same device object from racing with each other.
-> > Unfortunately, after commit e8665002477f0278f84f898145b1f141ba26ee26
-> > (PM: Allow pm_runtime_suspend() to succeed during system suspend)
-> > runtime PM callbacks may be executed concurrently with system
-> > suspend/resume callbacks for the same device.
-> (...)
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > On Tuesday, October 11, 2011, Jeff Layton wrote:
+> > > On Tue, 11 Oct 2011 08:18:48 +0200
+> > > Pavel Machek <pavel@ucw.cz> wrote:
+> > > 
+> > > > 
+> > > > Hi!
+> > > > 
+> > > > > TASK_KILLABLE is often used to put tasks to sleep for quite some time.
+> > > > > One of the most common uses is to put tasks to sleep while waiting for
+> > > > > replies from a server on a networked filesystem (such as CIFS or NFS).
+> > > > > 
+> > > > > Unfortunately, fake_signal_wake_up does not currently wake up tasks
+> > > > > that are sleeping in TASK_KILLABLE state. This means that even if the
+> > > > > code were in place to allow them to freeze while in this sleep, it
+> > > > > wouldn't work anyway.
+> > > > > 
+> > > > > This patch changes this function to wake tasks in this state as well.
+> > > > > This should be harmless -- if the code doing the sleeping doesn't have
+> > > > > handling to deal with freezer events, it should just go back to sleep.
+> > > > 
+> > > > I'm pretty sure this will break something; but that does not mean it
+> > > > is bad idea, just that it should be merged early and tested a lot.
+> > > > 
+> > > 
+> > > FWIW, I looked at most of the places in the kernel that do
+> > > TASK_KILLABLE sleeps and they look like they'll handle this correctly.
+> > > The main one I wasn't sure about was mem_cgroup_handle_oom(), but I
+> > > think it'll do the right thing too. I certainly could have missed
+> > > something though...
+> > > 
+> > > In any case, would you mind merging this via the linux-pm tree for 3.2?
+> > 
+> > I will push it for 3.2.
+> > 
 > 
-> A quick question: is there some specific reason why this patch should
-> not go into the 3.0.y stable releases?
->
-> We are trying to produce
-> a runtime PM system of product quality based on 3.0.y and we've
-> already had to backport this patch ourselves to get things stable.
+> Hi Rafael,
 > 
-> We have also backported:
-> PM: Introduce generic "noirq" callback routines for subsystems (v2)
-> PM / Runtime: Update documentation of interactions with system sleep
-> PM / Runtime: Add new helper function: pm_runtime_status_suspended()
+> Trond asked if you would also be willing to push patches 3 and 4 in
+> this series for 3.2 as well [1]? Note that patch #4 got another revision so
+> we'll want to make sure that you get that one. I can resend the
+> nfs/sunrpc patches if that will help...
 > 
-> And now it seems to be sufficient to get this thing going.
+> [1]: I think Steve F is going to push patch #2, so that one shouldn't
+> be an issue. 
 
-Well, it isn't a simple fix and it changes the code's behavior quite
-significantly, so I thought it might not be a good idea to risk problems
-with -stable because of it.  Perhaps let's see how it works out in 3.1
-and backport it later if there are no problem reports related to it?
+Well, I've already sent my pull request.  I can keep these patches in my
+tree for the next pull request, though (I'm sure there will be fixes against
+3.2, so they will go along with those).
 
+Thanks,
 Rafael
