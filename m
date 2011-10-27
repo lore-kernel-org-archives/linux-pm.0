@@ -1,73 +1,31 @@
-From: Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCHSET cgroup] extend threadgroup locking
-Date: Sun, 11 Sep 2011 12:35:36 +0900
-Message-ID: <20110911033536.GO29319__22369.3934306086$1315712246$gmane$org@htj.dyndns.org>
-References: <1315159280-25032-1-git-send-email-htejun@gmail.com>
+From: Mailman Admin <mailman-owner@linuxfoundation.org>
+Subject: Linux Foundation mailing list services restored
+Date: Wed, 26 Oct 2011 17:47:01 -0700
+Message-ID: <4EA8AA05.3080309@linuxfoundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1315159280-25032-1-git-send-email-htejun@gmail.com>
-List-Unsubscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linux-foundation.org/pipermail/linux-pm>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
 List-Post: <mailto:linux-pm@lists.linux-foundation.org>
 List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linux-foundation.org/mailman/listinfo/linux-pm>,
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl, paul@paulmenage.org, lizf@cn.fujitsu.com
-Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 05, 2011 at 03:01:16AM +0900, Tejun Heo wrote:
-> Hello,
-> 
-> cgroup currently only blocks new threads from joining the target
-> threadgroup during migration, and on-going migration could race
-> against exec and exit leading to interesting problems - the symmetry
-> between various attach methods, task exiting during method execution,
-> ->exit() racing against attach methods, migrating task switching basic
-> properties during exec and so on.
-> 
-> This patchset extends threadgroup locking such that it covers all
-> operations which can alter the threadgroup - fork, exit and exec, and
-> update cgroup to take advantage of it.  rwsem read ops are added to
-> exit path but exec is excluded by grabbing the existing
-> cred_guard_mutex from threadgroup locking helper.
-> 
-> This makes threadgroup locking complete and resolves cgroup issues
-> stemming from the target taskset being unstable.
-> 
-> This patchset is on top of the current pm-freezer + "freezer: fixes &
-> simplifications" patchset and contains the following four patches.
-> Patch list and diffstat follow.
-> 
-> Thanks.
-> 
->  [PATCH 1/4] cgroup: change locking order in attach_task_by_pid()
->  [PATCH 2/4] threadgroup: rename signal->threadgroup_fork_lock to
->  [PATCH 3/4] threadgroup: extend threadgroup_lock() to cover exit and
->  [PATCH 4/4] cgroup: always lock threadgroup during migration
-> 
->  include/linux/init_task.h |    9 ++----
->  include/linux/sched.h     |   58 ++++++++++++++++++++++++++++---------------
->  kernel/cgroup.c           |   62 +++++++++++++++++++++-------------------------
->  kernel/exit.c             |   16 ++++++++---
->  kernel/fork.c             |    8 ++---
->  5 files changed, 88 insertions(+), 65 deletions(-)
+Hello,
 
-Oops, forgot to cc Oleg on this series.
+Mailing list services have been restored and we are in the testing
+phase, so please let us know if you see any issues.
 
-Oleg, this one definitely needs your review.  The original thread is...
+Most importantly, we want to thank you for your patience and
+understanding as we worked around the clock to restore services.   For
+web sites associated with particular projects that have not yet been
+restored, we are reaching out this week and next to the project leads to
+begin restoring the web services.   Thanks for your continued patience.
 
-  http://thread.gmane.org/gmane.linux.kernel/1187853/focus=1188347
-
-If you want the series in mbox format, please let me know.
-
-Thanks.
-
--- 
-tejun
+The Linux Foundation
