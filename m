@@ -1,16 +1,15 @@
-From: Paul Walmsley <paul@pwsan.com>
-Subject: Re: [PATCH 8/8] OMAP3: powerdomain data: add wake-up
- latency figures
-Date: Thu, 6 Oct 2011 22:17:15 -0600 (MDT)
-Message-ID: <alpine.DEB.2.00.1110062215270.4611__13071.7856264257$1319703451$gmane$org@utopia.booyaka.com>
-References: <1316621649-3622-1-git-send-email-j-pihet@ti.com>
-	<1316622258-3892-1-git-send-email-j-pihet@ti.com>
-	<1316622258-3892-9-git-send-email-j-pihet@ti.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 4/6 v2] PM: Limit race conditions between
+ runtime PM and system sleep (v2)
+Date: Thu, 27 Oct 2011 15:54:20 +0200
+Message-ID: <CAKnu2Mru4c-2LBCZ_k3ZA+v47u0+um8igYU7EWt8=qOTVgcUjA@mail.gmail.com>
+References: <201106260054.20578.rjw@sisk.pl> <201106292329.04163.rjw@sisk.pl>
+	<201106292334.24518.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1316622258-3892-9-git-send-email-j-pihet@ti.com>
+In-Reply-To: <201106292334.24518.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,32 +19,32 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: jean.pihet@newoldbits.com
-Cc: Kevin Hilman <khilman@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kevin Hilman <khilman@ti.com>, linux-scsi@vger.kernel.org, Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, stable@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jean
+2011/6/29 Rafael J. Wysocki <rjw@sisk.pl>:
 
-On Wed, 21 Sep 2011, jean.pihet@newoldbits.com wrote:
+> One of the roles of the PM core is to prevent different PM callbacks
+> executed for the same device object from racing with each other.
+> Unfortunately, after commit e8665002477f0278f84f898145b1f141ba26ee26
+> (PM: Allow pm_runtime_suspend() to succeed during system suspend)
+> runtime PM callbacks may be executed concurrently with system
+> suspend/resume callbacks for the same device.
+(...)
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-> From: Jean Pihet <j-pihet@ti.com>
-> 
-> Figures are added to the power domains structs for RET and OFF modes.
-> 
-> Note: the latency figures for MPU, PER, CORE, NEON have been obtained
-> from actual measurements.
-> The latency figures for the other power domains are preliminary and
-> shall be added.
-> 
-> Cf. http://www.omappedia.org/wiki/Power_Management_Device_Latencies_Measurement
-> for a detailed explanation on where are the numbers magically coming from.
-> 
-> Tested on OMAP3 Beagleboard in RET/OFF using wake-up latency constraints
-> on MPU, CORE and PER.
+A quick question: is there some specific reason why this patch should
+not go into the 3.0.y stable releases? We are trying to produce
+a runtime PM system of product quality based on 3.0.y and we've
+already had to backport this patch ourselves to get things stable.
 
-Do the CSWR measurements include the time for the PMIC to scale the 
-voltage, or do they just represent the time to enter and exit clock stop 
-(presumably with DPLL idling)? 
+We have also backported:
+PM: Introduce generic "noirq" callback routines for subsystems (v2)
+PM / Runtime: Update documentation of interactions with system sleep
+PM / Runtime: Add new helper function: pm_runtime_status_suspended()
 
+And now it seems to be sufficient to get this thing going.
 
-- Paul
+Yours,
+Linus Walleij
