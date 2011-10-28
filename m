@@ -1,16 +1,12 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/4] freezer: make fake_signal_wake_up wake
-	TASK_KILLABLE tasks too
-Date: Thu, 27 Oct 2011 22:22:39 +0200
-Message-ID: <201110272222.39962.rjw__14810.4263389998$1319746817$gmane$org@sisk.pl>
-References: <1317210761-11518-1-git-send-email-jlayton@redhat.com>
-	<20111026155548.4a7c3dd8@corrin.poochiereds.net>
-	<201110272221.06782.rjw@sisk.pl>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: [PATCH v9 0/4] cpuidle: Global registration of idle
+ states with per-cpu statistics
+Date: Fri, 28 Oct 2011 16:19:55 +0530
+Message-ID: <20111028104945.7520.83828.stgit__4489.42312873459$1319799031$gmane$org@localhost6.localdomain6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201110272221.06782.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,64 +16,118 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-cifs@vger.kernel.org, linux-nfs@vger.kernel.org, Jeff Layton <jlayton@redhat.com>, trond.myklebust@netapp.com, linux-kernel@vger.kernel.org, smfrench@gmail.com, john@calva.com
+To: khilman@ti.com, venki@google.com, ak@linux.intel.com, len.brown@intel.com, peterz@infradead.org, rjw@sisk.pl, santosh.shilimkar@ti.com, arjan@linux.intel.com, lenb@kernel.org
+Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, October 27, 2011, Rafael J. Wysocki wrote:
-> On Wednesday, October 26, 2011, Jeff Layton wrote:
-> > On Tue, 11 Oct 2011 21:14:28 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > On Tuesday, October 11, 2011, Jeff Layton wrote:
-> > > > On Tue, 11 Oct 2011 08:18:48 +0200
-> > > > Pavel Machek <pavel@ucw.cz> wrote:
-> > > > 
-> > > > > 
-> > > > > Hi!
-> > > > > 
-> > > > > > TASK_KILLABLE is often used to put tasks to sleep for quite some time.
-> > > > > > One of the most common uses is to put tasks to sleep while waiting for
-> > > > > > replies from a server on a networked filesystem (such as CIFS or NFS).
-> > > > > > 
-> > > > > > Unfortunately, fake_signal_wake_up does not currently wake up tasks
-> > > > > > that are sleeping in TASK_KILLABLE state. This means that even if the
-> > > > > > code were in place to allow them to freeze while in this sleep, it
-> > > > > > wouldn't work anyway.
-> > > > > > 
-> > > > > > This patch changes this function to wake tasks in this state as well.
-> > > > > > This should be harmless -- if the code doing the sleeping doesn't have
-> > > > > > handling to deal with freezer events, it should just go back to sleep.
-> > > > > 
-> > > > > I'm pretty sure this will break something; but that does not mean it
-> > > > > is bad idea, just that it should be merged early and tested a lot.
-> > > > > 
-> > > > 
-> > > > FWIW, I looked at most of the places in the kernel that do
-> > > > TASK_KILLABLE sleeps and they look like they'll handle this correctly.
-> > > > The main one I wasn't sure about was mem_cgroup_handle_oom(), but I
-> > > > think it'll do the right thing too. I certainly could have missed
-> > > > something though...
-> > > > 
-> > > > In any case, would you mind merging this via the linux-pm tree for 3.2?
-> > > 
-> > > I will push it for 3.2.
-> > > 
-> > 
-> > Hi Rafael,
-> > 
-> > Trond asked if you would also be willing to push patches 3 and 4 in
-> > this series for 3.2 as well [1]? Note that patch #4 got another revision so
-> > we'll want to make sure that you get that one. I can resend the
-> > nfs/sunrpc patches if that will help...
-> > 
-> > [1]: I think Steve F is going to push patch #2, so that one shouldn't
-> > be an issue. 
-> 
-> Well, I've already sent my pull request.  I can keep these patches in my
-> tree for the next pull request, though (I'm sure there will be fixes against
-> 3.2, so they will go along with those).
+Version 6 of this patch series dated 22nd Sept 2011 was 
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+Acked-by: Kevin Hilman <khilman@ti.com> for OMAP specific parts.
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Jean Pihet <j-pihet@ti.com>
 
-BTW, do you have current versions handy?  Or hasn't they changed?
+Hi Len, 
+Can you please queue this series for the next mainline merge window by merging
+it into your development tree and also linux-next for further testing.
 
-Rafael
+I have also tested it by applying these patches on your ACPI tree hosted @github.
+
+Thanks
+-Deepthi
+
+--
+
+The following patch series implements global registration of cpuidle
+states, and also has the necessary data structure changes to
+accommodate the per-cpu writable members of the cpuidle_states
+structure.
+
+This patch series had been in discussion earlier and
+following are the links to the previous discussions.
+
+v8 --> https://lkml.org/lkml/2011/10/3/52
+v7 --> https://lkml.org/lkml/2011/9/27/74 
+v6 --> https://lkml.org/lkml/2011/9/22/58
+v5 --> https://lkml.org/lkml/2011/6/6/259
+v4 --> https://lkml.org/lkml/2011/4/28/312
+v3 --> https://lkml.org/lkml/2011/2/8/73
+v2 --> https://lkml.org/lkml/2011/1/13/98
+v1 --> https://lkml.org/lkml/2011/3/22/161
+
+Changes from previous version (v8):
+
+   1. Rebased and tested on 3.1
+
+Tests done:
+
+    1. Compile tested for ARM using the following configs: da8xx_omapl_defconfig,
+    kirkwood_defconfig, omap2plus_defconfig, at91rm9200_defconfig
+      
+    2. Boot tested on x86 nehalem with multiple C-states for both intel_idle
+    and acpi_idle drivers.
+
+    3. Boot tested on T60p thinkpad that has T2600 cpu with multiple C-states. 
+    Also tested the case when there is dynamic changes in C-states 
+    AC <-> Battery Power switch.
+
+Brief description of the patches:
+
+Core change in this series is to split the cpuidle_device structure 
+into two parts, i.e  global and per-cpu basis. 
+
+The per-cpu pieces are mostly generic statistics that can be independent 
+of current running driver. As a result of these changes, there is single 
+copy of cpuidle_states structure and single registration done by one 
+cpu. The low level driver is free to set per-cpu driver data on
+each cpu if needed using the cpuidle_set_statedata() as the case
+today. Only in very rare cases asymmetric C-states exist which can be 
+handled within the cpuidle driver. Most architectures do not have 
+asymmetric C-states.
+
+First two patches in the series facilitate splitting of cpuidle_states
+and cpuidle_device structure and next two patches do the actual split,
+change the API's and make existing code follow the changed API.
+
+[1/4] - Move the idle residency accounting part from cpuidle.c to
+the respective low level drivers, so that the accounting can
+be accurately maintained if the driver decides to demote the
+chosen (suggested) by the governor.
+
+[2/4] - removes the cpuidle_device()->prepare API since is is not
+widely used and the only use case was to allow software
+demotion using CPUIDLE_FLAG_IGNORE flag.  Both these
+functions can be absorbed within the cpuidle back-end
+driver ad hence deprecating the prepare routine and the
+CPUIDLE_FLAG_IGNORE flag.
+
+    - Ref: https://lkml.org/lkml/2011/3/25/52
+
+[3/4] - Splits the usage statistics (read/write) part out of
+cpuidle_state structure, so that the states can become read
+only and hence made global.
+
+[4/4] - Most APIs will now need to pass pointer to both global
+cpuidle_driver and per-cpu cpuidle_device structure.
+
+ arch/arm/mach-at91/cpuidle.c          |   41 +++--
+ arch/arm/mach-davinci/cpuidle.c       |   51 ++++---
+ arch/arm/mach-exynos4/cpuidle.c       |   30 ++--
+ arch/arm/mach-kirkwood/cpuidle.c      |   42 +++---
+ arch/arm/mach-omap2/cpuidle34xx.c     |  133 +++++++++++------
+ arch/sh/kernel/cpu/shmobile/cpuidle.c |   28 ++--
+ drivers/acpi/processor_driver.c       |   20 ---
+ drivers/acpi/processor_idle.c         |  251 +++++++++++++++++++++++++++------
+ drivers/cpuidle/cpuidle.c             |   86 ++++-------
+ drivers/cpuidle/driver.c              |   25 +++
+ drivers/cpuidle/governors/ladder.c    |   41 ++++-
+ drivers/cpuidle/governors/menu.c      |   29 ++--
+ drivers/cpuidle/sysfs.c               |   22 ++-
+ drivers/idle/intel_idle.c             |  130 +++++++++++++----
+ include/acpi/processor.h              |    1 
+ include/linux/cpuidle.h               |   52 ++++---
+ 16 files changed, 650 insertions(+), 332 deletions(-)
+
+
+-- 
+
+-Deepthi
