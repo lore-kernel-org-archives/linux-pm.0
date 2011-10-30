@@ -1,14 +1,17 @@
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 2/2] nfs: make TASK_KILLABLE sleeps attempt to
-	freeze
-Date: Fri, 28 Oct 2011 02:08:32 -0400
-Message-ID: <1319782112-15094-2-git-send-email-jlayton__31905.2590326921$1320296211$gmane$org@redhat.com>
-References: <1319782112-15094-1-git-send-email-jlayton@redhat.com>
+From: David Fries <david@fries.net>
+Subject: Re: hiberante hangs TCP Re: [EXAMPLE CODE] Parasite
+ thread injection and TCP connection hijacking
+Date: Sun, 30 Oct 2011 15:43:18 -0500
+Message-ID: <20111030204318.GZ24999__3779.16442598707$1320296216$gmane$org@spacedout.fries.net>
+References: <20110806121247.GC23937@htj.dyndns.org>
+	<20111030044821.GA23741@spacedout.fries.net>
+	<20111030201618.GA7696@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1319782112-15094-1-git-send-email-jlayton@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <20111030201618.GA7696@google.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,129 +21,65 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: linux-pm@lists.linux-foundation.org, john@calva.com, trond.myklebust@netapp.com, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Allow the TASK_KILLABLE sleeps in NFS layer to respect the freezer. This
-should allow suspend and hibernate events to occur, even when the client
-is looping on an EJUKEBOX or NFS4ERR_DELAY sort of error.
+On Sun, Oct 30, 2011 at 01:16:18PM -0700, Tejun Heo wrote:
+> (cc'ing Rafael and linux-pm)
+> 
+> On Sat, Oct 29, 2011 at 11:48:21PM -0500, David Fries wrote:
+> > I saw the write up on this on lwn.net, pretty creative by the way, and
+> > it got me thinking about a different checkpoint/restart problem I've
+> > been running into.  Specifically in hibernating to disk.  In the
+> > hibernate case active TCP connections hang after resuming, while an
+> > idle TCP connection will continue after the system is back up.  My
+> > observation is the kernel checkpoints itself to memory, enables
+> > devices, writes out that checkpoint image to storage, then powers off.
+> > The problem is if TCP packets are received while writing to storage,
+> > the kernel will continue to queue and ack those TCP packets, but the
+> > running kernel and it's network state is shortly lost.  When the
+> > computer resumes, those TCP byte sequences hang the TCP connection for
+> > an extended period of time while the resumed computer refuses to
+> > acknowledge the data that was received after checkpointing and the now
+> > running kernel knew nothing about, and the other computer tries in
+> > vain to resend any data that hadn't yet been acknowledged, which is
+> > always after the data that was lost, until one of them eventually
+> > gives up.
+> > 
+> > I've been wondering if it was safe or possible to leave any network
+> > interfaces down after the checkpoint, or what the right solution would
+> > be.  I didn't think marking every TCP connection with a ZOMBIE_KERNEL
+> > bit just after the kernel checkpoint (for the kernel is walking dead
+> > and won't remember anything that happens), and then prevent any TCP
+> > acks from being sent for those connections would be the right
+> > solution.  I've taken to unplugging the physical lan cable,
+> > hibernating to disk, and plugging it back in after the system is down,
+> > to avoid the problem.  Any ideas?
+> 
+> Hmmm... sounds like taking down network interfaces before starting
+> hibernation sequence should be enough, which shouldn't be too
+> difficult to implement from userland.  Rafael, what do you think?
 
-Tested-by: John Hughes <john@Calva.COM>
-Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/nfs/inode.c    |    4 +++-
- fs/nfs/nfs3proc.c |    4 +++-
- fs/nfs/nfs4proc.c |   13 +++++++++----
- fs/nfs/proc.c     |    4 +++-
- 4 files changed, 18 insertions(+), 7 deletions(-)
+What I observe is the kernel prints out "Preallocating image memory",
+then when the screen goes blank the network link light also goes out,
+then the screen comes back on with "Compressing and saving" along with
+the link light comes on, until it has been saved and the system shuts
+down.  So the kernel is already brining the network down, it just
+needs to keep it there until the original check pointed kernel is back
+up.
 
-diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-index 4dc6d07..4b91e24 100644
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -38,6 +38,7 @@
- #include <linux/nfs_xdr.h>
- #include <linux/slab.h>
- #include <linux/compat.h>
-+#include <linux/freezer.h>
- 
- #include <asm/system.h>
- #include <asm/uaccess.h>
-@@ -77,7 +78,8 @@ int nfs_wait_bit_killable(void *word)
- {
- 	if (fatal_signal_pending(current))
- 		return -ERESTARTSYS;
--	schedule();
-+	if (!try_to_freeze())
-+		schedule();
- 	return 0;
- }
- 
-diff --git a/fs/nfs/nfs3proc.c b/fs/nfs/nfs3proc.c
-index 85f1690..5354219 100644
---- a/fs/nfs/nfs3proc.c
-+++ b/fs/nfs/nfs3proc.c
-@@ -17,6 +17,7 @@
- #include <linux/nfs_page.h>
- #include <linux/lockd/bind.h>
- #include <linux/nfs_mount.h>
-+#include <linux/freezer.h>
- 
- #include "iostat.h"
- #include "internal.h"
-@@ -32,7 +33,8 @@ nfs3_rpc_wrapper(struct rpc_clnt *clnt, struct rpc_message *msg, int flags)
- 		res = rpc_call_sync(clnt, msg, flags);
- 		if (res != -EJUKEBOX && res != -EKEYEXPIRED)
- 			break;
--		schedule_timeout_killable(NFS_JUKEBOX_RETRY_TIME);
-+		if (!try_to_freeze())
-+			schedule_timeout_killable(NFS_JUKEBOX_RETRY_TIME);
- 		res = -ERESTARTSYS;
- 	} while (!fatal_signal_pending(current));
- 	return res;
-diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-index d2ae413..085eb8a 100644
---- a/fs/nfs/nfs4proc.c
-+++ b/fs/nfs/nfs4proc.c
-@@ -53,6 +53,7 @@
- #include <linux/sunrpc/bc_xprt.h>
- #include <linux/xattr.h>
- #include <linux/utsname.h>
-+#include <linux/freezer.h>
- 
- #include "nfs4_fs.h"
- #include "delegation.h"
-@@ -241,10 +242,12 @@ static int nfs4_delay(struct rpc_clnt *clnt, long *timeout)
- 		*timeout = NFS4_POLL_RETRY_MIN;
- 	if (*timeout > NFS4_POLL_RETRY_MAX)
- 		*timeout = NFS4_POLL_RETRY_MAX;
--	schedule_timeout_killable(*timeout);
-+	if (!try_to_freeze()) {
-+		schedule_timeout_killable(*timeout);
-+		*timeout <<= 1;
-+	}
- 	if (fatal_signal_pending(current))
- 		res = -ERESTARTSYS;
--	*timeout <<= 1;
- 	return res;
- }
- 
-@@ -3951,8 +3954,10 @@ int nfs4_proc_delegreturn(struct inode *inode, struct rpc_cred *cred, const nfs4
- static unsigned long
- nfs4_set_lock_task_retry(unsigned long timeout)
- {
--	schedule_timeout_killable(timeout);
--	timeout <<= 1;
-+	if (!try_to_freeze()) {
-+		schedule_timeout_killable(timeout);
-+		timeout <<= 1;
-+	}
- 	if (timeout > NFS4_LOCK_MAXTIMEOUT)
- 		return NFS4_LOCK_MAXTIMEOUT;
- 	return timeout;
-diff --git a/fs/nfs/proc.c b/fs/nfs/proc.c
-index ac40b85..0b70e85 100644
---- a/fs/nfs/proc.c
-+++ b/fs/nfs/proc.c
-@@ -41,6 +41,7 @@
- #include <linux/nfs_fs.h>
- #include <linux/nfs_page.h>
- #include <linux/lockd/bind.h>
-+#include <linux/freezer.h>
- #include "internal.h"
- 
- #define NFSDBG_FACILITY		NFSDBG_PROC
-@@ -59,7 +60,8 @@ nfs_rpc_wrapper(struct rpc_clnt *clnt, struct rpc_message *msg, int flags)
- 		res = rpc_call_sync(clnt, msg, flags);
- 		if (res != -EKEYEXPIRED)
- 			break;
--		schedule_timeout_killable(NFS_JUKEBOX_RETRY_TIME);
-+		if (!try_to_freeze())
-+			schedule_timeout_killable(NFS_JUKEBOX_RETRY_TIME);
- 		res = -ERESTARTSYS;
- 	} while (!fatal_signal_pending(current));
- 	return res;
+Userspace bringing the network interfaces down is problematic.  As an
+example one of my systems is running hostapd as an access point and
+bridging that to the wired ethernet, that's not a trivial task to
+setup and take down (the Debian ifup can set it up, but I've not
+figured out yet how to get ifdown to take everything down cleanly, and
+I sometimes manually run hostapd if I'm troubleshooting).  Any
+manually added routes would go away, good luck in setting everything
+back up the way it was before for all the different configurations out
+there in userspace.  Add to those issues programs would now have a
+time when networking is down that they wouldn't have otherwise seen.
+
 -- 
-1.7.6.4
+David Fries <david@fries.net>    PGP pub CB1EE8F0
+http://fries.net/~david/
