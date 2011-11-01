@@ -1,15 +1,12 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
-Date: Tue, 1 Nov 2011 13:19:02 -0700
-Message-ID: <20111101201902.GA1763@google.com>
-References: <20111101124759.GA1326@zeus> <20111101164235.GS18855@google.com>
-	<20111101191459.GA2748@zeus>
+Subject: [PATCHSET] cgroup: stable threadgroup during attach &
+	subsys methods consolidation
+Date: Tue,  1 Nov 2011 16:46:23 -0700
+Message-ID: <1320191193-8110-1-git-send-email-tj__20843.4715787464$1320191217$gmane$org@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20111101191459.GA2748@zeus>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,33 +16,124 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Watts <akwatts@ymail.com>
-Cc: linux-pm@lists.linux-foundation.org, dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
+To: paul@paulmenage.org, rjw@sisk.pl, lizf@cn.fujitsu.com
+Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, kamezawa.hiroyu@Jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 01, 2011 at 02:15:16PM -0500, Andrew Watts wrote:
-> On Tue, Nov 01, 2011 at 09:42:35AM -0700, Tejun Heo wrote:
-> > 
-> > Does the following patch fix the problem?
-> > 
-> > Thanks.
-> 
-> Unfortunately, it does not fix the problem.
+Hello,
 
-Odd... how about the following one?  Thanks.
+NOT FOR THIS MERGE WINDOW.
 
-diff --git a/drivers/input/serio/serio.c b/drivers/input/serio/serio.c
-index ba70058..14d560a 100644
---- a/drivers/input/serio/serio.c
-+++ b/drivers/input/serio/serio.c
-@@ -299,9 +299,8 @@ static int serio_queue_event(void *object, struct module *owner,
- 	event->owner = owner;
- 
- 	list_add_tail(&event->node, &serio_event_list);
--	queue_work(system_long_wq, &serio_event_work);
--
- out:
-+	queue_work(system_long_wq, &serio_event_work);
- 	spin_unlock_irqrestore(&serio_event_lock, flags);
- 	return retval;
- }
+This patchset is combination of the following two patchsets.
+
+ [1] cgroup: extend threadgroup locking
+ [2] cgroup: introduce cgroup_taskset and consolidate subsys methods, take#2
+
+Changes from the last postings are
+
+* 0001-cgroup-add-cgroup_root_mutex.patch replaces mutex ordering
+  reversal patch, which Oleg found out to be broken.  Instead, a new
+  sub-mutex cgroup_root_mutex is introduced to break circular
+  dependency.
+
+* Rebased on top of the current linus/master.
+
+* Other minor changes to reflect comments from reviews.
+
+* Reviewed/Acked-by's added.
+
+This patchset addresses the following two issues.
+
+1. cgroup currently only blocks new threads from joining the target
+   threadgroup during migration, and on-going migration could race
+   against exec and exit leading to interesting problems - the
+   symmetry between various attach methods, task exiting during method
+   execution, ->exit() racing against attach methods, migrating task
+   switching basic properties during exec and so on.
+
+   This is resolved by extending threadgroup locking such that it
+   covers all operations which can alter the threadgroup - fork, exit
+   and exec, and update cgroup to take advantage of it.  rwsem read
+   ops are added to exit path but exec is excluded by grabbing the
+   existing cred_guard_mutex from threadgroup locking helper.
+
+   This makes threadgroup locking complete and resolves cgroup issues
+   stemming from the target taskset being unstable.
+
+2. cgroup has grown quite some number of subsys methods.  Some of them
+   are overlapping, inconsistent with each other and called under
+   different conditions depending on whether they're called for a
+   single task or whole process.  Unfortunately, these callbacks are
+   complicated and incomplete at the same time.
+
+   * ->attach_task() is called after migration for task attach but
+     before for process.
+
+   * Ditto for ->pre_attach().
+
+   * ->can_attach_task() is called for every task in the thread group
+     ->but attach_task() skips the ones which don't actually change
+     ->cgroups.
+
+   * Task attach becomes noop if the task isn't actually moving.
+     Process attach is always performed.
+
+   * ->attach_task() doesn't (or at least aren't supposed to) have
+     access to the old cgroup.
+
+   * During cancel, there's no way to access the affected tasks.
+
+   This patchset introduces cgroup_taskset along with some accessors
+   and iterator, updates methods to use it, consolidates usages and
+   drops superflous methods.
+
+ 0001-cgroup-add-cgroup_root_mutex.patch
+ 0002-threadgroup-rename-signal-threadgroup_fork_lock-to-g.patch
+ 0003-threadgroup-extend-threadgroup_lock-to-cover-exit-an.patch
+ 0004-cgroup-always-lock-threadgroup-during-migration.patch
+ 0005-cgroup-subsys-attach_task-should-be-called-after-mig.patch
+ 0006-cgroup-improve-old-cgroup-handling-in-cgroup_attach_.patch
+ 0007-cgroup-introduce-cgroup_taskset-and-use-it-in-subsys.patch
+ 0008-cgroup-don-t-use-subsys-can_attach_task-or-attach_ta.patch
+ 0009-cgroup-cpuset-don-t-use-ss-pre_attach.patch
+ 0010-cgroup-kill-subsys-can_attach_task-pre_attach-and-at.patch
+
+0001-0004 implement stable thread group.
+
+0005-0010 introduce taskset and consolidate subsys callbacks.
+
+This patchset is on top of the current linus/master 839d881074 "Merge
+branch 'i2c-for-linus' of ..." and also available in the following git
+branch.
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git cgroup-cleanup
+
+If this looks okay, I think it would be best to route this through pm
+tree as there are and will be intersecting changes (mostly around
+cgroup_freezer).
+
+diffstat follows.
+
+ Documentation/cgroups/cgroups.txt |   51 ++----
+ block/blk-cgroup.c                |   45 +++--
+ include/linux/cgroup.h            |   31 ++-
+ include/linux/init_task.h         |    9 -
+ include/linux/sched.h             |   62 +++++--
+ kernel/cgroup.c                   |  320 +++++++++++++++++++++++---------------
+ kernel/cgroup_freezer.c           |   27 +--
+ kernel/cpuset.c                   |  105 +++++-------
+ kernel/events/core.c              |   13 -
+ kernel/exit.c                     |   17 +-
+ kernel/fork.c                     |    8 
+ kernel/sched.c                    |   31 ++-
+ mm/memcontrol.c                   |   16 -
+ security/device_cgroup.c          |    7 
+ 14 files changed, 430 insertions(+), 312 deletions(-)
+
+Thanks.
+
+--
+tejun
+
+[1] http://thread.gmane.org/gmane.linux.kernel/1187853
+[2] http://thread.gmane.org/gmane.linux.kernel/1184375
