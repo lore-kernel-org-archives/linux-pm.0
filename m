@@ -1,17 +1,12 @@
-From: David Fries <david@fries.net>
-Subject: Re: hiberante hangs TCP Re: [EXAMPLE CODE] Parasite
- thread injection and TCP connection hijacking
-Date: Sun, 30 Oct 2011 15:43:18 -0500
-Message-ID: <20111030204318.GZ24999__3779.16442598707$1320296216$gmane$org@spacedout.fries.net>
-References: <20110806121247.GC23937@htj.dyndns.org>
-	<20111030044821.GA23741@spacedout.fries.net>
-	<20111030201618.GA7696@google.com>
+From: Andrew Watts <akwatts@ymail.com>
+Subject: [REGRESSION]: hibernate/sleep regression w/ bisection
+Date: Tue, 1 Nov 2011 07:48:19 -0500
+Message-ID: <20111101124759.GA1326__23326.234581373$1320296219$gmane$org@zeus>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20111030201618.GA7696@google.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,65 +16,39 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: tj@kernel.org, linux-pm@lists.linux-foundation.org, dmitry.torokhov@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Oct 30, 2011 at 01:16:18PM -0700, Tejun Heo wrote:
-> (cc'ing Rafael and linux-pm)
-> 
-> On Sat, Oct 29, 2011 at 11:48:21PM -0500, David Fries wrote:
-> > I saw the write up on this on lwn.net, pretty creative by the way, and
-> > it got me thinking about a different checkpoint/restart problem I've
-> > been running into.  Specifically in hibernating to disk.  In the
-> > hibernate case active TCP connections hang after resuming, while an
-> > idle TCP connection will continue after the system is back up.  My
-> > observation is the kernel checkpoints itself to memory, enables
-> > devices, writes out that checkpoint image to storage, then powers off.
-> > The problem is if TCP packets are received while writing to storage,
-> > the kernel will continue to queue and ack those TCP packets, but the
-> > running kernel and it's network state is shortly lost.  When the
-> > computer resumes, those TCP byte sequences hang the TCP connection for
-> > an extended period of time while the resumed computer refuses to
-> > acknowledge the data that was received after checkpointing and the now
-> > running kernel knew nothing about, and the other computer tries in
-> > vain to resend any data that hadn't yet been acknowledged, which is
-> > always after the data that was lost, until one of them eventually
-> > gives up.
-> > 
-> > I've been wondering if it was safe or possible to leave any network
-> > interfaces down after the checkpoint, or what the right solution would
-> > be.  I didn't think marking every TCP connection with a ZOMBIE_KERNEL
-> > bit just after the kernel checkpoint (for the kernel is walking dead
-> > and won't remember anything that happens), and then prevent any TCP
-> > acks from being sent for those connections would be the right
-> > solution.  I've taken to unplugging the physical lan cable,
-> > hibernating to disk, and plugging it back in after the system is down,
-> > to avoid the problem.  Any ideas?
-> 
-> Hmmm... sounds like taking down network interfaces before starting
-> hibernation sequence should be enough, which shouldn't be too
-> difficult to implement from userland.  Rafael, what do you think?
+Hi.
 
-What I observe is the kernel prints out "Preallocating image memory",
-then when the screen goes blank the network link light also goes out,
-then the screen comes back on with "Compressing and saving" along with
-the link light comes on, until it has been saved and the system shuts
-down.  So the kernel is already brining the network down, it just
-needs to keep it there until the original check pointed kernel is back
-up.
+Hibernate/sleep (echo disk/mem > /sys/power/state) has presented problems
+for me starting with 2.6.39. Kernel 2.6.37.6 was the last completely bug-free
+version I used (I skipped the 2.6.38 branch entirely).
 
-Userspace bringing the network interfaces down is problematic.  As an
-example one of my systems is running hostapd as an access point and
-bridging that to the wired ethernet, that's not a trivial task to
-setup and take down (the Debian ifup can set it up, but I've not
-figured out yet how to get ifdown to take everything down cleanly, and
-I sometimes manually run hostapd if I'm troubleshooting).  Any
-manually added routes would go away, good luck in setting everything
-back up the way it was before for all the different configurations out
-there in userspace.  Add to those issues programs would now have a
-time when networking is down that they wouldn't have otherwise seen.
+The symptoms are that upon resume (from sleep/hibernate) there is no video
+nor any keyboard input with the exception of sysrq.
 
--- 
-David Fries <david@fries.net>    PGP pub CB1EE8F0
-http://fries.net/~david/
+It has been a frustrating bug to hunt down because it is not easily
+reproduced; sometimes the bug doesn't pop up until after a long sequence of
+hibernate/sleep cycles.
+
+I successfully bisected the problem to: 8ee294cd9def000.
+
+=======
+Commit: 8ee294cd9def0004887da7f44b80563493b0a097
+Author: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date:   Mon Nov 15 01:39:57 2010 -0800
+Input: serio - convert to common workqueue instead of a thread
+=======
+
+Backing out 8ee294cd9def000 (which requires reversing part of
+1d64b655dc083df also) fixes this particular problem on 2.6.39.4,
+3.0.8, and 3.1.
+
+Unfortunately, in 3.0.8 and 3.1 I have other suspend/hibernate problems
+that I will investigate next and detail in a different regression report.
+
+~ Andy
+
+System specs: P4/Radeon GPU
