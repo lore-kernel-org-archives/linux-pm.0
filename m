@@ -1,16 +1,12 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [PATCH v9 2/4] cpuidle: Remove CPUIDLE_FLAG_IGNORE
-	and dev->prepare()
-Date: Mon, 31 Oct 2011 13:02:27 +0530
-Message-ID: <4EAE4F0B.2050500__36894.1569621258$1320046427$gmane$org@linux.vnet.ibm.com>
-References: <20111028104945.7520.83828.stgit@localhost6.localdomain6>
-	<20111028105020.7520.68014.stgit@localhost6.localdomain6>
-	<4EAABB07.3000305@linux.intel.com>
+From: =?UTF-8?Q?Damien_Th=C3=A9bault?= <damien.thebault@gmail.com>
+Subject: Resume problem,
+	reboot instead of resume after suspend on Zepto Nox A14
+Date: Tue, 1 Nov 2011 13:27:56 +0100
+Message-ID: <CAEcrOvACd=zZ000t2niWM6DFgSuJOHyS1MEibwcA-=ouGfzU6w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4EAABB07.3000305@linux.intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,72 +16,80 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: khilman@ti.com, venki@google.com, ak@linux.intel.com, len.brown@intel.com, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 28 October 2011 07:54 PM, Arjan van de Ven wrote:
-> 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> On 10/28/2011 3:50 AM, Deepthi Dharwar wrote:
->> The cpuidle_device->prepare() mechanism causes updates to the
->> cpuidle_state[].flags, setting and clearing CPUIDLE_FLAG_IGNORE
->> to tell the governor not to chose a state on a per-cpu basis at
->> run-time. State demotion is now handled by the driver and it returns
->> the actual state entered. Hence, this mechanism is not required.
->> Also this removes per-cpu flags from cpuidle_state enabling
->> it to be made global.
->>
-> 
-> having worked on some newer platforms....
-> this one is really still needed. doing this inside the actual states
-> does not work,
-> because if the deepest 3 states are invalid, the same (somewhat
-> expensive) test would have to be done 3 times,
-> and each of the states would have to fail before the 4th one gets chosen.
-> that's just not going to work
-> 
-> (in the state handler you can't know what other state to fall back to,
-> and especially not how to enter such a fallback state)
-> 
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v2.0.17 (MingW32)
-> 
-> iQEcBAEBAgAGBQJOqrsGAAoJEEHdSxh4DVnEu7EH/i5lEJctBAIubJOcZz/tvBFp
-> XYmAe/HqNtSXeHOVsJkTf8y4ppE8487exF7xxMik4GRN0CZNCtkyMezqDVu+eDim
-> O/UUbScsAc5cSY6mkjOFXLFup+mi1nkRUnAbxXEyTMhWwcbfr2OvcuO7l7TmATML
-> hu87P3PVEafEop3q2+uWMc57fFxnNFfEDqRx6N9V+OJKV5dHrRYL4G4E01fYGFLo
-> xTR0IW7nB15L0C29zk9uk/Dqow8SoJZA83c7p7AieP5zdntb6p7noIf03qmdp19f
-> fulwMwembCHivo+pLO+jAMhKD1T6VYoCyiYW0LHrQ2E07fayBhFJCxlazgKFcl0=
-> =FL6o
-> -----END PGP SIGNATURE-----
-> 
-Hi Arjan,
+Hello,
 
-Thanks for the review. 
+I have a problem with suspend and resume on my laptop, I tried to
+solve the problem myself but nothing works.
 
-We retain the dev->prepare() routine and CPUIDLE_FLAG_IGNORE 
-but still allow the dev->enter() to return index ? 
-So by retaining it, transition to the idle states
-would be much quicker in case one more states are invalid.
+I was using kernel 2.6.36 in the past and suspend was working just out
+of the box (however, I had problem with sound and needed a more recent
+kernel for it).
+With the next kernel, suspend was not working anymore, but I thought
+it was just a temporary bug.
+Some month later, I retried with a more recent kernel, and it still
+failed. So I bisected the problem and found that commit
+bd25f4dd6972755579d0ea50d1a5ace2e9b00d1a was the first "bad" commit
+("HID: hiddev: use usb_find_interface, get rid of BKL"). This commit
+made other laptops to fail suspend/resume too, and it was reverted
+later (commit 9c9e54a8df0be48aa359744f412377cc55c3b7d2 "HID: hiddev:
+fix memory corruption due to invalid intfdata").
+However, other changes must have been made elsewhere, and even after
+the revert, suspend didn't work anymore, and it's still not working
+now (3.0.6 currently).
 
-Also to note is that in the newer design, we have split the 
-cpuidle_state structure. One global struct, cpuidle_states[] that
-contains all the state related information including flags, and 
-the other cpuidle_device that contain statistics and other data 
-that are per-cpu basis. 
-So the flags are not per cpu per state basis but 
-maintained globally as per state basis. 
+A lot of things changed in the kernel, and I don't expect to be able
+to solve my problem by looking at the git history, so I'm trying to
+solve the problem by using standard power-management debugging.
 
-So if we have to enable CPUIDLE_FLAG_IGNORE flag in this 
-current new design, then I am thinking if we needed to have this 
-on a per-cpu basis. If so, then flags have to be moved into cpuidle_device 
-struct rather than cpuidle_state struct. 
+First I'll describe the problem:
+ - I launch suspend to ram with any tool (I used to run acpitool -s,
+but echo mem > /sys/power/state or s2ram works too)
+ - The computer goes to sleep, the power led blinks slowly
+ - I push a keyboard key (usually Ctrl), but any key or the power key
+are working too
+ - Instead of resuming successfully, the computer reboots and the BIOS
+runs, like a cold power-up would do.
 
-Is it a good idea to retain these flags as global (part of cpuidle_states) 
-or make it per-cpu basis ? 
+I looked at Documentation/power/basic-pm-debugging.txt and tested
+modes of hibernations:
+ - echo freezer > /sys/power/pm_test
+ - echo mem > /sys/power/state
+This worked just fine, I then tested with "devices", "platform",
+"processors" and "core", and all worked.
+If I use "none" to use the normal suspend, it just reboots to the BIOS.
 
--Thanks
-Deepthi   
+I then followed the instructions at Documentation/power/s2ram.txt and
+used PM_TRACE:
+ - echo 1 > /sys/power/pm_trace
+ - echo mem > /sys/power/state
+On reboot, I can see the "Magic number" line, but no hash is matching.
+
+I then tried suspend to disk, everything works just fine there, it
+works perfectly.
+
+I searched on forums and mailing lists to see which quirks I could try:
+ - "i8042.reset=1": same behaviour
+ - "acpi_sleep=s3_beep": same behaviour, no beep at all
+ - "acpi_sleep=nonvs": same behaviour
+ - "no_console_suspend": same behaviour
+
+The DSDT does not contain any suspect windows-specific switches,
+there's some "windows 2006" checks, but nothing for other versions,
+and as I wrote previously linux was suspending well with the 2.6.36
+kernel.
+I'm not even sure that pressing a key does resume the kernel at all
+(since s3_beep doesn't do any sound and PM_TRACE doesn't show
+anything).
+
+What could I do to debug this further? Is there a list of parameters to try?
+What is the extra step done between "core" and "none" in /sys/power/pm_test?
+
+This is a Zepto Nox A14 laptop, Core 2 Duo, ICH9 chipset, iwlagn wifi,
+... I can provide dmidecode output, ACPI dumps and so on.
+
+Regards,
+-- 
+Damien Thebault
