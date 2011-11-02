@@ -1,14 +1,14 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 10/10] cgroup: kill subsys->can_attach_task(),
-	pre_attach() and attach_task()
-Date: Tue,  1 Nov 2011 16:46:33 -0700
-Message-ID: <1320191193-8110-11-git-send-email-tj__32648.1381584474$1320191286$gmane$org@kernel.org>
-References: <1320191193-8110-1-git-send-email-tj@kernel.org>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
+Date: Tue, 1 Nov 2011 22:46:58 -0700
+Message-ID: <20111102054658.GA29035@core.coreip.homeip.net>
+References: <20111101124759.GA1326@zeus>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1320191193-8110-1-git-send-email-tj@kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20111101124759.GA1326@zeus>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,193 +18,48 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paul@paulmenage.org, rjw@sisk.pl, lizf@cn.fujitsu.com
-Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, oleg@redhat.com, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, kamezawa.hiroyu@Jp.fujitsu.com
+To: Andrew Watts <akwatts@ymail.com>
+Cc: tj@kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-These three methods are no longer used.  Kill them.
+Hi Andrew,
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Acked-by: Paul Menage <paul@paulmenage.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
----
- Documentation/cgroups/cgroups.txt |   20 --------------
- include/linux/cgroup.h            |    3 --
- kernel/cgroup.c                   |   53 +++---------------------------------
- 3 files changed, 5 insertions(+), 71 deletions(-)
+On Tue, Nov 01, 2011 at 07:48:19AM -0500, Andrew Watts wrote:
+> Hi.
+> 
+> Hibernate/sleep (echo disk/mem > /sys/power/state) has presented problems
+> for me starting with 2.6.39. Kernel 2.6.37.6 was the last completely bug-free
+> version I used (I skipped the 2.6.38 branch entirely).
+> 
+> The symptoms are that upon resume (from sleep/hibernate) there is no video
+> nor any keyboard input with the exception of sysrq.
 
-diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
-index bf5d6c9..eb1b609 100644
---- a/Documentation/cgroups/cgroups.txt
-+++ b/Documentation/cgroups/cgroups.txt
-@@ -615,13 +615,6 @@ fork. If this method returns 0 (success) then this should remain valid
- while the caller holds cgroup_mutex and it is ensured that either
- attach() or cancel_attach() will be called in future.
- 
--int can_attach_task(struct cgroup *cgrp, struct task_struct *tsk);
--(cgroup_mutex held by caller)
--
--As can_attach, but for operations that must be run once per task to be
--attached (possibly many when using cgroup_attach_proc). Called after
--can_attach.
--
- void cancel_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 		   struct cgroup_taskset *tset)
- (cgroup_mutex held by caller)
-@@ -632,12 +625,6 @@ function, so that the subsystem can implement a rollback. If not, not necessary.
- This will be called only about subsystems whose can_attach() operation have
- succeeded. The parameters are identical to can_attach().
- 
--void pre_attach(struct cgroup *cgrp);
--(cgroup_mutex held by caller)
--
--For any non-per-thread attachment work that needs to happen before
--attach_task. Needed by cpuset.
--
- void attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 	    struct cgroup_taskset *tset)
- (cgroup_mutex held by caller)
-@@ -646,13 +633,6 @@ Called after the task has been attached to the cgroup, to allow any
- post-attachment activity that requires memory allocations or blocking.
- The parameters are identical to can_attach().
- 
--void attach_task(struct cgroup *cgrp, struct task_struct *tsk);
--(cgroup_mutex held by caller)
--
--As attach, but for operations that must be run once per task to be attached,
--like can_attach_task. Called before attach. Currently does not support any
--subsystem that might need the old_cgrp for every thread in the group.
--
- void fork(struct cgroup_subsy *ss, struct task_struct *task)
- 
- Called when a task is forked into a cgroup.
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index 2470c8e..5659d37 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -490,11 +490,8 @@ struct cgroup_subsys {
- 	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
- 	int (*can_attach)(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 			  struct cgroup_taskset *tset);
--	int (*can_attach_task)(struct cgroup *cgrp, struct task_struct *tsk);
- 	void (*cancel_attach)(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 			      struct cgroup_taskset *tset);
--	void (*pre_attach)(struct cgroup *cgrp);
--	void (*attach_task)(struct cgroup *cgrp, struct task_struct *tsk);
- 	void (*attach)(struct cgroup_subsys *ss, struct cgroup *cgrp,
- 		       struct cgroup_taskset *tset);
- 	void (*fork)(struct cgroup_subsys *ss, struct task_struct *task);
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 0bb7927..d2b3697 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1944,13 +1944,6 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
- 				goto out;
- 			}
- 		}
--		if (ss->can_attach_task) {
--			retval = ss->can_attach_task(cgrp, tsk);
--			if (retval) {
--				failed_ss = ss;
--				goto out;
--			}
--		}
- 	}
- 
- 	retval = cgroup_task_migrate(cgrp, oldcgrp, tsk, false);
-@@ -1958,10 +1951,6 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
- 		goto out;
- 
- 	for_each_subsys(root, ss) {
--		if (ss->pre_attach)
--			ss->pre_attach(cgrp);
--		if (ss->attach_task)
--			ss->attach_task(cgrp, tsk);
- 		if (ss->attach)
- 			ss->attach(ss, cgrp, &tset);
- 	}
-@@ -2093,7 +2082,6 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
- {
- 	int retval, i, group_size, nr_migrating_tasks;
- 	struct cgroup_subsys *ss, *failed_ss = NULL;
--	bool cancel_failed_ss = false;
- 	/* guaranteed to be initialized later, but the compiler needs this */
- 	struct css_set *oldcg;
- 	struct cgroupfs_root *root = cgrp->root;
-@@ -2188,21 +2176,6 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
- 				goto out_cancel_attach;
- 			}
- 		}
--		/* a callback to be run on every thread in the threadgroup. */
--		if (ss->can_attach_task) {
--			/* run on each task in the threadgroup. */
--			for (i = 0; i < group_size; i++) {
--				tc = flex_array_get(group, i);
--				if (tc->cgrp == cgrp)
--					continue;
--				retval = ss->can_attach_task(cgrp, tc->task);
--				if (retval) {
--					failed_ss = ss;
--					cancel_failed_ss = true;
--					goto out_cancel_attach;
--				}
--			}
--		}
- 	}
- 
- 	/*
-@@ -2234,15 +2207,10 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
- 	}
- 
- 	/*
--	 * step 3: now that we're guaranteed success wrt the css_sets, proceed
--	 * to move all tasks to the new cgroup, calling ss->attach_task for each
--	 * one along the way. there are no failure cases after here, so this is
--	 * the commit point.
-+	 * step 3: now that we're guaranteed success wrt the css_sets,
-+	 * proceed to move all tasks to the new cgroup.  There are no
-+	 * failure cases after here, so this is the commit point.
- 	 */
--	for_each_subsys(root, ss) {
--		if (ss->pre_attach)
--			ss->pre_attach(cgrp);
--	}
- 	for (i = 0; i < group_size; i++) {
- 		tc = flex_array_get(group, i);
- 		/* leave current thread as it is if it's already there */
-@@ -2251,19 +2219,11 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
- 
- 		retval = cgroup_task_migrate(cgrp, tc->cgrp, tc->task, true);
- 		BUG_ON(retval != 0);
--
--		/* attach each task to each subsystem */
--		for_each_subsys(root, ss) {
--			if (ss->attach_task)
--				ss->attach_task(cgrp, tc->task);
--		}
- 	}
- 	/* nothing is sensitive to fork() after this point. */
- 
- 	/*
--	 * step 4: do expensive, non-thread-specific subsystem callbacks.
--	 * TODO: if ever a subsystem needs to know the oldcgrp for each task
--	 * being moved, this call will need to be reworked to communicate that.
-+	 * step 4: do subsystem attach callbacks.
- 	 */
- 	for_each_subsys(root, ss) {
- 		if (ss->attach)
-@@ -2287,11 +2247,8 @@ out_cancel_attach:
- 	/* same deal as in cgroup_attach_task */
- 	if (retval) {
- 		for_each_subsys(root, ss) {
--			if (ss == failed_ss) {
--				if (cancel_failed_ss && ss->cancel_attach)
--					ss->cancel_attach(ss, cgrp, &tset);
-+			if (ss == failed_ss)
- 				break;
--			}
- 			if (ss->cancel_attach)
- 				ss->cancel_attach(ss, cgrp, &tset);
- 		}
+If SysRq is working that means that i8042, atkbd and input core are
+working properly.
+
+> 
+> It has been a frustrating bug to hunt down because it is not easily
+> reproduced; sometimes the bug doesn't pop up until after a long sequence of
+> hibernate/sleep cycles.
+> 
+> I successfully bisected the problem to: 8ee294cd9def000.
+> 
+> =======
+> Commit: 8ee294cd9def0004887da7f44b80563493b0a097
+> Author: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Date:   Mon Nov 15 01:39:57 2010 -0800
+> Input: serio - convert to common workqueue instead of a thread
+> =======
+> 
+> Backing out 8ee294cd9def000 (which requires reversing part of
+> 1d64b655dc083df also) fixes this particular problem on 2.6.39.4,
+> 3.0.8, and 3.1.
+
+I am not sure how this commit could cause your "no video" issue...
+Are you hibernating from text console or X? Can you try plugging in USB
+keyboard and see if you are getting input? What about ssh into the box?
+
+Thanks.
+
 -- 
-1.7.3.1
+Dmitry
