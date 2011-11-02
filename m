@@ -1,18 +1,16 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: hiberante hangs TCP Re: [EXAMPLE CODE] Parasite
- thread injection and TCP connection hijacking
-Date: Wed, 2 Nov 2011 08:10:39 -0700
-Message-ID: <20111102151039.GA12543@dhcp-172-17-108-109.mtv.corp.google.com>
-References: <20110806121247.GC23937@htj.dyndns.org>
-	<20111030044821.GA23741@spacedout.fries.net>
-	<20111030201618.GA7696@google.com>
-	<CAJ0PZbSRX6Rqn5NnnMkVGrPovtSuc2NWasysOYnjr3j9rON1VQ@mail.gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
+Date: Wed, 2 Nov 2011 09:31:09 -0700
+Message-ID: <20111102163109.GA29430@core.coreip.homeip.net>
+References: <20111101124759.GA1326@zeus>
+	<20111102054658.GA29035@core.coreip.homeip.net>
+	<20111102160208.GA6657@zeus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <CAJ0PZbSRX6Rqn5NnnMkVGrPovtSuc2NWasysOYnjr3j9rON1VQ@mail.gmail.com>
+In-Reply-To: <20111102160208.GA6657@zeus>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -22,34 +20,30 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, David Fries <david@fries.net>, linux-kernel@vger.kernel.org
+To: Andrew Watts <akwatts@ymail.com>
+Cc: tj@kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+On Wed, Nov 02, 2011 at 11:02:09AM -0500, Andrew Watts wrote:
+> On Tue, Nov 01, 2011 at 10:46:58PM -0700, Dmitry Torokhov wrote:
+> > 
+> > Are you hibernating from text console or X? Can you try plugging in USB
+> > keyboard and see if you are getting input? What about ssh into the box?
+> 
+> Forgot to answer a few of your questions. Plugging in a USB keyboard does
+> not help.
 
-On Wed, Nov 02, 2011 at 06:44:31PM +0900, MyungJoo Ham wrote:
-> > Hmmm... sounds like taking down network interfaces before starting
-> > hibernation sequence should be enough, which shouldn't be too
-> > difficult to implement from userland. =A0Rafael, what do you think?
-> >
-> > Thanks.
-> =
+OK, it looks like you do have input, what you do not have is X
+functioning.
 
-> Um... it seems that the "thaw" callbacks of network interfaces or TCP
-> should do something on this.
-> =
+I am not sure why radeon reports lockup with that patch; serio uses
+system_long_wq to schedule its long-playing works and the only other
+user of system_long_wq seems to be sata, but then concurrency management
+should take care of them sharing the workqueue.
 
-> Probably, the "thaw" callbacks should make sure that the TCP
-> connections are closed?
-
-I don't think it's a good idea to diddle with TCP connections from
-that layer.  From what I understand, it seem all we need is plugging
-tx/rx while preparing for hibernation.  That shouldn't be too
-difficult.
+Tejun, do you have any ideas here?
 
 Thanks.
 
--- =
-
-tejun
+-- 
+Dmitry
