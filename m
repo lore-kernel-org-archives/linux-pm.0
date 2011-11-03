@@ -1,14 +1,13 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] CPU hotplug,
-	PM: Remove unused symbol 'suspend_cpu_hotplug'
-Date: Thu, 3 Nov 2011 01:19:14 +0100
-Message-ID: <201111030119.14542.rjw__6909.29746856472$1320279417$gmane$org@sisk.pl>
-References: <20111028134737.18461.60249.stgit@srivatsabhat.in.ibm.com>
+Subject: Re: PM / OPP: Fix build when CONFIG_PM_OPP is not set
+Date: Thu, 3 Nov 2011 01:21:42 +0100
+Message-ID: <201111030121.42432.rjw@sisk.pl>
+References: <20111102170055.GI31337@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20111028134737.18461.60249.stgit@srivatsabhat.in.ibm.com>
+In-Reply-To: <20111102170055.GI31337@atomide.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,13 +17,27 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: mingo@elte.hu, amwang@redhat.com, linux-pm@vger.kernel.org, gregkh@suse.de, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl
+To: Tony Lindgren <tony@atomide.com>
+Cc: Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 28, 2011, Srivatsa S. Bhat wrote:
+On Wednesday, November 02, 2011, Tony Lindgren wrote:
+> Commit 03ca370fbf7b76d6d002380dbdc2cdc2319f9c80 (PM / OPP: Add
+> OPP availability change notifier) does not compile if CONFIG_PM_OPP
+> is not set:
 > 
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> arch/arm/plat-omap/omap-pm-noop.o: In function `opp_get_notifier':
+> include/linux/opp.h:103: multiple definition of `opp_get_notifier'
+> include/linux/opp.h:103: first defined here
+> 
+> Also fix incorrect comment.
+> 
+> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Mike Turquette <mturquette@ti.com>
+> Cc: Kevin Hilman <khilman@ti.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 
 Applied to linux-pm/linux-next.
 
@@ -34,31 +47,23 @@ Rafael
 
 > ---
 > 
->  include/linux/cpu.h |    4 ----
->  1 files changed, 0 insertions(+), 4 deletions(-)
+> I'm seeing this with omap1_defconfig at least.
 > 
-> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-> index b1a635a..6cb60fd 100644
-> --- a/include/linux/cpu.h
-> +++ b/include/linux/cpu.h
-> @@ -196,13 +196,9 @@ static inline void cpu_hotplug_driver_unlock(void)
->  #endif		/* CONFIG_HOTPLUG_CPU */
+> --- a/include/linux/opp.h
+> +++ b/include/linux/opp.h
+> @@ -97,11 +97,11 @@ static inline int opp_disable(struct device *dev, unsigned long freq)
+>  	return 0;
+>  }
 >  
->  #ifdef CONFIG_PM_SLEEP_SMP
-> -extern int suspend_cpu_hotplug;
-> -
->  extern int disable_nonboot_cpus(void);
->  extern void enable_nonboot_cpus(void);
->  #else /* !CONFIG_PM_SLEEP_SMP */
-> -#define suspend_cpu_hotplug	0
-> -
->  static inline int disable_nonboot_cpus(void) { return 0; }
->  static inline void enable_nonboot_cpus(void) {}
->  #endif /* !CONFIG_PM_SLEEP_SMP */
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> -struct srcu_notifier_head *opp_get_notifier(struct device *dev)
+> +static inline struct srcu_notifier_head *opp_get_notifier(struct device *dev)
+>  {
+>  	return ERR_PTR(-EINVAL);
+>  }
+> -#endif		/* CONFIG_PM */
+> +#endif		/* CONFIG_PM_OPP */
+>  
+>  #if defined(CONFIG_CPU_FREQ) && defined(CONFIG_PM_OPP)
+>  int opp_init_cpufreq_table(struct device *dev,
 > 
 > 
