@@ -1,14 +1,14 @@
 From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH 1/3 v3] ARM: EXYNOS4: Support for generic I/O
- power domains on EXYNOS4210/4212
-Date: Thu, 03 Nov 2011 11:09:00 +0900
-Message-ID: <013301cc99cd$8d5a6a00$a80f3e00$%kim@samsung.com>
-References: <4EA690EF.4000703@samsung.com>
+Subject: Re: [PATCH 3/3 v3] ARM: EXYNOS4: Delete the power domain
+ code depend on samsung SoC
+Date: Thu, 03 Nov 2011 11:09:08 +0900
+Message-ID: <013401cc99cd$92218f00$b664ad00$%kim@samsung.com>
+References: <4EA690F4.6040608@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <4EA690EF.4000703@samsung.com>
+In-reply-to: <4EA690F4.6040608@samsung.com>
 Content-language: ko
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -25,409 +25,370 @@ List-Id: linux-pm@vger.kernel.org
 
 Chanwoo Choi wrote:
 > 
-> This patch support the generic power domains to control power domain
-> of EXYNOS4.
-> 
 > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 > ---
->  arch/arm/mach-exynos4/Kconfig                   |    2 +
->  arch/arm/mach-exynos4/Makefile                  |    1 +
->  arch/arm/mach-exynos4/include/mach/pm-exynos4.h |   50 +++++
->  arch/arm/mach-exynos4/include/mach/regs-clock.h |    9 +
->  arch/arm/mach-exynos4/include/mach/regs-pmu.h   |    2 +
->  arch/arm/mach-exynos4/pm-exynos4.c              |  237
-> +++++++++++++++++++++++
->  6 files changed, 301 insertions(+), 0 deletions(-)
->  create mode 100644 arch/arm/mach-exynos4/include/mach/pm-exynos4.h
->  create mode 100644 arch/arm/mach-exynos4/pm-exynos4.c
+>  arch/arm/mach-exynos4/Kconfig           |    5 -
+>  arch/arm/mach-exynos4/Makefile          |    1 -
+>  arch/arm/mach-exynos4/dev-pd.c          |  139 -------------------------------
+>  arch/arm/plat-samsung/Kconfig           |    8 --
+>  arch/arm/plat-samsung/Makefile          |    4 -
+>  arch/arm/plat-samsung/include/plat/pd.h |   30 -------
+>  arch/arm/plat-samsung/pd.c              |   95 ---------------------
+>  7 files changed, 0 insertions(+), 282 deletions(-)
+>  delete mode 100644 arch/arm/mach-exynos4/dev-pd.c
+>  delete mode 100644 arch/arm/plat-samsung/include/plat/pd.h
+>  delete mode 100644 arch/arm/plat-samsung/pd.c
 > 
 > diff --git a/arch/arm/mach-exynos4/Kconfig b/arch/arm/mach-exynos4/Kconfig
-> index 4924838..d042e53 100644
+> index d042e53..3c16ab0 100644
 > --- a/arch/arm/mach-exynos4/Kconfig
 > +++ b/arch/arm/mach-exynos4/Kconfig
-> @@ -14,6 +14,7 @@ config CPU_EXYNOS4210
->  	select SAMSUNG_DMADEV
->  	select S5P_PM if PM
->  	select S5P_SLEEP if PM
-> +	select PM_GENERIC_DOMAINS if PM
+> @@ -47,11 +47,6 @@ config EXYNOS4_SETUP_FIMD0
 >  	help
->  	  Enable EXYNOS4210 CPU support
+>  	  Common setup code for FIMD0.
 > 
-> @@ -21,6 +22,7 @@ config SOC_EXYNOS4212
+> -config EXYNOS4_DEV_PD
+> -	bool
+> -	help
+> -	  Compile in platform device definitions for Power Domain
+> -
+>  config EXYNOS4_DEV_SYSMMU
 >  	bool
->  	select S5P_PM if PM
->  	select S5P_SLEEP if PM
-> +	select PM_GENERIC_DOMAINS if PM
 >  	help
->  	  Enable EXYNOS4212 SoC support
-> 
 > diff --git a/arch/arm/mach-exynos4/Makefile b/arch/arm/mach-exynos4/Makefile
-> index 2bb18f4..d73a4e7 100644
+> index d73a4e7..2cad115 100644
 > --- a/arch/arm/mach-exynos4/Makefile
 > +++ b/arch/arm/mach-exynos4/Makefile
-> @@ -14,6 +14,7 @@ obj-				:=
+> @@ -42,7 +42,6 @@ obj-$(CONFIG_MACH_SMDK4412)		+= mach-
+> smdk4x12.o
 > 
->  obj-$(CONFIG_ARCH_EXYNOS4)	+= cpu.o init.o clock.o irq-combiner.o
->  obj-$(CONFIG_ARCH_EXYNOS4)	+= setup-i2c0.o irq-eint.o dma.o pmu.o
-> +obj-$(CONFIG_ARCH_EXYNOS4)	+= pm-exynos4.o
->  obj-$(CONFIG_CPU_EXYNOS4210)	+= clock-exynos4210.o
->  obj-$(CONFIG_SOC_EXYNOS4212)	+= clock-exynos4212.o
->  obj-$(CONFIG_PM)		+= pm.o
-> diff --git a/arch/arm/mach-exynos4/include/mach/pm-exynos4.h b/arch/arm/mach-
-> exynos4/include/mach/pm-exynos4.h
-> new file mode 100644
-> index 0000000..31f6b75
-> --- /dev/null
-> +++ b/arch/arm/mach-exynos4/include/mach/pm-exynos4.h
-> @@ -0,0 +1,50 @@
-> +/* linux/arch/arm/mach-exynos4/include/mach/pm-exynos4.h
-> + *
-> + * EXYNOS4 series Power management support
-> + *
-> + * Copyright (c) 2011 Samsung Electronics Co., Ltd.
-> + *		http://www.samsung.com
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#ifndef PM_EXYNOS4_H
-> +#define PM_EXYNOS4_H
-> +
-> +#include <linux/pm_domain.h>
-> +
-> +#ifdef CONFIG_PM
-> +struct exynos4_pm_domain {
-> +	struct generic_pm_domain genpd;
-> +	const char *name;
-> +	void __iomem *base;
-> +	u32 clkgate_mask;
-> +};
-> +
-> +extern int exynos4_add_device_to_domain(struct exynos4_pm_domain
-> *exynos4_pd,
-> +				struct platform_device *pdev);
-> +extern void exynos4210_init_pm_domains(void);
-> +extern void exynos4x12_init_pm_domains(void);
-> +
-> +/* Common power domain for EXYNOS4 series */
-> +extern struct exynos4_pm_domain exynos4_pd_mfc;
-> +extern struct exynos4_pm_domain exynos4_pd_g3d;
-> +extern struct exynos4_pm_domain exynos4_pd_lcd0;
-> +extern struct exynos4_pm_domain exynos4_pd_tv;
-> +extern struct exynos4_pm_domain exynos4_pd_cam;
-> +extern struct exynos4_pm_domain exynos4_pd_gps;
-> +
-> +/* Only for EXYNOS4210 */
-> +extern struct exynos4_pm_domain exynos4_pd_lcd1;
-> +
-> +/* Only for EXYNOS4x12 */
-> +extern struct exynos4_pm_domain exynos4_pd_isp;
-> +
-> +#else
-> +#define exynos4_add_device_to_domain(exynos4_pd, pdev) { }
-> +#define exynos4210_init_pm_domains() { }
-> +#define exynos4x12_init_pm_domains() { }
-> +#endif	/* CONFIG_PM */
-> +#endif	/* PM_EXYNOS4_H */
-> diff --git a/arch/arm/mach-exynos4/include/mach/regs-clock.h b/arch/arm/mach-
-> exynos4/include/mach/regs-clock.h
-> index 6c37ebe..c519ade 100644
-> --- a/arch/arm/mach-exynos4/include/mach/regs-clock.h
-> +++ b/arch/arm/mach-exynos4/include/mach/regs-clock.h
-> @@ -194,6 +194,13 @@
->  #define S5P_CLKDIV_BUS_GPLR_SHIFT	(4)
->  #define S5P_CLKDIV_BUS_GPLR_MASK	(0x7 <<
-> S5P_CLKDIV_BUS_GPLR_SHIFT)
+>  obj-y					+= dev-audio.o
+>  obj-$(CONFIG_EXYNOS4_DEV_AHCI)		+= dev-ahci.o
+> -obj-$(CONFIG_EXYNOS4_DEV_PD)		+= dev-pd.o
+>  obj-$(CONFIG_EXYNOS4_DEV_SYSMMU)	+= dev-sysmmu.o
+>  obj-$(CONFIG_EXYNOS4_DEV_DWMCI)	+= dev-dwmci.o
 > 
-> +#define S5P_CLKGATE_BLOCK_CAM		(1 << 0)
-> +#define S5P_CLKGATE_BLOCK_TV		(1 << 1)
-> +#define S5P_CLKGATE_BLOCK_MFC		(1 << 2)
-> +#define S5P_CLKGATE_BLOCK_G3D		(1 << 3)
-> +#define S5P_CLKGATE_BLOCK_LCD0		(1 << 4)
-> +#define S5P_CLKGATE_BLOCK_GPS		(1 << 7)
-> +
->  /* Only for EXYNOS4210 */
+> diff --git a/arch/arm/mach-exynos4/dev-pd.c b/arch/arm/mach-exynos4/dev-pd.c
+> deleted file mode 100644
+> index 3273f25..0000000
+> --- a/arch/arm/mach-exynos4/dev-pd.c
+> +++ /dev/null
+> @@ -1,139 +0,0 @@
+> -/* linux/arch/arm/mach-exynos4/dev-pd.c
+> - *
+> - * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
+> - *		http://www.samsung.com
+> - *
+> - * EXYNOS4 - Power Domain support
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License version 2 as
+> - * published by the Free Software Foundation.
+> -*/
+> -
+> -#include <linux/io.h>
+> -#include <linux/kernel.h>
+> -#include <linux/platform_device.h>
+> -#include <linux/delay.h>
+> -
+> -#include <mach/regs-pmu.h>
+> -
+> -#include <plat/pd.h>
+> -
+> -static int exynos4_pd_enable(struct device *dev)
+> -{
+> -	struct samsung_pd_info *pdata =  dev->platform_data;
+> -	u32 timeout;
+> -
+> -	__raw_writel(S5P_INT_LOCAL_PWR_EN, pdata->base);
+> -
+> -	/* Wait max 1ms */
+> -	timeout = 10;
+> -	while ((__raw_readl(pdata->base + 0x4) & S5P_INT_LOCAL_PWR_EN)
+> -		!= S5P_INT_LOCAL_PWR_EN) {
+> -		if (timeout == 0) {
+> -			printk(KERN_ERR "Power domain %s enable failed.\n",
+> -				dev_name(dev));
+> -			return -ETIMEDOUT;
+> -		}
+> -		timeout--;
+> -		udelay(100);
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -static int exynos4_pd_disable(struct device *dev)
+> -{
+> -	struct samsung_pd_info *pdata =  dev->platform_data;
+> -	u32 timeout;
+> -
+> -	__raw_writel(0, pdata->base);
+> -
+> -	/* Wait max 1ms */
+> -	timeout = 10;
+> -	while (__raw_readl(pdata->base + 0x4) & S5P_INT_LOCAL_PWR_EN) {
+> -		if (timeout == 0) {
+> -			printk(KERN_ERR "Power domain %s disable failed.\n",
+> -				dev_name(dev));
+> -			return -ETIMEDOUT;
+> -		}
+> -		timeout--;
+> -		udelay(100);
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -struct platform_device exynos4_device_pd[] = {
+> -	{
+> -		.name		= "samsung-pd",
+> -		.id		= 0,
+> -		.dev = {
+> -			.platform_data = &(struct samsung_pd_info) {
+> -				.enable		= exynos4_pd_enable,
+> -				.disable	= exynos4_pd_disable,
+> -				.base		= S5P_PMU_MFC_CONF,
+> -			},
+> -		},
+> -	}, {
+> -		.name		= "samsung-pd",
+> -		.id		= 1,
+> -		.dev = {
+> -			.platform_data = &(struct samsung_pd_info) {
+> -				.enable		= exynos4_pd_enable,
+> -				.disable	= exynos4_pd_disable,
+> -				.base		= S5P_PMU_G3D_CONF,
+> -			},
+> -		},
+> -	}, {
+> -		.name		= "samsung-pd",
+> -		.id		= 2,
+> -		.dev = {
+> -			.platform_data = &(struct samsung_pd_info) {
+> -				.enable		= exynos4_pd_enable,
+> -				.disable	= exynos4_pd_disable,
+> -				.base		= S5P_PMU_LCD0_CONF,
+> -			},
+> -		},
+> -	}, {
+> -		.name		= "samsung-pd",
+> -		.id		= 3,
+> -		.dev = {
+> -			.platform_data = &(struct samsung_pd_info) {
+> -				.enable		= exynos4_pd_enable,
+> -				.disable	= exynos4_pd_disable,
+> -				.base		= S5P_PMU_LCD1_CONF,
+> -			},
+> -		},
+> -	}, {
+> -		.name		= "samsung-pd",
+> -		.id		= 4,
+> -		.dev = {
+> -			.platform_data = &(struct samsung_pd_info) {
+> -				.enable		= exynos4_pd_enable,
+> -				.disable	= exynos4_pd_disable,
+> -				.base		= S5P_PMU_TV_CONF,
+> -			},
+> -		},
+> -	}, {
+> -		.name		= "samsung-pd",
+> -		.id		= 5,
+> -		.dev = {
+> -			.platform_data = &(struct samsung_pd_info) {
+> -				.enable		= exynos4_pd_enable,
+> -				.disable	= exynos4_pd_disable,
+> -				.base		= S5P_PMU_CAM_CONF,
+> -			},
+> -		},
+> -	}, {
+> -		.name		= "samsung-pd",
+> -		.id		= 6,
+> -		.dev = {
+> -			.platform_data = &(struct samsung_pd_info) {
+> -				.enable		= exynos4_pd_enable,
+> -				.disable	= exynos4_pd_disable,
+> -				.base		= S5P_PMU_GPS_CONF,
+> -			},
+> -		},
+> -	},
+> -};
+> diff --git a/arch/arm/plat-samsung/Kconfig b/arch/arm/plat-samsung/Kconfig
+> index 74714c1..f29c443 100644
+> --- a/arch/arm/plat-samsung/Kconfig
+> +++ b/arch/arm/plat-samsung/Kconfig
+> @@ -335,12 +335,4 @@ config SAMSUNG_WAKEMASK
+>  	  and above. This code allows a set of interrupt to wakeup-mask
+>  	  mappings. See <plat/wakeup-mask.h>
 > 
->  #define S5P_CLKSRC_LCD1			S5P_CLKREG(0x0C238)
-> @@ -201,6 +208,8 @@
->  #define S5P_CLKDIV_LCD1			S5P_CLKREG(0x0C538)
->  #define S5P_CLKGATE_IP_LCD1		S5P_CLKREG(0x0C938)
+> -comment "Power Domain"
+> -
+> -config SAMSUNG_PD
+> -	bool "Samsung Power Domain"
+> -	depends on PM_RUNTIME
+> -	help
+> -	  Say Y here if you want to control Power Domain by Runtime PM.
+> -
+>  endif
+> diff --git a/arch/arm/plat-samsung/Makefile b/arch/arm/plat-samsung/Makefile
+> index a524fab..bd60e56 100644
+> --- a/arch/arm/plat-samsung/Makefile
+> +++ b/arch/arm/plat-samsung/Makefile
+> @@ -48,10 +48,6 @@ obj-$(CONFIG_SAMSUNG_PM_CHECK)	+= pm-
+> check.o
 > 
-> +#define S5P_CLKGATE_BLOCK_LCD1		(1 << 5)
-> +
->  /* Compatibility defines and inclusion */
+>  obj-$(CONFIG_SAMSUNG_WAKEMASK)	+= wakeup-mask.o
 > 
->  #include <mach/regs-pmu.h>
-> diff --git a/arch/arm/mach-exynos4/include/mach/regs-pmu.h b/arch/arm/mach-
-> exynos4/include/mach/regs-pmu.h
-> index 4fff8e9..da397d5 100644
-> --- a/arch/arm/mach-exynos4/include/mach/regs-pmu.h
-> +++ b/arch/arm/mach-exynos4/include/mach/regs-pmu.h
-> @@ -217,4 +217,6 @@
->  #define S5P_SECSS_MEM_OPTION
-> 	S5P_PMUREG(0x2EC8)
->  #define S5P_ROTATOR_MEM_OPTION
-> 	S5P_PMUREG(0x2F48)
+> -# PD support
+> -
+> -obj-$(CONFIG_SAMSUNG_PD)	+= pd.o
+> -
+>  # PWM support
 > 
-> +#define S5P_PMU_ISP_CONF			S5P_PMUREG(0x3CA0)
-> +
->  #endif /* __ASM_ARCH_REGS_PMU_H */
-> diff --git a/arch/arm/mach-exynos4/pm-exynos4.c b/arch/arm/mach-exynos4/pm-
-> exynos4.c
-> new file mode 100644
-> index 0000000..c35952b
-> --- /dev/null
-> +++ b/arch/arm/mach-exynos4/pm-exynos4.c
-> @@ -0,0 +1,237 @@
-> +/* linux/arch/arm/mach-exynos4/pm-exynos4.c
-> + *
-> + * EXYNOS4 series Power management support
-> + *
-> + * Copyright (c) 2011 Samsung Electronics Co., Ltd.
-> + *		http://www.samsung.com
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +#include <linux/delay.h>
-> +#include <linux/err.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_domain.h>
-> +#include <linux/io.h>
-> +
-> +#include <mach/regs-clock.h>
-> +#include <mach/pm-exynos4.h>
-> +
-> +#ifdef CONFIG_PM
-> +/*
-> + * Define function to support generic power domain
-> + */
-> +
-> +static DEFINE_SPINLOCK(clkgate_block_lock);
-> +
-> +static struct exynos4_pm_domain *to_exynos4_pd(struct generic_pm_domain
-> *pd)
-> +{
-> +	return container_of(pd, struct exynos4_pm_domain, genpd);
-> +}
-> +
-> +static int __exynos4_pd_power_down(struct generic_pm_domain *genpd)
-> +{
-> +	struct exynos4_pm_domain *exynos4_pd = to_exynos4_pd(genpd);
-> +	u32 timeout;
-> +
-> +	/* Disable the power of power-domain */
-> +	__raw_writel(0, exynos4_pd->base);
-> +
-> +	/* Wait max 1ms */
-> +	timeout = 10;
-> +	while (__raw_readl(exynos4_pd->base + 0x4) &
-> S5P_INT_LOCAL_PWR_EN) {
-> +		if (timeout == 0) {
-> +			pr_err("Power domain %s disable failed.\n",
-> exynos4_pd->name);
-> +			return -ETIMEDOUT;
-> +		}
-> +		timeout--;
-> +		usleep_range(90, 110);
-> +	}
-> +
-> +	/* Configure the clock-gating control register for block to turn off */
-> +	if (exynos4_pd->clkgate_mask) {
-> +		unsigned long flags;
-> +		u32 reg;
-> +
-> +		spin_lock_irqsave(&clkgate_block_lock, flags);
-> +		reg = __raw_readl(S5P_CLKGATE_BLOCK);
-> +		reg &= ~exynos4_pd->clkgate_mask;
-> +		__raw_writel(reg, S5P_CLKGATE_BLOCK);
-> +		spin_unlock_irqrestore(&clkgate_block_lock, flags);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int __exynos4_pd_power_up(struct generic_pm_domain *genpd)
-> +{
-> +	struct exynos4_pm_domain *exynos4_pd = to_exynos4_pd(genpd);
-> +	u32 timeout;
-> +
-> +	/* Enable power domain */
-> +	__raw_writel(S5P_INT_LOCAL_PWR_EN, exynos4_pd->base);
-> +
-> +	/* Wait max 1ms */
-> +	timeout = 10;
-> +	while ((__raw_readl(exynos4_pd->base + 0x4) &
-> S5P_INT_LOCAL_PWR_EN)
-> +		!= S5P_INT_LOCAL_PWR_EN) {
-> +		if (timeout == 0) {
-> +			pr_err("Power domain %s enable failed.\n",
-> +				exynos4_pd->name);
-> +			return -ETIMEDOUT;
-> +		}
-> +		timeout--;
-> +		usleep_range(90, 110);
-> +	}
-> +
-> +	/* Configure the clock-gating control register for block to turn on */
-> +	if (exynos4_pd->clkgate_mask) {
-> +		unsigned long flags;
-> +		u32 reg;
-> +
-> +		spin_lock_irqsave(&clkgate_block_lock, flags);
-> +		reg = __raw_readl(S5P_CLKGATE_BLOCK);
-> +		reg |= exynos4_pd->clkgate_mask;
-> +		__raw_writel(reg, S5P_CLKGATE_BLOCK);
-> +		spin_unlock_irqrestore(&clkgate_block_lock, flags);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static bool __exynos4_pd_active_wakeup(struct device *dev)
-> +{
-> +	return true;
-> +}
-> +
-> +static void __exynos4_init_pm_domain(struct exynos4_pm_domain *exynos4_pd)
-> +{
-> +	struct generic_pm_domain *genpd;
-> +
-> +	if (!exynos4_pd) {
-> +		pr_err("Failed to initialize Power domain(%s)\n", exynos4_pd-
-> >name);
-> +		return;
-> +	}
-> +
-> +	genpd = &exynos4_pd->genpd;
-> +
-> +	pm_genpd_init(genpd, NULL, false);
-> +	genpd->active_wakeup = __exynos4_pd_active_wakeup;
-> +	genpd->power_off = __exynos4_pd_power_down;
-> +	genpd->power_on = __exynos4_pd_power_up;
-> +}
-> +
-> +/*
-> + * Define power domain of EXYNOS4 series
-> + * - EXYNOS4210
-> + * - EXYNOS4212
-> + */
-> +/* Common power domain on EXYNOS4 series */
-> +struct exynos4_pm_domain exynos4_pd_mfc = {
-> +	.name		= "PD_MFC",
-> +	.base		= S5P_PMU_MFC_CONF,
-> +	.clkgate_mask	= S5P_CLKGATE_BLOCK_MFC,
-> +};
-> +
-> +struct exynos4_pm_domain exynos4_pd_g3d = {
-> +	.name		= "PD_G3D",
-> +	.base		= S5P_PMU_G3D_CONF,
-> +	.clkgate_mask	= S5P_CLKGATE_BLOCK_G3D,
-> +};
-> +
-> +struct exynos4_pm_domain exynos4_pd_lcd0 = {
-> +	.name		= "PD_LCD0",
-> +	.base		= S5P_PMU_LCD0_CONF,
-> +	.clkgate_mask	= S5P_CLKGATE_BLOCK_LCD0,
-> +};
-> +
-> +struct exynos4_pm_domain exynos4_pd_tv = {
-> +	.name		= "PD_TV",
-> +	.base		= S5P_PMU_TV_CONF,
-> +	.clkgate_mask	= S5P_CLKGATE_BLOCK_TV,
-> +};
-> +
-> +struct exynos4_pm_domain exynos4_pd_cam = {
-> +	.name		= "PD_CAM",
-> +	.base		= S5P_PMU_CAM_CONF,
-> +	.clkgate_mask	= S5P_CLKGATE_BLOCK_CAM,
-> +};
-> +
-> +struct exynos4_pm_domain exynos4_pd_gps = {
-> +	.name		= "PD_GPS",
-> +	.base		= S5P_PMU_GPS_CONF,
-> +	.clkgate_mask	= S5P_CLKGATE_BLOCK_GPS,
-> +};
-> +
-> +/* Only for EXYNOS4210 */
-> +struct exynos4_pm_domain exynos4_pd_lcd1 = {
-> +	.name		= "PD_LCD1",
-> +	.base		= S5P_PMU_LCD1_CONF,
-> +	.clkgate_mask	= S5P_CLKGATE_BLOCK_LCD1,
-> +};
-> +
-> +/* Only for EXYNOS4212 */
-> +struct exynos4_pm_domain exynos4_pd_isp = {
-> +	.name		= "PD_ISP",
-> +	.base		= S5P_PMU_ISP_CONF,
-> +};
-> +
-> +/*
-> + * Define function which initalize power domain and add device to it
-> + */
-> +int exynos4_add_device_to_domain(struct exynos4_pm_domain *exynos4_pd,
-> +				struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	int ret;
-> +
-> +	if (!exynos4_pd || !pdev)
-> +		return -EINVAL;
-> +
-> +	ret = pm_genpd_add_device(&exynos4_pd->genpd, dev);
-> +	if (ret < 0) {
-> +		pr_err("Failed to add %s device to power domain(%s)\n",
-> +			dev_name(&pdev->dev), exynos4_pd->name);
-> +		return ret;
-> +	}
-> +
-> +	pr_info("Add %s device to power domain(%s)\n",
-> +			dev_name(&pdev->dev), exynos4_pd->name);
-> +	return 0;
-> +}
-> +
-> +void exynos4_init_pm_domains(void)
-> +{
-> +	__exynos4_init_pm_domain(&exynos4_pd_mfc);
-> +	__exynos4_init_pm_domain(&exynos4_pd_g3d);
-> +	__exynos4_init_pm_domain(&exynos4_pd_lcd0);
-> +	__exynos4_init_pm_domain(&exynos4_pd_tv);
-> +	__exynos4_init_pm_domain(&exynos4_pd_cam);
-> +	__exynos4_init_pm_domain(&exynos4_pd_gps);
-> +
-> +}
-> +
-> +/* Initialize EXYNOS4210 power domain */
-> +void exynos4210_init_pm_domains(void)
-> +{
-> +	exynos4_init_pm_domains();
-> +
-> +	__exynos4_init_pm_domain(&exynos4_pd_lcd1);
-> +
-> +	/* Enabled the power domain of LCD0 */
-> +	__exynos4_pd_power_up(&exynos4_pd_lcd0.genpd);
-> +}
-> +
-> +/* Initialize EXYNOS4x12 power domain */
-> +void exynos4x12_init_pm_domains(void)
-> +{
-> +	exynos4_init_pm_domains();
-> +
-> +	__exynos4_init_pm_domain(&exynos4_pd_isp);
-> +
-> +	/* Enabled the power domain of LCD0 */
-> +	__exynos4_pd_power_up(&exynos4_pd_lcd0.genpd);
-> +}
-> +#endif	/* CONFIG_PM */
+>  obj-$(CONFIG_HAVE_PWM)		+= pwm.o
+> diff --git a/arch/arm/plat-samsung/include/plat/pd.h b/arch/arm/plat-
+> samsung/include/plat/pd.h
+> deleted file mode 100644
+> index abb4bc3..0000000
+> --- a/arch/arm/plat-samsung/include/plat/pd.h
+> +++ /dev/null
+> @@ -1,30 +0,0 @@
+> -/* linux/arch/arm/plat-samsung/include/plat/pd.h
+> - *
+> - * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
+> - *		http://www.samsung.com
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License version 2 as
+> - * published by the Free Software Foundation.
+> -*/
+> -
+> -#ifndef __ASM_PLAT_SAMSUNG_PD_H
+> -#define __ASM_PLAT_SAMSUNG_PD_H __FILE__
+> -
+> -struct samsung_pd_info {
+> -	int (*enable)(struct device *dev);
+> -	int (*disable)(struct device *dev);
+> -	void __iomem *base;
+> -};
+> -
+> -enum exynos4_pd_block {
+> -	PD_MFC,
+> -	PD_G3D,
+> -	PD_LCD0,
+> -	PD_LCD1,
+> -	PD_TV,
+> -	PD_CAM,
+> -	PD_GPS
+> -};
+> -
+> -#endif /* __ASM_PLAT_SAMSUNG_PD_H */
+> diff --git a/arch/arm/plat-samsung/pd.c b/arch/arm/plat-samsung/pd.c
+> deleted file mode 100644
+> index efe1d56..0000000
+> --- a/arch/arm/plat-samsung/pd.c
+> +++ /dev/null
+> @@ -1,95 +0,0 @@
+> -/* linux/arch/arm/plat-samsung/pd.c
+> - *
+> - * Copyright (c) 2010 Samsung Electronics Co., Ltd.
+> - *		http://www.samsung.com
+> - *
+> - * Samsung Power domain support
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License version 2 as
+> - * published by the Free Software Foundation.
+> -*/
+> -
+> -#include <linux/init.h>
+> -#include <linux/module.h>
+> -#include <linux/platform_device.h>
+> -#include <linux/err.h>
+> -#include <linux/pm_runtime.h>
+> -
+> -#include <plat/pd.h>
+> -
+> -static int samsung_pd_probe(struct platform_device *pdev)
+> -{
+> -	struct samsung_pd_info *pdata = pdev->dev.platform_data;
+> -	struct device *dev = &pdev->dev;
+> -
+> -	if (!pdata) {
+> -		dev_err(dev, "no device data specified\n");
+> -		return -ENOENT;
+> -	}
+> -
+> -	pm_runtime_set_active(dev);
+> -	pm_runtime_enable(dev);
+> -
+> -	dev_info(dev, "power domain registered\n");
+> -	return 0;
+> -}
+> -
+> -static int __devexit samsung_pd_remove(struct platform_device *pdev)
+> -{
+> -	struct device *dev = &pdev->dev;
+> -
+> -	pm_runtime_disable(dev);
+> -	return 0;
+> -}
+> -
+> -static int samsung_pd_runtime_suspend(struct device *dev)
+> -{
+> -	struct samsung_pd_info *pdata = dev->platform_data;
+> -	int ret = 0;
+> -
+> -	if (pdata->disable)
+> -		ret = pdata->disable(dev);
+> -
+> -	dev_dbg(dev, "suspended\n");
+> -	return ret;
+> -}
+> -
+> -static int samsung_pd_runtime_resume(struct device *dev)
+> -{
+> -	struct samsung_pd_info *pdata = dev->platform_data;
+> -	int ret = 0;
+> -
+> -	if (pdata->enable)
+> -		ret = pdata->enable(dev);
+> -
+> -	dev_dbg(dev, "resumed\n");
+> -	return ret;
+> -}
+> -
+> -static const struct dev_pm_ops samsung_pd_pm_ops = {
+> -	.runtime_suspend	= samsung_pd_runtime_suspend,
+> -	.runtime_resume		= samsung_pd_runtime_resume,
+> -};
+> -
+> -static struct platform_driver samsung_pd_driver = {
+> -	.driver		= {
+> -		.name		= "samsung-pd",
+> -		.owner		= THIS_MODULE,
+> -		.pm		= &samsung_pd_pm_ops,
+> -	},
+> -	.probe		= samsung_pd_probe,
+> -	.remove		= __devexit_p(samsung_pd_remove),
+> -};
+> -
+> -static int __init samsung_pd_init(void)
+> -{
+> -	int ret;
+> -
+> -	ret = platform_driver_register(&samsung_pd_driver);
+> -	if (ret)
+> -		printk(KERN_ERR "%s: failed to add PD driver\n", __func__);
+> -
+> -	return ret;
+> -}
+> -arch_initcall(samsung_pd_init);
 > --
 > 1.7.0.4
 
-As I said, I don't think we should control/gate the clocks with regarding power domain. It should be controlled by each regarding device driver and in addition, as I know, to handle block of clock is not recommended on EXYNOS4 now.
+Well, I can't agree on this because you removed power domain codes which can be used for all of Samsung stuff for only EXYNOS4's generic power domain even though it was used for only EXYNOS4.
 
 Thanks.
 
