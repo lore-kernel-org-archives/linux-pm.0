@@ -1,15 +1,17 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH 1/3 v3] ARM: EXYNOS4: Support for generic I/O
- power domains on EXYNOS4210/4212
-Date: Thu, 03 Nov 2011 11:24:34 +0100
-Message-ID: <4EB26BE2.2060508__13852.9128431857$1320315890$gmane$org@samsung.com>
-References: <4EA690EF.4000703@samsung.com>
-	<013301cc99cd$8d5a6a00$a80f3e00$%kim@samsung.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
+Date: Thu, 3 Nov 2011 08:59:56 -0700
+Message-ID: <20111103155956.GG4417@google.com>
+References: <20111101124759.GA1326@zeus>
+	<20111102054658.GA29035@core.coreip.homeip.net>
+	<20111102160208.GA6657@zeus>
+	<20111102163109.GA29430@core.coreip.homeip.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <013301cc99cd$8d5a6a00$a80f3e00$%kim@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20111102163109.GA29430@core.coreip.homeip.net>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,31 +21,42 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: 'linux-samsung-soc' <linux-samsung-soc@vger.kernel.org>, 'Russell King - ARM Linux' <linux@arm.linux.org.uk>, 'Sylwester Nawrocki' <snjw23@gmail.com>, 'Kyungmin Park' <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, 'linux-arm-kernel' <linux-arm-kernel@lists.infradead.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, Andrew Watts <akwatts@ymail.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Kgene,
+Hello,
 
-On 11/03/2011 03:09 AM, Kukjin Kim wrote:
-> As I said, I don't think we should control/gate the clocks with regarding power domain. 
+On Wed, Nov 02, 2011 at 09:31:09AM -0700, Dmitry Torokhov wrote:
+> On Wed, Nov 02, 2011 at 11:02:09AM -0500, Andrew Watts wrote:
+> > On Tue, Nov 01, 2011 at 10:46:58PM -0700, Dmitry Torokhov wrote:
+> > > 
+> > > Are you hibernating from text console or X? Can you try plugging in USB
+> > > keyboard and see if you are getting input? What about ssh into the box?
+> > 
+> > Forgot to answer a few of your questions. Plugging in a USB keyboard does
+> > not help.
+> 
+> OK, it looks like you do have input, what you do not have is X
+> functioning.
+> 
+> I am not sure why radeon reports lockup with that patch; serio uses
+> system_long_wq to schedule its long-playing works and the only other
+> user of system_long_wq seems to be sata, but then concurrency management
+> should take care of them sharing the workqueue.
+> 
+> Tejun, do you have any ideas here?
 
-As far as I know there is a plan to let the drivers override start/stop_device callbacks,
-moreover the clock control can be disabled globally by not implementing start/stop_device
-callbacks or per device by not adding clkdev entities to the device clock list at runtime 
-PM core. So IMHO, there is/going to be enough flexibility.
+Not at all.  Dang, I was feeling pretty sure that it was some missing
+queue_work somewhere.  So, input is working fine but X locks up
+because of that change?  That's just odd.
 
-> It should be controlled by each regarding device driver and in addition, as I know,
-> to handle block of clock is not recommended on EXYNOS4 now.
+Andrew, just in case, can you please double check that you're
+reverting only that single commit (not all the ones afterwards) and
+the test results?  If they're all okay, can you please trigger the
+problem, wait a while, trigger sysrq-t and attach the kernel log?
 
-What do you mean by this ? I couldn't find such information in any documentation.
-Shouldn't "clock gate block" registers be touched by boot loader and the kernel?
-Our boot loaders disable all clocks, and if the global clock gate is not enabled
-by the kernel there is no chance any multimedia device will work.
-
-Should the global clock block gate be always enabled then ? I'm afraid it is not
-optimal form power management POV.
+Thank you.
 
 -- 
-Thanks,
-Sylwester
+tejun
