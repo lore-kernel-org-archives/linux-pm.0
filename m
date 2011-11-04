@@ -1,18 +1,12 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
-Date: Thu, 3 Nov 2011 14:39:59 -0700
-Message-ID: <20111103213959.GP4417@google.com>
-References: <20111101124759.GA1326@zeus>
-	<20111102054658.GA29035@core.coreip.homeip.net>
-	<20111102160208.GA6657@zeus>
-	<20111102163109.GA29430@core.coreip.homeip.net>
-	<20111103155956.GG4417@google.com> <20111103184559.GA3295@zeus>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH] ACPI: Export FADT pm_profile integer value to
+	userspace
+Date: Fri,  4 Nov 2011 03:33:46 +0100
+Message-ID: <1320374026-4913-1-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20111103184559.GA3295@zeus>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -22,51 +16,85 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Watts <akwatts@ymail.com>
-Cc: linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org
+To: linux-acpi@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Andrew.
+There are a lot userspace approaches to detect the usage of the
+platform (laptop, workstation, server, ...) and adjust kernel tunables
+accordingly (io/process scheduler, power management, ...).
 
-On Thu, Nov 03, 2011 at 01:46:19PM -0500, Andrew Watts wrote:
-> On Thu, Nov 03, 2011 at 08:59:56AM -0700, Tejun Heo wrote:
-> > Andrew, just in case, can you please double check that you're
-> > reverting only that single commit (not all the ones afterwards) and
-> > the test results?  If they're all okay, can you please trigger the
-> > problem, wait a while, trigger sysrq-t and attach the kernel log?
-> 
-> Hi Tejun.
-> 
-> I am only reverting 8ee294cd9def0004887da7f44b80563493b0a097 though I first
-> revert part of 1d64b655dc083df5c5ac39945ccbbc6532903bf1 so it reverts 
-> cleanly. 
-> 
-> I am very sure of my test results; normally I get 4-5 bad resumes on a 20
-> hibernate loop and get no bad resumes with the commit reverted. I have
-> been very thorough in my testing to ensure I am not generating false
-> positives or false negatives (repeating the loops many times).
+These approaches need constant maintaining and are ugly to implement
+(detect PCMCIA controller -> laptop,
+does not work on recent systems anymore, ...)
+On ACPI systems there is an easy and reliable way (if implemented
+in BIOS and most recent platforms have this value set).
+-> export it to userspace.
 
-Thanks.  Yeah, this is odd & interesting.
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: lenb@kernel.org
+---
+ Documentation/ABI/stable/sysfs-acpi-pmprofile |   22 ++++++++++++++++++++++
+ drivers/acpi/sysfs.c                          |   14 +++++++++++++-
+ 2 files changed, 35 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/ABI/stable/sysfs-acpi-pmprofile
 
-> Below is the output you asked for (sysrq t).
-> 
-> Thanks.
-> 
-> ~ Andy
-> 
-> ======================
-> 
-> 
-> kernel: [  345.226523] SysRq : Show State
-> kernel: [  345.226531]   task                PC stack   pid father
-> kernel: [  345.226535] init            S f4a47b68  5488     1      0 0x00000000
-> kernel: [  345.226765] kthreadd        S 00000000  7172     2      0 0x00000000
-
-This is missing all stack traces.  Can you please turn on
-FRAME_POINTER and adjust log level such that all stack dumps are
-included too?
-
-Thank you.
-
+diff --git a/Documentation/ABI/stable/sysfs-acpi-pmprofile b/Documentation/ABI/stable/sysfs-acpi-pmprofile
+new file mode 100644
+index 0000000..964c7a8
+--- /dev/null
++++ b/Documentation/ABI/stable/sysfs-acpi-pmprofile
+@@ -0,0 +1,22 @@
++What: 		/sys/firmware/acpi/pm_profile
++Date:		03-Nov-2011
++KernelVersion:	v3.2
++Contact:	linux-acpi@vger.kernel.org
++Description: 	The ACPI pm_profile sysfs interface exports the platform
++		power management (and performance) requirement expectations
++		as provided by BIOS. The integer value is directly passed as
++		retrieved from the FADT ACPI table.
++Values:         For possible values see ACPI specification:
++		5.2.9 Fixed ACPI Description Table (FADT)
++		Field: Preferred_PM_Profile
++
++		Currently these values are defined by spec:
++		0 Unspecified
++		1 Desktop
++		2 Mobile
++		3 Workstation
++		4 Enterprise Server
++		5 SOHO Server
++		6 Appliance PC
++		7 Performance Server
++		>7 Reserved
+diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
+index c538d0e..9f66181 100644
+--- a/drivers/acpi/sysfs.c
++++ b/drivers/acpi/sysfs.c
+@@ -706,11 +706,23 @@ static void __exit interrupt_stats_exit(void)
+ 	return;
+ }
+ 
++static ssize_t
++acpi_show_profile(struct device *dev, struct device_attribute *attr,
++		  char *buf)
++{
++	return sprintf(buf, "%d\n", acpi_gbl_FADT.preferred_profile);
++}
++
++static const struct device_attribute pm_profile_attr =
++	__ATTR(pm_profile, S_IRUGO, acpi_show_profile, NULL);
++
+ int __init acpi_sysfs_init(void)
+ {
+ 	int result;
+ 
+ 	result = acpi_tables_sysfs_init();
+-
++	if (result)
++		return result;
++	result = sysfs_create_file(acpi_kobj, &pm_profile_attr.attr);
+ 	return result;
+ }
 -- 
-tejun
+1.7.6.1
