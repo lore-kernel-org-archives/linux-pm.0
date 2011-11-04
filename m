@@ -1,17 +1,19 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 04/10] cgroup: always lock threadgroup during
-	migration
-Date: Fri, 4 Nov 2011 08:21:50 -0700
-Message-ID: <20111104152150.GX4417__29504.5745013796$1320420127$gmane$org@google.com>
-References: <1320191193-8110-1-git-send-email-tj@kernel.org>
-	<1320191193-8110-5-git-send-email-tj@kernel.org>
-	<20111104175413.30afaf8e.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
+Date: Fri, 4 Nov 2011 09:14:31 -0700
+Message-ID: <20111104161431.GZ4417__39212.6757455573$1320423292$gmane$org@google.com>
+References: <20111101124759.GA1326@zeus>
+	<20111102054658.GA29035@core.coreip.homeip.net>
+	<20111102160208.GA6657@zeus>
+	<20111102163109.GA29430@core.coreip.homeip.net>
+	<20111103155956.GG4417@google.com> <20111103184559.GA3295@zeus>
+	<20111103213959.GP4417@google.com> <20111104134347.GA2480@zeus>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20111104175413.30afaf8e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20111104134347.GA2480@zeus>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,46 +23,64 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: akpm@linux-foundation.org, fweisbec@gmail.com, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
+To: Andrew Watts <akwatts@ymail.com>
+Cc: David Airlie <airlied@linux.ie>, linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+(cc'ing David Airlie and dri-devel)
 
-On Fri, Nov 04, 2011 at 05:54:13PM +0900, KAMEZAWA Hiroyuki wrote:
-> > -	/* if PF_EXITING is set, the tsk->cgroups pointer is no longer safe. */
-> > +	/* @tsk can't exit as its threadgroup is locked */
-> >  	task_lock(tsk);
-> > -	if (tsk->flags & PF_EXITING) {
-> > -		task_unlock(tsk);
-> > -		put_css_set(newcg);
-> > -		return -ESRCH;
-> > -	}
-> > +	WARN_ON_ONCE(tsk->flags & PF_EXITING);
-> >  	rcu_assign_pointer(tsk->cgroups, newcg);
-> >  	task_unlock(tsk);
-> 
-> Is this task_lock/unlock is required ?
+Hello, the original thread can be read from
 
-For put, I don't think it's necessary.
+  http://thread.gmane.org/gmane.linux.kernel/1209587
 
-> > @@ -2116,11 +2120,6 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
-> >  			continue;
-> >  		/* get old css_set pointer */
-> >  		task_lock(tsk);
-> > -		if (tsk->flags & PF_EXITING) {
-> > -			/* ignore this task if it's going away */
-> > -			task_unlock(tsk);
-> > -			continue;
-> > -		}
-> >  		oldcg = tsk->cgroups;
-> >  		get_css_set(oldcg);
-> >  		task_unlock(tsk);
+Full sysrq-t output at
 
-For get, I think it is; otherwise, nothing prevents someone else from
-changing tsk->cgroups between load and get, and destroying it.
+  http://article.gmane.org/gmane.linux.kernel/1211256
 
-Thanks.
+So, the problem is that after a seemingly unreated update to input
+serio driver (convert to use workqueue), X seems to lock up
+sporadically across suspend/resume cycles.
+
+I went through the full sysrq-t output but couldn't spot anything
+suspicious w/ anything else.  No worker is stuck and nobody is waiting
+for flush to finish.
+
+Stack trace for X follows.
+
+> X               S f499b944  5800  1652   1651 0x00400080
+>  f499b9a8 00003086 00000000 f499b944 c100d4a4 00000000 00000000 f499b958
+>  00000000 f499b9a8 f5173140 d7857c56 00000057 f5173140 d8b69880 00000057
+>  00000001 00000000 f499b9b4 c104dd89 000f4240 00000000 00000000 f499ba68
+> Call Trace:
+>  [<c1291301>] ttm_bo_wait_unreserved+0x5f/0x106
+>  [<c129145f>] ttm_bo_reserve_locked+0xb7/0xe1
+>  [<c1292c27>] ttm_bo_reserve+0x26/0x95
+>  [<c12c3c97>] radeon_crtc_do_set_base+0xbd/0x6d2
+>  [<c12c42e7>] radeon_crtc_set_base+0x1b/0x1d
+>  [<c12c430d>] radeon_crtc_mode_set+0x24/0xdd7
+>  [<c1279c57>] drm_crtc_helper_set_mode+0x32c/0x48b
+>  [<c1279e2f>] drm_helper_resume_force_mode+0x79/0x23e
+>  [<c12ace10>] radeon_gpu_reset+0x84/0x98
+>  [<c12c0838>] radeon_fence_wait+0x2d1/0x311
+>  [<c12c0e37>] radeon_sync_obj_wait+0xc/0xe
+>  [<c12908be>] ttm_bo_wait+0xa1/0x108
+>  [<c12d6e7b>] radeon_gem_wait_idle_ioctl+0x76/0xc4
+>  [<c127e62e>] drm_ioctl+0x1c2/0x42c
+>  [<c10e288e>] do_vfs_ioctl+0x79/0x54b
+>  [<c10e2dcb>] sys_ioctl+0x6b/0x70
+>  [<c1593813>] sysenter_do_call+0x12/0x22
+
+Do you guys have any ideas what's going on?  It seems to be waiting
+for bo->reserved to go zero.  Is it possible that someone there is
+forgetting to properly kick a work item after resume causing the wait
+to stall?
+
+Andrew, can you please kill the X server after the hang and see
+whether that brings the system back?  I think sshd should still work
+and if not you can write a script to kill the X server after 30secs
+after resume (and kill that script if resume succeeds).
+
+Thank you.
 
 -- 
 tejun
