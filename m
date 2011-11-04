@@ -1,14 +1,14 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI: Export FADT pm_profile integer value
-	to userspace
-Date: Fri, 4 Nov 2011 23:25:48 +0100
-Message-ID: <201111042325.48583.rjw__10703.3334243626$1320445406$gmane$org@sisk.pl>
-References: <1320374026-4913-1-git-send-email-trenn@suse.de>
+Subject: Re: [PATCH] PM: HIBERNATION: skip the swap size check if
+	the snapshot image size is anticipative
+Date: Fri, 4 Nov 2011 23:29:45 +0100
+Message-ID: <201111042329.45405.rjw@sisk.pl>
+References: <1320392176-3906-1-git-send-email-Barry.Song@csr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1320374026-4913-1-git-send-email-trenn@suse.de>
+In-Reply-To: <1320392176-3906-1-git-send-email-Barry.Song@csr.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,94 +18,95 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, "Len Brown (Intel)" <len.brown@intel.com>
+To: Barry Song <Barry.Song@csr.com>
+Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 04, 2011, Thomas Renninger wrote:
-> There are a lot userspace approaches to detect the usage of the
-> platform (laptop, workstation, server, ...) and adjust kernel tunables
-> accordingly (io/process scheduler, power management, ...).
+On Friday, November 04, 2011, Barry Song wrote:
+> From: Barry Song <Baohua.Song@csr.com>
 > 
-> These approaches need constant maintaining and are ugly to implement
-> (detect PCMCIA controller -> laptop,
-> does not work on recent systems anymore, ...)
-> On ACPI systems there is an easy and reliable way (if implemented
-> in BIOS and most recent platforms have this value set).
-> -> export it to userspace.
+> Current swsusp requires swap partitions even larger than real saved pages
+> due to the worst compress ratio:
+> but for an embedded system, which has limited storage space, then it might
+> can't give the big size partition to save snapshot.
+> In the another way, some embedded systems can definitely know the most size
+> needed for snapshot since they run some specific application lists.
+> So this patch provides the possibility for bootloader to tell kernel even
+> the system has a little snapshot partition, but it is still enough.
+> For example, if the system need to save 120MB memory, origin swsusp will require
+> a 130MB partition to save snapshot. but if users know 30MB is enough for them(
+> compressed image will be less than 30MB), they just make a 30MB partition.
 > 
-> Signed-off-by: Thomas Renninger <trenn@suse.de>
-> CC: lenb@kernel.org
+> Signed-off-by: Barry Song <Baohua.Song@csr.com>
+> Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>
 
-This is for Len, I guess?
-
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+I'm considering this as 3.3 material, so I'll take care of it after the current
+merge window closes.
 
 Thanks,
 Rafael
 
 
 > ---
->  Documentation/ABI/stable/sysfs-acpi-pmprofile |   22 ++++++++++++++++++++++
->  drivers/acpi/sysfs.c                          |   14 +++++++++++++-
->  2 files changed, 35 insertions(+), 1 deletions(-)
->  create mode 100644 Documentation/ABI/stable/sysfs-acpi-pmprofile
+>  this is another patch after I provide resumewait/resumedelay kernel params
+>  to make swsusp support embedded systems better.
+>  This patch is tested on CSR SiRFprimaII platform.
 > 
-> diff --git a/Documentation/ABI/stable/sysfs-acpi-pmprofile b/Documentation/ABI/stable/sysfs-acpi-pmprofile
-> new file mode 100644
-> index 0000000..964c7a8
-> --- /dev/null
-> +++ b/Documentation/ABI/stable/sysfs-acpi-pmprofile
-> @@ -0,0 +1,22 @@
-> +What: 		/sys/firmware/acpi/pm_profile
-> +Date:		03-Nov-2011
-> +KernelVersion:	v3.2
-> +Contact:	linux-acpi@vger.kernel.org
-> +Description: 	The ACPI pm_profile sysfs interface exports the platform
-> +		power management (and performance) requirement expectations
-> +		as provided by BIOS. The integer value is directly passed as
-> +		retrieved from the FADT ACPI table.
-> +Values:         For possible values see ACPI specification:
-> +		5.2.9 Fixed ACPI Description Table (FADT)
-> +		Field: Preferred_PM_Profile
+>  Documentation/kernel-parameters.txt |    7 +++++++
+>  kernel/power/swap.c                 |   13 +++++++++++++
+>  2 files changed, 20 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index a0c5c5f..2ad2e9c 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -2277,6 +2277,13 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+>  			in <PAGE_SIZE> units (needed only for swap files).
+>  			See  Documentation/power/swsusp-and-swap-files.txt
+>  
+> +	swapenough	[SWSUSP]
+> +			Tell kernel the swap partition size is enough and let kernel
+> +			skip checking whether the swap partition has enough size to
+> +			save snapshot.
+> +			It is used for embedded systems, typically using NAND and SD
+> +			card, which have not large space.
 > +
-> +		Currently these values are defined by spec:
-> +		0 Unspecified
-> +		1 Desktop
-> +		2 Mobile
-> +		3 Workstation
-> +		4 Enterprise Server
-> +		5 SOHO Server
-> +		6 Appliance PC
-> +		7 Performance Server
-> +		>7 Reserved
-> diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
-> index c538d0e..9f66181 100644
-> --- a/drivers/acpi/sysfs.c
-> +++ b/drivers/acpi/sysfs.c
-> @@ -706,11 +706,23 @@ static void __exit interrupt_stats_exit(void)
->  	return;
+>  	resumedelay=	[HIBERNATION] Delay (in seconds) to pause before attempting to
+>  			read the resume files
+>  
+> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+> index 11a594c..97c30b5 100644
+> --- a/kernel/power/swap.c
+> +++ b/kernel/power/swap.c
+> @@ -36,6 +36,8 @@
+>  
+>  #define HIBERNATE_SIG	"S1SUSPEND"
+>  
+> +static int swapenough;
+> +
+>  /*
+>   *	The swap map is a data structure used for keeping track of each page
+>   *	written to a swap partition.  It consists of many swap_map_page
+> @@ -772,6 +774,9 @@ static int enough_swap(unsigned int nr_pages, unsigned int flags)
+>  	unsigned int free_swap = count_swap_pages(root_swap, 1);
+>  	unsigned int required;
+>  
+> +	if (swapenough)
+> +		return 1;
+> +
+>  	pr_debug("PM: Free swap pages: %u\n", free_swap);
+>  
+>  	required = PAGES_FOR_IO + ((flags & SF_NOCOMPRESS_MODE) ?
+> @@ -1449,3 +1454,11 @@ static int swsusp_header_init(void)
 >  }
 >  
-> +static ssize_t
-> +acpi_show_profile(struct device *dev, struct device_attribute *attr,
-> +		  char *buf)
+>  core_initcall(swsusp_header_init);
+> +
+> +static int __init swapenough_setup(char *str)
 > +{
-> +	return sprintf(buf, "%d\n", acpi_gbl_FADT.preferred_profile);
+> +	swapenough = 1;
+> +	return 1;
 > +}
 > +
-> +static const struct device_attribute pm_profile_attr =
-> +	__ATTR(pm_profile, S_IRUGO, acpi_show_profile, NULL);
-> +
->  int __init acpi_sysfs_init(void)
->  {
->  	int result;
->  
->  	result = acpi_tables_sysfs_init();
-> -
-> +	if (result)
-> +		return result;
-> +	result = sysfs_create_file(acpi_kobj, &pm_profile_attr.attr);
->  	return result;
->  }
+> +__setup("swapenough", swapenough_setup);
 > 
