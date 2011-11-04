@@ -1,17 +1,17 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 02/10] threadgroup: rename
- signal->threadgroup_fork_lock to ->group_rwsem
-Date: Fri, 4 Nov 2011 08:16:31 -0700
-Message-ID: <20111104151631.GW4417@google.com>
+Subject: Re: [PATCH 04/10] cgroup: always lock threadgroup during
+	migration
+Date: Fri, 4 Nov 2011 08:21:50 -0700
+Message-ID: <20111104152150.GX4417__29504.5745013796$1320420127$gmane$org@google.com>
 References: <1320191193-8110-1-git-send-email-tj@kernel.org>
-	<1320191193-8110-3-git-send-email-tj@kernel.org>
-	<20111104174032.e0c4fc11.kamezawa.hiroyu@jp.fujitsu.com>
+	<1320191193-8110-5-git-send-email-tj@kernel.org>
+	<20111104175413.30afaf8e.kamezawa.hiroyu@jp.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20111104174032.e0c4fc11.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20111104175413.30afaf8e.kamezawa.hiroyu@jp.fujitsu.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -25,20 +25,40 @@ To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: akpm@linux-foundation.org, fweisbec@gmail.com, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, paul@paulmenage.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 04, 2011 at 05:40:32PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Tue,  1 Nov 2011 16:46:25 -0700
-> Tejun Heo <tj@kernel.org> wrote:
-> 
-> > Make the following renames to prepare for extension of threadgroup
-> > locking.
-> > 
-> > * s/signal->threadgroup_fork_lock/signal->group_rwsem/
-> > * s/threadgroup_fork_read_lock()/threadgroup_change_begin()/
-> > * s/threadgroup_fork_read_unlock()/threadgroup_change_done()/
-> 
-> I personally like begin <-> end to see relationship.
+Hello,
 
-Hmmm... yeah, I like that better too.  Renaming.
+On Fri, Nov 04, 2011 at 05:54:13PM +0900, KAMEZAWA Hiroyuki wrote:
+> > -	/* if PF_EXITING is set, the tsk->cgroups pointer is no longer safe. */
+> > +	/* @tsk can't exit as its threadgroup is locked */
+> >  	task_lock(tsk);
+> > -	if (tsk->flags & PF_EXITING) {
+> > -		task_unlock(tsk);
+> > -		put_css_set(newcg);
+> > -		return -ESRCH;
+> > -	}
+> > +	WARN_ON_ONCE(tsk->flags & PF_EXITING);
+> >  	rcu_assign_pointer(tsk->cgroups, newcg);
+> >  	task_unlock(tsk);
+> 
+> Is this task_lock/unlock is required ?
+
+For put, I don't think it's necessary.
+
+> > @@ -2116,11 +2120,6 @@ int cgroup_attach_proc(struct cgroup *cgrp, struct task_struct *leader)
+> >  			continue;
+> >  		/* get old css_set pointer */
+> >  		task_lock(tsk);
+> > -		if (tsk->flags & PF_EXITING) {
+> > -			/* ignore this task if it's going away */
+> > -			task_unlock(tsk);
+> > -			continue;
+> > -		}
+> >  		oldcg = tsk->cgroups;
+> >  		get_css_set(oldcg);
+> >  		task_unlock(tsk);
+
+For get, I think it is; otherwise, nothing prevents someone else from
+changing tsk->cgroups between load and get, and destroying it.
 
 Thanks.
 
