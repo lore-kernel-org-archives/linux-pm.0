@@ -1,19 +1,14 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
-Date: Fri, 4 Nov 2011 09:14:31 -0700
-Message-ID: <20111104161431.GZ4417__39212.6757455573$1320423292$gmane$org@google.com>
-References: <20111101124759.GA1326@zeus>
-	<20111102054658.GA29035@core.coreip.homeip.net>
-	<20111102160208.GA6657@zeus>
-	<20111102163109.GA29430@core.coreip.homeip.net>
-	<20111103155956.GG4417@google.com> <20111103184559.GA3295@zeus>
-	<20111103213959.GP4417@google.com> <20111104134347.GA2480@zeus>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] ACPI: Export FADT pm_profile integer value
+	to userspace
+Date: Fri, 4 Nov 2011 23:25:48 +0100
+Message-ID: <201111042325.48583.rjw__10703.3334243626$1320445406$gmane$org@sisk.pl>
+References: <1320374026-4913-1-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20111104134347.GA2480@zeus>
+In-Reply-To: <1320374026-4913-1-git-send-email-trenn@suse.de>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -23,64 +18,94 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Watts <akwatts@ymail.com>
-Cc: David Airlie <airlied@linux.ie>, linux-pm@lists.linux-foundation.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, "Len Brown (Intel)" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-(cc'ing David Airlie and dri-devel)
+On Friday, November 04, 2011, Thomas Renninger wrote:
+> There are a lot userspace approaches to detect the usage of the
+> platform (laptop, workstation, server, ...) and adjust kernel tunables
+> accordingly (io/process scheduler, power management, ...).
+> 
+> These approaches need constant maintaining and are ugly to implement
+> (detect PCMCIA controller -> laptop,
+> does not work on recent systems anymore, ...)
+> On ACPI systems there is an easy and reliable way (if implemented
+> in BIOS and most recent platforms have this value set).
+> -> export it to userspace.
+> 
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
+> CC: lenb@kernel.org
 
-Hello, the original thread can be read from
+This is for Len, I guess?
 
-  http://thread.gmane.org/gmane.linux.kernel/1209587
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Full sysrq-t output at
+Thanks,
+Rafael
 
-  http://article.gmane.org/gmane.linux.kernel/1211256
 
-So, the problem is that after a seemingly unreated update to input
-serio driver (convert to use workqueue), X seems to lock up
-sporadically across suspend/resume cycles.
-
-I went through the full sysrq-t output but couldn't spot anything
-suspicious w/ anything else.  No worker is stuck and nobody is waiting
-for flush to finish.
-
-Stack trace for X follows.
-
-> X               S f499b944  5800  1652   1651 0x00400080
->  f499b9a8 00003086 00000000 f499b944 c100d4a4 00000000 00000000 f499b958
->  00000000 f499b9a8 f5173140 d7857c56 00000057 f5173140 d8b69880 00000057
->  00000001 00000000 f499b9b4 c104dd89 000f4240 00000000 00000000 f499ba68
-> Call Trace:
->  [<c1291301>] ttm_bo_wait_unreserved+0x5f/0x106
->  [<c129145f>] ttm_bo_reserve_locked+0xb7/0xe1
->  [<c1292c27>] ttm_bo_reserve+0x26/0x95
->  [<c12c3c97>] radeon_crtc_do_set_base+0xbd/0x6d2
->  [<c12c42e7>] radeon_crtc_set_base+0x1b/0x1d
->  [<c12c430d>] radeon_crtc_mode_set+0x24/0xdd7
->  [<c1279c57>] drm_crtc_helper_set_mode+0x32c/0x48b
->  [<c1279e2f>] drm_helper_resume_force_mode+0x79/0x23e
->  [<c12ace10>] radeon_gpu_reset+0x84/0x98
->  [<c12c0838>] radeon_fence_wait+0x2d1/0x311
->  [<c12c0e37>] radeon_sync_obj_wait+0xc/0xe
->  [<c12908be>] ttm_bo_wait+0xa1/0x108
->  [<c12d6e7b>] radeon_gem_wait_idle_ioctl+0x76/0xc4
->  [<c127e62e>] drm_ioctl+0x1c2/0x42c
->  [<c10e288e>] do_vfs_ioctl+0x79/0x54b
->  [<c10e2dcb>] sys_ioctl+0x6b/0x70
->  [<c1593813>] sysenter_do_call+0x12/0x22
-
-Do you guys have any ideas what's going on?  It seems to be waiting
-for bo->reserved to go zero.  Is it possible that someone there is
-forgetting to properly kick a work item after resume causing the wait
-to stall?
-
-Andrew, can you please kill the X server after the hang and see
-whether that brings the system back?  I think sshd should still work
-and if not you can write a script to kill the X server after 30secs
-after resume (and kill that script if resume succeeds).
-
-Thank you.
-
--- 
-tejun
+> ---
+>  Documentation/ABI/stable/sysfs-acpi-pmprofile |   22 ++++++++++++++++++++++
+>  drivers/acpi/sysfs.c                          |   14 +++++++++++++-
+>  2 files changed, 35 insertions(+), 1 deletions(-)
+>  create mode 100644 Documentation/ABI/stable/sysfs-acpi-pmprofile
+> 
+> diff --git a/Documentation/ABI/stable/sysfs-acpi-pmprofile b/Documentation/ABI/stable/sysfs-acpi-pmprofile
+> new file mode 100644
+> index 0000000..964c7a8
+> --- /dev/null
+> +++ b/Documentation/ABI/stable/sysfs-acpi-pmprofile
+> @@ -0,0 +1,22 @@
+> +What: 		/sys/firmware/acpi/pm_profile
+> +Date:		03-Nov-2011
+> +KernelVersion:	v3.2
+> +Contact:	linux-acpi@vger.kernel.org
+> +Description: 	The ACPI pm_profile sysfs interface exports the platform
+> +		power management (and performance) requirement expectations
+> +		as provided by BIOS. The integer value is directly passed as
+> +		retrieved from the FADT ACPI table.
+> +Values:         For possible values see ACPI specification:
+> +		5.2.9 Fixed ACPI Description Table (FADT)
+> +		Field: Preferred_PM_Profile
+> +
+> +		Currently these values are defined by spec:
+> +		0 Unspecified
+> +		1 Desktop
+> +		2 Mobile
+> +		3 Workstation
+> +		4 Enterprise Server
+> +		5 SOHO Server
+> +		6 Appliance PC
+> +		7 Performance Server
+> +		>7 Reserved
+> diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
+> index c538d0e..9f66181 100644
+> --- a/drivers/acpi/sysfs.c
+> +++ b/drivers/acpi/sysfs.c
+> @@ -706,11 +706,23 @@ static void __exit interrupt_stats_exit(void)
+>  	return;
+>  }
+>  
+> +static ssize_t
+> +acpi_show_profile(struct device *dev, struct device_attribute *attr,
+> +		  char *buf)
+> +{
+> +	return sprintf(buf, "%d\n", acpi_gbl_FADT.preferred_profile);
+> +}
+> +
+> +static const struct device_attribute pm_profile_attr =
+> +	__ATTR(pm_profile, S_IRUGO, acpi_show_profile, NULL);
+> +
+>  int __init acpi_sysfs_init(void)
+>  {
+>  	int result;
+>  
+>  	result = acpi_tables_sysfs_init();
+> -
+> +	if (result)
+> +		return result;
+> +	result = sysfs_create_file(acpi_kobj, &pm_profile_attr.attr);
+>  	return result;
+>  }
+> 
