@@ -1,8 +1,8 @@
 From: Barry Song <Barry.Song@csr.com>
 Subject: [PATCH] PM: HIBERNATION: skip the swap size check if the
 	snapshot image size is anticipative
-Date: Fri, 4 Nov 2011 00:36:16 -0700
-Message-ID: <1320392176-3906-1-git-send-email-Barry.Song@csr.com>
+Date: Fri, 4 Nov 2011 00:37:23 -0700
+Message-ID: <1320392243-3948-1-git-send-email-Barry.Song@csr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,7 +17,7 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org, pavel@ucw.cz, rjw@sisk.pl
-Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Barry Song <Baohua.Song@csr.com>
+Cc: workgroup.linux@csr.com, Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Barry Song <Baohua.Song@csr.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Barry Song <Baohua.Song@csr.com>
