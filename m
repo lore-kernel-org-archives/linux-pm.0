@@ -1,7 +1,7 @@
 From: Jerome Glisse <j.glisse@gmail.com>
 Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
-Date: Fri, 4 Nov 2011 13:35:53 -0400
-Message-ID: <CAH3drwaXcUy1vz8bvHwE2_iga5WUsWn_Dp0oe_0r3UacV0vT_A__3109.23155998371$1321058415$gmane$org@mail.gmail.com>
+Date: Fri, 4 Nov 2011 13:44:01 -0400
+Message-ID: <20111104174401.GB2015__30999.932884197$1321058418$gmane$org@homer.localdomain>
 References: <20111101124759.GA1326@zeus>
 	<20111102054658.GA29035@core.coreip.homeip.net>
 	<20111102160208.GA6657@zeus>
@@ -10,9 +10,9 @@ References: <20111101124759.GA1326@zeus>
 	<20111103213959.GP4417@google.com> <20111104134347.GA2480@zeus>
 	<20111104161431.GZ4417@google.com> <20111104173441.GA2157@zeus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/mixed; boundary="X1bOJ3K7DJ5YkBrT"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
 In-Reply-To: <20111104173441.GA2157@zeus>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -27,35 +27,79 @@ To: Andrew Watts <akwatts@ymail.com>
 Cc: David Airlie <airlied@linux.ie>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 4, 2011 at 1:34 PM, Andrew Watts <akwatts@ymail.com> wrote:
+
+--X1bOJ3K7DJ5YkBrT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Fri, Nov 04, 2011 at 12:34:58PM -0500, Andrew Watts wrote:
 > On Fri, Nov 04, 2011 at 09:14:31AM -0700, Tejun Heo wrote:
->> Andrew, can you please kill the X server after the hang and see
->> whether that brings the system back? =A0I think sshd should still work
->> and if not you can write a script to kill the X server after 30secs
->> after resume (and kill that script if resume succeeds).
->
+> > Andrew, can you please kill the X server after the hang and see
+> > whether that brings the system back?  I think sshd should still work
+> > and if not you can write a script to kill the X server after 30secs
+> > after resume (and kill that script if resume succeeds).
+> 
 > Hi Tejun & Jerome.
->
-> Tejun: My script killed X after a small wait from a bad resume. I am retu=
-rned
-> to the funcioning calling console. I can then re-start X and all subsyste=
-ms
+> 
+> Tejun: My script killed X after a small wait from a bad resume. I am returned 
+> to the funcioning calling console. I can then re-start X and all subsystems
 > seem to working fine.
->
+> 
 > Jerome: I posted a post-bad-resume dmesg snippet with a GPU lockup warning
 > and trace here:
->
-> =A0 http://article.gmane.org/gmane.linux.kernel/1210057
->
+> 
+>    http://article.gmane.org/gmane.linux.kernel/1210057
+> 
 > Did you need to see more?
->
+> 
 > Thanks.
->
+> 
 > ~ Andy
->
->
+> 
 
-I need full dmesg
+Attached patch might hide the issue.
 
 Cheers,
 Jerome
+
+--X1bOJ3K7DJ5YkBrT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="0001-drm-radeon-kms-make-sure-GPU-is-idle-and-working-at-.patch"
+
+>From a13af3d0bff9e093160da63f22c6b44e436aa570 Mon Sep 17 00:00:00 2001
+From: Jerome Glisse <jglisse@redhat.com>
+Date: Fri, 4 Nov 2011 13:41:37 -0400
+Subject: [PATCH] drm/radeon/kms: make sure GPU is idle and working at end of
+ resume
+
+This might hide some GPU lockup issue deadlock on resume.
+
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+---
+ drivers/gpu/drm/radeon/radeon_device.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
+index c33bc91..1158e55 100644
+--- a/drivers/gpu/drm/radeon/radeon_device.c
++++ b/drivers/gpu/drm/radeon/radeon_device.c
+@@ -947,6 +947,7 @@ int radeon_resume_kms(struct drm_device *dev)
+ 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+ 		drm_helper_connector_dpms(connector, DRM_MODE_DPMS_ON);
+ 	}
++	radeon_fence_wait_last(rdev);
+ 	return 0;
+ }
+ 
+-- 
+1.7.6.4
+
+
+--X1bOJ3K7DJ5YkBrT
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--X1bOJ3K7DJ5YkBrT--
