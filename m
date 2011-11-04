@@ -1,19 +1,19 @@
-From: Jerome Glisse <j.glisse@gmail.com>
+From: Andrew Watts <akwatts@ymail.com>
 Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
-Date: Fri, 4 Nov 2011 13:44:01 -0400
-Message-ID: <20111104174401.GB2015__30999.932884197$1321058418$gmane$org@homer.localdomain>
-References: <20111101124759.GA1326@zeus>
-	<20111102054658.GA29035@core.coreip.homeip.net>
+Date: Fri, 4 Nov 2011 13:45:22 -0500
+Message-ID: <20111104184514.GA2772__13111.1627830707$1321058422$gmane$org@zeus>
+References: <20111102054658.GA29035@core.coreip.homeip.net>
 	<20111102160208.GA6657@zeus>
 	<20111102163109.GA29430@core.coreip.homeip.net>
 	<20111103155956.GG4417@google.com> <20111103184559.GA3295@zeus>
 	<20111103213959.GP4417@google.com> <20111104134347.GA2480@zeus>
 	<20111104161431.GZ4417@google.com> <20111104173441.GA2157@zeus>
+	<20111104174401.GB2015@homer.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="X1bOJ3K7DJ5YkBrT"
+Content-Type: multipart/mixed; boundary="pWyiEgJYm5f9v55/"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20111104173441.GA2157@zeus>
+In-Reply-To: <20111104174401.GB2015@homer.localdomain>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -23,83 +23,116 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Watts <akwatts@ymail.com>
+To: Jerome Glisse <j.glisse@gmail.com>
 Cc: David Airlie <airlied@linux.ie>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 
---X1bOJ3K7DJ5YkBrT
+--pWyiEgJYm5f9v55/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Nov 04, 2011 at 12:34:58PM -0500, Andrew Watts wrote:
-> On Fri, Nov 04, 2011 at 09:14:31AM -0700, Tejun Heo wrote:
-> > Andrew, can you please kill the X server after the hang and see
-> > whether that brings the system back?  I think sshd should still work
-> > and if not you can write a script to kill the X server after 30secs
-> > after resume (and kill that script if resume succeeds).
+On Fri, Nov 04, 2011 at 01:44:01PM -0400, Jerome Glisse wrote:
 > 
-> Hi Tejun & Jerome.
+> Attached patch might hide the issue.
 > 
-> Tejun: My script killed X after a small wait from a bad resume. I am returned 
-> to the funcioning calling console. I can then re-start X and all subsystems
-> seem to working fine.
-> 
-> Jerome: I posted a post-bad-resume dmesg snippet with a GPU lockup warning
-> and trace here:
-> 
->    http://article.gmane.org/gmane.linux.kernel/1210057
-> 
-> Did you need to see more?
-> 
-> Thanks.
-> 
-> ~ Andy
-> 
+> Cheers,
+> Jerome
 
-Attached patch might hide the issue.
+Unfortunately, the patch did not help.
 
-Cheers,
-Jerome
+Attached is the full hibernate->resume dmesg requested.
 
---X1bOJ3K7DJ5YkBrT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="0001-drm-radeon-kms-make-sure-GPU-is-idle-and-working-at-.patch"
+Thanks.
 
->From a13af3d0bff9e093160da63f22c6b44e436aa570 Mon Sep 17 00:00:00 2001
-From: Jerome Glisse <jglisse@redhat.com>
-Date: Fri, 4 Nov 2011 13:41:37 -0400
-Subject: [PATCH] drm/radeon/kms: make sure GPU is idle and working at end of
- resume
-
-This might hide some GPU lockup issue deadlock on resume.
-
-Signed-off-by: Jerome Glisse <jglisse@redhat.com>
----
- drivers/gpu/drm/radeon/radeon_device.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
-index c33bc91..1158e55 100644
---- a/drivers/gpu/drm/radeon/radeon_device.c
-+++ b/drivers/gpu/drm/radeon/radeon_device.c
-@@ -947,6 +947,7 @@ int radeon_resume_kms(struct drm_device *dev)
- 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
- 		drm_helper_connector_dpms(connector, DRM_MODE_DPMS_ON);
- 	}
-+	radeon_fence_wait_last(rdev);
- 	return 0;
- }
- 
--- 
-1.7.6.4
+~ Andy
 
 
---X1bOJ3K7DJ5YkBrT
+--pWyiEgJYm5f9v55/
+Content-Type: application/x-gunzip
+Content-Disposition: attachment; filename="bad-dmesg.txt.gz"
+Content-Transfer-Encoding: base64
+
+H4sICCYltE4CA2JhZC1kbWVzZy50eHQAtVtrU+NIsv2+v6I29gvEgqmXXo7LbNCmH8QOtC9m
+hokgOhyyVAYttuSRZB776zez9HDJSLJ9+y4TzRhR52QqK+tkllQ8EMKFM6CCMmb9IOPrIbn2
+0+cofiRxkvkviqz8R5UNCd18eXP4Rk6NS0x//8vDhoyzguyTn0UBWaplkr6TWZQv/VVGglT5
+uQob40UxfvIeB2h8Hi1U9p7lapmRwWBAwiRWgxogbUa9H+RLqtS/cfQ6UynJVn4A7qZJoLJM
+FbAjtQCDKiR0QBnJVJDEYXa8xWY51DXZUrX0o1h7gZf82UKR3M+eD6C0XeqWdzSGm10sksDP
+kTFaQjjLeFT3RY7KAUDqCk84RcyPKzZmScncgu2iHimE5UiXPM/ec7jZKEZ/3MofciSZZw9c
+i1x/Omsycf6DTNbZSsUhOgTDs2ShjuAWjiCMMOvT8tI0K0aRPCGhmq0fTRpXOj/I03pG5Ckd
+sgEd4g8VwhxngePrbIb/5JDM1hlpGWRDrJKnIJo+BaFOqyHlQ+ogbeVEmiQ52jBhHit8EDt8
+8OzaB9Hlg0fpBx+AVQxYrw8eL+PA+33wBK994J0+CLvdh/44eLZX+MB2+ODI2gfW6YMDE6Za
+5oL3+WBLXMDog9XrA4zzah+sDh9sKTryoWcuOPVcVLDIpZITf/1GEGUPyav/rE7XKxL4K38W
+LaL8nYRRhos6JLN3cjEaX9UcDNaUXXE8z0LNYbVyqLiLwvbgFmdSnK6C6HSWRiEs+PoeOIZm
+PLoiVzd35KL2xIDDov6hKcmTH4cgPU9+BqsSF2qu3vK/1kOFBOWCoXdA9scYIJ6jB6XJYgFy
+WKePHFgbk58+mhSSUVfzAM306vKzCWW93kqQE1kIk5ZKRZI5aMVLBBIMvixXC5Ur4s9z8Mf1
+Bo7FyBIUKjMIXFFWigWo2m4WOpD0I4lnsSJmWm5XforKBrKlYsQUdYRkC6VWJMvRzkTWaIdy
+Xla+if+CwBW4Mk/SJbn5fVJKtTnawUyPZiqNQdKTuNDGIbn3I63wgCRWpcNFRZAcgNy1aOXk
+va8rLGTUPE2WPQ5qpMUcq2d+UpXlSVpq+Tx6LAuhn0MY55nKCX1j5OgVsoi++UW5PiGvaeFt
+dck6ru25NsU5mUepeoV/U1yImwSmmMCfLm4JahKQQ5QfIEZAFFJOXRh2Wn505vMf5Aizxw9D
+cDIjD+2Dmqbd3aZZm2m6YRXzLtPbgxqmpddveo9Az6tAS7AAXZEZ6OKS3zBpuz9tUlQmt4xR
+t2EJU+gnLdVZxIt+z7SnLzHbNMmotUMHD7JpWmvYsZlTLF/lp4v3krRPQxgbWDY1RAR4BPN0
+O9FRfRdJlpNV8qpSA+Axr7NlaAdIey+dPf2FfJ1cEWaTo4V6UYsToHs9xstXt/8Ll01KWx5e
+Akp+q5Xeqtm5sBh0LQ9hugQbX8dkmYQK4vvnGkKswiFxG0NhFvzH1aOf5qcgjLXxIr0QDpEk
+RR6YOGH14VbrXM854n8X5YxCtwtr333TDplcFkhz6ocKVLmgYVC+D6YBEeqg+Xp3NySCX0MK
+XhZiovdBb5fii/6qSYTwPGfvLqCab7d9vjdhhpIvWWer3JJzALBpZy/VCpCMddz9/VbzUI7H
+slbkSIGCdY2h9nH5VhtEjBartoglDrvWEqfLNSQVdHdBoFQIfRVuaHBfZyxRwGBQC0w0240A
+G8LyOhf1928wA8Zy0ZXXxOLa6sNCn3tCbr6ThXr0g3dwZbVK0hxWyGMECyRt+GF3+1G6gOFy
+Bfk2+jI5T1Yq1d2FvyCjT5Pbc2FyOaKbaxnibayzKvhk8n10ThtopxMNCyJtwimVZPLFhLu8
+F170xQB3i77CJ9dXn8ntt8mI/Ab/vyT3l99MOo920j0FgQ8Nkr9U5G9I1YBZnTDcGcDGYOAT
+XfCh0pPx97vx17tzTm7GE3JzOT4XR+K4QeftpJvVzzvIeDy6PtefLm/PqZHWQCWp2ElVhRi+
+3ILl/nODwt1JgYlW0jxABMvZYtq5icnF+EFcrJfLPoiL93L1RBzWNVSDumybMNxmbrbR1SbQ
+UDIC7Td2DECi8gbywL01wiwqLdZZ4/v1A7FWP3Zv/UCu7l7jMP0ALlt0c+3QD0Q7neid+gFw
+h/XCD9IPpOuOS6d+AMyVnbCD9QPp3J10e+kHUHl8J1WvfiCFvZNiP/2wqNXzWOww/UAueRAX
+7+XqzsJO/UCYZz4K3Fs/AMnEYc8HEeZSy/U6+7V+/QCsJ/qxe+sHcjmdXBv94KAft/ejnRri
+QlfZ3Yfu0hBEW53onRqCcK8XfpCGAF1LXavomhrC5iaM006YoSHzpoYwq11EkE/u5NtLRJDK
+2UnVKyJAIfhOiv1EBLnsg7hYH5ekB3HxXq6ee+wSEYRZ5juNvUUEke5hLzoAZjFqO917uF4R
+0VjZj91XRDSX28l1sIggn8u7+fpFRKPtTvQuEdFwrxd+iIggndftTZeIAMyh3VP7QUR4i4jw
+I37c4JM7+fYREU3l7qTqExGkYHwnxV4iornsg7hYL1fPrXUsfIThW+3Ny6t9F75GysPeaJUw
+x3w+HCSpguHP0WqFL57gJh9VXC6v7ISE4HiavOtnL4sFiRO4YHJ5jTeQ+Am8XC8bN+g5fbsy
+GNzmpUuF2VS1Mrv9/VoXM3PNN5YHBNzF7V7Ha0w9Fud36cf4O3wwZZOjlZ8+H59TEuVPMOLp
+nBHQrigJzy3Gya3GfLv49c40ImSnkev7K+IHefTSiAIWrw7AYDDQd7ReEZ3G8LOJtGyz5rTH
+2O4ujfgGE5jbYmxbZlK3MMNeXTp966V19gBl+My6mG3aN08mc/n0vph2yIBNcoOIcrflKICe
+6OmWTRiMrU1jcJ6+128MterrElgmWAxLKT7NXqM8eNK/NO8S2LAb+HACoMu03D4u8FOmLdly
+CKPLtLV9YuMnTDPas740Dcdn2ASUDaTq9PQXLad+DEpVkcAOgrYeGmjzXw+2twb/n/23bc5s
+3u+/IPM1qGjfDQCL0529X1U+KUoR8g0FqWulcCkjlJCL0T+hoN9/viXf72/gexY9nv+LjL7f
+3Hwe3ZlWPL6vFW5YkdAvdFh5JqPJqLYAs2l1b6g2Fjqq7HlRZxn+h7xYa8loNDH57e1ELXJk
+WLuLWJiouHhLwjZYQTlvOd3SmiQ42NoarFNDv9Wv8gKLo76FCudga9UtcP0BoEYARBmAXyeX
+F9tRQCOV7liNKLBNFER7FBwpXM/a71xK69kWzWFb2E08hT5EEOvn0n8j46vvElhiPFAGn7ll
+HfnrPDnN17E6JplaqKD8VX0ewYGaIZyS6LfL64sz7K/0q8FqfD3UkTqzUPnlaVV5T5uzBt2D
+lOXBJOuUdQwStpb4n8tRpieJjG/LJB1/bkyR6zpUWNvumjrw2+RT9e4wXi9nkE8CRmN2VY5V
+XJ5VCNZ/0WHoyhij+Ep5q0NMFSRBkLwo+FC5O3+lNYpLXbNWCy6AHO9UJ2OcEHNV6YMsYQoN
+TFoO/UeDwfnIAIgATK7jWVSe5yoGM3tjLs/fIYqY+8XPsG8EC1jYY6gX2vE4LrJOn40px5ts
+Lv1ourxNE19BYKCWhZ9b3jAVopqKen1vzQd3Ga3O+W1S2SiEH/OHt+aPGEhP/j9o0j5OW7BI
+nfKs6h5nJ7glB5KZR7BKDq8lpSAQ01WazNQ0wpNYcz9QDYi7F4SckkdoAaPQwDLc525jP6RU
+CI6bqWBTGzppY4W3JqGf537wpPTB1630AwKOD7MwWFf6KG8ZsrB4EZ1lqBbvg8Z4UMDbYlOp
+25X6JPHmyHAxUkrRc2gaj8aZNyItyLSXKFQJ+fXmj9+vLj9/xy2VNlUcqpn5wfMienzKzYdC
+BdaVWx1wcerMKQojqFrw9KhTjqiXnGweDJRob6uJPQjtia1eoAMtK7Q00BblrZ3EidFJiBOj
+iNITyFlyPTvLGizOVpvQ9MHqvQOQ9q063kTzCs0rNG+grdYu4MToAj7cwcBq3gKHtOo6pvF1
+/BtITvAMfcFojKRQvlDLl7iyc6AlLoBdXMANPkjrU+PrgQRr2HdBESE/zOsmBlPw/uL25urm
+6xAPfBTlIjt7XK3PwnR5VvhX/m86V3GgBsGQS5uYl6avfpT/nb7xQJzRN8HY0XHDCDj2zU/D
+Vx9cif0lVLix/wLdDtz5v18sc25wNOSmEYGjV+NYZvk86Is7IgsfOiBtHXRl84uLhmXcI1wn
+4XoBOgg95LM+ZAJlDkKYxeE0U39Ow/Vy+V7/BJvS+vMyCqOpelFxXl3agIoSgD+ugmWNWkZv
+KtU/zfEkfqlN+Bs/j6K3VfEx8Byo86EKiP6oT1AXRAT+BZGvf8yjJT4MjsNNBcmeVsHTqvoD
+CQjHO/jmTzMIFBSpAjtNszQgGchjoSw5zP/SX5DXZQRykoNCgiCt8xzb6GCzJymHTbP3rCLC
+VmTrwKF2EzRzqv/cwQi0wCNH4ygcEmZL+0Q/mhmSP8idjzUALn8lhFyT8gsa/YHwBpL8jXkN
+EtC0ESb7XQpFY2j+Css/efifALRBgIlffkDPm8bTDCrzys+fpmgwiSEFbQcy0FUmFteZxvKA
+utwH7D/6s7cBtn4G7G285tT54PV8qaEKkeYaENhON63ubRNXdGFTzljpMO4ypuvVdKZhNj/D
+bw2Qu7GnhLOxl73HwTSZ/asyGQC0EVw8iVAgPerOFCDzfDmdJRXAZ4Bg1DUxTj0hoa2c2cba
+o1pq3DQKF9A+JEG+AArHBopANhhqfx1lc7QKYlUDWIB3KHkjQ11hGKWWOZFoFtvmPMJ9Zk3j
+qg+p5NYT6vmhVwR3BT3OdLVcT4tnGGjfP8PztCbQq/OX29AFaOB6FULRmQbrNEWQLRElQwOm
+jyJpGJtbzGGF07OpSv1MG7LRRe74JoZV0aXUmfmuxkynxXOUaZ5M3/LUB+wcFwpjDXN4ArTM
+V8ospaEYmFi95XB7OWxPcUpDnA/z9vSfJFXzIe1AA3FGsJZEel26GBO34SivJpEq7rp6EpPp
+yzzbTLwHGEvOTBAWOQ2y3MCzihnIsNdb69BzD+3YzMwWKdnGUBhgvoHM1VbsGSAc2gDURjzh
+MlEA9J8iTMHFACQKg49JxnkD5+kK/ED0H12hiBHm+Ix5oSdsxjkPPF2Ka4yAy1ZPF1BsP8oT
+kjXKYQxjt98Rz2K8c/ARzwLnHnTEU2M4pb1HPFkT4VDI8u6TGfphBvTD20++C6DsPmfXAvwP
+aERxjys5AAA=
+
+--pWyiEgJYm5f9v55/
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---X1bOJ3K7DJ5YkBrT--
+--pWyiEgJYm5f9v55/--
