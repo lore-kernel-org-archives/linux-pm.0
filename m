@@ -1,14 +1,15 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Barry Song <21cnbao@gmail.com>
 Subject: Re: [PATCH] PM: HIBERNATION: skip the swap size check if
-	the snapshot image size is anticipative
-Date: Fri, 4 Nov 2011 23:29:45 +0100
-Message-ID: <201111042329.45405.rjw@sisk.pl>
+ the snapshot image size is anticipative
+Date: Sat, 5 Nov 2011 09:51:56 +0800
+Message-ID: <CAGsJ_4yx4+nxBC1P0i6QEPce60EKRouy-AhLKhPyik1T+0MtJA@mail.gmail.com>
 References: <1320392176-3906-1-git-send-email-Barry.Song@csr.com>
+	<201111042329.45405.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1320392176-3906-1-git-send-email-Barry.Song@csr.com>
+In-Reply-To: <201111042329.45405.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,95 +19,79 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Barry Song <Barry.Song@csr.com>
-Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, DL-SHA-WorkGroupLinux <workgroup.linux@csr.com>, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 04, 2011, Barry Song wrote:
-> From: Barry Song <Baohua.Song@csr.com>
-> 
-> Current swsusp requires swap partitions even larger than real saved pages
-> due to the worst compress ratio:
-> but for an embedded system, which has limited storage space, then it might
-> can't give the big size partition to save snapshot.
-> In the another way, some embedded systems can definitely know the most size
-> needed for snapshot since they run some specific application lists.
-> So this patch provides the possibility for bootloader to tell kernel even
-> the system has a little snapshot partition, but it is still enough.
-> For example, if the system need to save 120MB memory, origin swsusp will require
-> a 130MB partition to save snapshot. but if users know 30MB is enough for them(
-> compressed image will be less than 30MB), they just make a 30MB partition.
-> 
-> Signed-off-by: Barry Song <Baohua.Song@csr.com>
-> Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>
-
-I'm considering this as 3.3 material, so I'll take care of it after the current
-merge window closes.
-
-Thanks,
-Rafael
-
-
-> ---
->  this is another patch after I provide resumewait/resumedelay kernel params
->  to make swsusp support embedded systems better.
->  This patch is tested on CSR SiRFprimaII platform.
-> 
->  Documentation/kernel-parameters.txt |    7 +++++++
->  kernel/power/swap.c                 |   13 +++++++++++++
->  2 files changed, 20 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index a0c5c5f..2ad2e9c 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2277,6 +2277,13 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  			in <PAGE_SIZE> units (needed only for swap files).
->  			See  Documentation/power/swsusp-and-swap-files.txt
->  
-> +	swapenough	[SWSUSP]
-> +			Tell kernel the swap partition size is enough and let kernel
-> +			skip checking whether the swap partition has enough size to
-> +			save snapshot.
-> +			It is used for embedded systems, typically using NAND and SD
-> +			card, which have not large space.
-> +
->  	resumedelay=	[HIBERNATION] Delay (in seconds) to pause before attempting to
->  			read the resume files
->  
-> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> index 11a594c..97c30b5 100644
-> --- a/kernel/power/swap.c
-> +++ b/kernel/power/swap.c
-> @@ -36,6 +36,8 @@
->  
->  #define HIBERNATE_SIG	"S1SUSPEND"
->  
-> +static int swapenough;
-> +
->  /*
->   *	The swap map is a data structure used for keeping track of each page
->   *	written to a swap partition.  It consists of many swap_map_page
-> @@ -772,6 +774,9 @@ static int enough_swap(unsigned int nr_pages, unsigned int flags)
->  	unsigned int free_swap = count_swap_pages(root_swap, 1);
->  	unsigned int required;
->  
-> +	if (swapenough)
-> +		return 1;
-> +
->  	pr_debug("PM: Free swap pages: %u\n", free_swap);
->  
->  	required = PAGES_FOR_IO + ((flags & SF_NOCOMPRESS_MODE) ?
-> @@ -1449,3 +1454,11 @@ static int swsusp_header_init(void)
->  }
->  
->  core_initcall(swsusp_header_init);
-> +
-> +static int __init swapenough_setup(char *str)
-> +{
-> +	swapenough = 1;
-> +	return 1;
-> +}
-> +
-> +__setup("swapenough", swapenough_setup);
-> 
+MjAxMS8xMS81IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAc2lzay5wbD46Cj4gT24gRnJpZGF5LCBO
+b3ZlbWJlciAwNCwgMjAxMSwgQmFycnkgU29uZyB3cm90ZToKPj4gRnJvbTogQmFycnkgU29uZyA8
+QmFvaHVhLlNvbmdAY3NyLmNvbT4KPj4KPj4gQ3VycmVudCBzd3N1c3AgcmVxdWlyZXMgc3dhcCBw
+YXJ0aXRpb25zIGV2ZW4gbGFyZ2VyIHRoYW4gcmVhbCBzYXZlZCBwYWdlcwo+PiBkdWUgdG8gdGhl
+IHdvcnN0IGNvbXByZXNzIHJhdGlvOgo+PiBidXQgZm9yIGFuIGVtYmVkZGVkIHN5c3RlbSwgd2hp
+Y2ggaGFzIGxpbWl0ZWQgc3RvcmFnZSBzcGFjZSwgdGhlbiBpdCBtaWdodAo+PiBjYW4ndCBnaXZl
+IHRoZSBiaWcgc2l6ZSBwYXJ0aXRpb24gdG8gc2F2ZSBzbmFwc2hvdC4KPj4gSW4gdGhlIGFub3Ro
+ZXIgd2F5LCBzb21lIGVtYmVkZGVkIHN5c3RlbXMgY2FuIGRlZmluaXRlbHkga25vdyB0aGUgbW9z
+dCBzaXplCj4+IG5lZWRlZCBmb3Igc25hcHNob3Qgc2luY2UgdGhleSBydW4gc29tZSBzcGVjaWZp
+YyBhcHBsaWNhdGlvbiBsaXN0cy4KPj4gU28gdGhpcyBwYXRjaCBwcm92aWRlcyB0aGUgcG9zc2li
+aWxpdHkgZm9yIGJvb3Rsb2FkZXIgdG8gdGVsbCBrZXJuZWwgZXZlbgo+PiB0aGUgc3lzdGVtIGhh
+cyBhIGxpdHRsZSBzbmFwc2hvdCBwYXJ0aXRpb24sIGJ1dCBpdCBpcyBzdGlsbCBlbm91Z2guCj4+
+IEZvciBleGFtcGxlLCBpZiB0aGUgc3lzdGVtIG5lZWQgdG8gc2F2ZSAxMjBNQiBtZW1vcnksIG9y
+aWdpbiBzd3N1c3Agd2lsbCByZXF1aXJlCj4+IGEgMTMwTUIgcGFydGl0aW9uIHRvIHNhdmUgc25h
+cHNob3QuIGJ1dCBpZiB1c2VycyBrbm93IDMwTUIgaXMgZW5vdWdoIGZvciB0aGVtKAo+PiBjb21w
+cmVzc2VkIGltYWdlIHdpbGwgYmUgbGVzcyB0aGFuIDMwTUIpLCB0aGV5IGp1c3QgbWFrZSBhIDMw
+TUIgcGFydGl0aW9uLgo+Pgo+PiBTaWduZWQtb2ZmLWJ5OiBCYXJyeSBTb25nIDxCYW9odWEuU29u
+Z0Bjc3IuY29tPgo+PiBDYzogWGlhbmd6aGVuIFllIDxYaWFuZ3poZW4uWWVAY3NyLmNvbT4KPgo+
+IEknbSBjb25zaWRlcmluZyB0aGlzIGFzIDMuMyBtYXRlcmlhbCwgc28gSSdsbCB0YWtlIGNhcmUg
+b2YgaXQgYWZ0ZXIgdGhlIGN1cnJlbnQKPiBtZXJnZSB3aW5kb3cgY2xvc2VzLgo+Cgpvay4gdGhh
+bmtzLiB0aGUgaWRlYSBpcyBtYWtpbmcgc3dzdXNwIHN1cHBvcnQgZW1iZWRkZWQgc3lzdGVtcyB3
+aXRoCmxpbWl0ZWQgcmVzb3VyY2VzIGJldHRlci4Kd2UgY2FuIGdldCBpbnRvIGRldGFpbHMgYWZ0
+ZXIgdGhlIGN1cnJlbnQgbWVyZ2Ugd2luZG93LgoKPiBUaGFua3MsCj4gUmFmYWVsCj4KPgo+PiAt
+LS0KPj4gwqB0aGlzIGlzIGFub3RoZXIgcGF0Y2ggYWZ0ZXIgSSBwcm92aWRlIHJlc3VtZXdhaXQv
+cmVzdW1lZGVsYXkga2VybmVsIHBhcmFtcwo+PiDCoHRvIG1ha2Ugc3dzdXNwIHN1cHBvcnQgZW1i
+ZWRkZWQgc3lzdGVtcyBiZXR0ZXIuCj4+IMKgVGhpcyBwYXRjaCBpcyB0ZXN0ZWQgb24gQ1NSIFNp
+UkZwcmltYUlJIHBsYXRmb3JtLgo+Pgo+PiDCoERvY3VtZW50YXRpb24va2VybmVsLXBhcmFtZXRl
+cnMudHh0IHwgwqAgwqA3ICsrKysrKysKPj4gwqBrZXJuZWwvcG93ZXIvc3dhcC5jIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIHwgwqAgMTMgKysrKysrKysrKysrKwo+PiDCoDIgZmlsZXMgY2hhbmdl
+ZCwgMjAgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKPj4KPj4gZGlmZiAtLWdpdCBhL0Rv
+Y3VtZW50YXRpb24va2VybmVsLXBhcmFtZXRlcnMudHh0IGIvRG9jdW1lbnRhdGlvbi9rZXJuZWwt
+cGFyYW1ldGVycy50eHQKPj4gaW5kZXggYTBjNWM1Zi4uMmFkMmU5YyAxMDA2NDQKPj4gLS0tIGEv
+RG9jdW1lbnRhdGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQKPj4gKysrIGIvRG9jdW1lbnRhdGlv
+bi9rZXJuZWwtcGFyYW1ldGVycy50eHQKPj4gQEAgLTIyNzcsNiArMjI3NywxMyBAQCBieXRlcyBy
+ZXNwZWN0aXZlbHkuIFN1Y2ggbGV0dGVyIHN1ZmZpeGVzIGNhbiBhbHNvIGJlIGVudGlyZWx5IG9t
+aXR0ZWQuCj4+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGluIDxQQUdFX1NJWkU+
+IHVuaXRzIChuZWVkZWQgb25seSBmb3Igc3dhcCBmaWxlcykuCj4+IMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIFNlZSDCoERvY3VtZW50YXRpb24vcG93ZXIvc3dzdXNwLWFuZC1zd2Fw
+LWZpbGVzLnR4dAo+Pgo+PiArIMKgIMKgIHN3YXBlbm91Z2ggwqAgwqAgwqBbU1dTVVNQXQo+PiAr
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIFRlbGwga2VybmVsIHRoZSBzd2FwIHBhcnRp
+dGlvbiBzaXplIGlzIGVub3VnaCBhbmQgbGV0IGtlcm5lbAo+PiArIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIHNraXAgY2hlY2tpbmcgd2hldGhlciB0aGUgc3dhcCBwYXJ0aXRpb24gaGFz
+IGVub3VnaCBzaXplIHRvCj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgc2F2ZSBz
+bmFwc2hvdC4KPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBJdCBpcyB1c2VkIGZv
+ciBlbWJlZGRlZCBzeXN0ZW1zLCB0eXBpY2FsbHkgdXNpbmcgTkFORCBhbmQgU0QKPj4gKyDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBjYXJkLCB3aGljaCBoYXZlIG5vdCBsYXJnZSBzcGFj
+ZS4KPj4gKwo+PiDCoCDCoCDCoCByZXN1bWVkZWxheT0gwqAgwqBbSElCRVJOQVRJT05dIERlbGF5
+IChpbiBzZWNvbmRzKSB0byBwYXVzZSBiZWZvcmUgYXR0ZW1wdGluZyB0bwo+PiDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCByZWFkIHRoZSByZXN1bWUgZmlsZXMKPj4KPj4gZGlmZiAt
+LWdpdCBhL2tlcm5lbC9wb3dlci9zd2FwLmMgYi9rZXJuZWwvcG93ZXIvc3dhcC5jCj4+IGluZGV4
+IDExYTU5NGMuLjk3YzMwYjUgMTAwNjQ0Cj4+IC0tLSBhL2tlcm5lbC9wb3dlci9zd2FwLmMKPj4g
+KysrIGIva2VybmVsL3Bvd2VyL3N3YXAuYwo+PiBAQCAtMzYsNiArMzYsOCBAQAo+Pgo+PiDCoCNk
+ZWZpbmUgSElCRVJOQVRFX1NJRyDCoCDCoCDCoCDCoCJTMVNVU1BFTkQiCj4+Cj4+ICtzdGF0aWMg
+aW50IHN3YXBlbm91Z2g7Cj4+ICsKPj4gwqAvKgo+PiDCoCAqIMKgIFRoZSBzd2FwIG1hcCBpcyBh
+IGRhdGEgc3RydWN0dXJlIHVzZWQgZm9yIGtlZXBpbmcgdHJhY2sgb2YgZWFjaCBwYWdlCj4+IMKg
+ICogwqAgd3JpdHRlbiB0byBhIHN3YXAgcGFydGl0aW9uLiDCoEl0IGNvbnNpc3RzIG9mIG1hbnkg
+c3dhcF9tYXBfcGFnZQo+PiBAQCAtNzcyLDYgKzc3NCw5IEBAIHN0YXRpYyBpbnQgZW5vdWdoX3N3
+YXAodW5zaWduZWQgaW50IG5yX3BhZ2VzLCB1bnNpZ25lZCBpbnQgZmxhZ3MpCj4+IMKgIMKgIMKg
+IHVuc2lnbmVkIGludCBmcmVlX3N3YXAgPSBjb3VudF9zd2FwX3BhZ2VzKHJvb3Rfc3dhcCwgMSk7
+Cj4+IMKgIMKgIMKgIHVuc2lnbmVkIGludCByZXF1aXJlZDsKPj4KPj4gKyDCoCDCoCBpZiAoc3dh
+cGVub3VnaCkKPj4gKyDCoCDCoCDCoCDCoCDCoCDCoCByZXR1cm4gMTsKPj4gKwo+PiDCoCDCoCDC
+oCBwcl9kZWJ1ZygiUE06IEZyZWUgc3dhcCBwYWdlczogJXVcbiIsIGZyZWVfc3dhcCk7Cj4+Cj4+
+IMKgIMKgIMKgIHJlcXVpcmVkID0gUEFHRVNfRk9SX0lPICsgKChmbGFncyAmIFNGX05PQ09NUFJF
+U1NfTU9ERSkgPwo+PiBAQCAtMTQ0OSwzICsxNDU0LDExIEBAIHN0YXRpYyBpbnQgc3dzdXNwX2hl
+YWRlcl9pbml0KHZvaWQpCj4+IMKgfQo+Pgo+PiDCoGNvcmVfaW5pdGNhbGwoc3dzdXNwX2hlYWRl
+cl9pbml0KTsKPj4gKwo+PiArc3RhdGljIGludCBfX2luaXQgc3dhcGVub3VnaF9zZXR1cChjaGFy
+ICpzdHIpCj4+ICt7Cj4+ICsgwqAgwqAgc3dhcGVub3VnaCA9IDE7Cj4+ICsgwqAgwqAgcmV0dXJu
+IDE7Cj4+ICt9Cj4+ICsKPj4gK19fc2V0dXAoInN3YXBlbm91Z2giLCBzd2FwZW5vdWdoX3NldHVw
+KTsKPj4KLWJhcnJ5Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
+Lm9yZwpodHRwczovL2xpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
+aW51eC1wbQ==
