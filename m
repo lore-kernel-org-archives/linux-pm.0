@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 01/14] tools/power turbostat: less verbose
-	debugging
-Date: Sun, 06 Nov 2011 23:11:51 -0500
-Message-ID: <aeae1e92daec5a38b40ad12598b97501b675a381.1320636776.git.len.brown@intel.com>
+Subject: [PATCH 04/14] ACPI: Fix possible recursive locking in
+	hwregs.c
+Date: Sun, 06 Nov 2011 23:11:54 -0500
+Message-ID: <f7f71cfbf0c276ee3d8d856d0f35a41aed997fa4.1320636776.git.len.brown@intel.com>
 References: <1320639124-16178-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -10,6 +10,8 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-reply-to: <1320639124-16178-1-git-send-email-lenb@kernel.org>
+In-reply-to: <aeae1e92daec5a38b40ad12598b97501b675a381.1320636776.git.len.brown@intel.com>
+References: <aeae1e92daec5a38b40ad12598b97501b675a381.1320636776.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,56 +22,62 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>
+Cc: Rakib Mullick <rakib.mullick@gmail.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+From: Rakib Mullick <rakib.mullick@gmail.com>
 
-dump only the counters which are active
+Calling pm-suspend might trigger a recursive lock in it's code path.
+In function acpi_hw_clear_acpi_status, acpi_os_acquire_lock holds
+the lock acpi_gbl_hardware_lock before calling acpi_hw_register_write(),
+then without releasing acpi_gbl_hardware_lock, this function calls
+acpi_ev_walk_gpe_list, which tries to hold acpi_gbl_gpe_lock.
+Both acpi_gbl_hardware_lock and acpi_gbl_gpe_lock are at same
+lock-class and which might cause lock recursion deadlock.
 
+Following patch fixes this scenario by just releasing
+acpi_gbl_hardware_lock before calling acpi_ev_walk_gpe_list.
+
+ Changes since v0(https://lkml.org/lkml/2011/9/21/355):
+	- Fix changelog, thanks to Lin Ming.
+
+ Changes since v1 (https://lkml.org/lkml/2011/11/3/89):
+	- Update changelog and rename goto label, courtesy Srivatsa S. Bhat.
+
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c |   28 +++++++++++++++-------------
- 1 files changed, 15 insertions(+), 13 deletions(-)
+ drivers/acpi/acpica/hwregs.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 6d8ef4a..dd2d1a2 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -162,19 +162,21 @@ void print_header(void)
+diff --git a/drivers/acpi/acpica/hwregs.c b/drivers/acpi/acpica/hwregs.c
+index 55accb7..cc70f3f 100644
+--- a/drivers/acpi/acpica/hwregs.c
++++ b/drivers/acpi/acpica/hwregs.c
+@@ -269,16 +269,17 @@ acpi_status acpi_hw_clear_acpi_status(void)
  
- void dump_cnt(struct counters *cnt)
- {
--	fprintf(stderr, "package: %d ", cnt->pkg);
--	fprintf(stderr, "core:: %d ", cnt->core);
--	fprintf(stderr, "CPU: %d ", cnt->cpu);
--	fprintf(stderr, "TSC: %016llX\n", cnt->tsc);
--	fprintf(stderr, "c3: %016llX\n", cnt->c3);
--	fprintf(stderr, "c6: %016llX\n", cnt->c6);
--	fprintf(stderr, "c7: %016llX\n", cnt->c7);
--	fprintf(stderr, "aperf: %016llX\n", cnt->aperf);
--	fprintf(stderr, "pc2: %016llX\n", cnt->pc2);
--	fprintf(stderr, "pc3: %016llX\n", cnt->pc3);
--	fprintf(stderr, "pc6: %016llX\n", cnt->pc6);
--	fprintf(stderr, "pc7: %016llX\n", cnt->pc7);
--	fprintf(stderr, "msr0x%x: %016llX\n", extra_msr_offset, cnt->extra_msr);
-+	if (!cnt)
-+		return;
-+	if (cnt->pkg) fprintf(stderr, "package: %d ", cnt->pkg);
-+	if (cnt->core) fprintf(stderr, "core:: %d ", cnt->core);
-+	if (cnt->cpu) fprintf(stderr, "CPU: %d ", cnt->cpu);
-+	if (cnt->tsc) fprintf(stderr, "TSC: %016llX\n", cnt->tsc);
-+	if (cnt->c3) fprintf(stderr, "c3: %016llX\n", cnt->c3);
-+	if (cnt->c6) fprintf(stderr, "c6: %016llX\n", cnt->c6);
-+	if (cnt->c7) fprintf(stderr, "c7: %016llX\n", cnt->c7);
-+	if (cnt->aperf) fprintf(stderr, "aperf: %016llX\n", cnt->aperf);
-+	if (cnt->pc2) fprintf(stderr, "pc2: %016llX\n", cnt->pc2);
-+	if (cnt->pc3) fprintf(stderr, "pc3: %016llX\n", cnt->pc3);
-+	if (cnt->pc6) fprintf(stderr, "pc6: %016llX\n", cnt->pc6);
-+	if (cnt->pc7) fprintf(stderr, "pc7: %016llX\n", cnt->pc7);
-+	if (cnt->extra_msr) fprintf(stderr, "msr0x%x: %016llX\n", extra_msr_offset, cnt->extra_msr);
+ 	status = acpi_hw_register_write(ACPI_REGISTER_PM1_STATUS,
+ 					ACPI_BITMASK_ALL_FIXED_STATUS);
+-	if (ACPI_FAILURE(status)) {
+-		goto unlock_and_exit;
+-	}
++
++	acpi_os_release_lock(acpi_gbl_hardware_lock, lock_flags);
++
++	if (ACPI_FAILURE(status))
++		goto exit;
+ 
+ 	/* Clear the GPE Bits in all GPE registers in all GPE blocks */
+ 
+ 	status = acpi_ev_walk_gpe_list(acpi_hw_clear_gpe_block, NULL);
+ 
+-      unlock_and_exit:
+-	acpi_os_release_lock(acpi_gbl_hardware_lock, lock_flags);
++exit:
+ 	return_ACPI_STATUS(status);
  }
  
- void dump_list(struct counters *cnt)
 -- 
 1.7.7.rc0.72.g4b5ea
