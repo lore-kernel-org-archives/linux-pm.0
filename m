@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 06/14] ACPI atomicio: Convert width in bits to
- bytes in __acpi_ioremap_fast()
-Date: Sun, 06 Nov 2011 23:11:56 -0500
-Message-ID: <3bf3f8b19d2bfccc40f13c456bf339fd8f535ebc.1320636776.git.len.brown@intel.com>
+Subject: [PATCH 09/14] ACPI: Export FADT pm_profile integer value
+	to userspace
+Date: Sun, 06 Nov 2011 23:11:59 -0500
+Message-ID: <362b646062b2073bd5c38efb42171d86e4f717e6.1320636776.git.len.brown@intel.com>
 References: <1320639124-16178-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,34 +22,87 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, "Luck, Tony" <tony.luck@intel.com>, stable@kernel.org
+Cc: Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: "Luck, Tony" <tony.luck@intel.com>
+From: Thomas Renninger <trenn@suse.de>
 
-Callers to __acpi_ioremap_fast() pass the bit_width that they found in the
-acpi_generic_address structure. Convert from bits to bytes when passing to
-__acpi_find_iomap() - as it wants to see bytes, not bits.
+There are a lot userspace approaches to detect the usage of the
+platform (laptop, workstation, server, ...) and adjust kernel tunables
+accordingly (io/process scheduler, power management, ...).
 
-cc: stable@kernel.org
-Signed-off-by: Tony Luck <tony.luck@intel.com>
+These approaches need constant maintaining and are ugly to implement
+(detect PCMCIA controller -> laptop,
+does not work on recent systems anymore, ...)
+On ACPI systems there is an easy and reliable way (if implemented
+in BIOS and most recent platforms have this value set).
+-> export it to userspace.
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/atomicio.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ Documentation/ABI/stable/sysfs-acpi-pmprofile |   22 ++++++++++++++++++++++
+ drivers/acpi/sysfs.c                          |   14 +++++++++++++-
+ 2 files changed, 35 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/ABI/stable/sysfs-acpi-pmprofile
 
-diff --git a/drivers/acpi/atomicio.c b/drivers/acpi/atomicio.c
-index 7489b89..f151afe 100644
---- a/drivers/acpi/atomicio.c
-+++ b/drivers/acpi/atomicio.c
-@@ -76,7 +76,7 @@ static void __iomem *__acpi_ioremap_fast(phys_addr_t paddr,
- {
- 	struct acpi_iomap *map;
+diff --git a/Documentation/ABI/stable/sysfs-acpi-pmprofile b/Documentation/ABI/stable/sysfs-acpi-pmprofile
+new file mode 100644
+index 0000000..964c7a8
+--- /dev/null
++++ b/Documentation/ABI/stable/sysfs-acpi-pmprofile
+@@ -0,0 +1,22 @@
++What: 		/sys/firmware/acpi/pm_profile
++Date:		03-Nov-2011
++KernelVersion:	v3.2
++Contact:	linux-acpi@vger.kernel.org
++Description: 	The ACPI pm_profile sysfs interface exports the platform
++		power management (and performance) requirement expectations
++		as provided by BIOS. The integer value is directly passed as
++		retrieved from the FADT ACPI table.
++Values:         For possible values see ACPI specification:
++		5.2.9 Fixed ACPI Description Table (FADT)
++		Field: Preferred_PM_Profile
++
++		Currently these values are defined by spec:
++		0 Unspecified
++		1 Desktop
++		2 Mobile
++		3 Workstation
++		4 Enterprise Server
++		5 SOHO Server
++		6 Appliance PC
++		7 Performance Server
++		>7 Reserved
+diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
+index c538d0e..9f66181 100644
+--- a/drivers/acpi/sysfs.c
++++ b/drivers/acpi/sysfs.c
+@@ -706,11 +706,23 @@ static void __exit interrupt_stats_exit(void)
+ 	return;
+ }
  
--	map = __acpi_find_iomap(paddr, size);
-+	map = __acpi_find_iomap(paddr, size/8);
- 	if (map)
- 		return map->vaddr + (paddr - map->paddr);
- 	else
++static ssize_t
++acpi_show_profile(struct device *dev, struct device_attribute *attr,
++		  char *buf)
++{
++	return sprintf(buf, "%d\n", acpi_gbl_FADT.preferred_profile);
++}
++
++static const struct device_attribute pm_profile_attr =
++	__ATTR(pm_profile, S_IRUGO, acpi_show_profile, NULL);
++
+ int __init acpi_sysfs_init(void)
+ {
+ 	int result;
+ 
+ 	result = acpi_tables_sysfs_init();
+-
++	if (result)
++		return result;
++	result = sysfs_create_file(acpi_kobj, &pm_profile_attr.attr);
+ 	return result;
+ }
 -- 
 1.7.7.rc0.72.g4b5ea
