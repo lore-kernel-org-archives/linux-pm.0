@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 05/14] PNPACPI: Simplify disabled resource
-	registration
-Date: Sun, 06 Nov 2011 23:11:55 -0500
-Message-ID: <18fd470a48396c8795ba7256c5973e92ffa25cb3.1320636776.git.len.brown@intel.com>
+Subject: [PATCH 10/14] ACPI: Fix CONFIG_ACPI_DOCK=n compiler
+	warning
+Date: Sun, 06 Nov 2011 23:12:00 -0500
+Message-ID: <c1056b42a87b59375f8f81a92ef029165f44fcce.1320636776.git.len.brown@intel.com>
 References: <1320639124-16178-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,199 +22,42 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Witold Szczeponik <Witold.Szczeponik@gmx.net>, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>, Bart Van Assche <bvanassche@acm.org>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+From: Bart Van Assche <bvanassche@acm.org>
 
-The attached patch simplifies 29df8d8f8702f0f53c1375015f09f04bc8d023c1.  As
-the "pnp_xxx" structs are not designed to cope with IORESOURCE_DISABLED, and
-hence no code can test for this value, setting this value is actually a "no op"
-and can be skipped altogether.  It is sufficient to remove the checks for
-"empty" resources and continue processing.
+Recently the ACPI ops structs were constified but the inline version
+of register_hotplug_dock_device() was overlooked (see also commit
+9c8b04b, June 25 2011). Update the inline function
+register_hotplug_dock_device() that is enabled with
+CONFIG_ACPI_DOCK=n too. This patch fixes at least the following
+compiler warnings:
 
-The patch is applied against 3.1.
+drivers/ata/libata-acpi.c: In function .ata_acpi_associate.:
+drivers/ata/libata-acpi.c:266:11: warning: passing argument 2 of .register_hotplug_dock_device. discards qualifiers from pointer target type
+include/acpi/acpi_drivers.h:146:19: note: expected .struct acpi_dock_ops *. but argument is of type .const struct acpi_dock_ops *.
+drivers/ata/libata-acpi.c:275:11: warning: passing argument 2 of .register_hotplug_dock_device. discards qualifiers from pointer target type
+include/acpi/acpi_drivers.h:146:19: note: expected .struct acpi_dock_ops *. but argument is of type .const struct acpi_dock_ops *.
 
-Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Cc: stable@vger.kernel.org
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/pnp/pnpacpi/rsparser.c |   62 +++++++++------------------------------
- 1 files changed, 15 insertions(+), 47 deletions(-)
+ include/acpi/acpi_drivers.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/pnp/pnpacpi/rsparser.c b/drivers/pnp/pnpacpi/rsparser.c
-index bbf3edd..5be4a39 100644
---- a/drivers/pnp/pnpacpi/rsparser.c
-+++ b/drivers/pnp/pnpacpi/rsparser.c
-@@ -509,15 +509,12 @@ static __init void pnpacpi_parse_dma_option(struct pnp_dev *dev,
- 					    struct acpi_resource_dma *p)
+diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+index e49c36d..bb145e4 100644
+--- a/include/acpi/acpi_drivers.h
++++ b/include/acpi/acpi_drivers.h
+@@ -144,7 +144,7 @@ static inline void unregister_dock_notifier(struct notifier_block *nb)
  {
- 	int i;
--	unsigned char map = 0, flags = 0;
--
--	if (p->channel_count == 0)
--		flags |= IORESOURCE_DISABLED;
-+	unsigned char map = 0, flags;
- 
- 	for (i = 0; i < p->channel_count; i++)
- 		map |= 1 << p->channels[i];
- 
--	flags |= dma_flags(dev, p->type, p->bus_master, p->transfer);
-+	flags = dma_flags(dev, p->type, p->bus_master, p->transfer);
- 	pnp_register_dma_resource(dev, option_flags, map, flags);
  }
- 
-@@ -527,17 +524,14 @@ static __init void pnpacpi_parse_irq_option(struct pnp_dev *dev,
+ static inline int register_hotplug_dock_device(acpi_handle handle,
+-					       struct acpi_dock_ops *ops,
++					       const struct acpi_dock_ops *ops,
+ 					       void *context)
  {
- 	int i;
- 	pnp_irq_mask_t map;
--	unsigned char flags = 0;
--
--	if (p->interrupt_count == 0)
--		flags |= IORESOURCE_DISABLED;
-+	unsigned char flags;
- 
- 	bitmap_zero(map.bits, PNP_IRQ_NR);
- 	for (i = 0; i < p->interrupt_count; i++)
- 		if (p->interrupts[i])
- 			__set_bit(p->interrupts[i], map.bits);
- 
--	flags |= irq_flags(p->triggering, p->polarity, p->sharable);
-+	flags = irq_flags(p->triggering, p->polarity, p->sharable);
- 	pnp_register_irq_resource(dev, option_flags, &map, flags);
- }
- 
-@@ -547,10 +541,7 @@ static __init void pnpacpi_parse_ext_irq_option(struct pnp_dev *dev,
- {
- 	int i;
- 	pnp_irq_mask_t map;
--	unsigned char flags = 0;
--
--	if (p->interrupt_count == 0)
--		flags |= IORESOURCE_DISABLED;
-+	unsigned char flags;
- 
- 	bitmap_zero(map.bits, PNP_IRQ_NR);
- 	for (i = 0; i < p->interrupt_count; i++) {
-@@ -564,7 +555,7 @@ static __init void pnpacpi_parse_ext_irq_option(struct pnp_dev *dev,
- 		}
- 	}
- 
--	flags |= irq_flags(p->triggering, p->polarity, p->sharable);
-+	flags = irq_flags(p->triggering, p->polarity, p->sharable);
- 	pnp_register_irq_resource(dev, option_flags, &map, flags);
- }
- 
-@@ -574,11 +565,8 @@ static __init void pnpacpi_parse_port_option(struct pnp_dev *dev,
- {
- 	unsigned char flags = 0;
- 
--	if (io->address_length == 0)
--		flags |= IORESOURCE_DISABLED;
--
- 	if (io->io_decode == ACPI_DECODE_16)
--		flags |= IORESOURCE_IO_16BIT_ADDR;
-+		flags = IORESOURCE_IO_16BIT_ADDR;
- 	pnp_register_port_resource(dev, option_flags, io->minimum, io->maximum,
- 				   io->alignment, io->address_length, flags);
- }
-@@ -587,13 +575,8 @@ static __init void pnpacpi_parse_fixed_port_option(struct pnp_dev *dev,
- 					unsigned int option_flags,
- 					struct acpi_resource_fixed_io *io)
- {
--	unsigned char flags = 0;
--
--	if (io->address_length == 0)
--		flags |= IORESOURCE_DISABLED;
--
- 	pnp_register_port_resource(dev, option_flags, io->address, io->address,
--				   0, io->address_length, flags | IORESOURCE_IO_FIXED);
-+				   0, io->address_length, IORESOURCE_IO_FIXED);
- }
- 
- static __init void pnpacpi_parse_mem24_option(struct pnp_dev *dev,
-@@ -602,11 +585,8 @@ static __init void pnpacpi_parse_mem24_option(struct pnp_dev *dev,
- {
- 	unsigned char flags = 0;
- 
--	if (p->address_length == 0)
--		flags |= IORESOURCE_DISABLED;
--
- 	if (p->write_protect == ACPI_READ_WRITE_MEMORY)
--		flags |= IORESOURCE_MEM_WRITEABLE;
-+		flags = IORESOURCE_MEM_WRITEABLE;
- 	pnp_register_mem_resource(dev, option_flags, p->minimum, p->maximum,
- 				  p->alignment, p->address_length, flags);
- }
-@@ -617,11 +597,8 @@ static __init void pnpacpi_parse_mem32_option(struct pnp_dev *dev,
- {
- 	unsigned char flags = 0;
- 
--	if (p->address_length == 0)
--		flags |= IORESOURCE_DISABLED;
--
- 	if (p->write_protect == ACPI_READ_WRITE_MEMORY)
--		flags |= IORESOURCE_MEM_WRITEABLE;
-+		flags = IORESOURCE_MEM_WRITEABLE;
- 	pnp_register_mem_resource(dev, option_flags, p->minimum, p->maximum,
- 				  p->alignment, p->address_length, flags);
- }
-@@ -632,11 +609,8 @@ static __init void pnpacpi_parse_fixed_mem32_option(struct pnp_dev *dev,
- {
- 	unsigned char flags = 0;
- 
--	if (p->address_length == 0)
--		flags |= IORESOURCE_DISABLED;
--
- 	if (p->write_protect == ACPI_READ_WRITE_MEMORY)
--		flags |= IORESOURCE_MEM_WRITEABLE;
-+		flags = IORESOURCE_MEM_WRITEABLE;
- 	pnp_register_mem_resource(dev, option_flags, p->address, p->address,
- 				  0, p->address_length, flags);
- }
-@@ -656,19 +630,16 @@ static __init void pnpacpi_parse_address_option(struct pnp_dev *dev,
- 		return;
- 	}
- 
--	if (p->address_length == 0)
--		flags |= IORESOURCE_DISABLED;
--
- 	if (p->resource_type == ACPI_MEMORY_RANGE) {
- 		if (p->info.mem.write_protect == ACPI_READ_WRITE_MEMORY)
--			flags |= IORESOURCE_MEM_WRITEABLE;
-+			flags = IORESOURCE_MEM_WRITEABLE;
- 		pnp_register_mem_resource(dev, option_flags, p->minimum,
- 					  p->minimum, 0, p->address_length,
- 					  flags);
- 	} else if (p->resource_type == ACPI_IO_RANGE)
- 		pnp_register_port_resource(dev, option_flags, p->minimum,
- 					   p->minimum, 0, p->address_length,
--					   flags | IORESOURCE_IO_FIXED);
-+					   IORESOURCE_IO_FIXED);
- }
- 
- static __init void pnpacpi_parse_ext_address_option(struct pnp_dev *dev,
-@@ -678,19 +649,16 @@ static __init void pnpacpi_parse_ext_address_option(struct pnp_dev *dev,
- 	struct acpi_resource_extended_address64 *p = &r->data.ext_address64;
- 	unsigned char flags = 0;
- 
--	if (p->address_length == 0)
--		flags |= IORESOURCE_DISABLED;
--
- 	if (p->resource_type == ACPI_MEMORY_RANGE) {
- 		if (p->info.mem.write_protect == ACPI_READ_WRITE_MEMORY)
--			flags |= IORESOURCE_MEM_WRITEABLE;
-+			flags = IORESOURCE_MEM_WRITEABLE;
- 		pnp_register_mem_resource(dev, option_flags, p->minimum,
- 					  p->minimum, 0, p->address_length,
- 					  flags);
- 	} else if (p->resource_type == ACPI_IO_RANGE)
- 		pnp_register_port_resource(dev, option_flags, p->minimum,
- 					   p->minimum, 0, p->address_length,
--					   flags | IORESOURCE_IO_FIXED);
-+					   IORESOURCE_IO_FIXED);
- }
- 
- struct acpipnp_parse_option_s {
+ 	return -ENODEV;
 -- 
 1.7.7.rc0.72.g4b5ea
