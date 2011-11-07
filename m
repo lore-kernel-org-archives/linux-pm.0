@@ -1,16 +1,15 @@
-From: Barry Song <21cnbao@gmail.com>
-Subject: Re: [PATCH] PM: HIBERNATION: skip the swap size check if
- the snapshot image size is anticipative
-Date: Mon, 7 Nov 2011 09:31:10 +0800
-Message-ID: <CAGsJ_4xm05N4UZ94kvUtUGLGkcDnxesojV0fL9hQQnZBOFvohg@mail.gmail.com>
-References: <1320392176-3906-1-git-send-email-Barry.Song@csr.com>
-	<20111105182244.GB6772@elf.ucw.cz>
-	<CAGsJ_4xU28APFEcALAzuB2jAACa8FbOR6iSvOaEeGZa=JyjNeA@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] ACPI: Export FADT pm_profile integer value
+ to userspace
+Date: Sun, 06 Nov 2011 20:50:14 -0500
+Message-ID: <4EB73956.50709@kernel.org>
+References: <1320374026-4913-1-git-send-email-trenn@suse.de>
+	<201111042325.48583.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAGsJ_4xU28APFEcALAzuB2jAACa8FbOR6iSvOaEeGZa=JyjNeA@mail.gmail.com>
+In-Reply-To: <201111042325.48583.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,40 +19,16 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, DL-SHA-WorkGroupLinux <workgroup.linux@csr.com>, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, "Len Brown (Intel)" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-MjAxMS8xMS82IEJhcnJ5IFNvbmcgPDIxY25iYW9AZ21haWwuY29tPjoKPiAyMDExLzExLzYgUGF2
-ZWwgTWFjaGVrIDxwYXZlbEB1Y3cuY3o+Ogo+PiBIaSEKPj4KPj4+IEZyb206IEJhcnJ5IFNvbmcg
-PEJhb2h1YS5Tb25nQGNzci5jb20+Cj4+Pgo+Pj4gQ3VycmVudCBzd3N1c3AgcmVxdWlyZXMgc3dh
-cCBwYXJ0aXRpb25zIGV2ZW4gbGFyZ2VyIHRoYW4gcmVhbCBzYXZlZCBwYWdlcwo+Pj4gZHVlIHRv
-IHRoZSB3b3JzdCBjb21wcmVzcyByYXRpbzoKPj4+IGJ1dCBmb3IgYW4gZW1iZWRkZWQgc3lzdGVt
-LCB3aGljaCBoYXMgbGltaXRlZCBzdG9yYWdlIHNwYWNlLCB0aGVuIGl0IG1pZ2h0Cj4+PiBjYW4n
-dCBnaXZlIHRoZSBiaWcgc2l6ZSBwYXJ0aXRpb24gdG8gc2F2ZSBzbmFwc2hvdC4KPj4+IEluIHRo
-ZSBhbm90aGVyIHdheSwgc29tZSBlbWJlZGRlZCBzeXN0ZW1zIGNhbiBkZWZpbml0ZWx5IGtub3cg
-dGhlIG1vc3Qgc2l6ZQo+Pj4gbmVlZGVkIGZvciBzbmFwc2hvdCBzaW5jZSB0aGV5IHJ1biBzb21l
-IHNwZWNpZmljIGFwcGxpY2F0aW9uIGxpc3RzLgo+Pj4gU28gdGhpcyBwYXRjaCBwcm92aWRlcyB0
-aGUgcG9zc2liaWxpdHkgZm9yIGJvb3Rsb2FkZXIgdG8gdGVsbCBrZXJuZWwgZXZlbgo+Pj4gdGhl
-IHN5c3RlbSBoYXMgYSBsaXR0bGUgc25hcHNob3QgcGFydGl0aW9uLCBidXQgaXQgaXMgc3RpbGwg
-ZW5vdWdoLgo+Pj4gRm9yIGV4YW1wbGUsIGlmIHRoZSBzeXN0ZW0gbmVlZCB0byBzYXZlIDEyME1C
-IG1lbW9yeSwgb3JpZ2luIHN3c3VzcCB3aWxsIHJlcXVpcmUKPj4+IGEgMTMwTUIgcGFydGl0aW9u
-IHRvIHNhdmUgc25hcHNob3QuIGJ1dCBpZiB1c2VycyBrbm93IDMwTUIgaXMgZW5vdWdoIGZvciB0
-aGVtKAo+Pj4gY29tcHJlc3NlZCBpbWFnZSB3aWxsIGJlIGxlc3MgdGhhbiAzME1CKSwgdGhleSBq
-dXN0IG1ha2UgYSAzME1CCj4+PiBwYXJ0aXRpb24uCj4+Cj4+IFdvdWxkIGl0IGJlIGJldHRlciB0
-byBoYXZlIC9zeXMvcG93ZXIvLi4uIGVudHJ5IHdoaWNoIHdvdWxkIGFsbG93Cj4+IGNvbmZpZ3Vy
-aW5nIGV4cGVjdGVkIGNvbXByZXNzaW9uIHJhdGlvIGF0IHJ1bnRpbWU/Cj4KPiBpIHRoaW5rIGl0
-IGlzIGJldHRlciB0byBoYXZlIGEgc3lzIG5vZGUgdGhhbiBhZGQgYW5vdGhlciBrZXJuZWwgcGFy
-YW0uCj4gYnV0IHRoZSBwb2ludCBpcyBpIG9ubHkgY2FyZSBhYm91dCB0aGUgZmluYWwgaW1hZ2Ug
-c2l6ZSBidXQgbm90Cj4gY29tcHJlc3Npb24gcmF0aW8uIGkgZG9uJ3QgY2FyZSBob3cgd2VsbCBs
-em8gd2lsbCBkbyBmb3IgbWUgc2luY2UgaQo+IG9ubHkgaGF2ZSBsaW1pdGVkIGRpc2sgc3BhY2Ug
-YW5kIGtub3cgaG93IG1hbnkgcGFnZXMgd2FudCB0byBiZSBzYXZlZC4KPiB0aGVyZSBoYXMgYmVl
-biBhIGltYWdlX3NpemUgbm9kZSwgd2lsbCB3ZSBoYXZlIGEgZXhwZWN0ZWRfaW1hZ2Vfc2l6ZSBu
-b2RlPwoKb3Igd2lsbCB3ZSBoYXZlIGp1c3QgYSBub2RlIG5hbWVkIC9zeXMvcG93ZXIvY2hlY2tf
-c2l6ZSwgaWYKMShkZWZhdWx0KSwgY2hlY2ssIG90aGVyd2lzZSgwIHNldCBieSB1c2VycyksIHNr
-aXAgY2hlY2tpbmc/Cgo+PiDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
-oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoFBh
-dmVsCgotYmFycnkKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24u
-b3JnCmh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
-bnV4LXBt
+I guess in theory one could parse the FADT from user-space,
+as it is already exported in /sys/firmware/acpi/tables/
+but this is certainly more user-friendly -- say
+to a shell script etc.
+
+applied.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
