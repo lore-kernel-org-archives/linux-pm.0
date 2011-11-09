@@ -1,16 +1,15 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH 1/3 v3] ARM: EXYNOS4: Support for generic I/O
- power domains on EXYNOS4210/4212
-Date: Tue, 8 Nov 2011 22:19:59 +0900
-Message-ID: <CAGTfZH0xOh=EDRhb3gxOZhV-KQZNY_-o=miBOEne_S5-YsQ_Vg@mail.gmail.com>
-References: <4EA690EF.4000703@samsung.com>
-	<013301cc99cd$8d5a6a00$a80f3e00$%kim@samsung.com>
-	<4EB26BE2.2060508@samsung.com>
-Reply-To: cw00.choi@samsung.com
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: Re: [PATCH] CPUIdle: Reevaluate C-states under CPU load
+ to favor deeper C-states
+Date: Wed, 09 Nov 2011 16:43:10 +0530
+Message-ID: <4EBA6046.2060305@linux.vnet.ibm.com>
+References: <1316475315-5905-1-git-send-email-khilman@ti.com>
+	<87d3d75zo6.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8235363546724667571=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4EB26BE2.2060508@samsung.com>
+In-Reply-To: <87d3d75zo6.fsf@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,141 +19,238 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sylwester Nawrocki <snjw23@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: Kevin Hilman <khilman@ti.com>
+Cc: linux-kernel@vger.kernel.org, Nicole Chalhoub <n-chalhoub@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============8235363546724667571==
-Content-Type: multipart/alternative; boundary=f46d041555f0398aea04b1390783
+On Saturday 05 November 2011 03:16 AM, Kevin Hilman wrote:
+> ping v2
+> 
+> Kevin Hilman <khilman@ti.com> writes:
+> 
+>> From: Nicole Chalhoub <n-chalhoub@ti.com>
+>>
+>> While there is CPU load, program a C-state specific one-shot timer in
+>> order to give CPUidle another opportunity to pick a deeper C-state
+>> instead of spending potentially long idle times in a shallow C-state.
+>>
+>> Long winded version:
+>> When going idle with a high load average, CPUidle menu governor will
+>> decide to pick a shallow C-state since one of the guiding principles
+>> of the menu governor is "The busier the system, the less impact of
+>> C-states is acceptable" (taken from cpuidle/governors/menu.c.)
+>> That makes perfect sense.
+>>
+>> However, there are missed power-saving opportunities for bursty
+>> workloads with long idle times (e.g. MP3 playback.)  Given such a
+>> workload, because of the load average, CPUidle tends to pick a shallow
+>> C-state.  Because we also go tickless, this shallow C-state is used
+>> for the duration of the idle period. If the idle period is long, a
+>> deeper C state would've resulted in better power savings.
+>> This patch provides an additional opportuntity for CPUidle to pick a
+>> deeper C-state by programming a timer (with a C-state specific timeout)
+>> such that the CPUidle governor will have another opportunity to pick a
+>> deeper C-state.
+>>
+>> Adding this timer for C-state reevaluation improved the load estimation
+>> on our ARM/OMAP4 platform and increased the time spent in deep C-states
+>> (~50% of idle time in C-states deeper than C1).  A power saving of ~10mA
+>> at battery level is observed during MP3 playback on OMAP4/Blaze board.
+>>
+>> Signed-off-by: Nicole Chalhoub <n-chalhoub@ti.com>
+>> Signed-off-by: Kevin Hilman <khilman@ti.com>
+>> ---
+>>  drivers/cpuidle/cpuidle.c        |   28 +++++++++++++++++++++++++-
+>>  drivers/cpuidle/governors/menu.c |   39 ++++++++++++++++++++++++++++++++-----
+>>  include/linux/cpuidle.h          |    4 +++
+>>  3 files changed, 63 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index 1994885..4b1ac0c 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -92,13 +92,33 @@ static void cpuidle_idle_call(void)
+>>  	target_state->time += (unsigned long long)dev->last_residency;
+>>  	target_state->usage++;
+>>  
+>> -	/* give the governor an opportunity to reflect on the outcome */
+>> -	if (cpuidle_curr_governor->reflect)
+>> +	hrtimer_cancel(&dev->cstate_timer);
+>> +
+>> +	/*
+>> +	 * Give the governor an opportunity to reflect on the outcome
+>> +	 * Do not take into account the wakeups due to the hrtimer, they
+>> +	 * should not impact the predicted idle time.
+>> +	 */
+>> +	if ((!dev->hrtimer_expired) && cpuidle_curr_governor->reflect)
+>>  		cpuidle_curr_governor->reflect(dev);
+>>  	trace_power_end(0);
+>>  }
+>>  
+>>  /**
+>> + * cstate_reassessment_timer - interrupt handler of the cstate hrtimer
+>> + * @handle:	the expired hrtimer
+>> + */
+>> +static enum hrtimer_restart cstate_reassessment_timer(struct hrtimer *handle)
+>> +{
+>> +	struct cpuidle_device *data =
+>> +		container_of(handle, struct cpuidle_device, cstate_timer);
+>> +
+>> +	data->hrtimer_expired = 1;
+>> +
+>> +	return HRTIMER_NORESTART;
+>> +}
+>> +
+>> +/**
+>>   * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
+>>   */
+>>  void cpuidle_install_idle_handler(void)
+>> @@ -185,6 +205,10 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
+>>  
+>>  	dev->enabled = 1;
+>>  
+>> +	dev->hrtimer_expired = 0;
+>> +	hrtimer_init(&dev->cstate_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+>> +	dev->cstate_timer.function = cstate_reassessment_timer;
+>> +
+>>  	enabled_devices++;
+>>  	return 0;
+>>  
+>> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+>> index 1b12870..fd54584 100644
+>> --- a/drivers/cpuidle/governors/menu.c
+>> +++ b/drivers/cpuidle/governors/menu.c
+>> @@ -125,10 +125,21 @@ struct menu_device {
+>>  #define LOAD_INT(x) ((x) >> FSHIFT)
+>>  #define LOAD_FRAC(x) LOAD_INT(((x) & (FIXED_1-1)) * 100)
+>>  
+>> -static int get_loadavg(void)
+>> +static int get_loadavg(struct cpuidle_device *dev)
+>>  {
+>> -	unsigned long this = this_cpu_load();
+>> +	unsigned long this;
+>>  
+>> +	/*
+>> +	 * this_cpu_load() returns the value of rq->load.weight
+>> +	 * at the previous scheduler tick and not the current value.
+>> +	 * If the timer expired, that means we are in idle,there
+>> +	 * are no more runnable processes in the current queue
+>> +	 * =>return the current value of rq->load.weight which is 0.
+>> +	 */
+>> +	if (dev->hrtimer_expired == 1)
+>> +		return 0;
+>> +	else
+>> +		this = this_cpu_load();
+>>  
+>>  	return LOAD_INT(this) * 10 + LOAD_FRAC(this) / 10;
+>>  }
+>> @@ -166,13 +177,13 @@ static inline int which_bucket(unsigned int duration)
+>>   * to be, the higher this multiplier, and thus the higher
+>>   * the barrier to go to an expensive C state.
+>>   */
+>> -static inline int performance_multiplier(void)
+>> +static inline int performance_multiplier(struct cpuidle_device *dev)
+>>  {
+>>  	int mult = 1;
+>>  
+>>  	/* for higher loadavg, we are more reluctant */
+>>  
+>> -	mult += 2 * get_loadavg();
+>> +	mult += 2 * get_loadavg(dev);
+>>  
+>>  	/* for IO wait tasks (per cpu!) we add 5x each */
+>>  	mult += 10 * nr_iowait_cpu(smp_processor_id());
+>> @@ -236,6 +247,7 @@ static int menu_select(struct cpuidle_device *dev)
+>>  	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+>>  	int i;
+>>  	int multiplier;
+>> +	ktime_t timeout;
+>>  
+>>  	if (data->needs_update) {
+>>  		menu_update(dev);
+>> @@ -256,7 +268,7 @@ static int menu_select(struct cpuidle_device *dev)
+>>  
+>>  	data->bucket = which_bucket(data->expected_us);
+>>  
+>> -	multiplier = performance_multiplier();
+>> +	multiplier = performance_multiplier(dev);
+>>  
+>>  	/*
+>>  	 * if the correction factor is 0 (eg first time init or cpu hotplug
+>> @@ -287,12 +299,27 @@ static int menu_select(struct cpuidle_device *dev)
+>>  			break;
+>>  		if (s->exit_latency > latency_req)
+>>  			break;
+>> -		if (s->exit_latency * multiplier > data->predicted_us)
+>> +		if (s->exit_latency * multiplier > data->predicted_us) {
+>> +			/*
+>> +			 * Could not enter the next C-state because of a high
+>> +			 * load. Set a timer in order to check the load again
+>> +			 * after the timeout expires and re-evaluate cstate.
+>> +			 */
+>> +			if (s->hrtimer_timeout != 0 && get_loadavg(dev)) {
+>> +				timeout =
+>> +				       ktime_set(0,
+>> +					   s->hrtimer_timeout * NSEC_PER_USEC);
+>> +				hrtimer_start(&dev->cstate_timer, timeout,
+>> +					   HRTIMER_MODE_REL);
+>> +			}
+>>  			break;
+>> +		}
+>>  		data->exit_us = s->exit_latency;
+>>  		data->last_state_idx = i;
+>>  	}
+>>  
+>> +	/* Reset hrtimer_expired which is set when the hrtimer fires */
+>> +	dev->hrtimer_expired = 0;
+>>  	return data->last_state_idx;
+>>  }
+>>  
+>> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+>> index 55215cc..8d11b52 100644
+>> --- a/include/linux/cpuidle.h
+>> +++ b/include/linux/cpuidle.h
+>> @@ -16,6 +16,7 @@
+>>  #include <linux/module.h>
+>>  #include <linux/kobject.h>
+>>  #include <linux/completion.h>
+>> +#include <linux/hrtimer.h>
+>>  
+>>  #define CPUIDLE_STATE_MAX	8
+>>  #define CPUIDLE_NAME_LEN	16
+>> @@ -37,6 +38,7 @@ struct cpuidle_state {
+>>  	unsigned int	exit_latency; /* in US */
+>>  	unsigned int	power_usage; /* in mW */
+>>  	unsigned int	target_residency; /* in US */
+>> +	unsigned int	hrtimer_timeout; /* in US */
+>>  
+>>  	unsigned long long	usage;
+>>  	unsigned long long	time; /* in US */
+>> @@ -97,6 +99,8 @@ struct cpuidle_device {
+>>  	struct completion	kobj_unregister;
+>>  	void			*governor_data;
+>>  	struct cpuidle_state	*safe_state;
+>> +	struct hrtimer          cstate_timer;
+>> +	unsigned int            hrtimer_expired;
+>>  };
+>>  
+>>  DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
---f46d041555f0398aea04b1390783
-Content-Type: text/plain; charset=ISO-8859-1
+By setting timers when we enter non-deepest C-state possible, such that when it fires we
+can re-evaluate and try moving into deeper and deeper C-states enhancing the
+power savings is a good feature to have. 
 
-Hi Kukjin Kim,
+Looking at the current implementation, is it possible to have it as configurable option
+where one can enable/disable this functionality through the backhand driver ?
 
-Please reply about Sylwester Nawrocki and me.
+Also I am thinking, instead of having them in governor
+wouldnt it be a good idea to have it implemented in 
+the backhand driver itself ? 
 
-2011/11/3 Sylwester Nawrocki <s.nawrocki@samsung.com>
-
-> Hi Kgene,
->
-> On 11/03/2011 03:09 AM, Kukjin Kim wrote:
-> > As I said, I don't think we should control/gate the clocks with
-> regarding power domain.
->
-> As far as I know there is a plan to let the drivers override
-> start/stop_device callbacks,
-> moreover the clock control can be disabled globally by not implementing
-> start/stop_device
-> callbacks or per device by not adding clkdev entities to the device clock
-> list at runtime
-> PM core. So IMHO, there is/going to be enough flexibility.
->
-> > It should be controlled by each regarding device driver and in addition,
-> as I know,
-> > to handle block of clock is not recommended on EXYNOS4 now.
->
-> What do you mean by this ? I couldn't find such information in any
-> documentation.
-> Shouldn't "clock gate block" registers be touched by boot loader and the
-> kernel?
-> Our boot loaders disable all clocks, and if the global clock gate is not
-> enabled
-> by the kernel there is no chance any multimedia device will work.
->
-> Should the global clock block gate be always enabled then ? I'm afraid it
-> is not
-> optimal form power management POV.
->
->
-To Kukjin Kim,
-
-> It should be controlled by each regarding device driver and in addition,
-as I know,
-> to handle block of clock is not recommended on EXYNOS4 now.
-
-As you said, should we separately control power and clock of power domain?
-or Have to turn on the clock of power domain always?
-I think that it is to happen unnecessary power consumption.
-If we have to maintain on state of power domain clock, please let me know
-guide about this.
-
-Also,
-For example, fimg2d and framebuffer use LCD0 power domain as parent device.I
-If fimg2d and framebuffer is disabled state due to not using their,
-I think that we should turn off the clock of LCD0 power domain to reduce
-power leakage.
-Which each regarding device driver control the clock of power domain?
-
-I will expect for your reply.
-
-Best regards,
-Chanwoo Choi
-
---f46d041555f0398aea04b1390783
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi Kukjin Kim,<div><br></div><div>Please reply about=A0Sylwester Nawrocki a=
-nd me.<br><br><div class=3D"gmail_quote">2011/11/3 Sylwester Nawrocki <span=
- dir=3D"ltr">&lt;<a href=3D"mailto:s.nawrocki@samsung.com">s.nawrocki@samsu=
-ng.com</a>&gt;</span><br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex;">Hi Kgene,<br>
-<div class=3D"im"><br>
-On 11/03/2011 03:09 AM, Kukjin Kim wrote:<br>
-&gt; As I said, I don&#39;t think we should control/gate the clocks with re=
-garding power domain.<br>
-<br>
-</div>As far as I know there is a plan to let the drivers override start/st=
-op_device callbacks,<br>
-moreover the clock control can be disabled globally by not implementing sta=
-rt/stop_device<br>
-callbacks or per device by not adding clkdev entities to the device clock l=
-ist at runtime<br>
-PM core. So IMHO, there is/going to be enough flexibility.<br>
-<div class=3D"im"><br>
-&gt; It should be controlled by each regarding device driver and in additio=
-n, as I know,<br>
-&gt; to handle block of clock is not recommended on EXYNOS4 now.<br>
-<br>
-</div>What do you mean by this ? I couldn&#39;t find such information in an=
-y documentation.<br>
-Shouldn&#39;t &quot;clock gate block&quot; registers be touched by boot loa=
-der and the kernel?<br>
-Our boot loaders disable all clocks, and if the global clock gate is not en=
-abled<br>
-by the kernel there is no chance any multimedia device will work.<br>
-<br>
-Should the global clock block gate be always enabled then ? I&#39;m afraid =
-it is not<br>
-optimal form power management POV.<br>
-<font color=3D"#888888"><br></font></blockquote><div><br></div><div>To Kukj=
-in Kim,</div><div><br></div>&gt; It should be controlled by each regarding =
-device driver and in addition, as I know,<br><div>&gt; to handle block of c=
-lock is not recommended on EXYNOS4 now.</div>
-<div><br></div><div>As you said, should we separately control power and clo=
-ck of power domain?</div><div>or Have to turn on the clock of power domain =
-always?</div><div>I think that it is to happen unnecessary power consumptio=
-n.</div>
-<div>If we have to maintain=A0on state of power domain clock, please let me=
- know guide about this.</div><div><br></div><div>Also,=A0</div><div>For exa=
-mple, fimg2d and framebuffer use LCD0 power domain as parent device.I</div>
-<div>If fimg2d and framebuffer is disabled state due to not using their,</d=
-iv><div>I think that we should turn off the clock of LCD0 power domain to r=
-educe power leakage.</div><div>Which each regarding device driver control t=
-he clock of power domain?</div>
-<div><br></div><div>I will expect for your reply.</div><div><br></div><div>=
-Best regards,</div><div>Chanwoo Choi</div><div><br></div><div>=A0</div></di=
-v></div>
-
---f46d041555f0398aea04b1390783--
-
---===============8235363546724667571==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8235363546724667571==--
+--Deepthi
