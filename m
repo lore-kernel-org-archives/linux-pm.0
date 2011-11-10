@@ -1,16 +1,14 @@
-From: "Chalhoub, Nicole" <n-chalhoub@ti.com>
-Subject: Re: [PATCH] CPUIdle: Reevaluate C-states under CPU load
- to favor deeper C-states
-Date: Wed, 9 Nov 2011 18:06:41 +0000
-Message-ID: <37CAE120BAE10B42A790DD1418C8021D0136C7__22133.2781053663$1321058439$gmane$org@DNCE02.ent.ti.com>
-References: <1316475315-5905-1-git-send-email-khilman@ti.com>
-	<87d3d75zo6.fsf@ti.com> <4EBA6046.2060305@linux.vnet.ibm.com>
+From: Vasily Khoruzhick <anarsoul@gmail.com>
+Subject: Re: [PATCH] s3c-adc-battery: Add naive
+ POWER_SUPPLY_PROP_PRESENT implementation
+Date: Thu, 10 Nov 2011 14:05:06 +0300
+Message-ID: <1320923106.2594.0.camel__34709.7524944276$1321058442$gmane$org@anarsoul-laptop.Home>
+References: <201111100956.43979.heiko@sntech.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4EBA6046.2060305@linux.vnet.ibm.com>
-Content-Language: en-US
+In-Reply-To: <201111100956.43979.heiko@sntech.de>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,48 +18,58 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, "Hilman, Kevin" <khilman@ti.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Arjan van de Ven <arjan@infradead.org>
+To: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Cc: Anton Vorontsov <cbou@mail.ru>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Deepthi,
-
->
-Texas Instruments France SA, 821 Avenue Jack Kilby, 06270 Villeneuve Loubet. 036 420 040 R.C.S Antibes. Capital de EUR 753.920
-
------Original Message-----
-> From: Deepthi Dharwar [mailto:deepthi@linux.vnet.ibm.com]
-> Sent: Wednesday, November 09, 2011 12:13 PM
-> To: Hilman, Kevin
-> Cc: linux-kernel@vger.kernel.org; Arjan van de Ven; linux-arm-
-> kernel@lists.infradead.org; linux-omap@vger.kernel.org; linux-
-> pm@lists.linux-foundation.org; Chalhoub, Nicole
-> Subject: Re: [PATCH] CPUIdle: Reevaluate C-states under CPU load to favor
-> deeper C-states
-
-[...]
-> By setting timers when we enter non-deepest C-state possible, such that
-> when it fires we
-> can re-evaluate and try moving into deeper and deeper C-states enhancing
-> the
-> power savings is a good feature to have.
->
-> Looking at the current implementation, is it possible to have it as
-> configurable option
-> where one can enable/disable this functionality through the backhand
-> driver ?
-
-The timeout values of the c state timers are set in the backhand driver.
-By setting the timeout to 0 the timers will not fire so you'll not have this functionality enabled
-
-> Also I am thinking, instead of having them in governor
-> wouldnt it be a good idea to have it implemented in
-> the backhand driver itself ?
-> --Deepthi
-
-
-In fact each C-state had its own configurable timer, so it is a parameter characterizing a C-state as it is for the exit_latency and target_residency parameters.
-And we wanted the timer to fire only when we do not go in deep Cstate due to a high load. This decision is made in the CPU idle governor. So the functionality should be seen from the governor..
-
-Thanks and Regards
-Nicole
+T24gVGh1LCAyMDExLTExLTEwIGF0IDA5OjU2ICswMTAwLCBIZWlrbyBTdMO8Ym5lciB3cm90ZToK
+PiBVc2Vyc3BhY2UgcHJvZ3JhbXMgbGlrZSB1cG93ZXIgc2VlbSB0byBkZXBlbmQgb24gdGhlIHBy
+ZXNlbmNlIG9mIHRoZQo+IFBPV0VSX1NVUFBMWV9QUk9QX1BSRVNFTlQgcHJvcGVydHkuCj4gCj4g
+VGhlIHJlYWwgcHJlc2VuY2Ugb2YgdGhlIGJhdHRlcnkgY2Fubm90IGJlIHNlbnNlZCBhbmQgYWxs
+IG90aGVyCj4gcm91dGluZXMgb2YgczNjLWFkYy1iYXR0ZXJ5IHNpbXBseSBleHBlY3QgaXQgdG8g
+YmUgcHJlc2VudC4KPiAKPiBUaGVyZWZvcmUgd2Ugc2ltcGx5IHJldHVybiAxLCB1bmxlc3MgdGhl
+IGJhdHRlcnkgc3RydWN0IGlzIG5vdCBwcmVzZW50IGF0IGFsbC4KCkxvb2tzIE9LIGZvciBtZSwK
+Cj4gU2lnbmVkLW9mZi1ieTogSGVpa28gU3R1ZWJuZXIgPGhlaWtvQHNudGVjaC5kZT4KQWNrZWQt
+Ynk6IFZhc2lseSBLaG9ydXpoaWNrIDxhbmFyc291bEBnbWFpbC5jb20+Cgo+IC0tLQo+ICBkcml2
+ZXJzL3Bvd2VyL3MzY19hZGNfYmF0dGVyeS5jIHwgICAxOCArKysrKysrKysrKysrKysrKysKPiAg
+MSBmaWxlcyBjaGFuZ2VkLCAxOCBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQo+IAo+IGRp
+ZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2VyL3MzY19hZGNfYmF0dGVyeS5jIGIvZHJpdmVycy9wb3dl
+ci9zM2NfYWRjX2JhdHRlcnkuYwo+IGluZGV4IGQzMmQwZDcuLjQyZDFmOTIgMTAwNjQ0Cj4gLS0t
+IGEvZHJpdmVycy9wb3dlci9zM2NfYWRjX2JhdHRlcnkuYwo+ICsrKyBiL2RyaXZlcnMvcG93ZXIv
+czNjX2FkY19iYXR0ZXJ5LmMKPiBAQCAtNTEsNiArNTEsNyBAQCBzdGF0aWMgZW51bSBwb3dlcl9z
+dXBwbHlfcHJvcGVydHkgczNjX2FkY19iYWNrdXBfYmF0X3Byb3BzW10gPSB7Cj4gIAlQT1dFUl9T
+VVBQTFlfUFJPUF9WT0xUQUdFX05PVywKPiAgCVBPV0VSX1NVUFBMWV9QUk9QX1ZPTFRBR0VfTUlO
+LAo+ICAJUE9XRVJfU1VQUExZX1BST1BfVk9MVEFHRV9NQVhfREVTSUdOLAo+ICsJUE9XRVJfU1VQ
+UExZX1BST1BfUFJFU0VOVCwKPiAgfTsKPiAgCj4gIHN0YXRpYyBpbnQgczNjX2FkY19iYWNrdXBf
+YmF0X2dldF9wcm9wZXJ0eShzdHJ1Y3QgcG93ZXJfc3VwcGx5ICpwc3ksCj4gQEAgLTYwLDYgKzYx
+LDExIEBAIHN0YXRpYyBpbnQgczNjX2FkY19iYWNrdXBfYmF0X2dldF9wcm9wZXJ0eShzdHJ1Y3Qg
+cG93ZXJfc3VwcGx5ICpwc3ksCj4gIAlzdHJ1Y3QgczNjX2FkY19iYXQgKmJhdCA9IGNvbnRhaW5l
+cl9vZihwc3ksIHN0cnVjdCBzM2NfYWRjX2JhdCwgcHN5KTsKPiAgCj4gIAlpZiAoIWJhdCkgewo+
+ICsJCWlmIChwc3AgPT0gUE9XRVJfU1VQUExZX1BST1BfUFJFU0VOVCkgewo+ICsJCQl2YWwtPmlu
+dHZhbCA9IDA7Cj4gKwkJCXJldHVybiAwOwo+ICsJCX0KPiArCj4gIAkJZGV2X2Vycihwc3ktPmRl
+diwgIiVzOiBubyBiYXR0ZXJ5IGluZm9zID8hXG4iLCBfX2Z1bmNfXyk7Cj4gIAkJcmV0dXJuIC1F
+SU5WQUw7Cj4gIAl9Cj4gQEAgLTgzLDYgKzg5LDkgQEAgc3RhdGljIGludCBzM2NfYWRjX2JhY2t1
+cF9iYXRfZ2V0X3Byb3BlcnR5KHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeSwKPiAgCWNhc2UgUE9X
+RVJfU1VQUExZX1BST1BfVk9MVEFHRV9NQVhfREVTSUdOOgo+ICAJCXZhbC0+aW50dmFsID0gYmF0
+LT5wZGF0YS0+YmFja3VwX3ZvbHRfbWF4Owo+ICAJCXJldHVybiAwOwo+ICsJY2FzZSBQT1dFUl9T
+VVBQTFlfUFJPUF9QUkVTRU5UOgo+ICsJCXZhbC0+aW50dmFsID0gMTsKPiArCQlyZXR1cm4gMDsK
+PiAgCWRlZmF1bHQ6Cj4gIAkJcmV0dXJuIC1FSU5WQUw7Cj4gIAl9Cj4gQEAgLTEwNiw2ICsxMTUs
+NyBAQCBzdGF0aWMgZW51bSBwb3dlcl9zdXBwbHlfcHJvcGVydHkgczNjX2FkY19tYWluX2JhdF9w
+cm9wc1tdID0gewo+ICAJUE9XRVJfU1VQUExZX1BST1BfQ0hBUkdFX05PVywKPiAgCVBPV0VSX1NV
+UFBMWV9QUk9QX1ZPTFRBR0VfTk9XLAo+ICAJUE9XRVJfU1VQUExZX1BST1BfQ1VSUkVOVF9OT1cs
+Cj4gKwlQT1dFUl9TVVBQTFlfUFJPUF9QUkVTRU5ULAo+ICB9Owo+ICAKPiAgc3RhdGljIGludCBj
+YWxjX2Z1bGxfdm9sdChpbnQgdm9sdF92YWwsIGludCBjdXJfdmFsLCBpbnQgaW1wZWRhbmNlKQo+
+IEBAIC0xMzIsNiArMTQyLDExIEBAIHN0YXRpYyBpbnQgczNjX2FkY19iYXRfZ2V0X3Byb3BlcnR5
+KHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeSwKPiAgCXVuc2lnbmVkIGludCBsdXRfc2l6ZSA9IGJh
+dC0+cGRhdGEtPmx1dF9ub2FjX2NudDsKPiAgCj4gIAlpZiAoIWJhdCkgewo+ICsJCWlmIChwc3Ag
+PT0gUE9XRVJfU1VQUExZX1BST1BfUFJFU0VOVCkgewo+ICsJCQl2YWwtPmludHZhbCA9IDA7Cj4g
+KwkJCXJldHVybiAwOwo+ICsJCX0KPiArCj4gIAkJZGV2X2Vycihwc3ktPmRldiwgIm5vIGJhdHRl
+cnkgaW5mb3MgPyFcbiIpOwo+ICAJCXJldHVybiAtRUlOVkFMOwo+ICAJfQo+IEBAIC0yMDUsNiAr
+MjIwLDkgQEAgc3RhdGljIGludCBzM2NfYWRjX2JhdF9nZXRfcHJvcGVydHkoc3RydWN0IHBvd2Vy
+X3N1cHBseSAqcHN5LAo+ICAJY2FzZSBQT1dFUl9TVVBQTFlfUFJPUF9DVVJSRU5UX05PVzoKPiAg
+CQl2YWwtPmludHZhbCA9IGJhdC0+Y3VyX3ZhbHVlOwo+ICAJCXJldHVybiAwOwo+ICsJY2FzZSBQ
+T1dFUl9TVVBQTFlfUFJPUF9QUkVTRU5UOgo+ICsJCXZhbC0+aW50dmFsID0gMTsKPiArCQlyZXR1
+cm4gMDsKPiAgCWRlZmF1bHQ6Cj4gIAkJcmV0dXJuIC1FSU5WQUw7Cj4gIAl9CgoKX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBs
+aXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGlu
+dXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
