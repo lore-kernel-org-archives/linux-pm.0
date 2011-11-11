@@ -1,16 +1,13 @@
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: Re: [PATCH] s3c-adc-battery: Add naive
- POWER_SUPPLY_PROP_PRESENT implementation
-Date: Thu, 10 Nov 2011 17:30:52 +0400
-Message-ID: <20111110133052.GA31381@oksana.dev.rtsoft.ru>
-References: <201111100956.43979.heiko@sntech.de>
-	<1320923106.2594.0.camel@anarsoul-laptop.Home>
+From: =?ks_c_5601-1987?B?w9bC+b/s?= <cw00.choi@samsung.com>
+Subject: [RFC PATCH] PM / Domains: Allow devices to generic pm
+ domain regardless of power domain state
+Date: Fri, 11 Nov 2011 13:49:21 +0900
+Message-ID: <004801cca02d$474c0a80$d5e41f80$%choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1320923106.2594.0.camel@anarsoul-laptop.Home>
+Content-language: ko
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,34 +17,57 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Vasily Khoruzhick <anarsoul@gmail.com>
-Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linux-pm@lists.linux-foundation.org, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, m.szyprowski@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBOb3YgMTAsIDIwMTEgYXQgMDI6MDU6MDZQTSArMDMwMCwgVmFzaWx5IEtob3J1emhp
-Y2sgd3JvdGU6Cj4gT24gVGh1LCAyMDExLTExLTEwIGF0IDA5OjU2ICswMTAwLCBIZWlrbyBTdMO8
-Ym5lciB3cm90ZToKPiA+IFVzZXJzcGFjZSBwcm9ncmFtcyBsaWtlIHVwb3dlciBzZWVtIHRvIGRl
-cGVuZCBvbiB0aGUgcHJlc2VuY2Ugb2YgdGhlCj4gPiBQT1dFUl9TVVBQTFlfUFJPUF9QUkVTRU5U
-IHByb3BlcnR5Lgo+ID4gCj4gPiBUaGUgcmVhbCBwcmVzZW5jZSBvZiB0aGUgYmF0dGVyeSBjYW5u
-b3QgYmUgc2Vuc2VkIGFuZCBhbGwgb3RoZXIKPiA+IHJvdXRpbmVzIG9mIHMzYy1hZGMtYmF0dGVy
-eSBzaW1wbHkgZXhwZWN0IGl0IHRvIGJlIHByZXNlbnQuCj4gPiAKPiA+IFRoZXJlZm9yZSB3ZSBz
-aW1wbHkgcmV0dXJuIDEsIHVubGVzcyB0aGUgYmF0dGVyeSBzdHJ1Y3QgaXMgbm90IHByZXNlbnQg
-YXQgYWxsLgo+IAo+IExvb2tzIE9LIGZvciBtZSwKPiAKPiA+IFNpZ25lZC1vZmYtYnk6IEhlaWtv
-IFN0dWVibmVyIDxoZWlrb0BzbnRlY2guZGU+Cj4gQWNrZWQtYnk6IFZhc2lseSBLaG9ydXpoaWNr
-IDxhbmFyc291bEBnbWFpbC5jb20+CgpJIGRpc2FncmVlLiBJZiB0aGUgZHJpdmVyIGJlaGF2ZXMg
-bGlrZSB0aGUgaGFyZHdhcmUgZG9lcyBub3Qgc3VwcG9ydApob3QtcGx1Z2dhYmxlIGNlbGxzLCB0
-aGVuIHByZXNlbnQgcHJvcGVydHkgaXMgbm90IG5lY2Vzc2FyeS4KClVwb3dlcmQgc2hvdWxkIGxv
-b2sgYXQgdGhlICdwcmVzZW50JyBvbmx5IGlmIGl0IGlzIHRoZXJlOyBhbmQgaWYgaXQKaXMgbm90
-LCBjZWxscyBhc3N1bWVkIHRvIGJlIGFsd2F5cyBwcmVzZW50LgoKWy4uXQo+ID4gIAlpZiAoIWJh
-dCkgewo+ID4gKwkJaWYgKHBzcCA9PSBQT1dFUl9TVVBQTFlfUFJPUF9QUkVTRU5UKSB7Cj4gPiAr
-CQkJdmFsLT5pbnR2YWwgPSAwOwo+ID4gKwkJCXJldHVybiAwOwo+ID4gKwkJfQo+ID4gKwo+ID4g
-IAkJZGV2X2Vycihwc3ktPmRldiwgIiVzOiBubyBiYXR0ZXJ5IGluZm9zID8hXG4iLCBfX2Z1bmNf
-Xyk7CgpBbmQgaW4gdGhpcyBjYXNlIHRoYXQgZGV2X2VycigpIHRlbGxzIHRoYXQgZWl0aGVyIGhh
-cmR3YXJlIGRvZXMgbm90CnN1cHBvcnQgaG90LXBsdWdnYWJsZSBjZWxscywgb3IgZHJpdmVyIGRv
-ZXMgbm90IGhhbmRsZSB0aGlzIGNhc2U7IHdoaWNoCmlzIGFjdHVhbGx5IHRoZSBzYW1lIGZyb20g
-dGhlIHVzZXJzcGFjZSBwb2ludCBvZiB2aWV3LgoKU28sIHRoZSBwcm9ibGVtIGlzIGluIHVwb3dl
-cmQsIG5vdCB0aGlzIGRyaXZlci4KClRoYW5rcywKCi0tIApBbnRvbiBWb3JvbnRzb3YKRW1haWw6
-IGNib3VhdG1haWxydUBnbWFpbC5jb20KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4
-LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2xpbnV4LXBt
+This patch allow devices to generic pm domain without reference
+to the state of pm domains.
+
+Generic PM domain framework can add devices to pm domain with GPD_STATE_ACTIVE
+state.
+
+If I don't want to enable the specific pm domain during kernel boot for power
+saving,
+so I can't add device to specific pm domain. Usually, the works ,which
+initialize pm domain
+and add device to pm domain, is operated during early kernel boot.
+
+I think that we allow device to pm domain regardless of the state of pm domain
+and
+pm domain have to be enabled when devices included in pm domain executes
+probe() or runtime pm.
+
+Please let me know reason that why should we enable the pm domain when add
+devices to it?
+
+Best regards,
+Chanwoo Choi
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Singed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Singed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/base/power/domain.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 6790cf7..3ee34ad 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1093,11 +1093,6 @@ int pm_genpd_add_device(struct generic_pm_domain *genpd,
+struct device *dev)
+ 
+ 	genpd_acquire_lock(genpd);
+ 
+-	if (genpd->status == GPD_STATE_POWER_OFF) {
+-		ret = -EINVAL;
+-		goto out;
+-	}
+-
+ 	if (genpd->prepared_count > 0) {
+ 		ret = -EAGAIN;
+ 		goto out;
+-- 
+1.7.0.4
