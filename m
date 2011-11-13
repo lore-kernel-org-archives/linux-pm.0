@@ -1,15 +1,16 @@
-From: Mohan <camilo.id@gmail.com>
-Subject: Re: Question regarding kjournald when entering
-	hibernation
-Date: Sun, 13 Nov 2011 18:41:36 +0900
-Message-ID: <CACzi5T9gAXoYa-gSFpQoNVZ5FNJLrJabVkff0+5y-j6k28A9Cg@mail.gmail.com>
-References: <CACzi5T9Df+h4eG_yabUt4sU5V=W+6gvVWODk90FzkX1jH=BhUw@mail.gmail.com>
-	<4EBD957B.20309@tuxonice.net>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 03/10] threadgroup: extend threadgroup_lock()
+ to cover exit and exec
+Date: Sun, 13 Nov 2011 17:44:32 +0100
+Message-ID: <20111113164426.GB9446__36308.5173107267$1321202693$gmane$org@somewhere>
+References: <1320191193-8110-1-git-send-email-tj@kernel.org>
+	<1320191193-8110-4-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4EBD957B.20309@tuxonice.net>
+Content-Disposition: inline
+In-Reply-To: <1320191193-8110-4-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,81 +20,62 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: linux-pm@lists.linux-foundation.org
+To: Tejun Heo <tj@kernel.org>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@Jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Nigel,
+On Tue, Nov 01, 2011 at 04:46:26PM -0700, Tejun Heo wrote:
+> threadgroup_lock() protected only protected against new addition to
+> the threadgroup, which was inherently somewhat incomplete and
+> problematic for its only user cgroup.  On-going migration could race
+> against exec and exit leading to interesting problems - the symmetry
+> between various attach methods, task exiting during method execution,
+> ->exit() racing against attach methods, migrating task switching basic
+> properties during exec and so on.
+> 
+> This patch extends threadgroup_lock() such that it protects against
+> all three threadgroup altering operations - fork, exit and exec.  For
+> exit, threadgroup_change_begin/end() calls are added to exit path.
+> For exec, threadgroup_[un]lock() are updated to also grab and release
+> cred_guard_mutex.
+> 
+> With this change, threadgroup_lock() guarantees that the target
+> threadgroup will remain stable - no new task will be added, no new
+> PF_EXITING will be set and exec won't happen.
+> 
+> The next patch will update cgroup so that it can take full advantage
+> of this change.
 
-Thanks for the  response.
+I don't want to nitpick really, but IMHO the races involved in exit and exec
+are too different, specific and complicated on their own to be solved in a
+single one patch. This should be split in two things.
 
-On Sat, Nov 12, 2011 at 6:36 AM, Nigel Cunningham <nigel@tuxonice.net> wrote:
-> Hi Mohan.
->
-> On 11/11/11 19:35, Mohan wrote:
->> Hi,
->>
->> I am testing hibernation on a PPC4xx board.
->> I have noticed that kjournald is still running even when the hibernation
->> image is being saved to disk.
->>
->> On looking at the code in fs/jbd/journal.c the kjournald thread
->> has a check "if(freezing(current))" which i assume is to
->> check if hibernating and to freeze the kjournald thread.
->> But since the kjournald thread has the PF_NOFREEZE flag
->> set it does not freeze the kjournald thread.
->>
->> 1. Can any one tell me in what case the kjournald thread is frozen?
->
-> All kernel threads were originally treated as unfreezable. Looking at
-> the history of kjournald in git, the support for freezing kjournald has
-> been there since before 2.6.12-rc2 (before git began to be used). I'd
-> therefore say that the code may never have been used and kjournald may
-> never have been frozen.
->
-I also felt that the kjournald thread is never frozen.
-But it seems to have the if(freezing) check and the code for suspending
-that got me wondering.
+The specific problems and their fix need to be described more in detail
+in the changelog because the issues are very tricky.
 
->> 2. Or is there no problem if it is not frozen during hibernation ?
->
-> Since the hibernation code seeks to make an atomic copy which is then
-> saved, there shouldn't be a problem in the case of the vanilla kernel
-> and uswsusp. TuxOnIce might possibly have a problem if kjournald had
-> work to do and tried to do it (though a BUG_ON that the patch adds in
-> the block would capture the attempt at submitting I/O and stop
-> corruption occuring).
->
-As of now I am only using the hibernate support from the vanilla kernel.
-And as you rightly point out there seems to be no problem in the
-hibernation image that is created, I am able to resume successfully.
-I am having other problems for which i feel the running of kjournald
-during hibernation acts as a trigger. (will be debugging them
-separately relates to
-16K PAGESIZE and hIbernation image saved to swap file on / )
+The exec case:
 
->> 3. Would it be a bad idea to set the kjournald thread freezeable using
->> "set_freezable()" ?
->
-> I think it would be a good idea. Even with the atomic copy (ignoring ToI
-> since it's out-of-tree), it will simplify the debugging process if
-> things that shouldn't be running don't run during hibernation.
->
-If it is alright i can prepare a patch for fs/jbd/journal.c with
-the set_freezable() and refrigerator() -> try_to_freeze()
-(like in mm/vmscan.c) code changes.
-I would like to get it reviewed and ok'd if posible.
+IIUC, the race in exec is about the group leader that can be changed
+to become the exec'ing thread, making while_each_thread() unsafe.
+We also have other things happening there like all the other threads
+in the group that get killed, but that should be handled by the threadgroup_change_begin()
+you put in the exit path.
+The old leader is also killed but release_task() -> __unhash_process() is called
+for it manually from the exec path. However this thread too should be covered by your
+synchronisation in exit().
 
-Please let me know where (who all) i have to post it to.
+So after your protection in the exit path, the only thing to protect against in exec
+is that group_leader that can change concurrently. But I may be missing something in the picture.
+Also note this is currently protected by the tasklist readlock. Cred guard mutex is
+certainly better, I just don't remember if you remove the tasklist lock in a
+further patch.
 
-> Regards,
->
-> Nigel
-> --
-> Evolution (n): A hypothetical process whereby improbable
-> events occur with alarming frequency, order arises from chaos, and
-> no one is given credit.
->
+The exit case:
 
-Regards,
-Mohan
+There the issue is about racing against cgroup_exit() where the task can be
+assigned to the root cgroup. Is this really a problem in fact? I don't know
+if subsystems care about that. Perhaps some of them are buggy in that
+regard. At least the task counter handles that and it needs a
+->cancel_attach_task() for this purpose in the case the migration fails due to exit.
+Not sure about others. A real synchronization against exit is less error prone for sure.
+In the end that's probably a win.
