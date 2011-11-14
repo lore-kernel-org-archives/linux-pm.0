@@ -1,13 +1,16 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / devfreq: correct Kconfig dependency
-Date: Tue, 15 Nov 2011 00:16:51 +0100
-Message-ID: <201111150016.51389.rjw@sisk.pl>
-References: <CAJ0PZbSO7n7P0r_i+tOWmxtzxx0T9kTRgnC2eLXn9m69k5HsKw@mail.gmail.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 08/10] cgroup: don't use
+ subsys->can_attach_task() or ->attach_task()
+Date: Tue, 15 Nov 2011 00:54:10 +0100
+Message-ID: <20111114235405.GJ9446__31342.7180437886$1321314877$gmane$org@somewhere>
+References: <1320191193-8110-1-git-send-email-tj@kernel.org>
+	<1320191193-8110-9-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ0PZbSO7n7P0r_i+tOWmxtzxx0T9kTRgnC2eLXn9m69k5HsKw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1320191193-8110-9-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -17,82 +20,32 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: myungjoo.ham@gmail.com
-Cc: "Hilman, Kevin" <khilman@ti.com>, Kyungmin Park <kyungmin.park@samsung.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: akpm@linux-foundation.org, Peter Zijlstra <peterz@infradead.org>, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, containers@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, James Morris <jmorris@namei.org>, paul@paulmenage.org, kamezawa.hiroyu@Jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, November 14, 2011, MyungJoo Ham wrote:
-> Devfreq does not depend on OPP. The dependency is removed.
+On Tue, Nov 01, 2011 at 04:46:31PM -0700, Tejun Heo wrote:
+> Now that subsys->can_attach() and attach() take @tset instead of
+> @task, they can handle per-task operations.  Convert
+> ->can_attach_task() and ->attach_task() users to use ->can_attach()
+> and attach() instead.  Most converions are straight-forward.
+> Noteworthy changes are,
 > 
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> * In cgroup_freezer, remove unnecessary NULL assignments to unused
+>   methods.  It's useless and very prone to get out of sync, which
+>   already happened.
+> 
+> * In cpuset, PF_THREAD_BOUND test is checked for each task.  This
+>   doesn't make any practical difference but is conceptually cleaner.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Paul Menage <paul@paulmenage.org>
+> Cc: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: James Morris <jmorris@namei.org>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <peterz@infradead.org>
 
-Applied to linux-pm/pm-fixes.
-
-Thanks,
-Rafael
-
-
-> ---
->  drivers/devfreq/Kconfig |   41 +++++++++++++++++------------------------
->  1 files changed, 17 insertions(+), 24 deletions(-)
-> 
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 8fd34e7..87a742f 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -1,36 +1,29 @@
-> -config ARCH_HAS_DEVFREQ
-> -	bool
-> -	depends on ARCH_HAS_OPP
-> -	help
-> -	  Denotes that the architecture supports DEVFREQ. If the architecture
-> -	  supports multiple OPP entries per device and the frequency of the
-> -	  devices with OPPs may be altered dynamically, the architecture
-> -	  supports DEVFREQ.
-> -
->  menuconfig PM_DEVFREQ
->  	bool "Generic Dynamic Voltage and Frequency Scaling (DVFS) support"
-> -	depends on PM_OPP && ARCH_HAS_DEVFREQ
->  	help
-> -	  With OPP support, a device may have a list of frequencies and
-> -	  voltages available. DEVFREQ, a generic DVFS framework can be
-> -	  registered for a device with OPP support in order to let the
-> -	  governor provided to DEVFREQ choose an operating frequency
-> -	  based on the OPP's list and the policy given with DEVFREQ.
-> +	  A device may have a list of frequencies and voltages available.
-> +	  devfreq, a generic DVFS framework can be registered for a device
-> +	  in order to let the governor provided to devfreq choose an
-> +	  operating frequency based on the device driver's policy.
-> 
-> -	  Each device may have its own governor and policy. DEVFREQ can
-> +	  Each device may have its own governor and policy. Devfreq can
->  	  reevaluate the device state periodically and/or based on the
-> -	  OPP list changes (each frequency/voltage pair in OPP may be
-> -	  disabled or enabled).
-> +	  notification to "nb", a notifier block, of devfreq.
-> 
-> -	  Like some CPUs with CPUFREQ, a device may have multiple clocks.
-> +	  Like some CPUs with CPUfreq, a device may have multiple clocks.
->  	  However, because the clock frequencies of a single device are
-> -	  determined by the single device's state, an instance of DEVFREQ
-> +	  determined by the single device's state, an instance of devfreq
->  	  is attached to a single device and returns a "representative"
-> -	  clock frequency from the OPP of the device, which is also attached
-> -	  to a device by 1-to-1. The device registering DEVFREQ takes the
-> -	  responsiblity to "interpret" the frequency listed in OPP and
-> +	  clock frequency of the device, which is also attached
-> +	  to a device by 1-to-1. The device registering devfreq takes the
-> +	  responsiblity to "interpret" the representative frequency and
->  	  to set its every clock accordingly with the "target" callback
-> -	  given to DEVFREQ.
-> +	  given to devfreq.
-> +
-> +	  When OPP is used with the devfreq device, it is recommended to
-> +	  register devfreq's nb to the OPP's notifier head.  If OPP is
-> +	  used with the devfreq device, you may use OPP helper
-> +	  functions defined in devfreq.h.
-> 
->  if PM_DEVFREQ
-> 
-> 
+Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
