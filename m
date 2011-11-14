@@ -1,16 +1,12 @@
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 03/10] threadgroup: extend threadgroup_lock()
- to cover exit and exec
-Date: Sun, 13 Nov 2011 19:20:34 +0100
-Message-ID: <20111113182029.GC9446@somewhere>
-References: <1320191193-8110-1-git-send-email-tj@kernel.org>
-	<1320191193-8110-4-git-send-email-tj@kernel.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH] PM / devfreq: correct Kconfig dependency
+Date: Mon, 14 Nov 2011 16:57:24 +0900
+Message-ID: <CAJ0PZbSO7n7P0r_i+tOWmxtzxx0T9kTRgnC2eLXn9m69k5HsKw@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1320191193-8110-4-git-send-email-tj@kernel.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,73 +16,75 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@Jp.fujitsu.com
+To: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: "Hilman, Kevin" <khilman@ti.com>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 01, 2011 at 04:46:26PM -0700, Tejun Heo wrote:
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index aa47d0f..6fb546e 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -2377,13 +2377,37 @@ static inline void threadgroup_change_done(struct task_struct *tsk)
->  {
->  	up_read(&tsk->signal->group_rwsem);
->  }
-> +
-> +/**
-> + * threadgroup_lock - lock threadgroup
-> + * @tsk: member task of the threadgroup to lock
-> + *
-> + * Lock the threadgroup @tsk belongs to.  No new task is allowed to enter
-> + * and member tasks aren't allowed to exit (as indicated by PF_EXITING) or
-> + * perform exec.  This is useful for cases where the threadgroup needs to
-> + * stay stable across blockable operations.
-> + *
-> + * fork and exit explicitly call threadgroup_change_{begin|end}() for
-> + * synchronization.  exec is already synchronized with cread_guard_mutex
-> + * which we grab here.
-> + */
->  static inline void threadgroup_lock(struct task_struct *tsk)
->  {
-> +	/* exec uses exit for de-threading, grab cred_guard_mutex first */
-> +	mutex_lock(&tsk->signal->cred_guard_mutex);
+Devfreq does not depend on OPP. The dependency is removed.
 
-May be worth explaining what in exec is synchronized through this. ie the leader.
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ drivers/devfreq/Kconfig |   41 +++++++++++++++++------------------------
+ 1 files changed, 17 insertions(+), 24 deletions(-)
 
->  	down_write(&tsk->signal->group_rwsem);
->  }
-> +
-> +/**
-> + * threadgroup_unlock - unlock threadgroup
-> + * @tsk: member task of the threadgroup to unlock
-> + *
-> + * Reverse threadgroup_lock().
-> + */
->  static inline void threadgroup_unlock(struct task_struct *tsk)
->  {
->  	up_write(&tsk->signal->group_rwsem);
-> +	mutex_unlock(&tsk->signal->cred_guard_mutex);
->  }
->  #else
->  static inline void threadgroup_change_begin(struct task_struct *tsk) {}
-> diff --git a/kernel/exit.c b/kernel/exit.c
-> index 2913b35..3565f00 100644
-> --- a/kernel/exit.c
-> +++ b/kernel/exit.c
-> @@ -938,6 +938,12 @@ NORET_TYPE void do_exit(long code)
->  		schedule();
->  	}
->  
-> +	/*
-> +	 * @tsk's threadgroup is going through changes - lock out users
-> +	 * which expect stable threadgroup.
-> +	 */
-> +	threadgroup_change_begin(tsk);
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 8fd34e7..87a742f 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -1,36 +1,29 @@
+-config ARCH_HAS_DEVFREQ
+-	bool
+-	depends on ARCH_HAS_OPP
+-	help
+-	  Denotes that the architecture supports DEVFREQ. If the architecture
+-	  supports multiple OPP entries per device and the frequency of the
+-	  devices with OPPs may be altered dynamically, the architecture
+-	  supports DEVFREQ.
+-
+ menuconfig PM_DEVFREQ
+ 	bool "Generic Dynamic Voltage and Frequency Scaling (DVFS) support"
+-	depends on PM_OPP && ARCH_HAS_DEVFREQ
+ 	help
+-	  With OPP support, a device may have a list of frequencies and
+-	  voltages available. DEVFREQ, a generic DVFS framework can be
+-	  registered for a device with OPP support in order to let the
+-	  governor provided to DEVFREQ choose an operating frequency
+-	  based on the OPP's list and the policy given with DEVFREQ.
++	  A device may have a list of frequencies and voltages available.
++	  devfreq, a generic DVFS framework can be registered for a device
++	  in order to let the governor provided to devfreq choose an
++	  operating frequency based on the device driver's policy.
 
-Why so early? You actually want to synchronize against cgroup_exit(). Or
-am I missing something?
+-	  Each device may have its own governor and policy. DEVFREQ can
++	  Each device may have its own governor and policy. Devfreq can
+ 	  reevaluate the device state periodically and/or based on the
+-	  OPP list changes (each frequency/voltage pair in OPP may be
+-	  disabled or enabled).
++	  notification to "nb", a notifier block, of devfreq.
 
-Yeah there may be a problem with reading PF_EXITING inside the lock if it
-is updated outside the lock, may be we need a pair of memory barriers. But
-other than that, this should be enough to lock around cgroup_exit().
+-	  Like some CPUs with CPUFREQ, a device may have multiple clocks.
++	  Like some CPUs with CPUfreq, a device may have multiple clocks.
+ 	  However, because the clock frequencies of a single device are
+-	  determined by the single device's state, an instance of DEVFREQ
++	  determined by the single device's state, an instance of devfreq
+ 	  is attached to a single device and returns a "representative"
+-	  clock frequency from the OPP of the device, which is also attached
+-	  to a device by 1-to-1. The device registering DEVFREQ takes the
+-	  responsiblity to "interpret" the frequency listed in OPP and
++	  clock frequency of the device, which is also attached
++	  to a device by 1-to-1. The device registering devfreq takes the
++	  responsiblity to "interpret" the representative frequency and
+ 	  to set its every clock accordingly with the "target" callback
+-	  given to DEVFREQ.
++	  given to devfreq.
++
++	  When OPP is used with the devfreq device, it is recommended to
++	  register devfreq's nb to the OPP's notifier head.  If OPP is
++	  used with the devfreq device, you may use OPP helper
++	  functions defined in devfreq.h.
+
+ if PM_DEVFREQ
+
+-- 
+1.7.4.1
