@@ -1,14 +1,18 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 4/7] x86: Expand the x86_msi_ops to have a
-	restore MSIs.
-Date: Tue, 15 Nov 2011 16:31:08 -0500
-Message-ID: <1321392671-9128-5-git-send-email-konrad.wilk@oracle.com>
-References: <1321392671-9128-1-git-send-email-konrad.wilk@oracle.com>
+From: Kyungmin Park <kyungmin.park@samsung.com>
+Subject: Re: [PATCH 1/3 v3] ARM: EXYNOS4: Support for generic I/O
+ power domains on EXYNOS4210/4212
+Date: Tue, 15 Nov 2011 18:32:20 +0900
+Message-ID: <CAH9JG2Vcp50_6ppkjrdsUu6mEkL4CMSKVySmJKyPhGaSjbxO=A__31331.5034880818$1321393316$gmane$org@mail.gmail.com>
+References: <4EA690EF.4000703@samsung.com>
+	<013301cc99cd$8d5a6a00$a80f3e00$%kim@samsung.com>
+	<4EB26BE2.2060508@samsung.com>
+	<CAGTfZH0xOh=EDRhb3gxOZhV-KQZNY_-o=miBOEne_S5-YsQ_Vg@mail.gmail.com>
+	<005801cca378$0488d0e0$0d9a72a0$%kim@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1321392671-9128-1-git-send-email-konrad.wilk@oracle.com>
+In-Reply-To: <005801cca378$0488d0e0$0d9a72a0$%kim@samsung.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,131 +22,104 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, x86@kernel.org, hpa@zytor.com, len.brown@intel.com, joseph.cihula@intel.com, linux-pm@lists.linux-foundation.org, tboot-
-Cc: xen-devel@lists.xensource.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sylwester Nawrocki <snjw23@gmail.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-The MSI restore function will become a function pointer in an
-x86_msi_ops struct. It defaults to the implementation in the
-io_apic.c and msi.c. We piggyback on the indirection mechanism
-introduced by "x86: Introduce x86_msi_ops".
+On 11/15/11, Kukjin Kim <kgene.kim@samsung.com> wrote:
+> Chanwoo Choi wrote:
+>> Hi Kukjin Kim,
+>>
+>> Please reply about Sylwester Nawrocki and me.
+>> 2011/11/3 Sylwester Nawrocki <s.nawrocki@samsung.com>
+>> Hi Kgene,
+>>
+>> On 11/03/2011 03:09 AM, Kukjin Kim wrote:
+>> > As I said, I don't think we should control/gate the clocks with
+> regarding power domain.
+>> As far as I know there is a plan to let the drivers override
+> start/stop_device callbacks,
+>> moreover the clock control can be disabled globally by not implementing
+> start/stop_device
+>> callbacks or per device by not adding clkdev entities to the device clock
+> list at runtime
+>> PM core. So IMHO, there is/going to be enough flexibility.
+>>
+>> > It should be controlled by each regarding device driver and in addition,
+> as I know,
+>> > to handle block of clock is not recommended on EXYNOS4 now.
+>> What do you mean by this ? I couldn't find such information in any
+> documentation.
+>> Shouldn't "clock gate block" registers be touched by boot loader and the
+> kernel?
+>> Our boot loaders disable all clocks, and if the global clock gate is not
+> enabled
+>> by the kernel there is no chance any multimedia device will work.
+>>
+>> Should the global clock block gate be always enabled then ? I'm afraid it
+> is not
+>> optimal form power management POV.
+>>
+> Sylwester, let me check again before replying.
+>
+>> To Kukjin Kim,
+>>
+> Hi Chanwoo,
+>
+> Firstly, please use text-typed e-mail when you reply.
+>
+>> > It should be controlled by each regarding device driver and in addition,
+> as I know,
+>> > to handle block of clock is not recommended on EXYNOS4 now.
+>>
+>> As you said, should we separately control power and clock of power domain?
+>
+> If you ask my opinion, yes, I mean when it is required, it would be
+> controlled independent.
 
-Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
----
- arch/x86/include/asm/pci.h      |    9 +++++++++
- arch/x86/include/asm/x86_init.h |    1 +
- arch/x86/kernel/x86_init.c      |    1 +
- drivers/pci/msi.c               |   29 +++++++++++++++++++++++++++--
- 4 files changed, 38 insertions(+), 2 deletions(-)
+Okay. It's meaning-less, Until change his mind, just drop it. I hope
+you don't change this mind for long time.
 
-diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-index d498943..df75d07 100644
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -112,19 +112,28 @@ static inline void x86_teardown_msi_irq(unsigned int irq)
- {
- 	x86_msi.teardown_msi_irq(irq);
- }
-+static inline void x86_restore_msi_irqs(struct pci_dev *dev, int irq)
-+{
-+	x86_msi.restore_msi_irqs(dev, irq);
-+}
- #define arch_setup_msi_irqs x86_setup_msi_irqs
- #define arch_teardown_msi_irqs x86_teardown_msi_irqs
- #define arch_teardown_msi_irq x86_teardown_msi_irq
-+#define arch_restore_msi_irqs x86_restore_msi_irqs
- /* implemented in arch/x86/kernel/apic/io_apic. */
- int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
- void native_teardown_msi_irq(unsigned int irq);
-+void native_restore_msi_irqs(struct pci_dev *dev, int irq);
- /* default to the implementation in drivers/lib/msi.c */
- #define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
-+#define HAVE_DEFAULT_MSI_RESTORE_IRQS
- void default_teardown_msi_irqs(struct pci_dev *dev);
-+void default_restore_msi_irqs(struct pci_dev *dev, int irq);
- #else
- #define native_setup_msi_irqs		NULL
- #define native_teardown_msi_irq		NULL
- #define default_teardown_msi_irqs	NULL
-+#define default_restore_msi_irqs	NULL
- #endif
- 
- #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
-diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
-index d3d8590..7af18be 100644
---- a/arch/x86/include/asm/x86_init.h
-+++ b/arch/x86/include/asm/x86_init.h
-@@ -174,6 +174,7 @@ struct x86_msi_ops {
- 	int (*setup_msi_irqs)(struct pci_dev *dev, int nvec, int type);
- 	void (*teardown_msi_irq)(unsigned int irq);
- 	void (*teardown_msi_irqs)(struct pci_dev *dev);
-+	void (*restore_msi_irqs)(struct pci_dev *dev, int irq);
- };
- 
- extern struct x86_init_ops x86_init;
-diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
-index 6f164bd..bd1fe10 100644
---- a/arch/x86/kernel/x86_init.c
-+++ b/arch/x86/kernel/x86_init.c
-@@ -110,4 +110,5 @@ struct x86_msi_ops x86_msi = {
- 	.setup_msi_irqs = native_setup_msi_irqs,
- 	.teardown_msi_irq = native_teardown_msi_irq,
- 	.teardown_msi_irqs = default_teardown_msi_irqs,
-+	.restore_msi_irqs = default_restore_msi_irqs,
- };
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 0e6d04d..ba2ea4e 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -86,6 +86,31 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
- }
- #endif
- 
-+#ifndef arch_restore_msi_irqs
-+# define arch_restore_msi_irqs default_restore_msi_irqs
-+# define HAVE_DEFAULT_MSI_RESTORE_IRQS
-+#endif
-+
-+#ifdef HAVE_DEFAULT_MSI_RESTORE_IRQS
-+void default_restore_msi_irqs(struct pci_dev *dev, int irq)
-+{
-+	struct msi_desc *entry;
-+
-+	entry = NULL;
-+	if (dev->msix_enabled) {
-+		list_for_each_entry(entry, &dev->msi_list, list) {
-+			if (irq == entry->irq)
-+				break;
-+		}
-+	} else if (dev->msi_enabled)  {
-+		entry = irq_get_msi_desc(irq);
-+	}
-+
-+	if (entry)
-+		write_msi_msg(irq, &entry->msg);
-+}
-+#endif
-+
- static void msi_set_enable(struct pci_dev *dev, int pos, int enable)
- {
- 	u16 control;
-@@ -360,7 +385,7 @@ static void __pci_restore_msi_state(struct pci_dev *dev)
- 
- 	pci_intx_for_msi(dev, 0);
- 	msi_set_enable(dev, pos, 0);
--	write_msi_msg(dev->irq, &entry->msg);
-+	arch_restore_msi_irqs(dev, dev->irq);
- 
- 	pci_read_config_word(dev, pos + PCI_MSI_FLAGS, &control);
- 	msi_mask_irq(entry, msi_capable_mask(control), entry->masked);
-@@ -388,7 +413,7 @@ static void __pci_restore_msix_state(struct pci_dev *dev)
- 	pci_write_config_word(dev, pos + PCI_MSIX_FLAGS, control);
- 
- 	list_for_each_entry(entry, &dev->msi_list, list) {
--		write_msi_msg(entry->irq, &entry->msg);
-+		arch_restore_msi_irqs(dev, entry->irq);
- 		msix_mask_irq(entry, entry->masked);
- 	}
- 
--- 
-1.7.7.1
+Thank you,
+Kyungmin Park
+>
+>> or Have to turn on the clock of power domain always?
+>
+> I didn't say like that.
+>
+>> I think that it is to happen unnecessary power consumption.
+>
+> I don't think, when the power of block/domain is downed, does it happen
+> _really_ meaningful power consumption?
+>
+>> If we have to maintain on state of power domain clock, please let me know
+> guide about this.
+>>
+>> Also,
+>> For example, fimg2d and framebuffer use LCD0 power domain as parent
+> device.I
+>> If fimg2d and framebuffer is disabled state due to not using their,
+>> I think that we should turn off the clock of LCD0 power domain to reduce
+> power leakage.
+>
+> I think, probably it doesn't matter. If any useful data, please let me know.
+>
+>> Which each regarding device driver control the clock of power domain?
+>>
+>> I will expect for your reply.
+>>
+>
+> Thanks.
+>
+> Best regards,
+> Kgene.
+> --
+> Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
+> SW Solution Development Team, Samsung Electronics Co., Ltd.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
