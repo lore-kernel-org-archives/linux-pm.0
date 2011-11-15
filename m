@@ -1,8 +1,7 @@
 From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 7/7] xen/acpi/sleep: Register to the
-	acpi_suspend_lowlevel a callback.
-Date: Tue, 15 Nov 2011 16:31:11 -0500
-Message-ID: <1321392671-9128-8-git-send-email-konrad.wilk@oracle.com>
+Subject: [PATCH 5/7] xen/pci: Utilize the restore_msi_irqs hook.
+Date: Tue, 15 Nov 2011 16:31:09 -0500
+Message-ID: <1321392671-9128-6-git-send-email-konrad.wilk@oracle.com>
 References: <1321392671-9128-1-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,51 +21,79 @@ To: linux-kernel@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, x86@kernel.or
 Cc: xen-devel@lists.xensource.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-We piggyback on "x86/acpi: Provide registration for acpi_suspend_lowlevel."
-to register a Xen version of the callback. The callback does not
-do anything special - except it omits the x86_acpi_suspend_lowlevel.
-It does that b/c during suspend it tries to save cr8 values (which
-the hypervisor does not support), and then on resume path the
-cr3, cr8, idt, and gdt are all resumed which clashes with what
-the hypervisor has set up for the guest.
+From: Tang Liang <liang.tang@oracle.com>
 
-Signed-off-by: Liang Tang <liang.tang@oracle.com>
+to make a hypercall to restore the vectors in the MSI/MSI-X
+configuration space.
+
 Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- include/xen/acpi.h |   17 ++++++++++++++++-
- 1 files changed, 16 insertions(+), 1 deletions(-)
+ arch/x86/pci/xen.c              |   27 +++++++++++++++++++++++++++
+ include/xen/interface/physdev.h |    7 +++++++
+ 2 files changed, 34 insertions(+), 0 deletions(-)
 
-diff --git a/include/xen/acpi.h b/include/xen/acpi.h
-index 69a6890..832b5e5 100644
---- a/include/xen/acpi.h
-+++ b/include/xen/acpi.h
-@@ -44,11 +44,26 @@
- acpi_status xen_acpi_notify_hypervisor_state(u8 sleep_state,
- 				     u32 pm1a_cnt, u32 pm1b_cnd);
- 
-+static inline int xen_acpi_suspend_lowlevel(void)
-+{
-+	/*
-+	* Xen will save and restore CPU context, so
-+	* we can skip that and just go straight to
-+	* the suspend.
-+	*/
-+	acpi_enter_sleep_state(ACPI_STATE_S3);
-+	return 0;
-+}
-+
-+
- static inline void xen_acpi_sleep_register(void)
- {
--	if (xen_initial_domain())
-+	if (xen_initial_domain()){
- 		acpi_os_prepare_sleep_register(
- 			&xen_acpi_notify_hypervisor_state);
-+
-+		acpi_suspend_lowlevel = xen_acpi_suspend_lowlevel;
-+	}
+diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
+index 492ade8..249a5ae 100644
+--- a/arch/x86/pci/xen.c
++++ b/arch/x86/pci/xen.c
+@@ -324,6 +324,32 @@ static int xen_initdom_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ out:
+ 	return ret;
  }
- #else
- static inline void xen_acpi_sleep_register(void)
++
++static void xen_initdom_restore_msi_irqs(struct pci_dev *dev, int irq)
++{
++	int ret = 0;
++
++	if (pci_seg_supported) {
++		struct physdev_pci_device restore_ext;
++
++		restore_ext.seg = pci_domain_nr(dev->bus);
++		restore_ext.bus = dev->bus->number;
++		restore_ext.devfn = dev->devfn;
++		ret = HYPERVISOR_physdev_op(PHYSDEVOP_restore_msi_ext,
++					&restore_ext);
++		if (ret == -ENOSYS)
++			pci_seg_supported = false;
++		WARN(ret && ret != -ENOSYS, "restore_msi_ext -> %d\n", ret);
++	}
++	if (!pci_seg_supported) {
++		struct physdev_restore_msi restore;
++
++		restore.bus = dev->bus->number;
++		restore.devfn = dev->devfn;
++		ret = HYPERVISOR_physdev_op(PHYSDEVOP_restore_msi, &restore);
++		WARN(ret && ret != -ENOSYS, "restore_msi -> %d\n", ret);
++	}
++}
+ #endif
+ 
+ static void xen_teardown_msi_irqs(struct pci_dev *dev)
+@@ -446,6 +472,7 @@ int __init pci_xen_initial_domain(void)
+ #ifdef CONFIG_PCI_MSI
+ 	x86_msi.setup_msi_irqs = xen_initdom_setup_msi_irqs;
+ 	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
++	x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
+ #endif
+ 	xen_setup_acpi_sci();
+ 	__acpi_register_gsi = acpi_register_gsi_xen;
+diff --git a/include/xen/interface/physdev.h b/include/xen/interface/physdev.h
+index c1080d9..0c28989 100644
+--- a/include/xen/interface/physdev.h
++++ b/include/xen/interface/physdev.h
+@@ -145,6 +145,13 @@ struct physdev_manage_pci {
+ 	uint8_t devfn;
+ };
+ 
++#define PHYSDEVOP_restore_msi            19
++struct physdev_restore_msi {
++	/* IN */
++	uint8_t bus;
++	uint8_t devfn;
++};
++
+ #define PHYSDEVOP_manage_pci_add_ext	20
+ struct physdev_manage_pci_ext {
+ 	/* IN */
 -- 
 1.7.7.1
