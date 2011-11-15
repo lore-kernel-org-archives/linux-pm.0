@@ -1,7 +1,8 @@
 From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 5/7] xen/pci: Utilize the restore_msi_irqs hook.
-Date: Tue, 15 Nov 2011 16:31:09 -0500
-Message-ID: <1321392671-9128-6-git-send-email-konrad.wilk@oracle.com>
+Subject: [PATCH 4/7] x86: Expand the x86_msi_ops to have a
+	restore MSIs.
+Date: Tue, 15 Nov 2011 16:31:08 -0500
+Message-ID: <1321392671-9128-5-git-send-email-konrad.wilk@oracle.com>
 References: <1321392671-9128-1-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,79 +22,127 @@ To: linux-kernel@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, x86@kernel.or
 Cc: xen-devel@lists.xensource.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tang Liang <liang.tang@oracle.com>
-
-to make a hypercall to restore the vectors in the MSI/MSI-X
-configuration space.
+The MSI restore function will become a function pointer in an
+x86_msi_ops struct. It defaults to the implementation in the
+io_apic.c and msi.c. We piggyback on the indirection mechanism
+introduced by "x86: Introduce x86_msi_ops".
 
 Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- arch/x86/pci/xen.c              |   27 +++++++++++++++++++++++++++
- include/xen/interface/physdev.h |    7 +++++++
- 2 files changed, 34 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/pci.h      |    9 +++++++++
+ arch/x86/include/asm/x86_init.h |    1 +
+ arch/x86/kernel/x86_init.c      |    1 +
+ drivers/pci/msi.c               |   29 +++++++++++++++++++++++++++--
+ 4 files changed, 38 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index 492ade8..249a5ae 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -324,6 +324,32 @@ static int xen_initdom_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- out:
- 	return ret;
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index d498943..df75d07 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -112,19 +112,28 @@ static inline void x86_teardown_msi_irq(unsigned int irq)
+ {
+ 	x86_msi.teardown_msi_irq(irq);
  }
-+
-+static void xen_initdom_restore_msi_irqs(struct pci_dev *dev, int irq)
++static inline void x86_restore_msi_irqs(struct pci_dev *dev, int irq)
 +{
-+	int ret = 0;
-+
-+	if (pci_seg_supported) {
-+		struct physdev_pci_device restore_ext;
-+
-+		restore_ext.seg = pci_domain_nr(dev->bus);
-+		restore_ext.bus = dev->bus->number;
-+		restore_ext.devfn = dev->devfn;
-+		ret = HYPERVISOR_physdev_op(PHYSDEVOP_restore_msi_ext,
-+					&restore_ext);
-+		if (ret == -ENOSYS)
-+			pci_seg_supported = false;
-+		WARN(ret && ret != -ENOSYS, "restore_msi_ext -> %d\n", ret);
-+	}
-+	if (!pci_seg_supported) {
-+		struct physdev_restore_msi restore;
-+
-+		restore.bus = dev->bus->number;
-+		restore.devfn = dev->devfn;
-+		ret = HYPERVISOR_physdev_op(PHYSDEVOP_restore_msi, &restore);
-+		WARN(ret && ret != -ENOSYS, "restore_msi -> %d\n", ret);
-+	}
++	x86_msi.restore_msi_irqs(dev, irq);
 +}
+ #define arch_setup_msi_irqs x86_setup_msi_irqs
+ #define arch_teardown_msi_irqs x86_teardown_msi_irqs
+ #define arch_teardown_msi_irq x86_teardown_msi_irq
++#define arch_restore_msi_irqs x86_restore_msi_irqs
+ /* implemented in arch/x86/kernel/apic/io_apic. */
+ int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
+ void native_teardown_msi_irq(unsigned int irq);
++void native_restore_msi_irqs(struct pci_dev *dev, int irq);
+ /* default to the implementation in drivers/lib/msi.c */
+ #define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
++#define HAVE_DEFAULT_MSI_RESTORE_IRQS
+ void default_teardown_msi_irqs(struct pci_dev *dev);
++void default_restore_msi_irqs(struct pci_dev *dev, int irq);
+ #else
+ #define native_setup_msi_irqs		NULL
+ #define native_teardown_msi_irq		NULL
+ #define default_teardown_msi_irqs	NULL
++#define default_restore_msi_irqs	NULL
  #endif
  
- static void xen_teardown_msi_irqs(struct pci_dev *dev)
-@@ -446,6 +472,7 @@ int __init pci_xen_initial_domain(void)
- #ifdef CONFIG_PCI_MSI
- 	x86_msi.setup_msi_irqs = xen_initdom_setup_msi_irqs;
- 	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
-+	x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
- #endif
- 	xen_setup_acpi_sci();
- 	__acpi_register_gsi = acpi_register_gsi_xen;
-diff --git a/include/xen/interface/physdev.h b/include/xen/interface/physdev.h
-index c1080d9..0c28989 100644
---- a/include/xen/interface/physdev.h
-+++ b/include/xen/interface/physdev.h
-@@ -145,6 +145,13 @@ struct physdev_manage_pci {
- 	uint8_t devfn;
+ #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
+diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
+index d3d8590..7af18be 100644
+--- a/arch/x86/include/asm/x86_init.h
++++ b/arch/x86/include/asm/x86_init.h
+@@ -174,6 +174,7 @@ struct x86_msi_ops {
+ 	int (*setup_msi_irqs)(struct pci_dev *dev, int nvec, int type);
+ 	void (*teardown_msi_irq)(unsigned int irq);
+ 	void (*teardown_msi_irqs)(struct pci_dev *dev);
++	void (*restore_msi_irqs)(struct pci_dev *dev, int irq);
  };
  
-+#define PHYSDEVOP_restore_msi            19
-+struct physdev_restore_msi {
-+	/* IN */
-+	uint8_t bus;
-+	uint8_t devfn;
-+};
+ extern struct x86_init_ops x86_init;
+diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+index 6f164bd..bd1fe10 100644
+--- a/arch/x86/kernel/x86_init.c
++++ b/arch/x86/kernel/x86_init.c
+@@ -110,4 +110,5 @@ struct x86_msi_ops x86_msi = {
+ 	.setup_msi_irqs = native_setup_msi_irqs,
+ 	.teardown_msi_irq = native_teardown_msi_irq,
+ 	.teardown_msi_irqs = default_teardown_msi_irqs,
++	.restore_msi_irqs = default_restore_msi_irqs,
+ };
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index 0e6d04d..ba2ea4e 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -86,6 +86,31 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
+ }
+ #endif
+ 
++#ifndef arch_restore_msi_irqs
++# define arch_restore_msi_irqs default_restore_msi_irqs
++# define HAVE_DEFAULT_MSI_RESTORE_IRQS
++#endif
 +
- #define PHYSDEVOP_manage_pci_add_ext	20
- struct physdev_manage_pci_ext {
- 	/* IN */
++#ifdef HAVE_DEFAULT_MSI_RESTORE_IRQS
++void default_restore_msi_irqs(struct pci_dev *dev, int irq)
++{
++	struct msi_desc *entry;
++
++	entry = NULL;
++	if (dev->msix_enabled) {
++		list_for_each_entry(entry, &dev->msi_list, list) {
++			if (irq == entry->irq)
++				break;
++		}
++	} else if (dev->msi_enabled)  {
++		entry = irq_get_msi_desc(irq);
++	}
++
++	if (entry)
++		write_msi_msg(irq, &entry->msg);
++}
++#endif
++
+ static void msi_set_enable(struct pci_dev *dev, int pos, int enable)
+ {
+ 	u16 control;
+@@ -360,7 +385,7 @@ static void __pci_restore_msi_state(struct pci_dev *dev)
+ 
+ 	pci_intx_for_msi(dev, 0);
+ 	msi_set_enable(dev, pos, 0);
+-	write_msi_msg(dev->irq, &entry->msg);
++	arch_restore_msi_irqs(dev, dev->irq);
+ 
+ 	pci_read_config_word(dev, pos + PCI_MSI_FLAGS, &control);
+ 	msi_mask_irq(entry, msi_capable_mask(control), entry->masked);
+@@ -388,7 +413,7 @@ static void __pci_restore_msix_state(struct pci_dev *dev)
+ 	pci_write_config_word(dev, pos + PCI_MSIX_FLAGS, control);
+ 
+ 	list_for_each_entry(entry, &dev->msi_list, list) {
+-		write_msi_msg(entry->irq, &entry->msg);
++		arch_restore_msi_irqs(dev, entry->irq);
+ 		msix_mask_irq(entry, entry->masked);
+ 	}
+ 
 -- 
 1.7.7.1
