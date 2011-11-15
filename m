@@ -1,8 +1,8 @@
 From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 3/7] xen/acpi/sleep: Enable ACPI sleep via the
-	acpi_os_prepare_sleep_register
-Date: Tue, 15 Nov 2011 16:31:07 -0500
-Message-ID: <1321392671-9128-4-git-send-email-konrad.wilk@oracle.com>
+Subject: [PATCH 1/7] x86, acpi,
+	tboot: Have a ACPI os prepare sleep instead of calling tboot_sleep.
+Date: Tue, 15 Nov 2011 16:31:05 -0500
+Message-ID: <1321392671-9128-2-git-send-email-konrad.wilk@oracle.com>
 References: <1321392671-9128-1-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,196 +22,153 @@ To: linux-kernel@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, x86@kernel.or
 Cc: xen-devel@lists.xensource.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-Provide the registration callback to call in the Xen's
-ACPI sleep functionality. This means that during S3/S5
-we make a hypercall XENPF_enter_acpi_sleep with the
-proper PM1A/PM1B registers.
+From: Tang Liang <liang.tang@oracle.com>
 
-Based of Ke Yu's <ke.yu@intel.com> initial idea.
-[ From http://xenbits.xensource.com/linux-2.6.18-xen.hg
-change c68699484a65 ]
+The ACPI suspend path makes a call to tboot_sleep right before
+it writes the PM1A, PM1B values. We replace the direct call to
+tboot via an registration callback similar to __acpi_register_gsi.
 
-[v1: Added Copyright and license]
-[v2: Added check if PM1A/B the 16-bits MSB contain something. The spec
-     only uses 16-bits but might have more in future]
-Signed-off-by: Liang Tang <liang.tang@oracle.com>
-[v1: Improved the git commit description]
+As part of this, the tboot_sleep need only to register with the
+acpi_os_prepare_sleep_register and if it not (on IA64) then it simply
+won't be called.
+
+We can also remove the tboot_sleep declerations.
+
+[v1: Added __attribute__ ((unused))]
+[v2: Introduced a wrapper instead of changing tboot_sleep return values]
+Signed-off-by: Tang Liang <liang.tang@oracle.com>
 Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- arch/x86/xen/enlighten.c |    3 ++
- drivers/xen/Makefile     |    2 +-
- drivers/xen/acpi.c       |   62 ++++++++++++++++++++++++++++++++++++++++++++++
- include/xen/acpi.h       |   59 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 125 insertions(+), 1 deletions(-)
- create mode 100644 drivers/xen/acpi.c
- create mode 100644 include/xen/acpi.h
+ arch/x86/kernel/tboot.c       |    9 +++++++++
+ drivers/acpi/acpica/hwsleep.c |    7 ++++---
+ drivers/acpi/osl.c            |   19 +++++++++++++++++++
+ include/acpi/acpiosxf.h       |    6 ++++++
+ include/linux/tboot.h         |    3 ---
+ 5 files changed, 38 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index da8afd5..bb0c864 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -42,6 +42,7 @@
- #include <xen/page.h>
- #include <xen/hvm.h>
- #include <xen/hvc-console.h>
-+#include <xen/acpi.h>
- 
- #include <asm/paravirt.h>
- #include <asm/apic.h>
-@@ -1277,6 +1278,8 @@ asmlinkage void __init xen_start_kernel(void)
- 
- 		/* Make sure ACS will be enabled */
- 		pci_request_acs();
-+
-+		xen_acpi_sleep_register();
- 	}
- 		
- 
-diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-index 974fffd..0435996 100644
---- a/drivers/xen/Makefile
-+++ b/drivers/xen/Makefile
-@@ -17,7 +17,7 @@ obj-$(CONFIG_XEN_SYS_HYPERVISOR)	+= sys-hypervisor.o
- obj-$(CONFIG_XEN_PVHVM)			+= platform-pci.o
- obj-$(CONFIG_XEN_TMEM)			+= tmem.o
- obj-$(CONFIG_SWIOTLB_XEN)		+= swiotlb-xen.o
--obj-$(CONFIG_XEN_DOM0)			+= pci.o
-+obj-$(CONFIG_XEN_DOM0)			+= pci.o acpi.o
- obj-$(CONFIG_XEN_PCIDEV_BACKEND)	+= xen-pciback/
- 
- xen-evtchn-y				:= evtchn.o
-diff --git a/drivers/xen/acpi.c b/drivers/xen/acpi.c
-new file mode 100644
-index 0000000..9f81a0f
---- /dev/null
-+++ b/drivers/xen/acpi.c
-@@ -0,0 +1,62 @@
-+/******************************************************************************
-+ * acpi.c
-+ * acpi file for domain 0 kernel
-+ *
-+ * Copyright (c) 2011 Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-+ * Copyright (c) 2011 Yu Ke ke.yu@intel.com
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
-+ */
-+
-+#include <xen/acpi.h>
-+#include <xen/interface/platform.h>
-+#include <asm/xen/hypercall.h>
-+#include <asm/xen/hypervisor.h>
-+
-+acpi_status xen_acpi_notify_hypervisor_state(u8 sleep_state,
-+				     u32 pm1a_cnt, u32 pm1b_cnt)
-+{
-+	struct xen_platform_op op = {
-+		.cmd = XENPF_enter_acpi_sleep,
-+		.interface_version = XENPF_INTERFACE_VERSION,
-+		.u = {
-+			.enter_acpi_sleep = {
-+				.pm1a_cnt_val = (u16)pm1a_cnt,
-+				.pm1b_cnt_val = (u16)pm1b_cnt,
-+				.sleep_state = sleep_state,
-+			},
-+		},
-+	};
-+
-+	if ((pm1a_cnt & 0xffff0000) || (pm1b_cnt & 0xffff0000)) {
-+		WARN(1, "Using more than 16bits of PM1A/B 0x%x/0x%x!"
-+		     "Email xen-devel@lists.xensource.com  Thank you.\n", \
-+		     pm1a_cnt, pm1b_cnt);
-+		return AE_ERROR;
-+	}
-+
-+	HYPERVISOR_dom0_op(&op);
-+	return AE_ERROR;
-+}
-diff --git a/include/xen/acpi.h b/include/xen/acpi.h
-new file mode 100644
-index 0000000..69a6890
---- /dev/null
-+++ b/include/xen/acpi.h
-@@ -0,0 +1,59 @@
-+/******************************************************************************
-+ * acpi.h
-+ * acpi file for domain 0 kernel
-+ *
-+ * Copyright (c) 2011 Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-+ * Copyright (c) 2011 Yu Ke <ke.yu@intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
-+ */
-+
-+#ifndef _XEN_ACPI_H
-+#define _XEN_ACPI_H
-+
-+#include <linux/types.h>
-+
-+#ifdef CONFIG_XEN_DOM0
-+#include <asm/xen/hypervisor.h>
-+#include <xen/xen.h>
-+#include <linux/acpi.h>
+diff --git a/arch/x86/kernel/tboot.c b/arch/x86/kernel/tboot.c
+index e2410e2..751d673 100644
+--- a/arch/x86/kernel/tboot.c
++++ b/arch/x86/kernel/tboot.c
+@@ -31,6 +31,7 @@
+ #include <linux/pfn.h>
+ #include <linux/mm.h>
+ #include <linux/tboot.h>
 +#include <acpi/acpiosxf.h>
-+
-+acpi_status xen_acpi_notify_hypervisor_state(u8 sleep_state,
-+				     u32 pm1a_cnt, u32 pm1b_cnd);
-+
-+static inline void xen_acpi_sleep_register(void)
+ 
+ #include <asm/trampoline.h>
+ #include <asm/processor.h>
+@@ -297,6 +298,12 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
+ 
+ 	tboot_shutdown(acpi_shutdown_map[sleep_state]);
+ }
++static acpi_status tboot_sleep_wrapper(u8 sleep_state, u32 pm1a_control,
++		u32 pm1b_control)
 +{
-+	if (xen_initial_domain())
-+		acpi_os_prepare_sleep_register(
-+			&xen_acpi_notify_hypervisor_state);
++	tboot_sleep(sleep_state, pm1a_control, pm1b_control);
++	return AE_OK;
 +}
-+#else
-+static inline void xen_acpi_sleep_register(void)
-+{
-+}
-+#endif
+ 
+ static atomic_t ap_wfs_count;
+ 
+@@ -345,6 +352,8 @@ static __init int tboot_late_init(void)
+ 
+ 	atomic_set(&ap_wfs_count, 0);
+ 	register_hotcpu_notifier(&tboot_cpu_notifier);
 +
-+#endif	/* _XEN_ACPI_H */
++	acpi_os_prepare_sleep_register(&tboot_sleep_wrapper);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/acpi/acpica/hwsleep.c b/drivers/acpi/acpica/hwsleep.c
+index d52da30..b10bc90 100644
+--- a/drivers/acpi/acpica/hwsleep.c
++++ b/drivers/acpi/acpica/hwsleep.c
+@@ -45,7 +45,6 @@
+ #include <acpi/acpi.h>
+ #include "accommon.h"
+ #include "actables.h"
+-#include <linux/tboot.h>
+ #include <linux/module.h>
+ 
+ #define _COMPONENT          ACPI_HARDWARE
+@@ -344,8 +343,10 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
+ 
+ 	ACPI_FLUSH_CPU_CACHE();
+ 
+-	tboot_sleep(sleep_state, pm1a_control, pm1b_control);
+-
++	status = acpi_os_prepare_sleep(sleep_state, pm1a_control,
++				 pm1b_control);
++	if (ACPI_FAILURE(status))
++		return_ACPI_STATUS(status);
+ 	/* Write #2: Write both SLP_TYP + SLP_EN */
+ 
+ 	status = acpi_hw_write_pm1_control(pm1a_control, pm1b_control);
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index f31c5c5..40daa68 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -1659,3 +1659,22 @@ acpi_status acpi_os_terminate(void)
+ 
+ 	return AE_OK;
+ }
++
++acpi_status (*__acpi_os_prepare_sleep)(u8 sleep_state, u32 pm1a_ctrl,
++				       u32 pm1b_ctrl);
++
++acpi_status acpi_os_prepare_sleep(u8 sleep_state, u32 pm1a_control,
++		u32 pm1b_control)
++{
++	if (__acpi_os_prepare_sleep)
++		return __acpi_os_prepare_sleep(sleep_state, pm1a_control,
++					       pm1b_control);
++	else
++		return	AE_OK;
++}
++
++void acpi_os_prepare_sleep_register(acpi_status (*func)(u8 sleep_state,
++		 u32 pm1a_ctrl,	u32 pm1b_ctrl))
++{
++	__acpi_os_prepare_sleep = func;
++}
+diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
+index 83062ed..ebde1e1 100644
+--- a/include/acpi/acpiosxf.h
++++ b/include/acpi/acpiosxf.h
+@@ -108,6 +108,12 @@ void acpi_os_delete_lock(acpi_spinlock handle);
+ 
+ acpi_cpu_flags acpi_os_acquire_lock(acpi_spinlock handle);
+ 
++void acpi_os_prepare_sleep_register(acpi_status (*func)(u8 sleep_state,
++				    u32 pm1a_ctrl, u32 pm1b_ctrl));
++
++acpi_status acpi_os_prepare_sleep(u8 sleep_state, u32 pm1a_control,
++				  u32 pm1b_control);
++
+ void acpi_os_release_lock(acpi_spinlock handle, acpi_cpu_flags flags);
+ 
+ /*
+diff --git a/include/linux/tboot.h b/include/linux/tboot.h
+index 1dba6ee..d57732d 100644
+--- a/include/linux/tboot.h
++++ b/include/linux/tboot.h
+@@ -143,7 +143,6 @@ static inline int tboot_enabled(void)
+ 
+ extern void tboot_probe(void);
+ extern void tboot_shutdown(u32 shutdown_type);
+-extern void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control);
+ extern struct acpi_table_header *tboot_get_dmar_table(
+ 				      struct acpi_table_header *dmar_tbl);
+ extern int tboot_force_iommu(void);
+@@ -153,8 +152,6 @@ extern int tboot_force_iommu(void);
+ #define tboot_enabled()			0
+ #define tboot_probe()			do { } while (0)
+ #define tboot_shutdown(shutdown_type)	do { } while (0)
+-#define tboot_sleep(sleep_state, pm1a_control, pm1b_control)	\
+-					do { } while (0)
+ #define tboot_get_dmar_table(dmar_tbl)	(dmar_tbl)
+ #define tboot_force_iommu()		0
+ 
 -- 
 1.7.7.1
