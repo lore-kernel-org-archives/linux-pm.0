@@ -1,18 +1,12 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH 1/3 v3] ARM: EXYNOS4: Support for generic I/O
- power domains on EXYNOS4210/4212
-Date: Tue, 15 Nov 2011 18:21:55 +0900
-Message-ID: <005801cca378$0488d0e0$0d9a72a0$%kim__14662.7990682193$1321348933$gmane$org@samsung.com>
-References: <4EA690EF.4000703@samsung.com>
-	<013301cc99cd$8d5a6a00$a80f3e00$%kim@samsung.com>
-	<4EB26BE2.2060508@samsung.com>
-	<CAGTfZH0xOh=EDRhb3gxOZhV-KQZNY_-o=miBOEne_S5-YsQ_Vg@mail.gmail.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: [PATCH] ACPI cleanup's and enablement for Xen ACPI S3
+	[v3]
+Date: Tue, 15 Nov 2011 16:31:04 -0500
+Message-ID: <1321392671-9128-1-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <CAGTfZH0xOh=EDRhb3gxOZhV-KQZNY_-o=miBOEne_S5-YsQ_Vg@mail.gmail.com>
-Content-language: ko
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -22,92 +16,127 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: cw00.choi@samsung.com
-Cc: 'linux-samsung-soc' <linux-samsung-soc@vger.kernel.org>, 'Russell King - ARM Linux' <linux@arm.linux.org.uk>, 'Sylwester Nawrocki' <snjw23@gmail.com>, 'Kyungmin Park' <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org, 'linux-arm-kernel' <linux-arm-kernel@lists.infradead.org>
+To: linux-kernel@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, x86@kernel.org, hpa@zytor.com, len.brown@intel.com, joseph.cihula@intel.com, linux-pm@lists.linux-foundation.org, tboot-
+Cc: xen-devel@lists.xensource.com
 List-Id: linux-pm@vger.kernel.org
 
-Chanwoo Choi wrote:
-> Hi Kukjin Kim,
-> =
+Attached is an [v3] set of patches to enable S3 to work with the Xen hypervisor.
 
-> Please reply about=A0Sylwester Nawrocki and me.
-> 2011/11/3 Sylwester Nawrocki <s.nawrocki@samsung.com>
-> Hi Kgene,
->
-> On 11/03/2011 03:09 AM, Kukjin Kim wrote:
-> > As I said, I don't think we should control/gate the clocks with
-regarding power domain.
-> As far as I know there is a plan to let the drivers override
-start/stop_device callbacks,
-> moreover the clock control can be disabled globally by not implementing
-start/stop_device
-> callbacks or per device by not adding clkdev entities to the device clock
-list at runtime
-> PM core. So IMHO, there is/going to be enough flexibility.
->
-> > It should be controlled by each regarding device driver and in addition,
-as I know,
-> > to handle block of clock is not recommended on EXYNOS4 now.
-> What do you mean by this ? I couldn't find such information in any
-documentation.
-> Shouldn't "clock gate block" registers be touched by boot loader and the
-kernel?
-> Our boot loaders disable all clocks, and if the global clock gate is not
-enabled
-> by the kernel there is no chance any multimedia device will work.
->
-> Should the global clock block gate be always enabled then ? I'm afraid it
-is not
-> optimal form power management POV.
->
-Sylwester, let me check again before replying.
+Changes since v2: [https://lkml.org/lkml/2011/9/29/408]
+ - Moved tboot_sleep out to the osl.c code.
+ - Dropped some patches.
+since the RFC posting [http://comments.gmane.org/gmane.linux.acpi.devel/50701]:
+ - Per review comments added: __unused__ attribute, support for PM1A/B if more than 16-bit,
+   copyright/license.
+ - Added support for PHYSDEVOP_restore_msi_ext call.
 
-> To Kukjin Kim,
->
-Hi Chanwoo,
+The first two patches can be considered independently as cleanup - they move
+the tboot_sleep out of the ACPI code and move it in the OS part. That is
+the OSPM code changes required.
 
-Firstly, please use text-typed e-mail when you reply.
+The more complex ones are in the ACPI x86 code. I was not sure how to
+post the patches so I grouped in the "functionality" parts.
 
-> > It should be controlled by each regarding device driver and in addition,
-as I know,
-> > to handle block of clock is not recommended on EXYNOS4 now.
->
-> As you said, should we separately control power and clock of power domain?
+1). Use the acpi_os_prepare_sleep to register a variant of it. The reason
+    for the need for this is explained in more details below. The patches are:
 
-If you ask my opinion, yes, I mean when it is required, it would be
-controlled independent.
+ [PATCH 1/7] x86, acpi, tboot: Have a ACPI os prepare sleep instead
+ [PATCH 2/7] tboot: Add return values for tboot_sleep
+ [PATCH 3/7] xen/acpi/sleep: Enable ACPI sleep via the
 
-> or Have to turn on the clock of power domain always?
+2). Expand x86_msi_ops. Every time we resume, we end up calling write_msi_irq
+    to resume the MSI vectors. But when using Xen, we would write the MSI
+    vectors using the other x86_msi_ops - hence we expand the x86_msi_ops
+    indirection mechanism to take resume in account. The paches are:
 
-I didn't say like that.
+ [PATCH 4/7] x86: Expand the x86_msi_ops to have a restore MSIs.
+ [PATCH 5/7] xen/pci: Utilize the restore_msi_irqs hook.
+3). Make acpi_suspend_lowlevel be a function pointer instead of a function.
+    Details of why we want to omit the lowlevel values is explained below.
+    Originally I was thinking that perhaps doing it via a registration
+    function would be better? But not sure what folks leanings are
+    in this case. The patches are:
 
-> I think that it is to happen unnecessary power consumption.
+ [PATCH 6/7] x86/acpi/sleep: Provide registration for
+ [PATCH 7/7] xen/acpi/sleep: Register to the acpi_suspend_lowlevel a
 
-I don't think, when the power of block/domain is downed, does it happen
-_really_ meaningful power consumption?
+Details of what I said in the first postings:
 
-> If we have to maintain=A0on state of power domain clock, please let me kn=
-ow
-guide about this.
->
-> Also,=A0
-> For example, fimg2d and framebuffer use LCD0 power domain as parent
-device.I
-> If fimg2d and framebuffer is disabled state due to not using their,
-> I think that we should turn off the clock of LCD0 power domain to reduce
-power leakage.
+The Xen ACPI S3 functionality requires help from the Linux kernel. The Linux
+kernel does the ACPI "stuff" and tells the hypervisor to do the low-level
+stuff (such as program the IOAPIC, setup vectors, etc). Naturally do it correctly
+the Xen hypervisor must be programmed with correct values that are extracted
+as part of parsing the ACPI.
 
-I think, probably it doesn't matter. If any useful data, please let me know.
+The ACPI code used during suspend is mostly all in hwsleep.c and there is one
+particular case where 'hwsleep.c' is calling in the tboot.c code. This is replaced
+by making the call go through the OS part of the ACPI code. The reason for
+doing this is two fold: 1) cleanup, 2) for Xen case, it needs to make a hypercall
+so that the hypervisor can write the PM1A/PM1B bits.
 
-> Which each regarding device driver control the clock of power domain?
->
-> I will expect for your reply.
->
+The major difficulties we hit was with 'acpi_suspend_lowlevel' - which tweaks
+a lot of lowlevel values and some of them are not properly handled by Xen.
+Liang Tang has figured which ones of them we trip over (read below) - and he
+suggested that perhaps we can provide a registration mechanism to abstract
+this away. The reason for all of this is that Linux does not talk to the
+BIOS directly - instead it simply walks through the necessary ACPI methods
+and then issues hypercall to Xen which then further completes the remaining
+suspend steps.
 
-Thanks.
+So the attached patches do exactly that - there are two entry points
+in the ACPI.
 
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+ 1). For S3: acpi_suspend_lowlevel -> .. lots of code -> acpi_enter_sleep_state
+ 2). For S1/S4/S5: acpi_enter_sleep_state
+
+The first naive idea was of abstracting away in the 'acpi_enter_sleep_state'
+function the tboot_sleep code so that we can use it too. And low-behold - it
+worked splendidly for powering off (S5 I believe)
+
+For S3 that did not work - during suspend the hypervisor tripped over when
+saving cr8. During resume it tripped over at restoring the cr3, cr8, idt,
+and gdt values.
+
+When I posted the RFC, the feedback I got was to use a higher upper
+interface to make the call to the hypervisor. Instead of doing it at the
+lower pv-ops case for cr3, cr8, idt, gdt, etc. The code is much nicer
+this way, I've to say.
+
+Anyhow, please take a look!
+
+The patches are also located at
+
+git://git.kernel.org/pub/scm/linux/kernel/git/konrad/xen.git devel/acpi-s3.v5
+
+Konrad Rzeszutek Wilk (5):
+      tboot: Add return values for tboot_sleep
+      xen/acpi/sleep: Enable ACPI sleep via the acpi_os_prepare_sleep_register
+      x86: Expand the x86_msi_ops to have a restore MSIs.
+      x86/acpi/sleep: Provide registration for acpi_suspend_lowlevel
+      xen/acpi/sleep: Register to the acpi_suspend_lowlevel a callback.
+
+Tang Liang (2):
+      x86, acpi, tboot: Have a ACPI os prepare sleep instead of calling tboot_sleep.
+      xen/pci: Utilize the restore_msi_irqs hook.
+
+ arch/x86/include/asm/acpi.h     |    2 +-
+ arch/x86/include/asm/pci.h      |    9 +++++
+ arch/x86/include/asm/x86_init.h |    1 +
+ arch/x86/kernel/acpi/boot.c     |    2 +
+ arch/x86/kernel/acpi/sleep.c    |    4 +-
+ arch/x86/kernel/acpi/sleep.h    |    2 +
+ arch/x86/kernel/tboot.c         |   18 ++++++++--
+ arch/x86/kernel/x86_init.c      |    1 +
+ arch/x86/pci/xen.c              |   27 ++++++++++++++
+ arch/x86/xen/enlighten.c        |    3 ++
+ drivers/acpi/acpica/hwsleep.c   |    7 ++--
+ drivers/acpi/osl.c              |   19 ++++++++++
+ drivers/acpi/sleep.c            |    2 +
+ drivers/pci/msi.c               |   29 ++++++++++++++-
+ drivers/xen/Makefile            |    2 +-
+ drivers/xen/acpi.c              |   62 ++++++++++++++++++++++++++++++++
+ include/acpi/acpiosxf.h         |    6 +++
+ include/linux/tboot.h           |    3 --
+ include/xen/acpi.h              |   74 +++++++++++++++++++++++++++++++++++++++
+ include/xen/interface/physdev.h |    7 ++++
+ 20 files changed, 265 insertions(+), 15 deletions(-)
