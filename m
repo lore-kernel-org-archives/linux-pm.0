@@ -1,7 +1,8 @@
 From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 2/7] tboot: Add return values for tboot_sleep
-Date: Tue, 15 Nov 2011 16:31:06 -0500
-Message-ID: <1321392671-9128-3-git-send-email-konrad.wilk@oracle.com>
+Subject: [PATCH 7/7] xen/acpi/sleep: Register to the
+	acpi_suspend_lowlevel a callback.
+Date: Tue, 15 Nov 2011 16:31:11 -0500
+Message-ID: <1321392671-9128-8-git-send-email-konrad.wilk@oracle.com>
 References: <1321392671-9128-1-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,61 +22,51 @@ To: linux-kernel@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, x86@kernel.or
 Cc: xen-devel@lists.xensource.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-. as appropiately. As tboot_sleep now returns values, we are free
-to remove the tboot_sleep_wrapper function altogether.
+We piggyback on "x86/acpi: Provide registration for acpi_suspend_lowlevel."
+to register a Xen version of the callback. The callback does not
+do anything special - except it omits the x86_acpi_suspend_lowlevel.
+It does that b/c during suspend it tries to save cr8 values (which
+the hypervisor does not support), and then on resume path the
+cr3, cr8, idt, and gdt are all resumed which clashes with what
+the hypervisor has set up for the guest.
 
-Suggested-by: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Joseph Cihula <joseph.cihula@intel.com>
+Signed-off-by: Liang Tang <liang.tang@oracle.com>
 Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- arch/x86/kernel/tboot.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+ include/xen/acpi.h |   17 ++++++++++++++++-
+ 1 files changed, 16 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/tboot.c b/arch/x86/kernel/tboot.c
-index 751d673..5ab5362 100644
---- a/arch/x86/kernel/tboot.c
-+++ b/arch/x86/kernel/tboot.c
-@@ -273,7 +273,8 @@ static void tboot_copy_fadt(const struct acpi_table_fadt *fadt)
- 		offsetof(struct acpi_table_facs, firmware_waking_vector);
- }
+diff --git a/include/xen/acpi.h b/include/xen/acpi.h
+index 69a6890..832b5e5 100644
+--- a/include/xen/acpi.h
++++ b/include/xen/acpi.h
+@@ -44,11 +44,26 @@
+ acpi_status xen_acpi_notify_hypervisor_state(u8 sleep_state,
+ 				     u32 pm1a_cnt, u32 pm1b_cnd);
  
--void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
-+static acpi_status tboot_sleep(u8 sleep_state, u32 pm1a_control,
-+			       u32 pm1b_control)
- {
- 	static u32 acpi_shutdown_map[ACPI_S_STATE_COUNT] = {
- 		/* S0,1,2: */ -1, -1, -1,
-@@ -282,7 +283,7 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
- 		/* S5: */ TB_SHUTDOWN_S5 };
- 
- 	if (!tboot_enabled())
--		return;
-+		return AE_OK;
- 
- 	tboot_copy_fadt(&acpi_gbl_FADT);
- 	tboot->acpi_sinfo.pm1a_cnt_val = pm1a_control;
-@@ -293,10 +294,12 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
- 	if (sleep_state >= ACPI_S_STATE_COUNT ||
- 	    acpi_shutdown_map[sleep_state] == -1) {
- 		pr_warning("unsupported sleep state 0x%x\n", sleep_state);
--		return;
-+		return AE_ERROR;
- 	}
- 
- 	tboot_shutdown(acpi_shutdown_map[sleep_state]);
++static inline int xen_acpi_suspend_lowlevel(void)
++{
++	/*
++	* Xen will save and restore CPU context, so
++	* we can skip that and just go straight to
++	* the suspend.
++	*/
++	acpi_enter_sleep_state(ACPI_STATE_S3);
++	return 0;
++}
 +
-+	return AE_OK;
++
+ static inline void xen_acpi_sleep_register(void)
+ {
+-	if (xen_initial_domain())
++	if (xen_initial_domain()){
+ 		acpi_os_prepare_sleep_register(
+ 			&xen_acpi_notify_hypervisor_state);
++
++		acpi_suspend_lowlevel = xen_acpi_suspend_lowlevel;
++	}
  }
- static acpi_status tboot_sleep_wrapper(u8 sleep_state, u32 pm1a_control,
- 		u32 pm1b_control)
-@@ -353,7 +356,7 @@ static __init int tboot_late_init(void)
- 	atomic_set(&ap_wfs_count, 0);
- 	register_hotcpu_notifier(&tboot_cpu_notifier);
- 
--	acpi_os_prepare_sleep_register(&tboot_sleep_wrapper);
-+	acpi_os_prepare_sleep_register(&tboot_sleep);
- 	return 0;
- }
- 
+ #else
+ static inline void xen_acpi_sleep_register(void)
 -- 
 1.7.7.1
