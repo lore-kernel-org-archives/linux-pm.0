@@ -1,8 +1,8 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 2/6][resend] cpuidle : remove unused
-	'governor_data' field
-Date: Thu, 17 Nov 2011 11:26:36 +0100
-Message-ID: <1321525600-2466-3-git-send-email-daniel.lezcano__37233.9091067717$1321526081$gmane$org@linaro.org>
+Subject: [PATCH 4/6][resend] acpi : remove 'time' field in
+	acpi_processor_cx
+Date: Thu, 17 Nov 2011 11:26:38 +0100
+Message-ID: <1321525600-2466-5-git-send-email-daniel.lezcano__14106.1397306204$1321526086$gmane$org@linaro.org>
 References: <1321525600-2466-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,24 +22,46 @@ To: lenb@kernel.org
 Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, rob.lee@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-As far as I can see, this field is never used in the code.
+The 'time' field is used to sum the idle time but it is never
+used.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- include/linux/cpuidle.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/acpi/processor_idle.c |    2 --
+ include/acpi/processor.h      |    1 -
+ 2 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index c904188..4c8fd37 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -95,7 +95,6 @@ struct cpuidle_device {
- 	struct list_head 	device_list;
- 	struct kobject		kobj;
- 	struct completion	kobj_unregister;
--	void			*governor_data;
- };
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index dd87355..142af72 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -861,7 +861,6 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+ 	cx->usage++;
  
- DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+ 	lapic_timer_state_broadcast(pr, cx, 0);
+-	cx->time += idle_time;
+ 	return index;
+ }
+ 
+@@ -987,7 +986,6 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 	cx->usage++;
+ 
+ 	lapic_timer_state_broadcast(pr, cx, 0);
+-	cx->time += idle_time;
+ 	return index;
+ }
+ 
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 1b6e65c..46bcf79 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -61,7 +61,6 @@ struct acpi_processor_cx {
+ 	u32 latency;
+ 	u32 power;
+ 	u32 usage;
+-	u64 time;
+ 	u8 bm_sts_skip;
+ 	char desc[ACPI_CX_DESC_LEN];
+ };
 -- 
 1.7.4.1
