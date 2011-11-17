@@ -1,14 +1,12 @@
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 3/4] cpuidle: (POWER) Enable cpuidle and
- directly call cpuidle_idle_call() for pSeries
-Date: Thu, 17 Nov 2011 16:58:59 +0530
-Message-ID: <20111117112852.9191.34256.stgit__26697.3838014112$1321530037$gmane$org@localhost6.localdomain6>
-References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
+Subject: [RFC PATCH v2 0/4] cpuidle: (POWER) cpuidle driver for
+	pSeries
+Date: Thu, 17 Nov 2011 16:58:25 +0530
+Message-ID: <20111117112815.9191.2322.stgit__10496.19529299$1321539821$gmane$org@localhost6.localdomain6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -22,176 +20,72 @@ To: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-pm@vger.
 Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch enables cpuidle for pSeries and cpuidle_idle_call() is
-directly called from the idle loop. As a result pseries_idle cpuidle
-driver registered with cpuidle subsystem comes into action. This patch
-also removes the routines pseries_shared_idle_sleep and
-pseries_dedicated_idle_sleep as they are now implemented as part of
-pseries_idle cpuidle driver.
+This patch series ports the cpuidle framework for ppc64 platform and
+implements a cpuidle back-end driver for ppc64 (pSeries) platform.
+Currently idle states are managed by pseries_{dedicated,shared}_idle_sleep()
+routines in arch/powerpc/platforms/pseries/setup.c.  There are
+two idle states (snooze and cede) that are exploited by
+these routines based on simple heuristics.
 
-Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Signed-off-by: Trinabh Gupta <g.trinabh@gmail.com>
-Signed-off-by: Arun R Bharadwaj <arun.r.bharadwaj@gmail.com>
----
- arch/powerpc/platforms/Kconfig         |    6 ++
- arch/powerpc/platforms/pseries/setup.c |   86 +-------------------------------
- include/linux/cpuidle.h                |    2 -
- 3 files changed, 8 insertions(+), 86 deletions(-)
+Moving the idle states over to cpuidle framework can take advantage of
+the advanced heuristics, tunables, and features provided by cpuidle
+framework. Additional idle states like extended cede with hints would be
+included and exploited using the cpuidle framework. The statistics and 
+tracing infrastructure provided by the cpuidle framework also helps in 
+enabling power management related tools and help tune the system and 
+applications.
 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index e458872..0d2a028 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -211,6 +211,12 @@ config PPC_PASEMI_CPUFREQ
- 
- endmenu
- 
-+menu "CPUIdle driver"
-+
-+source "drivers/cpuidle/Kconfig"
-+
-+endmenu
-+
- config PPC601_SYNC_FIX
- 	bool "Workarounds for PPC601 bugs"
- 	depends on 6xx && (PPC_PREP || PPC_PMAC)
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 9c6716a..f624e74 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -39,6 +39,7 @@
- #include <linux/irq.h>
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
-+#include <linux/cpuidle.h>
- 
- #include <asm/mmu.h>
- #include <asm/processor.h>
-@@ -74,9 +75,6 @@ EXPORT_SYMBOL(CMO_PageSize);
- 
- int fwnmi_active;  /* TRUE if an FWNMI handler is present */
- 
--static void pseries_shared_idle_sleep(void);
--static void pseries_dedicated_idle_sleep(void);
--
- static struct device_node *pSeries_mpic_node;
- 
- static void pSeries_show_cpuinfo(struct seq_file *m)
-@@ -374,18 +372,9 @@ static void __init pSeries_setup_arch(void)
- 
- 	pSeries_nvram_init();
- 
--	/* Choose an idle loop */
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
- 		vpa_init(boot_cpuid);
--		if (get_lppaca()->shared_proc) {
--			printk(KERN_DEBUG "Using shared processor idle loop\n");
--			ppc_md.power_save = pseries_shared_idle_sleep;
--		} else {
--			printk(KERN_DEBUG "Using dedicated idle loop\n");
--			ppc_md.power_save = pseries_dedicated_idle_sleep;
--		}
--	} else {
--		printk(KERN_DEBUG "Using default idle loop\n");
-+		ppc_md.power_save = (void *)cpuidle_idle_call;
- 	}
- 
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
-@@ -586,77 +575,6 @@ static int __init pSeries_probe(void)
- 	return 1;
- }
- 
--static void pseries_dedicated_idle_sleep(void)
--{ 
--	unsigned int cpu = smp_processor_id();
--	unsigned long start_snooze;
--	unsigned long in_purr, out_purr;
--	long snooze = __get_cpu_var(smt_snooze_delay);
--
--	/*
--	 * Indicate to the HV that we are idle. Now would be
--	 * a good time to find other work to dispatch.
--	 */
--	get_lppaca()->idle = 1;
--	get_lppaca()->donate_dedicated_cpu = 1;
--	in_purr = mfspr(SPRN_PURR);
--
--	/*
--	 * We come in with interrupts disabled, and need_resched()
--	 * has been checked recently.  If we should poll for a little
--	 * while, do so.
--	 */
--	if (snooze) {
--		start_snooze = get_tb() + snooze * tb_ticks_per_usec;
--		local_irq_enable();
--		set_thread_flag(TIF_POLLING_NRFLAG);
--
--		while ((snooze < 0) || (get_tb() < start_snooze)) {
--			if (need_resched() || cpu_is_offline(cpu))
--				goto out;
--			ppc64_runlatch_off();
--			HMT_low();
--			HMT_very_low();
--		}
--
--		HMT_medium();
--		clear_thread_flag(TIF_POLLING_NRFLAG);
--		smp_mb();
--		local_irq_disable();
--		if (need_resched() || cpu_is_offline(cpu))
--			goto out;
--	}
--
--	cede_processor();
--
--out:
--	HMT_medium();
--	out_purr = mfspr(SPRN_PURR);
--	get_lppaca()->wait_state_cycles += out_purr - in_purr;
--	get_lppaca()->donate_dedicated_cpu = 0;
--	get_lppaca()->idle = 0;
--}
--
--static void pseries_shared_idle_sleep(void)
--{
--	/*
--	 * Indicate to the HV that we are idle. Now would be
--	 * a good time to find other work to dispatch.
--	 */
--	get_lppaca()->idle = 1;
--
--	/*
--	 * Yield the processor to the hypervisor.  We return if
--	 * an external interrupt occurs (which are driven prior
--	 * to returning here) or if a prod occurs from another
--	 * processor. When returning here, external interrupts
--	 * are enabled.
--	 */
--	cede_processor();
--
--	get_lppaca()->idle = 0;
--}
--
- static int pSeries_pci_probe_mode(struct pci_bus *bus)
- {
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 7408af8..23f81de 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -130,7 +130,6 @@ struct cpuidle_driver {
- #ifdef CONFIG_CPU_IDLE
- extern void disable_cpuidle(void);
- extern int cpuidle_idle_call(void);
--
- extern int cpuidle_register_driver(struct cpuidle_driver *drv);
- struct cpuidle_driver *cpuidle_get_driver(void);
- extern void cpuidle_unregister_driver(struct cpuidle_driver *drv);
-@@ -145,7 +144,6 @@ extern void cpuidle_disable_device(struct cpuidle_device *dev);
- #else
- static inline void disable_cpuidle(void) { }
- static inline int cpuidle_idle_call(void) { return -ENODEV; }
--
- static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
- {return -ENODEV; }
- static inline struct cpuidle_driver *cpuidle_get_driver(void) {return NULL; }
+This series aims to maintain compatibility and functionality to
+existing pSeries idle cpu management code.  There are no new functions
+or idle states added as part of this series.
+
+The previous version of this patch can be found at
+https://lkml.org/lkml/2011/6/7/375
+
+Changes from the previous version (v1):
+
+	1] Rebased to latest 3.2-rc2
+
+	2] Incorporated the changes from the feedback provided by Ben
+	   in the previous version of this series.
+
+	3] The first three patches in this series posted in v1 are not
+	   re-posted as they were taken from "idle cleanup - v3" posted by
+	   Len Brown (https://lkml.org/lkml/2011/4/2/8) which have made 
+	   to the mainline in 3.1. 
+	   This cleanup was a community requirement and major dependency
+	   before cpuidle framework can be ported over to powerpc
+	   architecture.
+
+This patch series includes:
+
+[1/4] - Provides arch specific cpu_idle_wait() function required by cpuidle
+  subsystem.
+[2/4] - pseries_idle cpuidle driver
+[3/4] - Enables cpuidle for pSeries and directly calls cpuidle_idle_call()
+[4/4] - Handles powersave=off kernel boot parameter and disables registration
+  of pseries_idle cpuidle driver.
+
+This series has been tested on ppc64 pSeries POWER7 system with the snooze
+and cede states
+
+--
+ arch/powerpc/Kconfig                            |    4 
+ arch/powerpc/include/asm/processor.h            |    3 
+ arch/powerpc/include/asm/system.h               |    9 +
+ arch/powerpc/kernel/idle.c                      |   26 ++
+ arch/powerpc/kernel/sysfs.c                     |    2 
+ arch/powerpc/platforms/Kconfig                  |    6 
+ arch/powerpc/platforms/pseries/Kconfig          |    9 +
+ arch/powerpc/platforms/pseries/Makefile         |    1 
+ arch/powerpc/platforms/pseries/processor_idle.c |  321 +++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/pseries.h        |    3 
+ arch/powerpc/platforms/pseries/setup.c          |   89 ------
+ arch/powerpc/platforms/pseries/smp.c            |    1 
+ include/linux/cpuidle.h                         |    2 
+ 13 files changed, 387 insertions(+), 89 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/processor_idle.c
+
+
+
+-Deepthi 
