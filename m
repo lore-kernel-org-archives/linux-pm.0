@@ -1,14 +1,14 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 6/6][resend] acpi : remove 'power' field from
-	acpi_processor_cx
-Date: Thu, 17 Nov 2011 11:26:40 +0100
-Message-ID: <1321525600-2466-7-git-send-email-daniel.lezcano__42405.893703881$1321526101$gmane$org@linaro.org>
-References: <1321525600-2466-1-git-send-email-daniel.lezcano@linaro.org>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 1/4] cpuidle: (powerpc) Add
+ cpu_idle_wait() to allow switching of idle routines
+Date: Thu, 17 Nov 2011 16:58:34 +0530
+Message-ID: <20111117112830.9191.1951.stgit__11527.7128098116$1321529939$gmane$org@localhost6.localdomain6>
+References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1321525600-2466-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,42 +18,110 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, rob.lee@linaro.org
+To: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The power field is filled but never used in the code.
+This patch provides cpu_idle_wait() routine for the powerpc
+platform which is required by the cpuidle subsystem. This
+routine is requied to change the idle handler on SMP systems.
+The equivalent routine for x86 is in arch/x86/kernel/process.c
+but the powerpc implementation is different.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Signed-off-by: Trinabh Gupta <g.trinabh@gmail.com>
+Signed-off-by: Arun R Bharadwaj <arun.r.bharadwaj@gmail.com>
 ---
- drivers/acpi/processor_idle.c |    2 --
- include/acpi/processor.h      |    1 -
- 2 files changed, 0 insertions(+), 3 deletions(-)
+ arch/powerpc/Kconfig                 |    4 ++++
+ arch/powerpc/include/asm/processor.h |    2 ++
+ arch/powerpc/include/asm/system.h    |    1 +
+ arch/powerpc/kernel/idle.c           |   26 ++++++++++++++++++++++++++
+ 4 files changed, 33 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 4b9ebd5..e2b67e2 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -495,8 +495,6 @@ static int acpi_processor_get_power_info_cst(struct acpi_processor *pr)
- 		if (obj->type != ACPI_TYPE_INTEGER)
- 			continue;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index b177caa..87f8604 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -87,6 +87,10 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default y if 64BIT
  
--		cx.power = obj->integer.value;
--
- 		current_count++;
- 		memcpy(&(pr->power.states[current_count]), &cx, sizeof(cx));
++config ARCH_HAS_CPU_IDLE_WAIT
++	bool
++	default y
++
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index eb11a44..811b7e7 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -382,6 +382,8 @@ static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
+ }
+ #endif
  
-diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-index bc3449a..bed1093 100644
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -59,7 +59,6 @@ struct acpi_processor_cx {
- 	u8 entry_method;
- 	u8 index;
- 	u32 latency;
--	u32 power;
- 	u8 bm_sts_skip;
- 	char desc[ACPI_CX_DESC_LEN];
- };
--- 
-1.7.4.1
++enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_PROCESSOR_H */
+diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
+index e30a13d..ff66680 100644
+--- a/arch/powerpc/include/asm/system.h
++++ b/arch/powerpc/include/asm/system.h
+@@ -221,6 +221,7 @@ extern unsigned long klimit;
+ extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+ 
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
++void cpu_idle_wait(void);
+ 
+ /*
+  * Atomic exchange
+diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+index 39a2baa..b478c72 100644
+--- a/arch/powerpc/kernel/idle.c
++++ b/arch/powerpc/kernel/idle.c
+@@ -39,9 +39,13 @@
+ #define cpu_should_die()	0
+ #endif
+ 
++unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
++EXPORT_SYMBOL(boot_option_idle_override);
++
+ static int __init powersave_off(char *arg)
+ {
+ 	ppc_md.power_save = NULL;
++	boot_option_idle_override = IDLE_POWERSAVE_OFF;
+ 	return 0;
+ }
+ __setup("powersave=off", powersave_off);
+@@ -102,6 +106,28 @@ void cpu_idle(void)
+ 	}
+ }
+ 
++
++/*
++ * cpu_idle_wait - Used to ensure that all the CPUs come out of the old
++ * idle loop and start using the new idle loop.
++ * Required while changing idle handler on SMP systems.
++ * Caller must have changed idle handler to the new value before the call.
++ */
++void cpu_idle_wait(void)
++{
++	int cpu;
++	smp_mb();
++
++	/* kick all the CPUs so that they exit out of old idle routine */
++	get_online_cpus();
++	for_each_online_cpu(cpu) {
++		if (cpu != smp_processor_id())
++			smp_send_reschedule(cpu);
++	}
++	put_online_cpus();
++}
++EXPORT_SYMBOL_GPL(cpu_idle_wait);
++
+ int powersave_nap;
+ 
+ #ifdef CONFIG_SYSCTL
