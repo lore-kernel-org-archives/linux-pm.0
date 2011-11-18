@@ -1,12 +1,15 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 0/4] cpuidle: (POWER) cpuidle driver for
-	pSeries
-Date: Thu, 17 Nov 2011 16:58:25 +0530
-Message-ID: <20111117112815.9191.2322.stgit__10496.19529299$1321539821$gmane$org@localhost6.localdomain6>
+From: Felipe Balbi <balbi@ti.com>
+Subject: Re: [PATCH] ahci: platform support for suspend/resume
+Date: Fri, 18 Nov 2011 11:17:48 +0200
+Message-ID: <20111118091747.GD9759@legolas.emea.dhcp.ti.com>
+References: <1321475279-29930-1-git-send-email-computersforpeace@gmail.com>
+	<20111116203422.GA29581@legolas.emea.dhcp.ti.com>
+	<CAN8TOE9T8YJ8Kbz=cuQ_CYPQozxU--yskZuBcXwe_emVVNQqDg@mail.gmail.com>
+Reply-To: balbi@ti.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============3997965125503434196=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAN8TOE9T8YJ8Kbz=cuQ_CYPQozxU--yskZuBcXwe_emVVNQqDg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -16,76 +19,84 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, balbi@ti.com, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Anton Vorontsov <avorontsov@ru.mvista.com>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch series ports the cpuidle framework for ppc64 platform and
-implements a cpuidle back-end driver for ppc64 (pSeries) platform.
-Currently idle states are managed by pseries_{dedicated,shared}_idle_sleep()
-routines in arch/powerpc/platforms/pseries/setup.c.  There are
-two idle states (snooze and cede) that are exploited by
-these routines based on simple heuristics.
 
-Moving the idle states over to cpuidle framework can take advantage of
-the advanced heuristics, tunables, and features provided by cpuidle
-framework. Additional idle states like extended cede with hints would be
-included and exploited using the cpuidle framework. The statistics and 
-tracing infrastructure provided by the cpuidle framework also helps in 
-enabling power management related tools and help tune the system and 
-applications.
-
-This series aims to maintain compatibility and functionality to
-existing pSeries idle cpu management code.  There are no new functions
-or idle states added as part of this series.
-
-The previous version of this patch can be found at
-https://lkml.org/lkml/2011/6/7/375
-
-Changes from the previous version (v1):
-
-	1] Rebased to latest 3.2-rc2
-
-	2] Incorporated the changes from the feedback provided by Ben
-	   in the previous version of this series.
-
-	3] The first three patches in this series posted in v1 are not
-	   re-posted as they were taken from "idle cleanup - v3" posted by
-	   Len Brown (https://lkml.org/lkml/2011/4/2/8) which have made 
-	   to the mainline in 3.1. 
-	   This cleanup was a community requirement and major dependency
-	   before cpuidle framework can be ported over to powerpc
-	   architecture.
-
-This patch series includes:
-
-[1/4] - Provides arch specific cpu_idle_wait() function required by cpuidle
-  subsystem.
-[2/4] - pseries_idle cpuidle driver
-[3/4] - Enables cpuidle for pSeries and directly calls cpuidle_idle_call()
-[4/4] - Handles powersave=off kernel boot parameter and disables registration
-  of pseries_idle cpuidle driver.
-
-This series has been tested on ppc64 pSeries POWER7 system with the snooze
-and cede states
-
---
- arch/powerpc/Kconfig                            |    4 
- arch/powerpc/include/asm/processor.h            |    3 
- arch/powerpc/include/asm/system.h               |    9 +
- arch/powerpc/kernel/idle.c                      |   26 ++
- arch/powerpc/kernel/sysfs.c                     |    2 
- arch/powerpc/platforms/Kconfig                  |    6 
- arch/powerpc/platforms/pseries/Kconfig          |    9 +
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/processor_idle.c |  321 +++++++++++++++++++++++
- arch/powerpc/platforms/pseries/pseries.h        |    3 
- arch/powerpc/platforms/pseries/setup.c          |   89 ------
- arch/powerpc/platforms/pseries/smp.c            |    1 
- include/linux/cpuidle.h                         |    2 
- 13 files changed, 387 insertions(+), 89 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/processor_idle.c
+--===============3997965125503434196==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fOHHtNG4YXGJ0yqR"
+Content-Disposition: inline
 
 
+--fOHHtNG4YXGJ0yqR
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Deepthi 
+On Thu, Nov 17, 2011 at 04:31:32PM -0800, Brian Norris wrote:
+> +linux-pm mailing list
+>=20
+> Hi Felipe,
+>=20
+> On Wed, Nov 16, 2011 at 12:34 PM, Felipe Balbi <balbi@ti.com> wrote:
+> > On Wed, Nov 16, 2011 at 12:27:59PM -0800, Brian Norris wrote:
+> >> + =A0 =A0 /* Does platform support suspend/resume? */
+> >> + =A0 =A0 if (!pdata->suspend || !pdata->resume)
+> >> + =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> >
+> > should you really prevent suspend is platform doesn't provide
+> > ->suspend() ?
+>=20
+> No, we shouldn't prevent suspend entirely; that would just be my
+> accidental side effect.
+>=20
+> > I mean, we could some platform where all clocks are autogated and
+> > there's no need for platform to do anything. Would it be better to only
+> > call pdata->suspend if it exists but still let the AHCI-specific part go
+> > through ?
+>=20
+> Perhaps. But would this have any unintended effects on systems that
+> don't implement AHCI power management at all? My intention was just to
+> provide an 'opt-in' interface for platform developers. I probably got
+> this wrong.
+
+I guess you could add a flag for that, but until we know that the AHCI
+powermanagement is broken somewhere should we really care ? :-)
+
+--=20
+balbi
+
+--fOHHtNG4YXGJ0yqR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBAgAGBQJOxiK7AAoJEIaOsuA1yqREU/EQALUUH2e/7kVn88k+MFSnW6f4
+71/RTp+rXa+LROdZF+XQtnguPrhazJ6noX5hMhDRsYOt645QMHU3zzV1PgSeCdNI
+Y+QDzmZsPMtYPqiPbmS9Q4r4NwQGAasrxPnW1eDPck0HRbXyi5qz3CTiNksYaZ1+
+7eihLXRyxC+2kHBH7cDBLYJ1Q9wrWaK3XC3ctI+541mBib3R/RSma5R8YeeKmWNj
+s6unkGZdbQBgHWQ6grew2jFuoL405PCZ/Ong8EXf9A6PBs+hVB/sLRtWSWr3I0Sc
+ufJJrR9PV8EDa/rC2h2M+XS1L0viP9xHC7eR/iOrE+jpS2aACCj9QAT2CD+FnN6R
+DNO8c5ciTIA6y2JFUnsELGJqTJ0GrkD8GAea4ut0tWzcN++8mhLJyokLitEEPLqF
+bnZL0pdvQ8o+MGa/7r1N0y7eT5jInHkIRVJvILxJBeDBCyhmoxkWCANR6vV5fkNC
+Tg+FmgWrDPUQLKJavTiEeiB6jlDQxeTuvMbV/4EMWxoOxUhk6nphVKsT00eSH03C
+Tr7ER1mCKWNyqhjQJp+NANT0VZpOlP008jvR9UhtD3ddPFGLXjaMvi2gRW93oLVw
++OmdUXG1W4MxDKze4pzhT8pZtS83QdgttZoOfMlc7Rm804pa1uaTrzrlTaO7pWMM
+5XUteNkcmemjHRq59adt
+=fhKt
+-----END PGP SIGNATURE-----
+
+--fOHHtNG4YXGJ0yqR--
+
+--===============3997965125503434196==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============3997965125503434196==--
