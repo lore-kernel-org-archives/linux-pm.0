@@ -1,15 +1,18 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH] ahci: platform support for suspend/resume
-Date: Fri, 18 Nov 2011 11:17:48 +0200
-Message-ID: <20111118091747.GD9759@legolas.emea.dhcp.ti.com>
-References: <1321475279-29930-1-git-send-email-computersforpeace@gmail.com>
-	<20111116203422.GA29581@legolas.emea.dhcp.ti.com>
-	<CAN8TOE9T8YJ8Kbz=cuQ_CYPQozxU--yskZuBcXwe_emVVNQqDg@mail.gmail.com>
-Reply-To: balbi@ti.com
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM: HIBERNATION: skip the swap size check if
+ the snapshot image size is anticipative
+Date: Fri, 18 Nov 2011 20:02:33 +0100
+Message-ID: <20111118190233.GA16136__7103.84393246404$1321643515$gmane$org@elf.ucw.cz>
+References: <1320392176-3906-1-git-send-email-Barry.Song@csr.com>
+	<20111105182244.GB6772@elf.ucw.cz>
+	<CAGsJ_4xU28APFEcALAzuB2jAACa8FbOR6iSvOaEeGZa=JyjNeA@mail.gmail.com>
+	<CAGsJ_4xm05N4UZ94kvUtUGLGkcDnxesojV0fL9hQQnZBOFvohg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3997965125503434196=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAN8TOE9T8YJ8Kbz=cuQ_CYPQozxU--yskZuBcXwe_emVVNQqDg@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAGsJ_4xm05N4UZ94kvUtUGLGkcDnxesojV0fL9hQQnZBOFvohg@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,84 +22,49 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Norris <computersforpeace@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, balbi@ti.com, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Anton Vorontsov <avorontsov@ru.mvista.com>, Jeff Garzik <jgarzik@pobox.com>
+To: Barry Song <21cnbao@gmail.com>
+Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, DL-SHA-WorkGroupLinux <workgroup.linux@csr.com>, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-
---===============3997965125503434196==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fOHHtNG4YXGJ0yqR"
-Content-Disposition: inline
-
-
---fOHHtNG4YXGJ0yqR
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Nov 17, 2011 at 04:31:32PM -0800, Brian Norris wrote:
-> +linux-pm mailing list
->=20
-> Hi Felipe,
->=20
-> On Wed, Nov 16, 2011 at 12:34 PM, Felipe Balbi <balbi@ti.com> wrote:
-> > On Wed, Nov 16, 2011 at 12:27:59PM -0800, Brian Norris wrote:
-> >> + =A0 =A0 /* Does platform support suspend/resume? */
-> >> + =A0 =A0 if (!pdata->suspend || !pdata->resume)
-> >> + =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+On Mon 2011-11-07 09:31:10, Barry Song wrote:
+> 2011/11/6 Barry Song <21cnbao@gmail.com>:
+> > 2011/11/6 Pavel Machek <pavel@ucw.cz>:
+> >> Hi!
+> >>
+> >>> From: Barry Song <Baohua.Song@csr.com>
+> >>>
+> >>> Current swsusp requires swap partitions even larger than real saved pages
+> >>> due to the worst compress ratio:
+> >>> but for an embedded system, which has limited storage space, then it might
+> >>> can't give the big size partition to save snapshot.
+> >>> In the another way, some embedded systems can definitely know the most size
+> >>> needed for snapshot since they run some specific application lists.
+> >>> So this patch provides the possibility for bootloader to tell kernel even
+> >>> the system has a little snapshot partition, but it is still enough.
+> >>> For example, if the system need to save 120MB memory, origin swsusp will require
+> >>> a 130MB partition to save snapshot. but if users know 30MB is enough for them(
+> >>> compressed image will be less than 30MB), they just make a 30MB
+> >>> partition.
+> >>
+> >> Would it be better to have /sys/power/... entry which would allow
+> >> configuring expected compression ratio at runtime?
 > >
-> > should you really prevent suspend is platform doesn't provide
-> > ->suspend() ?
->=20
-> No, we shouldn't prevent suspend entirely; that would just be my
-> accidental side effect.
->=20
-> > I mean, we could some platform where all clocks are autogated and
-> > there's no need for platform to do anything. Would it be better to only
-> > call pdata->suspend if it exists but still let the AHCI-specific part go
-> > through ?
->=20
-> Perhaps. But would this have any unintended effects on systems that
-> don't implement AHCI power management at all? My intention was just to
-> provide an 'opt-in' interface for platform developers. I probably got
-> this wrong.
+> > i think it is better to have a sys node than add another kernel param.
+> > but the point is i only care about the final image size but not
+> > compression ratio. i don't care how well lzo will do for me since i
+> > only have limited disk space and know how many pages want to be saved.
+> > there has been a image_size node, will we have a expected_image_size node?
+> 
+> or will we have just a node named /sys/power/check_size, if
+> 1(default), check, otherwise(0 set by users), skip checking?
 
-I guess you could add a flag for that, but until we know that the AHCI
-powermanagement is broken somewhere should we really care ? :-)
+Or just avoid the check at all, since it no longer makes sense with
+compression?
 
---=20
-balbi
+What is the failure scenario? Hibernation still fails, but it takes
+longer to fail?
 
---fOHHtNG4YXGJ0yqR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBAgAGBQJOxiK7AAoJEIaOsuA1yqREU/EQALUUH2e/7kVn88k+MFSnW6f4
-71/RTp+rXa+LROdZF+XQtnguPrhazJ6noX5hMhDRsYOt645QMHU3zzV1PgSeCdNI
-Y+QDzmZsPMtYPqiPbmS9Q4r4NwQGAasrxPnW1eDPck0HRbXyi5qz3CTiNksYaZ1+
-7eihLXRyxC+2kHBH7cDBLYJ1Q9wrWaK3XC3ctI+541mBib3R/RSma5R8YeeKmWNj
-s6unkGZdbQBgHWQ6grew2jFuoL405PCZ/Ong8EXf9A6PBs+hVB/sLRtWSWr3I0Sc
-ufJJrR9PV8EDa/rC2h2M+XS1L0viP9xHC7eR/iOrE+jpS2aACCj9QAT2CD+FnN6R
-DNO8c5ciTIA6y2JFUnsELGJqTJ0GrkD8GAea4ut0tWzcN++8mhLJyokLitEEPLqF
-bnZL0pdvQ8o+MGa/7r1N0y7eT5jInHkIRVJvILxJBeDBCyhmoxkWCANR6vV5fkNC
-Tg+FmgWrDPUQLKJavTiEeiB6jlDQxeTuvMbV/4EMWxoOxUhk6nphVKsT00eSH03C
-Tr7ER1mCKWNyqhjQJp+NANT0VZpOlP008jvR9UhtD3ddPFGLXjaMvi2gRW93oLVw
-+OmdUXG1W4MxDKze4pzhT8pZtS83QdgttZoOfMlc7Rm804pa1uaTrzrlTaO7pWMM
-5XUteNkcmemjHRq59adt
-=fhKt
------END PGP SIGNATURE-----
-
---fOHHtNG4YXGJ0yqR--
-
---===============3997965125503434196==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============3997965125503434196==--
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
