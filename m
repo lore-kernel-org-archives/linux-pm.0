@@ -1,16 +1,14 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [PATCH 4/6] OMAP3: cpuidle: next C-state decision
-	depends on the PM QoS MPU and CORE constraints
-Date: Thu, 17 Nov 2011 13:29:54 -0800
-Message-ID: <877h2y30a5.fsf__27902.7126533494$1321933355$gmane$org@ti.com>
-References: <1319032263-22699-1-git-send-email-j-pihet@ti.com>
-	<1319032263-22699-5-git-send-email-j-pihet@ti.com>
+From: Brian Norris <computersforpeace@gmail.com>
+Subject: Re: [PATCH] ahci: platform support for suspend/resume
+Date: Thu, 17 Nov 2011 16:31:32 -0800
+Message-ID: <CAN8TOE9T8YJ8Kbz=cuQ_CYPQozxU--yskZuBcXwe_emVVNQqDg__12568.4705483311$1321933359$gmane$org@mail.gmail.com>
+References: <1321475279-29930-1-git-send-email-computersforpeace@gmail.com>
+	<20111116203422.GA29581@legolas.emea.dhcp.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1319032263-22699-5-git-send-email-j-pihet@ti.com> (jean pihet's
-	message of "Wed, 19 Oct 2011 15:51:01 +0200")
+In-Reply-To: <20111116203422.GA29581@legolas.emea.dhcp.ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,28 +18,34 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: jean.pihet@newoldbits.com
-Cc: linux-omap@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jean Pihet <j-pihet@ti.com>
+To: balbi@ti.com
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Anton Vorontsov <avorontsov@ru.mvista.com>, Jeff Garzik <jgarzik@pobox.com>
 List-Id: linux-pm@vger.kernel.org
 
-jean.pihet@newoldbits.com writes:
++linux-pm mailing list
 
-> From: Jean Pihet <j-pihet@ti.com>
->
-> The MPU latency figures for cpuidle include the MPU itself and also
-> the peripherals needed for the MPU to execute instructions (e.g.
-> main memory, caches, IRQ controller, MMU etc). On OMAP3 those
-> peripherals belong to the MPU and CORE power domains and so the
-> cpuidle C-states are a combination of MPU and CORE states.
->
-> This patch implements the relation between the cpuidle and per-
-> device PM QoS frameworks in the OMAP3 specific idle callbacks.
->
-> The chosen C-state shall satisfy the following conditions:
->  . the 'valid' field is enabled,
->  . it satisfies the enable_off_mode flag,
+Hi Felipe,
 
-Not directly related to this patch, but is there any reason to keep the
-'enable_off_mode' flag after this series?
+On Wed, Nov 16, 2011 at 12:34 PM, Felipe Balbi <balbi@ti.com> wrote:
+> On Wed, Nov 16, 2011 at 12:27:59PM -0800, Brian Norris wrote:
+>> + =A0 =A0 /* Does platform support suspend/resume? */
+>> + =A0 =A0 if (!pdata->suspend || !pdata->resume)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+>
+> should you really prevent suspend is platform doesn't provide
+> ->suspend() ?
 
-Kevin
+No, we shouldn't prevent suspend entirely; that would just be my
+accidental side effect.
+
+> I mean, we could some platform where all clocks are autogated and
+> there's no need for platform to do anything. Would it be better to only
+> call pdata->suspend if it exists but still let the AHCI-specific part go
+> through ?
+
+Perhaps. But would this have any unintended effects on systems that
+don't implement AHCI power management at all? My intention was just to
+provide an 'opt-in' interface for platform developers. I probably got
+this wrong.
+
+Brian
