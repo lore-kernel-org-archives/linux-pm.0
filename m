@@ -1,18 +1,18 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: Barry Song <21cnbao@gmail.com>
 Subject: Re: [PATCH] PM: HIBERNATION: skip the swap size check if
  the snapshot image size is anticipative
-Date: Fri, 18 Nov 2011 20:02:33 +0100
-Message-ID: <20111118190233.GA16136__7103.84393246404$1321643515$gmane$org@elf.ucw.cz>
+Date: Sat, 19 Nov 2011 19:17:20 +0800
+Message-ID: <CAGsJ_4zDNH-a==E=OcGaaKmMzMwRCxJk9SVW0=bzScvisNGPsg@mail.gmail.com>
 References: <1320392176-3906-1-git-send-email-Barry.Song@csr.com>
 	<20111105182244.GB6772@elf.ucw.cz>
 	<CAGsJ_4xU28APFEcALAzuB2jAACa8FbOR6iSvOaEeGZa=JyjNeA@mail.gmail.com>
 	<CAGsJ_4xm05N4UZ94kvUtUGLGkcDnxesojV0fL9hQQnZBOFvohg@mail.gmail.com>
+	<20111118190233.GA16136@elf.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <CAGsJ_4xm05N4UZ94kvUtUGLGkcDnxesojV0fL9hQQnZBOFvohg@mail.gmail.com>
+In-Reply-To: <20111118190233.GA16136@elf.ucw.cz>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -22,49 +22,61 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Barry Song <21cnbao@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, DL-SHA-WorkGroupLinux <workgroup.linux@csr.com>, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2011-11-07 09:31:10, Barry Song wrote:
-> 2011/11/6 Barry Song <21cnbao@gmail.com>:
-> > 2011/11/6 Pavel Machek <pavel@ucw.cz>:
-> >> Hi!
-> >>
-> >>> From: Barry Song <Baohua.Song@csr.com>
-> >>>
-> >>> Current swsusp requires swap partitions even larger than real saved pages
-> >>> due to the worst compress ratio:
-> >>> but for an embedded system, which has limited storage space, then it might
-> >>> can't give the big size partition to save snapshot.
-> >>> In the another way, some embedded systems can definitely know the most size
-> >>> needed for snapshot since they run some specific application lists.
-> >>> So this patch provides the possibility for bootloader to tell kernel even
-> >>> the system has a little snapshot partition, but it is still enough.
-> >>> For example, if the system need to save 120MB memory, origin swsusp will require
-> >>> a 130MB partition to save snapshot. but if users know 30MB is enough for them(
-> >>> compressed image will be less than 30MB), they just make a 30MB
-> >>> partition.
-> >>
-> >> Would it be better to have /sys/power/... entry which would allow
-> >> configuring expected compression ratio at runtime?
-> >
-> > i think it is better to have a sys node than add another kernel param.
-> > but the point is i only care about the final image size but not
-> > compression ratio. i don't care how well lzo will do for me since i
-> > only have limited disk space and know how many pages want to be saved.
-> > there has been a image_size node, will we have a expected_image_size node?
-> 
-> or will we have just a node named /sys/power/check_size, if
-> 1(default), check, otherwise(0 set by users), skip checking?
-
-Or just avoid the check at all, since it no longer makes sense with
-compression?
-
-What is the failure scenario? Hibernation still fails, but it takes
-longer to fail?
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+MjAxMS8xMS8xOSBQYXZlbCBNYWNoZWsgPHBhdmVsQHVjdy5jej46Cj4gT24gTW9uIDIwMTEtMTEt
+MDcgMDk6MzE6MTAsIEJhcnJ5IFNvbmcgd3JvdGU6Cj4+IDIwMTEvMTEvNiBCYXJyeSBTb25nIDwy
+MWNuYmFvQGdtYWlsLmNvbT46Cj4+ID4gMjAxMS8xMS82IFBhdmVsIE1hY2hlayA8cGF2ZWxAdWN3
+LmN6PjoKPj4gPj4gSGkhCj4+ID4+Cj4+ID4+PiBGcm9tOiBCYXJyeSBTb25nIDxCYW9odWEuU29u
+Z0Bjc3IuY29tPgo+PiA+Pj4KPj4gPj4+IEN1cnJlbnQgc3dzdXNwIHJlcXVpcmVzIHN3YXAgcGFy
+dGl0aW9ucyBldmVuIGxhcmdlciB0aGFuIHJlYWwgc2F2ZWQgcGFnZXMKPj4gPj4+IGR1ZSB0byB0
+aGUgd29yc3QgY29tcHJlc3MgcmF0aW86Cj4+ID4+PiBidXQgZm9yIGFuIGVtYmVkZGVkIHN5c3Rl
+bSwgd2hpY2ggaGFzIGxpbWl0ZWQgc3RvcmFnZSBzcGFjZSwgdGhlbiBpdCBtaWdodAo+PiA+Pj4g
+Y2FuJ3QgZ2l2ZSB0aGUgYmlnIHNpemUgcGFydGl0aW9uIHRvIHNhdmUgc25hcHNob3QuCj4+ID4+
+PiBJbiB0aGUgYW5vdGhlciB3YXksIHNvbWUgZW1iZWRkZWQgc3lzdGVtcyBjYW4gZGVmaW5pdGVs
+eSBrbm93IHRoZSBtb3N0IHNpemUKPj4gPj4+IG5lZWRlZCBmb3Igc25hcHNob3Qgc2luY2UgdGhl
+eSBydW4gc29tZSBzcGVjaWZpYyBhcHBsaWNhdGlvbiBsaXN0cy4KPj4gPj4+IFNvIHRoaXMgcGF0
+Y2ggcHJvdmlkZXMgdGhlIHBvc3NpYmlsaXR5IGZvciBib290bG9hZGVyIHRvIHRlbGwga2VybmVs
+IGV2ZW4KPj4gPj4+IHRoZSBzeXN0ZW0gaGFzIGEgbGl0dGxlIHNuYXBzaG90IHBhcnRpdGlvbiwg
+YnV0IGl0IGlzIHN0aWxsIGVub3VnaC4KPj4gPj4+IEZvciBleGFtcGxlLCBpZiB0aGUgc3lzdGVt
+IG5lZWQgdG8gc2F2ZSAxMjBNQiBtZW1vcnksIG9yaWdpbiBzd3N1c3Agd2lsbCByZXF1aXJlCj4+
+ID4+PiBhIDEzME1CIHBhcnRpdGlvbiB0byBzYXZlIHNuYXBzaG90LiBidXQgaWYgdXNlcnMga25v
+dyAzME1CIGlzIGVub3VnaCBmb3IgdGhlbSgKPj4gPj4+IGNvbXByZXNzZWQgaW1hZ2Ugd2lsbCBi
+ZSBsZXNzIHRoYW4gMzBNQiksIHRoZXkganVzdCBtYWtlIGEgMzBNQgo+PiA+Pj4gcGFydGl0aW9u
+Lgo+PiA+Pgo+PiA+PiBXb3VsZCBpdCBiZSBiZXR0ZXIgdG8gaGF2ZSAvc3lzL3Bvd2VyLy4uLiBl
+bnRyeSB3aGljaCB3b3VsZCBhbGxvdwo+PiA+PiBjb25maWd1cmluZyBleHBlY3RlZCBjb21wcmVz
+c2lvbiByYXRpbyBhdCBydW50aW1lPwo+PiA+Cj4+ID4gaSB0aGluayBpdCBpcyBiZXR0ZXIgdG8g
+aGF2ZSBhIHN5cyBub2RlIHRoYW4gYWRkIGFub3RoZXIga2VybmVsIHBhcmFtLgo+PiA+IGJ1dCB0
+aGUgcG9pbnQgaXMgaSBvbmx5IGNhcmUgYWJvdXQgdGhlIGZpbmFsIGltYWdlIHNpemUgYnV0IG5v
+dAo+PiA+IGNvbXByZXNzaW9uIHJhdGlvLiBpIGRvbid0IGNhcmUgaG93IHdlbGwgbHpvIHdpbGwg
+ZG8gZm9yIG1lIHNpbmNlIGkKPj4gPiBvbmx5IGhhdmUgbGltaXRlZCBkaXNrIHNwYWNlIGFuZCBr
+bm93IGhvdyBtYW55IHBhZ2VzIHdhbnQgdG8gYmUgc2F2ZWQuCj4+ID4gdGhlcmUgaGFzIGJlZW4g
+YSBpbWFnZV9zaXplIG5vZGUsIHdpbGwgd2UgaGF2ZSBhIGV4cGVjdGVkX2ltYWdlX3NpemUgbm9k
+ZT8KPj4KPj4gb3Igd2lsbCB3ZSBoYXZlIGp1c3QgYSBub2RlIG5hbWVkIC9zeXMvcG93ZXIvY2hl
+Y2tfc2l6ZSwgaWYKPj4gMShkZWZhdWx0KSwgY2hlY2ssIG90aGVyd2lzZSgwIHNldCBieSB1c2Vy
+cyksIHNraXAgY2hlY2tpbmc/Cj4KPiBPciBqdXN0IGF2b2lkIHRoZSBjaGVjayBhdCBhbGwsIHNp
+bmNlIGl0IG5vIGxvbmdlciBtYWtlcyBzZW5zZSB3aXRoCj4gY29tcHJlc3Npb24/CgpjdXJyZW50
+IGVhcmx5IGNoZWNrIGp1c3QgbWFrZXMgdGhlIGZhaWx1cmUgaGFwcGVuIGVhcmllci4gaW4gdGhl
+CmNoZWNrLCBpdCByZXF1aXJlcyBtb3JlIHNwYWNlIHRoYW4gdW5jb21wcmVzc2VkIGRhdGEgZHVl
+IHRvIHRoZSB3b3JzdApjb21wcmVzcyByYXRpby4gc29tZSB1c2VycyBtaWdodCBoYXZlIGJpZyBz
+cGFjZSBhbmQgY29tcGxleCBzY2VuZXJpb3MsCnRoZXkgbWlnaHQgd2FudCB0aGUgZWFybGllciBj
+aGVjay4gYnV0IGl0IGlzIHJlYWxseSBhIGJpZyB3YXN0ZQpjb25zaWRlcmluZyB0ZXh0LCBkYXRh
+IHNlY3Rpb25zIG9mIHByb2dyYW1zIGFyZSBhY3R1YWxseSBkYXRhIHdoaWNoCmNhbiBiZSBjb21w
+cmVzc2VkIGluIGEgYmlnIHJhdGlvLgoKYnV0IGZvciBzb21lIG90aGVyIGVtYmVkZGVkIHN5c3Rl
+bSB1c2VycywgdGhleSBoYXZlIGxpbWl0ZWQgc3RvcmFnZQphbmQga25vd24gc3cgbGlzdCwgdGhl
+biB0aGV5IGtub3cgdGhlaXIgbGl0dGxlIHNwYWNlIGlzIGVub3VnaCBmb3IKY29tcHJlc3NlZCBp
+bWFnZS4KCmkgdGhpbmsgd2UgY2FuIG1ha2UgdGhlIGZ1bmN0aW9uIGFzIGEgb3B0aW9uIGZvciB1
+c2Vycy4gcHJvdmlkZSBhIG5vZGUKL3N5cy9wb3dlci9jaGVja19zd2FwX3NpemUsIGlmIHVzZXJz
+IHNldCBpdCB0byAwLCBpZ25vcmUgdGhlIGNoZWNrLgpvdGhlcndpc2UsIGNoZWNrIGJ5IHRoZSB3
+b3JzdCBjb21wcmVzcyByYXRpby4KCj4KPiBXaGF0IGlzIHRoZSBmYWlsdXJlIHNjZW5hcmlvPyBI
+aWJlcm5hdGlvbiBzdGlsbCBmYWlscywgYnV0IGl0IHRha2VzCj4gbG9uZ2VyIHRvIGZhaWw/Cgpp
+dCB3aWxsIGZhaWwgc29tZSBsYXRlci4gYnV0IGkgc3RpbGwgZXhwZWN0IHRoZSBzeXN0ZW0gY2Fu
+IHJlc3RvcmUgdG8KYmUgbm9ybWFsIGV2ZW4gaXQgZmFpbHMgaW4gdGhlIHNhdmluZyBzdGFnZS4g
+aSBjYW4gZ2l2ZSBhIHRlc3QuCgo+Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqBQYXZlbAo+IC0tCi1iYXJyeQpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1A
+bGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eGZvdW5kYXRpb24u
+b3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
