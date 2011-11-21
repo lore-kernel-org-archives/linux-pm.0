@@ -1,19 +1,14 @@
-From: Jerome Glisse <j.glisse@gmail.com>
-Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
-Date: Mon, 21 Nov 2011 16:29:23 -0500
-Message-ID: <CAH3drwbtWJcPOixW0gze0e0jbTn_uY0x5E=KY8N-WDcb1t8h2w__37120.5983371057$1321933367$gmane$org@mail.gmail.com>
-References: <20111102160208.GA6657@zeus>
-	<20111102163109.GA29430@core.coreip.homeip.net>
-	<20111103155956.GG4417@google.com> <20111103184559.GA3295@zeus>
-	<20111103213959.GP4417@google.com> <20111104134347.GA2480@zeus>
-	<20111104161431.GZ4417@google.com> <20111104173441.GA2157@zeus>
-	<CAH3drwaXcUy1vz8bvHwE2_iga5WUsWn_Dp0oe_0r3UacV0vT_A@mail.gmail.com>
-	<20111104230758.GA7332@zeus> <20111121210908.GJ25776@google.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1
+Date: Mon, 21 Nov 2011 14:34:17 -0800
+Message-ID: <CALCETrUpXrsjBLZsZU3u+y7KCDO0LW55QoBQkBqN_BPFZHsrkw__38778.9150387563$1321933372$gmane$org@mail.gmail.com>
+References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
+	<CA+55aFwAELQieN=qR7Gz_MT5rHPp90H10uTMS+DOJjefk7q3ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20111121210908.GJ25776@google.com>
+In-Reply-To: <CA+55aFwAELQieN=qR7Gz_MT5rHPp90H10uTMS+DOJjefk7q3ng@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -23,34 +18,41 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, David Airlie <airlied@linux.ie>, Andrew Watts <akwatts@ymail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-pm@lists.linux-foundation.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 21, 2011 at 4:09 PM, Tejun Heo <tj@kernel.org> wrote:
-> On Fri, Nov 04, 2011 at 06:08:20PM -0500, Andrew Watts wrote:
->> On Fri, Nov 04, 2011 at 01:35:53PM -0400, Jerome Glisse wrote:
->> >
->> > I need full dmesg
->> >
->> > Cheers,
->> > Jerome
+On Mon, Nov 21, 2011 at 2:11 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Mon, Nov 21, 2011 at 1:49 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 >>
->> Hi. Just noticed I attached a gzip of my dmesg last time by mistake.
->>
->> Here goes as text/plain.
+>> Subject =A0 =A0: [3.1 REGRESSION] Commit 5cec93c216db77c45f7ce970d46283b=
+cb1933884 breaks the Chromium seccomp sandbox
+>> Submitter =A0: Nix <nix@esperi.org.uk>
+>> Date =A0 =A0 =A0 : 2011-11-14 0:40
+>> Message-ID : 8762inleno.fsf@spindle.srvr.nix
+>> References : http://marc.info/?l=3Dlinux-kernel&m=3D132123396226377&w=3D2
 >
-> Out of curiosity, did it get somewhere?
->
-> Thanks.
->
-> --
-> tejun
->
+> So this should be fixed by commit 2b666859ec32 ("x86: Default to
+> vsyscall=3Dnative for now"), since we disabled the vsyscall emulation
+> because it broken UML too.
 
-Yeah i am pretty sure i know what's going wrong but there is no easy
-fix, there is a deadlock in the kernel when gem wait ioctl is call on
-scanout buffer and that a gpu reset happen
+I don't think so.  I think the issue is that the chromium sandbox is
+trying to use getcpu, time, or gettimeofday from seccomp mode and the
+kernel is (IMO correctly) sending it SIGKILL.  Nix can trigger the bug
+in vsyscall=3Dnative mode, so it's not the emulation.  (If it's
+gettimeofday, then it's definitely not a regression.  vgettimeofday
+would SIGKILL in seccomp mode with any timing source other than rdtsc
+or hpet even on old kernels.)
 
-Cheers,
-Jerome
+I sent a patch to show which syscall is causing SIGKILL and haven't
+heard back.  Meanwhile, I'm downloading the 1.1GB (!) tarball to see
+if I can reproduce it here.  Fedora's build didn't trigger it for me,
+probably because the sandbox was disabled.
+
+To try to reduce the incidence of this stuff in the future, and to
+make vsyscall=3Dnone and UML more useful, I filed this bug:
+
+http://sourceware.org/bugzilla/show_bug.cgi?id=3D13425
+
+--Andy
