@@ -1,15 +1,13 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCHSET] cgroup: stable threadgroup during attach
- & subsys methods consolidation
-Date: Mon, 21 Nov 2011 14:07:19 -0800
-Message-ID: <20111121220719.GP25776__35913.1856159822$1321913256$gmane$org@google.com>
-References: <1320191193-8110-1-git-send-email-tj@kernel.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1
+Date: Mon, 21 Nov 2011 14:07:20 -0800
+Message-ID: <CA+55aFxv7+Kf=sRj7RCSeY0dcVFMcUiXVKT=CY-2aFti5bO4yA__42942.7094212317$1321913280$gmane$org@mail.gmail.com>
+References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1320191193-8110-1-git-send-email-tj@kernel.org>
+In-Reply-To: <201111212249.31196.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,21 +17,30 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: paul@paulmenage.org, rjw@sisk.pl, lizf@cn.fujitsu.com
-Cc: fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, kamezawa.hiroyu@Jp.fujitsu.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 01, 2011 at 04:46:23PM -0700, Tejun Heo wrote:
-> This patchset is combination of the following two patchsets.
-> 
->  [1] cgroup: extend threadgroup locking
->  [2] cgroup: introduce cgroup_taskset and consolidate subsys methods, take#2
+On Mon, Nov 21, 2011 at 1:49 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> Subject =A0 =A0: Simultaneous cat and external keyboard input causing ker=
+nel panic
+> Submitter =A0: Timo Jyrinki <timo.jyrinki@gmail.com>
+> Date =A0 =A0 =A0 : 2011-11-03 12:14
+> Message-ID : CAJtFfxmovJHspHHKbvBVc4pw+u5mjGmUejCXEzdV+GqE=3DjVSOQ@mail.g=
+mail.com
+> References : http://marc.info/?l=3Dlinux-kernel&m=3D132032253903074&w=3D2
 
-Li, do you agree with the proposed patches?  If so, I'll wait for
-Frederic's response, repost updated series and merge it into the
-cgroup tree.
+So while funny, I doubt this is actually a bug. It's a feature, as
+pointed out by Clemens Ladisch in that thread.
 
-Thank you.
+It's simply sysrq-c: "perform a system crash by a NULL pointer dereference".
 
--- 
-tejun
+Now, I'm perfectly willing to consider that feature to be a
+mis-feature, and that this should be considered a bug to be fixed. But
+it is not a regression.
+
+Keeping it on the regression list just because it is amusing is
+understandable, though ;)
+
+                    Linus
