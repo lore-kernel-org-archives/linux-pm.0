@@ -1,7 +1,7 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1
-Date: Mon, 21 Nov 2011 14:11:54 -0800
-Message-ID: <CA+55aFwAELQieN=qR7Gz_MT5rHPp90H10uTMS+DOJjefk7q3ng__32375.3078737811$1321913553$gmane$org@mail.gmail.com>
+Date: Mon, 21 Nov 2011 14:18:29 -0800
+Message-ID: <CA+55aFygSFt+O5KLoiE_0V+o45eKfsoDDV5ML8EF=J0n9z_D-Q__2977.77275923199$1321913956$gmane$org@mail.gmail.com>
 References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
@@ -23,22 +23,17 @@ List-Id: linux-pm@vger.kernel.org
 
 On Mon, Nov 21, 2011 at 1:49 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 >
-> Subject =A0 =A0: [3.1 REGRESSION] Commit 5cec93c216db77c45f7ce970d46283bc=
-b1933884 breaks the Chromium seccomp sandbox
-> Submitter =A0: Nix <nix@esperi.org.uk>
-> Date =A0 =A0 =A0 : 2011-11-14 0:40
-> Message-ID : 8762inleno.fsf@spindle.srvr.nix
-> References : http://marc.info/?l=3Dlinux-kernel&m=3D132123396226377&w=3D2
+> Subject =A0 =A0: hugetlb oops on 3.1.0-rc8-devel
+> Submitter =A0: Andy Lutomirski <luto@amacapital.net>
+> Date =A0 =A0 =A0 : 2011-11-01 22:20
+> Message-ID : CALCETrW1mpVCz2tO5roaz1r6vnno+srHR-dHA6_pkRi2qiCfdw@mail.gma=
+il.com
+> References : http://marc.info/?l=3Dlinux-kernel&m=3D132018604426692&w=3D2
 
-So this should be fixed by commit 2b666859ec32 ("x86: Default to
-vsyscall=3Dnative for now"), since we disabled the vsyscall emulation
-because it broken UML too.
+Despite the subject line, that's not an oops, it's a BUG_ON().
 
-Of course, the chromium seccomp thing might re-surface with the
-patches that enable the emulation (with better emulation), which Andy
-is still working on, and that I was planning on merging for 3.3.
+And it *should* be fixed by commit ea4039a34c4c ("hugetlb: release
+pages in the error path of hugetlb_cow()") although I don't think Andy
+ever confirmed that (since it was hard to trigger).
 
-Andy, it migth be worth contacting Nix and having him test whether
-your fixed emulation works for chromium too.
-
-                      Linus
+                     Linus
