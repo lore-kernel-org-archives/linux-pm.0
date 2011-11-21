@@ -1,13 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 3.2-rc2+: Reported regressions from 3.0 and 3.1
-Date: Mon, 21 Nov 2011 22:49:30 +0100
-Message-ID: <201111212249.31196.rjw__8163.29603917456$1321912023$gmane$org@sisk.pl>
-References: <lx6sezwGldO.A.IhF.UBpWOB@chimera>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 03/10] threadgroup: extend threadgroup_lock()
+ to cover exit and exec
+Date: Mon, 21 Nov 2011 13:58:39 -0800
+Message-ID: <20111121215839.GL25776__44053.0640692033$1321912740$gmane$org@google.com>
+References: <1320191193-8110-1-git-send-email-tj@kernel.org>
+	<1320191193-8110-4-git-send-email-tj@kernel.org>
+	<20111113164426.GB9446@somewhere>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <lx6sezwGldO.A.IhF.UBpWOB@chimera>
+Content-Disposition: inline
+In-Reply-To: <20111113164426.GB9446@somewhere>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -17,125 +21,99 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@Jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBtZXNzYWdlIGNvbnRhaW5zIGEgbGlzdCBvZiBzb21lIHJlZ3Jlc3Npb25zIGZyb20gMy4w
-IGFuZCAzLjEKZm9yIHdoaWNoIHRoZXJlIGFyZSBubyBmaXhlcyBpbiB0aGUgbWFpbmxpbmUga25v
-d24gdG8gdGhlIHRyYWNraW5nIHRlYW0uCklmIGFueSBvZiB0aGVtIGhhdmUgYmVlbiBmaXhlZCBh
-bHJlYWR5LCBwbGVhc2UgbGV0IHVzIGtub3cuCgpJZiB5b3Uga25vdyBvZiBhbnkgb3RoZXIgdW5y
-ZXNvbHZlZCByZWdyZXNzaW9ucyBmcm9tIDMuMCBhbmQgMy4xLCBwbGVhc2UgbGV0IHVzCmtub3cg
-ZWl0aGVyIGFuZCB3ZSdsbCBhZGQgdGhlbSB0byB0aGUgbGlzdC4gIEFsc28sIHBsZWFzZSBsZXQg
-dXMga25vdyBpZiBhbnkgb2YKdGhlIGVudHJpZXMgYmVsb3cgYXJlIGludmFsaWQuCgpUaGUgZW50
-cmllcyBiZWxvdyBhcmUgc2ltcGxpZmllZCBhbmQgdGhlIHN0YXRpc3RpY3MgYXJlIG5vdCBwcmVz
-ZW50IGR1ZSB0byB0aGUKY29udGludWluZyBCdWd6aWxsYSBvdXRhZ2UuCgpTdWJqZWN0ICAgIDog
-aXdsYWduIGlzIGdldHRpbmcgdmVyeSBzaGFreQpTdWJtaXR0ZXIgIDogTm9yYmVydCBQcmVpbmlu
-ZyA8cHJlaW5pbmdAbG9naWMuYXQ+CkRhdGUgICAgICAgOiAyMDExLTEwLTE5IDY6MDEKTWVzc2Fn
-ZS1JRCA6IDIwMTExMDE5MDYwMTA4LkdBMTE1ODhAZ2FtbWEubG9naWMudHV3aWVuLmFjLmF0ClJl
-ZmVyZW5jZXMgOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEzMTkxNDU1Mzky
-MDYxNCZ3PTIKClN1YmplY3QgICAgOiBSZWdyZXNzaW9uOiAiaXJxcG9sbCIgaGFzbid0IGJlZW4g
-d29ya2luZyBmb3IgbWUgc2luY2UgTWFyY2ggMTYgSVJRClN1Ym1pdHRlciAgOiBFZHdhcmQgRG9u
-b3ZhbiA8ZWR3YXJkLmRvbm92YW5AbnVtYmxlLm5ldD4KRGF0ZSAgICAgICA6IDIwMTEtMTAtMTkg
-MjI6MDkKTWVzc2FnZS1JRCA6IENBRGRiVytIWGRDUGZKdTJSVEY2enordWpDbWl1X2RtWndMMmlT
-Y3VGNTNwPUFhWjFVd0BtYWlsLmdtYWlsLmNvbQpSZWZlcmVuY2VzIDogaHR0cDovL21hcmMuaW5m
-by8/bD1saW51eC1rZXJuZWwmbT0xMzE5MTQ1NTQyMjA2Nzkmdz0yCgpTdWJqZWN0ICAgIDogUmVn
-cmVzc2lvbiBpbiAzLjEgY2F1c2VzIFhlbiB0byB1c2Ugd3JvbmcgaWRsZSByb3V0aW5lClN1Ym1p
-dHRlciAgOiBTdGVmYW4gQmFkZXIgPHN0ZWZhbi5iYWRlckBjYW5vbmljYWwuY29tPgpEYXRlICAg
-ICAgIDogMjAxMS0xMC0yNiAxMDoyNApNZXNzYWdlLUlEIDogNEVBN0RGRDEuOTA2MDYwOEBjYW5v
-bmljYWwuY29tClJlZmVyZW5jZXMgOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWFjcGkmbT0x
-MzE5NjI0Njc5MjQ1NjQmdz0yCgpTdWJqZWN0ICAgIDogMy4xKyBpd2x3aWZpIGxvY2t1cApTdWJt
-aXR0ZXIgIDogRGF2ZSBKb25lcyA8ZGF2ZWpAcmVkaGF0LmNvbT4KRGF0ZSAgICAgICA6IDIwMTEt
-MTAtMzEgMTQ6MzQKTWVzc2FnZS1JRCA6IDIwMTExMDMxMTQzNDA4LkdBMTcxNTJAcmVkaGF0LmNv
-bQpSZWZlcmVuY2VzIDogaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzIwMDcx
-Njk0MjAxNjAmdz0yCgpTdWJqZWN0ICAgIDogaHVnZXRsYiBvb3BzIG9uIDMuMS4wLXJjOC1kZXZl
-bApTdWJtaXR0ZXIgIDogQW5keSBMdXRvbWlyc2tpIDxsdXRvQGFtYWNhcGl0YWwubmV0PgpEYXRl
-ICAgICAgIDogMjAxMS0xMS0wMSAyMjoyMApNZXNzYWdlLUlEIDogQ0FMQ0VUclcxbXBWQ3oydE81
-cm9hejFyNnZubm8rc3JIUi1kSEE2X3BrUmkycWlDZmR3QG1haWwuZ21haWwuY29tClJlZmVyZW5j
-ZXMgOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEzMjAxODYwNDQyNjY5MiZ3
-PTIKClN1YmplY3QgICAgOiBTaW11bHRhbmVvdXMgY2F0IGFuZCBleHRlcm5hbCBrZXlib2FyZCBp
-bnB1dCBjYXVzaW5nIGtlcm5lbCBwYW5pYwpTdWJtaXR0ZXIgIDogVGltbyBKeXJpbmtpIDx0aW1v
-Lmp5cmlua2lAZ21haWwuY29tPgpEYXRlICAgICAgIDogMjAxMS0xMS0wMyAxMjoxNApNZXNzYWdl
-LUlEIDogQ0FKdEZmeG1vdkpIc3BISEtidkJWYzRwdyt1NW1qR21VZWpDWEV6ZFYrR3FFPWpWU09R
-QG1haWwuZ21haWwuY29tClJlZmVyZW5jZXMgOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtl
-cm5lbCZtPTEzMjAzMjI1MzkwMzA3NCZ3PTIKClN1YmplY3QgICAgOiBMaW51cyBHSVQgLSBJTkZP
-OiBwb3NzaWJsZSBjaXJjdWxhciBsb2NraW5nIGRlcGVuZGVuY3kgZGV0ZWN0ZWQKU3VibWl0dGVy
-ICA6IE1pbGVzIExhbmUgPG1pbGVzLmxhbmVAZ21haWwuY29tPgpEYXRlICAgICAgIDogMjAxMS0x
-MS0wMyAxNTo1NwpNZXNzYWdlLUlEIDogQ0FIRmdSeThTMHhMZmhaeFRVT0VINUEwUExfRmI3OS0w
-LWdtYlE9OWgyRC14TXF0MWhBQG1haWwuZ21haWwuY29tClJlZmVyZW5jZXMgOiBodHRwOi8vbWFy
-Yy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEzMjAzMzU4NzkwODQyNiZ3PTIKClN1YmplY3QgICAg
-OiBsb2NrZGVwIHdhcm5pbmcgYWZ0ZXIgYWE2YWZjYTViY2FiOiAicHJvYzogZml4IHJhY2VzIGFn
-YWluc3QgZXhlY3ZlKCkgb2YgL3Byb2MvUElEL2ZkKioiClN1Ym1pdHRlciAgOiBBcmkgU2F2b2xh
-aW5lbiA8YXJpLm0uc2F2b2xhaW5lbkBnbWFpbC5jb20+CkRhdGUgICAgICAgOiAyMDExLTExLTA4
-IDM6NDcKTWVzc2FnZS1JRCA6IENBRWJ5a2FYWVpFRmhUZ1dNbTJBZmFXUTJTYVhZdU9feXBUbncr
-NkFWV1NjT1lTQ3V1d0BtYWlsLmdtYWlsLmNvbQpSZWZlcmVuY2VzIDogaHR0cDovL21hcmMuaW5m
-by8/bD1saW51eC1rZXJuZWwmbT0xMzIwNzI0MTMxMjUwOTkmdz0yCgpTdWJqZWN0ICAgIDogRE1B
-LUFQSSBjaGVja19zeW5jIGVycm9ycyB3aXRoIDMuMgpTdWJtaXR0ZXIgIDogSm9zaCBCb3llciA8
-andib3llckByZWRoYXQuY29tPgpEYXRlICAgICAgIDogMjAxMS0xMS0wOCAxNzozMQpNZXNzYWdl
-LUlEIDogMjAxMTExMDgxNzMxNTMuR0UxNDIxNkB6b2QuYm9zLnJlZGhhdC5jb20KUmVmZXJlbmNl
-cyA6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMyMDc3MzU3NjA4Nzk3Jnc9
-MgoKU3ViamVjdCAgICA6IFszLjEtcmM4IFJFR1JFU1NJT05dIHNreTIgaGFuZ3MgbWFjaGluZSBv
-biB0dXJuaW5nIG9mZiBvciBzdXNwZW5kaW5nClN1Ym1pdHRlciAgOiBSYWZhxYIgTWnFgmVja2kg
-PHphamVjNUBnbWFpbC5jb20+CkRhdGUgICAgICAgOiAyMDExLTExLTA5IDExOjQ2Ck1lc3NhZ2Ut
-SUQgOiBDQUNuYTZyeVRkTGNXVllnSHU9X21SRmdhMXNGaXZwRV9EeVpPWS1ITW1LZ2drV0FKQXdA
-bWFpbC5nbWFpbC5jb20KUmVmZXJlbmNlcyA6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgtbmV0
-ZGV2Jm09MTMyMDgzOTIyMjI4MDg4Jnc9NAoKU3ViamVjdCAgICA6IDMuMi1yYzEgZG9lc24ndCBi
-b290IG9uIGR1YWwgc29ja2V0IG9wdGVyb24gd2l0aG91dCBzd2FwClN1Ym1pdHRlciAgOiBOaWts
-YXMgU2NobmVsbGUgPG5pa2xhc0Brb21hbmkuZGU+CkRhdGUgICAgICAgOiAyMDExLTExLTEwIDIw
-OjA5Ck1lc3NhZ2UtSUQgOiAxMzIwOTU1NzY5LjE3MTguOC5jYW1lbEBqdXBpdGVyClJlZmVyZW5j
-ZXMgOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEzMjA5NTU4MzUwMTc2NyZ3
-PTIKClN1YmplY3QgICAgOiBTcGFyYy0zMiBkb2Vzbid0IHdvcmsgaW4gMy4xLgpTdWJtaXR0ZXIg
-IDogUm9iIExhbmRsZXkgPHJvYkBsYW5kbGV5Lm5ldD4KRGF0ZSAgICAgICA6IDIwMTEtMTEtMTIg
-MTE6MjIKTWVzc2FnZS1JRCA6IDRFQkVBQjVBLjUwMjA4MDlAbGFuZGxleS5uZXQKUmVmZXJlbmNl
-cyA6IGh0dHA6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMva2VybmVsL21zZzEyNjAzODMuaHRtbAoK
-U3ViamVjdCAgICA6IGtodWdlcGFnZWQgYmxvY2tzIHN1c3BlbmQycmFtICgzLjIuMC1yYzEtMDAy
-NTItZzhmMDQyYWEpClN1Ym1pdHRlciAgOiBTZXJnZWkgVHJvZmltb3ZpY2ggPHNseWljaEBnbWFp
-bC5jb20+CkRhdGUgICAgICAgOiAyMDExLTExLTEyIDEwOjQ4Ck1lc3NhZ2UtSUQgOiAyMDExMTEx
-MjEwNDg1OS43NzQ0YjI4MkBzZi5ob21lClJlZmVyZW5jZXMgOiBodHRwczovL2xrbWwub3JnL2xr
-bWwvMjAxMS8xMS8xMi8xMQoKU3ViamVjdCAgICA6IFdBUk5JTkc6IGF0IGZzL3N5c2ZzL3N5c2Zz
-Lmg6MTk1IChkdXJpbmcgYm9vdCkKU3VibWl0dGVyICA6IE1hcmt1cyBUcmlwcGVsc2RvcmYgPG1h
-cmt1c0B0cmlwcGVsc2RvcmYuZGU+CkRhdGUgICAgICAgOiAyMDExLTExLTEzIDE5OjI0Ck1lc3Nh
-Z2UtSUQgOiAyMDExMTExMzE5MjQxNy5HQTE2NTlAeDQudHJpcHBlbHMuZGUKUmVmZXJlbmNlcyA6
-IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMyMTIxMjMxOTIxOTMyJnc9MgoK
-U3ViamVjdCAgICA6IFBST0JMRU06IFJhZGVvbiBkaXNwbGF5IGNvbm5lY3RvciA6IE5vIG1vbml0
-b3IgY29ubmVjdGVkIG9yIGludmFsaWQgRURJRApTdWJtaXR0ZXIgIDogVHJlZXZlIEplbGJlcnQg
-PHRyZWV2ZUBzY2FybGV0LmJlPgpEYXRlICAgICAgIDogMjAxMS0xMS0xMyAxNzoyNwpNZXNzYWdl
-LUlEIDogMjQwNzAyNi5ha2NUTzJHZ2ljQGdlbWluaS02NApSZWZlcmVuY2VzIDogaHR0cDovL21h
-cmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzIxMjA1MzA5MjAxMzkmdz0yCgpTdWJqZWN0ICAg
-IDogWzMuMSBSRUdSRVNTSU9OXSBDb21taXQgNWNlYzkzYzIxNmRiNzdjNDVmN2NlOTcwZDQ2Mjgz
-YmNiMTkzMzg4NCBicmVha3MgdGhlIENocm9taXVtIHNlY2NvbXAgc2FuZGJveApTdWJtaXR0ZXIg
-IDogTml4IDxuaXhAZXNwZXJpLm9yZy51az4KRGF0ZSAgICAgICA6IDIwMTEtMTEtMTQgMDo0MApN
-ZXNzYWdlLUlEIDogODc2MmlubGVuby5mc2ZAc3BpbmRsZS5zcnZyLm5peApSZWZlcmVuY2VzIDog
-aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzIxMjMzOTYyMjYzNzcmdz0yCgpT
-dWJqZWN0ICAgIDogbWF4IFBXTSBpcyB6ZXJvClN1Ym1pdHRlciAgOiBNYXJjb3MgUGF1bG8gZGUg
-U291emEgPG1hcmNvcy5tYWdlQGdtYWlsLmNvbT4KRGF0ZSAgICAgICA6IDIwMTEtMTEtMTUgMTU6
-MTQKTWVzc2FnZS1JRCA6IGFscGluZS5MTlguMi4wMC4xMTExMTUxMzAxNDEwLjI2OTNAZGFya3N0
-YXIuZXhhbXBsZS5uZXQKUmVmZXJlbmNlcyA6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2Vy
-bmVsJm09MTMyMTM3MDE5MzMwNTQ4Jnc9MgoKU3ViamVjdCAgICA6IE9vcHMgb24gc3VzcGVuZCB3
-aXRoIGxpYmVydGFzIFNESU8gKExpbnV4IDMuMi1yYzIpClN1Ym1pdHRlciAgOiBTdmVuIE5ldW1h
-bm4gPHMubmV1bWFubkByYXVtZmVsZC5jb20+CkRhdGUgICAgICAgOiAyMDExLTExLTE3IDE1OjM2
-Ck1lc3NhZ2UtSUQgOiAxMzIxNTQ0MjEwLjMxMDkwLjYuY2FtZWxAc3ZlbgpSZWZlcmVuY2VzIDog
-aHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMzIxNTQ1Mjc3MTU4MDcmdz0yCgpT
-dWJqZWN0ICAgIDogSW1wb3NzaWJsZSBoaWdoIGNwdS10aW1lIHZhbHVlcyBmb3IgbWlncmF0aW9u
-IHRocmVhZHMKU3VibWl0dGVyICA6IE1hcmt1cyBUcmlwcGVsc2RvcmYgPG1hcmt1c0B0cmlwcGVs
-c2RvcmYuZGU+CkRhdGUgICAgICAgOiAyMDExLTExLTE3IDIyOjE3Ck1lc3NhZ2UtSUQgOiAyMDEx
-MTExNzIyMTczMS5HQTkyMjlAeDQudHJpcHBlbHMuZGUKUmVmZXJlbmNlcyA6IGh0dHA6Ly9tYXJj
-LmluZm8vP2w9bGludXgta2VybmVsJm09MTMyMTU2ODMyMTI0MzE0Jnc9MgoKU3ViamVjdCAgICA6
-IFdBUk5JTkc6IGF0IG1tL3NsdWIuYzozMzU3LCBrZXJuZWwgQlVHIGF0IG1tL3NsdWIuYzozNDEz
-ClN1Ym1pdHRlciAgOiBNYXJrdXMgVHJpcHBlbHNkb3JmIDxtYXJrdXNAdHJpcHBlbHNkb3JmLmRl
-PgpEYXRlICAgICAgIDogMjAxMS0xMS0xOCA3OjI1Ck1lc3NhZ2UtSUQgOiAyMDExMTExODA3MjUx
-OS5HQTE2MTVAeDQudHJpcHBlbHMuZGUKUmVmZXJlbmNlcyA6IGh0dHA6Ly9tYXJjLmluZm8vP2w9
-bGludXgta2VybmVsJm09MTMyMTYwMTE5MDMxNzk0Jnc9MgoKU3ViamVjdCAgICA6IFtSRUdSRVNT
-SU9OXSByZXN1bWUgdGFrZXMgMTBzIGxvbmdlciBkdWUgdG8gZTFiNmViMyAoQmx1ZXRvb3RoOiBJ
-bmNyZWFzZSBIQ0kgcmVzZXQgdGltZW91dCAuLi4pClN1Ym1pdHRlciAgOiBUb23DocWhIEphbm91
-xaFlayA8dG9taUBub21pLmN6PgpEYXRlICAgICAgIDogMjAxMS0xMS0xOCAxODo0MApNZXNzYWdl
-LUlEIDogMjAxMTExMTgxODQwMTcuR0E1MDUyQG5vbWkuY3oKUmVmZXJlbmNlcyA6IGh0dHA6Ly9t
-YXJjLmluZm8vP2w9bGludXgta2VybmVsJm09MTMyMTY0MTY5NTExNDE2Jnc9MgoKU3ViamVjdCAg
-ICA6IFtSRUdSRVNTSU9OXSBzdWRkZW4gY3B1IGhvZ2dpbmcgaW4ga2VybmVsIDMuMiByYy1zZXJp
-ZXMKU3VibWl0dGVyICA6ICJOaWNvbGFzIEthbGtob2YiIDxua2Fsa2hvZkB3ZWIuZGU+CkRhdGUg
-ICAgICAgOiAyMDExLTExLTE4IDIwOjMzCk1lc3NhZ2UtSUQgOiA1MDY3ODY2ODkuODEwMDQ0LjEz
-MjE2NDgzOTUyNjUuSmF2YU1haWwuZm1haWxAbXdtd2ViMDEwClJlZmVyZW5jZXMgOiBodHRwOi8v
-bWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZtPTEzMjE2NDkwOTMxMzU5NCZ3PTIKClRoYW5rcyEK
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0g
-bWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8v
-bGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Hello, Frederic.
+
+On Sun, Nov 13, 2011 at 05:44:32PM +0100, Frederic Weisbecker wrote:
+> > The next patch will update cgroup so that it can take full advantage
+> > of this change.
+> 
+> I don't want to nitpick really,
+
+Heh, please go ahead and nitpick.  That's one of the main purposes of
+LKML after all. :)
+
+> but IMHO the races involved in exit and exec
+> are too different, specific and complicated on their own to be solved in a
+> single one patch. This should be split in two things.
+> 
+> The specific problems and their fix need to be described more in detail
+> in the changelog because the issues are very tricky.
+> 
+> The exec case:
+> 
+> IIUC, the race in exec is about the group leader that can be changed
+> to become the exec'ing thread, making while_each_thread() unsafe.
+
+Not only that, pid changes, sighand struct may get swapped, and other
+weird things which aren't usually expected for a live task happen.
+It's basically semi-killed and then resurrected.
+
+> We also have other things happening there like all the other threads
+> in the group that get killed, but that should be handled by the threadgroup_change_begin()
+> you put in the exit path.
+> The old leader is also killed but release_task() -> __unhash_process() is called
+> for it manually from the exec path. However this thread too should be covered by your
+> synchronisation in exit().
+> 
+> So after your protection in the exit path, the only thing to protect against in exec
+> is that group_leader that can change concurrently. But I may be missing something in the picture.
+
+Hmm... an exec'ing task goes through transitions which usually aren't
+allowed to happen.  It assumes exclusive access to group-shared data
+structures and may ditch the current one and create a new one.
+
+Sure, it's possible to make every cgroup method correct w.r.t. all
+those via explicit locking or by being more careful but I don't see
+much point in such excercise.  If the code is sitting in some hot path
+and the added exclusion is gonna add significant amount of contention,
+sure, we should trade off easiness for better performance /
+scalability but this is for cgroup modifications, a fundamentally cold
+path, and the added locking is per-task or per-threadgroup.  I don't
+see any reason not to be easy here.
+
+Please read on.
+
+> Also note this is currently protected by the tasklist readlock. Cred
+> guard mutex is certainly better, I just don't remember if you remove
+> the tasklist lock in a further patch.
+
+I don't remove tasklist_lock.
+
+> The exit case:
+> 
+> There the issue is about racing against cgroup_exit() where the task can be
+> assigned to the root cgroup. Is this really a problem in fact? I don't know
+> if subsystems care about that. Perhaps some of them are buggy in that
+> regard. At least the task counter handles that and it needs a
+> ->cancel_attach_task() for this purpose in the case the migration fails due to exit.
+> Not sure about others. A real synchronization against exit is less error prone for sure.
+> In the end that's probably a win.
+
+This is the same story.  Yes, we can narrow the locking and try to
+make sure everyone handles partially destroyed tasks properly in all
+methods, but for what?  If we can give stable threadgroups to all
+cgroup methods without introducing performance or scalability
+bottleneck, that's the right thing to do.  Please also note that bugs
+stemming from failure to handle those corner cases properly will be
+subtle, difficult to reproduce and track down.
+
+In general, for any subsystem with pluggable interface, I think it's
+best to put as much complexity as possible into the core layer to make
+things eaiser for its customers.  It becomes excruciatingly painful if
+the API invites subtle corner case bugs and the subsystem grows
+several dozen clients down the road.
+
+So, to me, what seems more important is how to make it easier for each
+cgroup client instead of what's the minimal that's necessary right
+now.
+
+Heh, did I make any sense? :)
+
+Thanks.
+
+-- 
+tejun
