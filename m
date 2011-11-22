@@ -1,14 +1,17 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1
-Date: Tue, 22 Nov 2011 08:54:12 -0500
-Message-ID: <20111122135412.GA29905@phenom.dumpdata.com>
-References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCHSET] cgroup: stable threadgroup during attach
+ & subsys methods consolidation
+Date: Tue, 22 Nov 2011 08:20:13 -0800
+Message-ID: <20111122162013.GD3250__7132.25803706354$1321978835$gmane$org@google.com>
+References: <1320191193-8110-1-git-send-email-tj@kernel.org>
+	<20111121220719.GP25776@google.com>
+	<4ECB089C.3080208@cn.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201111212249.31196.rjw@sisk.pl>
+In-Reply-To: <4ECB089C.3080208@cn.fujitsu.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,15 +21,28 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: akpm@linux-foundation.org, fweisbec@gmail.com, containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@Jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-> Subject    : Regression in 3.1 causes Xen to use wrong idle routine
-> Submitter  : Stefan Bader <stefan.bader@canonical.com>
-> Date       : 2011-10-26 10:24
-> Message-ID : 4EA7DFD1.9060608@canonical.com
-> References : http://marc.info/?l=linux-acpi&m=131962467924564&w=2
+On Tue, Nov 22, 2011 at 10:27:40AM +0800, Li Zefan wrote:
+> Tejun Heo wrote:
+> > On Tue, Nov 01, 2011 at 04:46:23PM -0700, Tejun Heo wrote:
+> >> This patchset is combination of the following two patchsets.
+> >>
+> >>  [1] cgroup: extend threadgroup locking
+> >>  [2] cgroup: introduce cgroup_taskset and consolidate subsys methods, take#2
+> > 
+> > Li, do you agree with the proposed patches?  If so, I'll wait for
+> > Frederic's response, repost updated series and merge it into the
+> > cgroup tree.
+> > 
+> 
+> I remember I've acked both patchsets in your earlier post. :)
 
-The patch mentioned in http://mid.gmane.org/20111115144004.GE22675@phenom.dumpdata.com 
-should do it. But the patch needs an Ack from ACPI/x86 folks.
+Heh, right, it has been too long and I forgot.  I'll add the acks.
+
+Thank you.
+
+-- 
+tejun
