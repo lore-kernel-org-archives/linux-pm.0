@@ -1,15 +1,19 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 4/4] cpuidle: (POWER) Handle
-	power_save=off
-Date: Mon, 28 Nov 2011 16:33:25 +0530
-Message-ID: <4ED36A7D.9070308__30833.3199973733$1322478237$gmane$org@linux.vnet.ibm.com>
-References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>	<20111117112906.9191.54050.stgit@localhost6.localdomain6>
-	<1322435233.23348.19.camel@pasglop>
+From: Andrew Watts <akwatts@ymail.com>
+Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
+Date: Tue, 22 Nov 2011 06:40:21 -0500
+Message-ID: <20111122114019.GA20081__7300.62488369203$1322500050$gmane$org@zeus>
+References: <20111103155956.GG4417@google.com> <20111103184559.GA3295@zeus>
+	<20111103213959.GP4417@google.com> <20111104134347.GA2480@zeus>
+	<20111104161431.GZ4417@google.com> <20111104173441.GA2157@zeus>
+	<CAH3drwaXcUy1vz8bvHwE2_iga5WUsWn_Dp0oe_0r3UacV0vT_A@mail.gmail.com>
+	<20111104230758.GA7332@zeus> <20111121210908.GJ25776@google.com>
+	<CAH3drwbtWJcPOixW0gze0e0jbTn_uY0x5E=KY8N-WDcb1t8h2w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1322435233.23348.19.camel@pasglop>
+Content-Disposition: inline
+In-Reply-To: <CAH3drwbtWJcPOixW0gze0e0jbTn_uY0x5E=KY8N-WDcb1t8h2w@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,54 +23,33 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Jerome Glisse <j.glisse@gmail.com>
+Cc: David Airlie <airlied@linux.ie>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/28/2011 04:37 AM, Benjamin Herrenschmidt wrote:
-
-> On Thu, 2011-11-17 at 16:59 +0530, Deepthi Dharwar wrote:
->> This patch makes pseries_idle_driver not to be registered when
->> power_save=off kernel boot option is specified. The
->> boot_option_idle_override variable used here is similar to
->> its usage on x86.
+On Mon, Nov 21, 2011 at 04:29:23PM -0500, Jerome Glisse wrote:
+> On Mon, Nov 21, 2011 at 4:09 PM, Tejun Heo <tj@kernel.org> wrote:
+> >
+> > Out of curiosity, did it get somewhere?
+> >
+> > Thanks.
+> >
+> > --
+> > tejun
+> >
 > 
-> Quick Q. With your changes, the CPU will never get into idle at all
-> until cpuidle initializes and the driver loads.
+> Yeah i am pretty sure i know what's going wrong but there is no easy
+> fix, there is a deadlock in the kernel when gem wait ioctl is call on
+> scanout buffer and that a gpu reset happen
 > 
-> That means not only much later in the boot process, but potentially
-> never if the distro has the driver as a module and fails to load it, or
-> similar.
-> 
-> Can't that be an issue ? Shouldn't we keep at least one of the basic
-> idle functions as a fallback ?
-> 
-
-
-On an LPAR if cpuidle is disabled, ppc_md.power_save is still set to
-cpuidle_idle_call by default here. This would result in calling of
-cpuidle_idle_call repeatedly, only for the call to return -ENODEV. The
-default idle is never executed.
-This would be a major design flaw. No fallback idle routine.
-
-We propose to fix this by checking the return value of
-ppc_md.power_save() call from void to int.
-Right now return value is void, but if we change this to int, this
-would solve two problems. One being removing the cast to a function
-pointer in the prev patch and this design flaw stated above.
-
-So by checking the return value of ppc_md.power_save(), we can invoke
-the default idle on failure. But my only concern is about the effects of
-changing the ppc_md.power_save() to return int on other powerpc
-architectures. Would it be a good idea to change the return type to int
-which would help us flag an error and fallback to default idle?
-
 > Cheers,
+> Jerome
 
-> Ben.
-> 
-> 
+Tejun, I was about to send a similar email asking about this; many thanks
+for sharing my interest.
 
+Jerome, sounds encouraging that you think you know what the issue is. What
+are the next steps? Please let me know how I can assist on my end (code 
+validation, etc.).
 
-Regards,
-Deepthi
+~ Andy
