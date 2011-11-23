@@ -1,16 +1,14 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 1/6] OMAP2+: powerdomain: control power
-	domains next state
-Date: Tue, 22 Nov 2011 20:44:34 +0100
-Message-ID: <CAORVsuV2dEf=P1uR9bG1tg+wFN2CkBO-BGrqO7AThW0VMWFtWA__24878.3300201923$1321992513$gmane$org@mail.gmail.com>
-References: <1319032263-22699-1-git-send-email-j-pihet@ti.com>
-	<1319032263-22699-2-git-send-email-j-pihet@ti.com>
-	<87obwa30vx.fsf@ti.com>
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+Subject: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1
+Date: Wed, 23 Nov 2011 08:37:45 +0100
+Message-ID: <CACna6rzQhp4DXonK_Mr+Od9yMQJtr24Z5TE27VxhcMrcY4u+EA__36723.0705371641$1322033885$gmane$org@mail.gmail.com>
+References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
+	<CA+55aFyy19VYSdZW0+jNxAb8ix0xpX2j9YFw9oQi3jm3+mDEvw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87obwa30vx.fsf@ti.com>
+In-Reply-To: <CA+55aFyy19VYSdZW0+jNxAb8ix0xpX2j9YFw9oQi3jm3+mDEvw@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,118 +18,27 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: linux-omap@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jean Pihet <j-pihet@ti.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>, stephen hemminger <shemminger@vyatta.com>
+Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Kevin,
-
-On Thu, Nov 17, 2011 at 10:16 PM, Kevin Hilman <khilman@ti.com> wrote:
-> jean.pihet@newoldbits.com writes:
->
->> From: Jean Pihet <j-pihet@ti.com>
->>
->> When a PM QoS device latency constraint is requested or removed the
->> PM QoS layer notifies the underlying layer with the updated aggregated
->> constraint value. The constraint is stored in the powerdomain constraints
->> list and then applied to the corresponding power domain.
->> The power domains get the next power state programmed directly in the
->> registers via pwrdm_wakeuplat_update_pwrst.
->>
->> Tested on OMAP3 Beagleboard and OMAP4 Pandaboard in RET/OFF using
->> wake-up latency constraints on MPU, CORE and PER.
->>
->> Signed-off-by: Jean Pihet <j-pihet@ti.com>
->> ---
-...
-
->> @@ -104,6 +106,12 @@ static int _pwrdm_register(struct powerdomain *pwrd=
-m)
->> =A0 =A0 =A0 for (i =3D 0; i < pwrdm->banks; i++)
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 pwrdm->ret_mem_off_counter[i] =3D 0;
->>
->> + =A0 =A0 /* Initialize the per-od wake-up constraints data */
->
-> This comment needs an update (they are not per-od, but per pwrdm), or
-> could probably be removed, since it doesn't add any value over the code.
-Ok to remove it
-
->
->> + =A0 =A0 spin_lock_init(&pwrdm->wkup_lat_plist_lock);
->> + =A0 =A0 plist_head_init(&pwrdm->wkup_lat_plist_head);
->> + =A0 =A0 pwrdm->wkup_lat_next_state =3D PWRDM_POWER_OFF;
->> +
->> + =A0 =A0 /* Initialize the pwrdm state */
->> =A0 =A0 =A0 pwrdm_wait_transition(pwrdm);
->> =A0 =A0 =A0 pwrdm->state =3D pwrdm_read_pwrst(pwrdm);
->> =A0 =A0 =A0 pwrdm->state_counter[pwrdm->state] =3D 1;
-...
-
->> +int pwrdm_set_wkup_lat_constraint(struct powerdomain *pwrdm, void *cook=
-ie,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 long min_l=
-atency)
->> +{
->> + =A0 =A0 struct pwrdm_wkup_constraints_entry *user =3D NULL, *new_user =
-=3D NULL;
->> + =A0 =A0 int ret =3D 0, free_new_user =3D 0, free_node =3D 0;
->> + =A0 =A0 long value =3D PM_QOS_DEV_LAT_DEFAULT_VALUE;
->> + =A0 =A0 unsigned long flags;
->> +
->> + =A0 =A0 pr_debug("powerdomain: %s: pwrdm %s, cookie=3D0x%p, min_latenc=
-y=3D%ld\n",
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0__func__, pwrdm->name, cookie, min_latency);
->> +
->> + =A0 =A0 if (min_latency !=3D PM_QOS_DEV_LAT_DEFAULT_VALUE) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 new_user =3D kzalloc(sizeof(struct pwrdm_wkup_=
-constraints_entry),
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0GFP_KER=
-NEL);
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (!new_user) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err("%s: FATAL ERROR: kzall=
-oc failed\n", __func__);
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;
->> + =A0 =A0 =A0 =A0 =A0 =A0 }
->> + =A0 =A0 =A0 =A0 =A0 =A0 free_new_user =3D 1;
->> + =A0 =A0 }
->> +
->> + =A0 =A0 spin_lock_irqsave(&pwrdm->wkup_lat_plist_lock, flags);
->> +
->> + =A0 =A0 /* Manage the constraints list */
->> + =A0 =A0 ret =3D _pwrdm_update_wakeuplat_list(pwrdm, cookie, min_latenc=
-y,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0user, new_user,
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0&free_new_user, &free_node);
->> +
->> + =A0 =A0 /* Find the aggregated constraint value from the list */
->> + =A0 =A0 if (!ret)
->> + =A0 =A0 =A0 =A0 =A0 =A0 if (!plist_head_empty(&pwrdm->wkup_lat_plist_h=
-ead))
->> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 value =3D plist_first(&pwrdm->=
-wkup_lat_plist_head)->prio;
->> +
->> + =A0 =A0 spin_unlock_irqrestore(&pwrdm->wkup_lat_plist_lock, flags);
->> +
->> + =A0 =A0 if (free_node)
->> + =A0 =A0 =A0 =A0 =A0 =A0 kfree(user);
->> +
->> + =A0 =A0 if (free_new_user)
->> + =A0 =A0 =A0 =A0 =A0 =A0 kfree(new_user);
->
-> The alloc/free of these buffers is not terribly obvious when reading. =A0I
-Agreed.
-
-> think the code/changelog needs some comments describing the logic
-> behind how/when these nodes are allocated and freed.
-Ok I will add it.
-
-...
-
->
-> Kevin
->
-
-Thanks,
-Jean
+VyBkbml1IDIxIGxpc3RvcGFkYSAyMDExIDIzOjIyIHXFvHl0a293bmlrIExpbnVzIFRvcnZhbGRz
+Cjx0b3J2YWxkc0BsaW51eC1mb3VuZGF0aW9uLm9yZz4gbmFwaXNhxYI6Cj4gT24gTW9uLCBOb3Yg
+MjEsIDIwMTEgYXQgMTo0OSBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0BzaXNrLnBsPiB3cm90
+ZToKPj4KPj4gU3ViamVjdCDCoCDCoDogWzMuMS1yYzggUkVHUkVTU0lPTl0gc2t5MiBoYW5ncyBt
+YWNoaW5lIG9uIHR1cm5pbmcgb2ZmIG9yIHN1c3BlbmRpbmcKPj4gU3VibWl0dGVyIMKgOiBSYWZh
+xYIgTWnFgmVja2kgPHphamVjNUBnbWFpbC5jb20+Cj4+IERhdGUgwqAgwqAgwqAgOiAyMDExLTEx
+LTA5IDExOjQ2Cj4+IE1lc3NhZ2UtSUQgOiBDQUNuYTZyeVRkTGNXVllnSHU9X21SRmdhMXNGaXZw
+RV9EeVpPWS1ITW1LZ2drV0FKQXdAbWFpbC5nbWFpbC5jb20KPj4gUmVmZXJlbmNlcyA6IGh0dHA6
+Ly9tYXJjLmluZm8vP2w9bGludXgtbmV0ZGV2Jm09MTMyMDgzOTIyMjI4MDg4Jnc9NAo+Cj4gVGhp
+cyBzaG91bGQgYmUgZml4ZWQgYnkgY29tbWl0IDE0MDFhODAwOGEwOSAoInNreTI6IGZpeCBoYW5n
+IG9uCj4gc2h1dGRvd24gKGFuZCBvdGhlciBpcnEgaXNzdWVzKSIpIGluIGN1cnJlbnQgLWdpdC4K
+ClRoaXMgcGF0Y2ggZG9lc24ndCBmaXggbXkgaGFuZy4KCkhvd2V2ZXIgZ2l0IGNvbnRhaW5zIGFs
+c286CnNreTI6IGZpeCBoYW5nIGluIG5hcGlfZGlzYWJsZQpUaGlzIGlzIHRoZSBvbmUgZml4aW5n
+IG15IGNhc2UuCgpTbyB0aGUgYnVnIGlzIHJlc29sdmVkLCBob3dldmVyIEknbSBhIGxpdHRsZSBk
+aXNhcHBvaW50ZWQgbm9vbmUKcGluZy1lZCBtZSBhYm91dCB0aGF0IHBhdGNoZXMuIEkndmUgc3Bl
+bnQgc29tZSB0aW1lIG9uIGJpc2VjdGluZyB0aGlzCmlzc3VlLCBleHBlY3RlZCB0byBnZXQgc29t
+ZSByZXNwb25zZSA6LwoKLS0gClJhZmHFggpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGlu
+dXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eGZvdW5kYXRpb24ub3JnL21haWxt
+YW4vbGlzdGluZm8vbGludXgtcG0=
