@@ -1,16 +1,18 @@
-From: Andrea Arcangeli <aarcange@redhat.com>
-Subject: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1
-Date: Tue, 22 Nov 2011 13:22:06 +0100
-Message-ID: <20111122122206.GD8397__16099.7317558669$1322500055$gmane$org@redhat.com>
-References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
-	<4ECB37E4.6020204@linux.vnet.ibm.com>
-	<20111121215918.febd9fd4.akpm@linux-foundation.org>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH 3/6] OMAP: PM: register to the per-device PM
+	QoS framework
+Date: Wed, 23 Nov 2011 11:42:50 -0800
+Message-ID: <87hb1ubp6t.fsf__29517.0051781044$1322500057$gmane$org@ti.com>
+References: <1319032263-22699-1-git-send-email-j-pihet@ti.com>
+	<1319032263-22699-4-git-send-email-j-pihet@ti.com>
+	<87d3cq30ja.fsf@ti.com>
+	<CAORVsuURENRLO-FAhau-eS2VmfZrG=BOgih_SPHUSD3Nv3j96w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20111121215918.febd9fd4.akpm@linux-foundation.org>
+In-Reply-To: <CAORVsuURENRLO-FAhau-eS2VmfZrG=BOgih_SPHUSD3Nv3j96w@mail.gmail.com>
+	(Jean Pihet's message of "Tue, 22 Nov 2011 20:52:51 +0100")
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,20 +22,54 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Florian Mickler <florian@mickler.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Linux PM List <linux-pm@lists.linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Jean Pihet <jean.pihet@newoldbits.com>
+Cc: linux-omap@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 21, 2011 at 09:59:18PM -0800, Andrew Morton wrote:
-> grr, nothing in that patch's changelog indicates that it fixed a
-> regression nor that it fixed an infinite blockage of suspend.
-
-Well it's not a recent thing so I didn't flag it as a regression. It
-doesn't infinite block it, suspend works fine almost all the time (or
-it would have been noticed before), and if you've bad luck and it
-doesn't suspend the first time around like someone experienced, if you
-try again a bit later it'll work.
-
-> I moved it to my 3.2 queue, thanks.
-
-Thanks!
+SmVhbiBQaWhldCA8amVhbi5waWhldEBuZXdvbGRiaXRzLmNvbT4gd3JpdGVzOgoKPiBPbiBUaHUs
+IE5vdiAxNywgMjAxMSBhdCAxMDoyNCBQTSwgS2V2aW4gSGlsbWFuIDxraGlsbWFuQHRpLmNvbT4g
+d3JvdGU6Cj4+IGplYW4ucGloZXRAbmV3b2xkYml0cy5jb20gd3JpdGVzOgo+Pgo+Pj4gRnJvbTog
+SmVhbiBQaWhldCA8ai1waWhldEB0aS5jb20+Cj4+Pgo+Pj4gSW1wbGVtZW50IHRoZSBkZXZpY2Vz
+IHdha2UtdXAgbGF0ZW5jeSBjb25zdHJhaW50cyB1c2luZyB0aGUgZ2xvYmFsCj4+PiBkZXZpY2Ug
+UE0gUW9TIG5vdGlmaWNhdGlvbiBoYW5kbGVyIHdoaWNoIGFwcGxpZXMgdGhlIGNvbnN0cmFpbnRz
+IHRvIHRoZQo+Pj4gdW5kZXJseWluZyBsYXllciBieSBjYWxsaW5nIHRoZSBjb3JyZXNwb25kaW5n
+IGZ1bmN0aW9uIGF0IGh3bW9kIGxldmVsLgo+Pj4KPj4+IFRlc3RlZCBvbiBPTUFQMyBCZWFnbGVi
+b2FyZCBhbmQgT01BUDQgUGFuZGFib2FyZCBpbiBSRVQvT0ZGIHVzaW5nIHdha2UtdXAKPj4+IGxh
+dGVuY3kgY29uc3RyYWludHMgb24gTVBVLCBDT1JFIGFuZCBQRVIuCj4+Pgo+Pj4gU2lnbmVkLW9m
+Zi1ieTogSmVhbiBQaWhldCA8ai1waWhldEB0aS5jb20+Cj4gLi4uCj4KPj4+ICsvKiBJbnRlcmZh
+Y2UgdG8gdGhlIHBlci1kZXZpY2UgUE0gUW9TIGZyYW1ld29yayAqLwo+Pj4gK3N0YXRpYyBpbnQg
+b21hcDJfZGV2X3BtX3Fvc19oYW5kbGVyKHN0cnVjdCBub3RpZmllcl9ibG9jayAqbmIsCj4+PiAr
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHVuc2lnbmVk
+IGxvbmcgbmV3X3ZhbHVlLAo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCB2b2lkICpyZXEpCj4+PiArewo+Pj4gKyDCoCDCoCBzdHJ1Y3Qgb21hcF9k
+ZXZpY2UgKm9kOwo+Pj4gKyDCoCDCoCBzdHJ1Y3Qgb21hcF9od21vZCAqb2g7Cj4+PiArIMKgIMKg
+IHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXY7Cj4+PiArIMKgIMKgIHN0cnVjdCBkZXZfcG1f
+cW9zX3JlcXVlc3QgKmRldl9wbV9xb3NfcmVxID0gcmVxOwo+Pj4gKwo+Pj4gKyDCoCDCoCBwcl9k
+ZWJ1ZygiT01BUCBQTSBDT05TVFJBSU5UUzogcmVxQDB4JXAsIG5ld192YWx1ZT0lbHVcbiIsCj4+
+Cj4+IHMvQ09OU1RSQUlOVFMvY29uc3RyYWludHMvCj4+IGFub3RoZXIgb25lIGJlbG93Lgo+IE9r
+Cj4KPj4KPj4+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqByZXEsIG5ld192YWx1ZSk7Cj4+PiArCj4+
+PiArIMKgIMKgIC8qIExvb2sgZm9yIHRoZSBwbGF0Zm9ybSBkZXZpY2UgZm9yIHRoZSBjb25zdHJh
+aW50IHRhcmdldCBkZXZpY2UgKi8KPj4+ICsgwqAgwqAgcGRldiA9IHRvX3BsYXRmb3JtX2Rldmlj
+ZShkZXZfcG1fcW9zX3JlcS0+ZGV2KTsKPj4+ICsKPj4+ICsgwqAgwqAgLyogVHJ5IHRvIGNhdGNo
+IG5vbiBwbGF0Zm9ybSBkZXZpY2VzICovCj4+Cj4+IHdoeT8KPiBUaGUgY29uc3RyYWludHMgdGFy
+Z2V0cyBhcmUgdGhlIHBvd2VyIGRvbWFpbnMsIHdoaWNoIHlvdSBmaW5kIGJ5Cj4gd2Fsa2luZyB0
+aHJvdWdoIHRoZSBjaGFpbiBvZiBzdHJ1Y3RzIGRldiwgcGRldiwgb21hcF9kZXZpY2UsIGh3bW9k
+IGFuZAo+IGZpbmFsbHkgcHdyZG0uCgpPSwoKPj4KPj4+ICsgwqAgwqAgaWYgKHBkZXYtPm5hbWUg
+PT0gTlVMTCkgewo+Pj4gKyDCoCDCoCDCoCDCoCDCoCDCoCBwcl9lcnIoIiVzOiBFcnJvcjogcGxh
+dGZvcm0gZGV2aWNlIGZvciBkZXZpY2UgJXMgbm90IHZhbGlkXG4iLAo+Pj4gKyDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoF9fZnVuY19fLCBkZXZfbmFtZShkZXZfcG1fcW9zX3JlcS0+ZGV2
+KSk7Cj4+PiArIMKgIMKgIMKgIMKgIMKgIMKgIHJldHVybiAtRUlOVkFMOwo+Pj4gKyDCoCDCoCB9
+Cj4+PiArCj4+PiArIMKgIMKgIC8qIEZpbmQgdGhlIGFzc29jaWF0ZWQgb21hcF9kZXZpY2UgZm9y
+IGRldiAqLwo+Pj4gKyDCoCDCoCBvZCA9IGNvbnRhaW5lcl9vZihwZGV2LCBzdHJ1Y3Qgb21hcF9k
+ZXZpY2UsIHBkZXYpOwo+Pgo+PiBXaGF0IGFib3V0IGRldmljZXMgdGhhdCBhcmUgdmFsaWQgcGxh
+dGZvcm1fZGV2aWNlcywgYnV0IG5vdCBvbWFwX2RldmljZXM/Cj4gRG8geW91IG1lYW4gdGhhdCBv
+ZCBzaG91bGQgYmUgdGVzdGVkIGZvciBOVUxMIHZhbHVlPwoKRmlyc3QsIGl0IHNob3VsZCBiZSB1
+c2luZyB0aGUgdG9fb21hcF9kZXZpY2UoKSBoZWxwZXIgZnVuY3Rpb24gZnJvbQpvbWFwX2Rldmlj
+ZS5oLgoKVW50aWwgdjMuMiwgaXQgd2FzIGJhc2VkIG9uIGNvbnRhaW5lcl9vZigpIHNvIGNoZWNr
+aW5nIGZvciBOVUxMIHdpbGwgbm90CmhlbHAuICBIb3dldmVyLCBhcyBvZiB2My4yLCBiZWNhdXNl
+IEkgZGVjb3VwbGVkIHBsYXRmb3JtX2RldmljZSBhbmQKb21hcF9kZXZpY2UsIGNoZWNraW5nIGZv
+ciBhIE5VTEwgcmV0dXJuIGZyb20gdG9fb21hcF9kZXZpY2UoKSB3aWxsIGJlIGEKZ29vZCBlbm91
+Z2ggY2hlY2suCgpLZXZpbgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRh
+dGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eGZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtcG0=
