@@ -1,16 +1,12 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH UPDATED 03/10] threadgroup: extend
- threadgroup_lock() to cover exit and exec
-Date: Thu, 24 Nov 2011 20:02:18 -0800
-Message-ID: <CA+55aFxq1wztMzYhKaY5RHazLBDz4pSXUgiGzTj2wA6EJcDbAw@mail.gmail.com>
-References: <1320191193-8110-1-git-send-email-tj@kernel.org>
-	<1320191193-8110-4-git-send-email-tj@kernel.org>
-	<20111124225054.GA14828@google.com>
+From: Barry Song <Barry.Song@csr.com>
+Subject: [PATCH v2] PM: HIBERNATION: skip the swap size check if
+	the snapshot image size is anticipative
+Date: Fri, 25 Nov 2011 00:07:02 -0800
+Message-ID: <1322208422-12346-1-git-send-email-Barry.Song__35964.0009621673$1322212308$gmane$org@csr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20111124225054.GA14828@google.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,44 +16,134 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Tejun Heo <tj@kernel.org>
-Cc: akpm@linux-foundation.org, fweisbec@gmail.com, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
+To: pavel@ucw.cz, rjw@sisk.pl, linux-pm@lists.linux-foundation.org
+Cc: workgroup.linux@csr.com, Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Barry Song <Baohua.Song@csr.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 24, 2011 at 2:50 PM, Tejun Heo <tj@kernel.org> wrote:
->
-> Linus, this is something being scheduled for the next merge window.
-> It extends threadgroup locking which cgroup used to do to exclude only
-> fork path so that it includes exit and exec paths. =A0threadgroup
-> locking is used by cgroup to implement process-scope cgroup migration.
->
-> Migration happens in multiple steps, at each of which the matching
-> method of each cgroup plugin is called. =A0When a whole process is being
-> migrated, methods being called at those different steps expect to see
-> consistent image of the thread group.
+From: Barry Song <baohua.song@csr.com>
 
-Ugh.
+Current swsusp requires swap partitions even larger than real saved pages
+based on the worst compression ratio:
+but for an embedded system, which has limited storage space, then it might
+can't give the large partition to save snapshot.
+In the another way, some embedded systems can definitely know the most size
+needed for snapshot since they run some specific application lists.
+So this patch provides the possibility for users to tell kernel even
+the system has a little snapshot partition, but it is still enough.
+For example, if the system need to save 120MB memory, origin swsusp will require
+a 130MB partition to save snapshot. but if users know 30MB is enough for them(
+compressed image will be less than 30MB), they just make a 30MB partition by
+echo 0 > /sys/power/check_swap_size
 
-I see why you want to do this, but I really don't much like some of it.
+Signed-off-by: Barry Song <Baohua.Song@csr.com>
+Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>
+---
+ -v2:drop swap_enough bootargs and use /sys/power/check_swap_size node
 
-I've got a few questions:
+ Documentation/power/interface.txt |    5 +++++
+ kernel/power/hibernate.c          |   22 ++++++++++++++++++++++
+ kernel/power/power.h              |    2 ++
+ kernel/power/swap.c               |    9 +++++++++
+ 4 files changed, 38 insertions(+), 0 deletions(-)
 
- - do you even *need* two separate locks at all? If you extend the
-threadgroup_fork_lock to cover exec/exit too (and rename it), then why
-does that separate cred_guard_mutex make sense at all?
+diff --git a/Documentation/power/interface.txt b/Documentation/power/interface.txt
+index c537834..5e205f0 100644
+--- a/Documentation/power/interface.txt
++++ b/Documentation/power/interface.txt
+@@ -47,6 +47,11 @@ Writing to this file will accept one of
+        'testproc'
+        'test'
+ 
++/sys/power/check_swap_size controls whether we can skip checking the swap
++partition size by worst compression ratio. If users know the swap partition
++is enough for compressed snapshot, write 0 to /sys/power/check_swap_size.
++It is useful for an embedded system with known running softwares.
++
+ /sys/power/image_size controls the size of the image created by
+ the suspend-to-disk mechanism.  It can be written a string
+ representing a non-negative integer that will be used as an upper
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 1c53f7f..5552473 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -1024,11 +1024,33 @@ static ssize_t reserved_size_store(struct kobject *kobj,
+ 
+ power_attr(reserved_size);
+ 
++static ssize_t check_swap_size_show(struct kobject *kobj, struct kobj_attribute *attr,
++			       char *buf)
++{
++	return sprintf(buf, "%d\n", check_swap_size);
++}
++
++static ssize_t check_swap_size_store(struct kobject *kobj, struct kobj_attribute *attr,
++				const char *buf, size_t n)
++{
++	int check_size;
++
++	if (sscanf(buf, "%d", &check_size) == 1) {
++		check_swap_size = check_size;
++		return n;
++	}
++
++	return -EINVAL;
++}
++
++power_attr(check_swap_size);
++
+ static struct attribute * g[] = {
+ 	&disk_attr.attr,
+ 	&resume_attr.attr,
+ 	&image_size_attr.attr,
+ 	&reserved_size_attr.attr,
++	&check_swap_size_attr.attr,
+ 	NULL,
+ };
+ 
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 23a2db1..4f0fa78 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -74,6 +74,8 @@ static struct kobj_attribute _name##_attr = {	\
+ 
+ /* Preferred image size in bytes (default 500 MB) */
+ extern unsigned long image_size;
++/* If 0, skip checking whether the swap size is enough for compressed snapshot */
++extern int check_swap_size;
+ /* Size of memory reserved for drivers (default SPARE_PAGES x PAGE_SIZE) */
+ extern unsigned long reserved_size;
+ extern int in_suspend;
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 11a594c..db90195 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -37,6 +37,12 @@
+ #define HIBERNATE_SIG	"S1SUSPEND"
+ 
+ /*
++ * if users know swap partitions are enough for compressed snapshots,
++ * echo 0 > /sys/power/check_swap_size
++ */
++int check_swap_size = 1;
++
++/*
+  *	The swap map is a data structure used for keeping track of each page
+  *	written to a swap partition.  It consists of many swap_map_page
+  *	structures that contain each an array of MAP_PAGE_ENTRIES swap entries.
+@@ -772,6 +778,9 @@ static int enough_swap(unsigned int nr_pages, unsigned int flags)
+ 	unsigned int free_swap = count_swap_pages(root_swap, 1);
+ 	unsigned int required;
+ 
++	if (!check_swap_size)
++		return 1;
++
+ 	pr_debug("PM: Free swap pages: %u\n", free_swap);
+ 
+ 	required = PAGES_FOR_IO + ((flags & SF_NOCOMPRESS_MODE) ?
+-- 
+1.7.1
 
-  Taking two locks for the common exit case seems disgusting. What do
-the separate locks buy us?
 
- - could we possible avoid the lock(s) entirely for the
-single-threaded case? The fact that ptrace wants to serialize makes me
-say "maybe we can't avoid it", but I thought I'd ask. Even if we do
-need/want two separate locks, do we really want to take them both for
-the case that shouldn't really need even a single one?
 
-Hmm? Simplifying the locking rules is always a good idea, and I think
-this seems to make some of it more straightforward, but at the same
-time I shudder when I look at some of the patches in the series that
-nest locking three locks deep. Ugh.
-
-                 Linus
+Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+More information can be found at www.csr.com. Follow CSR on Twitter at http://twitter.com/CSR_PLC and read our blog at www.csr.com/blog
