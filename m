@@ -1,15 +1,17 @@
-From: Barry Song <21cnbao@gmail.com>
-Subject: Re: [PATCH v2] PM: HIBERNATION: skip the swap size check
- if the snapshot image size is anticipative
-Date: Fri, 25 Nov 2011 21:42:46 +0800
-Message-ID: <CAGsJ_4yse3kjRd+GGeZ81WEJPM0gEX=Ljik_EpGjnwS8pjxfMA@mail.gmail.com>
-References: <1322208422-12346-1-git-send-email-Barry.Song@csr.com>
-	<4ECF6C36.8000702@parrot.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH UPDATED 03/10] threadgroup: extend
+ threadgroup_lock() to cover exit and exec
+Date: Fri, 25 Nov 2011 15:01:39 +0100
+Message-ID: <20111125140136.GC23307@somewhere.redhat.com>
+References: <1320191193-8110-1-git-send-email-tj@kernel.org>
+	<1320191193-8110-4-git-send-email-tj@kernel.org>
+	<20111124225054.GA14828@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4ECF6C36.8000702@parrot.com>
+Content-Disposition: inline
+In-Reply-To: <20111124225054.GA14828@google.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,52 +21,178 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthieu CASTET <matthieu.castet@parrot.com>
-Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "workgroup.linux@csr.com" <workgroup.linux@csr.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Barry Song <Baohua.Song@csr.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: akpm@linux-foundation.org, paul@paulmenage.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, containers@lists.linux-foundation.org, kamezawa.hiroyu@Jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthieu,
+On Thu, Nov 24, 2011 at 02:50:54PM -0800, Tejun Heo wrote:
+> threadgroup_lock() protected only protected against new addition to
+> the threadgroup, which was inherently somewhat incomplete and
+> problematic for its only user cgroup.  On-going migration could race
+> against exec and exit leading to interesting problems - the symmetry
+> between various attach methods, task exiting during method execution,
+> ->exit() racing against attach methods, migrating task switching basic
+> properties during exec and so on.
+> 
+> This patch extends threadgroup_lock() such that it protects against
+> all three threadgroup altering operations - fork, exit and exec.  For
+> exit, threadgroup_change_begin/end() calls are added to exit path.
+> For exec, threadgroup_[un]lock() are updated to also grab and release
+> cred_guard_mutex.
+> 
+> With this change, threadgroup_lock() guarantees that the target
+> threadgroup will remain stable - no new task will be added, no new
+> PF_EXITING will be set and exec won't happen.
+> 
+> The next patch will update cgroup so that it can take full advantage
+> of this change.
+> 
+> -v2: beefed up comment as suggested by Frederic.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Acked-by: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Paul Menage <paul@paulmenage.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> ---
+> 
+> Linus, this is something being scheduled for the next merge window.
+> It extends threadgroup locking which cgroup used to do to exclude only
+> fork path so that it includes exit and exec paths.  threadgroup
+> locking is used by cgroup to implement process-scope cgroup migration.
+> 
+> Migration happens in multiple steps, at each of which the matching
+> method of each cgroup plugin is called.  When a whole process is being
+> migrated, methods being called at those different steps expect to see
+> consistent image of the thread group.
+> 
+> cgroup currently only locks out addition of new tasks into the thread
+> group and holds extra ref to member tasks.  This mandates all cgroup
+> plugins to deal with tasks being torn down and exec morphing the
+> threadgroup.  This patch extends the scope of threadgroup locking such
+> that the thread group is guaranteed to be stable (no new task, tasks
+> are either live or dead and no exec morphing) while locked.
+> 
+> This is part of changes to clean up cgroup methods and iron out corner
+> case fuzziness and should make difficult-to-reproduce race conditions
+> less likely and cgroup plugins easier to implement and verify.
+> 
+> The synchronization is strictly per-threadgroup and goes away if
+> cgroup is not configured.
+> 
+> The whole series is avilable at
+> 
+>   http://thread.gmane.org/gmane.linux.kernel.containers/21716
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/cgroup.git for-3.3
+> 
+> Thank you.
+> 
+>  include/linux/sched.h |   47 +++++++++++++++++++++++++++++++++++++++++------
+>  kernel/exit.c         |   19 +++++++++++++++----
+>  2 files changed, 56 insertions(+), 10 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index c5acbce..481c5ed 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -635,11 +635,12 @@ struct signal_struct {
+>  #endif
+>  #ifdef CONFIG_CGROUPS
+>  	/*
+> -	 * The group_rwsem prevents threads from forking with
+> -	 * CLONE_THREAD while held for writing. Use this for fork-sensitive
+> -	 * threadgroup-wide operations. It's taken for reading in fork.c in
+> -	 * copy_process().
+> -	 * Currently only needed write-side by cgroups.
+> +	 * group_rwsem prevents new tasks from entering the threadgroup and
+> +	 * member tasks from exiting.  fork and exit paths are protected
+> +	 * with this rwsem using threadgroup_change_begin/end().  Users
+> +	 * which require threadgroup to remain stable should use
+> +	 * threadgroup_[un]lock() which also takes care of exec path.
+> +	 * Currently, cgroup is the only user.
+>  	 */
+>  	struct rw_semaphore group_rwsem;
+>  #endif
+> @@ -2374,7 +2375,6 @@ static inline void unlock_task_sighand(struct task_struct *tsk,
+>  	spin_unlock_irqrestore(&tsk->sighand->siglock, *flags);
+>  }
+>  
+> -/* See the declaration of group_rwsem in signal_struct. */
+>  #ifdef CONFIG_CGROUPS
+>  static inline void threadgroup_change_begin(struct task_struct *tsk)
+>  {
+> @@ -2384,13 +2384,48 @@ static inline void threadgroup_change_end(struct task_struct *tsk)
+>  {
+>  	up_read(&tsk->signal->group_rwsem);
+>  }
+> +
+> +/**
+> + * threadgroup_lock - lock threadgroup
+> + * @tsk: member task of the threadgroup to lock
+> + *
+> + * Lock the threadgroup @tsk belongs to.  No new task is allowed to enter
+> + * and member tasks aren't allowed to exit (as indicated by PF_EXITING) or
+> + * perform exec.  This is useful for cases where the threadgroup needs to
+> + * stay stable across blockable operations.
+> + *
+> + * fork and exit explicitly call threadgroup_change_{begin|end}() for
+> + * synchronization.  This excludes most of do_exit() to ensure that, while
+> + * locked, tasks belonging to a locked group are not in the process of
+> + * deconstruction - they're either alive or dead.
+> + *
+> + * During exec, a task goes and puts its thread group through unusual
+> + * changes.  After de-threading, exclusive access is assumed to resources
+> + * which are usually shared by tasks in the same group - e.g. sighand may
+> + * be replaced with a new one.  Also, the exec'ing task takes over group
+> + * leader role including its pid.  Exclude these changes while locked by
+> + * grabbing cred_guard_mutex which is used to synchronize exec path.
+> + */
+>  static inline void threadgroup_lock(struct task_struct *tsk)
+>  {
+> +	/*
+> +	 * exec uses exit for de-threading nesting group_rwsem inside
+> +	 * cred_guard_mutex. Grab cred_guard_mutex first.
+> +	 */
+> +	mutex_lock(&tsk->signal->cred_guard_mutex);
+>  	down_write(&tsk->signal->group_rwsem);
+>  }
+> +
+> +/**
+> + * threadgroup_unlock - unlock threadgroup
+> + * @tsk: member task of the threadgroup to unlock
+> + *
+> + * Reverse threadgroup_lock().
+> + */
+>  static inline void threadgroup_unlock(struct task_struct *tsk)
+>  {
+>  	up_write(&tsk->signal->group_rwsem);
+> +	mutex_unlock(&tsk->signal->cred_guard_mutex);
+>  }
+>  #else
+>  static inline void threadgroup_change_begin(struct task_struct *tsk) {}
+> diff --git a/kernel/exit.c b/kernel/exit.c
+> index d0b7d98..b2cb562 100644
+> --- a/kernel/exit.c
+> +++ b/kernel/exit.c
+> @@ -936,6 +936,14 @@ NORET_TYPE void do_exit(long code)
+>  		schedule();
+>  	}
+>  
+> +	/*
+> +	 * @tsk's threadgroup is going through changes - lock out users
+> +	 * which expect stable threadgroup.  Do this before actually
+> +	 * starting tearing down @tsk so that locked threadgroup has either
+> +	 * alive or dead tasks, not something inbetween.
+> +	 */
+> +	threadgroup_change_begin(tsk);
+> +
 
-2011/11/25 Matthieu CASTET <matthieu.castet@parrot.com>
->
-> Hi,
->
-> but did embedded system will really use swap interface ?
+I still wonder why there is a so big coverage of this lock. I mean
+why is it called right before exit_irq_thread() and released so late.
+All we want is to lock cgroup_exit() I think, after which tasks can't be
+migrated.
 
-if you self-define the hibernation flow, you don't need swap. but for
-embedded system, we actually can still use the standard flow, swapon
-before hibernation, and swapoff after restore. so the swap partition
-only works as a partition to save used pages based on swap format. it
-is not a runtime swap partition at all.
-
->
-> Often they don't have swap and can already save suspend image in disk/nand :
-> - SNAPSHOT_CREATE_IMAGE
-> - read it from /dev/snapshot and write it to a file.
->
-> The only problem with the current interface, is that you can't SNAPSHOT_UNFREEZE
-> before reading the image.
-> But this is need for some filesystem that have thread.
->
->
-> For example we have a demo where we save the suspend image in a ubi volume and
-> restore it from bootloader.
-yes. we can definitely resume snapshot from bootloader directly, that
-depends on your self-defined hibernation flow. if that works well, it
-will save about 0.5s kernel boot time for a typical cortex-a9 ARM 1Ghz
-system.
-
-but you still need to take care you only compress and save used pages
-but not all pages. sync, drop page caches and kill non-system
-processes will help much to decrease hibernation image size. and
-standard hibernation flow will only save used pages, that is very
-important for decreasing snapshot size and restore faster.
-
-i am happy to hear you have a demo. do you have a website to show your
-demo and techinical details?
-
->
->
-> Matthieu
->
--barry
+Thanks.
