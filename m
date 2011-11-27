@@ -1,19 +1,15 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH UPDATED 03/10] threadgroup: extend
- threadgroup_lock() to cover exit and exec
-Date: Sun, 27 Nov 2011 13:25:58 -0800
-Message-ID: <20111127212558.GE4266__38472.0167298385$1322429181$gmane$org@google.com>
-References: <1320191193-8110-1-git-send-email-tj@kernel.org>
-	<1320191193-8110-4-git-send-email-tj@kernel.org>
-	<20111124225054.GA14828@google.com>
-	<CA+55aFxq1wztMzYhKaY5RHazLBDz4pSXUgiGzTj2wA6EJcDbAw@mail.gmail.com>
-	<20111127192155.GB4266@google.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH v2 1/4] cpuidle: (powerpc) Add
+ cpu_idle_wait() to allow switching of idle routines
+Date: Mon, 28 Nov 2011 09:48:16 +1100
+Message-ID: <1322434096.23348.6.camel@pasglop>
+References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
+	<20111117112830.9191.1951.stgit@localhost6.localdomain6>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20111127192155.GB4266@google.com>
+In-Reply-To: <20111117112830.9191.1951.stgit@localhost6.localdomain6>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -23,68 +19,135 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: akpm@linux-foundation.org, fweisbec@gmail.com, containers@lists.linux-foundation.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, paul@paulmenage.org, kamezawa.hiroyu@jp.fujitsu.com
+To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Linus.
-
-On Sun, Nov 27, 2011 at 11:21:55AM -0800, Tejun Heo wrote:
-> On Thu, Nov 24, 2011 at 08:02:18PM -0800, Linus Torvalds wrote:
-> >  - do you even *need* two separate locks at all? If you extend the
-> > threadgroup_fork_lock to cover exec/exit too (and rename it), then why
-> > does that separate cred_guard_mutex make sense at all?
+On Thu, 2011-11-17 at 16:58 +0530, Deepthi Dharwar wrote:
+> This patch provides cpu_idle_wait() routine for the powerpc
+> platform which is required by the cpuidle subsystem. This
+> routine is requied to change the idle handler on SMP systems.
+> The equivalent routine for x86 is in arch/x86/kernel/process.c
+> but the powerpc implementation is different.
 > 
-> That was mostly choosing the path of least resistance as both locks
-> already existed and exec exclusion was added later on, but yeah there
-> isn't much to lose by merging those two locks (do_exit nesting inside
-> exec will need some care tho).  I'll try to unify the two locks.
+> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+> Signed-off-by: Trinabh Gupta <g.trinabh@gmail.com>
+> Signed-off-by: Arun R Bharadwaj <arun.r.bharadwaj@gmail.com>
+> ---
 
-Hmmm... I tried this but it seems more difficult than originally
-expected.  The biggest obstacle is that we don't have _interruptible
-and _killable rwsem ops.
+No, that patch also adds this idle boot override thing (can you pick a
+shorter name for boot_option_idle_override btw ?) which seems unrelated
+and without any explanation as to what it's supposed to be about.
 
-As proposed, what we have is,
+Additionally, I'm a bit worried (but maybe we already discussed that a
+while back, I don't know) but cpu_idle_wait() has "wait" in the name,
+which makes me think it might need to actually -wait- for all cpus to
+have come out of the function.
 
-* fork and exit paths are read-protected by group_rwsem.  ie. forks
-  and exits don't block each other.
+Now your implementation doesn't provide that guarantee. It might be
+fine, I don't know, but if it is, you'd better document it well in the
+comments surrounding the code, because as it is, all you do is shoot an
+interrupt which will cause the target CPU to eventually come out of idle
+some time in the future.
 
-* exec path is protected by cred_guard_mutex.  cred_guard_mutex also
-  synchronizes parallel exec attempts.  (It's probably better to
-  rename it to exec_mutex)
+Cheers,
+Ben.
 
-* thread_group_lock() makes the thread group stable by write-locking
-  group_rwsem and grabbing cred_guard_mutex.  The former excludes
-  forks and exits and the latter exec.
-
-group_rwsem and cred_guard_mutex can be merged by,
-
-* fork and exit paths read-lock group_rwsem as it currently does.
-
-* exec path write-locks group_rwsem.  Note that it'll need to unlock
-  in de_thread() while waiting for other threads to exit as exit path
-  can't proceed while group_rwsem is write-locked.
-  prepare_bprm_creds() should be updated to check signal_pending()
-  after acquiring group_rwsem.
-
-  This introduces synchronization between exec and fork/exit paths,
-  but I don't think this is something we need to worry about as both
-  fork-exec and exit-exec scalabilities don't matter.
-
-* thread_group_lock() write-locks group_rwsem.
-
-The problem is that cred_guard_mutex uses _interruptible/_killable
-operations and rwsem doesn't have them, so cred_guard_mutex can't be
-easily replaced with write-locking group_rwsem.
-
-If the two locks can't be merged, under the proposed scheme, while not
-exactly pretty, both fork/exit and exec paths go through single
-locking and only the ones which want stable threadgroup need to grab
-both locks, so IMHO it is at least reasonable.
-
-Any better ideas?
-
-Thanks.
-
--- 
-tejun
+>  arch/powerpc/Kconfig                 |    4 ++++
+>  arch/powerpc/include/asm/processor.h |    2 ++
+>  arch/powerpc/include/asm/system.h    |    1 +
+>  arch/powerpc/kernel/idle.c           |   26 ++++++++++++++++++++++++++
+>  4 files changed, 33 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index b177caa..87f8604 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -87,6 +87,10 @@ config ARCH_HAS_ILOG2_U64
+>  	bool
+>  	default y if 64BIT
+>  
+> +config ARCH_HAS_CPU_IDLE_WAIT
+> +	bool
+> +	default y
+> +
+>  config GENERIC_HWEIGHT
+>  	bool
+>  	default y
+> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+> index eb11a44..811b7e7 100644
+> --- a/arch/powerpc/include/asm/processor.h
+> +++ b/arch/powerpc/include/asm/processor.h
+> @@ -382,6 +382,8 @@ static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
+>  }
+>  #endif
+>  
+> +enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
+> +
+>  #endif /* __KERNEL__ */
+>  #endif /* __ASSEMBLY__ */
+>  #endif /* _ASM_POWERPC_PROCESSOR_H */
+> diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
+> index e30a13d..ff66680 100644
+> --- a/arch/powerpc/include/asm/system.h
+> +++ b/arch/powerpc/include/asm/system.h
+> @@ -221,6 +221,7 @@ extern unsigned long klimit;
+>  extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+>  
+>  extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+> +void cpu_idle_wait(void);
+>  
+>  /*
+>   * Atomic exchange
+> diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+> index 39a2baa..b478c72 100644
+> --- a/arch/powerpc/kernel/idle.c
+> +++ b/arch/powerpc/kernel/idle.c
+> @@ -39,9 +39,13 @@
+>  #define cpu_should_die()	0
+>  #endif
+>  
+> +unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
+> +EXPORT_SYMBOL(boot_option_idle_override);
+> +
+>  static int __init powersave_off(char *arg)
+>  {
+>  	ppc_md.power_save = NULL;
+> +	boot_option_idle_override = IDLE_POWERSAVE_OFF;
+>  	return 0;
+>  }
+>  __setup("powersave=off", powersave_off);
+> @@ -102,6 +106,28 @@ void cpu_idle(void)
+>  	}
+>  }
+>  
+> +
+> +/*
+> + * cpu_idle_wait - Used to ensure that all the CPUs come out of the old
+> + * idle loop and start using the new idle loop.
+> + * Required while changing idle handler on SMP systems.
+> + * Caller must have changed idle handler to the new value before the call.
+> + */
+> +void cpu_idle_wait(void)
+> +{
+> +	int cpu;
+> +	smp_mb();
+> +
+> +	/* kick all the CPUs so that they exit out of old idle routine */
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu) {
+> +		if (cpu != smp_processor_id())
+> +			smp_send_reschedule(cpu);
+> +	}
+> +	put_online_cpus();
+> +}
+> +EXPORT_SYMBOL_GPL(cpu_idle_wait);
+> +
+>  int powersave_nap;
+>  
+>  #ifdef CONFIG_SYSCTL
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
