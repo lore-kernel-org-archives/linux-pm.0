@@ -1,15 +1,15 @@
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 1/4] cpuidle: (powerpc) Add
- cpu_idle_wait() to allow switching of idle routines
-Date: Mon, 28 Nov 2011 16:32:15 +0530
-Message-ID: <4ED36A37.3030409__35557.3816261769$1322478199$gmane$org@linux.vnet.ibm.com>
-References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>	<20111117112830.9191.1951.stgit@localhost6.localdomain6>
-	<1322434096.23348.6.camel@pasglop>
+Subject: Re: [RFC PATCH v2 3/4] cpuidle: (POWER) Enable cpuidle
+ and directly call cpuidle_idle_call() for pSeries
+Date: Mon, 28 Nov 2011 16:33:10 +0530
+Message-ID: <4ED36A6E.1090002@linux.vnet.ibm.com>
+References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>	<20111117112852.9191.34256.stgit@localhost6.localdomain6>
+	<1322435131.23348.17.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1322434096.23348.6.camel@pasglop>
+In-Reply-To: <1322435131.23348.17.camel@pasglop>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -23,158 +23,101 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ben,
-
-Thanks a lot for the review.
-
-On 11/28/2011 04:18 AM, Benjamin Herrenschmidt wrote:
+On 11/28/2011 04:35 AM, Benjamin Herrenschmidt wrote:
 
 > On Thu, 2011-11-17 at 16:58 +0530, Deepthi Dharwar wrote:
->> This patch provides cpu_idle_wait() routine for the powerpc
->> platform which is required by the cpuidle subsystem. This
->> routine is requied to change the idle handler on SMP systems.
->> The equivalent routine for x86 is in arch/x86/kernel/process.c
->> but the powerpc implementation is different.
+>> This patch enables cpuidle for pSeries and cpuidle_idle_call() is
+>> directly called from the idle loop. As a result pseries_idle cpuidle
+>> driver registered with cpuidle subsystem comes into action. This patch
+>> also removes the routines pseries_shared_idle_sleep and
+>> pseries_dedicated_idle_sleep as they are now implemented as part of
+>> pseries_idle cpuidle driver.
 >>
 >> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 >> Signed-off-by: Trinabh Gupta <g.trinabh@gmail.com>
 >> Signed-off-by: Arun R Bharadwaj <arun.r.bharadwaj@gmail.com>
 >> ---
+>>  arch/powerpc/platforms/Kconfig         |    6 ++
+>>  arch/powerpc/platforms/pseries/setup.c |   86 +-------------------------------
+>>  include/linux/cpuidle.h                |    2 -
+>>  3 files changed, 8 insertions(+), 86 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+>> index e458872..0d2a028 100644
+>> --- a/arch/powerpc/platforms/Kconfig
+>> +++ b/arch/powerpc/platforms/Kconfig
+>> @@ -211,6 +211,12 @@ config PPC_PASEMI_CPUFREQ
+>>  
+>>  endmenu
+>>  
+>> +menu "CPUIdle driver"
+>> +
+>> +source "drivers/cpuidle/Kconfig"
+>> +
+>> +endmenu
+>> +
+>>  config PPC601_SYNC_FIX
+>>  	bool "Workarounds for PPC601 bugs"
+>>  	depends on 6xx && (PPC_PREP || PPC_PMAC)
+>> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+>> index 9c6716a..f624e74 100644
+>> --- a/arch/powerpc/platforms/pseries/setup.c
+>> +++ b/arch/powerpc/platforms/pseries/setup.c
+>> @@ -39,6 +39,7 @@
+>>  #include <linux/irq.h>
+>>  #include <linux/seq_file.h>
+>>  #include <linux/root_dev.h>
+>> +#include <linux/cpuidle.h>
+>>  
+>>  #include <asm/mmu.h>
+>>  #include <asm/processor.h>
+>> @@ -74,9 +75,6 @@ EXPORT_SYMBOL(CMO_PageSize);
+>>  
+>>  int fwnmi_active;  /* TRUE if an FWNMI handler is present */
+>>  
+>> -static void pseries_shared_idle_sleep(void);
+>> -static void pseries_dedicated_idle_sleep(void);
+>> -
+>>  static struct device_node *pSeries_mpic_node;
+>>  
+>>  static void pSeries_show_cpuinfo(struct seq_file *m)
+>> @@ -374,18 +372,9 @@ static void __init pSeries_setup_arch(void)
+>>  
+>>  	pSeries_nvram_init();
+>>  
+>> -	/* Choose an idle loop */
+>>  	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+>>  		vpa_init(boot_cpuid);
+>> -		if (get_lppaca()->shared_proc) {
+>> -			printk(KERN_DEBUG "Using shared processor idle loop\n");
+>> -			ppc_md.power_save = pseries_shared_idle_sleep;
+>> -		} else {
+>> -			printk(KERN_DEBUG "Using dedicated idle loop\n");
+>> -			ppc_md.power_save = pseries_dedicated_idle_sleep;
+>> -		}
+>> -	} else {
+>> -		printk(KERN_DEBUG "Using default idle loop\n");
+>> +		ppc_md.power_save = (void *)cpuidle_idle_call;
+>>  	}
 > 
-> No, that patch also adds this idle boot override thing (can you pick a
-> shorter name for boot_option_idle_override btw ?) which seems unrelated
-> and without any explanation as to what it's supposed to be about.
+> I very very much dislike that cast. You should not have to cast a
+> function pointer ... EVER.
 
 
- Yes, we can pick a better and shorter name for this variable.
- This variable is used to determine if cpuidle framework
- needs to be enabled and pseries_driver to be loaded or not.
- We disable cpuidle framework only when powersave_off option is set or
- not enabled by the user.
+
+Yes, I ll fix this.
+This actually bought out a design flaw with the current pseries idle as
+mentioned by you in the next patch of the series.
 
 > 
-> Additionally, I'm a bit worried (but maybe we already discussed that a
-> while back, I don't know) but cpu_idle_wait() has "wait" in the name,
-> which makes me think it might need to actually -wait- for all cpus to
-> have come out of the function.
-
-
-cpu_idle_wait is used to ensure that all the CPUs discard old idle
-handler and update to new one.  Required while changing idle
-handler on SMP systems.
-
-> Now your implementation doesn't provide that guarantee. It might be
-> fine, I don't know, but if it is, you'd better document it well in the
-> comments surrounding the code, because as it is, all you do is shoot an
-> interrupt which will cause the target CPU to eventually come out of idle
-> some time in the future.
-
-
-I was hoping that sending an explicit reschedule to the cpus would
-do the trick but sure we can add some documentation around the code.
-
+>>  	if (firmware_has_feature(FW_FEATURE_LPAR))
+>> @@ -586,77 +575,6 @@ static int __init pSeries_probe(void)
+>>  	return 1;
+>>  }
+>>  
 > 
 > Cheers,
 > Ben.
-> 
->>  arch/powerpc/Kconfig                 |    4 ++++
->>  arch/powerpc/include/asm/processor.h |    2 ++
->>  arch/powerpc/include/asm/system.h    |    1 +
->>  arch/powerpc/kernel/idle.c           |   26 ++++++++++++++++++++++++++
->>  4 files changed, 33 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index b177caa..87f8604 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -87,6 +87,10 @@ config ARCH_HAS_ILOG2_U64
->>  	bool
->>  	default y if 64BIT
->>  
->> +config ARCH_HAS_CPU_IDLE_WAIT
->> +	bool
->> +	default y
->> +
->>  config GENERIC_HWEIGHT
->>  	bool
->>  	default y
->> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
->> index eb11a44..811b7e7 100644
->> --- a/arch/powerpc/include/asm/processor.h
->> +++ b/arch/powerpc/include/asm/processor.h
->> @@ -382,6 +382,8 @@ static inline unsigned long get_clean_sp(struct pt_regs *regs, int is_32)
->>  }
->>  #endif
->>  
->> +enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
->> +
->>  #endif /* __KERNEL__ */
->>  #endif /* __ASSEMBLY__ */
->>  #endif /* _ASM_POWERPC_PROCESSOR_H */
->> diff --git a/arch/powerpc/include/asm/system.h b/arch/powerpc/include/asm/system.h
->> index e30a13d..ff66680 100644
->> --- a/arch/powerpc/include/asm/system.h
->> +++ b/arch/powerpc/include/asm/system.h
->> @@ -221,6 +221,7 @@ extern unsigned long klimit;
->>  extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
->>  
->>  extern int powersave_nap;	/* set if nap mode can be used in idle loop */
->> +void cpu_idle_wait(void);
->>  
->>  /*
->>   * Atomic exchange
->> diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
->> index 39a2baa..b478c72 100644
->> --- a/arch/powerpc/kernel/idle.c
->> +++ b/arch/powerpc/kernel/idle.c
->> @@ -39,9 +39,13 @@
->>  #define cpu_should_die()	0
->>  #endif
->>  
->> +unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
->> +EXPORT_SYMBOL(boot_option_idle_override);
->> +
->>  static int __init powersave_off(char *arg)
->>  {
->>  	ppc_md.power_save = NULL;
->> +	boot_option_idle_override = IDLE_POWERSAVE_OFF;
->>  	return 0;
->>  }
->>  __setup("powersave=off", powersave_off);
->> @@ -102,6 +106,28 @@ void cpu_idle(void)
->>  	}
->>  }
->>  
->> +
->> +/*
->> + * cpu_idle_wait - Used to ensure that all the CPUs come out of the old
->> + * idle loop and start using the new idle loop.
->> + * Required while changing idle handler on SMP systems.
->> + * Caller must have changed idle handler to the new value before the call.
->> + */
->> +void cpu_idle_wait(void)
->> +{
->> +	int cpu;
->> +	smp_mb();
->> +
->> +	/* kick all the CPUs so that they exit out of old idle routine */
->> +	get_online_cpus();
->> +	for_each_online_cpu(cpu) {
->> +		if (cpu != smp_processor_id())
->> +			smp_send_reschedule(cpu);
->> +	}
->> +	put_online_cpus();
->> +}
->> +EXPORT_SYMBOL_GPL(cpu_idle_wait);
->> +
->>  int powersave_nap;
->>  
->>  #ifdef CONFIG_SYSCTL
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
 > 
 
