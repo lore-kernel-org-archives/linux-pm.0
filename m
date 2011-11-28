@@ -1,16 +1,15 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: [PATCH] hugetlb: release pages in the error path of
- hugetlb_cow() (was: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1)
-Date: Mon, 28 Nov 2011 09:33:13 +0100
-Message-ID: <20111128083313.GA18337__36578.3812515021$1322469221$gmane$org@tiehlicka.suse.cz>
-References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
-	<CA+55aFygSFt+O5KLoiE_0V+o45eKfsoDDV5ML8EF=J0n9z_D-Q@mail.gmail.com>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 2/4] cpuidle: (POWER) cpuidle driver
+	for pSeries
+Date: Mon, 28 Nov 2011 16:32:53 +0530
+Message-ID: <4ED36A5D.5060405@linux.vnet.ibm.com>
+References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>	<20111117112841.9191.97974.stgit@localhost6.localdomain6>
+	<1322435008.23348.15.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <CA+55aFygSFt+O5KLoiE_0V+o45eKfsoDDV5ML8EF=J0n9z_D-Q@mail.gmail.com>
+In-Reply-To: <1322435008.23348.15.camel@pasglop>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,79 +19,331 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: stable@vger.kernel.org
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Network Development <netdev@vger.kernel.org>, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Andy Lutomirski <luto@amacapital.net>, Florian Mickler <florian@mickler.org>, Andrew Morton <akpm@linux-foundation.org>, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 21-11-11 14:18:29, Linus Torvalds wrote:
-> On Mon, Nov 21, 2011 at 1:49 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >
-> > Subject =A0 =A0: hugetlb oops on 3.1.0-rc8-devel
-> > Submitter =A0: Andy Lutomirski <luto@amacapital.net>
-> > Date =A0 =A0 =A0 : 2011-11-01 22:20
-> > Message-ID : CALCETrW1mpVCz2tO5roaz1r6vnno+srHR-dHA6_pkRi2qiCfdw@mail.g=
-mail.com
-> > References : http://marc.info/?l=3Dlinux-kernel&m=3D132018604426692&w=
-=3D2
-> =
+On 11/28/2011 04:33 AM, Benjamin Herrenschmidt wrote:
 
-> Despite the subject line, that's not an oops, it's a BUG_ON().
-> =
-
-> And it *should* be fixed by commit ea4039a34c4c ("hugetlb: release
-> pages in the error path of hugetlb_cow()") although I don't think Andy
-> ever confirmed that (since it was hard to trigger).
-
-AFAICS the issue has been introduced by 0fe6e20b (hugetlb, rmap:
-add reverse mapping for hugepage) in 2.6.36-rc1 so this is a stable
-material. I do not see the patch in any stable branch so here we go.
-The patch is on top of 3.0.y branch and it applies as is to 3.1.y
-as well.
----
->From fdaa4aaa008cce149a5fd60934112acd8988e0b6 Mon Sep 17 00:00:00 2001
-From: Hillf Danton <dhillf@gmail.com>
-Date: Tue, 15 Nov 2011 14:36:12 -0800
-Subject: [PATCH] hugetlb: release pages in the error path of hugetlb_cow()
-
-commit ea4039a34c4c206d015d34a49d0b00868e37db1d upstream.
-
-If we fail to prepare an anon_vma, the {new, old}_page should be released,
-or they will leak.
-
-Signed-off-by: Hillf Danton <dhillf@gmail.com>
-Reviewed-by: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Hugh Dickins <hughd@google.com>
-Cc: Johannes Weiner <jweiner@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- mm/hugetlb.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index bfcf153..2b57cd9 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -2415,6 +2415,8 @@ retry_avoidcopy:
- 	 * anon_vma prepared.
- 	 */
- 	if (unlikely(anon_vma_prepare(vma))) {
-+		page_cache_release(new_page);
-+		page_cache_release(old_page);
- 		/* Caller expects lock to be held */
- 		spin_lock(&mm->page_table_lock);
- 		return VM_FAULT_OOM;
--- =
-
-1.7.7.3
+> On Thu, 2011-11-17 at 16:58 +0530, Deepthi Dharwar wrote:
+>> This patch implements a backhand cpuidle driver for pSeries
+>> based on pseries_dedicated_idle_loop and pseries_shared_idle_loop
+>> routines.  The driver is built only if CONFIG_CPU_IDLE is set. This
+>> cpuidle driver uses global registration of idle states and
+>> not per-cpu.
+> 
+>  .../...
+> 
+>> +#define MAX_IDLE_STATE_COUNT	2
+>> +
+>> +static int max_cstate = MAX_IDLE_STATE_COUNT - 1;
+> 
+> Why "cstate" ? This isn't an x86 :-)
 
 
--- =
+Sure, I shall change it right away :)
 
-Michal Hocko
-SUSE Labs
-SUSE LINUX s.r.o.
-Lihovarska 1060/12
-190 00 Praha 9    =
+> 
+>> +static struct cpuidle_device __percpu *pseries_idle_cpuidle_devices;
+> 
+> Shorter name please. pseries_cpuidle_devs is fine.
 
-Czech Republic
+
+I ll do so.
+
+> 
+>> +static struct cpuidle_state *cpuidle_state_table;
+>> +
+>> +void update_smt_snooze_delay(int snooze)
+>> +{
+>> +	struct cpuidle_driver *drv = cpuidle_get_driver();
+>> +	if (drv)
+>> +		drv->states[0].target_residency = snooze;
+>> +}
+>> +
+>> +static inline void idle_loop_prolog(unsigned long *in_purr, ktime_t *kt_before)
+>> +{
+>> +
+>> +	*kt_before = ktime_get_real();
+>> +	*in_purr = mfspr(SPRN_PURR);
+>> +	/*
+>> +	 * Indicate to the HV that we are idle. Now would be
+>> +	 * a good time to find other work to dispatch.
+>> +	 */
+>> +	get_lppaca()->idle = 1;
+>> +	get_lppaca()->donate_dedicated_cpu = 1;
+>> +}
+> 
+> I notice that you call this on shared processors as well. The old ocde
+> used to not set donate_dedicated_cpu in that case. I assume that's not a
+> big deal and that the HV will just ignore it in the shared processor
+> case but please add a comment after you've verified it.
+>
+
+
+Yes, the old code does not set donate_dedicated_cpu. But yes I will
+try testing it in a shared proc config but also remove this
+initialization for shared idle loop.
+
+ 
+>> +static inline  s64 idle_loop_epilog(unsigned long in_purr, ktime_t kt_before)
+>> +{
+>> +	get_lppaca()->wait_state_cycles += mfspr(SPRN_PURR) - in_purr;
+>> +	get_lppaca()->donate_dedicated_cpu = 0;
+>> +	get_lppaca()->idle = 0;
+>> +
+>> +	return ktime_to_us(ktime_sub(ktime_get_real(), kt_before));
+>> +}
+>> +
+>> +
+>> +static int snooze_loop(struct cpuidle_device *dev,
+>> +			struct cpuidle_driver *drv,
+>> +			int index)
+>> +{
+>> +	unsigned long in_purr;
+>> +	ktime_t kt_before;
+>> +
+>> +	idle_loop_prolog(&in_purr, &kt_before);
+>> +
+>> +	local_irq_enable();
+>> +	set_thread_flag(TIF_POLLING_NRFLAG);
+>> +	while (!need_resched()) {
+>> +		ppc64_runlatch_off();
+>> +		HMT_low();
+>> +		HMT_very_low();
+>> +	}
+>> +	HMT_medium();
+>> +	clear_thread_flag(TIF_POLLING_NRFLAG);
+>> +	smp_mb();
+>> +	local_irq_disable();
+>> +
+>> +	dev->last_residency =
+>> +		(int)idle_loop_epilog(in_purr, kt_before);
+>> +	return index;
+>> +}
+> 
+> So your snooze loop has no timeout, is that handled by the cpuidle
+> driver using some kind of timer ? That sounds a lot less efficient than
+> passing a max delay to the snooze loop to handle getting into a deeper
+> state after a bit of snoozing rather than interrupting etc...
+
+
+My bad, snooze_loop is essential for a time out. Nope cpuidle
+driver doesn't have any timer mechanism. I ll fix it.
+Need to add loop for snooze time.
+
+>> +static int dedicated_cede_loop(struct cpuidle_device *dev,
+>> +				struct cpuidle_driver *drv,
+>> +				int index)
+>> +{
+>> +	unsigned long in_purr;
+>> +	ktime_t kt_before;
+>> +
+>> +	idle_loop_prolog(&in_purr, &kt_before);
+>> +
+>> +	ppc64_runlatch_off();
+>> +	HMT_medium();
+>> +	cede_processor();
+>> +
+>> +	dev->last_residency =
+>> +		(int)idle_loop_epilog(in_purr, kt_before);
+>> +	return index;
+>> +}
+>> +
+>> +static int shared_cede_loop(struct cpuidle_device *dev,
+>> +			struct cpuidle_driver *drv,
+>> +			int index)
+>> +{
+>> +	unsigned long in_purr;
+>> +	ktime_t kt_before;
+>> +
+>> +	idle_loop_prolog(&in_purr, &kt_before);
+>> +
+>> +	/*
+>> +	 * Yield the processor to the hypervisor.  We return if
+>> +	 * an external interrupt occurs (which are driven prior
+>> +	 * to returning here) or if a prod occurs from another
+>> +	 * processor. When returning here, external interrupts
+>> +	 * are enabled.
+>> +	 */
+>> +	cede_processor();
+>> +
+>> +	dev->last_residency =
+>> +		(int)idle_loop_epilog(in_purr, kt_before);
+>> +	return index;
+>> +}
+>> +
+>> +/*
+>> + * States for dedicated partition case.
+>> + */
+>> +static struct cpuidle_state dedicated_states[MAX_IDLE_STATE_COUNT] = {
+>> +	{ /* Snooze */
+>> +		.name = "snooze",
+>> +		.desc = "snooze",
+>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+>> +		.exit_latency = 0,
+>> +		.target_residency = 0,
+>> +		.enter = &snooze_loop },
+>> +	{ /* CEDE */
+>> +		.name = "CEDE",
+>> +		.desc = "CEDE",
+>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+>> +		.exit_latency = 1,
+>> +		.target_residency = 10,
+>> +		.enter = &dedicated_cede_loop },
+>> +};
+>> +
+>> +/*
+>> + * States for shared partition case.
+>> + */
+>> +static struct cpuidle_state shared_states[MAX_IDLE_STATE_COUNT] = {
+>> +	{ /* Shared Cede */
+>> +		.name = "Shared Cede",
+>> +		.desc = "Shared Cede",
+>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+>> +		.exit_latency = 0,
+>> +		.target_residency = 0,
+>> +		.enter = &shared_cede_loop },
+>> +};
+>> +
+>> +int pseries_notify_cpuidle_add_cpu(int cpu)
+>> +{
+>> +	struct cpuidle_device *dev =
+>> +			per_cpu_ptr(pseries_idle_cpuidle_devices, cpu);
+>> +	if (dev && cpuidle_get_driver()) {
+>> +		cpuidle_disable_device(dev);
+>> +		cpuidle_enable_device(dev);
+>> +	}
+>> +	return 0;
+>> +}
+>> +
+>> +/*
+>> + * pseries_idle_cpuidle_driver_init()
+>> + */
+>> +static int pseries_idle_cpuidle_driver_init(void)
+>> +{
+> 
+> Drop the "idle", those names are too long.
+
+
+ Sure.
+
+> 
+>> +	int cstate;
+> 
+> And use something else than 'cstate', we are among civilized people
+> here ;-)
+
+
+Yes :)
+
+> 
+>> +	struct cpuidle_driver *drv = &pseries_idle_driver;
+>> +
+>> +	drv->state_count = 0;
+>> +
+>> +	for (cstate = 0; cstate < MAX_IDLE_STATE_COUNT; ++cstate) {
+>> +
+>> +		if (cstate > max_cstate)
+>> +			break;
+>> +
+>> +		/* is the state not enabled? */
+>> +		if (cpuidle_state_table[cstate].enter == NULL)
+>> +			continue;
+>> +
+>> +		drv->states[drv->state_count] =	/* structure copy */
+>> +			cpuidle_state_table[cstate];
+>> +
+>> +		if (cpuidle_state_table == dedicated_states)
+>> +			drv->states[drv->state_count].target_residency =
+>> +				__get_cpu_var(smt_snooze_delay);
+>> +
+>> +		drv->state_count += 1;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +/* pseries_idle_devices_uninit(void)
+>> + * unregister cpuidle devices and de-allocate memory
+>> + */
+>> +static void pseries_idle_devices_uninit(void)
+>> +{
+>> +	int i;
+>> +	struct cpuidle_device *dev;
+>> +
+>> +	for_each_possible_cpu(i) {
+>> +		dev = per_cpu_ptr(pseries_idle_cpuidle_devices, i);
+>> +		cpuidle_unregister_device(dev);
+>> +	}
+>> +
+>> +	free_percpu(pseries_idle_cpuidle_devices);
+>> +	return;
+>> +}
+>> +
+>> +/* pseries_idle_devices_init()
+>> + * allocate, initialize and register cpuidle device
+>> + */
+>> +static int pseries_idle_devices_init(void)
+>> +{
+>> +	int i;
+>> +	struct cpuidle_driver *drv = &pseries_idle_driver;
+>> +	struct cpuidle_device *dev;
+>> +
+>> +	pseries_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
+>> +	if (pseries_idle_cpuidle_devices == NULL)
+>> +		return -ENOMEM;
+>> +
+>> +	for_each_possible_cpu(i) {
+>> +		dev = per_cpu_ptr(pseries_idle_cpuidle_devices, i);
+>> +		dev->state_count = drv->state_count;
+>> +		dev->cpu = i;
+>> +		if (cpuidle_register_device(dev)) {
+>> +			printk(KERN_DEBUG \
+>> +				"cpuidle_register_device %d failed!\n", i);
+>> +			return -EIO;
+>> +		}
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +/*
+>> + * pseries_idle_probe()
+>> + * Choose state table for shared versus dedicated partition
+>> + */
+>> +static int pseries_idle_probe(void)
+>> +{
+>> +	if (max_cstate == 0) {
+>> +		printk(KERN_DEBUG "pseries processor idle disabled.\n");
+>> +		return -EPERM;
+>> +	}
+>> +
+>> +	if (!firmware_has_feature(FW_FEATURE_SPLPAR)) {
+>> +		printk(KERN_DEBUG "Using default idle\n");
+>> +		return -ENODEV;
+>> +	}
+> 
+> Don't even printk here, this will happen on all !pseries machines and
+> the debug output isn't useful. Also move the check of max-cstate to
+> after the splpar test.
+
+
+I ll move the check above.
+
+ 
+> Overall, I quite like these patches, my comments are all pretty minor,
+> hopefully the next round should be the one.
+
+
+Thank you.
+
+> 
+> Cheers,
+> Ben.
+> 
+> 
+
+
+Regards,
+Deepthi
