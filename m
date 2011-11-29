@@ -1,15 +1,18 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 4/4] cpuidle: (POWER) Handle
-	power_save=off
-Date: Tue, 29 Nov 2011 12:14:24 +0530
-Message-ID: <4ED47F48.2070107@linux.vnet.ibm.com>
-References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>	<20111117112906.9191.54050.stgit@localhost6.localdomain6>	<1322435233.23348.19.camel@pasglop>	<4ED36A7D.9070308@linux.vnet.ibm.com>
-	<1322512771.23348.45.camel@pasglop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH v2 1/4] cpuidle: (powerpc) Add
+ cpu_idle_wait() to allow switching of idle routines
+Date: Tue, 29 Nov 2011 18:01:55 +1100
+Message-ID: <1322550115.23348.72.camel@pasglop>
+References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
+	<20111117112830.9191.1951.stgit@localhost6.localdomain6>
+	<1322434096.23348.6.camel@pasglop>	<4ED36A37.3030409@linux.vnet.ibm.com>
+	<1322512522.23348.43.camel@pasglop>
+	<4ED47EC2.2090802@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1322512771.23348.45.camel@pasglop>
+In-Reply-To: <4ED47EC2.2090802@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,44 +22,22 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/29/2011 02:09 AM, Benjamin Herrenschmidt wrote:
-
-> On Mon, 2011-11-28 at 16:33 +0530, Deepthi Dharwar wrote:
+On Tue, 2011-11-29 at 12:12 +0530, Deepthi Dharwar wrote:
 > 
->> On an LPAR if cpuidle is disabled, ppc_md.power_save is still set to
->> cpuidle_idle_call by default here. This would result in calling of
->> cpuidle_idle_call repeatedly, only for the call to return -ENODEV. The
->> default idle is never executed.
->> This would be a major design flaw. No fallback idle routine.
->>
->> We propose to fix this by checking the return value of
->> ppc_md.power_save() call from void to int.
->> Right now return value is void, but if we change this to int, this
->> would solve two problems. One being removing the cast to a function
->> pointer in the prev patch and this design flaw stated above.
->>
->> So by checking the return value of ppc_md.power_save(), we can invoke
->> the default idle on failure. But my only concern is about the effects of
->> changing the ppc_md.power_save() to return int on other powerpc
->> architectures. Would it be a good idea to change the return type to int
->> which would help us flag an error and fallback to default idle?
-> 
-> I would have preferred an approach where the cpuidle module sets
-> ppc_md.power_save when loaded and restores it when unloaded ... but that
-> would have to go into the cpuidle core as a powerpc specific tweak and
-> might not be generally well received.
-> 
-> So go for it, add the return value, but you'll have to update all the
-> idle functions (grep for power_save in arch/powerpc to find them).
-> 
+> Yes, this could be problematic as there is small window for the
+> race condition to occur . Otherwise we need to manually schedule
+> it by running a kernel thread but this would definitely have a
+> overhead and would be an overkill. 
 
+Depends what this "window" is. IE. What are you trying to protect
+yourself against ? What's the risk ?
 
-Thanks Ben. Yes, I will update all the idle functions under powerpc.
-I will re-work these patches with the discussed changes.
+If it's just module unload, then stop_machine is probably your
+friend :-)
 
-Regards,
-Deepthi
+Cheers,
+Ben.
