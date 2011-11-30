@@ -1,17 +1,18 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1
-Date: Tue, 29 Nov 2011 15:08:15 -0500
-Message-ID: <20111129200815.GA12114@phenom.dumpdata.com>
-References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
-	<20111122135412.GA29905@phenom.dumpdata.com>
-	<20111129180414.GA11459@phenom.dumpdata.com>
-	<20111129183428.GE8200@aftab>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 4/4] cpuidle: (POWER) Handle
+	power_save=off
+Date: Wed, 30 Nov 2011 06:55:40 +0530
+Message-ID: <4ED58614.9090204@linux.vnet.ibm.com>
+References: <20111117112815.9191.2322.stgit@localhost6.localdomain6>
+	<20111117112906.9191.54050.stgit@localhost6.localdomain6>
+	<1322435233.23348.19.camel@pasglop>	<4ED36A7D.9070308@linux.vnet.ibm.com>
+	<1322512771.23348.45.camel@pasglop>
+	<4ED47F48.2070107@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <20111129183428.GE8200@aftab>
+In-Reply-To: <4ED47F48.2070107@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,94 +22,67 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Borislav Petkov <bp@amd64.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Network Development <netdev@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, x86@kernel.org, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 29, 2011 at 07:34:28PM +0100, Borislav Petkov wrote:
-> On Tue, Nov 29, 2011 at 01:04:14PM -0500, Konrad Rzeszutek Wilk wrote:
-> > This patch:
-> > 
-> > commit d91ee5863b71e8c90eaf6035bff3078a85e2e7b5
-> > Author: Len Brown <len.brown@intel.com>
-> > Date:   Fri Apr 1 18:28:35 2011 -0400
-> > 
-> >     cpuidle: replace xen access to x86 pm_idle and default_idle
-> > 
-> >     ..scribble on pm_idle and access default_idle,
-> >    have it simply disable_cpuidle() so acpi_idle will not load and
-> >    architecture default HLT will be used.
-> > 
-> > idea was to have one call - disable_cpuidle() which would make
-> > pm_idle not be molested by other code. It disallows cpuidle_idle_call
-> > and acpi_idle_call to not set pm_idle (which is excellent). But the
-> 
-> what is acpi_idle_call, I can't find it anywhere.
+On 11/29/2011 12:14 PM, Deepthi Dharwar wrote:
 
-You are right. I had "acpi_idle_enter_*" and its friend in mind. Which
-are called from the cpuidle_idle_call.
+> On 11/29/2011 02:09 AM, Benjamin Herrenschmidt wrote:
+> 
+>> On Mon, 2011-11-28 at 16:33 +0530, Deepthi Dharwar wrote:
+>>
+>>> On an LPAR if cpuidle is disabled, ppc_md.power_save is still set to
+>>> cpuidle_idle_call by default here. This would result in calling of
+>>> cpuidle_idle_call repeatedly, only for the call to return -ENODEV. The
+>>> default idle is never executed.
+>>> This would be a major design flaw. No fallback idle routine.
+>>>
+>>> We propose to fix this by checking the return value of
+>>> ppc_md.power_save() call from void to int.
+>>> Right now return value is void, but if we change this to int, this
+>>> would solve two problems. One being removing the cast to a function
+>>> pointer in the prev patch and this design flaw stated above.
+kernel/idle.c:  ppc_md.power_save = NULL;
+>>>
+>>> So by checking the return value of ppc_md.power_save(), we can invoke
+>>> the default idle on failure. But my only concern is about the effects of
+>>> changing the ppc_md.power_save() to return int on other powerpc
+>>> architectures. Would it be a good idea to change the return type to int
+>>> which would help us flag an error and fallback to default idle?
+>>
+>> I would have preferred an approach where the cpuidle module sets
+>> ppc_md.power_save when loaded and restores it when unloaded ... but that
+>> would have to go into the cpuidle core as a powerpc specific tweak and
+>> might not be generally well received.
+>>
+>> So go for it, add the return value, but you'll have to update all the
+>> idle functions (grep for power_save in arch/powerpc to find them).
+>>
+> 
+> 
+> Thanks Ben. Yes, I will update all the idle functions under powerpc.
+> I will re-work these patches with the discussed changes.
+> 
+> Regards,
+> Deepthi
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
+> 
+> 
 
-Let me fix that comment up.
-> 
-> > amd_e400_idle and mwait_idle can still setup pm_idle which we really
-> > do not want.
-> 
-> This is not the case: rather select_idle_routine()/idle_setup() sets
-> pm_idle.
+Hi Ben,
 
-Yes. Let me fix up the comment.
-> 
-> [..]
-> 
-> > +bool set_pm_idle_to_default()
-> > +{
-> > +	if (!pm_idle) {
-> > +		pm_idle = default_idle;
-> > +		return true;
-> > +	}
-> > +	return false;
-> > +}
-> 
-> I don't understand what you're trying to achieve here? Do you want
-> default_idle to be always the pm_idle for xen or what is the deal here?
+I was trying to add a return value for power_save for all arch/powepc
+idle functions but a few of them directly call *.S  routines, as they
+are asm.
 
-Yes (always want default_idle).
-> 
-> If yes, then simply do:
-> 
-> bool set_pm_idle_to_default(void)	// remember to add "void" for no function args
-> {
-> 	bool ret = !!pm_idle;
-> 
-> 	pm_idle = default_idle;
+What would be a good way to change the return value  for asm routines ?
+Do we make a change in asm only, put the return value in r3 or write a
+wrapper function which would call these asm routines and return an int ?
 
-That would work too.
-> 
-> 	return ret;
-> 
-> }
-> 
-> ...
-> 
-> >  void stop_this_cpu(void *dummy) 
-> >  {
-> >  	local_irq_disable();
-> > diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-> > index 46d6d21..7506181 100644
-> > --- a/arch/x86/xen/setup.c
-> > +++ b/arch/x86/xen/setup.c
-> > @@ -448,6 +448,6 @@ void __init xen_arch_setup(void)
-> >  #endif
-> >  	disable_cpuidle();
-> >  	boot_option_idle_override = IDLE_HALT;
-> > -
-> > +	WARN_ON(!set_pm_idle_to_default());
-> 
-> and then do
-> 
-> 	WARN_ON(set_pm_idle_to_default());
-> 
-> instead of having arbitrary confusing logic. This way you can warn
-> whether something else set pm_idle already. Or?
-
-That would work as well.
+Regards,
+Deepthi
