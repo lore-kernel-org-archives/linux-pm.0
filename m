@@ -1,19 +1,20 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: 3.2-rc2+: Reported regressions from 3.0 and 3.1
-Date: Thu, 1 Dec 2011 09:35:48 -0500
-Message-ID: <20111201143548.GA28114@phenom.dumpdata.com>
-References: <lx6sezwGldO.A.IhF.UBpWOB@chimera> <201111212249.31196.rjw@sisk.pl>
-	<20111122135412.GA29905@phenom.dumpdata.com>
-	<20111129180414.GA11459@phenom.dumpdata.com>
-	<20111129183428.GE8200@aftab>
-	<20111130175936.GA15168@phenom.dumpdata.com>
-	<20111201113919.GC31552@aftab>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH UPDATED 03/10] threadgroup: extend
+ threadgroup_lock() to cover exit and exec
+Date: Mon, 5 Dec 2011 10:43:15 -0800
+Message-ID: <20111205184315.GJ627__6000.67776763371$1323110619$gmane$org@google.com>
+References: <1320191193-8110-1-git-send-email-tj@kernel.org>
+	<1320191193-8110-4-git-send-email-tj@kernel.org>
+	<20111124225054.GA14828@google.com>
+	<20111125140136.GC23307@somewhere.redhat.com>
+	<20111127193001.GC4266@google.com>
+	<20111202162753.GA19752@somewhere.redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20111201113919.GC31552@aftab>
+In-Reply-To: <20111202162753.GA19752@somewhere.redhat.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -23,25 +24,30 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Borislav Petkov <bp@amd64.org>
-Cc: Linux SCSI List <linux-scsi@vger.kernel.org>, Florian Mickler <florian@mickler.org>, Network Development <netdev@vger.kernel.org>, Linux PM List <linux-pm@lists.linux-foundation.org>, x86@kernel.org, Linux Wireless List <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI <dri-devel@lists.freedesktop.org>, Linux ACPI <linux-acpi@vger.kernel.org>, mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de, Kernel Testers List <kernel-testers@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: akpm@linux-foundation.org, paul@paulmenage.org, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org, oleg@redhat.com, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, containers@lists.linux-foundation.org, kamezawa.hiroyu@Jp.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-> >From what I can see, you get the following callchain:
-> 
-> start_kernel
-> |-> setup_arch
->     |-> x86_init.oem.arch_setup = xen_arch_setup
->     ....
->     |-> check_bugs
->         |-> identify_boot_cpu
-> 	    |-> identify_cpu
-> 	        |-> select_idle_routine
-> 
-> 
-> so xen_arch_setup will set pm_idle and select_idle_routine will honour
-> it. I'm being told this is run either in the dom0 or the paravirt guest
-> and if so, I don't see any issue with this for baremetal. So you can
-> have my ACK provided this is tested on baremetal too.
+Hello, Frederic.
 
-Tested on baremetal and there were no abnormalities. Thanks!
+On Fri, Dec 02, 2011 at 05:28:03PM +0100, Frederic Weisbecker wrote:
+> But I don't think it's very useful to protect against irq_exit_thread(),
+> what happens there is purely of internal irq interest.
+> 
+> Then right after, PF_EXITING is set before any interesting change.
+> Isn't it possible to simply lock this flag setting? IIRC, as soon
+> as the PF_EXITING flag is set, you ignore the task for attachment.
+
+I think that's technically possible but it does introduce another
+class of tasks - the dying ones.  e.g. If a task has PF_EXITING set
+and the containing process is migrating, we'll have to migrate all
+tasks but the dying one and cgroup ->exit callbacks can be called on
+the lonely task after the migration is complete.  It's kinda messy and
+if someone makes a wrong assumption there, the bug is gonna be even
+more difficult to reproduce / track down than now.  Yes, smaller scope
+locking is nicer but I would like to avoid api weirdities like that.
+
+Thanks.
+
+-- 
+tejun
