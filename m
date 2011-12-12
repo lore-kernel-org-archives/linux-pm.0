@@ -1,14 +1,14 @@
-From: jean.pihet@newoldbits.com
-Subject: [PATCH 2/6] OMAP2+: omap_hwmod: manage the wake-up
-	latency constraints
-Date: Mon, 12 Dec 2011 17:18:17 +0100
-Message-ID: <1323706701-6627-3-git-send-email-j-pihet__10422.1371504993$1323707219$gmane$org@ti.com>
-References: <1323706701-6627-1-git-send-email-j-pihet@ti.com>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [PATCH 0/2] OMAP: PM: switch from omap_pm_ functions
+	to PM QoS
+Date: Mon, 12 Dec 2011 17:27:54 +0100
+Message-ID: <CAORVsuU3_+653sUMZUWrJ+QHgaWEDqZAy0kEv_o=5m8zfeS4dw@mail.gmail.com>
+References: <1319034531-22964-1-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1323706701-6627-1-git-send-email-j-pihet@ti.com>
+In-Reply-To: <1319034531-22964-1-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,84 +19,53 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kevin Hilman <khilman@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, magnus.damm@gmail.com, Todd Poynor <toddpoynor@google.com>
-Cc: Jean Pihet <j-pihet@ti.com>, linux-arm <linux-arm-kernel@lists.infradead.org>
+Cc: Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Pihet <j-pihet@ti.com>
+Hi Kevin, Paul,
 
-Hwmod is queried from the OMAP_PM layer to manage the power domains
-wake-up latency constraints. Hwmod retrieves the correct power domain
-and if it exists it calls the corresponding power domain function.
+ping on this series
 
-Tested on OMAP3 Beagleboard and OMAP4 Pandaboard in RET/OFF using wake-up
-latency constraints on MPU, CORE and PER.
+Thanks,
+Jean
 
-Signed-off-by: Jean Pihet <j-pihet@ti.com>
+On Wed, Oct 19, 2011 at 4:28 PM,  <jean.pihet@newoldbits.com> wrote:
+> From: Jean Pihet <j-pihet@ti.com>
+>
+> . Convert the OMAP I2C driver to the PM QoS API for MPU latency constrain=
+ts
+> . Remove the latency related functions from OMAP PM in favor of
+> =A0the generic per-device PM QoS API
+>
+>
+> Apply on top of the OMAP PM QoS patch set [1].
+> Based on the pm-qos branch of the linux-pm git tree (3.1.0-rc3), cf. [2].
+>
+> Tested on OMAP3 Beagleboard (ES2.x) with constraints on MPU, CORE, PER in
+> RETention and OFF modes.
+>
+> [1] http://thread.gmane.org/gmane.linux.ports.arm.omap/65971
+> [2] git://github.com/rjwysocki/linux-pm.git
+>
+>
+> Jean Pihet (2):
+> =A0OMAP: convert I2C driver to PM QoS for latency constraints
+> =A0OMAP: PM: remove the latency related functions from the API
+>
+> =A0Documentation/arm/OMAP/omap_pm =A0 =A0 =A0 =A0 =A0 =A0| =A0 55 +++----=
+---------
+> =A0arch/arm/plat-omap/i2c.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 20 -=
+-----
+> =A0arch/arm/plat-omap/include/plat/omap-pm.h | =A0 99 -------------------=
+----------
+> =A0arch/arm/plat-omap/omap-pm-noop.c =A0 =A0 =A0 =A0 | =A0 88 -----------=
+--------------
+> =A0drivers/i2c/busses/i2c-omap.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 30 +++++--=
 ---
- arch/arm/mach-omap2/omap_hwmod.c             |   27 +++++++++++++++++++++++++-
- arch/arm/plat-omap/include/plat/omap_hwmod.h |    2 +
- 2 files changed, 28 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/omap_hwmod.c b/arch/arm/mach-omap2/omap_hwmod.c
-index 529142a..c3a4cc4 100644
---- a/arch/arm/mach-omap2/omap_hwmod.c
-+++ b/arch/arm/mach-omap2/omap_hwmod.c
-@@ -143,6 +143,7 @@
- #include "powerdomain.h"
- #include <plat/clock.h>
- #include <plat/omap_hwmod.h>
-+#include <plat/omap_device.h>
- #include <plat/prcm.h>
- 
- #include "cm2xxx_3xxx.h"
-@@ -2616,10 +2617,34 @@ ohsps_unlock:
- }
- 
- /**
-+ * omap_hwmod_set_wkup_constraint- set/release a wake-up latency constraint
-+ *
-+ * @oh: struct omap_hwmod* to which the target device belongs to.
-+ * @cookie: identifier of the constraints list for @oh.
-+ * @min_latency: the minimum allowed wake-up latency for @oh.
-+ *
-+ * Returns 0 upon success, -EINVAL in case of invalid parameters, or
-+ * the return value from pwrdm_set_wkup_lat_constraint.
-+ */
-+int omap_hwmod_set_wkup_lat_constraint(struct omap_hwmod *oh,
-+				       void *cookie, long min_latency)
-+{
-+	struct powerdomain *pwrdm = omap_hwmod_get_pwrdm(oh);
-+
-+	if (!pwrdm) {
-+		pr_err("%s: Error: could not find powerdomain "
-+		       "for %s\n", __func__, oh->name);
-+		return -EINVAL;
-+	}
-+
-+	return pwrdm_set_wkup_lat_constraint(pwrdm, cookie, min_latency);
-+}
-+
-+/**
-  * omap_hwmod_get_context_loss_count - get lost context count
-  * @oh: struct omap_hwmod *
-  *
-- * Query the powerdomain of of @oh to get the context loss
-+ * Query the powerdomain of @oh to get the context loss
-  * count for this device.
-  *
-  * Returns the context loss count of the powerdomain assocated with @oh
-diff --git a/arch/arm/plat-omap/include/plat/omap_hwmod.h b/arch/arm/plat-omap/include/plat/omap_hwmod.h
-index 8b372ed..222f792 100644
---- a/arch/arm/plat-omap/include/plat/omap_hwmod.h
-+++ b/arch/arm/plat-omap/include/plat/omap_hwmod.h
-@@ -600,6 +600,8 @@ int omap_hwmod_for_each_by_class(const char *classname,
- 				 void *user);
- 
- int omap_hwmod_set_postsetup_state(struct omap_hwmod *oh, u8 state);
-+int omap_hwmod_set_wkup_lat_constraint(struct omap_hwmod *oh, void *cookie,
-+				       long min_latency);
- int omap_hwmod_get_context_loss_count(struct omap_hwmod *oh);
- 
- int omap_hwmod_no_setup_reset(struct omap_hwmod *oh);
--- 
-1.7.5.4
+> =A0include/linux/i2c-omap.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A01=
+ -
+> =A06 files changed, 24 insertions(+), 269 deletions(-)
+>
+> --
+> 1.7.4.1
+>
