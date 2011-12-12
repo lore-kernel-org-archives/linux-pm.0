@@ -1,14 +1,18 @@
-From: jean.pihet@newoldbits.com
-Subject: [PATCH 3/6] OMAP: PM: register to the per-device PM QoS
-	framework
-Date: Mon, 12 Dec 2011 17:18:18 +0100
-Message-ID: <1323706701-6627-4-git-send-email-j-pihet__37327.2083038048$1323707177$gmane$org@ti.com>
-References: <1323706701-6627-1-git-send-email-j-pihet@ti.com>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [PATCH 4/6] OMAP3: cpuidle: next C-state decision
+ depends on the PM QoS MPU and CORE constraints
+Date: Mon, 12 Dec 2011 17:26:10 +0100
+Message-ID: <CAORVsuXDNUEYnP=7E8+Ny8J2ShkhBCS-GG+vET1MCcUjxVCBCg__30977.8762203225$1323707186$gmane$org@mail.gmail.com>
+References: <1319032263-22699-1-git-send-email-j-pihet@ti.com>
+	<1319032263-22699-5-git-send-email-j-pihet@ti.com>
+	<877h2y30a5.fsf@ti.com>
+	<CAORVsuV5bV-p0kxhh8g4T076Dg3Mj89X_=4E+BpCSTdLiUmNZA@mail.gmail.com>
+	<877h2qbp56.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1323706701-6627-1-git-send-email-j-pihet@ti.com>
+In-Reply-To: <877h2qbp56.fsf@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,126 +22,48 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, magnus.damm@gmail.com, Todd Poynor <toddpoynor@google.com>
-Cc: Jean Pihet <j-pihet@ti.com>, linux-arm <linux-arm-kernel@lists.infradead.org>
+To: Kevin Hilman <khilman@ti.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Pihet <j-pihet@ti.com>
+Hi Kevin,
 
-Implement the devices wake-up latency constraints using the global
-device PM QoS notification handler which applies the constraints to the
-underlying layer by calling the corresponding function at hwmod level.
+On Wed, Nov 23, 2011 at 8:43 PM, Kevin Hilman <khilman@ti.com> wrote:
+> Jean Pihet <jean.pihet@newoldbits.com> writes:
+>
+>> On Thu, Nov 17, 2011 at 10:29 PM, Kevin Hilman <khilman@ti.com> wrote:
+>>> jean.pihet@newoldbits.com writes:
+>>>
+>>>> From: Jean Pihet <j-pihet@ti.com>
+>>>>
+>>>> The MPU latency figures for cpuidle include the MPU itself and also
+>>>> the peripherals needed for the MPU to execute instructions (e.g.
+>>>> main memory, caches, IRQ controller, MMU etc). On OMAP3 those
+>>>> peripherals belong to the MPU and CORE power domains and so the
+>>>> cpuidle C-states are a combination of MPU and CORE states.
+>>>>
+>>>> This patch implements the relation between the cpuidle and per-
+>>>> device PM QoS frameworks in the OMAP3 specific idle callbacks.
+>>>>
+>>>> The chosen C-state shall satisfy the following conditions:
+>>>> =A0. the 'valid' field is enabled,
+>>>> =A0. it satisfies the enable_off_mode flag,
+>>>
+>>> Not directly related to this patch, but is there any reason to keep the
+>>> 'enable_off_mode' flag after this series?
+>> enable_off_mode could be removed completely after this series unless
+>> there is a need to prevent OFF mode for debug reasons.
+>
+> Great.
+>
+> For debug reasons, we can just as easily set constraints to prevent off
+> mode, so I would like to see it disappear.
+I have a WIP patch that removes the enable_off_mode flag and will post
+it as soon as this series is in the upstream pipe.
 
-Tested on OMAP3 Beagleboard and OMAP4 Pandaboard in RET/OFF using wake-up
-latency constraints on MPU, CORE and PER.
+Thanks,
+Jean
 
-Signed-off-by: Jean Pihet <j-pihet@ti.com>
----
- arch/arm/mach-omap2/pm.c |   71 +++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 70 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
-index 1881fe9..a40d4f3 100644
---- a/arch/arm/mach-omap2/pm.c
-+++ b/arch/arm/mach-omap2/pm.c
-@@ -11,15 +11,18 @@
- 
- #include <linux/kernel.h>
- #include <linux/init.h>
-+#include <linux/notifier.h>
- #include <linux/io.h>
- #include <linux/err.h>
- #include <linux/opp.h>
-+#include <linux/pm_qos.h>
- #include <linux/export.h>
- 
- #include <plat/omap-pm.h>
- #include <plat/omap_device.h>
--#include "common.h"
-+#include <plat/omap_hwmod.h>
- 
-+#include "common.h"
- #include "voltage.h"
- #include "powerdomain.h"
- #include "clockdomain.h"
-@@ -215,12 +218,78 @@ static void __init omap4_init_voltages(void)
- 	omap2_set_init_voltage("iva", "dpll_iva_m5x2_ck", "iva");
- }
- 
-+/* Interface to the per-device PM QoS framework */
-+static int omap2_dev_pm_qos_handler(struct notifier_block *nb,
-+				    unsigned long new_value,
-+				    void *req)
-+{
-+	struct omap_device *od;
-+	struct omap_hwmod *oh;
-+	struct platform_device *pdev;
-+	struct dev_pm_qos_request *dev_pm_qos_req = req;
-+
-+	pr_debug("OMAP PM constraints: req@0x%p, new_value=%lu\n",
-+		 req, new_value);
-+
-+	/* Look for the platform device for the constraint target device */
-+	pdev = to_platform_device(dev_pm_qos_req->dev);
-+
-+	/* Try to catch non platform devices */
-+	if (pdev->name == NULL) {
-+		pr_err("%s: Error: platform device for device %s not valid\n",
-+		       __func__, dev_name(dev_pm_qos_req->dev));
-+		return -EINVAL;
-+	}
-+
-+	/* Find the associated omap_device for dev */
-+	od = to_omap_device(pdev);
-+	if (od == NULL) {
-+		pr_err("%s: Error: no omap_device for device %s\n",
-+		       __func__, dev_name(dev_pm_qos_req->dev));
-+		return -EINVAL;
-+	}
-+
-+	/* Check that the omap_device has an unique hwmod entry */
-+	if (od->hwmods_cnt != 1) {
-+		pr_err("%s: Error: No unique hwmod for device %s\n",
-+		       __func__, dev_name(dev_pm_qos_req->dev));
-+		return -EINVAL;
-+	}
-+
-+	/* Find the primary omap_hwmod for dev */
-+	oh = od->hwmods[0];
-+
-+	pr_debug("OMAP PM constraints: req@0x%p, dev=0x%p, new_value=%lu\n",
-+		 req, dev_pm_qos_req->dev, new_value);
-+
-+	/* Apply the constraint */
-+	return omap_hwmod_set_wkup_lat_constraint(oh, dev_pm_qos_req,
-+						  new_value);
-+}
-+
-+static struct notifier_block omap2_dev_pm_qos_notifier = {
-+	.notifier_call	= omap2_dev_pm_qos_handler,
-+};
-+
-+static int __init omap2_dev_pm_qos_init(void)
-+{
-+	int ret;
-+
-+	ret = dev_pm_qos_add_global_notifier(&omap2_dev_pm_qos_notifier);
-+	WARN(ret, KERN_ERR "Cannot add global notifier for dev PM QoS\n");
-+
-+	return ret;
-+}
-+
- static int __init omap2_common_pm_init(void)
- {
- 	if (!of_have_populated_dt())
- 		omap2_init_processor_devices();
- 	omap_pm_if_init();
- 
-+	/* Register to the per-device PM QoS framework */
-+	omap2_dev_pm_qos_init();
-+
- 	return 0;
- }
- postcore_initcall(omap2_common_pm_init);
--- 
-1.7.5.4
+>
+> Kevin
+>
