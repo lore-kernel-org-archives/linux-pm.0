@@ -1,12 +1,14 @@
 From: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Subject: [RFC PATCH 0/2] thermal: Add generic cpu cooling devices
-	according to thermal framework
-Date: Tue, 13 Dec 2011 20:43:14 +0530
-Message-ID: <1323789196-4942-1-git-send-email-amit.kachhap__11552.2482469261$1323789226$gmane$org@linaro.org>
+Subject: [RFC PATCH 1/2] thermal: Add a new trip type to use
+	cooling device instance number
+Date: Tue, 13 Dec 2011 20:43:15 +0530
+Message-ID: <1323789196-4942-2-git-send-email-amit.kachhap@linaro.org>
+References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,34 +22,100 @@ To: linux-pm@lists.linux-foundation.org
 Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-PATCH 1)  [thermal: Add a new trip type to use cooling device instance number]
-This patch adds a new trip type THERMAL_TRIP_STATE_ACTIVE which passes
-cooling device instance number and may be helpful for cpufreq cooling devices
-to take the correct cooling action.
+This patch adds a new trip type THERMAL_TRIP_STATE_ACTIVE. This
+trip behaves same as THERMAL_TRIP_ACTIVE but also passes the cooling
+device instance number. This helps the cooling device registered as
+different instances to perform appropriate cooling action decision in
+the set_cur_state call back function.
 
-PATCH 2)  [thermal: Add generic cpu cooling implementation]
-This patch adds generic cpu cooling low level implementation through frequency
-clipping and cpu hotplug. In future, other cpu related cooling devices may be
-added here. An ACPI version of this already exists(drivers/acpi/processor_thermal.c).
-But this will be useful for platforms like ARM using the generic thermal interface
-along with the generic cpu cooling devices. The cooling device registration API's
-return cooling device pointers which can be easily binded with the thermal zone
-trip points.
+Also since the trip temperature's are in ascending order so some logic
+is put in place to skip the un-necessary checks.
 
+Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+---
+ Documentation/thermal/sysfs-api.txt |    4 ++--
+ drivers/thermal/thermal_sys.c       |   27 ++++++++++++++++++++++++++-
+ include/linux/thermal.h             |    1 +
+ 3 files changed, 29 insertions(+), 3 deletions(-)
 
-Amit Daniel Kachhap (2):
-  thermal: Add a new trip type to use cooling device instance number
-  thermal: Add generic cpu cooling implementation
-
- Documentation/thermal/cpu-cooling-api.txt |   52 +++++
- Documentation/thermal/sysfs-api.txt       |    4 +-
- drivers/thermal/Kconfig                   |   11 +
- drivers/thermal/Makefile                  |    1 +
- drivers/thermal/cpu_cooling.c             |  302 +++++++++++++++++++++++++++++
- drivers/thermal/thermal_sys.c             |   27 +++-
- include/linux/cpu_cooling.h               |   45 +++++
- include/linux/thermal.h                   |    1 +
- 8 files changed, 440 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/thermal/cpu-cooling-api.txt
- create mode 100644 drivers/thermal/cpu_cooling.c
- create mode 100644 include/linux/cpu_cooling.h
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index b61e46f..5c1d44e 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -184,8 +184,8 @@ trip_point_[0-*]_temp
+ 
+ trip_point_[0-*]_type
+ 	Strings which indicate the type of the trip point.
+-	E.g. it can be one of critical, hot, passive, active[0-*] for ACPI
+-	thermal zone.
++	E.g. it can be one of critical, hot, passive, active[0-1],
++	state-active[0-*] for ACPI thermal zone.
+ 	RO, Optional
+ 
+ cdev[0-*]
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index dd9a574..72b1ab3 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -192,6 +192,8 @@ trip_point_type_show(struct device *dev, struct device_attribute *attr,
+ 		return sprintf(buf, "passive\n");
+ 	case THERMAL_TRIP_ACTIVE:
+ 		return sprintf(buf, "active\n");
++	case THERMAL_TRIP_STATE_ACTIVE:
++		return sprintf(buf, "state-active\n");
+ 	default:
+ 		return sprintf(buf, "unknown\n");
+ 	}
+@@ -1035,7 +1037,7 @@ EXPORT_SYMBOL(thermal_cooling_device_unregister);
+ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ {
+ 	int count, ret = 0;
+-	long temp, trip_temp;
++	long temp, trip_temp, max_state, last_trip_change = 0;
+ 	enum thermal_trip_type trip_type;
+ 	struct thermal_cooling_device_instance *instance;
+ 	struct thermal_cooling_device *cdev;
+@@ -1086,6 +1088,29 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ 					cdev->ops->set_cur_state(cdev, 0);
+ 			}
+ 			break;
++		case THERMAL_TRIP_STATE_ACTIVE:
++			list_for_each_entry(instance, &tz->cooling_devices,
++					    node) {
++				if (instance->trip != count)
++					continue;
++
++				if (temp <= last_trip_change)
++					continue;
++
++				cdev = instance->cdev;
++				cdev->ops->get_max_state(cdev, &max_state);
++
++				if ((temp >= trip_temp) &&
++						((count + 1) <= max_state))
++					cdev->ops->set_cur_state(cdev,
++								count + 1);
++				else if ((temp < trip_temp) &&
++							(count <= max_state))
++					cdev->ops->set_cur_state(cdev, count);
++
++				last_trip_change = trip_temp;
++			}
++			break;
+ 		case THERMAL_TRIP_PASSIVE:
+ 			if (temp >= trip_temp || tz->passive)
+ 				thermal_zone_device_passive(tz, temp,
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 47b4a27..d7d0a27 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -42,6 +42,7 @@ enum thermal_trip_type {
+ 	THERMAL_TRIP_PASSIVE,
+ 	THERMAL_TRIP_HOT,
+ 	THERMAL_TRIP_CRITICAL,
++	THERMAL_TRIP_STATE_ACTIVE,
+ };
+ 
+ struct thermal_zone_device_ops {
+-- 
+1.7.1
