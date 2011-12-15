@@ -1,14 +1,14 @@
-From: jean.pihet@newoldbits.com
-Subject: [PATCH 4/6] OMAP3: cpuidle: next C-state decision
-	depends on the PM QoS MPU and CORE constraints
-Date: Wed, 14 Dec 2011 15:51:42 +0100
-Message-ID: <1323874304-5001-5-git-send-email-j-pihet__22781.389920465$1323874812$gmane$org@ti.com>
-References: <1323874304-5001-1-git-send-email-j-pihet@ti.com>
+From: Barry Song <21cnbao@gmail.com>
+Subject: Re: [PATCH v2] PM: HIBERNATION: skip the swap size check
+ if the snapshot image size is anticipative
+Date: Thu, 15 Dec 2011 16:50:07 +0800
+Message-ID: <CAGsJ_4ziRj1oEhmMYjc6yJvS2FHYn+uRWmSaggnJQQjqi=B6gw@mail.gmail.com>
+References: <1322208422-12346-1-git-send-email-Barry.Song@csr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1323874304-5001-1-git-send-email-j-pihet@ti.com>
+In-Reply-To: <1322208422-12346-1-git-send-email-Barry.Song@csr.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,212 +18,99 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Paul Walmsley <paul@pwsan.com>, magnus.damm@gmail.com, Todd Poynor <toddpoynor@google.com>
-Cc: Jean Pihet <j-pihet@ti.com>, linux-arm <linux-arm-kernel@lists.infradead.org>
+To: Barry Song <Barry.Song@csr.com>
+Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, workgroup.linux@csr.com, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Pihet <j-pihet@ti.com>
-
-The MPU latency figures for cpuidle include the MPU itself and also
-the peripherals needed for the MPU to execute instructions (e.g.
-main memory, caches, IRQ controller, MMU etc). On OMAP3 those
-peripherals belong to the MPU and CORE power domains and so the
-cpuidle C-states are a combination of MPU and CORE states.
-
-This patch implements the relation between the cpuidle and per-
-device PM QoS frameworks in the OMAP3 specific idle callbacks.
-
-The chosen C-state shall satisfy the following conditions:
- . the 'valid' field is enabled,
- . it satisfies the enable_off_mode flag,
- . the next state for MPU and CORE power domains is not lower than the
-   next state calculated by the per-device PM QoS.
-
-Tested on OMAP3 Beagleboard in RET/OFF using wake-up latency constraints
-on MPU, CORE and PER.
-
-Signed-off-by: Jean Pihet <j-pihet@ti.com>
-Reviewed-by: Kevin Hilman <khilman@ti.com>
----
- arch/arm/mach-omap2/cpuidle34xx.c |   57 ++++++++++++++++++++----------------
- arch/arm/mach-omap2/pm.h          |   17 ++++++++++-
- 2 files changed, 47 insertions(+), 27 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
-index 1f71ebb..c67835f 100644
---- a/arch/arm/mach-omap2/cpuidle34xx.c
-+++ b/arch/arm/mach-omap2/cpuidle34xx.c
-@@ -40,7 +40,7 @@
- #ifdef CONFIG_CPU_IDLE
- 
- /*
-- * The latencies/thresholds for various C states have
-+ * The MPU latencies/thresholds for various C states have
-  * to be configured from the respective board files.
-  * These are some default values (which might not provide
-  * the best power savings) used on boards which do not
-@@ -75,14 +75,14 @@ struct omap3_idle_statedata omap3_idle_data[OMAP3_NUM_STATES];
- struct powerdomain *mpu_pd, *core_pd, *per_pd, *cam_pd;
- 
- static int _cpuidle_allow_idle(struct powerdomain *pwrdm,
--				struct clockdomain *clkdm)
-+			       struct clockdomain *clkdm)
- {
- 	clkdm_allow_idle(clkdm);
- 	return 0;
- }
- 
- static int _cpuidle_deny_idle(struct powerdomain *pwrdm,
--				struct clockdomain *clkdm)
-+			      struct clockdomain *clkdm)
- {
- 	clkdm_deny_idle(clkdm);
- 	return 0;
-@@ -96,10 +96,13 @@ static int _cpuidle_deny_idle(struct powerdomain *pwrdm,
-  *
-  * Called from the CPUidle framework to program the device to the
-  * specified target state selected by the governor.
-+ *
-+ * Note: this function does not check for any pending activity or dependency
-+ * between power domains states, so the caller shall check the parameters
-+ * correctness.
-  */
- static int omap3_enter_idle(struct cpuidle_device *dev,
--				struct cpuidle_driver *drv,
--				int index)
-+			    struct cpuidle_driver *drv, int index)
- {
- 	struct omap3_idle_statedata *cx =
- 			cpuidle_get_statedata(&dev->states_usage[index]);
-@@ -174,18 +177,23 @@ return_sleep_time:
-  * to the caller. Else, this function searches for a lower c-state which is
-  * still valid (as defined in omap3_power_states[]) and returns its index.
-  *
-- * A state is valid if the 'valid' field is enabled and
-- * if it satisfies the enable_off_mode condition.
-+ * A state is valid if:
-+ * . the 'valid' field is enabled,
-+ * . it satisfies the enable_off_mode flag,
-+ * . the next state for MPU and CORE power domains is not lower than the
-+ *   state programmed by the per-device PM QoS.
-  */
- static int next_valid_state(struct cpuidle_device *dev,
--			struct cpuidle_driver *drv,
--				int index)
-+			    struct cpuidle_driver *drv, int index)
- {
- 	struct cpuidle_state_usage *curr_usage = &dev->states_usage[index];
- 	struct cpuidle_state *curr = &drv->states[index];
- 	struct omap3_idle_statedata *cx = cpuidle_get_statedata(curr_usage);
- 	u32 mpu_deepest_state = PWRDM_POWER_RET;
- 	u32 core_deepest_state = PWRDM_POWER_RET;
-+	u32 mpu_pm_qos_next_state = mpu_pd->wkup_lat_next_state;
-+	u32 core_pm_qos_next_state = core_pd->wkup_lat_next_state;
-+
- 	int next_index = -1;
- 
- 	if (enable_off_mode) {
-@@ -202,7 +210,9 @@ static int next_valid_state(struct cpuidle_device *dev,
- 	/* Check if current state is valid */
- 	if ((cx->valid) &&
- 	    (cx->mpu_state >= mpu_deepest_state) &&
--	    (cx->core_state >= core_deepest_state)) {
-+	    (cx->core_state >= core_deepest_state) &&
-+	    (cx->mpu_state >= mpu_pm_qos_next_state) &&
-+	    (cx->core_state >= core_pm_qos_next_state)) {
- 		return index;
- 	} else {
- 		int idx = OMAP3_NUM_STATES - 1;
-@@ -227,7 +237,9 @@ static int next_valid_state(struct cpuidle_device *dev,
- 			cx = cpuidle_get_statedata(&dev->states_usage[idx]);
- 			if ((cx->valid) &&
- 			    (cx->mpu_state >= mpu_deepest_state) &&
--			    (cx->core_state >= core_deepest_state)) {
-+			    (cx->core_state >= core_deepest_state) &&
-+			    (cx->mpu_state >= mpu_pm_qos_next_state) &&
-+			    (cx->core_state >= core_pm_qos_next_state)) {
- 				next_index = idx;
- 				break;
- 			}
-@@ -248,12 +260,15 @@ static int next_valid_state(struct cpuidle_device *dev,
-  * @drv: cpuidle driver
-  * @index: array index of target state to be programmed
-  *
-- * This function checks for any pending activity and then programs
-- * the device to the specified or a safer state.
-+ * Called from the CPUidle framework to program the device to the
-+ * specified target state selected by the governor.
-+ *
-+ * This function checks for any pending activity or dependency between
-+ * power domains states and then programs the device to the specified
-+ * or a safer state.
-  */
- static int omap3_enter_idle_bm(struct cpuidle_device *dev,
--				struct cpuidle_driver *drv,
--			       int index)
-+			       struct cpuidle_driver *drv, int index)
- {
- 	int new_state_idx;
- 	u32 core_next_state, per_next_state = 0, per_saved_state = 0, cam_state;
-@@ -275,19 +290,13 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
- 		goto select_state;
- 	}
- 
--	/*
--	 * FIXME: we currently manage device-specific idle states
--	 *        for PER and CORE in combination with CPU-specific
--	 *        idle states.  This is wrong, and device-specific
--	 *        idle management needs to be separated out into
--	 *        its own code.
--	 */
-+	new_state_idx = next_valid_state(dev, drv, index);
- 
- 	/*
- 	 * Prevent PER off if CORE is not in retention or off as this
- 	 * would disable PER wakeups completely.
- 	 */
--	cx = cpuidle_get_statedata(&dev->states_usage[index]);
-+	cx = cpuidle_get_statedata(&dev->states_usage[new_state_idx]);
- 	core_next_state = cx->core_state;
- 	per_next_state = per_saved_state = pwrdm_read_next_pwrst(per_pd);
- 	if ((per_next_state == PWRDM_POWER_OFF) &&
-@@ -298,8 +307,6 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
- 	if (per_next_state != per_saved_state)
- 		pwrdm_set_next_pwrst(per_pd, per_next_state);
- 
--	new_state_idx = next_valid_state(dev, drv, index);
--
- select_state:
- 	ret = omap3_enter_idle(dev, drv, new_state_idx);
- 
-diff --git a/arch/arm/mach-omap2/pm.h b/arch/arm/mach-omap2/pm.h
-index b737b11..ab32465 100644
---- a/arch/arm/mach-omap2/pm.h
-+++ b/arch/arm/mach-omap2/pm.h
-@@ -44,9 +44,22 @@ static inline int omap4_opp_init(void)
-  * omap3_pm_init_cpuidle
-  */
- struct cpuidle_params {
--	u32 exit_latency;	/* exit_latency = sleep + wake-up latencies */
-+	/*
-+	 * exit_latency = sleep + wake-up latencies of the MPU,
-+	 * which include the MPU itself and the peripherals needed
-+	 * for the MPU to execute instructions (e.g. main memory,
-+	 * caches, IRQ controller, MMU etc). Some of those peripherals
-+	 * can belong to other power domains than the MPU subsystem and so
-+	 * the corresponding latencies must be included in this figure.
-+	 */
-+	u32 exit_latency;
-+	/*
-+	 * target_residency: required amount of time in the C state
-+	 * to break even on energy cost
-+	 */
- 	u32 target_residency;
--	u8 valid;		/* validates the C-state */
-+	/* validates the C-state on the given board */
-+	u8 valid;
- };
- 
- #if defined(CONFIG_PM) && defined(CONFIG_CPU_IDLE)
--- 
-1.7.5.4
+UGF2ZWwgLFJhZmFlbCwgYW55IGZlZWRiYWNrPwotYmFycnkKCjIwMTEvMTEvMjUgQmFycnkgU29u
+ZyA8QmFycnkuU29uZ0Bjc3IuY29tPjoKPiBGcm9tOiBCYXJyeSBTb25nIDxiYW9odWEuc29uZ0Bj
+c3IuY29tPgo+Cj4gQ3VycmVudCBzd3N1c3AgcmVxdWlyZXMgc3dhcCBwYXJ0aXRpb25zIGV2ZW4g
+bGFyZ2VyIHRoYW4gcmVhbCBzYXZlZCBwYWdlcwo+IGJhc2VkIG9uIHRoZSB3b3JzdCBjb21wcmVz
+c2lvbiByYXRpbzoKPiBidXQgZm9yIGFuIGVtYmVkZGVkIHN5c3RlbSwgd2hpY2ggaGFzIGxpbWl0
+ZWQgc3RvcmFnZSBzcGFjZSwgdGhlbiBpdCBtaWdodAo+IGNhbid0IGdpdmUgdGhlIGxhcmdlIHBh
+cnRpdGlvbiB0byBzYXZlIHNuYXBzaG90Lgo+IEluIHRoZSBhbm90aGVyIHdheSwgc29tZSBlbWJl
+ZGRlZCBzeXN0ZW1zIGNhbiBkZWZpbml0ZWx5IGtub3cgdGhlIG1vc3Qgc2l6ZQo+IG5lZWRlZCBm
+b3Igc25hcHNob3Qgc2luY2UgdGhleSBydW4gc29tZSBzcGVjaWZpYyBhcHBsaWNhdGlvbiBsaXN0
+cy4KPiBTbyB0aGlzIHBhdGNoIHByb3ZpZGVzIHRoZSBwb3NzaWJpbGl0eSBmb3IgdXNlcnMgdG8g
+dGVsbCBrZXJuZWwgZXZlbgo+IHRoZSBzeXN0ZW0gaGFzIGEgbGl0dGxlIHNuYXBzaG90IHBhcnRp
+dGlvbiwgYnV0IGl0IGlzIHN0aWxsIGVub3VnaC4KPiBGb3IgZXhhbXBsZSwgaWYgdGhlIHN5c3Rl
+bSBuZWVkIHRvIHNhdmUgMTIwTUIgbWVtb3J5LCBvcmlnaW4gc3dzdXNwIHdpbGwgcmVxdWlyZQo+
+IGEgMTMwTUIgcGFydGl0aW9uIHRvIHNhdmUgc25hcHNob3QuIGJ1dCBpZiB1c2VycyBrbm93IDMw
+TUIgaXMgZW5vdWdoIGZvciB0aGVtKAo+IGNvbXByZXNzZWQgaW1hZ2Ugd2lsbCBiZSBsZXNzIHRo
+YW4gMzBNQiksIHRoZXkganVzdCBtYWtlIGEgMzBNQiBwYXJ0aXRpb24gYnkKPiBlY2hvIDAgPiAv
+c3lzL3Bvd2VyL2NoZWNrX3N3YXBfc2l6ZQo+Cj4gU2lnbmVkLW9mZi1ieTogQmFycnkgU29uZyA8
+QmFvaHVhLlNvbmdAY3NyLmNvbT4KPiBDYzogWGlhbmd6aGVuIFllIDxYaWFuZ3poZW4uWWVAY3Ny
+LmNvbT4KPiAtLS0KPiDCoC12Mjpkcm9wIHN3YXBfZW5vdWdoIGJvb3RhcmdzIGFuZCB1c2UgL3N5
+cy9wb3dlci9jaGVja19zd2FwX3NpemUgbm9kZQo+Cj4gwqBEb2N1bWVudGF0aW9uL3Bvd2VyL2lu
+dGVyZmFjZS50eHQgfCDCoCDCoDUgKysrKysKPiDCoGtlcm5lbC9wb3dlci9oaWJlcm5hdGUuYyDC
+oCDCoCDCoCDCoCDCoHwgwqAgMjIgKysrKysrKysrKysrKysrKysrKysrKwo+IMKga2VybmVsL3Bv
+d2VyL3Bvd2VyLmggwqAgwqAgwqAgwqAgwqAgwqAgwqB8IMKgIMKgMiArKwo+IMKga2VybmVsL3Bv
+d2VyL3N3YXAuYyDCoCDCoCDCoCDCoCDCoCDCoCDCoCB8IMKgIMKgOSArKysrKysrKysKPiDCoDQg
+ZmlsZXMgY2hhbmdlZCwgMzggaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKPgo+IGRpZmYg
+LS1naXQgYS9Eb2N1bWVudGF0aW9uL3Bvd2VyL2ludGVyZmFjZS50eHQgYi9Eb2N1bWVudGF0aW9u
+L3Bvd2VyL2ludGVyZmFjZS50eHQKPiBpbmRleCBjNTM3ODM0Li41ZTIwNWYwIDEwMDY0NAo+IC0t
+LSBhL0RvY3VtZW50YXRpb24vcG93ZXIvaW50ZXJmYWNlLnR4dAo+ICsrKyBiL0RvY3VtZW50YXRp
+b24vcG93ZXIvaW50ZXJmYWNlLnR4dAo+IEBAIC00Nyw2ICs0NywxMSBAQCBXcml0aW5nIHRvIHRo
+aXMgZmlsZSB3aWxsIGFjY2VwdCBvbmUgb2YKPiDCoCDCoCDCoCDCoCd0ZXN0cHJvYycKPiDCoCDC
+oCDCoCDCoCd0ZXN0Jwo+Cj4gKy9zeXMvcG93ZXIvY2hlY2tfc3dhcF9zaXplIGNvbnRyb2xzIHdo
+ZXRoZXIgd2UgY2FuIHNraXAgY2hlY2tpbmcgdGhlIHN3YXAKPiArcGFydGl0aW9uIHNpemUgYnkg
+d29yc3QgY29tcHJlc3Npb24gcmF0aW8uIElmIHVzZXJzIGtub3cgdGhlIHN3YXAgcGFydGl0aW9u
+Cj4gK2lzIGVub3VnaCBmb3IgY29tcHJlc3NlZCBzbmFwc2hvdCwgd3JpdGUgMCB0byAvc3lzL3Bv
+d2VyL2NoZWNrX3N3YXBfc2l6ZS4KPiArSXQgaXMgdXNlZnVsIGZvciBhbiBlbWJlZGRlZCBzeXN0
+ZW0gd2l0aCBrbm93biBydW5uaW5nIHNvZnR3YXJlcy4KPiArCj4gwqAvc3lzL3Bvd2VyL2ltYWdl
+X3NpemUgY29udHJvbHMgdGhlIHNpemUgb2YgdGhlIGltYWdlIGNyZWF0ZWQgYnkKPiDCoHRoZSBz
+dXNwZW5kLXRvLWRpc2sgbWVjaGFuaXNtLiDCoEl0IGNhbiBiZSB3cml0dGVuIGEgc3RyaW5nCj4g
+wqByZXByZXNlbnRpbmcgYSBub24tbmVnYXRpdmUgaW50ZWdlciB0aGF0IHdpbGwgYmUgdXNlZCBh
+cyBhbiB1cHBlcgo+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvaGliZXJuYXRlLmMgYi9rZXJu
+ZWwvcG93ZXIvaGliZXJuYXRlLmMKPiBpbmRleCAxYzUzZjdmLi41NTUyNDczIDEwMDY0NAo+IC0t
+LSBhL2tlcm5lbC9wb3dlci9oaWJlcm5hdGUuYwo+ICsrKyBiL2tlcm5lbC9wb3dlci9oaWJlcm5h
+dGUuYwo+IEBAIC0xMDI0LDExICsxMDI0LDMzIEBAIHN0YXRpYyBzc2l6ZV90IHJlc2VydmVkX3Np
+emVfc3RvcmUoc3RydWN0IGtvYmplY3QgKmtvYmosCj4KPiDCoHBvd2VyX2F0dHIocmVzZXJ2ZWRf
+c2l6ZSk7Cj4KPiArc3RhdGljIHNzaXplX3QgY2hlY2tfc3dhcF9zaXplX3Nob3coc3RydWN0IGtv
+YmplY3QgKmtvYmosIHN0cnVjdCBrb2JqX2F0dHJpYnV0ZSAqYXR0ciwKPiArIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgY2hhciAqYnVmKQo+ICt7Cj4gKyDCoCDC
+oCDCoCByZXR1cm4gc3ByaW50ZihidWYsICIlZFxuIiwgY2hlY2tfc3dhcF9zaXplKTsKPiArfQo+
+ICsKPiArc3RhdGljIHNzaXplX3QgY2hlY2tfc3dhcF9zaXplX3N0b3JlKHN0cnVjdCBrb2JqZWN0
+ICprb2JqLCBzdHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsCj4gKyDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBjb25zdCBjaGFyICpidWYsIHNpemVfdCBuKQo+
+ICt7Cj4gKyDCoCDCoCDCoCBpbnQgY2hlY2tfc2l6ZTsKPiArCj4gKyDCoCDCoCDCoCBpZiAoc3Nj
+YW5mKGJ1ZiwgIiVkIiwgJmNoZWNrX3NpemUpID09IDEpIHsKPiArIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIGNoZWNrX3N3YXBfc2l6ZSA9IGNoZWNrX3NpemU7Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCByZXR1cm4gbjsKPiArIMKgIMKgIMKgIH0KPiArCj4gKyDCoCDCoCDCoCByZXR1cm4gLUVJTlZB
+TDsKPiArfQo+ICsKPiArcG93ZXJfYXR0cihjaGVja19zd2FwX3NpemUpOwo+ICsKPiDCoHN0YXRp
+YyBzdHJ1Y3QgYXR0cmlidXRlICogZ1tdID0gewo+IMKgIMKgIMKgIMKgJmRpc2tfYXR0ci5hdHRy
+LAo+IMKgIMKgIMKgIMKgJnJlc3VtZV9hdHRyLmF0dHIsCj4gwqAgwqAgwqAgwqAmaW1hZ2Vfc2l6
+ZV9hdHRyLmF0dHIsCj4gwqAgwqAgwqAgwqAmcmVzZXJ2ZWRfc2l6ZV9hdHRyLmF0dHIsCj4gKyDC
+oCDCoCDCoCAmY2hlY2tfc3dhcF9zaXplX2F0dHIuYXR0ciwKPiDCoCDCoCDCoCDCoE5VTEwsCj4g
+wqB9Owo+Cj4gZGlmZiAtLWdpdCBhL2tlcm5lbC9wb3dlci9wb3dlci5oIGIva2VybmVsL3Bvd2Vy
+L3Bvd2VyLmgKPiBpbmRleCAyM2EyZGIxLi40ZjBmYTc4IDEwMDY0NAo+IC0tLSBhL2tlcm5lbC9w
+b3dlci9wb3dlci5oCj4gKysrIGIva2VybmVsL3Bvd2VyL3Bvd2VyLmgKPiBAQCAtNzQsNiArNzQs
+OCBAQCBzdGF0aWMgc3RydWN0IGtvYmpfYXR0cmlidXRlIF9uYW1lIyNfYXR0ciA9IHsgXAo+Cj4g
+wqAvKiBQcmVmZXJyZWQgaW1hZ2Ugc2l6ZSBpbiBieXRlcyAoZGVmYXVsdCA1MDAgTUIpICovCj4g
+wqBleHRlcm4gdW5zaWduZWQgbG9uZyBpbWFnZV9zaXplOwo+ICsvKiBJZiAwLCBza2lwIGNoZWNr
+aW5nIHdoZXRoZXIgdGhlIHN3YXAgc2l6ZSBpcyBlbm91Z2ggZm9yIGNvbXByZXNzZWQgc25hcHNo
+b3QgKi8KPiArZXh0ZXJuIGludCBjaGVja19zd2FwX3NpemU7Cj4gwqAvKiBTaXplIG9mIG1lbW9y
+eSByZXNlcnZlZCBmb3IgZHJpdmVycyAoZGVmYXVsdCBTUEFSRV9QQUdFUyB4IFBBR0VfU0laRSkg
+Ki8KPiDCoGV4dGVybiB1bnNpZ25lZCBsb25nIHJlc2VydmVkX3NpemU7Cj4gwqBleHRlcm4gaW50
+IGluX3N1c3BlbmQ7Cj4gZGlmZiAtLWdpdCBhL2tlcm5lbC9wb3dlci9zd2FwLmMgYi9rZXJuZWwv
+cG93ZXIvc3dhcC5jCj4gaW5kZXggMTFhNTk0Yy4uZGI5MDE5NSAxMDA2NDQKPiAtLS0gYS9rZXJu
+ZWwvcG93ZXIvc3dhcC5jCj4gKysrIGIva2VybmVsL3Bvd2VyL3N3YXAuYwo+IEBAIC0zNyw2ICsz
+NywxMiBAQAo+IMKgI2RlZmluZSBISUJFUk5BVEVfU0lHIMKgIlMxU1VTUEVORCIKPgo+IMKgLyoK
+PiArICogaWYgdXNlcnMga25vdyBzd2FwIHBhcnRpdGlvbnMgYXJlIGVub3VnaCBmb3IgY29tcHJl
+c3NlZCBzbmFwc2hvdHMsCj4gKyAqIGVjaG8gMCA+IC9zeXMvcG93ZXIvY2hlY2tfc3dhcF9zaXpl
+Cj4gKyAqLwo+ICtpbnQgY2hlY2tfc3dhcF9zaXplID0gMTsKPiArCj4gKy8qCj4gwqAqIMKgIMKg
+IFRoZSBzd2FwIG1hcCBpcyBhIGRhdGEgc3RydWN0dXJlIHVzZWQgZm9yIGtlZXBpbmcgdHJhY2sg
+b2YgZWFjaCBwYWdlCj4gwqAqIMKgIMKgIHdyaXR0ZW4gdG8gYSBzd2FwIHBhcnRpdGlvbi4gwqBJ
+dCBjb25zaXN0cyBvZiBtYW55IHN3YXBfbWFwX3BhZ2UKPiDCoCogwqAgwqAgc3RydWN0dXJlcyB0
+aGF0IGNvbnRhaW4gZWFjaCBhbiBhcnJheSBvZiBNQVBfUEFHRV9FTlRSSUVTIHN3YXAgZW50cmll
+cy4KPiBAQCAtNzcyLDYgKzc3OCw5IEBAIHN0YXRpYyBpbnQgZW5vdWdoX3N3YXAodW5zaWduZWQg
+aW50IG5yX3BhZ2VzLCB1bnNpZ25lZCBpbnQgZmxhZ3MpCj4gwqAgwqAgwqAgwqB1bnNpZ25lZCBp
+bnQgZnJlZV9zd2FwID0gY291bnRfc3dhcF9wYWdlcyhyb290X3N3YXAsIDEpOwo+IMKgIMKgIMKg
+IMKgdW5zaWduZWQgaW50IHJlcXVpcmVkOwo+Cj4gKyDCoCDCoCDCoCBpZiAoIWNoZWNrX3N3YXBf
+c2l6ZSkKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHJldHVybiAxOwo+ICsKPiDCoCDCoCDCoCDC
+oHByX2RlYnVnKCJQTTogRnJlZSBzd2FwIHBhZ2VzOiAldVxuIiwgZnJlZV9zd2FwKTsKPgo+IMKg
+IMKgIMKgIMKgcmVxdWlyZWQgPSBQQUdFU19GT1JfSU8gKyAoKGZsYWdzICYgU0ZfTk9DT01QUkVT
+U19NT0RFKSA/Cj4gLS0KPiAxLjcuMQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgt
+Zm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eGZvdW5kYXRpb24ub3JnL21haWxtYW4v
+bGlzdGluZm8vbGludXgtcG0=
