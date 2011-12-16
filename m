@@ -1,7 +1,7 @@
 From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 7/7] xen: Utilize the restore_msi_irqs hook.
-Date: Fri, 16 Dec 2011 17:38:19 -0500
-Message-ID: <1324075099-11397-8-git-send-email-konrad.wilk@oracle.com>
+Subject: [PATCH 2/7] tboot: Add return values for tboot_sleep
+Date: Fri, 16 Dec 2011 17:38:14 -0500
+Message-ID: <1324075099-11397-3-git-send-email-konrad.wilk@oracle.com>
 References: <1324075099-11397-1-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,80 +21,64 @@ To: linux-kernel@vger.kernel.org, rjw@sisk.pl, x86@kernel.org, len.brown@intel.c
 Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, hpa@zytor.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Tang Liang <liang.tang@oracle.com>
+. as appropiately. As tboot_sleep now returns values.
+remove tboot_sleep_wrapper.
 
-to make a hypercall to restore the vectors in the MSI/MSI-X
-configuration space.
-
-Signed-off-by: Tang Liang <liang.tang@oracle.com>
+Suggested-by: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Joseph Cihula <joseph.cihula@intel.com>
+[v1: Return -1/0/+1 instead of ACPI_xx values]
 Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
- arch/x86/pci/xen.c              |   27 +++++++++++++++++++++++++++
- include/xen/interface/physdev.h |    7 +++++++
- 2 files changed, 34 insertions(+), 0 deletions(-)
+ arch/x86/kernel/tboot.c |   13 ++++---------
+ 1 files changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index 492ade8..249a5ae 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -324,6 +324,32 @@ static int xen_initdom_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- out:
- 	return ret;
+diff --git a/arch/x86/kernel/tboot.c b/arch/x86/kernel/tboot.c
+index 1a4ab7d..6410744 100644
+--- a/arch/x86/kernel/tboot.c
++++ b/arch/x86/kernel/tboot.c
+@@ -272,7 +272,7 @@ static void tboot_copy_fadt(const struct acpi_table_fadt *fadt)
+ 		offsetof(struct acpi_table_facs, firmware_waking_vector);
  }
-+
-+static void xen_initdom_restore_msi_irqs(struct pci_dev *dev, int irq)
-+{
-+	int ret = 0;
-+
-+	if (pci_seg_supported) {
-+		struct physdev_pci_device restore_ext;
-+
-+		restore_ext.seg = pci_domain_nr(dev->bus);
-+		restore_ext.bus = dev->bus->number;
-+		restore_ext.devfn = dev->devfn;
-+		ret = HYPERVISOR_physdev_op(PHYSDEVOP_restore_msi_ext,
-+					&restore_ext);
-+		if (ret == -ENOSYS)
-+			pci_seg_supported = false;
-+		WARN(ret && ret != -ENOSYS, "restore_msi_ext -> %d\n", ret);
-+	}
-+	if (!pci_seg_supported) {
-+		struct physdev_restore_msi restore;
-+
-+		restore.bus = dev->bus->number;
-+		restore.devfn = dev->devfn;
-+		ret = HYPERVISOR_physdev_op(PHYSDEVOP_restore_msi, &restore);
-+		WARN(ret && ret != -ENOSYS, "restore_msi -> %d\n", ret);
-+	}
-+}
- #endif
  
- static void xen_teardown_msi_irqs(struct pci_dev *dev)
-@@ -446,6 +472,7 @@ int __init pci_xen_initial_domain(void)
- #ifdef CONFIG_PCI_MSI
- 	x86_msi.setup_msi_irqs = xen_initdom_setup_msi_irqs;
- 	x86_msi.teardown_msi_irq = xen_teardown_msi_irq;
-+	x86_msi.restore_msi_irqs = xen_initdom_restore_msi_irqs;
- #endif
- 	xen_setup_acpi_sci();
- 	__acpi_register_gsi = acpi_register_gsi_xen;
-diff --git a/include/xen/interface/physdev.h b/include/xen/interface/physdev.h
-index c1080d9..0c28989 100644
---- a/include/xen/interface/physdev.h
-+++ b/include/xen/interface/physdev.h
-@@ -145,6 +145,13 @@ struct physdev_manage_pci {
- 	uint8_t devfn;
- };
+-void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
++static int tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
+ {
+ 	static u32 acpi_shutdown_map[ACPI_S_STATE_COUNT] = {
+ 		/* S0,1,2: */ -1, -1, -1,
+@@ -281,7 +281,7 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
+ 		/* S5: */ TB_SHUTDOWN_S5 };
  
-+#define PHYSDEVOP_restore_msi            19
-+struct physdev_restore_msi {
-+	/* IN */
-+	uint8_t bus;
-+	uint8_t devfn;
-+};
-+
- #define PHYSDEVOP_manage_pci_add_ext	20
- struct physdev_manage_pci_ext {
- 	/* IN */
+ 	if (!tboot_enabled())
+-		return;
++		return 0;
+ 
+ 	tboot_copy_fadt(&acpi_gbl_FADT);
+ 	tboot->acpi_sinfo.pm1a_cnt_val = pm1a_control;
+@@ -292,15 +292,10 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
+ 	if (sleep_state >= ACPI_S_STATE_COUNT ||
+ 	    acpi_shutdown_map[sleep_state] == -1) {
+ 		pr_warning("unsupported sleep state 0x%x\n", sleep_state);
+-		return;
++		return -1;
+ 	}
+ 
+ 	tboot_shutdown(acpi_shutdown_map[sleep_state]);
+-}
+-static int tboot_sleep_wrapper(u8 sleep_state, u32 pm1a_control,
+-			       u32 pm1b_control)
+-{
+-	tboot_sleep(sleep_state, pm1a_control, pm1b_control);
+ 	return 0;
+ }
+ 
+@@ -352,7 +347,7 @@ static __init int tboot_late_init(void)
+ 	atomic_set(&ap_wfs_count, 0);
+ 	register_hotcpu_notifier(&tboot_cpu_notifier);
+ 
+-	acpi_os_set_prepare_sleep(&tboot_sleep_wrapper);
++	acpi_os_set_prepare_sleep(&tboot_sleep);
+ 	return 0;
+ }
+ 
 -- 
 1.7.7.4
