@@ -1,15 +1,13 @@
-From: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH v2] ahci: platform support for suspend/resume
-Date: Thu, 15 Dec 2011 14:18:21 -0500
-Message-ID: <4EEA47FD.4050407__35879.8451642089$1323976717$gmane$org@pobox.com>
-References: <1321643410-16102-1-git-send-email-computersforpeace@gmail.com>
-	<20111118192809.GF11736@legolas.emea.dhcp.ti.com>
-	<CAN8TOE-yZyHC3n+dSu9wZ=UBmenD67OHbAyrF2K_sgf0O7oUJA@mail.gmail.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 1/4] cpupower: Add cpupower-idle-info manpage
+Date: Fri, 16 Dec 2011 15:35:51 +0100
+Message-ID: <1324046154-64824-2-git-send-email-trenn__2199.7423297309$1324046179$gmane$org@suse.de>
+References: <1324046154-64824-1-git-send-email-trenn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAN8TOE-yZyHC3n+dSu9wZ=UBmenD67OHbAyrF2K_sgf0O7oUJA@mail.gmail.com>
+In-Reply-To: <1324046154-64824-1-git-send-email-trenn@suse.de>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,25 +17,122 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Brian Norris <computersforpeace@gmail.com>
-Cc: Lin Ming <ming.m.lin@intel.com>, Linux Kernel <linux-kernel@vger.kernel.org>, balbi@ti.com, linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux-pm@lists.linux-foundation.org, Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linux@dominikbrodowski.net
+Cc: cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12/15/2011 01:13 PM, Brian Norris wrote:
-> On Fri, Nov 18, 2011 at 11:28 AM, Felipe Balbi<balbi@ti.com>  wrote:
->> On Fri, Nov 18, 2011 at 11:10:10AM -0800, Brian Norris wrote:
->>> Add platform hooks for custom suspend() and resume() functions. The
->>> generic suspend/resume code in drivers/ata/ahci_platform.c is adapted
->>> from the PCI version in drivers/ata/ahci.c.
->>>
->>> Signed-off-by: Brian Norris<computersforpeace@gmail.com>
->>
->> Reviewed-by: Felipe Balbi<balbi@ti.com>
->
-> Thanks for the review, Felipe.
->
-> What's the status on this? There have been no comments for almost a
-> month. Can it be merged?
+The last missing manpage for cpupower tools.
 
-The previous version was queued, but did not apply to upstream (I 
-emailed a comment at the time).  Hopefully this one works...
+More info about other architecture's sleep state specialities would be great.
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+CC: linux-arm-kernel@lists.infradead.org
+CC: jean.pihet@newoldbits.com
+CC: linux-omap@vger.kernel.org
+CC: linux-pm@lists.linux-foundation.org
+CC: linux-acpi@vger.kernel.org
+CC: cpufreq@vger.kernel.org
+CC: linux@dominikbrodowski.net
+---
+ tools/power/cpupower/man/cpupower-idle-info.1 |   90 +++++++++++++++++++++++++
+ 1 files changed, 90 insertions(+), 0 deletions(-)
+ create mode 100644 tools/power/cpupower/man/cpupower-idle-info.1
+
+diff --git a/tools/power/cpupower/man/cpupower-idle-info.1 b/tools/power/cpupower/man/cpupower-idle-info.1
+new file mode 100644
+index 0000000..4178eff
+--- /dev/null
++++ b/tools/power/cpupower/man/cpupower-idle-info.1
+@@ -0,0 +1,90 @@
++.TH "CPUPOWER-IDLE-INFO" "1" "0.1" "" "cpupower Manual"
++.SH "NAME"
++.LP
++cpupower idle\-info \- Utility to retrieve cpu idle kernel information
++.SH "SYNTAX"
++.LP
++cpupower [ \-c cpulist ] idle\-info [\fIoptions\fP]
++.SH "DESCRIPTION"
++.LP
++A tool which prints out per cpu idle information helpful to developers and interested users.
++.SH "OPTIONS"
++.LP
++.TP
++\fB\-f\fR \fB\-\-silent\fR
++Only print a summary of all available C-states in the system.
++.TP
++\fB\-e\fR \fB\-\-proc\fR
++deprecated.
++Prints out idle information in old /proc/acpi/processor/*/power format. This
++interface has been removed from the kernel for quite some time, do not let
++further code depend on this option, best do not use it.
++
++.SH IDLE\-INFO DESCRIPTIONS
++CPU sleep state statistics and descriptions are retrieved from sysfs files,
++exported by the cpuidle kernel subsystem. The kernel only updates these
++statistics when it enters or leaves an idle state, therefore on a very idle or
++a very busy system, these statistics may not be accurate. They still provide a
++good overview about the usage and availability of processor sleep states on
++the platform.
++
++Be aware that the sleep states as exported by the hardware or BIOS and used by
++the Linux kernel may not exactly reflect the capabilities of the
++processor. This often is the case on the X86 architecture when the acpi_idle
++driver is used. It is also possible that the hardware overrules the kernel
++requests, due to internal activity monitors or other reasons.
++On recent X86 platforms it is often possible to read out hardware registers
++which monitor the duration of sleep states the processor resided in. The
++cpupower monitor tool (cpupower\-monitor(1)) can be used to show real sleep
++state residencies. Please refer to the architecture specific description
++section below.
++
++.SH IDLE\-INFO ARCHITECTURE SPECIFIC DESCRIPTIONS
++.SS "X86"
++POLL idle state
++
++If cpuidle is active, X86 platforms have one special idle state.
++The POLL idle state is not a real idle state, it does not save any
++power. Instead, a busy\-loop is executed doing nothing for a short period of
++time. This state is used if the kernel knows that work has to be processed
++very soon and entering any real hardware idle state may result in a slight
++performance penalty.
++
++There exist two different cpuidle drivers on the X86 architecture platform:
++
++"acpi_idle" cpuidle driver
++
++The acpi_idle cpuidle driver retrieves available sleep states (C\-states) from
++the ACPI BIOS tables (from the _CST ACPI function on recent platforms or from
++the FADT BIOS table on older ones).
++The C1 state is not retrieved from ACPI tables. If the C1 state is entered,
++the kernel will call the hlt instruction (or mwait on Intel).
++
++"intel_idle" cpuidle driver
++
++In kernel 2.6.36 the intel_idle driver was introduced.
++It only serves recent Intel CPUs (Nehalem, Westmere, Sandybridge, Atoms or
++newer). On older Intel CPUs the acpi_idle driver is still used (if the BIOS
++provides C\-state ACPI tables).
++The intel_idle driver knows the sleep state capabilities of the processor and
++ignores ACPI BIOS exported processor sleep states tables.
++
++.SH "REMARKS"
++.LP
++By default only values of core zero are displayed. How to display settings of
++other cores is described in the cpupower(1) manpage in the \-\-cpu option
++section.
++.SH REFERENCES
++http://www.acpi.info/spec.htm
++.SH "FILES"
++.nf
++\fI/sys/devices/system/cpu/cpu*/cpuidle/state*\fP
++\fI/sys/devices/system/cpu/cpuidle/*\fP
++.fi
++.SH "AUTHORS"
++.nf
++Thomas Renninger <trenn@suse.de>
++.fi
++.SH "SEE ALSO"
++.LP
++cpupower(1), cpupower\-monitor(1), cpupower\-info(1), cpupower\-set(1)
+-- 
+1.7.6.1
