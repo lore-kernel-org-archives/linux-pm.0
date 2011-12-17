@@ -1,14 +1,15 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: [PATCH 6/7] x86: Expand the x86_msi_ops to have a
-	restore MSIs.
-Date: Fri, 16 Dec 2011 17:38:18 -0500
-Message-ID: <1324075099-11397-7-git-send-email-konrad.wilk@oracle.com>
-References: <1324075099-11397-1-git-send-email-konrad.wilk@oracle.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 1/4] cpupower: Add cpupower-idle-info manpage
+Date: Sat, 17 Dec 2011 10:21:57 +0100
+Message-ID: <201112171021.58492.trenn@suse.de>
+References: <1324046154-64824-1-git-send-email-trenn@suse.de>
+	<1324046154-64824-2-git-send-email-trenn@suse.de>
+	<CAORVsuVrm+dWGgs-taatnUMZsYvYg_tdx1=7ekWp0qM+25DorQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1324075099-11397-1-git-send-email-konrad.wilk@oracle.com>
+In-Reply-To: <CAORVsuVrm+dWGgs-taatnUMZsYvYg_tdx1=7ekWp0qM+25DorQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,136 +19,47 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, rjw@sisk.pl, x86@kernel.org, len.brown@intel.com, joseph.cihula@intel.com, linux-pm@lists.linux-foundation.org, tboot-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org, liang.tang@oracle.com
-Cc: linux-pci@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, hpa@zytor.com
+To: Jean Pihet <jean.pihet@newoldbits.com>
+Cc: cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, linux@dominikbrodowski.net, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The MSI restore function will become a function pointer in an
-x86_msi_ops struct. It defaults to the implementation in the
-io_apic.c and msi.c. We piggyback on the indirection mechanism
-introduced by "x86: Introduce x86_msi_ops".
+On Friday 16 December 2011 17:18:37 Jean Pihet wrote:
+> Hi Thomas,
+> 
+> On Fri, Dec 16, 2011 at 3:35 PM, Thomas Renninger <trenn@suse.de> wrote:
+> > The last missing manpage for cpupower tools.
+> Great!
+> 
+> > More info about other architecture's sleep state specialities would be great.
+> I wonder if it is the right place for some arch specific information
+> about the sleep states.
+> 
+> I propose to document this in a more generic doc file (e.g.
+> Documentation/arm/OMAP/omap_pm) and link it from the manpage.
+Duplicating info at different places increases needed maintenance.
+Mabye above should be more about the kernel implementation details
+and the manpage should more include the bits a typical user
+wants to know?
 
-Cc: x86@kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-pci@vger.kernel.org
-Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
----
- arch/x86/include/asm/pci.h      |    9 +++++++++
- arch/x86/include/asm/x86_init.h |    1 +
- arch/x86/kernel/x86_init.c      |    1 +
- drivers/pci/msi.c               |   29 +++++++++++++++++++++++++++--
- 4 files changed, 38 insertions(+), 2 deletions(-)
+> What do you think?
+The POLL state is a bit confusing on X86 cpupower idle-info output.
+Also on X86 the CPU may decide to use other states than the kernel
+requested and the cpupower monitor tool should get used to see them.
+This directly affects the output/usage of the tool and to understand it,
+it should be documented in the manpage.
 
-diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-index d498943..df75d07 100644
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -112,19 +112,28 @@ static inline void x86_teardown_msi_irq(unsigned int irq)
- {
- 	x86_msi.teardown_msi_irq(irq);
- }
-+static inline void x86_restore_msi_irqs(struct pci_dev *dev, int irq)
-+{
-+	x86_msi.restore_msi_irqs(dev, irq);
-+}
- #define arch_setup_msi_irqs x86_setup_msi_irqs
- #define arch_teardown_msi_irqs x86_teardown_msi_irqs
- #define arch_teardown_msi_irq x86_teardown_msi_irq
-+#define arch_restore_msi_irqs x86_restore_msi_irqs
- /* implemented in arch/x86/kernel/apic/io_apic. */
- int native_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
- void native_teardown_msi_irq(unsigned int irq);
-+void native_restore_msi_irqs(struct pci_dev *dev, int irq);
- /* default to the implementation in drivers/lib/msi.c */
- #define HAVE_DEFAULT_MSI_TEARDOWN_IRQS
-+#define HAVE_DEFAULT_MSI_RESTORE_IRQS
- void default_teardown_msi_irqs(struct pci_dev *dev);
-+void default_restore_msi_irqs(struct pci_dev *dev, int irq);
- #else
- #define native_setup_msi_irqs		NULL
- #define native_teardown_msi_irq		NULL
- #define default_teardown_msi_irqs	NULL
-+#define default_restore_msi_irqs	NULL
- #endif
- 
- #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
-diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
-index 1971e65..cd52084 100644
---- a/arch/x86/include/asm/x86_init.h
-+++ b/arch/x86/include/asm/x86_init.h
-@@ -177,6 +177,7 @@ struct x86_msi_ops {
- 	int (*setup_msi_irqs)(struct pci_dev *dev, int nvec, int type);
- 	void (*teardown_msi_irq)(unsigned int irq);
- 	void (*teardown_msi_irqs)(struct pci_dev *dev);
-+	void (*restore_msi_irqs)(struct pci_dev *dev, int irq);
- };
- 
- extern struct x86_init_ops x86_init;
-diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
-index c1d6cd5..83b05ad 100644
---- a/arch/x86/kernel/x86_init.c
-+++ b/arch/x86/kernel/x86_init.c
-@@ -114,4 +114,5 @@ struct x86_msi_ops x86_msi = {
- 	.setup_msi_irqs = native_setup_msi_irqs,
- 	.teardown_msi_irq = native_teardown_msi_irq,
- 	.teardown_msi_irqs = default_teardown_msi_irqs,
-+	.restore_msi_irqs = default_restore_msi_irqs,
- };
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 0e6d04d..ba2ea4e 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -86,6 +86,31 @@ void default_teardown_msi_irqs(struct pci_dev *dev)
- }
- #endif
- 
-+#ifndef arch_restore_msi_irqs
-+# define arch_restore_msi_irqs default_restore_msi_irqs
-+# define HAVE_DEFAULT_MSI_RESTORE_IRQS
-+#endif
-+
-+#ifdef HAVE_DEFAULT_MSI_RESTORE_IRQS
-+void default_restore_msi_irqs(struct pci_dev *dev, int irq)
-+{
-+	struct msi_desc *entry;
-+
-+	entry = NULL;
-+	if (dev->msix_enabled) {
-+		list_for_each_entry(entry, &dev->msi_list, list) {
-+			if (irq == entry->irq)
-+				break;
-+		}
-+	} else if (dev->msi_enabled)  {
-+		entry = irq_get_msi_desc(irq);
-+	}
-+
-+	if (entry)
-+		write_msi_msg(irq, &entry->msg);
-+}
-+#endif
-+
- static void msi_set_enable(struct pci_dev *dev, int pos, int enable)
- {
- 	u16 control;
-@@ -360,7 +385,7 @@ static void __pci_restore_msi_state(struct pci_dev *dev)
- 
- 	pci_intx_for_msi(dev, 0);
- 	msi_set_enable(dev, pos, 0);
--	write_msi_msg(dev->irq, &entry->msg);
-+	arch_restore_msi_irqs(dev, dev->irq);
- 
- 	pci_read_config_word(dev, pos + PCI_MSI_FLAGS, &control);
- 	msi_mask_irq(entry, msi_capable_mask(control), entry->masked);
-@@ -388,7 +413,7 @@ static void __pci_restore_msix_state(struct pci_dev *dev)
- 	pci_write_config_word(dev, pos + PCI_MSIX_FLAGS, control);
- 
- 	list_for_each_entry(entry, &dev->msi_list, list) {
--		write_msi_msg(entry->irq, &entry->msg);
-+		arch_restore_msi_irqs(dev, entry->irq);
- 		msix_mask_irq(entry, entry->masked);
- 	}
- 
--- 
-1.7.7.4
+IMO it's not bad to have a somewhat bigger manpage here.
+Especially on ARM, also the "ordinary" user wants to know
+about how/whether the cpu power functionalities work as expected
+without the need of looking at the kernel sources.
+
+For now I could only try out cpupower on an ARM platform
+with cpufreq support.
+Would be great if someone could give cpupower idle-info
+a try on such a machine.
+Think of a typical user, not a kernel hacker and what he needs to
+know to interpret and understand the output.
+Maybe it's self-explanatory already, maybe the one or other arch
+specific bit should get explained?
+
+   Thomas
