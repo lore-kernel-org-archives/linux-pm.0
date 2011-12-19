@@ -1,15 +1,14 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 1/4] cpupower: Add cpupower-idle-info manpage
-Date: Sat, 17 Dec 2011 10:21:57 +0100
-Message-ID: <201112171021.58492.trenn@suse.de>
-References: <1324046154-64824-1-git-send-email-trenn@suse.de>
-	<1324046154-64824-2-git-send-email-trenn@suse.de>
-	<CAORVsuVrm+dWGgs-taatnUMZsYvYg_tdx1=7ekWp0qM+25DorQ@mail.gmail.com>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: [PATCH v6 0/6] PM QoS: implement the OMAP low level
+ constraints management code
+Date: Mon, 19 Dec 2011 14:02:00 -0700 (MST)
+Message-ID: <alpine.DEB.2.00.1112191337420.12660__48536.9302485653$1324328933$gmane$org@utopia.booyaka.com>
+References: <1323874304-5001-1-git-send-email-j-pihet@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAORVsuVrm+dWGgs-taatnUMZsYvYg_tdx1=7ekWp0qM+25DorQ@mail.gmail.com>
+In-Reply-To: <1323874304-5001-1-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,47 +18,72 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Jean Pihet <jean.pihet@newoldbits.com>
-Cc: cpufreq@vger.kernel.org, linux-acpi@vger.kernel.org, linux@dominikbrodowski.net, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: jean.pihet@newoldbits.com
+Cc: Kevin Hilman <khilman@ti.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, Jean Pihet <j-pihet@ti.com>, linux-arm <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 16 December 2011 17:18:37 Jean Pihet wrote:
-> Hi Thomas,
+Hi Jean
+
+I'm really sorry it's taken me so long to do detailed review of these 
+patches for merging... anyway -
+
+On Wed, 14 Dec 2011, jean.pihet@newoldbits.com wrote:
+
+> From: Jean Pihet <j-pihet@ti.com>
 > 
-> On Fri, Dec 16, 2011 at 3:35 PM, Thomas Renninger <trenn@suse.de> wrote:
-> > The last missing manpage for cpupower tools.
-> Great!
-> 
-> > More info about other architecture's sleep state specialities would be great.
-> I wonder if it is the right place for some arch specific information
-> about the sleep states.
-> 
-> I propose to document this in a more generic doc file (e.g.
-> Documentation/arm/OMAP/omap_pm) and link it from the manpage.
-Duplicating info at different places increases needed maintenance.
-Mabye above should be more about the kernel implementation details
-and the manpage should more include the bits a typical user
-wants to know?
+> . Implement the devices wake-up latency constraints using the global
+>   device PM QoS notification handler which applies the constraints to the
+>   underlying layer
+> . Implement the low level code which controls the power domains next power
+>   states, through the hwmod and pwrdm layers
+> . Add cpuidle and power domains wake-up latency figures for OMAP3, cf. 
+>   comments in the code and [1] for the details on where the numbers
+>   are magically coming from
+> . Implement the relation between the cpuidle and per-device PM QoS frameworks
+>   in the OMAP3 specific idle callbacks.
+>   The chosen C-state shall satisfy the following conditions:
+>    . the 'valid' field is enabled,
+>    . it satisfies the enable_off_mode flag,
+>    . the next state for MPU and CORE power domains is not lower than the
+>      state programmed by the per-device PM QoS.
 
-> What do you think?
-The POLL state is a bit confusing on X86 cpupower idle-info output.
-Also on X86 the CPU may decide to use other states than the kernel
-requested and the cpupower monitor tool should get used to see them.
-This directly affects the output/usage of the tool and to understand it,
-it should be documented in the manpage.
+I've been reviewing these closely.  It looks to me that are some issues 
+that need to be resolved before all of them are mergeable.
 
-IMO it's not bad to have a somewhat bigger manpage here.
-Especially on ARM, also the "ordinary" user wants to know
-about how/whether the cpu power functionalities work as expected
-without the need of looking at the kernel sources.
+One issue that I noticed in this series is that there are some locking 
+issues in patch 1.  It looks to me that calls to 
+_pwrdm_wakeuplat_update_pwrst() can race with each other, since it's 
+called outside the lock?
 
-For now I could only try out cpupower on an ARM platform
-with cpufreq support.
-Would be great if someone could give cpupower idle-info
-a try on such a machine.
-Think of a typical user, not a kernel hacker and what he needs to
-know to interpret and understand the output.
-Maybe it's self-explanatory already, maybe the one or other arch
-specific bit should get explained?
+Another issue is with the latency data, which we've discussed previously. 
+Before we merge the latency data in mainline, we need to ensure that we've 
+minimized the dependency of that data on other register settings, such as 
+the AUTOEXTCLKMODE bits or the external high-frequency oscillator 
+stabilization time.  Otherwise any board vendor that ships devices based 
+on that data will need to redo it, which we'd like to avoid.  I'll comment 
+more on this in replies to those data patches.
 
-   Thomas
+But there is a more fundamental issue that we need to deal with before we 
+should merge the low-level powerdomain portion of your patches -- an issue 
+that isn't directly related to your code.  We should first switch over to 
+use functional powerstates throughout our PM code.  Right now, we have 
+some code that tweaks powerdomain bits directly, and some code that calls 
+omap_set_pwrdm_state().  We should get rid of the former, I think, so that 
+there is one single code path that directly changes the low-level 
+powerdomain bits.  Otherwise I think we run the risk of having one of our 
+code paths lose track of what the powerdomain settings are -- and that way 
+lies madness...
+
+Anyway, I've got some experimental code to do this, but since it touches a 
+lot of our existing PM code, I'd like to have Kevin's review, testing, and 
+approval of it.  (And yours too, ideally ;-)  So what I'd like to do is to 
+repost your series with some changes, and with the functional powerstate 
+portion sorted out first.  Would you be able to help test those for 3.4?
+
+In the meantime, it looks to me like two of your patches are good to go in 
+the short term, with some tweaks - the omap_hwmod changes and the 
+dev_pm_qos callback changes.  I'll repost those shortly and queue them up 
+for whenever Tony wants to pull them.
+
+
+- Paul
