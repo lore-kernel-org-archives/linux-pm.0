@@ -1,16 +1,12 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [PATCH 0/3] coupled cpuidle state support
-Date: Wed, 21 Dec 2011 01:55:13 -0800
-Message-ID: <CAMbhsRSNTUvou9Gf6T4Ggq=jfxsWUcn7M2yNsKQz6aNrt6gLDg__11936.2241741785$1324461328$gmane$org@mail.gmail.com>
-References: <1324426147-16735-1-git-send-email-ccross@android.com>
-	<4EF1A0B4.5080307@linux.intel.com>
-	<CAMbhsRRP7s9xsHqxhb=iMfHAJFcqAea-6CDORZS34RCPNo+UWw@mail.gmail.com>
-	<4EF1AA8A.8060304@linux.intel.com>
+From: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+Subject: [RFC PATCH 0/3] thermal: exynos: Add kernel thermal
+	support for exynos platform
+Date: Wed, 21 Dec 2011 17:29:55 +0530
+Message-ID: <1324468798-20423-1-git-send-email-amit.kachhap__26349.4339808405$1324468863$gmane$org@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4EF1AA8A.8060304@linux.intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,40 +16,54 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-tegra@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org
+Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 21, 2011 at 1:44 AM, Arjan van de Ven <arjan@linux.intel.com> w=
-rote:
-> On 12/21/2011 10:40 AM, Colin Cross wrote:
->
->>> this smells fundamentally racey to me; you can get an interrupt one
->>> cycle after you think you're done, but before the last guy enters WFI...
->>>
->>> how do you solve that issue ?
->>
->> All the cpus have interrupts off when they increment the counter, so
->> they cannot receive an interrupt. =A0If an interrupt is pending on one
->> of those cpus, it will be handled later when WFI aborts due to the
->> pending interrupt.
->
-> ... but this leads to cases where you're aborting before other cpus are
-> entering..... so your "last guy in" doesn't really work, since while cpu
-> 0 thinks it's the last guy, cpu 1 is already on the way out/out
-> already... =A0(heck it might already be going back to sleep if your idle
-> code can run fast, like in the size of a cache miss)
+All the patchset based on Kernel version 3.2-rc6 and uses the cpufreq
+cooling registration api's implemented in earlier patchset 
+http://www.spinics.net/lists/linux-pm/msg26500.html
 
-Once a cpu has incremented the counter, it has no way out unless either
-1: another cpu (that hasn't incremented the counter yet) receives an
-interrupt, aborts idle, and clears its idle flag
-or
-2: all cpus enter the ready counter, and call the cpuidle driver's
-enter function.
+The code added in this patchset adds a thermal interface layer for samsung
+exynos platforms. This layer is registered from the hwmon based temperature
+sensor and recieves/monitor the temperature from the sensor and informs the
+generic thermal layer to take the necessary cooling action. Currently this
+layer can be used to create only one thermal zone and hence only one
+temperature sensor can register.
 
-In your example, cpu 1 has incremented the counter, so it cannot be on
-the way out unless cpu 0 aborts (in which case it will not increment
-the counter, and the counter will never be equal to the number of
-cpus), or unless cpu 0 turns off its interrupts and incrementes the
-counter (in which case neither cpu can return until after the cpuidle
-driver's enter function has been called on all cpus).
+Some modifications are done in the temperature sensor driver to export the
+information needed for the thermal interface to register with the core linux
+thermal framework and with the cpu frequency based cooling devices.
+
+A simple data/control flow diagrams to illustrate this,
+
+Core Linux thermal <------->  Exynos thermal  <-------- Temperature Sensor
+	  |                             |
+	 \|/                            |
+  Cpufreq cooling device <-----
+
+Amit Daniel Kachhap (3):
+  thermal: exynos: Add thermal interface support for linux thermal
+    layer
+  thermal: exynos4: Register the tmu sensor with the thermal interface
+    layer
+  ARM: exynos4: Add thermal sensor driver platform device support
+
+ arch/arm/mach-exynos/Kconfig              |   12 ++
+ arch/arm/mach-exynos/Makefile             |    1 +
+ arch/arm/mach-exynos/clock.c              |    4 +
+ arch/arm/mach-exynos/dev-tmu.c            |   64 +++++++
+ arch/arm/mach-exynos/include/mach/irqs.h  |    2 +
+ arch/arm/mach-exynos/include/mach/map.h   |    1 +
+ arch/arm/mach-exynos/mach-origen.c        |    1 +
+ arch/arm/plat-samsung/include/plat/devs.h |    1 +
+ drivers/hwmon/exynos4_tmu.c               |   34 ++++-
+ drivers/thermal/Kconfig                   |    8 +
+ drivers/thermal/Makefile                  |    1 +
+ drivers/thermal/exynos_thermal.c          |  255 +++++++++++++++++++++++++++++
+ include/linux/exynos_thermal.h            |   59 +++++++
+ include/linux/platform_data/exynos4_tmu.h |    7 +
+ 14 files changed, 447 insertions(+), 3 deletions(-)
+ create mode 100644 arch/arm/mach-exynos/dev-tmu.c
+ create mode 100644 drivers/thermal/exynos_thermal.c
+ create mode 100644 include/linux/exynos_thermal.h
