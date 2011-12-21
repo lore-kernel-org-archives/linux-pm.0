@@ -1,14 +1,15 @@
-From: Colin Cross <ccross@android.com>
-Subject: [PATCH 3/3] cpuidle: add support for states that affect
-	multiple cpus
-Date: Tue, 20 Dec 2011 16:09:07 -0800
-Message-ID: <1324426147-16735-4-git-send-email-ccross__45261.5997674458$1324426545$gmane$org@android.com>
-References: <1324426147-16735-1-git-send-email-ccross@android.com>
+From: Amit Kachhap <amit.kachhap@linaro.org>
+Subject: Re: [RFC PATCH 1/2] thermal: Add a new trip type to use
+ cooling device instance number
+Date: Wed, 21 Dec 2011 10:38:43 +0530
+Message-ID: <CAK44p232PbvGRXKB7_3TYn0Q3iqgRJg6Qv81W_EwXCHL+79baA@mail.gmail.com>
+References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
+	<1323789196-4942-2-git-send-email-amit.kachhap@linaro.org>
+	<CAKfTPtCVtWfdUpW=Up6eWTsceBCfER5NcvjF1KRTNcqys2YArQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1015661466215579248=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1324426147-16735-1-git-send-email-ccross@android.com>
+In-Reply-To: <CAKfTPtCVtWfdUpW=Up6eWTsceBCfER5NcvjF1KRTNcqys2YArQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,635 +19,449 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@lists.linux-foundation.org
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
-cpus cannot be independently powered down, either due to
-sequencing restrictions (on Tegra 2, cpu 0 must be the last to
-power down), or due to HW bugs (on OMAP4460, a cpu powering up
-will corrupt the gic state unless the other cpu runs a work
-around).  Each cpu has a power state that it can enter without
-coordinating with the other cpu (usually Wait For Interrupt, or
-WFI), and one or more "coupled" power states that affect blocks
-shared between the cpus (L2 cache, interrupt controller, and
-sometimes the whole SoC).  Entering a coupled power state must
-be tightly controlled on both cpus.
+--===============1015661466215579248==
+Content-Type: multipart/alternative; boundary=00248c768f6a83ef0c04b4932d73
 
-The easiest solution to implementing coupled cpu power states is
-to hotplug all but one cpu whenever possible, usually using a
-cpufreq governor that looks at cpu load to determine when to
-enable the secondary cpus.  This causes problems, as hotplug is an
-expensive operation, so the number of hotplug transitions must be
-minimized, leading to very slow response to loads, often on the
-order of seconds.
+--00248c768f6a83ef0c04b4932d73
+Content-Type: text/plain; charset=ISO-8859-1
 
-This file implements an alternative solution, where each cpu will
-wait in the WFI state until all cpus are ready to enter a coupled
-state, at which point the coupled state function will be called
-on all cpus at approximately the same time.
+Hi Vincent,
 
-Once all cpus are ready to enter idle, they are woken by an smp
-cross call.  At this point, there is a chance that one of the
-cpus will find work to do, and choose not to enter suspend.  A
-final pass is needed to guarantee that all cpus will call the
-power state enter function at the same time.  During this pass,
-each cpu will increment the ready counter, and continue once the
-ready counter matches the number of online coupled cpus.  If any
-cpu exits idle, the other cpus will decrement their counter and
-retry.
+Thanks for the review.
+Well actually your are correct that current temperature and last
+temperature can be used to increase or decrease the cufreq. But this has to
+be done again in cooling devices so to make the cooling devices generic and
+to avoid the temperature comparision again this new trip type passes the
+cooling device instance id.
+Also about your queries that this may add dependency between trip index and
+cooling state. This is actually needed and this dependency is created when
+the cooling device is binded with trip points(For cpufreq type cooling
+device just the instance of cooling device is associated with trip points).
+More over the existing PASSIVE cooling trip type does the same thing and
+iterates across all the cooling state.
 
-To use coupled cpuidle states, a cpuidle driver must:
+Thanks,
+Amit Daniel
 
-   Set struct cpuidle_device.coupled_cpus to the mask of all
-   coupled cpus, usually the same as cpu_possible_mask if all cpus
-   are part of the same cluster.  The coupled_cpus mask must be
-   set in the struct cpuidle_device for each cpu.
+On 20 December 2011 18:07, Vincent Guittot <vincent.guittot@linaro.org>wrote:
 
-   Set struct cpuidle_device.safe_state to a state that is not a
-   coupled state.  This is usually WFI.
+> Hi Amit,
+>
+> I'm not sure that using the trip index for setting the state of a
+> cooling device is a generic solution because you are adding a
+> dependency between the trip index and the cooling device state that
+> might be difficult to handle. This dependency implies that a cooling
+> device like cpufreq_cooling_device must be registered in the 1st trips
+> of a thermal_zone which is not possible when we want to register 2
+> cpufreq_cooling_devices in the same thermal_zone.
+> You should only rely on the current and last temperatures to detect if
+> a trip_temp has been crossed and you should increase or decrease the
+> current state of the cooling device accordingly.
+>
+> something like below should work with cpufreq_cooling_device and will
+> not add any constraint on the trip index. The state of a cooling
+> device is increased/decreased once for each trip
+>
+> +               case THERMAL_TRIP_STATE_ACTIVE:
+> +                       list_for_each_entry(instance, &tz->cooling_devices,
+> +                                           node) {
+> +                               if (instance->trip != count)
+> +                                       continue;
+> +
+> +                               cdev = instance->cdev;
+> +
+> +                               if ((temp >= trip_temp)
+> +                                       && (trip_temp >
+> tz->last_temperature)) {
+> +                                       cdev->ops->get_max_state(cdev,
+> +                                                       &max_state);
+> +                                       cdev->ops->get_cur_state(cdev,
+> +                                                       &current_state);
+> +                                       if (++current_state <= max_state)
+> +
+> cdev->ops->set_cur_state(cdev,
+> +
+> current_state);
+> +                               }
+> +                               else if ((temp < trip_temp)
+> +                                       && (trip_temp <=
+> tz->last_temperature)) {
+> +                                       cdev->ops->get_cur_state(cdev,
+> +                                                       &current_state);
+> +                                       if (current_state > 0)
+> +
+> cdev->ops->set_cur_state(cdev,
+> +
+> --current_state);
+> +                       }
+> +                       break;
+>
+> Regards,
+> Vincent
+>
+> On 13 December 2011 16:13, Amit Daniel Kachhap <amit.kachhap@linaro.org>
+> wrote:
+> > This patch adds a new trip type THERMAL_TRIP_STATE_ACTIVE. This
+> > trip behaves same as THERMAL_TRIP_ACTIVE but also passes the cooling
+> > device instance number. This helps the cooling device registered as
+> > different instances to perform appropriate cooling action decision in
+> > the set_cur_state call back function.
+> >
+> > Also since the trip temperature's are in ascending order so some logic
+> > is put in place to skip the un-necessary checks.
+> >
+> > Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+> > ---
+> >  Documentation/thermal/sysfs-api.txt |    4 ++--
+> >  drivers/thermal/thermal_sys.c       |   27 ++++++++++++++++++++++++++-
+> >  include/linux/thermal.h             |    1 +
+> >  3 files changed, 29 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/Documentation/thermal/sysfs-api.txt
+> b/Documentation/thermal/sysfs-api.txt
+> > index b61e46f..5c1d44e 100644
+> > --- a/Documentation/thermal/sysfs-api.txt
+> > +++ b/Documentation/thermal/sysfs-api.txt
+> > @@ -184,8 +184,8 @@ trip_point_[0-*]_temp
+> >
+> >  trip_point_[0-*]_type
+> >        Strings which indicate the type of the trip point.
+> > -       E.g. it can be one of critical, hot, passive, active[0-*] for
+> ACPI
+> > -       thermal zone.
+> > +       E.g. it can be one of critical, hot, passive, active[0-1],
+> > +       state-active[0-*] for ACPI thermal zone.
+> >        RO, Optional
+> >
+> >  cdev[0-*]
+> > diff --git a/drivers/thermal/thermal_sys.c
+> b/drivers/thermal/thermal_sys.c
+> > index dd9a574..72b1ab3 100644
+> > --- a/drivers/thermal/thermal_sys.c
+> > +++ b/drivers/thermal/thermal_sys.c
+> > @@ -192,6 +192,8 @@ trip_point_type_show(struct device *dev, struct
+> device_attribute *attr,
+> >                return sprintf(buf, "passive\n");
+> >        case THERMAL_TRIP_ACTIVE:
+> >                return sprintf(buf, "active\n");
+> > +       case THERMAL_TRIP_STATE_ACTIVE:
+> > +               return sprintf(buf, "state-active\n");
+> >        default:
+> >                return sprintf(buf, "unknown\n");
+> >        }
+> > @@ -1035,7 +1037,7 @@ EXPORT_SYMBOL(thermal_cooling_device_unregister);
+> >  void thermal_zone_device_update(struct thermal_zone_device *tz)
+> >  {
+> >        int count, ret = 0;
+> > -       long temp, trip_temp;
+> > +       long temp, trip_temp, max_state, last_trip_change = 0;
+> >        enum thermal_trip_type trip_type;
+> >        struct thermal_cooling_device_instance *instance;
+> >        struct thermal_cooling_device *cdev;
+> > @@ -1086,6 +1088,29 @@ void thermal_zone_device_update(struct
+> thermal_zone_device *tz)
+> >                                        cdev->ops->set_cur_state(cdev, 0);
+> >                        }
+> >                        break;
+> > +               case THERMAL_TRIP_STATE_ACTIVE:
+> > +                       list_for_each_entry(instance,
+> &tz->cooling_devices,
+> > +                                           node) {
+> > +                               if (instance->trip != count)
+> > +                                       continue;
+> > +
+> > +                               if (temp <= last_trip_change)
+> > +                                       continue;
+> > +
+> > +                               cdev = instance->cdev;
+> > +                               cdev->ops->get_max_state(cdev,
+> &max_state);
+> > +
+> > +                               if ((temp >= trip_temp) &&
+> > +                                               ((count + 1) <=
+> max_state))
+> > +                                       cdev->ops->set_cur_state(cdev,
+> > +                                                               count +
+> 1);
+> > +                               else if ((temp < trip_temp) &&
+> > +                                                       (count <=
+> max_state))
+> > +                                       cdev->ops->set_cur_state(cdev,
+> count);
+> > +
+> > +                               last_trip_change = trip_temp;
+> > +                       }
+> > +                       break;
+> >                case THERMAL_TRIP_PASSIVE:
+> >                        if (temp >= trip_temp || tz->passive)
+> >                                thermal_zone_device_passive(tz, temp,
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> > index 47b4a27..d7d0a27 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -42,6 +42,7 @@ enum thermal_trip_type {
+> >        THERMAL_TRIP_PASSIVE,
+> >        THERMAL_TRIP_HOT,
+> >        THERMAL_TRIP_CRITICAL,
+> > +       THERMAL_TRIP_STATE_ACTIVE,
+> >  };
+> >
+> >  struct thermal_zone_device_ops {
+> > --
+> > 1.7.1
+> >
+> > _______________________________________________
+> > linux-pm mailing list
+> > linux-pm@lists.linux-foundation.org
+> > https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
+>
 
-   Set CPUIDLE_FLAG_COUPLED in struct cpuidle_state.flags for each
-   state that affects multiple cpus.
+--00248c768f6a83ef0c04b4932d73
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-   Provide a struct cpuidle_state.enter function for each state
-   that affects multiple cpus.  This function is guaranteed to be
-   called on all cpus at approximately the same time.  The driver
-   should ensure that the cpus all abort together if any cpu tries
-   to abort once the function is called.
+Hi Vincent,<br><br>Thanks for the review.<br>Well actually your are correct=
+ that current temperature and last temperature can be used to increase or d=
+ecrease the cufreq. But this has to be done again in cooling devices so to =
+make the cooling devices generic and to avoid the temperature comparision a=
+gain this new trip type passes the cooling device instance id.<br>
+Also about your queries that this may add dependency between trip index and=
+ cooling state. This is actually needed and this dependency is created when=
+ the cooling device is binded with trip points(For cpufreq type cooling dev=
+ice just the instance of cooling device is associated with trip points). Mo=
+re over the existing PASSIVE cooling trip type does the same thing and iter=
+ates across all the cooling state.<br>
+<br>Thanks,<br>Amit Daniel<br><br><div class=3D"gmail_quote">On 20 December=
+ 2011 18:07, Vincent Guittot <span dir=3D"ltr">&lt;<a href=3D"mailto:vincen=
+t.guittot@linaro.org">vincent.guittot@linaro.org</a>&gt;</span> wrote:<br><=
+blockquote class=3D"gmail_quote" style=3D"margin:0pt 0pt 0pt 0.8ex;border-l=
+eft:1px solid rgb(204,204,204);padding-left:1ex">
+Hi Amit,<br>
+<br>
+I&#39;m not sure that using the trip index for setting the state of a<br>
+cooling device is a generic solution because you are adding a<br>
+dependency between the trip index and the cooling device state that<br>
+might be difficult to handle. This dependency implies that a cooling<br>
+device like cpufreq_cooling_device must be registered in the 1st trips<br>
+of a thermal_zone which is not possible when we want to register 2<br>
+cpufreq_cooling_devices in the same thermal_zone.<br>
+You should only rely on the current and last temperatures to detect if<br>
+a trip_temp has been crossed and you should increase or decrease the<br>
+current state of the cooling device accordingly.<br>
+<br>
+something like below should work with cpufreq_cooling_device and will<br>
+not add any constraint on the trip index. The state of a cooling<br>
+device is increased/decreased once for each trip<br>
+<div class=3D"im"><br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 case THERMAL_TRIP_STATE_ACTIVE:<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 list_for_each_entry(instance,=
+ &amp;tz-&gt;cooling_devices,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 node) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (instance-=
+&gt;trip !=3D count)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 continue;<br>
++<br>
+</div><div class=3D"im">+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 cdev =3D instance-&gt;cdev;<br>
++<br>
+</div><div class=3D"im">+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 if ((temp &gt;=3D trip_temp)<br>
+</div>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 &amp;&amp; (trip_temp &gt; tz-&gt;last_temperature)) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 cdev-&gt;ops-&gt;get_max_state(cdev,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 &amp;max_state);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 cdev-&gt;ops-&gt;get_cur_state(cdev,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 &amp;current_state);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 if (++current_state &lt;=3D max_state)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 cdev-&gt;ops-&gt;set_cur_state(cdev,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 current_state);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }<br>
+<div class=3D"im">+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 else if ((temp &lt; trip_temp)<br>
+</div>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 &amp;&amp; (trip_temp &lt;=3D tz-&gt;last_temperature)) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 cdev-&gt;ops-&gt;get_cur_state(cdev,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 &amp;current_state);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 if (current_state &gt; 0)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 cdev-&gt;ops-&gt;set_cur_state(cdev,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 --current_state);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
+<br>
+Regards,<br>
+Vincent<br>
+<div><div class=3D"h5"><br>
+On 13 December 2011 16:13, Amit Daniel Kachhap &lt;<a href=3D"mailto:amit.k=
+achhap@linaro.org">amit.kachhap@linaro.org</a>&gt; wrote:<br>
+&gt; This patch adds a new trip type THERMAL_TRIP_STATE_ACTIVE. This<br>
+&gt; trip behaves same as THERMAL_TRIP_ACTIVE but also passes the cooling<b=
+r>
+&gt; device instance number. This helps the cooling device registered as<br=
+>
+&gt; different instances to perform appropriate cooling action decision in<=
+br>
+&gt; the set_cur_state call back function.<br>
+&gt;<br>
+&gt; Also since the trip temperature&#39;s are in ascending order so some l=
+ogic<br>
+&gt; is put in place to skip the un-necessary checks.<br>
+&gt;<br>
+&gt; Signed-off-by: Amit Daniel Kachhap &lt;<a href=3D"mailto:amit.kachhap@=
+linaro.org">amit.kachhap@linaro.org</a>&gt;<br>
+&gt; ---<br>
+&gt; =A0Documentation/thermal/sysfs-api.txt | =A0 =A04 ++--<br>
+&gt; =A0drivers/thermal/thermal_sys.c =A0 =A0 =A0 | =A0 27 ++++++++++++++++=
+++++++++++-<br>
+&gt; =A0include/linux/thermal.h =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A01 +<br>
+&gt; =A03 files changed, 29 insertions(+), 3 deletions(-)<br>
+&gt;<br>
+&gt; diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/therm=
+al/sysfs-api.txt<br>
+&gt; index b61e46f..5c1d44e 100644<br>
+&gt; --- a/Documentation/thermal/sysfs-api.txt<br>
+&gt; +++ b/Documentation/thermal/sysfs-api.txt<br>
+&gt; @@ -184,8 +184,8 @@ trip_point_[0-*]_temp<br>
+&gt;<br>
+&gt; =A0trip_point_[0-*]_type<br>
+&gt; =A0 =A0 =A0 =A0Strings which indicate the type of the trip point.<br>
+&gt; - =A0 =A0 =A0 E.g. it can be one of critical, hot, passive, active[0-*=
+] for ACPI<br>
+&gt; - =A0 =A0 =A0 thermal zone.<br>
+&gt; + =A0 =A0 =A0 E.g. it can be one of critical, hot, passive, active[0-1=
+],<br>
+&gt; + =A0 =A0 =A0 state-active[0-*] for ACPI thermal zone.<br>
+&gt; =A0 =A0 =A0 =A0RO, Optional<br>
+&gt;<br>
+&gt; =A0cdev[0-*]<br>
+&gt; diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_s=
+ys.c<br>
+&gt; index dd9a574..72b1ab3 100644<br>
+&gt; --- a/drivers/thermal/thermal_sys.c<br>
+&gt; +++ b/drivers/thermal/thermal_sys.c<br>
+&gt; @@ -192,6 +192,8 @@ trip_point_type_show(struct device *dev, struct de=
+vice_attribute *attr,<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return sprintf(buf, &quot;passive\n&quo=
+t;);<br>
+&gt; =A0 =A0 =A0 =A0case THERMAL_TRIP_ACTIVE:<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return sprintf(buf, &quot;active\n&quot=
+;);<br>
+&gt; + =A0 =A0 =A0 case THERMAL_TRIP_STATE_ACTIVE:<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return sprintf(buf, &quot;state-active\n=
+&quot;);<br>
+&gt; =A0 =A0 =A0 =A0default:<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return sprintf(buf, &quot;unknown\n&quo=
+t;);<br>
+&gt; =A0 =A0 =A0 =A0}<br>
+&gt; @@ -1035,7 +1037,7 @@ EXPORT_SYMBOL(thermal_cooling_device_unregister)=
+;<br>
+&gt; =A0void thermal_zone_device_update(struct thermal_zone_device *tz)<br>
+&gt; =A0{<br>
+&gt; =A0 =A0 =A0 =A0int count, ret =3D 0;<br>
+&gt; - =A0 =A0 =A0 long temp, trip_temp;<br>
+&gt; + =A0 =A0 =A0 long temp, trip_temp, max_state, last_trip_change =3D 0;=
+<br>
+&gt; =A0 =A0 =A0 =A0enum thermal_trip_type trip_type;<br>
+&gt; =A0 =A0 =A0 =A0struct thermal_cooling_device_instance *instance;<br>
+&gt; =A0 =A0 =A0 =A0struct thermal_cooling_device *cdev;<br>
+&gt; @@ -1086,6 +1088,29 @@ void thermal_zone_device_update(struct thermal_=
+zone_device *tz)<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0cdev-&gt;ops-&gt;set_cur_state(cdev, 0);<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 case THERMAL_TRIP_STATE_ACTIVE:<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 list_for_each_entry(inst=
+ance, &amp;tz-&gt;cooling_devices,<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 node) {<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (inst=
+ance-&gt;trip !=3D count)<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 continue;<br>
+&gt; +<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (temp=
+ &lt;=3D last_trip_change)<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 continue;<br>
+&gt; +<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev =3D=
+ instance-&gt;cdev;<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev-&gt=
+;ops-&gt;get_max_state(cdev, &amp;max_state);<br>
+&gt; +<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if ((tem=
+p &gt;=3D trip_temp) &amp;&amp;<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 ((count + 1) &lt;=3D max_state))<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 cdev-&gt;ops-&gt;set_cur_state(cdev,<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 count + 1);<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else if =
+((temp &lt; trip_temp) &amp;&amp;<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (count &lt;=3D max_state))<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 cdev-&gt;ops-&gt;set_cur_state(cdev, count);<br>
+&gt; +<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 last_tri=
+p_change =3D trip_temp;<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }<br>
+&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0case THERMAL_TRIP_PASSIVE:<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (temp &gt;=3D trip_t=
+emp || tz-&gt;passive)<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0thermal=
+_zone_device_passive(tz, temp,<br>
+&gt; diff --git a/include/linux/thermal.h b/include/linux/thermal.h<br>
+&gt; index 47b4a27..d7d0a27 100644<br>
+&gt; --- a/include/linux/thermal.h<br>
+&gt; +++ b/include/linux/thermal.h<br>
+&gt; @@ -42,6 +42,7 @@ enum thermal_trip_type {<br>
+&gt; =A0 =A0 =A0 =A0THERMAL_TRIP_PASSIVE,<br>
+&gt; =A0 =A0 =A0 =A0THERMAL_TRIP_HOT,<br>
+&gt; =A0 =A0 =A0 =A0THERMAL_TRIP_CRITICAL,<br>
+&gt; + =A0 =A0 =A0 THERMAL_TRIP_STATE_ACTIVE,<br>
+&gt; =A0};<br>
+&gt;<br>
+&gt; =A0struct thermal_zone_device_ops {<br>
+&gt; --<br>
+&gt; 1.7.1<br>
+&gt;<br>
+</div></div>&gt; _______________________________________________<br>
+&gt; linux-pm mailing list<br>
+&gt; <a href=3D"mailto:linux-pm@lists.linux-foundation.org">linux-pm@lists.=
+linux-foundation.org</a><br>
+&gt; <a href=3D"https://lists.linuxfoundation.org/mailman/listinfo/linux-pm=
+" target=3D"_blank">https://lists.linuxfoundation.org/mailman/listinfo/linu=
+x-pm</a><br>
+</blockquote></div><br>
 
-Signed-off-by: Colin Cross <ccross@android.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Kevin Hilman <khilman@ti.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Trinabh Gupta <g.trinabh@gmail.com>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
----
- drivers/cpuidle/Kconfig   |    3 +
- drivers/cpuidle/Makefile  |    1 +
- drivers/cpuidle/coupled.c |  413 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/cpuidle/cpuidle.c |   14 ++-
- drivers/cpuidle/cpuidle.h |   39 +++++
- include/linux/cpuidle.h   |    7 +
- 6 files changed, 476 insertions(+), 1 deletions(-)
- create mode 100644 drivers/cpuidle/coupled.c
+--00248c768f6a83ef0c04b4932d73--
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 7dbc4a8..7a72e55 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -18,3 +18,6 @@ config CPU_IDLE_GOV_MENU
- 	bool
- 	depends on CPU_IDLE && NO_HZ
- 	default y
-+
-+config ARCH_NEEDS_CPU_IDLE_COUPLED
-+	def_bool n
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index 5634f88..38c8f69 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -3,3 +3,4 @@
- #
- 
- obj-y += cpuidle.o driver.o governor.o sysfs.o governors/
-+obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
-diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-new file mode 100644
-index 0000000..3fb7d24
---- /dev/null
-+++ b/drivers/cpuidle/coupled.c
-@@ -0,0 +1,413 @@
-+/*
-+ * coupled.c - helper functions to enter the same idle state on multiple cpus
-+ *
-+ * Copyright (c) 2011 Google, Inc.
-+ *
-+ * Author: Colin Cross <ccross@android.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/cpu.h>
-+#include <linux/cpuidle.h>
-+#include <linux/mutex.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+
-+#include "cpuidle.h"
-+
-+/*
-+ * coupled cpuidle states
-+ *
-+ * On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
-+ * cpus cannot be independently powered down, either due to
-+ * sequencing restrictions (on Tegra 2, cpu 0 must be the last to
-+ * power down), or due to HW bugs (on OMAP4460, a cpu powering up
-+ * will corrupt the gic state unless the other cpu runs a work
-+ * around).  Each cpu has a power state that it can enter without
-+ * coordinating with the other cpu (usually Wait For Interrupt, or
-+ * WFI), and one or more "coupled" power states that affect blocks
-+ * shared between the cpus (L2 cache, interrupt controller, and
-+ * sometimes the whole SoC).  Entering a coupled power state must
-+ * be tightly controlled on both cpus.
-+ *
-+ * The easiest solution to implementing coupled cpu power states is
-+ * to hotplug all but one cpu whenever possible, usually using a
-+ * cpufreq governor that looks at cpu load to determine when to
-+ * enable the secondary cpus.  This causes problems, as hotplug is an
-+ * expensive operation, so the number of hotplug transitions must be
-+ * minimized, leading to very slow response to loads, often on the
-+ * order of seconds.
-+ *
-+ * This file implements an alternative solution, where each cpu will
-+ * wait in the WFI state until all cpus are ready to enter a coupled
-+ * state, at which point the coupled state function will be called
-+ * on all cpus at approximately the same time.
-+ *
-+ * Once all cpus are ready to enter idle, they are woken by an smp
-+ * cross call.  At this point, there is a chance that one of the
-+ * cpus will find work to do, and choose not to enter suspend.  A
-+ * final pass is needed to guarantee that all cpus will call the
-+ * power state enter function at the same time.  During this pass,
-+ * each cpu will increment the ready counter, and continue once the
-+ * ready counter matches the number of online coupled cpus.  If any
-+ * cpu exits idle, the other cpus will decrement their counter and
-+ * retry.
-+ *
-+ * To use coupled cpuidle states, a cpuidle driver must:
-+ *
-+ *    Set struct cpuidle_device.coupled_cpus to the mask of all
-+ *    coupled cpus, usually the same as cpu_possible_mask if all cpus
-+ *    are part of the same cluster.  The coupled_cpus mask must be
-+ *    set in the struct cpuidle_device for each cpu.
-+ *
-+ *    Set struct cpuidle_device.safe_state to a state that is not a
-+ *    coupled state.  This is usually WFI.
-+ *
-+ *    Set CPUIDLE_FLAG_COUPLED in struct cpuidle_state.flags for each
-+ *    state that affects multiple cpus.
-+ *
-+ *    Provide a struct cpuidle_state.enter function for each state
-+ *    that affects multiple cpus.  This function is guaranteed to be
-+ *    called on all cpus at approximately the same time.  The driver
-+ *    should ensure that the cpus all abort together if any cpu tries
-+ *    to abort once the function is called.
-+ *
-+ */
-+
-+static DEFINE_MUTEX(cpuidle_coupled_lock);
-+static DEFINE_PER_CPU(struct call_single_data, cpuidle_coupled_poke_cb);
-+static cpumask_t cpuidle_coupled_poked_mask;
-+
-+/**
-+ * cpuidle_state_is_coupled
-+ *
-+ * Returns true if the target state is coupled with cpus besides this one
-+ */
-+bool cpuidle_state_is_coupled(struct cpuidle_device *dev,
-+	struct cpuidle_driver *drv, int state)
-+{
-+	return drv->states[state].flags & CPUIDLE_FLAG_COUPLED;
-+}
-+
-+/**
-+ * cpuidle_all_coupled_cpus_idle
-+ *
-+ * Returns true if all cpus coupled to this target state are idle
-+ */
-+static inline bool
-+cpuidle_coupled_cpus_idle(struct cpuidle_coupled *coupled)
-+{
-+	int i;
-+
-+	assert_spin_locked(&coupled->lock);
-+
-+	smp_rmb();
-+
-+	for_each_cpu_mask(i, coupled->alive_coupled_cpus)
-+		if (coupled->requested_state[i] < 0)
-+			return false;
-+
-+	return true;
-+}
-+
-+/**
-+ * cpuidle_get_idle_state
-+ *
-+ * Returns the deepest idle state that all coupled cpus can enter
-+ */
-+static inline int cpuidle_coupled_get_state(struct cpuidle_device *dev,
-+		struct cpuidle_coupled *coupled)
-+{
-+	int i;
-+	int state = INT_MAX;
-+
-+	assert_spin_locked(&coupled->lock);
-+
-+	for_each_cpu_mask(i, coupled->alive_coupled_cpus)
-+		if (coupled->requested_state[i] < state)
-+			state = coupled->requested_state[i];
-+
-+	BUG_ON(state >= dev->state_count || state < 0);
-+
-+	return state;
-+}
-+
-+static void cpuidle_coupled_poked(void *info)
-+{
-+	int cpu = (unsigned long)info;
-+	cpumask_clear_cpu(cpu, &cpuidle_coupled_poked_mask);
-+}
-+
-+static void cpuidle_coupled_poke(int cpu)
-+{
-+	struct call_single_data *csd = &per_cpu(cpuidle_coupled_poke_cb, cpu);
-+	if (cpu_online(cpu))
-+		if (!cpumask_test_and_set_cpu(cpu, &cpuidle_coupled_poked_mask))
-+			__smp_call_function_single(cpu, csd, 0);
-+}
-+
-+/**
-+ * cpuidle_coupled_update_state
-+ *
-+ * Updates the requested idle state for the specified cpuidle device,
-+ * poking all coupled cpus out of idle to let them see the new state.
-+ */
-+static void cpuidle_coupled_update_state(struct cpuidle_device *dev,
-+		struct cpuidle_coupled *coupled, int next_state)
-+{
-+	int cpu;
-+
-+	assert_spin_locked(&coupled->lock);
-+
-+	coupled->requested_state[dev->cpu] = next_state;
-+	smp_wmb();
-+
-+	if (next_state >= 0)
-+		for_each_cpu_mask(cpu, coupled->alive_coupled_cpus)
-+			if (cpu != dev->cpu)
-+				cpuidle_coupled_poke(cpu);
-+}
-+
-+/**
-+ * cpuidle_enter_state_coupled
-+ *
-+ * Coordinate with coupled cpus to enter the target state.  This is a two
-+ * stage process.  In the first stage, the cpus are operating independently,
-+ * and may call into cpuidle_enter_state_coupled at completely different times.
-+ * To save as much power as possible, the first cpus to call this function will
-+ * go to an intermediate state (the cpuidle_device's safe state), and wait for
-+ * all the other cpus to call this function.  Once all coupled cpus are idle,
-+ * the second stage will start.  Each coupled cpu will spin until all cpus have
-+ * guaranteed that they will call the target_state.
-+ */
-+int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
-+		struct cpuidle_driver *drv, int next_state)
-+{
-+	int entered_state = -1;
-+	struct cpuidle_coupled *coupled = dev->coupled;
-+
-+	spin_lock(&coupled->lock);
-+	if (!cpumask_test_cpu(dev->cpu, &coupled->alive_coupled_cpus)) {
-+		/*
-+		 * somebody took us out of the online coupled cpus mask, we
-+		 * must be on the way up or down
-+		 */
-+		spin_unlock(&coupled->lock);
-+		return -1;
-+	}
-+
-+	BUG_ON(coupled->ready_count);
-+	cpuidle_coupled_update_state(dev, coupled, next_state);
-+
-+retry:
-+	/*
-+	 * Wait for all coupled cpus to be idle, using the deepest state
-+	 * allowed for a single cpu.
-+	 */
-+	while (!need_resched() && !cpuidle_coupled_cpus_idle(coupled)) {
-+		spin_unlock(&coupled->lock);
-+
-+		entered_state = cpuidle_enter_state(dev, drv,
-+			dev->safe_state_index);
-+
-+		local_irq_enable();
-+		cpu_relax();
-+		local_irq_disable();
-+
-+		spin_lock(&coupled->lock);
-+	}
-+
-+	/* give a chance to process any remaining pokes */
-+	local_irq_enable();
-+	cpu_relax();
-+	local_irq_disable();
-+
-+	if (need_resched()) {
-+		cpuidle_coupled_update_state(dev, coupled, -1);
-+		goto out;
-+	}
-+
-+	/*
-+	 * All coupled cpus are probably idle.  There is a small chance that
-+	 * one of the other cpus just became active.  Increment a counter when
-+	 * ready, and spin until all coupled cpus have incremented the counter.
-+	 * Once a cpu has incremented the counter, it cannot abort idle and must
-+	 * spin until either the count has hit num_online_cpus(), or another
-+	 * cpu leaves idle.
-+	 */
-+
-+	coupled->ready_count++;
-+
-+	while (coupled->ready_count !=
-+			cpumask_weight(&coupled->alive_coupled_cpus)) {
-+		if (!cpuidle_coupled_cpus_idle(coupled)) {
-+			coupled->ready_count--;
-+			goto retry;
-+		}
-+
-+		spin_unlock(&coupled->lock);
-+		cpu_relax();
-+		spin_lock(&coupled->lock);
-+	}
-+
-+	/* all cpus have acked the coupled state */
-+	next_state = cpuidle_coupled_get_state(dev, coupled);
-+	spin_unlock(&coupled->lock);
-+
-+	entered_state = cpuidle_enter_state(dev, drv, next_state);
-+
-+	spin_lock(&coupled->lock);
-+
-+	cpuidle_coupled_update_state(dev, coupled, -1);
-+	coupled->ready_count--;
-+
-+out:
-+	local_irq_enable();
-+
-+	while (coupled->ready_count > 0) {
-+		spin_unlock(&coupled->lock);
-+		cpu_relax();
-+		spin_lock(&coupled->lock);
-+	}
-+
-+	spin_unlock(&coupled->lock);
-+
-+	return entered_state;
-+}
-+
-+/**
-+ * cpuidle_coupled_register_device
-+ *
-+ * Called from cpuidle_register_device to handle coupled idle init.  Finds the
-+ * cpuidle_coupled struct for this set of coupled cpus, or creates one if none
-+ * exists yet.
-+ */
-+int cpuidle_coupled_register_device(struct cpuidle_device *dev)
-+{
-+	int cpu;
-+	struct cpuidle_device *other_dev;
-+	struct call_single_data *csd;
-+
-+	if (cpumask_empty(&dev->coupled_cpus))
-+		return 0;
-+
-+	for_each_cpu_mask(cpu, dev->coupled_cpus) {
-+		other_dev = per_cpu(cpuidle_devices, cpu);
-+		if (other_dev && other_dev->coupled) {
-+			BUG_ON(!cpumask_equal(&dev->coupled_cpus,
-+				&other_dev->coupled_cpus));
-+			dev->coupled = other_dev->coupled;
-+			goto have_coupled;
-+		}
-+	}
-+
-+	/* No existing coupled info found, create a new one */
-+	dev->coupled = kzalloc(sizeof(struct cpuidle_coupled), GFP_KERNEL);
-+	if (!dev->coupled)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&dev->coupled->lock);
-+
-+have_coupled:
-+	spin_lock(&dev->coupled->lock);
-+
-+	dev->coupled->requested_state[dev->cpu] = -1;
-+
-+	if (cpu_online(dev->cpu))
-+		cpumask_set_cpu(dev->cpu, &dev->coupled->alive_coupled_cpus);
-+	dev->coupled->refcnt++;
-+
-+	csd = &per_cpu(cpuidle_coupled_poke_cb, dev->cpu);
-+	csd->func = cpuidle_coupled_poked;
-+	csd->info = (void *)(unsigned long)dev->cpu;
-+
-+	spin_unlock(&dev->coupled->lock);
-+
-+	return 0;
-+}
-+
-+/**
-+ * cpuidle_coupled_unregister_device
-+ *
-+ * Called from cpuidle_unregister_device to tear down coupled idle.  Removes the
-+ * cpu from the coupled idle set, and frees the cpuidle_coupled_info struct if
-+ * this was the last cpu in the set.
-+ */
-+void cpuidle_coupled_unregister_device(struct cpuidle_device *dev)
-+{
-+	if (cpumask_empty(&dev->coupled_cpus))
-+		return;
-+
-+	cpumask_clear_cpu(dev->cpu, &dev->coupled->alive_coupled_cpus);
-+	if (--dev->coupled->refcnt)
-+		kfree(dev->coupled);
-+
-+	dev->coupled = NULL;
-+}
-+
-+static void cpuidle_coupled_cpu_set_alive(int cpu, bool online)
-+{
-+	struct cpuidle_device *dev;
-+
-+	mutex_lock(&cpuidle_lock);
-+
-+	dev = per_cpu(cpuidle_devices, cpu);
-+	if (!dev->coupled)
-+		goto out;
-+
-+	spin_lock(&dev->coupled->lock);
-+
-+	if (online)
-+		cpumask_set_cpu(dev->cpu, &dev->coupled->alive_coupled_cpus);
-+	else
-+		cpumask_clear_cpu(dev->cpu, &dev->coupled->alive_coupled_cpus);
-+
-+	spin_unlock(&dev->coupled->lock);
-+
-+out:
-+	mutex_unlock(&cpuidle_lock);
-+}
-+
-+/**
-+ * cpuidle_coupled_cpu_notify
-+ *
-+ * Called when a cpu is brought on or offline using hotplug.  Updates the
-+ * coupled cpu set appropriately
-+ */
-+static int cpuidle_coupled_cpu_notify(struct notifier_block *nb,
-+		unsigned long action, void *hcpu)
-+{
-+	int cpu = (unsigned long)hcpu;
-+
-+	switch (action & ~CPU_TASKS_FROZEN) {
-+	case CPU_DEAD:
-+	case CPU_UP_CANCELED:
-+		cpuidle_coupled_cpu_set_alive(cpu, false);
-+		break;
-+	case CPU_UP_PREPARE:
-+		cpuidle_coupled_cpu_set_alive(cpu, true);
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block cpuidle_coupled_cpu_notifier = {
-+	.notifier_call = cpuidle_coupled_cpu_notify,
-+};
-+
-+static int __init cpuidle_coupled_init(void)
-+{
-+	return register_cpu_notifier(&cpuidle_coupled_cpu_notifier);
-+}
-+core_initcall(cpuidle_coupled_init);
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index ea00a16..e3d61b2 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -122,7 +122,10 @@ int cpuidle_idle_call(void)
- 	trace_power_start(POWER_CSTATE, next_state, dev->cpu);
- 	trace_cpu_idle(next_state, dev->cpu);
- 
--	entered_state = cpuidle_enter_state(dev, drv, next_state);
-+	if (cpuidle_state_is_coupled(dev, drv, next_state))
-+		entered_state = cpuidle_enter_state_coupled(dev, drv, next_state);
-+	else
-+		entered_state = cpuidle_enter_state(dev, drv, next_state);
- 
- 	trace_power_end(dev->cpu);
- 	trace_cpu_idle(PWR_EVENT_EXIT, dev->cpu);
-@@ -322,9 +325,16 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
- 	if (ret)
- 		goto err_sysfs;
- 
-+	ret = cpuidle_coupled_register_device(dev);
-+	if (ret)
-+		goto err_coupled;
-+
- 	dev->registered = 1;
- 	return 0;
- 
-+err_coupled:
-+	cpuidle_remove_sysfs(sys_dev);
-+	wait_for_completion(&dev->kobj_unregister);
- err_sysfs:
- 	module_put(cpuidle_driver->owner);
- 	list_del(&dev->device_list);
-@@ -379,6 +389,8 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
- 	wait_for_completion(&dev->kobj_unregister);
- 	per_cpu(cpuidle_devices, dev->cpu) = NULL;
- 
-+	cpuidle_coupled_unregister_device(dev);
-+
- 	cpuidle_resume_and_unlock();
- 
- 	module_put(cpuidle_driver->owner);
-diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
-index dd2df8f..55a0c6f 100644
---- a/drivers/cpuidle/cpuidle.h
-+++ b/drivers/cpuidle/cpuidle.h
-@@ -32,4 +32,43 @@ extern void cpuidle_remove_state_sysfs(struct cpuidle_device *device);
- extern int cpuidle_add_sysfs(struct sys_device *sysdev);
- extern void cpuidle_remove_sysfs(struct sys_device *sysdev);
- 
-+/* coupled states */
-+struct cpuidle_coupled {
-+	spinlock_t lock;
-+	int requested_state[NR_CPUS];
-+	int ready_count;
-+	cpumask_t alive_coupled_cpus;
-+	int refcnt;
-+};
-+
-+#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-+bool cpuidle_state_is_coupled(struct cpuidle_device *dev,
-+		struct cpuidle_driver *drv, int state);
-+int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
-+		struct cpuidle_driver *drv, int next_state);
-+int cpuidle_coupled_register_device(struct cpuidle_device *dev);
-+void cpuidle_coupled_unregister_device(struct cpuidle_device *dev);
-+#else
-+static inline bool cpuidle_state_is_coupled(struct cpuidle_device *dev,
-+		struct cpuidle_driver *drv, int state)
-+{
-+	return false;
-+}
-+
-+static inline int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
-+		struct cpuidle_driver *drv, int next_state)
-+{
-+	return -1;
-+}
-+
-+static inline int cpuidle_coupled_register_device(struct cpuidle_device *dev)
-+{
-+	return 0;
-+}
-+
-+static inline void cpuidle_coupled_unregister_device(struct cpuidle_device *dev)
-+{
-+}
-+#endif
-+
- #endif /* __DRIVER_CPUIDLE_H */
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 7408af8..5438a09 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -53,6 +53,7 @@ struct cpuidle_state {
- 
- /* Idle State Flags */
- #define CPUIDLE_FLAG_TIME_VALID	(0x01) /* is residency time measurable? */
-+#define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
- 
- #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
- 
-@@ -97,6 +98,12 @@ struct cpuidle_device {
- 	struct kobject		kobj;
- 	struct completion	kobj_unregister;
- 	void			*governor_data;
-+
-+#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-+	int			safe_state_index;
-+	cpumask_t		coupled_cpus;
-+	struct cpuidle_coupled	*coupled;
-+#endif
- };
- 
- DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
--- 
-1.7.4.1
+--===============1015661466215579248==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============1015661466215579248==--
