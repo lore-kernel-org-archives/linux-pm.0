@@ -1,7 +1,7 @@
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+From: Arjan van de Ven <arjan@linux.intel.com>
 Subject: Re: [PATCH 0/3] coupled cpuidle state support
-Date: Thu, 22 Dec 2011 14:05:36 +0530
-Message-ID: <CAMQu2gxws83BUdj_eMbF0xpA1Mo_OA_MswE7KUm5pvbn3YbMuQ__20748.4772931368$1324542971$gmane$org@mail.gmail.com>
+Date: Thu, 22 Dec 2011 09:53:50 +0100
+Message-ID: <4EF2F01E.8060307@linux.intel.com>
 References: <1324426147-16735-1-git-send-email-ccross@android.com>
 	<4EF1A0B4.5080307@linux.intel.com>
 	<CAMbhsRRP7s9xsHqxhb=iMfHAJFcqAea-6CDORZS34RCPNo+UWw@mail.gmail.com>
@@ -11,11 +11,12 @@ References: <1324426147-16735-1-git-send-email-ccross@android.com>
 	<CAMbhsRRnKoR3YPWrZzVynVe+dcuU5v0siYvmp2vbBcS1hquC7Q@mail.gmail.com>
 	<4EF2352C.3060102@linux.intel.com>
 	<CAMbhsRSPCo9MSGp57Fv0sRdYUFcdwx8jEz1-CfX8LdKf8X4MVg@mail.gmail.com>
+	<CAMQu2gxws83BUdj_eMbF0xpA1Mo_OA_MswE7KUm5pvbn3YbMuQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAMbhsRSPCo9MSGp57Fv0sRdYUFcdwx8jEz1-CfX8LdKf8X4MVg@mail.gmail.com>
+In-Reply-To: <CAMQu2gxws83BUdj_eMbF0xpA1Mo_OA_MswE7KUm5pvbn3YbMuQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -25,52 +26,16 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-tegra@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org
+To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-tegra@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 22, 2011 at 1:12 AM, Colin Cross <ccross@android.com> wrote:
-> On Wed, Dec 21, 2011 at 11:36 AM, Arjan van de Ven
-> <arjan@linux.intel.com> wrote:
->>>>
->>>> .. or it enters WFI, and a physical device sends it an interrupt,
->>>> at which point it exits.
->>>
->>> None of the cpus will return to the idle loop until all cpus have
->>> decremented the ready counter back to 0, so they can't wrap around
->>> again.
->>
->>
->> yikes, so you IPI all the cpus on the first exit.
->> that must burn power ;-(
->
-> No, you're not understanding the point of this series.
->
-> If your cpus can go in and out of idle independently, you don't use
-> this code at all. =A0Each cpu can call WFI and come back out without
-> talking to the other cpu.
->
-Indeed. The SOCs, Arch's which does support low power
-state independently and doesn't need any co-ordination between CPU's
-will continue to work same way as before with this series.
+On 12/22/2011 9:35 AM, Shilimkar, Santosh wrote:
 
-> However, if you have two cpus that share some part of the SoC that can
-> be turned off in idle, like the L2 cache controller or the system bus,
-> the two cpus need to go to idle together, and they will both boot
-> together when either one receives an interrupt (although one will
-> likely immediately go back to a shallower state that doesn't require
-> coordination with the other cpu). =A0There is no way around this, it's
-> how the hardware works on some ARM platforms.
+> Indeed. The SOCs, Arch's which does support low power
+> state independently and doesn't need any co-ordination between CPU's
+> will continue to work same way as before with this series.
 
-Apart from shared peripherals which Colin pointed out, OMAP also
-brings in the security software state which is kind of executing in
-parallel with linux. This state is lost in certain deeper low power
-states and since the security software is affine to only master CPU
-(because of OMAP security architecture), the co-ordination is
-mandatory to achieve those low power states.
-
-So this additional CPU co-ordination logic for such C-states
-really helps to solve the issue in most generic way.
-
-Regards
-Santosh
+btw I think you misunderstand; I don't object to a need for something
+like this, I am just very concerned that this may not be possible to be
+done in a race-free way.
