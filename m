@@ -1,7 +1,7 @@
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+From: Colin Cross <ccross@android.com>
 Subject: Re: [PATCH 0/3] coupled cpuidle state support
-Date: Thu, 22 Dec 2011 15:00:34 +0530
-Message-ID: <CAMQu2gxq26=pNA3L8aXUbLR4ZAT5RqyNawtm2qsPVc5cJCdOLg__875.164211220358$1324546269$gmane$org@mail.gmail.com>
+Date: Thu, 22 Dec 2011 13:20:38 -0800
+Message-ID: <CAMbhsRQDLdozcK0uazMd2gSxRMdPqMq6vAE2__k08BBFCQS3eQ__20901.8747591928$1324588853$gmane$org@mail.gmail.com>
 References: <1324426147-16735-1-git-send-email-ccross@android.com>
 	<4EF1A0B4.5080307@linux.intel.com>
 	<CAMbhsRRP7s9xsHqxhb=iMfHAJFcqAea-6CDORZS34RCPNo+UWw@mail.gmail.com>
@@ -28,10 +28,11 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-tegra@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-tegra@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 22, 2011 at 2:23 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
+On Thu, Dec 22, 2011 at 12:53 AM, Arjan van de Ven
+<arjan@linux.intel.com> wrote:
 > On 12/22/2011 9:35 AM, Shilimkar, Santosh wrote:
 >
 >> Indeed. The SOCs, Arch's which does support low power
@@ -39,34 +40,29 @@ On Thu, Dec 22, 2011 at 2:23 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
 >> will continue to work same way as before with this series.
 >
 > btw I think you misunderstand; I don't object to a need for something
-> like this,
-I did. Thanks for clarification.
-
-> I am just very concerned that this may not be possible to be
+> like this, I am just very concerned that this may not be possible to be
 > done in a race-free way.
->
-I agree to those races but may be they are harmless.
-Also the safe state need not be just WFI and can be bit deeper
-where the co-ordination between isn't necessary. So that should
-still not burn the power that much.
 
-For simplicity let's assume a two CPU scenario.
-Ideal scenario:
-CPU 1 has entered idle and incremented counter for the
-co-ordinated C state. CPU0 also enter and increments the
-counter and now the subsystem and interconnect can go
-down along with CPU cluster.
+I agree that there are many potential races in this code, but I
+believe I've handled all of them.  This patch set is a refactoring of
+the common parts of the SMP idle code that has shipped on Tegra and
+OMAP4 devices, so the basic idea has been hammered on extensively.
 
-Few of the race conditions will possibly lead to void
-the above conditions  and in that case the counter would
-reflect that and such a C-state won't be attempted and
-a safe C-state would be attempted. That should still work
-fine.
+I think I've explained the protection against the race condition you
+asked about earlier.  As for the power impact, the power savings of
+getting into the deeper coupled power states far outweighs the cost of
+booting all coupled cpus out of idle and letting them loop back to a
+shallower idle state.
 
-Some how this hardware/security restriction is bit stupid
-and likely going against the existing CPUIDLE design
-which expect that a CPUIDLE thread are per CPU and it should
-be independent and local to that CPU.
+On an OMAP4 platform, at the slowest cpu speed, the system-wide power
+usage with both cpus in the non-coupled state (WFI) is around 50 mA,
+while the deepest coupled state is 12 mA.  At the fastest cpu speed,
+WFI is over 100 mA.
 
-Regards
-Santosh
+On some platforms it may be possible to have only one cpu boot out of
+idle when an interrupt arrives, but that introduces the race condition
+you asked about before, where the last cpu tries to go into idle at
+the same time that an already-idle cpu comes back out.  This way has
+fairly minimal overhead (booting the 2nd cpu and then going to WFI),
+and that's a path that already needs to be fast because it's part of
+the normal single-cpu idle path.
