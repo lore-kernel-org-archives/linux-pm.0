@@ -1,7 +1,7 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
 Subject: Re: [PATCH 0/3] coupled cpuidle state support
-Date: Thu, 22 Dec 2011 09:53:50 +0100
-Message-ID: <4EF2F01E.8060307@linux.intel.com>
+Date: Thu, 22 Dec 2011 15:00:34 +0530
+Message-ID: <CAMQu2gxq26=pNA3L8aXUbLR4ZAT5RqyNawtm2qsPVc5cJCdOLg__875.164211220358$1324546269$gmane$org@mail.gmail.com>
 References: <1324426147-16735-1-git-send-email-ccross@android.com>
 	<4EF1A0B4.5080307@linux.intel.com>
 	<CAMbhsRRP7s9xsHqxhb=iMfHAJFcqAea-6CDORZS34RCPNo+UWw@mail.gmail.com>
@@ -12,11 +12,12 @@ References: <1324426147-16735-1-git-send-email-ccross@android.com>
 	<4EF2352C.3060102@linux.intel.com>
 	<CAMbhsRSPCo9MSGp57Fv0sRdYUFcdwx8jEz1-CfX8LdKf8X4MVg@mail.gmail.com>
 	<CAMQu2gxws83BUdj_eMbF0xpA1Mo_OA_MswE7KUm5pvbn3YbMuQ@mail.gmail.com>
+	<4EF2F01E.8060307@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAMQu2gxws83BUdj_eMbF0xpA1Mo_OA_MswE7KUm5pvbn3YbMuQ@mail.gmail.com>
+In-Reply-To: <4EF2F01E.8060307@linux.intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -26,16 +27,46 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
 Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-tegra@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12/22/2011 9:35 AM, Shilimkar, Santosh wrote:
+On Thu, Dec 22, 2011 at 2:23 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
+> On 12/22/2011 9:35 AM, Shilimkar, Santosh wrote:
+>
+>> Indeed. The SOCs, Arch's which does support low power
+>> state independently and doesn't need any co-ordination between CPU's
+>> will continue to work same way as before with this series.
+>
+> btw I think you misunderstand; I don't object to a need for something
+> like this,
+I did. Thanks for clarification.
 
-> Indeed. The SOCs, Arch's which does support low power
-> state independently and doesn't need any co-ordination between CPU's
-> will continue to work same way as before with this series.
+> I am just very concerned that this may not be possible to be
+> done in a race-free way.
+>
+I agree to those races but may be they are harmless.
+Also the safe state need not be just WFI and can be bit deeper
+where the co-ordination between isn't necessary. So that should
+still not burn the power that much.
 
-btw I think you misunderstand; I don't object to a need for something
-like this, I am just very concerned that this may not be possible to be
-done in a race-free way.
+For simplicity let's assume a two CPU scenario.
+Ideal scenario:
+CPU 1 has entered idle and incremented counter for the
+co-ordinated C state. CPU0 also enter and increments the
+counter and now the subsystem and interconnect can go
+down along with CPU cluster.
+
+Few of the race conditions will possibly lead to void
+the above conditions  and in that case the counter would
+reflect that and such a C-state won't be attempted and
+a safe C-state would be attempted. That should still work
+fine.
+
+Some how this hardware/security restriction is bit stupid
+and likely going against the existing CPUIDLE design
+which expect that a CPUIDLE thread are per CPU and it should
+be independent and local to that CPU.
+
+Regards
+Santosh
