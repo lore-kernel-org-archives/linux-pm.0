@@ -1,16 +1,16 @@
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Subject: Re: [PATCH 1/7] x86, acpi,
- tboot: Have a ACPI os prepare sleep instead of calling tboot_sleep.
-Date: Tue, 3 Jan 2012 12:13:18 -0500
-Message-ID: <20120103171318.GA25341@phenom.dumpdata.com>
-References: <1324075099-11397-1-git-send-email-konrad.wilk@oracle.com>
-	<1324075099-11397-2-git-send-email-konrad.wilk@oracle.com>
+From: Amit Kachhap <amit.kachhap@linaro.org>
+Subject: Re: [lm-sensors] [RFC PATCH 2/3] thermal: exynos4:
+ Register the tmu sensor with the thermal interface layer
+Date: Wed, 4 Jan 2012 15:44:07 +0530
+Message-ID: <CAK44p20XeLVkJyox2SsDqyy=RYgEQNpyGGypwTMPXpueQT1T3g__21455.9458698661$1325672060$gmane$org@mail.gmail.com>
+References: <1324468798-20423-1-git-send-email-amit.kachhap@linaro.org>
+	<1324468798-20423-3-git-send-email-amit.kachhap@linaro.org>
+	<1325629553.26706.11.camel@groeck-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1324075099-11397-2-git-send-email-konrad.wilk@oracle.com>
+In-Reply-To: <1325629553.26706.11.camel@groeck-laptop>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,189 +20,166 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org, rjw@sisk.pl, x86@kernel.org, len.brown@intel.com, joseph.cihula@intel.com, linux-pm@lists.linux-foundation.org, tboot-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org, liang.tang@oracle.com
-Cc: Shane Wang <shane.wang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, xen-devel@lists.xensource.com, hpa@zytor.com
+To: guenter.roeck@ericsson.com, Donggeun Kim <dg77.kim@samsung.com>
+Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 16, 2011 at 05:38:13PM -0500, Konrad Rzeszutek Wilk wrote:
-> From: Tang Liang <liang.tang@oracle.com>
+Hi Guenter,
 
-Hey Joseph,
+The main idea of this work is to leave the current userspace based
+notification scheme and add the kernel based cooling scheme on top of
+it. Anyway, It is a good idea to move the file hwmon/exynos4_tmu.c as
+this creates 2 hwmon entries.
+Adding CC: Donggeun Kim to know his opinion.
 
-I remember you acked the initial rfc patches I had posted.
-But I was wondering if these ones are to your liking (I think they are -
-they aren't that much different, but I didn't want to blindly sticking
-'Acked-by' as they did change a bit).
+Thanks,
+Amit Daniel
 
-Thanks!
-> 
-> The ACPI suspend path makes a call to tboot_sleep right before
-> it writes the PM1A, PM1B values. We replace the direct call to
-> tboot via an registration callback similar to __acpi_register_gsi.
-> 
-> CC: Thomas Gleixner <tglx@linutronix.de>
-> CC: "H. Peter Anvin" <hpa@zytor.com>
-> CC: x86@kernel.org
-> CC: Len Brown <len.brown@intel.com>
-> CC: Joseph Cihula <joseph.cihula@intel.com>
-> CC: Shane Wang <shane.wang@intel.com>
-> CC: xen-devel@lists.xensource.com
-> CC: linux-pm@lists.linux-foundation.org
-> CC: tboot-devel@lists.sourceforge.net
-> CC: linux-acpi@vger.kernel.org
-> [v1: Added __attribute__ ((unused))]
-> [v2: Introduced a wrapper instead of changing tboot_sleep return values]
-> [v3: Added return value AE_CTRL_SKIP for acpi_os_sleep_prepare]
-> Signed-off-by: Tang Liang <liang.tang@oracle.com>
-> [v1: Fix compile issues on IA64 and PPC64]
-> [v2: Fix where __acpi_os_prepare_sleep==NULL and did not go in sleep properly]
-> Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-> ---
->  arch/x86/kernel/tboot.c       |    8 ++++++++
->  drivers/acpi/acpica/hwsleep.c |   10 +++++++---
->  drivers/acpi/osl.c            |   24 ++++++++++++++++++++++++
->  include/acpi/acexcep.h        |    1 +
->  include/linux/acpi.h          |   10 ++++++++++
->  include/linux/tboot.h         |    1 -
->  6 files changed, 50 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/tboot.c b/arch/x86/kernel/tboot.c
-> index e2410e2..1a4ab7d 100644
-> --- a/arch/x86/kernel/tboot.c
-> +++ b/arch/x86/kernel/tboot.c
-> @@ -297,6 +297,12 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
->  
->  	tboot_shutdown(acpi_shutdown_map[sleep_state]);
->  }
-> +static int tboot_sleep_wrapper(u8 sleep_state, u32 pm1a_control,
-> +			       u32 pm1b_control)
-> +{
-> +	tboot_sleep(sleep_state, pm1a_control, pm1b_control);
-> +	return 0;
-> +}
->  
->  static atomic_t ap_wfs_count;
->  
-> @@ -345,6 +351,8 @@ static __init int tboot_late_init(void)
->  
->  	atomic_set(&ap_wfs_count, 0);
->  	register_hotcpu_notifier(&tboot_cpu_notifier);
-> +
-> +	acpi_os_set_prepare_sleep(&tboot_sleep_wrapper);
->  	return 0;
->  }
->  
-> diff --git a/drivers/acpi/acpica/hwsleep.c b/drivers/acpi/acpica/hwsleep.c
-> index d52da30..992359a 100644
-> --- a/drivers/acpi/acpica/hwsleep.c
-> +++ b/drivers/acpi/acpica/hwsleep.c
-> @@ -43,9 +43,9 @@
->   */
->  
->  #include <acpi/acpi.h>
-> +#include <linux/acpi.h>
->  #include "accommon.h"
->  #include "actables.h"
-> -#include <linux/tboot.h>
->  #include <linux/module.h>
->  
->  #define _COMPONENT          ACPI_HARDWARE
-> @@ -344,8 +344,12 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
->  
->  	ACPI_FLUSH_CPU_CACHE();
->  
-> -	tboot_sleep(sleep_state, pm1a_control, pm1b_control);
-> -
-> +	status = acpi_os_prepare_sleep(sleep_state, pm1a_control,
-> +				       pm1b_control);
-> +	if (ACPI_SKIP(status))
-> +		return_ACPI_STATUS(AE_OK);
-> +	if (ACPI_FAILURE(status))
-> +		return_ACPI_STATUS(status);
->  	/* Write #2: Write both SLP_TYP + SLP_EN */
->  
->  	status = acpi_hw_write_pm1_control(pm1a_control, pm1b_control);
-> diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-> index f31c5c5..f3aae4b 100644
-> --- a/drivers/acpi/osl.c
-> +++ b/drivers/acpi/osl.c
-> @@ -76,6 +76,9 @@ EXPORT_SYMBOL(acpi_in_debugger);
->  extern char line_buf[80];
->  #endif				/*ENABLE_DEBUGGER */
->  
-> +static int (*__acpi_os_prepare_sleep)(u8 sleep_state, u32 pm1a_ctrl,
-> +				      u32 pm1b_ctrl);
-> +
->  static acpi_osd_handler acpi_irq_handler;
->  static void *acpi_irq_context;
->  static struct workqueue_struct *kacpid_wq;
-> @@ -1659,3 +1662,24 @@ acpi_status acpi_os_terminate(void)
->  
->  	return AE_OK;
->  }
-> +
-> +acpi_status acpi_os_prepare_sleep(u8 sleep_state, u32 pm1a_control,
-> +				  u32 pm1b_control)
-> +{
-> +	int rc = 0;
-> +	if (__acpi_os_prepare_sleep)
-> +		rc = __acpi_os_prepare_sleep(sleep_state,
-> +					     pm1a_control, pm1b_control);
-> +	if (rc < 0)
-> +		return AE_ERROR;
-> +	else if (rc > 0)
-> +		return AE_CTRL_SKIP;
-> +
-> +	return AE_OK;
-> +}
-> +
-> +void acpi_os_set_prepare_sleep(int (*func)(u8 sleep_state,
-> +			       u32 pm1a_ctrl, u32 pm1b_ctrl))
-> +{
-> +	__acpi_os_prepare_sleep = func;
-> +}
-> diff --git a/include/acpi/acexcep.h b/include/acpi/acexcep.h
-> index 5b6c391..fa0d22c 100644
-> --- a/include/acpi/acexcep.h
-> +++ b/include/acpi/acexcep.h
-> @@ -57,6 +57,7 @@
->  #define ACPI_SUCCESS(a)                 (!(a))
->  #define ACPI_FAILURE(a)                 (a)
->  
-> +#define ACPI_SKIP(a)                    (a == AE_CTRL_SKIP)
->  #define AE_OK                           (acpi_status) 0x0000
->  
->  /*
-> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-> index 6001b4da..fccd017 100644
-> --- a/include/linux/acpi.h
-> +++ b/include/linux/acpi.h
-> @@ -359,4 +359,14 @@ static inline int suspend_nvs_register(unsigned long a, unsigned long b)
->  }
->  #endif
->  
-> +#ifdef CONFIG_ACPI
-> +void acpi_os_set_prepare_sleep(int (*func)(u8 sleep_state,
-> +			       u32 pm1a_ctrl,  u32 pm1b_ctrl));
-> +
-> +acpi_status acpi_os_prepare_sleep(u8 sleep_state,
-> +				  u32 pm1a_control, u32 pm1b_control);
-> +#else
-> +#define acpi_os_set_prepare_sleep(func, pm1a_ctrl, pm1b_ctrl) do { } while (0)
-> +#endif
-> +
->  #endif	/*_LINUX_ACPI_H*/
-> diff --git a/include/linux/tboot.h b/include/linux/tboot.h
-> index 1dba6ee..c75128b 100644
-> --- a/include/linux/tboot.h
-> +++ b/include/linux/tboot.h
-> @@ -143,7 +143,6 @@ static inline int tboot_enabled(void)
->  
->  extern void tboot_probe(void);
->  extern void tboot_shutdown(u32 shutdown_type);
-> -extern void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control);
->  extern struct acpi_table_header *tboot_get_dmar_table(
->  				      struct acpi_table_header *dmar_tbl);
->  extern int tboot_force_iommu(void);
-> -- 
-> 1.7.7.4
+On 4 January 2012 03:55, Guenter Roeck <guenter.roeck@ericsson.com> wrote:
+> On Wed, 2011-12-21 at 06:59 -0500, Amit Daniel Kachhap wrote:
+>> Export and register information from the hwmon tmu sensor to the samsung
+>> exynos kernel thermal framework where different cooling devices and ther=
+mal
+>> zone are binded. The exported information is based according to the data
+>> structure thermal_sensor_conf present in exynos_thermal.h. HWMON sysfs
+>> functions are currently left although all of them are present in generic
+>> linux thermal layer.
+>> Also the platform data structure is modified to pass frequency cooling
+>> in percentages for each thermal level.
+>>
+> Hi Amit,
+>
+> wouldn't it make more sense to merge the code as necessary from
+> hwmon/exynos4_tmu.c into the new thermal/exynos_thermal.c, and drop
+> hwmon/exynos4_tmu.c entirely ?
+>
+> With that, you should get the hwmon entries for free, and we would not
+> have to maintain two drivers with overlapping functionality.
+>
+> Thanks,
+> Guenter
+>
+>> Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+>> ---
+>> =A0drivers/hwmon/exynos4_tmu.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 34 ++++=
+++++++++++++++++++++++--
+>> =A0include/linux/platform_data/exynos4_tmu.h | =A0 =A07 ++++++
+>> =A02 files changed, 38 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/hwmon/exynos4_tmu.c b/drivers/hwmon/exynos4_tmu.c
+>> index f2359a0..6912a7f 100644
+>> --- a/drivers/hwmon/exynos4_tmu.c
+>> +++ b/drivers/hwmon/exynos4_tmu.c
+>> @@ -37,6 +37,9 @@
+>> =A0#include <linux/hwmon-sysfs.h>
+>>
+>> =A0#include <linux/platform_data/exynos4_tmu.h>
+>> +#ifdef CONFIG_SAMSUNG_THERMAL_INTERFACE
+>> +#include <linux/exynos_thermal.h>
+>> +#endif
+>>
+>> =A0#define EXYNOS4_TMU_REG_TRIMINFO =A0 =A0 0x0
+>> =A0#define EXYNOS4_TMU_REG_CONTROL =A0 =A0 =A0 =A0 =A0 =A0 =A00x20
+>> @@ -248,10 +251,13 @@ static void exynos4_tmu_work(struct work_struct *w=
+ork)
+>>
+>> =A0 =A0 =A0 kobject_uevent(&data->hwmon_dev->kobj, KOBJ_CHANGE);
+>>
+>> - =A0 =A0 enable_irq(data->irq);
+>>
+>> =A0 =A0 =A0 clk_disable(data->clk);
+>> =A0 =A0 =A0 mutex_unlock(&data->lock);
+>> +#ifdef CONFIG_SAMSUNG_THERMAL_INTERFACE
+>> + =A0 =A0 exynos4_report_trigger();
+>> +#endif
+>> + =A0 =A0 enable_irq(data->irq);
+>> =A0}
+>>
+>> =A0static irqreturn_t exynos4_tmu_irq(int irq, void *id)
+>> @@ -345,6 +351,14 @@ static const struct attribute_group exynos4_tmu_att=
+r_group =3D {
+>> =A0 =A0 =A0 .attrs =3D exynos4_tmu_attributes,
+>> =A0};
+>>
+>> +#ifdef CONFIG_SAMSUNG_THERMAL_INTERFACE
+>> +static struct thermal_sensor_conf exynos4_sensor_conf =3D {
+>> + =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D "exynos4-therm",
+>> + =A0 =A0 .read_temperature =A0 =A0 =A0 =3D (int (*)(void *))exynos4_tmu=
+_read,
+>> +};
+>> +#endif
+>> +/*CONFIG_SAMSUNG_THERMAL_INTERFACE*/
+>> +
+>> =A0static int __devinit exynos4_tmu_probe(struct platform_device *pdev)
+>> =A0{
+>> =A0 =A0 =A0 struct exynos4_tmu_data *data;
+>> @@ -432,9 +446,20 @@ static int __devinit exynos4_tmu_probe(struct platf=
+orm_device *pdev)
+>> =A0 =A0 =A0 }
+>>
+>> =A0 =A0 =A0 exynos4_tmu_control(pdev, true);
+>> -
+>> +#ifdef CONFIG_SAMSUNG_THERMAL_INTERFACE
+>> + =A0 =A0 (&exynos4_sensor_conf)->private_data =3D data;
+>> + =A0 =A0 (&exynos4_sensor_conf)->sensor_data =3D pdata;
+>> + =A0 =A0 ret =3D exynos4_register_thermal(&exynos4_sensor_conf);
+>> + =A0 =A0 if (ret) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&pdev->dev, "Failed to register therma=
+l interface\n");
+>> + =A0 =A0 =A0 =A0 =A0 =A0 goto err_hwmon_device;
+>> + =A0 =A0 }
+>> +#endif
+>> =A0 =A0 =A0 return 0;
+>> -
+>> +#ifdef CONFIG_SAMSUNG_THERMAL_INTERFACE
+>> +err_hwmon_device:
+>> + =A0 =A0 hwmon_device_unregister(data->hwmon_dev);
+>> +#endif
+>> =A0err_create_group:
+>> =A0 =A0 =A0 sysfs_remove_group(&pdev->dev.kobj, &exynos4_tmu_attr_group);
+>> =A0err_clk:
+>> @@ -458,6 +483,9 @@ static int __devexit exynos4_tmu_remove(struct platf=
+orm_device *pdev)
+>>
+>> =A0 =A0 =A0 exynos4_tmu_control(pdev, false);
+>>
+>> +#ifdef CONFIG_SAMSUNG_THERMAL_INTERFACE
+>> + =A0 =A0 exynos4_unregister_thermal();
+>> +#endif
+>> =A0 =A0 =A0 hwmon_device_unregister(data->hwmon_dev);
+>> =A0 =A0 =A0 sysfs_remove_group(&pdev->dev.kobj, &exynos4_tmu_attr_group);
+>>
+>> diff --git a/include/linux/platform_data/exynos4_tmu.h b/include/linux/p=
+latform_data/exynos4_tmu.h
+>> index 39e038c..642c508 100644
+>> --- a/include/linux/platform_data/exynos4_tmu.h
+>> +++ b/include/linux/platform_data/exynos4_tmu.h
+>> @@ -21,6 +21,7 @@
+>>
+>> =A0#ifndef _LINUX_EXYNOS4_TMU_H
+>> =A0#define _LINUX_EXYNOS4_TMU_H
+>> +#include <linux/cpu_cooling.h>
+>>
+>> =A0enum calibration_type {
+>> =A0 =A0 =A0 TYPE_ONE_POINT_TRIMMING,
+>> @@ -64,6 +65,9 @@ enum calibration_type {
+>> =A0 * =A0 in the positive-TC generator block
+>> =A0 * =A0 0 <=3D reference_voltage <=3D 31
+>> =A0 * @cal_type: calibration type for temperature
+>> + * @freq_pctg_table: Table representing frequency reduction percentage.
+>> + * @freq_tab_count: Count of the above table as frequency reduction may
+>> + * =A0 applicable to only some of the trigger levels.
+>> =A0 *
+>> =A0 * This structure is required for configuration of exynos4_tmu driver.
+>> =A0 */
+>> @@ -79,5 +83,8 @@ struct exynos4_tmu_platform_data {
+>> =A0 =A0 =A0 u8 reference_voltage;
+>>
+>> =A0 =A0 =A0 enum calibration_type cal_type;
+>> +
+>> + =A0 =A0 struct freq_pctg_table freq_tab[4];
+>> + =A0 =A0 unsigned int freq_tab_count;
+>> =A0};
+>> =A0#endif /* _LINUX_EXYNOS4_TMU_H */
+>
+>
