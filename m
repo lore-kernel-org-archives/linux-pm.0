@@ -1,17 +1,16 @@
 From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH 2/6] PM QoS: Add CPU frequency min/max as PM
- QoS params
-Date: Fri, 6 Jan 2012 07:30:27 -0800
-Message-ID: <20120106153027.GE12530@mgross-G62>
+Subject: Re: [PATCH 3/6] cpufreq: Export user_policy min/max
+Date: Fri, 6 Jan 2012 07:33:20 -0800
+Message-ID: <20120106153320.GF12530@mgross-G62>
 References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
-	<1325810186-28986-3-git-send-email-amiettinen@nvidia.com>
+	<1325810186-28986-4-git-send-email-amiettinen@nvidia.com>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1325810186-28986-3-git-send-email-amiettinen@nvidia.com>
+In-Reply-To: <1325810186-28986-4-git-send-email-amiettinen@nvidia.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -25,100 +24,52 @@ To: Antti P Miettinen <amiettinen@nvidia.com>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 06, 2012 at 02:36:22AM +0200, Antti P Miettinen wrote:
-> Add minimum and maximum CPU frequency as PM QoS parameters.
-> 
-> Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
-> ---
->  include/linux/pm_qos.h |    5 +++++
->  kernel/power/qos.c     |   32 +++++++++++++++++++++++++++++++-
->  2 files changed, 36 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> index 5ac91d8..7b8d08b 100644
-> --- a/include/linux/pm_qos.h
-> +++ b/include/linux/pm_qos.h
-> @@ -14,8 +14,11 @@ enum {
->  	PM_QOS_CPU_DMA_LATENCY,
->  	PM_QOS_NETWORK_LATENCY,
->  	PM_QOS_NETWORK_THROUGHPUT,
-> +	PM_QOS_CPU_FREQ_MIN,
-> +	PM_QOS_CPU_FREQ_MAX,
-What is this about?  How sould freq_max make any sense in the context of
-constraining power mangement throutling?  this is wrong.
+Why do you need to export these values here and from the pmqos ABI?
 
-You should only have a cpu throughput qos.  I.e. FREQ_MIN.
-FWIW in my patch I named it : PM_QOS_CPU_THROUGHPUT  but, its just a
-different name to your PM_QOS_CPU_FREQ_MIN name.
-
-
->  
->  	/* insert new class ID */
-> +
->  	PM_QOS_NUM_CLASSES,
->  };
->  
-> @@ -25,6 +28,8 @@ enum {
->  #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
->  #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
->  #define PM_QOS_DEV_LAT_DEFAULT_VALUE		0
-> +#define PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE	0
-> +#define PM_QOS_CPU_FREQ_MAX_DEFAULT_VALUE	LONG_MAX
-
-PM_QOS_FREQ_MAX must go away.
+I don't think we want this change.  Also, isn't it redundant WRT
+existing CPU freq govoner sysfs output?
 
 --mark
 
+On Fri, Jan 06, 2012 at 02:36:23AM +0200, Antti P Miettinen wrote:
+> Add sysfs nodes for user_policy min and max settings.
+> 
+> Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 8c2df34..e63b29f 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -364,6 +364,8 @@ show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
+>  show_one(scaling_min_freq, min);
+>  show_one(scaling_max_freq, max);
+>  show_one(scaling_cur_freq, cur);
+> +show_one(policy_min_freq, user_policy.min);
+> +show_one(policy_max_freq, user_policy.max);
 >  
->  struct pm_qos_request {
->  	struct plist_node node;
-> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> index d6d6dbd..66ae05e 100644
-> --- a/kernel/power/qos.c
-> +++ b/kernel/power/qos.c
-> @@ -101,11 +101,41 @@ static struct pm_qos_object network_throughput_pm_qos = {
+>  static int __cpufreq_set_policy(struct cpufreq_policy *data,
+>  				struct cpufreq_policy *policy);
+> @@ -582,6 +584,8 @@ cpufreq_freq_attr_rw(scaling_min_freq);
+>  cpufreq_freq_attr_rw(scaling_max_freq);
+>  cpufreq_freq_attr_rw(scaling_governor);
+>  cpufreq_freq_attr_rw(scaling_setspeed);
+> +cpufreq_freq_attr_ro(policy_min_freq);
+> +cpufreq_freq_attr_ro(policy_max_freq);
+>  
+>  static struct attribute *default_attrs[] = {
+>  	&cpuinfo_min_freq.attr,
+> @@ -595,6 +599,8 @@ static struct attribute *default_attrs[] = {
+>  	&scaling_driver.attr,
+>  	&scaling_available_governors.attr,
+>  	&scaling_setspeed.attr,
+> +	&policy_min_freq.attr,
+> +	&policy_max_freq.attr,
+>  	NULL
 >  };
 >  
->  
-> +static BLOCKING_NOTIFIER_HEAD(cpu_freq_min_notifier);
-> +static struct pm_qos_constraints cpu_freq_min_constraints = {
-> +	.list = PLIST_HEAD_INIT(cpu_freq_min_constraints.list),
-> +	.target_value = PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE,
-> +	.default_value = PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE,
-> +	.type = PM_QOS_MAX,
-> +	.notifiers = &cpu_freq_min_notifier,
-> +};
-> +static struct pm_qos_object cpu_freq_min_pm_qos = {
-> +	.constraints = &cpu_freq_min_constraints,
-> +	.name = "cpu_freq_min",
-> +};
-> +
-> +
-> +static BLOCKING_NOTIFIER_HEAD(cpu_freq_max_notifier);
-> +static struct pm_qos_constraints cpu_freq_max_constraints = {
-> +	.list = PLIST_HEAD_INIT(cpu_freq_max_constraints.list),
-> +	.target_value = PM_QOS_CPU_FREQ_MAX_DEFAULT_VALUE,
-> +	.default_value = PM_QOS_CPU_FREQ_MAX_DEFAULT_VALUE,
-> +	.type = PM_QOS_MIN,
-> +	.notifiers = &cpu_freq_max_notifier,
-> +};
-> +static struct pm_qos_object cpu_freq_max_pm_qos = {
-> +	.constraints = &cpu_freq_max_constraints,
-> +	.name = "cpu_freq_max",
-> +};
-> +
-> +
->  static struct pm_qos_object *pm_qos_array[] = {
->  	&null_pm_qos,
->  	&cpu_dma_pm_qos,
->  	&network_lat_pm_qos,
-> -	&network_throughput_pm_qos
-> +	&network_throughput_pm_qos,
-> +	&cpu_freq_min_pm_qos,
-> +	&cpu_freq_max_pm_qos
->  };
->  
->  static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
 > -- 
 > 1.7.4.1
 > 
