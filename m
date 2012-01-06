@@ -1,8 +1,8 @@
 From: mark gross <markgross@thegnar.org>
 Subject: Re: [PATCH 0/6] RFC: CPU frequency min/max as PM QoS
  params
-Date: Fri, 6 Jan 2012 07:46:13 -0800
-Message-ID: <20120106154613.GI12530@mgross-G62>
+Date: Fri, 6 Jan 2012 10:27:43 -0800
+Message-ID: <20120106182743.GA13859@mgross-G62>
 References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
@@ -84,9 +84,9 @@ Signed-off-by: markgross <markgross@thegnar.org>
 
 
 >From b4be99354c5af20cbd4041cddd6038e2353e06b4 Mon Sep 17 00:00:00 2001
-From: mgross <mgross@mini>
-Date: Sat, 24 Dec 2011 13:40:03 -0800
-Subject: [PATCH] Some devices have a subtle relationship with the CPU
+>From: mgross <mgross@mini>
+>Date: Sat, 24 Dec 2011 13:40:03 -0800
+>Subject: [PATCH] Some devices have a subtle relationship with the CPU
  throughput and need to set a minimum cpu frequency en order
  for the device to not experience performance issues with
  buffer under runs because the cpu was throttled too much to
