@@ -1,17 +1,13 @@
-From: Donggeun Kim <dg77.kim@samsung.com>
-Subject: Re: [lm-sensors] [RFC PATCH 2/3] thermal: exynos4:
- Register the tmu sensor with the thermal interface layer
-Date: Thu, 05 Jan 2012 14:57:35 +0900
-Message-ID: <4F053BCF.7030600__1981.19100318781$1325790508$gmane$org@samsung.com>
-References: <1324468798-20423-1-git-send-email-amit.kachhap@linaro.org>
-	<1324468798-20423-3-git-send-email-amit.kachhap@linaro.org>
-	<1325629553.26706.11.camel@groeck-laptop>
-	<CAK44p20XeLVkJyox2SsDqyy=RYgEQNpyGGypwTMPXpueQT1T3g@mail.gmail.com>
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: [PATCH 4/6] cpufreq: Preserve sysfs min/max request
+Date: Fri,  6 Jan 2012 02:36:24 +0200
+Message-ID: <1325810186-28986-5-git-send-email-amiettinen@nvidia.com>
+References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <CAK44p20XeLVkJyox2SsDqyy=RYgEQNpyGGypwTMPXpueQT1T3g@mail.gmail.com>
+In-Reply-To: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,111 +17,32 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Amit Kachhap <amit.kachhap@linaro.org>
-Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, guenter.roeck@ericsson.com
+To: linux-pm@lists.linux-foundation.org
+Cc: Antti P Miettinen <amiettinen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-QWN0dWFsbHksIHRoZSBUTVUgZHJpdmVyIGlzIGNsb3NlbHkgcmVsYXRlZCB0byB0aGVybWFsIGxh
-eWVyLgpJIHRoaW5rIGl0J3Mgb2theSB0byBtb3ZlIGl0IHRvIHRoZSB0aGVybWFsLgoKVGhhbmtz
-LgotRG9uZ2dldW4KCk9uIDIwMTLrhYQgMDHsm5QgMDTsnbwgMTk6MTQsIEFtaXQgS2FjaGhhcCB3
-cm90ZToKPiBIaSBHdWVudGVyLAo+IAo+IFRoZSBtYWluIGlkZWEgb2YgdGhpcyB3b3JrIGlzIHRv
-IGxlYXZlIHRoZSBjdXJyZW50IHVzZXJzcGFjZSBiYXNlZAo+IG5vdGlmaWNhdGlvbiBzY2hlbWUg
-YW5kIGFkZCB0aGUga2VybmVsIGJhc2VkIGNvb2xpbmcgc2NoZW1lIG9uIHRvcCBvZgo+IGl0LiBB
-bnl3YXksIEl0IGlzIGEgZ29vZCBpZGVhIHRvIG1vdmUgdGhlIGZpbGUgaHdtb24vZXh5bm9zNF90
-bXUuYyBhcwo+IHRoaXMgY3JlYXRlcyAyIGh3bW9uIGVudHJpZXMuCj4gQWRkaW5nIENDOiBEb25n
-Z2V1biBLaW0gdG8ga25vdyBoaXMgb3Bpbmlvbi4KPiAKPiBUaGFua3MsCj4gQW1pdCBEYW5pZWwK
-PiAKPiBPbiA0IEphbnVhcnkgMjAxMiAwMzo1NSwgR3VlbnRlciBSb2VjayA8Z3VlbnRlci5yb2Vj
-a0Blcmljc3Nvbi5jb20+IHdyb3RlOgo+PiBPbiBXZWQsIDIwMTEtMTItMjEgYXQgMDY6NTkgLTA1
-MDAsIEFtaXQgRGFuaWVsIEthY2hoYXAgd3JvdGU6Cj4+PiBFeHBvcnQgYW5kIHJlZ2lzdGVyIGlu
-Zm9ybWF0aW9uIGZyb20gdGhlIGh3bW9uIHRtdSBzZW5zb3IgdG8gdGhlIHNhbXN1bmcKPj4+IGV4
-eW5vcyBrZXJuZWwgdGhlcm1hbCBmcmFtZXdvcmsgd2hlcmUgZGlmZmVyZW50IGNvb2xpbmcgZGV2
-aWNlcyBhbmQgdGhlcm1hbAo+Pj4gem9uZSBhcmUgYmluZGVkLiBUaGUgZXhwb3J0ZWQgaW5mb3Jt
-YXRpb24gaXMgYmFzZWQgYWNjb3JkaW5nIHRvIHRoZSBkYXRhCj4+PiBzdHJ1Y3R1cmUgdGhlcm1h
-bF9zZW5zb3JfY29uZiBwcmVzZW50IGluIGV4eW5vc190aGVybWFsLmguIEhXTU9OIHN5c2ZzCj4+
-PiBmdW5jdGlvbnMgYXJlIGN1cnJlbnRseSBsZWZ0IGFsdGhvdWdoIGFsbCBvZiB0aGVtIGFyZSBw
-cmVzZW50IGluIGdlbmVyaWMKPj4+IGxpbnV4IHRoZXJtYWwgbGF5ZXIuCj4+PiBBbHNvIHRoZSBw
-bGF0Zm9ybSBkYXRhIHN0cnVjdHVyZSBpcyBtb2RpZmllZCB0byBwYXNzIGZyZXF1ZW5jeSBjb29s
-aW5nCj4+PiBpbiBwZXJjZW50YWdlcyBmb3IgZWFjaCB0aGVybWFsIGxldmVsLgo+Pj4KPj4gSGkg
-QW1pdCwKPj4KPj4gd291bGRuJ3QgaXQgbWFrZSBtb3JlIHNlbnNlIHRvIG1lcmdlIHRoZSBjb2Rl
-IGFzIG5lY2Vzc2FyeSBmcm9tCj4+IGh3bW9uL2V4eW5vczRfdG11LmMgaW50byB0aGUgbmV3IHRo
-ZXJtYWwvZXh5bm9zX3RoZXJtYWwuYywgYW5kIGRyb3AKPj4gaHdtb24vZXh5bm9zNF90bXUuYyBl
-bnRpcmVseSA/Cj4+Cj4+IFdpdGggdGhhdCwgeW91IHNob3VsZCBnZXQgdGhlIGh3bW9uIGVudHJp
-ZXMgZm9yIGZyZWUsIGFuZCB3ZSB3b3VsZCBub3QKPj4gaGF2ZSB0byBtYWludGFpbiB0d28gZHJp
-dmVycyB3aXRoIG92ZXJsYXBwaW5nIGZ1bmN0aW9uYWxpdHkuCj4+Cj4+IFRoYW5rcywKPj4gR3Vl
-bnRlcgo+Pgo+Pj4gU2lnbmVkLW9mZi1ieTogQW1pdCBEYW5pZWwgS2FjaGhhcCA8YW1pdC5rYWNo
-aGFwQGxpbmFyby5vcmc+Cj4+PiAtLS0KPj4+ICBkcml2ZXJzL2h3bW9uL2V4eW5vczRfdG11LmMg
-ICAgICAgICAgICAgICB8ICAgMzQgKysrKysrKysrKysrKysrKysrKysrKysrKystLQo+Pj4gIGlu
-Y2x1ZGUvbGludXgvcGxhdGZvcm1fZGF0YS9leHlub3M0X3RtdS5oIHwgICAgNyArKysrKysKPj4+
-ICAyIGZpbGVzIGNoYW5nZWQsIDM4IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCj4+Pgo+
-Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvaHdtb24vZXh5bm9zNF90bXUuYyBiL2RyaXZlcnMvaHdt
-b24vZXh5bm9zNF90bXUuYwo+Pj4gaW5kZXggZjIzNTlhMC4uNjkxMmE3ZiAxMDA2NDQKPj4+IC0t
-LSBhL2RyaXZlcnMvaHdtb24vZXh5bm9zNF90bXUuYwo+Pj4gKysrIGIvZHJpdmVycy9od21vbi9l
-eHlub3M0X3RtdS5jCj4+PiBAQCAtMzcsNiArMzcsOSBAQAo+Pj4gICNpbmNsdWRlIDxsaW51eC9o
-d21vbi1zeXNmcy5oPgo+Pj4KPj4+ICAjaW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGF0YS9leHlu
-b3M0X3RtdS5oPgo+Pj4gKyNpZmRlZiBDT05GSUdfU0FNU1VOR19USEVSTUFMX0lOVEVSRkFDRQo+
-Pj4gKyNpbmNsdWRlIDxsaW51eC9leHlub3NfdGhlcm1hbC5oPgo+Pj4gKyNlbmRpZgo+Pj4KPj4+
-ICAjZGVmaW5lIEVYWU5PUzRfVE1VX1JFR19UUklNSU5GTyAgICAgMHgwCj4+PiAgI2RlZmluZSBF
-WFlOT1M0X1RNVV9SRUdfQ09OVFJPTCAgICAgICAgICAgICAgMHgyMAo+Pj4gQEAgLTI0OCwxMCAr
-MjUxLDEzIEBAIHN0YXRpYyB2b2lkIGV4eW5vczRfdG11X3dvcmsoc3RydWN0IHdvcmtfc3RydWN0
-ICp3b3JrKQo+Pj4KPj4+ICAgICAgIGtvYmplY3RfdWV2ZW50KCZkYXRhLT5od21vbl9kZXYtPmtv
-YmosIEtPQkpfQ0hBTkdFKTsKPj4+Cj4+PiAtICAgICBlbmFibGVfaXJxKGRhdGEtPmlycSk7Cj4+
-Pgo+Pj4gICAgICAgY2xrX2Rpc2FibGUoZGF0YS0+Y2xrKTsKPj4+ICAgICAgIG11dGV4X3VubG9j
-aygmZGF0YS0+bG9jayk7Cj4+PiArI2lmZGVmIENPTkZJR19TQU1TVU5HX1RIRVJNQUxfSU5URVJG
-QUNFCj4+PiArICAgICBleHlub3M0X3JlcG9ydF90cmlnZ2VyKCk7Cj4+PiArI2VuZGlmCj4+PiAr
-ICAgICBlbmFibGVfaXJxKGRhdGEtPmlycSk7Cj4+PiAgfQo+Pj4KPj4+ICBzdGF0aWMgaXJxcmV0
-dXJuX3QgZXh5bm9zNF90bXVfaXJxKGludCBpcnEsIHZvaWQgKmlkKQo+Pj4gQEAgLTM0NSw2ICsz
-NTEsMTQgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBhdHRyaWJ1dGVfZ3JvdXAgZXh5bm9zNF90bXVf
-YXR0cl9ncm91cCA9IHsKPj4+ICAgICAgIC5hdHRycyA9IGV4eW5vczRfdG11X2F0dHJpYnV0ZXMs
-Cj4+PiAgfTsKPj4+Cj4+PiArI2lmZGVmIENPTkZJR19TQU1TVU5HX1RIRVJNQUxfSU5URVJGQUNF
-Cj4+PiArc3RhdGljIHN0cnVjdCB0aGVybWFsX3NlbnNvcl9jb25mIGV4eW5vczRfc2Vuc29yX2Nv
-bmYgPSB7Cj4+PiArICAgICAubmFtZSAgICAgICAgICAgICAgICAgICA9ICJleHlub3M0LXRoZXJt
-IiwKPj4+ICsgICAgIC5yZWFkX3RlbXBlcmF0dXJlICAgICAgID0gKGludCAoKikodm9pZCAqKSll
-eHlub3M0X3RtdV9yZWFkLAo+Pj4gK307Cj4+PiArI2VuZGlmCj4+PiArLypDT05GSUdfU0FNU1VO
-R19USEVSTUFMX0lOVEVSRkFDRSovCj4+PiArCj4+PiAgc3RhdGljIGludCBfX2RldmluaXQgZXh5
-bm9zNF90bXVfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPj4+ICB7Cj4+PiAg
-ICAgICBzdHJ1Y3QgZXh5bm9zNF90bXVfZGF0YSAqZGF0YTsKPj4+IEBAIC00MzIsOSArNDQ2LDIw
-IEBAIHN0YXRpYyBpbnQgX19kZXZpbml0IGV4eW5vczRfdG11X3Byb2JlKHN0cnVjdCBwbGF0Zm9y
-bV9kZXZpY2UgKnBkZXYpCj4+PiAgICAgICB9Cj4+Pgo+Pj4gICAgICAgZXh5bm9zNF90bXVfY29u
-dHJvbChwZGV2LCB0cnVlKTsKPj4+IC0KPj4+ICsjaWZkZWYgQ09ORklHX1NBTVNVTkdfVEhFUk1B
-TF9JTlRFUkZBQ0UKPj4+ICsgICAgICgmZXh5bm9zNF9zZW5zb3JfY29uZiktPnByaXZhdGVfZGF0
-YSA9IGRhdGE7Cj4+PiArICAgICAoJmV4eW5vczRfc2Vuc29yX2NvbmYpLT5zZW5zb3JfZGF0YSA9
-IHBkYXRhOwo+Pj4gKyAgICAgcmV0ID0gZXh5bm9zNF9yZWdpc3Rlcl90aGVybWFsKCZleHlub3M0
-X3NlbnNvcl9jb25mKTsKPj4+ICsgICAgIGlmIChyZXQpIHsKPj4+ICsgICAgICAgICAgICAgZGV2
-X2VycigmcGRldi0+ZGV2LCAiRmFpbGVkIHRvIHJlZ2lzdGVyIHRoZXJtYWwgaW50ZXJmYWNlXG4i
-KTsKPj4+ICsgICAgICAgICAgICAgZ290byBlcnJfaHdtb25fZGV2aWNlOwo+Pj4gKyAgICAgfQo+
-Pj4gKyNlbmRpZgo+Pj4gICAgICAgcmV0dXJuIDA7Cj4+PiAtCj4+PiArI2lmZGVmIENPTkZJR19T
-QU1TVU5HX1RIRVJNQUxfSU5URVJGQUNFCj4+PiArZXJyX2h3bW9uX2RldmljZToKPj4+ICsgICAg
-IGh3bW9uX2RldmljZV91bnJlZ2lzdGVyKGRhdGEtPmh3bW9uX2Rldik7Cj4+PiArI2VuZGlmCj4+
-PiAgZXJyX2NyZWF0ZV9ncm91cDoKPj4+ICAgICAgIHN5c2ZzX3JlbW92ZV9ncm91cCgmcGRldi0+
-ZGV2LmtvYmosICZleHlub3M0X3RtdV9hdHRyX2dyb3VwKTsKPj4+ICBlcnJfY2xrOgo+Pj4gQEAg
-LTQ1OCw2ICs0ODMsOSBAQCBzdGF0aWMgaW50IF9fZGV2ZXhpdCBleHlub3M0X3RtdV9yZW1vdmUo
-c3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPj4+Cj4+PiAgICAgICBleHlub3M0X3RtdV9j
-b250cm9sKHBkZXYsIGZhbHNlKTsKPj4+Cj4+PiArI2lmZGVmIENPTkZJR19TQU1TVU5HX1RIRVJN
-QUxfSU5URVJGQUNFCj4+PiArICAgICBleHlub3M0X3VucmVnaXN0ZXJfdGhlcm1hbCgpOwo+Pj4g
-KyNlbmRpZgo+Pj4gICAgICAgaHdtb25fZGV2aWNlX3VucmVnaXN0ZXIoZGF0YS0+aHdtb25fZGV2
-KTsKPj4+ICAgICAgIHN5c2ZzX3JlbW92ZV9ncm91cCgmcGRldi0+ZGV2LmtvYmosICZleHlub3M0
-X3RtdV9hdHRyX2dyb3VwKTsKPj4+Cj4+PiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9wbGF0
-Zm9ybV9kYXRhL2V4eW5vczRfdG11LmggYi9pbmNsdWRlL2xpbnV4L3BsYXRmb3JtX2RhdGEvZXh5
-bm9zNF90bXUuaAo+Pj4gaW5kZXggMzllMDM4Yy4uNjQyYzUwOCAxMDA2NDQKPj4+IC0tLSBhL2lu
-Y2x1ZGUvbGludXgvcGxhdGZvcm1fZGF0YS9leHlub3M0X3RtdS5oCj4+PiArKysgYi9pbmNsdWRl
-L2xpbnV4L3BsYXRmb3JtX2RhdGEvZXh5bm9zNF90bXUuaAo+Pj4gQEAgLTIxLDYgKzIxLDcgQEAK
-Pj4+Cj4+PiAgI2lmbmRlZiBfTElOVVhfRVhZTk9TNF9UTVVfSAo+Pj4gICNkZWZpbmUgX0xJTlVY
-X0VYWU5PUzRfVE1VX0gKPj4+ICsjaW5jbHVkZSA8bGludXgvY3B1X2Nvb2xpbmcuaD4KPj4+Cj4+
-PiAgZW51bSBjYWxpYnJhdGlvbl90eXBlIHsKPj4+ICAgICAgIFRZUEVfT05FX1BPSU5UX1RSSU1N
-SU5HLAo+Pj4gQEAgLTY0LDYgKzY1LDkgQEAgZW51bSBjYWxpYnJhdGlvbl90eXBlIHsKPj4+ICAg
-KiAgIGluIHRoZSBwb3NpdGl2ZS1UQyBnZW5lcmF0b3IgYmxvY2sKPj4+ICAgKiAgIDAgPD0gcmVm
-ZXJlbmNlX3ZvbHRhZ2UgPD0gMzEKPj4+ICAgKiBAY2FsX3R5cGU6IGNhbGlicmF0aW9uIHR5cGUg
-Zm9yIHRlbXBlcmF0dXJlCj4+PiArICogQGZyZXFfcGN0Z190YWJsZTogVGFibGUgcmVwcmVzZW50
-aW5nIGZyZXF1ZW5jeSByZWR1Y3Rpb24gcGVyY2VudGFnZS4KPj4+ICsgKiBAZnJlcV90YWJfY291
-bnQ6IENvdW50IG9mIHRoZSBhYm92ZSB0YWJsZSBhcyBmcmVxdWVuY3kgcmVkdWN0aW9uIG1heQo+
-Pj4gKyAqICAgYXBwbGljYWJsZSB0byBvbmx5IHNvbWUgb2YgdGhlIHRyaWdnZXIgbGV2ZWxzLgo+
-Pj4gICAqCj4+PiAgICogVGhpcyBzdHJ1Y3R1cmUgaXMgcmVxdWlyZWQgZm9yIGNvbmZpZ3VyYXRp
-b24gb2YgZXh5bm9zNF90bXUgZHJpdmVyLgo+Pj4gICAqLwo+Pj4gQEAgLTc5LDUgKzgzLDggQEAg
-c3RydWN0IGV4eW5vczRfdG11X3BsYXRmb3JtX2RhdGEgewo+Pj4gICAgICAgdTggcmVmZXJlbmNl
-X3ZvbHRhZ2U7Cj4+Pgo+Pj4gICAgICAgZW51bSBjYWxpYnJhdGlvbl90eXBlIGNhbF90eXBlOwo+
-Pj4gKwo+Pj4gKyAgICAgc3RydWN0IGZyZXFfcGN0Z190YWJsZSBmcmVxX3RhYls0XTsKPj4+ICsg
-ICAgIHVuc2lnbmVkIGludCBmcmVxX3RhYl9jb3VudDsKPj4+ICB9Owo+Pj4gICNlbmRpZiAvKiBf
-TElOVVhfRVhZTk9TNF9UTVVfSCAqLwo+Pgo+Pgo+IAoKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Store the value received via sysfs as the user_policy
+min/max value instead of the currently enforced min/max.
+This allows restoring the user min/max values when
+constraints on enforced min/max change.
+
+Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
+---
+ drivers/cpufreq/cpufreq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e63b29f..65a512b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -389,7 +389,7 @@ static ssize_t store_##file_name					\
+ 		return -EINVAL;						\
+ 									\
+ 	ret = __cpufreq_set_policy(policy, &new_policy);		\
+-	policy->user_policy.object = policy->object;			\
++	policy->user_policy.object = new_policy.object;			\
+ 									\
+ 	return ret ? ret : count;					\
+ }
+-- 
+1.7.4.1
