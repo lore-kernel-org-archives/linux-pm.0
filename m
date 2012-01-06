@@ -1,8 +1,7 @@
 From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: [PATCH 2/6] PM QoS: Add CPU frequency min/max as PM QoS
-	params
-Date: Fri,  6 Jan 2012 02:36:22 +0200
-Message-ID: <1325810186-28986-3-git-send-email-amiettinen@nvidia.com>
+Subject: [PATCH 5/6] cpufreq: Enforce PM QoS min/max limits
+Date: Fri,  6 Jan 2012 02:36:25 +0200
+Message-ID: <1325810186-28986-6-git-send-email-amiettinen@nvidia.com>
 References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,85 +21,105 @@ To: linux-pm@lists.linux-foundation.org
 Cc: Antti P Miettinen <amiettinen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add minimum and maximum CPU frequency as PM QoS parameters.
+Observe PM QoS CPU frequency minimum and maximum in addition
+to policy settings.
 
 Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
 ---
- include/linux/pm_qos.h |    5 +++++
- kernel/power/qos.c     |   32 +++++++++++++++++++++++++++++++-
- 2 files changed, 36 insertions(+), 1 deletions(-)
+ drivers/cpufreq/cpufreq.c |   49 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 47 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 5ac91d8..7b8d08b 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -14,8 +14,11 @@ enum {
- 	PM_QOS_CPU_DMA_LATENCY,
- 	PM_QOS_NETWORK_LATENCY,
- 	PM_QOS_NETWORK_THROUGHPUT,
-+	PM_QOS_CPU_FREQ_MIN,
-+	PM_QOS_CPU_FREQ_MAX,
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 65a512b..cd90cd2b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -29,6 +29,7 @@
+ #include <linux/completion.h>
+ #include <linux/mutex.h>
+ #include <linux/syscore_ops.h>
++#include <linux/pm_qos.h>
  
- 	/* insert new class ID */
+ #include <trace/events/power.h>
+ 
+@@ -1634,9 +1635,17 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+ 				struct cpufreq_policy *policy)
+ {
+ 	int ret = 0;
++	unsigned int pmin = policy->min;
++	unsigned int pmax = policy->max;
++	unsigned int qmin = pm_qos_request(PM_QOS_CPU_FREQ_MIN);
++	unsigned int qmax = pm_qos_request(PM_QOS_CPU_FREQ_MAX);
+ 
+-	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", policy->cpu,
+-		policy->min, policy->max);
++	pr_debug("setting new policy for CPU %u: %u - %u (%u - %u) kHz\n",
++		 policy->cpu, pmin, pmax, qmin, qmax);
 +
- 	PM_QOS_NUM_CLASSES,
- };
++	/* clamp the new policy to PM QoS limits */
++	policy->min = max(pmin, qmin);
++	policy->max = min(pmax, qmax);
  
-@@ -25,6 +28,8 @@ enum {
- #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
- #define PM_QOS_DEV_LAT_DEFAULT_VALUE		0
-+#define PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE	0
-+#define PM_QOS_CPU_FREQ_MAX_DEFAULT_VALUE	LONG_MAX
+ 	memcpy(&policy->cpuinfo, &data->cpuinfo,
+ 				sizeof(struct cpufreq_cpuinfo));
+@@ -1711,6 +1720,9 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+ 	}
  
- struct pm_qos_request {
- 	struct plist_node node;
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index d6d6dbd..66ae05e 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -101,11 +101,41 @@ static struct pm_qos_object network_throughput_pm_qos = {
- };
+ error_out:
++	/* restore the limits that the policy requested */
++	policy->min = pmin;
++	policy->max = pmax;
+ 	return ret;
+ }
  
+@@ -1904,9 +1916,36 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
  
-+static BLOCKING_NOTIFIER_HEAD(cpu_freq_min_notifier);
-+static struct pm_qos_constraints cpu_freq_min_constraints = {
-+	.list = PLIST_HEAD_INIT(cpu_freq_min_constraints.list),
-+	.target_value = PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE,
-+	.default_value = PM_QOS_CPU_FREQ_MIN_DEFAULT_VALUE,
-+	.type = PM_QOS_MAX,
-+	.notifiers = &cpu_freq_min_notifier,
-+};
-+static struct pm_qos_object cpu_freq_min_pm_qos = {
-+	.constraints = &cpu_freq_min_constraints,
-+	.name = "cpu_freq_min",
-+};
++static int cpu_freq_notify(struct notifier_block *b,
++			   unsigned long l, void *v);
 +
-+
-+static BLOCKING_NOTIFIER_HEAD(cpu_freq_max_notifier);
-+static struct pm_qos_constraints cpu_freq_max_constraints = {
-+	.list = PLIST_HEAD_INIT(cpu_freq_max_constraints.list),
-+	.target_value = PM_QOS_CPU_FREQ_MAX_DEFAULT_VALUE,
-+	.default_value = PM_QOS_CPU_FREQ_MAX_DEFAULT_VALUE,
-+	.type = PM_QOS_MIN,
-+	.notifiers = &cpu_freq_max_notifier,
++static struct notifier_block min_freq_notifier = {
++	.notifier_call = cpu_freq_notify,
 +};
-+static struct pm_qos_object cpu_freq_max_pm_qos = {
-+	.constraints = &cpu_freq_max_constraints,
-+	.name = "cpu_freq_max",
++static struct notifier_block max_freq_notifier = {
++	.notifier_call = cpu_freq_notify,
 +};
 +
++static int cpu_freq_notify(struct notifier_block *b,
++			   unsigned long l, void *v)
++{
++	int cpu;
++	pr_debug("PM QoS %s %lu\n",
++		 b == &min_freq_notifier ? "min" : "max", l);
++	for_each_online_cpu(cpu) {
++		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
++		if (policy) {
++			cpufreq_update_policy(policy->cpu);
++			cpufreq_cpu_put(policy);
++		}
++	}
++	return NOTIFY_OK;
++}
 +
- static struct pm_qos_object *pm_qos_array[] = {
- 	&null_pm_qos,
- 	&cpu_dma_pm_qos,
- 	&network_lat_pm_qos,
--	&network_throughput_pm_qos
-+	&network_throughput_pm_qos,
-+	&cpu_freq_min_pm_qos,
-+	&cpu_freq_max_pm_qos
- };
+ static int __init cpufreq_core_init(void)
+ {
+ 	int cpu;
++	int rc;
  
- static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ 	for_each_possible_cpu(cpu) {
+ 		per_cpu(cpufreq_policy_cpu, cpu) = -1;
+@@ -1916,6 +1955,12 @@ static int __init cpufreq_core_init(void)
+ 	cpufreq_global_kobject = kobject_create_and_add("cpufreq", &cpu_subsys.dev_root->kobj);
+ 	BUG_ON(!cpufreq_global_kobject);
+ 	register_syscore_ops(&cpufreq_syscore_ops);
++	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MIN,
++				 &min_freq_notifier);
++	BUG_ON(rc);
++	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MAX,
++				 &max_freq_notifier);
++	BUG_ON(rc);
+ 
+ 	return 0;
+ }
 -- 
 1.7.4.1
