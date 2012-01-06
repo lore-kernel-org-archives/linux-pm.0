@@ -1,16 +1,16 @@
 From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH 6/6] input: CPU frequency booster
-Date: Fri, 6 Jan 2012 07:40:28 -0800
-Message-ID: <20120106154028.GH12530@mgross-G62>
+Subject: Re: [PATCH 0/6] RFC: CPU frequency min/max as PM QoS
+ params
+Date: Fri, 6 Jan 2012 07:46:13 -0800
+Message-ID: <20120106154613.GI12530@mgross-G62>
 References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
-	<1325810186-28986-7-git-send-email-amiettinen@nvidia.com>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1325810186-28986-7-git-send-email-amiettinen@nvidia.com>
+In-Reply-To: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -24,238 +24,43 @@ To: Antti P Miettinen <amiettinen@nvidia.com>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-
-FWIW this looks ok.  but isn't really a pm_qos change.
-
---mark
-
-On Fri, Jan 06, 2012 at 02:36:26AM +0200, Antti P Miettinen wrote:
-> Inspired by cpufreq ondemand governor changes at
-> git://codeaurora.org/kernel/msm.git tree in commits:
+On Fri, Jan 06, 2012 at 02:36:20AM +0200, Antti P Miettinen wrote:
+> The inspiration for this patch series is the N9 CPU frequency boost
+> upon input events:
 > 
->     2a6181bc76c6ce46ca0fa8e547be42acd534cf0e
->     1cca8861d8fda4e05f6b0c59c60003345c15454d
->     96a9aeb02bf5b3fbbef47e44460750eb275e9f1b
->     b600449501cf15928440f87eff86b1f32d14214e
->     88a65c7ae04632ffee11f9fc628d7ab017c06b83
+> http://www.spinics.net/lists/cpufreq/msg00667.html
 > 
-> Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
-> ---
+> and the related changes in git://codeaurora.org/kernel/msm.git tree.
+> Those patches modify the ondemand cpufreq governor. This patch series
+> adds minimum and maximum CPU frequency as PM QoS parameters and
+> modifies the cpufreq core to enforce the PM QoS limits. There is also
+> an example module for boosting the frequency upon input events.
+> 
+> I've been testing these changes against Ubuntu 3.2 kernel on a Dell
+> E6420 with the ACPI cpufreq driver. The patches are against
+> linux-next/master, compile tested against it.
+> 
+> 	--Antti
+> 
+> Alex Frid (1):
+>   PM QoS: Simplify PM QoS expansion/merge
+> 
+> Antti P Miettinen (5):
+>   PM QoS: Add CPU frequency min/max as PM QoS params
+>   cpufreq: Export user_policy min/max
+>   cpufreq: Preserve sysfs min/max request
+>   cpufreq: Enforce PM QoS min/max limits
+>   input: CPU frequency booster
+> 
+>  drivers/cpufreq/cpufreq.c     |   57 +++++++++++++-
 >  drivers/input/Kconfig         |    9 ++
 >  drivers/input/Makefile        |    1 +
 >  drivers/input/input-cfboost.c |  174 +++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 184 insertions(+), 0 deletions(-)
+>  include/linux/pm_qos.h        |   19 ++++-
+>  kernel/power/qos.c            |   55 ++++++++++----
+>  6 files changed, 293 insertions(+), 22 deletions(-)
 >  create mode 100644 drivers/input/input-cfboost.c
 > 
-> diff --git a/drivers/input/Kconfig b/drivers/input/Kconfig
-> index 001b147..3859f78 100644
-> --- a/drivers/input/Kconfig
-> +++ b/drivers/input/Kconfig
-> @@ -161,6 +161,15 @@ config INPUT_APMPOWER
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called apm-power.
->  
-> +config INPUT_CFBOOST
-> +	tristate "CPU frequency booster"
-> +	depends on INPUT && CPU_FREQ
-> +	help
-> +	  Say Y here if you want to boost frequency upon input events;
-> +
-> +	  To compile this driver as a module, choose M here: the
-> +	  module will be called input-cfboost.
-> +
->  comment "Input Device Drivers"
->  
->  source "drivers/input/keyboard/Kconfig"
-> diff --git a/drivers/input/Makefile b/drivers/input/Makefile
-> index 0c78949..6cad177 100644
-> --- a/drivers/input/Makefile
-> +++ b/drivers/input/Makefile
-> @@ -24,3 +24,4 @@ obj-$(CONFIG_INPUT_TOUCHSCREEN)	+= touchscreen/
->  obj-$(CONFIG_INPUT_MISC)	+= misc/
->  
->  obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
-> +obj-$(CONFIG_INPUT_CFBOOST)	+= input-cfboost.o
-> diff --git a/drivers/input/input-cfboost.c b/drivers/input/input-cfboost.c
-> new file mode 100644
-> index 0000000..bef3ec5
-> --- /dev/null
-> +++ b/drivers/input/input-cfboost.c
-> @@ -0,0 +1,174 @@
-> +/*
-> + * drivers/input/input-cfboost.c
-> + *
-> + * Copyright (C) 2012 NVIDIA Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; version 2 of the License.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along
-> + * with this program; if not, write to the Free Software Foundation, Inc.,
-> + * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-> + *
-> + */
-> +
-> +#include <linux/slab.h>
-> +#include <linux/jiffies.h>
-> +#include <linux/printk.h>
-> +#include <linux/workqueue.h>
-> +#include <linux/input.h>
-> +#include <linux/module.h>
-> +#include <linux/pm_qos.h>
-> +
-> +/* This module listens to input events and sets a temporary frequency
-> + * floor upon input event detection. This is based on changes to
-> + * cpufreq ondemand governor by:
-> + *
-> + * Tero Kristo <tero.kristo@nokia.com>
-> + * Brian Steuer <bsteuer@codeaurora.org>
-> + * David Ng <dave@codeaurora.org>
-> + *
-> + * at git://codeaurora.org/kernel/msm.git tree, commits:
-> + *
-> + * 2a6181bc76c6ce46ca0fa8e547be42acd534cf0e
-> + * 1cca8861d8fda4e05f6b0c59c60003345c15454d
-> + * 96a9aeb02bf5b3fbbef47e44460750eb275e9f1b
-> + * b600449501cf15928440f87eff86b1f32d14214e
-> + * 88a65c7ae04632ffee11f9fc628d7ab017c06b83
-> + */
-> +
-> +MODULE_AUTHOR("Antti P Miettinen <amiettinen@nvidia.com>");
-> +MODULE_DESCRIPTION("Input event CPU frequency booster");
-> +MODULE_LICENSE("GPL v2");
-> +
-> +
-> +static struct pm_qos_request qos_req;
-> +static struct work_struct boost;
-> +static struct delayed_work unboost;
-> +static unsigned int boost_freq; /* kHz */
-> +module_param(boost_freq, uint, 0644);
-> +static unsigned long boost_time = 500; /* ms */
-> +module_param(boost_time, ulong, 0644);
-> +static struct workqueue_struct *cfb_wq;
-> +
-> +static void cfb_boost(struct work_struct *w)
-> +{
-> +	cancel_delayed_work_sync(&unboost);
-> +	pm_qos_update_request(&qos_req, boost_freq);
-> +	queue_delayed_work(cfb_wq, &unboost, msecs_to_jiffies(boost_time));
-> +}
-> +
-> +static void cfb_unboost(struct work_struct *w)
-> +{
-> +	pm_qos_update_request(&qos_req, PM_QOS_DEFAULT_VALUE);
-> +}
-> +
-> +static void cfb_input_event(struct input_handle *handle, unsigned int type,
-> +			    unsigned int code, int value)
-> +{
-> +	if (!work_pending(&boost))
-> +		queue_work(cfb_wq, &boost);
-> +}
-> +
-> +static int cfb_input_connect(struct input_handler *handler,
-> +			     struct input_dev *dev,
-> +			     const struct input_device_id *id)
-> +{
-> +	struct input_handle *handle;
-> +	int error;
-> +
-> +	handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL);
-> +	if (!handle)
-> +		return -ENOMEM;
-> +
-> +	handle->dev = dev;
-> +	handle->handler = handler;
-> +	handle->name = "icfboost";
-> +
-> +	error = input_register_handle(handle);
-> +	if (error)
-> +		goto err2;
-> +
-> +	error = input_open_device(handle);
-> +	if (error)
-> +		goto err1;
-> +
-> +	return 0;
-> +err1:
-> +	input_unregister_handle(handle);
-> +err2:
-> +	kfree(handle);
-> +	return error;
-> +}
-> +
-> +static void cfb_input_disconnect(struct input_handle *handle)
-> +{
-> +	input_close_device(handle);
-> +	input_unregister_handle(handle);
-> +	kfree(handle);
-> +}
-> +
-> +/* XXX make configurable */
-> +static const struct input_device_id cfb_ids[] = {
-> +	{ /* touch screen */
-> +		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-> +				INPUT_DEVICE_ID_MATCH_KEYBIT,
-> +		.evbit = { BIT_MASK(EV_ABS) },
-> +		.keybit = {[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH) },
-> +	},
-> +	{ /* mouse */
-> +		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-> +				INPUT_DEVICE_ID_MATCH_KEYBIT,
-> +		.evbit = { BIT_MASK(EV_REL) },
-> +		.keybit = {[BIT_WORD(BTN_MOUSE)] = BIT_MASK(BTN_MOUSE) },
-> +	},
-> +	{ },
-> +};
-> +
-> +static struct input_handler cfb_input_handler = {
-> +	.event		= cfb_input_event,
-> +	.connect	= cfb_input_connect,
-> +	.disconnect	= cfb_input_disconnect,
-> +	.name		= "icfboost",
-> +	.id_table	= cfb_ids,
-> +};
-> +
-> +static int __init cfboost_init(void)
-> +{
-> +	int ret;
-> +
-> +	cfb_wq = create_workqueue("icfb-wq");
-> +	if (!cfb_wq)
-> +		return -ENOMEM;
-> +	INIT_WORK(&boost, cfb_boost);
-> +	INIT_DELAYED_WORK(&unboost, cfb_unboost);
-> +	ret = input_register_handler(&cfb_input_handler);
-> +	if (ret) {
-> +		destroy_workqueue(cfb_wq);
-> +		return ret;
-> +	}
-> +	pm_qos_add_request(&qos_req, PM_QOS_CPU_FREQ_MIN,
-> +			   PM_QOS_DEFAULT_VALUE);
-> +	return 0;
-> +}
-> +
-> +static void __exit cfboost_exit(void)
-> +{
-> +	/* stop input events */
-> +	input_unregister_handler(&cfb_input_handler);
-> +	/* cancel pending work requests */
-> +	cancel_work_sync(&boost);
-> +	cancel_delayed_work_sync(&unboost);
-> +	/* clean up */
-> +	destroy_workqueue(cfb_wq);
-> +	pm_qos_remove_request(&qos_req);
-> +}
-> +
-> +module_init(cfboost_init);
-> +module_exit(cfboost_exit);
 > -- 
 > 1.7.4.1
 > 
@@ -263,3 +68,140 @@ On Fri, Jan 06, 2012 at 02:36:26AM +0200, Antti P Miettinen wrote:
 > linux-pm mailing list
 > linux-pm@lists.linux-foundation.org
 > https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
+
+The following is my version of part of this patch set I was tinkering
+with.  Its missing the cpufreq notification this change has and doesn't
+do anything WRT cfboost.
+
+Would it be ok if we could consolidate our two implementations and
+completely separate the cfboost stuff as a separate patch set?
+
+My code below is missing the cpufreq notification logic you have.
+
+--mark
+
+Signed-off-by: markgross <markgross@thegnar.org>
+
+
+>From b4be99354c5af20cbd4041cddd6038e2353e06b4 Mon Sep 17 00:00:00 2001
+From: mgross <mgross@mini>
+Date: Sat, 24 Dec 2011 13:40:03 -0800
+Subject: [PATCH] Some devices have a subtle relationship with the CPU
+ throughput and need to set a minimum cpu frequency en order
+ for the device to not experience performance issues with
+ buffer under runs because the cpu was throttled too much to
+ be able to keep the buffers full enough.
+
+One graphics benchmark has shown this issue on Intel SOC devices.  The
+graphics part ends up waiting on the cpu to fill the open GL instruction
+queue between frames and thus graphic performance suffers because of the
+cpu throttling because the CPU really isn't very busy while running the
+benchmark.
+---
+ drivers/cpufreq/cpufreq.c |    8 ++++++++
+ include/linux/pm_qos.h    |    8 +++++---
+ kernel/power/qos.c        |   19 +++++++++++++++++++
+ 3 files changed, 32 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 987a165..4cbd58b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -29,6 +29,7 @@
+ #include <linux/completion.h>
+ #include <linux/mutex.h>
+ #include <linux/syscore_ops.h>
++#include <linux/pm_qos.h>
+ 
+ #include <trace/events/power.h>
+ 
+@@ -1629,6 +1630,9 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+ 
+ 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", policy->cpu,
+ 		policy->min, policy->max);
++	
++	if (policy->min < pm_qos_request(PM_QOS_CPU_THROUGHPUT))
++		policy->min = pm_qos_request(PM_QOS_CPU_THROUGHPUT);
+ 
+ 	memcpy(&policy->cpuinfo, &data->cpuinfo,
+ 				sizeof(struct cpufreq_cpuinfo));
+@@ -1736,6 +1740,10 @@ int cpufreq_update_policy(unsigned int cpu)
+ 	policy.policy = data->user_policy.policy;
+ 	policy.governor = data->user_policy.governor;
+ 
++	if (policy.min < pm_qos_request(PM_QOS_CPU_THROUGHPUT))
++		policy.min = pm_qos_request(PM_QOS_CPU_THROUGHPUT);
++
++
+ 	/* BIOS might change freq behind our back
+ 	  -> ask driver for current freq and notify governors about a change */
+ 	if (cpufreq_driver->get) {
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 83b0ea3..ead081c 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -11,13 +11,15 @@
+ 
+ #define PM_QOS_RESERVED 0
+ #define PM_QOS_CPU_DMA_LATENCY 1
+-#define PM_QOS_NETWORK_LATENCY 2
+-#define PM_QOS_NETWORK_THROUGHPUT 3
++#define PM_QOS_CPU_THROUGHPUT 2
++#define PM_QOS_NETWORK_LATENCY 3
++#define PM_QOS_NETWORK_THROUGHPUT 4
+ 
+-#define PM_QOS_NUM_CLASSES 4
++#define PM_QOS_NUM_CLASSES 5
+ #define PM_QOS_DEFAULT_VALUE -1
+ 
+ #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
++#define PM_QOS_CPU_THROUGHPUT_DEFAULT_VALUE	0
+ #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+ #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
+ #define PM_QOS_DEV_LAT_DEFAULT_VALUE		0
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 995e3bd..92951fa 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -60,6 +60,19 @@ static DEFINE_SPINLOCK(pm_qos_lock);
+ 
+ static struct pm_qos_object null_pm_qos;
+ 
++static BLOCKING_NOTIFIER_HEAD(cpu_throughput_notifier);
++static struct pm_qos_constraints cpu_throughput_constraints = {
++	.list = PLIST_HEAD_INIT(cpu_throughput_constraints.list),
++	.target_value = PM_QOS_CPU_THROUGHPUT_DEFAULT_VALUE,
++	.default_value = PM_QOS_CPU_THROUGHPUT_DEFAULT_VALUE,
++	.type = PM_QOS_MIN,
++	.notifiers = &cpu_throughput_notifier,
++};
++static struct pm_qos_object cpu_throughput_pm_qos = {
++	.constraints = &cpu_throughput_constraints,
++	.name = "cpu_throughput",
++};
++
+ static BLOCKING_NOTIFIER_HEAD(cpu_dma_lat_notifier);
+ static struct pm_qos_constraints cpu_dma_constraints = {
+ 	.list = PLIST_HEAD_INIT(cpu_dma_constraints.list),
+@@ -104,6 +117,7 @@ static struct pm_qos_object network_throughput_pm_qos = {
+ static struct pm_qos_object *pm_qos_array[] = {
+ 	&null_pm_qos,
+ 	&cpu_dma_pm_qos,
++	&cpu_throughput_pm_qos,
+ 	&network_lat_pm_qos,
+ 	&network_throughput_pm_qos
+ };
+@@ -475,6 +489,11 @@ static int __init pm_qos_power_init(void)
+ 		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
+ 		return ret;
+ 	}
++	ret = register_pm_qos_misc(&cpu_throughput_pm_qos);
++	if (ret < 0) {
++		printk(KERN_ERR "pm_qos_param: cpu_throughput setup failed\n");
++		return ret;
++	}
+ 	ret = register_pm_qos_misc(&network_lat_pm_qos);
+ 	if (ret < 0) {
+ 		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
+-- 
+1.7.5.4
