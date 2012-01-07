@@ -1,16 +1,17 @@
 From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: Re: [PATCH 3/6] cpufreq: Export user_policy min/max
-Date: Sat, 07 Jan 2012 10:47:23 +0200 (EET)
-Message-ID: <20120107.104723.1386766787855536005.apm@brigitte.kvy.fi>
-References: <20120106153320.GF12530@mgross-G62>
-	<20120106.212926.720061341805749024.apm@brigitte.kvy.fi>
-	<20120107035328.GC3119@mgross-G62>
+Subject: Re: [PATCH 2/6] PM QoS: Add CPU frequency min/max as PM
+ QoS params
+Date: Sat, 07 Jan 2012 10:54:47 +0200 (EET)
+Message-ID: <20120107.105447.73982038242397071.apm@brigitte.kvy.fi>
+References: <20120106153027.GE12530@mgross-G62>
+	<20120106.213236.1775053150950189700.apm@brigitte.kvy.fi>
+	<20120107034746.GB3119@mgross-G62>
 Reply-To: ananaza@iki.fi
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120107035328.GC3119@mgross-G62>
+In-Reply-To: <20120107034746.GB3119@mgross-G62>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,34 +22,29 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: markgross@thegnar.org
-Cc: linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
 From: mark gross <markgross@thegnar.org>
-> Maybe I'm missing something but cpufreq already has ABI for setting
-> upper and lower bounds for frequencies.
+> On Fri, Jan 06, 2012 at 09:32:36PM +0200, Antti P Miettinen wrote:
+>> mark gross <markgross@thegnar.org> writes:
+[..]
+>> > You should only have a cpu throughput qos.  I.e. FREQ_MIN.
+>> > FWIW in my patch I named it : PM_QOS_CPU_THROUGHPUT  but, its just a
+>> > different name to your PM_QOS_CPU_FREQ_MIN name.
+>> 
+>> I anticipated getting this comment :-)
 > 
-> /sys/devices/system/cpu/cpu0/cpufreq/[scaling_min_freq,
-> scaling_max_freq]
-> 
-> --mark
+> I'm glad.  Say did we talk at plumbers last year?  This is starting to
+> ring a bell.
 
-Yes, and the patch just adds two read-only files,
-/sys/devices/system/cpu/cpu?/cpufreq/policy_{min,max}_freq:
+Sorry - no, I've never been to plumbers :-)
 
-+show_one(policy_min_freq, user_policy.min);
-+show_one(policy_max_freq, user_policy.max);
+> yes, there are a lot of interesting things one can do to attempt to
+> somewhat gracefully deal with some sort of power or thermal envelope
+> limitations.  But, they are not PM_QoS. 
 
-to show the user_policy.min/max in addition to the
-policy->min/max. This is related to patch 4 which changes the
-scaling_{min,max}_freq store function to store the received value to
-user_policy instead of the enforced value. Related in turn to the
-restoring of the policy values when PM QoS constraints get lifted. The
-purpose of patch 3 is to allow inspecting the requested min/max in
-addition to the enforced min/max.
+Well - I'd say level of energy efficiency could easily be called PM
+QoS, but taking the max out is easy enough.
 
 	--Antti
-
-Adding cpufreq to cc, previous comments for context:
-
-http://thread.gmane.org/gmane.linux.power-management.general/26532
