@@ -1,8 +1,8 @@
 From: Barry Song <Barry.Song@csr.com>
-Subject: [PATCH] PM:Hibernation: drop the check of swap space
-	size for compressed image
-Date: Mon, 9 Jan 2012 12:56:23 +0800
-Message-ID: <1326084983-22237-1-git-send-email-Barry.Song@csr.com>
+Subject: [PATCH] mmc: core: move suspend/resume to dev_pm_ops and
+	add hibernation support
+Date: Mon, 9 Jan 2012 14:22:49 +0800
+Message-ID: <1326090169-4942-1-git-send-email-Barry.Song__30907.2356940762$1326090233$gmane$org@csr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,54 +16,104 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl, pavel@ucw.cz
-Cc: linux-pm@lists.linux-foundation.org, workgroup.linux@csr.com, linux-arm-kernel@lists.infradead.org, Barry Song <Baohua.Song@csr.com>
+To: cjb@laptop.org
+Cc: Bin Shi <Bin.Shi@csr.com>, linux-pm@lists.linux-foundation.org, linux-mmc@vger.kernel.org, workgroup.linux@csr.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Barry Song <Baohua.Song@csr.com>
+From: Bin Shi <Bin.Shi@csr.com>
 
-For compressed image, the space required is not known until
-we finish compressing and writing all pages.
-This patch drops the check, and if swap space is not enough
-finally, system can still restore to normal after writing
-swap fails for compressed images.
+This patch moves suspend/resume to dev_pm_ops and add hibernation support.
+It was tested on CSR SiRFprimaII cortex-a9 platform. A sd partition is used
+as swsusp partition.
 
-Signed-off-by: Barry Song <Baohua.Song@csr.com>
+Signed-off-by: Bin Shi <Bin.Shi@csr.com>
+Signed-off-by: Barry Song <Barry.Song@csr.com>
 ---
- kernel/power/swap.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/mmc/core/bus.c |   38 +++++++++++++++++++++++++-------------
+ 1 files changed, 25 insertions(+), 13 deletions(-)
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 11a594c..c8306a5 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -774,8 +774,7 @@ static int enough_swap(unsigned int nr_pages, unsigned int flags)
- 
- 	pr_debug("PM: Free swap pages: %u\n", free_swap);
- 
--	required = PAGES_FOR_IO + ((flags & SF_NOCOMPRESS_MODE) ?
--		nr_pages : (nr_pages * LZO_CMP_PAGES) / LZO_UNC_PAGES + 1);
-+	required = PAGES_FOR_IO + nr_pages;
- 	return free_swap > required;
+diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+index 6be4924..bab50f7 100644
+--- a/drivers/mmc/core/bus.c
++++ b/drivers/mmc/core/bus.c
+@@ -122,14 +122,14 @@ static int mmc_bus_remove(struct device *dev)
+ 	return 0;
  }
  
-@@ -803,10 +802,12 @@ int swsusp_write(unsigned int flags)
- 		printk(KERN_ERR "PM: Cannot get swap writer\n");
- 		return error;
- 	}
--	if (!enough_swap(pages, flags)) {
--		printk(KERN_ERR "PM: Not enough free swap\n");
--		error = -ENOSPC;
--		goto out_finish;
-+	if (flags & SF_NOCOMPRESS_MODE) {
-+		if (!enough_swap(pages, flags)) {
-+			printk(KERN_ERR "PM: Not enough free swap\n");
-+			error = -ENOSPC;
-+			goto out_finish;
-+		}
- 	}
- 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
- 	error = snapshot_read_next(&snapshot);
+-static int mmc_bus_suspend(struct device *dev, pm_message_t state)
++static int mmc_bus_suspend(struct device *dev)
+ {
+ 	struct mmc_driver *drv = to_mmc_driver(dev->driver);
+ 	struct mmc_card *card = mmc_dev_to_card(dev);
+ 	int ret = 0;
+ 
+ 	if (dev->driver && drv->suspend)
+-		ret = drv->suspend(card, state);
++		ret = drv->suspend(card, PMSG_SUSPEND);
+ 	return ret;
+ }
+ 
+@@ -144,6 +144,17 @@ static int mmc_bus_resume(struct device *dev)
+ 	return ret;
+ }
+ 
++static int mmc_bus_freeze(struct device *dev)
++{
++	struct mmc_driver *drv = to_mmc_driver(dev->driver);
++	struct mmc_card *card = mmc_dev_to_card(dev);
++	int ret = 0;
++
++	if (dev->driver && drv->suspend)
++		ret = drv->suspend(card, PMSG_FREEZE);
++	return ret;
++}
++
+ #ifdef CONFIG_PM_RUNTIME
+ 
+ static int mmc_runtime_suspend(struct device *dev)
+@@ -165,20 +176,23 @@ static int mmc_runtime_idle(struct device *dev)
+ 	return pm_runtime_suspend(dev);
+ }
+ 
++#else /* !CONFIG_PM_RUNTIME */
++#define mmc_runtime_suspend	NULL
++#define mmc_runtime_resume	NULL
++#define mmc_runtime_idle	NULL
++#endif /* !CONFIG_PM_RUNTIME */
++
+ static const struct dev_pm_ops mmc_bus_pm_ops = {
+ 	.runtime_suspend	= mmc_runtime_suspend,
+ 	.runtime_resume		= mmc_runtime_resume,
+ 	.runtime_idle		= mmc_runtime_idle,
++	.suspend		= mmc_bus_suspend,
++	.resume			= mmc_bus_resume,
++	.freeze			= mmc_bus_freeze,
++	.restore		= mmc_bus_resume,
++	.thaw			= mmc_bus_resume,
+ };
+ 
+-#define MMC_PM_OPS_PTR	(&mmc_bus_pm_ops)
+-
+-#else /* !CONFIG_PM_RUNTIME */
+-
+-#define MMC_PM_OPS_PTR	NULL
+-
+-#endif /* !CONFIG_PM_RUNTIME */
+-
+ static struct bus_type mmc_bus_type = {
+ 	.name		= "mmc",
+ 	.dev_attrs	= mmc_dev_attrs,
+@@ -186,9 +200,7 @@ static struct bus_type mmc_bus_type = {
+ 	.uevent		= mmc_bus_uevent,
+ 	.probe		= mmc_bus_probe,
+ 	.remove		= mmc_bus_remove,
+-	.suspend	= mmc_bus_suspend,
+-	.resume		= mmc_bus_resume,
+-	.pm		= MMC_PM_OPS_PTR,
++	.pm		= &mmc_bus_pm_ops,
+ };
+ 
+ int mmc_register_bus(void)
 -- 
 1.7.1
 
