@@ -1,15 +1,17 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/6] PM QoS: Simplify PM QoS expansion/merge
-Date: Mon, 9 Jan 2012 00:03:39 +0100
-Message-ID: <201201090003.39383.rjw@sisk.pl>
-References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
-	<1325810186-28986-2-git-send-email-amiettinen@nvidia.com>
-	<20120106152430.GD12530@mgross-G62>
+From: Barry Song <21cnbao@gmail.com>
+Subject: Re: [PATCH v2] PM: HIBERNATION: skip the swap size check
+ if the snapshot image size is anticipative
+Date: Mon, 9 Jan 2012 10:50:52 +0800
+Message-ID: <CAGsJ_4y+fQ14yDzD1FxtutD7b17KqK+voaywHAZuS0SXK5Z_xQ__31753.4373644323$1326077494$gmane$org@mail.gmail.com>
+References: <1322208422-12346-1-git-send-email-Barry.Song@csr.com>
+	<20120105184604.GA11065@atrey.karlin.mff.cuni.cz>
+	<CAGsJ_4ypEKZLXf0KU81=dRADcxesxKVyqg0UnEKGaxthNMZQ-g@mail.gmail.com>
+	<201201082231.44510.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120106152430.GD12530@mgross-G62>
+In-Reply-To: <201201082231.44510.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,101 +21,50 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: Alex Frid <afrid@nvidia.com>, linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, workgroup.linux@csr.com, linux-arm-kernel@lists.infradead.org, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, January 06, 2012, mark gross wrote:
-> Acked-by: markgross <markgross@thegnar.org>
+2012/1/9 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Friday, January 06, 2012, Barry Song wrote:
+>> 2012/1/6 Pavel Machek <pavel@ucw.cz>:
+>> > Hi!
+>> >
+>> > Is the check even useful these days? Should we remove it altogether?
+>>
+>> i think we can let users or distributions decide whether it is useful.
+>> On PC, disk space is not an issue, people might run many applications
+>> while doing hibernation, so snapshot is much big. an early check will
+>> improve user experience because people don't need to wait a long time
+>> and find space is not enough.
+>> for embedded system, SoC solutions can know whether the space is
+>> enough since they know what are running while doing hibernation, so
+>> they can skip the check by setting the flag in sysfs.
+>> that is why i had this patch sent.
+>
+> I agree with Pavel that it's better to drop the check altogether.
+>
+> The sysfs switch you're adding doesn't seem to be very useful, as PC
+> users won't touch it and whoever needs it to be 0, will always set it
+> that way and won't change it afterwards.
 
-OK, I'm going to take this one for 3.4.
+ok. if we don't have the check, in case swap partition is not enough,
+writing failure will happen, system still can restore to normal
+status:
 
-Thanks,
-Rafael
+for example, in the following test, only 27% data is written with a
+small partition, "Restarting tasks ... done" will make system restore
+to normal status.
+
+[   11.2080 27%
+[   11.403274] PM: Wrote uncompressed 34920 kbytes in 0.65 seconds (53.72 MB/s)
+[   11.407649] PM: Wrote compressed 3500 kbytes in 0.65 seconds (5.38 MB/s)
+[   11.447176] Restarting tasks ... done.
+[   11.448801] ...
 
 
-> On Fri, Jan 06, 2012 at 02:36:21AM +0200, Antti P Miettinen wrote:
-> > From: Alex Frid <afrid@nvidia.com>
-> > 
-> > - Replace class ID #define with enumeration
-> > - Loop through PM QoS objects during initialization (rather than
-> >   initializing them one-by-one)
-> > 
-> > Signed-off-by: Alex Frid <afrid@nvidia.com>
-> > Reviewed-by: Antti Miettinen <amiettinen@nvidia.com>
-> > Reviewed-by: Diwakar Tundlam <dtundlam@nvidia.com>
-> > Reviewed-by: Scott Williams <scwilliams@nvidia.com>
-> > Reviewed-by: Yu-Huan Hsu <yhsu@nvidia.com>
-> > ---
-> >  include/linux/pm_qos.h |   14 +++++++++-----
-> >  kernel/power/qos.c     |   23 ++++++++++-------------
-> >  2 files changed, 19 insertions(+), 18 deletions(-)
-> > 
-> > diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> > index e5bbcba..5ac91d8 100644
-> > --- a/include/linux/pm_qos.h
-> > +++ b/include/linux/pm_qos.h
-> > @@ -9,12 +9,16 @@
-> >  #include <linux/miscdevice.h>
-> >  #include <linux/device.h>
-> >  
-> > -#define PM_QOS_RESERVED 0
-> > -#define PM_QOS_CPU_DMA_LATENCY 1
-> > -#define PM_QOS_NETWORK_LATENCY 2
-> > -#define PM_QOS_NETWORK_THROUGHPUT 3
-> > +enum {
-> > +	PM_QOS_RESERVED = 0,
-> > +	PM_QOS_CPU_DMA_LATENCY,
-> > +	PM_QOS_NETWORK_LATENCY,
-> > +	PM_QOS_NETWORK_THROUGHPUT,
-> > +
-> > +	/* insert new class ID */
-> > +	PM_QOS_NUM_CLASSES,
-> > +};
-> >  
-> > -#define PM_QOS_NUM_CLASSES 4
-> >  #define PM_QOS_DEFAULT_VALUE -1
-> >  
-> >  #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
-> > diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> > index 995e3bd..d6d6dbd 100644
-> > --- a/kernel/power/qos.c
-> > +++ b/kernel/power/qos.c
-> > @@ -469,21 +469,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
-> >  static int __init pm_qos_power_init(void)
-> >  {
-> >  	int ret = 0;
-> > +	int i;
-> >  
-> > -	ret = register_pm_qos_misc(&cpu_dma_pm_qos);
-> > -	if (ret < 0) {
-> > -		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
-> > -		return ret;
-> > -	}
-> > -	ret = register_pm_qos_misc(&network_lat_pm_qos);
-> > -	if (ret < 0) {
-> > -		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
-> > -		return ret;
-> > +	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
-> > +
-> > +	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
-> > +		ret = register_pm_qos_misc(pm_qos_array[i]);
-> > +		if (ret < 0) {
-> > +			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
-> > +			       pm_qos_array[i]->name);
-> > +			return ret;
-> > +		}
-> >  	}
-> > -	ret = register_pm_qos_misc(&network_throughput_pm_qos);
-> > -	if (ret < 0)
-> > -		printk(KERN_ERR
-> > -			"pm_qos_param: network_throughput setup failed\n");
-> >  
-> >  	return ret;
-> >  }
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
-> 
-> 
+>
+> Thanks,
+> Rafael
+
+-barry
