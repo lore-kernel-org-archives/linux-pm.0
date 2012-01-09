@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/6] RFC: CPU frequency min/max as PM QoS
-	params
-Date: Mon, 9 Jan 2012 22:27:29 +0100
-Message-ID: <201201092227.29857.rjw@sisk.pl>
-References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
-	<201201082359.25077.rjw@sisk.pl>
-	<20120109142353.GC11463@mgross-G62>
+Subject: Re: [PATCH v2] PM: HIBERNATION: skip the swap size check
+	if the snapshot image size is anticipative
+Date: Mon, 9 Jan 2012 22:46:34 +0100
+Message-ID: <201201092246.35170.rjw@sisk.pl>
+References: <1322208422-12346-1-git-send-email-Barry.Song@csr.com>
+	<201201082231.44510.rjw@sisk.pl>
+	<CAGsJ_4y+fQ14yDzD1FxtutD7b17KqK+voaywHAZuS0SXK5Z_xQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120109142353.GC11463@mgross-G62>
+In-Reply-To: <CAGsJ_4y+fQ14yDzD1FxtutD7b17KqK+voaywHAZuS0SXK5Z_xQ@mail.gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,78 +20,49 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>
+To: Barry Song <21cnbao@gmail.com>
+Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, workgroup.linux@csr.com, linux-arm-kernel@lists.infradead.org, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, January 09, 2012, mark gross wrote:
-> On Sun, Jan 08, 2012 at 11:59:24PM +0100, Rafael J. Wysocki wrote:
-> > On Friday, January 06, 2012, mark gross wrote:
-> > > On Fri, Jan 06, 2012 at 02:36:20AM +0200, Antti P Miettinen wrote:
-> > > > The inspiration for this patch series is the N9 CPU frequency boost
-> > > > upon input events:
-> > > > 
-> > > > http://www.spinics.net/lists/cpufreq/msg00667.html
-> > > > 
-> > > > and the related changes in git://codeaurora.org/kernel/msm.git tree.
-> > > > Those patches modify the ondemand cpufreq governor. This patch series
-> > > > adds minimum and maximum CPU frequency as PM QoS parameters and
-> > > > modifies the cpufreq core to enforce the PM QoS limits. There is also
-> > > > an example module for boosting the frequency upon input events.
-> > > > 
-> > > > I've been testing these changes against Ubuntu 3.2 kernel on a Dell
-> > > > E6420 with the ACPI cpufreq driver. The patches are against
-> > > > linux-next/master, compile tested against it.
-> > > > 
-> > > > 	--Antti
-> > > > 
-> > > > Alex Frid (1):
-> > > >   PM QoS: Simplify PM QoS expansion/merge
-> > > > 
-> > > > Antti P Miettinen (5):
-> > > >   PM QoS: Add CPU frequency min/max as PM QoS params
-> > > >   cpufreq: Export user_policy min/max
-> > > >   cpufreq: Preserve sysfs min/max request
-> > > >   cpufreq: Enforce PM QoS min/max limits
-> > > >   input: CPU frequency booster
-> > > > 
-> > > >  drivers/cpufreq/cpufreq.c     |   57 +++++++++++++-
-> > > >  drivers/input/Kconfig         |    9 ++
-> > > >  drivers/input/Makefile        |    1 +
-> > > >  drivers/input/input-cfboost.c |  174 +++++++++++++++++++++++++++++++++++++++++
-> > > >  include/linux/pm_qos.h        |   19 ++++-
-> > > >  kernel/power/qos.c            |   55 ++++++++++----
-> > > >  6 files changed, 293 insertions(+), 22 deletions(-)
-> > > >  create mode 100644 drivers/input/input-cfboost.c
-> > > > 
-> > > 
-> > > The following is my version of part of this patch set I was tinkering
-> > > with.  Its missing the cpufreq notification this change has and doesn't
-> > > do anything WRT cfboost.
-> > > 
-> > > Would it be ok if we could consolidate our two implementations and
-> > > completely separate the cfboost stuff as a separate patch set?
-> > > 
-> > > My code below is missing the cpufreq notification logic you have.
-> > 
-> > Well, I have one substantial problem with this approach.  Namely, our
-> > current PM QoS infrastructure is not suitable for throughput constraints,
-> > because they should be additive, unlike the latency ones.
-> > 
-> > Namely, if sombody requests throughput X and someone else Y, the resulting
-> > combined throughput should be X+Y rather than max(X, Y).
+On Monday, January 09, 2012, Barry Song wrote:
+> 2012/1/9 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Friday, January 06, 2012, Barry Song wrote:
+> >> 2012/1/6 Pavel Machek <pavel@ucw.cz>:
+> >> > Hi!
+> >> >
+> >> > Is the check even useful these days? Should we remove it altogether?
+> >>
+> >> i think we can let users or distributions decide whether it is useful.
+> >> On PC, disk space is not an issue, people might run many applications
+> >> while doing hibernation, so snapshot is much big. an early check will
+> >> improve user experience because people don't need to wait a long time
+> >> and find space is not enough.
+> >> for embedded system, SoC solutions can know whether the space is
+> >> enough since they know what are running while doing hibernation, so
+> >> they can skip the check by setting the flag in sysfs.
+> >> that is why i had this patch sent.
+> >
+> > I agree with Pavel that it's better to drop the check altogether.
+> >
+> > The sysfs switch you're adding doesn't seem to be very useful, as PC
+> > users won't touch it and whoever needs it to be 0, will always set it
+> > that way and won't change it afterwards.
 > 
-> That can be done easy enough.  However; in practice I'm not convinced
-> doing and additive aggregation of the requested QoS would be any better
-> than just taking the max.
+> ok. if we don't have the check, in case swap partition is not enough,
+> writing failure will happen, system still can restore to normal
+> status:
+> 
+> for example, in the following test, only 27% data is written with a
+> small partition, "Restarting tasks ... done" will make system restore
+> to normal status.
+> 
+> [   11.2080 27%
+> [   11.403274] PM: Wrote uncompressed 34920 kbytes in 0.65 seconds (53.72 MB/s)
+> [   11.407649] PM: Wrote compressed 3500 kbytes in 0.65 seconds (5.38 MB/s)
+> [   11.447176] Restarting tasks ... done.
+> [   11.448801] ...
 
-Well, I'd say it's necessary for correctness, perhaps not for the CPU, but in
-general.  If Y is the max, then the subsystem that requested X may easily
-starve whoever requested the Y by using all of the bandwidth it asked for.
-
-> But, we can give it a try.
-
-Good. :-)
+That's exactly correct.
 
 Thanks,
 Rafael
