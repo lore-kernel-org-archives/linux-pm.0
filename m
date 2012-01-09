@@ -1,17 +1,12 @@
-From: Barry Song <21cnbao@gmail.com>
-Subject: Re: [PATCH v2] PM: HIBERNATION: skip the swap size check
- if the snapshot image size is anticipative
-Date: Mon, 9 Jan 2012 10:50:52 +0800
-Message-ID: <CAGsJ_4y+fQ14yDzD1FxtutD7b17KqK+voaywHAZuS0SXK5Z_xQ__31753.4373644323$1326077494$gmane$org@mail.gmail.com>
-References: <1322208422-12346-1-git-send-email-Barry.Song@csr.com>
-	<20120105184604.GA11065@atrey.karlin.mff.cuni.cz>
-	<CAGsJ_4ypEKZLXf0KU81=dRADcxesxKVyqg0UnEKGaxthNMZQ-g@mail.gmail.com>
-	<201201082231.44510.rjw@sisk.pl>
+From: Barry Song <Barry.Song@csr.com>
+Subject: [PATCH] PM:Hibernation: drop the check of swap space
+	size for compressed image
+Date: Mon, 9 Jan 2012 12:56:23 +0800
+Message-ID: <1326084983-22237-1-git-send-email-Barry.Song@csr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201201082231.44510.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,50 +16,58 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Xiangzhen Ye <Xiangzhen.Ye@csr.com>, linux-kernel@vger.kernel.org, workgroup.linux@csr.com, linux-arm-kernel@lists.infradead.org, Barry Song <Baohua.Song@csr.com>, linux-pm@lists.linux-foundation.org
+To: rjw@sisk.pl, pavel@ucw.cz
+Cc: linux-pm@lists.linux-foundation.org, workgroup.linux@csr.com, linux-arm-kernel@lists.infradead.org, Barry Song <Baohua.Song@csr.com>
 List-Id: linux-pm@vger.kernel.org
 
-2012/1/9 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Friday, January 06, 2012, Barry Song wrote:
->> 2012/1/6 Pavel Machek <pavel@ucw.cz>:
->> > Hi!
->> >
->> > Is the check even useful these days? Should we remove it altogether?
->>
->> i think we can let users or distributions decide whether it is useful.
->> On PC, disk space is not an issue, people might run many applications
->> while doing hibernation, so snapshot is much big. an early check will
->> improve user experience because people don't need to wait a long time
->> and find space is not enough.
->> for embedded system, SoC solutions can know whether the space is
->> enough since they know what are running while doing hibernation, so
->> they can skip the check by setting the flag in sysfs.
->> that is why i had this patch sent.
->
-> I agree with Pavel that it's better to drop the check altogether.
->
-> The sysfs switch you're adding doesn't seem to be very useful, as PC
-> users won't touch it and whoever needs it to be 0, will always set it
-> that way and won't change it afterwards.
+From: Barry Song <Baohua.Song@csr.com>
 
-ok. if we don't have the check, in case swap partition is not enough,
-writing failure will happen, system still can restore to normal
-status:
+For compressed image, the space required is not known until
+we finish compressing and writing all pages.
+This patch drops the check, and if swap space is not enough
+finally, system can still restore to normal after writing
+swap fails for compressed images.
 
-for example, in the following test, only 27% data is written with a
-small partition, "Restarting tasks ... done" will make system restore
-to normal status.
+Signed-off-by: Barry Song <Baohua.Song@csr.com>
+---
+ kernel/power/swap.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-[   11.2080 27%
-[   11.403274] PM: Wrote uncompressed 34920 kbytes in 0.65 seconds (53.72 MB/s)
-[   11.407649] PM: Wrote compressed 3500 kbytes in 0.65 seconds (5.38 MB/s)
-[   11.447176] Restarting tasks ... done.
-[   11.448801] ...
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 11a594c..c8306a5 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -774,8 +774,7 @@ static int enough_swap(unsigned int nr_pages, unsigned int flags)
+ 
+ 	pr_debug("PM: Free swap pages: %u\n", free_swap);
+ 
+-	required = PAGES_FOR_IO + ((flags & SF_NOCOMPRESS_MODE) ?
+-		nr_pages : (nr_pages * LZO_CMP_PAGES) / LZO_UNC_PAGES + 1);
++	required = PAGES_FOR_IO + nr_pages;
+ 	return free_swap > required;
+ }
+ 
+@@ -803,10 +802,12 @@ int swsusp_write(unsigned int flags)
+ 		printk(KERN_ERR "PM: Cannot get swap writer\n");
+ 		return error;
+ 	}
+-	if (!enough_swap(pages, flags)) {
+-		printk(KERN_ERR "PM: Not enough free swap\n");
+-		error = -ENOSPC;
+-		goto out_finish;
++	if (flags & SF_NOCOMPRESS_MODE) {
++		if (!enough_swap(pages, flags)) {
++			printk(KERN_ERR "PM: Not enough free swap\n");
++			error = -ENOSPC;
++			goto out_finish;
++		}
+ 	}
+ 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
+ 	error = snapshot_read_next(&snapshot);
+-- 
+1.7.1
 
 
->
-> Thanks,
-> Rafael
 
--barry
+Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+More information can be found at www.csr.com. Follow CSR on Twitter at http://twitter.com/CSR_PLC and read our blog at www.csr.com/blog
