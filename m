@@ -1,145 +1,91 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH 0/6] RFC: CPU frequency min/max as PM QoS
-	params
-Date: Tue, 10 Jan 2012 22:02:49 +0100
-Message-ID: <CAORVsuUgL=5N1s7j3mHTzVgpq5sFO5nkotAZ1PeC=s0GfkWGwA@mail.gmail.com>
-References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
-	<201201092227.29857.rjw@sisk.pl>
-	<20120110045042.GA14968@mgross-G62>
-	<201201102146.23001.rjw@sisk.pl>
+From: Barry Song <21cnbao@gmail.com>
+Subject: Re: [PATCH] mmc: core: move suspend/resume to dev_pm_ops and add
+ hibernation support
+Date: Wed, 11 Jan 2012 10:54:20 +0800
+Message-ID: <CAGsJ_4yruL+M3osK2DjWj_ankvOFnUFG_tgmrMe9c1uKa4JrNw@mail.gmail.com>
+References: <1326090169-4942-1-git-send-email-Barry.Song@csr.com> <CAM=Q2cv_sZ89YJbyqVhKYaBA=Yg3UDcv6hfpiebvMYoXkrVg3Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201201102146.23001.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>, markgross@thegnar.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <CAM=Q2cv_sZ89YJbyqVhKYaBA=Yg3UDcv6hfpiebvMYoXkrVg3Q@mail.gmail.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Shubhrajyoti Datta <omaplinuxkernel@gmail.com>
+Cc: Barry Song <Barry.Song@csr.com>, cjb@laptop.org, linux-mmc@vger.kernel.org, linux-pm@lists.linux-foundation.org, workgroup.linux@csr.com, Bin Shi <Bin.Shi@csr.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mark, Rafael,
-
-On Tue, Jan 10, 2012 at 9:46 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, January 10, 2012, mark gross wrote:
->> On Mon, Jan 09, 2012 at 10:27:29PM +0100, Rafael J. Wysocki wrote:
->> > On Monday, January 09, 2012, mark gross wrote:
->> > > On Sun, Jan 08, 2012 at 11:59:24PM +0100, Rafael J. Wysocki wrote:
->> > > > On Friday, January 06, 2012, mark gross wrote:
->> > > > > On Fri, Jan 06, 2012 at 02:36:20AM +0200, Antti P Miettinen wrot=
+2012/1/9 Shubhrajyoti Datta <omaplinuxkernel@gmail.com>:
+> Hi Bin,
+>
+> On Mon, Jan 9, 2012 at 11:52 AM, Barry Song <Barry.Song@csr.com> wrot=
 e:
->> > > > > > The inspiration for this patch series is the N9 CPU frequency =
-boost
->> > > > > > upon input events:
->> > > > > >
->> > > > > > http://www.spinics.net/lists/cpufreq/msg00667.html
->> > > > > >
->> > > > > > and the related changes in git://codeaurora.org/kernel/msm.git=
- tree.
->> > > > > > Those patches modify the ondemand cpufreq governor. This patch=
- series
->> > > > > > adds minimum and maximum CPU frequency as PM QoS parameters and
->> > > > > > modifies the cpufreq core to enforce the PM QoS limits. There =
-is also
->> > > > > > an example module for boosting the frequency upon input events.
->> > > > > >
->> > > > > > I've been testing these changes against Ubuntu 3.2 kernel on a=
- Dell
->> > > > > > E6420 with the ACPI cpufreq driver. The patches are against
->> > > > > > linux-next/master, compile tested against it.
->> > > > > >
->> > > > > > =A0 =A0 --Antti
->> > > > > >
->> > > > > > Alex Frid (1):
->> > > > > > =A0 PM QoS: Simplify PM QoS expansion/merge
->> > > > > >
->> > > > > > Antti P Miettinen (5):
->> > > > > > =A0 PM QoS: Add CPU frequency min/max as PM QoS params
->> > > > > > =A0 cpufreq: Export user_policy min/max
->> > > > > > =A0 cpufreq: Preserve sysfs min/max request
->> > > > > > =A0 cpufreq: Enforce PM QoS min/max limits
->> > > > > > =A0 input: CPU frequency booster
->> > > > > >
->> > > > > > =A0drivers/cpufreq/cpufreq.c =A0 =A0 | =A0 57 +++++++++++++-
->> > > > > > =A0drivers/input/Kconfig =A0 =A0 =A0 =A0 | =A0 =A09 ++
->> > > > > > =A0drivers/input/Makefile =A0 =A0 =A0 =A0| =A0 =A01 +
->> > > > > > =A0drivers/input/input-cfboost.c | =A0174 ++++++++++++++++++++=
-+++++++++++++++++++++
->> > > > > > =A0include/linux/pm_qos.h =A0 =A0 =A0 =A0| =A0 19 ++++-
->> > > > > > =A0kernel/power/qos.c =A0 =A0 =A0 =A0 =A0 =A0| =A0 55 ++++++++=
-++----
->> > > > > > =A06 files changed, 293 insertions(+), 22 deletions(-)
->> > > > > > =A0create mode 100644 drivers/input/input-cfboost.c
->> > > > > >
->> > > > >
->> > > > > The following is my version of part of this patch set I was tink=
-ering
->> > > > > with. =A0Its missing the cpufreq notification this change has an=
-d doesn't
->> > > > > do anything WRT cfboost.
->> > > > >
->> > > > > Would it be ok if we could consolidate our two implementations a=
-nd
->> > > > > completely separate the cfboost stuff as a separate patch set?
->> > > > >
->> > > > > My code below is missing the cpufreq notification logic you have.
->> > > >
->> > > > Well, I have one substantial problem with this approach. =A0Namely=
-, our
->> > > > current PM QoS infrastructure is not suitable for throughput const=
-raints,
->> > > > because they should be additive, unlike the latency ones.
->> > > >
->> > > > Namely, if sombody requests throughput X and someone else Y, the r=
-esulting
->> > > > combined throughput should be X+Y rather than max(X, Y).
->> > >
->> > > That can be done easy enough. =A0However; in practice I'm not convin=
-ced
->> > > doing and additive aggregation of the requested QoS would be any bet=
-ter
->> > > than just taking the max.
->> >
->> > Well, I'd say it's necessary for correctness, perhaps not for the CPU,=
- but in
->> > general. =A0If Y is the max, then the subsystem that requested X may e=
-asily
->> > starve whoever requested the Y by using all of the bandwidth it asked =
-for.
+>> From: Bin Shi <Bin.Shi@csr.com>
 >>
->> I was thinking about this from the CPU point of view more over the day.
->> Given that there are many times more than one make the qos requests
->> additive will result in quickly requesting more cpu than is available
->> and waisting a lot of power. =A0 Also additive aggregation falls over a
->> bit on with multi-core.
+>> This patch moves suspend/resume to dev_pm_ops and add hibernation su=
+pport.
+>> It was tested on CSR SiRFprimaII cortex-a9 platform. A sd partition =
+is used
+>> as swsusp partition.
 >>
->> As the consumer of the cpu resources are tasks, and we can only run one
->> task at a time on a cpu, I'm talking myself into thinking that max
->> *is* the right way to go for cpu throughput (i.e. frequency).
-There are case where the constraints values should be additive. The
-best example is the main memory throughput and so the memory
-controller frequency (or the L3 frequency on OMAP). The main problem
-is to estimate the overhead of multiple simultaneous transfers.
-
-What do you think?
-
+>> Signed-off-by: Bin Shi <Bin.Shi@csr.com>
+>> Signed-off-by: Barry Song <Barry.Song@csr.com>
+>> ---
+>> =C2=A0drivers/mmc/core/bus.c | =C2=A0 38 +++++++++++++++++++++++++--=
+-----------
+>> =C2=A01 files changed, 25 insertions(+), 13 deletions(-)
+>>
+>> diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+>> index 6be4924..bab50f7 100644
+>> --- a/drivers/mmc/core/bus.c
+>> +++ b/drivers/mmc/core/bus.c
+>> @@ -122,14 +122,14 @@ static int mmc_bus_remove(struct device *dev)
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;
+>> =C2=A0}
+>>
+>> -static int mmc_bus_suspend(struct device *dev, pm_message_t state)
+>> +static int mmc_bus_suspend(struct device *dev)
+>> =C2=A0{
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0struct mmc_driver *drv =3D to_mmc_driver(=
+dev->driver);
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0struct mmc_card *card =3D mmc_dev_to_card=
+(dev);
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0int ret =3D 0;
+>>
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0if (dev->driver && drv->suspend)
+>> - =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D drv->susp=
+end(card, state);
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D drv->susp=
+end(card, PMSG_SUSPEND);
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0return ret;
+>> =C2=A0}
+>>
+>> @@ -144,6 +144,17 @@ static int mmc_bus_resume(struct device *dev)
+>> =C2=A0 =C2=A0 =C2=A0 =C2=A0return ret;
+>> =C2=A0}
+>>
+>> +static int mmc_bus_freeze(struct device *dev)
+>> +{
+>> + =C2=A0 =C2=A0 =C2=A0 struct mmc_driver *drv =3D to_mmc_driver(dev-=
+>driver);
+>> + =C2=A0 =C2=A0 =C2=A0 struct mmc_card *card =3D mmc_dev_to_card(dev=
+);
+>> + =C2=A0 =C2=A0 =C2=A0 int ret =3D 0;
+>> +
+>> + =C2=A0 =C2=A0 =C2=A0 if (dev->driver && drv->suspend)
+>> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D drv->susp=
+end(card, PMSG_FREEZE);
 >
-> I agree, but I wonder what units of throughput should be used in that cas=
-e?
+> Not a comment , rather a doubt
 >
-> Rafael
+> Any particular reason to differenciate freeze and =C2=A0suspend?
 
-Regards,
-Jean
 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
+Shubhrajyoti,
+there is no real difference for our system. this is just to keep
+back-compatible with old mmc_driver.suspend() since the function
+accepts a PMSG_xxx as param.
+i think all things go well if we add freeze/thaw/restore in Dmitry
+Shmidt's "[PATCH V4] mmc: Set suspend/resume bus operations if
+CONFIG_PM_RUNTIME is used"
+
+-barry
