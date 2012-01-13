@@ -1,60 +1,44 @@
-From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH 0/6] RFC: CPU frequency min/max as PM QoS
- params
-Date: Thu, 12 Jan 2012 20:37:18 -0800
-Message-ID: <20120113043718.GA6004@mgross-G62>
-References: <1325810186-28986-1-git-send-email-amiettinen@nvidia.com>
-	<CAORVsuUgL=5N1s7j3mHTzVgpq5sFO5nkotAZ1PeC=s0GfkWGwA@mail.gmail.com>
-	<87r4z6d784.fsf@amiettinen-lnx.nvidia.com>
-	<201201120000.17044.rjw@sisk.pl>
-	<87ehv5cnui.fsf@amiettinen-lnx.nvidia.com>
-Reply-To: markgross@thegnar.org
+From: Viresh Kumar <viresh.kumar@st.com>
+Subject: [PATCH] Documentation/power/freezing-of-tasks: Fix minor issue
+Date: Fri, 13 Jan 2012 10:09:17 +0530
+Message-ID: <1e6f2ab3f62123a550ca52ce68d9d7e0573c5084.1326372545.git.viresh.kumar@st.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <87ehv5cnui.fsf@amiettinen-lnx.nvidia.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: pavel@ucw.cz, len.brown@intel.com, rdunlap@xenotime.net, linux-pm@lists.linux-foundation.org, linux-doc@vger.kernel.org, armando.visconti@st.com, shiraz.hashim@st.com, vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com, vipulkumar.samar@st.com, amit.virdi@st.com, viresh.kumar@st.com, pratyush.anand@st.com, bhupesh.sharma@st.com, viresh.linux@gmail.com, bhavna.yadav@st.com, vincenzo.frascino@st.com, mirko.gardi@st.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 12, 2012 at 10:43:49AM +0200, Antti P Miettinen wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> > On Wednesday, January 11, 2012, Antti P Miettinen wrote:
-> >> I think for CPU performance, it's probably simplest just to use
-> >> frequency. Mapping from GOPS/MIPS/FLOPS/FPS is probably more sensily
-> >> done by PM QoS client side.
-> >
-> > Well, unfortunately, frequency is kind of system-specific.  I mean,
-> > you need to know what frequencies are supported/available to use that,
-> > so it would require the potential users to know the CPU internals.
-> >
-> > Thanks,
-> > Rafael
-> 
-> I would expect clients requesting for computing performance to require
-> system specific knowledge anyway. Computing performance is often
-> affected by target specific details (CPU, memory, interconnects). So
-> something like board specific configuration parameters would probably be
-> required for the PM QoS clients doing computing performance requests.
->
-Also, one doesn't have to know the exact number to use the throughput
-parameter.  If one value was not enough (i.e. you are missing
-deadlines) the increase it until things stabilize.
+In a paragraph, "kernel thread" is mistakenly written as "kernel". Fix this by
+adding thread after word "kernel".
 
-In practice I doubt any of these qos parameter can be portable.  I
-once thought of using units of bogomips for cpu throughput but, thats
-just as un-portable as frequency.  Things will end up having to be
-tuned or use some training algorithm.
+Changes are shown in multiple lines, as they are realigned to 80 col width.
 
---mark
+Signed-off-by: Viresh Kumar <viresh.kumar@st.com>
+---
+ Documentation/power/freezing-of-tasks.txt |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/power/freezing-of-tasks.txt b/Documentation/power/freezing-of-tasks.txt
+index 6ccb68f..ebd7490 100644
+--- a/Documentation/power/freezing-of-tasks.txt
++++ b/Documentation/power/freezing-of-tasks.txt
+@@ -120,10 +120,10 @@ So in practice, the 'at all' may become a 'why freeze kernel threads?' and
+ freezing user threads I don't find really objectionable."
+ 
+ Still, there are kernel threads that may want to be freezable.  For example, if
+-a kernel that belongs to a device driver accesses the device directly, it in
+-principle needs to know when the device is suspended, so that it doesn't try to
+-access it at that time.  However, if the kernel thread is freezable, it will be
+-frozen before the driver's .suspend() callback is executed and it will be
++a kernel thread that belongs to a device driver accesses the device directly, it
++in principle needs to know when the device is suspended, so that it doesn't try
++to access it at that time.  However, if the kernel thread is freezable, it will
++be frozen before the driver's .suspend() callback is executed and it will be
+ thawed after the driver's .resume() callback has run, so it won't be accessing
+ the device while it's suspended.
+ 
+-- 
+1.7.8.110.g4cb5d
+
