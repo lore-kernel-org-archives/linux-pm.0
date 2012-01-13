@@ -1,23 +1,44 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Documentation/power/freezing-of-tasks: Fix minor issue
-Date: Fri, 13 Jan 2012 11:21:42 +0100
-Message-ID: <20120113102142.GA15031@atrey.karlin.mff.cuni.cz>
-References: <1e6f2ab3f62123a550ca52ce68d9d7e0573c5084.1326372545.git.viresh.kumar@st.com>
+From: Antti P Miettinen <ananaza@iki.fi>
+Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
+Date: Fri, 13 Jan 2012 18:17:06 +0200
+Message-ID: <87pqenwpa5.fsf@amiettinen-lnx.nvidia.com>
+References: <1326459559-5436-1-git-send-email-amiettinen@nvidia.com>
+	<20120113152445.GA3005@mgross-G62>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1e6f2ab3f62123a550ca52ce68d9d7e0573c5084.1326372545.git.viresh.kumar@st.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@st.com>
-Cc: rjw@sisk.pl, len.brown@intel.com, rdunlap@xenotime.net, linux-pm@lists.linux-foundation.org, linux-doc@vger.kernel.org, armando.visconti@st.com, shiraz.hashim@st.com, vipin.kumar@st.com, rajeev-dlh.kumar@st.com, deepak.sikri@st.com, vipulkumar.samar@st.com, amit.virdi@st.com, pratyush.anand@st.com, bhupesh.sharma@st.com, viresh.linux@gmail.com, bhavna.yadav@st.com, vincenzo.frascino@st.com, mirko.gardi@st.com
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-> In a paragraph, "kernel thread" is mistakenly written as "kernel". Fix this by
-> adding thread after word "kernel".
-> 
-> Changes are shown in multiple lines, as they are realigned to 80 col width.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@st.com>
+mark gross <markgross@thegnar.org> writes:
+> just a quick note: ever since I lost my mgross@linux.intel.com email
+> I've started using markgross@thegnar.org
 
-ACK.
+Sorry - I picked the @linux.intel.com address from git blame. Hmm.. is
+the mark.gross@intelc.om in MAINTAINERS still valid?
+
+> FWIW if this works the way I hope it does then, its a feature we need
+> for different reasons than interactivity.  So thanks for working on
+> this!
+
+Thanks - I appreciate the feedback!
+
+>> V2:
+>> * split min and max to separate commits
+>> * handle PM QoS min above max as max
+>> * handle PM QoS max below min as min
+>
+> A qos to constrain how slow the cpu goes is ok.
+> A qos to constrain how fast it is allowed to go is not a PM_QOS thing.
+
+Thanks - I appreciate the feedback :-)
+
+As I said earlier, I think the maximum frequency can act as a level of
+energy efficiency request. If a workload knows that a certain level of
+performance is adequate, the maximum frequency request can prevent
+e.g. ondemand unnecessarily raising the frequency.
+
+	--Antti
+
