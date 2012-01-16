@@ -1,82 +1,45 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: [PATCH v2 8/8] cpufreq: Enforce PM QoS maximum frequency
-Date: Mon, 16 Jan 2012 09:00:01 +0200
-Message-ID: <1326697201-32406-9-git-send-email-amiettinen@nvidia.com>
-References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
+From: Rob Lee <rob.lee@linaro.org>
+Subject: Re: [RFC PATCH 2/2] thermal: Add generic cpu cooling implementation
+Date: Mon, 16 Jan 2012 08:13:16 -0600
+Message-ID: <CAMXH7KGR7UCc42TJrVyR7WehDCHczOL2NCnZQe7giLXccF3RbA@mail.gmail.com>
+References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
+	<1323789196-4942-3-git-send-email-amit.kachhap@linaro.org>
+	<CAMXH7KEBCTWDsSFn+ZUsbetvbWXO3N9ZMpLBvLm0n0r2RH1wuQ@mail.gmail.com>
+	<CAK44p203s3Eg8n2C_SXiFDEOsL3hQ2J34e0kFE9T=Um6kFZd1Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAK44p203s3Eg8n2C_SXiFDEOsL3hQ2J34e0kFE9T=Um6kFZd1Q@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Amit Kachhap <amit.kachhap@linaro.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org, linux-acpi@vger.kernel.org, lenb@kernel.org, rui.zhang@intel.com, linaro-dev@lists.linaro.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Observe PM QoS CPU frequency maximum in addition to
-policy settings.
-
-Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
----
- drivers/cpufreq/cpufreq.c |   16 +++++++++++++---
- 1 files changed, 13 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c2c1c62..d233a8b 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1638,12 +1638,15 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 	unsigned int pmax = policy->max;
- 	unsigned int qmin = min(pm_qos_request(PM_QOS_CPU_FREQ_MIN),
- 				data->max);
-+	unsigned int qmax = max(pm_qos_request(PM_QOS_CPU_FREQ_MAX),
-+				data->min);
- 
--	pr_debug("setting new policy for CPU %u: %u/%u - %u kHz\n",
--		 policy->cpu, pmin, qmin, pmax);
-+	pr_debug("setting new policy for CPU %u: %u/%u - %u/%u kHz\n",
-+		 policy->cpu, pmin, qmin, pmax, qmax);
- 
- 	/* clamp the new policy to PM QoS limits */
- 	policy->min = max(pmin, qmin);
-+	policy->max = min(pmax, qmax);
- 
- 	memcpy(&policy->cpuinfo, &data->cpuinfo,
- 				sizeof(struct cpufreq_cpuinfo));
-@@ -1920,12 +1923,16 @@ static int cpu_freq_notify(struct notifier_block *b,
- static struct notifier_block min_freq_notifier = {
- 	.notifier_call = cpu_freq_notify,
- };
-+static struct notifier_block max_freq_notifier = {
-+	.notifier_call = cpu_freq_notify,
-+};
- 
- static int cpu_freq_notify(struct notifier_block *b,
- 			   unsigned long l, void *v)
- {
- 	int cpu;
--	pr_debug("PM QoS min %lu\n", l);
-+	pr_debug("PM QoS %s %lu\n",
-+		 b == &min_freq_notifier ? "min" : "max", l);
- 	for_each_online_cpu(cpu) {
- 		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 		if (policy) {
-@@ -1952,6 +1959,9 @@ static int __init cpufreq_core_init(void)
- 	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MIN,
- 				 &min_freq_notifier);
- 	BUG_ON(rc);
-+	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MAX,
-+				 &max_freq_notifier);
-+	BUG_ON(rc);
- 
- 	return 0;
- }
--- 
-1.7.4.1
+>> I don't like how ACTIVE does not have available notification callbac=
+ks
+>> like HOT and CRITICAL do. =A0Perhaps I fail to grasp why they aren't=
+ there
+>> but besides just applying a cooling device, one might want to do som=
+ething
+>> else as well upon hitting these trip points. =A0So that said, it mig=
+ht be nice
+>> to add a notification to STATE_ACTIVE as well.
+> Well I added ACTIVE_STATE trip type as just some additional features
+> over trip type ACTIVE. Also each thermal zone can have more then one
+> trip types so HOT notifications can still be used. But I like your
+> suggestion of putting notfications in all the trip types. Lets see if
+> the maintainers agree to this idea.
+Thinking about it a bit more, I didn't consider HOT because it only
+notifies when you cross above this trip point and not below and the
+use case I had in mind would ideally want to be notified in both
+cases.  Also, if ACTIVE/ACTIVE_STATE trip types will always have
+cooling devices bound to them, then the notification could be put in
+the cooling device code if desired.  I think these features are
+separate from your main effort and can be addressed in separate future
+patch.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
