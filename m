@@ -1,45 +1,85 @@
-From: Rob Lee <rob.lee@linaro.org>
-Subject: Re: [RFC PATCH 2/2] thermal: Add generic cpu cooling implementation
-Date: Mon, 16 Jan 2012 08:13:16 -0600
-Message-ID: <CAMXH7KGR7UCc42TJrVyR7WehDCHczOL2NCnZQe7giLXccF3RbA@mail.gmail.com>
-References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
-	<1323789196-4942-3-git-send-email-amit.kachhap@linaro.org>
-	<CAMXH7KEBCTWDsSFn+ZUsbetvbWXO3N9ZMpLBvLm0n0r2RH1wuQ@mail.gmail.com>
-	<CAK44p203s3Eg8n2C_SXiFDEOsL3hQ2J34e0kFE9T=Um6kFZd1Q@mail.gmail.com>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [PATCH v6 0/6] PM QoS: implement the OMAP low level constraints
+ management code
+Date: Mon, 16 Jan 2012 20:57:51 +0100
+Message-ID: <CAORVsuVNvvPu6it7r_uxc0f6H-9kpo6SChTTGkdqpLmzMDNxvQ@mail.gmail.com>
+References: <1323874304-5001-1-git-send-email-j-pihet@ti.com>
+	<alpine.DEB.2.00.1112191337420.12660@utopia.booyaka.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAK44p203s3Eg8n2C_SXiFDEOsL3hQ2J34e0kFE9T=Um6kFZd1Q@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Amit Kachhap <amit.kachhap@linaro.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org, linux-acpi@vger.kernel.org, lenb@kernel.org, rui.zhang@intel.com, linaro-dev@lists.linaro.org, patches@linaro.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.00.1112191337420.12660@utopia.booyaka.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Paul Walmsley <paul@pwsan.com>, Kevin Hilman <khilman@ti.com>
+Cc: Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, magnus.damm@gmail.com, Todd Poynor <toddpoynor@google.com>, linux-arm <linux-arm-kernel@lists.infradead.org>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
->> I don't like how ACTIVE does not have available notification callbac=
-ks
->> like HOT and CRITICAL do. =A0Perhaps I fail to grasp why they aren't=
- there
->> but besides just applying a cooling device, one might want to do som=
-ething
->> else as well upon hitting these trip points. =A0So that said, it mig=
-ht be nice
->> to add a notification to STATE_ACTIVE as well.
-> Well I added ACTIVE_STATE trip type as just some additional features
-> over trip type ACTIVE. Also each thermal zone can have more then one
-> trip types so HOT notifications can still be used. But I like your
-> suggestion of putting notfications in all the trip types. Lets see if
-> the maintainers agree to this idea.
-Thinking about it a bit more, I didn't consider HOT because it only
-notifies when you cross above this trip point and not below and the
-use case I had in mind would ideally want to be notified in both
-cases.  Also, if ACTIVE/ACTIVE_STATE trip types will always have
-cooling devices bound to them, then the notification could be put in
-the cooling device code if desired.  I think these features are
-separate from your main effort and can be addressed in separate future
-patch.
+Paul, Kevin,
+
+On Mon, Dec 19, 2011 at 10:02 PM, Paul Walmsley <paul@pwsan.com> wrote:
+> Hi Jean
+>
+> I'm really sorry it's taken me so long to do detailed review of these
+> patches for merging... anyway -
+>
+> On Wed, 14 Dec 2011, jean.pihet@newoldbits.com wrote:
+>
+>> From: Jean Pihet <j-pihet@ti.com>
+>>
+>> . Implement the devices wake-up latency constraints using the global
+>> =A0 device PM QoS notification handler which applies the constraints=
+ to the
+>> =A0 underlying layer
+>> . Implement the low level code which controls the power domains next=
+ power
+>> =A0 states, through the hwmod and pwrdm layers
+>> . Add cpuidle and power domains wake-up latency figures for OMAP3, c=
+f.
+>> =A0 comments in the code and [1] for the details on where the number=
+s
+>> =A0 are magically coming from
+>> . Implement the relation between the cpuidle and per-device PM QoS f=
+rameworks
+>> =A0 in the OMAP3 specific idle callbacks.
+>> =A0 The chosen C-state shall satisfy the following conditions:
+>> =A0 =A0. the 'valid' field is enabled,
+>> =A0 =A0. it satisfies the enable_off_mode flag,
+>> =A0 =A0. the next state for MPU and CORE power domains is not lower =
+than the
+>> =A0 =A0 =A0state programmed by the per-device PM QoS.
+>
+> I've been reviewing these closely. =A0It looks to me that are some is=
+sues
+> that need to be resolved before all of them are mergeable.
+>
+> One issue that I noticed in this series is that there are some lockin=
+g
+> issues in patch 1. =A0It looks to me that calls to
+> _pwrdm_wakeuplat_update_pwrst() can race with each other, since it's
+> called outside the lock?
+I fixed this by moving the lock so that it includes the update of the
+next power state.
+
+Speaking of the locking, currently a spinlock is used and it could be
+replaced by a more efficient mutex. This is ok at the condition that
+this code is not called from interrupt context?
+
+Kevin,
+Do you know if the per-device constraint code can be called from
+interrupt context?
+
+>
+
+=2E..
+
+>
+>
+> - Paul
+
+Jean
 --
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
 n
 the body of a message to majordomo@vger.kernel.org
 More majordomo info at  http://vger.kernel.org/majordomo-info.html
