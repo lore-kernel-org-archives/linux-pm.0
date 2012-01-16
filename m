@@ -1,7 +1,7 @@
 From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: [PATCH v2 3/8] cpufreq: Export user_policy min/max
-Date: Mon, 16 Jan 2012 08:59:56 +0200
-Message-ID: <1326697201-32406-4-git-send-email-amiettinen@nvidia.com>
+Subject: [PATCH v2 4/8] cpufreq: Preserve sysfs min/max request
+Date: Mon, 16 Jan 2012 08:59:57 +0200
+Message-ID: <1326697201-32406-5-git-send-email-amiettinen@nvidia.com>
 References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -20,43 +20,28 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Add sysfs nodes for user_policy min and max settings.
+Store the value received via sysfs as the user_policy
+min/max value instead of the currently enforced min/max.
+This allows restoring the user min/max values when
+constraints on enforced min/max change.
 
 Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
 ---
- drivers/cpufreq/cpufreq.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/cpufreq/cpufreq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 622013f..f115888 100644
+index f115888..127e37a 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -363,6 +363,8 @@ show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
- show_one(scaling_min_freq, min);
- show_one(scaling_max_freq, max);
- show_one(scaling_cur_freq, cur);
-+show_one(policy_min_freq, user_policy.min);
-+show_one(policy_max_freq, user_policy.max);
- 
- static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 				struct cpufreq_policy *policy);
-@@ -581,6 +583,8 @@ cpufreq_freq_attr_rw(scaling_min_freq);
- cpufreq_freq_attr_rw(scaling_max_freq);
- cpufreq_freq_attr_rw(scaling_governor);
- cpufreq_freq_attr_rw(scaling_setspeed);
-+cpufreq_freq_attr_ro(policy_min_freq);
-+cpufreq_freq_attr_ro(policy_max_freq);
- 
- static struct attribute *default_attrs[] = {
- 	&cpuinfo_min_freq.attr,
-@@ -594,6 +598,8 @@ static struct attribute *default_attrs[] = {
- 	&scaling_driver.attr,
- 	&scaling_available_governors.attr,
- 	&scaling_setspeed.attr,
-+	&policy_min_freq.attr,
-+	&policy_max_freq.attr,
- 	NULL
- };
- 
+@@ -388,7 +388,7 @@ static ssize_t store_##file_name					\
+ 		return -EINVAL;						\
+ 									\
+ 	ret = __cpufreq_set_policy(policy, &new_policy);		\
+-	policy->user_policy.object = policy->object;			\
++	policy->user_policy.object = new_policy.object;			\
+ 									\
+ 	return ret ? ret : count;					\
+ }
 -- 
 1.7.4.1
