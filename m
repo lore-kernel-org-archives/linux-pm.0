@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 16/50] ACPI 5.0: New interface, acpi_buffer_to_resource
-Date: Tue, 17 Jan 2012 07:21:08 -0500
-Message-ID: <0e243178047c0219b3367dd44f81040826b7ea83.1326802229.git.len.brown@intel.com>
+Subject: [PATCH 06/50] ACPICA: Add error msg for Index/Bank field registers
+ out-of-range
+Date: Tue, 17 Jan 2012 07:20:58 -0500
+Message-ID: <46dfb09c024a1a92ead63b40f6993dcb5eb7d153.1326802229.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
@@ -15,107 +16,41 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Bob Moore <robert.moore@intel.com>
 
-This interface converts an AML buffer to an internal ACPI_RESOURCE.
+Supplement the exception code with an actual message.
+
+Found during ACPICA debugging.
 
 Signed-off-by: Bob Moore <robert.moore@intel.com>
 Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/rscreate.c |   64 ++++++++++++++++++++++++++++++++++++++++
- include/acpi/acpixf.h          |    5 +++
- 2 files changed, 69 insertions(+), 0 deletions(-)
+ drivers/acpi/acpica/exfldio.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/acpica/rscreate.c b/drivers/acpi/acpica/rscreate.c
-index f61285d..06264e8 100644
---- a/drivers/acpi/acpica/rscreate.c
-+++ b/drivers/acpi/acpica/rscreate.c
-@@ -51,6 +51,70 @@ ACPI_MODULE_NAME("rscreate")
+diff --git a/drivers/acpi/acpica/exfldio.c b/drivers/acpi/acpica/exfldio.c
+index f915a7f..19df8ce 100644
+--- a/drivers/acpi/acpica/exfldio.c
++++ b/drivers/acpi/acpica/exfldio.c
+@@ -316,6 +316,7 @@ acpi_ex_access_region(union acpi_operand_object *obj_desc,
+ static u8
+ acpi_ex_register_overflow(union acpi_operand_object *obj_desc, u64 value)
+ {
++	ACPI_FUNCTION_NAME(ex_register_overflow);
  
- /*******************************************************************************
-  *
-+ * FUNCTION:    acpi_buffer_to_resource
-+ *
-+ * PARAMETERS:  aml_buffer          - Pointer to the resource byte stream
-+ *              aml_buffer_length   - Length of the aml_buffer
-+ *              resource_ptr        - Where the converted resource is returned
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Convert a raw AML buffer to a resource list
-+ *
-+ ******************************************************************************/
-+acpi_status
-+acpi_buffer_to_resource(u8 *aml_buffer,
-+			u16 aml_buffer_length,
-+			struct acpi_resource **resource_ptr)
-+{
-+	acpi_status status;
-+	acpi_size list_size_needed;
-+	void *resource;
-+	void *current_resource_ptr;
+ 	if (obj_desc->common_field.bit_length >= ACPI_INTEGER_BIT_SIZE) {
+ 		/*
+@@ -330,6 +331,11 @@ acpi_ex_register_overflow(union acpi_operand_object *obj_desc, u64 value)
+ 		 * The Value is larger than the maximum value that can fit into
+ 		 * the register.
+ 		 */
++		ACPI_ERROR((AE_INFO,
++			    "Index value 0x%8.8X%8.8X overflows field width 0x%X",
++			    ACPI_FORMAT_UINT64(value),
++			    obj_desc->common_field.bit_length));
 +
-+	/*
-+	 * Note: we allow AE_AML_NO_RESOURCE_END_TAG, since an end tag
-+	 * is not required here.
-+	 */
-+
-+	/* Get the required length for the converted resource */
-+
-+	status = acpi_rs_get_list_length(aml_buffer, aml_buffer_length,
-+					 &list_size_needed);
-+	if (status == AE_AML_NO_RESOURCE_END_TAG) {
-+		status = AE_OK;
-+	}
-+	if (ACPI_FAILURE(status)) {
-+		return (status);
-+	}
-+
-+	/* Allocate a buffer for the converted resource */
-+
-+	resource = ACPI_ALLOCATE_ZEROED(list_size_needed);
-+	current_resource_ptr = resource;
-+	if (!resource) {
-+		return (AE_NO_MEMORY);
-+	}
-+
-+	/* Perform the AML-to-Resource conversion */
-+
-+	status = acpi_ut_walk_aml_resources(aml_buffer, aml_buffer_length,
-+					    acpi_rs_convert_aml_to_resources,
-+					    &current_resource_ptr);
-+	if (status == AE_AML_NO_RESOURCE_END_TAG) {
-+		status = AE_OK;
-+	}
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_FREE(resource);
-+	} else {
-+		*resource_ptr = resource;
-+	}
-+
-+	return (status);
-+}
-+
-+/*******************************************************************************
-+ *
-  * FUNCTION:    acpi_rs_create_resource_list
-  *
-  * PARAMETERS:  aml_buffer          - Pointer to the resource byte stream
-diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
-index 726d937..5d8df1d 100644
---- a/include/acpi/acpixf.h
-+++ b/include/acpi/acpixf.h
-@@ -376,6 +376,11 @@ acpi_status
- acpi_resource_to_address64(struct acpi_resource *resource,
- 			   struct acpi_resource_address64 *out);
+ 		return (TRUE);
+ 	}
  
-+acpi_status
-+acpi_buffer_to_resource(u8 *aml_buffer,
-+			u16 aml_buffer_length,
-+			struct acpi_resource **resource_ptr);
-+
- /*
-  * Hardware (ACPI device) interfaces
-  */
 -- 
 1.7.9.rc1
 
