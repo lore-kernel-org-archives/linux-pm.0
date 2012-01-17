@@ -1,89 +1,121 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 04/50] ACPICA: Fix to allow region arguments to reference other
- scopes
-Date: Tue, 17 Jan 2012 07:20:56 -0500
-Message-ID: <8931d9ea78848b073bf299594f148b83abde4a5e.1326802229.git.len.brown@intel.com>
+Subject: [PATCH 16/50] ACPI 5.0: New interface, acpi_buffer_to_resource
+Date: Tue, 17 Jan 2012 07:21:08 -0500
+Message-ID: <0e243178047c0219b3367dd44f81040826b7ea83.1326802229.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-reply-to: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 In-reply-to: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
 References: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Lin Ming <ming.m.lin@intel.com>, Bob Moore <robert.moore@intel.com>, Len Brown <len.brown@intel.com>
+Cc: Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Lin Ming <ming.m.lin@intel.com>
+From: Bob Moore <robert.moore@intel.com>
 
-Allow referenced objects to be in a different scope.
+This interface converts an AML buffer to an internal ACPI_RESOURCE.
 
-http://www.acpica.org/bugzilla/show_bug.cgi?id=937
-http://marc.info/?l=linux-acpi&m=131636632718222&w=2
-
-ACPI Error: [RAMB] Namespace lookup failure, AE_NOT_FOUND (20110112/psargs-359)
-ACPI Exception: AE_NOT_FOUND, Could not execute arguments for [RAMW] (Region) (20110112/nsinit-349)
-
-    Scope (_SB)
-    {
-        Name (RAMB, 0xDF5A1018)
-        OperationRegion (\RAMW, SystemMemory, RAMB, 0x00010000)
-    }
-
-For above ASL code, we need to save scope node(\_SB) to lookup
-the argument node(\_SB.RAMB).
-
-Reported-by: Jim Green <student.northwestern@gmail.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/acobject.h |    1 +
- drivers/acpi/acpica/dsargs.c   |    2 +-
- drivers/acpi/acpica/excreate.c |    6 ++++++
- 3 files changed, 8 insertions(+), 1 deletions(-)
+ drivers/acpi/acpica/rscreate.c |   64 ++++++++++++++++++++++++++++++++++++++++
+ include/acpi/acpixf.h          |    5 +++
+ 2 files changed, 69 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/acpica/acobject.h b/drivers/acpi/acpica/acobject.h
-index 1055769..6d276c2 100644
---- a/drivers/acpi/acpica/acobject.h
-+++ b/drivers/acpi/acpica/acobject.h
-@@ -358,6 +358,7 @@ typedef enum {
-  */
- struct acpi_object_extra {
- 	ACPI_OBJECT_COMMON_HEADER struct acpi_namespace_node *method_REG;	/* _REG method for this region (if any) */
-+	struct acpi_namespace_node *scope_node;
- 	void *region_context;	/* Region-specific data */
- 	u8 *aml_start;
- 	u32 aml_length;
-diff --git a/drivers/acpi/acpica/dsargs.c b/drivers/acpi/acpica/dsargs.c
-index 42163d8..d69e4a5 100644
---- a/drivers/acpi/acpica/dsargs.c
-+++ b/drivers/acpi/acpica/dsargs.c
-@@ -384,7 +384,7 @@ acpi_status acpi_ds_get_region_arguments(union acpi_operand_object *obj_desc)
+diff --git a/drivers/acpi/acpica/rscreate.c b/drivers/acpi/acpica/rscreate.c
+index f61285d..06264e8 100644
+--- a/drivers/acpi/acpica/rscreate.c
++++ b/drivers/acpi/acpica/rscreate.c
+@@ -51,6 +51,70 @@ ACPI_MODULE_NAME("rscreate")
  
- 	/* Execute the argument AML */
- 
--	status = acpi_ds_execute_arguments(node, node->parent,
-+	status = acpi_ds_execute_arguments(node, extra_desc->extra.scope_node,
- 					   extra_desc->extra.aml_length,
- 					   extra_desc->extra.aml_start);
- 	if (ACPI_FAILURE(status)) {
-diff --git a/drivers/acpi/acpica/excreate.c b/drivers/acpi/acpica/excreate.c
-index 110711a..8a06dc5 100644
---- a/drivers/acpi/acpica/excreate.c
-+++ b/drivers/acpi/acpica/excreate.c
-@@ -330,6 +330,12 @@ acpi_ex_create_region(u8 * aml_start,
- 	region_obj2 = obj_desc->common.next_object;
- 	region_obj2->extra.aml_start = aml_start;
- 	region_obj2->extra.aml_length = aml_length;
-+	if (walk_state->scope_info) {
-+		region_obj2->extra.scope_node =
-+		    walk_state->scope_info->scope.node;
-+	} else {
-+		region_obj2->extra.scope_node = node;
+ /*******************************************************************************
+  *
++ * FUNCTION:    acpi_buffer_to_resource
++ *
++ * PARAMETERS:  aml_buffer          - Pointer to the resource byte stream
++ *              aml_buffer_length   - Length of the aml_buffer
++ *              resource_ptr        - Where the converted resource is returned
++ *
++ * RETURN:      Status
++ *
++ * DESCRIPTION: Convert a raw AML buffer to a resource list
++ *
++ ******************************************************************************/
++acpi_status
++acpi_buffer_to_resource(u8 *aml_buffer,
++			u16 aml_buffer_length,
++			struct acpi_resource **resource_ptr)
++{
++	acpi_status status;
++	acpi_size list_size_needed;
++	void *resource;
++	void *current_resource_ptr;
++
++	/*
++	 * Note: we allow AE_AML_NO_RESOURCE_END_TAG, since an end tag
++	 * is not required here.
++	 */
++
++	/* Get the required length for the converted resource */
++
++	status = acpi_rs_get_list_length(aml_buffer, aml_buffer_length,
++					 &list_size_needed);
++	if (status == AE_AML_NO_RESOURCE_END_TAG) {
++		status = AE_OK;
 +	}
++	if (ACPI_FAILURE(status)) {
++		return (status);
++	}
++
++	/* Allocate a buffer for the converted resource */
++
++	resource = ACPI_ALLOCATE_ZEROED(list_size_needed);
++	current_resource_ptr = resource;
++	if (!resource) {
++		return (AE_NO_MEMORY);
++	}
++
++	/* Perform the AML-to-Resource conversion */
++
++	status = acpi_ut_walk_aml_resources(aml_buffer, aml_buffer_length,
++					    acpi_rs_convert_aml_to_resources,
++					    &current_resource_ptr);
++	if (status == AE_AML_NO_RESOURCE_END_TAG) {
++		status = AE_OK;
++	}
++	if (ACPI_FAILURE(status)) {
++		ACPI_FREE(resource);
++	} else {
++		*resource_ptr = resource;
++	}
++
++	return (status);
++}
++
++/*******************************************************************************
++ *
+  * FUNCTION:    acpi_rs_create_resource_list
+  *
+  * PARAMETERS:  aml_buffer          - Pointer to the resource byte stream
+diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
+index 726d937..5d8df1d 100644
+--- a/include/acpi/acpixf.h
++++ b/include/acpi/acpixf.h
+@@ -376,6 +376,11 @@ acpi_status
+ acpi_resource_to_address64(struct acpi_resource *resource,
+ 			   struct acpi_resource_address64 *out);
  
- 	/* Init the region from the operands */
- 
++acpi_status
++acpi_buffer_to_resource(u8 *aml_buffer,
++			u16 aml_buffer_length,
++			struct acpi_resource **resource_ptr);
++
+ /*
+  * Hardware (ACPI device) interfaces
+  */
 -- 
 1.7.9.rc1
+
