@@ -1,84 +1,68 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 47/50] ACPI: processor: fix acpi_get_cpuid for UP processor
-Date: Tue, 17 Jan 2012 07:21:39 -0500
-Message-ID: <d640113fe80e45ebd4a5b420b220d3f6bf37f682.1326802230.git.len.brown@intel.com>
+Subject: [PATCH 45/50] intel_idle: remove redundant
+	local_irq_disable() call
+Date: Tue, 17 Jan 2012 07:21:37 -0500
+Message-ID: <44bea1c45390ec0dc7ef5e1017c014498a580abb.1326802230.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-reply-to: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 In-reply-to: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
 References: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Lin Ming <ming.m.lin@intel.com>, stable@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>, Yanmin Zhang <yanmin_zhang@linux.intel.com>, Mingming Zhang <mingmingx.zhang@intel.com>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Lin Ming <ming.m.lin@intel.com>
+From: Yanmin Zhang <yanmin_zhang@linux.intel.com>
 
-For UP processor, it is likely that no _MAT method or MADT table defined.
-So currently acpi_get_cpuid(...) always return -1 for UP processor.
-This is wrong. It should return valid value for CPU0.
+irq disabling happens earlier in process_32.c:cpu_idle.  Basically,
+cpuidle_state->enter is called, cpu irq is disabled.  cpuidle_state->enter
+would turn on irq when exiting.
 
-In the other hand, BIOS may define multiple CPU handles even for UP
-processor, for example
+intel_idle doesn't follow this assumption.  Although it doesn't cause real
+issue, it misleads developers.  Remove the call to local_irq_disable() at
+entry.
 
-        Scope (_PR)
-        {
-            Processor (CPU0, 0x00, 0x00000410, 0x06) {}
-            Processor (CPU1, 0x01, 0x00000410, 0x06) {}
-            Processor (CPU2, 0x02, 0x00000410, 0x06) {}
-            Processor (CPU3, 0x03, 0x00000410, 0x06) {}
-        }
-
-We should only return valid value for CPU0's acpi handle.
-And return invalid value for others.
-
-http://marc.info/?t=132329819900003&r=1&w=2
-
-Cc: stable@vger.kernel.org
-Reported-and-tested-by: wallak@free.fr
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+[akpm@linux-foundation.org: add comment]
+Signed-off-by: Mingming Zhang <mingmingx.zhang@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/processor_core.c |   26 ++++++++++++++++++++++++--
- 1 files changed, 24 insertions(+), 2 deletions(-)
+ drivers/idle/intel_idle.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-index 3a0428e..c850de4 100644
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -173,8 +173,30 @@ int acpi_get_cpuid(acpi_handle handle, int type, u32 acpi_id)
- 	apic_id = map_mat_entry(handle, type, acpi_id);
- 	if (apic_id == -1)
- 		apic_id = map_madt_entry(type, acpi_id);
--	if (apic_id == -1)
--		return apic_id;
-+	if (apic_id == -1) {
-+		/*
-+		 * On UP processor, there is no _MAT or MADT table.
-+		 * So above apic_id is always set to -1.
-+		 *
-+		 * BIOS may define multiple CPU handles even for UP processor.
-+		 * For example,
-+		 *
-+		 * Scope (_PR)
-+                 * {
-+		 *     Processor (CPU0, 0x00, 0x00000410, 0x06) {}
-+		 *     Processor (CPU1, 0x01, 0x00000410, 0x06) {}
-+		 *     Processor (CPU2, 0x02, 0x00000410, 0x06) {}
-+		 *     Processor (CPU3, 0x03, 0x00000410, 0x06) {}
-+		 * }
-+		 *
-+		 * Ignores apic_id and always return 0 for CPU0's handle.
-+		 * Return -1 for other CPU's handle.
-+		 */
-+		if (acpi_id == 0)
-+			return acpi_id;
-+		else
-+			return apic_id;
-+	}
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 38da9f8..27e41cc 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -232,6 +232,7 @@ static int get_driver_data(int cstate)
+  * @drv: cpuidle driver
+  * @index: index of cpuidle state
+  *
++ * Must be called under local_irq_disable().
+  */
+ static int intel_idle(struct cpuidle_device *dev,
+ 		struct cpuidle_driver *drv, int index)
+@@ -247,8 +248,6 @@ static int intel_idle(struct cpuidle_device *dev,
  
- #ifdef CONFIG_SMP
- 	for_each_possible_cpu(i) {
+ 	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
+ 
+-	local_irq_disable();
+-
+ 	/*
+ 	 * leave_mm() to avoid costly and often unnecessary wakeups
+ 	 * for flushing the user TLB's associated with the active mm.
 -- 
 1.7.9.rc1
