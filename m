@@ -1,87 +1,84 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 40/50] ACPI: Export interfaces for ioremapping/iounmapping ACPI
- registers
-Date: Tue, 17 Jan 2012 07:21:32 -0500
-Message-ID: <6f68c91c55ea3576d366797fa8d45e31c4aa79f8.1326802230.git.len.brown@intel.com>
+Subject: [PATCH 28/50] ACPI, APEI, Remove table not found message
+Date: Tue, 17 Jan 2012 07:21:20 -0500
+Message-ID: <ad6861547b52ad7c31eacc336b79ac91d7fded75.1326802230.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 In-reply-to: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
 References: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Myron Stowe <mstowe@redhat.com>, Myron Stowe <myron.stowe@redhat.com>, Len Brown <len.brown@intel.com>
+Cc: Huang Ying <ying.huang@intel.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Myron Stowe <mstowe@redhat.com>
+From: Huang Ying <ying.huang@intel.com>
 
-Export remapping and unmapping interfaces - acpi_os_map_generic_address()
-and acpi_os_unmap_generic_address() - for ACPI generic registers that are
-backed by memory mapped I/O (MMIO).
+Because APEI tables are optional, these message may confuse users, for
+example,
 
-The acpi_os_map_generic_address() and acpi_os_unmap_generic_address()
-declarations may more properly belong in include/acpi/acpiosxf.h next to
-acpi_os_read_memory() but I believe that would require the ACPI CA making
-them an official part of the ACPI CA - OS interface.
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/599715
 
-ACPI Generic Address Structure (GAS) reference (ACPI's fixed/generic
-hardware registers use the GAS format):
-  ACPI Specification, Revision 4.0, Section 5.2.3.1, "Generic Address
-  Structure"
-
-Signed-off-by: Myron Stowe <myron.stowe@redhat.com>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/osl.c      |    6 ++++--
- include/linux/acpi_io.h |    3 +++
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/acpi/apei/einj.c |    5 ++---
+ drivers/acpi/apei/erst.c |    5 ++---
+ drivers/acpi/apei/hest.c |    5 ++---
+ 3 files changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-index 2e285cd..b11f267 100644
---- a/drivers/acpi/osl.c
-+++ b/drivers/acpi/osl.c
-@@ -431,7 +431,7 @@ void __init early_acpi_os_unmap_memory(void __iomem *virt, acpi_size size)
- 		__acpi_unmap_table(virt, size);
- }
+diff --git a/drivers/acpi/apei/einj.c b/drivers/acpi/apei/einj.c
+index d253902..43eeb2e 100644
+--- a/drivers/acpi/apei/einj.c
++++ b/drivers/acpi/apei/einj.c
+@@ -466,10 +466,9 @@ static int __init einj_init(void)
  
--static int acpi_os_map_generic_address(struct acpi_generic_address *gas)
-+int acpi_os_map_generic_address(struct acpi_generic_address *gas)
- {
- 	u64 addr;
- 	void __iomem *virt;
-@@ -450,8 +450,9 @@ static int acpi_os_map_generic_address(struct acpi_generic_address *gas)
+ 	status = acpi_get_table(ACPI_SIG_EINJ, 0,
+ 				(struct acpi_table_header **)&einj_tab);
+-	if (status == AE_NOT_FOUND) {
+-		pr_info(EINJ_PFX "Table is not found!\n");
++	if (status == AE_NOT_FOUND)
+ 		return -ENODEV;
+-	} else if (ACPI_FAILURE(status)) {
++	else if (ACPI_FAILURE(status)) {
+ 		const char *msg = acpi_format_exception(status);
+ 		pr_err(EINJ_PFX "Failed to get table, %s\n", msg);
+ 		return -EINVAL;
+diff --git a/drivers/acpi/apei/erst.c b/drivers/acpi/apei/erst.c
+index 631b947..8e8d786 100644
+--- a/drivers/acpi/apei/erst.c
++++ b/drivers/acpi/apei/erst.c
+@@ -1125,10 +1125,9 @@ static int __init erst_init(void)
  
- 	return 0;
- }
-+EXPORT_SYMBOL(acpi_os_map_generic_address);
+ 	status = acpi_get_table(ACPI_SIG_ERST, 0,
+ 				(struct acpi_table_header **)&erst_tab);
+-	if (status == AE_NOT_FOUND) {
+-		pr_info(ERST_PFX "Table is not found!\n");
++	if (status == AE_NOT_FOUND)
+ 		goto err;
+-	} else if (ACPI_FAILURE(status)) {
++	else if (ACPI_FAILURE(status)) {
+ 		const char *msg = acpi_format_exception(status);
+ 		pr_err(ERST_PFX "Failed to get table, %s\n", msg);
+ 		rc = -EINVAL;
+diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+index 05fee06..f709269 100644
+--- a/drivers/acpi/apei/hest.c
++++ b/drivers/acpi/apei/hest.c
+@@ -221,10 +221,9 @@ void __init acpi_hest_init(void)
  
--static void acpi_os_unmap_generic_address(struct acpi_generic_address *gas)
-+void acpi_os_unmap_generic_address(struct acpi_generic_address *gas)
- {
- 	u64 addr;
- 	struct acpi_ioremap *map;
-@@ -475,6 +476,7 @@ static void acpi_os_unmap_generic_address(struct acpi_generic_address *gas)
- 
- 	acpi_os_map_cleanup(map);
- }
-+EXPORT_SYMBOL(acpi_os_unmap_generic_address);
- 
- #ifdef ACPI_FUTURE_USAGE
- acpi_status
-diff --git a/include/linux/acpi_io.h b/include/linux/acpi_io.h
-index 4afd710..b0ffa21 100644
---- a/include/linux/acpi_io.h
-+++ b/include/linux/acpi_io.h
-@@ -12,4 +12,7 @@ static inline void __iomem *acpi_os_ioremap(acpi_physical_address phys,
- 
- void __iomem *acpi_os_get_iomem(acpi_physical_address phys, unsigned int size);
- 
-+int acpi_os_map_generic_address(struct acpi_generic_address *addr);
-+void acpi_os_unmap_generic_address(struct acpi_generic_address *addr);
-+
- #endif
+ 	status = acpi_get_table(ACPI_SIG_HEST, 0,
+ 				(struct acpi_table_header **)&hest_tab);
+-	if (status == AE_NOT_FOUND) {
+-		pr_info(HEST_PFX "Table not found.\n");
++	if (status == AE_NOT_FOUND)
+ 		goto err;
+-	} else if (ACPI_FAILURE(status)) {
++	else if (ACPI_FAILURE(status)) {
+ 		const char *msg = acpi_format_exception(status);
+ 		pr_err(HEST_PFX "Failed to get table, %s\n", msg);
+ 		rc = -EINVAL;
 -- 
 1.7.9.rc1
-
