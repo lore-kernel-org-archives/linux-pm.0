@@ -1,62 +1,124 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 49/50] intel idle: Make idle driver more robust
-Date: Tue, 17 Jan 2012 07:21:41 -0500
-Message-ID: <58d40ff92451e9639ad58d7a00539f2833c85413.1326802230.git.len.brown@intel.com>
+Subject: [PATCH 30/50] ACPI, APEI, Printk queued error record before panic
+Date: Tue, 17 Jan 2012 07:21:22 -0500
+Message-ID: <46d12f0bcb17b2de89a059114349d472b7eb1783.1326802230.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-reply-to: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 In-reply-to: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
 References: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Thomas Renninger <trenn@suse.de>, stable@vger.kernel.org, Bruno Friedmann <bruno@ioda-net.ch>, Len Brown <len.brown@intel.com>
+Cc: Huang Ying <ying.huang@intel.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Renninger <trenn@suse.de>
+From: Huang Ying <ying.huang@intel.com>
 
-kvm -cpu host passes the original cpuid info to the guest.
+Because printk is not safe inside NMI handler, the recoverable error
+records received in NMI handler will be queued to be printked in a
+delayed IRQ context via irq_work.  If a fatal error occurs after the
+recoverable error and before the irq_work processed, we lost a error
+report.
 
-Latest kvm version seem to return true for mwait_leaf cpuid
-function on recent Intel CPUs. But it does not return mwait
-C-states (mwait_substates), instead zero is returned.
+To solve the issue, the queued error records are printked in NMI
+handler if system will go panic.
 
-While real CPUs seem to always return non-zero values, the intel
-idle driver should not get active in kvm (mwait_substates == 0)
-case and bail out.
-Otherwise a Null pointer exception will happen later when the
-cpuidle subsystem tries to get active:
-[0.984807] BUG: unable to handle kernel NULL pointer dereference at (null)
-[0.984807] IP: [<(null)>] (null)
-...
-[0.984807][<ffffffff8143cf34>] ? cpuidle_idle_call+0xb4/0x340
-[0.984807][<ffffffff8159e7bc>] ? __atomic_notifier_call_chain+0x4c/0x70
-[0.984807][<ffffffff81001198>] ? cpu_idle+0x78/0xd0
-
-Reference:
-https://bugzilla.novell.com/show_bug.cgi?id=726296
-
-Cc: stable@vger.kernel.org
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-CC: Bruno Friedmann <bruno@ioda-net.ch>
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/idle/intel_idle.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/acpi/apei/ghes.c |   53 ++++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 44 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 6a3d91d..e56ae0b 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -356,7 +356,8 @@ static int intel_idle_probe(void)
- 	cpuid(CPUID_MWAIT_LEAF, &eax, &ebx, &ecx, &mwait_substates);
+diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
+index 9dcb2d8..aaf3609 100644
+--- a/drivers/acpi/apei/ghes.c
++++ b/drivers/acpi/apei/ghes.c
+@@ -740,26 +740,34 @@ static int ghes_notify_sci(struct notifier_block *this,
+ 	return ret;
+ }
  
- 	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED) ||
--		!(ecx & CPUID5_ECX_INTERRUPT_BREAK))
-+	    !(ecx & CPUID5_ECX_INTERRUPT_BREAK) ||
-+	    !mwait_substates)
- 			return -ENODEV;
++static struct llist_node *llist_nodes_reverse(struct llist_node *llnode)
++{
++	struct llist_node *next, *tail = NULL;
++
++	while (llnode) {
++		next = llnode->next;
++		llnode->next = tail;
++		tail = llnode;
++		llnode = next;
++	}
++
++	return tail;
++}
++
+ static void ghes_proc_in_irq(struct irq_work *irq_work)
+ {
+-	struct llist_node *llnode, *next, *tail = NULL;
++	struct llist_node *llnode, *next;
+ 	struct ghes_estatus_node *estatus_node;
+ 	struct acpi_hest_generic *generic;
+ 	struct acpi_hest_generic_status *estatus;
+ 	u32 len, node_len;
  
- 	pr_debug(PREFIX "MWAIT substates: 0x%x\n", mwait_substates);
++	llnode = llist_del_all(&ghes_estatus_llist);
+ 	/*
+ 	 * Because the time order of estatus in list is reversed,
+ 	 * revert it back to proper order.
+ 	 */
+-	llnode = llist_del_all(&ghes_estatus_llist);
+-	while (llnode) {
+-		next = llnode->next;
+-		llnode->next = tail;
+-		tail = llnode;
+-		llnode = next;
+-	}
+-	llnode = tail;
++	llnode = llist_nodes_reverse(llnode);
+ 	while (llnode) {
+ 		next = llnode->next;
+ 		estatus_node = llist_entry(llnode, struct ghes_estatus_node,
+@@ -779,6 +787,32 @@ static void ghes_proc_in_irq(struct irq_work *irq_work)
+ 	}
+ }
+ 
++static void ghes_print_queued_estatus(void)
++{
++	struct llist_node *llnode;
++	struct ghes_estatus_node *estatus_node;
++	struct acpi_hest_generic *generic;
++	struct acpi_hest_generic_status *estatus;
++	u32 len, node_len;
++
++	llnode = llist_del_all(&ghes_estatus_llist);
++	/*
++	 * Because the time order of estatus in list is reversed,
++	 * revert it back to proper order.
++	 */
++	llnode = llist_nodes_reverse(llnode);
++	while (llnode) {
++		estatus_node = llist_entry(llnode, struct ghes_estatus_node,
++					   llnode);
++		estatus = GHES_ESTATUS_FROM_NODE(estatus_node);
++		len = apei_estatus_len(estatus);
++		node_len = GHES_ESTATUS_NODE_LEN(len);
++		generic = estatus_node->generic;
++		ghes_print_estatus(NULL, generic, estatus);
++		llnode = llnode->next;
++	}
++}
++
+ static int ghes_notify_nmi(unsigned int cmd, struct pt_regs *regs)
+ {
+ 	struct ghes *ghes, *ghes_global = NULL;
+@@ -804,6 +838,7 @@ static int ghes_notify_nmi(unsigned int cmd, struct pt_regs *regs)
+ 
+ 	if (sev_global >= GHES_SEV_PANIC) {
+ 		oops_begin();
++		ghes_print_queued_estatus();
+ 		__ghes_print_estatus(KERN_EMERG, ghes_global->generic,
+ 				     ghes_global->estatus);
+ 		/* reboot to log the error! */
 -- 
 1.7.9.rc1
+
