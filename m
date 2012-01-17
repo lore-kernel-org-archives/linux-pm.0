@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 09/50] ACPI 5.0: Implement hardware-reduced option
-Date: Tue, 17 Jan 2012 07:21:01 -0500
-Message-ID: <22e5b40ab21fcac21db0ff25fbb844ffecc73a4a.1326802229.git.len.brown@intel.com>
+Subject: [PATCH 48/50] intel_idle: Fix a cast to pointer from integer of
+ different size warning in intel_idle
+Date: Tue, 17 Jan 2012 07:21:40 -0500
+Message-ID: <441f30f24edbc7ed35107472fd0be2ce86b70aee.1326802230.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -10,183 +11,36 @@ In-reply-to: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@
 References: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>, Len Brown <len.brown@intel.com>
+Cc: David Howells <dhowells@redhat.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+From: David Howells <dhowells@redhat.com>
 
-If HW-reduced flag is set in the FADT, do not attempt to access
-or initialize any ACPI hardware, including SCI and global lock.
-No FACS will be present.
+Fix the following warning:
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+drivers/idle/intel_idle.c: In function 'intel_idle_cpuidle_devices_init':
+drivers/idle/intel_idle.c:518:5: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+
+By making get_driver_data() return a long instead of an int.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/acglobal.h |   13 ++++++++++++-
- drivers/acpi/acpica/evevent.c  |   12 ++++++++++++
- drivers/acpi/acpica/evglock.c  |    6 ++++++
- drivers/acpi/acpica/tbfadt.c   |   22 ++++++++++++++++++++--
- drivers/acpi/acpica/tbutils.c  |    7 +++++++
- include/acpi/acpixf.h          |    1 +
- 6 files changed, 58 insertions(+), 3 deletions(-)
+ drivers/idle/intel_idle.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/acpi/acpica/acglobal.h b/drivers/acpi/acpica/acglobal.h
-index 76dc02f..25912a9 100644
---- a/drivers/acpi/acpica/acglobal.h
-+++ b/drivers/acpi/acpica/acglobal.h
-@@ -140,8 +140,19 @@ u32 acpi_gbl_trace_flags;
- acpi_name acpi_gbl_trace_method_name;
- u8 acpi_gbl_system_awake_and_running;
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 27e41cc..6a3d91d 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -197,7 +197,7 @@ static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] = {
+ 		.enter = &intel_idle },
+ };
  
-+/*
-+ * ACPI 5.0 introduces the concept of a "reduced hardware platform", meaning
-+ * that the ACPI hardware is no longer required. A flag in the FADT indicates
-+ * a reduced HW machine, and that flag is duplicated here for convenience.
-+ */
-+u8 acpi_gbl_reduced_hardware;
-+
- #endif
- 
-+/* Do not disassemble buffers to resource descriptors */
-+
-+ACPI_EXTERN u8 ACPI_INIT_GLOBAL(acpi_gbl_no_resource_disassembly, FALSE);
-+
- /*****************************************************************************
-  *
-  * Debug support
-@@ -207,7 +218,7 @@ ACPI_EXTERN struct acpi_rw_lock acpi_gbl_namespace_rw_lock;
- 
- /*****************************************************************************
-  *
-- * Mutual exlusion within ACPICA subsystem
-+ * Mutual exclusion within ACPICA subsystem
-  *
-  ****************************************************************************/
- 
-diff --git a/drivers/acpi/acpica/evevent.c b/drivers/acpi/acpica/evevent.c
-index d458b04..1f43be4 100644
---- a/drivers/acpi/acpica/evevent.c
-+++ b/drivers/acpi/acpica/evevent.c
-@@ -71,6 +71,12 @@ acpi_status acpi_ev_initialize_events(void)
- 
- 	ACPI_FUNCTION_TRACE(ev_initialize_events);
- 
-+	/* If Hardware Reduced flag is set, there are no fixed events */
-+
-+	if (acpi_gbl_reduced_hardware) {
-+		return_ACPI_STATUS(AE_OK);
-+	}
-+
- 	/*
- 	 * Initialize the Fixed and General Purpose Events. This is done prior to
- 	 * enabling SCIs to prevent interrupts from occurring before the handlers
-@@ -111,6 +117,12 @@ acpi_status acpi_ev_install_xrupt_handlers(void)
- 
- 	ACPI_FUNCTION_TRACE(ev_install_xrupt_handlers);
- 
-+	/* If Hardware Reduced flag is set, there is no ACPI h/w */
-+
-+	if (acpi_gbl_reduced_hardware) {
-+		return_ACPI_STATUS(AE_OK);
-+	}
-+
- 	/* Install the SCI handler */
- 
- 	status = acpi_ev_install_sci_handler();
-diff --git a/drivers/acpi/acpica/evglock.c b/drivers/acpi/acpica/evglock.c
-index 56a562a..af1e71a 100644
---- a/drivers/acpi/acpica/evglock.c
-+++ b/drivers/acpi/acpica/evglock.c
-@@ -70,6 +70,12 @@ acpi_status acpi_ev_init_global_lock_handler(void)
- 
- 	ACPI_FUNCTION_TRACE(ev_init_global_lock_handler);
- 
-+	/* If Hardware Reduced flag is set, there is no global lock */
-+
-+	if (acpi_gbl_reduced_hardware) {
-+		return_ACPI_STATUS(AE_OK);
-+	}
-+
- 	/* Attempt installation of the global lock handler */
- 
- 	status = acpi_install_fixed_event_handler(ACPI_EVENT_GLOBAL,
-diff --git a/drivers/acpi/acpica/tbfadt.c b/drivers/acpi/acpica/tbfadt.c
-index 536fd2b..1e1a7de 100644
---- a/drivers/acpi/acpica/tbfadt.c
-+++ b/drivers/acpi/acpica/tbfadt.c
-@@ -253,8 +253,13 @@ void acpi_tb_parse_fadt(u32 table_index)
- 	acpi_tb_install_table((acpi_physical_address) acpi_gbl_FADT.Xdsdt,
- 			      ACPI_SIG_DSDT, ACPI_TABLE_INDEX_DSDT);
- 
--	acpi_tb_install_table((acpi_physical_address) acpi_gbl_FADT.Xfacs,
--			      ACPI_SIG_FACS, ACPI_TABLE_INDEX_FACS);
-+	/* If Hardware Reduced flag is set, there is no FACS */
-+
-+	if (!acpi_gbl_reduced_hardware) {
-+		acpi_tb_install_table((acpi_physical_address) acpi_gbl_FADT.
-+				      Xfacs, ACPI_SIG_FACS,
-+				      ACPI_TABLE_INDEX_FACS);
-+	}
- }
- 
- /*******************************************************************************
-@@ -297,6 +302,13 @@ void acpi_tb_create_local_fadt(struct acpi_table_header *table, u32 length)
- 	ACPI_MEMCPY(&acpi_gbl_FADT, table,
- 		    ACPI_MIN(length, sizeof(struct acpi_table_fadt)));
- 
-+	/* Take a copy of the Hardware Reduced flag */
-+
-+	acpi_gbl_reduced_hardware = FALSE;
-+	if (acpi_gbl_FADT.flags & ACPI_FADT_HW_REDUCED) {
-+		acpi_gbl_reduced_hardware = TRUE;
-+	}
-+
- 	/* Convert the local copy of the FADT to the common internal format */
- 
- 	acpi_tb_convert_fadt();
-@@ -502,6 +514,12 @@ static void acpi_tb_validate_fadt(void)
- 		acpi_gbl_FADT.Xdsdt = (u64) acpi_gbl_FADT.dsdt;
- 	}
- 
-+	/* If Hardware Reduced flag is set, we are all done */
-+
-+	if (acpi_gbl_reduced_hardware) {
-+		return;
-+	}
-+
- 	/* Examine all of the 64-bit extended address fields (X fields) */
- 
- 	for (i = 0; i < ACPI_FADT_INFO_ENTRIES; i++) {
-diff --git a/drivers/acpi/acpica/tbutils.c b/drivers/acpi/acpica/tbutils.c
-index 0f2d395..da56a19 100644
---- a/drivers/acpi/acpica/tbutils.c
-+++ b/drivers/acpi/acpica/tbutils.c
-@@ -135,6 +135,13 @@ acpi_status acpi_tb_initialize_facs(void)
+-static int get_driver_data(int cstate)
++static long get_driver_data(int cstate)
  {
- 	acpi_status status;
- 
-+	/* If Hardware Reduced flag is set, there is no FACS */
-+
-+	if (acpi_gbl_reduced_hardware) {
-+		acpi_gbl_FACS = NULL;
-+		return (AE_OK);
-+	}
-+
- 	status = acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
- 					 ACPI_CAST_INDIRECT_PTR(struct
- 								acpi_table_header,
-diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
-index f554a93..9ba2e3a 100644
---- a/include/acpi/acpixf.h
-+++ b/include/acpi/acpixf.h
-@@ -74,6 +74,7 @@ extern u8 acpi_gbl_disable_auto_repair;
- extern u32 acpi_current_gpe_count;
- extern struct acpi_table_fadt acpi_gbl_FADT;
- extern u8 acpi_gbl_system_awake_and_running;
-+extern u8 acpi_gbl_reduced_hardware;	/* ACPI 5.0 */
- 
- extern u32 acpi_rsdt_forced;
- /*
+ 	int driver_data;
+ 	switch (cstate) {
 -- 
 1.7.9.rc1
