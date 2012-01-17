@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 13/50] ACPI 5.0: Support for GeneralPurposeIo and
- GenericSerialBus operation region
-Date: Tue, 17 Jan 2012 07:21:05 -0500
-Message-ID: <2da120b6847f85c406f9afa13853e2755684389e.1326802229.git.len.brown@intel.com>
+Subject: [PATCH 09/50] ACPI 5.0: Implement hardware-reduced option
+Date: Tue, 17 Jan 2012 07:21:01 -0500
+Message-ID: <22e5b40ab21fcac21db0ff25fbb844ffecc73a4a.1326802229.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -16,190 +15,178 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Bob Moore <robert.moore@intel.com>
 
+If HW-reduced flag is set in the FADT, do not attempt to access
+or initialize any ACPI hardware, including SCI and global lock.
+No FACS will be present.
+
 Signed-off-by: Bob Moore <robert.moore@intel.com>
 Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/acconfig.h |    3 ++-
- drivers/acpi/acpica/amlcode.h  |   17 ++++++++++-------
- drivers/acpi/acpica/exfield.c  |   28 +++++++++++++++++++++-------
- drivers/acpi/acpica/exfldio.c  |    3 ++-
- drivers/acpi/acpica/utdecode.c |    4 +++-
- include/acpi/actypes.h         |    4 +++-
- 6 files changed, 41 insertions(+), 18 deletions(-)
+ drivers/acpi/acpica/acglobal.h |   13 ++++++++++++-
+ drivers/acpi/acpica/evevent.c  |   12 ++++++++++++
+ drivers/acpi/acpica/evglock.c  |    6 ++++++
+ drivers/acpi/acpica/tbfadt.c   |   22 ++++++++++++++++++++--
+ drivers/acpi/acpica/tbutils.c  |    7 +++++++
+ include/acpi/acpixf.h          |    1 +
+ 6 files changed, 58 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/acpi/acpica/acconfig.h b/drivers/acpi/acpica/acconfig.h
-index f895a24..f467d49 100644
---- a/drivers/acpi/acpica/acconfig.h
-+++ b/drivers/acpi/acpica/acconfig.h
-@@ -202,9 +202,10 @@
- #define ACPI_RSDP_CHECKSUM_LENGTH       20
- #define ACPI_RSDP_XCHECKSUM_LENGTH      36
+diff --git a/drivers/acpi/acpica/acglobal.h b/drivers/acpi/acpica/acglobal.h
+index 76dc02f..25912a9 100644
+--- a/drivers/acpi/acpica/acglobal.h
++++ b/drivers/acpi/acpica/acglobal.h
+@@ -140,8 +140,19 @@ u32 acpi_gbl_trace_flags;
+ acpi_name acpi_gbl_trace_method_name;
+ u8 acpi_gbl_system_awake_and_running;
  
--/* SMBus and IPMI bidirectional buffer size */
-+/* SMBus, GSBus and IPMI bidirectional buffer size */
++/*
++ * ACPI 5.0 introduces the concept of a "reduced hardware platform", meaning
++ * that the ACPI hardware is no longer required. A flag in the FADT indicates
++ * a reduced HW machine, and that flag is duplicated here for convenience.
++ */
++u8 acpi_gbl_reduced_hardware;
++
+ #endif
  
- #define ACPI_SMBUS_BUFFER_SIZE          34
-+#define ACPI_GSBUS_BUFFER_SIZE          34
- #define ACPI_IPMI_BUFFER_SIZE           66
++/* Do not disassemble buffers to resource descriptors */
++
++ACPI_EXTERN u8 ACPI_INIT_GLOBAL(acpi_gbl_no_resource_disassembly, FALSE);
++
+ /*****************************************************************************
+  *
+  * Debug support
+@@ -207,7 +218,7 @@ ACPI_EXTERN struct acpi_rw_lock acpi_gbl_namespace_rw_lock;
  
- /* _sx_d and _sx_w control methods */
-diff --git a/drivers/acpi/acpica/amlcode.h b/drivers/acpi/acpica/amlcode.h
-index adf7a71..c7db80e 100644
---- a/drivers/acpi/acpica/amlcode.h
-+++ b/drivers/acpi/acpica/amlcode.h
-@@ -466,13 +466,16 @@ typedef enum {
-  * access_as keyword
-  */
- typedef enum {
--	AML_FIELD_ATTRIB_SMB_QUICK = 0x02,
--	AML_FIELD_ATTRIB_SMB_SEND_RCV = 0x04,
--	AML_FIELD_ATTRIB_SMB_BYTE = 0x06,
--	AML_FIELD_ATTRIB_SMB_WORD = 0x08,
--	AML_FIELD_ATTRIB_SMB_BLOCK = 0x0A,
--	AML_FIELD_ATTRIB_SMB_WORD_CALL = 0x0C,
--	AML_FIELD_ATTRIB_SMB_BLOCK_CALL = 0x0D
-+	AML_FIELD_ATTRIB_QUICK = 0x02,
-+	AML_FIELD_ATTRIB_SEND_RCV = 0x04,
-+	AML_FIELD_ATTRIB_BYTE = 0x06,
-+	AML_FIELD_ATTRIB_WORD = 0x08,
-+	AML_FIELD_ATTRIB_BLOCK = 0x0A,
-+	AML_FIELD_ATTRIB_MULTIBYTE = 0x0B,
-+	AML_FIELD_ATTRIB_WORD_CALL = 0x0C,
-+	AML_FIELD_ATTRIB_BLOCK_CALL = 0x0D,
-+	AML_FIELD_ATTRIB_RAW_BYTES = 0x0E,
-+	AML_FIELD_ATTRIB_RAW_PROCESS = 0x0F
- } AML_ACCESS_ATTRIBUTE;
+ /*****************************************************************************
+  *
+- * Mutual exlusion within ACPICA subsystem
++ * Mutual exclusion within ACPICA subsystem
+  *
+  ****************************************************************************/
  
- /* Bit fields in the AML method_flags byte */
-diff --git a/drivers/acpi/acpica/exfield.c b/drivers/acpi/acpica/exfield.c
-index 0bde223..3aeec02 100644
---- a/drivers/acpi/acpica/exfield.c
-+++ b/drivers/acpi/acpica/exfield.c
-@@ -100,18 +100,25 @@ acpi_ex_read_data_from_field(struct acpi_walk_state *walk_state,
- 		   (obj_desc->field.region_obj->region.space_id ==
- 		    ACPI_ADR_SPACE_SMBUS
- 		    || obj_desc->field.region_obj->region.space_id ==
-+		    ACPI_ADR_SPACE_GSBUS
-+		    || obj_desc->field.region_obj->region.space_id ==
- 		    ACPI_ADR_SPACE_IPMI)) {
- 		/*
--		 * This is an SMBus or IPMI read. We must create a buffer to hold
-+		 * This is an SMBus, GSBus or IPMI read. We must create a buffer to hold
- 		 * the data and then directly access the region handler.
- 		 *
--		 * Note: Smbus protocol value is passed in upper 16-bits of Function
-+		 * Note: SMBus and GSBus protocol value is passed in upper 16-bits of Function
- 		 */
- 		if (obj_desc->field.region_obj->region.space_id ==
- 		    ACPI_ADR_SPACE_SMBUS) {
- 			length = ACPI_SMBUS_BUFFER_SIZE;
- 			function =
- 			    ACPI_READ | (obj_desc->field.attribute << 16);
-+		} else if (obj_desc->field.region_obj->region.space_id ==
-+			   ACPI_ADR_SPACE_GSBUS) {
-+			length = ACPI_GSBUS_BUFFER_SIZE;
-+			function =
-+			    ACPI_READ | (obj_desc->field.attribute << 16);
- 		} else {	/* IPMI */
+diff --git a/drivers/acpi/acpica/evevent.c b/drivers/acpi/acpica/evevent.c
+index d458b04..1f43be4 100644
+--- a/drivers/acpi/acpica/evevent.c
++++ b/drivers/acpi/acpica/evevent.c
+@@ -71,6 +71,12 @@ acpi_status acpi_ev_initialize_events(void)
  
- 			length = ACPI_IPMI_BUFFER_SIZE;
-@@ -248,21 +255,23 @@ acpi_ex_write_data_to_field(union acpi_operand_object *source_desc,
- 		   (obj_desc->field.region_obj->region.space_id ==
- 		    ACPI_ADR_SPACE_SMBUS
- 		    || obj_desc->field.region_obj->region.space_id ==
-+		    ACPI_ADR_SPACE_GSBUS
-+		    || obj_desc->field.region_obj->region.space_id ==
- 		    ACPI_ADR_SPACE_IPMI)) {
- 		/*
--		 * This is an SMBus or IPMI write. We will bypass the entire field
-+		 * This is an SMBus, GSBus or IPMI write. We will bypass the entire field
- 		 * mechanism and handoff the buffer directly to the handler. For
- 		 * these address spaces, the buffer is bi-directional; on a write,
- 		 * return data is returned in the same buffer.
- 		 *
- 		 * Source must be a buffer of sufficient size:
--		 * ACPI_SMBUS_BUFFER_SIZE or ACPI_IPMI_BUFFER_SIZE.
-+		 * ACPI_SMBUS_BUFFER_SIZE, ACPI_GSBUS_BUFFER_SIZE, or ACPI_IPMI_BUFFER_SIZE.
- 		 *
--		 * Note: SMBus protocol type is passed in upper 16-bits of Function
-+		 * Note: SMBus and GSBus protocol type is passed in upper 16-bits of Function
- 		 */
- 		if (source_desc->common.type != ACPI_TYPE_BUFFER) {
- 			ACPI_ERROR((AE_INFO,
--				    "SMBus or IPMI write requires Buffer, found type %s",
-+				    "SMBus/IPMI/GenericSerialBus write requires Buffer, found type %s",
- 				    acpi_ut_get_object_type_name(source_desc)));
+ 	ACPI_FUNCTION_TRACE(ev_initialize_events);
  
- 			return_ACPI_STATUS(AE_AML_OPERAND_TYPE);
-@@ -273,6 +282,11 @@ acpi_ex_write_data_to_field(union acpi_operand_object *source_desc,
- 			length = ACPI_SMBUS_BUFFER_SIZE;
- 			function =
- 			    ACPI_WRITE | (obj_desc->field.attribute << 16);
-+		} else if (obj_desc->field.region_obj->region.space_id ==
-+			   ACPI_ADR_SPACE_GSBUS) {
-+			length = ACPI_GSBUS_BUFFER_SIZE;
-+			function =
-+			    ACPI_WRITE | (obj_desc->field.attribute << 16);
- 		} else {	/* IPMI */
++	/* If Hardware Reduced flag is set, there are no fixed events */
++
++	if (acpi_gbl_reduced_hardware) {
++		return_ACPI_STATUS(AE_OK);
++	}
++
+ 	/*
+ 	 * Initialize the Fixed and General Purpose Events. This is done prior to
+ 	 * enabling SCIs to prevent interrupts from occurring before the handlers
+@@ -111,6 +117,12 @@ acpi_status acpi_ev_install_xrupt_handlers(void)
  
- 			length = ACPI_IPMI_BUFFER_SIZE;
-@@ -281,7 +295,7 @@ acpi_ex_write_data_to_field(union acpi_operand_object *source_desc,
+ 	ACPI_FUNCTION_TRACE(ev_install_xrupt_handlers);
  
- 		if (source_desc->buffer.length < length) {
- 			ACPI_ERROR((AE_INFO,
--				    "SMBus or IPMI write requires Buffer of length %u, found length %u",
-+				    "SMBus/IPMI/GenericSerialBus write requires Buffer of length %u, found length %u",
- 				    length, source_desc->buffer.length));
++	/* If Hardware Reduced flag is set, there is no ACPI h/w */
++
++	if (acpi_gbl_reduced_hardware) {
++		return_ACPI_STATUS(AE_OK);
++	}
++
+ 	/* Install the SCI handler */
  
- 			return_ACPI_STATUS(AE_AML_BUFFER_LIMIT);
-diff --git a/drivers/acpi/acpica/exfldio.c b/drivers/acpi/acpica/exfldio.c
-index cc9c5df..5b76c11 100644
---- a/drivers/acpi/acpica/exfldio.c
-+++ b/drivers/acpi/acpica/exfldio.c
-@@ -131,10 +131,11 @@ acpi_ex_setup_region(union acpi_operand_object *obj_desc,
+ 	status = acpi_ev_install_sci_handler();
+diff --git a/drivers/acpi/acpica/evglock.c b/drivers/acpi/acpica/evglock.c
+index 56a562a..af1e71a 100644
+--- a/drivers/acpi/acpica/evglock.c
++++ b/drivers/acpi/acpica/evglock.c
+@@ -70,6 +70,12 @@ acpi_status acpi_ev_init_global_lock_handler(void)
+ 
+ 	ACPI_FUNCTION_TRACE(ev_init_global_lock_handler);
+ 
++	/* If Hardware Reduced flag is set, there is no global lock */
++
++	if (acpi_gbl_reduced_hardware) {
++		return_ACPI_STATUS(AE_OK);
++	}
++
+ 	/* Attempt installation of the global lock handler */
+ 
+ 	status = acpi_install_fixed_event_handler(ACPI_EVENT_GLOBAL,
+diff --git a/drivers/acpi/acpica/tbfadt.c b/drivers/acpi/acpica/tbfadt.c
+index 536fd2b..1e1a7de 100644
+--- a/drivers/acpi/acpica/tbfadt.c
++++ b/drivers/acpi/acpica/tbfadt.c
+@@ -253,8 +253,13 @@ void acpi_tb_parse_fadt(u32 table_index)
+ 	acpi_tb_install_table((acpi_physical_address) acpi_gbl_FADT.Xdsdt,
+ 			      ACPI_SIG_DSDT, ACPI_TABLE_INDEX_DSDT);
+ 
+-	acpi_tb_install_table((acpi_physical_address) acpi_gbl_FADT.Xfacs,
+-			      ACPI_SIG_FACS, ACPI_TABLE_INDEX_FACS);
++	/* If Hardware Reduced flag is set, there is no FACS */
++
++	if (!acpi_gbl_reduced_hardware) {
++		acpi_tb_install_table((acpi_physical_address) acpi_gbl_FADT.
++				      Xfacs, ACPI_SIG_FACS,
++				      ACPI_TABLE_INDEX_FACS);
++	}
+ }
+ 
+ /*******************************************************************************
+@@ -297,6 +302,13 @@ void acpi_tb_create_local_fadt(struct acpi_table_header *table, u32 length)
+ 	ACPI_MEMCPY(&acpi_gbl_FADT, table,
+ 		    ACPI_MIN(length, sizeof(struct acpi_table_fadt)));
+ 
++	/* Take a copy of the Hardware Reduced flag */
++
++	acpi_gbl_reduced_hardware = FALSE;
++	if (acpi_gbl_FADT.flags & ACPI_FADT_HW_REDUCED) {
++		acpi_gbl_reduced_hardware = TRUE;
++	}
++
+ 	/* Convert the local copy of the FADT to the common internal format */
+ 
+ 	acpi_tb_convert_fadt();
+@@ -502,6 +514,12 @@ static void acpi_tb_validate_fadt(void)
+ 		acpi_gbl_FADT.Xdsdt = (u64) acpi_gbl_FADT.dsdt;
  	}
  
- 	/*
--	 * Exit now for SMBus or IPMI address space, it has a non-linear
-+	 * Exit now for SMBus, GSBus or IPMI address space, it has a non-linear
- 	 * address space and the request cannot be directly validated
- 	 */
- 	if (space_id == ACPI_ADR_SPACE_SMBUS ||
-+	    space_id == ACPI_ADR_SPACE_GSBUS ||
- 	    space_id == ACPI_ADR_SPACE_IPMI) {
++	/* If Hardware Reduced flag is set, we are all done */
++
++	if (acpi_gbl_reduced_hardware) {
++		return;
++	}
++
+ 	/* Examine all of the 64-bit extended address fields (X fields) */
  
- 		/* SMBus or IPMI has a non-linear address space */
-diff --git a/drivers/acpi/acpica/utdecode.c b/drivers/acpi/acpica/utdecode.c
-index 8b087e2..6fd56d5 100644
---- a/drivers/acpi/acpica/utdecode.c
-+++ b/drivers/acpi/acpica/utdecode.c
-@@ -171,7 +171,9 @@ const char *acpi_gbl_region_types[ACPI_NUM_PREDEFINED_REGIONS] = {
- 	"SMBus",
- 	"SystemCMOS",
- 	"PCIBARTarget",
--	"IPMI"
-+	"IPMI",
-+	"GeneralPurposeIo",
-+	"GenericSerialBus"
- };
+ 	for (i = 0; i < ACPI_FADT_INFO_ENTRIES; i++) {
+diff --git a/drivers/acpi/acpica/tbutils.c b/drivers/acpi/acpica/tbutils.c
+index 0f2d395..da56a19 100644
+--- a/drivers/acpi/acpica/tbutils.c
++++ b/drivers/acpi/acpica/tbutils.c
+@@ -135,6 +135,13 @@ acpi_status acpi_tb_initialize_facs(void)
+ {
+ 	acpi_status status;
  
- char *acpi_ut_get_region_name(u8 space_id)
-diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
-index d088c90..d5dee7c 100644
---- a/include/acpi/actypes.h
-+++ b/include/acpi/actypes.h
-@@ -712,8 +712,10 @@ typedef u8 acpi_adr_space_type;
- #define ACPI_ADR_SPACE_CMOS             (acpi_adr_space_type) 5
- #define ACPI_ADR_SPACE_PCI_BAR_TARGET   (acpi_adr_space_type) 6
- #define ACPI_ADR_SPACE_IPMI             (acpi_adr_space_type) 7
-+#define ACPI_ADR_SPACE_GPIO             (acpi_adr_space_type) 8
-+#define ACPI_ADR_SPACE_GSBUS            (acpi_adr_space_type) 9
++	/* If Hardware Reduced flag is set, there is no FACS */
++
++	if (acpi_gbl_reduced_hardware) {
++		acpi_gbl_FACS = NULL;
++		return (AE_OK);
++	}
++
+ 	status = acpi_get_table_by_index(ACPI_TABLE_INDEX_FACS,
+ 					 ACPI_CAST_INDIRECT_PTR(struct
+ 								acpi_table_header,
+diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
+index f554a93..9ba2e3a 100644
+--- a/include/acpi/acpixf.h
++++ b/include/acpi/acpixf.h
+@@ -74,6 +74,7 @@ extern u8 acpi_gbl_disable_auto_repair;
+ extern u32 acpi_current_gpe_count;
+ extern struct acpi_table_fadt acpi_gbl_FADT;
+ extern u8 acpi_gbl_system_awake_and_running;
++extern u8 acpi_gbl_reduced_hardware;	/* ACPI 5.0 */
  
--#define ACPI_NUM_PREDEFINED_REGIONS     8
-+#define ACPI_NUM_PREDEFINED_REGIONS     10
- 
+ extern u32 acpi_rsdt_forced;
  /*
-  * Special Address Spaces
 -- 
 1.7.9.rc1
