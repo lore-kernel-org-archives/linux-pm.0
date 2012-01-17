@@ -1,148 +1,74 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 31/50] ACPI,
-	Add RAM mapping support to ACPI atomic IO support
-Date: Tue, 17 Jan 2012 07:21:23 -0500
-Message-ID: <76da3fb3575e39fb23b2c072997ccd1187a2ce9d.1326802230.git.len.brown@intel.com>
-References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
+Date: Tue, 17 Jan 2012 22:27:58 +0100
+Message-ID: <201201172227.59080.rjw@sisk.pl>
+References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com> <201201162238.57556.rjw@sisk.pl> <87r4yyrh2e.fsf@amiettinen-lnx.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1326802902-21583-1-git-send-email-lenb@kernel.org>
-In-reply-to: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
-References: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Huang Ying <ying.huang@intel.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <87r4yyrh2e.fsf@amiettinen-lnx.nvidia.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: Antti P Miettinen <amiettinen@nvidia.com>, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Huang Ying <ying.huang@intel.com>
+On Tuesday, January 17, 2012, Antti P Miettinen wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> > If that hasn't been clear enough so far, I'm still not convinced that using
+> > PM QoS for that is a good idea.
+> >
+> > First off, frequency as a unit of throughput is questionable to say the least,
+> > because it isn't portable from one system to another.  Moreover, even on a
+> > given system it isn't particularly clear what the exact correspondence
+> > between frequency and throughput actually is.
+> >
+> > Second, it's not particularly clear what the meaning of the "min" frequency
+> > is supposed to be in terms of throughput.
+> >
+> > Moreover, you make cpufreq export user_policy.min and user_policy.max
+> > regardless of the new PM QoS parameters, so it looks like you could use those
+> > new attributes to set the min/max as well.
+> >
+> > Thanks,
+> > Rafael
+> 
+> Thanks - yes - I've understood you are not convinced :-)
+> 
+> Is there any reason why the mapping from application oriented
+> performance requirement metric to hardware oriented performance setting
+> metric would need to be inside kernel? As I've said (and Mark Gross
+> seems to agree) the performance requirements are likely to be system
+> specific and probably obtained via trial and error or some kind of
+> adaptive iteration. Wouldn't it be better to leave this complexity
+> outside PM QoS core or even outside kernel if possible?
 
-On one of our testing machine, the following EINJ command lines:
+If I understand you correctly, you want to have an iterface for specifying
+min and max frequencies from user space.  I can understand that.  At least
+I can see some use cases for that.
 
-  # echo 0x10000000 > param1
-  # echo 0xfffffffffffff000 > param2
-  # echo 0x8 > error_type
-  # echo 1 > error_inject
+Now, the question is if using the PM QoS framework is the right way to do
+that.
 
-Will get:
+> The change to cpufreq core just adds two read-only files to be able to
+> inspect user_policy.min/max in addition to the currently enforced
+> policy->min/max. Yes - there has been the possibility of using the sysfs
+> min for setting a frequency floor but this is problematic when there are
+> multiple clients. You'd need some kind of arbitration and book keeping
+> to set/restore the minimum. And PM QoS provides exactly this mechanism.
 
-  echo: write error: Input/output error
+Just as I suspected. :-)
 
-The EIO comes from:
+OK, so what's your anticipated usage model of this?
 
-    rc = apei_exec_pre_map_gars(&trigger_ctx);
+> I think the kernel needs to be extended to handle more PM constraints
+> and PM QoS is the closest thing I know for this kind of
+> functionality. However, I'm open to suggestions about alternative
+> approaches. I think we need e.g. more than just min/max "reduction
+> operators". Ideas, anyone?
 
-The root cause is as follow.  Normally, ACPI atomic IO support is used
-to access IO memory.  But in EINJ of that machine, it is used to
-access RAM to trigger the injected error.  And the ioremap() called by
-apei_exec_pre_map_gars() can not map the RAM.
+I first need to know who those multiple clients are going to be.
 
-This patch add RAM mapping support to ACPI atomic IO support to
-satisfy EINJ requirement.
-
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-Tested-by: Tony Luck <tony.luck@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/acpi/atomicio.c |   41 +++++++++++++++++++++++++++++++++++++----
- 1 files changed, 37 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/acpi/atomicio.c b/drivers/acpi/atomicio.c
-index 1016f18..d4a5b3d 100644
---- a/drivers/acpi/atomicio.c
-+++ b/drivers/acpi/atomicio.c
-@@ -32,6 +32,8 @@
- #include <linux/rculist.h>
- #include <linux/interrupt.h>
- #include <linux/slab.h>
-+#include <linux/mm.h>
-+#include <linux/highmem.h>
- #include <acpi/atomicio.h>
- 
- #define ACPI_PFX "ACPI: "
-@@ -97,6 +99,37 @@ static void __iomem *__acpi_try_ioremap(phys_addr_t paddr,
- 		return NULL;
- }
- 
-+#ifndef CONFIG_IA64
-+#define should_use_kmap(pfn)	page_is_ram(pfn)
-+#else
-+/* ioremap will take care of cache attributes */
-+#define should_use_kmap(pfn)	0
-+#endif
-+
-+static void __iomem *acpi_map(phys_addr_t pg_off, unsigned long pg_sz)
-+{
-+	unsigned long pfn;
-+
-+	pfn = pg_off >> PAGE_SHIFT;
-+	if (should_use_kmap(pfn)) {
-+		if (pg_sz > PAGE_SIZE)
-+			return NULL;
-+		return (void __iomem __force *)kmap(pfn_to_page(pfn));
-+	} else
-+		return ioremap(pg_off, pg_sz);
-+}
-+
-+static void acpi_unmap(phys_addr_t pg_off, void __iomem *vaddr)
-+{
-+	unsigned long pfn;
-+
-+	pfn = pg_off >> PAGE_SHIFT;
-+	if (page_is_ram(pfn))
-+		kunmap(pfn_to_page(pfn));
-+	else
-+		iounmap(vaddr);
-+}
-+
- /*
-  * Used to pre-map the specified IO memory area. First try to find
-  * whether the area is already pre-mapped, if it is, increase the
-@@ -119,7 +152,7 @@ static void __iomem *acpi_pre_map(phys_addr_t paddr,
- 
- 	pg_off = paddr & PAGE_MASK;
- 	pg_sz = ((paddr + size + PAGE_SIZE - 1) & PAGE_MASK) - pg_off;
--	vaddr = ioremap(pg_off, pg_sz);
-+	vaddr = acpi_map(pg_off, pg_sz);
- 	if (!vaddr)
- 		return NULL;
- 	map = kmalloc(sizeof(*map), GFP_KERNEL);
-@@ -135,7 +168,7 @@ static void __iomem *acpi_pre_map(phys_addr_t paddr,
- 	vaddr = __acpi_try_ioremap(paddr, size);
- 	if (vaddr) {
- 		spin_unlock_irqrestore(&acpi_iomaps_lock, flags);
--		iounmap(map->vaddr);
-+		acpi_unmap(pg_off, map->vaddr);
- 		kfree(map);
- 		return vaddr;
- 	}
-@@ -144,7 +177,7 @@ static void __iomem *acpi_pre_map(phys_addr_t paddr,
- 
- 	return map->vaddr + (paddr - map->paddr);
- err_unmap:
--	iounmap(vaddr);
-+	acpi_unmap(pg_off, vaddr);
- 	return NULL;
- }
- 
-@@ -177,7 +210,7 @@ static void acpi_post_unmap(phys_addr_t paddr, unsigned long size)
- 		return;
- 
- 	synchronize_rcu();
--	iounmap(map->vaddr);
-+	acpi_unmap(map->paddr, map->vaddr);
- 	kfree(map);
- }
- 
--- 
-1.7.9.rc1
+Thanks,
+Rafael
