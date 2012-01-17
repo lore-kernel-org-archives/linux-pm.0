@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 19/50] ACPICA: Clean up Makefile
-Date: Tue, 17 Jan 2012 07:21:11 -0500
-Message-ID: <5dc46c3f13b2f538402a09083bdf67d47836fd81.1326802229.git.len.brown@intel.com>
+Subject: [PATCH 15/50] ACPI 5.0: New interface,
+	acpi_get_event_resources
+Date: Tue, 17 Jan 2012 07:21:07 -0500
+Message-ID: <a91cdde20a870bd773d605c764ed211539bf3020.1326802229.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -21,198 +22,164 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Lin Ming <ming.m.lin@intel.com>
+Cc: Len Brown <len.brown@intel.com>, Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Lin Ming <ming.m.lin@intel.com>
+From: Bob Moore <robert.moore@intel.com>
 
-Make the various files in alphabetical order to simplify
-addition of new files.
+Executes _AEI and formats the result, similar to acpi_get_current_resources, etc.
 
+Signed-off-by: Bob Moore <robert.moore@intel.com>
 Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/Makefile |  157 +++++++++++++++++++++++++++++++++++-------
- 1 files changed, 133 insertions(+), 24 deletions(-)
+ drivers/acpi/acpica/acresrc.h |    4 +++
+ drivers/acpi/acpica/rsutils.c |   50 +++++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/acpica/rsxface.c |   40 ++++++++++++++++++++++++++++++++
+ include/acpi/acpixf.h         |    4 +++
+ 4 files changed, 98 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/acpica/Makefile b/drivers/acpi/acpica/Makefile
-index b0af3b8..5f7d0cd 100644
---- a/drivers/acpi/acpica/Makefile
-+++ b/drivers/acpi/acpica/Makefile
-@@ -8,41 +8,150 @@ ccflags-$(CONFIG_ACPI_DEBUG)	+= -DACPI_DEBUG_OUTPUT
- # use acpi.o to put all files here into acpi.o modparam namespace
- obj-y	+= acpi.o
+diff --git a/drivers/acpi/acpica/acresrc.h b/drivers/acpi/acpica/acresrc.h
+index 05721b0..61b2e04 100644
+--- a/drivers/acpi/acpica/acresrc.h
++++ b/drivers/acpi/acpica/acresrc.h
+@@ -215,6 +215,10 @@ acpi_status
+ acpi_rs_set_srs_method_data(struct acpi_namespace_node *node,
+ 			    struct acpi_buffer *ret_buffer);
  
--acpi-y := dsfield.o   dsmthdat.o  dsopcode.o  dswexec.o  dswscope.o \
--	 dsmethod.o  dsobject.o  dsutils.o   dswload.o  dswstate.o \
--	 dsinit.o dsargs.o dscontrol.o dswload2.o
-+acpi-y :=		\
-+	dsargs.o	\
-+	dscontrol.o	\
-+	dsfield.o	\
-+	dsinit.o	\
-+	dsmethod.o	\
-+	dsmthdat.o	\
-+	dsobject.o	\
-+	dsopcode.o	\
-+	dsutils.o	\
-+	dswexec.o	\
-+	dswload.o	\
-+	dswload2.o	\
-+	dswscope.o	\
-+	dswstate.o
++acpi_status
++acpi_rs_get_aei_method_data(struct acpi_namespace_node *node,
++			    struct acpi_buffer *ret_buffer);
++
+ /*
+  * rscalc
+  */
+diff --git a/drivers/acpi/acpica/rsutils.c b/drivers/acpi/acpica/rsutils.c
+index 4409db8..54a9a97 100644
+--- a/drivers/acpi/acpica/rsutils.c
++++ b/drivers/acpi/acpica/rsutils.c
+@@ -594,6 +594,56 @@ acpi_rs_get_prs_method_data(struct acpi_namespace_node *node,
  
--acpi-y += evevent.o  evregion.o  evsci.o    evxfevnt.o \
--	 evmisc.o   evrgnini.o  evxface.o  evxfregn.o \
--	 evgpe.o    evgpeblk.o evgpeinit.o  evgpeutil.o evxfgpe.o evglock.o
-+acpi-y +=		\
-+	evevent.o	\
-+	evgpe.o		\
-+	evgpeblk.o	\
-+	evgpeinit.o	\
-+	evgpeutil.o	\
-+	evglock.o	\
-+	evmisc.o	\
-+	evregion.o	\
-+	evrgnini.o	\
-+	evsci.o		\
-+	evxface.o	\
-+	evxfevnt.o	\
-+	evxfgpe.o	\
-+	evxfregn.o
+ /*******************************************************************************
+  *
++ * FUNCTION:    acpi_rs_get_aei_method_data
++ *
++ * PARAMETERS:  Node            - Device node
++ *              ret_buffer      - Pointer to a buffer structure for the
++ *                                results
++ *
++ * RETURN:      Status
++ *
++ * DESCRIPTION: This function is called to get the _AEI value of an object
++ *              contained in an object specified by the handle passed in
++ *
++ *              If the function fails an appropriate status will be returned
++ *              and the contents of the callers buffer is undefined.
++ *
++ ******************************************************************************/
++
++acpi_status
++acpi_rs_get_aei_method_data(struct acpi_namespace_node *node,
++			    struct acpi_buffer *ret_buffer)
++{
++	union acpi_operand_object *obj_desc;
++	acpi_status status;
++
++	ACPI_FUNCTION_TRACE(rs_get_aei_method_data);
++
++	/* Parameters guaranteed valid by caller */
++
++	/* Execute the method, no parameters */
++
++	status = acpi_ut_evaluate_object(node, METHOD_NAME__AEI,
++					 ACPI_BTYPE_BUFFER, &obj_desc);
++	if (ACPI_FAILURE(status)) {
++		return_ACPI_STATUS(status);
++	}
++
++	/*
++	 * Make the call to create a resource linked list from the
++	 * byte stream buffer that comes back from the _CRS method
++	 * execution.
++	 */
++	status = acpi_rs_create_resource_list(obj_desc, ret_buffer);
++
++	/* On exit, we must delete the object returned by evaluate_object */
++
++	acpi_ut_remove_reference(obj_desc);
++	return_ACPI_STATUS(status);
++}
++
++/*******************************************************************************
++ *
+  * FUNCTION:    acpi_rs_get_method_data
+  *
+  * PARAMETERS:  Handle          - Handle to the containing object
+diff --git a/drivers/acpi/acpica/rsxface.c b/drivers/acpi/acpica/rsxface.c
+index fe86b37..45a9e5e 100644
+--- a/drivers/acpi/acpica/rsxface.c
++++ b/drivers/acpi/acpica/rsxface.c
+@@ -307,6 +307,46 @@ acpi_set_current_resources(acpi_handle device_handle,
  
--acpi-y += exconfig.o  exfield.o  exnames.o   exoparg6.o  exresolv.o  exstorob.o\
--	 exconvrt.o  exfldio.o  exoparg1.o  exprep.o    exresop.o   exsystem.o\
--	 excreate.o  exmisc.o   exoparg2.o  exregion.o  exstore.o   exutils.o \
--	 exdump.o    exmutex.o  exoparg3.o  exresnte.o  exstoren.o  exdebug.o
-+acpi-y +=		\
-+	exconfig.o	\
-+	exconvrt.o	\
-+	excreate.o	\
-+	exdebug.o	\
-+	exdump.o	\
-+	exfield.o	\
-+	exfldio.o	\
-+	exmutex.o	\
-+	exnames.o	\
-+	exoparg1.o	\
-+	exoparg2.o	\
-+	exoparg3.o	\
-+	exoparg6.o	\
-+	exprep.o	\
-+	exmisc.o	\
-+	exregion.o	\
-+	exresnte.o	\
-+	exresolv.o	\
-+	exresop.o	\
-+	exstore.o	\
-+	exstoren.o	\
-+	exstorob.o	\
-+	exsystem.o	\
-+	exutils.o
+ ACPI_EXPORT_SYMBOL(acpi_set_current_resources)
  
--acpi-y += hwacpi.o  hwgpe.o  hwregs.o  hwsleep.o hwxface.o hwvalid.o hwpci.o
-+acpi-y +=		\
-+	hwacpi.o	\
-+	hwgpe.o		\
-+	hwpci.o		\
-+	hwregs.o	\
-+	hwsleep.o	\
-+	hwvalid.o	\
-+	hwxface.o
++/*******************************************************************************
++ *
++ * FUNCTION:    acpi_get_event_resources
++ *
++ * PARAMETERS:  device_handle   - Handle to the device object for the
++ *                                device we are getting resources
++ *              in_buffer       - Pointer to a buffer containing the
++ *                                resources to be set for the device
++ *
++ * RETURN:      Status
++ *
++ * DESCRIPTION: This function is called to get the event resources for a
++ *              specific device. The caller must first acquire a handle for
++ *              the desired device. The resource data is passed to the routine
++ *              the buffer pointed to by the in_buffer variable. Uses the
++ *              _AEI method.
++ *
++ ******************************************************************************/
++acpi_status
++acpi_get_event_resources(acpi_handle device_handle,
++			 struct acpi_buffer *ret_buffer)
++{
++	acpi_status status;
++	struct acpi_namespace_node *node;
++
++	ACPI_FUNCTION_TRACE(acpi_get_event_resources);
++
++	/* Validate parameters then dispatch to internal routine */
++
++	status = acpi_rs_validate_parameters(device_handle, ret_buffer, &node);
++	if (ACPI_FAILURE(status)) {
++		return_ACPI_STATUS(status);
++	}
++
++	status = acpi_rs_get_aei_method_data(node, ret_buffer);
++	return_ACPI_STATUS(status);
++}
++
++ACPI_EXPORT_SYMBOL(acpi_get_event_resources)
++
+ /******************************************************************************
+  *
+  * FUNCTION:    acpi_resource_to_address64
+diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
+index dd86610..726d937 100644
+--- a/include/acpi/acpixf.h
++++ b/include/acpi/acpixf.h
+@@ -358,6 +358,10 @@ acpi_get_possible_resources(acpi_handle device, struct acpi_buffer *ret_buffer);
+ #endif
  
- acpi-$(ACPI_FUTURE_USAGE) += hwtimer.o
- 
--acpi-y += nsaccess.o  nsload.o    nssearch.o  nsxfeval.o \
--	 nsalloc.o   nseval.o    nsnames.o   nsutils.o   nsxfname.o \
--	 nsdump.o    nsinit.o    nsobject.o  nswalk.o    nsxfobj.o  \
--	 nsparse.o   nspredef.o  nsrepair.o  nsrepair2.o
-+acpi-y +=		\
-+	nsaccess.o	\
-+	nsalloc.o	\
-+	nsdump.o	\
-+	nseval.o	\
-+	nsinit.o	\
-+	nsload.o	\
-+	nsnames.o	\
-+	nsobject.o	\
-+	nsparse.o	\
-+	nspredef.o	\
-+	nsrepair.o	\
-+	nsrepair2.o	\
-+	nssearch.o	\
-+	nsutils.o	\
-+	nswalk.o	\
-+	nsxfeval.o	\
-+	nsxfname.o	\
-+	nsxfobj.o
- 
- acpi-$(ACPI_FUTURE_USAGE) += nsdumpdv.o
- 
--acpi-y += psargs.o    psparse.o  psloop.o pstree.o   pswalk.o  \
--	 psopcode.o  psscope.o  psutils.o  psxface.o
-+acpi-y +=		\
-+	psargs.o	\
-+	psloop.o	\
-+	psopcode.o	\
-+	psparse.o	\
-+	psscope.o	\
-+	pstree.o	\
-+	psutils.o	\
-+	pswalk.o	\
-+	psxface.o
- 
--acpi-y += rsaddr.o rscreate.o rsinfo.o rsio.o rslist.o rsmisc.o rsxface.o \
--	 rscalc.o  rsirq.o  rsmemory.o  rsutils.o rsserial.o
-+acpi-y +=		\
-+	rsaddr.o	\
-+	rscalc.o	\
-+	rscreate.o	\
-+	rsinfo.o	\
-+	rsio.o		\
-+	rsirq.o		\
-+	rslist.o	\
-+	rsmemory.o	\
-+	rsmisc.o	\
-+	rsserial.o	\
-+	rsutils.o	\
-+	rsxface.o
- 
- acpi-$(ACPI_FUTURE_USAGE) += rsdump.o
- 
--acpi-y += tbxface.o tbinstal.o tbutils.o tbfind.o tbfadt.o tbxfroot.o
-+acpi-y +=		\
-+	tbfadt.o	\
-+	tbfind.o	\
-+	tbinstal.o	\
-+	tbutils.o	\
-+	tbxface.o	\
-+	tbxfroot.o
- 
--acpi-y += utalloc.o utdebug.o uteval.o utinit.o utmisc.o utxface.o \
--		utcopy.o utdelete.o utglobal.o utmath.o utobject.o \
--		utstate.o utmutex.o utobject.o utresrc.o utlock.o utids.o \
--		utosi.o utxferror.o utdecode.o utxfmutex.o
-+acpi-y +=		\
-+	utalloc.o	\
-+	utcopy.o	\
-+	utdebug.o	\
-+	utdecode.o	\
-+	utdelete.o	\
-+	uteval.o	\
-+	utglobal.o	\
-+	utids.o		\
-+	utinit.o	\
-+	utlock.o	\
-+	utmath.o	\
-+	utmisc.o	\
-+	utmutex.o	\
-+	utobject.o	\
-+	utosi.o		\
-+	utresrc.o	\
-+	utstate.o	\
-+	utxface.o	\
-+	utxferror.o	\
-+	utxfmutex.o
+ acpi_status
++acpi_get_event_resources(acpi_handle device_handle,
++			 struct acpi_buffer *ret_buffer);
++
++acpi_status
+ acpi_walk_resources(acpi_handle device,
+ 		    char *name,
+ 		    acpi_walk_resource_callback user_function, void *context);
 -- 
 1.7.9.rc1
