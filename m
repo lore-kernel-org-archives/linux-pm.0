@@ -1,74 +1,75 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 18/50] ACPI 5.0: Allow _AEI method in walk resources
-Date: Tue, 17 Jan 2012 07:21:10 -0500
-Message-ID: <25169b77f7c33b363db7d099d67491e977cdefc7.1326802229.git.len.brown@intel.com>
+Subject: [PATCH 38/50] ACPI, ia64: Use SRAT table rev to use 8bit or 16/32bit
+ PXM fields (ia64)
+Date: Tue, 17 Jan 2012 07:21:30 -0500
+Message-ID: <9f10f6a520deb3639fac78d81151a3ade88b4e7f.1326802230.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-reply-to: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 In-reply-to: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
 References: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>, Len Brown <len.brown@intel.com>
+Cc: Kurt Garloff <kurt@garloff.de>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Kurt Garloff <kurt@garloff.de>
 
-_AEI contains a resource template, this change adds support for
-the walk resources function.
+In SRAT v1, we had 8bit proximity domain (PXM) fields; SRAT v2 provides
+32bits for these. The new fields were reserved before.
+According to the ACPI spec, the OS must disregrard reserved fields.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+ia64 did handle the PXM fields almost consistently, but depending on
+sgi's sn2 platform. This patch leaves the sn2 logic in, but does also
+use 16/32 bits for PXM if the SRAT has rev 2 or higher.
+
+The patch also adds __init to the two pxm accessor functions, as they
+access __initdata now and are called from an __init function only anyway.
+
+Note that the code only uses 16 bits for the PXM field in the processor
+proximity field; the patch does not address this as 16 bits are more than
+enough.
+
+Signed-off-by: Kurt Garloff <kurt@garloff.de>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/rsxface.c |   10 ++++++----
- include/acpi/acnames.h        |    1 +
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ arch/ia64/kernel/acpi.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/acpica/rsxface.c b/drivers/acpi/acpica/rsxface.c
-index 45a9e5e..f6cceac 100644
---- a/drivers/acpi/acpica/rsxface.c
-+++ b/drivers/acpi/acpica/rsxface.c
-@@ -526,8 +526,9 @@ acpi_rs_match_vendor_resource(struct acpi_resource *resource, void *context)
-  *
-  * PARAMETERS:  device_handle   - Handle to the device object for the
-  *                                device we are querying
-- *              Name            - Method name of the resources we want
-- *                                (METHOD_NAME__CRS or METHOD_NAME__PRS)
-+ *              Name            - Method name of the resources we want.
-+ *                                (METHOD_NAME__CRS, METHOD_NAME__PRS, or
-+ *                                METHOD_NAME__AEI)
-  *              user_function   - Called for each resource
-  *              Context         - Passed to user_function
-  *
-@@ -554,11 +555,12 @@ acpi_walk_resources(acpi_handle device_handle,
+diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
+index bfb4d01..5207035 100644
+--- a/arch/ia64/kernel/acpi.c
++++ b/arch/ia64/kernel/acpi.c
+@@ -429,22 +429,24 @@ static u32 __devinitdata pxm_flag[PXM_FLAG_LEN];
+ static struct acpi_table_slit __initdata *slit_table;
+ cpumask_t early_cpu_possible_map = CPU_MASK_NONE;
  
- 	if (!device_handle || !user_function || !name ||
- 	    (!ACPI_COMPARE_NAME(name, METHOD_NAME__CRS) &&
--	     !ACPI_COMPARE_NAME(name, METHOD_NAME__PRS))) {
-+	     !ACPI_COMPARE_NAME(name, METHOD_NAME__PRS) &&
-+	     !ACPI_COMPARE_NAME(name, METHOD_NAME__AEI))) {
- 		return_ACPI_STATUS(AE_BAD_PARAMETER);
- 	}
+-static int get_processor_proximity_domain(struct acpi_srat_cpu_affinity *pa)
++static int __init
++get_processor_proximity_domain(struct acpi_srat_cpu_affinity *pa)
+ {
+ 	int pxm;
  
--	/* Get the _CRS or _PRS resource list */
-+	/* Get the _CRS/_PRS/_AEI resource list */
+ 	pxm = pa->proximity_domain_lo;
+-	if (ia64_platform_is("sn2"))
++	if (ia64_platform_is("sn2") || acpi_srat_revision >= 2)
+ 		pxm += pa->proximity_domain_hi[0] << 8;
+ 	return pxm;
+ }
  
- 	buffer.length = ACPI_ALLOCATE_LOCAL_BUFFER;
- 	status = acpi_rs_get_method_data(device_handle, name, &buffer);
-diff --git a/include/acpi/acnames.h b/include/acpi/acnames.h
-index fc1575f..5b5af0d 100644
---- a/include/acpi/acnames.h
-+++ b/include/acpi/acnames.h
-@@ -58,6 +58,7 @@
- #define METHOD_NAME__PRT        "_PRT"
- #define METHOD_NAME__CRS        "_CRS"
- #define METHOD_NAME__PRS        "_PRS"
-+#define METHOD_NAME__AEI        "_AEI"
- #define METHOD_NAME__PRW        "_PRW"
- #define METHOD_NAME__SRS        "_SRS"
+-static int get_memory_proximity_domain(struct acpi_srat_mem_affinity *ma)
++static int __init
++get_memory_proximity_domain(struct acpi_srat_mem_affinity *ma)
+ {
+ 	int pxm;
  
+ 	pxm = ma->proximity_domain;
+-	if (!ia64_platform_is("sn2"))
++	if (!ia64_platform_is("sn2") && acpi_srat_revision <= 1)
+ 		pxm &= 0xff;
+ 
+ 	return pxm;
 -- 
 1.7.9.rc1
+
