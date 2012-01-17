@@ -1,69 +1,94 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 37/50] ACPI,
- x86: Use SRAT table rev to use 8bit or 32bit PXM fields (x86/x86-64)
-Date: Tue, 17 Jan 2012 07:21:29 -0500
-Message-ID: <cd298f60a2451a16e0f077404bf69b62ec868733.1326802230.git.len.brown@intel.com>
+Subject: [PATCH 33/50] ACPI, APEI, EINJ, Refine the fix of resource conflict
+Date: Tue, 17 Jan 2012 07:21:25 -0500
+Message-ID: <b4e008dc53a31cb4bf6a12d9dbaf1d5c6070a838.1326802230.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 In-reply-to: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
 References: <553575f1ae048aa44682b46b3c51929a0b3ad337.1326802228.git.len.brown@intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, Kurt Garloff <kurt@garloff.de>
+Cc: "Xiao, Hui" <hui.xiao@linux.intel.com>, Huang Ying <ying.huang@intel.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Kurt Garloff <kurt@garloff.de>
+From: "Xiao, Hui" <hui.xiao@linux.intel.com>
 
-In SRAT v1, we had 8bit proximity domain (PXM) fields; SRAT v2 provides
-32bits for these. The new fields were reserved before.
-According to the ACPI spec, the OS must disregrard reserved fields.
+Current fix for resource conflict is to remove the address region <param1 &
+param2, ~param2+1> from trigger resource, which is highly relies on valid user
+input. This patch is trying to avoid such potential issues by fetching the
+exact address region from trigger action table entry.
 
-x86/x86-64 was rather inconsistent prior to this patch; it used 8 bits
-for the pxm field in cpu_affinity, but 32 bits in mem_affinity.
-This patch makes it consistent: Either use 8 bits consistently (SRAT
-rev 1 or lower) or 32 bits (SRAT rev 2 or higher).
-
-cc: x86@kernel.org
-Signed-off-by: Kurt Garloff <kurt@garloff.de>
+Signed-off-by: Xiao, Hui <hui.xiao@linux.intel.com>
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/mm/srat.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/acpi/apei/einj.c |   38 ++++++++++++++++++++++++++++++++------
+ 1 files changed, 32 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/mm/srat.c b/arch/x86/mm/srat.c
-index 81dbfde..7efd0c6 100644
---- a/arch/x86/mm/srat.c
-+++ b/arch/x86/mm/srat.c
-@@ -104,6 +104,8 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
- 	if ((pa->flags & ACPI_SRAT_CPU_ENABLED) == 0)
- 		return;
- 	pxm = pa->proximity_domain_lo;
-+	if (acpi_srat_revision >= 2)
-+		pxm |= *((unsigned int*)pa->proximity_domain_hi) << 8;
- 	node = setup_node(pxm);
- 	if (node < 0) {
- 		printk(KERN_ERR "SRAT: Too many proximity domains %x\n", pxm);
-@@ -155,6 +157,8 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
- 	start = ma->base_address;
- 	end = start + ma->length;
- 	pxm = ma->proximity_domain;
-+	if (acpi_srat_revision <= 1)
-+		pxm &= 0xff;
- 	node = setup_node(pxm);
- 	if (node < 0) {
- 		printk(KERN_ERR "SRAT: Too many proximity domains.\n");
+diff --git a/drivers/acpi/apei/einj.c b/drivers/acpi/apei/einj.c
+index 4fdc8a3..6e6512e 100644
+--- a/drivers/acpi/apei/einj.c
++++ b/drivers/acpi/apei/einj.c
+@@ -194,6 +194,26 @@ static int einj_check_trigger_header(struct acpi_einj_trigger *trigger_tab)
+ 	return 0;
+ }
+ 
++static struct acpi_generic_address *einj_get_trigger_parameter_region(
++	struct acpi_einj_trigger *trigger_tab, u64 param1, u64 param2)
++{
++	int i;
++	struct acpi_whea_header *entry;
++
++	entry = (struct acpi_whea_header *)
++		((char *)trigger_tab + sizeof(struct acpi_einj_trigger));
++	for (i = 0; i < trigger_tab->entry_count; i++) {
++		if (entry->action == ACPI_EINJ_TRIGGER_ERROR &&
++		entry->instruction == ACPI_EINJ_WRITE_REGISTER_VALUE &&
++		entry->register_region.space_id ==
++			ACPI_ADR_SPACE_SYSTEM_MEMORY &&
++		(entry->register_region.address & param2) == (param1 & param2))
++			return &entry->register_region;
++		entry++;
++	}
++
++	return NULL;
++}
+ /* Execute instructions in trigger error action table */
+ static int __einj_error_trigger(u64 trigger_paddr, u32 type,
+ 				u64 param1, u64 param2)
+@@ -205,6 +225,7 @@ static int __einj_error_trigger(u64 trigger_paddr, u32 type,
+ 	struct resource *r;
+ 	u32 table_size;
+ 	int rc = -EIO;
++	struct acpi_generic_address *trigger_param_region = NULL;
+ 
+ 	r = request_mem_region(trigger_paddr, sizeof(*trigger_tab),
+ 			       "APEI EINJ Trigger Table");
+@@ -266,12 +287,17 @@ static int __einj_error_trigger(u64 trigger_paddr, u32 type,
+ 	if (param_extension && (type & 0x0038) && param2) {
+ 		struct apei_resources addr_resources;
+ 		apei_resources_init(&addr_resources);
+-		rc = apei_resources_add(&addr_resources,
+-					param1 & param2,
+-					~param2 + 1, true);
+-		if (rc)
+-			goto out_fini;
+-		rc = apei_resources_sub(&trigger_resources, &addr_resources);
++		trigger_param_region = einj_get_trigger_parameter_region(
++			trigger_tab, param1, param2);
++		if (trigger_param_region) {
++			rc = apei_resources_add(&addr_resources,
++				trigger_param_region->address,
++				trigger_param_region->bit_width/8, true);
++			if (rc)
++				goto out_fini;
++			rc = apei_resources_sub(&trigger_resources,
++					&addr_resources);
++		}
+ 		apei_resources_fini(&addr_resources);
+ 		if (rc)
+ 			goto out_fini;
 -- 
 1.7.9.rc1
