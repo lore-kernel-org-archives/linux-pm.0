@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 17/50] ACPI 5.0: Add new predefined names
-Date: Tue, 17 Jan 2012 07:21:09 -0500
-Message-ID: <7fce7a4b0db7d90db553faf568853d56cd908c39.1326802229.git.len.brown@intel.com>
+Subject: [PATCH 37/50] ACPI,
+ x86: Use SRAT table rev to use 8bit or 32bit PXM fields (x86/x86-64)
+Date: Tue, 17 Jan 2012 07:21:29 -0500
+Message-ID: <cd298f60a2451a16e0f077404bf69b62ec868733.1326802230.git.len.brown@intel.com>
 References: <1326802902-21583-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -21,254 +22,48 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
+Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, Kurt Garloff <kurt@garloff.de>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+From: Kurt Garloff <kurt@garloff.de>
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+In SRAT v1, we had 8bit proximity domain (PXM) fields; SRAT v2 provides
+32bits for these. The new fields were reserved before.
+According to the ACPI spec, the OS must disregrard reserved fields.
+
+x86/x86-64 was rather inconsistent prior to this patch; it used 8 bits
+for the pxm field in cpu_affinity, but 32 bits in mem_affinity.
+This patch makes it consistent: Either use 8 bits consistently (SRAT
+rev 1 or lower) or 32 bits (SRAT rev 2 or higher).
+
+cc: x86@kernel.org
+Signed-off-by: Kurt Garloff <kurt@garloff.de>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/aclocal.h   |    3 ++-
- drivers/acpi/acpica/acpredef.h  |   39 ++++++++++++++++++++++++++++++++++++++-
- drivers/acpi/acpica/nspredef.c  |   29 +++++++++++++++++++++++++++++
- drivers/acpi/acpica/nsrepair.c  |    1 +
- drivers/acpi/acpica/nsrepair2.c |    5 +++--
- 5 files changed, 73 insertions(+), 4 deletions(-)
+ arch/x86/mm/srat.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/acpica/aclocal.h b/drivers/acpi/acpica/aclocal.h
-index 60aee56..2ddd61d 100644
---- a/drivers/acpi/acpica/aclocal.h
-+++ b/drivers/acpi/acpica/aclocal.h
-@@ -319,7 +319,8 @@ struct acpi_name_info {
- 
- /*
-  * Used for ACPI_PTYPE1_FIXED, ACPI_PTYPE1_VAR, ACPI_PTYPE2,
-- * ACPI_PTYPE2_MIN, ACPI_PTYPE2_PKG_COUNT, ACPI_PTYPE2_COUNT
-+ * ACPI_PTYPE2_MIN, ACPI_PTYPE2_PKG_COUNT, ACPI_PTYPE2_COUNT,
-+ * ACPI_PTYPE2_FIX_VAR
-  */
- struct acpi_package_info {
- 	u8 type;
-diff --git a/drivers/acpi/acpica/acpredef.h b/drivers/acpi/acpica/acpredef.h
-index c445cca..ecac9cf 100644
---- a/drivers/acpi/acpica/acpredef.h
-+++ b/drivers/acpi/acpica/acpredef.h
-@@ -94,6 +94,14 @@
-  * ACPI_PTYPE2_REV_FIXED: Revision at start, each subpackage is Fixed-length
-  *      (Used for _ART, _FPS)
-  *
-+ * ACPI_PTYPE2_FIX_VAR: Each subpackage consists of some fixed-length elements
-+ *      followed by an optional element
-+ *      object type
-+ *      count
-+ *      object type
-+ *      count = 0 (optional)
-+ *      (Used for _DLM)
-+ *
-  *****************************************************************************/
- 
- enum acpi_return_package_types {
-@@ -105,7 +113,8 @@ enum acpi_return_package_types {
- 	ACPI_PTYPE2_PKG_COUNT = 6,
- 	ACPI_PTYPE2_FIXED = 7,
- 	ACPI_PTYPE2_MIN = 8,
--	ACPI_PTYPE2_REV_FIXED = 9
-+	ACPI_PTYPE2_REV_FIXED = 9,
-+	ACPI_PTYPE2_FIX_VAR = 10
- };
- 
- #ifdef ACPI_CREATE_PREDEFINED_TABLE
-@@ -154,6 +163,7 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_AC8", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_AC9", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_ADR", 0, ACPI_RTYPE_INTEGER}},
-+	{{"_AEI", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_AL0", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Refs) */
- 			  {{{ACPI_PTYPE1_VAR, ACPI_RTYPE_REFERENCE, 0,0}, 0,0}},
- 
-@@ -229,6 +239,13 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_CID", 0, ACPI_RTYPE_INTEGER | ACPI_RTYPE_STRING | ACPI_RTYPE_PACKAGE}}, /* Variable-length (Ints/Strs) */
- 			  {{{ACPI_PTYPE1_VAR, ACPI_RTYPE_INTEGER | ACPI_RTYPE_STRING, 0,0}, 0,0}},
- 
-+	{{"_CLS", 0, ACPI_RTYPE_PACKAGE}},	/* Fixed-length (3 Int) */
-+	{{{ACPI_PTYPE1_FIXED, ACPI_RTYPE_INTEGER, 3, 0}, 0, 0}},
-+
-+	{{"_CPC", 0, ACPI_RTYPE_PACKAGE}},	/* Variable-length (Ints/Bufs) */
-+	{{{ACPI_PTYPE1_VAR, ACPI_RTYPE_INTEGER | ACPI_RTYPE_BUFFER, 0, 0}, 0,
-+	  0}},
-+
- 	{{"_CRS", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_CRT", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_CSD", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (1 Int(n), n-1 Int) */
-@@ -237,12 +254,21 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_CST", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (1 Int(n), n Pkg (1 Buf/3 Int) */
- 			  {{{ACPI_PTYPE2_PKG_COUNT,ACPI_RTYPE_BUFFER, 1, ACPI_RTYPE_INTEGER}, 3,0}},
- 
-+	{{"_CWS", 1, ACPI_RTYPE_INTEGER}},
- 	{{"_DCK", 1, ACPI_RTYPE_INTEGER}},
- 	{{"_DCS", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_DDC", 1, ACPI_RTYPE_INTEGER | ACPI_RTYPE_BUFFER}},
- 	{{"_DDN", 0, ACPI_RTYPE_STRING}},
-+	{{"_DEP", 0, ACPI_RTYPE_PACKAGE}},	/* Variable-length (Refs) */
-+	{{{ACPI_PTYPE1_VAR, ACPI_RTYPE_REFERENCE, 0, 0}, 0, 0}},
-+
- 	{{"_DGS", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_DIS", 0, 0}},
-+
-+	{{"_DLM", 0, ACPI_RTYPE_PACKAGE}},	/* Variable-length (Pkgs) each (1 Ref, 0/1 Optional Buf/Ref) */
-+	{{{ACPI_PTYPE2_FIX_VAR, ACPI_RTYPE_REFERENCE, 1,
-+	   ACPI_RTYPE_REFERENCE | ACPI_RTYPE_BUFFER}, 0, 0}},
-+
- 	{{"_DMA", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_DOD", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Ints) */
- 			  {{{ACPI_PTYPE1_VAR, ACPI_RTYPE_INTEGER, 0,0}, 0,0}},
-@@ -262,6 +288,7 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_EJ3", 1, 0}},
- 	{{"_EJ4", 1, 0}},
- 	{{"_EJD", 0, ACPI_RTYPE_STRING}},
-+	{{"_EVT", 1, 0}},
- 	{{"_FDE", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_FDI", 0, ACPI_RTYPE_PACKAGE}}, /* Fixed-length (16 Int) */
- 			  {{{ACPI_PTYPE1_FIXED, ACPI_RTYPE_INTEGER, 16,0}, 0,0}},
-@@ -281,14 +308,17 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{{ACPI_PTYPE1_FIXED, ACPI_RTYPE_INTEGER, 3, 0}, 0, 0}},
- 
- 	{{"_GAI", 0, ACPI_RTYPE_INTEGER}},
-+	{{"_GCP", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_GHL", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_GLK", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_GPD", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_GPE", 0, ACPI_RTYPE_INTEGER}}, /* _GPE method, not _GPE scope */
-+	{{"_GRT", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_GSB", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_GTF", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_GTM", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_GTS", 1, 0}},
-+	{{"_GWS", 1, ACPI_RTYPE_INTEGER}},
- 	{{"_HID", 0, ACPI_RTYPE_INTEGER | ACPI_RTYPE_STRING}},
- 	{{"_HOT", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_HPP", 0, ACPI_RTYPE_PACKAGE}}, /* Fixed-length (4 Int) */
-@@ -303,6 +333,7 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_HPX", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Pkgs) each (var Ints) */
- 			  {{{ACPI_PTYPE2_MIN, ACPI_RTYPE_INTEGER, 5,0}, 0,0}},
- 
-+	{{"_HRV", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_IFT", 0, ACPI_RTYPE_INTEGER}}, /* See IPMI spec */
- 	{{"_INI", 0, 0}},
- 	{{"_IRC", 0, 0}},
-@@ -361,6 +392,9 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_PR3", 0, ACPI_RTYPE_PACKAGE}},	/* Variable-length (Refs) */
- 	{{{ACPI_PTYPE1_VAR, ACPI_RTYPE_REFERENCE, 0, 0}, 0, 0}},
- 
-+	{{"_PRE", 0, ACPI_RTYPE_PACKAGE}},	/* Variable-length (Refs) */
-+	{{{ACPI_PTYPE1_VAR, ACPI_RTYPE_REFERENCE, 0, 0}, 0, 0}},
-+
- 	{{"_PRL", 0, ACPI_RTYPE_PACKAGE}},	/* Variable-length (Refs) */
- 	{{{ACPI_PTYPE1_VAR, ACPI_RTYPE_REFERENCE, 0, 0}, 0, 0}},
- 
-@@ -391,6 +425,7 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_PSD", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Pkgs) each (5 Int) with count */
- 			  {{{ACPI_PTYPE2_COUNT, ACPI_RTYPE_INTEGER,0,0}, 0,0}},
- 
-+	{{"_PSE", 1, 0}},
- 	{{"_PSL", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Refs) */
- 			  {{{ACPI_PTYPE1_VAR, ACPI_RTYPE_REFERENCE, 0,0}, 0,0}},
- 
-@@ -457,6 +492,7 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_SLI", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_SPD", 1, ACPI_RTYPE_INTEGER}},
- 	{{"_SRS", 1, 0}},
-+	{{"_SRT", 1, ACPI_RTYPE_INTEGER}},
- 	{{"_SRV", 0, ACPI_RTYPE_INTEGER}}, /* See IPMI spec */
- 	{{"_SST", 1, 0}},
- 	{{"_STA", 0, ACPI_RTYPE_INTEGER}},
-@@ -464,6 +500,7 @@ static const union acpi_predefined_info predefined_names[] =
- 	{{"_STP", 2, ACPI_RTYPE_INTEGER}},
- 	{{"_STR", 0, ACPI_RTYPE_BUFFER}},
- 	{{"_STV", 2, ACPI_RTYPE_INTEGER}},
-+	{{"_SUB", 0, ACPI_RTYPE_STRING}},
- 	{{"_SUN", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_SWS", 0, ACPI_RTYPE_INTEGER}},
- 	{{"_TC1", 0, ACPI_RTYPE_INTEGER}},
-diff --git a/drivers/acpi/acpica/nspredef.c b/drivers/acpi/acpica/nspredef.c
-index c845c80..db80366 100644
---- a/drivers/acpi/acpica/nspredef.c
-+++ b/drivers/acpi/acpica/nspredef.c
-@@ -620,6 +620,7 @@ acpi_ns_check_package(struct acpi_predefined_data *data,
- 	case ACPI_PTYPE2_FIXED:
- 	case ACPI_PTYPE2_MIN:
- 	case ACPI_PTYPE2_COUNT:
-+	case ACPI_PTYPE2_FIX_VAR:
- 
- 		/*
- 		 * These types all return a single Package that consists of a
-@@ -759,6 +760,34 @@ acpi_ns_check_package_list(struct acpi_predefined_data *data,
- 			}
- 			break;
- 
-+		case ACPI_PTYPE2_FIX_VAR:
-+			/*
-+			 * Each subpackage has a fixed number of elements and an
-+			 * optional element
-+			 */
-+			expected_count =
-+			    package->ret_info.count1 + package->ret_info.count2;
-+			if (sub_package->package.count < expected_count) {
-+				goto package_too_small;
-+			}
-+
-+			status =
-+			    acpi_ns_check_package_elements(data, sub_elements,
-+							   package->ret_info.
-+							   object_type1,
-+							   package->ret_info.
-+							   count1,
-+							   package->ret_info.
-+							   object_type2,
-+							   sub_package->package.
-+							   count -
-+							   package->ret_info.
-+							   count1, 0);
-+			if (ACPI_FAILURE(status)) {
-+				return (status);
-+			}
-+			break;
-+
- 		case ACPI_PTYPE2_FIXED:
- 
- 			/* Each sub-package has a fixed length */
-diff --git a/drivers/acpi/acpica/nsrepair.c b/drivers/acpi/acpica/nsrepair.c
-index ac7b854..dd0a0bd 100644
---- a/drivers/acpi/acpica/nsrepair.c
-+++ b/drivers/acpi/acpica/nsrepair.c
-@@ -634,6 +634,7 @@ acpi_ns_remove_null_elements(struct acpi_predefined_data *data,
- 	case ACPI_PTYPE2_FIXED:
- 	case ACPI_PTYPE2_MIN:
- 	case ACPI_PTYPE2_REV_FIXED:
-+	case ACPI_PTYPE2_FIX_VAR:
- 		break;
- 
- 	default:
-diff --git a/drivers/acpi/acpica/nsrepair2.c b/drivers/acpi/acpica/nsrepair2.c
-index 024c4f2..3ee2b22 100644
---- a/drivers/acpi/acpica/nsrepair2.c
-+++ b/drivers/acpi/acpica/nsrepair2.c
-@@ -467,11 +467,12 @@ acpi_ns_repair_HID(struct acpi_predefined_data *data,
- 	}
- 
- 	/*
--	 * Copy and uppercase the string. From the ACPI specification:
-+	 * Copy and uppercase the string. From the ACPI 5.0 specification:
- 	 *
- 	 * A valid PNP ID must be of the form "AAA####" where A is an uppercase
- 	 * letter and # is a hex digit. A valid ACPI ID must be of the form
--	 * "ACPI####" where # is a hex digit.
-+	 * "NNNN####" where N is an uppercase letter or decimal digit, and
-+	 * # is a hex digit.
- 	 */
- 	for (dest = new_string->string.pointer; *source; dest++, source++) {
- 		*dest = (char)ACPI_TOUPPER(*source);
+diff --git a/arch/x86/mm/srat.c b/arch/x86/mm/srat.c
+index 81dbfde..7efd0c6 100644
+--- a/arch/x86/mm/srat.c
++++ b/arch/x86/mm/srat.c
+@@ -104,6 +104,8 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+ 	if ((pa->flags & ACPI_SRAT_CPU_ENABLED) == 0)
+ 		return;
+ 	pxm = pa->proximity_domain_lo;
++	if (acpi_srat_revision >= 2)
++		pxm |= *((unsigned int*)pa->proximity_domain_hi) << 8;
+ 	node = setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains %x\n", pxm);
+@@ -155,6 +157,8 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 	start = ma->base_address;
+ 	end = start + ma->length;
+ 	pxm = ma->proximity_domain;
++	if (acpi_srat_revision <= 1)
++		pxm &= 0xff;
+ 	node = setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains.\n");
 -- 
 1.7.9.rc1
