@@ -1,16 +1,16 @@
-From: mark gross <markgross@thegnar.org>
+From: Antti P Miettinen <amiettinen@nvidia.com>
 Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS
- params
-Date: Tue, 17 Jan 2012 19:44:06 -0800
-Message-ID: <20120118034406.GD27153@mgross-G62>
+	params
+Date: Wed, 18 Jan 2012 09:52:52 +0200
+Message-ID: <87ipk9qwff.fsf@amiettinen-lnx.nvidia.com>
 References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
-Reply-To: markgross@thegnar.org
+	<201201162238.57556.rjw@sisk.pl>
+	<87r4yyrh2e.fsf@amiettinen-lnx.nvidia.com>
+	<201201172227.59080.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,73 +20,49 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: linux-pm@lists.linux-foundation.org
+Cc: cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Would it be possible for you to split this set up where you only have
-the cpu_min_freq enabling in pos.c and cpufreq and make the rest of the
-set a separate patch set?
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+[..]
+> If I understand you correctly, you want to have an iterface for specifying
+> min and max frequencies from user space.  I can understand that.  At least
+> I can see some use cases for that.
+>
+> Now, the question is if using the PM QoS framework is the right way to do
+> that.
+>
+>> The change to cpufreq core just adds two read-only files to be able to
+>> inspect user_policy.min/max in addition to the currently enforced
+>> policy->min/max. Yes - there has been the possibility of using the sysfs
+>> min for setting a frequency floor but this is problematic when there are
+>> multiple clients. You'd need some kind of arbitration and book keeping
+>> to set/restore the minimum. And PM QoS provides exactly this mechanism.
+>
+> Just as I suspected. :-)
+>
+> OK, so what's your anticipated usage model of this?
 
-As you have it currently the parts I care about are intermixed with
-controversial things (max freq and the new cpufreq exports).
+We've been experimenting with hooking the frequency boost to e.g. touch
+screen UI events and application launch. I believe there are also some
+specific applications that would want to either set a frequency floor or
+ceiling in some situations.
 
-Also could you make the entire set git am friendly?  Only the first
-patch am's the reset don't.
+>> I think the kernel needs to be extended to handle more PM constraints
+>> and PM QoS is the closest thing I know for this kind of
+>> functionality. However, I'm open to suggestions about alternative
+>> approaches. I think we need e.g. more than just min/max "reduction
+>> operators". Ideas, anyone?
+>
+> I first need to know who those multiple clients are going to be.
+>
+> Thanks,
+> Rafael
 
---mark
+For the touch screen UI, the boost could be implemented as a kernel
+module hooked with suitable event filter to the input event
+stream. Another possibility is the UI framework in user space. Some
+specific user space applications would also be clients.
 
-On Mon, Jan 16, 2012 at 08:59:53AM +0200, Antti P Miettinen wrote:
-> [did not reach linux-pm as I sent to wrong address, sorry for
-> duplicates]
-> 
-> The inspiration for this patch series is the N9 CPU frequency boost
-> upon input events:
-> 
-> http://www.spinics.net/lists/cpufreq/msg00667.html
-> 
-> and the related changes in git://codeaurora.org/kernel/msm.git tree.
-> Those patches modify the ondemand cpufreq governor. This patch series
-> adds minimum and maximum CPU frequency as PM QoS parameters and
-> modifies the cpufreq core to enforce the PM QoS limits. There is also
-> an example module for boosting the frequency upon input events.
-> 
-> I've been testing these changes against Ubuntu 3.2 kernel on a Dell
-> E6420 with the ACPI cpufreq driver. The patches are against
-> linux-next/master, compile tested against it.
-> 
-> V2:
-> * split min and max to separate commits
-> * handle PM QoS min above max as max
-> * handle PM QoS max below min as min
-> 
-> 	--Antti
-> 
-> Alex Frid (1):
->   PM QoS: Simplify PM QoS expansion/merge
-> 
-> Antti P Miettinen (7):
->   PM QoS: Add CPU frequency minimum as PM QoS param
->   cpufreq: Export user_policy min/max
->   cpufreq: Preserve sysfs min/max request
->   cpufreq: Enforce PM QoS minimum limit
->   input: CPU frequency booster
->   PM QoS: Add CPU frequency maximum as PM QoS param
->   cpufreq: Enforce PM QoS maximum frequency
-> 
->  drivers/cpufreq/cpufreq.c     |   59 +++++++++++++-
->  drivers/input/Kconfig         |    9 ++
->  drivers/input/Makefile        |    1 +
->  drivers/input/input-cfboost.c |  174 +++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_qos.h        |   19 ++++-
->  kernel/power/qos.c            |   55 ++++++++++----
->  6 files changed, 295 insertions(+), 22 deletions(-)
->  create mode 100644 drivers/input/input-cfboost.c
-> 
-> -- 
-> 1.7.4.1
-> 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
+	--Antti
