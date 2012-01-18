@@ -1,74 +1,122 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
-Date: Tue, 17 Jan 2012 22:27:58 +0100
-Message-ID: <201201172227.59080.rjw@sisk.pl>
-References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com> <201201162238.57556.rjw@sisk.pl> <87r4yyrh2e.fsf@amiettinen-lnx.nvidia.com>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [PATCH v2 1/8] PM QoS: Simplify PM QoS
+	expansion/merge
+Date: Tue, 17 Jan 2012 18:50:34 -0800
+Message-ID: <20120118025034.GA27153@mgross-G62>
+References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
+	<1326697201-32406-2-git-send-email-amiettinen@nvidia.com>
+	<201201162222.09828.rjw@sisk.pl>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <87r4yyrh2e.fsf@amiettinen-lnx.nvidia.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: linux-pm@lists.linux-foundation.org
-Cc: Antti P Miettinen <amiettinen@nvidia.com>, cpufreq@vger.kernel.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <201201162222.09828.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>, mark gross <markgross@thegnar.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 17, 2012, Antti P Miettinen wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> > If that hasn't been clear enough so far, I'm still not convinced that using
-> > PM QoS for that is a good idea.
-> >
-> > First off, frequency as a unit of throughput is questionable to say the least,
-> > because it isn't portable from one system to another.  Moreover, even on a
-> > given system it isn't particularly clear what the exact correspondence
-> > between frequency and throughput actually is.
-> >
-> > Second, it's not particularly clear what the meaning of the "min" frequency
-> > is supposed to be in terms of throughput.
-> >
-> > Moreover, you make cpufreq export user_policy.min and user_policy.max
-> > regardless of the new PM QoS parameters, so it looks like you could use those
-> > new attributes to set the min/max as well.
-> >
-> > Thanks,
-> > Rafael
+On Mon, Jan 16, 2012 at 10:22:09PM +0100, Rafael J. Wysocki wrote:
+> On Monday, January 16, 2012, Antti P Miettinen wrote:
+> > From: Alex Frid <afrid@nvidia.com>
+> > 
+> > - Replace class ID #define with enumeration
+> > - Loop through PM QoS objects during initialization (rather than
+> >   initializing them one-by-one)
+> > 
+> > Signed-off-by: Alex Frid <afrid@nvidia.com>
+> > Reviewed-by: Antti Miettinen <amiettinen@nvidia.com>
+> > Reviewed-by: Diwakar Tundlam <dtundlam@nvidia.com>
+> > Reviewed-by: Scott Williams <scwilliams@nvidia.com>
+> > Reviewed-by: Yu-Huan Hsu <yhsu@nvidia.com>
 > 
-> Thanks - yes - I've understood you are not convinced :-)
+> This one has been ACKed by Mark IIRC.
+
+yes it was.  I sent responces to a few other patches that I can't seem
+to find in the list server archives.  Am I doing something dumb?
+
+--mark
+
+> Thanks,
+> Rafael
 > 
-> Is there any reason why the mapping from application oriented
-> performance requirement metric to hardware oriented performance setting
-> metric would need to be inside kernel? As I've said (and Mark Gross
-> seems to agree) the performance requirements are likely to be system
-> specific and probably obtained via trial and error or some kind of
-> adaptive iteration. Wouldn't it be better to leave this complexity
-> outside PM QoS core or even outside kernel if possible?
-
-If I understand you correctly, you want to have an iterface for specifying
-min and max frequencies from user space.  I can understand that.  At least
-I can see some use cases for that.
-
-Now, the question is if using the PM QoS framework is the right way to do
-that.
-
-> The change to cpufreq core just adds two read-only files to be able to
-> inspect user_policy.min/max in addition to the currently enforced
-> policy->min/max. Yes - there has been the possibility of using the sysfs
-> min for setting a frequency floor but this is problematic when there are
-> multiple clients. You'd need some kind of arbitration and book keeping
-> to set/restore the minimum. And PM QoS provides exactly this mechanism.
-
-Just as I suspected. :-)
-
-OK, so what's your anticipated usage model of this?
-
-> I think the kernel needs to be extended to handle more PM constraints
-> and PM QoS is the closest thing I know for this kind of
-> functionality. However, I'm open to suggestions about alternative
-> approaches. I think we need e.g. more than just min/max "reduction
-> operators". Ideas, anyone?
-
-I first need to know who those multiple clients are going to be.
-
-Thanks,
-Rafael
+> 
+> > ---
+> >  include/linux/pm_qos.h |   14 +++++++++-----
+> >  kernel/power/qos.c     |   23 ++++++++++-------------
+> >  2 files changed, 19 insertions(+), 18 deletions(-)
+> > 
+> > diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> > index e5bbcba..5ac91d8 100644
+> > --- a/include/linux/pm_qos.h
+> > +++ b/include/linux/pm_qos.h
+> > @@ -9,12 +9,16 @@
+> >  #include <linux/miscdevice.h>
+> >  #include <linux/device.h>
+> >  
+> > -#define PM_QOS_RESERVED 0
+> > -#define PM_QOS_CPU_DMA_LATENCY 1
+> > -#define PM_QOS_NETWORK_LATENCY 2
+> > -#define PM_QOS_NETWORK_THROUGHPUT 3
+> > +enum {
+> > +	PM_QOS_RESERVED = 0,
+> > +	PM_QOS_CPU_DMA_LATENCY,
+> > +	PM_QOS_NETWORK_LATENCY,
+> > +	PM_QOS_NETWORK_THROUGHPUT,
+> > +
+> > +	/* insert new class ID */
+> > +	PM_QOS_NUM_CLASSES,
+> > +};
+> >  
+> > -#define PM_QOS_NUM_CLASSES 4
+> >  #define PM_QOS_DEFAULT_VALUE -1
+> >  
+> >  #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+> > diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> > index 995e3bd..d6d6dbd 100644
+> > --- a/kernel/power/qos.c
+> > +++ b/kernel/power/qos.c
+> > @@ -469,21 +469,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+> >  static int __init pm_qos_power_init(void)
+> >  {
+> >  	int ret = 0;
+> > +	int i;
+> >  
+> > -	ret = register_pm_qos_misc(&cpu_dma_pm_qos);
+> > -	if (ret < 0) {
+> > -		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
+> > -		return ret;
+> > -	}
+> > -	ret = register_pm_qos_misc(&network_lat_pm_qos);
+> > -	if (ret < 0) {
+> > -		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
+> > -		return ret;
+> > +	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
+> > +
+> > +	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
+> > +		ret = register_pm_qos_misc(pm_qos_array[i]);
+> > +		if (ret < 0) {
+> > +			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
+> > +			       pm_qos_array[i]->name);
+> > +			return ret;
+> > +		}
+> >  	}
+> > -	ret = register_pm_qos_misc(&network_throughput_pm_qos);
+> > -	if (ret < 0)
+> > -		printk(KERN_ERR
+> > -			"pm_qos_param: network_throughput setup failed\n");
+> >  
+> >  	return ret;
+> >  }
+> > 
+> 
