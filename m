@@ -1,18 +1,17 @@
 From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH v2 1/8] PM QoS: Simplify PM QoS
-	expansion/merge
-Date: Tue, 17 Jan 2012 18:50:34 -0800
-Message-ID: <20120118025034.GA27153@mgross-G62>
+Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS
+ params
+Date: Tue, 17 Jan 2012 19:13:19 -0800
+Message-ID: <20120118031319.GB27153@mgross-G62>
 References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
-	<1326697201-32406-2-git-send-email-amiettinen@nvidia.com>
-	<201201162222.09828.rjw@sisk.pl>
+	<201201162238.57556.rjw@sisk.pl>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201201162222.09828.rjw@sisk.pl>
+In-Reply-To: <201201162238.57556.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -23,100 +22,69 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>, mark gross <markgross@thegnar.org>
+Cc: linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>, cpufreq@vger.kernel.org, mark gross <markgross@thegnar.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 16, 2012 at 10:22:09PM +0100, Rafael J. Wysocki wrote:
+On Mon, Jan 16, 2012 at 10:38:57PM +0100, Rafael J. Wysocki wrote:
+> Hi,
+> 
 > On Monday, January 16, 2012, Antti P Miettinen wrote:
-> > From: Alex Frid <afrid@nvidia.com>
+> > [did not reach linux-pm as I sent to wrong address, sorry for
+> > duplicates]
 > > 
-> > - Replace class ID #define with enumeration
-> > - Loop through PM QoS objects during initialization (rather than
-> >   initializing them one-by-one)
+> > The inspiration for this patch series is the N9 CPU frequency boost
+> > upon input events:
 > > 
-> > Signed-off-by: Alex Frid <afrid@nvidia.com>
-> > Reviewed-by: Antti Miettinen <amiettinen@nvidia.com>
-> > Reviewed-by: Diwakar Tundlam <dtundlam@nvidia.com>
-> > Reviewed-by: Scott Williams <scwilliams@nvidia.com>
-> > Reviewed-by: Yu-Huan Hsu <yhsu@nvidia.com>
+> > http://www.spinics.net/lists/cpufreq/msg00667.html
+> > 
+> > and the related changes in git://codeaurora.org/kernel/msm.git tree.
+> > Those patches modify the ondemand cpufreq governor. This patch series
+> > adds minimum and maximum CPU frequency as PM QoS parameters and
+> > modifies the cpufreq core to enforce the PM QoS limits.
 > 
-> This one has been ACKed by Mark IIRC.
+> If that hasn't been clear enough so far, I'm still not convinced that using
+> PM QoS for that is a good idea.
+> 
+> First off, frequency as a unit of throughput is questionable to say the least,
+> because it isn't portable from one system to another.  Moreover, even on a
+> given system it isn't particularly clear what the exact correspondence
+> between frequency and throughput actually is.
 
-yes it was.  I sent responces to a few other patches that I can't seem
-to find in the list server archives.  Am I doing something dumb?
+You are right.  The notion of throughput of a CPU is really hard to
+quantify.  Perhaps not using the term "throughput" would help?
 
---mark
+The base issue I see, the Intel platform, is needing is that sometimes
+we need to block the lowest P-states that the ondemand governor goes for
+because those P-states result in media / graphics workloads dropping
+frames.  However; GPU intensive workloads do not stress the CPU so the
+ondemand governor goes for the low p-state.
 
-> Thanks,
-> Rafael
+I could use some way of constraining the PM-throttling of the
+cpu-freq that can be hit from kernel or user mode.  So the graphics
+driver can dynamically adjust the constraint request on the cpufreq
+subsystem.
+
+It is problematic that any driver requesting a given frequency request
+is not portable across ISA's or even processor families in the same ISA.
+But, maybe such a driver should use a module parameter to work around
+this lack of portability?
+
+> Second, it's not particularly clear what the meaning of the "min" frequency
+> is supposed to be in terms of throughput.
+
+It should mean "please cpufreq do not put the cpu into a state where its
+clock runs slower than min".  I don't think we should talk about it as
+throughput because thats not what the cpufreq controls.
+
 > 
-> 
-> > ---
-> >  include/linux/pm_qos.h |   14 +++++++++-----
-> >  kernel/power/qos.c     |   23 ++++++++++-------------
-> >  2 files changed, 19 insertions(+), 18 deletions(-)
-> > 
-> > diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> > index e5bbcba..5ac91d8 100644
-> > --- a/include/linux/pm_qos.h
-> > +++ b/include/linux/pm_qos.h
-> > @@ -9,12 +9,16 @@
-> >  #include <linux/miscdevice.h>
-> >  #include <linux/device.h>
-> >  
-> > -#define PM_QOS_RESERVED 0
-> > -#define PM_QOS_CPU_DMA_LATENCY 1
-> > -#define PM_QOS_NETWORK_LATENCY 2
-> > -#define PM_QOS_NETWORK_THROUGHPUT 3
-> > +enum {
-> > +	PM_QOS_RESERVED = 0,
-> > +	PM_QOS_CPU_DMA_LATENCY,
-> > +	PM_QOS_NETWORK_LATENCY,
-> > +	PM_QOS_NETWORK_THROUGHPUT,
-> > +
-> > +	/* insert new class ID */
-> > +	PM_QOS_NUM_CLASSES,
-> > +};
-> >  
-> > -#define PM_QOS_NUM_CLASSES 4
-> >  #define PM_QOS_DEFAULT_VALUE -1
-> >  
-> >  #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
-> > diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> > index 995e3bd..d6d6dbd 100644
-> > --- a/kernel/power/qos.c
-> > +++ b/kernel/power/qos.c
-> > @@ -469,21 +469,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
-> >  static int __init pm_qos_power_init(void)
-> >  {
-> >  	int ret = 0;
-> > +	int i;
-> >  
-> > -	ret = register_pm_qos_misc(&cpu_dma_pm_qos);
-> > -	if (ret < 0) {
-> > -		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
-> > -		return ret;
-> > -	}
-> > -	ret = register_pm_qos_misc(&network_lat_pm_qos);
-> > -	if (ret < 0) {
-> > -		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
-> > -		return ret;
-> > +	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
-> > +
-> > +	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
-> > +		ret = register_pm_qos_misc(pm_qos_array[i]);
-> > +		if (ret < 0) {
-> > +			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
-> > +			       pm_qos_array[i]->name);
-> > +			return ret;
-> > +		}
-> >  	}
-> > -	ret = register_pm_qos_misc(&network_throughput_pm_qos);
-> > -	if (ret < 0)
-> > -		printk(KERN_ERR
-> > -			"pm_qos_param: network_throughput setup failed\n");
-> >  
-> >  	return ret;
-> >  }
-> > 
-> 
+> Moreover, you make cpufreq export user_policy.min and user_policy.max
+> regardless of the new PM QoS parameters, so it looks like you could use those
+> new attributes to set the min/max as well.
+
+I'm not a big fan of the cpufreq seamanly redundant export either.
+Doesn't the equivalent data get exported under
+/sys/devices/system/cpu/cpu?/cpufreq/ ?
+ 
+my 2 cents.
+
+ --mark
