@@ -1,35 +1,122 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [linux-pm] [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS params
-Date: Thu, 19 Jan 2012 23:40:24 +0100
-Message-ID: <201201192340.24503.rjw@sisk.pl>
-References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com> <201201190024.27022.rjw@sisk.pl> <871uqwqja2.fsf@amiettinen-lnx.nvidia.com>
+Date: Fri, 20 Jan 2012 00:36:05 +0100
+Message-ID: <201201200036.05677.rjw@sisk.pl>
+References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com> <201201190024.27022.rjw@sisk.pl> <20120119164144.GA8757@mgross-G62>
 Mime-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <871uqwqja2.fsf@amiettinen-lnx.nvidia.com>
+In-Reply-To: <20120119164144.GA8757@mgross-G62>
 Sender: cpufreq-owner@vger.kernel.org
-To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org, markgross@thegnar.org
+To: markgross@thegnar.org
+Cc: linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 19, 2012, Antti P Miettinen wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> [..]
+On Thursday, January 19, 2012, mark gross wrote:
+> On Thu, Jan 19, 2012 at 12:24:26AM +0100, Rafael J. Wysocki wrote:
+> > On Wednesday, January 18, 2012, mark gross wrote:
+> > > On Mon, Jan 16, 2012 at 10:38:57PM +0100, Rafael J. Wysocki wrote:
+> > > > Hi,
+> > > > 
+> > > > On Monday, January 16, 2012, Antti P Miettinen wrote:
+> > > > > [did not reach linux-pm as I sent to wrong address, sorry for
+> > > > > duplicates]
+> > > > > 
+> > > > > The inspiration for this patch series is the N9 CPU frequency boost
+> > > > > upon input events:
+> > > > > 
+> > > > > http://www.spinics.net/lists/cpufreq/msg00667.html
+> > > > > 
+> > > > > and the related changes in git://codeaurora.org/kernel/msm.git tree.
+> > > > > Those patches modify the ondemand cpufreq governor. This patch series
+> > > > > adds minimum and maximum CPU frequency as PM QoS parameters and
+> > > > > modifies the cpufreq core to enforce the PM QoS limits.
+> > > > 
+> > > > If that hasn't been clear enough so far, I'm still not convinced that using
+> > > > PM QoS for that is a good idea.
+> > > > 
+> > > > First off, frequency as a unit of throughput is questionable to say the least,
+> > > > because it isn't portable from one system to another.  Moreover, even on a
+> > > > given system it isn't particularly clear what the exact correspondence
+> > > > between frequency and throughput actually is.
+> > > 
+> > > You are right.  The notion of throughput of a CPU is really hard to
+> > > quantify.  Perhaps not using the term "throughput" would help?
+> > 
+> > Yes, it would.
+> > 
+> > > The base issue I see, the Intel platform, is needing is that sometimes
+> > > we need to block the lowest P-states that the ondemand governor goes for
+> > > because those P-states result in media / graphics workloads dropping
+> > > frames.  However; GPU intensive workloads do not stress the CPU so the
+> > > ondemand governor goes for the low p-state.
+> > > 
+> > > I could use some way of constraining the PM-throttling of the
+> > > cpu-freq that can be hit from kernel or user mode.  So the graphics
+> > > driver can dynamically adjust the constraint request on the cpufreq
+> > > subsystem.
+> > > 
+> > > It is problematic that any driver requesting a given frequency request
+> > > is not portable across ISA's or even processor families in the same ISA.
+> > > But, maybe such a driver should use a module parameter to work around
+> > > this lack of portability?
+> > 
+> > Well, it seems to me that we're trying to add a backdoor to the (apparently
+> > inadequate) governors here.  Arguably, the governors should be able to
+> > make the right decisions on the basis of the information they receive
+> > through their own interfaces.
+> 
+> the failings of governors to have the information needed is why pm_qos
+> was created in the first place.
+
+Well, that's interesting. :-)
+
+> It can be seen as a limitation on the governor from some perspectives.  But,
+> I like to think of if as updating existing governors to account for new use
+> case requirements as hardware get bigger power management / performance
+> dynamic ranges.
+
+The current patchset doesn't seem to update governors, though.
+
+> > > > Second, it's not particularly clear what the meaning of the "min" frequency
+> > > > is supposed to be in terms of throughput.
+> > > 
+> > > It should mean "please cpufreq do not put the cpu into a state where its
+> > > clock runs slower than min".  I don't think we should talk about it as
+> > > throughput because thats not what the cpufreq controls.
+> > 
 > > Perhaps we need a new cpufreq governor that would take use PM QoS internally
 > > to store requests from different sources, but that would work on a per-CPU
 > > basis (not globally) and would provide a new interface for user space?
-> >
-> > Rafael
+> > 
 > 
-> I think it would be nice if the choice of governor could be independent
-> of the constraints. Also, implementing the constraints in the cpufreq
-> core is easier than in governors.
+> I don' think we need a new cpufreq governor, the parts of this patchset
+> that I agree with evolve the governor to account for pm-qos requests
+> but, globally for all cpu's.
 
-Well, while it might be easier, the _whole_ _point_ of governors is to make
-decisions on the basis of available data.  By introducing an independent
-mechanism for that we're bypassing governors in a sense.
+As I said, it doesn't really evolve governors.  It adds a mechanism for
+influencing policy limits in a kind of convoluted fashion.
+
+I mean, there are scaling_min_freq and scaling_max_freq in the per-CPU
+cpufreq's sysfs interface that can be used to set min/max policy
+limits.  The only problem with those I see, which the current patchset
+is kind of trying to address, is that they don't contain information
+about who requested those limits.
+
+> Hmm, your right this patch set is global in its request and not
+> "per-cpu".  I need to think on that.  Making it per-cpu would likely
+> infer we need to make the qos request per cpu as well.  
+> 
+> Do you think it needs to be per-cpu?  (I'm starting to think "yes" it
+> does)
+> 
+> How do we scale the pm_qos ABI to support per/cpu?  (maybe we don't
+> export those types of qos classes to the user mode?)
+
+I think we should focus on iproving the existing cpufreq inteface in the
+first place.
 
 Thanks,
 Rafael
