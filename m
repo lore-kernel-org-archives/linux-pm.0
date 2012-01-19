@@ -1,71 +1,92 @@
-From: Amit Kachhap <amit.kachhap@linaro.org>
-Subject: Re: [RFC PATCH 0/2] thermal: Add generic cpu cooling devices
- according to thermal framework
-Date: Thu, 19 Jan 2012 14:47:31 +0530
-Message-ID: <CAK44p22LmkGVo0W5eoT5Ms57pkP7PbWoxNS2c8bnx=1FhBvamA@mail.gmail.com>
-References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, mjg59@srcf.ucam.org, linux-acpi@vger.kernel.org, lenb@kernel.org, rui.zhang@intel.com, linaro-dev@lists.linaro.org, amit.kachhap@linaro.org, patches@linaro.org
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: [PATCH v3 1/3] PM QoS: Simplify PM QoS expansion/merge
+Date: Thu, 19 Jan 2012 14:34:50 +0200
+Message-ID: <1326976492-3970-2-git-send-email-amiettinen@nvidia.com>
+References: <1326976492-3970-1-git-send-email-amiettinen@nvidia.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1326976492-3970-1-git-send-email-amiettinen@nvidia.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: davej@redhat.com, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, khilman@ti.com, j-pihet@ti.com, markgross@thegnar.org, cpufreq@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13 December 2011 20:43, Amit Daniel Kachhap <amit.kachhap@linaro.org=
-> wrote:
-> PATCH 1) =A0[thermal: Add a new trip type to use cooling device insta=
-nce number]
-> This patch adds a new trip type THERMAL_TRIP_STATE_ACTIVE which passe=
-s
-> cooling device instance number and may be helpful for cpufreq cooling=
- devices
-> to take the correct cooling action.
->
-> PATCH 2) =A0[thermal: Add generic cpu cooling implementation]
-> This patch adds generic cpu cooling low level implementation through =
-frequency
-> clipping and cpu hotplug. In future, other cpu related cooling device=
-s may be
-> added here. An ACPI version of this already exists(drivers/acpi/proce=
-ssor_thermal.c).
-> But this will be useful for platforms like ARM using the generic ther=
-mal interface
-> along with the generic cpu cooling devices. The cooling device regist=
-ration API's
-> return cooling device pointers which can be easily binded with the th=
-ermal zone
-> trip points.
->
+From: Alex Frid <afrid@nvidia.com>
 
-Any comments on these patches? I submitted them quite long back.
+- Replace class ID #define with enumeration
+- Loop through PM QoS objects during initialization (rather than
+  initializing them one-by-one)
 
-Regards,
-Amit D
+Signed-off-by: Alex Frid <afrid@nvidia.com>
+Reviewed-by: Antti Miettinen <amiettinen@nvidia.com>
+Reviewed-by: Diwakar Tundlam <dtundlam@nvidia.com>
+Reviewed-by: Scott Williams <scwilliams@nvidia.com>
+Reviewed-by: Yu-Huan Hsu <yhsu@nvidia.com>
+---
+ include/linux/pm_qos.h |   14 +++++++++-----
+ kernel/power/qos.c     |   23 ++++++++++-------------
+ 2 files changed, 19 insertions(+), 18 deletions(-)
 
->
-> Amit Daniel Kachhap (2):
-> =A0thermal: Add a new trip type to use cooling device instance number
-> =A0thermal: Add generic cpu cooling implementation
->
-> =A0Documentation/thermal/cpu-cooling-api.txt | =A0 52 +++++
-> =A0Documentation/thermal/sysfs-api.txt =A0 =A0 =A0 | =A0 =A04 +-
-> =A0drivers/thermal/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
-11 +
-> =A0drivers/thermal/Makefile =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =
-=A01 +
-> =A0drivers/thermal/cpu_cooling.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0302 +++=
-++++++++++++++++++++++++++
-> =A0drivers/thermal/thermal_sys.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 27 +++=
--
-> =A0include/linux/cpu_cooling.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 45 +=
-++++
-> =A0include/linux/thermal.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =
-=A01 +
-> =A08 files changed, 440 insertions(+), 3 deletions(-)
-> =A0create mode 100644 Documentation/thermal/cpu-cooling-api.txt
-> =A0create mode 100644 drivers/thermal/cpu_cooling.c
-> =A0create mode 100644 include/linux/cpu_cooling.h
->
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index e5bbcba..5ac91d8 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -9,12 +9,16 @@
+ #include <linux/miscdevice.h>
+ #include <linux/device.h>
+ 
+-#define PM_QOS_RESERVED 0
+-#define PM_QOS_CPU_DMA_LATENCY 1
+-#define PM_QOS_NETWORK_LATENCY 2
+-#define PM_QOS_NETWORK_THROUGHPUT 3
++enum {
++	PM_QOS_RESERVED = 0,
++	PM_QOS_CPU_DMA_LATENCY,
++	PM_QOS_NETWORK_LATENCY,
++	PM_QOS_NETWORK_THROUGHPUT,
++
++	/* insert new class ID */
++	PM_QOS_NUM_CLASSES,
++};
+ 
+-#define PM_QOS_NUM_CLASSES 4
+ #define PM_QOS_DEFAULT_VALUE -1
+ 
+ #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 995e3bd..d6d6dbd 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -469,21 +469,18 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+ static int __init pm_qos_power_init(void)
+ {
+ 	int ret = 0;
++	int i;
+ 
+-	ret = register_pm_qos_misc(&cpu_dma_pm_qos);
+-	if (ret < 0) {
+-		printk(KERN_ERR "pm_qos_param: cpu_dma_latency setup failed\n");
+-		return ret;
+-	}
+-	ret = register_pm_qos_misc(&network_lat_pm_qos);
+-	if (ret < 0) {
+-		printk(KERN_ERR "pm_qos_param: network_latency setup failed\n");
+-		return ret;
++	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
++
++	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
++		ret = register_pm_qos_misc(pm_qos_array[i]);
++		if (ret < 0) {
++			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
++			       pm_qos_array[i]->name);
++			return ret;
++		}
+ 	}
+-	ret = register_pm_qos_misc(&network_throughput_pm_qos);
+-	if (ret < 0)
+-		printk(KERN_ERR
+-			"pm_qos_param: network_throughput setup failed\n");
+ 
+ 	return ret;
+ }
+-- 
+1.7.4.1
+
