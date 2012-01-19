@@ -1,72 +1,55 @@
 From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: [PATCH 2/2] cpufreq: Enforce PM QoS maximum frequency
-Date: Thu, 19 Jan 2012 14:35:59 +0200
-Message-ID: <1326976559-4009-3-git-send-email-amiettinen@nvidia.com>
-References: <1326976559-4009-1-git-send-email-amiettinen@nvidia.com>
+Subject: [PATCH] cpufreq: Export user_policy min/max
+Date: Thu, 19 Jan 2012 14:51:01 +0200
+Message-ID: <1326977461-4348-1-git-send-email-amiettinen@nvidia.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1326976559-4009-1-git-send-email-amiettinen@nvidia.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: davej@redhat.com, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, khilman@ti.com, j-pihet@ti.com, markgross@thegnar.org, cpufreq@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Observe PM QoS CPU frequency maximum in addition to
-policy settings.
+Add read-only sysfs nodes for user_policy min and max settings.
+This helps diagnosis in the presence of other constraints that
+affect the currently enforced policy minimum and maximum that
+can be viewed with scaling_{min,max}_freq.
 
 Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
 ---
- drivers/cpufreq/cpufreq.c |   16 +++++++++++++---
- 1 files changed, 13 insertions(+), 3 deletions(-)
+Related to "RFC: CPU frequency min as PM QoS param" patchset.
+
+ drivers/cpufreq/cpufreq.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c2c1c62..d233a8b 100644
+index f2c7fc2..c2c1c62 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1638,12 +1638,15 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 	unsigned int pmax = policy->max;
- 	unsigned int qmin = min(pm_qos_request(PM_QOS_CPU_FREQ_MIN),
- 				data->max);
-+	unsigned int qmax = max(pm_qos_request(PM_QOS_CPU_FREQ_MAX),
-+				data->min);
+@@ -364,6 +364,8 @@ show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
+ show_one(scaling_min_freq, min);
+ show_one(scaling_max_freq, max);
+ show_one(scaling_cur_freq, cur);
++show_one(policy_min_freq, user_policy.min);
++show_one(policy_max_freq, user_policy.max);
  
--	pr_debug("setting new policy for CPU %u: %u/%u - %u kHz\n",
--		 policy->cpu, pmin, qmin, pmax);
-+	pr_debug("setting new policy for CPU %u: %u/%u - %u/%u kHz\n",
-+		 policy->cpu, pmin, qmin, pmax, qmax);
+ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+ 				struct cpufreq_policy *policy);
+@@ -582,6 +584,8 @@ cpufreq_freq_attr_rw(scaling_min_freq);
+ cpufreq_freq_attr_rw(scaling_max_freq);
+ cpufreq_freq_attr_rw(scaling_governor);
+ cpufreq_freq_attr_rw(scaling_setspeed);
++cpufreq_freq_attr_ro(policy_min_freq);
++cpufreq_freq_attr_ro(policy_max_freq);
  
- 	/* clamp the new policy to PM QoS limits */
- 	policy->min = max(pmin, qmin);
-+	policy->max = min(pmax, qmax);
- 
- 	memcpy(&policy->cpuinfo, &data->cpuinfo,
- 				sizeof(struct cpufreq_cpuinfo));
-@@ -1920,12 +1923,16 @@ static int cpu_freq_notify(struct notifier_block *b,
- static struct notifier_block min_freq_notifier = {
- 	.notifier_call = cpu_freq_notify,
+ static struct attribute *default_attrs[] = {
+ 	&cpuinfo_min_freq.attr,
+@@ -595,6 +599,8 @@ static struct attribute *default_attrs[] = {
+ 	&scaling_driver.attr,
+ 	&scaling_available_governors.attr,
+ 	&scaling_setspeed.attr,
++	&policy_min_freq.attr,
++	&policy_max_freq.attr,
+ 	NULL
  };
-+static struct notifier_block max_freq_notifier = {
-+	.notifier_call = cpu_freq_notify,
-+};
  
- static int cpu_freq_notify(struct notifier_block *b,
- 			   unsigned long l, void *v)
- {
- 	int cpu;
--	pr_debug("PM QoS min %lu\n", l);
-+	pr_debug("PM QoS %s %lu\n",
-+		 b == &min_freq_notifier ? "min" : "max", l);
- 	for_each_online_cpu(cpu) {
- 		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
- 		if (policy) {
-@@ -1952,6 +1959,9 @@ static int __init cpufreq_core_init(void)
- 	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MIN,
- 				 &min_freq_notifier);
- 	BUG_ON(rc);
-+	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MAX,
-+				 &max_freq_notifier);
-+	BUG_ON(rc);
- 
- 	return 0;
- }
 -- 
 1.7.4.1
 
