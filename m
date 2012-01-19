@@ -1,55 +1,241 @@
 From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: [PATCH] cpufreq: Export user_policy min/max
-Date: Thu, 19 Jan 2012 14:51:01 +0200
-Message-ID: <1326977461-4348-1-git-send-email-amiettinen@nvidia.com>
+Subject: [PATCH] input: CPU frequency booster
+Date: Thu, 19 Jan 2012 14:53:35 +0200
+Message-ID: <1326977615-4387-1-git-send-email-amiettinen@nvidia.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
 To: davej@redhat.com, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, khilman@ti.com, j-pihet@ti.com, markgross@thegnar.org, cpufreq@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Add read-only sysfs nodes for user_policy min and max settings.
-This helps diagnosis in the presence of other constraints that
-affect the currently enforced policy minimum and maximum that
-can be viewed with scaling_{min,max}_freq.
+Inspired by cpufreq ondemand governor changes at
+git://codeaurora.org/kernel/msm.git tree in commits:
+
+    2a6181bc76c6ce46ca0fa8e547be42acd534cf0e
+    1cca8861d8fda4e05f6b0c59c60003345c15454d
+    96a9aeb02bf5b3fbbef47e44460750eb275e9f1b
+    b600449501cf15928440f87eff86b1f32d14214e
+    88a65c7ae04632ffee11f9fc628d7ab017c06b83
 
 Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
 ---
-Related to "RFC: CPU frequency min as PM QoS param" patchset.
+Depends on "RFC: CPU frequency min as PM QoS param" patchset.
+An example - the input filtering needs some thinking.
 
- drivers/cpufreq/cpufreq.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/input/Kconfig         |    9 ++
+ drivers/input/Makefile        |    1 +
+ drivers/input/input-cfboost.c |  174 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 184 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/input-cfboost.c
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f2c7fc2..c2c1c62 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -364,6 +364,8 @@ show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
- show_one(scaling_min_freq, min);
- show_one(scaling_max_freq, max);
- show_one(scaling_cur_freq, cur);
-+show_one(policy_min_freq, user_policy.min);
-+show_one(policy_max_freq, user_policy.max);
+diff --git a/drivers/input/Kconfig b/drivers/input/Kconfig
+index 001b147..3859f78 100644
+--- a/drivers/input/Kconfig
++++ b/drivers/input/Kconfig
+@@ -161,6 +161,15 @@ config INPUT_APMPOWER
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called apm-power.
  
- static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 				struct cpufreq_policy *policy);
-@@ -582,6 +584,8 @@ cpufreq_freq_attr_rw(scaling_min_freq);
- cpufreq_freq_attr_rw(scaling_max_freq);
- cpufreq_freq_attr_rw(scaling_governor);
- cpufreq_freq_attr_rw(scaling_setspeed);
-+cpufreq_freq_attr_ro(policy_min_freq);
-+cpufreq_freq_attr_ro(policy_max_freq);
++config INPUT_CFBOOST
++	tristate "CPU frequency booster"
++	depends on INPUT && CPU_FREQ
++	help
++	  Say Y here if you want to boost frequency upon input events;
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called input-cfboost.
++
+ comment "Input Device Drivers"
  
- static struct attribute *default_attrs[] = {
- 	&cpuinfo_min_freq.attr,
-@@ -595,6 +599,8 @@ static struct attribute *default_attrs[] = {
- 	&scaling_driver.attr,
- 	&scaling_available_governors.attr,
- 	&scaling_setspeed.attr,
-+	&policy_min_freq.attr,
-+	&policy_max_freq.attr,
- 	NULL
- };
+ source "drivers/input/keyboard/Kconfig"
+diff --git a/drivers/input/Makefile b/drivers/input/Makefile
+index 0c78949..6cad177 100644
+--- a/drivers/input/Makefile
++++ b/drivers/input/Makefile
+@@ -24,3 +24,4 @@ obj-$(CONFIG_INPUT_TOUCHSCREEN)	+= touchscreen/
+ obj-$(CONFIG_INPUT_MISC)	+= misc/
  
+ obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
++obj-$(CONFIG_INPUT_CFBOOST)	+= input-cfboost.o
+diff --git a/drivers/input/input-cfboost.c b/drivers/input/input-cfboost.c
+new file mode 100644
+index 0000000..bef3ec5
+--- /dev/null
++++ b/drivers/input/input-cfboost.c
+@@ -0,0 +1,174 @@
++/*
++ * drivers/input/input-cfboost.c
++ *
++ * Copyright (C) 2012 NVIDIA Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ *
++ */
++
++#include <linux/slab.h>
++#include <linux/jiffies.h>
++#include <linux/printk.h>
++#include <linux/workqueue.h>
++#include <linux/input.h>
++#include <linux/module.h>
++#include <linux/pm_qos.h>
++
++/* This module listens to input events and sets a temporary frequency
++ * floor upon input event detection. This is based on changes to
++ * cpufreq ondemand governor by:
++ *
++ * Tero Kristo <tero.kristo@nokia.com>
++ * Brian Steuer <bsteuer@codeaurora.org>
++ * David Ng <dave@codeaurora.org>
++ *
++ * at git://codeaurora.org/kernel/msm.git tree, commits:
++ *
++ * 2a6181bc76c6ce46ca0fa8e547be42acd534cf0e
++ * 1cca8861d8fda4e05f6b0c59c60003345c15454d
++ * 96a9aeb02bf5b3fbbef47e44460750eb275e9f1b
++ * b600449501cf15928440f87eff86b1f32d14214e
++ * 88a65c7ae04632ffee11f9fc628d7ab017c06b83
++ */
++
++MODULE_AUTHOR("Antti P Miettinen <amiettinen@nvidia.com>");
++MODULE_DESCRIPTION("Input event CPU frequency booster");
++MODULE_LICENSE("GPL v2");
++
++
++static struct pm_qos_request qos_req;
++static struct work_struct boost;
++static struct delayed_work unboost;
++static unsigned int boost_freq; /* kHz */
++module_param(boost_freq, uint, 0644);
++static unsigned long boost_time = 500; /* ms */
++module_param(boost_time, ulong, 0644);
++static struct workqueue_struct *cfb_wq;
++
++static void cfb_boost(struct work_struct *w)
++{
++	cancel_delayed_work_sync(&unboost);
++	pm_qos_update_request(&qos_req, boost_freq);
++	queue_delayed_work(cfb_wq, &unboost, msecs_to_jiffies(boost_time));
++}
++
++static void cfb_unboost(struct work_struct *w)
++{
++	pm_qos_update_request(&qos_req, PM_QOS_DEFAULT_VALUE);
++}
++
++static void cfb_input_event(struct input_handle *handle, unsigned int type,
++			    unsigned int code, int value)
++{
++	if (!work_pending(&boost))
++		queue_work(cfb_wq, &boost);
++}
++
++static int cfb_input_connect(struct input_handler *handler,
++			     struct input_dev *dev,
++			     const struct input_device_id *id)
++{
++	struct input_handle *handle;
++	int error;
++
++	handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL);
++	if (!handle)
++		return -ENOMEM;
++
++	handle->dev = dev;
++	handle->handler = handler;
++	handle->name = "icfboost";
++
++	error = input_register_handle(handle);
++	if (error)
++		goto err2;
++
++	error = input_open_device(handle);
++	if (error)
++		goto err1;
++
++	return 0;
++err1:
++	input_unregister_handle(handle);
++err2:
++	kfree(handle);
++	return error;
++}
++
++static void cfb_input_disconnect(struct input_handle *handle)
++{
++	input_close_device(handle);
++	input_unregister_handle(handle);
++	kfree(handle);
++}
++
++/* XXX make configurable */
++static const struct input_device_id cfb_ids[] = {
++	{ /* touch screen */
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_KEYBIT,
++		.evbit = { BIT_MASK(EV_ABS) },
++		.keybit = {[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH) },
++	},
++	{ /* mouse */
++		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
++				INPUT_DEVICE_ID_MATCH_KEYBIT,
++		.evbit = { BIT_MASK(EV_REL) },
++		.keybit = {[BIT_WORD(BTN_MOUSE)] = BIT_MASK(BTN_MOUSE) },
++	},
++	{ },
++};
++
++static struct input_handler cfb_input_handler = {
++	.event		= cfb_input_event,
++	.connect	= cfb_input_connect,
++	.disconnect	= cfb_input_disconnect,
++	.name		= "icfboost",
++	.id_table	= cfb_ids,
++};
++
++static int __init cfboost_init(void)
++{
++	int ret;
++
++	cfb_wq = create_workqueue("icfb-wq");
++	if (!cfb_wq)
++		return -ENOMEM;
++	INIT_WORK(&boost, cfb_boost);
++	INIT_DELAYED_WORK(&unboost, cfb_unboost);
++	ret = input_register_handler(&cfb_input_handler);
++	if (ret) {
++		destroy_workqueue(cfb_wq);
++		return ret;
++	}
++	pm_qos_add_request(&qos_req, PM_QOS_CPU_FREQ_MIN,
++			   PM_QOS_DEFAULT_VALUE);
++	return 0;
++}
++
++static void __exit cfboost_exit(void)
++{
++	/* stop input events */
++	input_unregister_handler(&cfb_input_handler);
++	/* cancel pending work requests */
++	cancel_work_sync(&boost);
++	cancel_delayed_work_sync(&unboost);
++	/* clean up */
++	destroy_workqueue(cfb_wq);
++	pm_qos_remove_request(&qos_req);
++}
++
++module_init(cfboost_init);
++module_exit(cfboost_exit);
 -- 
 1.7.4.1
 
