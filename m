@@ -1,13 +1,13 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] MAINTAINERS: Fix linux-pm address
-Date: Thu, 19 Jan 2012 19:02:15 +0530
-Message-ID: <4F181B5F.70100@linux.vnet.ibm.com>
-References: <1326979082-4485-1-git-send-email-amiettinen@nvidia.com>
+Date: Thu, 19 Jan 2012 10:30:25 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1201191023510.1447-100000@iolanthe.rowland.org>
+References: <4F181B5F.70100@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1326979082-4485-1-git-send-email-amiettinen@nvidia.com>
+In-Reply-To: <4F181B5F.70100@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,81 +18,26 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: linux-pm@lists.linux-foundation.org, Linux PM mailing list <linux-pm@vger.kernel.org>
+Cc: linux-pm@lists.linux-foundation.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/19/2012 06:48 PM, Antti P Miettinen wrote:
+On Thu, 19 Jan 2012, Srivatsa S. Bhat wrote:
 
-> Current linux-pm mailing list address seems to be
-> linux-pm@lists.linux-foundation.org.
+> On 01/19/2012 06:48 PM, Antti P Miettinen wrote:
 > 
+> > Current linux-pm mailing list address seems to be
+> > linux-pm@lists.linux-foundation.org.
+> > 
+> 
+> 
+> Actually now both the mailing list addresses work.
 
+The lists.linux-foundation.org address was linux-pm's original home.  
+The vger.kernel.org addresss was created when the Linux Foundation's
+listserv went down last summer; it is now regarded as linux-pm's
+primary address even though both addresses are working.
 
-Actually now both the mailing list addresses work.
+See commit bf1c138e350155edb06709c7fbf0946f252b257c (MAINTAINERS:
+Update linux-pm list address).
 
-Regards,
-Srivatsa S. Bhat
-
-> Signed-off-by: Antti P Miettinen <amiettinen@nvidia.com>
-> ---
->  MAINTAINERS |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 56818fe..6038cb8 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2805,7 +2805,7 @@ F:	fs/freevxfs/
->  FREEZER
->  M:	Pavel Machek <pavel@ucw.cz>
->  M:	"Rafael J. Wysocki" <rjw@sisk.pl>
-> -L:	linux-pm@vger.kernel.org
-> +L:	linux-pm@lists.linux-foundation.org
->  S:	Supported
->  F:	Documentation/power/freezing-of-tasks.txt
->  F:	include/linux/freezer.h
-> @@ -3083,7 +3083,7 @@ F:	drivers/video/hgafb.c
->  HIBERNATION (aka Software Suspend, aka swsusp)
->  M:	Pavel Machek <pavel@ucw.cz>
->  M:	"Rafael J. Wysocki" <rjw@sisk.pl>
-> -L:	linux-pm@vger.kernel.org
-> +L:	linux-pm@lists.linux-foundation.org
->  S:	Supported
->  F:	arch/x86/power/
->  F:	drivers/base/power/
-> @@ -3296,7 +3296,7 @@ F:	drivers/ide/ide-cd*
-> 
->  IDLE-I7300
->  M:	Andy Henroid <andrew.d.henroid@intel.com>
-> -L:	linux-pm@vger.kernel.org
-> +L:	linux-pm@lists.linux-foundation.org
->  S:	Supported
->  F:	drivers/idle/i7300_idle.c
-> 
-> @@ -3379,7 +3379,7 @@ F:	firmware/isci/
-> 
->  INTEL IDLE DRIVER
->  M:	Len Brown <lenb@kernel.org>
-> -L:	linux-pm@vger.kernel.org
-> +L:	linux-pm@lists.linux-foundation.org
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-idle-2.6.git
->  S:	Supported
->  F:	drivers/idle/intel_idle.c
-> @@ -3476,7 +3476,7 @@ F:	drivers/net/ethernet/intel/
-> 
->  INTEL MRST PMU DRIVER
->  M:	Len Brown <len.brown@intel.com>
-> -L:	linux-pm@vger.kernel.org
-> +L:	linux-pm@lists.linux-foundation.org
->  S:	Supported
->  F:	arch/x86/platform/mrst/pmu.*
-> 
-> @@ -6469,7 +6469,7 @@ SUSPEND TO RAM
->  M:	Len Brown <len.brown@intel.com>
->  M:	Pavel Machek <pavel@ucw.cz>
->  M:	"Rafael J. Wysocki" <rjw@sisk.pl>
-> -L:	linux-pm@vger.kernel.org
-> +L:	linux-pm@lists.linux-foundation.org
->  S:	Supported
->  F:	Documentation/power/
->  F:	arch/x86/kernel/acpi/
+Alan Stern
