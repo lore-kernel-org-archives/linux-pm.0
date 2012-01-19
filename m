@@ -1,14 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] input: CPU frequency booster
-Date: Thu, 19 Jan 2012 18:44:59 +0100
-Message-ID: <20120119174459.GB25397@atrey.karlin.mff.cuni.cz>
-References: <1326977615-4387-1-git-send-email-amiettinen@nvidia.com>
+From: Antti P Miettinen <amiettinen@nvidia.com>
+Subject: Re: [PATCH v2 0/8] RFC: CPU frequency min/max as PM QoS
+	params
+Date: Thu, 19 Jan 2012 21:48:21 +0200
+Message-ID: <87y5t35v96.fsf@amiettinen-lnx.nvidia.com>
+References: <1326697201-32406-1-git-send-email-amiettinen@nvidia.com>
+	<201201162238.57556.rjw@sisk.pl> <20120118031319.GB27153@mgross-G62>
+	<201201190024.27022.rjw@sisk.pl> <20120119164144.GA8757@mgross-G62>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1326977615-4387-1-git-send-email-amiettinen@nvidia.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,38 +19,15 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Antti P Miettinen <amiettinen@nvidia.com>
-Cc: khilman@ti.com, len.brown@intel.com, markgross@thegnar.org, cpufreq@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
+To: linux-pm@lists.linux-foundation.org
+Cc: cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+mark gross <markgross@thegnar.org> writes:
+> Hmm, your right this patch set is global in its request and not
+> "per-cpu".  I need to think on that.  Making it per-cpu would likely
+> infer we need to make the qos request per cpu as well.  
 
-> +/* XXX make configurable */
+I think we need both, global and per cpu.
 
-Remove XXX?
-
-
-> +static const struct input_device_id cfb_ids[] = {
-> +	{ /* touch screen */
-> +		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-> +				INPUT_DEVICE_ID_MATCH_KEYBIT,
-> +		.evbit = { BIT_MASK(EV_ABS) },
-> +		.keybit = {[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH) },
-> +	},
-> +	{ /* mouse */
-> +		.flags = INPUT_DEVICE_ID_MATCH_EVBIT |
-> +				INPUT_DEVICE_ID_MATCH_KEYBIT,
-> +		.evbit = { BIT_MASK(EV_REL) },
-> +		.keybit = {[BIT_WORD(BTN_MOUSE)] = BIT_MASK(BTN_MOUSE) },
-> +	},
-> +	{ },
-> +};
-
-Does it need to be configurable? Going to max frequency for user
-interaction sounds like good idea... Probably should include keyboard,
-too.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	--Antti
