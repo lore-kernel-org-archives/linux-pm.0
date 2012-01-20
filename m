@@ -1,31 +1,100 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: Re: [PATCH] input: CPU frequency booster
-Date: Fri, 20 Jan 2012 10:36:57 +0200
-Message-ID: <87r4yu22ja.fsf@amiettinen-lnx.nvidia.com>
-References: <1326977615-4387-1-git-send-email-amiettinen@nvidia.com>
-	<201201192353.00761.trenn@suse.de>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 0/3] coupled cpuidle state support
+Date: Fri, 20 Jan 2012 09:46:33 +0100
+Message-ID: <4F1929E9.7070707@linaro.org>
+References: <1324426147-16735-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
-Cc: cpufreq@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1324426147-16735-1-git-send-email-ccross@android.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@lists.linux-foundation.org, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Arjan van de Ven <arjan@linux.intel.com>, Trinabh Gupta <g.trinabh@gmail.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, linux-omap@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Thomas Renninger <trenn@suse.de> writes:
-> I can't see why pm_qos is needed at all, better use cpufreq
-> providing interface.
+On 12/21/2011 01:09 AM, Colin Cross wrote:
+> On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
+> cpus cannot be independently powered down, either due to
+> sequencing restrictions (on Tegra 2, cpu 0 must be the last to
+> power down), or due to HW bugs (on OMAP4460, a cpu powering up
+> will corrupt the gic state unless the other cpu runs a work
+> around).  Each cpu has a power state that it can enter without
+> coordinating with the other cpu (usually Wait For Interrupt, or
+> WFI), and one or more "coupled" power states that affect blocks
+> shared between the cpus (L2 cache, interrupt controller, and
+> sometimes the whole SoC).  Entering a coupled power state must
+> be tightly controlled on both cpus.
+>
+> The easiest solution to implementing coupled cpu power states is
+> to hotplug all but one cpu whenever possible, usually using a
+> cpufreq governor that looks at cpu load to determine when to
+> enable the secondary cpus.  This causes problems, as hotplug is an
+> expensive operation, so the number of hotplug transitions must be
+> minimized, leading to very slow response to loads, often on the
+> order of seconds.
+>
+> This patch series implements an alternative solution, where each
+> cpu will wait in the WFI state until all cpus are ready to enter
+> a coupled state, at which point the coupled state function will
+> be called on all cpus at approximately the same time.
+>
+> Once all cpus are ready to enter idle, they are woken by an smp
+> cross call.  At this point, there is a chance that one of the
+> cpus will find work to do, and choose not to enter suspend.  A
+> final pass is needed to guarantee that all cpus will call the
+> power state enter function at the same time.  During this pass,
+> each cpu will increment the ready counter, and continue once the
+> ready counter matches the number of online coupled cpus.  If any
+> cpu exits idle, the other cpus will decrement their counter and
+> retry.
+>
+> To use coupled cpuidle states, a cpuidle driver must:
+>
+>     Set struct cpuidle_device.coupled_cpus to the mask of all
+>     coupled cpus, usually the same as cpu_possible_mask if all cpus
+>     are part of the same cluster.  The coupled_cpus mask must be
+>     set in the struct cpuidle_device for each cpu.
+>
+>     Set struct cpuidle_device.safe_state to a state that is not a
+>     coupled state.  This is usually WFI.
+>
+>     Set CPUIDLE_FLAG_COUPLED in struct cpuidle_state.flags for each
+>     state that affects multiple cpus.
+>
+>     Provide a struct cpuidle_state.enter function for each state
+>     that affects multiple cpus.  This function is guaranteed to be
+>     called on all cpus at approximately the same time.  The driver
+>     should ensure that the cpus all abort together if any cpu tries
+>     to abort once the function is called.
+>
+> This series was functionally tested on v3.0, but has only been
+> compile-tested on v3.2 after the removal of per-cpu state fields.
 
-One reason for using PM QoS is that it provides an interface for user
-space. We want to be able to control frequency also from user space.
+Hi Colin,
 
-	--Antti
+this patchset could be interesting to resolve in a generic way the cpu=20
+dependencies.
+What is the status of this patchset ?
+
+Did you have the opportunity to measure the power consumption with and=20
+without this patchset ?
+
+Thanks
+-- Daniel
+
+--=20
+  <http://www.linaro.org/>  Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+
+=46ollow Linaro:<http://www.facebook.com/pages/Linaro>  Facebook |
+<http://twitter.com/#!/linaroorg>  Twitter |
+<http://www.linaro.org/linaro-blog/>  Blog
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
