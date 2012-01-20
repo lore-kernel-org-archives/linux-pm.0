@@ -1,100 +1,135 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 0/3] coupled cpuidle state support
-Date: Fri, 20 Jan 2012 09:46:33 +0100
-Message-ID: <4F1929E9.7070707@linaro.org>
-References: <1324426147-16735-1-git-send-email-ccross@android.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] input: CPU frequency booster
+Date: Fri, 20 Jan 2012 11:50:22 +0100
+Message-ID: <201201201150.22950.trenn@suse.de>
+References: <1326977615-4387-1-git-send-email-amiettinen@nvidia.com>
+	<201201192353.00761.trenn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1324426147-16735-1-git-send-email-ccross@android.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@lists.linux-foundation.org, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Arjan van de Ven <arjan@linux.intel.com>, Trinabh Gupta <g.trinabh@gmail.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, linux-omap@vger.kernel.org, linux-tegra@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============8117163493339656993=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201201192353.00761.trenn@suse.de>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Antti P Miettinen <amiettinen@nvidia.com>
+Cc: khilman@ti.com, len.brown@intel.com, markgross@thegnar.org, cpufreq@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-On 12/21/2011 01:09 AM, Colin Cross wrote:
-> On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
-> cpus cannot be independently powered down, either due to
-> sequencing restrictions (on Tegra 2, cpu 0 must be the last to
-> power down), or due to HW bugs (on OMAP4460, a cpu powering up
-> will corrupt the gic state unless the other cpu runs a work
-> around).  Each cpu has a power state that it can enter without
-> coordinating with the other cpu (usually Wait For Interrupt, or
-> WFI), and one or more "coupled" power states that affect blocks
-> shared between the cpus (L2 cache, interrupt controller, and
-> sometimes the whole SoC).  Entering a coupled power state must
-> be tightly controlled on both cpus.
->
-> The easiest solution to implementing coupled cpu power states is
-> to hotplug all but one cpu whenever possible, usually using a
-> cpufreq governor that looks at cpu load to determine when to
-> enable the secondary cpus.  This causes problems, as hotplug is an
-> expensive operation, so the number of hotplug transitions must be
-> minimized, leading to very slow response to loads, often on the
-> order of seconds.
->
-> This patch series implements an alternative solution, where each
-> cpu will wait in the WFI state until all cpus are ready to enter
-> a coupled state, at which point the coupled state function will
-> be called on all cpus at approximately the same time.
->
-> Once all cpus are ready to enter idle, they are woken by an smp
-> cross call.  At this point, there is a chance that one of the
-> cpus will find work to do, and choose not to enter suspend.  A
-> final pass is needed to guarantee that all cpus will call the
-> power state enter function at the same time.  During this pass,
-> each cpu will increment the ready counter, and continue once the
-> ready counter matches the number of online coupled cpus.  If any
-> cpu exits idle, the other cpus will decrement their counter and
-> retry.
->
-> To use coupled cpuidle states, a cpuidle driver must:
->
->     Set struct cpuidle_device.coupled_cpus to the mask of all
->     coupled cpus, usually the same as cpu_possible_mask if all cpus
->     are part of the same cluster.  The coupled_cpus mask must be
->     set in the struct cpuidle_device for each cpu.
->
->     Set struct cpuidle_device.safe_state to a state that is not a
->     coupled state.  This is usually WFI.
->
->     Set CPUIDLE_FLAG_COUPLED in struct cpuidle_state.flags for each
->     state that affects multiple cpus.
->
->     Provide a struct cpuidle_state.enter function for each state
->     that affects multiple cpus.  This function is guaranteed to be
->     called on all cpus at approximately the same time.  The driver
->     should ensure that the cpus all abort together if any cpu tries
->     to abort once the function is called.
->
-> This series was functionally tested on v3.0, but has only been
-> compile-tested on v3.2 after the removal of per-cpu state fields.
+--===============8117163493339656993==
+Content-Type: multipart/alternative;
+  boundary="Boundary-01=_ubUGPlCcng4/lvC"
+Content-Transfer-Encoding: 7bit
 
-Hi Colin,
+--Boundary-01=_ubUGPlCcng4/lvC
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
 
-this patchset could be interesting to resolve in a generic way the cpu=20
-dependencies.
-What is the status of this patchset ?
+On Thursday, January 19, 2012 11:52:59 PM Thomas Renninger wrote:
+> Hi,
+> 
+...
+I forgot to activate the newly set limits:
 
-Did you have the opportunity to measure the power consumption with and=20
-without this patchset ?
+> +/* sysfs stuff **************************/
+> +
+> +
+> +static void cfb_boost(struct work_struct *w)
+> +{
+> +	struct cpufreq_policy policy;
+> +	int ret;
+> +
+> +	cancel_delayed_work_sync(&unboost);
+> +	ret = cpufreq_get_policy(&policy, 0);
+> +	if (ret)
+> +		return;
+> +	cpufreq_verify_within_limits(&policy, boost_freq,
+> +				     policy.cpuinfo.max_freq);
+cpufreq_update_policy(0);
+> +	queue_delayed_work(cfb_wq, &unboost,
+> +			   msecs_to_jiffies(boost_time));
+> +}
+> +
+> +static void cfb_unboost(struct work_struct *w)
+> +{
+> +	struct cpufreq_policy policy;
+> +	int ret;
+> +	
+> +	ret = cpufreq_get_policy(&policy, 0);
+> +	if (ret)
+> +		return;
+> +
+> +	cpufreq_verify_within_limits(&policy, policy.cpuinfo.min_freq,
+> +				     policy.cpuinfo.max_freq);
+cpufreq_update_policy(0);
 
-Thanks
--- Daniel
+Hope it works now?
 
---=20
-  <http://www.linaro.org/>  Linaro.org =E2=94=82 Open source software f=
-or ARM SoCs
+   Thomas
 
-=46ollow Linaro:<http://www.facebook.com/pages/Linaro>  Facebook |
-<http://twitter.com/#!/linaroorg>  Twitter |
-<http://www.linaro.org/linaro-blog/>  Blog
+--Boundary-01=_ubUGPlCcng4/lvC
+Content-Type: text/html;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html><head><meta name="qrichtext" content="1" /><style type="text/css">
+p, li { white-space: pre-wrap; }
+</style></head><body style=" font-family:'Monospace'; font-size:15pt; font-weight:400; font-style:normal;">
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Thursday, January 19, 2012 11:52:59 PM Thomas Renninger wrote:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Hi,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">...</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">I forgot to activate the newly set limits:</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br /></p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +/* sysfs stuff **************************/</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +static void cfb_boost(struct work_struct *w)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +{</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	struct cpufreq_policy policy;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	int ret;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	cancel_delayed_work_sync(&amp;unboost);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	ret = cpufreq_get_policy(&amp;policy, 0);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	if (ret)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +		return;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	cpufreq_verify_within_limits(&amp;policy, boost_freq,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +				     policy.cpuinfo.max_freq);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">cpufreq_update_policy(0);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	queue_delayed_work(cfb_wq, &amp;unboost,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +			   msecs_to_jiffies(boost_time));</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +}</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +static void cfb_unboost(struct work_struct *w)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +{</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	struct cpufreq_policy policy;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	int ret;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	ret = cpufreq_get_policy(&amp;policy, 0);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	if (ret)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +		return;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +	cpufreq_verify_within_limits(&amp;policy, policy.cpuinfo.min_freq,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; +				     policy.cpuinfo.max_freq);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">cpufreq_update_policy(0);</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br /></p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Hope it works now?</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"><br /></p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">   Thomas</p></body></html>
+--Boundary-01=_ubUGPlCcng4/lvC--
+
+--===============8117163493339656993==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--===============8117163493339656993==--
