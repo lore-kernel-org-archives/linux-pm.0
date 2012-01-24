@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 03/10] ACPI, APEI: Add 64-bit read/write support for APEI on
- i386
-Date: Mon, 23 Jan 2012 20:30:02 -0500
-Message-ID: <e615bf5b5519862ab66172f4dec7455d6543a578.1327368464.git.len.brown@intel.com>
+Subject: [PATCH 02/10] ACPI processor hotplug: Delay acpi_processor_start()
+ call for hotplugged cores
+Date: Mon, 23 Jan 2012 20:30:01 -0500
+Message-ID: <99b725084450bbc6f8e1ab20a0df4cc291c342b5.1327368464.git.len.brown@intel.com>
 References: <1327368609-28409-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
@@ -11,262 +11,167 @@ In-reply-to: <54d5dcc45af7adbb907072d042bbece4c2b4de6e.1327368464.git.len.brown@
 References: <54d5dcc45af7adbb907072d042bbece4c2b4de6e.1327368464.git.len.brown@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Myron Stowe <mstowe@redhat.com>, Myron Stowe <myron.stowe@redhat.com>, Len Brown <len.brown@intel.com>
+Cc: Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Myron Stowe <mstowe@redhat.com>
+From: Thomas Renninger <trenn@suse.de>
 
-Base ACPI (CA) currently does not support atomic 64-bit reads and writes
-(acpi_read() and acpi_write() split 64-bit loads/stores into two
-32-bit transfers) yet APEI expects 64-bit transfer capability, even
-when running on 32-bit systems.
+Delay the setting up of features (cpuidle, throttling by calling
+acpi_processor_start()) to the time when the hotplugged
+core got onlined the first time and got fully
+initialized.
 
-This patch implements 64-bit read and write routines for APEI usage.
-
-This patch re-factors similar functionality introduced in commit
-04c25997c97, bringing it into the ACPI subsystem in preparation for
-removing ./drivers/acpi/atomicio.[ch].  In the implementation I have
-replicated acpi_os_read_memory() and acpi_os_write_memory(), creating
-64-bit versions for APEI to utilize, as opposed to something more
-elegant.  My thinking is that we should attempt to see if we can get
-ACPI's CA/OSL changed so that the existing acpi_read() and acpi_write()
-interfaces are natively 64-bit capable and then subsequently remove the
-replication.
-
-Signed-off-by: Myron Stowe <myron.stowe@redhat.com>
+Signed-off-by: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/apei/apei-base.c |   35 ++-----------
- drivers/acpi/osl.c            |  116 +++++++++++++++++++++++++++++++++++++++++
- include/acpi/acpiosxf.h       |    4 ++
- 3 files changed, 124 insertions(+), 31 deletions(-)
+ drivers/acpi/processor_driver.c |   72 +++++++++++++++++++++++++++++++++++----
+ drivers/idle/intel_idle.c       |    2 +-
+ include/acpi/processor.h        |    1 +
+ 3 files changed, 67 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/acpi/apei/apei-base.c b/drivers/acpi/apei/apei-base.c
-index e45350c..e5d53b7 100644
---- a/drivers/acpi/apei/apei-base.c
-+++ b/drivers/acpi/apei/apei-base.c
-@@ -596,33 +596,19 @@ int apei_read(u64 *val, struct acpi_generic_address *reg)
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index bec5593..2b805d7 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -84,7 +84,7 @@ static int acpi_processor_remove(struct acpi_device *device, int type);
+ static void acpi_processor_notify(struct acpi_device *device, u32 event);
+ static acpi_status acpi_processor_hotadd_init(struct acpi_processor *pr);
+ static int acpi_processor_handle_eject(struct acpi_processor *pr);
+-
++static int acpi_processor_start(struct acpi_processor *pr);
+ 
+ static const struct acpi_device_id processor_device_ids[] = {
+ 	{ACPI_PROCESSOR_OBJECT_HID, 0},
+@@ -423,10 +423,29 @@ static int acpi_cpu_soft_notify(struct notifier_block *nfb,
+ 	struct acpi_processor *pr = per_cpu(processors, cpu);
+ 
+ 	if (action == CPU_ONLINE && pr) {
+-		acpi_processor_ppc_has_changed(pr, 0);
+-		acpi_processor_hotplug(pr);
+-		acpi_processor_reevaluate_tstate(pr, action);
+-		acpi_processor_tstate_has_changed(pr);
++		/* CPU got physically hotplugged and onlined the first time:
++		 * Initialize missing things
++		 */
++		if (pr->flags.need_hotplug_init) {
++			struct cpuidle_driver *idle_driver =
++				cpuidle_get_driver();
++
++			printk(KERN_INFO "Will online and init hotplugged "
++			       "CPU: %d\n", pr->id);
++			WARN(acpi_processor_start(pr), "Failed to start CPU:"
++				" %d\n", pr->id);
++			pr->flags.need_hotplug_init = 0;
++			if (idle_driver && !strcmp(idle_driver->name,
++						   "intel_idle")) {
++				intel_idle_cpu_init(pr->id);
++			}
++		/* Normal CPU soft online event */
++		} else {
++			acpi_processor_ppc_has_changed(pr, 0);
++			acpi_processor_cst_has_changed(pr);
++			acpi_processor_reevaluate_tstate(pr, action);
++			acpi_processor_tstate_has_changed(pr);
++		}
+ 	}
+ 	if (action == CPU_DEAD && pr) {
+ 		/* invalidate the flag.throttling after one CPU is offline */
+@@ -440,7 +459,15 @@ static struct notifier_block acpi_cpu_notifier =
+ 	    .notifier_call = acpi_cpu_soft_notify,
+ };
+ 
+-static int __cpuinit acpi_processor_start(struct acpi_processor *pr)
++/*
++ * acpi_processor_start() is called by the cpu_hotplug_notifier func:
++ * acpi_cpu_soft_notify(). Getting it __cpuinit{data} is difficult, the
++ * root cause seem to be that acpi_processor_uninstall_hotplug_notify()
++ * is in the module_exit (__exit) func. Allowing acpi_processor_start()
++ * to not be in __cpuinit section, but being called from __cpuinit funcs
++ * via __ref looks like the right thing to do here.
++ */
++static __ref int acpi_processor_start(struct acpi_processor *pr)
  {
- 	int rc;
- 	u64 address;
--	u32 tmp, width = reg->bit_width;
- 	acpi_status status;
+ 	struct acpi_device *device = per_cpu(processor_device_array, pr->id);
+ 	int result = 0;
+@@ -491,7 +518,12 @@ err_power_exit:
+ 	return result;
+ }
  
- 	rc = apei_check_gar(reg, &address);
- 	if (rc)
- 		return rc;
- 
--	if (width == 64)
--		width = 32;	/* Break into two 32-bit transfers */
 -
- 	*val = 0;
- 	switch(reg->space_id) {
- 	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
--		status = acpi_os_read_memory((acpi_physical_address)
--					     address, &tmp, width);
-+		status = acpi_os_read_memory64((acpi_physical_address)
-+					     address, val, reg->bit_width);
- 		if (ACPI_FAILURE(status))
- 			return -EIO;
--		*val = tmp;
--
--		if (reg->bit_width == 64) {
--			/* Read the top 32 bits */
--			status = acpi_os_read_memory((acpi_physical_address)
--						     (address + 4), &tmp, 32);
--			if (ACPI_FAILURE(status))
--				return -EIO;
--			*val |= ((u64)tmp << 32);
--		}
- 		break;
- 	case ACPI_ADR_SPACE_SYSTEM_IO:
- 		status = acpi_os_read_port(address, (u32 *)val, reg->bit_width);
-@@ -642,31 +628,18 @@ int apei_write(u64 val, struct acpi_generic_address *reg)
++/*
++ * Do not put anything in here which needs the core to be online.
++ * For example MSR access or setting up things which check for cpuinfo_x86
++ * (cpu_data(cpu)) values, like CPU feature flags, family, model, etc.
++ * Such things have to be put in and set up above in acpi_processor_start()
++ */
+ static int __cpuinit acpi_processor_add(struct acpi_device *device)
  {
- 	int rc;
- 	u64 address;
--	u32 width = reg->bit_width;
- 	acpi_status status;
+ 	struct acpi_processor *pr = NULL;
+@@ -546,6 +578,21 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ 		result = -EFAULT;
+ 		goto err_free_cpumask;
+ 	}
++
++	/*
++	 * Do not start hotplugged CPUs now, but when they
++	 * are onlined the first time
++	 */
++	if (pr->flags.need_hotplug_init)
++		return 0;
++
++	/*
++	 * Do not start hotplugged CPUs now, but when they
++	 * are onlined the first time
++	 */
++	if (pr->flags.need_hotplug_init)
++		return 0;
++
+ 	result = acpi_processor_start(pr);
+ 	if (result)
+ 		goto err_remove_sysfs;
+@@ -751,6 +798,17 @@ static acpi_status acpi_processor_hotadd_init(struct acpi_processor *pr)
+ 		return AE_ERROR;
+ 	}
  
- 	rc = apei_check_gar(reg, &address);
- 	if (rc)
- 		return rc;
- 
--	if (width == 64)
--		width = 32;	/* Break into two 32-bit transfers */
--
- 	switch (reg->space_id) {
- 	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
--		status = acpi_os_write_memory((acpi_physical_address)
--					      address, ACPI_LODWORD(val),
--					      width);
-+		status = acpi_os_write_memory64((acpi_physical_address)
-+					      address, val, reg->bit_width);
- 		if (ACPI_FAILURE(status))
- 			return -EIO;
--
--		if (reg->bit_width == 64) {
--			status = acpi_os_write_memory((acpi_physical_address)
--						      (address + 4),
--						      ACPI_HIDWORD(val), 32);
--			if (ACPI_FAILURE(status))
--				return -EIO;
--		}
- 		break;
- 	case ACPI_ADR_SPACE_SYSTEM_IO:
- 		status = acpi_os_write_port(address, val, reg->bit_width);
-diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-index fcc12d8..5498a6d 100644
---- a/drivers/acpi/osl.c
-+++ b/drivers/acpi/osl.c
-@@ -710,6 +710,67 @@ acpi_os_read_memory(acpi_physical_address phys_addr, u32 * value, u32 width)
++	/* CPU got hot-plugged, but cpu_data is not initialized yet
++	 * Set flag to delay cpu_idle/throttling initialization
++	 * in:
++	 * acpi_processor_add()
++	 *   acpi_processor_get_info()
++	 * and do it when the CPU gets online the first time
++	 * TBD: Cleanup above functions and try to do this more elegant.
++	 */
++	printk(KERN_INFO "CPU %d got hotplugged\n", pr->id);
++	pr->flags.need_hotplug_init = 1;
++
  	return AE_OK;
  }
  
-+#ifdef readq
-+static inline u64 read64(const volatile void __iomem *addr)
-+{
-+	return readq(addr);
-+}
-+#else
-+static inline u64 read64(const volatile void __iomem *addr)
-+{
-+	u64 l, h;
-+	l = readl(addr);
-+	h = readl(addr+4);
-+	return l | (h << 32);
-+}
-+#endif
-+
-+acpi_status
-+acpi_os_read_memory64(acpi_physical_address phys_addr, u64 *value, u32 width)
-+{
-+	void __iomem *virt_addr;
-+	unsigned int size = width / 8;
-+	bool unmap = false;
-+	u64 dummy;
-+
-+	rcu_read_lock();
-+	virt_addr = acpi_map_vaddr_lookup(phys_addr, size);
-+	if (!virt_addr) {
-+		rcu_read_unlock();
-+		virt_addr = acpi_os_ioremap(phys_addr, size);
-+		if (!virt_addr)
-+			return AE_BAD_ADDRESS;
-+		unmap = true;
-+	}
-+
-+	if (!value)
-+		value = &dummy;
-+
-+	switch (width) {
-+	case 8:
-+		*(u8 *) value = readb(virt_addr);
-+		break;
-+	case 16:
-+		*(u16 *) value = readw(virt_addr);
-+		break;
-+	case 32:
-+		*(u32 *) value = readl(virt_addr);
-+		break;
-+	case 64:
-+		*(u64 *) value = read64(virt_addr);
-+		break;
-+	default:
-+		BUG();
-+	}
-+
-+	if (unmap)
-+		iounmap(virt_addr);
-+	else
-+		rcu_read_unlock();
-+
-+	return AE_OK;
-+}
-+
- acpi_status
- acpi_os_write_memory(acpi_physical_address phys_addr, u32 value, u32 width)
- {
-@@ -749,6 +810,61 @@ acpi_os_write_memory(acpi_physical_address phys_addr, u32 value, u32 width)
- 	return AE_OK;
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 20bce51..54ab97b 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -527,7 +527,7 @@ int intel_idle_cpu_init(int cpu)
+ 
+ 	return 0;
  }
+-
++EXPORT_SYMBOL_GPL(intel_idle_cpu_init);
  
-+#ifdef writeq
-+static inline void write64(u64 val, volatile void __iomem *addr)
-+{
-+	writeq(val, addr);
-+}
-+#else
-+static inline void write64(u64 val, volatile void __iomem *addr)
-+{
-+	writel(val, addr);
-+	writel(val>>32, addr+4);
-+}
-+#endif
-+
-+acpi_status
-+acpi_os_write_memory64(acpi_physical_address phys_addr, u64 value, u32 width)
-+{
-+	void __iomem *virt_addr;
-+	unsigned int size = width / 8;
-+	bool unmap = false;
-+
-+	rcu_read_lock();
-+	virt_addr = acpi_map_vaddr_lookup(phys_addr, size);
-+	if (!virt_addr) {
-+		rcu_read_unlock();
-+		virt_addr = acpi_os_ioremap(phys_addr, size);
-+		if (!virt_addr)
-+			return AE_BAD_ADDRESS;
-+		unmap = true;
-+	}
-+
-+	switch (width) {
-+	case 8:
-+		writeb(value, virt_addr);
-+		break;
-+	case 16:
-+		writew(value, virt_addr);
-+		break;
-+	case 32:
-+		writel(value, virt_addr);
-+		break;
-+	case 64:
-+		write64(value, virt_addr);
-+		break;
-+	default:
-+		BUG();
-+	}
-+
-+	if (unmap)
-+		iounmap(virt_addr);
-+	else
-+		rcu_read_unlock();
-+
-+	return AE_OK;
-+}
-+
- acpi_status
- acpi_os_read_pci_configuration(struct acpi_pci_id * pci_id, u32 reg,
- 			       u64 *value, u32 width)
-diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
-index 2fe8639..7c9aebe 100644
---- a/include/acpi/acpiosxf.h
-+++ b/include/acpi/acpiosxf.h
-@@ -218,9 +218,13 @@ acpi_status acpi_os_write_port(acpi_io_address address, u32 value, u32 width);
-  */
- acpi_status
- acpi_os_read_memory(acpi_physical_address address, u32 * value, u32 width);
-+acpi_status
-+acpi_os_read_memory64(acpi_physical_address address, u64 *value, u32 width);
+ static int __init intel_idle_init(void)
+ {
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 610f6fb..8cf7e98 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -195,6 +195,7 @@ struct acpi_processor_flags {
+ 	u8 has_cst:1;
+ 	u8 power_setup_done:1;
+ 	u8 bm_rld_set:1;
++	u8 need_hotplug_init:1;
+ };
  
- acpi_status
- acpi_os_write_memory(acpi_physical_address address, u32 value, u32 width);
-+acpi_status
-+acpi_os_write_memory64(acpi_physical_address address, u64 value, u32 width);
- 
- /*
-  * Platform and hardware-independent PCI configuration space access
+ struct acpi_processor {
 -- 
 1.7.9.rc2
 
