@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 02/10] ACPI processor hotplug: Delay acpi_processor_start()
- call for hotplugged cores
-Date: Mon, 23 Jan 2012 20:30:01 -0500
-Message-ID: <99b725084450bbc6f8e1ab20a0df4cc291c342b5.1327368464.git.len.brown@intel.com>
+Subject: [PATCH 07/10] thermal: Rename generate_netlink_event
+Date: Mon, 23 Jan 2012 20:30:06 -0500
+Message-ID: <2d58d7ea9164da59d0ea82fdf80e3ababe52d58c.1327368464.git.len.brown@intel.com>
 References: <1327368609-28409-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
@@ -11,167 +10,77 @@ In-reply-to: <54d5dcc45af7adbb907072d042bbece4c2b4de6e.1327368464.git.len.brown@
 References: <54d5dcc45af7adbb907072d042bbece4c2b4de6e.1327368464.git.len.brown@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Thomas Renninger <trenn@suse.de>, Len Brown <len.brown@intel.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Renninger <trenn@suse.de>
+From: Jean Delvare <khali@linux-fr.org>
 
-Delay the setting up of features (cpuidle, throttling by calling
-acpi_processor_start()) to the time when the hotplugged
-core got onlined the first time and got fully
-initialized.
+It doesn't seem right for the thermal subsystem to export a symbol
+named generate_netlink_event. This function is thermal-specific and
+its name should reflect that fact. Rename it to
+thermal_generate_netlink_event.
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: R.Durgadoss <durgadoss.r@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/processor_driver.c |   72 +++++++++++++++++++++++++++++++++++----
- drivers/idle/intel_idle.c       |    2 +-
- include/acpi/processor.h        |    1 +
- 3 files changed, 67 insertions(+), 8 deletions(-)
+ Documentation/thermal/sysfs-api.txt |    2 +-
+ drivers/thermal/thermal_sys.c       |    4 ++--
+ include/linux/thermal.h             |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index bec5593..2b805d7 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -84,7 +84,7 @@ static int acpi_processor_remove(struct acpi_device *device, int type);
- static void acpi_processor_notify(struct acpi_device *device, u32 event);
- static acpi_status acpi_processor_hotadd_init(struct acpi_processor *pr);
- static int acpi_processor_handle_eject(struct acpi_processor *pr);
--
-+static int acpi_processor_start(struct acpi_processor *pr);
- 
- static const struct acpi_device_id processor_device_ids[] = {
- 	{ACPI_PROCESSOR_OBJECT_HID, 0},
-@@ -423,10 +423,29 @@ static int acpi_cpu_soft_notify(struct notifier_block *nfb,
- 	struct acpi_processor *pr = per_cpu(processors, cpu);
- 
- 	if (action == CPU_ONLINE && pr) {
--		acpi_processor_ppc_has_changed(pr, 0);
--		acpi_processor_hotplug(pr);
--		acpi_processor_reevaluate_tstate(pr, action);
--		acpi_processor_tstate_has_changed(pr);
-+		/* CPU got physically hotplugged and onlined the first time:
-+		 * Initialize missing things
-+		 */
-+		if (pr->flags.need_hotplug_init) {
-+			struct cpuidle_driver *idle_driver =
-+				cpuidle_get_driver();
-+
-+			printk(KERN_INFO "Will online and init hotplugged "
-+			       "CPU: %d\n", pr->id);
-+			WARN(acpi_processor_start(pr), "Failed to start CPU:"
-+				" %d\n", pr->id);
-+			pr->flags.need_hotplug_init = 0;
-+			if (idle_driver && !strcmp(idle_driver->name,
-+						   "intel_idle")) {
-+				intel_idle_cpu_init(pr->id);
-+			}
-+		/* Normal CPU soft online event */
-+		} else {
-+			acpi_processor_ppc_has_changed(pr, 0);
-+			acpi_processor_cst_has_changed(pr);
-+			acpi_processor_reevaluate_tstate(pr, action);
-+			acpi_processor_tstate_has_changed(pr);
-+		}
- 	}
- 	if (action == CPU_DEAD && pr) {
- 		/* invalidate the flag.throttling after one CPU is offline */
-@@ -440,7 +459,15 @@ static struct notifier_block acpi_cpu_notifier =
- 	    .notifier_call = acpi_cpu_soft_notify,
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index b61e46f..1733ab9 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -284,7 +284,7 @@ method, the sys I/F structure will be built like this:
+ The framework includes a simple notification mechanism, in the form of a
+ netlink event. Netlink socket initialization is done during the _init_
+ of the framework. Drivers which intend to use the notification mechanism
+-just need to call generate_netlink_event() with two arguments viz
++just need to call thermal_generate_netlink_event() with two arguments viz
+ (originator, event). Typically the originator will be an integer assigned
+ to a thermal_zone_device when it registers itself with the framework. The
+ event will be one of:{THERMAL_AUX0, THERMAL_AUX1, THERMAL_CRITICAL,
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index dd9a574..220ce7e 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -1304,7 +1304,7 @@ static struct genl_multicast_group thermal_event_mcgrp = {
+ 	.name = THERMAL_GENL_MCAST_GROUP_NAME,
  };
  
--static int __cpuinit acpi_processor_start(struct acpi_processor *pr)
-+/*
-+ * acpi_processor_start() is called by the cpu_hotplug_notifier func:
-+ * acpi_cpu_soft_notify(). Getting it __cpuinit{data} is difficult, the
-+ * root cause seem to be that acpi_processor_uninstall_hotplug_notify()
-+ * is in the module_exit (__exit) func. Allowing acpi_processor_start()
-+ * to not be in __cpuinit section, but being called from __cpuinit funcs
-+ * via __ref looks like the right thing to do here.
-+ */
-+static __ref int acpi_processor_start(struct acpi_processor *pr)
+-int generate_netlink_event(u32 orig, enum events event)
++int thermal_generate_netlink_event(u32 orig, enum events event)
  {
- 	struct acpi_device *device = per_cpu(processor_device_array, pr->id);
- 	int result = 0;
-@@ -491,7 +518,12 @@ err_power_exit:
+ 	struct sk_buff *skb;
+ 	struct nlattr *attr;
+@@ -1363,7 +1363,7 @@ int generate_netlink_event(u32 orig, enum events event)
+ 
  	return result;
  }
+-EXPORT_SYMBOL(generate_netlink_event);
++EXPORT_SYMBOL(thermal_generate_netlink_event);
  
--
-+/*
-+ * Do not put anything in here which needs the core to be online.
-+ * For example MSR access or setting up things which check for cpuinfo_x86
-+ * (cpu_data(cpu)) values, like CPU feature flags, family, model, etc.
-+ * Such things have to be put in and set up above in acpi_processor_start()
-+ */
- static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ static int genetlink_init(void)
  {
- 	struct acpi_processor *pr = NULL;
-@@ -546,6 +578,21 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
- 		result = -EFAULT;
- 		goto err_free_cpumask;
- 	}
-+
-+	/*
-+	 * Do not start hotplugged CPUs now, but when they
-+	 * are onlined the first time
-+	 */
-+	if (pr->flags.need_hotplug_init)
-+		return 0;
-+
-+	/*
-+	 * Do not start hotplugged CPUs now, but when they
-+	 * are onlined the first time
-+	 */
-+	if (pr->flags.need_hotplug_init)
-+		return 0;
-+
- 	result = acpi_processor_start(pr);
- 	if (result)
- 		goto err_remove_sysfs;
-@@ -751,6 +798,17 @@ static acpi_status acpi_processor_hotadd_init(struct acpi_processor *pr)
- 		return AE_ERROR;
- 	}
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 47b4a27..796f1ff 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -152,9 +152,9 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+ void thermal_cooling_device_unregister(struct thermal_cooling_device *);
  
-+	/* CPU got hot-plugged, but cpu_data is not initialized yet
-+	 * Set flag to delay cpu_idle/throttling initialization
-+	 * in:
-+	 * acpi_processor_add()
-+	 *   acpi_processor_get_info()
-+	 * and do it when the CPU gets online the first time
-+	 * TBD: Cleanup above functions and try to do this more elegant.
-+	 */
-+	printk(KERN_INFO "CPU %d got hotplugged\n", pr->id);
-+	pr->flags.need_hotplug_init = 1;
-+
- 	return AE_OK;
- }
- 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 20bce51..54ab97b 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -527,7 +527,7 @@ int intel_idle_cpu_init(int cpu)
- 
+ #ifdef CONFIG_NET
+-extern int generate_netlink_event(u32 orig, enum events event);
++extern int thermal_generate_netlink_event(u32 orig, enum events event);
+ #else
+-static inline int generate_netlink_event(u32 orig, enum events event)
++static inline int thermal_generate_netlink_event(u32 orig, enum events event)
+ {
  	return 0;
  }
--
-+EXPORT_SYMBOL_GPL(intel_idle_cpu_init);
- 
- static int __init intel_idle_init(void)
- {
-diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-index 610f6fb..8cf7e98 100644
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -195,6 +195,7 @@ struct acpi_processor_flags {
- 	u8 has_cst:1;
- 	u8 power_setup_done:1;
- 	u8 bm_rld_set:1;
-+	u8 need_hotplug_init:1;
- };
- 
- struct acpi_processor {
 -- 
 1.7.9.rc2
 
