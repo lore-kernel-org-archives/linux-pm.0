@@ -1,17 +1,11 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 10/10] Use acpi_os_map_memory() instead of
- ioremap() in einj driver
-Date: Mon, 23 Jan 2012 20:30:09 -0500
-Message-ID: <459413db33d6c99fc13d60f88899fb72d2530ed3.1327368464.git.len.brown@intel.com>
-References: <1327368609-28409-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: PM: cannot hibernate -- BUG at kernel/workqueue.c:3659
+Date: Tue, 24 Jan 2012 16:05:57 +0100
+Message-ID: <4F1EC8D5.5040102@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1327368609-28409-1-git-send-email-lenb@kernel.org>
-In-reply-to: <54d5dcc45af7adbb907072d042bbece4c2b4de6e.1327368464.git.len.brown@intel.com>
-References: <54d5dcc45af7adbb907072d042bbece4c2b4de6e.1327368464.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,207 +15,63 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, "Luck, Tony" <tony.luck@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: "Luck, Tony" <tony.luck@intel.com>
+Hi,
 
-ioremap() has become more picky and is now spitting out console messages like:
+this is a freshly booted system. When I do s2dsk, I see:
+...
+Freezing remaining freezable tasks ... BUG: 'workqueue_freezing' is true!
+------------[ cut here ]------------
+kernel BUG at /l/latest/linux/kernel/workqueue.c:3659!
+invalid opcode: 0000 [#1] SMP
+CPU 0
+Modules linked in:
 
- ioremap error for 0xbddbd000-0xbddbe000, requested 0x10, got 0x0
+Pid: 2669, comm: s2disk Not tainted 3.3.0-rc1-next-20120124_64+ #1627
+Bochs Bochs
+RIP: 0010:[<ffffffff8107e365>]  [<ffffffff8107e365>]
+freeze_workqueues_begin+0x195/0x1a0
+RSP: 0018:ffff880046f01d68  EFLAGS: 00010292
+RAX: 0000000000000023 RBX: 0000000000000001 RCX: 00000000000000c9
+RDX: 0000000000000077 RSI: 0000000000000046 RDI: ffffffff81b51f7c
+RBP: ffff880046f01d98 R08: ffffffff81a9d760 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+R13: 00007fff579464dc R14: ffffffffffffffff R15: 0000000000000004
+FS:  00007f3c65d54700(0000) GS:ffff880049600000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f3c64f58c20 CR3: 0000000045b64000 CR4: 00000000000006f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process s2disk (pid: 2669, threadinfo ffff880046f00000, task
+ffff880047251980)
+Stack:
+ ffff880046f01d98 0000000000000001 0000000000000000 00007fff579464dc
+ ffffffffffffffff 0000000000000004 ffff880046f01e18 ffffffff81096cb9
+ 00000000ffff0124 0000000000000004 ffff880046f01e18 000000004f1ec7d1
+Call Trace:
+ [<ffffffff81096cb9>] try_to_freeze_tasks+0x1b9/0x2d0
+ [<ffffffff81096ed5>] freeze_kernel_threads+0x25/0x90
+ [<ffffffff81097b55>] hibernation_snapshot+0x75/0x2e0
+ [<ffffffff8109d724>] snapshot_ioctl+0x314/0x4e0
+ [<ffffffff81130856>] do_vfs_ioctl+0x96/0x550
+ [<ffffffff8111ff7b>] ? vfs_write+0x10b/0x180
+ [<ffffffff81130d5a>] sys_ioctl+0x4a/0x80
+ [<ffffffff81630e22>] system_call_fastpath+0x16/0x1b
+Code: c7 c6 0a a4 92 81 48 c7 c7 16 65 92 81 31 c0 e8 19 94 5a 00 0f 0b
+48 c7 c6 27 a4 92 81 48 c7 c7 16 65 92 81 31 c0 e8 02 94 5a 00 <0f> 0b
+66 0f 1f 84 00 00 00 00 00 55 48 c7 c7 82 4b b9 81 48 89
+RIP  [<ffffffff8107e365>] freeze_workqueues_begin+0x195/0x1a0
+ RSP <ffff880046f01d68>
+---[ end trace 632574abdc098963 ]---
 
-when loading the einj driver.  What we are trying to so here is map
-a couple of data structures that the EINJ table points to. Perhaps
-acpi_os_map_memory() is a better tool for this?
-Most importantly it works, but as a side benefit it maps the structures
-into kernel virtual space so we can access them with normal C memory
-dereferences, so instead of using:
-	writel(param1, &v5param->apicid);
-we can use the more natural:
-	v5param->apicid = param1;
+I wanted to reproduce a different crash which happens on 3.2.1. When
+there is not enough free swap, the kernel crashes (when s2disk is used).
+I will post more info after the one above is resolved and I can
+reproduce the latter :).
 
-Signed-off-by: Tony Luck <tony.luck@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/acpi/apei/einj.c |   82 +++++++++++++++++++++------------------------
- 1 files changed, 38 insertions(+), 44 deletions(-)
-
-diff --git a/drivers/acpi/apei/einj.c b/drivers/acpi/apei/einj.c
-index c89b0e5..4ca087d 100644
---- a/drivers/acpi/apei/einj.c
-+++ b/drivers/acpi/apei/einj.c
-@@ -141,21 +141,6 @@ static DEFINE_MUTEX(einj_mutex);
- 
- static void *einj_param;
- 
--#ifndef readq
--static inline __u64 readq(volatile void __iomem *addr)
--{
--	return ((__u64)readl(addr+4) << 32) + readl(addr);
--}
--#endif
--
--#ifndef writeq
--static inline void writeq(__u64 val, volatile void __iomem *addr)
--{
--	writel(val, addr);
--	writel(val >> 32, addr+4);
--}
--#endif
--
- static void einj_exec_ctx_init(struct apei_exec_context *ctx)
- {
- 	apei_exec_ctx_init(ctx, einj_ins_type, ARRAY_SIZE(einj_ins_type),
-@@ -204,22 +189,21 @@ static int einj_timedout(u64 *t)
- static void check_vendor_extension(u64 paddr,
- 				   struct set_error_type_with_address *v5param)
- {
--	int	offset = readl(&v5param->vendor_extension);
-+	int	offset = v5param->vendor_extension;
- 	struct	vendor_error_type_extension *v;
- 	u32	sbdf;
- 
- 	if (!offset)
- 		return;
--	v = ioremap(paddr + offset, sizeof(*v));
-+	v = acpi_os_map_memory(paddr + offset, sizeof(*v));
- 	if (!v)
- 		return;
--	sbdf = readl(&v->pcie_sbdf);
-+	sbdf = v->pcie_sbdf;
- 	sprintf(vendor_dev, "%x:%x:%x.%x vendor_id=%x device_id=%x rev_id=%x\n",
- 		sbdf >> 24, (sbdf >> 16) & 0xff,
- 		(sbdf >> 11) & 0x1f, (sbdf >> 8) & 0x7,
--		 readw(&v->vendor_id), readw(&v->device_id),
--		readb(&v->rev_id));
--	iounmap(v);
-+		 v->vendor_id, v->device_id, v->rev_id);
-+	acpi_os_unmap_memory(v, sizeof(*v));
- }
- 
- static void *einj_get_parameter_address(void)
-@@ -247,7 +231,7 @@ static void *einj_get_parameter_address(void)
- 	if (paddrv5) {
- 		struct set_error_type_with_address *v5param;
- 
--		v5param = ioremap(paddrv5, sizeof(*v5param));
-+		v5param = acpi_os_map_memory(paddrv5, sizeof(*v5param));
- 		if (v5param) {
- 			acpi5 = 1;
- 			check_vendor_extension(paddrv5, v5param);
-@@ -257,11 +241,11 @@ static void *einj_get_parameter_address(void)
- 	if (paddrv4) {
- 		struct einj_parameter *v4param;
- 
--		v4param = ioremap(paddrv4, sizeof(*v4param));
-+		v4param = acpi_os_map_memory(paddrv4, sizeof(*v4param));
- 		if (!v4param)
- 			return NULL;
--		if (readq(&v4param->reserved1) || readq(&v4param->reserved2)) {
--			iounmap(v4param);
-+		if (v4param->reserved1 || v4param->reserved2) {
-+			acpi_os_unmap_memory(v4param, sizeof(*v4param));
- 			return NULL;
- 		}
- 		return v4param;
-@@ -440,41 +424,41 @@ static int __einj_error_inject(u32 type, u64 param1, u64 param2)
- 	if (acpi5) {
- 		struct set_error_type_with_address *v5param = einj_param;
- 
--		writel(type, &v5param->type);
-+		v5param->type = type;
- 		if (type & 0x80000000) {
- 			switch (vendor_flags) {
- 			case SETWA_FLAGS_APICID:
--				writel(param1, &v5param->apicid);
-+				v5param->apicid = param1;
- 				break;
- 			case SETWA_FLAGS_MEM:
--				writeq(param1, &v5param->memory_address);
--				writeq(param2, &v5param->memory_address_range);
-+				v5param->memory_address = param1;
-+				v5param->memory_address_range = param2;
- 				break;
- 			case SETWA_FLAGS_PCIE_SBDF:
--				writel(param1, &v5param->pcie_sbdf);
-+				v5param->pcie_sbdf = param1;
- 				break;
- 			}
--			writel(vendor_flags, &v5param->flags);
-+			v5param->flags = vendor_flags;
- 		} else {
- 			switch (type) {
- 			case ACPI_EINJ_PROCESSOR_CORRECTABLE:
- 			case ACPI_EINJ_PROCESSOR_UNCORRECTABLE:
- 			case ACPI_EINJ_PROCESSOR_FATAL:
--				writel(param1, &v5param->apicid);
--				writel(SETWA_FLAGS_APICID, &v5param->flags);
-+				v5param->apicid = param1;
-+				v5param->flags = SETWA_FLAGS_APICID;
- 				break;
- 			case ACPI_EINJ_MEMORY_CORRECTABLE:
- 			case ACPI_EINJ_MEMORY_UNCORRECTABLE:
- 			case ACPI_EINJ_MEMORY_FATAL:
--				writeq(param1, &v5param->memory_address);
--				writeq(param2, &v5param->memory_address_range);
--				writel(SETWA_FLAGS_MEM, &v5param->flags);
-+				v5param->memory_address = param1;
-+				v5param->memory_address_range = param2;
-+				v5param->flags = SETWA_FLAGS_MEM;
- 				break;
- 			case ACPI_EINJ_PCIX_CORRECTABLE:
- 			case ACPI_EINJ_PCIX_UNCORRECTABLE:
- 			case ACPI_EINJ_PCIX_FATAL:
--				writel(param1, &v5param->pcie_sbdf);
--				writel(SETWA_FLAGS_PCIE_SBDF, &v5param->flags);
-+				v5param->pcie_sbdf = param1;
-+				v5param->flags = SETWA_FLAGS_PCIE_SBDF;
- 				break;
- 			}
- 		}
-@@ -484,8 +468,8 @@ static int __einj_error_inject(u32 type, u64 param1, u64 param2)
- 			return rc;
- 		if (einj_param) {
- 			struct einj_parameter *v4param = einj_param;
--			writeq(param1, &v4param->param1);
--			writeq(param2, &v4param->param2);
-+			v4param->param1 = param1;
-+			v4param->param2 = param2;
- 		}
- 	}
- 	rc = apei_exec_run(&ctx, ACPI_EINJ_EXECUTE_OPERATION);
-@@ -736,8 +720,13 @@ static int __init einj_init(void)
- 	return 0;
- 
- err_unmap:
--	if (einj_param)
--		iounmap(einj_param);
-+	if (einj_param) {
-+		acpi_size size = (acpi5) ?
-+			sizeof(struct set_error_type_with_address) :
-+			sizeof(struct einj_parameter);
-+
-+		acpi_os_unmap_memory(einj_param, size);
-+	}
- 	apei_exec_post_unmap_gars(&ctx);
- err_release:
- 	apei_resources_release(&einj_resources);
-@@ -753,8 +742,13 @@ static void __exit einj_exit(void)
- {
- 	struct apei_exec_context ctx;
- 
--	if (einj_param)
--		iounmap(einj_param);
-+	if (einj_param) {
-+		acpi_size size = (acpi5) ?
-+			sizeof(struct set_error_type_with_address) :
-+			sizeof(struct einj_parameter);
-+
-+		acpi_os_unmap_memory(einj_param, size);
-+	}
- 	einj_exec_ctx_init(&ctx);
- 	apei_exec_post_unmap_gars(&ctx);
- 	apei_resources_release(&einj_resources);
+thanks,
 -- 
-1.7.9.rc2
+js
+suse labs
