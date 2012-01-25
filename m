@@ -1,61 +1,37 @@
-From: Daniel Lezcano <daniel.lezcano@free.fr>
-Subject: Re: [PATCH 0/3] coupled cpuidle state support
-Date: Wed, 25 Jan 2012 15:04:18 +0100
-Message-ID: <4F200BE2.2070301@free.fr>
-References: <1324426147-16735-1-git-send-email-ccross@android.com> <4F1929E9.7070707@linaro.org> <CAMbhsRTbVqV6p0py9NGZrpFPf2yvp-B0dr+o-m7qbdja_-Lfzw@mail.gmail.com>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: PM: cannot hibernate -- BUG at
+	kernel/workqueue.c:3659
+Date: Wed, 25 Jan 2012 15:25:29 +0100
+Message-ID: <4F2010D9.5040900@gmail.com>
+References: <4F1EC8D5.5040102@suse.cz> <201201250002.37916.rjw@sisk.pl>
+	<4F1F4717.2090704@gmail.com> <201201250110.44360.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <CAMbhsRTbVqV6p0py9NGZrpFPf2yvp-B0dr+o-m7qbdja_-Lfzw@mail.gmail.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@lists.linux-foundation.org, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Amit Kucheria <amit.kucheria@linaro.org>, Arjan van de Ven <arjan@linux.intel.com>, Trinabh Gupta <g.trinabh@gmail.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, linux-omap@vger.kernel.org, linux-tegra@vger.kernel.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201201250110.44360.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, LKML <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/20/2012 09:40 PM, Colin Cross wrote:
-> On Fri, Jan 20, 2012 at 12:46 AM, Daniel Lezcano
-> <daniel.lezcano@linaro.org>  wrote:
->> Hi Colin,
->>
->> this patchset could be interesting to resolve in a generic way the cpu
->> dependencies.
->> What is the status of this patchset ?
-> I can't do much with it right now, because I don't have any devices
-> that can do SMP idle with a v3.2 kernel.  I've started working on an
-> updated version that avoids the spinlock, but it might be a while
-> before I can test and post it.  I'm mostly looking for feedback on the
-> approach taken in this patch, and whether it will be useful for other
-> SoCs besides Tegra and OMAP4.
+On 01/25/2012 01:10 AM, Rafael J. Wysocki wrote:
+> On Wednesday, January 25, 2012, Jiri Slaby wrote:
+>> Yeah, 100%. Just try it with a small enough swap.
+> 
+> Ah, thanks, so that's an error code path problem and most likely in the Linus'
+> tree.
 
-Hi Colin,
+Just to emphasize what I wrote earlier. I would apprectiate this fixed
+in 3.2 stable too.
 
-I will be happy to test your patchset. Do you have a pointer to a more 
-recent kernel ?
-
-
->> Did you have the opportunity to measure the power consumption with and
->> without this patchset ?
-> Power consumption will be very dependent on the specific SoC in
-> question.  The most important factors are the power savings of the
-> independent cpuidle state (normally WFI) vs. the hotplug state
-> (normally 1 cpu in OFF), and the workload being tested.
->
-> On a very idle system, these patches result in the same total power as
-> hotplugging one cpu and letting the other idle normally.  On a 25%
-> busy system, you might see a slight increase in power, as the best
-> independent cpuidle state might be WFI, vs 1 cpu in OFF mode in
-> hotplug.  On OMAP4, that difference is small, on the order of 10 mW.
-> Once you hit the threshold where a hotplug governor would have
-> hotplugged in the second cpu (lets say 40%), the savings from these
-> patches are enormous, as you can hit the lowest power state up to 60%
-> of the time, where the hotplug solution would never be going below WFI
-> on both cpus.  On OMAP4, that can be well over 100 mW.
-
-Interesting.
-
-
-Thanks
-
-   -- Daniel
-
+-- 
+js
