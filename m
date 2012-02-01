@@ -1,33 +1,72 @@
-From: Matthew Garrett <mjg@redhat.com>
-Subject: Re: [RFC PATCH 2/2] thermal: Add generic cpu cooling implementation
-Date: Wed, 1 Feb 2012 14:57:07 +0000
-Message-ID: <20120201145707.GD30184@srcf.ucam.org>
-References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
- <1323789196-4942-3-git-send-email-amit.kachhap@linaro.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 0/3] coupled cpuidle state support
+Date: Wed, 1 Feb 2012 14:59:35 +0000
+Message-ID: <20120201145934.GA20421@e102568-lin.cambridge.arm.com>
+References: <1324426147-16735-1-git-send-email-ccross@android.com>
+	<4F1929E9.7070707@linaro.org>
+	<CAMbhsRTbVqV6p0py9NGZrpFPf2yvp-B0dr+o-m7qbdja_-Lfzw@mail.gmail.com>
+	<CAKfTPtAsO8z_8AnR8zSGZ9cm_7orDNxB3r09JAFk+2jdezUVmQ@mail.gmail.com>
+	<CAMbhsRQYVXTZ2pX4mBrM6=SyGTqn_GY8xsW4rt_e21zerEzctA@mail.gmail.com>
+	<CAKfTPtB3Kcy41H9g9u3u81kEHJeypi=GvOfOjcpdztzqN991nA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAKfTPtB3Kcy41H9g9u3u81kEHJeypi=GvOfOjcpdztzqN991nA@mail.gmail.com>
 Content-Disposition: inline
-In-Reply-To: <1323789196-4942-3-git-send-email-amit.kachhap@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org, rui.zhang@intel.com, linaro-dev@lists.linaro.org, patches@linaro.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 13, 2011 at 08:43:16PM +0530, Amit Daniel Kachhap wrote:
-> This patch adds support for generic cpu thermal cooling low level
-> implementations using frequency scaling and cpuhotplugg currently.
+On Wed, Feb 01, 2012 at 12:13:26PM +0000, Vincent Guittot wrote:
 
-We've been over this kind of thing in the past. cpu hotplug is a 
-relatively expensive operation, so people have previously been 
-enthusiastic about using the scheduler to simply avoid running anything 
-on CPUs if they're overheating. Has any general consensus been reached 
-on this?
+[...]
 
-I'm also not entirely thrilled at now having two ways to manage the cpu 
-through the thermal layer. ACPI already plugs in via the passive trip 
-points. If we're going to do this then I'd like to see the ACPI code 
-merged in with the generic cpu cooling code.
+> >> In your patch, you put in safe state (WFI for most of platform) the
+> >> cpus that become idle and these cpus are woken up each time a new cpu
+> >> of the cluster becomes idle. Then, the cluster state is chosen and the
+> >> cpus enter the selected C-state. On ux500, we are using another
+> >> behavior for synchronizing  the cpus. The cpus are prepared to enter
+> >> the c-state that has been chosen by the governor and the last cpu,
+> >> that enters idle, chooses the final cluster state (according to cpus'
+> >> C-state). The main advantage of this solution is that you don't need
+> >> to wake other cpus to enter the C-state of a cluster. This can be
+> >> quite worth full when tasks mainly run on one cpu. Have you also think
+> >> about such behavior when developing the coupled cpuidle driver ? It
+> >> could be interesting to add such behavior.
+> >
+> > Waking up the cpus that are in the safe state is not done just to
+> > choose the target state, it's done to allow the cpus to take
+> > themselves to the target low power state.  On ux500, are you saying
+> > you take the cpus directly from the safe state to a lower power state
+> > without ever going back to the active state?  I once implemented Tegra
+> 
+> yes it is
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+But if there is a single power rail for the entire cluster, when a CPU
+is "prepared" for shutdown this means that you have to save the context and
+clean L1, maybe for nothing since if other CPUs are up and running the
+CPU going idle can just enter a simple standby wfi (clock-gated but power on).
+
+With Colin's approach, context is saved and L1 cleaned only when it is
+almost certain the cluster is powered off (so the CPUs).
+
+It is a trade-off, I am not saying one approach is better than the
+other; we just have to make sure that preparing the CPU for "possible" shutdown 
+is better than sending IPIs to take CPUs out of wfi and synchronize
+them (this happens if and only if CPUs enter coupled C-states).
+
+As usual this will depend on use cases (and silicon implementations :) )
+
+It is definitely worth benchmarking them.
+
+Lorenzo
