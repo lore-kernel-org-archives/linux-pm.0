@@ -1,16 +1,16 @@
 From: Amit Kachhap <amit.kachhap@linaro.org>
-Subject: Re: [RFC PATCH 1/2] thermal: Add a new trip type to use
- cooling device instance number
-Date: Thu, 2 Feb 2012 12:46:27 +0530
-Message-ID: <CAK44p21qu=8rtO=C+wogK3sjG77fwUsF_FyZBnCbHTyxNrVT_A@mail.gmail.com>
+Subject: Re: [RFC PATCH 2/2] thermal: Add generic cpu cooling
+	implementation
+Date: Thu, 2 Feb 2012 14:46:31 +0530
+Message-ID: <CAK44p23gUr=y4h_VUsy4_NWQvVRbG=EmLLXkZN3Lp-HnGsuPYQ@mail.gmail.com>
 References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
-	<1323789196-4942-2-git-send-email-amit.kachhap@linaro.org>
-	<20120201144931.GC30184@srcf.ucam.org>
+	<1323789196-4942-3-git-send-email-amit.kachhap@linaro.org>
+	<20120201145707.GD30184@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120201144931.GC30184@srcf.ucam.org>
+In-Reply-To: <20120201145707.GD30184@srcf.ucam.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -24,124 +24,30 @@ To: Matthew Garrett <mjg@redhat.com>
 Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 1 February 2012 20:19, Matthew Garrett <mjg@redhat.com> wrote:
+On 1 February 2012 20:27, Matthew Garrett <mjg@redhat.com> wrote:
+> On Tue, Dec 13, 2011 at 08:43:16PM +0530, Amit Daniel Kachhap wrote:
+>> This patch adds support for generic cpu thermal cooling low level
+>> implementations using frequency scaling and cpuhotplugg currently.
 >
-> I'm not really a fan of this as it stands - the name isn't very
-> intuitive and the code's pretty difficult to read. Would the following
-> (incomplete and obviously untested) not have the effect you want? Then
-> you register multiple trip points with the same cooling device but
-> different private values, and the state set does whatever you want it
-> to. Or am I misunderstanding the problem you're trying to solve?
-
-Thanks for the detailed review of the patch. Actually i tried to merge
-the benefits of trip type ACTIVE and PASSIVE into one so this name.
-This new trip type is just like ACTIVE but instead of OFF(0)/ON(1)
-all values greater then 0 is on. Anyways I looked at your
-implementation below but this will not solve the purpose as
-thermal_cooling_device_register() need to be be called only once to
-register a cooling device such cpu frequency based. However the same
-cooling device may be binded many times to different trips.
-Say,
-1) thermal_zone_bind_cooling_device(tz_dev, 0, cdev);
-2) thermal_zone_bind_cooling_device(tz_dev, 1, cdev);
-3) thermal_zone_bind_cooling_device(tz_dev, 2, cdev);
-
-0,1, 2 are nothing but trip points so the set_cur_state should be called li=
-ke
-set_cur_state(cdev, 0)
-set_cur_state(cdev, 1)
-set_cur_state(cdev, 2) when the trip point threshold are crossed.
-
-Yeah I agree that implementation logic looks complex but this to
-prevent the lower temp trip points cooling handlers to be called. I
-will surely make this better in next version.
-
+> We've been over this kind of thing in the past. cpu hotplug is a
+> relatively expensive operation, so people have previously been
+> enthusiastic about using the scheduler to simply avoid running anything
+> on CPUs if they're overheating. Has any general consensus been reached
+> on this?
+yes you are right that cpuhotplug is an expensive process and it may
+further heat up the system before turning off so the ideal way would
+be to reduce the capacity of the cpu gradually. Anyway these patches
+are only exporting those API's and the actual use of them depends on
+the user. Although my bigger focus is on cpufreq as cooling devices so
+I might remove cpuhotplug in the next version.
 >
-> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-> index 220ce7e..817f2ba 100644
-> --- a/drivers/thermal/thermal_sys.c
-> +++ b/drivers/thermal/thermal_sys.c
-> @@ -50,6 +50,7 @@ struct thermal_cooling_device_instance {
-> =A0 =A0 =A0 =A0char attr_name[THERMAL_NAME_LENGTH];
-> =A0 =A0 =A0 =A0struct device_attribute attr;
-> =A0 =A0 =A0 =A0struct list_head node;
-> + =A0 =A0 =A0 unsigned long private;
-> =A0};
->
-> =A0static DEFINE_IDR(thermal_tz_idr);
-> @@ -909,7 +910,8 @@ static struct class thermal_class =3D {
-> =A0* @ops: =A0 =A0 =A0 =A0 =A0 =A0 =A0 standard thermal cooling devices c=
-allbacks.
-> =A0*/
-> =A0struct thermal_cooling_device *thermal_cooling_device_register(
-> - =A0 =A0 char *type, void *devdata, const struct thermal_cooling_device_=
-ops *ops)
-> + =A0 =A0 =A0 char *type, void *devdata, const struct thermal_cooling_dev=
-ice_ops *ops,
-> + =A0 =A0 =A0 unsigned long private)
-> =A0{
-> =A0 =A0 =A0 =A0struct thermal_cooling_device *cdev;
-> =A0 =A0 =A0 =A0struct thermal_zone_device *pos;
-> @@ -936,6 +938,7 @@ struct thermal_cooling_device *thermal_cooling_device=
-_register(
-> =A0 =A0 =A0 =A0cdev->ops =3D ops;
-> =A0 =A0 =A0 =A0cdev->device.class =3D &thermal_class;
-> =A0 =A0 =A0 =A0cdev->devdata =3D devdata;
-> + =A0 =A0 =A0 cdev->private =3D private;
-> =A0 =A0 =A0 =A0dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
-> =A0 =A0 =A0 =A0result =3D device_register(&cdev->device);
-> =A0 =A0 =A0 =A0if (result) {
-> @@ -1079,11 +1082,14 @@ void thermal_zone_device_update(struct thermal_zo=
-ne_device *tz)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0continue;
->
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cdev =3D i=
-nstance->cdev;
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (temp >=
-=3D trip_temp)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 cdev->ops->set_cur_state(cdev, 1);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 cdev->ops->set_cur_state(cdev, 0);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (cdev->p=
-rivate) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 cdev->ops->set_cur_state(cdev, cdev->private);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 if (temp >=3D trip_temp)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 cdev->ops->set_cur_state(cdev, 1);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 else
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 cdev->ops->set_cur_state(cdev, 0);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0case THERMAL_TRIP_PASSIVE:
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 796f1ff..04aac09 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -148,7 +148,7 @@ int thermal_zone_unbind_cooling_device(struct thermal=
-_zone_device *, int,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 struct thermal_cooling_device *);
-> =A0void thermal_zone_device_update(struct thermal_zone_device *);
-> =A0struct thermal_cooling_device *thermal_cooling_device_register(char *,=
- void *,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 const struct thermal_cooling_device_ops *);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0const struct thermal_cooling_dev=
-ice_ops *, unsigned long private);
-> =A0void thermal_cooling_device_unregister(struct thermal_cooling_device *=
-);
->
-> =A0#ifdef CONFIG_NET
->
+> I'm also not entirely thrilled at now having two ways to manage the cpu
+> through the thermal layer. ACPI already plugs in via the passive trip
+> points. If we're going to do this then I'd like to see the ACPI code
+> merged in with the generic cpu cooling code.
+Yeah I also agree that there is a kind of repetition and not entirely
+sure where to place these codes. I will try adding them inside acpi.
+Thanks for the suggestion.
 >
 > --
 > Matthew Garrett | mjg59@srcf.ucam.org
