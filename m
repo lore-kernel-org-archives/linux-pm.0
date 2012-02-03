@@ -1,16 +1,21 @@
-From: Amit Kachhap <amit.kachhap@linaro.org>
-Subject: Re: [RFC PATCH 2/2] thermal: Add generic cpu cooling
-	implementation
-Date: Thu, 2 Feb 2012 14:46:31 +0530
-Message-ID: <CAK44p23gUr=y4h_VUsy4_NWQvVRbG=EmLLXkZN3Lp-HnGsuPYQ@mail.gmail.com>
-References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
-	<1323789196-4942-3-git-send-email-amit.kachhap@linaro.org>
-	<20120201145707.GD30184@srcf.ucam.org>
+From: Colin Cross <ccross@android.com>
+Subject: Re: [PATCH 0/3] coupled cpuidle state support
+Date: Thu, 2 Feb 2012 17:19:28 -0800
+Message-ID: <CAMbhsRSBqyTaCBMjJL-izMK=HSVwY6yQQqPyg0enddo2vymyxA@mail.gmail.com>
+References: <1324426147-16735-1-git-send-email-ccross@android.com>
+	<4F1929E9.7070707@linaro.org>
+	<CAMbhsRTbVqV6p0py9NGZrpFPf2yvp-B0dr+o-m7qbdja_-Lfzw@mail.gmail.com>
+	<CAKfTPtAsO8z_8AnR8zSGZ9cm_7orDNxB3r09JAFk+2jdezUVmQ@mail.gmail.com>
+	<CAMbhsRQYVXTZ2pX4mBrM6=SyGTqn_GY8xsW4rt_e21zerEzctA@mail.gmail.com>
+	<CAKfTPtB3Kcy41H9g9u3u81kEHJeypi=GvOfOjcpdztzqN991nA@mail.gmail.com>
+	<20120201145934.GA20421@e102568-lin.cambridge.arm.com>
+	<CAMbhsRTFzc8aGsSGUs2==4FiqBb7zOit4cO=6U698k+RCE+kqQ@mail.gmail.com>
+	<20120201180705.GA20936@e102568-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120201145707.GD30184@srcf.ucam.org>
+In-Reply-To: <20120201180705.GA20936@e102568-lin.cambridge.arm.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,34 +25,117 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Matthew Garrett <mjg@redhat.com>
-Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 1 February 2012 20:27, Matthew Garrett <mjg@redhat.com> wrote:
-> On Tue, Dec 13, 2011 at 08:43:16PM +0530, Amit Daniel Kachhap wrote:
->> This patch adds support for generic cpu thermal cooling low level
->> implementations using frequency scaling and cpuhotplugg currently.
+On Wed, Feb 1, 2012 at 10:07 AM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> On Wed, Feb 01, 2012 at 05:30:15PM +0000, Colin Cross wrote:
+>> On Wed, Feb 1, 2012 at 6:59 AM, Lorenzo Pieralisi
+>> <lorenzo.pieralisi@arm.com> wrote:
+>> > On Wed, Feb 01, 2012 at 12:13:26PM +0000, Vincent Guittot wrote:
+>> >
+>> > [...]
+>> >
+>> >> >> In your patch, you put in safe state (WFI for most of platform) the
+>> >> >> cpus that become idle and these cpus are woken up each time a new =
+cpu
+>> >> >> of the cluster becomes idle. Then, the cluster state is chosen and=
+ the
+>> >> >> cpus enter the selected C-state. On ux500, we are using another
+>> >> >> behavior for synchronizing =A0the cpus. The cpus are prepared to e=
+nter
+>> >> >> the c-state that has been chosen by the governor and the last cpu,
+>> >> >> that enters idle, chooses the final cluster state (according to cp=
+us'
+>> >> >> C-state). The main advantage of this solution is that you don't ne=
+ed
+>> >> >> to wake other cpus to enter the C-state of a cluster. This can be
+>> >> >> quite worth full when tasks mainly run on one cpu. Have you also t=
+hink
+>> >> >> about such behavior when developing the coupled cpuidle driver ? It
+>> >> >> could be interesting to add such behavior.
+>> >> >
+>> >> > Waking up the cpus that are in the safe state is not done just to
+>> >> > choose the target state, it's done to allow the cpus to take
+>> >> > themselves to the target low power state. =A0On ux500, are you sayi=
+ng
+>> >> > you take the cpus directly from the safe state to a lower power sta=
+te
+>> >> > without ever going back to the active state? =A0I once implemented =
+Tegra
+>> >>
+>> >> yes it is
+>> >
+>> > But if there is a single power rail for the entire cluster, when a CPU
+>> > is "prepared" for shutdown this means that you have to save the contex=
+t and
+>> > clean L1, maybe for nothing since if other CPUs are up and running the
+>> > CPU going idle can just enter a simple standby wfi (clock-gated but po=
+wer on).
+>> >
+>> > With Colin's approach, context is saved and L1 cleaned only when it is
+>> > almost certain the cluster is powered off (so the CPUs).
+>> >
+>> > It is a trade-off, I am not saying one approach is better than the
+>> > other; we just have to make sure that preparing the CPU for "possible"=
+ shutdown
+>> > is better than sending IPIs to take CPUs out of wfi and synchronize
+>> > them (this happens if and only if CPUs enter coupled C-states).
+>> >
+>> > As usual this will depend on use cases (and silicon implementations :)=
+ )
+>> >
+>> > It is definitely worth benchmarking them.
+>> >
+>>
+>> I'm less worried about performance, and more worried about race
+>> conditions. =A0How do you deal with the following situation:
+>> CPU0 goes to WFI, and saves its state
+>> CPU1 goes idle, and selects a deep idle state that powers down CPU0
+>> CPU1 saves is state, and is about to trigger the power down
+>> CPU0 gets an interrupt, restores its state, and modifies state (maybe
+>> takes a spinlock during boot)
+>> CPU1 cuts the power to CPU0
+>>
+>> On OMAP4, the race is handled in hardware. =A0When CPU1 tries to cut the
+>> power to the blocks shared by CPU0 the hardware will ignore the
+>> request if CPU0 is not in WFI. =A0On Tegra2, there is no hardware
+>> support and I had to handle it with a spinlock implemented in scratch
+>> registers because CPU0 is out of coherency when it starts booting and
+>> ldrex/strex don't work. =A0I'm not convinced my implementation is
+>> correct, and I'd be curious to see any other implementations.
 >
-> We've been over this kind of thing in the past. cpu hotplug is a
-> relatively expensive operation, so people have previously been
-> enthusiastic about using the scheduler to simply avoid running anything
-> on CPUs if they're overheating. Has any general consensus been reached
-> on this?
-yes you are right that cpuhotplug is an expensive process and it may
-further heat up the system before turning off so the ideal way would
-be to reduce the capacity of the cpu gradually. Anyway these patches
-are only exporting those API's and the actual use of them depends on
-the user. Although my bigger focus is on cpufreq as cooling devices so
-I might remove cpuhotplug in the next version.
+> That's a problem you solved with coupled C-states (ie your example in
+> the cover letter), where the primary waits for other CPUs to be reset
+> before issuing the power down command, right ? At that point in time
+> secondaries cannot wake up (?) and if wfi (ie power down) aborts you just
+> take the secondaries out of reset and restart executing simultaneously,
+> correct ? It mirrors the suspend behaviour, which is easier to deal with
+> than completely random idle paths.
+
+Yes, anything that supports hotplug and suspend should support coupled
+cpuidle states fairly easily.  The only thing required that is not
+already used by hotplug/suspend is the ability to save and restore
+context on cpu1, but most implementations end up doing that already.
+
+> It is true that this should be managed by the PM HW; if HW is not
+> capable of managing these situations things get nasty as you highlighted.
+
+Yes - on some platforms, the HW is not designed to handle it.  On
+others, it is designed to, but due to HW bugs it cannot be used.
+
+> And it is also true ldrex/strex on cacheable memory might not be availabl=
+e in
+> those early warm-boot stages. I came up with a locking algorithm on
+> strongly ordered memory to deal with that, but I am still not sure it is
+> something we really really need.
+
+I did the same, but with device memory.
+
+> I will test coupled C-state code ASAP, and come back with feedback.
 >
-> I'm also not entirely thrilled at now having two ways to manage the cpu
-> through the thermal layer. ACPI already plugs in via the passive trip
-> points. If we're going to do this then I'd like to see the ACPI code
-> merged in with the generic cpu cooling code.
-Yeah I also agree that there is a kind of repetition and not entirely
-sure where to place these codes. I will try adding them inside acpi.
-Thanks for the suggestion.
+> Thanks,
+> Lorenzo
 >
-> --
-> Matthew Garrett | mjg59@srcf.ucam.org
