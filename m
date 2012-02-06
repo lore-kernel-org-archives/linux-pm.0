@@ -1,65 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] CPU C-state breakage with PM Qos change
-Date: Sun, 5 Feb 2012 12:04:38 +0100
-Message-ID: <201202051204.38717.rjw@sisk.pl>
-References: <1328227065-22045-1-git-send-email-venki@google.com> <CAN5iSWo-n7OER4i1tPoeGBhY_RY-nX=7n4B3mFv1f0JK074bhQ@mail.gmail.com> <20120205035057.GA4948@gs62>
+From: Viresh Kumar <viresh.kumar@st.com>
+Subject: Query: When will drv->poweroff() called
+Date: Mon, 6 Feb 2012 11:25:12 +0530
+Message-ID: <4F2F6B40.6070308@st.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20120205035057.GA4948@gs62>
 Sender: linux-kernel-owner@vger.kernel.org
-To: markgross@thegnar.org
-Cc: "Pihet-XID, Jean" <j-pihet@ti.com>, Venkatesh Pallipadi <venki@google.com>, Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>
+To: pavel@ucw.cz, "Rafael J. Wysocki" <rjw@sisk.pl>, len.brown@intel.com
+Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Shiraz HASHIM <shiraz.hashim@st.com>, Armando VISCONTI <armando.visconti@st.com>, Vipin KUMAR <vipin.kumar@st.com>, deepak sikri <deepak.sikri@st.com>, Vipul Kumar SAMAR <vipulkumar.samar@st.com>, Amit VIRDI <amit.virdi@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, Pratyush ANAND <pratyush.anand@st.com>, Mirko GARDI <mirko.gardi@st.com>, Vincenzo FRASCINO <Vincenzo.FRASCINO@st.com>, Bhupesh SHARMA <bhupesh.sharma@st.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, February 05, 2012, mark gross wrote:
-> On Fri, Feb 03, 2012 at 03:04:43PM +0100, Pihet-XID, Jean wrote:
-> > Looping in linux-pm
-> > 
-> > On Fri, Feb 3, 2012 at 1:14 AM, Venkatesh Pallipadi <venki@google.com> wrote:
-> > > Looks like change "PM QoS: Move and rename the implementation files"
-> > > made pm_qos depend on CONFIG_PM which depends on
-> > > PM_SLEEP || PM_RUNTIME
-> > >
-> > > That breaks CPU C-states with kernels not having these CONFIGs, causing CPUs
-> > > to spend time in Polling loop idle instead of going into deep C-states,
-> > > consuming way way more power. This is with either acpi idle or intel idle
-> > > enabled.
-> > >
-> > > Either CONFIG_PM should be enabled with any pm_qos users or
-> > > the !CONFIG_PM pm_qos_request() should return sane defaults not to break
-> > > the existing users. Here's is the patch for the latter option.
-> > I think the real question is whether PM QoS should be functional in
-> > all cases (as is ACPI) or whether only if certain options are set
-> > (CONFIG_PM).
-> > In the current code if CONFIG_PM is not enabled, a dummy PM QoS API is
-> > provided as function stubs in order for the build to succeed.
-> > 
-> > Rafael, Mark,
-> > What do you think? Should PM QoS be enabled in all cases? Are there
-> > any known dependencies with CONFIG_PM?
-> 
-> Yes I do think pm_qos interfaces should be enabled all the time and be
-> independent of CONFIG_PM.  Also, I still am not a fan of the renaming
-> patch but, as the argument for and against renaming cannot be based on
-> quantifiable things I've chosen not to let it bother me.
-> 
-> I think Venki's change is a band aid and we should fix it right by not
-> having a dependency on config_pm for the interface to behave.
-> 
-> I'll take a look at why there is now a dependency before I have more to
-> say.
 
-In kernel/power/Makefile:
+Hi Guys,
 
-obj-$(CONFIG_PM)                += main.o qos.o
+Sorry for asking this silly question, but i couldn't locate much
+help for it in documentation, so asking it.
 
-I guess that explains things. :-)
+We were testing hibernation for SPEAr13xx SoC family, based on
+ARM Cortex a9.
 
-It's quite easy to make qos.o be independent of CONFIG_PM, in which case the
-code added by Venki can be removed, so patches welcome (for 3.4, though).
+I observed that poweroff() callback of individual drivers are not
+getting called at all, while we test hibernate.
 
-Thanks,
-Rafael
+I tried to go through the code to see what happened. It looked like
+there should be call to hibernation_set_ops() for platforms that are
+willing to get a call to poweroff() for their drivers. Otherwise
+shutdown of the busses gets called, which is a completely different path.
+
+There are many drivers today, that are registering poweroff() from dev_pm_ops
+but are not doing bus specific shutdown stuff.
+
+Even i tried to look for hibernation_set_ops() in kernel, and only acpi
+code is calling it. I didn't understood how other ARM Sub-Arch's are handling
+this.
+
+Thanks in advance :)
+
+-- 
+viresh
