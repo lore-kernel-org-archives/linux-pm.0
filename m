@@ -1,15 +1,13 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH] CPU C-state breakage with PM Qos change
-Date: Mon, 6 Feb 2012 11:18:33 +0100
-Message-ID: <CAORVsuVCYp+Fmfaje-UDnv1=x0PqApML6Jb-Z6EG0425SuREMg@mail.gmail.com>
-References: <1328227065-22045-1-git-send-email-venki@google.com>
-	<CAN5iSWo-n7OER4i1tPoeGBhY_RY-nX=7n4B3mFv1f0JK074bhQ@mail.gmail.com>
-	<20120205035057.GA4948@gs62> <201202051204.38717.rjw@sisk.pl>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Query: When will drv->poweroff() called
+Date: Mon, 6 Feb 2012 13:07:40 +0100
+Message-ID: <201202061307.40628.rjw@sisk.pl>
+References: <4F2F6B40.6070308@st.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201202051204.38717.rjw@sisk.pl>
+In-Reply-To: <4F2F6B40.6070308@st.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,77 +17,53 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, markgross@thegnar.org
-Cc: Kevin Hilman <khilman@ti.com>, Venkatesh Pallipadi <venki@google.com>, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, linux-kernel@vger.kernel.org, "Pihet-XID, Jean" <j-pihet@ti.com>
+To: Viresh Kumar <viresh.kumar@st.com>
+Cc: len.brown@intel.com, Vipul Kumar SAMAR <vipulkumar.samar@st.com>, Bhupesh SHARMA <bhupesh.sharma@st.com>, Pratyush ANAND <pratyush.anand@st.com>, Armando VISCONTI <armando.visconti@st.com>, Mirko GARDI <mirko.gardi@st.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vipin KUMAR <vipin.kumar@st.com>, Shiraz HASHIM <shiraz.hashim@st.com>, Amit VIRDI <amit.virdi@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, deepak sikri <deepak.sikri@st.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Vincenzo FRASCINO <Vincenzo.FRASCINO@st.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael, Mark,
+Hi,
 
-On Sun, Feb 5, 2012 at 12:04 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday, February 05, 2012, mark gross wrote:
->> On Fri, Feb 03, 2012 at 03:04:43PM +0100, Pihet-XID, Jean wrote:
->> > Looping in linux-pm
->> >
->> > On Fri, Feb 3, 2012 at 1:14 AM, Venkatesh Pallipadi <venki@google.com>=
- wrote:
->> > > Looks like change "PM QoS: Move and rename the implementation files"
->> > > made pm_qos depend on CONFIG_PM which depends on
->> > > PM_SLEEP || PM_RUNTIME
->> > >
->> > > That breaks CPU C-states with kernels not having these CONFIGs, caus=
-ing CPUs
->> > > to spend time in Polling loop idle instead of going into deep C-stat=
-es,
->> > > consuming way way more power. This is with either acpi idle or intel=
- idle
->> > > enabled.
->> > >
->> > > Either CONFIG_PM should be enabled with any pm_qos users or
->> > > the !CONFIG_PM pm_qos_request() should return sane defaults not to b=
-reak
->> > > the existing users. Here's is the patch for the latter option.
->> > I think the real question is whether PM QoS should be functional in
->> > all cases (as is ACPI) or whether only if certain options are set
->> > (CONFIG_PM).
->> > In the current code if CONFIG_PM is not enabled, a dummy PM QoS API is
->> > provided as function stubs in order for the build to succeed.
->> >
->> > Rafael, Mark,
->> > What do you think? Should PM QoS be enabled in all cases? Are there
->> > any known dependencies with CONFIG_PM?
->>
->> Yes I do think pm_qos interfaces should be enabled all the time and be
->> independent of CONFIG_PM. =A0Also, I still am not a fan of the renaming
->> patch but, as the argument for and against renaming cannot be based on
->> quantifiable things I've chosen not to let it bother me.
->>
->> I think Venki's change is a band aid and we should fix it right by not
->> having a dependency on config_pm for the interface to behave.
->>
->> I'll take a look at why there is now a dependency before I have more to
->> say.
->
-> In kernel/power/Makefile:
->
-> obj-$(CONFIG_PM) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0+=3D main.o qos.o
->
-> I guess that explains things. :-)
-Initially I thought we should have a way of disabling the feature on
-some (minimal) kernels and so thought CONFIG_PM was the option to use.
+On Monday, February 06, 2012, Viresh Kumar wrote:
+> 
+> Hi Guys,
+> 
+> Sorry for asking this silly question, but i couldn't locate much
+> help for it in documentation, so asking it.
+> 
+> We were testing hibernation for SPEAr13xx SoC family, based on
+> ARM Cortex a9.
+> 
+> I observed that poweroff() callback of individual drivers are not
+> getting called at all, while we test hibernate.
 
-> It's quite easy to make qos.o be independent of CONFIG_PM, in which case =
-the
-> code added by Venki can be removed, so patches welcome (for 3.4, though).
-I am working on it, more to come soon.
+They should be called in the last phase of hibernation, after the image
+has been created and the system is going for "power off" (hance the
+callback name).
 
->
-> Thanks,
-> Rafael
+> I tried to go through the code to see what happened. It looked like
+> there should be call to hibernation_set_ops() for platforms that are
+> willing to get a call to poweroff() for their drivers.
+
+That's correct.  The ->poweroff() callbacks are only executed if
+hibernation_mode is equal to HIBERNATION_PLATFORM, which is not the
+default.
+
+> Otherwise shutdown of the busses gets called, which is a completely
+> different path.
+> 
+> There are many drivers today, that are registering poweroff() from dev_pm_ops
+> but are not doing bus specific shutdown stuff.
+> 
+> Even i tried to look for hibernation_set_ops() in kernel, and only acpi
+> code is calling it.
+
+That's correct too.
+
+> I didn't understood how other ARM Sub-Arch's are handling this.
+
+Well, they are supposed to call hibernation_set_ops() and set the operations
+appropriately.  Those operations may be empty routines if they don't need
+to do anything, but they have to be defined.
 
 Thanks,
-Jean
-
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
+Rafael
