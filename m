@@ -1,269 +1,529 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [linux-pm] [RFC PATCH] thermal: Add support to report cooling
- statistics achieved by cooling devices
-Date: Tue, 7 Feb 2012 09:09:17 +0200
-Message-ID: <20120207070917.GA2616@besouro>
-References: <1326878467-17766-1-git-send-email-amit.kachhap@linaro.org>
+Subject: Re: [linux-pm] [RFC PATCH 2/2] thermal: Add generic cpu cooling
+ implementation
+Date: Tue, 7 Feb 2012 10:25:59 +0200
+Message-ID: <20120207082559.GA5558@besouro>
+References: <1323789196-4942-1-git-send-email-amit.kachhap@linaro.org>
+ <1323789196-4942-3-git-send-email-amit.kachhap@linaro.org>
 Reply-To: eduardo.valentin@ti.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1326878467-17766-1-git-send-email-amit.kachhap@linaro.org>
+In-Reply-To: <1323789196-4942-3-git-send-email-amit.kachhap@linaro.org>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Cc: linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, rob.lee@linaro.org
+Cc: linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Hello Amit,
 
-some comments embedded.
-
-On Wed, Jan 18, 2012 at 02:51:07PM +0530, Amit Daniel Kachhap wrote:
-> Add a sysfs node code to report effective cooling of all cooling devices
-> attached to each trip points of a thermal zone. The cooling data reported
-> will be absolute if the higher temperature trip points are arranged first
-> otherwise the cooling stats is the cumulative effect of the earlier
-> invoked cooling handlers.
-> 
-> The basic assumption is that cooling devices will bring down the temperature
-> in a symmetric manner and those statistics can be stored back and used for
-> further tuning of the system.
+On Tue, Dec 13, 2011 at 08:43:16PM +0530, Amit Daniel Kachhap wrote:
+> This patch adds support for generic cpu thermal cooling low level
+> implementations using frequency scaling and cpuhotplugg currently.
+> Different cpu related cooling devices can be registered by the
+> user and the binding of these cooling devices to the corresponding
+> trip points can be easily done as the registration API's return the
+> cooling device pointer.
 > 
 > Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
 > ---
->  Documentation/thermal/sysfs-api.txt |   10 ++++
->  drivers/thermal/thermal_sys.c       |   96 +++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h             |    8 +++
->  3 files changed, 114 insertions(+), 0 deletions(-)
+>  Documentation/thermal/cpu-cooling-api.txt |   52 +++++
+>  drivers/thermal/Kconfig                   |   11 +
+>  drivers/thermal/Makefile                  |    1 +
+>  drivers/thermal/cpu_cooling.c             |  302 +++++++++++++++++++++++++++++
+>  include/linux/cpu_cooling.h               |   45 +++++
+>  5 files changed, 411 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/thermal/cpu-cooling-api.txt
+>  create mode 100644 drivers/thermal/cpu_cooling.c
+>  create mode 100644 include/linux/cpu_cooling.h
 > 
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-> index b61e46f..1db9a9d 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -209,6 +209,13 @@ passive
->  	Valid values: 0 (disabled) or greater than 1000
->  	RW, Optional
+> diff --git a/Documentation/thermal/cpu-cooling-api.txt b/Documentation/thermal/cpu-cooling-api.txt
+> new file mode 100644
+> index 0000000..d30b4f2
+> --- /dev/null
+> +++ b/Documentation/thermal/cpu-cooling-api.txt
+> @@ -0,0 +1,52 @@
+> +CPU cooling api's How To
+> +===================================
+> +
+> +Written by Amit Daniel Kachhap <amit.kachhap@linaro.org>
+> +
+> +Updated: 13 Dec 2011
+> +
+> +Copyright (c)  2011 Samsung Electronics Co., Ltd(http://www.samsung.com)
+> +
+> +0. Introduction
+> +
+> +The generic cpu cooling(freq clipping, cpuhotplug) provides
+> +registration/unregistration api's to the user. The binding of the cooling
+> +devices to the trip types is left for the user. The registration api's returns
+> +the cooling device pointer.
+> +
+> +1. cpufreq cooling api's
+> +
+> +1.1 cpufreq registration api's
+> +1.1.1 struct thermal_cooling_device *cpufreq_cooling_register(
+> +	struct freq_pctg_table *tab_ptr, unsigned int tab_size,
+> +	const struct cpumask *mask_val)
+> +
+> +    This interface function registers the cpufreq cooling device with the name
+> +	"thermal-cpufreq".
+> +
+> +    tab_ptr: The table containing the percentage of frequency to be clipped for
+> +    each cooling state.
+> +	.freq_clip_pctg[NR_CPUS]:Percentage of frequency to be clipped for each
+> +	 cpu.
+> +	.polling_interval: polling interval for this cooling state.
+> +    tab_size: the total number of cooling state.
+> +    mask_val: all the allowed cpu's where frequency clipping can happen.
+> +
+> +1.1.2 void cpufreq_cooling_unregister(void)
+> +
+> +    This interface function unregisters the "thermal-cpufreq" cooling device.
+> +
+> +
+> +1.2 cpuhotplug registration api's
+> +
+> +1.2.1 struct thermal_cooling_device *cpuhotplug_cooling_register(
+> +	const struct cpumask *mask_val)
+> +
+> +    This interface function registers the cpuhotplug cooling device with the name
+> +	"thermal-cpuhotplug".
+> +
+> +    mask_val: all the allowed cpu's which can be hotplugged out.
+> +
+> +1.1.2 void cpuhotplug_cooling_unregister(void)
+> +
+> +    This interface function unregisters the "thermal-cpuhotplug" cooling device.
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index f7f71b2..298c1cd 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -18,3 +18,14 @@ config THERMAL_HWMON
+>  	depends on THERMAL
+>  	depends on HWMON=y || HWMON=THERMAL
+>  	default y
+> +
+> +config CPU_THERMAL
+> +	bool "generic cpu cooling support"
+> +	depends on THERMAL
+> +	help
+> +	  This implements the generic cpu cooling mechanism through frequency
+> +	  reduction, cpu hotplug and any other ways of reducing temperature. An
+> +	  ACPI version of this already exists(drivers/acpi/processor_thermal.c).
+> +	  This will be useful for platforms using the generic thermal interface
+> +	  and not the ACPI interface.
+> +	  If you want this support, you should say Y or M here.
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index 31108a0..655cbc4 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -3,3 +3,4 @@
+>  #
 >  
-> +trip_stats
-> +	This attribute presents the effective cooling generated from all the
-> +	cooling devices attached to a trip point. The output is a pair of value
-> +	for each trip point. Each pair represents
-> +	(trip index, cooling temperature difference in millidegree Celsius)
-> +	RO, Optional
+>  obj-$(CONFIG_THERMAL)		+= thermal_sys.o
+> +obj-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> new file mode 100644
+> index 0000000..cdd148c
+> --- /dev/null
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -0,0 +1,302 @@
+> +/*
+> + *  linux/drivers/thermal/cpu_cooling.c
+> + *
+> + *  Copyright (C) 2011	Samsung Electronics Co., Ltd(http://www.samsung.com)
+> + *  Copyright (C) 2011  Amit Daniel <amit.kachhap@linaro.org>
+> + *
+> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; version 2 of the License.
+> + *
+> + *  This program is distributed in the hope that it will be useful, but
+> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + *  General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License along
+> + *  with this program; if not, write to the Free Software Foundation, Inc.,
+> + *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+> + *
+> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> + */
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/thermal.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/cpufreq.h>
+> +#include <linux/err.h>
+> +#include <linux/slab.h>
+> +#include <linux/cpu.h>
+> +#include <linux/cpu_cooling.h>
 > +
->  *****************************
->  * Cooling device attributes *
->  *****************************
-> @@ -261,6 +268,9 @@ method, the sys I/F structure will be built like this:
->      |---cdev0_trip_point:	1	/* cdev0 can be used for passive */
->      |---cdev1:			--->/sys/class/thermal/cooling_device3
->      |---cdev1_trip_point:	2	/* cdev1 can be used for active[0]*/
-> +    |---trip_stats		0 0
-> +				1 8000	/*trip 1 causes 8 degree Celsius drop*/
-> +				2 3000	/*trip 2 causes 3 degree Celsius drop*/
->  
->  |cooling_device0:
->      |---type:			Processor
-> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-> index dd9a574..47e7b6e 100644
-> --- a/drivers/thermal/thermal_sys.c
-> +++ b/drivers/thermal/thermal_sys.c
-> @@ -92,6 +92,64 @@ static void release_idr(struct idr *idr, struct mutex *lock, int id)
->  	if (lock)
->  		mutex_unlock(lock);
->  }
-> +static void update_cooling_stats(struct thermal_zone_device *tz, long cur_temp)
-> +{
-> +	int count, max_index, cur_interval;
-> +	long trip_temp, max_temp = 0, cool_temp;
-> +	static int last_trip_level = -1;
-
-I got confused here. Are you sure using a static variable here is safe? I suppose this function
-is called for any thermal_zone_device, which in turns, may have different amount of trips, and
-different update rate. You may be using last_trip_level as reference for a different tz. Meaning,
-you would be screwing the stat buffers silently.
-
-If that is the case, I suggest you to move this to your stat structure.
-
-> +
-> +	if (cur_temp >= tz->last_temperature)
-> +		return;
-> +
-> +	/* find the trip according to last temperature */
-> +	for (count = 0; count < tz->trips; count++) {
-> +		tz->ops->get_trip_temp(tz, count, &trip_temp);
-> +		if (tz->last_temperature >= trip_temp) {
-> +			if (max_temp < trip_temp) {
-> +				max_temp = trip_temp;
-> +				max_index = count;
-> +			}
-> +		}
-> +	}
-> +
-> +	if (!max_temp) {
-> +		last_trip_level = -1;
-> +		return;
-> +	}
-> +
-> +	cur_interval = tz->stat[max_index].interval_ptr;
-> +	cool_temp = tz->last_temperature - cur_temp;
-> +
-> +	if (last_trip_level != max_index) {
-> +		if (++cur_interval == INTERVAL_HISTORY)
-> +			cur_interval = 0;
-> +		tz->stat[max_index].cool_temp[cur_interval] = cool_temp;
-> +		tz->stat[max_index].interval_ptr = cur_interval;
-> +		last_trip_level = max_index;
-> +	} else {
-> +		tz->stat[max_index].cool_temp[cur_interval] += cool_temp;
-
-Why do you need to sum up here? Wouldn't this break your statistics? (I may completely missed your idea for last_trip_level).
-
-> +	}
-> +}
-> +
-> +static int calculate_cooling_temp_avg(struct thermal_zone_device *tz, int trip,
-> +					int *avg_cool)
-> +{
-> +	int result = 0, count = 0, used_data = 0;
-> +
-> +	if (trip > THERMAL_MAX_TRIPS)
-
-Shouldn't this be checked against tz->trips ? At least you allocate your *stat based on it.
-
-> +		return -EINVAL;
-> +
-> +	*avg_cool = 0;
-> +	for (count = 0; count < INTERVAL_HISTORY; count++) {
-> +		if (tz->stat[trip].cool_temp[count] > 0) {
-> +			*avg_cool += tz->stat[trip].cool_temp[count];
-> +			used_data++;
-> +		}
-> +	}
-> +	if (used_data > 1)
-> +		*avg_cool = (*avg_cool)/used_data;
-
-IIRC, the preferred operator style is (*avg_cool) / used_data
-
-> +	return result;
-
-result is used only to hold a 0 here?
-
-> +}
->  
->  /* sys I/F for thermal zone */
->  
-> @@ -493,6 +551,26 @@ temp_crit_show(struct device *dev, struct device_attribute *attr,
->  	return sprintf(buf, "%ld\n", temperature);
->  }
->  
-> +static ssize_t
-> +thermal_cooling_trip_stats_show(struct device *dev,
-> +				struct device_attribute *attr,
-> +				char *buf)
-> +{
-> +	struct thermal_zone_device *tz = to_thermal_zone(dev);
-> +	int avg_cool = 0, result, trip_index;
-> +	ssize_t len = 0;
-> +
-> +	for (trip_index = 0; trip_index < tz->trips; trip_index++) {
-> +		result  = calculate_cooling_temp_avg(tz,
-> +						trip_index, &avg_cool);
-> +		if (!result)
-> +			len += sprintf(buf + len, "%d %d\n",
-> +					trip_index, avg_cool);
-> +	}
-> +	return len;
-> +}
-> +static DEVICE_ATTR(trip_stats, 0444,
-> +		   thermal_cooling_trip_stats_show, NULL);
->  
->  static struct thermal_hwmon_device *
->  thermal_hwmon_lookup_by_type(const struct thermal_zone_device *tz)
-> @@ -1049,6 +1127,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
->  		goto leave;
->  	}
->  
-> +	update_cooling_stats(tz, temp);
-> +
->  	for (count = 0; count < tz->trips; count++) {
->  		tz->ops->get_trip_type(tz, count, &trip_type);
->  		tz->ops->get_trip_temp(tz, count, &trip_temp);
-> @@ -1181,6 +1261,13 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
->  		return ERR_PTR(result);
->  	}
->  
-> +	/*Allocate variables for cooling stats*/
-> +	tz->stat  = devm_kzalloc(&tz->device,
-> +				sizeof(struct thermal_cooling_stats) * trips,
-> +				GFP_KERNEL);
-
-You never free this memory here.
-
-> +	if (!tz->stat)
-> +		goto unregister;
-> +
->  	/* sys I/F */
->  	if (type) {
->  		result = device_create_file(&tz->device, &dev_attr_type);
-> @@ -1207,6 +1294,12 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
->  			passive = 1;
->  	}
->  
-> +	if (trips > 0) {
-> +		result = device_create_file(&tz->device, &dev_attr_trip_stats);
-> +		if (result)
-> +			goto unregister;
-
-The failing paths after your allocation point must consider freeing the memory you requested.
-
-> +	}
-> +
->  	if (!passive)
->  		result = device_create_file(&tz->device,
->  					    &dev_attr_passive);
-> @@ -1282,6 +1375,9 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
->  	for (count = 0; count < tz->trips; count++)
->  		TRIP_POINT_ATTR_REMOVE(&tz->device, count);
->  
-> +	if (tz->trips > 0)
-> +		device_remove_file(&tz->device, &dev_attr_trip_stats);
-> +
-
-Amit,
-
-I think here it would be a good place to free the memory you allocated for *stat
-
->  	thermal_remove_hwmon_sysfs(tz);
->  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
->  	idr_destroy(&tz->idr);
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 47b4a27..47504c7 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -72,6 +72,13 @@ struct thermal_cooling_device_ops {
->  #define THERMAL_TRIPS_NONE -1
->  #define THERMAL_MAX_TRIPS 12
->  #define THERMAL_NAME_LENGTH 20
-> +#define INTERVAL_HISTORY 12
-> +
-> +struct thermal_cooling_stats {
-> +	int cool_temp[INTERVAL_HISTORY];
-> +	int interval_ptr;
+> +#ifdef CONFIG_CPU_FREQ
+> +struct cpufreq_cooling_device {
+> +	struct thermal_cooling_device *cool_dev;
+> +	struct freq_pctg_table *tab_ptr;
+> +	unsigned int tab_size;
+> +	unsigned int cpufreq_state;
+> +	const struct cpumask *allowed_cpus;
 > +};
 > +
->  struct thermal_cooling_device {
->  	int id;
->  	char type[THERMAL_NAME_LENGTH];
-> @@ -102,6 +109,7 @@ struct thermal_zone_device {
->  	struct list_head cooling_devices;
->  	struct idr idr;
->  	struct mutex lock;	/* protect cooling devices list */
-> +	struct thermal_cooling_stats *stat;
->  	struct list_head node;
->  	struct delayed_work poll_queue;
->  };
+> +static struct cpufreq_cooling_device *cpufreq_device;
+> +
+> +/*Below codes defines functions to be used for cpufreq as cooling device*/
+> +static bool is_cpufreq_valid(int cpu)
+> +{
+> +	struct cpufreq_policy policy;
+> +	if (!cpufreq_get_policy(&policy, cpu))
+> +		return true;
+> +	return false;
+> +}
+> +
+> +static int cpufreq_apply_cooling(int cooling_state)
+> +{
+
+Why do you need cooling_state to be signed? You used it always against
+unsigned values. Besides, the thermal api imposes unsigned long.
+
+> +	int cpuid, this_cpu = smp_processor_id();
+> +
+> +	if (!is_cpufreq_valid(this_cpu))
+> +		return 0;
+> +
+> +	if (cooling_state > cpufreq_device->tab_size)
+> +		return -EINVAL;
+> +
+> +	/*Check if last cooling level is same as current cooling level*/
+> +	if (cpufreq_device->cpufreq_state == cooling_state)
+> +		return 0;
+> +
+> +	cpufreq_device->cpufreq_state = cooling_state;
+> +
+> +	for_each_cpu(cpuid, cpufreq_device->allowed_cpus) {
+> +		if (is_cpufreq_valid(cpuid))
+> +			cpufreq_update_policy(cpuid);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int thermal_cpufreq_notifier(struct notifier_block *nb,
+> +					unsigned long event, void *data)
+> +{
+> +	struct cpufreq_policy *policy = data;
+> +	struct freq_pctg_table *th_table;
+> +	unsigned long max_freq = 0;
+> +	unsigned int cpu = policy->cpu, th_pctg = 0, level;
+> +
+> +	if (event != CPUFREQ_ADJUST)
+> +		return 0;
+> +
+> +	level = cpufreq_device->cpufreq_state;
+> +
+> +	if (level > 0) {
+> +		th_table =
+> +			&(cpufreq_device->tab_ptr[level - 1]);
+> +		th_pctg = th_table->freq_clip_pctg[cpu];
+> +	}
+> +
+> +	max_freq =
+> +		(policy->cpuinfo.max_freq * (100 - th_pctg)) / 100;
+
+
+Might be interesting to extend this a bit. You could have the
+above as default policy setup, but you could also allow people
+to change this behavior. For instance, adding some callback option
+while registering the cooling device (or a notifier), which would
+determine the max_freq for the generic layer. The mechanism to
+deploy max_freq into the system must be generic enough with cpufreq
+APIs, but the decision to which max_freq to use, could be specific.
+Don't you think?
+
+> +
+> +	cpufreq_verify_within_limits(policy, 0, max_freq);
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * cpufreq cooling device callback functions
+> + */
+> +static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+> +				 unsigned long *state)
+> +{
+> +	*state = cpufreq_device->tab_size;
+> +	return 0;
+> +}
+> +
+> +static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
+> +				 unsigned long *state)
+> +{
+> +	*state = cpufreq_device->cpufreq_state;
+> +	return 0;
+> +}
+> +
+> +/*This cooling may be as PASSIVE/STATE_ACTIVE type*/
+> +static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+> +				 unsigned long state)
+> +{
+> +	cpufreq_apply_cooling(state);
+> +	return 0;
+> +}
+> +
+> +/* bind cpufreq callbacks to cpufreq cooling device */
+> +static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+> +	.get_max_state = cpufreq_get_max_state,
+> +	.get_cur_state = cpufreq_get_cur_state,
+> +	.set_cur_state = cpufreq_set_cur_state,
+> +};
+> +
+> +static struct notifier_block thermal_cpufreq_notifier_block = {
+> +	.notifier_call = thermal_cpufreq_notifier,
+> +};
+> +
+> +struct thermal_cooling_device *cpufreq_cooling_register(
+> +	struct freq_pctg_table *tab_ptr, unsigned int tab_size,
+> +	const struct cpumask *mask_val)
+> +{
+> +	struct thermal_cooling_device *cool_dev;
+> +
+> +	if (tab_ptr == NULL || tab_size == 0)
+> +		return ERR_PTR(-EINVAL);
+> +
+> +	cpufreq_device =
+> +		kzalloc(sizeof(struct cpufreq_cooling_device), GFP_KERNEL);
+> +
+> +	if (!cpufreq_device)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	cool_dev = thermal_cooling_device_register("thermal-cpufreq", NULL,
+> +						&cpufreq_cooling_ops);
+> +	if (!cool_dev) {
+> +		kfree(cpufreq_device);
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	cpufreq_device->tab_ptr = tab_ptr;
+> +	cpufreq_device->tab_size = tab_size;
+> +	cpufreq_device->cool_dev = cool_dev;
+> +	cpufreq_device->allowed_cpus = mask_val;
+> +
+> +	cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
+> +						CPUFREQ_POLICY_NOTIFIER);
+> +	return cool_dev;
+> +}
+> +EXPORT_SYMBOL(cpufreq_cooling_register);
+> +
+> +void cpufreq_cooling_unregister(void)
+> +{
+> +	cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
+> +						CPUFREQ_POLICY_NOTIFIER);
+> +	thermal_cooling_device_unregister(cpufreq_device->cool_dev);
+> +	kfree(cpufreq_device);
+> +}
+> +EXPORT_SYMBOL(cpufreq_cooling_unregister);
+> +#else /*!CONFIG_CPU_FREQ*/
+> +struct thermal_cooling_device *cpufreq_cooling_register(
+> +	struct freq_pctg_table *tab_ptr, unsigned int tab_size)
+> +{
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL(cpufreq_cooling_register);
+> +void cpufreq_cooling_unregister(void)
+> +{
+> +	return;
+> +}
+> +EXPORT_SYMBOL(cpufreq_cooling_unregister);
+> +#endif /*CONFIG_CPU_FREQ*/
+> +
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +
+> +struct hotplug_cooling_device {
+> +	struct thermal_cooling_device *cool_dev;
+> +	unsigned int hotplug_state;
+> +	const struct cpumask *allowed_cpus;
+> +};
+> +static struct hotplug_cooling_device *hotplug_device;
+> +
+> +/*
+> + * cpu hotplug cooling device callback functions
+> + */
+> +static int cpuhotplug_get_max_state(struct thermal_cooling_device *cdev,
+> +				 unsigned long *state)
+> +{
+> +	*state = 1;
+> +	return 0;
+> +}
+> +
+> +static int cpuhotplug_get_cur_state(struct thermal_cooling_device *cdev,
+> +				 unsigned long *state)
+> +{
+> +	/*This cooling device may be of type ACTIVE, so state field
+> +	can be 0 or 1*/
+> +	*state = hotplug_device->hotplug_state;
+> +	return 0;
+> +}
+> +
+> +/*This cooling may be as PASSIVE/STATE_ACTIVE type*/
+> +static int cpuhotplug_set_cur_state(struct thermal_cooling_device *cdev,
+> +				 unsigned long state)
+> +{
+> +	int cpuid, this_cpu = smp_processor_id();
+> +
+> +	if (hotplug_device->hotplug_state == state)
+> +		return 0;
+> +
+> +	/*This cooling device may be of type ACTIVE, so state field
+> +	can be 0 or 1*/
+
+/*
+ * Small thing. Check the style for multi line comments.
+ * This is also an example.
+ */
+
+> +	if (state == 1) {
+> +		for_each_cpu(cpuid, hotplug_device->allowed_cpus) {
+> +			if (cpu_online(cpuid) && (cpuid != this_cpu))
+> +				cpu_down(cpuid);
+> +		}
+> +	} else if (state == 0) {
+> +		for_each_cpu(cpuid, hotplug_device->allowed_cpus) {
+> +			if (!cpu_online(cpuid) && (cpuid != this_cpu))
+> +				cpu_up(cpuid);
+> +		}
+> +	} else
+> +		return -EINVAL;
+> +
+> +	hotplug_device->hotplug_state = state;
+> +
+> +	return 0;
+> +}
+> +/* bind hotplug callbacks to cpu hotplug cooling device */
+> +static struct thermal_cooling_device_ops cpuhotplug_cooling_ops = {
+> +	.get_max_state = cpuhotplug_get_max_state,
+> +	.get_cur_state = cpuhotplug_get_cur_state,
+> +	.set_cur_state = cpuhotplug_set_cur_state,
+> +};
+> +
+> +struct thermal_cooling_device *cpuhotplug_cooling_register(
+> +	const struct cpumask *mask_val)
+> +{
+> +	struct thermal_cooling_device *cool_dev;
+> +
+> +	hotplug_device =
+> +		kzalloc(sizeof(struct hotplug_cooling_device), GFP_KERNEL);
+> +
+> +	if (!hotplug_device)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	cool_dev = thermal_cooling_device_register("thermal-cpuhotplug", NULL,
+> +						&cpuhotplug_cooling_ops);
+> +	if (!cool_dev) {
+> +		kfree(hotplug_device);
+> +		return ERR_PTR(-EINVAL);
+> +	}
+> +
+> +	hotplug_device->cool_dev = cool_dev;
+> +	hotplug_device->hotplug_state = 0;
+> +	hotplug_device->allowed_cpus = mask_val;
+> +
+> +	return cool_dev;
+> +}
+> +EXPORT_SYMBOL(cpuhotplug_cooling_register);
+> +
+> +void cpuhotplug_cooling_unregister(void)
+> +{
+> +	thermal_cooling_device_unregister(hotplug_device->cool_dev);
+> +	kfree(hotplug_device);
+> +}
+> +EXPORT_SYMBOL(cpuhotplug_cooling_unregister);
+> +#else /*!CONFIG_HOTPLUG_CPU*/
+> +struct thermal_cooling_device *cpuhotplug_cooling_register(
+> +	const struct cpumask *mask_val)
+> +{
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL(cpuhotplug_cooling_register);
+> +void cpuhotplug_cooling_unregister(void)
+> +{
+> +	return;
+> +}
+> +EXPORT_SYMBOL(cpuhotplug_cooling_unregister);
+> +#endif /*CONFIG_HOTPLUG_CPU*/
+> diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+> new file mode 100644
+> index 0000000..0c57375
+> --- /dev/null
+> +++ b/include/linux/cpu_cooling.h
+> @@ -0,0 +1,45 @@
+> +/*
+> + *  linux/include/linux/cpu_cooling.h
+> + *
+> + *  Copyright (C) 2011	Samsung Electronics Co., Ltd(http://www.samsung.com)
+> + *  Copyright (C) 2011  Amit Daniel <amit.kachhap@linaro.org>
+> + *
+> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; version 2 of the License.
+> + *
+> + *  This program is distributed in the hope that it will be useful, but
+> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + *  General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License along
+> + *  with this program; if not, write to the Free Software Foundation, Inc.,
+> + *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+> + *
+> + * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> + */
+> +
+> +#ifndef __CPU_COOLING_H__
+> +#define __CPU_COOLING_H__
+> +
+> +#include <linux/thermal.h>
+> +
+> +struct freq_pctg_table {
+> +	unsigned int freq_clip_pctg[NR_CPUS];
+> +	unsigned int polling_interval;
+> +};
+> +
+> +extern struct thermal_cooling_device *cpufreq_cooling_register(
+> +	struct freq_pctg_table *tab_ptr, unsigned int tab_size,
+> +	const struct cpumask *mask_val);
+
+I suppose your original idea was to have this function called only once right?
+I'd suggest to add some documentation on this header file to specify this.
+
+Besides, the fact that you receive a cpumask may suggest you could register
+different cooling device for subsets of your system cpus.
+
+In any case, if you call this function more than once, you may end with memory leaks
+and the last call will be the one acting in the system.
+
+
+
+> +
+> +extern void cpufreq_cooling_unregister(void);
+> +
+> +extern struct thermal_cooling_device *cpuhotplug_cooling_register(
+> +	const struct cpumask *mask_val);
+> +
+> +extern void cpuhotplug_cooling_unregister(void);
+> +
+> +#endif /* __CPU_COOLING_H__ */
+
+Another thing, I have the impression that solving the config selection in the
+header file instead of in .c files is cleaner. If you want to solve the config
+selection in .c files, better to do so with Makefiles.
+
+If you keep the ifdefery ( THERMAL vs. HOTPLUG_CPU vs. CPU_FREQ ) here in the
+header file, it is easier to read.
+
 > -- 
 > 1.7.1
 > 
