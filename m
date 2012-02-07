@@ -1,76 +1,64 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: [RFC PATCH] thermal: Add support to report cooling
- statistics achieved by cooling devices
-Date: Mon, 6 Feb 2012 16:18:18 -0800
-Message-ID: <20120207001818.GB30840@kroah.com>
-References: <1326878467-17766-1-git-send-email-amit.kachhap@linaro.org>
-	<20120206165658.GA28687@atrey.karlin.mff.cuni.cz>
-	<20120206170348.GA19749@kroah.com>
-	<CAK44p22FWxiXyBA1zbiuO0cbDScTSMRSV9pFDDMxXsc43ebGpw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@st.com>
+Subject: Re: Query: When will drv->poweroff() called
+Date: Tue, 7 Feb 2012 09:49:52 +0530
+Message-ID: <4F30A668.8010407@st.com>
+References: <4F2F6B40.6070308@st.com> <201202061307.40628.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <CAK44p22FWxiXyBA1zbiuO0cbDScTSMRSV9pFDDMxXsc43ebGpw@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Amit Kachhap <amit.kachhap@linaro.org>
-Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, rob.lee@linaro.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <201202061307.40628.rjw@sisk.pl>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, amit.kucheria@linaro.org
+Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Shiraz HASHIM <shiraz.hashim@st.com>, Armando VISCONTI <armando.visconti@st.com>, Vipin KUMAR <vipin.kumar@st.com>, Deepak SIKRI <deepak.sikri@st.com>, Vipul Kumar SAMAR <vipulkumar.samar@st.com>, Amit VIRDI <Amit.VIRDI@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, Pratyush ANAND <pratyush.anand@st.com>, Mirko GARDI <mirko.gardi@st.com>, Vincenzo FRASCINO <Vincenzo.FRASCINO@st.com>, Bhupesh SHARMA <bhupesh.sharma@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 06, 2012 at 03:16:17PM -0800, Amit Kachhap wrote:
-> On 6 February 2012 09:03, Greg KH <greg@kroah.com> wrote:
-> > On Mon, Feb 06, 2012 at 05:56:58PM +0100, Pavel Machek wrote:
-> >> Hi!
-> >>
-> >> > Add a sysfs node code to report effective cooling of all cooling devices
-> >> > attached to each trip points of a thermal zone. The cooling data reported
-> >> > will be absolute if the higher temperature trip points are arranged first
-> >> > otherwise the cooling stats is the cumulative effect of the earlier
-> >> > invoked cooling handlers.
-> >> >
-> >> > The basic assumption is that cooling devices will bring down the temperature
-> >> > in a symmetric manner and those statistics can be stored back and used for
-> >> > further tuning of the system.
-> >>
-> >> /sys fs should be one-value-per-file, talk to gregkh.
-> >
-> > That's correct.
-> >
-> > Why not use debugfs for this instead?
-> >
-> > thanks,
-> >
-> > greg k-h
+
+Thanks Rafael.
+
+On 2/6/2012 5:37 PM, Rafael J. Wysocki wrote:
+> On Monday, February 06, 2012, Viresh Kumar wrote:
+>> > 
+>> > Hi Guys,
+>> > 
+>> > Sorry for asking this silly question, but i couldn't locate much
+>> > help for it in documentation, so asking it.
+>> > 
+>> > We were testing hibernation for SPEAr13xx SoC family, based on
+>> > ARM Cortex a9.
+>> > 
+>> > I observed that poweroff() callback of individual drivers are not
+>> > getting called at all, while we test hibernate.
+> They should be called in the last phase of hibernation, after the image
+> has been created and the system is going for "power off" (hance the
+> callback name).
 > 
-> Thanks Greg/Pavel for looking into the patch.
-> Basically I checked the places where single sysfs entry is showing
-> more then 1 output. And
-> 1) /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
-> 2) /sys/devices/system/cpu/cpu0/cpufreq/stats/trans_table
-> are the places where the output is more than 1 value.
+>> > I tried to go through the code to see what happened. It looked like
+>> > there should be call to hibernation_set_ops() for platforms that are
+>> > willing to get a call to poweroff() for their drivers.
+> That's correct.  The ->poweroff() callbacks are only executed if
+> hibernation_mode is equal to HIBERNATION_PLATFORM, which is not the
+> default.
+> 
+>> > Otherwise shutdown of the busses gets called, which is a completely
+>> > different path.
+>> > 
+>> > There are many drivers today, that are registering poweroff() from dev_pm_ops
+>> > but are not doing bus specific shutdown stuff.
+>> > 
+>> > Even i tried to look for hibernation_set_ops() in kernel, and only acpi
+>> > code is calling it.
+> That's correct too.
+> 
+>> > I didn't understood how other ARM Sub-Arch's are handling this.
+> Well, they are supposed to call hibernation_set_ops() and set the operations
+> appropriately.  Those operations may be empty routines if they don't need
+> to do anything, but they have to be defined.
 
-Yes, those are two known-bad files, whose files will change soon and
-move to debugfs.
+Hi Amit,
 
-Just because you found 2, instead of the thousands of other properly
-formatted files, does not mean you are allowed to create something like
-this.
+Can you give some input on why none of the ARM platforms are calling
+this routine currently.
 
-> Anyway I can enclose this sysfs inside CONFIG_THERMAL_COOLING_STATS macro.
-
-No, you can not create it at all in sysfs, if you really need such a
-large single file, use debugfs instead, that is what it is there for.
-
-Again, one-value-per-file is the sysfs rule, and has been for a decade
-now, please don't think this is a new thing.
-
-greg k-h
+-- 
+viresh
