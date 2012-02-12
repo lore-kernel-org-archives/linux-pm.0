@@ -1,17 +1,17 @@
 From: mark gross <markgross@thegnar.org>
-Subject: Re: [PATCH 1/2] PM / QoS: unconditionally build the
-	feature
-Date: Sat, 11 Feb 2012 18:06:22 -0800
-Message-ID: <20120212020622.GE18742@gs62>
+Subject: Re: [PATCH 2/2] PM / QoS: unconditionally build the
+ per-device constraints feature
+Date: Sat, 11 Feb 2012 18:07:57 -0800
+Message-ID: <20120212020757.GF18742@gs62>
 References: <1328603646-2714-1-git-send-email-j-pihet@ti.com>
-	<1328603646-2714-2-git-send-email-j-pihet@ti.com>
+	<1328603646-2714-3-git-send-email-j-pihet@ti.com>
 Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1328603646-2714-2-git-send-email-j-pihet@ti.com>
+In-Reply-To: <1328603646-2714-3-git-send-email-j-pihet@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -25,92 +25,94 @@ To: Jean Pihet <jean.pihet@newoldbits.com>
 Cc: Venkatesh Pallipadi <venki@google.com>, Mark Gross <markgross@thegnar.org>, linux-kernel@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-acked-by <markgross@thegnar.org>
+why are these two patches?
 
-On Tue, Feb 07, 2012 at 09:34:05AM +0100, Jean Pihet wrote:
-> The PM QoS feature depends on CONFIG_PM which depends on
-> PM_SLEEP || PM_RUNTIME. This breaks CPU C-states with kernels
+I think you could squash them into one and it would be just fine.
+
+--mark
+
+On Tue, Feb 07, 2012 at 09:34:06AM +0100, Jean Pihet wrote:
+> The per-device PM QoS feature depends on CONFIG_PM which depends
+> on PM_SLEEP || PM_RUNTIME. This breaks CPU C-states with kernels
 > not having these CONFIGs.
 > 
 > This patch allows the feature in all cases.
 > 
-> Reported-by: Venkatesh Pallipadi <venki@google.com>
 > Signed-off-by: Jean Pihet <j-pihet@ti.com>
 > Cc: Rafael J. Wysocki <rjw@sisk.pl>
 > Cc: Mark Gross <markgross@thegnar.org>
 > ---
->  include/linux/pm_qos.h |   29 +----------------------------
->  kernel/power/Makefile  |    3 ++-
->  2 files changed, 3 insertions(+), 29 deletions(-)
+>  drivers/base/power/Makefile |    3 ++-
+>  include/linux/pm_qos.h      |   39 ---------------------------------------
+>  2 files changed, 2 insertions(+), 40 deletions(-)
 > 
+> diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+> index 2e58ebb..312eb65 100644
+> --- a/drivers/base/power/Makefile
+> +++ b/drivers/base/power/Makefile
+> @@ -1,4 +1,5 @@
+> -obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o
+> +obj-y			+= qos.o
+> +obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o
+>  obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
+>  obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+>  obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
 > diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-> index e5bbcba..105be69 100644
+> index 105be69..37b017a 100644
 > --- a/include/linux/pm_qos.h
 > +++ b/include/linux/pm_qos.h
-> @@ -63,7 +63,6 @@ static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
->  	return req->dev != 0;
->  }
->  
-> -#ifdef CONFIG_PM
->  int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
->  			 enum pm_qos_req_action action, int value);
->  void pm_qos_add_request(struct pm_qos_request *req, int pm_qos_class,
-> @@ -78,6 +77,7 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
+> @@ -77,7 +77,6 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier);
 >  int pm_qos_request_active(struct pm_qos_request *req);
 >  s32 pm_qos_read_value(struct pm_qos_constraints *c);
 >  
-> +#ifdef CONFIG_PM
+> -#ifdef CONFIG_PM
 >  s32 __dev_pm_qos_read_value(struct device *dev);
 >  s32 dev_pm_qos_read_value(struct device *dev);
 >  int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
-> @@ -95,33 +95,6 @@ void dev_pm_qos_constraints_destroy(struct device *dev);
+> @@ -94,43 +93,5 @@ void dev_pm_qos_constraints_init(struct device *dev);
+>  void dev_pm_qos_constraints_destroy(struct device *dev);
 >  int dev_pm_qos_add_ancestor_request(struct device *dev,
 >  				    struct dev_pm_qos_request *req, s32 value);
->  #else
-> -static inline int pm_qos_update_target(struct pm_qos_constraints *c,
-> -				       struct plist_node *node,
-> -				       enum pm_qos_req_action action,
-> -				       int value)
+> -#else
+> -static inline s32 __dev_pm_qos_read_value(struct device *dev)
 > -			{ return 0; }
-> -static inline void pm_qos_add_request(struct pm_qos_request *req,
-> -				      int pm_qos_class, s32 value)
-> -			{ return; }
-> -static inline void pm_qos_update_request(struct pm_qos_request *req,
-> -					 s32 new_value)
-> -			{ return; }
-> -static inline void pm_qos_remove_request(struct pm_qos_request *req)
-> -			{ return; }
-> -
-> -static inline int pm_qos_request(int pm_qos_class)
+> -static inline s32 dev_pm_qos_read_value(struct device *dev)
 > -			{ return 0; }
-> -static inline int pm_qos_add_notifier(int pm_qos_class,
-> -				      struct notifier_block *notifier)
+> -static inline int dev_pm_qos_add_request(struct device *dev,
+> -					 struct dev_pm_qos_request *req,
+> -					 s32 value)
 > -			{ return 0; }
-> -static inline int pm_qos_remove_notifier(int pm_qos_class,
-> -					 struct notifier_block *notifier)
+> -static inline int dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+> -					    s32 new_value)
 > -			{ return 0; }
-> -static inline int pm_qos_request_active(struct pm_qos_request *req)
+> -static inline int dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
 > -			{ return 0; }
-> -static inline s32 pm_qos_read_value(struct pm_qos_constraints *c)
+> -static inline int dev_pm_qos_add_notifier(struct device *dev,
+> -					  struct notifier_block *notifier)
 > -			{ return 0; }
-> -
->  static inline s32 __dev_pm_qos_read_value(struct device *dev)
->  			{ return 0; }
->  static inline s32 dev_pm_qos_read_value(struct device *dev)
-> diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-> index 07e0e28..66d808e 100644
-> --- a/kernel/power/Makefile
-> +++ b/kernel/power/Makefile
-> @@ -1,7 +1,8 @@
+> -static inline int dev_pm_qos_remove_notifier(struct device *dev,
+> -					     struct notifier_block *notifier)
+> -			{ return 0; }
+> -static inline int dev_pm_qos_add_global_notifier(
+> -					struct notifier_block *notifier)
+> -			{ return 0; }
+> -static inline int dev_pm_qos_remove_global_notifier(
+> -					struct notifier_block *notifier)
+> -			{ return 0; }
+> -static inline void dev_pm_qos_constraints_init(struct device *dev)
+> -{
+> -	dev->power.power_state = PMSG_ON;
+> -}
+> -static inline void dev_pm_qos_constraints_destroy(struct device *dev)
+> -{
+> -	dev->power.power_state = PMSG_INVALID;
+> -}
+> -static inline int dev_pm_qos_add_ancestor_request(struct device *dev,
+> -				    struct dev_pm_qos_request *req, s32 value)
+> -			{ return 0; }
+> -#endif
 >  
->  ccflags-$(CONFIG_PM_DEBUG)	:= -DDEBUG
->  
-> -obj-$(CONFIG_PM)		+= main.o qos.o
-> +obj-y				+= qos.o
-> +obj-$(CONFIG_PM)		+= main.o
->  obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= console.o
->  obj-$(CONFIG_FREEZER)		+= process.o
->  obj-$(CONFIG_SUSPEND)		+= suspend.o
+>  #endif
 > -- 
 > 1.7.5.4
 > 
