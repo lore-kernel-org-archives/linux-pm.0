@@ -1,15 +1,15 @@
-From: Sameer Nanda <snanda@chromium.org>
+From: Francois Romieu <romieu@fr.zoreil.com>
 Subject: Re: [PATCH 1/2] r8169: Enable WOL from Magic Packet by
 	default
-Date: Tue, 14 Feb 2012 10:38:24 -0800
-Message-ID: <CANMivWa=WRh=5EeVG7_59s8JyXZGmWrch=fsg8KRmm5QAu3n3g@mail.gmail.com>
+Date: Wed, 15 Feb 2012 01:13:42 +0100
+Message-ID: <20120215001342.GA11453@electric-eye.fr.zoreil.com>
 References: <1329244079-27842-1-git-send-email-snanda@chromium.org>
-	<CANMivWZ9OsEVpqUHCG=GYz82rv6f31Ppkh_-f7+Uf_BKU4rwgA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CANMivWZ9OsEVpqUHCG=GYz82rv6f31Ppkh_-f7+Uf_BKU4rwgA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1329244079-27842-1-git-send-email-snanda@chromium.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,43 +19,20 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: romieu@fr.zoreil.com, "Rafael J. Wysocki" <rjw@sisk.pl>, hayeswang@realtek.com
-Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, Sameer Nanda <snanda@chromium.org>
+To: Sameer Nanda <snanda@chromium.org>
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, hayeswang@realtek.com
 List-Id: linux-pm@vger.kernel.org
 
-Rml4ZWQgUmFmYWVsJ3MgZW1haWwgYWRkcmVzcy4gwqBTb3JyeSBhYm91dCB0aGUgZHVwZSBlbWFp
-bHMuCgpPbiBUdWUsIEZlYiAxNCwgMjAxMiBhdCAxMDozMyBBTSwgU2FtZWVyIE5hbmRhIDxzbmFu
-ZGFAY2hyb21pdW0ub3JnPiB3cm90ZToKPiBGaXhlZCBGcmFuY29pcyBSb21pZXUgZW1haWwgYWRk
-cmVzcy4KPgo+IE9uIFR1ZSwgRmViIDE0LCAyMDEyIGF0IDEwOjI3IEFNLCBTYW1lZXIgTmFuZGEg
-PHNuYW5kYUBjaHJvbWl1bS5vcmc+IHdyb3RlOgo+Pgo+PiBTZXQgdGhlIFdPTCBjb25maWcgcmVn
-aXN0ZXJzIHRvIG9ubHkgZW5hYmxlIFdPTCBmcm9tIG1hZ2ljIHBhY2tldCBieQo+PiBkZWZhdWx0
-LiBXaXRob3V0IHRoaXMgY2hhbmdlIGluIHBsYWNlLCB0aGUgV09MIGNvbmZpZyByZWdpc3Rlcgo+
-PiBzZXR0aW5ncyBvbiB3YXJtIHJlYm9vdCBjb21lIHVwIGluIGFuIGluY29uc2lzdGVudCBzdGF0
-ZSBzaW5jZSB0aGVzZQo+PiByZWdpc3RlcnMgZG9uJ3QgZ2V0IHJlc2V0IG9uIGEgd2FybSByZWJv
-b3QuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IFNhbWVlciBOYW5kYSA8c25hbmRhQGNocm9taXVtLm9y
-Zz4KPj4gLS0tCj4+IMKgZHJpdmVycy9uZXQvZXRoZXJuZXQvcmVhbHRlay9yODE2OS5jIHwgwqAg
-MTEgKysrKysrLS0tLS0KPj4gwqAxIGZpbGVzIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgNSBk
-ZWxldGlvbnMoLSkKPj4KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L3JlYWx0
-ZWsvcjgxNjkuYyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L3JlYWx0ZWsvcjgxNjkuYwo+PiBpbmRl
-eCA3YTBjODAwLi5hNjkyMWI3IDEwMDY0NAo+PiAtLS0gYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9y
-ZWFsdGVrL3I4MTY5LmMKPj4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvcmVhbHRlay9yODE2
-OS5jCj4+IEBAIC00MDczLDEyICs0MDczLDEzIEBAIHJ0bDgxNjlfaW5pdF9vbmUoc3RydWN0IHBj
-aV9kZXYgKnBkZXYsIGNvbnN0IHN0cnVjdCBwY2lfZGV2aWNlX2lkICplbnQpCj4+IMKgIMKgIMKg
-IMKgdHAtPnR4ZF92ZXJzaW9uID0gcnRsX2NoaXBfaW5mb3NbY2hpcHNldF0udHhkX3ZlcnNpb247
-Cj4+Cj4+IMKgIMKgIMKgIMKgUlRMX1c4KENmZzkzNDYsIENmZzkzNDZfVW5sb2NrKTsKPj4gKwo+
-PiArIMKgIMKgIMKgIC8qIEVuYWJsZSBXT0wgZnJvbSBNYWdpYyBQYWNrZXQgYnkgZGVmYXVsdCAq
-Lwo+PiDCoCDCoCDCoCDCoFJUTF9XOChDb25maWcxLCBSVExfUjgoQ29uZmlnMSkgfCBQTUVuYWJs
-ZSk7Cj4+IC0gwqAgwqAgwqAgUlRMX1c4KENvbmZpZzUsIFJUTF9SOChDb25maWc1KSAmIFBNRVN0
-YXR1cyk7Cj4+IC0gwqAgwqAgwqAgaWYgKChSVExfUjgoQ29uZmlnMykgJiAoTGlua1VwIHwgTWFn
-aWNQYWNrZXQpKSAhPSAwKQo+PiAtIMKgIMKgIMKgIMKgIMKgIMKgIMKgIHRwLT5mZWF0dXJlcyB8
-PSBSVExfRkVBVFVSRV9XT0w7Cj4+IC0gwqAgwqAgwqAgaWYgKChSVExfUjgoQ29uZmlnNSkgJiAo
-VVdGIHwgQldGIHwgTVdGKSkgIT0gMCkKPj4gLSDCoCDCoCDCoCDCoCDCoCDCoCDCoCB0cC0+ZmVh
-dHVyZXMgfD0gUlRMX0ZFQVRVUkVfV09MOwo+PiArIMKgIMKgIMKgIFJUTF9XOChDb25maWczLCBN
-YWdpY1BhY2tldCk7Cj4+ICsgwqAgwqAgwqAgUlRMX1c4KENvbmZpZzUsIFBNRVN0YXR1cyk7Cj4+
-ICsgwqAgwqAgwqAgdHAtPmZlYXR1cmVzIHw9IFJUTF9GRUFUVVJFX1dPTDsKPj4gKwo+PiDCoCDC
-oCDCoCDCoHRwLT5mZWF0dXJlcyB8PSBydGxfdHJ5X21zaSh0cCwgY2ZnKTsKPj4gwqAgwqAgwqAg
-wqBSVExfVzgoQ2ZnOTM0NiwgQ2ZnOTM0Nl9Mb2NrKTsKPj4KPj4gLS0KPj4gMS43LjcuMwo+Pgo+
-Cj4KPgo+IC0tCj4gU2FtZWVyCgoKCi0tIApTYW1lZXIKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxp
-c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXBt
+Sameer Nanda <snanda@chromium.org> :
+> Set the WOL config registers to only enable WOL from magic packet by
+> default. Without this change in place, the WOL config register
+> settings on warm reboot come up in an inconsistent state since these
+> registers don't get reset on a warm reboot.
+
+I am not completely convinced, especially as the change of behavior
+could be noticed.
+
+Can you elaborate why the previous WoL settings should be ignored ?
+
+-- 
+Ueimor
