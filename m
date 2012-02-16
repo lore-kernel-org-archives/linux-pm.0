@@ -1,82 +1,58 @@
-From: viresh kumar <viresh.linux@gmail.com>
-Subject: Re: Query: When will drv->poweroff() called
-Date: Thu, 16 Feb 2012 07:16:11 -0800
-Message-ID: <CAOh2x=n42kU+9Yvz2-KFxAm2OFvoc427oibSh4Y7bkQxWRdy5w@mail.gmail.com>
-References: <4F2F6B40.6070308@st.com>
-	<201202061307.40628.rjw@sisk.pl>
-	<4F30A668.8010407@st.com>
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Corrupted files after suspend to disk
+Date: Thu, 16 Feb 2012 11:30:31 -0500
+Message-ID: <20120216163030.GA32651@redhat.com>
+References: <AANLkTinRC1hXvaXDVV5pOA4YyCdXwAjziZsDzm=LuHqK@mail.gmail.com>
+	<AANLkTinewk=mJZifVxEJkCtKfNauOjHnLAqwbGn139C=@mail.gmail.com>
+	<AANLkTikui_HQ5JMcMJUqMr9WLyTRNzF-z4G7wAUNPOFy@mail.gmail.com>
+	<201103242330.14416.rjw@sisk.pl>
+	<CAFLxGvzzHDRma_Y_XEpOD+fY+vonbkoR1mvQp4Vb4c3M6fTsPA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4F30A668.8010407@st.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: amit.kucheria@linaro.org, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
-Cc: Viresh Kumar <viresh.kumar@st.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "len.brown@intel.com" <len.brown@intel.com>, Vipul Kumar SAMAR <vipulkumar.samar@st.com>, Bhupesh SHARMA <bhupesh.sharma@st.com>, Pratyush ANAND <pratyush.anand@st.com>, Armando VISCONTI <armando.visconti@st.com>, Mirko GARDI <mirko.gardi@st.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vipin KUMAR <vipin.kumar@st.com>, Shiraz HASHIM <shiraz.hashim@st.com>, Amit VIRDI <Amit.VIRDI@st.com>, Rajeev KUMAR <rajeev-dlh.kumar@st.com>, "pavel@ucw.cz" <pavel@ucw.cz>, Deepak SIKRI <deepak.sikri@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Vincenzo FRASCINO <Vincenzo.FRASCINO@st.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <CAFLxGvzzHDRma_Y_XEpOD+fY+vonbkoR1mvQp4Vb4c3M6fTsPA@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: richard -rw- weinberger <richard.weinberger@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, esandeen@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-[Sorry for mailing again, earlier mail bounced on linux-pm list,
-as i wasn't subscribed to it]
+On Thu, Feb 16, 2012 at 11:52:27AM +0100, richard -rw- weinberger wrote:
+ 
+ > >> >> Of course, please test the above separately. :-)
+ > >> >
+ > >> > Ok, I'll test this when I'm at home.
+ > >> >
+ > >> > BTW: dropping the caches helps, when some files seem corrupted.
+ > >> > Today /usr/bin/okular was broken.
+ > >> > After setting vm.drop_caches=1 it worked again.
+ > >>
+ > >> On Linux 2.6.38 I'm unable to reproduce the issue.
+ > >> Only 2.6.37 seems to be affected.
+ > >> So, I'm moving over to 2.6.38. :)
+ > >
+ > Bad news:
+ > I saw the issue on 3.x too but thought it's because my IdeaPad s10 is crap.
+ > Now with my shiny new Lenovo x121e I have the same issue! :-(
+ > 
+ > OpenSUSE 12.1, kernel 3.2.7.
+ > After a few suspend2disk iterations random files are corrupted.
+ > But only cached files. A reboot solves the problem.
+ 
+FWIW, we've been seeing a number of hard to diagnose failures
+with suspend to disk for the last few releases in Fedora.
+Eric Sandeen has been chasing https://bugzilla.redhat.com/show_bug.cgi?id=744275
+for a while, but there's no smoking gun that really explains what's
+getting into these states. Further complicating things, is that it
+doesn't seem to be 100% reproducable.
 
-Hi Amit,
-
-Can you please clear my doubt regarding calling of
-hibernation_set_ops() for ARM SoC's?
-
---
-viresh
-
-On Mon, Feb 6, 2012 at 8:19 PM, Viresh Kumar <viresh.kumar@st.com> wrot=
-e:
-> On 2/6/2012 5:37 PM, Rafael J. Wysocki wrote:
->> On Monday, February 06, 2012, Viresh Kumar wrote:
->>> >
->>> > Hi Guys,
->>> >
->>> > Sorry for asking this silly question, but i couldn't locate much
->>> > help for it in documentation, so asking it.
->>> >
->>> > We were testing hibernation for SPEAr13xx SoC family, based on
->>> > ARM Cortex a9.
->>> >
->>> > I observed that poweroff() callback of individual drivers are not
->>> > getting called at all, while we test hibernate.
->> They should be called in the last phase of hibernation, after the im=
-age
->> has been created and the system is going for "power off" (hance the
->> callback name).
->>
->>> > I tried to go through the code to see what happened. It looked li=
-ke
->>> > there should be call to hibernation_set_ops() for platforms that =
-are
->>> > willing to get a call to poweroff() for their drivers.
->> That's correct. =C2=A0The ->poweroff() callbacks are only executed i=
-f
->> hibernation_mode is equal to HIBERNATION_PLATFORM, which is not the
->> default.
->>
->>> > Otherwise shutdown of the busses gets called, which is a complete=
-ly
->>> > different path.
->>> >
->>> > There are many drivers today, that are registering poweroff() fro=
-m dev_pm_ops
->>> > but are not doing bus specific shutdown stuff.
->>> >
->>> > Even i tried to look for hibernation_set_ops() in kernel, and onl=
-y acpi
->>> > code is calling it.
->> That's correct too.
->>
->>> > I didn't understood how other ARM Sub-Arch's are handling this.
->> Well, they are supposed to call hibernation_set_ops() and set the op=
-erations
->> appropriately. =C2=A0Those operations may be empty routines if they =
-don't need
->> to do anything, but they have to be defined.
->
-> Hi Amit,
->
-> Can you give some input on why none of the ARM platforms are calling
-> this routine currently.
+	Dave
