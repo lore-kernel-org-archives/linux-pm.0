@@ -1,58 +1,57 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: Corrupted files after suspend to disk
-Date: Thu, 16 Feb 2012 11:30:31 -0500
-Message-ID: <20120216163030.GA32651@redhat.com>
-References: <AANLkTinRC1hXvaXDVV5pOA4YyCdXwAjziZsDzm=LuHqK@mail.gmail.com>
-	<AANLkTinewk=mJZifVxEJkCtKfNauOjHnLAqwbGn139C=@mail.gmail.com>
-	<AANLkTikui_HQ5JMcMJUqMr9WLyTRNzF-z4G7wAUNPOFy@mail.gmail.com>
-	<201103242330.14416.rjw@sisk.pl>
-	<CAFLxGvzzHDRma_Y_XEpOD+fY+vonbkoR1mvQp4Vb4c3M6fTsPA@mail.gmail.com>
+From: Sameer Nanda <snanda@chromium.org>
+Subject: Re: [PATCH 1/2] r8169: Enable WOL from Magic Packet by default
+Date: Thu, 16 Feb 2012 12:47:00 -0800
+Message-ID: <CANMivWbccWrz=bVhKA8=yDj+RVURiUNFZZpQTix0oD6Ld7+4Gw@mail.gmail.com>
+References: <1329244079-27842-1-git-send-email-snanda@chromium.org>
+ <20120215001342.GA11453@electric-eye.fr.zoreil.com> <CANMivWax5jGNJLkjZWi2F5iaM+bnK0Ti1qZzQx4CGgkzeQqt7Q@mail.gmail.com>
+ <20120214.223746.419009242484406948.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <CAFLxGvzzHDRma_Y_XEpOD+fY+vonbkoR1mvQp4Vb4c3M6fTsPA@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: richard -rw- weinberger <richard.weinberger@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, esandeen@redhat.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <20120214.223746.419009242484406948.davem@davemloft.net>
+Sender: netdev-owner@vger.kernel.org
+To: David Miller <davem@davemloft.net>
+Cc: romieu@fr.zoreil.com, rjw@sisk.pl, hayeswang@realtek.com, netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 16, 2012 at 11:52:27AM +0100, richard -rw- weinberger wrote:
- 
- > >> >> Of course, please test the above separately. :-)
- > >> >
- > >> > Ok, I'll test this when I'm at home.
- > >> >
- > >> > BTW: dropping the caches helps, when some files seem corrupted.
- > >> > Today /usr/bin/okular was broken.
- > >> > After setting vm.drop_caches=1 it worked again.
- > >>
- > >> On Linux 2.6.38 I'm unable to reproduce the issue.
- > >> Only 2.6.37 seems to be affected.
- > >> So, I'm moving over to 2.6.38. :)
- > >
- > Bad news:
- > I saw the issue on 3.x too but thought it's because my IdeaPad s10 is crap.
- > Now with my shiny new Lenovo x121e I have the same issue! :-(
- > 
- > OpenSUSE 12.1, kernel 3.2.7.
- > After a few suspend2disk iterations random files are corrupted.
- > But only cached files. A reboot solves the problem.
- 
-FWIW, we've been seeing a number of hard to diagnose failures
-with suspend to disk for the last few releases in Fedora.
-Eric Sandeen has been chasing https://bugzilla.redhat.com/show_bug.cgi?id=744275
-for a while, but there's no smoking gun that really explains what's
-getting into these states. Further complicating things, is that it
-doesn't seem to be 100% reproducable.
+On Tue, Feb 14, 2012 at 7:37 PM, David Miller <davem@davemloft.net> wro=
+te:
+> From: Sameer Nanda <snanda@chromium.org>
+> Date: Tue, 14 Feb 2012 17:00:04 -0800
+>
+>> On Tue, Feb 14, 2012 at 4:13 PM, Francois Romieu <romieu@fr.zoreil.c=
+om> wrote:
+>>> Sameer Nanda <snanda@chromium.org> :
+>>>> Set the WOL config registers to only enable WOL from magic packet =
+by
+>>>> default. Without this change in place, the WOL config register
+>>>> settings on warm reboot come up in an inconsistent state since the=
+se
+>>>> registers don't get reset on a warm reboot.
+>>>
+>>> I am not completely convinced, especially as the change of behavior
+>>> could be noticed.
+>>
+>> Agreed that this change could be noticed. =C2=A0Maybe a module param=
+eter
+>> might be a better way to handle this?
+>
+> Please no random module parameters, something ethtool based is
+> what you should shoot for.
 
-	Dave
+With the existing code, WOL from PHY, unicast, multicast and broadcast
+packets may get accidentally enabled.  The probability of seeing such
+packets/events in the wild is quite high and this can cause unintended
+wakes from S3 or reboots.
+
+The probability of seeing matching MagicPackets in the wild is
+vanishingly small.  Therefore, setting MagicPacket as the only default
+WOL mechanism seems like the safer option.
+
+Since ethtool already supports setting of WOL options from userland, I
+guess we don't need a new module parameter as the user can set WOL
+options according to his own desires.
+
+--=20
+Sameer
