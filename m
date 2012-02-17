@@ -1,16 +1,19 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / QoS: unconditionally build the feature
-Date: Fri, 17 Feb 2012 20:27:24 +0100
-Message-ID: <20120217192724.GC2707@elf.ucw.cz>
-References: <1328603646-2714-2-git-send-email-j-pihet@ti.com>
-	<1329141059-16554-1-git-send-email-j-pihet@ti.com>
-	<201202131641.10535.rjw@sisk.pl>
+Subject: Re: hiberante hangs TCP Re: [EXAMPLE CODE] Parasite
+ thread injection and TCP connection hijacking
+Date: Fri, 17 Feb 2012 20:28:59 +0100
+Message-ID: <20120217192859.GG2707@elf.ucw.cz>
+References: <20110806121247.GC23937@htj.dyndns.org>
+	<20111030044821.GA23741@spacedout.fries.net>
+	<20111030201618.GA7696@google.com>
+	<CAJ0PZbSRX6Rqn5NnnMkVGrPovtSuc2NWasysOYnjr3j9rON1VQ@mail.gmail.com>
+	<20111102151039.GA12543@dhcp-172-17-108-109.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <201202131641.10535.rjw@sisk.pl>
+In-Reply-To: <20111102151039.GA12543@dhcp-172-17-108-109.mtv.corp.google.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,29 +23,46 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Venkatesh Pallipadi <venki@google.com>, Mark Gross <markgross@thegnar.org>, linux-kernel@vger.kernel.org, Linux PM mailing list <linux-pm@lists.linux-foundation.org>, Jean Pihet <j-pihet@ti.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, David Fries <david@fries.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2012-02-13 16:41:10, Rafael J. Wysocki wrote:
-> On Monday, February 13, 2012, Jean Pihet wrote:
-> > The PM QoS feature depends on CONFIG_PM which depends on
-> > PM_SLEEP || PM_RUNTIME. This breaks CPU C-states with kernels
-> > not having these CONFIGs.
-> > 
-> > This patch allows the feature in all cases.
-> > 
-> > Signed-off-by: Jean Pihet <j-pihet@ti.com>
-> > Reported-by: Venkatesh Pallipadi <venki@google.com>
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Cc: Mark Gross <markgross@thegnar.org>
-> 
-> Applied, but I modified the changelog (please have a look at the
-> linux-pm/pm-qos branch for details).
+On Wed 2011-11-02 08:10:39, Tejun Heo wrote:
+> Hello,
+> =
 
-Is it good idea? For servers, power management / QoS is not
-neccessary... What about fixing kconfig, instead?
-									Pavel
--- 
+> On Wed, Nov 02, 2011 at 06:44:31PM +0900, MyungJoo Ham wrote:
+> > > Hmmm... sounds like taking down network interfaces before starting
+> > > hibernation sequence should be enough, which shouldn't be too
+> > > difficult to implement from userland. =A0Rafael, what do you think?
+> > >
+> > > Thanks.
+> > =
+
+> > Um... it seems that the "thaw" callbacks of network interfaces or TCP
+> > should do something on this.
+> > =
+
+> > Probably, the "thaw" callbacks should make sure that the TCP
+> > connections are closed?
+> =
+
+> I don't think it's a good idea to diddle with TCP connections from
+> that layer.  From what I understand, it seem all we need is plugging
+> tx/rx while preparing for hibernation.  That shouldn't be too
+> difficult.
+
+Yes, that should be done. =
+
+
+If someone has uswsusp setup where they talk over the network, it
+might break them, but hopefully noone is doing that.
+
+Also hopefully noone does hibernation on /dev/nbd.
+
+      	    							Pavel
+-- =
+
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
