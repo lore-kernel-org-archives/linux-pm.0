@@ -1,18 +1,16 @@
-From: richard -rw- weinberger <richard.weinberger@gmail.com>
-Subject: Re: Corrupted files after suspend to disk
-Date: Fri, 17 Feb 2012 00:37:17 +0100
-Message-ID: <CAFLxGvz4MUQrLUs=CWVbWspKQoBC7qiLTUyWQMKzgeX8r3L8VA@mail.gmail.com>
-References: <AANLkTinRC1hXvaXDVV5pOA4YyCdXwAjziZsDzm=LuHqK@mail.gmail.com>
-	<AANLkTinewk=mJZifVxEJkCtKfNauOjHnLAqwbGn139C=@mail.gmail.com>
-	<AANLkTikui_HQ5JMcMJUqMr9WLyTRNzF-z4G7wAUNPOFy@mail.gmail.com>
-	<201103242330.14416.rjw@sisk.pl>
-	<CAFLxGvzzHDRma_Y_XEpOD+fY+vonbkoR1mvQp4Vb4c3M6fTsPA@mail.gmail.com>
-	<20120216163030.GA32651@redhat.com> <4F3D90E1.6010001@redhat.com>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: [PATCH 0/2] RFC: CPU frequency max as PM QoS param
+Date: Thu, 16 Feb 2012 19:04:53 -0800
+Message-ID: <20120217030453.GA3266@gs62>
+References: <1326976559-4009-1-git-send-email-amiettinen@nvidia.com>
+	<87d39fk2n3.fsf@ti.com>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4F3D90E1.6010001@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <87d39fk2n3.fsf@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -22,45 +20,99 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: linux-pm@lists.linux-foundation.org, LKML <linux-kernel@vger.kernel.org>, esandeen@redhat.com
+To: Kevin Hilman <khilman@ti.com>
+Cc: len.brown@intel.com, markgross@thegnar.org, cpufreq@vger.kernel.org, Antti P Miettinen <amiettinen@nvidia.com>, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 17, 2012 at 12:27 AM, Eric Sandeen <sandeen@redhat.com> wrote:
-> On 2/16/12 8:30 AM, Dave Jones wrote:
->> On Thu, Feb 16, 2012 at 11:52:27AM +0100, richard -rw- weinberger wrote:
->>
->> =A0> >> >> Of course, please test the above separately. :-)
->> =A0> >> >
->> =A0> >> > Ok, I'll test this when I'm at home.
->> =A0> >> >
->> =A0> >> > BTW: dropping the caches helps, when some files seem corrupted.
->> =A0> >> > Today /usr/bin/okular was broken.
->> =A0> >> > After setting vm.drop_caches=3D1 it worked again.
->> =A0> >>
->> =A0> >> On Linux 2.6.38 I'm unable to reproduce the issue.
->> =A0> >> Only 2.6.37 seems to be affected.
->> =A0> >> So, I'm moving over to 2.6.38. :)
->> =A0> >
->> =A0> Bad news:
->> =A0> I saw the issue on 3.x too but thought it's because my IdeaPad s10 =
-is crap.
->> =A0> Now with my shiny new Lenovo x121e I have the same issue! :-(
->> =A0>
->> =A0> OpenSUSE 12.1, kernel 3.2.7.
->> =A0> After a few suspend2disk iterations random files are corrupted.
->> =A0> But only cached files. A reboot solves the problem.
+On Wed, Feb 15, 2012 at 05:06:40PM -0800, Kevin Hilman wrote:
+> Hello,
+> 
+> Antti P Miettinen <amiettinen@nvidia.com> writes:
+> 
+> > This is a continuation to "RFC: CPU frequency min as PM QoS param"
+> > patchset. This patchset adds CPU frequency maximum as a PM QoS
+> > parameter and modifies CPU frequncy core to enforce the limit. CPU
+> > frequency ceiling can be used to improve the energy efficiency of
+> > workloads that would cause the cpufreq governors to enforce an
+> > unnecessarily high operating point. In other words, CPU frequency
+> > maximum can act as an energy efficiency level request.
+> >
+> > Tested on Dell E6420 with the ACPI cpufreq driver against Ubuntu
+> > 3.2. Patches are against linux-next, compile tested.
+> 
+> I know there were some earlier discussions about the usefulness of a max
+> frequency QoS parameter, so I wanted to throw in a reason to include max
+> as well as min frequency parameters.
+> 
+> IMO, having a max frequency QoS parameter would be very useful from a
+> thermal perspective.  
+> 
+> There are some ongoing projects in the PM working group at Linaro that
+> are exploring plugins to the thermal framework that implment a "cooling
+> device" by capping CPU frequency.  Having a QoS parameter do do this
+> would be the logical interface.
+> 
+> I also agree with some earlier requests that these should probably be
+> per-CPU instead of global.  That would make it simple to cap frequency
+> of one cluster while leaving another alone.
 >
-> Just to be clear - you see _data_ corruption in files, but only
-> until a reboot, and after that they are ok? =A0Ok, reading above
-> about using drop_caches that sounds like the case.
+Hi,
 
-Yes.
-A reboot always solved the data corruption.
-drop_caches solved it in 99% of all cases.
+My problem is that overloading pm_qos with a performance limits is a
+hack that will likely have problems coexisting with the core notion of
+throttling limiting that is pm_qos as thermal limiting enabling expands
+its scope.
 
-On-disk data was never corrupted.
+Sure limiting performance governors seem to need the same notifications
+and infrastructure as pm_qos but I worry that as its really doing the
+opposite to qos I really don't see the logic of having it in pmqos.
 
--- =
+Lets consider thermal throttling a bit maybe I can convince you to that
+maybe we need some new mechanism for energy and thermal limiting.  (BTW
+I agree something is needed for this).
 
-Thanks,
-//richard
+For thermals the culprit's are:
+cpu -- cpufreq governor currently not-thermal aware
+Display -- brightness not thermal aware
+GFX -- graphics driver not thermal aware
+battery charging -- somewhat thermal aware but needs more than just bat
+temp to count.
+Flash -- led flash light  not thermal aware.
+
+Other devices may have other heat sources of course.
+
+Wouldn't it be better to have thermal awareness as part of the driver
+model and then have a pm_qos like thing to do out of band signaling of
+devices and user mode when a temperature is hit?
+
+Putting it a qos class for limiting the high end of the performance that
+a governor really doesn't go far enough IMO.  It looks like a hack just
+for cpufreq that already has sysfs interfaces for limiting the top
+frequency.
+
+ok, maybe my argument is not so strong. but as long as its named pm QOS
+and not pm-constraints I don't like the idea of having the max
+parameter in the pm_qos code.  
+
+It feature creeps the infrastructure and violates the spirit of what
+pm_qos was to solve.  i.e. constrain the lower power states not upper
+states.
+
+But, for thermal / energy management I think we need more notification
+of thermal or energy events than what is needed for the pm_qos problem.
+
+For pm_qos its mostly a static problem that is tuned in the lab.  Know
+the workload needs and block too much throttling.  For thermal / energy
+management you isn't any tuning you can do.  You don't apply the
+constraint until it gets too hot.  You don't know if or when you'll get
+too hot.
+
+Note: its more than just temperature that we need to worry about.  Peak
+current is also a related issue (that is much more transient)
+
+Shouldn't we do something more forward looking than hack pm_qos with
+max-freq so that cpufreq can check a redundant parameter to what it
+already has exported through sysfs?
+
+
+--mark
