@@ -1,10 +1,7 @@
-From: Antti P Miettinen <amiettinen@nvidia.com>
-Subject: Re: [PATCH 0/2] RFC: CPU frequency max as PM QoS param
-Date: Mon, 20 Feb 2012 12:00:41 +0200
-Message-ID: <87pqd94yeu.fsf@amiettinen-lnx.nvidia.com>
-References: <1326976559-4009-1-git-send-email-amiettinen@nvidia.com>
-	<87d39fk2n3.fsf@ti.com> <20120217030453.GA3266@gs62>
-	<CAGF5oy9LC4Ve8u6UqG3EbGkWmWYVMthHatJdaRR_ZMO4UQh3CA@mail.gmail.com>
+From: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+Subject: [PATCH 0/4] thermal: Adding generic cpu cooling devices
+Date: Wed, 22 Feb 2012 15:44:06 +0530
+Message-ID: <1329905650-30161-1-git-send-email-amit.kachhap@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,38 +15,59 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-Cc: linux-pm@lists.linux-foundation.org, cpufreq@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org
+Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, rob.lee@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Thanks for the comments. I'd like to comment on maximum CPU frequency,
-sysfs files and per device contraints..
+Changes since RFC:
+ *Changed the cpu cooling registration/unregistration API's to instance based
+ *Changed the STATE_ACTIVE trip type to pass correct instance id
+ *Adding support to restore back the policy->max_freq after doing frequency 
+  clipping.
+ *Moved the trip cooling stats from sysfs node to debugfs node as suggested
+  by Greg KH greg@kroah.com 
+ *Incorporated several review comments from eduardo.valentin@ti.com
 
-Maximum CPU frequency could be useful for thermal. However, it is not a
-complete solution for thermal. Just like minimum CPU frequency is not a
-complete solution for computing throughput (e.g. memory and accelerator
-control are not directly addressed by a CPU frequency
-constraint). Maximum CPU frequency can be also useful for energy
-efficiency even though the constraint is not a complete solution here
-either. I guess latency constraints do not completely solve end-to-end
-latency requirements but the mechanism is useful so it is good to have
-it. I'd argue minimum and maximum frequency are simular in this respect.
+Todo:
+ *Report time spent in each trip point along with the cooling statistics
+ *Add opp library support in cpufreq cooling api's
 
-There are sysfs files for constraining CPU frequency. However, there is
-no arbitration for several applications trying to place constraints. PM
-QoS provides a way to consolidate requests from several applications and
-cleanup upon application crash. I think the existing sysfs files are not
-an appropriate inferface for user space applications.
+Brief Description:
 
-Currently CPU sleep states are blocked globally for latency
-contraints. Finer granularity control would be possible with per CPU
-contraints. However - are there clients that know or want to contrain a
-specific CPU? Same question is applicable also to CPU frequency. Even
-though per CPU control is more flexible, what are the clients that want
-to constrain a specific CPU?
+1) The generic cooling devices code is placed inside driver/thermal/* as 
+placing inside acpi folder will need un-necessary enabling of acpi code.
 
-Another complication for the per device constraints is the user space
-interface. Dynamic minors run out pretty fast if we have per CPU
-parameters and the system has huge number of CPUs. Does anyone have any
-opinions about the user space interface for device PM QoS?
+2) This patchset adds a new trip type THERMAL_TRIP_STATE_ACTIVE which passes
+cooling device instance number and may be helpful for cpufreq cooling devices
+to take the correct cooling action.
 
-	--Antti
+3) This patchset adds generic cpu cooling low level implementation through
+frequency clipping and cpu hotplug. In future, other cpu related cooling
+devices may be added here. An ACPI version of this already exists
+(drivers/acpi/processor_thermal.c). But this will be useful for platforms
+like ARM using the generic thermal interface along with the generic cpu
+cooling devices. The cooling device registration API's return cooling device
+pointers which can be easily binded with the thermal zone trip points.
+
+4)This patchset provides a simple way of reporting cooling achieved in a
+trip type. This will help in fine cooling the cooling devices attached.
+
+Amit Daniel Kachhap (4):
+  thermal: Add a new trip type to use cooling device instance number
+  thermal: Add generic cpufreq cooling implementation
+  thermal: Add generic cpuhotplug cooling implementation
+  thermal: Add support to report cooling statistics achieved by cooling
+    devices
+
+ Documentation/thermal/cpu-cooling-api.txt |   57 ++++
+ Documentation/thermal/sysfs-api.txt       |    4 +-
+ drivers/thermal/Kconfig                   |   11 +
+ drivers/thermal/Makefile                  |    1 +
+ drivers/thermal/cpu_cooling.c             |  484 +++++++++++++++++++++++++++++
+ drivers/thermal/thermal_sys.c             |  165 ++++++++++-
+ include/linux/cpu_cooling.h               |   71 +++++
+ include/linux/thermal.h                   |   14 +
+ 8 files changed, 802 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/thermal/cpu-cooling-api.txt
+ create mode 100644 drivers/thermal/cpu_cooling.c
+ create mode 100644 include/linux/cpu_cooling.h
