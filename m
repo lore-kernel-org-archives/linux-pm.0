@@ -1,8 +1,8 @@
 From: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Subject: [PATCH 3/4] thermal: Add generic cpuhotplug cooling
-	implementation
-Date: Wed, 22 Feb 2012 15:44:09 +0530
-Message-ID: <1329905650-30161-4-git-send-email-amit.kachhap@linaro.org>
+Subject: [PATCH 4/4] thermal: Add support to report cooling
+	statistics achieved by cooling devices
+Date: Wed, 22 Feb 2012 15:44:10 +0530
+Message-ID: <1329905650-30161-5-git-send-email-amit.kachhap@linaro.org>
 References: <1329905650-30161-1-git-send-email-amit.kachhap@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,261 +22,244 @@ To: linux-pm@lists.linux-foundation.org
 Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, rob.lee@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds support for generic cpu thermal cooling low level
-implementations using cpuhotplug based on the thermal level requested
-from user. Different cpu related cooling devices can be registered by the
-user and the binding of these cooling devices to the corresponding
-trip points can be easily done as the registration API's return the
-cooling device pointer. The user of these api's are responsible for
-passing the cpumask.
+Add a debugfs node code to report effective cooling of all cooling devices
+attached to each trip points of a thermal zone. The cooling data reported
+will be absolute if the higher temperature trip points are arranged first
+otherwise the cooling stats is the cumulative effect of the earlier
+invoked cooling handlers.
+
+The basic assumption is that cooling devices will bring down the temperature
+in a symmetric manner and those statistics can be stored back and used for
+further tuning of the system.
+
+e.g.
+cat /sys/kernel/debug/thermal/thermal_zone0/trip_0_cooling
+6000
+Here trip_0 cooling devices produce 6 degree Celsius temperature drop.
 
 Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
 ---
- Documentation/thermal/cpu-cooling-api.txt |   17 +++
- drivers/thermal/cpu_cooling.c             |  174 +++++++++++++++++++++++++++++
- include/linux/cpu_cooling.h               |   17 +++
- 3 files changed, 208 insertions(+), 0 deletions(-)
+ drivers/thermal/thermal_sys.c |  120 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h       |   13 +++++
+ 2 files changed, 133 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/thermal/cpu-cooling-api.txt b/Documentation/thermal/cpu-cooling-api.txt
-index 04de67c..bdaf509 100644
---- a/Documentation/thermal/cpu-cooling-api.txt
-+++ b/Documentation/thermal/cpu-cooling-api.txt
-@@ -38,3 +38,20 @@ the cooling device pointer.
-     This interface function unregisters the "thermal-cpufreq-%x" cooling device.
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index d4c9b20..9784551 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -34,6 +34,7 @@
+ #include <linux/reboot.h>
+ #include <net/netlink.h>
+ #include <net/genetlink.h>
++#include <linux/debugfs.h>
  
-     cdev: Cooling device pointer which has to be unregistered.
-+
-+1.2 cpuhotplug registration api's
-+
-+1.2.1 struct thermal_cooling_device *cpuhotplug_cooling_register(
-+	const struct cpumask *mask_val)
-+
-+    This interface function registers the cpuhotplug cooling device with the name
-+    "cpu-hotplug-%x". This api can support multiple instance of cpuhotplug cooling
-+    devices.
-+
-+    mask_val: all the allowed cpu's which can be hotplugged out.
-+
-+1.1.2 void cpuhotplug_cooling_unregister(struct thermal_cooling_device *cdev)
-+
-+    This interface function unregisters the "thermal-cpuhotplug-%x" cooling device.
-+
-+    cdev: Cooling device pointer which has to be unregistered.
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 298f550..3d2d87f 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -48,6 +48,21 @@ static struct cpufreq_cooling_device *notify_cpufreq;
- static DEFINE_PER_CPU(unsigned int, max_policy_freq);
- #endif /*CONFIG_CPU_FREQ*/
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+struct hotplug_cooling_device {
-+	int id;
-+	struct thermal_cooling_device *cool_dev;
-+	unsigned int hotplug_state;
-+	const struct cpumask *allowed_cpus;
-+	struct list_head node;
-+};
-+
-+static LIST_HEAD(cooling_cpuhotplug_list);
-+static DEFINE_MUTEX(cooling_cpuhotplug_lock);
-+static DEFINE_IDR(cpuhotplug_idr);
-+#endif /*CONFIG_HOTPLUG_CPU*/
-+
-+
- static int get_idr(struct idr *idr, struct mutex *lock, int *id)
- {
- 	int err;
-@@ -308,3 +323,162 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ MODULE_AUTHOR("Zhang Rui");
+ MODULE_DESCRIPTION("Generic thermal management sysfs support");
+@@ -93,6 +94,97 @@ static void release_idr(struct idr *idr, struct mutex *lock, int id)
+ 		mutex_unlock(lock);
  }
- EXPORT_SYMBOL(cpufreq_cooling_unregister);
- #endif /*CONFIG_CPU_FREQ*/
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+/*
-+ * cpu hotplug cooling device callback functions
-+ */
-+static int cpuhotplug_get_max_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
+ 
++static void update_cooling_stats(struct thermal_zone_device *tz, long cur_temp)
 +{
-+	struct hotplug_cooling_device *hotplug_dev = NULL;
++	int count, max_index, cur_interval, used_data = 0;
++	long trip_temp, max_temp = 0, cool_temp;
 +
-+	mutex_lock(&cooling_cpuhotplug_lock);
-+	list_for_each_entry(hotplug_dev, &cooling_cpuhotplug_list, node)
-+		if (hotplug_dev && hotplug_dev->cool_dev == cdev)
-+			break;
++	if (cur_temp >= tz->last_temperature)
++		return;
 +
-+	mutex_unlock(&cooling_cpuhotplug_lock);
-+	if (!hotplug_dev || hotplug_dev->cool_dev != cdev)
-+		return -EINVAL;
-+
-+	*state = 1;
-+	return 0;
-+}
-+
-+static int cpuhotplug_get_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct hotplug_cooling_device *hotplug_dev = NULL;
-+
-+	mutex_lock(&cooling_cpuhotplug_lock);
-+	list_for_each_entry(hotplug_dev, &cooling_cpuhotplug_list, node)
-+		if (hotplug_dev && hotplug_dev->cool_dev == cdev)
-+			break;
-+
-+	mutex_unlock(&cooling_cpuhotplug_lock);
-+	if (!hotplug_dev || hotplug_dev->cool_dev != cdev)
-+		return -EINVAL;
-+
-+	/*
-+	* This cooling device may be of type ACTIVE, so state field can
-+	* be 0 or 1
-+	*/
-+	*state = hotplug_dev->hotplug_state;
-+	return 0;
-+}
-+
-+/*This cooling may be as ACTIVE type*/
-+static int cpuhotplug_set_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long state)
-+{
-+	int cpuid, this_cpu = smp_processor_id();
-+	struct hotplug_cooling_device *hotplug_dev = NULL;
-+
-+	mutex_lock(&cooling_cpuhotplug_lock);
-+	list_for_each_entry(hotplug_dev, &cooling_cpuhotplug_list, node)
-+		if (hotplug_dev && hotplug_dev->cool_dev == cdev)
-+			break;
-+
-+	mutex_unlock(&cooling_cpuhotplug_lock);
-+	if (!hotplug_dev || hotplug_dev->cool_dev != cdev)
-+		return -EINVAL;
-+
-+	if (hotplug_dev->hotplug_state == state)
-+		return 0;
-+
-+	/*
-+	* This cooling device may be of type ACTIVE, so state field can
-+	* be 0 or 1
-+	*/
-+	if (state == 1) {
-+		for_each_cpu(cpuid, hotplug_dev->allowed_cpus) {
-+			if (cpu_online(cpuid) && (cpuid != this_cpu))
-+				cpu_down(cpuid);
++	/* find the trip according to last temperature */
++	for (count = 0; count < tz->trips; count++) {
++		tz->ops->get_trip_temp(tz, count, &trip_temp);
++		if (tz->last_temperature >= trip_temp) {
++			if (max_temp < trip_temp) {
++				max_temp = trip_temp;
++				max_index = count;
++			}
 +		}
-+	} else if (state == 0) {
-+		for_each_cpu(cpuid, hotplug_dev->allowed_cpus) {
-+			if (!cpu_online(cpuid) && (cpuid != this_cpu))
-+				cpu_up(cpuid);
-+		}
-+	} else {
-+		return -EINVAL;
 +	}
 +
-+	hotplug_dev->hotplug_state = state;
-+
-+	return 0;
-+}
-+/* bind hotplug callbacks to cpu hotplug cooling device */
-+static struct thermal_cooling_device_ops cpuhotplug_cooling_ops = {
-+	.get_max_state = cpuhotplug_get_max_state,
-+	.get_cur_state = cpuhotplug_get_cur_state,
-+	.set_cur_state = cpuhotplug_set_cur_state,
-+};
-+
-+struct thermal_cooling_device *cpuhotplug_cooling_register(
-+	const struct cpumask *mask_val)
-+{
-+	struct thermal_cooling_device *cool_dev;
-+	struct hotplug_cooling_device *hotplug_dev;
-+	int ret = 0;
-+	char dev_name[THERMAL_NAME_LENGTH];
-+
-+	hotplug_dev =
-+		kzalloc(sizeof(struct hotplug_cooling_device), GFP_KERNEL);
-+
-+	if (!hotplug_dev)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ret = get_idr(&cpuhotplug_idr, &cooling_cpuhotplug_lock,
-+			&hotplug_dev->id);
-+	if (ret) {
-+		kfree(hotplug_dev);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	sprintf(dev_name, "cpu-hotplug-%u", hotplug_dev->id);
-+
-+	hotplug_dev->hotplug_state = 0;
-+	hotplug_dev->allowed_cpus = mask_val;
-+	cool_dev = thermal_cooling_device_register(dev_name, hotplug_dev,
-+						&cpuhotplug_cooling_ops);
-+	if (!cool_dev) {
-+		release_idr(&cpuhotplug_idr, &cooling_cpuhotplug_lock,
-+				hotplug_dev->id);
-+		kfree(hotplug_dev);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	hotplug_dev->cool_dev = cool_dev;
-+	mutex_lock(&cooling_cpuhotplug_lock);
-+	list_add_tail(&hotplug_dev->node, &cooling_cpuhotplug_list);
-+	mutex_unlock(&cooling_cpuhotplug_lock);
-+
-+	return cool_dev;
-+}
-+EXPORT_SYMBOL(cpuhotplug_cooling_register);
-+
-+void cpuhotplug_cooling_unregister(struct thermal_cooling_device *cdev)
-+{
-+	struct hotplug_cooling_device *hotplug_dev = NULL;
-+
-+	mutex_lock(&cooling_cpuhotplug_lock);
-+	list_for_each_entry(hotplug_dev, &cooling_cpuhotplug_list, node)
-+		if (hotplug_dev && hotplug_dev->cool_dev == cdev)
-+			break;
-+
-+	if (!hotplug_dev || hotplug_dev->cool_dev != cdev) {
-+		mutex_unlock(&cooling_cpuhotplug_lock);
++	if (!max_temp) {
++		tz->last_trip_level = -1;
 +		return;
 +	}
 +
-+	list_del(&hotplug_dev->node);
-+	mutex_unlock(&cooling_cpuhotplug_lock);
-+	thermal_cooling_device_unregister(hotplug_dev->cool_dev);
-+	release_idr(&cpuhotplug_idr, &cooling_cpuhotplug_lock,
-+						hotplug_dev->id);
-+	kfree(hotplug_dev);
-+}
-+EXPORT_SYMBOL(cpuhotplug_cooling_unregister);
-+#endif /*CONFIG_HOTPLUG_CPU*/
-diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-index 5dc5632..8d195d5 100644
---- a/include/linux/cpu_cooling.h
-+++ b/include/linux/cpu_cooling.h
-@@ -50,5 +50,22 @@ static inline void cpufreq_cooling_unregister(
- 	return;
- }
- #endif	/*CONFIG_CPU_FREQ*/
-+#ifdef CONFIG_HOTPLUG_CPU
-+extern struct thermal_cooling_device *cpuhotplug_cooling_register(
-+	const struct cpumask *mask_val);
++	cur_interval = tz->stat[max_index].interval_ptr;
++	cool_temp = tz->last_temperature - cur_temp;
 +
-+extern void cpuhotplug_cooling_unregister(struct thermal_cooling_device *cdev);
-+#else /*!CONFIG_HOTPLUG_CPU*/
-+static inline struct thermal_cooling_device *cpuhotplug_cooling_register(
-+	const struct cpumask *mask_val)
-+{
-+	return NULL;
-+}
-+static inline void cpuhotplug_cooling_unregister(
-+				struct thermal_cooling_device *cdev)
-+{
++	if (tz->last_trip_level != max_index) {
++		if (++cur_interval == INTERVAL_HISTORY)
++			cur_interval = 0;
++		tz->stat[max_index].cool_temp[cur_interval] = cool_temp;
++		tz->stat[max_index].interval_ptr = cur_interval;
++		tz->last_trip_level = max_index;
++	} else {
++		tz->stat[max_index].cool_temp[cur_interval] += cool_temp;
++	}
++
++	/*Average out the cooling for this trip level*/
++	for (count = 0; count < INTERVAL_HISTORY; count++) {
++		if (tz->stat[max_index].cool_temp[count] > 0) {
++			tz->stat[max_index].avg_cool +=
++					tz->stat[max_index].cool_temp[count];
++			used_data++;
++		}
++	}
++	if (used_data > 1)
++		tz->stat[max_index].avg_cool =
++				tz->stat[max_index].avg_cool / used_data;
 +	return;
 +}
-+#endif /*CONFIG_HOTPLUG_CPU*/
++
++#if defined(CONFIG_DEBUG_FS)
++/* debugfs support to debug cooling info per trip type */
++static struct dentry *thermal_debugfs_root;
++static int thermal_register_debugfs(struct thermal_zone_device *tz)
++{
++	char name[THERMAL_NAME_LENGTH];
++	int count = 0, err = 0;
++	struct dentry *d;
++
++	if (thermal_debugfs_root == NULL)
++		return -EINVAL;
++
++	sprintf(name, "thermal_zone%d", tz->id);
++	d = debugfs_create_dir(name, thermal_debugfs_root);
++	if (!d)
++		return -ENOMEM;
++	tz->d_entry = d;
++	for (count = 0; count < tz->trips; count++) {
++		sprintf(name, "trip_%d_cooling", count);
++		d = debugfs_create_u32(name, S_IRUGO, tz->d_entry,
++					(u32 *)&tz->stat[count].avg_cool);
++		if (!d) {
++			err = -ENOMEM;
++			goto err_debugfs;
++		}
++	}
++	return 0;
++
++err_debugfs:
++	debugfs_remove_recursive(tz->d_entry);
++	return err;
++}
++
++static void thermal_unregister_debugfs(struct thermal_zone_device *tz)
++{
++	debugfs_remove_recursive(tz->d_entry);
++}
++
++#endif
++
+ /* sys I/F for thermal zone */
  
- #endif /* __CPU_COOLING_H__ */
+ #define to_thermal_zone(_dev) \
+@@ -1051,6 +1143,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ 		goto leave;
+ 	}
+ 
++	update_cooling_stats(tz, temp);
++
+ 	for (count = 0; count < tz->trips; count++) {
+ 		tz->ops->get_trip_type(tz, count, &trip_type);
+ 		tz->ops->get_trip_temp(tz, count, &trip_temp);
+@@ -1211,6 +1305,7 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
+ 	tz->tc2 = tc2;
+ 	tz->passive_delay = passive_delay;
+ 	tz->polling_delay = polling_delay;
++	tz->last_trip_level = -1;
+ 
+ 	dev_set_name(&tz->device, "thermal_zone%d", tz->id);
+ 	result = device_register(&tz->device);
+@@ -1220,6 +1315,13 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
+ 		return ERR_PTR(result);
+ 	}
+ 
++	/*Allocate variables for cooling stats*/
++	tz->stat  = devm_kzalloc(&tz->device,
++				sizeof(struct thermal_cooling_stats) * trips,
++				GFP_KERNEL);
++	if (!tz->stat)
++		goto unregister;
++
+ 	/* sys I/F */
+ 	if (type) {
+ 		result = device_create_file(&tz->device, &dev_attr_type);
+@@ -1257,6 +1359,12 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
+ 	if (result)
+ 		goto unregister;
+ 
++#if defined(CONFIG_DEBUG_FS)
++	result = thermal_register_debugfs(tz);
++	if (result)
++		goto unregister;
++#endif
++
+ 	mutex_lock(&thermal_list_lock);
+ 	list_add_tail(&tz->node, &thermal_tz_list);
+ 	if (ops->bind)
+@@ -1321,6 +1429,10 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	for (count = 0; count < tz->trips; count++)
+ 		TRIP_POINT_ATTR_REMOVE(&tz->device, count);
+ 
++#if defined(CONFIG_DEBUG_FS)
++	thermal_unregister_debugfs(tz);
++#endif
++
+ 	thermal_remove_hwmon_sysfs(tz);
+ 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+ 	idr_destroy(&tz->idr);
+@@ -1440,6 +1552,11 @@ static int __init thermal_init(void)
+ 		mutex_destroy(&thermal_list_lock);
+ 	}
+ 	result = genetlink_init();
++#if defined(CONFIG_DEBUG_FS)
++	thermal_debugfs_root = debugfs_create_dir("thermal", NULL);
++	if (!thermal_debugfs_root)
++		result = -ENOMEM;
++#endif
+ 	return result;
+ }
+ 
+@@ -1451,6 +1568,9 @@ static void __exit thermal_exit(void)
+ 	mutex_destroy(&thermal_idr_lock);
+ 	mutex_destroy(&thermal_list_lock);
+ 	genetlink_exit();
++#if defined(CONFIG_DEBUG_FS)
++	debugfs_remove_recursive(thermal_debugfs_root);
++#endif
+ }
+ 
+ fs_initcall(thermal_init);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 8df901f..6f15f85 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -73,6 +73,14 @@ struct thermal_cooling_device_ops {
+ #define THERMAL_TRIPS_NONE -1
+ #define THERMAL_MAX_TRIPS 12
+ #define THERMAL_NAME_LENGTH 20
++#define INTERVAL_HISTORY 12
++
++struct thermal_cooling_stats {
++	int cool_temp[INTERVAL_HISTORY];
++	int interval_ptr;
++	int avg_cool;
++};
++
+ struct thermal_cooling_device {
+ 	int id;
+ 	char type[THERMAL_NAME_LENGTH];
+@@ -103,6 +111,11 @@ struct thermal_zone_device {
+ 	struct list_head cooling_devices;
+ 	struct idr idr;
+ 	struct mutex lock;	/* protect cooling devices list */
++	struct thermal_cooling_stats *stat;
++	int last_trip_level;
++#if defined(CONFIG_DEBUG_FS)
++	struct dentry *d_entry;
++#endif
+ 	struct list_head node;
+ 	struct delayed_work poll_queue;
+ };
 -- 
 1.7.1
