@@ -1,32 +1,44 @@
-From: Guenter Roeck <guenter.roeck@ericsson.com>
-Subject: Re: [lm-sensors] [PATCH 3/4] thermal: exynos4: Register the tmu
- sensor with the thermal interface layer
-Date: Sat, 3 Mar 2012 06:55:38 -0800
-Message-ID: <20120303145538.GB29335@ericsson.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 2/4] hwmon: exynos4: Move thermal sensor
+ driver to driver/mfd directory
+Date: Sat, 3 Mar 2012 16:44:10 +0000
+Message-ID: <20120303164410.GB1495@sirena.org.uk>
 References: <1330772767-16120-1-git-send-email-amit.kachhap@linaro.org>
- <1330772767-16120-4-git-send-email-amit.kachhap@linaro.org>
+	<1330772767-16120-3-git-send-email-amit.kachhap@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1330772767-16120-4-git-send-email-amit.kachhap@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
+In-Reply-To: <1330772767-16120-3-git-send-email-amit.kachhap@linaro.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "lenb@kernel.org" <lenb@kernel.org>
+Cc: linux-samsung-soc@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Mar 03, 2012 at 06:06:06AM -0500, Amit Daniel Kachhap wrote:
-> Export and register information from the tmu temperature sensor to the samsung
-> exynos kernel thermal framework where different cooling devices and thermal
-> zone are binded. The exported information is based according to the data
-> structure thermal_sensor_conf present in exynos_thermal.h. HWMON sysfs
-> functions are removed as all of them are present in generic linux thermal layer.
-> 
-> Also the platform data structure is modified to pass frequency cooling
-> in percentages for each thermal level.
-> 
-> Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+On Sat, Mar 03, 2012 at 04:36:05PM +0530, Amit Daniel Kachhap wrote:
+> This movement is needed because the hwmon entries and corresponding
+> sysfs interface is a duplicate of utilities already provided by
+> driver/thermal/thermal_sys.c. The goal is to place it in mfd folder
+> and add necessary calls to get the temperature information.
 
-Ah, that is what I meant. I don't think it makes sense to have this as separate patch.
+> --- a/Documentation/hwmon/exynos4_tmu
+> +++ /dev/null
 
-Guenter
+Moving this seems to be a failure, the device is exposing a hwmon
+interface even if you've moved the code to mfd (though it doesn't
+actually look like a multi-function device at all as far as I can see -
+usually a MFD would have a bunch of unrelated functionality while this
+has one function used by two subsystems).
+
+If anything it looks like the ADC driver ought to be moved into IIO with
+either generic or Exynos specific function drivers layered on top of it
+in hwmon and thermal making use of the values that are read.
