@@ -1,80 +1,79 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH V3] cpuidle: Add a sysfs entry to disable specific C
- state for debug purpose.
-Date: Mon, 5 Mar 2012 07:18:27 -0300
-Message-ID: <20120305101827.GA19408@khazad-dum.debian.net>
-References: <C6CB66606345BC4B80CBE69D22ABFBB1021C7F@SHSMSX101.ccr.corp.intel.com>
- <1330647453.1916.7.camel@ymzhang>
- <20120302142303.648285a7.akpm@linux-foundation.org>
- <C6CB66606345BC4B80CBE69D22ABFBB10220E1@SHSMSX101.ccr.corp.intel.com>
- <4F545A4E.8010801@linux.vnet.ibm.com>
- <4F5466C4.2090808@intel.com>
+From: Jan Kara <jack@suse.cz>
+Subject: Re: [linux-pm] [Patch] JBD and JBD2 missing set_freezable()
+Date: Mon, 5 Mar 2012 11:28:00 +0100
+Message-ID: <20120305102800.GB6643@quack.suse.cz>
+References: <4F2BA1FD.3030302@tuxonice.net>
+ <201203042351.07405.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-ext4-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <4F5466C4.2090808@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ShuoX Liu <shuox.liu@intel.com>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <201203042351.07405.rjw@sisk.pl>
+Sender: linux-ext4-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <nigel@tuxonice.net>, Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 05 Mar 2012, ShuoX Liu wrote:
-> @@ -45,6 +46,7 @@ total 0
->  /sys/devices/system/cpu/cpu0/cpuidle/state1:
->  total 0
->  -r--r--r-- 1 root root 4096 Feb  8 10:42 desc
-> +-rw-r--r-- 1 root root 4096 Feb  8 10:42 disable
->  -r--r--r-- 1 root root 4096 Feb  8 10:42 latency
->  -r--r--r-- 1 root root 4096 Feb  8 10:42 name
->  -r--r--r-- 1 root root 4096 Feb  8 10:42 power
-
-...
-
-> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> index 3fe41fe..1eae29a 100644
-> --- a/drivers/cpuidle/sysfs.c
-> +++ b/drivers/cpuidle/sysfs.c
-> @@ -222,6 +222,9 @@ struct cpuidle_state_attr {
->  #define define_one_state_ro(_name, show) \
->  static struct cpuidle_state_attr attr_##_name = __ATTR(_name, 0444,
-> show, NULL)
+On Sun 04-03-12 23:51:07, Rafael J. Wysocki wrote:
+> On Friday, February 03, 2012, Nigel Cunningham wrote:
+> > Hi all.
+> > 
+> > With the latest and greatest changes to the freezer, I started seeing
+> > panics that were caused by jbd2 running post-process freezing and
+> > hitting the canary BUG_ON for non-TuxOnIce I/O submission. I've traced
+> > this back to a lack of set_freezable calls in both jbd and jbd2. Since
+> > they're clearly meant to be frozen (there are tests for freezing()), I
+> > submit the following patch to add the missing calls.
+> > 
+> > Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 > 
-> +#define define_one_state_rw(_name, show, store) \
-> +static struct cpuidle_state_attr attr_##_name = __ATTR(_name, 0644,
-> show, store)
-> +
->  #define define_show_state_function(_name) \
->  static ssize_t show_state_##_name(struct cpuidle_state *state, \
->  			 struct cpuidle_state_usage *state_usage, char *buf) \
-> @@ -229,6 +232,19 @@ static ssize_t show_state_##_name(struct
-> cpuidle_state *state, \
->  	return sprintf(buf, "%u\n", state->_name);\
->  }
+> Well, I wonder what the filesystems people think about that.
+  Nigel is right that threads are meant to be freezable. If below patch
+is needed for that, you have my ack.
+
+  Just two notes:
+1) Freezing the journal thread will effectively block filesystem activity
+(not immediately but once transaction fills up) so you should better make
+sure you don't need to do anything with the filesystem after freezing the
+thread.
+
+2) Is freezing journal thread still needed when we freeze filesystem in
+suspend code? Because no IO should happen once filesystem is frozen...
+
+								Honza
 > 
-> +#define define_store_state_function(_name) \
-> +static ssize_t store_state_##_name(struct cpuidle_state *state, \
-> +		const char *buf, size_t size) \
-> +{ \
-> +	int value; \
-> +	sscanf(buf, "%d", &value); \
-> +	if (value) \
-> +		state->disable = 1; \
-> +	else \
-> +		state->disable = 0; \
-> +	return size; \
-> +}
-
-Isn't this missing a check for capabilities?  Disabling cpuidle states is
-not something random Joe (and IMHO that does mean random capability-
-restricted Joe root) should be doing...
-
-Also, maybe it would be best to use one of the lib helpers to parse that
-value, so that it will be less annoying to userspace (trim blanks, complain
-if there is trailing junk after trimming, etc)?
-
+> Thanks,
+> Rafael
+> 
+> 
+> > diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
+> > index 59c09f9..89cd985 100644
+> > --- a/fs/jbd/journal.c
+> > +++ b/fs/jbd/journal.c
+> > @@ -129,6 +129,8 @@ static int kjournald(void *arg)
+> >  	setup_timer(&journal->j_commit_timer, commit_timeout,
+> >  			(unsigned long)current);
+> > 
+> > +	set_freezable();
+> > +
+> >  	/* Record that the journal thread is running */
+> >  	journal->j_task = current;
+> >  	wake_up(&journal->j_wait_done_commit);
+> > diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+> > index c0a5f9f..663e47c 100644
+> > --- a/fs/jbd2/journal.c
+> > +++ b/fs/jbd2/journal.c
+> > @@ -139,6 +139,8 @@ static int kjournald2(void *arg)
+> >  	setup_timer(&journal->j_commit_timer, commit_timeout,
+> >  			(unsigned long)current);
+> > 
+> > +	set_freezable();
+> > +
+> >  	/* Record that the journal thread is running */
+> >  	journal->j_task = current;
+> >  	wake_up(&journal->j_wait_done_commit);
+> > 
+> 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
