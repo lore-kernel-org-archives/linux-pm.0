@@ -1,59 +1,80 @@
-From: Amit Kachhap <amit.kachhap@linaro.org>
-Subject: Re: [lm-sensors] [PATCH 2/4] hwmon: exynos4: Move
- thermal sensor driver to driver/mfd directory
-Date: Mon, 5 Mar 2012 14:41:14 +0530
-Message-ID: <CAK44p20WsM4DHdcYF_NSWS7Ux_O6p2Fx1R9fdms5UAoWE3YXaA@mail.gmail.com>
-References: <1330772767-16120-1-git-send-email-amit.kachhap@linaro.org>
-	<1330772767-16120-3-git-send-email-amit.kachhap@linaro.org>
-	<20120303164410.GB1495@sirena.org.uk>
-	<20120303180402.GA30062@ericsson.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH V3] cpuidle: Add a sysfs entry to disable specific C
+ state for debug purpose.
+Date: Mon, 5 Mar 2012 07:18:27 -0300
+Message-ID: <20120305101827.GA19408@khazad-dum.debian.net>
+References: <C6CB66606345BC4B80CBE69D22ABFBB1021C7F@SHSMSX101.ccr.corp.intel.com>
+ <1330647453.1916.7.camel@ymzhang>
+ <20120302142303.648285a7.akpm@linux-foundation.org>
+ <C6CB66606345BC4B80CBE69D22ABFBB10220E1@SHSMSX101.ccr.corp.intel.com>
+ <4F545A4E.8010801@linux.vnet.ibm.com>
+ <4F5466C4.2090808@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120303180402.GA30062@ericsson.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Guenter Roeck <guenter.roeck@ericsson.com>
-Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4F5466C4.2090808@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: ShuoX Liu <shuox.liu@intel.com>
+Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 3 March 2012 23:34, Guenter Roeck <guenter.roeck@ericsson.com> wrote:
-> On Sat, Mar 03, 2012 at 11:44:10AM -0500, Mark Brown wrote:
->> On Sat, Mar 03, 2012 at 04:36:05PM +0530, Amit Daniel Kachhap wrote:
->> > This movement is needed because the hwmon entries and corresponding
->> > sysfs interface is a duplicate of utilities already provided by
->> > driver/thermal/thermal_sys.c. The goal is to place it in mfd folder
->> > and add necessary calls to get the temperature information.
->>
->> > --- a/Documentation/hwmon/exynos4_tmu
->> > +++ /dev/null
->>
->> Moving this seems to be a failure, the device is exposing a hwmon
->> interface even if you've moved the code to mfd (though it doesn't
->> actually look like a multi-function device at all as far as I can see -
->> usually a MFD would have a bunch of unrelated functionality while this
->> has one function used by two subsystems).
->>
->> If anything it looks like the ADC driver ought to be moved into IIO with
->> either generic or Exynos specific function drivers layered on top of it
->> in hwmon and thermal making use of the values that are read.
->>
-> I would agree. Or maybe move it all to thermal, since thermal devices register
-> the hwmon subsystem.
+On Mon, 05 Mar 2012, ShuoX Liu wrote:
+> @@ -45,6 +46,7 @@ total 0
+>  /sys/devices/system/cpu/cpu0/cpuidle/state1:
+>  total 0
+>  -r--r--r-- 1 root root 4096 Feb  8 10:42 desc
+> +-rw-r--r-- 1 root root 4096 Feb  8 10:42 disable
+>  -r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+>  -r--r--r-- 1 root root 4096 Feb  8 10:42 name
+>  -r--r--r-- 1 root root 4096 Feb  8 10:42 power
 
-Ok I agree with your suggestion of moving into thermal. Since I wanted
-to separate exynos specific generic thermal implementation with the
-H/W driver so that other versions of the sensor driver can easily hook
-into the common part. Anyway this implementation seems possible.
+...
 
-Thanks for the comments
->
-> Guenter
+> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+> index 3fe41fe..1eae29a 100644
+> --- a/drivers/cpuidle/sysfs.c
+> +++ b/drivers/cpuidle/sysfs.c
+> @@ -222,6 +222,9 @@ struct cpuidle_state_attr {
+>  #define define_one_state_ro(_name, show) \
+>  static struct cpuidle_state_attr attr_##_name = __ATTR(_name, 0444,
+> show, NULL)
+> 
+> +#define define_one_state_rw(_name, show, store) \
+> +static struct cpuidle_state_attr attr_##_name = __ATTR(_name, 0644,
+> show, store)
+> +
+>  #define define_show_state_function(_name) \
+>  static ssize_t show_state_##_name(struct cpuidle_state *state, \
+>  			 struct cpuidle_state_usage *state_usage, char *buf) \
+> @@ -229,6 +232,19 @@ static ssize_t show_state_##_name(struct
+> cpuidle_state *state, \
+>  	return sprintf(buf, "%u\n", state->_name);\
+>  }
+> 
+> +#define define_store_state_function(_name) \
+> +static ssize_t store_state_##_name(struct cpuidle_state *state, \
+> +		const char *buf, size_t size) \
+> +{ \
+> +	int value; \
+> +	sscanf(buf, "%d", &value); \
+> +	if (value) \
+> +		state->disable = 1; \
+> +	else \
+> +		state->disable = 0; \
+> +	return size; \
+> +}
+
+Isn't this missing a check for capabilities?  Disabling cpuidle states is
+not something random Joe (and IMHO that does mean random capability-
+restricted Joe root) should be doing...
+
+Also, maybe it would be best to use one of the lib helpers to parse that
+value, so that it will be less annoying to userspace (trim blanks, complain
+if there is trailing junk after trimming, etc)?
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
