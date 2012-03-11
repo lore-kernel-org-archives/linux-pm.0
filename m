@@ -1,88 +1,87 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [Patch] JBD and JBD2 missing set_freezable()
-Date: Sat, 10 Mar 2012 22:42:00 +0100
-Message-ID: <201203102242.00557.rjw@sisk.pl>
-References: <4F2BA1FD.3030302@tuxonice.net> <201203042351.07405.rjw@sisk.pl> <20120305102800.GB6643@quack.suse.cz>
+From: Sundar <sunder.svit@gmail.com>
+Subject: Re: [linux-pm] [PATCH 2/4] thermal: Add generic cpufreq cooling implementation
+Date: Sun, 11 Mar 2012 09:41:03 +0530
+Message-ID: <CAMHCuPUOnftKYaGjEpA9rZFc1yjH3U-EkEEUWqcFapSKROTopQ@mail.gmail.com>
+References: <1329905650-30161-1-git-send-email-amit.kachhap@linaro.org>
+	<1329905650-30161-3-git-send-email-amit.kachhap@linaro.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ext4-owner@vger.kernel.org>
-In-Reply-To: <20120305102800.GB6643@quack.suse.cz>
-Sender: linux-ext4-owner@vger.kernel.org
-To: Jan Kara <jack@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org, Nigel Cunningham <nigel@tuxonice.net>, linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1329905650-30161-3-git-send-email-amit.kachhap@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+Cc: len.brown@intel.com, linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, rob.lee@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Amit,
 
-Sorry for the delay.
+I am new here; so please bear with my questions/doubts :)
 
-On Monday, March 05, 2012, Jan Kara wrote:
-> On Sun 04-03-12 23:51:07, Rafael J. Wysocki wrote:
-> > On Friday, February 03, 2012, Nigel Cunningham wrote:
-> > > Hi all.
-> > > 
-> > > With the latest and greatest changes to the freezer, I started seeing
-> > > panics that were caused by jbd2 running post-process freezing and
-> > > hitting the canary BUG_ON for non-TuxOnIce I/O submission. I've traced
-> > > this back to a lack of set_freezable calls in both jbd and jbd2. Since
-> > > they're clearly meant to be frozen (there are tests for freezing()), I
-> > > submit the following patch to add the missing calls.
-> > > 
-> > > Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-> > 
-> > Well, I wonder what the filesystems people think about that.
->   Nigel is right that threads are meant to be freezable. If below patch
-> is needed for that, you have my ack.
+On Wed, Feb 22, 2012 at 3:44 PM, Amit Daniel Kachhap
+<amit.kachhap@linaro.org> wrote:
+> This patch adds support for generic cpu thermal cooling low level
+> implementations using frequency scaling up/down based on the request
+> from user. Different cpu related cooling devices can be registered by=
+ the
+> user and the binding of these cooling devices to the corresponding
 
-Yes, it is, thanks!  I'm going to push it for v3.4 along with PM updates.
+"Different cpu related cooling devices": Do you mean cooling devices
+for different CPUs (num_cpus) or are you referring to different
+customers aka consumer drivers who could use this framework and impose
+the cooling.
 
->   Just two notes:
-> 1) Freezing the journal thread will effectively block filesystem activity
-> (not immediately but once transaction fills up) so you should better make
-> sure you don't need to do anything with the filesystem after freezing the
-> thread.
+> trip points can be easily done as the registration API's return the
+> cooling device pointer. The user of these api's are responsible for
+> passing clipping frequency in percentages.
 
-Sure, no worries. :-)
+Why do you want to pass the clipping frequency in percentages? Wouldnt
+it be simpler for any platform sensor driver to just pass the
+frequency it wants to throttle the CPU?
 
-> 2) Is freezing journal thread still needed when we freeze filesystem in
-> suspend code? Because no IO should happen once filesystem is frozen...
+> +
+> + =A0 =A0This interface function registers the cpufreq cooling device=
+ with the name
+> + =A0 =A0"thermal-cpufreq-%x". This api can support multiple instance=
+ of cpufreq cooling
+> + =A0 =A0devices.
 
-It won't be strictly necessary, but it won't hurt either.  However, until
-we start freezing filesystems in suspend code, it is needed.
+When you refer to cooling devices, is it the number of instances
+per-CPU that is supported? Sorry I am unable to follow.
 
-Thanks,
-Rafael
+> + =A0 =A0 =A0 .polling_interval: polling interval for this cooling st=
+ate.
+> + =A0 =A0tab_size: the total number of cooling state.
 
- 
-> > > diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-> > > index 59c09f9..89cd985 100644
-> > > --- a/fs/jbd/journal.c
-> > > +++ b/fs/jbd/journal.c
-> > > @@ -129,6 +129,8 @@ static int kjournald(void *arg)
-> > >  	setup_timer(&journal->j_commit_timer, commit_timeout,
-> > >  			(unsigned long)current);
-> > > 
-> > > +	set_freezable();
-> > > +
-> > >  	/* Record that the journal thread is running */
-> > >  	journal->j_task = current;
-> > >  	wake_up(&journal->j_wait_done_commit);
-> > > diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-> > > index c0a5f9f..663e47c 100644
-> > > --- a/fs/jbd2/journal.c
-> > > +++ b/fs/jbd2/journal.c
-> > > @@ -139,6 +139,8 @@ static int kjournald2(void *arg)
-> > >  	setup_timer(&journal->j_commit_timer, commit_timeout,
-> > >  			(unsigned long)current);
-> > > 
-> > > +	set_freezable();
-> > > +
-> > >  	/* Record that the journal thread is running */
-> > >  	journal->j_task = current;
-> > >  	wake_up(&journal->j_wait_done_commit);
-> > > 
-> > 
-> 
+By cooling_state, I assume you are referring to the thermal state for
+the platform? or only for the CPU?
 
+> + =A0 =A0mask_val: all the allowed cpu's where frequency clipping can=
+ happen.
+
+Why should this be a new variable? The policy->affected_cpus should be
+the same as this IMO?
+
+> + =A0 =A0 =A0 help
+> + =A0 =A0 =A0 =A0 This implements the generic cpu cooling mechanism t=
+hrough frequency
+> + =A0 =A0 =A0 =A0 reduction, cpu hotplug and any other ways of reduci=
+ng temperature. An
+
+Apart from reducing the CPU frequency, (probably) CPU hotplug, what
+other means of reducing CPU temperature? Or are you referring to any
+platform temperature controls?
+
+It isnt very clear from the documentation (at least to me) if this is
+only for CPU cooling or generic platform cooling.
+
+Cheers!
+--=20
+---------
+The views expressed in this email are personal and do not necessarily
+echo my employers'.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
