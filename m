@@ -1,231 +1,1027 @@
-From: "Mansoor, Illyas" <illyas.mansoor@intel.com>
-Subject: mmc: sdhci-pci: why no .shutdown() implemented
-Date: Mon, 12 Mar 2012 08:15:37 +0000
-Message-ID: <810586B7581CC8469141DADEBC3719120AECF8@BGSMSX102.gar.corp.intel.com>
+From: ShuoX Liu <shuox.liu@intel.com>
+Subject: [PATCH 1/3] cpuidle: Move cpuidle sysfs entry of each cpu to debugfs.
+Date: Mon, 12 Mar 2012 17:19:36 +0800
+Message-ID: <4F5DBFA8.3080300@intel.com>
+References: <C6CB66606345BC4B80CBE69D22ABFBB10220E1@SHSMSX101.ccr.corp.intel.com> <4F545A4E.8010801@linux.vnet.ibm.com> <4F5466C4.2090808@intel.com> <20120305101827.GA19408@khazad-dum.debian.net> <CAGF5oy_BUytjeDa8Oc62pRabaEqwqKCFuVJuzLd-XNZg34ne2w@mail.gmail.com> <1330998885.1916.89.camel@ymzhang> <20120306052236.GA19416@kroah.com> <1331013078.1916.103.camel@ymzhang> <20120306143935.GA23346@kroah.com> <1331082051.1916.124.camel@ymzhang> <20120308180106.GD26516@kroah.com>
+Reply-To: shuox.liu@intel.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
-	micalg=SHA1; boundary="----=_NextPart_000_03B1_01CD0056.67A47130"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
-Cc: "Hunter, Adrian" <adrian.hunter@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20120308180106.GD26516@kroah.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: Yanmin Zhang <yanmin_zhang@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, "Valentin, Eduardo" <eduardo.valentin@ti.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "Brown, Len" <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, "Kleen, Andi" <andi.kleen@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-------=_NextPart_000_03B1_01CD0056.67A47130
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+On 2012=E5=B9=B403=E6=9C=8809=E6=97=A5 02:01, Greg KH wrote:
+> On Wed, Mar 07, 2012 at 09:00:51AM +0800, Yanmin Zhang wrote:
+>> On Tue, 2012-03-06 at 06:39 -0800, Greg KH wrote:
+>>> On Tue, Mar 06, 2012 at 01:51:18PM +0800, Yanmin Zhang wrote:
+>>>> On Mon, 2012-03-05 at 21:22 -0800, Greg KH wrote:
+>>>>> On Tue, Mar 06, 2012 at 09:54:45AM +0800, Yanmin Zhang wrote:
+>>>>>> On Mon, 2012-03-05 at 14:20 +0200, Valentin, Eduardo wrote:
+>>>>>>> Hello,
+>>>>>>>
+>>>>>>>
+>>>>>>> On Mon, Mar 5, 2012 at 12:18 PM, Henrique de Moraes Holschuh
+>>>>>>> <hmh@hmh.eng.br>  wrote:
+>>>>>>>> On Mon, 05 Mar 2012, ShuoX Liu wrote:
+>>>>>>>>> @@ -45,6 +46,7 @@ total 0
+>>>>>>>>>   /sys/devices/system/cpu/cpu0/cpuidle/state1:
+>>>>>>>>>   total 0
+>>>>>>>>>   -r--r--r-- 1 root root 4096 Feb  8 10:42 desc
+>>>>>>>>> +-rw-r--r-- 1 root root 4096 Feb  8 10:42 disable
+>>>>>>>>>   -r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+>>>>>>>>>   -r--r--r-- 1 root root 4096 Feb  8 10:42 name
+>>>>>>>>>   -r--r--r-- 1 root root 4096 Feb  8 10:42 power
+>>>>>>>>
+>>>>>>>> ...
+>>>>>>>>
+>>>>>>>>> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.=
+c
+>>>>>>>>> index 3fe41fe..1eae29a 100644
+>>>>>>>>> --- a/drivers/cpuidle/sysfs.c
+>>>>>>>>> +++ b/drivers/cpuidle/sysfs.c
+>>>>>>>>> @@ -222,6 +222,9 @@ struct cpuidle_state_attr {
+>>>>>>>>>   #define define_one_state_ro(_name, show) \
+>>>>>>>>>   static struct cpuidle_state_attr attr_##_name =3D __ATTR(_n=
+ame, 0444,
+>>>>>>>>> show, NULL)
+>>>>>>>>>
+>>>>>>>>> +#define define_one_state_rw(_name, show, store) \
+>>>>>>>>> +static struct cpuidle_state_attr attr_##_name =3D __ATTR(_na=
+me, 0644,
+>>>>>>>>> show, store)
+>>>>>>>>> +
+>>>>>>>>>   #define define_show_state_function(_name) \
+>>>>>>>>>   static ssize_t show_state_##_name(struct cpuidle_state *sta=
+te, \
+>>>>>>>>>                         struct cpuidle_state_usage *state_usa=
+ge, char *buf) \
+>>>>>>>>> @@ -229,6 +232,19 @@ static ssize_t show_state_##_name(struct
+>>>>>>>>> cpuidle_state *state, \
+>>>>>>>>>        return sprintf(buf, "%u\n", state->_name);\
+>>>>>>>>>   }
+>>>>>>>>>
+>>>>>>>>> +#define define_store_state_function(_name) \
+>>>>>>>>> +static ssize_t store_state_##_name(struct cpuidle_state *sta=
+te, \
+>>>>>>>>> +             const char *buf, size_t size) \
+>>>>>>>>> +{ \
+>>>>>>>>> +     int value; \
+>>>>>>>>> +     sscanf(buf, "%d",&value); \
+>>>>>>>>> +     if (value) \
+>>>>>>>>> +             state->disable =3D 1; \
+>>>>>>>>> +     else \
+>>>>>>>>> +             state->disable =3D 0; \
+>>>>>>>>> +     return size; \
+>>>>>>>>> +}
+>>>>>>>>
+>>>>>>>> Isn't this missing a check for capabilities?  Disabling cpuidl=
+e states is
+>>>>>>>> not something random Joe (and IMHO that does mean random capab=
+ility-
+>>>>>>>> restricted Joe root) should be doing...
+>>>>>>>>
+>>>>>>>> Also, maybe it would be best to use one of the lib helpers to =
+parse that
+>>>>>>>> value, so that it will be less annoying to userspace (trim bla=
+nks, complain
+>>>>>>>> if there is trailing junk after trimming, etc)?
+>>>>>>>
+>>>>>>> I may be jumping the thread in the middle but, if it is for deb=
+ug
+>>>>>>> purposes, as states the subject, shouldn't this entry go to deb=
+ugfs
+>>>>>>> instead of sysfs? I know cpuidle has all the infrastructure the=
+re to
+>>>>>>> simply add another sysfs entry, but if the intent is to create =
+a debug
+>>>>>>> capability, then I'd say it fits under debugfs instead.  Adding=
+ Greg
+>>>>>>> KH here, as I suppose he may have strong opinion on using sysfs=
+ for
+>>>>>>> debugging.
+>>>>>> Thanks for the comments.
+>>>>>>
+>>>>>> IMHO, all entries under cpuidle directory are for debug purpose.=
+ End users
+>>>>>> shouldn't care about them. If we rewrite codes around all the en=
+tries, I strongly
+>>>>>> agree that we need move them to debugfs.
+>>>>>
+>>>>> I totally agree, they all need to move out of sysfs.
+>>>>>
+>>>>>> Here, we just add a new entry under same directory. If we create=
+ it under debugfs,
+>>>>>> we need create the similar directory tree, which is a duplicate =
+effort. In addition,
+>>>>>> users might be confused that why we separate the entries under s=
+ysfs and debugfs.
+>>>>>
+>>>>> They should all be moved there, that will remove any confusion :)
+>>>> Greg,
+>>>>
+>>>> Sorry. I might mislead you.
+>>>>
+>>>> Basically, we could move all the entries of cpuidle from sysfs to =
+debugfs. But such
+>>>> moving would change KBI. There might be many scripts used by end u=
+sers to parse the
+>>>> data. If we change them to debugfs, the scripts wouldn't work and =
+users would
+>>>> complain.
+>>>>
+>>>> What's your opinion about the KBI consistence?
+>>>
+>>> These files all are debugging files, right?  So they should be move=
+d,
+>>> especially as the violate the "one value per file" rule of sysfs.
+>>>
+>>> Do you know of any tools using these files?  I have never heard of =
+them,
+>>> and I was told we should move these files years ago.  So I don't th=
+ink
+>>> there should be any api issues.
+>>>
+>>> But, if there are, we need to know what they are, and work to prese=
+rve
+>>> them.  The only way to find out is to move them :)
+>> We would move all cpuidle entries to debugfs firstly.
+>> 1) Create the similar directory tree on debugfs: cpu/cpuXXX, but jus=
+t have cpuidle subdirectory;
+>> 2) Move our cpuidle->disable patch to debugfs;
+>> sysfs cpuXXX has other sub directories. We don't move them this time=
+=2E
+>>
+>> The new directory under debugfs becomes:
+>> cpu---cpu0---cpuidle
+>> 	|
+>> 	|
+>>        cpu1---cpuidle
+>> 	|
+>>
+>> Is it ok?
+>
+> Looks fine to me.
+>
+> greg k-h
 
-Hi All,
+I created a series to do this.
 
-I'm not sure if this is the right mailing list to discuss this question, but
-anyways I'll ask:
+[PATCH 1/3] cpuidle: Move cpuidle sysfs entry of each cpu to debugfs.
+[PATCH 2/3] cpuidle: Add a debugfs entry to disable specific C state fo=
+r=20
+debug purpose.
+[PATCH 3/3] cpupower: Update the cpupower tool for new debugfs entries=20
+of cpuidle.
 
-On our platform we implemented a BUG in pci_set_power_state callback when the
-shutdown
-Is in progress, and we caught sdci-pci doing pci_set_power_state(D0) when
-shutdown was
-Already in progress.
+Below are patches.
+---
+=46rom: ShuoX Liu <shuox.liu@intel.com>
 
-My question, why doesn't sdhci-pci.c implement a .shutdown() callback and close
-the device
-After doing sys_sync()?
+This patch move cpuidle sysfs entry into debugfs. That is
+/sys/devices/system/cpu/cpuXX/cpuidle will be changed to
+$(debugfs_mount_dir)/cpu/cpuXX/cpuidle.
 
-Is there some reason behind it not doing a graceful shutdown.
+Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
+Reviewed-by: Yanmin Zhang <yanmin_zhang@intel.com>
+---
+  Documentation/cpuidle/debugfs.txt |   63 ++++++++++
+  Documentation/cpuidle/sysfs.txt   |   59 ---------
+  drivers/base/cpu.c                |   14 ++
+  drivers/cpuidle/Makefile          |    1 +
+  drivers/cpuidle/cpuidle.c         |   23 +---
+  drivers/cpuidle/cpuidle.h         |   29 ++++-
+  drivers/cpuidle/debugfs.c         |  176 +++++++++++++++++++++++++++
+  drivers/cpuidle/sysfs.c           |  239=20
+-------------------------------------
+  include/linux/cpuidle.h           |   10 +-
+  9 files changed, 292 insertions(+), 322 deletions(-)
+  create mode 100644 Documentation/cpuidle/debugfs.txt
+  create mode 100644 drivers/cpuidle/debugfs.c
 
-I think it could cause corruption, since there is no guarantee when the system
-will power-off/reboot/halt
+diff --git a/Documentation/cpuidle/debugfs.txt=20
+b/Documentation/cpuidle/debugfs.txt
+new file mode 100644
+index 0000000..7724a69
+--- /dev/null
++++ b/Documentation/cpuidle/debugfs.txt
+@@ -0,0 +1,63 @@
++
++		Supporting multiple CPU idle levels in kernel
++
++				cpuidle debugfs
++
++Per logical CPU specific cpuidle information are under
++/sys/kernel/debug/cpu/cpuX/cpuidle
++(when your system mounted debugfs at /sys/kernel/debug)
++for each online cpu X
++
++----------------------------------------------------------------------=
+----------
++# ls -lR /sys/kernel/debug/cpu/cpu0/cpuidle/
++/sys/kernel/debug/cpu/cpu0/cpuidle/:
++total 0
++drwxr-xr-x 2 root root 0 Feb  8 10:42 state0
++drwxr-xr-x 2 root root 0 Feb  8 10:42 state1
++drwxr-xr-x 2 root root 0 Feb  8 10:42 state2
++drwxr-xr-x 2 root root 0 Feb  8 10:42 state3
++
++/sys/kernel/debug/cpu/cpu0/cpuidle/state0:
++total 0
++-r--r--r-- 1 root root 4096 Feb  8 10:42 desc
++-r--r--r-- 1 root root 4096 Feb  8 10:42 latency
++-r--r--r-- 1 root root 4096 Feb  8 10:42 name
++-r--r--r-- 1 root root 4096 Feb  8 10:42 power
++-r--r--r-- 1 root root 4096 Feb  8 10:42 time
++-r--r--r-- 1 root root 4096 Feb  8 10:42 usage
++
++/sys/kernel/debug/cpu/cpu0/cpuidle/state1:
++total 0
++-r--r--r-- 1 root root 4096 Feb  8 10:42 desc
++-r--r--r-- 1 root root 4096 Feb  8 10:42 latency
++-r--r--r-- 1 root root 4096 Feb  8 10:42 name
++-r--r--r-- 1 root root 4096 Feb  8 10:42 power
++-r--r--r-- 1 root root 4096 Feb  8 10:42 time
++-r--r--r-- 1 root root 4096 Feb  8 10:42 usage
++
++/sys/kernel/debug/cpu/cpu0/cpuidle/state2:
++total 0
++-r--r--r-- 1 root root 4096 Feb  8 10:42 desc
++-r--r--r-- 1 root root 4096 Feb  8 10:42 latency
++-r--r--r-- 1 root root 4096 Feb  8 10:42 name
++-r--r--r-- 1 root root 4096 Feb  8 10:42 power
++-r--r--r-- 1 root root 4096 Feb  8 10:42 time
++-r--r--r-- 1 root root 4096 Feb  8 10:42 usage
++
++/sys/kernel/debug/cpu/cpu0/cpuidle/state3:
++total 0
++-r--r--r-- 1 root root 4096 Feb  8 10:42 desc
++-r--r--r-- 1 root root 4096 Feb  8 10:42 latency
++-r--r--r-- 1 root root 4096 Feb  8 10:42 name
++-r--r--r-- 1 root root 4096 Feb  8 10:42 power
++-r--r--r-- 1 root root 4096 Feb  8 10:42 time
++-r--r--r-- 1 root root 4096 Feb  8 10:42 usage
++----------------------------------------------------------------------=
+----------
++
++
++* desc : Small description about the idle state (string)
++* latency : Latency to exit out of this idle state (in microseconds)
++* name : Name of the idle state (string)
++* power : Power consumed while in this idle state (in milliwatts)
++* time : Total time spent in this idle state (in microseconds)
++* usage : Number of times this state was entered (count)
+diff --git a/Documentation/cpuidle/sysfs.txt=20
+b/Documentation/cpuidle/sysfs.txt
+index 50d7b16..588e40b 100644
+--- a/Documentation/cpuidle/sysfs.txt
++++ b/Documentation/cpuidle/sysfs.txt
+@@ -18,62 +18,3 @@ following objects are visible instead.
+  * current_governor
+  In this case users can switch the governor at run time by writing
+  to current_governor.
+-
+-
+-Per logical CPU specific cpuidle information are under
+-/sys/devices/system/cpu/cpuX/cpuidle
+-for each online cpu X
+-
+-----------------------------------------------------------------------=
+----------
+-# ls -lR /sys/devices/system/cpu/cpu0/cpuidle/
+-/sys/devices/system/cpu/cpu0/cpuidle/:
+-total 0
+-drwxr-xr-x 2 root root 0 Feb  8 10:42 state0
+-drwxr-xr-x 2 root root 0 Feb  8 10:42 state1
+-drwxr-xr-x 2 root root 0 Feb  8 10:42 state2
+-drwxr-xr-x 2 root root 0 Feb  8 10:42 state3
+-
+-/sys/devices/system/cpu/cpu0/cpuidle/state0:
+-total 0
+--r--r--r-- 1 root root 4096 Feb  8 10:42 desc
+--r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+--r--r--r-- 1 root root 4096 Feb  8 10:42 name
+--r--r--r-- 1 root root 4096 Feb  8 10:42 power
+--r--r--r-- 1 root root 4096 Feb  8 10:42 time
+--r--r--r-- 1 root root 4096 Feb  8 10:42 usage
+-
+-/sys/devices/system/cpu/cpu0/cpuidle/state1:
+-total 0
+--r--r--r-- 1 root root 4096 Feb  8 10:42 desc
+--r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+--r--r--r-- 1 root root 4096 Feb  8 10:42 name
+--r--r--r-- 1 root root 4096 Feb  8 10:42 power
+--r--r--r-- 1 root root 4096 Feb  8 10:42 time
+--r--r--r-- 1 root root 4096 Feb  8 10:42 usage
+-
+-/sys/devices/system/cpu/cpu0/cpuidle/state2:
+-total 0
+--r--r--r-- 1 root root 4096 Feb  8 10:42 desc
+--r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+--r--r--r-- 1 root root 4096 Feb  8 10:42 name
+--r--r--r-- 1 root root 4096 Feb  8 10:42 power
+--r--r--r-- 1 root root 4096 Feb  8 10:42 time
+--r--r--r-- 1 root root 4096 Feb  8 10:42 usage
+-
+-/sys/devices/system/cpu/cpu0/cpuidle/state3:
+-total 0
+--r--r--r-- 1 root root 4096 Feb  8 10:42 desc
+--r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+--r--r--r-- 1 root root 4096 Feb  8 10:42 name
+--r--r--r-- 1 root root 4096 Feb  8 10:42 power
+--r--r--r-- 1 root root 4096 Feb  8 10:42 time
+--r--r--r-- 1 root root 4096 Feb  8 10:42 usage
+-----------------------------------------------------------------------=
+----------
+-
+-
+-* desc : Small description about the idle state (string)
+-* latency : Latency to exit out of this idle state (in microseconds)
+-* name : Name of the idle state (string)
+-* power : Power consumed while in this idle state (in milliwatts)
+-* time : Total time spent in this idle state (in microseconds)
+-* usage : Number of times this state was entered (count)
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 4dabf50..cc4fa6f 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -12,6 +12,7 @@
+  #include <linux/node.h>
+  #include <linux/gfp.h>
+  #include <linux/percpu.h>
++#include <linux/debugfs.h>
 
-I just implemented a patch to fix this, if it's a good fix I'll submit.
+  #include "base.h"
 
-diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
-index f5fe05c..e0818c9 100644
---- a/drivers/mmc/host/sdhci-pci.c
-+++ b/drivers/mmc/host/sdhci-pci.c
-@@ -23,6 +23,7 @@
- #include <linux/regulator/consumer.h>
- #include <linux/pm_runtime.h>
- #include <linux/async.h>
-+#include <linux/syscalls.h>
+@@ -22,6 +23,9 @@ struct bus_type cpu_subsys =3D {
+  EXPORT_SYMBOL_GPL(cpu_subsys);
 
- #include <asm/scatterlist.h>
- #include <asm/io.h>
-@@ -1342,6 +1343,34 @@ err:
-        return ret;
- }
+  static DEFINE_PER_CPU(struct device *, cpu_sys_devices);
++static struct dentry *cpu_debugfs_root;
++DEFINE_PER_CPU(struct dentry *, cpu_debugfs);
++EXPORT_PER_CPU_SYMBOL_GPL(cpu_debugfs);
 
-+static void sdhci_pci_shutdown(struct pci_dev *pdev)
+  #ifdef CONFIG_HOTPLUG_CPU
+  static ssize_t show_online(struct device *dev,
+@@ -71,6 +75,8 @@ void unregister_cpu(struct cpu *cpu)
+  {
+  	int logical_cpu =3D cpu->dev.id;
+
++	debugfs_remove_recursive(per_cpu(cpu_debugfs, logical_cpu));
++
+  	unregister_cpu_under_node(logical_cpu, cpu_to_node(logical_cpu));
+
+  	device_remove_file(&cpu->dev, &dev_attr_online);
+@@ -238,6 +244,7 @@ static void cpu_device_release(struct device *dev)
+  int __cpuinit register_cpu(struct cpu *cpu, int num)
+  {
+  	int error;
++	struct dentry **debugfs =3D &per_cpu(cpu_debugfs, num);
+
+  	cpu->node_id =3D cpu_to_node(num);
+  	memset(&cpu->dev, 0x00, sizeof(struct device));
+@@ -251,6 +258,9 @@ int __cpuinit register_cpu(struct cpu *cpu, int num=
+)
+  		per_cpu(cpu_sys_devices, num) =3D &cpu->dev;
+  	if (!error)
+  		register_cpu_under_node(num, cpu_to_node(num));
++	if (!error && cpu_debugfs_root)
++		*debugfs =3D debugfs_create_dir(dev_name(&cpu->dev),
++						cpu_debugfs_root);
+
+  #ifdef CONFIG_KEXEC
+  	if (!error)
+@@ -323,4 +333,8 @@ void __init cpu_dev_init(void)
+  #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+  	sched_create_sysfs_power_savings_entries(cpu_subsys.dev_root);
+  #endif
++
++	cpu_debugfs_root =3D debugfs_create_dir("cpu", NULL);
++	if (cpu_debugfs_root =3D=3D ERR_PTR(-ENODEV))
++		cpu_debugfs_root =3D NULL;
+  }
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index 5634f88..a4640ed 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -3,3 +3,4 @@
+  #
+
+  obj-y +=3D cpuidle.o driver.o governor.o sysfs.o governors/
++obj-$(CONFIG_DEBUG_FS) +=3D debugfs.o
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 59f4261..b4946bc 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -228,12 +228,9 @@ int cpuidle_enable_device(struct cpuidle_device *d=
+ev)
+
+  	poll_idle_init(cpuidle_get_driver());
+
+-	if ((ret =3D cpuidle_add_state_sysfs(dev)))
+-		return ret;
+-
+  	if (cpuidle_curr_governor->enable &&
+  	    (ret =3D cpuidle_curr_governor->enable(cpuidle_get_driver(), dev=
+)))
+-		goto fail_sysfs;
++		return ret;
+
+  	for (i =3D 0; i < dev->state_count; i++) {
+  		dev->states_usage[i].usage =3D 0;
+@@ -243,15 +240,13 @@ int cpuidle_enable_device(struct cpuidle_device *=
+dev)
+
+  	smp_wmb();
+
++	cpuidle_add_state_debugfs(dev);
++
+  	dev->enabled =3D 1;
+
+  	enabled_devices++;
+-	return 0;
+
+-fail_sysfs:
+-	cpuidle_remove_state_sysfs(dev);
+-
+-	return ret;
++	return 0;
+  }
+
+  EXPORT_SYMBOL_GPL(cpuidle_enable_device);
+@@ -275,7 +270,7 @@ void cpuidle_disable_device(struct cpuidle_device *=
+dev)
+  	if (cpuidle_curr_governor->disable)
+  		cpuidle_curr_governor->disable(cpuidle_get_driver(), dev);
+
+-	cpuidle_remove_state_sysfs(dev);
++	cpuidle_remove_state_debugfs(dev);
+  	enabled_devices--;
+  }
+
+@@ -290,7 +285,6 @@ EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+   */
+  static int __cpuidle_register_device(struct cpuidle_device *dev)
+  {
+-	int ret;
+  	struct device *cpu_dev =3D get_cpu_device((unsigned long)dev->cpu);
+  	struct cpuidle_driver *cpuidle_driver =3D cpuidle_get_driver();
+
+@@ -303,10 +297,7 @@ static int __cpuidle_register_device(struct=20
+cpuidle_device *dev)
+
+  	per_cpu(cpuidle_devices, dev->cpu) =3D dev;
+  	list_add(&dev->device_list, &cpuidle_detected_devices);
+-	if ((ret =3D cpuidle_add_sysfs(cpu_dev))) {
+-		module_put(cpuidle_driver->owner);
+-		return ret;
+-	}
++	cpuidle_add_debugfs(cpu_dev);
+
+  	dev->registered =3D 1;
+  	return 0;
+@@ -354,7 +345,7 @@ void cpuidle_unregister_device(struct cpuidle_devic=
+e=20
+*dev)
+
+  	cpuidle_disable_device(dev);
+
+-	cpuidle_remove_sysfs(cpu_dev);
++	cpuidle_remove_debugfs(cpu_dev);
+  	list_del(&dev->device_list);
+  	wait_for_completion(&dev->kobj_unregister);
+  	per_cpu(cpuidle_devices, dev->cpu) =3D NULL;
+diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+index 7db1866..890545c 100644
+--- a/drivers/cpuidle/cpuidle.h
++++ b/drivers/cpuidle/cpuidle.h
+@@ -25,9 +25,30 @@ extern int cpuidle_switch_governor(struct=20
+cpuidle_governor *gov);
+  /* sysfs */
+  extern int cpuidle_add_interface(struct device *dev);
+  extern void cpuidle_remove_interface(struct device *dev);
+-extern int cpuidle_add_state_sysfs(struct cpuidle_device *device);
+-extern void cpuidle_remove_state_sysfs(struct cpuidle_device *device);
+-extern int cpuidle_add_sysfs(struct device *dev);
+-extern void cpuidle_remove_sysfs(struct device *dev);
++
++/* debugfs */
++#ifdef CONFIG_DEBUG_FS
++DECLARE_PER_CPU(struct dentry *, cpu_debugfs);
++extern int cpuidle_add_state_debugfs(struct cpuidle_device *device);
++extern void cpuidle_remove_state_debugfs(struct cpuidle_device *device=
+);
++extern int cpuidle_add_debugfs(struct device *dev);
++extern void cpuidle_remove_debugfs(struct device *dev);
++#else
++static inline int cpuidle_add_state_debugfs(struct cpuidle_device *dev=
+ice)
 +{
-+       int i;
-+       struct sdhci_pci_chip *chip;
++	return 0;
++}
++static inline
++void cpuidle_remove_state_debugfs(struct cpuidle_device *device)
++{
++}
++static inline int cpuidle_add_debugfs(struct device *cpu_dev)
++{
++	return 0;
++}
++static inline void cpuidle_remove_debugfs(struct device *cpu_dev)
++{
++}
++#endif
+
+  #endif /* __DRIVER_CPUIDLE_H */
+diff --git a/drivers/cpuidle/debugfs.c b/drivers/cpuidle/debugfs.c
+new file mode 100644
+index 0000000..67ddc44
+--- /dev/null
++++ b/drivers/cpuidle/debugfs.c
+@@ -0,0 +1,176 @@
++/*
++ * debugfs.c - debugfs support
++ *
++ * (C) 2006-2007 Shaohua Li <shaohua.li@intel.com>
++ * (C) 2012 ShuoX Liu <shuox.liu@intel.com>
++ *
++ * This code is licenced under the GPL.
++ */
 +
-+       printk(KERN_INFO "%s: Syncing filesystems ... ", __func__);
-+       sys_sync();
-+       printk("done.\n");
++#include <linux/kernel.h>
++#include <linux/cpuidle.h>
++#include <linux/slab.h>
++#include <linux/debugfs.h>
 +
-+       pm_runtime_get_sync(&pdev->dev);
++#include "cpuidle.h"
 +
-+       chip = pci_get_drvdata(pdev);
-+
-+       if (chip) {
-+               for (i = 0;i < chip->num_slots; i++)
-+                       sdhci_pci_remove_slot(chip->slots[i]);
-+
-+               pci_set_drvdata(pdev, NULL);
-+               kfree(chip);
-+       }
-+
-+       pci_disable_device(pdev);
-+
-+       pm_runtime_put_noidle(&pdev->dev);
-+       pm_runtime_forbid(&pdev->dev);
-+       pm_runtime_disable(&pdev->dev);
++static int state_open_generic(struct inode *inode, struct file *file)
++{
++	file->private_data =3D inode->i_private;
++	return 0;
 +}
 +
- static void __devexit sdhci_pci_remove(struct pci_dev *pdev)
- {
-        int i;
-@@ -1473,6 +1502,7 @@ static struct pci_driver sdhci_driver = {
-        .id_table =     pci_ids,
-        .probe =        sdhci_pci_probe,
-        .remove =       __devexit_p(sdhci_pci_remove),
-+       .shutdown =     sdhci_pci_shutdown,
++static ssize_t state_name_read(struct file *f, char __user *buf,
++				size_t count, loff_t *off)
++{
++	struct cpuidle_state *state =3D f->private_data;
++	char buffer[CPUIDLE_NAME_LEN];
++	int len;
++
++	len =3D snprintf(buffer, sizeof(buffer), "%s\n", state->name);
++
++	return simple_read_from_buffer(buf, count, off, buffer, len);
++}
++
++static const struct file_operations state_name_fops =3D {
++	.open	=3D state_open_generic,
++	.read	=3D state_name_read,
++};
++
++static ssize_t state_desc_read(struct file *f, char __user *buf,
++				size_t count, loff_t *off)
++{
++	struct cpuidle_state *state =3D f->private_data;
++	char buffer[CPUIDLE_DESC_LEN];
++	int len;
++
++	len =3D snprintf(buffer, sizeof(buffer), "%s\n", state->desc);
++
++	return simple_read_from_buffer(buf, count, off, buffer, len);
++}
++
++static const struct file_operations state_desc_fops =3D {
++	.open	=3D state_open_generic,
++	.read	=3D state_desc_read,
++};
++
++static void debugfs_add_state_attrs(struct cpuidle_dev_state *dev_stat=
+e)
++{
++	struct dentry *parent =3D dev_state->debugfs;
++	struct cpuidle_state *state =3D dev_state->state;
++	struct cpuidle_state_usage *state_usage =3D dev_state->state_usage;
++
++	if (!parent)
++		return;
++
++	if (!debugfs_create_file("name", S_IRUGO,
++				parent, state, &state_name_fops))
++		goto error;
++
++	if (!debugfs_create_file("desc", S_IRUGO,
++				parent, state, &state_desc_fops))
++		goto error;
++
++	if (!debugfs_create_u32("latency", S_IRUGO,
++				parent, &state->exit_latency))
++		goto error;
++
++	if (!debugfs_create_u32("power", S_IRUGO,
++				parent, &state->power_usage))
++		goto error;
++
++	if (!debugfs_create_u64("usage", S_IRUGO,
++				parent, &state_usage->usage))
++		goto error;
++
++	if (!debugfs_create_u64("time", S_IRUGO,
++				parent, &state_usage->time))
++		goto error;
++
++	return;
++error:
++	debugfs_remove_recursive(parent);
++}
++
++static inline void cpuidle_free_dev_state(struct cpuidle_device=20
+*device, int i)
++{
++	struct cpuidle_dev_state *dev_state =3D device->dev_states[i];
++
++	if (!dev_state)
++		return ;
++	debugfs_remove_recursive(dev_state->debugfs);
++	kfree(dev_state);
++	dev_state =3D NULL;
++}
++
++int cpuidle_add_state_debugfs(struct cpuidle_device *device)
++{
++	int i, ret =3D -ENOMEM;
++	char buf[16];
++	struct cpuidle_dev_state *dev_state;
++	struct cpuidle_driver *drv =3D cpuidle_get_driver();
++	struct dentry *parent =3D device->debugfs;
++
++	if (!parent)
++		return -ENOENT;
++	/* state statistics */
++	for (i =3D 0; i < device->state_count; i++) {
++		dev_state =3D
++			kzalloc(sizeof(struct cpuidle_dev_state), GFP_KERNEL);
++		if (!dev_state)
++			goto error;
++		dev_state->state =3D &drv->states[i];
++		dev_state->state_usage =3D &device->states_usage[i];
++
++		sprintf(buf, "state%d", i);
++		dev_state->debugfs =3D debugfs_create_dir(buf, parent);
++		if (!dev_state->debugfs) {
++			kfree(dev_state);
++			dev_state =3D NULL;
++			goto error;
++		}
++		dev_state->dev =3D device;
++		device->dev_states[i] =3D dev_state;
++		debugfs_add_state_attrs(dev_state);
++	}
++
++	return 0;
++
++error:
++	for (i =3D i - 1; i >=3D 0; i--)
++		cpuidle_free_dev_state(device, i);
++	return ret;
++}
++
++void cpuidle_remove_state_debugfs(struct cpuidle_device *device)
++{
++	int i;
++
++	for (i =3D 0; i < device->state_count; i++)
++		cpuidle_free_dev_state(device, i);
++}
++
++int cpuidle_add_debugfs(struct device *cpu_dev)
++{
++	int cpu =3D cpu_dev->id;
++	struct cpuidle_device *device;
++	struct dentry *parent =3D per_cpu(cpu_debugfs, cpu);
++
++	if (!parent)
++		return -ENOENT;
++	device =3D per_cpu(cpuidle_devices, cpu);
++	device->debugfs =3D debugfs_create_dir("cpuidle", parent);
++	if (!device->debugfs)
++		return -ENOMEM;
++
++	return 0;
++}
++
++void cpuidle_remove_debugfs(struct device *cpu_dev)
++{
++	int cpu =3D cpu_dev->id;
++	struct cpuidle_device *dev;
++
++	dev =3D per_cpu(cpuidle_devices, cpu);
++	debugfs_remove_recursive(dev->debugfs);
++}
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index 3fe41fe..dd597a9 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -152,242 +152,3 @@ void cpuidle_remove_interface(struct device *dev)
+  {
+  	sysfs_remove_group(&dev->kobj, &cpuidle_attr_group);
+  }
+-
+-struct cpuidle_attr {
+-	struct attribute attr;
+-	ssize_t (*show)(struct cpuidle_device *, char *);
+-	ssize_t (*store)(struct cpuidle_device *, const char *, size_t count)=
+;
+-};
+-
+-#define define_one_ro(_name, show) \
+-	static struct cpuidle_attr attr_##_name =3D __ATTR(_name, 0444, show,=
+ NULL)
+-#define define_one_rw(_name, show, store) \
+-	static struct cpuidle_attr attr_##_name =3D __ATTR(_name, 0644, show,=
+ store)
+-
+-#define kobj_to_cpuidledev(k) container_of(k, struct cpuidle_device, k=
+obj)
+-#define attr_to_cpuidleattr(a) container_of(a, struct cpuidle_attr, at=
+tr)
+-static ssize_t cpuidle_show(struct kobject * kobj, struct attribute *=20
+attr ,char * buf)
+-{
+-	int ret =3D -EIO;
+-	struct cpuidle_device *dev =3D kobj_to_cpuidledev(kobj);
+-	struct cpuidle_attr * cattr =3D attr_to_cpuidleattr(attr);
+-
+-	if (cattr->show) {
+-		mutex_lock(&cpuidle_lock);
+-		ret =3D cattr->show(dev, buf);
+-		mutex_unlock(&cpuidle_lock);
+-	}
+-	return ret;
+-}
+-
+-static ssize_t cpuidle_store(struct kobject * kobj, struct attribute *=
+=20
+attr,
+-		     const char * buf, size_t count)
+-{
+-	int ret =3D -EIO;
+-	struct cpuidle_device *dev =3D kobj_to_cpuidledev(kobj);
+-	struct cpuidle_attr * cattr =3D attr_to_cpuidleattr(attr);
+-
+-	if (cattr->store) {
+-		mutex_lock(&cpuidle_lock);
+-		ret =3D cattr->store(dev, buf, count);
+-		mutex_unlock(&cpuidle_lock);
+-	}
+-	return ret;
+-}
+-
+-static const struct sysfs_ops cpuidle_sysfs_ops =3D {
+-	.show =3D cpuidle_show,
+-	.store =3D cpuidle_store,
+-};
+-
+-static void cpuidle_sysfs_release(struct kobject *kobj)
+-{
+-	struct cpuidle_device *dev =3D kobj_to_cpuidledev(kobj);
+-
+-	complete(&dev->kobj_unregister);
+-}
+-
+-static struct kobj_type ktype_cpuidle =3D {
+-	.sysfs_ops =3D &cpuidle_sysfs_ops,
+-	.release =3D cpuidle_sysfs_release,
+-};
+-
+-struct cpuidle_state_attr {
+-	struct attribute attr;
+-	ssize_t (*show)(struct cpuidle_state *, \
+-					struct cpuidle_state_usage *, char *);
+-	ssize_t (*store)(struct cpuidle_state *, const char *, size_t);
+-};
+-
+-#define define_one_state_ro(_name, show) \
+-static struct cpuidle_state_attr attr_##_name =3D __ATTR(_name, 0444,=20
+show, NULL)
+-
+-#define define_show_state_function(_name) \
+-static ssize_t show_state_##_name(struct cpuidle_state *state, \
+-			 struct cpuidle_state_usage *state_usage, char *buf) \
+-{ \
+-	return sprintf(buf, "%u\n", state->_name);\
+-}
+-
+-#define define_show_state_ull_function(_name) \
+-static ssize_t show_state_##_name(struct cpuidle_state *state, \
+-			struct cpuidle_state_usage *state_usage, char *buf) \
+-{ \
+-	return sprintf(buf, "%llu\n", state_usage->_name);\
+-}
+-
+-#define define_show_state_str_function(_name) \
+-static ssize_t show_state_##_name(struct cpuidle_state *state, \
+-			struct cpuidle_state_usage *state_usage, char *buf) \
+-{ \
+-	if (state->_name[0] =3D=3D '\0')\
+-		return sprintf(buf, "<null>\n");\
+-	return sprintf(buf, "%s\n", state->_name);\
+-}
+-
+-define_show_state_function(exit_latency)
+-define_show_state_function(power_usage)
+-define_show_state_ull_function(usage)
+-define_show_state_ull_function(time)
+-define_show_state_str_function(name)
+-define_show_state_str_function(desc)
+-
+-define_one_state_ro(name, show_state_name);
+-define_one_state_ro(desc, show_state_desc);
+-define_one_state_ro(latency, show_state_exit_latency);
+-define_one_state_ro(power, show_state_power_usage);
+-define_one_state_ro(usage, show_state_usage);
+-define_one_state_ro(time, show_state_time);
+-
+-static struct attribute *cpuidle_state_default_attrs[] =3D {
+-	&attr_name.attr,
+-	&attr_desc.attr,
+-	&attr_latency.attr,
+-	&attr_power.attr,
+-	&attr_usage.attr,
+-	&attr_time.attr,
+-	NULL
+-};
+-
+-#define kobj_to_state_obj(k) container_of(k, struct cpuidle_state_kobj=
+,=20
+kobj)
+-#define kobj_to_state(k) (kobj_to_state_obj(k)->state)
+-#define kobj_to_state_usage(k) (kobj_to_state_obj(k)->state_usage)
+-#define attr_to_stateattr(a) container_of(a, struct cpuidle_state_attr=
+,=20
+attr)
+-static ssize_t cpuidle_state_show(struct kobject * kobj,
+-	struct attribute * attr ,char * buf)
+-{
+-	int ret =3D -EIO;
+-	struct cpuidle_state *state =3D kobj_to_state(kobj);
+-	struct cpuidle_state_usage *state_usage =3D kobj_to_state_usage(kobj)=
+;
+-	struct cpuidle_state_attr * cattr =3D attr_to_stateattr(attr);
+-
+-	if (cattr->show)
+-		ret =3D cattr->show(state, state_usage, buf);
+-
+-	return ret;
+-}
+-
+-static const struct sysfs_ops cpuidle_state_sysfs_ops =3D {
+-	.show =3D cpuidle_state_show,
+-};
+-
+-static void cpuidle_state_sysfs_release(struct kobject *kobj)
+-{
+-	struct cpuidle_state_kobj *state_obj =3D kobj_to_state_obj(kobj);
+-
+-	complete(&state_obj->kobj_unregister);
+-}
+-
+-static struct kobj_type ktype_state_cpuidle =3D {
+-	.sysfs_ops =3D &cpuidle_state_sysfs_ops,
+-	.default_attrs =3D cpuidle_state_default_attrs,
+-	.release =3D cpuidle_state_sysfs_release,
+-};
+-
+-static inline void cpuidle_free_state_kobj(struct cpuidle_device=20
+*device, int i)
+-{
+-	kobject_put(&device->kobjs[i]->kobj);
+-	wait_for_completion(&device->kobjs[i]->kobj_unregister);
+-	kfree(device->kobjs[i]);
+-	device->kobjs[i] =3D NULL;
+-}
+-
+-/**
+- * cpuidle_add_driver_sysfs - adds driver-specific sysfs attributes
+- * @device: the target device
+- */
+-int cpuidle_add_state_sysfs(struct cpuidle_device *device)
+-{
+-	int i, ret =3D -ENOMEM;
+-	struct cpuidle_state_kobj *kobj;
+-	struct cpuidle_driver *drv =3D cpuidle_get_driver();
+-
+-	/* state statistics */
+-	for (i =3D 0; i < device->state_count; i++) {
+-		kobj =3D kzalloc(sizeof(struct cpuidle_state_kobj), GFP_KERNEL);
+-		if (!kobj)
+-			goto error_state;
+-		kobj->state =3D &drv->states[i];
+-		kobj->state_usage =3D &device->states_usage[i];
+-		init_completion(&kobj->kobj_unregister);
+-
+-		ret =3D kobject_init_and_add(&kobj->kobj, &ktype_state_cpuidle,=20
+&device->kobj,
+-					   "state%d", i);
+-		if (ret) {
+-			kfree(kobj);
+-			goto error_state;
+-		}
+-		kobject_uevent(&kobj->kobj, KOBJ_ADD);
+-		device->kobjs[i] =3D kobj;
+-	}
+-
+-	return 0;
+-
+-error_state:
+-	for (i =3D i - 1; i >=3D 0; i--)
+-		cpuidle_free_state_kobj(device, i);
+-	return ret;
+-}
+-
+-/**
+- * cpuidle_remove_driver_sysfs - removes driver-specific sysfs attribu=
+tes
+- * @device: the target device
+- */
+-void cpuidle_remove_state_sysfs(struct cpuidle_device *device)
+-{
+-	int i;
+-
+-	for (i =3D 0; i < device->state_count; i++)
+-		cpuidle_free_state_kobj(device, i);
+-}
+-
+-/**
+- * cpuidle_add_sysfs - creates a sysfs instance for the target device
+- * @dev: the target device
+- */
+-int cpuidle_add_sysfs(struct device *cpu_dev)
+-{
+-	int cpu =3D cpu_dev->id;
+-	struct cpuidle_device *dev;
+-	int error;
+-
+-	dev =3D per_cpu(cpuidle_devices, cpu);
+-	error =3D kobject_init_and_add(&dev->kobj, &ktype_cpuidle, &cpu_dev->=
+kobj,
+-				     "cpuidle");
+-	if (!error)
+-		kobject_uevent(&dev->kobj, KOBJ_ADD);
+-	return error;
+-}
+-
+-/**
+- * cpuidle_remove_sysfs - deletes a sysfs instance on the target devic=
+e
+- * @dev: the target device
+- */
+-void cpuidle_remove_sysfs(struct device *cpu_dev)
+-{
+-	int cpu =3D cpu_dev->id;
+-	struct cpuidle_device *dev;
+-
+-	dev =3D per_cpu(cpuidle_devices, cpu);
+-	kobject_put(&dev->kobj);
+-}
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 712abcc..f605d28 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -76,11 +76,11 @@ cpuidle_set_statedata(struct cpuidle_state_usage=20
+*st_usage, void *data)
+  	st_usage->driver_data =3D data;
+  }
 
+-struct cpuidle_state_kobj {
++struct cpuidle_dev_state {
+  	struct cpuidle_state *state;
+  	struct cpuidle_state_usage *state_usage;
+-	struct completion kobj_unregister;
+-	struct kobject kobj;
++	struct cpuidle_device *dev;
++	struct dentry *debugfs;
+  };
 
--Illyas
+  struct cpuidle_device {
+@@ -91,12 +91,14 @@ struct cpuidle_device {
+  	int			last_residency;
+  	int			state_count;
+  	struct cpuidle_state_usage	states_usage[CPUIDLE_STATE_MAX];
+-	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
++	struct cpuidle_dev_state	*dev_states[CPUIDLE_STATE_MAX];
 
-------=_NextPart_000_03B1_01CD0056.67A47130
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
+  	struct list_head 	device_list;
+  	struct kobject		kobj;
+  	struct completion	kobj_unregister;
+  	void			*governor_data;
++
++	struct dentry		*debugfs;
+  };
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIYaDCCAyAw
-ggKJoAMCAQICBDXe9M8wDQYJKoZIhvcNAQEFBQAwTjELMAkGA1UEBhMCVVMxEDAOBgNVBAoTB0Vx
-dWlmYXgxLTArBgNVBAsTJEVxdWlmYXggU2VjdXJlIENlcnRpZmljYXRlIEF1dGhvcml0eTAeFw05
-ODA4MjIxNjQxNTFaFw0xODA4MjIxNjQxNTFaME4xCzAJBgNVBAYTAlVTMRAwDgYDVQQKEwdFcXVp
-ZmF4MS0wKwYDVQQLEyRFcXVpZmF4IFNlY3VyZSBDZXJ0aWZpY2F0ZSBBdXRob3JpdHkwgZ8wDQYJ
-KoZIhvcNAQEBBQADgY0AMIGJAoGBAMFdsVhnCGLuoJotHwhtkRRomAoe/toEbxOEYiHD0XzOnwXg
-uAHwTjTs4oqVBGSs8WtTXwWzy2eAv0ICjv7dAQns4QAUT/z78AzdQ7pbK+EfgHCZFVeTFvEPl2q3
-wmgjHMxNWTCsUR47ryvW7mNFe8XZX1DS41APOojnvxT94Me5AgMBAAGjggEJMIIBBTBwBgNVHR8E
-aTBnMGWgY6BhpF8wXTELMAkGA1UEBhMCVVMxEDAOBgNVBAoTB0VxdWlmYXgxLTArBgNVBAsTJEVx
-dWlmYXggU2VjdXJlIENlcnRpZmljYXRlIEF1dGhvcml0eTENMAsGA1UEAxMEQ1JMMTAaBgNVHRAE
-EzARgQ8yMDE4MDgyMjE2NDE1MVowCwYDVR0PBAQDAgEGMB8GA1UdIwQYMBaAFEjmaPkr0rKV10fY
-IyAQTzOYkJ/UMB0GA1UdDgQWBBRI5mj5K9KylddH2CMgEE8zmJCf1DAMBgNVHRMEBTADAQH/MBoG
-CSqGSIb2fQdBAAQNMAsbBVYzLjBjAwIGwDANBgkqhkiG9w0BAQUFAAOBgQBYzinq/Pfetc4CuRe1
-hdG54+CVzCUxDQCmkm5/tpJjnlCV0Zpv5BHeY4VumO6o/1rI01WyZnFX3sAh6z0qpyNJAQSGQnv8
-7n+iFlK1Z2fTQNs7JliyKHc9rhR3Ydb6KmYnoA36p3Nc6nDxlCFlRF/6/O8paKmih3nvee9PrAd3
-ODCCAz0wggKmoAMCAQICAwWw/zANBgkqhkiG9w0BAQUFADBOMQswCQYDVQQGEwJVUzEQMA4GA1UE
-ChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5
-MB4XDTA2MDIxNjE4MDEzMFoXDTE2MDIxOTE4MDEzMFowUjELMAkGA1UEBhMCVVMxGjAYBgNVBAoT
-EUludGVsIENvcnBvcmF0aW9uMScwJQYDVQQDEx5JbnRlbCBFeHRlcm5hbCBCYXNpYyBQb2xpY3kg
-Q0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDBpd/XOb9QVqEZ8mQ1042TdOIq3ATD
-IsV2xDyt30yLyMR5Wjtus0bn3B+he89BiNO/LP6+rFzEwlD55PlX+HLGIKeNNG97dqyc30FElEUj
-ZzTZFq2N4e3kVJ/XAEEgANzV8v9qp7qWwxugPgfc3z9BkYot+CifozexHLb/hEZj+yISCU61kRZv
-uSQ0E11yYL4dRgcglJeaHo3oX57rvIckaLsYV5/1Aj+R8DM1Ppk965XQAKsHfnyT7C4S50T4lVn4
-lz36wOdNZn/zegG1zp41lnoTFfT4KuKVJH5x7YD1p6KbgJCKLovnujGuohquBNfdXKpZkvz6pGv+
-iC1HawJdAgMBAAGjgaAwgZ0wDgYDVR0PAQH/BAQDAgEGMB0GA1UdDgQWBBQaxgxKxEdvqNutK/D0
-Vgaj7TdUDDA6BgNVHR8EMzAxMC+gLaArhilodHRwOi8vY3JsLmdlb3RydXN0LmNvbS9jcmxzL3Nl
-Y3VyZWNhLmNybDAfBgNVHSMEGDAWgBRI5mj5K9KylddH2CMgEE8zmJCf1DAPBgNVHRMBAf8EBTAD
-AQH/MA0GCSqGSIb3DQEBBQUAA4GBABMQOK2kVKVIlUWwLTdywJ+e2O+PC/uQltK2F3lRyrPfBn69
-tOkIP4SgDJOfsxyobIrPLe75kBLw+Dom13OBDp/EMZJZ1CglQfVV8co9mT3aZMjSGGQiMgkJLR3j
-Mfr900fXZKj5XeqCJ+JP0mEhJGEdVCY+FFlksJjV86fDrq1QMIIFijCCBHKgAwIBAgIKYSCKYgAA
-AAAACDANBgkqhkiG9w0BAQUFADBSMQswCQYDVQQGEwJVUzEaMBgGA1UEChMRSW50ZWwgQ29ycG9y
-YXRpb24xJzAlBgNVBAMTHkludGVsIEV4dGVybmFsIEJhc2ljIFBvbGljeSBDQTAeFw0wOTA1MTUx
-OTI3MjZaFw0xNTA1MTUxOTM3MjZaMFYxCzAJBgNVBAYTAlVTMRowGAYDVQQKExFJbnRlbCBDb3Jw
-b3JhdGlvbjErMCkGA1UEAxMiSW50ZWwgRXh0ZXJuYWwgQmFzaWMgSXNzdWluZyBDQSAzQjCCASIw
-DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKQEM1Wn9TU9vc9C+/Tc7KB+eiYElmrcEWE32WUd
-HvWG+IcQHVQsikTmMyKKojNLw2B5s6Iekc8ivDo/wCfjZzX9JyftMnc+AArc0la87Olybzm8K9jX
-EfTBvTnUSFSiI9ZYefITdiUgqlAFuljFZEHYKYtLuhrRacpmQfP4mV63NKdc2bT804HRf6YptZFa
-4k6YN94zlrGNrBuQQ74WFzz/jLBusbUpEkro6Mu/ZYFOFWQrV9lBhF9Ruk8yN+3N6n9fUo/qBigi
-F2kEn9xVh1ykl7SCGL2jBUkXx4qgV27a6Si8lRRdgrHGtN/HWnSWlLXTH5l575H4Lq++77OFv38C
-AwEAAaOCAlwwggJYMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFA7GKvdZsggQkCVvw939imYx
-MCvFMAsGA1UdDwQEAwIBhjASBgkrBgEEAYI3FQEEBQIDAQABMCMGCSsGAQQBgjcVAgQWBBQ5oFY2
-ekKQ/5Ktim+VdMeSWb4QWTAZBgkrBgEEAYI3FAIEDB4KAFMAdQBiAEMAQTAfBgNVHSMEGDAWgBQa
-xgxKxEdvqNutK/D0Vgaj7TdUDDCBvQYDVR0fBIG1MIGyMIGvoIGsoIGphk5odHRwOi8vd3d3Lmlu
-dGVsLmNvbS9yZXBvc2l0b3J5L0NSTC9JbnRlbCUyMEV4dGVybmFsJTIwQmFzaWMlMjBQb2xpY3kl
-MjBDQS5jcmyGV2h0dHA6Ly9jZXJ0aWZpY2F0ZXMuaW50ZWwuY29tL3JlcG9zaXRvcnkvQ1JML0lu
-dGVsJTIwRXh0ZXJuYWwlMjBCYXNpYyUyMFBvbGljeSUyMENBLmNybDCB4wYIKwYBBQUHAQEEgdYw
-gdMwYwYIKwYBBQUHMAKGV2h0dHA6Ly93d3cuaW50ZWwuY29tL3JlcG9zaXRvcnkvY2VydGlmaWNh
-dGVzL0ludGVsJTIwRXh0ZXJuYWwlMjBCYXNpYyUyMFBvbGljeSUyMENBLmNydDBsBggrBgEFBQcw
-AoZgaHR0cDovL2NlcnRpZmljYXRlcy5pbnRlbC5jb20vcmVwb3NpdG9yeS9jZXJ0aWZpY2F0ZXMv
-SW50ZWwlMjBFeHRlcm5hbCUyMEJhc2ljJTIwUG9saWN5JTIwQ0EuY3J0MA0GCSqGSIb3DQEBBQUA
-A4IBAQCxtQEHchVQhXyjEqtMVUMe6gkmPsIczHxSeqNbo9dsD+6xbT65JT+oYgpIAtfEsYXeUJu1
-cChqpb22U5bMAz7eaQcW5bzefufWvA6lg2048B8oczBj/q+5P5NpYrUO8jOmN4jTjfJq3ElZ7yFW
-py7rB3Vm/aN6ATYqWfMbS/xfh+JCxmH3droUmMJI0/aZJHsLtjbjFnNsHDNrJZX1vxlM78Lb1hjs
-kTENPmhbVbfTj5i/ZGnhv4tmI8QZPCNtcegXJrfhRl2D9bWpdTOPrWiLDUqzy1Z6KL7TcOS/PCl8
-RHCJXkPau/thTQCpIoDa2+c+3XA++gRTfAQ4svTO260NMIIGEzCCBPugAwIBAgIKFWACkwABAACH
-wDANBgkqhkiG9w0BAQUFADBWMQswCQYDVQQGEwJVUzEaMBgGA1UEChMRSW50ZWwgQ29ycG9yYXRp
-b24xKzApBgNVBAMTIkludGVsIEV4dGVybmFsIEJhc2ljIElzc3VpbmcgQ0EgM0IwHhcNMTIwMTI2
-MDY0MzEzWhcNMTUwMTEwMDY0MzEzWjBDMRgwFgYDVQQDEw9NYW5zb29yLCBJbGx5YXMxJzAlBgkq
-hkiG9w0BCQEWGGlsbHlhcy5tYW5zb29yQGludGVsLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEP
-ADCCAQoCggEBAOLKk+CT5hEwsQdwos/OqCkUifVuyWoby0kGe6UsisRLKMgdFJQRcbEZc854jPbe
-8YISCDRl1hTBq+vT9ZRwm7sStOI93WJF6Ob66+A12bab8qgSw6HLjYErSnXwLtrj2y+zScrNaSRJ
-Xr+m59nIxba+8NvudUJ1FX0WQVmQFnCuJylzko8GPhFQBDmRQnwRCX0VJM/lJQOZOqQr5MoARNYN
-V1A5mvEqMS2Hfe8qrfkaO2alLgC7tg36U78OhOwfIDW9MWkqtoVY7PT+WVfZ9UbUUwI+eWzPwPmz
-KbouW0RA7PBva7AYQnFnbvFqBsDfiNhbccADYudqsvnyek1SaQECAwEAAaOCAvQwggLwMAsGA1Ud
-DwQEAwIHgDA8BgkrBgEEAYI3FQcELzAtBiUrBgEEAYI3FQiGw4x1hJnlUYP9gSiFjp9TgpHACWeB
-3r05lfBDAgFkAgEIMB0GA1UdDgQWBBSSPPfdaC41Y8K1RPfESldXb64J4jAfBgNVHSMEGDAWgBQO
-xir3WbIIEJAlb8Pd/YpmMTArxTCBzwYDVR0fBIHHMIHEMIHBoIG+oIG7hldodHRwOi8vd3d3Lmlu
-dGVsLmNvbS9yZXBvc2l0b3J5L0NSTC9JbnRlbCUyMEV4dGVybmFsJTIwQmFzaWMlMjBJc3N1aW5n
-JTIwQ0ElMjAzQigxKS5jcmyGYGh0dHA6Ly9jZXJ0aWZpY2F0ZXMuaW50ZWwuY29tL3JlcG9zaXRv
-cnkvQ1JML0ludGVsJTIwRXh0ZXJuYWwlMjBCYXNpYyUyMElzc3VpbmclMjBDQSUyMDNCKDEpLmNy
-bDCB9QYIKwYBBQUHAQEEgegwgeUwbAYIKwYBBQUHMAKGYGh0dHA6Ly93d3cuaW50ZWwuY29tL3Jl
-cG9zaXRvcnkvY2VydGlmaWNhdGVzL0ludGVsJTIwRXh0ZXJuYWwlMjBCYXNpYyUyMElzc3Vpbmcl
-MjBDQSUyMDNCKDEpLmNydDB1BggrBgEFBQcwAoZpaHR0cDovL2NlcnRpZmljYXRlcy5pbnRlbC5j
-b20vcmVwb3NpdG9yeS9jZXJ0aWZpY2F0ZXMvSW50ZWwlMjBFeHRlcm5hbCUyMEJhc2ljJTIwSXNz
-dWluZyUyMENBJTIwM0IoMSkuY3J0MB8GA1UdJQQYMBYGCCsGAQUFBwMEBgorBgEEAYI3CgMMMCkG
-CSsGAQQBgjcVCgQcMBowCgYIKwYBBQUHAwQwDAYKKwYBBAGCNwoDDDBNBgNVHREERjBEoCgGCisG
-AQQBgjcUAgOgGgwYaWxseWFzLm1hbnNvb3JAaW50ZWwuY29tgRhpbGx5YXMubWFuc29vckBpbnRl
-bC5jb20wDQYJKoZIhvcNAQEFBQADggEBAFPpw1PlHMUQjyxONBjYnTRfozVus7KykXMaZQWTVGIc
-oeF9H7V0tzl0wB3z1bD21t91rWsDoAZOB6kxjz7i01a6mR8OHv341m8818/kgC8LQglZnDWDHdxY
-Hp3vDu+o6QwH7CVVSf6ymi/6aihQCWLZRctSEvXvXx4K/SGkFGNMlKm5RDV+htQ5KDfk9T9LVr3W
-lW69t3Wf3Tsm5qy1v5QczGFwZqCca/67ghrwP8dYhp9Ir9bqocJcdZYjWmZEDPz/3fj6PXxxdh2F
-vOCy32HDBE6L796BVOiI9d4bbxuTcoUmL53sF6r7lNpImt4ASlnnkQRcR1rrWPJXC6H7lEwwggZa
-MIIFQqADAgECAgoVZHP3AAEAAIfBMA0GCSqGSIb3DQEBBQUAMFYxCzAJBgNVBAYTAlVTMRowGAYD
-VQQKExFJbnRlbCBDb3Jwb3JhdGlvbjErMCkGA1UEAxMiSW50ZWwgRXh0ZXJuYWwgQmFzaWMgSXNz
-dWluZyBDQSAzQjAeFw0xMjAxMjYwNjQ4MDVaFw0xNTAxMTAwNjQ4MDVaMEMxGDAWBgNVBAMTD01h
-bnNvb3IsIElsbHlhczEnMCUGCSqGSIb3DQEJARYYaWxseWFzLm1hbnNvb3JAaW50ZWwuY29tMIIB
-IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgvl4tjFKG7qkJ5HgPVOntL0NZCDa1tfKb8hT
-zbHPlqLaiRAZJd/QjJcvMVMNhnk2BqpUk7564Xi4WK8Xb/qGBScfGmNRgD6rusizYoB6WrN1Fg9A
-LhlZQygA24tsm5MspWOafPCrgDY8OLgC+48GdWzWYxtEB+f8qM8n3s1JQ/fRQqRsvei4vcyNce/S
-wlIlYJH0EyeJuR3sMpShZdexnfnArSkttheYo8tnL6TT/SqXZ4C51AXiV4cU6z7DNPTx0Ae24UnD
-eAtvsoKiqds//Wk9gk4qoaF5IhXevz2PcG3zqGgvt0pTDj79Umb4mza8EmtUc2UtliBnhXo+qVv1
-3QIDAQABo4IDOzCCAzcwCwYDVR0PBAQDAgQwMD0GCSsGAQQBgjcVBwQwMC4GJisGAQQBgjcVCIbD
-jHWEmeVRg/2BKIWOn1OCkcAJZ4S52UGHhP9OAgFkAgEMMEQGCSqGSIb3DQEJDwQ3MDUwDgYIKoZI
-hvcNAwICAgCAMA4GCCqGSIb3DQMEAgIAgDAHBgUrDgMCBzAKBggqhkiG9w0DBzAdBgNVHQ4EFgQU
-UkdcLiBuK8C6TP9mVRypaDJDFlUwHwYDVR0jBBgwFoAUDsYq91myCBCQJW/D3f2KZjEwK8Uwgc8G
-A1UdHwSBxzCBxDCBwaCBvqCBu4ZXaHR0cDovL3d3dy5pbnRlbC5jb20vcmVwb3NpdG9yeS9DUkwv
-SW50ZWwlMjBFeHRlcm5hbCUyMEJhc2ljJTIwSXNzdWluZyUyMENBJTIwM0IoMSkuY3JshmBodHRw
-Oi8vY2VydGlmaWNhdGVzLmludGVsLmNvbS9yZXBvc2l0b3J5L0NSTC9JbnRlbCUyMEV4dGVybmFs
-JTIwQmFzaWMlMjBJc3N1aW5nJTIwQ0ElMjAzQigxKS5jcmwwgfUGCCsGAQUFBwEBBIHoMIHlMGwG
-CCsGAQUFBzAChmBodHRwOi8vd3d3LmludGVsLmNvbS9yZXBvc2l0b3J5L2NlcnRpZmljYXRlcy9J
-bnRlbCUyMEV4dGVybmFsJTIwQmFzaWMlMjBJc3N1aW5nJTIwQ0ElMjAzQigxKS5jcnQwdQYIKwYB
-BQUHMAKGaWh0dHA6Ly9jZXJ0aWZpY2F0ZXMuaW50ZWwuY29tL3JlcG9zaXRvcnkvY2VydGlmaWNh
-dGVzL0ludGVsJTIwRXh0ZXJuYWwlMjBCYXNpYyUyMElzc3VpbmclMjBDQSUyMDNCKDEpLmNydDAf
-BgNVHSUEGDAWBggrBgEFBQcDBAYKKwYBBAGCNwoDBDApBgkrBgEEAYI3FQoEHDAaMAoGCCsGAQUF
-BwMEMAwGCisGAQQBgjcKAwQwTQYDVR0RBEYwRKAoBgorBgEEAYI3FAIDoBoMGGlsbHlhcy5tYW5z
-b29yQGludGVsLmNvbYEYaWxseWFzLm1hbnNvb3JAaW50ZWwuY29tMA0GCSqGSIb3DQEBBQUAA4IB
-AQBEffGupAfAE+Y5L+hlXS1UW0TEDOnQBq3uypJmipQTm+b6rDUeaME1HSPqk0N640yUFZYO9wr4
-3QeVWksRsIz7jxB7u7byd2sou8Z9Gx57o79FC3UCvmTWn0+Au2+klUdqi5ZyawlxPkwJyG0/oaKQ
-CABK3zUgLxhIv0d007LHgoyv4+jSPETqYlofCffG1pxEquL50D08k+W2x1GEkxqgASMqneT6FKJz
-nYijxwnZz4mnHAnFc8KFJnmzsb3GkrcKAtBXYbux0Jbp/ZVdgyKzrensNsUMG2p6lPLSXcs5Pmlt
-95t1h2XcwOThPPvE6lumj8IXDJwEbyrbUeqCli3IMYIDhjCCA4ICAQEwZDBWMQswCQYDVQQGEwJV
-UzEaMBgGA1UEChMRSW50ZWwgQ29ycG9yYXRpb24xKzApBgNVBAMTIkludGVsIEV4dGVybmFsIEJh
-c2ljIElzc3VpbmcgQ0EgM0ICChVgApMAAQAAh8AwCQYFKw4DAhoFAKCCAfcwGAYJKoZIhvcNAQkD
-MQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTIwMzEyMDgxNTM2WjAjBgkqhkiG9w0BCQQx
-FgQUt3wbPi0Nei9x6NG0Z/8BdiCIEMgwcwYJKwYBBAGCNxAEMWYwZDBWMQswCQYDVQQGEwJVUzEa
-MBgGA1UEChMRSW50ZWwgQ29ycG9yYXRpb24xKzApBgNVBAMTIkludGVsIEV4dGVybmFsIEJhc2lj
-IElzc3VpbmcgQ0EgM0ICChVkc/cAAQAAh8EwdQYLKoZIhvcNAQkQAgsxZqBkMFYxCzAJBgNVBAYT
-AlVTMRowGAYDVQQKExFJbnRlbCBDb3Jwb3JhdGlvbjErMCkGA1UEAxMiSW50ZWwgRXh0ZXJuYWwg
-QmFzaWMgSXNzdWluZyBDQSAzQgIKFWRz9wABAACHwTCBqwYJKoZIhvcNAQkPMYGdMIGaMAsGCWCG
-SAFlAwQBKjALBglghkgBZQMEARYwCgYIKoZIhvcNAwcwCwYJYIZIAWUDBAECMA4GCCqGSIb3DQMC
-AgIAgDAHBgUrDgMCBzANBggqhkiG9w0DAgIBQDANBggqhkiG9w0DAgIBKDAHBgUrDgMCGjALBglg
-hkgBZQMEAgMwCwYJYIZIAWUDBAICMAsGCWCGSAFlAwQCATANBgkqhkiG9w0BAQEFAASCAQANO9hf
-S8l9jIWZzgdNAsBYfvhN+J6W7OmnnQ7KeUFD+SeXYXKVjW6K8DixWZTHXL3HZc0zgjoZZy8iofVw
-mvuJdHsjKmbEF3WUd7ktCgxNhf4H8cCjChX7yvEPyn8v7H2hjzzFX716NFOTch8Crrh7Plcl8iX9
-gSc9jMNvRIOIGPakG9RWzVRkMYshQIkHMzGNnOrqum7qzmGyFUfAqZMPH11TZrsibJdvQM81rYH+
-G4Ls2m0O9tUizVMivePyQptulgMkt0BlNNgHqzfXrySO5jtGViXGTXG0SCQ4WcZj95Gt6yAHqH6m
-25Lnrk55f+Ubi/u7qYNO4OKbYH/aURZZAAAAAAAA
-
-------=_NextPart_000_03B1_01CD0056.67A47130--
+  DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+--=20
+1.7.1
