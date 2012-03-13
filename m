@@ -1,34 +1,58 @@
-From: Sundar <sunder.svit@gmail.com>
-Subject: Re: [linux-pm] [PATCH 2/4] thermal: Add generic cpufreq cooling implementation
-Date: Tue, 13 Mar 2012 17:13:45 +0530
-Message-ID: <CAMHCuPXyTXVdJQUew2SU65fhC82hDe+inJ3UQssuAZp_GMiCGA@mail.gmail.com>
-References: <1329905650-30161-1-git-send-email-amit.kachhap@linaro.org>
-	<1329905650-30161-3-git-send-email-amit.kachhap@linaro.org>
-	<CAMHCuPUOnftKYaGjEpA9rZFc1yjH3U-EkEEUWqcFapSKROTopQ@mail.gmail.com>
-	<CAK44p23nZ0kgdieasMkChV8B51Rjt=KrmypN+ksV+nym_e0Cqw@mail.gmail.com>
-	<CAMHCuPXSCZjiyW28aPPjO4zF0vgabZUrqtUK5nMXLwNzSWUjQA@mail.gmail.com>
-	<CAP245DUqz-N3nG+bc-3b=4YgYk3LMJTWk_wB7Db1ZBm0fBQOSQ@mail.gmail.com>
-	<CAMHCuPUQSPgt8mP2FY7hxi8345ZbLYi9NNbo5P24CDpZp50=_A@mail.gmail.com>
-	<CAK44p224FTbnBXOo34TPgB2dKjT1x-rGbDB+kPitvNhoXy35Tg@mail.gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [linux-pm] [PATCH V3] cpuidle: Add a sysfs entry to disable
+ specific C state for debug purpose.
+Date: Tue, 13 Mar 2012 12:29:49 -0700
+Message-ID: <20120313192949.GA8568@kroah.com>
+References: <4F5466C4.2090808@intel.com>
+ <20120305101827.GA19408@khazad-dum.debian.net>
+ <CAGF5oy_BUytjeDa8Oc62pRabaEqwqKCFuVJuzLd-XNZg34ne2w@mail.gmail.com>
+ <1330998885.1916.89.camel@ymzhang>
+ <20120306052236.GA19416@kroah.com>
+ <1331013078.1916.103.camel@ymzhang>
+ <20120306143935.GA23346@kroah.com>
+ <20120312181151.GE14020@sirena.org.uk>
+ <20120312192936.GC24873@kroah.com>
+ <1331602594.1916.155.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAK44p224FTbnBXOo34TPgB2dKjT1x-rGbDB+kPitvNhoXy35Tg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Amit Kachhap <amit.kachhap@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, len.brown@intel.com, linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, mark.gross@intel.com, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1331602594.1916.155.camel@ymzhang>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Yanmin Zhang <yanmin_zhang@linux.intel.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, "Brown, Len" <len.brown@intel.com>, ShuoX Liu <shuox.liu@intel.com>, Ingo Molnar <mingo@elte.hu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "H. Peter Anvin" <hpa@zytor.com>, andi.kleen@intel.com, Thomas Gleixner <tglx@linutronix.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 13, 2012 at 4:22 PM, Amit Kachhap <amit.kachhap@linaro.org> wrote:
-> Yes that should be helpful. Even the things your are suggesting are
-> somewhat same with some patches submitted which sets cpufreq min/max
-> constraint.
+On Tue, Mar 13, 2012 at 09:36:34AM +0800, Yanmin Zhang wrote:
+> On Mon, 2012-03-12 at 12:29 -0700, Greg KH wrote:
+> > On Mon, Mar 12, 2012 at 06:11:51PM +0000, Mark Brown wrote:
+> > > On Tue, Mar 06, 2012 at 06:39:35AM -0800, Greg KH wrote:
+> > > 
+> > > > Do you know of any tools using these files?  I have never heard of them,
+> > > > and I was told we should move these files years ago.  So I don't think
+> > > > there should be any api issues.
+> > > 
+> > > powertop uses them.
+> > 
+> > Ok, then we can't move them all.
+> > 
+> > We should then just move the ones that have multiple lines, as I'm
+> > pretty sure powertop doesn't use them, right?
+> All sys files under cpu/cpuXXX/cpuidle have single line. If we move
+> some files to debugfs and keep others under sysfs, users might be confused.
+> 
+> Should we go back to the 1st version which just adds the new entry to
+> sysfs?
 
-Hmm..let me see how soon can I code up a rough implementation!
+Wait, I thought this whole thing started when we wanted to move the
+files that had multiple lines out of sysfs?
 
-Cheers!
+If none of these do, and they all are being used by tools already, then
+fine, they should stay.
 
--- 
----------
-The views expressed in this email are personal and do not necessarily
-echo my employers.
+But for some reason, I thought there was a problem here.  Perhaps that
+was in the cpufreq code?
+
+confused,
+
+greg k-h
