@@ -1,46 +1,60 @@
-From: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [linux-pm] [PATCH V3] cpuidle: Add a sysfs entry to disable
- specific C state for debug purpose.
-Date: Tue, 13 Mar 2012 09:36:34 +0800
-Message-ID: <1331602594.1916.155.camel@ymzhang>
-References: <C6CB66606345BC4B80CBE69D22ABFBB10220E1@SHSMSX101.ccr.corp.intel.com>
-	 <4F545A4E.8010801@linux.vnet.ibm.com> <4F5466C4.2090808@intel.com>
-	 <20120305101827.GA19408@khazad-dum.debian.net>
-	 <CAGF5oy_BUytjeDa8Oc62pRabaEqwqKCFuVJuzLd-XNZg34ne2w@mail.gmail.com>
-	 <1330998885.1916.89.camel@ymzhang> <20120306052236.GA19416@kroah.com>
-	 <1331013078.1916.103.camel@ymzhang> <20120306143935.GA23346@kroah.com>
-	 <20120312181151.GE14020@sirena.org.uk>  <20120312192936.GC24873@kroah.com>
-Reply-To: yanmin_zhang@linux.intel.com
+From: ShuoX Liu <shuox.liu@intel.com>
+Subject: Re: [PATCH 1/3] cpuidle: Move cpuidle sysfs entry of each cpu to
+ debugfs.
+Date: Tue, 13 Mar 2012 10:07:57 +0800
+Message-ID: <4F5EABFD.3090705@intel.com>
+References: <4F5466C4.2090808@intel.com> <20120305101827.GA19408@khazad-dum.debian.net> <CAGF5oy_BUytjeDa8Oc62pRabaEqwqKCFuVJuzLd-XNZg34ne2w@mail.gmail.com> <1330998885.1916.89.camel@ymzhang> <20120306052236.GA19416@kroah.com> <1331013078.1916.103.camel@ymzhang> <20120306143935.GA23346@kroah.com> <1331082051.1916.124.camel@ymzhang> <20120308180106.GD26516@kroah.com> <4F5DBFA8.3080300@intel.com> <20120312172258.GA29938@kroah.com>
+Reply-To: shuox.liu@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20120312192936.GC24873@kroah.com>
+In-Reply-To: <20120312172258.GA29938@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, "Brown, Len" <len.brown@intel.com>, ShuoX Liu <shuox.liu@intel.com>, Ingo Molnar <mingo@elte.hu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "H. Peter Anvin" <hpa@zytor.com>, andi.kleen@intel.com, Thomas Gleixner <tglx@linutronix.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Yanmin Zhang <yanmin_zhang@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, "Valentin, Eduardo" <eduardo.valentin@ti.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "Brown, Len" <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>, "Kleen, Andi" <andi.kleen@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2012-03-12 at 12:29 -0700, Greg KH wrote:
-> On Mon, Mar 12, 2012 at 06:11:51PM +0000, Mark Brown wrote:
-> > On Tue, Mar 06, 2012 at 06:39:35AM -0800, Greg KH wrote:
-> > 
-> > > Do you know of any tools using these files?  I have never heard of them,
-> > > and I was told we should move these files years ago.  So I don't think
-> > > there should be any api issues.
-> > 
-> > powertop uses them.
-> 
-> Ok, then we can't move them all.
-> 
-> We should then just move the ones that have multiple lines, as I'm
-> pretty sure powertop doesn't use them, right?
-All sys files under cpu/cpuXXX/cpuidle have single line. If we move
-some files to debugfs and keep others under sysfs, users might be confused.
+On 2012=E5=B9=B403=E6=9C=8813=E6=97=A5 01:22, Greg KH wrote:
 
-Should we go back to the 1st version which just adds the new entry to
-sysfs?
+> On Mon, Mar 12, 2012 at 05:19:36PM +0800, ShuoX Liu wrote:
+>> I created a series to do this.
+>>
+>> [PATCH 1/3] cpuidle: Move cpuidle sysfs entry of each cpu to debugfs=
+=2E
+>> [PATCH 2/3] cpuidle: Add a debugfs entry to disable specific C state
+>> for debug purpose.
+>> [PATCH 3/3] cpupower: Update the cpupower tool for new debugfs
+>> entries of cpuidle.
+>>
+>> Below are patches.
+>=20
+> The patch is line-wrapped and can not be applied :(
 
-In addition, should we move powertop to tools/?
+Sorry that i made a mistake. I sent email with fresh email-client which
+has the text-wrapping default. I will configure it.
+I will send the patch in good format when needed.
 
-Yanmin
+>> --- /dev/null
+>> +++ b/drivers/cpuidle/debugfs.c
+>> @@ -0,0 +1,176 @@
+>> +/*
+>> + * debugfs.c - debugfs support
+>> + *
+>> + * (C) 2006-2007 Shaohua Li <shaohua.li@intel.com>
+>> + * (C) 2012 ShuoX Liu <shuox.liu@intel.com>
+>> + *
+>> + * This code is licenced under the GPL.
+>=20
+> What version of the GPL?
+
+GPLv2
+
+>=20
+> thanks,
+>=20
+> greg k-h
+
+
+thanks,
+Shuo
