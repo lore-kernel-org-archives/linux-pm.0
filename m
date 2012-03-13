@@ -1,76 +1,105 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH V3] cpuidle: Add a sysfs entry to disable
- specific C state for debug purpose.
-Date: Tue, 13 Mar 2012 17:49:15 -0300
-Message-ID: <20120313204915.GD3260@khazad-dum.debian.net>
-References: <C6CB66606345BC4B80CBE69D22ABFBB1021C7F@SHSMSX101.ccr.corp.intel.com>
-	<1330647453.1916.7.camel@ymzhang>
-	<20120302142303.648285a7.akpm@linux-foundation.org>
-	<C6CB66606345BC4B80CBE69D22ABFBB10220E1@SHSMSX101.ccr.corp.intel.com>
-	<4F545A4E.8010801@linux.vnet.ibm.com> <4F5466C4.2090808@intel.com>
-	<20120305101827.GA19408@khazad-dum.debian.net>
-	<1330995854.1916.39.camel@ymzhang>
-	<20120313004229.GA21111@khazad-dum.debian.net>
-	<1331601480.1916.149.camel@ymzhang>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH 0/3] coupled cpuidle state support
+Date: Tue, 13 Mar 2012 16:52:49 -0700
+Message-ID: <8762e8kqi6.fsf@ti.com>
+References: <1324426147-16735-1-git-send-email-ccross@android.com>
+ <4F1929E9.7070707@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1331601480.1916.149.camel@ymzhang>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>, ShuoX Liu <shuox.liu@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <4F1929E9.7070707@linaro.org> (Daniel Lezcano's message of "Fri,
+ 20 Jan 2012 09:46:33 +0100")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Colin Cross <ccross@android.com>
+Cc: Len Brown <len.brown@intel.com>, Trinabh Gupta <g.trinabh@gmail.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-tegra@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 13 Mar 2012, Yanmin Zhang wrote:
-> > > > > +static ssize_t store_state_##_name(struct cpuidle_state *state, \
-> > > > > +		const char *buf, size_t size) \
-> > > > > +{ \
-> > > > > +	int value; \
-> > > > > +	sscanf(buf, "%d", &value); \
-> > > > > +	if (value) \
-> > > > > +		state->disable = 1; \
-> > > > > +	else \
-> > > > > +		state->disable = 0; \
-> > > > > +	return size; \
-> > > > > +}
-> > > > 
-> > > > Isn't this missing a check for capabilities?  Disabling cpuidle states is
-> > > > not something random Joe (and IMHO that does mean random capability-
-> > > > restricted Joe root) should be doing...
-> > > Sorry. Could you elaborate it?
-> > 
-> > Sure.  Should any user be able to disable a C state, therefore causing
-> > the system to consume more power?
-> Here we use the simple way to check access. Only root could change it.
+Hi Colin,
 
-Yea, but capabilities are supposed to constrain root as well :-)
+On 12/21/2011 01:09 AM, Colin Cross wrote:
 
-> > I am pretty sure the answer is NO, in which case you should check for
-> > the appropriate user credentials before you allow a write to these
-> > "debug" controls to succeed.  "capability" here is one of the CAP_*
-> > capabilities tested through capable(), which are supposed to limit even
-> > root.
-> We would add below check.
->  
->         if (!capable(CAP_SYS_ADMIN))
->                 return -EPERM;
+> To use coupled cpuidle states, a cpuidle driver must:
 
-Looks good.
+[...]
 
-Thanks!
+>     Provide a struct cpuidle_state.enter function for each state
+>     that affects multiple cpus.  This function is guaranteed to be
+>     called on all cpus at approximately the same time.  The driver
+>     should ensure that the cpus all abort together if any cpu tries
+>     to abort once the function is called.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I've discoved the last sentence above is crucial, and in order to catch
+all the corner cases I found it useful to have the struct
+cpuidle_coupled in cpuidle.h so that the driver can check ready_count
+itself (patch below, on top of $SUBJECT series.)
+
+As you know, on OMAP4, when entering the coupled state, CPU0 has to wait
+for CPU1 to enter its low power state before entering itself.  The first
+pass at implementing this was to just spin waiting for the powerdomain
+of CPU1 to hit off.  That works... most of the time.
+
+If CPU1 wakes up immediately (or before CPU0 starts checking), or more
+likely, fails to hit the low-power state because of other hardware
+"conditions", CPU0 will end up stuck in the loop waiting for CPU1.
+
+To solve this, in addition to checking the power state of CPU1, I also 
+check if (coupled->ready_count != cpumask_weight(&coupled->alive_coupled_cpus)).
+If true, it means that CPU1 has already exited/aborted so CPU0 had
+better abort as well.
+
+Checking the ready_count seemed like an easy way to do this, but did you
+have any other mechanisms in mind for CPUs to communicate that they've
+exited/aborted?
+
+Kevin
+
+
+diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+index bf34d67..16e00cc 100644
+--- a/drivers/cpuidle/cpuidle.h
++++ b/drivers/cpuidle/cpuidle.h
+@@ -32,15 +32,6 @@ extern void cpuidle_remove_state_sysfs(struct cpuidle_device *device);
+ extern int cpuidle_add_sysfs(struct device *dev);
+ extern void cpuidle_remove_sysfs(struct device *dev);
+ 
+-/* coupled states */
+-struct cpuidle_coupled {
+-	spinlock_t lock;
+-	int requested_state[NR_CPUS];
+-	int ready_count;
+-	cpumask_t alive_coupled_cpus;
+-	int refcnt;
+-};
+-
+ #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+ bool cpuidle_state_is_coupled(struct cpuidle_device *dev,
+ 		struct cpuidle_driver *drv, int state);
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 71f2fba..dbc1f2e 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -51,6 +51,15 @@ struct cpuidle_state {
+ 			int index);
+ };
+ 
++/* coupled states */
++struct cpuidle_coupled {
++	spinlock_t lock;
++	int requested_state[NR_CPUS];
++	int ready_count;
++	cpumask_t alive_coupled_cpus;
++	int refcnt;
++};
++
+ /* Idle State Flags */
+ #define CPUIDLE_FLAG_TIME_VALID	(0x01) /* is residency time measurable? */
+ #define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
