@@ -1,65 +1,36 @@
-From: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [linux-pm] [PATCH V3] cpuidle: Add a sysfs entry to disable
- specific C state for debug purpose.
-Date: Wed, 14 Mar 2012 08:55:00 +0800
-Message-ID: <1331686500.1916.172.camel@ymzhang>
-References: <4F5466C4.2090808@intel.com>
-	 <20120305101827.GA19408@khazad-dum.debian.net>
-	 <CAGF5oy_BUytjeDa8Oc62pRabaEqwqKCFuVJuzLd-XNZg34ne2w@mail.gmail.com>
-	 <1330998885.1916.89.camel@ymzhang> <20120306052236.GA19416@kroah.com>
-	 <1331013078.1916.103.camel@ymzhang> <20120306143935.GA23346@kroah.com>
-	 <20120312181151.GE14020@sirena.org.uk> <20120312192936.GC24873@kroah.com>
-	 <1331602594.1916.155.camel@ymzhang>  <20120313192949.GA8568@kroah.com>
-Reply-To: yanmin_zhang@linux.intel.com
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 0/3] coupled cpuidle state support
+Date: Tue, 13 Mar 2012 19:04:49 -0700
+Message-ID: <4F5FFCC1.2030702@linux.intel.com>
+References: <1324426147-16735-1-git-send-email-ccross@android.com>
+	<4F1929E9.7070707@linaro.org> <8762e8kqi6.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20120313192949.GA8568@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, "Brown, Len" <len.brown@intel.com>, ShuoX Liu <shuox.liu@intel.com>, Ingo Molnar <mingo@elte.hu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "H. Peter Anvin" <hpa@zytor.com>, andi.kleen@intel.com, Thomas Gleixner <tglx@linutronix.de>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <8762e8kqi6.fsf@ti.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Kevin Hilman <khilman@ti.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-tegra@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2012-03-13 at 12:29 -0700, Greg KH wrote:
-> On Tue, Mar 13, 2012 at 09:36:34AM +0800, Yanmin Zhang wrote:
-> > On Mon, 2012-03-12 at 12:29 -0700, Greg KH wrote:
-> > > On Mon, Mar 12, 2012 at 06:11:51PM +0000, Mark Brown wrote:
-> > > > On Tue, Mar 06, 2012 at 06:39:35AM -0800, Greg KH wrote:
-> > > > 
-> > > > > Do you know of any tools using these files?  I have never heard of them,
-> > > > > and I was told we should move these files years ago.  So I don't think
-> > > > > there should be any api issues.
-> > > > 
-> > > > powertop uses them.
-> > > 
-> > > Ok, then we can't move them all.
-> > > 
-> > > We should then just move the ones that have multiple lines, as I'm
-> > > pretty sure powertop doesn't use them, right?
-> > All sys files under cpu/cpuXXX/cpuidle have single line. If we move
-> > some files to debugfs and keep others under sysfs, users might be confused.
-> > 
-> > Should we go back to the 1st version which just adds the new entry to
-> > sysfs?
-> 
-> Wait, I thought this whole thing started when we wanted to move the
-> files that had multiple lines out of sysfs?
-No. Liu Shuo's patch adds a new entry under cpu/cpuXXX/cpuidle and users
-can disable specific C state.
-A gentleman raised that if we should move it to debugfs, then you suggested
-to move all files under cpu/cpuXXX/cpuidle to debugfs.
+On 3/13/2012 4:52 PM, Kevin Hilman wrote:
+> Checking the ready_count seemed like an easy way to do this, but did you
+> have any other mechanisms in mind for CPUs to communicate that they've
+> exited/aborted?
 
-> 
-> If none of these do, and they all are being used by tools already, then
-> fine, they should stay.
-Agree.
+this indeed is the tricky part (which I warned about earlier);
+I've spent quite a lot of time (weeks) to get this provably working for
+an Intel system with similar requirements... and it's extremely unfunny,
+and needed firmware support to close some of the race conditions.
 
-> 
-> But for some reason, I thought there was a problem here.  Perhaps that
-> was in the cpufreq code?
-I checked cpufreq quickly. Every file has single-line, but some have
-multiple-fields.
-
-We would send a new patch based on sysfs as the new entry has
-single line.
+I sure hope that hardware with these requirements is on the way out...
+it's not very OS friendly.
