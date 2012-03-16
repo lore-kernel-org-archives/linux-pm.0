@@ -1,8 +1,8 @@
 From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH v4] cpuidle: Add a sysfs entry to disable
  specific C state for debug purpose.
-Date: Fri, 16 Mar 2012 14:33:55 -0700
-Message-ID: <20120316143355.f2dddbbd.akpm@linux-foundation.org>
+Date: Fri, 16 Mar 2012 15:23:23 -0700
+Message-ID: <20120316152323.3c629e5c.akpm@linux-foundation.org>
 References: <CAGF5oy_BUytjeDa8Oc62pRabaEqwqKCFuVJuzLd-XNZg34ne2w@mail.gmail.com>
 	<1330998885.1916.89.camel@ymzhang>
 	<20120306052236.GA19416@kroah.com>
@@ -46,17 +46,8 @@ ShuoX Liu <shuox.liu@intel.com> wrote:
 > the new debug option, developers could check if a deep C state could  impact
 > performance and how much impact it could cause.
 > 
-> Also add this option in Documentation/cpuidle/sysfs.txt.
-> 
->
 > ...
 >
-> +#define define_one_state_rw(_name, show, store) \
-> +static struct cpuidle_state_attr attr_##_name = __ATTR(_name, 0644, show, store)
->
-> ...
->
-
 > +#define define_store_state_function(_name) \
 > +static ssize_t store_state_##_name(struct cpuidle_state *state, \
 > +		const char *buf, size_t size) \
@@ -64,9 +55,6 @@ ShuoX Liu <shuox.liu@intel.com> wrote:
 > +	long value; \
 > +	if (!capable(CAP_SYS_ADMIN)) \
 > +		return -EPERM; \
-
-Is the capability check required?  The 0644 permissions aren't sufficient?
-
 > +	kstrtol(buf, 0, &value); \
 > +	if (value) \
 > +		state->disable = 1; \
@@ -74,6 +62,27 @@ Is the capability check required?  The 0644 permissions aren't sufficient?
 > +		state->disable = 0; \
 > +	return size; \
 > +}
->
-> ...
->
+
+drivers/cpuidle/sysfs.c: In function 'store_state_disable':
+drivers/cpuidle/sysfs.c:274: warning: ignoring return value of 'kstrtol', declared with attribute warn_unused_result
+
+The check is there for a reason - the kernel shouldn't silently accept
+random garbage inputs.
+
+--- a/drivers/cpuidle/sysfs.c~cpuidle-add-a-sysfs-entry-to-disable-specific-c-state-for-debug-purpose-fix
++++ a/drivers/cpuidle/sysfs.c
+@@ -238,9 +238,12 @@ static ssize_t store_state_##_name(struc
+ 		const char *buf, size_t size) \
+ { \
+ 	long value; \
++	int err; \
+ 	if (!capable(CAP_SYS_ADMIN)) \
+ 		return -EPERM; \
+-	kstrtol(buf, 0, &value); \
++	err = kstrtol(buf, 0, &value); \
++	if (err) \
++		return err; \
+ 	if (value) \
+ 		state->disable = 1; \
+ 	else \
+_
