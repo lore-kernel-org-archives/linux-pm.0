@@ -1,24 +1,14 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4] cpuidle: Add a sysfs entry to disable
- specific C state for debug purpose.
-Date: Fri, 16 Mar 2012 15:23:23 -0700
-Message-ID: <20120316152323.3c629e5c.akpm@linux-foundation.org>
-References: <CAGF5oy_BUytjeDa8Oc62pRabaEqwqKCFuVJuzLd-XNZg34ne2w@mail.gmail.com>
-	<1330998885.1916.89.camel@ymzhang>
-	<20120306052236.GA19416@kroah.com>
-	<1331013078.1916.103.camel@ymzhang>
-	<20120306143935.GA23346@kroah.com>
-	<20120312181151.GE14020@sirena.org.uk>
-	<20120312192936.GC24873@kroah.com>
-	<1331602594.1916.155.camel@ymzhang>
-	<20120313192949.GA8568@kroah.com>
-	<1331686500.1916.172.camel@ymzhang>
-	<20120314024619.GC22955@kroah.com> <4F600F78.2060902@intel.com>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCHv2 3/5] cpuidle: add support for states that
+ affect multiple cpus
+Date: Sat, 17 Mar 2012 17:59:46 +0530
+Message-ID: <4F6483BA.8050103@ti.com>
+References: <1331749794-8056-1-git-send-email-ccross@android.com>
+	<1331749794-8056-4-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="------------010003030608010006070203"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4F600F78.2060902@intel.com>
+In-Reply-To: <1331749794-8056-4-git-send-email-ccross@android.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -28,61 +18,269 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: shuox.liu@intel.com
-Cc: "Brown, Len" <len.brown@intel.com>, Yanmin Zhang <yanmin_zhang@linux.intel.com>, Greg KH <gregkh@linuxfoundation.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, "H. Peter Anvin" <hpa@zytor.com>, andi.kleen@intel.com, Ingo Molnar <mingo@elte.hu>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Colin Cross <ccross@android.com>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 14 Mar 2012 11:24:40 +0800
-ShuoX Liu <shuox.liu@intel.com> wrote:
+This is a multi-part message in MIME format.
+--------------010003030608010006070203
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> From: ShuoX Liu <shuox.liu@intel.com>
+Colin,
+
+On Wednesday 14 March 2012 11:59 PM, Colin Cross wrote:
+> On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
+> cpus cannot be independently powered down, either due to
+> sequencing restrictions (on Tegra 2, cpu 0 must be the last to
+> power down), or due to HW bugs (on OMAP4460, a cpu powering up
+> will corrupt the gic state unless the other cpu runs a work
+> around).  Each cpu has a power state that it can enter without
+> coordinating with the other cpu (usually Wait For Interrupt, or
+> WFI), and one or more "coupled" power states that affect blocks
+> shared between the cpus (L2 cache, interrupt controller, and
+> sometimes the whole SoC).  Entering a coupled power state must
+> be tightly controlled on both cpus.
 > 
-> Some C states of new CPU might be not good. One reason is BIOS might configure
-> them incorrectly. To help developers root cause it quickly, the patch adds a
-> new sysfs entry, so developers could disable specific C state manually.
+> The easiest solution to implementing coupled cpu power states is
+> to hotplug all but one cpu whenever possible, usually using a
+> cpufreq governor that looks at cpu load to determine when to
+> enable the secondary cpus.  This causes problems, as hotplug is an
+> expensive operation, so the number of hotplug transitions must be
+> minimized, leading to very slow response to loads, often on the
+> order of seconds.
 > 
-> In addition, C state might have much impact on performance tuning, as it takes
-> much time to enter/exit C states, which might delay interrupt processing. With
-> the new debug option, developers could check if a deep C state could  impact
-> performance and how much impact it could cause.
+> This file implements an alternative solution, where each cpu will
+> wait in the WFI state until all cpus are ready to enter a coupled
+> state, at which point the coupled state function will be called
+> on all cpus at approximately the same time.
 > 
-> ...
->
-> +#define define_store_state_function(_name) \
-> +static ssize_t store_state_##_name(struct cpuidle_state *state, \
-> +		const char *buf, size_t size) \
-> +{ \
-> +	long value; \
-> +	if (!capable(CAP_SYS_ADMIN)) \
-> +		return -EPERM; \
-> +	kstrtol(buf, 0, &value); \
-> +	if (value) \
-> +		state->disable = 1; \
-> +	else \
-> +		state->disable = 0; \
-> +	return size; \
-> +}
+> Once all cpus are ready to enter idle, they are woken by an smp
+> cross call.  At this point, there is a chance that one of the
+> cpus will find work to do, and choose not to enter idle.  A
+> final pass is needed to guarantee that all cpus will call the
+> power state enter function at the same time.  During this pass,
+> each cpu will increment the ready counter, and continue once the
+> ready counter matches the number of online coupled cpus.  If any
+> cpu exits idle, the other cpus will decrement their counter and
+> retry.
+> 
+> To use coupled cpuidle states, a cpuidle driver must:
+> 
+>    Set struct cpuidle_device.coupled_cpus to the mask of all
+>    coupled cpus, usually the same as cpu_possible_mask if all cpus
+>    are part of the same cluster.  The coupled_cpus mask must be
+>    set in the struct cpuidle_device for each cpu.
+> 
+>    Set struct cpuidle_device.safe_state to a state that is not a
+>    coupled state.  This is usually WFI.
+> 
+>    Set CPUIDLE_FLAG_COUPLED in struct cpuidle_state.flags for each
+>    state that affects multiple cpus.
+> 
+>    Provide a struct cpuidle_state.enter function for each state
+>    that affects multiple cpus.  This function is guaranteed to be
+>    called on all cpus at approximately the same time.  The driver
+>    should ensure that the cpus all abort together if any cpu tries
+>    to abort once the function is called.
+> 
+> Signed-off-by: Colin Cross <ccross@android.com>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Kevin Hilman <khilman@ti.com>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Amit Kucheria <amit.kucheria@linaro.org>
+> Cc: Arjan van de Ven <arjan@linux.intel.com>
+> Cc: Trinabh Gupta <g.trinabh@gmail.com>
+> Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+> ---
 
-drivers/cpuidle/sysfs.c: In function 'store_state_disable':
-drivers/cpuidle/sysfs.c:274: warning: ignoring return value of 'kstrtol', declared with attribute warn_unused_result
+[..]
 
-The check is there for a reason - the kernel shouldn't silently accept
-random garbage inputs.
+> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+> new file mode 100644
+> index 0000000..046fccb
+> --- /dev/null
+> +++ b/drivers/cpuidle/coupled.c
+> @@ -0,0 +1,568 @@
+> +/*
+> + * coupled.c - helper functions to enter the same idle state on multiple cpus
+> + *
+> + * Copyright (c) 2011 Google, Inc.
+> + *
+> + * Author: Colin Cross <ccross@android.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+> + */
 
---- a/drivers/cpuidle/sysfs.c~cpuidle-add-a-sysfs-entry-to-disable-specific-c-state-for-debug-purpose-fix
-+++ a/drivers/cpuidle/sysfs.c
-@@ -238,9 +238,12 @@ static ssize_t store_state_##_name(struc
- 		const char *buf, size_t size) \
- { \
- 	long value; \
-+	int err; \
- 	if (!capable(CAP_SYS_ADMIN)) \
- 		return -EPERM; \
--	kstrtol(buf, 0, &value); \
-+	err = kstrtol(buf, 0, &value); \
-+	if (err) \
-+		return err; \
- 	if (value) \
- 		state->disable = 1; \
- 	else \
-_
+[...]
+
+> +/**
+> + * cpuidle_coupled_cpu_set_alive - adjust alive_count during hotplug transitions
+> + * @cpu: target cpu number
+> + * @alive: whether the target cpu is going up or down
+> + *
+> + * Run on the cpu that is bringing up the target cpu, before the target cpu
+> + * has been booted, or after the target cpu is completely dead.
+> + */
+> +static void cpuidle_coupled_cpu_set_alive(int cpu, bool alive)
+> +{
+> +	struct cpuidle_device *dev;
+> +	struct cpuidle_coupled *coupled;
+> +
+> +	mutex_lock(&cpuidle_lock);
+> +
+> +	dev = per_cpu(cpuidle_devices, cpu);
+> +	if (!dev->coupled)
+> +		goto out;
+> +
+> +	coupled = dev->coupled;
+> +
+> +	/*
+> +	 * waiting_count must be at least 1 less than alive_count, because
+> +	 * this cpu is not waiting.  Spin until all cpus have noticed this cpu
+> +	 * is not idle and exited the ready loop before changing alive_count.
+> +	 */
+> +	while (atomic_read(&coupled->ready_count))
+> +		cpu_relax();
+> +
+> +	smp_mb__before_atomic_inc();
+> +	atomic_inc(&coupled->alive_count);
+> +	smp_mb__after_atomic_inc();
+> +
+> +	if (alive)
+> +		coupled->requested_state[dev->cpu] = CPUIDLE_COUPLED_NOT_IDLE;
+> +	else
+> +		coupled->requested_state[dev->cpu] = CPUIDLE_COUPLED_DEAD;
+> +
+
+While playing around with this version, I noticed that the
+'alive_count' is ever incrementing which will lead to
+coupled idle state not being attempted after one CPU offline
+attempt.
+
+Fix in end of the email for the same. With it, coupled states
+continue to work with CPU online/offline transitions.
+
+Feel free to fold it into original patch. Attached
+the same in case mailer eat tabs.
+
+Regards
+Santosh
+
+>>
+cpuidle: coupled: Fix the alive_count based on CPU online/offline.
+
+Currently the alive_count is ever incrementing which will lead to
+coupled idle state not being attempted after one CPU offline
+attempt.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+---
+ drivers/cpuidle/coupled.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index 3bc8a02..708bcfe 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -595,14 +595,18 @@ static void cpuidle_coupled_cpu_set_alive(int cpu,
+bool alive)
+        while (atomic_read(&coupled->ready_count))
+                cpu_relax();
+
+-       smp_mb__before_atomic_inc();
+-       atomic_inc(&coupled->alive_count);
+-       smp_mb__after_atomic_inc();
+
+-       if (alive)
++       if (alive) {
++               smp_mb__before_atomic_inc();
++               atomic_inc(&coupled->alive_count);
++               smp_mb__after_atomic_inc();
+                coupled->requested_state[dev->cpu] =
+CPUIDLE_COUPLED_NOT_IDLE;
+-       else
++       } else {
++               smp_mb__before_atomic_inc();
++               atomic_dec(&coupled->alive_count);
++               smp_mb__after_atomic_inc();
+                coupled->requested_state[dev->cpu] = CPUIDLE_COUPLED_DEAD;
++       }
+
+<upled-Fix-the-alive_count-based-on-CPU-onl.patch" 45L, 1387C 1,1
+    Top
+
+
+
+
+
+--------------010003030608010006070203
+Content-Type: text/x-patch;
+ name="0001-cpuidle-coupled-Fix-the-alive_count-based-on-CPU-onl.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0001-cpuidle-coupled-Fix-the-alive_count-based-on-CPU-onl.pa";
+ filename*1="tch"
+
+>From 189e5862ea4f983313cbf6abb7aabab670267c83 Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Sat, 17 Mar 2012 17:46:50 +0530
+Subject: [PATCH] cpuidle: coupled: Fix the alive_count based on CPU online/offline.
+
+Currently the alive_count is ever incrementing which will lead to
+coupled idle state not being attempted after one CPU offline
+attempt.
+
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+---
+ drivers/cpuidle/coupled.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index 3bc8a02..708bcfe 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -595,14 +595,18 @@ static void cpuidle_coupled_cpu_set_alive(int cpu, bool alive)
+ 	while (atomic_read(&coupled->ready_count))
+ 		cpu_relax();
+ 
+-	smp_mb__before_atomic_inc();
+-	atomic_inc(&coupled->alive_count);
+-	smp_mb__after_atomic_inc();
+ 
+-	if (alive)
++	if (alive) {
++		smp_mb__before_atomic_inc();
++		atomic_inc(&coupled->alive_count);
++		smp_mb__after_atomic_inc();
+ 		coupled->requested_state[dev->cpu] = CPUIDLE_COUPLED_NOT_IDLE;
+-	else
++	} else {
++		smp_mb__before_atomic_inc();
++		atomic_dec(&coupled->alive_count);
++		smp_mb__after_atomic_inc();
+ 		coupled->requested_state[dev->cpu] = CPUIDLE_COUPLED_DEAD;
++	}
+ 
+ out:
+ 	mutex_unlock(&cpuidle_lock);
+-- 
+1.7.4.1
+
+
+--------------010003030608010006070203
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--------------010003030608010006070203--
