@@ -1,62 +1,43 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] thermal: Fix for setting the thermal zone mode to enable/disable
-Date: Wed, 21 Mar 2012 16:14:46 +0100
-Message-ID: <CAMuHMdUFh=kRJFGP3sxHCqERSVcrWGD40iYzhrFMRxDNFvounA@mail.gmail.com>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] thermal: Fix for setting the thermal zone mode to
+ enable/disable
+Date: Wed, 21 Mar 2012 16:18:51 +0100
+Message-ID: <20120321161851.2f072204@endymion.delvare>
 References: <1332328201-21191-1-git-send-email-amit.kachhap@linaro.org>
 	<20120321151357.53fb86e4@endymion.delvare>
+	<CACLa4pts46gZmx=cGWF9UuHh-VpeoG9e2MmJR=xTn7sFxiFyjw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20120321151357.53fb86e4@endymion.delvare>
+In-Reply-To: <CACLa4pts46gZmx=cGWF9UuHh-VpeoG9e2MmJR=xTn7sFxiFyjw@mail.gmail.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Jean Delvare <khali@linux-fr.org>
+To: Eric Paris <eparis@parisplace.org>
 Cc: Amit Daniel Kachhap <amit.kachhap@linaro.org>, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 21, 2012 at 15:13, Jean Delvare <khali@linux-fr.org> wrote:
-> On Wed, 21 Mar 2012 16:40:01 +0530, Amit Daniel Kachhap wrote:
->> Basically without this patch changing the mode of thermal zone
->> is not possible as wrong string size is passed to strncmp.
->
-> Actually it is possible,
-> $ echo -n disabled > mode
-> works fine. But it fails without the -n, your patch would fix that.
+Hi Eric,
 
-Now it ignores any extra characters. Are they always newlines?
+On Wed, 21 Mar 2012 10:47:52 -0400, Eric Paris wrote:
+> On Wed, Mar 21, 2012 at 10:13 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> > Note that a quick grep suggests that drivers/misc/ad525x_dpot.c,
+> > security/selinux/hooks.c and arch/m68k/sun3/prom/console.c suffer from
+> > the same issue, if you want to fix them too.
+> 
+> I do see that we use sizeof() for strings in the selinux code, but I
+> don't see a place that it is a bug.  If you see a bug let me know and
+> I'd be happy to fix it!
 
-Now "echo -n disabledx > mode" will also "succeed".
+My suspect is in sb_finish_set_opts():
 
-> Acked-by: Jean Delvare <khali@linux-fr.org>
->
-> Note that a quick grep suggests that drivers/misc/ad525x_dpot.c,
-> security/selinux/hooks.c and arch/m68k/sun3/prom/console.c suffer fro=
-m
-> the same issue, if you want to fix them too.
+	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
 
-W.r.t. the Sun-3 code, those strings don't come from the user, but from=
- the
-firmware. But the code (copied from SPARC, which has the right firmware=
-,
-unlike Sun-3) is commented out anyway.
+If sb->s_type->name is exactly "sysfs", it will work, but if it only
+starts with "sysfs" it won't. And if only exact matches are expected,
+then strncmp is overkill and strcmp should be used instead.
 
-Gr{oetje,eeting}s,
+Note that I don't know anything about the code so I might as well be
+totally wrong.
 
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-=
-m68k.org
-
-In personal conversations with technical people, I call myself a hacker=
-=2E But
-when I'm talking to journalists I just say "programmer" or something li=
-ke that.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Jean Delvare
