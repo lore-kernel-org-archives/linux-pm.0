@@ -1,9 +1,10 @@
-From: Kunjan Shah <kunjanpshah@gmail.com>
-Subject: Invitation to connect on LinkedIn
-Date: Sat, 24 Mar 2012 19:31:31 +0000 (UTC)
-Message-ID: <1323240650.1821288.1332617491320.JavaMail.app@ela4-bed80.prod>
+From: NeilBrown <neilb@suse.de>
+Subject: Recent "Run the driver callback directly" patch breaks
+ libertas suspend
+Date: Sun, 25 Mar 2012 20:38:49 +1100
+Message-ID: <20120325203849.7a908e32@notabene.brown>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0531011714230835077=="
+Content-Type: multipart/mixed; boundary="===============2440951566741787275=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
@@ -14,134 +15,81 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, Chris Ball <cjb@laptop.org>, linux-mmc@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============0531011714230835077==
-Content-Type: multipart/alternative;
-	boundary="----=_Part_1821287_818890521.1332617491318"
+--===============2440951566741787275==
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/yGZl.8mQ06pciTWinzyRmM7"; protocol="application/pgp-signature"
 
-------=_Part_1821287_818890521.1332617491318
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-LinkedIn
-------------
+--Sig_/yGZl.8mQ06pciTWinzyRmM7
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
 
+Hi Rafael,
 
-I'd like to add you to my professional network on LinkedIn.
+ Your recent patch:
+   commit 35cd133c
+   PM: Run the driver callback directly if the subsystem one is not there
 
-- Kunjan
+ breaks suspend for my libertas wifi and probably other SDIO devices.
 
-Kunjan Shah
-R & D Engineer at Masibus Automation
-Porbandar Area, India
+ SDIO (and possible MMC in general) has a protocol where the suspend
+ method can return -ENOSYS and this means "There is no point in suspending,
+ just turn me off".
 
-Confirm that you know Kunjan Shah:
-https://www.linkedin.com/e/8tznj9-h0721p4k-1n/isd/6419418158/M2b2XW0s/?hs=false&tok=01Yk6bG6_PVB81
+ The device itself "mmc1:0001" (I think) doesn't have any bus etc 'suspend'
+ function so the new code call the device's suspend function which returns
+ ENOSYS and the suspend fails.
 
---
-You are receiving Invitation to Connect emails. Click to unsubscribe:
-http://www.linkedin.com/e/8tznj9-h0721p4k-1n/Tu26r8ft-NY4IGf2LXhCd4a2-9TSX366pN_su_TZ_g0SzZKV-Ijl/goo/linux-pm%40lists%2Elinux-foundation%2Eorg/20061/I2227723104_1/?hs=false&tok=3b33MvkcnPVB81
+ The previous code ignores the device as there is no bus suspend, and when =
+it
+ gets to suspend the ancestor - which for me is omap_hsmmc.1, it calls the
+ device suspend function catches the ENOSYS, and turns it off.
 
-(c) 2012 LinkedIn Corporation. 2029 Stierlin Ct, Mountain View, CA 94043, USA.
+ I suspect just reverting it isn't the right long term solution, however I
+ can confirm that it works for me for now.
 
+ I'm happy to try any alternate fixes you would like to suggest (but I cann=
+ot
+ promise how quickly I will get the testing done).
 
-------=_Part_1821287_818890521.1332617491318
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ (I'm testing with 3.3)
 
+Thanks,
+NeilBrown
 
-<html>
-  <body>
+--Sig_/yGZl.8mQ06pciTWinzyRmM7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.18 (GNU/Linux)
 
+iQIVAwUBT27nsDnsnt1WYoG5AQInaw/9ESXA5685gASikhN/BwoBTBng3FAOxdQQ
+wDfTRoXRCnlbsy96Zx8F/BnOQ5w9BodCvF0nAKzrDzAteBR3InKdxIFayaZ9fWnz
+H0WmvNxVaNyeeQo1I2nr2iY/cZr1bsvXkEVveoi0EMtv1HbNiRAvmZ9JD+VQB24D
+ZWZh9lbSOsfNCEOGDdSneqgCP18iuzVqmg0BMoRBTqEucx+7J+Vl2FxiA/qujS2P
+SzbHLJ0//7tcHJcb8lnD2HCMn0SLv5Wg/Eg/uB1ZxJ+8JG3ecovv/h34DcUub7I/
+6GLfVTxA2xRjzcnnf/gWgMR17fNS915PNogsga11/MFgCOywcqc479zReNIaCYlz
+G7M4wBCbDUbwCYMBF4HwzZpgBFKCIozEoWVyBUt0jBeG4ZG/FahHzOWMtdTo6OT9
+etfYTubLoVs4w8mzs8847v5jev5Z2j5OZK4BpijXhCozIc8D/IPz+nysVOJQ9KRa
+/qkRYtywuhgIVqCpmg1FOvB0zdROK299qIr03nO9NHE/jhB3DmU9Xg1H19G1f/g5
+gfFgKUrErTT/yRpArbZ9/oxGmvo0dUH2qM/3d2oRXaP4QIZ4JUB/l+gf3EyoCVgA
+G7RpK85A68uxRBai6zJx0kdcJBzHP4xcUic79hFuUqCoUAP2aEMRyqqSX2NNTrN5
+mtg/7GqpHIU=
+=7QOd
+-----END PGP SIGNATURE-----
 
+--Sig_/yGZl.8mQ06pciTWinzyRmM7--
 
-  
-  
-      <table border="0" cellspacing="0" cellpadding="0" style="font-family:Arial;" width="100%" bgcolor="#F4F4F4"><tr><td align="center">
-
-
-
-
-<table border="0" cellspacing="0" cellpadding="0" style="font-family:Arial;" width="550">
-  <tr><td>
-    <table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:10px;font-size:10px;line-height:10px;">&nbsp;</div></td></tr></table>
-  </td></tr>
-  <tr><td align="left">
-    <img src="http://www.linkedin.com/scds/common/u/img/logos/logo_emails_trans_98x24.png" alt="LinkedIn" border="0" height="24" width="98">
-  </td></tr>
-  <tr><td>
-    <table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:10px;font-size:10px;line-height:10px;">&nbsp;</div></td></tr></table>
-  </td></tr>
-</table>
-
-<table border="0" cellspacing="0" cellpadding="0" style="font-family:Arial;border:solid 1px #DDDDDD;-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px;" bgcolor="#FFFFFF" width="550"><tr><td colspan="3"><table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:15px;font-size:15px;line-height:15px;">&nbsp;</div></td></tr></table></td></tr><tr><td width="1%"><table width="15" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:0px;font-size:0px;line-height:0px;">&nbsp;</div></td></tr></table></td><td width="98%" valign="top" align="">
-  <table border="0" cellspacing="0" cellpadding="0" style="font-family:Arial;" width="100%">
-    <tr>
-      <td style="font-family:Arial,sans-serif;font-size:12px">
-        <div>
-          <b style="font-size:16px;margin-right:12px">From Kunjan Shah</b>
-        </div>
-           <table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:6px;font-size:6px;line-height:6px;">&nbsp;</div></td></tr></table>
-           <div style="color:#666666">R &amp; D Engineer at Masibus Automation</div>
-            <div style="color:#666666">Porbandar Area, India</div>
-        <table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:16px;font-size:16px;line-height:16px;">&nbsp;</div></td></tr></table>
-      </td>
-    </tr>
-    <tr>
-      <td style="border:1px dotted #DDDDDD;border-width:1px 0">
-        <table border="0" cellspacing="0" cellpadding="0" style="font-family:Arial;background:#F2FAFF;width:100%" >
-        <tr><td colspan="3"><table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:4px;font-size:4px;line-height:4px;">&nbsp;</div></td></tr></table></td></tr>
-        <tr>
-          <td><table width="5" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:0px;font-size:0px;line-height:0px;">&nbsp;</div></td></tr></table></td>
-          <td style="font-family:Arial,sans-serif;font-size:12px">
-            <p>
-              I'd like to add you to my professional network on LinkedIn.<br/>
-<br/>
-- Kunjan
-            </p>
-          </td>
-          <td><table width="5" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:0px;font-size:0px;line-height:0px;">&nbsp;</div></td></tr></table></td>
-        </tr>
-        <tr><td colspan="3"><table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:5px;font-size:5px;line-height:5px;">&nbsp;</div></td></tr></table></td></tr>
-        </table>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:12px;font-size:12px;line-height:12px;">&nbsp;</div></td></tr></table>
-          <table border="0" cellpadding="6" cellspacing="1" align=""><tr><td align="center" valign="middle" bgcolor="#FFE86C" background="http://www.linkedin.com/scds/common/u/img/bg/yellow_button_back.png" style="background:url(http://www.linkedin.com/scds/common/u/img/bg/yellow_button_back.png) repeat-x scroll 100% 0 #FFE86C;background-color:#FFE86C;border:1px solid #E8B463;-moz-border-radius:4px;-webkit-border-radius:4px;border-radius:4px;"><div style="padding-right:10px;padding-left:10px;"><a href="https://www.linkedin.com/e/8tznj9-h0721p4k-1n/isd/6419418158/M2b2XW0s/?hs=false&amp;tok=01Yk6bG6_PVB81" style="text-decoration:none;"><span style="font-size:12px;font-family:Arial;font-weight:bold;color:#333333;white-space:nowrap;display:block;">Confirm that you know Kunjan</span></a></div><
- /td></tr></table>
-      </td>
-    </tr>
-  </table>
-</td><td width="1%"><table width="15" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:0px;font-size:0px;line-height:0px;">&nbsp;</div></td></tr></table></td></tr><tr><td colspan="3"><table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:15px;font-size:15px;line-height:15px;">&nbsp;</div></td></tr></table></td></tr></table>
-<table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:5px;font-size:5px;line-height:5px;">&nbsp;</div></td></tr></table>
-<table border="0" cellspacing="0" cellpadding="0" style="font-family:Arial;width:550px" >
-  <tr>
-    <td style="color:#999;font-family:Arial,sans-serif;font-size:11px;line-height:15px">
-      <div>You are receiving Invitation to Connect emails. <a href="http://www.linkedin.com/e/8tznj9-h0721p4k-1n/Tu26r8ft-NY4IGf2LXhCd4a2-9TSX366pN_su_TZ_g0SzZKV-Ijl/goo/linux-pm%40lists%2Elinux-foundation%2Eorg/20061/I2227723104_1/?hs=false&amp;tok=3b33MvkcnPVB81">Unsubscribe</a></div>
-      <div>&copy; 2012, LinkedIn Corporation. 2029 Stierlin Ct. Mountain View, CA 94043, USA<table width="1" border="0" cellspacing="0" cellpadding="0"><tr><td><div style="height:1px;font-size:1px;line-height:1px;">&nbsp;</div></td></tr></table></div>
-    </td>
-  </tr>
-</table>
-
-
-    </td></tr></table>
-
-
-<img src="http://www.linkedin.com/emimp/8tznj9-h0721p4k-1n.gif" style="width:1px; height:1px;"/></body>
-</html>
-------=_Part_1821287_818890521.1332617491318--
-
---===============0531011714230835077==
+--===============2440951566741787275==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============0531011714230835077==--
+--===============2440951566741787275==--
