@@ -1,61 +1,58 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 1/3] cpuidle: use the driver's state_count as
-	default
-Date: Mon, 26 Mar 2012 14:51:26 +0200
-Message-ID: <1332766288-30412-1-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 2/3] cpuidle: remove useless array definition in
+	cpuidle_structure
+Date: Mon, 26 Mar 2012 14:51:27 +0200
+Message-ID: <1332766288-30412-2-git-send-email-daniel.lezcano@linaro.org>
+References: <1332766288-30412-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: lenb@kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, patches@linaro.org
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <1332766288-30412-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-If the state_count is not initialized for the device use
-the driver's state count as the default. That will prevent
-to add it manually in the cpuidle driver initialization
-routine and will save us from duplicate line of code.
+All the modules name are ro-data, it is never copied to the array.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+eg.
+
+static struct cpuidle_driver intel_idle_driver = {
+        .name = "intel_idle",
+        .owner = THIS_MODULE,
+};
+
+It safe to assign the pointer of this ro-data to a const char *.
+By this way we save 12 bytes.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Deepthi Dharwar <deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
+Tested-by: Deepthi Dharwar <deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
 ---
- drivers/cpuidle/cpuidle.c |    2 +-
- drivers/cpuidle/driver.c  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ include/linux/cpuidle.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 27f77a4..b8a1faf 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -268,7 +268,7 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
- 	if (!drv || !cpuidle_curr_governor)
- 		return -EIO;
- 	if (!dev->state_count)
--		return -EINVAL;
-+		dev->state_count = drv->state_count;
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index ca4e498..f7f1d90 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -120,7 +120,7 @@ static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
+  ****************************/
  
- 	if (dev->registered == 0) {
- 		ret = __cpuidle_register_device(dev);
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 284d7af..40cd3f3 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -47,7 +47,7 @@ static void __cpuidle_register_driver(struct cpuidle_driver *drv)
-  */
- int cpuidle_register_driver(struct cpuidle_driver *drv)
- {
--	if (!drv)
-+	if (!drv || !drv->state_count)
- 		return -EINVAL;
+ struct cpuidle_driver {
+-	char			name[CPUIDLE_NAME_LEN];
++	const char		*name;
+ 	struct module 		*owner;
  
- 	if (cpuidle_disabled())
+ 	unsigned int		power_specified:1;
 -- 
 1.7.5.4
