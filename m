@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 28/76] ACPICA: ACPI 5: Update debug output for
-	new notify values
-Date: Fri, 30 Mar 2012 06:13:31 -0400
-Message-ID: <ea143604c5c8426923bbed7cd389fdaed7d58a2e.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 32/76] ACPICA: Add table-driven dispatch for
+ sleep/wake functions
+Date: Fri, 30 Mar 2012 06:13:35 -0400
+Message-ID: <72a8887a356076dfa39bd6691c52446f90a50480.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -27,146 +27,256 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Bob Moore <robert.moore@intel.com>
 
-Add new notify values, add support for "hardware specific" notifies.
+Simplifies the code, especially the compile-time
+ACPI_REDUCED_HARDWARE option.
 
 Signed-off-by: Bob Moore <robert.moore@intel.com>
 Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/evmisc.c   |   23 +++++++++++++----------
- drivers/acpi/acpica/utdecode.c |   34 ++++++++++++++++++----------------
- include/acpi/actypes.h         |    6 ++++--
- 3 files changed, 35 insertions(+), 28 deletions(-)
+ drivers/acpi/acpica/acmacros.h  |    6 ++
+ drivers/acpi/acpica/hwxfsleep.c |  136 +++++++++++++++++++++++----------------
+ include/acpi/actypes.h          |    9 +++
+ 3 files changed, 97 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/acpi/acpica/evmisc.c b/drivers/acpi/acpica/evmisc.c
-index 0912f62..51ef9f5 100644
---- a/drivers/acpi/acpica/evmisc.c
-+++ b/drivers/acpi/acpica/evmisc.c
-@@ -108,27 +108,30 @@ acpi_ev_queue_notify_request(struct acpi_namespace_node * node,
- 	ACPI_FUNCTION_NAME(ev_queue_notify_request);
+diff --git a/drivers/acpi/acpica/acmacros.h b/drivers/acpi/acpica/acmacros.h
+index ef338a9..f119f47 100644
+--- a/drivers/acpi/acpica/acmacros.h
++++ b/drivers/acpi/acpica/acmacros.h
+@@ -516,6 +516,12 @@
  
- 	/*
--	 * For value 3 (Ejection Request), some device method may need to be run.
--	 * For value 2 (Device Wake) if _PRW exists, the _PS0 method may need
--	 *   to be run.
-+	 * For value 0x03 (Ejection Request), may need to run a device method.
-+	 * For value 0x02 (Device Wake), if _PRW exists, may need to run
-+	 *   the _PS0 method.
- 	 * For value 0x80 (Status Change) on the power button or sleep button,
--	 *   initiate soft-off or sleep operation?
-+	 *   initiate soft-off or sleep operation.
-+	 *
-+	 * For all cases, simply dispatch the notify to the handler.
- 	 */
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--			  "Dispatching Notify on [%4.4s] Node %p Value 0x%2.2X (%s)\n",
--			  acpi_ut_get_node_name(node), node, notify_value,
--			  acpi_ut_get_notify_name(notify_value)));
-+			  "Dispatching Notify on [%4.4s] (%s) Value 0x%2.2X (%s) Node %p\n",
-+			  acpi_ut_get_node_name(node),
-+			  acpi_ut_get_type_name(node->type), notify_value,
-+			  acpi_ut_get_notify_name(notify_value), node));
+ #endif				/* ACPI_DEBUG_OUTPUT */
  
- 	/* Get the notify object attached to the NS Node */
++#if (!ACPI_REDUCED_HARDWARE)
++#define ACPI_HW_OPTIONAL_FUNCTION(addr)     addr
++#else
++#define ACPI_HW_OPTIONAL_FUNCTION(addr)     NULL
++#endif
++
+ /*
+  * Some code only gets executed when the debugger is built in.
+  * Note that this is entirely independent of whether the
+diff --git a/drivers/acpi/acpica/hwxfsleep.c b/drivers/acpi/acpica/hwxfsleep.c
+index ff20558..b711f97 100644
+--- a/drivers/acpi/acpica/hwxfsleep.c
++++ b/drivers/acpi/acpica/hwxfsleep.c
+@@ -48,6 +48,34 @@
+ #define _COMPONENT          ACPI_HARDWARE
+ ACPI_MODULE_NAME("hwxfsleep")
  
- 	obj_desc = acpi_ns_get_attached_object(node);
- 	if (obj_desc) {
- 
--		/* We have the notify object, Get the right handler */
-+		/* We have the notify object, Get the correct handler */
- 
- 		switch (node->type) {
- 
--			/* Notify allowed only on these types */
-+			/* Notify is allowed only on these types */
- 
- 		case ACPI_TYPE_DEVICE:
- 		case ACPI_TYPE_THERMAL:
-@@ -152,7 +155,7 @@ acpi_ev_queue_notify_request(struct acpi_namespace_node * node,
- 	}
- 
- 	/*
--	 * If there is any handler to run, schedule the dispatcher.
-+	 * If there is a handler to run, schedule the dispatcher.
- 	 * Check for:
- 	 * 1) Global system notify handler
- 	 * 2) Global device notify handler
-diff --git a/drivers/acpi/acpica/utdecode.c b/drivers/acpi/acpica/utdecode.c
-index d42ede52..6848499 100644
---- a/drivers/acpi/acpica/utdecode.c
-+++ b/drivers/acpi/acpica/utdecode.c
-@@ -497,19 +497,20 @@ char *acpi_ut_get_mutex_name(u32 mutex_id)
- 
- /* Names for Notify() values, used for debug output */
- 
--static const char *acpi_gbl_notify_value_names[] = {
--	"Bus Check",
--	"Device Check",
--	"Device Wake",
--	"Eject Request",
--	"Device Check Light",
--	"Frequency Mismatch",
--	"Bus Mode Mismatch",
--	"Power Fault",
--	"Capabilities Check",
--	"Device PLD Check",
--	"Reserved",
--	"System Locality Update"
-+static const char *acpi_gbl_notify_value_names[ACPI_NOTIFY_MAX + 1] = {
-+	/* 00 */ "Bus Check",
-+	/* 01 */ "Device Check",
-+	/* 02 */ "Device Wake",
-+	/* 03 */ "Eject Request",
-+	/* 04 */ "Device Check Light",
-+	/* 05 */ "Frequency Mismatch",
-+	/* 06 */ "Bus Mode Mismatch",
-+	/* 07 */ "Power Fault",
-+	/* 08 */ "Capabilities Check",
-+	/* 09 */ "Device PLD Check",
-+	/* 10 */ "Reserved",
-+	/* 11 */ "System Locality Update",
-+	/* 12 */ "Shutdown Request"
- };
- 
- const char *acpi_ut_get_notify_name(u32 notify_value)
-@@ -519,9 +520,10 @@ const char *acpi_ut_get_notify_name(u32 notify_value)
- 		return (acpi_gbl_notify_value_names[notify_value]);
- 	} else if (notify_value <= ACPI_MAX_SYS_NOTIFY) {
- 		return ("Reserved");
--	} else {		/* Greater or equal to 0x80 */
--
--		return ("**Device Specific**");
-+	} else if (notify_value <= ACPI_MAX_DEVICE_SPECIFIC_NOTIFY) {
-+		return ("Device Specific");
++/* Local prototypes */
++static acpi_status acpi_hw_sleep_dispatch(u8 sleep_state, u32 function_id);
++
++/*
++ * Dispatch table used to efficiently branch to the various sleep
++ * functions.
++ */
++#define ACPI_SLEEP_FUNCTION         0
++#define ACPI_WAKE_PREP_FUNCTION     1
++#define ACPI_WAKE_FUNCTION          2
++
++/* Legacy functions are optional, based upon ACPI_REDUCED_HARDWARE */
++
++static struct acpi_sleep_functions acpi_sleep_dispatch[] = {
++	{ACPI_HW_OPTIONAL_FUNCTION(acpi_hw_legacy_sleep),
++	 acpi_hw_extended_sleep},
++	{ACPI_HW_OPTIONAL_FUNCTION(acpi_hw_legacy_wake_prep),
++	 acpi_hw_extended_wake_prep},
++	{ACPI_HW_OPTIONAL_FUNCTION(acpi_hw_legacy_wake), acpi_hw_extended_wake}
++};
++
++/*
++ * These functions are removed for the ACPI_REDUCED_HARDWARE case:
++ *      acpi_set_firmware_waking_vector
++ *      acpi_set_firmware_waking_vector64
++ *      acpi_enter_sleep_state_s4bios
++ */
++
+ #if (!ACPI_REDUCED_HARDWARE)
+ /*******************************************************************************
+  *
+@@ -61,6 +89,7 @@ ACPI_MODULE_NAME("hwxfsleep")
+  * DESCRIPTION: Sets the 32-bit firmware_waking_vector field of the FACS
+  *
+  ******************************************************************************/
++
+ acpi_status acpi_set_firmware_waking_vector(u32 physical_address)
+ {
+ 	ACPI_FUNCTION_TRACE(acpi_set_firmware_waking_vector);
+@@ -193,18 +222,65 @@ ACPI_EXPORT_SYMBOL(acpi_enter_sleep_state_s4bios)
+ #endif				/* !ACPI_REDUCED_HARDWARE */
+ /*******************************************************************************
+  *
++ * FUNCTION:    acpi_hw_sleep_dispatch
++ *
++ * PARAMETERS:  sleep_state         - Which sleep state to enter/exit
++ *              function_id         - Sleep, wake_prep, or Wake
++ *
++ * RETURN:      Status from the invoked sleep handling function.
++ *
++ * DESCRIPTION: Dispatch a sleep/wake request to the appropriate handling
++ *              function.
++ *
++ ******************************************************************************/
++static acpi_status acpi_hw_sleep_dispatch(u8 sleep_state, u32 function_id)
++{
++	acpi_status status;
++	struct acpi_sleep_functions *sleep_functions =
++	    &acpi_sleep_dispatch[function_id];
++
++#if (!ACPI_REDUCED_HARDWARE)
++
++	/*
++	 * If the Hardware Reduced flag is set (from the FADT), we must
++	 * use the extended sleep registers
++	 */
++	if (acpi_gbl_reduced_hardware || acpi_gbl_FADT.sleep_control.address) {
++		status = sleep_functions->extended_function(sleep_state);
 +	} else {
-+		return ("Hardware Specific");
++		/* Legacy sleep */
++
++		status = sleep_functions->legacy_function(sleep_state);
++	}
++
++	return (status);
++
++#else
++	/*
++	 * For the case where reduced-hardware-only code is being generated,
++	 * we know that only the extended sleep registers are available
++	 */
++	status = sleep_functions->extended_function(sleep_state);
++	return (status);
++
++#endif				/* !ACPI_REDUCED_HARDWARE */
++}
++
++/*******************************************************************************
++ *
+  * FUNCTION:    acpi_enter_sleep_state_prep
+  *
+  * PARAMETERS:  sleep_state         - Which sleep state to enter
+  *
+  * RETURN:      Status
+  *
+- * DESCRIPTION: Prepare to enter a system sleep state (see ACPI 2.0 spec p 231)
++ * DESCRIPTION: Prepare to enter a system sleep state.
+  *              This function must execute with interrupts enabled.
+  *              We break sleeping into 2 stages so that OSPM can handle
+  *              various OS-specific tasks between the two steps.
+  *
+  ******************************************************************************/
++
+ acpi_status acpi_enter_sleep_state_prep(u8 sleep_state)
+ {
+ 	acpi_status status;
+@@ -291,23 +367,8 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
+ 			    acpi_gbl_sleep_type_a, acpi_gbl_sleep_type_b));
+ 		return_ACPI_STATUS(AE_AML_OPERAND_VALUE);
  	}
+-#if (!ACPI_REDUCED_HARDWARE)
+-
+-	/* If Hardware Reduced flag is set, must use the extended sleep registers */
+-
+-	if (acpi_gbl_reduced_hardware || acpi_gbl_FADT.sleep_control.address) {
+-		status = acpi_hw_extended_sleep(sleep_state);
+-	} else {
+-		/* Legacy sleep */
+-
+-		status = acpi_hw_legacy_sleep(sleep_state);
+-	}
+-
+-#else
+-	status = acpi_hw_extended_sleep(sleep_state);
+-
+-#endif				/* !ACPI_REDUCED_HARDWARE */
+ 
++	status = acpi_hw_sleep_dispatch(sleep_state, ACPI_SLEEP_FUNCTION);
+ 	return_ACPI_STATUS(status);
  }
- #endif
+ 
+@@ -330,26 +391,9 @@ acpi_status acpi_leave_sleep_state_prep(u8 sleep_state)
+ {
+ 	acpi_status status;
+ 
+-	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
+-
+-
+-#if (!ACPI_REDUCED_HARDWARE)
+-
+-	/* If Hardware Reduced flag is set, must use the extended sleep registers */
+-
+-	if (acpi_gbl_reduced_hardware || acpi_gbl_FADT.sleep_control.address) {
+-		status = acpi_hw_extended_wake_prep(sleep_state);
+-	} else {
+-		/* Legacy sleep */
+-
+-		status = acpi_hw_legacy_wake_prep(sleep_state);
+-	}
+-#else
+-	status = acpi_hw_extended_wake_prep(sleep_state);
+-
+-#endif				/* !ACPI_REDUCED_HARDWARE */
+-
++	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state_prep);
+ 
++	status = acpi_hw_sleep_dispatch(sleep_state, ACPI_WAKE_PREP_FUNCTION);
+ 	return_ACPI_STATUS(status);
+ }
+ 
+@@ -359,7 +403,7 @@ ACPI_EXPORT_SYMBOL(acpi_leave_sleep_state_prep)
+  *
+  * FUNCTION:    acpi_leave_sleep_state
+  *
+- * PARAMETERS:  sleep_state         - Which sleep state we just exited
++ * PARAMETERS:  sleep_state         - Which sleep state we are exiting
+  *
+  * RETURN:      Status
+  *
+@@ -374,23 +418,7 @@ acpi_status acpi_leave_sleep_state(u8 sleep_state)
+ 	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
+ 
+ 
+-#if (!ACPI_REDUCED_HARDWARE)
+-
+-	/* If Hardware Reduced flag is set, must use the extended sleep registers */
+-
+-	if (acpi_gbl_reduced_hardware || acpi_gbl_FADT.sleep_control.address) {
+-		status = acpi_hw_extended_wake(sleep_state);
+-	} else {
+-		/* Legacy sleep */
+-
+-		status = acpi_hw_legacy_wake(sleep_state);
+-	}
+-
+-#else
+-	status = acpi_hw_extended_wake(sleep_state);
+-
+-#endif				/* !ACPI_REDUCED_HARDWARE */
+-
++	status = acpi_hw_sleep_dispatch(sleep_state, ACPI_WAKE_FUNCTION);
+ 	return_ACPI_STATUS(status);
+ }
+ 
 diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
-index d5dee7c..48c4d5f 100644
+index 48c4d5f..3496158 100644
 --- a/include/acpi/actypes.h
 +++ b/include/acpi/actypes.h
-@@ -532,8 +532,9 @@ typedef u64 acpi_integer;
- #define ACPI_NOTIFY_DEVICE_PLD_CHECK    (u8) 0x09
- #define ACPI_NOTIFY_RESERVED            (u8) 0x0A
- #define ACPI_NOTIFY_LOCALITY_UPDATE     (u8) 0x0B
-+#define ACPI_NOTIFY_SHUTDOWN_REQUEST    (u8) 0x0C
+@@ -788,6 +788,15 @@ typedef u8 acpi_adr_space_type;
+ #define ACPI_ENABLE_EVENT                       1
+ #define ACPI_DISABLE_EVENT                      0
  
--#define ACPI_NOTIFY_MAX                 0x0B
-+#define ACPI_NOTIFY_MAX                 0x0C
- 
++/* Sleep function dispatch */
++
++typedef acpi_status(*ACPI_SLEEP_FUNCTION) (u8 sleep_state);
++
++struct acpi_sleep_functions {
++	ACPI_SLEEP_FUNCTION legacy_function;
++	ACPI_SLEEP_FUNCTION extended_function;
++};
++
  /*
-  * Types associated with ACPI names and objects. The first group of
-@@ -698,7 +699,8 @@ typedef u32 acpi_event_status;
- #define ACPI_ALL_NOTIFY                 (ACPI_SYSTEM_NOTIFY | ACPI_DEVICE_NOTIFY)
- #define ACPI_MAX_NOTIFY_HANDLER_TYPE    0x3
- 
--#define ACPI_MAX_SYS_NOTIFY             0x7f
-+#define ACPI_MAX_SYS_NOTIFY             0x7F
-+#define ACPI_MAX_DEVICE_SPECIFIC_NOTIFY 0xBF
- 
- /* Address Space (Operation Region) Types */
- 
+  * External ACPI object definition
+  */
 -- 
 1.7.10.rc2.19.gfae9d
