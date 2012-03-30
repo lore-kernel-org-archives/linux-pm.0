@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 43/76] ACPI: Make ACPI interrupt threaded
-Date: Fri, 30 Mar 2012 06:13:46 -0400
-Message-ID: <6fe0d0628245fdcd6fad8b837c81e8f7ebc3364d.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 60/76] ACPI, APEI, Fix ERST header length check
+Date: Fri, 30 Mar 2012 06:14:03 -0400
+Message-ID: <7ed28f2ed43ece424ff2fa4dedac7928bb37a23a.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -21,34 +21,35 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Andi Kleen <ak@linux.intel.com>, Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@huawei.com>, Jiang Liu <liuj97@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Jiang Liu <liuj97@gmail.com>
 
-Some ACPI interrupt actions may need to wait, and it's easiest to
-have a thread context for this. So turn the ACPI interrupt
-into a threaded interrupt.
+This fixes a trivial copy & paste error in ERST header length check.
+It's just for future safety because sizeof(struct acpi_table_einj)
+equals to sizeof(struct acpi_table_erst) with current ACPI5.0
+specification. It applies to v3.3-rc6.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
+Acked-by: Huang Ying <ying.huang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/osl.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/acpi/apei/erst.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-index 412a1e0..02367a8 100644
---- a/drivers/acpi/osl.c
-+++ b/drivers/acpi/osl.c
-@@ -595,7 +595,8 @@ acpi_os_install_interrupt_handler(u32 gsi, acpi_osd_handler handler,
- 
- 	acpi_irq_handler = handler;
- 	acpi_irq_context = context;
--	if (request_irq(irq, acpi_irq, IRQF_SHARED, "acpi", acpi_irq)) {
-+	if (request_threaded_irq(irq, NULL, acpi_irq, IRQF_SHARED, "acpi",
-+				 acpi_irq)) {
- 		printk(KERN_ERR PREFIX "SCI (IRQ%d) allocation failed\n", irq);
- 		acpi_irq_handler = NULL;
- 		return AE_NOT_ACQUIRED;
+diff --git a/drivers/acpi/apei/erst.c b/drivers/acpi/apei/erst.c
+index eb9fab5..e4d9d24 100644
+--- a/drivers/acpi/apei/erst.c
++++ b/drivers/acpi/apei/erst.c
+@@ -917,7 +917,7 @@ static int erst_check_table(struct acpi_table_erst *erst_tab)
+ {
+ 	if ((erst_tab->header_length !=
+ 	     (sizeof(struct acpi_table_erst) - sizeof(erst_tab->header)))
+-	    && (erst_tab->header_length != sizeof(struct acpi_table_einj)))
++	    && (erst_tab->header_length != sizeof(struct acpi_table_erst)))
+ 		return -EINVAL;
+ 	if (erst_tab->header.length < sizeof(struct acpi_table_erst))
+ 		return -EINVAL;
 -- 
 1.7.10.rc2.19.gfae9d
