@@ -1,88 +1,57 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 11/76] ARM: shmobile: Consolidate time keeping and irq enable
-Date: Fri, 30 Mar 2012 06:13:14 -0400
-Message-ID: <ee807dd89c0003a5cc0ec961132cd83542e5c30c.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 49/76] cpuidle: use the driver's state_count as default
+Date: Fri, 30 Mar 2012 06:13:52 -0400
+Message-ID: <fc850f39ea54c760ce438a601cfea8ab80c4898e.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Robert Lee <rob.lee@linaro.org>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Robert Lee <rob.lee@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Enable core cpuidle timekeeping and irq enabling and remove that
-handling from this code.
+If the state_count is not initialized for the device use
+the driver's state count as the default. That will prevent
+to add it manually in the cpuidle driver initialization
+routine and will save us from duplicate line of code.
 
-Signed-off-by: Robert Lee <rob.lee@linaro.org>
-Reviewed-by: Kevin Hilman <khilman@ti.com>
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Jean Pihet <j-pihet@ti.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/arm/mach-shmobile/cpuidle.c |   31 +++++++------------------------
- 1 file changed, 7 insertions(+), 24 deletions(-)
+ drivers/cpuidle/cpuidle.c |    2 +-
+ drivers/cpuidle/driver.c  |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
-index 1b23342..ca23b20 100644
---- a/arch/arm/mach-shmobile/cpuidle.c
-+++ b/arch/arm/mach-shmobile/cpuidle.c
-@@ -14,6 +14,7 @@
- #include <linux/module.h>
- #include <linux/err.h>
- #include <asm/system.h>
-+#include <asm/cpuidle.h>
- #include <asm/io.h>
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 77304b6..f7cab5e 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -268,7 +268,7 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
+ 	if (!drv || !cpuidle_curr_governor)
+ 		return -EIO;
+ 	if (!dev->state_count)
+-		return -EINVAL;
++		dev->state_count = drv->state_count;
  
- static void shmobile_enter_wfi(void)
-@@ -29,37 +30,19 @@ static int shmobile_cpuidle_enter(struct cpuidle_device *dev,
- 				  struct cpuidle_driver *drv,
- 				  int index)
+ 	if (dev->registered == 0) {
+ 		ret = __cpuidle_register_device(dev);
+diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+index 284d7af..40cd3f3 100644
+--- a/drivers/cpuidle/driver.c
++++ b/drivers/cpuidle/driver.c
+@@ -47,7 +47,7 @@ static void __cpuidle_register_driver(struct cpuidle_driver *drv)
+  */
+ int cpuidle_register_driver(struct cpuidle_driver *drv)
  {
--	ktime_t before, after;
--
--	before = ktime_get();
--
--	local_irq_disable();
--	local_fiq_disable();
--
- 	shmobile_cpuidle_modes[index]();
+-	if (!drv)
++	if (!drv || !drv->state_count)
+ 		return -EINVAL;
  
--	local_irq_enable();
--	local_fiq_enable();
--
--	after = ktime_get();
--	dev->last_residency = ktime_to_ns(ktime_sub(after, before)) >> 10;
--
- 	return index;
- }
- 
- static struct cpuidle_device shmobile_cpuidle_dev;
- static struct cpuidle_driver shmobile_cpuidle_driver = {
--	.name =		"shmobile_cpuidle",
--	.owner =	THIS_MODULE,
--	.states[0] = {
--		.name = "C1",
--		.desc = "WFI",
--		.exit_latency = 1,
--		.target_residency = 1 * 2,
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--	},
--	.safe_state_index = 0, /* C1 */
--	.state_count = 1,
-+	.name			= "shmobile_cpuidle",
-+	.owner			= THIS_MODULE,
-+	.en_core_tk_irqen	= 1,
-+	.states[0]		= ARM_CPUIDLE_WFI_STATE,
-+	.safe_state_index	= 0, /* C1 */
-+	.state_count		= 1,
- };
- 
- void (*shmobile_cpuidle_setup)(struct cpuidle_driver *drv);
+ 	if (cpuidle_disabled())
 -- 
 1.7.10.rc2.19.gfae9d
-
