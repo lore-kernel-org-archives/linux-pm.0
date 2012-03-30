@@ -1,87 +1,79 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 19/76] thermal/spear_thermal: replace readl/writel with lighter
- _relaxed variants
-Date: Fri, 30 Mar 2012 06:13:22 -0400
-Message-ID: <de716e32e61fae5d1f0d000008d3f641cec5c9dd.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 14/76] thermal_sys: remove unnecessary line
+	continuations
+Date: Fri, 30 Mar 2012 06:13:17 -0400
+Message-ID: <886ee5463530036f6171e1376118e7014cf33f7f.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-reply-to: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@st.com>, Andrew Morton <akpm@linux-foundation.org>, Len Brown <len.brown@intel.com>
+Cc: Joe Perches <joe@perches.com>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Viresh Kumar <viresh.kumar@st.com>
+From: Joe Perches <joe@perches.com>
 
-readl/writel versions for ARM contain memory barrier instruction for
-synchronizing DMA buffers.  These are not required at least on this
-module.  So use lighter _relaxed variants.
+Line continations are not necessary in function calls or statements.
+Remove them.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@st.com>
+Signed-off-by: Joe Perches <joe@perches.com>
+Reviewed-by: Jesper Juhl <jj@chaosbits.net>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/thermal/spear_thermal.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/thermal/thermal_sys.c |   11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
-index 880bf28..be94413 100644
---- a/drivers/thermal/spear_thermal.c
-+++ b/drivers/thermal/spear_thermal.c
-@@ -46,7 +46,7 @@ static inline int thermal_get_temp(struct thermal_zone_device *thermal,
- 	 * Data are ready to be read after 628 usec from POWERDOWN signal
- 	 * (PDN) = 1
- 	 */
--	*temp = (readl(stdev->thermal_base) & 0x7F) * MD_FACTOR;
-+	*temp = (readl_relaxed(stdev->thermal_base) & 0x7F) * MD_FACTOR;
- 	return 0;
- }
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 859b80b..71802ca 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -281,8 +281,7 @@ passive_show(struct device *dev, struct device_attribute *attr,
+ static DEVICE_ATTR(type, 0444, type_show, NULL);
+ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+ static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+-static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, \
+-		   passive_store);
++static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
  
-@@ -63,8 +63,8 @@ static int spear_thermal_suspend(struct device *dev)
- 	unsigned int actual_mask = 0;
+ static struct device_attribute trip_point_attrs[] = {
+ 	__ATTR(trip_point_0_type, 0444, trip_point_type_show, NULL),
+@@ -1313,8 +1312,8 @@ int thermal_generate_netlink_event(u32 orig, enum events event)
+ 	static unsigned int thermal_event_seqnum;
  
- 	/* Disable SPEAr Thermal Sensor */
--	actual_mask = readl(stdev->thermal_base);
--	writel(actual_mask & ~stdev->flags, stdev->thermal_base);
-+	actual_mask = readl_relaxed(stdev->thermal_base);
-+	writel_relaxed(actual_mask & ~stdev->flags, stdev->thermal_base);
+ 	/* allocate memory */
+-	size = nla_total_size(sizeof(struct thermal_genl_event)) + \
+-				nla_total_size(0);
++	size = nla_total_size(sizeof(struct thermal_genl_event)) +
++	       nla_total_size(0);
  
- 	clk_disable(stdev->clk);
- 	dev_info(dev, "Suspended.\n");
-@@ -87,8 +87,8 @@ static int spear_thermal_resume(struct device *dev)
+ 	skb = genlmsg_new(size, GFP_ATOMIC);
+ 	if (!skb)
+@@ -1330,8 +1329,8 @@ int thermal_generate_netlink_event(u32 orig, enum events event)
  	}
  
- 	/* Enable SPEAr Thermal Sensor */
--	actual_mask = readl(stdev->thermal_base);
--	writel(actual_mask | stdev->flags, stdev->thermal_base);
-+	actual_mask = readl_relaxed(stdev->thermal_base);
-+	writel_relaxed(actual_mask | stdev->flags, stdev->thermal_base);
+ 	/* fill the data */
+-	attr = nla_reserve(skb, THERMAL_GENL_ATTR_EVENT, \
+-			sizeof(struct thermal_genl_event));
++	attr = nla_reserve(skb, THERMAL_GENL_ATTR_EVENT,
++			   sizeof(struct thermal_genl_event));
  
- 	dev_info(dev, "Resumed.\n");
- 
-@@ -145,7 +145,7 @@ static int spear_thermal_probe(struct platform_device *pdev)
- 	}
- 
- 	stdev->flags = pdata->thermal_flags;
--	writel(stdev->flags, stdev->thermal_base);
-+	writel_relaxed(stdev->flags, stdev->thermal_base);
- 
- 	spear_thermal = thermal_zone_device_register("spear_thermal", 0,
- 				stdev, &ops, 0, 0, 0, 0);
-@@ -180,8 +180,8 @@ static int spear_thermal_exit(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, NULL);
- 
- 	/* Disable SPEAr Thermal Sensor */
--	actual_mask = readl(stdev->thermal_base);
--	writel(actual_mask & ~stdev->flags, stdev->thermal_base);
-+	actual_mask = readl_relaxed(stdev->thermal_base);
-+	writel_relaxed(actual_mask & ~stdev->flags, stdev->thermal_base);
- 
- 	clk_disable(stdev->clk);
- 	clk_put(stdev->clk);
+ 	if (!attr) {
+ 		nlmsg_free(skb);
 -- 
 1.7.10.rc2.19.gfae9d
-
