@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 04/76] ACPICA: Fix regression in FADT revision
-	checks
-Date: Fri, 30 Mar 2012 06:13:07 -0400
-Message-ID: <3e80acd1af40fcd91a200b0416a7616b20c5d647.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 65/76] ACPI: processor_driver: add missing kfree
+Date: Fri, 30 Mar 2012 06:14:08 -0400
+Message-ID: <c80f5b31f3c55a197f5323b93d1e3553429a427e.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,66 +21,69 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Julian Anastasov <ja@ssi.bg>, linux-kernel@vger.kernel.org
+Cc: Julia Lawall <Julia.Lawall@lip6.fr>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Julian Anastasov <ja@ssi.bg>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-	commit 64b3db22c04586997ab4be46dd5a5b99f8a2d390 (2.6.39),
-"Remove use of unreliable FADT revision field" causes regression
-for old P4 systems because now cst_control and other fields are
-not reset to 0.
+The function acpi_processor_add is stored in the ops.add field of a
+acpi_driver structure.  This function is then called in
+acpi_bus_driver_init.  On failure, this function clears the field
+device->driver_data, but does not free its contents.  Thus the free has to
+be done by the add function.  In acpi_processor_add, the corresponding
+value is pr.  This value is currently freed on failure before storing it in
+device->driver_data, but not after.  This free is added in the error
+handling code at the end of the function.  The per_cpu variable
+processors is also cleared so that it does not refer to a dangling pointer.
 
-	The effect is that acpi_processor_power_init will notice
-cst_control != 0 and a write to CST_CNT register is performed
-that should not happen. As result, the system oopses after the
-"No _CST, giving up" message, sometimes in acpi_ns_internalize_name,
-sometimes in acpi_ns_get_type, usually at random places. May be
-during migration to CPU 1 in acpi_processor_get_throttling.
-
-	Every one of these settings help to avoid this problem:
- - acpi=off
- - processor.nocst=1
- - maxcpus=1
-
-	The fix is to update acpi_gbl_FADT.header.length after
-the original value is used to check for old revisions.
-
-https://bugzilla.kernel.org/show_bug.cgi?id=42700
-https://bugzilla.redhat.com/show_bug.cgi?id=727865
-
-Signed-off-by: Julian Anastasov <ja@ssi.bg>
-Acked-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/tbfadt.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/acpi/processor_driver.c |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/acpica/tbfadt.c b/drivers/acpi/acpica/tbfadt.c
-index c5d8704..4c9c760 100644
---- a/drivers/acpi/acpica/tbfadt.c
-+++ b/drivers/acpi/acpica/tbfadt.c
-@@ -363,10 +363,6 @@ static void acpi_tb_convert_fadt(void)
- 	u32 address32;
- 	u32 i;
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index 8ae05ce..fce0066 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -535,8 +535,8 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ 		return -ENOMEM;
  
--	/* Update the local FADT table header length */
--
--	acpi_gbl_FADT.header.length = sizeof(struct acpi_table_fadt);
--
- 	/*
- 	 * Expand the 32-bit FACS and DSDT addresses to 64-bit as necessary.
- 	 * Later code will always use the X 64-bit field. Also, check for an
-@@ -408,6 +404,10 @@ static void acpi_tb_convert_fadt(void)
- 		acpi_gbl_FADT.boot_flags = 0;
+ 	if (!zalloc_cpumask_var(&pr->throttling.shared_cpu_map, GFP_KERNEL)) {
+-		kfree(pr);
+-		return -ENOMEM;
++		result = -ENOMEM;
++		goto err_free_pr;
  	}
  
-+	/* Update the local FADT table header length */
-+
-+	acpi_gbl_FADT.header.length = sizeof(struct acpi_table_fadt);
-+
+ 	pr->handle = device->handle;
+@@ -576,7 +576,7 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ 	dev = get_cpu_device(pr->id);
+ 	if (sysfs_create_link(&device->dev.kobj, &dev->kobj, "sysdev")) {
+ 		result = -EFAULT;
+-		goto err_free_cpumask;
++		goto err_clear_processor;
+ 	}
+ 
  	/*
- 	 * Expand the ACPI 1.0 32-bit addresses to the ACPI 2.0 64-bit "X"
- 	 * generic address structures as necessary. Later code will always use
+@@ -594,9 +594,15 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
+ 
+ err_remove_sysfs:
+ 	sysfs_remove_link(&device->dev.kobj, "sysdev");
++err_clear_processor:
++	/*
++	 * processor_device_array is not cleared to allow checks for buggy BIOS
++	 */ 
++	per_cpu(processors, pr->id) = NULL;
+ err_free_cpumask:
+ 	free_cpumask_var(pr->throttling.shared_cpu_map);
+-
++err_free_pr:
++	kfree(pr);
+ 	return result;
+ }
+ 
 -- 
 1.7.10.rc2.19.gfae9d
