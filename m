@@ -1,14 +1,15 @@
-From: Zhichao Li <lzcmichael@gmail.com>
-Subject: Re: Regarding CPU idle C states
-Date: Fri, 30 Mar 2012 11:48:09 -0400
-Message-ID: <CAOUN_Df315y9=_=ED9TP+7=YFzu2eDi00AvXuokAr6DJd8Khug@mail.gmail.com>
-References: <CAOUN_DfbAAsAmySTOQ_-zQLbFnCEOnvSsjdXevs9OBXkAgGCUQ@mail.gmail.com>
-	<CAGF5oy-igUy1GjB86hqnFF_ch5CqnDGO5rSJ_tQk1A6iammmpQ@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle : use percpu cpuidle in the core code
+Date: Fri, 30 Mar 2012 18:18:06 +0200
+Message-ID: <4F75DCBE.8000309@linaro.org>
+References: <1333104499-8627-1-git-send-email-daniel.lezcano@linaro.org>
+	<4F759838.4060007@linux.vnet.ibm.com> <4F759CDE.9060108@linaro.org>
+	<4F75A015.2010609@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAGF5oy-igUy1GjB86hqnFF_ch5CqnDGO5rSJ_tQk1A6iammmpQ@mail.gmail.com>
+In-Reply-To: <4F75A015.2010609@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,91 +19,99 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Valentin, Eduardo" <eduardo.valentin@ti.com>
-Cc: ShuoX Liu <shuox.liu@intel.com>, linux-pm@lists.linux-foundation.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Thanks for the email, Eduardo. It's useful.
-
-Basically, we'd like to save power while maintaining performance in
-storage systems with domain knowledge aware algorithm. Our previous
-research papers can be found here:
-
-http://www.fsl.cs.sunysb.edu/~zhicli/#_Publications
-
-We can now start with the patch adding sysfs entry for C states and
-provide kernel support, and try to play with them in the user level.
-
-Regards,
-
-
-On Fri, Mar 30, 2012 at 2:41 AM, Valentin, Eduardo
-<eduardo.valentin@ti.com> wrote:
-> Hello Zhichao,
->
-> On Thu, Mar 29, 2012 at 11:58 PM, Zhichao Li <lzcmichael@gmail.com> wrote:
->> Hi,
->>
->> I am a third year PhD student working on power management in storage
->> systems, under the Linux platform.
->
-> Good :-)
->
->>
->> We are exploring CPU DVFS, and also idle CPU C states. We figured out
->> that the scheduling of CPU frequencies is exported to user level with
->> the "userspace" governor. However, it seems the multiple idle C states
->> are only scheduled in the kernel space (governors like "menu" and
->> "ladder").
->
-> OK. Which kind of exploration you are performing? Any published paper
-> you would like to point?
->
->>
->> We wonder whether there is any existing kernel module or existing
->> kernel patch that can export the various idle CPU C states to the user
->> level for user's control as well. =A0If you could guide us to such
->> code/patch, or if you have plan to do so, we'd be more than happy to
->> help you testing the code for various idle CPU C states in the user
->> level.
->
->
-> Have you seen this patch?
-> https://lkml.org/lkml/2012/3/5/30
->
-> It's original purpose is for debugging. One can enable of disable the
-> C states available. There has been some discussion about that patch
-> regarding its usage for userspace based governors. But it should be
-> enough for your purpose. In theory you could keep enabled only the C
-> state you want to force to be reached.
->
->
->>
->> Thanks for your time. Appreciated it!
->>
->> Regards,
->>
->> --
->> Zhichao Li
->> File Systems and Storage Lab
->> Computer Science Department
->> Stony Brook University
->> _______________________________________________
->> linux-pm mailing list
->> linux-pm@lists.linux-foundation.org
->> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
->
->
->
-> --
->
-> Eduardo Valentin
-
-
-
--- =
-
-Zhichao Li
-File Systems and Storage Lab
-Computer Science Department
-Stony Brook University
+T24gMDMvMzAvMjAxMiAwMTo1OSBQTSwgU3JpdmF0c2EgUy4gQmhhdCB3cm90ZToKPiBPbiAwMy8z
+MC8yMDEyIDA1OjE1IFBNLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPgo+PiBPbiAwMy8zMC8yMDEy
+IDAxOjI1IFBNLCBTcml2YXRzYSBTLiBCaGF0IHdyb3RlOgo+Pj4gT24gMDMvMzAvMjAxMiAwNDox
+OCBQTSwgRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+Pgo+Pj4+IFRoZSB1c3VhbCBjcHVpZGxlIGlu
+aXRpYWxpemF0aW9uIHJvdXRpbmVzIGFyZSB0byByZWdpc3RlciB0aGUKPj4+PiBkcml2ZXIsIHRo
+ZW4gcmVnaXN0ZXIgYSBjcHVpZGxlIGRldmljZSBwZXIgY3B1Lgo+Pj4+Cj4+Pj4gV2l0aCB0aGUg
+ZGV2aWNlJ3Mgc3RhdGUgY291bnQgZGVmYXVsdCBpbml0aWFsaXphdGlvbiB3aXRoIHRoZQo+Pj4+
+IGRyaXZlcidzIHN0YXRlIGNvdW50LCB0aGUgY29kZSBpbml0aWFsaXphdGlvbiByZW1haW5zIG1v
+c3RseSB0aGUKPj4+PiBzYW1lIGluIHRoZSBkaWZmZXJlbnQgZHJpdmVycy4KPj4+Pgo+Pj4+IFdl
+IGNhbiB0aGVuIGFkZCBhIG5ldyBmdW5jdGlvbiAnY3B1aWRsZV9yZWdpc3Rlcicgd2hlcmUgd2Ug
+cmVnaXN0ZXIKPj4+PiB0aGUgZHJpdmVyIGFuZCB0aGUgZGV2aWNlcy4gVGhlc2UgZGV2aWNlcyBj
+YW4gYmUgZGVmaW5lZCBpbiBhIGdsb2JhbAo+Pj4+IHN0YXRpYyB2YXJpYWJsZSBpbiBjcHVpZGxl
+LmMuIFdlIHdpbGwgYmUgYWJsZSB0byBmYWN0b3Igb3V0IGFuZAo+Pj4+IHJlbW92ZSBhIGxvdCBv
+ZiBkdXBsaWNhdGUgbGluZXMgb2YgY29kZS4KPj4+Pgo+Pj4+IEFzIHdlIHN0aWxsIGhhdmUgc29t
+ZSBkcml2ZXJzLCB3aXRoIGRpZmZlcmVudCBpbml0aWFsaXphdGlvbiByb3V0aW5lcywKPj4+PiB3
+ZSBrZWVwICdjcHVpZGxlX3JlZ2lzdGVyX2RyaXZlcicgYW5kICdjcHVpZGxlX3JlZ2lzdGVyX2Rl
+dmljZScgYXMgbG93Cj4+Pj4gbGV2ZWwgaW5pdGlhbGl6YXRpb24gcm91dGluZXMgdG8gZG8gc29t
+ZSBzcGVjaWZpYyBvcGVyYXRpb25zIG9uIHRoZQo+Pj4+IGNwdWlkbGUgZGV2aWNlcy4KPj4+Pgo+
+Pj4+IFNpZ25lZC1vZmYtYnk6IERhbmllbCBMZXpjYW5vPGRhbmllbC5sZXpjYW5vQGxpbmFyby5v
+cmc+Cj4+Pj4gLS0tCj4+Pj4gICAgZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYyB8ICAgMzQgKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+Pj4+ICAgIGluY2x1ZGUvbGludXgvY3B1
+aWRsZS5oICAgfCAgICAzICsrKwo+Pj4+ICAgIDIgZmlsZXMgY2hhbmdlZCwgMzcgaW5zZXJ0aW9u
+cygrKSwgMCBkZWxldGlvbnMoLSkKPj4+Pgo+Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlk
+bGUvY3B1aWRsZS5jIGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYwo+Pj4+IGluZGV4IGI4YTFm
+YWYuLjJhMTc0ZTggMTAwNjQ0Cj4+Pj4gLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYwo+
+Pj4+ICsrKyBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMKPj4+PiBAQCAtMjMsNiArMjMsNyBA
+QAo+Pj4+ICAgICNpbmNsdWRlICJjcHVpZGxlLmgiCj4+Pj4KPj4+PiAgICBERUZJTkVfUEVSX0NQ
+VShzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKiwgY3B1aWRsZV9kZXZpY2VzKTsKPj4+PiArREVGSU5F
+X1BFUl9DUFUoc3RydWN0IGNwdWlkbGVfZGV2aWNlLCBjcHVpZGxlX2RldmljZSk7Cj4+Pj4KPj4+
+PiAgICBERUZJTkVfTVVURVgoY3B1aWRsZV9sb2NrKTsKPj4+PiAgICBMSVNUX0hFQUQoY3B1aWRs
+ZV9kZXRlY3RlZF9kZXZpY2VzKTsKPj4+PiBAQCAtMzkxLDYgKzM5MiwzOSBAQCBpbnQgY3B1aWRs
+ZV9yZWdpc3Rlcl9kZXZpY2Uoc3RydWN0Cj4+Pj4gY3B1aWRsZV9kZXZpY2UgKmRldikKPj4+Pgo+
+Pj4+ICAgIEVYUE9SVF9TWU1CT0xfR1BMKGNwdWlkbGVfcmVnaXN0ZXJfZGV2aWNlKTsKPj4+Pgo+
+Pj4+ICtpbnQgY3B1aWRsZV9yZWdpc3RlcihzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgKmRydikKPj4+
+PiArewo+Pj4+ICsgICAgaW50IHJldCwgY3B1Owo+Pj4+ICsgICAgc3RydWN0IGNwdWlkbGVfZGV2
+aWNlICpkZXY7Cj4+Pj4gKwo+Pj4+ICsgICAgcmV0ID0gY3B1aWRsZV9yZWdpc3Rlcl9kcml2ZXIo
+ZHJ2KTsKPj4+PiArICAgIGlmIChyZXQpCj4+Pj4gKyAgICAgICAgcmV0dXJuIHJldDsKPj4+PiAr
+Cj4+Pj4gKyAgICBmb3JfZWFjaF9vbmxpbmVfY3B1KGNwdSkgewo+Pj4+ICsgICAgICAgIGRldiA9
+JnBlcl9jcHUoY3B1aWRsZV9kZXZpY2UsIGNwdSk7Cj4+Pj4gKyAgICAgICAgZGV2LT5jcHUgPSBj
+cHU7Cj4+Pj4gKwo+Pj4+ICsgICAgICAgIHJldCA9IGNwdWlkbGVfcmVnaXN0ZXJfZGV2aWNlKGRl
+dik7Cj4+Pj4gKyAgICAgICAgaWYgKHJldCkKPj4+PiArICAgICAgICAgICAgZ290byBvdXRfdW5y
+ZWdpc3RlcjsKPj4+PiArICAgIH0KPj4+PiArCj4+Pgo+Pj4KPj4+IElzbid0IHRoaXMgcmFjeSB3
+aXRoIHJlc3BlY3QgdG8gQ1BVIGhvdHBsdWc/Cj4+Cj4+IE5vLCBJIGRvbid0IHRoaW5rIHNvLiBE
+byB5b3Ugc2VlIGEgcmFjZSA/Cj4KPgo+IFdlbGwsIHRoYXQgZGVwZW5kcyBvbiB3aGVuL3doZXJl
+IHRoaXMgZnVuY3Rpb24gZ2V0cyBjYWxsZWQuCj4gVGhpcyBwYXRjaCBpbnRyb2R1Y2VzIHRoZSBm
+dW5jdGlvbi4gV2hlcmUgaXMgdGhlIGNhbGxlcj8KClRoZXJlIGlzIG5vIGNhbGxlciBmb3IgdGhl
+IG1vbWVudCBiZWNhdXNlIHRoZXkgYXJlIGluIHRoZSBkaWZmZXJlbnQgYXJjaCAKc3BlY2lmaWMg
+Y29kZSBpbiB0aGUgZGlmZmVyZW50IHRyZWVzLgoKQnV0IHRoZSBjYWxsZXJzIHdpbGwgYmUgaW4g
+dGhlIGluaXQgY2FsbHMgYXQgYm9vdCB1cC4KCj4gQXMgb2Ygbm93LCBpZiB5b3UgYXJlIGNhbGxp
+bmcgdGhpcyBpbiBib290LXVwIGNvZGUsIGl0cyBub3QgcmFjeS4KCk1vc3Qgb2YgdGhlIGNhbGxl
+ciBhcmUgaW4gdGhlIGJvb3QtdXAgY29kZSwgaW4gZGV2aWNlX2luaXQgb3IgCm1vZHVsZV9pbml0
+LiBUaGUgb3RoZXIgb25lcyBhcmUgZG9pbmcgc29tZSBzcGVjaWZpYyBpbml0aWFsaXphdGlvbiBv
+biAKdGhlIGNwdWlkbGVfZGV2aWNlIChjcHVpbml0LCBsaWtlIGFjcGkpIGFuZCBjYW4ndCB1c2Ug
+dGhlIApjcHVpZGxlX3JlZ2lzdGVyIGZ1bmN0aW9uLgoKPiBIb3dldmVyLCB0aGVyZSBoYXZlIGJl
+ZW4gYXR0ZW1wdHMgdG8gc3BlZWQgdXAgYm9vdCB0aW1lcyBieSB0cnlpbmcKPiB0byBvbmxpbmUg
+Y3B1cyBpbiBwYXJhbGxlbCB3aXRoIHRoZSByZXN0IG9mIHRoZSBrZXJuZWwgaW5pdGlhbGl6YXRp
+b25bMV0uCj4gSW4gdGhhdCBjYXNlLCB1bmxlc3MgeW91ciBjYWxsIGlzIGFuIGVhcmx5IGluaXQg
+Y2FsbCwgaXQgY2FuIHJhY2UKPiB3aXRoIENQVSBob3RwbHVnLgo+Cj4gWzFdLiBodHRwczovL2xr
+bWwub3JnL2xrbWwvMjAxMi8xLzMwLzY0NwoKQWhhICEgTm93IEkgdW5kZXJzdGFuZCB0aGUgcmFj
+ZSB5b3Ugd2VyZSB0YWxraW5nIGFib3V0LiBUaGFua3MgZm9yIHRoZSAKcG9pbnRlci4gSXQgaXMg
+dmVyeSBpbnRlcmVzdGluZy4KCkkgcmVhbGl6ZSBpZiB0aGUgY3B1cyBib290IHVwIGluIHBhcmFs
+bGVsLCB0aGF0IHdpbGwgYnJlYWsgYSBsb3Qgb2YgCnRoaW5ncyBhbmQsIGZvciBteSBjb25jZXJu
+LCB0aGF0IHdpbGwgYnJlYWsgbW9zdCBvZiB0aGUgY3B1aWRsZSBkcml2ZXJzLgoKU28gZmFyIHRo
+ZSBjcHUgYm9vdHVwIHBhcmFsbGVsaXphdGlvbiBpcyBub3QgdGhlcmUsIHNvIGZyb20gbXkgUE9W
+LCBteSAKcGF0Y2ggaXMgY29ycmVjdCBhcyB3ZSB3aWxsIGZhY3RvciBvdXQgaW4gYSBzaW5nbGUg
+cGxhY2Ugc29tZSBjb2RlIHdoaWNoIAp3aWxsIGJlIHBvdGVudGlhbGx5IGJyb2tlbiBieSB0aGlz
+IHBhcmFsbGVsaXphdGlvbiBpbiB0aGUgZnV0dXJlLiBJdCAKd2lsbCBiZSBlYXNpZXIgdG8gZml4
+IHRoYXQgaW4gYSBzaW5nbGUgcGxhY2UgcmF0aGVyIGluIG11bHRpcGxlIGRyaXZlcnMuCgpUaGFu
+a3MgZm9yIHNwb3R0aW5nIHRoaXMgcG90ZW50aWFsIHByb2JsZW0uIFRoaXMgaXMgc29tZXRoaW5n
+IEkgd2lsbCAKa2VlcCBpbiBtaW5kIGZvciB0aGUgZnV0dXJlLgoKPj4+PiArb3V0Ogo+Pj4+ICsg
+ICAgcmV0dXJuIHJldDsKPj4+PiArCj4+Pj4gK291dF91bnJlZ2lzdGVyOgo+Pj4+ICsgICAgZm9y
+X2VhY2hfb25saW5lX2NwdShjcHUpIHsKPj4+PiArICAgICAgICBkZXYgPSZwZXJfY3B1KGNwdWlk
+bGVfZGV2aWNlLCBjcHUpOwo+Pj4+ICsgICAgICAgIGNwdWlkbGVfdW5yZWdpc3Rlcl9kZXZpY2Uo
+ZGV2KTsKPj4+PiArICAgIH0KPj4+PiArCj4+Pgo+Pj4KPj4+IFRoaXMgY291bGQgYmUgaW1wcm92
+ZWQgSSBndWVzcy4uIFdoYXQgaWYgdGhlIHJlZ2lzdHJhdGlvbiBmYWlscwo+Pj4gZm9yIHRoZSBm
+aXJzdCBjcHUgaXRzZWxmPyBUaGVuIGxvb3Bpbmcgb3ZlciBlbnRpcmUgb25saW5lIGNwdW1hc2sK
+Pj4+IHdvdWxkIGJlIGEgd2FzdGUgb2YgdGltZS4uCj4+Cj4+IENlcnRhaW5seSBpbiBhIGNyaXRp
+Y2FsIHNlY3Rpb24gdGhhdCB3b3VsZCBtYWtlIHNlbnNlLCBidXQgZm9yIDQsOCBvciAxNgo+PiBj
+cHVzIGluIGFuIGluaXRpYWxpemF0aW9uIHBhdGggYXQgYm9vdCB0aW1lLi4uIEFueXdheSwgSSBj
+YW4gYWRkIHdoYXQgaXMKPj4gcHJvcG9zZWQgaW4gaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTIv
+My8yMi8xNDMuCj4+Cj4KPgo+IFdoYXQgYWJvdXQgc2VydmVycyB3aXRoIGEgbG90IG1vcmUgQ1BV
+cywgbGlrZSBzYXkgMTI4IG9yIGV2ZW4gbW9yZT8gOi0pCj4KPiBNb3Jlb3ZlciBJIGRvbid0IHNl
+ZSBhbnkgZG93bnNpZGVzIHRvIHRoZSBvcHRpbWl6YXRpb24uIFNvIHNob3VsZCBiZSBnb29kCj4g
+dG8gYWRkIGl0IGluIGFueSBjYXNlLi4uCgpZZXMsIG5vIHByb2JsZW0uIEkgd2lsbCBhZGQgaXQu
+CgoKVGhhbmtzICEKICAgLS0gRGFuaWVsCgotLSAKICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4g
+TGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cg
+TGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sg
+fAo8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3
+LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCgpfX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlz
+dHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eGZvdW5kYXRpb24ub3Jn
+L21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
