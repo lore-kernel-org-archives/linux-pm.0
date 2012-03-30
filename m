@@ -1,156 +1,80 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 16/76] thermal_sys: kernel style cleanups
-Date: Fri, 30 Mar 2012 06:13:19 -0400
-Message-ID: <caca8b803520b0694423e2ac0ee3d58650b04a12.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 46/76] ACPI: Introduce ACPI D3_COLD state support
+Date: Fri, 30 Mar 2012 06:13:49 -0400
+Message-ID: <3ebc81b8937d2bc1d0d0064bed29434dfce490aa.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-reply-to: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
+From: Zhang Rui <rui.zhang@intel.com>
 
-Just a few tidies to make it more like most kernel sources.
+If a device has _PR3, it means the device supports D3_COLD.
+Add the ability to validate and enter D3_COLD state in ACPI.
 
-A couple of long lines still remain.
-
-Signed-off-by: Joe Perches <joe@perches.com>
-Reviewed-by: Jesper Juhl <jj@chaosbits.net>
-Cc: Len Brown <lenb@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/thermal/thermal_sys.c |   30 +++++++++++++-----------------
- 1 file changed, 13 insertions(+), 17 deletions(-)
+ drivers/acpi/power.c |    4 ++--
+ drivers/acpi/scan.c  |    7 +++++++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 11237bc..db5d8f8 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -64,7 +64,7 @@ static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
+index 9ac2a9f..0d681fb 100644
+--- a/drivers/acpi/power.c
++++ b/drivers/acpi/power.c
+@@ -500,14 +500,14 @@ int acpi_power_transition(struct acpi_device *device, int state)
  {
- 	int err;
+ 	int result;
  
--      again:
-+again:
- 	if (unlikely(idr_pre_get(idr, GFP_KERNEL) == 0))
- 		return -ENOMEM;
+-	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3))
++	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
+ 		return -EINVAL;
  
-@@ -816,15 +816,14 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	if (device->power.state == state)
  		return 0;
  
- 	device_remove_file(&tz->device, &dev->attr);
--      remove_symbol_link:
-+remove_symbol_link:
- 	sysfs_remove_link(&tz->device.kobj, dev->name);
--      release_idr:
-+release_idr:
- 	release_idr(&tz->idr, &tz->lock, dev->id);
--      free_mem:
-+free_mem:
- 	kfree(dev);
- 	return result;
- }
--
- EXPORT_SYMBOL(thermal_zone_bind_cooling_device);
+ 	if ((device->power.state < ACPI_STATE_D0)
+-	    || (device->power.state > ACPI_STATE_D3))
++	    || (device->power.state > ACPI_STATE_D3_COLD))
+ 		return -ENODEV;
  
- /**
-@@ -854,14 +853,13 @@ int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
+ 	/* TBD: Resources must be ordered. */
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 8ab80ba..571396c 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -885,6 +885,13 @@ static int acpi_bus_get_power_flags(struct acpi_device *device)
+ 				acpi_bus_add_power_resource(ps->resources.handles[j]);
+ 		}
  
- 	return -ENODEV;
- 
--      unbind:
-+unbind:
- 	device_remove_file(&tz->device, &pos->attr);
- 	sysfs_remove_link(&tz->device.kobj, pos->name);
- 	release_idr(&tz->idr, &tz->lock, pos->id);
- 	kfree(pos);
- 	return 0;
- }
--
- EXPORT_SYMBOL(thermal_zone_unbind_cooling_device);
- 
- static void thermal_release(struct device *dev)
-@@ -869,7 +867,8 @@ static void thermal_release(struct device *dev)
- 	struct thermal_zone_device *tz;
- 	struct thermal_cooling_device *cdev;
- 
--	if (!strncmp(dev_name(dev), "thermal_zone", sizeof "thermal_zone" - 1)) {
-+	if (!strncmp(dev_name(dev), "thermal_zone",
-+		     sizeof("thermal_zone") - 1)) {
- 		tz = to_thermal_zone(dev);
- 		kfree(tz);
- 	} else {
-@@ -889,8 +888,9 @@ static struct class thermal_class = {
-  * @devdata:	device private data.
-  * @ops:		standard thermal cooling devices callbacks.
-  */
--struct thermal_cooling_device *thermal_cooling_device_register(
--     char *type, void *devdata, const struct thermal_cooling_device_ops *ops)
-+struct thermal_cooling_device *
-+thermal_cooling_device_register(char *type, void *devdata,
-+				const struct thermal_cooling_device_ops *ops)
- {
- 	struct thermal_cooling_device *cdev;
- 	struct thermal_zone_device *pos;
-@@ -955,12 +955,11 @@ struct thermal_cooling_device *thermal_cooling_device_register(
- 	if (!result)
- 		return cdev;
- 
--      unregister:
-+unregister:
- 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
- 	device_unregister(&cdev->device);
- 	return ERR_PTR(result);
- }
--
- EXPORT_SYMBOL(thermal_cooling_device_register);
- 
- /**
-@@ -1005,7 +1004,6 @@ void thermal_cooling_device_unregister(struct
- 	device_unregister(&cdev->device);
- 	return;
- }
--
- EXPORT_SYMBOL(thermal_cooling_device_unregister);
- 
- /**
-@@ -1081,7 +1079,7 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
- 
- 	tz->last_temperature = temp;
- 
--      leave:
-+leave:
- 	if (tz->passive)
- 		thermal_zone_device_set_polling(tz, tz->passive_delay);
- 	else if (tz->polling_delay)
-@@ -1221,12 +1219,11 @@ struct thermal_zone_device *thermal_zone_device_register(char *type,
- 	if (!result)
- 		return tz;
- 
--      unregister:
-+unregister:
- 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
- 	device_unregister(&tz->device);
- 	return ERR_PTR(result);
- }
--
- EXPORT_SYMBOL(thermal_zone_device_register);
- 
- /**
-@@ -1278,7 +1275,6 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	device_unregister(&tz->device);
- 	return;
- }
--
- EXPORT_SYMBOL(thermal_zone_device_unregister);
- 
- #ifdef CONFIG_NET
++		/* The exist of _PR3 indicates D3Cold support */
++		if (i == ACPI_STATE_D3) {
++			status = acpi_get_handle(device->handle, object_name, &handle);
++			if (ACPI_SUCCESS(status))
++				device->power.states[ACPI_STATE_D3_COLD].flags.valid = 1;
++		}
++
+ 		/* Evaluate "_PSx" to see if we can do explicit sets */
+ 		object_name[2] = 'S';
+ 		status = acpi_get_handle(device->handle, object_name, &handle);
 -- 
 1.7.10.rc2.19.gfae9d
-
