@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 64/76] ACPI,
- APEI: Fix incorrect APEI register bit width check and usage
-Date: Fri, 30 Mar 2012 06:14:07 -0400
-Message-ID: <15afae604651d4e17652d2ffb56f5e36f991cfef.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 74/76] ACPI: Add support for exposing BGRT data
+Date: Fri, 30 Mar 2012 06:14:17 -0400
+Message-ID: <d1ff4b1cdbabb9ab9813f3d6e1cbec42cc5d6ed8.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,200 +21,267 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Gary Hade <garyhade@us.ibm.com>
+From: Matthew Garrett <mjg@redhat.com>
 
-The current code incorrectly assumes that
-(1) the APEI register bit width is always 8, 16, 32, or 64 and
-(2) the APEI register bit width is always equal to the APEI
-    register access width.
+ACPI 5.0 adds the BGRT, a table that contains a pointer to the firmware
+boot splash and associated metadata. This simple driver exposes it via
+/sys/firmware/acpi in order to allow bootsplash applications to draw their
+splash around the firmware image and reduce the number of jarring graphical
+transitions during boot.
 
-ERST serialization instructions entries such as:
-
-[030h 0048   1]                       Action : 00 [Begin Write Operation]
-[031h 0049   1]                  Instruction : 03 [Write Register Value]
-[032h 0050   1]        Flags (decoded below) : 01
-                      Preserve Register Bits : 1
-[033h 0051   1]                     Reserved : 00
-
-[034h 0052  12]              Register Region : [Generic Address Structure]
-[034h 0052   1]                     Space ID : 00 [SystemMemory]
-[035h 0053   1]                    Bit Width : 03
-[036h 0054   1]                   Bit Offset : 00
-[037h 0055   1]         Encoded Access Width : 03 [DWord Access:32]
-[038h 0056   8]                      Address : 000000007F2D7038
-
-[040h 0064   8]                        Value : 0000000000000001
-[048h 0072   8]                         Mask : 0000000000000007
-
-break this assumption by yielding:
-  [Firmware Bug]: APEI: Invalid bit width in GAR [0x7f2d7038/3/0]
-
-I have found no ACPI specification requirements corresponding
-with the above assumptions.  There is even a good example in
-the Serialization Instruction Entries section (ACPI 4.0 section
-17.4,1.2, ACPI 4.0a section 2.5.1.2, ACPI 5.0 section 18.5.1.2)
-that mentions a serialization instruction with a bit range of
-[6:2] which is 5 bits wide, _not_ 8, 16, 32, or 64 bits wide.
-
-Compile and boot tested with 3.3.0-rc7 on a IBM HX5.
-
-Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/apei/apei-base.c |   61 +++++++++++++++++++++++++++--------------
- 1 file changed, 40 insertions(+), 21 deletions(-)
+ Documentation/ABI/testing/sysfs-firmware-acpi |   20 +++
+ drivers/acpi/Kconfig                          |    9 ++
+ drivers/acpi/Makefile                         |    1 +
+ drivers/acpi/bgrt.c                           |  175 +++++++++++++++++++++++++
+ 4 files changed, 205 insertions(+)
+ create mode 100644 drivers/acpi/bgrt.c
 
-diff --git a/drivers/acpi/apei/apei-base.c b/drivers/acpi/apei/apei-base.c
-index e5d53b7..1d3656f 100644
---- a/drivers/acpi/apei/apei-base.c
-+++ b/drivers/acpi/apei/apei-base.c
-@@ -558,33 +558,48 @@ void apei_resources_release(struct apei_resources *resources)
- }
- EXPORT_SYMBOL_GPL(apei_resources_release);
- 
--static int apei_check_gar(struct acpi_generic_address *reg, u64 *paddr)
-+static int apei_check_gar(struct acpi_generic_address *reg, u64 *paddr,
-+				u32 *access_bit_width)
- {
--	u32 width, space_id;
-+	u32 bit_width, bit_offset, access_size_code, space_id;
- 
--	width = reg->bit_width;
-+	bit_width = reg->bit_width;
-+	bit_offset = reg->bit_offset;
-+	access_size_code = reg->access_width;
- 	space_id = reg->space_id;
- 	/* Handle possible alignment issues */
- 	memcpy(paddr, &reg->address, sizeof(*paddr));
- 	if (!*paddr) {
- 		pr_warning(FW_BUG APEI_PFX
--			   "Invalid physical address in GAR [0x%llx/%u/%u]\n",
--			   *paddr, width, space_id);
-+			   "Invalid physical address in GAR [0x%llx/%u/%u/%u/%u]\n",
-+			   *paddr, bit_width, bit_offset, access_size_code,
-+			   space_id);
- 		return -EINVAL;
- 	}
- 
--	if ((width != 8) && (width != 16) && (width != 32) && (width != 64)) {
-+	if (access_size_code < 1 || access_size_code > 4) {
- 		pr_warning(FW_BUG APEI_PFX
--			   "Invalid bit width in GAR [0x%llx/%u/%u]\n",
--			   *paddr, width, space_id);
-+			   "Invalid access size code in GAR [0x%llx/%u/%u/%u/%u]\n",
-+			   *paddr, bit_width, bit_offset, access_size_code,
-+			   space_id);
-+		return -EINVAL;
-+	}
-+	*access_bit_width = 1UL << (access_size_code + 2);
+diff --git a/Documentation/ABI/testing/sysfs-firmware-acpi b/Documentation/ABI/testing/sysfs-firmware-acpi
+index 4f9ba3c..dd930c8 100644
+--- a/Documentation/ABI/testing/sysfs-firmware-acpi
++++ b/Documentation/ABI/testing/sysfs-firmware-acpi
+@@ -1,3 +1,23 @@
++What:		/sys/firmware/acpi/bgrt/
++Date:		January 2012
++Contact:	Matthew Garrett <mjg@redhat.com>
++Description:
++		The BGRT is an ACPI 5.0 feature that allows the OS
++		to obtain a copy of the firmware boot splash and
++		some associated metadata. This is intended to be used
++		by boot splash applications in order to interact with
++		the firmware boot splash in order to avoid jarring
++		transitions.
 +
-+	if ((bit_width + bit_offset) > *access_bit_width) {
-+		pr_warning(FW_BUG APEI_PFX
-+			   "Invalid bit width + offset in GAR [0x%llx/%u/%u/%u/%u]\n",
-+			   *paddr, bit_width, bit_offset, access_size_code,
-+			   space_id);
- 		return -EINVAL;
- 	}
++		image: The image bitmap. Currently a 32-bit BMP.
++		status: 1 if the image is valid, 0 if firmware invalidated it.
++		type: 0 indicates image is in BMP format.
++		version: The version of the BGRT. Currently 1.
++		xoffset: The number of pixels between the left of the screen
++			 and the left edge of the image.
++		yoffset: The number of pixels between the top of the screen
++			 and the top edge of the image.
++
+ What:		/sys/firmware/acpi/interrupts/
+ Date:		February 2008
+ Contact:	Len Brown <lenb@kernel.org>
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 7556913..47768ff 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -384,6 +384,15 @@ config ACPI_CUSTOM_METHOD
+ 	  load additional kernel modules after boot, this feature may be used
+ 	  to override that restriction).
  
- 	if (space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY &&
- 	    space_id != ACPI_ADR_SPACE_SYSTEM_IO) {
- 		pr_warning(FW_BUG APEI_PFX
--			   "Invalid address space type in GAR [0x%llx/%u/%u]\n",
--			   *paddr, width, space_id);
-+			   "Invalid address space type in GAR [0x%llx/%u/%u/%u/%u]\n",
-+			   *paddr, bit_width, bit_offset, access_size_code,
-+			   space_id);
- 		return -EINVAL;
- 	}
++config ACPI_BGRT
++        tristate "Boottime Graphics Resource Table support"
++        default n
++        help
++	  This driver adds support for exposing the ACPI Boottime Graphics
++	  Resource Table, which allows the operating system to obtain
++	  data from the firmware boot splash. It will appear under
++	  /sys/firmware/acpi/bgrt/ .
++
+ source "drivers/acpi/apei/Kconfig"
  
-@@ -595,23 +610,25 @@ static int apei_check_gar(struct acpi_generic_address *reg, u64 *paddr)
- int apei_read(u64 *val, struct acpi_generic_address *reg)
- {
- 	int rc;
-+	u32 access_bit_width;
- 	u64 address;
- 	acpi_status status;
+ endif	# ACPI
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+index 1567028..47199e2 100644
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -62,6 +62,7 @@ obj-$(CONFIG_ACPI_SBS)		+= sbs.o
+ obj-$(CONFIG_ACPI_HED)		+= hed.o
+ obj-$(CONFIG_ACPI_EC_DEBUGFS)	+= ec_sys.o
+ obj-$(CONFIG_ACPI_CUSTOM_METHOD)+= custom_method.o
++obj-$(CONFIG_ACPI_BGRT)		+= bgrt.o
  
--	rc = apei_check_gar(reg, &address);
-+	rc = apei_check_gar(reg, &address, &access_bit_width);
- 	if (rc)
- 		return rc;
- 
- 	*val = 0;
- 	switch(reg->space_id) {
- 	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
--		status = acpi_os_read_memory64((acpi_physical_address)
--					     address, val, reg->bit_width);
-+		status = acpi_os_read_memory64((acpi_physical_address) address,
-+					       val, access_bit_width);
- 		if (ACPI_FAILURE(status))
- 			return -EIO;
- 		break;
- 	case ACPI_ADR_SPACE_SYSTEM_IO:
--		status = acpi_os_read_port(address, (u32 *)val, reg->bit_width);
-+		status = acpi_os_read_port(address, (u32 *)val,
-+					   access_bit_width);
- 		if (ACPI_FAILURE(status))
- 			return -EIO;
- 		break;
-@@ -627,22 +644,23 @@ EXPORT_SYMBOL_GPL(apei_read);
- int apei_write(u64 val, struct acpi_generic_address *reg)
- {
- 	int rc;
-+	u32 access_bit_width;
- 	u64 address;
- 	acpi_status status;
- 
--	rc = apei_check_gar(reg, &address);
-+	rc = apei_check_gar(reg, &address, &access_bit_width);
- 	if (rc)
- 		return rc;
- 
- 	switch (reg->space_id) {
- 	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
--		status = acpi_os_write_memory64((acpi_physical_address)
--					      address, val, reg->bit_width);
-+		status = acpi_os_write_memory64((acpi_physical_address) address,
-+						val, access_bit_width);
- 		if (ACPI_FAILURE(status))
- 			return -EIO;
- 		break;
- 	case ACPI_ADR_SPACE_SYSTEM_IO:
--		status = acpi_os_write_port(address, val, reg->bit_width);
-+		status = acpi_os_write_port(address, val, access_bit_width);
- 		if (ACPI_FAILURE(status))
- 			return -EIO;
- 		break;
-@@ -661,23 +679,24 @@ static int collect_res_callback(struct apei_exec_context *ctx,
- 	struct apei_resources *resources = data;
- 	struct acpi_generic_address *reg = &entry->register_region;
- 	u8 ins = entry->instruction;
-+	u32 access_bit_width;
- 	u64 paddr;
- 	int rc;
- 
- 	if (!(ctx->ins_table[ins].flags & APEI_EXEC_INS_ACCESS_REGISTER))
- 		return 0;
- 
--	rc = apei_check_gar(reg, &paddr);
-+	rc = apei_check_gar(reg, &paddr, &access_bit_width);
- 	if (rc)
- 		return rc;
- 
- 	switch (reg->space_id) {
- 	case ACPI_ADR_SPACE_SYSTEM_MEMORY:
- 		return apei_res_add(&resources->iomem, paddr,
--				    reg->bit_width / 8);
-+				    access_bit_width / 8);
- 	case ACPI_ADR_SPACE_SYSTEM_IO:
- 		return apei_res_add(&resources->ioport, paddr,
--				    reg->bit_width / 8);
-+				    access_bit_width / 8);
- 	default:
- 		return -EINVAL;
- 	}
+ # processor has its own "processor." module_param namespace
+ processor-y			:= processor_driver.o processor_throttling.o
+diff --git a/drivers/acpi/bgrt.c b/drivers/acpi/bgrt.c
+new file mode 100644
+index 0000000..8cf6c46
+--- /dev/null
++++ b/drivers/acpi/bgrt.c
+@@ -0,0 +1,175 @@
++/*
++ * Copyright 2012 Red Hat, Inc <mjg@redhat.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/sysfs.h>
++#include <acpi/acpi.h>
++#include <acpi/acpi_bus.h>
++
++static struct acpi_table_bgrt *bgrt_tab;
++static struct kobject *bgrt_kobj;
++
++struct bmp_header {
++	u16 id;
++	u32 size;
++} __attribute ((packed));
++
++static struct bmp_header bmp_header;
++
++static ssize_t show_version(struct device *dev,
++			    struct device_attribute *attr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", bgrt_tab->version);
++}
++static DEVICE_ATTR(version, S_IRUGO, show_version, NULL);
++
++static ssize_t show_status(struct device *dev,
++			   struct device_attribute *attr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", bgrt_tab->status);
++}
++static DEVICE_ATTR(status, S_IRUGO, show_status, NULL);
++
++static ssize_t show_type(struct device *dev,
++			 struct device_attribute *attr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", bgrt_tab->image_type);
++}
++static DEVICE_ATTR(type, S_IRUGO, show_type, NULL);
++
++static ssize_t show_xoffset(struct device *dev,
++			    struct device_attribute *attr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", bgrt_tab->image_offset_x);
++}
++static DEVICE_ATTR(xoffset, S_IRUGO, show_xoffset, NULL);
++
++static ssize_t show_yoffset(struct device *dev,
++			    struct device_attribute *attr, char *buf)
++{
++	return snprintf(buf, PAGE_SIZE, "%d\n", bgrt_tab->image_offset_y);
++}
++static DEVICE_ATTR(yoffset, S_IRUGO, show_yoffset, NULL);
++
++static ssize_t show_image(struct file *file, struct kobject *kobj,
++	       struct bin_attribute *attr, char *buf, loff_t off, size_t count)
++{
++	int size = attr->size;
++	void __iomem *image = attr->private;
++
++	if (off >= size) {
++		count = 0;
++	} else {
++		if (off + count > size)
++			count = size - off;
++
++		memcpy_fromio(buf, image+off, count);
++	}
++
++	return count;
++}
++
++static struct bin_attribute image_attr = {
++	.attr = {
++		.name = "image",
++		.mode = S_IRUGO,
++	},
++	.read = show_image,
++};
++
++static struct attribute *bgrt_attributes[] = {
++	&dev_attr_version.attr,
++	&dev_attr_status.attr,
++	&dev_attr_type.attr,
++	&dev_attr_xoffset.attr,
++	&dev_attr_yoffset.attr,
++	NULL,
++};
++
++static struct attribute_group bgrt_attribute_group = {
++	.attrs = bgrt_attributes,
++};
++
++static int __init bgrt_init(void)
++{
++	acpi_status status;
++	int ret;
++	void __iomem *bgrt;
++
++	if (acpi_disabled)
++		return -ENODEV;
++
++	status = acpi_get_table("BGRT", 0,
++				(struct acpi_table_header **)&bgrt_tab);
++
++	if (ACPI_FAILURE(status))
++		return -ENODEV;
++
++	sysfs_bin_attr_init(&image_attr);
++
++	bgrt = ioremap(bgrt_tab->image_address, sizeof(struct bmp_header));
++
++	if (!bgrt) {
++		ret = -EINVAL;
++		goto out_err;
++	}
++
++	memcpy_fromio(&bmp_header, bgrt, sizeof(bmp_header));
++	image_attr.size = bmp_header.size;
++	iounmap(bgrt);
++
++	image_attr.private = ioremap(bgrt_tab->image_address, image_attr.size);
++
++	if (!image_attr.private) {
++		ret = -EINVAL;
++		goto out_err;
++	}
++
++
++	bgrt_kobj = kobject_create_and_add("bgrt", acpi_kobj);
++	if (!bgrt_kobj) {
++		ret = -EINVAL;
++		goto out_iounmap;
++	}
++
++	ret = sysfs_create_group(bgrt_kobj, &bgrt_attribute_group);
++	if (ret)
++		goto out_kobject;
++
++	ret = sysfs_create_bin_file(bgrt_kobj, &image_attr);
++	if (ret)
++		goto out_group;
++
++	return 0;
++
++out_group:
++	sysfs_remove_group(bgrt_kobj, &bgrt_attribute_group);
++out_kobject:
++	kobject_put(bgrt_kobj);
++out_iounmap:
++	iounmap(image_attr.private);
++out_err:
++	return ret;
++}
++
++static void __exit bgrt_exit(void)
++{
++	iounmap(image_attr.private);
++	sysfs_remove_group(bgrt_kobj, &bgrt_attribute_group);
++	sysfs_remove_bin_file(bgrt_kobj, &image_attr);
++}
++
++module_init(bgrt_init);
++module_exit(bgrt_exit);
++
++MODULE_AUTHOR("Matthew Garrett");
++MODULE_DESCRIPTION("BGRT boot graphic support");
++MODULE_LICENSE("GPL");
 -- 
 1.7.10.rc2.19.gfae9d
