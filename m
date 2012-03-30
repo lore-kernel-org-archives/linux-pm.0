@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 25/76] ACPICA: Move ACPI timer prototypes to
-	public acpixf file
-Date: Fri, 30 Mar 2012 06:13:28 -0400
-Message-ID: <d08310fe0d6bd8c82da94e8d8ef48bdbe14d2bd1.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 66/76] ACPI: Fix use-after-free in acpi_map_lsapic
+Date: Fri, 30 Mar 2012 06:14:09 -0400
+Message-ID: <ac909ec308ce8d5177963c780564824d12bc3fa2.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,64 +21,52 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>, Bob Moore <robert.moore@intel.com>
+Cc: Len Brown <len.brown@intel.com>, Alok N Kataria <akataria@vmware.com>, Petr Vandrovec <petr@vmware.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+From: Petr Vandrovec <petr@vmware.com>
 
-These prototypes were incorrectly declared in achware.h.
+When processor is being hot-added to the system, acpi_map_lsapic invokes
+ACPI _MAT method to find APIC ID and flags, verifies that returned structure
+is indeed ACPI's local APIC structure, and that flags contain MADT_ENABLED
+bit.  Then saves APIC ID, frees structure - and accesses structure when
+computing arguments for acpi_register_lapic call.  Which sometime leads
+to acpi_register_lapic call being made with second argument zero, failing
+to bring processor online with error 'Unable to map lapic to logical cpu
+number'.
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+As lapic->lapic_flags & ACPI_MADT_ENABLED was already confirmed to be non-zero
+few lines above, we can just pass unconditional ACPI_MADT_ENABLED to the
+acpi_register_lapic.
+
+Signed-off-by: Petr Vandrovec <petr@vmware.com>
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Reviewed-by: Toshi Kani <toshi.kani@hp.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/achware.h |   12 ------------
- include/acpi/acpixf.h         |   12 ++++++++++++
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ arch/x86/kernel/acpi/boot.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/acpica/achware.h b/drivers/acpi/acpica/achware.h
-index 087f710..eed204a 100644
---- a/drivers/acpi/acpica/achware.h
-+++ b/drivers/acpi/acpica/achware.h
-@@ -145,16 +145,4 @@ acpi_status
- acpi_hw_derive_pci_id(struct acpi_pci_id *pci_id,
- 		      acpi_handle root_pci_device, acpi_handle pci_region);
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index ce664f3..bbcc2c3 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -642,6 +642,7 @@ static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
+ 	kfree(buffer.pointer);
+ 	buffer.length = ACPI_ALLOCATE_BUFFER;
+ 	buffer.pointer = NULL;
++	lapic = NULL;
  
--#ifdef	ACPI_FUTURE_USAGE
--/*
-- * hwtimer - ACPI Timer prototypes
-- */
--acpi_status acpi_get_timer_resolution(u32 * resolution);
--
--acpi_status acpi_get_timer(u32 * ticks);
--
--acpi_status
--acpi_get_timer_duration(u32 start_ticks, u32 end_ticks, u32 * time_elapsed);
--#endif				/* ACPI_FUTURE_USAGE */
--
- #endif				/* __ACHWARE_H__ */
-diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
-index a28da35..67cd51c 100644
---- a/include/acpi/acpixf.h
-+++ b/include/acpi/acpixf.h
-@@ -419,6 +419,18 @@ acpi_status acpi_leave_sleep_state_prep(u8 sleep_state);
- acpi_status acpi_leave_sleep_state(u8 sleep_state);
+ 	if (!alloc_cpumask_var(&tmp_map, GFP_KERNEL))
+ 		goto out;
+@@ -650,7 +651,7 @@ static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
+ 		goto free_tmp_map;
  
- /*
-+ * ACPI Timer interfaces
-+ */
-+#ifdef ACPI_FUTURE_USAGE
-+acpi_status acpi_get_timer_resolution(u32 *resolution);
-+
-+acpi_status acpi_get_timer(u32 *ticks);
-+
-+acpi_status
-+acpi_get_timer_duration(u32 start_ticks, u32 end_ticks, u32 *time_elapsed);
-+#endif				/* ACPI_FUTURE_USAGE */
-+
-+/*
-  * Error/Warning output
-  */
- void ACPI_INTERNAL_VAR_XFACE
+ 	cpumask_copy(tmp_map, cpu_present_mask);
+-	acpi_register_lapic(physid, lapic->lapic_flags & ACPI_MADT_ENABLED);
++	acpi_register_lapic(physid, ACPI_MADT_ENABLED);
+ 
+ 	/*
+ 	 * If mp_register_lapic successfully generates a new logical cpu
 -- 
 1.7.10.rc2.19.gfae9d
