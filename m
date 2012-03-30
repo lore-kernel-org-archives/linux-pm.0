@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 42/76] ACPI: ec: Do request_region outside WARN()
-Date: Fri, 30 Mar 2012 06:13:45 -0400
-Message-ID: <d6795fe32da13bde39ea483e42799a22daa730b5.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 67/76] PNPACPI: Fix device ref leaking in
+	acpi_pnp_match
+Date: Fri, 30 Mar 2012 06:14:10 -0400
+Message-ID: <89e96ada572fb216e582dbe3f64e1a6939a37f74.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -21,38 +22,43 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Andi Kleen <ak@linux.intel.com>, Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>, Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Yinghai Lu <yinghai@kernel.org>
 
-WARN() is not supposed to have side effects, so move the request_regions
-outside.
+During testing pci root bus removal, found some root bus bridge is not freed.
+If booting with pnpacpi=off, those hostbridge could be freed without problem.
+It turns out that some devices reference are not released during acpi_pnp_match.
+that match should not hold one device ref during every calling.
+Add pu_device calling before returning.
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: stable@vger.kernel.org
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/ec.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/pnp/pnpacpi/core.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index b19a18d..3268dcf 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -812,10 +812,10 @@ static int acpi_ec_add(struct acpi_device *device)
- 		first_ec = ec;
- 	device->driver_data = ec;
+diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
+index b00c176..d21e8f5 100644
+--- a/drivers/pnp/pnpacpi/core.c
++++ b/drivers/pnp/pnpacpi/core.c
+@@ -321,9 +321,14 @@ static int __init acpi_pnp_match(struct device *dev, void *_pnp)
+ {
+ 	struct acpi_device *acpi = to_acpi_device(dev);
+ 	struct pnp_dev *pnp = _pnp;
++	struct device *physical_device;
++
++	physical_device = acpi_get_physical_device(acpi->handle);
++	if (physical_device)
++		put_device(physical_device);
  
--	WARN(!request_region(ec->data_addr, 1, "EC data"),
--	     "Could not request EC data io port 0x%lx", ec->data_addr);
--	WARN(!request_region(ec->command_addr, 1, "EC cmd"),
--	     "Could not request EC cmd io port 0x%lx", ec->command_addr);
-+	ret = !!request_region(ec->data_addr, 1, "EC data");
-+	WARN(!ret, "Could not request EC data io port 0x%lx", ec->data_addr);
-+	ret = !!request_region(ec->command_addr, 1, "EC cmd");
-+	WARN(!ret, "Could not request EC cmd io port 0x%lx", ec->command_addr);
+ 	/* true means it matched */
+-	return !acpi_get_physical_device(acpi->handle)
++	return !physical_device
+ 	    && compare_pnp_id(pnp->id, acpi_device_hid(acpi));
+ }
  
- 	pr_info(PREFIX "GPE = 0x%lx, I/O: command/status = 0x%lx, data = 0x%lx\n",
- 			  ec->gpe, ec->command_addr, ec->data_addr);
 -- 
 1.7.10.rc2.19.gfae9d
