@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 49/76] cpuidle: use the driver's state_count as default
-Date: Fri, 30 Mar 2012 06:13:52 -0400
-Message-ID: <fc850f39ea54c760ce438a601cfea8ab80c4898e.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 62/76] ACPI, APEI, EINJ, new parameter to control trigger action
+Date: Fri, 30 Mar 2012 06:14:05 -0400
+Message-ID: <ee49089dc7d9fc78db51e18f4fba68e88edc49a4.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -10,48 +10,70 @@ In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Chen Gong <gong.chen@linux.intel.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+From: Chen Gong <gong.chen@linux.intel.com>
 
-If the state_count is not initialized for the device use
-the driver's state count as the default. That will prevent
-to add it manually in the cpuidle driver initialization
-routine and will save us from duplicate line of code.
+Some APEI firmware implementation will access injected address
+specified in param1 to trigger the error when injecting memory
+error, which means if one SRAR error is injected, the crash
+always happens because it is executed in kernel context. This
+new parameter can disable trigger action and control is taken
+over by the user. In this way, an SRAR error can happen in user
+context instead of crashing the system. This function is highly
+depended on BIOS implementation so please ensure you know the
+BIOS trigger procedure before you enable this switch.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+v2:
+  notrigger should be created together with param1/param2
+
+Tested-by: Tony Luck <tony.luck@lintel.com>
+Signed-off-by: Chen Gong <gong.chen@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/cpuidle/cpuidle.c |    2 +-
- drivers/cpuidle/driver.c  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/apei/einj.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 77304b6..f7cab5e 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -268,7 +268,7 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
- 	if (!drv || !cpuidle_curr_governor)
- 		return -EIO;
- 	if (!dev->state_count)
--		return -EINVAL;
-+		dev->state_count = drv->state_count;
+diff --git a/drivers/acpi/apei/einj.c b/drivers/acpi/apei/einj.c
+index 3d3816f..8e17936 100644
+--- a/drivers/acpi/apei/einj.c
++++ b/drivers/acpi/apei/einj.c
+@@ -74,6 +74,8 @@ struct vendor_error_type_extension {
+ 	u8	reserved[3];
+ };
  
- 	if (dev->registered == 0) {
- 		ret = __cpuidle_register_device(dev);
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 284d7af..40cd3f3 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -47,7 +47,7 @@ static void __cpuidle_register_driver(struct cpuidle_driver *drv)
-  */
- int cpuidle_register_driver(struct cpuidle_driver *drv)
- {
--	if (!drv)
-+	if (!drv || !drv->state_count)
- 		return -EINVAL;
++static u32 notrigger;
++
+ static u32 vendor_flags;
+ static struct debugfs_blob_wrapper vendor_blob;
+ static char vendor_dev[64];
+@@ -496,9 +498,11 @@ static int __einj_error_inject(u32 type, u64 param1, u64 param2)
+ 	if (rc)
+ 		return rc;
+ 	trigger_paddr = apei_exec_ctx_get_output(&ctx);
+-	rc = __einj_error_trigger(trigger_paddr, type, param1, param2);
+-	if (rc)
+-		return rc;
++	if (notrigger == 0) {
++		rc = __einj_error_trigger(trigger_paddr, type, param1, param2);
++		if (rc)
++			return rc;
++	}
+ 	rc = apei_exec_run_optional(&ctx, ACPI_EINJ_END_OPERATION);
  
- 	if (cpuidle_disabled())
+ 	return rc;
+@@ -700,6 +704,11 @@ static int __init einj_init(void)
+ 					    einj_debug_dir, &error_param2);
+ 		if (!fentry)
+ 			goto err_unmap;
++
++		fentry = debugfs_create_x32("notrigger", S_IRUSR | S_IWUSR,
++					    einj_debug_dir, &notrigger);
++		if (!fentry)
++			goto err_unmap;
+ 	}
+ 
+ 	if (vendor_dev[0]) {
 -- 
 1.7.10.rc2.19.gfae9d
