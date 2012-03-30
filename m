@@ -1,78 +1,58 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 02/76] tboot: Add return values for tboot_sleep
-Date: Fri, 30 Mar 2012 06:13:05 -0400
-Message-ID: <a1f37788a6d8c037e7d92fe4a0fe9ec0d713b21e.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 03/76] ACPI: ignore FADT reset-reg-sup flag
+Date: Fri, 30 Mar 2012 06:13:06 -0400
+Message-ID: <cf450136bfde77c7f95065c91bffded4aa7fa731.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-reply-to: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+From: Len Brown <len.brown@intel.com>
 
-.. as appropiately. As tboot_sleep now returns values.
-remove tboot_sleep_wrapper.
+we check that the address is non-zero later anyway.
 
-Suggested-and-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Joseph Cihula <joseph.cihula@intel.com>
-[v1: Return -1/0/+1 instead of ACPI_xx values]
-Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=11533
+
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/kernel/tboot.c |   13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+ drivers/acpi/acpica/hwxface.c |    3 +--
+ drivers/acpi/reboot.c         |    3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/tboot.c b/arch/x86/kernel/tboot.c
-index 1a4ab7d..6410744 100644
---- a/arch/x86/kernel/tboot.c
-+++ b/arch/x86/kernel/tboot.c
-@@ -272,7 +272,7 @@ static void tboot_copy_fadt(const struct acpi_table_fadt *fadt)
- 		offsetof(struct acpi_table_facs, firmware_waking_vector);
- }
+diff --git a/drivers/acpi/acpica/hwxface.c b/drivers/acpi/acpica/hwxface.c
+index 9d38eb6..fe1fb63 100644
+--- a/drivers/acpi/acpica/hwxface.c
++++ b/drivers/acpi/acpica/hwxface.c
+@@ -74,8 +74,7 @@ acpi_status acpi_reset(void)
  
--void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
-+static int tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
- {
- 	static u32 acpi_shutdown_map[ACPI_S_STATE_COUNT] = {
- 		/* S0,1,2: */ -1, -1, -1,
-@@ -281,7 +281,7 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
- 		/* S5: */ TB_SHUTDOWN_S5 };
+ 	/* Check if the reset register is supported */
  
- 	if (!tboot_enabled())
--		return;
-+		return 0;
- 
- 	tboot_copy_fadt(&acpi_gbl_FADT);
- 	tboot->acpi_sinfo.pm1a_cnt_val = pm1a_control;
-@@ -292,15 +292,10 @@ void tboot_sleep(u8 sleep_state, u32 pm1a_control, u32 pm1b_control)
- 	if (sleep_state >= ACPI_S_STATE_COUNT ||
- 	    acpi_shutdown_map[sleep_state] == -1) {
- 		pr_warning("unsupported sleep state 0x%x\n", sleep_state);
--		return;
-+		return -1;
+-	if (!(acpi_gbl_FADT.flags & ACPI_FADT_RESET_REGISTER) ||
+-	    !reset_reg->address) {
++	if (!reset_reg->address) {
+ 		return_ACPI_STATUS(AE_NOT_EXIST);
  	}
  
- 	tboot_shutdown(acpi_shutdown_map[sleep_state]);
--}
--static int tboot_sleep_wrapper(u8 sleep_state, u32 pm1a_control,
--			       u32 pm1b_control)
--{
--	tboot_sleep(sleep_state, pm1a_control, pm1b_control);
- 	return 0;
- }
+diff --git a/drivers/acpi/reboot.c b/drivers/acpi/reboot.c
+index a6c77e8b..c1d6124 100644
+--- a/drivers/acpi/reboot.c
++++ b/drivers/acpi/reboot.c
+@@ -23,8 +23,7 @@ void acpi_reboot(void)
+ 	/* Is the reset register supported? The spec says we should be
+ 	 * checking the bit width and bit offset, but Windows ignores
+ 	 * these fields */
+-	if (!(acpi_gbl_FADT.flags & ACPI_FADT_RESET_REGISTER))
+-		return;
++	/* Ignore also acpi_gbl_FADT.flags.ACPI_FADT_RESET_REGISTER */
  
-@@ -352,7 +347,7 @@ static __init int tboot_late_init(void)
- 	atomic_set(&ap_wfs_count, 0);
- 	register_hotcpu_notifier(&tboot_cpu_notifier);
- 
--	acpi_os_set_prepare_sleep(&tboot_sleep_wrapper);
-+	acpi_os_set_prepare_sleep(&tboot_sleep);
- 	return 0;
- }
+ 	reset_value = acpi_gbl_FADT.reset_value;
  
 -- 
 1.7.10.rc2.19.gfae9d
+
