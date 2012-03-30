@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 72/76] ACPI: Fix logic for removing mappings in
-	'acpi_unmap'
-Date: Fri, 30 Mar 2012 06:14:15 -0400
-Message-ID: <8cdde126aa60ced0d63ff137378e09dd01dfadda.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 43/76] ACPI: Make ACPI interrupt threaded
+Date: Fri, 30 Mar 2012 06:13:46 -0400
+Message-ID: <6fe0d0628245fdcd6fad8b837c81e8f7ebc3364d.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,32 +21,34 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Myron Stowe <myron.stowe@redhat.com>, linux-kernel@vger.kernel.org, Myron Stowe <mstowe@redhat.com>
+Cc: Andi Kleen <ak@linux.intel.com>, Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Myron Stowe <mstowe@redhat.com>
+From: Andi Kleen <andi@firstfloor.org>
 
-Make sure the removal of mappings uses the same logic that put the
-mappings in place.
+Some ACPI interrupt actions may need to wait, and it's easiest to
+have a thread context for this. So turn the ACPI interrupt
+into a threaded interrupt.
 
-Signed-off-by: Myron Stowe <myron.stowe@redhat.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/osl.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/osl.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-index 412a1e0..5aef087 100644
+index 412a1e0..02367a8 100644
 --- a/drivers/acpi/osl.c
 +++ b/drivers/acpi/osl.c
-@@ -347,7 +347,7 @@ static void acpi_unmap(acpi_physical_address pg_off, void __iomem *vaddr)
- 	unsigned long pfn;
+@@ -595,7 +595,8 @@ acpi_os_install_interrupt_handler(u32 gsi, acpi_osd_handler handler,
  
- 	pfn = pg_off >> PAGE_SHIFT;
--	if (page_is_ram(pfn))
-+	if (should_use_kmap(pfn))
- 		kunmap(pfn_to_page(pfn));
- 	else
- 		iounmap(vaddr);
+ 	acpi_irq_handler = handler;
+ 	acpi_irq_context = context;
+-	if (request_irq(irq, acpi_irq, IRQF_SHARED, "acpi", acpi_irq)) {
++	if (request_threaded_irq(irq, NULL, acpi_irq, IRQF_SHARED, "acpi",
++				 acpi_irq)) {
+ 		printk(KERN_ERR PREFIX "SCI (IRQ%d) allocation failed\n", irq);
+ 		acpi_irq_handler = NULL;
+ 		return AE_NOT_ACQUIRED;
 -- 
 1.7.10.rc2.19.gfae9d
