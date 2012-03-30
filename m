@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 67/76] PNPACPI: Fix device ref leaking in
-	acpi_pnp_match
-Date: Fri, 30 Mar 2012 06:14:10 -0400
-Message-ID: <89e96ada572fb216e582dbe3f64e1a6939a37f74.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 69/76] ACPI: Fix unprotected smp_processor_id()
+ in acpi_processor_cst_has_changed()
+Date: Fri, 30 Mar 2012 06:14:12 -0400
+Message-ID: <9505626d7bfeb5bd4b85acb483831ac640b2a5e8.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,43 +22,43 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: "Paul E. McKenney" <paul.mckenney@linaro.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Yinghai Lu <yinghai@kernel.org>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 
-During testing pci root bus removal, found some root bus bridge is not freed.
-If booting with pnpacpi=off, those hostbridge could be freed without problem.
-It turns out that some devices reference are not released during acpi_pnp_match.
-that match should not hold one device ref during every calling.
-Add pu_device calling before returning.
+The acpi_processor_cst_has_changed() function is invoked from a
+CPU_ONLINE or CPU_DEAD function, which might well execute on CPU 0
+even though the CPU being hotplugged is some other CPU.  In addition,
+acpi_processor_cst_has_changed() invokes smp_processor_id() without
+protection, resulting in splats when onlining CPUs.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: stable@vger.kernel.org
+This commit therefore changes the smp_processor_id() to pr->id, as is
+used elsewhere in the code, for example, in acpi_processor_add().
+
+Signed-off-by: Paul E. McKenney <paul.mckenney@linaro.org>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Tested-by: Yong Zhang <yong.zhang0@gmail.com>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/pnp/pnpacpi/core.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/acpi/processor_idle.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
-index b00c176..d21e8f5 100644
---- a/drivers/pnp/pnpacpi/core.c
-+++ b/drivers/pnp/pnpacpi/core.c
-@@ -321,9 +321,14 @@ static int __init acpi_pnp_match(struct device *dev, void *_pnp)
- {
- 	struct acpi_device *acpi = to_acpi_device(dev);
- 	struct pnp_dev *pnp = _pnp;
-+	struct device *physical_device;
-+
-+	physical_device = acpi_get_physical_device(acpi->handle);
-+	if (physical_device)
-+		put_device(physical_device);
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 0e8e2de..9e57b06 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1159,8 +1159,7 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
+ 	 * to make the code that updates C-States be called once.
+ 	 */
  
- 	/* true means it matched */
--	return !acpi_get_physical_device(acpi->handle)
-+	return !physical_device
- 	    && compare_pnp_id(pnp->id, acpi_device_hid(acpi));
- }
+-	if (smp_processor_id() == 0 &&
+-			cpuidle_get_driver() == &acpi_idle_driver) {
++	if (pr->id == 0 && cpuidle_get_driver() == &acpi_idle_driver) {
  
+ 		cpuidle_pause_and_lock();
+ 		/* Protect against cpu-hotplug */
 -- 
 1.7.10.rc2.19.gfae9d
