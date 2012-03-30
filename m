@@ -1,54 +1,40 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 50/76] cpuidle: remove useless array definition in
- cpuidle_structure
-Date: Fri, 30 Mar 2012 06:13:53 -0400
-Message-ID: <db70b04407a63668e5fee773f76f90367492fd25.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 73/76] ACPI: export acpi_kobj
+Date: Fri, 30 Mar 2012 06:14:16 -0400
+Message-ID: <f2d4753fbd4d15c65d6ba48167aa83916ddbe518.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+From: Matthew Garrett <mjg@redhat.com>
 
-All the modules name are ro-data, it is never copied to the array.
+Drivers may wish to add entries to /sys/firmware/acpi, so export acpi_kobj
+in order to let them do that.
 
-eg.
-
-static struct cpuidle_driver intel_idle_driver = {
-        .name = "intel_idle",
-        .owner = THIS_MODULE,
-};
-
-It safe to assign the pointer of this ro-data to a const char *.
-By this way we save 12 bytes.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Tested-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/linux/cpuidle.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/bus.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index ca4e498..f7f1d90 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -120,7 +120,7 @@ static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
-  ****************************/
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 9ecec98..3263b68 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -1010,6 +1010,7 @@ static int __init acpi_bus_init(void)
+ }
  
- struct cpuidle_driver {
--	char			name[CPUIDLE_NAME_LEN];
-+	const char		*name;
- 	struct module 		*owner;
+ struct kobject *acpi_kobj;
++EXPORT_SYMBOL_GPL(acpi_kobj);
  
- 	unsigned int		power_specified:1;
+ static int __init acpi_init(void)
+ {
 -- 
 1.7.10.rc2.19.gfae9d
-
