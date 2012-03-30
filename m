@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 24/76] ACPICA: ACPI 5: Support for new FADT
- SleepStatus, SleepControl registers
-Date: Fri, 30 Mar 2012 06:13:27 -0400
-Message-ID: <2feec47d4c5f80b05f1650f5a24865718978eea4.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 48/76] cpuidle: add a sysfs entry to disable
+ specific C state for debug purpose.
+Date: Fri, 30 Mar 2012 06:13:51 -0400
+Message-ID: <3a53396b0381ec9d5180fd8fe7a681c8ce95fd9a.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,1237 +22,222 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Bob Moore <robert.moore@intel.com>
+Cc: ShuoX Liu <shuox.liu@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+From: ShuoX Liu <shuox.liu@intel.com>
 
-Adds sleep and wake support for systems with these registers.
-One new file, hwxfsleep.c
+Some C states of new CPU might be not good.  One reason is BIOS might
+configure them incorrectly.  To help developers root cause it quickly, the
+patch adds a new sysfs entry, so developers could disable specific C state
+manually.
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
+In addition, C state might have much impact on performance tuning, as it
+takes much time to enter/exit C states, which might delay interrupt
+processing.  With the new debug option, developers could check if a deep C
+state could impact performance and how much impact it could cause.
+
+Also add this option in Documentation/cpuidle/sysfs.txt.
+
+[akpm@linux-foundation.org: check kstrtol return value]
+Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
+Reviewed-by: Yanmin Zhang <yanmin_zhang@intel.com>
+Reviewed-and-Tested-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/Makefile    |    3 +-
- drivers/acpi/acpica/achware.h   |   17 ++
- drivers/acpi/acpica/hwsleep.c   |  566 +++++++++++++++++++++------------------
- drivers/acpi/acpica/hwxfsleep.c |  377 ++++++++++++++++++++++++++
- include/acpi/actbl.h            |    7 +
- 5 files changed, 701 insertions(+), 269 deletions(-)
- create mode 100644 drivers/acpi/acpica/hwxfsleep.c
+ Documentation/cpuidle/sysfs.txt  |    5 +++++
+ drivers/cpuidle/cpuidle.c        |    1 +
+ drivers/cpuidle/governors/menu.c |    5 ++++-
+ drivers/cpuidle/sysfs.c          |   40 ++++++++++++++++++++++++++++++++++++++
+ include/linux/cpuidle.h          |    1 +
+ 5 files changed, 51 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/acpica/Makefile b/drivers/acpi/acpica/Makefile
-index 0ca208b..da55180 100644
---- a/drivers/acpi/acpica/Makefile
-+++ b/drivers/acpi/acpica/Makefile
-@@ -73,7 +73,8 @@ acpi-y +=		\
- 	hwregs.o	\
- 	hwsleep.o	\
- 	hwvalid.o	\
--	hwxface.o
-+	hwxface.o	\
-+	hwxfsleep.o
+diff --git a/Documentation/cpuidle/sysfs.txt b/Documentation/cpuidle/sysfs.txt
+index 50d7b16..9d28a34 100644
+--- a/Documentation/cpuidle/sysfs.txt
++++ b/Documentation/cpuidle/sysfs.txt
+@@ -36,6 +36,7 @@ drwxr-xr-x 2 root root 0 Feb  8 10:42 state3
+ /sys/devices/system/cpu/cpu0/cpuidle/state0:
+ total 0
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 desc
++-rw-r--r-- 1 root root 4096 Feb  8 10:42 disable
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 name
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 power
+@@ -45,6 +46,7 @@ total 0
+ /sys/devices/system/cpu/cpu0/cpuidle/state1:
+ total 0
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 desc
++-rw-r--r-- 1 root root 4096 Feb  8 10:42 disable
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 name
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 power
+@@ -54,6 +56,7 @@ total 0
+ /sys/devices/system/cpu/cpu0/cpuidle/state2:
+ total 0
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 desc
++-rw-r--r-- 1 root root 4096 Feb  8 10:42 disable
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 name
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 power
+@@ -63,6 +66,7 @@ total 0
+ /sys/devices/system/cpu/cpu0/cpuidle/state3:
+ total 0
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 desc
++-rw-r--r-- 1 root root 4096 Feb  8 10:42 disable
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 latency
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 name
+ -r--r--r-- 1 root root 4096 Feb  8 10:42 power
+@@ -72,6 +76,7 @@ total 0
  
- acpi-$(ACPI_FUTURE_USAGE) += hwtimer.o
  
-diff --git a/drivers/acpi/acpica/achware.h b/drivers/acpi/acpica/achware.h
-index 677793e..087f710 100644
---- a/drivers/acpi/acpica/achware.h
-+++ b/drivers/acpi/acpica/achware.h
-@@ -81,6 +81,23 @@ acpi_status acpi_hw_register_write(u32 register_id, u32 value);
- acpi_status acpi_hw_clear_acpi_status(void);
- 
- /*
-+ * hwsleep - sleep/wake support
-+ */
-+void acpi_hw_execute_SST(u32 value);
-+
-+acpi_status acpi_hw_extended_sleep(u8 sleep_state);
-+
-+acpi_status acpi_hw_legacy_sleep(u8 sleep_state);
-+
-+acpi_status acpi_hw_extended_wake_prep(u8 sleep_state);
-+
-+acpi_status acpi_hw_extended_wake(u8 sleep_state);
-+
-+acpi_status acpi_hw_legacy_wake_prep(u8 sleep_state);
-+
-+acpi_status acpi_hw_legacy_wake(u8 sleep_state);
-+
-+/*
-  * hwvalid - Port I/O with validation
-  */
- acpi_status acpi_hw_read_port(acpi_io_address address, u32 *value, u32 width);
-diff --git a/drivers/acpi/acpica/hwsleep.c b/drivers/acpi/acpica/hwsleep.c
-index 3c4a922..59a2a6b 100644
---- a/drivers/acpi/acpica/hwsleep.c
-+++ b/drivers/acpi/acpica/hwsleep.c
-@@ -1,7 +1,6 @@
--
- /******************************************************************************
-  *
-- * Name: hwsleep.c - ACPI Hardware Sleep/Wake Interface
-+ * Name: hwsleep.c - ACPI Hardware Sleep/Wake Support Functions
-  *
-  *****************************************************************************/
- 
-@@ -44,212 +43,183 @@
- 
- #include <acpi/acpi.h>
- #include "accommon.h"
--#include "actables.h"
- #include <linux/tboot.h>
- #include <linux/module.h>
- 
- #define _COMPONENT          ACPI_HARDWARE
- ACPI_MODULE_NAME("hwsleep")
- 
-+/* Local prototypes */
-+static void acpi_hw_execute_GTS(u8 sleep_state);
-+
-+static void acpi_hw_execute_BFS(u8 sleep_state);
-+
-+static void acpi_hw_execute_WAK(u8 sleep_state);
-+
-+static unsigned int gts, bfs;
-+module_param(gts, uint, 0644);
-+module_param(bfs, uint, 0644);
-+MODULE_PARM_DESC(gts, "Enable evaluation of _GTS on suspend.");
-+MODULE_PARM_DESC(bfs, "Enable evaluation of _BFS on resume".);
-+
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_set_firmware_waking_vector
-+ * FUNCTION:    acpi_hw_execute_GTS
-  *
-- * PARAMETERS:  physical_address    - 32-bit physical address of ACPI real mode
-- *                                    entry point.
-+ * PARAMETERS:  sleep_state         - Sleep state that will be entered
-  *
-- * RETURN:      Status
-+ * RETURN:      None
-  *
-- * DESCRIPTION: Sets the 32-bit firmware_waking_vector field of the FACS
-+ * DESCRIPTION: Execute the optional _GTS method (Going To Sleep)
-  *
-  ******************************************************************************/
--acpi_status
--acpi_set_firmware_waking_vector(u32 physical_address)
--{
--	ACPI_FUNCTION_TRACE(acpi_set_firmware_waking_vector);
--
- 
--	/*
--	 * According to the ACPI specification 2.0c and later, the 64-bit
--	 * waking vector should be cleared and the 32-bit waking vector should
--	 * be used, unless we want the wake-up code to be called by the BIOS in
--	 * Protected Mode.  Some systems (for example HP dv5-1004nr) are known
--	 * to fail to resume if the 64-bit vector is used.
--	 */
-+static void acpi_hw_execute_GTS(u8 sleep_state)
-+{
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
-+	acpi_status status;
- 
--	/* Set the 32-bit vector */
-+	if (!gts)
-+		return;
- 
--	acpi_gbl_FACS->firmware_waking_vector = physical_address;
-+	/* One argument, sleep_state */
- 
--	/* Clear the 64-bit vector if it exists */
-+	arg_list.count = 1;
-+	arg_list.pointer = &arg;
-+	arg.type = ACPI_TYPE_INTEGER;
-+	arg.integer.value = sleep_state;
- 
--	if ((acpi_gbl_FACS->length > 32) && (acpi_gbl_FACS->version >= 1)) {
--		acpi_gbl_FACS->xfirmware_waking_vector = 0;
-+	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-+		ACPI_EXCEPTION((AE_INFO, status,
-+				"While executing method _GTS"));
- 	}
--
--	return_ACPI_STATUS(AE_OK);
+ * desc : Small description about the idle state (string)
++* disable : Option to disable this idle state (bool)
+ * latency : Latency to exit out of this idle state (in microseconds)
+ * name : Name of the idle state (string)
+ * power : Power consumed while in this idle state (in milliwatts)
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 4869b55..77304b6 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -245,6 +245,7 @@ static void poll_idle_init(struct cpuidle_driver *drv)
+ 	state->power_usage = -1;
+ 	state->flags = 0;
+ 	state->enter = poll_idle;
++	state->disable = 0;
  }
- 
--ACPI_EXPORT_SYMBOL(acpi_set_firmware_waking_vector)
--
--#if ACPI_MACHINE_WIDTH == 64
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_set_firmware_waking_vector64
-+ * FUNCTION:    acpi_hw_execute_BFS
-  *
-- * PARAMETERS:  physical_address    - 64-bit physical address of ACPI protected
-- *                                    mode entry point.
-+ * PARAMETERS:  sleep_state         - Which sleep state we just exited
-  *
-- * RETURN:      Status
-+ * RETURN:      None
-  *
-- * DESCRIPTION: Sets the 64-bit X_firmware_waking_vector field of the FACS, if
-- *              it exists in the table. This function is intended for use with
-- *              64-bit host operating systems.
-+ * DESCRIPTION: Execute the optional _BFS method (Back From Sleep)
-  *
-  ******************************************************************************/
--acpi_status
--acpi_set_firmware_waking_vector64(u64 physical_address)
--{
--	ACPI_FUNCTION_TRACE(acpi_set_firmware_waking_vector64);
--
- 
--	/* Determine if the 64-bit vector actually exists */
-+static void acpi_hw_execute_BFS(u8 sleep_state)
-+{
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
-+	acpi_status status;
- 
--	if ((acpi_gbl_FACS->length <= 32) || (acpi_gbl_FACS->version < 1)) {
--		return_ACPI_STATUS(AE_NOT_EXIST);
--	}
-+	if (!bfs)
-+		return;
- 
--	/* Clear 32-bit vector, set the 64-bit X_ vector */
-+	/* One argument, sleep_state */
- 
--	acpi_gbl_FACS->firmware_waking_vector = 0;
--	acpi_gbl_FACS->xfirmware_waking_vector = physical_address;
-+	arg_list.count = 1;
-+	arg_list.pointer = &arg;
-+	arg.type = ACPI_TYPE_INTEGER;
-+	arg.integer.value = sleep_state;
- 
--	return_ACPI_STATUS(AE_OK);
-+	status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-+		ACPI_EXCEPTION((AE_INFO, status,
-+				"While executing method _BFS"));
-+	}
- }
- 
--ACPI_EXPORT_SYMBOL(acpi_set_firmware_waking_vector64)
--#endif
--
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_enter_sleep_state_prep
-+ * FUNCTION:    acpi_hw_execute_WAK
-  *
-- * PARAMETERS:  sleep_state         - Which sleep state to enter
-+ * PARAMETERS:  sleep_state         - Which sleep state we just exited
-  *
-- * RETURN:      Status
-+ * RETURN:      None
-  *
-- * DESCRIPTION: Prepare to enter a system sleep state (see ACPI 2.0 spec p 231)
-- *              This function must execute with interrupts enabled.
-- *              We break sleeping into 2 stages so that OSPM can handle
-- *              various OS-specific tasks between the two steps.
-+ * DESCRIPTION: Execute the _WAK method (System Wake)
-  *
-  ******************************************************************************/
--acpi_status acpi_enter_sleep_state_prep(u8 sleep_state)
-+
-+static void acpi_hw_execute_WAK(u8 sleep_state)
- {
--	acpi_status status;
- 	struct acpi_object_list arg_list;
- 	union acpi_object arg;
-+	acpi_status status;
- 
--	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state_prep);
--
--	/* _PSW methods could be run here to enable wake-on keyboard, LAN, etc. */
--
--	status = acpi_get_sleep_type_data(sleep_state,
--					  &acpi_gbl_sleep_type_a,
--					  &acpi_gbl_sleep_type_b);
--	if (ACPI_FAILURE(status)) {
--		return_ACPI_STATUS(status);
--	}
--
--	/* Setup parameter object */
-+	/* One argument, sleep_state */
- 
- 	arg_list.count = 1;
- 	arg_list.pointer = &arg;
--
- 	arg.type = ACPI_TYPE_INTEGER;
- 	arg.integer.value = sleep_state;
- 
--	/* Run the _PTS method */
--
--	status = acpi_evaluate_object(NULL, METHOD_NAME__PTS, &arg_list, NULL);
-+	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		return_ACPI_STATUS(status);
-+		ACPI_EXCEPTION((AE_INFO, status,
-+				"While executing method _WAK"));
- 	}
-+	/* TBD: _WAK "sometimes" returns stuff - do we want to look at it? */
-+}
- 
--	/* Setup the argument to _SST */
--
--	switch (sleep_state) {
--	case ACPI_STATE_S0:
--		arg.integer.value = ACPI_SST_WORKING;
--		break;
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_hw_execute_SST
-+ *
-+ * PARAMETERS:  indicator_id        - Value to be passed to the _SST method
-+ *
-+ * RETURN:      None
-+ *
-+ * DESCRIPTION: Execute the optional _SST method (System Status)
-+ *
-+ ******************************************************************************/
- 
--	case ACPI_STATE_S1:
--	case ACPI_STATE_S2:
--	case ACPI_STATE_S3:
--		arg.integer.value = ACPI_SST_SLEEPING;
--		break;
-+void acpi_hw_execute_SST(u32 indicator_id)
-+{
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
-+	acpi_status status;
- 
--	case ACPI_STATE_S4:
--		arg.integer.value = ACPI_SST_SLEEP_CONTEXT;
--		break;
-+	/* One argument, status indicator ID */
- 
--	default:
--		arg.integer.value = ACPI_SST_INDICATOR_OFF;	/* Default is off */
--		break;
--	}
-+	arg_list.count = 1;
-+	arg_list.pointer = &arg;
-+	arg.type = ACPI_TYPE_INTEGER;
- 
--	/*
--	 * Set the system indicators to show the desired sleep state.
--	 * _SST is an optional method (return no error if not found)
--	 */
-+	arg.integer.value = indicator_id;
- 	status = acpi_evaluate_object(NULL, METHOD_NAME__SST, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		ACPI_EXCEPTION((AE_INFO, status,
- 				"While executing method _SST"));
- 	}
--
--	return_ACPI_STATUS(AE_OK);
- }
- 
--ACPI_EXPORT_SYMBOL(acpi_enter_sleep_state_prep)
--
--static unsigned int gts, bfs;
--module_param(gts, uint, 0644);
--module_param(bfs, uint, 0644);
--MODULE_PARM_DESC(gts, "Enable evaluation of _GTS on suspend.");
--MODULE_PARM_DESC(bfs, "Enable evaluation of _BFS on resume".);
--
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_enter_sleep_state
-+ * FUNCTION:    acpi_hw_legacy_sleep
-  *
-  * PARAMETERS:  sleep_state         - Which sleep state to enter
-  *
-  * RETURN:      Status
-  *
-- * DESCRIPTION: Enter a system sleep state (see ACPI 2.0 spec p 231)
-+ * DESCRIPTION: Enter a system sleep state via the legacy FADT PM registers
-  *              THIS FUNCTION MUST BE CALLED WITH INTERRUPTS DISABLED
-  *
-  ******************************************************************************/
--acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
-+
-+acpi_status acpi_hw_legacy_sleep(u8 sleep_state)
- {
--	u32 pm1a_control;
--	u32 pm1b_control;
- 	struct acpi_bit_register_info *sleep_type_reg_info;
- 	struct acpi_bit_register_info *sleep_enable_reg_info;
-+	u32 pm1a_control;
-+	u32 pm1b_control;
- 	u32 in_value;
--	struct acpi_object_list arg_list;
--	union acpi_object arg;
- 	acpi_status status;
- 
--	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state);
--
--	if ((acpi_gbl_sleep_type_a > ACPI_SLEEP_TYPE_MAX) ||
--	    (acpi_gbl_sleep_type_b > ACPI_SLEEP_TYPE_MAX)) {
--		ACPI_ERROR((AE_INFO, "Sleep values out of range: A=0x%X B=0x%X",
--			    acpi_gbl_sleep_type_a, acpi_gbl_sleep_type_b));
--		return_ACPI_STATUS(AE_AML_OPERAND_VALUE);
--	}
-+	ACPI_FUNCTION_TRACE(hw_legacy_sleep);
- 
- 	sleep_type_reg_info =
- 	    acpi_hw_get_bit_register_info(ACPI_BITREG_SLEEP_TYPE);
-@@ -271,6 +241,18 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
- 		return_ACPI_STATUS(status);
- 	}
- 
-+	if (sleep_state != ACPI_STATE_S5) {
-+		/*
-+		 * Disable BM arbitration. This feature is contained within an
-+		 * optional register (PM2 Control), so ignore a BAD_ADDRESS
-+		 * exception.
-+		 */
-+		status = acpi_write_bit_register(ACPI_BITREG_ARB_DISABLE, 1);
-+		if (ACPI_FAILURE(status) && (status != AE_BAD_ADDRESS)) {
-+			return_ACPI_STATUS(status);
-+		}
-+	}
-+
- 	/*
- 	 * 1) Disable/Clear all GPEs
- 	 * 2) Enable all wakeup GPEs
-@@ -286,19 +268,9 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
- 		return_ACPI_STATUS(status);
- 	}
- 
--	if (gts) {
--		/* Execute the _GTS method */
-+	/* Execute the _GTS method (Going To Sleep) */
- 
--		arg_list.count = 1;
--		arg_list.pointer = &arg;
--		arg.type = ACPI_TYPE_INTEGER;
--		arg.integer.value = sleep_state;
--
--		status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
--		if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--			return_ACPI_STATUS(status);
--		}
--	}
-+	acpi_hw_execute_GTS(sleep_state);
- 
- 	/* Get current value of PM1A control */
- 
-@@ -375,114 +347,43 @@ acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
- 		}
- 	}
- 
--	/* Wait until we enter sleep state */
--
--	do {
--		status = acpi_read_bit_register(ACPI_BITREG_WAKE_STATUS,
--						    &in_value);
--		if (ACPI_FAILURE(status)) {
--			return_ACPI_STATUS(status);
--		}
--
--		/* Spin until we wake */
--
--	} while (!in_value);
--
--	return_ACPI_STATUS(AE_OK);
--}
--
--ACPI_EXPORT_SYMBOL(acpi_enter_sleep_state)
--
--/*******************************************************************************
-- *
-- * FUNCTION:    acpi_enter_sleep_state_s4bios
-- *
-- * PARAMETERS:  None
-- *
-- * RETURN:      Status
-- *
-- * DESCRIPTION: Perform a S4 bios request.
-- *              THIS FUNCTION MUST BE CALLED WITH INTERRUPTS DISABLED
-- *
-- ******************************************************************************/
--acpi_status asmlinkage acpi_enter_sleep_state_s4bios(void)
--{
--	u32 in_value;
--	acpi_status status;
--
--	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state_s4bios);
--
--	/* Clear the wake status bit (PM1) */
--
--	status =
--	    acpi_write_bit_register(ACPI_BITREG_WAKE_STATUS, ACPI_CLEAR_STATUS);
--	if (ACPI_FAILURE(status)) {
--		return_ACPI_STATUS(status);
--	}
--
--	status = acpi_hw_clear_acpi_status();
--	if (ACPI_FAILURE(status)) {
--		return_ACPI_STATUS(status);
--	}
--
--	/*
--	 * 1) Disable/Clear all GPEs
--	 * 2) Enable all wakeup GPEs
--	 */
--	status = acpi_hw_disable_all_gpes();
--	if (ACPI_FAILURE(status)) {
--		return_ACPI_STATUS(status);
--	}
--	acpi_gbl_system_awake_and_running = FALSE;
--
--	status = acpi_hw_enable_all_wakeup_gpes();
--	if (ACPI_FAILURE(status)) {
--		return_ACPI_STATUS(status);
--	}
--
--	ACPI_FLUSH_CPU_CACHE();
--
--	status = acpi_hw_write_port(acpi_gbl_FADT.smi_command,
--				    (u32) acpi_gbl_FADT.S4bios_request, 8);
-+	/* Wait for transition back to Working State */
- 
- 	do {
--		acpi_os_stall(1000);
- 		status =
- 		    acpi_read_bit_register(ACPI_BITREG_WAKE_STATUS, &in_value);
- 		if (ACPI_FAILURE(status)) {
- 			return_ACPI_STATUS(status);
- 		}
-+
- 	} while (!in_value);
- 
- 	return_ACPI_STATUS(AE_OK);
- }
- 
--ACPI_EXPORT_SYMBOL(acpi_enter_sleep_state_s4bios)
--
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_leave_sleep_state_prep
-+ * FUNCTION:    acpi_hw_legacy_wake_prep
-  *
-- * PARAMETERS:  sleep_state         - Which sleep state we are exiting
-+ * PARAMETERS:  sleep_state         - Which sleep state we just exited
-  *
-  * RETURN:      Status
-  *
-  * DESCRIPTION: Perform the first state of OS-independent ACPI cleanup after a
-  *              sleep.
-- *              Called with interrupts DISABLED.
-+ *              Called with interrupts ENABLED.
-  *
-  ******************************************************************************/
--acpi_status acpi_leave_sleep_state_prep(u8 sleep_state)
-+
-+acpi_status acpi_hw_legacy_wake_prep(u8 sleep_state)
- {
--	struct acpi_object_list arg_list;
--	union acpi_object arg;
- 	acpi_status status;
- 	struct acpi_bit_register_info *sleep_type_reg_info;
- 	struct acpi_bit_register_info *sleep_enable_reg_info;
- 	u32 pm1a_control;
- 	u32 pm1b_control;
- 
--	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state_prep);
-+	ACPI_FUNCTION_TRACE(hw_legacy_wake_prep);
- 
- 	/*
- 	 * Set SLP_TYPE and SLP_EN to state S0.
-@@ -525,25 +426,13 @@ acpi_status acpi_leave_sleep_state_prep(u8 sleep_state)
- 		}
- 	}
- 
--	if (bfs) {
--		/* Execute the _BFS method */
--
--		arg_list.count = 1;
--		arg_list.pointer = &arg;
--		arg.type = ACPI_TYPE_INTEGER;
--		arg.integer.value = sleep_state;
--
--		status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
--		if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--			ACPI_EXCEPTION((AE_INFO, status, "During Method _BFS"));
--		}
--	}
-+	acpi_hw_execute_BFS(sleep_state);
- 	return_ACPI_STATUS(status);
- }
- 
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_leave_sleep_state
-+ * FUNCTION:    acpi_hw_legacy_wake
-  *
-  * PARAMETERS:  sleep_state         - Which sleep state we just exited
-  *
-@@ -553,31 +442,17 @@ acpi_status acpi_leave_sleep_state_prep(u8 sleep_state)
-  *              Called with interrupts ENABLED.
-  *
-  ******************************************************************************/
--acpi_status acpi_leave_sleep_state(u8 sleep_state)
-+
-+acpi_status acpi_hw_legacy_wake(u8 sleep_state)
- {
--	struct acpi_object_list arg_list;
--	union acpi_object arg;
- 	acpi_status status;
- 
--	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
-+	ACPI_FUNCTION_TRACE(hw_legacy_wake);
- 
- 	/* Ensure enter_sleep_state_prep -> enter_sleep_state ordering */
- 
- 	acpi_gbl_sleep_type_a = ACPI_SLEEP_TYPE_INVALID;
--
--	/* Setup parameter object */
--
--	arg_list.count = 1;
--	arg_list.pointer = &arg;
--	arg.type = ACPI_TYPE_INTEGER;
--
--	/* Ignore any errors from these methods */
--
--	arg.integer.value = ACPI_SST_WAKING;
--	status = acpi_evaluate_object(NULL, METHOD_NAME__SST, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status, "During Method _SST"));
--	}
-+	acpi_hw_execute_SST(ACPI_SST_WAKING);
- 
- 	/*
- 	 * GPEs must be enabled before _WAK is called as GPEs
-@@ -591,46 +466,201 @@ acpi_status acpi_leave_sleep_state(u8 sleep_state)
- 	if (ACPI_FAILURE(status)) {
- 		return_ACPI_STATUS(status);
- 	}
-+
- 	status = acpi_hw_enable_all_runtime_gpes();
- 	if (ACPI_FAILURE(status)) {
- 		return_ACPI_STATUS(status);
- 	}
- 
--	arg.integer.value = sleep_state;
--	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
--	}
--	/* TBD: _WAK "sometimes" returns stuff - do we want to look at it? */
-+	/*
-+	 * Now we can execute _WAK, etc. Some machines require that the GPEs
-+	 * are enabled before the wake methods are executed.
-+	 */
-+	acpi_hw_execute_WAK(sleep_state);
- 
- 	/*
--	 * Some BIOSes assume that WAK_STS will be cleared on resume and use
--	 * it to determine whether the system is rebooting or resuming. Clear
--	 * it for compatibility.
-+	 * Some BIOS code assumes that WAK_STS will be cleared on resume
-+	 * and use it to determine whether the system is rebooting or
-+	 * resuming. Clear WAK_STS for compatibility.
+ #else
+ static void poll_idle_init(struct cpuidle_driver *drv) {}
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index ad09526..5c17ca1 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -280,7 +280,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	 * We want to default to C1 (hlt), not to busy polling
+ 	 * unless the timer is happening really really soon.
  	 */
- 	acpi_write_bit_register(ACPI_BITREG_WAKE_STATUS, 1);
--
- 	acpi_gbl_system_awake_and_running = TRUE;
+-	if (data->expected_us > 5)
++	if (data->expected_us > 5 &&
++		drv->states[CPUIDLE_DRIVER_STATE_START].disable == 0)
+ 		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
  
- 	/* Enable power button */
+ 	/*
+@@ -290,6 +291,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+ 		struct cpuidle_state *s = &drv->states[i];
  
- 	(void)
- 	    acpi_write_bit_register(acpi_gbl_fixed_event_info
--			      [ACPI_EVENT_POWER_BUTTON].
--			      enable_register_id, ACPI_ENABLE_EVENT);
-+				    [ACPI_EVENT_POWER_BUTTON].
-+				    enable_register_id, ACPI_ENABLE_EVENT);
++		if (s->disable)
++			continue;
+ 		if (s->target_residency > data->predicted_us)
+ 			continue;
+ 		if (s->exit_latency > latency_req)
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index 3fe41fe..88032b4 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -11,6 +11,7 @@
+ #include <linux/sysfs.h>
+ #include <linux/slab.h>
+ #include <linux/cpu.h>
++#include <linux/capability.h>
  
- 	(void)
- 	    acpi_write_bit_register(acpi_gbl_fixed_event_info
--			      [ACPI_EVENT_POWER_BUTTON].
--			      status_register_id, ACPI_CLEAR_STATUS);
-+				    [ACPI_EVENT_POWER_BUTTON].
-+				    status_register_id, ACPI_CLEAR_STATUS);
+ #include "cpuidle.h"
  
--	arg.integer.value = ACPI_SST_WORKING;
--	status = acpi_evaluate_object(NULL, METHOD_NAME__SST, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status, "During Method _SST"));
-+	/*
-+	 * Enable BM arbitration. This feature is contained within an
-+	 * optional register (PM2 Control), so ignore a BAD_ADDRESS
-+	 * exception.
-+	 */
-+	status = acpi_write_bit_register(ACPI_BITREG_ARB_DISABLE, 0);
-+	if (ACPI_FAILURE(status) && (status != AE_BAD_ADDRESS)) {
-+		return_ACPI_STATUS(status);
- 	}
+@@ -222,6 +223,9 @@ struct cpuidle_state_attr {
+ #define define_one_state_ro(_name, show) \
+ static struct cpuidle_state_attr attr_##_name = __ATTR(_name, 0444, show, NULL)
  
-+	acpi_hw_execute_SST(ACPI_SST_WORKING);
- 	return_ACPI_STATUS(status);
++#define define_one_state_rw(_name, show, store) \
++static struct cpuidle_state_attr attr_##_name = __ATTR(_name, 0644, show, store)
++
+ #define define_show_state_function(_name) \
+ static ssize_t show_state_##_name(struct cpuidle_state *state, \
+ 			 struct cpuidle_state_usage *state_usage, char *buf) \
+@@ -229,6 +233,24 @@ static ssize_t show_state_##_name(struct cpuidle_state *state, \
+ 	return sprintf(buf, "%u\n", state->_name);\
  }
  
--ACPI_EXPORT_SYMBOL(acpi_leave_sleep_state)
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_hw_extended_sleep
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state to enter
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Enter a system sleep state via the extended FADT sleep
-+ *              registers (V5 FADT).
-+ *              THIS FUNCTION MUST BE CALLED WITH INTERRUPTS DISABLED
-+ *
-+ ******************************************************************************/
-+
-+acpi_status acpi_hw_extended_sleep(u8 sleep_state)
-+{
-+	acpi_status status;
-+	u8 sleep_type_value;
-+	u64 sleep_status;
-+
-+	ACPI_FUNCTION_TRACE(hw_extended_sleep);
-+
-+	/* Extended sleep registers must be valid */
-+
-+	if (!acpi_gbl_FADT.sleep_control.address ||
-+	    !acpi_gbl_FADT.sleep_status.address) {
-+		return_ACPI_STATUS(AE_NOT_EXIST);
-+	}
-+
-+	/* Clear wake status (WAK_STS) */
-+
-+	status = acpi_write(ACPI_X_WAKE_STATUS, &acpi_gbl_FADT.sleep_status);
-+	if (ACPI_FAILURE(status)) {
-+		return_ACPI_STATUS(status);
-+	}
-+
-+	acpi_gbl_system_awake_and_running = FALSE;
-+
-+	/* Execute the _GTS method (Going To Sleep) */
-+
-+	acpi_hw_execute_GTS(sleep_state);
-+
-+	/* Flush caches, as per ACPI specification */
-+
-+	ACPI_FLUSH_CPU_CACHE();
-+
-+	/*
-+	 * Set the SLP_TYP and SLP_EN bits.
-+	 *
-+	 * Note: We only use the first value returned by the \_Sx method
-+	 * (acpi_gbl_sleep_type_a) - As per ACPI specification.
-+	 */
-+	ACPI_DEBUG_PRINT((ACPI_DB_INIT,
-+			  "Entering sleep state [S%u]\n", sleep_state));
-+
-+	sleep_type_value =
-+	    ((acpi_gbl_sleep_type_a << ACPI_X_SLEEP_TYPE_POSITION) &
-+	     ACPI_X_SLEEP_TYPE_MASK);
-+
-+	status = acpi_write((sleep_type_value | ACPI_X_SLEEP_ENABLE),
-+			    &acpi_gbl_FADT.sleep_control);
-+	if (ACPI_FAILURE(status)) {
-+		return_ACPI_STATUS(status);
-+	}
-+
-+	/* Wait for transition back to Working State */
-+
-+	do {
-+		status = acpi_read(&sleep_status, &acpi_gbl_FADT.sleep_status);
-+		if (ACPI_FAILURE(status)) {
-+			return_ACPI_STATUS(status);
-+		}
-+
-+	} while (!(((u8)sleep_status) & ACPI_X_WAKE_STATUS));
-+
-+	return_ACPI_STATUS(AE_OK);
++#define define_store_state_function(_name) \
++static ssize_t store_state_##_name(struct cpuidle_state *state, \
++		const char *buf, size_t size) \
++{ \
++	long value; \
++	int err; \
++	if (!capable(CAP_SYS_ADMIN)) \
++		return -EPERM; \
++	err = kstrtol(buf, 0, &value); \
++	if (err) \
++		return err; \
++	if (value) \
++		state->disable = 1; \
++	else \
++		state->disable = 0; \
++	return size; \
 +}
 +
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_hw_extended_wake_prep
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state we just exited
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Perform first part of OS-independent ACPI cleanup after
-+ *              a sleep. Called with interrupts ENABLED.
-+ *
-+ ******************************************************************************/
-+
-+acpi_status acpi_hw_extended_wake_prep(u8 sleep_state)
-+{
-+	acpi_status status;
-+	u8 sleep_type_value;
-+
-+	ACPI_FUNCTION_TRACE(hw_extended_wake_prep);
-+
-+	status = acpi_get_sleep_type_data(ACPI_STATE_S0,
-+					  &acpi_gbl_sleep_type_a,
-+					  &acpi_gbl_sleep_type_b);
-+	if (ACPI_SUCCESS(status)) {
-+		sleep_type_value =
-+		    ((acpi_gbl_sleep_type_a << ACPI_X_SLEEP_TYPE_POSITION) &
-+		     ACPI_X_SLEEP_TYPE_MASK);
-+
-+		(void)acpi_write((sleep_type_value | ACPI_X_SLEEP_ENABLE),
-+				 &acpi_gbl_FADT.sleep_control);
-+	}
-+
-+	acpi_hw_execute_BFS(sleep_state);
-+	return_ACPI_STATUS(AE_OK);
-+}
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_hw_extended_wake
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state we just exited
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Perform OS-independent ACPI cleanup after a sleep
-+ *              Called with interrupts ENABLED.
-+ *
-+ ******************************************************************************/
-+
-+acpi_status acpi_hw_extended_wake(u8 sleep_state)
-+{
-+	ACPI_FUNCTION_TRACE(hw_extended_wake);
-+
-+	/* Ensure enter_sleep_state_prep -> enter_sleep_state ordering */
-+
-+	acpi_gbl_sleep_type_a = ACPI_SLEEP_TYPE_INVALID;
-+
-+	/* Execute the wake methods */
-+
-+	acpi_hw_execute_SST(ACPI_SST_WAKING);
-+	acpi_hw_execute_WAK(sleep_state);
-+
-+	/*
-+	 * Some BIOS code assumes that WAK_STS will be cleared on resume
-+	 * and use it to determine whether the system is rebooting or
-+	 * resuming. Clear WAK_STS for compatibility.
-+	 */
-+	(void)acpi_write(ACPI_X_WAKE_STATUS, &acpi_gbl_FADT.sleep_status);
-+	acpi_gbl_system_awake_and_running = TRUE;
-+
-+	acpi_hw_execute_SST(ACPI_SST_WORKING);
-+	return_ACPI_STATUS(AE_OK);
-+}
-diff --git a/drivers/acpi/acpica/hwxfsleep.c b/drivers/acpi/acpica/hwxfsleep.c
-new file mode 100644
-index 0000000..29c0fd3
---- /dev/null
-+++ b/drivers/acpi/acpica/hwxfsleep.c
-@@ -0,0 +1,377 @@
-+/******************************************************************************
-+ *
-+ * Name: hwxfsleep.c - ACPI Hardware Sleep/Wake External Interfaces
-+ *
-+ *****************************************************************************/
-+
-+/*
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-+ * All rights reserved.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions
-+ * are met:
-+ * 1. Redistributions of source code must retain the above copyright
-+ *    notice, this list of conditions, and the following disclaimer,
-+ *    without modification.
-+ * 2. Redistributions in binary form must reproduce at minimum a disclaimer
-+ *    substantially similar to the "NO WARRANTY" disclaimer below
-+ *    ("Disclaimer") and any redistribution must be conditioned upon
-+ *    including a substantially similar Disclaimer requirement for further
-+ *    binary redistribution.
-+ * 3. Neither the names of the above-listed copyright holders nor the names
-+ *    of any contributors may be used to endorse or promote products derived
-+ *    from this software without specific prior written permission.
-+ *
-+ * Alternatively, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") version 2 as published by the Free
-+ * Software Foundation.
-+ *
-+ * NO WARRANTY
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR
-+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-+ * HOLDERS OR CONTRIBUTORS BE LIABLE FOR SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGES.
-+ */
-+
-+#include <acpi/acpi.h>
-+#include "accommon.h"
-+#include <linux/module.h>
-+
-+#define _COMPONENT          ACPI_HARDWARE
-+ACPI_MODULE_NAME("hwxfsleep")
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_set_firmware_waking_vector
-+ *
-+ * PARAMETERS:  physical_address    - 32-bit physical address of ACPI real mode
-+ *                                    entry point.
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Sets the 32-bit firmware_waking_vector field of the FACS
-+ *
-+ ******************************************************************************/
-+acpi_status acpi_set_firmware_waking_vector(u32 physical_address)
-+{
-+	ACPI_FUNCTION_TRACE(acpi_set_firmware_waking_vector);
-+
-+
-+	/*
-+	 * According to the ACPI specification 2.0c and later, the 64-bit
-+	 * waking vector should be cleared and the 32-bit waking vector should
-+	 * be used, unless we want the wake-up code to be called by the BIOS in
-+	 * Protected Mode.  Some systems (for example HP dv5-1004nr) are known
-+	 * to fail to resume if the 64-bit vector is used.
-+	 */
-+
-+	/* Set the 32-bit vector */
-+
-+	acpi_gbl_FACS->firmware_waking_vector = physical_address;
-+
-+	/* Clear the 64-bit vector if it exists */
-+
-+	if ((acpi_gbl_FACS->length > 32) && (acpi_gbl_FACS->version >= 1)) {
-+		acpi_gbl_FACS->xfirmware_waking_vector = 0;
-+	}
-+
-+	return_ACPI_STATUS(AE_OK);
-+}
-+
-+ACPI_EXPORT_SYMBOL(acpi_set_firmware_waking_vector)
-+
-+#if ACPI_MACHINE_WIDTH == 64
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_set_firmware_waking_vector64
-+ *
-+ * PARAMETERS:  physical_address    - 64-bit physical address of ACPI protected
-+ *                                    mode entry point.
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Sets the 64-bit X_firmware_waking_vector field of the FACS, if
-+ *              it exists in the table. This function is intended for use with
-+ *              64-bit host operating systems.
-+ *
-+ ******************************************************************************/
-+acpi_status acpi_set_firmware_waking_vector64(u64 physical_address)
-+{
-+	ACPI_FUNCTION_TRACE(acpi_set_firmware_waking_vector64);
-+
-+
-+	/* Determine if the 64-bit vector actually exists */
-+
-+	if ((acpi_gbl_FACS->length <= 32) || (acpi_gbl_FACS->version < 1)) {
-+		return_ACPI_STATUS(AE_NOT_EXIST);
-+	}
-+
-+	/* Clear 32-bit vector, set the 64-bit X_ vector */
-+
-+	acpi_gbl_FACS->firmware_waking_vector = 0;
-+	acpi_gbl_FACS->xfirmware_waking_vector = physical_address;
-+	return_ACPI_STATUS(AE_OK);
-+}
-+
-+ACPI_EXPORT_SYMBOL(acpi_set_firmware_waking_vector64)
-+#endif
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_enter_sleep_state_s4bios
-+ *
-+ * PARAMETERS:  None
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Perform a S4 bios request.
-+ *              THIS FUNCTION MUST BE CALLED WITH INTERRUPTS DISABLED
-+ *
-+ ******************************************************************************/
-+acpi_status asmlinkage acpi_enter_sleep_state_s4bios(void)
-+{
-+	u32 in_value;
-+	acpi_status status;
-+
-+	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state_s4bios);
-+
-+	/* Clear the wake status bit (PM1) */
-+
-+	status =
-+	    acpi_write_bit_register(ACPI_BITREG_WAKE_STATUS, ACPI_CLEAR_STATUS);
-+	if (ACPI_FAILURE(status)) {
-+		return_ACPI_STATUS(status);
-+	}
-+
-+	status = acpi_hw_clear_acpi_status();
-+	if (ACPI_FAILURE(status)) {
-+		return_ACPI_STATUS(status);
-+	}
-+
-+	/*
-+	 * 1) Disable/Clear all GPEs
-+	 * 2) Enable all wakeup GPEs
-+	 */
-+	status = acpi_hw_disable_all_gpes();
-+	if (ACPI_FAILURE(status)) {
-+		return_ACPI_STATUS(status);
-+	}
-+	acpi_gbl_system_awake_and_running = FALSE;
-+
-+	status = acpi_hw_enable_all_wakeup_gpes();
-+	if (ACPI_FAILURE(status)) {
-+		return_ACPI_STATUS(status);
-+	}
-+
-+	ACPI_FLUSH_CPU_CACHE();
-+
-+	status = acpi_hw_write_port(acpi_gbl_FADT.smi_command,
-+				    (u32)acpi_gbl_FADT.S4bios_request, 8);
-+
-+	do {
-+		acpi_os_stall(1000);
-+		status =
-+		    acpi_read_bit_register(ACPI_BITREG_WAKE_STATUS, &in_value);
-+		if (ACPI_FAILURE(status)) {
-+			return_ACPI_STATUS(status);
-+		}
-+	} while (!in_value);
-+
-+	return_ACPI_STATUS(AE_OK);
-+}
-+
-+ACPI_EXPORT_SYMBOL(acpi_enter_sleep_state_s4bios)
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_enter_sleep_state_prep
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state to enter
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Prepare to enter a system sleep state (see ACPI 2.0 spec p 231)
-+ *              This function must execute with interrupts enabled.
-+ *              We break sleeping into 2 stages so that OSPM can handle
-+ *              various OS-specific tasks between the two steps.
-+ *
-+ ******************************************************************************/
-+acpi_status acpi_enter_sleep_state_prep(u8 sleep_state)
-+{
-+	acpi_status status;
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
-+	u32 sst_value;
-+
-+	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state_prep);
-+
-+	/* _PSW methods could be run here to enable wake-on keyboard, LAN, etc. */
-+
-+	status = acpi_get_sleep_type_data(sleep_state,
-+					  &acpi_gbl_sleep_type_a,
-+					  &acpi_gbl_sleep_type_b);
-+	if (ACPI_FAILURE(status)) {
-+		return_ACPI_STATUS(status);
-+	}
-+
-+	/* Execute the _PTS method (Prepare To Sleep) */
-+
-+	arg_list.count = 1;
-+	arg_list.pointer = &arg;
-+	arg.type = ACPI_TYPE_INTEGER;
-+	arg.integer.value = sleep_state;
-+
-+	status = acpi_evaluate_object(NULL, METHOD_NAME__PTS, &arg_list, NULL);
-+	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-+		return_ACPI_STATUS(status);
-+	}
-+
-+	/* Setup the argument to the _SST method (System STatus) */
-+
-+	switch (sleep_state) {
-+	case ACPI_STATE_S0:
-+		sst_value = ACPI_SST_WORKING;
-+		break;
-+
-+	case ACPI_STATE_S1:
-+	case ACPI_STATE_S2:
-+	case ACPI_STATE_S3:
-+		sst_value = ACPI_SST_SLEEPING;
-+		break;
-+
-+	case ACPI_STATE_S4:
-+		sst_value = ACPI_SST_SLEEP_CONTEXT;
-+		break;
-+
-+	default:
-+		sst_value = ACPI_SST_INDICATOR_OFF;	/* Default is off */
-+		break;
-+	}
-+
-+	/*
-+	 * Set the system indicators to show the desired sleep state.
-+	 * _SST is an optional method (return no error if not found)
-+	 */
-+	acpi_hw_execute_SST(sst_value);
-+	return_ACPI_STATUS(AE_OK);
-+}
-+
-+ACPI_EXPORT_SYMBOL(acpi_enter_sleep_state_prep)
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_enter_sleep_state
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state to enter
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Enter a system sleep state (see ACPI 2.0 spec p 231)
-+ *              THIS FUNCTION MUST BE CALLED WITH INTERRUPTS DISABLED
-+ *
-+ ******************************************************************************/
-+acpi_status asmlinkage acpi_enter_sleep_state(u8 sleep_state)
-+{
-+	acpi_status status;
-+
-+	ACPI_FUNCTION_TRACE(acpi_enter_sleep_state);
-+
-+	if ((acpi_gbl_sleep_type_a > ACPI_SLEEP_TYPE_MAX) ||
-+	    (acpi_gbl_sleep_type_b > ACPI_SLEEP_TYPE_MAX)) {
-+		ACPI_ERROR((AE_INFO, "Sleep values out of range: A=0x%X B=0x%X",
-+			    acpi_gbl_sleep_type_a, acpi_gbl_sleep_type_b));
-+		return_ACPI_STATUS(AE_AML_OPERAND_VALUE);
-+	}
-+
-+	/* If Hardware Reduced flag is set, must use the extended sleep registers */
-+
-+	if (acpi_gbl_reduced_hardware || acpi_gbl_FADT.sleep_control.address) {
-+		status = acpi_hw_extended_sleep(sleep_state);
-+	} else {
-+		/* Legacy sleep */
-+
-+		status = acpi_hw_legacy_sleep(sleep_state);
-+	}
-+
-+	return_ACPI_STATUS(status);
-+}
-+
-+ACPI_EXPORT_SYMBOL(acpi_enter_sleep_state)
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_leave_sleep_state_prep
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state we are exiting
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Perform the first state of OS-independent ACPI cleanup after a
-+ *              sleep.
-+ *              Called with interrupts DISABLED.
-+ *
-+ ******************************************************************************/
-+acpi_status acpi_leave_sleep_state_prep(u8 sleep_state)
-+{
-+	acpi_status status;
-+
-+	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
-+
-+
-+	/* If Hardware Reduced flag is set, must use the extended sleep registers */
-+
-+	if (acpi_gbl_reduced_hardware || acpi_gbl_FADT.sleep_control.address) {
-+		status = acpi_hw_extended_wake_prep(sleep_state);
-+	} else {
-+		/* Legacy sleep */
-+
-+		status = acpi_hw_legacy_wake_prep(sleep_state);
-+	}
-+
-+
-+	return_ACPI_STATUS(status);
-+}
-+
-+ACPI_EXPORT_SYMBOL(acpi_leave_sleep_state_prep)
-+
-+/*******************************************************************************
-+ *
-+ * FUNCTION:    acpi_leave_sleep_state
-+ *
-+ * PARAMETERS:  sleep_state         - Which sleep state we just exited
-+ *
-+ * RETURN:      Status
-+ *
-+ * DESCRIPTION: Perform OS-independent ACPI cleanup after a sleep
-+ *              Called with interrupts ENABLED.
-+ *
-+ ******************************************************************************/
-+acpi_status acpi_leave_sleep_state(u8 sleep_state)
-+{
-+	acpi_status status;
-+
-+	ACPI_FUNCTION_TRACE(acpi_leave_sleep_state);
-+
-+
-+	/* If Hardware Reduced flag is set, must use the extended sleep registers */
-+
-+	if (acpi_gbl_reduced_hardware || acpi_gbl_FADT.sleep_control.address) {
-+		status = acpi_hw_extended_wake(sleep_state);
-+	} else {
-+		/* Legacy sleep */
-+
-+		status = acpi_hw_legacy_wake(sleep_state);
-+	}
-+
-+	return_ACPI_STATUS(status);
-+}
-+
-+ACPI_EXPORT_SYMBOL(acpi_leave_sleep_state)
-diff --git a/include/acpi/actbl.h b/include/acpi/actbl.h
-index 8e1b92f..8dea546 100644
---- a/include/acpi/actbl.h
-+++ b/include/acpi/actbl.h
-@@ -309,6 +309,13 @@ enum acpi_prefered_pm_profiles {
- 	PM_TABLET = 8
+ #define define_show_state_ull_function(_name) \
+ static ssize_t show_state_##_name(struct cpuidle_state *state, \
+ 			struct cpuidle_state_usage *state_usage, char *buf) \
+@@ -251,6 +273,8 @@ define_show_state_ull_function(usage)
+ define_show_state_ull_function(time)
+ define_show_state_str_function(name)
+ define_show_state_str_function(desc)
++define_show_state_function(disable)
++define_store_state_function(disable)
+ 
+ define_one_state_ro(name, show_state_name);
+ define_one_state_ro(desc, show_state_desc);
+@@ -258,6 +282,7 @@ define_one_state_ro(latency, show_state_exit_latency);
+ define_one_state_ro(power, show_state_power_usage);
+ define_one_state_ro(usage, show_state_usage);
+ define_one_state_ro(time, show_state_time);
++define_one_state_rw(disable, show_state_disable, store_state_disable);
+ 
+ static struct attribute *cpuidle_state_default_attrs[] = {
+ 	&attr_name.attr,
+@@ -266,6 +291,7 @@ static struct attribute *cpuidle_state_default_attrs[] = {
+ 	&attr_power.attr,
+ 	&attr_usage.attr,
+ 	&attr_time.attr,
++	&attr_disable.attr,
+ 	NULL
  };
  
-+/* Values for sleep_status and sleep_control registers (V5 FADT) */
-+
-+#define ACPI_X_WAKE_STATUS          0x80
-+#define ACPI_X_SLEEP_TYPE_MASK      0x1C
-+#define ACPI_X_SLEEP_TYPE_POSITION  0x02
-+#define ACPI_X_SLEEP_ENABLE         0x20
-+
- /* Reset to default packing */
+@@ -287,8 +313,22 @@ static ssize_t cpuidle_state_show(struct kobject * kobj,
+ 	return ret;
+ }
  
- #pragma pack()
++static ssize_t cpuidle_state_store(struct kobject *kobj,
++	struct attribute *attr, const char *buf, size_t size)
++{
++	int ret = -EIO;
++	struct cpuidle_state *state = kobj_to_state(kobj);
++	struct cpuidle_state_attr *cattr = attr_to_stateattr(attr);
++
++	if (cattr->store)
++		ret = cattr->store(state, buf, size);
++
++	return ret;
++}
++
+ static const struct sysfs_ops cpuidle_state_sysfs_ops = {
+ 	.show = cpuidle_state_show,
++	.store = cpuidle_state_store,
+ };
+ 
+ static void cpuidle_state_sysfs_release(struct kobject *kobj)
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 927db28..ca4e498 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -46,6 +46,7 @@ struct cpuidle_state {
+ 	unsigned int	exit_latency; /* in US */
+ 	unsigned int	power_usage; /* in mW */
+ 	unsigned int	target_residency; /* in US */
++	unsigned int    disable;
+ 
+ 	int (*enter)	(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
 -- 
 1.7.10.rc2.19.gfae9d
