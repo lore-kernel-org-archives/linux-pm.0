@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 69/76] ACPI: Fix unprotected smp_processor_id()
- in acpi_processor_cst_has_changed()
-Date: Fri, 30 Mar 2012 06:14:12 -0400
-Message-ID: <9505626d7bfeb5bd4b85acb483831ac640b2a5e8.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 25/76] ACPICA: Move ACPI timer prototypes to
+	public acpixf file
+Date: Fri, 30 Mar 2012 06:13:28 -0400
+Message-ID: <d08310fe0d6bd8c82da94e8d8ef48bdbe14d2bd1.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,43 +22,64 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: "Paul E. McKenney" <paul.mckenney@linaro.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>, Bob Moore <robert.moore@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: Bob Moore <robert.moore@intel.com>
 
-The acpi_processor_cst_has_changed() function is invoked from a
-CPU_ONLINE or CPU_DEAD function, which might well execute on CPU 0
-even though the CPU being hotplugged is some other CPU.  In addition,
-acpi_processor_cst_has_changed() invokes smp_processor_id() without
-protection, resulting in splats when onlining CPUs.
+These prototypes were incorrectly declared in achware.h.
 
-This commit therefore changes the smp_processor_id() to pr->id, as is
-used elsewhere in the code, for example, in acpi_processor_add().
-
-Signed-off-by: Paul E. McKenney <paul.mckenney@linaro.org>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Tested-by: Yong Zhang <yong.zhang0@gmail.com>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/processor_idle.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/acpi/acpica/achware.h |   12 ------------
+ include/acpi/acpixf.h         |   12 ++++++++++++
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 0e8e2de..9e57b06 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -1159,8 +1159,7 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
- 	 * to make the code that updates C-States be called once.
- 	 */
+diff --git a/drivers/acpi/acpica/achware.h b/drivers/acpi/acpica/achware.h
+index 087f710..eed204a 100644
+--- a/drivers/acpi/acpica/achware.h
++++ b/drivers/acpi/acpica/achware.h
+@@ -145,16 +145,4 @@ acpi_status
+ acpi_hw_derive_pci_id(struct acpi_pci_id *pci_id,
+ 		      acpi_handle root_pci_device, acpi_handle pci_region);
  
--	if (smp_processor_id() == 0 &&
--			cpuidle_get_driver() == &acpi_idle_driver) {
-+	if (pr->id == 0 && cpuidle_get_driver() == &acpi_idle_driver) {
+-#ifdef	ACPI_FUTURE_USAGE
+-/*
+- * hwtimer - ACPI Timer prototypes
+- */
+-acpi_status acpi_get_timer_resolution(u32 * resolution);
+-
+-acpi_status acpi_get_timer(u32 * ticks);
+-
+-acpi_status
+-acpi_get_timer_duration(u32 start_ticks, u32 end_ticks, u32 * time_elapsed);
+-#endif				/* ACPI_FUTURE_USAGE */
+-
+ #endif				/* __ACHWARE_H__ */
+diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
+index a28da35..67cd51c 100644
+--- a/include/acpi/acpixf.h
++++ b/include/acpi/acpixf.h
+@@ -419,6 +419,18 @@ acpi_status acpi_leave_sleep_state_prep(u8 sleep_state);
+ acpi_status acpi_leave_sleep_state(u8 sleep_state);
  
- 		cpuidle_pause_and_lock();
- 		/* Protect against cpu-hotplug */
+ /*
++ * ACPI Timer interfaces
++ */
++#ifdef ACPI_FUTURE_USAGE
++acpi_status acpi_get_timer_resolution(u32 *resolution);
++
++acpi_status acpi_get_timer(u32 *ticks);
++
++acpi_status
++acpi_get_timer_duration(u32 start_ticks, u32 end_ticks, u32 *time_elapsed);
++#endif				/* ACPI_FUTURE_USAGE */
++
++/*
+  * Error/Warning output
+  */
+ void ACPI_INTERNAL_VAR_XFACE
 -- 
 1.7.10.rc2.19.gfae9d
