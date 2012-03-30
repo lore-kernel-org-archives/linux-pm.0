@@ -1,80 +1,87 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 46/76] ACPI: Introduce ACPI D3_COLD state support
-Date: Fri, 30 Mar 2012 06:13:49 -0400
-Message-ID: <3ebc81b8937d2bc1d0d0064bed29434dfce490aa.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 19/76] thermal/spear_thermal: replace readl/writel with lighter
+ _relaxed variants
+Date: Fri, 30 Mar 2012 06:13:22 -0400
+Message-ID: <de716e32e61fae5d1f0d000008d3f641cec5c9dd.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-reply-to: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>
+Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@st.com>, Andrew Morton <akpm@linux-foundation.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Viresh Kumar <viresh.kumar@st.com>
 
-If a device has _PR3, it means the device supports D3_COLD.
-Add the ability to validate and enter D3_COLD state in ACPI.
+readl/writel versions for ARM contain memory barrier instruction for
+synchronizing DMA buffers.  These are not required at least on this
+module.  So use lighter _relaxed variants.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@st.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/power.c |    4 ++--
- drivers/acpi/scan.c  |    7 +++++++
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ drivers/thermal/spear_thermal.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
-index 9ac2a9f..0d681fb 100644
---- a/drivers/acpi/power.c
-+++ b/drivers/acpi/power.c
-@@ -500,14 +500,14 @@ int acpi_power_transition(struct acpi_device *device, int state)
- {
- 	int result;
+diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
+index 880bf28..be94413 100644
+--- a/drivers/thermal/spear_thermal.c
++++ b/drivers/thermal/spear_thermal.c
+@@ -46,7 +46,7 @@ static inline int thermal_get_temp(struct thermal_zone_device *thermal,
+ 	 * Data are ready to be read after 628 usec from POWERDOWN signal
+ 	 * (PDN) = 1
+ 	 */
+-	*temp = (readl(stdev->thermal_base) & 0x7F) * MD_FACTOR;
++	*temp = (readl_relaxed(stdev->thermal_base) & 0x7F) * MD_FACTOR;
+ 	return 0;
+ }
  
--	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3))
-+	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
- 		return -EINVAL;
+@@ -63,8 +63,8 @@ static int spear_thermal_suspend(struct device *dev)
+ 	unsigned int actual_mask = 0;
  
- 	if (device->power.state == state)
- 		return 0;
+ 	/* Disable SPEAr Thermal Sensor */
+-	actual_mask = readl(stdev->thermal_base);
+-	writel(actual_mask & ~stdev->flags, stdev->thermal_base);
++	actual_mask = readl_relaxed(stdev->thermal_base);
++	writel_relaxed(actual_mask & ~stdev->flags, stdev->thermal_base);
  
- 	if ((device->power.state < ACPI_STATE_D0)
--	    || (device->power.state > ACPI_STATE_D3))
-+	    || (device->power.state > ACPI_STATE_D3_COLD))
- 		return -ENODEV;
+ 	clk_disable(stdev->clk);
+ 	dev_info(dev, "Suspended.\n");
+@@ -87,8 +87,8 @@ static int spear_thermal_resume(struct device *dev)
+ 	}
  
- 	/* TBD: Resources must be ordered. */
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 8ab80ba..571396c 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -885,6 +885,13 @@ static int acpi_bus_get_power_flags(struct acpi_device *device)
- 				acpi_bus_add_power_resource(ps->resources.handles[j]);
- 		}
+ 	/* Enable SPEAr Thermal Sensor */
+-	actual_mask = readl(stdev->thermal_base);
+-	writel(actual_mask | stdev->flags, stdev->thermal_base);
++	actual_mask = readl_relaxed(stdev->thermal_base);
++	writel_relaxed(actual_mask | stdev->flags, stdev->thermal_base);
  
-+		/* The exist of _PR3 indicates D3Cold support */
-+		if (i == ACPI_STATE_D3) {
-+			status = acpi_get_handle(device->handle, object_name, &handle);
-+			if (ACPI_SUCCESS(status))
-+				device->power.states[ACPI_STATE_D3_COLD].flags.valid = 1;
-+		}
-+
- 		/* Evaluate "_PSx" to see if we can do explicit sets */
- 		object_name[2] = 'S';
- 		status = acpi_get_handle(device->handle, object_name, &handle);
+ 	dev_info(dev, "Resumed.\n");
+ 
+@@ -145,7 +145,7 @@ static int spear_thermal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	stdev->flags = pdata->thermal_flags;
+-	writel(stdev->flags, stdev->thermal_base);
++	writel_relaxed(stdev->flags, stdev->thermal_base);
+ 
+ 	spear_thermal = thermal_zone_device_register("spear_thermal", 0,
+ 				stdev, &ops, 0, 0, 0, 0);
+@@ -180,8 +180,8 @@ static int spear_thermal_exit(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, NULL);
+ 
+ 	/* Disable SPEAr Thermal Sensor */
+-	actual_mask = readl(stdev->thermal_base);
+-	writel(actual_mask & ~stdev->flags, stdev->thermal_base);
++	actual_mask = readl_relaxed(stdev->thermal_base);
++	writel_relaxed(actual_mask & ~stdev->flags, stdev->thermal_base);
+ 
+ 	clk_disable(stdev->clk);
+ 	clk_put(stdev->clk);
 -- 
 1.7.10.rc2.19.gfae9d
+
