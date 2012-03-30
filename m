@@ -1,14 +1,16 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle : use percpu cpuidle in the core code
-Date: Fri, 30 Mar 2012 17:29:17 +0530
-Message-ID: <4F75A015.2010609@linux.vnet.ibm.com>
-References: <1333104499-8627-1-git-send-email-daniel.lezcano@linaro.org>
-	<4F759838.4060007@linux.vnet.ibm.com> <4F759CDE.9060108@linaro.org>
+From: Corentin Chary <corentin.chary@gmail.com>
+Subject: Re: [PATCH 57/76] ACPI / Video: blacklist some samsung
+	laptops
+Date: Fri, 30 Mar 2012 14:07:15 +0200
+Message-ID: <CAHR064iEVsoMiP1PYzXeZeZzOFCPTk1YDBty6nHAfzej2qh_qA@mail.gmail.com>
+References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
+	<1333102459-23750-1-git-send-email-lenb@kernel.org>
+	<0e569b120d19c35dcc4f5549956cd884c3241270.1333101989.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4F759CDE.9060108@linaro.org>
+In-Reply-To: <0e569b120d19c35dcc4f5549956cd884c3241270.1333101989.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,157 +20,88 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, patches@linaro.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 03/30/2012 05:15 PM, Daniel Lezcano wrote:
-
-> On 03/30/2012 01:25 PM, Srivatsa S. Bhat wrote:
->> On 03/30/2012 04:18 PM, Daniel Lezcano wrote:
->>
->>> The usual cpuidle initialization routines are to register the
->>> driver, then register a cpuidle device per cpu.
->>>
->>> With the device's state count default initialization with the
->>> driver's state count, the code initialization remains mostly the
->>> same in the different drivers.
->>>
->>> We can then add a new function 'cpuidle_register' where we register
->>> the driver and the devices. These devices can be defined in a global
->>> static variable in cpuidle.c. We will be able to factor out and
->>> remove a lot of duplicate lines of code.
->>>
->>> As we still have some drivers, with different initialization routines,
->>> we keep 'cpuidle_register_driver' and 'cpuidle_register_device' as low
->>> level initialization routines to do some specific operations on the
->>> cpuidle devices.
->>>
->>> Signed-off-by: Daniel Lezcano<daniel.lezcano@linaro.org>
->>> ---
->>>   drivers/cpuidle/cpuidle.c |   34 ++++++++++++++++++++++++++++++++++
->>>   include/linux/cpuidle.h   |    3 +++
->>>   2 files changed, 37 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->>> index b8a1faf..2a174e8 100644
->>> --- a/drivers/cpuidle/cpuidle.c
->>> +++ b/drivers/cpuidle/cpuidle.c
->>> @@ -23,6 +23,7 @@
->>>   #include "cpuidle.h"
->>>
->>>   DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
->>> +DEFINE_PER_CPU(struct cpuidle_device, cpuidle_device);
->>>
->>>   DEFINE_MUTEX(cpuidle_lock);
->>>   LIST_HEAD(cpuidle_detected_devices);
->>> @@ -391,6 +392,39 @@ int cpuidle_register_device(struct
->>> cpuidle_device *dev)
->>>
->>>   EXPORT_SYMBOL_GPL(cpuidle_register_device);
->>>
->>> +int cpuidle_register(struct cpuidle_driver *drv)
->>> +{
->>> +    int ret, cpu;
->>> +    struct cpuidle_device *dev;
->>> +
->>> +    ret = cpuidle_register_driver(drv);
->>> +    if (ret)
->>> +        return ret;
->>> +
->>> +    for_each_online_cpu(cpu) {
->>> +        dev =&per_cpu(cpuidle_device, cpu);
->>> +        dev->cpu = cpu;
->>> +
->>> +        ret = cpuidle_register_device(dev);
->>> +        if (ret)
->>> +            goto out_unregister;
->>> +    }
->>> +
->>
->>
->> Isn't this racy with respect to CPU hotplug?
-> 
-> No, I don't think so. Do you see a race ?
-
-
-Well, that depends on when/where this function gets called.
-This patch introduces the function. Where is the caller?
-
-As of now, if you are calling this in boot-up code, its not racy.
-However, there have been attempts to speed up boot times by trying
-to online cpus in parallel with the rest of the kernel initialization[1].
-In that case, unless your call is an early init call, it can race
-with CPU hotplug.
-
-[1]. https://lkml.org/lkml/2012/1/30/647
-
-> 
->>> +out:
->>> +    return ret;
->>> +
->>> +out_unregister:
->>> +    for_each_online_cpu(cpu) {
->>> +        dev =&per_cpu(cpuidle_device, cpu);
->>> +        cpuidle_unregister_device(dev);
->>> +    }
->>> +
->>
->>
->> This could be improved I guess.. What if the registration fails
->> for the first cpu itself? Then looping over entire online cpumask
->> would be a waste of time..
-> 
-> Certainly in a critical section that would make sense, but for 4,8 or 16
-> cpus in an initialization path at boot time... Anyway, I can add what is
-> proposed in https://lkml.org/lkml/2012/3/22/143.
-> 
-
-
-What about servers with a lot more CPUs, like say 128 or even more? :-)
-
-Moreover I don't see any downsides to the optimization. So should be good
-to add it in any case...
- 
-Regards,
-Srivatsa S. Bhat
-
-> 
->> Here is a discussion on some very similar code:
->> https://lkml.org/lkml/2012/3/22/72
->> https://lkml.org/lkml/2012/3/22/143
->>
->>> +    cpuidle_unregister_driver(drv);
->>> +
->>> +    goto out;
->>> +}
->>> +EXPORT_SYMBOL_GPL(cpuidle_register);
->>> +
->>>   /**
->>>    * cpuidle_unregister_device - unregisters a CPU's idle PM feature
->>>    * @dev: the cpu
->>> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
->>> index f3ebbba..17e3d33 100644
->>> --- a/include/linux/cpuidle.h
->>> +++ b/include/linux/cpuidle.h
->>> @@ -133,6 +133,7 @@ struct cpuidle_driver {
->>>   #ifdef CONFIG_CPU_IDLE
->>>   extern void disable_cpuidle(void);
->>>   extern int cpuidle_idle_call(void);
->>> +extern int cpuidle_register(struct cpuidle_driver *drv);
->>>   extern int cpuidle_register_driver(struct cpuidle_driver *drv);
->>>   struct cpuidle_driver *cpuidle_get_driver(void);
->>>   extern void cpuidle_unregister_driver(struct cpuidle_driver *drv);
->>> @@ -150,6 +151,8 @@ extern int cpuidle_wrap_enter(struct
->>> cpuidle_device *dev,
->>>   #else
->>>   static inline void disable_cpuidle(void) { }
->>>   static inline int cpuidle_idle_call(void) { return -ENODEV; }
->>> +static inline int cpuidle_register(struct cpuidle_driver *drv)
->>> +{return -ENODEV; }
->>>   static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
->>>   {return -ENODEV; }
->>>   static inline struct cpuidle_driver *cpuidle_get_driver(void)
->>> {return NULL; }
->>
->>
+T24gRnJpLCBNYXIgMzAsIDIwMTIgYXQgMTI6MTQgUE0sIExlbiBCcm93biA8bGVuYkBrZXJuZWwu
+b3JnPiB3cm90ZToKPiBGcm9tOiBDb3JlbnRpbiBDaGFyeSA8Y29yZW50aW5jakBpa3NhaWYubmV0
+Pgo+Cj4gT24gdGhlc2UgbGFwdG9wcywgdGhlIEFDUEkgdmlkZW8gaXMgbm90IGZ1bmN0aW9uYWws
+IGFuZCB2ZXJ5IHVubGlrZWx5Cj4gdG8gYmUgZml4ZWQgYnkgdGhlIHZlbmRvci4gTm90ZSB0aGF0
+IGludGVsX2JhY2tsaWdodCB3b3JrcyBmb3Igc29tZQo+IG9mIHRoZXNlIGxhcHRvcHMsIGFuZCB0
+aGUgYmFja2xpZ2h0IGZyb20gc2Ftc3VuZy1sYXB0b3AgYWx3YXlzIHdvcmsuCj4KPiBUaGUgZ29v
+ZCBuZXdzIGlzIHRoYXQgbmV3ZXIgbGFwdG9wcyBoYXZlIGZ1bmN0aW9uYWwgQUNQSSB2aWRlbyBk
+ZXZpY2UKPiBhbmQgd29uJ3QgZW5kIHVwIGdyb3dpbmcgdGhpcyBsaXN0Lgo+Cj4gU2lnbmVkLW9m
+Zi1ieTogQ29yZW50aW4gQ2hhcnkgPGNvcmVudGluY2pAaWtzYWlmLm5ldD4KPiBTaWduZWQtb2Zm
+LWJ5OiBMZW4gQnJvd24gPGxlbi5icm93bkBpbnRlbC5jb20+Cj4gLS0tCj4gwqBkcml2ZXJzL2Fj
+cGkvdmlkZW9fZGV0ZWN0LmMgfCDCoCA0OSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrCj4gwqAxIGZpbGUgY2hhbmdlZCwgNDkgaW5zZXJ0aW9ucygrKQo+Cj4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvYWNwaS92aWRlb19kZXRlY3QuYyBiL2RyaXZlcnMvYWNwaS92aWRl
+b19kZXRlY3QuYwo+IGluZGV4IGYzZjBmZTcuLmI2ZjY5NzkgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVy
+cy9hY3BpL3ZpZGVvX2RldGVjdC5jCj4gKysrIGIvZHJpdmVycy9hY3BpL3ZpZGVvX2RldGVjdC5j
+Cj4gQEAgLTEzMiw2ICsxMzIsNTMgQEAgZmluZF92aWRlbyhhY3BpX2hhbmRsZSBoYW5kbGUsIHUz
+MiBsdmwsIHZvaWQgKmNvbnRleHQsIHZvaWQgKipydikKPiDCoCDCoCDCoCDCoHJldHVybiBBRV9P
+SzsKPiDCoH0KPgo+ICsvKiBGb3JjZSB0byB1c2UgdmVuZG9yIGRyaXZlciB3aGVuIHRoZSBBQ1BJ
+IGRldmljZSBpcyBrbm93biB0byBiZQo+ICsgKiBidWdneSAqLwo+ICtzdGF0aWMgaW50IHZpZGVv
+X2RldGVjdF9mb3JjZV92ZW5kb3IoY29uc3Qgc3RydWN0IGRtaV9zeXN0ZW1faWQgKmQpCj4gK3sK
+PiArIMKgIMKgIMKgIGFjcGlfdmlkZW9fc3VwcG9ydCB8PSBBQ1BJX1ZJREVPX0JBQ0tMSUdIVF9E
+TUlfVkVORE9SOwo+ICsgwqAgwqAgwqAgcmV0dXJuIDA7Cj4gK30KPiArCj4gK3N0YXRpYyBzdHJ1
+Y3QgZG1pX3N5c3RlbV9pZCB2aWRlb19kZXRlY3RfZG1pX3RhYmxlW10gPSB7Cj4gKyDCoCDCoCDC
+oCB7Cj4gKyDCoCDCoCDCoCDCoC5jYWxsYmFjayA9IHZpZGVvX2RldGVjdF9mb3JjZV92ZW5kb3Is
+Cj4gKyDCoCDCoCDCoCDCoC5pZGVudCA9ICJOMTUwUCIsCj4gKyDCoCDCoCDCoCDCoC5tYXRjaGVz
+ID0gewo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgRE1JX01BVENIKERNSV9TWVNfVkVORE9SLCAi
+U0FNU1VORyBFTEVDVFJPTklDUyBDTy4sIExURC4iKSwKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IERNSV9NQVRDSChETUlfUFJPRFVDVF9OQU1FLCAiTjE1MFAiKSwKPiArIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIERNSV9NQVRDSChETUlfQk9BUkRfTkFNRSwgIk4xNTBQIiksCj4gKyDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCB9LAo+ICsgwqAgwqAgwqAgfSwKPiArIMKgIMKgIMKgIHsKPiArIMKgIMKgIMKg
+IMKgLmNhbGxiYWNrID0gdmlkZW9fZGV0ZWN0X2ZvcmNlX3ZlbmRvciwKPiArIMKgIMKgIMKgIMKg
+LmlkZW50ID0gIk4xNDVQL04yNTBQL04yNjBQIiwKPiArIMKgIMKgIMKgIMKgLm1hdGNoZXMgPSB7
+Cj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBETUlfTUFUQ0goRE1JX1NZU19WRU5ET1IsICJTQU1T
+VU5HIEVMRUNUUk9OSUNTIENPLiwgTFRELiIpLAo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgRE1J
+X01BVENIKERNSV9QUk9EVUNUX05BTUUsICJOMTQ1UC9OMjUwUC9OMjYwUCIpLAo+ICsgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgRE1JX01BVENIKERNSV9CT0FSRF9OQU1FLCAiTjE0NVAvTjI1MFAvTjI2
+MFAiKSwKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIH0sCj4gKyDCoCDCoCDCoCB9LAo+ICsgwqAg
+wqAgwqAgewo+ICsgwqAgwqAgwqAgwqAuY2FsbGJhY2sgPSB2aWRlb19kZXRlY3RfZm9yY2VfdmVu
+ZG9yLAo+ICsgwqAgwqAgwqAgwqAuaWRlbnQgPSAiTjE1MC9OMjEwL04yMjAiLAo+ICsgwqAgwqAg
+wqAgwqAubWF0Y2hlcyA9IHsKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIERNSV9NQVRDSChETUlf
+U1lTX1ZFTkRPUiwgIlNBTVNVTkcgRUxFQ1RST05JQ1MgQ08uLCBMVEQuIiksCj4gKyDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCBETUlfTUFUQ0goRE1JX1BST0RVQ1RfTkFNRSwgIk4xNTAvTjIxMC9OMjIw
+IiksCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBETUlfTUFUQ0goRE1JX0JPQVJEX05BTUUsICJO
+MTUwL04yMTAvTjIyMCIpLAo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAgfSwKPiArIMKgIMKgIMKg
+IH0sCj4gKyDCoCDCoCDCoCB7Cj4gKyDCoCDCoCDCoCDCoC5jYWxsYmFjayA9IHZpZGVvX2RldGVj
+dF9mb3JjZV92ZW5kb3IsCj4gKyDCoCDCoCDCoCDCoC5pZGVudCA9ICJORjExMC9ORjIxMC9ORjMx
+MCIsCj4gKyDCoCDCoCDCoCDCoC5tYXRjaGVzID0gewo+ICsgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+RE1JX01BVENIKERNSV9TWVNfVkVORE9SLCAiU0FNU1VORyBFTEVDVFJPTklDUyBDTy4sIExURC4i
+KSwKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIERNSV9NQVRDSChETUlfUFJPRFVDVF9OQU1FLCAi
+TkYxMTAvTkYyMTAvTkYzMTAiKSwKPiArIMKgIMKgIMKgIMKgIMKgIMKgIMKgIERNSV9NQVRDSChE
+TUlfQk9BUkRfTkFNRSwgIk5GMTEwL05GMjEwL05GMzEwIiksCj4gKyDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCB9LAo+ICsgwqAgwqAgwqAgfSwKPiArfTsKPiArCj4gwqAvKgo+IMKgKiBSZXR1cm5zIHRo
+ZSB2aWRlbyBjYXBhYmlsaXRpZXMgb2YgYSBzcGVjaWZpYyBBQ1BJIGdyYXBoaWNzIGRldmljZQo+
+IMKgKgo+IEBAIC0xNjQsNiArMjExLDggQEAgbG9uZyBhY3BpX3ZpZGVvX2dldF9jYXBhYmlsaXRp
+ZXMoYWNwaV9oYW5kbGUgZ3JhcGhpY3NfaGFuZGxlKQo+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+ICogwqAgwqAgwqAgwqAgwqAgwqAgwqBBQ1BJX1ZJREVPX0JBQ0tMSUdIVF9ETUlfVkVORE9SOwo+
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgICp9Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgKi8K
+PiArCj4gKyDCoCDCoCDCoCDCoCDCoCDCoCDCoCBkbWlfY2hlY2tfc3lzdGVtKHZpZGVvX2RldGVj
+dF9kbWlfdGFibGUpOwo+IMKgIMKgIMKgIMKgfSBlbHNlIHsKPiDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoHN0YXR1cyA9IGFjcGlfYnVzX2dldF9kZXZpY2UoZ3JhcGhpY3NfaGFuZGxlLCAmdG1wX2Rl
+dik7Cj4gwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBpZiAoQUNQSV9GQUlMVVJFKHN0YXR1cykpIHsK
+PiAtLQo+IDEuNy4xMC5yYzIuMTkuZ2ZhZTlkCj4KPiAtLQo+IFRvIHVuc3Vic2NyaWJlIGZyb20g
+dGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1hY3BpIiBpbgo+IHRo
+ZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCj4gTW9yZSBt
+YWpvcmRvbW8gaW5mbyBhdCDCoGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8u
+aHRtbAoKSGkgTGVuLAoKU29ycnkgZm9yIHRoYXQgYnV0IHRoaXMgcGF0Y2ggd2FzIHJlLXNlbnQg
+cmVjZW50bHksIGFuZCBNYXR0aGV3IHRvbGQKbWUgdG8gZG8gdGhhdCB0aGlzIHNob3VsZCBiZSBk
+b25lIGluIHNhbXN1bmctbGFwdG9wLmMgaW5zdGVhZC4KClRoZSByZXN1bHRpbmcgcGF0Y2ggaGFz
+IGJlZW4gbWVyZ2VkIGluIE1hdHRoZXcncyB0cmVlOgpodHRwOi8vZ2l0Lmtlcm5lbC5vcmcvP3A9
+bGludXgva2VybmVsL2dpdC9uZXh0L2xpbnV4LW5leHQuZ2l0O2E9YmxvYmRpZmY7Zj1kcml2ZXJz
+L3BsYXRmb3JtL3g4Ni9zYW1zdW5nLWxhcHRvcC5jO2g9ZTJhMzRiNDJkZGMxZDU4NGI1MzMzZmU5
+OTIxZDBkMmMyYjEyZGRhNDtocD00Nzg3YWZkZjExZGMyMGU2OWFmOGZlNTMyNDM2NmQ0YmQ2NWFl
+Yjk4O2hiPWE5NzllMmUyYWY3ZDViNGJiM2IyMGY2YTcxNmM2MjdiYjIzYTY3NTM7aHBiPTU3MTli
+ODE5ODhmM2MyNGZmNjk0ZGMzYTM3ZTM1YjM1NjMwYTM5NjYKCk9uZSBvZiB0aGVzZSBwYXRjaGVz
+IHNob3VsZCBiZSByZXZlcnRlZCwgYnV0IHdoaWNoIG9uZSA/Ck5vdGUgdGhhdCBhcHBsZS1nbXV4
+IGFuZCBhY2VyLXdtaSBhcmUgYWxzbyB1c2luZyB0aGUKYWNwaV92aWRlb191bnJlZ2lzdGVyKCkg
+dHJpY2sgaW4gbGludXgtbmV4dC4KClRoYW5rcywKCi0tIApDb3JlbnRpbiBDaGFyeQpodHRwOi8v
+eGYuaWtzYWlmLm5ldApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fXwpsaW51eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlv
+bi5vcmcKaHR0cHM6Ly9saXN0cy5saW51eGZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8v
+bGludXgtcG0=
