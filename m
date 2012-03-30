@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 12/76] SH: shmobile: Consolidate time keeping and irq enable
-Date: Fri, 30 Mar 2012 06:13:15 -0400
-Message-ID: <5c48c873baf1a67b93d26770c8fe4d41f26f48af.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 11/76] ARM: shmobile: Consolidate time keeping and irq enable
+Date: Fri, 30 Mar 2012 06:13:14 -0400
+Message-ID: <ee807dd89c0003a5cc0ec961132cd83542e5c30c.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
@@ -24,44 +24,65 @@ Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Acked-by: Jean Pihet <j-pihet@ti.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/sh/kernel/cpu/shmobile/cpuidle.c |   10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ arch/arm/mach-shmobile/cpuidle.c |   31 +++++++------------------------
+ 1 file changed, 7 insertions(+), 24 deletions(-)
 
-diff --git a/arch/sh/kernel/cpu/shmobile/cpuidle.c b/arch/sh/kernel/cpu/shmobile/cpuidle.c
-index 6d62eb4..1ddc876 100644
---- a/arch/sh/kernel/cpu/shmobile/cpuidle.c
-+++ b/arch/sh/kernel/cpu/shmobile/cpuidle.c
-@@ -29,7 +29,6 @@ static int cpuidle_sleep_enter(struct cpuidle_device *dev,
- 				int index)
+diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
+index 1b23342..ca23b20 100644
+--- a/arch/arm/mach-shmobile/cpuidle.c
++++ b/arch/arm/mach-shmobile/cpuidle.c
+@@ -14,6 +14,7 @@
+ #include <linux/module.h>
+ #include <linux/err.h>
+ #include <asm/system.h>
++#include <asm/cpuidle.h>
+ #include <asm/io.h>
+ 
+ static void shmobile_enter_wfi(void)
+@@ -29,37 +30,19 @@ static int shmobile_cpuidle_enter(struct cpuidle_device *dev,
+ 				  struct cpuidle_driver *drv,
+ 				  int index)
  {
- 	unsigned long allowed_mode = SUSP_SH_SLEEP;
 -	ktime_t before, after;
- 	int requested_state = index;
- 	int allowed_state;
- 	int k;
-@@ -47,19 +46,16 @@ static int cpuidle_sleep_enter(struct cpuidle_device *dev,
- 	 */
- 	k = min_t(int, allowed_state, requested_state);
- 
--	before = ktime_get();
- 	sh_mobile_call_standby(cpuidle_mode[k]);
--	after = ktime_get();
 -
--	dev->last_residency = (int)ktime_to_ns(ktime_sub(after, before)) >> 10;
+-	before = ktime_get();
+-
+-	local_irq_disable();
+-	local_fiq_disable();
+-
+ 	shmobile_cpuidle_modes[index]();
  
- 	return k;
+-	local_irq_enable();
+-	local_fiq_enable();
+-
+-	after = ktime_get();
+-	dev->last_residency = ktime_to_ns(ktime_sub(after, before)) >> 10;
+-
+ 	return index;
  }
  
- static struct cpuidle_device cpuidle_dev;
- static struct cpuidle_driver cpuidle_driver = {
--	.name =		"sh_idle",
+ static struct cpuidle_device shmobile_cpuidle_dev;
+ static struct cpuidle_driver shmobile_cpuidle_driver = {
+-	.name =		"shmobile_cpuidle",
 -	.owner =	THIS_MODULE,
-+	.name			= "sh_idle",
+-	.states[0] = {
+-		.name = "C1",
+-		.desc = "WFI",
+-		.exit_latency = 1,
+-		.target_residency = 1 * 2,
+-		.flags = CPUIDLE_FLAG_TIME_VALID,
+-	},
+-	.safe_state_index = 0, /* C1 */
+-	.state_count = 1,
++	.name			= "shmobile_cpuidle",
 +	.owner			= THIS_MODULE,
 +	.en_core_tk_irqen	= 1,
++	.states[0]		= ARM_CPUIDLE_WFI_STATE,
++	.safe_state_index	= 0, /* C1 */
++	.state_count		= 1,
  };
  
- void sh_mobile_setup_cpuidle(void)
+ void (*shmobile_cpuidle_setup)(struct cpuidle_driver *drv);
 -- 
 1.7.10.rc2.19.gfae9d
 
