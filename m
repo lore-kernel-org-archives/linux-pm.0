@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 36/76] ACPICA: Debugger: Add missing object info
- to namespace dump
-Date: Fri, 30 Mar 2012 06:13:39 -0400
-Message-ID: <4acb6884b5568f19bd47173cba8bc1f2289d6baa.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 42/76] ACPI: ec: Do request_region outside WARN()
+Date: Fri, 30 Mar 2012 06:13:45 -0400
+Message-ID: <d6795fe32da13bde39ea483e42799a22daa730b5.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -22,47 +21,38 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>, Bob Moore <robert.moore@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>, Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+From: Andi Kleen <andi@firstfloor.org>
 
-Many namespace node types must have an attached object. For
-these node types, print a message about a missing object during
-a namespace dump.
+WARN() is not supposed to have side effects, so move the request_regions
+outside.
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/nsdump.c |   15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ drivers/acpi/ec.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/acpica/nsdump.c b/drivers/acpi/acpica/nsdump.c
-index b7f2b3b..3f7f3f6 100644
---- a/drivers/acpi/acpica/nsdump.c
-+++ b/drivers/acpi/acpica/nsdump.c
-@@ -242,7 +242,20 @@ acpi_ns_dump_one_object(acpi_handle obj_handle,
+diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+index b19a18d..3268dcf 100644
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -812,10 +812,10 @@ static int acpi_ec_add(struct acpi_device *device)
+ 		first_ec = ec;
+ 	device->driver_data = ec;
  
- 		if (!obj_desc) {
+-	WARN(!request_region(ec->data_addr, 1, "EC data"),
+-	     "Could not request EC data io port 0x%lx", ec->data_addr);
+-	WARN(!request_region(ec->command_addr, 1, "EC cmd"),
+-	     "Could not request EC cmd io port 0x%lx", ec->command_addr);
++	ret = !!request_region(ec->data_addr, 1, "EC data");
++	WARN(!ret, "Could not request EC data io port 0x%lx", ec->data_addr);
++	ret = !!request_region(ec->command_addr, 1, "EC cmd");
++	WARN(!ret, "Could not request EC cmd io port 0x%lx", ec->command_addr);
  
--			/* No attached object, we are done */
-+			/* No attached object. Some types should always have an object */
-+
-+			switch (type) {
-+			case ACPI_TYPE_INTEGER:
-+			case ACPI_TYPE_PACKAGE:
-+			case ACPI_TYPE_BUFFER:
-+			case ACPI_TYPE_STRING:
-+			case ACPI_TYPE_METHOD:
-+				acpi_os_printf("<No attached object>");
-+				break;
-+
-+			default:
-+				break;
-+			}
- 
- 			acpi_os_printf("\n");
- 			return (AE_OK);
+ 	pr_info(PREFIX "GPE = 0x%lx, I/O: command/status = 0x%lx, data = 0x%lx\n",
+ 			  ec->gpe, ec->command_addr, ec->data_addr);
 -- 
 1.7.10.rc2.19.gfae9d
