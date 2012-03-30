@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 75/76] Disable MCP limit exceeded messages from Intel IPS driver
-Date: Fri, 30 Mar 2012 06:14:18 -0400
-Message-ID: <2d7bbf008531cfdc353b09ed7cadd6dd3336a948.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 70/76] ACPI: Clean redundant codes in scan.c
+Date: Fri, 30 Mar 2012 06:14:13 -0400
+Message-ID: <37239978778806ecba54da60676abb46870acebb.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
@@ -10,54 +10,43 @@ In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Alex He <alex.he@amd.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Andi Kleen <ak@linux.intel.com>
+From: Alex He <alex.he@amd.com>
 
-On a system on the thermal limit these are quite noisy and flood the logs.
-Better would be a counter anyways. But given that we don't even have
-anything for normal throttling this doesn't seem to be urgent either.
+Clean the redundant codes of apci_bus_get_power_flags().
 
-Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Alex He <alex.he@amd.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/platform/x86/intel_ips.c |   13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+ drivers/acpi/scan.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/platform/x86/intel_ips.c b/drivers/platform/x86/intel_ips.c
-index 88a98cf..f7ba316 100644
---- a/drivers/platform/x86/intel_ips.c
-+++ b/drivers/platform/x86/intel_ips.c
-@@ -609,25 +609,16 @@ static bool mcp_exceeded(struct ips_driver *ips)
- 	bool ret = false;
- 	u32 temp_limit;
- 	u32 avg_power;
--	const char *msg = "MCP limit exceeded: ";
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 8ab80ba..5d24a17 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -880,7 +880,6 @@ static int acpi_bus_get_power_flags(struct acpi_device *device)
+ 			int j;
  
- 	spin_lock_irqsave(&ips->turbo_status_lock, flags);
+ 			device->power.flags.power_resources = 1;
+-			ps->flags.valid = 1;
+ 			for (j = 0; j < ps->resources.count; j++)
+ 				acpi_bus_add_power_resource(ps->resources.handles[j]);
+ 		}
+@@ -888,10 +887,8 @@ static int acpi_bus_get_power_flags(struct acpi_device *device)
+ 		/* Evaluate "_PSx" to see if we can do explicit sets */
+ 		object_name[2] = 'S';
+ 		status = acpi_get_handle(device->handle, object_name, &handle);
+-		if (ACPI_SUCCESS(status)) {
++		if (ACPI_SUCCESS(status))
+ 			ps->flags.explicit_set = 1;
+-			ps->flags.valid = 1;
+-		}
  
- 	temp_limit = ips->mcp_temp_limit * 100;
--	if (ips->mcp_avg_temp > temp_limit) {
--		dev_info(&ips->dev->dev,
--			"%sAvg temp %u, limit %u\n", msg, ips->mcp_avg_temp,
--			temp_limit);
-+	if (ips->mcp_avg_temp > temp_limit)
- 		ret = true;
--	}
- 
- 	avg_power = ips->cpu_avg_power + ips->mch_avg_power;
--	if (avg_power > ips->mcp_power_limit) {
--		dev_info(&ips->dev->dev,
--			"%sAvg power %u, limit %u\n", msg, avg_power,
--			ips->mcp_power_limit);
-+	if (avg_power > ips->mcp_power_limit)
- 		ret = true;
--	}
- 
- 	spin_unlock_irqrestore(&ips->turbo_status_lock, flags);
- 
+ 		/* State is valid if we have some power control */
+ 		if (ps->resources.count || ps->flags.explicit_set)
 -- 
 1.7.10.rc2.19.gfae9d
 
