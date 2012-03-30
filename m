@@ -1,69 +1,111 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 13/76] drivers/thermal/thermal_sys.c: fix build
-	warning
-Date: Fri, 30 Mar 2012 06:13:16 -0400
-Message-ID: <b11de07ce561574b6e03c8192b28bad540da8f79.1333101989.git.len.brown@intel.com>
-References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-reply-to: <1333102459-23750-1-git-send-email-lenb@kernel.org>
-In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [linux-pm] [PATCH 17/76] thermal_sys: convert printks to
+ pr_<level>
+Date: Fri, 30 Mar 2012 16:41:19 +0300
+Message-ID: <20120330134119.GA13130@besouro>
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Fabio Estevam <fabio.estevam@freescale.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Jean Delvare <khali@linux-fr.org>, Andrew Morton <akpm@linux-foundation.org>, Fabio Estevam <festevam@gmail.com>
+ <c5a01dd52dc4903772f464ea580895ccc36e911d.1333101989.git.len.brown@intel.com>
+Reply-To: eduardo.valentin@ti.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <c5a01dd52dc4903772f464ea580895ccc36e911d.1333101989.git.len.brown@intel.com>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Joe Perches <joe@perches.com>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Jesper Juhl <jj@chaosbits.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Fabio Estevam <festevam@gmail.com>
+Hello Joe, Len,
 
-With CONFIG_NET=n:
+On Fri, Mar 30, 2012 at 06:13:20AM -0400, Len Brown wrote:
+> From: Joe Perches <joe@perches.com>
+> 
+> Use the current logging style.
+> 
+> Remove PREFIX, add pr_fmt, convert the printks.  All dmesg output now
+> prefixed with "thermal_sys: ".
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> Cc: Jesper Juhl <jj@chaosbits.net>
+> Cc: Len Brown <lenb@kernel.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  drivers/thermal/thermal_sys.c |   14 ++++++--------
+>  1 file changed, 6 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+> index db5d8f8..fab970d 100644
+> --- a/drivers/thermal/thermal_sys.c
+> +++ b/drivers/thermal/thermal_sys.c
+> @@ -23,6 +23,8 @@
+>   * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>   */
+>  
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+>  #include <linux/module.h>
+>  #include <linux/device.h>
+>  #include <linux/err.h>
+> @@ -39,8 +41,6 @@ MODULE_AUTHOR("Zhang Rui");
+>  MODULE_DESCRIPTION("Generic thermal management sysfs support");
+>  MODULE_LICENSE("GPL");
+>  
+> -#define PREFIX "Thermal: "
+> -
+>  struct thermal_cooling_device_instance {
+>  	int id;
+>  	char name[THERMAL_NAME_LENGTH];
+> @@ -1023,8 +1023,7 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+>  
+>  	if (tz->ops->get_temp(tz, &temp)) {
+>  		/* get_temp failed - retry it later */
+> -		printk(KERN_WARNING PREFIX "failed to read out thermal zone "
+> -		       "%d\n", tz->id);
+> +		pr_warn("failed to read out thermal zone %d\n", tz->id);
 
-drivers/thermal/thermal_sys.c:63: warning: 'thermal_event_seqnum' defined but not used
+We should get the struct dev in thermal_zone_device, I think it makes more sense to use the dev_* helper functions.
 
-Move 'thermal_event_seqnum' definition inside the '#ifdef CONFIG_NET'
+>  		goto leave;
+>  	}
+>  
+> @@ -1039,9 +1038,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+>  					ret = tz->ops->notify(tz, count,
+>  							      trip_type);
+>  				if (!ret) {
+> -					printk(KERN_EMERG
+> -					       "Critical temperature reached (%ld C), shutting down.\n",
+> -					       temp/1000);
+> +					pr_emerg("Critical temperature reached (%ld C), shutting down\n",
+> +						 temp/1000);
 
-[akpm@linux-foundation.org: make thermal_event_seqnum local to generate_netlink_event()]
-Signed-off-by: Fabio Estevam <fabio.estevam@freescale.com>
-Acked-by: Guenter Roeck <guenter.roeck@ericsson.com>
-Acked-by: Durgadoss R <durgadoss.r@intel.com>
-Cc: Jean Delvare <khali@linux-fr.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/thermal/thermal_sys.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+dito.
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 220ce7e..859b80b 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -60,8 +60,6 @@ static LIST_HEAD(thermal_tz_list);
- static LIST_HEAD(thermal_cdev_list);
- static DEFINE_MUTEX(thermal_list_lock);
- 
--static unsigned int thermal_event_seqnum;
--
- static int get_idr(struct idr *idr, struct mutex *lock, int *id)
- {
- 	int err;
-@@ -1312,6 +1310,7 @@ int thermal_generate_netlink_event(u32 orig, enum events event)
- 	void *msg_header;
- 	int size;
- 	int result;
-+	static unsigned int thermal_event_seqnum;
- 
- 	/* allocate memory */
- 	size = nla_total_size(sizeof(struct thermal_genl_event)) + \
--- 
-1.7.10.rc2.19.gfae9d
+>  					orderly_poweroff(true);
+>  				}
+>  			}
+> @@ -1345,7 +1343,7 @@ int thermal_generate_netlink_event(u32 orig, enum events event)
+>  
+>  	result = genlmsg_multicast(skb, 0, thermal_event_mcgrp.id, GFP_ATOMIC);
+>  	if (result)
+> -		printk(KERN_INFO "failed to send netlink event:%d", result);
+> +		pr_info("failed to send netlink event:%d\n", result);
+
+Here we probably would want to do the same, but we don't have the reference for the thermal zone device.
+
+
+The orig argument could probably be changed to a thermal zone device and the we use it's id as orig for the message.
+
+What do you think?
+
+>  
+>  	return result;
+>  }
+> -- 
+> 1.7.10.rc2.19.gfae9d
+> 
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
