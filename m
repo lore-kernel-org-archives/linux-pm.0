@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 22/76] ARM: davinci: Fix for cpuidle consolidation changes
-Date: Fri, 30 Mar 2012 06:13:25 -0400
-Message-ID: <6a6ea0acc9375571a13aa8c4e105a0807e1c16a4.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 59/76] cpuidle: power_usage should be declared signed integer
+Date: Fri, 30 Mar 2012 06:14:02 -0400
+Message-ID: <02401c06b7f6bec65f314e3cec7894502c973501.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
@@ -10,42 +10,47 @@ In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Robert Lee <rob.lee@linaro.org>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@amd.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Robert Lee <rob.lee@linaro.org>
+From: Boris Ostrovsky <boris.ostrovsky@amd.com>
 
-The recent cpuidle consolidation changes erroneously omitted one
-critical line of code.
+power_usage is always assigned a negative value and should be declared
+a signed integer
 
-Signed-off-by: Robert Lee <rob.lee@linaro.org>
-Tested-by: Sekhar Nori <nsekhar@ti.com>
-Acked-by: Sekhar Nori <nsekhar@ti.com>
+Signed-off-by: Boris Ostrovsky <boris.ostrovsky@amd.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/arm/mach-davinci/cpuidle.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/cpuidle/governors/menu.c |    2 +-
+ include/linux/cpuidle.h          |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
-index 93ae096..9107691 100644
---- a/arch/arm/mach-davinci/cpuidle.c
-+++ b/arch/arm/mach-davinci/cpuidle.c
-@@ -55,10 +55,11 @@ static int davinci_enter_idle(struct cpuidle_device *dev,
- #define DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN	BIT(0)
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 5c17ca1..0633575 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -236,7 +236,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+ 	struct menu_device *data = &__get_cpu_var(menu_devices);
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+-	unsigned int power_usage = -1;
++	int power_usage = -1;
+ 	int i;
+ 	int multiplier;
+ 	struct timespec t;
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index d557bcd..6c26a3d 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -44,7 +44,7 @@ struct cpuidle_state {
  
- static struct cpuidle_driver davinci_idle_driver = {
--	.name		= "cpuidle-davinci",
--	.owner		= THIS_MODULE,
--	.states[0]	= ARM_CPUIDLE_WFI_STATE,
--	.states[1]	= {
-+	.name			= "cpuidle-davinci",
-+	.owner			= THIS_MODULE,
-+	.en_core_tk_irqen	= 1,
-+	.states[0]		= ARM_CPUIDLE_WFI_STATE,
-+	.states[1]		= {
- 		.enter			= davinci_enter_idle,
- 		.exit_latency		= 10,
- 		.target_residency	= 100000,
+ 	unsigned int	flags;
+ 	unsigned int	exit_latency; /* in US */
+-	unsigned int	power_usage; /* in mW */
++	int		power_usage; /* in mW */
+ 	unsigned int	target_residency; /* in US */
+ 	unsigned int    disable;
+ 
 -- 
 1.7.10.rc2.19.gfae9d
 
