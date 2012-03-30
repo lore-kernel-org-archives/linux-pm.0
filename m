@@ -1,8 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 55/76] ACPI / PM: print physical addresses consistently with
- other parts of kernel
-Date: Fri, 30 Mar 2012 06:13:58 -0400
-Message-ID: <c6436f5a395d346e9f4892d7aeed4c3f99261f0f.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 61/76] ACPI, APEI, EINJ, limit the range of einj_param
+Date: Fri, 30 Mar 2012 06:14:04 -0400
+Message-ID: <185210cc754754c2504afcef9d1c9cd4b8761a9c.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
@@ -11,35 +10,37 @@ In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Chen Gong <gong.chen@linux.intel.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+From: Chen Gong <gong.chen@linux.intel.com>
 
-Print physical address info in a style consistent with the %pR style used
-elsewhere in the kernel.
+On the platforms with ACPI4.x support, parameter extension
+is not always doable, which means only parameter extension
+is enabled, einj_param can take effect.
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+v2->v1: stopping early in einj_get_parameter_address for einj_param
+
+Signed-off-by: Chen Gong <gong.chen@linux.intel.com>
+Acked-by: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/nvs.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/apei/einj.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/nvs.c b/drivers/acpi/nvs.c
-index 7a2035f..266bc58 100644
---- a/drivers/acpi/nvs.c
-+++ b/drivers/acpi/nvs.c
-@@ -95,8 +95,8 @@ static int suspend_nvs_register(unsigned long start, unsigned long size)
- {
- 	struct nvs_page *entry, *next;
+diff --git a/drivers/acpi/apei/einj.c b/drivers/acpi/apei/einj.c
+index 4ca087d..3d3816f 100644
+--- a/drivers/acpi/apei/einj.c
++++ b/drivers/acpi/apei/einj.c
+@@ -238,7 +238,7 @@ static void *einj_get_parameter_address(void)
+ 			return v5param;
+ 		}
+ 	}
+-	if (paddrv4) {
++	if (param_extension && paddrv4) {
+ 		struct einj_parameter *v4param;
  
--	pr_info("PM: Registering ACPI NVS region at %lx (%ld bytes)\n",
--		start, size);
-+	pr_info("PM: Registering ACPI NVS region [mem %#010lx-%#010lx] (%ld bytes)\n",
-+		start, start + size - 1, size);
- 
- 	while (size > 0) {
- 		unsigned int nr_bytes;
+ 		v4param = acpi_os_map_memory(paddrv4, sizeof(*v4param));
 -- 
 1.7.10.rc2.19.gfae9d
 
