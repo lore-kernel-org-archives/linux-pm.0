@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 60/76] ACPI, APEI, Fix ERST header length check
-Date: Fri, 30 Mar 2012 06:14:03 -0400
-Message-ID: <7ed28f2ed43ece424ff2fa4dedac7928bb37a23a.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 71/76] CPER failed to handle generic error
+ records with multiple sections
+Date: Fri, 30 Mar 2012 06:14:14 -0400
+Message-ID: <37d2a3622d249d83413c92a1cd9e94b5237d0fcc.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -26,30 +27,34 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Jiang Liu <liuj97@gmail.com>
 
-This fixes a trivial copy & paste error in ERST header length check.
-It's just for future safety because sizeof(struct acpi_table_einj)
-equals to sizeof(struct acpi_table_erst) with current ACPI5.0
-specification. It applies to v3.3-rc6.
+The function apei_estatus_print() and apei_estatus_check() forget to move ahead
+the gdata pointer when dealing with multiple generic error data sections.
 
 Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
-Acked-by: Huang Ying <ying.huang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/apei/erst.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/apei/cper.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/acpi/apei/erst.c b/drivers/acpi/apei/erst.c
-index eb9fab5..e4d9d24 100644
---- a/drivers/acpi/apei/erst.c
-+++ b/drivers/acpi/apei/erst.c
-@@ -917,7 +917,7 @@ static int erst_check_table(struct acpi_table_erst *erst_tab)
- {
- 	if ((erst_tab->header_length !=
- 	     (sizeof(struct acpi_table_erst) - sizeof(erst_tab->header)))
--	    && (erst_tab->header_length != sizeof(struct acpi_table_einj)))
-+	    && (erst_tab->header_length != sizeof(struct acpi_table_erst)))
- 		return -EINVAL;
- 	if (erst_tab->header.length < sizeof(struct acpi_table_erst))
+diff --git a/drivers/acpi/apei/cper.c b/drivers/acpi/apei/cper.c
+index 5d41894..e6defd8 100644
+--- a/drivers/acpi/apei/cper.c
++++ b/drivers/acpi/apei/cper.c
+@@ -362,6 +362,7 @@ void apei_estatus_print(const char *pfx,
+ 		gedata_len = gdata->error_data_length;
+ 		apei_estatus_print_section(pfx, gdata, sec_no);
+ 		data_len -= gedata_len + sizeof(*gdata);
++		gdata = (void *)(gdata + 1) + gedata_len;
+ 		sec_no++;
+ 	}
+ }
+@@ -396,6 +397,7 @@ int apei_estatus_check(const struct acpi_hest_generic_status *estatus)
+ 		if (gedata_len > data_len - sizeof(*gdata))
+ 			return -EINVAL;
+ 		data_len -= gedata_len + sizeof(*gdata);
++		gdata = (void *)(gdata + 1) + gedata_len;
+ 	}
+ 	if (data_len)
  		return -EINVAL;
 -- 
 1.7.10.rc2.19.gfae9d
