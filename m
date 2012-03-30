@@ -1,315 +1,172 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 30/76] ACPICA: Distill multiple sleep method functions to a
- single function
-Date: Fri, 30 Mar 2012 06:13:33 -0400
-Message-ID: <f99648b1aff8b6158333a06c50d627be3c243a32.1333101989.git.len.brown@intel.com>
+Subject: [PATCH 28/76] ACPICA: ACPI 5: Update debug output for
+	new notify values
+Date: Fri, 30 Mar 2012 06:13:31 -0400
+Message-ID: <ea143604c5c8426923bbed7cd389fdaed7d58a2e.1333101989.git.len.brown@intel.com>
 References: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-reply-to: <1333102459-23750-1-git-send-email-lenb@kernel.org>
 In-reply-to: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
 References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>, Bob Moore <robert.moore@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Bob Moore <robert.moore@intel.com>
 
-Adds acpi_hw_execute_sleep_method to handle the various sleep methods
-such as _GTS, _BFS, _WAK, and _SST. Removes the specialized
-functions previously used for each of these methods.
+Add new notify values, add support for "hardware specific" notifies.
 
 Signed-off-by: Bob Moore <robert.moore@intel.com>
 Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/achware.h   |    2 +-
- drivers/acpi/acpica/hwsleep.c   |  153 +++++++--------------------------------
- drivers/acpi/acpica/hwxfsleep.c |    2 +-
- 3 files changed, 29 insertions(+), 128 deletions(-)
+ drivers/acpi/acpica/evmisc.c   |   23 +++++++++++++----------
+ drivers/acpi/acpica/utdecode.c |   34 ++++++++++++++++++----------------
+ include/acpi/actypes.h         |    6 ++++--
+ 3 files changed, 35 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/acpi/acpica/achware.h b/drivers/acpi/acpica/achware.h
-index eed204a..d3f62a8 100644
---- a/drivers/acpi/acpica/achware.h
-+++ b/drivers/acpi/acpica/achware.h
-@@ -83,7 +83,7 @@ acpi_status acpi_hw_clear_acpi_status(void);
+diff --git a/drivers/acpi/acpica/evmisc.c b/drivers/acpi/acpica/evmisc.c
+index 0912f62..51ef9f5 100644
+--- a/drivers/acpi/acpica/evmisc.c
++++ b/drivers/acpi/acpica/evmisc.c
+@@ -108,27 +108,30 @@ acpi_ev_queue_notify_request(struct acpi_namespace_node * node,
+ 	ACPI_FUNCTION_NAME(ev_queue_notify_request);
+ 
+ 	/*
+-	 * For value 3 (Ejection Request), some device method may need to be run.
+-	 * For value 2 (Device Wake) if _PRW exists, the _PS0 method may need
+-	 *   to be run.
++	 * For value 0x03 (Ejection Request), may need to run a device method.
++	 * For value 0x02 (Device Wake), if _PRW exists, may need to run
++	 *   the _PS0 method.
+ 	 * For value 0x80 (Status Change) on the power button or sleep button,
+-	 *   initiate soft-off or sleep operation?
++	 *   initiate soft-off or sleep operation.
++	 *
++	 * For all cases, simply dispatch the notify to the handler.
+ 	 */
+ 	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-			  "Dispatching Notify on [%4.4s] Node %p Value 0x%2.2X (%s)\n",
+-			  acpi_ut_get_node_name(node), node, notify_value,
+-			  acpi_ut_get_notify_name(notify_value)));
++			  "Dispatching Notify on [%4.4s] (%s) Value 0x%2.2X (%s) Node %p\n",
++			  acpi_ut_get_node_name(node),
++			  acpi_ut_get_type_name(node->type), notify_value,
++			  acpi_ut_get_notify_name(notify_value), node));
+ 
+ 	/* Get the notify object attached to the NS Node */
+ 
+ 	obj_desc = acpi_ns_get_attached_object(node);
+ 	if (obj_desc) {
+ 
+-		/* We have the notify object, Get the right handler */
++		/* We have the notify object, Get the correct handler */
+ 
+ 		switch (node->type) {
+ 
+-			/* Notify allowed only on these types */
++			/* Notify is allowed only on these types */
+ 
+ 		case ACPI_TYPE_DEVICE:
+ 		case ACPI_TYPE_THERMAL:
+@@ -152,7 +155,7 @@ acpi_ev_queue_notify_request(struct acpi_namespace_node * node,
+ 	}
+ 
+ 	/*
+-	 * If there is any handler to run, schedule the dispatcher.
++	 * If there is a handler to run, schedule the dispatcher.
+ 	 * Check for:
+ 	 * 1) Global system notify handler
+ 	 * 2) Global device notify handler
+diff --git a/drivers/acpi/acpica/utdecode.c b/drivers/acpi/acpica/utdecode.c
+index d42ede52..6848499 100644
+--- a/drivers/acpi/acpica/utdecode.c
++++ b/drivers/acpi/acpica/utdecode.c
+@@ -497,19 +497,20 @@ char *acpi_ut_get_mutex_name(u32 mutex_id)
+ 
+ /* Names for Notify() values, used for debug output */
+ 
+-static const char *acpi_gbl_notify_value_names[] = {
+-	"Bus Check",
+-	"Device Check",
+-	"Device Wake",
+-	"Eject Request",
+-	"Device Check Light",
+-	"Frequency Mismatch",
+-	"Bus Mode Mismatch",
+-	"Power Fault",
+-	"Capabilities Check",
+-	"Device PLD Check",
+-	"Reserved",
+-	"System Locality Update"
++static const char *acpi_gbl_notify_value_names[ACPI_NOTIFY_MAX + 1] = {
++	/* 00 */ "Bus Check",
++	/* 01 */ "Device Check",
++	/* 02 */ "Device Wake",
++	/* 03 */ "Eject Request",
++	/* 04 */ "Device Check Light",
++	/* 05 */ "Frequency Mismatch",
++	/* 06 */ "Bus Mode Mismatch",
++	/* 07 */ "Power Fault",
++	/* 08 */ "Capabilities Check",
++	/* 09 */ "Device PLD Check",
++	/* 10 */ "Reserved",
++	/* 11 */ "System Locality Update",
++	/* 12 */ "Shutdown Request"
+ };
+ 
+ const char *acpi_ut_get_notify_name(u32 notify_value)
+@@ -519,9 +520,10 @@ const char *acpi_ut_get_notify_name(u32 notify_value)
+ 		return (acpi_gbl_notify_value_names[notify_value]);
+ 	} else if (notify_value <= ACPI_MAX_SYS_NOTIFY) {
+ 		return ("Reserved");
+-	} else {		/* Greater or equal to 0x80 */
+-
+-		return ("**Device Specific**");
++	} else if (notify_value <= ACPI_MAX_DEVICE_SPECIFIC_NOTIFY) {
++		return ("Device Specific");
++	} else {
++		return ("Hardware Specific");
+ 	}
+ }
+ #endif
+diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
+index d5dee7c..48c4d5f 100644
+--- a/include/acpi/actypes.h
++++ b/include/acpi/actypes.h
+@@ -532,8 +532,9 @@ typedef u64 acpi_integer;
+ #define ACPI_NOTIFY_DEVICE_PLD_CHECK    (u8) 0x09
+ #define ACPI_NOTIFY_RESERVED            (u8) 0x0A
+ #define ACPI_NOTIFY_LOCALITY_UPDATE     (u8) 0x0B
++#define ACPI_NOTIFY_SHUTDOWN_REQUEST    (u8) 0x0C
+ 
+-#define ACPI_NOTIFY_MAX                 0x0B
++#define ACPI_NOTIFY_MAX                 0x0C
+ 
  /*
-  * hwsleep - sleep/wake support
-  */
--void acpi_hw_execute_SST(u32 value);
-+void acpi_hw_execute_sleep_method(char *method_name, u32 integer_argument);
+  * Types associated with ACPI names and objects. The first group of
+@@ -698,7 +699,8 @@ typedef u32 acpi_event_status;
+ #define ACPI_ALL_NOTIFY                 (ACPI_SYSTEM_NOTIFY | ACPI_DEVICE_NOTIFY)
+ #define ACPI_MAX_NOTIFY_HANDLER_TYPE    0x3
  
- acpi_status acpi_hw_extended_sleep(u8 sleep_state);
+-#define ACPI_MAX_SYS_NOTIFY             0x7f
++#define ACPI_MAX_SYS_NOTIFY             0x7F
++#define ACPI_MAX_DEVICE_SPECIFIC_NOTIFY 0xBF
  
-diff --git a/drivers/acpi/acpica/hwsleep.c b/drivers/acpi/acpica/hwsleep.c
-index fa34147..abe65ff 100644
---- a/drivers/acpi/acpica/hwsleep.c
-+++ b/drivers/acpi/acpica/hwsleep.c
-@@ -49,13 +49,6 @@
- #define _COMPONENT          ACPI_HARDWARE
- ACPI_MODULE_NAME("hwsleep")
- 
--/* Local prototypes */
--static void acpi_hw_execute_GTS(u8 sleep_state);
--
--static void acpi_hw_execute_BFS(u8 sleep_state);
--
--static void acpi_hw_execute_WAK(u8 sleep_state);
--
- static unsigned int gts, bfs;
- module_param(gts, uint, 0644);
- module_param(bfs, uint, 0644);
-@@ -64,137 +57,45 @@ MODULE_PARM_DESC(bfs, "Enable evaluation of _BFS on resume".);
- 
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_hw_execute_GTS
-+ * FUNCTION:    acpi_hw_execute_sleep_method
-  *
-- * PARAMETERS:  sleep_state         - Sleep state that will be entered
-+ * PARAMETERS:  method_name         - Pathname of method to execute
-+ *              integer_argument    - Argument to pass to the method
-  *
-  * RETURN:      None
-  *
-- * DESCRIPTION: Execute the optional _GTS method (Going To Sleep)
-+ * DESCRIPTION: Execute a sleep/wake related method, with one integer argument
-+ *              and no return value.
-  *
-  ******************************************************************************/
--
--static void acpi_hw_execute_GTS(u8 sleep_state)
-+void acpi_hw_execute_sleep_method(char *method_name, u32 integer_argument)
- {
- 	struct acpi_object_list arg_list;
- 	union acpi_object arg;
- 	acpi_status status;
- 
--	if (!gts)
--		return;
-+	ACPI_FUNCTION_TRACE(hw_execute_sleep_method);
- 
--	/* One argument, sleep_state */
-+	if (!ACPI_STRCMP(METHOD_NAME__GTS, method_name) && !gts)
-+		return_VOID;
- 
--	arg_list.count = 1;
--	arg_list.pointer = &arg;
--	arg.type = ACPI_TYPE_INTEGER;
--	arg.integer.value = sleep_state;
-+	if (!ACPI_STRCMP(METHOD_NAME__BFS, method_name) && !bfs)
-+		return_VOID;
- 
--	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status,
--				"While executing method _GTS"));
--	}
--}
--
--/*******************************************************************************
-- *
-- * FUNCTION:    acpi_hw_execute_BFS
-- *
-- * PARAMETERS:  sleep_state         - Which sleep state we just exited
-- *
-- * RETURN:      None
-- *
-- * DESCRIPTION: Execute the optional _BFS method (Back From Sleep)
-- *
-- ******************************************************************************/
--
--static void acpi_hw_execute_BFS(u8 sleep_state)
--{
--	struct acpi_object_list arg_list;
--	union acpi_object arg;
--	acpi_status status;
--
--	if (!bfs)
--		return;
--
--	/* One argument, sleep_state */
-+	/* One argument, integer_argument */
- 
- 	arg_list.count = 1;
- 	arg_list.pointer = &arg;
- 	arg.type = ACPI_TYPE_INTEGER;
--	arg.integer.value = sleep_state;
-+	arg.integer.value = (u64)integer_argument;
- 
--	status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
-+	status = acpi_evaluate_object(NULL, method_name, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status,
--				"While executing method _BFS"));
-+		ACPI_EXCEPTION((AE_INFO, status, "While executing method %s",
-+				method_name));
- 	}
--}
- 
--/*******************************************************************************
-- *
-- * FUNCTION:    acpi_hw_execute_WAK
-- *
-- * PARAMETERS:  sleep_state         - Which sleep state we just exited
-- *
-- * RETURN:      None
-- *
-- * DESCRIPTION: Execute the _WAK method (System Wake)
-- *
-- ******************************************************************************/
--
--static void acpi_hw_execute_WAK(u8 sleep_state)
--{
--	struct acpi_object_list arg_list;
--	union acpi_object arg;
--	acpi_status status;
--
--	/* One argument, sleep_state */
--
--	arg_list.count = 1;
--	arg_list.pointer = &arg;
--	arg.type = ACPI_TYPE_INTEGER;
--	arg.integer.value = sleep_state;
--
--	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status,
--				"While executing method _WAK"));
--	}
--	/* TBD: _WAK "sometimes" returns stuff - do we want to look at it? */
--}
--
--/*******************************************************************************
-- *
-- * FUNCTION:    acpi_hw_execute_SST
-- *
-- * PARAMETERS:  indicator_id        - Value to be passed to the _SST method
-- *
-- * RETURN:      None
-- *
-- * DESCRIPTION: Execute the optional _SST method (System Status)
-- *
-- ******************************************************************************/
--
--void acpi_hw_execute_SST(u32 indicator_id)
--{
--	struct acpi_object_list arg_list;
--	union acpi_object arg;
--	acpi_status status;
--
--	/* One argument, status indicator ID */
--
--	arg_list.count = 1;
--	arg_list.pointer = &arg;
--	arg.type = ACPI_TYPE_INTEGER;
--
--	arg.integer.value = indicator_id;
--	status = acpi_evaluate_object(NULL, METHOD_NAME__SST, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status,
--				"While executing method _SST"));
--	}
-+	return_VOID;
- }
- 
- #if (!ACPI_REDUCED_HARDWARE)
-@@ -271,7 +172,7 @@ acpi_status acpi_hw_legacy_sleep(u8 sleep_state)
- 
- 	/* Execute the _GTS method (Going To Sleep) */
- 
--	acpi_hw_execute_GTS(sleep_state);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__GTS, sleep_state);
- 
- 	/* Get current value of PM1A control */
- 
-@@ -427,7 +328,7 @@ acpi_status acpi_hw_legacy_wake_prep(u8 sleep_state)
- 		}
- 	}
- 
--	acpi_hw_execute_BFS(sleep_state);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__BFS, sleep_state);
- 	return_ACPI_STATUS(status);
- }
- 
-@@ -453,7 +354,7 @@ acpi_status acpi_hw_legacy_wake(u8 sleep_state)
- 	/* Ensure enter_sleep_state_prep -> enter_sleep_state ordering */
- 
- 	acpi_gbl_sleep_type_a = ACPI_SLEEP_TYPE_INVALID;
--	acpi_hw_execute_SST(ACPI_SST_WAKING);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__SST, ACPI_SST_WAKING);
- 
- 	/*
- 	 * GPEs must be enabled before _WAK is called as GPEs
-@@ -477,7 +378,7 @@ acpi_status acpi_hw_legacy_wake(u8 sleep_state)
- 	 * Now we can execute _WAK, etc. Some machines require that the GPEs
- 	 * are enabled before the wake methods are executed.
- 	 */
--	acpi_hw_execute_WAK(sleep_state);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__WAK, sleep_state);
- 
- 	/*
- 	 * Some BIOS code assumes that WAK_STS will be cleared on resume
-@@ -509,7 +410,7 @@ acpi_status acpi_hw_legacy_wake(u8 sleep_state)
- 		return_ACPI_STATUS(status);
- 	}
- 
--	acpi_hw_execute_SST(ACPI_SST_WORKING);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__SST, ACPI_SST_WORKING);
- 	return_ACPI_STATUS(status);
- }
- 
-@@ -555,7 +456,7 @@ acpi_status acpi_hw_extended_sleep(u8 sleep_state)
- 
- 	/* Execute the _GTS method (Going To Sleep) */
- 
--	acpi_hw_execute_GTS(sleep_state);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__GTS, sleep_state);
- 
- 	/* Flush caches, as per ACPI specification */
- 
-@@ -625,7 +526,7 @@ acpi_status acpi_hw_extended_wake_prep(u8 sleep_state)
- 				 &acpi_gbl_FADT.sleep_control);
- 	}
- 
--	acpi_hw_execute_BFS(sleep_state);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__BFS, sleep_state);
- 	return_ACPI_STATUS(AE_OK);
- }
- 
-@@ -652,8 +553,8 @@ acpi_status acpi_hw_extended_wake(u8 sleep_state)
- 
- 	/* Execute the wake methods */
- 
--	acpi_hw_execute_SST(ACPI_SST_WAKING);
--	acpi_hw_execute_WAK(sleep_state);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__SST, ACPI_SST_WAKING);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__WAK, sleep_state);
- 
- 	/*
- 	 * Some BIOS code assumes that WAK_STS will be cleared on resume
-@@ -663,6 +564,6 @@ acpi_status acpi_hw_extended_wake(u8 sleep_state)
- 	(void)acpi_write(ACPI_X_WAKE_STATUS, &acpi_gbl_FADT.sleep_status);
- 	acpi_gbl_system_awake_and_running = TRUE;
- 
--	acpi_hw_execute_SST(ACPI_SST_WORKING);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__SST, ACPI_SST_WORKING);
- 	return_ACPI_STATUS(AE_OK);
- }
-diff --git a/drivers/acpi/acpica/hwxfsleep.c b/drivers/acpi/acpica/hwxfsleep.c
-index d599961..ff20558 100644
---- a/drivers/acpi/acpica/hwxfsleep.c
-+++ b/drivers/acpi/acpica/hwxfsleep.c
-@@ -261,7 +261,7 @@ acpi_status acpi_enter_sleep_state_prep(u8 sleep_state)
- 	 * Set the system indicators to show the desired sleep state.
- 	 * _SST is an optional method (return no error if not found)
- 	 */
--	acpi_hw_execute_SST(sst_value);
-+	acpi_hw_execute_sleep_method(METHOD_NAME__SST, sst_value);
- 	return_ACPI_STATUS(AE_OK);
- }
+ /* Address Space (Operation Region) Types */
  
 -- 
 1.7.10.rc2.19.gfae9d
-
