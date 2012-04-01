@@ -1,86 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [PATCH 46/76] ACPI: Introduce ACPI D3_COLD state support
-Date: Sun, 1 Apr 2012 08:53:33 +0200
-Message-ID: <201204010853.33667.rjw@sisk.pl>
-References: <1333102459-23750-1-git-send-email-lenb@kernel.org> <3ebc81b8937d2bc1d0d0064bed29434dfce490aa.1333101989.git.len.brown@intel.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 17/76] thermal_sys: convert printks to
+ pr_<level>
+Date: Sun, 1 Apr 2012 22:13:51 +0300
+Message-ID: <20120401191351.GA4010@besouro>
+References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
+	<c5a01dd52dc4903772f464ea580895ccc36e911d.1333101989.git.len.brown@intel.com>
+	<20120330134119.GA13130@besouro>
+	<1333134530.27601.2.camel@joe2Laptop>
+Reply-To: eduardo.valentin@ti.com
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <3ebc81b8937d2bc1d0d0064bed29434dfce490aa.1333101989.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@lists.linux-foundation.org, Len Brown <lenb@kernel.org>, Lin Ming <ming.m.lin@intel.com>
-Cc: linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <1333134530.27601.2.camel@joe2Laptop>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Joe Perches <joe@perches.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Jesper Juhl <jj@chaosbits.net>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, March 30, 2012, Len Brown wrote:
-> From: Zhang Rui <rui.zhang@intel.com>
+Hello Joe,
+
+On Fri, Mar 30, 2012 at 12:08:50PM -0700, Joe Perches wrote:
+> On Fri, 2012-03-30 at 16:41 +0300, Eduardo Valentin wrote:
+> > On Fri, Mar 30, 2012 at 06:13:20AM -0400, Len Brown wrote:
+> > > From: Joe Perches <joe@perches.com>
+> > > Use the current logging style.
+> []
+> > We should get the struct dev in thermal_zone_device, I think it makes
+> > more sense to use the dev_* helper functions.
+> []
+> > The orig argument could probably be changed to a thermal zone device
+> > and the we use it's id as orig for the message.
+> > What do you think?
 > 
-> If a device has _PR3, it means the device supports D3_COLD.
-> Add the ability to validate and enter D3_COLD state in ACPI.
+> dev_<level> should be used instead of pr_<level> when
+> an appropriate struct device * is available.
 
-This patch is wrong, IMO.
+Agreed that we need a struct device *. My comments are based on the fact
+that you have one of it inside the struct therma_zone_device, field device.
 
-Namely, _PR3 lists power resources that are supposed to be "on"
-in D3, which means that in that state the device is not completely
-off, so this must be D3_hot and not D3_cold.
+Isn't that struct device appropriated enough to be used by the dev_* functions?
 
-So. _PR3 means D3_hot is supported.  D3_cold, on the other hand,
-is always supported, although it may not be accessible through any
-direct software action (for example, it may be necessary to power
-down a bus to put devices on it into D3_cold).
-
-Thanks,
-Rafael
-
-
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  drivers/acpi/power.c |    4 ++--
->  drivers/acpi/scan.c  |    7 +++++++
->  2 files changed, 9 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
-> index 9ac2a9f..0d681fb 100644
-> --- a/drivers/acpi/power.c
-> +++ b/drivers/acpi/power.c
-> @@ -500,14 +500,14 @@ int acpi_power_transition(struct acpi_device *device, int state)
->  {
->  	int result;
->  
-> -	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3))
-> +	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
->  		return -EINVAL;
->  
->  	if (device->power.state == state)
->  		return 0;
->  
->  	if ((device->power.state < ACPI_STATE_D0)
-> -	    || (device->power.state > ACPI_STATE_D3))
-> +	    || (device->power.state > ACPI_STATE_D3_COLD))
->  		return -ENODEV;
->  
->  	/* TBD: Resources must be ordered. */
-> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-> index 8ab80ba..571396c 100644
-> --- a/drivers/acpi/scan.c
-> +++ b/drivers/acpi/scan.c
-> @@ -885,6 +885,13 @@ static int acpi_bus_get_power_flags(struct acpi_device *device)
->  				acpi_bus_add_power_resource(ps->resources.handles[j]);
->  		}
->  
-> +		/* The exist of _PR3 indicates D3Cold support */
-> +		if (i == ACPI_STATE_D3) {
-> +			status = acpi_get_handle(device->handle, object_name, &handle);
-> +			if (ACPI_SUCCESS(status))
-> +				device->power.states[ACPI_STATE_D3_COLD].flags.valid = 1;
-> +		}
-> +
->  		/* Evaluate "_PSx" to see if we can do explicit sets */
->  		object_name[2] = 'S';
->  		status = acpi_get_handle(device->handle, object_name, &handle);
+> cheers, Joe
 > 
 
+Cheers,
+
+Eduardo
