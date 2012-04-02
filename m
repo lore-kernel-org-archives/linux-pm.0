@@ -1,19 +1,11 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 17/76] thermal_sys: convert printks to
- pr_<level>
-Date: Sun, 1 Apr 2012 22:13:51 +0300
-Message-ID: <20120401191351.GA4010@besouro>
-References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-	<c5a01dd52dc4903772f464ea580895ccc36e911d.1333101989.git.len.brown@intel.com>
-	<20120330134119.GA13130@besouro>
-	<1333134530.27601.2.camel@joe2Laptop>
-Reply-To: eduardo.valentin@ti.com
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH][V2] cpuidle : use percpu cpuidle in the core code
+Date: Mon,  2 Apr 2012 14:48:48 +0200
+Message-ID: <1333370928-1930-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1333134530.27601.2.camel@joe2Laptop>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -23,37 +15,113 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Joe Perches <joe@perches.com>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Jesper Juhl <jj@chaosbits.net>, linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
+To: lenb@kernel.org
+Cc: linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, srivatsa.bhat@linux.vnet.ibm.com, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Joe,
+The usual cpuidle initialization routines are to register the
+driver, then register a cpuidle device per cpu.
 
-On Fri, Mar 30, 2012 at 12:08:50PM -0700, Joe Perches wrote:
-> On Fri, 2012-03-30 at 16:41 +0300, Eduardo Valentin wrote:
-> > On Fri, Mar 30, 2012 at 06:13:20AM -0400, Len Brown wrote:
-> > > From: Joe Perches <joe@perches.com>
-> > > Use the current logging style.
-> []
-> > We should get the struct dev in thermal_zone_device, I think it makes
-> > more sense to use the dev_* helper functions.
-> []
-> > The orig argument could probably be changed to a thermal zone device
-> > and the we use it's id as orig for the message.
-> > What do you think?
-> 
-> dev_<level> should be used instead of pr_<level> when
-> an appropriate struct device * is available.
+With the device's state count default initialization with the
+driver's state count, the code initialization remains mostly the
+same in the different drivers.
 
-Agreed that we need a struct device *. My comments are based on the fact
-that you have one of it inside the struct therma_zone_device, field device.
+We can then add a new function 'cpuidle_register' where we register
+the driver and the devices. These devices can be defined in a global
+static variable in cpuidle.c. We will be able to factor out and
+remove a lot of duplicate lines of code.
 
-Isn't that struct device appropriated enough to be used by the dev_* functions?
+As we still have some drivers, with different initialization routines,
+we keep 'cpuidle_register_driver' and 'cpuidle_register_device' as low
+level initialization routines to do some specific operations on the
+cpuidle devices.
 
-> 
-> cheers, Joe
-> 
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/cpuidle.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpuidle.h   |    3 +++
+ 2 files changed, 45 insertions(+), 0 deletions(-)
 
-Cheers,
-
-Eduardo
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 87411ce..151c55a 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -23,6 +23,7 @@
+ #include "cpuidle.h"
+ 
+ DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
++DEFINE_PER_CPU(struct cpuidle_device, cpuidle_device);
+ 
+ DEFINE_MUTEX(cpuidle_lock);
+ LIST_HEAD(cpuidle_detected_devices);
+@@ -419,6 +420,47 @@ int cpuidle_register_device(struct cpuidle_device *dev)
+ 
+ EXPORT_SYMBOL_GPL(cpuidle_register_device);
+ 
++/*
++ * cpuidle_register : register cpuidle driver and devices
++ * Note this function must be called after smp_init.
++ * @drv : the cpuidle driver
++ * Returns 0 on success, < 0 otherwise
++ */
++int cpuidle_register(struct cpuidle_driver *drv)
++{
++	int ret, cpu, i;
++	struct cpuidle_device *dev;
++
++	ret = cpuidle_register_driver(drv);
++	if (ret)
++		return ret;
++
++	for_each_online_cpu(cpu) {
++		dev = &per_cpu(cpuidle_device, cpu);
++		dev->cpu = cpu;
++
++		ret = cpuidle_register_device(dev);
++		if (ret)
++			goto out_unregister;
++	}
++
++out:
++	return ret;
++
++out_unregister:
++	for_each_online_cpu(i) {
++		if (i == cpu)
++			break;
++		dev = &per_cpu(cpuidle_device, cpu);
++		cpuidle_unregister_device(dev);
++	}
++
++	cpuidle_unregister_driver(drv);
++
++	goto out;
++}
++EXPORT_SYMBOL_GPL(cpuidle_register);
++
+ /**
+  * cpuidle_unregister_device - unregisters a CPU's idle PM feature
+  * @dev: the cpu
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 6c26a3d..3475294 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -135,6 +135,7 @@ struct cpuidle_driver {
+ #ifdef CONFIG_CPU_IDLE
+ extern void disable_cpuidle(void);
+ extern int cpuidle_idle_call(void);
++extern int cpuidle_register(struct cpuidle_driver *drv);
+ extern int cpuidle_register_driver(struct cpuidle_driver *drv);
+ struct cpuidle_driver *cpuidle_get_driver(void);
+ extern void cpuidle_unregister_driver(struct cpuidle_driver *drv);
+@@ -154,6 +155,8 @@ extern int cpuidle_play_dead(void);
+ #else
+ static inline void disable_cpuidle(void) { }
+ static inline int cpuidle_idle_call(void) { return -ENODEV; }
++static inline int cpuidle_register(struct cpuidle_driver *drv)
++{return -ENODEV; }
+ static inline int cpuidle_register_driver(struct cpuidle_driver *drv)
+ {return -ENODEV; }
+ static inline struct cpuidle_driver *cpuidle_get_driver(void) {return NULL; }
+-- 
+1.7.5.4
