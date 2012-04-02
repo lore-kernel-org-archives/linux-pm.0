@@ -1,14 +1,15 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH][V2] cpuidle : use percpu cpuidle in the core
 	code
-Date: Mon, 02 Apr 2012 18:51:48 +0530
-Message-ID: <4F79A7EC.5000003@linux.vnet.ibm.com>
+Date: Mon, 02 Apr 2012 15:46:05 +0200
+Message-ID: <4F79AD9D.9010603@linaro.org>
 References: <1333370928-1930-1-git-send-email-daniel.lezcano@linaro.org>
+	<4F79A7EC.5000003@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1333370928-1930-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <4F79A7EC.5000003@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,79 +19,46 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Cc: linux-pm@lists.linux-foundation.org, patches@linaro.org, linaro-dev@lists.linaro.org, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/02/2012 06:18 PM, Daniel Lezcano wrote:
-
-> The usual cpuidle initialization routines are to register the
-> driver, then register a cpuidle device per cpu.
-> 
-> With the device's state count default initialization with the
-> driver's state count, the code initialization remains mostly the
-> same in the different drivers.
-> 
-> We can then add a new function 'cpuidle_register' where we register
-> the driver and the devices. These devices can be defined in a global
-> static variable in cpuidle.c. We will be able to factor out and
-> remove a lot of duplicate lines of code.
-> 
-> As we still have some drivers, with different initialization routines,
-> we keep 'cpuidle_register_driver' and 'cpuidle_register_device' as low
-> level initialization routines to do some specific operations on the
-> cpuidle devices.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-> +/*
-> + * cpuidle_register : register cpuidle driver and devices
-> + * Note this function must be called after smp_init.
-> + * @drv : the cpuidle driver
-> + * Returns 0 on success, < 0 otherwise
-> + */
-> +int cpuidle_register(struct cpuidle_driver *drv)
-> +{
-> +	int ret, cpu, i;
-> +	struct cpuidle_device *dev;
-> +
-> +	ret = cpuidle_register_driver(drv);
-> +	if (ret)
-> +		return ret;
-> +
-> +	for_each_online_cpu(cpu) {
-> +		dev = &per_cpu(cpuidle_device, cpu);
-> +		dev->cpu = cpu;
-> +
-> +		ret = cpuidle_register_device(dev);
-> +		if (ret)
-> +			goto out_unregister;
-> +	}
-> +
-> +out:
-> +	return ret;
-> +
-> +out_unregister:
-> +	for_each_online_cpu(i) {
-> +		if (i == cpu)
-> +			break;
-> +		dev = &per_cpu(cpuidle_device, cpu);
-
-
-					       ^^^
-That must have been "i" instead of "cpu"...
-
-> +		cpuidle_unregister_device(dev);
-> +	}
-> +
-> +	cpuidle_unregister_driver(drv);
-> +
-> +	goto out;
-> +}
-> +EXPORT_SYMBOL_GPL(cpuidle_register);
-> +
-
-
-
-Regards,
-Srivatsa S. Bhat
+T24gMDQvMDIvMjAxMiAwMzoyMSBQTSwgU3JpdmF0c2EgUy4gQmhhdCB3cm90ZToKPiBPbiAwNC8w
+Mi8yMDEyIDA2OjE4IFBNLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPgo+PiBUaGUgdXN1YWwgY3B1
+aWRsZSBpbml0aWFsaXphdGlvbiByb3V0aW5lcyBhcmUgdG8gcmVnaXN0ZXIgdGhlCj4+IGRyaXZl
+ciwgdGhlbiByZWdpc3RlciBhIGNwdWlkbGUgZGV2aWNlIHBlciBjcHUuCj4+Cj4+IFdpdGggdGhl
+IGRldmljZSdzIHN0YXRlIGNvdW50IGRlZmF1bHQgaW5pdGlhbGl6YXRpb24gd2l0aCB0aGUKPj4g
+ZHJpdmVyJ3Mgc3RhdGUgY291bnQsIHRoZSBjb2RlIGluaXRpYWxpemF0aW9uIHJlbWFpbnMgbW9z
+dGx5IHRoZQo+PiBzYW1lIGluIHRoZSBkaWZmZXJlbnQgZHJpdmVycy4KPj4KPj4gV2UgY2FuIHRo
+ZW4gYWRkIGEgbmV3IGZ1bmN0aW9uICdjcHVpZGxlX3JlZ2lzdGVyJyB3aGVyZSB3ZSByZWdpc3Rl
+cgo+PiB0aGUgZHJpdmVyIGFuZCB0aGUgZGV2aWNlcy4gVGhlc2UgZGV2aWNlcyBjYW4gYmUgZGVm
+aW5lZCBpbiBhIGdsb2JhbAo+PiBzdGF0aWMgdmFyaWFibGUgaW4gY3B1aWRsZS5jLiBXZSB3aWxs
+IGJlIGFibGUgdG8gZmFjdG9yIG91dCBhbmQKPj4gcmVtb3ZlIGEgbG90IG9mIGR1cGxpY2F0ZSBs
+aW5lcyBvZiBjb2RlLgo+Pgo+PiBBcyB3ZSBzdGlsbCBoYXZlIHNvbWUgZHJpdmVycywgd2l0aCBk
+aWZmZXJlbnQgaW5pdGlhbGl6YXRpb24gcm91dGluZXMsCj4+IHdlIGtlZXAgJ2NwdWlkbGVfcmVn
+aXN0ZXJfZHJpdmVyJyBhbmQgJ2NwdWlkbGVfcmVnaXN0ZXJfZGV2aWNlJyBhcyBsb3cKPj4gbGV2
+ZWwgaW5pdGlhbGl6YXRpb24gcm91dGluZXMgdG8gZG8gc29tZSBzcGVjaWZpYyBvcGVyYXRpb25z
+IG9uIHRoZQo+PiBjcHVpZGxlIGRldmljZXMuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IERhbmllbCBM
+ZXpjYW5vPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+Cj4KPj4gKy8qCj4+ICsgKiBjcHVpZGxl
+X3JlZ2lzdGVyIDogcmVnaXN0ZXIgY3B1aWRsZSBkcml2ZXIgYW5kIGRldmljZXMKPj4gKyAqIE5v
+dGUgdGhpcyBmdW5jdGlvbiBtdXN0IGJlIGNhbGxlZCBhZnRlciBzbXBfaW5pdC4KPj4gKyAqIEBk
+cnYgOiB0aGUgY3B1aWRsZSBkcml2ZXIKPj4gKyAqIFJldHVybnMgMCBvbiBzdWNjZXNzLDwgIDAg
+b3RoZXJ3aXNlCj4+ICsgKi8KPj4gK2ludCBjcHVpZGxlX3JlZ2lzdGVyKHN0cnVjdCBjcHVpZGxl
+X2RyaXZlciAqZHJ2KQo+PiArewo+PiArCWludCByZXQsIGNwdSwgaTsKPj4gKwlzdHJ1Y3QgY3B1
+aWRsZV9kZXZpY2UgKmRldjsKPj4gKwo+PiArCXJldCA9IGNwdWlkbGVfcmVnaXN0ZXJfZHJpdmVy
+KGRydik7Cj4+ICsJaWYgKHJldCkKPj4gKwkJcmV0dXJuIHJldDsKPj4gKwo+PiArCWZvcl9lYWNo
+X29ubGluZV9jcHUoY3B1KSB7Cj4+ICsJCWRldiA9JnBlcl9jcHUoY3B1aWRsZV9kZXZpY2UsIGNw
+dSk7Cj4+ICsJCWRldi0+Y3B1ID0gY3B1Owo+PiArCj4+ICsJCXJldCA9IGNwdWlkbGVfcmVnaXN0
+ZXJfZGV2aWNlKGRldik7Cj4+ICsJCWlmIChyZXQpCj4+ICsJCQlnb3RvIG91dF91bnJlZ2lzdGVy
+Owo+PiArCX0KPj4gKwo+PiArb3V0Ogo+PiArCXJldHVybiByZXQ7Cj4+ICsKPj4gK291dF91bnJl
+Z2lzdGVyOgo+PiArCWZvcl9lYWNoX29ubGluZV9jcHUoaSkgewo+PiArCQlpZiAoaSA9PSBjcHUp
+Cj4+ICsJCQlicmVhazsKPj4gKwkJZGV2ID0mcGVyX2NwdShjcHVpZGxlX2RldmljZSwgY3B1KTsK
+Pgo+Cj4gCQkJCQleXl4KPiBUaGF0IG11c3QgaGF2ZSBiZWVuICJpIiBpbnN0ZWFkIG9mICJjcHUi
+Li4uCgpPb3BzLCByaWdodCAhIEdvb2QgY2F0Y2guCgpUaGFua3MKCiAgIC0tIERhbmllbAoKCgot
+LSAKICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ug
+c29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJv
+b2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xp
+bmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBC
+bG9nCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
+eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
+cHM6Ly9saXN0cy5saW51eGZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
