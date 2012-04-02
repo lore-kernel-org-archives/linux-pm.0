@@ -1,64 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH][V2] cpuidle : use percpu cpuidle in the core
-	code
-Date: Mon, 02 Apr 2012 15:46:05 +0200
-Message-ID: <4F79AD9D.9010603@linaro.org>
-References: <1333370928-1930-1-git-send-email-daniel.lezcano@linaro.org>
-	<4F79A7EC.5000003@linux.vnet.ibm.com>
+From: Tony Luck <tony.luck@gmail.com>
+Subject: Re: [PATCH 58/76] idle, x86: Allow off-lined CPU to enter deeper C states
+Date: Mon, 2 Apr 2012 09:13:46 -0700
+Message-ID: <CA+8MBbLROfbyfAGZ0xn1tZVHsndeTUNrn=-gHhsfzkocBLh=iQ@mail.gmail.com>
+References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
+	<1333102459-23750-1-git-send-email-lenb@kernel.org>
+	<1a022e3f1be11730bd8747b1af96a0274bf6356e.1333101989.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4F79A7EC.5000003@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: linux-pm@lists.linux-foundation.org, patches@linaro.org, linaro-dev@lists.linaro.org, amit.kucheria@linaro.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1a022e3f1be11730bd8747b1af96a0274bf6356e.1333101989.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@amd.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDQvMDIvMjAxMiAwMzoyMSBQTSwgU3JpdmF0c2EgUy4gQmhhdCB3cm90ZToKPiBPbiAwNC8w
-Mi8yMDEyIDA2OjE4IFBNLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPgo+PiBUaGUgdXN1YWwgY3B1
-aWRsZSBpbml0aWFsaXphdGlvbiByb3V0aW5lcyBhcmUgdG8gcmVnaXN0ZXIgdGhlCj4+IGRyaXZl
-ciwgdGhlbiByZWdpc3RlciBhIGNwdWlkbGUgZGV2aWNlIHBlciBjcHUuCj4+Cj4+IFdpdGggdGhl
-IGRldmljZSdzIHN0YXRlIGNvdW50IGRlZmF1bHQgaW5pdGlhbGl6YXRpb24gd2l0aCB0aGUKPj4g
-ZHJpdmVyJ3Mgc3RhdGUgY291bnQsIHRoZSBjb2RlIGluaXRpYWxpemF0aW9uIHJlbWFpbnMgbW9z
-dGx5IHRoZQo+PiBzYW1lIGluIHRoZSBkaWZmZXJlbnQgZHJpdmVycy4KPj4KPj4gV2UgY2FuIHRo
-ZW4gYWRkIGEgbmV3IGZ1bmN0aW9uICdjcHVpZGxlX3JlZ2lzdGVyJyB3aGVyZSB3ZSByZWdpc3Rl
-cgo+PiB0aGUgZHJpdmVyIGFuZCB0aGUgZGV2aWNlcy4gVGhlc2UgZGV2aWNlcyBjYW4gYmUgZGVm
-aW5lZCBpbiBhIGdsb2JhbAo+PiBzdGF0aWMgdmFyaWFibGUgaW4gY3B1aWRsZS5jLiBXZSB3aWxs
-IGJlIGFibGUgdG8gZmFjdG9yIG91dCBhbmQKPj4gcmVtb3ZlIGEgbG90IG9mIGR1cGxpY2F0ZSBs
-aW5lcyBvZiBjb2RlLgo+Pgo+PiBBcyB3ZSBzdGlsbCBoYXZlIHNvbWUgZHJpdmVycywgd2l0aCBk
-aWZmZXJlbnQgaW5pdGlhbGl6YXRpb24gcm91dGluZXMsCj4+IHdlIGtlZXAgJ2NwdWlkbGVfcmVn
-aXN0ZXJfZHJpdmVyJyBhbmQgJ2NwdWlkbGVfcmVnaXN0ZXJfZGV2aWNlJyBhcyBsb3cKPj4gbGV2
-ZWwgaW5pdGlhbGl6YXRpb24gcm91dGluZXMgdG8gZG8gc29tZSBzcGVjaWZpYyBvcGVyYXRpb25z
-IG9uIHRoZQo+PiBjcHVpZGxlIGRldmljZXMuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IERhbmllbCBM
-ZXpjYW5vPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+Cj4KPj4gKy8qCj4+ICsgKiBjcHVpZGxl
-X3JlZ2lzdGVyIDogcmVnaXN0ZXIgY3B1aWRsZSBkcml2ZXIgYW5kIGRldmljZXMKPj4gKyAqIE5v
-dGUgdGhpcyBmdW5jdGlvbiBtdXN0IGJlIGNhbGxlZCBhZnRlciBzbXBfaW5pdC4KPj4gKyAqIEBk
-cnYgOiB0aGUgY3B1aWRsZSBkcml2ZXIKPj4gKyAqIFJldHVybnMgMCBvbiBzdWNjZXNzLDwgIDAg
-b3RoZXJ3aXNlCj4+ICsgKi8KPj4gK2ludCBjcHVpZGxlX3JlZ2lzdGVyKHN0cnVjdCBjcHVpZGxl
-X2RyaXZlciAqZHJ2KQo+PiArewo+PiArCWludCByZXQsIGNwdSwgaTsKPj4gKwlzdHJ1Y3QgY3B1
-aWRsZV9kZXZpY2UgKmRldjsKPj4gKwo+PiArCXJldCA9IGNwdWlkbGVfcmVnaXN0ZXJfZHJpdmVy
-KGRydik7Cj4+ICsJaWYgKHJldCkKPj4gKwkJcmV0dXJuIHJldDsKPj4gKwo+PiArCWZvcl9lYWNo
-X29ubGluZV9jcHUoY3B1KSB7Cj4+ICsJCWRldiA9JnBlcl9jcHUoY3B1aWRsZV9kZXZpY2UsIGNw
-dSk7Cj4+ICsJCWRldi0+Y3B1ID0gY3B1Owo+PiArCj4+ICsJCXJldCA9IGNwdWlkbGVfcmVnaXN0
-ZXJfZGV2aWNlKGRldik7Cj4+ICsJCWlmIChyZXQpCj4+ICsJCQlnb3RvIG91dF91bnJlZ2lzdGVy
-Owo+PiArCX0KPj4gKwo+PiArb3V0Ogo+PiArCXJldHVybiByZXQ7Cj4+ICsKPj4gK291dF91bnJl
-Z2lzdGVyOgo+PiArCWZvcl9lYWNoX29ubGluZV9jcHUoaSkgewo+PiArCQlpZiAoaSA9PSBjcHUp
-Cj4+ICsJCQlicmVhazsKPj4gKwkJZGV2ID0mcGVyX2NwdShjcHVpZGxlX2RldmljZSwgY3B1KTsK
-Pgo+Cj4gCQkJCQleXl4KPiBUaGF0IG11c3QgaGF2ZSBiZWVuICJpIiBpbnN0ZWFkIG9mICJjcHUi
-Li4uCgpPb3BzLCByaWdodCAhIEdvb2QgY2F0Y2guCgpUaGFua3MKCiAgIC0tIERhbmllbAoKCgot
-LSAKICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ug
-c29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJv
-b2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xp
-bmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBC
-bG9nCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51
-eC1wbSBtYWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0
-cHM6Ly9saXN0cy5saW51eGZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On Fri, Mar 30, 2012 at 3:14 AM, Len Brown <lenb@kernel.org> wrote:
+> From: Boris Ostrovsky <boris.ostrovsky@amd.com>
+
+This bit breaks ia64 build:
+
+> +
+> +/**
+> + * acpi_idle_play_dead - enters an ACPI state for long-term idle (i.=
+e. off-lining)
+> + * @dev: the target CPU
+> + * @index: the index of suggested state
+> + */
+> +static int acpi_idle_play_dead(struct cpuidle_device *dev, int index=
+)
+> +{
+> + =A0 =A0 =A0 struct cpuidle_state_usage *state_usage =3D &dev->state=
+s_usage[index];
+> + =A0 =A0 =A0 struct acpi_processor_cx *cx =3D cpuidle_get_statedata(=
+state_usage);
+> +
+> + =A0 =A0 =A0 ACPI_FLUSH_CPU_CACHE();
+> +
+> + =A0 =A0 =A0 while (1) {
+> +
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (cx->entry_method =3D=3D ACPI_CSTATE=
+_HALT)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 halt();
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 else if (cx->entry_method =3D=3D ACPI_C=
+STATE_SYSTEMIO) {
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 inb(cx->address);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* See comment in acpi_=
+idle_do_entry() */
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 inl(acpi_gbl_FADT.xpm_t=
+imer_block.address);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;
+> + =A0 =A0 =A0 }
+
+drivers/acpi/processor_idle.c: In function 'acpi_idle_play_dead':
+drivers/acpi/processor_idle.c:789: error: implicit declaration of
+function 'halt'
+
+So the initial compiler complaint is just about "halt()" - but those "i=
+nb()" and
+"inl()" parts don't look very ia64 compatible either.
+
+-Tony
