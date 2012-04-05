@@ -1,77 +1,121 @@
-From: Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: [3.0.y, 3.2.y,
- 3.3.y] Re: [PATCH 04/76] ACPICA: Fix regression in FADT revision
- checks
-Date: Wed, 4 Apr 2012 11:58:56 -0700
-Message-ID: <20120404185856.GA2272@kroah.com>
-References: <09f98a825a821f7a3f1b162f9ed023f37213a63b.1333101989.git.len.brown@intel.com>
-	<1333102459-23750-1-git-send-email-lenb@kernel.org>
-	<3e80acd1af40fcd91a200b0416a7616b20c5d647.1333101989.git.len.brown@intel.com>
-	<CA+5PVA4EBdoxgSrYKYRnaO2qSXDP_rxeQEogD+6jkKPi8sQB-g@mail.gmail.com>
-	<20120403195804.GA19239@burratino>
-	<CA+5PVA58jN8S9efACB==o5Z9frEOxVN__wo9yYU6ErQcsKyj8w@mail.gmail.com>
+From: Chuanxiao Dong <chuanxiao.dong@intel.com>
+Subject: [PATCH V2]mmc: remove MMC bus legacy suspend/resume method
+Date: Thu, 5 Apr 2012 15:51:18 +0800
+Message-ID: <20120405075118.GA29395@intel.com>
+Reply-To: Chuanxiao Dong <chuanxiao.dong@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-mmc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CA+5PVA58jN8S9efACB==o5Z9frEOxVN__wo9yYU6ErQcsKyj8w@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Josh Boyer <jwboyer@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Jonathan Nieder <jrnieder@gmail.com>, linux-acpi@vger.kernel.org, Julian Anastasov <ja@ssi.bg>, linux-pm@lists.linux-foundation.org, wzab@ise.pw.edu.pl
+Sender: linux-mmc-owner@vger.kernel.org
+To: linux-mmc@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: rjw@sisk.pl
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 03, 2012 at 04:15:32PM -0400, Josh Boyer wrote:
-> On Tue, Apr 3, 2012 at 3:58 PM, Jonathan Nieder <jrnieder@gmail.com> wrot=
-e:
-> > Hi Greg,
-> >
-> > Josh Boyer wrote:
-> >> On Fri, Mar 30, 2012 at 6:13 AM, Len Brown <lenb@kernel.org> wrote:
-> >
-> >>> From: Julian Anastasov <ja@ssi.bg>
-> >>>
-> >>> =A0 =A0 =A0 =A0commit 64b3db22c04586997ab4be46dd5a5b99f8a2d390 (2.6.3=
-9),
-> >>> "Remove use of unreliable FADT revision field" causes regression
-> >>> for old P4 systems because now cst_control and other fields are
-> >>> not reset to 0.
-> > [...]
-> >>> =A0 =A0 =A0 =A0The fix is to update acpi_gbl_FADT.header.length after
-> >>> the original value is used to check for old revisions.
-> >>>
-> >>> https://bugzilla.kernel.org/show_bug.cgi?id=3D42700
-> >>> https://bugzilla.redhat.com/show_bug.cgi?id=3D727865
-> >>>
-> >>> Signed-off-by: Julian Anastasov <ja@ssi.bg>
-> >>> Acked-by: Bob Moore <robert.moore@intel.com>
-> >>> Signed-off-by: Len Brown <len.brown@intel.com>
-> >>
-> >> This one should go into the stable trees.
-> >
-> > Please apply
-> >
-> > =A03e80acd1af40 "ACPICA: Fix regression in FADT revision checks"
-> >
-> > which is in linus's master to the 3.0.y, 3.2.y, and 3.3.y series to
-> > fix this old boot problem. =A0(Many affected people disabled HT in the
-> > BIOS to work around it in the meantime.)
-> >
-> > WZab (cc-ed) has tested that the patch addresses the problem when
-> > applied to the 3.2.y and 3.3.y branches. =A0[1] has details.
-> =
+MMC bus is using legacy suspend/resume method, which is not compatible if
+runtime pm callbacks are used. In this scenario, MMC bus suspend/resume
+callbacks cannot be called when system entering S3. So change to use the new
+defined dev_pm_ops for system sleeping mode
 
-> We've had this applied in Fedora on 3.2 and 3.3 for a while now as
-> well.
+Signed-off-by: Chuanxiao Dong <chuanxiao.dong@intel.com>
+---
+Changes in v2:
+	use SET_SYSTEM_SLEEP_PM_OPS to define sleep callbacks as Rafael
+	suggested
 
-Wonderful, now queued up, thanks for letting me know.
+ drivers/mmc/card/block.c |    2 +-
+ drivers/mmc/core/bus.c   |   26 ++++++++++++--------------
+ include/linux/mmc/card.h |    2 +-
+ 3 files changed, 14 insertions(+), 16 deletions(-)
 
-greg k-h
+diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
+index f2020d3..3582c03 100644
+--- a/drivers/mmc/card/block.c
++++ b/drivers/mmc/card/block.c
+@@ -1826,7 +1826,7 @@ static void mmc_blk_remove(struct mmc_card *card)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int mmc_blk_suspend(struct mmc_card *card, pm_message_t state)
++static int mmc_blk_suspend(struct mmc_card *card)
+ {
+ 	struct mmc_blk_data *part_md;
+ 	struct mmc_blk_data *md = mmc_get_drvdata(card);
+diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+index 5d011a3..d44f0d9 100644
+--- a/drivers/mmc/core/bus.c
++++ b/drivers/mmc/core/bus.c
+@@ -122,14 +122,14 @@ static int mmc_bus_remove(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int mmc_bus_suspend(struct device *dev, pm_message_t state)
++static int mmc_bus_suspend(struct device *dev)
+ {
+ 	struct mmc_driver *drv = to_mmc_driver(dev->driver);
+ 	struct mmc_card *card = mmc_dev_to_card(dev);
+ 	int ret = 0;
+ 
+ 	if (dev->driver && drv->suspend)
+-		ret = drv->suspend(card, state);
++		ret = drv->suspend(card);
+ 	return ret;
+ }
+ 
+@@ -165,20 +165,20 @@ static int mmc_runtime_idle(struct device *dev)
+ 	return pm_runtime_suspend(dev);
+ }
+ 
+-static const struct dev_pm_ops mmc_bus_pm_ops = {
+-	.runtime_suspend	= mmc_runtime_suspend,
+-	.runtime_resume		= mmc_runtime_resume,
+-	.runtime_idle		= mmc_runtime_idle,
+-};
+-
+-#define MMC_PM_OPS_PTR	(&mmc_bus_pm_ops)
+-
+ #else /* !CONFIG_PM_RUNTIME */
+ 
+-#define MMC_PM_OPS_PTR	NULL
++#define mmc_runtime_suspend	NULL
++#define mmc_runtime_resume	NULL
++#define mmc_runtime_idle	NULL
+ 
+ #endif /* !CONFIG_PM_RUNTIME */
+ 
++static const struct dev_pm_ops mmc_bus_pm_ops = {
++	SET_RUNTIME_PM_OPS(mmc_runtime_suspend, mmc_runtime_resume,
++			mmc_runtime_idle)
++	SET_SYSTEM_SLEEP_PM_OPS(mmc_bus_suspend, mmc_bus_resume)
++};
++
+ static struct bus_type mmc_bus_type = {
+ 	.name		= "mmc",
+ 	.dev_attrs	= mmc_dev_attrs,
+@@ -186,9 +186,7 @@ static struct bus_type mmc_bus_type = {
+ 	.uevent		= mmc_bus_uevent,
+ 	.probe		= mmc_bus_probe,
+ 	.remove		= mmc_bus_remove,
+-	.suspend	= mmc_bus_suspend,
+-	.resume		= mmc_bus_resume,
+-	.pm		= MMC_PM_OPS_PTR,
++	.pm		= &mmc_bus_pm_ops,
+ };
+ 
+ int mmc_register_bus(void)
+diff --git a/include/linux/mmc/card.h b/include/linux/mmc/card.h
+index 1a1ca71..c984c9a 100644
+--- a/include/linux/mmc/card.h
++++ b/include/linux/mmc/card.h
+@@ -480,7 +480,7 @@ struct mmc_driver {
+ 	struct device_driver drv;
+ 	int (*probe)(struct mmc_card *);
+ 	void (*remove)(struct mmc_card *);
+-	int (*suspend)(struct mmc_card *, pm_message_t);
++	int (*suspend)(struct mmc_card *);
+ 	int (*resume)(struct mmc_card *);
+ };
+ 
+-- 
+1.7.1
+
