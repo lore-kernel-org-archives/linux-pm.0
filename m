@@ -1,81 +1,39 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] Runtime PM for host controllers
-Date: Mon, 9 Apr 2012 10:14:06 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1204091007350.1429-100000@iolanthe.rowland.org>
-References: <CAJiQ=7D8QbV45euE1VN0ENpCMUESMMgeUr6gKwK3g+8-PUyTcQ@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH V2]mmc: remove MMC bus legacy suspend/resume method
+Date: Mon, 9 Apr 2012 23:07:23 +0200
+Message-ID: <CACRpkdaS8f3KT+f1oPXiRhSoxwVOL5s69mMZCz__6WvtfKY=Ag@mail.gmail.com>
+References: <20120405075118.GA29395@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJiQ=7D8QbV45euE1VN0ENpCMUESMMgeUr6gKwK3g+8-PUyTcQ@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Cernekee <cernekee@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <20120405075118.GA29395@intel.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Chuanxiao Dong <chuanxiao.dong@intel.com>
+Cc: linux-mmc@vger.kernel.org, linux-pm@lists.linux-foundation.org, rjw@sisk.pl
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 8 Apr 2012, Kevin Cernekee wrote:
+On Thu, Apr 5, 2012 at 9:51 AM, Chuanxiao Dong <chuanxiao.dong@intel.co=
+m> wrote:
 
-> In embedded applications, there are a number of situations in which it
-> is useful to completely disable a host controller in order to conserve
-> power.  Some typical scenarios include:
+> MMC bus is using legacy suspend/resume method, which is not compatibl=
+e if
+> runtime pm callbacks are used. In this scenario, MMC bus suspend/resu=
+me
+> callbacks cannot be called when system entering S3. So change to use =
+the new
+> defined dev_pm_ops for system sleeping mode
+>
+> Signed-off-by: Chuanxiao Dong <chuanxiao.dong@intel.com>
+> ---
+> Changes in v2:
+> =A0 =A0 =A0 =A0use SET_SYSTEM_SLEEP_PM_OPS to define sleep callbacks =
+as Rafael
+> =A0 =A0 =A0 =A0suggested
 
-<SNIP>
+This looks so much more sane.
 
-> Looking through Linus' head of tree, I see:
-> 
-> USB runtime PM seems to focus on the individual USB devices, and does
-> not allow for dynamically suspending the entire host controller
-> AFAICT.
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-That is not correct.  USB host controllers _can_ be suspended.  (Not 
-all of them; many of the platform drivers don't implement controller 
-suspend.  But some of them do, and almost all of the PCI-based drivers 
-do.)
-
-> USB used to allow writing "suspend" to the power/control file, but
-> that no longer seems to be the case as of 2.6.32.
-
-Correct.
-
->  In general I don't
-> see any facility where the application can explicitly tell the PM core
-> to suspend a device (incurring a potential loss of functionality, such
-> as hot plug/unplug detection).
-
-Right; there is no way to do this.  The OS will suspend a device only 
-when it believes it is safe to do so.
-
-<SNIP>
-
-> So, my questions are:
-> 
-> a) Is SATA/USB/MMC host controller suspension something that can be
-> accomplished within the existing runtime PM framework?
-
-Not only _can_ it be accomplished, it already _has_ been accomplished 
-(for USB at least, I'm not familiar with the others).
-
-> b) If not, what is the best way to modify the runtime PM framework so
-> that it can support these use cases?
-
-No changes to the framework are needed.  If a subsystem or driver
-doesn't support runtime suspend then support has to be added at the 
-subsystem or driver level.
-
-> c) Is this something you would even want in mainline?
-
-Yes.  People are already working on this stuff.
-
-> d) Or should I just go back to using "rmmod"?
-
-I don't see how rmmod will save any power.
-
-Alan Stern
+Yours,
+Linus Walleij
