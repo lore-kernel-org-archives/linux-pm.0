@@ -1,73 +1,79 @@
-From: Kevin Cernekee <cernekee@gmail.com>
-Subject: Re: [RFC] Runtime PM for host controllers
-Date: Mon, 9 Apr 2012 14:14:57 -0700
-Message-ID: <CAJiQ=7CVzOpRdKWMzLwtYznjOno-GQjOZ8Jm7EiEzs9icWwnHw@mail.gmail.com>
-References: <CAJiQ=7D8QbV45euE1VN0ENpCMUESMMgeUr6gKwK3g+8-PUyTcQ@mail.gmail.com>
-	<Pine.LNX.4.44L0.1204091007350.1429-100000@iolanthe.rowland.org>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [linux-pm] [PATCHv2 0/5] coupled cpuidle state support
+Date: Mon, 09 Apr 2012 16:35:40 -0700
+Message-ID: <87mx6k7a2b.fsf@ti.com>
+References: <1331749794-8056-1-git-send-email-ccross@android.com>
+ <CAMbhsRQAw2+as13NVvWkh7ojyRs+jNpFist2gmiiEY52U=o84A@mail.gmail.com>
+ <4F75ACCA.4090009@ti.com> <4F828BAB.5010302@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1204091007350.1429-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm@lists.linux-foundation.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <4F828BAB.5010302@ti.com> (Santosh Shilimkar's message of "Mon,
+ 09 Apr 2012 12:41:39 +0530")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Rob Lee <rob.lee@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 9, 2012 at 7:14 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
->> USB runtime PM seems to focus on the individual USB devices, and does
->> not allow for dynamically suspending the entire host controller
->> AFAICT.
+Santosh Shilimkar <santosh.shilimkar@ti.com> writes:
+
+> On Friday 30 March 2012 06:23 PM, Santosh Shilimkar wrote:
+>> Colin,
+>> 
+>> On Friday 16 March 2012 05:07 AM, Colin Cross wrote:
+>>> On Wed, Mar 14, 2012 at 11:29 AM, Colin Cross <ccross@android.com> wrote:
+>> 
+>> [...]
+>> 
+>>>>
+>>>> v2:
+>>>>   * removed the coupled lock, replacing it with atomic counters
+>>>>   * added a check for outstanding pokes before beginning the
+>>>>     final transition to avoid extra wakeups
+>>>>   * made the cpuidle_coupled struct completely private
+>>>>   * fixed kerneldoc comment formatting
+>>>>   * added a patch with a helper function for resynchronizing
+>>>>     cpus after aborting idle
+>>>>   * added a patch (not for merging) to add trace events for
+>>>>     verification and performance testing
+>>>
+>>> I forgot to mention, this patch series is on v3.3-rc7, and will
+>>> conflict with the cpuidle timekeeping patches.  If those go in first
+>>> (which is likely), I will rework this series on top of it.  I left it
+>>> on v3.3-rc7 now to make testing easier.
+>> 
+>> I have re-based your series against Len Browns
+>> next branch [1] which has time keeping and other cpuidle patches.
+>> Have also folded the CPU hotplug fix which I posted in the
+>> original coupled idle patch.
+>> 
+> As you know, we have been playing around this series for OMAP
+> for last few weeks. This version series seems to work as intended
+> and found it pretty stable in my testing. Apart from the cpu
+> hotplug fix and the trace event comment, series looks fine
+> to me.
 >
-> That is not correct.  USB host controllers _can_ be suspended.  (Not
-> all of them; many of the platform drivers don't implement controller
-> suspend.  But some of them do, and almost all of the PCI-based drivers
-> do.)
+> FWIW,
+> Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>	
 
-I am not clear on what is actually happening at the chip level in these cases?
+Also
 
-i.e. is the entire USB core getting clock gated or power gated, such
-that it is completely non-responsive to register accesses or device
-hotplug?  Or is the driver just shutting down a few tiny pieces of the
-hardware?
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Kevin Hilman <khilman@ti.com>
 
-Is there a way to initiate USB runtime suspend on the host controller
-even if there are devices plugged into the downstream ports?
+as I've been working with Santosh on getting this stabilized on OMAP and
+we are very keen to see this functionality merged.
 
->>  In general I don't
->> see any facility where the application can explicitly tell the PM core
->> to suspend a device (incurring a potential loss of functionality, such
->> as hot plug/unplug detection).
->
-> Right; there is no way to do this.  The OS will suspend a device only
-> when it believes it is safe to do so.
+Thanks,
 
-Assuming that somebody is able to come up with a satisfactory
-implementation, are you open to allowing a "user-initiated suspend"
-mode, in addition to "opportunistic suspend"?
-
->> d) Or should I just go back to using "rmmod"?
->
-> I don't see how rmmod will save any power.
-
-rmmod allows me to forcibly shut down the controller, cleanly (in
-theory) disconnecting any active devices and preventing the kernel
-from touching the registers.
-
-After rmmod, I can then tell the SoC to put the whole core into an
-unresponsive, low power state.
-
-This is not a very clean way of doing things, so I would prefer to use
-runtime PM if at all possible.  But I don't think my hardware is
-designed in a way that is compatible with "opportunistic suspend."
-
-
-Thanks.
+Kevin
