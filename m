@@ -1,127 +1,101 @@
-From: Chuanxiao Dong <chuanxiao.dong@intel.com>
-Subject: [PATCH V3]mmc: remove MMC bus legacy suspend/resume method
-Date: Tue, 10 Apr 2012 22:07:21 +0800
-Message-ID: <20120410140721.GA15362@intel.com>
-Reply-To: Chuanxiao Dong <chuanxiao.dong@intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Runtime PM for host controllers
+Date: Tue, 10 Apr 2012 10:15:40 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1204100949390.1605-100000@iolanthe.rowland.org>
+References: <CAJiQ=7CVzOpRdKWMzLwtYznjOno-GQjOZ8Jm7EiEzs9icWwnHw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-mmc-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-mmc-owner@vger.kernel.org
-To: linux-mmc@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: cjb@laptop.org, linus.walleij@linaro.org, ulf.hansson@stericsson.com, rjw@sisk.pl
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAJiQ=7CVzOpRdKWMzLwtYznjOno-GQjOZ8Jm7EiEzs9icWwnHw@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Kevin Cernekee <cernekee@gmail.com>
+Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-MMC bus is using legacy suspend/resume method, which is not compatible if
-runtime pm callbacks are used. In this scenario, MMC bus suspend/resume
-callbacks cannot be called when system entering S3. So change to use the new
-defined dev_pm_ops for system sleeping mode
+On Mon, 9 Apr 2012, Kevin Cernekee wrote:
 
-Signed-off-by: Chuanxiao Dong <chuanxiao.dong@intel.com>
----
-Changes in v2:
-	use SET_SYSTEM_SLEEP_PM_OPS to define sleep callbacks as Rafael
-	suggested
+> On Mon, Apr 9, 2012 at 7:14 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> >> USB runtime PM seems to focus on the individual USB devices, and does
+> >> not allow for dynamically suspending the entire host controller
+> >> AFAICT.
+> >
+> > That is not correct.  USB host controllers _can_ be suspended.  (Not
+> > all of them; many of the platform drivers don't implement controller
+> > suspend.  But some of them do, and almost all of the PCI-based drivers
+> > do.)
+> 
+> I am not clear on what is actually happening at the chip level in these cases?
+> 
+> i.e. is the entire USB core getting clock gated or power gated, such
+> that it is completely non-responsive to register accesses or device
+> hotplug?  Or is the driver just shutting down a few tiny pieces of the
+> hardware?
 
-Changes in v3:
-	remove NULL pointer define for runtime callbacks when PM_RUNTIME is not
-	selected, as Ulf Hansson suggested
+The entire controller goes into a low-power mode.  For example, a PCI 
+controller would go into D3hot.  The hardware is no longer responsive 
+to register accesses, but it can generate a wakeup signal in response 
+to device hotplug.
 
- drivers/mmc/card/block.c |    2 +-
- drivers/mmc/core/bus.c   |   24 ++++++------------------
- include/linux/mmc/card.h |    2 +-
- 3 files changed, 8 insertions(+), 20 deletions(-)
+> Is there a way to initiate USB runtime suspend on the host controller
+> even if there are devices plugged into the downstream ports?
 
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index f2020d3..3582c03 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -1826,7 +1826,7 @@ static void mmc_blk_remove(struct mmc_card *card)
- }
- 
- #ifdef CONFIG_PM
--static int mmc_blk_suspend(struct mmc_card *card, pm_message_t state)
-+static int mmc_blk_suspend(struct mmc_card *card)
- {
- 	struct mmc_blk_data *part_md;
- 	struct mmc_blk_data *md = mmc_get_drvdata(card);
-diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
-index 5d011a3..1996c9b 100644
---- a/drivers/mmc/core/bus.c
-+++ b/drivers/mmc/core/bus.c
-@@ -122,14 +122,14 @@ static int mmc_bus_remove(struct device *dev)
- 	return 0;
- }
- 
--static int mmc_bus_suspend(struct device *dev, pm_message_t state)
-+static int mmc_bus_suspend(struct device *dev)
- {
- 	struct mmc_driver *drv = to_mmc_driver(dev->driver);
- 	struct mmc_card *card = mmc_dev_to_card(dev);
- 	int ret = 0;
- 
- 	if (dev->driver && drv->suspend)
--		ret = drv->suspend(card, state);
-+		ret = drv->suspend(card);
- 	return ret;
- }
- 
-@@ -144,8 +144,6 @@ static int mmc_bus_resume(struct device *dev)
- 	return ret;
- }
- 
--#ifdef CONFIG_PM_RUNTIME
--
- static int mmc_runtime_suspend(struct device *dev)
- {
- 	struct mmc_card *card = mmc_dev_to_card(dev);
-@@ -166,19 +164,11 @@ static int mmc_runtime_idle(struct device *dev)
- }
- 
- static const struct dev_pm_ops mmc_bus_pm_ops = {
--	.runtime_suspend	= mmc_runtime_suspend,
--	.runtime_resume		= mmc_runtime_resume,
--	.runtime_idle		= mmc_runtime_idle,
-+	SET_RUNTIME_PM_OPS(mmc_runtime_suspend, mmc_runtime_resume,
-+			mmc_runtime_idle)
-+	SET_SYSTEM_SLEEP_PM_OPS(mmc_bus_suspend, mmc_bus_resume)
- };
- 
--#define MMC_PM_OPS_PTR	(&mmc_bus_pm_ops)
--
--#else /* !CONFIG_PM_RUNTIME */
--
--#define MMC_PM_OPS_PTR	NULL
--
--#endif /* !CONFIG_PM_RUNTIME */
--
- static struct bus_type mmc_bus_type = {
- 	.name		= "mmc",
- 	.dev_attrs	= mmc_dev_attrs,
-@@ -186,9 +176,7 @@ static struct bus_type mmc_bus_type = {
- 	.uevent		= mmc_bus_uevent,
- 	.probe		= mmc_bus_probe,
- 	.remove		= mmc_bus_remove,
--	.suspend	= mmc_bus_suspend,
--	.resume		= mmc_bus_resume,
--	.pm		= MMC_PM_OPS_PTR,
-+	.pm		= &mmc_bus_pm_ops,
- };
- 
- int mmc_register_bus(void)
-diff --git a/include/linux/mmc/card.h b/include/linux/mmc/card.h
-index 1a1ca71..c984c9a 100644
---- a/include/linux/mmc/card.h
-+++ b/include/linux/mmc/card.h
-@@ -480,7 +480,7 @@ struct mmc_driver {
- 	struct device_driver drv;
- 	int (*probe)(struct mmc_card *);
- 	void (*remove)(struct mmc_card *);
--	int (*suspend)(struct mmc_card *, pm_message_t);
-+	int (*suspend)(struct mmc_card *);
- 	int (*resume)(struct mmc_card *);
- };
- 
--- 
-1.7.1
+Yes, provided all those devices are themselves already suspended.
 
+> >>  In general I don't
+> >> see any facility where the application can explicitly tell the PM core
+> >> to suspend a device (incurring a potential loss of functionality, such
+> >> as hot plug/unplug detection).
+> >
+> > Right; there is no way to do this.  The OS will suspend a device only
+> > when it believes it is safe to do so.
+> 
+> Assuming that somebody is able to come up with a satisfactory
+> implementation, are you open to allowing a "user-initiated suspend"
+> mode, in addition to "opportunistic suspend"?
+
+I'm not sure what you are asking.  If "use-initiated suspend"  
+involves loss of functionality (such as loss of hotplug/unplug
+detection) then no, it is generally not acceptable -- although the
+final decision rests with the subsystem's maintainer.  If it does not
+involve any such loss then no "user-initiated suspend" should be
+needed, because the existing runtime suspend methods will do the job.
+
+On the other hand, if you really want to suspend a device and don't
+care about using it, then unbinding it from its driver is a good start.  
+For USB devices, that alone will cause the device to be suspended.  
+For PCI devices (such as host controllers), unfortunately, it isn't
+sufficient -- the PCI subsystem doesn't allow driverless devices to be
+suspended.  Perhaps the same is true of the platform subsystem; I'm not
+sure.
+
+If you'd like to work on a method of allowing driverless PCI or
+platform devices to be runtime-suspended, that would be okay.  It 
+probably wouldn't be very hard to do.
+
+> >> d) Or should I just go back to using "rmmod"?
+> >
+> > I don't see how rmmod will save any power.
+> 
+> rmmod allows me to forcibly shut down the controller, cleanly (in
+> theory) disconnecting any active devices and preventing the kernel
+> from touching the registers.
+> 
+> After rmmod, I can then tell the SoC to put the whole core into an
+> unresponsive, low power state.
+> 
+> This is not a very clean way of doing things, so I would prefer to use
+> runtime PM if at all possible.  But I don't think my hardware is
+> designed in a way that is compatible with "opportunistic suspend."
+
+In what way is it incompatible?
+
+Alan Stern
