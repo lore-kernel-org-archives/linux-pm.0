@@ -1,84 +1,75 @@
-From: Andrey Rahmatullin <wrar@wrar.name>
-Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
-Date: Thu, 12 Apr 2012 02:52:04 +0600
-Message-ID: <20120411205204.GB3677@belkar.wrar.name>
-References: <Pine.LNX.4.44L0.1204111324100.1351-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.44L0.1204111429510.1351-100000@iolanthe.rowland.org>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Wed, 11 Apr 2012 17:13:51 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1204111703180.1351-100000@iolanthe.rowland.org>
+References: <1334177035.23924.299.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8285303724542861156=="
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1204111429510.1351-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: jrnieder@gmail.com, greg@kroah.com, linux-pm@lists.linux-foundation.org, linux-usb@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1334177035.23924.299.camel-f9ZlEuEWxVcI6MkJdU+c8EEOCMrvLtNR@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>, Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>
+Cc: jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 11 Apr 2012, Steven Rostedt wrote:
 
---===============8285303724542861156==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="i9LlY+UWpKt15+FH"
-Content-Disposition: inline
+> On Wed, 2012-04-11 at 15:12 -0400, Alan Stern wrote:
+> 
+> > If so, setting the value back to 0 before suspending (or never setting 
+> > it to 1 in the first place) might be important.  You can test this 
+> > easily enough.  In drivers/usb/host/ehci-pci.c:ehci_pci_suspend(), add 
+> > a line saying
+> > 
+> > 	ehci_writel(ehci, 0, &ehci->regs->configured_flag);
+> > 
+> > just before the spin_lock_irqrestore.  This will invalidate the
+> > driver's criterion for determining whether or not the controller's
+> > state got messed up during the suspend; we can worry about that later.
+> 
+> I just tried the above, and it made no difference. Note, I don't even
+> get to suspend. It locks up in suspend, so I haven't even tried a resume
+> yet.
 
+What do you mean, you don't get to suspend?  Is that a typo?
 
---i9LlY+UWpKt15+FH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If the system locks up during the suspend procedure, it must do so
+after this code runs.  I know that because it runs during the "devices"  
+phase of suspending, and you said that "echo devices
+>/sys/power/pm_test" works.
 
-On Wed, Apr 11, 2012 at 03:12:13PM -0400, Alan Stern wrote:
-> You can try getting rid of the call to pci_prepare_to_sleep in=20
-> drivers/usb/core/hcd-pci.c:hcd_pci_suspend_noirq.  This will prevent=20
-> the controller from being put into D3hot and might interfere with=20
-> wakeup detection.
->=20
-> I don't know how sigificant the difference is between
-> pci_disable_device and pci_disable_enabled_device.  Probably not very,=20
-> since all it involves is whether or not to disable bus-mastering on the=
-=20
-> controller.
-I replaced the hcd_pci_suspend_noirq call with retval=3D0 and suspend/resume
-was successful.
+> > You can try getting rid of the call to pci_prepare_to_sleep in 
+> > drivers/usb/core/hcd-pci.c:hcd_pci_suspend_noirq.  This will prevent 
+> > the controller from being put into D3hot and might interfere with 
+> > wakeup detection.
+> > 
+> 
+> What do I do with the retval? -EIO, 0, or other?
 
---=20
-WBR, wRAR
-
---i9LlY+UWpKt15+FH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPhe70AAoJEDNi9wMaSZLhy40P/iWX/TEMe99596pbVrdb37NH
-EAv+AthFn9yjd0kviBgFApRz2k0EgZj9wE0HcnBhNPazOwRzpcqY7bpmGu6r0mDi
-zAJCx6hOgM4B2qjKvVo4stDt/WGjsYa6CfwXBoZyI4NacNjW0ERmT02oAFQjdZJv
-j+ZtHAd/ZwlXMPnma4zUL9h+WT/ukWUsdkyYdMWIc6Us7NsKk9bu+D7wqbB2pao9
-02ywN+aYhETxgt/k79qiMJH0WKSmwRktsuaCQTR0cObE3RURlMALe8tIrkRbbmsH
-38shIgpfk+/+/MPYyg4wWQE+XGrwWCXU/s175hdwIsBxQFdJCt6HyePaexctGbBP
-mZhyRcbOd/qtY9XXQgWCIZVeOLlBFWZHzEB0NkhPHdlrV7wAe7dgvIUbga54Mxpw
-LZFc71hp75D5TEaXdNEbGkc66wAZOU3xiUZZwAW/fsDL0k7wrmmwKkeetnn9xxeG
-TNNFCxERfGCLWWFHWt6M5ecKvly1kwugMElIQ+nAhICmEHEHt3Ku9ZY/uuXItItx
-SEvTGUvdFz2xz9uWKVUSFKnKlT9rRW6BhxSsicZwW5D72zgfV1Mrm4KuOGYQxJxB
-f8NMk+mqxffK/DTjpIZOLpxU54pdljJUhRswsfwU9vhnTwxgRUkIlcltqC3TIHKg
-2563IL6/A/EXJLwQsO5y
-=yTVr
------END PGP SIGNATURE-----
-
---i9LlY+UWpKt15+FH--
-
---===============8285303724542861156==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+0 or -EIO, either one.
 
 
---===============8285303724542861156==--
+On Thu, 12 Apr 2012, Andrey Rahmatullin wrote:
+
+> I replaced the hcd_pci_suspend_noirq call with retval=0 and suspend/resume
+> was successful.
+ 
+This indicates that your computer doesn't like to suspend while the
+EHCI controllers are in D3hot.  I have no idea why not.
+
+If you want a really thorough test, try changing 
+drivers/pci/pci-driver.c:pci_pm_suspend_noirq.  In the "if (!pm)" 
+clause, add a call to
+
+	pci_prepare_to_sleep(pci_dev);
+
+just after the pci_save_state line.  Then try suspending with the 
+script enabled (ehci-hcd unbound from the controllers).  If this fails 
+then we'll know it is the source of the trouble.
+
+Alan Stern
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
