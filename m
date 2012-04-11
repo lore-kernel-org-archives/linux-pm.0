@@ -1,46 +1,59 @@
-From: Chris Ball <cjb@laptop.org>
-Subject: Re: [PATCH V4]mmc: remove MMC bus legacy suspend/resume method
-Date: Wed, 11 Apr 2012 10:44:47 -0400
-Message-ID: <87y5q2s4yo.fsf@laptop.org>
-References: <20120411115438.GA303@intel.com> <4F858A25.20302@stericsson.com>
+From: Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>
+Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Wed, 11 Apr 2012 13:06:53 -0400
+Message-ID: <1334164013.23924.271.camel@gandalf.stny.rr.com>
+References: <20120411165531.GA3717@belkar.wrar.name>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <4F858A25.20302@stericsson.com> (Ulf Hansson's message of "Wed,
-	11 Apr 2012 15:41:57 +0200")
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@stericsson.com>
-Cc: Chuanxiao Dong <chuanxiao.dong@intel.com>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20120411165531.GA3717-hAV9HEAGFNe6YibBOCjzsw@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>
+Cc: linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, 2012-04-11 at 22:55 +0600, Andrey Rahmatullin wrote:
+> On many ASUS laptops and probably on some non-ASUS ones you need to unload
+> ehci_hcd or unbind both USB controllers from it before entering S3, else
+> the system will lockup. Here are some links:
+> 
+> http://thread.gmane.org/gmane.linux.kernel/1222803
+> https://bugzilla.kernel.org/show_bug.cgi?id=37632
+> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=658778
+> http://ubuntuforums.org/showthread.php?t=1444822
+> 
+> This still happens on my K53E on v3.4-rc2-16-ga9e1e53.
+> 
+> Unbinding just one of two controllers doesn't help.
+> 
+> Disabling /sys/bus/pci/devices/0000:00:1[ad].0/power/wakeup doesn't help.
+> echo mem>/sys/power/state doesn't hang with 'core' in /sys/power/pm_test,
+> only with 'none'.
+> 
+> Windows 7 enters S3 perfectly well.
+> 
+> I didn't see any other suggestions how to debug this. I can provide any
+> debug data if that will help. This seems to be a very important problem
+> for owners of certain devices.
+> 
 
-On Wed, Apr 11 2012, Ulf Hansson wrote:
-> On 04/11/2012 01:54 PM, Chuanxiao Dong wrote:
->> MMC bus is using legacy suspend/resume method, which is not compatible if
->> runtime pm callbacks are used. In this scenario, MMC bus suspend/resume
->> callbacks cannot be called when system entering S3. So change to use the new
->> defined dev_pm_ops for system sleeping mode
->>
->> Signed-off-by: Chuanxiao Dong<chuanxiao.dong@intel.com>
->> ---
->> Changes in v2:
->> 	use SET_SYSTEM_SLEEP_PM_OPS to define sleep callbacks as Rafael
->> 	suggested
->>
->> Changes in v3:
->> 	remove NULL pointer define for runtime callbacks when PM_RUNTIME is not
->> 	selected, as Ulf Hansson suggested
->>
->> Changes in v4:
->> 	fix the warning when disable CONFIG_PM_RUNTIME
->>
->
-> Looks good to me! Acked-by: Ulf Hansson <ulf.hansson@stericsson.com>
+Yeah, I never got a real fix. I'm still using the script that removes
+the driver and adds it back during the suspend/resume sequence. That
+seems to be a working work-around for me.
 
-Thanks!  Pushed to mmc-next for 3.4.
+That said, I would love to have this fixed for real. Not just for me,
+but for anyone else that is suffering from the same issue. I'm a kernel
+developer and can easily include work arounds like this. But for anyone
+else, this is a total fail for Linux in general.
 
-- Chris.
--- 
-Chris Ball   <cjb@laptop.org>   <http://printf.net/>
-One Laptop Per Child
+I'm willing to test fixes, as the issue still exists for my laptop if I
+remove the script.
+
+-- Steve
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
