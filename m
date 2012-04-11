@@ -1,92 +1,89 @@
-From: Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>
-Subject: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again
-Date: Wed, 11 Apr 2012 17:19:25 -0400
-Message-ID: <1334179165.23924.311.camel@gandalf.stny.rr.com>
-References: <Pine.LNX.4.44L0.1204111703180.1351-100000@iolanthe.rowland.org>
+From: Andrey Rahmatullin <wrar@wrar.name>
+Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Thu, 12 Apr 2012 04:09:44 +0600
+Message-ID: <20120411220944.GC3677@belkar.wrar.name>
+References: <1334177035.23924.299.camel@gandalf.stny.rr.com>
+	<Pine.LNX.4.44L0.1204111703180.1351-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <Pine.LNX.4.44L0.1204111703180.1351-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>, jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============6257655862861496996=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1204111703180.1351-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: jrnieder@gmail.com, Greg KH <greg@kroah.com>, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2012-04-11 at 17:13 -0400, Alan Stern wrote:
-> On Wed, 11 Apr 2012, Steven Rostedt wrote:
-> 
-> > On Wed, 2012-04-11 at 15:12 -0400, Alan Stern wrote:
-> > 
-> > > If so, setting the value back to 0 before suspending (or never setting 
-> > > it to 1 in the first place) might be important.  You can test this 
-> > > easily enough.  In drivers/usb/host/ehci-pci.c:ehci_pci_suspend(), add 
-> > > a line saying
-> > > 
-> > > 	ehci_writel(ehci, 0, &ehci->regs->configured_flag);
-> > > 
-> > > just before the spin_lock_irqrestore.  This will invalidate the
-> > > driver's criterion for determining whether or not the controller's
-> > > state got messed up during the suspend; we can worry about that later.
-> > 
-> > I just tried the above, and it made no difference. Note, I don't even
-> > get to suspend. It locks up in suspend, so I haven't even tried a resume
-> > yet.
-> 
-> What do you mean, you don't get to suspend?  Is that a typo?
 
-I mean, as I hit suspend, the screen goes blank, but the backlight stays
-on, and the system just hangs there. It never gets to the point where
-the machine is in "suspend" mode. I have to press and hold the power
-button to force a shutdown.
+--===============6257655862861496996==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="69pVuxX8awAiJ7fD"
+Content-Disposition: inline
 
-> 
-> If the system locks up during the suspend procedure, it must do so
-> after this code runs.  I know that because it runs during the "devices"  
-> phase of suspending, and you said that "echo devices
-> >/sys/power/pm_test" works.
-> 
-> > > You can try getting rid of the call to pci_prepare_to_sleep in 
-> > > drivers/usb/core/hcd-pci.c:hcd_pci_suspend_noirq.  This will prevent 
-> > > the controller from being put into D3hot and might interfere with 
-> > > wakeup detection.
-> > > 
-> > 
-> > What do I do with the retval? -EIO, 0, or other?
-> 
-> 0 or -EIO, either one.
 
-I set it to 0 and it worked! (was able to suspend and resume)
+--69pVuxX8awAiJ7fD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> 
-> On Thu, 12 Apr 2012, Andrey Rahmatullin wrote:
-> 
-> > I replaced the hcd_pci_suspend_noirq call with retval=0 and suspend/resume
+On Wed, Apr 11, 2012 at 05:13:51PM -0400, Alan Stern wrote:
+> > I replaced the hcd_pci_suspend_noirq call with retval=3D0 and suspend/r=
+esume
 > > was successful.
->  
+> =20
 > This indicates that your computer doesn't like to suspend while the
 > EHCI controllers are in D3hot.  I have no idea why not.
-> 
-> If you want a really thorough test, try changing 
-> drivers/pci/pci-driver.c:pci_pm_suspend_noirq.  In the "if (!pm)" 
+>=20
+> If you want a really thorough test, try changing=20
+> drivers/pci/pci-driver.c:pci_pm_suspend_noirq.  In the "if (!pm)"=20
 > clause, add a call to
-> 
+>=20
 > 	pci_prepare_to_sleep(pci_dev);
-> 
-> just after the pci_save_state line.  Then try suspending with the 
-> script enabled (ehci-hcd unbound from the controllers).  If this fails 
+>=20
+> just after the pci_save_state line.  Then try suspending with the=20
+> script enabled (ehci-hcd unbound from the controllers).  If this fails=20
 > then we'll know it is the source of the trouble.
+Looks like it works even with this line added.
 
-I have to go for a few hours, but I can try this when I get back. Even
-if Andrey does it first. I'll verify it it too.
+--=20
+WBR, wRAR
 
-Thanks Alan and Andrey!
+--69pVuxX8awAiJ7fD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
--- Steve
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPhgEoAAoJEDNi9wMaSZLhkvAP/RgW1Cha019RXRRoNXYZQRRz
+MbqmwbvDOSOo3Edjh89FZpynTY0k0fcehpTLlGkWfttFqSJ9RVT8u9eIs0atTmPP
+nIIBjOa3BXS26Pys+ZoI6tn6P/gEV++/QYAm9nvLl5jggeNofJoUQd44FqCssjYN
+IKTV7tRIk7kc2rmXei0TZ18mjqYhjCAIpFX6PLcumkQUSLkFGUzyUXY+R95020WQ
+VytSkd6pKeFoYfAB5dsBiT4M7ezb5Rvk6vOKxB7zzSuzyNjZZxYXkR3g+d2UdYk8
+SEbB90LrKYqDb37hqMrqaEoXLk2i0Nb+5hDTVKgZeCAY0gyONaxbM2+7rASgB+aw
+alsPYBn7zUUGlL/IwUsTKrOwJnSNbQij2g9zWNv7Mlkir82VNjawsn4uHqMJqJum
+A1OuJAFixVp+3ivVe8U11WPNv3abi9EgYOhnjfYos9ZWZT8sT8w9500qJdvTo+Ll
+tSzbha7FVdN1kYbwNlUQgkYxtHRrATJCyZNolDXDyWjKJIe6df5S5WMxND6rforJ
+x8Q8RhgOVrBWL6zmDBrf2awhkLIQ04yeIOSJHEl2TJp73+mO2R9Eq/R1oNM9NIFa
+Iw4g5wSPQiV1R9t8p5g9cxfmzsdVnZK5718uBEsVQIiibj5QQ9ffccr5RW52tYUD
+ZwluwNiWA3vXUh2nXHUl
+=q3Vl
+-----END PGP SIGNATURE-----
+
+--69pVuxX8awAiJ7fD--
+
+--===============6257655862861496996==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--===============6257655862861496996==--
