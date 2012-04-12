@@ -1,77 +1,61 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
-Date: Thu, 12 Apr 2012 15:11:42 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1204121504550.1496-100000@iolanthe.rowland.org>
+From: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>
+Subject: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Fri, 13 Apr 2012 01:24:06 +0600
+Message-ID: <20120412192406.GG12852@belkar.wrar.name>
 References: <1334255150.23924.342.camel@gandalf.stny.rr.com>
+ <Pine.LNX.4.44L0.1204121504550.1496-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1334255150.23924.342.camel@gandalf.stny.rr.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: jrnieder@gmail.com, Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>, Andrey Rahmatullin <wrar@wrar.name>, linux-pm@lists.linux-foundation.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="HKEL+t8MFpg/ASTE"
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1204121504550.1496-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 12 Apr 2012, Steven Rostedt wrote:
 
-> On Thu, 2012-04-12 at 14:17 -0400, Steven Rostedt wrote:
-> 
-> > And I forgot that the echo isn't enough, and I need to do a pm-suspend
-> > too ;-)
-> > 
-> > # dmesg | grep target
-> > [ 8829.427534] atl1c 0000:04:00.0: target 3 wakeup 0 error 0
-> > [ 8829.443524] xhci_hcd 0000:03:00.0: target 3 wakeup 1 error 0
-> > [ 8829.459506] iwlwifi 0000:02:00.0: target 3 wakeup 0 error 0
-> > [ 8829.459560] pci 0000:00:1f.3: target 0 wakeup 0 error 0
-> > [ 8829.459607] pci 0000:00:1f.0: target 0 wakeup 0 error 0
-> > [ 8829.475458] ehci_hcd 0000:00:1d.0: target 3 wakeup 1 error 0
-> > [ 8829.491433] ehci_hcd 0000:00:1a.0: target 3 wakeup 1 error 0
-> > [ 8829.507416] pci 0000:00:16.0: target 3 wakeup 0 error 0
-> > 
-> 
-> The above was without the script, with the script:
-> 
-> # dmesg | grep target
-> [ 8829.427534] atl1c 0000:04:00.0: target 3 wakeup 0 error 0
-> [ 8829.443524] xhci_hcd 0000:03:00.0: target 3 wakeup 1 error 0
-> [ 8829.459506] iwlwifi 0000:02:00.0: target 3 wakeup 0 error 0
-> [ 8829.459560] pci 0000:00:1f.3: target 0 wakeup 0 error 0
-> [ 8829.459607] pci 0000:00:1f.0: target 0 wakeup 0 error 0
-> [ 8829.475458] ehci_hcd 0000:00:1d.0: target 3 wakeup 1 error 0
-> [ 8829.491433] ehci_hcd 0000:00:1a.0: target 3 wakeup 1 error 0
-> [ 8829.507416] pci 0000:00:16.0: target 3 wakeup 0 error 0
+--HKEL+t8MFpg/ASTE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The entries above are left over from the earlier test.
+On Thu, Apr 12, 2012 at 03:11:42PM -0400, Alan Stern wrote:
+> Here's another rather drastic test you can do.  In=20
+> drivers/usb/host/ehci-pci.c:ehci_pci_suspend(), call ehci_reset(ehci)=20
+> just before the final return statement.  That should leave the hardware=
+=20
+> in exactly the same state as if ehci-hcd had been unbound.
+What should we do with that? I tried to suspend and it locked up.
 
-> [ 9419.750158] atl1c 0000:04:00.0: target 3 wakeup 0 error 0
-> [ 9419.766134] pci 0000:03:00.0: target 3 wakeup 1 error 0
-> [ 9419.782126] iwlwifi 0000:02:00.0: target 3 wakeup 0 error 0
-> [ 9419.782181] pci 0000:00:1f.3: target 0 wakeup 0 error 0
-> [ 9419.782230] pci 0000:00:1f.0: target 0 wakeup 0 error 0
-> [ 9419.798087] pci 0000:00:1d.0: target 3 wakeup 1 error 0
-> [ 9419.814064] pci 0000:00:1a.0: target 3 wakeup 1 error 0
-> [ 9419.830031] pci 0000:00:16.0: target 3 wakeup 0 error 0
+--=20
+WBR, wRAR
 
-Evidently the script unbinds xhci-hcd too.  Did you check to make
-sure it is unrelated to the suspend problem?
+--HKEL+t8MFpg/ASTE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Anyway, this shows that the EHCI controllers are being set to the same 
-power state with the same wakeup settings in both cases.  And yet one 
-hangs the computer while the other doesn't.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-Here's another rather drastic test you can do.  In 
-drivers/usb/host/ehci-pci.c:ehci_pci_suspend(), call ehci_reset(ehci) 
-just before the final return statement.  That should leave the hardware 
-in exactly the same state as if ehci-hcd had been unbound.
+iQIcBAEBCAAGBQJPhyvWAAoJEDNi9wMaSZLh/3YP/3Z9Y2Z/B84iBnFLy/oXTOuq
+wCUyMErhBMK9B6McPUhBADOzqyzIkJZmBzfMcsXApkGOR4IEFPYzBVh/+eBkoQ6M
+ViAj2isuf7jlb56q9ILAHUVOd/71VPD2Q+xud1yMXnT45Hme1WyXlboTygrC7i19
+ZDfr65K99wLS0BEs6zvhM6iKLVtZeLz940U/Q65Bf0H1g7EDvuX0Yu56yczsE8QR
+CzMGW7MgErsBs3+fR7EWX+vryn7nT+qZK9JxCY7lo76dkGRCI0dxBiLJ9Vtw8ws9
+XZTjU924Ju9gfXN0vR+I5CjhKjqJXWkvwpKAK4PvgFZlbcS1giFXON4XD6AWUcGt
+ox6NHAa5vt7iEISM10Sxc4n5E7/uK9JR0nG3FKcsuXvCd7E4Y7R6ikDxWAbVlIJn
+hQydkXbP20oiOAHN5SUCGy2M3xOMyeqWzvPJFFIFiS4+eWZG3jLsunRa4aZaAbO6
+Ula6pX2/3S8vtynqymRuIPVWUynTOIrpz6m8Ipat01oA1WVtHXq+VzTJJPFbsW5x
+ZjW7SJB5woqJzJhG/h3zWibvE5UodG0Xb62eNWEDb8TDEINbdhm1+aIqK9P42HWF
+dtSAeuesHlXY6IXnG3mgPX7IXKlw9mP4RfhHlVmfwO3v/e+9vq1D8f15Y1e6Fpvh
+6HmUehZnXfkxeUgdkce0
+=iqzW
+-----END PGP SIGNATURE-----
 
-Alan Stern
+--HKEL+t8MFpg/ASTE--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
