@@ -1,13 +1,13 @@
 From: Andrey Rahmatullin <wrar@wrar.name>
 Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
-Date: Fri, 13 Apr 2012 02:21:32 +0600
-Message-ID: <20120412202132.GH12852@belkar.wrar.name>
-References: <Pine.LNX.4.44L0.1204121554320.1496-100000@iolanthe.rowland.org>
-	<Pine.LNX.4.44L0.1204121607520.1496-100000@iolanthe.rowland.org>
+Date: Fri, 13 Apr 2012 02:30:42 +0600
+Message-ID: <20120412203042.GI12852@belkar.wrar.name>
+References: <1334259347.23924.345.camel@gandalf.stny.rr.com>
+	<Pine.LNX.4.44L0.1204121554320.1496-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3087099276291811553=="
+Content-Type: multipart/mixed; boundary="===============9102172400510731116=="
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1204121607520.1496-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1204121554320.1496-100000@iolanthe.rowland.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -22,61 +22,73 @@ Cc: jrnieder@gmail.com, Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kerne
 List-Id: linux-pm@vger.kernel.org
 
 
---===============3087099276291811553==
+--===============9102172400510731116==
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="poemUeGtc2GQvHuH"
+	protocol="application/pgp-signature"; boundary="zgY/UHCnsaNnNXRx"
 Content-Disposition: inline
 
 
---poemUeGtc2GQvHuH
+--zgY/UHCnsaNnNXRx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 12, 2012 at 04:09:43PM -0400, Alan Stern wrote:
-> > Do this with the ehci_reset added and all the other changes present as=
-=20
-> > well.
+On Thu, Apr 12, 2012 at 04:02:26PM -0400, Alan Stern wrote:
+> Asumming you get the same result as Andrey, that the computer still
+> hangs even with the ehci_reset() call, there's one more thing for the=20
+> two of you to try.
 >=20
-> More precisely, keep the ehci_reset call (in both places),
-Which both places?
-
-> the dev_info call, and the pci_prepare_to_sleep call.  You don't need to
-> set the configflag register to 0; the reset will do that anyway.
-
+> I noted before that with ehci-hcd bound, it would call=20
+> pci_disable_device.  But with the driver unbound, the PCI core calls=20
+> pci_disable_enabled_device instead.
+>=20
+> So let's have the driver do the same thing.  At the end of
+> drivers/usb/core/hcd-pci.c:suspend_common, change pci_disable_device to
+> pci_disable_enabled_device.  You'll also have to EXPORT that routine;
+> it's defined in drivers/pci/pci.c.
+>=20
+> Do this with the ehci_reset added and all the other changes present as=20
+> well.  Then there should be no difference at all between the two=20
+> scenarios.
+With
+- pci_prepare_to_sleep in pci_pm_suspend_noirq
+- pci_disable_enabled_device instead of pci_disable_device in
+  suspend_common
+- ehci_reset at the end of ehci_pci_suspend
+it still locks up.
 
 --=20
 WBR, wRAR
 
---poemUeGtc2GQvHuH
+--zgY/UHCnsaNnNXRx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJPhzlMAAoJEDNi9wMaSZLhW7UP/0QdTMgFMC1tlA+fiPxU3Xs9
-Cqep39C9w1dnyETbJPmC7xX1+ngETgiEvYP1xL4Gj3SY9Xeodqma1scZejKzKYYt
-ldnKQz035a76UH2ClUhdBMoQuirSTBUcNhTohSlp+1kBh6qu4gTnZZi1gU08G2BA
-1AP4bQHXirtwvB2cU1zWW5qpnFBzf+x5QAcV0kzkfDxHtcFoi7pg7TFgRDrbu/4R
-Ia0YRkKQKsfXPHUxQP6WcyPrUq0PhcWIkNMPUQ1Dl50AU1AS9hkCpVTSsDDbGoCY
-iVcjTm1J00G6MrqMbuTTvnV8GjflP5pSpZ3n3QXW1ae9v/pgUloTSK2CaTPTmmyI
-09yTTyzUNFCtPleOgTum3hsnuqvu5sCDfVBAG+i+zTenLwMvJeAfQGRvjIKHleWq
-Q+lv/iC0PbCc36CXUaIIDjk+tia9NWqxF1OqdV+YSYyWTfcrMEyWk0kAcy1SvGFQ
-GvPBo22egI3DTtbqfXTdDQ0PHHjER5qzERMbWbIEWYr8mIIddPtTia2+fy56q7LS
-7kUFvoh6v/5gdBipHZ2HlRjwo8Sh5IiXsH/0Ah7r/cDFwU7q+toW2ckQh9KhnnRV
-oXCPa+mPrLxXBgN9mi3bffAR4LI3RWGXUNypN6p06z+ywmuT1lAeLLTvhMcUNdIH
-DLa4mSsbAjXOwZKsDHf/
-=uR/c
+iQIcBAEBCAAGBQJPhztyAAoJEDNi9wMaSZLhiCgP/ig/yTwdgRb5YFVtKH8o7kee
+ILYSNq7/xUmSo7yc2ct93ayjpKBzQdP8bMKzj1/fcpfPj8KMIJqS6x84hutgEngl
+V6C4Z8Di6babcpW0LqmY5gZp2Amilqho9DA9FdM/+urAv70fzxEcHPvXE+DUR09M
+CGasWv1uotgYB5zF093PPIfLN6k0kqJ7ZSmyU98Ton3htvJg8w0kyhk8Q0lleOfF
++Kk5V5yB87/LGLPqUXBqeYvrntk06cGq4WtRVzGxApV9Rmb6lWZjq9C4LRvSAaSN
+zeGq1ibESugNWIyvPWs8fb5W2UB9cQS6ebAxzqzJgcxi22OuvpBRMaRkIfe84/fo
+11MUl2NRH3gF2JASS75zgokkdvFUVRahrSSKtn5HLb7shgwHEezOcrIMDVcS0ojx
+tNSAbSP54jmWZOxXC5tzGMWe6Q1N+SIF+FJgZHsDEMSfhaZ/qBIVIlMorxVma7Hs
+00RybBVMKqbKOWCGJf5bDL3cpD6ieeBjxeiWc19dgaHs6vrq7SU4Xa7IvM16RMdF
+dkX/HQF3ukkr4wHuQPv9JiiL0bSebRQqJBhiscseDkT4yB+4HixMgxyNPTzWb8Iy
+Pec/Mdq9t2lI6T0WrYpkf927m3liSvdeJw23LLBzMKddAS+Mh0Z0L9fO6aKvoaDW
+WXBBrERz4QgLy18m4Yvh
+=6yW8
 -----END PGP SIGNATURE-----
 
---poemUeGtc2GQvHuH--
+--zgY/UHCnsaNnNXRx--
 
---===============3087099276291811553==
+--===============9102172400510731116==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 
---===============3087099276291811553==--
+--===============9102172400510731116==--
