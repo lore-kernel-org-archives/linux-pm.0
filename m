@@ -1,61 +1,70 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
-Date: Thu, 12 Apr 2012 12:33:22 -0400
-Message-ID: <1334248402.23924.337.camel@gandalf.stny.rr.com>
-References: <Pine.LNX.4.44L0.1204121017460.1496-100000@iolanthe.rowland.org>
+From: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>
+Subject: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Thu, 12 Apr 2012 22:49:03 +0600
+Message-ID: <20120412164903.GB12852@belkar.wrar.name>
+References: <20120412153750.GA12852@belkar.wrar.name>
+ <Pine.LNX.4.44L0.1204121203530.1496-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1204121017460.1496-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: jrnieder@gmail.com, Andrey Rahmatullin <wrar@wrar.name>, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>, Greg KH <greg@kroah.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="dc+cDN39EJAMEtIO"
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1204121203530.1496-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>, jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2012-04-12 at 10:28 -0400, Alan Stern wrote:
 
-> Hmmm.  This is a situation where the wakeup setting might matter.  Did 
-> the /sys/bus/pci/devices/0000:00:1[ad].0/power/wakeup files both 
-> contain "enabled" when you ran the test?
+--dc+cDN39EJAMEtIO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-They're both enabled for me too.
+On Thu, Apr 12, 2012 at 12:09:00PM -0400, Alan Stern wrote:
+> > > Here's a diagnostic patch that will give us a little more information=
+=2E =20
+> > > Keep the previous change (so that pci_prepare_to_sleep gets called=20
+> > > whether ehci-hcd is bound or not) and let's see what it says.  Try=20
+> > > doing it both with and without ehci-hcd bound.  Running this with "ec=
+ho=20
+> > > devices >/sys/power/pm_test" ought to be good enough.
+> > I don't see that line with ehci_hcd both bound and unbound and both in
+> > 'devices' test and in a real S3.
+>=20
+> You mean the new dev_info message did not appear at all?  Is
+> pci_prepare_to_sleep getting called properly?  Or does the routine exit
+> early because target_state is equal to PCI_POWER_ERROR?
+Either dev_info is silenced on my system or pci_pm_suspend_noirq is not
+called during the 'devices' pm test.
 
-> 
-> Here's a diagnostic patch that will give us a little more information.  
-> Keep the previous change (so that pci_prepare_to_sleep gets called 
-> whether ehci-hcd is bound or not) and let's see what it says.  Try 
-> doing it both with and without ehci-hcd bound.  Running this with "echo 
-> devices >/sys/power/pm_test" ought to be good enough.
+--=20
+WBR, wRAR
 
-Where do I read out the dev info?
+--dc+cDN39EJAMEtIO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
--- Steve
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-> 
-> Alan Stern
-> 
-> 
-> 
-> Index: usb-3.4/drivers/pci/pci.c
-> ===================================================================
-> --- usb-3.4.orig/drivers/pci/pci.c
-> +++ usb-3.4/drivers/pci/pci.c
-> @@ -1720,6 +1720,9 @@ int pci_prepare_to_sleep(struct pci_dev
->  
->  	error = pci_set_power_state(dev, target_state);
->  
-> +	dev_info(&dev->dev, "target %d wakeup %d error %d\n",
-> +			target_state, device_may_wakeup(&dev->dev), error);
-> +
->  	if (error)
->  		pci_enable_wake(dev, target_state, false);
->  
+iQIcBAEBCAAGBQJPhwd/AAoJEDNi9wMaSZLhDy4P/3bYY5WL3itEO1t7kf1itAtr
+jVFZk4TIVdTjPJOeLIC/3bBJPYKVM4nnoAsxZxsw038tGnPAFA1dYY1K4jA7ihzX
+TBiLnNhBosb6TUUQDZYYCDgpuxUjO2GyeiQfoC1ddUs5dDIevYhBH2u1XxUZmyAW
+QNZPTQrPUs5pNqyTaHOV4OlMVSNzLcENSyf3Nnkleq3GhhKRoz9SSAXyQA8K3lSh
+OLXzyvZ55P0lPlSKeDTqH1CbMdTvyQaQeGiPQgRxcL/4Q41Vizb2EPJ9YPBTBi55
+IFoIuKQWRIjhFqBj/TYJigr+eM/aVXaSvGo6YwgPkL2FSQD5Qq84gkUPp/u+Tzv0
+RjHyfWdE9aJfdLe8FDCJrMa5qtIyx6JsRO3C/OYrEXqbGbLwzHvtqr0qffADyzpF
+Cy3EF2xDTJCJEGiQJT5vA6bshZsNY4zAXyot8KDK34jw39XRoY9fc/Oz5UmNW4+a
+z/s5HqvWfo6YQc6tlKPvqZevPBAT9G9z0d88DDHkSbMuiKFqrHXPsL0CRjmYWR7P
+/al49SmO8s2McM+7JdKGELcCuox33aAjGumsqI9Att3ExJO70rZCrPhTpvJwh2Z7
+nv/sSTu55MSLkJmmK9BFwFRK7BgdYw5jsgYBkI8ZGmimdWczHX0n7p8nUQsGvOrE
+xCWoyhyx46vTfK4zMdlL
+=ARJx
+-----END PGP SIGNATURE-----
+
+--dc+cDN39EJAMEtIO--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
