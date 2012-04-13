@@ -1,62 +1,38 @@
-From: Mikko Vinni <mmvinni@yahoo.com>
-Subject: "i8042: Can't reactivate AUX port" after s2ram on 3.4-rc2
-Date: Fri, 13 Apr 2012 02:52:34 -0700 (PDT)
-Message-ID: <1334310754.17013.YahooMailNeo@web161804.mail.bf1.yahoo.com>
-Reply-To: Mikko Vinni <mmvinni@yahoo.com>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Fri, 13 Apr 2012 10:10:30 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1204131008010.1185-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.1204122103230.10558-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Allen Kay <allen.m.kay@intel.com>, Jean Guyader <jean.guyader@eu.citrix.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <Pine.LNX.4.44L0.1204122103230.10558-100000-pYrvlCTfrz9XsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>
+Cc: Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>, jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Bug report:
-=A0=A0=A0 https://bugzilla.kernel.org/show_bug.cgi?id=3D43099
+On Thu, 12 Apr 2012, Alan Stern wrote:
 
-Briefly:
+> Tomorrow I'll look through the code more carefully; with those changes
+> there really is very little difference between the two cases.  Things
+> like mmio mappings and IRQs requested; they shouldn't cause a crash.
 
-After s2ram the touchpad on a HP dv5 laptop doesn't work anymore.
+Let's start with some basic information.  First, before suspending,
+what shows up in /sys/kernel/debug/usb/devices?
 
-dmesg contains this about the touchpad
-Apr 11 18:00:05 koni kernel: i8042: Can't write CTR while closing AUX port
-Apr 11 18:00:08 koni kernel: i8042: Can't reactivate AUX port
+Second, if you do
 
+	echo 0 >/sys/bus/usb/devices/usb1/bConfigurationValue
+	echo 0 >/sys/bus/usb/devices/usb2/bConfigurationValue
 
-Full log in bugzilla with PCI and i8042 debug turned on.
+before suspending (using a vanilla kernel and no script), does it 
+change the behavior?  I expect it won't, but we should check just to be 
+thorough.
 
-Bisected to:
+Alan Stern
 
-commit 26f41062f28de65e11d3cf353e52d0be73442be1
-Author: Kay, Allen M <allen.m.kay@intel.com>
-Date:=A0=A0 Thu Jan 26 10:25:53 2012 -0800
-
-=A0=A0=A0 PCI: check for pci bar restore completion and retry
-=A0=A0=A0 =
-
-=A0=A0=A0 On some OEM systems, pci_restore_state() is called while FLR has =
-not yet
-=A0=A0=A0 completed.=A0 As a result, PCI BAR register restore is not succes=
-sful.=A0 This fix
-=A0=A0=A0 reads back the restored value and compares it with saved value an=
-d re-tries 10
-=A0=A0=A0 times before giving up.
-
-
-I will try to update the BIOS on this laptop next week, hoping that it might
-fix some of the s2ram issues, but other than that, maybe somebody has an id=
-ea?
-
-
-Thanks,
-
-Mikko
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
