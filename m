@@ -1,213 +1,143 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V2 0/6] thermal: exynos: Add kernel thermal
- support for exynos platform
-Date: Mon, 16 Apr 2012 10:07:02 +0800
-Message-ID: <1334542022.2387.325.camel@rui.sh.intel.com>
-References: <1332137864-12943-1-git-send-email-amit.kachhap@linaro.org>
-	<CAK44p23jiXn6mn-VsdXr3h9J5FfKztXMiqu=XjaF6nqLnRQAmA@mail.gmail.com>
-	<1334019502.2387.211.camel@rui.sh.intel.com>
-	<CAK44p20Bw9QACRqJc_s4Ri8E46OKOD9O_XpC2Gtd6avSy50dJQ@mail.gmail.com>
+From: "Hebbar, Gururaja" <gururaja.hebbar@ti.com>
+Subject: RE: [PATCH V4]mmc: remove MMC bus legacy suspend/resume method
+Date: Mon, 16 Apr 2012 05:46:32 +0000
+Message-ID: <1BAFE6F6C881BF42822005164F1491C33E9D0E0F@DBDE01.ent.ti.com>
+References: <20120411115438.GA303@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAK44p20Bw9QACRqJc_s4Ri8E46OKOD9O_XpC2Gtd6avSy50dJQ@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Amit Kachhap <amit.kachhap@linaro.org>
-Cc: linux-samsung-soc@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <20120411115438.GA303@intel.com>
+Content-Language: en-US
+Sender: linux-mmc-owner@vger.kernel.org
+To: Chuanxiao Dong <chuanxiao.dong@intel.com>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Cc: "cjb@laptop.org" <cjb@laptop.org>, "ulf.hansson@stericsson.com" <ulf.hansson@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24g5LiJLCAyMDEyLTA0LTExIGF0IDE4OjE3ICswNTMwLCBBbWl0IEthY2hoYXAgd3JvdGU6Cj4g
-SGkgUnVpLAo+IAo+IFRoYW5rcyBmb3IgbG9va2luZyBpbnRvIHRoZSBwYXRjaGVzLgo+IAo+IE9u
-IDEwIEFwcmlsIDIwMTIgMDY6MjgsIFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT4gd3Jv
-dGU6Cj4gPiBIaSwgQW1pdCwKPiA+Cj4gPiBPbiDkuIksIDIwMTItMDQtMDQgYXQgMTA6MDIgKzA1
-MzAsIEFtaXQgS2FjaGhhcCB3cm90ZToKPiA+PiBIaSBMZW4vUnVpLAo+ID4+Cj4gPj4gQW55IGNv
-bW1lbnQgb3IgZmVlZGJhY2sgZnJvbSB5b3VyIHNpZGUgYWJvdXQgdGhlIHN0YXR1cyBvZiB0aGlz
-IHBhdGNoPwo+ID4+IElzIGl0IG1lcmdlLWFibGUgb3IgbWFqb3IgcmUtd29yayBpcyBuZWVkZWQ/
-IEkgaGF2ZSBmaXhlZCBtb3N0IG9mIHRoZQo+ID4+IGNvbW1lbnRzIGluIHRoaXMgcGF0Y2hzZXQg
-YW5kIGN1cnJlbnRseSB3b3JraW5nIG9uIHNvbWUgb2YgdGhlIG1pbm9yCj4gPj4gY29tbWVudHMg
-cmVjZWl2ZWQgYW5kIHdpbGwgc3VibWl0IHRoZW0gc2hvcnRseS4KPiA+Pgo+ID4gU29ycnkgZm9y
-IHRoZSBsYXRlIHJlc3BvbnNlLgo+ID4KPiA+IEZpcnN0IG9mIGFsbCwgaXQgbWFrZXMgc2Vuc2Ug
-dG8gbWUgdG8gaW50cm9kdWNlIHRoZSBnZW5lcmljIGNwdWZycQo+ID4gY29vbGluZyBpbXBsZW1l
-bnRhdGlvbi4KPiBvayB0aGFua3MKPiA+IEJ1dCBJIHN0aWxsIGhhdmUgc29tZSBxdWVzdGlvbnMu
-Cj4gPiBJIHRoaW5rIHRoZSBrZXkgcmVhc29uIHdoeSBUSEVSTUFMX1RSSVBfU1RBVEVfSU5TVEFO
-Q0UgaXMgaW50cm9kdWNlZCBpcwo+ID4gdGhhdCB0aGUgTU9OSVJPUl9aT05FIGFuZCBXQVJOX1pP
-TkUgb24gZXh5bm9zNCBjYW4gbm90IGZpdCBpbnRvIHRoZQo+ID4gY3VycmVudCBwYXNzaXZlIGhh
-bmRsaW5nIGluIHRoZSBnZW5lcmljIHRoZXJtYWwgbGF5ZXIgd2VsbCwgcmlnaHQ/Cj4gPiBlLmcu
-IHRoZXJlIGlzIG5vIHRjMS90YzIgb24gZXh5bm9zNC4KPiA+Cj4gPiBJZiB5ZXMsIGlzIGl0IHBv
-c3NpYmxlIHRoYXQgd2UgY2FuIGVuaGFuY2UgdGhlIHBhc3NpdmUgY29vbGluZyB0bwo+ID4gc3Vw
-cG9ydCB0aGUgZ2VuZXJpYyBwcm9jZXNzb3IgY29vbGluZz8KPiA+IHNheSwgaW50cm9kdWNlIGFu
-b3RoZXIgd2F5IHRvIHRocm90dGxlIHRoZSBwcm9jZXNzb3IgaW4KPiA+IHRoZXJtYWxfem9uZV9k
-ZXZpY2VfcGFzc2l2ZSB3aGVuIHRjMSBhbmQgdGMyIGFyZSBub3QgYXZhaWxhYmxlPwo+IAo+IEkg
-YWdyZWUgdGhhdCB0aGlzIG5ldyB0cmlwIHR5cGUgY29kZSBjYW4gYmUgbW92ZWQgaW50byBwYXNz
-aXZlIHRyaXAKPiB0eXBlIHdoZW4gdGMxIGFuZCB0YzIgYXJlIDAuIGJ1dCB0aGlzIGlzIHNwZWNp
-YWwgdHlwZSBvZiBjb29saW5nCj4gZGV2aWNlcyBiZWhhdmlvdXIgd2hlcmUgb25seSBpbnN0YW5j
-ZXMgb2YgdGhlIHNhbWUgY29vbGluZyBkZXZpY2UgaXMKPiBiaW5kZWQgdG8gYSB0cmlwIHBvaW50
-LiBUaGUgb3JkZXIgb2YgbWFwcGluZyBpcyB0aGUgb25seQo+IGRpZmZlcmVudGlhdGluZyBjcml0
-ZXJpYSBhbmQgdGhlcmUgYXJlIHNvbWUgY2hlY2tzIHVzZWQgdG8gaW1wbGVtZW50Cj4gdGhpcyBs
-aWtlCj4gMSkgVGhlIHRyaXAgcG9pbnRzIHNob3VsZCBiZSBpbiBhc2NlbmRpbmcgb3JkZXIuKFRo
-aXMgaXMgbWlzc2luZyBpbiBteQo+IG9yaWdpbmFsIHBhdGNoLCBzbyBJIGFkZGVkIGJlbG93KQo+
-IDIpIFRoZSBzZXRfY3VyX3N0YXRlIGhhcyB0byBiZSBjYWxsZWQgZm9yIHRoZSBleGFjdCB0ZW1w
-IHJhbmdlIHNvCj4gZ2V0X2N1cl9zdGF0ZSgmc3RhdGUpIGFuZCBzZXRfY3VyX3N0YXRlKHN0YXRl
-ICsrL3N0YXRlLS0pIGxvZ2ljIGlzIG5vdAo+IHBvc3NpYmxlLgo+IDMpIHNldF9jdXJfc3RhdGUg
-aXMgY2FsbGVkIGFzIHNldF9jdXJfc3RhdGUoY2Rldl9pbnN0YW5jZSkuCgpEbyB5b3UgcmVhbGx5
-IG5lZWQgdHdvIFRIRVJNQUxfVFJJUF9TVEFURV9JTlNUQU5DRSB0cmlwIHBvaW50cz8KCkknbSBu
-b3Qgc3VyZSBpZiBteSB1bmRlcnN0YW5kaW5nIGlzIHJpZ2h0LCBidXQgSU1PLCB3ZSBjYW4gaGF2
-ZSBvbmUKVEhFUk1BTF9UUklQX1NUQVRFX0lOU1RBTkNFIG9ubHksIGZvciBib3RoIE1PTklST1Jf
-Wk9ORSBhbmQgV0FSTl9aT05FLAphbmQgdGhlIHRyaXAgdGVtcGVyYXR1cmUgZXF1YWxzIE1PTklS
-T1JfWk9ORS4KVGhlIGNwdWZyZXEgY29vbGluZyBkZXZpY2Ugd2lsbCB3b3JrIGluIHRoZSBzYW1l
-IHdheSwgbm8/Cgp0aGFua3MsCnJ1aQoKPiBUaGVyZSBpcyBhIGNoYW5jZSB0aGF0IHBlb3BsZSBt
-aWdodCBjb25mdXNlIHRoYXQgdGhlc2UgY2hlY2tzIGFyZQo+IGFwcGxpY2FibGUgZm9yIHBhc3Np
-dmUgdHJpcCB0eXBlcyBhbHNvIHdoaWNoIGlzIG5vdCB0aGUgY2FzZSBoZXJlLgo+IAo+IEBAIC0x
-MTg3LDYgKzEyMjgsMjEgQEAgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UKPiAqdGhlcm1hbF96
-b25lX2RldmljZV9yZWdpc3RlcihjaGFyICp0eXBlLAo+ICAgICAgICAgICAgICAgICB0ei0+b3Bz
-LT5nZXRfdHJpcF90eXBlKHR6LCBjb3VudCwgJnRyaXBfdHlwZSk7Cj4gICAgICAgICAgICAgICAg
-IGlmICh0cmlwX3R5cGUgPT0gVEhFUk1BTF9UUklQX1BBU1NJVkUpCj4gICAgICAgICAgICAgICAg
-ICAgICAgICAgcGFzc2l2ZSA9IDE7Cj4gKyAgICAgICAgICAgICAgIC8qCj4gKyAgICAgICAgICAg
-ICAgICAqIEZvciBUSEVSTUFMX1RSSVBfU1RBVEVfSU5TVEFOQ0UgdHJpcHMsIHRoZXJtYWwgem9u
-ZSBzaG91bGQKPiArICAgICAgICAgICAgICAgICogYmUgaW4gYXNjZW5kaW5nIG9yZGVyLgo+ICsg
-ICAgICAgICAgICAgICAqLwo+ICsgICAgICAgICAgICAgICBpZiAodHJpcF90eXBlID09IFRIRVJN
-QUxfVFJJUF9TVEFURV9JTlNUQU5DRSkgewo+ICsgICAgICAgICAgICAgICAgICAgICAgIHR6LT5v
-cHMtPmdldF90cmlwX3RlbXAodHosIGNvdW50LCAmdHJpcF90ZW1wKTsKPiArICAgICAgICAgICAg
-ICAgICAgICAgICBpZiAoZmlyc3RfdHJpcF90ZW1wID09IDApCj4gKyAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICBmaXJzdF90cmlwX3RlbXAgPSB0cmlwX3RlbXA7Cj4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgZWxzZSBpZiAoZmlyc3RfdHJpcF90ZW1wIDwgdHJpcF90ZW1wKQo+ICsgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgZmlyc3RfdHJpcF90ZW1wID0gdHJpcF90ZW1wOwo+
-ICsgICAgICAgICAgICAgICAgICAgICAgIGVsc2UgaWYgKGZpcnN0X3RyaXBfdGVtcCA+IHRyaXBf
-dGVtcCkgewo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcHJfd2FybigiWm9uZSB0
-cmlwIHBvaW50cyBzaG91bGQgYmUgaW4KPiBhc2NlbmRpbmcgb3JkZXJcbiIpOwo+ICsgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgZ290byB1bnJlZ2lzdGVyOwo+ICsgICAgICAgICAgICAg
-ICAgICAgICAgIH0KPiArICAgICAgICAgICAgICAgfQo+ICAgICAgICAgfQo+IAo+ICAgICAgICAg
-aWYgKCFwYXNzaXZlKQo+IAo+IEFueXdheSB0aGVyZSBpcyBvdGhlciBhbHRlcm5hdGl2ZSB3aGVy
-ZSB0aGlzIG5ldyB0cmlwIHR5cGUgaXMgbm90Cj4gbmVlZGVkIGFuZCBJIGNhbiBqdXN0IHVzZSB0
-aGUgZXhpc3RpbmcgdHJpcCB0eXBlIFRIRVJNQUxfVFJJUF9BQ1RJVkUKPiBhbmQgY3JlYXRlIDIg
-c2VwYXJhdGUgY29vbGluZyBkZXZpY2VzIGZvciBNT05JVE9SX1pPTkUgYW5kIFdBUk5fWk9ORS4K
-PiBJIGhhZCB0aG91Z2h0IHRvIG1ha2UgdGhpcyBnZW5lcmljIGFuZCBqdXN0IHRvIG1hbmFnZSB3
-aXRoIDEgY29vbGluZwo+IGRldmljZS4KPiBXaGF0IGlzIHlvdXIgdmlldz8KPiAKPiBUaGFua3Ms
-Cj4gQW1pdCBEYW5pZWwKPiAKPiAKPiA+Cj4gPiB0aGFua3MsCj4gPiBydWkKPiA+Cj4gPj4gUmVn
-YXJkcywKPiA+PiBBbWl0IERhbmllbAo+ID4+Cj4gPj4gT24gMTkgTWFyY2ggMjAxMiAxMTo0Nywg
-QW1pdCBEYW5pZWwgS2FjaGhhcCA8YW1pdC5rYWNoaGFwQGxpbmFyby5vcmc+IHdyb3RlOgo+ID4+
-ID4gQ2hhbmdlcyBzaW5jZSBWMToKPiA+PiA+ICpNb3ZlZCB0aGUgc2Vuc29yIGRyaXZlciB0byBk
-cml2ZXIvdGhlcm1hbCBmb2xkZXIgZnJvbSBkcml2ZXIvaHdtb24gZm9sZGVyCj4gPj4gPiAgYXMg
-c3VnZ2VzdGVkIGJ5IE1hcmsgQnJvd24gYW5kIEd1ZW50ZXIgUm9lY2sKPiA+PiA+ICpBZGRlZCBu
-b3RpZmllciBzdXBwb3J0IHRvIG5vdGlmeSB0aGUgcmVnaXN0ZXJlZCBkcml2ZXJzIG9mIGFueSBj
-cHUgY29vbGluZwo+ID4+ID4gIGFjdGlvbi4gVGhlIGRyaXZlciBjYW4gbW9kaWZ5IHRoZSBkZWZh
-dWx0IGNvb2xpbmcgYmVoYXZpb3VyKGVnIHNldCBkaWZmZXJlbnQKPiA+PiA+ICBtYXggY2xpcCBm
-cmVxdWVuY3kpLgo+ID4+ID4gKlRoZSBwZXJjZW50YWdlIGJhc2VkIGZyZXF1ZW5jeSByZXBsYWNl
-ZCB3aXRoIGFic29sdXRlIGNsaXBwZWQgZnJlcXVlbmN5Lgo+ID4+ID4gKlNvbWUgbW9yZSBjb25k
-aXRpb25hbCBjaGVja3Mgd2hlbiBzZXR0aW5nIG1heCBmcmVxdWVuY3kuCj4gPj4gPiAqUmVuYW1l
-ZCB0aGUgbmV3IHRyaXAgdHlwZSBUSEVSTUFMX1RSSVBfU1RBVEVfQUNUSVZFIHRvCj4gPj4gPiAg
-VEhFUk1BTF9UUklQX1NUQVRFX0lOU1RBTkNFCj4gPj4gPiAqTWFueSByZXZpZXcgY29tbWVudHMg
-ZnJvbSBSLCBEdXJnYWRvc3MgPGR1cmdhZG9zcy5yQGludGVsLmNvbT4gYW5kCj4gPj4gPiAgZWR1
-YXJkby52YWxlbnRpbkB0aS5jb20gaW1wbGVtZW50ZWQuCj4gPj4gPiAqUmVtb3ZlZCBjb29saW5n
-IHN0YXRzIHRocm91Z2ggZGVidWdmcyBwYXRjaAo+ID4+ID4gKlRoZSBWMSBiYXNlZCBjYW4gYmUg
-Zm91bmQgaGVyZSwKPiA+PiA+ICBodHRwczovL2xrbWwub3JnL2xrbWwvMjAxMi8yLzIyLzEyMwo+
-ID4+ID4gIGh0dHA6Ly9sa21sLm9yZy9sa21sLzIwMTIvMy8zLzMyCj4gPj4gPgo+ID4+ID4gQ2hh
-bmdlcyBzaW5jZSBSRkM6Cj4gPj4gPiAqQ2hhbmdlZCB0aGUgY3B1IGNvb2xpbmcgcmVnaXN0cmF0
-aW9uL3VucmVnaXN0cmF0aW9uIEFQSSdzIHRvIGluc3RhbmNlIGJhc2VkCj4gPj4gPiAqQ2hhbmdl
-ZCB0aGUgU1RBVEVfQUNUSVZFIHRyaXAgdHlwZSB0byBwYXNzIGNvcnJlY3QgaW5zdGFuY2UgaWQK
-PiA+PiA+ICpBZGRpbmcgc3VwcG9ydCB0byByZXN0b3JlIGJhY2sgdGhlIHBvbGljeS0+bWF4X2Zy
-ZXEgYWZ0ZXIgZG9pbmcgZnJlcXVlbmN5Cj4gPj4gPiAgY2xpcHBpbmcuCj4gPj4gPiAqTW92ZWQg
-dGhlIHRyaXAgY29vbGluZyBzdGF0cyBmcm9tIHN5c2ZzIG5vZGUgdG8gZGVidWdmcyBub2RlIGFz
-IHN1Z2dlc3RlZAo+ID4+ID4gIGJ5IEdyZWcgS0ggZ3JlZ0Brcm9haC5jb20KPiA+PiA+ICpJbmNv
-cnBvcmF0ZWQgc2V2ZXJhbCByZXZpZXcgY29tbWVudHMgZnJvbSBlZHVhcmRvLnZhbGVudGluQHRp
-LmNvbQo+ID4+ID4gKk1vdmVkIHRoZSBUZW1wZXJhdHVyZSBzZW5zb3IgZHJpdmVyIGZyb20gZHJp
-dmVyL2h3bW9uLyB0byBkcml2ZXIvbWZkCj4gPj4gPiAgYXMgZGlzY3Vzc2VkIHdpdGggR3VlbnRl
-ciBSb2VjayA8Z3VlbnRlci5yb2Vja0Blcmljc3Nvbi5jb20+IGFuZAo+ID4+ID4gIERvbmdnZXVu
-IEtpbSA8ZGc3Ny5raW1Ac2Ftc3VuZy5jb20+IChodHRwczovL2xrbWwub3JnL2xrbWwvMjAxMi8x
-LzUvNykKPiA+PiA+ICpTb21lIGNoYW5nZXMgYWNjb3JkaW5nIHRvIHRoZSBjaGFuZ2VzIGluIGNv
-bW1vbiBjcHUgY29vbGluZyBBUElzCj4gPj4gPiAqVGhlIFJGQyBiYXNlZCBwYXRjaGVzIGNhbiBi
-ZSBmb3VuZCBoZXJlLAo+ID4+ID4gIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDExLzEyLzEzLzE4
-Ngo+ID4+ID4gIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDExLzEyLzIxLzE2OQo+ID4+ID4KPiA+
-PiA+Cj4gPj4gPiBCcmllZiBEZXNjcmlwdGlvbjoKPiA+PiA+Cj4gPj4gPiAxKSBUaGUgZ2VuZXJp
-YyBjb29saW5nIGRldmljZXMgY29kZSBpcyBwbGFjZWQgaW5zaWRlIGRyaXZlci90aGVybWFsLyog
-YXMKPiA+PiA+IHBsYWNpbmcgaW5zaWRlIGFjcGkgZm9sZGVyIHdpbGwgbmVlZCB1bi1uZWNlc3Nh
-cnkgZW5hYmxpbmcgb2YgYWNwaSBjb2RlLiBUaGlzCj4gPj4gPiBjb2RlcyBpcyBhcmNoaXRlY3R1
-cmUgaW5kZXBlbmRlbnQuCj4gPj4gPgo+ID4+ID4gMikgVGhpcyBwYXRjaHNldCBhZGRzIGEgbmV3
-IHRyaXAgdHlwZSBUSEVSTUFMX1RSSVBfU1RBVEVfSU5TVEFOQ0Ugd2hpY2ggcGFzc2VzCj4gPj4g
-PiBjb29saW5nIGRldmljZSBpbnN0YW5jZSBudW1iZXIgYW5kIG1heSBiZSBoZWxwZnVsIGZvciBj
-cHVmcmVxIGNvb2xpbmcgZGV2aWNlcwo+ID4+ID4gdG8gdGFrZSB0aGUgY29ycmVjdCBjb29saW5n
-IGFjdGlvbi4gVGhpcyB0cmlwIHR5cGUgYXZvaWRzIHRoZSB0ZW1wZXJhdHVyZQo+ID4+ID4gY29t
-cGFyaXNpb24gY2hlY2sgYWdhaW4gaW5zaWRlIHRoZSBjb29saW5nIGhhbmRsZXIuCj4gPj4gPgo+
-ID4+ID4gMykgVGhpcyBwYXRjaHNldCBhZGRzIGdlbmVyaWMgY3B1IGNvb2xpbmcgbG93IGxldmVs
-IGltcGxlbWVudGF0aW9uIHRocm91Z2gKPiA+PiA+IGZyZXF1ZW5jeSBjbGlwcGluZyBhbmQgY3B1
-IGhvdHBsdWcuIEluIGZ1dHVyZSwgb3RoZXIgY3B1IHJlbGF0ZWQgY29vbGluZwo+ID4+ID4gZGV2
-aWNlcyBtYXkgYmUgYWRkZWQgaGVyZS4gQW4gQUNQSSB2ZXJzaW9uIG9mIHRoaXMgYWxyZWFkeSBl
-eGlzdHMKPiA+PiA+IChkcml2ZXJzL2FjcGkvcHJvY2Vzc29yX3RoZXJtYWwuYykuIEJ1dCB0aGlz
-IHdpbGwgYmUgdXNlZnVsIGZvciBwbGF0Zm9ybXMKPiA+PiA+IGxpa2UgQVJNIHVzaW5nIHRoZSBn
-ZW5lcmljIHRoZXJtYWwgaW50ZXJmYWNlIGFsb25nIHdpdGggdGhlIGdlbmVyaWMgY3B1Cj4gPj4g
-PiBjb29saW5nIGRldmljZXMuIFRoZSBjb29saW5nIGRldmljZSByZWdpc3RyYXRpb24gQVBJJ3Mg
-cmV0dXJuIGNvb2xpbmcgZGV2aWNlCj4gPj4gPiBwb2ludGVycyB3aGljaCBjYW4gYmUgZWFzaWx5
-IGJpbmRlZCB3aXRoIHRoZSB0aGVybWFsIHpvbmUgdHJpcCBwb2ludHMuCj4gPj4gPiBUaGUgaW1w
-b3J0YW50IEFQSXMgZXhwb3NlZCBhcmUsCj4gPj4gPiAgIGEpc3RydWN0IHRoZXJtYWxfY29vbGlu
-Z19kZXZpY2UgKmNwdWZyZXFfY29vbGluZ19yZWdpc3RlcigKPiA+PiA+ICAgICAgICBzdHJ1Y3Qg
-ZnJlcV9jbGlwX3RhYmxlICp0YWJfcHRyLCB1bnNpZ25lZCBpbnQgdGFiX3NpemUsCj4gPj4gPiAg
-ICAgICAgY29uc3Qgc3RydWN0IGNwdW1hc2sgKm1hc2tfdmFsKQo+ID4+ID4gICBiKXZvaWQgY3B1
-ZnJlcV9jb29saW5nX3VucmVnaXN0ZXIoc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKmNk
-ZXYpCj4gPj4gPgo+ID4+ID4gNCkgU2Ftc3VuZyBleHlub3MgcGxhdGZvcm0gdGhlcm1hbCBpbXBs
-ZW1lbnRhdGlvbiBpcyBkb25lIHVzaW5nIHRoZSBnZW5lcmljCj4gPj4gPiBjcHUgY29vbGluZyBB
-UElzIGFuZCB0aGUgbmV3IHRyaXAgdHlwZS4gVGhlIHRlbXBlcmF0dXJlIHNlbnNvciBkcml2ZXIg
-cHJlc2VudAo+ID4+ID4gaW4gdGhlIGh3bW9uIGZvbGRlcihyZWdpc3RlcmVkIGFzIGh3bW9uIGRy
-aXZlcikgaXMgbW92ZWQgdG8gdGhlcm1hbCBmb2xkZXIKPiA+PiA+IGFuZCByZWdpc3RlcmVkIGFz
-IGEgdGhlcm1hbCBkcml2ZXIuCj4gPj4gPgo+ID4+ID4gQWxsIHRoaXMgcGF0Y2hzZXQgaXMgYmFz
-ZWQgb24gS2VybmVsIHZlcnNpb24gMy4zLXJjNwo+ID4+ID4KPiA+PiA+IEEgc2ltcGxlIGRhdGEv
-Y29udHJvbCBmbG93IGRpYWdyYW1zIGlzIHNob3duIGJlbG93LAo+ID4+ID4KPiA+PiA+IENvcmUg
-TGludXggdGhlcm1hbCA8LS0tLS0+ICBFeHlub3MgdGhlcm1hbCBpbnRlcmZhY2UgPC0tLS0tIFRl
-bXBlcmF0dXJlIFNlbnNvcgo+ID4+ID4gICAgICAgICAgfCAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgfAo+ID4+ID4gICAgICAgICBcfC8gICAgICAgICAgICAgICAgICAgICAgICAgICAgfAo+
-ID4+ID4gIENwdWZyZXEgY29vbGluZyBkZXZpY2UgPC0tLS0tLS0tLS0tLS0tLQo+ID4+ID4KPiA+
-PiA+Cj4gPj4gPiBBbWl0IERhbmllbCBLYWNoaGFwICg2KToKPiA+PiA+ICB0aGVybWFsOiBBZGQg
-YSBuZXcgdHJpcCB0eXBlIHRvIHVzZSBjb29saW5nIGRldmljZSBpbnN0YW5jZSBudW1iZXIKPiA+
-PiA+ICB0aGVybWFsOiBBZGQgZ2VuZXJpYyBjcHVmcmVxIGNvb2xpbmcgaW1wbGVtZW50YXRpb24K
-PiA+PiA+ICB0aGVybWFsOiBBZGQgZ2VuZXJpYyBjcHVob3RwbHVnIGNvb2xpbmcgaW1wbGVtZW50
-YXRpb24KPiA+PiA+ICBod21vbjogZXh5bm9zNDogTW92ZSB0aGVybWFsIHNlbnNvciBkcml2ZXIg
-dG8gZHJpdmVyL3RoZXJtYWwKPiA+PiA+ICAgIGRpcmVjdG9yeQo+ID4+ID4gIHRoZXJtYWw6IGV4
-eW5vczQ6IFJlZ2lzdGVyIHRoZSB0bXUgc2Vuc29yIHdpdGggdGhlIGtlcm5lbCB0aGVybWFsCj4g
-Pj4gPiAgICBsYXllcgo+ID4+ID4gIEFSTTogZXh5bm9zNDogQWRkIHRoZXJtYWwgc2Vuc29yIGRy
-aXZlciBwbGF0Zm9ybSBkZXZpY2Ugc3VwcG9ydAo+ID4+ID4KPiA+PiA+ICBEb2N1bWVudGF0aW9u
-L2h3bW9uL2V4eW5vczRfdG11ICAgICAgICAgICB8ICAgODEgLS0tCj4gPj4gPiAgRG9jdW1lbnRh
-dGlvbi90aGVybWFsL2NwdS1jb29saW5nLWFwaS50eHQgfCAgIDc2ICsrKwo+ID4+ID4gIERvY3Vt
-ZW50YXRpb24vdGhlcm1hbC9leHlub3M0X3RtdSAgICAgICAgIHwgICA1MiArKwo+ID4+ID4gIERv
-Y3VtZW50YXRpb24vdGhlcm1hbC9zeXNmcy1hcGkudHh0ICAgICAgIHwgICAgNCArLQo+ID4+ID4g
-IGFyY2gvYXJtL21hY2gtZXh5bm9zL0tjb25maWcgICAgICAgICAgICAgIHwgICAxMSArCj4gPj4g
-PiAgYXJjaC9hcm0vbWFjaC1leHlub3MvTWFrZWZpbGUgICAgICAgICAgICAgfCAgICAxICsKPiA+
-PiA+ICBhcmNoL2FybS9tYWNoLWV4eW5vcy9jbG9jay5jICAgICAgICAgICAgICB8ICAgIDQgKwo+
-ID4+ID4gIGFyY2gvYXJtL21hY2gtZXh5bm9zL2Rldi10bXUuYyAgICAgICAgICAgIHwgICAzOSAr
-Kwo+ID4+ID4gIGFyY2gvYXJtL21hY2gtZXh5bm9zL2luY2x1ZGUvbWFjaC9pcnFzLmggIHwgICAg
-MiArCj4gPj4gPiAgYXJjaC9hcm0vbWFjaC1leHlub3MvaW5jbHVkZS9tYWNoL21hcC5oICAgfCAg
-ICAxICsKPiA+PiA+ICBhcmNoL2FybS9tYWNoLWV4eW5vcy9tYWNoLW9yaWdlbi5jICAgICAgICB8
-ICAgIDEgKwo+ID4+ID4gIGFyY2gvYXJtL3BsYXQtc2Ftc3VuZy9pbmNsdWRlL3BsYXQvZGV2cy5o
-IHwgICAgMSArCj4gPj4gPiAgZHJpdmVycy9od21vbi9LY29uZmlnICAgICAgICAgICAgICAgICAg
-ICAgfCAgIDEwIC0KPiA+PiA+ICBkcml2ZXJzL2h3bW9uL01ha2VmaWxlICAgICAgICAgICAgICAg
-ICAgICB8ICAgIDEgLQo+ID4+ID4gIGRyaXZlcnMvaHdtb24vZXh5bm9zNF90bXUuYyAgICAgICAg
-ICAgICAgIHwgIDUxNCAtLS0tLS0tLS0tLS0tLS0tLS0tCj4gPj4gPiAgZHJpdmVycy90aGVybWFs
-L0tjb25maWcgICAgICAgICAgICAgICAgICAgfCAgIDIxICsKPiA+PiA+ICBkcml2ZXJzL3RoZXJt
-YWwvTWFrZWZpbGUgICAgICAgICAgICAgICAgICB8ICAgIDIgKwo+ID4+ID4gIGRyaXZlcnMvdGhl
-cm1hbC9jcHVfY29vbGluZy5jICAgICAgICAgICAgIHwgIDUyOSArKysrKysrKysrKysrKysrKysr
-Cj4gPj4gPiAgZHJpdmVycy90aGVybWFsL2V4eW5vczRfdGhlcm1hbC5jICAgICAgICAgfCAgNzkw
-ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrCj4gPj4gPiAgZHJpdmVycy90aGVybWFsL3Ro
-ZXJtYWxfc3lzLmMgICAgICAgICAgICAgfCAgIDQ1ICsrLQo+ID4+ID4gIGluY2x1ZGUvbGludXgv
-Y3B1X2Nvb2xpbmcuaCAgICAgICAgICAgICAgIHwgICA3OCArKysKPiA+PiA+ICBpbmNsdWRlL2xp
-bnV4L3BsYXRmb3JtX2RhdGEvZXh5bm9zNF90bXUuaCB8ICAgIDcgKwo+ID4+ID4gIGluY2x1ZGUv
-bGludXgvdGhlcm1hbC5oICAgICAgICAgICAgICAgICAgIHwgICAgMSArCj4gPj4gPiAgMjMgZmls
-ZXMgY2hhbmdlZCwgMTY2MCBpbnNlcnRpb25zKCspLCA2MTEgZGVsZXRpb25zKC0pCj4gPj4gPiAg
-ZGVsZXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vaHdtb24vZXh5bm9zNF90bXUKPiA+PiA+
-ICBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi90aGVybWFsL2NwdS1jb29saW5nLWFw
-aS50eHQKPiA+PiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi90aGVybWFsL2V4
-eW5vczRfdG11Cj4gPj4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGFyY2gvYXJtL21hY2gtZXh5bm9z
-L2Rldi10bXUuYwo+ID4+ID4gIGRlbGV0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2h3bW9uL2V4eW5v
-czRfdG11LmMKPiA+PiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy90aGVybWFsL2NwdV9j
-b29saW5nLmMKPiA+PiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy90aGVybWFsL2V4eW5v
-czRfdGhlcm1hbC5jCj4gPj4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGluY2x1ZGUvbGludXgvY3B1
-X2Nvb2xpbmcuaAo+ID4+ID4KPiA+Cj4gPgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5s
-aW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9saW51eC1wbQ==
+On Wed, Apr 11, 2012 at 17:24:38, Chuanxiao Dong wrote:
+> MMC bus is using legacy suspend/resume method, which is not compatible if
+> runtime pm callbacks are used. In this scenario, MMC bus suspend/resume
+> callbacks cannot be called when system entering S3. So change to use the new
+> defined dev_pm_ops for system sleeping mode
+> 
+> Signed-off-by: Chuanxiao Dong <chuanxiao.dong@intel.com>
+> ---
+> Changes in v2:
+> 	use SET_SYSTEM_SLEEP_PM_OPS to define sleep callbacks as Rafael
+> 	suggested
+> 
+> Changes in v3:
+> 	remove NULL pointer define for runtime callbacks when PM_RUNTIME is not
+> 	selected, as Ulf Hansson suggested
+> 
+> Changes in v4:
+> 	fix the warning when disable CONFIG_PM_RUNTIME
+
+
+Tested on AM335x Platform. Solves major issue/crash reported at 
+http://www.mail-archive.com/linux-omap@vger.kernel.org/msg65425.html
+
+Tested-by: Hebbar, Gururaja <gururaja.hebbar@ti.com>
+
+> 
+>  drivers/mmc/card/block.c |    2 +-
+>  drivers/mmc/core/bus.c   |   24 ++++++++----------------
+>  include/linux/mmc/card.h |    2 +-
+>  3 files changed, 10 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
+> index f2020d3..3582c03 100644
+> --- a/drivers/mmc/card/block.c
+> +++ b/drivers/mmc/card/block.c
+> @@ -1826,7 +1826,7 @@ static void mmc_blk_remove(struct mmc_card *card)
+>  }
+>  
+>  #ifdef CONFIG_PM
+> -static int mmc_blk_suspend(struct mmc_card *card, pm_message_t state)
+> +static int mmc_blk_suspend(struct mmc_card *card)
+>  {
+>  	struct mmc_blk_data *part_md;
+>  	struct mmc_blk_data *md = mmc_get_drvdata(card);
+> diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
+> index 5d011a3..aad8516 100644
+> --- a/drivers/mmc/core/bus.c
+> +++ b/drivers/mmc/core/bus.c
+> @@ -122,14 +122,14 @@ static int mmc_bus_remove(struct device *dev)
+>  	return 0;
+>  }
+>  
+> -static int mmc_bus_suspend(struct device *dev, pm_message_t state)
+> +static int mmc_bus_suspend(struct device *dev)
+>  {
+>  	struct mmc_driver *drv = to_mmc_driver(dev->driver);
+>  	struct mmc_card *card = mmc_dev_to_card(dev);
+>  	int ret = 0;
+>  
+>  	if (dev->driver && drv->suspend)
+> -		ret = drv->suspend(card, state);
+> +		ret = drv->suspend(card);
+>  	return ret;
+>  }
+>  
+> @@ -165,20 +165,14 @@ static int mmc_runtime_idle(struct device *dev)
+>  	return pm_runtime_suspend(dev);
+>  }
+>  
+> +#endif /* !CONFIG_PM_RUNTIME */
+> +
+>  static const struct dev_pm_ops mmc_bus_pm_ops = {
+> -	.runtime_suspend	= mmc_runtime_suspend,
+> -	.runtime_resume		= mmc_runtime_resume,
+> -	.runtime_idle		= mmc_runtime_idle,
+> +	SET_RUNTIME_PM_OPS(mmc_runtime_suspend, mmc_runtime_resume,
+> +			mmc_runtime_idle)
+> +	SET_SYSTEM_SLEEP_PM_OPS(mmc_bus_suspend, mmc_bus_resume)
+>  };
+>  
+> -#define MMC_PM_OPS_PTR	(&mmc_bus_pm_ops)
+> -
+> -#else /* !CONFIG_PM_RUNTIME */
+> -
+> -#define MMC_PM_OPS_PTR	NULL
+> -
+> -#endif /* !CONFIG_PM_RUNTIME */
+> -
+>  static struct bus_type mmc_bus_type = {
+>  	.name		= "mmc",
+>  	.dev_attrs	= mmc_dev_attrs,
+> @@ -186,9 +180,7 @@ static struct bus_type mmc_bus_type = {
+>  	.uevent		= mmc_bus_uevent,
+>  	.probe		= mmc_bus_probe,
+>  	.remove		= mmc_bus_remove,
+> -	.suspend	= mmc_bus_suspend,
+> -	.resume		= mmc_bus_resume,
+> -	.pm		= MMC_PM_OPS_PTR,
+> +	.pm		= &mmc_bus_pm_ops,
+>  };
+>  
+>  int mmc_register_bus(void)
+> diff --git a/include/linux/mmc/card.h b/include/linux/mmc/card.h
+> index 1a1ca71..c984c9a 100644
+> --- a/include/linux/mmc/card.h
+> +++ b/include/linux/mmc/card.h
+> @@ -480,7 +480,7 @@ struct mmc_driver {
+>  	struct device_driver drv;
+>  	int (*probe)(struct mmc_card *);
+>  	void (*remove)(struct mmc_card *);
+> -	int (*suspend)(struct mmc_card *, pm_message_t);
+> +	int (*suspend)(struct mmc_card *);
+>  	int (*resume)(struct mmc_card *);
+>  };
+>  
+> -- 
+> 1.7.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+
+Regards, 
+Gururaja
