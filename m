@@ -1,13 +1,13 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: Devfreq Simple On Demand Governor
-Date: Mon, 16 Apr 2012 23:16:49 +0900
-Message-ID: <CAJ0PZbQB3USyV65KNERn01yF-KFgi9o7yRJquoOc0iBWotv6PA@mail.gmail.com>
-References: <CAChS5kNS6DUq9W-R0XkQ8ksojUAbsLy5opz1eKb5iaa0D895cw@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Mon, 16 Apr 2012 16:07:10 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1204161558220.1408-100000@iolanthe.rowland.org>
+References: <20120413224336.GA5585@belkar.wrar.name>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAChS5kNS6DUq9W-R0XkQ8ksojUAbsLy5opz1eKb5iaa0D895cw@mail.gmail.com>
+In-Reply-To: <20120413224336.GA5585@belkar.wrar.name>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -17,76 +17,133 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Satendra..." <satendra.pratap@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+To: Andrey Rahmatullin <wrar@wrar.name>
+Cc: jrnieder@gmail.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 16, 2012 at 7:07 PM, Satendra... <satendra.pratap@gmail.com> wr=
-ote:
-> Hi Ham,
->
-> I was looking at the simple on demand governor's code and have got few
-> queries:
-> - In the code below to check for overflow, why 24 and 7 =A0has been taken?
-> =A0 =A0 =A0 =A0 /* Prevent overflow */
-> =A0 =A0 =A0 =A0 if (stat.busy_time >=3D (1 << 24) || stat.total_time >=3D=
- (1 << 24)) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 stat.busy_time >>=3D 7;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 stat.total_time >>=3D 7;
-> =A0 =A0 =A0 =A0 }
+On Sat, 14 Apr 2012, Andrey Rahmatullin wrote:
 
-It is because 1<<7 >=3D 100 and 1<<6 < 100. (To get percentage, we are
-multiplying 100).
+> On Fri, Apr 13, 2012 at 10:10:30AM -0400, Alan Stern wrote:
+> > Second, if you do
+> > 
+> > 	echo 0 >/sys/bus/usb/devices/usb1/bConfigurationValue
+> > 	echo 0 >/sys/bus/usb/devices/usb2/bConfigurationValue
+> > 
+> > before suspending (using a vanilla kernel and no script), does it 
+> > change the behavior?  I expect it won't, but we should check just to be 
+> > thorough.
+> No, it still locks up.
 
->
-> - Also for maximum frequency UINT_MAX is returned which may not be suited
-> for some devices.
+Okay.
 
-The frequency given to devfreq driver is "recommended frequency", not
-the "exact frequency required".
+This is my next attempt to make the driver-bound and driver-unbound
+suspend paths as similar as possible.  Apply this to a vanilla kernel;  
+it is based on 3.4-rc2 plus a few unrelated changes.  See what happens
+when you suspend without unbinding ehci-hcd -- and be sure to include
+"no_console_suspend" on the boot command line beforehand.
 
-Thus, the driver is required to choose
-1. frequency that is at least (but closest) or same with the
-"recommended frequency"
-and if that's impossible,
-2. frequency that is closest to the "recommended frequency".
+These changes will prevent the driver from working after resume 
+(assuming the computer survives that long).  That's all right; all I 
+care about is whether the computer _does_ resume.
 
-Thus, if it's "UINT_MAX", then it should choose the maximum frequency.
-
->
-> - One more query, whats the unit (usecs, nsecs etc) used for busy and load
-> time. Has it got nothing to do with units
-> and its mere the percentage of busy time?
-
-The unit is up to the device driver. It only needs to provide
-"reasonable" values in u32 to the infrastructure. It could be usec,
-nsec, #ops, or anything else.
-I've mentioned it only because jiffy does not seem to be "reasonable";
-jiffy is too rough. You may even get 0 jiffies for 100 operations
-while you may get 1 jiffy for 1 operation in the same system.
-
-In the governors, maybe busy / total ratio can be used as in
-simple_ondemand. And you should give values that can support some fair
-granularity there, which jiffy cannot.
-
->
-> - If we want to use simple on demand governor then do we need to modify
-> yours to suit our needs? I mean you have
-> just provided a framework?
-
-If you want to use THE simple_ondemand for your device, you only need
-to create a devfreq driver. You don't need to modify the governor or
-the framework/.
-
->
-> Thanks,
-> Satendra
+Alan Stern
 
 
-Cheers!
-MyungJoo.
 
--- =
 
-MyungJoo Ham, Ph.D.
-System S/W Lab, S/W Center, Samsung Electronics
+Index: usb-3.4/drivers/pci/pci-driver.c
+===================================================================
+--- usb-3.4.orig/drivers/pci/pci-driver.c
++++ usb-3.4/drivers/pci/pci-driver.c
+@@ -713,6 +713,8 @@ static int pci_pm_suspend_noirq(struct d
+ 
+ 	if (!pm) {
+ 		pci_save_state(pci_dev);
++		pci_prepare_to_sleep(pci_dev);
++		pci_pm_set_unknown_state(pci_dev);
+ 		return 0;
+ 	}
+ 
+Index: usb-3.4/drivers/pci/pci.c
+===================================================================
+--- usb-3.4.orig/drivers/pci/pci.c
++++ usb-3.4/drivers/pci/pci.c
+@@ -1348,6 +1348,7 @@ void pci_disable_enabled_device(struct p
+ 	if (pci_is_enabled(dev))
+ 		do_pci_disable_device(dev);
+ }
++EXPORT_SYMBOL(pci_disable_enabled_device);
+ 
+ /**
+  * pci_disable_device - Disable PCI device after use
+@@ -1710,6 +1711,7 @@ pci_power_t pci_target_state(struct pci_
+  */
+ int pci_prepare_to_sleep(struct pci_dev *dev)
+ {
++	pci_power_t cur_state = dev->current_state;
+ 	pci_power_t target_state = pci_target_state(dev);
+ 	int error;
+ 
+@@ -1723,6 +1725,8 @@ int pci_prepare_to_sleep(struct pci_dev
+ 	if (error)
+ 		pci_enable_wake(dev, target_state, false);
+ 
++	dev_info(&dev->dev, "cur %d target %d error %d\n", cur_state,
++			target_state, error);
+ 	return error;
+ }
+ 
+Index: usb-3.4/drivers/usb/core/hcd-pci.c
+===================================================================
+--- usb-3.4.orig/drivers/usb/core/hcd-pci.c
++++ usb-3.4/drivers/usb/core/hcd-pci.c
+@@ -381,6 +381,8 @@ static int check_root_hub_suspended(stru
+ }
+ 
+ #if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_RUNTIME)
++extern void pci_disable_enabled_device(struct pci_dev *);
++
+ static int suspend_common(struct device *dev, bool do_wakeup)
+ {
+ 	struct pci_dev		*pci_dev = to_pci_dev(dev);
+@@ -427,12 +429,17 @@ static int suspend_common(struct device
+ 	if (!hcd->msix_enabled)
+ 		synchronize_irq(pci_dev->irq);
+ 
++	free_irq(hcd->irq, hcd);
++	iounmap(hcd->regs);
++	pci_disable_device(pci_dev);
++
+ 	/* Downstream ports from this root hub should already be quiesced, so
+ 	 * there will be no DMA activity.  Now we can shut down the upstream
+ 	 * link (except maybe for PME# resume signaling).  We'll enter a
+ 	 * low power state during suspend_noirq, if the hardware allows.
+ 	 */
+-	pci_disable_device(pci_dev);
++	pci_disable_enabled_device(pci_dev);
++	pci_dev->current_state = PCI_UNKNOWN;
+ 	return retval;
+ }
+ 
+Index: usb-3.4/drivers/usb/host/ehci-pci.c
+===================================================================
+--- usb-3.4.orig/drivers/usb/host/ehci-pci.c
++++ usb-3.4/drivers/usb/host/ehci-pci.c
+@@ -342,7 +342,6 @@ static int ehci_pci_suspend(struct usb_h
+ 	 * mark HW unaccessible.  The PM and USB cores make sure that
+ 	 * the root hub is either suspended or stopped.
+ 	 */
+-	ehci_prepare_ports_for_controller_suspend(ehci, do_wakeup);
+ 	spin_lock_irqsave (&ehci->lock, flags);
+ 	ehci_writel(ehci, 0, &ehci->regs->intr_enable);
+ 	(void)ehci_readl(ehci, &ehci->regs->intr_enable);
+@@ -350,6 +349,9 @@ static int ehci_pci_suspend(struct usb_h
+ 	clear_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+ 	spin_unlock_irqrestore (&ehci->lock, flags);
+ 
++	ehci_silence_controller(ehci);
++	ehci_reset(ehci);
++
+ 	// could save FLADJ in case of Vaux power loss
+ 	// ... we'd only use it to handle clock skew
+ 
