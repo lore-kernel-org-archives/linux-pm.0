@@ -1,91 +1,47 @@
-From: Andrey Rahmatullin <wrar@wrar.name>
-Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
-Date: Thu, 19 Apr 2012 03:23:01 +0600
-Message-ID: <20120418212301.GW11484@belkar.wrar.name>
-References: <1334769632.28106.46.camel@gandalf.stny.rr.com>
-	<Pine.LNX.4.44L0.1204181616430.1149-100000@iolanthe.rowland.org>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Wed, 18 Apr 2012 17:27:37 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1204181724570.1149-100000@iolanthe.rowland.org>
+References: <1334782932.28106.52.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4687507814904410924=="
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1204181616430.1149-100000@iolanthe.rowland.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: jrnieder@gmail.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1334782932.28106.52.camel-f9ZlEuEWxVcI6MkJdU+c8EEOCMrvLtNR@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>
+Cc: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>, jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 18 Apr 2012, Steven Rostedt wrote:
 
---===============4687507814904410924==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="0k4Rxg87Lb8yV0u3"
-Content-Disposition: inline
+> On Wed, 2012-04-18 at 16:23 -0400, Alan Stern wrote:
+> 
+> > In the meantime, just to be certain of the diagnosis, here's a
+> > different patch for you guys to try.  This will test the ehci-hcd
+> > unbound path (i.e., use it with the script).  The patch removes the
+> > line that sets the dev->current_state to PCI_UNKNOWN when the driver is
+> > unbound.  Thus current_state will remain equal to PCI_D0, so
+> > pci_prepare_to_sleep should put the controllers into D3, which we
+> > expect will cause a crash.
+> 
+> Confirmed. The suspend locked up even with the script.
 
+Okay, now I'm certain that this is the problem.
 
---0k4Rxg87Lb8yV0u3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > Please try this both with and without pm_test set to "platform", and 
+> > post the debugging dmesg output from whichever cases the computer 
+> > survives.
+> > 
+> 
+> Below is the dmesg output after running with pm_test set to "platform".
 
-On Wed, Apr 18, 2012 at 04:23:20PM -0400, Alan Stern wrote:
-> In the meantime, just to be certain of the diagnosis, here's a
-> different patch for you guys to try.  This will test the ehci-hcd
-> unbound path (i.e., use it with the script).  The patch removes the
-> line that sets the dev->current_state to PCI_UNKNOWN when the driver is
-> unbound.  Thus current_state will remain equal to PCI_D0, so
-> pci_prepare_to_sleep should put the controllers into D3, which we
-> expect will cause a crash.
->=20
-> Please try this both with and without pm_test set to "platform", and=20
-> post the debugging dmesg output from whichever cases the computer=20
-> survives.
-With "platform":
+The part you included didn't show the suspend itself.  It looks like a 
+bunch of stuff following the resume.  But I guess it doesn't much 
+matter, since we now know what needs to be fixed.
 
-ehci_hcd 0000:00:1d.0: wake-up capability enabled by ACPI
-ehci_hcd 0000:00:1d.0: cur 0 target 3 error 0
-ehci_hcd 0000:00:1a.0: wake-up capability enabled by ACPI
-ehci_hcd 0000:00:1a.0: cur 0 target 3 error 0
+Alan Stern
 
-With "none" it locks up.
-
---=20
-WBR, wRAR
-
---0k4Rxg87Lb8yV0u3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPjzC0AAoJEDNi9wMaSZLh7yEP/0TpicDHDfYLsgd17zRkdOfg
-wxtIzcs7K2niogf9IX9kVP1oscERE/g9C8Dli3vfuAbYFfMHlrbsuSRGtF7jTKFS
-101c7zcrgqzJVeKtL/nbbx+/pIS+o68qqlh7hONfVXt5VSLGsGLD3b1D2XCqLWTH
-SYS4zU0odoQtJRCMrgZNI2pO8o9HpSMrmfV6CADQjNBnARVNnIRVnAMtnTrptBqm
-fJyqqcs5YOD4n/tXJDM771KPllfwyU/bFnkGRvo7OVu49XFpefzrdvBiq9qoPZXo
-aLeZiFb+8nlLacxtQtNOFdUmzn2Qw3WMsmi/BUyf69y0IMKyOOw+PHgnfdiiiAbi
-DHU75ZZbGD9TpruZgCh1wPury1kj+45z+47DJs/cK37+meCnz0uiHc/PaTdka0sT
-mvm3a1sGs3YLlpHsg3MQTgOkfP1Unauz9Z97MmMSUoOj1Tox5wj/uCdhv4lT2uWZ
-fNn91ArsK65aCCk1S6bfqePTSqDtFgdSm37am/NAkNle/HeJ4Yt6L85ua2YvEIqZ
-RcT3Oqja5gs1U7dqaTsC0xF/PD6+sGTUI1O5oztTcU8JjFdlcyZS7A5UEz1kSUpd
-wHZ+tOicDPryYSkFHWJviakW7zz9No6c+CWs3k2RBObydZxz42Q2IJiXwvQ9m98R
-p0b8bdjqpO/Yav1c9gnn
-=EqVJ
------END PGP SIGNATURE-----
-
---0k4Rxg87Lb8yV0u3--
-
---===============4687507814904410924==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4687507814904410924==--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
