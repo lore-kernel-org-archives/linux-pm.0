@@ -1,57 +1,91 @@
-From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Subject: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again
-Date: Wed, 18 Apr 2012 23:04:29 +0200
-Message-ID: <201204182304.29249.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1204181616430.1149-100000@iolanthe.rowland.org>
+From: Andrey Rahmatullin <wrar@wrar.name>
+Subject: Re: ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Thu, 19 Apr 2012 03:23:01 +0600
+Message-ID: <20120418212301.GW11484@belkar.wrar.name>
+References: <1334769632.28106.46.camel@gandalf.stny.rr.com>
+	<Pine.LNX.4.44L0.1204181616430.1149-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <Pine.LNX.4.44L0.1204181616430.1149-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>, jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/mixed; boundary="===============4687507814904410924=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.1204181616430.1149-100000@iolanthe.rowland.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: jrnieder@gmail.com, linux-pm@lists.linux-foundation.org, USB list <linux-usb@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, April 18, 2012, Alan Stern wrote:
-> On Wed, 18 Apr 2012, Steven Rostedt wrote:
-> 
-> > On Wed, 2012-04-18 at 23:10 +0600, Andrey Rahmatullin wrote:
-> > > On Wed, Apr 18, 2012 at 12:41:10PM -0400, Alan Stern wrote:
-> > > > Here's the situation.  When the script unbinds ehci-hcd, 
-> > > > pci_device_remove() sets the current state to PCI_UNKNOWN.  The patch 
-> > > > to hcd-pci.c does the same thing before the suspend_noirq phase begins, 
-> > > > i.e., before pci_prepare_to_sleep() is called.
-> > > > 
-> > > > In pci_raw_set_power_state(), there's a "switch" statement that depends
-> > > > on dev->current_state.  If the current state is PCI_D0 then the new
-> > > > state in pmcsr is set to PCI_D3; if the current state is PCI_UNKNOWN
-> > > > then the state in pmcsr is left unchanged.  After that, the value in
-> > > > pmcsr is written to the controller.
-> > > > 
-> > > > This means that when ehci-hcd is unbound or the patch is installed, the
-> > > > controller stays in D0.  That's why we see those "Refused to change
-> > > > power state" messages, since D0 is not what the target state was
-> > > > supposed to be.  When ehci-hcd remains bound and the patch isn't
-> > > > installed, the controller is put into D3.
-> > > > 
-> > > > And then finally, the computer crashes during the final stage of 
-> > > > suspend if either controller is in D3.  Clearly this is a bug in the 
-> > > > firmware, not in the kernel.
-> 
-> > Is there a way to detect this chipset or something, to add a workaround
-> > for it?
-> 
-> Yes, there are ways to work around this.  At the moment I'm not sure 
-> what would be best; we can ask Rafael.  One big remaining puzzle: Why 
-> are the EHCI controllers the only devices that cause a crash when left 
-> in D3 during suspend?  We may never know...
 
-Are they put into D3 by ACPI or using the native PCI PM?
+--===============4687507814904410924==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="0k4Rxg87Lb8yV0u3"
+Content-Disposition: inline
 
-Rafael
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--0k4Rxg87Lb8yV0u3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Apr 18, 2012 at 04:23:20PM -0400, Alan Stern wrote:
+> In the meantime, just to be certain of the diagnosis, here's a
+> different patch for you guys to try.  This will test the ehci-hcd
+> unbound path (i.e., use it with the script).  The patch removes the
+> line that sets the dev->current_state to PCI_UNKNOWN when the driver is
+> unbound.  Thus current_state will remain equal to PCI_D0, so
+> pci_prepare_to_sleep should put the controllers into D3, which we
+> expect will cause a crash.
+>=20
+> Please try this both with and without pm_test set to "platform", and=20
+> post the debugging dmesg output from whichever cases the computer=20
+> survives.
+With "platform":
+
+ehci_hcd 0000:00:1d.0: wake-up capability enabled by ACPI
+ehci_hcd 0000:00:1d.0: cur 0 target 3 error 0
+ehci_hcd 0000:00:1a.0: wake-up capability enabled by ACPI
+ehci_hcd 0000:00:1a.0: cur 0 target 3 error 0
+
+With "none" it locks up.
+
+--=20
+WBR, wRAR
+
+--0k4Rxg87Lb8yV0u3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPjzC0AAoJEDNi9wMaSZLh7yEP/0TpicDHDfYLsgd17zRkdOfg
+wxtIzcs7K2niogf9IX9kVP1oscERE/g9C8Dli3vfuAbYFfMHlrbsuSRGtF7jTKFS
+101c7zcrgqzJVeKtL/nbbx+/pIS+o68qqlh7hONfVXt5VSLGsGLD3b1D2XCqLWTH
+SYS4zU0odoQtJRCMrgZNI2pO8o9HpSMrmfV6CADQjNBnARVNnIRVnAMtnTrptBqm
+fJyqqcs5YOD4n/tXJDM771KPllfwyU/bFnkGRvo7OVu49XFpefzrdvBiq9qoPZXo
+aLeZiFb+8nlLacxtQtNOFdUmzn2Qw3WMsmi/BUyf69y0IMKyOOw+PHgnfdiiiAbi
+DHU75ZZbGD9TpruZgCh1wPury1kj+45z+47DJs/cK37+meCnz0uiHc/PaTdka0sT
+mvm3a1sGs3YLlpHsg3MQTgOkfP1Unauz9Z97MmMSUoOj1Tox5wj/uCdhv4lT2uWZ
+fNn91ArsK65aCCk1S6bfqePTSqDtFgdSm37am/NAkNle/HeJ4Yt6L85ua2YvEIqZ
+RcT3Oqja5gs1U7dqaTsC0xF/PD6+sGTUI1O5oztTcU8JjFdlcyZS7A5UEz1kSUpd
+wHZ+tOicDPryYSkFHWJviakW7zz9No6c+CWs3k2RBObydZxz42Q2IJiXwvQ9m98R
+p0b8bdjqpO/Yav1c9gnn
+=EqVJ
+-----END PGP SIGNATURE-----
+
+--0k4Rxg87Lb8yV0u3--
+
+--===============4687507814904410924==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4687507814904410924==--
