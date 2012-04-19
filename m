@@ -1,134 +1,54 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: Devfreq Simple On Demand Governor
-Date: Thu, 19 Apr 2012 11:48:12 +0900
-Message-ID: <CAJ0PZbTd1QV9FZj+cnCaOZ96FC3zkNiLcqpa0XuW+09Y7j_XBA@mail.gmail.com>
-References: <CAChS5kNS6DUq9W-R0XkQ8ksojUAbsLy5opz1eKb5iaa0D895cw@mail.gmail.com>
-	<CAJ0PZbQB3USyV65KNERn01yF-KFgi9o7yRJquoOc0iBWotv6PA@mail.gmail.com>
-	<CAChS5kO96UeZEeisRqdX7Ene_cQBjdB2+pduBMtoBWvXr4szTw@mail.gmail.com>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again
+Date: Thu, 19 Apr 2012 09:43:45 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1204190934500.2070-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.1204181729400.1149-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAChS5kO96UeZEeisRqdX7Ene_cQBjdB2+pduBMtoBWvXr4szTw@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Satendra..." <satendra.pratap@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <Pine.LNX.4.44L0.1204181729400.1149-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>
+Cc: jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 17, 2012 at 7:19 PM, Satendra... <satendra.pratap@gmail.com> wr=
-ote:
-> Hi Ham,
->
-> Thanks for your replies. Below are my thoughts.
->
-> On 16 April 2012 19:46, MyungJoo Ham <myungjoo.ham@gmail.com> wrote:
->>
->> On Mon, Apr 16, 2012 at 7:07 PM, Satendra... <satendra.pratap@gmail.com>
->> wrote:
->> > Hi Ham,
->> >
->> > I was looking at the simple on demand governor's code and have got few
->> > queries:
->> > - In the code below to check for overflow, why 24 and 7 =A0has been ta=
-ken?
->> > =A0 =A0 =A0 =A0 /* Prevent overflow */
->> > =A0 =A0 =A0 =A0 if (stat.busy_time >=3D (1 << 24) || stat.total_time >=
-=3D (1 << 24))
->> > {
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 stat.busy_time >>=3D 7;
->> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 stat.total_time >>=3D 7;
->> > =A0 =A0 =A0 =A0 }
->>
->> It is because 1<<7 >=3D 100 and 1<<6 < 100. (To get percentage, we are
->> multiplying 100).
->>
-> ok. but what about 24? Is it assumed that no one will be allowed to execu=
-te
-> more than 2^(24-7) units (nsec, msecs etc)?
-> Is 2^(24-7) =3D 128 * 1024 units (nsecs, msecs etc) the default time slic=
-e of
-> kernel to any code?
+On Wed, 18 Apr 2012, Alan Stern wrote:
 
-It is because we are using 32 bit values and we want to avoid
-overflow. If the numbers are sufficiently big, we can forget about the
-least bits, which won't impact the precision significantly.
+> Tomorrow we can try to figure out the appropriate workaround.
 
->
->>
->> >
->> > - Also for maximum frequency UINT_MAX is returned which may not be
->> > suited
->> > for some devices.
->>
->> The frequency given to devfreq driver is "recommended frequency", not
->> the "exact frequency required".
->>
->> Thus, the driver is required to choose
->> 1. frequency that is at least (but closest) or same with the
->> "recommended frequency"
->> and if that's impossible,
->> 2. frequency that is closest to the "recommended frequency".
->>
->> Thus, if it's "UINT_MAX", then it should choose the maximum frequency.
->>
->
-> You mean we have to check for UINT_MAX in our code and if its so then set
-> device at its maximum frequency.
->
->>
->> >
->> > - One more query, whats the unit (usecs, nsecs etc) used for busy and
->> > load
->> > time. Has it got nothing to do with units
->> > and its mere the percentage of busy time?
->>
->> The unit is up to the device driver. It only needs to provide
->> "reasonable" values in u32 to the infrastructure. It could be usec,
->> nsec, #ops, or anything else.
->> I've mentioned it only because jiffy does not seem to be "reasonable";
->> jiffy is too rough. You may even get 0 jiffies for 100 operations
->> while you may get 1 jiffy for 1 operation in the same system.
->>
->> In the governors, maybe busy / total ratio can be used as in
->> simple_ondemand. And you should give values that can support some fair
->> granularity there, which jiffy cannot.
->>
->> >
->> > - If we want to use simple on demand governor then do we need to modify
->> > yours to suit our needs? I mean you have
->> > just provided a framework?
->>
->> If you want to use THE simple_ondemand for your device, you only need
->> to create a devfreq driver. You don't need to modify the governor or
->> the framework/.
->>
->> >
->> > Thanks,
->> > Satendra
->>
->>
->> Cheers!
->> MyungJoo.
->>
->> --
->> MyungJoo Ham, Ph.D.
->> System S/W Lab, S/W Center, Samsung Electronics
->
->
-> Thanks,
-> Satendra
+Below is a patch that will prevent any PCI device from being put into
+D3 during suspend.  (This is meant to be used without any of the
+earlier diagnostic patches.)  Obviously it's not the final solution; 
+the test in the "if" statement needs to be more discriminating.  :-)
+
+But before going any farther, I'd like to test if USB wakeup works.  
+So after booting with this patch, make sure that the power/wakeup file
+says "enabled" in the sysfs path for each controller as well as the
+usb1, usb2, 1-2, and 2-2 paths under /sys/bus/usb/devices/.
+
+Then suspend the computer without using the script, and while it is
+asleep try plugging in a new USB device.  That should cause the
+computer to wake up, if everything is working properly.
+
+Alan Stern
 
 
 
--- =
+Index: usb-3.4/drivers/pci/pci.c
+===================================================================
+--- usb-3.4.orig/drivers/pci/pci.c
++++ usb-3.4/drivers/pci/pci.c
+@@ -1713,6 +1713,8 @@ int pci_prepare_to_sleep(struct pci_dev
+ 	pci_power_t target_state = pci_target_state(dev);
+ 	int error;
+ 
++	if (1)
++		target_state = PCI_D0;
+ 	if (target_state == PCI_POWER_ERROR)
+ 		return -EIO;
+ 
 
-MyungJoo Ham, Ph.D.
-System S/W Lab, S/W Center, Samsung Electronics
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
