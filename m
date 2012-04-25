@@ -1,109 +1,95 @@
-From: Adrian Fita <adrian.fita@gmail.com>
-Subject: udev/power_supply battery oscilates between remove and
-	add
-Date: Wed, 25 Apr 2012 02:24:31 +0300
-Message-ID: <4F97362F.9050909@gmail.com>
+From: Andrew Watts <akwatts@ymail.com>
+Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
+Date: Wed, 25 Apr 2012 15:04:34 -0500
+Message-ID: <20120425200402.GB22273@zeus>
+References: <20111101124759.GA1326@zeus>
+ <20111102054658.GA29035@core.coreip.homeip.net>
+ <20111102160208.GA6657@zeus>
+ <20111102163109.GA29430@core.coreip.homeip.net>
+ <20111103155956.GG4417@google.com>
+ <20111103184559.GA3295@zeus>
+ <20111103213959.GP4417@google.com>
+ <20111104134347.GA2480@zeus>
+ <20111104161431.GZ4417@google.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------020400090804030400010803"
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20111104161431.GZ4417@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020400090804030400010803
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Hello all.
 
-Hi. I hope I'm addressing the appropriate mailinglist regarding this. If 
-not, please direct me to the right place where I should write.
+I wanted to follow-up on a very peculiar yet highly reproducible bug
+involving suspend/resume, radeon, and a seemingly unrelated patch to
+input serio.
 
-I'm using Debian Wheezy/Testing, kernel 3.2.15-1 on a HP PowerBook 4515s 
-laptop.
+The last comment in the thread was from Jerome Glisse saying it was a tough
+bug to fix. Has anyone had any good ideas on how to fix it since?
 
-I noticed that /var/log/syslog is getting spammed with messages like in 
-the attached syslog-laptop-mode_spam.log.gz file.
+Thanks!
 
-Also, at the same time, "upower --monitor" shows the messages from 
-upower-monitor.log.gz.
-
-In Windows XP I don't see any issue with the battery and also running HP 
-Battery Check 
-(http://h20239.www2.hp.com/techcenter/battery/battery_ts.htm) I got the 
-result that the battery is functioning correctly, but is week 
-(admittedly it is more than a year old, but still holds a charge for 30 
-mins).
-
-So it looks like a kernel issue. I started checking the udev events with 
-'udevadm monitor --property' and got the messages from the 
-udevadm_monitor.log.gz file.
-
-This happens only when the battery and the power cable are connected. 
-When running with the battery removed or without the power cable 
-connected (running only on battery) this is not happening.
-
-Here are some more discussions about this:
-- a Debian Bug reported: 
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638970
-- and also a thread on the Upower mailinglist: 
-http://lists.freedesktop.org/archives/devkit-devel/2012-February/001225.html
--- 
-Fita Adrian
-
---------------020400090804030400010803
-Content-Type: application/x-gzip;
- name="syslog-laptop-mode_spam.log.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="syslog-laptop-mode_spam.log.gz"
-
-H4sICNqkkU8AA3N5c2xvZy1sYXB0b3AtbW9kZV9zcGFtLmxvZwBzLChSMDJQMDSwMjWyMjRR
-qEotylfISSwoyS/Qzc1PSbVS8AFzFEAcLkeCqlPzEpNyUlN0iFCal1+ikJhcklmWqhBdmpec
-kZiXnpoSS4TGAXWRsTEpLsKqGruLsCodmi4yNSLFRVhVY3cRVqVDxUUKXADX7LpFbQMAAA==
---------------020400090804030400010803
-Content-Type: application/x-gzip;
- name="upower-monitor.log.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="upower-monitor.log.gz"
-
-H4sICPakkU8AA3Vwb3dlci1tb25pdG9yLmxvZwCt0zkOwjAQheGeU+QE3iaD7XRwAgqoEEIB
-D4sQBDkRiNsTlgJaeK6tTzPy77k1FbvKkgqeFkV/klz2aymyHJuLpKrQTd7qTRZJ0h665qxn
-k+YqWb/utXpVd53k23I8mprB/M2VylvzydUp/YV9zbbe1aftzxwrFyKOGyoXHY7zPWdxXOg5
-g+MidFlyKlpcdUTKGwZV98Q8btUS+hDE0EwIGzE9Isb9WArQ6diqWDKsOnbKhwCq7oEB35UJ
-Wh1jI2aGZsJD6J9gj1n2DleqFO5iBwAA
---------------020400090804030400010803
-Content-Type: application/x-gzip;
- name="udevadm_monitor.log.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="udevadm_monitor.log.gz"
-
-H4sICPalkU8AA3VkZXZhZG1fbW9uaXRvci5sb2cA7dhBb5swFAfwO5+C43Zo84wNhkk+EOIm
-qGAY4HbZFKEoQVvUNqnSrlG//Uyyagkl0tqpKwffLL8nG15+iv7JOc8Ej75ZxKXoFHsOWPbE
-XFc3q4fK7M2rh8WsuutF4ks+zov4E8DvvXqVihQC8Ovl7WpTrcu7n7e314+9vl+A+WF/66Ph
-B0WYCLY72Bjwi9QvRuwfLjDS5JJnZS7TNBqXwcjPhrw8k1HEEMIU4HhDOeB5OBSMEIBjfSK5
-ZMjyWs6RWcZFsW1olsZBxMsgkaJolmJfyDM1ApnxjI2qzXV1f3+STmdX0/W80ZkMeFQKP+Ys
-XS9upuvHw/q28vz904zn6rEYOtzOeRb66jgZ99XFAJhg0wLwemD3ULO38AuZM7m8Wq42y8Na
-wYORSKJkOGbR4mSxapQvkqjw1dTiUDwNF4HbMt2nxt14iYvqjpx/Vg/IbOLYRi77tQMes/0P
-3JAKTKmuZ9gwzhtgse1MzOl8/gZa1amaqqbaRtV5BVUXE2tizn5Ml9/f4rt1d7AGq8G2gaV/
-A7Zem+YfsA6mOgxosJ0NAzLnQRmKsFAvFn7lA7aVq0IBRW5DMwHLAlcnBe24g0mh3TEBhMlz
-x9Slno4RWnNnY8QxzdgBZz8Ue3BKEHHrUKwzhtb8Dprdl/2K24K1LZfqGKGp/meq3muo2o6j
-k4IG+x5gKbzsD4cdWJcQHQY02M6GgbZo64FKsR5xmpotoI6tk4J23MGkcMSxBTaxmo6xTYHo
-GKE1dzZGHNXsUWwavwAavVjN4iAAAA==
---------------020400090804030400010803
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+~ Andy
 
 
---------------020400090804030400010803--
+On Fri, Nov 04, 2011 at 09:14:31AM -0700, Tejun Heo wrote:
+> (cc'ing David Airlie and dri-devel)
+> 
+> Hello, the original thread can be read from
+> 
+>   http://thread.gmane.org/gmane.linux.kernel/1209587
+> 
+> Full sysrq-t output at
+> 
+>   http://article.gmane.org/gmane.linux.kernel/1211256
+> 
+> So, the problem is that after a seemingly unreated update to input
+> serio driver (convert to use workqueue), X seems to lock up
+> sporadically across suspend/resume cycles.
+> 
+> I went through the full sysrq-t output but couldn't spot anything
+> suspicious w/ anything else.  No worker is stuck and nobody is waiting
+> for flush to finish.
+> 
+> Stack trace for X follows.
+> 
+> > X               S f499b944  5800  1652   1651 0x00400080
+> >  f499b9a8 00003086 00000000 f499b944 c100d4a4 00000000 00000000 f499b958
+> >  00000000 f499b9a8 f5173140 d7857c56 00000057 f5173140 d8b69880 00000057
+> >  00000001 00000000 f499b9b4 c104dd89 000f4240 00000000 00000000 f499ba68
+> > Call Trace:
+> >  [<c1291301>] ttm_bo_wait_unreserved+0x5f/0x106
+> >  [<c129145f>] ttm_bo_reserve_locked+0xb7/0xe1
+> >  [<c1292c27>] ttm_bo_reserve+0x26/0x95
+> >  [<c12c3c97>] radeon_crtc_do_set_base+0xbd/0x6d2
+> >  [<c12c42e7>] radeon_crtc_set_base+0x1b/0x1d
+> >  [<c12c430d>] radeon_crtc_mode_set+0x24/0xdd7
+> >  [<c1279c57>] drm_crtc_helper_set_mode+0x32c/0x48b
+> >  [<c1279e2f>] drm_helper_resume_force_mode+0x79/0x23e
+> >  [<c12ace10>] radeon_gpu_reset+0x84/0x98
+> >  [<c12c0838>] radeon_fence_wait+0x2d1/0x311
+> >  [<c12c0e37>] radeon_sync_obj_wait+0xc/0xe
+> >  [<c12908be>] ttm_bo_wait+0xa1/0x108
+> >  [<c12d6e7b>] radeon_gem_wait_idle_ioctl+0x76/0xc4
+> >  [<c127e62e>] drm_ioctl+0x1c2/0x42c
+> >  [<c10e288e>] do_vfs_ioctl+0x79/0x54b
+> >  [<c10e2dcb>] sys_ioctl+0x6b/0x70
+> >  [<c1593813>] sysenter_do_call+0x12/0x22
+> 
+> Do you guys have any ideas what's going on?  It seems to be waiting
+> for bo->reserved to go zero.  Is it possible that someone there is
+> forgetting to properly kick a work item after resume causing the wait
+> to stall?
+> 
+> Andrew, can you please kill the X server after the hang and see
+> whether that brings the system back?  I think sshd should still work
+> and if not you can write a script to kill the X server after 30secs
+> after resume (and kill that script if resume succeeds).
+> 
+> Thank you.
+> 
+> -- 
+> tejun
