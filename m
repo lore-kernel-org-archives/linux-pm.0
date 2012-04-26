@@ -1,95 +1,82 @@
-From: Andrew Watts <akwatts@ymail.com>
-Subject: Re: [REGRESSION]: hibernate/sleep regression w/ bisection
-Date: Wed, 25 Apr 2012 15:04:34 -0500
-Message-ID: <20120425200402.GB22273@zeus>
-References: <20111101124759.GA1326@zeus>
- <20111102054658.GA29035@core.coreip.homeip.net>
- <20111102160208.GA6657@zeus>
- <20111102163109.GA29430@core.coreip.homeip.net>
- <20111103155956.GG4417@google.com>
- <20111103184559.GA3295@zeus>
- <20111103213959.GP4417@google.com>
- <20111104134347.GA2480@zeus>
- <20111104161431.GZ4417@google.com>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH V3 04/10] ARM: OMAP3: hwmod: rename the smartreflex entries
+Date: Thu, 26 Apr 2012 23:10:35 +0530
+Message-ID: <1335462041-4949-5-git-send-email-j-keerthy@ti.com>
+References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20111104161431.GZ4417@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org
+Content-Type: text/plain
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@ti.com, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Cc: j-pihet@ti.com, j-keerthy@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-Hello all.
+From: Jean Pihet <j-pihet@ti.com>
 
-I wanted to follow-up on a very peculiar yet highly reproducible bug
-involving suspend/resume, radeon, and a seemingly unrelated patch to
-input serio.
+Change the name field value to better reflect the smartreflex
+integration in the system.
 
-The last comment in the thread was from Jerome Glisse saying it was a tough
-bug to fix. Has anyone had any good ideas on how to fix it since?
+Signed-off-by: Jean Pihet <j-pihet@ti.com>
+Signed-off-by: J Keerthy <j-keerthy@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_3xxx_data.c |    8 ++++----
+ arch/arm/mach-omap2/smartreflex.c          |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Thanks!
+diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+index 144d118..15907b0 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+@@ -1324,7 +1324,7 @@ static struct omap_hwmod_irq_info omap3_smartreflex_mpu_irqs[] = {
+ };
+ 
+ static struct omap_hwmod omap34xx_sr1_hwmod = {
+-	.name		= "sr1",
++	.name		= "smartreflex_mpu_iva",
+ 	.class		= &omap34xx_smartreflex_hwmod_class,
+ 	.main_clk	= "sr1_fck",
+ 	.prcm		= {
+@@ -1342,7 +1342,7 @@ static struct omap_hwmod omap34xx_sr1_hwmod = {
+ };
+ 
+ static struct omap_hwmod omap36xx_sr1_hwmod = {
+-	.name		= "sr1",
++	.name		= "smartreflex_mpu_iva",
+ 	.class		= &omap36xx_smartreflex_hwmod_class,
+ 	.main_clk	= "sr1_fck",
+ 	.prcm		= {
+@@ -1369,7 +1369,7 @@ static struct omap_hwmod_irq_info omap3_smartreflex_core_irqs[] = {
+ };
+ 
+ static struct omap_hwmod omap34xx_sr2_hwmod = {
+-	.name		= "sr2",
++	.name		= "smartreflex_core",
+ 	.class		= &omap34xx_smartreflex_hwmod_class,
+ 	.main_clk	= "sr2_fck",
+ 	.prcm		= {
+@@ -1387,7 +1387,7 @@ static struct omap_hwmod omap34xx_sr2_hwmod = {
+ };
+ 
+ static struct omap_hwmod omap36xx_sr2_hwmod = {
+-	.name		= "sr2",
++	.name		= "smartreflex_core",
+ 	.class		= &omap36xx_smartreflex_hwmod_class,
+ 	.main_clk	= "sr2_fck",
+ 	.prcm		= {
+diff --git a/arch/arm/mach-omap2/smartreflex.c b/arch/arm/mach-omap2/smartreflex.c
+index 2edd1e2..d859277 100644
+--- a/arch/arm/mach-omap2/smartreflex.c
++++ b/arch/arm/mach-omap2/smartreflex.c
+@@ -183,7 +183,7 @@ static void sr_set_regfields(struct omap_sr *sr)
+ 		sr->err_weight = OMAP3430_SR_ERRWEIGHT;
+ 		sr->err_maxlimit = OMAP3430_SR_ERRMAXLIMIT;
+ 		sr->accum_data = OMAP3430_SR_ACCUMDATA;
+-		if (!(strcmp(sr->name, "sr1"))) {
++		if (!(strcmp(sr->name, "smartreflex_mpu_iva"))) {
+ 			sr->senn_avgweight = OMAP3430_SR1_SENNAVGWEIGHT;
+ 			sr->senp_avgweight = OMAP3430_SR1_SENPAVGWEIGHT;
+ 		} else {
+-- 
+1.7.5.4
 
-~ Andy
-
-
-On Fri, Nov 04, 2011 at 09:14:31AM -0700, Tejun Heo wrote:
-> (cc'ing David Airlie and dri-devel)
-> 
-> Hello, the original thread can be read from
-> 
->   http://thread.gmane.org/gmane.linux.kernel/1209587
-> 
-> Full sysrq-t output at
-> 
->   http://article.gmane.org/gmane.linux.kernel/1211256
-> 
-> So, the problem is that after a seemingly unreated update to input
-> serio driver (convert to use workqueue), X seems to lock up
-> sporadically across suspend/resume cycles.
-> 
-> I went through the full sysrq-t output but couldn't spot anything
-> suspicious w/ anything else.  No worker is stuck and nobody is waiting
-> for flush to finish.
-> 
-> Stack trace for X follows.
-> 
-> > X               S f499b944  5800  1652   1651 0x00400080
-> >  f499b9a8 00003086 00000000 f499b944 c100d4a4 00000000 00000000 f499b958
-> >  00000000 f499b9a8 f5173140 d7857c56 00000057 f5173140 d8b69880 00000057
-> >  00000001 00000000 f499b9b4 c104dd89 000f4240 00000000 00000000 f499ba68
-> > Call Trace:
-> >  [<c1291301>] ttm_bo_wait_unreserved+0x5f/0x106
-> >  [<c129145f>] ttm_bo_reserve_locked+0xb7/0xe1
-> >  [<c1292c27>] ttm_bo_reserve+0x26/0x95
-> >  [<c12c3c97>] radeon_crtc_do_set_base+0xbd/0x6d2
-> >  [<c12c42e7>] radeon_crtc_set_base+0x1b/0x1d
-> >  [<c12c430d>] radeon_crtc_mode_set+0x24/0xdd7
-> >  [<c1279c57>] drm_crtc_helper_set_mode+0x32c/0x48b
-> >  [<c1279e2f>] drm_helper_resume_force_mode+0x79/0x23e
-> >  [<c12ace10>] radeon_gpu_reset+0x84/0x98
-> >  [<c12c0838>] radeon_fence_wait+0x2d1/0x311
-> >  [<c12c0e37>] radeon_sync_obj_wait+0xc/0xe
-> >  [<c12908be>] ttm_bo_wait+0xa1/0x108
-> >  [<c12d6e7b>] radeon_gem_wait_idle_ioctl+0x76/0xc4
-> >  [<c127e62e>] drm_ioctl+0x1c2/0x42c
-> >  [<c10e288e>] do_vfs_ioctl+0x79/0x54b
-> >  [<c10e2dcb>] sys_ioctl+0x6b/0x70
-> >  [<c1593813>] sysenter_do_call+0x12/0x22
-> 
-> Do you guys have any ideas what's going on?  It seems to be waiting
-> for bo->reserved to go zero.  Is it possible that someone there is
-> forgetting to properly kick a work item after resume causing the wait
-> to stall?
-> 
-> Andrew, can you please kill the X server after the hang and see
-> whether that brings the system back?  I think sshd should still work
-> and if not you can write a script to kill the X server after 30secs
-> after resume (and kill that script if resume succeeds).
-> 
-> Thank you.
-> 
-> -- 
-> tejun
