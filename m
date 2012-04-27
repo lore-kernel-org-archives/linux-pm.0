@@ -1,63 +1,79 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
-Date: Fri, 27 Apr 2012 11:09:10 +0530
-Message-ID: <CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage
+	Scaling)
+Date: Fri, 27 Apr 2012 18:56:58 +0100
+Message-ID: <20120427175657.GP18260@opensource.wolfsonmicro.com>
 References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
 	<20120426191159.GA9415@sirena.org.uk>
+	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20120426191159.GA9415@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, khilman@ti.com, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
+Content-Type: multipart/mixed; boundary="===============4879448653714740865=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "J, KEERTHY" <j-keerthy@ti.com>
+Cc: khilman@ti.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, j-pihet@ti.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Mark,
 
-On Fri, Apr 27, 2012 at 12:41 AM, Mark Brown
-<broonie@opensource.wolfsonmicro.com> wrote:
-> On Thu, Apr 26, 2012 at 11:10:31PM +0530, Keerthy wrote:
->> From: J Keerthy <j-keerthy@ti.com>
->>
->> AVS(Adaptive Voltage Scaling) is a power management technique which
->> controls the operating voltage of a device in order to optimize (i.e=
-=2E reduce)
->> its power consumption. The voltage is adapted depending on static fa=
-ctors
->> (chip manufacturing process) and dynamic factors (temperature
->> depending performance).
->> The TI AVS solution is named Smartreflex.
->
-> What's the relationship between this and existing things like devfreq
-> and cpufreq? =A0It'd be better if the changelogs made this clear and
-> provided an overview of how all these different subsystems are intend=
-ed
-> to fit together.
+--===============4879448653714740865==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="iq/fWD14IMVFWBCD"
+Content-Disposition: inline
 
-Devfreq and cpufreq are related to dynamic frequency/voltage switching =
-between
-pre defined Operating Performance Points or the OPPs. Every OPP being
-a voltage/frequency pair. Smartreflex is a different
-power management technique.
 
-SmartReflex is a technology that uses adaptive
-power supply to achieve the goal of reducing active power consumption.
-With SmartReflex, the power supply voltage can be adapted to the silico=
-n
-performance either statically (for example, adapted to the manufacturin=
-g process
-of a given device), or dynamically (for example, adapted to the tempera=
-ture
-induced current performance of the device).
+--iq/fWD14IMVFWBCD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-So for every OPP(voltage/frequency pair) depending on the silicon proce=
-ss and
-temperature the Smartreflex tries to get the voltage to an optimal
-value at which
-the corresponding frequency can be sustained.
+On Fri, Apr 27, 2012 at 11:09:10AM +0530, J, KEERTHY wrote:
 
---=20
-Regards and Thanks,
-Keerthy
+> Devfreq and cpufreq are related to dynamic frequency/voltage switching between
+> pre defined Operating Performance Points or the OPPs. Every OPP being
+> a voltage/frequency pair. Smartreflex is a different
+> power management technique.
+
+But presumably these things should integrate somehow - for example,
+should devfreq and cpufreq be providing inputs into what AVS is doing,
+and if so how?
+
+--iq/fWD14IMVFWBCD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJPmt3jAAoJEBus8iNuMP3dwCIP/1i2rPocJbbB7yGsjpZmoc0F
+b3lRK6RmOuad98MAeSv1AO7/J6QI3N7s7oVhJfkP69j3mxzXdQf2AE6DSgqbWJT4
+wU1qRVsrC1WniNeDHU8ucXq6wIMalxUapfVhUJDChz4Ui04+si6xkKfWjkKHMSZa
+zv+7TequN2Rk8EVmZtMdyonyBjXTNchjIJ7AREUfrXKHL1LTRn5zljr/QMb+bKiW
+fN0ndG7iDizDTwDY67tXDdMN5WlIVl7FexGV/L44V32F4iENeBkOn3rfI2AzLSKX
+XBpKidSO54q1s4HrrzdPBGAkV70K/BBNktQWAd85CFptQ3jP4TNTrr0FV56/URNK
+waLW58bP3RfWYEQyBIsixdFVbgk6/M01FmwSUOdFf26dsQi0sDh29LrM67RkNKmt
+p2O+oLuJRKAjUh5dJOtyqkXpjdSEKBcl/gmREQqdS1AGzhdaP6BZ0mN1XIuYGPi/
+JsRHUbXAlFzYNc4F2dEYE5WIo1fj1q/9kWwhY8vLPvFZlCWyEr8NfgASdpY0gxbC
+Hn9YjPv+fCQN6SUKaUfLiaGThTh7e5zysuvjHU+w+eGNZBNSgvZA7ofaf/TsX+Ba
+ike7OfcLi/Noho5LBD2Dxsbtg/lNamL5n8pdDFu+OwCoqj64cspjz7mOFcJaaSFd
+xPst2wKotL3rtuxYiVMl
+=IFMA
+-----END PGP SIGNATURE-----
+
+--iq/fWD14IMVFWBCD--
+
+--===============4879448653714740865==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============4879448653714740865==--
