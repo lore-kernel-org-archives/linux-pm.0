@@ -1,79 +1,61 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage
-	Scaling)
-Date: Fri, 27 Apr 2012 18:56:58 +0100
-Message-ID: <20120427175657.GP18260@opensource.wolfsonmicro.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
+Date: Fri, 27 Apr 2012 14:01:17 -0700
+Message-ID: <87397o3n4y.fsf@ti.com>
 References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
 	<20120426191159.GA9415@sirena.org.uk>
 	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
+	<20120427175657.GP18260@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4879448653714740865=="
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "J, KEERTHY" <j-keerthy@ti.com>
-Cc: khilman@ti.com, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, j-pihet@ti.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20120427175657.GP18260@opensource.wolfsonmicro.com> (Mark
+	Brown's message of "Fri, 27 Apr 2012 18:56:58 +0100")
+Sender: linux-omap-owner@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: "J, KEERTHY" <j-keerthy@ti.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
 List-Id: linux-pm@vger.kernel.org
 
+Hi Mark,
 
---===============4879448653714740865==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="iq/fWD14IMVFWBCD"
-Content-Disposition: inline
+Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
 
+> On Fri, Apr 27, 2012 at 11:09:10AM +0530, J, KEERTHY wrote:
+>
+>> Devfreq and cpufreq are related to dynamic frequency/voltage switching between
+>> pre defined Operating Performance Points or the OPPs. Every OPP being
+>> a voltage/frequency pair. Smartreflex is a different
+>> power management technique.
+>
+> But presumably these things should integrate somehow - for example,
+> should devfreq and cpufreq be providing inputs into what AVS is doing,
+> and if so how?
 
---iq/fWD14IMVFWBCD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The way it is currently designed, cpufreq/devfreq/regulator layers don't
+need to know about AVS.
 
-On Fri, Apr 27, 2012 at 11:09:10AM +0530, J, KEERTHY wrote:
+The higher-level layers only know about the "nominal" voltage.  AVS
+hardware does automatic, adaptive, micro-adjustments around that nominal
+voltage, and these micro-adjustments are managed by the AVS hardware
+sending commands to the PMIC.  (specifically, on OMAP, the AVS sensors
+provide inputs to the voltage processor (VP) which provide inputs to the
+voltage controller (VC) which sends commands to the PMIC[1].)
 
-> Devfreq and cpufreq are related to dynamic frequency/voltage switching between
-> pre defined Operating Performance Points or the OPPs. Every OPP being
-> a voltage/frequency pair. Smartreflex is a different
-> power management technique.
+The driver proposed here is primarily for initializing the various
+parameters/sensitivity/etc. of the AVS hardware, but the actual voltage
+adjustments are done in hardware by VC/VP.
 
-But presumably these things should integrate somehow - for example,
-should devfreq and cpufreq be providing inputs into what AVS is doing,
-and if so how?
+The only thing the higher-level layers might potentially need to do to
+enable/disable AVS around transitions (e.g. when changing OPP, AVS is
+disabled before changing OPP and only re-enabled when the new nominal
+voltage has been acheived.)
 
---iq/fWD14IMVFWBCD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+On OMAP, we handle this inside the OMAP-specific voltage layer which is
+called by the regulator framework, so even the regulators do not need
+any knowledge of AVS.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Kevin
 
-iQIcBAEBAgAGBQJPmt3jAAoJEBus8iNuMP3dwCIP/1i2rPocJbbB7yGsjpZmoc0F
-b3lRK6RmOuad98MAeSv1AO7/J6QI3N7s7oVhJfkP69j3mxzXdQf2AE6DSgqbWJT4
-wU1qRVsrC1WniNeDHU8ucXq6wIMalxUapfVhUJDChz4Ui04+si6xkKfWjkKHMSZa
-zv+7TequN2Rk8EVmZtMdyonyBjXTNchjIJ7AREUfrXKHL1LTRn5zljr/QMb+bKiW
-fN0ndG7iDizDTwDY67tXDdMN5WlIVl7FexGV/L44V32F4iENeBkOn3rfI2AzLSKX
-XBpKidSO54q1s4HrrzdPBGAkV70K/BBNktQWAd85CFptQ3jP4TNTrr0FV56/URNK
-waLW58bP3RfWYEQyBIsixdFVbgk6/M01FmwSUOdFf26dsQi0sDh29LrM67RkNKmt
-p2O+oLuJRKAjUh5dJOtyqkXpjdSEKBcl/gmREQqdS1AGzhdaP6BZ0mN1XIuYGPi/
-JsRHUbXAlFzYNc4F2dEYE5WIo1fj1q/9kWwhY8vLPvFZlCWyEr8NfgASdpY0gxbC
-Hn9YjPv+fCQN6SUKaUfLiaGThTh7e5zysuvjHU+w+eGNZBNSgvZA7ofaf/TsX+Ba
-ike7OfcLi/Noho5LBD2Dxsbtg/lNamL5n8pdDFu+OwCoqj64cspjz7mOFcJaaSFd
-xPst2wKotL3rtuxYiVMl
-=IFMA
------END PGP SIGNATURE-----
-
---iq/fWD14IMVFWBCD--
-
---===============4879448653714740865==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============4879448653714740865==--
+[1] Figure 3-76 in OMAP4430 ES2.1 Public TRM vAD provides a 
+    detailed diagram:
+    http://www.ti.com/pdfs/wtbu/OMAP4430_ES2.x_PUBLIC_TRM_vAD.zip
