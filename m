@@ -1,7 +1,7 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCHv3 4/5] cpuidle: coupled: add parallel barrier function
-Date: Mon, 30 Apr 2012 13:09:10 -0700
-Message-ID: <1335816551-27756-5-git-send-email-ccross@android.com>
+Subject: [PATCHv3 1/5] cpuidle: refactor out cpuidle_enter_state
+Date: Mon, 30 Apr 2012 13:09:07 -0700
+Message-ID: <1335816551-27756-2-git-send-email-ccross@android.com>
 References: <1335816551-27756-1-git-send-email-ccross@android.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1335816551-27756-1-git-send-email-ccross@android.com>
@@ -10,36 +10,10 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org, linux-pm@lists.linux-foundation.org, Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Trinabh Gupta <g.trinabh@gmail.com>, Arjan van de Ven <arjan@linux.intel.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, Russell King <linux@arm.linux.org.uk>, Colin Cross <ccross@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-Adds cpuidle_coupled_parallel_barrier, which can be used by coupled
-cpuidle state enter functions to handle resynchronization after
-determining if any cpu needs to abort.  The normal use case will
-be:
-
-static bool abort_flag;
-static atomic_t abort_barrier;
-
-int arch_cpuidle_enter(struct cpuidle_device *dev, ...)
-{
-	if (arch_turn_off_irq_controller()) {
-	   	/* returns an error if an irq is pending and would be lost
-		   if idle continued and turned off power */
-		abort_flag = true;
-	}
-
-	cpuidle_coupled_parallel_barrier(dev, &abort_barrier);
-
-	if (abort_flag) {
-	   	/* One of the cpus didn't turn off it's irq controller */
-	   	arch_turn_on_irq_controller();
-		return -EINTR;
-	}
-
-	/* continue with idle */
-	...
-}
-
-This will cause all cpus to abort idle together if one of them needs
-to abort.
+Split the code to enter a state and update the stats into a helper
+function, cpuidle_enter_state, and export it.  This function will
+be called by the coupled state code to handle entering the safe
+state and the final coupled state.
 
 Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
@@ -47,72 +21,86 @@ Reviewed-by: Kevin Hilman <khilman@ti.com>
 Tested-by: Kevin Hilman <khilman@ti.com>
 Signed-off-by: Colin Cross <ccross@android.com>
 ---
- drivers/cpuidle/coupled.c |   37 +++++++++++++++++++++++++++++++++++++
- include/linux/cpuidle.h   |    4 ++++
- 2 files changed, 41 insertions(+), 0 deletions(-)
+ drivers/cpuidle/cpuidle.c |   42 +++++++++++++++++++++++++++++-------------
+ drivers/cpuidle/cpuidle.h |    2 ++
+ 2 files changed, 31 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-index d097826..242dc7c 100644
---- a/drivers/cpuidle/coupled.c
-+++ b/drivers/cpuidle/coupled.c
-@@ -134,6 +134,43 @@ struct cpuidle_coupled {
- static cpumask_t cpuidle_coupled_poked_mask;
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 2f0083a..3e3e3e4 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -103,6 +103,34 @@ int cpuidle_play_dead(void)
+ }
  
  /**
-+ * cpuidle_coupled_parallel_barrier - synchronize all online coupled cpus
-+ * @dev: cpuidle_device of the calling cpu
-+ * @a:   atomic variable to hold the barrier
-+ *
-+ * No caller to this function will return from this function until all online
-+ * cpus in the same coupled group have called this function.  Once any caller
-+ * has returned from this function, the barrier is immediately available for
-+ * reuse.
-+ *
-+ * The atomic variable a must be initialized to 0 before any cpu calls
-+ * this function, will be reset to 0 before any cpu returns from this function.
-+ *
-+ * Must only be called from within a coupled idle state handler
-+ * (state.enter when state.flags has CPUIDLE_FLAG_COUPLED set).
-+ *
-+ * Provides full smp barrier semantics before and after calling.
++ * cpuidle_enter_state - enter the state and update stats
++ * @dev: cpuidle device for this cpu
++ * @drv: cpuidle driver for this cpu
++ * @next_state: index into drv->states of the state to enter
 + */
-+void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a)
++int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
++		int next_state)
 +{
-+	int n = atomic_read(&dev->coupled->alive_count);
++	int entered_state;
 +
-+	smp_mb__before_atomic_inc();
-+	atomic_inc(a);
++	entered_state = cpuidle_enter_ops(dev, drv, next_state);
 +
-+	while (atomic_read(a) < n)
-+		cpu_relax();
-+
-+	if (atomic_inc_return(a) == n * 2) {
-+		atomic_set(a, 0);
-+		return;
++	if (entered_state >= 0) {
++		/* Update cpuidle counters */
++		/* This can be moved to within driver enter routine
++		 * but that results in multiple copies of same code.
++		 */
++		dev->states_usage[entered_state].time +=
++				(unsigned long long)dev->last_residency;
++		dev->states_usage[entered_state].usage++;
++	} else {
++		dev->last_residency = 0;
 +	}
 +
-+	while (atomic_read(a) > n)
-+		cpu_relax();
++	return entered_state;
 +}
 +
 +/**
-  * cpuidle_state_is_coupled - check if a state is part of a coupled set
-  * @dev: struct cpuidle_device for the current cpu
-  * @drv: struct cpuidle_driver for the platform
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 6038448..5ab7183 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -183,6 +183,10 @@ static inline int cpuidle_wrap_enter(struct cpuidle_device *dev,
+  * cpuidle_idle_call - the main idle loop
+  *
+  * NOTE: no locks or semaphores should be used here
+@@ -143,23 +171,11 @@ int cpuidle_idle_call(void)
+ 	trace_power_start_rcuidle(POWER_CSTATE, next_state, dev->cpu);
+ 	trace_cpu_idle_rcuidle(next_state, dev->cpu);
  
- #endif
+-	entered_state = cpuidle_enter_ops(dev, drv, next_state);
++	entered_state = cpuidle_enter_state(dev, drv, next_state);
  
-+#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-+void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a);
-+#endif
-+
- /******************************
-  * CPUIDLE GOVERNOR INTERFACE *
-  ******************************/
+ 	trace_power_end_rcuidle(dev->cpu);
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
+-	if (entered_state >= 0) {
+-		/* Update cpuidle counters */
+-		/* This can be moved to within driver enter routine
+-		 * but that results in multiple copies of same code.
+-		 */
+-		dev->states_usage[entered_state].time +=
+-				(unsigned long long)dev->last_residency;
+-		dev->states_usage[entered_state].usage++;
+-	} else {
+-		dev->last_residency = 0;
+-	}
+-
+ 	/* give the governor an opportunity to reflect on the outcome */
+ 	if (cpuidle_curr_governor->reflect)
+ 		cpuidle_curr_governor->reflect(dev, entered_state);
+diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+index 7db1866..d8a3ccc 100644
+--- a/drivers/cpuidle/cpuidle.h
++++ b/drivers/cpuidle/cpuidle.h
+@@ -14,6 +14,8 @@
+ extern struct mutex cpuidle_lock;
+ extern spinlock_t cpuidle_driver_lock;
+ extern int cpuidle_disabled(void);
++extern int cpuidle_enter_state(struct cpuidle_device *dev,
++		struct cpuidle_driver *drv, int next_state);
+ 
+ /* idle loop */
+ extern void cpuidle_install_idle_handler(void);
 -- 
 1.7.7.3
