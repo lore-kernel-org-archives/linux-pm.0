@@ -1,122 +1,72 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCHv3 0/5] coupled cpuidle state support
-Date: Mon, 30 Apr 2012 23:54:41 +0200
-Message-ID: <201204302354.41969.rjw@sisk.pl>
-References: <1335816551-27756-1-git-send-email-ccross@android.com>
-	<201204302325.09505.rjw@sisk.pl>
-	<CAMbhsRRReyiv2LgUNgp6XiW07V8Eb0gd4fb7W6nBjMZ1FpmOBQ@mail.gmail.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
+Date: Mon, 30 Apr 2012 14:51:48 -0700
+Message-ID: <87wr4wriq3.fsf@ti.com>
+References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
+	<20120426191159.GA9415@sirena.org.uk>
+	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
+	<20120427175657.GP18260@opensource.wolfsonmicro.com>
+	<87397o3n4y.fsf@ti.com>
+	<20120430095429.GB3170@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAMbhsRRReyiv2LgUNgp6XiW07V8Eb0gd4fb7W6nBjMZ1FpmOBQ@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20120430095429.GB3170@opensource.wolfsonmicro.com> (Mark Brown's
+	message of "Mon, 30 Apr 2012 10:54:29 +0100")
+Sender: linux-omap-owner@vger.kernel.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: "J, KEERTHY" <j-keerthy@ti.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com, durgadoss.r@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, April 30, 2012, Colin Cross wrote:
-> On Mon, Apr 30, 2012 at 2:25 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Hi,
-> >
-> > I have a comment, which isn't about the series itself, but something
-> > thay may be worth thinking about.
-> >
-> > On Monday, April 30, 2012, Colin Cross wrote:
-> >> On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
-> >> cpus cannot be independently powered down, either due to
-> >> sequencing restrictions (on Tegra 2, cpu 0 must be the last to
-> >> power down), or due to HW bugs (on OMAP4460, a cpu powering up
-> >> will corrupt the gic state unless the other cpu runs a work
-> >> around).  Each cpu has a power state that it can enter without
-> >> coordinating with the other cpu (usually Wait For Interrupt, or
-> >> WFI), and one or more "coupled" power states that affect blocks
-> >> shared between the cpus (L2 cache, interrupt controller, and
-> >> sometimes the whole SoC).  Entering a coupled power state must
-> >> be tightly controlled on both cpus.
-> >
-> > That seems to be a special case of a more general situation where
-> > a number of CPU cores belong into a single power domain, possibly along
-> > some I/O devices.
-> >
-> > We'll need to handle the general case at one point anyway, so I wonder if
-> > the approach shown here may get us in the way?
-> 
-> I can't parse what you're saying here.
+Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
 
-The general case is a CPU core in one PM domain with a number of I/O
-devices and a number of other CPU cores.  If we forget about the I/O
-devices, we get a situation your patchset is addressing, so the
-question is how difficult it is going to be to extend it to cover the
-I/O devices as well.
+> On Fri, Apr 27, 2012 at 02:01:17PM -0700, Kevin Hilman wrote:
+>> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
+>
+>> > But presumably these things should integrate somehow - for example,
+>> > should devfreq and cpufreq be providing inputs into what AVS is doing,
+>> > and if so how?
+>
+>> The way it is currently designed, cpufreq/devfreq/regulator layers don't
+>> need to know about AVS.
+>
+> Yes, and that was a part of my concern, but see below.
+>
+>> The higher-level layers only know about the "nominal" voltage.  AVS
+>> hardware does automatic, adaptive, micro-adjustments around that nominal
+>> voltage, and these micro-adjustments are managed by the AVS hardware
+>> sending commands to the PMIC.  (specifically, on OMAP, the AVS sensors
+>> provide inputs to the voltage processor (VP) which provide inputs to the
+>> voltage controller (VC) which sends commands to the PMIC[1].)
+>
+> Right, that's what I'd understood it to be.  
+>
+>> The driver proposed here is primarily for initializing the various
+>> parameters/sensitivity/etc. of the AVS hardware, but the actual voltage
+>> adjustments are done in hardware by VC/VP.
+>
+> It's not just a driver, though - it's also creating this power/avs
+> thing, though now I look at the code rather than just its shape there's
+> not actually an abstraction being added here, it's mostly just straight
+> code motion of the arch/arm code that's there already.  The changelog
+> and the shape of the code make it sound like this is intended to be
+> somewhat generic when really it's providing some OMAP specific tuning
+> for the device which is much less of a concern.
+>
+> I guess for now it's probably OK to just clarify in the documentation
+> and say that whoever adds the second driver has to work on making this
+> generic :)
 
-> >> The easiest solution to implementing coupled cpu power states is
-> >> to hotplug all but one cpu whenever possible, usually using a
-> >> cpufreq governor that looks at cpu load to determine when to
-> >> enable the secondary cpus.  This causes problems, as hotplug is an
-> >> expensive operation, so the number of hotplug transitions must be
-> >> minimized, leading to very slow response to loads, often on the
-> >> order of seconds.
-> >
-> > This isn't a solution at all, rather a workaround and a poor one for that
-> > matter.
-> 
-> Yes, which is what started me on this series.
-> 
-> >> This patch series implements an alternative solution, where each
-> >> cpu will wait in the WFI state until all cpus are ready to enter
-> >> a coupled state, at which point the coupled state function will
-> >> be called on all cpus at approximately the same time.
-> >>
-> >> Once all cpus are ready to enter idle, they are woken by an smp
-> >> cross call.
-> >
-> > Is it really necessary to wake up all of the CPUs in WFI before
-> > going to deeper idle?  We should be able to figure out when they
-> > are going to be needed next time without waking them up and we should
-> > know the latency to wake up from the deeper multi-CPU "C-state",
-> > so it should be possible to decide whether or not to go to deeper
-> > idle without the SMP cross call.  Is there anything I'm missing here?
-> 
-> The decision to go to the lower state has already been made when the
-> cross call occurs.  On the platforms I have worked directly with so
-> far (Tegra2 and OMAP4460), the secondary cpu needs to execute code
-> before the primary cpu turns off the power.  For example, on OMAP4460,
-> the secondary cpu needs to go from WFI (clock gated) to OFF (power
-> gated), because OFF is not supported as an individual cpu state due to
-> a ROM code bug.  To do that transition, it needs to come out of WFI,
-> set up it's power domain registers, save a bunch of state, and
-> transition to OFF.
-> 
-> On Tegra3, the deepest individual cpu state for cpus 1-3 is OFF, the
-> same state the cpu would go into as the first step of a transition to
-> a deeper power state (cpus 0-3 OFF).  It would be more optimal in that
-> case to bypass the SMP cross call, and leave the cpu in OFF, but that
-> would require some way of disabling all wakeups for the secondary cpus
-> and then verifying that they didn't start waking up just before the
-> wakeups were disabled.  I have just started considering this
-> optimization, but I don't see anything in the existing code that would
-> prevent adding it later.
+Agreed.
 
-OK
+In a different thread (which I can't seem to find now) we discussed this
+as well, so it just sounds like the changelog should clarify this a bit
+better.
 
-> A simple measurement using the tracing may show that it is
-> unnecessary.  If the wakeup time for CPU1 to go from OFF to active is
-> small there might be no need to optimize out the extra wakeup.
+Kevin
 
-I see.
+> This does also sound rather like it's in a similar area to the current
+> management work which Durgadoss R (CCed) was working on, though with a
+> slightly different application and in the OMAP case it's pretty much all
+> hidden in the external processor.
 
-So, in the end, it may always be more straightforward to put individual
-CPU cores into single-core idle states until the "we can all go to
-deeper idle" condition is satisfied and then wake them all up and let
-each of them do the transition individually, right?
-
-Rafael
