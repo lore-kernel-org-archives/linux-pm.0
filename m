@@ -1,84 +1,113 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
-Date: Mon, 30 Apr 2012 09:55:26 +0530
-Message-ID: <CAJ6a13ZFj47nps1teNHyE3FyzZOUBx9HDOL-3_CNC+_vdbs6ag@mail.gmail.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage
+	Scaling)
+Date: Mon, 30 Apr 2012 10:54:29 +0100
+Message-ID: <20120430095429.GB3170@opensource.wolfsonmicro.com>
 References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
 	<20120426191159.GA9415@sirena.org.uk>
 	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
 	<20120427175657.GP18260@opensource.wolfsonmicro.com>
 	<87397o3n4y.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============8108554701136473573=="
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <87397o3n4y.fsf@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Kevin Hilman <khilman@ti.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
+Cc: "J, KEERTHY" <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, j-pihet@ti.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Apr 28, 2012 at 2:31 AM, Kevin Hilman <khilman@ti.com> wrote:
-> Hi Mark,
->
+
+--===============8108554701136473573==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="8P1HSweYDcXXzwPJ"
+Content-Disposition: inline
+
+
+--8P1HSweYDcXXzwPJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Apr 27, 2012 at 02:01:17PM -0700, Kevin Hilman wrote:
 > Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
->
->> On Fri, Apr 27, 2012 at 11:09:10AM +0530, J, KEERTHY wrote:
->>
->>> Devfreq and cpufreq are related to dynamic frequency/voltage switch=
-ing between
->>> pre defined Operating Performance Points or the OPPs. Every OPP bei=
-ng
->>> a voltage/frequency pair. Smartreflex is a different
->>> power management technique.
->>
->> But presumably these things should integrate somehow - for example,
->> should devfreq and cpufreq be providing inputs into what AVS is doin=
-g,
->> and if so how?
->
-> The way it is currently designed, cpufreq/devfreq/regulator layers do=
-n't
+
+> > But presumably these things should integrate somehow - for example,
+> > should devfreq and cpufreq be providing inputs into what AVS is doing,
+> > and if so how?
+
+> The way it is currently designed, cpufreq/devfreq/regulator layers don't
 > need to know about AVS.
->
-> The higher-level layers only know about the "nominal" voltage. =A0AVS
-> hardware does automatic, adaptive, micro-adjustments around that nomi=
-nal
+
+Yes, and that was a part of my concern, but see below.
+
+> The higher-level layers only know about the "nominal" voltage.  AVS
+> hardware does automatic, adaptive, micro-adjustments around that nominal
 > voltage, and these micro-adjustments are managed by the AVS hardware
-> sending commands to the PMIC. =A0(specifically, on OMAP, the AVS sens=
-ors
-> provide inputs to the voltage processor (VP) which provide inputs to =
-the
+> sending commands to the PMIC.  (specifically, on OMAP, the AVS sensors
+> provide inputs to the voltage processor (VP) which provide inputs to the
 > voltage controller (VC) which sends commands to the PMIC[1].)
->
+
+Right, that's what I'd understood it to be. =20
+
 > The driver proposed here is primarily for initializing the various
-> parameters/sensitivity/etc. of the AVS hardware, but the actual volta=
-ge
+> parameters/sensitivity/etc. of the AVS hardware, but the actual voltage
 > adjustments are done in hardware by VC/VP.
->
-> The only thing the higher-level layers might potentially need to do t=
-o
-> enable/disable AVS around transitions (e.g. when changing OPP, AVS is
-> disabled before changing OPP and only re-enabled when the new nominal
-> voltage has been acheived.)
->
-> On OMAP, we handle this inside the OMAP-specific voltage layer which =
-is
-> called by the regulator framework, so even the regulators do not need
-> any knowledge of AVS.
->
-> Kevin
->
-> [1] Figure 3-76 in OMAP4430 ES2.1 Public TRM vAD provides a
-> =A0 =A0detailed diagram:
-> =A0 =A0http://www.ti.com/pdfs/wtbu/OMAP4430_ES2.x_PUBLIC_TRM_vAD.zip
 
-Thanks for the detailed answer Kevin.
+It's not just a driver, though - it's also creating this power/avs
+thing, though now I look at the code rather than just its shape there's
+not actually an abstraction being added here, it's mostly just straight
+code motion of the arch/arm code that's there already.  The changelog
+and the shape of the code make it sound like this is intended to be
+somewhat generic when really it's providing some OMAP specific tuning
+for the device which is much less of a concern.
 
---=20
-Regards and Thanks,
-Keerthy
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I guess for now it's probably OK to just clarify in the documentation
+and say that whoever adds the second driver has to work on making this
+generic :)
+
+This does also sound rather like it's in a similar area to the current
+management work which Durgadoss R (CCed) was working on, though with a
+slightly different application and in the OMAP case it's pretty much all
+hidden in the external processor.
+
+--8P1HSweYDcXXzwPJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJPnmFNAAoJEBus8iNuMP3dhM8P/2QSv9mJ0brc+jjv0V77iy7f
+/fXc7pneBBwXwUPC5RJJGS0Qc/iTjaTN2QfYpw8TjdnuEKsOpwuz1W4UCZNRWKxu
+72dXmNB2u1F+Tf9rXBHZqW2OE6slDhuvhIdly/rOwjjmf6IGf37vJb2i+fA8V0gW
+aevaGzwC3asRM1QQxQ3fAKx7Xc4kdULG0ifJ/7mYoeFK0IBEHLusClhVJFTGOZ1i
+aHjD2I0ASGt7O1N3Ewg2a+uxaDjNvGLBRI2UxdmSoI68ygTIwizUkUFuZ1ozoP3I
+BP9AX3YuRZXwxVNYOv0sNSNgQ50mE7NYYbGinw7NiUyDHIQ9WSEml4ltJLC3Pt01
+vtrECuEy1ck7ewrGhbRvzrCnArOiVnt7cUYBd2TxGp3P8kJ0tnp9JvRnjYT6T3G7
+ISAlckx6ZcUaDCU0JxHhc4XmksI5upw0LojrwnlPJMOjcLkr6rr5e7t2d+3E4G2u
+lh0Uw5xNnT6Sthj2OS5wNTtzPrC5ltk2LLSAxhEM2fybEmg6twvxdAa19RpofyT0
+zgMtqA9vwjMintaGLdq05MNyeIGFu/ChJ55Y5rh8z0lQN3x0OJlD4nwN/dMadut+
+U/vOAP12ug4V6GamKuWrejOjKEpUVJdRoKNTWK6G9ZcajIa0ZAX+KTNFKvR+PAYz
+veNrHzL4OvV/3MabrWpy
+=WsSD
+-----END PGP SIGNATURE-----
+
+--8P1HSweYDcXXzwPJ--
+
+--===============8108554701136473573==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============8108554701136473573==--
