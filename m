@@ -1,17 +1,14 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage
-	Scaling)
-Date: Mon, 30 Apr 2012 10:54:29 +0100
-Message-ID: <20120430095429.GB3170@opensource.wolfsonmicro.com>
-References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
-	<20120426191159.GA9415@sirena.org.uk>
-	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
-	<20120427175657.GP18260@opensource.wolfsonmicro.com>
-	<87397o3n4y.fsf@ti.com>
+From: Colin Cross <ccross@android.com>
+Subject: [PATCHv3 2/5] cpuidle: fix error handling in
+	__cpuidle_register_device
+Date: Mon, 30 Apr 2012 13:09:08 -0700
+Message-ID: <1335816551-27756-3-git-send-email-ccross@android.com>
+References: <1335816551-27756-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8108554701136473573=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87397o3n4y.fsf@ti.com>
+In-Reply-To: <1335816551-27756-1-git-send-email-ccross@android.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,93 +18,49 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: "J, KEERTHY" <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, j-pihet@ti.com, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Fix the error handling in __cpuidle_register_device to include
+the missing list_del.  Move it to a label, which will simplify
+the error handling when coupled states are added.
 
---===============8108554701136473573==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8P1HSweYDcXXzwPJ"
-Content-Disposition: inline
+Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Kevin Hilman <khilman@ti.com>
+Signed-off-by: Colin Cross <ccross@android.com>
+---
+ drivers/cpuidle/cpuidle.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-
---8P1HSweYDcXXzwPJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Apr 27, 2012 at 02:01:17PM -0700, Kevin Hilman wrote:
-> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
-
-> > But presumably these things should integrate somehow - for example,
-> > should devfreq and cpufreq be providing inputs into what AVS is doing,
-> > and if so how?
-
-> The way it is currently designed, cpufreq/devfreq/regulator layers don't
-> need to know about AVS.
-
-Yes, and that was a part of my concern, but see below.
-
-> The higher-level layers only know about the "nominal" voltage.  AVS
-> hardware does automatic, adaptive, micro-adjustments around that nominal
-> voltage, and these micro-adjustments are managed by the AVS hardware
-> sending commands to the PMIC.  (specifically, on OMAP, the AVS sensors
-> provide inputs to the voltage processor (VP) which provide inputs to the
-> voltage controller (VC) which sends commands to the PMIC[1].)
-
-Right, that's what I'd understood it to be. =20
-
-> The driver proposed here is primarily for initializing the various
-> parameters/sensitivity/etc. of the AVS hardware, but the actual voltage
-> adjustments are done in hardware by VC/VP.
-
-It's not just a driver, though - it's also creating this power/avs
-thing, though now I look at the code rather than just its shape there's
-not actually an abstraction being added here, it's mostly just straight
-code motion of the arch/arm code that's there already.  The changelog
-and the shape of the code make it sound like this is intended to be
-somewhat generic when really it's providing some OMAP specific tuning
-for the device which is much less of a concern.
-
-I guess for now it's probably OK to just clarify in the documentation
-and say that whoever adds the second driver has to work on making this
-generic :)
-
-This does also sound rather like it's in a similar area to the current
-management work which Durgadoss R (CCed) was working on, though with a
-slightly different application and in the OMAP case it's pretty much all
-hidden in the external processor.
-
---8P1HSweYDcXXzwPJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJPnmFNAAoJEBus8iNuMP3dhM8P/2QSv9mJ0brc+jjv0V77iy7f
-/fXc7pneBBwXwUPC5RJJGS0Qc/iTjaTN2QfYpw8TjdnuEKsOpwuz1W4UCZNRWKxu
-72dXmNB2u1F+Tf9rXBHZqW2OE6slDhuvhIdly/rOwjjmf6IGf37vJb2i+fA8V0gW
-aevaGzwC3asRM1QQxQ3fAKx7Xc4kdULG0ifJ/7mYoeFK0IBEHLusClhVJFTGOZ1i
-aHjD2I0ASGt7O1N3Ewg2a+uxaDjNvGLBRI2UxdmSoI68ygTIwizUkUFuZ1ozoP3I
-BP9AX3YuRZXwxVNYOv0sNSNgQ50mE7NYYbGinw7NiUyDHIQ9WSEml4ltJLC3Pt01
-vtrECuEy1ck7ewrGhbRvzrCnArOiVnt7cUYBd2TxGp3P8kJ0tnp9JvRnjYT6T3G7
-ISAlckx6ZcUaDCU0JxHhc4XmksI5upw0LojrwnlPJMOjcLkr6rr5e7t2d+3E4G2u
-lh0Uw5xNnT6Sthj2OS5wNTtzPrC5ltk2LLSAxhEM2fybEmg6twvxdAa19RpofyT0
-zgMtqA9vwjMintaGLdq05MNyeIGFu/ChJ55Y5rh8z0lQN3x0OJlD4nwN/dMadut+
-U/vOAP12ug4V6GamKuWrejOjKEpUVJdRoKNTWK6G9ZcajIa0ZAX+KTNFKvR+PAYz
-veNrHzL4OvV/3MabrWpy
-=WsSD
------END PGP SIGNATURE-----
-
---8P1HSweYDcXXzwPJ--
-
---===============8108554701136473573==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============8108554701136473573==--
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 3e3e3e4..4540672 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -403,13 +403,18 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+ 
+ 	per_cpu(cpuidle_devices, dev->cpu) = dev;
+ 	list_add(&dev->device_list, &cpuidle_detected_devices);
+-	if ((ret = cpuidle_add_sysfs(cpu_dev))) {
+-		module_put(cpuidle_driver->owner);
+-		return ret;
+-	}
++	ret = cpuidle_add_sysfs(cpu_dev);
++	if (ret)
++		goto err_sysfs;
+ 
+ 	dev->registered = 1;
+ 	return 0;
++
++err_sysfs:
++	list_del(&dev->device_list);
++	per_cpu(cpuidle_devices, dev->cpu) = NULL;
++	module_put(cpuidle_driver->owner);
++	return ret;
+ }
+ 
+ /**
+-- 
+1.7.7.3
