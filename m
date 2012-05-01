@@ -1,70 +1,43 @@
-From: Jonathan Nieder <jrnieder@gmail.com>
-Subject: [bug?] Battery notifications produce flashing battery icon, syslog
- spam (Re: [PATCH 11/11] ACPI / Battery: Update information on info
+From: Adrian Fita <adrian.fita@gmail.com>
+Subject: Re: [bug?] Battery notifications produce flashing
+ battery icon,
+ syslog spam (Re: [PATCH 11/11] ACPI / Battery: Update information on info
  notification and resume)
-Date: Tue, 1 May 2012 13:47:34 -0500
-Message-ID: <20120501184534.GA31731@burratino>
-References: <201101062331.17079.rjw@sisk.pl>
- <201101062342.28168.rjw@sisk.pl>
+Date: Tue, 01 May 2012 22:00:58 +0300
+Message-ID: <4FA032EA.1090608@gmail.com>
+References: <201101062331.17079.rjw@sisk.pl> <201101062342.28168.rjw@sisk.pl>
+	<20120501184534.GA31731@burratino>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <201101062342.28168.rjw@sisk.pl>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Adrian Fita <adrian.fita@gmail.com>, Ralf Jung <ralfjung-e@gmx.de>, Paolo Scarabelli <paolo@msw.it>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20120501184534.GA31731@burratino>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Jonathan Nieder <jrnieder@gmail.com>
+Cc: Paolo Scarabelli <paolo@msw.it>, LKML <linux-kernel@vger.kernel.org>, Ralf Jung <ralfjung-e@gmx.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael et al,
+On 01/05/12 21:47, Jonathan Nieder wrote:
+ >
+> [...]
+ >
+> [...]  More background
+> at [2].
+>
+> [2] http://bugs.debian.org/670958
 
-Rafael J. Wysocki wrote:
-
-> A notification event 0x81 from an ACPI battery device requires us to
-> re-read the battery information structure.  Follow this requirement
-> and remove and re-create the battery's attibutes in sysfs so that
-> they reflect the reporting units used by the battery at the moment
-> (those units may actually change sometimes at run time, which happens
-> on some Thinkpads).
-
-Ralf Jung was noticing his system tray power management icon in the
-bottom-right corner *flickering* every 30 seconds with recent kernels.
-Bisects to v2.6.38-rc1~68^2~4 ("ACPI / Battery: Update information on
-info notification and resume"), which has the above description.
-
-Some affected systems:
-
- HP ProBook 4515s/3077, BIOS 68GPI Ver. F.03 (Adrian Fita)
- HP ProBook 4510s (Paolo Scarabelli)
- HP Compaq 615 (Ralf Jung)
-
-Some symptoms:
-
- KDE power management icon shows "no battery" for a fraction of a
- second (upower is its backend)
-
- upowerd makes CPU run at close to 100% CPU all the time (?)
-
- /var/log/syslog gets lots of messages from laptop-mode, like this:
-
-| Apr 20 10:52:14 zero laptop-mode: Laptop mode
-| Apr 20 10:52:14 zero laptop-mode: enabled,
-| Apr 20 10:52:14 zero laptop-mode: not active [unchanged]
-| Apr 20 10:52:14 zero laptop-mode: Laptop mode
-| Apr 20 10:52:14 zero laptop-mode: enabled,
-| Apr 20 10:52:14 zero laptop-mode: not active [unchanged]
-| Apr 20 10:52:33 zero laptop-mode: Laptop mode
-| Apr 20 10:52:33 zero laptop-mode: enabled,
-
-Known problems?  Is there some way to handle notification events
-without these side effects?  Anything the submitters can do to help
-track details down?
-
-An acpidump from Adrian's system can be found at [1].  More background
-at [2].
+Also, searching on Google after "upowerd device 
+removed:/org/freedesktop/UPower/devices/battery_BAT0", reveals much more 
+bug reports with the exact issue.
 
 Thanks,
-Jonathan
-
-[1] http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=54;filename=acpidump_HP_ProBook_4515s.dat.gz;att=1;bug=670958
-[2] http://bugs.debian.org/670958
+-- 
+Fita Adrian
