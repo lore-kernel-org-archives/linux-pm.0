@@ -1,112 +1,99 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
-Date: Wed, 2 May 2012 10:34:29 +0530
-Message-ID: <CAJ6a13ZBwZn20ObD2hy=xna8oFoKtdczYNxyWACJZoJkhKhsUQ@mail.gmail.com>
-References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
-	<20120426191159.GA9415@sirena.org.uk>
-	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
-	<20120427175657.GP18260@opensource.wolfsonmicro.com>
-	<87397o3n4y.fsf@ti.com>
-	<20120430095429.GB3170@opensource.wolfsonmicro.com>
-	<87wr4wriq3.fsf@ti.com>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCHv3 0/5] coupled cpuidle state support
+Date: Wed, 02 May 2012 12:52:25 +0530
+Message-ID: <4FA0E0B1.5010605@ti.com>
+References: <1335816551-27756-1-git-send-email-ccross@android.com>
+	<201204302325.09505.rjw@sisk.pl>
+	<CAMbhsRRReyiv2LgUNgp6XiW07V8Eb0gd4fb7W6nBjMZ1FpmOBQ@mail.gmail.com>
+	<20120501104310.GB28930@e102568-lin.cambridge.arm.com>
+	<CAMbhsRRhJ-7Am0k0OCJG0E9C=w+ApVi2Ce4b-BfV_6frJfTh=Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <87wr4wriq3.fsf@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com, durgadoss.r@intel.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAMbhsRRhJ-7Am0k0OCJG0E9C=w+ApVi2Ce4b-BfV_6frJfTh=Q@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Colin Cross <ccross@android.com>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 1, 2012 at 3:21 AM, Kevin Hilman <khilman@ti.com> wrote:
-> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
->
->> On Fri, Apr 27, 2012 at 02:01:17PM -0700, Kevin Hilman wrote:
->>> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
+On Wednesday 02 May 2012 05:41 AM, Colin Cross wrote:
+> On Tue, May 1, 2012 at 3:43 AM, Lorenzo Pieralisi
+> <lorenzo.pieralisi@arm.com> wrote:
+>> Hi Colin,
 >>
->>> > But presumably these things should integrate somehow - for exampl=
-e,
->>> > should devfreq and cpufreq be providing inputs into what AVS is d=
-oing,
->>> > and if so how?
+>> On Mon, Apr 30, 2012 at 10:37:30PM +0100, Colin Cross wrote:
+> <snip>
+> 
+>>> On Tegra3, the deepest individual cpu state for cpus 1-3 is OFF, the
+>>> same state the cpu would go into as the first step of a transition to
+>>> a deeper power state (cpus 0-3 OFF).  It would be more optimal in that
+>>> case to bypass the SMP cross call, and leave the cpu in OFF, but that
+>>> would require some way of disabling all wakeups for the secondary cpus
+>>> and then verifying that they didn't start waking up just before the
+>>> wakeups were disabled.  I have just started considering this
+>>> optimization, but I don't see anything in the existing code that would
+>>> prevent adding it later.
 >>
->>> The way it is currently designed, cpufreq/devfreq/regulator layers =
-don't
->>> need to know about AVS.
->>
->> Yes, and that was a part of my concern, but see below.
->>
->>> The higher-level layers only know about the "nominal" voltage. =A0A=
-VS
->>> hardware does automatic, adaptive, micro-adjustments around that no=
-minal
->>> voltage, and these micro-adjustments are managed by the AVS hardwar=
-e
->>> sending commands to the PMIC. =A0(specifically, on OMAP, the AVS se=
-nsors
->>> provide inputs to the voltage processor (VP) which provide inputs t=
-o the
->>> voltage controller (VC) which sends commands to the PMIC[1].)
->>
->> Right, that's what I'd understood it to be.
->>
->>> The driver proposed here is primarily for initializing the various
->>> parameters/sensitivity/etc. of the AVS hardware, but the actual vol=
-tage
->>> adjustments are done in hardware by VC/VP.
->>
->> It's not just a driver, though - it's also creating this power/avs
->> thing, though now I look at the code rather than just its shape ther=
-e's
->> not actually an abstraction being added here, it's mostly just strai=
-ght
->> code motion of the arch/arm code that's there already. =A0The change=
-log
->> and the shape of the code make it sound like this is intended to be
->> somewhat generic when really it's providing some OMAP specific tunin=
-g
->> for the device which is much less of a concern.
->>
->> I guess for now it's probably OK to just clarify in the documentatio=
-n
->> and say that whoever adds the second driver has to work on making th=
-is
->> generic :)
->
-> Agreed.
->
-> In a different thread (which I can't seem to find now) we discussed t=
-his
-> as well, so it just sounds like the changelog should clarify this a b=
-it
-> better.
+I was also looking at how we can avoid the un-necessary wakeup on
+secondary CPUs if the timer event is not for those CPUs. As you
+rightly said, we can add all the optimisations once we have the
+base patches merged.
 
-Kevin/Mark,
-
-Thanks for the feedback. I will add more documentation
-to clarify this aspect. Please let me know if there are any more
-things to be taken care of in this patch set.
-
+>> I agree it is certainly an optimisation that can be added later if benchmarks
+>> show it is needed (but again it is heavily platform dependent, ie technology
+>> dependent).
+>> On a side note, disabling (or move to the primary) wake-ups for "secondaries"
+>> on platforms where every core is in a different power domain is still needed
+>> to avoid having a situation where a CPU can independently get out of idle, ie
+>> abort idle, after hitting the coupled barrier.
+>> Still do not know if for those platforms coupled C-states should be used, but
+>> it is much better to have a choice there IMHO.
+> 
+> Yes, that is the primary need for the coupled_cpuidle_parallel_barrier
+> function - secondary cpus need to disable their wakeup sources, then
+> check that a wakeup was not already pending and abort if necessary.
+> 
+>> I have also started thinking about a cluster or multi-CPU "next-event" that
+>> could avoid triggering heavy operations like L2 cleaning (ie cluster shutdown)
+>> if a timer is about to expire on a given CPU (as you know CPUs get in and out
+>> of idle independently so the governor decision at the point the coupled state
+>> barrier is hit might be stale).
+> 
+> It would be possible to re-check the governor to decide the next state
+> (maybe only if the previous decision is out of date by more than the
+> target_residency?), but I left that as an additional optimization.
 >
-> Kevin
->
->> This does also sound rather like it's in a similar area to the curre=
-nt
->> management work which Durgadoss R (CCed) was working on, though with=
- a
->> slightly different application and in the OMAP case it's pretty much=
- all
->> hidden in the external processor.
->
+Yep. If the remaining time for idle is not enough, we
+should abort that C-states since the CPU won't stay for good
+enough time in the C-state to save power.
 
+>> I reckon the coupled C-state concept can prove to be an effective one for
+>> some platforms, currently benchmarking it.
+>>
+>>> A simple measurement using the tracing may show that it is
+>>> unnecessary.  If the wakeup time for CPU1 to go from OFF to active is
+>>> small there might be no need to optimize out the extra wakeup.
+>>
+>> Indeed, it is all about resetting the CPU and getting it started, with
+>> inclusive L2 the power cost of shutting down a CPU and resuming it should be
+>> low (and timing very fast) for most platforms.
+> 
+> The limiting factor may be the amount of time spent in ROM/Trustzone
+> code when bringing a cpu back online.
 
+It is fast but it's not very small time and will vary on CPU speed too.
+As mentioned by Colin it all depends on secure code, CPU restore code
+as well as the power domain transition time. Of course power domain
+transition time will be different on different platforms.
 
---=20
-Regards and Thanks,
-Keerthy
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Regards
+santosh
