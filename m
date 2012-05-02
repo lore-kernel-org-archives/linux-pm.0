@@ -1,70 +1,75 @@
-From: Paolo Scarabelli <paolo@msw.it>
-Subject: Re: [bug?] Battery notifications produce flashing battery icon, syslog
- spam (Re: [PATCH 11/11] ACPI / Battery: Update information on info notification
- and resume)
-Date: Wed, 02 May 2012 19:49:11 +0800
-Message-ID: <4FA11F37.5070903@msw.it>
-References: <201101062331.17079.rjw@sisk.pl> <4FA032EA.1090608@gmail.com> <20120501191408.GD19143@burratino> <201205012142.55664.post@ralfj.de>
+From: mark gross <markgross@thegnar.org>
+Subject: Plumbers: PM constraints micro-conf RFP
+Date: Wed, 2 May 2012 07:36:10 -0700
+Message-ID: <20120502143607.GA21640@G62>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <201205012142.55664.post@ralfj.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ralf Jung <post@ralfj.de>
-Cc: Jonathan Nieder <jrnieder@gmail.com>, Adrian Fita <adrian.fita@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Andy Whitcroft <apw@canonical.com>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: mark gross <markgross@thegnar.org>, John Stultz <john.stultz@linaro.org>, jeen.pihet@G62.linuxfoundation.org, MyungJoo Ham <myungjoo.ham@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, "Agarwal, Ramesh" <ramesh.agarwal@intel.com>, Praveen Chidambaram <pchidamb@gmail.com>, Antti P Miettinen <amiettinen@nvidia.com>, "Valentin, Eduardo" <eduardo.valentin@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>
+Cc: paulmck@vnet.ibm.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+This is a Request For Participation in a micro-conference at this years
+Linux plumbers event.  For this micro conference to happen we need to
+reach a certain critical mass WRT participants as measured by submitted
+talks associated to Power Management Constraints.
 
-I have the same problem on kernel 3.2.0 (actually I have the same
-problem with all kernels I tried since reporting the issue the first time).
+The To: list is populated with folks that I've had interactions with
+over extending pm-qos or constraint based PM over the past year.
 
-I'm almost sure this is related to several Debian bugs open for upower:
-#606414, #596721 and #619343.
+If you are working on problems related to constraining the power /
+performance of devices I am inviting your participation and request you
+submit a proposal for presenting your problem space (preferred) and or
+solution to a group of developers looking for a good solution to push
+upstream.  The talks will be about 20 min long as I want to get into
+some design and implementation discussions after the requirements
+definition is mostly finished.
 
-Is it possible that the high cpu problem with upowerd is caused just to
-the log size increasing too much when the laptop is left on for a long time?
+I am interested in gathering user mode interface needs as well as kernel
+mode.
 
-In my laptop upowerd starts using a lot of cpu only when I leave it on
-overnight.
+>From a high level pm-constraints is a generalization of pm-qos to include
+limiting performance as well as its current limiting of device
+throttling.
 
+As performance limiting is typically used for any of the following:
+1) staying within thermal operational envelopes
+2) avoiding peak current
+3) extending battery life in active use cases
 
-Regards,
+I invite anyone working in any of these areas or pm-qos applications to
+participate in this micro-conference.
 
+I will organize the micro-conference into 2 parts:
+1) problem statements with specific participant examples where
+constraining the performance or throttling is needed.
 
-Paolo
+2) high level design brain storming.
 
+If the micro-conference happens (i.e. critical mass is reached) any
+interested linux-plumbers attendees is very welcome to participate.
 
-On 05/02/2012 03:42 AM, Ralf Jung wrote:
-> Hi,
-> 
-> in addition to the constant flickering when running on AC, there is a more 
-> "high frequency" flickering immediately after plugging in the AC: For some 5 
-> to 10 seconds, the battery appears and disappears (according to upower) around 
-> once per second. There's also a short moment without battery after plugging 
-> out the AC.
-> All this is gone after going to a kernel version without this patch applied.
-> 
-> I did not notice unusual high CPU usage of upower on my system, however I 
-> noticed disc activity - according to iotop, upower is writing several MiB of 
-> data per minute to /var/lib/upower/ where it keeps some battery statistics. I 
-> do not know whether this is out of the ordinary.
-> 
-> Kind regards,
-> Ralf
-> 
-> 
-> On Tuesday 01 May 2012 21:14:08 Jonathan Nieder wrote:
->> (cc-ing Andy)
->>
->> Adrian Fita wrote:
->>> Also, searching on Google after "upowerd device
->>> removed:/org/freedesktop/UPower/devices/battery_BAT0", reveals much
->>> more bug reports with the exact issue.
->>
->> Thanks.  That confirms the high CPU consumption in upowerd ---
->> see [1], for example.
->>
->> [1] https://bugs.launchpad.net/ubuntu/+source/linux/+bug/987807
-> 
+Please send me an off list email if you want me to add you to my mutt
+alias of interested parties I'll use to cc people on emails.  Note: must
+of the correspondence will cc linux-pm too.
+
+Please submit a proposal if you are interested in participating in this
+with me.  I know a number of people are working in this space for the
+past few years now.  I think its a good time to compare notes and at
+least consolidate requirements and use cases.  Perhaps we'll even come up
+with a good design to implement in the process.
+
+thanks,
+--mark
