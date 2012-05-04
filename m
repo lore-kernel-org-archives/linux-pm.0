@@ -1,125 +1,80 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
-Date: Fri, 4 May 2012 10:35:45 +0530
-Message-ID: <CAJ6a13Z0omMwmuSDcZtJbUgTEoVu-ExiRVUw=dsitsjKfzi4Kg@mail.gmail.com>
+From: "AnilKumar, Chimata" <anilkumar@ti.com>
+Subject: RE: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
+Date: Fri, 4 May 2012 08:21:28 +0000
+Message-ID: <331ABD5ECB02734CA317220B2BBEABC13E9B1A67@DBDE01.ent.ti.com>
 References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
 	<20120426191159.GA9415@sirena.org.uk>
 	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
-	<20120427175657.GP18260@opensource.wolfsonmicro.com>
-	<87397o3n4y.fsf@ti.com>
-	<20120430095429.GB3170@opensource.wolfsonmicro.com>
-	<87wr4wriq3.fsf@ti.com>
-	<CAJ6a13ZBwZn20ObD2hy=xna8oFoKtdczYNxyWACJZoJkhKhsUQ@mail.gmail.com>
+	<20120427175657.GP18260@opensource.wolfsonmicro.com> <87397o3n4y.fsf@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <CAJ6a13ZBwZn20ObD2hy=xna8oFoKtdczYNxyWACJZoJkhKhsUQ@mail.gmail.com>
+In-Reply-To: <87397o3n4y.fsf@ti.com>
+Content-Language: en-US
 Sender: linux-omap-owner@vger.kernel.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com, durgadoss.r@intel.com
+To: "Hilman, Kevin" <khilman@ti.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: "J, KEERTHY" <j-keerthy@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Pihet-XID, Jean" <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 2, 2012 at 10:34 AM, J, KEERTHY <j-keerthy@ti.com> wrote:
-> On Tue, May 1, 2012 at 3:21 AM, Kevin Hilman <khilman@ti.com> wrote:
->> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
->>
->>> On Fri, Apr 27, 2012 at 02:01:17PM -0700, Kevin Hilman wrote:
->>>> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
->>>
->>>> > But presumably these things should integrate somehow - for examp=
-le,
->>>> > should devfreq and cpufreq be providing inputs into what AVS is =
-doing,
->>>> > and if so how?
->>>
->>>> The way it is currently designed, cpufreq/devfreq/regulator layers=
- don't
->>>> need to know about AVS.
->>>
->>> Yes, and that was a part of my concern, but see below.
->>>
->>>> The higher-level layers only know about the "nominal" voltage. =A0=
-AVS
->>>> hardware does automatic, adaptive, micro-adjustments around that n=
-ominal
->>>> voltage, and these micro-adjustments are managed by the AVS hardwa=
-re
->>>> sending commands to the PMIC. =A0(specifically, on OMAP, the AVS s=
-ensors
->>>> provide inputs to the voltage processor (VP) which provide inputs =
-to the
->>>> voltage controller (VC) which sends commands to the PMIC[1].)
->>>
->>> Right, that's what I'd understood it to be.
->>>
->>>> The driver proposed here is primarily for initializing the various
->>>> parameters/sensitivity/etc. of the AVS hardware, but the actual vo=
-ltage
->>>> adjustments are done in hardware by VC/VP.
->>>
->>> It's not just a driver, though - it's also creating this power/avs
->>> thing, though now I look at the code rather than just its shape the=
-re's
->>> not actually an abstraction being added here, it's mostly just stra=
-ight
->>> code motion of the arch/arm code that's there already. =A0The chang=
-elog
->>> and the shape of the code make it sound like this is intended to be
->>> somewhat generic when really it's providing some OMAP specific tuni=
-ng
->>> for the device which is much less of a concern.
->>>
->>> I guess for now it's probably OK to just clarify in the documentati=
-on
->>> and say that whoever adds the second driver has to work on making t=
-his
->>> generic :)
->>
->> Agreed.
->>
->> In a different thread (which I can't seem to find now) we discussed =
-this
->> as well, so it just sounds like the changelog should clarify this a =
-bit
->> better.
->
-> Kevin/Mark,
->
-> Thanks for the feedback. I will add more documentation
-> to clarify this aspect. Please let me know if there are any more
-> things to be taken care of in this patch set.
+On Sat, Apr 28, 2012 at 02:31:17, Hilman, Kevin wrote:
+> Hi Mark,
+> 
+> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
+> 
+> > On Fri, Apr 27, 2012 at 11:09:10AM +0530, J, KEERTHY wrote:
+> >
+> >> Devfreq and cpufreq are related to dynamic frequency/voltage switching between
+> >> pre defined Operating Performance Points or the OPPs. Every OPP being
+> >> a voltage/frequency pair. Smartreflex is a different
+> >> power management technique.
+> >
+> > But presumably these things should integrate somehow - for example,
+> > should devfreq and cpufreq be providing inputs into what AVS is doing,
+> > and if so how?
+> 
+> The way it is currently designed, cpufreq/devfreq/regulator layers don't
+> need to know about AVS.
+> 
+> The higher-level layers only know about the "nominal" voltage.  AVS
+> hardware does automatic, adaptive, micro-adjustments around that nominal
+> voltage, and these micro-adjustments are managed by the AVS hardware
+> sending commands to the PMIC.  (specifically, on OMAP, the AVS sensors
+> provide inputs to the voltage processor (VP) which provide inputs to the
+> voltage controller (VC) which sends commands to the PMIC[1].)
+> 
+> The driver proposed here is primarily for initializing the various
+> parameters/sensitivity/etc. of the AVS hardware, but the actual voltage
+> adjustments are done in hardware by VC/VP.
+> 
+> The only thing the higher-level layers might potentially need to do to
+> enable/disable AVS around transitions (e.g. when changing OPP, AVS is
+> disabled before changing OPP and only re-enabled when the new nominal
+> voltage has been acheived.)
+> 
+> On OMAP, we handle this inside the OMAP-specific voltage layer which is
+> called by the regulator framework, so even the regulators do not need
+> any knowledge of AVS.
 
-Hello Kevin,
+Kevin,
 
-A gentle ping on this series. Any comments on this?
+I want to point out some cases of SR implementation where this may not
+be true.
 
->
->>
->> Kevin
->>
->>> This does also sound rather like it's in a similar area to the curr=
-ent
->>> management work which Durgadoss R (CCed) was working on, though wit=
-h a
->>> slightly different application and in the OMAP case it's pretty muc=
-h all
->>> hidden in the external processor.
->>
->
->
->
-> --
-> Regards and Thanks,
-> Keerthy
+Devices like DM8168, DM8148 and AM335X use Class 2B implementation of SR.
 
+Under this, SR module issues an interrupt to ARM when there is a need to
+change the voltage based on temperature changes, ageing etc.
 
+Once the interrupt arrives, kernel needs to adjust voltage using regulator API.
+The voltage change is a micro adjustment as in other SR classes.
 
---=20
-Regards and Thanks,
-Keerthy
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The SR class 2B implementation on these devices does not exist in mainline.
+I can point to some public repositories if you are interested in taking a look at
+the current code.
+
+Implementation of this SR method is must on at least the DM8168 device and
+I know some customers who are using it on their production systems.
+
+Regards
+AnilKumar
