@@ -1,106 +1,72 @@
-From: "AnilKumar, Chimata" <anilkumar@ti.com>
-Subject: RE: [PATCH V3 05/10] ARM: OMAP2+: SmartReflex: introduce a busy
- loop condition test macro
-Date: Fri, 4 May 2012 09:12:13 +0000
-Message-ID: <331ABD5ECB02734CA317220B2BBEABC13E9B1B40@DBDE01.ent.ti.com>
-References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
- <1335462041-4949-6-git-send-email-j-keerthy@ti.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCHv3 0/5] coupled cpuidle state support
+Date: Fri, 4 May 2012 11:04:55 +0100
+Message-ID: <20120504100455.GA14578@e102568-lin.cambridge.arm.com>
+References: <1335816551-27756-1-git-send-email-ccross@android.com>
+	<201204302354.41969.rjw@sisk.pl>
+	<CAMbhsRQcDDW5vWbqb1FRtvOmq6UjOjXj9MCfSt2KF9fHrcY59Q@mail.gmail.com>
+	<201205032200.01823.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1335462041-4949-6-git-send-email-j-keerthy@ti.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "J, KEERTHY" <j-keerthy@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Hilman, Kevin" <khilman@ti.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
-Cc: "Pihet-XID, Jean" <j-pihet@ti.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201205032200.01823.rjw@sisk.pl>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 26, 2012 at 23:10:36, J, KEERTHY wrote:
-> From: Jean Pihet <j-pihet@ti.com>
-> 
-> Now that omap_test_timeout is only accessible from mach-omap2/,
-> introduce a similar function for SR.
-> 
-> This change makes the SmartReflex implementation ready for the move
-> to drivers/.
-> 
-> Signed-off-by: Jean Pihet <j-pihet@ti.com>
-> Signed-off-by: J Keerthy <j-keerthy@ti.com>
-> ---
->  arch/arm/mach-omap2/smartreflex.c |   12 ++++++------
->  include/linux/power/smartreflex.h |   23 ++++++++++++++++++++++-
->  2 files changed, 28 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/smartreflex.c b/arch/arm/mach-omap2/smartreflex.c
-> index d859277..acef08d 100644
-> --- a/arch/arm/mach-omap2/smartreflex.c
-> +++ b/arch/arm/mach-omap2/smartreflex.c
-> @@ -289,9 +289,9 @@ static void sr_v1_disable(struct omap_sr *sr)
->  	 * Wait for SR to be disabled.
->  	 * wait until ERRCONFIG.MCUDISACKINTST = 1. Typical latency is 1us.
->  	 */
-> -	omap_test_timeout((sr_read_reg(sr, ERRCONFIG_V1) &
-> -			ERRCONFIG_MCUDISACKINTST), SR_DISABLE_TIMEOUT,
-> -			timeout);
-> +	sr_test_cond_timeout((sr_read_reg(sr, ERRCONFIG_V1) &
-> +			     ERRCONFIG_MCUDISACKINTST), SR_DISABLE_TIMEOUT,
-> +			     timeout);
->  
->  	if (timeout >= SR_DISABLE_TIMEOUT)
->  		dev_warn(&sr->pdev->dev, "%s: Smartreflex disable timedout\n",
-> @@ -334,9 +334,9 @@ static void sr_v2_disable(struct omap_sr *sr)
->  	 * Wait for SR to be disabled.
->  	 * wait until IRQSTATUS.MCUDISACKINTST = 1. Typical latency is 1us.
->  	 */
-> -	omap_test_timeout((sr_read_reg(sr, IRQSTATUS) &
-> -			IRQSTATUS_MCUDISABLEACKINT), SR_DISABLE_TIMEOUT,
-> -			timeout);
-> +	sr_test_cond_timeout((sr_read_reg(sr, IRQSTATUS) &
-> +			     IRQSTATUS_MCUDISABLEACKINT), SR_DISABLE_TIMEOUT,
-> +			     timeout);
->  
->  	if (timeout >= SR_DISABLE_TIMEOUT)
->  		dev_warn(&sr->pdev->dev, "%s: Smartreflex disable timedout\n",
-> diff --git a/include/linux/power/smartreflex.h b/include/linux/power/smartreflex.h
-> index 884eaee..78b795e 100644
-> --- a/include/linux/power/smartreflex.h
-> +++ b/include/linux/power/smartreflex.h
-> @@ -22,7 +22,7 @@
->  
->  #include <linux/types.h>
->  #include <linux/platform_device.h>
-> -
-> +#include <linux/delay.h>
->  #include <plat/voltage.h>
->  
->  /*
-> @@ -168,6 +168,27 @@ struct omap_sr {
->  };
->  
->  /**
-> + * test_cond_timeout - busy-loop, testing a condition
-> + * @cond: condition to test until it evaluates to true
-> + * @timeout: maximum number of microseconds in the timeout
-> + * @index: loop index (integer)
-> + *
-> + * Loop waiting for @cond to become true or until at least @timeout
-> + * microseconds have passed.  To use, define some integer @index in the
-> + * calling code.  After running, if @index == @timeout, then the loop has
-> + * timed out.
-> + *
-> + * Copied from omap_test_timeout */
-> +#define sr_test_cond_timeout(cond, timeout, index)		\
-> +({								\
-> +	for (index = 0; index < timeout; index++) {		\
-> +		if (cond)					\
-> +			break;					\
-> +		udelay(1);					\
-> +	}							\
-> +})
+On Thu, May 03, 2012 at 09:00:01PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday, May 01, 2012, Colin Cross wrote:
+> > On Mon, Apr 30, 2012 at 2:54 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > On Monday, April 30, 2012, Colin Cross wrote:
+> > >> On Mon, Apr 30, 2012 at 2:25 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-I think we can use time_after()/time_before() APIs for timeout and cpu_relax() for
-tight loops instead of udelay().
+[...]
 
-Regards
-AnilKumar
+> Having considered this for a while I think that it may be more straightforward
+> to avoid waking up the already idled cores.
+> 
+> For instance, say we have 4 CPU cores in a cluster (package) such that each
+> core has its own idle state (call it C1) and there is a multicore idle state
+> entered by turning off the entire cluster (call this state C-multi).  One of
+> the possible ways to handle this seems to be to use an identical table of
+> C-states for each core containing the C1 entry and a kind of fake entry called
+> (for example) C4 with the time characteristics of C-multi and a special
+> .enter() callback.  That callback will prepare the core it is called for to
+> enter C-multi, but instead of simply turning off the whole package it will
+> decrement a counter.  If the counte happens to be 0 at this point, the
+> package will be turned off.  Otherwise, the core will be put into the idle
+> state corresponding to C1, but it will be ready for entering C-multi at
+> any time. The counter will be incremented on exiting the C4 "state".
+> 
+> It looks like this should work without modifying the cpuidle core, but
+> the drawback here is that the cpuidle core doesn't know how much time
+> spend in C4 is really in C1 and how much of it is in C-multi, so the
+> statistics reported by it won't reflect the real energy usage.
+
+This is exactly what has been done in some ARM platforms with per-CPU power
+rails ("C1" means shutdown here) and that are completely symmetric (ie every
+CPU can trigger cluster shutdown); a "C4" multi-CPU state with target_residency
+equivalent to the cluster shutdown implied power break-even point.
+
+There are two issues with this approach. One you already mentioned it.
+Second is that CPUs go idle at different times. Hence, by the time the last
+CPU calls C4.enter() other CPUs in the package might already have a timer
+that is about to expire. If we start cluster shutdown we are wasting power
+(eg caches write-back to DDR) for nothing.
+
+Colin and Santosh mentioned it already, we have to peek at the next event for
+all CPUs in the package (or peek the broadcast global timer if CPUs rely
+on it) and make a decision accordingly.
+
+Lorenzo
