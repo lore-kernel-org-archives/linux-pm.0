@@ -1,63 +1,92 @@
-From: Ralf Jung <post@ralfj.de>
-Subject: Re: [PATCH 1/1] battery: only refresh the sysfs files when pertinant information changes
-Date: Fri, 4 May 2012 15:29:06 +0200
-Message-ID: <201205041529.07142.post@ralfj.de>
-References: <20120503124708.GA18622@srcf.ucam.org> <1336052907-15084-1-git-send-email-apw@canonical.com>
+From: mark gross <markgross@thegnar.org>
+Subject: Re: Plumbers: PM constraints micro-conf RFP
+Date: Fri, 4 May 2012 07:16:18 -0700
+Message-ID: <20120504141618.GC15928@G62>
+References: <20120502143607.GA21640@G62>
+Reply-To: markgross@thegnar.org
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1336052907-15084-1-git-send-email-apw@canonical.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jonathan Nieder <jrnieder@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Adrian Fita <adrian.fita@gmail.com>, Len Brown <lenb@kernel.org>, Paolo Scarabelli <paolo@msw.it>, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <20120502143607.GA21640@G62>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: mark gross <markgross@thegnar.org>
+Cc: Kevin Hilman <khilman@ti.com>, "Agarwal, Ramesh" <ramesh.agarwal@intel.com>, paulmck@vnet.ibm.com, Praveen Chidambaram <pchidamb@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Antti P Miettinen <amiettinen@nvidia.com>, John Stultz <john.stultz@linaro.org>, linux-pm@lists.linux-foundation.org, jeen.pihet@G62.linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, May 02, 2012 at 07:36:10AM -0700, mark gross wrote:
+> This is a Request For Participation in a micro-conference at this years
+> Linux plumbers event.  For this micro conference to happen we need to
+> reach a certain critical mass WRT participants as measured by submitted
+> talks associated to Power Management Constraints.
+> 
+> The To: list is populated with folks that I've had interactions with
+> over extending pm-qos or constraint based PM over the past year.
+> 
+> If you are working on problems related to constraining the power /
+> performance of devices I am inviting your participation and request you
+> submit a proposal for presenting your problem space (preferred) and or
+> solution to a group of developers looking for a good solution to push
+> upstream.  The talks will be about 20 min long as I want to get into
+> some design and implementation discussions after the requirements
+> definition is mostly finished.
+> 
+> I am interested in gathering user mode interface needs as well as kernel
+> mode.
+> 
+> From a high level pm-constraints is a generalization of pm-qos to include
+> limiting performance as well as its current limiting of device
+> throttling.
+> 
+> As performance limiting is typically used for any of the following:
+> 1) staying within thermal operational envelopes
+> 2) avoiding peak current
+> 3) extending battery life in active use cases
+> 
+> I invite anyone working in any of these areas or pm-qos applications to
+> participate in this micro-conference.
+> 
+> I will organize the micro-conference into 2 parts:
+> 1) problem statements with specific participant examples where
+> constraining the performance or throttling is needed.
+> 
+> 2) high level design brain storming.
+> 
+> If the micro-conference happens (i.e. critical mass is reached) any
+> interested linux-plumbers attendees is very welcome to participate.
+> 
+> Please send me an off list email if you want me to add you to my mutt
+> alias of interested parties I'll use to cc people on emails.  Note: must
+> of the correspondence will cc linux-pm too.
+> 
+> Please submit a proposal if you are interested in participating in this
+> with me.  I know a number of people are working in this space for the
+> past few years now.  I think its a good time to compare notes and at
+> least consolidate requirements and use cases.  Perhaps we'll even come up
+> with a good design to implement in the process.
 
-I applied this to 3.4-rc5, and it fixes the issue. Thanks a lot :)
+I forgot to make clear a few things specific to the Plumbers conference.
+1) they need proposals by mid may
+2) if you want financial assistance to be part of this micro-conf you
+need to ask the conference committee and I think I need to recommend you
+as an important participant.  --- Paul, can you clarify this?
 
-> We only need to regenerate the sysfs files when the capacity units
-> change, avoid the update otherwise.
-> 
-> Signed-off-by: Andy Whitcroft <apw@canonical.com>
-Tested-by: Ralf Jung <post@ralfj.de>
-> ---
->  drivers/acpi/battery.c |   10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> 	Based on Matthew's feedback here is a version which optimises
-> 	based on the power_unit field as returned from the battery info.
-> 	Could someone who suffers from this issue please test this out
-> 	and report back.  Thanks.
-> 
-> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-> index 86933ca..7dd3f9f 100644
-> --- a/drivers/acpi/battery.c
-> +++ b/drivers/acpi/battery.c
-> @@ -643,11 +643,19 @@ static int acpi_battery_update(struct acpi_battery
-> *battery)
-> 
->  static void acpi_battery_refresh(struct acpi_battery *battery)
->  {
-> +	int power_unit;
-> +
->  	if (!battery->bat.dev)
->  		return;
-> 
-> +	power_unit = battery->power_unit;
-> +
->  	acpi_battery_get_info(battery);
-> -	/* The battery may have changed its reporting units. */
-> +
-> +	if (power_unit == battery->power_unit)
-> +		return;
-> +
-> +	/* The battery has changed its reporting units. */
->  	sysfs_remove_battery(battery);
->  	sysfs_add_battery(battery);
->  }
+If we don't get a critical mass as determined by the conference
+committee we can try again / do more stuff over email.  BTW we should be
+doing more of anyway.
 
-Kind regards,
-Ralf Jung
+--mark
+
+
+> thanks,
+> --mark
+> 
