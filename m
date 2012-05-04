@@ -1,72 +1,119 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCHv3 0/5] coupled cpuidle state support
-Date: Fri, 4 May 2012 11:04:55 +0100
-Message-ID: <20120504100455.GA14578@e102568-lin.cambridge.arm.com>
-References: <1335816551-27756-1-git-send-email-ccross@android.com>
-	<201204302354.41969.rjw@sisk.pl>
-	<CAMbhsRQcDDW5vWbqb1FRtvOmq6UjOjXj9MCfSt2KF9fHrcY59Q@mail.gmail.com>
-	<201205032200.01823.rjw@sisk.pl>
+From: "J, KEERTHY" <j-keerthy@ti.com>
+Subject: Re: [PATCH V3 04/10] ARM: OMAP3: hwmod: rename the smartreflex entries
+Date: Fri, 4 May 2012 15:41:34 +0530
+Message-ID: <CAJ6a13ZSWSa_RpGB9NxtfyChUba9NGivGogpsfyk7oT9pNayjg@mail.gmail.com>
+References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
+	<1335462041-4949-5-git-send-email-j-keerthy@ti.com>
+	<331ABD5ECB02734CA317220B2BBEABC13E9B1AA2@DBDE01.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201205032200.01823.rjw@sisk.pl>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <331ABD5ECB02734CA317220B2BBEABC13E9B1AA2@DBDE01.ent.ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "AnilKumar, Chimata" <anilkumar@ti.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Hilman, Kevin" <khilman@ti.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Pihet-XID, Jean" <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 03, 2012 at 09:00:01PM +0100, Rafael J. Wysocki wrote:
-> On Tuesday, May 01, 2012, Colin Cross wrote:
-> > On Mon, Apr 30, 2012 at 2:54 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Monday, April 30, 2012, Colin Cross wrote:
-> > >> On Mon, Apr 30, 2012 at 2:25 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Hi AnilKumar,
 
-[...]
+Thanks for reviewing.
 
-> Having considered this for a while I think that it may be more straightforward
-> to avoid waking up the already idled cores.
-> 
-> For instance, say we have 4 CPU cores in a cluster (package) such that each
-> core has its own idle state (call it C1) and there is a multicore idle state
-> entered by turning off the entire cluster (call this state C-multi).  One of
-> the possible ways to handle this seems to be to use an identical table of
-> C-states for each core containing the C1 entry and a kind of fake entry called
-> (for example) C4 with the time characteristics of C-multi and a special
-> .enter() callback.  That callback will prepare the core it is called for to
-> enter C-multi, but instead of simply turning off the whole package it will
-> decrement a counter.  If the counte happens to be 0 at this point, the
-> package will be turned off.  Otherwise, the core will be put into the idle
-> state corresponding to C1, but it will be ready for entering C-multi at
-> any time. The counter will be incremented on exiting the C4 "state".
-> 
-> It looks like this should work without modifying the cpuidle core, but
-> the drawback here is that the cpuidle core doesn't know how much time
-> spend in C4 is really in C1 and how much of it is in C-multi, so the
-> statistics reported by it won't reflect the real energy usage.
+On Fri, May 4, 2012 at 2:00 PM, AnilKumar, Chimata <anilkumar@ti.com> w=
+rote:
+> On Thu, Apr 26, 2012 at 23:10:35, J, KEERTHY wrote:
+>> From: Jean Pihet <j-pihet@ti.com>
+>>
+>> Change the name field value to better reflect the smartreflex
+>> integration in the system.
+>>
+>> Signed-off-by: Jean Pihet <j-pihet@ti.com>
+>> Signed-off-by: J Keerthy <j-keerthy@ti.com>
+>> ---
+>> =A0arch/arm/mach-omap2/omap_hwmod_3xxx_data.c | =A0 =A08 ++++----
+>> =A0arch/arm/mach-omap2/smartreflex.c =A0 =A0 =A0 =A0 =A0| =A0 =A02 +=
+-
+>> =A02 files changed, 5 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/m=
+ach-omap2/omap_hwmod_3xxx_data.c
+>> index 144d118..15907b0 100644
+>> --- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+>> +++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+>> @@ -1324,7 +1324,7 @@ static struct omap_hwmod_irq_info omap3_smartr=
+eflex_mpu_irqs[] =3D {
+>> =A0};
+>>
+>> =A0static struct omap_hwmod omap34xx_sr1_hwmod =3D {
+>> - =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "sr1",
+>> + =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "smartreflex_mpu_iva",
+>> =A0 =A0 =A0 .class =A0 =A0 =A0 =A0 =A0=3D &omap34xx_smartreflex_hwmo=
+d_class,
+>> =A0 =A0 =A0 .main_clk =A0 =A0 =A0 =3D "sr1_fck",
+>> =A0 =A0 =A0 .prcm =A0 =A0 =A0 =A0 =A0 =3D {
+>> @@ -1342,7 +1342,7 @@ static struct omap_hwmod omap34xx_sr1_hwmod =3D=
+ {
+>> =A0};
+>>
+>> =A0static struct omap_hwmod omap36xx_sr1_hwmod =3D {
+>> - =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "sr1",
+>> + =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "smartreflex_mpu_iva",
+>> =A0 =A0 =A0 .class =A0 =A0 =A0 =A0 =A0=3D &omap36xx_smartreflex_hwmo=
+d_class,
+>> =A0 =A0 =A0 .main_clk =A0 =A0 =A0 =3D "sr1_fck",
+>> =A0 =A0 =A0 .prcm =A0 =A0 =A0 =A0 =A0 =3D {
+>> @@ -1369,7 +1369,7 @@ static struct omap_hwmod_irq_info omap3_smartr=
+eflex_core_irqs[] =3D {
+>> =A0};
+>>
+>> =A0static struct omap_hwmod omap34xx_sr2_hwmod =3D {
+>> - =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "sr2",
+>> + =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "smartreflex_core",
+>> =A0 =A0 =A0 .class =A0 =A0 =A0 =A0 =A0=3D &omap34xx_smartreflex_hwmo=
+d_class,
+>> =A0 =A0 =A0 .main_clk =A0 =A0 =A0 =3D "sr2_fck",
+>> =A0 =A0 =A0 .prcm =A0 =A0 =A0 =A0 =A0 =3D {
+>> @@ -1387,7 +1387,7 @@ static struct omap_hwmod omap34xx_sr2_hwmod =3D=
+ {
+>> =A0};
+>>
+>> =A0static struct omap_hwmod omap36xx_sr2_hwmod =3D {
+>> - =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "sr2",
+>> + =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "smartreflex_core",
+>> =A0 =A0 =A0 .class =A0 =A0 =A0 =A0 =A0=3D &omap36xx_smartreflex_hwmo=
+d_class,
+>> =A0 =A0 =A0 .main_clk =A0 =A0 =A0 =3D "sr2_fck",
+>> =A0 =A0 =A0 .prcm =A0 =A0 =A0 =A0 =A0 =3D {
+>> diff --git a/arch/arm/mach-omap2/smartreflex.c b/arch/arm/mach-omap2=
+/smartreflex.c
+>> index 2edd1e2..d859277 100644
+>> --- a/arch/arm/mach-omap2/smartreflex.c
+>> +++ b/arch/arm/mach-omap2/smartreflex.c
+>> @@ -183,7 +183,7 @@ static void sr_set_regfields(struct omap_sr *sr)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 sr->err_weight =3D OMAP3430_SR_ERRWEIGHT=
+;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 sr->err_maxlimit =3D OMAP3430_SR_ERRMAXL=
+IMIT;
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 sr->accum_data =3D OMAP3430_SR_ACCUMDATA=
+;
+>> - =A0 =A0 =A0 =A0 =A0 =A0 if (!(strcmp(sr->name, "sr1"))) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 if (!(strcmp(sr->name, "smartreflex_mpu_iv=
+a"))) {
+>
+> What if voltage rail is different for mpu and iva? I have seen some d=
+evices
+> supports SmartReflex have different voltage rails for mpu and iva.
+>
 
-This is exactly what has been done in some ARM platforms with per-CPU power
-rails ("C1" means shutdown here) and that are completely symmetric (ie every
-CPU can trigger cluster shutdown); a "C4" multi-CPU state with target_residency
-equivalent to the cluster shutdown implied power break-even point.
+I get the point. OMAP3 iva and mpu have a common rail. OMAP4 onwards
+even we have different rails for mpu and iva. I will enhance the checks=
+ here.
 
-There are two issues with this approach. One you already mentioned it.
-Second is that CPUs go idle at different times. Hence, by the time the last
-CPU calls C4.enter() other CPUs in the package might already have a timer
-that is about to expire. If we start cluster shutdown we are wasting power
-(eg caches write-back to DDR) for nothing.
+> Regards
+> AnilKumar
 
-Colin and Santosh mentioned it already, we have to peek at the next event for
-all CPUs in the package (or peek the broadcast global timer if CPUs rely
-on it) and make a decision accordingly.
 
-Lorenzo
+
+--=20
+Regards and Thanks,
+Keerthy
