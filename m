@@ -1,152 +1,21 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
-Date: Tue, 8 May 2012 09:18:48 +0530
-Message-ID: <CAJ6a13arx4bNzc1ByXj=E9gwE3hrw7muZUwmbo3doYAzK-pAnQ@mail.gmail.com>
-References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
-	<20120426191159.GA9415@sirena.org.uk>
-	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
-	<20120427175657.GP18260@opensource.wolfsonmicro.com>
-	<87397o3n4y.fsf@ti.com>
-	<331ABD5ECB02734CA317220B2BBEABC13E9B1A67@DBDE01.ent.ti.com>
-	<87mx5jy2li.fsf@ti.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/1] battery: only refresh the sysfs files when pertinant
+ information changes
+Date: Tue, 08 May 2012 01:50:40 -0400
+Message-ID: <4FA8B430.3050401@kernel.org>
+References: <20120503124708.GA18622@srcf.ucam.org> <1336052907-15084-1-git-send-email-apw@canonical.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <87mx5jy2li.fsf@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Kevin Hilman <khilman@ti.com>, "AnilKumar, Chimata" <anilkumar@ti.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Pihet-XID, Jean" <j-pihet@ti.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1336052907-15084-1-git-send-email-apw@canonical.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andy Whitcroft <apw@canonical.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jonathan Nieder <jrnieder@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.linux-foundation.org>, Adrian Fita <adrian.fita@gmail.com>, Ralf Jung <ralfjung-e@gmx.de>, Paolo Scarabelli <paolo@msw.it>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 8, 2012 at 5:18 AM, Kevin Hilman <khilman@ti.com> wrote:
-> "AnilKumar, Chimata" <anilkumar@ti.com> writes:
->
->> On Sat, Apr 28, 2012 at 02:31:17, Hilman, Kevin wrote:
->>> Hi Mark,
->>>
->>> Mark Brown <broonie@opensource.wolfsonmicro.com> writes:
->>>
->>> > On Fri, Apr 27, 2012 at 11:09:10AM +0530, J, KEERTHY wrote:
->>> >
->>> >> Devfreq and cpufreq are related to dynamic frequency/voltage swi=
-tching between
->>> >> pre defined Operating Performance Points or the OPPs. Every OPP =
-being
->>> >> a voltage/frequency pair. Smartreflex is a different
->>> >> power management technique.
->>> >
->>> > But presumably these things should integrate somehow - for exampl=
-e,
->>> > should devfreq and cpufreq be providing inputs into what AVS is d=
-oing,
->>> > and if so how?
->>>
->>> The way it is currently designed, cpufreq/devfreq/regulator layers =
-don't
->>> need to know about AVS.
->>>
->>> The higher-level layers only know about the "nominal" voltage. =A0A=
-VS
->>> hardware does automatic, adaptive, micro-adjustments around that no=
-minal
->>> voltage, and these micro-adjustments are managed by the AVS hardwar=
-e
->>> sending commands to the PMIC. =A0(specifically, on OMAP, the AVS se=
-nsors
->>> provide inputs to the voltage processor (VP) which provide inputs t=
-o the
->>> voltage controller (VC) which sends commands to the PMIC[1].)
->>>
->>> The driver proposed here is primarily for initializing the various
->>> parameters/sensitivity/etc. of the AVS hardware, but the actual vol=
-tage
->>> adjustments are done in hardware by VC/VP.
->>>
->>> The only thing the higher-level layers might potentially need to do=
- to
->>> enable/disable AVS around transitions (e.g. when changing OPP, AVS =
-is
->>> disabled before changing OPP and only re-enabled when the new nomin=
-al
->>> voltage has been acheived.)
->>>
->>> On OMAP, we handle this inside the OMAP-specific voltage layer whic=
-h is
->>> called by the regulator framework, so even the regulators do not ne=
-ed
->>> any knowledge of AVS.
->>
->> Kevin,
->>
->> I want to point out some cases of SR implementation where this may n=
-ot
->> be true.
->>
->> Devices like DM8168, DM8148 and AM335X use Class 2B implementation o=
-f SR.
->>
->> Under this, SR module issues an interrupt to ARM when there is a nee=
-d to
->> change the voltage based on temperature changes, ageing etc.
->>
->> Once the interrupt arrives, kernel needs to adjust voltage using reg=
-ulator API.
->> The voltage change is a micro adjustment as in other SR classes.
->
-> That can easily be handled writing a plugin specific to class 2B. =A0=
-This
-> driver was designed so plugins for other classes can be supported.
->
-> Sure, we might need some enhancements for other classes (we already k=
-now
-> that we will for class 1 support.) =A0However, the purpose of this se=
-ries
-> is to do the cleanups necessary for the driver to move to drivers/*.
+applied to ACPI next branch
 
-AnilKumar,
+thanks,
+Len Brown, Intel Open Source Technology Center
 
-The intent of the series as explained by Kevin if to do the necessary c=
-lean up
-for the driver to move from mach-omap to drivers/*. We will for sure ne=
-ed
-more enhancements for other classes support.
-
->
-> Support for additional classes can be added after the driver is moved
-> if/when folks are motivated to post that support upstream.
->
->> The SR class 2B implementation on these devices does not exist in ma=
-inline.
->> I can point to some public repositories if you are interested in tak=
-ing a look at
->> the current code.
->
-> No thanks. =A0We can discuss it when you post support for it to mainl=
-ine.
->
-> Kevin
->
->> Implementation of this SR method is must on at least the DM8168 devi=
-ce and
->> I know some customers who are using it on their production systems.
->>
->> Regards
->> AnilKumar
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kern=
-el" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at =A0http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at =A0http://www.tux.org/lkml/
-
-
-
---=20
-Regards and Thanks,
-Keerthy
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
