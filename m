@@ -1,139 +1,165 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCHv4 4/4] cpuidle: coupled: add parallel barrier
-	function
-Date: Wed, 9 May 2012 23:31:24 +0200
-Message-ID: <201205092331.24487.rjw@sisk.pl>
-References: <1336438662-10484-1-git-send-email-ccross@android.com>
-	<1336438662-10484-5-git-send-email-ccross@android.com>
+From: "J, KEERTHY" <j-keerthy@ti.com>
+Subject: Re: [PATCH V3 05/10] ARM: OMAP2+: SmartReflex: introduce a busy loop
+ condition test macro
+Date: Thu, 10 May 2012 11:49:47 +0530
+Message-ID: <CAJ6a13Z4AuDccR2o0nzQO+tnL59PbAVtFkzYDCd1FU_VuiZOVw@mail.gmail.com>
+References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
+	<1335462041-4949-6-git-send-email-j-keerthy@ti.com>
+	<331ABD5ECB02734CA317220B2BBEABC13E9B1B40@DBDE01.ent.ti.com>
+	<CAJ6a13aA9nutZvRkcj8GHok9cEe8A=J2bwzSXt=Sd0Hu_WPaPw@mail.gmail.com>
+	<331ABD5ECB02734CA317220B2BBEABC13E9B667C@DBDE01.ent.ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1336438662-10484-5-git-send-email-ccross@android.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <331ABD5ECB02734CA317220B2BBEABC13E9B667C@DBDE01.ent.ti.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: "AnilKumar, Chimata" <anilkumar@ti.com>
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Hilman, Kevin" <khilman@ti.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Pihet-XID, Jean" <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 08, 2012, Colin Cross wrote:
-> Adds cpuidle_coupled_parallel_barrier, which can be used by coupled
-> cpuidle state enter functions to handle resynchronization after
-> determining if any cpu needs to abort.  The normal use case will
-> be:
-> 
-> static bool abort_flag;
-> static atomic_t abort_barrier;
-> 
-> int arch_cpuidle_enter(struct cpuidle_device *dev, ...)
-> {
-> 	if (arch_turn_off_irq_controller()) {
-> 	   	/* returns an error if an irq is pending and would be lost
-> 		   if idle continued and turned off power */
-> 		abort_flag = true;
-> 	}
-> 
-> 	cpuidle_coupled_parallel_barrier(dev, &abort_barrier);
+On Tue, May 8, 2012 at 3:47 PM, AnilKumar, Chimata <anilkumar@ti.com> w=
+rote:
+> On Mon, May 07, 2012 at 10:51:53, J, KEERTHY wrote:
+>> On Fri, May 4, 2012 at 2:42 PM, AnilKumar, Chimata <anilkumar@ti.com=
+> wrote:
+>> > On Thu, Apr 26, 2012 at 23:10:36, J, KEERTHY wrote:
+>> >> From: Jean Pihet <j-pihet@ti.com>
+>> >>
+>> >> Now that omap_test_timeout is only accessible from mach-omap2/,
+>> >> introduce a similar function for SR.
+>> >>
+>> >> This change makes the SmartReflex implementation ready for the mo=
+ve
+>> >> to drivers/.
+>> >>
+>> >> Signed-off-by: Jean Pihet <j-pihet@ti.com>
+>> >> Signed-off-by: J Keerthy <j-keerthy@ti.com>
+>> >> ---
+>> >> =A0arch/arm/mach-omap2/smartreflex.c | =A0 12 ++++++------
+>> >> =A0include/linux/power/smartreflex.h | =A0 23 +++++++++++++++++++=
++++-
+>> >> =A02 files changed, 28 insertions(+), 7 deletions(-)
+>> >>
+>> >> diff --git a/arch/arm/mach-omap2/smartreflex.c b/arch/arm/mach-om=
+ap2/smartreflex.c
+>> >> index d859277..acef08d 100644
+>> >> --- a/arch/arm/mach-omap2/smartreflex.c
+>> >> +++ b/arch/arm/mach-omap2/smartreflex.c
+>> >> @@ -289,9 +289,9 @@ static void sr_v1_disable(struct omap_sr *sr)
+>> >> =A0 =A0 =A0 =A0* Wait for SR to be disabled.
+>> >> =A0 =A0 =A0 =A0* wait until ERRCONFIG.MCUDISACKINTST =3D 1. Typic=
+al latency is 1us.
+>> >> =A0 =A0 =A0 =A0*/
+>> >> - =A0 =A0 omap_test_timeout((sr_read_reg(sr, ERRCONFIG_V1) &
+>> >> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ERRCONFIG_MCUDISACKINTS=
+T), SR_DISABLE_TIMEOUT,
+>> >> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 timeout);
+>> >> + =A0 =A0 sr_test_cond_timeout((sr_read_reg(sr, ERRCONFIG_V1) &
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0ERRCONFIG_MC=
+UDISACKINTST), SR_DISABLE_TIMEOUT,
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0timeout);
+>> >>
+>> >> =A0 =A0 =A0 if (timeout >=3D SR_DISABLE_TIMEOUT)
+>> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_warn(&sr->pdev->dev, "%s: Smartre=
+flex disable timedout\n",
+>> >> @@ -334,9 +334,9 @@ static void sr_v2_disable(struct omap_sr *sr)
+>> >> =A0 =A0 =A0 =A0* Wait for SR to be disabled.
+>> >> =A0 =A0 =A0 =A0* wait until IRQSTATUS.MCUDISACKINTST =3D 1. Typic=
+al latency is 1us.
+>> >> =A0 =A0 =A0 =A0*/
+>> >> - =A0 =A0 omap_test_timeout((sr_read_reg(sr, IRQSTATUS) &
+>> >> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 IRQSTATUS_MCUDISABLEACK=
+INT), SR_DISABLE_TIMEOUT,
+>> >> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 timeout);
+>> >> + =A0 =A0 sr_test_cond_timeout((sr_read_reg(sr, IRQSTATUS) &
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0IRQSTATUS_MC=
+UDISABLEACKINT), SR_DISABLE_TIMEOUT,
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0timeout);
+>> >>
+>> >> =A0 =A0 =A0 if (timeout >=3D SR_DISABLE_TIMEOUT)
+>> >> =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_warn(&sr->pdev->dev, "%s: Smartre=
+flex disable timedout\n",
+>> >> diff --git a/include/linux/power/smartreflex.h b/include/linux/po=
+wer/smartreflex.h
+>> >> index 884eaee..78b795e 100644
+>> >> --- a/include/linux/power/smartreflex.h
+>> >> +++ b/include/linux/power/smartreflex.h
+>> >> @@ -22,7 +22,7 @@
+>> >>
+>> >> =A0#include <linux/types.h>
+>> >> =A0#include <linux/platform_device.h>
+>> >> -
+>> >> +#include <linux/delay.h>
+>> >> =A0#include <plat/voltage.h>
+>> >>
+>> >> =A0/*
+>> >> @@ -168,6 +168,27 @@ struct omap_sr {
+>> >> =A0};
+>> >>
+>> >> =A0/**
+>> >> + * test_cond_timeout - busy-loop, testing a condition
+>> >> + * @cond: condition to test until it evaluates to true
+>> >> + * @timeout: maximum number of microseconds in the timeout
+>> >> + * @index: loop index (integer)
+>> >> + *
+>> >> + * Loop waiting for @cond to become true or until at least @time=
+out
+>> >> + * microseconds have passed. =A0To use, define some integer @ind=
+ex in the
+>> >> + * calling code. =A0After running, if @index =3D=3D @timeout, th=
+en the loop has
+>> >> + * timed out.
+>> >> + *
+>> >> + * Copied from omap_test_timeout */
+>> >> +#define sr_test_cond_timeout(cond, timeout, index) =A0 =A0 =A0 =A0=
+ =A0 \
+>> >> +({ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 \
+>> >> + =A0 =A0 for (index =3D 0; index < timeout; index++) { =A0 =A0 =A0=
+ =A0 =A0 =A0 \
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 if (cond) =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 \
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break; =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+>> >> + =A0 =A0 =A0 =A0 =A0 =A0 udelay(1); =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0\
+>> >> + =A0 =A0 } =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 \
+>> >> +})
+>> >
+>> > I think we can use time_after()/time_before() APIs for timeout and=
+ cpu_relax() for
+>> > tight loops instead of udelay().
+>>
+>> cpu_relax() changes the priority everytime to low and will yield to
+>> another thread.
+>> Considering that we are checking the condition every microsecond doe=
+s it make
+>> some saving using cpu_relax().
+>>
 >
-> 	if (abort_flag) {
-> 	   	/* One of the cpus didn't turn off it's irq controller */
-> 	   	arch_turn_on_irq_controller();
-> 		return -EINTR;
-> 	}
-> 
-> 	/* continue with idle */
-> 	...
-> }
-> 
-> This will cause all cpus to abort idle together if one of them needs
-> to abort.
-> 
-> Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> Reviewed-by: Kevin Hilman <khilman@ti.com>
-> Tested-by: Kevin Hilman <khilman@ti.com>
-> Signed-off-by: Colin Cross <ccross@android.com>
-> ---
->  drivers/cpuidle/coupled.c |   37 +++++++++++++++++++++++++++++++++++++
->  include/linux/cpuidle.h   |    4 ++++
->  2 files changed, 41 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-> index 93101fb..3e65de1 100644
-> --- a/drivers/cpuidle/coupled.c
-> +++ b/drivers/cpuidle/coupled.c
-> @@ -130,6 +130,43 @@ struct cpuidle_coupled {
->  static cpumask_t cpuidle_coupled_poked_mask;
->  
->  /**
-> + * cpuidle_coupled_parallel_barrier - synchronize all online coupled cpus
-> + * @dev: cpuidle_device of the calling cpu
-> + * @a:   atomic variable to hold the barrier
-> + *
-> + * No caller to this function will return from this function until all online
-> + * cpus in the same coupled group have called this function.  Once any caller
-> + * has returned from this function, the barrier is immediately available for
-> + * reuse.
-> + *
-> + * The atomic variable a must be initialized to 0 before any cpu calls
-> + * this function, will be reset to 0 before any cpu returns from this function.
-> + *
-> + * Must only be called from within a coupled idle state handler
-> + * (state.enter when state.flags has CPUIDLE_FLAG_COUPLED set).
-> + *
-> + * Provides full smp barrier semantics before and after calling.
-> + */
-> +void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a)
-> +{
-> +	int n = dev->coupled->online_count;
-> +
-> +	smp_mb__before_atomic_inc();
-> +	atomic_inc(a);
-> +
-> +	while (atomic_read(a) < n)
-> +		cpu_relax();
-> +
-> +	if (atomic_inc_return(a) == n * 2) {
-> +		atomic_set(a, 0);
-> +		return;
-> +	}
-> +
-> +	while (atomic_read(a) > n)
-> +		cpu_relax();
-> +}
+> cpu_relax() does not involve any priority changes or scheduling AFAIC=
+S.
+> Have a look at this thread:
+>
+> http://www.spinics.net/lists/netdev/msg151699.html
 
-Well, this looks like "wait until all CPUs execute this code".  Don't we have
-anything like this already somewhere?
+Thanks. My bad. I meant yielding to another thread with in a space
+of 1uS.
 
-> +
-> +/**
->   * cpuidle_state_is_coupled - check if a state is part of a coupled set
->   * @dev: struct cpuidle_device for the current cpu
->   * @drv: struct cpuidle_driver for the platform
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 6038448..5ab7183 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -183,6 +183,10 @@ static inline int cpuidle_wrap_enter(struct cpuidle_device *dev,
->  
->  #endif
->  
-> +#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-> +void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a);
-> +#endif
+>
+> Regards
+> AnilKumar
+>
 
-Why exactly is the extra Kconfig option necessary?
 
-> +
->  /******************************
->   * CPUIDLE GOVERNOR INTERFACE *
->   ******************************/
 
-Rafael
+--=20
+Regards and Thanks,
+Keerthy
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
