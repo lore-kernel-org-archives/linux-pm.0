@@ -1,284 +1,151 @@
-From: "Guyotte, Greg" <gguyotte@ti.com>
-Subject: RE: [PATCH V3 07/10] ARM: OMAP2+: SmartReflex: Use per-OPP data
- structure
-Date: Thu, 10 May 2012 19:11:39 +0000
-Message-ID: <44C9A5C2B412554B8C50A260EB4EF32703971E34@DFLE32.ent.ti.com>
-References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
- <1335462041-4949-8-git-send-email-j-keerthy@ti.com>
+From: Colin Cross <ccross@android.com>
+Subject: Re: [PATCHv4 4/4] cpuidle: coupled: add parallel barrier
+	function
+Date: Thu, 10 May 2012 15:47:21 -0700
+Message-ID: <CAMbhsRRzc9hPYLZvuwqsOP3RrF1dZVmzM_qfy_xHNL6mhtJzDA@mail.gmail.com>
+References: <1336438662-10484-1-git-send-email-ccross@android.com>
+	<1336438662-10484-5-git-send-email-ccross@android.com>
+	<201205092331.24487.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1335462041-4949-8-git-send-email-j-keerthy@ti.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "J, KEERTHY" <j-keerthy@ti.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Hilman, Kevin" <khilman@ti.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
-Cc: "Pihet-XID, Jean" <j-pihet@ti.com>, Paul Walmsley <paul@pwsan.com>, "Gopinath, Thara" <thara@ti.com>, "Menon, Nishanth" <nm@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201205092331.24487.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jean,
+On Wed, May 9, 2012 at 2:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday, May 08, 2012, Colin Cross wrote:
+>> Adds cpuidle_coupled_parallel_barrier, which can be used by coupled
+>> cpuidle state enter functions to handle resynchronization after
+>> determining if any cpu needs to abort. =A0The normal use case will
+>> be:
+>>
+>> static bool abort_flag;
+>> static atomic_t abort_barrier;
+>>
+>> int arch_cpuidle_enter(struct cpuidle_device *dev, ...)
+>> {
+>> =A0 =A0 =A0 if (arch_turn_off_irq_controller()) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* returns an error if an irq is pending and=
+ would be lost
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if idle continued and turned off powe=
+r */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 abort_flag =3D true;
+>> =A0 =A0 =A0 }
+>>
+>> =A0 =A0 =A0 cpuidle_coupled_parallel_barrier(dev, &abort_barrier);
+>>
+>> =A0 =A0 =A0 if (abort_flag) {
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* One of the cpus didn't turn off it's irq =
+controller */
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 arch_turn_on_irq_controller();
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINTR;
+>> =A0 =A0 =A0 }
+>>
+>> =A0 =A0 =A0 /* continue with idle */
+>> =A0 =A0 =A0 ...
+>> }
+>>
+>> This will cause all cpus to abort idle together if one of them needs
+>> to abort.
+>>
+>> Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> Reviewed-by: Kevin Hilman <khilman@ti.com>
+>> Tested-by: Kevin Hilman <khilman@ti.com>
+>> Signed-off-by: Colin Cross <ccross@android.com>
+>> ---
+>> =A0drivers/cpuidle/coupled.c | =A0 37 ++++++++++++++++++++++++++++++++++=
++++
+>> =A0include/linux/cpuidle.h =A0 | =A0 =A04 ++++
+>> =A02 files changed, 41 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+>> index 93101fb..3e65de1 100644
+>> --- a/drivers/cpuidle/coupled.c
+>> +++ b/drivers/cpuidle/coupled.c
+>> @@ -130,6 +130,43 @@ struct cpuidle_coupled {
+>> =A0static cpumask_t cpuidle_coupled_poked_mask;
+>>
+>> =A0/**
+>> + * cpuidle_coupled_parallel_barrier - synchronize all online coupled cp=
+us
+>> + * @dev: cpuidle_device of the calling cpu
+>> + * @a: =A0 atomic variable to hold the barrier
+>> + *
+>> + * No caller to this function will return from this function until all =
+online
+>> + * cpus in the same coupled group have called this function. =A0Once an=
+y caller
+>> + * has returned from this function, the barrier is immediately availabl=
+e for
+>> + * reuse.
+>> + *
+>> + * The atomic variable a must be initialized to 0 before any cpu calls
+>> + * this function, will be reset to 0 before any cpu returns from this f=
+unction.
+>> + *
+>> + * Must only be called from within a coupled idle state handler
+>> + * (state.enter when state.flags has CPUIDLE_FLAG_COUPLED set).
+>> + *
+>> + * Provides full smp barrier semantics before and after calling.
+>> + */
+>> +void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomi=
+c_t *a)
+>> +{
+>> + =A0 =A0 int n =3D dev->coupled->online_count;
+>> +
+>> + =A0 =A0 smp_mb__before_atomic_inc();
+>> + =A0 =A0 atomic_inc(a);
+>> +
+>> + =A0 =A0 while (atomic_read(a) < n)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 cpu_relax();
+>> +
+>> + =A0 =A0 if (atomic_inc_return(a) =3D=3D n * 2) {
+>> + =A0 =A0 =A0 =A0 =A0 =A0 atomic_set(a, 0);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 return;
+>> + =A0 =A0 }
+>> +
+>> + =A0 =A0 while (atomic_read(a) > n)
+>> + =A0 =A0 =A0 =A0 =A0 =A0 cpu_relax();
+>> +}
+>
+> Well, this looks like "wait until all CPUs execute this code". =A0Don't w=
+e have
+> anything like this already somewhere?
+>
+>> +
+>> +/**
+>> =A0 * cpuidle_state_is_coupled - check if a state is part of a coupled s=
+et
+>> =A0 * @dev: struct cpuidle_device for the current cpu
+>> =A0 * @drv: struct cpuidle_driver for the platform
+>> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+>> index 6038448..5ab7183 100644
+>> --- a/include/linux/cpuidle.h
+>> +++ b/include/linux/cpuidle.h
+>> @@ -183,6 +183,10 @@ static inline int cpuidle_wrap_enter(struct cpuidle=
+_device *dev,
+>>
+>> =A0#endif
+>>
+>> +#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+>> +void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomi=
+c_t *a);
+>> +#endif
+>
+> Why exactly is the extra Kconfig option necessary?
 
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> owner@vger.kernel.org] On Behalf Of J, KEERTHY
-> Sent: Thursday, April 26, 2012 12:41 PM
-> To: linux-omap@vger.kernel.org; linux-arm-kernel@lists.infradead.org;
-> Hilman, Kevin; rjw@sisk.pl; linux-kernel@vger.kernel.org; linux-
-> pm@lists.linux-foundation.org
-> Cc: Pihet-XID, Jean; J, KEERTHY; Paul Walmsley; Gopinath, Thara; Menon,
-> Nishanth
-> Subject: [PATCH V3 07/10] ARM: OMAP2+: SmartReflex: Use per-OPP data
-> structure
-> 
-> From: Jean Pihet <j-pihet@ti.com>
-> 
-> The SmartReflex driver incorrectly treats some per-OPP data as data
-> common to all OPPs (e.g., ERRMINLIMIT).  Move this data into a per-OPP
-> data structure.
-> 
-> Furthermore, in order to make the SmartReflex implementation ready for
-> the move to drivers/, remove the dependency from the SR driver code
-> to the voltage layer by querying the data tables only from the SR device
-> init code.
-> 
-> Based on Paul's original code for the SmartReflex driver conversion.
-> 
-> Signed-off-by: Jean Pihet <j-pihet@ti.com>
-> Signed-off-by: J Keerthy <j-keerthy@ti.com>
-> Cc: Paul Walmsley <paul@pwsan.com>
-> Cc: Thara Gopinath <thara@ti.com>
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: Kevin Hilman <khilman@ti.com>
-> ---
->  arch/arm/mach-omap2/smartreflex.c |   38 +++++++++++++++++---------------
-> ----
->  arch/arm/mach-omap2/sr_device.c   |   36 +++++++++++++++++++++++++++++---
-> --
->  include/linux/power/smartreflex.h |    8 +++++-
->  3 files changed, 54 insertions(+), 28 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/smartreflex.c b/arch/arm/mach-
-> omap2/smartreflex.c
-> index acef08d..20075de 100644
-> --- a/arch/arm/mach-omap2/smartreflex.c
-> +++ b/arch/arm/mach-omap2/smartreflex.c
-> @@ -347,22 +347,23 @@ static void sr_v2_disable(struct omap_sr *sr)
->  	sr_write_reg(sr, IRQSTATUS, IRQSTATUS_MCUDISABLEACKINT);
->  }
-> 
-> -static u32 sr_retrieve_nvalue(struct omap_sr *sr, u32 efuse_offs)
-> +static struct omap_sr_nvalue_table *sr_retrieve_nvalue_row(
-> +				struct omap_sr *sr, u32 efuse_offs)
->  {
->  	int i;
-> 
->  	if (!sr->nvalue_table) {
->  		dev_warn(&sr->pdev->dev, "%s: Missing ntarget value table\n",
->  			__func__);
-> -		return 0;
-> +		return NULL;
->  	}
-> 
->  	for (i = 0; i < sr->nvalue_count; i++) {
->  		if (sr->nvalue_table[i].efuse_offs == efuse_offs)
-> -			return sr->nvalue_table[i].nvalue;
-> +			return &sr->nvalue_table[i];
->  	}
-> 
-> -	return 0;
-> +	return NULL;
->  }
-> 
->  /* Public Functions */
-> @@ -586,7 +587,7 @@ int sr_enable(struct voltagedomain *voltdm, unsigned
-> long volt)
->  {
->  	struct omap_volt_data *volt_data;
->  	struct omap_sr *sr = _sr_lookup(voltdm);
-> -	u32 nvalue_reciprocal;
-> +	struct omap_sr_nvalue_table *nvalue_row;
->  	int ret;
-> 
->  	if (IS_ERR(sr)) {
-> @@ -602,16 +603,16 @@ int sr_enable(struct voltagedomain *voltdm, unsigned
-> long volt)
->  		return PTR_ERR(volt_data);
->  	}
-> 
-> -	nvalue_reciprocal = sr_retrieve_nvalue(sr, volt_data-
-> >sr_efuse_offs);
-> +	nvalue_row = sr_retrieve_nvalue_row(sr, volt_data->sr_efuse_offs);
-> 
-> -	if (!nvalue_reciprocal) {
-> -		dev_warn(&sr->pdev->dev, "%s: NVALUE = 0 at voltage %ld\n",
-> -			__func__, volt);
-> +	if (!nvalue_row) {
-> +		dev_warn(&sr->pdev->dev, "%s: failure getting SR data for this
-> voltage %ld\n",
-> +			 __func__, volt);
->  		return -ENODATA;
->  	}
-> 
->  	/* errminlimit is opp dependent and hence linked to voltage */
-> -	sr->err_minlimit = volt_data->sr_errminlimit;
-> +	sr->err_minlimit = nvalue_row->errminlimit;
-> 
->  	pm_runtime_get_sync(&sr->pdev->dev);
-> 
-> @@ -624,7 +625,7 @@ int sr_enable(struct voltagedomain *voltdm, unsigned
-> long volt)
->  	if (ret)
->  		return ret;
-> 
-> -	sr_write_reg(sr, NVALUERECIPROCAL, nvalue_reciprocal);
-> +	sr_write_reg(sr, NVALUERECIPROCAL, nvalue_row->nvalue);
-> 
->  	/* SRCONFIG - enable SR */
->  	sr_modify_reg(sr, SRCONFIG, SRCONFIG_SRENABLE, SRCONFIG_SRENABLE);
-> @@ -872,7 +873,6 @@ static int __init omap_sr_probe(struct platform_device
-> *pdev)
->  	struct omap_sr_data *pdata = pdev->dev.platform_data;
->  	struct resource *mem, *irq;
->  	struct dentry *nvalue_dir;
-> -	struct omap_volt_data *volt_data;
->  	int i, ret = 0;
-> 
->  	sr_info = kzalloc(sizeof(struct omap_sr), GFP_KERNEL);
-> @@ -990,12 +990,10 @@ static int __init omap_sr_probe(struct
-> platform_device *pdev)
->  		goto err_debugfs;
->  	}
-> 
-> -	omap_voltage_get_volttable(sr_info->voltdm, &volt_data);
-> -	if (!volt_data) {
-> -		dev_warn(&pdev->dev, "%s: %s: No Voltage table for the"
-> -			" corresponding vdd. Cannot create debugfs"
-> -			"entries for n-values\n",
-> -			__func__, sr_info->name);
-> +	if (sr_info->nvalue_count == 0 || !sr_info->nvalue_table) {
-> +		dev_warn(&pdev->dev, "%s: %s: No Voltage table for the
-> corresponding vdd. Cannot create debugfs entries for n-values\n",
-> +			 __func__, sr_info->name);
-> +
->  		ret = -ENODATA;
->  		goto err_debugfs;
->  	}
-> @@ -1003,8 +1001,8 @@ static int __init omap_sr_probe(struct
-> platform_device *pdev)
->  	for (i = 0; i < sr_info->nvalue_count; i++) {
->  		char name[NVALUE_NAME_LEN + 1];
-> 
-> -		snprintf(name, sizeof(name), "volt_%d",
-> -			 volt_data[i].volt_nominal);
-> +		snprintf(name, sizeof(name), "volt_%lu",
-> +				sr_info->nvalue_table[i].volt_nominal);
->  		(void) debugfs_create_x32(name, S_IRUGO | S_IWUSR, nvalue_dir,
->  				&(sr_info->nvalue_table[i].nvalue));
->  	}
-> diff --git a/arch/arm/mach-omap2/sr_device.c b/arch/arm/mach-
-> omap2/sr_device.c
-> index e081174..e107e39 100644
-> --- a/arch/arm/mach-omap2/sr_device.c
-> +++ b/arch/arm/mach-omap2/sr_device.c
-> @@ -36,7 +36,10 @@ static void __init sr_set_nvalues(struct omap_volt_data
-> *volt_data,
->  				struct omap_sr_data *sr_data)
->  {
->  	struct omap_sr_nvalue_table *nvalue_table;
-> -	int i, count = 0;
-> +	int i, j, count = 0;
-> +
-> +	sr_data->nvalue_count = 0;
-> +	sr_data->nvalue_table = NULL;
-> 
->  	while (volt_data[count].volt_nominal)
->  		count++;
-> @@ -44,8 +47,14 @@ static void __init sr_set_nvalues(struct omap_volt_data
-> *volt_data,
->  	nvalue_table = kzalloc(sizeof(struct omap_sr_nvalue_table)*count,
->  			GFP_KERNEL);
-> 
-> -	for (i = 0; i < count; i++) {
-> +	if (!nvalue_table) {
-> +		pr_err("OMAP: SmartReflex: cannot allocate memory for n-value
-> table\n");
-> +		return;
-> +	}
-> +
-> +	for (i = 0, j = 0; i < count; i++) {
->  		u32 v;
-> +
->  		/*
->  		 * In OMAP4 the efuse registers are 24 bit aligned.
->  		 * A __raw_readl will fail for non-32 bit aligned address
-> @@ -58,15 +67,30 @@ static void __init sr_set_nvalues(struct
-> omap_volt_data *volt_data,
->  				omap_ctrl_readb(offset + 1) << 8 |
->  				omap_ctrl_readb(offset + 2) << 16;
->  		} else {
-> -			 v = omap_ctrl_readl(volt_data[i].sr_efuse_offs);
-> +			v = omap_ctrl_readl(volt_data[i].sr_efuse_offs);
->  		}
-> 
-> -		nvalue_table[i].efuse_offs = volt_data[i].sr_efuse_offs;
-> -		nvalue_table[i].nvalue = v;
-> +		/*
-> +		 * Many OMAP SoCs don't have the eFuse values set.
-> +		 * For example, pretty much all OMAP3xxx before
-> +		 * ES3.something.
-> +		 *
-> +		 * XXX There needs to be some way for board files or
-> +		 * userspace to add these in.
-> +		 */
-> +		if (v == 0)
-> +			continue;
-> +
-> +		nvalue_table[j].nvalue = v;
-> +		nvalue_table[j].efuse_offs = volt_data[i].sr_efuse_offs;
-> +		nvalue_table[j].errminlimit = volt_data[i].sr_errminlimit;
-> +		nvalue_table[j].volt_nominal = volt_data[i].volt_nominal;
-> +
-> +		j++;
->  	}
-> 
->  	sr_data->nvalue_table = nvalue_table;
-> -	sr_data->nvalue_count = count;
-> +	sr_data->nvalue_count = j;
->  }
-> 
->  static int __init sr_dev_init(struct omap_hwmod *oh, void *user)
-> diff --git a/include/linux/power/smartreflex.h
-> b/include/linux/power/smartreflex.h
-> index 78b795e..222f901 100644
-> --- a/include/linux/power/smartreflex.h
-> +++ b/include/linux/power/smartreflex.h
-> @@ -243,12 +243,16 @@ struct omap_sr_class_data {
->  /**
->   * struct omap_sr_nvalue_table	- Smartreflex n-target value info
->   *
-> - * @efuse_offs:	The offset of the efuse where n-target values are stored.
-> - * @nvalue:	The n-target value.
-> + * @efuse_offs:	  The offset of the efuse where n-target values are
-> stored.
-> + * @nvalue:	  The n-target value.
-> + * @errminlimit:  The value of the ERRMINLIMIT bitfield for this n-target
-> + * @volt_nominal: microvolts DC that the VDD is initially programmed to
->   */
->  struct omap_sr_nvalue_table {
->  	u32 efuse_offs;
->  	u32 nvalue;
-> +	u32 errminlimit;
-> +	unsigned long volt_nominal;
-
-[GG] I would suggest that we also need to add errmaxlimit and errweight fields to this structure.  These are very much possible to change per OPP, though it hasn't been common in implementations up to now.
-
->  };
-> 
->  /**
-> --
-> 1.7.5.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+It prevents compiling in coupled.o (2k text section) on the majority
+of kernels that will never use it.
