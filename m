@@ -1,151 +1,52 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [PATCHv4 4/4] cpuidle: coupled: add parallel barrier
-	function
-Date: Thu, 10 May 2012 15:47:21 -0700
-Message-ID: <CAMbhsRRzc9hPYLZvuwqsOP3RrF1dZVmzM_qfy_xHNL6mhtJzDA@mail.gmail.com>
-References: <1336438662-10484-1-git-send-email-ccross@android.com>
-	<1336438662-10484-5-git-send-email-ccross@android.com>
-	<201205092331.24487.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201205092331.24487.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, linux-arm-kernel@lists.infradead.org
+From: Youquan Song <youquan.song@intel.com>
+Subject: [PATCH 0/3] x86,idle: Enhance cpuidle prediction to handle its failure
+Date: Fri, 11 May 2012 11:15:54 -0400
+Message-ID: <1336749357-9133-1-git-send-email-youquan.song@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, len.brown@intel.com, akpm@linux-foundation.org
+Cc: arjan@linux.intel.com, len.brown@linux.intel.com, suresh.b.siddha@intel.com, Youquan Song <youquan.song@linux.intel.com>, Youquan Song <youquan.song@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 9, 2012 at 2:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, May 08, 2012, Colin Cross wrote:
->> Adds cpuidle_coupled_parallel_barrier, which can be used by coupled
->> cpuidle state enter functions to handle resynchronization after
->> determining if any cpu needs to abort. =A0The normal use case will
->> be:
->>
->> static bool abort_flag;
->> static atomic_t abort_barrier;
->>
->> int arch_cpuidle_enter(struct cpuidle_device *dev, ...)
->> {
->> =A0 =A0 =A0 if (arch_turn_off_irq_controller()) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* returns an error if an irq is pending and=
- would be lost
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if idle continued and turned off powe=
-r */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 abort_flag =3D true;
->> =A0 =A0 =A0 }
->>
->> =A0 =A0 =A0 cpuidle_coupled_parallel_barrier(dev, &abort_barrier);
->>
->> =A0 =A0 =A0 if (abort_flag) {
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* One of the cpus didn't turn off it's irq =
-controller */
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 arch_turn_on_irq_controller();
->> =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINTR;
->> =A0 =A0 =A0 }
->>
->> =A0 =A0 =A0 /* continue with idle */
->> =A0 =A0 =A0 ...
->> }
->>
->> This will cause all cpus to abort idle together if one of them needs
->> to abort.
->>
->> Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
->> Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
->> Reviewed-by: Kevin Hilman <khilman@ti.com>
->> Tested-by: Kevin Hilman <khilman@ti.com>
->> Signed-off-by: Colin Cross <ccross@android.com>
->> ---
->> =A0drivers/cpuidle/coupled.c | =A0 37 ++++++++++++++++++++++++++++++++++=
-+++
->> =A0include/linux/cpuidle.h =A0 | =A0 =A04 ++++
->> =A02 files changed, 41 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
->> index 93101fb..3e65de1 100644
->> --- a/drivers/cpuidle/coupled.c
->> +++ b/drivers/cpuidle/coupled.c
->> @@ -130,6 +130,43 @@ struct cpuidle_coupled {
->> =A0static cpumask_t cpuidle_coupled_poked_mask;
->>
->> =A0/**
->> + * cpuidle_coupled_parallel_barrier - synchronize all online coupled cp=
-us
->> + * @dev: cpuidle_device of the calling cpu
->> + * @a: =A0 atomic variable to hold the barrier
->> + *
->> + * No caller to this function will return from this function until all =
-online
->> + * cpus in the same coupled group have called this function. =A0Once an=
-y caller
->> + * has returned from this function, the barrier is immediately availabl=
-e for
->> + * reuse.
->> + *
->> + * The atomic variable a must be initialized to 0 before any cpu calls
->> + * this function, will be reset to 0 before any cpu returns from this f=
-unction.
->> + *
->> + * Must only be called from within a coupled idle state handler
->> + * (state.enter when state.flags has CPUIDLE_FLAG_COUPLED set).
->> + *
->> + * Provides full smp barrier semantics before and after calling.
->> + */
->> +void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomi=
-c_t *a)
->> +{
->> + =A0 =A0 int n =3D dev->coupled->online_count;
->> +
->> + =A0 =A0 smp_mb__before_atomic_inc();
->> + =A0 =A0 atomic_inc(a);
->> +
->> + =A0 =A0 while (atomic_read(a) < n)
->> + =A0 =A0 =A0 =A0 =A0 =A0 cpu_relax();
->> +
->> + =A0 =A0 if (atomic_inc_return(a) =3D=3D n * 2) {
->> + =A0 =A0 =A0 =A0 =A0 =A0 atomic_set(a, 0);
->> + =A0 =A0 =A0 =A0 =A0 =A0 return;
->> + =A0 =A0 }
->> +
->> + =A0 =A0 while (atomic_read(a) > n)
->> + =A0 =A0 =A0 =A0 =A0 =A0 cpu_relax();
->> +}
->
-> Well, this looks like "wait until all CPUs execute this code". =A0Don't w=
-e have
-> anything like this already somewhere?
->
->> +
->> +/**
->> =A0 * cpuidle_state_is_coupled - check if a state is part of a coupled s=
-et
->> =A0 * @dev: struct cpuidle_device for the current cpu
->> =A0 * @drv: struct cpuidle_driver for the platform
->> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
->> index 6038448..5ab7183 100644
->> --- a/include/linux/cpuidle.h
->> +++ b/include/linux/cpuidle.h
->> @@ -183,6 +183,10 @@ static inline int cpuidle_wrap_enter(struct cpuidle=
-_device *dev,
->>
->> =A0#endif
->>
->> +#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
->> +void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomi=
-c_t *a);
->> +#endif
->
-> Why exactly is the extra Kconfig option necessary?
+The prediction for future is difficult and when the cpuidle governor prediction 
+fails and govenor possibly choose the shallower C-state than it should. How to 
+quickly notice and find the failure becomes important for power saving.    
 
-It prevents compiling in coupled.o (2k text section) on the majority
-of kernels that will never use it.
+cpuidle menu governor has a method to predict the repeat pattern if there are 8
+C-states residency which are continuous and the same or very close, so it will
+predict the next C-states residency will keep same residency time.
+
+We encountered a real case that turbostat utility (tools/power/x86/turbostat) 
+at kernel 3.3 or early. turbostat utility will read 10 registers one by one at
+Sandybridge, so it will generate 10 IPIs to wake up idle CPUs. So cpuidle menu
+ governor will predict it is repeat mode and there is another IPI wake up idle
+ CPU soon, so it keeps idle CPU stay at C1 state even though CPU is totally 
+idle. However, in the turbostat, following 10 registers reading is sleep 5 
+seconds by default, so the idle CPU will keep at C1 for a long time though it is
+ idle until break event occurs.
+
+The "old turbostat" is specific case and it is already fix by skip to read CPU
+MSRs. But we do not guarantee that other application will not do it like this.
+So the proper ways is to enhance the logic of the men governor prediction for 
+next C-states. 
+
+This patchset adds a timer when menu governor choose a non-deepest C-state in
+order to wake up quickly from shallow C-state to avoid staying too long at 
+shallow C-state for prediction failure. If the timer is not triggered and CPU
+is waken up from C-state, the timer will be cancelled initiatively to avoid the
+adding timer bring affect to system. If the timer is time out, CPU will quickly
+be waken up from shallow C-state and re-evaluates deeper C-states possibility. 
+
+After plenty of testing and tuning, the patchset get about 1% power efficiency
+ehancement in SpecPower2008 on Romley-EP. Especailly, when workload is not so 
+high < 70%, it can notice 1~3 watts power saving; while workload is high > 80%,
+It will cost more power consumption. Another benchmarks non-CPU intensive, like 
+fio, apache and aio-stress will also get power saving while the performance does 
+not drop.
+
+While I try to fix the issue, I got a lot of help and suggestion from Arjan,
+Thanks a lot Arjan!
+
+Thanks 
+-Youquan
+
