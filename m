@@ -1,7 +1,7 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
+From: "Valentin, Eduardo" <eduardo.valentin@ti.com>
 Subject: Re: Plumbers: PM constraints micro-conf RFP
-Date: Fri, 11 May 2012 09:02:02 +0200
-Message-ID: <CAORVsuUna_6oUYRf4_wfWcyR-n8CBMNWsdz5MaECLEdKFYs9SA@mail.gmail.com>
+Date: Fri, 11 May 2012 10:17:19 +0300
+Message-ID: <CAGF5oy8E26sYHi13ayrrOY5qbXepz1U8ErEfF-Ata9k6Zyzz+Q@mail.gmail.com>
 References: <20120502143607.GA21640@G62>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
@@ -18,19 +18,20 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: markgross@thegnar.org
-Cc: Kevin Hilman <khilman@ti.com>, "Agarwal, Ramesh" <ramesh.agarwal@intel.com>, paulmck@vnet.ibm.com, Praveen Chidambaram <pchidamb@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, John Stultz <john.stultz@linaro.org>, linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>, jeen.pihet@g62.linuxfoundation.org
+Cc: Kevin Hilman <khilman@ti.com>, "Agarwal, Ramesh" <ramesh.agarwal@intel.com>, paulmck@vnet.ibm.com, Praveen Chidambaram <pchidamb@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, Jean Pihet <j-pihet@ti.com>, John Stultz <john.stultz@linaro.org>, linux-pm@lists.linux-foundation.org, Antti P Miettinen <amiettinen@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mark,
+Hello Mark,
 
-On Wed, May 2, 2012 at 4:36 PM, mark gross <markgross@thegnar.org> wrote:
+On Wed, May 2, 2012 at 5:36 PM, mark gross <markgross@thegnar.org> wrote:
 > This is a Request For Participation in a micro-conference at this years
 > Linux plumbers event. =A0For this micro conference to happen we need to
 > reach a certain critical mass WRT participants as measured by submitted
 > talks associated to Power Management Constraints.
-That looks great! I hope some progress can be made in the area of the
-constraints frameworks design.
 
+Nice! Thanks for proposing this.
+
+>
 > The To: list is populated with folks that I've had interactions with
 > over extending pm-qos or constraint based PM over the past year.
 >
@@ -41,20 +42,9 @@ constraints frameworks design.
 > upstream. =A0The talks will be about 20 min long as I want to get into
 > some design and implementation discussions after the requirements
 > definition is mostly finished.
-I can have something about the per-device PM QoS, starting from the
-ELC presentation [1], the current status and the next steps.
-
-[1] https://events.linuxfoundation.org/events/embedded-linux-conference/pih=
-et
-The slides can be found at
-https://events.linuxfoundation.org/images/stories/pdf/lf_elc12_pihet.pdf.
-
-I am looking at the travel arrangements and will confirm asap.
-
+>
 > I am interested in gathering user mode interface needs as well as kernel
 > mode.
-An agreement is needed on the APIs, especially for the user space.
-
 >
 > From a high level pm-constraints is a generalization of pm-qos to include
 > limiting performance as well as its current limiting of device
@@ -71,6 +61,17 @@ An agreement is needed on the APIs, especially for the user space.
 > I will organize the micro-conference into 2 parts:
 > 1) problem statements with specific participant examples where
 > constraining the performance or throttling is needed.
+
+
+I could bring something on the use cases where this type of
+constraining could be used. Essentially major focus gets partitioned
+in two areas: For device skin/case temperature management, and IC's
+junction temperature management.
+
+I am currently checking the traveling arrangements as well. And
+confirming soon.
+
+
 >
 > 2) high level design brain storming.
 >
@@ -90,14 +91,11 @@ up
 >
 > thanks,
 > --mark
-
-Thanks for organizing!
-
-Regards,
-Jean
-
 >
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
+
+
+All best,
+-- =
+
+
+Eduardo Valentin
