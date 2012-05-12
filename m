@@ -1,56 +1,42 @@
-From: Guenter Roeck <guenter.roeck@ericsson.com>
-Subject: Re: [PATCH v4 2/5] hwmon: exynos4: Move thermal sensor driver to
- driver/thermal directory
-Date: Sat, 12 May 2012 08:38:05 -0700
-Message-ID: <20120512153805.GB5769@ericsson.com>
-References: <1336815645-29625-1-git-send-email-amit.kachhap@linaro.org>
- <1336815645-29625-3-git-send-email-amit.kachhap@linaro.org>
+From: Greg KH <greg@kroah.com>
+Subject: Re: 3.3.5 regression: resume doesn't switch to X
+Date: Sat, 12 May 2012 08:43:07 -0700
+Message-ID: <20120512154307.GA6023@kroah.com>
+References: <4FAE0E88.2030703@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <1336815645-29625-3-git-send-email-amit.kachhap@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "khali@linux-fr.org" <khali@linux-fr.org>, "patches@linaro.org" <patches@linaro.org>
+In-Reply-To: <4FAE0E88.2030703@suse.cz>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, Linux kernel mailing list <linux-kernel@vger.kernel.org>, stable@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, May 12, 2012 at 05:40:42AM -0400, Amit Daniel Kachhap wrote:
-> This movement is needed because the hwmon entries and corresponding
-> sysfs interface is a duplicate of utilities already provided by
-> driver/thermal/thermal_sys.c. The goal is to place it in thermal folder
-> and add necessary functions to use the in-kernel thermal interfaces.
+On Sat, May 12, 2012 at 09:17:28AM +0200, Jiri Slaby wrote:
+> Hi,
+
+<side note, it's stable@vger.kernel.org, not stable@kernel.org>
+
+> since update to 3.3.5, my X doesn't show up after resume from
+> hibernation anymore. The only thing I see is "resuming..." on the
+> console. I can switch to any tty and login in text mode, but cannot
+> switch to X despite it is running. I have to restart whole session to
+> have X again.
 > 
-> CC: Guenter Roeck <guenter.roeck@ericsson.com>
-> Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-> Signed-off-by: Donggeun Kim <dg77.kim@samsung.com>
+> Now I'm back to 3.3.4 and everything is OK.
 
-Acked-by: Guenter Roeck <guenter.roeck@ericsson.com>
+Care to run 'git bisect' to find the offending patch?
 
-Some suggestions, possibly for later cleanup.
+thanks,
 
-> -
-> -       data = kzalloc(sizeof(struct exynos4_tmu_data), GFP_KERNEL);
-
-If you use devm_kzalloc, you won't have to free it.
-
-[ ...]
-
-> -       data->mem = request_mem_region(data->mem->start,
-> -                       resource_size(data->mem), pdev->name);
-
-Same here, with devm_request_mem_region.
-
-[ ... ]
-
-> -       data->base = ioremap(data->mem->start, resource_size(data->mem));
-
-and devm_ioremap
-
-[ ... ]
-
-> -       ret = request_irq(data->irq, exynos4_tmu_irq,
-
-and devm_request_irq
-
-Guenter
+greg k-h
