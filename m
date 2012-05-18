@@ -1,8 +1,7 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH 2/2] cpuidle: coupled: fix decrementing ready
-	count
-Date: Fri, 18 May 2012 11:05:24 -0700
-Message-ID: <1337364324-12171-3-git-send-email-ccross@android.com>
+Subject: [PATCH 1/2] cpuidle: coupled: fix count of online cpus
+Date: Fri, 18 May 2012 11:05:23 -0700
+Message-ID: <1337364324-12171-2-git-send-email-ccross@android.com>
 References: <1337364324-12171-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,52 +21,51 @@ To: Len Brown <len.brown@intel.com>
 Cc: Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-cpuidle_coupled_set_not_ready sometimes refuses to decrement the
-ready count in order to prevent a race condition.  This makes it
-unsuitable for use when finished with idle.  Add a new function
-cpuidle_coupled_set_done that decrements both the ready count and
-waiting count, and call it after idle is complete.
+online_count was never incremented on boot, and was also counting
+cpus that were not part of the coupled set.  Fix both issues by
+introducting a new function that counts online coupled cpus, and
+call it from register as well as the hotplug notifier.
 
 Signed-off-by: Colin Cross <ccross@android.com>
 ---
- drivers/cpuidle/coupled.c |   18 ++++++++++++++++--
- 1 files changed, 16 insertions(+), 2 deletions(-)
+ drivers/cpuidle/coupled.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-index b02810a..fc427fa 100644
+index 3e65de1..b02810a 100644
 --- a/drivers/cpuidle/coupled.c
 +++ b/drivers/cpuidle/coupled.c
-@@ -388,6 +388,21 @@ static void cpuidle_coupled_set_not_waiting(int cpu,
+@@ -532,6 +532,13 @@ int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+ 	return entered_state;
  }
  
- /**
-+ * cpuidle_coupled_set_done - mark this cpu as leaving the ready loop
-+ * @cpu: the current cpu
-+ * @coupled: the struct coupled that contains the current cpu
-+ *
-+ * Marks this cpu as no longer in the ready and waiting loops.  Decrements
-+ * the waiting count first to prevent another cpu looping back in and seeing
-+ * this cpu as waiting just before it exits idle.
-+ */
-+static void cpuidle_coupled_set_done(int cpu, struct cpuidle_coupled *coupled)
++static void cpuidle_coupled_update_online_cpus(struct cpuidle_coupled *coupled)
 +{
-+	cpuidle_coupled_set_not_waiting(cpu, coupled);
-+	atomic_sub(MAX_WAITING_CPUS, &coupled->ready_waiting_counts);
++	cpumask_t cpus;
++	cpumask_and(&cpus, cpu_online_mask, &coupled->coupled_cpus);
++	coupled->online_count = cpumask_weight(&cpus);
 +}
 +
-+/**
-  * cpuidle_coupled_clear_pokes - spin until the poke interrupt is processed
-  * @cpu - this cpu
-  *
-@@ -501,8 +516,7 @@ int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+ /**
+  * cpuidle_coupled_register_device - register a coupled cpuidle device
+  * @dev: struct cpuidle_device for the current cpu
+@@ -570,6 +577,8 @@ int cpuidle_coupled_register_device(struct cpuidle_device *dev)
+ 	if (WARN_ON(!cpumask_equal(&dev->coupled_cpus, &coupled->coupled_cpus)))
+ 		coupled->prevent++;
  
- 	entered_state = cpuidle_enter_state(dev, drv, next_state);
++	cpuidle_coupled_update_online_cpus(coupled);
++
+ 	coupled->refcnt++;
  
--	cpuidle_coupled_set_not_waiting(dev->cpu, coupled);
--	cpuidle_coupled_set_not_ready(coupled);
-+	cpuidle_coupled_set_done(dev->cpu, coupled);
- 
- out:
- 	/*
+ 	csd = &per_cpu(cpuidle_coupled_poke_cb, dev->cpu);
+@@ -668,7 +677,7 @@ static int cpuidle_coupled_cpu_notify(struct notifier_block *nb,
+ 		break;
+ 	case CPU_ONLINE:
+ 	case CPU_DEAD:
+-		dev->coupled->online_count = num_online_cpus();
++		cpuidle_coupled_update_online_cpus(dev->coupled);
+ 		/* Fall through */
+ 	case CPU_UP_CANCELED:
+ 	case CPU_DOWN_FAILED:
 -- 
 1.7.7.3
