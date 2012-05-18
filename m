@@ -1,22 +1,13 @@
-From: Sundar <sunder.svit@gmail.com>
-Subject: Re: Plumbers: PM constraints micro-conf RFP
-Date: Thu, 17 May 2012 17:00:35 +0530
-Message-ID: <CAMHCuPUu5s62Zy4413M-rzkYhhj6MUSJOrXwD4CR=BS2shAWgw@mail.gmail.com>
-References: <20120502143607.GA21640@G62>
-	<CAGF5oy8E26sYHi13ayrrOY5qbXepz1U8ErEfF-Ata9k6Zyzz+Q@mail.gmail.com>
-	<CAORVsuU3YDGq713jtmPCpJT=3eXqrvx_qU=uPK86XvDdzHSGtg@mail.gmail.com>
-	<4FB13CD3.8000505@ti.com>
-	<CAGF5oy-xduO-BjM1NcNvJG1LV1d-1h78v6mdpq5noRFMsxmjkg@mail.gmail.com>
-	<CAGF5oy9kKPW5BF9FPXXm8-=9O5AM+NhKxjOysJbDiwDF=RvpKw@mail.gmail.com>
-	<CAORVsuV7PrJb4v-7G_JJJMy-fAAFdU-R-JWfwQoRzgtSg-m_KQ@mail.gmail.com>
-	<CAP245DUhJ+Y9tKV=JNqdPHEvAe9fZ013ee9NKMkKQQcOs3M15A@mail.gmail.com>
-	<20120516001335.GB4260@G62>
-	<CAMHCuPX_=Vi6mQ0XdyNvca-dq+r8bFok=SQoZkK17GvOrERR+w@mail.gmail.com>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCHv3 0/4] coupled cpuidle state support
+Date: Fri, 18 May 2012 16:06:01 +0530
+Message-ID: <4FB62611.7080908@ti.com>
+References: <1336438662-10484-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAMHCuPX_=Vi6mQ0XdyNvca-dq+r8bFok=SQoZkK17GvOrERR+w@mail.gmail.com>
+In-Reply-To: <1336438662-10484-1-git-send-email-ccross@android.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -26,34 +17,35 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: markgross@thegnar.org
-Cc: Kevin Hilman <khilman@ti.com>, "Agarwal, Ramesh" <ramesh.agarwal@intel.com>, paulmck@vnet.ibm.com, pdeschrijver@nvidia.com, Praveen Chidambaram <pchidamb@gmail.com>, Amit Kucheria <amit.kucheria@linaro.org>, John Stultz <john.stultz@linaro.org>, linux-pm@lists.linux-foundation.org, amiettinen@nvidia.com
+To: Colin Cross <ccross@android.com>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-:(
+On Tuesday 08 May 2012 06:27 AM, Colin Cross wrote:
+> On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
+> cpus cannot be independently powered down, either due to
+> sequencing restrictions (on Tegra 2, cpu 0 must be the last to
+> power down), or due to HW bugs (on OMAP4460, a cpu powering up
+> will corrupt the gic state unless the other cpu runs a work
+> around).  Each cpu has a power state that it can enter without
+> coordinating with the other cpu (usually Wait For Interrupt, or
+> WFI), and one or more "coupled" power states that affect blocks
+> shared between the cpus (L2 cache, interrupt controller, and
+> sometimes the whole SoC).  Entering a coupled power state must
+> be tightly controlled on both cpus.
+> 
 
-I received this:
+[...]
 
-Your message (attached below) was not delivered to:
+> This series has been tested and reviewed by Santosh and Kevin
+> for OMAP4, which has a cpuidle series ready for 3.5, and Tegra
+> and Exynos5 patches are in progress.  I think this is ready to
+> go in.  Lean, are you maintaining a cpuidle tree for linux-next?
+> If not, I can publish a tree for linux-next, or this could go in
+> through Arnd's tree.
 
- paulmck@vnet.ibm.com
+I haven't seen any response so far on who is lining up this
+series for 3.5 ? Not sure if it made it to linux-next either.
 
-because:
-
- Bad destination mailbox address
-
-Final-recipient: rfc822;paulmck@vnet.ibm.com
-Action: failed
-Status: 5.1.1
-Diagnostic-code: X-Xagent; Bad destination mailbox address
-
-On Thu, May 17, 2012 at 4:47 PM, Sundar <sunder.svit@gmail.com> wrote:
-> I put in a rough draft @
-> https://blueprints.launchpad.net/lpc/+spec/lpc2012-power-management-constraints
->
-> Cheers!
-
--- 
----------
-The views expressed in this email are personal and do not necessarily
-echo my employers.
+Regards
+santosh
