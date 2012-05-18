@@ -1,13 +1,14 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCHv3 0/4] coupled cpuidle state support
-Date: Fri, 18 May 2012 16:06:01 +0530
-Message-ID: <4FB62611.7080908@ti.com>
-References: <1336438662-10484-1-git-send-email-ccross@android.com>
+From: Colin Cross <ccross@android.com>
+Subject: [PATCH 2/2] cpuidle: coupled: fix decrementing ready
+	count
+Date: Fri, 18 May 2012 11:05:24 -0700
+Message-ID: <1337364324-12171-3-git-send-email-ccross@android.com>
+References: <1337364324-12171-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1336438662-10484-1-git-send-email-ccross@android.com>
+In-Reply-To: <1337364324-12171-1-git-send-email-ccross@android.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -17,35 +18,56 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Colin Cross <ccross@android.com>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, linux-arm-kernel@lists.infradead.org
+To: Len Brown <len.brown@intel.com>
+Cc: Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 08 May 2012 06:27 AM, Colin Cross wrote:
-> On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
-> cpus cannot be independently powered down, either due to
-> sequencing restrictions (on Tegra 2, cpu 0 must be the last to
-> power down), or due to HW bugs (on OMAP4460, a cpu powering up
-> will corrupt the gic state unless the other cpu runs a work
-> around).  Each cpu has a power state that it can enter without
-> coordinating with the other cpu (usually Wait For Interrupt, or
-> WFI), and one or more "coupled" power states that affect blocks
-> shared between the cpus (L2 cache, interrupt controller, and
-> sometimes the whole SoC).  Entering a coupled power state must
-> be tightly controlled on both cpus.
-> 
+cpuidle_coupled_set_not_ready sometimes refuses to decrement the
+ready count in order to prevent a race condition.  This makes it
+unsuitable for use when finished with idle.  Add a new function
+cpuidle_coupled_set_done that decrements both the ready count and
+waiting count, and call it after idle is complete.
 
-[...]
+Signed-off-by: Colin Cross <ccross@android.com>
+---
+ drivers/cpuidle/coupled.c |   18 ++++++++++++++++--
+ 1 files changed, 16 insertions(+), 2 deletions(-)
 
-> This series has been tested and reviewed by Santosh and Kevin
-> for OMAP4, which has a cpuidle series ready for 3.5, and Tegra
-> and Exynos5 patches are in progress.  I think this is ready to
-> go in.  Lean, are you maintaining a cpuidle tree for linux-next?
-> If not, I can publish a tree for linux-next, or this could go in
-> through Arnd's tree.
-
-I haven't seen any response so far on who is lining up this
-series for 3.5 ? Not sure if it made it to linux-next either.
-
-Regards
-santosh
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index b02810a..fc427fa 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -388,6 +388,21 @@ static void cpuidle_coupled_set_not_waiting(int cpu,
+ }
+ 
+ /**
++ * cpuidle_coupled_set_done - mark this cpu as leaving the ready loop
++ * @cpu: the current cpu
++ * @coupled: the struct coupled that contains the current cpu
++ *
++ * Marks this cpu as no longer in the ready and waiting loops.  Decrements
++ * the waiting count first to prevent another cpu looping back in and seeing
++ * this cpu as waiting just before it exits idle.
++ */
++static void cpuidle_coupled_set_done(int cpu, struct cpuidle_coupled *coupled)
++{
++	cpuidle_coupled_set_not_waiting(cpu, coupled);
++	atomic_sub(MAX_WAITING_CPUS, &coupled->ready_waiting_counts);
++}
++
++/**
+  * cpuidle_coupled_clear_pokes - spin until the poke interrupt is processed
+  * @cpu - this cpu
+  *
+@@ -501,8 +516,7 @@ int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+ 
+ 	entered_state = cpuidle_enter_state(dev, drv, next_state);
+ 
+-	cpuidle_coupled_set_not_waiting(dev->cpu, coupled);
+-	cpuidle_coupled_set_not_ready(coupled);
++	cpuidle_coupled_set_done(dev->cpu, coupled);
+ 
+ out:
+ 	/*
+-- 
+1.7.7.3
