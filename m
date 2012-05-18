@@ -1,11 +1,14 @@
-From: Colin Cross <ccross@android.com>
-Subject: [PATCH 0/2] bug fixes for coupled cpuidle
-Date: Fri, 18 May 2012 11:05:22 -0700
-Message-ID: <1337364324-12171-1-git-send-email-ccross@android.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCHv3 0/4] coupled cpuidle state support
+Date: Fri, 18 May 2012 21:03:55 +0200
+Message-ID: <201205182103.56301.rjw@sisk.pl>
+References: <1336438662-10484-1-git-send-email-ccross@android.com>
+	<4FB62611.7080908@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4FB62611.7080908@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -15,17 +18,39 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <len.brown@intel.com>
-Cc: Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, Arnd Bergmann <arnd.bergmann@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The last modifications made to the coupled cpuidle patches introduced
-two bugs that I missed during testing.  The online count was never
-initialized, causing coupled idle to always wait and never enter the
-ready loop.  That hid the second bug, the ready count could never be
-decremented after exiting idle.
+On Friday, May 18, 2012, Santosh Shilimkar wrote:
+> On Tuesday 08 May 2012 06:27 AM, Colin Cross wrote:
+> > On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the
+> > cpus cannot be independently powered down, either due to
+> > sequencing restrictions (on Tegra 2, cpu 0 must be the last to
+> > power down), or due to HW bugs (on OMAP4460, a cpu powering up
+> > will corrupt the gic state unless the other cpu runs a work
+> > around).  Each cpu has a power state that it can enter without
+> > coordinating with the other cpu (usually Wait For Interrupt, or
+> > WFI), and one or more "coupled" power states that affect blocks
+> > shared between the cpus (L2 cache, interrupt controller, and
+> > sometimes the whole SoC).  Entering a coupled power state must
+> > be tightly controlled on both cpus.
+> > 
+> 
+> [...]
+> 
+> > This series has been tested and reviewed by Santosh and Kevin
+> > for OMAP4, which has a cpuidle series ready for 3.5, and Tegra
+> > and Exynos5 patches are in progress.  I think this is ready to
+> > go in.  Lean, are you maintaining a cpuidle tree for linux-next?
+> > If not, I can publish a tree for linux-next, or this could go in
+> > through Arnd's tree.
+> 
+> I haven't seen any response so far on who is lining up this
+> series for 3.5 ? Not sure if it made it to linux-next either.
 
-Len, these two patches could be squashed into patch 3 of the original
-set.  If you do squash them, you could also add Rafael's tags to the
-set (Reviewed-by on 1 and 2, acked-by on 3).  Or I can reupload the
-whole stack as v5 if you prefer.
+That should be Len, but he's been silent recently.
+
+How urgent is it?
+
+Rafael
