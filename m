@@ -1,15 +1,11 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] ARM: DAVINCI: cpuidle - remove ops
-Date: Sun, 20 May 2012 12:37:02 +0200
-Message-ID: <4FB8C94E.4080806@linaro.org>
-References: <1336639485-26955-1-git-send-email-daniel.lezcano@linaro.org>
-	<1336639485-26955-3-git-send-email-daniel.lezcano@linaro.org>
-	<4FB8C53C.1020301@ti.com>
+Subject: [PATCH][v2] ARM: davinci: cpuidle - remove ops
+Date: Mon, 21 May 2012 00:07:20 +0200
+Message-ID: <1337551640-5973-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4FB8C53C.1020301@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,52 +15,147 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Sekhar Nori <nsekhar@ti.com>
-Cc: khilman@ti.com, davinci-linux-open-source@linux.davincidsp.com, linaro-dev@lists.linaro.org, patches@linaro.org, linux-pm@lists.linux-foundation.org
+To: nsekhar@ti.com, khilman@ti.com
+Cc: davinci-linux-open-source@linux.davincidsp.com, patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDUvMjAvMjAxMiAxMjoxOSBQTSwgU2VraGFyIE5vcmkgd3JvdGU6Cj4gSGkgRGFuaWVsLAo+
-Cj4gT24gNS8xMC8yMDEyIDI6MTQgUE0sIERhbmllbCBMZXpjYW5vIHdyb3RlOgo+PiBUaGlzIHBh
-dGNoIHJlbW92ZXMgdGhlIG9wcyB1c2FnZSBiZWNhdXNlIHdlIGhhdmUgdGhlIGluZGV4Cj4+IHBh
-c3NlZCBhcyBwYXJhbWV0ZXIgdG8gdGhlIGlkbGUgZnVuY3Rpb24gYW5kIHdlIGNhbiBkZXRlcm1p
-bmUKPj4gaWYgd2UgZG8gV0ZJIG9yIG1lbW9yeSByZXRlbnRpb24uCj4+Cj4+IFRoZSBiZW5lZml0
-IG9mIHRoaXMgY2xlYW51cCBpcyB0aGUgcmVtb3ZhbCBvZjoKPj4gICAqIHRoZSBvcHMKPj4gICAq
-IHRoZSBzdGF0ZWRhdGEgdXNhZ2UgYmVjYXVzZSB3ZSB3YW50IHRvIGdldCByaWQgb2YgaXQgaW4g
-YWxsIHRoZSBkcml2ZXJzCj4+ICAgKiBleHRyYSBzdHJ1Y3R1cmUgZGVmaW5pdGlvbgo+PiAgICog
-ZXh0cmEgZnVuY3Rpb25zIGRlZmluaXRpb24KPj4gICAqIHBvaW50bGVzcyBtYWNybyBkZWZpbml0
-aW9uIEJJVCgwKQo+Cj4gVGhpcyBtYWNybyB3YXMgbm90IHBvaW50bGVzcyBpbiB0aGUgb3JpZ2lu
-YWwgY29kZS4gVGhpcyBjb21tZW50IHNlZW1zIHRvCj4gc3VnZ2VzdCBzby4KPgo+Pgo+PiBJdCBh
-bHNvIGJlbmVmaXRzIHRoZSByZWFkYWJpbGl0eS4KPj4KPj4gU2lnbmVkLW9mZi1ieTogRGFuaWVs
-IExlemNhbm88ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz4KPj4gLS0tCj4+ICAgYXJjaC9hcm0v
-bWFjaC1kYXZpbmNpL2NwdWlkbGUuYyB8ICAgODEgKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tCj4+ICAgMSBmaWxlcyBjaGFuZ2VkLCAyNyBpbnNlcnRpb25zKCspLCA1NCBk
-ZWxldGlvbnMoLSkKPj4KPj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtZGF2aW5jaS9jcHVp
-ZGxlLmMgYi9hcmNoL2FybS9tYWNoLWRhdmluY2kvY3B1aWRsZS5jCj4+IGluZGV4IGYwZjE3OWMu
-LjYxZjRlNTIgMTAwNjQ0Cj4+IC0tLSBhL2FyY2gvYXJtL21hY2gtZGF2aW5jaS9jcHVpZGxlLmMK
-Pj4gKysrIGIvYXJjaC9hcm0vbWFjaC1kYXZpbmNpL2NwdWlkbGUuYwo+PiBAQCAtMjUsMzUgKzI1
-LDQ2IEBACj4+Cj4+ICAgI2RlZmluZSBEQVZJTkNJX0NQVUlETEVfTUFYX1NUQVRFUwkyCj4+Cj4+
-IC1zdHJ1Y3QgZGF2aW5jaV9vcHMgewo+PiAtCXZvaWQgKCplbnRlcikgKHUzMiBmbGFncyk7Cj4+
-IC0Jdm9pZCAoKmV4aXQpICh1MzIgZmxhZ3MpOwo+PiAtCXUzMiBmbGFnczsKPj4gLX07Cj4+ICtz
-dGF0aWMgYm9vbCBkZHIyX3B3ZG4gPSBmYWxzZTsKPgo+IFRoaXMgemVybyBpbml0aWFsaXphdGlv
-biBpcyBub3QgcmVxdWlyZWQuIEluIGZhY3QgdGhpcyB0aHJvd3MgYQo+IGNoZWNrcGF0Y2ggZXJy
-b3IuCj4KPj4gKwo+PiArc3RhdGljIHZvaWQgX19pb21lbSAqZGRyMl9yZWdfYmFzZTsKPj4gKwo+
-PiArc3RhdGljIHZvaWQgZGF2aW5jaV9zYXZlX2Rkcl9wb3dlcihpbnQgZW50ZXIsIGJvb2wgcGRv
-d24pCj4+ICt7Cj4+ICsJdTMyIHZhbDsKPj4gKwo+PiArCXZhbCA9IF9fcmF3X3JlYWRsKGRkcjJf
-cmVnX2Jhc2UgKyBERFIyX1NEUkNSX09GRlNFVCk7Cj4+ICsKPj4gKwlpZiAoZW50ZXIpIHsKPj4g
-KwkJaWYgKHBkb3duKQo+PiArCQkJdmFsIHw9IEREUjJfU1JQRF9CSVQ7Cj4+ICsJCWVsc2UKPj4g
-KwkJCXZhbCY9IH5ERFIyX1NSUERfQklUOwo+PiArCQl2YWwgfD0gRERSMl9MUE1PREVOX0JJVDsK
-Pj4gKwl9IGVsc2Ugewo+PiArCQl2YWwmPSB+KEREUjJfU1JQRF9CSVQgfCBERFIyX0xQTU9ERU5f
-QklUKTsKPj4gKwl9Cj4+ICsKPj4gKwlfX3Jhd193cml0ZWwodmFsLCBkZHIyX3JlZ19iYXNlICsg
-RERSMl9TRFJDUl9PRkZTRVQpOwo+Cj4gQ2FuIHlvdSBwbGVhc2UgdXNlIHJlYWRsL3dyaXRlbCBp
-bnN0ZWFkIG9mIHRoZSBfX3JhdyB2YXJpYW50cy4gSSBrbm93Cj4gdGhpcyBpcyBjYXJyaWVkIGZy
-b20gb3JpZ2luYWwgY29kZSwgYnV0IHdlIG5lZWQgdG8gZ2l0IHJpZCBvZiBpdCB3aXRoCj4gY2xl
-YW51cHMgbGlrZSB0aGlzLgoKU3VyZSwgSSB3aWxsIHJlc2VuZCBhIHZlcnNpb24gd2l0aG91dCB0
-aGUgaW5pdGlhbGl6YXRpb24gYW5kIHRoZSAKX3Jhd193cml0ZSB2YXJpYW50LgoKVGhhbmtzCiAg
-IC0tIERhbmllbAoKCi0tIAogIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKU
-giBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0
-cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdp
-dHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9s
-aW5hcm8tYmxvZy8+IEJsb2cKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3Vu
-ZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1wbQ==
+This patch removes the ops usage because we have the index
+passed as parameter to the idle function and we can determine
+if we do WFI or memory retention.
+
+The benefit of this cleanup is the removal of:
+ * the ops
+ * the statedata usage because we want to get rid of it in all the drivers
+ * extra structure definition
+ * extra functions definition
+ * remove macro definition using BIT(0)
+
+It also benefits the readability.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/arm/mach-davinci/cpuidle.c |   81 +++++++++++++--------------------------
+ 1 files changed, 27 insertions(+), 54 deletions(-)
+
+diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
+index f0f179c..1b0782a 100644
+--- a/arch/arm/mach-davinci/cpuidle.c
++++ b/arch/arm/mach-davinci/cpuidle.c
+@@ -25,35 +25,46 @@
+ 
+ #define DAVINCI_CPUIDLE_MAX_STATES	2
+ 
+-struct davinci_ops {
+-	void (*enter) (u32 flags);
+-	void (*exit) (u32 flags);
+-	u32 flags;
+-};
++static bool ddr2_pwdn;
++
++static void __iomem *ddr2_reg_base;
++
++static void davinci_save_ddr_power(int enter, bool pdown)
++{
++	u32 val;
++
++	val = readl(ddr2_reg_base + DDR2_SDRCR_OFFSET);
++
++	if (enter) {
++		if (pdown)
++			val |= DDR2_SRPD_BIT;
++		else
++			val &= ~DDR2_SRPD_BIT;
++		val |= DDR2_LPMODEN_BIT;
++	} else {
++		val &= ~(DDR2_SRPD_BIT | DDR2_LPMODEN_BIT);
++	}
++
++	writel(val, ddr2_reg_base + DDR2_SDRCR_OFFSET);
++}
+ 
+ /* Actual code that puts the SoC in different idle states */
+ static int davinci_enter_idle(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv,
+ 						int index)
+ {
+-	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
+-	struct davinci_ops *ops = cpuidle_get_statedata(state_usage);
+-
+-	if (ops && ops->enter)
+-		ops->enter(ops->flags);
++	if (index)
++		davinci_save_ddr_power(1, ddr2_pwdn);
+ 
+ 	index = cpuidle_wrap_enter(dev,	drv, index,
+ 				arm_cpuidle_simple_enter);
+ 
+-	if (ops && ops->exit)
+-		ops->exit(ops->flags);
++	if (index)
++		davinci_save_ddr_power(0, ddr2_pwdn);
+ 
+ 	return index;
+ }
+ 
+-/* fields in davinci_ops.flags */
+-#define DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN	BIT(0)
+-
+ static struct cpuidle_driver davinci_idle_driver = {
+ 	.name			= "cpuidle-davinci",
+ 	.owner			= THIS_MODULE,
+@@ -71,43 +82,6 @@ static struct cpuidle_driver davinci_idle_driver = {
+ };
+ 
+ static DEFINE_PER_CPU(struct cpuidle_device, davinci_cpuidle_device);
+-static void __iomem *ddr2_reg_base;
+-
+-static void davinci_save_ddr_power(int enter, bool pdown)
+-{
+-	u32 val;
+-
+-	val = __raw_readl(ddr2_reg_base + DDR2_SDRCR_OFFSET);
+-
+-	if (enter) {
+-		if (pdown)
+-			val |= DDR2_SRPD_BIT;
+-		else
+-			val &= ~DDR2_SRPD_BIT;
+-		val |= DDR2_LPMODEN_BIT;
+-	} else {
+-		val &= ~(DDR2_SRPD_BIT | DDR2_LPMODEN_BIT);
+-	}
+-
+-	__raw_writel(val, ddr2_reg_base + DDR2_SDRCR_OFFSET);
+-}
+-
+-static void davinci_c2state_enter(u32 flags)
+-{
+-	davinci_save_ddr_power(1, !!(flags & DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN));
+-}
+-
+-static void davinci_c2state_exit(u32 flags)
+-{
+-	davinci_save_ddr_power(0, !!(flags & DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN));
+-}
+-
+-static struct davinci_ops davinci_states[DAVINCI_CPUIDLE_MAX_STATES] = {
+-	[1] = {
+-		.enter	= davinci_c2state_enter,
+-		.exit	= davinci_c2state_exit,
+-	},
+-};
+ 
+ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
+ {
+@@ -125,8 +99,7 @@ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
+ 	ddr2_reg_base = pdata->ddr2_ctlr_base;
+ 
+ 	if (pdata->ddr2_pdown)
+-		davinci_states[1].flags |= DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN;
+-	cpuidle_set_statedata(&device->states_usage[1], &davinci_states[1]);
++		ddr2_pwdn = true;
+ 
+ 	ret = cpuidle_register_driver(&davinci_idle_driver);
+ 	if (ret) {
+-- 
+1.7.5.4
