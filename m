@@ -1,46 +1,77 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH][v2] ARM: davinci: cpuidle - remove ops
-Date: Tue, 22 May 2012 20:40:24 +0200
-Message-ID: <4FBBDD98.30105@linaro.org>
-References: <1337551640-5973-1-git-send-email-daniel.lezcano@linaro.org>
-	<4FBBD3CD.7070804@ti.com>
+From: "J, KEERTHY" <j-keerthy@ti.com>
+Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
+Date: Wed, 23 May 2012 10:21:19 +0530
+Message-ID: <CAJ6a13YLogA7M=rzSJAW6fHZOujFY0Crfdz9Sc5qL0mt8kX9CA@mail.gmail.com>
+References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
+	<87397by2h9.fsf@ti.com>
+	<CAJ6a13aJwesHw0frCV+EfvYaep09cZGcu_PopuHzye1HS2tgvg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <4FBBD3CD.7070804-l0cyMroinI0@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>
-Cc: khilman-l0cyMroinI0@public.gmane.org, davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJ6a13aJwesHw0frCV+EfvYaep09cZGcu_PopuHzye1HS2tgvg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, greg@kroah.com
+Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDUvMjIvMjAxMiAwNzo1OCBQTSwgU2VraGFyIE5vcmkgd3JvdGU6Cj4gSGkgRGFuaWVsLAo+
-Cj4gT24gNS8yMS8yMDEyIDM6MzcgQU0sIERhbmllbCBMZXpjYW5vIHdyb3RlOgo+PiBUaGlzIHBh
-dGNoIHJlbW92ZXMgdGhlIG9wcyB1c2FnZSBiZWNhdXNlIHdlIGhhdmUgdGhlIGluZGV4Cj4+IHBh
-c3NlZCBhcyBwYXJhbWV0ZXIgdG8gdGhlIGlkbGUgZnVuY3Rpb24gYW5kIHdlIGNhbiBkZXRlcm1p
-bmUKPj4gaWYgd2UgZG8gV0ZJIG9yIG1lbW9yeSByZXRlbnRpb24uCj4+Cj4+IFRoZSBiZW5lZml0
-IG9mIHRoaXMgY2xlYW51cCBpcyB0aGUgcmVtb3ZhbCBvZjoKPj4gICAqIHRoZSBvcHMKPj4gICAq
-IHRoZSBzdGF0ZWRhdGEgdXNhZ2UgYmVjYXVzZSB3ZSB3YW50IHRvIGdldCByaWQgb2YgaXQgaW4g
-YWxsIHRoZSBkcml2ZXJzCj4+ICAgKiBleHRyYSBzdHJ1Y3R1cmUgZGVmaW5pdGlvbgo+PiAgICog
-ZXh0cmEgZnVuY3Rpb25zIGRlZmluaXRpb24KPj4gICAqIHJlbW92ZSBtYWNybyBkZWZpbml0aW9u
-IHVzaW5nIEJJVCgwKQo+Pgo+PiBJdCBhbHNvIGJlbmVmaXRzIHRoZSByZWFkYWJpbGl0eS4KPj4K
-Pj4gU2lnbmVkLW9mZi1ieTogRGFuaWVsIExlemNhbm88ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9y
-Zz4KPgo+IExvb2tzIGdvb2QgdG8gbWUuIElmIHRoZXJlIGlzIG5vIG90aGVyIHBsYW4sIEkgd2ls
-bCBxdWV1ZSB0aGVzZSB0d28KPiBjcHVpZGxlIHBhdGNoZXMgZm9yIHYzLjYgdGhyb3VnaCBEYVZp
-bmNpIHRyZWUuCgpDb29sICEKCkp1c3QgYSByZW1pbmRlciwgSSBkb24ndCBoYXZlIHRoaXMgYm9h
-cmQsIHNvIEkgd2FzIG5vdCBhYmxlIHRvIHRlc3QgaXQuCgpUaGFua3MuCiAgIC0tIERhbmllbAoK
-Ci0tIAogIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJj
-ZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0cDovL3d3dy5mYWNl
-Ym9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdpdHRlci5jb20vIyEv
-bGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+
-IEJsb2cKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
-aW5hcm8tZGV2IG1haWxpbmcgbGlzdApsaW5hcm8tZGV2QGxpc3RzLmxpbmFyby5vcmcKaHR0cDov
-L2xpc3RzLmxpbmFyby5vcmcvbWFpbG1hbi9saXN0aW5mby9saW5hcm8tZGV2Cg==
+On Tue, May 15, 2012 at 11:16 AM, J, KEERTHY <j-keerthy@ti.com> wrote:
+> On Tue, May 8, 2012 at 5:21 AM, Kevin Hilman <khilman@ti.com> wrote:
+>> Rafael,
+>>
+>> Keerthy <j-keerthy@ti.com> writes:
+>>
+>>> From: J Keerthy <j-keerthy@ti.com>
+>>>
+>>> AVS(Adaptive Voltage Scaling) is a power management technique which
+>>> controls the operating voltage of a device in order to optimize (i.=
+e. reduce)
+>>> its power consumption. The voltage is adapted depending on static f=
+actors
+>>> (chip manufacturing process) and dynamic factors (temperature
+>>> depending performance).
+>>> The TI AVS solution is named Smartreflex.
+>>>
+>>> To that end, create the AVS driver in drivers/power/avs and
+>>> move the OMAP SmartReflex code to the new directory. The
+>>> class driver is still retained in the mach-omap2 directory.
+>>
+>> How should we handle this for upstream?
+>>
+>> It does a bunch of cleanup under arch/arm then does the move to
+>> drivers/power the end. =A0To avoid conflicts with other OMAP core ch=
+anges,
+>> I would suggest we take this through the OMAP tree.
+>>
+>> With your ack, I'd be glad to take it.
+>
+> Hello Rafael,
+>
+> A gentle ping on this series.
+
+Hi Greg,
+
+This series has Kevin's comments incorporated.
+
+Kevin,
+
+Can i have your Ack for this series?
+
+>
+>>
+>> Thanks,
+>>
+>> Kevin
+>>
+>
+>
+>
+> --
+> Regards and Thanks,
+> Keerthy
+
+
+
+--=20
+Regards and Thanks,
+Keerthy
