@@ -1,74 +1,57 @@
-From: "Menon, Nishanth" <nm@ti.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage
-	Scaling)
-Date: Wed, 23 May 2012 08:27:06 -0500
-Message-ID: <CAOMWX4cjzLYuPmA-k=Z_pc5uw=CCViPjRYqs4VTyLX6T8HhtcA@mail.gmail.com>
-References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
-	<20120426191159.GA9415@sirena.org.uk>
-	<CAJ6a13a6WN9h1QZynpEOf-R6RXwWBZ2eOPkTeNc15JX_YfAz_w@mail.gmail.com>
-	<20120427175657.GP18260@opensource.wolfsonmicro.com>
-	<87397o3n4y.fsf@ti.com>
-	<331ABD5ECB02734CA317220B2BBEABC13E9B1A67@DBDE01.ent.ti.com>
-	<87mx5jy2li.fsf@ti.com>
-	<331ABD5ECB02734CA317220B2BBEABC13E9B6681@DBDE01.ent.ti.com>
-	<EF62F09C0797D947AD4180A1043C0DF73C40BCE1@DLEE10.ent.ti.com>
-	<87lil2jp2z.fsf@ti.com>
-	<EF62F09C0797D947AD4180A1043C0DF73C40C247@DLEE10.ent.ti.com>
-	<87pqadgqd5.fsf@ti.com>
+From: Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH][v2] ARM: davinci: cpuidle - remove ops
+Date: Wed, 23 May 2012 23:24:16 +0530
+Message-ID: <4FBD2448.9010502@ti.com>
+References: <1337551640-5973-1-git-send-email-daniel.lezcano@linaro.org>
+	<4FBBD3CD.7070804@ti.com> <4FBBDD98.30105@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <87pqadgqd5.fsf@ti.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: "J, KEERTHY" <j-keerthy@ti.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "AnilKumar, Chimata" <anilkumar@ti.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "Pihet-XID, Jean" <j-pihet@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+In-Reply-To: <4FBBDD98.30105-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://linux.davincidsp.com/mailman/options/davinci-linux-open-source>,
+	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://linux.davincidsp.com/pipermail/davinci-linux-open-source>
+List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
+List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
+	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
+Sender: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
+Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: khilman-l0cyMroinI0@public.gmane.org, davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 9, 2012 at 1:29 PM, Kevin Hilman <khilman@ti.com> wrote:
-> "Woodruff, Richard" <r-woodruff2@ti.com> writes:
->
->>> From: Hilman, Kevin
->>> Sent: Tuesday, May 08, 2012 5:17 PM
+On 5/23/2012 12:10 AM, Daniel Lezcano wrote:
+> On 05/22/2012 07:58 PM, Sekhar Nori wrote:
+>> Hi Daniel,
 >>
->>> A basic OMAP AVS driver has been in mainline for a long time, yet we
->>> have not seen support submitted for all of these features.
+>> On 5/21/2012 3:37 AM, Daniel Lezcano wrote:
+>>> This patch removes the ops usage because we have the index
+>>> passed as parameter to the idle function and we can determine
+>>> if we do WFI or memory retention.
+>>>
+>>> The benefit of this cleanup is the removal of:
+>>>   * the ops
+>>>   * the statedata usage because we want to get rid of it in all the
+>>> drivers
+>>>   * extra structure definition
+>>>   * extra functions definition
+>>>   * remove macro definition using BIT(0)
+>>>
+>>> It also benefits the readability.
+>>>
+>>> Signed-off-by: Daniel Lezcano<daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 >>
->> 1.5/3.5 is a feature.
->
-> And I'm still waiting for it to be submitted upstream.
->
->> ABB is requirement for a production useable driver. Higher speed rated
->> OMAP4 and all OMAP5 added these to be useable.
->
-> ditto
->
->> Yes this is effort. Point of mentioning is to raise awareness of need.
->
-> I'm well aware of the need.
->
->> Yet to be added feature has different meaning than functional gap.
->
-> And both need to be submitted upstream.
+>> Looks good to me. If there is no other plan, I will queue these two
+>> cpuidle patches for v3.6 through DaVinci tree.
+> 
+> Cool !
+> 
+> Just a reminder, I don't have this board, so I was not able to test it.
 
-SR 1.5: http://marc.info/?l=linux-omap&m=129933897910785&w=2
-ABB: http://marc.info/?l=linux-omap&m=130939399209099&w=2
+No problem. I tested that cpuidle enters state0 and state1 correctly
+after this change. I did not make any power measurements though.
 
-I am not sure what you mean "need to be submitted upstream"?
-
-Just tired of seeing things perpetually change without considering
-even how to handle features that are mandatory for SoC even with code
-posted upstream to show exactly what it takes.. I think you do mean
-merged upstream in this context.
-
-
-Regards,
-Nishanth Menon
+Thanks,
+Sekhar
