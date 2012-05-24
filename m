@@ -1,57 +1,80 @@
-From: Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH][v2] ARM: davinci: cpuidle - remove ops
-Date: Wed, 23 May 2012 23:24:16 +0530
-Message-ID: <4FBD2448.9010502@ti.com>
-References: <1337551640-5973-1-git-send-email-daniel.lezcano@linaro.org>
-	<4FBBD3CD.7070804@ti.com> <4FBBDD98.30105@linaro.org>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
+Date: Thu, 24 May 2012 10:24:15 -0700
+Message-ID: <87obpdv6f4.fsf@ti.com>
+References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
+	<87397by2h9.fsf@ti.com>
+	<CAJ6a13aJwesHw0frCV+EfvYaep09cZGcu_PopuHzye1HS2tgvg@mail.gmail.com>
+	<CAJ6a13YLogA7M=rzSJAW6fHZOujFY0Crfdz9Sc5qL0mt8kX9CA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-In-Reply-To: <4FBBDD98.30105-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <http://linux.davincidsp.com/mailman/options/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://linux.davincidsp.com/pipermail/davinci-linux-open-source>
-List-Post: <mailto:davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-List-Help: <mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=help>
-List-Subscribe: <http://linux.davincidsp.com/mailman/listinfo/davinci-linux-open-source>,
-	<mailto:davinci-linux-open-source-request-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org?subject=subscribe>
-Sender: <davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org>
-Errors-To: davinci-linux-open-source-bounces-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org
-To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: khilman-l0cyMroinI0@public.gmane.org, davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <CAJ6a13YLogA7M=rzSJAW6fHZOujFY0Crfdz9Sc5qL0mt8kX9CA@mail.gmail.com>
+	(KEERTHY J.'s message of "Wed, 23 May 2012 10:21:19 +0530")
+Sender: linux-omap-owner@vger.kernel.org
+To: "J, KEERTHY" <j-keerthy@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, greg@kroah.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-On 5/23/2012 12:10 AM, Daniel Lezcano wrote:
-> On 05/22/2012 07:58 PM, Sekhar Nori wrote:
->> Hi Daniel,
->>
->> On 5/21/2012 3:37 AM, Daniel Lezcano wrote:
->>> This patch removes the ops usage because we have the index
->>> passed as parameter to the idle function and we can determine
->>> if we do WFI or memory retention.
->>>
->>> The benefit of this cleanup is the removal of:
->>>   * the ops
->>>   * the statedata usage because we want to get rid of it in all the
->>> drivers
->>>   * extra structure definition
->>>   * extra functions definition
->>>   * remove macro definition using BIT(0)
->>>
->>> It also benefits the readability.
->>>
->>> Signed-off-by: Daniel Lezcano<daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->>
->> Looks good to me. If there is no other plan, I will queue these two
->> cpuidle patches for v3.6 through DaVinci tree.
-> 
-> Cool !
-> 
-> Just a reminder, I don't have this board, so I was not able to test it.
+"J, KEERTHY" <j-keerthy@ti.com> writes:
 
-No problem. I tested that cpuidle enters state0 and state1 correctly
-after this change. I did not make any power measurements though.
+> On Tue, May 15, 2012 at 11:16 AM, J, KEERTHY <j-keerthy@ti.com> wrote=
+:
+>> On Tue, May 8, 2012 at 5:21 AM, Kevin Hilman <khilman@ti.com> wrote:
+>>> Rafael,
+>>>
+>>> Keerthy <j-keerthy@ti.com> writes:
+>>>
+>>>> From: J Keerthy <j-keerthy@ti.com>
+>>>>
+>>>> AVS(Adaptive Voltage Scaling) is a power management technique whic=
+h
+>>>> controls the operating voltage of a device in order to optimize (i=
+=2Ee. reduce)
+>>>> its power consumption. The voltage is adapted depending on static =
+factors
+>>>> (chip manufacturing process) and dynamic factors (temperature
+>>>> depending performance).
+>>>> The TI AVS solution is named Smartreflex.
+>>>>
+>>>> To that end, create the AVS driver in drivers/power/avs and
+>>>> move the OMAP SmartReflex code to the new directory. The
+>>>> class driver is still retained in the mach-omap2 directory.
+>>>
+>>> How should we handle this for upstream?
+>>>
+>>> It does a bunch of cleanup under arch/arm then does the move to
+>>> drivers/power the end. =C2=A0To avoid conflicts with other OMAP cor=
+e changes,
+>>> I would suggest we take this through the OMAP tree.
+>>>
+>>> With your ack, I'd be glad to take it.
+>>
+>> Hello Rafael,
+>>
+>> A gentle ping on this series.
+>
+> Hi Greg,
+>
+> This series has Kevin's comments incorporated.
+>
+> Kevin,
+>
+> Can i have your Ack for this series?
+>
 
-Thanks,
-Sekhar
+Well, as mentioned above, I'm waiting for Rafael's ack, then I will
+merge it.
+
+Because of all the arch/arm/mach-omap2/* changes, I would like to merge
+this via the OMAP tree to avoid conflicts with other stuff we have
+changing in arch/arm/mach-omap2/*
+
+Kevin
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
