@@ -1,42 +1,35 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
+From: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
 Subject: Re: [RFC PATCH 00/11] OMAP System Control Module
-Date: Fri, 25 May 2012 11:35:22 +0300
-Message-ID: <20120525083522.GA1741@besouro>
+Date: Fri, 25 May 2012 14:50:15 +0400
+Message-ID: <4FBF63E7.3070605@dev.rtsoft.ru>
 References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
-Reply-To: eduardo.valentin@ti.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: amit.kucheria@linaro.org, kbaidarov@dev.rtsoft.ru, kishon@ti.com, balbi@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: paul@pwsan.com, b-cousson@ti.com, tony@atomide.com, Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>, balbi@ti.com, kishon@ti.com, santosh.shilimkar@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, amit.kachhap@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello again,
+  Hi.
 
-On Fri, May 25, 2012 at 11:25:50AM +0300, Eduardo Valentin wrote:
+On 05/25/2012 12:25 PM, Eduardo Valentin wrote:
 > Hello Paul and Tony,
-
-FYI, Forgot to mention that these patches are available here:
-git://gitorious.org/omap-thermal/omap-thermal.git omap_scm_dev
-
-
-> 
+>
 > This is a series of patches adding a basic support for system control module,
 > on OMAP4+ context. It is a working in progress, but I wanted to share already
 > to get your feedback.
-> 
+>
 > I've modeled the driver as an MFD. You will see in this series:
 > . A rework of the system control module header (patch from Santosh, picked from the list)
 > . Device creation for control module core
@@ -47,11 +40,11 @@ git://gitorious.org/omap-thermal/omap-thermal.git omap_scm_dev
 > . Very early exposure of OMAP4 thermal zone
 > . All added drivers are only supporting DT probing
 > . The series is based on linux-omap master, as it has the hwmod entries for SCM.
-> 
+>
 > The overall idea of this series is to put in place the infrastructure. It is
 > not touching nor removing the existing APIs under mach-omap2/control.c for now.
 > But the target is to have these APIs moved to the MFD core driver.
-> 
+>
 > For early access, like ID checking, I have written the platform driver
 > as an early platform driver and you will see also early device addition
 > and probing under device.c for this case. This is of course a proposal.
@@ -59,10 +52,16 @@ git://gitorious.org/omap-thermal/omap-thermal.git omap_scm_dev
 > Konstantin (CCd) was proposing a simpler solution by having
 > APIs with early_* prefixes, and solve the IO address mapping with
 > a DT entry, for instance. But feel free to propose better ways.
-> 
+In my latest version I got rid from early API set, check out patch for V3 patch set.
+I'll attach patch for current version later.
+
+BR,
+    Konstantin Baydarov.
+
+>
 > This code has been ripped off from the Android 3.1 branch. I have rewritten
 > a couple of things, but the major driver functions and API's entries are kept.
-> 
+>
 > So, based on this series, I see as a TODO list, for system control core driver:
 > - Start to move all the existing APIs under mach-omap2/control.c to the mfd core.
 > - Rewrite the users of the existing APIs, mentioned on previous item
@@ -70,20 +69,20 @@ git://gitorious.org/omap-thermal/omap-thermal.git omap_scm_dev
 > - Add remaining children (from top of my head, the CAM is one of them,
 > but I also think we should prob have one for HWOBS for instance)
 > - Test on boards that use the existing APIs.
-> 
+>
 > TODO list for bandgap driver:
 > - Improve thermal zone definition for OMAP4
 > - Introduce the thermal zones for OMAP5
-> 
+>
 > Amit, due to hwmod dep, I didn't include any cooling binding in this series,
 > based on the generic CPU cooling device.
-> 
+>
 > Overall series has been tested only with panda board OMAP4460.
-> 
+>
 > Your comments are welcome.
-> 
+>
 > All best,
-> 
+>
 > Eduardo Valentin (9):
 >   ARM: OMAP: expose control.h to mach area
 >   OMAP: Add early device for system control module
@@ -94,13 +93,13 @@ git://gitorious.org/omap-thermal/omap-thermal.git omap_scm_dev
 >   ARM: OMAP4+: thermal: introduce bandgap temperature sensor
 >   omap4: thermal: add basic CPU thermal zone
 >   ARM: DT: Add support to system control module for OMAP4
-> 
+>
 > Kishon Vijay Abraham I (1):
 >   arm: omap: device: create a device for system control module
-> 
+>
 > Santosh Shilimkar (1):
 >   ARM: OMAP4: Remove un-used control module headers and defines.
-> 
+>
 >  .../devicetree/bindings/mfd/omap_control.txt       |   44 +
 >  .../devicetree/bindings/thermal/omap_bandgap.txt   |   27 +
 >  arch/arm/boot/dts/omap4.dtsi                       |   13 +
@@ -176,7 +175,4 @@ git://gitorious.org/omap-thermal/omap-thermal.git omap_scm_dev
 >  create mode 100644 drivers/usb/otg/omap4-usb-phy.c
 >  create mode 100644 include/linux/mfd/omap_control.h
 >  create mode 100644 include/linux/usb/omap4_usb_phy.h
-> 
-> -- 
-> 1.7.7.1.488.ge8e1c
-> 
+>
