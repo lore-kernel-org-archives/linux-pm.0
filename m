@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFT][PATCH 4/4] ACPI / PM: Fix interactions between _SxD and _SxW
-Date: Sat, 26 May 2012 23:21:50 +0200
-Message-ID: <201205262321.50409.rjw@sisk.pl>
+Subject: [RFT][PATCH 2/4] PCI / PM: Make platform choose target low-power states of more devices
+Date: Sat, 26 May 2012 23:20:25 +0200
+Message-ID: <201205262320.25191.rjw@sisk.pl>
 References: <Pine.LNX.4.44L0.1205252157430.24286-100000@saphir.localdomain> <201205262227.47442.rjw@sisk.pl> <201205262316.30096.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: Text/Plain;
@@ -16,69 +16,48 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The ACPI specification (ACPI 5.0 and earlier) tells us to use the
-value returned by the _SxD method for the given device as the
-lowest-power state the device can be put into before transitioning
-the system into the given sleep state if (1) the device is supposed
-to wake up the system and (2) the _SxW method is not present for it.
-However, if both _SxD and _SxW are not present, we are free to use
-D3cold as the lowest-power state to put the device into.
+It turns out that there are devices whose power states cannot be set
+by ACPI (the _PRn and _PSn methods are not available for them), but
+it still is necessary to use ACPI for setting up those devices to
+wake up the system from sleep states.  Then, according to the ACPI
+specification (ACPI 5.0 and earlier), if there are _SxD and/or _SxW
+methods defined for those devices, the results returned by them
+should be taken into consideration.  Moreover, some hardware vendors
+seem to use this requirement to work around hardware and/or firmware
+bugs, so it's better to follow it (which we don't do at the moment)
+to avoid some nasty suspend/resume issues that are quite difficult to
+debug.
 
-Unfortunately, acpi_pm_device_sleep_state() returns D0 as the
-lowest-power state to put the device into if both _SxD and _SxW are
-not present, which is incorrect.  Prevent this from happening by
-making acpi_pm_device_sleep_state() check whether or not _SxD is
-present while deciding what value to use as the lowest-power state
-to put the device into.
+This change is based on a patch from Oleksij Rempel.
 
+References: https://bugzilla.kernel.org/show_bug.cgi?id=42728
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/sleep.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/pci/pci.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Index: linux/drivers/acpi/sleep.c
+Index: linux/drivers/pci/pci.c
 ===================================================================
---- linux.orig/drivers/acpi/sleep.c
-+++ linux/drivers/acpi/sleep.c
-@@ -699,6 +699,8 @@ int acpi_pm_device_sleep_state(struct de
- 	struct acpi_device *adev;
- 	char method[] = "_SxD";
- 	unsigned long long d_min, d_max;
-+	acpi_status status;
-+	bool sxd_present = false;
+--- linux.orig/drivers/pci/pci.c
++++ linux/drivers/pci/pci.c
+@@ -1691,10 +1691,16 @@ pci_power_t pci_target_state(struct pci_
+ {
+ 	pci_power_t target_state = PCI_D3hot;
  
- 	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
- 		printk(KERN_DEBUG "ACPI handle has no context!\n");
-@@ -719,10 +721,13 @@ int acpi_pm_device_sleep_state(struct de
- 	 * minimum D-state is D0 (ACPI 3.x).
- 	 *
- 	 * NOTE: We rely on acpi_evaluate_integer() not clobbering the integer
--	 * provided -- that's our fault recovery, we ignore retval.
-+	 * provided in case of an error.
- 	 */
--	if (acpi_target_sleep_state > ACPI_STATE_S0)
--		acpi_evaluate_integer(handle, method, NULL, &d_min);
-+	if (acpi_target_sleep_state > ACPI_STATE_S0) {
-+		status = acpi_evaluate_integer(handle, method, NULL, &d_min);
-+		if (status != AE_NOT_FOUND)
-+			sxd_present = true;
-+	}
+-	if (platform_pci_power_manageable(dev)) {
++	/*
++	 * It turns out that there are devices whose power states cannot be set
++	 * by the platform, although their wakeup capabilities depend on it.
++	 * The platform should be called to choose the target low-power states
++	 * of those devices too.
++	 */
++	if (platform_pci_power_manageable(dev)
++	    || (device_may_wakeup(&dev->dev) && platform_pci_can_wakeup(dev))) {
+ 		/*
+-		 * Call the platform to choose the target state of the device
+-		 * and enable wake-up from this state if supported.
++		 * Call the platform to choose the target state of the device.
+ 		 */
+ 		pci_power_t state = platform_pci_choose_state(dev);
  
- 	/*
- 	 * If _PRW says we can wake up the system from the target sleep state,
-@@ -734,13 +739,10 @@ int acpi_pm_device_sleep_state(struct de
- 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
- 	    (device_may_wakeup(dev) && adev->wakeup.flags.valid &&
- 	     adev->wakeup.sleep_state >= acpi_target_sleep_state)) {
--		acpi_status status;
--
- 		method[3] = 'W';
- 		status = acpi_evaluate_integer(handle, method, NULL, &d_max);
- 		if (ACPI_FAILURE(status)) {
--			if (acpi_target_sleep_state != ACPI_STATE_S0 ||
--			    status != AE_NOT_FOUND)
-+			if (sxd_present || status != AE_NOT_FOUND)
- 				d_max = d_min;
- 		} else if (d_max < d_min) {
- 			/* Warn the user of the broken DSDT */
 
