@@ -1,15 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFT][PATCH 1/4] ACPI / PM: Make
-	acpi_pm_device_sleep_state() follow the specification
-Date: Sat, 26 May 2012 23:19:33 +0200
-Message-ID: <201205262319.33464.rjw@sisk.pl>
+Subject: [RFT] PCI changes related to wakeup (was: Re: ehci_hcd
+	related S3 lockup on ASUS laptops, again)
+Date: Sat, 26 May 2012 23:16:29 +0200
+Message-ID: <201205262316.30096.rjw@sisk.pl>
 References: <Pine.LNX.4.44L0.1205252157430.24286-100000@saphir.localdomain>
-	<201205262227.47442.rjw@sisk.pl> <201205262316.30096.rjw@sisk.pl>
+	<1338005001.13348.279.camel@gandalf.stny.rr.com>
+	<201205262227.47442.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201205262316.30096.rjw@sisk.pl>
+In-Reply-To: <201205262227.47442.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,46 +20,44 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrey Rahmatullin <wrar@wrar.name>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Steven Rostedt <rostedt@goodmis.org>
+To: Andrey Rahmatullin <wrar@wrar.name>, Steven Rostedt <rostedt@goodmis.org>
+Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Saturday, May 26, 2012, Rafael J. Wysocki wrote:
+> On Saturday, May 26, 2012, Steven Rostedt wrote:
+> > On Fri, 2012-05-25 at 22:01 -0400, Alan Stern wrote:
+> > > Steve and Andrey:
+> > > 
+> > > It turns out that the proposed solution for your problem causes a
+> > > regression on other ASUS computers (see Bugzilla 43278).  Rafael's got a
+> > > proposal for a replacement.
+> > > 
+> > > Can you try out the patch attached to comment #61 of Bugzilla 42728?  It
+> > > may even allow USB wakeup to work for you (but I wouldn't count on it!).
+> > > Thanks.
+> > 
+> > I added the patch against 3.4 and my laptop still suspends.
+> > 
+> > And no, wakeup still doesn't work.
+> > 
+> > Tested-by: Steven Rostedt <rostedt@goodmis.org>
+> 
+> Thanks!
+> 
+> Unfortunately, I have no idea what to do to make wakeup work on the
+> affected machines.
 
-The comparison between the system sleep state being entered
-and the lowest system sleep state the given device may wake up
-from in acpi_pm_device_sleep_state() is reversed, because the
-specification (ACPI 5.0) says that for wakeup to work:
+Andrey, Stephen,
 
-"The sleeping state being entered must be less than or equal to the
- power state declared in element 1 of the _PRW object."
+We still have problems with this patch in https://bugzilla.kernel.org/show_bug.cgi?id=43278
+so some more testing will be necessary, I'm afraid.
 
-In other words, the state returned by _PRW is the deepest
-(lowest-power) system sleep state the device is capable of waking up
-the system from.
+I will send a series of ACPI and PCI patches I have collected so far,
+that I'd like you to test on top of kernel 3.4.0 with commit
+151b61284776 reverted.
 
-Moreover, acpi_pm_device_sleep_state() also should check if the
-wakeup capability is supported through ACPI, because in principle it
-may be done via native PCIe PME, for example, in which case _SxW
-should not be evaluated.
+Please let me know if suspend/wakeup work for you with these patches applied.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/sleep.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux/drivers/acpi/sleep.c
-===================================================================
---- linux.orig/drivers/acpi/sleep.c
-+++ linux/drivers/acpi/sleep.c
-@@ -732,8 +732,8 @@ int acpi_pm_device_sleep_state(struct de
- 	 * can wake the system.  _S0W may be valid, too.
- 	 */
- 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
--	    (device_may_wakeup(dev) &&
--	     adev->wakeup.sleep_state <= acpi_target_sleep_state)) {
-+	    (device_may_wakeup(dev) && adev->wakeup.flags.valid &&
-+	     adev->wakeup.sleep_state >= acpi_target_sleep_state)) {
- 		acpi_status status;
- 
- 		acpi_method[3] = 'W';
+Thanks,
+Rafael
