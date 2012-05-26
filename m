@@ -1,63 +1,87 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFT][PATCH 2/4] PCI / PM: Make platform choose target low-power states of more devices
-Date: Sat, 26 May 2012 23:20:25 +0200
-Message-ID: <201205262320.25191.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1205252157430.24286-100000@saphir.localdomain> <201205262227.47442.rjw@sisk.pl> <201205262316.30096.rjw@sisk.pl>
+Subject: [RFT][PATCH 3/4] ACPI / PM: Shorten variable name in
+	acpi_pm_device_sleep_state()
+Date: Sat, 26 May 2012 23:21:04 +0200
+Message-ID: <201205262321.04574.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1205252157430.24286-100000@saphir.localdomain>
+	<201205262227.47442.rjw@sisk.pl> <201205262316.30096.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <201205262316.30096.rjw@sisk.pl>
-Sender: linux-acpi-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Andrey Rahmatullin <wrar@wrar.name>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-pm@lists.linux-foundation.org, Alan Stern <stern@rowland.harvard.edu>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-It turns out that there are devices whose power states cannot be set
-by ACPI (the _PRn and _PSn methods are not available for them), but
-it still is necessary to use ACPI for setting up those devices to
-wake up the system from sleep states.  Then, according to the ACPI
-specification (ACPI 5.0 and earlier), if there are _SxD and/or _SxW
-methods defined for those devices, the results returned by them
-should be taken into consideration.  Moreover, some hardware vendors
-seem to use this requirement to work around hardware and/or firmware
-bugs, so it's better to follow it (which we don't do at the moment)
-to avoid some nasty suspend/resume issues that are quite difficult to
-debug.
+Save a couple of code lines by using a more concise name for the
+variable representing the ACPI method to evaluate.
 
-This change is based on a patch from Oleksij Rempel.
-
-References: https://bugzilla.kernel.org/show_bug.cgi?id=42728
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/acpi/sleep.c |   14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
-Index: linux/drivers/pci/pci.c
+Index: linux/drivers/acpi/sleep.c
 ===================================================================
---- linux.orig/drivers/pci/pci.c
-+++ linux/drivers/pci/pci.c
-@@ -1691,10 +1691,16 @@ pci_power_t pci_target_state(struct pci_
+--- linux.orig/drivers/acpi/sleep.c
++++ linux/drivers/acpi/sleep.c
+@@ -697,7 +697,7 @@ int acpi_pm_device_sleep_state(struct de
  {
- 	pci_power_t target_state = PCI_D3hot;
+ 	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
+ 	struct acpi_device *adev;
+-	char acpi_method[] = "_SxD";
++	char method[] = "_SxD";
+ 	unsigned long long d_min, d_max;
  
--	if (platform_pci_power_manageable(dev)) {
-+	/*
-+	 * It turns out that there are devices whose power states cannot be set
-+	 * by the platform, although their wakeup capabilities depend on it.
-+	 * The platform should be called to choose the target low-power states
-+	 * of those devices too.
-+	 */
-+	if (platform_pci_power_manageable(dev)
-+	    || (device_may_wakeup(&dev->dev) && platform_pci_can_wakeup(dev))) {
- 		/*
--		 * Call the platform to choose the target state of the device
--		 * and enable wake-up from this state if supported.
-+		 * Call the platform to choose the target state of the device.
- 		 */
- 		pci_power_t state = platform_pci_choose_state(dev);
+ 	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
+@@ -705,7 +705,7 @@ int acpi_pm_device_sleep_state(struct de
+ 		return -ENODEV;
+ 	}
  
-
+-	acpi_method[2] = '0' + acpi_target_sleep_state;
++	method[2] = '0' + acpi_target_sleep_state;
+ 	/*
+ 	 * If the sleep state is S0, we will return D3, but if the device has
+ 	 * _S0W, we will use the value from _S0W
+@@ -722,7 +722,7 @@ int acpi_pm_device_sleep_state(struct de
+ 	 * provided -- that's our fault recovery, we ignore retval.
+ 	 */
+ 	if (acpi_target_sleep_state > ACPI_STATE_S0)
+-		acpi_evaluate_integer(handle, acpi_method, NULL, &d_min);
++		acpi_evaluate_integer(handle, method, NULL, &d_min);
+ 
+ 	/*
+ 	 * If _PRW says we can wake up the system from the target sleep state,
+@@ -736,17 +736,15 @@ int acpi_pm_device_sleep_state(struct de
+ 	     adev->wakeup.sleep_state >= acpi_target_sleep_state)) {
+ 		acpi_status status;
+ 
+-		acpi_method[3] = 'W';
+-		status = acpi_evaluate_integer(handle, acpi_method, NULL,
+-						&d_max);
++		method[3] = 'W';
++		status = acpi_evaluate_integer(handle, method, NULL, &d_max);
+ 		if (ACPI_FAILURE(status)) {
+ 			if (acpi_target_sleep_state != ACPI_STATE_S0 ||
+ 			    status != AE_NOT_FOUND)
+ 				d_max = d_min;
+ 		} else if (d_max < d_min) {
+ 			/* Warn the user of the broken DSDT */
+-			printk(KERN_WARNING "ACPI: Wrong value from %s\n",
+-				acpi_method);
++			pr_warning("ACPI: Wrong value from %s\n", method);
+ 			/* Sanitize it */
+ 			d_min = d_max;
+ 		}
