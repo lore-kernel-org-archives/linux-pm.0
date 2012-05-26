@@ -1,63 +1,84 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [RFT] PCI changes related to wakeup (was: Re: ehci_hcd
-	related S3 lockup on ASUS laptops, again)
-Date: Sat, 26 May 2012 23:16:29 +0200
-Message-ID: <201205262316.30096.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1205252157430.24286-100000@saphir.localdomain>
-	<1338005001.13348.279.camel@gandalf.stny.rr.com>
-	<201205262227.47442.rjw@sisk.pl>
+Subject: [RFT][PATCH 4/4] ACPI / PM: Fix interactions between _SxD and _SxW
+Date: Sat, 26 May 2012 23:21:50 +0200
+Message-ID: <201205262321.50409.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1205252157430.24286-100000@saphir.localdomain> <201205262227.47442.rjw@sisk.pl> <201205262316.30096.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201205262227.47442.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Andrey Rahmatullin <wrar@wrar.name>, Steven Rostedt <rostedt@goodmis.org>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <201205262316.30096.rjw@sisk.pl>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andrey Rahmatullin <wrar@wrar.name>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-pm@lists.linux-foundation.org, Alan Stern <stern@rowland.harvard.edu>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, May 26, 2012, Rafael J. Wysocki wrote:
-> On Saturday, May 26, 2012, Steven Rostedt wrote:
-> > On Fri, 2012-05-25 at 22:01 -0400, Alan Stern wrote:
-> > > Steve and Andrey:
-> > > 
-> > > It turns out that the proposed solution for your problem causes a
-> > > regression on other ASUS computers (see Bugzilla 43278).  Rafael's got a
-> > > proposal for a replacement.
-> > > 
-> > > Can you try out the patch attached to comment #61 of Bugzilla 42728?  It
-> > > may even allow USB wakeup to work for you (but I wouldn't count on it!).
-> > > Thanks.
-> > 
-> > I added the patch against 3.4 and my laptop still suspends.
-> > 
-> > And no, wakeup still doesn't work.
-> > 
-> > Tested-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> Thanks!
-> 
-> Unfortunately, I have no idea what to do to make wakeup work on the
-> affected machines.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Andrey, Stephen,
+The ACPI specification (ACPI 5.0 and earlier) tells us to use the
+value returned by the _SxD method for the given device as the
+lowest-power state the device can be put into before transitioning
+the system into the given sleep state if (1) the device is supposed
+to wake up the system and (2) the _SxW method is not present for it.
+However, if both _SxD and _SxW are not present, we are free to use
+D3cold as the lowest-power state to put the device into.
 
-We still have problems with this patch in https://bugzilla.kernel.org/show_bug.cgi?id=43278
-so some more testing will be necessary, I'm afraid.
+Unfortunately, acpi_pm_device_sleep_state() returns D0 as the
+lowest-power state to put the device into if both _SxD and _SxW are
+not present, which is incorrect.  Prevent this from happening by
+making acpi_pm_device_sleep_state() check whether or not _SxD is
+present while deciding what value to use as the lowest-power state
+to put the device into.
 
-I will send a series of ACPI and PCI patches I have collected so far,
-that I'd like you to test on top of kernel 3.4.0 with commit
-151b61284776 reverted.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/sleep.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-Please let me know if suspend/wakeup work for you with these patches applied.
+Index: linux/drivers/acpi/sleep.c
+===================================================================
+--- linux.orig/drivers/acpi/sleep.c
++++ linux/drivers/acpi/sleep.c
+@@ -699,6 +699,8 @@ int acpi_pm_device_sleep_state(struct de
+ 	struct acpi_device *adev;
+ 	char method[] = "_SxD";
+ 	unsigned long long d_min, d_max;
++	acpi_status status;
++	bool sxd_present = false;
+ 
+ 	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
+ 		printk(KERN_DEBUG "ACPI handle has no context!\n");
+@@ -719,10 +721,13 @@ int acpi_pm_device_sleep_state(struct de
+ 	 * minimum D-state is D0 (ACPI 3.x).
+ 	 *
+ 	 * NOTE: We rely on acpi_evaluate_integer() not clobbering the integer
+-	 * provided -- that's our fault recovery, we ignore retval.
++	 * provided in case of an error.
+ 	 */
+-	if (acpi_target_sleep_state > ACPI_STATE_S0)
+-		acpi_evaluate_integer(handle, method, NULL, &d_min);
++	if (acpi_target_sleep_state > ACPI_STATE_S0) {
++		status = acpi_evaluate_integer(handle, method, NULL, &d_min);
++		if (status != AE_NOT_FOUND)
++			sxd_present = true;
++	}
+ 
+ 	/*
+ 	 * If _PRW says we can wake up the system from the target sleep state,
+@@ -734,13 +739,10 @@ int acpi_pm_device_sleep_state(struct de
+ 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
+ 	    (device_may_wakeup(dev) && adev->wakeup.flags.valid &&
+ 	     adev->wakeup.sleep_state >= acpi_target_sleep_state)) {
+-		acpi_status status;
+-
+ 		method[3] = 'W';
+ 		status = acpi_evaluate_integer(handle, method, NULL, &d_max);
+ 		if (ACPI_FAILURE(status)) {
+-			if (acpi_target_sleep_state != ACPI_STATE_S0 ||
+-			    status != AE_NOT_FOUND)
++			if (sxd_present || status != AE_NOT_FOUND)
+ 				d_max = d_min;
+ 		} else if (d_max < d_min) {
+ 			/* Warn the user of the broken DSDT */
 
-Thanks,
-Rafael
