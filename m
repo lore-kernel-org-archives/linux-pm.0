@@ -1,83 +1,89 @@
 From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Subject: Re: [RFC PATCH 04/11] OMAP: Add early device for system control module
-Date: Mon, 28 May 2012 15:28:20 +0530
-Message-ID: <CAMQu2gyVZ8iq3S=WMXNNaw6PtrcggRkoOEOpM9nL-Ngy+SoRfQ@mail.gmail.com>
-References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com> <1337934361-1606-5-git-send-email-eduardo.valentin@ti.com>
+Subject: Re: [RFC PATCH 06/11] OMAP2+: use control module mfd
+	driver in omap_type
+Date: Mon, 28 May 2012 15:32:50 +0530
+Message-ID: <CAMQu2gyjJdJZKAf+TJwQfQ2BgAXe_s-soTcs7Am6O4+yy=7cLQ@mail.gmail.com>
+References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
+	<1337934361-1606-7-git-send-email-eduardo.valentin@ti.com>
+	<4FBF80D5.2000600@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1337934361-1606-5-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: b-cousson@ti.com, kishon@ti.com, kbaidarov@dev.rtsoft.ru, tony@atomide.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4FBF80D5.2000600@ti.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Cousson, Benoit" <b-cousson@ti.com>
+Cc: amit.kucheria@linaro.org, balbi@ti.com, kishon@ti.com, kbaidarov@dev.rtsoft.ru, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 25, 2012 at 1:55 PM, Eduardo Valentin
-<eduardo.valentin@ti.com> wrote:
-> This is a way to add an early device for system control module.
-> the code is also requesting for driver registration and probing.
-> Done at early_initcall because at that time, ioremapping is possible.
+On Fri, May 25, 2012 at 6:23 PM, Cousson, Benoit <b-cousson@ti.com> wrote:
+> Hi Eduardo,
 >
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
-> =A0arch/arm/mach-omap2/devices.c | =A0 29 +++++++++++++++++++++++++++=
-++
-> =A01 files changed, 29 insertions(+), 0 deletions(-)
 >
-> diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devi=
-ces.c
-> index 9332673..58cc5c3 100644
-> --- a/arch/arm/mach-omap2/devices.c
-> +++ b/arch/arm/mach-omap2/devices.c
-> @@ -40,6 +40,35 @@
-> =A0#define L3_MODULES_MAX_LEN 12
-> =A0#define L3_MODULES 3
+> On 5/25/2012 10:25 AM, Eduardo Valentin wrote:
+>>
+>> OMAP system control module can be probed early, then
+>> omap_type is safe to use its APIs.
+>>
+>> TODO: add support for other omap versions
+>>
+>> Signed-off-by: Eduardo Valentin<eduardo.valentin@ti.com>
+>> ---
+>> =A0arch/arm/mach-omap2/id.c | =A0 16 +++++++++++++++-
+>> =A01 files changed, 15 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/arch/arm/mach-omap2/id.c b/arch/arm/mach-omap2/id.c
+>> index 5bb9746..acfd698 100644
+>> --- a/arch/arm/mach-omap2/id.c
+>> +++ b/arch/arm/mach-omap2/id.c
+>> @@ -18,6 +18,7 @@
+>> =A0#include<linux/kernel.h>
+>> =A0#include<linux/init.h>
+>> =A0#include<linux/io.h>
+>> +#include<linux/mfd/omap_control.h>
+>>
+>> =A0#include<asm/cputype.h>
+>>
+>> @@ -40,8 +41,14 @@ EXPORT_SYMBOL(omap_rev);
+>>
+>> =A0int omap_type(void)
+>> =A0{
+>> + =A0 =A0 =A0 struct device *scm;
+>> + =A0 =A0 =A0 int ret =3D 0;
+>> =A0 =A0 =A0 =A0u32 val =3D 0;
+>>
+>> + =A0 =A0 =A0 scm =3D omap_control_get();
+>> + =A0 =A0 =A0 if (IS_ERR_OR_NULL(scm))
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
+>> +
+>> =A0 =A0 =A0 =A0if (cpu_is_omap24xx()) {
 >
-> +static struct resource control_resources[] =3D {
-> + =A0 =A0 =A0 [0] =3D {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .start =A0=3D 0x4a002000,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .end =A0 =A0=3D 0x4a0027ff,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 .flags =A0=3D IORESOURCE_MEM,
-> + =A0 =A0 =A0 },
-> +};
-> +static struct platform_device control_device =3D {
-> + =A0 =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =3D "omap-control-core",
-> + =A0 =A0 =A0 .id =A0 =A0 =A0 =A0 =A0 =A0 =3D 0,
-> + =A0 =A0 =A0 .resource =A0 =A0 =A0 =3D control_resources,
-> + =A0 =A0 =A0 .num_resources =A0=3D ARRAY_SIZE(control_resources),
-> +};
-> +
-> +static struct platform_device *early_devices[] __initdata =3D {
-> + =A0 =A0 =A0 &control_device,
-> +};
-> +
-> +static int __init plat_early_device_setup(void)
-> +{
-> + =A0 =A0 =A0 early_platform_add_devices(early_devices,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-ARRAY_SIZE(early_devices));
-> + =A0 =A0 =A0 early_platform_driver_register_all("early_omap_control"=
-);
-> + =A0 =A0 =A0 early_platform_driver_probe("early_omap_control", 1, fa=
-lse);
-> +
-> + =A0 =A0 =A0 return 0;
-> +}
-> +early_initcall(plat_early_device_setup);
-> +
-> =A0static int omap_init_control(void)
-> =A0{
-> =A0 =A0 =A0 =A0struct omap_hwmod =A0 =A0 =A0 =A0 =A0 =A0 =A0 *oh;
+>
+> OK, not really related to that patch, but the previous cpu_is_omap24xx ma=
+kes
+> me think of that :-)
+>
+> What about the omap<X>_check_revision used by cpu_is_XXX?
+>
+> This call is the very first one to require the control module access in
+> order to get the ID_CODE inside the control module.
+>
+> So far it still use that ugly hard coded phys -> virtual address macro th=
+at
+> is sued for that.
+>
+Agree with Benoits comment. One way to deal with this is,
+store the register offset with init and then just use it here.
 
-Nice !!
-Apart from fix from Konstantin and Benoit's DT comment,
-patch looks fine to me.
+That way you can get rid of all cpu_is_XXXX() from this function.
 
 Regards
 Santosh
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
