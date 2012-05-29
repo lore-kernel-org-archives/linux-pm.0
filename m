@@ -1,110 +1,116 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFT] PCI changes related to wakeup (was: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again)
-Date: Tue, 29 May 2012 21:16:33 +0200
-Message-ID: <201205292116.33587.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1205291425490.1289-100000@iolanthe.rowland.org>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFT] PCI changes related to wakeup (was: Re:
+ ehci_hcd related S3 lockup on ASUS laptops, again)
+Date: Tue, 29 May 2012 18:39:08 -0400
+Message-ID: <1338331148.13348.296.camel@gandalf.stny.rr.com>
+References: <20120526223611.GF5012@belkar.wrar.name>
+	<Pine.LNX.4.44L0.1205271238040.14937-100000@netrider.rowland.org>
+	<20120527211714.GC4994@belkar.wrar.name>
+	<201205282213.01560.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1205291425490.1289-100000@iolanthe.rowland.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, =?utf-8?q?D=C3=A2niel_Fraga?= <fragabr@gmail.com>, Andrey Rahmatullin <wrar@wrar.name>, Steven Rostedt <rostedt@goodmis.org>, linux-pm@lists.linux-foundation.org, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="=-gPp6IrJjfd56YmlfKJIm"
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201205282213.01560.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrey Rahmatullin <wrar@wrar.name>, linux-pm@lists.linux-foundation.org, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 29, 2012, Alan Stern wrote:
-> On Tue, 29 May 2012, Rafael J. Wysocki wrote:
->=20
-> > On Tuesday, May 29, 2012, Alan Stern wrote:
-> > > On Sun, 27 May 2012, Rafael J. Wysocki wrote:
-> > >=20
-> > > > So, do you think we should apply [1/4] and [2/4] and try to wor=
-k around the
-> > > > BIOS bug from https://bugzilla.kernel.org/show_bug.cgi?id=3D432=
-78 (I suppose
-> > > > we can do that by double checking if the target state returned =
-by ACPI is
-> > > > in agreement with the capabilities returned by the PCI layer)?
-> > >=20
-> > > Here's one possible approach.  It only solves part of the problem=
-, but
-> > > it ought to help with Bugzilla 43278 (D=C3=A2niel's case).  I sug=
-gest that
-> > > we don't believe the output from _SxW if the PCI PM capability
-> > > indicates that PME is supported in a higher-numbered D state than=
- _SxW
-> > > says.
-> > >=20
-> > > On D=C3=A2niel's smachine, _SxW returns D2
-> >=20
-> > No, it doesn't.  In fact, _SxW is not present for that device in hi=
-s DSDT.
->=20
-> Oh -- I guess I got the machines mixed up.  Since _SxW isn't present
-> and _SxD is, we accept the value of _SxD as the only state in which
-> wakeup is supported.
 
-Precisely.
+--=-gPp6IrJjfd56YmlfKJIm
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 7bit
 
-> ACPI apparently doesn't have any way to express: "The device is allow=
-ed=20
-> to be in either D2 or D3 during S3 sleep, but it supports wakeup only=
-=20
-> in D3."  And trying to express the inexpressible, the BIOS ended up=20
-> being buggy.
+On Mon, 2012-05-28 at 22:13 +0200, Rafael J. Wysocki wrote:
 
-Yeah.
+> Please attach the output of dmidecode from your machine.
+> Steven, please do that too.
 
-> ACPI also apparently doesn't have any way to express: "The device is=20
-> allowed be in D2 but not D3 during S3 sleep, even if wakeup is not=20
-> enabled."
+Attached.
 
-That's my understanding too.
+-- Steve
 
-> > > but the controller supports PME in D3; therefore we would use D3.
-> >=20
-> > Yes, we can do that.  This goes along the lines of what I said in t=
-he bug
-> > entry.
-> >=20
-> > > This still leaves the original problem.  It seems clear that ACPI
-> > > won't be sufficient to solve this -- at least, it won't help in t=
-he
-> > > case where the controller isn't enabled for wakeup.
-> > >=20
-> > > Therefore we really do need a quirk, probably in ehci-hcd like th=
-e=20
-> > > original patch.  If it is restricted to apply only in cases where=
- the=20
-> > > DMI information lists ASUSTeK as the manufacturer, perhaps that w=
-ill be=20
-> > > sufficient.  (For some reason, the manufacturer field in D=C3=A2n=
-iel's BIOS=20
-> > > isn't initialized.)
-> >=20
-> > Yeah.
-> >=20
-> > I'll have a deeper look at this later today, I think.
->=20
-> It's easy enough to write such a check (or perhaps more reliably, che=
-ck
-> for a product name matching "P8Z68-V").
 
-I think we should try to express it as a PCI quirk in quirks.c, though.
+--=-gPp6IrJjfd56YmlfKJIm
+Content-Type: application/x-gzip; name="dmi.gz"
+Content-Disposition: attachment; filename="dmi.gz"
+Content-Transfer-Encoding: base64
 
-> More difficult is knowing whether it's the right thing to do.  We don=
-'t
-> know the extent of the underlying problem.
+H4sICMRPxU8AA2RtaQDdXGlv4kwS/hx+RWn3y4w0MHb7wKDVan1AyMGhGDKzn145pgN+AzayTY73
+1291+8AGhskMOMsuiiLTl+upq6tMl/8O06U3pW4wpUAarZrdN66GNl6qsAppRP24UWs2IYrDtRuv
+sQUC112v3jx/BqRJNHh4i2nUqI2dhwUFJwbhVRCEjq51hEat1nP8KTbzNuELWP0riN9W2PAFiJxM
+rfH7XfmPQbh0Yi/waxf31J8GYRv0JQ091/GhT2dOHGJrhAPdBhsRRji0DRNF7TSIoNUu7uiCOhEF
+y4lpG4TmV6J+JYIo1i706RTpjrDxtcvowLFrP/aWFGzvLxyryvBkYOOwnzYQRRV4kzl3QseNkYoo
+9tyoXbu4GJlX4EUQrVerIIzpFJs4AGxbr2ahM6WMEVlrNHemwQvjFfY7i0XwkswIghgew2AJprW9
+mo043Jhz84EN2+ruWDszlAZR/vZVbBDoG/C4CFarN4ho+Oy5KC0npJvB8MnzYxCl+WecJjVwVpMI
+cPPLs0hD037tZqOQfYnckFI/G1/CkYxW+GBNkAk80beHwAmnB1dv8fE2CshZHCZD3pBBw8NDm3yo
+bo52JD2xDVigLrpvO1JbOmEMD06Mq+90clXgwoxW1PUeUaeZom8PGzvhjDIy3ACJREqmqHah97De
+M5gveUefvcQM5IZaNjZSMDa8FpXM2JiJGJyvJZPrO/760eEWzgzPnthjegNmsFytGb8SqxuFwRS9
+AAycJU1Mr2CJYkOA5FPLBDJYLx/YcoY9EIkkK2pTawnpFZplFNEYxs4M7zfeN6BLHe5x2txiGMnM
+iGAeoDGiRXHtKHaFdLVw3NT+boOUyVc+oBlHkYcOoH9lWbcdKH24lbNuSPjXThgo1S7GyDycE8Rz
+GqY3M1EyjuejjIYPf6KZpnOYbynzXyrwH6+JmPI/u9evMz+hZhDEFDXpiQN8asMo8dHvk4P5MzkM
+Asi/1biXqq9XYMfcpdrOI/J1hC4sBBs1cfFW7hkjm5Z4t1KjTd116MXJ0HXEbuFj87DTL7Ig5bmQ
+eOce9WbzGBXMT82FKXyCAYaPkFBgBuEUlxOLMuks6BKZsSsNuSANvEbvkkgDFRqdQBSEZXnYyFpk
+gkUjb+anBJqjCbtZIgUT7xIi1Hw+Kquz9BZvbfjHcDKGYRfsUcf857Zor9CuF2Xlu7JQ4k0QVBAI
+CAJ0u9A1oGOA0S0IlU/8dPeZwaafxv3P4Cl1IktCnxP2L9yvZeGy91e+7H2wiJ0ZU2ZUh/vaRecV
+NclHks0F1xsRb9Xv/cUIfAV7RekUnYiQNZrrMGQOKO0gctaRSXEUrNYLFPP0C3R8ZnAooUmy/bVh
+yAwGFVQE03HntGxXCnaQfR0qdkj7Opo7ejwOwKDQ9RZ4XzDeYNjoNPqNkib/aMiIuemfrcOYjJzG
+IAGxp19TmFzjxvOQOtPiiN04QZXrD14MrrPi/qikjkpBHZvonFuZc+Dgf6qKt2Kdj+Sq/+jN1mHa
+kdL4hXkJSGayb7f0GbUO6R6uaDIUedkPmKi+oW3ifuC4TxuPmWgbUxbUTj+KHc6eJDJqSZrcUjFi
+4IrjLdfL3Q47307tO70PzGI4R1K1KCyZdecqk+rbxH/ygxdE3wnDgJt6iL6WOfPMCTIfYr9FMV2m
+TRM/9ROoA4HrIZBn9Dpt6K4X6Kc2jVuSUI+UBPkdSZB9krh3Qg/jkW9ePMdwdxlgFJHGre+TDMas
+e8SStZ6VTLT6i4MbAo3rzo/k0jxSLtLvyEWqQi6S0CR7BJM3n5VkkoVLktAKksDrTBAjpBlv5ft4
+q+3tM2MGxqePFPcRjPQz6bCs7lrUxcKgzSJFcvP9av8aI5v0g3VUHLi9zsj+Sli4gnRmgRxOANZQ
+Rtg6S4Q3afrzKwizOXtA6lWAJPqxKNONndP7Y6CWUW8Bhpa0hLYwF0RVUQSdh8xI/c6Ga1SC3jgW
+/b03pcFh3Ji4PdId6HziHimbp8cp6eRYmD2k6QDK1Ju9A55VBTzpWHgT2xAPwNNdliKAsY7gEw79
+XEKKDWWInXOFSE4GsXuuEKVTQRSFc4UonwyieHqI8vG7JpKpnAwiOVeI6skgSmcJ8VYfHEB4d12X
+lRKsAY1fgvBpd8cQ5dPjU47HV3ikCNbol7bG3QhdVE6PUbs+GqOtj/UkNhPA8lhGkq1zAK+t21+T
+iYv1DBd26Sp23O24DweUOaCengPN4zlANyw45HZ/E3Pz9JjVk2I+tJv+JuYqctHu0eGtbsLVIX/1
+LiOuIAlVDBHqMDJ7cD3WLw+gTAn8CUz+xGTzPP6HcBOeHUZbQTba0hna8aj/dTS8G4MmnBXgChLQ
+VkdGwD1LB/Jdgx51psnzorPBXEEy2uo0U8zayPPPEXQFKarWFVPQSSJ9RmgryFZbHQnR2vzUhxOH
+3mvhSdgZIa8gidU6TM726Ir9rDgLneU5ASYVpLStjoKAb0cm9JBQK3CfPH92VqArSHJblyQFbV9Z
+HTD0gXVWkCtIerVuDnkRxGeFtoL8V+tJadj1neV2ZwS2gmS4ecl9Vh70Hwqmfxz0V8WDnQyCVJAr
+N7lBb1hwKIc6BxZUkCyrvYIWvJxXREYqSJSVa4a3OzrDAJRUkCPLXLz6+PsZSreKH2+vmQPX7/vm
+WSGt4hdcLlhDH4/h0G+ZH4+1it9reyTDeuhX64/HWkGaTPiuzA4Gdh3/rMBWkB6LFjPXc4u1KsiM
+5Xsm1fQMEoukD4YaHw+5gpRYvidbkA8FmB8OWaogKZZNHlvoAxh9uzsrsMVkGLddsZmiTU+WcfGU
+oJaO5F0rZn58+lVUt89JZyeOJxE/taw/O94iPchP/Vk8b8NtwB4O7DlpKzUkuGfn/1dh8OxNeSnF
+cEX9tOomwhm8bdTvACdoUa6lKIEkx4FUTbIBCaxWqPO6Sg4L/hyhPefHoNiJcLF6pNKRSK33Ir3y
+8Wo/zP1Hp08KUz4OZrOotUcIVKoeqXIk0lMIVK4epnqshZ5GoEr1SJvHIdU2vkgivBjhsM/dFuvH
+OFztSHFOjP+BXaV1HEhRMSY5Svm8txX9SKhSAeox9vkBW0sxS2VH/tQU6tBPKywtystcS3ATaOnJ
+36ycKq+hQma4obdKmIGfH1Qolcgwf5+MDovyfBpvKLG8aB8p76HD+n067GDtT0/EjmIawo7wKWUF
+LBWEwJCvHbHCD/5dRA7Yg3axRO+bQux72VbLZXvpeJKMN8Uukc1WR7dkEfZ88vFSMl6ULb3TMmXS
+Fc2D42XkTf+qLQgGMcvPceXiPsh+qMoMzVh7i7ju+TAKPJ8XyiZ839Sz8roJnlg8Oi7N6giMdRwj
+K1ioUrpPcRdi4TERygzltezlipy81BMoK0mJYEpjzDa27EcoJhR4TbZcxQfWJ2sDQbflVksjLUlW
+00GTCfMjmtAxNbHZqeumadY7gibWiaAK9aIIaxffnCfKSmUTFqc1si9e7M7xZjeT/E77P5vq0UlZ
+l4tPEdiJ20yXWfmsHYco3Iixm10w1e0N7D/v6PLZHly+qXkH6uhMif7sT33r5q7uhnkHKqNNbmKr
+Vxe+zyfLl7wDta4lDNQbXROVS7Gpqvdj4d95r9LmLEy+qMUvzeIXrfilVfwiCuxbScmKiTQ7zpfX
+q4/mb5Hnoqyy2qswdN6KlVe5FjIPMwzL5doYz+QjkgV+UiWVFWmZzspxeUkUBhWXRjaroJJ5jSpL
+sUf5brIpU06sLmI7UQlqSevRuLJXaNRShJm1cqSlSlhZeD8d4yBGpn3zpmxbVGXA8A9VxXJiZ6cx
+KUiThZYKfUTaxZWh67j8+YE9tK76fWYwccYiznrWh9ur79OFXmdDkDTD8Z8g7zX0wQ0ImdPZistY
+IwKNcQNn8vHdeRj46JfymjZRkiRWcQyfhIYGfvR52wPYzjJas9Bty5TlJhF0paWXioFbWlNVZImI
+wlYBcF9uioZCmpLVE+pmr7WtlqW3KAiFOsSSrKDvrFa4IeV1gegAQ+55C28eETYflKI/3e3upp/a
+xZ3jz7KXk8hc/XIzSO9YUguM6orWsUVOeayScMDjqnMXvKCvirzEkvI6Qr41LKjzTAu9YrF9ClyT
+LLpimiSWmSb9nym4cUDByX9LwY3TKLj8P6Hg0kcoOHm3ghcftLCDu/lmdYDISnm235I2bEgNovxS
+DFkrBcqIQ9tEF/XsRTV8d2Sv5GA/dAPO5oxhqZQmgqCBrLGXVggi/yP4P9vlebrFX1vxh253i9d/
+YORXpqSYHovsoXoeY76TFAKiDHKLkULwQgTZAkXmlBX+dAVIF6nEGYXmMil6iRTcq1X510iR0NGA
+rLO1JbFMQXObIAmDtIsu5yASj6kAe/lH9ocMJcLuAuyFNxIICE7fXs7UsheIdIvtZbjQTMSVXKug
+4H8CanlGiSWlNJe9yyZ7ewp/B9EtquUa8/HtXzl42Tp/i1U2InlbywXlD1ySVH7xBpsC92xcG9iQ
+EgmlFJed6MiEgjbDYq1x8o6N/wCg9BA7zEwAAA==
 
-Well, we can only learn that by experience, so we should address the kn=
-ow
-cases and then try to find patterns, if they exist.
 
-Thanks,
-Rafael
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=-gPp6IrJjfd56YmlfKJIm
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--=-gPp6IrJjfd56YmlfKJIm--
