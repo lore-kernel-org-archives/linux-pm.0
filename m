@@ -1,88 +1,56 @@
-From: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Subject: Re: [RFC PATCH 03/11] arm: omap: device: create a device for system
- control module
-Date: Tue, 29 May 2012 17:39:54 +0400
-Message-ID: <4FC4D1AA.5040807@dev.rtsoft.ru>
-References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com> <1337934361-1606-4-git-send-email-eduardo.valentin@ti.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFT] PCI changes related to wakeup (was: Re: [linux-pm] ehci_hcd
+ related S3 lockup on ASUS laptops, again)
+Date: Tue, 29 May 2012 10:23:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1205291010190.1289-100000@iolanthe.rowland.org>
+References: <201205270059.04166.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1337934361-1606-4-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: b-cousson@ti.com, kishon@ti.com, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org, Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <201205270059.04166.rjw@sisk.pl>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, =?UTF-8?Q?D=C3=A2niel_Fraga?= <fragabr@gmail.com>, Andrey Rahmatullin <wrar@wrar.name>, Steven Rostedt <rostedt@goodmis.org>, linux-pm@lists.linux-foundation.org, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-  Hi.
+On Sun, 27 May 2012, Rafael J. Wysocki wrote:
 
-On 05/25/2012 12:25 PM, Eduardo Valentin wrote:
-> From: Kishon Vijay Abraham I <kishon@ti.com>
->
-> Extracts the device data from hwmod database and create a platform device
-> using omap device build.
->
-> The device build is done during postcore_initcall.
->
-> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  arch/arm/mach-omap2/devices.c |   26 ++++++++++++++++++++++++++
->  1 files changed, 26 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
-> index 152c266..9332673 100644
-> --- a/arch/arm/mach-omap2/devices.c
-> +++ b/arch/arm/mach-omap2/devices.c
-> @@ -40,6 +40,32 @@
->  #define L3_MODULES_MAX_LEN 12
->  #define L3_MODULES 3
->  
-> +static int omap_init_control(void)
-> +{
-> +	struct omap_hwmod		*oh;
-> +	struct platform_device		*pdev;
-> +	const char			*oh_name, *name;
-> +
-> +	oh_name = "ctrl_module_core";
-> +	name = "omap-control-core";
-> +
-> +	oh = omap_hwmod_lookup(oh_name);
-> +	if (!oh) {
-> +		pr_err("Could not lookup hwmod for %s\n", oh_name);
-> +		return PTR_ERR(oh);
-> +	}
-> +
-> +	pdev = omap_device_build(name, -1, oh, NULL, 0, NULL, 0, true);
-I noticed that control module omap device is created and configured according to following idle flags:
-static struct omap_hwmod_class_sysconfig omap44xx_ctrl_module_sysc = {
-    .rev_offs    = 0x0000,
-    .sysc_offs    = 0x0010,
-    .sysc_flags    = SYSC_HAS_SIDLEMODE,
-    .idlemodes    = (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART |
-               SIDLE_SMART_WKUP),
-    .sysc_fields    = &omap_hwmod_sysc_type2,
-};
+> So, do you think we should apply [1/4] and [2/4] and try to work arou=
+nd the
+> BIOS bug from https://bugzilla.kernel.org/show_bug.cgi?id=3D43278 (I =
+suppose
+> we can do that by double checking if the target state returned by ACP=
+I is
+> in agreement with the capabilities returned by the PCI layer)?
 
-IIUC, ".idlemodes    = (SIDLE_FORCE | SIDLE_NO | SIDLE_SMART | SIDLE_SMART_WKUP)" means that CONTROL_GEN_CORE idlemode will be set to
-"0x2,0x3: Clock is automatically gated when there is no access to the Control Module through L4-interconnect". See CONTROL_GEN_CORE_SYSCONFIG register.
-So IIUC theoretically CONTROL_GEN_CORE module clock can be automatically gated. Recalling that CONTROL_GEN_CORE module has an THERMAL_ALERT interrupt that is used by the bandgap driver, I'm wondering if the THERMAL_ALERT interrupt will be fired when CONTROL_GEN_CORE module clock is gated?
-Probably bandgap driver should set CONTROL_GEN_CORE idle mode to SIDLE_NO, to prevent loosing THERMAL_ALERT interrupt?
+Here's one possible approach.  It only solves part of the problem, but
+it ought to help with Bugzilla 43278 (D=C3=A2niel's case).  I suggest t=
+hat
+we don't believe the output from _SxW if the PCI PM capability
+indicates that PME is supported in a higher-numbered D state than _SxW
+says.
 
-  BR,
-    Konstantin Baydarov.
+On D=C3=A2niel's smachine, _SxW returns D2 but the controller supports =
+PME=20
+in D3; therefore we would use D3.
 
-> +	if (IS_ERR(pdev)) {
-> +		pr_err("Could not build omap_device for %s %s\n",
-> +		       name, oh_name);
-> +		return PTR_ERR(pdev);
-> +	}
-> +
-> +	return 0;
-> +}
-> +postcore_initcall(omap_init_control);
-> +
->  static int __init omap3_l3_init(void)
->  {
->  	struct omap_hwmod *oh;
+This still leaves the original problem.  It seems clear that ACPI
+won't be sufficient to solve this -- at least, it won't help in the
+case where the controller isn't enabled for wakeup.
 
+Therefore we really do need a quirk, probably in ehci-hcd like the=20
+original patch.  If it is restricted to apply only in cases where the=20
+DMI information lists ASUSTeK as the manufacturer, perhaps that will be=
+=20
+sufficient.  (For some reason, the manufacturer field in D=C3=A2niel's =
+BIOS=20
+isn't initialized.)
+
+Alan Stern
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
