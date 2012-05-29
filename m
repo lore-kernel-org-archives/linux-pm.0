@@ -1,49 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFT] PCI changes related to wakeup (was: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again)
-Date: Tue, 29 May 2012 19:30:03 +0200
-Message-ID: <201205291930.03413.rjw@sisk.pl>
-References: <20120526223611.GF5012@belkar.wrar.name> <201205282213.01560.rjw@sisk.pl> <20120529074852.GF5028@belkar.wrar.name>
+From: Mike Turquette <mturquette@ti.com>
+Subject: Re: [RFC PATCH 09/11] ARM: OMAP4+: thermal: introduce bandgap
+ temperature sensor
+Date: Tue, 29 May 2012 10:51:25 -0700
+Message-ID: <20120529175125.GD2722@gmail.com>
+References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
+ <1337934361-1606-10-git-send-email-eduardo.valentin@ti.com>
+ <4FBFAA18.4040103@ti.com>
+ <20120528111624.GC3923@besouro>
+ <4FC4CBC8.2040600@ti.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20120529074852.GF5028@belkar.wrar.name>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Andrey Rahmatullin <wrar@wrar.name>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@lists.linux-foundation.org, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4FC4CBC8.2040600@ti.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: "Cousson, Benoit" <b-cousson@ti.com>
+Cc: eduardo.valentin@ti.com, kishon@ti.com, kbaidarov@dev.rtsoft.ru, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org, Keerthy <j-keerthy@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 29, 2012, Andrey Rahmatullin wrote:
-> On Mon, May 28, 2012 at 10:13:01PM +0200, Rafael J. Wysocki wrote:
-> > > > > > > > Andrey, Stephen,
-> > > > > > > > 
-> > > > > > > > We still have problems with this patch in https://bugzilla.kernel.org/show_bug.cgi?id=43278
-> > > > > > > > so some more testing will be necessary, I'm afraid.
-> > > > > > > > 
-> > > > > > > > I will send a series of ACPI and PCI patches I have collected so far,
-> > > > > > > > that I'd like you to test on top of kernel 3.4.0 with commit
-> > > > > > > > 151b61284776 reverted.
-> > > > > > > > 
-> > > > > > > > Please let me know if suspend/wakeup work for you with these patches applied.
-> > > > > > > I get the usual freeze on suspending with these patches.
-> > > > > > 
-> > > > > > I see.
-> > > > > > 
-> > > > > > Please try to unapply [4/4] and see if that helps.
-> > > > > It helps.
-> > > > 
-> > > > Andrey, can you try out Rafael's patches 1-3 (with 151b... reverted)  
-> > > > and see what happens if the EHCI controllers' power/wakeup sysfs
-> > > > atributes are first set to "disabled"?
-> > > It freezes.
-> > 
-> > Well, that means trying to work around this through changing the algorithm
-> > of selecting the target state of a device wasn't a good idea after all.
-> > 
-> > Still, we've found some bugs in the process, so it was worth the effort.
-> > 
-> > Please attach the output of dmidecode from your machine.
-> Attached.
+On 20120529-15:14, Cousson, Benoit wrote:
+> On 5/28/2012 1:16 PM, Eduardo Valentin wrote:
+> >In fact I didn't touch the clk data on purpose and left the clock handling
+> >as is. On my side I didn't know how the clock struct would look like with DT,
+> >so, I didn't mess with it.
+> >
+> >Do you have a reference to check the work in progress for clock DT ?
+> 
+> Rob sent a pull request, it seems that now it is up to Mike T. :-)
+> 
+> http://lists-archives.com/linux-kernel/27640907-dt-clk-binding-support.html
+> 
 
-Cool, thanks!
+Due to the on-going discussion around those patches I haven't pulled
+yet.  If everyone agrees once the dust settles then I'll take them in.
+
+Regards,
+Mike
+
