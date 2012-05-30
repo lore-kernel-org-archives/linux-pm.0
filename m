@@ -1,58 +1,71 @@
-From: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Subject: Re: [RFC PATCH 11/11] ARM: DT: Add support to system control module
- for OMAP4
-Date: Wed, 30 May 2012 13:05:50 +0400
-Message-ID: <4FC5E2EE.8030504@dev.rtsoft.ru>
-References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com> <1337934361-1606-12-git-send-email-eduardo.valentin@ti.com> <4FC49BA5.5050008@dev.rtsoft.ru> <4FC5DC9F.7080104@ti.com>
+From: "Cousson, Benoit" <b-cousson@ti.com>
+Subject: Re: [RFC PATCH 11/11] ARM: DT: Add support to system
+ control module for OMAP4
+Date: Wed, 30 May 2012 11:26:54 +0200
+Message-ID: <4FC5E7DE.2060905@ti.com>
+References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
+	<1337934361-1606-12-git-send-email-eduardo.valentin@ti.com>
+	<4FC49BA5.5050008@dev.rtsoft.ru> <4FC5DC9F.7080104@ti.com>
+	<4FC5E2EE.8030504@dev.rtsoft.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <4FC5DC9F.7080104@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: "Cousson, Benoit" <b-cousson@ti.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, kishon@ti.com, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org, Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4FC5E2EE.8030504@dev.rtsoft.ru>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+Cc: balbi@ti.com, kishon@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05/30/2012 12:38 PM, Cousson, Benoit wrote:
-> On 5/29/2012 11:49 AM, Konstantin Baydarov wrote:
->>    Hi, Eduardo.
+On 5/30/2012 11:05 AM, Konstantin Baydarov wrote:
+> On 05/30/2012 12:38 PM, Cousson, Benoit wrote:
+>> On 5/29/2012 11:49 AM, Konstantin Baydarov wrote:
+>>> Hi, Eduardo.
+>>>
+>>> On 05/25/2012 12:26 PM, Eduardo Valentin wrote:
+>>>> This patch add device tree entries on OMAP4 based boards for
+>>>> System Control Module (SCM).
+
+...
+
+>>> I believe that CPU-specific bandgap definition should be moved to
+>>> bard specific dts.
 >>
->> On 05/25/2012 12:26 PM, Eduardo Valentin wrote:
->>> This patch add device tree entries on OMAP4 based boards
->>> for System Control Module (SCM).
->>>
->>> Signed-off-by: Eduardo Valentin<eduardo.valentin@ti.com>
->>> ---
->>>   arch/arm/boot/dts/omap4.dtsi |   13 +++++++++++++
->>>   1 files changed, 13 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
->>> index 359c497..d2cb392 100644
->>> --- a/arch/arm/boot/dts/omap4.dtsi
->>> +++ b/arch/arm/boot/dts/omap4.dtsi
->>> @@ -272,5 +272,18 @@
->>>               ti,hwmods = "mmc5";
->>>               ti,needs-special-reset;
->>>           };
->>> +
->>> +        ctrl_module_core: ctrl_module_core@4a002000 {
->>> +            compatible = "ti,omap4-control";
->>> +            ti,hwmods = "ctrl_module_core";
->>> +            bandgap {
->>> +                compatible = "ti,omap4460-bandgap";
->>> +                interrupts =<0 126 4>; /* talert */
->>> +                ti,tshut-gpio =<86>; /* tshut */
->>> +            };
->> I believe that CPU-specific bandgap definition should be moved to bard specific dts.
->
-> Mmm, why, since it is CPU specific and not board specific. I has to be in the SoC file.
-Speaking about omap4430 - omap4430 bandgap differs from omap4460, so if omap4430 bandgap support will be added to omap-bandgap driver the version of bandgap should specified in dts file. omap4.dtsi is a common for omap4 boards, that is why I'm suggesting to move bandgap description to probably board specific file.
-Another solution is to determine bandgap type in driver probe function, but in that case "ti,omap4460-bandgap" in omap4.dtsi should be replaced to "ti,omap4-bandgap".
+>> Mmm, why, since it is CPU specific and not board specific. I has to
+>> be in the SoC file.
+> Speaking about omap4430 - omap4430 bandgap differs from omap4460, so
+> if omap4430 bandgap support will be added to omap-bandgap driver the
+> version of bandgap should specified in dts file. omap4.dtsi is a
+> common for omap4 boards, that is why I'm suggesting to move bandgap
+> description to probably board specific file.
 
-  BR,
-    Konstantin Baydarov.
+OK, I got your point, but in that case we could potentially define a 
+omap4460.dtsi file.
 
-> Regards,
-> Benoit
+> Another solution is to
+> determine bandgap type in driver probe function, but in that case
+> "ti,omap4460-bandgap" in omap4.dtsi should be replaced to
+> "ti,omap4-bandgap".
 
+Yes, this is the best solution, but that assume that we can identify the 
+control module version from the HW, which is not necessarily true :-(
+
+The IP_REVISION (offset = 0) value are unfortunately not documented, so 
+we should read it to check if they are different from omap4430 and 4460.
+
+The bitfield layout in that register is:
+
+IP_REV_MAJOR: 8..10
+IP_REV_CUSTOM: 6..7
+IP_REV_MINOR: 0..5
+
+Regards,
+Benoit
