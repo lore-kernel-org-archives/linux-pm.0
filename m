@@ -1,56 +1,52 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC] the generic thermal layer enhancement
-Date: Wed, 30 May 2012 13:50:35 +0100
-Message-ID: <20120530125035.GA17379@srcf.ucam.org>
-References: <1338367742.1472.128.camel@rui.sh.intel.com>
+From: Rob Lee <rob.lee-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [linux-pm] [PATCH] cpuidle : use percpu cpuidle in the core code
+Date: Thu, 31 May 2012 05:45:05 +0800
+Message-ID: <CAMXH7KHY+Hgw-n3cM6yNt9x3UPUpBUp96+DqofCCTFcFD+fmgg@mail.gmail.com>
+References: <1333104499-8627-1-git-send-email-daniel.lezcano@linaro.org>
+	<4F759838.4060007@linux.vnet.ibm.com> <4F759CDE.9060108@linaro.org>
+	<4F75A015.2010609@linux.vnet.ibm.com> <4F75DCBE.8000309@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1338367742.1472.128.camel@rui.sh.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, amit.kachhap@linaro.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <4F75DCBE.8000309-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, "Srivatsa S. Bhat" <srivatsa.bhat-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 30, 2012 at 04:49:02PM +0800, Zhang Rui wrote:
+Hey Daniel,
 
-> G1. supporting multiple cooling states for active cooling devices.
+Sorry for the late review/response but perhaps this will still be
+useful as your cpuidle work is ongoing.
 
-Sounds fine.
+> Most of the caller are in the boot-up code, in device_init or module_init.
+> The other ones are doing some specific initialization on the cpuidle_device
+> (cpuinit, like acpi) and can't use the cpuidle_register function.
+>
 
-> G2. introduce cooling states range for a certain trip point
+What about adding a callback pointer parameter to the cpuidle_register
+function that allows platform specific device initialization to occur
+before the cpuidle_device_register call is made?  For reference, see
+my old cpuidle common init code that does this at
+git://git.linaro.org/people/rob_lee/linux.git cpuidle_init.
 
-Again, no problem here.
+With this callback, acpi and the other platforms that need to modify
+the cpuidle_device data can use this interface also.  The necessary
+acpi cpuidle changes can also be found at the above git URL (although
+they haven't been reviewed so they are possibly flawed).
 
-> G3. kernel thermal passive cooling algorithm
+Rob
 
->     Currently, tc1 and tc2 are hard requirements for kernel passive
->     cooling. But non-ACPI platforms do not have this information
->     (please correct me if I'm wrong).
->     Say, for the patches here
->     http://marc.info/?l=linux-acpi&m=133681581305341&w=2
->     They just want to slow down the processor when current temperature
->     is higher than the trip point and speed up the processor when the
->     temperature is lower than the trip point.
-
-Just slowing the CPU down above a certain temperature is a pretty awful 
-approach to passive cooling. You want to maximise performance while 
-staying within your thermal envelope, so you need a more advanced 
-approach. The existing algorithm provides a generic mechanism for 
-balancing performance and thermal output, with the only requirement 
-being that the platform provide constants that represent the heating and 
-cooling properties of the system.
-
-I don't fundamentally object to adding support for platform-specific 
-passive formulae, but I'd like an explanation for how they're better 
-than the existing one.
-
-> G4. Multiple passive trip points
-
-It would be good to have an explanation of the use case here. If it's 
-acceptable for the device to be at the lower passive trip point, why are 
-we slowing it down at all?
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ _______________________________________________
+> linaro-dev mailing list
+> linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+> http://lists.linaro.org/mailman/listinfo/linaro-dev
