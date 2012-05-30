@@ -1,111 +1,121 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [RFC PATCH 11/11] ARM: DT: Add support to system control module
- for OMAP4
-Date: Wed, 30 May 2012 13:42:53 +0300
-Message-ID: <20120530104253.GB3261@besouro>
-References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
- <1337934361-1606-12-git-send-email-eduardo.valentin@ti.com>
- <4FC49BA5.5050008@dev.rtsoft.ru>
- <4FC5DC9F.7080104@ti.com>
- <4FC5E2EE.8030504@dev.rtsoft.ru>
- <4FC5E7DE.2060905@ti.com>
- <4FC5F3C3.2000309@dev.rtsoft.ru>
- <4FC5F4F9.6020106@ti.com>
-Reply-To: eduardo.valentin@ti.com
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [linux-pm] [RFC] the generic thermal layer enhancement
+Date: Wed, 30 May 2012 10:44:25 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5912C950@BGSMSX101.gar.corp.intel.com>
+References: <1338367742.1472.128.camel@rui.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4FC5F4F9.6020106@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: "Cousson, Benoit" <b-cousson@ti.com>
-Cc: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>, Eduardo Valentin <eduardo.valentin@ti.com>, kishon@ti.com, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1338367742.1472.128.camel@rui.sh.intel.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+Hi Rui,
 
-On Wed, May 30, 2012 at 12:22:49PM +0200, Cousson Benoit wrote:
-> On 5/30/2012 12:17 PM, Konstantin Baydarov wrote:
-> >   Hi.
-> >On 05/30/2012 01:26 PM, Cousson, Benoit wrote:
-> >>On 5/30/2012 11:05 AM, Konstantin Baydarov wrote:
-> >>>On 05/30/2012 12:38 PM, Cousson, Benoit wrote:
-> >>>>On 5/29/2012 11:49 AM, Konstantin Baydarov wrote:
-> >>>>>Hi, Eduardo.
-> >>>>>
-> >>>>>On 05/25/2012 12:26 PM, Eduardo Valentin wrote:
-> >>>>>>This patch add device tree entries on OMAP4 based boards for
-> >>>>>>System Control Module (SCM).
-> >>
-> >>...
-> >>
-> >>>>>I believe that CPU-specific bandgap definition should be moved to
-> >>>>>bard specific dts.
-> >>>>
-> >>>>Mmm, why, since it is CPU specific and not board specific. I has to
-> >>>>be in the SoC file.
-> >>>Speaking about omap4430 - omap4430 bandgap differs from omap4460, so
-> >>>if omap4430 bandgap support will be added to omap-bandgap driver the
-> >>>version of bandgap should specified in dts file. omap4.dtsi is a
-> >>>common for omap4 boards, that is why I'm suggesting to move bandgap
-> >>>description to probably board specific file.
-> >>
-> >>OK, I got your point, but in that case we could potentially define a omap4460.dtsi file.
-> >>
-> >>>Another solution is to
-> >>>determine bandgap type in driver probe function, but in that case
-> >>>"ti,omap4460-bandgap" in omap4.dtsi should be replaced to
-> >>>"ti,omap4-bandgap".
-> >>
-> >>Yes, this is the best solution, but that assume that we can identify the control module version from the HW, which is not necessarily true :-(
-> >>
-> >>The IP_REVISION (offset = 0) value are unfortunately not documented, so we should read it to check if they are different from omap4430 and 4460.
-> >>
-> >>The bitfield layout in that register is:
-> >>
-> >>IP_REV_MAJOR: 8..10
-> >>IP_REV_CUSTOM: 6..7
-> >>IP_REV_MINOR: 0..5
+> G1. supporting multiple cooling states for active cooling devices.
+> 
+>     The current active cooling device supports two cooling states only,
+>     please refer to the code below, in driver/thermal/thermal_sys.c
+>                 case THERMAL_TRIP_ACTIVE:
+>                         ...
+>                         if (temp >= trip_temp)
+>                                 cdev->ops->set_cur_state(cdev, 1);
+>                         else
+>                                 cdev->ops->set_cur_state(cdev, 0);
+>                         break;
+> 
+>     This is an ACPI specific thing, as our ACPI FAN used to support
+>     ON/OFF only.
+>     I think it is reasonable to support multiple active cooling states
+>     as they are common on many platforms, and note that this is also
+>     true for ACPI 3.0 FAN device (_FPS).
+> 
+> G2. introduce cooling states range for a certain trip point
+> 
+>     This problem comes with the first one.
+>     If the cooling devices support multiple cooling states, and surely
+>     we may want only several cooling states for a certain trip point,
+>     and other cooling states for other active trip points.
+>     To do this, we should be able to describe the cooling device
+>     behavior for a certain trip point, rather than for the entire
+>     thermal zone.
+> 
+> G3. kernel thermal passive cooling algorithm
+> 
+>     Currently, tc1 and tc2 are hard requirements for kernel passive
+>     cooling. But non-ACPI platforms do not have this information
+>     (please correct me if I'm wrong).
+>     Say, for the patches here
+>     http://marc.info/?l=linux-acpi&m=133681581305341&w=2
+>     They just want to slow down the processor when current temperature
+>     is higher than the trip point and speed up the processor when the
+>     temperature is lower than the trip point.
+> 
+>     According to Matthew, the platform drivers are responsible to
+>     provide proper tc1 and tc2 values to use kernel passive cooling.
+>     But I'm just wondering if we can use something instead.
+>     Say, introduce .get_trend() in thermal_zone_device_ops.
+>     And we set cur_state++ or cur_state-- based on the value returned
+>     by .get_trend(), instead of using tc1 and tc2.
 
-I have the weird deja vu feeling... 
-The DT entry I sent, I already knew it would cause troubles :-)
-Having it per board it would be really a PITA. Image that every
-body doing a 4430 board needs to define a BG entry...
-That would work, but still do we want this?
-
-Benoit, I guess you should know my option by now.
-Ideally we should rely on revision register to decide what to do in the driver.
-And as we discussed, looks like for BG this is somewhat non-existing.
-
-If we go with the SCM revision register, what do we do if the BG goes away from SCM?
-
-If we go with "ti,omap4-bandgap", we still need a way to say if it is 4430, 4460 or 4470.
-There are configuration / settings specific for each. Not only on bandgap,
-but also wrt to sensor location and hotspot extrapolation rules.
-
-Because we lack a revision register for bandgap, one way to go is to have still the
-revisioning on the same way: "ti,omapXXXX-bandgap", but having a omapXXXX.dtsi
-per omap revision. But do we want to this only due to bandgap?
-BTW, is it only BG which is suffering of this issue?
-
-> >Probably, cpu_is_omap443x() and cpu_is_omap446x() can be used in bandgap driver probe function. Actually many drivers use cpu_is_omap*():
-
-
-No please! Let's not use that stuff...
+Yes we should do that. I would also like to remove these values from the
+registration API's. That makes the registration code way more simpler.
+Right now, I do not see any driver using thermal_zone_device_register
+with values other than 0's for these.
 
 > 
-> No, we cannot, we are in the process of getting rid of that.
-> A driver should only focus on the IP version in theory. The CPU
-> version is not the proper way of getting that. It will make the
-> driver not scalable at all for future OMAP revision.
+> G4. Multiple passive trip points
 > 
-> >drivers/mfd/omap-usb-host.c
-> >drivers/mfd/twl-core.c
+>     I get this idea also from the patches at
+>     http://marc.info/?l=linux-acpi&m=133681581305341&w=2
 > 
-> Yeah, these are the ones that still need to be fixed...
+>     IMO, they want to get an acceptable performance at a tolerable
+>     temperature.
+>     Say, a platform with four P-states. P3 is really low.
+>     And I'm okay with the temperature at 60C, but 80C? No.
+>     With G2 resolved, we can use processor P0~P2 for Passive trip point
+>     0 (50C), and P3 for Passive trip point 1 (70C). And then the
+>     temperature may be jumping at around 60C or even 65C, without
+>     entering P3.
+> 
+>     Further more, IMO, this also works for ACPI platforms.
+>     Say, we can easily change p-state to cool the system, but using
+>     t-state is definitely what we do not want to see. The current
+>     implementation does not expose this difference to the generic
+>     thermal layer, but if we can have two passive trip points, and use
+>     p-state for the first one only... (this works if we start polling
+>     after entering passive cooling mode, without hardware notification)
+> 
+> G5. unify active cooling and passive cooling code
+> 
+>     If G4 and G5 are resolved, a new problem to me is that there is no
+>     difference between passive cooling and active cooling except the
+>     cooling policy.
 
-agreed with Benoit here.
+Correct...
+
+>     Then we can share the same code for both active and passive cooling.
+>     maybe something like:
+
+Or just use TRIP_PASSIVE...
 
 > 
-> Regards,
-> Benoit
+>     case THERMAL_TRIP_ACTIVE:
+>     case THERMAL_TRIP_PASSIVE:
+>          ...
+>          tz->ops->get_trend();
+>          if (trend == HEATING)
+>                  cdev->ops->set_cur_state(cdev, cur_state++);
+>          else if (trend == COOLING)
+>                  cdev->ops->set_cur_state(cdev, cur_state--);
+>          break;
+
+I agree with you here...
+
+Thanks,
+Durga
+
