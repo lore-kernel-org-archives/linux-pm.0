@@ -1,100 +1,52 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH][V3] cpuidle : use percpu cpuidle in the core
-	code
-Date: Wed, 30 May 2012 08:51:25 +0200
-Message-ID: <4FC5C36D.8080906@linaro.org>
-References: <1333394401-20701-1-git-send-email-daniel.lezcano@linaro.org>
-	<4F7A8F84.5040700@linux.vnet.ibm.com>
+From: "Cousson, Benoit" <b-cousson@ti.com>
+Subject: Re: [RFC PATCH 11/11] ARM: DT: Add support to system control module
+ for OMAP4
+Date: Wed, 30 May 2012 10:38:55 +0200
+Message-ID: <4FC5DC9F.7080104@ti.com>
+References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com> <1337934361-1606-12-git-send-email-eduardo.valentin@ti.com> <4FC49BA5.5050008@dev.rtsoft.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4F7A8F84.5040700@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: lenb@kernel.org
-Cc: linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, patches@linaro.org
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <4FC49BA5.5050008@dev.rtsoft.ru>
+Sender: linux-omap-owner@vger.kernel.org
+To: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, kishon@ti.com, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDQvMDMvMjAxMiAwNzo0OSBBTSwgU3JpdmF0c2EgUy4gQmhhdCB3cm90ZToKPiBPbiAwNC8w
-My8yMDEyIDEyOjUwIEFNLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPiAKPj4gVGhlIHVzdWFsIGNw
-dWlkbGUgaW5pdGlhbGl6YXRpb24gcm91dGluZXMgcmVnaXN0ZXIgdGhlIGRyaXZlciBhbmQKPj4g
-dGhlbiByZWdpc3RlciBhIGNwdWlkbGUgZGV2aWNlIHBlciBjcHUuCj4+Cj4+IEJ5IGRlZmF1bHQs
-IG1vc3QgZHJpdmVycyBpbml0aWFsaXplIHRoZSBkZXZpY2Ugc3RhdGUgY291bnQgd2l0aCB0aGUK
-Pj4gZHJpdmVyIHN0YXRlIGNvdW50Lgo+Pgo+PiBXZSBjYW4gdGhlbiBhZGQgYSBuZXcgZnVuY3Rp
-b24gJ2NwdWlkbGVfcmVnaXN0ZXInIHdoZXJlIHdlIHJlZ2lzdGVyCj4+IHRoZSBkcml2ZXIgYW5k
-IHRoZSBkZXZpY2VzLiBUaGVzZSBkZXZpY2VzIGNhbiBiZSBkZWZpbmVkIGluIGEgZ2xvYmFsCj4+
-IHN0YXRpYyB2YXJpYWJsZSBpbiBjcHVpZGxlLmMuIFdlIHdpbGwgYmUgYWJsZSB0byBmYWN0b3Ig
-b3V0IGFuZAo+PiByZW1vdmUgYSBsb3Qgb2YgZHVwbGljYXRlIGxpbmVzIG9mIGNvZGUuCj4+Cj4+
-IEFzIHdlIHN0aWxsIGhhdmUgc29tZSBkcml2ZXJzLCB3aXRoIGRpZmZlcmVudCBpbml0aWFsaXph
-dGlvbiByb3V0aW5lcywKPj4gd2Uga2VlcCAnY3B1aWRsZV9yZWdpc3Rlcl9kcml2ZXInIGFuZCAn
-Y3B1aWRsZV9yZWdpc3Rlcl9kZXZpY2UnIGFzIGxvdwo+PiBsZXZlbCBpbml0aWFsaXphdGlvbiBy
-b3V0aW5lcyB0byBkbyBzb21lIHNwZWNpZmljIG9wZXJhdGlvbnMgb24gdGhlCj4+IGNwdWlkbGUg
-ZGV2aWNlcy4KPj4KPj4gU2lnbmVkLW9mZi1ieTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpj
-YW5vQGxpbmFyby5vcmc+Cj4gCj4gCj4gTG9va3MgZ29vZCB0byBtZSBub3cuCj4gQWNrZWQtYnk6
-IFNyaXZhdHNhIFMuIEJoYXQgPHNyaXZhdHNhLmJoYXRAbGludXgudm5ldC5pYm0uY29tPgoKSGkg
-TGVuLAoKY291bGQgeW91IGNvbnNpZGVyIHRoaXMgcGF0Y2ggZm9yIG1lcmdpbmcgPwoKVGhhbmtz
-CiAgLS0gRGFuaWVsCgo+IAo+IAo+IFJlZ2FyZHMsCj4gU3JpdmF0c2EgUy4gQmhhdAo+IAo+PiAt
-LS0KPj4gIGRyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMgfCAgIDQyICsrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKwo+PiAgaW5jbHVkZS9saW51eC9jcHVpZGxlLmggICB8
-ICAgIDMgKysrCj4+ICAyIGZpbGVzIGNoYW5nZWQsIDQ1IGluc2VydGlvbnMoKyksIDAgZGVsZXRp
-b25zKC0pCj4+Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5jIGIvZHJp
-dmVycy9jcHVpZGxlL2NwdWlkbGUuYwo+PiBpbmRleCA4NzQxMWNlLi40ZDFmNzliIDEwMDY0NAo+
-PiAtLS0gYS9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5jCj4+ICsrKyBiL2RyaXZlcnMvY3B1aWRs
-ZS9jcHVpZGxlLmMKPj4gQEAgLTIzLDYgKzIzLDcgQEAKPj4gICNpbmNsdWRlICJjcHVpZGxlLmgi
-Cj4+Cj4+ICBERUZJTkVfUEVSX0NQVShzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKiwgY3B1aWRsZV9k
-ZXZpY2VzKTsKPj4gK0RFRklORV9QRVJfQ1BVKHN0cnVjdCBjcHVpZGxlX2RldmljZSwgY3B1aWRs
-ZV9kZXZpY2UpOwo+Pgo+PiAgREVGSU5FX01VVEVYKGNwdWlkbGVfbG9jayk7Cj4+ICBMSVNUX0hF
-QUQoY3B1aWRsZV9kZXRlY3RlZF9kZXZpY2VzKTsKPj4gQEAgLTQxOSw2ICs0MjAsNDcgQEAgaW50
-IGNwdWlkbGVfcmVnaXN0ZXJfZGV2aWNlKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2KQo+Pgo+
-PiAgRVhQT1JUX1NZTUJPTF9HUEwoY3B1aWRsZV9yZWdpc3Rlcl9kZXZpY2UpOwo+Pgo+PiArLyoK
-Pj4gKyAqIGNwdWlkbGVfcmVnaXN0ZXIgOiByZWdpc3RlciBjcHVpZGxlIGRyaXZlciBhbmQgZGV2
-aWNlcwo+PiArICogTm90ZSB0aGlzIGZ1bmN0aW9uIG11c3QgYmUgY2FsbGVkIGFmdGVyIHNtcF9p
-bml0Lgo+PiArICogQGRydiA6IHRoZSBjcHVpZGxlIGRyaXZlcgo+PiArICogUmV0dXJucyAwIG9u
-IHN1Y2Nlc3MsIDwgMCBvdGhlcndpc2UKPj4gKyAqLwo+PiAraW50IGNwdWlkbGVfcmVnaXN0ZXIo
-c3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYpCj4+ICt7Cj4+ICsJaW50IHJldCwgY3B1LCBpOwo+
-PiArCXN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2Owo+PiArCj4+ICsJcmV0ID0gY3B1aWRsZV9y
-ZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPj4gKwlpZiAocmV0KQo+PiArCQlyZXR1cm4gcmV0Owo+PiAr
-Cj4+ICsJZm9yX2VhY2hfb25saW5lX2NwdShjcHUpIHsKPj4gKwkJZGV2ID0gJnBlcl9jcHUoY3B1
-aWRsZV9kZXZpY2UsIGNwdSk7Cj4+ICsJCWRldi0+Y3B1ID0gY3B1Owo+PiArCj4+ICsJCXJldCA9
-IGNwdWlkbGVfcmVnaXN0ZXJfZGV2aWNlKGRldik7Cj4+ICsJCWlmIChyZXQpCj4+ICsJCQlnb3Rv
-IG91dF91bnJlZ2lzdGVyOwo+PiArCX0KPj4gKwo+PiArb3V0Ogo+PiArCXJldHVybiByZXQ7Cj4+
-ICsKPj4gK291dF91bnJlZ2lzdGVyOgo+PiArCWZvcl9lYWNoX29ubGluZV9jcHUoaSkgewo+PiAr
-CQlpZiAoaSA9PSBjcHUpCj4+ICsJCQlicmVhazsKPj4gKwkJZGV2ID0gJnBlcl9jcHUoY3B1aWRs
-ZV9kZXZpY2UsIGkpOwo+PiArCQljcHVpZGxlX3VucmVnaXN0ZXJfZGV2aWNlKGRldik7Cj4+ICsJ
-fQo+PiArCj4+ICsJY3B1aWRsZV91bnJlZ2lzdGVyX2RyaXZlcihkcnYpOwo+PiArCj4+ICsJZ290
-byBvdXQ7Cj4+ICt9Cj4+ICtFWFBPUlRfU1lNQk9MX0dQTChjcHVpZGxlX3JlZ2lzdGVyKTsKPj4g
-Kwo+PiAgLyoqCj4+ICAgKiBjcHVpZGxlX3VucmVnaXN0ZXJfZGV2aWNlIC0gdW5yZWdpc3RlcnMg
-YSBDUFUncyBpZGxlIFBNIGZlYXR1cmUKPj4gICAqIEBkZXY6IHRoZSBjcHUKPj4gZGlmZiAtLWdp
-dCBhL2luY2x1ZGUvbGludXgvY3B1aWRsZS5oIGIvaW5jbHVkZS9saW51eC9jcHVpZGxlLmgKPj4g
-aW5kZXggNmMyNmEzZC4uMzQ3NTI5NCAxMDA2NDQKPj4gLS0tIGEvaW5jbHVkZS9saW51eC9jcHVp
-ZGxlLmgKPj4gKysrIGIvaW5jbHVkZS9saW51eC9jcHVpZGxlLmgKPj4gQEAgLTEzNSw2ICsxMzUs
-NyBAQCBzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgewo+PiAgI2lmZGVmIENPTkZJR19DUFVfSURMRQo+
-PiAgZXh0ZXJuIHZvaWQgZGlzYWJsZV9jcHVpZGxlKHZvaWQpOwo+PiAgZXh0ZXJuIGludCBjcHVp
-ZGxlX2lkbGVfY2FsbCh2b2lkKTsKPj4gK2V4dGVybiBpbnQgY3B1aWRsZV9yZWdpc3RlcihzdHJ1
-Y3QgY3B1aWRsZV9kcml2ZXIgKmRydik7Cj4+ICBleHRlcm4gaW50IGNwdWlkbGVfcmVnaXN0ZXJf
-ZHJpdmVyKHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2KTsKPj4gIHN0cnVjdCBjcHVpZGxlX2Ry
-aXZlciAqY3B1aWRsZV9nZXRfZHJpdmVyKHZvaWQpOwo+PiAgZXh0ZXJuIHZvaWQgY3B1aWRsZV91
-bnJlZ2lzdGVyX2RyaXZlcihzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgKmRydik7Cj4+IEBAIC0xNTQs
-NiArMTU1LDggQEAgZXh0ZXJuIGludCBjcHVpZGxlX3BsYXlfZGVhZCh2b2lkKTsKPj4gICNlbHNl
-Cj4+ICBzdGF0aWMgaW5saW5lIHZvaWQgZGlzYWJsZV9jcHVpZGxlKHZvaWQpIHsgfQo+PiAgc3Rh
-dGljIGlubGluZSBpbnQgY3B1aWRsZV9pZGxlX2NhbGwodm9pZCkgeyByZXR1cm4gLUVOT0RFVjsg
-fQo+PiArc3RhdGljIGlubGluZSBpbnQgY3B1aWRsZV9yZWdpc3RlcihzdHJ1Y3QgY3B1aWRsZV9k
-cml2ZXIgKmRydikKPj4gK3tyZXR1cm4gLUVOT0RFVjsgfQo+PiAgc3RhdGljIGlubGluZSBpbnQg
-Y3B1aWRsZV9yZWdpc3Rlcl9kcml2ZXIoc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYpCj4+ICB7
-cmV0dXJuIC1FTk9ERVY7IH0KPj4gIHN0YXRpYyBpbmxpbmUgc3RydWN0IGNwdWlkbGVfZHJpdmVy
-ICpjcHVpZGxlX2dldF9kcml2ZXIodm9pZCkge3JldHVybiBOVUxMOyB9Cj4gCj4gCgoKLS0gCiA8
-aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdh
-cmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJvb2suY29t
-L3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29y
-Zz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1wbSBt
-YWlsaW5nIGxpc3QKbGludXgtcG1AbGlzdHMubGludXgtZm91bmRhdGlvbi5vcmcKaHR0cHM6Ly9s
-aXN0cy5saW51eGZvdW5kYXRpb24ub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcG0=
+On 5/29/2012 11:49 AM, Konstantin Baydarov wrote:
+>    Hi, Eduardo.
+>
+> On 05/25/2012 12:26 PM, Eduardo Valentin wrote:
+>> This patch add device tree entries on OMAP4 based boards
+>> for System Control Module (SCM).
+>>
+>> Signed-off-by: Eduardo Valentin<eduardo.valentin@ti.com>
+>> ---
+>>   arch/arm/boot/dts/omap4.dtsi |   13 +++++++++++++
+>>   1 files changed, 13 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
+>> index 359c497..d2cb392 100644
+>> --- a/arch/arm/boot/dts/omap4.dtsi
+>> +++ b/arch/arm/boot/dts/omap4.dtsi
+>> @@ -272,5 +272,18 @@
+>>   			ti,hwmods = "mmc5";
+>>   			ti,needs-special-reset;
+>>   		};
+>> +
+>> +		ctrl_module_core: ctrl_module_core@4a002000 {
+>> +			compatible = "ti,omap4-control";
+>> +			ti,hwmods = "ctrl_module_core";
+>> +			bandgap {
+>> +				compatible = "ti,omap4460-bandgap";
+>> +				interrupts =<0 126 4>; /* talert */
+>> +				ti,tshut-gpio =<86>; /* tshut */
+>> +			};
+> I believe that CPU-specific bandgap definition should be moved to bard specific dts.
+
+Mmm, why, since it is CPU specific and not board specific. I has to be 
+in the SoC file.
+
+Regards,
+Benoit
