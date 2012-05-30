@@ -1,121 +1,67 @@
 From: "R, Durgadoss" <durgadoss.r@intel.com>
 Subject: RE: [linux-pm] [RFC] the generic thermal layer enhancement
-Date: Wed, 30 May 2012 10:44:25 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5912C950@BGSMSX101.gar.corp.intel.com>
+Date: Wed, 30 May 2012 11:05:18 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5912C976@BGSMSX101.gar.corp.intel.com>
 References: <1338367742.1472.128.camel@rui.sh.intel.com>
+ <1338367860.1472.129.camel@rui.sh.intel.com> <20120530103006.GA3261@besouro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1338367742.1472.128.camel@rui.sh.intel.com>
+In-Reply-To: <20120530103006.GA3261@besouro>
 Content-Language: en-US
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Brown, Len" <len.brown@intel.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, Jean Delvare <jdelvare@suse.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rui,
-
-> G1. supporting multiple cooling states for active cooling devices.
-> 
->     The current active cooling device supports two cooling states only,
->     please refer to the code below, in driver/thermal/thermal_sys.c
->                 case THERMAL_TRIP_ACTIVE:
->                         ...
->                         if (temp >= trip_temp)
->                                 cdev->ops->set_cur_state(cdev, 1);
->                         else
->                                 cdev->ops->set_cur_state(cdev, 0);
->                         break;
-> 
->     This is an ACPI specific thing, as our ACPI FAN used to support
->     ON/OFF only.
->     I think it is reasonable to support multiple active cooling states
->     as they are common on many platforms, and note that this is also
->     true for ACPI 3.0 FAN device (_FPS).
-> 
-> G2. introduce cooling states range for a certain trip point
-> 
->     This problem comes with the first one.
->     If the cooling devices support multiple cooling states, and surely
->     we may want only several cooling states for a certain trip point,
->     and other cooling states for other active trip points.
->     To do this, we should be able to describe the cooling device
->     behavior for a certain trip point, rather than for the entire
->     thermal zone.
-> 
-> G3. kernel thermal passive cooling algorithm
-> 
->     Currently, tc1 and tc2 are hard requirements for kernel passive
->     cooling. But non-ACPI platforms do not have this information
->     (please correct me if I'm wrong).
->     Say, for the patches here
->     http://marc.info/?l=linux-acpi&m=133681581305341&w=2
->     They just want to slow down the processor when current temperature
->     is higher than the trip point and speed up the processor when the
->     temperature is lower than the trip point.
-> 
->     According to Matthew, the platform drivers are responsible to
->     provide proper tc1 and tc2 values to use kernel passive cooling.
->     But I'm just wondering if we can use something instead.
->     Say, introduce .get_trend() in thermal_zone_device_ops.
->     And we set cur_state++ or cur_state-- based on the value returned
->     by .get_trend(), instead of using tc1 and tc2.
-
-Yes we should do that. I would also like to remove these values from the
-registration API's. That makes the registration code way more simpler.
-Right now, I do not see any driver using thermal_zone_device_register
-with values other than 0's for these.
-
-> 
-> G4. Multiple passive trip points
-> 
->     I get this idea also from the patches at
->     http://marc.info/?l=linux-acpi&m=133681581305341&w=2
-> 
->     IMO, they want to get an acceptable performance at a tolerable
->     temperature.
->     Say, a platform with four P-states. P3 is really low.
->     And I'm okay with the temperature at 60C, but 80C? No.
->     With G2 resolved, we can use processor P0~P2 for Passive trip point
->     0 (50C), and P3 for Passive trip point 1 (70C). And then the
->     temperature may be jumping at around 60C or even 65C, without
->     entering P3.
-> 
->     Further more, IMO, this also works for ACPI platforms.
->     Say, we can easily change p-state to cool the system, but using
->     t-state is definitely what we do not want to see. The current
->     implementation does not expose this difference to the generic
->     thermal layer, but if we can have two passive trip points, and use
->     p-state for the first one only... (this works if we start polling
->     after entering passive cooling mode, without hardware notification)
-> 
-> G5. unify active cooling and passive cooling code
-> 
->     If G4 and G5 are resolved, a new problem to me is that there is no
->     difference between passive cooling and active cooling except the
->     cooling policy.
-
-Correct...
-
->     Then we can share the same code for both active and passive cooling.
->     maybe something like:
-
-Or just use TRIP_PASSIVE...
-
-> 
->     case THERMAL_TRIP_ACTIVE:
->     case THERMAL_TRIP_PASSIVE:
->          ...
->          tz->ops->get_trend();
->          if (trend == HEATING)
->                  cdev->ops->set_cur_state(cdev, cur_state++);
->          else if (trend == COOLING)
->                  cdev->ops->set_cur_state(cdev, cur_state--);
->          break;
-
-I agree with you here...
-
-Thanks,
-Durga
-
+SGkgRWR1YXJkbywNCg0KPiANCj4gRm9yIEcxK0cyLCBJIGFncmVlIHdpdGggeW91ciBwcm9wb3Nh
+bC4gSSBoYWQgc29tZSBkaXNjdXNzaW9uIHdpdGggQW1pdA0KPiByZWdhcmRpbmcgdGhpcy4gSW4g
+aGlzIHNlcmllcyBvZiBwYXRjaGVzIHdlIGluY3JlYXNlIC8gZGVjcmVhc2UgdGhlIGNvb2xpbmcN
+Cj4gZGV2aWNlIHN0YXRlIGxpbmVhcmx5IGFuZCBzdGVhZGlseS4NCj4gDQo+IEJ1dCBpZiB3ZSB3
+b3VsZCBoYXZlIHdoYXQgeW91IGFyZSBzYXlpbmcsIHdlIGNvdWxkIGJpbmQgY29vbGluZyBkZXZp
+Y2UNCj4gc2V0IG9mIHN0YXRlcyB3aXRoIHRyaXAgcG9pbnRzLg0KDQpUcnVlLCBXZSB3YW50IHRv
+IGJpbmQgdGhlIGxldmVscyBvZiBjb29saW5nIHdpdGggdGhlIHRyaXBzIHBvaW50cyBhIHRoZXJt
+YWwgem9uZSBoYXMuDQpCdXQgd2UgbWlnaHQgbm90IGdldCBhIDEtMSBtYXBwaW5nIGFsd2F5cy4N
+Cg0KPiANCj4gSSBmdWxseSBzdXBwb3J0IHRoaXMgb3B0aW9uIGFuZCBjb3VsZCBjb29rIHVwIHNv
+bWV0aGluZyBvbiB0aGlzLg0KPiBUaGUgVEMxIGFuZCBUQzIgc2hvdWxkIGdvIGluc2lkZSB0aGUg
+LmdldF90cmVuZCgpwqBjYWxsYmFja3MgZm9yIEFDUEkuDQo+IFNob3VsZCBwcm9iYWJseSBnbyBh
+d2F5IGZyb20gdGhlIHJlZ2lzdHJhdGlvbiBmdW5jdGlvbiB0aGF0IHdlIGhhdmUNCj4gY3VycmVu
+dGx5Lg0KDQpJIHJlYWxpemUgSSBqdXN0IHNhaWQgdGhlIHNhbWUgdGhpbmcgOi0pDQoNCj4gDQo+
+IFdlIGNvdWxkIGhhdmUgZ2VuZXJpYyB0cmVuZGluZyBjb21wdXRhdGlvbiB0aG91Z2guIEJhc2Vk
+IG9uIHRpbWVzdGFtcGluZw0KPiBhbmQgdGVtcGVyYXR1cmUgcmVhZHMsIGFuZCBtYWtlIGl0IGF2
+YWlsYWJsZSBmb3Igem9uZXMgdGhhdCB3YW50IHRvIHVzZWQgaXQuDQoNCkFncmVlLCBidXQgSSB3
+b3VsZCBsaWtlIHRoaXMgZ28gaW50byB0aGUgcGxhdGZvcm0gdGhlcm1hbCBkcml2ZXJzLiBBbmQg
+dGhlbiB3aGVuDQp0aG9zZSBkcml2ZXJzIG5vdGlmeSB0aGUgZnJhbWV3b3JrIHRoZXkgY2FuIHNw
+ZWNpZnkgdGhlIHRyZW5kIGFsc28uIFRoaXMgc29ydCBvZg0Kbm90aWZpY2F0aW9uIGlzIG5vdCB0
+aGVyZSwgYnV0IHRoYXQgaXMgd2hhdCBJIGFtIGltcGxlbWVudGluZyB0aGVzZSBkYXlzLi4NCkhv
+cGUgdG8gc3VibWl0IHRoaXMgcGF0Y2ggaW4gYSB3ZWVrJ3MgdGltZS4uDQoNCj4gPiA+ICAgICBj
+YXNlIFRIRVJNQUxfVFJJUF9BQ1RJVkU6DQo+ID4gPiAgICAgY2FzZSBUSEVSTUFMX1RSSVBfUEFT
+U0lWRToNCj4gPiA+ICAgICAgICAgIC4uLg0KPiA+ID4gICAgICAgICAgdHotPm9wcy0+Z2V0X3Ry
+ZW5kKCk7DQo+IA0KPiBXb3VsZCB0aGUgZ2V0X3RyZW5kIHRha2UgaW50byBhY2NvdW50IGlmIHdl
+IGFyZSBjb29saW5nIHdpdGggYWN0aXZlIG9yIHBhc3NpdmUNCj4gY29vbGluZyBkZXZpY2U/DQoN
+ClRvIG1lLCBpdCBkb2VzIG5vdCBtYXR0ZXIuIEl0IGlzIHVwIHRvIHRoZSBmcmFtZXdvcmsgdG8g
+ZGVjaWRlIGFuZCB0aHJvdHRsZSwNCnRoZSByZXNwZWN0aXZlIGNvb2xpbmcgZGV2aWNlcyBhY2Nv
+cmRpbmcgdG8gdGhlIHRyZW5kLg0KDQo+IA0KPiA+ID4gICAgICAgICAgaWYgKHRyZW5kID09IEhF
+QVRJTkcpDQo+ID4gPiAgICAgICAgICAgICAgICAgIGNkZXYtPm9wcy0+c2V0X2N1cl9zdGF0ZShj
+ZGV2LCBjdXJfc3RhdGUrKyk7DQo+ID4gPiAgICAgICAgICBlbHNlIGlmICh0cmVuZCA9PSBDT09M
+SU5HKQ0KPiA+ID4gICAgICAgICAgICAgICAgICBjZGV2LT5vcHMtPnNldF9jdXJfc3RhdGUoY2Rl
+diwgY3VyX3N0YXRlLS0pOw0KPiA+ID4gICAgICAgICAgYnJlYWs7DQo+IA0KPiBJIGJlbGlldmUg
+d2Ugc2hvdWxkIGhhdmUgc29tZXRoaW5nIGZvciB0ZW1wZXJhdHVyZSBzdGFiaWxpemF0aW9uIHRo
+ZXJlIGFzIHdlbGwuDQo+IA0KPiBCZXNpZGVzLCBpZiB3ZSBnbyB3aXRoIHRoaXMgZ2VuZXJpYyBw
+b2xpY3ksIHRoZW4gdGhlIHpvbmUgdXBkYXRlIHdvdWxkIGJlIG11Y2gNCj4gc2ltcGxlciBubz8N
+Cg0KWWVzLCBhbmQgdGhhdOKAmXMgd2hhdCB3ZSB3YW50IHRvbyAgOi0pDQoNCj4gSGVyZSBhcmUg
+c29tZSBvdGhlciB0aG91Z2h0czoNCj4gRzYuIEFub3RoZXIgcG9pbnQgaXMsIHdvdWxkIGl0IG1h
+a2Ugc2Vuc2UgdG8gYWxsb3cgZm9yIHBvbGljeSBleHRlbnNpb24/IE1lYW5pbmcsDQo+IHRoZSB6
+b25lIHVwZGF0ZSB3b3VsZCBjYWxsIGEgY2FsbGJhY2sgdG8gcmVxdWVzdCBmb3IgdXBkYXRlIGZy
+b20gdGhlIHpvbmUNCj4gZGV2aWNlIGRyaXZlcj8NCj4gDQo+IEc3LiBIb3cgZG8gd2Ugc29sdmUg
+Y29vbGluZyBkZXZpY2VzIGJlaW5nIHNoYXJlZCBiZXR3ZWVuIGRpZmZlcmVudCB0aGVybWFsDQo+
+IHpvbmVzPw0KPiBTaG91bGQgd2UgaGF2ZSBhIGJldHRlciBjb29saW5nIGRldmljZSBjb25zdHJh
+aW50IG1hbmFnZW1lbnQ/DQoNClRoaXMgaXMgYW5vdGhlciB0aGluZyB0aGF0IHdhcyBoYXVudGlu
+ZyBtZSBmb3IgcXVpdGUgc29tZSB0aW1lLg0KQW5kIFdoYXQgSSBoYXZlIGluIG1pbmQgaXMgYSBt
+YXBwaW5nIGtpbmQgb2YgdGhpbmcgaW4gdGhlIHBsYXRmb3JtIGxheWVyLA0KdGhhdCB3aWxsIHBy
+b3ZpZGUgZGV0YWlscyBhYm91dCB3aGljaCBjb29saW5nIGRldmljZSBpcyBzaGFyZWQgd2l0aCB3
+aG9tLg0KVGhlIGZyYW1ld29yayBjYW4gdGhlbiB1c2UgdGhpcyBhbmQgZmlndXJlIG91dCB0aGUg
+YXNzb2NpYXRpb24gYW1vbmcgdmFyaW91cyBkZXZpY2VzLg0KSSBhbSB0ZXN0aW5nIGl0IG91dCwg
+YW5kIHdpbGwgc3VibWl0IG9uY2UgaXQgY29tZXMgdG8gYSBnb29kIHNoYXBlLg0KDQpUaGFua3Ms
+DQpEdXJnYQ0KDQo=
