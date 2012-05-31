@@ -1,115 +1,60 @@
-From: Zhang Rui <rui.zhang@intel.com>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: [RFC] the generic thermal layer enhancement
-Date: Thu, 31 May 2012 11:54:51 +0800
-Message-ID: <1338436491.1472.223.camel@rui.sh.intel.com>
+Date: Thu, 31 May 2012 04:58:21 +0100
+Message-ID: <20120531035821.GA1587@srcf.ucam.org>
 References: <1338367742.1472.128.camel@rui.sh.intel.com>
-	 <20120530125035.GA17379@srcf.ucam.org>
+	<20120530125035.GA17379@srcf.ucam.org>
+	<1338436491.1472.223.camel@rui.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20120530125035.GA17379@srcf.ucam.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, amit.kachhap@linaro.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <1338436491.1472.223.camel@rui.sh.intel.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, Jean Delvare <jdelvare@suse.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On =E4=B8=89, 2012-05-30 at 13:50 +0100, Matthew Garrett wrote:
-> On Wed, May 30, 2012 at 04:49:02PM +0800, Zhang Rui wrote:
->=20
-> > G1. supporting multiple cooling states for active cooling devices.
->=20
-> Sounds fine.
->=20
-Great!
-
-> > G2. introduce cooling states range for a certain trip point
->=20
-> Again, no problem here.
->=20
-Again, great!
-
-> > G3. kernel thermal passive cooling algorithm
->=20
-> >     Currently, tc1 and tc2 are hard requirements for kernel passive
-> >     cooling. But non-ACPI platforms do not have this information
-> >     (please correct me if I'm wrong).
-> >     Say, for the patches here
-> >     http://marc.info/?l=3Dlinux-acpi&m=3D133681581305341&w=3D2
-> >     They just want to slow down the processor when current temperat=
-ure
-> >     is higher than the trip point and speed up the processor when t=
-he
-> >     temperature is lower than the trip point.
->=20
-> Just slowing the CPU down above a certain temperature is a pretty awf=
-ul=20
-> approach to passive cooling. You want to maximise performance while=20
-> staying within your thermal envelope, so you need a more advanced=20
-> approach.
-
-Agreed.
-
-> The existing algorithm provides a generic mechanism for=20
-> balancing performance and thermal output, with the only requirement=20
-> being that the platform provide constants that represent the heating =
-and=20
-> cooling properties of the system.
->=20
-I'm not sure if this could work on their platforms. So I'm just looking
-for an easier way to handle this, i.e. make generic thermal layer
-simple, and provide the flexibility for platform drivers to do their ow=
-n
-tricks.
-
-> I don't fundamentally object to adding support for platform-specific=20
-> passive formulae, but I'd like an explanation for how they're better=20
-> than the existing one.
->=20
-Hmmm, I'd like to see if it is possible for them to make use of the
-current passive cooling implementation.. if no...
-
-how about this?
-
-we can provide an API for the current algorithm in thermal_sys.c
-
-thermal_passive_get_trend(int tc1, int tc2)
-{
-}
-EXPORT_SYMBOL(...);
-
-and in platform driver, they can choose to use this default algorithm i=
-f
-they are able to.
-
-=2Eget_trend()
-{
-   return thermal_passive_get_trend(platform_tc1, platform_tc2);
-}
-
-> > G4. Multiple passive trip points
->=20
-> It would be good to have an explanation of the use case here. If it's=
-=20
-> acceptable for the device to be at the lower passive trip point, why =
-are=20
-> we slowing it down at all?
->=20
-acceptable does not equal comfortable?
-Say, I'd like to use the computer at 30C skin temperature.
-I'm okay with the temperature at 50C, but it would be nice if it can be
-lower, even if the system would be slower, but not too slow (T-state).
-If the temperature is higher than 60, it is not usable for me, I'll wai=
-t
-for a while, the system can do everything they want do cool the system
-down (but hibernate/shutdown would be not a good idea at this time
-because it is hot enough for some hardware damage).
-
-thanks,
-rui
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gVGh1LCBNYXkgMzEsIDIwMTIgYXQgMTE6NTQ6NTFBTSArMDgwMCwgWmhhbmcgUnVpIHdyb3Rl
+Ogo+IE9uIOS4iSwgMjAxMi0wNS0zMCBhdCAxMzo1MCArMDEwMCwgTWF0dGhldyBHYXJyZXR0IHdy
+b3RlOgo+ID4gVGhlIGV4aXN0aW5nIGFsZ29yaXRobSBwcm92aWRlcyBhIGdlbmVyaWMgbWVjaGFu
+aXNtIGZvciAKPiA+IGJhbGFuY2luZyBwZXJmb3JtYW5jZSBhbmQgdGhlcm1hbCBvdXRwdXQsIHdp
+dGggdGhlIG9ubHkgcmVxdWlyZW1lbnQgCj4gPiBiZWluZyB0aGF0IHRoZSBwbGF0Zm9ybSBwcm92
+aWRlIGNvbnN0YW50cyB0aGF0IHJlcHJlc2VudCB0aGUgaGVhdGluZyBhbmQgCj4gPiBjb29saW5n
+IHByb3BlcnRpZXMgb2YgdGhlIHN5c3RlbS4KPiA+IAo+IEknbSBub3Qgc3VyZSBpZiB0aGlzIGNv
+dWxkIHdvcmsgb24gdGhlaXIgcGxhdGZvcm1zLiBTbyBJJ20ganVzdCBsb29raW5nCj4gZm9yIGFu
+IGVhc2llciB3YXkgdG8gaGFuZGxlIHRoaXMsIGkuZS4gbWFrZSBnZW5lcmljIHRoZXJtYWwgbGF5
+ZXIKPiBzaW1wbGUsIGFuZCBwcm92aWRlIHRoZSBmbGV4aWJpbGl0eSBmb3IgcGxhdGZvcm0gZHJp
+dmVycyB0byBkbyB0aGVpciBvd24KPiB0cmlja3MuCgpJZiBpdCdzIG5vdCBwb3NzaWJsZSBmb3Ig
+YSBwbGF0Zm9ybSB0byB1c2UgdGhlIGV4aXN0aW5nIGdlbmVyaWMgYXBwcm9hY2ggCnRoZW4gd2Ug
+c2hvdWxkIGNlcnRhaW5seSBwcm92aWRlIGEgd2F5IGZvciB0aGVtIHRvIGhhbmRsZSB0aGF0LCBi
+dXQgCmZpcnN0IEknZCBsaWtlIHRvIHNlZSBldmlkZW5jZSB0aGF0IGl0J3MgaW1wb3NzaWJsZSBm
+b3IgdGhlbSB0byB1c2UgdGhlIApleGlzdGluZyBnZW5lcmljIGFwcHJvYWNoLiBUaGlzIGtpbmQg
+b2YgY29udmVyc2F0aW9uIGlzIGJldHRlciB3aXRoIHJlYWwgCndvcmxkIGV4YW1wbGVzIDopCgo+
+ID4gPiBHNC4gTXVsdGlwbGUgcGFzc2l2ZSB0cmlwIHBvaW50cwo+ID4gCj4gPiBJdCB3b3VsZCBi
+ZSBnb29kIHRvIGhhdmUgYW4gZXhwbGFuYXRpb24gb2YgdGhlIHVzZSBjYXNlIGhlcmUuIElmIGl0
+J3MgCj4gPiBhY2NlcHRhYmxlIGZvciB0aGUgZGV2aWNlIHRvIGJlIGF0IHRoZSBsb3dlciBwYXNz
+aXZlIHRyaXAgcG9pbnQsIHdoeSBhcmUgCj4gPiB3ZSBzbG93aW5nIGl0IGRvd24gYXQgYWxsPwo+
+ID4gCj4gYWNjZXB0YWJsZSBkb2VzIG5vdCBlcXVhbCBjb21mb3J0YWJsZT8KPiBTYXksIEknZCBs
+aWtlIHRvIHVzZSB0aGUgY29tcHV0ZXIgYXQgMzBDIHNraW4gdGVtcGVyYXR1cmUuCj4gSSdtIG9r
+YXkgd2l0aCB0aGUgdGVtcGVyYXR1cmUgYXQgNTBDLCBidXQgaXQgd291bGQgYmUgbmljZSBpZiBp
+dCBjYW4gYmUKPiBsb3dlciwgZXZlbiBpZiB0aGUgc3lzdGVtIHdvdWxkIGJlIHNsb3dlciwgYnV0
+IG5vdCB0b28gc2xvdyAoVC1zdGF0ZSkuCj4gSWYgdGhlIHRlbXBlcmF0dXJlIGlzIGhpZ2hlciB0
+aGFuIDYwLCBpdCBpcyBub3QgdXNhYmxlIGZvciBtZSwgSSdsbCB3YWl0Cj4gZm9yIGEgd2hpbGUs
+IHRoZSBzeXN0ZW0gY2FuIGRvIGV2ZXJ5dGhpbmcgdGhleSB3YW50IGRvIGNvb2wgdGhlIHN5c3Rl
+bQo+IGRvd24gKGJ1dCBoaWJlcm5hdGUvc2h1dGRvd24gd291bGQgYmUgbm90IGEgZ29vZCBpZGVh
+IGF0IHRoaXMgdGltZQo+IGJlY2F1c2UgaXQgaXMgaG90IGVub3VnaCBmb3Igc29tZSBoYXJkd2Fy
+ZSBkYW1hZ2UpLgoKT2ssIHRoYXQgc2VlbXMgcmVhc29uYWJsZS4KCi0tIApNYXR0aGV3IEdhcnJl
+dHQgfCBtamc1OUBzcmNmLnVjYW0ub3JnCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51
+eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmcvbWFpbG1h
+bi9saXN0aW5mby9saW51eC1wbQ==
