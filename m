@@ -1,139 +1,221 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFT] PCI changes related to wakeup (was: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again)
-Date: Thu, 31 May 2012 23:29:15 +0200
-Message-ID: <201205312329.15523.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1205311704340.1178-100000@iolanthe.rowland.org>
+From: =?UTF-8?B?RMOibmllbA==?= Fraga <fragabr@gmail.com>
+Subject: Re: [RFT] PCI changes related to wakeup (was: Re: [linux-pm]
+ ehci_hcd related S3 lockup on ASUS laptops, again)
+Date: Thu, 31 May 2012 19:02:59 -0300
+Message-ID: <4fc7ea97.c383ec0a.2707.ffffa637@mx.google.com>
+References: <201205292116.33587.rjw@sisk.pl>
+	<Pine.LNX.4.44L0.1205311704340.1178-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/mixed; boundary="MP_/Jd+1g2IHXgvghqh+mC9.pOh"
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <Pine.LNX.4.44L0.1205311704340.1178-100000@iolanthe.rowland.org>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, =?utf-8?q?D=C3=A2niel_Fraga?= <fragabr@gmail.com>, Andrey Rahmatullin <wrar@wrar.name>, Steven Rostedt <rostedt@goodmis.org>, linux-pm@lists.linux-foundation.org, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, Andrey Rahmatullin <wrar@wrar.name>, Steven Rostedt <rostedt@goodmis.org>, linux-pm@lists.linux-foundation.org, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 31, 2012, Alan Stern wrote:
-> On Tue, 29 May 2012, Rafael J. Wysocki wrote:
->=20
-> > > > > Therefore we really do need a quirk, probably in ehci-hcd lik=
-e the=20
-> > > > > original patch.  If it is restricted to apply only in cases w=
-here the=20
-> > > > > DMI information lists ASUSTeK as the manufacturer, perhaps th=
-at will be=20
-> > > > > sufficient.  (For some reason, the manufacturer field in D=C3=
-=A2niel's BIOS=20
-> > > > > isn't initialized.)
-> > > >=20
-> > > > Yeah.
-> > > >=20
-> > > > I'll have a deeper look at this later today, I think.
-> > >=20
-> > > It's easy enough to write such a check (or perhaps more reliably,=
- check
-> > > for a product name matching "P8Z68-V").
-> >=20
-> > I think we should try to express it as a PCI quirk in quirks.c, tho=
-ugh.
->=20
+--MP_/Jd+1g2IHXgvghqh+mC9.pOh
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+
+On Thu, 31 May 2012 17:07:36 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
+
 > Here's my attempt.  Everybody, please try this patch with the
 > 151b61284776 commit removed.  Make sure that CONFIG_USB_DEBUG is
-> enabled so we can check the controller's power state during suspend,=20
-> and check that the "broken D3 during system sleep on ASUS" message=20
+> enabled so we can check the controller's power state during suspend, 
+> and check that the "broken D3 during system sleep on ASUS" message 
 > shows up during booting.
->=20
-> Alan Stern
->=20
->=20
->=20
-> Index: usb-3.4/drivers/pci/pci.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-3.4.orig/drivers/pci/pci.c
-> +++ usb-3.4/drivers/pci/pci.c
-> @@ -1743,6 +1743,11 @@ int pci_prepare_to_sleep(struct pci_dev
->  	if (target_state =3D=3D PCI_POWER_ERROR)
->  		return -EIO;
-> =20
-> +	/* Some devices mustn't be in D3 during system sleep */
-> +	if (target_state =3D=3D PCI_D3hot &&
-> +			(dev->dev_flags & PCI_DEV_FLAGS_NO_D3_DURING_SLEEP))
-> +		return 0;
-> +
 
-Why do you want to skip the wakeup setting in that case?
+	Hi Alan, I tested your patch. It wakes up fine through
+keyboard, but it didn't write the "broken D3 during..." message. I
+attached the dmesg output.
 
->  	pci_enable_wake(dev, target_state, device_may_wakeup(&dev->dev));
-> =20
->  	error =3D pci_set_power_state(dev, target_state);
-> Index: usb-3.4/drivers/pci/quirks.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-3.4.orig/drivers/pci/quirks.c
-> +++ usb-3.4/drivers/pci/quirks.c
-> @@ -2917,6 +2917,32 @@ static void __devinit disable_igfx_irq(s
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x0102, disable_igfx_ir=
-q);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x010a, disable_igfx_ir=
-q);
-> =20
-> +/*
-> + * The Intel 6 Series/C200 Series chipset's EHCI controllers on many
-> + * ASUS motherboards will cause memory corruption or a system crash
-> + * if they are in D3 while the system is put into S3 sleep.
-> + */
-> +static void __devinit asus_ehci_no_d3(struct pci_dev *dev)
-> +{
-> +	const char *sys_info;
-> +	static const char good_Asus_board[] =3D "P8Z68-V";
-> +
-> +	if (dev->dev_flags & PCI_DEV_FLAGS_NO_D3_DURING_SLEEP)
-> +		return;
-> +	if (dev->subsystem_vendor !=3D PCI_VENDOR_ID_ASUSTEK)
-> +		return;
-> +	sys_info =3D dmi_get_system_info(DMI_BOARD_NAME);
-> +	if (sys_info && memcmp(sys_info, good_Asus_board,
-> +			sizeof(good_Asus_board) - 1) =3D=3D 0)
-> +		return;
-> +
-> +	dev_info(&dev->dev, "broken D3 during system sleep on ASUS\n");
-> +	dev->dev_flags |=3D PCI_DEV_FLAGS_NO_D3_DURING_SLEEP;
-> +	device_set_wakeup_capable(&dev->dev, false);
-> +}
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1c26, asus_ehci_no_d3=
-);
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1c2d, asus_ehci_no_d3=
-);
-> +
->  static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
->  			  struct pci_fixup *end)
->  {
-> Index: usb-3.4/include/linux/pci.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-3.4.orig/include/linux/pci.h
-> +++ usb-3.4/include/linux/pci.h
-> @@ -176,6 +176,8 @@ enum pci_dev_flags {
->  	PCI_DEV_FLAGS_NO_D3 =3D (__force pci_dev_flags_t) 2,
->  	/* Provide indication device is assigned by a Virtual Machine Manag=
-er */
->  	PCI_DEV_FLAGS_ASSIGNED =3D (__force pci_dev_flags_t) 4,
-> +	/* Device causes system crash if in D3 during S3 sleep */
-> +	PCI_DEV_FLAGS_NO_D3_DURING_SLEEP =3D (__force pci_dev_flags_t) 8,
->  };
-> =20
->  enum pci_irq_reroute_variant {
+-- 
+Linux 3.4.0: Saber-toothed Squirrel
+http://www.youtube.com/DanielFragaBR
 
-The quirks part looks good to me.
+--MP_/Jd+1g2IHXgvghqh+mC9.pOh
+Content-Type: application/octet-stream; name=dmesg-alan.txt
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=dmesg-alan.txt
 
-Thanks,
-Rafael
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+dXNiIDItMS42OiB1bmxpbmsgcWg4LTA2MDEvZmZmZjg4MDIxNDhmOTcwMCBzdGFydCAwIFsxLzIg
+dXNdCmVoY2lfaGNkIDAwMDA6MDA6MWQuMDogcmV1c2VkIHFoIGZmZmY4ODAyMTJhZWZkMDAgc2No
+ZWR1bGUKdXNiIDItMS4zOiBsaW5rIHFoOC0wNjAxL2ZmZmY4ODAyMTJhZWZkMDAgc3RhcnQgNyBb
+MS8yIHVzXQp1c2IgMi0xLjM6IHVubGluayBxaDgtMDYwMS9mZmZmODgwMjEyYWVmZDAwIHN0YXJ0
+IDcgWzEvMiB1c10KUE06IFN5bmNpbmcgZmlsZXN5c3RlbXMgLi4uIGRvbmUuCkZyZWV6aW5nIHVz
+ZXIgc3BhY2UgcHJvY2Vzc2VzIC4uLiAoZWxhcHNlZCAwLjEzIHNlY29uZHMpIGRvbmUuCkZyZWV6
+aW5nIHJlbWFpbmluZyBmcmVlemFibGUgdGFza3MgLi4uIChlbGFwc2VkIDAuOTMgc2Vjb25kcykg
+ZG9uZS4KU3VzcGVuZGluZyBjb25zb2xlKHMpICh1c2Ugbm9fY29uc29sZV9zdXNwZW5kIHRvIGRl
+YnVnKQp1c2IgMi0xLjU6IHVubGluayBxaDMyLTA2MDEvZmZmZjg4MDIxMzg2ODk4MCBzdGFydCA2
+IFsxLzIgdXNdCnVzYiAyLTEuNTogdW5saW5rIHFoOC0wNjAxL2ZmZmY4ODAyMTVjZGExODAgc3Rh
+cnQgNSBbMS8yIHVzXQp1c2IgMi0xLjIuMS4xOiB1c2Igc3VzcGVuZCwgd2FrZXVwIDAKdXNiIDIt
+MS4zOiB1c2Igc3VzcGVuZCwgd2FrZXVwIDAKdXNiIDItMS42OiB1c2Igc3VzcGVuZCwgd2FrZXVw
+IDAKdXNiIDItMS4xOiB1c2Igc3VzcGVuZCwgd2FrZXVwIDAKdXNiIDItMS41OiB1c2Igc3VzcGVu
+ZCwgd2FrZXVwIDEKdXNiIHVzYjE6IHVzYiBhdXRvLXJlc3VtZQplaGNpX2hjZCAwMDAwOjAwOjFh
+LjA6IHJlc3VtZSByb290IGh1YgpzZCA0OjA6MDowOiBbc2RhXSBTeW5jaHJvbml6aW5nIFNDU0kg
+Y2FjaGUKc2QgNDowOjA6MDogW3NkYV0gU3RvcHBpbmcgZGlzawpBQ1BJIGhhbmRsZSBoYXMgbm8g
+Y29udGV4dCEKaHViIDItMS4yLjE6MS4wOiBodWJfc3VzcGVuZAp1c2IgMi0xLjIuMTogdW5saW5r
+IHFoMjU2LTAwMDEvZmZmZjg4MDIxMzg2OGIwMCBzdGFydCAzIFsxLzAgdXNdCnVzYiAyLTEuMi4x
+OiB1c2Igc3VzcGVuZCwgd2FrZXVwIDAKaHViIDEtMDoxLjA6IGh1Yl9yZXN1bWUKaHViIDEtMDox
+LjA6IHBvcnQgMTogc3RhdHVzIDA1MDcgY2hhbmdlIDAwMDAKdXNiIDEtMTogdXNiIGF1dG8tcmVz
+dW1lCmh1YiAyLTEuMjoxLjA6IGh1Yl9zdXNwZW5kCnVzYiAyLTEuMjogdW5saW5rIHFoMjU2LTAw
+MDEvZmZmZjg4MDIxNjFiMGU4MCBzdGFydCAyIFsxLzAgdXNdCnVzYiAyLTEuMjogdXNiIHN1c3Bl
+bmQsIHdha2V1cCAwCmh1YiAyLTE6MS4wOiBodWJfc3VzcGVuZAp1c2IgMi0xOiB1bmxpbmsgcWgy
+NTYtMDAwMS9mZmZmODgwMjE2MDg5OTAwIHN0YXJ0IDEgWzEvMCB1c10KdXNiIDItMTogdXNiIHN1
+c3BlbmQsIHdha2V1cCAwCmh1YiAyLTA6MS4wOiBodWJfc3VzcGVuZAp1c2IgdXNiMjogYnVzIHN1
+c3BlbmQsIHdha2V1cCAwCmVoY2lfaGNkIDAwMDA6MDA6MWQuMDogc3VzcGVuZCByb290IGh1Ygpl
+aGNpX2hjZCAwMDAwOjAwOjFhLjA6IEdldFN0YXR1cyBwb3J0OjEgc3RhdHVzIDAwMTAwNSAwICBB
+Q0sgUE9XRVIgc2lnPXNlMCBQRSBDT05ORUNUCnVzYiAxLTE6IGZpbmlzaCByZXN1bWUKaHViIDEt
+MToxLjA6IGh1Yl9yZXN1bWUKZWhjaV9oY2QgMDAwMDowMDoxYS4wOiByZXVzZWQgcWggZmZmZjg4
+MDIxNTA5Y2EwMCBzY2hlZHVsZQp1c2IgMS0xOiBsaW5rIHFoMjU2LTAwMDEvZmZmZjg4MDIxNTA5
+Y2EwMCBzdGFydCAxIFsxLzAgdXNdCmh1YiAxLTE6MS4wOiBodWJfc3VzcGVuZAp1c2IgMS0xOiB1
+bmxpbmsgcWgyNTYtMDAwMS9mZmZmODgwMjE1MDljYTAwIHN0YXJ0IDEgWzEvMCB1c10KdXNiIDEt
+MTogdXNiIHN1c3BlbmQsIHdha2V1cCAwCmh1YiAxLTA6MS4wOiBodWJfc3VzcGVuZAp1c2IgdXNi
+MTogYnVzIHN1c3BlbmQsIHdha2V1cCAwCmVoY2lfaGNkIDAwMDA6MDA6MWEuMDogc3VzcGVuZCBy
+b290IGh1YgplMTAwMGUgMDAwMDowMDoxOS4wOiB3YWtlLXVwIGNhcGFiaWxpdHkgZW5hYmxlZCBi
+eSBBQ1BJClBNOiBzdXNwZW5kIG9mIGRldmljZXMgY29tcGxldGUgYWZ0ZXIgMjE1LjczMCBtc2Vj
+cwpQTTogbGF0ZSBzdXNwZW5kIG9mIGRldmljZXMgY29tcGxldGUgYWZ0ZXIgMC4wNTggbXNlY3MK
+ZWhjaV9oY2QgMDAwMDowMDoxZC4wOiB3YWtldXA6IDEKZWhjaV9oY2QgMDAwMDowMDoxZC4wOiB3
+YWtlLXVwIGNhcGFiaWxpdHkgZW5hYmxlZCBieSBBQ1BJCmVoY2lfaGNkIDAwMDA6MDA6MWQuMDog
+LS0+IFBDSSBEM2hvdAplaGNpX2hjZCAwMDAwOjAwOjFhLjA6IHdha2V1cDogMQplaGNpX2hjZCAw
+MDAwOjAwOjFhLjA6IHdha2UtdXAgY2FwYWJpbGl0eSBlbmFibGVkIGJ5IEFDUEkKZWhjaV9oY2Qg
+MDAwMDowMDoxYS4wOiAtLT4gUENJIEQzaG90ClBNOiBub2lycSBzdXNwZW5kIG9mIGRldmljZXMg
+Y29tcGxldGUgYWZ0ZXIgMjEuOTk5IG1zZWNzCkFDUEk6IFByZXBhcmluZyB0byBlbnRlciBzeXN0
+ZW0gc2xlZXAgc3RhdGUgUzMKUE06IFNhdmluZyBwbGF0Zm9ybSBOVlMgbWVtb3J5CkRpc2FibGlu
+ZyBub24tYm9vdCBDUFVzIC4uLgpDUFUgMSBpcyBub3cgb2ZmbGluZQpDUFUgMiBpcyBub3cgb2Zm
+bGluZQpDUFUgMyBpcyBub3cgb2ZmbGluZQpDUFUgNCBpcyBub3cgb2ZmbGluZQpDUFUgNSBpcyBu
+b3cgb2ZmbGluZQpDUFUgNiBpcyBub3cgb2ZmbGluZQpDUFUgNyBpcyBub3cgb2ZmbGluZQpFeHRl
+bmRlZCBDTU9TIHllYXI6IDIwMDAKQUNQSTogTG93LWxldmVsIHJlc3VtZSBjb21wbGV0ZQpQTTog
+UmVzdG9yaW5nIHBsYXRmb3JtIE5WUyBtZW1vcnkKRXh0ZW5kZWQgQ01PUyB5ZWFyOiAyMDAwCkVu
+YWJsaW5nIG5vbi1ib290IENQVXMgLi4uCkJvb3RpbmcgTm9kZSAwIFByb2Nlc3NvciAxIEFQSUMg
+MHgyCkNQVTEgaXMgdXAKQm9vdGluZyBOb2RlIDAgUHJvY2Vzc29yIDIgQVBJQyAweDQKQ1BVMiBp
+cyB1cApCb290aW5nIE5vZGUgMCBQcm9jZXNzb3IgMyBBUElDIDB4NgpDUFUzIGlzIHVwCkJvb3Rp
+bmcgTm9kZSAwIFByb2Nlc3NvciA0IEFQSUMgMHgxCkNQVTQgaXMgdXAKQm9vdGluZyBOb2RlIDAg
+UHJvY2Vzc29yIDUgQVBJQyAweDMKQ1BVNSBpcyB1cApCb290aW5nIE5vZGUgMCBQcm9jZXNzb3Ig
+NiBBUElDIDB4NQpDUFU2IGlzIHVwCkJvb3RpbmcgTm9kZSAwIFByb2Nlc3NvciA3IEFQSUMgMHg3
+CkNQVTcgaXMgdXAKQUNQSTogV2FraW5nIHVwIGZyb20gc3lzdGVtIHNsZWVwIHN0YXRlIFMzCmVo
+Y2lfaGNkIDAwMDA6MDA6MWEuMDogd2FrZS11cCBjYXBhYmlsaXR5IGRpc2FibGVkIGJ5IEFDUEkK
+ZWhjaV9oY2QgMDAwMDowMDoxZC4wOiB3YWtlLXVwIGNhcGFiaWxpdHkgZGlzYWJsZWQgYnkgQUNQ
+SQpQTTogbm9pcnEgcmVzdW1lIG9mIGRldmljZXMgY29tcGxldGUgYWZ0ZXIgMC41NTMgbXNlY3MK
+UE06IGVhcmx5IHJlc3VtZSBvZiBkZXZpY2VzIGNvbXBsZXRlIGFmdGVyIDAuMDI0IG1zZWNzCmk5
+MTUgMDAwMDowMDowMi4wOiBzZXR0aW5nIGxhdGVuY3kgdGltZXIgdG8gNjQKZTEwMDBlIDAwMDA6
+MDA6MTkuMDogd2FrZS11cCBjYXBhYmlsaXR5IGRpc2FibGVkIGJ5IEFDUEkKZWhjaV9oY2QgMDAw
+MDowMDoxYS4wOiBzZXR0aW5nIGxhdGVuY3kgdGltZXIgdG8gNjQKZWhjaV9oY2QgMDAwMDowMDox
+ZC4wOiBzZXR0aW5nIGxhdGVuY3kgdGltZXIgdG8gNjQKYWhjaSAwMDAwOjAwOjFmLjI6IHNldHRp
+bmcgbGF0ZW5jeSB0aW1lciB0byA2NApwY2kgMDAwMDowMzowMC4wOiBzZXR0aW5nIGxhdGVuY3kg
+dGltZXIgdG8gNjQKc25kX2hkYV9pbnRlbCAwMDAwOjAwOjFiLjA6IGlycSA0MiBmb3IgTVNJL01T
+SS1YCmUxMDAwZSAwMDAwOjAwOjE5LjA6IGlycSA0MyBmb3IgTVNJL01TSS1YCnVzYiB1c2IxOiB1
+c2IgcmVzdW1lCmVoY2lfaGNkIDAwMDA6MDA6MWEuMDogcmVzdW1lIHJvb3QgaHViCnVzYiB1c2Iy
+OiB1c2IgcmVzdW1lCmVoY2lfaGNkIDAwMDA6MDA6MWQuMDogcmVzdW1lIHJvb3QgaHViCmVoY2lf
+aGNkIDAwMDA6MDA6MWQuMDogcG9ydCAxIHJlbW90ZSB3YWtldXAKaHViIDItMDoxLjA6IGh1Yl9y
+ZXN1bWUKaHViIDEtMDoxLjA6IGh1Yl9yZXN1bWUKaHViIDItMDoxLjA6IHBvcnQgMTogc3RhdHVz
+IDA1MDcgY2hhbmdlIDAwMDAKaHViIDEtMDoxLjA6IHBvcnQgMTogc3RhdHVzIDA1MDcgY2hhbmdl
+IDAwMDAKdXNiIDItMTogdXNiIHJlc3VtZQp1c2IgMS0xOiB1c2IgcmVzdW1lCltkcm1dIEVuYWJs
+aW5nIFJDNiBzdGF0ZXM6IFJDNiBvbiwgUkM2cCBvZmYsIFJDNnBwIG9mZgplaGNpX2hjZCAwMDAw
+OjAwOjFkLjA6IEdldFN0YXR1cyBwb3J0OjEgc3RhdHVzIDAwMTAwNSAwICBBQ0sgUE9XRVIgc2ln
+PXNlMCBQRSBDT05ORUNUCmVoY2lfaGNkIDAwMDA6MDA6MWEuMDogR2V0U3RhdHVzIHBvcnQ6MSBz
+dGF0dXMgMDAxMDA1IDAgIEFDSyBQT1dFUiBzaWc9c2UwIFBFIENPTk5FQ1QKdXNiIDEtMTogZmlu
+aXNoIHJlc3VtZQp1c2IgMi0xOiBmaW5pc2ggcmVzdW1lCmh1YiAyLTE6MS4wOiBodWJfcmVzdW1l
+Cmh1YiAxLTE6MS4wOiBodWJfcmVzdW1lCmh1YiAyLTE6MS4wOiBwb3J0IDE6IHN0YXR1cyAwNTA3
+IGNoYW5nZSAwMDAwCmh1YiAyLTE6MS4wOiBwb3J0IDI6IHN0YXR1cyAwNTA3IGNoYW5nZSAwMDAw
+Cmh1YiAyLTE6MS4wOiBwb3J0IDM6IHN0YXR1cyAwMzA3IGNoYW5nZSAwMDAwCmh1YiAyLTE6MS4w
+OiBwb3J0IDU6IHN0YXR1cyAwMzAzIGNoYW5nZSAwMDA0Cmh1YiAyLTE6MS4wOiBwb3J0IDY6IHN0
+YXR1cyAwMzA3IGNoYW5nZSAwMDAwCmVoY2lfaGNkIDAwMDA6MDA6MWEuMDogcmV1c2VkIHFoIGZm
+ZmY4ODAyMTUwOWNhMDAgc2NoZWR1bGUKdXNiIDEtMTogbGluayBxaDI1Ni0wMDAxL2ZmZmY4ODAy
+MTUwOWNhMDAgc3RhcnQgMSBbMS8wIHVzXQplaGNpX2hjZCAwMDAwOjAwOjFkLjA6IHJldXNlZCBx
+aCBmZmZmODgwMjE2MDg5OTAwIHNjaGVkdWxlCnVzYiAyLTE6IGxpbmsgcWgyNTYtMDAwMS9mZmZm
+ODgwMjE2MDg5OTAwIHN0YXJ0IDEgWzEvMCB1c10KdXNiIDItMS41OiBmaW5pc2ggcmVzdW1lCnVz
+YiAyLTEuMzogdXNiIHJlc3VtZQp1c2IgMi0xLjY6IHVzYiByZXN1bWUKdXNiIDItMS4yOiB1c2Ig
+cmVzdW1lCnVzYiAyLTEuMTogdXNiIHJlc3VtZQplaGNpX2hjZCAwMDAwOjAwOjFkLjA6IHJldXNl
+ZCBxaCBmZmZmODgwMjE1Y2RhMTgwIHNjaGVkdWxlCnVzYiAyLTEuNTogbGluayBxaDgtMDYwMS9m
+ZmZmODgwMjE1Y2RhMTgwIHN0YXJ0IDUgWzEvMiB1c10KZWhjaV9oY2QgMDAwMDowMDoxZC4wOiBy
+ZXVzZWQgcWggZmZmZjg4MDIxMzg2ODk4MCBzY2hlZHVsZQp1c2IgMi0xLjU6IGxpbmsgcWgzMi0w
+NjAxL2ZmZmY4ODAyMTM4Njg5ODAgc3RhcnQgNiBbMS8yIHVzXQp1c2IgMi0xLjY6IGZpbmlzaCBy
+ZXN1bWUKdXNiIDItMS4xOiBmaW5pc2ggcmVzZXQtcmVzdW1lCnVzYiAyLTEuMjogZmluaXNoIHJl
+c3VtZQp1c2IgMi0xLjM6IGZpbmlzaCByZXN1bWUKaHViIDItMS4yOjEuMDogaHViX3Jlc3VtZQpo
+dWIgMi0xLjI6MS4wOiBwb3J0IDE6IHN0YXR1cyAwNTA3IGNoYW5nZSAwMDAwCmVoY2lfaGNkIDAw
+MDA6MDA6MWQuMDogcmV1c2VkIHFoIGZmZmY4ODAyMTYxYjBlODAgc2NoZWR1bGUKdXNiIDItMS4y
+OiBsaW5rIHFoMjU2LTAwMDEvZmZmZjg4MDIxNjFiMGU4MCBzdGFydCAyIFsxLzAgdXNdCnVzYiAy
+LTEuMi4xOiB1c2IgcmVzdW1lCmh1YiAyLTE6MS4wOiBwb3J0IDEgbm90IHJlc2V0IHlldCwgd2Fp
+dGluZyAxMG1zCnVzYiAyLTEuMi4xOiBmaW5pc2ggcmVzdW1lCmh1YiAyLTEuMi4xOjEuMDogaHVi
+X3Jlc3VtZQpodWIgMi0xLjIuMToxLjA6IHBvcnQgMTogc3RhdHVzIDA1MDcgY2hhbmdlIDAwMDAK
+ZWhjaV9oY2QgMDAwMDowMDoxZC4wOiByZXVzZWQgcWggZmZmZjg4MDIxMzg2OGIwMCBzY2hlZHVs
+ZQp1c2IgMi0xLjIuMTogbGluayBxaDI1Ni0wMDAxL2ZmZmY4ODAyMTM4NjhiMDAgc3RhcnQgMyBb
+MS8wIHVzXQp1c2IgMi0xLjIuMS4xOiB1c2IgcmVzdW1lCnVzYiAyLTEuMTogcmVzZXQgaGlnaC1z
+cGVlZCBVU0IgZGV2aWNlIG51bWJlciAzIHVzaW5nIGVoY2lfaGNkCnVzYiAyLTEuMi4xLjE6IGZp
+bmlzaCByZXN1bWUKaHViIDItMToxLjA6IHBvcnQgMSBub3QgcmVzZXQgeWV0LCB3YWl0aW5nIDEw
+bXMKYXRhMzogU0FUQSBsaW5rIHVwIDEuNSBHYnBzIChTU3RhdHVzIDExMyBTQ29udHJvbCAzMDAp
+CkFDUEkgRXJyb3I6IFtEU1NQXSBOYW1lc3BhY2UgbG9va3VwIGZhaWx1cmUsIEFFX05PVF9GT1VO
+RCAoMjAxMjAzMjAvcHNhcmdzLTM1OSkKQUNQSSBFcnJvcjogTWV0aG9kIHBhcnNlL2V4ZWN1dGlv
+biBmYWlsZWQgW1xfU0JfLlBDSTAuU0FUMC5TUFQyLl9HVEZdIChOb2RlIGZmZmY4ODAyMTYwNmI2
+MTgpLCBBRV9OT1RfRk9VTkQgKDIwMTIwMzIwL3BzcGFyc2UtNTM2KQpBQ1BJIEVycm9yOiBbRFNT
+UF0gTmFtZXNwYWNlIGxvb2t1cCBmYWlsdXJlLCBBRV9OT1RfRk9VTkQgKDIwMTIwMzIwL3BzYXJn
+cy0zNTkpCkFDUEkgRXJyb3I6IE1ldGhvZCBwYXJzZS9leGVjdXRpb24gZmFpbGVkIFtcX1NCXy5Q
+Q0kwLlNBVDAuU1BUMi5fR1RGXSAoTm9kZSBmZmZmODgwMjE2MDZiNjE4KSwgQUVfTk9UX0ZPVU5E
+ICgyMDEyMDMyMC9wc3BhcnNlLTUzNikKYXRhMy4wMDogY29uZmlndXJlZCBmb3IgVURNQS8xMzMK
+cmVzdG9yaW5nIGNvbnRyb2wgMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxLzEv
+MgpyZXN0b3JpbmcgY29udHJvbCAwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEv
+Mi8zCnJlc3RvcmluZyBjb250cm9sIDAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAw
+MS8zLzQKdXZjdmlkZW86IEZhaWxlZCB0byBxdWVyeSAoU0VUX0NVUikgVVZDIGNvbnRyb2wgNCBv
+biB1bml0IDE6IC0zMiAoZXhwLiA0KS4KdXZjdmlkZW8gMi0xLjE6MS4wOiByZXNldF9yZXN1bWUg
+ZXJyb3IgLTUKc25kLXVzYi1hdWRpbyAyLTEuMToxLjI6IG5vIHJlc2V0X3Jlc3VtZSBmb3IgZHJp
+dmVyIHNuZC11c2ItYXVkaW8/CnNuZC11c2ItYXVkaW8gMi0xLjE6MS4zOiBubyByZXNldF9yZXN1
+bWUgZm9yIGRyaXZlciBzbmQtdXNiLWF1ZGlvPwpzbmQtdXNiLWF1ZGlvIDItMS4xOjEuMjogZm9y
+Y2VkIHVuYmluZApzbmQtdXNiLWF1ZGlvIDItMS4xOjEuMzogZm9yY2VkIHVuYmluZAplMTAwMGU6
+IGV0aDAgTklDIExpbmsgaXMgVXAgMTAwMCBNYnBzIEZ1bGwgRHVwbGV4LCBGbG93IENvbnRyb2w6
+IFJ4L1R4CkRST1AgSU5QVVQ6IElOPWV0aDAgT1VUPSBNQUM9MDE6MDA6NWU6MDA6MDA6MDE6ZDg6
+NWQ6NGM6Yjk6ZGM6Y2U6MDg6MDAgU1JDPTE5Mi4xNjguMS4xIERTVD0yMjQuMC4wLjEgTEVOPTMy
+IFRPUz0weDAwIFBSRUM9MHhDMCBUVEw9MSBJRD0wIERGIFBST1RPPTIgCmF0YTU6IFNBVEEgbGlu
+ayB1cCAzLjAgR2JwcyAoU1N0YXR1cyAxMjMgU0NvbnRyb2wgMzAwKQpBQ1BJIEVycm9yOiBbRFNT
+UF0gTmFtZXNwYWNlIGxvb2t1cCBmYWlsdXJlLCBBRV9OT1RfRk9VTkQgKDIwMTIwMzIwL3BzYXJn
+cy0zNTkpCkFDUEkgRXJyb3I6IE1ldGhvZCBwYXJzZS9leGVjdXRpb24gZmFpbGVkIFtcX1NCXy5Q
+Q0kwLlNBVDAuU1BUNC5fR1RGXSAoTm9kZSBmZmZmODgwMjE2MDZiNzA4KSwgQUVfTk9UX0ZPVU5E
+ICgyMDEyMDMyMC9wc3BhcnNlLTUzNikKQUNQSSBFcnJvcjogW0RTU1BdIE5hbWVzcGFjZSBsb29r
+dXAgZmFpbHVyZSwgQUVfTk9UX0ZPVU5EICgyMDEyMDMyMC9wc2FyZ3MtMzU5KQpBQ1BJIEVycm9y
+OiBNZXRob2QgcGFyc2UvZXhlY3V0aW9uIGZhaWxlZCBbXF9TQl8uUENJMC5TQVQwLlNQVDQuX0dU
+Rl0gKE5vZGUgZmZmZjg4MDIxNjA2YjcwOCksIEFFX05PVF9GT1VORCAoMjAxMjAzMjAvcHNwYXJz
+ZS01MzYpCmF0YTUuMDA6IGNvbmZpZ3VyZWQgZm9yIFVETUEvMTMzCnNkIDQ6MDowOjA6IFtzZGFd
+IFN0YXJ0aW5nIGRpc2sKUE06IHJlc3VtZSBvZiBkZXZpY2VzIGNvbXBsZXRlIGFmdGVyIDQ1Mzku
+ODMzIG1zZWNzCnNuZC11c2ItYXVkaW8gMi0xLjE6MS4yOiB1c2JfcHJvYmVfaW50ZXJmYWNlCnNu
+ZC11c2ItYXVkaW8gMi0xLjE6MS4yOiB1c2JfcHJvYmVfaW50ZXJmYWNlIC0gZ290IGlkClJlc3Rh
+cnRpbmcgdGFza3MgLi4uIApodWIgMS0wOjEuMDogc3RhdGUgNyBwb3J0cyAyIGNoZyAwMDAwIGV2
+dCAwMDAwCmh1YiAxLTE6MS4wOiBzdGF0ZSA3IHBvcnRzIDYgY2hnIDAwMDAgZXZ0IDAwMDAKaHVi
+IDItMDoxLjA6IHN0YXRlIDcgcG9ydHMgMiBjaGcgMDAwMCBldnQgMDAwMApodWIgMi0xOjEuMDog
+c3RhdGUgNyBwb3J0cyA4IGNoZyAwMDIwIGV2dCAwMDAwCmh1YiAyLTE6MS4wOiBwb3J0IDUsIHN0
+YXR1cyAwMzAzLCBjaGFuZ2UgMDAwMCwgMS41IE1iL3MKaHViIDItMS4yOjEuMDogc3RhdGUgNyBw
+b3J0cyAyIGNoZyAwMDAwIGV2dCAwMDAwCmh1YiAyLTEuMi4xOjEuMDogc3RhdGUgNyBwb3J0cyA0
+IGNoZyAwMDAwIGV2dCAwMDAwCmVoY2lfaGNkIDAwMDA6MDA6MWQuMDogcmV1c2VkIHFoIGZmZmY4
+ODAyMTJhZWZkMDAgc2NoZWR1bGUKdXNiIDItMS4zOiBsaW5rIHFoOC0wNjAxL2ZmZmY4ODAyMTJh
+ZWZkMDAgc3RhcnQgNyBbMS8yIHVzXQplaGNpX2hjZCAwMDAwOjAwOjFkLjA6IHJldXNlZCBxaCBm
+ZmZmODgwMjE0OGY5NzAwIHNjaGVkdWxlCnVzYiAyLTEuNjogbGluayBxaDgtMDYwMS9mZmZmODgw
+MjE0OGY5NzAwIHN0YXJ0IDAgWzEvMiB1c10KZG9uZS4KdmlkZW8gTE5YVklERU86MDA6IFJlc3Rv
+cmluZyBiYWNrbGlnaHQgc3RhdGUKdXNiIDItMS4zOiB1bmxpbmsgcWg4LTA2MDEvZmZmZjg4MDIx
+MmFlZmQwMCBzdGFydCA3IFsxLzIgdXNdCnVzYiAyLTEuNjogdW5saW5rIHFoOC0wNjAxL2ZmZmY4
+ODAyMTQ4Zjk3MDAgc3RhcnQgMCBbMS8yIHVzXQplaGNpX2hjZCAwMDAwOjAwOjFkLjA6IHJldXNl
+ZCBxaCBmZmZmODgwMjE0OGY5NzAwIHNjaGVkdWxlCnVzYiAyLTEuNjogbGluayBxaDgtMDYwMS9m
+ZmZmODgwMjE0OGY5NzAwIHN0YXJ0IDAgWzEvMiB1c10KZWhjaV9oY2QgMDAwMDowMDoxZC4wOiBy
+ZXVzZWQgcWggZmZmZjg4MDIxMmFlZmQwMCBzY2hlZHVsZQp1c2IgMi0xLjM6IGxpbmsgcWg4LTA2
+MDEvZmZmZjg4MDIxMmFlZmQwMCBzdGFydCA3IFsxLzIgdXNdCnVzYiAyLTEuMzogdW5saW5rIHFo
+OC0wNjAxL2ZmZmY4ODAyMTJhZWZkMDAgc3RhcnQgNyBbMS8yIHVzXQpodWIgMS0xOjEuMDogaHVi
+X3N1c3BlbmQKdXNiIDEtMTogdW5saW5rIHFoMjU2LTAwMDEvZmZmZjg4MDIxNTA5Y2EwMCBzdGFy
+dCAxIFsxLzAgdXNdCnVzYiAxLTE6IHVzYiBhdXRvLXN1c3BlbmQsIHdha2V1cCAxCmVoY2lfaGNk
+IDAwMDA6MDA6MWQuMDogcmV1c2VkIHFoIGZmZmY4ODAyMTJhZWZkMDAgc2NoZWR1bGUKdXNiIDIt
+MS4zOiBsaW5rIHFoOC0wNjAxL2ZmZmY4ODAyMTJhZWZkMDAgc3RhcnQgNyBbMS8yIHVzXQp1c2Ig
+Mi0xLjM6IHVubGluayBxaDgtMDYwMS9mZmZmODgwMjEyYWVmZDAwIHN0YXJ0IDcgWzEvMiB1c10K
+aHViIDEtMDoxLjA6IGh1Yl9zdXNwZW5kCnVzYiB1c2IxOiBidXMgYXV0by1zdXNwZW5kLCB3YWtl
+dXAgMQplaGNpX2hjZCAwMDAwOjAwOjFhLjA6IHN1c3BlbmQgcm9vdCBodWIKZWhjaV9oY2QgMDAw
+MDowMDoxZC4wOiByZXVzZWQgcWggZmZmZjg4MDIxMmFlZmQwMCBzY2hlZHVsZQp1c2IgMi0xLjM6
+IGxpbmsgcWg4LTA2MDEvZmZmZjg4MDIxMmFlZmQwMCBzdGFydCA3IFsxLzIgdXNdCnVzYiAyLTEu
+MzogdW5saW5rIHFoOC0wNjAxL2ZmZmY4ODAyMTJhZWZkMDAgc3RhcnQgNyBbMS8yIHVzXQplaGNp
+X2hjZCAwMDAwOjAwOjFkLjA6IHJldXNlZCBxaCBmZmZmODgwMjEyYWVmZDAwIHNjaGVkdWxlCnVz
+YiAyLTEuMzogbGluayBxaDgtMDYwMS9mZmZmODgwMjEyYWVmZDAwIHN0YXJ0IDcgWzEvMiB1c10K
+dXNiIDItMS4zOiB1bmxpbmsgcWg4LTA2MDEvZmZmZjg4MDIxMmFlZmQwMCBzdGFydCA3IFsxLzIg
+dXNdCmVoY2lfaGNkIDAwMDA6MDA6MWQuMDogcmV1c2VkIHFoIGZmZmY4ODAyMTJhZWZkMDAgc2No
+ZWR1bGUKdXNiIDItMS4zOiBsaW5rIHFoOC0wNjAxL2ZmZmY4ODAyMTJhZWZkMDAgc3RhcnQgNyBb
+MS8yIHVzXQp1c2IgMi0xLjM6IHVubGluayBxaDgtMDYwMS9mZmZmODgwMjEyYWVmZDAwIHN0YXJ0
+IDcgWzEvMiB1c10K
+
+--MP_/Jd+1g2IHXgvghqh+mC9.pOh--
