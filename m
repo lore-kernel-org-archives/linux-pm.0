@@ -1,320 +1,118 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [linux-pm] [RFC] the generic thermal layer enhancement
-Date: Thu, 31 May 2012 10:20:52 +0800
-Message-ID: <1338430852.1472.175.camel@rui.sh.intel.com>
+Subject: Re: [RFC] the generic thermal layer enhancement
+Date: Thu, 31 May 2012 11:15:21 +0800
+Message-ID: <1338434121.1472.191.camel@rui.sh.intel.com>
 References: <1338367742.1472.128.camel@rui.sh.intel.com>
-	 <1338367860.1472.129.camel@rui.sh.intel.com>
-	 <20120530103006.GA3261@besouro>
+	<4D68720C2E767A4AA6A8796D42C8EB5912C950@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20120530103006.GA3261@besouro>
-Sender: linux-acpi-owner@vger.kernel.org
-To: eduardo.valentin@ti.com
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Brown, Len" <len.brown@intel.com>, amit.kachhap@linaro.org, Jean Delvare <jdelvare@suse.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB5912C950@BGSMSX101.gar.corp.intel.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Eduardo,
-
-On =E4=B8=89, 2012-05-30 at 13:30 +0300, Eduardo Valentin wrote:
-> > >=20
-> > > G1. supporting multiple cooling states for active cooling devices=
-=2E
-> > >=20
-> > >     The current active cooling device supports two cooling states=
- only,
-> > >     please refer to the code below, in driver/thermal/thermal_sys=
-=2Ec
-> > >                 case THERMAL_TRIP_ACTIVE:
-> > >                         ...
-> > >                         if (temp >=3D trip_temp)
-> > >                                 cdev->ops->set_cur_state(cdev, 1)=
-;
-> > >                         else
-> > >                                 cdev->ops->set_cur_state(cdev, 0)=
-;
-> > >                         break;
-> > >=20
-> > >     This is an ACPI specific thing, as our ACPI FAN used to suppo=
-rt
-> > >     ON/OFF only.
-> > >     I think it is reasonable to support multiple active cooling s=
-tates
-> > >     as they are common on many platforms, and note that this is a=
-lso
-> > >     true for ACPI 3.0 FAN device (_FPS).
-> > >=20
-> > > G2. introduce cooling states range for a certain trip point
-> > >=20
-> > >     This problem comes with the first one.
-> > >     If the cooling devices support multiple cooling states, and s=
-urely
-> > >     we may want only several cooling states for a certain trip po=
-int,
-> > >     and other cooling states for other active trip points.
-> > >     To do this, we should be able to describe the cooling device
-> > >     behavior for a certain trip point, rather than for the entire
-> > >     thermal zone.
->=20
-> For G1+G2, I agree with your proposal. I had some discussion with Ami=
-t
-> regarding this. In his series of patches we increase / decrease the c=
-ooling
-> device state linearly and steadily.
->=20
-> But if we would have what you are saying, we could bind cooling devic=
-e
-> set of states with trip points.
->=20
-Great.
-But further more, IMO, with G3/G4 solved, this patch set can use passiv=
-e
-trip points instead of active trip points for processors, right?
-
-> > >=20
-> > > G3. kernel thermal passive cooling algorithm
-> > >=20
-> > >     Currently, tc1 and tc2 are hard requirements for kernel passi=
-ve
-> > >     cooling. But non-ACPI platforms do not have this information
-> > >     (please correct me if I'm wrong).
-> > >     Say, for the patches here
-> > >     http://marc.info/?l=3Dlinux-acpi&m=3D133681581305341&w=3D2
-> >=20
-> > Sorry, forgot to cc Amit, the author of this patch set.
-> >=20
-> > thanks,
-> > rui
-> > >     They just want to slow down the processor when current temper=
-ature
-> > >     is higher than the trip point and speed up the processor when=
- the
-> > >     temperature is lower than the trip point.
-> > >=20
-> > >     According to Matthew, the platform drivers are responsible to
-> > >     provide proper tc1 and tc2 values to use kernel passive cooli=
-ng.
-> > >     But I'm just wondering if we can use something instead.
-> > >     Say, introduce .get_trend() in thermal_zone_device_ops.
-> > >     And we set cur_state++ or cur_state-- based on the value retu=
-rned
-> > >     by .get_trend(), instead of using tc1 and tc2.
->=20
-> I fully support this option and could cook up something on this.
-> The TC1 and TC2 should go inside the .get_trend() callbacks for ACPI.
-> Should probably go away from the registration function that we have
-> currently.
->=20
-> We could have generic trending computation though. Based on timestamp=
-ing
-> and temperature reads, and make it available for zones that want to u=
-sed it.
->=20
-Agreed.
-I already have this patch in hand.
-
-> > >=20
-> > > G4. Multiple passive trip points
-> > >=20
-> > >     I get this idea also from the patches at
-> > >     http://marc.info/?l=3Dlinux-acpi&m=3D133681581305341&w=3D2
-> > >=20
-> > >     IMO, they want to get an acceptable performance at a tolerabl=
-e
-> > >     temperature.
-> > >     Say, a platform with four P-states. P3 is really low.
-> > >     And I'm okay with the temperature at 60C, but 80C? No.
-> > >     With G2 resolved, we can use processor P0~P2 for Passive trip=
- point
-> > >     0 (50C), and P3 for Passive trip point 1 (70C). And then the
-> > >     temperature may be jumping at around 60C or even 65C, without
-> > >     entering P3.
->=20
-> Yeah, I guess we need to solve G1+G2 first to allow this.
-
-yes.
-
->  But I also agree
-> that ideally, there should be possibility to have multiple passive tr=
-ip points.
->=20
-
-I think this is still an open question for Amit.
-
-As I mentioned above, the idea comes from Amit's patch set, and what I'=
-m
-doing here is to try to make the passive cooling implementation works
-well on exynos platforms.
-As we know, in his patch set, MONITOR_ZONE and WARN_ZONE are mapped to
-active trip points. But actually, with G2/G3/G4 solved, they SHOULD be
-passive trip points as all the cooling devices are processors, right?
-
-So, my question, and probably this is also the question from Matthew,
-would be:
-Why we need two passive trip points?
-What if we use all p-state for MONITOR_ZONE and discard the WARN_ZONE?
-
-I'd like to see Amit's explanation on this. :)
-
-> > >=20
-> > >     Further more, IMO, this also works for ACPI platforms.
-> > >     Say, we can easily change p-state to cool the system, but usi=
-ng
-> > >     t-state is definitely what we do not want to see. The current
-> > >     implementation does not expose this difference to the generic
-> > >     thermal layer, but if we can have two passive trip points, an=
-d use
-> > >     p-state for the first one only... (this works if we start pol=
-ling
-> > >     after entering passive cooling mode, without hardware notific=
-ation)
-> > >=20
-> > > G5. unify active cooling and passive cooling code
-> > >=20
-> > >     If G4 and G5 are resolved, a new problem to me is that there =
-is no
-> > >     difference between passive cooling and active cooling except =
-the
-> > >     cooling policy.
->=20
-> OK...
->=20
-> > >     Then we can share the same code for both active and passive c=
-ooling.
-> > >     maybe something like:
-> > >=20
-> > >     case THERMAL_TRIP_ACTIVE:
-> > >     case THERMAL_TRIP_PASSIVE:
-> > >          ...
-> > >          tz->ops->get_trend();
->=20
-> Would the get_trend take into account if we are cooling with active o=
-r passive
-> cooling device?
->=20
-YES.
-We need this as a hint for active/passive cooling management.
-But how it actually works depends on the implementation of
-the .get_trend callback in the platform driver.
-
-Say, for active trip points,
-=2Eget_trend can always return HEATING, so that fan will start to run
-faster and faster when the temperature keeps higher than the trip point=
-=2E
-Or it can return COOLING when cur_temperature < last_temperature, so
-that the fan will slow down when the temperature is dropping, but still
-higher than the trip point.
-
-> > >          if (trend =3D=3D HEATING)
-> > >                  cdev->ops->set_cur_state(cdev, cur_state++);
-> > >          else if (trend =3D=3D COOLING)
-> > >                  cdev->ops->set_cur_state(cdev, cur_state--);
-> > >          break;
->=20
-> I believe we should have something for temperature stabilization ther=
-e as well.
->=20
-> Besides, if we go with this generic policy, then the zone update woul=
-d be much
-> simpler no?
->=20
-Agree with Durga.
-
-> > >=20
-> > > Here are the gaps in my point of view, I'd like to get your ideas=
- about
-> > > which are reasonable and which are not.
->=20
-> Here are some other thoughts:
-> G6. Another point is, would it make sense to allow for policy extensi=
-on? Meaning,
-> the zone update would call a callback to request for update from the =
-zone
-> device driver?
->=20
-I'm not against this idea. But do we really have a request for such a
-case?
-And BTW, if we really have such a request, I think the first thing to d=
-o
-is to investigate if this is a general request that should be
-implemented in the generic thermal layer, rather than go to the zone
-device driver directly?
-
-> G7. How do we solve cooling devices being shared between different th=
-ermal zones?
-> Should we have a better cooling device constraint management?
->=20
-Maybe we just need a simple Arbitrator in kernel?
-
-When changing a cooling device state, it can only override the cur_stat=
-e
-value for the current cooling device instance!
-And the code should parse all the cooling device instance of this
-cooling device, and choose the deepest cooling state.
-
-what do you think?
-
-> G8. On same topic as G7, how are we currently making sure that therma=
-l constraints
-> don't get overwritten by, let's say, userspace APIs?
-
-what kind of userspace APIs can change this?
-
-> I guess the generic CPU cooling
-> propose by Amit suffers of an issue. If user sets cpufreq governor to=
- userspace
-> and sets the frequency to its maximum, say in a busy loop, the therma=
-l cooling
-> could potentially be ruined.
->=20
-that's true, but I don't think that's the case we need to cover.
-
-Setting cpufreq governor to "Userspace" means user needs to be
-responsible for the p-state controlling. If the system overheats, that'=
-s
-the thing that the user needs to worry about.
-
-> G9. Is there any possibility to have multiple sensors per thermal zon=
-e?
->=20
-I do not think we need to consider this situation, until there is such
-an requirement.
-
-> G10. Do we want to represent other sensing stimuli other that tempera=
-ture? Say,
-> current sensing?
->=20
-what do you mean by "current sensing"?
-
-> G11. Do we want to allow for cross zoning policies? Sometimes a polic=
-y may use
-> temperature from different thermal zone in order to better represent =
-what
-> is going on in its thermal zone.
->=20
-Good question. This bothered me a lot actually.
-
-Each zone device just represents a certain part of the overall system,
-and these different zones may interact with each other.
-But the current implementation does not take care of this.
-Unfortunately I do not have any ideas about this yet. :)
-
-> > >=20
-> > > Any comments are appreciated! Thanks!
->=20
->=20
-> Thanks to you for starting this up! The above are points that come to=
- my mind now.
-> I will keep updating the list if something else come to my mind.
->=20
-They are all good points, thank you for your valuable feedback, Eduardo=
-!
-
--rui
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGksIER1cmdhLAoKT24g5LiJLCAyMDEyLTA1LTMwIGF0IDA0OjQ0IC0wNjAwLCBSLCBEdXJnYWRv
+c3Mgd3JvdGU6Cj4gSGkgUnVpLAo+IAo+ID4gRzEuIHN1cHBvcnRpbmcgbXVsdGlwbGUgY29vbGlu
+ZyBzdGF0ZXMgZm9yIGFjdGl2ZSBjb29saW5nIGRldmljZXMuCj4gPiAKPiA+ICAgICBUaGUgY3Vy
+cmVudCBhY3RpdmUgY29vbGluZyBkZXZpY2Ugc3VwcG9ydHMgdHdvIGNvb2xpbmcgc3RhdGVzIG9u
+bHksCj4gPiAgICAgcGxlYXNlIHJlZmVyIHRvIHRoZSBjb2RlIGJlbG93LCBpbiBkcml2ZXIvdGhl
+cm1hbC90aGVybWFsX3N5cy5jCj4gPiAgICAgICAgICAgICAgICAgY2FzZSBUSEVSTUFMX1RSSVBf
+QUNUSVZFOgo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgLi4uCj4gPiAgICAgICAgICAgICAg
+ICAgICAgICAgICBpZiAodGVtcCA+PSB0cmlwX3RlbXApCj4gPiAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIGNkZXYtPm9wcy0+c2V0X2N1cl9zdGF0ZShjZGV2LCAxKTsKPiA+ICAgICAg
+ICAgICAgICAgICAgICAgICAgIGVsc2UKPiA+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgY2Rldi0+b3BzLT5zZXRfY3VyX3N0YXRlKGNkZXYsIDApOwo+ID4gICAgICAgICAgICAgICAg
+ICAgICAgICAgYnJlYWs7Cj4gPiAKPiA+ICAgICBUaGlzIGlzIGFuIEFDUEkgc3BlY2lmaWMgdGhp
+bmcsIGFzIG91ciBBQ1BJIEZBTiB1c2VkIHRvIHN1cHBvcnQKPiA+ICAgICBPTi9PRkYgb25seS4K
+PiA+ICAgICBJIHRoaW5rIGl0IGlzIHJlYXNvbmFibGUgdG8gc3VwcG9ydCBtdWx0aXBsZSBhY3Rp
+dmUgY29vbGluZyBzdGF0ZXMKPiA+ICAgICBhcyB0aGV5IGFyZSBjb21tb24gb24gbWFueSBwbGF0
+Zm9ybXMsIGFuZCBub3RlIHRoYXQgdGhpcyBpcyBhbHNvCj4gPiAgICAgdHJ1ZSBmb3IgQUNQSSAz
+LjAgRkFOIGRldmljZSAoX0ZQUykuCj4gPiAKPiA+IEcyLiBpbnRyb2R1Y2UgY29vbGluZyBzdGF0
+ZXMgcmFuZ2UgZm9yIGEgY2VydGFpbiB0cmlwIHBvaW50Cj4gPiAKPiA+ICAgICBUaGlzIHByb2Js
+ZW0gY29tZXMgd2l0aCB0aGUgZmlyc3Qgb25lLgo+ID4gICAgIElmIHRoZSBjb29saW5nIGRldmlj
+ZXMgc3VwcG9ydCBtdWx0aXBsZSBjb29saW5nIHN0YXRlcywgYW5kIHN1cmVseQo+ID4gICAgIHdl
+IG1heSB3YW50IG9ubHkgc2V2ZXJhbCBjb29saW5nIHN0YXRlcyBmb3IgYSBjZXJ0YWluIHRyaXAg
+cG9pbnQsCj4gPiAgICAgYW5kIG90aGVyIGNvb2xpbmcgc3RhdGVzIGZvciBvdGhlciBhY3RpdmUg
+dHJpcCBwb2ludHMuCj4gPiAgICAgVG8gZG8gdGhpcywgd2Ugc2hvdWxkIGJlIGFibGUgdG8gZGVz
+Y3JpYmUgdGhlIGNvb2xpbmcgZGV2aWNlCj4gPiAgICAgYmVoYXZpb3IgZm9yIGEgY2VydGFpbiB0
+cmlwIHBvaW50LCByYXRoZXIgdGhhbiBmb3IgdGhlIGVudGlyZQo+ID4gICAgIHRoZXJtYWwgem9u
+ZS4KPiA+IAo+ID4gRzMuIGtlcm5lbCB0aGVybWFsIHBhc3NpdmUgY29vbGluZyBhbGdvcml0aG0K
+PiA+IAo+ID4gICAgIEN1cnJlbnRseSwgdGMxIGFuZCB0YzIgYXJlIGhhcmQgcmVxdWlyZW1lbnRz
+IGZvciBrZXJuZWwgcGFzc2l2ZQo+ID4gICAgIGNvb2xpbmcuIEJ1dCBub24tQUNQSSBwbGF0Zm9y
+bXMgZG8gbm90IGhhdmUgdGhpcyBpbmZvcm1hdGlvbgo+ID4gICAgIChwbGVhc2UgY29ycmVjdCBt
+ZSBpZiBJJ20gd3JvbmcpLgo+ID4gICAgIFNheSwgZm9yIHRoZSBwYXRjaGVzIGhlcmUKPiA+ICAg
+ICBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWFjcGkmbT0xMzM2ODE1ODEzMDUzNDEmdz0yCj4g
+PiAgICAgVGhleSBqdXN0IHdhbnQgdG8gc2xvdyBkb3duIHRoZSBwcm9jZXNzb3Igd2hlbiBjdXJy
+ZW50IHRlbXBlcmF0dXJlCj4gPiAgICAgaXMgaGlnaGVyIHRoYW4gdGhlIHRyaXAgcG9pbnQgYW5k
+IHNwZWVkIHVwIHRoZSBwcm9jZXNzb3Igd2hlbiB0aGUKPiA+ICAgICB0ZW1wZXJhdHVyZSBpcyBs
+b3dlciB0aGFuIHRoZSB0cmlwIHBvaW50Lgo+ID4gCj4gPiAgICAgQWNjb3JkaW5nIHRvIE1hdHRo
+ZXcsIHRoZSBwbGF0Zm9ybSBkcml2ZXJzIGFyZSByZXNwb25zaWJsZSB0bwo+ID4gICAgIHByb3Zp
+ZGUgcHJvcGVyIHRjMSBhbmQgdGMyIHZhbHVlcyB0byB1c2Uga2VybmVsIHBhc3NpdmUgY29vbGlu
+Zy4KPiA+ICAgICBCdXQgSSdtIGp1c3Qgd29uZGVyaW5nIGlmIHdlIGNhbiB1c2Ugc29tZXRoaW5n
+IGluc3RlYWQuCj4gPiAgICAgU2F5LCBpbnRyb2R1Y2UgLmdldF90cmVuZCgpIGluIHRoZXJtYWxf
+em9uZV9kZXZpY2Vfb3BzLgo+ID4gICAgIEFuZCB3ZSBzZXQgY3VyX3N0YXRlKysgb3IgY3VyX3N0
+YXRlLS0gYmFzZWQgb24gdGhlIHZhbHVlIHJldHVybmVkCj4gPiAgICAgYnkgLmdldF90cmVuZCgp
+LCBpbnN0ZWFkIG9mIHVzaW5nIHRjMSBhbmQgdGMyLgo+IAo+IFllcyB3ZSBzaG91bGQgZG8gdGhh
+dC4gSSB3b3VsZCBhbHNvIGxpa2UgdG8gcmVtb3ZlIHRoZXNlIHZhbHVlcyBmcm9tIHRoZQo+IHJl
+Z2lzdHJhdGlvbiBBUEkncy4gVGhhdCBtYWtlcyB0aGUgcmVnaXN0cmF0aW9uIGNvZGUgd2F5IG1v
+cmUgc2ltcGxlci4KPiBSaWdodCBub3csIEkgZG8gbm90IHNlZSBhbnkgZHJpdmVyIHVzaW5nIHRo
+ZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXIKPiB3aXRoIHZhbHVlcyBvdGhlciB0aGFuIDAncyBm
+b3IgdGhlc2UuCj4gCkFncmVlZC4KCj4gPiAKPiA+IEc0LiBNdWx0aXBsZSBwYXNzaXZlIHRyaXAg
+cG9pbnRzCj4gPiAKPiA+ICAgICBJIGdldCB0aGlzIGlkZWEgYWxzbyBmcm9tIHRoZSBwYXRjaGVz
+IGF0Cj4gPiAgICAgaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1hY3BpJm09MTMzNjgxNTgxMzA1
+MzQxJnc9Mgo+ID4gCj4gPiAgICAgSU1PLCB0aGV5IHdhbnQgdG8gZ2V0IGFuIGFjY2VwdGFibGUg
+cGVyZm9ybWFuY2UgYXQgYSB0b2xlcmFibGUKPiA+ICAgICB0ZW1wZXJhdHVyZS4KPiA+ICAgICBT
+YXksIGEgcGxhdGZvcm0gd2l0aCBmb3VyIFAtc3RhdGVzLiBQMyBpcyByZWFsbHkgbG93Lgo+ID4g
+ICAgIEFuZCBJJ20gb2theSB3aXRoIHRoZSB0ZW1wZXJhdHVyZSBhdCA2MEMsIGJ1dCA4MEM/IE5v
+Lgo+ID4gICAgIFdpdGggRzIgcmVzb2x2ZWQsIHdlIGNhbiB1c2UgcHJvY2Vzc29yIFAwflAyIGZv
+ciBQYXNzaXZlIHRyaXAgcG9pbnQKPiA+ICAgICAwICg1MEMpLCBhbmQgUDMgZm9yIFBhc3NpdmUg
+dHJpcCBwb2ludCAxICg3MEMpLiBBbmQgdGhlbiB0aGUKPiA+ICAgICB0ZW1wZXJhdHVyZSBtYXkg
+YmUganVtcGluZyBhdCBhcm91bmQgNjBDIG9yIGV2ZW4gNjVDLCB3aXRob3V0Cj4gPiAgICAgZW50
+ZXJpbmcgUDMuCj4gPiAKPiA+ICAgICBGdXJ0aGVyIG1vcmUsIElNTywgdGhpcyBhbHNvIHdvcmtz
+IGZvciBBQ1BJIHBsYXRmb3Jtcy4KPiA+ICAgICBTYXksIHdlIGNhbiBlYXNpbHkgY2hhbmdlIHAt
+c3RhdGUgdG8gY29vbCB0aGUgc3lzdGVtLCBidXQgdXNpbmcKPiA+ICAgICB0LXN0YXRlIGlzIGRl
+ZmluaXRlbHkgd2hhdCB3ZSBkbyBub3Qgd2FudCB0byBzZWUuIFRoZSBjdXJyZW50Cj4gPiAgICAg
+aW1wbGVtZW50YXRpb24gZG9lcyBub3QgZXhwb3NlIHRoaXMgZGlmZmVyZW5jZSB0byB0aGUgZ2Vu
+ZXJpYwo+ID4gICAgIHRoZXJtYWwgbGF5ZXIsIGJ1dCBpZiB3ZSBjYW4gaGF2ZSB0d28gcGFzc2l2
+ZSB0cmlwIHBvaW50cywgYW5kIHVzZQo+ID4gICAgIHAtc3RhdGUgZm9yIHRoZSBmaXJzdCBvbmUg
+b25seS4uLiAodGhpcyB3b3JrcyBpZiB3ZSBzdGFydCBwb2xsaW5nCj4gPiAgICAgYWZ0ZXIgZW50
+ZXJpbmcgcGFzc2l2ZSBjb29saW5nIG1vZGUsIHdpdGhvdXQgaGFyZHdhcmUgbm90aWZpY2F0aW9u
+KQo+ID4gCj4gPiBHNS4gdW5pZnkgYWN0aXZlIGNvb2xpbmcgYW5kIHBhc3NpdmUgY29vbGluZyBj
+b2RlCj4gPiAKPiA+ICAgICBJZiBHNCBhbmQgRzUgYXJlIHJlc29sdmVkLCBhIG5ldyBwcm9ibGVt
+IHRvIG1lIGlzIHRoYXQgdGhlcmUgaXMgbm8KPiA+ICAgICBkaWZmZXJlbmNlIGJldHdlZW4gcGFz
+c2l2ZSBjb29saW5nIGFuZCBhY3RpdmUgY29vbGluZyBleGNlcHQgdGhlCj4gPiAgICAgY29vbGlu
+ZyBwb2xpY3kuCj4gCj4gQ29ycmVjdC4uLgo+IAo+ID4gICAgIFRoZW4gd2UgY2FuIHNoYXJlIHRo
+ZSBzYW1lIGNvZGUgZm9yIGJvdGggYWN0aXZlIGFuZCBwYXNzaXZlIGNvb2xpbmcuCj4gPiAgICAg
+bWF5YmUgc29tZXRoaW5nIGxpa2U6Cj4gCj4gT3IganVzdCB1c2UgVFJJUF9QQVNTSVZFLi4uCj4g
+CndoYXQgZG8geW91IG1lYW4/IFJlbW92ZSBUSEVSTUFMX1RSSVBfQUNUSVZFPwoKTWF5YmUgSSdt
+IG5vdCBjbGVhciBlbm91Z2ggaGVyZS4KV2UgbWF5IGRpc2FibGUgdGhlIHBhc3NpdmUgY29vbGlu
+ZyBvciBhY3RpdmUgY29vbGluZyBiZWNhdXNlIG9mIHRoZQp0aGVybWFsIG1hbmFnZW1lbnQgcG9s
+aWN5LgpTYXksIGlmIHdlIGFyZSBydW5uaW5nIG9uIEFDLCB3ZSBtYXkgd2FudCB0byB1c2UgYWN0
+aXZlIGNvb2xpbmcgb25seSB0bwphdm9pZCBhbnkgcGVyZm9ybWFuY2UgbG9zcy4gSWYgd2UgYXJl
+IHJ1bm5pbmcgb24gQmF0dGVyeSwgd2UgbWF5IHdhbnQgdG8KdXNlIHBhc3NpdmUgY29vbGluZyBv
+bmx5IHRvIGdldCBsb25nZXIgYmF0dGVyeSBsaWZlLgoKU28gdGhlIGNvZGUgd291bGQgYmU6CiAg
+IHN0YXRpYyB2b2lkIHRoZXJtYWxfY29vbGluZygpCiAgIHsKICAgICAgLi4uCiAgICAgIHR6LT5v
+cHMtPmdldF90cmVuZCgpOwogICAgICBpZiAodHJlbmQgPT0gSEVBVElORykKICAgICAgICAgY2Rl
+di0+b3BzLT5zZXRfY3VyX3N0YXRlKGNkZXYsIGN1cl9zdGF0ZSsrKTsKICAgICAgZWxzZSBpZiAo
+dHJlbmQgPT0gQ09PTElORykKICAgICAgICAgY2Rldi0+b3BzLT5zZXRfY3VyX3N0YXRlKGNkZXYs
+IGN1cl9zdGF0ZS0tKTsKICAgfQoKICAgdm9pZCB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZSgp
+CiAgIHsKICAgICAgIC4uLgogICAgICAgY2FzZSBUSEVSTUFMX1RSSVBfQUNUSVZFOgogICAgICAg
+ICAgICBpZiAocG9saWN5ICYgQUNUSVZFX0NPT0xJTkcpCiAgICAgICAgICAgICAgIHRoZXJtYWxf
+Y29vbGluZygpOwogICAgICAgICAgICBicmVhazsKICAgICAgIGNhc2UgVEhFUk1BTF9UUklQX1BB
+U1NJVkU6CiAgICAgICAgICAgIGlmIChwb2xpY3kgJiBQQVNTSVZFX0NPT0xJTkcpCiAgICAgICAg
+ICAgICAgIHRoZXJtYWxfY29vbGluZygpOwogICAgICAgICAgICBicmVhazsKICAgICAgIC4uLgog
+ICB9Cgp0aGFua3MsCnJ1aQoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3Vu
+ZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1wbQ==
