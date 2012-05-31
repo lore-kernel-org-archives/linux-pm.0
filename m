@@ -1,158 +1,109 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [linux-pm] [RFC] the generic thermal layer enhancement
-Date: Thu, 31 May 2012 11:32:41 +0800
-Message-ID: <1338435161.1472.205.camel@rui.sh.intel.com>
+Subject: Re: [RFC] the generic thermal layer enhancement
+Date: Thu, 31 May 2012 11:54:51 +0800
+Message-ID: <1338436491.1472.223.camel@rui.sh.intel.com>
 References: <1338367742.1472.128.camel@rui.sh.intel.com>
-	 <1338367860.1472.129.camel@rui.sh.intel.com>
-	 <20120530103006.GA3261@besouro>
-	 <4D68720C2E767A4AA6A8796D42C8EB5912C976@BGSMSX101.gar.corp.intel.com>
-	 <20120530111729.GC3261@besouro>
+	 <20120530125035.GA17379@srcf.ucam.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20120530111729.GC3261@besouro>
+In-Reply-To: <20120530125035.GA17379@srcf.ucam.org>
 Sender: linux-acpi-owner@vger.kernel.org
-To: eduardo.valentin@ti.com
-Cc: "R, Durgadoss" <durgadoss.r@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>, "Brown, Len" <len.brown@intel.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, jean.pihet@newoldbits.com, Jean Delvare <jdelvare@suse.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, amit.kachhap@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On =E4=B8=89, 2012-05-30 at 14:17 +0300, Eduardo Valentin wrote:
-> Hello Durga,
+On =E4=B8=89, 2012-05-30 at 13:50 +0100, Matthew Garrett wrote:
+> On Wed, May 30, 2012 at 04:49:02PM +0800, Zhang Rui wrote:
 >=20
-> On Wed, May 30, 2012 at 11:05:18AM +0000, R, Durgadoss wrote:
-> > Hi Eduardo,
-> >=20
-> > >=20
-> > > For G1+G2, I agree with your proposal. I had some discussion with=
- Amit
-> > > regarding this. In his series of patches we increase / decrease t=
-he cooling
-> > > device state linearly and steadily.
-> > >=20
-> > > But if we would have what you are saying, we could bind cooling d=
-evice
-> > > set of states with trip points.
-> >=20
-> > True, We want to bind the levels of cooling with the trips points a=
- thermal zone has.
-> > But we might not get a 1-1 mapping always.
+> > G1. supporting multiple cooling states for active cooling devices.
 >=20
-> Just to make sure we are all taking the same thing.
+> Sounds fine.
 >=20
-> In this case a cooling device would have 1-N states. And this set cou=
-ld
-> be partitioned and each partition would be assigned to a specific tri=
-p point
-> of a thermal zone, right?
->=20
-yep.
-BTW, Overlaps should be possible and we should handle this as well.
->=20
->=20
-> >=20
-> > >=20
-> > > I fully support this option and could cook up something on this.
-> > > The TC1 and TC2 should go inside the .get_trend() callbacks for A=
-CPI.
-> > > Should probably go away from the registration function that we ha=
-ve
-> > > currently.
-> >=20
-> > I realize I just said the same thing :-)
->=20
-> Cool :-)
->=20
-> >=20
-> > >=20
-> > > We could have generic trending computation though. Based on times=
-tamping
-> > > and temperature reads, and make it available for zones that want =
-to used it.
-> >=20
-> > Agree, but I would like this go into the platform thermal drivers. =
-And then when
-> > those drivers notify the framework they can specify the trend also.=
- This sort of
-> > notification is not there, but that is what I am implementing these=
- days..
-> > Hope to submit this patch in a week's time..
->=20
-> Nice, I actually have something being cooked for the same thing. We s=
-hould probably
-> align to avoid work duplication...
->=20
-Hah, seems a lot of work is in progress in this area.
+Great!
 
-> >=20
-> > > > >     case THERMAL_TRIP_ACTIVE:
-> > > > >     case THERMAL_TRIP_PASSIVE:
-> > > > >          ...
-> > > > >          tz->ops->get_trend();
-> > >=20
-> > > Would the get_trend take into account if we are cooling with acti=
-ve or passive
-> > > cooling device?
-> >=20
-> > To me, it does not matter. It is up to the framework to decide and =
-throttle,
-> > the respective cooling devices according to the trend.
+> > G2. introduce cooling states range for a certain trip point
 >=20
-> OK. For me it doesn't really matter as well. Having a simplified zone=
- update is better.
+> Again, no problem here.
 >=20
-> >=20
-> > >=20
-> > > > >          if (trend =3D=3D HEATING)
-> > > > >                  cdev->ops->set_cur_state(cdev, cur_state++);
-> > > > >          else if (trend =3D=3D COOLING)
-> > > > >                  cdev->ops->set_cur_state(cdev, cur_state--);
-> > > > >          break;
-> > >=20
-> > > I believe we should have something for temperature stabilization =
-there as well.
-> > >=20
-> > > Besides, if we go with this generic policy, then the zone update =
-would be much
-> > > simpler no?
-> >=20
-> > Yes, and that=E2=80=99s what we want too  :-)
+Again, great!
+
+> > G3. kernel thermal passive cooling algorithm
 >=20
-> Nice!
+> >     Currently, tc1 and tc2 are hard requirements for kernel passive
+> >     cooling. But non-ACPI platforms do not have this information
+> >     (please correct me if I'm wrong).
+> >     Say, for the patches here
+> >     http://marc.info/?l=3Dlinux-acpi&m=3D133681581305341&w=3D2
+> >     They just want to slow down the processor when current temperat=
+ure
+> >     is higher than the trip point and speed up the processor when t=
+he
+> >     temperature is lower than the trip point.
 >=20
-> >=20
-> > > Here are some other thoughts:
-> > > G6. Another point is, would it make sense to allow for policy ext=
-ension? Meaning,
-> > > the zone update would call a callback to request for update from =
-the zone
-> > > device driver?
-> > >=20
-> > > G7. How do we solve cooling devices being shared between differen=
-t thermal
-> > > zones?
-> > > Should we have a better cooling device constraint management?
-> >=20
-> > This is another thing that was haunting me for quite some time.
-> > And What I have in mind is a mapping kind of thing in the platform =
-layer,
-> > that will provide details about which cooling device is shared with=
- whom.
-> > The framework can then use this and figure out the association amon=
-g various devices.
-> > I am testing it out, and will submit once it comes to a good shape.
+> Just slowing the CPU down above a certain temperature is a pretty awf=
+ul=20
+> approach to passive cooling. You want to maximise performance while=20
+> staying within your thermal envelope, so you need a more advanced=20
+> approach.
+
+Agreed.
+
+> The existing algorithm provides a generic mechanism for=20
+> balancing performance and thermal output, with the only requirement=20
+> being that the platform provide constants that represent the heating =
+and=20
+> cooling properties of the system.
 >=20
-> Right, I am not sure we want to go in this direction?
+I'm not sure if this could work on their platforms. So I'm just looking
+for an easier way to handle this, i.e. make generic thermal layer
+simple, and provide the flexibility for platform drivers to do their ow=
+n
+tricks.
+
+> I don't fundamentally object to adding support for platform-specific=20
+> passive formulae, but I'd like an explanation for how they're better=20
+> than the existing one.
 >=20
-> Maybe a better way would be to have sort of pm/thermal contraint fram=
-ework, which
-> would map these per device, at LDM level?
+Hmmm, I'd like to see if it is possible for them to make use of the
+current passive cooling implementation.. if no...
+
+how about this?
+
+we can provide an API for the current algorithm in thermal_sys.c
+
+thermal_passive_get_trend(int tc1, int tc2)
+{
+}
+EXPORT_SYMBOL(...);
+
+and in platform driver, they can choose to use this default algorithm i=
+f
+they are able to.
+
+=2Eget_trend()
+{
+   return thermal_passive_get_trend(platform_tc1, platform_tc2);
+}
+
+> > G4. Multiple passive trip points
 >=20
-> I am copying Jean-Pihet, he has been working in this front. Jean, any=
- thoughts?
+> It would be good to have an explanation of the use case here. If it's=
+=20
+> acceptable for the device to be at the lower passive trip point, why =
+are=20
+> we slowing it down at all?
 >=20
-Durga and I are investigating how to introduce some concepts like
-"influence/weight" to generic thermal layer. :)
+acceptable does not equal comfortable?
+Say, I'd like to use the computer at 30C skin temperature.
+I'm okay with the temperature at 50C, but it would be nice if it can be
+lower, even if the system would be slower, but not too slow (T-state).
+If the temperature is higher than 60, it is not usable for me, I'll wai=
+t
+for a while, the system can do everything they want do cool the system
+down (but hibernate/shutdown would be not a good idea at this time
+because it is hot enough for some hardware damage).
 
 thanks,
 rui
