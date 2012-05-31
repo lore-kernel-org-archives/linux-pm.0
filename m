@@ -1,159 +1,179 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [RFC] the generic thermal layer enhancement
-Date: Thu, 31 May 2012 13:59:09 +0300
-Message-ID: <20120531105846.GA3673@besouro>
+Subject: Re: [linux-pm] [RFC] the generic thermal layer enhancement
+Date: Thu, 31 May 2012 14:06:07 +0300
+Message-ID: <20120531110607.GB3673@besouro>
 References: <1338367742.1472.128.camel@rui.sh.intel.com>
-	<CAK44p20hLTC5oLHtUizrrNDajp674UKUatxiH2bQJUnYNsM10w@mail.gmail.com>
-	<1338444559.1472.250.camel@rui.sh.intel.com>
+ <1338367860.1472.129.camel@rui.sh.intel.com>
+ <20120530103006.GA3261@besouro>
+ <4D68720C2E767A4AA6A8796D42C8EB5912C976@BGSMSX101.gar.corp.intel.com>
+ <20120530111729.GC3261@besouro>
+ <1338435161.1472.205.camel@rui.sh.intel.com>
 Reply-To: eduardo.valentin@ti.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1338444559.1472.250.camel@rui.sh.intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+In-Reply-To: <1338435161.1472.205.camel@rui.sh.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
-Cc: Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: eduardo.valentin@ti.com, "R, Durgadoss" <durgadoss.r@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>, "Brown, Len" <len.brown@intel.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, jean.pihet@newoldbits.com, Jean Delvare <jdelvare@suse.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpPbiBUaHUsIE1heSAzMSwgMjAxMiBhdCAwMjowOToxOVBNICswODAwLCBaaGFuZyBS
-dWkgd3JvdGU6Cj4gSGksIEFtaXQsCj4gCj4gT24g5ZubLCAyMDEyLTA1LTMxIGF0IDEyOjU5ICsw
-ODAwLCBBbWl0IEthY2hoYXAgd3JvdGU6Cj4gPiBIaSBSdWksCj4gPiAKPiA+IFRoYW5rcyBmb3Ig
-c3RhcnRpbmcgYSBkaXNjdXNzaW9uIG9uIGZ1cnRoZXIgZmluZXR1bmluZyB0aGUgdGhlcm1hbCBs
-YXllci4KPiA+IAo+ID4gT24gMzAgTWF5IDIwMTIgMTY6NDksIFpoYW5nIFJ1aSA8cnVpLnpoYW5n
-QGludGVsLmNvbT4gd3JvdGU6Cj4gPiA+IEhpLCBhbGwsCj4gPiA+Cj4gPiA+IEl0IGlzIGdyZWF0
-IHRvIHNlZSBtb3JlIGFuZCBtb3JlIHVzZXJzIG9mIHRoZSBnZW5lcmljIHRoZXJtYWwgbGF5ZXIu
-Cj4gPiA+IEJ1dCBhcyB3ZSBrbm93LCB0aGUgb3JpZ2luYWwgZGVzaWduIG9mIHRoZSBnZW5lcmlj
-IHRoZXJtYWwgbGF5ZXIgY29tZXMKPiA+ID4gZnJvbSBBQ1BJIHRoZXJtYWwgbWFuYWdlbWVudCwg
-YW5kIHNvbWUgb2YgaXRzIGltcGxlbWVudGF0aW9uIHNlZW1zIHRvIGJlCj4gPiA+IHRvbyBBQ1BJ
-IHNwZWNpZmljIG5vd2FkYXlzLgo+ID4gVG90YWxseSBhZ3JlZWQgOikKPiA+ID4KPiA+ID4gUmVj
-ZW50bHkgSSdtIHRoaW5raW5nIG9mIGVuaGFuY2UgdGhlIGdlbmVyaWMgdGhlcm1hbCBsYXllciBz
-byB0aGF0IGl0Cj4gPiA+IHdvcmtzIHdlbGwgZm9yIG1vcmUgcGxhdGZvcm1zLgo+ID4gPgo+ID4g
-PiBCZWxvdyBhcmUgc29tZSB0aG91Z2h0cyBvZiBtaW5lLCBhZnRlciByZWFkaW5nIHRoZSBwYXRj
-aGVzIGZyb20gQW1pdAo+ID4gPiBEYW5pZWwgS2FjaGhhcCwgYW5kIEFDUEkgMy4wIHRoZXJtYWwg
-bW9kZWwuIEFjdHVhbGx5LCBJIGhhdmUgc3RhcnRlZAo+ID4gPiBjb2Rpbmcgc29tZSBSRkMgcGF0
-Y2hlcy4gQnV0IEkgZG8gcmVhbGx5IHdhbnQgdG8gZ2V0IGZlZWRiYWNrIGZyb20geW91Cj4gPiA+
-IGJlZm9yZSBnb2luZyBvbi4KPiA+ID4KPiA+ID4gRzEuIHN1cHBvcnRpbmcgbXVsdGlwbGUgY29v
-bGluZyBzdGF0ZXMgZm9yIGFjdGl2ZSBjb29saW5nIGRldmljZXMuCj4gPiA+Cj4gPiA+ICAgIFRo
-ZSBjdXJyZW50IGFjdGl2ZSBjb29saW5nIGRldmljZSBzdXBwb3J0cyB0d28gY29vbGluZyBzdGF0
-ZXMgb25seSwKPiA+ID4gICAgcGxlYXNlIHJlZmVyIHRvIHRoZSBjb2RlIGJlbG93LCBpbiBkcml2
-ZXIvdGhlcm1hbC90aGVybWFsX3N5cy5jCj4gPiA+ICAgICAgICAgICAgICAgIGNhc2UgVEhFUk1B
-TF9UUklQX0FDVElWRToKPiA+ID4gICAgICAgICAgICAgICAgICAgICAgICAuLi4KPiA+ID4gICAg
-ICAgICAgICAgICAgICAgICAgICBpZiAodGVtcCA+PSB0cmlwX3RlbXApCj4gPiA+ICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICBjZGV2LT5vcHMtPnNldF9jdXJfc3RhdGUoY2RldiwgMSk7
-Cj4gPiA+ICAgICAgICAgICAgICAgICAgICAgICAgZWxzZQo+ID4gPiAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgY2Rldi0+b3BzLT5zZXRfY3VyX3N0YXRlKGNkZXYsIDApOwo+ID4gPiAg
-ICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwo+ID4gPgo+ID4gPiAgICBUaGlzIGlzIGFuIEFD
-UEkgc3BlY2lmaWMgdGhpbmcsIGFzIG91ciBBQ1BJIEZBTiB1c2VkIHRvIHN1cHBvcnQKPiA+ID4g
-ICAgT04vT0ZGIG9ubHkuCj4gPiA+ICAgIEkgdGhpbmsgaXQgaXMgcmVhc29uYWJsZSB0byBzdXBw
-b3J0IG11bHRpcGxlIGFjdGl2ZSBjb29saW5nIHN0YXRlcwo+ID4gPiAgICBhcyB0aGV5IGFyZSBj
-b21tb24gb24gbWFueSBwbGF0Zm9ybXMsIGFuZCBub3RlIHRoYXQgdGhpcyBpcyBhbHNvCj4gPiA+
-ICAgIHRydWUgZm9yIEFDUEkgMy4wIEZBTiBkZXZpY2UgKF9GUFMpLgo+ID4gWWVzIEkgYWdyZWUg
-dGhhdCBBQ1RJVkUgdHJpcCB0eXBlIHNob3VsZCBzdXBwb3J0IG1vcmUgdGhhbiAxKE9OKQo+ID4g
-c3RhdGUuIGFuZCB3aGljaCBzdGF0ZSB0aGUgdGhlIHNldF9jdXJfc3RhdGUgc2hvdWxkIGNhbGwg
-ZGVwZW5kcyBvbgo+ID4gaG93IHRoZSBzdGF0ZSBpcyBiaW5kZWQgb24gdGhlIHRyaXAgcG9pbnQu
-IEJ1dCBhZ2FpbiBpbiBkb2luZyB0aGVzZQo+ID4gdGhlcmUgaXMgc28gbXVjaCBsb2dpYyBwdXQg
-aW4gaGFuZGxpbmcgdGhpcyB0aGF0IHRoZSBJIGRyb3BwZWQgdGhlCj4gPiBwYXRjaCBmb3IgbmV3
-IHRyaXAgdHlwZSBBQ1RJVkVfSU5TVEFOQ0UuCj4gCj4geWVzLCBJIGtub3cuCj4gCj4gPiA+Cj4g
-PiA+IEcyLiBpbnRyb2R1Y2UgY29vbGluZyBzdGF0ZXMgcmFuZ2UgZm9yIGEgY2VydGFpbiB0cmlw
-IHBvaW50Cj4gPiA+Cj4gPiA+ICAgIFRoaXMgcHJvYmxlbSBjb21lcyB3aXRoIHRoZSBmaXJzdCBv
-bmUuCj4gPiA+ICAgIElmIHRoZSBjb29saW5nIGRldmljZXMgc3VwcG9ydCBtdWx0aXBsZSBjb29s
-aW5nIHN0YXRlcywgYW5kIHN1cmVseQo+ID4gPiAgICB3ZSBtYXkgd2FudCBvbmx5IHNldmVyYWwg
-Y29vbGluZyBzdGF0ZXMgZm9yIGEgY2VydGFpbiB0cmlwIHBvaW50LAo+ID4gPiAgICBhbmQgb3Ro
-ZXIgY29vbGluZyBzdGF0ZXMgZm9yIG90aGVyIGFjdGl2ZSB0cmlwIHBvaW50cy4KPiA+ID4gICAg
-VG8gZG8gdGhpcywgd2Ugc2hvdWxkIGJlIGFibGUgdG8gZGVzY3JpYmUgdGhlIGNvb2xpbmcgZGV2
-aWNlCj4gPiA+ICAgIGJlaGF2aW9yIGZvciBhIGNlcnRhaW4gdHJpcCBwb2ludCwgcmF0aGVyIHRo
-YW4gZm9yIHRoZSBlbnRpcmUKPiA+ID4gICAgdGhlcm1hbCB6b25lLgo+ID4gQWdyZWVkCj4gPiA+
-Cj4gPiA+IEczLiBrZXJuZWwgdGhlcm1hbCBwYXNzaXZlIGNvb2xpbmcgYWxnb3JpdGhtCj4gPiA+
-Cj4gPiA+ICAgIEN1cnJlbnRseSwgdGMxIGFuZCB0YzIgYXJlIGhhcmQgcmVxdWlyZW1lbnRzIGZv
-ciBrZXJuZWwgcGFzc2l2ZQo+ID4gPiAgICBjb29saW5nLiBCdXQgbm9uLUFDUEkgcGxhdGZvcm1z
-IGRvIG5vdCBoYXZlIHRoaXMgaW5mb3JtYXRpb24KPiA+ID4gICAgKHBsZWFzZSBjb3JyZWN0IG1l
-IGlmIEknbSB3cm9uZykuCj4gPiA+ICAgIFNheSwgZm9yIHRoZSBwYXRjaGVzIGhlcmUKPiA+ID4g
-ICAgaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1hY3BpJm09MTMzNjgxNTgxMzA1MzQxJnc9Mgo+
-ID4gPiAgICBUaGV5IGp1c3Qgd2FudCB0byBzbG93IGRvd24gdGhlIHByb2Nlc3NvciB3aGVuIGN1
-cnJlbnQgdGVtcGVyYXR1cmUKPiA+ID4gICAgaXMgaGlnaGVyIHRoYW4gdGhlIHRyaXAgcG9pbnQg
-YW5kIHNwZWVkIHVwIHRoZSBwcm9jZXNzb3Igd2hlbiB0aGUKPiA+ID4gICAgdGVtcGVyYXR1cmUg
-aXMgbG93ZXIgdGhhbiB0aGUgdHJpcCBwb2ludC4KPiA+ID4KPiA+ID4gICAgQWNjb3JkaW5nIHRv
-IE1hdHRoZXcsIHRoZSBwbGF0Zm9ybSBkcml2ZXJzIGFyZSByZXNwb25zaWJsZSB0bwo+ID4gPiAg
-ICBwcm92aWRlIHByb3BlciB0YzEgYW5kIHRjMiB2YWx1ZXMgdG8gdXNlIGtlcm5lbCBwYXNzaXZl
-IGNvb2xpbmcuCj4gPiA+ICAgIEJ1dCBJJ20ganVzdCB3b25kZXJpbmcgaWYgd2UgY2FuIHVzZSBz
-b21ldGhpbmcgaW5zdGVhZC4KPiA+ID4gICAgU2F5LCBpbnRyb2R1Y2UgLmdldF90cmVuZCgpIGlu
-IHRoZXJtYWxfem9uZV9kZXZpY2Vfb3BzLgo+ID4gPiAgICBBbmQgd2Ugc2V0IGN1cl9zdGF0ZSsr
-IG9yIGN1cl9zdGF0ZS0tIGJhc2VkIG9uIHRoZSB2YWx1ZSByZXR1cm5lZAo+ID4gPiAgICBieSAu
-Z2V0X3RyZW5kKCksIGluc3RlYWQgb2YgdXNpbmcgdGMxIGFuZCB0YzIuCj4gPiBPSyB0aGlzIHNl
-ZW1zIGZpbmUuIEJ1dCBmb3IgZXh5bm9zIHBsYXRmb3JtKGFsc28gc29tZSBvdGhlciBwbGF0Zm9y
-bXMpCj4gPiB0aGlzIG1heSBiZSBzaW1wbHkgY3VyX3RlbXAgLSBsYXN0X3RlbXAgd2hpY2ggaXMg
-ZmluZS4KPiAKPiBJJ20gd29uZGVyaW5nIGlmIHlvdSBjYW4gdHJ5IHRvIHRlc3Qgc29tZSBwbGF0
-Zm9ybSB0YzEvdGMyIG51bWJlcnMgYW5kCj4gc2VlIGlmIGl0IGlzIGJldHRlciB0byB1c2UgdGhl
-IGN1cnJlbnQgcGFzc2l2ZSBjb29saW5nIGltcGxlbWVudGF0aW9uLgoKV2VsbCwgd2UgY2FuIGRl
-ZmluaXRlbHkgdHJ5IGl0IG91dCB3aXRoIFRDMSBhbmQgVEMyLCBidXQgd2hhdCBpcyB0aGUKcmln
-aHQgcHJvY2VkdXJlIHRvIGRlZmluZSB0aGVtIHByb3Blcmx5IG90aGVyIHRoYW4gdHJ5IGFuZCBl
-cnJvcj8KCj4gCj4gPiA+Cj4gPiA+IEc0LiBNdWx0aXBsZSBwYXNzaXZlIHRyaXAgcG9pbnRzCj4g
-PiA+Cj4gPiA+ICAgIEkgZ2V0IHRoaXMgaWRlYSBhbHNvIGZyb20gdGhlIHBhdGNoZXMgYXQKPiA+
-ID4gICAgaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1hY3BpJm09MTMzNjgxNTgxMzA1MzQxJnc9
-Mgo+ID4gPgo+ID4gPiAgICBJTU8sIHRoZXkgd2FudCB0byBnZXQgYW4gYWNjZXB0YWJsZSBwZXJm
-b3JtYW5jZSBhdCBhIHRvbGVyYWJsZQo+ID4gPiAgICB0ZW1wZXJhdHVyZS4KPiA+ID4gICAgU2F5
-LCBhIHBsYXRmb3JtIHdpdGggZm91ciBQLXN0YXRlcy4gUDMgaXMgcmVhbGx5IGxvdy4KPiA+ID4g
-ICAgQW5kIEknbSBva2F5IHdpdGggdGhlIHRlbXBlcmF0dXJlIGF0IDYwQywgYnV0IDgwQz8gTm8u
-Cj4gPiA+ICAgIFdpdGggRzIgcmVzb2x2ZWQsIHdlIGNhbiB1c2UgcHJvY2Vzc29yIFAwflAyIGZv
-ciBQYXNzaXZlIHRyaXAgcG9pbnQKPiA+ID4gICAgMCAoNTBDKSwgYW5kIFAzIGZvciBQYXNzaXZl
-IHRyaXAgcG9pbnQgMSAoNzBDKS4gQW5kIHRoZW4gdGhlCj4gPiA+ICAgIHRlbXBlcmF0dXJlIG1h
-eSBiZSBqdW1waW5nIGF0IGFyb3VuZCA2MEMgb3IgZXZlbiA2NUMsIHdpdGhvdXQKPiA+ID4gICAg
-ZW50ZXJpbmcgUDMuCj4gPiA+Cj4gPiA+ICAgIEZ1cnRoZXIgbW9yZSwgSU1PLCB0aGlzIGFsc28g
-d29ya3MgZm9yIEFDUEkgcGxhdGZvcm1zLgo+ID4gPiAgICBTYXksIHdlIGNhbiBlYXNpbHkgY2hh
-bmdlIHAtc3RhdGUgdG8gY29vbCB0aGUgc3lzdGVtLCBidXQgdXNpbmcKPiA+ID4gICAgdC1zdGF0
-ZSBpcyBkZWZpbml0ZWx5IHdoYXQgd2UgZG8gbm90IHdhbnQgdG8gc2VlLiBUaGUgY3VycmVudAo+
-ID4gPiAgICBpbXBsZW1lbnRhdGlvbiBkb2VzIG5vdCBleHBvc2UgdGhpcyBkaWZmZXJlbmNlIHRv
-IHRoZSBnZW5lcmljCj4gPiA+ICAgIHRoZXJtYWwgbGF5ZXIsIGJ1dCBpZiB3ZSBjYW4gaGF2ZSB0
-d28gcGFzc2l2ZSB0cmlwIHBvaW50cywgYW5kIHVzZQo+ID4gPiAgICBwLXN0YXRlIGZvciB0aGUg
-Zmlyc3Qgb25lIG9ubHkuLi4gKHRoaXMgd29ya3MgaWYgd2Ugc3RhcnQgcG9sbGluZwo+ID4gPiAg
-ICBhZnRlciBlbnRlcmluZyBwYXNzaXZlIGNvb2xpbmcgbW9kZSwgd2l0aG91dCBoYXJkd2FyZSBu
-b3RpZmljYXRpb24pCj4gPiBUaGlzIHNlZW1zIGNvb2wgYW5kIHRvIGFuc3dlciBNYXRoZXcgZG91
-YnQgdGhpcyBpcyBuZWVkZWQgYmVjYXVzZSBpbgo+ID4gdGhlIG5vdCBzbyBjcml0aWNhbCB0aGVy
-bWFsIGVudmVsb3AgdGhlIHBsYXRmb3JtcyBtYXkgbm90IHdhbnQgdG8gZ28KPiA+IHRvIHRoZSBs
-b3dlc3Qgb3BwIGxldmVsIGFuZCBzb21lIGludGVybWVkaWF0ZSBsZXZlbCBpcyBmaW5lLgo+ID4g
-Cj4gPiA+Cj4gPiA+IEc1LiB1bmlmeSBhY3RpdmUgY29vbGluZyBhbmQgcGFzc2l2ZSBjb29saW5n
-IGNvZGUKPiA+ID4KPiA+ID4gICAgSWYgRzQgYW5kIEc1IGFyZSByZXNvbHZlZCwgYSBuZXcgcHJv
-YmxlbSB0byBtZSBpcyB0aGF0IHRoZXJlIGlzIG5vCj4gPiA+ICAgIGRpZmZlcmVuY2UgYmV0d2Vl
-biBwYXNzaXZlIGNvb2xpbmcgYW5kIGFjdGl2ZSBjb29saW5nIGV4Y2VwdCB0aGUKPiA+ID4gICAg
-Y29vbGluZyBwb2xpY3kuCj4gPiA+ICAgIFRoZW4gd2UgY2FuIHNoYXJlIHRoZSBzYW1lIGNvZGUg
-Zm9yIGJvdGggYWN0aXZlIGFuZCBwYXNzaXZlIGNvb2xpbmcuCj4gPiA+ICAgIG1heWJlIHNvbWV0
-aGluZyBsaWtlOgo+ID4gPgo+ID4gPiAgICBjYXNlIFRIRVJNQUxfVFJJUF9BQ1RJVkU6Cj4gPiA+
-ICAgIGNhc2UgVEhFUk1BTF9UUklQX1BBU1NJVkU6Cj4gPiA+ICAgICAgICAgLi4uCj4gPiA+ICAg
-ICAgICAgdHotPm9wcy0+Z2V0X3RyZW5kKCk7Cj4gPiA+ICAgICAgICAgaWYgKHRyZW5kID09IEhF
-QVRJTkcpCj4gPiA+ICAgICAgICAgICAgICAgICBjZGV2LT5vcHMtPnNldF9jdXJfc3RhdGUoY2Rl
-diwgY3VyX3N0YXRlKyspOwo+ID4gPiAgICAgICAgIGVsc2UgaWYgKHRyZW5kID09IENPT0xJTkcp
-Cj4gPiA+ICAgICAgICAgICAgICAgICBjZGV2LT5vcHMtPnNldF9jdXJfc3RhdGUoY2RldiwgY3Vy
-X3N0YXRlLS0pOwo+ID4gPiAgICAgICAgIGJyZWFrOwo+ID4gQWN0dWFsbHkgSSBzdGlsbCBmZWVs
-cyB0aGF0IEFDVElWRSBhbmQgUEFTU0lWRSBhcmUgbmVlZGVkIGJlY2F1c2UgdGhleQo+ID4gaGF2
-ZSBkaWZmZXJlbnQgd2F5IG9mIGNhbGxpbmcgdGhlIHNldF9jdXJfcmF0ZS4gQUNUSVZFIHRyaXAg
-dHlwZSBpcwo+ID4gYXNzb2NpYXRlZCB3aXRoIDEgdHJpcCBwb2ludCBzbyBvbiByZWFjaGluZyBh
-IHRyaXAgcG9pbnQgYSBzcGVjaWZpYwo+ID4gc3RhdGUgaXMgY2FsbGVkIGluIHNldF9jdXJfc3Rh
-dGUuIEJ1dCBQQVNTSVZFIGJhc2ljYWxseQo+ID4gaW5jcmVtZW50cy9kZWNyZW1lbnRzIHRoZSBz
-dGF0ZSBkZXBlbmRpbmcgb24gdGhlcm1hbCB0cmVuZC4KPiAKPiBTb3JyeSwgSSBkbyBub3QgdW5k
-ZXJzdGFuZC4KPiBmb3IgYWN0aXZlIHRyaXAgcG9pbnRzLCB3ZSBjYW4gZWl0aGVyIHVzZSB0cmVu
-ZCBvciBub3QuCj4gc2F5LCB3ZSBjYW4gYWx3YXlzIHNldCB0aGUgdHJlbmQgdG8gSEVBVElORywg
-aW4gb3VyIC5nZXRfdHJlbmQoKQo+IGNhbGxiYWNrIGlmIHdlIGFsd2F5cyB3YW50IHRvIHNwaW4g
-dXAgdGhlIGZhbiB3aGVuIHRoZSB0ZW1wZXJhdHVyZSBpcwo+IGhpZ2hlciB0aGFuIHRoZSB0cmlw
-IHBvaW50Lgo+IEJ1dCBpZiB0aGUgdGVtcGVyYXR1cmUgaGlnaCBidXQgaXQgaXMgZHJvcHBpbmcs
-IGFuZCB3ZSB3YW50IHRvIHNwaW4gZG93bgo+IHRoZSBmYW4gYSBsaXR0bGUgdG8gc2F2ZSBtb3Jl
-IHBvd2VyLCB3ZSBjYW4gbGV0IC5nZXRfdHJlbmQgcmV0dXJuCj4gQ09PTElORyBhdCB0aGlzIHRp
-bWUuCj4gd2hhdCBkbyB5b3UgdGhpbms/Cj4gCj4gQlRXLCB3aGF0IEknZCBsaWtlIHRvIGtub3cg
-aXMgdGhhdCwgd2l0aCBhbGwgdGhpcyBnYXBzIHNvbHZlZCwgaXMgaXQKPiBtdWNoIGVhc2llciBh
-bmQgY2xlYXJlciBmb3IgdGhlIGdlbmVyaWMgY3B1IGNvb2xpbmcgQVBJcyBhbmQgdGhlIGV4eW5v
-cwo+IHBsYXRmb3JtcyB0byBmb2xsb3cgdGhlIGdlbmVyaWMgdGhlcm1hbCBsYXllcj8gU2F5LCB0
-d28gcGFzc2l2ZSB0cmlwCj4gcG9pbnRzIGZvciBleHlub3MgcGxhdGZvcm1zLCBhbmQgY2VydGFp
-biBwcm9jZXNzb3IgUC1zdGF0ZXMgYmluZCB0byBlYWNoCj4gdHJpcCBwb2ludD8KPiAKPiB0aGFu
-a3MsCj4gcnVpCj4gCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9u
-Lm9yZwpodHRwczovL2xpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eC1wbQ==
+hello,
+
+On Thu, May 31, 2012 at 11:32:41AM +0800, Zhang Rui wrote:
+> On =E4=B8=89, 2012-05-30 at 14:17 +0300, Eduardo Valentin wrote:
+> > Hello Durga,
+> >=20
+> > On Wed, May 30, 2012 at 11:05:18AM +0000, R, Durgadoss wrote:
+> > > Hi Eduardo,
+> > >=20
+> > > >=20
+> > > > For G1+G2, I agree with your proposal. I had some discussion wi=
+th Amit
+> > > > regarding this. In his series of patches we increase / decrease=
+ the cooling
+> > > > device state linearly and steadily.
+> > > >=20
+> > > > But if we would have what you are saying, we could bind cooling=
+ device
+> > > > set of states with trip points.
+> > >=20
+> > > True, We want to bind the levels of cooling with the trips points=
+ a thermal zone has.
+> > > But we might not get a 1-1 mapping always.
+> >=20
+> > Just to make sure we are all taking the same thing.
+> >=20
+> > In this case a cooling device would have 1-N states. And this set c=
+ould
+> > be partitioned and each partition would be assigned to a specific t=
+rip point
+> > of a thermal zone, right?
+> >=20
+> yep.
+> BTW, Overlaps should be possible and we should handle this as well.
+> >=20
+> >=20
+> > >=20
+> > > >=20
+> > > > I fully support this option and could cook up something on this=
+=2E
+> > > > The TC1 and TC2 should go inside the .get_trend() callbacks for=
+ ACPI.
+> > > > Should probably go away from the registration function that we =
+have
+> > > > currently.
+> > >=20
+> > > I realize I just said the same thing :-)
+> >=20
+> > Cool :-)
+> >=20
+> > >=20
+> > > >=20
+> > > > We could have generic trending computation though. Based on tim=
+estamping
+> > > > and temperature reads, and make it available for zones that wan=
+t to used it.
+> > >=20
+> > > Agree, but I would like this go into the platform thermal drivers=
+=2E And then when
+> > > those drivers notify the framework they can specify the trend als=
+o. This sort of
+> > > notification is not there, but that is what I am implementing the=
+se days..
+> > > Hope to submit this patch in a week's time..
+> >=20
+> > Nice, I actually have something being cooked for the same thing. We=
+ should probably
+> > align to avoid work duplication...
+> >=20
+> Hah, seems a lot of work is in progress in this area.
+>=20
+> > >=20
+> > > > > >     case THERMAL_TRIP_ACTIVE:
+> > > > > >     case THERMAL_TRIP_PASSIVE:
+> > > > > >          ...
+> > > > > >          tz->ops->get_trend();
+> > > >=20
+> > > > Would the get_trend take into account if we are cooling with ac=
+tive or passive
+> > > > cooling device?
+> > >=20
+> > > To me, it does not matter. It is up to the framework to decide an=
+d throttle,
+> > > the respective cooling devices according to the trend.
+> >=20
+> > OK. For me it doesn't really matter as well. Having a simplified zo=
+ne update is better.
+> >=20
+> > >=20
+> > > >=20
+> > > > > >          if (trend =3D=3D HEATING)
+> > > > > >                  cdev->ops->set_cur_state(cdev, cur_state++=
+);
+> > > > > >          else if (trend =3D=3D COOLING)
+> > > > > >                  cdev->ops->set_cur_state(cdev, cur_state--=
+);
+> > > > > >          break;
+> > > >=20
+> > > > I believe we should have something for temperature stabilizatio=
+n there as well.
+> > > >=20
+> > > > Besides, if we go with this generic policy, then the zone updat=
+e would be much
+> > > > simpler no?
+> > >=20
+> > > Yes, and that=E2=80=99s what we want too  :-)
+> >=20
+> > Nice!
+> >=20
+> > >=20
+> > > > Here are some other thoughts:
+> > > > G6. Another point is, would it make sense to allow for policy e=
+xtension? Meaning,
+> > > > the zone update would call a callback to request for update fro=
+m the zone
+> > > > device driver?
+> > > >=20
+> > > > G7. How do we solve cooling devices being shared between differ=
+ent thermal
+> > > > zones?
+> > > > Should we have a better cooling device constraint management?
+> > >=20
+> > > This is another thing that was haunting me for quite some time.
+> > > And What I have in mind is a mapping kind of thing in the platfor=
+m layer,
+> > > that will provide details about which cooling device is shared wi=
+th whom.
+> > > The framework can then use this and figure out the association am=
+ong various devices.
+> > > I am testing it out, and will submit once it comes to a good shap=
+e.
+> >=20
+> > Right, I am not sure we want to go in this direction?
+> >=20
+> > Maybe a better way would be to have sort of pm/thermal contraint fr=
+amework, which
+> > would map these per device, at LDM level?
+> >=20
+> > I am copying Jean-Pihet, he has been working in this front. Jean, a=
+ny thoughts?
+> >=20
+> Durga and I are investigating how to introduce some concepts like
+> "influence/weight" to generic thermal layer. :)
+
+What do you mean here? Describing the cooling devices effectiveness on =
+each zone and
+derive algorithms to act accordingly?
+
+>=20
+> thanks,
+> rui
+>=20
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
