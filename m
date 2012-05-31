@@ -1,83 +1,147 @@
 From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: [RFC] the generic thermal layer enhancement
-Date: Thu, 31 May 2012 13:54:44 +0800
-Message-ID: <1338443684.1472.237.camel@rui.sh.intel.com>
+Date: Thu, 31 May 2012 14:09:19 +0800
+Message-ID: <1338444559.1472.250.camel@rui.sh.intel.com>
 References: <1338367742.1472.128.camel@rui.sh.intel.com>
-	 <20120530125035.GA17379@srcf.ucam.org>
-	 <1338436491.1472.223.camel@rui.sh.intel.com>
-	 <20120531035821.GA1587@srcf.ucam.org>
+	<CAK44p20hLTC5oLHtUizrrNDajp674UKUatxiH2bQJUnYNsM10w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20120531035821.GA1587@srcf.ucam.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, amit.kachhap@linaro.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <CAK44p20hLTC5oLHtUizrrNDajp674UKUatxiH2bQJUnYNsM10w@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Amit Kachhap <amit.kachhap@linaro.org>
+Cc: Jean Delvare <jdelvare@suse.com>, "Brown, Len" <len.brown@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On =E5=9B=9B, 2012-05-31 at 04:58 +0100, Matthew Garrett wrote:
-> On Thu, May 31, 2012 at 11:54:51AM +0800, Zhang Rui wrote:
-> > On =E4=B8=89, 2012-05-30 at 13:50 +0100, Matthew Garrett wrote:
-> > > The existing algorithm provides a generic mechanism for=20
-> > > balancing performance and thermal output, with the only requireme=
-nt=20
-> > > being that the platform provide constants that represent the heat=
-ing and=20
-> > > cooling properties of the system.
-> > >=20
-> > I'm not sure if this could work on their platforms. So I'm just loo=
-king
-> > for an easier way to handle this, i.e. make generic thermal layer
-> > simple, and provide the flexibility for platform drivers to do thei=
-r own
-> > tricks.
->=20
-> If it's not possible for a platform to use the existing generic appro=
-ach=20
-> then we should certainly provide a way for them to handle that, but=20
-> first I'd like to see evidence that it's impossible for them to use t=
-he=20
-> existing generic approach. This kind of conversation is better with r=
-eal=20
-> world examples :)
-
-Agreed.
-
-Amit, do you have any update on this? :)
-
->=20
-> > > > G4. Multiple passive trip points
-> > >=20
-> > > It would be good to have an explanation of the use case here. If =
-it's=20
-> > > acceptable for the device to be at the lower passive trip point, =
-why are=20
-> > > we slowing it down at all?
-> > >=20
-> > acceptable does not equal comfortable?
-> > Say, I'd like to use the computer at 30C skin temperature.
-> > I'm okay with the temperature at 50C, but it would be nice if it ca=
-n be
-> > lower, even if the system would be slower, but not too slow (T-stat=
-e).
-> > If the temperature is higher than 60, it is not usable for me, I'll=
- wait
-> > for a while, the system can do everything they want do cool the sys=
-tem
-> > down (but hibernate/shutdown would be not a good idea at this time
-> > because it is hot enough for some hardware damage).
->=20
-> Ok, that seems reasonable.
->=20
-Great!
-
-thanks,
-rui
-
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGksIEFtaXQsCgpPbiDlm5ssIDIwMTItMDUtMzEgYXQgMTI6NTkgKzA4MDAsIEFtaXQgS2FjaGhh
+cCB3cm90ZToKPiBIaSBSdWksCj4gCj4gVGhhbmtzIGZvciBzdGFydGluZyBhIGRpc2N1c3Npb24g
+b24gZnVydGhlciBmaW5ldHVuaW5nIHRoZSB0aGVybWFsIGxheWVyLgo+IAo+IE9uIDMwIE1heSAy
+MDEyIDE2OjQ5LCBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+IHdyb3RlOgo+ID4gSGks
+IGFsbCwKPiA+Cj4gPiBJdCBpcyBncmVhdCB0byBzZWUgbW9yZSBhbmQgbW9yZSB1c2VycyBvZiB0
+aGUgZ2VuZXJpYyB0aGVybWFsIGxheWVyLgo+ID4gQnV0IGFzIHdlIGtub3csIHRoZSBvcmlnaW5h
+bCBkZXNpZ24gb2YgdGhlIGdlbmVyaWMgdGhlcm1hbCBsYXllciBjb21lcwo+ID4gZnJvbSBBQ1BJ
+IHRoZXJtYWwgbWFuYWdlbWVudCwgYW5kIHNvbWUgb2YgaXRzIGltcGxlbWVudGF0aW9uIHNlZW1z
+IHRvIGJlCj4gPiB0b28gQUNQSSBzcGVjaWZpYyBub3dhZGF5cy4KPiBUb3RhbGx5IGFncmVlZCA6
+KQo+ID4KPiA+IFJlY2VudGx5IEknbSB0aGlua2luZyBvZiBlbmhhbmNlIHRoZSBnZW5lcmljIHRo
+ZXJtYWwgbGF5ZXIgc28gdGhhdCBpdAo+ID4gd29ya3Mgd2VsbCBmb3IgbW9yZSBwbGF0Zm9ybXMu
+Cj4gPgo+ID4gQmVsb3cgYXJlIHNvbWUgdGhvdWdodHMgb2YgbWluZSwgYWZ0ZXIgcmVhZGluZyB0
+aGUgcGF0Y2hlcyBmcm9tIEFtaXQKPiA+IERhbmllbCBLYWNoaGFwLCBhbmQgQUNQSSAzLjAgdGhl
+cm1hbCBtb2RlbC4gQWN0dWFsbHksIEkgaGF2ZSBzdGFydGVkCj4gPiBjb2Rpbmcgc29tZSBSRkMg
+cGF0Y2hlcy4gQnV0IEkgZG8gcmVhbGx5IHdhbnQgdG8gZ2V0IGZlZWRiYWNrIGZyb20geW91Cj4g
+PiBiZWZvcmUgZ29pbmcgb24uCj4gPgo+ID4gRzEuIHN1cHBvcnRpbmcgbXVsdGlwbGUgY29vbGlu
+ZyBzdGF0ZXMgZm9yIGFjdGl2ZSBjb29saW5nIGRldmljZXMuCj4gPgo+ID4gICAgVGhlIGN1cnJl
+bnQgYWN0aXZlIGNvb2xpbmcgZGV2aWNlIHN1cHBvcnRzIHR3byBjb29saW5nIHN0YXRlcyBvbmx5
+LAo+ID4gICAgcGxlYXNlIHJlZmVyIHRvIHRoZSBjb2RlIGJlbG93LCBpbiBkcml2ZXIvdGhlcm1h
+bC90aGVybWFsX3N5cy5jCj4gPiAgICAgICAgICAgICAgICBjYXNlIFRIRVJNQUxfVFJJUF9BQ1RJ
+VkU6Cj4gPiAgICAgICAgICAgICAgICAgICAgICAgIC4uLgo+ID4gICAgICAgICAgICAgICAgICAg
+ICAgICBpZiAodGVtcCA+PSB0cmlwX3RlbXApCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgY2Rldi0+b3BzLT5zZXRfY3VyX3N0YXRlKGNkZXYsIDEpOwo+ID4gICAgICAgICAgICAg
+ICAgICAgICAgICBlbHNlCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY2Rldi0+
+b3BzLT5zZXRfY3VyX3N0YXRlKGNkZXYsIDApOwo+ID4gICAgICAgICAgICAgICAgICAgICAgICBi
+cmVhazsKPiA+Cj4gPiAgICBUaGlzIGlzIGFuIEFDUEkgc3BlY2lmaWMgdGhpbmcsIGFzIG91ciBB
+Q1BJIEZBTiB1c2VkIHRvIHN1cHBvcnQKPiA+ICAgIE9OL09GRiBvbmx5Lgo+ID4gICAgSSB0aGlu
+ayBpdCBpcyByZWFzb25hYmxlIHRvIHN1cHBvcnQgbXVsdGlwbGUgYWN0aXZlIGNvb2xpbmcgc3Rh
+dGVzCj4gPiAgICBhcyB0aGV5IGFyZSBjb21tb24gb24gbWFueSBwbGF0Zm9ybXMsIGFuZCBub3Rl
+IHRoYXQgdGhpcyBpcyBhbHNvCj4gPiAgICB0cnVlIGZvciBBQ1BJIDMuMCBGQU4gZGV2aWNlIChf
+RlBTKS4KPiBZZXMgSSBhZ3JlZSB0aGF0IEFDVElWRSB0cmlwIHR5cGUgc2hvdWxkIHN1cHBvcnQg
+bW9yZSB0aGFuIDEoT04pCj4gc3RhdGUuIGFuZCB3aGljaCBzdGF0ZSB0aGUgdGhlIHNldF9jdXJf
+c3RhdGUgc2hvdWxkIGNhbGwgZGVwZW5kcyBvbgo+IGhvdyB0aGUgc3RhdGUgaXMgYmluZGVkIG9u
+IHRoZSB0cmlwIHBvaW50LiBCdXQgYWdhaW4gaW4gZG9pbmcgdGhlc2UKPiB0aGVyZSBpcyBzbyBt
+dWNoIGxvZ2ljIHB1dCBpbiBoYW5kbGluZyB0aGlzIHRoYXQgdGhlIEkgZHJvcHBlZCB0aGUKPiBw
+YXRjaCBmb3IgbmV3IHRyaXAgdHlwZSBBQ1RJVkVfSU5TVEFOQ0UuCgp5ZXMsIEkga25vdy4KCj4g
+Pgo+ID4gRzIuIGludHJvZHVjZSBjb29saW5nIHN0YXRlcyByYW5nZSBmb3IgYSBjZXJ0YWluIHRy
+aXAgcG9pbnQKPiA+Cj4gPiAgICBUaGlzIHByb2JsZW0gY29tZXMgd2l0aCB0aGUgZmlyc3Qgb25l
+Lgo+ID4gICAgSWYgdGhlIGNvb2xpbmcgZGV2aWNlcyBzdXBwb3J0IG11bHRpcGxlIGNvb2xpbmcg
+c3RhdGVzLCBhbmQgc3VyZWx5Cj4gPiAgICB3ZSBtYXkgd2FudCBvbmx5IHNldmVyYWwgY29vbGlu
+ZyBzdGF0ZXMgZm9yIGEgY2VydGFpbiB0cmlwIHBvaW50LAo+ID4gICAgYW5kIG90aGVyIGNvb2xp
+bmcgc3RhdGVzIGZvciBvdGhlciBhY3RpdmUgdHJpcCBwb2ludHMuCj4gPiAgICBUbyBkbyB0aGlz
+LCB3ZSBzaG91bGQgYmUgYWJsZSB0byBkZXNjcmliZSB0aGUgY29vbGluZyBkZXZpY2UKPiA+ICAg
+IGJlaGF2aW9yIGZvciBhIGNlcnRhaW4gdHJpcCBwb2ludCwgcmF0aGVyIHRoYW4gZm9yIHRoZSBl
+bnRpcmUKPiA+ICAgIHRoZXJtYWwgem9uZS4KPiBBZ3JlZWQKPiA+Cj4gPiBHMy4ga2VybmVsIHRo
+ZXJtYWwgcGFzc2l2ZSBjb29saW5nIGFsZ29yaXRobQo+ID4KPiA+ICAgIEN1cnJlbnRseSwgdGMx
+IGFuZCB0YzIgYXJlIGhhcmQgcmVxdWlyZW1lbnRzIGZvciBrZXJuZWwgcGFzc2l2ZQo+ID4gICAg
+Y29vbGluZy4gQnV0IG5vbi1BQ1BJIHBsYXRmb3JtcyBkbyBub3QgaGF2ZSB0aGlzIGluZm9ybWF0
+aW9uCj4gPiAgICAocGxlYXNlIGNvcnJlY3QgbWUgaWYgSSdtIHdyb25nKS4KPiA+ICAgIFNheSwg
+Zm9yIHRoZSBwYXRjaGVzIGhlcmUKPiA+ICAgIGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgtYWNw
+aSZtPTEzMzY4MTU4MTMwNTM0MSZ3PTIKPiA+ICAgIFRoZXkganVzdCB3YW50IHRvIHNsb3cgZG93
+biB0aGUgcHJvY2Vzc29yIHdoZW4gY3VycmVudCB0ZW1wZXJhdHVyZQo+ID4gICAgaXMgaGlnaGVy
+IHRoYW4gdGhlIHRyaXAgcG9pbnQgYW5kIHNwZWVkIHVwIHRoZSBwcm9jZXNzb3Igd2hlbiB0aGUK
+PiA+ICAgIHRlbXBlcmF0dXJlIGlzIGxvd2VyIHRoYW4gdGhlIHRyaXAgcG9pbnQuCj4gPgo+ID4g
+ICAgQWNjb3JkaW5nIHRvIE1hdHRoZXcsIHRoZSBwbGF0Zm9ybSBkcml2ZXJzIGFyZSByZXNwb25z
+aWJsZSB0bwo+ID4gICAgcHJvdmlkZSBwcm9wZXIgdGMxIGFuZCB0YzIgdmFsdWVzIHRvIHVzZSBr
+ZXJuZWwgcGFzc2l2ZSBjb29saW5nLgo+ID4gICAgQnV0IEknbSBqdXN0IHdvbmRlcmluZyBpZiB3
+ZSBjYW4gdXNlIHNvbWV0aGluZyBpbnN0ZWFkLgo+ID4gICAgU2F5LCBpbnRyb2R1Y2UgLmdldF90
+cmVuZCgpIGluIHRoZXJtYWxfem9uZV9kZXZpY2Vfb3BzLgo+ID4gICAgQW5kIHdlIHNldCBjdXJf
+c3RhdGUrKyBvciBjdXJfc3RhdGUtLSBiYXNlZCBvbiB0aGUgdmFsdWUgcmV0dXJuZWQKPiA+ICAg
+IGJ5IC5nZXRfdHJlbmQoKSwgaW5zdGVhZCBvZiB1c2luZyB0YzEgYW5kIHRjMi4KPiBPSyB0aGlz
+IHNlZW1zIGZpbmUuIEJ1dCBmb3IgZXh5bm9zIHBsYXRmb3JtKGFsc28gc29tZSBvdGhlciBwbGF0
+Zm9ybXMpCj4gdGhpcyBtYXkgYmUgc2ltcGx5IGN1cl90ZW1wIC0gbGFzdF90ZW1wIHdoaWNoIGlz
+IGZpbmUuCgpJJ20gd29uZGVyaW5nIGlmIHlvdSBjYW4gdHJ5IHRvIHRlc3Qgc29tZSBwbGF0Zm9y
+bSB0YzEvdGMyIG51bWJlcnMgYW5kCnNlZSBpZiBpdCBpcyBiZXR0ZXIgdG8gdXNlIHRoZSBjdXJy
+ZW50IHBhc3NpdmUgY29vbGluZyBpbXBsZW1lbnRhdGlvbi4KCj4gPgo+ID4gRzQuIE11bHRpcGxl
+IHBhc3NpdmUgdHJpcCBwb2ludHMKPiA+Cj4gPiAgICBJIGdldCB0aGlzIGlkZWEgYWxzbyBmcm9t
+IHRoZSBwYXRjaGVzIGF0Cj4gPiAgICBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWFjcGkmbT0x
+MzM2ODE1ODEzMDUzNDEmdz0yCj4gPgo+ID4gICAgSU1PLCB0aGV5IHdhbnQgdG8gZ2V0IGFuIGFj
+Y2VwdGFibGUgcGVyZm9ybWFuY2UgYXQgYSB0b2xlcmFibGUKPiA+ICAgIHRlbXBlcmF0dXJlLgo+
+ID4gICAgU2F5LCBhIHBsYXRmb3JtIHdpdGggZm91ciBQLXN0YXRlcy4gUDMgaXMgcmVhbGx5IGxv
+dy4KPiA+ICAgIEFuZCBJJ20gb2theSB3aXRoIHRoZSB0ZW1wZXJhdHVyZSBhdCA2MEMsIGJ1dCA4
+MEM/IE5vLgo+ID4gICAgV2l0aCBHMiByZXNvbHZlZCwgd2UgY2FuIHVzZSBwcm9jZXNzb3IgUDB+
+UDIgZm9yIFBhc3NpdmUgdHJpcCBwb2ludAo+ID4gICAgMCAoNTBDKSwgYW5kIFAzIGZvciBQYXNz
+aXZlIHRyaXAgcG9pbnQgMSAoNzBDKS4gQW5kIHRoZW4gdGhlCj4gPiAgICB0ZW1wZXJhdHVyZSBt
+YXkgYmUganVtcGluZyBhdCBhcm91bmQgNjBDIG9yIGV2ZW4gNjVDLCB3aXRob3V0Cj4gPiAgICBl
+bnRlcmluZyBQMy4KPiA+Cj4gPiAgICBGdXJ0aGVyIG1vcmUsIElNTywgdGhpcyBhbHNvIHdvcmtz
+IGZvciBBQ1BJIHBsYXRmb3Jtcy4KPiA+ICAgIFNheSwgd2UgY2FuIGVhc2lseSBjaGFuZ2UgcC1z
+dGF0ZSB0byBjb29sIHRoZSBzeXN0ZW0sIGJ1dCB1c2luZwo+ID4gICAgdC1zdGF0ZSBpcyBkZWZp
+bml0ZWx5IHdoYXQgd2UgZG8gbm90IHdhbnQgdG8gc2VlLiBUaGUgY3VycmVudAo+ID4gICAgaW1w
+bGVtZW50YXRpb24gZG9lcyBub3QgZXhwb3NlIHRoaXMgZGlmZmVyZW5jZSB0byB0aGUgZ2VuZXJp
+Ywo+ID4gICAgdGhlcm1hbCBsYXllciwgYnV0IGlmIHdlIGNhbiBoYXZlIHR3byBwYXNzaXZlIHRy
+aXAgcG9pbnRzLCBhbmQgdXNlCj4gPiAgICBwLXN0YXRlIGZvciB0aGUgZmlyc3Qgb25lIG9ubHku
+Li4gKHRoaXMgd29ya3MgaWYgd2Ugc3RhcnQgcG9sbGluZwo+ID4gICAgYWZ0ZXIgZW50ZXJpbmcg
+cGFzc2l2ZSBjb29saW5nIG1vZGUsIHdpdGhvdXQgaGFyZHdhcmUgbm90aWZpY2F0aW9uKQo+IFRo
+aXMgc2VlbXMgY29vbCBhbmQgdG8gYW5zd2VyIE1hdGhldyBkb3VidCB0aGlzIGlzIG5lZWRlZCBi
+ZWNhdXNlIGluCj4gdGhlIG5vdCBzbyBjcml0aWNhbCB0aGVybWFsIGVudmVsb3AgdGhlIHBsYXRm
+b3JtcyBtYXkgbm90IHdhbnQgdG8gZ28KPiB0byB0aGUgbG93ZXN0IG9wcCBsZXZlbCBhbmQgc29t
+ZSBpbnRlcm1lZGlhdGUgbGV2ZWwgaXMgZmluZS4KPiAKPiA+Cj4gPiBHNS4gdW5pZnkgYWN0aXZl
+IGNvb2xpbmcgYW5kIHBhc3NpdmUgY29vbGluZyBjb2RlCj4gPgo+ID4gICAgSWYgRzQgYW5kIEc1
+IGFyZSByZXNvbHZlZCwgYSBuZXcgcHJvYmxlbSB0byBtZSBpcyB0aGF0IHRoZXJlIGlzIG5vCj4g
+PiAgICBkaWZmZXJlbmNlIGJldHdlZW4gcGFzc2l2ZSBjb29saW5nIGFuZCBhY3RpdmUgY29vbGlu
+ZyBleGNlcHQgdGhlCj4gPiAgICBjb29saW5nIHBvbGljeS4KPiA+ICAgIFRoZW4gd2UgY2FuIHNo
+YXJlIHRoZSBzYW1lIGNvZGUgZm9yIGJvdGggYWN0aXZlIGFuZCBwYXNzaXZlIGNvb2xpbmcuCj4g
+PiAgICBtYXliZSBzb21ldGhpbmcgbGlrZToKPiA+Cj4gPiAgICBjYXNlIFRIRVJNQUxfVFJJUF9B
+Q1RJVkU6Cj4gPiAgICBjYXNlIFRIRVJNQUxfVFJJUF9QQVNTSVZFOgo+ID4gICAgICAgICAuLi4K
+PiA+ICAgICAgICAgdHotPm9wcy0+Z2V0X3RyZW5kKCk7Cj4gPiAgICAgICAgIGlmICh0cmVuZCA9
+PSBIRUFUSU5HKQo+ID4gICAgICAgICAgICAgICAgIGNkZXYtPm9wcy0+c2V0X2N1cl9zdGF0ZShj
+ZGV2LCBjdXJfc3RhdGUrKyk7Cj4gPiAgICAgICAgIGVsc2UgaWYgKHRyZW5kID09IENPT0xJTkcp
+Cj4gPiAgICAgICAgICAgICAgICAgY2Rldi0+b3BzLT5zZXRfY3VyX3N0YXRlKGNkZXYsIGN1cl9z
+dGF0ZS0tKTsKPiA+ICAgICAgICAgYnJlYWs7Cj4gQWN0dWFsbHkgSSBzdGlsbCBmZWVscyB0aGF0
+IEFDVElWRSBhbmQgUEFTU0lWRSBhcmUgbmVlZGVkIGJlY2F1c2UgdGhleQo+IGhhdmUgZGlmZmVy
+ZW50IHdheSBvZiBjYWxsaW5nIHRoZSBzZXRfY3VyX3JhdGUuIEFDVElWRSB0cmlwIHR5cGUgaXMK
+PiBhc3NvY2lhdGVkIHdpdGggMSB0cmlwIHBvaW50IHNvIG9uIHJlYWNoaW5nIGEgdHJpcCBwb2lu
+dCBhIHNwZWNpZmljCj4gc3RhdGUgaXMgY2FsbGVkIGluIHNldF9jdXJfc3RhdGUuIEJ1dCBQQVNT
+SVZFIGJhc2ljYWxseQo+IGluY3JlbWVudHMvZGVjcmVtZW50cyB0aGUgc3RhdGUgZGVwZW5kaW5n
+IG9uIHRoZXJtYWwgdHJlbmQuCgpTb3JyeSwgSSBkbyBub3QgdW5kZXJzdGFuZC4KZm9yIGFjdGl2
+ZSB0cmlwIHBvaW50cywgd2UgY2FuIGVpdGhlciB1c2UgdHJlbmQgb3Igbm90LgpzYXksIHdlIGNh
+biBhbHdheXMgc2V0IHRoZSB0cmVuZCB0byBIRUFUSU5HLCBpbiBvdXIgLmdldF90cmVuZCgpCmNh
+bGxiYWNrIGlmIHdlIGFsd2F5cyB3YW50IHRvIHNwaW4gdXAgdGhlIGZhbiB3aGVuIHRoZSB0ZW1w
+ZXJhdHVyZSBpcwpoaWdoZXIgdGhhbiB0aGUgdHJpcCBwb2ludC4KQnV0IGlmIHRoZSB0ZW1wZXJh
+dHVyZSBoaWdoIGJ1dCBpdCBpcyBkcm9wcGluZywgYW5kIHdlIHdhbnQgdG8gc3BpbiBkb3duCnRo
+ZSBmYW4gYSBsaXR0bGUgdG8gc2F2ZSBtb3JlIHBvd2VyLCB3ZSBjYW4gbGV0IC5nZXRfdHJlbmQg
+cmV0dXJuCkNPT0xJTkcgYXQgdGhpcyB0aW1lLgp3aGF0IGRvIHlvdSB0aGluaz8KCkJUVywgd2hh
+dCBJJ2QgbGlrZSB0byBrbm93IGlzIHRoYXQsIHdpdGggYWxsIHRoaXMgZ2FwcyBzb2x2ZWQsIGlz
+IGl0Cm11Y2ggZWFzaWVyIGFuZCBjbGVhcmVyIGZvciB0aGUgZ2VuZXJpYyBjcHUgY29vbGluZyBB
+UElzIGFuZCB0aGUgZXh5bm9zCnBsYXRmb3JtcyB0byBmb2xsb3cgdGhlIGdlbmVyaWMgdGhlcm1h
+bCBsYXllcj8gU2F5LCB0d28gcGFzc2l2ZSB0cmlwCnBvaW50cyBmb3IgZXh5bm9zIHBsYXRmb3Jt
+cywgYW5kIGNlcnRhaW4gcHJvY2Vzc29yIFAtc3RhdGVzIGJpbmQgdG8gZWFjaAp0cmlwIHBvaW50
+PwoKdGhhbmtzLApydWkKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCmxpbnV4LXBtIG1haWxpbmcgbGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0
+aW9uLm9yZwpodHRwczovL2xpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5m
+by9saW51eC1wbQ==
