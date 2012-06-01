@@ -1,78 +1,71 @@
-From: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Subject: Re: [RFC PATCH 05/11] mfd: omap: control: core system control driver
-Date: Fri, 01 Jun 2012 17:40:25 +0400
-Message-ID: <4FC8C649.10507@dev.rtsoft.ru>
-References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com> <1337934361-1606-6-git-send-email-eduardo.valentin@ti.com> <4FBF8078.9050809@ti.com> <20120528113502.GG3923@besouro> <4FC4CE4B.8020708@ti.com> <20120601112951.GM12766@atomide.com>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [linux-pm] [RFC PATCH 07/11] mfd: omap: control: usb-phy: introduce the ctrl-module usb driver
+Date: Fri, 01 Jun 2012 07:07:08 -0700
+Message-ID: <87txyvt9bn.fsf@ti.com>
+References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
+	<1337934361-1606-8-git-send-email-eduardo.valentin@ti.com>
+	<20120601113853.GO12766@atomide.com>
+	<20120601132056.GR12766@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20120601112951.GM12766@atomide.com>
+In-Reply-To: <20120601132056.GR12766@atomide.com> (Tony Lindgren's message of
+	"Fri, 1 Jun 2012 06:20:57 -0700")
 Sender: linux-omap-owner@vger.kernel.org
 To: Tony Lindgren <tony@atomide.com>
-Cc: "Cousson, Benoit" <b-cousson@ti.com>, paul@pwsan.com, amit.kucheria@linaro.org, balbi@ti.com, kishon@ti.com, eduardo.valentin@ti.com, santosh.shilimkar@ti.com, J Keerthy <j-keerthy@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, amit.kachhap@linaro.org
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, balbi@ti.com, kishon@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-  Hi, Tony.
+Tony Lindgren <tony@atomide.com> writes:
 
-On 06/01/2012 03:29 PM, Tony Lindgren wrote:
-> * Cousson, Benoit <b-cousson@ti.com> [120529 06:29]:
->> On 5/28/2012 1:35 PM, Eduardo Valentin wrote:
->>>> Mmm, we can have up to 4 control module instances in OMAP4.
->>>>
->>>> Well, I'm not sure it worth considering them as separate devices. Is
->>>> that your plan as well?
->>> At least for now I was focusing on the ctrl_module_core ...
->> OK, that's a good start already :-)
->>
->>>> But since they all have different base address, it will be trick to
->>>> handle them with only a single entry.
->>> Indeed. We can always add the support latter on.
->>>
->>> I am not sure what would be the best way to handle those instances though,
->>> and how they are going to expose APIs. Would need to have an instance bound
->>> to API set?
->> We should not go to that path I guess. We should have an API at
->> children level independent of the underlying control module
->> partitioning.
-> These should be separate driver instances for the control modules.
+> * Tony Lindgren <tony@atomide.com> [120601 04:43]:
+>> * Eduardo Valentin <eduardo.valentin@ti.com> [120525 01:31]:
+>> > +int omap4_usb_phy_power(struct device *dev, int on)
+>> > +{
+>> > +	u32 val;
+>> > +	int ret;
+>> > +
+>> > +	if (on) {
+>> > +		ret = omap_control_readl(dev, CONTROL_DEV_CONF, &val);
+>> > +		if (!ret && (val & PHY_PD)) {
+>> > +			ret = omap_control_writel(dev, ~PHY_PD,
+>> > +						  CONTROL_DEV_CONF);
+>> > +			/* XXX: add proper documentation for this delay */
+>> > +			mdelay(200);
+>> > +		}
+>> > +	} else {
+>> > +		ret = omap_control_writel(dev, PHY_PD, CONTROL_DEV_CONF);
+>> > +	}
+>> > +
+>> > +	return ret;
+>> > +}
+>> > +EXPORT_SYMBOL_GPL(omap4_usb_phy_power);
+>> 
+>> I'm not quite convinced that we should export omap_control_read/write
+>> to drivers. If there's a clear register area this USB phy driver can
+>> manage, then ioremaping it separately makes sense. If it's just one
+>> register, then exporting something like omap_control_usb_phy_set()
+>> might be better for ensuring that drivers don't mess up things for
+>> other drivers.
 >
-> And then the ioremapped area should ignore at least the padconf
-> registers so drivers/pinctrl/pinctrl-simple can handle those. There
-> should not be any dependencies to the SCM driver from pinctrl-simple,
-> the core SCM driver can manage the clocks and trigger the save of
-> padconf regs.
+> After chatting with Benoit a bit we came to the conclusion that the
+> clock and powerdomain state needs to be managed for the children by
+> the SCM core driver so the children can't be completely independent.
 >
-> Also we should allow MMC driver handle the MMC specific registers
-> and USB driver(s) handle the USB specific registers if possible. Those
-> should not live under drivers/mfd unless there are some dependencies
-> other than trying to ioremap the whole SCM module instead of ioremapping
-> in each driver.
+> But rather than exporting omap_control_read/write, maybe you can
+> register the usb/bandgap whatever children with SCM core driver,
+> then have the runtime PM calls from children be passthrough calls
+> to the parent?
 >
-> We can have a static map for the SCM, so ioremapping each driver
-> individually should not be an issue.
-Actually SCM registers window is mapped statically. Mapping is defined in omap44xx_io_desc[] in arch/arm/mach-omap2/io.c:
+> Maybe Kevin has some better ideas here?
 
-...
-        .virtual    = L4_44XX_VIRT,
-        .pfn        = __phys_to_pfn(L4_44XX_PHYS),
-        .length        = L4_44XX_SIZE,
-        .type        = MT_DEVICE,
-...
+Handling this with parent/child relationships is the way to go for
+runtime PM.  
 
+In MFD, are all sub-devices always children of the core device in the
+LDM?  If so, it seems relatively easy to handle.  If the parent/child
+relationships are modeled correctly in the LDM, then the children do not
+have to know anything about their parent, the runtime PM core will handle
+this (parent will not be runtime suspended until all the children are.)
 
-So ioremap() always returns same virtual address (0xfc002000).
-
-BR,
-    Konstantin Baydarov.
-
->
-> Regards,
->
-> Tony
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
+Kevin
