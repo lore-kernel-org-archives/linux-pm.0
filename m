@@ -1,14 +1,21 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFT] PCI changes related to wakeup (was: Re:
- ehci_hcd related S3 lockup on ASUS laptops, again)
-Date: Fri, 1 Jun 2012 13:17:18 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1206011313560.1610-100000@iolanthe.rowland.org>
-References: <1338570117.13348.469.camel@gandalf.stny.rr.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFC PATCH 05/11] mfd: omap: control: core system
+	control driver
+Date: Fri, 1 Jun 2012 20:19:58 +0300
+Message-ID: <20120601171941.GA2451@besouro>
+References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
+	<1337934361-1606-6-git-send-email-eduardo.valentin@ti.com>
+	<4FBF8078.9050809@ti.com> <20120528113502.GG3923@besouro>
+	<4FC4CE4B.8020708@ti.com> <20120601112951.GM12766@atomide.com>
+	<CAMQu2gyn_Fir=Jp0cQR_t7yc_JkwajFMvR1yDx-VYv9JOOwivw@mail.gmail.com>
+	<4FC8B90A.9040505@ti.com>
+Reply-To: eduardo.valentin@ti.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1338570117.13348.469.camel@gandalf.stny.rr.com>
+Content-Disposition: inline
+In-Reply-To: <4FC8B90A.9040505@ti.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,29 +25,97 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, =?ISO-8859-1?Q?D=E2niel?= Fraga <fragabr@gmail.com>, Andrey Rahmatullin <wrar@wrar.name>, "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, linux-pm@lists.linux-foundation.org
+To: "Cousson, Benoit" <b-cousson@ti.com>
+Cc: amit.kucheria@linaro.org, kbaidarov@dev.rtsoft.ru, kishon@ti.com, balbi@ti.com, J Keerthy <j-keerthy@ti.com>, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 1 Jun 2012, Steven Rostedt wrote:
+Hello,
 
-> On Fri, 2012-06-01 at 11:59 -0400, Alan Stern wrote:
-> >  
-> > > I even plugged in a USB keyboard, suspended, and tried to wake it up
-> > > with that. That did not work. I even enabled what you stated above, with
-> > > no effect (with keyboard or usb storage).
-> > 
-> > This suggests that the original version of the patch is superior.  
-> > There's not point in saying the controller is wakeup-capable and trying 
-> > to enable wakeup if it's not going to work.
+On Fri, Jun 01, 2012 at 02:43:54PM +0200, Cousson Benoit wrote:
+> On 6/1/2012 2:30 PM, Shilimkar, Santosh wrote:
+> >On Fri, Jun 1, 2012 at 7:29 PM, Tony Lindgren<tony@atomide.com>  wrote:
+> >>* Cousson, Benoit<b-cousson@ti.com>  [120529 06:29]:
+> >>>On 5/28/2012 1:35 PM, Eduardo Valentin wrote:
+> >>>>>
+> >>>>>Mmm, we can have up to 4 control module instances in OMAP4.
+> >>>>>
+> >>>>>Well, I'm not sure it worth considering them as separate devices. Is
+> >>>>>that your plan as well?
+> >>>>
+> >>>>At least for now I was focusing on the ctrl_module_core ...
+> >>>
+> >>>OK, that's a good start already :-)
+> >>>
+> >>>>>But since they all have different base address, it will be trick to
+> >>>>>handle them with only a single entry.
+> >>>>
+> >>>>Indeed. We can always add the support latter on.
+> >>>>
+> >>>>I am not sure what would be the best way to handle those instances though,
+> >>>>and how they are going to expose APIs. Would need to have an instance bound
+> >>>>to API set?
+> >>>
+> >>>We should not go to that path I guess. We should have an API at
+> >>>children level independent of the underlying control module
+> >>>partitioning.
+> >>
+> >>These should be separate driver instances for the control modules.
+> >>
+> >>And then the ioremapped area should ignore at least the padconf
+> >>registers so drivers/pinctrl/pinctrl-simple can handle those. There
+> >>should not be any dependencies to the SCM driver from pinctrl-simple,
+> >>the core SCM driver can manage the clocks and trigger the save of
+> >>padconf regs.
+> >>
+> >>Also we should allow MMC driver handle the MMC specific registers
+> >>and USB driver(s) handle the USB specific registers if possible. Those
+> >>should not live under drivers/mfd unless there are some dependencies
+> >>other than trying to ioremap the whole SCM module instead of ioremapping
+> >>in each driver.
+> >>
+> >>We can have a static map for the SCM, so ioremapping each driver
+> >>individually should not be an issue.
+
+Within this series I kept the original MFD setup in the original driver
+found in the TI Android tree. But in fact, I agree with Tony here.
+
+In general, ideally it would be good if we could setup this driver
+family, having for each driver their respective resources;
+a separated individual io area, IRQs, locking, APIs, etc.
+
+But, the issue is to avoid having hard coded io areas in the code,
+and move them  to auto generated data, DT/hwmod.
+
+> >>
+> >This sounds a good idea. With this we may not even need a core control
+> >module drivers if all the individual drivers take care of the registers they
+> >care. Mapping shouldn't be a problem as you mentioned.
 > 
-> I would point out that I have yet to get wakeup via usb to work with any
-> patch.
+> We should keep the MFD for PM / OCP single port correctness. Other
+> than that it will be mostly useless, indeed.
+
+Then, I guess the idea of having 1 static mapping for the MFD core, either in DT or hwmod,
+is to maintain the single OCP port we have today for SCM.
+
+But, Benoit, IIRC, from our previous discussions, we won't have the io area for children
+autogenerated anyway, as they don't have any OCP. I suppose this applies also for
+clock data?
+
+If children data won't be autogenerated, assuming we are relying on the autogenerated
+data, it means that SCM core area is the boundary that will be ioremapped and protected.
+But then we still have a flaw because children can still stomp between each other.
+Not to mention non-children users and the pin ctrl simple.
+
+That said, if we want to have these io areas properly assigned to their drivers,
+we either have children area autogenerated, in DT / hwmod. Or we have them in the code.
+
+Assuming you still want to have the MFD core, for matching w/ the OCP single port,
+it would still need to have the resources for its children in the driver code.
+
+Or we hack them in the DT entries. Like I already did in this series for the thermal IRQ :-)
+
+
 > 
-> Maybe I missed a patch, which one is suppose to work?
-
-No, I think it's more likely that USB wakeup simply can't be made to
-work on your computer.  Whatever caused the original suspend problem
-also interferes with wakeup.
-
-Alan Stern
+> Regards,
+> Benoit
+> 
