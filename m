@@ -1,44 +1,66 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [RFC PATCH 09/11] ARM: OMAP4+: thermal: introduce bandgap
- temperature sensor
-Date: Fri, 1 Jun 2012 04:42:39 -0700
-Message-ID: <20120601114238.GP12766@atomide.com>
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+Subject: Re: [RFC PATCH 05/11] mfd: omap: control: core system control driver
+Date: Fri, 1 Jun 2012 20:30:35 +0800
+Message-ID: <CAMQu2gyn_Fir=Jp0cQR_t7yc_JkwajFMvR1yDx-VYv9JOOwivw@mail.gmail.com>
 References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
- <1337934361-1606-10-git-send-email-eduardo.valentin@ti.com>
+ <1337934361-1606-6-git-send-email-eduardo.valentin@ti.com>
+ <4FBF8078.9050809@ti.com> <20120528113502.GG3923@besouro> <4FC4CE4B.8020708@ti.com>
+ <20120601112951.GM12766@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1337934361-1606-10-git-send-email-eduardo.valentin@ti.com>
+In-Reply-To: <20120601112951.GM12766@atomide.com>
 Sender: linux-omap-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: b-cousson@ti.com, kishon@ti.com, kbaidarov@dev.rtsoft.ru, santosh.shilimkar@ti.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org, Keerthy <j-keerthy@ti.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Cousson, Benoit" <b-cousson@ti.com>, eduardo.valentin@ti.com, kishon@ti.com, kbaidarov@dev.rtsoft.ru, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org, J Keerthy <j-keerthy@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Eduardo Valentin <eduardo.valentin@ti.com> [120525 01:31]:
-> In the System Control Module, OMAP supplies a voltage reference
-> and a temperature sensor feature that are gathered in the band
-> gap voltage and temperature sensor (VBGAPTS) module. The band
-> gap provides current and voltage reference for its internal
-> circuits and other analog IP blocks. The analog-to-digital
-> converter (ADC) produces an output value that is proportional
-> to the silicon temperature.
-> 
-> This patch provides a platform driver which expose this feature.
-> It is moduled as a MFD child of the System Control Module core
-> MFD driver.
-> 
-> This driver provides only APIs to access the device properties,
-> like temperature, thresholds and update rate.
+On Fri, Jun 1, 2012 at 7:29 PM, Tony Lindgren <tony@atomide.com> wrote:
+> * Cousson, Benoit <b-cousson@ti.com> [120529 06:29]:
+>> On 5/28/2012 1:35 PM, Eduardo Valentin wrote:
+>> >>
+>> >>Mmm, we can have up to 4 control module instances in OMAP4.
+>> >>
+>> >>Well, I'm not sure it worth considering them as separate devices. Is
+>> >>that your plan as well?
+>> >
+>> >At least for now I was focusing on the ctrl_module_core ...
+>>
+>> OK, that's a good start already :-)
+>>
+>> >>But since they all have different base address, it will be trick to
+>> >>handle them with only a single entry.
+>> >
+>> >Indeed. We can always add the support latter on.
+>> >
+>> >I am not sure what would be the best way to handle those instances though,
+>> >and how they are going to expose APIs. Would need to have an instance bound
+>> >to API set?
+>>
+>> We should not go to that path I guess. We should have an API at
+>> children level independent of the underlying control module
+>> partitioning.
+>
+> These should be separate driver instances for the control modules.
+>
+> And then the ioremapped area should ignore at least the padconf
+> registers so drivers/pinctrl/pinctrl-simple can handle those. There
+> should not be any dependencies to the SCM driver from pinctrl-simple,
+> the core SCM driver can manage the clocks and trigger the save of
+> padconf regs.
+>
+> Also we should allow MMC driver handle the MMC specific registers
+> and USB driver(s) handle the USB specific registers if possible. Those
+> should not live under drivers/mfd unless there are some dependencies
+> other than trying to ioremap the whole SCM module instead of ioremapping
+> in each driver.
+>
+> We can have a static map for the SCM, so ioremapping each driver
+> individually should not be an issue.
+>
+This sounds a good idea. With this we may not even need a core control
+module drivers if all the individual drivers take care of the registers they
+care. Mapping shouldn't be a problem as you mentioned.
 
-Here too you a better long term solution is probably to ioremap
-the temp sensor registers for the driver. That way alloc_mem_region()
-provides some checks so the driver won't stomp over other registers.
-
-If you need to use omap_ctrl_read/write here, then we should at
-least clearly understand and document why it needs to be done that
-way instead of following standard ioremap + readl/writel.
-
-Regards,
-
-Tony
+Regards
+Santosh
