@@ -1,95 +1,71 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: Re: [PATCH V3 00/10] PM: Create the AVS(Adaptive Voltage Scaling)
-Date: Fri, 1 Jun 2012 09:15:45 +0530
-Message-ID: <CAJ6a13YzgxK1QJVLd+ZKRM=w4mM3P3YXicwdazpBaRDqdUDHqA@mail.gmail.com>
-References: <1335462041-4949-1-git-send-email-j-keerthy@ti.com>
-	<87397by2h9.fsf@ti.com>
-	<CAJ6a13aJwesHw0frCV+EfvYaep09cZGcu_PopuHzye1HS2tgvg@mail.gmail.com>
-	<CAJ6a13YLogA7M=rzSJAW6fHZOujFY0Crfdz9Sc5qL0mt8kX9CA@mail.gmail.com>
-	<87obpdv6f4.fsf@ti.com>
-	<874nqwynxd.fsf@ti.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [RFC PATCH 02/11] ARM: OMAP: expose control.h to mach area
+Date: Fri, 1 Jun 2012 04:19:39 -0700
+Message-ID: <20120601111938.GL12766@atomide.com>
+References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
+ <1337934361-1606-3-git-send-email-eduardo.valentin@ti.com>
+ <CAMQu2gxbkFCtkK+NCVksC82-R4SAKKtK2w=zNbrNi9a10s1t1Q@mail.gmail.com>
+ <CAGF5oy_R0xKsKQoqq2ReCjEP2tWC4UcawnAkTPU35thysnSj7g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <874nqwynxd.fsf@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, greg@kroah.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, j-pihet@ti.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAGF5oy_R0xKsKQoqq2ReCjEP2tWC4UcawnAkTPU35thysnSj7g@mail.gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: "Valentin, Eduardo" <eduardo.valentin@ti.com>
+Cc: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>, b-cousson@ti.com, kishon@ti.com, kbaidarov@dev.rtsoft.ru, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 1, 2012 at 4:10 AM, Kevin Hilman <khilman@ti.com> wrote:
-> Kevin Hilman <khilman@ti.com> writes:
->
->> "J, KEERTHY" <j-keerthy@ti.com> writes:
->>
->>> On Tue, May 15, 2012 at 11:16 AM, J, KEERTHY <j-keerthy@ti.com> wro=
-te:
->>>> On Tue, May 8, 2012 at 5:21 AM, Kevin Hilman <khilman@ti.com> wrot=
-e:
->>>>> Rafael,
->>>>>
->>>>> Keerthy <j-keerthy@ti.com> writes:
->>>>>
->>>>>> From: J Keerthy <j-keerthy@ti.com>
->>>>>>
->>>>>> AVS(Adaptive Voltage Scaling) is a power management technique wh=
-ich
->>>>>> controls the operating voltage of a device in order to optimize =
-(i.e. reduce)
->>>>>> its power consumption. The voltage is adapted depending on stati=
-c factors
->>>>>> (chip manufacturing process) and dynamic factors (temperature
->>>>>> depending performance).
->>>>>> The TI AVS solution is named Smartreflex.
->>>>>>
->>>>>> To that end, create the AVS driver in drivers/power/avs and
->>>>>> move the OMAP SmartReflex code to the new directory. The
->>>>>> class driver is still retained in the mach-omap2 directory.
->>>>>
->>>>> How should we handle this for upstream?
->>>>>
->>>>> It does a bunch of cleanup under arch/arm then does the move to
->>>>> drivers/power the end. =A0To avoid conflicts with other OMAP core=
- changes,
->>>>> I would suggest we take this through the OMAP tree.
->>>>>
->>>>> With your ack, I'd be glad to take it.
->>>>
->>>> Hello Rafael,
->>>>
->>>> A gentle ping on this series.
->>>
->>> Hi Greg,
->>>
->>> This series has Kevin's comments incorporated.
->>>
->>> Kevin,
->>>
->>> Can i have your Ack for this series?
->>>
->>
->> Well, as mentioned above, I'm waiting for Rafael's ack, then I will
->> merge it.
->>
->> Because of all the arch/arm/mach-omap2/* changes, I would like to me=
-rge
->> this via the OMAP tree to avoid conflicts with other stuff we have
->> changing in arch/arm/mach-omap2/*
->
-> OK, I had an off-line discussion with Rafael and he's OK that I take
-> these. =A0I will add an ack from Rafael and queue this series up for =
-v3.6.
+* Valentin, Eduardo <eduardo.valentin@ti.com> [120528 03:34]:
+> Hello,
+> 
+> On Mon, May 28, 2012 at 12:25 PM, Shilimkar, Santosh
+> <santosh.shilimkar@ti.com> wrote:
+> > On Fri, May 25, 2012 at 1:55 PM, Eduardo Valentin
+> > <eduardo.valentin@ti.com> wrote:
+> >> This patch exposes the definitions under control.h to
+> >> drivers outside the machine code.
+> >>
+> >> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> >> ---
+> > After second thought, this complete header movement needs to avoided.
+> > Drivers should not anyway include something like <mach/control.h>
+> >
+> > May be split the control.h header file data into ..
+> > - defines used by mach-omap2/* files which can remain in "control.h"
+> > in existing location.
+> 
+> OK..
+> 
+> > - common functions/defines used across drivers/*, mach-omap2/*,
+> > plat-omap/*, should
+> > go to include/linux/omap_control.h
+> 
+> Right..
+> 
+> > - Driver specific defines like thermal, usb etc, should go to
+> > respective drivers file.
+> 
+> Indeed.
+> 
+> >
+> > What do you think ?
+> 
+> I think we are in line. And I believe I saw a similar comment by
+> Benoit in other email thread.
+> 
+> Having a better thinking of this, it makes sense to have the
+> definition specific to drivers in the driver scope only, as they are
+> going to be used only there anyway.
+> 
+> I will drop this patch off and update the remaining changes
+> accordingly (drop the change in control.h for thermal specific and
+> move it to omap_bandgap.h).
 
-Thanks Kevin.
+Yes good, we should not expose these to the other drivers, that will
+lead into misuse of these defines from various other drivers that we
+may not notice until it's too late.
 
->
-> Thanks,
->
-> Kevin
+Regards,
 
-
-
---=20
-Regards and Thanks,
-Keerthy
+Tony
