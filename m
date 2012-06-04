@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 10/15] gma500: don't register the ACPI video bus
-Date: Mon,  4 Jun 2012 01:40:01 -0400
-Message-ID: <155689defc782b486a7e6776a57ecc4ebb37ed52.1338786832.git.len.brown@intel.com>
+Subject: [PATCH 11/15] ACPI video: use after
+	input_unregister_device()
+Date: Mon,  4 Jun 2012 01:40:02 -0400
+Message-ID: <301f33fbcf4ced53b3de114846ecece5d6aafeeb.1338786832.git.len.brown@intel.com>
 References: <1338788406-29981-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -21,31 +22,57 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Alan Cox <alan@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Alan Cox <alan@linux.intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-We are not yet ready for this and it makes a mess on some devices.
+We can't use "input" anymore after calling input_unregister_device().
+The call to input_free_device() is a double free.  The normal way to
+deal with this is to make input_register_device() the last function
+called in the function.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Acked-by: Dmitry Torokhov <dtor@mail.ru>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/gpu/drm/gma500/psb_drv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/video.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/gpu/drm/gma500/psb_drv.c b/drivers/gpu/drm/gma500/psb_drv.c
-index c34adf9..09af2ff 100644
---- a/drivers/gpu/drm/gma500/psb_drv.c
-+++ b/drivers/gpu/drm/gma500/psb_drv.c
-@@ -349,7 +349,7 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
- 	PSB_WSGX32(0x30000000, PSB_CR_BIF_3D_REQ_BASE);
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 609262d..a576575 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -1687,10 +1687,6 @@ static int acpi_video_bus_add(struct acpi_device *device)
+ 	set_bit(KEY_BRIGHTNESS_ZERO, input->keybit);
+ 	set_bit(KEY_DISPLAY_OFF, input->keybit);
  
- /*	igd_opregion_init(&dev_priv->opregion_dev); */
--	acpi_video_register();
-+/*	acpi_video_register(); */
- 	if (dev_priv->lid_state)
- 		psb_lid_timer_init(dev_priv);
+-	error = input_register_device(input);
+-	if (error)
+-		goto err_stop_video;
+-
+ 	printk(KERN_INFO PREFIX "%s [%s] (multi-head: %s  rom: %s  post: %s)\n",
+ 	       ACPI_VIDEO_DEVICE_NAME, acpi_device_bid(device),
+ 	       video->flags.multihead ? "yes" : "no",
+@@ -1701,12 +1697,16 @@ static int acpi_video_bus_add(struct acpi_device *device)
+ 	video->pm_nb.priority = 0;
+ 	error = register_pm_notifier(&video->pm_nb);
+ 	if (error)
+-		goto err_unregister_input_dev;
++		goto err_stop_video;
++
++	error = input_register_device(input);
++	if (error)
++		goto err_unregister_pm_notifier;
  
+ 	return 0;
+ 
+- err_unregister_input_dev:
+-	input_unregister_device(input);
++ err_unregister_pm_notifier:
++	unregister_pm_notifier(&video->pm_nb);
+  err_stop_video:
+ 	acpi_video_bus_stop_devices(video);
+  err_free_input_dev:
 -- 
 1.7.11.rc0.100.g5498c5f
