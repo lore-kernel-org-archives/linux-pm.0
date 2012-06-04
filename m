@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 08/15] acpi_video: fix leaking PCI references
-Date: Mon,  4 Jun 2012 01:39:59 -0400
-Message-ID: <cfb46f433a4da97c31780e08a259fac2cb6bd61f.1338786831.git.len.brown@intel.com>
+Subject: [PATCH 10/15] gma500: don't register the ACPI video bus
+Date: Mon,  4 Jun 2012 01:40:01 -0400
+Message-ID: <155689defc782b486a7e6776a57ecc4ebb37ed52.1338786832.git.len.brown@intel.com>
 References: <1338788406-29981-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -26,37 +26,26 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
+We are not yet ready for this and it makes a mess on some devices.
+
 Signed-off-by: Alan Cox <alan@linux.intel.com>
-Acked-by: Matthew Garrett <mjg@redhat.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/video.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/gma500/psb_drv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 9577b6f..66e8f73 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -1745,6 +1745,7 @@ static int acpi_video_bus_remove(struct acpi_device *device, int type)
+diff --git a/drivers/gpu/drm/gma500/psb_drv.c b/drivers/gpu/drm/gma500/psb_drv.c
+index c34adf9..09af2ff 100644
+--- a/drivers/gpu/drm/gma500/psb_drv.c
++++ b/drivers/gpu/drm/gma500/psb_drv.c
+@@ -349,7 +349,7 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
+ 	PSB_WSGX32(0x30000000, PSB_CR_BIF_3D_REQ_BASE);
  
- static int __init intel_opregion_present(void)
- {
-+	int i915 = 0;
- #if defined(CONFIG_DRM_I915) || defined(CONFIG_DRM_I915_MODULE)
- 	struct pci_dev *dev = NULL;
- 	u32 address;
-@@ -1757,10 +1758,10 @@ static int __init intel_opregion_present(void)
- 		pci_read_config_dword(dev, 0xfc, &address);
- 		if (!address)
- 			continue;
--		return 1;
-+		i915 = 1;
- 	}
- #endif
--	return 0;
-+	return i915;
- }
+ /*	igd_opregion_init(&dev_priv->opregion_dev); */
+-	acpi_video_register();
++/*	acpi_video_register(); */
+ 	if (dev_priv->lid_state)
+ 		psb_lid_timer_init(dev_priv);
  
- int acpi_video_register(void)
 -- 
 1.7.11.rc0.100.g5498c5f
