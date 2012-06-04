@@ -1,95 +1,105 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 02/15] ACPI: Ignore invalid _PSS entries,
-	but use valid ones
-Date: Mon,  4 Jun 2012 01:39:53 -0400
-Message-ID: <d8e725f356fd5f225ad97f21213fc007e409c9f5.1338786831.git.len.brown@intel.com>
+Subject: [PATCH 12/15] tools/power turbostat: fix un-intended affinity of forked program
+Date: Mon,  4 Jun 2012 01:40:03 -0400
+Message-ID: <d15cf7c129fa4ec4b44c52521e49ffafb9749029.1338786832.git.len.brown@intel.com>
 References: <1338788406-29981-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1338788406-29981-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <c5971456964290da7e98222892797b71ef793e62.1338786831.git.len.brown@intel.com>
 References: <c5971456964290da7e98222892797b71ef793e62.1338786831.git.len.brown@intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Marco Aurelio da Costa <costa@gamic.com>, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Marco Aurelio da Costa <costa@gamic.com>
+From: Len Brown <len.brown@intel.com>
 
-The EliteBook 8560W has non-initialized entries in its _PSS ACPI
-table. Instead of bailing out when the first non-initialized entry is
-found, ignore it and use only  the valid entries. Only bail out if there
-is no valid entry at all.
+Linux 3.4 included a modification to turbostat to
+lower cross-call overhead by using scheduler affinity:
 
-[v3: Fixes suggested by Konrad]
+15aaa34654831e98dd76f7738b6c7f5d05a66430
+(tools turbostat: reduce measurement overhead due to IPIs)
 
-Signed-off-by: Marco Aurelio da Costa <costa@gamic.com>
+In the use-case where turbostat forks a child program,
+that change had the un-intended side-effect of binding
+the child to the last cpu in the system.
+
+This change removed the binding before forking the child.
+
+This is a back-port of a fix already included in turbostat v2.
+
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/processor_perflib.c | 30 +++++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 28 ++++++++++++++++++++++++++--
+ 1 file changed, 26 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-index 0af48a8..a093dc1 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -333,6 +333,7 @@ static int acpi_processor_get_performance_states(struct acpi_processor *pr)
- 	struct acpi_buffer state = { 0, NULL };
- 	union acpi_object *pss = NULL;
- 	int i;
-+	int last_invalid = -1;
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index ab2f682..d5d6a3d 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -73,8 +73,8 @@ int backwards_count;
+ char *progname;
  
+ int num_cpus;
+-cpu_set_t *cpu_mask;
+-size_t cpu_mask_size;
++cpu_set_t *cpu_present_set, *cpu_mask;
++size_t cpu_present_setsize, cpu_mask_size;
  
- 	status = acpi_evaluate_object(pr->handle, "_PSS", NULL, &buffer);
-@@ -394,14 +395,33 @@ static int acpi_processor_get_performance_states(struct acpi_processor *pr)
- 		    ((u32)(px->core_frequency * 1000) !=
- 		     (px->core_frequency * 1000))) {
- 			printk(KERN_ERR FW_BUG PREFIX
--			       "Invalid BIOS _PSS frequency: 0x%llx MHz\n",
--			       px->core_frequency);
--			result = -EFAULT;
--			kfree(pr->performance->states);
--			goto end;
-+			       "Invalid BIOS _PSS frequency found for processor %d: 0x%llx MHz\n",
-+			       pr->id, px->core_frequency);
-+			if (last_invalid == -1)
-+				last_invalid = i;
-+		} else {
-+			if (last_invalid != -1) {
-+				/*
-+				 * Copy this valid entry over last_invalid entry
-+				 */
-+				memcpy(&(pr->performance->states[last_invalid]),
-+				       px, sizeof(struct acpi_processor_px));
-+				++last_invalid;
-+			}
- 		}
+ struct counters {
+ 	unsigned long long tsc;		/* per thread */
+@@ -103,6 +103,12 @@ struct timeval tv_even;
+ struct timeval tv_odd;
+ struct timeval tv_delta;
+ 
++int mark_cpu_present(int pkg, int core, int cpu)
++{
++	CPU_SET_S(cpu, cpu_present_setsize, cpu_present_set);
++	return 0;
++}
++
+ /*
+  * cpu_mask_init(ncpus)
+  *
+@@ -118,6 +124,18 @@ void cpu_mask_init(int ncpus)
  	}
- 
-+	if (last_invalid == 0) {
-+		printk(KERN_ERR FW_BUG PREFIX
-+		       "No valid BIOS _PSS frequency found for processor %d\n", pr->id);
-+		result = -EFAULT;
-+		kfree(pr->performance->states);
-+		pr->performance->states = NULL;
+ 	cpu_mask_size = CPU_ALLOC_SIZE(ncpus);
+ 	CPU_ZERO_S(cpu_mask_size, cpu_mask);
++
++	/*
++	 * Allocate and initialize cpu_present_set
++	 */
++	cpu_present_set = CPU_ALLOC(ncpus);
++	if (cpu_present_set == NULL) {
++		perror("CPU_ALLOC");
++		exit(3);
 +	}
-+
-+	if (last_invalid > 0)
-+		pr->performance->state_count = last_invalid;
-+
-       end:
- 	kfree(buffer.pointer);
++	cpu_present_setsize = CPU_ALLOC_SIZE(ncpus);
++	CPU_ZERO_S(cpu_present_setsize, cpu_present_set);
++	for_all_cpus(mark_cpu_present);
+ }
  
+ void cpu_mask_uninit()
+@@ -125,6 +143,9 @@ void cpu_mask_uninit()
+ 	CPU_FREE(cpu_mask);
+ 	cpu_mask = NULL;
+ 	cpu_mask_size = 0;
++	CPU_FREE(cpu_present_set);
++	cpu_present_set = NULL;
++	cpu_present_setsize = 0;
+ }
+ 
+ int cpu_migrate(int cpu)
+@@ -1047,6 +1068,9 @@ int fork_it(char **argv)
+ 	int retval;
+ 	pid_t child_pid;
+ 	get_counters(cnt_even);
++
++        /* clear affinity side-effect of get_counters() */
++        sched_setaffinity(0, cpu_present_setsize, cpu_present_set);
+ 	gettimeofday(&tv_even, (struct timezone *)NULL);
+ 
+ 	child_pid = fork();
 -- 
 1.7.11.rc0.100.g5498c5f
