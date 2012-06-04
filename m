@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 06/15] ACPI / PM: Make __acpi_bus_get_power()
-	cover D3cold correctly
-Date: Mon,  4 Jun 2012 01:39:57 -0400
-Message-ID: <38c92fff988d518fe80dc23d0d44d66bd7e47ddd.1338786831.git.len.brown@intel.com>
+Subject: [PATCH 07/15] ACPI / PM: Make
+	acpi_pm_device_sleep_state() follow the specification
+Date: Mon,  4 Jun 2012 01:39:58 -0400
+Message-ID: <dbe9a2edd17d843d80faf2b99f20a691c1853418.1338786831.git.len.brown@intel.com>
 References: <1338788406-29981-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Mime-Version: 1.0
@@ -27,112 +27,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 
-After recent changes of the ACPI device power states definitions, if
-power resources are not used for the device's power management, the
-state returned by __acpi_bus_get_power() cannot exceed D3hot, because
-the return values of _PSC are 0 through 3.  However, if the _PR3
-method is not present for the device and _PS3 returns 3, we have to
-assume that the device is in D3cold, so the value returned by
-__acpi_bus_get_power() in that case should be 4.
+The comparison between the system sleep state being entered
+and the lowest system sleep state the given device may wake up
+from in acpi_pm_device_sleep_state() is reversed, because the
+specification (ACPI 5.0) says that for wakeup to work:
 
-Similarly, acpi_power_get_inferred_state() should take the power
-resources for the D3hot state into account in general, so that it
-can return 3 if those resources are "on" or 4 (D3cold) otherwise.
+"The sleeping state being entered must be less than or equal to the
+ power state declared in element 1 of the _PRW object."
 
-Fix the the above two issues and make sure that if both _PSC and
-_PR3 are present for the device, the power resources listed by _PR3
-will be used to determine if the number 3 returned by _PSC is meant
-to represent D3cold or D3hot.
+In other words, the state returned by _PRW is the deepest
+(lowest-power) system sleep state the device is capable of waking up
+the system from.
+
+Moreover, acpi_pm_device_sleep_state() also should check if the
+wakeup capability is supported through ACPI, because in principle it
+may be done via native PCIe PME, for example, in which case _SxW
+should not be evaluated.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/acpi/bus.c   | 51 +++++++++++++++++++++++++++++----------------------
- drivers/acpi/power.c |  2 +-
- 2 files changed, 30 insertions(+), 23 deletions(-)
+ drivers/acpi/sleep.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index a41be56..adceafd 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -202,37 +202,44 @@ static const char *state_string(int state)
- 
- static int __acpi_bus_get_power(struct acpi_device *device, int *state)
- {
--	int result = 0;
--	acpi_status status = 0;
--	unsigned long long psc = 0;
-+	int result = ACPI_STATE_UNKNOWN;
- 
- 	if (!device || !state)
- 		return -EINVAL;
- 
--	*state = ACPI_STATE_UNKNOWN;
--
--	if (device->flags.power_manageable) {
--		/*
--		 * Get the device's power state either directly (via _PSC) or
--		 * indirectly (via power resources).
--		 */
--		if (device->power.flags.power_resources) {
--			result = acpi_power_get_inferred_state(device, state);
--			if (result)
--				return result;
--		} else if (device->power.flags.explicit_get) {
--			status = acpi_evaluate_integer(device->handle, "_PSC",
--						       NULL, &psc);
--			if (ACPI_FAILURE(status))
--				return -ENODEV;
--			*state = (int)psc;
--		}
--	} else {
-+	if (!device->flags.power_manageable) {
- 		/* TBD: Non-recursive algorithm for walking up hierarchy. */
- 		*state = device->parent ?
- 			device->parent->power.state : ACPI_STATE_D0;
-+		goto out;
-+	}
-+
-+	/*
-+	 * Get the device's power state either directly (via _PSC) or
-+	 * indirectly (via power resources).
-+	 */
-+	if (device->power.flags.explicit_get) {
-+		unsigned long long psc;
-+		acpi_status status = acpi_evaluate_integer(device->handle,
-+							   "_PSC", NULL, &psc);
-+		if (ACPI_FAILURE(status))
-+			return -ENODEV;
-+
-+		result = psc;
-+	}
-+	/* The test below covers ACPI_STATE_UNKNOWN too. */
-+	if (result <= ACPI_STATE_D2) {
-+	  ; /* Do nothing. */
-+	} else if (device->power.flags.power_resources) {
-+		int error = acpi_power_get_inferred_state(device, &result);
-+		if (error)
-+			return error;
-+	} else if (result == ACPI_STATE_D3_HOT) {
-+		result = ACPI_STATE_D3;
- 	}
-+	*state = result;
- 
-+ out:
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] power state is %s\n",
- 			  device->pnp.bus_id, state_string(*state)));
- 
-diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
-index 0500f71..dd6d6a3 100644
---- a/drivers/acpi/power.c
-+++ b/drivers/acpi/power.c
-@@ -631,7 +631,7 @@ int acpi_power_get_inferred_state(struct acpi_device *device, int *state)
- 	 * We know a device's inferred power state when all the resources
- 	 * required for a given D-state are 'on'.
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index a564fc3..d8b381e 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -773,8 +773,8 @@ int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p)
+ 	 * can wake the system.  _S0W may be valid, too.
  	 */
--	for (i = ACPI_STATE_D0; i < ACPI_STATE_D3_HOT; i++) {
-+	for (i = ACPI_STATE_D0; i <= ACPI_STATE_D3_HOT; i++) {
- 		list = &device->power.states[i].resources;
- 		if (list->count < 1)
- 			continue;
+ 	if (acpi_target_sleep_state == ACPI_STATE_S0 ||
+-	    (device_may_wakeup(dev) &&
+-	     adev->wakeup.sleep_state <= acpi_target_sleep_state)) {
++	    (device_may_wakeup(dev) && adev->wakeup.flags.valid &&
++	     adev->wakeup.sleep_state >= acpi_target_sleep_state)) {
+ 		acpi_status status;
+ 
+ 		acpi_method[3] = 'W';
 -- 
 1.7.11.rc0.100.g5498c5f
