@@ -1,56 +1,54 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 13/15] tools/power turbostat: fix IVB support
-Date: Mon,  4 Jun 2012 01:40:04 -0400
-Message-ID: <650a37f32d2bc16fa802075be579802bc4ec4132.1338786832.git.len.brown@intel.com>
-References: <1338788406-29981-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [linux-pm] [PATCH 0/2] bug fixes for coupled cpuidle
+Date: Tue, 05 Jun 2012 11:12:28 -0700
+Message-ID: <878vg1eigj.fsf@ti.com>
+References: <1337364324-12171-1-git-send-email-ccross@android.com>
+	<4FC9A9BA.1020904@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1338788406-29981-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <c5971456964290da7e98222892797b71ef793e62.1338786831.git.len.brown@intel.com>
-References: <c5971456964290da7e98222892797b71ef793e62.1338786831.git.len.brown@intel.com>
+In-Reply-To: <4FC9A9BA.1020904@kernel.org> (Len Brown's message of "Sat, 02
+	Jun 2012 01:50:50 -0400")
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Colin Cross <ccross@android.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+Hi Len,
 
-Initial IVB support went into turbostat in Linux-3.1:
-553575f1ae048aa44682b46b3c51929a0b3ad337
-(tools turbostat: recognize and run properly on IVB)
+Len Brown <lenb@kernel.org> writes:
 
-However, when running on IVB, turbostat would fail
-to report the new couters added with SNB, c7, pc2 and pc7.
-So in scenarios where these counters are non-zero on IVB,
-turbostat would report erroneous residencey results.
+> On 05/18/2012 02:05 PM, Colin Cross wrote:
+>
+>> The last modifications made to the coupled cpuidle patches introduced
+>> two bugs that I missed during testing.  The online count was never
+>> initialized, causing coupled idle to always wait and never enter the
+>> ready loop.  That hid the second bug, the ready count could never be
+>> decremented after exiting idle.
+>> 
+>> Len, these two patches could be squashed into patch 3 of the original
+>> set.  If you do squash them, you could also add Rafael's tags to the
+>> set (Reviewed-by on 1 and 2, acked-by on 3).
+>
+>
+> squash & tags update done.
+>
+>> Or I can reupload the
+>> whole stack as v5 if you prefer.
+>
+>
+> no need.
 
-In particular c7 time would be added to c1 time,
-since c1 time is calculated as "that which is left over".
+Hmm, after the problems with the pull request, it looks like you dropped
+the coupled CPUidle series completely.  It's a shame that this has been
+reviewed, tested and queued for so long only to see it dropped at the
+last minute.
 
-Also, turbostat reports MHz capabilities when passed
-the "-v" option, and it would incorrectly report 133MHz
-bclk instead of 100MHz bclk for IVB, which would inflate
-GHz reported with that option.
+Instead of the squash, could you just queue the original series (that
+has been in linux-next for some time) and then submit the fixes in
+$SUBJECT series for v3.5-rc?  That way we could still get this support
+in for 3.5, which many of us are waiting for.
 
-This patch is a backport of a fix already included in turbostat v2.
+Thanks,
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index d5d6a3d..16de7ad 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -933,6 +933,8 @@ int is_snb(unsigned int family, unsigned int model)
- 	switch (model) {
- 	case 0x2A:
- 	case 0x2D:
-+	case 0x3A:	/* IVB */
-+	case 0x3D:	/* IVB Xeon */
- 		return 1;
- 	}
- 	return 0;
--- 
-1.7.11.rc0.100.g5498c5f
+Kevin
