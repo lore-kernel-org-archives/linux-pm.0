@@ -1,54 +1,107 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [linux-pm] [PATCH 0/2] bug fixes for coupled cpuidle
-Date: Tue, 05 Jun 2012 11:12:28 -0700
-Message-ID: <878vg1eigj.fsf@ti.com>
-References: <1337364324-12171-1-git-send-email-ccross@android.com>
-	<4FC9A9BA.1020904@kernel.org>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: Re: Suspend/resume regressions on Lenovo S10-3
+Date: Wed, 06 Jun 2012 18:21:21 +0530
+Message-ID: <4FCF5249.2070600@linux.vnet.ibm.com>
+References: <4FC2DA8C.7050401@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4FC9A9BA.1020904@kernel.org> (Len Brown's message of "Sat, 02
-	Jun 2012 01:50:50 -0400")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Colin Cross <ccross@android.com>, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@lists.linux-foundation.org, Arjan van de Ven <arjan@linux.intel.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4FC2DA8C.7050401@linux.vnet.ibm.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Arnd Bergmann <arnd@arndb.de>, "Tomas M." <tmezzadra@gmail.com>, LKML <linux-kernel@vger.kernel.org>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len,
+On 05/28/2012 07:23 AM, Dave Hansen wrote:
 
-Len Brown <lenb@kernel.org> writes:
+> I have a Lenovo S10-3 Atom netbook.  It's always had some amount of
+> trouble working with the intel_idle driver, so I usually compile that
+> out an use the acpi one.  However, just after 3.1, suspend/resume broke.
+>  'echo mem > /sys/power/state' would hang before suspending.  I bisected
+> it down to the commits around:
+> 
+> 	e978aa7d7d57d04eb5f88a7507c4fb98577def77 / v3.1-1-ge978aa7
+> 
+> by Deepthi.  But, current mainline (v3.4-07644-g07acfc2) hangs with a
+> different symptom: it suspends, but hangs on resume from suspend.  I
+> think _that_ delta in the behavior was caused by:
+> 
+> 	3439a8da16bcad6b0982ece938c9f8299bb53584
+> 
+>         ACPI / cpuidle: Remove acpi_idle_suspend (to fix suspend
+> 		regression)
+> 
+> It's a bit of a pain to bisect these two different things in parallel.
+> I was trying to tell git bisect 'good' on working suspend/resume, 'bad'
+> on the hang during resume, and 'skip' on the hangs _during_ suspend.  83
+> kernels in, I'm not sure that's working very well. :)
+> 
+> Deepthi, do you have any idea why your patches broke me in the first
+> place?  Perhaps we should fix that regression first before we go on and
+> try to figure out what changed to let it suspend again, but break later.
 
-> On 05/18/2012 02:05 PM, Colin Cross wrote:
->
->> The last modifications made to the coupled cpuidle patches introduced
->> two bugs that I missed during testing.  The online count was never
->> initialized, causing coupled idle to always wait and never enter the
->> ready loop.  That hid the second bug, the ready count could never be
->> decremented after exiting idle.
->> 
->> Len, these two patches could be squashed into patch 3 of the original
->> set.  If you do squash them, you could also add Rafael's tags to the
->> set (Reviewed-by on 1 and 2, acked-by on 3).
->
->
-> squash & tags update done.
->
->> Or I can reupload the
->> whole stack as v5 if you prefer.
->
->
-> no need.
 
-Hmm, after the problems with the pull request, it looks like you dropped
-the coupled CPUidle series completely.  It's a shame that this has been
-reviewed, tested and queued for so long only to see it dropped at the
-last minute.
+Hi Dave,
 
-Instead of the squash, could you just queue the original series (that
-has been in linux-next for some time) and then submit the fixes in
-$SUBJECT series for v3.5-rc?  That way we could still get this support
-in for 3.5, which many of us are waiting for.
+Sorry about my patches breaking your suspend-resume.
 
-Thanks,
+I, basically tried out building and booting 3.1 kernel with 
+my patch set to reproduce the failure. I could clearly
+see suspend not happening. It turns out to be 
+a bug with my first patch in global registration
+series submitted earlier.
 
-Kevin
+e978aa7d7d57d04eb5f88a7507c4fb98577def77 / v3.1-1-ge978aa7
+
+The following patch, fixes the suspend issues
+seen on my laptop due to earlier cpuidle cleanup 
+(Lenevo T420 booting with acpi_idle enabled). 
+Can you please give this a try
+on top of my patch set (without Rafael's fix) 
+and see if it fixes the problem for you. 
+I am not reverting acpi_idle_suspend flag and 
+hopefully it should resume fine too. 
+
+---
+
+This patch fixes suspend-resume issue seen in the kernel 3.1
+series using acpi_idle_driver because of cpuidle global 
+registration cleanup.
+Here, when acpi_idle_suspend flag was set ( during suspend)
+the interrupts were not getting enabled in acpi_idle_enter_bm()
+routine which was causing the system to hang.
+
+
+Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+
+---
+ drivers/acpi/processor_idle.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 24fe3af..6e35293 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -895,8 +895,9 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 	if (unlikely(!pr))
+ 		return -EINVAL;
+ 
+-
+ 	if (acpi_idle_suspend) {
++		local_irq_disable();
++		local_irq_enable();
+ 		cpu_relax();
+ 		return -EINVAL;
+ 	}
+
+Cheers,
+Deepthi
