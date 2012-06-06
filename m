@@ -1,38 +1,36 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] Suspend/resume regressions on Lenovo S10-3
-Date: Wed, 6 Jun 2012 11:09:27 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1206061108040.1788-100000@iolanthe.rowland.org>
-References: <201206061543.03537.rjw@sisk.pl>
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: Suspend/resume regressions on Lenovo S10-3
+Date: Wed, 06 Jun 2012 07:48:52 -0700
+Message-ID: <4FCF6DD4.4090608@linux.vnet.ibm.com>
+References: <4FC2DA8C.7050401@linux.vnet.ibm.com> <4FCF5249.2070600@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201206061543.03537.rjw@sisk.pl>
+In-Reply-To: <4FCF5249.2070600@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Arnd Bergmann <arnd@arndb.de>, Linux PM mailing list <linux-pm@vger.kernel.org>, "Tomas M." <tmezzadra@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Dave Hansen <dave@linux.vnet.ibm.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
+To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Tomas M." <tmezzadra@gmail.com>, Ferenc Wagner <wferi@niif.hu>, Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@ti.com>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>, Trinabh Gupta <g.trinabh@gmail.com>, linux-pm@lists.linux-foundation.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 6 Jun 2012, Rafael J. Wysocki wrote:
-
-> > --- a/drivers/acpi/processor_idle.c
-> > +++ b/drivers/acpi/processor_idle.c
-> > @@ -895,8 +895,9 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
-> >  	if (unlikely(!pr))
-> >  		return -EINVAL;
-> >  
-> > -
-> >  	if (acpi_idle_suspend) {
-> > +		local_irq_disable();
-> > +		local_irq_enable();
-> >  		cpu_relax();
-> >  		return -EINVAL;
-> >  	}
+On 06/06/2012 05:51 AM, Deepthi Dharwar wrote:
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index 24fe3af..6e35293 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -895,8 +895,9 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  	if (unlikely(!pr))
+>  		return -EINVAL;
 > 
-> May I say this is ugly?  Why can't we track the status of interrupts
-> properly here?
+> -
+>  	if (acpi_idle_suspend) {
+> +		local_irq_disable();
+> +		local_irq_enable();
+>  		cpu_relax();
+>  		return -EINVAL;
+>  	}
 
-It's not just ugly; it's illogical.  What reason could there possibly
-be for disabling interrupts and then enabling them again without doing
-anything in between?
+Heh, that is quite the hack. :)
 
-Alan Stern
+However, it does at least work around my problem: I can suspend again
+with 46bcfad + your patch.
