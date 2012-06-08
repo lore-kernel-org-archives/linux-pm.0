@@ -1,129 +1,61 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: Suspend/resume regressions on Lenovo S10-3
-Date: Fri, 08 Jun 2012 12:11:16 +0530
-Message-ID: <4FD19E8C.7040207@linux.vnet.ibm.com>
-References: <4FC2DA8C.7050401@linux.vnet.ibm.com> <4FCF5249.2070600@linux.vnet.ibm.com> <201206061543.03537.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201206061543.03537.rjw@sisk.pl>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "Tomas M." <tmezzadra@gmail.com>, Ferenc Wagner <wferi@niif.hu>, Arnd Bergmann <arnd@arndb.de>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@ti.com>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>, Trinabh Gupta <g.trinabh@gmail.com>, linux-pm@lists.linux-foundation.org, preeti@linux.vnet.ibm.com, Alan Stern <stern@rowland.harvard.edu>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [RFC 1/4] cpuidle: define the enter function in the driver structure
+Date: Fri,  8 Jun 2012 18:02:42 +0200
+Message-ID: <1339171365-4098-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: lenb@kernel.org
+Cc: linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/06/2012 07:13 PM, Rafael J. Wysocki wrote:
+We have the state index passed as parameter to the 'enter' function.
+Most of the drivers assign their 'enter' functions several times in
+the cpuidle_state structure, as we have the index, we can delegate
+to the driver to handle their own callback array.
 
-> On Wednesday, June 06, 2012, Deepthi Dharwar wrote:
->> On 05/28/2012 07:23 AM, Dave Hansen wrote:
->>
->>> I have a Lenovo S10-3 Atom netbook.  It's always had some amount of
->>> trouble working with the intel_idle driver, so I usually compile that
->>> out an use the acpi one.  However, just after 3.1, suspend/resume broke.
->>>  'echo mem > /sys/power/state' would hang before suspending.  I bisected
->>> it down to the commits around:
->>>
->>> 	e978aa7d7d57d04eb5f88a7507c4fb98577def77 / v3.1-1-ge978aa7
->>>
->>> by Deepthi.  But, current mainline (v3.4-07644-g07acfc2) hangs with a
->>> different symptom: it suspends, but hangs on resume from suspend.  I
->>> think _that_ delta in the behavior was caused by:
->>>
->>> 	3439a8da16bcad6b0982ece938c9f8299bb53584
->>>
->>>         ACPI / cpuidle: Remove acpi_idle_suspend (to fix suspend
->>> 		regression)
->>>
->>> It's a bit of a pain to bisect these two different things in parallel.
->>> I was trying to tell git bisect 'good' on working suspend/resume, 'bad'
->>> on the hang during resume, and 'skip' on the hangs _during_ suspend.  83
->>> kernels in, I'm not sure that's working very well. :)
->>>
->>> Deepthi, do you have any idea why your patches broke me in the first
->>> place?  Perhaps we should fix that regression first before we go on and
->>> try to figure out what changed to let it suspend again, but break later.
->>
->>
->> Hi Dave,
->>
->> Sorry about my patches breaking your suspend-resume.
->>
->> I, basically tried out building and booting 3.1 kernel with 
->> my patch set to reproduce the failure. I could clearly
->> see suspend not happening. It turns out to be 
->> a bug with my first patch in global registration
->> series submitted earlier.
->>
->> e978aa7d7d57d04eb5f88a7507c4fb98577def77 / v3.1-1-ge978aa7
->>
->> The following patch, fixes the suspend issues
->> seen on my laptop due to earlier cpuidle cleanup 
->> (Lenevo T420 booting with acpi_idle enabled). 
->> Can you please give this a try
->> on top of my patch set (without Rafael's fix) 
->> and see if it fixes the problem for you. 
->> I am not reverting acpi_idle_suspend flag and 
->> hopefully it should resume fine too. 
->>
->> ---
->>
->> This patch fixes suspend-resume issue seen in the kernel 3.1
->> series using acpi_idle_driver because of cpuidle global 
->> registration cleanup.
->> Here, when acpi_idle_suspend flag was set ( during suspend)
->> the interrupts were not getting enabled in acpi_idle_enter_bm()
->> routine which was causing the system to hang.
->>
->>
->> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
->>
->> ---
->>  drivers/acpi/processor_idle.c |    3 ++-
->>  1 files changed, 2 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
->> index 24fe3af..6e35293 100644
->> --- a/drivers/acpi/processor_idle.c
->> +++ b/drivers/acpi/processor_idle.c
->> @@ -895,8 +895,9 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
->>  	if (unlikely(!pr))
->>  		return -EINVAL;
->>  
->> -
->>  	if (acpi_idle_suspend) {
->> +		local_irq_disable();
->> +		local_irq_enable();
->>  		cpu_relax();
->>  		return -EINVAL;
->>  	}
-> 
-> May I say this is ugly?  Why can't we track the status of interrupts
-> properly here?
-> 
+That will have the benefit of removing multiple lines of code in the
+different drivers.
 
+In order to smoothly modify the driver, the 'enter' function are in
+the driver structure and in the cpuidle state structure. That will
+let the time to modify the different drivers one by one.
+So the 'cpuidle_enter' function checks if the 'enter' callback is
+assigned in the driver structure and use it, otherwise it invokes
+the 'enter' assigned to the cpuidle_state.
 
-Btw, Deepthi, when you are modifying this to keep track of interrupt enabled/
-disabled status, I think it would be worthwhile to also add a WARN_ON() in
-cpu_idle() inside arch/x86/kernel/process.c, just like how ARM and sh do it.
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/cpuidle.c |    4 +++-
+ include/linux/cpuidle.h   |    1 +
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 735279e..1ca7e1a 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -459,6 +459,9 @@ void cpu_idle(void)
-                        if (cpuidle_idle_call())
-                                pm_idle();
-
-+                       /* The idle routine must return with IRQs enabled. */
-+                       WARN_ON(irqs_disabled());
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index d90519c..155dee7 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -46,7 +46,9 @@ static inline int cpuidle_enter(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv, int index)
+ {
+ 	struct cpuidle_state *target_state = &drv->states[index];
+-	return target_state->enter(dev, drv, index);
 +
-                        rcu_idle_exit();
-                        start_critical_timings();
++	return drv->enter(dev, drv, index) ? drv->enter(dev, drv, index) :
++		target_state->enter(dev, drv, index);
+ }
+ 
+ static inline int cpuidle_enter_tk(struct cpuidle_device *dev,
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 6c26a3d..d82e169 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -130,6 +130,7 @@ struct cpuidle_driver {
+ 	struct cpuidle_state	states[CPUIDLE_STATE_MAX];
+ 	int			state_count;
+ 	int			safe_state_index;
++	int (*enter)(struct cpuidle_device *, struct cpuidle_driver *, int);
+ };
+ 
+ #ifdef CONFIG_CPU_IDLE
+-- 
+1.7.5.4
 
-[If we had done this earlier, we could have caught the bug right when the
-patch went in :-)]
-
-Regards,
-
-Srivatsa S. Bhat
