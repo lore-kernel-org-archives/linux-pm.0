@@ -1,18 +1,14 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: Re: [RFC PATCH 6/12] thermal: introduce active cooling
-	algorithm
-Date: Mon, 11 Jun 2012 11:48:46 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59134985@BGSMSX101.gar.corp.intel.com>
-References: <1339384817.1492.160.camel@rui.sh.intel.com>
-	<CAK44p227RorAEGcikmXSYHJizxVvwbQkZY9fSS0MvpsA4XyATQ@mail.gmail.com>
-	<1339396704.1492.193.camel@rui.sh.intel.com>
-	<20120611114450.GC3649@besouro>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: Suspend/resume regressions on Lenovo S10-3
+Date: Mon, 11 Jun 2012 19:01:21 +0530
+Message-ID: <4FD5F329.2090302@linux.vnet.ibm.com>
+References: <4FC2DA8C.7050401@linux.vnet.ibm.com>
+	<4FCF5249.2070600@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120611114450.GC3649@besouro>
-Content-Language: en-US
+In-Reply-To: <4FCF5249.2070600@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -22,33 +18,129 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Kevin Hilman <khilman@ti.com>, Arnd Bergmann <arnd@arndb.de>, Linux PM mailing list <linux-pm@vger.kernel.org>, "Tomas M." <tmezzadra@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, preeti@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
+Hi Dave,
 
-> > > Can we use the trend callback here even if the current temperature is
-> > > less than the trip temperature. Basically according to trend it should
-> > > deactivate the cooling devices as done for activating cooling devices.
-> >
-> > yes, this depends on the cooling algorithm we want to use.
-> > When the temperature is lower than the trip point, if we want to stop
-> > the fan immediately instead of spinning down step by step, we can do
-> > this.
-> >
-> > Actually, what we are discussing right now should be some cooling
-> > governor stuff. which I'm not sure if we should introduce to the generic
-> > thermal manager or not, right now. :)
+On 06/06/2012 06:21 PM, Deepthi Dharwar wrote:
+
+> On 05/28/2012 07:23 AM, Dave Hansen wrote:
 > 
-> Rui, this is an interesting point. Do you have plans to have governor like approach
-> in the generic thermal fw? Or are you sticking to the zone/cooling binding?
+>> I have a Lenovo S10-3 Atom netbook.  It's always had some amount of
+>> trouble working with the intel_idle driver, so I usually compile that
+>> out an use the acpi one.
 
-Yes We have. I am almost done.
-Will submit patches by tomorrow.
 
-Unfortunately, I cannot re-base my code now on top of Rui's patches.
-So, I will submit an RFC version and we can work to resolve the conflicts.
+What problem did you face with intel_idle driver? Is it suspend/resume
+related?
 
-Thanks,
-Durga
+I see a comment in drivers/idle/intel_idle.c such as:
+
+/*
+ * Known limitations
+ * [...]
+ *
+ * ACPI has a .suspend hack to turn off deep c-statees during suspend
+ * to avoid complications with the lapic timer workaround.
+ * Have not seen issues with suspend, but may need same workaround here.
+ *
+ */
+
+So, if you are facing suspend issues with the intel_idle driver, we probably
+need to add that same workaround here as well, to make it work.
+
+Please let us know what problem you are facing.
+
+Regards,
+Srivatsa S. Bhat
+
+>>  However, just after 3.1, suspend/resume broke.
+>>  'echo mem > /sys/power/state' would hang before suspending.  I bisected
+>> it down to the commits around:
+>>
+>> 	e978aa7d7d57d04eb5f88a7507c4fb98577def77 / v3.1-1-ge978aa7
+>>
+>> by Deepthi.  But, current mainline (v3.4-07644-g07acfc2) hangs with a
+>> different symptom: it suspends, but hangs on resume from suspend.  I
+>> think _that_ delta in the behavior was caused by:
+>>
+>> 	3439a8da16bcad6b0982ece938c9f8299bb53584
+>>
+>>         ACPI / cpuidle: Remove acpi_idle_suspend (to fix suspend
+>> 		regression)
+>>
+>> It's a bit of a pain to bisect these two different things in parallel.
+>> I was trying to tell git bisect 'good' on working suspend/resume, 'bad'
+>> on the hang during resume, and 'skip' on the hangs _during_ suspend.  83
+>> kernels in, I'm not sure that's working very well. :)
+>>
+>> Deepthi, do you have any idea why your patches broke me in the first
+>> place?  Perhaps we should fix that regression first before we go on and
+>> try to figure out what changed to let it suspend again, but break later.
+> 
+> 
+> Hi Dave,
+> 
+> Sorry about my patches breaking your suspend-resume.
+> 
+> I, basically tried out building and booting 3.1 kernel with 
+> my patch set to reproduce the failure. I could clearly
+> see suspend not happening. It turns out to be 
+> a bug with my first patch in global registration
+> series submitted earlier.
+> 
+> e978aa7d7d57d04eb5f88a7507c4fb98577def77 / v3.1-1-ge978aa7
+> 
+> The following patch, fixes the suspend issues
+> seen on my laptop due to earlier cpuidle cleanup 
+> (Lenevo T420 booting with acpi_idle enabled). 
+> Can you please give this a try
+> on top of my patch set (without Rafael's fix) 
+> and see if it fixes the problem for you. 
+> I am not reverting acpi_idle_suspend flag and 
+> hopefully it should resume fine too. 
+> 
+> ---
+> 
+> This patch fixes suspend-resume issue seen in the kernel 3.1
+> series using acpi_idle_driver because of cpuidle global 
+> registration cleanup.
+> Here, when acpi_idle_suspend flag was set ( during suspend)
+> the interrupts were not getting enabled in acpi_idle_enter_bm()
+> routine which was causing the system to hang.
+> 
+> 
+> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+> 
+> ---
+>  drivers/acpi/processor_idle.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index 24fe3af..6e35293 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -895,8 +895,9 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  	if (unlikely(!pr))
+>  		return -EINVAL;
+> 
+> -
+>  	if (acpi_idle_suspend) {
+> +		local_irq_disable();
+> +		local_irq_enable();
+>  		cpu_relax();
+>  		return -EINVAL;
+>  	}
+> 
+> Cheers,
+> Deepthi
+> 
+
+
+
+-- 
+Regards,
+Srivatsa S. Bhat
+IBM Linux Technology Center
