@@ -1,11 +1,11 @@
 From: Amit Kachhap <amit.kachhap@linaro.org>
 Subject: Re: [RFC PATCH 3/12] thermal: set upper and lower limits when binding
-Date: Mon, 11 Jun 2012 09:51:19 +0530
-Message-ID: <CAK44p201bL-YZPZUpfx_mk5vCtc=7vvDfh+jsd7d9XL9yWCAzQ@mail.gmail.com>
+Date: Mon, 11 Jun 2012 09:57:49 +0530
+Message-ID: <CAK44p21ZtBR_ubDr4y9i4c81cBVRyBkr=T=CyWrwS=csQjtnfw@mail.gmail.com>
 References: <1339384801.1492.156.camel@rui.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1339384801.1492.156.camel@rui.sh.intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
@@ -13,156 +13,276 @@ To: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "R, Durgadoss" <durgadoss.r@intel.com>, eduardo <eduardo.valentin@ti.com>, "Len, Brown" <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUnVpLAoKSSBsaWtlIHRoaXMgYXBwcm9hY2ggb2YgbXVsdGlwbGUgY29vbGluZyBzdGF0ZXMg
-Zm9yIEFDVElWRSB0eXBlIGNvb2xpbmcgZGV2aWNlcy4KU29tZSBjb21tZW50cyBhZGRlZC4KCk9u
-IDExIEp1bmUgMjAxMiAwODo1MCwgWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPiB3cm90
-ZToKPgo+IFNldCB1cHBlciBhbmQgbG93ZXIgbGltaXRzIHdoZW4gYmluZGluZwo+IGEgdGhlcm1h
-bCBjb29saW5nIGRldmljZSB0byBhIHRoZXJtYWwgem9uZSBkZXZpY2UuCj4KPiBTaWduZWQtb2Zm
-LWJ5OiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+Cj4gLS0tCj4goGRyaXZlcnMvYWNw
-aS90aGVybWFsLmMgoCCgIKAgoCB8IKAgMzQgKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0t
-LS0tLQo+IKBkcml2ZXJzL3BsYXRmb3JtL3g4Ni9hY2VyaGRmLmMgfCCgIKAyICstCj4goGRyaXZl
-cnMvdGhlcm1hbC90aGVybWFsX3N5cy5jIKB8IKAgMjAgKysrKysrKysrKysrKystLS0tLS0KPiCg
-aW5jbHVkZS9saW51eC90aGVybWFsLmggoCCgIKAgoHwgoCCgMyArKy0KPiCgNCBmaWxlcyBjaGFu
-Z2VkLCA0MSBpbnNlcnRpb25zKCspLCAxOCBkZWxldGlvbnMoLSkKPgo+IEluZGV4OiBydGQzL2Ry
-aXZlcnMvdGhlcm1hbC90aGVybWFsX3N5cy5jCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSBydGQzLm9yaWcv
-ZHJpdmVycy90aGVybWFsL3RoZXJtYWxfc3lzLmMKPiArKysgcnRkMy9kcml2ZXJzL3RoZXJtYWwv
-dGhlcm1hbF9zeXMuYwo+IEBAIC0yNDgsNyArMjQ4LDcgQEAgcGFzc2l2ZV9zdG9yZShzdHJ1Y3Qg
-ZGV2aWNlICpkZXYsIHN0cnVjdAo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IHNpemVvZigiUHJvY2Vzc29yIikpKQo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKB0
-aGVybWFsX3pvbmVfYmluZF9jb29saW5nX2RldmljZSh0eiwKPiCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgVEhFUk1BTF9UUklQ
-U19OT05FLAo+IC0goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgY2Rldik7Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKBjZGV2LCAtMSwgLTEpOwo+IKAgoCCg
-IKAgoCCgIKAgoH0KPiCgIKAgoCCgIKAgoCCgIKBtdXRleF91bmxvY2soJnRoZXJtYWxfbGlzdF9s
-b2NrKTsKPiCgIKAgoCCgIKAgoCCgIKBpZiAoIXR6LT5wYXNzaXZlX2RlbGF5KQo+IEBAIC03NjAs
-NyArNzYwLDggQEAgc3RhdGljIHZvaWQgdGhlcm1hbF96b25lX2RldmljZV9jaGVjayhzdAo+IKAq
-Lwo+IKBpbnQgdGhlcm1hbF96b25lX2JpbmRfY29vbGluZ19kZXZpY2Uoc3RydWN0IHRoZXJtYWxf
-em9uZV9kZXZpY2UgKnR6LAo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGlu
-dCB0cmlwLAo+IC0goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKBzdHJ1Y3QgdGhl
-cm1hbF9jb29saW5nX2RldmljZSAqY2RldikKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKmNkZXYsCj4gKyCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoGxvbmcgdXBwZXIsIGxvbmcgbG93ZXIpCj4goHsK
-PiCgIKAgoCCgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2VfaW5zdGFuY2UgKmRldjsKPiCg
-IKAgoCCgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2VfaW5zdGFuY2UgKnBvczsKPiBAQCAt
-Nzg0LDYgKzc4NSwxNSBAQCBpbnQgdGhlcm1hbF96b25lX2JpbmRfY29vbGluZ19kZXZpY2Uoc3Ry
-Cj4goCCgIKAgoGlmICh0eiAhPSBwb3MxIHx8IGNkZXYgIT0gcG9zMikKPiCgIKAgoCCgIKAgoCCg
-IKByZXR1cm4gLUVJTlZBTDsKPgo+ICsgoCCgIKAgY2Rldi0+b3BzLT5nZXRfbWF4X3N0YXRlKGNk
-ZXYsICZtYXhfc3RhdGUpOwo+ICsKPiArIKAgoCCgIC8qIGxvd2VyIGRlZmF1bHQgMCwgdXBwZXIg
-ZGVmYXVsdCBtYXhfc3RhdGUgKi8KPiArIKAgoCCgIGxvd2VyID0gbG93ZXIgPCAwID8gMCA6IGxv
-d2VyOwo+ICsgoCCgIKAgdXBwZXIgPSB1cHBlciA8IDAgPyBtYXhfc3RhdGUgOiB1cHBlcjsKQWxz
-byBzb21lIGNoZWNrIGNhbiBiZSBhZGRlZCBoZXJlIGxpa2UgdGhpcywKICAgICAgICAgICBjZGV2
-LT5vcHMtPmdldF9tYXhfc3RhdGUoY2RldiwgJmN1cl9zdGF0ZSk7CgoKPiArCj4gKyCgIKAgoCBp
-ZiAobG93ZXIgPiB1cHBlciB8fCB1cHBlciA+IG1heF9zdGF0ZSkKPiArIKAgoCCgIKAgoCCgIKAg
-cmV0dXJuIC1FSU5WQUw7Cj4gKwo+IKAgoCCgIKBkZXYgPQo+IKAgoCCgIKAgoCCga3phbGxvYyhz
-aXplb2Yoc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2VfaW5zdGFuY2UpLCBHRlBfS0VSTkVM
-KTsKPiCgIKAgoCCgaWYgKCFkZXYpCj4gQEAgLTc5MSwxMCArODAxLDggQEAgaW50IHRoZXJtYWxf
-em9uZV9iaW5kX2Nvb2xpbmdfZGV2aWNlKHN0cgo+IKAgoCCgIKBkZXYtPnR6ID0gdHo7Cj4goCCg
-IKAgoGRldi0+Y2RldiA9IGNkZXY7Cj4goCCgIKAgoGRldi0+dHJpcCA9IHRyaXA7Cj4gLQo+IC0g
-oCCgIKAgY2Rldi0+b3BzLT5nZXRfbWF4X3N0YXRlKGRldiwgJm1heF9zdGF0ZSk7Cj4gLSCgIKAg
-oCBkZXYtPnVwcGVyID0gbWF4X3N0YXRlOwo+IC0goCCgIKAgZGV2LT5sb3dlciA9IDA7Cj4gKyCg
-IKAgoCBkZXYtPnVwcGVyID0gdXBwZXI7Cj4gKyCgIKAgoCBkZXYtPmxvd2VyID0gbG93ZXI7Cj4K
-PiCgIKAgoCCgcmVzdWx0ID0gZ2V0X2lkcigmdHotPmlkciwgJnR6LT5sb2NrLCAmZGV2LT5pZCk7
-Cj4goCCgIKAgoGlmIChyZXN1bHQpCj4gSW5kZXg6IHJ0ZDMvaW5jbHVkZS9saW51eC90aGVybWFs
-LmgKPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09Cj4gLS0tIHJ0ZDMub3JpZy9pbmNsdWRlL2xpbnV4L3RoZXJtYWwuaAo+
-ICsrKyBydGQzL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oCj4gQEAgLTE0Myw3ICsxNDMsOCBAQCBz
-dHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqdGhlcm1hbF96b25lCj4goHZvaWQgdGhlcm1hbF96
-b25lX2RldmljZV91bnJlZ2lzdGVyKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICopOwo+Cj4g
-oGludCB0aGVybWFsX3pvbmVfYmluZF9jb29saW5nX2RldmljZShzdHJ1Y3QgdGhlcm1hbF96b25l
-X2RldmljZSAqLCBpbnQsCj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoHN0
-cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlICopOwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKBzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSAqLAo+ICsgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKBsb25nLCBsb25nKTsKPiCgaW50IHRoZXJtYWxf
-em9uZV91bmJpbmRfY29vbGluZ19kZXZpY2Uoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKiwg
-aW50LAo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgc3RydWN0IHRoZXJt
-YWxfY29vbGluZ19kZXZpY2UgKik7Cj4goHZvaWQgdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUo
-c3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKik7Cj4gSW5kZXg6IHJ0ZDMvZHJpdmVycy9hY3Bp
-L3RoZXJtYWwuYwo+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT0KPiAtLS0gcnRkMy5vcmlnL2RyaXZlcnMvYWNwaS90aGVy
-bWFsLmMKPiArKysgcnRkMy9kcml2ZXJzL2FjcGkvdGhlcm1hbC5jCj4gQEAgLTcyOSwxMSArNzI5
-LDkgQEAgc3RhdGljIGludCB0aGVybWFsX25vdGlmeShzdHJ1Y3QgdGhlcm1hbAo+IKAgoCCgIKBy
-ZXR1cm4gMDsKPiCgfQo+Cj4gLXR5cGVkZWYgaW50ICgqY2IpKHN0cnVjdCB0aGVybWFsX3pvbmVf
-ZGV2aWNlICosIGludCwKPiAtIKAgoCCgIKAgoCCgIKAgoCBzdHJ1Y3QgdGhlcm1hbF9jb29saW5n
-X2RldmljZSAqKTsKPiCgc3RhdGljIGludCBhY3BpX3RoZXJtYWxfY29vbGluZ19kZXZpY2VfY2Io
-c3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnRoZXJtYWwsCj4goCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKmNkZXYs
-Cj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGNiIGFjdGlvbikKPiAr
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgaW50IGJpbmQpCj4goHsKPiCg
-IKAgoCCgc3RydWN0IGFjcGlfZGV2aWNlICpkZXZpY2UgPSBjZGV2LT5kZXZkYXRhOwo+IKAgoCCg
-IKBzdHJ1Y3QgYWNwaV90aGVybWFsICp0eiA9IHRoZXJtYWwtPmRldmRhdGE7Cj4gQEAgLTc1OCw3
-ICs3NTYsMTQgQEAgc3RhdGljIGludCBhY3BpX3RoZXJtYWxfY29vbGluZ19kZXZpY2VfYwo+IKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgaGFuZGxlID0gdHotPnRyaXBzLnBhc3NpdmUuZGV2aWNlcy5o
-YW5kbGVzW2ldOwo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgc3RhdHVzID0gYWNwaV9idXNfZ2V0
-X2RldmljZShoYW5kbGUsICZkZXYpOwo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgaWYgKEFDUElf
-U1VDQ0VTUyhzdGF0dXMpICYmIChkZXYgPT0gZGV2aWNlKSkgewo+IC0goCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgcmVzdWx0ID0gYWN0aW9uKHRoZXJtYWwsIHRyaXAsIGNkZXYpOwo+ICsg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgaWYgKGJpbmQpCj4gKyCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlc3VsdCA9Cj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgdGhlcm1hbF96b25lX2JpbmRfY29vbGluZ19kZXZp
-Y2UoCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCB0aGVybWFsLCB0cmlwLCBjZGV2LCAtMSwgLTEpOwo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgZWxzZQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCByZXN1bHQgPQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIHRoZXJtYWxfem9uZV91bmJpbmRfY29vbGluZ19kZXZpY2UoCj4gKyCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCB0aGVybWFsLCB0cmlwLCBj
-ZGV2KTsKPiCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgaWYgKHJlc3VsdCkKPiCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKBnb3RvIGZhaWxlZDsKPiCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoH0KPiBAQCAtNzc1LDcgKzc4MCwxMyBAQCBzdGF0aWMgaW50IGFjcGlf
-dGhlcm1hbF9jb29saW5nX2RldmljZV9jCj4goCCgIKAgoCCgIKAgoCCgIKAgoCCgIKBoYW5kbGUg
-PSB0ei0+dHJpcHMuYWN0aXZlW2ldLmRldmljZXMuaGFuZGxlc1tqXTsKPiCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoHN0YXR1cyA9IGFjcGlfYnVzX2dldF9kZXZpY2UoaGFuZGxlLCAmZGV2KTsKPiCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoGlmIChBQ1BJX1NVQ0NFU1Moc3RhdHVzKSAmJiAoZGV2ID09
-IGRldmljZSkpIHsKPiAtIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlc3VsdCA9IGFj
-dGlvbih0aGVybWFsLCB0cmlwLCBjZGV2KTsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIGlmIChiaW5kKQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBy
-ZXN1bHQgPQo+ICsgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IHRoZXJtYWxfem9uZV9iaW5kX2Nvb2xpbmdfZGV2aWNlKAo+ICsgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgdGhlcm1hbCwgdHJpcCwgY2Rldiwg
-LTEsIC0xKTsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIGVsc2UKPiArIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVzdWx0ID0gdGhlcm1hbF96b25lX3Vu
-YmluZF9jb29saW5nX2RldmljZSgKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIHRoZXJtYWwsIHRyaXAsIGNkZXYpOwo+IKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKBpZiAocmVzdWx0KQo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoGdvdG8gZmFpbGVkOwo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgfQo+
-IEBAIC03ODYsNyArNzk3LDEyIEBAIHN0YXRpYyBpbnQgYWNwaV90aGVybWFsX2Nvb2xpbmdfZGV2
-aWNlX2MKPiCgIKAgoCCgIKAgoCCgIKBoYW5kbGUgPSB0ei0+ZGV2aWNlcy5oYW5kbGVzW2ldOwo+
-IKAgoCCgIKAgoCCgIKAgoHN0YXR1cyA9IGFjcGlfYnVzX2dldF9kZXZpY2UoaGFuZGxlLCAmZGV2
-KTsKPiCgIKAgoCCgIKAgoCCgIKBpZiAoQUNQSV9TVUNDRVNTKHN0YXR1cykgJiYgKGRldiA9PSBk
-ZXZpY2UpKSB7Cj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgcmVzdWx0ID0gYWN0aW9uKHRoZXJt
-YWwsIC0xLCBjZGV2KTsKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCBpZiAoYmluZCkKPiArIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIHJlc3VsdCA9IHRoZXJtYWxfem9uZV9iaW5kX2Nv
-b2xpbmdfZGV2aWNlKHRoZXJtYWwsCj4gKyCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIC0xLCBjZGV2LCAtMSwgLTEpOwo+ICsgoCCg
-IKAgoCCgIKAgoCCgIKAgoCCgIGVsc2UKPiArIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCg
-IHJlc3VsdCA9IHRoZXJtYWxfem9uZV91bmJpbmRfY29vbGluZ19kZXZpY2UodGhlcm1hbCwKPiAr
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgLTEsIGNkZXYpOwo+IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgaWYgKHJlc3VsdCkKPiCg
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgZ290byBmYWlsZWQ7Cj4goCCgIKAgoCCgIKAg
-oCCgfQo+IEBAIC04MDAsMTYgKzgxNiwxNCBAQCBzdGF0aWMgaW50Cj4goGFjcGlfdGhlcm1hbF9i
-aW5kX2Nvb2xpbmdfZGV2aWNlKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0aGVybWFsLAo+
-IKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoHN0cnVjdCB0aGVybWFsX2Nv
-b2xpbmdfZGV2aWNlICpjZGV2KQo+IKB7Cj4gLSCgIKAgoCByZXR1cm4gYWNwaV90aGVybWFsX2Nv
-b2xpbmdfZGV2aWNlX2NiKHRoZXJtYWwsIGNkZXYsCj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCB0aGVybWFsX3pvbmVfYmluZF9jb29saW5nX2RldmljZSk7Cj4gKyCgIKAgoCByZXR1
-cm4gYWNwaV90aGVybWFsX2Nvb2xpbmdfZGV2aWNlX2NiKHRoZXJtYWwsIGNkZXYsIDEpOwo+IKB9
-Cj4KPiCgc3RhdGljIGludAo+IKBhY3BpX3RoZXJtYWxfdW5iaW5kX2Nvb2xpbmdfZGV2aWNlKHN0
-cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0aGVybWFsLAo+IKAgoCCgIKAgoCCgIKAgoCCgIKAg
-oCCgIKAgoCCgIKAgoCCgIKAgoHN0cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlICpjZGV2KQo+
-IKB7Cj4gLSCgIKAgoCByZXR1cm4gYWNwaV90aGVybWFsX2Nvb2xpbmdfZGV2aWNlX2NiKHRoZXJt
-YWwsIGNkZXYsCj4gLSCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCCgIKAgoCB0aGVybWFsX3pvbmVf
-dW5iaW5kX2Nvb2xpbmdfZGV2aWNlKTsKPiArIKAgoCCgIHJldHVybiBhY3BpX3RoZXJtYWxfY29v
-bGluZ19kZXZpY2VfY2IodGhlcm1hbCwgY2RldiwgMCk7Cj4goH0KPgo+IKBzdGF0aWMgY29uc3Qg
-c3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2Vfb3BzIGFjcGlfdGhlcm1hbF96b25lX29wcyA9IHsK
-PiBJbmRleDogcnRkMy9kcml2ZXJzL3BsYXRmb3JtL3g4Ni9hY2VyaGRmLmMKPiA9PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-Cj4gLS0tIHJ0ZDMub3JpZy9kcml2ZXJzL3BsYXRmb3JtL3g4Ni9hY2VyaGRmLmMKPiArKysgcnRk
-My9kcml2ZXJzL3BsYXRmb3JtL3g4Ni9hY2VyaGRmLmMKPiBAQCAtMzI5LDcgKzMyOSw3IEBAIHN0
-YXRpYyBpbnQgYWNlcmhkZl9iaW5kKHN0cnVjdCB0aGVybWFsX3oKPiCgIKAgoCCgaWYgKGNkZXYg
-IT0gY2xfZGV2KQo+IKAgoCCgIKAgoCCgIKAgoHJldHVybiAwOwo+Cj4gLSCgIKAgoCBpZiAodGhl
-cm1hbF96b25lX2JpbmRfY29vbGluZ19kZXZpY2UodGhlcm1hbCwgMCwgY2RldikpIHsKPiArIKAg
-oCCgIGlmICh0aGVybWFsX3pvbmVfYmluZF9jb29saW5nX2RldmljZSh0aGVybWFsLCAwLCBjZGV2
-LCAtMSwgLTEpKSB7Cj4goCCgIKAgoCCgIKAgoCCgcHJfZXJyKCJlcnJvciBiaW5kaW5nIGNvb2xp
-bmcgZGV2XG4iKTsKPiCgIKAgoCCgIKAgoCCgIKByZXR1cm4gLUVJTlZBTDsKPiCgIKAgoCCgfQo+
-Cj4K
+Hi Rui,
+
+Sorry for sending one incomplete mail before.
+I like this approach of multiple cooling states for ACTIVE type cooling=
+ devices.
+Some comments added.
+
+On 11 June 2012 08:50, Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> Set upper and lower limits when binding
+> a thermal cooling device to a thermal zone device.
+>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+> =A0drivers/acpi/thermal.c =A0 =A0 =A0 =A0 | =A0 34 ++++++++++++++++++=
+++++++----------
+> =A0drivers/platform/x86/acerhdf.c | =A0 =A02 +-
+> =A0drivers/thermal/thermal_sys.c =A0| =A0 20 ++++++++++++++------
+> =A0include/linux/thermal.h =A0 =A0 =A0 =A0| =A0 =A03 ++-
+> =A04 files changed, 41 insertions(+), 18 deletions(-)
+>
+> Index: rtd3/drivers/thermal/thermal_sys.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- rtd3.orig/drivers/thermal/thermal_sys.c
+> +++ rtd3/drivers/thermal/thermal_sys.c
+> @@ -248,7 +248,7 @@ passive_store(struct device *dev, struct
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ sizeof("Processor")))
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0therma=
+l_zone_bind_cooling_device(tz,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 THERMAL_TRIPS_=
+NONE,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cdev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0cdev, -1, -=
+1);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mutex_unlock(&thermal_list_lock);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (!tz->passive_delay)
+> @@ -760,7 +760,8 @@ static void thermal_zone_device_check(st
+> =A0*/
+> =A0int thermal_zone_bind_cooling_device(struct thermal_zone_device *t=
+z,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ int trip,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0struct thermal_cooling_device *cdev)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0struct thermal_cooling_device *cdev,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0long upper, long lower)
+> =A0{
+> =A0 =A0 =A0 =A0struct thermal_cooling_device_instance *dev;
+> =A0 =A0 =A0 =A0struct thermal_cooling_device_instance *pos;
+> @@ -784,6 +785,15 @@ int thermal_zone_bind_cooling_device(str
+> =A0 =A0 =A0 =A0if (tz !=3D pos1 || cdev !=3D pos2)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
+>
+> + =A0 =A0 =A0 cdev->ops->get_max_state(cdev, &max_state);
+> +
+> + =A0 =A0 =A0 /* lower default 0, upper default max_state */
+> + =A0 =A0 =A0 lower =3D lower < 0 ? 0 : lower;
+> + =A0 =A0 =A0 upper =3D upper < 0 ? max_state : upper;
+> +
+> + =A0 =A0 =A0 if (lower > upper || upper > max_state)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;
+> +
+> =A0 =A0 =A0 =A0dev =3D
+> =A0 =A0 =A0 =A0 =A0 =A0kzalloc(sizeof(struct thermal_cooling_device_i=
+nstance), GFP_KERNEL);
+> =A0 =A0 =A0 =A0if (!dev)
+> @@ -791,10 +801,8 @@ int thermal_zone_bind_cooling_device(str
+> =A0 =A0 =A0 =A0dev->tz =3D tz;
+> =A0 =A0 =A0 =A0dev->cdev =3D cdev;
+> =A0 =A0 =A0 =A0dev->trip =3D trip;
+> -
+> - =A0 =A0 =A0 cdev->ops->get_max_state(dev, &max_state);
+> - =A0 =A0 =A0 dev->upper =3D max_state;
+> - =A0 =A0 =A0 dev->lower =3D 0;
+> + =A0 =A0 =A0 dev->upper =3D upper;
+> + =A0 =A0 =A0 dev->lower =3D lower;
+Also some check can be added here like this,
+          cdev->ops->get_max_state(cdev, &cur_state);
+          if (cur_state !=3D  lower) {
+              print_err("Set the initial state of the cooling device
+to lower\n");
+              return -EINVAL;
+           }
+           This is needed because in your thermal_zone_update
+implementation the state change is from lower - upper.
+>
+> =A0 =A0 =A0 =A0result =3D get_idr(&tz->idr, &tz->lock, &dev->id);
+> =A0 =A0 =A0 =A0if (result)
+> Index: rtd3/include/linux/thermal.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- rtd3.orig/include/linux/thermal.h
+> +++ rtd3/include/linux/thermal.h
+> @@ -143,7 +143,8 @@ struct thermal_zone_device *thermal_zone
+> =A0void thermal_zone_device_unregister(struct thermal_zone_device *);
+>
+> =A0int thermal_zone_bind_cooling_device(struct thermal_zone_device *,=
+ int,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0struct thermal_cooling_device *);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0struct thermal_cooling_device *,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0long, long);
+> =A0int thermal_zone_unbind_cooling_device(struct thermal_zone_device =
+*, int,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 struct thermal_cooling_device *);
+> =A0void thermal_zone_device_update(struct thermal_zone_device *);
+> Index: rtd3/drivers/acpi/thermal.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- rtd3.orig/drivers/acpi/thermal.c
+> +++ rtd3/drivers/acpi/thermal.c
+> @@ -729,11 +729,9 @@ static int thermal_notify(struct thermal
+> =A0 =A0 =A0 =A0return 0;
+> =A0}
+>
+> -typedef int (*cb)(struct thermal_zone_device *, int,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct thermal_cooling_device *);
+> =A0static int acpi_thermal_cooling_device_cb(struct thermal_zone_devi=
+ce *thermal,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0struct thermal_cooling_device *cdev,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 cb action)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 int bind)
+> =A0{
+> =A0 =A0 =A0 =A0struct acpi_device *device =3D cdev->devdata;
+> =A0 =A0 =A0 =A0struct acpi_thermal *tz =3D thermal->devdata;
+> @@ -758,7 +756,14 @@ static int acpi_thermal_cooling_device_c
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0handle =3D tz->trips.p=
+assive.devices.handles[i];
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0status =3D acpi_bus_ge=
+t_device(handle, &dev);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (ACPI_SUCCESS(statu=
+s) && (dev =3D=3D device)) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 result =
+=3D action(thermal, trip, cdev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (bin=
+d)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 result =3D
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 thermal_zone_bind_cooling_device(
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal, trip, cdev, -1, -1);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 result =3D
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 thermal_zone_unbind_cooling_device(
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal, trip, cdev);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (re=
+sult)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0goto failed;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> @@ -775,7 +780,13 @@ static int acpi_thermal_cooling_device_c
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0handle =3D tz->trips.a=
+ctive[i].devices.handles[j];
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0status =3D acpi_bus_ge=
+t_device(handle, &dev);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (ACPI_SUCCESS(statu=
+s) && (dev =3D=3D device)) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 result =
+=3D action(thermal, trip, cdev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (bin=
+d)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 result =3D
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 thermal_zone_bind_cooling_device(
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal, trip, cdev, -1, -1);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 result =3D thermal_zone_unbind_cooling_device(
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal, trip, cdev);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (re=
+sult)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0goto failed;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> @@ -786,7 +797,12 @@ static int acpi_thermal_cooling_device_c
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0handle =3D tz->devices.handles[i];
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0status =3D acpi_bus_get_device(handle,=
+ &dev);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (ACPI_SUCCESS(status) && (dev =3D=3D=
+ device)) {
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 result =3D action(therm=
+al, -1, cdev);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (bind)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 result =
+=3D thermal_zone_bind_cooling_device(thermal,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 -1, cdev, -1, =
+-1);
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 result =
+=3D thermal_zone_unbind_cooling_device(thermal,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 -1, cdev);
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (result)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0goto f=
+ailed;
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0}
+> @@ -800,16 +816,14 @@ static int
+> =A0acpi_thermal_bind_cooling_device(struct thermal_zone_device *therm=
+al,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0struct thermal_cooling_device *cdev)
+> =A0{
+> - =A0 =A0 =A0 return acpi_thermal_cooling_device_cb(thermal, cdev,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal=
+_zone_bind_cooling_device);
+> + =A0 =A0 =A0 return acpi_thermal_cooling_device_cb(thermal, cdev, 1)=
+;
+> =A0}
+>
+> =A0static int
+> =A0acpi_thermal_unbind_cooling_device(struct thermal_zone_device *the=
+rmal,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ =A0 =A0struct thermal_cooling_device *cdev)
+> =A0{
+> - =A0 =A0 =A0 return acpi_thermal_cooling_device_cb(thermal, cdev,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal=
+_zone_unbind_cooling_device);
+> + =A0 =A0 =A0 return acpi_thermal_cooling_device_cb(thermal, cdev, 0)=
+;
+> =A0}
+>
+> =A0static const struct thermal_zone_device_ops acpi_thermal_zone_ops =
+=3D {
+> Index: rtd3/drivers/platform/x86/acerhdf.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- rtd3.orig/drivers/platform/x86/acerhdf.c
+> +++ rtd3/drivers/platform/x86/acerhdf.c
+> @@ -329,7 +329,7 @@ static int acerhdf_bind(struct thermal_z
+> =A0 =A0 =A0 =A0if (cdev !=3D cl_dev)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return 0;
+>
+> - =A0 =A0 =A0 if (thermal_zone_bind_cooling_device(thermal, 0, cdev))=
+ {
+> + =A0 =A0 =A0 if (thermal_zone_bind_cooling_device(thermal, 0, cdev, =
+-1, -1)) {
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0pr_err("error binding cooling dev\n");
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
+> =A0 =A0 =A0 =A0}
+>
+>
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
