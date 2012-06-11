@@ -1,167 +1,169 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [RFC PATCH 4/12] thermal: introduce .get_trend() callback
-Date: Mon, 11 Jun 2012 11:20:06 +0800
-Message-ID: <1339384806.1492.157.camel@rui.sh.intel.com>
+Subject: [RFC PATCH 5/12] thermal: remove tc1/tc2 in generic thermal layer
+Date: Mon, 11 Jun 2012 11:20:12 +0800
+Message-ID: <1339384812.1492.158.camel@rui.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Cc: Amit Kachhap <amit.kachhap@linaro.org>, eduardo <eduardo.valentin@ti.com>, "R, Durgadoss" <durgadoss.r@intel.com>, "Len, Brown" <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
 
-tc1 and tc2 are ACPI platform specific concepts, introduce
-.get_trend() as a more general solution.
-
+Remove tc1/tc2 in generic thermal layer.
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/acpi/thermal.c        |   32 ++++++++++++++++++++++++++++++++
- drivers/thermal/thermal_sys.c |   19 +++++++++++++++++--
- include/linux/thermal.h       |    9 +++++++++
- 3 files changed, 58 insertions(+), 2 deletions(-)
+ drivers/acpi/thermal.c                   |    5 +----
+ drivers/platform/x86/acerhdf.c           |    2 +-
+ drivers/platform/x86/intel_mid_thermal.c |    2 +-
+ drivers/thermal/spear_thermal.c          |    2 +-
+ drivers/thermal/thermal_sys.c            |   15 ++-------------
+ include/linux/thermal.h                  |    4 +---
+ 6 files changed, 7 insertions(+), 23 deletions(-)
 
-Index: rtd3/drivers/acpi/thermal.c
-===================================================================
---- rtd3.orig/drivers/acpi/thermal.c
-+++ rtd3/drivers/acpi/thermal.c
-@@ -706,6 +706,37 @@ static int thermal_get_crit_temp(struct
- 		return -EINVAL;
- }
- 
-+static int thermal_get_trend(struct thermal_zone_device *thermal,
-+				int trip, enum thermal_trend *trend)
-+{
-+	struct acpi_thermal *tz = thermal->devdata;
-+	enum thermal_trip_type type;
-+	unsigned long trip_temp;
-+	int i;
-+
-+	if (thermal_get_trip_type(thermal, trip, &type))
-+		return -EINVAL;
-+
-+	/* Only PASSIVE trip points need TREND */
-+	if (type != THERMAL_TRIP_PASSIVE)
-+		return -EINVAL;
-+
-+	if (thermal_get_trip_temp(thermal, trip, &trip_temp))
-+		return -EINVAL;
-+
-+	/*
-+	 * tz->temperature has already been updated by generic thermal layer,
-+	 * before this callback being invoked
-+	 */
-+	i = (tz->trips.passive.tc1 * (tz->temperature - tz->last_temperature))
-+		+ (tz->trips.passive.tc2 * (tz->temperature - trip_temp));
-+
-+	*trend = i > 0 ? THERMAL_TREND_RAISING :
-+		(i < 0 ? THERMAL_TREND_DROPPING : THERMAL_TREND_NONE);
-+	return 0;
-+}
-+
-+
- static int thermal_notify(struct thermal_zone_device *thermal, int trip,
- 			   enum thermal_trip_type trip_type)
- {
-@@ -835,6 +866,7 @@ static const struct thermal_zone_device_
- 	.get_trip_type = thermal_get_trip_type,
- 	.get_trip_temp = thermal_get_trip_temp,
- 	.get_crit_temp = thermal_get_crit_temp,
-+	.get_trend = thermal_get_trend,
- 	.notify = thermal_notify,
- };
- 
 Index: rtd3/drivers/thermal/thermal_sys.c
 ===================================================================
 --- rtd3.orig/drivers/thermal/thermal_sys.c
 +++ rtd3/drivers/thermal/thermal_sys.c
-@@ -657,6 +657,18 @@ thermal_remove_hwmon_sysfs(struct therma
- }
- #endif
- 
-+static void thermal_get_trend (struct thermal_zone_device *tz,
-+		int trip, enum thermal_trend *trend)
-+{
-+	if (tz->ops->get_trend)
-+		if (!tz->ops->get_trend(tz, trip, trend))
-+			return;
-+
-+	*trend = tz->temperature >= tz->last_temperature ?
-+		 THERMAL_TREND_RAISING : THERMAL_TREND_DROPPING;
-+	return;
-+}
-+
- static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
- 					    int delay)
- {
-@@ -691,6 +703,8 @@ static void thermal_zone_device_passive(
- 	if (temp >= trip_temp) {
- 		tz->passive = true;
- 
-+		thermal_get_trend(tz, trip, (enum thermal_trend *)&trend);
-+
- 		trend = (tz->tc1 * (temp - tz->last_temperature)) +
- 			(tz->tc2 * (temp - trip_temp));
- 
-@@ -1049,6 +1063,9 @@ void thermal_zone_device_update(struct t
- 		goto leave;
+@@ -266,9 +266,6 @@ passive_store(struct device *dev, struct
+ 		tz->passive_delay = 0;
  	}
  
-+	tz->last_temperature = tz->temperature;
-+	tz->temperature = temp;
-+
- 	for (count = 0; count < tz->trips; count++) {
- 		tz->ops->get_trip_type(tz, count, &trip_type);
- 		tz->ops->get_trip_temp(tz, count, &trip_temp);
-@@ -1108,8 +1125,6 @@ void thermal_zone_device_update(struct t
- 		thermal_zone_device_passive(tz, temp, tz->forced_passive,
- 					    THERMAL_TRIPS_NONE);
- 
--	tz->last_temperature = temp;
+-	tz->tc1 = 1;
+-	tz->tc2 = 1;
 -
- leave:
- 	if (tz->passive)
- 		thermal_zone_device_set_polling(tz, tz->passive_delay);
+ 	tz->forced_passive = state;
+ 
+ 	thermal_zone_device_update(tz);
+@@ -705,9 +702,6 @@ static void thermal_zone_device_passive(
+ 
+ 		thermal_get_trend(tz, trip, (enum thermal_trend *)&trend);
+ 
+-		trend = (tz->tc1 * (temp - tz->last_temperature)) +
+-			(tz->tc2 * (temp - trip_temp));
+-
+ 		/* Heating up? */
+ 		if (trend > 0) {
+ 			list_for_each_entry(instance, &tz->cooling_devices,
+@@ -1143,8 +1137,6 @@ EXPORT_SYMBOL(thermal_zone_device_update
+  * @trips:	the number of trip points the thermal zone support
+  * @devdata:	private device data
+  * @ops:	standard thermal zone device callbacks
+- * @tc1:	thermal coefficient 1 for passive calculations
+- * @tc2:	thermal coefficient 2 for passive calculations
+  * @passive_delay: number of milliseconds to wait between polls when
+  *		   performing passive cooling
+  * @polling_delay: number of milliseconds to wait between polls when checking
+@@ -1152,13 +1144,12 @@ EXPORT_SYMBOL(thermal_zone_device_update
+  *		   driven systems)
+  *
+  * thermal_zone_device_unregister() must be called when the device is no
+- * longer needed. The passive cooling formula uses tc1 and tc2 as described in
+- * section 11.1.5.1 of the ACPI specification 3.0.
++ * longer needed. The passive cooling depends on the .get_trend() return value.
+  */
+ struct thermal_zone_device *thermal_zone_device_register(char *type,
+ 	int trips, void *devdata,
+ 	const struct thermal_zone_device_ops *ops,
+-	int tc1, int tc2, int passive_delay, int polling_delay)
++	int passive_delay, int polling_delay)
+ {
+ 	struct thermal_zone_device *tz;
+ 	struct thermal_cooling_device *pos;
+@@ -1194,8 +1185,6 @@ struct thermal_zone_device *thermal_zone
+ 	tz->device.class = &thermal_class;
+ 	tz->devdata = devdata;
+ 	tz->trips = trips;
+-	tz->tc1 = tc1;
+-	tz->tc2 = tc2;
+ 	tz->passive_delay = passive_delay;
+ 	tz->polling_delay = polling_delay;
+ 
 Index: rtd3/include/linux/thermal.h
 ===================================================================
 --- rtd3.orig/include/linux/thermal.h
 +++ rtd3/include/linux/thermal.h
-@@ -44,6 +44,12 @@ enum thermal_trip_type {
- 	THERMAL_TRIP_CRITICAL,
- };
- 
-+enum thermal_trend {
-+	THERMAL_TREND_NONE,
-+	THERMAL_TREND_RAISING,
-+	THERMAL_TREND_DROPPING,
-+};
-+
- struct thermal_zone_device_ops {
- 	int (*bind) (struct thermal_zone_device *,
- 		     struct thermal_cooling_device *);
-@@ -59,6 +65,8 @@ struct thermal_zone_device_ops {
- 	int (*get_trip_temp) (struct thermal_zone_device *, int,
- 			      unsigned long *);
- 	int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
-+	int (*get_trend) (struct thermal_zone_device *, int,
-+			  enum thermal_trend *);
- 	int (*notify) (struct thermal_zone_device *, int,
- 		       enum thermal_trip_type);
- };
-@@ -95,6 +103,7 @@ struct thermal_zone_device {
- 	int tc2;
+@@ -99,8 +99,6 @@ struct thermal_zone_device {
+ 	struct device device;
+ 	void *devdata;
+ 	int trips;
+-	int tc1;
+-	int tc2;
  	int passive_delay;
  	int polling_delay;
-+	int temperature;
- 	int last_temperature;
- 	bool passive;
- 	unsigned int forced_passive;
+ 	int temperature;
+@@ -147,7 +145,7 @@ enum {
+ #define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
+ 
+ struct thermal_zone_device *thermal_zone_device_register(char *, int, void *,
+-		const struct thermal_zone_device_ops *, int tc1, int tc2,
++		const struct thermal_zone_device_ops *,
+ 		int passive_freq, int polling_freq);
+ void thermal_zone_device_unregister(struct thermal_zone_device *);
+ 
+Index: rtd3/drivers/acpi/thermal.c
+===================================================================
+--- rtd3.orig/drivers/acpi/thermal.c
++++ rtd3/drivers/acpi/thermal.c
+@@ -893,16 +893,13 @@ static int acpi_thermal_register_thermal
+ 		tz->thermal_zone =
+ 			thermal_zone_device_register("acpitz", trips, tz,
+ 						     &acpi_thermal_zone_ops,
+-						     tz->trips.passive.tc1,
+-						     tz->trips.passive.tc2,
+ 						     tz->trips.passive.tsp*100,
+ 						     tz->polling_frequency*100);
+ 	else
+ 		tz->thermal_zone =
+ 			thermal_zone_device_register("acpitz", trips, tz,
+ 						     &acpi_thermal_zone_ops,
+-						     0, 0, 0,
+-						     tz->polling_frequency*100);
++						     0, tz->polling_frequency*100);
+ 	if (IS_ERR(tz->thermal_zone))
+ 		return -ENODEV;
+ 
+Index: rtd3/drivers/platform/x86/acerhdf.c
+===================================================================
+--- rtd3.orig/drivers/platform/x86/acerhdf.c
++++ rtd3/drivers/platform/x86/acerhdf.c
+@@ -661,7 +661,7 @@ static int acerhdf_register_thermal(void
+ 		return -EINVAL;
+ 
+ 	thz_dev = thermal_zone_device_register("acerhdf", 1, NULL,
+-					      &acerhdf_dev_ops, 0, 0, 0,
++					      &acerhdf_dev_ops, 0,
+ 					      (kernelmode) ? interval*1000 : 0);
+ 	if (IS_ERR(thz_dev))
+ 		return -EINVAL;
+Index: rtd3/drivers/platform/x86/intel_mid_thermal.c
+===================================================================
+--- rtd3.orig/drivers/platform/x86/intel_mid_thermal.c
++++ rtd3/drivers/platform/x86/intel_mid_thermal.c
+@@ -499,7 +499,7 @@ static int mid_thermal_probe(struct plat
+ 			goto err;
+ 		}
+ 		pinfo->tzd[i] = thermal_zone_device_register(name[i],
+-				0, td_info, &tzd_ops, 0, 0, 0, 0);
++				0, td_info, &tzd_ops, 0, 0);
+ 		if (IS_ERR(pinfo->tzd[i])) {
+ 			kfree(td_info);
+ 			ret = PTR_ERR(pinfo->tzd[i]);
+Index: rtd3/drivers/thermal/spear_thermal.c
+===================================================================
+--- rtd3.orig/drivers/thermal/spear_thermal.c
++++ rtd3/drivers/thermal/spear_thermal.c
+@@ -148,7 +148,7 @@ static int spear_thermal_probe(struct pl
+ 	writel_relaxed(stdev->flags, stdev->thermal_base);
+ 
+ 	spear_thermal = thermal_zone_device_register("spear_thermal", 0,
+-				stdev, &ops, 0, 0, 0, 0);
++				stdev, &ops, 0, 0);
+ 	if (IS_ERR(spear_thermal)) {
+ 		dev_err(&pdev->dev, "thermal zone device is NULL\n");
+ 		ret = PTR_ERR(spear_thermal);
+
+
