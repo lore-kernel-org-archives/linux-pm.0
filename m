@@ -1,14 +1,14 @@
-From: Amit Kachhap <amit.kachhap@linaro.org>
-Subject: Re: [RFC PATCH 6/12] thermal: introduce active cooling
-	algorithm
-Date: Mon, 11 Jun 2012 10:21:08 +0530
-Message-ID: <CAK44p227RorAEGcikmXSYHJizxVvwbQkZY9fSS0MvpsA4XyATQ@mail.gmail.com>
-References: <1339384817.1492.160.camel@rui.sh.intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [RFC PATCH 7/12] thermal: rename structure
+ thermal_cooling_device_instance to thermal_instance
+Date: Mon, 11 Jun 2012 14:21:36 +0800
+Message-ID: <1339395696.1492.179.camel@rui.sh.intel.com>
+References: <1339384821.1492.161.camel@rui.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1339384817.1492.160.camel@rui.sh.intel.com>
+In-Reply-To: <1339384821.1492.161.camel@rui.sh.intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,214 +18,69 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: linux-pm <linux-pm@lists.linux-foundation.org>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11 June 2012 08:50, Zhang Rui <rui.zhang@intel.com> wrote:
->
-> Introduce thermal_zone_trip_update() to update the cooling state
-> of all the cooling devices that are binded to an active trip point.
->
-> This will be used for passive cooling as well, in the future patches.
-> as both active and passive cooling can share the same algorithm,
-> which is
->
-> 1. if the temperature is higher than a trip point,
-> =A0 a. if the trend is THERMAL_TREND_RAISING, use higher cooling
-> =A0 =A0 =A0state for this trip point
-> =A0 b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
-> =A0 =A0 =A0state for this trip point
->
-> 2. if the temperature is lower than a trip point, use lower
-> =A0 cooling state for this trip point.
->
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
-> =A0drivers/acpi/thermal.c =A0 =A0 =A0 =A0| =A0 =A07 ++-
-> =A0drivers/thermal/thermal_sys.c | =A0 91 ++++++++++++++++++++++++++++++-=
------------
-> =A02 files changed, 71 insertions(+), 27 deletions(-)
->
-> Index: rtd3/drivers/thermal/thermal_sys.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- rtd3.orig/drivers/thermal/thermal_sys.c
-> +++ rtd3/drivers/thermal/thermal_sys.c
-> @@ -1035,6 +1035,70 @@ void thermal_cooling_device_unregister(s
-> =A0}
-> =A0EXPORT_SYMBOL(thermal_cooling_device_unregister);
->
-> +/*
-> + * Cooling algorithm for active trip points
-> + *
-> + * 1. if the temperature is higher than a trip point,
-> + * =A0 =A0a. if the trend is THERMAL_TREND_RAISING, use higher cooling
-> + * =A0 =A0 =A0 state for this trip point
-> + * =A0 =A0b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
-> + * =A0 =A0 =A0 state for this trip point
-> + *
-> + * 2. if the temperature is lower than a trip point, use lower
-> + * =A0 =A0cooling state for this trip point
-> + *
-> + * Note that this behaves the same as the previous passive cooling
-> + * algorithm.
-> + */
-> +
-> +static void thermal_zone_trip_update(struct thermal_zone_device *tz,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
-int trip, long temp)
-> +{
-> + =A0 =A0 =A0 struct thermal_cooling_device_instance *instance;
-> + =A0 =A0 =A0 struct thermal_cooling_device *cdev =3D NULL;
-> + =A0 =A0 =A0 unsigned long cur_state, max_state;
-> + =A0 =A0 =A0 long trip_temp;
-> + =A0 =A0 =A0 enum thermal_trend trend;
-> +
-> + =A0 =A0 =A0 tz->ops->get_trip_temp(tz, trip, &trip_temp);
-> +
-> + =A0 =A0 =A0 if (temp >=3D trip_temp) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal_get_trend(tz, trip, &trend);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 list_for_each_entry(instance, &tz->cooling_=
-devices, node) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (instance->trip !=3D tri=
-p)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev =3D instance->cdev;
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev->ops->get_cur_state(cd=
-ev, &cur_state);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev->ops->get_max_state(cd=
-ev, &max_state);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (trend =3D=3D THERMAL_TR=
-END_RAISING) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cur_state =
-=3D cur_state < instance->upper ?
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 (cur_state + 1) : instance->upper;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 } else if (trend =3D=3D THE=
-RMAL_TREND_DROPPING) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cur_state =
-=3D cur_state > instance->lower ?
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (cu=
-r_state - 1) : instance->lower;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev->ops->set_cur_state(cd=
-ev, cur_state);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> + =A0 =A0 =A0 } else { =A0 =A0 =A0 =A0/* below trip */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 list_for_each_entry(instance, &tz->cooling_=
-devices, node) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (instance->trip !=3D tri=
-p)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 continue;
-Can we use the trend callback here even if the current temperature is
-less than the trip temperature. Basically according to trend it should
-deactivate the cooling devices as done for activating cooling devices.
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev =3D instance->cdev;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev->ops->get_cur_state(cd=
-ev, &cur_state);
-> +
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cur_state =3D cur_state > i=
-nstance->lower ?
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (cu=
-r_state - 1) : instance->lower;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev->ops->set_cur_state(cd=
-ev, cur_state);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> + =A0 =A0 =A0 }
-> +
-> + =A0 =A0 =A0 return;
-> +}
-> =A0/**
-> =A0* thermal_zone_device_update - force an update of a thermal zone's sta=
-te
-> =A0* @ttz: =A0 =A0 =A0 the thermal zone to update
-> @@ -1045,9 +1109,6 @@ void thermal_zone_device_update(struct t
-> =A0 =A0 =A0 =A0int count, ret =3D 0;
-> =A0 =A0 =A0 =A0long temp, trip_temp;
-> =A0 =A0 =A0 =A0enum thermal_trip_type trip_type;
-> - =A0 =A0 =A0 struct thermal_cooling_device_instance *instance;
-> - =A0 =A0 =A0 struct thermal_cooling_device *cdev;
-> - =A0 =A0 =A0 unsigned long cur_state, max_state;
->
-> =A0 =A0 =A0 =A0mutex_lock(&tz->lock);
->
-> @@ -1083,29 +1144,7 @@ void thermal_zone_device_update(struct t
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0tz->ops->notify(tz, count, trip_type);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0case THERMAL_TRIP_ACTIVE:
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 list_for_each_entry(instanc=
-e, &tz->cooling_devices,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 node) {
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (instanc=
-e->trip !=3D count)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 continue;
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev =3D in=
-stance->cdev;
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev->ops->=
-get_cur_state(cdev, &cur_state);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev->ops->=
-get_max_state(cdev, &max_state);
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (temp >=
-=3D trip_temp)
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 cur_state =3D
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 cur_state < instance->upper ?
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 (cur_state + 1) :
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 instance->upper;
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 else
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 cur_state =3D
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 cur_state > instance->lower ?
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 (cur_state - 1) :
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 instance->lower;
-> -
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cdev->ops->=
-set_cur_state(cdev, cur_state);
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal_zone_trip_update(tz=
-, count, temp);
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0case THERMAL_TRIP_PASSIVE:
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0if (temp >=3D trip_temp ||=
- tz->passive)
-> Index: rtd3/drivers/acpi/thermal.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- rtd3.orig/drivers/acpi/thermal.c
-> +++ rtd3/drivers/acpi/thermal.c
-> @@ -717,7 +717,12 @@ static int thermal_get_trend(struct ther
-> =A0 =A0 =A0 =A0if (thermal_get_trip_type(thermal, trip, &type))
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
->
-> - =A0 =A0 =A0 /* Only PASSIVE trip points need TREND */
-> + =A0 =A0 =A0 if (type =3D=3D THERMAL_TRIP_ACTIVE) {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* aggressive active cooling */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 *trend =3D THERMAL_TREND_RAISING;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;
-> + =A0 =A0 =A0 }
-> +
-> =A0 =A0 =A0 =A0if (type !=3D THERMAL_TRIP_PASSIVE)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -EINVAL;
->
->
->
+c2VlbXMgdGhpcyBwYXRjaCBpcyBtaXNzZWQuIFJlc2VuZCBpdC4KCk9uIOS4gCwgMjAxMi0wNi0x
+MSBhdCAxMToyMCArMDgwMCwgWmhhbmcgUnVpIHdyb3RlOgo+IFJlbmFtZSBzdHJ1Y3R1cmUgdGhl
+cm1hbF9jb29saW5nX2RldmljZV9pbnN0YW5jZSB0byB0aGVybWFsX2luc3RhbmNlLgo+IAo+IFRo
+aXMgc3RydWN0IGlzIHVzZWQgdG8gZGVzY3JpYmUgdGhlIGJlaGF2aW9yIGZvciBhIHRoZXJtYWwK
+PiBjb29saW5nIGRldmljZSBvbiBhIGNlcnRhaW4gdHJpcCBwb2ludCBmb3IgYSBjZXJ0YWluIHRo
+cmVtYWwgem9uZS4KPiAKPiB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX2luc3RhbmNlIGlzIG5vdCBh
+Y2N1cmF0ZSwgYXMgYSBjb29saW5nIGRldmljZQo+IGNhbiBiZSB1c2VkIGZvciBtb3JlIHRoYW4g
+b25lIHRyaXAgcG9pbnQgaW4gb25lIHRoZXJtYWwgem9uZSBkZXZpY2UuCj4gCj4gU2lnbmVkLW9m
+Zi1ieTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPgo+IC0tLQo+ICBkcml2ZXJzL3Ro
+ZXJtYWwvdGhlcm1hbF9zeXMuYyB8ICAgMTggKysrKysrKysrLS0tLS0tLS0tCj4gIDEgZmlsZSBj
+aGFuZ2VkLCA5IGluc2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0pCj4gCj4gSW5kZXg6IHJ0ZDMv
+ZHJpdmVycy90aGVybWFsL3RoZXJtYWxfc3lzLmMKPiA9PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gLS0tIHJ0ZDMub3Jp
+Zy9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9zeXMuYwo+ICsrKyBydGQzL2RyaXZlcnMvdGhlcm1h
+bC90aGVybWFsX3N5cy5jCj4gQEAgLTQ2LDcgKzQ2LDcgQEAgTU9EVUxFX0xJQ0VOU0UoIkdQTCIp
+Owo+ICAgKiBhIGNlcnRhaW4gY29vbGluZyBkZXZpY2Ugb24gYSBjZXJ0YWluIHRyaXAgcG9pbnQK
+PiAgICogaW4gYSBjZXJ0YWluIHRoZXJtYWwgem9uZQo+ICAgKi8KPiAtc3RydWN0IHRoZXJtYWxf
+Y29vbGluZ19kZXZpY2VfaW5zdGFuY2Ugewo+ICtzdHJ1Y3QgdGhlcm1hbF9pbnN0YW5jZSB7Cj4g
+IAlpbnQgaWQ7Cj4gIAljaGFyIG5hbWVbVEhFUk1BTF9OQU1FX0xFTkdUSF07Cj4gIAlzdHJ1Y3Qg
+dGhlcm1hbF96b25lX2RldmljZSAqdHo7Cj4gQEAgLTM4OCwxMCArMzg4LDEwIEBAIHN0YXRpYyBz
+c2l6ZV90Cj4gIHRoZXJtYWxfY29vbGluZ19kZXZpY2VfdHJpcF9wb2ludF9zaG93KHN0cnVjdCBk
+ZXZpY2UgKmRldiwKPiAgCQkJCSAgICAgICBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwg
+Y2hhciAqYnVmKQo+ICB7Cj4gLQlzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZV9pbnN0YW5j
+ZSAqaW5zdGFuY2U7Cj4gKwlzdHJ1Y3QgdGhlcm1hbF9pbnN0YW5jZSAqaW5zdGFuY2U7Cj4gIAo+
+ICAJaW5zdGFuY2UgPQo+IC0JICAgIGNvbnRhaW5lcl9vZihhdHRyLCBzdHJ1Y3QgdGhlcm1hbF9j
+b29saW5nX2RldmljZV9pbnN0YW5jZSwgYXR0cik7Cj4gKwkgICAgY29udGFpbmVyX29mKGF0dHIs
+IHN0cnVjdCB0aGVybWFsX2luc3RhbmNlLCBhdHRyKTsKPiAgCj4gIAlpZiAoaW5zdGFuY2UtPnRy
+aXAgPT0gVEhFUk1BTF9UUklQU19OT05FKQo+ICAJCXJldHVybiBzcHJpbnRmKGJ1ZiwgIi0xXG4i
+KTsKPiBAQCAtNjg2LDcgKzY4Niw3IEBAIHN0YXRpYyB2b2lkIHRoZXJtYWxfem9uZV9kZXZpY2Vf
+cGFzc2l2ZSgKPiAgCQkJCQlpbnQgdGVtcCwgaW50IHRyaXBfdGVtcCwgaW50IHRyaXApCj4gIHsK
+PiAgCWludCB0cmVuZCA9IDA7Cj4gLQlzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZV9pbnN0
+YW5jZSAqaW5zdGFuY2U7Cj4gKwlzdHJ1Y3QgdGhlcm1hbF9pbnN0YW5jZSAqaW5zdGFuY2U7Cj4g
+IAlzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSAqY2RldjsKPiAgCWxvbmcgc3RhdGUsIG1h
+eF9zdGF0ZTsKPiAgCj4gQEAgLTc3MSw4ICs3NzEsOCBAQCBpbnQgdGhlcm1hbF96b25lX2JpbmRf
+Y29vbGluZ19kZXZpY2Uoc3RyCj4gIAkJCQkgICAgIHN0cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2
+aWNlICpjZGV2LAo+ICAJCQkJICAgICBsb25nIHVwcGVyLCBsb25nIGxvd2VyKQo+ICB7Cj4gLQlz
+dHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZV9pbnN0YW5jZSAqZGV2Owo+IC0Jc3RydWN0IHRo
+ZXJtYWxfY29vbGluZ19kZXZpY2VfaW5zdGFuY2UgKnBvczsKPiArCXN0cnVjdCB0aGVybWFsX2lu
+c3RhbmNlICpkZXY7Cj4gKwlzdHJ1Y3QgdGhlcm1hbF9pbnN0YW5jZSAqcG9zOwo+ICAJc3RydWN0
+IHRoZXJtYWxfem9uZV9kZXZpY2UgKnBvczE7Cj4gIAlzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2Rl
+dmljZSAqcG9zMjsKPiAgCXVuc2lnbmVkIGxvbmcgbWF4X3N0YXRlOwo+IEBAIC04MDMsNyArODAz
+LDcgQEAgaW50IHRoZXJtYWxfem9uZV9iaW5kX2Nvb2xpbmdfZGV2aWNlKHN0cgo+ICAJCXJldHVy
+biAtRUlOVkFMOwo+ICAKPiAgCWRldiA9Cj4gLQkgICAga3phbGxvYyhzaXplb2Yoc3RydWN0IHRo
+ZXJtYWxfY29vbGluZ19kZXZpY2VfaW5zdGFuY2UpLCBHRlBfS0VSTkVMKTsKPiArCSAgICBremFs
+bG9jKHNpemVvZihzdHJ1Y3QgdGhlcm1hbF9pbnN0YW5jZSksIEdGUF9LRVJORUwpOwo+ICAJaWYg
+KCFkZXYpCj4gIAkJcmV0dXJuIC1FTk9NRU07Cj4gIAlkZXYtPnR6ID0gdHo7Cj4gQEAgLTg2OCw3
+ICs4NjgsNyBAQCBpbnQgdGhlcm1hbF96b25lX3VuYmluZF9jb29saW5nX2RldmljZShzCj4gIAkJ
+CQkgICAgICAgaW50IHRyaXAsCj4gIAkJCQkgICAgICAgc3RydWN0IHRoZXJtYWxfY29vbGluZ19k
+ZXZpY2UgKmNkZXYpCj4gIHsKPiAtCXN0cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX2luc3Rh
+bmNlICpwb3MsICpuZXh0Owo+ICsJc3RydWN0IHRoZXJtYWxfaW5zdGFuY2UgKnBvcywgKm5leHQ7
+Cj4gIAo+ICAJbXV0ZXhfbG9jaygmdHotPmxvY2spOwo+ICAJbGlzdF9mb3JfZWFjaF9lbnRyeV9z
+YWZlKHBvcywgbmV4dCwgJnR6LT5jb29saW5nX2RldmljZXMsIG5vZGUpIHsKPiBAQCAtMTA1NCw3
+ICsxMDU0LDcgQEAgRVhQT1JUX1NZTUJPTCh0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX3Vucgo+ICBz
+dGF0aWMgdm9pZCB0aGVybWFsX3pvbmVfdHJpcF91cGRhdGUoc3RydWN0IHRoZXJtYWxfem9uZV9k
+ZXZpY2UgKnR6LAo+ICAJCQkJICAgICBpbnQgdHJpcCwgbG9uZyB0ZW1wKQo+ICB7Cj4gLQlzdHJ1
+Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZV9pbnN0YW5jZSAqaW5zdGFuY2U7Cj4gKwlzdHJ1Y3Qg
+dGhlcm1hbF9pbnN0YW5jZSAqaW5zdGFuY2U7Cj4gIAlzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2Rl
+dmljZSAqY2RldiA9IE5VTEw7Cj4gIAl1bnNpZ25lZCBsb25nIGN1cl9zdGF0ZSwgbWF4X3N0YXRl
+Owo+ICAJbG9uZyB0cmlwX3RlbXA7Cj4gCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxp
+bnV4LWZvdW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWls
+bWFuL2xpc3RpbmZvL2xpbnV4LXBt
