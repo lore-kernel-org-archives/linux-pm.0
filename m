@@ -1,7 +1,8 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [RFC PATCH 0/12] generic thermal layer enhancement
-Date: Mon, 11 Jun 2012 11:19:11 +0800
-Message-ID: <1339384751.1492.153.camel@rui.sh.intel.com>
+Subject: [RFC PATCH 1/12] thermal: introduce multiple cooling
+ states support for Active cooling devices
+Date: Mon, 11 Jun 2012 11:19:40 +0800
+Message-ID: <1339384780.1492.154.camel@rui.sh.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,58 +19,46 @@ Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, all,
 
-this patch set is made to enhance the current generic thermal layer.
-It fixes several gaps discussed in
-http://marc.info/?l=linux-acpi&m=133836783425764&w=2
-and introduces a simple arbitrator to fix the "one cooling devices
-referenced by multiple trip points in multiple thermal zones" problem.
+Introduce multiple cooling states support for Active cooling devices.
+
+This is because general active cooling devices, like fans,
+may have multiple speeds, which can be mapped to different cooling states.
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/thermal_sys.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+Index: rtd3/drivers/thermal/thermal_sys.c
+===================================================================
+--- rtd3.orig/drivers/thermal/thermal_sys.c
++++ rtd3/drivers/thermal/thermal_sys.c
+@@ -1018,6 +1018,7 @@ void thermal_zone_device_update(struct t
+ 	enum thermal_trip_type trip_type;
+ 	struct thermal_cooling_device_instance *instance;
+ 	struct thermal_cooling_device *cdev;
++	unsigned long cur_state, max_state;
  
-The whole idea is
-1) make sure we have multiple cooling states for both active cooling and
-   passive cooling devices. (patch 1,2,3)
-2) remove passive specific requirement, aka, tc1/tc2, and
-   introduce .get_trend() instead, for both active and passive cooling
-   algorithm. (patch 4,5)
-3) introduce new function thermal_zone_trip_update(), this contains the
-   code for the general cooling algorithm. (patch 6)
-4) rename some thermal structures. Use thermal_instance instead of
-   thermal_cooling_device_instance, as this structure is used to
-   describe the behavior of a certain cooling device for a certain trip
-   point in a certain thermal zone.
-   thermal_zone_device has a list of all the thermal instances in this
-   thermal zone so that it can update them when the temperature changes.
-   thermal_cooling_device has a list of all the thermal instances for
-   this cooling device so that it can make decision which cooling state
-   should be in when the temperature changes. (patch 7,8,9,10)
-5) introduce a simple arbitrator. (patch 11)
-   When temperature changes, we update a thermal zone in two stages,
-   a) thermal_zone_trip_point() is the general cooling algorithm to
-      update the thermal instances in the thermal zone device
-   b) thermal_zone_do_update() is the arbitrator for the cooling device
-      to choose the deepest cooling state required to enter.
-6) unify the code for both passive and active cooling.
-
-TODO, add locking mechanism. I know this is important but as this patch
-set changes the thermal layer a lot, I just want to make sure I'm in the
-right direction before going on.
-
-BTW, in theory, they should make no change to the behavior of the
-current generic thermal layer users. But I have just done the build
-test.
-
-Any comments are welcome.
-
-thanks,
-rui
-
---------------------------------------------------------------------
- drivers/acpi/thermal.c                   |   76 +++++++--
- drivers/platform/x86/acerhdf.c           |    4 +-
- drivers/platform/x86/intel_mid_thermal.c |    2 +-
- drivers/thermal/spear_thermal.c          |    2 +-
- drivers/thermal/thermal_sys.c            |  293
-++++++++++++++++++------------
- include/linux/thermal.h                  |   22 ++-
- 7 files changed, 271 insertions(+), 148 deletions(-)
+ 	mutex_lock(&tz->lock);
+ 
+@@ -1057,10 +1058,17 @@ void thermal_zone_device_update(struct t
+ 
+ 				cdev = instance->cdev;
+ 
++				cdev->ops->get_cur_state(cdev, &cur_state);
++				cdev->ops->get_max_state(cdev, &max_state);
++
+ 				if (temp >= trip_temp)
+-					cdev->ops->set_cur_state(cdev, 1);
++					cur_state = cur_state < max_state ?
++						(cur_state + 1) : max_state;
+ 				else
+-					cdev->ops->set_cur_state(cdev, 0);
++					cur_state = cur_state > 0 ?
++						(cur_state - 1) : 0;
++
++				cdev->ops->set_cur_state(cdev, cur_state);
+ 			}
+ 			break;
+ 		case THERMAL_TRIP_PASSIVE:
