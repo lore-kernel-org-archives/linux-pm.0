@@ -1,115 +1,172 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [RFC PATCH 0/12] generic thermal layer enhancement
-Date: Mon, 11 Jun 2012 12:49:40 +0300
-Message-ID: <20120611094940.GA3649@besouro>
-References: <1339384751.1492.153.camel@rui.sh.intel.com>
+Subject: Re: [RFC PATCH 4/12] thermal:  introduce .get_trend() callback
+Date: Mon, 11 Jun 2012 12:54:43 +0300
+Message-ID: <20120611095443.GB3649@besouro>
+References: <1339384806.1492.157.camel@rui.sh.intel.com>
 Reply-To: eduardo.valentin@ti.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1339384751.1492.153.camel@rui.sh.intel.com>
+In-Reply-To: <1339384806.1492.157.camel@rui.sh.intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Amit Kachhap <amit.kachhap@linaro.org>, "R, Durgadoss" <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, eduardo <eduardo.valentin@ti.com>, "Len, Brown" <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Amit Kachhap <amit.kachhap@linaro.org>, "R, Durgadoss" <durgadoss.r@intel.com>, eduardo <eduardo.valentin@ti.com>, "Len, Brown" <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hello Rui,
 
-On Mon, Jun 11, 2012 at 11:19:11AM +0800, Zhang Rui wrote:
-> Hi, all,
+On Mon, Jun 11, 2012 at 11:20:06AM +0800, Zhang Rui wrote:
 > 
-> this patch set is made to enhance the current generic thermal layer.
-> It fixes several gaps discussed in
-> http://marc.info/?l=linux-acpi&m=133836783425764&w=2
-> and introduces a simple arbitrator to fix the "one cooling devices
-> referenced by multiple trip points in multiple thermal zones" problem.
-
-Thanks for taking this further. With code it is much better to progress.
-
-BTW, are you keeping this series somewhere in a branch?
-
+> tc1 and tc2 are ACPI platform specific concepts, introduce
+> .get_trend() as a more general solution.
+> 
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/acpi/thermal.c        |   32 ++++++++++++++++++++++++++++++++
+>  drivers/thermal/thermal_sys.c |   19 +++++++++++++++++--
+>  include/linux/thermal.h       |    9 +++++++++
+>  3 files changed, 58 insertions(+), 2 deletions(-)
+> 
+> Index: rtd3/drivers/acpi/thermal.c
+> ===================================================================
+> --- rtd3.orig/drivers/acpi/thermal.c
+> +++ rtd3/drivers/acpi/thermal.c
+> @@ -706,6 +706,37 @@ static int thermal_get_crit_temp(struct
+>  		return -EINVAL;
+>  }
 >  
-> The whole idea is
-> 1) make sure we have multiple cooling states for both active cooling and
->    passive cooling devices. (patch 1,2,3)
+> +static int thermal_get_trend(struct thermal_zone_device *thermal,
+> +				int trip, enum thermal_trend *trend)
+> +{
+> +	struct acpi_thermal *tz = thermal->devdata;
+> +	enum thermal_trip_type type;
+> +	unsigned long trip_temp;
+> +	int i;
+> +
+> +	if (thermal_get_trip_type(thermal, trip, &type))
+> +		return -EINVAL;
+> +
+> +	/* Only PASSIVE trip points need TREND */
+> +	if (type != THERMAL_TRIP_PASSIVE)
+> +		return -EINVAL;
+> +
+> +	if (thermal_get_trip_temp(thermal, trip, &trip_temp))
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * tz->temperature has already been updated by generic thermal layer,
+> +	 * before this callback being invoked
+> +	 */
+> +	i = (tz->trips.passive.tc1 * (tz->temperature - tz->last_temperature))
+> +		+ (tz->trips.passive.tc2 * (tz->temperature - trip_temp));
+> +
+> +	*trend = i > 0 ? THERMAL_TREND_RAISING :
+> +		(i < 0 ? THERMAL_TREND_DROPPING : THERMAL_TREND_NONE);
+> +	return 0;
+> +}
+> +
+> +
+>  static int thermal_notify(struct thermal_zone_device *thermal, int trip,
+>  			   enum thermal_trip_type trip_type)
+>  {
+> @@ -835,6 +866,7 @@ static const struct thermal_zone_device_
+>  	.get_trip_type = thermal_get_trip_type,
+>  	.get_trip_temp = thermal_get_trip_temp,
+>  	.get_crit_temp = thermal_get_crit_temp,
+> +	.get_trend = thermal_get_trend,
+>  	.notify = thermal_notify,
+>  };
+>  
+> Index: rtd3/drivers/thermal/thermal_sys.c
+> ===================================================================
+> --- rtd3.orig/drivers/thermal/thermal_sys.c
+> +++ rtd3/drivers/thermal/thermal_sys.c
+> @@ -657,6 +657,18 @@ thermal_remove_hwmon_sysfs(struct therma
+>  }
+>  #endif
+>  
+> +static void thermal_get_trend (struct thermal_zone_device *tz,
+> +		int trip, enum thermal_trend *trend)
+> +{
+> +	if (tz->ops->get_trend)
+> +		if (!tz->ops->get_trend(tz, trip, trend))
+> +			return;
+> +
+> +	*trend = tz->temperature >= tz->last_temperature ?
+> +		 THERMAL_TREND_RAISING : THERMAL_TREND_DROPPING;
+> +	return;
+> +}
+> +
+>  static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
+>  					    int delay)
+>  {
+> @@ -691,6 +703,8 @@ static void thermal_zone_device_passive(
+>  	if (temp >= trip_temp) {
+>  		tz->passive = true;
+>  
+> +		thermal_get_trend(tz, trip, (enum thermal_trend *)&trend);
+> +
+>  		trend = (tz->tc1 * (temp - tz->last_temperature)) +
+>  			(tz->tc2 * (temp - trip_temp));
+>  
+> @@ -1049,6 +1063,9 @@ void thermal_zone_device_update(struct t
+>  		goto leave;
+>  	}
+>  
+> +	tz->last_temperature = tz->temperature;
+> +	tz->temperature = temp;
+> +
+>  	for (count = 0; count < tz->trips; count++) {
+>  		tz->ops->get_trip_type(tz, count, &trip_type);
+>  		tz->ops->get_trip_temp(tz, count, &trip_temp);
+> @@ -1108,8 +1125,6 @@ void thermal_zone_device_update(struct t
+>  		thermal_zone_device_passive(tz, temp, tz->forced_passive,
+>  					    THERMAL_TRIPS_NONE);
+>  
+> -	tz->last_temperature = temp;
+> -
+>  leave:
+>  	if (tz->passive)
+>  		thermal_zone_device_set_polling(tz, tz->passive_delay);
+> Index: rtd3/include/linux/thermal.h
+> ===================================================================
+> --- rtd3.orig/include/linux/thermal.h
+> +++ rtd3/include/linux/thermal.h
+> @@ -44,6 +44,12 @@ enum thermal_trip_type {
+>  	THERMAL_TRIP_CRITICAL,
+>  };
+>  
+> +enum thermal_trend {
+> +	THERMAL_TREND_NONE,
+> +	THERMAL_TREND_RAISING,
+> +	THERMAL_TREND_DROPPING,
+> +};
+> +
 
-Nice!
+Nip: Can you please add some doc for the expected definition for all enum entries above?
+Is TREND_NONE supposed to mean "Stable", for instance?
 
-> 2) remove passive specific requirement, aka, tc1/tc2, and
->    introduce .get_trend() instead, for both active and passive cooling
->    algorithm. (patch 4,5)
-
-Cool. The .get_trend() might be also helpful in case there are sensors
-that provide trending computation, or at least, some history buffer.
-
-So, I definitely agree with this approach.
-
-> 3) introduce new function thermal_zone_trip_update(), this contains the
->    code for the general cooling algorithm. (patch 6)
-
-Ok.
-
-> 4) rename some thermal structures. Use thermal_instance instead of
->    thermal_cooling_device_instance, as this structure is used to
->    describe the behavior of a certain cooling device for a certain trip
->    point in a certain thermal zone.
->    thermal_zone_device has a list of all the thermal instances in this
->    thermal zone so that it can update them when the temperature changes.
->    thermal_cooling_device has a list of all the thermal instances for
->    this cooling device so that it can make decision which cooling state
->    should be in when the temperature changes. (patch 7,8,9,10)
-
-Ok.
-
-> 5) introduce a simple arbitrator. (patch 11)
->    When temperature changes, we update a thermal zone in two stages,
->    a) thermal_zone_trip_point() is the general cooling algorithm to
->       update the thermal instances in the thermal zone device
->    b) thermal_zone_do_update() is the arbitrator for the cooling device
->       to choose the deepest cooling state required to enter.
-
-The arbitrator is good starting point. I will have a deeper look on it.
-
-But we may be careful to solve the constraint issue only at thermal code
-level. There might be conflicting constraints coming from PM QoS layer,
-for instance.
-
-> 6) unify the code for both passive and active cooling.
-
-This is good.
-
+>  struct thermal_zone_device_ops {
+>  	int (*bind) (struct thermal_zone_device *,
+>  		     struct thermal_cooling_device *);
+> @@ -59,6 +65,8 @@ struct thermal_zone_device_ops {
+>  	int (*get_trip_temp) (struct thermal_zone_device *, int,
+>  			      unsigned long *);
+>  	int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
+> +	int (*get_trend) (struct thermal_zone_device *, int,
+> +			  enum thermal_trend *);
+>  	int (*notify) (struct thermal_zone_device *, int,
+>  		       enum thermal_trip_type);
+>  };
+> @@ -95,6 +103,7 @@ struct thermal_zone_device {
+>  	int tc2;
+>  	int passive_delay;
+>  	int polling_delay;
+> +	int temperature;
+>  	int last_temperature;
+>  	bool passive;
+>  	unsigned int forced_passive;
 > 
-> TODO, add locking mechanism. I know this is important but as this patch
-> set changes the thermal layer a(lot, I just want to make sure I'm in the
-> right direction before going on.
-
-Right. I second you on the incremental approach.
-
 > 
-> BTW, in theory, they should make no change to the behavior of the
-> current generic thermal layer users. But I have just done the build
-> test.
-
-OK. I will fetch them and give them a trial on my side, then send better review.
-
-> 
-> Any comments are welcome.
-> 
-> thanks,
-> rui
-> 
-> --------------------------------------------------------------------
->  drivers/acpi/thermal.c                   |   76 +++++++--
->  drivers/platform/x86/acerhdf.c           |    4 +-
->  drivers/platform/x86/intel_mid_thermal.c |    2 +-
->  driverk/thermal/spear_thermal.c          |    2 +-
->  drivers/thermal/thermal_sys.c            |  293
-> ++++++++++++++++++------------
->  include/linux/thermal.h                  |   22 ++-
->  7 files changed, 271 insertions(+), 148 deletions(-)
-> 
-> 
-
---
-Eduardo Valentin
