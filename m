@@ -1,15 +1,16 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC PATCH 4/12] thermal: introduce .get_trend()
-	callback
-Date: Tue, 12 Jun 2012 12:59:39 +0800
-Message-ID: <1339477179.1492.213.camel@rui.sh.intel.com>
-References: <1339384806.1492.157.camel@rui.sh.intel.com>
-	<20120611095443.GB3649@besouro>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFC PATCH 3/12] thermal: set upper and lower limits
+	when binding
+Date: Tue, 12 Jun 2012 12:52:39 +0300
+Message-ID: <20120612095215.GA3837@besouro>
+References: <1339384801.1492.156.camel@rui.sh.intel.com>
+Reply-To: eduardo.valentin@ti.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <20120611095443.GB3649@besouro>
+Content-Disposition: inline
+In-Reply-To: <1339384801.1492.156.camel@rui.sh.intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,105 +20,191 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: eduardo.valentin@ti.com
+To: Zhang Rui <rui.zhang@intel.com>
 Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24g5LiALCAyMDEyLTA2LTExIGF0IDEyOjU0ICswMzAwLCBFZHVhcmRvIFZhbGVudGluIHdyb3Rl
-Ogo+IEhlbGxvIFJ1aSwKPiAKPiBPbiBNb24sIEp1biAxMSwgMjAxMiBhdCAxMToyMDowNkFNICsw
-ODAwLCBaaGFuZyBSdWkgd3JvdGU6Cj4gPiAKPiA+IHRjMSBhbmQgdGMyIGFyZSBBQ1BJIHBsYXRm
-b3JtIHNwZWNpZmljIGNvbmNlcHRzLCBpbnRyb2R1Y2UKPiA+IC5nZXRfdHJlbmQoKSBhcyBhIG1v
-cmUgZ2VuZXJhbCBzb2x1dGlvbi4KPiA+IAo+ID4gCj4gPiBTaWduZWQtb2ZmLWJ5OiBaaGFuZyBS
-dWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+Cj4gPiAtLS0KPiA+ICBkcml2ZXJzL2FjcGkvdGhlcm1h
-bC5jICAgICAgICB8ICAgMzIgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKPiA+ICBk
-cml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9zeXMuYyB8ICAgMTkgKysrKysrKysrKysrKysrKystLQo+
-ID4gIGluY2x1ZGUvbGludXgvdGhlcm1hbC5oICAgICAgIHwgICAgOSArKysrKysrKysKPiA+ICAz
-IGZpbGVzIGNoYW5nZWQsIDU4IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCj4gPiAKPiA+
-IEluZGV4OiBydGQzL2RyaXZlcnMvYWNwaS90aGVybWFsLmMKPiA+ID09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPiA+IC0t
-LSBydGQzLm9yaWcvZHJpdmVycy9hY3BpL3RoZXJtYWwuYwo+ID4gKysrIHJ0ZDMvZHJpdmVycy9h
-Y3BpL3RoZXJtYWwuYwo+ID4gQEAgLTcwNiw2ICs3MDYsMzcgQEAgc3RhdGljIGludCB0aGVybWFs
-X2dldF9jcml0X3RlbXAoc3RydWN0Cj4gPiAgCQlyZXR1cm4gLUVJTlZBTDsKPiA+ICB9Cj4gPiAg
-Cj4gPiArc3RhdGljIGludCB0aGVybWFsX2dldF90cmVuZChzdHJ1Y3QgdGhlcm1hbF96b25lX2Rl
-dmljZSAqdGhlcm1hbCwKPiA+ICsJCQkJaW50IHRyaXAsIGVudW0gdGhlcm1hbF90cmVuZCAqdHJl
-bmQpCj4gPiArewo+ID4gKwlzdHJ1Y3QgYWNwaV90aGVybWFsICp0eiA9IHRoZXJtYWwtPmRldmRh
-dGE7Cj4gPiArCWVudW0gdGhlcm1hbF90cmlwX3R5cGUgdHlwZTsKPiA+ICsJdW5zaWduZWQgbG9u
-ZyB0cmlwX3RlbXA7Cj4gPiArCWludCBpOwo+ID4gKwo+ID4gKwlpZiAodGhlcm1hbF9nZXRfdHJp
-cF90eXBlKHRoZXJtYWwsIHRyaXAsICZ0eXBlKSkKPiA+ICsJCXJldHVybiAtRUlOVkFMOwo+ID4g
-Kwo+ID4gKwkvKiBPbmx5IFBBU1NJVkUgdHJpcCBwb2ludHMgbmVlZCBUUkVORCAqLwo+ID4gKwlp
-ZiAodHlwZSAhPSBUSEVSTUFMX1RSSVBfUEFTU0lWRSkKPiA+ICsJCXJldHVybiAtRUlOVkFMOwo+
-ID4gKwo+ID4gKwlpZiAodGhlcm1hbF9nZXRfdHJpcF90ZW1wKHRoZXJtYWwsIHRyaXAsICZ0cmlw
-X3RlbXApKQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7Cj4gPiArCj4gPiArCS8qCj4gPiArCSAqIHR6
-LT50ZW1wZXJhdHVyZSBoYXMgYWxyZWFkeSBiZWVuIHVwZGF0ZWQgYnkgZ2VuZXJpYyB0aGVybWFs
-IGxheWVyLAo+ID4gKwkgKiBiZWZvcmUgdGhpcyBjYWxsYmFjayBiZWluZyBpbnZva2VkCj4gPiAr
-CSAqLwo+ID4gKwlpID0gKHR6LT50cmlwcy5wYXNzaXZlLnRjMSAqICh0ei0+dGVtcGVyYXR1cmUg
-LSB0ei0+bGFzdF90ZW1wZXJhdHVyZSkpCj4gPiArCQkrICh0ei0+dHJpcHMucGFzc2l2ZS50YzIg
-KiAodHotPnRlbXBlcmF0dXJlIC0gdHJpcF90ZW1wKSk7Cj4gPiArCj4gPiArCSp0cmVuZCA9IGkg
-PiAwID8gVEhFUk1BTF9UUkVORF9SQUlTSU5HIDoKPiA+ICsJCShpIDwgMCA/IFRIRVJNQUxfVFJF
-TkRfRFJPUFBJTkcgOiBUSEVSTUFMX1RSRU5EX05PTkUpOwo+ID4gKwlyZXR1cm4gMDsKPiA+ICt9
-Cj4gPiArCj4gPiArCj4gPiAgc3RhdGljIGludCB0aGVybWFsX25vdGlmeShzdHJ1Y3QgdGhlcm1h
-bF96b25lX2RldmljZSAqdGhlcm1hbCwgaW50IHRyaXAsCj4gPiAgCQkJICAgZW51bSB0aGVybWFs
-X3RyaXBfdHlwZSB0cmlwX3R5cGUpCj4gPiAgewo+ID4gQEAgLTgzNSw2ICs4NjYsNyBAQCBzdGF0
-aWMgY29uc3Qgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2VfCj4gPiAgCS5nZXRfdHJpcF90eXBl
-ID0gdGhlcm1hbF9nZXRfdHJpcF90eXBlLAo+ID4gIAkuZ2V0X3RyaXBfdGVtcCA9IHRoZXJtYWxf
-Z2V0X3RyaXBfdGVtcCwKPiA+ICAJLmdldF9jcml0X3RlbXAgPSB0aGVybWFsX2dldF9jcml0X3Rl
-bXAsCj4gPiArCS5nZXRfdHJlbmQgPSB0aGVybWFsX2dldF90cmVuZCwKPiA+ICAJLm5vdGlmeSA9
-IHRoZXJtYWxfbm90aWZ5LAo+ID4gIH07Cj4gPiAgCj4gPiBJbmRleDogcnRkMy9kcml2ZXJzL3Ro
-ZXJtYWwvdGhlcm1hbF9zeXMuYwo+ID4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+ID4gLS0tIHJ0ZDMub3JpZy9kcml2
-ZXJzL3RoZXJtYWwvdGhlcm1hbF9zeXMuYwo+ID4gKysrIHJ0ZDMvZHJpdmVycy90aGVybWFsL3Ro
-ZXJtYWxfc3lzLmMKPiA+IEBAIC02NTcsNiArNjU3LDE4IEBAIHRoZXJtYWxfcmVtb3ZlX2h3bW9u
-X3N5c2ZzKHN0cnVjdCB0aGVybWEKPiA+ICB9Cj4gPiAgI2VuZGlmCj4gPiAgCj4gPiArc3RhdGlj
-IHZvaWQgdGhlcm1hbF9nZXRfdHJlbmQgKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eiwK
-PiA+ICsJCWludCB0cmlwLCBlbnVtIHRoZXJtYWxfdHJlbmQgKnRyZW5kKQo+ID4gK3sKPiA+ICsJ
-aWYgKHR6LT5vcHMtPmdldF90cmVuZCkKPiA+ICsJCWlmICghdHotPm9wcy0+Z2V0X3RyZW5kKHR6
-LCB0cmlwLCB0cmVuZCkpCj4gPiArCQkJcmV0dXJuOwo+ID4gKwo+ID4gKwkqdHJlbmQgPSB0ei0+
-dGVtcGVyYXR1cmUgPj0gdHotPmxhc3RfdGVtcGVyYXR1cmUgPwo+ID4gKwkJIFRIRVJNQUxfVFJF
-TkRfUkFJU0lORyA6IFRIRVJNQUxfVFJFTkRfRFJPUFBJTkc7Cj4gPiArCXJldHVybjsKPiA+ICt9
-Cj4gPiArCj4gPiAgc3RhdGljIHZvaWQgdGhlcm1hbF96b25lX2RldmljZV9zZXRfcG9sbGluZyhz
-dHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqdHosCj4gPiAgCQkJCQkgICAgaW50IGRlbGF5KQo+
-ID4gIHsKPiA+IEBAIC02OTEsNiArNzAzLDggQEAgc3RhdGljIHZvaWQgdGhlcm1hbF96b25lX2Rl
-dmljZV9wYXNzaXZlKAo+ID4gIAlpZiAodGVtcCA+PSB0cmlwX3RlbXApIHsKPiA+ICAJCXR6LT5w
-YXNzaXZlID0gdHJ1ZTsKPiA+ICAKPiA+ICsJCXRoZXJtYWxfZ2V0X3RyZW5kKHR6LCB0cmlwLCAo
-ZW51bSB0aGVybWFsX3RyZW5kICopJnRyZW5kKTsKPiA+ICsKPiA+ICAJCXRyZW5kID0gKHR6LT50
-YzEgKiAodGVtcCAtIHR6LT5sYXN0X3RlbXBlcmF0dXJlKSkgKwo+ID4gIAkJCSh0ei0+dGMyICog
-KHRlbXAgLSB0cmlwX3RlbXApKTsKPiA+ICAKPiA+IEBAIC0xMDQ5LDYgKzEwNjMsOSBAQCB2b2lk
-IHRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlKHN0cnVjdCB0Cj4gPiAgCQlnb3RvIGxlYXZlOwo+
-ID4gIAl9Cj4gPiAgCj4gPiArCXR6LT5sYXN0X3RlbXBlcmF0dXJlID0gdHotPnRlbXBlcmF0dXJl
-Owo+ID4gKwl0ei0+dGVtcGVyYXR1cmUgPSB0ZW1wOwo+ID4gKwo+ID4gIAlmb3IgKGNvdW50ID0g
-MDsgY291bnQgPCB0ei0+dHJpcHM7IGNvdW50KyspIHsKPiA+ICAJCXR6LT5vcHMtPmdldF90cmlw
-X3R5cGUodHosIGNvdW50LCAmdHJpcF90eXBlKTsKPiA+ICAJCXR6LT5vcHMtPmdldF90cmlwX3Rl
-bXAodHosIGNvdW50LCAmdHJpcF90ZW1wKTsKPiA+IEBAIC0xMTA4LDggKzExMjUsNiBAQCB2b2lk
-IHRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlKHN0cnVjdCB0Cj4gPiAgCQl0aGVybWFsX3pvbmVf
-ZGV2aWNlX3Bhc3NpdmUodHosIHRlbXAsIHR6LT5mb3JjZWRfcGFzc2l2ZSwKPiA+ICAJCQkJCSAg
-ICBUSEVSTUFMX1RSSVBTX05PTkUpOwo+ID4gIAo+ID4gLQl0ei0+bGFzdF90ZW1wZXJhdHVyZSA9
-IHRlbXA7Cj4gPiAtCj4gPiAgbGVhdmU6Cj4gPiAgCWlmICh0ei0+cGFzc2l2ZSkKPiA+ICAJCXRo
-ZXJtYWxfem9uZV9kZXZpY2Vfc2V0X3BvbGxpbmcodHosIHR6LT5wYXNzaXZlX2RlbGF5KTsKPiA+
-IEluZGV4OiBydGQzL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oCj4gPiA9PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4gPiAt
-LS0gcnRkMy5vcmlnL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oCj4gPiArKysgcnRkMy9pbmNsdWRl
-L2xpbnV4L3RoZXJtYWwuaAo+ID4gQEAgLTQ0LDYgKzQ0LDEyIEBAIGVudW0gdGhlcm1hbF90cmlw
-X3R5cGUgewo+ID4gIAlUSEVSTUFMX1RSSVBfQ1JJVElDQUwsCj4gPiAgfTsKPiA+ICAKPiA+ICtl
-bnVtIHRoZXJtYWxfdHJlbmQgewo+ID4gKwlUSEVSTUFMX1RSRU5EX05PTkUsCj4gPiArCVRIRVJN
-QUxfVFJFTkRfUkFJU0lORywKPiA+ICsJVEhFUk1BTF9UUkVORF9EUk9QUElORywKPiA+ICt9Owo+
-ID4gKwo+IAo+IE5pcDogQ2FuIHlvdSBwbGVhc2UgYWRkIHNvbWUgZG9jIGZvciB0aGUgZXhwZWN0
-ZWQgZGVmaW5pdGlvbiBmb3IgYWxsIGVudW0gZW50cmllcyBhYm92ZT8KPiBJcyBUUkVORF9OT05F
-IHN1cHBvc2VkIHRvIG1lYW4gIlN0YWJsZSIsIGZvciBpbnN0YW5jZT8KPiAKeWVwLiBUUkVORF9T
-VEFCTEUgc291bmRzIGJldHRlci4gSSdtIG5vdCBnb29kIGF0IG5hbWluZy4KCnRoYW5rcywKcnVp
-Cj4gPiAgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2Vfb3BzIHsKPiA+ICAJaW50ICgqYmluZCkg
-KHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICosCj4gPiAgCQkgICAgIHN0cnVjdCB0aGVybWFs
-X2Nvb2xpbmdfZGV2aWNlICopOwo+ID4gQEAgLTU5LDYgKzY1LDggQEAgc3RydWN0IHRoZXJtYWxf
-em9uZV9kZXZpY2Vfb3BzIHsKPiA+ICAJaW50ICgqZ2V0X3RyaXBfdGVtcCkgKHN0cnVjdCB0aGVy
-bWFsX3pvbmVfZGV2aWNlICosIGludCwKPiA+ICAJCQkgICAgICB1bnNpZ25lZCBsb25nICopOwo+
-ID4gIAlpbnQgKCpnZXRfY3JpdF90ZW1wKSAoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKiwg
-dW5zaWduZWQgbG9uZyAqKTsKPiA+ICsJaW50ICgqZ2V0X3RyZW5kKSAoc3RydWN0IHRoZXJtYWxf
-em9uZV9kZXZpY2UgKiwgaW50LAo+ID4gKwkJCSAgZW51bSB0aGVybWFsX3RyZW5kICopOwo+ID4g
-IAlpbnQgKCpub3RpZnkpIChzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqLCBpbnQsCj4gPiAg
-CQkgICAgICAgZW51bSB0aGVybWFsX3RyaXBfdHlwZSk7Cj4gPiAgfTsKPiA+IEBAIC05NSw2ICsx
-MDMsNyBAQCBzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSB7Cj4gPiAgCWludCB0YzI7Cj4gPiAg
-CWludCBwYXNzaXZlX2RlbGF5Owo+ID4gIAlpbnQgcG9sbGluZ19kZWxheTsKPiA+ICsJaW50IHRl
-bXBlcmF0dXJlOwo+ID4gIAlpbnQgbGFzdF90ZW1wZXJhdHVyZTsKPiA+ICAJYm9vbCBwYXNzaXZl
-Owo+ID4gIAl1bnNpZ25lZCBpbnQgZm9yY2VkX3Bhc3NpdmU7Cj4gPiAKPiA+IAoKCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LXBtIG1haWxpbmcg
-bGlzdApsaW51eC1wbUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwpodHRwczovL2xpc3RzLmxp
-bnV4Zm91bmRhdGlvbi5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1wbQ==
+Hello Rui,
+
+On Mon, Jun 11, 2012 at 11:20:01AM +0800, Zhang Rui wrote:
+> 
+> Set upper and lower limits when binding
+> a thermal cooling device to a thermal zone device.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/acpi/thermal.c         |   34 ++++++++++++++++++++++++----------
+>  drivers/platform/x86/acerhdf.c |    2 +-
+>  drivers/thermal/thermal_sys.c  |   20 ++++++++++++++------
+>  include/linux/thermal.h        |    3 ++-
+>  4 files changed, 41 insertions(+), 18 deletions(-)
+> 
+> Index: rtd3/drivers/thermal/thermal_sys.c
+> ===================================================================
+> --- rtd3.orig/drivers/thermal/thermal_sys.c
+> +++ rtd3/drivers/thermal/thermal_sys.c
+> @@ -248,7 +248,7 @@ passive_store(struct device *dev, struct
+>  				     sizeof("Processor")))
+>  				thermal_zone_bind_cooling_device(tz,
+>  								 THERMAL_TRIPS_NONE,
+> -								 cdev);
+> +								 cdev, -1, -1);
+>  		}
+>  		mutex_unlock(&thermal_list_lock);
+>  		if (!tz->passive_delay)
+> @@ -760,7 +760,8 @@ static void thermal_zone_device_check(st
+>   */
+>  int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+>  				     int trip,
+> -				     struct thermal_cooling_device *cdev)
+> +				     struct thermal_cooling_device *cdev,
+> +				     long upper, long lower)
+>  {
+>  	struct thermal_cooling_device_instance *dev;
+>  	struct thermal_cooling_device_instance *pos;
+> @@ -784,6 +785,15 @@ int thermal_zone_bind_cooling_device(str
+>  	if (tz != pos1 || cdev != pos2)
+>  		return -EINVAL;
+>  
+> +	cdev->ops->get_max_state(cdev, &max_state);
+> +
+> +	/* lower default 0, upper default max_state */
+> +	lower = lower < 0 ? 0 : lower;
+> +	upper = upper < 0 ? max_state : upper;
+> +
+> +	if (lower > upper || upper > max_state)
+> +		return -EINVAL;
+> +
+
+>From this version of the code, I assume we want to:
+a. Allow cooling binding instances to have ranges overlapping.
+b. Allow a binding with only one state (lower == upper).
+
+Is this the expected behavior?
+
+>  	dev =
+>  	    kzalloc(sizeof(struct thermal_cooling_device_instance), GFP_KERNEL);
+>  	if (!dev)
+> @@ -791,10 +801,8 @@ int thermal_zone_bind_cooling_device(str
+>  	dev->tz = tz;
+>  	dev->cdev = cdev;
+>  	dev->trip = trip;
+> -
+> -	cdev->ops->get_max_state(dev, &max_state);
+> -	dev->upper = max_state;
+> -	dev->lower = 0;
+> +	dev->upper = upper;
+> +	dev->lower = lower;
+>  
+>  	result = get_idr(&tz->idr, &tz->lock, &dev->id);
+>  	if (result)
+> Index: rtd3/include/linux/thermal.h
+> ===================================================================
+> --- rtd3.orig/include/linux/thermal.h
+> +++ rtd3/include/linux/thermal.h
+> @@ -143,7 +143,8 @@ struct thermal_zone_device *thermal_zone
+>  void thermal_zone_device_unregister(struct thermal_zone_device *);
+>  
+>  int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+> -				     struct thermal_cooling_device *);
+> +				     struct thermal_cooling_device *,
+> +				     long, long);
+>  int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
+>  				       struct thermal_cooling_device *);
+>  void thermal_zone_device_update(struct thermal_zone_device *);
+> Index: rtd3/drivers/acpi/thermal.c
+> ===================================================================
+> --- rtd3.orig/drivers/acpi/thermal.c
+> +++ rtd3/drivers/acpi/thermal.c
+> @@ -729,11 +729,9 @@ static int thermal_notify(struct thermal
+>  	return 0;
+>  }
+>  
+> -typedef int (*cb)(struct thermal_zone_device *, int,
+> -		  struct thermal_cooling_device *);
+>  static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
+>  					struct thermal_cooling_device *cdev,
+> -					cb action)
+> +					int bind)
+>  {
+>  	struct acpi_device *device = cdev->devdata;
+>  	struct acpi_thermal *tz = thermal->devdata;
+> @@ -758,7 +756,14 @@ static int acpi_thermal_cooling_device_c
+>  			handle = tz->trips.passive.devices.handles[i];
+>  			status = acpi_bus_get_device(handle, &dev);
+>  			if (ACPI_SUCCESS(status) && (dev == device)) {
+> -				result = action(thermal, trip, cdev);
+> +				if (bind)
+> +					result =
+> +						thermal_zone_bind_cooling_device(
+> +							thermal, trip, cdev, -1, -1);
+> +				else
+> +					result =
+> +						thermal_zone_unbind_cooling_device(
+> +							thermal, trip, cdev);
+>  				if (result)
+>  					goto failed;
+>  			}
+> @@ -775,7 +780,13 @@ static int acpi_thermal_cooling_device_c
+>  			handle = tz->trips.active[i].devices.handles[j];
+>  			status = acpi_bus_get_device(handle, &dev);
+>  			if (ACPI_SUCCESS(status) && (dev == device)) {
+> -				result = action(thermal, trip, cdev);
+> +				if (bind)
+> +					result =
+> +						thermal_zone_bind_cooling_device(
+> +							thermal, trip, cdev, -1, -1);
+> +				else
+> +					result = thermal_zone_unbind_cooling_device(
+> +							thermal, trip, cdev);
+>  				if (result)
+>  					goto failed;
+>  			}
+> @@ -786,7 +797,12 @@ static int acpi_thermal_cooling_device_c
+>  		handle = tz->devices.handles[i];
+>  		status = acpi_bus_get_device(handle, &dev);
+>  		if (ACPI_SUCCESS(status) && (dev == device)) {
+> -			result = action(thermal, -1, cdev);
+> +			if (bind)
+> +				result = thermal_zone_bind_cooling_device(thermal,
+> +								-1, cdev, -1, -1);
+> +			else
+> +				result = thermal_zone_unbind_cooling_device(thermal,
+> +								-1, cdev);
+>  			if (result)
+>  				goto failed;
+>  		}
+> @@ -800,16 +816,14 @@ static int
+>  acpi_thermal_bind_cooling_device(struct thermal_zone_device *thermal,
+>  					struct thermal_cooling_device *cdev)
+>  {
+> -	return acpi_thermal_cooling_device_cb(thermal, cdev,
+> -				thermal_zone_bind_cooling_device);
+> +	return acpi_thermal_cooling_device_cb(thermal, cdev, 1);
+>  }
+>  
+>  static int
+>  acpi_thermal_unbind_cooling_device(struct thermal_zone_device *thermal,
+>  					struct thermal_cooling_device *cdev)
+>  {
+> -	return acpi_thermal_cooling_device_cb(thermal, cdev,
+> -				thermal_zone_unbind_cooling_device);
+> +	return acpi_thermal_cooling_device_cb(thermal, cdev, 0);
+>  }
+>  
+>  static const struct thermal_zone_device_ops acpi_thermal_zone_ops = {
+> Index: rtd3/drivers/platform/x86/acerhdf.c
+> ===================================================================
+> --- rtd3.orig/drivers/platform/x86/acerhdf.c
+> +++ rtd3/drivers/platform/x86/acerhdf.c
+> @@ -329,7 +329,7 @@ static int acerhdf_bind(struct thermal_z
+>  	if (cdev != cl_dev)
+>  		return 0;
+>  
+> -	if (thermal_zone_bind_cooling_device(thermal, 0, cdev)) {
+> +	if (thermal_zone_bind_cooling_device(thermal, 0, cdev, -1, -1)) {
+>  		pr_err("error binding cooling dev\n");
+>  		return -EINVAL;
+>  	}
+> 
+> 
