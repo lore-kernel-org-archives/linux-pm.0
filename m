@@ -1,8 +1,8 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 1/2] PM: devfreq: add freq table and
-	available_freqs
-Date: Wed, 13 Jun 2012 04:53:47 +0000 (GMT)
-Message-ID: <16928680.915361339563225913.JavaMail.weblogic@epml04>
+Subject: Re: [PATCH 2/2] PM: Devfreq: Add frequency get function
+	in profile
+Date: Wed, 13 Jun 2012 04:57:36 +0000 (GMT)
+Message-ID: <1290271.915811339563455292.JavaMail.weblogic@epml04>
 Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,123 +19,86 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Xiaoguang Chen <chenxg@marvell.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, linux-pm@lists.linux-foundation.org
+Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Devfreq framework don't have a frequency table, add it
-> for easy use.
+> when devfreq set one frequency, the final frequency may not
+> the same as the requested frequency. Add get function in profile
+> to let devfreq driver return the final frequency.
 > 
 > Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
 
-If you need a predefined data structure to support frequency table,
-you can simply use OPP, which has helper functions implemented in
-devfreq subsystem. Is there any reason not to use OPP and to implement
-another data structure to store a frequency table attached to a device?
+That is why in update_freq() function that you've modified uses:
+
+err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
+
+not
+
+err = devfreq->profile->target(devfreq->dev.parent, freq, flags);
+
+The target function will return the configured frequency right there.
+Calling "__devfreq_get()" at the same location wouldn't help as long as
+the "target()" callback is implemented correctly.
+
 
 
 Cheers!
-MyungJoo.
+MyungJoo
 
 > ---
->  drivers/devfreq/devfreq.c |   26 ++++++++++++++++++++++++++
->  include/linux/devfreq.h   |   12 ++++++++++++
->  2 files changed, 38 insertions(+), 0 deletions(-)
+>  drivers/devfreq/devfreq.c |   12 +++++++++++-
+>  include/linux/devfreq.h   |    2 ++
+>  2 files changed, 13 insertions(+), 1 deletions(-)
 > 
 > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 70c31d4..2144200 100644
+> index 2144200..50a4fc0 100644
 > --- a/drivers/devfreq/devfreq.c
 > +++ b/drivers/devfreq/devfreq.c
-> @@ -460,6 +460,17 @@ int devfreq_remove_device(struct devfreq *devfreq)
->  	return 0;
+> @@ -72,6 +72,16 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+>  	return ERR_PTR(-ENODEV);
 >  }
 >  
-> +/*
-> + * devfreq_set_freq_table()- Set frequency table for devfreq
-> + * @devfreq	The devfreq instance
-> + * @table	The frequency table that device supports
-> + */
-> +void devfreq_set_freq_table(struct devfreq *devfreq,
-> +			    struct devfreq_frequency_table *table)
+> +static unsigned long __devfreq_get(struct device *dev)
 > +{
-> +	devfreq->freq_table = table;
-> +}
-> +
->  static ssize_t show_governor(struct device *dev,
->  			     struct device_attribute *attr, char *buf)
->  {
-> @@ -472,6 +483,20 @@ static ssize_t show_freq(struct device *dev,
->  	return sprintf(buf, "%lu\n", to_devfreq(dev)->previous_freq);
->  }
->  
-> +static ssize_t show_avail_freq(struct device *dev,
-> +			       struct device_attribute *attr, char *buf)
-> +{
-> +	int len = 0, i;
 > +	struct devfreq *devfreq = to_devfreq(dev);
-> +	if (devfreq->freq_table)
-> +		for (i = 0; devfreq->freq_table[i].frequency != DEVFREQ_TABLE_END; i++)
-> +			len += sprintf(buf + len, "%lu\n",
-> +				       devfreq->freq_table[i].frequency);
-> +	if (len == 0)
-> +		len += sprintf(buf + len, "No frequency table is provided\n");
-> +	return len;
+> +	unsigned long ret_freq = devfreq->previous_freq;
+> +	if (!devfreq->profile->get)
+> +		return ret_freq;
+> +	ret_freq = devfreq->profile->get(devfreq->dev.parent);
+> +	return ret_freq;
 > +}
-> +
->  static ssize_t show_polling_interval(struct device *dev,
->  				     struct device_attribute *attr, char *buf)
->  {
-> @@ -595,6 +620,7 @@ static struct device_attribute devfreq_attrs[] = {
->  	       store_polling_interval),
->  	__ATTR(min_freq, S_IRUGO | S_IWUSR, show_min_freq, store_min_freq),
->  	__ATTR(max_freq, S_IRUGO | S_IWUSR, show_max_freq, store_max_freq),
-> +	__ATTR(available_freqs, S_IRUGO, show_avail_freq, NULL),
->  	{ },
->  };
->  
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index 281c72a..e5e4036 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -52,6 +52,14 @@ struct devfreq_dev_status {
->   */
->  #define DEVFREQ_FLAG_LEAST_UPPER_BOUND		0x1
->  
-> +#define DEVFREQ_ENTRY_INVALID (~0)
-> +#define DEVFREQ_TABLE_END     (~1)
-> +
-> +struct devfreq_frequency_table {
-> +	unsigned int index;
-> +	unsigned long frequency;
-> +};
 > +
 >  /**
->   * struct devfreq_dev_profile - Devfreq's user device profile
+>   * update_devfreq() - Reevaluate the device and configure frequency.
+>   * @devfreq:	the devfreq instance.
+> @@ -116,7 +126,7 @@ int update_devfreq(struct devfreq *devfreq)
+>  	if (err)
+>  		return err;
+>  
+> -	devfreq->previous_freq = freq;
+> +	devfreq->previous_freq = __devfreq_get(&devfreq->dev);
+>  	return err;
+>  }
+>  
+> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> index e5e4036..f789314 100644
+> --- a/include/linux/devfreq.h
+> +++ b/include/linux/devfreq.h
+> @@ -65,6 +65,7 @@ struct devfreq_frequency_table {
 >   * @initial_freq	The operating frequency when devfreq_add_device() is
-> @@ -130,6 +138,7 @@ struct devfreq_governor {
->   *			"devfreq_monitor" executions to reevaluate
->   *			frequency/voltage of the device. Set by
->   *			profile's polling_ms interval.
-> + * @freq_table	The frequency table that device supports
->   * @data	Private data of the governor. The devfreq framework does not
->   *		touch this.
->   * @being_removed	a flag to mark that this object is being removed in
-> @@ -157,6 +166,7 @@ struct devfreq {
->  	unsigned long polling_jiffies;
->  	unsigned long previous_freq;
->  	unsigned int next_polling;
-> +	struct devfreq_frequency_table *freq_table;
+>   *			called.
+>   * @polling_ms		The polling interval in ms. 0 disables polling.
+> + * @get			Get the devices's actual frequency
+>   * @target		The device should set its operating frequency at
+>   *			freq or lowest-upper-than-freq value. If freq is
+>   *			higher than any operable frequency, set maximum.
+> @@ -84,6 +85,7 @@ struct devfreq_dev_profile {
+>  	unsigned long initial_freq;
+>  	unsigned int polling_ms;
 >  
->  	void *data; /* private data for governors */
->  
-> @@ -180,6 +190,8 @@ extern int devfreq_register_opp_notifier(struct device *dev,
->  					 struct devfreq *devfreq);
->  extern int devfreq_unregister_opp_notifier(struct device *dev,
->  					   struct devfreq *devfreq);
-> +extern void devfreq_set_freq_table(struct devfreq *devfreq,
-> +				   struct devfreq_frequency_table *table);
->  
->  #ifdef CONFIG_DEVFREQ_GOV_POWERSAVE
->  extern const struct devfreq_governor devfreq_powersave;
+> +	unsigned long	(*get)(struct device *dev);
+>  	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
+>  	int (*get_dev_status)(struct device *dev,
+>  			      struct devfreq_dev_status *stat);
 > -- 
 > 1.7.0.4
-> 
