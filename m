@@ -1,71 +1,143 @@
-From: Xiaoguang Chen <chenxg@marvell.com>
-Subject: RE: [PATCH 2/2] PM: Devfreq: Add frequency get function in profile
-Date: Tue, 12 Jun 2012 22:16:29 -0700
-Message-ID: <4737A960563B524DA805CA602BE04B3064CBDF6710@SC-VEXCH2.marvell.com>
-References: <1290271.915811339563455292.JavaMail.weblogic@epml04>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFT] PCI changes related to wakeup (was: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again)
+Date: Wed, 13 Jun 2012 11:22:35 +0200
+Message-ID: <201206131122.36198.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.1205311704340.1178-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ks_c_5601-1987"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1290271.915811339563455292.JavaMail.weblogic@epml04>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: =?ks_c_5601-1987?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Content-Type: Text/Plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1205311704340.1178-100000@iolanthe.rowland.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, =?utf-8?q?D=C3=A2niel_Fraga?= <fragabr@gmail.com>, Andrey Rahmatullin <wrar@wrar.name>, Steven Rostedt <rostedt@goodmis.org>, linux-pm@lists.linux-foundation.org, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T2ssIEkgZ290IGl0LiBTbyB0aGlzIHBhdGNoIGhhcyBubyB0b28gbXVjaCB1c2UuDQoNClRoYW5r
-cw0KWGlhb2d1YW5nDQoNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IE15dW5n
-Sm9vIEhhbSBbbWFpbHRvOm15dW5nam9vLmhhbUBzYW1zdW5nLmNvbV0gDQpTZW50OiAyMDEy0rQ2
-6sUxM+ztIDEyOjU4DQpUbzogWGlhb2d1YW5nIENoZW47IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5l
-bC5vcmcNCkNjOiC52rDmuc47IGxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnDQpT
-dWJqZWN0OiBSZTogW1BBVENIIDIvMl0gUE06IERldmZyZXE6IEFkZCBmcmVxdWVuY3kgZ2V0IGZ1
-bmN0aW9uIGluIHByb2ZpbGUNCg0KPiB3aGVuIGRldmZyZXEgc2V0IG9uZSBmcmVxdWVuY3ksIHRo
-ZSBmaW5hbCBmcmVxdWVuY3kgbWF5IG5vdCB0aGUgc2FtZSANCj4gYXMgdGhlIHJlcXVlc3RlZCBm
-cmVxdWVuY3kuIEFkZCBnZXQgZnVuY3Rpb24gaW4gcHJvZmlsZSB0byBsZXQgZGV2ZnJlcSANCj4g
-ZHJpdmVyIHJldHVybiB0aGUgZmluYWwgZnJlcXVlbmN5Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTog
-WGlhb2d1YW5nIENoZW4gPGNoZW54Z0BtYXJ2ZWxsLmNvbT4NCg0KVGhhdCBpcyB3aHkgaW4gdXBk
-YXRlX2ZyZXEoKSBmdW5jdGlvbiB0aGF0IHlvdSd2ZSBtb2RpZmllZCB1c2VzOg0KDQplcnIgPSBk
-ZXZmcmVxLT5wcm9maWxlLT50YXJnZXQoZGV2ZnJlcS0+ZGV2LnBhcmVudCwgJmZyZXEsIGZsYWdz
-KTsNCg0Kbm90DQoNCmVyciA9IGRldmZyZXEtPnByb2ZpbGUtPnRhcmdldChkZXZmcmVxLT5kZXYu
-cGFyZW50LCBmcmVxLCBmbGFncyk7DQoNClRoZSB0YXJnZXQgZnVuY3Rpb24gd2lsbCByZXR1cm4g
-dGhlIGNvbmZpZ3VyZWQgZnJlcXVlbmN5IHJpZ2h0IHRoZXJlLg0KQ2FsbGluZyAiX19kZXZmcmVx
-X2dldCgpIiBhdCB0aGUgc2FtZSBsb2NhdGlvbiB3b3VsZG4ndCBoZWxwIGFzIGxvbmcgYXMgdGhl
-ICJ0YXJnZXQoKSIgY2FsbGJhY2sgaXMgaW1wbGVtZW50ZWQgY29ycmVjdGx5Lg0KDQoNCg0KQ2hl
-ZXJzIQ0KTXl1bmdKb28NCg0KPiAtLS0NCj4gIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgfCAg
-IDEyICsrKysrKysrKysrLQ0KPiAgaW5jbHVkZS9saW51eC9kZXZmcmVxLmggICB8ICAgIDIgKysN
-Cj4gIDIgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkNCj4g
-DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jIGIvZHJpdmVycy9kZXZm
-cmVxL2RldmZyZXEuYyANCj4gaW5kZXggMjE0NDIwMC4uNTBhNGZjMCAxMDA2NDQNCj4gLS0tIGEv
-ZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KPiArKysgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJl
-cS5jDQo+IEBAIC03Miw2ICs3MiwxNiBAQCBzdGF0aWMgc3RydWN0IGRldmZyZXEgKmZpbmRfZGV2
-aWNlX2RldmZyZXEoc3RydWN0IGRldmljZSAqZGV2KQ0KPiAgCXJldHVybiBFUlJfUFRSKC1FTk9E
-RVYpOw0KPiAgfQ0KPiAgDQo+ICtzdGF0aWMgdW5zaWduZWQgbG9uZyBfX2RldmZyZXFfZ2V0KHN0
-cnVjdCBkZXZpY2UgKmRldikgew0KPiArCXN0cnVjdCBkZXZmcmVxICpkZXZmcmVxID0gdG9fZGV2
-ZnJlcShkZXYpOw0KPiArCXVuc2lnbmVkIGxvbmcgcmV0X2ZyZXEgPSBkZXZmcmVxLT5wcmV2aW91
-c19mcmVxOw0KPiArCWlmICghZGV2ZnJlcS0+cHJvZmlsZS0+Z2V0KQ0KPiArCQlyZXR1cm4gcmV0
-X2ZyZXE7DQo+ICsJcmV0X2ZyZXEgPSBkZXZmcmVxLT5wcm9maWxlLT5nZXQoZGV2ZnJlcS0+ZGV2
-LnBhcmVudCk7DQo+ICsJcmV0dXJuIHJldF9mcmVxOw0KPiArfQ0KPiArDQo+ICAvKioNCj4gICAq
-IHVwZGF0ZV9kZXZmcmVxKCkgLSBSZWV2YWx1YXRlIHRoZSBkZXZpY2UgYW5kIGNvbmZpZ3VyZSBm
-cmVxdWVuY3kuDQo+ICAgKiBAZGV2ZnJlcToJdGhlIGRldmZyZXEgaW5zdGFuY2UuDQo+IEBAIC0x
-MTYsNyArMTI2LDcgQEAgaW50IHVwZGF0ZV9kZXZmcmVxKHN0cnVjdCBkZXZmcmVxICpkZXZmcmVx
-KQ0KPiAgCWlmIChlcnIpDQo+ICAJCXJldHVybiBlcnI7DQo+ICANCj4gLQlkZXZmcmVxLT5wcmV2
-aW91c19mcmVxID0gZnJlcTsNCj4gKwlkZXZmcmVxLT5wcmV2aW91c19mcmVxID0gX19kZXZmcmVx
-X2dldCgmZGV2ZnJlcS0+ZGV2KTsNCj4gIAlyZXR1cm4gZXJyOw0KPiAgfQ0KPiAgDQo+IGRpZmYg
-LS1naXQgYS9pbmNsdWRlL2xpbnV4L2RldmZyZXEuaCBiL2luY2x1ZGUvbGludXgvZGV2ZnJlcS5o
-IGluZGV4IA0KPiBlNWU0MDM2Li5mNzg5MzE0IDEwMDY0NA0KPiAtLS0gYS9pbmNsdWRlL2xpbnV4
-L2RldmZyZXEuaA0KPiArKysgYi9pbmNsdWRlL2xpbnV4L2RldmZyZXEuaA0KPiBAQCAtNjUsNiAr
-NjUsNyBAQCBzdHJ1Y3QgZGV2ZnJlcV9mcmVxdWVuY3lfdGFibGUgew0KPiAgICogQGluaXRpYWxf
-ZnJlcQlUaGUgb3BlcmF0aW5nIGZyZXF1ZW5jeSB3aGVuIGRldmZyZXFfYWRkX2RldmljZSgpIGlz
-DQo+ICAgKgkJCWNhbGxlZC4NCj4gICAqIEBwb2xsaW5nX21zCQlUaGUgcG9sbGluZyBpbnRlcnZh
-bCBpbiBtcy4gMCBkaXNhYmxlcyBwb2xsaW5nLg0KPiArICogQGdldAkJCUdldCB0aGUgZGV2aWNl
-cydzIGFjdHVhbCBmcmVxdWVuY3kNCj4gICAqIEB0YXJnZXQJCVRoZSBkZXZpY2Ugc2hvdWxkIHNl
-dCBpdHMgb3BlcmF0aW5nIGZyZXF1ZW5jeSBhdA0KPiAgICoJCQlmcmVxIG9yIGxvd2VzdC11cHBl
-ci10aGFuLWZyZXEgdmFsdWUuIElmIGZyZXEgaXMNCj4gICAqCQkJaGlnaGVyIHRoYW4gYW55IG9w
-ZXJhYmxlIGZyZXF1ZW5jeSwgc2V0IG1heGltdW0uDQo+IEBAIC04NCw2ICs4NSw3IEBAIHN0cnVj
-dCBkZXZmcmVxX2Rldl9wcm9maWxlIHsNCj4gIAl1bnNpZ25lZCBsb25nIGluaXRpYWxfZnJlcTsN
-Cj4gIAl1bnNpZ25lZCBpbnQgcG9sbGluZ19tczsNCj4gIA0KPiArCXVuc2lnbmVkIGxvbmcJKCpn
-ZXQpKHN0cnVjdCBkZXZpY2UgKmRldik7DQo+ICAJaW50ICgqdGFyZ2V0KShzdHJ1Y3QgZGV2aWNl
-ICpkZXYsIHVuc2lnbmVkIGxvbmcgKmZyZXEsIHUzMiBmbGFncyk7DQo+ICAJaW50ICgqZ2V0X2Rl
-dl9zdGF0dXMpKHN0cnVjdCBkZXZpY2UgKmRldiwNCj4gIAkJCSAgICAgIHN0cnVjdCBkZXZmcmVx
-X2Rldl9zdGF0dXMgKnN0YXQpOw0KPiAtLQ0KPiAxLjcuMC40DQo=
+Hi Alan,
+
+On Thursday, May 31, 2012, Alan Stern wrote:
+> On Tue, 29 May 2012, Rafael J. Wysocki wrote:
+>=20
+> > > > > Therefore we really do need a quirk, probably in ehci-hcd lik=
+e the=20
+> > > > > original patch.  If it is restricted to apply only in cases w=
+here the=20
+> > > > > DMI information lists ASUSTeK as the manufacturer, perhaps th=
+at will be=20
+> > > > > sufficient.  (For some reason, the manufacturer field in D=C3=
+=A2niel's BIOS=20
+> > > > > isn't initialized.)
+> > > >=20
+> > > > Yeah.
+> > > >=20
+> > > > I'll have a deeper look at this later today, I think.
+> > >=20
+> > > It's easy enough to write such a check (or perhaps more reliably,=
+ check
+> > > for a product name matching "P8Z68-V").
+> >=20
+> > I think we should try to express it as a PCI quirk in quirks.c, tho=
+ugh.
+>=20
+> Here's my attempt.  Everybody, please try this patch with the
+> 151b61284776 commit removed.  Make sure that CONFIG_USB_DEBUG is
+> enabled so we can check the controller's power state during suspend,=20
+> and check that the "broken D3 during system sleep on ASUS" message=20
+> shows up during booting.
+
+It looks like this worked for everyone concerned, is that correct?
+
+In that case, do you intend to send this patch for inclusion any time s=
+oon?
+It would be good to have this particular issue taken care of.
+
+Thanks,
+Rafael
+
+
+> Index: usb-3.4/drivers/pci/pci.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- usb-3.4.orig/drivers/pci/pci.c
+> +++ usb-3.4/drivers/pci/pci.c
+> @@ -1743,6 +1743,11 @@ int pci_prepare_to_sleep(struct pci_dev
+>  	if (target_state =3D=3D PCI_POWER_ERROR)
+>  		return -EIO;
+> =20
+> +	/* Some devices mustn't be in D3 during system sleep */
+> +	if (target_state =3D=3D PCI_D3hot &&
+> +			(dev->dev_flags & PCI_DEV_FLAGS_NO_D3_DURING_SLEEP))
+> +		return 0;
+> +
+>  	pci_enable_wake(dev, target_state, device_may_wakeup(&dev->dev));
+> =20
+>  	error =3D pci_set_power_state(dev, target_state);
+> Index: usb-3.4/drivers/pci/quirks.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- usb-3.4.orig/drivers/pci/quirks.c
+> +++ usb-3.4/drivers/pci/quirks.c
+> @@ -2917,6 +2917,32 @@ static void __devinit disable_igfx_irq(s
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x0102, disable_igfx_ir=
+q);
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x010a, disable_igfx_ir=
+q);
+> =20
+> +/*
+> + * The Intel 6 Series/C200 Series chipset's EHCI controllers on many
+> + * ASUS motherboards will cause memory corruption or a system crash
+> + * if they are in D3 while the system is put into S3 sleep.
+> + */
+> +static void __devinit asus_ehci_no_d3(struct pci_dev *dev)
+> +{
+> +	const char *sys_info;
+> +	static const char good_Asus_board[] =3D "P8Z68-V";
+> +
+> +	if (dev->dev_flags & PCI_DEV_FLAGS_NO_D3_DURING_SLEEP)
+> +		return;
+> +	if (dev->subsystem_vendor !=3D PCI_VENDOR_ID_ASUSTEK)
+> +		return;
+> +	sys_info =3D dmi_get_system_info(DMI_BOARD_NAME);
+> +	if (sys_info && memcmp(sys_info, good_Asus_board,
+> +			sizeof(good_Asus_board) - 1) =3D=3D 0)
+> +		return;
+> +
+> +	dev_info(&dev->dev, "broken D3 during system sleep on ASUS\n");
+> +	dev->dev_flags |=3D PCI_DEV_FLAGS_NO_D3_DURING_SLEEP;
+> +	device_set_wakeup_capable(&dev->dev, false);
+> +}
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1c26, asus_ehci_no_d3=
+);
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1c2d, asus_ehci_no_d3=
+);
+> +
+>  static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
+>  			  struct pci_fixup *end)
+>  {
+> Index: usb-3.4/include/linux/pci.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- usb-3.4.orig/include/linux/pci.h
+> +++ usb-3.4/include/linux/pci.h
+> @@ -176,6 +176,8 @@ enum pci_dev_flags {
+>  	PCI_DEV_FLAGS_NO_D3 =3D (__force pci_dev_flags_t) 2,
+>  	/* Provide indication device is assigned by a Virtual Machine Manag=
+er */
+>  	PCI_DEV_FLAGS_ASSIGNED =3D (__force pci_dev_flags_t) 4,
+> +	/* Device causes system crash if in D3 during S3 sleep */
+> +	PCI_DEV_FLAGS_NO_D3_DURING_SLEEP =3D (__force pci_dev_flags_t) 8,
+>  };
+> =20
+>  enum pci_irq_reroute_variant {
+>=20
+>=20
+>=20
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
