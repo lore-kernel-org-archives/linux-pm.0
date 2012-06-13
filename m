@@ -1,171 +1,153 @@
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: [PATCH] ACPI,
- cpuidle: Fix suspend/resume regression caused by cpuidle cleanup.
-Date: Wed, 13 Jun 2012 16:28:17 +0530
-Message-ID: <4FD87249.6010302@linux.vnet.ibm.com>
+From: Jean Pihet <jean.pihet-OTs2U3NB0ngRmelmmXo44Q@public.gmane.org>
+Subject: Re: [linux-pm] [RFC 1/4] cpuidle: define the enter function in the
+	driver structure
+Date: Wed, 13 Jun 2012 14:44:55 +0200
+Message-ID: <CAORVsuXEkyU_OkjqLDhe_OMq-uLEBaMLnz-pkJ1jtgnmcNxZpw@mail.gmail.com>
+References: <1339171365-4098-1-git-send-email-daniel.lezcano@linaro.org>
+	<4FD23752.6090101@linux.vnet.ibm.com> <4FD27000.7000208@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kevin Hilman <khilman@ti.com>, Arnd Bergmann <arnd@arndb.de>, "Tomas M." <tmezzadra@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com, Ferenc Wagner <wferi@niif.hu>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <4FD27000.7000208-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Kevin Hilman <khilman-l0cyMroinI0@public.gmane.org>, Deepthi Dharwar <deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Daniel,
 
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+On Fri, Jun 8, 2012 at 11:34 PM, Daniel Lezcano
+<daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On 06/08/2012 07:33 PM, Deepthi Dharwar wrote:
+>> Hi Daniel,
+>
+> Hi Deepthi,
+>
+>> On 06/08/2012 09:32 PM, Daniel Lezcano wrote:
+>>
+>>> We have the state index passed as parameter to the 'enter' function.
+>>> Most of the drivers assign their 'enter' functions several times in
+>>> the cpuidle_state structure, as we have the index, we can delegate
+>>> to the driver to handle their own callback array.
+>>>
+>>> That will have the benefit of removing multiple lines of code in the
+>>> different drivers.
+>>>
+>>> In order to smoothly modify the driver, the 'enter' function are in
+>>> the driver structure and in the cpuidle state structure. That will
+>>> let the time to modify the different drivers one by one.
+>>> So the 'cpuidle_enter' function checks if the 'enter' callback is
+>>> assigned in the driver structure and use it, otherwise it invokes
+>>> the 'enter' assigned to the cpuidle_state.
+>>
+>>
+>> Currently, the backend driver initializes
+>> all the cpuidle states supported on the platform,
+>> and each state can have its own enter routine
+>> which can be unique This is a clean approach.
+>
+> Yes, I perfectly understood the purpose of this field but as clean it is
+> it does not make sense as it is not used in this way. If it is supposed
+> to be done in the way you are describing here, we should have the same
+> number of states and enter functions. Here it is how it is used:
+>
+> =A0--------------------------------------------------
+> | Arch =A0 =A0 =A0 =A0 =A0 =A0 | nr states | nr enter function |
+> =A0--------------------------------------------------
+> | x86 (nehalem) =A0 =A0| =A0 =A03 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =A0 =
+=A0 =A0 |
+> =A0--------------------------------------------------
+> | x86 (snb) =A0 =A0 =A0 =A0| =A0 =A04 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | x86 (atom) =A0 =A0 =A0 | =A0 =A04 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM tegra =A0 =A0 =A0 =A0| =A0 =A01 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM omap3 =A0 =A0 =A0 =A0| =A0 =A07 =A0 =A0 =A0| =A0 =A0 =A0 =A0 2 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM omap4 =A0 =A0 =A0 =A0| =A0 =A03 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM ux500 =A0 =A0 =A0 =A0| =A0 =A02 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM shmobile =A0 =A0 | =A0 =A01 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =A0 =
+=A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM davinci =A0 =A0 =A0| =A0 =A02 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM at91 =A0 =A0 =A0 =A0 | =A0 =A02 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM s3c64xx =A0 =A0 =A0| =A0 =A01 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM exynos =A0 =A0 =A0 | =A0 =A02 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =
+=A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | ARM kirkwood =A0 =A0 | =A0 =A02 =A0 =A0 =A0| =A0 =A0 =A0 =A0 1 =A0 =A0 =
+=A0 =A0 |
+> =A0--------------------------------------------------
+> | SH =A0 =A0 =A0 =A0 =A0 =A0 =A0 | =A0 =A03 =A0 =A0 =A0| =A0 =A0 =A0 =A0 =
+1 =A0 =A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | PPC =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A02 =A0 =A0 =A0| =A0 =A0 =A0 =A0 =
+2 =A0 =A0 =A0 =A0 |
+> =A0--------------------------------------------------
+> | =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0 =A0 =A0 =A0 | =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 |
+> | TOTAL =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A039 =A0 =A0 | =A0 =A0 =A0 =A017 =
+=A0 =A0 =A0 =A0 |
+> | =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A0 =A0 =A0 =A0 | =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 |
+> =A0--------------------------------------------------
+>
+>
+> As you can see most of the enter functions are only used as one.
+> The Omap3 cpuidle driver enter function for C2 calls the enter function
+> of C1. Other arch, already use a table of callbacks or the index.
+There is a plan to remove the extra enter function as part of an
+optimization, cf. [1]. The fix is planned to reach the 3.6 mainline
+kernel via Kevin's tree [2].
 
-Fix suspend/resume regression caused by cpuidle cleanup.
+[1] http://marc.info/?l=3Dlinux-omap&m=3D133856365818099&w=3D2
+[2] http://git.kernel.org/?p=3Dlinux/kernel/git/khilman/linux-omap-pm.git;a=
+=3Dshortlog;h=3Drefs/heads/for_3.6/pm/performance
 
-Commit e978aa7d7d57d04eb5f88a7507c4fb98577def77 ( cpuidle: Move
-dev->last_residency update to driver enter routine; remove dev->last_state)
-was  breaking suspend on laptops, as reported in the below link
-	- https://lkml.org/lkml/2011/11/11/164
-
-This was fixed in commit 3439a8da16bcad6b0982ece938c9f8299bb53584
-(ACPI / cpuidle: Remove acpi_idle_suspend (to fix suspend regression)
-by removing acpi_idle_suspend flag.
-	- https://lkml.org/lkml/2011/11/14/74
-
-But this fix did not work on all systems
-as Suspend/resume regression was reported on Lenovo S10-3
-recently by Dave.
-	- https://lkml.org/lkml/2012/5/27/115
-It looked like with commit e978aa7d broke suspend and
-with commit 3439a8da resume was not working with acpi_idle driver.
-
-This patch fixes the regression that caused this issue
-in the first place. acpi_idle_suspend flag is essential on
-some x86 systems to prevent the cpus from going to deeper C-states
-when suspend is triggered ( commit b04e7bdb984 )
-So reverting the commit 3439a8da is essential.
-
-By default, irqs are disabled in cpu_idle arch specific call
-and re-enabled in idle state return path . As the acpi_idle_suspend
-flag was being set during suspend, which prevented the cpus
-going to deeper idle states, it is essential to
-enabling the irqs in its return path too.
-
-To address the suspend issue,
-we were not re-enabling the interrupts while returning from
-acpi_idle_enter_bm() routine if acpi_idle_suspend flag is set.
-and this was causing suspend failure.
-
-In addition to the above fix, a sanity check has also been added
-in x86 arch specific cpu_idle call to ensure that the idle call
-always returns with IRQs enabled.
-
-This patch applies on 3.5-rc2
----
-
-Reported-and-Tested-by: Dav Hansen <dave@linux.vnet.ibm.com>
-Tested-by: Preeti Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Reviewed-by: Srivatsa S Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
- arch/x86/kernel/process.c     |    6 ++++++
- drivers/acpi/processor_idle.c |   28 ++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 735279e..8ab76ad 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -460,6 +460,12 @@ void cpu_idle(void)
- 				pm_idle();
-
- 			rcu_idle_exit();
-+
-+			/*
-+			 * Sanity check to ensure that idle call returns
-+			 * with IRQs enabled
-+			 */
-+			WARN_ON(irqs_disabled());
- 			start_critical_timings();
-
- 			/* In many cases the interrupt that ended idle
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index f3decb3..c2ffd84 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -224,6 +224,7 @@ static void lapic_timer_state_broadcast(struct acpi_processor *pr,
- /*
-  * Suspend / resume control
-  */
-+static int acpi_idle_suspend;
- static u32 saved_bm_rld;
-
- static void acpi_idle_bm_rld_save(void)
-@@ -242,13 +243,21 @@ static void acpi_idle_bm_rld_restore(void)
-
- int acpi_processor_suspend(struct acpi_device * device, pm_message_t state)
- {
-+	if (acpi_idle_suspend == 1)
-+		return 0;
-+
- 	acpi_idle_bm_rld_save();
-+	acpi_idle_suspend = 1;
- 	return 0;
- }
-
- int acpi_processor_resume(struct acpi_device * device)
- {
-+	if (acpi_idle_suspend == 0)
-+		return 0;
-+
- 	acpi_idle_bm_rld_restore();
-+	acpi_idle_suspend = 0;
- 	return 0;
- }
-
-@@ -754,6 +763,12 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
-
- 	local_irq_disable();
-
-+	if (acpi_idle_suspend) {
-+		local_irq_enable();
-+		cpu_relax();
-+		return -EINVAL;
-+	}
-+
- 	lapic_timer_state_broadcast(pr, cx, 1);
- 	kt1 = ktime_get_real();
- 	acpi_idle_do_entry(cx);
-@@ -823,6 +838,12 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
-
- 	local_irq_disable();
-
-+	if (acpi_idle_suspend) {
-+		local_irq_enable();
-+		cpu_relax();
-+		return -EINVAL;
-+	}
-+
- 	if (cx->entry_method != ACPI_CSTATE_FFH) {
- 		current_thread_info()->status &= ~TS_POLLING;
- 		/*
-@@ -901,6 +922,13 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	if (unlikely(!pr))
- 		return -EINVAL;
-
-+	if (acpi_idle_suspend) {
-+		if (irqs_disabled())
-+			local_irq_enable();
-+		cpu_relax();
-+		return -EINVAL;
-+	}
-+
- 	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
- 		if (drv->safe_state_index >= 0) {
- 			return drv->states[drv->safe_state_index].enter(dev,
+The result is that there will be only one enter function for OMAP3.
 
 Regards,
-Deepthi
+Jean
+
+>> By moving the enter routine into the driver,
+>> we are enforcing in having only one enter state.
+>> There is unnecessary overhead involved
+>> in calling a wrapper routine just to
+>> index into the right idle state routine
+>> for many platforms at runtime.
+>
+> I don't agree. For the sake of encapsulated code, we duplicate n-times a
+> field and that is not used in this way. It is quite easy to have in the
+> driver specific code a common enter function to ventilate to the right
+> routine without adding extra overhead and let the common code use a
+> single enter routine (which is already the case today).
+>
+>
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+> https://lists.linuxfoundation.org/mailman/listinfo/linux-pm
