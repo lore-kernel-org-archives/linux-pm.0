@@ -1,145 +1,78 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH] PCI: add NO_D3_DURING_SLEEP flag and revert
-	151b61284776be2
-Date: Wed, 13 Jun 2012 11:20:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1206131117260.1401-100000@iolanthe.rowland.org>
+From: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Subject: Re: [PATCH] PCI: add NO_D3_DURING_SLEEP flag and revert
+ 151b61284776be2
+Date: Wed, 13 Jun 2012 08:27:01 -0700
+Message-ID: <20120613152701.GA28116@kroah.com>
 References: <201206131122.36198.rjw@sisk.pl>
+ <Pine.LNX.4.44L0.1206131117260.1401-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201206131122.36198.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: =?utf-8?q?D=C3=A2niel_Fraga?= <fragabr@gmail.com>, Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Andrey Rahmatullin <wrar@wrar.name>, "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1206131117260.1401-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, "Oleksij Rempel (fishor)" <bug-track-M18mAb7Tlt0yCq4wW13eYl6hYfS7NtTn@public.gmane.org>, =?iso-8859-1?Q?D=E2niel?= Fraga <fragabr-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>, Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBwYXRjaCAoYXMxNTU4KSBmaXhlcyBhIHByb2JsZW0gYWZmZWN0aW5nIHNldmVyYWwgQVNV
-UyBjb21wdXRlcnM6ClRoZSBtYWNoaW5lIGNyYXNoZXMgb3IgY29ycnVwdHMgbWVtb3J5IHdoZW4g
-Z29pbmcgaW50byBzdXNwZW5kIGlmIHRoZQplaGNpLWhjZCBkcml2ZXIgaXMgYm91bmQgdG8gYW55
-IGNvbnRyb2xsZXJzLiAgVXNlcnMgaGF2ZSBiZWVuIGZvcmNlZAp0byB1bmJpbmQgb3IgdW5sb2Fk
-IGVoY2ktaGNkIGJlZm9yZSBwdXR0aW5nIHRoZWlyIHN5c3RlbXMgdG8gc2xlZXAuCgpBZnRlciBl
-eHRlbnNpdmUgdGVzdGluZywgaXQgd2FzIGRldGVybWluZWQgdGhhdCB0aGUgbWFjaGluZXMgZG9u
-J3QKbGlrZSBnb2luZyBpbnRvIHN1c3BlbmQgd2hlbiBhbnkgRUhDSSBjb250cm9sbGVycyBhcmUg
-aW4gdGhlIFBDSSBEMwpwb3dlciBzdGF0ZS4gIFByZXN1bWFibHkgdGhpcyBpcyBhIGZpcm13YXJl
-IGJ1ZywgYnV0IHRoZXJlJ3Mgbm90aGluZwp3ZSBjYW4gZG8gYWJvdXQgaXQgZXhjZXB0IHRvIGF2
-b2lkIHB1dHRpbmcgdGhlIGNvbnRyb2xsZXJzIGluIEQzCmR1cmluZyBzeXN0ZW0gc2xlZXAuCgpU
-aGUgcGF0Y2ggYWRkcyBhIG5ldyBmbGFnIHRvIGluZGljYXRlIHdoZXRoZXIgdGhlIHByb2JsZW0g
-aXMgcHJlc2VudCwKYW5kIGF2b2lkcyBjaGFuZ2luZyB0aGUgY29udHJvbGxlcidzIHBvd2VyIHN0
-YXRlIGlmIHRoZSBmbGFnIGlzIHNldC4KUnVudGltZSBzdXNwZW5kIGlzIHVuYWZmZWN0ZWQ7IHRo
-aXMgbWF0dGVycyBvbmx5IGZvciBzeXN0ZW0gc3VzcGVuZC4KSG93ZXZlciBhcyBhIHNpZGUgZWZm
-ZWN0LCB0aGUgY29udHJvbGxlciB3aWxsIG5vdCByZXNwb25kIHRvIHJlbW90ZQp3YWtldXAgcmVx
-dWVzdHMgd2hpbGUgdGhlIHN5c3RlbSBpcyBhc2xlZXAuICBIZW5jZSBVU0Igd2FrZXVwIGlzIG5v
-dApmdW5jdGlvbmFsIC0tIGJ1dCBvZiBjb3Vyc2UsIHRoaXMgaXMgYWxyZWFkeSB0cnVlIGluIHRo
-ZSBjdXJyZW50IHN0YXRlCm9mIGFmZmFpcnMuCgpBIHNpbWlsYXIgcGF0Y2ggaGFzIGFscmVhZHkg
-YmVlbiBhcHBsaWVkIGFzIGNvbW1pdAoxNTFiNjEyODQ3NzZiZTJkNmYwMmQ0OGMyM2MzNjI1Njc4
-OTYwYjk3IChVU0I6IEVIQ0k6IGZpeCBjcmFzaCBkdXJpbmcKc3VzcGVuZCBvbiBBU1VTIGNvbXB1
-dGVycykuICBUaGUgcGF0Y2ggc3VwZXJzZWRlcyB0aGF0IG9uZSBhbmQgcmV2ZXJ0cwppdC4gIFRo
-ZXJlIGFyZSB0d28gZGlmZmVyZW5jZXM6CgoJVGhlIG9sZCBwYXRjaCBhZGRlZCB0aGUgZmxhZyBh
-dCB0aGUgVVNCIGxldmVsOyB0aGlzIHBhdGNoCglhZGRzIGl0IGF0IHRoZSBQQ0kgbGV2ZWwuCgoJ
-VGhlIG9sZCBwYXRjaCBhcHBsaWVkIHRvIGFsbCBjaGlwc2V0cyB3aXRoIHRoZSBzYW1lIHZlbmRv
-ciwKCXN1YnN5c3RlbSB2ZW5kb3IsIGFuZCBwcm9kdWN0IElEczsgdGhpcyBwYXRjaCBtYWtlcyBh
-bgoJZXhjZXB0aW9uIGZvciBhIGtub3duLWdvb2Qgc3lzdGVtIChiYXNlZCBvbiBETUkgaW5mb3Jt
-YXRpb24pLgoKU2lnbmVkLW9mZi1ieTogQWxhbiBTdGVybiA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJk
-LmVkdT4KVGVzdGVkLWJ5OiBEw6JuaWVsIEZyYWdhIDxmcmFnYWJyQGdtYWlsLmNvbT4KVGVzdGVk
-LWJ5OiBBbmRyZXkgUmFobWF0dWxsaW4gPHdyYXJAd3Jhci5uYW1lPgpUZXN0ZWQtYnk6IFN0ZXZl
-biBSb3N0ZWR0IDxyb3N0ZWR0QGdvb2RtaXMub3JnPgpDQzogR3JlZyBLSCA8Z3JlZ0Brcm9haC5j
-b20+CkNDOiA8c3RhYmxlQHZnZXIua2VybmVsLm9yZz4KCi0tLQoKR3JlZywgZG8geW91IG1pbmQg
-aWYgdGhpcyBnb2VzIGluIHRocm91Z2ggUmFmYWVsJ3MgdHJlZT8KCgogZHJpdmVycy9wY2kvcGNp
-LmMgICAgICAgICAgIHwgICAgNSArKysrKwogZHJpdmVycy9wY2kvcXVpcmtzLmMgICAgICAgIHwg
-ICAyNiArKysrKysrKysrKysrKysrKysrKysrKysrKwogZHJpdmVycy91c2IvY29yZS9oY2QtcGNp
-LmMgIHwgICAgOSAtLS0tLS0tLS0KIGRyaXZlcnMvdXNiL2hvc3QvZWhjaS1wY2kuYyB8ICAgIDgg
-LS0tLS0tLS0KIGluY2x1ZGUvbGludXgvcGNpLmggICAgICAgICB8ICAgIDIgKysKIGluY2x1ZGUv
-bGludXgvdXNiL2hjZC5oICAgICB8ICAgIDIgLS0KIDYgZmlsZXMgY2hhbmdlZCwgMzMgaW5zZXJ0
-aW9ucygrKSwgMTkgZGVsZXRpb25zKC0pCgpJbmRleDogdXNiLTMuNC9pbmNsdWRlL2xpbnV4L3Bj
-aS5oCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT0KLS0tIHVzYi0zLjQub3JpZy9pbmNsdWRlL2xpbnV4L3BjaS5oCisrKyB1
-c2ItMy40L2luY2x1ZGUvbGludXgvcGNpLmgKQEAgLTE3Niw2ICsxNzYsOCBAQCBlbnVtIHBjaV9k
-ZXZfZmxhZ3MgewogCVBDSV9ERVZfRkxBR1NfTk9fRDMgPSAoX19mb3JjZSBwY2lfZGV2X2ZsYWdz
-X3QpIDIsCiAJLyogUHJvdmlkZSBpbmRpY2F0aW9uIGRldmljZSBpcyBhc3NpZ25lZCBieSBhIFZp
-cnR1YWwgTWFjaGluZSBNYW5hZ2VyICovCiAJUENJX0RFVl9GTEFHU19BU1NJR05FRCA9IChfX2Zv
-cmNlIHBjaV9kZXZfZmxhZ3NfdCkgNCwKKwkvKiBEZXZpY2UgY2F1c2VzIHN5c3RlbSBjcmFzaCBp
-ZiBpbiBEMyBkdXJpbmcgUzMgc2xlZXAgKi8KKwlQQ0lfREVWX0ZMQUdTX05PX0QzX0RVUklOR19T
-TEVFUCA9IChfX2ZvcmNlIHBjaV9kZXZfZmxhZ3NfdCkgOCwKIH07CiAKIGVudW0gcGNpX2lycV9y
-ZXJvdXRlX3ZhcmlhbnQgewpJbmRleDogdXNiLTMuNC9kcml2ZXJzL3BjaS9wY2kuYwo9PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09Ci0tLSB1c2ItMy40Lm9yaWcvZHJpdmVycy9wY2kvcGNpLmMKKysrIHVzYi0zLjQvZHJpdmVy
-cy9wY2kvcGNpLmMKQEAgLTE3NDMsNiArMTc0MywxMSBAQCBpbnQgcGNpX3ByZXBhcmVfdG9fc2xl
-ZXAoc3RydWN0IHBjaV9kZXYKIAlpZiAodGFyZ2V0X3N0YXRlID09IFBDSV9QT1dFUl9FUlJPUikK
-IAkJcmV0dXJuIC1FSU87CiAKKwkvKiBTb21lIGRldmljZXMgbXVzdG4ndCBiZSBpbiBEMyBkdXJp
-bmcgc3lzdGVtIHNsZWVwICovCisJaWYgKHRhcmdldF9zdGF0ZSA9PSBQQ0lfRDNob3QgJiYKKwkJ
-CShkZXYtPmRldl9mbGFncyAmIFBDSV9ERVZfRkxBR1NfTk9fRDNfRFVSSU5HX1NMRUVQKSkKKwkJ
-cmV0dXJuIDA7CisKIAlwY2lfZW5hYmxlX3dha2UoZGV2LCB0YXJnZXRfc3RhdGUsIGRldmljZV9t
-YXlfd2FrZXVwKCZkZXYtPmRldikpOwogCiAJZXJyb3IgPSBwY2lfc2V0X3Bvd2VyX3N0YXRlKGRl
-diwgdGFyZ2V0X3N0YXRlKTsKSW5kZXg6IHVzYi0zLjQvZHJpdmVycy9wY2kvcXVpcmtzLmMKPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PQotLS0gdXNiLTMuNC5vcmlnL2RyaXZlcnMvcGNpL3F1aXJrcy5jCisrKyB1c2ItMy40
-L2RyaXZlcnMvcGNpL3F1aXJrcy5jCkBAIC0yOTE3LDYgKzI5MTcsMzIgQEAgc3RhdGljIHZvaWQg
-X19kZXZpbml0IGRpc2FibGVfaWdmeF9pcnEocwogREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJ
-X1ZFTkRPUl9JRF9JTlRFTCwgMHgwMTAyLCBkaXNhYmxlX2lnZnhfaXJxKTsKIERFQ0xBUkVfUENJ
-X0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfSU5URUwsIDB4MDEwYSwgZGlzYWJsZV9pZ2Z4X2ly
-cSk7CiAKKy8qCisgKiBUaGUgSW50ZWwgNiBTZXJpZXMvQzIwMCBTZXJpZXMgY2hpcHNldCdzIEVI
-Q0kgY29udHJvbGxlcnMgb24gbWFueQorICogQVNVUyBtb3RoZXJib2FyZHMgd2lsbCBjYXVzZSBt
-ZW1vcnkgY29ycnVwdGlvbiBvciBhIHN5c3RlbSBjcmFzaAorICogaWYgdGhleSBhcmUgaW4gRDMg
-d2hpbGUgdGhlIHN5c3RlbSBpcyBwdXQgaW50byBTMyBzbGVlcC4KKyAqLworc3RhdGljIHZvaWQg
-X19kZXZpbml0IGFzdXNfZWhjaV9ub19kMyhzdHJ1Y3QgcGNpX2RldiAqZGV2KQoreworCWNvbnN0
-IGNoYXIgKnN5c19pbmZvOworCXN0YXRpYyBjb25zdCBjaGFyIGdvb2RfQXN1c19ib2FyZFtdID0g
-IlA4WjY4LVYiOworCisJaWYgKGRldi0+ZGV2X2ZsYWdzICYgUENJX0RFVl9GTEFHU19OT19EM19E
-VVJJTkdfU0xFRVApCisJCXJldHVybjsKKwlpZiAoZGV2LT5zdWJzeXN0ZW1fdmVuZG9yICE9IFBD
-SV9WRU5ET1JfSURfQVNVU1RFSykKKwkJcmV0dXJuOworCXN5c19pbmZvID0gZG1pX2dldF9zeXN0
-ZW1faW5mbyhETUlfQk9BUkRfTkFNRSk7CisJaWYgKHN5c19pbmZvICYmIG1lbWNtcChzeXNfaW5m
-bywgZ29vZF9Bc3VzX2JvYXJkLAorCQkJc2l6ZW9mKGdvb2RfQXN1c19ib2FyZCkgLSAxKSA9PSAw
-KQorCQlyZXR1cm47CisKKwlkZXZfaW5mbygmZGV2LT5kZXYsICJicm9rZW4gRDMgZHVyaW5nIHN5
-c3RlbSBzbGVlcCBvbiBBU1VTXG4iKTsKKwlkZXYtPmRldl9mbGFncyB8PSBQQ0lfREVWX0ZMQUdT
-X05PX0QzX0RVUklOR19TTEVFUDsKKwlkZXZpY2Vfc2V0X3dha2V1cF9jYXBhYmxlKCZkZXYtPmRl
-diwgZmFsc2UpOworfQorREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9JTlRF
-TCwgMHgxYzI2LCBhc3VzX2VoY2lfbm9fZDMpOworREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJ
-X1ZFTkRPUl9JRF9JTlRFTCwgMHgxYzJkLCBhc3VzX2VoY2lfbm9fZDMpOworCiBzdGF0aWMgdm9p
-ZCBwY2lfZG9fZml4dXBzKHN0cnVjdCBwY2lfZGV2ICpkZXYsIHN0cnVjdCBwY2lfZml4dXAgKmYs
-CiAJCQkgIHN0cnVjdCBwY2lfZml4dXAgKmVuZCkKIHsKSW5kZXg6IHVzYi0zLjQvZHJpdmVycy91
-c2IvY29yZS9oY2QtcGNpLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gdXNiLTMuNC5vcmlnL2RyaXZlcnMvdXNi
-L2NvcmUvaGNkLXBjaS5jCisrKyB1c2ItMy40L2RyaXZlcnMvdXNiL2NvcmUvaGNkLXBjaS5jCkBA
-IC00OTMsMTUgKzQ5Myw2IEBAIHN0YXRpYyBpbnQgaGNkX3BjaV9zdXNwZW5kX25vaXJxKHN0cnVj
-dAogCiAJcGNpX3NhdmVfc3RhdGUocGNpX2Rldik7CiAKLQkvKgotCSAqIFNvbWUgc3lzdGVtcyBj
-cmFzaCBpZiBhbiBFSENJIGNvbnRyb2xsZXIgaXMgaW4gRDMgZHVyaW5nCi0JICogYSBzbGVlcCB0
-cmFuc2l0aW9uLiAgV2UgaGF2ZSB0byBsZWF2ZSBzdWNoIGNvbnRyb2xsZXJzIGluIEQwLgotCSAq
-LwotCWlmIChoY2QtPmJyb2tlbl9wY2lfc2xlZXApIHsKLQkJZGV2X2RiZyhkZXYsICJTdGF5aW5n
-IGluIFBDSSBEMFxuIik7Ci0JCXJldHVybiByZXR2YWw7Ci0JfQotCiAJLyogSWYgdGhlIHJvb3Qg
-aHViIGlzIGRlYWQgcmF0aGVyIHRoYW4gc3VzcGVuZGVkLCBkaXNhbGxvdyByZW1vdGUKIAkgKiB3
-YWtldXAuICB1c2JfaGNfZGllZCgpIHNob3VsZCBlbnN1cmUgdGhhdCBib3RoIGhvc3RzIGFyZSBt
-YXJrZWQgYXMKIAkgKiBkeWluZywgc28gd2Ugb25seSBuZWVkIHRvIGNoZWNrIHRoZSBwcmltYXJ5
-IHJvb3RodWIuCkluZGV4OiB1c2ItMy40L2RyaXZlcnMvdXNiL2hvc3QvZWhjaS1wY2kuYwo9PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09Ci0tLSB1c2ItMy40Lm9yaWcvZHJpdmVycy91c2IvaG9zdC9laGNpLXBjaS5jCisrKyB1
-c2ItMy40L2RyaXZlcnMvdXNiL2hvc3QvZWhjaS1wY2kuYwpAQCAtMTUxLDE0ICsxNTEsNiBAQCBz
-dGF0aWMgaW50IGVoY2lfcGNpX3NldHVwKHN0cnVjdCB1c2JfaGNkCiAJCQloY2QtPmhhc190dCA9
-IDE7CiAJCQl0ZGlfcmVzZXQoZWhjaSk7CiAJCX0KLQkJaWYgKHBkZXYtPnN1YnN5c3RlbV92ZW5k
-b3IgPT0gUENJX1ZFTkRPUl9JRF9BU1VTVEVLKSB7Ci0JCQkvKiBFSENJICMxIG9yICMyIG9uIDYg
-U2VyaWVzL0MyMDAgU2VyaWVzIGNoaXBzZXQgKi8KLQkJCWlmIChwZGV2LT5kZXZpY2UgPT0gMHgx
-YzI2IHx8IHBkZXYtPmRldmljZSA9PSAweDFjMmQpIHsKLQkJCQllaGNpX2luZm8oZWhjaSwgImJy
-b2tlbiBEMyBkdXJpbmcgc3lzdGVtIHNsZWVwIG9uIEFTVVNcbiIpOwotCQkJCWhjZC0+YnJva2Vu
-X3BjaV9zbGVlcCA9IDE7Ci0JCQkJZGV2aWNlX3NldF93YWtldXBfY2FwYWJsZSgmcGRldi0+ZGV2
-LCBmYWxzZSk7Ci0JCQl9Ci0JCX0KIAkJYnJlYWs7CiAJY2FzZSBQQ0lfVkVORE9SX0lEX1RESToK
-IAkJaWYgKHBkZXYtPmRldmljZSA9PSBQQ0lfREVWSUNFX0lEX1RESV9FSENJKSB7CkluZGV4OiB1
-c2ItMy40L2luY2x1ZGUvbGludXgvdXNiL2hjZC5oCj09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIHVzYi0zLjQub3Jp
-Zy9pbmNsdWRlL2xpbnV4L3VzYi9oY2QuaAorKysgdXNiLTMuNC9pbmNsdWRlL2xpbnV4L3VzYi9o
-Y2QuaApAQCAtMTI2LDggKzEyNiw2IEBAIHN0cnVjdCB1c2JfaGNkIHsKIAl1bnNpZ25lZAkJd2ly
-ZWxlc3M6MTsJLyogV2lyZWxlc3MgVVNCIEhDRCAqLwogCXVuc2lnbmVkCQlhdXRob3JpemVkX2Rl
-ZmF1bHQ6MTsKIAl1bnNpZ25lZAkJaGFzX3R0OjE7CS8qIEludGVncmF0ZWQgVFQgaW4gcm9vdCBo
-dWIgKi8KLQl1bnNpZ25lZAkJYnJva2VuX3BjaV9zbGVlcDoxOwkvKiBEb24ndCBwdXQgdGhlCi0J
-CQljb250cm9sbGVyIGluIFBDSS1EMyBmb3Igc3lzdGVtIHNsZWVwICovCiAKIAl1bnNpZ25lZCBp
-bnQJCWlycTsJCS8qIGlycSBhbGxvY2F0ZWQgKi8KIAl2b2lkIF9faW9tZW0JCSpyZWdzOwkJLyog
-ZGV2aWNlIG1lbW9yeS9pbyAqLwoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
-dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
-c3RpbmZvL2xpbnV4LXBt
+On Wed, Jun 13, 2012 at 11:20:19AM -0400, Alan Stern wrote:
+> This patch (as1558) fixes a problem affecting several ASUS computers:
+> The machine crashes or corrupts memory when going into suspend if the
+> ehci-hcd driver is bound to any controllers.  Users have been forced
+> to unbind or unload ehci-hcd before putting their systems to sleep.
+>=20
+> After extensive testing, it was determined that the machines don't
+> like going into suspend when any EHCI controllers are in the PCI D3
+> power state.  Presumably this is a firmware bug, but there's nothing
+> we can do about it except to avoid putting the controllers in D3
+> during system sleep.
+>=20
+> The patch adds a new flag to indicate whether the problem is present,
+> and avoids changing the controller's power state if the flag is set.
+> Runtime suspend is unaffected; this matters only for system suspend.
+> However as a side effect, the controller will not respond to remote
+> wakeup requests while the system is asleep.  Hence USB wakeup is not
+> functional -- but of course, this is already true in the current stat=
+e
+> of affairs.
+>=20
+> A similar patch has already been applied as commit
+> 151b61284776be2d6f02d48c23c3625678960b97 (USB: EHCI: fix crash during
+> suspend on ASUS computers).  The patch supersedes that one and revert=
+s
+> it.  There are two differences:
+>=20
+> 	The old patch added the flag at the USB level; this patch
+> 	adds it at the PCI level.
+>=20
+> 	The old patch applied to all chipsets with the same vendor,
+> 	subsystem vendor, and product IDs; this patch makes an
+> 	exception for a known-good system (based on DMI information).
+>=20
+> Signed-off-by: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+> Tested-by: D=E2niel Fraga <fragabr-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> Tested-by: Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>
+> Tested-by: Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>
+> CC: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+> CC: <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+>=20
+> ---
+>=20
+> Greg, do you mind if this goes in through Rafael's tree?
+
+Not at all, but I can also take it.
+
+Rafael, if you want to take it, please add:
+
+Acked-by: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+
+to it, or let me know, and I can take this through my tree.
+
+thanks,
+
+greg k-h
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
