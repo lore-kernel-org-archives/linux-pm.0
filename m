@@ -1,104 +1,71 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 2/2] PM: Devfreq: Add frequency get function
-	in profile
-Date: Wed, 13 Jun 2012 04:57:36 +0000 (GMT)
-Message-ID: <1290271.915811339563455292.JavaMail.weblogic@epml04>
-Reply-To: myungjoo.ham@samsung.com
+From: Xiaoguang Chen <chenxg@marvell.com>
+Subject: RE: [PATCH 2/2] PM: Devfreq: Add frequency get function in profile
+Date: Tue, 12 Jun 2012 22:16:29 -0700
+Message-ID: <4737A960563B524DA805CA602BE04B3064CBDF6710@SC-VEXCH2.marvell.com>
+References: <1290271.915811339563455292.JavaMail.weblogic@epml04>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-MIME-version: 1.0
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Xiaoguang Chen <chenxg@marvell.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset="ks_c_5601-1987"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1290271.915811339563455292.JavaMail.weblogic@epml04>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: =?ks_c_5601-1987?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-> when devfreq set one frequency, the final frequency may not
-> the same as the requested frequency. Add get function in profile
-> to let devfreq driver return the final frequency.
-> 
-> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-
-That is why in update_freq() function that you've modified uses:
-
-err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
-
-not
-
-err = devfreq->profile->target(devfreq->dev.parent, freq, flags);
-
-The target function will return the configured frequency right there.
-Calling "__devfreq_get()" at the same location wouldn't help as long as
-the "target()" callback is implemented correctly.
-
-
-
-Cheers!
-MyungJoo
-
-> ---
->  drivers/devfreq/devfreq.c |   12 +++++++++++-
->  include/linux/devfreq.h   |    2 ++
->  2 files changed, 13 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 2144200..50a4fc0 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -72,6 +72,16 @@ static struct devfreq *find_device_devfreq(struct device *dev)
->  	return ERR_PTR(-ENODEV);
->  }
->  
-> +static unsigned long __devfreq_get(struct device *dev)
-> +{
-> +	struct devfreq *devfreq = to_devfreq(dev);
-> +	unsigned long ret_freq = devfreq->previous_freq;
-> +	if (!devfreq->profile->get)
-> +		return ret_freq;
-> +	ret_freq = devfreq->profile->get(devfreq->dev.parent);
-> +	return ret_freq;
-> +}
-> +
->  /**
->   * update_devfreq() - Reevaluate the device and configure frequency.
->   * @devfreq:	the devfreq instance.
-> @@ -116,7 +126,7 @@ int update_devfreq(struct devfreq *devfreq)
->  	if (err)
->  		return err;
->  
-> -	devfreq->previous_freq = freq;
-> +	devfreq->previous_freq = __devfreq_get(&devfreq->dev);
->  	return err;
->  }
->  
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index e5e4036..f789314 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -65,6 +65,7 @@ struct devfreq_frequency_table {
->   * @initial_freq	The operating frequency when devfreq_add_device() is
->   *			called.
->   * @polling_ms		The polling interval in ms. 0 disables polling.
-> + * @get			Get the devices's actual frequency
->   * @target		The device should set its operating frequency at
->   *			freq or lowest-upper-than-freq value. If freq is
->   *			higher than any operable frequency, set maximum.
-> @@ -84,6 +85,7 @@ struct devfreq_dev_profile {
->  	unsigned long initial_freq;
->  	unsigned int polling_ms;
->  
-> +	unsigned long	(*get)(struct device *dev);
->  	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
->  	int (*get_dev_status)(struct device *dev,
->  			      struct devfreq_dev_status *stat);
-> -- 
-> 1.7.0.4
+T2ssIEkgZ290IGl0LiBTbyB0aGlzIHBhdGNoIGhhcyBubyB0b28gbXVjaCB1c2UuDQoNClRoYW5r
+cw0KWGlhb2d1YW5nDQoNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IE15dW5n
+Sm9vIEhhbSBbbWFpbHRvOm15dW5nam9vLmhhbUBzYW1zdW5nLmNvbV0gDQpTZW50OiAyMDEy0rQ2
+6sUxM+ztIDEyOjU4DQpUbzogWGlhb2d1YW5nIENoZW47IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5l
+bC5vcmcNCkNjOiC52rDmuc47IGxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnDQpT
+dWJqZWN0OiBSZTogW1BBVENIIDIvMl0gUE06IERldmZyZXE6IEFkZCBmcmVxdWVuY3kgZ2V0IGZ1
+bmN0aW9uIGluIHByb2ZpbGUNCg0KPiB3aGVuIGRldmZyZXEgc2V0IG9uZSBmcmVxdWVuY3ksIHRo
+ZSBmaW5hbCBmcmVxdWVuY3kgbWF5IG5vdCB0aGUgc2FtZSANCj4gYXMgdGhlIHJlcXVlc3RlZCBm
+cmVxdWVuY3kuIEFkZCBnZXQgZnVuY3Rpb24gaW4gcHJvZmlsZSB0byBsZXQgZGV2ZnJlcSANCj4g
+ZHJpdmVyIHJldHVybiB0aGUgZmluYWwgZnJlcXVlbmN5Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTog
+WGlhb2d1YW5nIENoZW4gPGNoZW54Z0BtYXJ2ZWxsLmNvbT4NCg0KVGhhdCBpcyB3aHkgaW4gdXBk
+YXRlX2ZyZXEoKSBmdW5jdGlvbiB0aGF0IHlvdSd2ZSBtb2RpZmllZCB1c2VzOg0KDQplcnIgPSBk
+ZXZmcmVxLT5wcm9maWxlLT50YXJnZXQoZGV2ZnJlcS0+ZGV2LnBhcmVudCwgJmZyZXEsIGZsYWdz
+KTsNCg0Kbm90DQoNCmVyciA9IGRldmZyZXEtPnByb2ZpbGUtPnRhcmdldChkZXZmcmVxLT5kZXYu
+cGFyZW50LCBmcmVxLCBmbGFncyk7DQoNClRoZSB0YXJnZXQgZnVuY3Rpb24gd2lsbCByZXR1cm4g
+dGhlIGNvbmZpZ3VyZWQgZnJlcXVlbmN5IHJpZ2h0IHRoZXJlLg0KQ2FsbGluZyAiX19kZXZmcmVx
+X2dldCgpIiBhdCB0aGUgc2FtZSBsb2NhdGlvbiB3b3VsZG4ndCBoZWxwIGFzIGxvbmcgYXMgdGhl
+ICJ0YXJnZXQoKSIgY2FsbGJhY2sgaXMgaW1wbGVtZW50ZWQgY29ycmVjdGx5Lg0KDQoNCg0KQ2hl
+ZXJzIQ0KTXl1bmdKb28NCg0KPiAtLS0NCj4gIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgfCAg
+IDEyICsrKysrKysrKysrLQ0KPiAgaW5jbHVkZS9saW51eC9kZXZmcmVxLmggICB8ICAgIDIgKysN
+Cj4gIDIgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkNCj4g
+DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jIGIvZHJpdmVycy9kZXZm
+cmVxL2RldmZyZXEuYyANCj4gaW5kZXggMjE0NDIwMC4uNTBhNGZjMCAxMDA2NDQNCj4gLS0tIGEv
+ZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KPiArKysgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJl
+cS5jDQo+IEBAIC03Miw2ICs3MiwxNiBAQCBzdGF0aWMgc3RydWN0IGRldmZyZXEgKmZpbmRfZGV2
+aWNlX2RldmZyZXEoc3RydWN0IGRldmljZSAqZGV2KQ0KPiAgCXJldHVybiBFUlJfUFRSKC1FTk9E
+RVYpOw0KPiAgfQ0KPiAgDQo+ICtzdGF0aWMgdW5zaWduZWQgbG9uZyBfX2RldmZyZXFfZ2V0KHN0
+cnVjdCBkZXZpY2UgKmRldikgew0KPiArCXN0cnVjdCBkZXZmcmVxICpkZXZmcmVxID0gdG9fZGV2
+ZnJlcShkZXYpOw0KPiArCXVuc2lnbmVkIGxvbmcgcmV0X2ZyZXEgPSBkZXZmcmVxLT5wcmV2aW91
+c19mcmVxOw0KPiArCWlmICghZGV2ZnJlcS0+cHJvZmlsZS0+Z2V0KQ0KPiArCQlyZXR1cm4gcmV0
+X2ZyZXE7DQo+ICsJcmV0X2ZyZXEgPSBkZXZmcmVxLT5wcm9maWxlLT5nZXQoZGV2ZnJlcS0+ZGV2
+LnBhcmVudCk7DQo+ICsJcmV0dXJuIHJldF9mcmVxOw0KPiArfQ0KPiArDQo+ICAvKioNCj4gICAq
+IHVwZGF0ZV9kZXZmcmVxKCkgLSBSZWV2YWx1YXRlIHRoZSBkZXZpY2UgYW5kIGNvbmZpZ3VyZSBm
+cmVxdWVuY3kuDQo+ICAgKiBAZGV2ZnJlcToJdGhlIGRldmZyZXEgaW5zdGFuY2UuDQo+IEBAIC0x
+MTYsNyArMTI2LDcgQEAgaW50IHVwZGF0ZV9kZXZmcmVxKHN0cnVjdCBkZXZmcmVxICpkZXZmcmVx
+KQ0KPiAgCWlmIChlcnIpDQo+ICAJCXJldHVybiBlcnI7DQo+ICANCj4gLQlkZXZmcmVxLT5wcmV2
+aW91c19mcmVxID0gZnJlcTsNCj4gKwlkZXZmcmVxLT5wcmV2aW91c19mcmVxID0gX19kZXZmcmVx
+X2dldCgmZGV2ZnJlcS0+ZGV2KTsNCj4gIAlyZXR1cm4gZXJyOw0KPiAgfQ0KPiAgDQo+IGRpZmYg
+LS1naXQgYS9pbmNsdWRlL2xpbnV4L2RldmZyZXEuaCBiL2luY2x1ZGUvbGludXgvZGV2ZnJlcS5o
+IGluZGV4IA0KPiBlNWU0MDM2Li5mNzg5MzE0IDEwMDY0NA0KPiAtLS0gYS9pbmNsdWRlL2xpbnV4
+L2RldmZyZXEuaA0KPiArKysgYi9pbmNsdWRlL2xpbnV4L2RldmZyZXEuaA0KPiBAQCAtNjUsNiAr
+NjUsNyBAQCBzdHJ1Y3QgZGV2ZnJlcV9mcmVxdWVuY3lfdGFibGUgew0KPiAgICogQGluaXRpYWxf
+ZnJlcQlUaGUgb3BlcmF0aW5nIGZyZXF1ZW5jeSB3aGVuIGRldmZyZXFfYWRkX2RldmljZSgpIGlz
+DQo+ICAgKgkJCWNhbGxlZC4NCj4gICAqIEBwb2xsaW5nX21zCQlUaGUgcG9sbGluZyBpbnRlcnZh
+bCBpbiBtcy4gMCBkaXNhYmxlcyBwb2xsaW5nLg0KPiArICogQGdldAkJCUdldCB0aGUgZGV2aWNl
+cydzIGFjdHVhbCBmcmVxdWVuY3kNCj4gICAqIEB0YXJnZXQJCVRoZSBkZXZpY2Ugc2hvdWxkIHNl
+dCBpdHMgb3BlcmF0aW5nIGZyZXF1ZW5jeSBhdA0KPiAgICoJCQlmcmVxIG9yIGxvd2VzdC11cHBl
+ci10aGFuLWZyZXEgdmFsdWUuIElmIGZyZXEgaXMNCj4gICAqCQkJaGlnaGVyIHRoYW4gYW55IG9w
+ZXJhYmxlIGZyZXF1ZW5jeSwgc2V0IG1heGltdW0uDQo+IEBAIC04NCw2ICs4NSw3IEBAIHN0cnVj
+dCBkZXZmcmVxX2Rldl9wcm9maWxlIHsNCj4gIAl1bnNpZ25lZCBsb25nIGluaXRpYWxfZnJlcTsN
+Cj4gIAl1bnNpZ25lZCBpbnQgcG9sbGluZ19tczsNCj4gIA0KPiArCXVuc2lnbmVkIGxvbmcJKCpn
+ZXQpKHN0cnVjdCBkZXZpY2UgKmRldik7DQo+ICAJaW50ICgqdGFyZ2V0KShzdHJ1Y3QgZGV2aWNl
+ICpkZXYsIHVuc2lnbmVkIGxvbmcgKmZyZXEsIHUzMiBmbGFncyk7DQo+ICAJaW50ICgqZ2V0X2Rl
+dl9zdGF0dXMpKHN0cnVjdCBkZXZpY2UgKmRldiwNCj4gIAkJCSAgICAgIHN0cnVjdCBkZXZmcmVx
+X2Rldl9zdGF0dXMgKnN0YXQpOw0KPiAtLQ0KPiAxLjcuMC40DQo=
