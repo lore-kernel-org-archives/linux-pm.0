@@ -1,16 +1,14 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [RFC PATCH 11/12] thermal: introduce cooling state
-	arbitrator
-Date: Wed, 13 Jun 2012 17:23:16 +0300
-Message-ID: <20120613142316.GB16714@besouro>
-References: <1339384839.1492.165.camel@rui.sh.intel.com>
-Reply-To: eduardo.valentin@ti.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH] PCI: add NO_D3_DURING_SLEEP flag and revert
+	151b61284776be2
+Date: Wed, 13 Jun 2012 11:20:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1206131117260.1401-100000@iolanthe.rowland.org>
+References: <201206131122.36198.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <1339384839.1492.165.camel@rui.sh.intel.com>
+In-Reply-To: <201206131122.36198.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -20,155 +18,128 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?utf-8?q?D=C3=A2niel_Fraga?= <fragabr@gmail.com>, Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Andrey Rahmatullin <wrar@wrar.name>, "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Rui,
-
-On Mon, Jun 11, 2012 at 11:20:39AM +0800, Zhang Rui wrote:
-> 
-> Introduce simple arbitrator for setting device cooling state,
-> to fix the problem that a cooling device may be referenced by
-> by multiple trip points in multiple thermal zones.
-> 
-> 
-> With this patch, we have two stages for updating a thermal zone,
-> 1. check if a thermal_instance needs to be updated or not
-> 2. update the cooling device, based on the target cooling state
->    of all its instances.
-> 
-> Note that, currently, the cooling device is set to the deepest
-> cooling state required.
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/thermal/thermal_sys.c |   41 ++++++++++++++++++++++++++++++++++++++---
->  include/linux/thermal.h       |    1 +
->  2 files changed, 39 insertions(+), 3 deletions(-)
-> 
-> Index: rtd3/drivers/thermal/thermal_sys.c
-> ===================================================================
-> --- rtd3.orig/drivers/thermal/thermal_sys.c
-> +++ rtd3/drivers/thermal/thermal_sys.c
-> @@ -54,6 +54,7 @@ struct thermal_instance {
->  	int trip;
->  	unsigned long upper;	/* Highest cooling state for this trip point */
->  	unsigned long lower;	/* Lowest cooling state for this trip point */
-> +	unsigned long target;	/* expected cooling state */
->  	char attr_name[THERMAL_NAME_LENGTH];
->  	struct device_attribute attr;
->  	struct list_head tz_node; /* node in tz->instances */
-> @@ -812,6 +813,7 @@ int thermal_zone_bind_cooling_device(str
->  	dev->trip = trip;
->  	dev->upper = upper;
->  	dev->lower = lower;
-> +	dev->target = -1;
->  
->  	result = get_idr(&tz->idr, &tz->lock, &dev->id);
->  	if (result)
-> @@ -949,6 +951,7 @@ thermal_cooling_device_register(char *ty
->  	strcpy(cdev->type, type);
->  	INIT_LIST_HEAD(&cdev->instances);
->  	cdev->ops = ops;
-> +	cdev->updated = 1;
->  	cdev->device.class = &thermal_class;
->  	cdev->devdata = devdata;
->  	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
-> @@ -1040,6 +1043,32 @@ void thermal_cooling_device_unregister(s
->  }
->  EXPORT_SYMBOL(thermal_cooling_device_unregister);
->  
-> +static void thermal_zone_do_update(struct thermal_zone_device *tz)
-> +{
-> +	struct thermal_instance *instance1, *instance2;
-> +	struct thermal_cooling_device *cdev;
-> +	int target;
-> +
-> +	list_for_each_entry(instance1, &tz->instances, tz_node) {
-> +		cdev = instance1->cdev;
-> +
-> +		/* cooling device has already been updated*/
-> +		if (cdev->updated)
-> +			continue;
-> +
-> +		target = 0;
-> +		/* Make sure cdev enters the deepest cooling state */
-> +		list_for_each_entry(instance2, &cdev->instances, cdev_node) {
-> +			if (instance2->target == -1)
-> +				continue;
-> +			if (instance2->target > target)
-> +				target = instance2->target;
-> +		}
-> +		cdev->ops->set_cur_state(cdev, target);
-> +		cdev->updated = 1;
-> +	}
-> +}
-
-I think the above arbitrator solution does not escalate. As I can see,
-the arbitrator takes care of cooling device instances in the same thermal zone.
-
-What if you have a device which expose cooling device instances in different
-thermal zones?
-
-Besides, the thermal constraint might collide with pm QoS or with settings
-coming from user space interfaces.
-
-That's actually why I was suggesting to have this 'arbitrator' or constraint
-management outside the thermal framework. And managed per device at some
-other abstraction layer.
-
-> +
->  /*
->   * Cooling algorithm for active trip points
->   *
-> @@ -1086,19 +1115,24 @@ static void thermal_zone_trip_update(str
->  				cur_state = cur_state > instance->lower ?
->  				    (cur_state - 1) : instance->lower;
->  			}
-> -			cdev->ops->set_cur_state(cdev, cur_state);
-> +			instance->target = cur_state;
-> +			cdev->updated = 0; /* cooling device needs update */
->  		}
->  	} else {	/* below trip */
->  		list_for_each_entry(instance, &tz->instances, tz_node) {
->  			if (instance->trip != trip)
->  				continue;
->  
-> +			/* Do not use the deacitve thermal instance */
-> +			if (instance->target == -1)
-> +				continue;
->  			cdev = instance->cdev;
->  			cdev->ops->get_cur_state(cdev, &cur_state);
->  
->  			cur_state = cur_state > instance->lower ?
-> -				    (cur_state - 1) : instance->lower;
-> -			cdev->ops->set_cur_state(cdev, cur_state);
-> +				    (cur_state - 1) : -1;
-> +			instance->target = cur_state;
-> +			cdev->updated = 0; /* cooling device needs update */
->  		}
->  	}
->  
-> @@ -1159,6 +1193,7 @@ void thermal_zone_device_update(struct t
->  		}
->  	}
->  
-> +	thermal_zone_do_update(tz);
->  	if (tz->forced_passive)
->  		thermal_zone_device_passive(tz, temp, tz->forced_passive,
->  					    THERMAL_TRIPS_NONE);
-> Index: rtd3/include/linux/thermal.h
-> ===================================================================
-> --- rtd3.orig/include/linux/thermal.h
-> +++ rtd3/include/linux/thermal.h
-> @@ -86,6 +86,7 @@ struct thermal_cooling_device {
->  	struct device device;
->  	void *devdata;
->  	const struct thermal_cooling_device_ops *ops;
-> +	int updated; /* 1 if the cooling device does not need update */
->  	struct list_head instances;
->  	struct list_head node;
->  };
-> 
-> 
+VGhpcyBwYXRjaCAoYXMxNTU4KSBmaXhlcyBhIHByb2JsZW0gYWZmZWN0aW5nIHNldmVyYWwgQVNV
+UyBjb21wdXRlcnM6ClRoZSBtYWNoaW5lIGNyYXNoZXMgb3IgY29ycnVwdHMgbWVtb3J5IHdoZW4g
+Z29pbmcgaW50byBzdXNwZW5kIGlmIHRoZQplaGNpLWhjZCBkcml2ZXIgaXMgYm91bmQgdG8gYW55
+IGNvbnRyb2xsZXJzLiAgVXNlcnMgaGF2ZSBiZWVuIGZvcmNlZAp0byB1bmJpbmQgb3IgdW5sb2Fk
+IGVoY2ktaGNkIGJlZm9yZSBwdXR0aW5nIHRoZWlyIHN5c3RlbXMgdG8gc2xlZXAuCgpBZnRlciBl
+eHRlbnNpdmUgdGVzdGluZywgaXQgd2FzIGRldGVybWluZWQgdGhhdCB0aGUgbWFjaGluZXMgZG9u
+J3QKbGlrZSBnb2luZyBpbnRvIHN1c3BlbmQgd2hlbiBhbnkgRUhDSSBjb250cm9sbGVycyBhcmUg
+aW4gdGhlIFBDSSBEMwpwb3dlciBzdGF0ZS4gIFByZXN1bWFibHkgdGhpcyBpcyBhIGZpcm13YXJl
+IGJ1ZywgYnV0IHRoZXJlJ3Mgbm90aGluZwp3ZSBjYW4gZG8gYWJvdXQgaXQgZXhjZXB0IHRvIGF2
+b2lkIHB1dHRpbmcgdGhlIGNvbnRyb2xsZXJzIGluIEQzCmR1cmluZyBzeXN0ZW0gc2xlZXAuCgpU
+aGUgcGF0Y2ggYWRkcyBhIG5ldyBmbGFnIHRvIGluZGljYXRlIHdoZXRoZXIgdGhlIHByb2JsZW0g
+aXMgcHJlc2VudCwKYW5kIGF2b2lkcyBjaGFuZ2luZyB0aGUgY29udHJvbGxlcidzIHBvd2VyIHN0
+YXRlIGlmIHRoZSBmbGFnIGlzIHNldC4KUnVudGltZSBzdXNwZW5kIGlzIHVuYWZmZWN0ZWQ7IHRo
+aXMgbWF0dGVycyBvbmx5IGZvciBzeXN0ZW0gc3VzcGVuZC4KSG93ZXZlciBhcyBhIHNpZGUgZWZm
+ZWN0LCB0aGUgY29udHJvbGxlciB3aWxsIG5vdCByZXNwb25kIHRvIHJlbW90ZQp3YWtldXAgcmVx
+dWVzdHMgd2hpbGUgdGhlIHN5c3RlbSBpcyBhc2xlZXAuICBIZW5jZSBVU0Igd2FrZXVwIGlzIG5v
+dApmdW5jdGlvbmFsIC0tIGJ1dCBvZiBjb3Vyc2UsIHRoaXMgaXMgYWxyZWFkeSB0cnVlIGluIHRo
+ZSBjdXJyZW50IHN0YXRlCm9mIGFmZmFpcnMuCgpBIHNpbWlsYXIgcGF0Y2ggaGFzIGFscmVhZHkg
+YmVlbiBhcHBsaWVkIGFzIGNvbW1pdAoxNTFiNjEyODQ3NzZiZTJkNmYwMmQ0OGMyM2MzNjI1Njc4
+OTYwYjk3IChVU0I6IEVIQ0k6IGZpeCBjcmFzaCBkdXJpbmcKc3VzcGVuZCBvbiBBU1VTIGNvbXB1
+dGVycykuICBUaGUgcGF0Y2ggc3VwZXJzZWRlcyB0aGF0IG9uZSBhbmQgcmV2ZXJ0cwppdC4gIFRo
+ZXJlIGFyZSB0d28gZGlmZmVyZW5jZXM6CgoJVGhlIG9sZCBwYXRjaCBhZGRlZCB0aGUgZmxhZyBh
+dCB0aGUgVVNCIGxldmVsOyB0aGlzIHBhdGNoCglhZGRzIGl0IGF0IHRoZSBQQ0kgbGV2ZWwuCgoJ
+VGhlIG9sZCBwYXRjaCBhcHBsaWVkIHRvIGFsbCBjaGlwc2V0cyB3aXRoIHRoZSBzYW1lIHZlbmRv
+ciwKCXN1YnN5c3RlbSB2ZW5kb3IsIGFuZCBwcm9kdWN0IElEczsgdGhpcyBwYXRjaCBtYWtlcyBh
+bgoJZXhjZXB0aW9uIGZvciBhIGtub3duLWdvb2Qgc3lzdGVtIChiYXNlZCBvbiBETUkgaW5mb3Jt
+YXRpb24pLgoKU2lnbmVkLW9mZi1ieTogQWxhbiBTdGVybiA8c3Rlcm5Acm93bGFuZC5oYXJ2YXJk
+LmVkdT4KVGVzdGVkLWJ5OiBEw6JuaWVsIEZyYWdhIDxmcmFnYWJyQGdtYWlsLmNvbT4KVGVzdGVk
+LWJ5OiBBbmRyZXkgUmFobWF0dWxsaW4gPHdyYXJAd3Jhci5uYW1lPgpUZXN0ZWQtYnk6IFN0ZXZl
+biBSb3N0ZWR0IDxyb3N0ZWR0QGdvb2RtaXMub3JnPgpDQzogR3JlZyBLSCA8Z3JlZ0Brcm9haC5j
+b20+CkNDOiA8c3RhYmxlQHZnZXIua2VybmVsLm9yZz4KCi0tLQoKR3JlZywgZG8geW91IG1pbmQg
+aWYgdGhpcyBnb2VzIGluIHRocm91Z2ggUmFmYWVsJ3MgdHJlZT8KCgogZHJpdmVycy9wY2kvcGNp
+LmMgICAgICAgICAgIHwgICAgNSArKysrKwogZHJpdmVycy9wY2kvcXVpcmtzLmMgICAgICAgIHwg
+ICAyNiArKysrKysrKysrKysrKysrKysrKysrKysrKwogZHJpdmVycy91c2IvY29yZS9oY2QtcGNp
+LmMgIHwgICAgOSAtLS0tLS0tLS0KIGRyaXZlcnMvdXNiL2hvc3QvZWhjaS1wY2kuYyB8ICAgIDgg
+LS0tLS0tLS0KIGluY2x1ZGUvbGludXgvcGNpLmggICAgICAgICB8ICAgIDIgKysKIGluY2x1ZGUv
+bGludXgvdXNiL2hjZC5oICAgICB8ICAgIDIgLS0KIDYgZmlsZXMgY2hhbmdlZCwgMzMgaW5zZXJ0
+aW9ucygrKSwgMTkgZGVsZXRpb25zKC0pCgpJbmRleDogdXNiLTMuNC9pbmNsdWRlL2xpbnV4L3Bj
+aS5oCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT0KLS0tIHVzYi0zLjQub3JpZy9pbmNsdWRlL2xpbnV4L3BjaS5oCisrKyB1
+c2ItMy40L2luY2x1ZGUvbGludXgvcGNpLmgKQEAgLTE3Niw2ICsxNzYsOCBAQCBlbnVtIHBjaV9k
+ZXZfZmxhZ3MgewogCVBDSV9ERVZfRkxBR1NfTk9fRDMgPSAoX19mb3JjZSBwY2lfZGV2X2ZsYWdz
+X3QpIDIsCiAJLyogUHJvdmlkZSBpbmRpY2F0aW9uIGRldmljZSBpcyBhc3NpZ25lZCBieSBhIFZp
+cnR1YWwgTWFjaGluZSBNYW5hZ2VyICovCiAJUENJX0RFVl9GTEFHU19BU1NJR05FRCA9IChfX2Zv
+cmNlIHBjaV9kZXZfZmxhZ3NfdCkgNCwKKwkvKiBEZXZpY2UgY2F1c2VzIHN5c3RlbSBjcmFzaCBp
+ZiBpbiBEMyBkdXJpbmcgUzMgc2xlZXAgKi8KKwlQQ0lfREVWX0ZMQUdTX05PX0QzX0RVUklOR19T
+TEVFUCA9IChfX2ZvcmNlIHBjaV9kZXZfZmxhZ3NfdCkgOCwKIH07CiAKIGVudW0gcGNpX2lycV9y
+ZXJvdXRlX3ZhcmlhbnQgewpJbmRleDogdXNiLTMuNC9kcml2ZXJzL3BjaS9wY2kuYwo9PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09Ci0tLSB1c2ItMy40Lm9yaWcvZHJpdmVycy9wY2kvcGNpLmMKKysrIHVzYi0zLjQvZHJpdmVy
+cy9wY2kvcGNpLmMKQEAgLTE3NDMsNiArMTc0MywxMSBAQCBpbnQgcGNpX3ByZXBhcmVfdG9fc2xl
+ZXAoc3RydWN0IHBjaV9kZXYKIAlpZiAodGFyZ2V0X3N0YXRlID09IFBDSV9QT1dFUl9FUlJPUikK
+IAkJcmV0dXJuIC1FSU87CiAKKwkvKiBTb21lIGRldmljZXMgbXVzdG4ndCBiZSBpbiBEMyBkdXJp
+bmcgc3lzdGVtIHNsZWVwICovCisJaWYgKHRhcmdldF9zdGF0ZSA9PSBQQ0lfRDNob3QgJiYKKwkJ
+CShkZXYtPmRldl9mbGFncyAmIFBDSV9ERVZfRkxBR1NfTk9fRDNfRFVSSU5HX1NMRUVQKSkKKwkJ
+cmV0dXJuIDA7CisKIAlwY2lfZW5hYmxlX3dha2UoZGV2LCB0YXJnZXRfc3RhdGUsIGRldmljZV9t
+YXlfd2FrZXVwKCZkZXYtPmRldikpOwogCiAJZXJyb3IgPSBwY2lfc2V0X3Bvd2VyX3N0YXRlKGRl
+diwgdGFyZ2V0X3N0YXRlKTsKSW5kZXg6IHVzYi0zLjQvZHJpdmVycy9wY2kvcXVpcmtzLmMKPT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PQotLS0gdXNiLTMuNC5vcmlnL2RyaXZlcnMvcGNpL3F1aXJrcy5jCisrKyB1c2ItMy40
+L2RyaXZlcnMvcGNpL3F1aXJrcy5jCkBAIC0yOTE3LDYgKzI5MTcsMzIgQEAgc3RhdGljIHZvaWQg
+X19kZXZpbml0IGRpc2FibGVfaWdmeF9pcnEocwogREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJ
+X1ZFTkRPUl9JRF9JTlRFTCwgMHgwMTAyLCBkaXNhYmxlX2lnZnhfaXJxKTsKIERFQ0xBUkVfUENJ
+X0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfSU5URUwsIDB4MDEwYSwgZGlzYWJsZV9pZ2Z4X2ly
+cSk7CiAKKy8qCisgKiBUaGUgSW50ZWwgNiBTZXJpZXMvQzIwMCBTZXJpZXMgY2hpcHNldCdzIEVI
+Q0kgY29udHJvbGxlcnMgb24gbWFueQorICogQVNVUyBtb3RoZXJib2FyZHMgd2lsbCBjYXVzZSBt
+ZW1vcnkgY29ycnVwdGlvbiBvciBhIHN5c3RlbSBjcmFzaAorICogaWYgdGhleSBhcmUgaW4gRDMg
+d2hpbGUgdGhlIHN5c3RlbSBpcyBwdXQgaW50byBTMyBzbGVlcC4KKyAqLworc3RhdGljIHZvaWQg
+X19kZXZpbml0IGFzdXNfZWhjaV9ub19kMyhzdHJ1Y3QgcGNpX2RldiAqZGV2KQoreworCWNvbnN0
+IGNoYXIgKnN5c19pbmZvOworCXN0YXRpYyBjb25zdCBjaGFyIGdvb2RfQXN1c19ib2FyZFtdID0g
+IlA4WjY4LVYiOworCisJaWYgKGRldi0+ZGV2X2ZsYWdzICYgUENJX0RFVl9GTEFHU19OT19EM19E
+VVJJTkdfU0xFRVApCisJCXJldHVybjsKKwlpZiAoZGV2LT5zdWJzeXN0ZW1fdmVuZG9yICE9IFBD
+SV9WRU5ET1JfSURfQVNVU1RFSykKKwkJcmV0dXJuOworCXN5c19pbmZvID0gZG1pX2dldF9zeXN0
+ZW1faW5mbyhETUlfQk9BUkRfTkFNRSk7CisJaWYgKHN5c19pbmZvICYmIG1lbWNtcChzeXNfaW5m
+bywgZ29vZF9Bc3VzX2JvYXJkLAorCQkJc2l6ZW9mKGdvb2RfQXN1c19ib2FyZCkgLSAxKSA9PSAw
+KQorCQlyZXR1cm47CisKKwlkZXZfaW5mbygmZGV2LT5kZXYsICJicm9rZW4gRDMgZHVyaW5nIHN5
+c3RlbSBzbGVlcCBvbiBBU1VTXG4iKTsKKwlkZXYtPmRldl9mbGFncyB8PSBQQ0lfREVWX0ZMQUdT
+X05PX0QzX0RVUklOR19TTEVFUDsKKwlkZXZpY2Vfc2V0X3dha2V1cF9jYXBhYmxlKCZkZXYtPmRl
+diwgZmFsc2UpOworfQorREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJX1ZFTkRPUl9JRF9JTlRF
+TCwgMHgxYzI2LCBhc3VzX2VoY2lfbm9fZDMpOworREVDTEFSRV9QQ0lfRklYVVBfRklOQUwoUENJ
+X1ZFTkRPUl9JRF9JTlRFTCwgMHgxYzJkLCBhc3VzX2VoY2lfbm9fZDMpOworCiBzdGF0aWMgdm9p
+ZCBwY2lfZG9fZml4dXBzKHN0cnVjdCBwY2lfZGV2ICpkZXYsIHN0cnVjdCBwY2lfZml4dXAgKmYs
+CiAJCQkgIHN0cnVjdCBwY2lfZml4dXAgKmVuZCkKIHsKSW5kZXg6IHVzYi0zLjQvZHJpdmVycy91
+c2IvY29yZS9oY2QtcGNpLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gdXNiLTMuNC5vcmlnL2RyaXZlcnMvdXNi
+L2NvcmUvaGNkLXBjaS5jCisrKyB1c2ItMy40L2RyaXZlcnMvdXNiL2NvcmUvaGNkLXBjaS5jCkBA
+IC00OTMsMTUgKzQ5Myw2IEBAIHN0YXRpYyBpbnQgaGNkX3BjaV9zdXNwZW5kX25vaXJxKHN0cnVj
+dAogCiAJcGNpX3NhdmVfc3RhdGUocGNpX2Rldik7CiAKLQkvKgotCSAqIFNvbWUgc3lzdGVtcyBj
+cmFzaCBpZiBhbiBFSENJIGNvbnRyb2xsZXIgaXMgaW4gRDMgZHVyaW5nCi0JICogYSBzbGVlcCB0
+cmFuc2l0aW9uLiAgV2UgaGF2ZSB0byBsZWF2ZSBzdWNoIGNvbnRyb2xsZXJzIGluIEQwLgotCSAq
+LwotCWlmIChoY2QtPmJyb2tlbl9wY2lfc2xlZXApIHsKLQkJZGV2X2RiZyhkZXYsICJTdGF5aW5n
+IGluIFBDSSBEMFxuIik7Ci0JCXJldHVybiByZXR2YWw7Ci0JfQotCiAJLyogSWYgdGhlIHJvb3Qg
+aHViIGlzIGRlYWQgcmF0aGVyIHRoYW4gc3VzcGVuZGVkLCBkaXNhbGxvdyByZW1vdGUKIAkgKiB3
+YWtldXAuICB1c2JfaGNfZGllZCgpIHNob3VsZCBlbnN1cmUgdGhhdCBib3RoIGhvc3RzIGFyZSBt
+YXJrZWQgYXMKIAkgKiBkeWluZywgc28gd2Ugb25seSBuZWVkIHRvIGNoZWNrIHRoZSBwcmltYXJ5
+IHJvb3RodWIuCkluZGV4OiB1c2ItMy40L2RyaXZlcnMvdXNiL2hvc3QvZWhjaS1wY2kuYwo9PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09Ci0tLSB1c2ItMy40Lm9yaWcvZHJpdmVycy91c2IvaG9zdC9laGNpLXBjaS5jCisrKyB1
+c2ItMy40L2RyaXZlcnMvdXNiL2hvc3QvZWhjaS1wY2kuYwpAQCAtMTUxLDE0ICsxNTEsNiBAQCBz
+dGF0aWMgaW50IGVoY2lfcGNpX3NldHVwKHN0cnVjdCB1c2JfaGNkCiAJCQloY2QtPmhhc190dCA9
+IDE7CiAJCQl0ZGlfcmVzZXQoZWhjaSk7CiAJCX0KLQkJaWYgKHBkZXYtPnN1YnN5c3RlbV92ZW5k
+b3IgPT0gUENJX1ZFTkRPUl9JRF9BU1VTVEVLKSB7Ci0JCQkvKiBFSENJICMxIG9yICMyIG9uIDYg
+U2VyaWVzL0MyMDAgU2VyaWVzIGNoaXBzZXQgKi8KLQkJCWlmIChwZGV2LT5kZXZpY2UgPT0gMHgx
+YzI2IHx8IHBkZXYtPmRldmljZSA9PSAweDFjMmQpIHsKLQkJCQllaGNpX2luZm8oZWhjaSwgImJy
+b2tlbiBEMyBkdXJpbmcgc3lzdGVtIHNsZWVwIG9uIEFTVVNcbiIpOwotCQkJCWhjZC0+YnJva2Vu
+X3BjaV9zbGVlcCA9IDE7Ci0JCQkJZGV2aWNlX3NldF93YWtldXBfY2FwYWJsZSgmcGRldi0+ZGV2
+LCBmYWxzZSk7Ci0JCQl9Ci0JCX0KIAkJYnJlYWs7CiAJY2FzZSBQQ0lfVkVORE9SX0lEX1RESToK
+IAkJaWYgKHBkZXYtPmRldmljZSA9PSBQQ0lfREVWSUNFX0lEX1RESV9FSENJKSB7CkluZGV4OiB1
+c2ItMy40L2luY2x1ZGUvbGludXgvdXNiL2hjZC5oCj09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIHVzYi0zLjQub3Jp
+Zy9pbmNsdWRlL2xpbnV4L3VzYi9oY2QuaAorKysgdXNiLTMuNC9pbmNsdWRlL2xpbnV4L3VzYi9o
+Y2QuaApAQCAtMTI2LDggKzEyNiw2IEBAIHN0cnVjdCB1c2JfaGNkIHsKIAl1bnNpZ25lZAkJd2ly
+ZWxlc3M6MTsJLyogV2lyZWxlc3MgVVNCIEhDRCAqLwogCXVuc2lnbmVkCQlhdXRob3JpemVkX2Rl
+ZmF1bHQ6MTsKIAl1bnNpZ25lZAkJaGFzX3R0OjE7CS8qIEludGVncmF0ZWQgVFQgaW4gcm9vdCBo
+dWIgKi8KLQl1bnNpZ25lZAkJYnJva2VuX3BjaV9zbGVlcDoxOwkvKiBEb24ndCBwdXQgdGhlCi0J
+CQljb250cm9sbGVyIGluIFBDSS1EMyBmb3Igc3lzdGVtIHNsZWVwICovCiAKIAl1bnNpZ25lZCBp
+bnQJCWlycTsJCS8qIGlycSBhbGxvY2F0ZWQgKi8KIAl2b2lkIF9faW9tZW0JCSpyZWdzOwkJLyog
+ZGV2aWNlIG1lbW9yeS9pbyAqLwoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KbGludXgtcG0gbWFpbGluZyBsaXN0CmxpbnV4LXBtQGxpc3RzLmxpbnV4LWZv
+dW5kYXRpb24ub3JnCmh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xp
+c3RpbmZvL2xpbnV4LXBt
