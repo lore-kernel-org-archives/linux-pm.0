@@ -1,143 +1,171 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFT] PCI changes related to wakeup (was: Re: [linux-pm] ehci_hcd related S3 lockup on ASUS laptops, again)
-Date: Wed, 13 Jun 2012 11:22:35 +0200
-Message-ID: <201206131122.36198.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.1205311704340.1178-100000@iolanthe.rowland.org>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: [PATCH] ACPI,
+ cpuidle: Fix suspend/resume regression caused by cpuidle cleanup.
+Date: Wed, 13 Jun 2012 16:28:17 +0530
+Message-ID: <4FD87249.6010302@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1205311704340.1178-100000@iolanthe.rowland.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Oleksij Rempel (fishor)" <bug-track@fisher-privat.net>, =?utf-8?q?D=C3=A2niel_Fraga?= <fragabr@gmail.com>, Andrey Rahmatullin <wrar@wrar.name>, Steven Rostedt <rostedt@goodmis.org>, linux-pm@lists.linux-foundation.org, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kevin Hilman <khilman@ti.com>, Arnd Bergmann <arnd@arndb.de>, "Tomas M." <tmezzadra@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com, Ferenc Wagner <wferi@niif.hu>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
 
-On Thursday, May 31, 2012, Alan Stern wrote:
-> On Tue, 29 May 2012, Rafael J. Wysocki wrote:
->=20
-> > > > > Therefore we really do need a quirk, probably in ehci-hcd lik=
-e the=20
-> > > > > original patch.  If it is restricted to apply only in cases w=
-here the=20
-> > > > > DMI information lists ASUSTeK as the manufacturer, perhaps th=
-at will be=20
-> > > > > sufficient.  (For some reason, the manufacturer field in D=C3=
-=A2niel's BIOS=20
-> > > > > isn't initialized.)
-> > > >=20
-> > > > Yeah.
-> > > >=20
-> > > > I'll have a deeper look at this later today, I think.
-> > >=20
-> > > It's easy enough to write such a check (or perhaps more reliably,=
- check
-> > > for a product name matching "P8Z68-V").
-> >=20
-> > I think we should try to express it as a PCI quirk in quirks.c, tho=
-ugh.
->=20
-> Here's my attempt.  Everybody, please try this patch with the
-> 151b61284776 commit removed.  Make sure that CONFIG_USB_DEBUG is
-> enabled so we can check the controller's power state during suspend,=20
-> and check that the "broken D3 during system sleep on ASUS" message=20
-> shows up during booting.
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 
-It looks like this worked for everyone concerned, is that correct?
+Fix suspend/resume regression caused by cpuidle cleanup.
 
-In that case, do you intend to send this patch for inclusion any time s=
-oon?
-It would be good to have this particular issue taken care of.
+Commit e978aa7d7d57d04eb5f88a7507c4fb98577def77 ( cpuidle: Move
+dev->last_residency update to driver enter routine; remove dev->last_state)
+was  breaking suspend on laptops, as reported in the below link
+	- https://lkml.org/lkml/2011/11/11/164
 
-Thanks,
-Rafael
+This was fixed in commit 3439a8da16bcad6b0982ece938c9f8299bb53584
+(ACPI / cpuidle: Remove acpi_idle_suspend (to fix suspend regression)
+by removing acpi_idle_suspend flag.
+	- https://lkml.org/lkml/2011/11/14/74
 
+But this fix did not work on all systems
+as Suspend/resume regression was reported on Lenovo S10-3
+recently by Dave.
+	- https://lkml.org/lkml/2012/5/27/115
+It looked like with commit e978aa7d broke suspend and
+with commit 3439a8da resume was not working with acpi_idle driver.
 
-> Index: usb-3.4/drivers/pci/pci.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-3.4.orig/drivers/pci/pci.c
-> +++ usb-3.4/drivers/pci/pci.c
-> @@ -1743,6 +1743,11 @@ int pci_prepare_to_sleep(struct pci_dev
->  	if (target_state =3D=3D PCI_POWER_ERROR)
->  		return -EIO;
-> =20
-> +	/* Some devices mustn't be in D3 during system sleep */
-> +	if (target_state =3D=3D PCI_D3hot &&
-> +			(dev->dev_flags & PCI_DEV_FLAGS_NO_D3_DURING_SLEEP))
-> +		return 0;
-> +
->  	pci_enable_wake(dev, target_state, device_may_wakeup(&dev->dev));
-> =20
->  	error =3D pci_set_power_state(dev, target_state);
-> Index: usb-3.4/drivers/pci/quirks.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-3.4.orig/drivers/pci/quirks.c
-> +++ usb-3.4/drivers/pci/quirks.c
-> @@ -2917,6 +2917,32 @@ static void __devinit disable_igfx_irq(s
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x0102, disable_igfx_ir=
-q);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x010a, disable_igfx_ir=
-q);
-> =20
-> +/*
-> + * The Intel 6 Series/C200 Series chipset's EHCI controllers on many
-> + * ASUS motherboards will cause memory corruption or a system crash
-> + * if they are in D3 while the system is put into S3 sleep.
-> + */
-> +static void __devinit asus_ehci_no_d3(struct pci_dev *dev)
-> +{
-> +	const char *sys_info;
-> +	static const char good_Asus_board[] =3D "P8Z68-V";
-> +
-> +	if (dev->dev_flags & PCI_DEV_FLAGS_NO_D3_DURING_SLEEP)
-> +		return;
-> +	if (dev->subsystem_vendor !=3D PCI_VENDOR_ID_ASUSTEK)
-> +		return;
-> +	sys_info =3D dmi_get_system_info(DMI_BOARD_NAME);
-> +	if (sys_info && memcmp(sys_info, good_Asus_board,
-> +			sizeof(good_Asus_board) - 1) =3D=3D 0)
-> +		return;
-> +
-> +	dev_info(&dev->dev, "broken D3 during system sleep on ASUS\n");
-> +	dev->dev_flags |=3D PCI_DEV_FLAGS_NO_D3_DURING_SLEEP;
-> +	device_set_wakeup_capable(&dev->dev, false);
-> +}
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1c26, asus_ehci_no_d3=
-);
-> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1c2d, asus_ehci_no_d3=
-);
-> +
->  static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
->  			  struct pci_fixup *end)
->  {
-> Index: usb-3.4/include/linux/pci.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- usb-3.4.orig/include/linux/pci.h
-> +++ usb-3.4/include/linux/pci.h
-> @@ -176,6 +176,8 @@ enum pci_dev_flags {
->  	PCI_DEV_FLAGS_NO_D3 =3D (__force pci_dev_flags_t) 2,
->  	/* Provide indication device is assigned by a Virtual Machine Manag=
-er */
->  	PCI_DEV_FLAGS_ASSIGNED =3D (__force pci_dev_flags_t) 4,
-> +	/* Device causes system crash if in D3 during S3 sleep */
-> +	PCI_DEV_FLAGS_NO_D3_DURING_SLEEP =3D (__force pci_dev_flags_t) 8,
->  };
-> =20
->  enum pci_irq_reroute_variant {
->=20
->=20
->=20
+This patch fixes the regression that caused this issue
+in the first place. acpi_idle_suspend flag is essential on
+some x86 systems to prevent the cpus from going to deeper C-states
+when suspend is triggered ( commit b04e7bdb984 )
+So reverting the commit 3439a8da is essential.
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+By default, irqs are disabled in cpu_idle arch specific call
+and re-enabled in idle state return path . As the acpi_idle_suspend
+flag was being set during suspend, which prevented the cpus
+going to deeper idle states, it is essential to
+enabling the irqs in its return path too.
+
+To address the suspend issue,
+we were not re-enabling the interrupts while returning from
+acpi_idle_enter_bm() routine if acpi_idle_suspend flag is set.
+and this was causing suspend failure.
+
+In addition to the above fix, a sanity check has also been added
+in x86 arch specific cpu_idle call to ensure that the idle call
+always returns with IRQs enabled.
+
+This patch applies on 3.5-rc2
+---
+
+Reported-and-Tested-by: Dav Hansen <dave@linux.vnet.ibm.com>
+Tested-by: Preeti Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Reviewed-by: Srivatsa S Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
+ arch/x86/kernel/process.c     |    6 ++++++
+ drivers/acpi/processor_idle.c |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 735279e..8ab76ad 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -460,6 +460,12 @@ void cpu_idle(void)
+ 				pm_idle();
+
+ 			rcu_idle_exit();
++
++			/*
++			 * Sanity check to ensure that idle call returns
++			 * with IRQs enabled
++			 */
++			WARN_ON(irqs_disabled());
+ 			start_critical_timings();
+
+ 			/* In many cases the interrupt that ended idle
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index f3decb3..c2ffd84 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -224,6 +224,7 @@ static void lapic_timer_state_broadcast(struct acpi_processor *pr,
+ /*
+  * Suspend / resume control
+  */
++static int acpi_idle_suspend;
+ static u32 saved_bm_rld;
+
+ static void acpi_idle_bm_rld_save(void)
+@@ -242,13 +243,21 @@ static void acpi_idle_bm_rld_restore(void)
+
+ int acpi_processor_suspend(struct acpi_device * device, pm_message_t state)
+ {
++	if (acpi_idle_suspend == 1)
++		return 0;
++
+ 	acpi_idle_bm_rld_save();
++	acpi_idle_suspend = 1;
+ 	return 0;
+ }
+
+ int acpi_processor_resume(struct acpi_device * device)
+ {
++	if (acpi_idle_suspend == 0)
++		return 0;
++
+ 	acpi_idle_bm_rld_restore();
++	acpi_idle_suspend = 0;
+ 	return 0;
+ }
+
+@@ -754,6 +763,12 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
+
+ 	local_irq_disable();
+
++	if (acpi_idle_suspend) {
++		local_irq_enable();
++		cpu_relax();
++		return -EINVAL;
++	}
++
+ 	lapic_timer_state_broadcast(pr, cx, 1);
+ 	kt1 = ktime_get_real();
+ 	acpi_idle_do_entry(cx);
+@@ -823,6 +838,12 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+
+ 	local_irq_disable();
+
++	if (acpi_idle_suspend) {
++		local_irq_enable();
++		cpu_relax();
++		return -EINVAL;
++	}
++
+ 	if (cx->entry_method != ACPI_CSTATE_FFH) {
+ 		current_thread_info()->status &= ~TS_POLLING;
+ 		/*
+@@ -901,6 +922,13 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 	if (unlikely(!pr))
+ 		return -EINVAL;
+
++	if (acpi_idle_suspend) {
++		if (irqs_disabled())
++			local_irq_enable();
++		cpu_relax();
++		return -EINVAL;
++	}
++
+ 	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
+ 		if (drv->safe_state_index >= 0) {
+ 			return drv->states[drv->safe_state_index].enter(dev,
+
+Regards,
+Deepthi
