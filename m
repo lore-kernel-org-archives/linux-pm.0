@@ -1,73 +1,75 @@
-From: Xiaoguang Chen <chenxg@marvell.com>
-Subject: RE: Re: [PATCH 1/2] PM: devfreq: add freq table and available_freqs
-Date: Wed, 13 Jun 2012 22:39:59 -0700
-Message-ID: <4737A960563B524DA805CA602BE04B3064CBDF6AA3@SC-VEXCH2.marvell.com>
-References: <29439113.474411339649027694.JavaMail.weblogic@epml17>
+From: Namhyung Kim <namhyung@kernel.org>
+Subject: Re: [RFC 1/4] cpuidle: define the enter function in the driver structure
+Date: Thu, 14 Jun 2012 16:49:58 +0900
+Message-ID: <87r4ti49jt.fsf@sejong.aot.lge.com>
+References: <1339171365-4098-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ks_c_5601-1987"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <29439113.474411339649027694.JavaMail.weblogic@epml17>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Xiaoguang Chen <chenxg.marvell@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?ks_c_5601-1987?B?udqw5rnO?= <kyungmin.park@samsung.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1339171365-4098-1-git-send-email-daniel.lezcano@linaro.org>
+	(Daniel Lezcano's message of "Fri, 8 Jun 2012 18:02:42 +0200")
+Sender: linux-acpi-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: lenb@kernel.org, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksIE15dW5nam9vDQoNCnRoZSBBUEkgaXMgb3B0aW9uYWwsIGJ1dCBJIHRoaW5rIG9uZSBmcmVx
-dWVuY3kgdGFibGUgaXMgYmV0dGVyIHRvIGhhdmUuDQppZiB1c2VyIHNwYWNlIHdhbnQgdG8gc2Vl
-IHdoYXQgaXMgdGhlIHN1cHBvcnRlZCBmcmVxdWVuY2llcyBmb3IgdGhlIHNwZWNpZmljIGRldmZy
-ZXEgZHJpdmVyLCB0aGVuIHdoZXJlIGRvIHlvdSB0aGluayB3ZSBjYW4gc2VlIHRoaXMgaW50ZXJm
-YWNlPw0KZG8gd2UgaGF2ZSB0byBnbyB0byBPUFAgZnJhbWV3b3JrIHRvIGdldCBpdCA/IG9yIHdl
-IGNhbiBqdXN0IGFkZCBpdCBpbiBvdXIgZGV2ZnJlcSA/IGZvciBleGFtcGxlOiBzeXMvY2xhc3Mv
-ZGV2ZnJlcS94eHgtZGV2ZnJlcS9hdmFpbGFibGVfZnJlcXMNCkkgdGhpbmsgaXQgaXMgYmVzdCBm
-b3IgdXMgdG8gc2VlIHRoaXMgaW4gdGhlIHNhbWUgc3lzZnMgcGF0aC4NCg0KVGhhbmtzDQpYaWFv
-Z3VhbmcNCg0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogx9S47cHWIFttYWls
-dG86bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tXSANClNlbnQ6IDIwMTLStDbqxTE07O0gMTI6NDQN
-ClRvOiBYaWFvZ3VhbmcgQ2hlbg0KQ2M6IFhpYW9ndWFuZyBDaGVuOyBsaW51eC1rZXJuZWxAdmdl
-ci5rZXJuZWwub3JnOyC52rDmuc47IGxpbnV4LXBtQGxpc3RzLmxpbnV4LWZvdW5kYXRpb24ub3Jn
-DQpTdWJqZWN0OiBSZTogUmU6IFtQQVRDSCAxLzJdIFBNOiBkZXZmcmVxOiBhZGQgZnJlcSB0YWJs
-ZSBhbmQgYXZhaWxhYmxlX2ZyZXFzDQoNCj4gSGksIE15dW5nam9vDQo+IA0KPiANCj4gd2hhdCdz
-IHlvdXIgb3Bpbmlvbj8NCg0KSGVsbG8gWGlhb2d1YW5nLA0KDQpTdGlsbCwgSSBkb24ndCB0aGlu
-ayB3ZSBuZWVkIGFkZGl0aW9uYWwgQVBJIGFuZCBBQkkgZm9yIGEgc2ltcGxlIGZyZXF1ZW5jeSB0
-YWJsZS4gV2h5IGEgZGV2ZnJlcSBkZXZpY2UgZHJpdmVyIHdvdWxkIHdhbnQgdG8gcmVnaXN0ZXIg
-YSB0YWJsZSBpbiBzdHJ1Y3QgZGV2ZnJlcSB3aGlsZSBpdCBjYW4gaG9sZCBvbmUgZWl0aGVyIHdp
-dGggaXRzIGRldi1kYXRhLCBwcml2YXRlIGRhdGEgb2YgZGV2ZnJlcSwgb3IgZXZlbiBPUFAuDQoN
-CjEuIERldmZyZXEgaXMgbm90ICJjb21iaW5lZCIgd2l0aCBPUFAuIE9QUCBpcyBvcHRpb25hbC4N
-Cg0KMi4gSSBndWVzcyBmaWxsaW5nIHZvbHRhZ2UgY29sdW1uIHdpdGggc29tZSBhcmJpdHJhcnkg
-dmFsdWVzIGluIE9QUCB0YWJsZSB3b24ndCBodXJ0IGFueXRoaW5nIGlmIHRoZSBkZXZpY2UgZG9l
-cyBub3QgY2FyZSB2b2x0YWdlIHZhbHVlcy4gKGp1c3QgYSBzdWdnZXN0aW9uIGFuZCBzcGVjdWxh
-dGlvbikgVGh1cywgeW91IGNhbiBzdGlsbCB1c2UgT1BQIGluIHlvdXIgY2FzZSBhcyBsb25nIGFz
-IHRoZSBmcmVxdWVuY3kgdmFsdWVzIGFyZSBkaXNjcmV0ZSBhbmQgbm90IHRvbyBtYW55Lg0KDQoz
-LiBEZXZmcmVxIGFuZCBpdHMgZ292ZXJub3JzIHJlY29tbWVuZHMgdGhlIGJhc2UgZnJlcXVlbmN5
-IHRvIGRldmZyZXEgZHJpdmVycy4gRnJlcXVlbmN5IHRhYmxlIGlzIG9ubHkgbmVlZGVkIHRvIGJl
-IHZpc2libGUgdG8gZGV2ZnJlcSBkcml2ZXJzLCBub3QgdG8gZ292ZXJub3JzIG9yIGRldmZyZXEg
-aXRzZWxmLiBUaGUgZnJlcXVlbmN5IHRhYmxlIHlvdSd2ZSBzdWdnZXN0ZWQgaXMgbm90IG5lZWQg
-dG8gYmUgdmlzaWJsZSB0byBkZXZmcmVxIHN1YnN5c3RlbS4NCg0KDQpJIHN0aWxsIG9iamVjdCB0
-byBhZGRpbmcgYSBmcmVxdWVuY3kgdGFibGUgKHdoaWNoIGlzIGFscmVhZHkgc3VwcG9ydGVkIGJ5
-IE9QUCBieSBub3Qgc3BlY2lmeWluZyB2b2x0YWdlIG9yIHNwZWNpZnlpbmcgYXJiaXRyYXJ5IHZv
-bHRhZ2UgdmFsdWVzKS4gSG93ZXZlciwgZXZlbiBpZiBJIGRvbid0LCB3ZSB3b24ndCBuZWVkIHRo
-YXQgQVBJIChkZXZmcmVxX3NldF9mcmVxX3RhYmxlKSwgd2hpY2ggc2hvdWxkJ3ZlIGJlZW4gYWRk
-ZWQgaW4gZGV2aWNlIHByb2ZpbGUgYXQgZGV2ZnJlcV9hZGRfZGV2aWNlKCkgdGltZS4NCg0KDQpD
-aGVlcnMhDQpNeXVuZ0pvby4NCg0KPiANCj4gDQo+IFRoYW5rcw0KPiBYaWFvZ3VhbmcNCj4gDQo+
-IA0KPiA+IDIwMTIvNi8xMyBYaWFvZ3VhbmcgQ2hlbiA8Y2hlbnhnLm1hcnZlbGxAZ21haWwuY29t
-Pg0KPiA+IA0KPiA+IEkgdGhpbmsgRGV2ZnJlcSBzaG91bGQgbm90IGJlIGNvbWJpbmVkIHdpdGgg
-T1BQLCBPUFAgZnJhbWV3b3JrIGRvZXMgDQo+ID4gY29udGFpbiBvbmUgZnJlcXVlbmN5IHRhYmxl
-LCBidXQgdGhlIGZyZXF1ZW5jeSBpcyBjb21iaW5lZCB3aXRoIHZvbHRhZ2UuIHNvbWUgcGxhdGZv
-cm1zIG1heSBkb24ndCB3YW50IHRvIHVzZSB0aGlzIGJ1dCBoYW5kbGluZyB2b2x0YWdlIHNlcGVy
-YXRlbHkgaW4gdGhlaXIgY2xvY2sgZHJpdmVyLg0KPiA+IA0KPiA+IA0KPiA+IGFuZCBzb21lIHBs
-YXRmb3JtcyBkb24ndCB1c2UgT1BQLCBhbmQgdGhleSB3YW50IGEgZnJlcXVlbmN5IGxpc3QuDQo+
-ID4gdGhlbiB0aGlzIGlzIG5lY2Vzc2FyeS4gYWxzbyBkZXZmcmVxIHNob3VsZCBjb250YWluIGEg
-ZnJlcXVlbmN5IGxpc3QgZXZlbiB3aXRob3V0IGFueSBvdGhlciBmcmFtZXdvcmtzLCBkb24ndCB5
-b3UgdGhpbmsgc28gPw0KPiA+IA0KPiA+IA0KPiA+IFRoYW5rcw0KPiA+IFhpYW9ndWFuZw0KPiA+
-IA0KPiA+IA0KPiA+IA0KPiA+IDIwMTIvNi8xMyBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBz
-YW1zdW5nLmNvbT4NCj4gPiA+IA0KPiA+ID4gPiBEZXZmcmVxIGZyYW1ld29yayBkb24ndCBoYXZl
-IGEgZnJlcXVlbmN5IHRhYmxlLCBhZGQgaXQgZm9yIGVhc3kgDQo+ID4gPiA+IHVzZS4NCj4gPiA+
-ID4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogWGlhb2d1YW5nIENoZW4gPGNoZW54Z0BtYXJ2ZWxs
-LmNvbT4NCj4gPiA+IA0KPiA+ID4gDQo+ID4gPiBJZiB5b3UgbmVlZCBhIHByZWRlZmluZWQgZGF0
-YSBzdHJ1Y3R1cmUgdG8gc3VwcG9ydCBmcmVxdWVuY3kgDQo+ID4gPiB0YWJsZSwgeW91IGNhbiBz
-aW1wbHkgdXNlIE9QUCwgd2hpY2ggaGFzIGhlbHBlciBmdW5jdGlvbnMgDQo+ID4gPiBpbXBsZW1l
-bnRlZCBpbiBkZXZmcmVxIHN1YnN5c3RlbS4gSXMgdGhlcmUgYW55IHJlYXNvbiBub3QgdG8gdXNl
-IA0KPiA+ID4gT1BQIGFuZCB0byBpbXBsZW1lbnQgYW5vdGhlciBkYXRhIHN0cnVjdHVyZSB0byBz
-dG9yZSBhIGZyZXF1ZW5jeSB0YWJsZSBhdHRhY2hlZCB0byBhIGRldmljZT8NCj4gPiA+IA0KPiA+
-ID4gDQo+ID4gPiBDaGVlcnMhDQo+ID4gPiBNeXVuZ0pvby4NCj4gPiA+IA0K
+Hi,
+
+On Fri,  8 Jun 2012 18:02:42 +0200, Daniel Lezcano wrote:
+> We have the state index passed as parameter to the 'enter' function.
+> Most of the drivers assign their 'enter' functions several times in
+> the cpuidle_state structure, as we have the index, we can delegate
+> to the driver to handle their own callback array.
+>
+> That will have the benefit of removing multiple lines of code in the
+> different drivers.
+>
+> In order to smoothly modify the driver, the 'enter' function are in
+> the driver structure and in the cpuidle state structure. That will
+> let the time to modify the different drivers one by one.
+> So the 'cpuidle_enter' function checks if the 'enter' callback is
+> assigned in the driver structure and use it, otherwise it invokes
+> the 'enter' assigned to the cpuidle_state.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle.c |    4 +++-
+>  include/linux/cpuidle.h   |    1 +
+>  2 files changed, 4 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index d90519c..155dee7 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -46,7 +46,9 @@ static inline int cpuidle_enter(struct cpuidle_device *dev,
+>  				struct cpuidle_driver *drv, int index)
+>  {
+>  	struct cpuidle_state *target_state = &drv->states[index];
+> -	return target_state->enter(dev, drv, index);
+> +
+> +	return drv->enter(dev, drv, index) ? drv->enter(dev, drv, index) :
+
+Do you mean:
+	       drv->enter ? drv->enter(dev, drv, index) :
+?
+
+Thanks,
+Namhyung
+
+
+> +		target_state->enter(dev, drv, index);
+>  }
+>  
+>  static inline int cpuidle_enter_tk(struct cpuidle_device *dev,
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 6c26a3d..d82e169 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -130,6 +130,7 @@ struct cpuidle_driver {
+>  	struct cpuidle_state	states[CPUIDLE_STATE_MAX];
+>  	int			state_count;
+>  	int			safe_state_index;
+> +	int (*enter)(struct cpuidle_device *, struct cpuidle_driver *, int);
+>  };
+>  
+>  #ifdef CONFIG_CPU_IDLE
