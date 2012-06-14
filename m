@@ -1,34 +1,35 @@
-From: Steven Rostedt <rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org>
-Subject: Re: [PATCH] PCI: add NO_D3_DURING_SLEEP flag and revert
- 151b61284776be2
-Date: Wed, 13 Jun 2012 16:17:11 -0400
-Message-ID: <1339618631.13377.163.camel@gandalf.stny.rr.com>
-References: <201206131122.36198.rjw@sisk.pl>
-	 <Pine.LNX.4.44L0.1206131117260.1401-100000@iolanthe.rowland.org>
-	 <20120613152701.GA28116@kroah.com> <201206132204.43622.rjw@sisk.pl>
-	 <20120613200310.GA11110@kroah.com>
-	 <1339618548.13377.162.camel@gandalf.stny.rr.com>
+From: Chao Xie <xiechao.mail@gmail.com>
+Subject: PM_RUNTIME and device driver PM
+Date: Thu, 14 Jun 2012 11:13:25 +0800
+Message-ID: <CADApbejySy-n1+qWmAZ=BrSWBrSV563iCtqB2G3O7+y9BDwDHQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1339618548.13377.162.camel-f9ZlEuEWxVcI6MkJdU+c8EEOCMrvLtNR@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "Oleksij Rempel (fishor)" <bug-track-M18mAb7Tlt0yCq4wW13eYl6hYfS7NtTn@public.gmane.org>, =?ISO-8859-1?Q?D=E2niel?= Fraga <fragabr-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrey Rahmatullin <wrar-Bxt/JK/G85ezQB+pC5nmwQ@public.gmane.org>, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, rjw@sisk.pl, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2012-06-13 at 16:15 -0400, Steven Rostedt wrote:
-> One of you (or both) need to learn to use NTP, or perhaps, as we all
-> suspect, Greg is really psychic.
-
-Or maybe it's just that time moves faster at GregKH altitude.
-
--- Steve
-
-
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+hi
+PM_RUNTIME provide a way for device driver do runtime PM. so for some
+devices, they have some surrounded logic. For example, the device may
+get clock from outside, or it need PHY support(USB is a example).
+To get these dependency out of device driver, i define a struct
+dev_pm_domain, and make dev.pm_domain point to it. So in the device
+driver, when the hardware should be enabled, we can call
+pm_runtime_get_sync while when the hardware is idle or does not work,
+we can call pm_runtime_put_sync.
+It seems work well, but i have question about the suspend/resume of
+device. When the whole system will go to deep idle, and it will
+suspend the devices. for the function do device suspend
+__device_suspend, it will call pm_runtime_get_noresume(dev). As i
+think it will make the device not do runtime suspend any more. Is that
+correct?
+There is the question, how device driver handle the logic surrounds
+it? I want to add pm_runtime_put_sync in dev->driver->pm->suspend
+function, and pm_runtime_get_sync in dev->driver->pm->resume. Because
+__device_suspend increase the usage_count, pm_runtime_put_sync will
+not do real work.
+So is that right that i directly call pm_runtime_suspend in
+dev->driver->pm->suspend and pm_runtime_resume in
+dev->driver->pm->resume?
+Thanks.
