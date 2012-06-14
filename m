@@ -1,35 +1,59 @@
-From: Chao Xie <xiechao.mail@gmail.com>
-Subject: PM_RUNTIME and device driver PM
-Date: Thu, 14 Jun 2012 11:13:25 +0800
-Message-ID: <CADApbejySy-n1+qWmAZ=BrSWBrSV563iCtqB2G3O7+y9BDwDHQ@mail.gmail.com>
+From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH 1/2] PM: devfreq: add freq table and available_freqs
+Date: Thu, 14 Jun 2012 04:43:48 +0000 (GMT)
+Message-ID: <29439113.474411339649027694.JavaMail.weblogic@epml17>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
+MIME-version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, rjw@sisk.pl, pavel@ucw.cz
+To: Xiaoguang Chen <chenxg.marvell@gmail.com>
+Cc: Xiaoguang Chen <chenxg@marvell.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-hi
-PM_RUNTIME provide a way for device driver do runtime PM. so for some
-devices, they have some surrounded logic. For example, the device may
-get clock from outside, or it need PHY support(USB is a example).
-To get these dependency out of device driver, i define a struct
-dev_pm_domain, and make dev.pm_domain point to it. So in the device
-driver, when the hardware should be enabled, we can call
-pm_runtime_get_sync while when the hardware is idle or does not work,
-we can call pm_runtime_put_sync.
-It seems work well, but i have question about the suspend/resume of
-device. When the whole system will go to deep idle, and it will
-suspend the devices. for the function do device suspend
-__device_suspend, it will call pm_runtime_get_noresume(dev). As i
-think it will make the device not do runtime suspend any more. Is that
-correct?
-There is the question, how device driver handle the logic surrounds
-it? I want to add pm_runtime_put_sync in dev->driver->pm->suspend
-function, and pm_runtime_get_sync in dev->driver->pm->resume. Because
-__device_suspend increase the usage_count, pm_runtime_put_sync will
-not do real work.
-So is that right that i directly call pm_runtime_suspend in
-dev->driver->pm->suspend and pm_runtime_resume in
-dev->driver->pm->resume?
-Thanks.
+PiBIaSwgTXl1bmdqb28NCj4gDQo+IA0KPiB3aGF0J3MgeW91ciBvcGluaW9uPw0KDQpIZWxsbyBY
+aWFvZ3VhbmcsDQoNClN0aWxsLCBJIGRvbid0IHRoaW5rIHdlIG5lZWQgYWRkaXRpb25hbCBBUEkg
+YW5kIEFCSSBmb3IgYSBzaW1wbGUgZnJlcXVlbmN5IHRhYmxlLiBXaHkgYSBkZXZmcmVxIGRldmlj
+ZSBkcml2ZXIgd291bGQgd2FudCB0byByZWdpc3RlciBhIHRhYmxlIGluIHN0cnVjdCBkZXZmcmVx
+IHdoaWxlIGl0IGNhbiBob2xkIG9uZSBlaXRoZXIgd2l0aCBpdHMgZGV2LWRhdGEsIHByaXZhdGUg
+ZGF0YSBvZiBkZXZmcmVxLCBvciBldmVuIE9QUC4NCg0KMS4gRGV2ZnJlcSBpcyBub3QgImNvbWJp
+bmVkIiB3aXRoIE9QUC4gT1BQIGlzIG9wdGlvbmFsLg0KDQoyLiBJIGd1ZXNzIGZpbGxpbmcgdm9s
+dGFnZSBjb2x1bW4gd2l0aCBzb21lIGFyYml0cmFyeSB2YWx1ZXMgaW4gT1BQIHRhYmxlIHdvbid0
+IGh1cnQgYW55dGhpbmcgaWYgdGhlIGRldmljZSBkb2VzIG5vdCBjYXJlIHZvbHRhZ2UgdmFsdWVz
+LiAoanVzdCBhIHN1Z2dlc3Rpb24gYW5kIHNwZWN1bGF0aW9uKSBUaHVzLCB5b3UgY2FuIHN0aWxs
+IHVzZSBPUFAgaW4geW91ciBjYXNlIGFzIGxvbmcgYXMgdGhlIGZyZXF1ZW5jeSB2YWx1ZXMgYXJl
+IGRpc2NyZXRlIGFuZCBub3QgdG9vIG1hbnkuDQoNCjMuIERldmZyZXEgYW5kIGl0cyBnb3Zlcm5v
+cnMgcmVjb21tZW5kcyB0aGUgYmFzZSBmcmVxdWVuY3kgdG8gZGV2ZnJlcSBkcml2ZXJzLiBGcmVx
+dWVuY3kgdGFibGUgaXMgb25seSBuZWVkZWQgdG8gYmUgdmlzaWJsZSB0byBkZXZmcmVxIGRyaXZl
+cnMsIG5vdCB0byBnb3Zlcm5vcnMgb3IgZGV2ZnJlcSBpdHNlbGYuIFRoZSBmcmVxdWVuY3kgdGFi
+bGUgeW91J3ZlIHN1Z2dlc3RlZCBpcyBub3QgbmVlZCB0byBiZSB2aXNpYmxlIHRvIGRldmZyZXEg
+c3Vic3lzdGVtLg0KDQoNCkkgc3RpbGwgb2JqZWN0IHRvIGFkZGluZyBhIGZyZXF1ZW5jeSB0YWJs
+ZSAod2hpY2ggaXMgYWxyZWFkeSBzdXBwb3J0ZWQgYnkgT1BQIGJ5IG5vdCBzcGVjaWZ5aW5nIHZv
+bHRhZ2Ugb3Igc3BlY2lmeWluZyBhcmJpdHJhcnkgdm9sdGFnZSB2YWx1ZXMpLiBIb3dldmVyLCBl
+dmVuIGlmIEkgZG9uJ3QsIHdlIHdvbid0IG5lZWQgdGhhdCBBUEkgKGRldmZyZXFfc2V0X2ZyZXFf
+dGFibGUpLCB3aGljaCBzaG91bGQndmUgYmVlbiBhZGRlZCBpbiBkZXZpY2UgcHJvZmlsZSBhdCBk
+ZXZmcmVxX2FkZF9kZXZpY2UoKSB0aW1lLg0KDQoNCkNoZWVycyENCk15dW5nSm9vLg0KDQo+IA0K
+PiANCj4gVGhhbmtzDQo+IFhpYW9ndWFuZw0KPiANCj4gDQo+ID4gMjAxMi82LzEzIFhpYW9ndWFu
+ZyBDaGVuIDxjaGVueGcubWFydmVsbEBnbWFpbC5jb20+DQo+ID4gDQo+ID4gSSB0aGluayBEZXZm
+cmVxIHNob3VsZCBub3QgYmUgY29tYmluZWQgd2l0aCBPUFAsIA0KPiA+IE9QUCBmcmFtZXdvcmsg
+ZG9lcyBjb250YWluIG9uZSBmcmVxdWVuY3kgdGFibGUsIGJ1dCB0aGUgZnJlcXVlbmN5IGlzIGNv
+bWJpbmVkIHdpdGggdm9sdGFnZS4gc29tZSBwbGF0Zm9ybXMgbWF5IGRvbid0IHdhbnQgdG8gdXNl
+IHRoaXMgYnV0IGhhbmRsaW5nIHZvbHRhZ2Ugc2VwZXJhdGVseSBpbiB0aGVpciBjbG9jayBkcml2
+ZXIuDQo+ID4gDQo+ID4gDQo+ID4gYW5kIHNvbWUgcGxhdGZvcm1zIGRvbid0IHVzZSBPUFAsIGFu
+ZCB0aGV5IHdhbnQgYSBmcmVxdWVuY3kgbGlzdC4NCj4gPiB0aGVuIHRoaXMgaXMgbmVjZXNzYXJ5
+LiBhbHNvIGRldmZyZXEgc2hvdWxkIGNvbnRhaW4gYSBmcmVxdWVuY3kgbGlzdCBldmVuIHdpdGhv
+dXQgYW55IG90aGVyIGZyYW1ld29ya3MsIGRvbid0IHlvdSB0aGluayBzbyA/DQo+ID4gDQo+ID4g
+DQo+ID4gVGhhbmtzDQo+ID4gWGlhb2d1YW5nDQo+ID4gDQo+ID4gDQo+ID4gDQo+ID4gMjAxMi82
+LzEzIE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPg0KPiA+ID4gDQo+ID4g
+PiA+IERldmZyZXEgZnJhbWV3b3JrIGRvbid0IGhhdmUgYSBmcmVxdWVuY3kgdGFibGUsIGFkZCBp
+dA0KPiA+ID4gPiBmb3IgZWFzeSB1c2UuDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6
+IFhpYW9ndWFuZyBDaGVuIDxjaGVueGdAbWFydmVsbC5jb20+DQo+ID4gPiANCj4gPiA+IA0KPiA+
+ID4gSWYgeW91IG5lZWQgYSBwcmVkZWZpbmVkIGRhdGEgc3RydWN0dXJlIHRvIHN1cHBvcnQgZnJl
+cXVlbmN5IHRhYmxlLA0KPiA+ID4geW91IGNhbiBzaW1wbHkgdXNlIE9QUCwgd2hpY2ggaGFzIGhl
+bHBlciBmdW5jdGlvbnMgaW1wbGVtZW50ZWQgaW4NCj4gPiA+IGRldmZyZXEgc3Vic3lzdGVtLiBJ
+cyB0aGVyZSBhbnkgcmVhc29uIG5vdCB0byB1c2UgT1BQIGFuZCB0byBpbXBsZW1lbnQNCj4gPiA+
+IGFub3RoZXIgZGF0YSBzdHJ1Y3R1cmUgdG8gc3RvcmUgYSBmcmVxdWVuY3kgdGFibGUgYXR0YWNo
+ZWQgdG8gYSBkZXZpY2U/DQo+ID4gPiANCj4gPiA+IA0KPiA+ID4gQ2hlZXJzIQ0KPiA+ID4gTXl1
+bmdKb28uDQo+ID4gPiA=
