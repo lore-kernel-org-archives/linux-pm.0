@@ -1,27 +1,17 @@
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [PATCH] ACPI,
- cpuidle: Fix suspend/resume regression caused by cpuidle cleanup.
-Date: Fri, 15 Jun 2012 17:55:55 +0530
-Message-ID: <4FDB29D3.9000202@linux.vnet.ibm.com>
-References: <4FD87249.6010302@linux.vnet.ibm.com>
-	<201206132201.26058.rjw@sisk.pl>
-	<4FDB279F.7020801@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ACPI, cpuidle: Fix suspend/resume regression caused by
+ cpuidle cleanup.
+Date: Fri, 15 Jun 2012 17:57:50 +0530
+Message-ID: <4FDB2A46.6040905@linux.vnet.ibm.com>
+References: <4FD87249.6010302@linux.vnet.ibm.com> <201206132201.26058.rjw@sisk.pl> <4FDB279F.7020801@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <4FDB279F.7020801@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, Arnd Bergmann <arnd@arndb.de>, Linux PM mailing list <linux-pm@vger.kernel.org>, "Tomas M." <tmezzadra@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, stable@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>, linux-acpi@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org, Ferenc Wagner <wferi@niif.hu>, Arjan van de Ven <arjan@linux.intel.com>, Jean Pihet <j-pihet@ti.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>, Jean Pihet <j-pihet@ti.com>, Arjan van de Ven <arjan@linux.intel.com>, Kevin Hilman <khilman@ti.com>, Arnd Bergmann <arnd@arndb.de>, Ferenc Wagner <wferi@niif.hu>, "Tomas M." <tmezzadra@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 Apologies for the confusion.
@@ -37,10 +27,6 @@ On 06/15/2012 05:46 PM, Deepthi Dharwar wrote:
 
 > Please include this in -stable tree, as this is a regression fix which
 > affects older kernels ( 3.1 onwards )
-
-
-  Sorry for the typo. :(
-
 > Link to the patch : 
 > http://permalink.gmane.org/gmane.linux.power-management.general/27614
 > 
@@ -213,3 +199,5 @@ On 06/15/2012 05:46 PM, Deepthi Dharwar wrote:
 >>
 > 
 > 
+
+
