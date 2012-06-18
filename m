@@ -1,59 +1,59 @@
-From: a0393909 <santosh.shilimkar@ti.com>
-Subject: Re: [linux-pm] cpuidle future and improvements
-Date: Mon, 18 Jun 2012 19:00:00 +0530
-Message-ID: <4FDF2D58.9010006@ti.com>
+From: Colin Cross <ccross@android.com>
+Subject: Re: cpuidle future and improvements
+Date: Mon, 18 Jun 2012 11:15:30 -0700
+Message-ID: <CAMbhsRQRFXcayyWjM1RirgFppVAK23z2+3EbYOCw-qmzuY9_2g@mail.gmail.com>
 References: <4FDEE98D.7010802@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-next-owner@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <4FDEE98D.7010802@linaro.org>
-Sender: linux-next-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@ti.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Amit Kucheria <amit.kucheria@linaro.org>, linux-next@vger.kernel.org, Colin Cross <ccross@android.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Rob Lee <rob.lee@linaro.org>
+Cc: Kevin Hilman <khilman@ti.com>, Rob Lee <rob.lee@linaro.org>, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, linux-acpi@vger.kernel.org, linux-next@vger.kernel.org, linux-pm@lists.linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Daniel,
+On Mon, Jun 18, 2012 at 1:40 AM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> I propose to host a cpuidle-next tree where all these modifications will
+> be and where people can send patches against, preventing last minutes
+> conflicts and perhaps Lenb will agree to pull from this tree. In the
+> meantime, the tree will be part of the linux-next, the patches will be
+> more widely tested and could be fixed earlier.
 
-On 06/18/2012 02:10 PM, Daniel Lezcano wrote:
->
-> Dear all,
->
-> A few weeks ago, Peter De Schrijver proposed a patch [1] to allow per
-> cpu latencies. We had a discussion about this patchset because it
-> reverse the modifications Deepthi did some months ago [2] and we may
-> want to provide a different implementation.
->
-> The Linaro Connect [3] event bring us the opportunity to meet people
-> involved in the power management and the cpuidle area for different SoC.
->
-> With the Tegra3 and big.LITTLE architecture, making per cpu latencies
-> for cpuidle is vital.
->
-> Also, the SoC vendors would like to have the ability to tune their cpu
-> latencies through the device tree.
->
-> We agreed in the following steps:
->
-> 1. factor out / cleanup the cpuidle code as much as possible
-> 2. better sharing of code amongst SoC idle drivers by moving common bits
-> to core code
-> 3. make the cpuidle_state structure contain only data
-> 4. add a API to register latencies per cpu
->
-> These four steps impacts all the architecture. I began the factor out
-> code / cleanup [4] and that has been accepted upstream and I proposed
-> some modifications [5] but I had a very few answers.
->
-Another thing which we discussed is bringing the CPU cluster/package
-notion in the core idle code. Couple idle did bring that idea to some
-extent but in can be further extended and absratcted. Atm, most of
-the work is done in back-end cpuidle drivers which can be easily
-abstracted if the "cluster idle" notion is supported in the core layer.
+My coupled cpuidle patches were acked and temporarily in Len's
+next/Linus pull branch, but were later dropped when the first pull
+request to Linus was rejected.  I asked Len to either put the coupled
+cpuidle patches into his next branch, or let me host them so people
+could base SoC branches off of them and let Len pull them later, but
+got no response.  If you do start a cpuidle for-next branch, can you
+pull my coupled-cpuidle branch:
 
-Per CPU __and__ per operating point(OPP), latency is something which
-can be also added to the list. From the discussion I remember, it
-matters for few SoCs and can be beneficial.
+The following changes since commit 76e10d158efb6d4516018846f60c2ab5501900bc:
 
-Regards
-Santosh
+  Linux 3.4 (2012-05-20 15:29:13 -0700)
+
+are available in the git repository at:
+  https://android.googlesource.com/kernel/common.git coupled-cpuidle
+
+Colin Cross (4):
+      cpuidle: refactor out cpuidle_enter_state
+      cpuidle: fix error handling in __cpuidle_register_device
+      cpuidle: add support for states that affect multiple cpus
+      cpuidle: coupled: add parallel barrier function
+
+ drivers/cpuidle/Kconfig   |    3 +
+ drivers/cpuidle/Makefile  |    1 +
+ drivers/cpuidle/coupled.c |  715 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/cpuidle/cpuidle.c |   68 ++++-
+ drivers/cpuidle/cpuidle.h |   32 ++
+ include/linux/cpuidle.h   |   11 +
+ 6 files changed, 813 insertions(+), 17 deletions(-)
+ create mode 100644 drivers/cpuidle/coupled.c
