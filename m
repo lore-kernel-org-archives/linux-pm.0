@@ -1,115 +1,105 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [linux-pm] acpi_idle and max_cpus
-Date: Mon, 18 Jun 2012 14:54:22 +0200
-Message-ID: <4FDF24FE.1010108@linaro.org>
-References: <4FDB549F.1020002@linaro.org> <4FDE3B96.8030306@linaro.org> <4FDF1E3A.6010200@linux.vnet.ibm.com>
+Subject: Re: cpuidle future and improvements
+Date: Mon, 18 Jun 2012 14:55:58 +0200
+Message-ID: <4FDF255E.3080402@linaro.org>
+References: <4FDEE98D.7010802@linaro.org> <4FDF16DB.6080004@linux.vnet.ibm.com> <4FDF209E.7070803@linaro.org> <20120618125327.GB32111@tbergstrom-lnx.Nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4FDF1E3A.6010200@linux.vnet.ibm.com>
+In-Reply-To: <20120618125327.GB32111@tbergstrom-lnx.Nvidia.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+To: Peter De Schrijver <pdeschrijver@nvidia.com>
+Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, "lenb@kernel.org" <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Colin Cross <ccross@android.com>, Rob Lee <rob.lee@linaro.org>, "rjw@sisk.pl" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/18/2012 02:25 PM, Deepthi Dharwar wrote:
-> Hi Daniel,
->=20
-> On 06/18/2012 01:48 AM, Daniel Lezcano wrote:
->=20
->> On 06/15/2012 05:28 PM, Daniel Lezcano wrote:
+On 06/18/2012 02:53 PM, Peter De Schrijver wrote:
+> On Mon, Jun 18, 2012 at 02:35:42PM +0200, Daniel Lezcano wrote:
+>> On 06/18/2012 01:54 PM, Deepthi Dharwar wrote:
+>>> On 06/18/2012 02:10 PM, Daniel Lezcano wrote:
 >>>
->>> Hi all,
+>>>>
+>>>> Dear all,
+>>>>
+>>>> A few weeks ago, Peter De Schrijver proposed a patch [1] to allow =
+per
+>>>> cpu latencies. We had a discussion about this patchset because it
+>>>> reverse the modifications Deepthi did some months ago [2] and we m=
+ay
+>>>> want to provide a different implementation.
+>>>>
+>>>> The Linaro Connect [3] event bring us the opportunity to meet peop=
+le
+>>>> involved in the power management and the cpuidle area for differen=
+t SoC.
+>>>>
+>>>> With the Tegra3 and big.LITTLE architecture, making per cpu latenc=
+ies
+>>>> for cpuidle is vital.
+>>>>
+>>>> Also, the SoC vendors would like to have the ability to tune their=
+ cpu
+>>>> latencies through the device tree.
+>>>>
+>>>> We agreed in the following steps:
+>>>>
+>>>> 1. factor out / cleanup the cpuidle code as much as possible
+>>>> 2. better sharing of code amongst SoC idle drivers by moving commo=
+n bits
+>>>> to core code
+>>>> 3. make the cpuidle_state structure contain only data
+>>>> 4. add a API to register latencies per cpu
 >>>
->>> I have a dual core Intel T9500.
+>>> On huge systems especially  servers, doing a cpuidle registration o=
+n a
+>>> per-cpu basis creates a big overhead.
+>>> So global registration was introduced in the first place.
 >>>
->>> I boot the cpu with the acpi_idle driver and intel_idle enabled in =
-the
->>> config.
->>>
->>> The kernel is booted with maxcpus=3D1.
->>>
->>> After the system has boot, I put cpu1 online via sysfs.
->>>
->>> But I don't see any 'cpuidle' directory in the cpu's sysfs entry:
->>>
->>> /sys/devices/system/cpu/cpu1/cpuidle (?)
->>>
->>> When I look at the code I see the notifier is present for hotplug i=
-n
->>> processor_driver.c and the cpuidle intel init routine should be cal=
-led
->>> there.
->>>
->=20
->=20
-> Yes, we have a hotplug notifier.
-> Commit 99b72508  by Thomas Renninger fixed this issue.
->=20
-> Please let me know which kernel version you are running and what is i=
-dle
-> driver registered ?
-
-The kernel version is 3.5.0-rc1
-The registered driver is acpi_idle (with intel_idle if I am not wrong).
-
-Thomas's patch is in this version.
-
-Maybe I am wrong but I think the patch is not correct because:
-
-static int __cpuinit acpi_processor_add(struct acpi_device *device)
-{
-
- ...
-
-#ifdef CONFIG_SMP
-	if (pr->id >=3D setup_max_cpus && pr->id !=3D 0)
-		return 0;
-#endif
-
- ...
-
-	per_cpu(processors, pr->id) =3D pr;
-
-=2E..
-}
-
-With max_cpus=3D1 we exit before setting up 'pr'.
-
-So the condition in:
-
-static int acpi_cpu_soft_notify(...)
-{
-
-	unsigned int cpu =3D (unsigned long)hcpu;
-	struct acpi_processor *pr =3D per_cpu(processors, cpu);
-
-	if (action =3D=3D CPU_ONLINE && pr) {
-
-=2E..
-}
-
-Is always false because pr =3D=3D NULL
-
-I did the change but I don't still see the 'cpuidle' directory
-appearing, I suspect also pr->flags.need_hotplug_init is not correctly
-initialized but I did not investigate more.
-
->>> I am wondering is it a bug or an expected behavior ?
+>>> Why not have it as a configurable option or so ?
+>>> Architectures having uniform cpuidle state parameters can continue =
+to
+>>> use global registration, else have an api to register latencies per=
+ cpu
+>>> as proposed. We can definitely work to see the best way to implemen=
+t it.
 >>
->> Any thoughts on that ?
+>> Absolutely, this is one reason I think adding a function:
 >>
->> Thanks
->>   -- Daniel
+>> cpuidle_register_latencies(int cpu, struct cpuidle_latencies);
 >>
+>> makes sense if it is used only for cpus with different latencies.
+>> The other architecture will be kept untouched.
 >>
+>> IMHO, before adding more functionalities to cpuidle, we should clean=
+up
+>> and consolidate the code. For example, there is a dependency between
+>> acpi_idle and intel_idle which can be resolved with the notifiers, o=
+r
+>> there is intel specific code in cpuidle.c and cpuidle.h, cpu_relax i=
+s
+>> also introduced to cpuidle which is related to x86 not the cpuidle c=
+ore,
+>> etc ...
+>>
+>> Cleanup the code will help to move the different bits from the arch
+>> specific code to the core code and reduce the impact of the core's
+>> modifications. That should let a common pattern to emerge and will
+>> facilitate the modifications in the future (per cpu latencies is one=
+ of
+>> them).
+>>
+>> That will be a lot of changes and this is why I proposed to put in p=
+lace
+>> a cpuidle-next tree in order to consolidate all the cpuidle
+>> modifications people is willing to see upstream and provide better t=
+esting.
 >=20
->=20
-> Cheers
-> Deepthi
->=20
+> Sounds like a good idea. Do you have something like that already?
 
+Yes but I need to cleanup the tree before.
+
+http://git.linaro.org/gitweb?p=3Dpeople/dlezcano/linux-next.git;a=3Dsum=
+mary
 
 --=20
  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
