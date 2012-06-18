@@ -1,183 +1,82 @@
-From: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH] cpuidle: move field disable from per-driver to per-cpu
-Date: Mon, 18 Jun 2012 14:42:33 +0800
-Message-ID: <1340001753.7225.5.camel@ymzhang.sh.intel.com>
-References: <4FD95200.1090701@intel.com>
-	 <4FDB25B6.2040909@linux.vnet.ibm.com>
-Reply-To: yanmin_zhang@linux.intel.com
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: cpuidle future and improvements
+Date: Mon, 18 Jun 2012 10:40:45 +0200
+Message-ID: <4FDEE98D.7010802@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4FDB25B6.2040909@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, lenb@kernel.org
-Cc: shuox.liu@intel.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "Brown, Len" <len.brown@intel.com>, "Zhang, Yanmin" <yanmin.zhang@intel.com>, "Andrew J. Schorr" <aschorr@telemetry-investments.com>, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Kevin Hilman <khilman@ti.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Amit Kucheria <amit.kucheria@linaro.org>, linux-next@vger.kernel.org, Colin Cross <ccross@android.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Rob Lee <rob.lee@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2012-06-15 at 17:38 +0530, Deepthi Dharwar wrote:
-> On 06/14/2012 08:22 AM, ShuoX Liu wrote:
-> 
-> > From: ShuoX Liu <shuox.liu@intel.com>
-> > 
-> > Andrew J.Schorr raises a question. When he changes the disable setting
-> > on a single CPU, it affects all the other CPUs. Basically, currently,
-> > the disable field is per-driver instead of per-cpu. All the C states of
-> > the same driver are shared by all CPU in the same machine.
-> > 
-> > Below patch changes field disable to per-cpu, so we could set this
-> > separately for each cpu.
-> > 
-> 
-> 
-> This would help us have asymmetric C-states on cpus.
-> 
-> > Reported-by: Andrew J.Schorr <aschorr@telemetry-investments.com>
-> > Reviewed-by: Yanmin Zhang <yanmin_zhang@intel.com>
-> > Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
-> 
-> 
-> Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Len,
 
-Would you like to accept the patch into your testing tree?
-Both Deepthi Dharwar and Andrew J. Schorr  acked the patch is
-useful.
+Dear all,
 
-> 
-> > ---
-> >  drivers/cpuidle/cpuidle.c        |    1 -
-> >  drivers/cpuidle/governors/menu.c |    5 +++--
-> >  drivers/cpuidle/sysfs.c          |   21 ++++++++++++---------
-> >  include/linux/cpuidle.h          |    2 +-
-> >  4 files changed, 16 insertions(+), 13 deletions(-)
-> > 
-> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> > index d90519c..04e4b76 100644
-> > --- a/drivers/cpuidle/cpuidle.c
-> > +++ b/drivers/cpuidle/cpuidle.c
-> > @@ -265,7 +265,6 @@ static void poll_idle_init(struct cpuidle_driver *drv)
-> >  	state->power_usage = -1;
-> >  	state->flags = 0;
-> >  	state->enter = poll_idle;
-> > -	state->disable = 0;
-> >  }
-> >  #else
-> >  static void poll_idle_init(struct cpuidle_driver *drv) {}
-> > diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> > index 0633575..8391d93 100644
-> > --- a/drivers/cpuidle/governors/menu.c
-> > +++ b/drivers/cpuidle/governors/menu.c
-> > @@ -281,7 +281,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-> >  	 * unless the timer is happening really really soon.
-> >  	 */
-> >  	if (data->expected_us > 5 &&
-> > -		drv->states[CPUIDLE_DRIVER_STATE_START].disable == 0)
-> > +		dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
-> >  		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
-> > 
-> >  	/*
-> > @@ -290,8 +290,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-> >  	 */
-> >  	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
-> >  		struct cpuidle_state *s = &drv->states[i];
-> > +		struct cpuidle_state_usage *su = &dev->states_usage[i];
-> > 
-> > -		if (s->disable)
-> > +		if (su->disable)
-> >  			continue;
-> >  		if (s->target_residency > data->predicted_us)
-> >  			continue;
-> > diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> > index 88032b4..5f809e3 100644
-> > --- a/drivers/cpuidle/sysfs.c
-> > +++ b/drivers/cpuidle/sysfs.c
-> > @@ -217,7 +217,8 @@ struct cpuidle_state_attr {
-> >  	struct attribute attr;
-> >  	ssize_t (*show)(struct cpuidle_state *, \
-> >  					struct cpuidle_state_usage *, char *);
-> > -	ssize_t (*store)(struct cpuidle_state *, const char *, size_t);
-> > +	ssize_t (*store)(struct cpuidle_state *, \
-> > +			struct cpuidle_state_usage *, const char *, size_t);
-> >  };
-> > 
-> >  #define define_one_state_ro(_name, show) \
-> > @@ -233,21 +234,22 @@ static ssize_t show_state_##_name(struct cpuidle_state *state, \
-> >  	return sprintf(buf, "%u\n", state->_name);\
-> >  }
-> > 
-> > -#define define_store_state_function(_name) \
-> > +#define define_store_state_ull_function(_name) \
-> >  static ssize_t store_state_##_name(struct cpuidle_state *state, \
-> > +		struct cpuidle_state_usage *state_usage, \
-> >  		const char *buf, size_t size) \
-> >  { \
-> > -	long value; \
-> > +	unsigned long long value; \
-> >  	int err; \
-> >  	if (!capable(CAP_SYS_ADMIN)) \
-> >  		return -EPERM; \
-> > -	err = kstrtol(buf, 0, &value); \
-> > +	err = kstrtoull(buf, 0, &value); \
-> >  	if (err) \
-> >  		return err; \
-> >  	if (value) \
-> > -		state->disable = 1; \
-> > +		state_usage->_name = 1; \
-> >  	else \
-> > -		state->disable = 0; \
-> > +		state_usage->_name = 0; \
-> >  	return size; \
-> >  }
-> > 
-> > @@ -273,8 +275,8 @@ define_show_state_ull_function(usage)
-> >  define_show_state_ull_function(time)
-> >  define_show_state_str_function(name)
-> >  define_show_state_str_function(desc)
-> > -define_show_state_function(disable)
-> > -define_store_state_function(disable)
-> > +define_show_state_ull_function(disable)
-> > +define_store_state_ull_function(disable)
-> > 
-> >  define_one_state_ro(name, show_state_name);
-> >  define_one_state_ro(desc, show_state_desc);
-> > @@ -318,10 +320,11 @@ static ssize_t cpuidle_state_store(struct kobject *kobj,
-> >  {
-> >  	int ret = -EIO;
-> >  	struct cpuidle_state *state = kobj_to_state(kobj);
-> > +	struct cpuidle_state_usage *state_usage = kobj_to_state_usage(kobj);
-> >  	struct cpuidle_state_attr *cattr = attr_to_stateattr(attr);
-> > 
-> >  	if (cattr->store)
-> > -		ret = cattr->store(state, buf, size);
-> > +		ret = cattr->store(state, state_usage, buf, size);
-> > 
-> >  	return ret;
-> >  }
-> > diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> > index 6c26a3d..8570012 100644
-> > --- a/include/linux/cpuidle.h
-> > +++ b/include/linux/cpuidle.h
-> > @@ -34,6 +34,7 @@ struct cpuidle_driver;
-> >  struct cpuidle_state_usage {
-> >  	void		*driver_data;
-> > 
-> > +	unsigned long long	disable;
-> >  	unsigned long long	usage;
-> >  	unsigned long long	time; /* in US */
-> >  };
-> > @@ -46,7 +47,6 @@ struct cpuidle_state {
-> >  	unsigned int	exit_latency; /* in US */
-> >  	int		power_usage; /* in mW */
-> >  	unsigned int	target_residency; /* in US */
-> > -	unsigned int    disable;
-> > 
-> >  	int (*enter)	(struct cpuidle_device *dev,
-> >  			struct cpuidle_driver *drv,
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+A few weeks ago, Peter De Schrijver proposed a patch [1] to allow per
+cpu latencies. We had a discussion about this patchset because it
+reverse the modifications Deepthi did some months ago [2] and we may
+want to provide a different implementation.
+
+The Linaro Connect [3] event bring us the opportunity to meet people
+involved in the power management and the cpuidle area for different SoC.
+
+With the Tegra3 and big.LITTLE architecture, making per cpu latencies
+for cpuidle is vital.
+
+Also, the SoC vendors would like to have the ability to tune their cpu
+latencies through the device tree.
+
+We agreed in the following steps:
+
+1. factor out / cleanup the cpuidle code as much as possible
+2. better sharing of code amongst SoC idle drivers by moving common bits
+to core code
+3. make the cpuidle_state structure contain only data
+4. add a API to register latencies per cpu
+
+These four steps impacts all the architecture. I began the factor out
+code / cleanup [4] and that has been accepted upstream and I proposed
+some modifications [5] but I had a very few answers.
+
+The patch review are very slow and done at the last minute at the merge
+window and that makes code upstreaming very difficult. It is not a
+reproach, it is just how it is and I would like to propose a solution
+for that.
+
+I propose to host a cpuidle-next tree where all these modifications will
+be and where people can send patches against, preventing last minutes
+conflicts and perhaps Lenb will agree to pull from this tree. In the
+meantime, the tree will be part of the linux-next, the patches will be
+more widely tested and could be fixed earlier.
+
+Thanks
+-- Daniel
+
+[1] http://lwn.net/Articles/491257/
+[2] http://lwn.net/Articles/464808/
+[3] http://summit.linaro.org/
+[4]
+http://www.mail-archive.com/linux-omap@vger.kernel.org/msg67033.html,
+http://www.spinics.net/lists/linux-pm/msg27330.html,
+http://comments.gmane.org/gmane.linux.ports.arm.omap/76311,
+http://www.digipedia.pl/usenet/thread/18885/11795/
+
+[5] https://lkml.org/lkml/2012/6/8/375
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
+RM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
