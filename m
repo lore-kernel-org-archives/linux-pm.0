@@ -1,63 +1,68 @@
-From: Sergei Shtylyov <sshtylyov@mvista.com>
-Subject: Re: [RFC PATCH v2 09/11] ARM: DT: Add support to system control module
- for OMAP4
-Date: Mon, 18 Jun 2012 16:13:46 +0400
-Message-ID: <4FDF1B7A.6010608@mvista.com>
-References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com> <4FDF11D6.6050205@dev.rtsoft.ru>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: Re: acpi_idle and max_cpus
+Date: Mon, 18 Jun 2012 17:55:30 +0530
+Message-ID: <4FDF1E3A.6010200@linux.vnet.ibm.com>
+References: <4FDB549F.1020002@linaro.org> <4FDE3B96.8030306@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <4FDF11D6.6050205@dev.rtsoft.ru>
-Sender: linux-omap-owner@vger.kernel.org
-To: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Cc: b-cousson@ti.com, kishon@ti.com, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, amit.kucheria@linaro.org, Eduardo Valentin <eduardo.valentin@ti.com>, balbi@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, amit.kachhap@linaro.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <4FDE3B96.8030306@linaro.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello.
+Hi Daniel,
 
-On 18-06-2012 15:32, Konstantin Baydarov wrote:
+On 06/18/2012 01:48 AM, Daniel Lezcano wrote:
 
-> This patch adds device tree entries on OMAP4 based boards
-> for System Control Module (SCM).
+> On 06/15/2012 05:28 PM, Daniel Lezcano wrote:
+>>
+>> Hi all,
+>>
+>> I have a dual core Intel T9500.
+>>
+>> I boot the cpu with the acpi_idle driver and intel_idle enabled in the
+>> config.
+>>
+>> The kernel is booted with maxcpus=1.
+>>
+>> After the system has boot, I put cpu1 online via sysfs.
+>>
+>> But I don't see any 'cpuidle' directory in the cpu's sysfs entry:
+>>
+>> /sys/devices/system/cpu/cpu1/cpuidle (?)
+>>
+>> When I look at the code I see the notifier is present for hotplug in
+>> processor_driver.c and the cpuidle intel init routine should be called
+>> there.
+>>
 
-> TODO:
-> The IOMEM windows of ctrl_module_core, bandgap, usbphy overlap, so
-> probably only specific registers should be specified in dts for
-> bandgap and usb phy entries.
 
-> Signed-off-by: Konstantin Baydarov<kbaidarov@dev.rtsoft.ru>
-> Signed-off-by: Eduardo Valentin<eduardo.valentin@ti.com>
-> ---
->   arch/arm/boot/dts/omap4.dtsi |   17 +++++++++++++++++
->   1 file changed, 17 insertions(+)
->
-> Index: linux-2.6/arch/arm/boot/dts/omap4.dtsi
-> ===================================================================
-> --- linux-2.6.orig/arch/arm/boot/dts/omap4.dtsi
-> +++ linux-2.6/arch/arm/boot/dts/omap4.dtsi
-> @@ -272,5 +272,22 @@
->   			ti,hwmods = "mmc5";
->   			ti,needs-special-reset;
->   		};
-> +
-> +		ctrl_module_core: ctrl_module_core@4a002000 {
-> +			compatible = "ti,omap4-control";
-> +			#address-cells =<1>;
-> +			#size-cells =<1>;
-> +			ranges;
-> +			ti,hwmods = "ctrl_module_core";
-> +			reg =<0x4a002000 0x1000>;
-> +			bandgap@4a002000 {
-> +				compatible = "ti,omap4-bandgap";
-> +				reg =<0x4a002000 0x1000>;
-> +			};
-> +			usb@4a002000 {
-> +				compatible = "ti,omap4-usb-phy";
-> +				reg =<0x4a002000 0x1000>;
+Yes, we have a hotplug notifier.
+Commit 99b72508  by Thomas Renninger fixed this issue.
 
-    Two devices at the same address? Also, shouldn't values in the "reg" 
-property be relative to the value in the parent's "reg" property? Are they 
-needed at all here?
+Please let me know which kernel version you are running and what is idle
+driver registered ?
 
-WBR, Sergei
+>> I am wondering is it a bug or an expected behavior ?
+> 
+> Any thoughts on that ?
+> 
+> Thanks
+>   -- Daniel
+> 
+> 
+
+
+Cheers
+Deepthi
