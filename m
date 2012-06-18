@@ -1,57 +1,85 @@
-From: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Subject: [RFC PATCH v2 09/11] ARM: DT: Add support to system control module
- for OMAP4
-Date: Mon, 18 Jun 2012 15:32:38 +0400
-Message-ID: <4FDF11D6.6050205@dev.rtsoft.ru>
-References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: Re: cpuidle future and improvements
+Date: Mon, 18 Jun 2012 17:24:03 +0530
+Message-ID: <4FDF16DB.6080004@linux.vnet.ibm.com>
+References: <4FDEE98D.7010802@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: b-cousson@ti.com, kishon@ti.com, kbaidarov@dev.rtsoft.ru, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com
-Cc: balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org, Eduardo Valentin <eduardo.valentin@ti.com>
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <4FDEE98D.7010802@linaro.org>
+Sender: linux-next-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, "lenb@kernel.org" <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Colin Cross <ccross@android.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Rob Lee <rob.lee@linaro.org>, rjw@sisk.pl, Kevin Hilman <khilman@ti.com>, linux-next@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds device tree entries on OMAP4 based boards
-for System Control Module (SCM).
+On 06/18/2012 02:10 PM, Daniel Lezcano wrote:
 
-TODO:
-The IOMEM windows of ctrl_module_core, bandgap, usbphy overlap, so
-probably only specific registers should be specified in dts for
-bandgap and usb phy entries.
+> 
+> Dear all,
+> 
+> A few weeks ago, Peter De Schrijver proposed a patch [1] to allow per
+> cpu latencies. We had a discussion about this patchset because it
+> reverse the modifications Deepthi did some months ago [2] and we may
+> want to provide a different implementation.
+> 
+> The Linaro Connect [3] event bring us the opportunity to meet people
+> involved in the power management and the cpuidle area for different SoC.
+> 
+> With the Tegra3 and big.LITTLE architecture, making per cpu latencies
+> for cpuidle is vital.
+> 
+> Also, the SoC vendors would like to have the ability to tune their cpu
+> latencies through the device tree.
+> 
+> We agreed in the following steps:
+> 
+> 1. factor out / cleanup the cpuidle code as much as possible
+> 2. better sharing of code amongst SoC idle drivers by moving common bits
+> to core code
+> 3. make the cpuidle_state structure contain only data
+> 4. add a API to register latencies per cpu
 
-Signed-off-by: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- arch/arm/boot/dts/omap4.dtsi |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+On huge systems especially  servers, doing a cpuidle registration on a
+per-cpu basis creates a big overhead.
+So global registration was introduced in the first place.
 
-Index: linux-2.6/arch/arm/boot/dts/omap4.dtsi
-===================================================================
---- linux-2.6.orig/arch/arm/boot/dts/omap4.dtsi
-+++ linux-2.6/arch/arm/boot/dts/omap4.dtsi
-@@ -272,5 +272,22 @@
- 			ti,hwmods = "mmc5";
- 			ti,needs-special-reset;
- 		};
-+
-+		ctrl_module_core: ctrl_module_core@4a002000 {
-+			compatible = "ti,omap4-control";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			ranges;
-+			ti,hwmods = "ctrl_module_core";
-+			reg = <0x4a002000 0x1000>;
-+			bandgap@4a002000 {
-+				compatible = "ti,omap4-bandgap";
-+				reg = <0x4a002000 0x1000>;
-+			};
-+			usb@4a002000 {
-+				compatible = "ti,omap4-usb-phy";
-+				reg = <0x4a002000 0x1000>;
-+			};
-+		};
- 	};
- };
+Why not have it as a configurable option or so ?
+Architectures having uniform cpuidle state parameters can continue to
+use global registration, else have an api to register latencies per cpu
+as proposed. We can definitely work to see the best way to implement it.
+
+
+> These four steps impacts all the architecture. I began the factor out
+> code / cleanup [4] and that has been accepted upstream and I proposed
+> some modifications [5] but I had a very few answers.
+> 
+> The patch review are very slow and done at the last minute at the merge
+> window and that makes code upstreaming very difficult. It is not a
+> reproach, it is just how it is and I would like to propose a solution
+> for that.
+> 
+> I propose to host a cpuidle-next tree where all these modifications will
+> be and where people can send patches against, preventing last minutes
+> conflicts and perhaps Lenb will agree to pull from this tree. In the
+> meantime, the tree will be part of the linux-next, the patches will be
+> more widely tested and could be fixed earlier.
+> 
+> Thanks
+> -- Daniel
+> 
+> [1] http://lwn.net/Articles/491257/
+> [2] http://lwn.net/Articles/464808/
+> [3] http://summit.linaro.org/
+> [4]
+> http://www.mail-archive.com/linux-omap@vger.kernel.org/msg67033.html,
+> http://www.spinics.net/lists/linux-pm/msg27330.html,
+> http://comments.gmane.org/gmane.linux.ports.arm.omap/76311,
+> http://www.digipedia.pl/usenet/thread/18885/11795/
+> 
+> [5] https://lkml.org/lkml/2012/6/8/375
+> 
+
+
+Cheers,
+Deepthi
