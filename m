@@ -1,82 +1,105 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: cpuidle future and improvements
-Date: Mon, 18 Jun 2012 10:40:45 +0200
-Message-ID: <4FDEE98D.7010802@linaro.org>
+From: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+Subject: [RFC PATCH v2 00/11] OMAP System Control Module
+Date: Mon, 18 Jun 2012 15:31:57 +0400
+Message-ID: <4FDF11AD.4040305@dev.rtsoft.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Kevin Hilman <khilman@ti.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Amit Kucheria <amit.kucheria@linaro.org>, linux-next@vger.kernel.org, Colin Cross <ccross@android.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Rob Lee <rob.lee@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: b-cousson@ti.com, kishon@ti.com, kbaidarov@dev.rtsoft.ru, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com
+Cc: balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
+  Hello.
 
-Dear all,
+  This is a next version of series of patches(based on Eduardo Valentin's patch set) adding a basic support for system control module, on OMAP4+ context. It is a working in progress.
 
-A few weeks ago, Peter De Schrijver proposed a patch [1] to allow per
-cpu latencies. We had a discussion about this patchset because it
-reverse the modifications Deepthi did some months ago [2] and we may
-want to provide a different implementation.
+Main changes since previous patch set version:
+- Bandgap and usb phy: drivers are now independent from control module driver, they use their own API functions.
+Dependency was removed from Kconfig.
+- omap-control-core: driver is basically the same as arch/arm/mach-omap2/control.c, but resources aren't hardcoded, they are specified in dts file.
+- omap-control-core: Control module is a built-in driver - added control module select to ARCH_HAS_CONTROL_MODULE and ARCH_OMAP4.
+Probably, no configuration option is required!
+- omap-control-core: Added early init call that ioremaps control module IOMEM window, this allows
+omap-control-core.c API to be called very early, for example from omap_type()
+- omap-control-core: Removed device pointer from omap-control-core API arguments, becuase there can be only one instance control
+module device.
+- Bandgap and usb phy: Added private spinlocks for bandgap and usb drivers.
+- Bandgap: Check the type of bandgap dynamically in bandgap driver probe function by reading
+omap core control module revision register CONTROL_GEN_CORE_REVISION.
 
-The Linaro Connect [3] event bring us the opportunity to meet people
-involved in the power management and the cpuidle area for different SoC.
+TODO list for bandgap driver:
+- Currently, bandgap and usb phy are children of control module, but, in fact, the drivers are independent,
+so probably they should be independent entries in dts as well.
+- Reserve omap-control-core IOMEM window.
+- Improve thermal zone definition for OMAP4
+- Introduce the thermal zones for OMAP5
 
-With the Tegra3 and big.LITTLE architecture, making per cpu latencies
-for cpuidle is vital.
+Overall series has been tested only with panda board OMAP4430, so bandgap and usb phy drivers weren't tested at all.
 
-Also, the SoC vendors would like to have the ability to tune their cpu
-latencies through the device tree.
+---
+ Documentation/devicetree/bindings/mfd/omap_control.txt       |   44 
+ Documentation/devicetree/bindings/thermal/omap_bandgap.txt   |   27 
+ arch/arm/boot/dts/omap4.dtsi                                 |   17 
+ arch/arm/mach-omap2/Kconfig                                  |    1 
+ arch/arm/mach-omap2/am35xx-emac.c                            |    2 
+ arch/arm/mach-omap2/board-3430sdp.c                          |    2 
+ arch/arm/mach-omap2/board-4430sdp.c                          |    2 
+ arch/arm/mach-omap2/board-am3517crane.c                      |    2 
+ arch/arm/mach-omap2/board-am3517evm.c                        |    2 
+ arch/arm/mach-omap2/board-apollon.c                          |    2 
+ arch/arm/mach-omap2/board-cm-t3517.c                         |    2 
+ arch/arm/mach-omap2/board-h4.c                               |    2 
+ arch/arm/mach-omap2/board-igep0020.c                         |    2 
+ arch/arm/mach-omap2/board-ldp.c                              |    2 
+ arch/arm/mach-omap2/board-omap3logic.c                       |    2 
+ arch/arm/mach-omap2/board-omap4panda.c                       |    2 
+ arch/arm/mach-omap2/clock2420_data.c                         |    2 
+ arch/arm/mach-omap2/clock2430_data.c                         |    2 
+ arch/arm/mach-omap2/clock3xxx_data.c                         |    2 
+ arch/arm/mach-omap2/clock44xx_data.c                         |    2 
+ arch/arm/mach-omap2/common.c                                 |    2 
+ arch/arm/mach-omap2/control.c                                |    2 
+ arch/arm/mach-omap2/control.h                                |  416 --
+ arch/arm/mach-omap2/cpuidle34xx.c                            |    2 
+ arch/arm/mach-omap2/devices.c                                |    2 
+ arch/arm/mach-omap2/display.c                                |    2 
+ arch/arm/mach-omap2/hsmmc.c                                  |    2 
+ arch/arm/mach-omap2/id.c                                     |    7 
+ arch/arm/mach-omap2/include/mach/control.h                   |  567 +++
+ arch/arm/mach-omap2/include/mach/ctrl_module_core_44xx.h     |  391 --
+ arch/arm/mach-omap2/include/mach/ctrl_module_pad_core_44xx.h | 1409 ---------
+ arch/arm/mach-omap2/include/mach/ctrl_module_pad_wkup_44xx.h |  236 -
+ arch/arm/mach-omap2/include/mach/ctrl_module_wkup_44xx.h     |   92 
+ arch/arm/mach-omap2/mcbsp.c                                  |    2 
+ arch/arm/mach-omap2/mux.c                                    |    2 
+ arch/arm/mach-omap2/omap_phy_internal.c                      |    2 
+ arch/arm/mach-omap2/opp3xxx_data.c                           |    2 
+ arch/arm/mach-omap2/opp4xxx_data.c                           |    2 
+ arch/arm/mach-omap2/pm24xx.c                                 |    2 
+ arch/arm/mach-omap2/pm34xx.c                                 |    2 
+ arch/arm/mach-omap2/prcm.c                                   |    2 
+ arch/arm/mach-omap2/serial.c                                 |    2 
+ arch/arm/mach-omap2/sleep34xx.S                              |    2 
+ arch/arm/mach-omap2/sr_device.c                              |    2 
+ arch/arm/mach-omap2/usb-fs.c                                 |    2 
+ arch/arm/mach-omap2/voltage.c                                |    2 
+ arch/arm/plat-omap/Kconfig                                   |    4 
+ drivers/mfd/Kconfig                                          |    9 
+ drivers/mfd/Makefile                                         |    1 
+ drivers/mfd/omap-control-core.c                              |  141 
+ drivers/thermal/Kconfig                                      |   24 
+ drivers/thermal/Makefile                                     |    5 
+ drivers/thermal/omap-bandgap.c                               | 1658 +++++++++++
+ drivers/thermal/omap-bandgap.h                               |   76 
+ drivers/thermal/omap4-thermal.c                              |   72 
+ drivers/usb/otg/Kconfig                                      |   12 
+ drivers/usb/otg/Makefile                                     |    1 
+ drivers/usb/otg/omap4-usb-phy.c                              |  167 +
+ include/linux/mfd/omap_control.h                             |   70 
+ include/linux/usb/omap4_usb_phy.h                            |   53 
+ 60 files changed, 2988 insertions(+), 2582 deletions(-)
 
-We agreed in the following steps:
 
-1. factor out / cleanup the cpuidle code as much as possible
-2. better sharing of code amongst SoC idle drivers by moving common bits
-to core code
-3. make the cpuidle_state structure contain only data
-4. add a API to register latencies per cpu
 
-These four steps impacts all the architecture. I began the factor out
-code / cleanup [4] and that has been accepted upstream and I proposed
-some modifications [5] but I had a very few answers.
-
-The patch review are very slow and done at the last minute at the merge
-window and that makes code upstreaming very difficult. It is not a
-reproach, it is just how it is and I would like to propose a solution
-for that.
-
-I propose to host a cpuidle-next tree where all these modifications will
-be and where people can send patches against, preventing last minutes
-conflicts and perhaps Lenb will agree to pull from this tree. In the
-meantime, the tree will be part of the linux-next, the patches will be
-more widely tested and could be fixed earlier.
-
-Thanks
--- Daniel
-
-[1] http://lwn.net/Articles/491257/
-[2] http://lwn.net/Articles/464808/
-[3] http://summit.linaro.org/
-[4]
-http://www.mail-archive.com/linux-omap@vger.kernel.org/msg67033.html,
-http://www.spinics.net/lists/linux-pm/msg27330.html,
-http://comments.gmane.org/gmane.linux.ports.arm.omap/76311,
-http://www.digipedia.pl/usenet/thread/18885/11795/
-
-[5] https://lkml.org/lkml/2012/6/8/375
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
-RM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
