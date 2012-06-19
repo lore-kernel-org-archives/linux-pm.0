@@ -1,56 +1,155 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [RFC PATCH 0/12] generic thermal layer enhancement
-Date: Tue, 19 Jun 2012 11:31:21 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB591444A0@BGSMSX101.gar.corp.intel.com>
-References: <1339384751.1492.153.camel@rui.sh.intel.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [linux-pm] acpi_idle and max_cpus
+Date: Tue, 19 Jun 2012 17:30:29 +0200
+Message-ID: <201206191730.29452.trenn@suse.de>
+References: <4FDB549F.1020002@linaro.org> <4FE0243C.4040600@linux.vnet.ibm.com> <4FE027AC.8010607@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1339384751.1492.153.camel@rui.sh.intel.com>
-Content-Language: en-US
+In-Reply-To: <4FE027AC.8010607@linaro.org>
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, linux-pm <linux-pm@lists.linux-foundation.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Cc: Amit Kachhap <amit.kachhap@linaro.org>, eduardo <eduardo.valentin@ti.com>, "Len, Brown" <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgQWxsLA0KDQo+IFRoZSB3aG9sZSBpZGVhIGlzDQo+IDEpIG1ha2Ugc3VyZSB3ZSBoYXZlIG11
-bHRpcGxlIGNvb2xpbmcgc3RhdGVzIGZvciBib3RoIGFjdGl2ZSBjb29saW5nIGFuZA0KPiAgICBw
-YXNzaXZlIGNvb2xpbmcgZGV2aWNlcy4gKHBhdGNoIDEsMiwzKQ0KPiAyKSByZW1vdmUgcGFzc2l2
-ZSBzcGVjaWZpYyByZXF1aXJlbWVudCwgYWthLCB0YzEvdGMyLCBhbmQNCj4gICAgaW50cm9kdWNl
-IC5nZXRfdHJlbmQoKSBpbnN0ZWFkLCBmb3IgYm90aCBhY3RpdmUgYW5kIHBhc3NpdmUgY29vbGlu
-Zw0KPiAgICBhbGdvcml0aG0uIChwYXRjaCA0LDUpDQo+IDMpIGludHJvZHVjZSBuZXcgZnVuY3Rp
-b24gdGhlcm1hbF96b25lX3RyaXBfdXBkYXRlKCksIHRoaXMgY29udGFpbnMgdGhlDQo+ICAgIGNv
-ZGUgZm9yIHRoZSBnZW5lcmFsIGNvb2xpbmcgYWxnb3JpdGhtLiAocGF0Y2ggNikNCj4gNCkgcmVu
-YW1lIHNvbWUgdGhlcm1hbCBzdHJ1Y3R1cmVzLiBVc2UgdGhlcm1hbF9pbnN0YW5jZSBpbnN0ZWFk
-IG9mDQo+ICAgIHRoZXJtYWxfY29vbGluZ19kZXZpY2VfaW5zdGFuY2UsIGFzIHRoaXMgc3RydWN0
-dXJlIGlzIHVzZWQgdG8NCj4gICAgZGVzY3JpYmUgdGhlIGJlaGF2aW9yIG9mIGEgY2VydGFpbiBj
-b29saW5nIGRldmljZSBmb3IgYSBjZXJ0YWluIHRyaXANCj4gICAgcG9pbnQgaW4gYSBjZXJ0YWlu
-IHRoZXJtYWwgem9uZS4NCj4gICAgdGhlcm1hbF96b25lX2RldmljZSBoYXMgYSBsaXN0IG9mIGFs
-bCB0aGUgdGhlcm1hbCBpbnN0YW5jZXMgaW4gdGhpcw0KPiAgICB0aGVybWFsIHpvbmUgc28gdGhh
-dCBpdCBjYW4gdXBkYXRlIHRoZW0gd2hlbiB0aGUgdGVtcGVyYXR1cmUgY2hhbmdlcy4NCj4gICAg
-dGhlcm1hbF9jb29saW5nX2RldmljZSBoYXMgYSBsaXN0IG9mIGFsbCB0aGUgdGhlcm1hbCBpbnN0
-YW5jZXMgZm9yDQo+ICAgIHRoaXMgY29vbGluZyBkZXZpY2Ugc28gdGhhdCBpdCBjYW4gbWFrZSBk
-ZWNpc2lvbiB3aGljaCBjb29saW5nIHN0YXRlDQo+ICAgIHNob3VsZCBiZSBpbiB3aGVuIHRoZSB0
-ZW1wZXJhdHVyZSBjaGFuZ2VzLiAocGF0Y2ggNyw4LDksMTApDQo+IDUpIGludHJvZHVjZSBhIHNp
-bXBsZSBhcmJpdHJhdG9yLiAocGF0Y2ggMTEpDQo+ICAgIFdoZW4gdGVtcGVyYXR1cmUgY2hhbmdl
-cywgd2UgdXBkYXRlIGEgdGhlcm1hbCB6b25lIGluIHR3byBzdGFnZXMsDQo+ICAgIGEpIHRoZXJt
-YWxfem9uZV90cmlwX3BvaW50KCkgaXMgdGhlIGdlbmVyYWwgY29vbGluZyBhbGdvcml0aG0gdG8N
-Cj4gICAgICAgdXBkYXRlIHRoZSB0aGVybWFsIGluc3RhbmNlcyBpbiB0aGUgdGhlcm1hbCB6b25l
-IGRldmljZQ0KPiAgICBiKSB0aGVybWFsX3pvbmVfZG9fdXBkYXRlKCkgaXMgdGhlIGFyYml0cmF0
-b3IgZm9yIHRoZSBjb29saW5nIGRldmljZQ0KPiAgICAgICB0byBjaG9vc2UgdGhlIGRlZXBlc3Qg
-Y29vbGluZyBzdGF0ZSByZXF1aXJlZCB0byBlbnRlci4NCj4gNikgdW5pZnkgdGhlIGNvZGUgZm9y
-IGJvdGggcGFzc2l2ZSBhbmQgYWN0aXZlIGNvb2xpbmcuDQo+IA0KPiBUT0RPLCBhZGQgbG9ja2lu
-ZyBtZWNoYW5pc20uIEkga25vdyB0aGlzIGlzIGltcG9ydGFudCBidXQgYXMgdGhpcyBwYXRjaA0K
-PiBzZXQgY2hhbmdlcyB0aGUgdGhlcm1hbCBsYXllciBhIGxvdCwgSSBqdXN0IHdhbnQgdG8gbWFr
-ZSBzdXJlIEknbSBpbiB0aGUNCj4gcmlnaHQgZGlyZWN0aW9uIGJlZm9yZSBnb2luZyBvbi4NCj4g
-DQo+IEJUVywgaW4gdGhlb3J5LCB0aGV5IHNob3VsZCBtYWtlIG5vIGNoYW5nZSB0byB0aGUgYmVo
-YXZpb3Igb2YgdGhlDQo+IGN1cnJlbnQgZ2VuZXJpYyB0aGVybWFsIGxheWVyIHVzZXJzLiBCdXQg
-SSBoYXZlIGp1c3QgZG9uZSB0aGUgYnVpbGQNCj4gdGVzdC4NCg0KSSB0YWxrZWQgdG8gUnVpIGFi
-b3V0IHRoaXMgcGF0Y2ggc2V0IGFuZCBteSBvdGhlciBwYXRjaCBzZXRzLg0KUnVpIHN1Z2dlc3Rl
-ZCBtZSB0byByZWJhc2UgbXkgcGF0Y2hlcyBvbiB0b3Agb2YgaGlzIGNoYW5nZXMuDQoNClNvLCBJ
-IGhvcGUgUnVpIHdpbGwgYmUgYWJsZSB0byBjbGVhbiB1cCB0aGVzZSAxMiBwYXRjaGVzIGFuZCBz
-dWJtaXQgdGhlbQ0KKGluIGEgd2VlaydzIHRpbWUgOi0pIA0KSSB3aWxsIHJlYmFzZSBteSBwYXRj
-aGVzIG9uIHRvcCBvZiB0aGVtLg0KDQpBbHNvLCBSdWkgcHJvbWlzZWQgbWUgdGhhdCBoZSBjYW4g
-aG9zdCBhIHRyZWUgZm9yIHVzIHRvIGVhc2lseSBwaWNrIHVwIGNoYW5nZXMsIA0KTGV0IHVzIHNl
-ZSA6LSkNCg0KVGhhbmtzLA0KRHVyZ2ENCg==
+On Tuesday, June 19, 2012 09:18:04 AM Daniel Lezcano wrote:
+> On 06/19/2012 09:03 AM, Srivatsa S. Bhat wrote:
+> > On 06/19/2012 12:24 PM, Deepthi Dharwar wrote:
+> > 
+> >> On 06/18/2012 06:24 PM, Daniel Lezcano wrote:
+> >>
+> >>> On 06/18/2012 02:25 PM, Deepthi Dharwar wrote:
+> >>>> Hi Daniel,
+> >>>>
+> >>>> On 06/18/2012 01:48 AM, Daniel Lezcano wrote:
+> >>>>
+> >>>>> On 06/15/2012 05:28 PM, Daniel Lezcano wrote:
+> >>>>>>
+> >>>>>> Hi all,
+> >>>>>>
+> >>>>>> I have a dual core Intel T9500.
+> >>>>>>
+> >>>>>> I boot the cpu with the acpi_idle driver and intel_idle enabled in the
+> >>>>>> config.
+> >>>>>>
+> >>>>>> The kernel is booted with maxcpus=1.
+> >>>>>>
+> >>>>>> After the system has boot, I put cpu1 online via sysfs.
+> >>>>>>
+> >>>>>> But I don't see any 'cpuidle' directory in the cpu's sysfs entry:
+> >>>>>>
+> >>>>>> /sys/devices/system/cpu/cpu1/cpuidle (?)
+> >>>>>>
+> >>>>>> When I look at the code I see the notifier is present for hotplug in
+> >>>>>> processor_driver.c and the cpuidle intel init routine should be called
+> >>>>>> there.
+> >>>>>>
+> >>>>
+> >>>>
+> >>>> Yes, we have a hotplug notifier.
+> >>>> Commit 99b72508  by Thomas Renninger fixed this issue.
+> >>>>
+> >>>> Please let me know which kernel version you are running and what is idle
+> >>>> driver registered ?
+> >>>
+> >>> The kernel version is 3.5.0-rc1
+> >>> The registered driver is acpi_idle (with intel_idle if I am not wrong).
+> >>>
+> >>> Thomas's patch is in this version.
+> >>>
+> >>> Maybe I am wrong but I think the patch is not correct because:
+> >>>
+> >>> static int __cpuinit acpi_processor_add(struct acpi_device *device)
+> >>> {
+> >>>
+> >>>  ...
+> >>>
+> >>> #ifdef CONFIG_SMP
+> >>> 	if (pr->id >= setup_max_cpus && pr->id != 0)
+> >>> 		return 0;
+> >>> #endif
+> >>>
+> >>>  ...
+> >>>
+> >>> 	per_cpu(processors, pr->id) = pr;
+> >>>
+> >>> ...
+> >>> }
+> >>>
+> >>> With max_cpus=1 we exit before setting up 'pr'.
+> >>>
+> >>> So the condition in:
+> >>>
+> >>> static int acpi_cpu_soft_notify(...)
+> >>> {
+> >>>
+> >>> 	unsigned int cpu = (unsigned long)hcpu;
+> >>> 	struct acpi_processor *pr = per_cpu(processors, cpu);
+> >>>
+> >>> 	if (action == CPU_ONLINE && pr) {
+> >>>
+> >>> ...
+> >>> }
+> >>>
+> >>> Is always false because pr == NULL
+> >>>
+> >>> I did the change but I don't still see the 'cpuidle' directory
+> >>> appearing, I suspect also pr->flags.need_hotplug_init is not correctly
+> >>> initialized but I did not investigate more.
+> >>>
+> >>
+> >>
+> >> Well looks like variable maxcpus holds the key here.
+> >>
+> > 
+> > 
+> > Whose equivalent is setup_max_cpus inside the kernel, as Daniel mentioned.
+> > 
+> >> When I am booting the system, say with 2 out of 4 available cpus,
+> >> set via maxcpus variable with intel_idle or acpi_idle and onlining the
+> >> other 2 cpus later via sysfs, I dont see cpufreq or cpuidle dir in the
+> >> sysfs path.
+> >>
+> >> # cd /sys/devices/system/cpu/cpu2
+> >> xxx:/sys/devices/system/cpu/cpu2# ls
+> >> 	crash_notes  node0  online
+> >> xxx:/sys/devices/system/cpu/cpu2# echo 1 > online
+> >> xxx:/sys/devices/system/cpu/cpu2# ls
+> >> cache  crash_notes  node0  online  thermal_throttle  topology
+> >>
+> >> So looks like its designed that way for now.
+> > 
+> > 
+> > I don't think so. Looks more like a bug than a design ;-)
+> > 
+> >> So if maxcpus=X, X<Y where Y is no of available cpus.
+> >> Enabling the Y-X cpus later after the boot via sysfs is not enabling
+> >> cpuidle and cpufreq .
+> >>
+> >> The question is, do we want to modify this behavior ?
+> >>
+> > 
+> > 
+> > Yes we do, and that's Daniel's pain point as well. I don't think there is
+> > any good reason why the cpuidle directory must _not_ be exported for cpus
+> > that are onlined later.
+> 
+> Yes and if I refer to the code, it is supposed to do that.
+> 
+> I added Thomas in Cc.
+
+maxcpus=X is supposed to statically set the maximum allowed CPUs of the booted
+kernel to X.
+It's not supposed to online cores exceeding X later.
+This is similar to mem=4G, you won't be able to online memory beyond 4G later
+at runtime.
+Strange that one can online cores beyond X later at runtime, this sounds like
+a bug. But maxcpus=X is a debugging variable mostly anyway.
+
+The patch I sent some time ago was to fix CPU hotplug on systems where
+a real CPU got added at runtime (without maxcpus being involved).
+Not sure whether such systems got finally sold, afaik they are not.
+
+    Thomas
