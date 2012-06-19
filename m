@@ -1,14 +1,14 @@
-From: Xiaoguang Chen <chenxg.marvell@gmail.com>
+From: =?euc-kr?B?x9S47cHW?= <myungjoo.ham@samsung.com>
 Subject: Re: [PATCH 1/2] PM: devfreq: add freq table and
 	available_freqs
-Date: Thu, 14 Jun 2012 09:50:25 +0800
-Message-ID: <CAFgnuDc7BSVzCyc7XO9xssyX-5Tc3ss1t6hc0bTDbYx80vmMMQ@mail.gmail.com>
-References: <16928680.915361339563225913.JavaMail.weblogic@epml04>
-	<CAFgnuDfMVfimmYTQdB-vxCJPdB_x_nbwmd-2su45en4SpJeiow@mail.gmail.com>
+Date: Tue, 19 Jun 2012 05:04:46 +0000 (GMT)
+Message-ID: <9923093.588271340082284749.JavaMail.weblogic@epml24>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: multipart/alternative; boundary=e89a8f923de466686a04c264ece8
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAFgnuDfMVfimmYTQdB-vxCJPdB_x_nbwmd-2su45en4SpJeiow@mail.gmail.com>
+MIME-version: 1.0
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -18,341 +18,88 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: myungjoo.ham@samsung.com
-Cc: =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, Xiaoguang Chen <chenxg@marvell.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org
+To: Xiaoguang Chen <chenxg@marvell.com>, Xiaoguang Chen <chenxg.marvell@gmail.com>
+Cc: =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---e89a8f923de466686a04c264ece8
-Content-Type: text/plain; charset=ISO-8859-1
-
-Hi, Myungjoo
-
-what's your opinion?
-
-Thanks
-Xiaoguang
-
-2012/6/13 Xiaoguang Chen <chenxg.marvell@gmail.com>
-
-> I think Devfreq should not be combined with OPP,
-> OPP framework does contain one frequency table, but the frequency is
-> combined with voltage. some platforms may don't want to use this but
-> handling voltage seperately in their clock driver.
->
-> and some platforms don't use OPP, and they want a frequency list.
-> then this is necessary. also devfreq should contain a frequency list even
-> without any other frameworks, don't you think so ?
->
-> Thanks
-> Xiaoguang
->
->
-> 2012/6/13 MyungJoo Ham <myungjoo.ham@samsung.com>
->
->> > Devfreq framework don't have a frequency table, add it
->> > for easy use.
->> >
->> > Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
->>
->> If you need a predefined data structure to support frequency table,
->> you can simply use OPP, which has helper functions implemented in
->> devfreq subsystem. Is there any reason not to use OPP and to implement
->> another data structure to store a frequency table attached to a device?
->>
->>
->> Cheers!
->> MyungJoo.
->>
->> > ---
->> >  drivers/devfreq/devfreq.c |   26 ++++++++++++++++++++++++++
->> >  include/linux/devfreq.h   |   12 ++++++++++++
->> >  2 files changed, 38 insertions(+), 0 deletions(-)
->> >
->> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> > index 70c31d4..2144200 100644
->> > --- a/drivers/devfreq/devfreq.c
->> > +++ b/drivers/devfreq/devfreq.c
->> > @@ -460,6 +460,17 @@ int devfreq_remove_device(struct devfreq *devfreq)
->> >       return 0;
->> >  }
->> >
->> > +/*
->> > + * devfreq_set_freq_table()- Set frequency table for devfreq
->> > + * @devfreq  The devfreq instance
->> > + * @table    The frequency table that device supports
->> > + */
->> > +void devfreq_set_freq_table(struct devfreq *devfreq,
->> > +                         struct devfreq_frequency_table *table)
->> > +{
->> > +     devfreq->freq_table = table;
->> > +}
->> > +
->> >  static ssize_t show_governor(struct device *dev,
->> >                            struct device_attribute *attr, char *buf)
->> >  {
->> > @@ -472,6 +483,20 @@ static ssize_t show_freq(struct device *dev,
->> >       return sprintf(buf, "%lu\n", to_devfreq(dev)->previous_freq);
->> >  }
->> >
->> > +static ssize_t show_avail_freq(struct device *dev,
->> > +                            struct device_attribute *attr, char *buf)
->> > +{
->> > +     int len = 0, i;
->> > +     struct devfreq *devfreq = to_devfreq(dev);
->> > +     if (devfreq->freq_table)
->> > +             for (i = 0; devfreq->freq_table[i].frequency !=
->> DEVFREQ_TABLE_END; i++)
->> > +                     len += sprintf(buf + len, "%lu\n",
->> > +                                    devfreq->freq_table[i].frequency);
->> > +     if (len == 0)
->> > +             len += sprintf(buf + len, "No frequency table is
->> provided\n");
->> > +     return len;
->> > +}
->> > +
->> >  static ssize_t show_polling_interval(struct device *dev,
->> >                                    struct device_attribute *attr, char
->> *buf)
->> >  {
->> > @@ -595,6 +620,7 @@ static struct device_attribute devfreq_attrs[] = {
->> >              store_polling_interval),
->> >       __ATTR(min_freq, S_IRUGO | S_IWUSR, show_min_freq,
->> store_min_freq),
->> >       __ATTR(max_freq, S_IRUGO | S_IWUSR, show_max_freq,
->> store_max_freq),
->> > +     __ATTR(available_freqs, S_IRUGO, show_avail_freq, NULL),
->> >       { },
->> >  };
->> >
->> > diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
->> > index 281c72a..e5e4036 100644
->> > --- a/include/linux/devfreq.h
->> > +++ b/include/linux/devfreq.h
->> > @@ -52,6 +52,14 @@ struct devfreq_dev_status {
->> >   */
->> >  #define DEVFREQ_FLAG_LEAST_UPPER_BOUND               0x1
->> >
->> > +#define DEVFREQ_ENTRY_INVALID (~0)
->> > +#define DEVFREQ_TABLE_END     (~1)
->> > +
->> > +struct devfreq_frequency_table {
->> > +     unsigned int index;
->> > +     unsigned long frequency;
->> > +};
->> > +
->> >  /**
->> >   * struct devfreq_dev_profile - Devfreq's user device profile
->> >   * @initial_freq     The operating frequency when devfreq_add_device()
->> is
->> > @@ -130,6 +138,7 @@ struct devfreq_governor {
->> >   *                   "devfreq_monitor" executions to reevaluate
->> >   *                   frequency/voltage of the device. Set by
->> >   *                   profile's polling_ms interval.
->> > + * @freq_table       The frequency table that device supports
->> >   * @data     Private data of the governor. The devfreq framework does
->> not
->> >   *           touch this.
->> >   * @being_removed    a flag to mark that this object is being removed
->> in
->> > @@ -157,6 +166,7 @@ struct devfreq {
->> >       unsigned long polling_jiffies;
->> >       unsigned long previous_freq;
->> >       unsigned int next_polling;
->> > +     struct devfreq_frequency_table *freq_table;
->> >
->> >       void *data; /* private data for governors */
->> >
->> > @@ -180,6 +190,8 @@ extern int devfreq_register_opp_notifier(struct
->> device *dev,
->> >                                        struct devfreq *devfreq);
->> >  extern int devfreq_unregister_opp_notifier(struct device *dev,
->> >                                          struct devfreq *devfreq);
->> > +extern void devfreq_set_freq_table(struct devfreq *devfreq,
->> > +                                struct devfreq_frequency_table *table);
->> >
->> >  #ifdef CONFIG_DEVFREQ_GOV_POWERSAVE
->> >  extern const struct devfreq_governor devfreq_powersave;
->> > --
->> > 1.7.0.4
->> >
->>
->
->
-
---e89a8f923de466686a04c264ece8
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi, Myungjoo<div><br></div><div>what&#39;s your=A0opinion?</div><div><br></=
-div><div>Thanks</div><div>Xiaoguang<br><br><div class=3D"gmail_quote">2012/=
-6/13 Xiaoguang Chen <span dir=3D"ltr">&lt;<a href=3D"mailto:chenxg.marvell@=
-gmail.com" target=3D"_blank">chenxg.marvell@gmail.com</a>&gt;</span><br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">I think Devfreq should not be combined with =
-OPP,=A0<div>OPP framework does contain one frequency table, but the frequen=
-cy is combined with voltage. some platforms may don&#39;t want to use this =
-but handling voltage seperately in their clock driver.</div>
-
-<div><br></div><div>and some platforms don&#39;t use OPP, and they want a f=
-requency list.<div>then this is necessary. also devfreq should contain a fr=
-equency list even without any other frameworks, don&#39;t you think so ?</d=
-iv>
-
-<div><br></div><div>Thanks</div><div><span class=3D"HOEnZb"><font color=3D"=
-#888888">Xiaoguang</font></span><div><div class=3D"h5"><br><br><div class=
-=3D"gmail_quote">2012/6/13 MyungJoo Ham <span dir=3D"ltr">&lt;<a href=3D"ma=
-ilto:myungjoo.ham@samsung.com" target=3D"_blank">myungjoo.ham@samsung.com</=
-a>&gt;</span><br>
-
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">
-<div>&gt; Devfreq framework don&#39;t have a frequency table, add it<br>
-&gt; for easy use.<br>
-&gt;<br>
-&gt; Signed-off-by: Xiaoguang Chen &lt;<a href=3D"mailto:chenxg@marvell.com=
-" target=3D"_blank">chenxg@marvell.com</a>&gt;<br>
-<br>
-</div>If you need a predefined data structure to support frequency table,<b=
-r>
-you can simply use OPP, which has helper functions implemented in<br>
-devfreq subsystem. Is there any reason not to use OPP and to implement<br>
-another data structure to store a frequency table attached to a device?<br>
-<br>
-<br>
-Cheers!<br>
-<span><font color=3D"#888888">MyungJoo.<br>
-</font></span><div><div><br>
-&gt; ---<br>
-&gt; =A0drivers/devfreq/devfreq.c | =A0 26 ++++++++++++++++++++++++++<br>
-&gt; =A0include/linux/devfreq.h =A0 | =A0 12 ++++++++++++<br>
-&gt; =A02 files changed, 38 insertions(+), 0 deletions(-)<br>
-&gt;<br>
-&gt; diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c<br>
-&gt; index 70c31d4..2144200 100644<br>
-&gt; --- a/drivers/devfreq/devfreq.c<br>
-&gt; +++ b/drivers/devfreq/devfreq.c<br>
-&gt; @@ -460,6 +460,17 @@ int devfreq_remove_device(struct devfreq *devfreq=
-)<br>
-&gt; =A0 =A0 =A0 return 0;<br>
-&gt; =A0}<br>
-&gt;<br>
-&gt; +/*<br>
-&gt; + * devfreq_set_freq_table()- Set frequency table for devfreq<br>
-&gt; + * @devfreq =A0The devfreq instance<br>
-&gt; + * @table =A0 =A0The frequency table that device supports<br>
-&gt; + */<br>
-&gt; +void devfreq_set_freq_table(struct devfreq *devfreq,<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct devfreq_frequ=
-ency_table *table)<br>
-&gt; +{<br>
-&gt; + =A0 =A0 devfreq-&gt;freq_table =3D table;<br>
-&gt; +}<br>
-&gt; +<br>
-&gt; =A0static ssize_t show_governor(struct device *dev,<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device_a=
-ttribute *attr, char *buf)<br>
-&gt; =A0{<br>
-&gt; @@ -472,6 +483,20 @@ static ssize_t show_freq(struct device *dev,<br>
-&gt; =A0 =A0 =A0 return sprintf(buf, &quot;%lu\n&quot;, to_devfreq(dev)-&gt=
-;previous_freq);<br>
-&gt; =A0}<br>
-&gt;<br>
-&gt; +static ssize_t show_avail_freq(struct device *dev,<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct device=
-_attribute *attr, char *buf)<br>
-&gt; +{<br>
-&gt; + =A0 =A0 int len =3D 0, i;<br>
-&gt; + =A0 =A0 struct devfreq *devfreq =3D to_devfreq(dev);<br>
-&gt; + =A0 =A0 if (devfreq-&gt;freq_table)<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 for (i =3D 0; devfreq-&gt;freq_table[i].freq=
-uency !=3D DEVFREQ_TABLE_END; i++)<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 len +=3D sprintf(buf + len, =
-&quot;%lu\n&quot;,<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0devfreq-&gt;freq_table[i].frequency);<br>
-&gt; + =A0 =A0 if (len =3D=3D 0)<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 len +=3D sprintf(buf + len, &quot;No frequen=
-cy table is provided\n&quot;);<br>
-&gt; + =A0 =A0 return len;<br>
-&gt; +}<br>
-&gt; +<br>
-&gt; =A0static ssize_t show_polling_interval(struct device *dev,<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0struct device_attribute *attr, char *buf)<br>
-&gt; =A0{<br>
-&gt; @@ -595,6 +620,7 @@ static struct device_attribute devfreq_attrs[] =3D=
- {<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0store_polling_interval),<br>
-&gt; =A0 =A0 =A0 __ATTR(min_freq, S_IRUGO | S_IWUSR, show_min_freq, store_m=
-in_freq),<br>
-&gt; =A0 =A0 =A0 __ATTR(max_freq, S_IRUGO | S_IWUSR, show_max_freq, store_m=
-ax_freq),<br>
-&gt; + =A0 =A0 __ATTR(available_freqs, S_IRUGO, show_avail_freq, NULL),<br>
-&gt; =A0 =A0 =A0 { },<br>
-&gt; =A0};<br>
-&gt;<br>
-&gt; diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h<br>
-&gt; index 281c72a..e5e4036 100644<br>
-&gt; --- a/include/linux/devfreq.h<br>
-&gt; +++ b/include/linux/devfreq.h<br>
-&gt; @@ -52,6 +52,14 @@ struct devfreq_dev_status {<br>
-&gt; =A0 */<br>
-&gt; =A0#define DEVFREQ_FLAG_LEAST_UPPER_BOUND =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-0x1<br>
-&gt;<br>
-&gt; +#define DEVFREQ_ENTRY_INVALID (~0)<br>
-&gt; +#define DEVFREQ_TABLE_END =A0 =A0 (~1)<br>
-&gt; +<br>
-&gt; +struct devfreq_frequency_table {<br>
-&gt; + =A0 =A0 unsigned int index;<br>
-&gt; + =A0 =A0 unsigned long frequency;<br>
-&gt; +};<br>
-&gt; +<br>
-&gt; =A0/**<br>
-&gt; =A0 * struct devfreq_dev_profile - Devfreq&#39;s user device profile<b=
-r>
-&gt; =A0 * @initial_freq =A0 =A0 The operating frequency when devfreq_add_d=
-evice() is<br>
-&gt; @@ -130,6 +138,7 @@ struct devfreq_governor {<br>
-&gt; =A0 * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 &quot;devfreq_monitor&quot; =
-executions to reevaluate<br>
-&gt; =A0 * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 frequency/voltage of the dev=
-ice. Set by<br>
-&gt; =A0 * =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 profile&#39;s polling_ms int=
-erval.<br>
-&gt; + * @freq_table =A0 =A0 =A0 The frequency table that device supports<b=
-r>
-&gt; =A0 * @data =A0 =A0 Private data of the governor. The devfreq framewor=
-k does not<br>
-&gt; =A0 * =A0 =A0 =A0 =A0 =A0 touch this.<br>
-&gt; =A0 * @being_removed =A0 =A0a flag to mark that this object is being r=
-emoved in<br>
-&gt; @@ -157,6 +166,7 @@ struct devfreq {<br>
-&gt; =A0 =A0 =A0 unsigned long polling_jiffies;<br>
-&gt; =A0 =A0 =A0 unsigned long previous_freq;<br>
-&gt; =A0 =A0 =A0 unsigned int next_polling;<br>
-&gt; + =A0 =A0 struct devfreq_frequency_table *freq_table;<br>
-&gt;<br>
-&gt; =A0 =A0 =A0 void *data; /* private data for governors */<br>
-&gt;<br>
-&gt; @@ -180,6 +190,8 @@ extern int devfreq_register_opp_notifier(struct de=
-vice *dev,<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0struct devfreq *devfreq);<br>
-&gt; =A0extern int devfreq_unregister_opp_notifier(struct device *dev,<br>
-&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0struct devfreq *devfreq);<br>
-&gt; +extern void devfreq_set_freq_table(struct devfreq *devfreq,<br>
-&gt; + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struc=
-t devfreq_frequency_table *table);<br>
-&gt;<br>
-&gt; =A0#ifdef CONFIG_DEVFREQ_GOV_POWERSAVE<br>
-&gt; =A0extern const struct devfreq_governor devfreq_powersave;<br>
-&gt; --<br>
-&gt; 1.7.0.4<br>
-&gt;<br>
-</div></div></blockquote></div><br>
-</div></div></div></div>
-</blockquote></div><br></div>
-
---e89a8f923de466686a04c264ece8--
+PiBIaSwgTXl1bmdqb28NCj4gDQo+IHRoZSBBUEkgaXMgb3B0aW9uYWwsIGJ1dCBJIHRoaW5rIG9u
+ZSBmcmVxdWVuY3kgdGFibGUgaXMgYmV0dGVyIHRvIGhhdmUuDQo+IGlmIHVzZXIgc3BhY2Ugd2Fu
+dCB0byBzZWUgd2hhdCBpcyB0aGUgc3VwcG9ydGVkIGZyZXF1ZW5jaWVzIGZvciB0aGUgc3BlY2lm
+aWMgZGV2ZnJlcSBkcml2ZXIsIHRoZW4gd2hlcmUgZG8geW91IHRoaW5rIHdlIGNhbiBzZWUgdGhp
+cyBpbnRlcmZhY2U/DQo+IGRvIHdlIGhhdmUgdG8gZ28gdG8gT1BQIGZyYW1ld29yayB0byBnZXQg
+aXQgPyBvciB3ZSBjYW4ganVzdCBhZGQgaXQgaW4gb3VyIGRldmZyZXEgPyBmb3IgZXhhbXBsZTog
+c3lzL2NsYXNzL2RldmZyZXEveHh4LWRldmZyZXEvYXZhaWxhYmxlX2ZyZXFzDQo+IEkgdGhpbmsg
+aXQgaXMgYmVzdCBmb3IgdXMgdG8gc2VlIHRoaXMgaW4gdGhlIHNhbWUgc3lzZnMgcGF0aC4NCj4g
+DQo+IFRoYW5rcw0KPiBYaWFvZ3VhbmcNCg0KSGkgWGlhb2d1YW5nLA0KDQpGaXJzdCBvZiBhbGws
+IGJvdGggY29uY2VwdHVhbGx5IGFuZCBwcmFjdGljYWxseSwgZGV2ZnJlcSBzdWJzeXN0ZW0gZG9l
+cyBub3QgbmVlZCB0byBob2xkIHRoZSBsaXN0IG9mIGF2YWlsYWJsZSBmcmVxdWVuY2llcy4gRGV2
+ZnJlcSBzdWJzeXN0ZW0gZG9lcyBub3QgY2FyZSB3aGV0aGVyIGEgZGV2ZnJlcSBkZXZpY2UgaGFz
+IG9ubHkgdHdvIChvciBldmVuIG9uZSkgZnJlcXVlbmNpZXMgYXZhaWxhYmxlIG9yIHNldmVyYWwg
+YmlsbGlvbnMgZnJlcXVlbmNpZXMgYXZhaWxhYmxlLCB3aGljaCBpcyB3aHkgT1BQIGlzIGRyb3Bw
+ZWQgZnJvbSBkZXZmcmVxIHN1YnN5c3RlbSBhbmQgb25seSBoZWxwZXIgZnVuY3Rpb25zIGFyZSBy
+ZW1haW5pbmcuDQoNClRoZSBhdmFpbGFibGUgZnJlcXVlbmNpZXMgaW5mb3JtYXRpb24gbWF5IGJl
+IGluIE9QUCwgY2xvY2sgc3Vic3lzdGVtLCBvciB0aGUgZGV2aWNlIGRyaXZlciBpdHNlbGYuIFRo
+ZSBsaXN0aW5nIG9mIGF2YWlsYWJsZSBmcmVxdWVuY2llcyBzaG91bGQgYmUgcHJvdmlkZWQgYnkg
+dGhlIG9uZSB3aG8gaGFzIHRoZSBpbmZvcm1hdGlvbiBhdCBmaXJzdC4NCg0KQW55d2F5LCBleGNl
+cHQgZm9yIHRoZSBwdXJlIGN1cmlvc2l0eSBvZiB1c2Vycywgd2h5IGRvIHdlIG5lZWQgdG8gcHJv
+dmlkZSB0aGUgbGlzdCBvZiBhdmFpbGFibGUgZnJlcXVlbmNpZXMgYXQgdGhlIGRldmZyZXEgc3Vi
+c3lzdGVtPyBJZiB3ZSBhcmUgYWRkaW5nIGl0IGluIGRldmZyZXEgc3Vic3lzdGVtLCB3ZSBhcmUg
+YWRkaW5nIGFuIEFCSSBhbmQgc3VwcG9ydGluZyBkYXRhIHN0cnVjdHVyZSB0aGF0IGFyZSBuZXZl
+ciB1c2VkIGJ5IHRoZSBzdWJzeXN0ZW0sIGJ1dCBmb3IgcHJpbnRpbmcgb3V0IHZpYSBBQkkgd2hp
+Y2ggb25seSBzYXRpc2ZpZXMgdGhlIGN1cmlvc2l0eSBvZiB1c2VycyB0aGF0IG1heSBhbHJlYWR5
+IGtub3cgd2hhdCBpdCB3b3VsZCBsaXN0IHVwLiBUaGVyZSBhcmUgZXZlbiBjYXNlcyB3aGVyZSB0
+aGUgZGV2ZnJlcSBkZXZpY2UgZHJpdmVyIGl0c2VsZiBhbHNvIGRvZXMgbm90IGF3YXJlIG9mIGF2
+aWxhYmxlIGZyZXF1ZW5jaWVzOyB3aGVuIE9QUCBpcyBnaXZlbiBvdXRzaWRlLg0KDQoNCkNoZWVy
+cyENCk15dW5nSm9vLg0KDQo+IA0KPiANCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
+RnJvbTogx9S47cHWIFttYWlsdG86bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tXSANCj4gU2VudDog
+MjAxMtK0NurFMTTs7SAxMjo0NA0KPiBUbzogWGlhb2d1YW5nIENoZW4NCj4gQ2M6IFhpYW9ndWFu
+ZyBDaGVuOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyC52rDmuc47IGxpbnV4LXBtQGxp
+c3RzLmxpbnV4LWZvdW5kYXRpb24ub3JnDQo+IFN1YmplY3Q6IFJlOiBSZTogW1BBVENIIDEvMl0g
+UE06IGRldmZyZXE6IGFkZCBmcmVxIHRhYmxlIGFuZCBhdmFpbGFibGVfZnJlcXMNCj4gDQo+ID4g
+SGksIE15dW5nam9vDQo+ID4gDQo+ID4gDQo+ID4gd2hhdCdzIHlvdXIgb3Bpbmlvbj8NCj4gDQo+
+IEhlbGxvIFhpYW9ndWFuZywNCj4gDQo+IFN0aWxsLCBJIGRvbid0IHRoaW5rIHdlIG5lZWQgYWRk
+aXRpb25hbCBBUEkgYW5kIEFCSSBmb3IgYSBzaW1wbGUgZnJlcXVlbmN5IHRhYmxlLiBXaHkgYSBk
+ZXZmcmVxIGRldmljZSBkcml2ZXIgd291bGQgd2FudCB0byByZWdpc3RlciBhIHRhYmxlIGluIHN0
+cnVjdCBkZXZmcmVxIHdoaWxlIGl0IGNhbiBob2xkIG9uZSBlaXRoZXIgd2l0aCBpdHMgZGV2LWRh
+dGEsIHByaXZhdGUgZGF0YSBvZiBkZXZmcmVxLCBvciBldmVuIE9QUC4NCj4gDQo+IDEuIERldmZy
+ZXEgaXMgbm90ICJjb21iaW5lZCIgd2l0aCBPUFAuIE9QUCBpcyBvcHRpb25hbC4NCj4gDQo+IDIu
+IEkgZ3Vlc3MgZmlsbGluZyB2b2x0YWdlIGNvbHVtbiB3aXRoIHNvbWUgYXJiaXRyYXJ5IHZhbHVl
+cyBpbiBPUFAgdGFibGUgd29uJ3QgaHVydCBhbnl0aGluZyBpZiB0aGUgZGV2aWNlIGRvZXMgbm90
+IGNhcmUgdm9sdGFnZSB2YWx1ZXMuIChqdXN0IGEgc3VnZ2VzdGlvbiBhbmQgc3BlY3VsYXRpb24p
+IFRodXMsIHlvdSBjYW4gc3RpbGwgdXNlIE9QUCBpbiB5b3VyIGNhc2UgYXMgbG9uZyBhcyB0aGUg
+ZnJlcXVlbmN5IHZhbHVlcyBhcmUgZGlzY3JldGUgYW5kIG5vdCB0b28gbWFueS4NCj4gDQo+IDMu
+IERldmZyZXEgYW5kIGl0cyBnb3Zlcm5vcnMgcmVjb21tZW5kcyB0aGUgYmFzZSBmcmVxdWVuY3kg
+dG8gZGV2ZnJlcSBkcml2ZXJzLiBGcmVxdWVuY3kgdGFibGUgaXMgb25seSBuZWVkZWQgdG8gYmUg
+dmlzaWJsZSB0byBkZXZmcmVxIGRyaXZlcnMsIG5vdCB0byBnb3Zlcm5vcnMgb3IgZGV2ZnJlcSBp
+dHNlbGYuIFRoZSBmcmVxdWVuY3kgdGFibGUgeW91J3ZlIHN1Z2dlc3RlZCBpcyBub3QgbmVlZCB0
+byBiZSB2aXNpYmxlIHRvIGRldmZyZXEgc3Vic3lzdGVtLg0KPiANCj4gDQo+IEkgc3RpbGwgb2Jq
+ZWN0IHRvIGFkZGluZyBhIGZyZXF1ZW5jeSB0YWJsZSAod2hpY2ggaXMgYWxyZWFkeSBzdXBwb3J0
+ZWQgYnkgT1BQIGJ5IG5vdCBzcGVjaWZ5aW5nIHZvbHRhZ2Ugb3Igc3BlY2lmeWluZyBhcmJpdHJh
+cnkgdm9sdGFnZSB2YWx1ZXMpLiBIb3dldmVyLCBldmVuIGlmIEkgZG9uJ3QsIHdlIHdvbid0IG5l
+ZWQgdGhhdCBBUEkgKGRldmZyZXFfc2V0X2ZyZXFfdGFibGUpLCB3aGljaCBzaG91bGQndmUgYmVl
+biBhZGRlZCBpbiBkZXZpY2UgcHJvZmlsZSBhdCBkZXZmcmVxX2FkZF9kZXZpY2UoKSB0aW1lLg0K
+PiANCj4gDQo+IENoZWVycyENCj4gTXl1bmdKb28uDQo+IA0KPiA+IA0KPiA+IA0KPiA+IFRoYW5r
+cw0KPiA+IFhpYW9ndWFuZw0KPiA+IA0KPiA+IA0KPiA+ID4gMjAxMi82LzEzIFhpYW9ndWFuZyBD
+aGVuIDxjaGVueGcubWFydmVsbEBnbWFpbC5jb20+DQo+ID4gPiANCj4gPiA+IEkgdGhpbmsgRGV2
+ZnJlcSBzaG91bGQgbm90IGJlIGNvbWJpbmVkIHdpdGggT1BQLCBPUFAgZnJhbWV3b3JrIGRvZXMg
+DQo+ID4gPiBjb250YWluIG9uZSBmcmVxdWVuY3kgdGFibGUsIGJ1dCB0aGUgZnJlcXVlbmN5IGlz
+IGNvbWJpbmVkIHdpdGggdm9sdGFnZS4gc29tZSBwbGF0Zm9ybXMgbWF5IGRvbid0IHdhbnQgdG8g
+dXNlIHRoaXMgYnV0IGhhbmRsaW5nIHZvbHRhZ2Ugc2VwZXJhdGVseSBpbiB0aGVpciBjbG9jayBk
+cml2ZXIuDQo+ID4gPiANCj4gPiA+IA0KPiA+ID4gYW5kIHNvbWUgcGxhdGZvcm1zIGRvbid0IHVz
+ZSBPUFAsIGFuZCB0aGV5IHdhbnQgYSBmcmVxdWVuY3kgbGlzdC4NCj4gPiA+IHRoZW4gdGhpcyBp
+cyBuZWNlc3NhcnkuIGFsc28gZGV2ZnJlcSBzaG91bGQgY29udGFpbiBhIGZyZXF1ZW5jeSBsaXN0
+IGV2ZW4gd2l0aG91dCBhbnkgb3RoZXIgZnJhbWV3b3JrcywgZG9uJ3QgeW91IHRoaW5rIHNvID8N
+Cj4gPiA+IA0KPiA+ID4gDQo+ID4gPiBUaGFua3MNCj4gPiA+IFhpYW9ndWFuZw0KPiA+ID4gDQo+
+ID4gPiANCj4gPiA+IA0KPiA+ID4gMjAxMi82LzEzIE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
+QHNhbXN1bmcuY29tPg0KPiA+ID4gPiANCj4gPiA+ID4gPiBEZXZmcmVxIGZyYW1ld29yayBkb24n
+dCBoYXZlIGEgZnJlcXVlbmN5IHRhYmxlLCBhZGQgaXQgZm9yIGVhc3kgDQo+ID4gPiA+ID4gdXNl
+Lg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogWGlhb2d1YW5nIENoZW4gPGNo
+ZW54Z0BtYXJ2ZWxsLmNvbT4NCj4gPiA+ID4gDQo+ID4gPiA+IA0KPiA+ID4gPiBJZiB5b3UgbmVl
+ZCBhIHByZWRlZmluZWQgZGF0YSBzdHJ1Y3R1cmUgdG8gc3VwcG9ydCBmcmVxdWVuY3kgDQo+ID4g
+PiA+IHRhYmxlLCB5b3UgY2FuIHNpbXBseSB1c2UgT1BQLCB3aGljaCBoYXMgaGVscGVyIGZ1bmN0
+aW9ucyANCj4gPiA+ID4gaW1wbGVtZW50ZWQgaW4gZGV2ZnJlcSBzdWJzeXN0ZW0uIElzIHRoZXJl
+IGFueSByZWFzb24gbm90IHRvIHVzZSANCj4gPiA+ID4gT1BQIGFuZCB0byBpbXBsZW1lbnQgYW5v
+dGhlciBkYXRhIHN0cnVjdHVyZSB0byBzdG9yZSBhIGZyZXF1ZW5jeSB0YWJsZSBhdHRhY2hlZCB0
+byBhIGRldmljZT8NCj4gPiA+ID4gDQo+ID4gPiA+IA0KPiA+ID4gPiBDaGVlcnMhDQo+ID4gPiA+
+IE15dW5nSm9vLg0KPiA+ID4gPiANCj4gDQo+IA0KPiANCj4gICAgICAgIA0KPiAgIA0KPiAgICAg
+ICAgICANCj4gDQo=
