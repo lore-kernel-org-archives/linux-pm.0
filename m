@@ -1,177 +1,199 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI, cpuidle: Fix suspend/resume regression caused by cpuidle cleanup.
-Date: Tue, 19 Jun 2012 22:35:13 +0200
-Message-ID: <201206192235.13984.rjw@sisk.pl>
-References: <4FD87249.6010302@linux.vnet.ibm.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [RFC PATCH 11/12] thermal: introduce cooling state
+	arbitrator
+Date: Wed, 20 Jun 2012 14:47:39 +0800
+Message-ID: <1340174859.1682.21.camel@rui.sh.intel.com>
+References: <1339384839.1492.165.camel@rui.sh.intel.com>
+	<20120613142316.GB16714@besouro>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4FD87249.6010302@linux.vnet.ibm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>, Jean Pihet <j-pihet@ti.com>, Arjan van de Ven <arjan@linux.intel.com>, Kevin Hilman <khilman@ti.com>, Arnd Bergmann <arnd@arndb.de>, Ferenc Wagner <wferi@niif.hu>, "Tomas M." <tmezzadra@gmail.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, preeti@linux.vnet.ibm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <20120613142316.GB16714@besouro>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: eduardo.valentin@ti.com
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 13, 2012, Deepthi Dharwar wrote:
-> 
-> From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-> 
-> Fix suspend/resume regression caused by cpuidle cleanup.
-> 
-> Commit e978aa7d7d57d04eb5f88a7507c4fb98577def77 ( cpuidle: Move
-> dev->last_residency update to driver enter routine; remove dev->last_state)
-> was  breaking suspend on laptops, as reported in the below link
-> 	- https://lkml.org/lkml/2011/11/11/164
-> 
-> This was fixed in commit 3439a8da16bcad6b0982ece938c9f8299bb53584
-> (ACPI / cpuidle: Remove acpi_idle_suspend (to fix suspend regression)
-> by removing acpi_idle_suspend flag.
-> 	- https://lkml.org/lkml/2011/11/14/74
-> 
-> But this fix did not work on all systems
-> as Suspend/resume regression was reported on Lenovo S10-3
-> recently by Dave.
-> 	- https://lkml.org/lkml/2012/5/27/115
-> It looked like with commit e978aa7d broke suspend and
-> with commit 3439a8da resume was not working with acpi_idle driver.
-> 
-> This patch fixes the regression that caused this issue
-> in the first place. acpi_idle_suspend flag is essential on
-> some x86 systems to prevent the cpus from going to deeper C-states
-> when suspend is triggered ( commit b04e7bdb984 )
-> So reverting the commit 3439a8da is essential.
-> 
-> By default, irqs are disabled in cpu_idle arch specific call
-> and re-enabled in idle state return path . As the acpi_idle_suspend
-> flag was being set during suspend, which prevented the cpus
-> going to deeper idle states, it is essential to
-> enabling the irqs in its return path too.
-> 
-> To address the suspend issue,
-> we were not re-enabling the interrupts while returning from
-> acpi_idle_enter_bm() routine if acpi_idle_suspend flag is set.
-> and this was causing suspend failure.
-> 
-> In addition to the above fix, a sanity check has also been added
-> in x86 arch specific cpu_idle call to ensure that the idle call
-> always returns with IRQs enabled.
-> 
-> This patch applies on 3.5-rc2
-> ---
-> 
-> Reported-and-Tested-by: Dav Hansen <dave@linux.vnet.ibm.com>
-> Tested-by: Preeti Murthy <preeti@linux.vnet.ibm.com>
-> Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-> Reviewed-by: Srivatsa S Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+On =E4=B8=89, 2012-06-13 at 17:23 +0300, Eduardo Valentin wrote:
+> Hello Rui,
+>=20
+> On Mon, Jun 11, 2012 at 11:20:39AM +0800, Zhang Rui wrote:
+> >=20
+> > Introduce simple arbitrator for setting device cooling state,
+> > to fix the problem that a cooling device may be referenced by
+> > by multiple trip points in multiple thermal zones.
+> >=20
+> >=20
+> > With this patch, we have two stages for updating a thermal zone,
+> > 1. check if a thermal_instance needs to be updated or not
+> > 2. update the cooling device, based on the target cooling state
+> >    of all its instances.
+> >=20
+> > Note that, currently, the cooling device is set to the deepest
+> > cooling state required.
+> >=20
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/thermal/thermal_sys.c |   41 +++++++++++++++++++++++++++++++=
++++++++---
+> >  include/linux/thermal.h       |    1 +
+> >  2 files changed, 39 insertions(+), 3 deletions(-)
+> >=20
+> > Index: rtd3/drivers/thermal/thermal_sys.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- rtd3.orig/drivers/thermal/thermal_sys.c
+> > +++ rtd3/drivers/thermal/thermal_sys.c
+> > @@ -54,6 +54,7 @@ struct thermal_instance {
+> >  	int trip;
+> >  	unsigned long upper;	/* Highest cooling state for this trip point *=
+/
+> >  	unsigned long lower;	/* Lowest cooling state for this trip point */
+> > +	unsigned long target;	/* expected cooling state */
+> >  	char attr_name[THERMAL_NAME_LENGTH];
+> >  	struct device_attribute attr;
+> >  	struct list_head tz_node; /* node in tz->instances */
+> > @@ -812,6 +813,7 @@ int thermal_zone_bind_cooling_device(str
+> >  	dev->trip =3D trip;
+> >  	dev->upper =3D upper;
+> >  	dev->lower =3D lower;
+> > +	dev->target =3D -1;
+> > =20
+> >  	result =3D get_idr(&tz->idr, &tz->lock, &dev->id);
+> >  	if (result)
+> > @@ -949,6 +951,7 @@ thermal_cooling_device_register(char *ty
+> >  	strcpy(cdev->type, type);
+> >  	INIT_LIST_HEAD(&cdev->instances);
+> >  	cdev->ops =3D ops;
+> > +	cdev->updated =3D 1;
+> >  	cdev->device.class =3D &thermal_class;
+> >  	cdev->devdata =3D devdata;
+> >  	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
+> > @@ -1040,6 +1043,32 @@ void thermal_cooling_device_unregister(s
+> >  }
+> >  EXPORT_SYMBOL(thermal_cooling_device_unregister);
+> > =20
+> > +static void thermal_zone_do_update(struct thermal_zone_device *tz)
+> > +{
+> > +	struct thermal_instance *instance1, *instance2;
+> > +	struct thermal_cooling_device *cdev;
+> > +	int target;
+> > +
+> > +	list_for_each_entry(instance1, &tz->instances, tz_node) {
+> > +		cdev =3D instance1->cdev;
+> > +
+> > +		/* cooling device has already been updated*/
+> > +		if (cdev->updated)
+> > +			continue;
+> > +
+> > +		target =3D 0;
+> > +		/* Make sure cdev enters the deepest cooling state */
+> > +		list_for_each_entry(instance2, &cdev->instances, cdev_node) {
+> > +			if (instance2->target =3D=3D -1)
+> > +				continue;
+> > +			if (instance2->target > target)
+> > +				target =3D instance2->target;
+> > +		}
+> > +		cdev->ops->set_cur_state(cdev, target);
+> > +		cdev->updated =3D 1;
+> > +	}
+> > +}
+>=20
+> I think the above arbitrator solution does not escalate. As I can see,
+> the arbitrator takes care of cooling device instances in the same therm=
+al zone.
+>=20
+why?
+It parses the thermal instances in one thermal zone to find the cooling
+devices, and then parse all the thermal instances for the cooling
+devices, no matter which thermal zone it belongs to.
 
-Applied to linux-pm/linux-next, will be pushed to Linus later this week.
+> What if you have a device which expose cooling device instances in diff=
+erent
+> thermal zones?
+>=20
+> Besides, the thermal constraint might collide with pm QoS or with setti=
+ngs
+> coming from user space interfaces.
+>=20
 
-Thanks,
-Rafael
+> That's actually why I was suggesting to have this 'arbitrator' or const=
+raint
+> management outside the thermal framework. And managed per device at som=
+e
+> other abstraction layer.
+>=20
+Yeah, but I think we can have an incremental patch to handle the pm Qos
+constrains. Especially Durga already has the governor patches to move
+this out of the thermal framework.
+what do you think?
 
+thanks,
+rui
 
-> ---
->  arch/x86/kernel/process.c     |    6 ++++++
->  drivers/acpi/processor_idle.c |   28 ++++++++++++++++++++++++++++
->  2 files changed, 34 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-> index 735279e..8ab76ad 100644
-> --- a/arch/x86/kernel/process.c
-> +++ b/arch/x86/kernel/process.c
-> @@ -460,6 +460,12 @@ void cpu_idle(void)
->  				pm_idle();
-> 
->  			rcu_idle_exit();
-> +
-> +			/*
-> +			 * Sanity check to ensure that idle call returns
-> +			 * with IRQs enabled
-> +			 */
-> +			WARN_ON(irqs_disabled());
->  			start_critical_timings();
-> 
->  			/* In many cases the interrupt that ended idle
-> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-> index f3decb3..c2ffd84 100644
-> --- a/drivers/acpi/processor_idle.c
-> +++ b/drivers/acpi/processor_idle.c
-> @@ -224,6 +224,7 @@ static void lapic_timer_state_broadcast(struct acpi_processor *pr,
->  /*
->   * Suspend / resume control
->   */
-> +static int acpi_idle_suspend;
->  static u32 saved_bm_rld;
-> 
->  static void acpi_idle_bm_rld_save(void)
-> @@ -242,13 +243,21 @@ static void acpi_idle_bm_rld_restore(void)
-> 
->  int acpi_processor_suspend(struct acpi_device * device, pm_message_t state)
->  {
-> +	if (acpi_idle_suspend == 1)
-> +		return 0;
-> +
->  	acpi_idle_bm_rld_save();
-> +	acpi_idle_suspend = 1;
->  	return 0;
->  }
-> 
->  int acpi_processor_resume(struct acpi_device * device)
->  {
-> +	if (acpi_idle_suspend == 0)
-> +		return 0;
-> +
->  	acpi_idle_bm_rld_restore();
-> +	acpi_idle_suspend = 0;
->  	return 0;
->  }
-> 
-> @@ -754,6 +763,12 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
-> 
->  	local_irq_disable();
-> 
-> +	if (acpi_idle_suspend) {
-> +		local_irq_enable();
-> +		cpu_relax();
-> +		return -EINVAL;
-> +	}
-> +
->  	lapic_timer_state_broadcast(pr, cx, 1);
->  	kt1 = ktime_get_real();
->  	acpi_idle_do_entry(cx);
-> @@ -823,6 +838,12 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
-> 
->  	local_irq_disable();
-> 
-> +	if (acpi_idle_suspend) {
-> +		local_irq_enable();
-> +		cpu_relax();
-> +		return -EINVAL;
-> +	}
-> +
->  	if (cx->entry_method != ACPI_CSTATE_FFH) {
->  		current_thread_info()->status &= ~TS_POLLING;
->  		/*
-> @@ -901,6 +922,13 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
->  	if (unlikely(!pr))
->  		return -EINVAL;
-> 
-> +	if (acpi_idle_suspend) {
-> +		if (irqs_disabled())
-> +			local_irq_enable();
-> +		cpu_relax();
-> +		return -EINVAL;
-> +	}
-> +
->  	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
->  		if (drv->safe_state_index >= 0) {
->  			return drv->states[drv->safe_state_index].enter(dev,
-> 
-> Regards,
-> Deepthi
-> 
-> 
-> 
-
+> > +
+> >  /*
+> >   * Cooling algorithm for active trip points
+> >   *
+> > @@ -1086,19 +1115,24 @@ static void thermal_zone_trip_update(str
+> >  				cur_state =3D cur_state > instance->lower ?
+> >  				    (cur_state - 1) : instance->lower;
+> >  			}
+> > -			cdev->ops->set_cur_state(cdev, cur_state);
+> > +			instance->target =3D cur_state;
+> > +			cdev->updated =3D 0; /* cooling device needs update */
+> >  		}
+> >  	} else {	/* below trip */
+> >  		list_for_each_entry(instance, &tz->instances, tz_node) {
+> >  			if (instance->trip !=3D trip)
+> >  				continue;
+> > =20
+> > +			/* Do not use the deacitve thermal instance */
+> > +			if (instance->target =3D=3D -1)
+> > +				continue;
+> >  			cdev =3D instance->cdev;
+> >  			cdev->ops->get_cur_state(cdev, &cur_state);
+> > =20
+> >  			cur_state =3D cur_state > instance->lower ?
+> > -				    (cur_state - 1) : instance->lower;
+> > -			cdev->ops->set_cur_state(cdev, cur_state);
+> > +				    (cur_state - 1) : -1;
+> > +			instance->target =3D cur_state;
+> > +			cdev->updated =3D 0; /* cooling device needs update */
+> >  		}
+> >  	}
+> > =20
+> > @@ -1159,6 +1193,7 @@ void thermal_zone_device_update(struct t
+> >  		}
+> >  	}
+> > =20
+> > +	thermal_zone_do_update(tz);
+> >  	if (tz->forced_passive)
+> >  		thermal_zone_device_passive(tz, temp, tz->forced_passive,
+> >  					    THERMAL_TRIPS_NONE);
+> > Index: rtd3/include/linux/thermal.h
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- rtd3.orig/include/linux/thermal.h
+> > +++ rtd3/include/linux/thermal.h
+> > @@ -86,6 +86,7 @@ struct thermal_cooling_device {
+> >  	struct device device;
+> >  	void *devdata;
+> >  	const struct thermal_cooling_device_ops *ops;
+> > +	int updated; /* 1 if the cooling device does not need update */
+> >  	struct list_head instances;
+> >  	struct list_head node;
+> >  };
+> >=20
+> >=20
