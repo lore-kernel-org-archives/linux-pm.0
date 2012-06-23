@@ -1,425 +1,96 @@
-From: Akinobu Mita <akinobu.mita@gmail.com>
-Subject: [PATCH -v4 6/6] fault-injection: add notifier error injection testing scripts
-Date: Sat, 23 Jun 2012 23:58:22 +0900
-Message-ID: <1340463502-15341-7-git-send-email-akinobu.mita@gmail.com>
-References: <1340463502-15341-1-git-send-email-akinobu.mita@gmail.com>
+From: Pavel Pisa <pisa-/N2ztlQkxE7Ub/6JBqosbQ@public.gmane.org>
+Subject: Re: [PATCH] PCI: add NO_D3_DURING_SLEEP flag and revert 151b61284776be2
+Date: Sat, 23 Jun 2012 23:20:14 +0200
+Message-ID: <201206232320.15186.pisa@cmp.felk.cvut.cz>
+References: <201206131122.36198.rjw@sisk.pl> <Pine.LNX.4.44L0.1206131117260.1401-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1340463502-15341-1-git-send-email-akinobu.mita@gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Akinobu Mita <akinobu.mita@gmail.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org, Greg KH <greg@kroah.com>, linux-mm@kvack.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, =?UTF-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <Pine.LNX.4.44L0.1206131117260.1401-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Content-Disposition: inline
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This adds two testing scripts with notifier error injection
+Hello Alan and all others,
 
-* tools/testing/fault-injection/cpu-notifier.sh is testing script for
-CPU notifier error handling by using cpu-notifier-error-inject.ko.
+I have observed similar lock during suspend to RAM on ASUS K52F
 
-1. Offline all hot-pluggable CPUs in preparation for testing
-2. Test CPU hot-add error handling by injecting notifier errors
-3. Online all hot-pluggable CPUs in preparation for testing
-4. Test CPU hot-remove error handling by injecting notifier errors
+Handle 0x0002, DMI type 2, 15 bytes
+Base Board Information
+        Manufacturer: ASUSTeK Computer Inc.
+        Product Name: K52F
 
-* tools/testing/fault-injection/memory-notifier.sh is doing the similar
-thing for memory hotplug notifier.
+BIOS Information
+        Vendor: American Megatrends Inc.
+        Version: K52F.218
+        Release Date: 07/12/2011
 
-1. Offline 10% of hot-pluggable memory in preparation for testing
-2. Test memory hot-add error handling by injecting notifier errors
-3. Online all hot-pluggable memory in preparation for testing
-4. Test memory hot-remove error handling by injecting notifier errors
+00:00.0 Host bridge [0600]: Intel Corporation Core Processor DRAM Controller [8086:0044] (rev 18)
+00:02.0 VGA compatible controller [0300]: Intel Corporation Core Processor Integrated Graphics Controller [8086:0046] (rev 18)
+00:16.0 Communication controller [0780]: Intel Corporation 5 Series/3400 Series Chipset HECI Controller [8086:3b64] (rev 06)
+...
+00:1a.0 USB Controller [0c03]: Intel Corporation 5 Series/3400 Series Chipset USB2 Enhanced Host Controller [8086:3b3c] (rev 06)
+00:1d.0 USB Controller [0c03]: Intel Corporation 5 Series/3400 Series Chipset USB2 Enhanced Host Controller [8086:3b34] (rev 06)
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Suggested-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
-Cc: Greg KH <greg@kroah.com>
-Cc: linux-mm@kvack.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Am=C3=A9rico Wang <xiyou.wangcong@gmail.com>
+When I unbind EHCI controllers
+  # Unbind ehci_hcd for first device 0000:00:1a.0:
+  echo -n "0000:00:1a.0" >/sys/bus/pci/drivers/ehci_hcd/unbind
+  # Unbind ehci_hcd for second device 0000:00:1d.0:
+  echo -n "0000:00:1d.0" >/sys/bus/pci/drivers/ehci_hcd/unbind
+then laptop goes to suspend after
+  echo mem >/sys/power/state  
+and when power button is pressed it restores to functional state.
+It works quite stable repeatedly.
+
+This is similar to the problem solved by your patch.
+
+I have tried 3.4.4 with kernel and added quirk
+
 ---
-* v4
-- add -r option for memory-notifier.sh to specify percent of offlining
-  memory blocks
+ drivers/pci/quirks.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
- tools/testing/fault-injection/cpu-notifier.sh    |  169 ++++++++++++++++=
-+++++
- tools/testing/fault-injection/memory-notifier.sh |  176 ++++++++++++++++=
-++++++
- 2 files changed, 345 insertions(+)
- create mode 100755 tools/testing/fault-injection/cpu-notifier.sh
- create mode 100755 tools/testing/fault-injection/memory-notifier.sh
+Index: linux-3.4/drivers/pci/quirks.c
+===================================================================
+--- linux-3.4.orig/drivers/pci/quirks.c 2012-06-23 16:37:14.582568585 +0200
++++ linux-3.4/drivers/pci/quirks.c      2012-06-23 16:38:38.378571372 +0200
+@@ -2942,6 +2942,8 @@
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1c26, asus_ehci_no_d3);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1c2d, asus_ehci_no_d3);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x3b3c, asus_ehci_no_d3);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x3b34, asus_ehci_no_d3);
 
-diff --git a/tools/testing/fault-injection/cpu-notifier.sh b/tools/testin=
-g/fault-injection/cpu-notifier.sh
-new file mode 100755
-index 0000000..af93630
---- /dev/null
-+++ b/tools/testing/fault-injection/cpu-notifier.sh
-@@ -0,0 +1,169 @@
-+#!/bin/bash
-+
-+#
-+# list all hot-pluggable CPUs
-+#
-+hotpluggable_cpus()
-+{
-+	local state=3D${1:-.\*}
-+
-+	for cpu in /sys/devices/system/cpu/cpu*; do
-+		if [ -f $cpu/online ] && grep -q $state $cpu/online; then
-+			echo ${cpu##/*/cpu}
-+		fi
-+	done
-+}
-+
-+hotplaggable_offline_cpus()
-+{
-+	hotpluggable_cpus 0
-+}
-+
-+hotpluggable_online_cpus()
-+{
-+	hotpluggable_cpus 1
-+}
-+
-+cpu_is_online()
-+{
-+	grep -q 1 /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+cpu_is_offline()
-+{
-+	grep -q 0 /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+add_cpu()
-+{
-+	echo 1 > /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+remove_cpu()
-+{
-+	echo 0 > /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+add_cpu_expect_success()
-+{
-+	local cpu=3D$1
-+
-+	if ! add_cpu $cpu; then
-+		echo $FUNCNAME $cpu: unexpected fail >&2
-+	elif ! cpu_is_online $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+add_cpu_expect_fail()
-+{
-+	local cpu=3D$1
-+
-+	if add_cpu $cpu 2> /dev/null; then
-+		echo $FUNCNAME $cpu: unexpected success >&2
-+	elif ! cpu_is_offline $cpu; then
-+		echo $FUNCNAME $cpu: unexpected online >&2
-+	fi
-+}
-+
-+remove_cpu_expect_success()
-+{
-+	local cpu=3D$1
-+
-+	if ! remove_cpu $cpu; then
-+		echo $FUNCNAME $cpu: unexpected fail >&2
-+	elif ! cpu_is_offline $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+remove_cpu_expect_fail()
-+{
-+	local cpu=3D$1
-+
-+	if remove_cpu $cpu 2> /dev/null; then
-+		echo $FUNCNAME $cpu: unexpected success >&2
-+	elif ! cpu_is_online $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+if [ $UID !=3D 0 ]; then
-+	echo must be run as root >&2
-+	exit 1
-+fi
-+
-+error=3D-12
-+priority=3D0
-+
-+while getopts e:hp: opt; do
-+	case $opt in
-+	e)
-+		error=3D$OPTARG
-+		;;
-+	h)
-+		echo "Usage $0 [ -e errno ] [ -p notifier-priority ]"
-+		exit
-+		;;
-+	p)
-+		priority=3D$OPTARG
-+		;;
-+	esac
-+done
-+
-+if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
-+	echo "error code must be -4095 <=3D errno < 0" >&2
-+	exit 1
-+fi
-+
-+DEBUGFS=3D`mount -t debugfs | head -1 | awk '{ print $3 }'`
-+
-+if [ ! -d "$DEBUGFS" ]; then
-+	echo debugfs is not mounted >&2
-+	exit 1
-+fi
-+
-+/sbin/modprobe -r cpu-notifier-error-inject
-+/sbin/modprobe -q cpu-notifier-error-inject priority=3D$priority
-+
-+NOTIFIER_ERR_INJECT_DIR=3D$DEBUGFS/notifier-error-inject/cpu
-+
-+if [ ! -d $NOTIFIER_ERR_INJECT_DIR ]; then
-+	echo cpu-notifier-error-inject module is not available >&2
-+	exit 1
-+fi
-+
-+#
-+# Offline all hot-pluggable CPUs
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+for cpu in `hotpluggable_online_cpus`; do
-+	remove_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test CPU hot-add error handling (offline =3D> online)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_UP_PREPARE/error
-+for cpu in `hotplaggable_offline_cpus`; do
-+	add_cpu_expect_fail $cpu
-+done
-+
-+#
-+# Online all hot-pluggable CPUs
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_UP_PREPARE/error
-+for cpu in `hotplaggable_offline_cpus`; do
-+	add_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test CPU hot-remove error handling (online =3D> offline)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+for cpu in `hotpluggable_online_cpus`; do
-+	remove_cpu_expect_fail $cpu
-+done
-+
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+/sbin/modprobe -r cpu-notifier-error-inject
-diff --git a/tools/testing/fault-injection/memory-notifier.sh b/tools/tes=
-ting/fault-injection/memory-notifier.sh
-new file mode 100755
-index 0000000..843cba7
---- /dev/null
-+++ b/tools/testing/fault-injection/memory-notifier.sh
-@@ -0,0 +1,176 @@
-+#!/bin/bash
-+
-+#
-+# list all hot-pluggable memory
-+#
-+hotpluggable_memory()
-+{
-+	local state=3D${1:-.\*}
-+
-+	for memory in /sys/devices/system/memory/memory*; do
-+		if grep -q 1 $memory/removable &&
-+		   grep -q $state $memory/state; then
-+			echo ${memory##/*/memory}
-+		fi
-+	done
-+}
-+
-+hotplaggable_offline_memory()
-+{
-+	hotpluggable_memory offline
-+}
-+
-+hotpluggable_online_memory()
-+{
-+	hotpluggable_memory online
-+}
-+
-+memory_is_online()
-+{
-+	grep -q online /sys/devices/system/memory/memory$1/state
-+}
-+
-+memory_is_offline()
-+{
-+	grep -q offline /sys/devices/system/memory/memory$1/state
-+}
-+
-+add_memory()
-+{
-+	echo online > /sys/devices/system/memory/memory$1/state
-+}
-+
-+remove_memory()
-+{
-+	echo offline > /sys/devices/system/memory/memory$1/state
-+}
-+
-+add_memory_expect_success()
-+{
-+	local memory=3D$1
-+
-+	if ! add_memory $memory; then
-+		echo $FUNCNAME $memory: unexpected fail >&2
-+	elif ! memory_is_online $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+add_memory_expect_fail()
-+{
-+	local memory=3D$1
-+
-+	if add_memory $memory 2> /dev/null; then
-+		echo $FUNCNAME $memory: unexpected success >&2
-+	elif ! memory_is_offline $memory; then
-+		echo $FUNCNAME $memory: unexpected online >&2
-+	fi
-+}
-+
-+remove_memory_expect_success()
-+{
-+	local memory=3D$1
-+
-+	if ! remove_memory $memory; then
-+		echo $FUNCNAME $memory: unexpected fail >&2
-+	elif ! memory_is_offline $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+remove_memory_expect_fail()
-+{
-+	local memory=3D$1
-+
-+	if remove_memory $memory 2> /dev/null; then
-+		echo $FUNCNAME $memory: unexpected success >&2
-+	elif ! memory_is_online $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+if [ $UID !=3D 0 ]; then
-+	echo must be run as root >&2
-+	exit 1
-+fi
-+
-+error=3D-12
-+priority=3D0
-+ratio=3D10
-+
-+while getopts e:hp:r: opt; do
-+	case $opt in
-+	e)
-+		error=3D$OPTARG
-+		;;
-+	h)
-+		echo "Usage $0 [ -e errno ] [ -p notifier-priority ] [ -r percent-of-m=
-emory-to-offline ]"
-+		exit
-+		;;
-+	p)
-+		priority=3D$OPTARG
-+		;;
-+	r)
-+		ratio=3D$OPTARG
-+		;;
-+	esac
-+done
-+
-+if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
-+	echo "error code must be -4095 <=3D errno < 0" >&2
-+	exit 1
-+fi
-+
-+DEBUGFS=3D`mount -t debugfs | head -1 | awk '{ print $3 }'`
-+
-+if [ ! -d "$DEBUGFS" ]; then
-+	echo debugfs is not mounted >&2
-+	exit 1
-+fi
-+
-+/sbin/modprobe -r memory-notifier-error-inject
-+/sbin/modprobe -q memory-notifier-error-inject priority=3D$priority
-+
-+NOTIFIER_ERR_INJECT_DIR=3D$DEBUGFS/notifier-error-inject/memory
-+
-+if [ ! -d $NOTIFIER_ERR_INJECT_DIR ]; then
-+	echo memory-notifier-error-inject module is not available >&2
-+	exit 1
-+fi
-+
-+#
-+# Offline $ratio percent of hot-pluggable memory
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+for memory in `hotpluggable_online_memory`; do
-+	if [ $((RANDOM % 100)) -lt $ratio ]; then
-+		remove_memory_expect_success $memory
-+	fi
-+done
-+
-+#
-+# Test memory hot-add error handling (offline =3D> online)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_ONLINE/error
-+for memory in `hotplaggable_offline_memory`; do
-+	add_memory_expect_fail $memory
-+done
-+
-+#
-+# Online all hot-pluggable memory
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_ONLINE/error
-+for memory in `hotplaggable_offline_memory`; do
-+	add_memory_expect_success $memory
-+done
-+
-+#
-+# Test memory hot-remove error handling (online =3D> offline)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+for memory in `hotpluggable_online_memory`; do
-+	remove_memory_expect_fail $memory
-+done
-+
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+/sbin/modprobe -r memory-notifier-error-inject
---=20
-1.7.10.2
+ static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
+                          struct pci_fixup *end)
 
+This quirk allows laptop suspend and resume correctly when nothing
+is connected to the USB or even when mounted FLASH disk is connected.
+The USB drive works correctly after resume.
+
+DVB tuner is connected
+
+Bus 002 Device 003: ID 0b48:300d TechnoTrend AG TT-connect CT-3650 CI
+
+then suspend proceeds correctly but resume locks hard again.
+
+This seems to be problem in dvb_usb_ttusb2 driver.
+
+But anyway I think, that adding 0x3b3c and 0x3b34 to the quirk list
+could help more people.
+
+Best wishes
+
+                Pavel Pisa
+    e-mail:     pisa-/N2ztlQkxE7Ub/6JBqosbQ@public.gmane.org
+    www:        http://cmp.felk.cvut.cz/~pisa
+    university: http://dce.fel.cvut.cz/
+    company:    http://www.pikron.com/
 --
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=3Dmailto:"dont@kvack.org"> email@kvack.org </a>
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
