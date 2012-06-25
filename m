@@ -1,151 +1,93 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH] acpi,
- cpuidle: Register with cpuidle even if cpu is onlined after boot
- (beyond maxcpus)
-Date: Mon, 25 Jun 2012 21:33:42 +0530
-Message-ID: <4FE88BDE.1050406@linux.vnet.ibm.com>
-References: <4FDB549F.1020002@linaro.org> <4FE027AC.8010607@linaro.org>
-	<4FE84AB7.6020305@linux.vnet.ibm.com>
-	<201206251553.55867.trenn@suse.de>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next : cpuidle - could you add my tree please
+Date: Tue, 26 Jun 2012 08:53:49 +1000
+Message-ID: <20120626085349.532133b8b72c92ffa6519043@canb.auug.org.au>
+References: <4FDEE98D.7010802@linaro.org>
+	<4FDF2D58.9010006@ti.com>
+	<4FE86727.5010400@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201206251553.55867.trenn@suse.de>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: x86@kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__26_Jun_2012_08_53_49_+1000_Nuiqzk1NuC2Y/NmR"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <4FE86727.5010400@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@ti.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Amit Kucheria <amit.kucheria@linaro.org>, linux-next@vger.kernel.org, Colin Cross <ccross@android.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Rob Lee <rob.lee@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/25/2012 07:23 PM, Thomas Renninger wrote:
+--Signature=_Tue__26_Jun_2012_08_53_49_+1000_Nuiqzk1NuC2Y/NmR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Monday, June 25, 2012 01:25:43 PM Srivatsa S. Bhat wrote:
->>
->> Daniel Lezcano noticed that after booting with maxcpus=X, if we online the
->> remaining cpus by writing: echo 1 > /sys/devices/system/cpu/cpuY/online, then
->> for the newly onlined cpus, the cpuidle directory is not found under
->> /sys/devices/system/cpu/cpuY.
->>
->> Partly, the reason for this is that acpi restricts the initialization to cpus
->> within the maxcpus limit. (See commit 75cbfb9 "ACPI: Do not try to set up acpi
->> processor stuff on cores exceeding maxcpus="). The maxcpus= kernel parameter is
->> used to restrict the number of cpus brought up during boot. That doesn't mean
->> that we should hard restrict the bring up of the remaining cpus later on.
-> 
-> Sorry, but IMO it exaclty does mean that (adding more general lists for
-> further comments).
-> 
-> If you can online more cores than maxcpus= via sysfs, this sounds like a bug.
-> Not the other way around.
-> 
-> Compare with Documentation/kernel-parameters.txt:
->         maxcpus=        [SMP] Maximum number of processors that an SMP kernel
->                         should make use of.  maxcpus=n : n >= 0 limits the
->                         kernel to using 'n' processors.  n=0 is a special case,
->                         it is equivalent to "nosmp", which also disables
->                         the IO APIC.
-> 
-> Chances that you run into more problems are high.
+Hi Daniel,
 
+On Mon, 25 Jun 2012 15:27:03 +0200 Daniel Lezcano <daniel.lezcano@linaro.or=
+g> wrote:
+>
+> we discussed last week to put in place a tree grouping the cpuidle
+> modifications [1]. Is it possible to add the tree ?
+>=20
+> git://git.linaro.org/people/dlezcano/cpuidle-next.git #cpuidle-next
+>=20
+> It contains for the moment Colin Cross's cpuidle coupled states.
 
-Right, I agree on that. So, IMHO, maxcpus=X doesn't mean that the kernel must and
-should forbid any new cpus from coming online, but in the interest of avoiding
-problems/complications in some obscure paths, I guess it makes sense to avoid
-onlining new cpus beyond maxcpus.
+Added from today.
 
-In any case, I was just trying to see why the simple removal of the setup_max_cpus
-check in acpi_processor_add() wasn't enough to expose the cpuidle directories under
-the new cpus.. and while debugging that, I came up with this patch. I don't mind
-if this doesn't get picked up.
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgment of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
 
-> It would help if it is explained why at all this would be needed.
-> 
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+	Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
 
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
 
-Right, the usecase of why somebody would like to online new cpus beyond maxcpus
-doesn't look all that solid anyway. So I am OK with leaving the code as it is now.
+--=20
+Cheers,
+Stephen Rothwell=20
+sfr@canb.auug.org.au
 
-> If there really is a valid use-case, possibly a bootcpus= param could get
-> defined or above documentation is adjusted. But this would need thorough
-> double checking, because I expect maxcpus=X was never intended to bring up
-> more than X cores later via sysfs and I expect there are more
-> places where things have to get ajusted.
-> 
+Legal Stuff:
+By participating in linux-next, your subsystem tree contributions are
+public and will be included in the linux-next trees.  You may be sent
+e-mail messages indicating errors or other issues when the
+patches/commits from your subsystem tree are merged and tested in
+linux-next.  These messages may also be cross-posted to the linux-next
+mailing list, the linux-kernel mailing list, etc.  The linux-next tree
+project and IBM (my employer) make no warranties regarding the linux-next
+project, the testing procedures, the results, the e-mails, etc.  If you
+don't agree to these ground rules, let me know and I'll remove your tree
+from participation in linux-next.
 
+--Signature=_Tue__26_Jun_2012_08_53_49_+1000_Nuiqzk1NuC2Y/NmR
+Content-Type: application/pgp-signature
 
-Yep, that sounds reasonable.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-Regards,
-Srivatsa S. Bhat
+iQIcBAEBCAAGBQJP6Ov9AAoJEECxmPOUX5FE4IUP/2q3WNVkErDVVcKmdF2aGXHd
+s8puPfgYWRb6JoxPfznHKUL+OR4i+DOcTX423zdxk6vVViAr6LcJ0+L/giEGf/3O
+4UPcbo3Or3xFUduiUyCHkhWVRo9LAJsDidak6e9xfZ/3eJdQXdo1E2oPRnWTcKlq
+EosOkysGPaafeqRHmQCX9wIV7Pzz33cyBEqnK+CpWmEguPYR4DJ0sOun4AezROLY
+aQJ2YXIO9UoIxuwFUcIX97n6T0kAK5XveSiuEu3lHxZiNGebP+3RAL/zQavP9yWH
+KOlFboM4gQeOQ4McjHpWsEcR0sgqIGxZRC8RKy/bUZILxGZbVFKzmQB6clHADntn
+W0xiAZkWoEk6qw6hizVdD7Bg9Xv18NT9OBUn2tlu6HqLJ82weSIaijdUVr6F0Gd8
+z0rmgMFCY84rOVWRsDINoKpkr355AEIN9Yw5kLHlik/bdvj/x9n+p0k6iRMXJEpX
+LH0QzsSwwk4qwy0F5SisZyITYhgKqGvEe2gsYXt3uSkhiL0U0xqgtlkGjNSX265n
+eIRJ+7gZJizEF+S7/6VTFNqvO/QnCufa5f6wDb66PU1UZhlIQeGXgG+eKpi4bnj5
+8sT9mx8uKq2RmNmVOKDsi3fBfBkYbQvovkP2u0enz+uNOpb2Ukcob0RmiuWoSbks
+pDusNptPuaBTC0nLwjE0
+=onhO
+-----END PGP SIGNATURE-----
 
-> 
->> So
->> teach acpi to play nice with maxcpus= parameter, and perform the initialization
->> for all present cpus, but defer their startup to the point when they are
->> actually onlined later.
->>
->> But that alone won't suffice as a fix, because there is one more thing that
->> the present but !online cpus lack - the need_hotplug_init flag.
->> The need_hotplug_init flag is set only for physically hotplugged cpus and not
->> for cpus which were already present but not brought online during boot (due to
->> the maxcpus= parameter). For cpus with this flag set, during the online
->> operation, acpi_cpu_soft_notify() takes care of the registration with cpuidle.
->> So, in order to allow the present but !online cpus to be onlined later with
->> full features (by making use of acpi_cpu_soft_notify()), set their
->> need_hotplug_init flag.
->>
->> Reported-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->>
->> ---
->>
->> Daniel, this patch works for me. Does it work for you as well?
->>
->>  drivers/acpi/processor_driver.c |   16 +++++++++++-----
->>  1 files changed, 11 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
->> index 0734086..f29d30f 100644
->> --- a/drivers/acpi/processor_driver.c
->> +++ b/drivers/acpi/processor_driver.c
->> @@ -551,11 +551,6 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
->>  		return 0;
->>  	}
->>  
->> -#ifdef CONFIG_SMP
->> -	if (pr->id >= setup_max_cpus && pr->id != 0)
->> -		return 0;
->> -#endif
->> -
->>  	BUG_ON((pr->id >= nr_cpu_ids) || (pr->id < 0));
->>  
->>  	/*
->> @@ -580,6 +575,17 @@ static int __cpuinit acpi_processor_add(struct acpi_device *device)
->>  		goto err_clear_processor;
->>  	}
->>  
->> +#ifdef CONFIG_SMP
->> +	if (pr->id >= setup_max_cpus && pr->id != 0) {
->> +		/*
->> +		 * Don't start cpus beyond maxcpus now. But allow them to
->> +		 * to be brought online later.
->> +		 */
->> +		pr->flags.need_hotplug_init = 1;
->> +		return 0;
->> +	}
->> +#endif
->> +
->>  	/*
->>  	 * Do not start hotplugged CPUs now, but when they
->>  	 * are onlined the first time
->>
->>
->>
+--Signature=_Tue__26_Jun_2012_08_53_49_+1000_Nuiqzk1NuC2Y/NmR--
