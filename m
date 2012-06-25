@@ -1,73 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: cpuidle future and improvements
-Date: Mon, 25 Jun 2012 14:54:02 +0200
-Message-ID: <4FE85F6A.80307@linaro.org>
-References: <4FDEE98D.7010802@linaro.org> <CAMbhsRQRFXcayyWjM1RirgFppVAK23z2+3EbYOCw-qmzuY9_2g@mail.gmail.com>
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+Subject: Re: [linux-pm] cpuidle future and improvements
+Date: Mon, 25 Jun 2012 18:28:09 +0530
+Message-ID: <CAMQu2gz8aGC1DeOvWNNPaaMD9eJLuiJ5HGoKe98EDtV73_QRTQ@mail.gmail.com>
+References: <4FDEE98D.7010802@linaro.org> <4FDF2D58.9010006@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <CAMbhsRQRFXcayyWjM1RirgFppVAK23z2+3EbYOCw-qmzuY9_2g@mail.gmail.com>
+In-Reply-To: <4FDF2D58.9010006@ti.com>
 Sender: linux-next-owner@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, "lenb@kernel.org" <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Rob Lee <rob.lee@linaro.org>, rjw@sisk.pl, Kevin Hilman <khilman@ti.com>, linux-next@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, Lists Linaro-dev <linaro-dev@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@ti.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Amit Kucheria <amit.kucheria@linaro.org>, linux-next@vger.kernel.org, Colin Cross <ccross@android.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Rob Lee <rob.lee@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/18/2012 08:15 PM, Colin Cross wrote:
-> On Mon, Jun 18, 2012 at 1:40 AM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->> I propose to host a cpuidle-next tree where all these modifications =
-will
->> be and where people can send patches against, preventing last minute=
-s
->> conflicts and perhaps Lenb will agree to pull from this tree. In the
->> meantime, the tree will be part of the linux-next, the patches will =
-be
->> more widely tested and could be fixed earlier.
->=20
-> My coupled cpuidle patches were acked and temporarily in Len's
-> next/Linus pull branch, but were later dropped when the first pull
-> request to Linus was rejected.  I asked Len to either put the coupled
-> cpuidle patches into his next branch, or let me host them so people
-> could base SoC branches off of them and let Len pull them later, but
-> got no response.  If you do start a cpuidle for-next branch, can you
-> pull my coupled-cpuidle branch:
->=20
-> The following changes since commit 76e10d158efb6d4516018846f60c2ab550=
-1900bc:
->=20
->   Linux 3.4 (2012-05-20 15:29:13 -0700)
->=20
-> are available in the git repository at:
->   https://android.googlesource.com/kernel/common.git coupled-cpuidle
->=20
-> Colin Cross (4):
->       cpuidle: refactor out cpuidle_enter_state
->       cpuidle: fix error handling in __cpuidle_register_device
->       cpuidle: add support for states that affect multiple cpus
->       cpuidle: coupled: add parallel barrier function
->=20
->  drivers/cpuidle/Kconfig   |    3 +
->  drivers/cpuidle/Makefile  |    1 +
->  drivers/cpuidle/coupled.c |  715 +++++++++++++++++++++++++++++++++++=
-++++++++++
->  drivers/cpuidle/cpuidle.c |   68 ++++-
->  drivers/cpuidle/cpuidle.h |   32 ++
->  include/linux/cpuidle.h   |   11 +
->  6 files changed, 813 insertions(+), 17 deletions(-)
->  create mode 100644 drivers/cpuidle/coupled.c
+On Mon, Jun 18, 2012 at 7:00 PM, a0393909 <santosh.shilimkar@ti.com> wrote:
+> Daniel,
+>
+>
+> On 06/18/2012 02:10 PM, Daniel Lezcano wrote:
+>>
+>>
+>> Dear all,
+>>
+>> A few weeks ago, Peter De Schrijver proposed a patch [1] to allow per
+>> cpu latencies. We had a discussion about this patchset because it
+>> reverse the modifications Deepthi did some months ago [2] and we may
+>> want to provide a different implementation.
+>>
+>> The Linaro Connect [3] event bring us the opportunity to meet people
+>> involved in the power management and the cpuidle area for different SoC.
+>>
+>> With the Tegra3 and big.LITTLE architecture, making per cpu latencies
+>> for cpuidle is vital.
+>>
+>> Also, the SoC vendors would like to have the ability to tune their cpu
+>> latencies through the device tree.
+>>
+>> We agreed in the following steps:
+>>
+>> 1. factor out / cleanup the cpuidle code as much as possible
+>> 2. better sharing of code amongst SoC idle drivers by moving common bits
+>> to core code
+>> 3. make the cpuidle_state structure contain only data
+>> 4. add a API to register latencies per cpu
+>>
+>> These four steps impacts all the architecture. I began the factor out
+>> code / cleanup [4] and that has been accepted upstream and I proposed
+>> some modifications [5] but I had a very few answers.
+>>
+> Another thing which we discussed is bringing the CPU cluster/package
+> notion in the core idle code. Couple idle did bring that idea to some
+> extent but in can be further extended and abstracted. Atm, most of
+> the work is done in back-end cpuidle drivers which can be easily
+> abstracted if the "cluster idle" notion is supported in the core layer.
+>
+Are you considering the "cluster idle" as one of the topic ?
 
-
-Done.
-
-http://git.linaro.org/gitweb?p=3Dpeople/dlezcano/cpuidle-next.git;a=3Ds=
-hortlog;h=3Drefs/heads/cpuidle-next
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Regards
+Santosh
