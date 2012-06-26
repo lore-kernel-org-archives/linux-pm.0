@@ -1,17 +1,15 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [RFC PATCH v2 03/11] mfd: omap: control: core system
- control driver
-Date: Tue, 26 Jun 2012 04:17:46 -0700
-Message-ID: <20120626111746.GE31393@atomide.com>
-References: <1337934361-1606-1-git-send-email-eduardo.valentin@ti.com>
-	<4FDF11C3.4010701@dev.rtsoft.ru>
-	<20120620102224.GZ12766@atomide.com>
-	<4FE1DAA2.1000502@dev.rtsoft.ru>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -v4 6/6] fault-injection: add notifier error
+ injection testing scripts
+Date: Tue, 26 Jun 2012 16:31:47 -0700
+Message-ID: <20120626163147.93181e21.akpm@linux-foundation.org>
+References: <1340463502-15341-1-git-send-email-akinobu.mita@gmail.com>
+	<1340463502-15341-7-git-send-email-akinobu.mita@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <4FE1DAA2.1000502@dev.rtsoft.ru>
+In-Reply-To: <1340463502-15341-7-git-send-email-akinobu.mita@gmail.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -21,19 +19,38 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Cc: J Keerthy <j-keerthy@ti.com>, amit.kucheria@linaro.org, kishon@ti.com, balbi@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>, linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-* Konstantin Baydarov <kbaidarov@dev.rtsoft.ru> [120620 07:18]:
-> 
-> So,the same API set (omap_control_readl/omap_control_writel) was added to omap-control-core.c.
-> 
-> If omap-control-core.c should only service users from driver/ directory, than I agree - we can remove
-> omap_control_readl/omap_control_writel from omap-control-core.c.
->   But IIUC you are agree to "switch" arch/arm/mach-omap2/id.c from control.c to omap-control-core.c. If arch/arm/mach-omap2/id.c is switched to control.c, then I guess all arch/arm/mach-omap2/*.c should be "switched" to omap-control-core.c as well. But this means that omap-control-core.c should provide omap_control_readl/omap_control_writel API.
+On Sat, 23 Jun 2012 23:58:22 +0900
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-Can't you just add something like int omap_ctrl_read_status(void)
-that id.c can use?
+> This adds two testing scripts with notifier error injection
 
-Tony
+Can we move these into tools/testing/selftests/, so that a "make
+run_tests" runs these tests?
+
+Also, I don't think it's appropriate that "fault-injection" be in the
+path - that's an implementation detail.  What we're testing here is
+memory hotplug, pm, cpu hotplug, etc.  So each test would go into, say,
+tools/testing/selftests/cpu-hotplug.
+
+Now, your cpu-hotplug test only tests a tiny part of the cpu-hotplug
+code.  But it is a start, and creates the place where additional tests
+will be placed in the future.
+
+
+If the kernel configuration means that the tests cannot be run, the
+attempt should succeed so that other tests are not disrupted.  I guess
+that printing a warning in this case is useful.
+
+Probably the selftests will require root permissions - we haven't
+really thought about that much.  If these tests require root (I assume
+they do?) then a sensible approach would be to check for that and to
+emit a warning and return "success".
+
+My overall take on the fault-injection code is that there has been a
+disappointing amount of uptake: I don't see many developers using them
+for whitebox testing their stuff.  I guess this patchset addresses
+that, in a way.
