@@ -1,13 +1,12 @@
-From: Thomas Renninger <trenn@suse.de>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: Re: [PATCH] acpi: intel_idle : break dependency between
-	modules
-Date: Wed, 27 Jun 2012 15:06:28 +0200
-Message-ID: <201206271506.29034.trenn@suse.de>
+ modules
+Date: Wed, 27 Jun 2012 21:46:33 +0530
+Message-ID: <4FEB31E1.2030209@linux.vnet.ibm.com>
 References: <201206261301.25550.trenn@suse.de>
 	<1340788068-16422-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-6"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1340788068-16422-1-git-send-email-daniel.lezcano@linaro.org>
@@ -21,16 +20,10 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org
+Cc: linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-I agree that such a dependency between 2 modules is not
-nice. But your patch will have bad side-effects (see comments
-embedded below).
-
-On Wednesday, June 27, 2012 11:07:48 AM Daniel Lezcano wrote:
+On 06/27/2012 02:37 PM, Daniel Lezcano wrote:
 > When the system is booted with some cpus offline, the idle
 > driver is not initialized. When a cpu is set online, the
 > acpi code call the intel idle init function. Unfortunately
@@ -39,10 +32,17 @@ On Wednesday, June 27, 2012 11:07:48 AM Daniel Lezcano wrote:
 > This patch is intended to remove this dependency by using the
 > notifier of intel_idle. In order to make it work, the notifier
 > must be initialized in the right order, acpi then intel_idle.
-> This is done in the Makefile. This patch has the benefit of
+> This is done in the Makefile.
+
+There is a much better way of doing this. See below.
+
+> This patch has the benefit of
 > encapsulating the intel_idle driver and remove some exported
 > functions.
 > 
+
+Nice :)
+
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > ---
 >  drivers/Makefile                |    3 ++-
@@ -63,17 +63,25 @@ On Wednesday, June 27, 2012 11:07:48 AM Daniel Lezcano wrote:
 > +# acpi must come before idle for initialization
 >  obj-$(CONFIG_ACPI)		+= acpi/
 > +obj-y				+= idle/
-This breaks intel_idle.
-Loading order defines which one comes first and is used: intel_idle
-or ACPI processor cpuidle driver.
-With above, one would get acpi_idle cpuidle driver if both are
-compiled in, instead of the intel_idle one.
-
-Why exactly is this necessary, couldn't it just work?
-
 >  obj-$(CONFIG_SFI)		+= sfi/
 >  # PnP must come after ACPI since it will eventually need to check if acpi
 >  # was used and do nothing if so
+
+OK, so all you are trying to do here is ensure that the intel idle related
+notifier runs _after_ the acpi related one. To do that, you don't have to touch
+the Makefiles at all! Just use the appropriate priorities for the notifiers
+(default is 0), to handle the dependency. You can find some examples in kernel/
+sched/core.c.  And while doing that you might want to add a separate notifier
+in intel idle rather than piggy back on the existing timer related one (because
+you are handling a dependency here, which might not apply to timers, or even
+worse, cause unwanted side-effects, if any).
+
+I'll take a look at the rest of the patch tomorrow. I think Thomas has already
+pointed out the rest of the issues.
+
+Regards,
+Srivatsa S. Bhat
+
 > diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
 > index 0734086..8648b29 100644
 > --- a/drivers/acpi/processor_driver.c
@@ -106,13 +114,13 @@ Why exactly is this necessary, couldn't it just work?
 >  static int intel_idle(struct cpuidle_device *dev,
 >  			struct cpuidle_driver *drv, int index);
 > +static int intel_idle_cpu_init(int cpu);
->  
+> 
 >  static struct cpuidle_state *cpuidle_state_table;
->  
+> 
 > @@ -302,22 +303,28 @@ static void __setup_broadcast_timer(void *arg)
 >  	clockevents_notify(reason, &cpu);
 >  }
->  
+> 
 > -static int setup_broadcast_cpuhp_notify(struct notifier_block *n,
 > -		unsigned long action, void *hcpu)
 > +static int cpu_hotplug_notify(struct notifier_block *n,
@@ -120,7 +128,7 @@ Why exactly is this necessary, couldn't it just work?
 >  {
 >  	int hotcpu = (unsigned long)hcpu;
 > +	struct cpuidle_device *dev;
->  
+> 
 >  	switch (action & 0xf) {
 >  	case CPU_ONLINE:
 >  		smp_call_function_single(hotcpu, __setup_broadcast_timer,
@@ -130,20 +138,17 @@ Why exactly is this necessary, couldn't it just work?
 > +		if (!dev->registered)
 > +			intel_idle_cpu_init(hotcpu);
 > +
-A small comment why this can happen and needs to be done
-(real hotplugged cpu case) might help here later.
-
 >  		break;
 >  	}
 >  	return NOTIFY_OK;
 >  }
->  
+> 
 > -static struct notifier_block setup_broadcast_notifier = {
 > -	.notifier_call = setup_broadcast_cpuhp_notify,
 > +static struct notifier_block cpu_hotplug_notifier = {
 > +	.notifier_call = cpu_hotplug_notify,
 >  };
->  
+> 
 >  static void auto_demotion_disable(void *dummy)
 > @@ -407,7 +414,7 @@ static int intel_idle_probe(void)
 >  		lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
@@ -151,13 +156,8 @@ A small comment why this can happen and needs to be done
 >  		on_each_cpu(__setup_broadcast_timer, (void *)true, 1);
 > -		register_cpu_notifier(&setup_broadcast_notifier);
 > +		register_cpu_notifier(&cpu_hotplug_notifier);
-
-The notifier always has to be registered now, not only in:
-if (boot_cpu_has(X86_FEATURE_ARAT))     /* Always Reliable APIC Timer */
-case.
-
 >  	}
->  
+> 
 >  	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
 > @@ -494,7 +501,7 @@ static int intel_idle_cpuidle_driver_init(void)
 >   * allocate, initialize, register cpuidle_devices
@@ -169,17 +169,39 @@ case.
 >  	int cstate;
 >  	struct cpuidle_device *dev;
 > @@ -539,7 +546,6 @@ int intel_idle_cpu_init(int cpu)
->  
+> 
 >  	return 0;
 >  }
 > -EXPORT_SYMBOL_GPL(intel_idle_cpu_init);
->  
+> 
 >  static int __init intel_idle_init(void)
 >  {
 > @@ -583,7 +589,7 @@ static void __exit intel_idle_exit(void)
->  
+> 
 >  	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE) {
 >  		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
 > -		unregister_cpu_notifier(&setup_broadcast_notifier);
 > +		unregister_cpu_notifier(&cpu_hotplug_notifier);
-Same.
+>  	}
+> 
+>  	return;
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 5ab7183..66d7e0d 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -213,14 +213,7 @@ struct cpuidle_governor {
+>  extern int cpuidle_register_governor(struct cpuidle_governor *gov);
+>  extern void cpuidle_unregister_governor(struct cpuidle_governor *gov);
+> 
+> -#ifdef CONFIG_INTEL_IDLE
+> -extern int intel_idle_cpu_init(int cpu);
+>  #else
+> -static inline int intel_idle_cpu_init(int cpu) { return -1; }
+> -#endif
+> -
+> -#else
+> -static inline int intel_idle_cpu_init(int cpu) { return -1; }
+> 
+>  static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
+>  {return 0;}
+> 
