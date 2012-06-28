@@ -1,71 +1,105 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [linux-pm] [PATCH] acpi: intel_idle : break dependency between modules
-Date: Thu, 28 Jun 2012 09:34:47 +0200
-Message-ID: <201206280934.48147.trenn@suse.de>
-References: <201206261301.25550.trenn@suse.de> <1340788068-16422-1-git-send-email-daniel.lezcano@linaro.org> <4FEB31E1.2030209@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] acpi: intel_idle : break dependency between modules
+Date: Thu, 28 Jun 2012 10:03:56 +0200
+Message-ID: <4FEC0FEC.5070304@linaro.org>
+References: <201206261301.25550.trenn@suse.de>
+	<1340788068-16422-1-git-send-email-daniel.lezcano@linaro.org>
+	<201206271506.29034.trenn@suse.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4FEB31E1.2030209@linux.vnet.ibm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <201206271506.29034.trenn-l3A5Bk7waGM@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Thomas Renninger <trenn-l3A5Bk7waGM@public.gmane.org>
+Cc: deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, srivatsa.bhat-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 27, 2012 06:16:33 PM Srivatsa S. Bhat wrote:
-> On 06/27/2012 02:37 PM, Daniel Lezcano wrote:
-> > When the system is booted with some cpus offline, the idle
-> > driver is not initialized. When a cpu is set online, the
-> > acpi code call the intel idle init function. Unfortunately
-> > this code introduce a dependency between intel_idle and acpi.
-> > 
-> > This patch is intended to remove this dependency by using the
-> > notifier of intel_idle. In order to make it work, the notifier
-> > must be initialized in the right order, acpi then intel_idle.
-> > This is done in the Makefile.
-> 
-> There is a much better way of doing this. See below.
-> 
-> > This patch has the benefit of
-> > encapsulating the intel_idle driver and remove some exported
-> > functions.
-> > 
-> 
-> Nice :)
-> 
-> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > ---
-> >  drivers/Makefile                |    3 ++-
-> >  drivers/acpi/processor_driver.c |    7 -------
-> >  drivers/idle/intel_idle.c       |   22 ++++++++++++++--------
-> >  include/linux/cpuidle.h         |    7 -------
-> >  4 files changed, 16 insertions(+), 23 deletions(-)
-> > 
-> > diff --git a/drivers/Makefile b/drivers/Makefile
-> > index 2ba29ff..a2454b8 100644
-> > --- a/drivers/Makefile
-> > +++ b/drivers/Makefile
-> > @@ -12,8 +12,9 @@ obj-$(CONFIG_PCI)		+= pci/
-> >  obj-$(CONFIG_PARISC)		+= parisc/
-> >  obj-$(CONFIG_RAPIDIO)		+= rapidio/
-> >  obj-y				+= video/
-> > -obj-y				+= idle/
-> > +# acpi must come before idle for initialization
-> >  obj-$(CONFIG_ACPI)		+= acpi/
-> > +obj-y				+= idle/
-> >  obj-$(CONFIG_SFI)		+= sfi/
-> >  # PnP must come after ACPI since it will eventually need to check if acpi
-> >  # was used and do nothing if so
-> 
-> OK, so all you are trying to do here is ensure that the intel idle related
-> notifier runs _after_ the acpi related one.
-I might oversee something, if you have concerns, please point me to it.
-If it's all about keeping the order of excuting these functions:
-   acpi_processor_start(pr)
-and
-   intel_idle_cpu_init()
-There should be no need for it. Intel idle is pretty separated.
-
-  Thomas
+T24gMDYvMjcvMjAxMiAwMzowNiBQTSwgVGhvbWFzIFJlbm5pbmdlciB3cm90ZToKPiBIaSwKPiAK
+PiBJIGFncmVlIHRoYXQgc3VjaCBhIGRlcGVuZGVuY3kgYmV0d2VlbiAyIG1vZHVsZXMgaXMgbm90
+Cj4gbmljZS4gQnV0IHlvdXIgcGF0Y2ggd2lsbCBoYXZlIGJhZCBzaWRlLWVmZmVjdHMgKHNlZSBj
+b21tZW50cwo+IGVtYmVkZGVkIGJlbG93KS4KPiAKPiBPbiBXZWRuZXNkYXksIEp1bmUgMjcsIDIw
+MTIgMTE6MDc6NDggQU0gRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+IFdoZW4gdGhlIHN5c3RlbSBp
+cyBib290ZWQgd2l0aCBzb21lIGNwdXMgb2ZmbGluZSwgdGhlIGlkbGUKPj4gZHJpdmVyIGlzIG5v
+dCBpbml0aWFsaXplZC4gV2hlbiBhIGNwdSBpcyBzZXQgb25saW5lLCB0aGUKPj4gYWNwaSBjb2Rl
+IGNhbGwgdGhlIGludGVsIGlkbGUgaW5pdCBmdW5jdGlvbi4gVW5mb3J0dW5hdGVseQo+PiB0aGlz
+IGNvZGUgaW50cm9kdWNlIGEgZGVwZW5kZW5jeSBiZXR3ZWVuIGludGVsX2lkbGUgYW5kIGFjcGku
+Cj4+Cj4+IFRoaXMgcGF0Y2ggaXMgaW50ZW5kZWQgdG8gcmVtb3ZlIHRoaXMgZGVwZW5kZW5jeSBi
+eSB1c2luZyB0aGUKPj4gbm90aWZpZXIgb2YgaW50ZWxfaWRsZS4gSW4gb3JkZXIgdG8gbWFrZSBp
+dCB3b3JrLCB0aGUgbm90aWZpZXIKPj4gbXVzdCBiZSBpbml0aWFsaXplZCBpbiB0aGUgcmlnaHQg
+b3JkZXIsIGFjcGkgdGhlbiBpbnRlbF9pZGxlLgo+PiBUaGlzIGlzIGRvbmUgaW4gdGhlIE1ha2Vm
+aWxlLiBUaGlzIHBhdGNoIGhhcyB0aGUgYmVuZWZpdCBvZgo+PiBlbmNhcHN1bGF0aW5nIHRoZSBp
+bnRlbF9pZGxlIGRyaXZlciBhbmQgcmVtb3ZlIHNvbWUgZXhwb3J0ZWQKPj4gZnVuY3Rpb25zLgo+
+Pgo+PiBTaWduZWQtb2ZmLWJ5OiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGluYXJv
+Lm9yZz4KPj4gLS0tCj4+ICBkcml2ZXJzL01ha2VmaWxlICAgICAgICAgICAgICAgIHwgICAgMyAr
+Ky0KPj4gIGRyaXZlcnMvYWNwaS9wcm9jZXNzb3JfZHJpdmVyLmMgfCAgICA3IC0tLS0tLS0KPj4g
+IGRyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLmMgICAgICAgfCAgIDIyICsrKysrKysrKysrKysrLS0t
+LS0tLS0KPj4gIGluY2x1ZGUvbGludXgvY3B1aWRsZS5oICAgICAgICAgfCAgICA3IC0tLS0tLS0K
+Pj4gIDQgZmlsZXMgY2hhbmdlZCwgMTYgaW5zZXJ0aW9ucygrKSwgMjMgZGVsZXRpb25zKC0pCj4+
+Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL01ha2VmaWxlIGIvZHJpdmVycy9NYWtlZmlsZQo+PiBp
+bmRleCAyYmEyOWZmLi5hMjQ1NGI4IDEwMDY0NAo+PiAtLS0gYS9kcml2ZXJzL01ha2VmaWxlCj4+
+ICsrKyBiL2RyaXZlcnMvTWFrZWZpbGUKPj4gQEAgLTEyLDggKzEyLDkgQEAgb2JqLSQoQ09ORklH
+X1BDSSkJCSs9IHBjaS8KPj4gIG9iai0kKENPTkZJR19QQVJJU0MpCQkrPSBwYXJpc2MvCj4+ICBv
+YmotJChDT05GSUdfUkFQSURJTykJCSs9IHJhcGlkaW8vCj4+ICBvYmoteQkJCQkrPSB2aWRlby8K
+Pj4gLW9iai15CQkJCSs9IGlkbGUvCj4+ICsjIGFjcGkgbXVzdCBjb21lIGJlZm9yZSBpZGxlIGZv
+ciBpbml0aWFsaXphdGlvbgo+PiAgb2JqLSQoQ09ORklHX0FDUEkpCQkrPSBhY3BpLwo+PiArb2Jq
+LXkJCQkJKz0gaWRsZS8KPiBUaGlzIGJyZWFrcyBpbnRlbF9pZGxlLgo+IExvYWRpbmcgb3JkZXIg
+ZGVmaW5lcyB3aGljaCBvbmUgY29tZXMgZmlyc3QgYW5kIGlzIHVzZWQ6IGludGVsX2lkbGUKPiBv
+ciBBQ1BJIHByb2Nlc3NvciBjcHVpZGxlIGRyaXZlci4KPiBXaXRoIGFib3ZlLCBvbmUgd291bGQg
+Z2V0IGFjcGlfaWRsZSBjcHVpZGxlIGRyaXZlciBpZiBib3RoIGFyZQo+IGNvbXBpbGVkIGluLCBp
+bnN0ZWFkIG9mIHRoZSBpbnRlbF9pZGxlIG9uZS4KPiAKPiBXaHkgZXhhY3RseSBpcyB0aGlzIG5l
+Y2Vzc2FyeSwgY291bGRuJ3QgaXQganVzdCB3b3JrPwoKWy4uLl0KCkkganVzdCB3YW50ZWQgdG8g
+a2VlcCBzYW1lIG9yZGVyLiBJZiBpdCBpcyBub3QgbmVjZXNzYXJ5LCBJIHdvbid0IGludmVydAp0
+aGUgY29tcGlsYXRpb24gb3JkZXIgaW4gdGhlIG5leHQgcGF0Y2guCgo+PiAtc3RhdGljIGludCBz
+ZXR1cF9icm9hZGNhc3RfY3B1aHBfbm90aWZ5KHN0cnVjdCBub3RpZmllcl9ibG9jayAqbiwKPj4g
+LQkJdW5zaWduZWQgbG9uZyBhY3Rpb24sIHZvaWQgKmhjcHUpCj4+ICtzdGF0aWMgaW50IGNwdV9o
+b3RwbHVnX25vdGlmeShzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm4sCj4+ICsJCQkgICAgICB1bnNp
+Z25lZCBsb25nIGFjdGlvbiwgdm9pZCAqaGNwdSkKPj4gIHsKPj4gIAlpbnQgaG90Y3B1ID0gKHVu
+c2lnbmVkIGxvbmcpaGNwdTsKPj4gKwlzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldjsKPj4gIAo+
+PiAgCXN3aXRjaCAoYWN0aW9uICYgMHhmKSB7Cj4+ICAJY2FzZSBDUFVfT05MSU5FOgo+PiAgCQlz
+bXBfY2FsbF9mdW5jdGlvbl9zaW5nbGUoaG90Y3B1LCBfX3NldHVwX2Jyb2FkY2FzdF90aW1lciwK
+Pj4gIAkJCSh2b2lkICopdHJ1ZSwgMSk7Cj4+ICsKPj4gKwkJZGV2ID0gcGVyX2NwdV9wdHIoaW50
+ZWxfaWRsZV9jcHVpZGxlX2RldmljZXMsIGhvdGNwdSk7Cj4+ICsJCWlmICghZGV2LT5yZWdpc3Rl
+cmVkKQo+PiArCQkJaW50ZWxfaWRsZV9jcHVfaW5pdChob3RjcHUpOwo+PiArCj4gQSBzbWFsbCBj
+b21tZW50IHdoeSB0aGlzIGNhbiBoYXBwZW4gYW5kIG5lZWRzIHRvIGJlIGRvbmUKPiAocmVhbCBo
+b3RwbHVnZ2VkIGNwdSBjYXNlKSBtaWdodCBoZWxwIGhlcmUgbGF0ZXIuCgpZZXMsIHRoYXQgbWFr
+ZXMgc2Vuc2UuCgpbLi4uXQoKPj4gIHN0YXRpYyB2b2lkIGF1dG9fZGVtb3Rpb25fZGlzYWJsZSh2
+b2lkICpkdW1teSkKPj4gQEAgLTQwNyw3ICs0MTQsNyBAQCBzdGF0aWMgaW50IGludGVsX2lkbGVf
+cHJvYmUodm9pZCkKPj4gIAkJbGFwaWNfdGltZXJfcmVsaWFibGVfc3RhdGVzID0gTEFQSUNfVElN
+RVJfQUxXQVlTX1JFTElBQkxFOwo+PiAgCWVsc2Ugewo+PiAgCQlvbl9lYWNoX2NwdShfX3NldHVw
+X2Jyb2FkY2FzdF90aW1lciwgKHZvaWQgKil0cnVlLCAxKTsKPj4gLQkJcmVnaXN0ZXJfY3B1X25v
+dGlmaWVyKCZzZXR1cF9icm9hZGNhc3Rfbm90aWZpZXIpOwo+PiArCQlyZWdpc3Rlcl9jcHVfbm90
+aWZpZXIoJmNwdV9ob3RwbHVnX25vdGlmaWVyKTsKPiAKPiBUaGUgbm90aWZpZXIgYWx3YXlzIGhh
+cyB0byBiZSByZWdpc3RlcmVkIG5vdywgbm90IG9ubHkgaW46Cj4gaWYgKGJvb3RfY3B1X2hhcyhY
+ODZfRkVBVFVSRV9BUkFUKSkgICAgIC8qIEFsd2F5cyBSZWxpYWJsZSBBUElDIFRpbWVyICovCj4g
+Y2FzZS4KCk9vcHMsIHJpZ2h0LgoKCj4+ICAJcHJfZGVidWcoUFJFRklYICJ2IiBJTlRFTF9JRExF
+X1ZFUlNJT04KPj4gQEAgLTQ5NCw3ICs1MDEsNyBAQCBzdGF0aWMgaW50IGludGVsX2lkbGVfY3B1
+aWRsZV9kcml2ZXJfaW5pdCh2b2lkKQo+PiAgICogYWxsb2NhdGUsIGluaXRpYWxpemUsIHJlZ2lz
+dGVyIGNwdWlkbGVfZGV2aWNlcwo+PiAgICogQGNwdTogY3B1L2NvcmUgdG8gaW5pdGlhbGl6ZQo+
+PiAgICovCj4+IC1pbnQgaW50ZWxfaWRsZV9jcHVfaW5pdChpbnQgY3B1KQo+PiArc3RhdGljIGlu
+dCBpbnRlbF9pZGxlX2NwdV9pbml0KGludCBjcHUpCj4+ICB7Cj4+ICAJaW50IGNzdGF0ZTsKPj4g
+IAlzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldjsKPj4gQEAgLTUzOSw3ICs1NDYsNiBAQCBpbnQg
+aW50ZWxfaWRsZV9jcHVfaW5pdChpbnQgY3B1KQo+PiAgCj4+ICAJcmV0dXJuIDA7Cj4+ICB9Cj4+
+IC1FWFBPUlRfU1lNQk9MX0dQTChpbnRlbF9pZGxlX2NwdV9pbml0KTsKPj4gIAo+PiAgc3RhdGlj
+IGludCBfX2luaXQgaW50ZWxfaWRsZV9pbml0KHZvaWQpCj4+ICB7Cj4+IEBAIC01ODMsNyArNTg5
+LDcgQEAgc3RhdGljIHZvaWQgX19leGl0IGludGVsX2lkbGVfZXhpdCh2b2lkKQo+PiAgCj4+ICAJ
+aWYgKGxhcGljX3RpbWVyX3JlbGlhYmxlX3N0YXRlcyAhPSBMQVBJQ19USU1FUl9BTFdBWVNfUkVM
+SUFCTEUpIHsKPj4gIAkJb25fZWFjaF9jcHUoX19zZXR1cF9icm9hZGNhc3RfdGltZXIsICh2b2lk
+ICopZmFsc2UsIDEpOwo+PiAtCQl1bnJlZ2lzdGVyX2NwdV9ub3RpZmllcigmc2V0dXBfYnJvYWRj
+YXN0X25vdGlmaWVyKTsKPj4gKwkJdW5yZWdpc3Rlcl9jcHVfbm90aWZpZXIoJmNwdV9ob3RwbHVn
+X25vdGlmaWVyKTsKPiBTYW1lLgoKClRoYW5rcyBmb3IgdGhlIHJldmlldyAhCgogIC0tIERhbmll
+bAoKLS0gCiA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3Vy
+Y2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFj
+ZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMh
+L2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cv
+PiBCbG9nCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGluYXJvLWRldiBtYWlsaW5nIGxpc3QKbGluYXJvLWRldkBsaXN0cy5saW5hcm8ub3JnCmh0dHA6
+Ly9saXN0cy5saW5hcm8ub3JnL21haWxtYW4vbGlzdGluZm8vbGluYXJvLWRldgo=
