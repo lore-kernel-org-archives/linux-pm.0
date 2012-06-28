@@ -1,64 +1,187 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Cpuidle drivers,
-	Suspend : Fix suspend/resume hang with intel_idle driver
-Date: Thu, 28 Jun 2012 21:11:03 +0200
-Message-ID: <201206282111.03992.rjw@sisk.pl>
-References: <4FEC20D2.2070501@linux.vnet.ibm.com>
-	<201206281153.25310.rjw@sisk.pl>
-	<4FEC84A4.1000605@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] acpi: intel_idle : break dependency between modules
+Date: Thu, 28 Jun 2012 21:24:09 +0200
+Message-ID: <201206282124.09857.rjw@sisk.pl>
+References: <201206271506.29034.trenn@suse.de> <1340873202-2476-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4FEC84A4.1000605@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: preeti <preeti@linux.vnet.ibm.com>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, Dave Hansen <dave@linux.vnet.ibm.com>, linux-acpi@vger.kernel.org, "Srivatsa.S.Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-pm@lists.linux-foundation.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1340873202-2476-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, lenb@kernel.org
+Cc: trenn@suse.de, srivatsa.bhat@linux.vnet.ibm.com, deepthi@linux.vnet.ibm.com, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 28, 2012, preeti wrote:
-> On 06/28/2012 03:23 PM, Rafael J. Wysocki wrote:
-> > On Thursday, June 28, 2012, preeti wrote:
-> >>
-> >> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-[...]
-> cpuidle is an architecture independent part of the kernel  code.Since 
-> this patch aims at x86 architecture in specific,I considered it
-> inappropriate.
+On Thursday, June 28, 2012, Daniel Lezcano wrote:
+> When the system is booted with some cpus offline, the idle
+> driver is not initialized. When a cpu is set online, the
+> acpi code call the intel idle init function. Unfortunately
+> this code introduce a dependency between intel_idle and acpi.
 > 
-> In addition to this,suspend happens on x86 only if ACPI is configured.
+> This patch is intended to remove this dependency by using the
+> notifier of intel_idle. This patch has the benefit of
+> encapsulating the intel_idle driver and remove some exported
+> functions.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-But that is not required for intel_idle, so if it hangs with intel_idle,
-then it is not dependent on ACPI after all.
+This one looks good to me too.
 
-> Therefore it seemed right to put the callback in ACPI specific code
-> which deals with ACPI sleep support.
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I wonder if we can address this issue correctly.  That is, in a non-racy
-way and in a better place.
+Len, are you going to take it?
 
-First, I really don't think it is necessary to "suspend" cpuidle (be it
-ACPI or any other) when device drivers' suspend routines are being
-executed (which also is racy, because the cpuidle "suspend" may be running
-concurrently with cpuidle on another CPU) or earlier.  We really may want
-to disable the deeper C-states when we're about to execute
-suspend_ops->prepare_late(), or hibernation_ops->prepare(), i.e. after
-we've run dpm_suspend_end() successfully.
-
-So, it seems, it might be a good idea to place a cpuidle driver suspend
-(and/or hibernation) hook at the end of dpm_suspend_end() and make ACPI
-and intel_idle drivers implement that hook.
-
-That would be much more deterministic than your patch I think.
-
-Thanks,
 Rafael
+
+
+> ---
+>  drivers/acpi/processor_driver.c |    7 ------
+>  drivers/idle/intel_idle.c       |   41 +++++++++++++++++++++++++-------------
+>  include/linux/cpuidle.h         |    7 ------
+>  3 files changed, 27 insertions(+), 28 deletions(-)
+> 
+> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+> index 0734086..8648b29 100644
+> --- a/drivers/acpi/processor_driver.c
+> +++ b/drivers/acpi/processor_driver.c
+> @@ -427,18 +427,11 @@ static int acpi_cpu_soft_notify(struct notifier_block *nfb,
+>  		 * Initialize missing things
+>  		 */
+>  		if (pr->flags.need_hotplug_init) {
+> -			struct cpuidle_driver *idle_driver =
+> -				cpuidle_get_driver();
+> -
+>  			printk(KERN_INFO "Will online and init hotplugged "
+>  			       "CPU: %d\n", pr->id);
+>  			WARN(acpi_processor_start(pr), "Failed to start CPU:"
+>  				" %d\n", pr->id);
+>  			pr->flags.need_hotplug_init = 0;
+> -			if (idle_driver && !strcmp(idle_driver->name,
+> -						   "intel_idle")) {
+> -				intel_idle_cpu_init(pr->id);
+> -			}
+>  		/* Normal CPU soft online event */
+>  		} else {
+>  			acpi_processor_ppc_has_changed(pr, 0);
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index d0f59c3..fe95d54 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -96,6 +96,7 @@ static const struct idle_cpu *icpu;
+>  static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
+>  static int intel_idle(struct cpuidle_device *dev,
+>  			struct cpuidle_driver *drv, int index);
+> +static int intel_idle_cpu_init(int cpu);
+>  
+>  static struct cpuidle_state *cpuidle_state_table;
+>  
+> @@ -302,22 +303,35 @@ static void __setup_broadcast_timer(void *arg)
+>  	clockevents_notify(reason, &cpu);
+>  }
+>  
+> -static int setup_broadcast_cpuhp_notify(struct notifier_block *n,
+> -		unsigned long action, void *hcpu)
+> +static int cpu_hotplug_notify(struct notifier_block *n,
+> +			      unsigned long action, void *hcpu)
+>  {
+>  	int hotcpu = (unsigned long)hcpu;
+> +	struct cpuidle_device *dev;
+>  
+>  	switch (action & 0xf) {
+>  	case CPU_ONLINE:
+> -		smp_call_function_single(hotcpu, __setup_broadcast_timer,
+> -			(void *)true, 1);
+> +
+> +		if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
+> +			smp_call_function_single(hotcpu, __setup_broadcast_timer,
+> +						 (void *)true, 1);
+> +
+> +		/*
+> +		 * Some systems can hotplug a cpu at runtime after
+> +		 * the kernel has booted, we have to initialize the
+> +		 * driver in this case
+> +		 */
+> +		dev = per_cpu_ptr(intel_idle_cpuidle_devices, hotcpu);
+> +		if (!dev->registered)
+> +			intel_idle_cpu_init(hotcpu);
+> +
+>  		break;
+>  	}
+>  	return NOTIFY_OK;
+>  }
+>  
+> -static struct notifier_block setup_broadcast_notifier = {
+> -	.notifier_call = setup_broadcast_cpuhp_notify,
+> +static struct notifier_block cpu_hotplug_notifier = {
+> +	.notifier_call = cpu_hotplug_notify,
+>  };
+>  
+>  static void auto_demotion_disable(void *dummy)
+> @@ -405,10 +419,10 @@ static int intel_idle_probe(void)
+>  
+>  	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
+>  		lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
+> -	else {
+> +	else
+>  		on_each_cpu(__setup_broadcast_timer, (void *)true, 1);
+> -		register_cpu_notifier(&setup_broadcast_notifier);
+> -	}
+> +
+> +	register_cpu_notifier(&cpu_hotplug_notifier);
+>  
+>  	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
+>  		" model 0x%X\n", boot_cpu_data.x86_model);
+> @@ -494,7 +508,7 @@ static int intel_idle_cpuidle_driver_init(void)
+>   * allocate, initialize, register cpuidle_devices
+>   * @cpu: cpu/core to initialize
+>   */
+> -int intel_idle_cpu_init(int cpu)
+> +static int intel_idle_cpu_init(int cpu)
+>  {
+>  	int cstate;
+>  	struct cpuidle_device *dev;
+> @@ -539,7 +553,6 @@ int intel_idle_cpu_init(int cpu)
+>  
+>  	return 0;
+>  }
+> -EXPORT_SYMBOL_GPL(intel_idle_cpu_init);
+>  
+>  static int __init intel_idle_init(void)
+>  {
+> @@ -581,10 +594,10 @@ static void __exit intel_idle_exit(void)
+>  	intel_idle_cpuidle_devices_uninit();
+>  	cpuidle_unregister_driver(&intel_idle_driver);
+>  
+> -	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE) {
+> +
+> +	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
+>  		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
+> -		unregister_cpu_notifier(&setup_broadcast_notifier);
+> -	}
+> +	unregister_cpu_notifier(&cpu_hotplug_notifier);
+>  
+>  	return;
+>  }
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 5ab7183..66d7e0d 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -213,14 +213,7 @@ struct cpuidle_governor {
+>  extern int cpuidle_register_governor(struct cpuidle_governor *gov);
+>  extern void cpuidle_unregister_governor(struct cpuidle_governor *gov);
+>  
+> -#ifdef CONFIG_INTEL_IDLE
+> -extern int intel_idle_cpu_init(int cpu);
+>  #else
+> -static inline int intel_idle_cpu_init(int cpu) { return -1; }
+> -#endif
+> -
+> -#else
+> -static inline int intel_idle_cpu_init(int cpu) { return -1; }
+>  
+>  static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
+>  {return 0;}
+> 
+
