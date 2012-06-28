@@ -1,187 +1,169 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] acpi: intel_idle : break dependency between modules
-Date: Thu, 28 Jun 2012 21:24:09 +0200
-Message-ID: <201206282124.09857.rjw@sisk.pl>
-References: <201206271506.29034.trenn@suse.de> <1340873202-2476-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [PATCH -v4 3/6] PM: PM notifier error injection
+	module
+Date: Thu, 28 Jun 2012 23:45:17 +0200
+Message-ID: <201206282345.17707.rjw@sisk.pl>
+References: <1340463502-15341-1-git-send-email-akinobu.mita@gmail.com>
+	<1340463502-15341-4-git-send-email-akinobu.mita@gmail.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1340873202-2476-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, lenb@kernel.org
-Cc: trenn@suse.de, srivatsa.bhat@linux.vnet.ibm.com, deepthi@linux.vnet.ibm.com, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <1340463502-15341-4-git-send-email-akinobu.mita@gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 28, 2012, Daniel Lezcano wrote:
-> When the system is booted with some cpus offline, the idle
-> driver is not initialized. When a cpu is set online, the
-> acpi code call the intel idle init function. Unfortunately
-> this code introduce a dependency between intel_idle and acpi.
+On Saturday, June 23, 2012, Akinobu Mita wrote:
+> This provides the ability to inject artifical errors to PM notifier chain
+> callbacks.  It is controlled through debugfs interface under
+> /sys/kernel/debug/notifier-error-inject/pm
 > 
-> This patch is intended to remove this dependency by using the
-> notifier of intel_idle. This patch has the benefit of
-> encapsulating the intel_idle driver and remove some exported
-> functions.
+> Each of the files in "error" directory represents an event which can be
+> failed and contains the error code.  If the notifier call chain should
+> be failed with some events notified, write the error code to the files.
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> If the notifier call chain should be failed with some events notified,
+> write the error code to "actions/<notifier event>/error".
+> 
+> Example: Inject PM suspend error (-12 = -ENOMEM)
+> 
+> 	# cd /sys/kernel/debug/notifier-error-inject/pm
+> 	# echo -12 > actions/PM_SUSPEND_PREPARE/error
+> 	# echo mem > /sys/power/state
+> 	bash: echo: write error: Cannot allocate memory
+> 
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: linux-pm@lists.linux-foundation.org
 
-This one looks good to me too.
+OK, I have no objections.
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-Len, are you going to take it?
-
+Thanks,
 Rafael
 
 
 > ---
->  drivers/acpi/processor_driver.c |    7 ------
->  drivers/idle/intel_idle.c       |   41 +++++++++++++++++++++++++-------------
->  include/linux/cpuidle.h         |    7 ------
->  3 files changed, 27 insertions(+), 28 deletions(-)
+> * v4
+> - update modules to follow new interface
 > 
-> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-> index 0734086..8648b29 100644
-> --- a/drivers/acpi/processor_driver.c
-> +++ b/drivers/acpi/processor_driver.c
-> @@ -427,18 +427,11 @@ static int acpi_cpu_soft_notify(struct notifier_block *nfb,
->  		 * Initialize missing things
->  		 */
->  		if (pr->flags.need_hotplug_init) {
-> -			struct cpuidle_driver *idle_driver =
-> -				cpuidle_get_driver();
-> -
->  			printk(KERN_INFO "Will online and init hotplugged "
->  			       "CPU: %d\n", pr->id);
->  			WARN(acpi_processor_start(pr), "Failed to start CPU:"
->  				" %d\n", pr->id);
->  			pr->flags.need_hotplug_init = 0;
-> -			if (idle_driver && !strcmp(idle_driver->name,
-> -						   "intel_idle")) {
-> -				intel_idle_cpu_init(pr->id);
-> -			}
->  		/* Normal CPU soft online event */
->  		} else {
->  			acpi_processor_ppc_has_changed(pr, 0);
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index d0f59c3..fe95d54 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -96,6 +96,7 @@ static const struct idle_cpu *icpu;
->  static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
->  static int intel_idle(struct cpuidle_device *dev,
->  			struct cpuidle_driver *drv, int index);
-> +static int intel_idle_cpu_init(int cpu);
->  
->  static struct cpuidle_state *cpuidle_state_table;
->  
-> @@ -302,22 +303,35 @@ static void __setup_broadcast_timer(void *arg)
->  	clockevents_notify(reason, &cpu);
->  }
->  
-> -static int setup_broadcast_cpuhp_notify(struct notifier_block *n,
-> -		unsigned long action, void *hcpu)
-> +static int cpu_hotplug_notify(struct notifier_block *n,
-> +			      unsigned long action, void *hcpu)
->  {
->  	int hotcpu = (unsigned long)hcpu;
-> +	struct cpuidle_device *dev;
->  
->  	switch (action & 0xf) {
->  	case CPU_ONLINE:
-> -		smp_call_function_single(hotcpu, __setup_broadcast_timer,
-> -			(void *)true, 1);
-> +
-> +		if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
-> +			smp_call_function_single(hotcpu, __setup_broadcast_timer,
-> +						 (void *)true, 1);
-> +
-> +		/*
-> +		 * Some systems can hotplug a cpu at runtime after
-> +		 * the kernel has booted, we have to initialize the
-> +		 * driver in this case
-> +		 */
-> +		dev = per_cpu_ptr(intel_idle_cpuidle_devices, hotcpu);
-> +		if (!dev->registered)
-> +			intel_idle_cpu_init(hotcpu);
-> +
->  		break;
->  	}
->  	return NOTIFY_OK;
->  }
->  
-> -static struct notifier_block setup_broadcast_notifier = {
-> -	.notifier_call = setup_broadcast_cpuhp_notify,
-> +static struct notifier_block cpu_hotplug_notifier = {
-> +	.notifier_call = cpu_hotplug_notify,
->  };
->  
->  static void auto_demotion_disable(void *dummy)
-> @@ -405,10 +419,10 @@ static int intel_idle_probe(void)
->  
->  	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
->  		lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
-> -	else {
-> +	else
->  		on_each_cpu(__setup_broadcast_timer, (void *)true, 1);
-> -		register_cpu_notifier(&setup_broadcast_notifier);
-> -	}
-> +
-> +	register_cpu_notifier(&cpu_hotplug_notifier);
->  
->  	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
->  		" model 0x%X\n", boot_cpu_data.x86_model);
-> @@ -494,7 +508,7 @@ static int intel_idle_cpuidle_driver_init(void)
->   * allocate, initialize, register cpuidle_devices
->   * @cpu: cpu/core to initialize
->   */
-> -int intel_idle_cpu_init(int cpu)
-> +static int intel_idle_cpu_init(int cpu)
->  {
->  	int cstate;
->  	struct cpuidle_device *dev;
-> @@ -539,7 +553,6 @@ int intel_idle_cpu_init(int cpu)
->  
->  	return 0;
->  }
-> -EXPORT_SYMBOL_GPL(intel_idle_cpu_init);
->  
->  static int __init intel_idle_init(void)
->  {
-> @@ -581,10 +594,10 @@ static void __exit intel_idle_exit(void)
->  	intel_idle_cpuidle_devices_uninit();
->  	cpuidle_unregister_driver(&intel_idle_driver);
->  
-> -	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE) {
-> +
-> +	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
->  		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
-> -		unregister_cpu_notifier(&setup_broadcast_notifier);
-> -	}
-> +	unregister_cpu_notifier(&cpu_hotplug_notifier);
->  
->  	return;
->  }
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 5ab7183..66d7e0d 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -213,14 +213,7 @@ struct cpuidle_governor {
->  extern int cpuidle_register_governor(struct cpuidle_governor *gov);
->  extern void cpuidle_unregister_governor(struct cpuidle_governor *gov);
->  
-> -#ifdef CONFIG_INTEL_IDLE
-> -extern int intel_idle_cpu_init(int cpu);
->  #else
-> -static inline int intel_idle_cpu_init(int cpu) { return -1; }
-> -#endif
-> -
-> -#else
-> -static inline int intel_idle_cpu_init(int cpu) { return -1; }
->  
->  static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
->  {return 0;}
+>  lib/Kconfig.debug              |   24 ++++++++++++++++++++
+>  lib/Makefile                   |    1 +
+>  lib/pm-notifier-error-inject.c |   49 ++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 74 insertions(+)
+>  create mode 100644 lib/pm-notifier-error-inject.c
 > 
-
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index be0c197..246cea6 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -1119,6 +1119,30 @@ config CPU_NOTIFIER_ERROR_INJECT
+>  
+>  	  If unsure, say N.
+>  
+> +config PM_NOTIFIER_ERROR_INJECT
+> +	tristate "PM notifier error injection module"
+> +	depends on PM && NOTIFIER_ERROR_INJECTION
+> +	default m if PM_DEBUG
+> +	help
+> +	  This option provides the ability to inject artifical errors to
+> +	  PM notifier chain callbacks.  It is controlled through debugfs
+> +	  interface /sys/kernel/debug/notifier-error-inject/pm
+> +
+> +	  If the notifier call chain should be failed with some events
+> +	  notified, write the error code to "actions/<notifier event>/error".
+> +
+> +	  Example: Inject PM suspend error (-12 = -ENOMEM)
+> +
+> +	  # cd /sys/kernel/debug/notifier-error-inject/pm/
+> +	  # echo -12 > actions/PM_SUSPEND_PREPARE/error
+> +	  # echo mem > /sys/power/state
+> +	  bash: echo: write error: Cannot allocate memory
+> +
+> +	  To compile this code as a module, choose M here: the module will
+> +	  be called pm-notifier-error-inject.
+> +
+> +	  If unsure, say N.
+> +
+>  config FAULT_INJECTION
+>  	bool "Fault-injection framework"
+>  	depends on DEBUG_KERNEL
+> diff --git a/lib/Makefile b/lib/Makefile
+> index 23fba9e..230a949 100644
+> --- a/lib/Makefile
+> +++ b/lib/Makefile
+> @@ -92,6 +92,7 @@ obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
+>  obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
+>  obj-$(CONFIG_NOTIFIER_ERROR_INJECTION) += notifier-error-inject.o
+>  obj-$(CONFIG_CPU_NOTIFIER_ERROR_INJECT) += cpu-notifier-error-inject.o
+> +obj-$(CONFIG_PM_NOTIFIER_ERROR_INJECT) += pm-notifier-error-inject.o
+>  
+>  lib-$(CONFIG_GENERIC_BUG) += bug.o
+>  
+> diff --git a/lib/pm-notifier-error-inject.c b/lib/pm-notifier-error-inject.c
+> new file mode 100644
+> index 0000000..c094b2d
+> --- /dev/null
+> +++ b/lib/pm-notifier-error-inject.c
+> @@ -0,0 +1,49 @@
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/suspend.h>
+> +
+> +#include "notifier-error-inject.h"
+> +
+> +static int priority;
+> +module_param(priority, int, 0);
+> +MODULE_PARM_DESC(priority, "specify PM notifier priority");
+> +
+> +static struct notifier_err_inject pm_notifier_err_inject = {
+> +	.actions = {
+> +		{ NOTIFIER_ERR_INJECT_ACTION(PM_HIBERNATION_PREPARE) },
+> +		{ NOTIFIER_ERR_INJECT_ACTION(PM_SUSPEND_PREPARE) },
+> +		{ NOTIFIER_ERR_INJECT_ACTION(PM_RESTORE_PREPARE) },
+> +		{}
+> +	}
+> +};
+> +
+> +static struct dentry *dir;
+> +
+> +static int err_inject_init(void)
+> +{
+> +	int err;
+> +
+> +	dir = notifier_err_inject_init("pm", notifier_err_inject_dir,
+> +					&pm_notifier_err_inject, priority);
+> +	if (IS_ERR(dir))
+> +		return PTR_ERR(dir);
+> +
+> +	err = register_pm_notifier(&pm_notifier_err_inject.nb);
+> +	if (err)
+> +		debugfs_remove_recursive(dir);
+> +
+> +	return err;
+> +}
+> +
+> +static void err_inject_exit(void)
+> +{
+> +	unregister_pm_notifier(&pm_notifier_err_inject.nb);
+> +	debugfs_remove_recursive(dir);
+> +}
+> +
+> +module_init(err_inject_init);
+> +module_exit(err_inject_exit);
+> +
+> +MODULE_DESCRIPTION("PM notifier error injection module");
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Akinobu Mita <akinobu.mita@gmail.com>");
+> 
