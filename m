@@ -1,53 +1,157 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] acpi: intel_idle : break dependency
-	between modules
-Date: Thu, 28 Jun 2012 17:26:48 +0530
-Message-ID: <4FEC4680.1090006@linux.vnet.ibm.com>
-References: <201206271506.29034.trenn@suse.de>
-	<1340873202-2476-1-git-send-email-daniel.lezcano@linaro.org>
-	<4FEC3EF7.5020208@linux.vnet.ibm.com> <4FEC3FAB.20706@linaro.org>
+From: "Valentin, Eduardo" <eduardo.valentin@ti.com>
+Subject: Re: [PATCH v3 0/7] OMAP System Control Module
+Date: Thu, 28 Jun 2012 16:48:54 +0300
+Message-ID: <CAGF5oy8V+RZ=ewQsT==2wRY-BVsxVndEtONrd8a3NtjoGFu4hQ@mail.gmail.com>
+References: <4FEB4B30.2040305@dev.rtsoft.ru>
+	<20120628044343.GA2471@besouro>
+	<CAGF5oy925c96QqwjqMEaUYDon+mSVGd2dtgnWrzwnrq0rN14Ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <4FEC3FAB.20706@linaro.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <CAGF5oy925c96QqwjqMEaUYDon+mSVGd2dtgnWrzwnrq0rN14Ng@mail.gmail.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+Cc: b-cousson@ti.com, kishon@ti.com, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/28/2012 04:57 PM, Daniel Lezcano wrote:
-> On 06/28/2012 01:24 PM, Srivatsa S. Bhat wrote:
->> On 06/28/2012 02:16 PM, Daniel Lezcano wrote:
->>> When the system is booted with some cpus offline, the idle
->>> driver is not initialized. When a cpu is set online, the
->>> acpi code call the intel idle init function. Unfortunately
->>> this code introduce a dependency between intel_idle and acpi.
->>>
->>> This patch is intended to remove this dependency by using the
->>> notifier of intel_idle. This patch has the benefit of
->>> encapsulating the intel_idle driver and remove some exported
->>> functions.
->>>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>
->>
->> Looks good to me.
-> 
-> Thanks for the review Srivatsa.
-> 
-> Shall I consider it as an acked-by ?
-> 
+Hello again,
 
-Sure, go ahead! :-)
+On Thu, Jun 28, 2012 at 9:29 AM, Valentin, Eduardo
+<eduardo.valentin@ti.com> wrote:
+> Hello Konstantin,
+>
+> On Thu, Jun 28, 2012 at 7:43 AM, Eduardo Valentin
+> <eduardo.valentin@ti.com> wrote:
+>> Hello,
+>>
+>> On Wed, Jun 27, 2012 at 10:04:32PM +0400, Konstantin Baydarov wrote:
+>>> =A0Hello.
+>>>
+>>> This is a next version of series of patches(based on Eduardo Valent=
+in's patch set) adding a basic support for system control module, on OM=
+AP4+ context. It is a working in progress.
+>>>
+>>> Main changes since previous patch set version:
+>>> - Bandgap and usb phy: drivers are now independent from control mod=
+ule driver, they use their own functions to acess scm registers.
+>>
+>> Well, I believe the idea of having them with their own io resource w=
+as to avoid
+>> children drivers accessing each other io areas. Is this now working?
+>>
+>>> - omap-control-core: resources aren't hardcoded, they are specified=
+ in dts file.
+>>> - omap-control-core: Control module is a built-in driver - added co=
+ntrol module select to ARCH_HAS_CONTROL_MODULE and ARCH_OMAP4.
+>>> Probably, no configuration option is required!
+>>
+>> Why is this? I suppose the idea is to have the arch config selecting=
+ that flag.
+>>
+>>> - omap-control-core: Added early init call that ioremaps control mo=
+dule IOMEM window, this allows access of SCM registers very early, for =
+example from omap_type()
+>>
+>> Is this going to be reserved as well? if yes, how children are going=
+ to have
+>> their own access functions?
+>>
+>>> - omap-control-core: Removed device pointer from omap-control-core =
+API arguments, becuase there can be only one instance control
+>>> module device.
+>>> - omap-control-core: removed omap_control_get, omap_control_readl, =
+omap_control_writel
+>>
+>> fine, assuming the io split works...
+>>
+>>> - omap-control-core: added omap_control_status_read that is used ea=
+rly in omap_type
+>>> - Bandgap and usb phy: Added private spinlocks for bandgap and usb =
+drivers.
+>>> - Bandgap: Check the type of bandgap dynamically in bandgap driver =
+probe function by reading
+>>> omap core control module revision register CONTROL_GEN_CORE_REVISIO=
+N.
+>>
+>> this has some issue... I will post comment on the patch
+>>
+>>> - Bandgap and usb phy: Parent SCM platform device IOMEM resources i=
+s used to get the base address of SCM window.
+>>
+>> Ohh.. Then what is the point of having them using their own io acces=
+s functions,
+>> nothing is again protected as you have only 1 io resource which is s=
+hared.
+>> And now is even worse because you have several io access function..
+>> I think this is moving backwards.
+>>
+>>> - Bandgap masks defines were moved to drivers/thermal/omap-bandgap.=
+c.
+>>>
+>>> TODO list for bandgap driver:
+>>> - Reserve omap-control-core IOMEM window.
+>>> - Improve thermal zone definition for OMAP4
+>>> - Introduce the thermal zones for OMAP5
+>>
+>> Based on the review comments on RFC patch series, there are more
+>> things to be done.
+>>
+>> I have the O4 and O5 zone definition ready. But that work depends
+>> on generic CPU cooling patches. I have also looked the driver suppor=
+t
+>> for 4430. But the probing and io resource split is still based on
+>> previous design. I have also a patch which does the remapping in the
+>> bandgap driver. But really, for this to work it would require to hav=
+e
+>> several entries in the reg property. And that is going to change fro=
+m
+>> BG version to BG version.
+>>
+>> I can prepare some patches for this.
+>
+> You can find the updated patches here:
+> git@gitorious.org:thermal-framework/thermal-framework.git
+> thermal_work/omap/bandgap_clean
+>
+> But, as I said they are based on the generic cpu cooling. And the zon=
+e
+> registration follows the API as in linux-next.
 
-Regards,
-Srivatsa S. Bhat
+=46YI, I just updated the branches on that repo. The branch
+thermal_work/omap/pu has all required changes in order to get BG
+driver working on 4430/4460/4470 and O5.
+
+It relies on Rui's patch set sent to linux-pm, which reorgs the
+thermal fw a bit,  combined with the generic cpu cooling device by
+Amit. I also pushed in the 'pu' branch the APIs changes mentioned by
+Durga on other thread.
+
+While checking the pu branch you should be able to get a thermal zone
+with cpu cooling for OMAP on the mentioned omap versions.
+
+Once there is an agreement about the APIs between SCM core driver and
+its children, I can send out the BG driver patches and this initial
+omap thermal support using the generic thermal layer.
+
+There are some changes in the core thermal layer in the
+thermal_work/eduardo_thermal_upgrade. But there could be probably some
+extra changes in the core layer to finalize the omap thermal support.
+That's a work in progress :-)
+
+>
+>
+> --
+>
+> Eduardo Valentin
+
+
+
+--=20
+
+Eduardo Valentin
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
