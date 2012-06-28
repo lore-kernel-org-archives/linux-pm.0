@@ -1,324 +1,387 @@
-From: preeti <preeti@linux.vnet.ibm.com>
-Subject: Cpuidle drivers,Suspend : Fix suspend/resume hang with intel_idle
- driver
-Date: Thu, 28 Jun 2012 14:46:02 +0530
-Message-ID: <4FEC20D2.2070501@linux.vnet.ibm.com>
+From: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+Subject: Re: [PATCH v3 2/7] mfd: omap: control: core system control driver
+Date: Thu, 28 Jun 2012 13:37:14 +0400
+Message-ID: <4FEC25CA.10105@dev.rtsoft.ru>
+References: <4FEB4B46.9020904@dev.rtsoft.ru> <20120628045028.GC2471@besouro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, "Rafael .J. Wysocki" <rjw@sisk.pl>
-Cc: "Srivatsa.S.Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20120628045028.GC2471@besouro>
+Sender: linux-omap-owner@vger.kernel.org
+To: eduardo.valentin@ti.com
+Cc: b-cousson@ti.com, kishon@ti.com, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, balbi@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, amit.kachhap@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
+  Hi.
 
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+On 06/28/2012 08:50 AM, Eduardo Valentin wrote:
+> Hello,
+>
+> On Wed, Jun 27, 2012 at 10:04:54PM +0400, Konstantin Baydarov wrote:
+>> This patch introduces a MFD core device driver for OMAP system control module.
+>>
+>> The control module allows software control of various static modes supported by the device.
+>> It is composed of two control submodules: general control module and device (padconfiguration) control module.
+>>
+>> Changes since previous version:
+>> - omap-control-core: resources aren't hardcoded, they are specified in dts file.
+>> - omap-control-core: Control module is a built-in driver - added control module select to ARCH_HAS_CONTROL_MODULE and ARCH_OMAP4.
+>> Probably, no configuration option is required!
+>> - omap-control-core: Added early init call that ioremaps control module IOMEM window, this allows access of SCM registers very early, for example from omap_type()
+>> - omap-control-core: Removed device pointer from omap-control-core API arguments, becuase there can be only one instance control
+>> module device.
+>> - omap-control-core: removed omap_control_get, omap_control_readl, omap_control_writel
+>> - omap-control-core: added omap_control_status_read that is used early in omap_type
+>>
+>> Signed-off-by: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+>> Signed-off-by: J Keerthy <j-keerthy@ti.com>
+>> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>  .../devicetree/bindings/mfd/omap_control.txt       |   44 +++++++
+>>  arch/arm/mach-omap2/Kconfig                        |    1 +
+>>  arch/arm/plat-omap/Kconfig                         |    4 +
+>>  drivers/mfd/Kconfig                                |    9 ++
+>>  drivers/mfd/Makefile                               |    1 +
+>>  drivers/mfd/omap-control-core.c                    |  131 ++++++++++++++++++++
+>>  include/linux/mfd/omap_control.h                   |   52 ++++++++
+>>  7 files changed, 242 insertions(+), 0 deletions(-)
+>>  create mode 100644 Documentation/devicetree/bindings/mfd/omap_control.txt
+>>  create mode 100644 drivers/mfd/omap-control-core.c
+>>  create mode 100644 include/linux/mfd/omap_control.h
+>>
+>> diff --git a/Documentation/devicetree/bindings/mfd/omap_control.txt b/Documentation/devicetree/bindings/mfd/omap_control.txt
+>> new file mode 100644
+>> index 0000000..46d5e7e
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/mfd/omap_control.txt
+>> @@ -0,0 +1,44 @@
+>> +* Texas Instrument OMAP System Control Module (SCM) bindings
+>> +
+>> +The control module allows software control of various static modes supported by
+>> +the device. The control module controls the settings of various device  modules
+>> +through register configuration and internal signals. It also controls  the  pad
+>> +configuration, pin functional multiplexing, and the routing of internal signals
+>> +(such as PRCM  signals or DMA requests)  to output pins configured for hardware
+>> +observability.
+>> +
+>> +Required properties:
+>> +- compatible : Should be:
+>> +  - "ti,omap3-control" for OMAP3 support
+>> +  - "ti,omap4-control" for OMAP4 support
+>> +  - "ti,omap5-control" for OMAP5 support
+>> +
+>> +OMAP specific properties:
+>> +- ti,hwmods: Name of the hwmod associated to the control module:
+>> +  Should be "ctrl_module_core";
+>> +
+>> +Sub-nodes:
+>> +- bandgap : contains the bandgap node
+>> +
+>> +  The bindings details of individual bandgap device can be found in:
+>> +  Documentation/devicetree/bindings/thermal/omap_bandgap.txt
+>> +
+>> +- usb : contains the usb phy pin control node
+>> +
+>> +  The only required property for this child is:
+>> +    - compatible = "ti,omap4-control-usb";
+>> +
+>> +Examples:
+>> +
+>> +ctrl_module_core: ctrl_module_core@4a002000 {
+>> +	compatible = "ti,omap4-control";
+>> +	ti,hwmods = "ctrl_module_core";
+>> +	bandgap {
+>> +		compatible = "ti,omap4460-bandgap";
+> You need to update the documentation if change the DT structure.
+Ok.
+>
+>> +		interrupts = <0 126 4>; /* talert */
+>> +		ti,tshut-gpio = <86>; /* tshut */
+>> +	};
+>> +	usb {
+>> +		compatible = "ti,omap4-usb-phy";
+>> +	};
+>> +};
+>> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+>> index 4cf5142..c2ef07c 100644
+>> --- a/arch/arm/mach-omap2/Kconfig
+>> +++ b/arch/arm/mach-omap2/Kconfig
+>> @@ -52,6 +52,7 @@ config ARCH_OMAP4
+>>  	select PL310_ERRATA_727915
+>>  	select ARM_ERRATA_720789
+>>  	select ARCH_HAS_OPP
+>> +	select ARCH_HAS_CONTROL_MODULE
+>>  	select PM_OPP if PM
+>>  	select USB_ARCH_HAS_EHCI if USB_SUPPORT
+>>  	select ARM_CPU_SUSPEND if PM
+>> diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
+>> index ad95c7a..0f9b575 100644
+>> --- a/arch/arm/plat-omap/Kconfig
+>> +++ b/arch/arm/plat-omap/Kconfig
+>> @@ -5,6 +5,10 @@ menu "TI OMAP Common Features"
+>>  config ARCH_OMAP_OTG
+>>  	bool
+>>  
+>> +config ARCH_HAS_CONTROL_MODULE
+>> +	bool
+>> +	select MFD_OMAP_CONTROL
+>> +
+> OK now I got what you meant in patch 0. Fine for me.
+>
+>>  choice
+>>  	prompt "OMAP System Type"
+>>  	default ARCH_OMAP2PLUS
+>> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+>> index e129c82..d0c5456 100644
+>> --- a/drivers/mfd/Kconfig
+>> +++ b/drivers/mfd/Kconfig
+>> @@ -822,6 +822,15 @@ config MFD_WL1273_CORE
+>>  	  driver connects the radio-wl1273 V4L2 module and the wl1273
+>>  	  audio codec.
+>>  
+>> +config MFD_OMAP_CONTROL
+>> +	bool "Texas Instruments OMAP System control module"
+>> +	depends on ARCH_HAS_CONTROL_MODULE
+>> +	help
+>> +	  This is the core driver for system control module. This driver
+>> +	  is responsible for creating the control module mfd child,
+>> +	  like USB-pin control, pin muxing, MMC-pbias and DDR IO dynamic
+>> +	  change for off mode.
+>> +
+>>  config MFD_OMAP_USB_HOST
+>>  	bool "Support OMAP USBHS core driver"
+>>  	depends on USB_EHCI_HCD_OMAP || USB_OHCI_HCD_OMAP3
+>> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+>> index 75f6ed6..b037443 100644
+>> --- a/drivers/mfd/Makefile
+>> +++ b/drivers/mfd/Makefile
+>> @@ -107,6 +107,7 @@ obj-$(CONFIG_MFD_TPS6586X)	+= tps6586x.o
+>>  obj-$(CONFIG_MFD_VX855)		+= vx855.o
+>>  obj-$(CONFIG_MFD_WL1273_CORE)	+= wl1273-core.o
+>>  obj-$(CONFIG_MFD_CS5535)	+= cs5535-mfd.o
+>> +obj-$(CONFIG_MFD_OMAP_CONTROL)	+= omap-control-core.o
+>>  obj-$(CONFIG_MFD_OMAP_USB_HOST)	+= omap-usb-host.o
+>>  obj-$(CONFIG_MFD_PM8921_CORE) 	+= pm8921-core.o
+>>  obj-$(CONFIG_MFD_PM8XXX_IRQ) 	+= pm8xxx-irq.o
+>> diff --git a/drivers/mfd/omap-control-core.c b/drivers/mfd/omap-control-core.c
+>> new file mode 100644
+>> index 0000000..724c51b
+>> --- /dev/null
+>> +++ b/drivers/mfd/omap-control-core.c
+>> @@ -0,0 +1,131 @@
+>> +/*
+>> + * OMAP system control module driver file
+>> + *
+>> + * Copyright (C) 2011-2012 Texas Instruments Incorporated - http://www.ti.com/
+>> + * Contacts:
+>> + * Based on original code written by:
+>> + *    J Keerthy <j-keerthy@ti.com>
+>> + *    Moiz Sonasath <m-sonasath@ti.com>
+>> + * MFD clean up and re-factoring:
+>> + *    Eduardo Valentin <eduardo.valentin@ti.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * version 2 as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful, but
+>> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+>> + * General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#include <linux/module.h>
+>> +#include <linux/export.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/io.h>
+>> +#include <linux/err.h>
+>> +#include <linux/of_platform.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/mfd/core.h>
+>> +#include <linux/mfd/omap_control.h>
+>> +
+>> +#include <linux/of.h>
+>> +#include <linux/of_address.h>
+>> +
+>> +void __iomem *omap_control_base;
+>> +
+>> +u32 omap_control_status_read(u16 offset)
+>> +{
+>> +	return __raw_readl(omap_control_base + (offset));
+>> +}
+>> +
+>> +static const struct of_device_id of_omap_control_match[] = {
+>> +	{ .compatible = "ti,omap3-control", },
+>> +	{ .compatible = "ti,omap4-control", },
+>> +	{ .compatible = "ti,omap5-control", },
+>> +	{ },
+>> +};
+>> +
+>> +static int __devinit omap_control_probe(struct platform_device *pdev)
+>> +{
+>> +	struct device *dev = &pdev->dev;
+>> +	struct device_node *np = dev->of_node;
+>> +
+>> +	/*
+>> +	 *  Build child defvices of ctrl_module_core
+>> +	 */
+>> +	return of_platform_populate(np, of_omap_control_match, NULL, dev);
+>> +}
+>> +
+>> +
+>> +static struct platform_driver omap_control_driver = {
+>> +	.probe			= omap_control_probe,
+>> +	.driver = {
+>> +		.name		= "omap-control-core",
+>> +		.owner		= THIS_MODULE,
+>> +		.of_match_table	= of_omap_control_match,
+>> +	},
+>> +};
+>> +
+>> +int __init omap_control_of_init(struct device_node *node,
+>> +			     struct device_node *parent)
+>> +{
+>> +	struct resource res;
+>> +
+>> +	if (WARN_ON(!node))
+>> +		return -ENODEV;
+>> +
+>> +	if (of_address_to_resource(node, 0, &res)) {
+>> +		WARN(1, "unable to get intc registers\n");
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+> The above function is used nowhere.
+Agree.
+>
+>> +
+>> +void __init of_omap_control_init(const struct of_device_id *matches)
+>> +{
+>> +	struct device_node *np;
+>> +	struct property *pp = 0;
+>> +	unsigned long phys_base = 0;
+>> +	size_t mapsize = 0;
+>> +
+>> +	for_each_matching_node(np, matches) {
+>> +
+>> +		pp = of_find_property(np, "reg", NULL);
+>> +		if(pp) {
+>> +			phys_base = (unsigned long)be32_to_cpup(pp->value);
+>> +			mapsize = (size_t)be32_to_cpup( (void*)((char*)pp->value + 4) );
+>> +			omap_control_base = ioremap(phys_base, mapsize);
+> How the reservation is going to work?
+This can be done following way:
+- omap-control-core.c ioremaps and reserves SCM IOMEM window
+- omap-control-core.c exports omap_control_get_base(virtual base address is returned) to use in bandgap and usb_phy driver.
+IIUC, this way was suggested by Tony.
 
-Dave Hansen reported problems with suspend/resume when used
-with intel_idle driver.More such problems were noticed.
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/674075.
-
-The reason for this could not be suspected till he reported
-resume hang issue when used with acpi idle driver on his Lenovo-S10-3
-Atom netbook.
-
-The patch-[PM / ACPI: Fix suspend/resume regression caused by cpuidle
-cleanup],fixed this issue by ensuring that acpi idle drivers prevent
-cpus from going into deeper sleep states during suspend to prevent
-resume hang on certain bios.
-http://marc.info/?l=linux-pm&m=133958534231884&w=2
-
-Commit b04e7bdb984e3b7f62fb7f44146a529f88cc7639
-(ACPI: disable lower idle C-states across suspend/resume) throws
-light on the resume hang issue on certain specific bios.
-
-Also the following lines in drivers/idle/intel_idle.c suggest intel_idle
-drivers should also ensure cpus are prevented from entering idle states
-during suspend to avoid a resume hang.
-
-/*
- * Known limitations
- * [..]
- *
- * ACPI has a .suspend hack to turn off deep c-states during suspend
- * to avoid complications with the lapic timer workaround.
- * Have not seen issues with suspend, but may need same workaround here.
- *
- */
-This patch aims at having this fix in a place common to both the idle
-drivers.
-
-Suspend is enabled only if ACPI is active on x86.Thus the setting of
-acpi_idle_suspend during suspend is moved up to ACPI specific code with
-both acpi and intel idle drivers checking if it is valid to enter deeper
-idle states.The setting of acpi_idle_suspend is done via PM_SUSPEND_PREPARE
-notifiers to avoid race conditions between processors entering idle states
-and the ongoing process of suspend.
-
-The check on acpi_idle_suspend is included in the most appropriate header
-so as to be visible to both the idle drivers irrespective of the
-different configurations.Even if ACPI is disabled intel idle drivers can
-still carry out the acpi_idle_suspend check.
-
-Reported-by: Dave Hansen <dave@linux.vnet.ibm.com>
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
-Dave, does this patch ensure suspend/resume works
-fine on your netbook if intel_idle driver is enabled?
-
- drivers/acpi/processor_idle.c |   46 +++++++++++++++++++----------------------
- drivers/acpi/sleep.c          |   38 ++++++++++++++++++++++++++++++++++
- drivers/idle/intel_idle.c     |   10 +++++++++
- include/linux/suspend.h       |   24 +++++++++++++++++++++
- 4 files changed, 93 insertions(+), 25 deletions(-)
-
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index c2ffd84..3ab0963 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -41,7 +41,7 @@
- #include <linux/clockchips.h>
- #include <linux/cpuidle.h>
- #include <linux/irqflags.h>
--
-+#include <linux/suspend.h>
- /*
-  * Include the apic definitions for x86 to have the APIC timer related defines
-  * available also for UP (on SMP it gets magically included via linux/smp.h).
-@@ -221,10 +221,6 @@ static void lapic_timer_state_broadcast(struct acpi_processor *pr,
- 
- #endif
- 
--/*
-- * Suspend / resume control
-- */
--static int acpi_idle_suspend;
- static u32 saved_bm_rld;
- 
- static void acpi_idle_bm_rld_save(void)
-@@ -243,21 +239,13 @@ static void acpi_idle_bm_rld_restore(void)
- 
- int acpi_processor_suspend(struct acpi_device * device, pm_message_t state)
- {
--	if (acpi_idle_suspend == 1)
--		return 0;
--
- 	acpi_idle_bm_rld_save();
--	acpi_idle_suspend = 1;
- 	return 0;
- }
- 
- int acpi_processor_resume(struct acpi_device * device)
- {
--	if (acpi_idle_suspend == 0)
--		return 0;
--
- 	acpi_idle_bm_rld_restore();
--	acpi_idle_suspend = 0;
- 	return 0;
- }
- 
-@@ -762,11 +750,13 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
- 		return -EINVAL;
- 
- 	local_irq_disable();
--
--	if (acpi_idle_suspend) {
-+	/*
-+	 * Do not enter idle states if you are in suspend path
-+	 */
-+	if (in_suspend_path()) {
- 		local_irq_enable();
- 		cpu_relax();
--		return -EINVAL;
-+		return -EBUSY;
- 	}
- 
- 	lapic_timer_state_broadcast(pr, cx, 1);
-@@ -838,10 +828,13 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 
- 	local_irq_disable();
- 
--	if (acpi_idle_suspend) {
-+	/*
-+	 * Do not enter idle states if you are in suspend path
-+	 */
-+	if (in_suspend_path()) {
- 		local_irq_enable();
- 		cpu_relax();
--		return -EINVAL;
-+		return -EBUSY;
- 	}
- 
- 	if (cx->entry_method != ACPI_CSTATE_FFH) {
-@@ -922,12 +915,6 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	if (unlikely(!pr))
- 		return -EINVAL;
- 
--	if (acpi_idle_suspend) {
--		if (irqs_disabled())
--			local_irq_enable();
--		cpu_relax();
--		return -EINVAL;
--	}
- 
- 	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
- 		if (drv->safe_state_index >= 0) {
-@@ -935,13 +922,22 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 						drv, drv->safe_state_index);
- 		} else {
- 			local_irq_disable();
--			acpi_safe_halt();
-+			if (!(in_suspend_path()))
-+				acpi_safe_halt();
- 			local_irq_enable();
- 			return -EINVAL;
- 		}
- 	}
- 
- 	local_irq_disable();
-+	/*
-+	 * Do not enter idle states if you are in suspend path
-+	 */
-+	if (in_suspend_path()) {
-+		local_irq_enable();
-+		cpu_relax();
-+		return -EBUSY;
-+	}
- 
- 	if (cx->entry_method != ACPI_CSTATE_FFH) {
- 		current_thread_info()->status &= ~TS_POLLING;
-diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-index 8856102..4ec77db 100644
---- a/drivers/acpi/sleep.c
-+++ b/drivers/acpi/sleep.c
-@@ -28,6 +28,11 @@
- #include "internal.h"
- #include "sleep.h"
- 
-+/*
-+ * Suspend/Resume control
-+ */
-+int acpi_idle_suspend;
-+
- u8 wake_sleep_flags = ACPI_NO_OPTIONAL_METHODS;
- static unsigned int gts, bfs;
- static int set_param_wake_flag(const char *val, struct kernel_param *kp)
-@@ -905,6 +910,36 @@ static void __init acpi_gts_bfs_check(void)
- 	}
- }
- 
-+/**
-+ * cpuidle_pm_callback - On some bios, resume hangs
-+ * if idle states are entered during suspend.
-+ *
-+ * acpi_idle_suspend is used by the x86 idle drivers
-+ * to decide whether to go into idle states or not.
-+ */
-+static int
-+cpuidle_pm_callback(struct notifier_block *nb,
-+			unsigned long action, void *ptr)
-+{
-+	switch (action) {
-+
-+	case PM_SUSPEND_PREPARE:
-+		if (acpi_idle_suspend == 0)
-+			acpi_idle_suspend = 1;
-+		break;
-+
-+	case PM_POST_SUSPEND:
-+		if (acpi_idle_suspend == 1)
-+			acpi_idle_suspend = 0;
-+		break;
-+
-+	default:
-+		return NOTIFY_DONE;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
- int __init acpi_sleep_init(void)
- {
- 	acpi_status status;
-@@ -932,6 +967,9 @@ int __init acpi_sleep_init(void)
- 
- 	suspend_set_ops(old_suspend_ordering ?
- 		&acpi_suspend_ops_old : &acpi_suspend_ops);
-+
-+	pm_notifier(cpuidle_pm_callback, 0);
-+
- #endif
- 
- #ifdef CONFIG_HIBERNATION
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index d0f59c3..a595207 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -65,6 +65,7 @@
- #include <asm/cpu_device_id.h>
- #include <asm/mwait.h>
- #include <asm/msr.h>
-+#include <linux/suspend.h>
- 
- #define INTEL_IDLE_VERSION "0.4"
- #define PREFIX "intel_idle: "
-@@ -255,6 +256,15 @@ static int intel_idle(struct cpuidle_device *dev,
- 	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
- 
- 	/*
-+	 * Do not enter idle states if you are in suspend path
-+	 */
-+	if (in_suspend_path()) {
-+		local_irq_enable();
-+		cpu_relax();
-+		return -EBUSY;
-+	}
-+
-+	/*
- 	 * leave_mm() to avoid costly and often unnecessary wakeups
- 	 * for flushing the user TLB's associated with the active mm.
- 	 */
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 0c808d7..eb96670 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -38,6 +38,30 @@ typedef int __bitwise suspend_state_t;
- #define PM_SUSPEND_MEM		((__force suspend_state_t) 3)
- #define PM_SUSPEND_MAX		((__force suspend_state_t) 4)
- 
-+extern int acpi_idle_suspend;
-+
-+/**
-+ * in_suspend_path - X86 idle drivers make a call
-+ * to this function before entering idle states.
-+ *
-+ * Entering idle states is prevented if it is in suspend
-+ * path.
-+ */
-+#ifdef CONFIG_ACPI
-+static inline int in_suspend_path(void)
-+{
-+	if (acpi_idle_suspend == 1)
-+		return 1;
-+	else
-+		return 0;
-+}
-+#else
-+static inline int in_suspend_path(void)
-+{
-+	return 0;
-+}
-+#endif
-+
- enum suspend_stat_step {
- 	SUSPEND_FREEZE = 1,
- 	SUSPEND_PREPARE,
-
-Regards,
-Preeti U Murthy
+>
+>> +		}
+>> +	}
+>> +}
+>> +
+>> +static int __init
+>> +omap_control_early_initcall(void)
+>> +{
+>> +	of_omap_control_init(of_omap_control_match);
+>> +
+>> +	return 0;
+>> +}
+>> +early_initcall(omap_control_early_initcall);
+>> +
+>> +static int __init omap_control_init(void)
+>> +{
+>> +	return platform_driver_register(&omap_control_driver);
+>> +}
+>> +postcore_initcall_sync(omap_control_init);
+>> +
+>> +static void __exit omap_control_exit(void)
+>> +{
+>> +	platform_driver_unregister(&omap_control_driver);
+>> +}
+>> +module_exit(omap_control_exit);
+>> +early_platform_init("early_omap_control", &omap_control_driver);
+> early_platform_init is not needed as you are implementing the early reads in a different way.
+Right.
+>
+>> +
+>> +MODULE_DESCRIPTION("OMAP system control module driver");
+>> +MODULE_LICENSE("GPL v2");
+>> +MODULE_ALIAS("platform:omap-control-core");
+>> +MODULE_AUTHOR("Texas Instruments Inc.");
+>> diff --git a/include/linux/mfd/omap_control.h b/include/linux/mfd/omap_control.h
+>> new file mode 100644
+>> index 0000000..1795403
+>> --- /dev/null
+>> +++ b/include/linux/mfd/omap_control.h
+>> @@ -0,0 +1,52 @@
+>> +/*
+>> + * OMAP system control module header file
+>> + *
+>> + * Copyright (C) 2011-2012 Texas Instruments Incorporated - http://www.ti.com/
+>> + * Contact:
+>> + *   J Keerthy <j-keerthy@ti.com>
+>> + *   Moiz Sonasath <m-sonasath@ti.com>
+>> + *   Abraham, Kishon Vijay <kishon@ti.com>
+>> + *   Eduardo Valentin <eduardo.valentin@ti.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * version 2 as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful, but
+>> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+>> + * General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#ifndef __DRIVERS_OMAP_CONTROL_H
+>> +#define __DRIVERS_OMAP_CONTROL_H
+>> +
+>> +#include <linux/err.h>
+>> +
+>> +/**
+>> + * struct system control module - scm device structure
+>> + * @dev: device pointer
+>> + * @base: Base of the temp I/O
+>> + * @reg_lock: protect omap_control structure
+>> + * @use_count: track API users
+>> + */
+>> +struct omap_control {
+>> +	struct device		*dev;
+>> +	void __iomem		*base;
+>> +	/* protect this data structure and register access */
+>> +	spinlock_t		reg_lock;
+>> +	int			use_count;
+> I suppose the reg_lock and the use_count are not needed in this design?
+Right.
+>
+>> +};
+>> +
+>> +/* TODO: Add helpers for 16bit and byte access */
+>> +#ifdef CONFIG_MFD_OMAP_CONTROL
+>> +u32 omap_control_status_read(u16 offset);
+>> +#else
+>> +static inline u32 omap_control_status_read(u16 offset)
+>> +{
+>> +	return 0;
+>> +}
+>> +#endif
+>> +
+>> +#endif /* __DRIVERS_OMAP_CONTROL_H */
+>> -- 
+>> 1.7.7.6
+>>
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
