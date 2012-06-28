@@ -1,105 +1,181 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] acpi: intel_idle : break dependency between modules
-Date: Thu, 28 Jun 2012 10:03:56 +0200
-Message-ID: <4FEC0FEC.5070304@linaro.org>
-References: <201206261301.25550.trenn@suse.de>
-	<1340788068-16422-1-git-send-email-daniel.lezcano@linaro.org>
-	<201206271506.29034.trenn@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <201206271506.29034.trenn-l3A5Bk7waGM@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Thomas Renninger <trenn-l3A5Bk7waGM@public.gmane.org>
-Cc: deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, srivatsa.bhat-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH v2] acpi: intel_idle : break dependency between
+	modules
+Date: Thu, 28 Jun 2012 10:46:42 +0200
+Message-ID: <1340873202-2476-1-git-send-email-daniel.lezcano@linaro.org>
+References: <201206271506.29034.trenn@suse.de>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201206271506.29034.trenn@suse.de>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: trenn@suse.de
+Cc: linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDYvMjcvMjAxMiAwMzowNiBQTSwgVGhvbWFzIFJlbm5pbmdlciB3cm90ZToKPiBIaSwKPiAK
-PiBJIGFncmVlIHRoYXQgc3VjaCBhIGRlcGVuZGVuY3kgYmV0d2VlbiAyIG1vZHVsZXMgaXMgbm90
-Cj4gbmljZS4gQnV0IHlvdXIgcGF0Y2ggd2lsbCBoYXZlIGJhZCBzaWRlLWVmZmVjdHMgKHNlZSBj
-b21tZW50cwo+IGVtYmVkZGVkIGJlbG93KS4KPiAKPiBPbiBXZWRuZXNkYXksIEp1bmUgMjcsIDIw
-MTIgMTE6MDc6NDggQU0gRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+IFdoZW4gdGhlIHN5c3RlbSBp
-cyBib290ZWQgd2l0aCBzb21lIGNwdXMgb2ZmbGluZSwgdGhlIGlkbGUKPj4gZHJpdmVyIGlzIG5v
-dCBpbml0aWFsaXplZC4gV2hlbiBhIGNwdSBpcyBzZXQgb25saW5lLCB0aGUKPj4gYWNwaSBjb2Rl
-IGNhbGwgdGhlIGludGVsIGlkbGUgaW5pdCBmdW5jdGlvbi4gVW5mb3J0dW5hdGVseQo+PiB0aGlz
-IGNvZGUgaW50cm9kdWNlIGEgZGVwZW5kZW5jeSBiZXR3ZWVuIGludGVsX2lkbGUgYW5kIGFjcGku
-Cj4+Cj4+IFRoaXMgcGF0Y2ggaXMgaW50ZW5kZWQgdG8gcmVtb3ZlIHRoaXMgZGVwZW5kZW5jeSBi
-eSB1c2luZyB0aGUKPj4gbm90aWZpZXIgb2YgaW50ZWxfaWRsZS4gSW4gb3JkZXIgdG8gbWFrZSBp
-dCB3b3JrLCB0aGUgbm90aWZpZXIKPj4gbXVzdCBiZSBpbml0aWFsaXplZCBpbiB0aGUgcmlnaHQg
-b3JkZXIsIGFjcGkgdGhlbiBpbnRlbF9pZGxlLgo+PiBUaGlzIGlzIGRvbmUgaW4gdGhlIE1ha2Vm
-aWxlLiBUaGlzIHBhdGNoIGhhcyB0aGUgYmVuZWZpdCBvZgo+PiBlbmNhcHN1bGF0aW5nIHRoZSBp
-bnRlbF9pZGxlIGRyaXZlciBhbmQgcmVtb3ZlIHNvbWUgZXhwb3J0ZWQKPj4gZnVuY3Rpb25zLgo+
-Pgo+PiBTaWduZWQtb2ZmLWJ5OiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGluYXJv
-Lm9yZz4KPj4gLS0tCj4+ICBkcml2ZXJzL01ha2VmaWxlICAgICAgICAgICAgICAgIHwgICAgMyAr
-Ky0KPj4gIGRyaXZlcnMvYWNwaS9wcm9jZXNzb3JfZHJpdmVyLmMgfCAgICA3IC0tLS0tLS0KPj4g
-IGRyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLmMgICAgICAgfCAgIDIyICsrKysrKysrKysrKysrLS0t
-LS0tLS0KPj4gIGluY2x1ZGUvbGludXgvY3B1aWRsZS5oICAgICAgICAgfCAgICA3IC0tLS0tLS0K
-Pj4gIDQgZmlsZXMgY2hhbmdlZCwgMTYgaW5zZXJ0aW9ucygrKSwgMjMgZGVsZXRpb25zKC0pCj4+
-Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL01ha2VmaWxlIGIvZHJpdmVycy9NYWtlZmlsZQo+PiBp
-bmRleCAyYmEyOWZmLi5hMjQ1NGI4IDEwMDY0NAo+PiAtLS0gYS9kcml2ZXJzL01ha2VmaWxlCj4+
-ICsrKyBiL2RyaXZlcnMvTWFrZWZpbGUKPj4gQEAgLTEyLDggKzEyLDkgQEAgb2JqLSQoQ09ORklH
-X1BDSSkJCSs9IHBjaS8KPj4gIG9iai0kKENPTkZJR19QQVJJU0MpCQkrPSBwYXJpc2MvCj4+ICBv
-YmotJChDT05GSUdfUkFQSURJTykJCSs9IHJhcGlkaW8vCj4+ICBvYmoteQkJCQkrPSB2aWRlby8K
-Pj4gLW9iai15CQkJCSs9IGlkbGUvCj4+ICsjIGFjcGkgbXVzdCBjb21lIGJlZm9yZSBpZGxlIGZv
-ciBpbml0aWFsaXphdGlvbgo+PiAgb2JqLSQoQ09ORklHX0FDUEkpCQkrPSBhY3BpLwo+PiArb2Jq
-LXkJCQkJKz0gaWRsZS8KPiBUaGlzIGJyZWFrcyBpbnRlbF9pZGxlLgo+IExvYWRpbmcgb3JkZXIg
-ZGVmaW5lcyB3aGljaCBvbmUgY29tZXMgZmlyc3QgYW5kIGlzIHVzZWQ6IGludGVsX2lkbGUKPiBv
-ciBBQ1BJIHByb2Nlc3NvciBjcHVpZGxlIGRyaXZlci4KPiBXaXRoIGFib3ZlLCBvbmUgd291bGQg
-Z2V0IGFjcGlfaWRsZSBjcHVpZGxlIGRyaXZlciBpZiBib3RoIGFyZQo+IGNvbXBpbGVkIGluLCBp
-bnN0ZWFkIG9mIHRoZSBpbnRlbF9pZGxlIG9uZS4KPiAKPiBXaHkgZXhhY3RseSBpcyB0aGlzIG5l
-Y2Vzc2FyeSwgY291bGRuJ3QgaXQganVzdCB3b3JrPwoKWy4uLl0KCkkganVzdCB3YW50ZWQgdG8g
-a2VlcCBzYW1lIG9yZGVyLiBJZiBpdCBpcyBub3QgbmVjZXNzYXJ5LCBJIHdvbid0IGludmVydAp0
-aGUgY29tcGlsYXRpb24gb3JkZXIgaW4gdGhlIG5leHQgcGF0Y2guCgo+PiAtc3RhdGljIGludCBz
-ZXR1cF9icm9hZGNhc3RfY3B1aHBfbm90aWZ5KHN0cnVjdCBub3RpZmllcl9ibG9jayAqbiwKPj4g
-LQkJdW5zaWduZWQgbG9uZyBhY3Rpb24sIHZvaWQgKmhjcHUpCj4+ICtzdGF0aWMgaW50IGNwdV9o
-b3RwbHVnX25vdGlmeShzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm4sCj4+ICsJCQkgICAgICB1bnNp
-Z25lZCBsb25nIGFjdGlvbiwgdm9pZCAqaGNwdSkKPj4gIHsKPj4gIAlpbnQgaG90Y3B1ID0gKHVu
-c2lnbmVkIGxvbmcpaGNwdTsKPj4gKwlzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldjsKPj4gIAo+
-PiAgCXN3aXRjaCAoYWN0aW9uICYgMHhmKSB7Cj4+ICAJY2FzZSBDUFVfT05MSU5FOgo+PiAgCQlz
-bXBfY2FsbF9mdW5jdGlvbl9zaW5nbGUoaG90Y3B1LCBfX3NldHVwX2Jyb2FkY2FzdF90aW1lciwK
-Pj4gIAkJCSh2b2lkICopdHJ1ZSwgMSk7Cj4+ICsKPj4gKwkJZGV2ID0gcGVyX2NwdV9wdHIoaW50
-ZWxfaWRsZV9jcHVpZGxlX2RldmljZXMsIGhvdGNwdSk7Cj4+ICsJCWlmICghZGV2LT5yZWdpc3Rl
-cmVkKQo+PiArCQkJaW50ZWxfaWRsZV9jcHVfaW5pdChob3RjcHUpOwo+PiArCj4gQSBzbWFsbCBj
-b21tZW50IHdoeSB0aGlzIGNhbiBoYXBwZW4gYW5kIG5lZWRzIHRvIGJlIGRvbmUKPiAocmVhbCBo
-b3RwbHVnZ2VkIGNwdSBjYXNlKSBtaWdodCBoZWxwIGhlcmUgbGF0ZXIuCgpZZXMsIHRoYXQgbWFr
-ZXMgc2Vuc2UuCgpbLi4uXQoKPj4gIHN0YXRpYyB2b2lkIGF1dG9fZGVtb3Rpb25fZGlzYWJsZSh2
-b2lkICpkdW1teSkKPj4gQEAgLTQwNyw3ICs0MTQsNyBAQCBzdGF0aWMgaW50IGludGVsX2lkbGVf
-cHJvYmUodm9pZCkKPj4gIAkJbGFwaWNfdGltZXJfcmVsaWFibGVfc3RhdGVzID0gTEFQSUNfVElN
-RVJfQUxXQVlTX1JFTElBQkxFOwo+PiAgCWVsc2Ugewo+PiAgCQlvbl9lYWNoX2NwdShfX3NldHVw
-X2Jyb2FkY2FzdF90aW1lciwgKHZvaWQgKil0cnVlLCAxKTsKPj4gLQkJcmVnaXN0ZXJfY3B1X25v
-dGlmaWVyKCZzZXR1cF9icm9hZGNhc3Rfbm90aWZpZXIpOwo+PiArCQlyZWdpc3Rlcl9jcHVfbm90
-aWZpZXIoJmNwdV9ob3RwbHVnX25vdGlmaWVyKTsKPiAKPiBUaGUgbm90aWZpZXIgYWx3YXlzIGhh
-cyB0byBiZSByZWdpc3RlcmVkIG5vdywgbm90IG9ubHkgaW46Cj4gaWYgKGJvb3RfY3B1X2hhcyhY
-ODZfRkVBVFVSRV9BUkFUKSkgICAgIC8qIEFsd2F5cyBSZWxpYWJsZSBBUElDIFRpbWVyICovCj4g
-Y2FzZS4KCk9vcHMsIHJpZ2h0LgoKCj4+ICAJcHJfZGVidWcoUFJFRklYICJ2IiBJTlRFTF9JRExF
-X1ZFUlNJT04KPj4gQEAgLTQ5NCw3ICs1MDEsNyBAQCBzdGF0aWMgaW50IGludGVsX2lkbGVfY3B1
-aWRsZV9kcml2ZXJfaW5pdCh2b2lkKQo+PiAgICogYWxsb2NhdGUsIGluaXRpYWxpemUsIHJlZ2lz
-dGVyIGNwdWlkbGVfZGV2aWNlcwo+PiAgICogQGNwdTogY3B1L2NvcmUgdG8gaW5pdGlhbGl6ZQo+
-PiAgICovCj4+IC1pbnQgaW50ZWxfaWRsZV9jcHVfaW5pdChpbnQgY3B1KQo+PiArc3RhdGljIGlu
-dCBpbnRlbF9pZGxlX2NwdV9pbml0KGludCBjcHUpCj4+ICB7Cj4+ICAJaW50IGNzdGF0ZTsKPj4g
-IAlzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldjsKPj4gQEAgLTUzOSw3ICs1NDYsNiBAQCBpbnQg
-aW50ZWxfaWRsZV9jcHVfaW5pdChpbnQgY3B1KQo+PiAgCj4+ICAJcmV0dXJuIDA7Cj4+ICB9Cj4+
-IC1FWFBPUlRfU1lNQk9MX0dQTChpbnRlbF9pZGxlX2NwdV9pbml0KTsKPj4gIAo+PiAgc3RhdGlj
-IGludCBfX2luaXQgaW50ZWxfaWRsZV9pbml0KHZvaWQpCj4+ICB7Cj4+IEBAIC01ODMsNyArNTg5
-LDcgQEAgc3RhdGljIHZvaWQgX19leGl0IGludGVsX2lkbGVfZXhpdCh2b2lkKQo+PiAgCj4+ICAJ
-aWYgKGxhcGljX3RpbWVyX3JlbGlhYmxlX3N0YXRlcyAhPSBMQVBJQ19USU1FUl9BTFdBWVNfUkVM
-SUFCTEUpIHsKPj4gIAkJb25fZWFjaF9jcHUoX19zZXR1cF9icm9hZGNhc3RfdGltZXIsICh2b2lk
-ICopZmFsc2UsIDEpOwo+PiAtCQl1bnJlZ2lzdGVyX2NwdV9ub3RpZmllcigmc2V0dXBfYnJvYWRj
-YXN0X25vdGlmaWVyKTsKPj4gKwkJdW5yZWdpc3Rlcl9jcHVfbm90aWZpZXIoJmNwdV9ob3RwbHVn
-X25vdGlmaWVyKTsKPiBTYW1lLgoKClRoYW5rcyBmb3IgdGhlIHJldmlldyAhCgogIC0tIERhbmll
-bAoKLS0gCiA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3Vy
-Y2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFj
-ZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMh
-L2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cv
-PiBCbG9nCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-bGluYXJvLWRldiBtYWlsaW5nIGxpc3QKbGluYXJvLWRldkBsaXN0cy5saW5hcm8ub3JnCmh0dHA6
-Ly9saXN0cy5saW5hcm8ub3JnL21haWxtYW4vbGlzdGluZm8vbGluYXJvLWRldgo=
+When the system is booted with some cpus offline, the idle
+driver is not initialized. When a cpu is set online, the
+acpi code call the intel idle init function. Unfortunately
+this code introduce a dependency between intel_idle and acpi.
+
+This patch is intended to remove this dependency by using the
+notifier of intel_idle. This patch has the benefit of
+encapsulating the intel_idle driver and remove some exported
+functions.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/acpi/processor_driver.c |    7 ------
+ drivers/idle/intel_idle.c       |   41 +++++++++++++++++++++++++-------------
+ include/linux/cpuidle.h         |    7 ------
+ 3 files changed, 27 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index 0734086..8648b29 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -427,18 +427,11 @@ static int acpi_cpu_soft_notify(struct notifier_block *nfb,
+ 		 * Initialize missing things
+ 		 */
+ 		if (pr->flags.need_hotplug_init) {
+-			struct cpuidle_driver *idle_driver =
+-				cpuidle_get_driver();
+-
+ 			printk(KERN_INFO "Will online and init hotplugged "
+ 			       "CPU: %d\n", pr->id);
+ 			WARN(acpi_processor_start(pr), "Failed to start CPU:"
+ 				" %d\n", pr->id);
+ 			pr->flags.need_hotplug_init = 0;
+-			if (idle_driver && !strcmp(idle_driver->name,
+-						   "intel_idle")) {
+-				intel_idle_cpu_init(pr->id);
+-			}
+ 		/* Normal CPU soft online event */
+ 		} else {
+ 			acpi_processor_ppc_has_changed(pr, 0);
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index d0f59c3..fe95d54 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -96,6 +96,7 @@ static const struct idle_cpu *icpu;
+ static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
+ static int intel_idle(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv, int index);
++static int intel_idle_cpu_init(int cpu);
+ 
+ static struct cpuidle_state *cpuidle_state_table;
+ 
+@@ -302,22 +303,35 @@ static void __setup_broadcast_timer(void *arg)
+ 	clockevents_notify(reason, &cpu);
+ }
+ 
+-static int setup_broadcast_cpuhp_notify(struct notifier_block *n,
+-		unsigned long action, void *hcpu)
++static int cpu_hotplug_notify(struct notifier_block *n,
++			      unsigned long action, void *hcpu)
+ {
+ 	int hotcpu = (unsigned long)hcpu;
++	struct cpuidle_device *dev;
+ 
+ 	switch (action & 0xf) {
+ 	case CPU_ONLINE:
+-		smp_call_function_single(hotcpu, __setup_broadcast_timer,
+-			(void *)true, 1);
++
++		if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
++			smp_call_function_single(hotcpu, __setup_broadcast_timer,
++						 (void *)true, 1);
++
++		/*
++		 * Some systems can hotplug a cpu at runtime after
++		 * the kernel has booted, we have to initialize the
++		 * driver in this case
++		 */
++		dev = per_cpu_ptr(intel_idle_cpuidle_devices, hotcpu);
++		if (!dev->registered)
++			intel_idle_cpu_init(hotcpu);
++
+ 		break;
+ 	}
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block setup_broadcast_notifier = {
+-	.notifier_call = setup_broadcast_cpuhp_notify,
++static struct notifier_block cpu_hotplug_notifier = {
++	.notifier_call = cpu_hotplug_notify,
+ };
+ 
+ static void auto_demotion_disable(void *dummy)
+@@ -405,10 +419,10 @@ static int intel_idle_probe(void)
+ 
+ 	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
+ 		lapic_timer_reliable_states = LAPIC_TIMER_ALWAYS_RELIABLE;
+-	else {
++	else
+ 		on_each_cpu(__setup_broadcast_timer, (void *)true, 1);
+-		register_cpu_notifier(&setup_broadcast_notifier);
+-	}
++
++	register_cpu_notifier(&cpu_hotplug_notifier);
+ 
+ 	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
+ 		" model 0x%X\n", boot_cpu_data.x86_model);
+@@ -494,7 +508,7 @@ static int intel_idle_cpuidle_driver_init(void)
+  * allocate, initialize, register cpuidle_devices
+  * @cpu: cpu/core to initialize
+  */
+-int intel_idle_cpu_init(int cpu)
++static int intel_idle_cpu_init(int cpu)
+ {
+ 	int cstate;
+ 	struct cpuidle_device *dev;
+@@ -539,7 +553,6 @@ int intel_idle_cpu_init(int cpu)
+ 
+ 	return 0;
+ }
+-EXPORT_SYMBOL_GPL(intel_idle_cpu_init);
+ 
+ static int __init intel_idle_init(void)
+ {
+@@ -581,10 +594,10 @@ static void __exit intel_idle_exit(void)
+ 	intel_idle_cpuidle_devices_uninit();
+ 	cpuidle_unregister_driver(&intel_idle_driver);
+ 
+-	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE) {
++
++	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
+ 		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
+-		unregister_cpu_notifier(&setup_broadcast_notifier);
+-	}
++	unregister_cpu_notifier(&cpu_hotplug_notifier);
+ 
+ 	return;
+ }
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 5ab7183..66d7e0d 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -213,14 +213,7 @@ struct cpuidle_governor {
+ extern int cpuidle_register_governor(struct cpuidle_governor *gov);
+ extern void cpuidle_unregister_governor(struct cpuidle_governor *gov);
+ 
+-#ifdef CONFIG_INTEL_IDLE
+-extern int intel_idle_cpu_init(int cpu);
+ #else
+-static inline int intel_idle_cpu_init(int cpu) { return -1; }
+-#endif
+-
+-#else
+-static inline int intel_idle_cpu_init(int cpu) { return -1; }
+ 
+ static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
+ {return 0;}
+-- 
+1.7.5.4
