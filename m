@@ -1,103 +1,236 @@
-From: preeti <preeti@linux.vnet.ibm.com>
-Subject: Re: Cpuidle drivers,Suspend : Fix suspend/resume hang with intel_idle
- driver
-Date: Fri, 29 Jun 2012 10:56:56 +0530
-Message-ID: <4FED3CA0.3050909@linux.vnet.ibm.com>
-References: <4FEC20D2.2070501@linux.vnet.ibm.com> <201206281153.25310.rjw@sisk.pl> <4FEC84A4.1000605@linux.vnet.ibm.com> <201206282111.03992.rjw@sisk.pl> <4FED2AF2.4080900@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2] acpi: intel_idle : break dependency
+	between modules
+Date: Fri, 29 Jun 2012 10:39:26 +0200
+Message-ID: <4FED69BE.20707@linaro.org>
+References: <201206271506.29034.trenn@suse.de>
+	<1340873202-2476-1-git-send-email-daniel.lezcano@linaro.org>
+	<201206282124.09857.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4FED2AF2.4080900@linux.vnet.ibm.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201206282124.09857.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, "Srivatsa.S.Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Cc: linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/29/2012 09:41 AM, preeti wrote:
-> On 06/29/2012 12:41 AM, Rafael J. Wysocki wrote:
->> On Thursday, June 28, 2012, preeti wrote:
->>> On 06/28/2012 03:23 PM, Rafael J. Wysocki wrote:
->>>> On Thursday, June 28, 2012, preeti wrote:
->>>>>
->>>>> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> [...]
->>> cpuidle is an architecture independent part of the kernel  code.Since 
->>> this patch aims at x86 architecture in specific,I considered it
->>> inappropriate.
->>>
->>> In addition to this,suspend happens on x86 only if ACPI is configured.
+On 06/28/2012 09:24 PM, Rafael J. Wysocki wrote:
+> On Thursday, June 28, 2012, Daniel Lezcano wrote:
+>> When the system is booted with some cpus offline, the idle
+>> driver is not initialized. When a cpu is set online, the
+>> acpi code call the intel idle init function. Unfortunately
+>> this code introduce a dependency between intel_idle and acpi.
 >>
->> But that is not required for intel_idle, so if it hangs with intel_idle,
->> then it is not dependent on ACPI after all.
-> True intel_idle does not need ACPI to be configured,but that also means
-> that the kernel will not provide you the means to suspend.There is no
-> question of resume hang here at all as you cannot suspend in the first
-> place.
-> 
-> The issue is when ACPI is configured,and intel_idle is chosen to be the
-> cpuidle driver.In this situation when the user suspends,cpus can enter
-> deep sleep states as intel_idle driver does not prevent then from doing so.
-> This is when resume hangs.
+>> This patch is intended to remove this dependency by using the
+>> notifier of intel_idle. This patch has the benefit of
+>> encapsulating the intel_idle driver and remove some exported
+>> functions.
 >>
->>> Therefore it seemed right to put the callback in ACPI specific code
->>> which deals with ACPI sleep support.
->>
->> I wonder if we can address this issue correctly.  That is, in a non-racy
->> way and in a better place.
->>
->> First, I really don't think it is necessary to "suspend" cpuidle (be it
->> ACPI or any other) when device drivers' suspend routines are being
->> executed (which also is racy, because the cpuidle "suspend" may be running
->> concurrently with cpuidle on another CPU) or earlier.  We really may want
->> to disable the deeper C-states when we're about to execute
->> suspend_ops->prepare_late(), or hibernation_ops->prepare(), i.e. after
->> we've run dpm_suspend_end() successfully.
-> 
-> The commit "ACPI:disable lower idle C-states across suspend/resume"
-> states that device_suspend() calls ACPI suspend functions which cause
-> side effects on the lower idle C-states.This means we need to disable
-> entry into deeper C-states even before dpm_suspend_start(),but how much
-> before?
-> 
-> The commit answers this too.It says removing the functionality of
-> entering deep C-states before suspend removed the side effects.Besides,
-> the commit title says'across suspend/resume'.So I think to address the
-> resume hang effectively,it is desirable to disable entry into deeper
-> C-states during suspend_prepare operations.
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>=20
+> This one looks good to me too.
+>=20
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-To clarify this further,since we take action upon PM_SUSPEND_PREPARE
-notification,which is called before suspend begins,we avoid race
-condition between suspend operations and disabling entry into deeper
-c-states altogether.
+Thanks for the review Rafael.
 
+> Len, are you going to take it?
+
+Rafael, Len,
+
+After the discussion [1], I put in place a tree at:
+
+ssh://git.linaro.org/srv/git.linaro.org/git/people/dlezcano/cpuidle-next.=
+git
+#cpuidle-next
+
+I proposed this tree to group the cpuidle modifications and prevent the
+last minutes conflict when Len will apply them.
+
+I also included the tree into linux-next for wider testing.
+
+If you want I can take this patch even if it is related to acpi also and
+in the future if you agree, Len or you could pull from there.
+
+Thanks
+  -- Daniel
+
+[1] https://lkml.org/lkml/2012/6/18/113
+
+>=20
+> Rafael
+>=20
+>=20
+>> ---
+>>  drivers/acpi/processor_driver.c |    7 ------
+>>  drivers/idle/intel_idle.c       |   41 +++++++++++++++++++++++++-----=
+--------
+>>  include/linux/cpuidle.h         |    7 ------
+>>  3 files changed, 27 insertions(+), 28 deletions(-)
 >>
->> So, it seems, it might be a good idea to place a cpuidle driver suspend
->> (and/or hibernation) hook at the end of dpm_suspend_end() and make ACPI
->> and intel_idle drivers implement that hook.
+>> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_=
+driver.c
+>> index 0734086..8648b29 100644
+>> --- a/drivers/acpi/processor_driver.c
+>> +++ b/drivers/acpi/processor_driver.c
+>> @@ -427,18 +427,11 @@ static int acpi_cpu_soft_notify(struct notifier_=
+block *nfb,
+>>  		 * Initialize missing things
+>>  		 */
+>>  		if (pr->flags.need_hotplug_init) {
+>> -			struct cpuidle_driver *idle_driver =3D
+>> -				cpuidle_get_driver();
+>> -
+>>  			printk(KERN_INFO "Will online and init hotplugged "
+>>  			       "CPU: %d\n", pr->id);
+>>  			WARN(acpi_processor_start(pr), "Failed to start CPU:"
+>>  				" %d\n", pr->id);
+>>  			pr->flags.need_hotplug_init =3D 0;
+>> -			if (idle_driver && !strcmp(idle_driver->name,
+>> -						   "intel_idle")) {
+>> -				intel_idle_cpu_init(pr->id);
+>> -			}
+>>  		/* Normal CPU soft online event */
+>>  		} else {
+>>  			acpi_processor_ppc_has_changed(pr, 0);
+>> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+>> index d0f59c3..fe95d54 100644
+>> --- a/drivers/idle/intel_idle.c
+>> +++ b/drivers/idle/intel_idle.c
+>> @@ -96,6 +96,7 @@ static const struct idle_cpu *icpu;
+>>  static struct cpuidle_device __percpu *intel_idle_cpuidle_devices;
+>>  static int intel_idle(struct cpuidle_device *dev,
+>>  			struct cpuidle_driver *drv, int index);
+>> +static int intel_idle_cpu_init(int cpu);
+>> =20
+>>  static struct cpuidle_state *cpuidle_state_table;
+>> =20
+>> @@ -302,22 +303,35 @@ static void __setup_broadcast_timer(void *arg)
+>>  	clockevents_notify(reason, &cpu);
+>>  }
+>> =20
+>> -static int setup_broadcast_cpuhp_notify(struct notifier_block *n,
+>> -		unsigned long action, void *hcpu)
+>> +static int cpu_hotplug_notify(struct notifier_block *n,
+>> +			      unsigned long action, void *hcpu)
+>>  {
+>>  	int hotcpu =3D (unsigned long)hcpu;
+>> +	struct cpuidle_device *dev;
+>> =20
+>>  	switch (action & 0xf) {
+>>  	case CPU_ONLINE:
+>> -		smp_call_function_single(hotcpu, __setup_broadcast_timer,
+>> -			(void *)true, 1);
+>> +
+>> +		if (lapic_timer_reliable_states !=3D LAPIC_TIMER_ALWAYS_RELIABLE)
+>> +			smp_call_function_single(hotcpu, __setup_broadcast_timer,
+>> +						 (void *)true, 1);
+>> +
+>> +		/*
+>> +		 * Some systems can hotplug a cpu at runtime after
+>> +		 * the kernel has booted, we have to initialize the
+>> +		 * driver in this case
+>> +		 */
+>> +		dev =3D per_cpu_ptr(intel_idle_cpuidle_devices, hotcpu);
+>> +		if (!dev->registered)
+>> +			intel_idle_cpu_init(hotcpu);
+>> +
+>>  		break;
+>>  	}
+>>  	return NOTIFY_OK;
+>>  }
+>> =20
+>> -static struct notifier_block setup_broadcast_notifier =3D {
+>> -	.notifier_call =3D setup_broadcast_cpuhp_notify,
+>> +static struct notifier_block cpu_hotplug_notifier =3D {
+>> +	.notifier_call =3D cpu_hotplug_notify,
+>>  };
+>> =20
+>>  static void auto_demotion_disable(void *dummy)
+>> @@ -405,10 +419,10 @@ static int intel_idle_probe(void)
+>> =20
+>>  	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer */
+>>  		lapic_timer_reliable_states =3D LAPIC_TIMER_ALWAYS_RELIABLE;
+>> -	else {
+>> +	else
+>>  		on_each_cpu(__setup_broadcast_timer, (void *)true, 1);
+>> -		register_cpu_notifier(&setup_broadcast_notifier);
+>> -	}
+>> +
+>> +	register_cpu_notifier(&cpu_hotplug_notifier);
+>> =20
+>>  	pr_debug(PREFIX "v" INTEL_IDLE_VERSION
+>>  		" model 0x%X\n", boot_cpu_data.x86_model);
+>> @@ -494,7 +508,7 @@ static int intel_idle_cpuidle_driver_init(void)
+>>   * allocate, initialize, register cpuidle_devices
+>>   * @cpu: cpu/core to initialize
+>>   */
+>> -int intel_idle_cpu_init(int cpu)
+>> +static int intel_idle_cpu_init(int cpu)
+>>  {
+>>  	int cstate;
+>>  	struct cpuidle_device *dev;
+>> @@ -539,7 +553,6 @@ int intel_idle_cpu_init(int cpu)
+>> =20
+>>  	return 0;
+>>  }
+>> -EXPORT_SYMBOL_GPL(intel_idle_cpu_init);
+>> =20
+>>  static int __init intel_idle_init(void)
+>>  {
+>> @@ -581,10 +594,10 @@ static void __exit intel_idle_exit(void)
+>>  	intel_idle_cpuidle_devices_uninit();
+>>  	cpuidle_unregister_driver(&intel_idle_driver);
+>> =20
+>> -	if (lapic_timer_reliable_states !=3D LAPIC_TIMER_ALWAYS_RELIABLE) {
+>> +
+>> +	if (lapic_timer_reliable_states !=3D LAPIC_TIMER_ALWAYS_RELIABLE)
+>>  		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
+>> -		unregister_cpu_notifier(&setup_broadcast_notifier);
+>> -	}
+>> +	unregister_cpu_notifier(&cpu_hotplug_notifier);
+>> =20
+>>  	return;
+>>  }
+>> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+>> index 5ab7183..66d7e0d 100644
+>> --- a/include/linux/cpuidle.h
+>> +++ b/include/linux/cpuidle.h
+>> @@ -213,14 +213,7 @@ struct cpuidle_governor {
+>>  extern int cpuidle_register_governor(struct cpuidle_governor *gov);
+>>  extern void cpuidle_unregister_governor(struct cpuidle_governor *gov)=
+;
+>> =20
+>> -#ifdef CONFIG_INTEL_IDLE
+>> -extern int intel_idle_cpu_init(int cpu);
+>>  #else
+>> -static inline int intel_idle_cpu_init(int cpu) { return -1; }
+>> -#endif
+>> -
+>> -#else
+>> -static inline int intel_idle_cpu_init(int cpu) { return -1; }
+>> =20
+>>  static inline int cpuidle_register_governor(struct cpuidle_governor *=
+gov)
+>>  {return 0;}
 >>
-> Dont you think this patch is meant to fix a very ACPI specific problem?
-> Which is why I think the call backs or any hook meant to fix this should
-> go into ACPI specific code.
-> Else it will seem irrelevant to all other architectures that implement
-> suspend.
->> That would be much more deterministic than your patch I think.
->>
->> Thanks,
->> Rafael
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> Regards
-> Preeti
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>=20
 
 
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
+RM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
