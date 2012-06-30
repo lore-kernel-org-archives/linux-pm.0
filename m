@@ -1,13 +1,11 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 8/8] acpi_pad: fix power_saving thread deadlock
-Date: Sat, 30 Jun 2012 01:07:35 -0400
-Message-ID: <5f1601261050251a5ca293378b492a69d590dacb.1341032550.git.len.brown@intel.com>
-References: <1341032855-27139-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [PATCH -v5 0/6] notifier error injection
+Date: Sat, 30 Jun 2012 14:59:24 +0900
+Message-ID: <1341035970-20490-1-git-send-email-akinobu.mita@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1341032855-27139-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <9f132652d94c96476b0b0a8caf0c10e96ab10fa8.1341032550.git.len.brown@intel.com>
-References: <9f132652d94c96476b0b0a8caf0c10e96ab10fa8.1341032550.git.len.brown@intel.com>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -17,67 +15,109 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Stuart Hayes <Stuart_Hayes@Dell.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: Michael Ellerman <michael@ellerman.id.au>, Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, =?UTF-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>, linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Stuart Hayes <Stuart_Hayes@Dell.com>
+This provides kernel modules that can be used to test the error handling
+of notifier call chain failures by injecting artifical errors to the
+following notifier chain callbacks.
 
-The acpi_pad driver can get stuck in destroy_power_saving_task()
-waiting for kthread_stop() to stop a power_saving thread.  The problem
-is that the isolated_cpus_lock mutex is owned when
-destroy_power_saving_task() calls kthread_stop(), which waits for a
-power_saving thread to end, and the power_saving thread tries to
-acquire the isolated_cpus_lock when it calls round_robin_cpu().  This
-patch fixes the issue by making round_robin_cpu() use its own mutex.
+ * CPU notifier
+ * PM notifier
+ * memory hotplug notifier
+ * powerpc pSeries reconfig notifier
 
-https://bugzilla.kernel.org/show_bug.cgi?id=42981
+Example: Inject CPU offline error (-1 =3D=3D -EPERM)
 
-Cc: stable@vger.kernel.org
-Signed-off-by: Stuart Hayes <Stuart_Hayes@Dell.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/acpi/acpi_pad.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+	# cd /sys/kernel/debug/notifier-error-inject/cpu
+	# echo -1 > actions/CPU_DOWN_PREPARE/error
+	# echo 0 > /sys/devices/system/cpu/cpu1/online
+	bash: echo: write error: Operation not permitted
 
-diff --git a/drivers/acpi/acpi_pad.c b/drivers/acpi/acpi_pad.c
-index a43fa1a..1502c502 100644
---- a/drivers/acpi/acpi_pad.c
-+++ b/drivers/acpi/acpi_pad.c
-@@ -36,6 +36,7 @@
- #define ACPI_PROCESSOR_AGGREGATOR_DEVICE_NAME "Processor Aggregator"
- #define ACPI_PROCESSOR_AGGREGATOR_NOTIFY 0x80
- static DEFINE_MUTEX(isolated_cpus_lock);
-+static DEFINE_MUTEX(round_robin_lock);
- 
- static unsigned long power_saving_mwait_eax;
- 
-@@ -107,7 +108,7 @@ static void round_robin_cpu(unsigned int tsk_index)
- 	if (!alloc_cpumask_var(&tmp, GFP_KERNEL))
- 		return;
- 
--	mutex_lock(&isolated_cpus_lock);
-+	mutex_lock(&round_robin_lock);
- 	cpumask_clear(tmp);
- 	for_each_cpu(cpu, pad_busy_cpus)
- 		cpumask_or(tmp, tmp, topology_thread_cpumask(cpu));
-@@ -116,7 +117,7 @@ static void round_robin_cpu(unsigned int tsk_index)
- 	if (cpumask_empty(tmp))
- 		cpumask_andnot(tmp, cpu_online_mask, pad_busy_cpus);
- 	if (cpumask_empty(tmp)) {
--		mutex_unlock(&isolated_cpus_lock);
-+		mutex_unlock(&round_robin_lock);
- 		return;
- 	}
- 	for_each_cpu(cpu, tmp) {
-@@ -131,7 +132,7 @@ static void round_robin_cpu(unsigned int tsk_index)
- 	tsk_in_cpu[tsk_index] = preferred_cpu;
- 	cpumask_set_cpu(preferred_cpu, pad_busy_cpus);
- 	cpu_weight[preferred_cpu]++;
--	mutex_unlock(&isolated_cpus_lock);
-+	mutex_unlock(&round_robin_lock);
- 
- 	set_cpus_allowed_ptr(current, cpumask_of(preferred_cpu));
- }
--- 
-1.7.11.1.104.ge7b44f1
+This also adds cpu and memory hotplug tests to tools/testing/selftests=20
+These tests first do simple online and offline test and then do fault
+injection tests if notifier error injection module is available.
+
+Changelog:
+
+* v5 (change only testing scripts)
+- make testing scripts a part of tools/testing/selftests
+- do simple on/offline tests even if no notifier error injection support
+
+* v4 (It is about 11 months since v3)
+- prefix all APIs with notifier_err_inject_*
+- rearrange debugfs interface
+  (e.g. $DEBUGFS/cpu-notifier-error-inject/CPU_DOWN_PREPARE -->
+        $DEBUGFS/notifier-error-inject/cpu/actions/CPU_DOWN_PREPARE/error=
+)
+- update modules to follow new interface
+- add -r option for memory-notifier.sh to specify percent of offlining
+  memory blocks
+
+* v3
+- rewrite to be kernel modules instead of initializing at late_initcall()=
+s
+  (it makes the diffstat look different but most code remains unchanged)
+- export err_inject_notifier_block_{init,cleanup} for modules
+- export pSeries_reconfig_notifier_{,un}register symbols for a module
+- notifier priority can be specified as a module parameter
+- add testing scripts in tools/testing/fault-injection
+
+* v2
+- "PM: Improve error code of pm_notifier_call_chain()" is now in -next
+- "debugfs: add debugfs_create_int" is dropped
+- put a comment in err_inject_notifier_block_init()
+- only allow valid errno to be injected (-MAX_ERRNO <=3D errno <=3D 0)
+- improve Kconfig help text
+- make CONFIG_PM_NOTIFIER_ERROR_INJECTION visible even if PM_DEBUG is dis=
+abled
+- make CONFIG_PM_NOTIFIER_ERROR_INJECTION default if PM_DEBUG is enabled
+
+Akinobu Mita (6):
+  fault-injection: notifier error injection
+  cpu: rewrite cpu-notifier-error-inject module
+  PM: PM notifier error injection module
+  memory: memory notifier error injection module
+  powerpc: pSeries reconfig notifier error injection module
+  fault-injection: add selftests for cpu and memory hotplug
+
+ lib/Kconfig.debug                                  |   91 +++++++-
+ lib/Makefile                                       |    5 +
+ lib/cpu-notifier-error-inject.c                    |   63 +++---
+ lib/memory-notifier-error-inject.c                 |   48 ++++
+ lib/notifier-error-inject.c                        |  112 ++++++++++
+ lib/notifier-error-inject.h                        |   24 ++
+ lib/pSeries-reconfig-notifier-error-inject.c       |   51 +++++
+ lib/pm-notifier-error-inject.c                     |   49 +++++
+ tools/testing/selftests/Makefile                   |    2 +-
+ tools/testing/selftests/cpu-hotplug/Makefile       |    6 +
+ tools/testing/selftests/cpu-hotplug/on-off-test.sh |  221 ++++++++++++++=
++++++
+ tools/testing/selftests/memory-hotplug/Makefile    |    6 +
+ .../selftests/memory-hotplug/on-off-test.sh        |  230 ++++++++++++++=
+++++++
+ 13 files changed, 867 insertions(+), 41 deletions(-)
+ create mode 100644 lib/memory-notifier-error-inject.c
+ create mode 100644 lib/notifier-error-inject.c
+ create mode 100644 lib/notifier-error-inject.h
+ create mode 100644 lib/pSeries-reconfig-notifier-error-inject.c
+ create mode 100644 lib/pm-notifier-error-inject.c
+ create mode 100644 tools/testing/selftests/cpu-hotplug/Makefile
+ create mode 100755 tools/testing/selftests/cpu-hotplug/on-off-test.sh
+ create mode 100644 tools/testing/selftests/memory-hotplug/Makefile
+ create mode 100755 tools/testing/selftests/memory-hotplug/on-off-test.sh
+
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Greg KH <greg@kroah.com>
+Cc: linux-mm@kvack.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Am=C3=A9rico Wang <xiyou.wangcong@gmail.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+Cc: Dave Jones <davej@redhat.com>
+--=20
+1.7.10.4
