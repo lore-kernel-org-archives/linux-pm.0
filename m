@@ -1,94 +1,50 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 3/8] ACPI: Make acpi_skip_timer_override cover
-	all source_irq==0 cases
-Date: Sat, 30 Jun 2012 01:07:30 -0400
-Message-ID: <ae10ccdc3093486f8c2369d227583f9d79f628e5.1341032550.git.len.brown@intel.com>
+Subject: [PATCH 7/8] ACPI video: Still use ACPI backlight control if _DOS doesn't exist
+Date: Sat, 30 Jun 2012 01:07:34 -0400
+Message-ID: <b03738430c7537d5f87948e0b35d8aaf2688c6b4.1341032550.git.len.brown@intel.com>
 References: <1341032855-27139-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1341032855-27139-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <9f132652d94c96476b0b0a8caf0c10e96ab10fa8.1341032550.git.len.brown@intel.com>
 References: <9f132652d94c96476b0b0a8caf0c10e96ab10fa8.1341032550.git.len.brown@intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Igor Murzov <intergalactic.anonymous@gmail.com>, stable@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Feng Tang <feng.tang@intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
 
-Currently when acpi_skip_timer_override is set, it only cover the
-(source_irq == 0 && global_irq == 2) cases. While there is also
-platform which need use this option and its global_irq is not 2.
-This patch will extend acpi_skip_timer_override to cover all
-timer overriding cases as long as the source irq is 0.
+This fixes a regression in 3.4-rc1 caused by commit
+ea9f8856bd6d4ed45885b06a338f7362cd6c60e5
+(ACPI video: Harden video bus adding.)
 
-This is the first part of a fix to kernel bug bugzilla 40002:
-	"IRQ 0 assigned to VGA"
-https://bugzilla.kernel.org/show_bug.cgi?id=40002
+Some platforms don't have _DOS control method, but the ACPI
+backlight still works.
+We should not invoke _DOS for these platforms.
 
-Reported-and-tested-by: Szymon Kowalczyk <fazerxlo@o2.pl>
-Signed-off-by: Feng Tang <feng.tang@intel.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=43168
+
+Cc: Igor Murzov <intergalactic.anonymous@gmail.com>
+Cc: stable@vger.kernel.org
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/kernel/acpi/boot.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+ drivers/acpi/video.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 8afb693..e7c698e 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -422,12 +422,14 @@ acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
- 		return 0;
- 	}
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 9577b6f..4134b30 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -558,6 +558,8 @@ acpi_video_bus_DOS(struct acpi_video_bus *video, int bios_flag, int lcd_flag)
+ 	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
+ 	struct acpi_object_list args = { 1, &arg0 };
  
--	if (intsrc->source_irq == 0 && intsrc->global_irq == 2) {
-+	if (intsrc->source_irq == 0) {
- 		if (acpi_skip_timer_override) {
--			printk(PREFIX "BIOS IRQ0 pin2 override ignored.\n");
-+			printk(PREFIX "BIOS IRQ0 override ignored.\n");
- 			return 0;
- 		}
--		if (acpi_fix_pin2_polarity && (intsrc->inti_flags & ACPI_MADT_POLARITY_MASK)) {
-+
-+		if ((intsrc->global_irq == 2) && acpi_fix_pin2_polarity
-+			&& (intsrc->inti_flags & ACPI_MADT_POLARITY_MASK)) {
- 			intsrc->inti_flags &= ~ACPI_MADT_POLARITY_MASK;
- 			printk(PREFIX "BIOS IRQ0 pin2 override: forcing polarity to high active.\n");
- 		}
-@@ -1334,7 +1336,7 @@ static int __init dmi_disable_acpi(const struct dmi_system_id *d)
- }
++	if (!video->cap._DOS)
++		return 0;
  
- /*
-- * Force ignoring BIOS IRQ0 pin2 override
-+ * Force ignoring BIOS IRQ0 override
-  */
- static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
- {
-@@ -1344,7 +1346,7 @@ static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
- 	 */
- 	if (!acpi_skip_timer_override) {
- 		WARN(1, KERN_ERR "ati_ixp4x0 quirk not complete.\n");
--		pr_notice("%s detected: Ignoring BIOS IRQ0 pin2 override\n",
-+		pr_notice("%s detected: Ignoring BIOS IRQ0 override\n",
- 			d->ident);
- 		acpi_skip_timer_override = 1;
- 	}
-@@ -1438,7 +1440,7 @@ static struct dmi_system_id __initdata acpi_dmi_table_late[] = {
- 	 * is enabled.  This input is incorrectly designated the
- 	 * ISA IRQ 0 via an interrupt source override even though
- 	 * it is wired to the output of the master 8259A and INTIN0
--	 * is not connected at all.  Force ignoring BIOS IRQ0 pin2
-+	 * is not connected at all.  Force ignoring BIOS IRQ0
- 	 * override in that cases.
- 	 */
- 	{
+ 	if (bios_flag < 0 || bios_flag > 3 || lcd_flag < 0 || lcd_flag > 1)
+ 		return -EINVAL;
 -- 
 1.7.11.1.104.ge7b44f1
