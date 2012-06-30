@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/8] ACPI,
-	x86: fix Dell M6600 ACPI reboot regression via DMI
-Date: Sat, 30 Jun 2012 01:07:29 -0400
-Message-ID: <76eb9a30db4bc8fd172f9155247264b5f2686d7b.1341032550.git.len.brown@intel.com>
+Subject: [PATCH 3/8] ACPI: Make acpi_skip_timer_override cover
+	all source_irq==0 cases
+Date: Sat, 30 Jun 2012 01:07:30 -0400
+Message-ID: <ae10ccdc3093486f8c2369d227583f9d79f628e5.1341032550.git.len.brown@intel.com>
 References: <1341032855-27139-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -19,41 +19,76 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, x86@kernel.org, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Feng Tang <feng.tang@intel.com>
 
-Dell Precision M6600 is known to require PCI reboot, so add it to
-the reboot blacklist in pci_reboot_dmi_table[].
+Currently when acpi_skip_timer_override is set, it only cover the
+(source_irq == 0 && global_irq == 2) cases. While there is also
+platform which need use this option and its global_irq is not 2.
+This patch will extend acpi_skip_timer_override to cover all
+timer overriding cases as long as the source irq is 0.
 
-https://bugzilla.kernel.org/show_bug.cgi?id=42749
+This is the first part of a fix to kernel bug bugzilla 40002:
+	"IRQ 0 assigned to VGA"
+https://bugzilla.kernel.org/show_bug.cgi?id=40002
 
-cc: x86@kernel.org
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Reported-and-tested-by: Szymon Kowalczyk <fazerxlo@o2.pl>
+Signed-off-by: Feng Tang <feng.tang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/kernel/reboot.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/x86/kernel/acpi/boot.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 79c45af..412db57 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -451,6 +451,14 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 990"),
- 		},
- 	},
-+	{	/* Handle problems with rebooting on the Precision M6600. */
-+		.callback = set_pci_reboot,
-+		.ident = "Dell OptiPlex 990",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Precision M6600"),
-+		},
-+	},
- 	{ }
- };
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 8afb693..e7c698e 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -422,12 +422,14 @@ acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
+ 		return 0;
+ 	}
  
+-	if (intsrc->source_irq == 0 && intsrc->global_irq == 2) {
++	if (intsrc->source_irq == 0) {
+ 		if (acpi_skip_timer_override) {
+-			printk(PREFIX "BIOS IRQ0 pin2 override ignored.\n");
++			printk(PREFIX "BIOS IRQ0 override ignored.\n");
+ 			return 0;
+ 		}
+-		if (acpi_fix_pin2_polarity && (intsrc->inti_flags & ACPI_MADT_POLARITY_MASK)) {
++
++		if ((intsrc->global_irq == 2) && acpi_fix_pin2_polarity
++			&& (intsrc->inti_flags & ACPI_MADT_POLARITY_MASK)) {
+ 			intsrc->inti_flags &= ~ACPI_MADT_POLARITY_MASK;
+ 			printk(PREFIX "BIOS IRQ0 pin2 override: forcing polarity to high active.\n");
+ 		}
+@@ -1334,7 +1336,7 @@ static int __init dmi_disable_acpi(const struct dmi_system_id *d)
+ }
+ 
+ /*
+- * Force ignoring BIOS IRQ0 pin2 override
++ * Force ignoring BIOS IRQ0 override
+  */
+ static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
+ {
+@@ -1344,7 +1346,7 @@ static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
+ 	 */
+ 	if (!acpi_skip_timer_override) {
+ 		WARN(1, KERN_ERR "ati_ixp4x0 quirk not complete.\n");
+-		pr_notice("%s detected: Ignoring BIOS IRQ0 pin2 override\n",
++		pr_notice("%s detected: Ignoring BIOS IRQ0 override\n",
+ 			d->ident);
+ 		acpi_skip_timer_override = 1;
+ 	}
+@@ -1438,7 +1440,7 @@ static struct dmi_system_id __initdata acpi_dmi_table_late[] = {
+ 	 * is enabled.  This input is incorrectly designated the
+ 	 * ISA IRQ 0 via an interrupt source override even though
+ 	 * it is wired to the output of the master 8259A and INTIN0
+-	 * is not connected at all.  Force ignoring BIOS IRQ0 pin2
++	 * is not connected at all.  Force ignoring BIOS IRQ0
+ 	 * override in that cases.
+ 	 */
+ 	{
 -- 
 1.7.11.1.104.ge7b44f1
