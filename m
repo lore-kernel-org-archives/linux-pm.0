@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 4/8] ACPI: Remove one board specific WARN when
-	ignoring timer overriding
-Date: Sat, 30 Jun 2012 01:07:31 -0400
-Message-ID: <7f68b4c2e158019c2ec494b5cfbd9c83b4e5b253.1341032550.git.len.brown@intel.com>
+Subject: [PATCH 5/8] ACPI: Add a quirk for "AMILO PRO V2030" to
+	ignore the timer overriding
+Date: Sat, 30 Jun 2012 01:07:32 -0400
+Message-ID: <f6b54f083cc66cf9b11d2120d8df3c2ad4e0836d.1341032550.git.len.brown@intel.com>
 References: <1341032855-27139-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -24,32 +24,40 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Feng Tang <feng.tang@intel.com>
 
-Current WARN msg is only for the ati_ixp4x0 board, while this function
-is used by mulitple platforms. So this one board specific warning
-is not appropriate any more.
+This is the 2nd part of fix for kernel bugzilla 40002:
+    "IRQ 0 assigned to VGA"
+https://bugzilla.kernel.org/show_bug.cgi?id=40002
 
+The root cause is the buggy FW, whose ACPI tables assign the GSI 16
+to 2 irqs 0 and 16(VGA), and the VGA is the right owner of GSI 16.
+So add a quirk to ignore the irq0 overriding GSI 16 for the
+FUJITSU SIEMENS AMILO PRO V2030 platform will solve this issue.
+
+Reported-and-tested-by: Szymon Kowalczyk <fazerxlo@o2.pl>
 Signed-off-by: Feng Tang <feng.tang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/kernel/acpi/boot.c | 5 -----
- 1 file changed, 5 deletions(-)
+ arch/x86/kernel/acpi/boot.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index e7c698e..3a6afba 100644
+index 3a6afba..b2297e5 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -1340,12 +1340,7 @@ static int __init dmi_disable_acpi(const struct dmi_system_id *d)
-  */
- static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
- {
--	/*
--	 * The ati_ixp4x0_rev() early PCI quirk should have set
--	 * the acpi_skip_timer_override flag already:
--	 */
- 	if (!acpi_skip_timer_override) {
--		WARN(1, KERN_ERR "ati_ixp4x0 quirk not complete.\n");
- 		pr_notice("%s detected: Ignoring BIOS IRQ0 override\n",
- 			d->ident);
- 		acpi_skip_timer_override = 1;
+@@ -1470,6 +1470,14 @@ static struct dmi_system_id __initdata acpi_dmi_table_late[] = {
+ 		     DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq 6715b"),
+ 		     },
+ 	 },
++	{
++	 .callback = dmi_ignore_irq0_timer_override,
++	 .ident = "FUJITSU SIEMENS",
++	 .matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "AMILO PRO V2030"),
++		     },
++	 },
+ 	{}
+ };
+ 
 -- 
 1.7.11.1.104.ge7b44f1
