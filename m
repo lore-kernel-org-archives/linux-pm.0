@@ -1,12 +1,16 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/8] ACPI sysfs.c strlen fix
-Date: Sat, 30 Jun 2012 10:25:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1206301023540.29029-100000@netrider.rowland.org>
-References: <9f132652d94c96476b0b0a8caf0c10e96ab10fa8.1341032550.git.len.brown@intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2] acpi: intel_idle : break dependency
+	between modules
+Date: Sun, 01 Jul 2012 21:36:37 +0200
+Message-ID: <4FF0A6C5.5080509@linaro.org>
+References: <201206271506.29034.trenn@suse.de>
+	<201206282124.09857.rjw@sisk.pl> <4FED69BE.20707@linaro.org>
+	<201206300027.05175.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <9f132652d94c96476b0b0a8caf0c10e96ab10fa8.1341032550.git.len.brown@intel.com>
+In-Reply-To: <201206300027.05175.rjw@sisk.pl>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -16,38 +20,74 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Vasilyev <pavel@pavlinux.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linaro-dev@lists.linaro.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 30 Jun 2012, Len Brown wrote:
+On 06/30/2012 12:27 AM, Rafael J. Wysocki wrote:
+> On Friday, June 29, 2012, Daniel Lezcano wrote:
+>> On 06/28/2012 09:24 PM, Rafael J. Wysocki wrote:
+>>> On Thursday, June 28, 2012, Daniel Lezcano wrote:
+>>>> When the system is booted with some cpus offline, the idle
+>>>> driver is not initialized. When a cpu is set online, the
+>>>> acpi code call the intel idle init function. Unfortunately
+>>>> this code introduce a dependency between intel_idle and acpi.
+>>>>
+>>>> This patch is intended to remove this dependency by using the
+>>>> notifier of intel_idle. This patch has the benefit of
+>>>> encapsulating the intel_idle driver and remove some exported
+>>>> functions.
+>>>>
+>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>
+>>> This one looks good to me too.
+>>>
+>>> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>
+>> Thanks for the review Rafael.
+>>
+>>> Len, are you going to take it?
+>>
+>> Rafael, Len,
+>>
+>> After the discussion [1], I put in place a tree at:
+>>
+>> ssh://git.linaro.org/srv/git.linaro.org/git/people/dlezcano/cpuidle-ne=
+xt.git
+>> #cpuidle-next
+>>
+>> I proposed this tree to group the cpuidle modifications and prevent th=
+e
+>> last minutes conflict when Len will apply them.
+>>
+>> I also included the tree into linux-next for wider testing.
+>=20
+> I can't speak for Len, but I'm not sure he'll like this.
 
-> From: Pavel Vasilyev <pavel@pavlinux.ru>
-> 
-> Current code is ignoring the last character of "enable" and "disable"
-> in comparisons.
-> 
-> https://bugzilla.kernel.org/show_bug.cgi?id=33732
-> 
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  drivers/acpi/sysfs.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/acpi/sysfs.c b/drivers/acpi/sysfs.c
-> index 9f66181..240a244 100644
-> --- a/drivers/acpi/sysfs.c
-> +++ b/drivers/acpi/sysfs.c
-> @@ -173,7 +173,7 @@ static int param_set_trace_state(const char *val, struct kernel_param *kp)
->  {
->  	int result = 0;
->  
-> -	if (!strncmp(val, "enable", strlen("enable") - 1)) {
-> +	if (!strncmp(val, "enable", strlen("enable"))) {
+I sent the proposition a week ago and Len was Cc'ed. I guess he is very
+busy but the problem we are facing is there are a lot of pending
+modifications for cpuidle because of some new architecture (like the
+big.LITTLE and tegra3). Colin's patchset is one of them.
 
-Ironically, this is the less efficient of two possible fixes.
+> Anyway, you seem to have the same material as Len in that tree, won't t=
+here
+> be any conflicts in linux-next?
 
-It would have been better to leave the "- 1" in place and change strlen 
-to sizeof.  That's probably what the original author had in mind.
+At the first glance no, until he merge the patches we sent. As I already
+said the purpose is to help to consolidate the patches sent for cpuidle
+by acting as a proxy.
 
-Alan Stern
+I hope that helps.
+
+Thanks
+  -- Daniel
+
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
+RM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
