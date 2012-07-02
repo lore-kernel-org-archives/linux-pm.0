@@ -1,93 +1,93 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2] acpi: intel_idle : break dependency
-	between modules
-Date: Sun, 01 Jul 2012 21:36:37 +0200
-Message-ID: <4FF0A6C5.5080509@linaro.org>
-References: <201206271506.29034.trenn@suse.de>
-	<201206282124.09857.rjw@sisk.pl> <4FED69BE.20707@linaro.org>
-	<201206300027.05175.rjw@sisk.pl>
+From: preeti <preeti@linux.vnet.ibm.com>
+Subject: Re: Cpuidle drivers,Suspend : Fix suspend/resume hang with intel_idle
+ driver
+Date: Mon, 02 Jul 2012 10:07:35 +0530
+Message-ID: <4FF1258F.7020805@linux.vnet.ibm.com>
+References: <4FEC20D2.2070501@linux.vnet.ibm.com> <4FED2AF2.4080900@linux.vnet.ibm.com> <4FED3CA0.3050909@linux.vnet.ibm.com> <201206300011.51402.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <201206300027.05175.rjw@sisk.pl>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <201206300011.51402.rjw@sisk.pl>
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-dev@lists.linaro.org, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com, Colin Cross <ccross@android.com>, linux-pm@lists.linux-foundation.org
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org, "Srivatsa.S.Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/30/2012 12:27 AM, Rafael J. Wysocki wrote:
-> On Friday, June 29, 2012, Daniel Lezcano wrote:
->> On 06/28/2012 09:24 PM, Rafael J. Wysocki wrote:
->>> On Thursday, June 28, 2012, Daniel Lezcano wrote:
->>>> When the system is booted with some cpus offline, the idle
->>>> driver is not initialized. When a cpu is set online, the
->>>> acpi code call the intel idle init function. Unfortunately
->>>> this code introduce a dependency between intel_idle and acpi.
+On 06/30/2012 03:41 AM, Rafael J. Wysocki wrote:
+> On Friday, June 29, 2012, preeti wrote:
+>> On 06/29/2012 09:41 AM, preeti wrote:
+>>> On 06/29/2012 12:41 AM, Rafael J. Wysocki wrote:
+>>>> On Thursday, June 28, 2012, preeti wrote:
+>>>>> On 06/28/2012 03:23 PM, Rafael J. Wysocki wrote:
+>>>>>> On Thursday, June 28, 2012, preeti wrote:
+>>>>>>>
+>>>>>>> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>>>> [...]
+>>>>> cpuidle is an architecture independent part of the kernel  code.Since 
+>>>>> this patch aims at x86 architecture in specific,I considered it
+>>>>> inappropriate.
+>>>>>
+>>>>> In addition to this,suspend happens on x86 only if ACPI is configured.
 >>>>
->>>> This patch is intended to remove this dependency by using the
->>>> notifier of intel_idle. This patch has the benefit of
->>>> encapsulating the intel_idle driver and remove some exported
->>>> functions.
+>>>> But that is not required for intel_idle, so if it hangs with intel_idle,
+>>>> then it is not dependent on ACPI after all.
+>>> True intel_idle does not need ACPI to be configured,but that also means
+>>> that the kernel will not provide you the means to suspend.There is no
+>>> question of resume hang here at all as you cannot suspend in the first
+>>> place.
+>>>
+>>> The issue is when ACPI is configured,and intel_idle is chosen to be the
+>>> cpuidle driver.In this situation when the user suspends,cpus can enter
+>>> deep sleep states as intel_idle driver does not prevent then from doing so.
+>>> This is when resume hangs.
 >>>>
->>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>>> Therefore it seemed right to put the callback in ACPI specific code
+>>>>> which deals with ACPI sleep support.
+>>>>
+>>>> I wonder if we can address this issue correctly.  That is, in a non-racy
+>>>> way and in a better place.
+>>>>
+>>>> First, I really don't think it is necessary to "suspend" cpuidle (be it
+>>>> ACPI or any other) when device drivers' suspend routines are being
+>>>> executed (which also is racy, because the cpuidle "suspend" may be running
+>>>> concurrently with cpuidle on another CPU) or earlier.  We really may want
+>>>> to disable the deeper C-states when we're about to execute
+>>>> suspend_ops->prepare_late(), or hibernation_ops->prepare(), i.e. after
+>>>> we've run dpm_suspend_end() successfully.
 >>>
->>> This one looks good to me too.
+>>> The commit "ACPI:disable lower idle C-states across suspend/resume"
+>>> states that device_suspend() calls ACPI suspend functions which cause
+>>> side effects on the lower idle C-states.This means we need to disable
+>>> entry into deeper C-states even before dpm_suspend_start(),but how much
+>>> before?
 >>>
->>> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>> The commit answers this too.It says removing the functionality of
+>>> entering deep C-states before suspend removed the side effects.Besides,
+>>> the commit title says'across suspend/resume'.So I think to address the
+>>> resume hang effectively,it is desirable to disable entry into deeper
+>>> C-states during suspend_prepare operations.
 >>
->> Thanks for the review Rafael.
->>
->>> Len, are you going to take it?
->>
->> Rafael, Len,
->>
->> After the discussion [1], I put in place a tree at:
->>
->> ssh://git.linaro.org/srv/git.linaro.org/git/people/dlezcano/cpuidle-ne=
-xt.git
->> #cpuidle-next
->>
->> I proposed this tree to group the cpuidle modifications and prevent th=
-e
->> last minutes conflict when Len will apply them.
->>
->> I also included the tree into linux-next for wider testing.
->=20
-> I can't speak for Len, but I'm not sure he'll like this.
+>> To clarify this further,since we take action upon PM_SUSPEND_PREPARE
+>> notification,which is called before suspend begins,we avoid race
+>> condition between suspend operations and disabling entry into deeper
+>> c-states altogether.
+> 
+> Well, what about races between disabling deeper C-states and cpuidle?
 
-I sent the proposition a week ago and Len was Cc'ed. I guess he is very
-busy but the problem we are facing is there are a lot of pending
-modifications for cpuidle because of some new architecture (like the
-big.LITTLE and tegra3). Colin's patchset is one of them.
+Yes.The question still remains about the cpus that have already entered
+deep C-states even before suspend routines have begun.We are not taking
+precautions to prevent them from going into idle.
 
-> Anyway, you seem to have the same material as Len in that tree, won't t=
-here
-> be any conflicts in linux-next?
+If the resume hang does depend on the cpus being in deep C-state,even
+after the fix with acpi_idle_suspend, there should have been a hang
+in scenarios where the cpus have already entered deep C-states before
+suspend has begun.
 
-At the first glance no, until he merge the patches we sent. As I already
-said the purpose is to help to consolidate the patches sent for cpuidle
-by acting as a proxy.
+> 
+> Rafael
+> 
 
-I hope that helps.
+Regards
+Preeti
 
-Thanks
-  -- Daniel
-
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
-RM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
