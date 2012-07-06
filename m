@@ -1,85 +1,58 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/4] cpuidle: define the enter function in the driver
- structure
-Date: Fri, 06 Jul 2012 12:58:09 +0200
-Message-ID: <4FF6C4C1.7030004@linaro.org>
-References: <1341494608-16591-1-git-send-email-daniel.lezcano@linaro.org> <1341494608-16591-2-git-send-email-daniel.lezcano@linaro.org> <201207052238.44330.rjw@sisk.pl>
+Subject: Re: [PATCH 3/4] cpuidle: move enter_dead to the driver
+	structure
+Date: Fri, 06 Jul 2012 13:05:23 +0200
+Message-ID: <4FF6C673.7000003@linaro.org>
+References: <1341494608-16591-1-git-send-email-daniel.lezcano@linaro.org>
+	<1341494608-16591-3-git-send-email-daniel.lezcano@linaro.org>
+	<201207052240.57686.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <201207052238.44330.rjw@sisk.pl>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+In-Reply-To: <201207052240.57686.rjw@sisk.pl>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linaro-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07/05/2012 10:38 PM, Rafael J. Wysocki wrote:
+On 07/05/2012 10:40 PM, Rafael J. Wysocki wrote:
 > On Thursday, July 05, 2012, Daniel Lezcano wrote:
->> We have the state index passed as parameter to the 'enter' function.
->> Most of the drivers assign their 'enter' functions several times in
->> the cpuidle_state structure, as we have the index, we can delegate
->> to the driver to handle their own callback array.
->>
->> That will have the benefit of removing multiple lines of code in the
->> different drivers.
+>> The 'enter_dead' function is only used for processor_idle.c
+>> and the same function is used several times. We fall into the
+>> same abuse with the multiple callbacks for the same function.
 >=20
-> Hmm. I suppose the cpuidle subsystem was designed the way it was for =
-a reason.
-> Among other things, this was to avoid recurrence in callbacks - pleas=
-e see
-> acpi_idle_enter_bm() for example.
+> This isn't abuse, mind you.  This is a normal practice.
+
+Well, that depends :)
+
+I agree adding a callback per state is nice and flexible but if it is
+not used, it is a waste of memory, even if it is 32 bytes.
+
+>> This patch fixes that by moving the 'enter_dead' function to the
+>> driver structure. A flag CPUIDLE_FLAG_DEAD_VALID has been added
+>> to handle the callback conditional invokation.
 >=20
-> Now, if .enter() is moved to the driver structure, it will have to be=
- an
-> all-purpose complicated routine calling itself recursively at least i=
-n
-> some cases.  I'm not quite convinced that would be an improvement.
->=20
-> On the other hand, I don't see anything wrong with setting several ca=
-llback
-> pointers to the same routine.
+> And how does that improve things?
 
-Deepthi sent a few months ago a patch moving the per-cpu cpuidle_state
-to a single structure stored in the driver. The drivers were modified
-and cleanup to take into account this modification.
-
-We saw some regressions like for example the 'disable' which were not
-per cpu and has been moved to the cpuidle_state_usage (and IMHO it is a
-workaround more than a real fix). And now we have new architectures
-(tegra3, big.LITTLE) with different latencies per cpu. Logically we
-should revert Deepthi's patches but from my POV, going back and forth i=
-s
-not a good solution (also we have to undo all modifications done in the
-different drivers).
-
-The main purpose of all these cleanup patches are to move out all
-non-data information from the cpuidle_state structure in order to add a
-new api which could be 'cpuidle_register_cpu_latency(int cpu, struct
-cpuidle_latencies latencies)'.
-
-=46or this specific patch, the 'enter' function for all the drivers is =
-not
-used [1] and one of the driver is about to use a single function [2]. S=
-o
-we have only one driver is a couple of functions for this which can be
-replaced by an array of callbacks in the driver itself as we have the i=
-ndex.
-
-[1] http://lists.linaro.org/pipermail/linaro-dev/2012-June/012355.html
-[2] http://lists.linaro.org/pipermail/linaro-dev/2012-June/012399.html
+In order to check if the play_dead is enabled for a specific state, we
+check if the pointer is set. As it has been moved to a single function,
+we need to add a flag to replace this check. That is not an improvement,
+it replace a check by another check.
 
 
 --=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for A=
+RM SoCs
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
