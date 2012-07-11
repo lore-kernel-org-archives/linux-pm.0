@@ -1,13 +1,14 @@
 From: Kevin Hilman <khilman@ti.com>
 Subject: Re: use of pm_runtime_disable() from driver probe?
-Date: Tue, 10 Jul 2012 14:04:12 -0700
-Message-ID: <871ukjnx9v.fsf@ti.com>
-References: <Pine.LNX.4.44L0.1207101615320.1308-100000@iolanthe.rowland.org>
+Date: Wed, 11 Jul 2012 16:07:56 -0700
+Message-ID: <87ipdthp6b.fsf@ti.com>
+References: <Pine.LNX.4.44L0.1207111017010.1559-100000@iolanthe.rowland.org>
+	<201207111936.45639.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1207101615320.1308-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Tue, 10 Jul 2012 16:17:06 -0400 (EDT)")
+In-Reply-To: <201207111936.45639.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 11 Jul 2012 19:36:45 +0200")
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -17,81 +18,82 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> On Tue, 10 Jul 2012, Rafael J. Wysocki wrote:
->
->> > If .probe() enabled runtime PM and called pm_runtime_get_sync() (or _resume),
->> > it can't clean up properly in case of an error, because its
->> > pm_runtime_put_sync() (or _suspend) won't be effective and you're right that
->> > it has to call pm_runtime_disable().
+> On Wednesday, July 11, 2012, Alan Stern wrote:
+>> On Wed, 11 Jul 2012, Rafael J. Wysocki wrote:
+>> 
+>> > > This opens up the possibility of calling probe while a runtime resume
+>> > > or suspend is in progress.  (On the other hand, the existing code
+>> > > doesn't prevent a concurrent runtime resume.)  Maybe it would be best
+>> > > to leave the pm_runtime_barrier().
 >> > 
->> > So, we don't handle this particular case correctly.
-
-Right, this is exactly the case I'm working on now.  The driver is
-calling pm_runtime_enable() and _disable() in .probe().
-
->> > I'm not sure what the solution should be, though.  We could remove the
->> > runtime PM operations around really_probe(), but then there may be drivers
->> > assuming that the core will call pm_runtime_put_sync() after .probe()
->> > has returned.
+>> > That wouldn't close the race, though, because the suspend/resume may still
+>> > be started right after _barrier has returned.
 >> 
->> I have an idea.
+>> True, but see below.
 >> 
->> What about the following patch?  It shouldn't matter except for the cases when
->> .probe() attempts to suspend the device by itself.
+>> > The race is only possible if runtime PM is enabled by a subsystem or PM domain
+>> > code before the first eligible driver is registered and if that code is not
+>> > careful enough to get ready for driver registration.  I'm not sure how likely
+>> > it is to happen in practice.
 >> 
->> ---
->>  drivers/base/dd.c |    7 ++-----
->>  1 file changed, 2 insertions(+), 5 deletions(-)
+>> It's not just the first eligible driver.  Drivers can be bound and 
+>> unbound dynamically, and suspends/resume operations can sit on the wait 
+>> queue or wait until a timer expires.  We don't want an old request 
+>> suddenly to take effect in the middle of a probe.
 >> 
->> Index: linux/drivers/base/dd.c
->> ===================================================================
->> --- linux.orig/drivers/base/dd.c
->> +++ linux/drivers/base/dd.c
->> @@ -356,10 +356,8 @@ int driver_probe_device(struct device_dr
->>  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
->>  		 drv->bus->name, __func__, dev_name(dev), drv->name);
->>  
->> -	pm_runtime_get_noresume(dev);
->> -	pm_runtime_barrier(dev);
->>  	ret = really_probe(dev, drv);
->> -	pm_runtime_put_sync(dev);
->> +	pm_runtime_idle(dev);
->>  
->>  	return ret;
->>  }
->> @@ -406,9 +404,8 @@ int device_attach(struct device *dev)
->>  			ret = 0;
->>  		}
->>  	} else {
->> -		pm_runtime_get_noresume(dev);
->>  		ret = bus_for_each_drv(dev->bus, NULL, dev, __device_attach);
->> -		pm_runtime_put_sync(dev);
->> +		pm_runtime_idle(dev);
->>  	}
->>  out_unlock:
->>  	device_unlock(dev);
+>> The barrier will get rid of any old requests.  New ones would have to 
+>> be added after the probe starts, which as you say, is unlikely.
 >
+> OK, I'll keep the barrier, then.
 >
-> This opens up the possibility of calling probe while a runtime resume
-> or suspend is in progress.  (On the other hand, the existing code
-> doesn't prevent a concurrent runtime resume.)  Maybe it would be best
-> to leave the pm_runtime_barrier().
->
-> Apart from that, I think it would solve the problem.
+> Kevin, can you please double check the patch below?
 
-I just tested it and it definitely solves the problem.  I forgot exactly
-why the get/put was added around probe in the first place, so am not
-sure if this opens up other potential problems like Alan mentioned.
-
-In any case, if you go forward with this patch, feel free to add:
+Yup, this verion looks right and I tested it and verified that it still
+fixes the problem I'm seeing.
 
 Reviewed-by: Kevin Hilman <khilman@ti.com>
 Tested-by: Kevin Hilman <khilman@ti.com>
 
+Thanks!
+
 Kevin
+
+> Rafael
+>
+> ---
+>  drivers/base/dd.c |    6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+>
+> Index: linux/drivers/base/dd.c
+> ===================================================================
+> --- linux.orig/drivers/base/dd.c
+> +++ linux/drivers/base/dd.c
+> @@ -356,10 +356,9 @@ int driver_probe_device(struct device_dr
+>  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+>  		 drv->bus->name, __func__, dev_name(dev), drv->name);
+>  
+> -	pm_runtime_get_noresume(dev);
+>  	pm_runtime_barrier(dev);
+>  	ret = really_probe(dev, drv);
+> -	pm_runtime_put_sync(dev);
+> +	pm_runtime_idle(dev);
+>  
+>  	return ret;
+>  }
+> @@ -406,9 +405,8 @@ int device_attach(struct device *dev)
+>  			ret = 0;
+>  		}
+>  	} else {
+> -		pm_runtime_get_noresume(dev);
+>  		ret = bus_for_each_drv(dev->bus, NULL, dev, __device_attach);
+> -		pm_runtime_put_sync(dev);
+> +		pm_runtime_idle(dev);
+>  	}
+>  out_unlock:
+>  	device_unlock(dev);
