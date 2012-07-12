@@ -1,11 +1,15 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 4/5] acpi : remove power from acpi_processor_cx
-	structure
-Date: Thu, 12 Jul 2012 17:30:02 +0200
-Message-ID: <1342107003-9811-4-git-send-email-daniel.lezcano@linaro.org>
-References: <1342107003-9811-1-git-send-email-daniel.lezcano@linaro.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RESEND PATCH v4 1/5] thermal: add generic cpufreq
+ cooling implementation
+Date: Thu, 12 Jul 2012 16:04:15 -0700
+Message-ID: <20120712160415.473748fd.akpm@linux-foundation.org>
+References: <1342100468-19426-1-git-send-email-amit.kachhap@linaro.org>
+	<1342100468-19426-2-git-send-email-amit.kachhap@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <1342107003-9811-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <1342100468-19426-2-git-send-email-amit.kachhap@linaro.org>
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -15,42 +19,31 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: rjw@sisk.pl
-Cc: linux-pm@lists.linux-foundation.org
+To: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+Cc: Guenter Roeck <guenter.roeck@ericsson.com>, linux-samsung-soc@vger.kernel.org, SangWook Ju <sw.ju@samsung.com>, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org, Donggeun Kim <dg77.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Remove the power field as it is not used.
+On Thu, 12 Jul 2012 19:11:04 +0530
+Amit Daniel Kachhap <amit.kachhap@linaro.org> wrote:
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/acpi/processor_idle.c |    2 --
- include/acpi/processor.h      |    1 -
- 2 files changed, 0 insertions(+), 3 deletions(-)
+> [akpm@linux-foundation.org: fix comment layout]
+> Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+> Cc: Donggeun Kim <dg77.kim@samsung.com>
+> Cc: Guenter Roeck <guenter.roeck@ericsson.com>
+> Cc: SangWook Ju <sw.ju@samsung.com>
+> Cc: Durgadoss <durgadoss.r@intel.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Jean Delvare <khali@linux-fr.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 4c06939..9845739 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -482,8 +482,6 @@ static int acpi_processor_get_power_info_cst(struct acpi_processor *pr)
- 		if (obj->type != ACPI_TYPE_INTEGER)
- 			continue;
- 
--		cx.power = obj->integer.value;
--
- 		current_count++;
- 		memcpy(&(pr->power.states[current_count]), &cx, sizeof(cx));
- 
-diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-index 6ee4c06..3a675f4 100644
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -58,7 +58,6 @@ struct acpi_processor_cx {
- 	u32 address;
- 	u8 entry_method;
- 	u32 latency;
--	u32 power;
- 	u64 time;
- 	u8 bm_sts_skip;
- 	char desc[ACPI_CX_DESC_LEN];
--- 
-1.7.5.4
+Something strange appears to have happened here?  At a guess it seems
+that the patches were in my tree, I sent them to someone (Len?), then
+they were merged into linux-next by "someone" and then they fell
+out of linux-next again?
+
+If so, they will hopefully come back soon.  If not, something failed
+fairly seriously.
+
+
+I took a look at re-merging these patches into my tree, but there are
+significant conflicts with other work which has gone into linux-next.
