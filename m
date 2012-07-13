@@ -1,15 +1,12 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Fwd: [3.5-rc6+] mei: irq: request_threaded_irq is
- missing the IRQF_ONESHOT flag
-Date: Fri, 13 Jul 2012 12:12:11 +0200
-Message-ID: <CA+icZUXXMJ=DtPAGQHZ7MZmRWnDC2xrnQUmsOak_y_1HsmxwpA@mail.gmail.com>
-References: <CA+icZUVorJNMQ3wyz8WuZop_fwwOuBo38wZg9s9RJizhM0yc-w@mail.gmail.com>
-	<CA+icZUU+_PCVqWP028X7k1=Gc-EwtrXWtHyXB+EvRoofXCdmfg@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+From: "rakesh" <rks.linux.88@gmail.com>
+Subject: Need Help
+Date: Fri, 13 Jul 2012 16:43:25 +0530
+Message-ID: <50000318.c588440a.420e.7c47@mx.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_003E_01CD6116.C1CFAC80"
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CA+icZUU+_PCVqWP028X7k1=Gc-EwtrXWtHyXB+EvRoofXCdmfg@mail.gmail.com>
+Content-Language: en-us
 List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
 List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
@@ -19,101 +16,148 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM List <linux-pm@lists.linux-foundation.org>
+To: amit.kachhap@linaro.org
+Cc: 'Guenter Roeck' <guenter.roeck@ericsson.com>, linux-samsung-soc@vger.kernel.org, 'SangWook Ju' <sw.ju@samsung.com>, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org, 'Jean Delvare' <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org, 'Donggeun Kim' <dg77.kim@samsung.com>, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Is this problem MEI or PM (or even both) related?
+This is a multipart message in MIME format.
 
-- Sedat -
+------=_NextPart_000_003E_01CD6116.C1CFAC80
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
----------- Forwarded message ----------
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Date: Fri, Jul 13, 2012 at 12:09 PM
-Subject: Re: [3.5-rc6+] mei: irq: request_threaded_irq is missing the
-IRQF_ONESHOT flag
-To: Tomas Winkler <tomas.winkler@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML
-<linux-kernel@vger.kernel.org>, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org>, Roland Dreier <roland@purestorage.com>
+Hello everyone,
+
+ 
+
+I am new to linux and i also want to contribute in linux community.
+
+I am running Ubuntu 11.04 and i have downloaded linux-2.6.35.13 for
+learning. so kindly tell me how to set up and starting kernel development.
+
+I did tried some books and websites but i am still unable to do some
+productive work. So,, its my request that kindly help me in setting up the
+environment and start learning.
+
+ 
+
+Regards
+
+Rakesh kumar
+
+ 
 
 
-On Fri, Jul 13, 2012 at 11:47 AM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
-> Hi,
->
-> while dealing with [1], I saw this mei-related infos in dmesg when
-> doing a suspend + resume (see [1] for more logs):
->
-> [17046.348467]  [<ffffffffa00554d8>] mei_pci_suspend+0x78/0xd0 [mei]
-> [17047.460315] mei 0000:00:16.0: irq 47 for MSI/MSI-X
-> [17047.460512] mei 0000:00:16.0: request_threaded_irq failed: irq = 47.
->
-> I am not sure whom to address with the issue - so I just asked on
-> #linux-rt and Thomas responded:
->
-> [ 13-Jul-2012: German local-time (UTC+2) ]
-> ...
-> [11:03:40] <tglx> request_threaded_irq is missing the IRQF_ONESHOT flag
-> ...
-> [11:24:18] <tglx> anyone can fix it by sending a patch which adds the flag :)
->
-> Futhermore, I found those commits, so I added folks from there to this BR:
->
-> 16a50b1 mei: pci_resume: set IRQF_ONESHOT for msi request_threaded_irq
-> aa189ec misc: mei: set IRQF_ONESHOT for msi request_threaded_irq
->
-> If you need more infos and/or logs, please let me know.
->
-> Feel free to add:
->
->      Reported-by: Sedat Dilek <sedat.dilek@gmail.com>
->
-> Kind Regards,
-> - Sedat (dileks on IRC) -
->
-> [1] http://marc.info/?l=linux-kernel&m=134216822724119&w=2
+------=_NextPart_000_003E_01CD6116.C1CFAC80
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Here some more infos:
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-$ lspci -nnvv | egrep 'mei|00:16'
-00:16.0 Communication controller [0780]: Intel Corporation 6
-Series/C200 Series Chipset Family MEI Controller #1 [8086:1c3a] (rev
-04)
-        Kernel driver in use: mei
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"Cambria Math";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:Consolas;
+	panose-1:2 11 6 9 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{mso-style-priority:99;
+	mso-style-link:"Plain Text Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.5pt;
+	font-family:Consolas;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+span.PlainTextChar
+	{mso-style-name:"Plain Text Char";
+	mso-style-priority:99;
+	mso-style-link:"Plain Text";
+	font-family:Consolas;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
 
-$ dmesg | egrep 'mei|00:16'
-[    0.242776] pci 0000:00:16.0: [8086:1c3a] type 00 class 0x078000
-[    0.242802] pci 0000:00:16.0: reg 10: [mem 0xf0705000-0xf070500f 64bit]
-[    0.242884] pci 0000:00:16.0: PME# supported from D0 D3hot D3cold
-[   23.645968] mei 0000:00:16.0: setting latency timer to 64
-[   23.646041] mei 0000:00:16.0: irq 47 for MSI/MSI-X
-[   23.650677] mei 0000:00:16.0: wd: failed to find the client
-[ 1386.959871] mei 0000:00:16.0: irq 47 for MSI/MSI-X
-[ 1386.960810] mei 0000:00:16.0: wd: failed to find the client
-[ 1435.138062] mei 0000:00:16.0: irq 47 for MSI/MSI-X
-[ 1435.139033] mei 0000:00:16.0: wd: failed to find the client
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
->From the above mentionned dmesg log:
+<div class=3DSection1>
 
-$ dmesg | egrep 'mei|00:16|IRQF_ONESHOT'
-CALL-TRACE_3.5.0-rc6-1-iniza-generic_PM-related_HW-hidden.txt
+<p class=3DMsoPlainText>Hello everyone,<o:p></o:p></p>
 
-[17046.348410] Modules linked in: snd_hda_codec_hdmi
-snd_hda_codec_realtek rfcomm bnep parport_pc ppdev joydev
-snd_hda_intel snd_hda_codec snd_hwdep snd_pcm coretemp kvm_intel
-snd_page_alloc kvm arc4 snd_seq_midi snd_seq_midi_event iwlwifi i915
-snd_rawmidi uvcvideo snd_seq ghash_clmulni_intel snd_seq_device
-videobuf2_vmalloc aesni_intel snd_timer videobuf2_memops aes_x86_64
-drm_kms_helper videobuf2_core cryptd mac80211 drm snd videodev psmouse
-samsung_laptop i2c_algo_bit btusb hid_generic soundcore microcode
-serio_raw cfg80211 lp mei bluetooth video mac_hid lpc_ich parport
-usbhid hid r8169
-[17046.348467]  [<ffffffffa00554d8>] mei_pci_suspend+0x78/0xd0 [mei]
-[17047.460315] mei 0000:00:16.0: irq 47 for MSI/MSI-X
-[17047.460512] mei 0000:00:16.0: request_threaded_irq failed: irq = 47.
-[17047.460520] PM: Device 0000:00:16.0 failed to resume async: error -22
+<p class=3DMsoPlainText><o:p>&nbsp;</o:p></p>
 
-I am sorry if this is a different issue as already reported.
+<p class=3DMsoPlainText>I am new to linux and i also want to contribute =
+in linux
+community.<o:p></o:p></p>
 
-Greetings,
-- Sedat -
+<p class=3DMsoPlainText>I am running Ubuntu 11.04 and i have downloaded
+linux-2.6.35.13 for learning. so kindly tell me how to set up and =
+starting
+kernel development.<o:p></o:p></p>
+
+<p class=3DMsoPlainText>I did tried some books and websites but i am =
+still unable
+to do some productive work. So,, its my request that kindly help me in =
+setting
+up the environment and start learning.<o:p></o:p></p>
+
+<p class=3DMsoPlainText><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoPlainText>Regards<o:p></o:p></p>
+
+<p class=3DMsoPlainText>Rakesh kumar<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_003E_01CD6116.C1CFAC80--
