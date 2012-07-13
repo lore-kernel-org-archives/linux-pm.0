@@ -1,30 +1,62 @@
-From: rakesh singh <rks.linux.88@gmail.com>
-Subject: Re: [linux-pm] [RESEND PATCH v4 1/5] thermal: add generic cpufreq
- cooling implementation
-Date: Fri, 13 Jul 2012 16:33:38 +0530
-Message-ID: <CAGfj0KtJXMedUk73tBTxqNfjXmKfw5C=KxmUQhXWPT_0ddYvFg@mail.gmail.com>
-References: <1342100468-19426-1-git-send-email-amit.kachhap@linaro.org>
-	<1342100468-19426-2-git-send-email-amit.kachhap@linaro.org>
-	<CAGF5oy_irroPe-ZxThitBWwHVy9fXNvZjcGMDv7Xg+v1fd3UGQ@mail.gmail.com>
-	<CADGdYn5jNAP=C=Ub5LD-_g24syGRz2ijkekOXhS5NVWLWwHQmw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn5jNAP=C=Ub5LD-_g24syGRz2ijkekOXhS5NVWLWwHQmw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: amit kachhap <amit.kachhap@gmail.com>
-Cc: "Valentin, Eduardo" <eduardo.valentin@ti.com>, linux-pm@lists.linux-foundation.org, lenb@kernel.org, linux-samsung-soc@vger.kernel.org, SangWook Ju <sw.ju@samsung.com>, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org, Jean Delvare <khali@linux-fr.org>, akpm@linux-foundation.org, Donggeun Kim <dg77.kim@samsung.com>, Guenter Roeck <guenter.roeck@ericsson.com>
+From: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+Subject: [PATCH v5 0/5] thermal: Add kernel thermal support for exynos platform
+Date: Fri, 13 Jul 2012 16:40:20 +0530
+Message-ID: <1342177825-19006-1-git-send-email-amit.kachhap@linaro.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-pm@lists.linux-foundation.org, akpm@linux-foundation.org, lenb@kernel.org
+Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lm-sensors@lm-sensors.org, amit.kachhap@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello everyone,
+Hi Len/Andrew,
 
-I am new to linux and i also want to contribute in linux community.
-I am running Ubuntu 11.04 and i have downloaded linux-2.6.35.13 for
-learning. so kindly tell me how to set up and starting kernel
-development.
-I did tried some books and websites but i am still unable to do some
-productive work. So,, its my request that kindly help me in setting up
-the environment and start learning.
+This series is a repost of the thermal support for exynos platform.
 
-Regards
-Rakesh kumar
+This current patchset is based on 3.5-rc6 with hwmon-next branch merged.
+(git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git hwmon-next)
+
+Version v4 was accepted for 3.5 merge by Len.
+(https://lkml.org/lkml/2012/6/2/7) but somehow could not go through.
+
+I am aware that some work is going on for thermal framework improvement but
+that will have minimal changes on cpufreq cooling APIs and I hope to fix them as
+bug fix patches later.
+
+Please consider them for 3.6 merge.
+
+Thanks,
+Amit Daniel
+
+
+Amit Daniel Kachhap (5):
+  thermal: add generic cpufreq cooling implementation
+  hwmon: exynos4: move thermal sensor driver to driver/thermal
+    directory
+  thermal: exynos5: add exynos5 thermal sensor driver support
+  thermal: exynos: register the tmu sensor with the kernel thermal
+    layer
+  ARM: exynos: add thermal sensor driver platform data support
+
+ Documentation/hwmon/exynos4_tmu              |   81 ---
+ Documentation/thermal/cpu-cooling-api.txt    |   60 ++
+ Documentation/thermal/exynos_thermal         |   52 ++
+ drivers/hwmon/Kconfig                        |   10 -
+ drivers/hwmon/Makefile                       |    1 -
+ drivers/hwmon/exynos4_tmu.c                  |  518 --------------
+ drivers/thermal/Kconfig                      |   20 +
+ drivers/thermal/Makefile                     |    4 +-
+ drivers/thermal/cpu_cooling.c                |  483 +++++++++++++
+ drivers/thermal/exynos_thermal.c             |  960 ++++++++++++++++++++++++++
+ include/linux/cpu_cooling.h                  |   99 +++
+ include/linux/platform_data/exynos4_tmu.h    |   83 ---
+ include/linux/platform_data/exynos_thermal.h |  100 +++
+ 13 files changed, 1777 insertions(+), 694 deletions(-)
+ delete mode 100644 Documentation/hwmon/exynos4_tmu
+ create mode 100644 Documentation/thermal/cpu-cooling-api.txt
+ create mode 100644 Documentation/thermal/exynos_thermal
+ delete mode 100644 drivers/hwmon/exynos4_tmu.c
+ create mode 100644 drivers/thermal/cpu_cooling.c
+ create mode 100644 drivers/thermal/exynos_thermal.c
+ create mode 100644 include/linux/cpu_cooling.h
+ delete mode 100644 include/linux/platform_data/exynos4_tmu.h
+ create mode 100644 include/linux/platform_data/exynos_thermal.h
