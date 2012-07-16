@@ -1,208 +1,112 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH v5 5/5] ARM: exynos: add thermal sensor
- driver platform data support
-Date: Sat, 14 Jul 2012 13:00:33 +0530
-Message-ID: <CADGdYn6SPTosESY5YXa=Q0PoHTiW28VYgSJuZODj0tj0kU_y=g@mail.gmail.com>
-References: <1342177825-19006-1-git-send-email-amit.kachhap@linaro.org>
-	<1342177825-19006-6-git-send-email-amit.kachhap@linaro.org>
-	<CAH9JG2XGWgX-FiBacnrGXS-oG_7rbN1aum3mpW5HUAukiwaB7A@mail.gmail.com>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: [Regression][Revert request] Excessive delay or hang during
+ resume from system suspend due to a hrti
+Date: Mon, 16 Jul 2012 07:16:45 +0200
+Message-ID: <CA+icZUXURRAs-rK1EnRidYUQ9NXXYw4DaHbn=4mcEe3Q0sU+2A@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <CAH9JG2XGWgX-FiBacnrGXS-oG_7rbN1aum3mpW5HUAukiwaB7A@mail.gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: linux-samsung-soc@vger.kernel.org, SangWook Ju <sw.ju@samsung.com>, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org, Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org, Donggeun Kim <dg77.kim@samsung.com>, akpm@linux-foundation.org
+Content-Type: multipart/mixed; boundary=f46d042a0d673aa76104c4eb89ba
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, Linux PM List <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 14, 2012 at 7:03 AM, Kyungmin Park <kmpark@infradead.org> wrote:
-> On Fri, Jul 13, 2012 at 8:10 PM, Amit Daniel Kachhap
-> <amit.kachhap@linaro.org> wrote:
->> Add necessary default platform data support needed for TMU driver.  This
->> dt/non-dt values are tested for origen exynos4210 and smdk exynos5250
->> platforms.
-> Looks good to me.
+--f46d042a0d673aa76104c4eb89ba
+Content-Type: text/plain; charset=UTF-8
 
-Thanks.
+[ QUOTE ]
 
-> just nitpicks below.
->
-> Thank you,
-> Kyungmin Park
->>
->> Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
->> Cc: Donggeun Kim <dg77.kim@samsung.com>
->> Acked-by: Guenter Roeck <guenter.roeck@ericsson.com>
->> Cc: SangWook Ju <sw.ju@samsung.com>
->> Cc: Durgadoss <durgadoss.r@intel.com>
->> Cc: Len Brown <lenb@kernel.org>
->> Cc: Jean Delvare <khali@linux-fr.org>
->> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->> ---
->>  drivers/thermal/exynos_thermal.c |  111 +++++++++++++++++++++++++++++++++++++-
->>  1 files changed, 110 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
->> index 9ef8c37..07736ea 100644
->> --- a/drivers/thermal/exynos_thermal.c
->> +++ b/drivers/thermal/exynos_thermal.c
->> @@ -662,14 +662,121 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
->>  static struct thermal_sensor_conf exynos_sensor_conf = {
->>         .name                   = "exynos-therm",
->>         .read_temperature       = (int (*)(void *))exynos_tmu_read,
->> +};
->> +
->> +#if defined(CONFIG_CPU_EXYNOS4210)
-> BTW, doesn't it same as exynos4412? does it different from exynos4412?
-Currently I only tested this only for origen and exynos5250 board.
-Maybe somebody can add 4412 support also.
-> If it's same, it's better to use CONFIG_SOC_EXYNOS4?
->> +static struct exynos_tmu_platform_data const exynos4_default_tmu_data = {
->> +       .threshold = 80,
->> +       .trigger_levels[0] = 5,
->> +       .trigger_levels[1] = 20,
->> +       .trigger_levels[2] = 30,
->> +       .trigger_level0_en = 1,
->> +       .trigger_level1_en = 1,
->> +       .trigger_level2_en = 1,
->> +       .trigger_level3_en = 0,
->> +       .gain = 15,
->> +       .reference_voltage = 7,
->> +       .cal_type = TYPE_ONE_POINT_TRIMMING,
->> +       .freq_tab[0] = {
->> +               .freq_clip_max = 800 * 1000,
->> +               .temp_level = 85,
->> +       },
->> +       .freq_tab[1] = {
->> +               .freq_clip_max = 200 * 1000,
->> +               .temp_level = 100,
->> +       },
->> +       .freq_tab_count = 2,
->> +       .type = SOC_ARCH_EXYNOS4,
->> +};
->> +#define EXYNOS4_TMU_DRV_DATA (&exynos4_default_tmu_data)
->> +#else
->> +#define EXYNOS4_TMU_DRV_DATA (NULL)
->> +#endif
->> +
->> +#if defined(CONFIG_SOC_EXYNOS5250)
-> similar.
->> +static struct exynos_tmu_platform_data const exynos5_default_tmu_data = {
->> +       .trigger_levels[0] = 85,
->> +       .trigger_levels[1] = 103,
->> +       .trigger_levels[2] = 110,
->> +       .trigger_level0_en = 1,
->> +       .trigger_level1_en = 1,
->> +       .trigger_level2_en = 1,
->> +       .trigger_level3_en = 0,
->> +       .gain = 8,
->> +       .reference_voltage = 16,
->> +       .noise_cancel_mode = 4,
->> +       .cal_type = TYPE_ONE_POINT_TRIMMING,
->> +       .efuse_value = 55,
->> +       .freq_tab[0] = {
->> +               .freq_clip_max = 800 * 1000,
->> +               .temp_level = 85,
->> +       },
->> +       .freq_tab[1] = {
->> +               .freq_clip_max = 200 * 1000,
->> +               .temp_level = 103,
->> +       },
->> +       .freq_tab_count = 2,
->> +       .type = SOC_ARCH_EXYNOS5,
->> +};
->> +#define EXYNOS5_TMU_DRV_DATA (&exynos5_default_tmu_data)
->> +#else
->> +#define EXYNOS5_TMU_DRV_DATA (NULL)
->> +#endif
->> +
->> +#ifdef CONFIG_OF
->> +static const struct of_device_id exynos_tmu_match[] = {
->> +       {
->> +               .compatible = "samsung,exynos4-tmu",
->> +               .data = (void *)EXYNOS4_TMU_DRV_DATA,
->> +       },
->> +       {
->> +               .compatible = "samsung,exynos5-tmu",
->> +               .data = (void *)EXYNOS5_TMU_DRV_DATA,
->> +       },
->> +       {},
->> +};
->> +MODULE_DEVICE_TABLE(of, exynos_tmu_match);
->> +#else
->> +#define  exynos_tmu_match NULL
->> +#endif
->> +
->> +static struct platform_device_id exynos_tmu_driver_ids[] = {
->> +       {
->> +               .name           = "exynos4-tmu",
->> +               .driver_data    = (kernel_ulong_t)EXYNOS4_TMU_DRV_DATA,
->> +       },
->> +       {
->> +               .name           = "exynos5-tmu",
->> +               .driver_data    = (kernel_ulong_t)EXYNOS5_TMU_DRV_DATA,
->> +       },
->> +       { },
->> +};
->> +MODULE_DEVICE_TABLE(platform, exynos4_tmu_driver_ids);
->> +
->> +static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
->> +                       struct platform_device *pdev)
->> +{
->> +#ifdef CONFIG_OF
->> +       if (pdev->dev.of_node) {
->> +               const struct of_device_id *match;
->> +               match = of_match_node(exynos_tmu_match, pdev->dev.of_node);
->> +               if (!match)
->> +                       return NULL;
->> +               return (struct exynos_tmu_platform_data *) match->data;
->> +       }
->> +#endif
->> +       return (struct exynos_tmu_platform_data *)
->> +                       platform_get_device_id(pdev)->driver_data;
->>  }
->> -;
->>  static int __devinit exynos_tmu_probe(struct platform_device *pdev)
->>  {
->>         struct exynos_tmu_data *data;
->>         struct exynos_tmu_platform_data *pdata = pdev->dev.platform_data;
->>         int ret, i;
->>
->> +       if (!pdata)
->> +               pdata = exynos_get_driver_data(pdev);
->> +
->>         if (!pdata) {
->>                 dev_err(&pdev->dev, "No platform init data supplied.\n");
->>                 return -ENODEV;
->> @@ -838,9 +945,11 @@ static struct platform_driver exynos_tmu_driver = {
->>                 .name   = "exynos-tmu",
->>                 .owner  = THIS_MODULE,
->>                 .pm     = EXYNOS_TMU_PM,
->> +               .of_match_table = exynos_tmu_match,
->>         },
->>         .probe = exynos_tmu_probe,
->>         .remove = __devexit_p(exynos_tmu_remove),
->> +       .id_table = exynos_tmu_driver_ids,
->>  };
->>
->>  module_platform_driver(exynos_tmu_driver);
->> --
->> 1.7.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Hi Linus,
+
+Please revert:
+
+commit 5baefd6d84163443215f4a99f6a20f054ef11236
+Author: John Stultz <johnstul@us.ibm.com>
+Date:   Tue Jul 10 18:43:25 2012 -0400
+
+    hrtimer: Update hrtimer base offsets each hrtimer_interrupt
+
+This breaks resume on the iBook G4 and Toshiba Portege R500 (at least), by
+adding an excessive delay to it (the Toshiba box sometimes hangs hard during
+resume from system suspend).  According to Andreas
+(https://lkml.org/lkml/2012/7/15/66):
+
+"Apparently during or before noirq resume the system is hanging by the same
+amount of time as the system was sleeping."
+
+which seems to agree with my observations.
+
+Given that the two known-affected boxes are so different, it is quite probable
+that the total number of affected systems is actually quite high.
+
+Thanks!
+
+
+To everyone involved: the fact that this change, which was likely to introduce
+regressions from the look of it alone, has been pushed to Linus (an to -stable
+at the same time!) so late in the cycle, is seriuosly disappointing.
+
+Thanks,
+Rafael
+
+[ /QUOTE ]
+
+Hi,
+
+when I booted 1st into Linux-3.5-rc7 (a few hours after release) I had
+a call-trace in get_next_timer_interrupt() (NULL pointer dereference)
+on early-boot.
+The machine got frozen.
+
+I can't say if this is related to the same issue here, but I can
+confirm after suspend + resume the machine (sandy-bridge ultrabook) I
+am working on is in an unusable state.
+I had to cold reboot/restart.
+
+Regards,
+- Sedat -
+
+P.S.: Unfortunately, I could not reproduce the NULL-deref again.
+Thomas gave me some instruction to enable some debugobjects
+kernel-options (see attached backlog from IRC).
+
+--f46d042a0d673aa76104c4eb89ba
+Content-Type: text/plain; charset=US-ASCII;
+	name="backlog_linux-rt_timers-issue_20120715.txt"
+Content-Disposition: attachment;
+	filename="backlog_linux-rt_timers-issue_20120715.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_h4p3pga00
+
+QmFja2xvZyAjbGludXgtcnQgKE9GVEMsIEdlcm1hbiBsb2NhbC10aW1lIFVUQysyKToKClswOToy
+NzoyNl0gPGRpbGVrcz4gaGkKWzA5OjI4OjExXSA8ZGlsZWtzPiB0Z2x4IGpzdHVsdHo6IHdpdGgg
+My41LXJjNyBJIGhhdmUgYSBOVUxMIHBvaW50ZXIgZGVyZWZlbmNlIGluIGdldF9uZXh0X3RpbWVy
+X2ludGVycnVwdApbMDk6Mjg6MTldIDxkaWxla3M+IG5hdGl2ZV9zY2hlZF9jbG9jawpbMDk6Mjg6
+MzFdIDxkaWxla3M+IHRpY2tfbm9oel9zdG9wX3NjaGVkX3RpY2suaXNyYQpbMDk6Mjg6NDNdIDxk
+aWxla3M+IHRpY2tfbm9oel9pZGxlX2VudGVyClswOToyODo0Nl0gPGRpbGVrcz4gY3B1X2lkbGUK
+WzA5OjI4OjUyXSA8ZGlsZWtzPiBzdGFydF9zZWNvbmRhcnkKWzA5OjI4OjU4XSA8ZGlsZWtzPiBt
+YWNoaW5lIGZyZWV6ZXMKWzA5OjI5OjAzXSA8dGdseD4gYnJpbGxpYW50ClswOToyOTowNV0gPGRp
+bGVrcz4gY29sZCByZWJvb3QvcmVzdGFydApbMDk6Mjk6MjldIC0qLSBkaWxla3MgLT4gYnJlYWtm
+YXN0ClswOTo0MTozMl0gPC0tIHRyZW0gKH50cmVtQGJueTkzLTctODgtMTYxLTMzLTIyMS5mYngu
+cHJveGFkLm5ldCkgaGF0IGRhcyBOZXR6d2VyayB2ZXJsYXNzZW4gKFF1aXQ6IEV4LUNoYXQpClsw
+OTo0NToyN10gPGRpbGVrcz4gcmUKWzA5OjQ2OjE4XSA8ZGlsZWtzPiB0Z2x4OiBhbnkgaWRlYT8K
+WzA5OjQ3OjQyXSA8dGdseD4gd2hlbiBkb2VzIHRoaXMgaGFwcGVuID8KWzA5OjQ3OjQ4XSA8dGds
+eD4gZWFybHkgYm9vdCA/ClswOTo0ODowNl0gPGRpbGVrcz4geWVzLiBub3RoaW5nIGluIHRoZSBs
+b2dzClsxMDoxODoyNl0gPHRnbHg+IGhtbQpbMTA6MTk6MjFdIDx0Z2x4PiBzbyBpdCBleHBsb2Rl
+cyBpbiBnZXRfbmV4dF90aW1lcl9pbnRlcnJ1cHQoKSwgcmlnaHQgPwpbMTA6MjA6MDFdIDx0Z2x4
+PiBjYW4geW91IGVuYWJsZSBkZWJ1Z29iamVjdHMgPwpbMTA6MjA6MTJdIDxkaWxla3M+IHllcywg
+YXMgYXMgSSBzYXcgYW5kIG5vdGVkIG9uIGEgcG9zdGl0IHNjaGVldApbMTA6MjA6NDFdIDx0Z2x4
+PiBERUJVR19PQkpFQ1RTClsxMDoyMDo0Nl0gPHRnbHg+IERFQlVHX09CSkVDVFNfRlJFRQpbMTA6
+MjA6NTFdIDx0Z2x4PiBERUJVR19PQkpFQ1RTX1RJTUVSUwpbMTA6MjE6MDVdIDx0Z2x4PiBERUJV
+R19PQkpFQ1RTX0VOQUJMRV9ERUZBVUxUClsxMDoyMjoxOV0gPHRnbHg+IHVzdWFsbHkgZXhwbG9z
+aW9ucyBpbiBnZXRfbmV4dF90aW1lcl9pbnRlcnJ1cHQoKSBhcmUgY2F1c2VkIGJ5IHRpbWVycyBi
+ZWluZyBjb3JydXB0ZWQKWzEwOjIyOjUyXSA8dGdseD4gZGVidWcgb2JqZWN0cyB1c3VhbGx5IGNh
+biBjYXRjaCBpdCBhbmQgbGV0IHRoZSBib3ggc3Vydml2ZSBwbHVzIGdpdmVzIHVzIHByb3BlciBp
+bmZvIGFib3V0IHRoZSB3cmVja2FnZQpbMTA6MjU6MzddIDxkaWxla3M+IE9LClsxMDoyNjowM10g
+PGRpbGVrcz4gaXMgdGhlIGJ1aWxkLXRyZWUgZXhwbG9kaW5nIGluIHNpemU/ClsxMDo0Nzo0OF0g
+PHRnbHg+IG5vdCBtdWNoClsxMDo0ODoxN10gPHRnbHg+IGl0J3Mgb25seSB0aGUgZGVidWdvYmpl
+Y3QgY29kZSBpdHNlbGYgcGx1cyB0aGUgdGltZXIgY29kZSB3aGljaCBncm93cyBhIGJpdApbMTA6
+NDg6MjZdIDx0Z2x4PiBsZXNzIHRoYW4gMWsgSSB0aGluawoKCi1kaWxla3MgLy8gMTUtSnVsLTIw
+MTEK
+--f46d042a0d673aa76104c4eb89ba--
