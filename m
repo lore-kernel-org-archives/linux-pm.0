@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 32/52] ACPICA: Utilities: conditionally compile
-	backslash removal function
-Date: Tue, 24 Jul 2012 23:41:28 -0400
-Message-ID: <26181bf4b4ca6d963a369f119071a463c2107d69.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 33/52] ACPICA: Update comments;
+	no functional change
+Date: Tue, 24 Jul 2012 23:41:29 -0400
+Message-ID: <e40d5940396aa4002feeab8323224b5c7f84246c.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -24,34 +24,36 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Bob Moore <robert.moore@intel.com>
 
-Only used for iASL and AcpiExec.
+Cleanup a couple of comments.
 
 Signed-off-by: Bob Moore <robert.moore@intel.com>
 Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/utmisc.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/acpi/acpica/acpredef.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/acpi/acpica/utmisc.c b/drivers/acpi/acpica/utmisc.c
-index e86f897..577a44e 100644
---- a/drivers/acpi/acpica/utmisc.c
-+++ b/drivers/acpi/acpica/utmisc.c
-@@ -50,6 +50,7 @@
- #define _COMPONENT          ACPI_UTILITIES
- ACPI_MODULE_NAME("utmisc")
+diff --git a/drivers/acpi/acpica/acpredef.h b/drivers/acpi/acpica/acpredef.h
+index bbb34c9..c8e5756 100644
+--- a/drivers/acpi/acpica/acpredef.h
++++ b/drivers/acpi/acpica/acpredef.h
+@@ -511,14 +511,14 @@ static const union acpi_predefined_info predefined_names[] =
+ 	{{"_TMP", 0, ACPI_RTYPE_INTEGER}},
+ 	{{"_TPC", 0, ACPI_RTYPE_INTEGER}},
+ 	{{"_TPT", 1, 0}},
+-	{{"_TRT", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Pkgs) each 2_ref/6_int */
++	{{"_TRT", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Pkgs) each 2 Ref/6 Int */
+ 			  {{{ACPI_PTYPE2, ACPI_RTYPE_REFERENCE, 2, ACPI_RTYPE_INTEGER}, 6, 0}},
  
-+#if defined ACPI_ASL_COMPILER || defined ACPI_EXEC_APP
- /*******************************************************************************
-  *
-  * FUNCTION:    ut_convert_backslashes
-@@ -77,6 +78,7 @@ void ut_convert_backslashes(char *pathname)
- 		pathname++;
- 	}
- }
-+#endif
+-	{{"_TSD", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Pkgs) each 5_int with count */
++	{{"_TSD", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Pkgs) each 5 Int with count */
+ 			  {{{ACPI_PTYPE2_COUNT,ACPI_RTYPE_INTEGER, 5,0}, 0,0}},
  
- /*******************************************************************************
-  *
+ 	{{"_TSP", 0, ACPI_RTYPE_INTEGER}},
+-	{{"_TSS", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Pkgs) each 5_int */
++	{{"_TSS", 0, ACPI_RTYPE_PACKAGE}}, /* Variable-length (Pkgs) each 5 Int */
+ 			  {{{ACPI_PTYPE2, ACPI_RTYPE_INTEGER, 5,0}, 0,0}},
+ 
+ 	{{"_TST", 0, ACPI_RTYPE_INTEGER}},
 -- 
 1.7.12.rc0
