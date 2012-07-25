@@ -1,113 +1,76 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 15/52] cpuidle: refactor out cpuidle_enter_state
-Date: Tue, 24 Jul 2012 23:41:11 -0400
-Message-ID: <56cfbf74a17c40f3a741398103c9f5d5a6806715.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 48/52] tools/power: turbostat: fix large c1% issue
+Date: Tue, 24 Jul 2012 23:41:44 -0400
+Message-ID: <c3ae331d1c2fe25edfbece73fda0bb312445b636.1343187618.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
 References: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Colin Cross <ccross@android.com>
+From: Len Brown <len.brown@intel.com>
 
-Split the code to enter a state and update the stats into a helper
-function, cpuidle_enter_state, and export it.  This function will
-be called by the coupled state code to handle entering the safe
-state and the final coupled state.
+Under some conditions, c1% was displayed as very large number,
+much higher than 100%.
 
-Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Reviewed-by: Kevin Hilman <khilman@ti.com>
-Tested-by: Kevin Hilman <khilman@ti.com>
-Signed-off-by: Colin Cross <ccross@android.com>
-Reviewed-by: Rafael J. Wysocki <rjw@sisk.pl>
+c1% is not measured, it is derived as "that, which is left over"
+from other counters.  However, the other counters are not collected
+atomically, and so it is possible for c1% to be calaculagted as
+a small negative number -- displayed as very large positive.
+
+There was a check for mperf vs tsc for this already,
+but it needed to also include the other counters
+that are used to calculate c1.
+
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/cpuidle/cpuidle.c | 42 +++++++++++++++++++++++++++++-------------
- drivers/cpuidle/cpuidle.h |  2 ++
- 2 files changed, 31 insertions(+), 13 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 2f0083a..3e3e3e4 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -103,6 +103,34 @@ int cpuidle_play_dead(void)
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index b815a12..861d771 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -444,6 +444,9 @@ delta_core(struct core_data *new, struct core_data *old)
+ 	old->c7 = new->c7 - old->c7;
  }
  
- /**
-+ * cpuidle_enter_state - enter the state and update stats
-+ * @dev: cpuidle device for this cpu
-+ * @drv: cpuidle driver for this cpu
-+ * @next_state: index into drv->states of the state to enter
++/*
++ * old = new - old
 + */
-+int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
-+		int next_state)
-+{
-+	int entered_state;
-+
-+	entered_state = cpuidle_enter_ops(dev, drv, next_state);
-+
-+	if (entered_state >= 0) {
-+		/* Update cpuidle counters */
-+		/* This can be moved to within driver enter routine
-+		 * but that results in multiple copies of same code.
-+		 */
-+		dev->states_usage[entered_state].time +=
-+				(unsigned long long)dev->last_residency;
-+		dev->states_usage[entered_state].usage++;
-+	} else {
-+		dev->last_residency = 0;
-+	}
-+
-+	return entered_state;
-+}
-+
-+/**
-  * cpuidle_idle_call - the main idle loop
-  *
-  * NOTE: no locks or semaphores should be used here
-@@ -143,23 +171,11 @@ int cpuidle_idle_call(void)
- 	trace_power_start_rcuidle(POWER_CSTATE, next_state, dev->cpu);
- 	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+ void
+ delta_thread(struct thread_data *new, struct thread_data *old,
+ 	struct core_data *core_delta)
+@@ -482,19 +485,20 @@ delta_thread(struct thread_data *new, struct thread_data *old,
  
--	entered_state = cpuidle_enter_ops(dev, drv, next_state);
-+	entered_state = cpuidle_enter_state(dev, drv, next_state);
  
- 	trace_power_end_rcuidle(dev->cpu);
- 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 	/*
+-	 * As mperf and tsc collection are not atomic,
+-	 * it is possible for mperf's non-halted cycles
++	 * As counter collection is not atomic,
++	 * it is possible for mperf's non-halted cycles + idle states
+ 	 * to exceed TSC's all cycles: show c1 = 0% in that case.
+ 	 */
+-	if (old->mperf > old->tsc)
++	if ((old->mperf + core_delta->c3 + core_delta->c6 + core_delta->c7) > old->tsc)
+ 		old->c1 = 0;
+ 	else {
+ 		/* normal case, derive c1 */
+ 		old->c1 = old->tsc - old->mperf - core_delta->c3
+ 				- core_delta->c6 - core_delta->c7;
+ 	}
++
+ 	if (old->mperf == 0) {
+-		if (verbose) fprintf(stderr, "cpu%d MPERF 0!\n", old->cpu_id);
++		if (verbose > 1) fprintf(stderr, "cpu%d MPERF 0!\n", old->cpu_id);
+ 		old->mperf = 1;	/* divide by 0 protection */
+ 	}
  
--	if (entered_state >= 0) {
--		/* Update cpuidle counters */
--		/* This can be moved to within driver enter routine
--		 * but that results in multiple copies of same code.
--		 */
--		dev->states_usage[entered_state].time +=
--				(unsigned long long)dev->last_residency;
--		dev->states_usage[entered_state].usage++;
--	} else {
--		dev->last_residency = 0;
--	}
--
- 	/* give the governor an opportunity to reflect on the outcome */
- 	if (cpuidle_curr_governor->reflect)
- 		cpuidle_curr_governor->reflect(dev, entered_state);
-diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
-index 7db1866..d8a3ccc 100644
---- a/drivers/cpuidle/cpuidle.h
-+++ b/drivers/cpuidle/cpuidle.h
-@@ -14,6 +14,8 @@ extern struct list_head cpuidle_detected_devices;
- extern struct mutex cpuidle_lock;
- extern spinlock_t cpuidle_driver_lock;
- extern int cpuidle_disabled(void);
-+extern int cpuidle_enter_state(struct cpuidle_device *dev,
-+		struct cpuidle_driver *drv, int next_state);
- 
- /* idle loop */
- extern void cpuidle_install_idle_handler(void);
 -- 
 1.7.12.rc0
+
