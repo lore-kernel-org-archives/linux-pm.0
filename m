@@ -1,79 +1,70 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 03/52] ACPICA: Lint fixes for acpi_write,
-	no functional changes
-Date: Tue, 24 Jul 2012 23:40:59 -0400
-Message-ID: <5134abfcfb4a8a9ef42c82dabad05762fbf04376.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 13/52] cpuidle: add checks to avoid NULL pointer dereference
+Date: Tue, 24 Jul 2012 23:41:09 -0400
+Message-ID: <1b0a0e9a15b976d91f3b5ae619c6a8964c2818eb.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
 References: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>, Bob Moore <robert.moore@intel.com>
+Cc: linux-kernel@vger.kernel.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 
-acpi_write was widened to 64-bit data, this change eliminates some
-lint warnings.
+The existing check for dev == NULL in __cpuidle_register_device() is
+rendered useless because dev is dereferenced before the check itself.
+Moreover, correctly speaking, it is the job of the callers of this
+function, i.e., cpuidle_register_device() & cpuidle_enable_device() (which
+also happen to be exported functions) to ensure that
+__cpuidle_register_device() is called with a non-NULL dev.
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+So add the necessary dev == NULL checks in the two callers and remove the
+(useless) check from __cpuidle_register_device().
+
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpica/hwesleep.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/cpuidle/cpuidle.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/acpi/acpica/hwesleep.c b/drivers/acpi/acpica/hwesleep.c
-index 29e8592..3680c45 100644
---- a/drivers/acpi/acpica/hwesleep.c
-+++ b/drivers/acpi/acpica/hwesleep.c
-@@ -117,7 +117,8 @@ acpi_status acpi_hw_extended_sleep(u8 sleep_state, u8 flags)
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 588b44a..8ffef26 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -285,6 +285,9 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
+ 	int ret, i;
+ 	struct cpuidle_driver *drv = cpuidle_get_driver();
  
- 	/* Clear wake status (WAK_STS) */
++	if (!dev)
++		return -EINVAL;
++
+ 	if (dev->enabled)
+ 		return 0;
+ 	if (!drv || !cpuidle_curr_governor)
+@@ -369,8 +372,6 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
+ 	struct device *cpu_dev = get_cpu_device((unsigned long)dev->cpu);
+ 	struct cpuidle_driver *cpuidle_driver = cpuidle_get_driver();
  
--	status = acpi_write(ACPI_X_WAKE_STATUS, &acpi_gbl_FADT.sleep_status);
-+	status =
-+	    acpi_write((u64)ACPI_X_WAKE_STATUS, &acpi_gbl_FADT.sleep_status);
- 	if (ACPI_FAILURE(status)) {
- 		return_ACPI_STATUS(status);
- 	}
-@@ -147,7 +148,7 @@ acpi_status acpi_hw_extended_sleep(u8 sleep_state, u8 flags)
- 	    ((acpi_gbl_sleep_type_a << ACPI_X_SLEEP_TYPE_POSITION) &
- 	     ACPI_X_SLEEP_TYPE_MASK);
+-	if (!dev)
+-		return -EINVAL;
+ 	if (!try_module_get(cpuidle_driver->owner))
+ 		return -EINVAL;
  
--	status = acpi_write((sleep_type_value | ACPI_X_SLEEP_ENABLE),
-+	status = acpi_write((u64)(sleep_type_value | ACPI_X_SLEEP_ENABLE),
- 			    &acpi_gbl_FADT.sleep_control);
- 	if (ACPI_FAILURE(status)) {
- 		return_ACPI_STATUS(status);
-@@ -195,7 +196,7 @@ acpi_status acpi_hw_extended_wake_prep(u8 sleep_state, u8 flags)
- 		    ((acpi_gbl_sleep_type_a << ACPI_X_SLEEP_TYPE_POSITION) &
- 		     ACPI_X_SLEEP_TYPE_MASK);
+@@ -395,6 +396,9 @@ int cpuidle_register_device(struct cpuidle_device *dev)
+ {
+ 	int ret;
  
--		(void)acpi_write((sleep_type_value | ACPI_X_SLEEP_ENABLE),
-+		(void)acpi_write((u64)(sleep_type_value | ACPI_X_SLEEP_ENABLE),
- 				 &acpi_gbl_FADT.sleep_control);
- 	}
++	if (!dev)
++		return -EINVAL;
++
+ 	mutex_lock(&cpuidle_lock);
  
-@@ -239,7 +240,7 @@ acpi_status acpi_hw_extended_wake(u8 sleep_state, u8 flags)
- 	 * and use it to determine whether the system is rebooting or
- 	 * resuming. Clear WAK_STS for compatibility.
- 	 */
--	(void)acpi_write(ACPI_X_WAKE_STATUS, &acpi_gbl_FADT.sleep_status);
-+	(void)acpi_write((u64)ACPI_X_WAKE_STATUS, &acpi_gbl_FADT.sleep_status);
- 	acpi_gbl_system_awake_and_running = TRUE;
- 
- 	acpi_hw_execute_sleep_method(METHOD_PATHNAME__SST, ACPI_SST_WORKING);
+ 	if ((ret = __cpuidle_register_device(dev))) {
 -- 
 1.7.12.rc0
