@@ -1,185 +1,113 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 21/52] ACPI: Add _OST support for sysfs eject
-Date: Tue, 24 Jul 2012 23:41:17 -0400
-Message-ID: <c4753e57b78b213f2384fa0dbafa348b087114fa.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 15/52] cpuidle: refactor out cpuidle_enter_state
+Date: Tue, 24 Jul 2012 23:41:11 -0400
+Message-ID: <56cfbf74a17c40f3a741398103c9f5d5a6806715.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
 References: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Colin Cross <ccross@android.com>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Toshi Kani <toshi.kani@hp.com>
+From: Colin Cross <ccross@android.com>
 
-Changed acpi_bus_hot_remove_device() to support _OST. This function is
-also changed to global so that it can be called from hotplug notify
-handlers to perform hot-remove operation.
+Split the code to enter a state and update the stats into a helper
+function, cpuidle_enter_state, and export it.  This function will
+be called by the coupled state code to handle entering the safe
+state and the final coupled state.
 
-Changed acpi_eject_store(), which is the sysfs eject handler. It checks
-eject_pending to see if the request was originated from ACPI eject
-notification. If not, it calls _OST(0x103,84,) per Figure 6-37 in ACPI
-5.0 spec.
-
-Added eject_pending bit to acpi_device_flags. This bit is set when the
-kernel has received an ACPI eject notification, but does not initiate
-its hot-remove operation by itself.
-
-Added struct acpi_eject_event. This structure is used to pass extended
-information to acpi_bus_hot_remove_device(), which has a single argument
-to support asynchronous call
-
-Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Tested-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Kevin Hilman <khilman@ti.com>
+Signed-off-by: Colin Cross <ccross@android.com>
+Reviewed-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/scan.c     | 58 +++++++++++++++++++++++++++++++++++++++++--------
- include/acpi/acpi_bus.h |  9 +++++++-
- 2 files changed, 57 insertions(+), 10 deletions(-)
+ drivers/cpuidle/cpuidle.c | 42 +++++++++++++++++++++++++++++-------------
+ drivers/cpuidle/cpuidle.h |  2 ++
+ 2 files changed, 31 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 85cbfdc..bea3ab6 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -83,19 +83,29 @@ acpi_device_modalias_show(struct device *dev, struct device_attribute *attr, cha
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 2f0083a..3e3e3e4 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -103,6 +103,34 @@ int cpuidle_play_dead(void)
  }
- static DEVICE_ATTR(modalias, 0444, acpi_device_modalias_show, NULL);
  
--static void acpi_bus_hot_remove_device(void *context)
-+/**
-+ * acpi_bus_hot_remove_device: hot-remove a device and its children
-+ * @context: struct acpi_eject_event pointer (freed in this func)
-+ *
-+ * Hot-remove a device and its children. This function frees up the
-+ * memory space passed by arg context, so that the caller may call
-+ * this function asynchronously through acpi_os_hotplug_execute().
+ /**
++ * cpuidle_enter_state - enter the state and update stats
++ * @dev: cpuidle device for this cpu
++ * @drv: cpuidle driver for this cpu
++ * @next_state: index into drv->states of the state to enter
 + */
-+void acpi_bus_hot_remove_device(void *context)
- {
-+	struct acpi_eject_event *ej_event = (struct acpi_eject_event *) context;
- 	struct acpi_device *device;
--	acpi_handle handle = context;
-+	acpi_handle handle = ej_event->handle;
- 	struct acpi_object_list arg_list;
- 	union acpi_object arg;
- 	acpi_status status = AE_OK;
-+	u32 ost_code = ACPI_OST_SC_NON_SPECIFIC_FAILURE; /* default */
- 
- 	if (acpi_bus_get_device(handle, &device))
--		return;
-+		goto err_out;
- 
- 	if (!device)
--		return;
-+		goto err_out;
- 
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 		"Hot-removing device %s...\n", dev_name(&device->dev)));
-@@ -103,7 +113,7 @@ static void acpi_bus_hot_remove_device(void *context)
- 	if (acpi_bus_trim(device, 1)) {
- 		printk(KERN_ERR PREFIX
- 				"Removing device failed\n");
--		return;
-+		goto err_out;
- 	}
- 
- 	/* power off device */
-@@ -129,10 +139,21 @@ static void acpi_bus_hot_remove_device(void *context)
- 	 * TBD: _EJD support.
- 	 */
- 	status = acpi_evaluate_object(handle, "_EJ0", &arg_list, NULL);
--	if (ACPI_FAILURE(status))
--		printk(KERN_WARNING PREFIX
--				"Eject device failed\n");
-+	if (ACPI_FAILURE(status)) {
-+		if (status != AE_NOT_FOUND)
-+			printk(KERN_WARNING PREFIX
-+					"Eject device failed\n");
-+		goto err_out;
-+	}
++int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
++		int next_state)
++{
++	int entered_state;
 +
-+	kfree(context);
-+	return;
- 
-+err_out:
-+	/* Inform firmware the hot-remove operation has completed w/ error */
-+	(void) acpi_evaluate_hotplug_ost(handle,
-+				ej_event->event, ost_code, NULL);
-+	kfree(context);
- 	return;
- }
- 
-@@ -144,6 +165,7 @@ acpi_eject_store(struct device *d, struct device_attribute *attr,
- 	acpi_status status;
- 	acpi_object_type type = 0;
- 	struct acpi_device *acpi_device = to_acpi_device(d);
-+	struct acpi_eject_event *ej_event;
- 
- 	if ((!count) || (buf[0] != '1')) {
- 		return -EINVAL;
-@@ -160,7 +182,25 @@ acpi_eject_store(struct device *d, struct device_attribute *attr,
- 		goto err;
- 	}
- 
--	acpi_os_hotplug_execute(acpi_bus_hot_remove_device, acpi_device->handle);
-+	ej_event = kmalloc(sizeof(*ej_event), GFP_KERNEL);
-+	if (!ej_event) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
++	entered_state = cpuidle_enter_ops(dev, drv, next_state);
 +
-+	ej_event->handle = acpi_device->handle;
-+	if (acpi_device->flags.eject_pending) {
-+		/* event originated from ACPI eject notification */
-+		ej_event->event = ACPI_NOTIFY_EJECT_REQUEST;
-+		acpi_device->flags.eject_pending = 0;
++	if (entered_state >= 0) {
++		/* Update cpuidle counters */
++		/* This can be moved to within driver enter routine
++		 * but that results in multiple copies of same code.
++		 */
++		dev->states_usage[entered_state].time +=
++				(unsigned long long)dev->last_residency;
++		dev->states_usage[entered_state].usage++;
 +	} else {
-+		/* event originated from user */
-+		ej_event->event = ACPI_OST_EC_OSPM_EJECT;
-+		(void) acpi_evaluate_hotplug_ost(ej_event->handle,
-+			ej_event->event, ACPI_OST_SC_EJECT_IN_PROGRESS, NULL);
++		dev->last_residency = 0;
 +	}
 +
-+	acpi_os_hotplug_execute(acpi_bus_hot_remove_device, (void *)ej_event);
- err:
- 	return ret;
- }
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index 1139f3a..62eb514 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -182,7 +182,8 @@ struct acpi_device_flags {
- 	u32 suprise_removal_ok:1;
- 	u32 power_manageable:1;
- 	u32 performance_manageable:1;
--	u32 reserved:24;
-+	u32 eject_pending:1;
-+	u32 reserved:23;
- };
- 
- /* File System */
-@@ -334,6 +335,11 @@ struct acpi_bus_event {
- 	u32 data;
- };
- 
-+struct acpi_eject_event {
-+	acpi_handle	handle;
-+	u32		event;
-+};
++	return entered_state;
++}
 +
- extern struct kobject *acpi_kobj;
- extern int acpi_bus_generate_netlink_event(const char*, const char*, u8, int);
- void acpi_bus_private_data_handler(acpi_handle, void *);
-@@ -371,6 +377,7 @@ int acpi_bus_register_driver(struct acpi_driver *driver);
- void acpi_bus_unregister_driver(struct acpi_driver *driver);
- int acpi_bus_add(struct acpi_device **child, struct acpi_device *parent,
- 		 acpi_handle handle, int type);
-+void acpi_bus_hot_remove_device(void *context);
- int acpi_bus_trim(struct acpi_device *start, int rmdevice);
- int acpi_bus_start(struct acpi_device *device);
- acpi_status acpi_bus_get_ejd(acpi_handle handle, acpi_handle * ejd);
++/**
+  * cpuidle_idle_call - the main idle loop
+  *
+  * NOTE: no locks or semaphores should be used here
+@@ -143,23 +171,11 @@ int cpuidle_idle_call(void)
+ 	trace_power_start_rcuidle(POWER_CSTATE, next_state, dev->cpu);
+ 	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+ 
+-	entered_state = cpuidle_enter_ops(dev, drv, next_state);
++	entered_state = cpuidle_enter_state(dev, drv, next_state);
+ 
+ 	trace_power_end_rcuidle(dev->cpu);
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
+-	if (entered_state >= 0) {
+-		/* Update cpuidle counters */
+-		/* This can be moved to within driver enter routine
+-		 * but that results in multiple copies of same code.
+-		 */
+-		dev->states_usage[entered_state].time +=
+-				(unsigned long long)dev->last_residency;
+-		dev->states_usage[entered_state].usage++;
+-	} else {
+-		dev->last_residency = 0;
+-	}
+-
+ 	/* give the governor an opportunity to reflect on the outcome */
+ 	if (cpuidle_curr_governor->reflect)
+ 		cpuidle_curr_governor->reflect(dev, entered_state);
+diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+index 7db1866..d8a3ccc 100644
+--- a/drivers/cpuidle/cpuidle.h
++++ b/drivers/cpuidle/cpuidle.h
+@@ -14,6 +14,8 @@ extern struct list_head cpuidle_detected_devices;
+ extern struct mutex cpuidle_lock;
+ extern spinlock_t cpuidle_driver_lock;
+ extern int cpuidle_disabled(void);
++extern int cpuidle_enter_state(struct cpuidle_device *dev,
++		struct cpuidle_driver *drv, int next_state);
+ 
+ /* idle loop */
+ extern void cpuidle_install_idle_handler(void);
 -- 
 1.7.12.rc0
-
