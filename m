@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 35/52] ACPICA: Update to version 20120620
-Date: Tue, 24 Jul 2012 23:41:31 -0400
-Message-ID: <5179f59ecb0db585bd10bdad90594d9db0468015.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 44/52] ACPICA: Update header files copyrights to 2012
+Date: Tue, 24 Jul 2012 23:41:40 -0400
+Message-ID: <75e7386b104b27b1158bf7d13c69d5317f0033ca.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,27 +15,221 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Bob Moore <robert.moore@intel.com>
 
-Version 20120620.
-
 Signed-off-by: Bob Moore <robert.moore@intel.com>
 Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/acpi/acpixf.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/acpi/acexcep.h          | 2 +-
+ include/acpi/acnames.h          | 2 +-
+ include/acpi/acoutput.h         | 2 +-
+ include/acpi/acpi.h             | 2 +-
+ include/acpi/acpiosxf.h         | 2 +-
+ include/acpi/acpixf.h           | 2 +-
+ include/acpi/acrestyp.h         | 2 +-
+ include/acpi/actbl.h            | 2 +-
+ include/acpi/actbl1.h           | 2 +-
+ include/acpi/actbl2.h           | 2 +-
+ include/acpi/actbl3.h           | 2 +-
+ include/acpi/actypes.h          | 2 +-
+ include/acpi/platform/acenv.h   | 2 +-
+ include/acpi/platform/acgcc.h   | 2 +-
+ include/acpi/platform/aclinux.h | 2 +-
+ 15 files changed, 15 insertions(+), 15 deletions(-)
 
+diff --git a/include/acpi/acexcep.h b/include/acpi/acexcep.h
+index 0b5dcb6..1950344 100644
+--- a/include/acpi/acexcep.h
++++ b/include/acpi/acexcep.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/acnames.h b/include/acpi/acnames.h
+index 38f5088..ef24d82 100644
+--- a/include/acpi/acnames.h
++++ b/include/acpi/acnames.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/acoutput.h b/include/acpi/acoutput.h
+index f1cb332..2457ac8 100644
+--- a/include/acpi/acoutput.h
++++ b/include/acpi/acoutput.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/acpi.h b/include/acpi/acpi.h
+index de39915..c433d5e 100644
+--- a/include/acpi/acpi.h
++++ b/include/acpi/acpi.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
+index f3746f7..0650f5f 100644
+--- a/include/acpi/acpiosxf.h
++++ b/include/acpi/acpiosxf.h
+@@ -8,7 +8,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
 diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
-index 381c940..18f023a 100644
+index 079bb90..9877432 100644
 --- a/include/acpi/acpixf.h
 +++ b/include/acpi/acpixf.h
-@@ -47,7 +47,7 @@
+@@ -6,7 +6,7 @@
+  *****************************************************************************/
  
- /* Current ACPICA subsystem version in YYYYMMDD format */
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/acrestyp.h b/include/acpi/acrestyp.h
+index 3506e39..2504091 100644
+--- a/include/acpi/acrestyp.h
++++ b/include/acpi/acrestyp.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
  
--#define ACPI_CA_VERSION                 0x20120518
-+#define ACPI_CA_VERSION                 0x20120620
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/actbl.h b/include/acpi/actbl.h
+index 8dea546..a629a01 100644
+--- a/include/acpi/actbl.h
++++ b/include/acpi/actbl.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
  
- #include "acconfig.h"
- #include "actypes.h"
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/actbl1.h b/include/acpi/actbl1.h
+index 71e747b..9ac26b4 100644
+--- a/include/acpi/actbl1.h
++++ b/include/acpi/actbl1.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/actbl2.h b/include/acpi/actbl2.h
+index 58bdd05..34198bf2 100644
+--- a/include/acpi/actbl2.h
++++ b/include/acpi/actbl2.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/actbl3.h b/include/acpi/actbl3.h
+index c22ce80..f65a0ed 100644
+--- a/include/acpi/actbl3.h
++++ b/include/acpi/actbl3.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
+index 376c9ed..bc4a327 100644
+--- a/include/acpi/actypes.h
++++ b/include/acpi/actypes.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/platform/acenv.h b/include/acpi/platform/acenv.h
+index 5af3ed5..560a9f2 100644
+--- a/include/acpi/platform/acenv.h
++++ b/include/acpi/platform/acenv.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/platform/acgcc.h b/include/acpi/platform/acgcc.h
+index e228893..72553b0 100644
+--- a/include/acpi/platform/acgcc.h
++++ b/include/acpi/platform/acgcc.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
+diff --git a/include/acpi/platform/aclinux.h b/include/acpi/platform/aclinux.h
+index 6fbc4ca..7509be3 100644
+--- a/include/acpi/platform/aclinux.h
++++ b/include/acpi/platform/aclinux.h
+@@ -5,7 +5,7 @@
+  *****************************************************************************/
+ 
+ /*
+- * Copyright (C) 2000 - 2011, Intel Corp.
++ * Copyright (C) 2000 - 2012, Intel Corp.
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without
 -- 
 1.7.12.rc0
