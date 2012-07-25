@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 30/52] ACPI,
-	APEI: Fixup common access width firmware bug
-Date: Tue, 24 Jul 2012 23:41:26 -0400
-Message-ID: <f712c71f7b2b43b894d1e92e1b77385fcad8815f.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 32/52] ACPICA: Utilities: conditionally compile
+	backslash removal function
+Date: Tue, 24 Jul 2012 23:41:28 -0400
+Message-ID: <26181bf4b4ca6d963a369f119071a463c2107d69.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -19,43 +19,39 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, stable@vger.kernel.org, "[3.4+]"@mail.linuxfoundation.org, linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.de>
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Lin Ming <ming.m.lin@intel.com>, Bob Moore <robert.moore@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jean Delvare <jdelvare@suse.de>
+From: Bob Moore <robert.moore@intel.com>
 
-Many firmwares have a common register definition bug where 8-bit
-access width is specified for a 32-bit register. Ideally this should
-be fixed in the BIOS, but earlier versions of the kernel did not
-complain, so fix that up silently.
+Only used for iASL and AcpiExec.
 
-This closes kernel bug #43282:
-https://bugzilla.kernel.org/show_bug.cgi?id=43282
-
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
-Acked-by: Huang Ying <ying.huang@intel.com>
-Acked-by: Gary Hade <garyhade@us.ibm.com>
-Cc: stable@vger.kernel.org [3.4+]
+Signed-off-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/apei/apei-base.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/acpi/acpica/utmisc.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/acpi/apei/apei-base.c b/drivers/acpi/apei/apei-base.c
-index 6686b1e..00a7836 100644
---- a/drivers/acpi/apei/apei-base.c
-+++ b/drivers/acpi/apei/apei-base.c
-@@ -586,6 +586,11 @@ static int apei_check_gar(struct acpi_generic_address *reg, u64 *paddr,
- 	}
- 	*access_bit_width = 1UL << (access_size_code + 2);
+diff --git a/drivers/acpi/acpica/utmisc.c b/drivers/acpi/acpica/utmisc.c
+index e86f897..577a44e 100644
+--- a/drivers/acpi/acpica/utmisc.c
++++ b/drivers/acpi/acpica/utmisc.c
+@@ -50,6 +50,7 @@
+ #define _COMPONENT          ACPI_UTILITIES
+ ACPI_MODULE_NAME("utmisc")
  
-+	/* Fixup common BIOS bug */
-+	if (bit_width == 32 && bit_offset == 0 && (*paddr & 0x03) == 0 &&
-+	    *access_bit_width < 32)
-+		*access_bit_width = 32;
-+
- 	if ((bit_width + bit_offset) > *access_bit_width) {
- 		pr_warning(FW_BUG APEI_PFX
- 			   "Invalid bit width + offset in GAR [0x%llx/%u/%u/%u/%u]\n",
++#if defined ACPI_ASL_COMPILER || defined ACPI_EXEC_APP
+ /*******************************************************************************
+  *
+  * FUNCTION:    ut_convert_backslashes
+@@ -77,6 +78,7 @@ void ut_convert_backslashes(char *pathname)
+ 		pathname++;
+ 	}
+ }
++#endif
+ 
+ /*******************************************************************************
+  *
 -- 
 1.7.12.rc0
