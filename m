@@ -1,235 +1,71 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 44/52] ACPICA: Update header files copyrights to 2012
-Date: Tue, 24 Jul 2012 23:41:40 -0400
-Message-ID: <75e7386b104b27b1158bf7d13c69d5317f0033ca.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 12/52] cpuidle: remove unused
+	hrtimer_peek_ahead_timers() call
+Date: Tue, 24 Jul 2012 23:41:08 -0400
+Message-ID: <0aeb9cac6f8a6fc68acfb07d30b62ad6106a6384.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
 References: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>, Len Brown <len.brown@intel.com>
+Cc: Kevin Hilman <khilman@ti.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Arjan van de Ven <arjan@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+  commit 9a6558371bcd01c2973b7638181db4ccc34eab4f
+  Author: Arjan van de Ven <arjan@linux.intel.com>
+  Date:   Sun Nov 9 12:45:10 2008 -0800
+
+     regression: disable timer peek-ahead for 2.6.28
+
+     It's showing up as regressions; disabling it very likely just papers
+     over an underlying issue, but time is running out for 2.6.28, lets get
+     back to this for 2.6.29
+
+ Many years has passed since 2008, so it seems ok to remove whole `#if 0' block.
+
+Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Kevin Hilman <khilman@ti.com>
+Cc: Trinabh Gupta <g.trinabh@gmail.com>
+Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/acpi/acexcep.h          | 2 +-
- include/acpi/acnames.h          | 2 +-
- include/acpi/acoutput.h         | 2 +-
- include/acpi/acpi.h             | 2 +-
- include/acpi/acpiosxf.h         | 2 +-
- include/acpi/acpixf.h           | 2 +-
- include/acpi/acrestyp.h         | 2 +-
- include/acpi/actbl.h            | 2 +-
- include/acpi/actbl1.h           | 2 +-
- include/acpi/actbl2.h           | 2 +-
- include/acpi/actbl3.h           | 2 +-
- include/acpi/actypes.h          | 2 +-
- include/acpi/platform/acenv.h   | 2 +-
- include/acpi/platform/acgcc.h   | 2 +-
- include/acpi/platform/aclinux.h | 2 +-
- 15 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/cpuidle/cpuidle.c | 9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/include/acpi/acexcep.h b/include/acpi/acexcep.h
-index 0b5dcb6..1950344 100644
---- a/include/acpi/acexcep.h
-+++ b/include/acpi/acexcep.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 2f0083a..588b44a 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -124,15 +124,6 @@ int cpuidle_idle_call(void)
+ 	if (!dev || !dev->enabled)
+ 		return -EBUSY;
  
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/acnames.h b/include/acpi/acnames.h
-index 38f5088..ef24d82 100644
---- a/include/acpi/acnames.h
-+++ b/include/acpi/acnames.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/acoutput.h b/include/acpi/acoutput.h
-index f1cb332..2457ac8 100644
---- a/include/acpi/acoutput.h
-+++ b/include/acpi/acoutput.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/acpi.h b/include/acpi/acpi.h
-index de39915..c433d5e 100644
---- a/include/acpi/acpi.h
-+++ b/include/acpi/acpi.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/acpiosxf.h b/include/acpi/acpiosxf.h
-index f3746f7..0650f5f 100644
---- a/include/acpi/acpiosxf.h
-+++ b/include/acpi/acpiosxf.h
-@@ -8,7 +8,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
-index 079bb90..9877432 100644
---- a/include/acpi/acpixf.h
-+++ b/include/acpi/acpixf.h
-@@ -6,7 +6,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/acrestyp.h b/include/acpi/acrestyp.h
-index 3506e39..2504091 100644
---- a/include/acpi/acrestyp.h
-+++ b/include/acpi/acrestyp.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/actbl.h b/include/acpi/actbl.h
-index 8dea546..a629a01 100644
---- a/include/acpi/actbl.h
-+++ b/include/acpi/actbl.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/actbl1.h b/include/acpi/actbl1.h
-index 71e747b..9ac26b4 100644
---- a/include/acpi/actbl1.h
-+++ b/include/acpi/actbl1.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/actbl2.h b/include/acpi/actbl2.h
-index 58bdd05..34198bf2 100644
---- a/include/acpi/actbl2.h
-+++ b/include/acpi/actbl2.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/actbl3.h b/include/acpi/actbl3.h
-index c22ce80..f65a0ed 100644
---- a/include/acpi/actbl3.h
-+++ b/include/acpi/actbl3.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
-index 376c9ed..bc4a327 100644
---- a/include/acpi/actypes.h
-+++ b/include/acpi/actypes.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/platform/acenv.h b/include/acpi/platform/acenv.h
-index 5af3ed5..560a9f2 100644
---- a/include/acpi/platform/acenv.h
-+++ b/include/acpi/platform/acenv.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/platform/acgcc.h b/include/acpi/platform/acgcc.h
-index e228893..72553b0 100644
---- a/include/acpi/platform/acgcc.h
-+++ b/include/acpi/platform/acgcc.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-diff --git a/include/acpi/platform/aclinux.h b/include/acpi/platform/aclinux.h
-index 6fbc4ca..7509be3 100644
---- a/include/acpi/platform/aclinux.h
-+++ b/include/acpi/platform/aclinux.h
-@@ -5,7 +5,7 @@
-  *****************************************************************************/
- 
- /*
-- * Copyright (C) 2000 - 2011, Intel Corp.
-+ * Copyright (C) 2000 - 2012, Intel Corp.
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
+-#if 0
+-	/* shows regressions, re-enable for 2.6.29 */
+-	/*
+-	 * run any timers that can be run now, at this point
+-	 * before calculating the idle duration etc.
+-	 */
+-	hrtimer_peek_ahead_timers();
+-#endif
+-
+ 	/* ask the governor for the next state */
+ 	next_state = cpuidle_curr_governor->select(drv, dev);
+ 	if (need_resched()) {
 -- 
 1.7.12.rc0
