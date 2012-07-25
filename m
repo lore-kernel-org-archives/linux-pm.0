@@ -1,24 +1,26 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 29/52] ACPI: acpi_pad: rename "power_saving" thread to "acpi_pad" thread
-Date: Tue, 24 Jul 2012 23:41:25 -0400
-Message-ID: <150ed86fade791d82319b27e84a7a6d2de84d1fa.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 36/52] ACPI: acpi_pad: tune round_robin_time
+Date: Tue, 24 Jul 2012 23:41:32 -0400
+Message-ID: <fa7584e13ac8e6a306085bba0a931f3135f1d8c4.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
 References: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-"acpi_pad/%d" is a better thread name than
-generic "power_saving/%d" because users who see
-these threads will know the name of the driver
-that caused them.
+In an effort to be fair to bound processes,
+acpi_pad periodically moves its forced-idle threads.
+
+The default interval for moving the threads is 10 seconds.
+Measurements show that reducing this to 1 second has no
+power or performance impact, so reduce default to 1 second.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
@@ -26,17 +28,18 @@ Signed-off-by: Len Brown <len.brown@intel.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/acpi/acpi_pad.c b/drivers/acpi/acpi_pad.c
-index a43fa1a..1c09e1b 100644
+index 1c09e1b..f3e959f 100644
 --- a/drivers/acpi/acpi_pad.c
 +++ b/drivers/acpi/acpi_pad.c
-@@ -234,7 +234,7 @@ static int create_power_saving_task(void)
+@@ -144,7 +144,7 @@ static void exit_round_robin(unsigned int tsk_index)
+ }
  
- 	ps_tsks[ps_tsk_num] = kthread_run(power_saving_thread,
- 		(void *)(unsigned long)ps_tsk_num,
--		"power_saving/%d", ps_tsk_num);
-+		"acpi_pad/%d", ps_tsk_num);
- 	rc = IS_ERR(ps_tsks[ps_tsk_num]) ? PTR_ERR(ps_tsks[ps_tsk_num]) : 0;
- 	if (!rc)
- 		ps_tsk_num++;
+ static unsigned int idle_pct = 5; /* percentage */
+-static unsigned int round_robin_time = 10; /* second */
++static unsigned int round_robin_time = 1; /* second */
+ static int power_saving_thread(void *data)
+ {
+ 	struct sched_param param = {.sched_priority = 1};
 -- 
 1.7.12.rc0
+
