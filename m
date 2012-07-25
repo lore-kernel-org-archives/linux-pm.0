@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 22/52] ACPI: Add _OST support for ACPI CPU hotplug
-Date: Tue, 24 Jul 2012 23:41:18 -0400
-Message-ID: <51af3b9202ccffe0476899d5c29f0ae7e6bfdcea.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 23/52] ACPI: Add _OST support for ACPI memory
+	hotplug
+Date: Tue, 24 Jul 2012 23:41:19 -0400
+Message-ID: <b1f00de66f8809b451a33ce47e461ef0e33c09e8.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -23,46 +24,46 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Toshi Kani <toshi.kani@hp.com>
 
-Changed acpi_processor_hotplug_notify() to call ACPI _OST method
-when ACPI CPU hotplug operation has completed.
+Changed acpi_memory_device_notify() to call ACPI _OST method
+when ACPI memory hotplug operation has completed.
 
 Signed-off-by: Toshi Kani <toshi.kani@hp.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/processor_driver.c | 28 ++++++++++++++++++++--------
- 1 file changed, 20 insertions(+), 8 deletions(-)
+ drivers/acpi/acpi_memhotplug.c | 43 +++++++++++++++++++++++++++++++-----------
+ 1 file changed, 32 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index 0734086..971c454 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -701,9 +701,9 @@ static void acpi_processor_hotplug_notify(acpi_handle handle,
+diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+index d985713..24c807f 100644
+--- a/drivers/acpi/acpi_memhotplug.c
++++ b/drivers/acpi/acpi_memhotplug.c
+@@ -341,7 +341,7 @@ static void acpi_memory_device_notify(acpi_handle handle, u32 event, void *data)
  {
- 	struct acpi_processor *pr;
- 	struct acpi_device *device = NULL;
-+	u32 ost_code = ACPI_OST_SC_NON_SPECIFIC_FAILURE; /* default */
- 	int result;
- 
+ 	struct acpi_memory_device *mem_device;
+ 	struct acpi_device *device;
 -
++	u32 ost_code = ACPI_OST_SC_NON_SPECIFIC_FAILURE; /* default */
+ 
  	switch (event) {
  	case ACPI_NOTIFY_BUS_CHECK:
- 	case ACPI_NOTIFY_DEVICE_CHECK:
-@@ -715,14 +715,18 @@ static void acpi_processor_hotplug_notify(acpi_handle handle,
- 		if (!is_processor_present(handle))
- 			break;
+@@ -354,15 +354,20 @@ static void acpi_memory_device_notify(acpi_handle handle, u32 event, void *data)
+ 					  "\nReceived DEVICE CHECK notification for device\n"));
+ 		if (acpi_memory_get_device(handle, &mem_device)) {
+ 			printk(KERN_ERR PREFIX "Cannot find driver data\n");
+-			return;
++			break;
+ 		}
  
--		if (acpi_bus_get_device(handle, &device)) {
--			result = acpi_processor_device_add(handle, &device);
--			if (result)
+-		if (!acpi_memory_check_device(mem_device)) {
+-			if (acpi_memory_enable_device(mem_device))
 -				printk(KERN_ERR PREFIX
--					    "Unable to add the device\n");
-+		if (!acpi_bus_get_device(handle, &device))
+-					    "Cannot enable memory device\n");
++		if (acpi_memory_check_device(mem_device))
 +			break;
 +
-+		result = acpi_processor_device_add(handle, &device);
-+		if (result) {
-+			printk(KERN_ERR PREFIX "Unable to add the device\n");
- 			break;
++		if (acpi_memory_enable_device(mem_device)) {
++			printk(KERN_ERR PREFIX "Cannot enable memory device\n");
++			break;
  		}
 +
 +		ost_code = ACPI_OST_SC_SUCCESS;
@@ -70,18 +71,33 @@ index 0734086..971c454 100644
 +
  	case ACPI_NOTIFY_EJECT_REQUEST:
  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 				  "received ACPI_NOTIFY_EJECT_REQUEST\n"));
-@@ -736,15 +740,23 @@ static void acpi_processor_hotplug_notify(acpi_handle handle,
- 		if (!pr) {
- 			printk(KERN_ERR PREFIX
- 				    "Driver data is NULL, dropping EJECT\n");
--			return;
-+			break;
- 		}
+ 				  "\nReceived EJECT REQUEST notification for device\n"));
+@@ -383,19 +388,35 @@ static void acpi_memory_device_notify(acpi_handle handle, u32 event, void *data)
+ 		 * TBD: Can also be disabled by Callback registration
+ 		 *      with generic sysfs driver
+ 		 */
+-		if (acpi_memory_disable_device(mem_device))
+-			printk(KERN_ERR PREFIX
+-				    "Disable memory device\n");
++		if (acpi_memory_disable_device(mem_device)) {
++			printk(KERN_ERR PREFIX "Disable memory device\n");
++			/*
++			 * If _EJ0 was called but failed, _OST is not
++			 * necessary.
++			 */
++			if (mem_device->state == MEMORY_INVALID_STATE)
++				return;
 +
-+		/* REVISIT: update when eject is supported */
-+		ost_code = ACPI_OST_SC_EJECT_NOT_SUPPORTED;
- 		break;
++			break;
++		}
++
+ 		/*
+ 		 * TBD: Invoke acpi_bus_remove to cleanup data structures
+ 		 */
+-		break;
++
++		/* _EJ0 succeeded; _OST is not necessary */
++		return;
 +
  	default:
  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
