@@ -1,8 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 23/52] ACPI: Add _OST support for ACPI memory
-	hotplug
-Date: Tue, 24 Jul 2012 23:41:19 -0400
-Message-ID: <b1f00de66f8809b451a33ce47e461ef0e33c09e8.1343187617.git.len.brown@intel.com>
+Subject: [PATCH 26/52] ACPI, PM,
+	Specify lowest allowed state for device sleep state
+Date: Tue, 24 Jul 2012 23:41:22 -0400
+Message-ID: <27d7c86ccd58722021c4667b1c967eb39343e6fc.1343187617.git.len.brown@intel.com>
 References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -19,99 +19,149 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: Len Brown <len.brown@intel.com>, Toshi Kani <toshi.kani@hp.com>, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Huang Ying <ying.huang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Toshi Kani <toshi.kani@hp.com>
+From: Huang Ying <ying.huang@intel.com>
 
-Changed acpi_memory_device_notify() to call ACPI _OST method
-when ACPI memory hotplug operation has completed.
+Lower device sleep state can save more power, but has more exit
+latency too.  Sometimes, to satisfy some power QoS and other
+requirement, we need to constrain the lowest device sleep state.
 
-Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+In this patch, a parameter to specify lowest allowed state for
+acpi_pm_device_sleep_state is added.  So that the caller can enforce
+the constraint via the parameter.
+
+This is needed by PCIe D3cold support, where the lowest power state
+allowed may be D3_HOT instead of default D3_COLD.
+
+Changelog:
+
+v2:
+- Minor change per Rafeal's comments
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/acpi_memhotplug.c | 43 +++++++++++++++++++++++++++++++-----------
- 1 file changed, 32 insertions(+), 11 deletions(-)
+ drivers/acpi/sleep.c       | 24 +++++++++++++++++++-----
+ drivers/pci/pci-acpi.c     |  3 ++-
+ drivers/pnp/pnpacpi/core.c |  4 ++--
+ include/acpi/acpi_bus.h    |  6 +++---
+ 4 files changed, 26 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
-index d985713..24c807f 100644
---- a/drivers/acpi/acpi_memhotplug.c
-+++ b/drivers/acpi/acpi_memhotplug.c
-@@ -341,7 +341,7 @@ static void acpi_memory_device_notify(acpi_handle handle, u32 event, void *data)
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 74ee4ab..6f3f34c 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -675,8 +675,9 @@ int acpi_suspend(u32 acpi_state)
+  *	@dev: device to examine; its driver model wakeup flags control
+  *		whether it should be able to wake up the system
+  *	@d_min_p: used to store the upper limit of allowed states range
+- *	Return value: preferred power state of the device on success, -ENODEV on
+- *		failure (ie. if there's no 'struct acpi_device' for @dev)
++ *	@d_max_in: specify the lowest allowed states
++ *	Return value: preferred power state of the device on success, -ENODEV
++ *	(ie. if there's no 'struct acpi_device' for @dev) or -EINVAL on failure
+  *
+  *	Find the lowest power (highest number) ACPI device power state that
+  *	device @dev can be in while the system is in the sleep state represented
+@@ -691,13 +692,15 @@ int acpi_suspend(u32 acpi_state)
+  *	via @wake.
+  */
+ 
+-int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p)
++int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p, int d_max_in)
  {
- 	struct acpi_memory_device *mem_device;
- 	struct acpi_device *device;
--
-+	u32 ost_code = ACPI_OST_SC_NON_SPECIFIC_FAILURE; /* default */
+ 	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
+ 	struct acpi_device *adev;
+ 	char acpi_method[] = "_SxD";
+ 	unsigned long long d_min, d_max;
  
- 	switch (event) {
- 	case ACPI_NOTIFY_BUS_CHECK:
-@@ -354,15 +354,20 @@ static void acpi_memory_device_notify(acpi_handle handle, u32 event, void *data)
- 					  "\nReceived DEVICE CHECK notification for device\n"));
- 		if (acpi_memory_get_device(handle, &mem_device)) {
- 			printk(KERN_ERR PREFIX "Cannot find driver data\n");
--			return;
-+			break;
- 		}
++	if (d_max_in < ACPI_STATE_D0 || d_max_in > ACPI_STATE_D3)
++		return -EINVAL;
+ 	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
+ 		printk(KERN_DEBUG "ACPI handle has no context!\n");
+ 		return -ENODEV;
+@@ -705,8 +708,10 @@ int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p)
  
--		if (!acpi_memory_check_device(mem_device)) {
--			if (acpi_memory_enable_device(mem_device))
--				printk(KERN_ERR PREFIX
--					    "Cannot enable memory device\n");
-+		if (acpi_memory_check_device(mem_device))
-+			break;
-+
-+		if (acpi_memory_enable_device(mem_device)) {
-+			printk(KERN_ERR PREFIX "Cannot enable memory device\n");
-+			break;
+ 	acpi_method[2] = '0' + acpi_target_sleep_state;
+ 	/*
+-	 * If the sleep state is S0, we will return D3, but if the device has
+-	 * _S0W, we will use the value from _S0W
++	 * If the sleep state is S0, the lowest limit from ACPI is D3,
++	 * but if the device has _S0W, we will use the value from _S0W
++	 * as the lowest limit from ACPI.  Finally, we will constrain
++	 * the lowest limit with the specified one.
+ 	 */
+ 	d_min = ACPI_STATE_D0;
+ 	d_max = ACPI_STATE_D3;
+@@ -750,8 +755,17 @@ int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p)
  		}
-+
-+		ost_code = ACPI_OST_SC_SUCCESS;
- 		break;
-+
- 	case ACPI_NOTIFY_EJECT_REQUEST:
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 				  "\nReceived EJECT REQUEST notification for device\n"));
-@@ -383,19 +388,35 @@ static void acpi_memory_device_notify(acpi_handle handle, u32 event, void *data)
- 		 * TBD: Can also be disabled by Callback registration
- 		 *      with generic sysfs driver
- 		 */
--		if (acpi_memory_disable_device(mem_device))
--			printk(KERN_ERR PREFIX
--				    "Disable memory device\n");
-+		if (acpi_memory_disable_device(mem_device)) {
-+			printk(KERN_ERR PREFIX "Disable memory device\n");
-+			/*
-+			 * If _EJ0 was called but failed, _OST is not
-+			 * necessary.
-+			 */
-+			if (mem_device->state == MEMORY_INVALID_STATE)
-+				return;
-+
-+			break;
-+		}
-+
- 		/*
- 		 * TBD: Invoke acpi_bus_remove to cleanup data structures
- 		 */
--		break;
-+
-+		/* _EJ0 succeeded; _OST is not necessary */
-+		return;
-+
- 	default:
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 				  "Unsupported event [0x%x]\n", event));
--		break;
-+
-+		/* non-hotplug event; possibly handled by other handler */
-+		return;
  	}
  
-+	/* Inform firmware that the hotplug operation has completed */
-+	(void) acpi_evaluate_hotplug_ost(handle, event, ost_code, NULL);
- 	return;
++	if (d_max_in < d_min)
++		return -EINVAL;
+ 	if (d_min_p)
+ 		*d_min_p = d_min;
++	/* constrain d_max with specified lowest limit (max number) */
++	if (d_max > d_max_in) {
++		for (d_max = d_max_in; d_max > d_min; d_max--) {
++			if (adev->power.states[d_max].flags.valid)
++				break;
++		}
++	}
+ 	return d_max;
  }
+ #endif /* CONFIG_PM */
+diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
+index 61e2fef..a9efebc 100644
+--- a/drivers/pci/pci-acpi.c
++++ b/drivers/pci/pci-acpi.c
+@@ -189,7 +189,8 @@ static pci_power_t acpi_pci_choose_state(struct pci_dev *pdev)
+ {
+ 	int acpi_state;
+ 
+-	acpi_state = acpi_pm_device_sleep_state(&pdev->dev, NULL);
++	acpi_state = acpi_pm_device_sleep_state(&pdev->dev, NULL,
++						ACPI_STATE_D3);
+ 	if (acpi_state < 0)
+ 		return PCI_POWER_ERROR;
+ 
+diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
+index d21e8f5..507a8e2 100644
+--- a/drivers/pnp/pnpacpi/core.c
++++ b/drivers/pnp/pnpacpi/core.c
+@@ -170,8 +170,8 @@ static int pnpacpi_suspend(struct pnp_dev *dev, pm_message_t state)
+ 	}
+ 
+ 	if (acpi_bus_power_manageable(handle)) {
+-		int power_state = acpi_pm_device_sleep_state(&dev->dev, NULL);
+-
++		int power_state = acpi_pm_device_sleep_state(&dev->dev, NULL,
++							     ACPI_STATE_D3);
+ 		if (power_state < 0)
+ 			power_state = (state.event == PM_EVENT_ON) ?
+ 					ACPI_STATE_D0 : ACPI_STATE_D3;
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index b0d6282..0545df4 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -414,13 +414,13 @@ int acpi_enable_wakeup_device_power(struct acpi_device *dev, int state);
+ int acpi_disable_wakeup_device_power(struct acpi_device *dev);
+ 
+ #ifdef CONFIG_PM
+-int acpi_pm_device_sleep_state(struct device *, int *);
++int acpi_pm_device_sleep_state(struct device *, int *, int);
+ #else
+-static inline int acpi_pm_device_sleep_state(struct device *d, int *p)
++static inline int acpi_pm_device_sleep_state(struct device *d, int *p, int m)
+ {
+ 	if (p)
+ 		*p = ACPI_STATE_D0;
+-	return ACPI_STATE_D3;
++	return (m >= ACPI_STATE_D0 && m <= ACPI_STATE_D3) ? m : ACPI_STATE_D0;
+ }
+ #endif
  
 -- 
 1.7.12.rc0
