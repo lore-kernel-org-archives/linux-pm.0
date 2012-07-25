@@ -1,64 +1,94 @@
-From: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Subject: Re: [PATCH v4 3/4] OMAP2+: use control module mfd driver in omap_type
-Date: Wed, 25 Jul 2012 16:45:53 +0400
-Message-ID: <500FEA81.6010100@dev.rtsoft.ru>
-References: <500FD2EF.4010304@dev.rtsoft.ru> <500FE915.6090707@mvista.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [PATCH 48/52] tools/power: turbostat: fix large c1%
+	issue
+Date: Wed, 25 Jul 2012 09:03:14 -0400
+Message-ID: <20120725130314.GB4783@phenom.dumpdata.com>
+References: <6af1c4fc5227af65092ebc848989693562bfa3e8.1343187617.git.len.brown@intel.com>
+	<c3ae331d1c2fe25edfbece73fda0bb312445b636.1343187618.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <500FE915.6090707@mvista.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Sergei Shtylyov <sshtylyov@mvista.com>
-Cc: b-cousson@ti.com, kishon@ti.com, santosh.shilimkar@ti.com, tony@atomide.com, paul@pwsan.com, amit.kucheria@linaro.org, Eduardo Valentin <eduardo.valentin@ti.com>, balbi@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, amit.kachhap@linaro.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <c3ae331d1c2fe25edfbece73fda0bb312445b636.1343187618.git.len.brown@intel.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-  HI, Sergei.
+On Tue, Jul 24, 2012 at 11:41:44PM -0400, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+> 
+> Under some conditions, c1% was displayed as very large number,
+> much higher than 100%.
+> 
+> c1% is not measured, it is derived as "that, which is left over"
+> from other counters.  However, the other counters are not collected
+> atomically, and so it is possible for c1% to be calaculagted as
 
-On 07/25/2012 04:39 PM, Sergei Shtylyov wrote:
-> Hello.
->
-> On 25-07-2012 15:05, Konstantin Baydarov wrote:
->
->> OMAP system control module can be probed early, then
->> omap_type is safe to use its APIs.
->
->> TODO: add support for other omap versions
->
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->> Signed-off-by: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
->> ---
->>   arch/arm/mach-omap2/id.c |   11 ++++++-----
->>   1 files changed, 6 insertions(+), 5 deletions(-)
->
->> diff --git a/arch/arm/mach-omap2/id.c b/arch/arm/mach-omap2/id.c
->> index 40373db..8018cad 100644
->> --- a/arch/arm/mach-omap2/id.c
->> +++ b/arch/arm/mach-omap2/id.c
-> [...]
->> @@ -43,15 +44,15 @@ int omap_type(void)
->>       u32 val = 0;
->>
->>       if (cpu_is_omap24xx()) {
->> -        val = omap_ctrl_readl(OMAP24XX_CONTROL_STATUS);
->> +        val = omap_control_status_read();
->>       } else if (soc_is_am33xx()) {
->> -        val = omap_ctrl_readl(AM33XX_CONTROL_STATUS);
->> +        val = omap_control_status_read();
->>       } else if (cpu_is_omap34xx()) {
->> -        val = omap_ctrl_readl(OMAP343X_CONTROL_STATUS);
->> +        val = omap_control_status_read();
->>       } else if (cpu_is_omap44xx()) {
->> -        val = omap_ctrl_readl(OMAP4_CTRL_MODULE_CORE_STATUS);
->> +        val = omap_control_status_read();
->
->    Isn't it better to merge now identical code into one *if*?
-Good point.
->
-> WBR, Sergei
->
+calculated.
+
+> a small negative number -- displayed as very large positive.
+> 
+> There was a check for mperf vs tsc for this already,
+> but it needed to also include the other counters
+> that are used to calculate c1.
+> 
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  tools/power/x86/turbostat/turbostat.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index b815a12..861d771 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -444,6 +444,9 @@ delta_core(struct core_data *new, struct core_data *old)
+>  	old->c7 = new->c7 - old->c7;
+>  }
+>  
+> +/*
+> + * old = new - old
+> + */
+>  void
+>  delta_thread(struct thread_data *new, struct thread_data *old,
+>  	struct core_data *core_delta)
+> @@ -482,19 +485,20 @@ delta_thread(struct thread_data *new, struct thread_data *old,
+>  
+>  
+>  	/*
+> -	 * As mperf and tsc collection are not atomic,
+> -	 * it is possible for mperf's non-halted cycles
+> +	 * As counter collection is not atomic,
+> +	 * it is possible for mperf's non-halted cycles + idle states
+>  	 * to exceed TSC's all cycles: show c1 = 0% in that case.
+>  	 */
+> -	if (old->mperf > old->tsc)
+> +	if ((old->mperf + core_delta->c3 + core_delta->c6 + core_delta->c7) > old->tsc)
+>  		old->c1 = 0;
+>  	else {
+>  		/* normal case, derive c1 */
+>  		old->c1 = old->tsc - old->mperf - core_delta->c3
+>  				- core_delta->c6 - core_delta->c7;
+>  	}
+> +
+>  	if (old->mperf == 0) {
+> -		if (verbose) fprintf(stderr, "cpu%d MPERF 0!\n", old->cpu_id);
+> +		if (verbose > 1) fprintf(stderr, "cpu%d MPERF 0!\n", old->cpu_id);
+>  		old->mperf = 1;	/* divide by 0 protection */
+>  	}
+>  
 > -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> 1.7.12.rc0
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
