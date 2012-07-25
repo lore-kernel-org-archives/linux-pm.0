@@ -1,82 +1,56 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v4 2/4] mfd: omap: control: core system
-	control driver
-Date: Wed, 25 Jul 2012 14:07:15 +0300
-Message-ID: <20120725110714.GF16794@arwen.pp.htv.fi>
-References: <500FD2EC.7060208@dev.rtsoft.ru>
-Reply-To: balbi@ti.com
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [linux-pm] [PATCH 50/52] Thermal: Make Thermal trip points
+	writeable
+Date: Wed, 25 Jul 2012 11:15:59 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5916B222@BGSMSX101.gar.corp.intel.com>
+References: <1343187708-19532-1-git-send-email-lenb@kernel.org>
+	<c56f5c0342dfee11a1a13d2f5bb7618de5b17590.1343187618.git.len.brown@intel.com>
+ <201207251313.11061.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="TeJTyD9hb8KJN2Jy"
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <500FD2EC.7060208@dev.rtsoft.ru>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Cc: balbi@ti.com, kishon@ti.com, amit.kucheria@linaro.org, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <201207251313.11061.rjw@sisk.pl>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, Durgadoss R <dugardoss.r@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rafael,
 
---TeJTyD9hb8KJN2Jy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+> -----Original Message-----
+> From: linux-pm-bounces@lists.linux-foundation.org [mailto:linux-pm-
+> bounces@lists.linux-foundation.org] On Behalf Of Rafael J. Wysocki
+> Sent: Wednesday, July 25, 2012 4:43 PM
+> To: Len Brown; Zhang, Rui
+> Cc: linux-acpi@vger.kernel.org; linux-pm@lists.linux-foundation.org; Durgadoss
+> R; linux-kernel@vger.kernel.org; Brown, Len
+> Subject: Re: [linux-pm] [PATCH 50/52] Thermal: Make Thermal trip points
+> writeable
+> 
+> On Wednesday, July 25, 2012, Len Brown wrote:
+> > From: Durgadoss R <dugardoss.r@intel.com>
+> >
+> > Some of the thermal drivers using the Generic Thermal Framework
+> > require (all/some) trip points to be writeable. This patch makes
+> > the trip point temperatures writeable on a per-trip point basis,
+> > and modifies the required function call in thermal.c. This patch
+> > also updates the Documentation to reflect the new change.
+> >
+> > Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> There was a broken build report related to this patch (or a previous version
+> of it):
+> 
+> http://marc.info/?l=linux-kernel&m=134294496105083&w=2
+> 
+> Do I think correctly that it has been fixed already?
 
-On Wed, Jul 25, 2012 at 03:05:16PM +0400, Konstantin Baydarov wrote:
-> This patch introduces a MFD core device driver for
-> OMAP system control module.
->=20
-> The control module allows software control of
-> various static modes supported by the device. It is
-> composed of two control submodules: general control
-> module and device (padconfiguration) control
-> module.
->=20
-> Device driver is probed with postcore_initcall.
-> Control module register CONTROL_STATUS that is needed
-> by omap_type() is early mapped by postcore_initcall_sync.
->=20
-> Signed-off-by: J Keerthy <j-keerthy@ti.com>
-> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> Signed-off-by: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
+Yes you are right. It has been fixed in this patch.
 
-I believe this and the next 3 were authored by Eduardo. Also missing his
-=46rom tag.
-
---=20
-balbi
-
---TeJTyD9hb8KJN2Jy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQD9NiAAoJEIaOsuA1yqREqEIQAKCZNQcd5Ml8dSKdj9kWOI9P
-i59gEl8sLjosR1xlVtP8yPH9kvqMAIqHLo2Vt+/ZIgDz0r/ydVRHxfj8ZxaWvxM2
-WDGdPLDox67X8W/VNQ3K17EkuwVHVfh+1CHz+XpFZXPAFAMbeIR0AH7+KHiLQ6+g
-u+GnJWsITJB6+0TrbIT1/Ti7FnJ4MLqurwKRgnci/k1GDA4boBOvmQUml6rrWbCn
-DgublAE7ka4+6cK/1yrbEQK4vrWFLNm74aDgMV9v8CPIntY3iwuv+ceFSEtmKWY+
-kRl+J+RkjMqaiWn+rNFsQA2iLXGsUtAp8JtJX+cDCg25mzL//drfJSbYK1rM/S7M
-t+Sw1oEJsviMnAJyyctc6emgwXlJmy8wngsrHPCsq/B5buZSdsNtZtDeMA563TL5
-1n9Obp1zydsAvCeOOjV/8e45f53JD2jLwOX+mbMl8WLX35QuufO+veYTzhr7q05U
-lig00BDfkghlYL7IFAY1Px9nV88EvvlIwGCF1dhT+lcTGHUzDkQ2ZsdWV0lNn9lI
-SVs5iXE+UXOYBBmREtD4qz1RAb/Vr4i5BpU29LK+rESbqylUHzHCu3nvoL0WM9Pc
-6sSfvjqKaVXvev4Lrzu8og+DQthwDD2p4/28GGkNfxMHcFA2gGA6e/SD1xvMvJy9
-PlNCWbM6p9fSqa30KJHD
-=QgAo
------END PGP SIGNATURE-----
-
---TeJTyD9hb8KJN2Jy--
+Thanks,
+Durga
