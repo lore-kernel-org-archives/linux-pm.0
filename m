@@ -1,7 +1,8 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 3/4] x86, idle: make default_idle() static
-Date: Fri, 27 Jul 2012 18:42:54 -0400
-Message-ID: <a4eaab6aa17a36fb01bbc2dfb481e8fbc8a5c98d.1343428708.git.len.brown@intel.com>
+Subject: [PATCH 4/4] PM: cleanup: stop mandating that platforms
+	export (pm_idle)()
+Date: Fri, 27 Jul 2012 18:42:55 -0400
+Message-ID: <0753050fb227e5a19f0df303d1e9bf74534aabcd.1343428708.git.len.brown@intel.com>
 References: <1343428975-3897-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
@@ -18,56 +19,418 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: x86@kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+Cc: Jonas Bonn <jonas@southpole.se>, Len Brown <len.brown@intel.com>, #@mail.linuxfoundation.org, Tony Luck <tony.luck@intel.com>, Mike Frysinger <vapier@gentoo.org>, Michal Simek <monstr@monstr.eu>, David Howells <dhowells@redhat.com>, Mikael Starvik <starvik@axis.com>, Russell King <linux@arm.linux.org.uk>, "David S. Miller" <davem@davemloft.net>
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-default_idle() was public and exported to modules
-for the benefit of APM.  But APM no longer touches
-default_idle(), so default_idle() can now be private.
+(pm_idle)() was originally used on x86 to vector bewteen
+ACPI and APM.  With the advent of CPU_IDLE, that reason
+for pm_idle to exist vanished.
 
-Cc: x86@kernel.org
+But x86 APM still scribbled on pm_idle from a module,
+so pm_idle didn't go away.  Worse, it was declared in pm.h,
+and so it spread to other architectures as dead code.
+
+But today, APM no longer scribbles on pm_idle, so
+x86 no longer requires pm_idle to be visible to modules,
+or global at all.
+
+Here we remove pm_idle from pm.h, to stop the mandate
+that all architectures define it.
+
+This deletes dead code from most architectures,
+while some continue using their own internal pm_idle.
+
+At the end of the day, pm_idle...
+becomes static in sh, was global
+becomes static in x86, was EXPORT_SYMBOL
+becomes as global in sparc, was EXPORT_SYMBOL
+continues as static in m32r (no pm.h use there)
+and is deleted from all other places in the kernel.
+
 Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: x86@kernel.org # x86
+Cc: Mike Frysinger <vapier@gentoo.org> # blackfin
+Cc: Jonas Bonn <jonas@southpole.se> # openrisc
+Cc: Tony Luck <tony.luck@intel.com> # ia64
+Cc: David Howells <dhowells@redhat.com> # mn10300
+Cc: Mikael Starvik <starvik@axis.com> # cris
+Cc: Michal Simek <monstr@monstr.eu> # microblaze
+Cc: Paul Mundt <lethal@linux-sh.org> # sh
+Cc: David S. Miller <davem@davemloft.net> # sparc
+Cc: Russell King <linux@arm.linux.org.uk> # ARM
+Cc: Rafael J. Wysocki <rjw@sisk.pl> # PM
 ---
- arch/x86/include/asm/processor.h | 1 -
- arch/x86/kernel/process.c        | 5 +----
- 2 files changed, 1 insertion(+), 5 deletions(-)
+ arch/arm/kernel/process.c         | 12 +++---------
+ arch/blackfin/kernel/process.c    |  9 +--------
+ arch/cris/kernel/process.c        | 17 ++---------------
+ arch/ia64/include/asm/processor.h |  2 --
+ arch/ia64/kernel/process.c        | 10 ++--------
+ arch/ia64/kernel/setup.c          |  1 -
+ arch/microblaze/kernel/process.c  |  8 +-------
+ arch/mn10300/kernel/process.c     | 16 ++--------------
+ arch/openrisc/kernel/idle.c       |  5 -----
+ arch/sh/kernel/idle.c             |  2 +-
+ arch/sparc/include/asm/setup.h    |  1 +
+ arch/sparc/kernel/process_32.c    |  1 -
+ arch/unicore32/kernel/process.c   |  5 -----
+ arch/x86/kernel/process.c         |  5 +----
+ include/linux/pm.h                |  1 -
+ kernel/smp.c                      |  4 ++--
+ 16 files changed, 16 insertions(+), 83 deletions(-)
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 39bc577..b02e48c 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -979,7 +979,6 @@ extern bool cpu_has_amd_erratum(const int *);
- extern unsigned long arch_align_stack(unsigned long sp);
- extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
+diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+index 19c95ea..6af852e 100644
+--- a/arch/arm/kernel/process.c
++++ b/arch/arm/kernel/process.c
+@@ -172,14 +172,8 @@ static void default_idle(void)
+ 	local_irq_enable();
+ }
+ 
+-void (*pm_idle)(void) = default_idle;
+-EXPORT_SYMBOL(pm_idle);
+-
+ /*
+- * The idle thread, has rather strange semantics for calling pm_idle,
+- * but this is what x86 does and we need to do the same, so that
+- * things like cpuidle get called in the same way.  The only difference
+- * is that we always respect 'hlt_counter' to prevent low power idle.
++ * Respect 'hlt_counter' to prevent low power idle.
+  */
+ void cpu_idle(void)
+ {
+@@ -210,10 +204,10 @@ void cpu_idle(void)
+ 			} else if (!need_resched()) {
+ 				stop_critical_timings();
+ 				if (cpuidle_idle_call())
+-					pm_idle();
++					default_idle();
+ 				start_critical_timings();
+ 				/*
+-				 * pm_idle functions must always
++				 * idle functions must always
+ 				 * return with IRQs enabled.
+ 				 */
+ 				WARN_ON(irqs_disabled());
+diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
+index 62bcea7..892402a 100644
+--- a/arch/blackfin/kernel/process.c
++++ b/arch/blackfin/kernel/process.c
+@@ -42,9 +42,6 @@ unsigned long l1_stack_len;
+ /*
+  * Powermanagement idle function, if any..
+  */
+-void (*pm_idle)(void) = NULL;
+-EXPORT_SYMBOL(pm_idle);
+-
+ void (*pm_power_off)(void) = NULL;
+ EXPORT_SYMBOL(pm_power_off);
+ 
+@@ -81,18 +78,14 @@ void cpu_idle(void)
+ {
+ 	/* endless idle loop with no priority at all */
+ 	while (1) {
+-		void (*idle)(void) = pm_idle;
+-
+ #ifdef CONFIG_HOTPLUG_CPU
+ 		if (cpu_is_offline(smp_processor_id()))
+ 			cpu_die();
+ #endif
+-		if (!idle)
+-			idle = default_idle;
+ 		tick_nohz_idle_enter();
+ 		rcu_idle_enter();
+ 		while (!need_resched())
+-			idle();
++			default_idle();
+ 		rcu_idle_exit();
+ 		tick_nohz_idle_exit();
+ 		preempt_enable_no_resched();
+diff --git a/arch/cris/kernel/process.c b/arch/cris/kernel/process.c
+index 66fd017..ff20d39 100644
+--- a/arch/cris/kernel/process.c
++++ b/arch/cris/kernel/process.c
+@@ -54,12 +54,8 @@ void enable_hlt(void)
+ EXPORT_SYMBOL(enable_hlt);
+  
+ /*
+- * The following aren't currently used.
++ * The following is currently used.
+  */
+-void (*pm_idle)(void);
+-
+-extern void default_idle(void);
+-
+ void (*pm_power_off)(void);
+ EXPORT_SYMBOL(pm_power_off);
+ 
+@@ -75,16 +71,7 @@ void cpu_idle (void)
+ 	/* endless idle loop with no priority at all */
+ 	while (1) {
+ 		while (!need_resched()) {
+-			void (*idle)(void);
+-			/*
+-			 * Mark this as an RCU critical section so that
+-			 * synchronize_kernel() in the unload path waits
+-			 * for our completion.
+-			 */
+-			idle = pm_idle;
+-			if (!idle)
+-				idle = default_idle;
+-			idle();
++			default_idle();
+ 		}
+ 		schedule_preempt_disabled();
+ 	}
+diff --git a/arch/ia64/include/asm/processor.h b/arch/ia64/include/asm/processor.h
+index 832dd37..dea1ed3 100644
+--- a/arch/ia64/include/asm/processor.h
++++ b/arch/ia64/include/asm/processor.h
+@@ -717,8 +717,6 @@ extern unsigned long boot_option_idle_override;
+ enum idle_boot_override {IDLE_NO_OVERRIDE=0, IDLE_HALT, IDLE_FORCE_MWAIT,
+ 			 IDLE_NOMWAIT, IDLE_POLL};
  
 -void default_idle(void);
- bool set_pm_idle_to_default(void);
+-
+ #define ia64_platform_is(x) (strcmp(x, platform_name) == 0)
  
- void stop_this_cpu(void *dummy);
+ #endif /* !__ASSEMBLY__ */
+diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
+index dd6fc14..e7c651c 100644
+--- a/arch/ia64/kernel/process.c
++++ b/arch/ia64/kernel/process.c
+@@ -56,8 +56,6 @@ void (*ia64_mark_idle)(int);
+ 
+ unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
+ EXPORT_SYMBOL(boot_option_idle_override);
+-void (*pm_idle) (void);
+-EXPORT_SYMBOL(pm_idle);
+ void (*pm_power_off) (void);
+ EXPORT_SYMBOL(pm_power_off);
+ 
+@@ -229,7 +227,7 @@ update_pal_halt_status(int status)
+ /*
+  * We use this if we don't have any better idle routine..
+  */
+-void
++static void
+ default_idle (void)
+ {
+ 	local_irq_enable();
+@@ -291,7 +289,6 @@ cpu_idle (void)
+ 		}
+ 
+ 		if (!need_resched()) {
+-			void (*idle)(void);
+ #ifdef CONFIG_SMP
+ 			min_xtp();
+ #endif
+@@ -299,10 +296,7 @@ cpu_idle (void)
+ 			if (mark_idle)
+ 				(*mark_idle)(1);
+ 
+-			idle = pm_idle;
+-			if (!idle)
+-				idle = default_idle;
+-			(*idle)();
++			default_idle();
+ 			if (mark_idle)
+ 				(*mark_idle)(0);
+ #ifdef CONFIG_SMP
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index aaefd9b..2029cc0 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -1051,7 +1051,6 @@ cpu_init (void)
+ 		max_num_phys_stacked = num_phys_stacked;
+ 	}
+ 	platform_cpu_init();
+-	pm_idle = default_idle;
+ }
+ 
+ void __init
+diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
+index 1944e00..508d225 100644
+--- a/arch/microblaze/kernel/process.c
++++ b/arch/microblaze/kernel/process.c
+@@ -40,7 +40,6 @@ void show_regs(struct pt_regs *regs)
+ 				regs->msr, regs->ear, regs->esr, regs->fsr);
+ }
+ 
+-void (*pm_idle)(void);
+ void (*pm_power_off)(void) = NULL;
+ EXPORT_SYMBOL(pm_power_off);
+ 
+@@ -97,15 +96,10 @@ void cpu_idle(void)
+ 
+ 	/* endless idle loop with no priority at all */
+ 	while (1) {
+-		void (*idle)(void) = pm_idle;
+-
+-		if (!idle)
+-			idle = default_idle;
+-
+ 		tick_nohz_idle_enter();
+ 		rcu_idle_enter();
+ 		while (!need_resched())
+-			idle();
++			default_idle();
+ 		rcu_idle_exit();
+ 		tick_nohz_idle_exit();
+ 
+diff --git a/arch/mn10300/kernel/process.c b/arch/mn10300/kernel/process.c
+index 7dab0cd..6312a31 100644
+--- a/arch/mn10300/kernel/process.c
++++ b/arch/mn10300/kernel/process.c
+@@ -36,12 +36,6 @@
+ #include "internal.h"
+ 
+ /*
+- * power management idle function, if any..
+- */
+-void (*pm_idle)(void);
+-EXPORT_SYMBOL(pm_idle);
+-
+-/*
+  * return saved PC of a blocked thread.
+  */
+ unsigned long thread_saved_pc(struct task_struct *tsk)
+@@ -108,18 +102,12 @@ void cpu_idle(void)
+ 	/* endless idle loop with no priority at all */
+ 	for (;;) {
+ 		while (!need_resched()) {
+-			void (*idle)(void);
+-
+ 			smp_rmb();
+-			idle = pm_idle;
+-			if (!idle) {
+ #if defined(CONFIG_SMP) && !defined(CONFIG_HOTPLUG_CPU)
+-				idle = poll_idle;
++			poll_idle();
+ #else  /* CONFIG_SMP && !CONFIG_HOTPLUG_CPU */
+-				idle = default_idle;
++			default_idle();
+ #endif /* CONFIG_SMP && !CONFIG_HOTPLUG_CPU */
+-			}
+-			idle();
+ 		}
+ 
+ 		schedule_preempt_disabled();
+diff --git a/arch/openrisc/kernel/idle.c b/arch/openrisc/kernel/idle.c
+index 7d618fe..5e8a3b6 100644
+--- a/arch/openrisc/kernel/idle.c
++++ b/arch/openrisc/kernel/idle.c
+@@ -39,11 +39,6 @@
+ 
+ void (*powersave) (void) = NULL;
+ 
+-static inline void pm_idle(void)
+-{
+-	barrier();
+-}
+-
+ void cpu_idle(void)
+ {
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
+index 0c91016..f063b92 100644
+--- a/arch/sh/kernel/idle.c
++++ b/arch/sh/kernel/idle.c
+@@ -22,7 +22,7 @@
+ #include <asm/smp.h>
+ #include <asm/bl_bit.h>
+ 
+-void (*pm_idle)(void);
++static void (*pm_idle)(void);
+ 
+ static int hlt_counter;
+ 
+diff --git a/arch/sparc/include/asm/setup.h b/arch/sparc/include/asm/setup.h
+index 8a83699..33bef87 100644
+--- a/arch/sparc/include/asm/setup.h
++++ b/arch/sparc/include/asm/setup.h
+@@ -34,6 +34,7 @@ extern void sun_do_break(void);
+ extern int stop_a_enabled;
+ extern int scons_pwroff;
+ 
++extern void (*pm_idle)(void);
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _SPARC_SETUP_H */
+diff --git a/arch/sparc/kernel/process_32.c b/arch/sparc/kernel/process_32.c
+index cb36e82..1c702bd 100644
+--- a/arch/sparc/kernel/process_32.c
++++ b/arch/sparc/kernel/process_32.c
+@@ -44,7 +44,6 @@
+  * Set in pm platform drivers (apc.c and pmc.c)
+  */
+ void (*pm_idle)(void);
+-EXPORT_SYMBOL(pm_idle);
+ 
+ /* 
+  * Power-off handler instantiation for pm.h compliance
+diff --git a/arch/unicore32/kernel/process.c b/arch/unicore32/kernel/process.c
+index b6f0458..3841ef97 100644
+--- a/arch/unicore32/kernel/process.c
++++ b/arch/unicore32/kernel/process.c
+@@ -45,11 +45,6 @@ static const char * const processor_modes[] = {
+ 	"UK18", "UK19", "UK1A", "EXTN", "UK1C", "UK1D", "UK1E", "SUSR"
+ };
+ 
+-/*
+- * The idle thread, has rather strange semantics for calling pm_idle,
+- * but this is what x86 does and we need to do the same, so that
+- * things like cpuidle get called in the same way.
+- */
+ void cpu_idle(void)
+ {
+ 	/* endless idle loop with no priority at all */
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 735279e..165f870 100644
+index 165f870..c385cfa 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
-@@ -479,7 +479,7 @@ void cpu_idle(void)
-  * We use this if we don't have any better
-  * idle routine..
+@@ -372,10 +372,7 @@ EXPORT_SYMBOL(boot_option_idle_override);
+ /*
+  * Powermanagement idle function, if any..
   */
--void default_idle(void)
-+static void default_idle(void)
- {
- 	if (hlt_use_halt()) {
- 		trace_power_start_rcuidle(POWER_CSTATE, 1, smp_processor_id());
-@@ -504,9 +504,6 @@ void default_idle(void)
- 		cpu_relax();
- 	}
- }
+-void (*pm_idle)(void);
 -#ifdef CONFIG_APM_MODULE
--EXPORT_SYMBOL(default_idle);
+-EXPORT_SYMBOL(pm_idle);
 -#endif
++static void (*pm_idle)(void);
  
- bool set_pm_idle_to_default(void)
+ static inline int hlt_use_halt(void)
  {
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index f067e60..6b92c37 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -31,7 +31,6 @@
+ /*
+  * Callbacks for platform drivers to implement.
+  */
+-extern void (*pm_idle)(void);
+ extern void (*pm_power_off)(void);
+ extern void (*pm_power_off_prepare)(void);
+ 
+diff --git a/kernel/smp.c b/kernel/smp.c
+index d0ae5b2..ede77e4 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -803,11 +803,11 @@ static void do_nothing(void *unused)
+ /**
+  * kick_all_cpus_sync - Force all cpus out of idle
+  *
+- * Used to synchronize the update of pm_idle function pointer. It's
++ * Used to synchronize the update of idle function pointer. It's
+  * called after the pointer is updated and returns after the dummy
+  * callback function has been executed on all cpus. The execution of
+  * the function can only happen on the remote cpus after they have
+- * left the idle function which had been called via pm_idle function
++ * left the idle function which had been called via idle function
+  * pointer. So it's guaranteed that nothing uses the previous pointer
+  * anymore.
+  */
 -- 
 1.7.12.rc0
