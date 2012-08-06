@@ -1,43 +1,36 @@
-From: "Jae W. Lee" <jaewlee@gmail.com>
-Subject: Is there a way to read instantaneous chip power?
-Date: Thu, 2 Aug 2012 13:20:18 +0900
-Message-ID: <CAPztwH5k4A_U5HA7zidDKX0VE1C6_LxNDxQ8LA5np8Gzy2ASAg@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] [PATCH] ACPI: replace strlen("string") with
+ sizeof("string") -1
+Date: Mon, 6 Aug 2012 12:21:14 +0200
+Message-ID: <20120806102114.GA31404@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.1206301023540.29029-100000@netrider.rowland.org>
+ <5011F15A.3060007@kernel.org>
 Mime-Version: 1.0
-Content-Type: multipart/alternative; boundary=f46d042de273a8572104c640ba19
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5011F15A.3060007@kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Vasilyev <pavel@pavlinux.ru>
 List-Id: linux-pm@vger.kernel.org
 
---f46d042de273a8572104c640ba19
-Content-Type: text/plain; charset=ISO-8859-1
+On Thu 2012-07-26 21:39:38, Len Brown wrote:
+> ...both give the number of chars in the string
+> without the '\0', as strncmp() wants,
+> but sizeof() is compile-time.
 
-Hi all,
+What about introducing something like streq() to do this
+automatically? This is ugly....
 
-Is there an API available to read instantaneous chip power, preferably in
-userland? I know there are ways to read CPU temperature, but how about
-power? I am primarily interested in ARM platform but information on other
-platforms will be appreciated, too.
+#define streq(a, b) ... if (_buildin_constant(b)) ...
 
-Thanks,
-Jae
+?
 
---f46d042de273a8572104c640ba19
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+> -	if (!strncmp(val, "enable", strlen("enable"))) {
+> +	if (!strncmp(val, "enable", sizeof("enable") - 1)) {
 
-Hi all,<div><br></div><div>Is there an API available to read instantaneous =
-chip power, preferably in userland? I know there are ways to read CPU tempe=
-rature, but how about power? I am primarily interested in ARM platform but =
-information on other platforms will be appreciated, too.</div>
-<div><br></div><div>Thanks,</div><div>Jae</div><div><br></div>
-
---f46d042de273a8572104c640ba19--
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
