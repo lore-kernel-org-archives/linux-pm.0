@@ -1,47 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RESEND PATCH] conservative: Initialise the cpu field during governor start
-Date: Wed, 8 Aug 2012 00:22:03 +0200
-Message-ID: <201208080022.03731.rjw@sisk.pl>
-References: <201207232055.26506.rjw@sisk.pl> <1343121972-9130-1-git-send-email-amit.daniel@samsung.com>
+From: Pavel Vasilyev <pavel@pavlinux.ru>
+Subject: Re: [linux-pm] [PATCH] ACPI: replace strlen("string") with sizeof("string")
+ -1
+Date: Wed, 08 Aug 2012 03:23:30 +0400
+Message-ID: <5021A372.8030409@pavlinux.ru>
+References: <Pine.LNX.4.44L0.1208071322070.2400-100000@iolanthe.rowland.org>
+Reply-To: pavel@pavlinux.ru
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1343121972-9130-1-git-send-email-amit.daniel@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: cpufreq@vger.kernel.org, amit.kachhap@linaro.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1208071322070.2400-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, July 24, 2012, Amit Daniel Kachhap wrote:
-> This change initialises the cpu id field of cs_cpu_dbs_info structure in
-> conservative governor and keep this consistent with other governors.
-> Similar initialisation is present in ondemand governor.
-> 
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+07.08.2012 21:24, Alan Stern =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+> On Tue, 7 Aug 2012, Pavel Vasilyev wrote:
+>
+>> 06.08.2012 23:59, Alan Stern =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+>>> On Mon, 6 Aug 2012, Pavel Vasilyev wrote:
+>>>
+>>>>>> http://www.gossamer-threads.com/lists/engine?do=3Dpost_attachmen=
+t;postatt_id=3D41157;list=3Dlinux
+>>>>>
+>>>>> Interestingly, many (all?) of the changes in that patch are wrong
+>>>>> because they don't try to match the terminating '\0'.  As a resul=
+t,
+>>>>> they will match against extensions of the target string as well a=
+s the
+>>>>> target string itself.
+>>>>>
+>>>>
+>>>> strNcmp compare N bytes - http://lxr.linux.no/#linux+v3.5/lib/stri=
+ng.c#L270
+>>>> memcmp compare N bytes  - http://lxr.linux.no/#linux+v3.5/lib/stri=
+ng.c#L651
+>>>
+>>> Yes.  So if s contains "abcde" then
+>>>
+>>> 	memcmp(s, "abc", 3) and strncmp(s, "abc", 3) will both return 0, a=
+nd
+>>> 	memcmp(s, "abc", 4) and strncmp(s, "abc", 4) will both return 1.
+>>
+>> No matter what is contained in *s, "abcde" or "abcxxx",
+>> are important first N bytes. The second example, you see,
+>> a little bit stupid, and devoid of logic. :)
+>
+> Maybe yes, maybe no.  It all depends on what you want.
+>
+> For example, if you're looking for "on" or "off", what should you do
+> when the user writes "onoff"?  You could accept it as meaning the sam=
+e
+> as "on", but if you were being careful then you would want to reject =
+it
+> as a meaningless value.
 
-Applied to the linux-next branch of the linux-pm.git tree as v3.7 material.
 
-Thanks,
-Rafael
+The users should't be allowed to think!
+There is "on" - the size of 2 bytes, or "off" - 3 bytes,
+other variations - user error.
 
+We do not create a kernel with artificial intelligence? ;)
 
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 235a340..a1563d7 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -504,6 +504,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  				j_dbs_info->prev_cpu_nice =
->  						kcpustat_cpu(j).cpustat[CPUTIME_NICE];
->  		}
-> +		this_dbs_info->cpu = cpu;
->  		this_dbs_info->down_skip = 0;
->  		this_dbs_info->requested_freq = policy->cur;
->  
-> 
-
+--=20
+                                                          Pavel.
