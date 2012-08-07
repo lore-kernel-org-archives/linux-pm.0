@@ -1,68 +1,73 @@
-From: Pavel Vasilyev <pavel@pavlinux.ru>
-Subject: Re: [linux-pm] [PATCH] ACPI: replace strlen("string") with sizeof("string")
- -1
-Date: Wed, 08 Aug 2012 03:23:30 +0400
-Message-ID: <5021A372.8030409@pavlinux.ru>
-References: <Pine.LNX.4.44L0.1208071322070.2400-100000@iolanthe.rowland.org>
-Reply-To: pavel@pavlinux.ru
+From: Kevin Hilman <khilman@ti.com>
+Subject: Re: [linux-pm] [PATCH 4/4] PM: cleanup: stop mandating that platforms export (pm_idle)()
+Date: Tue, 07 Aug 2012 16:26:21 -0700
+Message-ID: <878vdqz3ky.fsf@ti.com>
+References: <1343428975-3897-1-git-send-email-lenb@kernel.org>
+	<06ed885aac76cc68bd1ca1f32c8dcab7bcca1940.1343428708.git.len.brown@intel.com>
+	<0753050fb227e5a19f0df303d1e9bf74534aabcd.1343428708.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1208071322070.2400-100000@iolanthe.rowland.org>
+In-Reply-To: <0753050fb227e5a19f0df303d1e9bf74534aabcd.1343428708.git.len.brown@intel.com>
+	(Len Brown's message of "Fri, 27 Jul 2012 18:42:55 -0400")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Jonas Bonn <jonas@southpole.se>, Len Brown <len.brown@intel.com>, #@mail.linuxfoundation.org, Tony Luck <tony.luck@intel.com>, Mike Frysinger <vapier@gentoo.org>, Michal Simek <monstr@monstr.eu>, David Howells <dhowells@redhat.com>, Mikael Starvik <starvik@axis.com>, Russell King <linux@arm.linux.org.uk>, "David S. Miller" <davem@davemloft.net>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-07.08.2012 21:24, Alan Stern =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
-> On Tue, 7 Aug 2012, Pavel Vasilyev wrote:
++ linux-arm-kernel
+
+Len Brown <lenb@kernel.org> writes:
+
+> From: Len Brown <len.brown@intel.com>
 >
->> 06.08.2012 23:59, Alan Stern =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
->>> On Mon, 6 Aug 2012, Pavel Vasilyev wrote:
->>>
->>>>>> http://www.gossamer-threads.com/lists/engine?do=3Dpost_attachmen=
-t;postatt_id=3D41157;list=3Dlinux
->>>>>
->>>>> Interestingly, many (all?) of the changes in that patch are wrong
->>>>> because they don't try to match the terminating '\0'.  As a resul=
-t,
->>>>> they will match against extensions of the target string as well a=
-s the
->>>>> target string itself.
->>>>>
->>>>
->>>> strNcmp compare N bytes - http://lxr.linux.no/#linux+v3.5/lib/stri=
-ng.c#L270
->>>> memcmp compare N bytes  - http://lxr.linux.no/#linux+v3.5/lib/stri=
-ng.c#L651
->>>
->>> Yes.  So if s contains "abcde" then
->>>
->>> 	memcmp(s, "abc", 3) and strncmp(s, "abc", 3) will both return 0, a=
-nd
->>> 	memcmp(s, "abc", 4) and strncmp(s, "abc", 4) will both return 1.
->>
->> No matter what is contained in *s, "abcde" or "abcxxx",
->> are important first N bytes. The second example, you see,
->> a little bit stupid, and devoid of logic. :)
+> (pm_idle)() was originally used on x86 to vector bewteen
+> ACPI and APM.  With the advent of CPU_IDLE, that reason
+> for pm_idle to exist vanished.
 >
-> Maybe yes, maybe no.  It all depends on what you want.
+> But x86 APM still scribbled on pm_idle from a module,
+> so pm_idle didn't go away.  Worse, it was declared in pm.h,
+> and so it spread to other architectures as dead code.
 >
-> For example, if you're looking for "on" or "off", what should you do
-> when the user writes "onoff"?  You could accept it as meaning the sam=
-e
-> as "on", but if you were being careful then you would want to reject =
-it
-> as a meaningless value.
+> But today, APM no longer scribbles on pm_idle, so
+> x86 no longer requires pm_idle to be visible to modules,
+> or global at all.
+>
+> Here we remove pm_idle from pm.h, to stop the mandate
+> that all architectures define it.
+>
+> This deletes dead code from most architectures,
+> while some continue using their own internal pm_idle.
+>
+> At the end of the day, pm_idle...
+> becomes static in sh, was global
+> becomes static in x86, was EXPORT_SYMBOL
+> becomes as global in sparc, was EXPORT_SYMBOL
+> continues as static in m32r (no pm.h use there)
+> and is deleted from all other places in the kernel.
+>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Cc: x86@kernel.org # x86
+> Cc: Mike Frysinger <vapier@gentoo.org> # blackfin
+> Cc: Jonas Bonn <jonas@southpole.se> # openrisc
+> Cc: Tony Luck <tony.luck@intel.com> # ia64
+> Cc: David Howells <dhowells@redhat.com> # mn10300
+> Cc: Mikael Starvik <starvik@axis.com> # cris
+> Cc: Michal Simek <monstr@monstr.eu> # microblaze
+> Cc: Paul Mundt <lethal@linux-sh.org> # sh
+> Cc: David S. Miller <davem@davemloft.net> # sparc
+> Cc: Russell King <linux@arm.linux.org.uk> # ARM
+> Cc: Rafael J. Wysocki <rjw@sisk.pl> # PM
+> ---
+>  arch/arm/kernel/process.c         | 12 +++---------
 
+Just looking at the ARM changes, it looks good to me.  I tested it with
+and without CPUidle on my ARM-based TI/OMAP platforms (3430/n900,
+4430/Panda)
 
-The users should't be allowed to think!
-There is "on" - the size of 2 bytes, or "off" - 3 bytes,
-other variations - user error.
+So for the arch/arm changes:
 
-We do not create a kernel with artificial intelligence? ;)
+Reviewed-by: Kevin Hilman <khilman@ti.com>
+Tested-by: Kevin Hilman <khilman@ti.com>
 
---=20
-                                                          Pavel.
+Kevin
