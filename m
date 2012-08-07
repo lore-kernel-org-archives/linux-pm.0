@@ -1,61 +1,47 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] ACPI: replace strlen("string") with
- sizeof("string") -1
-Date: Tue, 7 Aug 2012 13:24:48 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1208071322070.2400-100000@iolanthe.rowland.org>
-References: <50206A3A.8020706@pavlinux.ru>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RESEND PATCH] conservative: Initialise the cpu field during governor start
+Date: Wed, 8 Aug 2012 00:22:03 +0200
+Message-ID: <201208080022.03731.rjw@sisk.pl>
+References: <201207232055.26506.rjw@sisk.pl> <1343121972-9130-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-In-Reply-To: <50206A3A.8020706@pavlinux.ru>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Pavel Vasilyev <pavel@pavlinux.ru>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1343121972-9130-1-git-send-email-amit.daniel@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: cpufreq@vger.kernel.org, amit.kachhap@linaro.org, linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 7 Aug 2012, Pavel Vasilyev wrote:
+On Tuesday, July 24, 2012, Amit Daniel Kachhap wrote:
+> This change initialises the cpu id field of cs_cpu_dbs_info structure in
+> conservative governor and keep this consistent with other governors.
+> Similar initialisation is present in ondemand governor.
+> 
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-> 06.08.2012 23:59, Alan Stern =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
-> > On Mon, 6 Aug 2012, Pavel Vasilyev wrote:
-> >
-> >>>> http://www.gossamer-threads.com/lists/engine?do=3Dpost_attachment;=
-postatt_id=3D41157;list=3Dlinux
-> >>>
-> >>> Interestingly, many (all?) of the changes in that patch are wrong
-> >>> because they don't try to match the terminating '\0'.  As a result,
-> >>> they will match against extensions of the target string as well as =
-the
-> >>> target string itself.
-> >>>
-> >>
-> >> strNcmp compare N bytes - http://lxr.linux.no/#linux+v3.5/lib/string=
-.c#L270
-> >> memcmp compare N bytes  - http://lxr.linux.no/#linux+v3.5/lib/string=
-.c#L651
-> >
-> > Yes.  So if s contains "abcde" then
-> >
-> > 	memcmp(s, "abc", 3) and strncmp(s, "abc", 3) will both return 0, and
-> > 	memcmp(s, "abc", 4) and strncmp(s, "abc", 4) will both return 1.
->=20
-> No matter what is contained in *s, "abcde" or "abcxxx",
-> are important first N bytes. The second example, you see,
-> a little bit stupid, and devoid of logic. :)
+Applied to the linux-next branch of the linux-pm.git tree as v3.7 material.
 
-Maybe yes, maybe no.  It all depends on what you want.
+Thanks,
+Rafael
 
-For example, if you're looking for "on" or "off", what should you do
-when the user writes "onoff"?  You could accept it as meaning the same
-as "on", but if you were being careful then you would want to reject it
-as a meaningless value.
 
-Alan Stern
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 235a340..a1563d7 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -504,6 +504,7 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  				j_dbs_info->prev_cpu_nice =
+>  						kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+>  		}
+> +		this_dbs_info->cpu = cpu;
+>  		this_dbs_info->down_skip = 0;
+>  		this_dbs_info->requested_freq = policy->cur;
+>  
+> 
+
