@@ -1,73 +1,67 @@
-From: Kevin Hilman <khilman@ti.com>
-Subject: Re: [linux-pm] [PATCH 4/4] PM: cleanup: stop mandating that platforms export (pm_idle)()
-Date: Tue, 07 Aug 2012 16:26:21 -0700
-Message-ID: <878vdqz3ky.fsf@ti.com>
-References: <1343428975-3897-1-git-send-email-lenb@kernel.org>
-	<06ed885aac76cc68bd1ca1f32c8dcab7bcca1940.1343428708.git.len.brown@intel.com>
-	<0753050fb227e5a19f0df303d1e9bf74534aabcd.1343428708.git.len.brown@intel.com>
+From: Daniel Taylor <Daniel.Taylor@wdc.com>
+Subject: RE: [linux-pm] [PATCH] ACPI: replace strlen("string") with
+ sizeof("string") -1
+Date: Wed, 8 Aug 2012 00:59:24 +0000
+Message-ID: <5A9BC72FD5CEC94EA024CED8E31D701A2FD890B3@wdscexmb03.sc.wdc.com>
+References: <50201156.30704@pavlinux.ru>
+	 <Pine.LNX.4.44L0.1208061556010.1649-100000@iolanthe.rowland.org>
+	 <5A9BC72FD5CEC94EA024CED8E31D701A2FD84FC0@wdscexmb03.sc.wdc.com>
+ <1344345590.3975.1.camel@thorin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0753050fb227e5a19f0df303d1e9bf74534aabcd.1343428708.git.len.brown@intel.com>
-	(Len Brown's message of "Fri, 27 Jul 2012 18:42:55 -0400")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Jonas Bonn <jonas@southpole.se>, Len Brown <len.brown@intel.com>, #@mail.linuxfoundation.org, Tony Luck <tony.luck@intel.com>, Mike Frysinger <vapier@gentoo.org>, Michal Simek <monstr@monstr.eu>, David Howells <dhowells@redhat.com>, Mikael Starvik <starvik@axis.com>, Russell King <linux@arm.linux.org.uk>, "David S. Miller" <davem@davemloft.net>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1344345590.3975.1.camel@thorin>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: 'Bernd Petrovitsch' <bernd@petrovitsch.priv.at>
+Cc: 'Alan Stern' <stern@rowland.harvard.edu>, Pavel Vasilyev <pavel@pavlinux.ru>, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-+ linux-arm-kernel
+Said it was a silly question.
 
-Len Brown <lenb@kernel.org> writes:
+It's funny.
 
-> From: Len Brown <len.brown@intel.com>
->
-> (pm_idle)() was originally used on x86 to vector bewteen
-> ACPI and APM.  With the advent of CPU_IDLE, that reason
-> for pm_idle to exist vanished.
->
-> But x86 APM still scribbled on pm_idle from a module,
-> so pm_idle didn't go away.  Worse, it was declared in pm.h,
-> and so it spread to other architectures as dead code.
->
-> But today, APM no longer scribbles on pm_idle, so
-> x86 no longer requires pm_idle to be visible to modules,
-> or global at all.
->
-> Here we remove pm_idle from pm.h, to stop the mandate
-> that all architectures define it.
->
-> This deletes dead code from most architectures,
-> while some continue using their own internal pm_idle.
->
-> At the end of the day, pm_idle...
-> becomes static in sh, was global
-> becomes static in x86, was EXPORT_SYMBOL
-> becomes as global in sparc, was EXPORT_SYMBOL
-> continues as static in m32r (no pm.h use there)
-> and is deleted from all other places in the kernel.
->
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: x86@kernel.org # x86
-> Cc: Mike Frysinger <vapier@gentoo.org> # blackfin
-> Cc: Jonas Bonn <jonas@southpole.se> # openrisc
-> Cc: Tony Luck <tony.luck@intel.com> # ia64
-> Cc: David Howells <dhowells@redhat.com> # mn10300
-> Cc: Mikael Starvik <starvik@axis.com> # cris
-> Cc: Michal Simek <monstr@monstr.eu> # microblaze
-> Cc: Paul Mundt <lethal@linux-sh.org> # sh
-> Cc: David S. Miller <davem@davemloft.net> # sparc
-> Cc: Russell King <linux@arm.linux.org.uk> # ARM
-> Cc: Rafael J. Wysocki <rjw@sisk.pl> # PM
-> ---
->  arch/arm/kernel/process.c         | 12 +++---------
+I've been using "0123456789abcdef"[index] for a long time, so I "know"
+that "string" is a array of char, but it never occurred to me that
+"string" would work in sizeof() the same way as
 
-Just looking at the ARM changes, it looks good to me.  I tested it with
-and without CPUidle on my ARM-based TI/OMAP platforms (3430/n900,
-4430/Panda)
+char string[] = { '0', '1', '2', '3', '4', '5', '6', '7',
+                  '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', '\0' };
 
-So for the arch/arm changes:
+int stringlength = sizeof(string);
 
-Reviewed-by: Kevin Hilman <khilman@ti.com>
-Tested-by: Kevin Hilman <khilman@ti.com>
+Learned something.
 
-Kevin
+Thanks,
+
+Dan
+ 
+
+> -----Original Message-----
+> From: Bernd Petrovitsch [mailto:bernd@petrovitsch.priv.at] 
+> Sent: Tuesday, August 07, 2012 6:20 AM
+> To: Daniel Taylor
+> Cc: 'Alan Stern'; Pavel Vasilyev; Pavel Machek; Len Brown; 
+> linux-acpi@vger.kernel.org; 
+> linux-pm@lists.linux-foundation.org; 
+> linux-kernel@vger.kernel.org; Len Brown
+> Subject: RE: [linux-pm] [PATCH] ACPI: replace 
+> strlen("string") with sizeof("string") -1
+> 
+> On Mon, 2012-08-06 at 22:57 +0000, Daniel Taylor wrote:
+> > Silly question:  when did sizeof("string") get changed to 
+> be anything
+> > other than the size of the pointer ("string" is, after all, an array
+> > of characters)? 
+> 
+> It is since K&R times that way.
+> If you do not know the difference between a pointer and an array (and
+> these are vastly different), go learn something new about C.
+> 
+> 	Bernd
+> -- 
+> Bernd Petrovitsch                  Email : bernd@petrovitsch.priv.at
+>                      LUGA : http://www.luga.at
+> 
+> 
