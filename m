@@ -1,294 +1,1104 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v4 2/4] mfd: omap: control: core system
- control driver
-Date: Fri, 10 Aug 2012 01:50:22 -0700
-Message-ID: <20120810085022.GS11011@atomide.com>
-References: <500FD2EC.7060208@dev.rtsoft.ru>
-	<20120808140507.GF11011@atomide.com>
-	<20120808141051.GG11011@atomide.com>
-	<20120808143929.GJ11011@atomide.com>
-	<50227ED9.3010508@dev.rtsoft.ru> <5023985F.3090606@dev.rtsoft.ru>
+From: Hongbo Zhang <hongbo.zhang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 4/5] thermal: exynos: Register the tmu sensor with the
+	kernel thermal layer
+Date: Fri, 10 Aug 2012 19:49:23 +0800
+Message-ID: <CAJLyvQw+6o354hYEWC2OGL+xO+r-zj8LtpH2z1G=QyH6kf7iUA@mail.gmail.com>
+References: <1336815645-29625-1-git-send-email-amit.kachhap@linaro.org>
+	<1336815645-29625-5-git-send-email-amit.kachhap@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-Content-Disposition: inline
-In-Reply-To: <5023985F.3090606@dev.rtsoft.ru>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Konstantin Baydarov <kbaidarov@dev.rtsoft.ru>
-Cc: amit.kucheria@linaro.org, kishon@ti.com, balbi@ti.com, linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/mixed; boundary="===============0519213679858593677=="
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <1336815645-29625-5-git-send-email-amit.kachhap-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Amit Daniel Kachhap <amit.kachhap-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, guenter.roeck-IzeFyvvaP7pWk0Htik3J/w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-* Konstantin Baydarov <kbaidarov@dev.rtsoft.ru> [120809 04:00]:
->   Hi, Tony.
-> 
-> On 08/08/2012 06:59 PM, Konstantin Baydarov wrote:
-> >   Yes, omap_type() is called very early , that is why I'm using early_initcall for omap_control_base initialization.
-> >
-> > Do you mean following?:
-> > void __init omap2_set_globals_control(struct omap_globals *omap2_globals)
-> > {
-> >     if (omap2_globals->ctrl)
-> >         omap2_ctrl_base = omap2_globals->ctrl;
-> >
-> >     if (omap2_globals->ctrl_pad)
-> >         omap4_ctrl_pad_base = omap2_globals->ctrl_pad;
-> >
-> >     omap_control_base = omap2_ctrl_base;  // this line is added
-> > }
->   Sorry for the confusion - the code above isn't correct. First, as omap-control-core.c driver maps only control module status register the omap_control_base should be renamed to omap_control_status_reg:
+--===============0519213679858593677==
+Content-Type: multipart/alternative; boundary=e89a8f23594b760d9904c6e7efde
 
-Heh right :) And that makes the patch I posted wrong too.
- 
-> @@ -156,6 +158,20 @@ void __init omap2_set_globals_control(struct omap_globals *omap2_globals)
->  
->  	if (omap2_globals->ctrl_pad)
->  		omap4_ctrl_pad_base = omap2_globals->ctrl_pad;
+--e89a8f23594b760d9904c6e7efde
+Content-Type: text/plain; charset=ISO-8859-1
+
+On 12 May 2012 17:40, Amit Daniel Kachhap <amit.kachhap-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+
+> This code added creates a link between temperature sensors, linux thermal
+> framework and cooling devices for samsung exynos platform. This layer
+> monitors the temperature from the sensor and informs the generic thermal
+> layer to take the necessary cooling action.
+>
+> Signed-off-by: Amit Daniel Kachhap <amit.kachhap-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/thermal/exynos_thermal.c             |  344
+> +++++++++++++++++++++++++-
+>  include/linux/platform_data/exynos_thermal.h |    6 +
+>  2 files changed, 348 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/thermal/exynos_thermal.c
+> b/drivers/thermal/exynos_thermal.c
+> index cfe4aeb..48106d8 100644
+> --- a/drivers/thermal/exynos_thermal.c
+> +++ b/drivers/thermal/exynos_thermal.c
+> @@ -35,6 +35,9 @@
+>  #include <linux/mutex.h>
+>  #include <linux/err.h>
+>  #include <linux/platform_data/exynos_thermal.h>
+> +#include <linux/thermal.h>
+> +#include <linux/cpufreq.h>
+> +#include <linux/cpu_cooling.h>
+>  #include <linux/of.h>
+>
+>  #include <plat/cpu.h>
+> @@ -95,6 +98,7 @@
+>
+>  #define ACTIVE_INTERVAL 500
+>  #define IDLE_INTERVAL 10000
+> +#define MCELSIUS       1000
+>
+>  /* CPU Zone information */
+>  #define PANIC_ZONE      4
+> @@ -105,6 +109,8 @@
+>  #define GET_ZONE(trip) (trip + 2)
+>  #define GET_TRIP(zone) (zone - 2)
+>
+> +#define EXYNOS_ZONE_COUNT      3
 > +
-> +	omap_control_status_reg = omap2_ctrl_base;
-> +	if (cpu_is_omap24xx())
-> +		omap_control_status_reg += OMAP24XX_CONTROL_STATUS;
-> +	else if (soc_is_am33xx())
-> +		omap_control_status_reg += AM33XX_CONTROL_STATUS;
-> +	else if (cpu_is_omap34xx())
-> +		omap_control_status_reg += OMAP343X_CONTROL_STATUS;
-> +	else if (cpu_is_omap44xx())
-> +		omap_control_status_reg += OMAP4_CTRL_MODULE_CORE_STATUS;
-> +	else if (soc_is_omap54xx())
-> +		omap_control_status_reg += OMAP5XXX_CONTROL_STATUS;
-> +	else
-> +		omap_control_status_reg = 0;
+>  struct exynos_tmu_data {
+>         struct exynos_tmu_platform_data *pdata;
+>         struct resource *mem;
+> @@ -117,6 +123,309 @@ struct exynos_tmu_data {
+>         u8 temp_error1, temp_error2;
+>  };
+>
+> +struct thermal_trip_point_conf {
+> +       int trip_val[MAX_TRIP_COUNT];
+> +       int trip_count;
+> +};
+> +
+> +struct thermal_cooling_conf {
+> +       struct freq_clip_table freq_data[MAX_TRIP_COUNT];
+> +       int freq_clip_count;
+> +};
+> +
+> +struct thermal_sensor_conf {
+> +       char name[SENSOR_NAME_LEN];
+> +       int (*read_temperature)(void *data);
+> +       struct thermal_trip_point_conf trip_data;
+> +       struct thermal_cooling_conf cooling_data;
+> +       void *private_data;
+> +};
+> +
+> +struct exynos_thermal_zone {
+> +       enum thermal_device_mode mode;
+> +       struct thermal_zone_device *therm_dev;
+> +       struct thermal_cooling_device *cool_dev[MAX_COOLING_DEVICE];
+> +       unsigned int cool_dev_size;
+> +       struct platform_device *exynos4_dev;
+> +       struct thermal_sensor_conf *sensor_conf;
+> +};
+> +
+> +static struct exynos_thermal_zone *th_zone;
+> +static void exynos_unregister_thermal(void);
+> +static int exynos_register_thermal(struct thermal_sensor_conf
+> *sensor_conf);
+> +
+> +/* Get mode callback functions for thermal zone */
+> +static int exynos_get_mode(struct thermal_zone_device *thermal,
+> +                       enum thermal_device_mode *mode)
+> +{
+> +       if (th_zone)
+> +               *mode = th_zone->mode;
+> +       return 0;
+> +}
+> +
+> +/* Set mode callback functions for thermal zone */
+> +static int exynos_set_mode(struct thermal_zone_device *thermal,
+> +                       enum thermal_device_mode mode)
+> +{
+> +       if (!th_zone->therm_dev) {
+> +               pr_notice("thermal zone not registered\n");
+> +               return 0;
+> +       }
+> +
+> +       mutex_lock(&th_zone->therm_dev->lock);
+> +
+> +       if (mode == THERMAL_DEVICE_ENABLED)
+> +               th_zone->therm_dev->polling_delay = IDLE_INTERVAL;
+> +       else
+> +               th_zone->therm_dev->polling_delay = 0;
+> +
+> +       mutex_unlock(&th_zone->therm_dev->lock);
+> +
+> +       th_zone->mode = mode;
+> +       thermal_zone_device_update(th_zone->therm_dev);
+>
+I think it should be like this:
+if (mode == THERMAL_DEVICE_ENABLED)
+    thermal_zone_device_update(th_zone->therm_dev);
+else
+    disable cooling device;
+
+Imagine that when CPU goes high and the frequency is limited to low,
+and the you think it is safe I want a high speed CPU, then you disable
+the thermal mode by sysfs, but the CPU frequency is still low.
+
+ +       pr_info("thermal polling set for duration=%d msec\n",
+> +                               th_zone->therm_dev->polling_delay);
+> +       return 0;
+> +}
+> +
+> +/*
+> + * This function may be called from interrupt based temperature sensor
+> + * when threshold is changed.
+> + */
+> +static void exynos_report_trigger(void)
+> +{
+> +       unsigned int i;
+> +       char data[10];
+> +       char *envp[] = { data, NULL };
+> +
+> +       if (!th_zone || !th_zone->therm_dev)
+> +               return;
+> +
+> +       thermal_zone_device_update(th_zone->therm_dev);
+> +
+> +       mutex_lock(&th_zone->therm_dev->lock);
+> +       /* Find the level for which trip happened */
+> +       for (i = 0; i < th_zone->sensor_conf->trip_data.trip_count; i++) {
+> +               if (th_zone->therm_dev->last_temperature <
+> +                       th_zone->sensor_conf->trip_data.trip_val[i] *
+> MCELSIUS)
+> +                       break;
+> +       }
+> +
+> +       if (th_zone->mode == THERMAL_DEVICE_ENABLED) {
+> +               if (i > 0)
+> +                       th_zone->therm_dev->polling_delay =
+> ACTIVE_INTERVAL;
+> +               else
+> +                       th_zone->therm_dev->polling_delay = IDLE_INTERVAL;
+> +       }
+> +
+> +       snprintf(data, sizeof(data), "%u", i);
+> +       kobject_uevent_env(&th_zone->therm_dev->device.kobj, KOBJ_CHANGE,
+> envp);
+> +       mutex_unlock(&th_zone->therm_dev->lock);
+> +}
+> +
+> +/* Get trip type callback functions for thermal zone */
+> +static int exynos_get_trip_type(struct thermal_zone_device *thermal, int
+> trip,
+> +                                enum thermal_trip_type *type)
+> +{
+> +       switch (GET_ZONE(trip)) {
+> +       case MONITOR_ZONE:
+> +       case WARN_ZONE:
+> +               *type = THERMAL_TRIP_ACTIVE;
+> +               break;
+> +       case PANIC_ZONE:
+> +               *type = THERMAL_TRIP_CRITICAL;
+> +               break;
+> +       default:
+> +               return -EINVAL;
+> +       }
+> +       return 0;
+> +}
+> +
+> +/* Get trip temperature callback functions for thermal zone */
+> +static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int
+> trip,
+> +                               unsigned long *temp)
+> +{
+> +       if (trip < GET_TRIP(MONITOR_ZONE) || trip > GET_TRIP(PANIC_ZONE))
+> +               return -EINVAL;
+> +
+> +       *temp = th_zone->sensor_conf->trip_data.trip_val[trip];
+> +       /* convert the temperature into millicelsius */
+> +       *temp = *temp * MCELSIUS;
+> +
+> +       return 0;
+> +}
+> +
+> +/* Get critical temperature callback functions for thermal zone */
+> +static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+> +                               unsigned long *temp)
+> +{
+> +       int ret;
+> +       /* Panic zone */
+> +       ret = exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), temp);
+> +       return ret;
+> +}
+> +
+> +/* Bind callback functions for thermal zone */
+> +static int exynos_bind(struct thermal_zone_device *thermal,
+> +                       struct thermal_cooling_device *cdev)
+> +{
+> +       int ret = 0, i;
+> +
+> +       /* find the cooling device registered*/
+> +       for (i = 0; i < th_zone->cool_dev_size; i++)
+> +               if (cdev == th_zone->cool_dev[i])
+> +                       break;
+> +
+> +       /*No matching cooling device*/
+> +       if (i == th_zone->cool_dev_size)
+> +               return 0;
+> +
+> +       switch (GET_ZONE(i)) {
+> +       case MONITOR_ZONE:
+> +       case WARN_ZONE:
+> +               if (thermal_zone_bind_cooling_device(thermal, i, cdev)) {
+> +                       pr_err("error binding cooling dev inst 0\n");
+> +                       ret = -EINVAL;
+> +               }
+> +               break;
+> +       default:
+> +               ret = -EINVAL;
+> +       }
+> +
+> +       return ret;
+> +}
+> +
+> +/* Unbind callback functions for thermal zone */
+> +static int exynos_unbind(struct thermal_zone_device *thermal,
+> +                       struct thermal_cooling_device *cdev)
+> +{
+> +       int ret = 0, i;
+> +
+> +       /* find the cooling device registered*/
+> +       for (i = 0; i < th_zone->cool_dev_size; i++)
+> +               if (cdev == th_zone->cool_dev[i])
+> +                       break;
+> +
+> +       /*No matching cooling device*/
+> +       if (i == th_zone->cool_dev_size)
+> +               return 0;
+> +
+> +       switch (GET_ZONE(i)) {
+> +       case MONITOR_ZONE:
+> +       case WARN_ZONE:
+> +               if (thermal_zone_unbind_cooling_device(thermal, i, cdev))
+> {
+>
+Cooling devices should be disabled before unbinding?
+
++                       pr_err("error unbinding cooling dev\n");
+> +                       ret = -EINVAL;
+> +               }
+> +               break;
+> +       default:
+> +               ret = -EINVAL;
+> +       }
+> +       return ret;
+> +}
+> +
+> +/* Get temperature callback functions for thermal zone */
+> +static int exynos_get_temp(struct thermal_zone_device *thermal,
+> +                       unsigned long *temp)
+> +{
+> +       void *data;
+> +
+> +       if (!th_zone->sensor_conf) {
+> +               pr_info("Temperature sensor not initialised\n");
+> +               return -EINVAL;
+> +       }
+> +       data = th_zone->sensor_conf->private_data;
+> +       *temp = th_zone->sensor_conf->read_temperature(data);
+> +       /* convert the temperature into millicelsius */
+> +       *temp = *temp * MCELSIUS;
+> +       return 0;
+> +}
+> +
+> +/* Operation callback functions for thermal zone */
+> +static struct thermal_zone_device_ops const exynos_dev_ops = {
+> +       .bind = exynos_bind,
+> +       .unbind = exynos_unbind,
+> +       .get_temp = exynos_get_temp,
+> +       .get_mode = exynos_get_mode,
+> +       .set_mode = exynos_set_mode,
+> +       .get_trip_type = exynos_get_trip_type,
+> +       .get_trip_temp = exynos_get_trip_temp,
+> +       .get_crit_temp = exynos_get_crit_temp,
+> +};
+> +
+> +/* Register with the in-kernel thermal management */
+> +static int exynos_register_thermal(struct thermal_sensor_conf
+> *sensor_conf)
+> +{
+> +       int ret, count, tab_size;
+> +       struct freq_clip_table *tab_ptr, *clip_data;
+> +
+> +       if (!sensor_conf || !sensor_conf->read_temperature) {
+> +               pr_err("Temperature sensor not initialised\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       th_zone = kzalloc(sizeof(struct exynos_thermal_zone), GFP_KERNEL);
+> +       if (!th_zone)
+> +               return -ENOMEM;
+> +
+> +       th_zone->sensor_conf = sensor_conf;
+> +
+> +       tab_ptr = (struct freq_clip_table
+> *)sensor_conf->cooling_data.freq_data;
+> +       tab_size = sensor_conf->cooling_data.freq_clip_count;
+> +
+> +       /* Register the cpufreq cooling device */
+> +       for (count = 0; count < tab_size; count++) {
+> +               clip_data = (struct freq_clip_table *)&(tab_ptr[count]);
+> +               clip_data->mask_val = cpumask_of(0);
+> +               th_zone->cool_dev[count] = cpufreq_cooling_register(
+> +                                               clip_data, 1);
+> +               if (IS_ERR(th_zone->cool_dev[count])) {
+> +                       pr_err("Failed to register cpufreq cooling
+> device\n");
+> +                       ret = -EINVAL;
+> +                       th_zone->cool_dev_size = count;
+> +                       goto err_unregister;
+> +               }
+> +       }
+> +       th_zone->cool_dev_size = count;
+> +
+> +       th_zone->therm_dev =
+> thermal_zone_device_register(sensor_conf->name,
+> +                       EXYNOS_ZONE_COUNT, NULL, &exynos_dev_ops, 0, 0, 0,
+> +                       IDLE_INTERVAL);
+> +
+> +       if (IS_ERR(th_zone->therm_dev)) {
+> +               pr_err("Failed to register thermal zone device\n");
+> +               ret = -EINVAL;
+> +               goto err_unregister;
+> +       }
+> +       th_zone->mode = THERMAL_DEVICE_ENABLED;
+> +
+> +       pr_info("Exynos: Kernel Thermal management registered\n");
+> +
+> +       return 0;
+> +
+> +err_unregister:
+> +       exynos_unregister_thermal();
+> +       return ret;
+> +}
+> +
+> +/* Un-Register with the in-kernel thermal management */
+> +static void exynos_unregister_thermal(void)
+> +{
+> +       int i;
+> +
+> +       for (i = 0; i < th_zone->cool_dev_size; i++) {
+> +               if (th_zone && th_zone->cool_dev[i])
+> +                       cpufreq_cooling_unregister(th_zone->cool_dev[i]);
+> +       }
+> +
+> +       if (th_zone && th_zone->therm_dev)
+> +               thermal_zone_device_unregister(th_zone->therm_dev);
+> +
+> +       kfree(th_zone);
+> +
+> +       pr_info("Exynos: Kernel Thermal management unregistered\n");
+> +}
+> +
+>  /*
+>   * TMU treats temperature as a mapped temperature code.
+>   * The temperature is converted differently depending on the calibration
+> type.
+> @@ -337,6 +646,7 @@ static void exynos_tmu_work(struct work_struct *work)
+>
+>         clk_disable(data->clk);
+>         mutex_unlock(&data->lock);
+> +       exynos_report_trigger();
+>         enable_irq(data->irq);
 >  }
+>
+> @@ -349,12 +659,16 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
+>
+>         return IRQ_HANDLED;
+>  }
+> -
+> +static struct thermal_sensor_conf exynos_sensor_conf = {
+> +       .name                   = "exynos-therm",
+> +       .read_temperature       = (int (*)(void *))exynos_tmu_read,
+> +}
+> +;
+>  static int __devinit exynos_tmu_probe(struct platform_device *pdev)
+>  {
+>         struct exynos_tmu_data *data;
+>         struct exynos_tmu_platform_data *pdata = pdev->dev.platform_data;
+> -       int ret;
+> +       int ret, i;
+>
+>         if (!pdata) {
+>                 dev_err(&pdev->dev, "No platform init data supplied.\n");
+> @@ -432,6 +746,30 @@ static int __devinit exynos_tmu_probe(struct
+> platform_device *pdev)
+>
+>         exynos_tmu_control(pdev, true);
+>
+> +       /*Register the sensor with thermal management interface*/
+> +       (&exynos_sensor_conf)->private_data = data;
+> +       exynos_sensor_conf.trip_data.trip_count = pdata->trigger_level0_en
+> +
+> +                       pdata->trigger_level1_en +
+> pdata->trigger_level2_en +
+> +                       pdata->trigger_level3_en;
+> +
+> +       for (i = 0; i < exynos_sensor_conf.trip_data.trip_count; i++)
+> +               exynos_sensor_conf.trip_data.trip_val[i] =
+> +                       pdata->threshold + pdata->trigger_levels[i];
+> +
+> +       exynos_sensor_conf.cooling_data.freq_clip_count =
+> +                                               pdata->freq_tab_count;
+> +       for (i = 0; i < pdata->freq_tab_count; i++) {
+> +               exynos_sensor_conf.cooling_data.freq_data[i].freq_clip_max
+> =
+> +                                       pdata->freq_tab[i].freq_clip_max;
+> +               exynos_sensor_conf.cooling_data.freq_data[i].temp_level =
+> +                                       pdata->freq_tab[i].temp_level;
+> +       }
+> +
+> +       ret = exynos_register_thermal(&exynos_sensor_conf);
+> +       if (ret) {
+> +               dev_err(&pdev->dev, "Failed to register thermal
+> interface\n");
+> +               goto err_clk;
+> +       }
+>         return 0;
+>  err_clk:
+>         platform_set_drvdata(pdev, NULL);
+> @@ -454,6 +792,8 @@ static int __devexit exynos_tmu_remove(struct
+> platform_device *pdev)
+>
+>         exynos_tmu_control(pdev, false);
+>
+> +       exynos_unregister_thermal();
+> +
+>         clk_put(data->clk);
+>
+>         free_irq(data->irq, data);
+> diff --git a/include/linux/platform_data/exynos_thermal.h
+> b/include/linux/platform_data/exynos_thermal.h
+> index c980af6..858eaca 100644
+> --- a/include/linux/platform_data/exynos_thermal.h
+> +++ b/include/linux/platform_data/exynos_thermal.h
+> @@ -21,6 +21,7 @@
+>
+>  #ifndef _LINUX_EXYNOS_THERMAL_H
+>  #define _LINUX_EXYNOS_THERMAL_H
+> +#include <linux/cpu_cooling.h>
+>
+>  enum calibration_type {
+>         TYPE_ONE_POINT_TRIMMING,
+> @@ -72,6 +73,9 @@ enum soc_type {
+>   * @type: determines the type of SOC
+>   * @efuse_value: platform defined fuse value
+>   * @cal_type: calibration type for temperature
+> + * @freq_clip_table: Table representing frequency reduction percentage.
+> + * @freq_tab_count: Count of the above table as frequency reduction may
+> + *     applicable to only some of the trigger levels.
+>   *
+>   * This structure is required for configuration of exynos_tmu driver.
+>   */
+> @@ -90,5 +94,7 @@ struct exynos_tmu_platform_data {
+>
+>         enum calibration_type cal_type;
+>         enum soc_type type;
+> +       struct freq_clip_table freq_tab[4];
+> +       unsigned int freq_tab_count;
+>  };
+>  #endif /* _LINUX_EXYNOS_THERMAL_H */
+> --
+> 1.7.1
+>
+>
+> _______________________________________________
+> linaro-dev mailing list
+> linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+> http://lists.linaro.org/mailman/listinfo/linaro-dev
+>
 
-We can get rid of the if else SoC check here too. And we can limit the
-control_status tinkering to id.c. Here's an updated clean-up patch.
+--e89a8f23594b760d9904c6e7efde
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
+<br><br><div class=3D"gmail_quote">On 12 May 2012 17:40, Amit Daniel Kachha=
+p <span dir=3D"ltr">&lt;<a href=3D"mailto:amit.kachhap-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" target=
+=3D"_blank">amit.kachhap-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org</a>&gt;</span> wrote:<br><blockquote cl=
+ass=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;p=
+adding-left:1ex">
+This code added creates a link between temperature sensors, linux thermal<b=
+r>
+framework and cooling devices for samsung exynos platform. This layer<br>
+monitors the temperature from the sensor and informs the generic thermal<br=
+>
+layer to take the necessary cooling action.<br>
+<br>
+Signed-off-by: Amit Daniel Kachhap &lt;<a href=3D"mailto:amit.kachhap@linar=
+o.org">amit.kachhap-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org</a>&gt;<br>
+---<br>
+=A0drivers/thermal/exynos_thermal.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0344 ++++++=
++++++++++++++++++++-<br>
+=A0include/linux/platform_data/exynos_thermal.h | =A0 =A06 +<br>
+=A02 files changed, 348 insertions(+), 2 deletions(-)<br>
+<br>
+diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_ther=
+mal.c<br>
+index cfe4aeb..48106d8 100644<br>
+--- a/drivers/thermal/exynos_thermal.c<br>
++++ b/drivers/thermal/exynos_thermal.c<br>
+@@ -35,6 +35,9 @@<br>
+=A0#include &lt;linux/mutex.h&gt;<br>
+=A0#include &lt;linux/err.h&gt;<br>
+=A0#include &lt;linux/platform_data/exynos_thermal.h&gt;<br>
++#include &lt;linux/thermal.h&gt;<br>
++#include &lt;linux/cpufreq.h&gt;<br>
++#include &lt;linux/cpu_cooling.h&gt;<br>
+=A0#include &lt;linux/of.h&gt;<br>
+<br>
+=A0#include &lt;plat/cpu.h&gt;<br>
+@@ -95,6 +98,7 @@<br>
+<br>
+=A0#define ACTIVE_INTERVAL 500<br>
+=A0#define IDLE_INTERVAL 10000<br>
++#define MCELSIUS =A0 =A0 =A0 1000<br>
+<br>
+=A0/* CPU Zone information */<br>
+=A0#define PANIC_ZONE =A0 =A0 =A04<br>
+@@ -105,6 +109,8 @@<br>
+=A0#define GET_ZONE(trip) (trip + 2)<br>
+=A0#define GET_TRIP(zone) (zone - 2)<br>
+<br>
++#define EXYNOS_ZONE_COUNT =A0 =A0 =A03<br>
++<br>
+=A0struct exynos_tmu_data {<br>
+=A0 =A0 =A0 =A0 struct exynos_tmu_platform_data *pdata;<br>
+=A0 =A0 =A0 =A0 struct resource *mem;<br>
+@@ -117,6 +123,309 @@ struct exynos_tmu_data {<br>
+=A0 =A0 =A0 =A0 u8 temp_error1, temp_error2;<br>
+=A0};<br>
+<br>
++struct thermal_trip_point_conf {<br>
++ =A0 =A0 =A0 int trip_val[MAX_TRIP_COUNT];<br>
++ =A0 =A0 =A0 int trip_count;<br>
++};<br>
++<br>
++struct thermal_cooling_conf {<br>
++ =A0 =A0 =A0 struct freq_clip_table freq_data[MAX_TRIP_COUNT];<br>
++ =A0 =A0 =A0 int freq_clip_count;<br>
++};<br>
++<br>
++struct thermal_sensor_conf {<br>
++ =A0 =A0 =A0 char name[SENSOR_NAME_LEN];<br>
++ =A0 =A0 =A0 int (*read_temperature)(void *data);<br>
++ =A0 =A0 =A0 struct thermal_trip_point_conf trip_data;<br>
++ =A0 =A0 =A0 struct thermal_cooling_conf cooling_data;<br>
++ =A0 =A0 =A0 void *private_data;<br>
++};<br>
++<br>
++struct exynos_thermal_zone {<br>
++ =A0 =A0 =A0 enum thermal_device_mode mode;<br>
++ =A0 =A0 =A0 struct thermal_zone_device *therm_dev;<br>
++ =A0 =A0 =A0 struct thermal_cooling_device *cool_dev[MAX_COOLING_DEVICE];<=
+br>
++ =A0 =A0 =A0 unsigned int cool_dev_size;<br>
++ =A0 =A0 =A0 struct platform_device *exynos4_dev;<br>
++ =A0 =A0 =A0 struct thermal_sensor_conf *sensor_conf;<br>
++};<br>
++<br>
++static struct exynos_thermal_zone *th_zone;<br>
++static void exynos_unregister_thermal(void);<br>
++static int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf=
+);<br>
++<br>
++/* Get mode callback functions for thermal zone */<br>
++static int exynos_get_mode(struct thermal_zone_device *thermal,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 enum thermal_device_mode *mod=
+e)<br>
++{<br>
++ =A0 =A0 =A0 if (th_zone)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 *mode =3D th_zone-&gt;mode;<br>
++ =A0 =A0 =A0 return 0;<br>
++}<br>
++<br>
++/* Set mode callback functions for thermal zone */<br>
++static int exynos_set_mode(struct thermal_zone_device *thermal,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 enum thermal_device_mode mode=
+)<br>
++{<br>
++ =A0 =A0 =A0 if (!th_zone-&gt;therm_dev) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_notice(&quot;thermal zone not registered\n=
+&quot;);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;<br>
++ =A0 =A0 =A0 }<br>
++<br>
++ =A0 =A0 =A0 mutex_lock(&amp;th_zone-&gt;therm_dev-&gt;lock);<br>
++<br>
++ =A0 =A0 =A0 if (mode =3D=3D THERMAL_DEVICE_ENABLED)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 th_zone-&gt;therm_dev-&gt;polling_delay =3D I=
+DLE_INTERVAL;<br>
++ =A0 =A0 =A0 else<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 th_zone-&gt;therm_dev-&gt;polling_delay =3D 0=
+;<br>
++<br>
++ =A0 =A0 =A0 mutex_unlock(&amp;th_zone-&gt;therm_dev-&gt;lock);<br>
++<br>
++ =A0 =A0 =A0 th_zone-&gt;mode =3D mode;<br>
++ =A0 =A0 =A0 thermal_zone_device_update(th_zone-&gt;therm_dev);<br></block=
+quote><div>I think it should be like this:<br>if (mode =3D=3D THERMAL_DEVIC=
+E_ENABLED)<br>=A0=A0=A0 thermal_zone_device_update(th_zone-&gt;therm_dev);<=
+br>else<br>
+=A0=A0=A0 disable cooling device;<br><br>Imagine that when CPU goes high an=
+d the frequency is limited to low,<br>and the you think it is safe I want a=
+ high speed CPU, then you disable<br>the thermal mode by sysfs, but the CPU=
+ frequency is still low.<br>
+<br> </div><blockquote class=3D"gmail_quote" style=3D"margin:0pt 0pt 0pt 0.=
+8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex">
++ =A0 =A0 =A0 pr_info(&quot;thermal polling set for duration=3D%d msec\n&qu=
+ot;,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 th_zone-&gt;t=
+herm_dev-&gt;polling_delay);<br>
++ =A0 =A0 =A0 return 0;<br>
++}<br>
++<br>
++/*<br>
++ * This function may be called from interrupt based temperature sensor<br>
++ * when threshold is changed.<br>
++ */<br>
++static void exynos_report_trigger(void)<br>
++{<br>
++ =A0 =A0 =A0 unsigned int i;<br>
++ =A0 =A0 =A0 char data[10];<br>
++ =A0 =A0 =A0 char *envp[] =3D { data, NULL };<br>
++<br>
++ =A0 =A0 =A0 if (!th_zone || !th_zone-&gt;therm_dev)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return;<br>
++<br>
++ =A0 =A0 =A0 thermal_zone_device_update(th_zone-&gt;therm_dev);<br>
++<br>
++ =A0 =A0 =A0 mutex_lock(&amp;th_zone-&gt;therm_dev-&gt;lock);<br>
++ =A0 =A0 =A0 /* Find the level for which trip happened */<br>
++ =A0 =A0 =A0 for (i =3D 0; i &lt; th_zone-&gt;sensor_conf-&gt;trip_data.tr=
+ip_count; i++) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (th_zone-&gt;therm_dev-&gt;last_temperatur=
+e &lt;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 th_zone-&gt;sensor_conf-&gt;t=
+rip_data.trip_val[i] * MCELSIUS)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
++ =A0 =A0 =A0 }<br>
++<br>
++ =A0 =A0 =A0 if (th_zone-&gt;mode =3D=3D THERMAL_DEVICE_ENABLED) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (i &gt; 0)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 th_zone-&gt;therm_dev-&gt;pol=
+ling_delay =3D ACTIVE_INTERVAL;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 else<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 th_zone-&gt;therm_dev-&gt;pol=
+ling_delay =3D IDLE_INTERVAL;<br>
++ =A0 =A0 =A0 }<br>
++<br>
++ =A0 =A0 =A0 snprintf(data, sizeof(data), &quot;%u&quot;, i);<br>
++ =A0 =A0 =A0 kobject_uevent_env(&amp;th_zone-&gt;therm_dev-&gt;device.kobj=
+, KOBJ_CHANGE, envp);<br>
++ =A0 =A0 =A0 mutex_unlock(&amp;th_zone-&gt;therm_dev-&gt;lock);<br>
++}<br>
++<br>
++/* Get trip type callback functions for thermal zone */<br>
++static int exynos_get_trip_type(struct thermal_zone_device *thermal, int t=
+rip,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0enum therm=
+al_trip_type *type)<br>
++{<br>
++ =A0 =A0 =A0 switch (GET_ZONE(trip)) {<br>
++ =A0 =A0 =A0 case MONITOR_ZONE:<br>
++ =A0 =A0 =A0 case WARN_ZONE:<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 *type =3D THERMAL_TRIP_ACTIVE;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
++ =A0 =A0 =A0 case PANIC_ZONE:<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 *type =3D THERMAL_TRIP_CRITICAL;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
++ =A0 =A0 =A0 default:<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;<br>
++ =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 return 0;<br>
++}<br>
++<br>
++/* Get trip temperature callback functions for thermal zone */<br>
++static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int t=
+rip,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 unsigned long=
+ *temp)<br>
++{<br>
++ =A0 =A0 =A0 if (trip &lt; GET_TRIP(MONITOR_ZONE) || trip &gt; GET_TRIP(PA=
+NIC_ZONE))<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;<br>
++<br>
++ =A0 =A0 =A0 *temp =3D th_zone-&gt;sensor_conf-&gt;trip_data.trip_val[trip=
+];<br>
++ =A0 =A0 =A0 /* convert the temperature into millicelsius */<br>
++ =A0 =A0 =A0 *temp =3D *temp * MCELSIUS;<br>
++<br>
++ =A0 =A0 =A0 return 0;<br>
++}<br>
++<br>
++/* Get critical temperature callback functions for thermal zone */<br>
++static int exynos_get_crit_temp(struct thermal_zone_device *thermal,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 unsigned long=
+ *temp)<br>
++{<br>
++ =A0 =A0 =A0 int ret;<br>
++ =A0 =A0 =A0 /* Panic zone */<br>
++ =A0 =A0 =A0 ret =3D exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), t=
+emp);<br>
++ =A0 =A0 =A0 return ret;<br>
++}<br>
++<br>
++/* Bind callback functions for thermal zone */<br>
++static int exynos_bind(struct thermal_zone_device *thermal,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct thermal_cooling_device=
+ *cdev)<br>
++{<br>
++ =A0 =A0 =A0 int ret =3D 0, i;<br>
++<br>
++ =A0 =A0 =A0 /* find the cooling device registered*/<br>
++ =A0 =A0 =A0 for (i =3D 0; i &lt; th_zone-&gt;cool_dev_size; i++)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (cdev =3D=3D th_zone-&gt;cool_dev[i])<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
++<br>
++ =A0 =A0 =A0 /*No matching cooling device*/<br>
++ =A0 =A0 =A0 if (i =3D=3D th_zone-&gt;cool_dev_size)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;<br>
++<br>
++ =A0 =A0 =A0 switch (GET_ZONE(i)) {<br>
++ =A0 =A0 =A0 case MONITOR_ZONE:<br>
++ =A0 =A0 =A0 case WARN_ZONE:<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (thermal_zone_bind_cooling_device(thermal,=
+ i, cdev)) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err(&quot;error binding co=
+oling dev inst 0\n&quot;);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
++ =A0 =A0 =A0 default:<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;<br>
++ =A0 =A0 =A0 }<br>
++<br>
++ =A0 =A0 =A0 return ret;<br>
++}<br>
++<br>
++/* Unbind callback functions for thermal zone */<br>
++static int exynos_unbind(struct thermal_zone_device *thermal,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct thermal_cooling_device=
+ *cdev)<br>
++{<br>
++ =A0 =A0 =A0 int ret =3D 0, i;<br>
++<br>
++ =A0 =A0 =A0 /* find the cooling device registered*/<br>
++ =A0 =A0 =A0 for (i =3D 0; i &lt; th_zone-&gt;cool_dev_size; i++)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (cdev =3D=3D th_zone-&gt;cool_dev[i])<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
++<br>
++ =A0 =A0 =A0 /*No matching cooling device*/<br>
++ =A0 =A0 =A0 if (i =3D=3D th_zone-&gt;cool_dev_size)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return 0;<br>
++<br>
++ =A0 =A0 =A0 switch (GET_ZONE(i)) {<br>
++ =A0 =A0 =A0 case MONITOR_ZONE:<br>
++ =A0 =A0 =A0 case WARN_ZONE:<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (thermal_zone_unbind_cooling_device(therma=
+l, i, cdev)) {=A0<br></blockquote><div>Cooling devices should be disabled b=
+efore unbinding?<br><br></div><blockquote class=3D"gmail_quote" style=3D"ma=
+rgin:0pt 0pt 0pt 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:=
+1ex">
 
-Tony
- 
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err(&quot;error unbinding =
+cooling dev\n&quot;);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 break;<br>
++ =A0 =A0 =A0 default:<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;<br>
++ =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 return ret;<br>
++}<br>
++<br>
++/* Get temperature callback functions for thermal zone */<br>
++static int exynos_get_temp(struct thermal_zone_device *thermal,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 unsigned long *temp)<br>
++{<br>
++ =A0 =A0 =A0 void *data;<br>
++<br>
++ =A0 =A0 =A0 if (!th_zone-&gt;sensor_conf) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_info(&quot;Temperature sensor not initiali=
+sed\n&quot;);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;<br>
++ =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 data =3D th_zone-&gt;sensor_conf-&gt;private_data;<br>
++ =A0 =A0 =A0 *temp =3D th_zone-&gt;sensor_conf-&gt;read_temperature(data);=
+<br>
++ =A0 =A0 =A0 /* convert the temperature into millicelsius */<br>
++ =A0 =A0 =A0 *temp =3D *temp * MCELSIUS;<br>
++ =A0 =A0 =A0 return 0;<br>
++}<br>
++<br>
++/* Operation callback functions for thermal zone */<br>
++static struct thermal_zone_device_ops const exynos_dev_ops =3D {<br>
++ =A0 =A0 =A0 .bind =3D exynos_bind,<br>
++ =A0 =A0 =A0 .unbind =3D exynos_unbind,<br>
++ =A0 =A0 =A0 .get_temp =3D exynos_get_temp,<br>
++ =A0 =A0 =A0 .get_mode =3D exynos_get_mode,<br>
++ =A0 =A0 =A0 .set_mode =3D exynos_set_mode,<br>
++ =A0 =A0 =A0 .get_trip_type =3D exynos_get_trip_type,<br>
++ =A0 =A0 =A0 .get_trip_temp =3D exynos_get_trip_temp,<br>
++ =A0 =A0 =A0 .get_crit_temp =3D exynos_get_crit_temp,<br>
++};<br>
++<br>
++/* Register with the in-kernel thermal management */<br>
++static int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf=
+)<br>
++{<br>
++ =A0 =A0 =A0 int ret, count, tab_size;<br>
++ =A0 =A0 =A0 struct freq_clip_table *tab_ptr, *clip_data;<br>
++<br>
++ =A0 =A0 =A0 if (!sensor_conf || !sensor_conf-&gt;read_temperature) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err(&quot;Temperature sensor not initialis=
+ed\n&quot;);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -EINVAL;<br>
++ =A0 =A0 =A0 }<br>
++<br>
++ =A0 =A0 =A0 th_zone =3D kzalloc(sizeof(struct exynos_thermal_zone), GFP_K=
+ERNEL);<br>
++ =A0 =A0 =A0 if (!th_zone)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENOMEM;<br>
++<br>
++ =A0 =A0 =A0 th_zone-&gt;sensor_conf =3D sensor_conf;<br>
++<br>
++ =A0 =A0 =A0 tab_ptr =3D (struct freq_clip_table *)sensor_conf-&gt;cooling=
+_data.freq_data;<br>
++ =A0 =A0 =A0 tab_size =3D sensor_conf-&gt;cooling_data.freq_clip_count;<br=
+>
++<br>
++ =A0 =A0 =A0 /* Register the cpufreq cooling device */<br>
++ =A0 =A0 =A0 for (count =3D 0; count &lt; tab_size; count++) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 clip_data =3D (struct freq_clip_table *)&amp;=
+(tab_ptr[count]);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 clip_data-&gt;mask_val =3D cpumask_of(0);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 th_zone-&gt;cool_dev[count] =3D cpufreq_cooli=
+ng_register(<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 clip_data, 1);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (IS_ERR(th_zone-&gt;cool_dev[count])) {<br=
+>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err(&quot;Failed to regist=
+er cpufreq cooling device\n&quot;);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 th_zone-&gt;cool_dev_size =3D=
+ count;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_unregister;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 th_zone-&gt;cool_dev_size =3D count;<br>
++<br>
++ =A0 =A0 =A0 th_zone-&gt;therm_dev =3D thermal_zone_device_register(sensor=
+_conf-&gt;name,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 EXYNOS_ZONE_COUNT, NULL, &amp=
+;exynos_dev_ops, 0, 0, 0,<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 IDLE_INTERVAL);<br>
++<br>
++ =A0 =A0 =A0 if (IS_ERR(th_zone-&gt;therm_dev)) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 pr_err(&quot;Failed to register thermal zone =
+device\n&quot;);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_unregister;<br>
++ =A0 =A0 =A0 }<br>
++ =A0 =A0 =A0 th_zone-&gt;mode =3D THERMAL_DEVICE_ENABLED;<br>
++<br>
++ =A0 =A0 =A0 pr_info(&quot;Exynos: Kernel Thermal management registered\n&=
+quot;);<br>
++<br>
++ =A0 =A0 =A0 return 0;<br>
++<br>
++err_unregister:<br>
++ =A0 =A0 =A0 exynos_unregister_thermal();<br>
++ =A0 =A0 =A0 return ret;<br>
++}<br>
++<br>
++/* Un-Register with the in-kernel thermal management */<br>
++static void exynos_unregister_thermal(void)<br>
++{<br>
++ =A0 =A0 =A0 int i;<br>
++<br>
++ =A0 =A0 =A0 for (i =3D 0; i &lt; th_zone-&gt;cool_dev_size; i++) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (th_zone &amp;&amp; th_zone-&gt;cool_dev[i=
+])<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 cpufreq_cooling_unregister(th=
+_zone-&gt;cool_dev[i]);<br>
++ =A0 =A0 =A0 }<br>
++<br>
++ =A0 =A0 =A0 if (th_zone &amp;&amp; th_zone-&gt;therm_dev)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 thermal_zone_device_unregister(th_zone-&gt;th=
+erm_dev);<br>
++<br>
++ =A0 =A0 =A0 kfree(th_zone);<br>
++<br>
++ =A0 =A0 =A0 pr_info(&quot;Exynos: Kernel Thermal management unregistered\=
+n&quot;);<br>
++}<br>
++<br>
+=A0/*<br>
+=A0 * TMU treats temperature as a mapped temperature code.<br>
+=A0 * The temperature is converted differently depending on the calibration=
+ type.<br>
+@@ -337,6 +646,7 @@ static void exynos_tmu_work(struct work_struct *work)<b=
+r>
+<br>
+=A0 =A0 =A0 =A0 clk_disable(data-&gt;clk);<br>
+=A0 =A0 =A0 =A0 mutex_unlock(&amp;data-&gt;lock);<br>
++ =A0 =A0 =A0 exynos_report_trigger();<br>
+=A0 =A0 =A0 =A0 enable_irq(data-&gt;irq);<br>
+=A0}<br>
+<br>
+@@ -349,12 +659,16 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)<=
+br>
+<br>
+=A0 =A0 =A0 =A0 return IRQ_HANDLED;<br>
+=A0}<br>
+-<br>
++static struct thermal_sensor_conf exynos_sensor_conf =3D {<br>
++ =A0 =A0 =A0 .name =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =3D &quot;exynos-th=
+erm&quot;,<br>
++ =A0 =A0 =A0 .read_temperature =A0 =A0 =A0 =3D (int (*)(void *))exynos_tmu=
+_read,<br>
++}<br>
++;<br>
+=A0static int __devinit exynos_tmu_probe(struct platform_device *pdev)<br>
+=A0{<br>
+=A0 =A0 =A0 =A0 struct exynos_tmu_data *data;<br>
+=A0 =A0 =A0 =A0 struct exynos_tmu_platform_data *pdata =3D pdev-&gt;dev.pla=
+tform_data;<br>
+- =A0 =A0 =A0 int ret;<br>
++ =A0 =A0 =A0 int ret, i;<br>
+<br>
+=A0 =A0 =A0 =A0 if (!pdata) {<br>
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&amp;pdev-&gt;dev, &quot;No platfor=
+m init data supplied.\n&quot;);<br>
+@@ -432,6 +746,30 @@ static int __devinit exynos_tmu_probe(struct platform_=
+device *pdev)<br>
+<br>
+=A0 =A0 =A0 =A0 exynos_tmu_control(pdev, true);<br>
+<br>
++ =A0 =A0 =A0 /*Register the sensor with thermal management interface*/<br>
++ =A0 =A0 =A0 (&amp;exynos_sensor_conf)-&gt;private_data =3D data;<br>
++ =A0 =A0 =A0 exynos_sensor_conf.trip_data.trip_count =3D pdata-&gt;trigger=
+_level0_en +<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata-&gt;trigger_level1_en +=
+ pdata-&gt;trigger_level2_en +<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata-&gt;trigger_level3_en;<=
+br>
++<br>
++ =A0 =A0 =A0 for (i =3D 0; i &lt; exynos_sensor_conf.trip_data.trip_count;=
+ i++)<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 exynos_sensor_conf.trip_data.trip_val[i] =3D<=
+br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 pdata-&gt;threshold + pdata-&=
+gt;trigger_levels[i];<br>
++<br>
++ =A0 =A0 =A0 exynos_sensor_conf.cooling_data.freq_clip_count =3D<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 pdata-&gt;freq_tab_count;<br>
++ =A0 =A0 =A0 for (i =3D 0; i &lt; pdata-&gt;freq_tab_count; i++) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 exynos_sensor_conf.cooling_data.freq_data[i].=
+freq_clip_max =3D<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 pdata-&gt;freq_tab[i].freq_clip_max;<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 exynos_sensor_conf.cooling_data.freq_data[i].=
+temp_level =3D<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 pdata-&gt;freq_tab[i].temp_level;<br>
++ =A0 =A0 =A0 }<br>
++<br>
++ =A0 =A0 =A0 ret =3D exynos_register_thermal(&amp;exynos_sensor_conf);<br>
++ =A0 =A0 =A0 if (ret) {<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(&amp;pdev-&gt;dev, &quot;Failed to re=
+gister thermal interface\n&quot;);<br>
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_clk;<br>
++ =A0 =A0 =A0 }<br>
+=A0 =A0 =A0 =A0 return 0;<br>
+=A0err_clk:<br>
+=A0 =A0 =A0 =A0 platform_set_drvdata(pdev, NULL);<br>
+@@ -454,6 +792,8 @@ static int __devexit exynos_tmu_remove(struct platform_=
+device *pdev)<br>
+<br>
+=A0 =A0 =A0 =A0 exynos_tmu_control(pdev, false);<br>
+<br>
++ =A0 =A0 =A0 exynos_unregister_thermal();<br>
++<br>
+=A0 =A0 =A0 =A0 clk_put(data-&gt;clk);<br>
+<br>
+=A0 =A0 =A0 =A0 free_irq(data-&gt;irq, data);<br>
+diff --git a/include/linux/platform_data/exynos_thermal.h b/include/linux/p=
+latform_data/exynos_thermal.h<br>
+index c980af6..858eaca 100644<br>
+--- a/include/linux/platform_data/exynos_thermal.h<br>
++++ b/include/linux/platform_data/exynos_thermal.h<br>
+@@ -21,6 +21,7 @@<br>
+<br>
+=A0#ifndef _LINUX_EXYNOS_THERMAL_H<br>
+=A0#define _LINUX_EXYNOS_THERMAL_H<br>
++#include &lt;linux/cpu_cooling.h&gt;<br>
+<br>
+=A0enum calibration_type {<br>
+=A0 =A0 =A0 =A0 TYPE_ONE_POINT_TRIMMING,<br>
+@@ -72,6 +73,9 @@ enum soc_type {<br>
+=A0 * @type: determines the type of SOC<br>
+=A0 * @efuse_value: platform defined fuse value<br>
+=A0 * @cal_type: calibration type for temperature<br>
++ * @freq_clip_table: Table representing frequency reduction percentage.<br=
+>
++ * @freq_tab_count: Count of the above table as frequency reduction may<br=
+>
++ * =A0 =A0 applicable to only some of the trigger levels.<br>
+=A0 *<br>
+=A0 * This structure is required for configuration of exynos_tmu driver.<br=
+>
+=A0 */<br>
+@@ -90,5 +94,7 @@ struct exynos_tmu_platform_data {<br>
+<br>
+=A0 =A0 =A0 =A0 enum calibration_type cal_type;<br>
+=A0 =A0 =A0 =A0 enum soc_type type;<br>
++ =A0 =A0 =A0 struct freq_clip_table freq_tab[4];<br>
++ =A0 =A0 =A0 unsigned int freq_tab_count;<br>
+=A0};<br>
+=A0#endif /* _LINUX_EXYNOS_THERMAL_H */<br>
+<span class=3D"HOEnZb"><font color=3D"#888888">--<br>
+1.7.1<br>
+<br>
+<br>
+_______________________________________________<br>
+linaro-dev mailing list<br>
+<a href=3D"mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org">linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org<=
+/a><br>
+<a href=3D"http://lists.linaro.org/mailman/listinfo/linaro-dev" target=3D"_=
+blank">http://lists.linaro.org/mailman/listinfo/linaro-dev</a><br>
+</font></span></blockquote></div><br>
 
-From: Tony Lindgren <tony@atomide.com>
-Date: Wed, 8 Aug 2012 23:13:03 -0700
-Subject: [PATCH] ARM: OMAP2+: Initialize things for omap_type() to simplify
- SoC detection
+--e89a8f23594b760d9904c6e7efde--
 
-Let's rename omap2_set_globals_tap() to omap2_set_globals_id() and update
-the comments to remove old comments about map_io() as we don't need SoC
-detection for map_io() any longer.
 
-Let's also initialize control_status_reg with omap2_set_globals_id()
-so we can avoid SoC tests every time omap_type() gets called.
+--===============0519213679858593677==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Note that this patch sets the ti81xx to always return GP mode as
-the mode bits seem to be marked as reserved in ti81xx TRM.
+_______________________________________________
+linaro-dev mailing list
+linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+http://lists.linaro.org/mailman/listinfo/linaro-dev
 
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-
-diff --git a/arch/arm/mach-omap2/common.c b/arch/arm/mach-omap2/common.c
-index 069f972..64afeee 100644
---- a/arch/arm/mach-omap2/common.c
-+++ b/arch/arm/mach-omap2/common.c
-@@ -31,7 +31,7 @@
- 
- static void __init __omap2_set_globals(struct omap_globals *omap2_globals)
- {
--	omap2_set_globals_tap(omap2_globals);
-+	omap2_set_globals_id(omap2_globals);
- 	omap2_set_globals_sdrc(omap2_globals);
- 	omap2_set_globals_control(omap2_globals);
- 	omap2_set_globals_prcm(omap2_globals);
-@@ -45,6 +45,8 @@ static struct omap_globals omap242x_globals = {
- 	.sdrc	= OMAP2_L3_IO_ADDRESS(OMAP2420_SDRC_BASE),
- 	.sms	= OMAP2_L3_IO_ADDRESS(OMAP2420_SMS_BASE),
- 	.ctrl	= OMAP2_L4_IO_ADDRESS(OMAP242X_CTRL_BASE),
-+	.ctrl_status	= OMAP2_L4_IO_ADDRESS(OMAP242X_CTRL_BASE) +
-+				OMAP24XX_CONTROL_STATUS,
- 	.prm	= OMAP2_L4_IO_ADDRESS(OMAP2420_PRM_BASE),
- 	.cm	= OMAP2_L4_IO_ADDRESS(OMAP2420_CM_BASE),
- };
-@@ -68,6 +70,8 @@ static struct omap_globals omap243x_globals = {
- 	.sdrc	= OMAP2_L3_IO_ADDRESS(OMAP243X_SDRC_BASE),
- 	.sms	= OMAP2_L3_IO_ADDRESS(OMAP243X_SMS_BASE),
- 	.ctrl	= OMAP2_L4_IO_ADDRESS(OMAP243X_CTRL_BASE),
-+	.ctrl_status	= OMAP2_L4_IO_ADDRESS(OMAP243X_CTRL_BASE) +
-+				OMAP24XX_CONTROL_STATUS,
- 	.prm	= OMAP2_L4_IO_ADDRESS(OMAP2430_PRM_BASE),
- 	.cm	= OMAP2_L4_IO_ADDRESS(OMAP2430_CM_BASE),
- };
-@@ -91,6 +95,8 @@ static struct omap_globals omap3_globals = {
- 	.sdrc	= OMAP2_L3_IO_ADDRESS(OMAP343X_SDRC_BASE),
- 	.sms	= OMAP2_L3_IO_ADDRESS(OMAP343X_SMS_BASE),
- 	.ctrl	= OMAP2_L4_IO_ADDRESS(OMAP343X_CTRL_BASE),
-+	.ctrl_status	= OMAP2_L4_IO_ADDRESS(OMAP343X_CTRL_BASE) +
-+				OMAP343X_CONTROL_STATUS,
- 	.prm	= OMAP2_L4_IO_ADDRESS(OMAP3430_PRM_BASE),
- 	.cm	= OMAP2_L4_IO_ADDRESS(OMAP3430_CM_BASE),
- };
-@@ -117,6 +123,8 @@ static struct omap_globals ti81xx_globals = {
- 	.class  = OMAP343X_CLASS,
- 	.tap    = OMAP2_L4_IO_ADDRESS(TI81XX_TAP_BASE),
- 	.ctrl   = OMAP2_L4_IO_ADDRESS(TI81XX_CTRL_BASE),
-+	.ctrl_status   = OMAP2_L4_IO_ADDRESS(TI81XX_CTRL_BASE) +
-+				TI81XX_CONTROL_STATUS,
- 	.prm    = OMAP2_L4_IO_ADDRESS(TI81XX_PRCM_BASE),
- 	.cm     = OMAP2_L4_IO_ADDRESS(TI81XX_PRCM_BASE),
- };
-@@ -140,6 +148,8 @@ static struct omap_globals am33xx_globals = {
- 	.class  = AM335X_CLASS,
- 	.tap    = AM33XX_L4_WK_IO_ADDRESS(AM33XX_TAP_BASE),
- 	.ctrl   = AM33XX_L4_WK_IO_ADDRESS(AM33XX_CTRL_BASE),
-+	.ctrl_status = AM33XX_L4_WK_IO_ADDRESS(AM33XX_CTRL_BASE) +
-+			AM33XX_CONTROL_STATUS,
- 	.prm    = AM33XX_L4_WK_IO_ADDRESS(AM33XX_PRCM_BASE),
- 	.cm     = AM33XX_L4_WK_IO_ADDRESS(AM33XX_PRCM_BASE),
- };
-@@ -160,6 +170,8 @@ static struct omap_globals omap4_globals = {
- 	.class	= OMAP443X_CLASS,
- 	.tap	= OMAP2_L4_IO_ADDRESS(OMAP443X_SCM_BASE),
- 	.ctrl	= OMAP2_L4_IO_ADDRESS(OMAP443X_SCM_BASE),
-+	.ctrl_status	= OMAP2_L4_IO_ADDRESS(OMAP443X_SCM_BASE) +
-+				OMAP4_CTRL_MODULE_CORE_STATUS,
- 	.ctrl_pad	= OMAP2_L4_IO_ADDRESS(OMAP443X_CTRL_BASE),
- 	.prm	= OMAP2_L4_IO_ADDRESS(OMAP4430_PRM_BASE),
- 	.cm	= OMAP2_L4_IO_ADDRESS(OMAP4430_CM_BASE),
-@@ -183,6 +195,8 @@ static struct omap_globals omap5_globals = {
- 	.class	= OMAP54XX_CLASS,
- 	.tap	= OMAP2_L4_IO_ADDRESS(OMAP54XX_SCM_BASE),
- 	.ctrl	= OMAP2_L4_IO_ADDRESS(OMAP54XX_SCM_BASE),
-+	.ctrl_status	= OMAP2_L4_IO_ADDRESS(OMAP54XX_SCM_BASE) +
-+				OMAP5XXX_CONTROL_STATUS,
- 	.ctrl_pad	= OMAP2_L4_IO_ADDRESS(OMAP54XX_CTRL_BASE),
- 	.prm	= OMAP2_L4_IO_ADDRESS(OMAP54XX_PRM_BASE),
- 	.cm	= OMAP2_L4_IO_ADDRESS(OMAP54XX_CM_CORE_AON_BASE),
-@@ -192,7 +206,7 @@ static struct omap_globals omap5_globals = {
- 
- void __init omap2_set_globals_5xxx(void)
- {
--	omap2_set_globals_tap(&omap5_globals);
-+	omap2_set_globals_id(&omap5_globals);
- 	omap2_set_globals_control(&omap5_globals);
- 	omap2_set_globals_prcm(&omap5_globals);
- }
-diff --git a/arch/arm/mach-omap2/common.h b/arch/arm/mach-omap2/common.h
-index 1f65b18..a3cee8c 100644
---- a/arch/arm/mach-omap2/common.h
-+++ b/arch/arm/mach-omap2/common.h
-@@ -168,6 +168,7 @@ struct omap_globals {
- 	void __iomem	*sdrc;           /* SDRAM Controller */
- 	void __iomem	*sms;            /* SDRAM Memory Scheduler */
- 	void __iomem	*ctrl;           /* System Control Module */
-+	void __iomem	*ctrl_status;	/* Control status register */
- 	void __iomem	*ctrl_pad;	/* PAD Control Module */
- 	void __iomem	*prm;            /* Power and Reset Management */
- 	void __iomem	*cm;             /* Clock Management */
-@@ -184,7 +185,7 @@ void omap2_set_globals_ti81xx(void);
- void omap2_set_globals_am33xx(void);
- 
- /* These get called from omap2_set_globals_xxxx(), do not call these */
--void omap2_set_globals_tap(struct omap_globals *);
-+void omap2_set_globals_id(struct omap_globals *);
- #if defined(CONFIG_SOC_HAS_OMAP2_SDRC)
- void omap2_set_globals_sdrc(struct omap_globals *);
- #else
-diff --git a/arch/arm/mach-omap2/control.h b/arch/arm/mach-omap2/control.h
-index b8cdc85..cf92e06 100644
---- a/arch/arm/mach-omap2/control.h
-+++ b/arch/arm/mach-omap2/control.h
-@@ -59,6 +59,7 @@
- 
- /* TI81XX spefic control submodules */
- #define TI81XX_CONTROL_DEVCONF		0x600
-+#define TI81XX_CONTROL_STATUS		0x040
- 
- /* Control register offsets - read/write with omap_ctrl_{read,write}{bwl}() */
- 
-diff --git a/arch/arm/mach-omap2/id.c b/arch/arm/mach-omap2/id.c
-index 40373db..19cc66d 100644
---- a/arch/arm/mach-omap2/id.c
-+++ b/arch/arm/mach-omap2/id.c
-@@ -29,6 +29,7 @@
- #include "control.h"
- 
- static unsigned int omap_revision;
-+static unsigned int control_status;
- static const char *cpu_rev;
- u32 omap_features;
- 
-@@ -40,31 +41,13 @@ EXPORT_SYMBOL(omap_rev);
- 
- int omap_type(void)
- {
--	u32 val = 0;
--
--	if (cpu_is_omap24xx()) {
--		val = omap_ctrl_readl(OMAP24XX_CONTROL_STATUS);
--	} else if (soc_is_am33xx()) {
--		val = omap_ctrl_readl(AM33XX_CONTROL_STATUS);
--	} else if (cpu_is_omap34xx()) {
--		val = omap_ctrl_readl(OMAP343X_CONTROL_STATUS);
--	} else if (cpu_is_omap44xx()) {
--		val = omap_ctrl_readl(OMAP4_CTRL_MODULE_CORE_STATUS);
--	} else if (soc_is_omap54xx()) {
--		val = omap_ctrl_readl(OMAP5XXX_CONTROL_STATUS);
--		val &= OMAP5_DEVICETYPE_MASK;
--		val >>= 6;
--		goto out;
--	} else {
--		pr_err("Cannot detect omap type!\n");
--		goto out;
-+	if (!control_status) {
-+		pr_err("Uninitialized control_status!\n");
-+		WARN_ON(1);
-+		return 0;
- 	}
- 
--	val &= OMAP2_DEVICETYPE_MASK;
--	val >>= 8;
--
--out:
--	return val;
-+	return control_status;
- }
- EXPORT_SYMBOL(omap_type);
- 
-@@ -554,13 +537,9 @@ void __init omap5xxx_check_revision(void)
- }
- 
- /*
-- * Set up things for map_io and processor detection later on. Gets called
-- * pretty much first thing from board init. For multi-omap, this gets
-- * cpu_is_omapxxxx() working accurately enough for map_io. Then we'll try to
-- * detect the exact revision later on in omap2_detect_revision() once map_io
-- * is done.
-+ * Initialize things for SoC detecttion. Gets called from init_early.
-  */
--void __init omap2_set_globals_tap(struct omap_globals *omap2_globals)
-+void __init omap2_set_globals_id(struct omap_globals *omap2_globals)
- {
- 	omap_revision = omap2_globals->class;
- 	tap_base = omap2_globals->tap;
-@@ -569,4 +548,16 @@ void __init omap2_set_globals_tap(struct omap_globals *omap2_globals)
- 		tap_prod_id = 0x0210;
- 	else
- 		tap_prod_id = 0x0208;
-+
-+	control_status = __raw_readl(omap2_globals->ctrl_status);
-+	if (cpu_is_ti81xx()) {
-+		/* At least ti81xx TRM sprugx8.pdf lists type bits as reserved */
-+		control_status = OMAP2_DEVICE_TYPE_GP;
-+	} else if (soc_is_omap54xx()) {
-+		control_status &= OMAP5_DEVICETYPE_MASK;
-+		control_status >>= 6;
-+	} else {
-+		control_status &= OMAP2_DEVICETYPE_MASK;
-+		control_status >>= 8;
-+	}
- }
+--===============0519213679858593677==--
