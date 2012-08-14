@@ -1,98 +1,58 @@
-From: Sergei Trofimovich <slyich@gmail.com>
-Subject: bisected regression: v3.6-rc1: resume from s2ram does not restore
- ata_piix (v3.5 worked)
-Date: Mon, 13 Aug 2012 12:20:42 +0300
-Message-ID: <20120813122042.4fd81835@sf>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: [PATCH] cpuidle: Prevent null pointer dereference in
+ cpuidle_coupled_cpu_notify
+Date: Tue, 14 Aug 2012 12:52:31 +0100
+Message-ID: <1344945151.2674.56.camel@linaro1.home>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/9adQ69i6ES4fpN.RZn2v/l1"; protocol="application/pgp-signature"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@lists.linux-foundation.org, Matthew Garrett <mjg@redhat.com>, Holger Macht <holger@homac.de>, Lin Ming <ming.m.lin@intel.com>, Jeff Garzik <jgarzik@redhat.com>
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org, Colin Cross <ccross@android.com>
 List-Id: linux-pm@vger.kernel.org
 
---Sig_/9adQ69i6ES4fpN.RZn2v/l1
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+When a kernel is built to support multiple hardware types it's possible
+that CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED is set but the hardware the
+kernel is run on doesn't support cpuidle and therefore doesn't load a
+driver for it. In this case, when the system is shut down,
+cpuidle_coupled_cpu_notify() gets called with cpuidle_devices set to
+NULL. There are quite possibly other circumstances where this
+situation can also occur and we should check for it.
 
-It's a laptop compaq 2510p (~5 years old core2 laptop) with a
-single SATA drive:
+Signed-off-by: Jon Medhurst <tixy@linaro.org>
+---
 
-00:1f.1 IDE interface: Intel Corporation 82801HM/HEM (ICH8M/ICH8M-E) IDE Co=
-ntroller (rev 03)
-        Subsystem: Hewlett-Packard Company Device 30c9
-        Kernel driver in use: ata_piix
+Would a better fix be to delay registering the notifier until
+cpuidle_coupled_register_device() is called? Though following through
+with that logic would require unregistering the notifier when cpuidle
+driver is unregistered and it still seems possible that there would
+still be a window of opportunity for things to go wrong.
 
-kernel v3.5 worked fine. 3.6-rc1 resumes, but disk stays inaccessble.
-Seems to be 100% reproducible. Bisection gave sane result[1].
 
-I was not able to revert it as-is, thus couldn't verify the revert
-helps on top of master.
+ drivers/cpuidle/coupled.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Do you need more info?
-
-Thanks!
-
-[1]
-commit 30dcf76acc695cbd2fa919e294670fe9552e16e7
-Author: Matthew Garrett <mjg@redhat.com>
-Date:   Mon Jun 25 16:13:04 2012 +0800
-
-    libata: migrate ACPI code over to new bindings
-   =20
-    Now that we have the ability to directly glue the ACPI namespace to the
-    driver model in libata, we don't need the custom code to handle the same
-    thing. Remove it and migrate the functions over to the new code.
-   =20
-    Signed-off-by: Matthew Garrett <mjg@redhat.com>
-    Signed-off-by: Holger Macht <holger@homac.de>
-    Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-
-:040000 040000 6a659a9d4a92b2085f6d0b58484cb2f82cd12cfa 125fe5d5fa8b208a087=
-92b03e752571d825465d2 M      drivers
-:040000 040000 b7c3819be4e82ae6e2ac9688055aeb2bc1bc4ebd 9cbc8fd15b147a178f7=
-23bcdb9e7c34f9868400f M      include
-
-git bisect good 492d542273a4859f8bf8cc7744cdf71ef50b39ea
-# bad: [354b2eac3848bddbcb111079138b907ccca70ae8] libata-acpi: fix up for a=
-cpi_pm_device_sleep_state API
-git bisect bad 354b2eac3848bddbcb111079138b907ccca70ae8
-# bad: [dc7f71f486f4f5fa96f6dcf86833da020cde8a11] sata_dwc_460ex: device tr=
-ee may specify dma_channel
-git bisect bad dc7f71f486f4f5fa96f6dcf86833da020cde8a11
-# bad: [91e4d5a1d7d11ca0b08803a11cb8dc866d2d611f] drivers/acpi/glue: revert=
- accidental license-related 6b66d95895c bits
-git bisect bad 91e4d5a1d7d11ca0b08803a11cb8dc866d2d611f
-# bad: [3bd46600a7a7e938c54df8cdbac9910668c7dfb0] libata-acpi: add ata port=
- runtime D3Cold support
-git bisect bad 3bd46600a7a7e938c54df8cdbac9910668c7dfb0
-# bad: [30dcf76acc695cbd2fa919e294670fe9552e16e7] libata: migrate ACPI code=
- over to new bindings
-git bisect bad 30dcf76acc695cbd2fa919e294670fe9552e16e7
-# good: [6b66d95895c149cbc04d4fac5a2f5477c543a8ae] libata: bind the Linux d=
-evice tree to the ACPI device tree
-git bisect good 6b66d95895c149cbc04d4fac5a2f5477c543a8ae
-# good: [6b66d95895c149cbc04d4fac5a2f5477c543a8ae] libata: bind the Linux d=
-evice tree to the ACPI device tree
-git bisect good 6b66d95895c149cbc04d4fac5a2f5477c543a8ae
-30dcf76acc695cbd2fa919e294670fe9552e16e7 is the first bad commit
-
---=20
-
-  Sergei
-
---Sig_/9adQ69i6ES4fpN.RZn2v/l1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iEYEARECAAYFAlAoxvMACgkQcaHudmEf86r8vgCgiJP/7Jo6K3u25Idbe73wv5ra
-kRUAnjCcdsxe8hvhn1fhoYfnrknGr8oL
-=seCM
------END PGP SIGNATURE-----
-
---Sig_/9adQ69i6ES4fpN.RZn2v/l1--
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index 2c9bf26..c78a5ff 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -681,7 +681,7 @@ static int cpuidle_coupled_cpu_notify(struct notifier_block *nb,
+ 	mutex_lock(&cpuidle_lock);
+ 
+ 	dev = per_cpu(cpuidle_devices, cpu);
+-	if (!dev->coupled)
++	if (!dev || !dev->coupled)
+ 		goto out;
+ 
+ 	switch (action & ~CPU_TASKS_FROZEN) {
+-- 
+1.7.10.4
