@@ -1,8 +1,7 @@
 From: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Subject: [PATCH v6 5/6] ARM: exynos: add thermal sensor driver
-	platform data support
-Date: Thu, 16 Aug 2012 17:11:44 +0530
-Message-ID: <1345117305-8299-6-git-send-email-amit.kachhap@linaro.org>
+Subject: [PATCH v6 6/6] thermal: exynos: Use devm_* functions
+Date: Thu, 16 Aug 2012 17:11:45 +0530
+Message-ID: <1345117305-8299-7-git-send-email-amit.kachhap@linaro.org>
 References: <1345117305-8299-1-git-send-email-amit.kachhap@linaro.org>
 Return-path: <linux-pm-bounces@lists.linux-foundation.org>
 In-Reply-To: <1345117305-8299-1-git-send-email-amit.kachhap@linaro.org>
@@ -16,166 +15,120 @@ List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
 Sender: linux-pm-bounces@lists.linux-foundation.org
 Errors-To: linux-pm-bounces@lists.linux-foundation.org
 To: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>
-Cc: jonghwa lee <jonghwa3.lee@samsung.com>, linux-samsung-soc@vger.kernel.org, SangWook Ju <sw.ju@samsung.com>, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Jean Delvare <khali@linux-fr.org>, Kyungmin Park <kmpark@infradead.org>
+Cc: linux-acpi@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
 List-Id: linux-pm@vger.kernel.org
 
-Add necessary default platform data support needed for TMU driver.  The
-supplied dt/non-dt values are tested for origen exynos4210 and smdk exynos5250
-platforms and only compile tested for exynos4412.
+devm_* functions are used to replace kzalloc, request_mem_region, ioremap
+and request_irq functions in probe call. With the usage of devm_* functions
+explicit freeing and unmapping is not required.
 
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Signed-off-by: Sachin Kamat <sachin.kamat@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Acked-by: Guenter Roeck <guenter.roeck@ericsson.com>
-Cc: SangWook Ju <sw.ju@samsung.com>
-Cc: Durgadoss <durgadoss.r@intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: jonghwa lee <jonghwa3.lee@samsung.com>
-Cc: Kyungmin Park <kmpark@infradead.org>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/thermal/exynos_thermal.c |  111 +++++++++++++++++++++++++++++++++++++-
- 1 files changed, 110 insertions(+), 1 deletions(-)
+ drivers/thermal/exynos_thermal.c |   45 +++++++------------------------------
+ 1 files changed, 9 insertions(+), 36 deletions(-)
 
 diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index e79cdc9..03a99e4 100644
+index 03a99e4..e84acde 100644
 --- a/drivers/thermal/exynos_thermal.c
 +++ b/drivers/thermal/exynos_thermal.c
-@@ -723,14 +723,121 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
- static struct thermal_sensor_conf exynos_sensor_conf = {
- 	.name			= "exynos-therm",
- 	.read_temperature	= (int (*)(void *))exynos_tmu_read,
-+};
-+
-+#if defined(CONFIG_CPU_EXYNOS4210)
-+static struct exynos_tmu_platform_data const exynos4210_default_tmu_data = {
-+	.threshold = 80,
-+	.trigger_levels[0] = 5,
-+	.trigger_levels[1] = 20,
-+	.trigger_levels[2] = 30,
-+	.trigger_level0_en = 1,
-+	.trigger_level1_en = 1,
-+	.trigger_level2_en = 1,
-+	.trigger_level3_en = 0,
-+	.gain = 15,
-+	.reference_voltage = 7,
-+	.cal_type = TYPE_ONE_POINT_TRIMMING,
-+	.freq_tab[0] = {
-+		.freq_clip_max = 800 * 1000,
-+		.temp_level = 85,
-+	},
-+	.freq_tab[1] = {
-+		.freq_clip_max = 200 * 1000,
-+		.temp_level = 100,
-+	},
-+	.freq_tab_count = 2,
-+	.type = SOC_ARCH_EXYNOS4210,
-+};
-+#define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
-+#else
-+#define EXYNOS4210_TMU_DRV_DATA (NULL)
-+#endif
-+
-+#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
-+static struct exynos_tmu_platform_data const exynos_default_tmu_data = {
-+	.trigger_levels[0] = 85,
-+	.trigger_levels[1] = 103,
-+	.trigger_levels[2] = 110,
-+	.trigger_level0_en = 1,
-+	.trigger_level1_en = 1,
-+	.trigger_level2_en = 1,
-+	.trigger_level3_en = 0,
-+	.gain = 8,
-+	.reference_voltage = 16,
-+	.noise_cancel_mode = 4,
-+	.cal_type = TYPE_ONE_POINT_TRIMMING,
-+	.efuse_value = 55,
-+	.freq_tab[0] = {
-+		.freq_clip_max = 800 * 1000,
-+		.temp_level = 85,
-+	},
-+	.freq_tab[1] = {
-+		.freq_clip_max = 200 * 1000,
-+		.temp_level = 103,
-+	},
-+	.freq_tab_count = 2,
-+	.type = SOC_ARCH_EXYNOS,
-+};
-+#define EXYNOS_TMU_DRV_DATA (&exynos_default_tmu_data)
-+#else
-+#define EXYNOS_TMU_DRV_DATA (NULL)
-+#endif
-+
-+#ifdef CONFIG_OF
-+static const struct of_device_id exynos_tmu_match[] = {
-+	{
-+		.compatible = "samsung,exynos4210-tmu",
-+		.data = (void *)EXYNOS4210_TMU_DRV_DATA,
-+	},
-+	{
-+		.compatible = "samsung,exynos5250-tmu",
-+		.data = (void *)EXYNOS_TMU_DRV_DATA,
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, exynos_tmu_match);
-+#else
-+#define  exynos_tmu_match NULL
-+#endif
-+
-+static struct platform_device_id exynos_tmu_driver_ids[] = {
-+	{
-+		.name		= "exynos4210-tmu",
-+		.driver_data    = (kernel_ulong_t)EXYNOS4210_TMU_DRV_DATA,
-+	},
-+	{
-+		.name		= "exynos5250-tmu",
-+		.driver_data    = (kernel_ulong_t)EXYNOS_TMU_DRV_DATA,
-+	},
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(platform, exynos4_tmu_driver_ids);
-+
-+static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
-+			struct platform_device *pdev)
-+{
-+#ifdef CONFIG_OF
-+	if (pdev->dev.of_node) {
-+		const struct of_device_id *match;
-+		match = of_match_node(exynos_tmu_match, pdev->dev.of_node);
-+		if (!match)
-+			return NULL;
-+		return (struct exynos_tmu_platform_data *) match->data;
-+	}
-+#endif
-+	return (struct exynos_tmu_platform_data *)
-+			platform_get_device_id(pdev)->driver_data;
- }
--;
- static int __devinit exynos_tmu_probe(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data;
- 	struct exynos_tmu_platform_data *pdata = pdev->dev.platform_data;
- 	int ret, i;
- 
-+	if (!pdata)
-+		pdata = exynos_get_driver_data(pdev);
-+
- 	if (!pdata) {
+@@ -842,7 +842,8 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
  		dev_err(&pdev->dev, "No platform init data supplied.\n");
  		return -ENODEV;
-@@ -899,9 +1006,11 @@ static struct platform_driver exynos_tmu_driver = {
- 		.name   = "exynos-tmu",
- 		.owner  = THIS_MODULE,
- 		.pm     = EXYNOS_TMU_PM,
-+		.of_match_table = exynos_tmu_match,
- 	},
- 	.probe = exynos_tmu_probe,
- 	.remove	= __devexit_p(exynos_tmu_remove),
-+	.id_table = exynos_tmu_driver_ids,
- };
+ 	}
+-	data = kzalloc(sizeof(struct exynos_tmu_data), GFP_KERNEL);
++	data = devm_kzalloc(&pdev->dev, sizeof(struct exynos_tmu_data),
++					GFP_KERNEL);
+ 	if (!data) {
+ 		dev_err(&pdev->dev, "Failed to allocate driver structure\n");
+ 		return -ENOMEM;
+@@ -850,47 +851,35 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
  
- module_platform_driver(exynos_tmu_driver);
+ 	data->irq = platform_get_irq(pdev, 0);
+ 	if (data->irq < 0) {
+-		ret = data->irq;
+ 		dev_err(&pdev->dev, "Failed to get platform irq\n");
+-		goto err_free;
++		return data->irq;
+ 	}
+ 
+ 	INIT_WORK(&data->irq_work, exynos_tmu_work);
+ 
+ 	data->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!data->mem) {
+-		ret = -ENOENT;
+ 		dev_err(&pdev->dev, "Failed to get platform resource\n");
+-		goto err_free;
++		return -ENOENT;
+ 	}
+ 
+-	data->mem = request_mem_region(data->mem->start,
+-			resource_size(data->mem), pdev->name);
+-	if (!data->mem) {
+-		ret = -ENODEV;
+-		dev_err(&pdev->dev, "Failed to request memory region\n");
+-		goto err_free;
+-	}
+-
+-	data->base = ioremap(data->mem->start, resource_size(data->mem));
++	data->base = devm_request_and_ioremap(&pdev->dev, data->mem);
+ 	if (!data->base) {
+-		ret = -ENODEV;
+ 		dev_err(&pdev->dev, "Failed to ioremap memory\n");
+-		goto err_mem_region;
++		return -ENODEV;
+ 	}
+ 
+-	ret = request_irq(data->irq, exynos_tmu_irq,
++	ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
+ 		IRQF_TRIGGER_RISING, "exynos-tmu", data);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+-		goto err_io_remap;
++		return ret;
+ 	}
+ 
+ 	data->clk = clk_get(NULL, "tmu_apbif");
+ 	if (IS_ERR(data->clk)) {
+-		ret = PTR_ERR(data->clk);
+ 		dev_err(&pdev->dev, "Failed to get clock\n");
+-		goto err_irq;
++		return  PTR_ERR(data->clk);
+ 	}
+ 
+ 	if (pdata->type == SOC_ARCH_EXYNOS ||
+@@ -942,15 +931,6 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
+ err_clk:
+ 	platform_set_drvdata(pdev, NULL);
+ 	clk_put(data->clk);
+-err_irq:
+-	free_irq(data->irq, data);
+-err_io_remap:
+-	iounmap(data->base);
+-err_mem_region:
+-	release_mem_region(data->mem->start, resource_size(data->mem));
+-err_free:
+-	kfree(data);
+-
+ 	return ret;
+ }
+ 
+@@ -964,15 +944,8 @@ static int __devexit exynos_tmu_remove(struct platform_device *pdev)
+ 
+ 	clk_put(data->clk);
+ 
+-	free_irq(data->irq, data);
+-
+-	iounmap(data->base);
+-	release_mem_region(data->mem->start, resource_size(data->mem));
+-
+ 	platform_set_drvdata(pdev, NULL);
+ 
+-	kfree(data);
+-
+ 	return 0;
+ }
+ 
 -- 
 1.7.1
