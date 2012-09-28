@@ -1,81 +1,56 @@
-From: jonghwa3.lee@samsung.com
-Subject: Re: [PATCH v6 1/6] thermal: add generic cpufreq cooling implementation
-Date: Fri, 21 Sep 2012 11:23:47 +0900
-Message-ID: <505BCFB3.3040004@samsung.com>
-References: <0MAO00DCVFKI4NS0@ms2.samsung.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [RFC PATCH 0/6] ACPI: ACPI 5.0 device enumeration
+	proposal
+Date: Fri, 28 Sep 2012 15:37:43 +0800
+Message-ID: <1348817863.10877.320.camel@rui.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=EUC-KR
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-reply-to: <0MAO00DCVFKI4NS0@ms2.samsung.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Cc: linux-pm@lists.linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lm-sensors@lm-sensors.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, linux-i2c <linux-i2c@vger.kernel.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Amit,
-On 2012=B3=E2 08=BF=F9 16=C0=CF 20:41, Amit Daniel Kachhap wrote:
+Hi, all,
 
->  diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_coo=
-ling.c
->  new file mode 100644
->  index 0000000..66cbd52
->  --- /dev/null
->  +++ b/drivers/thermal/cpu_cooling.c
->  @@ -0,0 +1,586 @@
+I'm working on ACPI device enumeration support recently, and here is the
+proposal I made to enumerate devices via ACPI namespace.
 
->  +/**
->  + * cpufreq_cooling_register - function to create cpufreq cooling de=
-vice.
->  + * @clip_cpus: cpumask of cpus where the frequency constraints will=
- happen.
->  + */
->  +struct thermal_cooling_device *cpufreq_cooling_register(
->  +       struct cpumask *clip_cpus)
->  +{
->  +       struct thermal_cooling_device *cool_dev;
->  +       struct cpufreq_cooling_device *cpufreq_dev =3D NULL;
->  +       unsigned int cpufreq_dev_count =3D 0, min =3D 0, max =3D 0;
->  +       char dev_name[THERMAL_NAME_LENGTH];
->  +       int ret =3D 0, id =3D 0, i;
->  +       struct cpufreq_policy policy;
->  +       ret =3D get_idr(&cpufreq_idr,&cpufreq_dev->id);
->  +       if (ret) {
->  +               kfree(cpufreq_dev);
->  +               return ERR_PTR(-EINVAL);
->  +       }
->  +
->  +       sprintf(dev_name, "thermal-cpufreq-%d", cpufreq_dev->id);
->  +
->  +       cool_dev =3D thermal_cooling_device_register(dev_name, cpufr=
-eq_dev,
->  +&cpufreq_cooling_ops);
->  +       if (!cool_dev) {
->  +               release_idr(&cpufreq_idr, cpufreq_dev->id);
->  +               kfree(cpufreq_dev);
->  +               return ERR_PTR(-EINVAL);
->  +       }
->  +       cpufreq_dev->id =3D id;
+the main idea is that, for Serial Buses like I2C and SPI, we enumerate
+the controller as a platform device, and then enumerate the slaves via
+i2c/spi_register_board_info. And then, when the controller is really
+probed and enabled in the platform driver, the SPI/I2C bus code will
+enumerate I2C/SPI slaves automatically.
+And for the other devices, we will enumerate all of them as platform
+devices, which is not covered in this patch set yet.
 
+Patch 1 & 2 Introduce ACPI style device match method in platform_match.
+this is because an ACPI device may have multiple hardware ID (_HID) and
+Compatible IDs, aka, _CID, but in platform device code, only pdev->name
+is used to match the driver id_table currently.
+Patch 3 introduces a new API acpi_get_generic_resources().
+this API is used to convert ACPI style resources to the generic struct
+resource.
+Patch 4 changes i2c_register_board_info from __init to __devinit.
+This is needed because I want to enumerate the slave devices in ACPI I2C
+control Driver, which supports hotplug in theory.
+Patch 5 introduces the ACPI I2C controller enumeration drive.
+it enumerate the ACPI I2C controller to a platform device and then
+enumerate the I2C slaves as I2C_board_info.
+Patch 6 is an example driver for an ACPI enuemrated I2C controller.
 
-Why is this needed? Should every cpufreq_dev instance's id be same for
-zero? It looks odd. And it also has problem which can be occurred when
-it release id during unregistering cpufreq_dev. I think it should keep
-the idr value taken before.
+Note that this is just prototype patch set, which just passes build
+test. Because I'd like to get your ideas about this before going on.
+any comments are welcome.
 
-
->  1.7.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+thanks,
+rui
