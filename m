@@ -1,55 +1,74 @@
-From: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: RE: [RFC PATCH 1/6] Introduce acpi_match_device_id().
-Date: Mon, 1 Oct 2012 13:56:17 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B90926322D93C@SHSMSX101.ccr.corp.intel.com>
-References: <1348817910.10877.321.camel@rui.sh.intel.com>
- <20120928141347.GC15548@intel.com>
- <744357E9AAD1214791ACBA4B0B90926322C156@SHSMSX101.ccr.corp.intel.com>
- <20121001063753.GE15548@intel.com>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [RFC PATCH 2/6] Introduce ACPI style match in platform_match
+Date: Mon, 1 Oct 2012 14:00:17 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B90926322D953@SHSMSX101.ccr.corp.intel.com>
+References: <1348817955.10877.322.camel@rui.sh.intel.com>
+ <20121001064709.GG15548@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20121001063753.GE15548-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20121001064709.GG15548@intel.com>
 Content-Language: en-US
-Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm <linux-pm-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, linux-i2c <linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Len, Brown" <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Dirk Brandewie <dirk.brandewie-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-i2c <linux-i2c@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "Len, Brown" <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@secretlab.ca>, Dirk Brandewie <dirk.brandewie@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 
 
 > -----Original Message-----
-> From: Mika Westerberg [mailto:mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org]
-> Sent: Monday, October 01, 2012 2:38 PM
+> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+> owner@vger.kernel.org] On Behalf Of Mika Westerberg
+> Sent: Monday, October 01, 2012 2:47 PM
 > To: Zhang, Rui
-> Cc: LKML; linux-pm; linux-i2c; linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; Len, Brown;
+> Cc: LKML; linux-pm; linux-i2c; linux-acpi@vger.kernel.org; Len, Brown;
 > Rafael J. Wysocki; Grant Likely; Dirk Brandewie
-> Subject: Re: [RFC PATCH 1/6] Introduce acpi_match_device_id().
+> Subject: Re: [RFC PATCH 2/6] Introduce ACPI style match in
+> platform_match
 > Importance: High
 > 
-> On Sat, Sep 29, 2012 at 01:31:52PM +0000, Zhang, Rui wrote:
+> On Fri, Sep 28, 2012 at 03:39:15PM +0800, Zhang Rui wrote:
+> > >From 5d7ecd12c2994b8c5905d52718c2870c3b62746e Mon Sep 17 00:00:00
+> > >2001
+> > From: Zhang Rui <rui.zhang@intel.com>
+> > Date: Fri, 28 Sep 2012 14:51:03 +0800
+> > Subject: [RFC PATCH 2/6] Introduce ACPI style match in platform_match
 > >
-> > > > +{
-> > > > +	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
-> > >
-> > > If the device is not bound to an ACPI handle this will return NULL.
-> > > And I don't see you doing that in this series meaning that..
-> > >
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/base/platform.c |    8 ++++++++
+> >  1 files changed, 8 insertions(+), 0 deletions(-)
 > >
+> > diff --git a/drivers/base/platform.c b/drivers/base/platform.c index
+> > a1a7225..90e64c6f 100644
+> > --- a/drivers/base/platform.c
+> > +++ b/drivers/base/platform.c
+> > @@ -20,6 +20,7 @@
+> >  #include <linux/err.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/pm_runtime.h>
+> > +#include <linux/acpi.h>
 > >
-> > You're right, I should set pdev->archdata.acpi_handle to the I2C
-> > controller in i2c_root.c.
+> >  #include "base.h"
+> >
+> > @@ -635,6 +636,13 @@ static const struct platform_device_id
+> *platform_match_id(
+> >  			struct platform_device *pdev)
+> >  {
+> >  	while (id->name[0]) {
+> > +#ifdef CONFIG_ACPI
 > 
-> There already is an API for that - check drivers/acpi/glue.c.
+> I don't think the above is needed as you stub the acpi_match_device_id()
+> out when !CONFIG_ACPI.
+> 
+You're right, I'll remove this.
 
-Do you mean acpi_bind?
-acpi_bind_one will bind the physical device node to the ACPI device,
-But for the i2c controller ACPI device, the physical node is the I2C
-adapter in the I2C bus.
-If we introduce I2C bus ACPI binding, which is what we're doing now,
-the i2c_adapter->dev.archdata.acpi_handle will be set to the ACPI
-i2c controller handle by acpi_bind_one.
+> How about I2C and SPI slave devices?
+> 
+We're introduce the I2C/SPI bus ACPI binding, and the i2c/spi bus .match
+method can be redirected to acpi callbacks.
 
 Thanks,
-rui
+rui 
+
