@@ -1,243 +1,59 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [RFC PATCH 3/6] ACPI: introduce acpi_get_generic_resources
-Date: Fri, 5 Oct 2012 09:36:19 -0600
-Message-ID: <CAErSpo5NK4Gs_Kg1UkYvdsYMQ4eSTqy2nGW4W7RPEofU5ZADsA@mail.gmail.com>
-References: <1348818006.10877.323.camel@rui.sh.intel.com>
+From: Andrew Watts <akwatts@ymail.com>
+Subject: [REGRESSION]: hibernation issues on 3.5.4/3.5.5
+Date: Mon, 8 Oct 2012 00:30:09 -0500
+Message-ID: <20121008053006.GA2569@ymail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1348818006.10877.323.camel@rui.sh.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@lists.linux-foundation.org>, linux-i2c <linux-i2c@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "Len, Brown" <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Grant Likely <grant.likely@secretlab.ca>, Dirk Brandewie <dirk.brandewie@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
+List-Post: <mailto:linux-pm@lists.linux-foundation.org>
+List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
+	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
+Sender: linux-pm-bounces@lists.linux-foundation.org
+Errors-To: linux-pm-bounces@lists.linux-foundation.org
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 28, 2012 at 1:40 AM, Zhang Rui <rui.zhang@intel.com> wrote:
-> From 9a851d177794129a89f720c7122cb39fd163126b Mon Sep 17 00:00:00 2001
-> From: Zhang Rui <rui.zhang@intel.com>
-> Date: Fri, 28 Sep 2012 08:34:05 +0800
-> Subject: [RFC PATCH 3/6] ACPI: introduce acpi_get_generic_resources
->
-> Introduce acpi_get_generic_resources() to convert
-> ACPI style resources to struct resource.
+Hello.
 
-This seems obviously similar to drivers/pnp/pnpacpi/rsparser.c, but
-only handles a few of the resource types.  Do you plan to extend this
-to support everything rsparser.c supports?  Do you envision replacing
-the current PNPACPI/PNPBIOS/ISAPNP stuff with something built on what
-you're doing here?  We already have two ways for drivers to bind to
-ACPI devices (pnp_register_driver() and acpi_bus_register_driver()).
-I hope we are moving toward *one* way rather than three ways :)
+I am experiencing problems with hibernation (echo disk >
+/sys/power/state) on both 3.5.4 and 3.5.5. Note: Problem did not
+exist up through 3.5.2 (I skipped 3.5.3).
 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/acpi/Makefile   |    1 +
->  drivers/acpi/resource.c |  165 +++++++++++++++++++++++++++++++++++++++++++++++
->  include/acpi/acpi_bus.h |    1 +
->  3 files changed, 167 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/acpi/resource.c
->
-> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-> index 6b1d535..4b65608 100644
-> --- a/drivers/acpi/Makefile
-> +++ b/drivers/acpi/Makefile
-> @@ -46,6 +46,7 @@ acpi-$(CONFIG_ACPI_PROCFS_POWER) += cm_sbs.o
->  ifdef CONFIG_ACPI_VIDEO
->  acpi-y                         += video_detect.o
->  endif
-> +acpi-y                         += resource.o
->
->  # These are (potentially) separate modules
->  obj-$(CONFIG_ACPI_AC)          += ac.o
-> diff --git a/drivers/acpi/resource.c b/drivers/acpi/resource.c
-> new file mode 100644
-> index 0000000..30a5204
-> --- /dev/null
-> +++ b/drivers/acpi/resource.c
-> @@ -0,0 +1,165 @@
-> +/*
-> + * resource.c -- convert ACPI resource to generic resource
-> + *
-> + * Copyright (c) 2012 Zhang Rui <rui.zhang@intel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published by the
-> + * Free Software Foundation; either version 2.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + * General Public License for more details.
-> + *
-> + */
-> +#include <linux/kernel.h>
-> +#include <linux/export.h>
-> +#include <linux/acpi.h>
-> +
-> +static int irq_flags(int triggering, int polarity, int sharable)
-> +{
-> +       int flags;
-> +
-> +       if (triggering == ACPI_LEVEL_SENSITIVE) {
-> +               if (polarity == ACPI_ACTIVE_LOW)
-> +                       flags = IORESOURCE_IRQ_LOWLEVEL;
-> +               else
-> +                       flags = IORESOURCE_IRQ_HIGHLEVEL;
-> +       } else {
-> +               if (polarity == ACPI_ACTIVE_LOW)
-> +                       flags = IORESOURCE_IRQ_LOWEDGE;
-> +               else
-> +                       flags = IORESOURCE_IRQ_HIGHEDGE;
-> +       }
-> +
-> +       if (sharable == ACPI_SHARED)
-> +               flags |= IORESOURCE_IRQ_SHAREABLE;
-> +
-> +       return flags;
-> +}
-> +
-> +static void acpi_get_irq_resource(struct acpi_resource *res,
-> +                                 struct resource *resource)
-> +{
-> +       struct acpi_resource_irq *irq = &res->data.irq;
-> +       int t, p;
-> +
-> +       if (irq->interrupt_count == 0)
-> +               resource->flags = IORESOURCE_DISABLED;
-> +
-> +       if (!acpi_get_override_irq(irq->interrupts[0], &t, &p)) {
-> +               t = t ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE;
-> +               p = p ? ACPI_ACTIVE_LOW : ACPI_ACTIVE_HIGH;
-> +
-> +               if (irq->triggering != t || irq->polarity != p) {
-> +                       irq->triggering = t;
-> +                       irq->polarity = p;
-> +               }
-> +       }
-> +
-> +       resource->flags =
-> +           irq_flags(irq->triggering, irq->polarity, irq->sharable);
-> +       resource->flags |= IORESOURCE_IRQ;
-> +       resource->start = irq->interrupts[0];
-> +       resource->end = irq->interrupts[0];
-> +}
-> +
-> +static void acpi_get_extended_irq_resource(struct acpi_resource *res,
-> +                                          struct resource *resource)
-> +{
-> +       struct acpi_resource_extended_irq *irq = &res->data.extended_irq;
-> +       int t, p;
-> +
-> +       if (irq->interrupt_count == 0)
-> +               resource->flags = IORESOURCE_DISABLED;
-> +
-> +       if (!acpi_get_override_irq(irq->interrupts[0], &t, &p)) {
-> +               t = t ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE;
-> +               p = p ? ACPI_ACTIVE_LOW : ACPI_ACTIVE_HIGH;
-> +
-> +               if (irq->triggering != t || irq->polarity != p) {
-> +                       irq->triggering = t;
-> +                       irq->polarity = p;
-> +               }
-> +       }
-> +
-> +       resource->flags =
-> +           irq_flags(irq->triggering, irq->polarity, irq->sharable);
-> +       resource->flags |= IORESOURCE_IRQ;
-> +       resource->start = irq->interrupts[0];
-> +       resource->end = irq->interrupts[0];
-> +}
-> +
-> +static void acpi_get_mem_resource(struct acpi_resource *res,
-> +                                 struct resource *resource)
-> +{
-> +       struct acpi_resource_fixed_memory32 *mem = &res->data.fixed_memory32;
-> +
-> +       if (mem->address_length == 0)
-> +               resource->flags |= IORESOURCE_DISABLED;
-> +       if (mem->write_protect == ACPI_READ_WRITE_MEMORY)
-> +               resource->flags |= IORESOURCE_MEM_WRITEABLE;
-> +
-> +       resource->flags |= IORESOURCE_MEM;
-> +       resource->start = mem->address;
-> +       resource->end = mem->address + mem->address_length - 1;
-> +}
-> +
-> +int acpi_get_generic_resources(struct acpi_device *device,
-> +                              struct resource **resources)
-> +{
-> +       acpi_status status;
-> +       struct acpi_buffer buffer;
-> +       struct acpi_resource *res;
-> +       struct resource *p;
-> +       int res_count;
-> +       int i;
-> +
-> +       status = acpi_get_current_resources(device->handle, &buffer);
-> +       if (ACPI_FAILURE(status)) {
-> +               dev_err(&device->dev, "can't get ACPI resources\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       res_count = (buffer.length - 1) / sizeof(struct acpi_resource) - 1;
-> +       p = kzalloc(sizeof(struct resource) * res_count, GFP_KERNEL);
-> +       if (!resources) {
-> +               kfree(buffer.pointer);
-> +               return -ENOMEM;
-> +       }
-> +
-> +       res = (struct acpi_resource *)buffer.pointer;
-> +       i = 0;
-> +
-> +       while (res->type != ACPI_RESOURCE_TYPE_END_TAG) {
-> +
-> +               switch (res->type) {
-> +               case ACPI_RESOURCE_TYPE_IRQ:
-> +                       acpi_get_irq_resource(res, &p[i]);
-> +                       break;
-> +               case ACPI_RESOURCE_TYPE_EXTENDED_IRQ:
-> +                       acpi_get_extended_irq_resource(res, &p[i]);
-> +                       break;
-> +               case ACPI_RESOURCE_TYPE_MEMORY32:
-> +                       acpi_get_mem_resource(res, &p[i]);
-> +                       break;
-> +               default:
-> +                       i--;
-> +                       break;
-> +               }
-> +               i++;
-> +               res = ACPI_NEXT_RESOURCE(res);
-> +       }
-> +
-> +       /* Get rid of unsupported ACPI resources */
-> +       if (i != res_count)
-> +               p =
-> +                   kmemdup(p, sizeof(struct resource) * i, GFP_KERNEL);
-> +
-> +       *resources = p;
-> +       kfree(buffer.pointer);
-> +       return i;
-> +}
-> +
-> +EXPORT_SYMBOL(acpi_get_generic_resources);
-> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-> index 8b5b124..a4f8eaf 100644
-> --- a/include/acpi/acpi_bus.h
-> +++ b/include/acpi/acpi_bus.h
-> @@ -381,6 +381,7 @@ int acpi_match_device_ids(struct acpi_device *device,
->  int acpi_match_device_id(const struct device *, const char *);
->  int acpi_create_dir(struct acpi_device *);
->  void acpi_remove_dir(struct acpi_device *);
-> +int acpi_get_generic_resources(struct acpi_device *, struct resource **);
->
->  /*
->   * Bind physical devices with ACPI devices
-> --
-> 1.7.7.6
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Upon resume from hibernation, the % loading progress indicator
+appears. At some point the image stops loading and the system
+reverts to a standard cold-boot sequence.
+
+Logs (attached below) reveal it is erroring out with "Invalid LZO
+uncompressed length".
+
+Many thanks for your help.
+
+~ Andy
+
+=======
+
+[    2.354392] PM: Checking hibernation image partition /dev/hda2
+[    2.354414] PM: Hibernation image partition 3:2 present
+[    2.354415] PM: Looking for hibernation image.
+[    2.379577] PM: Image signature found, resuming
+[    2.406288] PM: Marking nosave pages: [mem 0x0009f000-0x000fffff]
+[    2.406294] PM: Basic memory bitmaps created
+[    2.406295] PM: Preparing processes for restore.
+[    2.406298] Freezing user space processes ... (elapsed 0.00 seconds) done.
+[    2.406604] PM: Loading hibernation image.
+[    3.162702] PM: Using 1 thread(s) for decompression.
+[    3.162702] PM: Loading and decompressing image data (161994 pages) ...     ^H^H^H^H  0%%^H^H^H^H  1%%^H^H^H^H  2%%^H^H^H^H  3%%^H^H^H^H  4%%^H^H^H^H  5%%^H^H^H^H  6%%^H^H^H^H  7%%^H^H^H^H  8%%^H^H^H^H  9%%^H^H^H^H 10%%^H^H^H^H 11%%^H^H^H^H 12%%^H^H^H^H 13%%^H^H^H^H 14%%^H^H^H^H 15%%^H^H^H^H 16%%^H^H^H^H 17%%^H^H^H^H 18%%^H^H^H^H 19%%^H^H^H^H 20%%^H^H^H^H 21%%^H^H^H^H 22%%^H^H^H^H 23%%^H^H^H^H 24%%^H^H^H^H 25%%^H^H^H^H 26%%^H^H^H^H 27%%^H^H^H^H 28%%^H^H^H^H 29%%^H^H^H^H 30%%^H^H^H^H 31%%^H^H^H^H 32%%^H^H^H^H 33%%^H^H^H^H 34%%^H^H^H^H 35%%^H^H^H^H 36%%^H^H^H^H 37%%^H^H^H^H 38%%^H^H^H^H 39%%^H^H^H^H 40%%^H^H^H^H 41%%^H^H^H^H 42%%^H^H^H^H 43%%^H^H^H^H 44%%^H^H^H^H 45%%^H^H^H^H 46%%^H^H^H^H 47%%^H^H^H^H 48%%^H^H^H^H 49%%^H^H^H^H 50%%^H^H^H^H 51%%^H^H^H^H 52%%^H^H^H^H 53%%^H^H^H^H 54%%^H^H^H
+ ^H 55%%^H^H^H^H 56%%^H^H^H^H 57%%^H^H^H^H 58%%^H^H^H^H 59%%^H^H^H^H 60%%^H^H^H^H 61%%^H^H^H^H 62%%
+[    7.730534] PM: Invalid LZO uncompressed length
+[    7.730743]
+[    7.730880] PM: Read 647976 kbytes in 4.56 seconds (142.10 MB/s)
+[    7.731616] PM: Error -1 resuming
+[    8.224207] PM: Failed to load hibernation image, recovering.
+[    8.279520] Restarting tasks ... done.
+[    8.279783] PM: Basic memory bitmaps freed
+[    8.306034] PM: Hibernation image not present or could not be loaded.
