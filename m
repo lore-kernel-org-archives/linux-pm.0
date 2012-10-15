@@ -1,68 +1,89 @@
-From: Sundar <sunder.svit@gmail.com>
-Subject: Tracing # of rtpm transitions
-Date: Fri, 12 Oct 2012 19:21:35 +0530
-Message-ID: <CAMHCuPXNNkwfU4vjrhswhp_8rtgSkV9zse5o-hbwBp1tSYhS3A@mail.gmail.com>
+From: Yanmin Zhang <yanmin_zhang@linux.intel.com>
+Subject: Re: Subject: [PATCH] drivers-core: move device_pm_remove behind
+ bus_remove_device
+Date: Mon, 15 Oct 2012 15:39:49 +0800
+Message-ID: <1350286789.2207.6.camel@ymzhang.sh.intel.com>
+References: <F7B8FD780A346D46A0042F5C63B06AE775B2B0@SHSMSX102.ccr.corp.intel.com>
+Reply-To: yanmin_zhang@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/linux-pm/>
-List-Post: <mailto:linux-pm@lists.linux-foundation.org>
-List-Help: <mailto:linux-pm-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/linux-pm>,
-	<mailto:linux-pm-request@lists.linux-foundation.org?subject=subscribe>
-Sender: linux-pm-bounces@lists.linux-foundation.org
-Errors-To: linux-pm-bounces@lists.linux-foundation.org
-To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, vivek.thakkar@intel.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <F7B8FD780A346D46A0042F5C63B06AE775B2B0@SHSMSX102.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Zhang, LongX" <longx.zhang@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "rjw@sisk.pl" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-<I sent an another email from sundar.iyer@intel.com, but I think it
-hasnt got through>
+On Fri, 2012-09-21 at 01:58 +0000, Zhang, LongX wrote:
+> From: LongX Zhang <longx.zhang@intel.com>
+> 
+> device_pm_remove will call pm_runtime_remove which would disable
+> runtime PM of the device. After that pm_runtime_get* or
+> pm_runtime_put* will be ingored. So if we disable the runtime PM
+> before device really be removed, drivers' _remove callback may
+> access HW even pm_runtime_get* fails. That is bad.
+The background about the patch: We hit an hang issue when removing a mmc
+device on Medfield Android phone by sysfs interface.
 
-Hi,
+Consider below call sequence when removing a device:
+device_del => device_pm_remove
+           => class_intf->remove_dev(dev, class_intf)  => pm_runtime_get_sync/put_sync
+           => bus_remove_device => device_release_driver => pm_runtime_get_sync/put_sync
 
-We need to count/trace the runtime PM transitions for all components.
+remove_dev might call pm_runtime_get_sync/put_sync.
+Then, generic device_release_driver also calls pm_runtime_get_sync/put_sync.
+Since device_del => device_pm_remove firstly, later _get_sync wouldn't really
+wake up the device.
 
-Is this small snippet of change valid? This can be extended to include
-a transition to active state, get exposed in sysfs, controls to reset
-the value like other existing sysfs entries.
+I git log -p to find the patch which moves the calling to device_pm_remove ahead.
+It's below patch:
 
-Or is the wakeup_count the correct means to figure out the resume events?
+commit 775b64d2b6ca37697de925f70799c710aab5849a
+Author: Rafael J. Wysocki <rjw@sisk.pl>
+Date:   Sat Jan 12 20:40:46 2008 +0100
 
-diff --git a/drivers/base/power/runtime.c
-b/drivers/base/power/runtime.c index 1f339d5..233f8f5 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -52,6 +52,8 @@ static void __update_runtime_status(struct device
-*dev, enum rpm_status status)
-        update_pm_runtime_accounting(dev);
-        trace_runtime_pm_status(dev, status);
-        dev->power.runtime_status = status;
-+       if (status == RPM_SUSPENDED)
-+               atomic_inc(&dev->power.transition_suspend_count);
- }
-
- /**
-siyer5@pnp-buildsrv-4:~/ICS/hardware/intel/linux-2.6$ git diff
-include/linux/pm.h diff --git a/include/linux/pm.h
-b/include/linux/pm.h index 411e4f4..076a0e3 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -442,6 +442,7 @@ struct dev_pm_info {
-        wait_queue_head_t       wait_queue;
-        atomic_t                usage_count;
-        atomic_t                child_count;
-+       atomic_t                suspend_transition_count;
-        unsigned int            disable_depth:3;
-        unsigned int            ignore_children:1;
-        unsigned int            idle_notification:1;
-
-Cheers!
+    PM: Acquire device locks on suspend
+    
+    This patch reorganizes the way suspend and resume notifications are
+    sent to drivers.  The major changes are that now the PM core acquires
+    every device semaphore before calling the methods, and calls to
+    device_add() during suspends will fail, while calls to device_del()
+    during suspends will block.
+    
+    It also provides a way to safely remove a suspended device with the
+    help of the PM core, by using the device_pm_schedule_removal() callback
+    introduced specifically for this purpose, and updates two drivers (msr
+    and cpuid) that need to use it.
 
 
--- 
----------
-The views expressed in this email are personal and do not necessarily
-echo my employers.
+As device_pm_schedule_removal is deleted by another patch, we need also revert
+other parts of the patch, i.e. move the calling of device_pm_remove after
+the calling to bus_remove_device.
+
+> 
+> Signed-off-by: LongX Zhang <longx.zhang@intel.com>
+> ---
+>  drivers/base/core.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 5e6e00b..81ea7f2 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -1169,7 +1169,6 @@ void device_del(struct device *dev)
+>  	if (dev->bus)
+>  		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+>  					     BUS_NOTIFY_DEL_DEVICE, dev);
+> -	device_pm_remove(dev);
+>  	dpm_sysfs_remove(dev);
+>  	if (parent)
+>  		klist_del(&dev->p->knode_parent);
+> @@ -1194,6 +1193,7 @@ void device_del(struct device *dev)
+>  	device_remove_file(dev, &uevent_attr);
+>  	device_remove_attrs(dev);
+>  	bus_remove_device(dev);
+> +	device_pm_remove(dev);
+>  	driver_deferred_probe_del(dev);
+>  
+>  	/*
