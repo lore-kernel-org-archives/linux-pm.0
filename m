@@ -1,37 +1,123 @@
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: [REGRESSION] 3.7-rc2 kernel BUG at kernel/power/snapshot.c:517!
-Date: Sun, 21 Oct 2012 17:12:28 +0200
-Message-ID: <201210211712.28571.maciej.rutecki@gmail.com>
-Reply-To: maciej.rutecki@gmail.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCH 4/4] sdio: pm: set device's power state after driver runtime suspended it
+Date: Sun, 21 Oct 2012 21:57:16 +0200
+Message-ID: <1729978.qEmlCqSTY2@vostro.rjw.lan>
+References: <1350011561-21039-1-git-send-email-aaron.lu@intel.com> <96495050.e1u1tibeG9@vostro.rjw.lan> <20121020071539.GB4798@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: lenb@kernel.org, rjw@sisk.pl, linux-acpi@vger.kernel.org, pavel@ucw.cz, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20121020071539.GB4798@localhost.localdomain>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Chris Ball <cjb@laptop.org>, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Error: kernel BUG at kernel/power/snapshot.c:517!
+On Saturday 20 of October 2012 15:15:41 Aaron Lu wrote:
+> On Fri, Oct 19, 2012 at 08:08:38PM +0200, Rafael J. Wysocki wrote:
+> > On Friday 19 of October 2012 01:39:25 Rafael J. Wysocki wrote:
+> > > On Friday 12 of October 2012 11:12:41 Aaron Lu wrote:
+> > > > In sdio bus level runtime callback function, after call the driver's
+> > > > runtime suspend callback, we will check if the device supports a
+> > > > platform level power management, and if so, a proper power state is
+> > > > chosen by the corresponding platform callback and then set.
+> > > > 
+> > > > Platform level runtime wakeup is also set, if device is enabled for
+> > > > runtime wakeup by its driver, it will be armed the ability to generate
+> > > > a wakeup event by the platform.
+> > > > 
+> > > > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> > > > ---
+> > > >  drivers/mmc/core/sdio_bus.c | 49 +++++++++++++++++++++++++++++++++++++++++++--
+> > > >  1 file changed, 47 insertions(+), 2 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+> > > > index aaec9e2..d83dea8 100644
+> > > > --- a/drivers/mmc/core/sdio_bus.c
+> > > > +++ b/drivers/mmc/core/sdio_bus.c
+> > > > @@ -23,6 +23,7 @@
+> > > >  
+> > > >  #include "sdio_cis.h"
+> > > >  #include "sdio_bus.h"
+> > > > +#include "sdio.h"
+> > > >  #include "sdio_acpi.h"
+> > > >  
+> > > >  /* show configuration fields */
+> > > > @@ -194,10 +195,54 @@ static int sdio_bus_remove(struct device *dev)
+> > > >  }
+> > > >  
+> > > >  #ifdef CONFIG_PM
+> > > > +
+> > > > +static int sdio_bus_runtime_suspend(struct device *dev)
+> > > > +{
+> > > > +	int ret;
+> > > > +	sdio_power_t state;
+> > > > +
+> > > > +	ret = pm_generic_runtime_suspend(dev);
+> > > > +	if (ret)
+> > > > +		goto out;
+> > > > +
+> > > > +	if (!platform_sdio_power_manageable(dev))
+> > > > +		goto out;
+> > > > +
+> > > > +	platform_sdio_run_wake(dev, true);
+> > > > +
+> > > > +	state = platform_sdio_choose_power_state(dev);
+> > > > +	if (state == SDIO_POWER_ERROR) {
+> > > > +		ret = -EIO;
+> > > > +		goto out;
+> > > > +	}
+> > > > +
+> > > > +	ret = platform_sdio_set_power_state(dev, state);
+> > > > +
+> > > > +out:
+> > > > +	return ret;
+> > > > +}
+> > > > +
+> > > > +static int sdio_bus_runtime_resume(struct device *dev)
+> > > > +{
+> > > > +	int ret;
+> > > > +
+> > > > +	if (platform_sdio_power_manageable(dev)) {
+> > > > +		platform_sdio_run_wake(dev, false);
+> > > > +		ret = platform_sdio_set_power_state(dev, SDIO_D0);
+> > > > +		if (ret)
+> > > > +			goto out;
+> > > > +	}
+> > > > +
+> > > > +	ret = pm_generic_runtime_resume(dev);
+> > > > +
+> > > > +out:
+> > > > +	return ret;
+> > > > +}
+> > > > +
+> > > 
+> > > Most likely we will need to make analogous changes for other bus types that
+> > > don't support power management natively, like platform, SPI, I2C etc.  In all
+> > > of them the _runtime_suspend() and _runtime_resume() routine will look
+> > > almost exactly the same except for the platform_sdio_ prefix.
+> > > 
+> > > For this reason, I think it would be better to simply define two functions
+> > > acpi_pm_runtime_suspend() and acpi_pm_runtime_resume() that will do all of
+> > > the ACPI-specific operations related to runtime suspend/resume.  Then, we
+> > > will be able to use these functions for all of the bus types in question
+> > > in the same way (we may also need to add analogous functions for system
+> > > suspend/resume handling).
+> > 
+> > Something like in the (totally untested) patch below.
+> 
+> Looks good to me.
+> I'll test the code and put it into v2 of the patchset with your
+> sign-off, is it OK?
 
-Last known good: 3.6.1
-Bad: 3.7-rc2
+I'd rather do it a bit differently in the signed-off version (I'm working
+on these patches, they should be ready around Tuesday), but if you can test
+it in its current form, that'd be useful too.
 
-Steps to reproduce:
-1. Boot system with 3.7-rc2 kernel
-2. Try suspend to disk (s2ram works OK)
-
-System dies on message:
-http://mrutecki.pl/download/kernel/3.7-rc2/swinka/DSCN0280.jpg
-
-lspci:
-http://mrutecki.pl/download/kernel/3.7-rc2/swinka/lspci.txt
-
-dmesg:
-http://mrutecki.pl/download/kernel/3.7-rc2/swinka/dmesg-3.7-rc2.txt
+Thanks,
+Rafael
 
 
 -- 
-Maciej Rutecki
-http://www.mrutecki.pl
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
