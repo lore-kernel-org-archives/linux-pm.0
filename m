@@ -1,66 +1,75 @@
-From: Andreas Schwab <schwab@linux-m68k.org>
-Subject: [PATCH] cpufreq: fix jiffies/cputime mixup in conservative/ondemand
- governors
-Date: Mon, 22 Oct 2012 15:35:29 +0200
-Message-ID: <m21ugq1vfi.fsf@igel.home>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH v2 2/6] PM / Runtime: introduce pm_runtime_set_memalloc_noio()
+Date: Mon, 22 Oct 2012 10:33:13 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1210221023300.1724-100000@iolanthe.rowland.org>
+References: <1350894794-1494-3-git-send-email-ming.lei@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1350894794-1494-3-git-send-email-ming.lei@canonical.com>
+Sender: owner-linux-mm@kvack.org
+To: Ming Lei <ming.lei@canonical.com>
+Cc: linux-kernel@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
 
-The function get_cpu_idle_time_jiffy in both the conservative and
-ondemand governors use jiffies_to_usecs to convert a cputime value to
-usecs which gives the wrong value on architectures where cputime and
-jiffies use different units.  Only matters if NO_HZ is disabled, since
-otherwise get_cpu_idle_time_us should already return a valid value, and
-get_cpu_idle_time_jiffy isn't actually called.
+On Mon, 22 Oct 2012, Ming Lei wrote:
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- drivers/cpufreq/cpufreq_conservative.c | 4 ++--
- drivers/cpufreq/cpufreq_ondemand.c     | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+> +void pm_runtime_set_memalloc_noio(struct device *dev, bool enable)
+> +{
+> +	dev->power.memalloc_noio_resume = enable;
+> +
+> +	if (!dev->parent)
+> +		return;
+> +
+> +	if (enable) {
+> +		pm_runtime_set_memalloc_noio(dev->parent, 1);
+> +	} else {
+> +		/* only clear the flag for one device if all
+> +		 * children of the device don't set the flag.
+> +		 */
+> +		if (device_for_each_child(dev->parent, NULL,
+> +					  dev_memalloc_noio))
+> +			return;
+> +
+> +		pm_runtime_set_memalloc_noio(dev->parent, 0);
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(pm_runtime_set_memalloc_noio);
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index a152af7..96af7d5 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -112,9 +112,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- 
- 	idle_time = cur_wall_time - busy_time;
- 	if (wall)
--		*wall = jiffies_to_usecs(cur_wall_time);
-+		*wall = cputime_to_usecs(cur_wall_time);
- 
--	return jiffies_to_usecs(idle_time);
-+	return cputime_to_usecs(idle_time);
- }
- 
- static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 396322f..6c19a66 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -136,9 +136,9 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- 
- 	idle_time = cur_wall_time - busy_time;
- 	if (wall)
--		*wall = jiffies_to_usecs(cur_wall_time);
-+		*wall = cputime_to_usecs(cur_wall_time);
- 
--	return jiffies_to_usecs(idle_time);
-+	return cputime_to_usecs(idle_time);
- }
- 
- static inline cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
--- 
-1.8.0
+Tail recursion should be implemented as a loop, not as an explicit
+recursion.  That is, the function should be:
 
+void pm_runtime_set_memalloc_noio(struct device *dev, bool enable)
+{
+	do {
+		dev->power.memalloc_noio_resume = enable;
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+		if (!enable) {
+			/*
+			 * Don't clear the parent's flag if any of the
+			 * parent's children have their flag set.
+			 */
+			if (device_for_each_child(dev->parent, NULL,
+					  dev_memalloc_noio))
+				return;
+		}
+		dev = dev->parent;
+	} while (dev);
+}
+
+except that you need to add locking, for two reasons:
+
+	There's a race.  What happens if another child sets the flag
+	between the time device_for_each_child() runs and the next loop
+	iteration?
+
+	Even without a race, access to bitfields is not SMP-safe 
+	without locking.
+
+Alan Stern
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
