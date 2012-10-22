@@ -1,72 +1,53 @@
-From: Ming Lei <ming.lei@canonical.com>
-Subject: [RFC PATCH v2 6/6] USB: forbid memory allocation with I/O during bus reset
-Date: Mon, 22 Oct 2012 16:33:14 +0800
-Message-ID: <1350894794-1494-7-git-send-email-ming.lei@canonical.com>
-References: <1350894794-1494-1-git-send-email-ming.lei@canonical.com>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1350894794-1494-1-git-send-email-ming.lei@canonical.com>
-Sender: owner-linux-mm@kvack.org
-To: linux-kernel@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org, Ming Lei <ming.lei@canonical.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
+Date: Mon, 22 Oct 2012 14:16:43 +0530
+Message-ID: <CAKohpo=Jsy9az4PgJ-mkq_U49EOpHGES+-DaROanCOTn-L2s3Q@mail.gmail.com>
+References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org>
+	<98478a02ae69afc01b3c7860e42a4d763b2045e8.1350677395.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <98478a02ae69afc01b3c7860e42a4d763b2045e8.1350677395.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-If one storage interface or usb network interface(iSCSI case)
-exists in current configuration, memory allocation with
-GFP_KERNEL during usb_device_reset() might trigger I/O transfer
-on the storage interface itself and cause deadlock because
-the 'us->dev_mutex' is held in .pre_reset() and the storage
-interface can't do I/O transfer when the reset is triggered
-by other interface, or the error handling can't be completed
-if the reset is triggered by the storage itself(error handling path).
+On 20 October 2012 01:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Initially ondemand governor was written and then using its code conservative
+> governor is written. It used a lot of code from ondemand governor, but copy of
+> code was created instead of using the same routines from both governors. Which
+> increased code redundancy, which is difficult to manage.
+>
+> This patch is an attempt to move common part of both the governors to
+> cpufreq_governor.c file to come over above mentioned issues.
+>
+> This shouldn't change anything from functionality point of view.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>
+> Hi Rafael,
+>
+> This patch is *NOT TESTED*... (only compiled)
+> Out of office now, so can't test it on board.
+>
+> Floated it, so that i can get some early comments if possible.
 
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>
-Signed-off-by: Ming Lei <ming.lei@canonical.com>
----
- drivers/usb/core/hub.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+Didn't crashed :)
+Tested both ondemand and conservative governors and they are working
+fine.
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 522ad57..106a80a 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -5038,6 +5038,7 @@ int usb_reset_device(struct usb_device *udev)
- {
- 	int ret;
- 	int i;
-+	unsigned int noio_flag;
- 	struct usb_host_config *config = udev->actconfig;
- 
- 	if (udev->state == USB_STATE_NOTATTACHED ||
-@@ -5047,6 +5048,15 @@ int usb_reset_device(struct usb_device *udev)
- 		return -EINVAL;
- 	}
- 
-+	/*
-+	 * Don't allocate memory with GFP_KERNEL in current
-+	 * context to avoid possible deadlock if usb mass
-+	 * storage interface or usbnet interface(iSCSI case)
-+	 * is included in current configuration. The easiest
-+	 * approach is to do it for all devices.
-+	 */
-+	memalloc_noio_save(noio_flag);
-+
- 	/* Prevent autosuspend during the reset */
- 	usb_autoresume_device(udev);
- 
-@@ -5091,6 +5101,7 @@ int usb_reset_device(struct usb_device *udev)
- 	}
- 
- 	usb_autosuspend_device(udev);
-+	memalloc_noio_restore(noio_flag);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(usb_reset_device);
--- 
-1.7.9.5
+>  drivers/cpufreq/Makefile               |   4 +-
+>  drivers/cpufreq/cpufreq_conservative.c | 558 +++++++------------------
+>  drivers/cpufreq/cpufreq_governor.c     | 314 ++++++++++++++
+>  drivers/cpufreq/cpufreq_governor.h     | 177 ++++++++
+>  drivers/cpufreq/cpufreq_ondemand.c     | 728 ++++++++++-----------------------
+>  include/linux/cpufreq.h                |   2 +-
+>  6 files changed, 864 insertions(+), 919 deletions(-)
+
+diffstat might not look awesome, but considering two new files with
+file headers, #includes, etc added.. this looks reasonable :)
 
 --
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+viresh
