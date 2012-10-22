@@ -1,127 +1,67 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [RFC PATCH 4/4] sdio: pm: set device's power state after driver
- runtime suspended it
-Date: Mon, 22 Oct 2012 08:49:15 +0800
-Message-ID: <5084980B.9090004@intel.com>
-References: <1350011561-21039-1-git-send-email-aaron.lu@intel.com> <96495050.e1u1tibeG9@vostro.rjw.lan> <20121020071539.GB4798@localhost.localdomain> <1729978.qEmlCqSTY2@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1729978.qEmlCqSTY2@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Chris Ball <cjb@laptop.org>, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>
+From: Ming Lei <ming.lei@canonical.com>
+Subject: [RFC PATCH v2 0/6] solve deadlock caused by memory allocation with I/O
+Date: Mon, 22 Oct 2012 16:33:08 +0800
+Message-ID: <1350894794-1494-1-git-send-email-ming.lei@canonical.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:48676 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125Ab2JVIeu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Oct 2012 04:34:50 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 
-On 10/22/2012 03:57 AM, Rafael J. Wysocki wrote:
-> On Saturday 20 of October 2012 15:15:41 Aaron Lu wrote:
->> On Fri, Oct 19, 2012 at 08:08:38PM +0200, Rafael J. Wysocki wrote:
->>> On Friday 19 of October 2012 01:39:25 Rafael J. Wysocki wrote:
->>>> On Friday 12 of October 2012 11:12:41 Aaron Lu wrote:
->>>>> In sdio bus level runtime callback function, after call the driver's
->>>>> runtime suspend callback, we will check if the device supports a
->>>>> platform level power management, and if so, a proper power state is
->>>>> chosen by the corresponding platform callback and then set.
->>>>>
->>>>> Platform level runtime wakeup is also set, if device is enabled for
->>>>> runtime wakeup by its driver, it will be armed the ability to generate
->>>>> a wakeup event by the platform.
->>>>>
->>>>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->>>>> ---
->>>>>  drivers/mmc/core/sdio_bus.c | 49 +++++++++++++++++++++++++++++++++++++++++++--
->>>>>  1 file changed, 47 insertions(+), 2 deletions(-)
->>>>>
->>>>> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
->>>>> index aaec9e2..d83dea8 100644
->>>>> --- a/drivers/mmc/core/sdio_bus.c
->>>>> +++ b/drivers/mmc/core/sdio_bus.c
->>>>> @@ -23,6 +23,7 @@
->>>>>  
->>>>>  #include "sdio_cis.h"
->>>>>  #include "sdio_bus.h"
->>>>> +#include "sdio.h"
->>>>>  #include "sdio_acpi.h"
->>>>>  
->>>>>  /* show configuration fields */
->>>>> @@ -194,10 +195,54 @@ static int sdio_bus_remove(struct device *dev)
->>>>>  }
->>>>>  
->>>>>  #ifdef CONFIG_PM
->>>>> +
->>>>> +static int sdio_bus_runtime_suspend(struct device *dev)
->>>>> +{
->>>>> +	int ret;
->>>>> +	sdio_power_t state;
->>>>> +
->>>>> +	ret = pm_generic_runtime_suspend(dev);
->>>>> +	if (ret)
->>>>> +		goto out;
->>>>> +
->>>>> +	if (!platform_sdio_power_manageable(dev))
->>>>> +		goto out;
->>>>> +
->>>>> +	platform_sdio_run_wake(dev, true);
->>>>> +
->>>>> +	state = platform_sdio_choose_power_state(dev);
->>>>> +	if (state == SDIO_POWER_ERROR) {
->>>>> +		ret = -EIO;
->>>>> +		goto out;
->>>>> +	}
->>>>> +
->>>>> +	ret = platform_sdio_set_power_state(dev, state);
->>>>> +
->>>>> +out:
->>>>> +	return ret;
->>>>> +}
->>>>> +
->>>>> +static int sdio_bus_runtime_resume(struct device *dev)
->>>>> +{
->>>>> +	int ret;
->>>>> +
->>>>> +	if (platform_sdio_power_manageable(dev)) {
->>>>> +		platform_sdio_run_wake(dev, false);
->>>>> +		ret = platform_sdio_set_power_state(dev, SDIO_D0);
->>>>> +		if (ret)
->>>>> +			goto out;
->>>>> +	}
->>>>> +
->>>>> +	ret = pm_generic_runtime_resume(dev);
->>>>> +
->>>>> +out:
->>>>> +	return ret;
->>>>> +}
->>>>> +
->>>>
->>>> Most likely we will need to make analogous changes for other bus types that
->>>> don't support power management natively, like platform, SPI, I2C etc.  In all
->>>> of them the _runtime_suspend() and _runtime_resume() routine will look
->>>> almost exactly the same except for the platform_sdio_ prefix.
->>>>
->>>> For this reason, I think it would be better to simply define two functions
->>>> acpi_pm_runtime_suspend() and acpi_pm_runtime_resume() that will do all of
->>>> the ACPI-specific operations related to runtime suspend/resume.  Then, we
->>>> will be able to use these functions for all of the bus types in question
->>>> in the same way (we may also need to add analogous functions for system
->>>> suspend/resume handling).
->>>
->>> Something like in the (totally untested) patch below.
->>
->> Looks good to me.
->> I'll test the code and put it into v2 of the patchset with your
->> sign-off, is it OK?
-> 
-> I'd rather do it a bit differently in the signed-off version (I'm working
-> on these patches, they should be ready around Tuesday), but if you can test
+Hi,
 
-OK, thanks.
+This patchset try to solve one deadlock problem which might be caused
+by memory allocation with block I/O during runtime resume and block device
+error handling path. Traditionly, the problem is addressed by passing
+GFP_NOIO statically to mm, but that is not a effective solution, see
+detailed description in patch 1's commit log.
 
-> it in its current form, that'd be useful too.
+This patch set introduces one process flag and trys to fix one deadlock
+problem on block device/network device during runtime resume or usb bus reset.
 
-I was planning to test it some time later, so looks like I can directly
-test your signed-off version :-)
+The 1st one is the change on include/sched.h and mm.
+
+The 2nd patch introduces the flag of memalloc_noio_resume on 'dev_pm_info',
+and pm_runtime_set_memalloc_noio(), so that PM Core can teach mm to not
+allocate mm with GFP_IOFS during the runtime_resume callback only on
+device with the flag set.
+
+The following 2 patches apply the introduced pm_runtime_set_memalloc_noio()
+to mark all devices as memalloc_noio_resume in the path from the block or
+network device to the root device in device tree.
+
+The last 2 patches are applied again PM and USB subsystem to demonstrate
+how to use the introduced mechanism to fix the deadlock problem.
+
+V2:
+	- remove changes on 'may_writepage' and 'may_swap'(1/6)
+	- unset GFP_IOFS in try_to_free_pages() path(1/6)
+	- introduce pm_runtime_set_memalloc_noio()
+	- only apply the meachnism on block/network device and its ancestors
+	for runtime resume context
+V1:
+        - take Minchan's change to avoid the check in alloc_page hot path
+        - change the helpers' style into save/restore as suggested by Alan
+        - memory allocation with no io in usb bus reset path for all devices
+        as suggested by Greg and Oliver
+
+ block/genhd.c                |    8 +++++
+ drivers/base/power/runtime.c |   69 +++++++++++++++++++++++++++++++++++++++++-
+ drivers/usb/core/hub.c       |   11 +++++++
+ include/linux/pm.h           |    1 +
+ include/linux/pm_runtime.h   |    3 ++
+ include/linux/sched.h        |   10 ++++++
+ mm/page_alloc.c              |   10 +++++-
+ mm/vmscan.c                  |   12 ++++++++
+ net/core/net-sysfs.c         |    5 +++
+ 9 files changed, 127 insertions(+), 2 deletions(-)
+
 
 Thanks,
-Aaron
+--
+Ming Lei
 
