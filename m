@@ -1,107 +1,86 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
-Subject: drivers/devfreq/governor_simpleondemand.c:92:5: sparse: symbol
- 'devfreq_simple_ondemand_handler' was not declared. Should it be static?
-Date: Tue, 23 Oct 2012 13:13:49 +0800
-Message-ID: <5086278d.Wk+4wZ82+5/DqqJn%fengguang.wu@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: drivers/cpufreq/cpufreq_governor.c:46:53: sparse: incorrect type
+ in argument 2 (different modifiers)
+Date: Tue, 23 Oct 2012 10:55:51 +0530
+Message-ID: <CAKohpo=PF-MkG8KDRWSfoBXkK102r7WwToQ01UmfetvarRyK3w@mail.gmail.com>
+References: <50862255.Foit2oXcLVE39lAk%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="=_5086278d.Wo/kweSMtB1hCOR0unxBskZ7gRx9fcoMzG8W1lV31abMSxi3"
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:13789 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752067Ab2JWFYM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Oct 2012 01:24:12 -0400
+Received: from mail-ia0-f174.google.com ([209.85.210.174]:51676 "EHLO
+	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954Ab2JWFZv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Oct 2012 01:25:51 -0400
+Received: by mail-ia0-f174.google.com with SMTP id y32so2692495iag.19
+        for <linux-pm@vger.kernel.org>; Mon, 22 Oct 2012 22:25:51 -0700 (PDT)
+In-Reply-To: <50862255.Foit2oXcLVE39lAk%fengguang.wu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fengguang Wu <fengguang.wu@intel.com>
+Cc: linux-pm@vger.kernel.org, Lists linaro-dev <linaro-dev@lists.linaro.org>
 
-This is a multi-part message in MIME format.
+Hi Fengguang,
 
---=_5086278d.Wo/kweSMtB1hCOR0unxBskZ7gRx9fcoMzG8W1lV31abMSxi3
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Thanks for your mail. Few things i learnt from it:
+- Rafael has already applied my patches :)
+- I haven't used sparse in my life till this point. Now i know how to use it.
 
-Hi Rajagopal,
+On 23 October 2012 10:21, Fengguang Wu <fengguang.wu@intel.com> wrote:
+> Hi viresh,
+>
+> FYI, there are new sparse warnings show up in
 
-FYI, there are new sparse warnings show up in
+Actually these aren't new warnings, but old. Because some part is moved from
+one file to another, that's why your script shows them as new warnings.
 
-tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-head:   13f5e2d9a915373dd1573d8fe0214738bc69004f
-commit: 5001044272888cc4c1aa7e29b0e601b7719742f2 PM / devfreq: Core updates to support devices which can idle
-date:   6 hours ago
+Anyway, i don't hesitate in fixing them.
+@Rafael: Most of these are due to mixed use of u64 and cputime64_t. Both of
+which are u64 if i am not wrong. Any specific reason that we used cputime64_t
+instead of u64? Or can i make everything u64 instead in governors?
 
-+ drivers/devfreq/governor_simpleondemand.c:92:5: sparse: symbol 'devfreq_simple_ondemand_handler' was not declared. Should it be static?
 --
-+ drivers/devfreq/governor_userspace.c:119:5: sparse: symbol 'devfreq_userspace_handler' was not declared. Should it be static?
+viresh
 
-vim +92 drivers/devfreq/governor_simpleondemand.c
-
-ce26c5bb MyungJoo Ham     2011-10-02   76  	/* Set the desired frequency based on the load */
-ce26c5bb MyungJoo Ham     2011-10-02   77  	a = stat.busy_time;
-ce26c5bb MyungJoo Ham     2011-10-02   78  	a *= stat.current_frequency;
-ce26c5bb MyungJoo Ham     2011-10-02   79  	b = div_u64(a, stat.total_time);
-ce26c5bb MyungJoo Ham     2011-10-02   80  	b *= 100;
-ce26c5bb MyungJoo Ham     2011-10-02   81  	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
-ce26c5bb MyungJoo Ham     2011-10-02   82  	*freq = (unsigned long) b;
-ce26c5bb MyungJoo Ham     2011-10-02   83  
-6530b9de MyungJoo Ham     2011-12-09   84  	if (df->min_freq && *freq < df->min_freq)
-6530b9de MyungJoo Ham     2011-12-09   85  		*freq = df->min_freq;
-6530b9de MyungJoo Ham     2011-12-09   86  	if (df->max_freq && *freq > df->max_freq)
-6530b9de MyungJoo Ham     2011-12-09   87  		*freq = df->max_freq;
-6530b9de MyungJoo Ham     2011-12-09   88  
-ce26c5bb MyungJoo Ham     2011-10-02   89  	return 0;
-ce26c5bb MyungJoo Ham     2011-10-02   90  }
-ce26c5bb MyungJoo Ham     2011-10-02   91  
-50010442 Rajagopal Venkat 2012-10-23  @92  int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
-50010442 Rajagopal Venkat 2012-10-23   93  				unsigned int event, void *data)
-50010442 Rajagopal Venkat 2012-10-23   94  {
-50010442 Rajagopal Venkat 2012-10-23   95  	switch (event) {
-50010442 Rajagopal Venkat 2012-10-23   96  	case DEVFREQ_GOV_START:
-50010442 Rajagopal Venkat 2012-10-23   97  		devfreq_monitor_start(devfreq);
-50010442 Rajagopal Venkat 2012-10-23   98  		break;
-50010442 Rajagopal Venkat 2012-10-23   99  
-50010442 Rajagopal Venkat 2012-10-23  100  	case DEVFREQ_GOV_STOP:
-
-Please consider folding the attached diff :-)
-
----
-0-DAY kernel build testing backend         Open Source Technology Center
-Fengguang Wu, Yuanhan Liu                              Intel Corporation
-
---=_5086278d.Wo/kweSMtB1hCOR0unxBskZ7gRx9fcoMzG8W1lV31abMSxi3
-Content-Type: text/x-diff;
- charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="make-it-static-5001044.diff"
-
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index cf94218..3716a65 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -89,7 +89,7 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	return 0;
- }
- 
--int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
-+static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
- 				unsigned int event, void *data)
- {
- 	switch (event) {
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index 1fddee5..7067555 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -116,7 +116,7 @@ static void userspace_exit(struct devfreq *devfreq)
- 	devfreq->data = NULL;
- }
- 
--int devfreq_userspace_handler(struct devfreq *devfreq,
-+static int devfreq_userspace_handler(struct devfreq *devfreq,
- 			unsigned int event, void *data)
- {
- 	int ret = 0;
-
---=_5086278d.Wo/kweSMtB1hCOR0unxBskZ7gRx9fcoMzG8W1lV31abMSxi3--
+> tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+> head:   13f5e2d9a915373dd1573d8fe0214738bc69004f
+> commit: 83a73f712f2275033b2dc7f5c664988a1823ebc7 cpufreq: Move common part from governors to separate file, v2
+> date:   5 hours ago
+>
+> + drivers/cpufreq/cpufreq_governor.c:46:53: sparse: incorrect type in argument 2 (different modifiers)
+> drivers/cpufreq/cpufreq_governor.c:46:53:    expected unsigned long long [usertype] *wall
+> drivers/cpufreq/cpufreq_governor.c:46:53:    got unsigned long long [nocast] [usertype] *wall
+> + drivers/cpufreq/cpufreq_governor.c:46:53: sparse: implicit cast from nocast type
+> drivers/cpufreq/cpufreq_governor.c:48:58: sparse: incorrect type in argument 2 (different modifiers)
+> drivers/cpufreq/cpufreq_governor.c:48:58:    expected unsigned long long [usertype] *last_update_time
+> drivers/cpufreq/cpufreq_governor.c:48:58:    got unsigned long long [nocast] [usertype] *wall
+> drivers/cpufreq/cpufreq_governor.c:48:58: sparse: implicit cast from nocast type
+>
+> vim +46 drivers/cpufreq/cpufreq_governor.c
+>
+> 83a73f71 viresh kumar 2012-10-23  30    busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
+> 83a73f71 viresh kumar 2012-10-23  31    busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
+> 83a73f71 viresh kumar 2012-10-23  32    busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
+> 83a73f71 viresh kumar 2012-10-23  33
+> 83a73f71 viresh kumar 2012-10-23  34    idle_time = cur_wall_time - busy_time;
+> 83a73f71 viresh kumar 2012-10-23  35    if (wall)
+> 83a73f71 viresh kumar 2012-10-23  36            *wall = jiffies_to_usecs(cur_wall_time);
+> 83a73f71 viresh kumar 2012-10-23  37
+> 83a73f71 viresh kumar 2012-10-23  38    return jiffies_to_usecs(idle_time);
+> 83a73f71 viresh kumar 2012-10-23  39  }
+> 83a73f71 viresh kumar 2012-10-23  40
+> 83a73f71 viresh kumar 2012-10-23  41  cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
+> 83a73f71 viresh kumar 2012-10-23  42  {
+> 83a73f71 viresh kumar 2012-10-23  43    u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
+> 83a73f71 viresh kumar 2012-10-23  44
+> 83a73f71 viresh kumar 2012-10-23  45    if (idle_time == -1ULL)
+> 83a73f71 viresh kumar 2012-10-23 @46            return get_cpu_idle_time_jiffy(cpu, wall);
+> 83a73f71 viresh kumar 2012-10-23  47    else
+> 83a73f71 viresh kumar 2012-10-23  48            idle_time += get_cpu_iowait_time_us(cpu, wall);
+> 83a73f71 viresh kumar 2012-10-23  49
+> 83a73f71 viresh kumar 2012-10-23  50    return idle_time;
+> 83a73f71 viresh kumar 2012-10-23  51  }
+> 83a73f71 viresh kumar 2012-10-23  52  EXPORT_SYMBOL_GPL(get_cpu_idle_time);
+>
+> ---
+> 0-DAY kernel build testing backend         Open Source Technology Center
+> Fengguang Wu, Yuanhan Liu                              Intel Corporation
