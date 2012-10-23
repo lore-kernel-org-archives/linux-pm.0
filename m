@@ -1,91 +1,150 @@
-From: Francesco Lavra <francescolavra.fl@gmail.com>
-Subject: Re: [PATCH 1/5] Thermal: do bind operation after thermal zone or
- cooling device register returns.
-Date: Wed, 24 Oct 2012 00:13:41 +0200
-Message-ID: <50871695.2040904@gmail.com>
-References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com> <1350387889-15324-2-git-send-email-hongbo.zhang@linaro.com> <5083C8E4.7090007@gmail.com> <CAJLyvQyrZ56_KhUTpuv=2fet=12QHSCUjgUKHF9n3cmaATke5w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] rtpm-core: enable counters for PM state transitions
+Date: Wed, 24 Oct 2012 01:37:03 +0200
+Message-ID: <4780242.tbR0uvdI2F@vostro.rjw.lan>
+References: <1351011142-6249-1-git-send-email-sundar.iyer@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f46.google.com ([74.125.83.46]:53727 "EHLO
-	mail-ee0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754073Ab2JWWLl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Oct 2012 18:11:41 -0400
-In-Reply-To: <CAJLyvQyrZ56_KhUTpuv=2fet=12QHSCUjgUKHF9n3cmaATke5w@mail.gmail.com>
+Received: from ogre.sisk.pl ([193.178.161.156]:33454 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933579Ab2JWXdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Oct 2012 19:33:08 -0400
+In-Reply-To: <1351011142-6249-1-git-send-email-sundar.iyer@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hongbo Zhang <hongbo.zhang@linaro.org>
-Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org, amit.kachhap@linaro.org
+To: Sundar Iyer <sundar.iyer@intel.com>
+Cc: vivek.thakkar@intel.com, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi,
-On 10/23/2012 10:23 AM, Hongbo Zhang wrote:
-> Hi Francesco,
-> I found out more points about this issue.
+On Tuesday 23 of October 2012 22:22:22 Sundar Iyer wrote:
+> Add usage counters for every runtime suspend/resume
+> to enable runtime characteristics debug
 > 
-> [1]
-> cdev should be ready when get_max_state callback be called, otherwise
-> parameter cdev is useless, imagine there may be cases that
-> get_max_state call back is shared by more than one cooling devices of
-> same kind, like this:
-> common_get_max_state(*cdev, *state)
-> {
->     if (cdev == cdev1)  *state = 3;
->     else if (cdev == cdev)  *state = 5;
->     else
-> }
-> 
-> [2]
-> In my cpufreq cooling case(in fact cdev is not used to calculate
-> max_state), the cooling_cpufreq_list should be ready when
-> get_max_state call back is called. In this patch I defer the binding
-> when registration finished, but this is not perfect now, see this
-> routine in cpufreq_cooling_register:
-> 
-> thermal_cooling_device_register;
-> at this time: thermal_bind_work -> get_max_state -> get NULL
-> cooling_cpufreq_list
-> and then: list_add_tail(&cpufreq_dev->node, &cooling_cpufreq_list)
-> This is due to we cannot know exactly when the bind work is executed.
-> (and this can be fixed by moving mutex_lock(&cooling_cpufreq_lock)
-> aheadof thermal_cooling_device_register and other corresponding
-> modifications, but I found another way as below)
-> 
-> [3]
-> Root cause of this problem is calling get_max_state in register -> bind routine.
-> Better solution is to add another parameter in cooling device register
-> function, also add a max_state member in struct cdev, like:
-> thermal_cooling_device_register(char *type, void *devdata, const
-> struct thermal_cooling_device_ops *ops, unsigned long max_state)
-> and then in the bind function:
-> if(cdev->max_state)
->     max_state = cdev->max_state;
-> else
->     cdev->get_max_state(cdev, &max_state)
-> 
-> It is common sense that the cooling driver should know its cooling
-> max_state(ability) before registration, and it can be offered when
-> register.
-> I think this way doesn't change both thermal and cooling layer much,
-> it is more clear.
-> I will update this patch soon.
+> Change-Id: I174dbf3ffc4161eb9baf597ae545a1bc4108e516
+> Signed-off-by: Sundar Iyer <sundar.iyer@intel.com>
 
-I still believe the thermal layer doesn't need any change to work around
-this problem, and I still believe that when a cooling device is being
-registered, all of its ops should be fully functional.
-The problem with the cpufreq cooling device driver is that its callbacks
-use the internal list of devices to retrieve the struct
-cpufreq_cooling_device instance corresponding to a given struct
-thermal_cooling_device. This is not necessary, because the struct
-thermal_cooling_device has a private data pointer (devdata) which in
-this case is exactly a reference to the struct cpufreq_cooling_device
-instance the callbacks are looking for. In fact, I think the
-cooling_cpufreq_list is not necessary at all, and should be removed from
-the cpufreq cooling driver.
-So the 3 callbacks, instead of iterating through the device list, should
-have something like:
-struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
-That would do the trick.
+First off, the linux-pm@lists.linux-foundation.org list is dead.
+Please use linux-pm@vger.kernel.org instead (as documented in multiple places).
 
---
-Francesco
+Second, what's the performance impact of this patch?
+
+Rafael
+
+
+> ---
+>  drivers/base/power/runtime.c |    6 +++++
+>  drivers/base/power/sysfs.c   |   44 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm.h           |    2 +
+>  3 files changed, 52 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 1f339d5..5895bc2 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -52,6 +52,10 @@ static void __update_runtime_status(struct device *dev, enum rpm_status status)
+>  	update_pm_runtime_accounting(dev);
+>  	trace_runtime_pm_status(dev, status);
+>  	dev->power.runtime_status = status;
+> +	if (status == RPM_SUSPENDED)
+> +		atomic_inc(&dev->power.suspend_transition_count);
+> +	else if (status == RPM_ACTIVE)
+> +		atomic_inc(&dev->power.resume_transition_count);
+>  }
+>  
+>  /**
+> @@ -1240,6 +1244,8 @@ void pm_runtime_init(struct device *dev)
+>  
+>  	dev->power.disable_depth = 1;
+>  	atomic_set(&dev->power.usage_count, 0);
+> +	atomic_set(&dev->power.suspend_transition_count, 0);
+> +	atomic_set(&dev->power.resume_transition_count, 0);
+>  
+>  	dev->power.runtime_error = 0;
+>  
+> diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+> index a9f5b89..32c372e 100644
+> --- a/drivers/base/power/sysfs.c
+> +++ b/drivers/base/power/sysfs.c
+> @@ -186,6 +186,46 @@ static ssize_t rtpm_status_show(struct device *dev,
+>  
+>  static DEVICE_ATTR(runtime_status, 0444, rtpm_status_show, NULL);
+>  
+> +static ssize_t suspend_transition_count_store(struct device *dev,
+> +		struct device_attribute *attr, char *buf, size_t n)
+> +{
+> +	atomic_set(&dev->power.suspend_transition_count, 0);
+> +
+> +	return n;
+> +}
+> +
+> +static ssize_t suspend_transition_count_show(struct device *dev,
+> +		struct device_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%d\n",
+> +			atomic_read(&dev->power.suspend_transition_count));
+> +}
+> +
+> +static DEVICE_ATTR(runtime_suspend_transition, 0644,
+> +		suspend_transition_count_show,
+> +		suspend_transition_count_store);
+> +
+> +static ssize_t resume_transition_count_store(struct device *dev,
+> +		struct device_attribute *attr, char *buf, size_t n)
+> +{
+> +	atomic_set(&dev->power.resume_transition_count, 0);
+> +
+> +	return n;
+> +}
+> +
+> +
+> +static ssize_t resume_transition_count_show(struct device *dev,
+> +		struct device_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "%d\n",
+> +			atomic_read(&dev->power.resume_transition_count));
+> +}
+> +
+> +static DEVICE_ATTR(runtime_resume_transition, 0644,
+> +		resume_transition_count_show,
+> +		resume_transition_count_store);
+> +
+> +
+>  static ssize_t autosuspend_delay_ms_show(struct device *dev,
+>  		struct device_attribute *attr, char *buf)
+>  {
+> @@ -438,6 +478,8 @@ static struct attribute *power_attrs[] = {
+>  #endif
+>  #ifdef CONFIG_PM_RUNTIME
+>  	&dev_attr_runtime_status.attr,
+> +	&dev_attr_runtime_suspend_transition.attr,
+> +	&dev_attr_runtime_resume_transition.attr,
+>  	&dev_attr_runtime_usage.attr,
+>  	&dev_attr_runtime_active_kids.attr,
+>  	&dev_attr_runtime_enabled.attr,
+> @@ -472,6 +514,8 @@ static struct attribute *runtime_attrs[] = {
+>  #ifdef CONFIG_PM_RUNTIME
+>  #ifndef CONFIG_PM_ADVANCED_DEBUG
+>  	&dev_attr_runtime_status.attr,
+> +	&dev_attr_runtime_suspend_transition.attr,
+> +	&dev_attr_runtime_resume_transition.attr,
+>  #endif
+>  	&dev_attr_control.attr,
+>  	&dev_attr_runtime_suspended_time.attr,
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 411e4f4..4001ba2 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -442,6 +442,8 @@ struct dev_pm_info {
+>  	wait_queue_head_t	wait_queue;
+>  	atomic_t		usage_count;
+>  	atomic_t		child_count;
+> +	atomic_t		suspend_transition_count;
+> +	atomic_t		resume_transition_count;
+>  	unsigned int		disable_depth:3;
+>  	unsigned int		ignore_children:1;
+>  	unsigned int		idle_notification:1;
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
