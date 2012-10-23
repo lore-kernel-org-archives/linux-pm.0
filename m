@@ -1,134 +1,107 @@
 From: Fengguang Wu <fengguang.wu@intel.com>
-Subject: drivers/cpufreq/cpufreq_governor.c:46:53: sparse: incorrect type
- in argument 2 (different modifiers)
-Date: Tue, 23 Oct 2012 12:51:33 +0800
-Message-ID: <50862255.Foit2oXcLVE39lAk%fengguang.wu@intel.com>
+Subject: drivers/devfreq/governor_simpleondemand.c:92:5: sparse: symbol
+ 'devfreq_simple_ondemand_handler' was not declared. Should it be static?
+Date: Tue, 23 Oct 2012 13:13:49 +0800
+Message-ID: <5086278d.Wk+4wZ82+5/DqqJn%fengguang.wu@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
- boundary="=_50862255.5/0qfSWSHA4CZlZuz3CnN7XYMrezVzqwyW9eXLdAd51/Ctjw"
+ boundary="=_5086278d.Wo/kweSMtB1hCOR0unxBskZ7gRx9fcoMzG8W1lV31abMSxi3"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:31394 "EHLO mga01.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:13789 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927Ab2JWFBx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Oct 2012 01:01:53 -0400
+	id S1752067Ab2JWFYM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Oct 2012 01:24:12 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: viresh kumar <viresh.kumar@linaro.org>
+To: Rajagopal Venkat <rajagopal.venkat@linaro.org>
 Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
 This is a multi-part message in MIME format.
 
---=_50862255.5/0qfSWSHA4CZlZuz3CnN7XYMrezVzqwyW9eXLdAd51/Ctjw
+--=_5086278d.Wo/kweSMtB1hCOR0unxBskZ7gRx9fcoMzG8W1lV31abMSxi3
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Hi viresh,
+Hi Rajagopal,
 
 FYI, there are new sparse warnings show up in
 
 tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
 head:   13f5e2d9a915373dd1573d8fe0214738bc69004f
-commit: 83a73f712f2275033b2dc7f5c664988a1823ebc7 cpufreq: Move common part from governors to separate file, v2
-date:   5 hours ago
+commit: 5001044272888cc4c1aa7e29b0e601b7719742f2 PM / devfreq: Core updates to support devices which can idle
+date:   6 hours ago
 
-+ drivers/cpufreq/cpufreq_governor.c:46:53: sparse: incorrect type in argument 2 (different modifiers)
-drivers/cpufreq/cpufreq_governor.c:46:53:    expected unsigned long long [usertype] *wall
-drivers/cpufreq/cpufreq_governor.c:46:53:    got unsigned long long [nocast] [usertype] *wall
-+ drivers/cpufreq/cpufreq_governor.c:46:53: sparse: implicit cast from nocast type
-drivers/cpufreq/cpufreq_governor.c:48:58: sparse: incorrect type in argument 2 (different modifiers)
-drivers/cpufreq/cpufreq_governor.c:48:58:    expected unsigned long long [usertype] *last_update_time
-drivers/cpufreq/cpufreq_governor.c:48:58:    got unsigned long long [nocast] [usertype] *wall
-drivers/cpufreq/cpufreq_governor.c:48:58: sparse: implicit cast from nocast type
++ drivers/devfreq/governor_simpleondemand.c:92:5: sparse: symbol 'devfreq_simple_ondemand_handler' was not declared. Should it be static?
+--
++ drivers/devfreq/governor_userspace.c:119:5: sparse: symbol 'devfreq_userspace_handler' was not declared. Should it be static?
 
-vim +46 drivers/cpufreq/cpufreq_governor.c
+vim +92 drivers/devfreq/governor_simpleondemand.c
 
-83a73f71 viresh kumar 2012-10-23  30  	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
-83a73f71 viresh kumar 2012-10-23  31  	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
-83a73f71 viresh kumar 2012-10-23  32  	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
-83a73f71 viresh kumar 2012-10-23  33  
-83a73f71 viresh kumar 2012-10-23  34  	idle_time = cur_wall_time - busy_time;
-83a73f71 viresh kumar 2012-10-23  35  	if (wall)
-83a73f71 viresh kumar 2012-10-23  36  		*wall = jiffies_to_usecs(cur_wall_time);
-83a73f71 viresh kumar 2012-10-23  37  
-83a73f71 viresh kumar 2012-10-23  38  	return jiffies_to_usecs(idle_time);
-83a73f71 viresh kumar 2012-10-23  39  }
-83a73f71 viresh kumar 2012-10-23  40  
-83a73f71 viresh kumar 2012-10-23  41  cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-83a73f71 viresh kumar 2012-10-23  42  {
-83a73f71 viresh kumar 2012-10-23  43  	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
-83a73f71 viresh kumar 2012-10-23  44  
-83a73f71 viresh kumar 2012-10-23  45  	if (idle_time == -1ULL)
-83a73f71 viresh kumar 2012-10-23 @46  		return get_cpu_idle_time_jiffy(cpu, wall);
-83a73f71 viresh kumar 2012-10-23  47  	else
-83a73f71 viresh kumar 2012-10-23  48  		idle_time += get_cpu_iowait_time_us(cpu, wall);
-83a73f71 viresh kumar 2012-10-23  49  
-83a73f71 viresh kumar 2012-10-23  50  	return idle_time;
-83a73f71 viresh kumar 2012-10-23  51  }
-83a73f71 viresh kumar 2012-10-23  52  EXPORT_SYMBOL_GPL(get_cpu_idle_time);
+ce26c5bb MyungJoo Ham     2011-10-02   76  	/* Set the desired frequency based on the load */
+ce26c5bb MyungJoo Ham     2011-10-02   77  	a = stat.busy_time;
+ce26c5bb MyungJoo Ham     2011-10-02   78  	a *= stat.current_frequency;
+ce26c5bb MyungJoo Ham     2011-10-02   79  	b = div_u64(a, stat.total_time);
+ce26c5bb MyungJoo Ham     2011-10-02   80  	b *= 100;
+ce26c5bb MyungJoo Ham     2011-10-02   81  	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
+ce26c5bb MyungJoo Ham     2011-10-02   82  	*freq = (unsigned long) b;
+ce26c5bb MyungJoo Ham     2011-10-02   83  
+6530b9de MyungJoo Ham     2011-12-09   84  	if (df->min_freq && *freq < df->min_freq)
+6530b9de MyungJoo Ham     2011-12-09   85  		*freq = df->min_freq;
+6530b9de MyungJoo Ham     2011-12-09   86  	if (df->max_freq && *freq > df->max_freq)
+6530b9de MyungJoo Ham     2011-12-09   87  		*freq = df->max_freq;
+6530b9de MyungJoo Ham     2011-12-09   88  
+ce26c5bb MyungJoo Ham     2011-10-02   89  	return 0;
+ce26c5bb MyungJoo Ham     2011-10-02   90  }
+ce26c5bb MyungJoo Ham     2011-10-02   91  
+50010442 Rajagopal Venkat 2012-10-23  @92  int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
+50010442 Rajagopal Venkat 2012-10-23   93  				unsigned int event, void *data)
+50010442 Rajagopal Venkat 2012-10-23   94  {
+50010442 Rajagopal Venkat 2012-10-23   95  	switch (event) {
+50010442 Rajagopal Venkat 2012-10-23   96  	case DEVFREQ_GOV_START:
+50010442 Rajagopal Venkat 2012-10-23   97  		devfreq_monitor_start(devfreq);
+50010442 Rajagopal Venkat 2012-10-23   98  		break;
+50010442 Rajagopal Venkat 2012-10-23   99  
+50010442 Rajagopal Venkat 2012-10-23  100  	case DEVFREQ_GOV_STOP:
+
+Please consider folding the attached diff :-)
 
 ---
 0-DAY kernel build testing backend         Open Source Technology Center
 Fengguang Wu, Yuanhan Liu                              Intel Corporation
 
---=_50862255.5/0qfSWSHA4CZlZuz3CnN7XYMrezVzqwyW9eXLdAd51/Ctjw
-Content-Type: text/x-csrc;
+--=_5086278d.Wo/kweSMtB1hCOR0unxBskZ7gRx9fcoMzG8W1lV31abMSxi3
+Content-Type: text/x-diff;
  charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
- filename="cpufreq_governor.c"
+ filename="make-it-static-5001044.diff"
 
-/*
- * drivers/cpufreq/cpufreq_governor.c
- *
- * CPUFREQ governors common code
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- */
+diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
+index cf94218..3716a65 100644
+--- a/drivers/devfreq/governor_simpleondemand.c
++++ b/drivers/devfreq/governor_simpleondemand.c
+@@ -89,7 +89,7 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
+ 	return 0;
+ }
+ 
+-int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
++static int devfreq_simple_ondemand_handler(struct devfreq *devfreq,
+ 				unsigned int event, void *data)
+ {
+ 	switch (event) {
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 1fddee5..7067555 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -116,7 +116,7 @@ static void userspace_exit(struct devfreq *devfreq)
+ 	devfreq->data = NULL;
+ }
+ 
+-int devfreq_userspace_handler(struct devfreq *devfreq,
++static int devfreq_userspace_handler(struct devfreq *devfreq,
+ 			unsigned int event, void *data)
+ {
+ 	int ret = 0;
 
-#include <asm/cputime.h>
-#include <linux/export.h>
-#include <linux/kernel_stat.h>
-#include <linux/tick.h>
-#include <linux/types.h>
-/*
- * Code picked from earlier governer implementations
- */
-static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
-{
-	u64 idle_time;
-	u64 cur_wall_time;
-	u64 busy_time;
-
-	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
-
-	busy_time = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
-	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
-
-	idle_time = cur_wall_time - busy_time;
-	if (wall)
-		*wall = jiffies_to_usecs(cur_wall_time);
-
-	return jiffies_to_usecs(idle_time);
-}
-
-cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
-{
-	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
-
-	if (idle_time == -1ULL)
-		return get_cpu_idle_time_jiffy(cpu, wall);
-	else
-		idle_time += get_cpu_iowait_time_us(cpu, wall);
-
-	return idle_time;
-}
-EXPORT_SYMBOL_GPL(get_cpu_idle_time);
-
---=_50862255.5/0qfSWSHA4CZlZuz3CnN7XYMrezVzqwyW9eXLdAd51/Ctjw--
+--=_5086278d.Wo/kweSMtB1hCOR0unxBskZ7gRx9fcoMzG8W1lV31abMSxi3--
