@@ -1,68 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUGFIX 2/2] PCI/PM: Resume device before shutdown
-Date: Wed, 24 Oct 2012 23:01:55 +0200
-Message-ID: <3990336.eisiEt4Bt9@vostro.rjw.lan>
-References: <1351061654-8339-1-git-send-email-ying.huang@intel.com> <1351061654-8339-2-git-send-email-ying.huang@intel.com>
+Subject: Re: [PATCH] cpuidle: fix warning when compile
+Date: Wed, 24 Oct 2012 23:03:18 +0200
+Message-ID: <4386557.NfbZYeZWxd@vostro.rjw.lan>
+References: <1351046728-10965-1-git-send-email-youquan.song@intel.com> <4092469.vxd3uL7amA@vostro.rjw.lan> <70A3B115BE79814398B8E4E7C4AE18EE13A10B@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:35386 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([193.178.161.156]:35400 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752374Ab2JXU6C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Oct 2012 16:58:02 -0400
-In-Reply-To: <1351061654-8339-2-git-send-email-ying.huang@intel.com>
+	id S1161180Ab2JXU7b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Oct 2012 16:59:31 -0400
+In-Reply-To: <70A3B115BE79814398B8E4E7C4AE18EE13A10B@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Song, Youquan" <youquan.song@intel.com>
+Cc: "Wu, Fengguang" <fengguang.wu@intel.com>, "yuanhan.liu@linux.intel.com" <yuanhan.liu@linux.intel.com>, Rik van Riel <riel@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Youquan Song <youquan.song@linux.intel.com>
 
-On Wednesday 24 of October 2012 14:54:14 Huang Ying wrote:
-> Some actions during shutdown need device to be in D0 state, such as
-> MSI shutdown etc, so resume device before shutdown.
+On Wednesday 24 of October 2012 02:14:13 Song, Youquan wrote:
+> >>  	int64_t thresh = LLONG_MAX; /* Discard outliers above this value. */
 > 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> >Shouldn't this one be uint64_t too?
+> 
+> Thanks Rafael!  Fenggung also asked me the similar question. 
+> But I think, the compile only complains about do_div() at SH 32bit
+> architecture, the above int64_t definition should be OK and I do not
+> find any issue without changing it to uint64_t. 
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+OK
 
-> ---
->  drivers/pci/pci-driver.c |   12 ++----------
->  1 file changed, 2 insertions(+), 10 deletions(-)
+I fixed up the original patch.
+
+Thanks,
+Rafael
+
+
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+> Sent: Wednesday, October 24, 2012 8:28 AM
+> To: Song, Youquan
+> Cc: Wu, Fengguang; yuanhan.liu@linux.intel.com; Rik van Riel; linux-pm@vger.kernel.org; Youquan Song
+> Subject: Re: [PATCH] cpuidle: fix warning when compile
 > 
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -398,6 +398,8 @@ static void pci_device_shutdown(struct d
->  	struct pci_dev *pci_dev = to_pci_dev(dev);
->  	struct pci_driver *drv = pci_dev->driver;
->  
-> +	pm_runtime_resume(dev);
-> +
->  	if (drv && drv->shutdown)
->  		drv->shutdown(pci_dev);
->  	pci_msi_shutdown(pci_dev);
-> @@ -408,16 +410,6 @@ static void pci_device_shutdown(struct d
->  	 * continue to do DMA
->  	 */
->  	pci_disable_device(pci_dev);
-> -
-> -	/*
-> -	 * Devices may be enabled to wake up by runtime PM, but they need not
-> -	 * be supposed to wake up the system from its "power off" state (e.g.
-> -	 * ACPI S5).  Therefore disable wakeup for all devices that aren't
-> -	 * supposed to wake up the system at this point.  The state argument
-> -	 * will be ignored by pci_enable_wake().
-> -	 */
-> -	if (!device_may_wakeup(dev))
-> -		pci_enable_wake(pci_dev, PCI_UNKNOWN, false);
->  }
->  
->  #ifdef CONFIG_PM
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> On Tuesday 23 of October 2012 22:45:28 Youquan Song wrote:
+> > Fix the warning complain when compile the kernel.
+> > 
+> > drivers/cpuidle/governors/menu.c: In function 'get_typical_interval':
+> > drivers/cpuidle/governors/menu.c:268:2: warning: comparison of 
+> > distinct pointer types lacks a cast [enabled by default]
+> > drivers/cpuidle/governors/menu.c:277:2: warning: comparison of 
+> > distinct pointer types lacks a cast [enabled by default]
+> > 
+> > Signed-off-by: Youquan Song <youquan.song@intel.com>
+> > ---
+> >  drivers/cpuidle/governors/menu.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/cpuidle/governors/menu.c 
+> > b/drivers/cpuidle/governors/menu.c
+> > index 26d5667..2efee27 100644
+> > --- a/drivers/cpuidle/governors/menu.c
+> > +++ b/drivers/cpuidle/governors/menu.c
+> > @@ -248,7 +248,7 @@ static enum hrtimer_restart 
+> > menu_hrtimer_notify(struct hrtimer *hrtimer)  static u32 
+> > get_typical_interval(struct menu_device *data)  {
+> >  	int i = 0, divisor = 0;
+> > -	int64_t max = 0, avg = 0, stddev = 0;
+> > +	uint64_t max = 0, avg = 0, stddev = 0;
+> >  	int64_t thresh = LLONG_MAX; /* Discard outliers above this value. */
 > 
+> Shouldn't this one be uint64_t too?
+> 
+> >  	unsigned int ret = 0;
+
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
