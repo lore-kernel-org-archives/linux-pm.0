@@ -1,42 +1,166 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
-Date: Wed, 24 Oct 2012 21:43:46 +0200
-Message-ID: <1597360.JT7plJlUsZ@vostro.rjw.lan>
-References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org> <CAKohpo=Jsy9az4PgJ-mkq_U49EOpHGES+-DaROanCOTn-L2s3Q@mail.gmail.com> <CAKohpomUD-JQbkyEom+_BaRqJSvw8P_hBUsrjTU3vH6bM1+scQ@mail.gmail.com>
+Subject: Re: [BUGFIX 1/2] PCI/PM: Fix deadlock when unbind device if its parent in D3cold
+Date: Wed, 24 Oct 2012 23:01:24 +0200
+Message-ID: <6992627.n0xzVn15jf@vostro.rjw.lan>
+References: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomUD-JQbkyEom+_BaRqJSvw8P_hBUsrjTU3vH6bM1+scQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Huang Ying <ying.huang@intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Zhang Yanmin <yanmin.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 24 of October 2012 11:37:13 Viresh Kumar wrote:
-> On 22 October 2012 14:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 20 October 2012 01:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> Initially ondemand governor was written and then using its code conservative
-> >> governor is written. It used a lot of code from ondemand governor, but copy of
-> >> code was created instead of using the same routines from both governors. Which
-> >> increased code redundancy, which is difficult to manage.
-> >>
-> >> This patch is an attempt to move common part of both the governors to
-> >> cpufreq_governor.c file to come over above mentioned issues.
-> >>
-> >> This shouldn't change anything from functionality point of view.
-> >>
-> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Wednesday 24 of October 2012 14:54:13 Huang Ying wrote:
+> If a PCI device and its parents are put into D3cold, unbinding the
+> device will trigger deadlock as follow:
 > 
-> For everybody else, this patch is already pushed by Rafael in his linux-next
-> branch.
+> - driver_unbind
+>   - device_release_driver
+>     - device_lock(dev)				<--- previous lock here
+>     - __device_release_driver
+>       - pm_runtime_get_sync
+>         ...
+>           - rpm_resume(dev)
+>             - rpm_resume(dev->parent)
+>               ...
+>                 - pci_pm_runtime_resume
+>                   ...
+>                   - pci_set_power_state
+>                     - __pci_start_power_transition
+>                       - pci_wakeup_bus(dev->parent->subordinate)
+>                         - pci_walk_bus
+>                           - device_lock(dev)	<--- dead lock here
+> 
+> 
+> If we do not do device_lock in pci_walk_bus, we can avoid dead lock.
+> Device_lock in pci_walk_bus is introduced in commit:
+> d71374dafbba7ec3f67371d3b7e9f6310a588808, corresponding email thread
+> is: https://lkml.org/lkml/2006/5/26/38.  The patch author Zhang Yanmin
+> said device_lock is added to pci_walk_bus because:
+> 
+>   Some error handling functions call pci_walk_bus. For example, PCIe
+>   aer. Here we lock the device, so the driver wouldn't detach from the
+>   device, as the cb might call driver's callback function.
+> 
+> So I fixed the dead lock as follow:
+> 
+> - remove device_lock from pci_walk_bus
+> - add device_lock into callback if callback will call driver's callback
+> 
+> I checked pci_walk_bus users one by one, and found only PCIe aer needs
+> device lock.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> Cc: Zhang Yanmin <yanmin.zhang@intel.com>
 
-Well, not yet, although I'm going to do that.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks,
-Rafael
-
-
+> ---
+>  drivers/pci/bus.c                  |    3 ---
+>  drivers/pci/pcie/aer/aerdrv_core.c |   20 ++++++++++++++++----
+>  2 files changed, 16 insertions(+), 7 deletions(-)
+> 
+> --- a/drivers/pci/bus.c
+> +++ b/drivers/pci/bus.c
+> @@ -320,10 +320,7 @@ void pci_walk_bus(struct pci_bus *top, i
+>  		} else
+>  			next = dev->bus_list.next;
+>  
+> -		/* Run device routines with the device locked */
+> -		device_lock(&dev->dev);
+>  		retval = cb(dev, userdata);
+> -		device_unlock(&dev->dev);
+>  		if (retval)
+>  			break;
+>  	}
+> --- a/drivers/pci/pcie/aer/aerdrv_core.c
+> +++ b/drivers/pci/pcie/aer/aerdrv_core.c
+> @@ -213,6 +213,7 @@ static int report_error_detected(struct
+>  	struct aer_broadcast_data *result_data;
+>  	result_data = (struct aer_broadcast_data *) data;
+>  
+> +	device_lock(&dev->dev);
+>  	dev->error_state = result_data->state;
+>  
+>  	if (!dev->driver ||
+> @@ -231,12 +232,14 @@ static int report_error_detected(struct
+>  				   dev->driver ?
+>  				   "no AER-aware driver" : "no driver");
+>  		}
+> -		return 0;
+> +		goto out;
+>  	}
+>  
+>  	err_handler = dev->driver->err_handler;
+>  	vote = err_handler->error_detected(dev, result_data->state);
+>  	result_data->result = merge_result(result_data->result, vote);
+> +out:
+> +	device_unlock(&dev->dev);
+>  	return 0;
+>  }
+>  
+> @@ -247,14 +250,17 @@ static int report_mmio_enabled(struct pc
+>  	struct aer_broadcast_data *result_data;
+>  	result_data = (struct aer_broadcast_data *) data;
+>  
+> +	device_lock(&dev->dev);
+>  	if (!dev->driver ||
+>  		!dev->driver->err_handler ||
+>  		!dev->driver->err_handler->mmio_enabled)
+> -		return 0;
+> +		goto out;
+>  
+>  	err_handler = dev->driver->err_handler;
+>  	vote = err_handler->mmio_enabled(dev);
+>  	result_data->result = merge_result(result_data->result, vote);
+> +out:
+> +	device_unlock(&dev->dev);
+>  	return 0;
+>  }
+>  
+> @@ -265,14 +271,17 @@ static int report_slot_reset(struct pci_
+>  	struct aer_broadcast_data *result_data;
+>  	result_data = (struct aer_broadcast_data *) data;
+>  
+> +	device_lock(&dev->dev);
+>  	if (!dev->driver ||
+>  		!dev->driver->err_handler ||
+>  		!dev->driver->err_handler->slot_reset)
+> -		return 0;
+> +		goto out;
+>  
+>  	err_handler = dev->driver->err_handler;
+>  	vote = err_handler->slot_reset(dev);
+>  	result_data->result = merge_result(result_data->result, vote);
+> +out:
+> +	device_unlock(&dev->dev);
+>  	return 0;
+>  }
+>  
+> @@ -280,15 +289,18 @@ static int report_resume(struct pci_dev
+>  {
+>  	const struct pci_error_handlers *err_handler;
+>  
+> +	device_lock(&dev->dev);
+>  	dev->error_state = pci_channel_io_normal;
+>  
+>  	if (!dev->driver ||
+>  		!dev->driver->err_handler ||
+>  		!dev->driver->err_handler->resume)
+> -		return 0;
+> +		goto out;
+>  
+>  	err_handler = dev->driver->err_handler;
+>  	err_handler->resume(dev);
+> +out:
+> +	device_unlock(&dev->dev);
+>  	return 0;
+>  }
+>  
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
