@@ -1,61 +1,35 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC PATCH v2 2/6] PM / Runtime: introduce
- pm_runtime_set_memalloc_noio()
-Date: Wed, 24 Oct 2012 13:26:03 +0100
-Message-ID: <20121024132603.6c52cc47@pyramind.ukuu.org.uk>
-References: <CACVXFVMmszZWHaeNS6LSG4nHR4wWBLwM_BvynRwUW8X=nO+JWA@mail.gmail.com>
-	<Pine.LNX.4.44L0.1210231022230.1635-100000@iolanthe.rowland.org>
-	<CACVXFVN+=XH_f5BmRkXeagTNowz0o0-Pd7GcxCneO0FSq8xqEw@mail.gmail.com>
-	<AE90C24D6B3A694183C094C60CF0A2F6026B7060@saturn3.aculab.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 3/6] Thermal: fix bug of counting cpu frequencies.
+Date: Wed, 24 Oct 2012 19:04:44 +0530
+Message-ID: <CAKohpomygrbhNMJ5+P6DnppBTOSXB8GFeQsbjkUZ61Ou6bzaPQ@mail.gmail.com>
+References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351079900-32236-4-git-send-email-hongbo.zhang@linaro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B7060@saturn3.aculab.com>
-Sender: owner-linux-mm@kvack.org
-To: David Laight <David.Laight@ACULAB.COM>
-Cc: Ming Lei <ming.lei@canonical.com>, Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, Oliver
- Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ia0-f174.google.com ([209.85.210.174]:42559 "EHLO
+	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755194Ab2JXNep (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Oct 2012 09:34:45 -0400
+Received: by mail-ia0-f174.google.com with SMTP id y32so357248iag.19
+        for <linux-pm@vger.kernel.org>; Wed, 24 Oct 2012 06:34:44 -0700 (PDT)
+In-Reply-To: <1351079900-32236-4-git-send-email-hongbo.zhang@linaro.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "hongbo.zhang" <hongbo.zhang@linaro.org>
+Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
 
-On Wed, 24 Oct 2012 10:06:36 +0100
-"David Laight" <David.Laight@ACULAB.COM> wrote:
+On 24 October 2012 17:28, hongbo.zhang <hongbo.zhang@linaro.org> wrote:
+> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+>
+> In the while loop for counting cpu frequencies, if table[i].frequency equals
+> CPUFREQ_ENTRY_INVALID, index i won't be increased, so this leads to an endless
+> loop, what's more the index i cannot be referred as cpu frequencies number if
+> there is CPUFREQ_ENTRY_INVALID case.
+>
+> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
 
-> > Looks the problem is worse than above, not only bitfields are affected, the
-> > adjacent fields might be involved too, see:
-> > 
-> >            http://lwn.net/Articles/478657/
-> 
-> Not mentioned in there is that even with x86/amd64 given
-> a struct with the following adjacent fields:
-> 	char a;
-> 	char b;
-> 	char c;
-> then foo->b |= 0x80; might do a 32bit RMW cycle.
+Good one.
 
-There are processors that will do this for the char case at least as they
-do byte ops by a mix of 32bit ops and rotate.
-
-> This will (well might - but probably does) happen
-> if compiled to a 'BTS' instruction.
-> The x86 instruction set docs are actually unclear
-> as to whether the 32bit cycle might even be misaligned!
-> amd64 might do a 64bit cycle (not checked the docs).
-
-Even with a suitably aligned field the compiler is at liberty to generate
-things like
-
-	reg = 0x80
-	reg |= foo->b
-	foo->b = reg;
-
-One reason it's a good idea to use set_bit/test_bit and friends.
-
-Alan
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
