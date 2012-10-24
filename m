@@ -1,272 +1,42 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V2 6/6] Thermal: Add ST-Ericsson DB8500 thermal properties
-	and platform data.
-Date: Wed, 24 Oct 2012 20:17:10 +0530
-Message-ID: <CAKohpom0EOAuahLQoNr1ODbTT-Trv3eE0-oBEmbbdbiKBJPCng@mail.gmail.com>
-References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
-	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
-	<1351079900-32236-7-git-send-email-hongbo.zhang@linaro.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
+Date: Wed, 24 Oct 2012 21:43:46 +0200
+Message-ID: <1597360.JT7plJlUsZ@vostro.rjw.lan>
+References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org> <CAKohpo=Jsy9az4PgJ-mkq_U49EOpHGES+-DaROanCOTn-L2s3Q@mail.gmail.com> <CAKohpomUD-JQbkyEom+_BaRqJSvw8P_hBUsrjTU3vH6bM1+scQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <1351079900-32236-7-git-send-email-hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: "hongbo.zhang" <hongbo.zhang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, STEricsson_nomadik_linux-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org, kernel-vMlcbD5RyM6HZuj8yyL1ah2eb7JE58TQ@public.gmane.org, "hongbo.zhang" <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomUD-JQbkyEom+_BaRqJSvw8P_hBUsrjTU3vH6bM1+scQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 24 October 2012 17:28, hongbo.zhang <hongbo.zhang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> From: "hongbo.zhang" <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
->
-> This patch adds device tree properties for ST-Ericsson DB8500 thermal driver,
-> also adds the platform data to support the old fashion.
->
-> Signed-off-by: hongbo.zhang <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
-> ---
->  .../devicetree/bindings/thermal/db8500-thermal.txt | 40 ++++++++++++++
+On Wednesday 24 of October 2012 11:37:13 Viresh Kumar wrote:
+> On 22 October 2012 14:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 20 October 2012 01:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> Initially ondemand governor was written and then using its code conservative
+> >> governor is written. It used a lot of code from ondemand governor, but copy of
+> >> code was created instead of using the same routines from both governors. Which
+> >> increased code redundancy, which is difficult to manage.
+> >>
+> >> This patch is an attempt to move common part of both the governors to
+> >> cpufreq_governor.c file to come over above mentioned issues.
+> >>
+> >> This shouldn't change anything from functionality point of view.
+> >>
+> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> For everybody else, this patch is already pushed by Rafael in his linux-next
+> branch.
 
-It must be included in patch 5/6
+Well, not yet, although I'm going to do that.
 
->  arch/arm/boot/dts/dbx5x0.dtsi                      | 14 +++++
->  arch/arm/boot/dts/snowball.dts                     | 31 +++++++++++
->  arch/arm/mach-ux500/board-mop500.c                 | 64 ++++++++++++++++++++++
->  4 files changed, 149 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/db8500-thermal.txt
->
-> diff --git a/Documentation/devicetree/bindings/thermal/db8500-thermal.txt b/Documentation/devicetree/bindings/thermal/db8500-thermal.txt
-> new file mode 100644
-> index 0000000..80d53e6
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/db8500-thermal.txt
-> @@ -0,0 +1,40 @@
-> +* ST-Ericsson DB8500 Thermal
-> +
-> +** Thermal node properties:
-> +
-> +- compatible : "stericsson,db8500-thermal";
-> +- reg : address range of the thermal sensor registers;
-> +- interrupts : interrupts generated form PRCMU;
-> +- interrupt-names : "IRQ_HOTMON_LOW" and "IRQ_HOTMON_HIGH";
-> +- num-trips : number of total trip points;
-> +- tripN-temp : temperature of trip point N;
-> +- tripN-type : type of trip point N, should be one of "active" "passive" "hot" "critical";
-> +- tripN-cdev-num : number of the cooling devices which can be bound to trip point N;
-> +- tripN-cdev-nameM : name of the No. M cooling device of trip point N;
-> +
-> +Usually the num-trips and tripN-*** are seperated in board related dts files.
+Thanks,
+Rafael
 
-s/seperated/separated
 
-> +
-> +Example:
-> +thermal@801573c0 {
-> +       compatible = "stericsson,db8500-thermal";
-> +       reg = <0x801573c0 0x40>;
-> +       interrupts = <21 0x4>, <22 0x4>;
-> +       interrupt-names = "IRQ_HOTMON_LOW", "IRQ_HOTMON_HIGH";
-> +
-> +       num-trips = <3>;
-> +
-> +       trip0-temp = <70000>;
-> +       trip0-type = "active";
-> +       trip0-cdev-num = <1>;
-> +       trip0-cdev-name0 = "thermal-cpufreq-0";
-> +
-> +       trip1-temp = <75000>;
-> +       trip1-type = "active";
-> +       trip1-cdev-num = <2>;
-> +       trip1-cdev-name0 = "thermal-cpufreq-0";
-> +       trip1-cdev-name1 = "thermal-fan";
-> +
-> +       trip2-temp = <85000>;
-> +       trip2-type = "critical";
-> +       trip2-cdev-num = <0>;
-> +}
-> diff --git a/arch/arm/boot/dts/dbx5x0.dtsi b/arch/arm/boot/dts/dbx5x0.dtsi
-> index 748ba7a..949edc2 100644
-> --- a/arch/arm/boot/dts/dbx5x0.dtsi
-> +++ b/arch/arm/boot/dts/dbx5x0.dtsi
-> @@ -203,6 +203,14 @@
->                                 reg = <0x80157450 0xC>;
->                         };
->
-> +                       thermal@801573c0 {
-> +                               compatible = "stericsson,db8500-thermal";
-> +                               reg = <0x801573c0 0x40>;
-> +                               interrupts = <21 0x4>, <22 0x4>;
-> +                               interrupt-names = "IRQ_HOTMON_LOW", "IRQ_HOTMON_HIGH";
-> +                               status = "disabled";
-> +                        };
-> +
->                         db8500-prcmu-regulators {
->                                 compatible = "stericsson,db8500-prcmu-regulator";
->
-> @@ -645,5 +653,11 @@
->                         ranges = <0 0x50000000 0x4000000>;
->                         status = "disabled";
->                 };
-> +
-> +               cpufreq-cooling {
-> +                       compatible = "stericsson,db8500-cpufreq-cooling";
-> +                       status = "disabled";
-> +                };
-> +
->         };
->  };
-> diff --git a/arch/arm/boot/dts/snowball.dts b/arch/arm/boot/dts/snowball.dts
-> index 702c0ba..c6f85f0 100644
-> --- a/arch/arm/boot/dts/snowball.dts
-> +++ b/arch/arm/boot/dts/snowball.dts
-> @@ -99,6 +99,33 @@
->                         status = "okay";
->                 };
->
-> +               prcmu@80157000 {
-> +                       thermal@801573c0 {
-> +                               num-trips = <4>;
-> +
-> +                               trip0-temp = <70000>;
-> +                               trip0-type = "active";
-> +                               trip0-cdev-num = <1>;
-> +                               trip0-cdev-name0 = "thermal-cpufreq-0";
-> +
-> +                               trip1-temp = <75000>;
-> +                               trip1-type = "active";
-> +                               trip1-cdev-num = <1>;
-> +                               trip1-cdev-name0 = "thermal-cpufreq-0";
-> +
-> +                               trip2-temp = <80000>;
-> +                               trip2-type = "active";
-> +                               trip2-cdev-num = <1>;
-> +                               trip2-cdev-name0 = "thermal-cpufreq-0";
-> +
-> +                               trip3-temp = <85000>;
-> +                               trip3-type = "critical";
-> +                               trip3-cdev-num = <0>;
-> +
-> +                               status = "okay";
-> +                        };
-> +               };
-> +
->                 external-bus@50000000 {
->                         status = "okay";
->
-> @@ -183,5 +210,9 @@
->                                 reg = <0x33>;
->                         };
->                 };
-> +
-> +               cpufreq-cooling {
-> +                       status = "okay";
-> +               };
->         };
->  };
-> diff --git a/arch/arm/mach-ux500/board-mop500.c b/arch/arm/mach-ux500/board-mop500.c
-> index 416d436..b03216b 100644
-> --- a/arch/arm/mach-ux500/board-mop500.c
-> +++ b/arch/arm/mach-ux500/board-mop500.c
-> @@ -16,6 +16,7 @@
->  #include <linux/io.h>
->  #include <linux/i2c.h>
->  #include <linux/platform_data/i2c-nomadik.h>
-> +#include <linux/platform_data/db8500_thermal.h>
->  #include <linux/gpio.h>
->  #include <linux/amba/bus.h>
->  #include <linux/amba/pl022.h>
-> @@ -229,6 +230,67 @@ static struct ab8500_platform_data ab8500_platdata = {
->  };
->
->  /*
-> + * Thermal Sensor
-> + */
-> +
-> +static struct resource db8500_thsens_resources[] = {
-> +       {
-> +               .name = "IRQ_HOTMON_LOW",
-> +               .start  = IRQ_PRCMU_HOTMON_LOW,
-> +               .end    = IRQ_PRCMU_HOTMON_LOW,
-> +               .flags  = IORESOURCE_IRQ,
-> +       },
-> +       {
-
-I prefer }, {
-
-> +               .name = "IRQ_HOTMON_HIGH",
-> +               .start  = IRQ_PRCMU_HOTMON_HIGH,
-> +               .end    = IRQ_PRCMU_HOTMON_HIGH,
-> +               .flags  = IORESOURCE_IRQ,
-> +       },
-> +};
-> +
-> +static struct db8500_thsens_platform_data db8500_thsens_data = {
-> +       .trip_points[0] = {
-> +               .temp = 70000,
-> +               .type = THERMAL_TRIP_ACTIVE,
-> +               .cdev_name = {
-> +                       [0] = "thermal-cpufreq-0",
-> +               },
-> +       },
-> +       .trip_points[1] = {
-> +               .temp = 75000,
-> +               .type = THERMAL_TRIP_ACTIVE,
-> +               .cdev_name = {
-> +                       [0] = "thermal-cpufreq-0",
-> +               },
-> +       },
-> +       .trip_points[2] = {
-> +               .temp = 80000,
-> +               .type = THERMAL_TRIP_ACTIVE,
-> +               .cdev_name = {
-> +                       [0] = "thermal-cpufreq-0",
-> +               },
-> +       },
-> +       .trip_points[3] = {
-> +               .temp = 85000,
-> +               .type = THERMAL_TRIP_CRITICAL,
-> +       },
-> +       .num_trips = 4,
-> +};
-> +
-> +static struct platform_device u8500_thsens_device = {
-> +       .name           = "db8500-thermal",
-> +       .resource       = db8500_thsens_resources,
-> +       .num_resources  = ARRAY_SIZE(db8500_thsens_resources),
-> +       .dev    = {
-> +               .platform_data  = &db8500_thsens_data,
-> +       },
-> +};
-> +
-> +static struct platform_device u8500_cpufreq_cooling_device = {
-> +       .name           = "db8500-cpufreq-cooling",
-> +};
-> +
-> +/*
->   * TPS61052
->   */
->
-> @@ -583,6 +645,8 @@ static struct platform_device *snowball_platform_devs[] __initdata = {
->         &snowball_key_dev,
->         &snowball_sbnet_dev,
->         &snowball_gpio_en_3v3_regulator_dev,
-> +       &u8500_thsens_device,
-> +       &u8500_cpufreq_cooling_device,
->  };
->
->  static void __init mop500_init_machine(void)
-> --
-> 1.7.11.3
->
->
-> _______________________________________________
-> linaro-dev mailing list
-> linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-> http://lists.linaro.org/mailman/listinfo/linaro-dev
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
