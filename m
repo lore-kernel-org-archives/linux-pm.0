@@ -1,47 +1,138 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
-Date: Wed, 24 Oct 2012 23:12:13 +0200
-Message-ID: <3245066.cWfgP9Ikey@vostro.rjw.lan>
-References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org> <CAKohpomUD-JQbkyEom+_BaRqJSvw8P_hBUsrjTU3vH6bM1+scQ@mail.gmail.com> <1597360.JT7plJlUsZ@vostro.rjw.lan>
+Subject: Re: [PATCH 1/2] cpufreq: Fix sparse warnings by updating cputime64_t to u64
+Date: Wed, 24 Oct 2012 23:14:17 +0200
+Message-ID: <1829614.cr6YHfW4bW@vostro.rjw.lan>
+References: <93ed702aba4c33d9a477c7296c59cc2882e16f82.1351064553.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1597360.JT7plJlUsZ@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ogre.sisk.pl ([193.178.161.156]:35443 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751447Ab2JXVKZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Oct 2012 17:10:25 -0400
+In-Reply-To: <93ed702aba4c33d9a477c7296c59cc2882e16f82.1351064553.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com, fengguang.wu@intel.com
 
-On Wednesday 24 of October 2012 21:43:46 Rafael J. Wysocki wrote:
-> On Wednesday 24 of October 2012 11:37:13 Viresh Kumar wrote:
-> > On 22 October 2012 14:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > On 20 October 2012 01:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > >> Initially ondemand governor was written and then using its code conservative
-> > >> governor is written. It used a lot of code from ondemand governor, but copy of
-> > >> code was created instead of using the same routines from both governors. Which
-> > >> increased code redundancy, which is difficult to manage.
-> > >>
-> > >> This patch is an attempt to move common part of both the governors to
-> > >> cpufreq_governor.c file to come over above mentioned issues.
-> > >>
-> > >> This shouldn't change anything from functionality point of view.
-> > >>
-> > >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
-> > For everybody else, this patch is already pushed by Rafael in his linux-next
-> > branch.
+On Wednesday 24 of October 2012 13:15:58 Viresh Kumar wrote:
+> There were few sparse warnings due to mismatch of type on function arguments.
+> Two types were used u64 and cputime64_t. Both are actually u64, so use u64 only.
 > 
-> Well, not yet, although I'm going to do that.
+> Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Or I would if it still applied.  Unfortunately, though, it doesn't apply any
-more to my linux-next branch due to some previous changes in it.
+This series appears to be based on your "cpufreq: governors: remove
+redundant code" patch that hasn't been applied yet.
 
-Care to rebase?
+Please rebase it on top of linux-pm/linux-next or on top of v3.7-rc2,
+whichever is more convenient, and resend.
 
+Thanks,
 Rafael
 
 
+> ---
+> 
+> This solution was discussed here:
+> 
+> http://www.mail-archive.com/linaro-dev@lists.linaro.org/msg13744.html
+> 
+>  drivers/cpufreq/cpufreq_governor.c |  4 ++--
+>  drivers/cpufreq/cpufreq_governor.h | 11 +++++------
+>  drivers/cpufreq/cpufreq_stats.c    |  4 ++--
+>  3 files changed, 9 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index cd5fe57..e39bf81 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -49,7 +49,7 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+>  	return jiffies_to_usecs(idle_time);
+>  }
+>  
+> -cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
+> +u64 get_cpu_idle_time(unsigned int cpu, u64 *wall)
+>  {
+>  	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
+>  
+> @@ -81,7 +81,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>  	/* Get Absolute Load (in terms of freq for ondemand gov) */
+>  	for_each_cpu(j, policy->cpus) {
+>  		struct cpu_dbs_common_info *j_cdbs;
+> -		cputime64_t cur_wall_time, cur_idle_time, cur_iowait_time;
+> +		u64 cur_wall_time, cur_idle_time, cur_iowait_time;
+>  		unsigned int idle_time, wall_time, iowait_time;
+>  		unsigned int load;
+>  
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index 34e14ad..f661654 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -17,7 +17,6 @@
+>  #ifndef _CPUFREQ_GOVERNER_H
+>  #define _CPUFREQ_GOVERNER_H
+>  
+> -#include <asm/cputime.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/kobject.h>
+>  #include <linux/mutex.h>
+> @@ -72,9 +71,9 @@ static void *get_cpu_dbs_info_s(int cpu)				\
+>  /* Per cpu structures */
+>  struct cpu_dbs_common_info {
+>  	int cpu;
+> -	cputime64_t prev_cpu_idle;
+> -	cputime64_t prev_cpu_wall;
+> -	cputime64_t prev_cpu_nice;
+> +	u64 prev_cpu_idle;
+> +	u64 prev_cpu_wall;
+> +	u64 prev_cpu_nice;
+>  	struct cpufreq_policy *cur_policy;
+>  	struct delayed_work work;
+>  	/*
+> @@ -87,7 +86,7 @@ struct cpu_dbs_common_info {
+>  
+>  struct od_cpu_dbs_info_s {
+>  	struct cpu_dbs_common_info cdbs;
+> -	cputime64_t prev_cpu_iowait;
+> +	u64 prev_cpu_iowait;
+>  	struct cpufreq_frequency_table *freq_table;
+>  	unsigned int freq_lo;
+>  	unsigned int freq_lo_jiffies;
+> @@ -170,7 +169,7 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
+>  	return delay;
+>  }
+>  
+> -cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall);
+> +u64 get_cpu_idle_time(unsigned int cpu, u64 *wall);
+>  void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
+>  int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+>  		struct cpufreq_policy *policy, unsigned int event);
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index b40ee14..683a48f 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -37,7 +37,7 @@ struct cpufreq_stats {
+>  	unsigned int max_state;
+>  	unsigned int state_num;
+>  	unsigned int last_index;
+> -	cputime64_t *time_in_state;
+> +	u64 *time_in_state;
+>  	unsigned int *freq_table;
+>  #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  	unsigned int *trans_table;
+> @@ -223,7 +223,7 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+>  		count++;
+>  	}
+>  
+> -	alloc_size = count * sizeof(int) + count * sizeof(cputime64_t);
+> +	alloc_size = count * sizeof(int) + count * sizeof(u64);
+>  
+>  #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  	alloc_size += count * count * sizeof(int);
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
