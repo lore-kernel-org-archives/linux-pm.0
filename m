@@ -1,37 +1,27 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
-Subject: Re: drivers/cpuidle/governors/menu.c:268:2: warning: comparison of
- distinct pointer types lacks a cast
-Date: Tue, 23 Oct 2012 20:44:31 +0800
-Message-ID: <20121023124431.GA17286@localhost>
-References: <508610e6.lZq8SVXFvwZCcvw6%fengguang.wu@intel.com>
- <70A3B115BE79814398B8E4E7C4AE18EE138DCD@SHSMSX101.ccr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Youquan Song <youquan.song@intel.com>
+Subject: [PATCH] cpuidle: fix warning when compile
+Date: Tue, 23 Oct 2012 22:45:28 -0400
+Message-ID: <1351046728-10965-1-git-send-email-youquan.song@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:53548 "EHLO mga02.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:62382 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753399Ab2JWMof (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Oct 2012 08:44:35 -0400
-Content-Disposition: inline
-In-Reply-To: <70A3B115BE79814398B8E4E7C4AE18EE138DCD@SHSMSX101.ccr.corp.intel.com>
+	id S1751789Ab2JWOld (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Oct 2012 10:41:33 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Song, Youquan" <youquan.song@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rik van Riel <riel@redhat.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+To: fengguang.wu@intel.com, yuanhan.liu@linux.intel.com, rjw@sisk.pl, Rik van Riel <riel@redhat.com>, linux-pm@vger.kernel.org
+Cc: Youquan Song <youquan.song@linux.intel.com>, Youquan Song <youquan.song@intel.com>
 
-Youquan,
-
-On Tue, Oct 23, 2012 at 07:23:00PM +0800, Song, Youquan wrote:
-> Hi Fengguang,
-> 
-> Sorry. I built the kernel at 32bit OS RHEL6 i686 without any complain about it.
-> Are you built it for sh architecture? by "make ARCH=sh sh7785lcr_32bit_defconfig", I do not know this architecture at all. Who can help me on it?
-
-No worry. This is tested to remove the following warnings.
+Fix the warning complain when compile the kernel.
 
 drivers/cpuidle/governors/menu.c: In function 'get_typical_interval':
 drivers/cpuidle/governors/menu.c:268:2: warning: comparison of distinct pointer types lacks a cast [enabled by default]
 drivers/cpuidle/governors/menu.c:277:2: warning: comparison of distinct pointer types lacks a cast [enabled by default]
+
+Signed-off-by: Youquan Song <youquan.song@intel.com>
+---
+ drivers/cpuidle/governors/menu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
 index 26d5667..2efee27 100644
@@ -46,3 +36,6 @@ index 26d5667..2efee27 100644
  	int64_t thresh = LLONG_MAX; /* Discard outliers above this value. */
  	unsigned int ret = 0;
  
+-- 
+1.7.7.4
+
