@@ -1,34 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
-Date: Wed, 24 Oct 2012 11:37:13 +0530
-Message-ID: <CAKohpomUD-JQbkyEom+_BaRqJSvw8P_hBUsrjTU3vH6bM1+scQ@mail.gmail.com>
-References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org>
-	<98478a02ae69afc01b3c7860e42a4d763b2045e8.1350677395.git.viresh.kumar@linaro.org>
-	<CAKohpo=Jsy9az4PgJ-mkq_U49EOpHGES+-DaROanCOTn-L2s3Q@mail.gmail.com>
+Subject: Re: drivers/cpufreq/cpufreq_governor.c:46:53: sparse: incorrect type
+ in argument 2 (different modifiers)
+Date: Wed, 24 Oct 2012 12:05:13 +0530
+Message-ID: <CAKohpomnBQ=6zX5v0zBWYUHggDAefsKLULpLGQKPkAxTQhuAqg@mail.gmail.com>
+References: <50862255.Foit2oXcLVE39lAk%fengguang.wu@intel.com>
+	<CAKohpo=PF-MkG8KDRWSfoBXkK102r7WwToQ01UmfetvarRyK3w@mail.gmail.com>
+	<1574211.OHQpWS6lzF@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=Jsy9az4PgJ-mkq_U49EOpHGES+-DaROanCOTn-L2s3Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ia0-f174.google.com ([209.85.210.174]:40160 "EHLO
+	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933348Ab2JXGfN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Oct 2012 02:35:13 -0400
+Received: by mail-ia0-f174.google.com with SMTP id y32so134540iag.19
+        for <linux-pm@vger.kernel.org>; Tue, 23 Oct 2012 23:35:13 -0700 (PDT)
+In-Reply-To: <1574211.OHQpWS6lzF@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fengguang Wu <fengguang.wu@intel.com>, linux-pm@vger.kernel.org, Lists linaro-dev <linaro-dev@lists.linaro.org>
 
-On 22 October 2012 14:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 20 October 2012 01:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> Initially ondemand governor was written and then using its code conservative
->> governor is written. It used a lot of code from ondemand governor, but copy of
->> code was created instead of using the same routines from both governors. Which
->> increased code redundancy, which is difficult to manage.
->>
->> This patch is an attempt to move common part of both the governors to
->> cpufreq_governor.c file to come over above mentioned issues.
->>
->> This shouldn't change anything from functionality point of view.
->>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 24 October 2012 06:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday 23 of October 2012 10:55:51 Viresh Kumar wrote:
 
-For everybody else, this patch is already pushed by Rafael in his linux-next
-branch.
+>> @Rafael: Most of these are due to mixed use of u64 and cputime64_t. Both of
+>> which are u64 if i am not wrong. Any specific reason that we used cputime64_t
+>> instead of u64? Or can i make everything u64 instead in governors?
+>
+> Well, there might be a reason in the past, but I'm not sure it's still there. :-)
+>
+> I _think_ you can use u64 everywhere.  It would be more correct than the current
+> situation anyway.
+
+Great. I will send another set for these warnings..
 
 --
 viresh
