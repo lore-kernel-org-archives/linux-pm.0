@@ -1,157 +1,122 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: [BUGFIX 1/2] PCI/PM: Fix deadlock when unbind device if its parent in D3cold
-Date: Wed, 24 Oct 2012 14:54:13 +0800
-Message-ID: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: Fix sparse warnings by updating cputime64_t to u64
+Date: Wed, 24 Oct 2012 13:15:58 +0530
+Message-ID: <93ed702aba4c33d9a477c7296c59cc2882e16f82.1351064553.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:38862 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751170Ab2JXHYc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Oct 2012 03:24:32 -0400
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:60765 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964825Ab2JXHqI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Oct 2012 03:46:08 -0400
+Received: by mail-pb0-f46.google.com with SMTP id rr4so1040532pbb.19
+        for <linux-pm@vger.kernel.org>; Wed, 24 Oct 2012 00:46:08 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Huang Ying <ying.huang@intel.com>, Zhang Yanmin <yanmin.zhang@intel.com>
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com, fengguang.wu@intel.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-If a PCI device and its parents are put into D3cold, unbinding the
-device will trigger deadlock as follow:
+There were few sparse warnings due to mismatch of type on function arguments.
+Two types were used u64 and cputime64_t. Both are actually u64, so use u64 only.
 
-- driver_unbind
-  - device_release_driver
-    - device_lock(dev)				<--- previous lock here
-    - __device_release_driver
-      - pm_runtime_get_sync
-        ...
-          - rpm_resume(dev)
-            - rpm_resume(dev->parent)
-              ...
-                - pci_pm_runtime_resume
-                  ...
-                  - pci_set_power_state
-                    - __pci_start_power_transition
-                      - pci_wakeup_bus(dev->parent->subordinate)
-                        - pci_walk_bus
-                          - device_lock(dev)	<--- dead lock here
-
-
-If we do not do device_lock in pci_walk_bus, we can avoid dead lock.
-Device_lock in pci_walk_bus is introduced in commit:
-d71374dafbba7ec3f67371d3b7e9f6310a588808, corresponding email thread
-is: https://lkml.org/lkml/2006/5/26/38.  The patch author Zhang Yanmin
-said device_lock is added to pci_walk_bus because:
-
-  Some error handling functions call pci_walk_bus. For example, PCIe
-  aer. Here we lock the device, so the driver wouldn't detach from the
-  device, as the cb might call driver's callback function.
-
-So I fixed the dead lock as follow:
-
-- remove device_lock from pci_walk_bus
-- add device_lock into callback if callback will call driver's callback
-
-I checked pci_walk_bus users one by one, and found only PCIe aer needs
-device lock.
-
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-Cc: Zhang Yanmin <yanmin.zhang@intel.com>
+Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/pci/bus.c                  |    3 ---
- drivers/pci/pcie/aer/aerdrv_core.c |   20 ++++++++++++++++----
- 2 files changed, 16 insertions(+), 7 deletions(-)
 
---- a/drivers/pci/bus.c
-+++ b/drivers/pci/bus.c
-@@ -320,10 +320,7 @@ void pci_walk_bus(struct pci_bus *top, i
- 		} else
- 			next = dev->bus_list.next;
- 
--		/* Run device routines with the device locked */
--		device_lock(&dev->dev);
- 		retval = cb(dev, userdata);
--		device_unlock(&dev->dev);
- 		if (retval)
- 			break;
- 	}
---- a/drivers/pci/pcie/aer/aerdrv_core.c
-+++ b/drivers/pci/pcie/aer/aerdrv_core.c
-@@ -213,6 +213,7 @@ static int report_error_detected(struct
- 	struct aer_broadcast_data *result_data;
- 	result_data = (struct aer_broadcast_data *) data;
- 
-+	device_lock(&dev->dev);
- 	dev->error_state = result_data->state;
- 
- 	if (!dev->driver ||
-@@ -231,12 +232,14 @@ static int report_error_detected(struct
- 				   dev->driver ?
- 				   "no AER-aware driver" : "no driver");
- 		}
--		return 0;
-+		goto out;
- 	}
- 
- 	err_handler = dev->driver->err_handler;
- 	vote = err_handler->error_detected(dev, result_data->state);
- 	result_data->result = merge_result(result_data->result, vote);
-+out:
-+	device_unlock(&dev->dev);
- 	return 0;
+This solution was discussed here:
+
+http://www.mail-archive.com/linaro-dev@lists.linaro.org/msg13744.html
+
+ drivers/cpufreq/cpufreq_governor.c |  4 ++--
+ drivers/cpufreq/cpufreq_governor.h | 11 +++++------
+ drivers/cpufreq/cpufreq_stats.c    |  4 ++--
+ 3 files changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index cd5fe57..e39bf81 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -49,7 +49,7 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+ 	return jiffies_to_usecs(idle_time);
  }
  
-@@ -247,14 +250,17 @@ static int report_mmio_enabled(struct pc
- 	struct aer_broadcast_data *result_data;
- 	result_data = (struct aer_broadcast_data *) data;
- 
-+	device_lock(&dev->dev);
- 	if (!dev->driver ||
- 		!dev->driver->err_handler ||
- 		!dev->driver->err_handler->mmio_enabled)
--		return 0;
-+		goto out;
- 
- 	err_handler = dev->driver->err_handler;
- 	vote = err_handler->mmio_enabled(dev);
- 	result_data->result = merge_result(result_data->result, vote);
-+out:
-+	device_unlock(&dev->dev);
- 	return 0;
- }
- 
-@@ -265,14 +271,17 @@ static int report_slot_reset(struct pci_
- 	struct aer_broadcast_data *result_data;
- 	result_data = (struct aer_broadcast_data *) data;
- 
-+	device_lock(&dev->dev);
- 	if (!dev->driver ||
- 		!dev->driver->err_handler ||
- 		!dev->driver->err_handler->slot_reset)
--		return 0;
-+		goto out;
- 
- 	err_handler = dev->driver->err_handler;
- 	vote = err_handler->slot_reset(dev);
- 	result_data->result = merge_result(result_data->result, vote);
-+out:
-+	device_unlock(&dev->dev);
- 	return 0;
- }
- 
-@@ -280,15 +289,18 @@ static int report_resume(struct pci_dev
+-cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall)
++u64 get_cpu_idle_time(unsigned int cpu, u64 *wall)
  {
- 	const struct pci_error_handlers *err_handler;
+ 	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
  
-+	device_lock(&dev->dev);
- 	dev->error_state = pci_channel_io_normal;
+@@ -81,7 +81,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 	/* Get Absolute Load (in terms of freq for ondemand gov) */
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct cpu_dbs_common_info *j_cdbs;
+-		cputime64_t cur_wall_time, cur_idle_time, cur_iowait_time;
++		u64 cur_wall_time, cur_idle_time, cur_iowait_time;
+ 		unsigned int idle_time, wall_time, iowait_time;
+ 		unsigned int load;
  
- 	if (!dev->driver ||
- 		!dev->driver->err_handler ||
- 		!dev->driver->err_handler->resume)
--		return 0;
-+		goto out;
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 34e14ad..f661654 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -17,7 +17,6 @@
+ #ifndef _CPUFREQ_GOVERNER_H
+ #define _CPUFREQ_GOVERNER_H
  
- 	err_handler = dev->driver->err_handler;
- 	err_handler->resume(dev);
-+out:
-+	device_unlock(&dev->dev);
- 	return 0;
+-#include <asm/cputime.h>
+ #include <linux/cpufreq.h>
+ #include <linux/kobject.h>
+ #include <linux/mutex.h>
+@@ -72,9 +71,9 @@ static void *get_cpu_dbs_info_s(int cpu)				\
+ /* Per cpu structures */
+ struct cpu_dbs_common_info {
+ 	int cpu;
+-	cputime64_t prev_cpu_idle;
+-	cputime64_t prev_cpu_wall;
+-	cputime64_t prev_cpu_nice;
++	u64 prev_cpu_idle;
++	u64 prev_cpu_wall;
++	u64 prev_cpu_nice;
+ 	struct cpufreq_policy *cur_policy;
+ 	struct delayed_work work;
+ 	/*
+@@ -87,7 +86,7 @@ struct cpu_dbs_common_info {
+ 
+ struct od_cpu_dbs_info_s {
+ 	struct cpu_dbs_common_info cdbs;
+-	cputime64_t prev_cpu_iowait;
++	u64 prev_cpu_iowait;
+ 	struct cpufreq_frequency_table *freq_table;
+ 	unsigned int freq_lo;
+ 	unsigned int freq_lo_jiffies;
+@@ -170,7 +169,7 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
+ 	return delay;
  }
  
+-cputime64_t get_cpu_idle_time(unsigned int cpu, cputime64_t *wall);
++u64 get_cpu_idle_time(unsigned int cpu, u64 *wall);
+ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
+ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+ 		struct cpufreq_policy *policy, unsigned int event);
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index b40ee14..683a48f 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -37,7 +37,7 @@ struct cpufreq_stats {
+ 	unsigned int max_state;
+ 	unsigned int state_num;
+ 	unsigned int last_index;
+-	cputime64_t *time_in_state;
++	u64 *time_in_state;
+ 	unsigned int *freq_table;
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	unsigned int *trans_table;
+@@ -223,7 +223,7 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 		count++;
+ 	}
+ 
+-	alloc_size = count * sizeof(int) + count * sizeof(cputime64_t);
++	alloc_size = count * sizeof(int) + count * sizeof(u64);
+ 
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	alloc_size += count * count * sizeof(int);
+-- 
+1.7.12.rc2.18.g61b472e
+
