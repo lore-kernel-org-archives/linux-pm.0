@@ -1,39 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: drivers/cpufreq/cpufreq_governor.c:46:53: sparse: incorrect type
- in argument 2 (different modifiers)
-Date: Wed, 24 Oct 2012 12:05:13 +0530
-Message-ID: <CAKohpomnBQ=6zX5v0zBWYUHggDAefsKLULpLGQKPkAxTQhuAqg@mail.gmail.com>
-References: <50862255.Foit2oXcLVE39lAk%fengguang.wu@intel.com>
-	<CAKohpo=PF-MkG8KDRWSfoBXkK102r7WwToQ01UmfetvarRyK3w@mail.gmail.com>
-	<1574211.OHQpWS6lzF@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ia0-f174.google.com ([209.85.210.174]:40160 "EHLO
-	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933348Ab2JXGfN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Oct 2012 02:35:13 -0400
-Received: by mail-ia0-f174.google.com with SMTP id y32so134540iag.19
-        for <linux-pm@vger.kernel.org>; Tue, 23 Oct 2012 23:35:13 -0700 (PDT)
-In-Reply-To: <1574211.OHQpWS6lzF@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Huang Ying <ying.huang@intel.com>
+Subject: [BUGFIX 2/2] PCI/PM: Resume device before shutdown
+Date: Wed, 24 Oct 2012 14:54:14 +0800
+Message-ID: <1351061654-8339-2-git-send-email-ying.huang@intel.com>
+References: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Huang Ying <ying.huang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Fengguang Wu <fengguang.wu@intel.com>, linux-pm@vger.kernel.org, Lists linaro-dev <linaro-dev@lists.linaro.org>
 
-On 24 October 2012 06:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 23 of October 2012 10:55:51 Viresh Kumar wrote:
+Some actions during shutdown need device to be in D0 state, such as
+MSI shutdown etc, so resume device before shutdown.
 
->> @Rafael: Most of these are due to mixed use of u64 and cputime64_t. Both of
->> which are u64 if i am not wrong. Any specific reason that we used cputime64_t
->> instead of u64? Or can i make everything u64 instead in governors?
->
-> Well, there might be a reason in the past, but I'm not sure it's still there. :-)
->
-> I _think_ you can use u64 everywhere.  It would be more correct than the current
-> situation anyway.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ drivers/pci/pci-driver.c |   12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
-Great. I will send another set for these warnings..
-
---
-viresh
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -398,6 +398,8 @@ static void pci_device_shutdown(struct d
+ 	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	struct pci_driver *drv = pci_dev->driver;
+ 
++	pm_runtime_resume(dev);
++
+ 	if (drv && drv->shutdown)
+ 		drv->shutdown(pci_dev);
+ 	pci_msi_shutdown(pci_dev);
+@@ -408,16 +410,6 @@ static void pci_device_shutdown(struct d
+ 	 * continue to do DMA
+ 	 */
+ 	pci_disable_device(pci_dev);
+-
+-	/*
+-	 * Devices may be enabled to wake up by runtime PM, but they need not
+-	 * be supposed to wake up the system from its "power off" state (e.g.
+-	 * ACPI S5).  Therefore disable wakeup for all devices that aren't
+-	 * supposed to wake up the system at this point.  The state argument
+-	 * will be ignored by pci_enable_wake().
+-	 */
+-	if (!device_may_wakeup(dev))
+-		pci_enable_wake(pci_dev, PCI_UNKNOWN, false);
+ }
+ 
+ #ifdef CONFIG_PM
