@@ -1,53 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V2] PM / OPP: predictable fail results for opp_find* functions
-Date: Thu, 25 Oct 2012 00:01:28 +0200
-Message-ID: <2369752.l80tmojpSQ@vostro.rjw.lan>
-References: <1350912799-17323-1-git-send-email-nm@ti.com>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH 1/2] cpufreq: return early from __cpufreq_driver_getavg()
+Date: Thu, 25 Oct 2012 00:02:17 +0200
+Message-ID: <112621141.CGPLIkkgz1@vostro.rjw.lan>
+References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org>
+	<2737823.2JYE7UmLRN@vostro.rjw.lan>
+	<CAKohponGwhC_zmk1Whq56vmZMvjcxXKiSpdvMk4ZU8z0Wa2TBw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1350912799-17323-1-git-send-email-nm@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <CAKohponGwhC_zmk1Whq56vmZMvjcxXKiSpdvMk4ZU8z0Wa2TBw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 22 of October 2012 08:33:19 Nishanth Menon wrote:
-> Currently the opp_find* functions return -ENODEV when:
-> a) it cant find a device (e.g. request for an OPP search on device
->    which was not registered)
-> b) When it cant find a match for the search strategy used
+On Saturday 20 of October 2012 10:12:07 Viresh Kumar wrote:
+> On Oct 20, 2012 3:37 AM, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org> wrote:
+> >
+> > On Saturday 20 of October 2012 01:42:05 Viresh Kumar wrote:
+> > > There is no need to do cpufreq_get_cpu() and cpufreq_put_cpu() for
+> drivers that
+> > > don't support getavg() routine.
+> > >
+> > > Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >
+> > The patch doesn't seem to follow the changelog or the other way around.
 > 
-> This makes life a little in-efficient for users such as devfreq
-> to make reasonable judgement before switching search strategies.
+> Sorry if my log isn't clear enough.
+> But i could still see it matching the code :)
 > 
-> So, standardize the return results as following:
->  -EINVAL for bad pointer parameters
->  -ENODEV when device cannot be found
->  -ERANGE when search fails
-> 
-> This has the following benefit for devfreq implementation:
-> The search fails when an unregistered device pointer is provided.
-> This is a trigger to change the search direction and search for
-> a better fit, however, if we cannot differentiate between a valid
-> search range failure Vs an unregistered device, second search goes
-> through the same fail return condition. This can be avoided by
-> appropriate handling of error return code.
-> 
-> With this change, we also fix devfreq for the improved search
-> strategy with updated error code.
-> 
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Kevin Hilman <khilman@ti.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> 
-> Reviewed-by: Kevin Hilman <khilman@ti.com>
-> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Nishanth Menon <nm@ti.com>
+> I have moved the check for drivers capabilities at the top
+> of routine, so that there is no need to call mentioned routines.
+
+OK
 
 Applied to linux-pm.git/linux-next as v3.8 material.
 
@@ -55,126 +49,6 @@ Thanks,
 Rafael
 
 
-> ---
-> V2:
->  * commit message change - updated frome example code, to verbose description
->  * picked up Acked-by and Reviewed-by tags from V1.
->  * rebased to v3.7-rc2
-> V1: https://patchwork.kernel.org/patch/1582111/
-> 
->  drivers/base/power/opp.c  |   27 +++++++++++++++++++--------
->  drivers/devfreq/devfreq.c |    4 ++--
->  2 files changed, 21 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index 4730a58..99d0573 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -234,7 +234,10 @@ EXPORT_SYMBOL(opp_get_opp_count);
->   *
->   * Searches for exact match in the opp list and returns pointer to the matching
->   * opp if found, else returns ERR_PTR in case of error and should be handled
-> - * using IS_ERR.
-> + * using IS_ERR. Error return values can be:
-> + * EINVAL:	for bad pointer
-> + * ERANGE:	no match found for search
-> + * ENODEV:	if device not found in list of registered devices
->   *
->   * Note: available is a modifier for the search. if available=true, then the
->   * match is for exact matching frequency and is available in the stored OPP
-> @@ -253,7 +256,7 @@ struct opp *opp_find_freq_exact(struct device *dev, unsigned long freq,
->  				bool available)
->  {
->  	struct device_opp *dev_opp;
-> -	struct opp *temp_opp, *opp = ERR_PTR(-ENODEV);
-> +	struct opp *temp_opp, *opp = ERR_PTR(-ERANGE);
->  
->  	dev_opp = find_device_opp(dev);
->  	if (IS_ERR(dev_opp)) {
-> @@ -283,7 +286,11 @@ EXPORT_SYMBOL(opp_find_freq_exact);
->   * for a device.
->   *
->   * Returns matching *opp and refreshes *freq accordingly, else returns
-> - * ERR_PTR in case of error and should be handled using IS_ERR.
-> + * ERR_PTR in case of error and should be handled using IS_ERR. Error return
-> + * values can be:
-> + * EINVAL:	for bad pointer
-> + * ERANGE:	no match found for search
-> + * ENODEV:	if device not found in list of registered devices
->   *
->   * Locking: This function must be called under rcu_read_lock(). opp is a rcu
->   * protected pointer. The reason for the same is that the opp pointer which is
-> @@ -294,7 +301,7 @@ EXPORT_SYMBOL(opp_find_freq_exact);
->  struct opp *opp_find_freq_ceil(struct device *dev, unsigned long *freq)
->  {
->  	struct device_opp *dev_opp;
-> -	struct opp *temp_opp, *opp = ERR_PTR(-ENODEV);
-> +	struct opp *temp_opp, *opp = ERR_PTR(-ERANGE);
->  
->  	if (!dev || !freq) {
->  		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
-> @@ -303,7 +310,7 @@ struct opp *opp_find_freq_ceil(struct device *dev, unsigned long *freq)
->  
->  	dev_opp = find_device_opp(dev);
->  	if (IS_ERR(dev_opp))
-> -		return opp;
-> +		return ERR_CAST(dev_opp);
->  
->  	list_for_each_entry_rcu(temp_opp, &dev_opp->opp_list, node) {
->  		if (temp_opp->available && temp_opp->rate >= *freq) {
-> @@ -326,7 +333,11 @@ EXPORT_SYMBOL(opp_find_freq_ceil);
->   * for a device.
->   *
->   * Returns matching *opp and refreshes *freq accordingly, else returns
-> - * ERR_PTR in case of error and should be handled using IS_ERR.
-> + * ERR_PTR in case of error and should be handled using IS_ERR. Error return
-> + * values can be:
-> + * EINVAL:	for bad pointer
-> + * ERANGE:	no match found for search
-> + * ENODEV:	if device not found in list of registered devices
->   *
->   * Locking: This function must be called under rcu_read_lock(). opp is a rcu
->   * protected pointer. The reason for the same is that the opp pointer which is
-> @@ -337,7 +348,7 @@ EXPORT_SYMBOL(opp_find_freq_ceil);
->  struct opp *opp_find_freq_floor(struct device *dev, unsigned long *freq)
->  {
->  	struct device_opp *dev_opp;
-> -	struct opp *temp_opp, *opp = ERR_PTR(-ENODEV);
-> +	struct opp *temp_opp, *opp = ERR_PTR(-ERANGE);
->  
->  	if (!dev || !freq) {
->  		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
-> @@ -346,7 +357,7 @@ struct opp *opp_find_freq_floor(struct device *dev, unsigned long *freq)
->  
->  	dev_opp = find_device_opp(dev);
->  	if (IS_ERR(dev_opp))
-> -		return opp;
-> +		return ERR_CAST(dev_opp);
->  
->  	list_for_each_entry_rcu(temp_opp, &dev_opp->opp_list, node) {
->  		if (temp_opp->available) {
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 0920d75..bee1c29 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -656,14 +656,14 @@ struct opp *devfreq_recommended_opp(struct device *dev, unsigned long *freq,
->  		opp = opp_find_freq_floor(dev, freq);
->  
->  		/* If not available, use the closest opp */
-> -		if (opp == ERR_PTR(-ENODEV))
-> +		if (opp == ERR_PTR(-ERANGE))
->  			opp = opp_find_freq_ceil(dev, freq);
->  	} else {
->  		/* The freq is an lower bound. opp should be higher */
->  		opp = opp_find_freq_ceil(dev, freq);
->  
->  		/* If not available, use the closest opp */
-> -		if (opp == ERR_PTR(-ENODEV))
-> +		if (opp == ERR_PTR(-ERANGE))
->  			opp = opp_find_freq_floor(dev, freq);
->  	}
->  
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
