@@ -1,8 +1,7 @@
 From: "hongbo.zhang" <hongbo.zhang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V2 2/6] Thermal: make sure cpufreq cooling register after
-	cpufreq driver
-Date: Wed, 24 Oct 2012 19:58:16 +0800
-Message-ID: <1351079900-32236-3-git-send-email-hongbo.zhang@linaro.com>
+Subject: [PATCH V2 3/6] Thermal: fix bug of counting cpu frequencies.
+Date: Wed, 24 Oct 2012 19:58:17 +0800
+Message-ID: <1351079900-32236-4-git-send-email-hongbo.zhang@linaro.com>
 References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
 	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
 Mime-Version: 1.0
@@ -25,28 +24,46 @@ List-Id: linux-pm@vger.kernel.org
 
 From: "hongbo.zhang" <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
 
-The cpufreq works as a cooling device, so the cooling layer should check if the
-cpufreq driver is initialized or not.
+In the while loop for counting cpu frequencies, if table[i].frequency equals
+CPUFREQ_ENTRY_INVALID, index i won't be increased, so this leads to an endless
+loop, what's more the index i cannot be referred as cpu frequencies number if
+there is CPUFREQ_ENTRY_INVALID case.
 
 Signed-off-by: hongbo.zhang <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
 ---
- drivers/thermal/cpu_cooling.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/thermal/cpu_cooling.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index b6b4c2a..7519a0b 100644
+index 7519a0b..415b041 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -354,6 +354,10 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 	int ret = 0, i;
- 	struct cpufreq_policy policy;
+@@ -245,6 +245,7 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+ 	struct cpumask *maskPtr;
+ 	unsigned int cpu;
+ 	struct cpufreq_frequency_table *table;
++	unsigned long count = 0;
  
-+	/* make sure cpufreq driver has been initialized */
-+	if (!cpufreq_frequency_get_table(cpumask_any(clip_cpus)))
-+		return ERR_PTR(-EPROBE_DEFER);
+ 	mutex_lock(&cooling_cpufreq_lock);
+ 	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
+@@ -263,13 +264,14 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+ 		goto return_get_max_state;
+ 	}
+ 
+-	while (table[i].frequency != CPUFREQ_TABLE_END) {
++	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
+ 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+-		i++;
++		count++;
+ 	}
+-	if (i > 0) {
+-		*state = --i;
 +
- 	list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node)
- 		cpufreq_dev_count++;
++	if (count > 0) {
++		*state = --count;
+ 		ret = 0;
+ 	}
  
 -- 
 1.7.11.3
