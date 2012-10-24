@@ -1,57 +1,104 @@
-From: "Song, Youquan" <youquan.song@intel.com>
-Subject: RE: [PATCH] cpuidle: fix warning when compile
-Date: Wed, 24 Oct 2012 02:14:13 +0000
-Message-ID: <70A3B115BE79814398B8E4E7C4AE18EE13A10B@SHSMSX101.ccr.corp.intel.com>
-References: <1351046728-10965-1-git-send-email-youquan.song@intel.com>
- <4092469.vxd3uL7amA@vostro.rjw.lan>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [PATCH 1/5] Thermal: do bind operation after thermal zone or
+ cooling device register returns.
+Date: Wed, 24 Oct 2012 10:37:01 +0800
+Message-ID: <CAJLyvQwKxVA7xz_KQsDAznJXr+OnFSHFyxGGL6DQucobA+JO4w@mail.gmail.com>
+References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
+	<1350387889-15324-2-git-send-email-hongbo.zhang@linaro.com>
+	<5083C8E4.7090007@gmail.com>
+	<CAJLyvQyrZ56_KhUTpuv=2fet=12QHSCUjgUKHF9n3cmaATke5w@mail.gmail.com>
+	<50871695.2040904@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:54923 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755480Ab2JXCY0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Oct 2012 22:24:26 -0400
-In-Reply-To: <4092469.vxd3uL7amA@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mail-ia0-f174.google.com ([209.85.210.174]:57868 "EHLO
+	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755816Ab2JXChC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Oct 2012 22:37:02 -0400
+Received: by mail-ia0-f174.google.com with SMTP id y32so33795iag.19
+        for <linux-pm@vger.kernel.org>; Tue, 23 Oct 2012 19:37:01 -0700 (PDT)
+In-Reply-To: <50871695.2040904@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Wu, Fengguang" <fengguang.wu@intel.com>, "yuanhan.liu@linux.intel.com" <yuanhan.liu@linux.intel.com>, Rik van Riel <riel@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Youquan Song <youquan.song@linux.intel.com>, "Song, Youquan" <youquan.song@intel.com>
+To: Francesco Lavra <francescolavra.fl@gmail.com>
+Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org, amit.kachhap@linaro.org
 
-Pj4gIAlpbnQ2NF90IHRocmVzaCA9IExMT05HX01BWDsgLyogRGlzY2FyZCBvdXRsaWVycyBhYm92
-ZSB0aGlzIHZhbHVlLiAqLw0KDQo+U2hvdWxkbid0IHRoaXMgb25lIGJlIHVpbnQ2NF90IHRvbz8N
-Cg0KVGhhbmtzIFJhZmFlbCEgIEZlbmdndW5nIGFsc28gYXNrZWQgbWUgdGhlIHNpbWlsYXIgcXVl
-c3Rpb24uIA0KQnV0IEkgdGhpbmssIHRoZSBjb21waWxlIG9ubHkgY29tcGxhaW5zIGFib3V0IGRv
-X2RpdigpIGF0IFNIIDMyYml0IGFyY2hpdGVjdHVyZSwgdGhlIGFib3ZlIGludDY0X3QgZGVmaW5p
-dGlvbiBzaG91bGQgYmUgT0sgYW5kIEkgZG8gbm90IGZpbmQgYW55IGlzc3VlIHdpdGhvdXQgY2hh
-bmdpbmcgaXQgdG8gdWludDY0X3QuIA0KDQpUaGFua3MNCi1Zb3VxdWFuDQoNCi0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0BzaXNr
-LnBsXSANClNlbnQ6IFdlZG5lc2RheSwgT2N0b2JlciAyNCwgMjAxMiA4OjI4IEFNDQpUbzogU29u
-ZywgWW91cXVhbg0KQ2M6IFd1LCBGZW5nZ3Vhbmc7IHl1YW5oYW4ubGl1QGxpbnV4LmludGVsLmNv
-bTsgUmlrIHZhbiBSaWVsOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IFlvdXF1YW4gU29uZw0K
-U3ViamVjdDogUmU6IFtQQVRDSF0gY3B1aWRsZTogZml4IHdhcm5pbmcgd2hlbiBjb21waWxlDQoN
-Ck9uIFR1ZXNkYXkgMjMgb2YgT2N0b2JlciAyMDEyIDIyOjQ1OjI4IFlvdXF1YW4gU29uZyB3cm90
-ZToNCj4gRml4IHRoZSB3YXJuaW5nIGNvbXBsYWluIHdoZW4gY29tcGlsZSB0aGUga2VybmVsLg0K
-PiANCj4gZHJpdmVycy9jcHVpZGxlL2dvdmVybm9ycy9tZW51LmM6IEluIGZ1bmN0aW9uICdnZXRf
-dHlwaWNhbF9pbnRlcnZhbCc6DQo+IGRyaXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMvbWVudS5jOjI2
-ODoyOiB3YXJuaW5nOiBjb21wYXJpc29uIG9mIA0KPiBkaXN0aW5jdCBwb2ludGVyIHR5cGVzIGxh
-Y2tzIGEgY2FzdCBbZW5hYmxlZCBieSBkZWZhdWx0XQ0KPiBkcml2ZXJzL2NwdWlkbGUvZ292ZXJu
-b3JzL21lbnUuYzoyNzc6Mjogd2FybmluZzogY29tcGFyaXNvbiBvZiANCj4gZGlzdGluY3QgcG9p
-bnRlciB0eXBlcyBsYWNrcyBhIGNhc3QgW2VuYWJsZWQgYnkgZGVmYXVsdF0NCj4gDQo+IFNpZ25l
-ZC1vZmYtYnk6IFlvdXF1YW4gU29uZyA8eW91cXVhbi5zb25nQGludGVsLmNvbT4NCj4gLS0tDQo+
-ICBkcml2ZXJzL2NwdWlkbGUvZ292ZXJub3JzL21lbnUuYyB8ICAgIDIgKy0NCj4gIDEgZmlsZXMg
-Y2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMvbWVudS5jIA0KPiBiL2RyaXZlcnMvY3B1aWRs
-ZS9nb3Zlcm5vcnMvbWVudS5jDQo+IGluZGV4IDI2ZDU2NjcuLjJlZmVlMjcgMTAwNjQ0DQo+IC0t
-LSBhL2RyaXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMvbWVudS5jDQo+ICsrKyBiL2RyaXZlcnMvY3B1
-aWRsZS9nb3Zlcm5vcnMvbWVudS5jDQo+IEBAIC0yNDgsNyArMjQ4LDcgQEAgc3RhdGljIGVudW0g
-aHJ0aW1lcl9yZXN0YXJ0IA0KPiBtZW51X2hydGltZXJfbm90aWZ5KHN0cnVjdCBocnRpbWVyICpo
-cnRpbWVyKSAgc3RhdGljIHUzMiANCj4gZ2V0X3R5cGljYWxfaW50ZXJ2YWwoc3RydWN0IG1lbnVf
-ZGV2aWNlICpkYXRhKSAgew0KPiAgCWludCBpID0gMCwgZGl2aXNvciA9IDA7DQo+IC0JaW50NjRf
-dCBtYXggPSAwLCBhdmcgPSAwLCBzdGRkZXYgPSAwOw0KPiArCXVpbnQ2NF90IG1heCA9IDAsIGF2
-ZyA9IDAsIHN0ZGRldiA9IDA7DQo+ICAJaW50NjRfdCB0aHJlc2ggPSBMTE9OR19NQVg7IC8qIERp
-c2NhcmQgb3V0bGllcnMgYWJvdmUgdGhpcyB2YWx1ZS4gKi8NCg0KU2hvdWxkbid0IHRoaXMgb25l
-IGJlIHVpbnQ2NF90IHRvbz8NCg0KPiAgCXVuc2lnbmVkIGludCByZXQgPSAwOw0KDQpSYWZhZWwN
-Cg0KDQotLQ0KSSBzcGVhayBvbmx5IGZvciBteXNlbGYuDQpSYWZhZWwgSi4gV3lzb2NraSwgSW50
-ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo=
+On 24 October 2012 06:13, Francesco Lavra <francescolavra.fl@gmail.com> wrote:
+> Hi,
+> On 10/23/2012 10:23 AM, Hongbo Zhang wrote:
+>> Hi Francesco,
+>> I found out more points about this issue.
+>>
+>> [1]
+>> cdev should be ready when get_max_state callback be called, otherwise
+>> parameter cdev is useless, imagine there may be cases that
+>> get_max_state call back is shared by more than one cooling devices of
+>> same kind, like this:
+>> common_get_max_state(*cdev, *state)
+>> {
+>>     if (cdev == cdev1)  *state = 3;
+>>     else if (cdev == cdev)  *state = 5;
+>>     else
+>> }
+>>
+>> [2]
+>> In my cpufreq cooling case(in fact cdev is not used to calculate
+>> max_state), the cooling_cpufreq_list should be ready when
+>> get_max_state call back is called. In this patch I defer the binding
+>> when registration finished, but this is not perfect now, see this
+>> routine in cpufreq_cooling_register:
+>>
+>> thermal_cooling_device_register;
+>> at this time: thermal_bind_work -> get_max_state -> get NULL
+>> cooling_cpufreq_list
+>> and then: list_add_tail(&cpufreq_dev->node, &cooling_cpufreq_list)
+>> This is due to we cannot know exactly when the bind work is executed.
+>> (and this can be fixed by moving mutex_lock(&cooling_cpufreq_lock)
+>> aheadof thermal_cooling_device_register and other corresponding
+>> modifications, but I found another way as below)
+>>
+>> [3]
+>> Root cause of this problem is calling get_max_state in register -> bind routine.
+>> Better solution is to add another parameter in cooling device register
+>> function, also add a max_state member in struct cdev, like:
+>> thermal_cooling_device_register(char *type, void *devdata, const
+>> struct thermal_cooling_device_ops *ops, unsigned long max_state)
+>> and then in the bind function:
+>> if(cdev->max_state)
+>>     max_state = cdev->max_state;
+>> else
+>>     cdev->get_max_state(cdev, &max_state)
+>>
+>> It is common sense that the cooling driver should know its cooling
+>> max_state(ability) before registration, and it can be offered when
+>> register.
+>> I think this way doesn't change both thermal and cooling layer much,
+>> it is more clear.
+>> I will update this patch soon.
+>
+> I still believe the thermal layer doesn't need any change to work around
+> this problem, and I still believe that when a cooling device is being
+> registered, all of its ops should be fully functional.
+> The problem with the cpufreq cooling device driver is that its callbacks
+> use the internal list of devices to retrieve the struct
+> cpufreq_cooling_device instance corresponding to a given struct
+> thermal_cooling_device. This is not necessary, because the struct
+> thermal_cooling_device has a private data pointer (devdata) which in
+> this case is exactly a reference to the struct cpufreq_cooling_device
+> instance the callbacks are looking for. In fact, I think the
+> cooling_cpufreq_list is not necessary at all, and should be removed from
+> the cpufreq cooling driver.
+> So the 3 callbacks, instead of iterating through the device list, should
+> have something like:
+> struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+> That would do the trick.
+
+Hi Francesco,
+When I found out this issue, I was hesitating to select the best
+solution among several ideas.
+It is clear now after talk with you, I will send patch for cpufreq
+cooling layer.
+Thank you.
+>
+> --
+> Francesco
