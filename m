@@ -1,66 +1,51 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] cpuidle - sysfs : move declaration in the sysfs file
-Date: Thu, 25 Oct 2012 13:46:17 +0200
-Message-ID: <1351165577-32020-1-git-send-email-daniel.lezcano@linaro.org>
+From: Peter De Schrijver <pdeschrijver@nvidia.com>
+Subject: Re: [PATCH 0/4][V2] cpuidle : multiple drivers support
+Date: Thu, 25 Oct 2012 16:49:33 +0300
+Message-ID: <20121025134933.GA1962@tbergstrom-lnx.Nvidia.com>
+References: <1350641449-22863-1-git-send-email-daniel.lezcano@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f44.google.com ([74.125.82.44]:35418 "EHLO
-	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754563Ab2JYLqV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 07:46:21 -0400
-Received: by mail-wg0-f44.google.com with SMTP id dr13so1266419wgb.1
-        for <linux-pm@vger.kernel.org>; Thu, 25 Oct 2012 04:46:20 -0700 (PDT)
+Received: from hqemgate03.nvidia.com ([216.228.121.140]:4679 "EHLO
+	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935668Ab2JYNtr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 09:49:47 -0400
+Content-Disposition: inline
+In-Reply-To: <1350641449-22863-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "patches@linaro.org" <patches@linaro.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>
 
-The structure cpuidle_state_kobj is not used anywhere except
-in the sysfs.c file. The definition of this structure is not
-needed in the cpuidle header file. This patch moves it to the
-sysfs.c file in order to encapsulate the code a bit more.
+On Fri, Oct 19, 2012 at 12:10:45PM +0200, Daniel Lezcano wrote:
+> The discussion about having different cpus on the system with
+> different latencies bring us to a first attemp by adding a
+> pointer in the cpuidle_device to the states array.
+> 
+> But as Rafael suggested, it would make more sense to create a
+> driver per cpu [1].
+> 
+> This patch adds support for multiple cpuidle drivers.
+> 
+> It creates a per cpu cpuidle driver pointer.
+> 
+> In order to not break the different drivers, the function cpuidle_register_driver
+> assign for each cpu, the driver.
+> 
+> The multiple driver support is optional and if it is not set, the cpuide driver
+> core code remains the same (except some code reorganisation).
+> 
+> I did the following tests compiled, booted, tested without/with CONFIG_CPU_IDLE,
+> with/without CONFIG_CPU_IDLE_MULTIPLE_DRIVERS.
+> 
+> Tested on Core2 Duo T9500 with acpi_idle [and intel_idle]
+> Tested on ARM Dual Cortex-A9 U8500 (aka Snowball)
+> 
+> V1 tested on Tegra3 and Vexpress TC2
+> 
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/sysfs.c |    7 +++++++
- include/linux/cpuidle.h |    7 -------
- 2 files changed, 7 insertions(+), 7 deletions(-)
+V2 tested on Tegra3.
 
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index ed87399..f15c1e5 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -297,6 +297,13 @@ static struct attribute *cpuidle_state_default_attrs[] = {
- 	NULL
- };
- 
-+struct cpuidle_state_kobj {
-+	struct cpuidle_state *state;
-+	struct cpuidle_state_usage *state_usage;
-+	struct completion kobj_unregister;
-+	struct kobject kobj;
-+};
-+
- #define kobj_to_state_obj(k) container_of(k, struct cpuidle_state_kobj, kobj)
- #define kobj_to_state(k) (kobj_to_state_obj(k)->state)
- #define kobj_to_state_usage(k) (kobj_to_state_obj(k)->state_usage)
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 279b1ea..7daf0e3 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -82,13 +82,6 @@ cpuidle_set_statedata(struct cpuidle_state_usage *st_usage, void *data)
- 	st_usage->driver_data = data;
- }
- 
--struct cpuidle_state_kobj {
--	struct cpuidle_state *state;
--	struct cpuidle_state_usage *state_usage;
--	struct completion kobj_unregister;
--	struct kobject kobj;
--};
--
- struct cpuidle_device {
- 	unsigned int		registered:1;
- 	unsigned int		enabled:1;
--- 
-1.7.5.4
+Cheers,
 
+Peter.
