@@ -1,65 +1,105 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [RFC] cpufreq: Make sure target freq is within limits
-Date: Thu, 25 Oct 2012 12:03:34 +0530
-Message-ID: <f0099171c1c4f3048d0f29b7deb42144f26ac5d5.1351146515.git.viresh.kumar@linaro.org>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [PATCH V2 5/6] Thermal: Add ST-Ericsson DB8500 thermal dirver.
+Date: Thu, 25 Oct 2012 16:26:53 +0800
+Message-ID: <CAJLyvQxEAeP__drUAAz6D_UeeDRvdqKdmim3xAO7sXP8cCM8=g@mail.gmail.com>
+References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351079900-32236-6-git-send-email-hongbo.zhang@linaro.com>
+	<CAKohpo=L-Xz90h90Q78gr7enOHK3u1TwHSs-QPQNE=0896SjRA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: rjw-KKrjLPT3xs0@public.gmane.org
-Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f174.google.com ([209.85.220.174]:47715 "EHLO
+	mail-vc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932796Ab2JYI0y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 04:26:54 -0400
+Received: by mail-vc0-f174.google.com with SMTP id fk26so1571386vcb.19
+        for <linux-pm@vger.kernel.org>; Thu, 25 Oct 2012 01:26:53 -0700 (PDT)
+In-Reply-To: <CAKohpo=L-Xz90h90Q78gr7enOHK3u1TwHSs-QPQNE=0896SjRA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
 
-Hi Rafael,
+[...]
+>> +/* Callback to get temperature changing trend */
+>> +static int db8500_sys_get_trend(struct thermal_zone_device *thermal,
+>> +                       int trip, enum thermal_trend *trend)
+>> +{
+>> +       struct db8500_thermal_zone *pzone = thermal->devdata;
+>> +
+>> +       *trend = pzone->trend;
+>> +
+>> +       return 0;
+>
+> Can make it return void.
+No, it is callback of thermal layer, prototype it to return int.
 
-__cpufreq_driver_target() must not pass target frequency beyond the limits of
-current policy.
-
-Today most of cpufreq platform drivers are doing this check in their target
-routines. Why not move it to __cpufreq_driver_target().
-
-I wanted to get your opinion on this before making changes in all driver files.
-That's why this is an RFC.
-
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
- drivers/cpufreq/cpufreq.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f552d5f..59264f1 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1470,12 +1470,19 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int relation)
- {
- 	int retval = -EINVAL;
-+	unsigned int old_target_freq = target_freq;
- 
- 	if (cpufreq_disabled())
- 		return -ENODEV;
- 
--	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
--		target_freq, relation);
-+	/* Make sure that target_freq is within supported range */
-+	if (target_freq > policy->max)
-+		target_freq = policy->max;
-+	if (target_freq < policy->min)
-+		target_freq = policy->min;
-+
-+	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
-+			policy->cpu, target_freq, relation, old_target_freq);
- 	if (cpu_online(policy->cpu) && cpufreq_driver->target)
- 		retval = cpufreq_driver->target(policy, target_freq, relation);
- 
--- 
-1.7.12.rc2.18.g61b472e
+[...]
+>> +static int __devinit db8500_thermal_probe(struct platform_device *pdev)
+>> +{
+>> +       struct db8500_thermal_zone *pzone = NULL;
+>> +       struct db8500_thsens_platform_data *ptrips = NULL;
+>> +       int low_irq, high_irq, ret = 0;
+>> +       unsigned long dft_low, dft_high;
+>> +
+>> +       pzone = devm_kzalloc(&pdev->dev, sizeof(*pzone), GFP_KERNEL);
+>> +       if (!pzone)
+>> +               return -ENOMEM;
+>> +
+>> +       ptrips = db8500_thermal_parse_dt(pdev);
+>
+> This is what u have in this routine at the very first line:
+>
+>        if (!np) {
+>                dev_err(&pdev->dev, "Missing device tree data\n");
+>
+> So, you will end up printing this line for every non-DT case. Not good.
+> What u can do is, give preference to normal pdata here.
+I moved this if(!np) into parse_dt function, no problem again.
+(in fact have already done this, but it is missed in this sending)
+>
+>> +       if (!ptrips)
+>> +               ptrips = dev_get_platdata(&pdev->dev);
+>> +
+>> +       if (!ptrips)
+>
+[...]
+>> +       }
+>> +
+>> +       ret = devm_request_threaded_irq(&pdev->dev, low_irq, NULL,
+>
+> why threaded irq?
+In fact PRCMU firmware is polling the thermal sensor, and if it meets
+threshold, the PRCMU will write this event into share memory (shared
+between PRCMU and ARM) and trigger an interrupt to ARM.
+There may be other events passed via share memory, so it is better to
+handle this kind of irq as fast as possible(it is always the policy),
+and threaded irq satisfies this case better then the traditional one.
+>
+>> +               prcmu_low_irq_handler, IRQF_NO_SUSPEND | IRQF_ONESHOT,
+>> +               "dbx500_temp_low", pzone);
+>> +       if (ret < 0) {
+>> +               dev_err(&pdev->dev, "Failed to allocate temp low irq.\n");
+>> +               return ret;
+>> +       }
+>> +
+>> +       high_irq = platform_get_irq_byname(pdev, "IRQ_HOTMON_HIGH");
+>> +       if (high_irq < 0) {
+>> +               dev_err(&pdev->dev, "Get IRQ_HOTMON_HIGH failed.\n");
+>> +               return high_irq;
+>
+> don't want to free resources?
+devm_* is used to allocate resources, so no need to free them manually.
+>
+>> +       }
+>> +
+>> +       ret = devm_request_threaded_irq(&pdev->dev, high_irq, NULL,
+>> +               prcmu_high_irq_handler, IRQF_NO_SUSPEND | IRQF_ONESHOT,
+>> +               "dbx500_temp_high", pzone);
+>> +       if (ret < 0) {
+>> +               dev_err(&pdev->dev, "Failed to allocate temp high irq.\n");
+>> +               return ret;
+>> +       }
+>> +
+[...]
