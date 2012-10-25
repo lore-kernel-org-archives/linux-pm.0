@@ -1,14 +1,20 @@
 From: "hongbo.zhang" <hongbo.zhang@linaro.org>
 Subject: [PATCH V2 6/6] Thermal: Add ST-Ericsson DB8500 thermal properties and platform data.
-Date: Thu, 25 Oct 2012 19:15:52 +0800
-Message-ID: <1351163752-29389-1-git-send-email-hongbo.zhang@linaro.com>
-References: <1351079900-32236-7-git-send-email-hongbo.zhang@linaro.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1351079900-32236-7-git-send-email-hongbo.zhang@linaro.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Date: Thu, 25 Oct 2012 19:39:39 +0800
+Message-ID: <1351165179-30599-1-git-send-email-hongbo.zhang@linaro.com>
+References: <1351163752-29389-1-git-send-email-hongbo.zhang@linaro.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:52162 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836Ab2JYLjx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 07:39:53 -0400
+Received: by mail-pb0-f46.google.com with SMTP id rr4so1948545pbb.19
+        for <linux-pm@vger.kernel.org>; Thu, 25 Oct 2012 04:39:52 -0700 (PDT)
+In-Reply-To: <1351163752-29389-1-git-send-email-hongbo.zhang@linaro.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: patches@linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: "hongbo.zhang" <hongbo.zhang@linaro.com>
 
@@ -55,10 +61,10 @@ index 748ba7a..949edc2 100644
  	};
  };
 diff --git a/arch/arm/boot/dts/snowball.dts b/arch/arm/boot/dts/snowball.dts
-index fce4a00..787d992 100644
+index 702c0ba..c6f85f0 100644
 --- a/arch/arm/boot/dts/snowball.dts
 +++ b/arch/arm/boot/dts/snowball.dts
-@@ -91,6 +91,33 @@
+@@ -99,6 +99,33 @@
  			status = "okay";
  		};
  
@@ -92,7 +98,7 @@ index fce4a00..787d992 100644
  		external-bus@50000000 {
  			status = "okay";
  
-@@ -176,5 +203,9 @@
+@@ -183,5 +210,9 @@
  				reg = <0x33>;
  			};
  		};
@@ -115,7 +121,7 @@ index cc5e7a8..34918c4 100644
 +CONFIG_DB8500_THERMAL=y
 +CONFIG_DB8500_CPUFREQ_COOLING=y
 diff --git a/arch/arm/mach-ux500/board-mop500.c b/arch/arm/mach-ux500/board-mop500.c
-index a534d88..71f2a9c 100644
+index 416d436..b03216b 100644
 --- a/arch/arm/mach-ux500/board-mop500.c
 +++ b/arch/arm/mach-ux500/board-mop500.c
 @@ -16,6 +16,7 @@
@@ -126,7 +132,7 @@ index a534d88..71f2a9c 100644
  #include <linux/gpio.h>
  #include <linux/amba/bus.h>
  #include <linux/amba/pl022.h>
-@@ -212,6 +213,67 @@ static struct ab8500_platform_data ab8500_platdata = {
+@@ -229,6 +230,67 @@ static struct ab8500_platform_data ab8500_platdata = {
  };
  
  /*
@@ -194,10 +200,10 @@ index a534d88..71f2a9c 100644
   * TPS61052
   */
  
-@@ -586,6 +648,8 @@ static struct platform_device *snowball_platform_devs[] __initdata = {
- 	&snowball_led_dev,
+@@ -583,6 +645,8 @@ static struct platform_device *snowball_platform_devs[] __initdata = {
  	&snowball_key_dev,
  	&snowball_sbnet_dev,
+ 	&snowball_gpio_en_3v3_regulator_dev,
 +	&u8500_thsens_device,
 +	&u8500_cpufreq_cooling_device,
  };
@@ -205,3 +211,4 @@ index a534d88..71f2a9c 100644
  static void __init mop500_init_machine(void)
 -- 
 1.7.11.3
+
